@@ -229,11 +229,12 @@ class SMAADemo : public boost::noncopyable {
 
 	struct Cube {
 		glm::vec3 pos;
+		glm::quat orient;
 		Color col;
 
 
-		Cube(float x_, float y_, float z_, Color col_)
-		: pos(x_, y_, z_), col(col_)
+		Cube(float x_, float y_, float z_, glm::quat orient_, Color col_)
+		: pos(x_, y_, z_), orient(orient_), col(col_)
 		{
 		}
 	};
@@ -394,7 +395,7 @@ void SMAADemo::createCubes() {
 	const unsigned int numCubes = pow(cubesSide, 3);
 
 	const float cubeDiameter = sqrtf(3.0f);
-	const float cubeDistance = cubeDiameter + 0.4f;
+	const float cubeDistance = cubeDiameter + 1.0f;
 
 	const float bigCubeSide = cubeDistance * cubesSide;
 
@@ -409,10 +410,20 @@ void SMAADemo::createCubes() {
 				// TODO: use repeatable random generator and seed
 				// FIXME: we're abusing little-endianness, make it portable
 				col.val = (rand() & 0x00FFFFFF) | 0xFF000000;
+				float qx = float(rand()) / RAND_MAX;
+				float qy = float(rand()) / RAND_MAX;
+				float qz = float(rand()) / RAND_MAX;
+				float qw = float(rand()) / RAND_MAX;
+				float reciprocLen = 1.0f / sqrtf(qx*qx + qy*qy + qz*qz + qw*qw);
+				qx *= reciprocLen;
+				qy *= reciprocLen;
+				qz *= reciprocLen;
+				qw *= reciprocLen;
 
 				cubes.emplace_back((x * cubeDistance) - (bigCubeSide / 2.0f)
 				                 , (y * cubeDistance) - (bigCubeSide / 2.0f)
 				                 , (z * cubeDistance) - (bigCubeSide / 2.0f)
+				                 , glm::quat(qx, qy, qz, qw)
 				                 , col);
 			}
 		}
@@ -451,13 +462,13 @@ void SMAADemo::render() {
 
 	simpleShader->bind();
 
-	glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -15.0f));
+	glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -25.0f));
 	glm::mat4 proj = glm::perspective(65.0f, float(windowWidth) / windowHeight, 0.1f, 100.0f);
 	glm::mat4 viewProj = proj * view;
 
 	// TODO: instancing
 	for (const auto &cube : cubes) {
-		glm::mat4 model = glm::translate(glm::mat4(1.0f), cube.pos);
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), cube.pos) * glm::mat4_cast(cube.orient);
 		glm::mat4 mvp = viewProj * model;
 		glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
 		glUniform4f(colorLoc, cube.col.r / 255.0f, cube.col.g / 255.0f, cube.col.b / 255.0f, cube.col.a / 255.0f);
