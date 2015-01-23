@@ -1,6 +1,7 @@
 #include <sys/stat.h>
 
 #include <cassert>
+#include <cfloat>
 #include <cstdio>
 #include <memory>
 #include <string>
@@ -11,10 +12,13 @@
 #include <SDL.h>
 
 #include <GL/glew.h>
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 
 #define ATTR_POS   0
-#define ATTR_COLOR 1
 
 
 // FIXME: should be ifdeffed out on compilers which already have it
@@ -56,6 +60,14 @@ namespace std {
 
 struct FILEDeleter {
 	void operator()(FILE *f) { fclose(f); }
+};
+
+
+union Color {
+	uint32_t val;
+	struct {
+		uint8_t r, g, b, a;
+	};
 };
 
 
@@ -103,6 +115,10 @@ public:
 	Shader(std::string vertexShaderName, std::string fragmentShaderName);
 
 	~Shader();
+
+	GLint getUniformLocation(const char *name);
+
+	void bind();
 };
 
 
@@ -154,7 +170,6 @@ Shader::Shader(std::string vertexShaderName, std::string fragmentShaderName)
 
 	program = glCreateProgram();
 	glBindAttribLocation(program, ATTR_POS, "position");
-	glBindAttribLocation(program, ATTR_COLOR, "color");
 	glAttachShader(program, vertexShader);
 	glAttachShader(program, fragmentShader);
 	glLinkProgram(program);
@@ -181,12 +196,48 @@ Shader::~Shader() {
 }
 
 
+GLint Shader::getUniformLocation(const char *name) {
+	assert(program != 0);
+	assert(name != NULL);
+
+	return glGetUniformLocation(program, name);
+}
+
+
+void Shader::bind() {
+	assert(program != 0);
+
+	glUseProgram(program);
+}
+
+
 class SMAADemo : public boost::noncopyable {
 	unsigned int windowWidth, windowHeight;
 	SDL_Window *window;
 	SDL_GLContext context;
 
 	std::unique_ptr<Shader> simpleShader;
+	// TODO: these are shader properties
+	// better yet use UBOs
+	GLint mvpLoc, colorLoc;
+
+	// TODO: create helper classes for these
+	GLuint vbo, ibo;
+
+	unsigned int cubePower;
+
+	struct Cube {
+		glm::vec3 pos;
+		Color col;
+
+
+		Cube(float x_, float y_, float z_, Color col_)
+		: pos(x_, y_, z_), col(col_)
+		{
+		}
+	};
+
+	std::vector<Cube> cubes;
 
 public:
 
@@ -195,6 +246,12 @@ public:
 	~SMAADemo();
 
 	void initRender();
+
+	void createCubes();
+
+	void mainLoop();
+
+	void render();
 };
 
 
@@ -203,6 +260,11 @@ SMAADemo::SMAADemo()
 , windowHeight(720)
 , window(NULL)
 , context(NULL)
+, mvpLoc(0)
+, colorLoc(0)
+, vbo(0)
+, ibo(0)
+, cubePower(3)
 {
 	// TODO: check return value
 	SDL_Init(SDL_INIT_VIDEO);
@@ -226,6 +288,56 @@ SMAADemo::~SMAADemo() {
 }
 
 
+struct Vertex {
+	float x, y, z;
+};
+
+
+const float coord = sqrtf(3.0f) / 2.0f;
+
+
+Vertex vertices[] =
+{
+	  { -coord ,  coord, -coord }
+	, {  coord ,  coord, -coord }
+	, { -coord ,  coord,  coord }
+	, {  coord ,  coord,  coord }
+	, { -coord , -coord, -coord }
+	, {  coord , -coord, -coord }
+	, { -coord , -coord,  coord }
+	, {  coord , -coord,  coord }
+};
+
+
+// FIXME: check vertex winding, some of these are probably wrong side out
+uint32_t indices[] =
+{
+    // top
+	  0, 1, 2
+	, 1, 2, 3
+
+	// front
+	, 0, 4, 1
+    , 4, 1, 5
+
+	// back
+	, 2, 3, 6
+    , 3, 6, 7
+
+	// left
+	, 0, 2, 4
+    , 2, 4, 6
+
+	// right
+	, 1, 3, 7
+    , 3, 7, 8
+
+	// bottom
+	, 4, 5, 6
+	, 5, 6, 7
+};
+
+
 void SMAADemo::initRender() {
 	assert(window == NULL);
 	assert(context == NULL);
@@ -244,6 +356,12 @@ void SMAADemo::initRender() {
 
 	// TODO: call SDL_GL_GetDrawableSize, log GL attributes etc.
 
+    // enable vsync, using late swap tearing if possible
+	int retval = SDL_GL_SetSwapInterval(-1);
+	if (retval != 0) {
+		SDL_GL_SetSwapInterval(1);
+	}
+
 	glewExperimental = true;
 	glewInit();
 
@@ -251,8 +369,102 @@ void SMAADemo::initRender() {
 	SDL_GL_SwapWindow(window);
 
 	simpleShader = std::make_unique<Shader>("simpleVS.vert", "simpleFS.frag");
+	mvpLoc = simpleShader->getUniformLocation("modelViewProj");
+	colorLoc = simpleShader->getUniformLocation("color");
+
+	// TODO: DSA
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices[0], GL_STATIC_DRAW);
+
+	glGenBuffers(1, &ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices[0], GL_STATIC_DRAW);
+	glVertexAttribPointer(ATTR_POS, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
+	glEnableVertexAttribArray(0);
 }
 
+
+void SMAADemo::createCubes() {
+	// cubes on a side is some power of 2
+	const unsigned int cubesSide = pow(2, cubePower);
+
+	// cube of cubes, n^3 cubes total
+	const unsigned int numCubes = pow(cubesSide, 3);
+
+	const float cubeDiameter = sqrtf(3.0f);
+	const float cubeDistance = cubeDiameter + 0.4f;
+
+	const float bigCubeSide = cubeDistance * cubesSide;
+
+	cubes.clear();
+	cubes.reserve(numCubes);
+
+	Color col;
+	for (unsigned int x = 0; x < cubesSide; x++) {
+		for (unsigned int y = 0; y < cubesSide; y++) {
+			for (unsigned int z = 0; z < cubesSide; z++) {
+				// random RGB, alpha = 1.0
+				// TODO: use repeatable random generator and seed
+				// FIXME: we're abusing little-endianness, make it portable
+				col.val = (rand() & 0x00FFFFFF) | 0xFF000000;
+
+				cubes.emplace_back((x * cubeDistance) - (bigCubeSide / 2.0f)
+				                 , (y * cubeDistance) - (bigCubeSide / 2.0f)
+				                 , (z * cubeDistance) - (bigCubeSide / 2.0f)
+				                 , col);
+			}
+		}
+	}
+}
+
+
+void SMAADemo::mainLoop() {
+	bool keepGoing = true;
+	while (keepGoing) {
+		// TODO: timing
+		SDL_Event event;
+		memset(&event, 0, sizeof(SDL_Event));
+		while (SDL_PollEvent(&event)) {
+			switch (event.type) {
+			case SDL_KEYDOWN:
+				if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+					keepGoing = false;
+				}
+				break;
+			}
+		}
+
+		render();
+	}
+}
+
+
+void SMAADemo::render() {
+	// TODO: reset all relevant state in case some 3rd-party program fucked them up
+
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+	glEnable(GL_DEPTH_TEST);
+
+	simpleShader->bind();
+
+	glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -15.0f));
+	glm::mat4 proj = glm::perspective(65.0f, float(windowWidth) / windowHeight, 0.1f, 100.0f);
+	glm::mat4 viewProj = proj * view;
+
+	// TODO: instancing
+	for (const auto &cube : cubes) {
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), cube.pos);
+		glm::mat4 mvp = viewProj * model;
+		glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+		glUniform4f(colorLoc, cube.col.r / 255.0f, cube.col.g / 255.0f, cube.col.b / 255.0f, cube.col.a / 255.0f);
+		glDrawElements(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL);
+	}
+
+	SDL_GL_SwapWindow(window);
+}
 
 
 int main(int /*argc */, char * /*argv*/ []) {
@@ -261,4 +473,8 @@ int main(int /*argc */, char * /*argv*/ []) {
 	// TODO: parse command line arguments and/or config file
 
 	demo.initRender();
+	demo.createCubes();
+	demo.mainLoop();
+
+	return 0;
 }
