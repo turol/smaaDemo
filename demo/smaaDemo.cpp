@@ -478,7 +478,7 @@ void SMAADemo::render() {
 	// TODO: instancing
 	for (const auto &cube : cubes) {
 		glUniform4f(colorLoc, cube.col.r / 255.0f, cube.col.g / 255.0f, cube.col.b / 255.0f, cube.col.a / 255.0f);
-		glUniform4f(rotLoc, cube.orient.x, cube.orient.y, cube.orient.z, cube.orient.w);
+		glUniform3f(rotLoc, cube.orient.x, cube.orient.y, cube.orient.z);
 		glUniform3f(posLoc, cube.pos.x, cube.pos.y, cube.pos.z);
 		glDrawElements(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL);
 	}
