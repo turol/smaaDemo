@@ -33,7 +33,7 @@ LDFLAGS:=-g -Wl,-rpath,. -Wl,-rpath,/usr/local/lib:./lib32
 LDFLAGS+=-Wl,--gc-sections,--icf=all
 LDLIBS:=
 LDLIBS+=$(shell sdl2-config --libs)
-LDLIBS+=$(shell pkg-config glew --libs)
+LDLIBS+=$(shell pkg-config glew --libs) -lGL
 
 LTOCFLAGS:=-flto -fuse-linker-plugin -fno-fat-lto-objects
 LTOLDFLAGS:=-flto -fuse-linker-plugin
