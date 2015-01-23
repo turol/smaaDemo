@@ -1,10 +1,14 @@
 #version 330
 
 uniform mat4 viewProj;
-uniform vec3 rotationQuat;
-uniform vec3 cubePos;
 
+in vec3 rotationQuat;
+in vec3 cubePos;
+in vec4 color;
 in vec3 position;
+
+
+out vec4 colorFrag;
 
 
 void main(void)
@@ -22,4 +26,5 @@ void main(void)
     vec3 rotatedPos = v + uv + uuv;
 
     gl_Position = viewProj * vec4(rotatedPos + cubePos, 1.0);
+    colorFrag = color;
 }

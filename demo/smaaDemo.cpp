@@ -20,6 +20,9 @@
 
 
 #define ATTR_POS   0
+#define ATTR_COLOR   1
+#define ATTR_CUBEPOS 2
+#define ATTR_ROT     3
 
 
 // FIXME: should be ifdeffed out on compilers which already have it
@@ -171,6 +174,10 @@ Shader::Shader(std::string vertexShaderName, std::string fragmentShaderName)
 
 	program = glCreateProgram();
 	glBindAttribLocation(program, ATTR_POS, "position");
+	glBindAttribLocation(program, ATTR_COLOR, "color");
+	glBindAttribLocation(program, ATTR_CUBEPOS, "cubePos");
+	glBindAttribLocation(program, ATTR_ROT, "rotationQuat");
+
 	glAttachShader(program, vertexShader);
 	glAttachShader(program, fragmentShader);
 	glLinkProgram(program);
@@ -220,11 +227,11 @@ class SMAADemo : public boost::noncopyable {
 	std::unique_ptr<Shader> simpleShader;
 	// TODO: these are shader properties
 	// better yet use UBOs
-	GLint viewProjLoc, colorLoc;
-	GLint rotLoc, posLoc;
+	GLint viewProjLoc;
 
 	// TODO: create helper classes for these
 	GLuint vbo, ibo;
+	GLuint instanceVBO;
 
 	unsigned int cubePower;
 
@@ -241,6 +248,26 @@ class SMAADemo : public boost::noncopyable {
 	};
 
 	std::vector<Cube> cubes;
+
+
+	struct InstanceData {
+		float x, y, z;
+		float qx, qy, qz;
+		Color col;
+
+
+		InstanceData(glm::quat rot, glm::vec3 pos, Color col_)
+			: x(pos.x), y(pos.y), z(pos.z)
+			, qx(rot.x), qy(rot.y), qz(rot.z)
+			, col(col_)
+		{
+			// shader assumes this and uses it to calculate w from other components
+			assert(rot.w >= 0.0);
+		}
+	};
+
+	std::vector<InstanceData> instances;
+
 
 public:
 
@@ -263,12 +290,10 @@ SMAADemo::SMAADemo()
 , windowHeight(720)
 , window(NULL)
 , context(NULL)
-, viewProjLoc(0)
-, colorLoc(0)
-, rotLoc(-1)
-, posLoc(-1)
+, viewProjLoc(-1)
 , vbo(0)
 , ibo(0)
+, instanceVBO(0)
 , cubePower(3)
 {
 	// TODO: check return value
@@ -343,6 +368,9 @@ uint32_t indices[] =
 };
 
 
+#define VBO_OFFSETOF(st, member) reinterpret_cast<GLvoid *>(offsetof(st, member))
+
+
 void SMAADemo::initRender() {
 	assert(window == NULL);
 	assert(context == NULL);
@@ -375,9 +403,6 @@ void SMAADemo::initRender() {
 
 	simpleShader = std::make_unique<Shader>("simpleVS.vert", "simpleFS.frag");
 	viewProjLoc = simpleShader->getUniformLocation("viewProj");
-	colorLoc = simpleShader->getUniformLocation("color");
-	rotLoc = simpleShader->getUniformLocation("rotationQuat");
-	posLoc = simpleShader->getUniformLocation("cubePos");
 
 	// TODO: DSA
 	glGenBuffers(1, &vbo);
@@ -388,7 +413,23 @@ void SMAADemo::initRender() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(ATTR_POS, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
-	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(ATTR_POS);
+
+	glGenBuffers(1, &instanceVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(InstanceData), NULL, GL_STREAM_DRAW);
+
+	glVertexAttribPointer(ATTR_CUBEPOS, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, x));
+	glVertexAttribDivisor(ATTR_CUBEPOS, 1);
+	glEnableVertexAttribArray(ATTR_CUBEPOS);
+
+	glVertexAttribPointer(ATTR_ROT, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, qx));
+	glVertexAttribDivisor(ATTR_ROT, 1);
+	glEnableVertexAttribArray(ATTR_ROT);
+
+	glVertexAttribPointer(ATTR_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, col));
+	glVertexAttribDivisor(ATTR_COLOR, 1);
+	glEnableVertexAttribArray(ATTR_COLOR);
 }
 
 
@@ -433,6 +474,10 @@ void SMAADemo::createCubes() {
 			}
 		}
 	}
+
+	// reallocate instance data buffer
+	glBufferData(GL_ARRAY_BUFFER, sizeof(InstanceData) * numCubes, NULL, GL_STREAM_DRAW);
+
 }
 
 
@@ -475,13 +520,17 @@ void SMAADemo::render() {
 	glm::mat4 viewProj = proj * view;
 	glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, glm::value_ptr(viewProj));
 
-	// TODO: instancing
+	instances.clear();
+	instances.reserve(cubes.size());
 	for (const auto &cube : cubes) {
-		glUniform4f(colorLoc, cube.col.r / 255.0f, cube.col.g / 255.0f, cube.col.b / 255.0f, cube.col.a / 255.0f);
-		glUniform3f(rotLoc, cube.orient.x, cube.orient.y, cube.orient.z);
-		glUniform3f(posLoc, cube.pos.x, cube.pos.y, cube.pos.z);
-		glDrawElements(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL);
+		instances.emplace_back(cube.orient, cube.pos, cube.col);
 	}
+
+	// FIXME: depends on instance data vbo remaining bound
+	// use dsa instead
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(InstanceData) * instances.size(), &instances[0]);
+
+	glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
 
 	SDL_GL_SwapWindow(window);
 }
