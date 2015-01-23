@@ -220,7 +220,8 @@ class SMAADemo : public boost::noncopyable {
 	std::unique_ptr<Shader> simpleShader;
 	// TODO: these are shader properties
 	// better yet use UBOs
-	GLint mvpLoc, colorLoc;
+	GLint viewProjLoc, colorLoc;
+	GLint rotLoc, posLoc;
 
 	// TODO: create helper classes for these
 	GLuint vbo, ibo;
@@ -262,8 +263,10 @@ SMAADemo::SMAADemo()
 , windowHeight(720)
 , window(NULL)
 , context(NULL)
-, mvpLoc(0)
+, viewProjLoc(0)
 , colorLoc(0)
+, rotLoc(-1)
+, posLoc(-1)
 , vbo(0)
 , ibo(0)
 , cubePower(3)
@@ -371,8 +374,10 @@ void SMAADemo::initRender() {
 	SDL_GL_SwapWindow(window);
 
 	simpleShader = std::make_unique<Shader>("simpleVS.vert", "simpleFS.frag");
-	mvpLoc = simpleShader->getUniformLocation("modelViewProj");
+	viewProjLoc = simpleShader->getUniformLocation("viewProj");
 	colorLoc = simpleShader->getUniformLocation("color");
+	rotLoc = simpleShader->getUniformLocation("rotationQuat");
+	posLoc = simpleShader->getUniformLocation("cubePos");
 
 	// TODO: DSA
 	glGenBuffers(1, &vbo);
@@ -468,13 +473,13 @@ void SMAADemo::render() {
 	glm::mat4 view = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -25.0f)), float(-360.0f * ticks) / rotationPeriod, glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 proj = glm::perspective(65.0f, float(windowWidth) / windowHeight, 0.1f, 100.0f);
 	glm::mat4 viewProj = proj * view;
+	glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, glm::value_ptr(viewProj));
 
 	// TODO: instancing
 	for (const auto &cube : cubes) {
-		glm::mat4 model = glm::translate(glm::mat4(1.0f), cube.pos) * glm::mat4_cast(cube.orient);
-		glm::mat4 mvp = viewProj * model;
-		glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, glm::value_ptr(mvp));
 		glUniform4f(colorLoc, cube.col.r / 255.0f, cube.col.g / 255.0f, cube.col.b / 255.0f, cube.col.a / 255.0f);
+		glUniform4f(rotLoc, cube.orient.x, cube.orient.y, cube.orient.z, cube.orient.w);
+		glUniform3f(posLoc, cube.pos.x, cube.pos.y, cube.pos.z);
 		glDrawElements(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL);
 	}
 
