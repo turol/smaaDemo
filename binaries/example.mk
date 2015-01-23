@@ -17,6 +17,7 @@ CXX:=g++
 CC:=gcc
 CFLAGS:=-g -Wall -Wextra -Werror -Wshadow
 CFLAGS+=-Wno-unused-local-typedefs
+CFLAGS+=$(shell sdl2-config --cflags)
 OPTFLAGS:=-O -march=native
 OPTFLAGS+=-ffast-math
 OPTFLAGS+=-fdata-sections -ffunction-sections
@@ -30,6 +31,7 @@ CXXFLAGS+=-std=c++11
 LDFLAGS:=-g -Wl,-rpath,. -Wl,-rpath,/usr/local/lib:./lib32
 LDFLAGS+=-Wl,--gc-sections,--icf=all
 LDLIBS:=
+LDLIBS+=$(shell sdl2-config --libs)
 
 LTOCFLAGS:=-flto -fuse-linker-plugin -fno-fat-lto-objects
 LTOLDFLAGS:=-flto -fuse-linker-plugin
