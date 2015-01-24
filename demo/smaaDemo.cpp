@@ -219,6 +219,68 @@ void Shader::bind() {
 }
 
 
+class SMAADemo;
+
+
+class Framebuffer : public boost::noncopyable {
+	// TODO: need a proper Render object to control the others
+	friend class SMAADemo;
+
+	GLuint fbo;
+	GLuint colorTex;
+	GLuint depthTex;
+
+	unsigned int width, height;
+
+public:
+
+	explicit Framebuffer(GLuint fbo_)
+	: fbo(fbo_)
+	, colorTex(0)
+	, depthTex(0)
+	, width(0)
+	, height(0)
+	{
+	}
+
+	~Framebuffer();
+
+	void bind();
+
+	void blitTo(Framebuffer &target);
+};
+
+
+Framebuffer::~Framebuffer() {
+	if (colorTex != 0) {
+		glDeleteTextures(1, &colorTex);
+		colorTex = 0;
+	}
+
+	if (depthTex != 0) {
+		glDeleteTextures(1, &depthTex);
+		depthTex = 0;
+	}
+
+	if (fbo != 0) {
+		glDeleteFramebuffers(1, &fbo);
+		fbo = 0;
+	}
+}
+
+
+void Framebuffer::bind() {
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+}
+
+
+void Framebuffer::blitTo(Framebuffer &target) {
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target.fbo);
+	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+}
+
+
 class SMAADemo : public boost::noncopyable {
 	unsigned int windowWidth, windowHeight;
 	SDL_Window *window;
@@ -234,6 +296,9 @@ class SMAADemo : public boost::noncopyable {
 	GLuint instanceVBO;
 
 	unsigned int cubePower;
+
+	std::unique_ptr<Framebuffer> builtinFBO;
+	std::unique_ptr<Framebuffer> renderFBO;
 
 	struct Cube {
 		glm::vec3 pos;
@@ -398,6 +463,9 @@ void SMAADemo::initRender() {
 	glewExperimental = true;
 	glewInit();
 
+	// TODO: check extensions
+	// at least direct state access, texture storage
+
 	// swap once to get better traces
 	SDL_GL_SwapWindow(window);
 
@@ -430,6 +498,30 @@ void SMAADemo::initRender() {
 	glVertexAttribPointer(ATTR_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, col));
 	glVertexAttribDivisor(ATTR_COLOR, 1);
 	glEnableVertexAttribArray(ATTR_COLOR);
+
+	builtinFBO = std::make_unique<Framebuffer>(0);
+	builtinFBO->width = windowWidth;
+	builtinFBO->height = windowHeight;
+
+	// TODO: move to a helper method
+	GLuint fbo = 0;
+	glGenFramebuffers(1, &fbo);
+	renderFBO = std::make_unique<Framebuffer>(fbo);
+	renderFBO->width = windowWidth;
+	renderFBO->height = windowHeight;
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	GLuint tex = 0;
+	glGenTextures(1, &tex);
+	renderFBO->colorTex = tex;
+	glTextureStorage2DEXT(tex, GL_TEXTURE_2D, 1, GL_RGBA8, windowWidth, windowHeight);
+	glNamedFramebufferTextureEXT(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
+
+	tex = 0;
+	glGenTextures(1, &tex);
+	renderFBO->depthTex = tex;
+	glTextureStorage2DEXT(tex, GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
+	glNamedFramebufferTextureEXT(fbo, GL_DEPTH_ATTACHMENT, tex, 0);
 }
 
 
@@ -508,6 +600,10 @@ void SMAADemo::render() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+	renderFBO->bind();
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
 	glEnable(GL_DEPTH_TEST);
 
 	simpleShader->bind();
@@ -531,6 +627,8 @@ void SMAADemo::render() {
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(InstanceData) * instances.size(), &instances[0]);
 
 	glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
+
+	renderFBO->blitTo(*builtinFBO);
 
 	SDL_GL_SwapWindow(window);
 }
