@@ -495,7 +495,7 @@ void SMAADemo::initRender() {
 	glVertexAttribDivisor(ATTR_ROT, 1);
 	glEnableVertexAttribArray(ATTR_ROT);
 
-	glVertexAttribPointer(ATTR_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, col));
+	glVertexAttribPointer(ATTR_COLOR, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, col));
 	glVertexAttribDivisor(ATTR_COLOR, 1);
 	glEnableVertexAttribArray(ATTR_COLOR);
 

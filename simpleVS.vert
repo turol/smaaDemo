@@ -4,11 +4,11 @@ uniform mat4 viewProj;
 
 in vec3 rotationQuat;
 in vec3 cubePos;
-in vec4 color;
+in vec3 color;
 in vec3 position;
 
 
-out vec4 colorFrag;
+out vec3 colorFrag;
 
 
 void main(void)
