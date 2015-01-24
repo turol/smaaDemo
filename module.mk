@@ -51,6 +51,8 @@ endif
 CFLAGS+=$(OPTFLAGS)
 
 CFLAGS+=-I$(TOPDIR)
+CFLAGS+=-isystem$(TOPDIR)/foreign/glew/include
+CFLAGS+=-DGLEW_STATIC -DGLEW_NO_GLU
 
 
 # (call directory-module, dirname)
@@ -73,6 +75,7 @@ endef
 
 DIRS:= \
 	demo \
+	foreign \
 	# empty line
 $(eval $(foreach directory, $(DIRS), $(call directory-module,$(directory)) ))
 

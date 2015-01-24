@@ -3,17 +3,18 @@ dirstack_$(sp) := $(d)
 d              := $(dir)
 
 
+SUBDIRS:= \
+	glew \
+	# empty line
+
+DIRS:=$(addprefix $(d)/,$(SUBDIRS))
+
+$(eval $(foreach directory, $(DIRS), $(call directory-module,$(directory)) ))
+
+
 FILES:= \
 	# empty line
 
-
-smaaDemo_MODULES:=glew
-smaaDemo_SRC:=$(dir)/smaaDemo.cpp
-
-
-PROGRAMS+= \
-	smaaDemo \
-	# empty line
 
 SRC_$(d):=$(addprefix $(d)/,$(FILES))
 
