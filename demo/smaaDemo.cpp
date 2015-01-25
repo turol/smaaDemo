@@ -1,5 +1,6 @@
 #include <sys/stat.h>
 
+#include <algorithm>
 #include <cassert>
 #include <cfloat>
 #include <cstdio>
@@ -112,6 +113,42 @@ std::vector<char> readTextFile(std::string filename) {
 }
 
 
+std::vector<char> readFile(std::string filename) {
+	std::unique_ptr<FILE, FILEDeleter> file(fopen(filename.c_str(), "rb"));
+
+	if (!file) {
+		// TODO: better exception
+		throw std::runtime_error("file not found " + filename);
+	}
+
+	int fd = fileno(file.get());
+	if (fd < 0) {
+		// TODO: better exception
+		throw std::runtime_error("no fd");
+	}
+
+	struct stat statbuf;
+	memset(&statbuf, 0, sizeof(struct stat));
+	int retval = fstat(fd, &statbuf);
+	if (retval < 0) {
+		// TODO: better exception
+		throw std::runtime_error("fstat failed");
+	}
+
+	uint64_t filesize = static_cast<uint64_t>(statbuf.st_size);
+	std::vector<char> buf(filesize, '\0');
+
+	size_t ret = fread(&buf[0], 1, filesize, file.get());
+	if (ret != filesize)
+	{
+		// TODO: better exception
+		throw std::runtime_error("fread failed");
+	}
+
+	return buf;
+}
+
+
 class Shader : public boost::noncopyable {
     GLuint program;
 
@@ -126,11 +163,97 @@ public:
 };
 
 
+static std::vector<char> processShaderIncludes(std::vector<char> shaderSource) {
+	std::vector<char> output(shaderSource);
+
+	auto includePos = output.begin();
+
+	while (true) {
+		// find an #include
+		while (includePos < output.end()) {
+			// is it a comment?
+			if (*includePos == '/') {
+				includePos++;
+				if (includePos == output.end()) {
+					break;
+				}
+
+				if (*includePos == '/') {
+					// until line end
+					includePos = std::find(includePos, output.end(), '\n');
+				} else if (*includePos == '*') {
+					// until "*/"
+					while (true) {
+						includePos = std::find(includePos, output.end(), '*');
+						if (includePos == output.end()) {
+							break;
+						}
+
+						includePos++;
+						if (includePos == output.end()) {
+							break;
+						}
+
+						if (*includePos == '/') {
+							includePos++;
+							break;
+						} else if (*includePos == '*') {
+							// handle "**/"
+							includePos--;
+						}
+					}
+				}
+			} else if (*includePos == '#' ) {
+				includePos++;
+				std::string directive(includePos, std::min(includePos + 7, output.end()));
+				if (directive == "include") {
+					// we have an "#include"
+					break;
+				}
+				includePos++;
+			} else {
+				includePos++;
+			}
+		}
+
+		if (includePos == output.end()) {
+			// not found, we're done
+			break;
+		}
+
+		// find first of either " or <
+		auto filenamePos = std::min(std::find(includePos, output.end(), '"'), std::find(includePos, output.end(), '<')) + 1;
+		auto filenameEnd = std::min(std::find(filenamePos, output.end(), '"'), std::find(filenamePos, output.end(), '>'));
+		std::string filename(filenamePos, filenameEnd);
+
+		printf("Filename: %s\n", filename.c_str());
+
+		// we don't want a terminating '\0'
+		auto includeContents = readFile(filename);
+		// TODO: strip other errant '\0's
+
+		std::vector<char> newOutput;
+		// TODO: could reduce this a bit
+		newOutput.reserve(output.size() + includeContents.size());
+		newOutput.insert(newOutput.end(), output.begin(), includePos);
+		newOutput.insert(newOutput.end(), includeContents.begin(), includeContents.end());
+		newOutput.insert(newOutput.end(), filenameEnd + 1, output.end());
+
+		auto dist = std::distance(output.begin(), includePos);
+		std::swap(output, newOutput);
+		includePos = output.begin() + dist;
+		// go again in case of recursive includes
+	}
+
+	return output;
+}
+
+
 Shader::Shader(std::string vertexShaderName, std::string fragmentShaderName)
 : program(0)
 {
-	auto vsSrc = readTextFile(vertexShaderName);
-	auto fsSrc = readTextFile(fragmentShaderName);
+	auto vsSrc = processShaderIncludes(readTextFile(vertexShaderName));
+	auto fsSrc = processShaderIncludes(readTextFile(fragmentShaderName));
 
 	std::vector<const char *> sourcePointers;
 	sourcePointers.push_back(&vsSrc[0]);
@@ -193,6 +316,7 @@ Shader::Shader(std::string vertexShaderName, std::string fragmentShaderName)
 		printf("info log: %s\n", &infoLog[0]); fflush(stdout);
 		throw std::runtime_error("shader link failed");
 	}
+	glUseProgram(program);
 }
 
 
@@ -300,6 +424,9 @@ class SMAADemo : public boost::noncopyable {
 	std::unique_ptr<Framebuffer> builtinFBO;
 	std::unique_ptr<Framebuffer> renderFBO;
 
+	bool fxaa;
+	std::unique_ptr<Shader> fxaaShader;
+
 	struct Cube {
 		glm::vec3 pos;
 		glm::quat orient;
@@ -360,6 +487,7 @@ SMAADemo::SMAADemo()
 , ibo(0)
 , instanceVBO(0)
 , cubePower(3)
+, fxaa(true)
 {
 	// TODO: check return value
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
@@ -472,6 +600,11 @@ void SMAADemo::initRender() {
 	simpleShader = std::make_unique<Shader>("simpleVS.vert", "simpleFS.frag");
 	viewProjLoc = simpleShader->getUniformLocation("viewProj");
 
+	fxaaShader = std::make_unique<Shader>("fxaa.vert", "fxaa.frag");
+	GLint screenSizeLoc = fxaaShader->getUniformLocation("screenSize");
+	glm::vec4 screenSize(windowWidth, windowHeight, 1.0f / float(windowWidth), 1.0f / float(windowHeight));
+	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
+
 	// TODO: DSA
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -481,7 +614,6 @@ void SMAADemo::initRender() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(ATTR_POS, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
-	glEnableVertexAttribArray(ATTR_POS);
 
 	glGenBuffers(1, &instanceVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
@@ -489,15 +621,12 @@ void SMAADemo::initRender() {
 
 	glVertexAttribPointer(ATTR_CUBEPOS, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, x));
 	glVertexAttribDivisor(ATTR_CUBEPOS, 1);
-	glEnableVertexAttribArray(ATTR_CUBEPOS);
 
 	glVertexAttribPointer(ATTR_ROT, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, qx));
 	glVertexAttribDivisor(ATTR_ROT, 1);
-	glEnableVertexAttribArray(ATTR_ROT);
 
 	glVertexAttribPointer(ATTR_COLOR, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, col));
 	glVertexAttribDivisor(ATTR_COLOR, 1);
-	glEnableVertexAttribArray(ATTR_COLOR);
 
 	builtinFBO = std::make_unique<Framebuffer>(0);
 	builtinFBO->width = windowWidth;
@@ -522,6 +651,10 @@ void SMAADemo::initRender() {
 	renderFBO->depthTex = tex;
 	glTextureStorage2DEXT(tex, GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
 	glNamedFramebufferTextureEXT(fbo, GL_DEPTH_ATTACHMENT, tex, 0);
+
+	GLint colorLoc = fxaaShader->getUniformLocation("color");
+	glUniform1i(colorLoc, 0);
+	glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, renderFBO->colorTex);
 }
 
 
@@ -582,8 +715,11 @@ void SMAADemo::mainLoop() {
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_KEYDOWN:
+				// TODO: switch
 				if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
 					keepGoing = false;
+				} else if (event.key.keysym.scancode == SDL_SCANCODE_A) {
+					fxaa = !fxaa;
 				}
 				break;
 			}
@@ -626,9 +762,25 @@ void SMAADemo::render() {
 	// use dsa instead
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(InstanceData) * instances.size(), &instances[0]);
 
+	glEnableVertexAttribArray(ATTR_POS);
+	glEnableVertexAttribArray(ATTR_CUBEPOS);
+	glEnableVertexAttribArray(ATTR_ROT);
+	glEnableVertexAttribArray(ATTR_COLOR);
 	glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
 
+	glDisableVertexAttribArray(ATTR_POS);
+	glDisableVertexAttribArray(ATTR_CUBEPOS);
+	glDisableVertexAttribArray(ATTR_ROT);
+	glDisableVertexAttribArray(ATTR_COLOR);
+
+	if (fxaa) {
+		glDisable(GL_DEPTH_TEST);
+		builtinFBO->bind();
+		fxaaShader->bind();
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+	} else {
 	renderFBO->blitTo(*builtinFBO);
+	}
 
 	SDL_GL_SwapWindow(window);
 }
