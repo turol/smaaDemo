@@ -424,7 +424,7 @@ class SMAADemo : public boost::noncopyable {
 	std::unique_ptr<Framebuffer> builtinFBO;
 	std::unique_ptr<Framebuffer> renderFBO;
 
-	bool fxaa;
+	bool antialiasing;
 	std::unique_ptr<Shader> fxaaShader;
 
 	struct Cube {
@@ -487,7 +487,7 @@ SMAADemo::SMAADemo()
 , ibo(0)
 , instanceVBO(0)
 , cubePower(3)
-, fxaa(true)
+, antialiasing(true)
 {
 	// TODO: check return value
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
@@ -719,7 +719,7 @@ void SMAADemo::mainLoop() {
 				if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
 					keepGoing = false;
 				} else if (event.key.keysym.scancode == SDL_SCANCODE_A) {
-					fxaa = !fxaa;
+					antialiasing = !antialiasing;
 				}
 				break;
 			}
@@ -773,7 +773,7 @@ void SMAADemo::render() {
 	glDisableVertexAttribArray(ATTR_ROT);
 	glDisableVertexAttribArray(ATTR_COLOR);
 
-	if (fxaa) {
+	if (antialiasing) {
 		glDisable(GL_DEPTH_TEST);
 		builtinFBO->bind();
 		fxaaShader->bind();
