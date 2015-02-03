@@ -1,4 +1,5 @@
 #version 330
+#extension GL_ARB_gpu_shader5 : enable
 
 
 uniform sampler2D color;
