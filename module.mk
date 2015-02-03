@@ -52,6 +52,7 @@ CFLAGS+=$(OPTFLAGS)
 
 CFLAGS+=-I$(TOPDIR)
 CFLAGS+=-isystem$(TOPDIR)/foreign/glew/include
+CFLAGS+=-isystem$(TOPDIR)/foreign/glm
 CFLAGS+=-DGLEW_STATIC -DGLEW_NO_GLU
 
 
