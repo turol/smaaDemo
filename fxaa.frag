@@ -12,7 +12,6 @@ in vec2 texcoord;
 #define FXAA_PC 1
 #define FXAA_GLSL_130 1
 #define FXAA_QUALITY__PRESET 39
-#define FXAA_GREEN_AS_LUMA 1
 
 
 #include "fxaa3_11.h"
