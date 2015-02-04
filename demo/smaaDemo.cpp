@@ -817,9 +817,9 @@ void SMAADemo::render() {
 		glDisable(GL_DEPTH_TEST);
 		switch (aaMethod) {
 		case AAMethod::FXAA:
-		builtinFBO->bind();
-		fxaaShader->bind();
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+			builtinFBO->bind();
+			fxaaShader->bind();
+			glDrawArrays(GL_TRIANGLES, 0, 3);
 		break;
 
 		case AAMethod::SMAA:
