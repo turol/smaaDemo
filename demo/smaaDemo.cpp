@@ -19,6 +19,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "AreaTex.h"
+#include "SearchTex.h"
+
 
 #define ATTR_POS   0
 #define ATTR_COLOR   1
@@ -27,6 +30,8 @@
 
 
 #define TEXUNIT_COLOR 0
+#define TEXUNIT_AREATEX 1
+#define TEXUNIT_SEARCHTEX 2
 
 
 // FIXME: should be ifdeffed out on compilers which already have it
@@ -455,6 +460,8 @@ class SMAADemo : public boost::noncopyable {
 	AAMethod::AAMethod aaMethod;
 	std::unique_ptr<Shader> fxaaShader;
 	std::unique_ptr<Shader> smaaEdgeShader;
+	GLuint areaTex;
+	GLuint searchTex;
 
 	struct Cube {
 		glm::vec3 pos;
@@ -518,6 +525,8 @@ SMAADemo::SMAADemo()
 , cubePower(3)
 , antialiasing(true)
 , aaMethod(AAMethod::FXAA)
+, areaTex(0)
+, searchTex(0)
 {
 	// TODO: check return value
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
@@ -665,6 +674,16 @@ void SMAADemo::initRender() {
 
 	glVertexAttribPointer(ATTR_COLOR, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, col));
 	glVertexAttribDivisor(ATTR_COLOR, 1);
+
+	glGenTextures(1, &areaTex);
+	glTextureStorage2DEXT(areaTex, GL_TEXTURE_2D, 1, GL_RG8, AREATEX_WIDTH, AREATEX_HEIGHT);
+	glTextureSubImage2DEXT(areaTex, GL_TEXTURE_2D, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, areaTexBytes);
+	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_AREATEX, GL_TEXTURE_2D, areaTex);
+
+	glGenTextures(1, &searchTex);
+	glTextureStorage2DEXT(searchTex, GL_TEXTURE_2D, 1, GL_RG8, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT);
+	glTextureSubImage2DEXT(searchTex, GL_TEXTURE_2D, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, searchTexBytes);
+	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_SEARCHTEX, GL_TEXTURE_2D, searchTex);
 
 	builtinFBO = std::make_unique<Framebuffer>(0);
 	builtinFBO->width = windowWidth;
