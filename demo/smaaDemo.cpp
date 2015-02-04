@@ -26,6 +26,9 @@
 #define ATTR_ROT     3
 
 
+#define TEXUNIT_COLOR 0
+
+
 // FIXME: should be ifdeffed out on compilers which already have it
 // http://isocpp.org/files/papers/N3656.txt
 namespace std {
@@ -184,7 +187,7 @@ static std::vector<char> processShaderIncludes(std::vector<char> shaderSource) {
 				} else if (*includePos == '*') {
 					// until "*/"
 					while (true) {
-						includePos = std::find(includePos, output.end(), '*');
+						includePos = std::find(includePos + 1, output.end(), '*');
 						if (includePos == output.end()) {
 							break;
 						}
@@ -266,12 +269,17 @@ Shader::Shader(std::string vertexShaderName, std::string fragmentShaderName)
 	// TODO: defer checking to enable multithreaded shader compile
 	GLint status = 0;
 	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
-	if (status != GL_TRUE) {
-		glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &status);
-		std::vector<char> infoLog(status + 1, '\0');
+
+	{
+		GLint infoLogLen = 0;
+		glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &infoLogLen);
+		std::vector<char> infoLog(infoLogLen + 1, '\0');
 		// TODO: better logging
-		glGetShaderInfoLog(vertexShader, status, NULL, &infoLog[0]);
-		printf("info log: %s\n", &infoLog[0]); fflush(stdout);
+		glGetShaderInfoLog(vertexShader, infoLogLen, NULL, &infoLog[0]);
+		printf("vert shader \"%s\" info log: %s\n", vertexShaderName.c_str(), &infoLog[0]); fflush(stdout);
+	}
+
+	if (status != GL_TRUE) {
 		glDeleteShader(vertexShader);
 		throw std::runtime_error("VS compile failed");
 	}
@@ -284,12 +292,17 @@ Shader::Shader(std::string vertexShaderName, std::string fragmentShaderName)
 	// TODO: defer checking to enable multithreaded shader compile
 	status = 0;
 	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &status);
-	if (status != GL_TRUE) {
-		glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &status);
-		std::vector<char> infoLog(status + 1, '\0');
+
+	{
+		GLint infoLogLen = 0;
+		glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &infoLogLen);
+		std::vector<char> infoLog(infoLogLen + 1, '\0');
 		// TODO: better logging
-		glGetShaderInfoLog(fragmentShader, status, NULL, &infoLog[0]);
-		printf("info log: %s\n", &infoLog[0]); fflush(stdout);
+		glGetShaderInfoLog(fragmentShader, infoLogLen, NULL, &infoLog[0]);
+		printf("frag shader \"%s\" info log: %s\n", fragmentShaderName.c_str(), &infoLog[0]); fflush(stdout);
+	}
+
+	if (status != GL_TRUE) {
 		glDeleteShader(fragmentShader);
 		glDeleteShader(vertexShader);
 		throw std::runtime_error("FS compile failed");
@@ -317,6 +330,9 @@ Shader::Shader(std::string vertexShaderName, std::string fragmentShaderName)
 		throw std::runtime_error("shader link failed");
 	}
 	glUseProgram(program);
+
+	GLint colorLoc = getUniformLocation("color");
+	glUniform1i(colorLoc, TEXUNIT_COLOR);
 }
 
 
@@ -426,6 +442,7 @@ class SMAADemo : public boost::noncopyable {
 
 	bool antialiasing;
 	std::unique_ptr<Shader> fxaaShader;
+	std::unique_ptr<Shader> smaaEdgeShader;
 
 	struct Cube {
 		glm::vec3 pos;
@@ -600,10 +617,19 @@ void SMAADemo::initRender() {
 	simpleShader = std::make_unique<Shader>("simpleVS.vert", "simpleFS.frag");
 	viewProjLoc = simpleShader->getUniformLocation("viewProj");
 
+	{
+	smaaEdgeShader = std::make_unique<Shader>("smaaEdge.vert", "smaaEdge.frag");
+	GLint screenSizeLoc = smaaEdgeShader->getUniformLocation("screenSize");
+	glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
+	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
+	}
+
+	{
 	fxaaShader = std::make_unique<Shader>("fxaa.vert", "fxaa.frag");
 	GLint screenSizeLoc = fxaaShader->getUniformLocation("screenSize");
 	glm::vec4 screenSize(windowWidth, windowHeight, 1.0f / float(windowWidth), 1.0f / float(windowHeight));
 	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
+	}
 
 	// TODO: DSA
 	glGenBuffers(1, &vbo);
@@ -644,6 +670,8 @@ void SMAADemo::initRender() {
 	glGenTextures(1, &tex);
 	renderFBO->colorTex = tex;
 	glTextureStorage2DEXT(tex, GL_TEXTURE_2D, 1, GL_RGBA8, windowWidth, windowHeight);
+	glTextureParameteriEXT(tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTextureParameteriEXT(tex, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glNamedFramebufferTextureEXT(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
 
 	tex = 0;
@@ -652,9 +680,7 @@ void SMAADemo::initRender() {
 	glTextureStorage2DEXT(tex, GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
 	glNamedFramebufferTextureEXT(fbo, GL_DEPTH_ATTACHMENT, tex, 0);
 
-	GLint colorLoc = fxaaShader->getUniformLocation("color");
-	glUniform1i(colorLoc, 0);
-	glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, renderFBO->colorTex);
+	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_COLOR, GL_TEXTURE_2D, renderFBO->colorTex);
 }
 
 
