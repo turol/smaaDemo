@@ -32,6 +32,7 @@
 #define TEXUNIT_COLOR 0
 #define TEXUNIT_AREATEX 1
 #define TEXUNIT_SEARCHTEX 2
+#define TEXUNIT_EDGES 3
 
 
 // FIXME: should be ifdeffed out on compilers which already have it
@@ -338,6 +339,21 @@ Shader::Shader(std::string vertexShaderName, std::string fragmentShaderName)
 
 	GLint colorLoc = getUniformLocation("color");
 	glUniform1i(colorLoc, TEXUNIT_COLOR);
+
+	GLint areaTexLoc = getUniformLocation("areaTex");
+	if (areaTexLoc >= 0) {
+		glUniform1i(areaTexLoc, TEXUNIT_AREATEX);
+	}
+
+	GLint searchTexLoc = getUniformLocation("searchTex");
+	if (searchTexLoc >= 0) {
+		glUniform1i(searchTexLoc, TEXUNIT_SEARCHTEX);
+	}
+
+	GLint edgesTexLoc = getUniformLocation("edgesTex");
+	if (edgesTexLoc >= 0) {
+		glUniform1i(edgesTexLoc, TEXUNIT_EDGES);
+	}
 }
 
 
@@ -455,11 +471,13 @@ class SMAADemo : public boost::noncopyable {
 
 	std::unique_ptr<Framebuffer> builtinFBO;
 	std::unique_ptr<Framebuffer> renderFBO;
+	std::unique_ptr<Framebuffer> edgesFBO;
 
 	bool antialiasing;
 	AAMethod::AAMethod aaMethod;
 	std::unique_ptr<Shader> fxaaShader;
 	std::unique_ptr<Shader> smaaEdgeShader;
+	std::unique_ptr<Shader> smaaBlendWeightShader;
 	GLuint areaTex;
 	GLuint searchTex;
 
@@ -647,6 +665,12 @@ void SMAADemo::initRender() {
 	}
 
 	{
+	smaaBlendWeightShader = std::make_unique<Shader>("smaaBlendWeight.vert", "smaaBlendWeight.frag");
+	GLint screenSizeLoc = smaaBlendWeightShader->getUniformLocation("screenSize");
+	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
+	}
+
+	{
 	fxaaShader = std::make_unique<Shader>("fxaa.vert", "fxaa.frag");
 	GLint screenSizeLoc = fxaaShader->getUniformLocation("screenSize");
 	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
@@ -712,6 +736,24 @@ void SMAADemo::initRender() {
 	glNamedFramebufferTextureEXT(fbo, GL_DEPTH_ATTACHMENT, tex, 0);
 
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_COLOR, GL_TEXTURE_2D, renderFBO->colorTex);
+
+	// SMAA edges texture and FBO
+	fbo = 0;
+	glGenFramebuffers(1, &fbo);
+	edgesFBO = std::make_unique<Framebuffer>(fbo);
+	edgesFBO->width = windowWidth;
+	edgesFBO->height = windowHeight;
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	tex = 0;
+	glGenTextures(1, &tex);
+	edgesFBO->colorTex = tex;
+	glTextureStorage2DEXT(tex, GL_TEXTURE_2D, 1, GL_RGBA8, windowWidth, windowHeight);
+	glTextureParameteriEXT(tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTextureParameteriEXT(tex, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glNamedFramebufferTextureEXT(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
+
+	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_EDGES, GL_TEXTURE_2D, edgesFBO->colorTex);
 }
 
 
@@ -842,8 +884,13 @@ void SMAADemo::render() {
 		break;
 
 		case AAMethod::SMAA:
-			builtinFBO->bind();
+			edgesFBO->bind();
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 			smaaEdgeShader->bind();
+			glDrawArrays(GL_TRIANGLES, 0, 3);
+
+			builtinFBO->bind();
+			smaaBlendWeightShader->bind();
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 			break;
 		}
