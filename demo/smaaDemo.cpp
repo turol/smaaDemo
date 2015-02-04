@@ -33,6 +33,7 @@
 #define TEXUNIT_AREATEX 1
 #define TEXUNIT_SEARCHTEX 2
 #define TEXUNIT_EDGES 3
+#define TEXUNIT_BLEND 4
 
 
 // FIXME: should be ifdeffed out on compilers which already have it
@@ -354,6 +355,11 @@ Shader::Shader(std::string vertexShaderName, std::string fragmentShaderName)
 	if (edgesTexLoc >= 0) {
 		glUniform1i(edgesTexLoc, TEXUNIT_EDGES);
 	}
+
+	GLint blendTexLoc = getUniformLocation("blendTex");
+	if (blendTexLoc >= 0) {
+		glUniform1i(blendTexLoc, TEXUNIT_BLEND);
+	}
 }
 
 
@@ -472,12 +478,14 @@ class SMAADemo : public boost::noncopyable {
 	std::unique_ptr<Framebuffer> builtinFBO;
 	std::unique_ptr<Framebuffer> renderFBO;
 	std::unique_ptr<Framebuffer> edgesFBO;
+	std::unique_ptr<Framebuffer> blendFBO;
 
 	bool antialiasing;
 	AAMethod::AAMethod aaMethod;
 	std::unique_ptr<Shader> fxaaShader;
 	std::unique_ptr<Shader> smaaEdgeShader;
 	std::unique_ptr<Shader> smaaBlendWeightShader;
+	std::unique_ptr<Shader> smaaNeighborShader;
 	GLuint areaTex;
 	GLuint searchTex;
 
@@ -671,6 +679,12 @@ void SMAADemo::initRender() {
 	}
 
 	{
+	smaaNeighborShader = std::make_unique<Shader>("smaaNeighbor.vert", "smaaNeighbor.frag");
+	GLint screenSizeLoc = smaaNeighborShader->getUniformLocation("screenSize");
+	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
+	}
+
+	{
 	fxaaShader = std::make_unique<Shader>("fxaa.vert", "fxaa.frag");
 	GLint screenSizeLoc = fxaaShader->getUniformLocation("screenSize");
 	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
@@ -754,6 +768,24 @@ void SMAADemo::initRender() {
 	glNamedFramebufferTextureEXT(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
 
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_EDGES, GL_TEXTURE_2D, edgesFBO->colorTex);
+
+	// SMAA blending weights texture and FBO
+	fbo = 0;
+	glGenFramebuffers(1, &fbo);
+	blendFBO = std::make_unique<Framebuffer>(fbo);
+	blendFBO->width = windowWidth;
+	blendFBO->height = windowHeight;
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	tex = 0;
+	glGenTextures(1, &tex);
+	blendFBO->colorTex = tex;
+	glTextureStorage2DEXT(tex, GL_TEXTURE_2D, 1, GL_RGBA8, windowWidth, windowHeight);
+	glTextureParameteriEXT(tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTextureParameteriEXT(tex, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glNamedFramebufferTextureEXT(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
+
+	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_BLEND, GL_TEXTURE_2D, blendFBO->colorTex);
 }
 
 
@@ -889,8 +921,12 @@ void SMAADemo::render() {
 			smaaEdgeShader->bind();
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 
-			builtinFBO->bind();
+			blendFBO->bind();
 			smaaBlendWeightShader->bind();
+			glDrawArrays(GL_TRIANGLES, 0, 3);
+
+			builtinFBO->bind();
+			smaaNeighborShader->bind();
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 			break;
 		}
