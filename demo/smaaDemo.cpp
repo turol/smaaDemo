@@ -805,7 +805,7 @@ void SMAADemo::render() {
 		fxaaShader->bind();
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 	} else {
-	renderFBO->blitTo(*builtinFBO);
+		renderFBO->blitTo(*builtinFBO);
 	}
 
 	SDL_GL_SwapWindow(window);
