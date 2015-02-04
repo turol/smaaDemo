@@ -421,6 +421,17 @@ void Framebuffer::blitTo(Framebuffer &target) {
 }
 
 
+namespace AAMethod {
+
+enum AAMethod {
+	  FXAA
+	, SMAA
+	, LAST = SMAA
+};
+
+}  // namespace AAMethod
+
+
 class SMAADemo : public boost::noncopyable {
 	unsigned int windowWidth, windowHeight;
 	SDL_Window *window;
@@ -441,6 +452,7 @@ class SMAADemo : public boost::noncopyable {
 	std::unique_ptr<Framebuffer> renderFBO;
 
 	bool antialiasing;
+	AAMethod::AAMethod aaMethod;
 	std::unique_ptr<Shader> fxaaShader;
 	std::unique_ptr<Shader> smaaEdgeShader;
 
@@ -505,6 +517,7 @@ SMAADemo::SMAADemo()
 , instanceVBO(0)
 , cubePower(3)
 , antialiasing(true)
+, aaMethod(AAMethod::FXAA)
 {
 	// TODO: check return value
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
@@ -745,6 +758,8 @@ void SMAADemo::mainLoop() {
 					keepGoing = false;
 				} else if (event.key.keysym.scancode == SDL_SCANCODE_A) {
 					antialiasing = !antialiasing;
+				} else if (event.key.keysym.scancode == SDL_SCANCODE_M) {
+					aaMethod = AAMethod::AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
 				}
 				break;
 			}
@@ -800,9 +815,20 @@ void SMAADemo::render() {
 
 	if (antialiasing) {
 		glDisable(GL_DEPTH_TEST);
+		switch (aaMethod) {
+		case AAMethod::FXAA:
 		builtinFBO->bind();
 		fxaaShader->bind();
 		glDrawArrays(GL_TRIANGLES, 0, 3);
+		break;
+
+		case AAMethod::SMAA:
+			builtinFBO->bind();
+			smaaEdgeShader->bind();
+			glDrawArrays(GL_TRIANGLES, 0, 3);
+			break;
+		}
+
 	} else {
 		renderFBO->blitTo(*builtinFBO);
 	}
