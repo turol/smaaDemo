@@ -617,17 +617,16 @@ void SMAADemo::initRender() {
 	simpleShader = std::make_unique<Shader>("simpleVS.vert", "simpleFS.frag");
 	viewProjLoc = simpleShader->getUniformLocation("viewProj");
 
+	glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 	{
 	smaaEdgeShader = std::make_unique<Shader>("smaaEdge.vert", "smaaEdge.frag");
 	GLint screenSizeLoc = smaaEdgeShader->getUniformLocation("screenSize");
-	glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
 	}
 
 	{
 	fxaaShader = std::make_unique<Shader>("fxaa.vert", "fxaa.frag");
 	GLint screenSizeLoc = fxaaShader->getUniformLocation("screenSize");
-	glm::vec4 screenSize(windowWidth, windowHeight, 1.0f / float(windowWidth), 1.0f / float(windowHeight));
 	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
 	}
 

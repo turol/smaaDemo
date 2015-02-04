@@ -20,5 +20,5 @@ in vec2 texcoord;
 void main(void)
 {
     vec4 zero = vec4(0.0, 0.0, 0.0, 0.0);
-    gl_FragColor = FxaaPixelShader(texcoord, zero, color, color, color, screenSize.zw, zero, zero, zero, 0.75, 0.166, 0.0833, 8.0, 0.125, 0.05, zero);
+    gl_FragColor = FxaaPixelShader(texcoord, zero, color, color, color, screenSize.xy, zero, zero, zero, 0.75, 0.166, 0.0833, 8.0, 0.125, 0.05, zero);
 }
