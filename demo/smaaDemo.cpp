@@ -716,11 +716,15 @@ void SMAADemo::initRender() {
 	glGenTextures(1, &areaTex);
 	glTextureStorage2DEXT(areaTex, GL_TEXTURE_2D, 1, GL_RG8, AREATEX_WIDTH, AREATEX_HEIGHT);
 	glTextureSubImage2DEXT(areaTex, GL_TEXTURE_2D, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, areaTexBytes);
+	glTextureParameteriEXT(areaTex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTextureParameteriEXT(areaTex, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_AREATEX, GL_TEXTURE_2D, areaTex);
 
 	glGenTextures(1, &searchTex);
 	glTextureStorage2DEXT(searchTex, GL_TEXTURE_2D, 1, GL_RG8, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT);
 	glTextureSubImage2DEXT(searchTex, GL_TEXTURE_2D, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, searchTexBytes);
+	glTextureParameteriEXT(searchTex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTextureParameteriEXT(searchTex, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_SEARCHTEX, GL_TEXTURE_2D, searchTex);
 
 	builtinFBO = std::make_unique<Framebuffer>(0);
@@ -747,6 +751,8 @@ void SMAADemo::initRender() {
 	glGenTextures(1, &tex);
 	renderFBO->depthTex = tex;
 	glTextureStorage2DEXT(tex, GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
+	glTextureParameteriEXT(tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTextureParameteriEXT(tex, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glNamedFramebufferTextureEXT(fbo, GL_DEPTH_ATTACHMENT, tex, 0);
 
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_COLOR, GL_TEXTURE_2D, renderFBO->colorTex);
@@ -922,6 +928,7 @@ void SMAADemo::render() {
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 
 			blendFBO->bind();
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 			smaaBlendWeightShader->bind();
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 
