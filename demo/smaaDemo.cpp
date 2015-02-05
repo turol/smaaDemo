@@ -550,7 +550,7 @@ SMAADemo::SMAADemo()
 , instanceVBO(0)
 , cubePower(3)
 , antialiasing(true)
-, aaMethod(AAMethod::FXAA)
+, aaMethod(AAMethod::SMAA)
 , areaTex(0)
 , searchTex(0)
 {
