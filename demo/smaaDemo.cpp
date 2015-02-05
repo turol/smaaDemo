@@ -895,18 +895,19 @@ void SMAADemo::mainLoop() {
 void SMAADemo::render() {
 	// TODO: reset all relevant state in case some 3rd-party program fucked them up
 
+	glDepthMask(GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
+
+	builtinFBO->bind();
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	renderFBO->bind();
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-	glEnable(GL_DEPTH_TEST);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	simpleShader->bind();
 
-	uint32_t ticks = SDL_GetTicks();
+	uint32_t ticks = 0 ;//SDL_GetTicks();
 	const uint32_t rotationPeriod = 30 * 1000;
 	ticks = ticks % rotationPeriod;
 	glm::mat4 view = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -25.0f)), float(M_PI * 2.0f * ticks) / rotationPeriod, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -937,27 +938,51 @@ void SMAADemo::render() {
 
 	if (antialiasing) {
 		glDisable(GL_DEPTH_TEST);
+		glDepthMask(GL_FALSE);
+
 		switch (aaMethod) {
 		case AAMethod::FXAA:
 			builtinFBO->bind();
 			fxaaShader->bind();
 			glDrawArrays(GL_TRIANGLES, 0, 3);
-		break;
+			break;
 
 		case AAMethod::SMAA:
+#if 0
+            // detect edges only
+			builtinFBO->bind();
+			smaaEdgeShader->bind();
+			glDrawArrays(GL_TRIANGLES, 0, 3);
+#endif
+
+#if 0
+            // show blending weights
 			edgesFBO->bind();
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+			glClear(GL_COLOR_BUFFER_BIT);
+			smaaEdgeShader->bind();
+			glDrawArrays(GL_TRIANGLES, 0, 3);
+
+			builtinFBO->bind();
+			smaaBlendWeightShader->bind();
+			glDrawArrays(GL_TRIANGLES, 0, 3);
+#endif
+
+#if 1
+             // full effect
+			edgesFBO->bind();
+			glClear(GL_COLOR_BUFFER_BIT);
 			smaaEdgeShader->bind();
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 
 			blendFBO->bind();
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+			glClear(GL_COLOR_BUFFER_BIT);
 			smaaBlendWeightShader->bind();
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 
 			builtinFBO->bind();
 			smaaNeighborShader->bind();
 			glDrawArrays(GL_TRIANGLES, 0, 3);
+#endif
 			break;
 		}
 
