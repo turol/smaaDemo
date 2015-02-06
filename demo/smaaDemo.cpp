@@ -729,13 +729,13 @@ void SMAADemo::initRender() {
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_AREATEX, GL_TEXTURE_2D, areaTex);
 
 	glGenTextures(1, &searchTex);
-	glTextureStorage2DEXT(searchTex, GL_TEXTURE_2D, 1, GL_RG8, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT);
+	glTextureStorage2DEXT(searchTex, GL_TEXTURE_2D, 1, GL_R8, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT);
 	for (unsigned int y = 0; y < SEARCHTEX_HEIGHT; y++) {
 		//unsigned int srcY = SEARCHTEX_HEIGHT - 1 - y;
 		unsigned int srcY = y;
         memcpy(&tempBuffer[y * SEARCHTEX_PITCH], searchTexBytes + srcY * SEARCHTEX_PITCH, SEARCHTEX_PITCH);
 	}
-	glTextureSubImage2DEXT(searchTex, GL_TEXTURE_2D, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, &tempBuffer[0]);
+	glTextureSubImage2DEXT(searchTex, GL_TEXTURE_2D, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, &tempBuffer[0]);
 	glTextureParameteriEXT(searchTex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTextureParameteriEXT(searchTex, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTextureParameteriEXT(searchTex, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
