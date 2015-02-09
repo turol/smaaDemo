@@ -1,7 +1,7 @@
 #version 330
 
 
-#include "tribuffer.h"
+#include "utils.h"
 
 
 out vec2 texcoord;

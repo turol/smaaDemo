@@ -717,8 +717,8 @@ void SMAADemo::initRender() {
 	glTextureStorage2DEXT(areaTex, GL_TEXTURE_2D, 1, GL_RG8, AREATEX_WIDTH, AREATEX_HEIGHT);
 	std::vector<unsigned char> tempBuffer(std::max(AREATEX_SIZE, SEARCHTEX_SIZE), 0);
 	for (unsigned int y = 0; y < AREATEX_HEIGHT; y++) {
-		//unsigned int srcY = AREATEX_HEIGHT - 1 - y;
-		unsigned int srcY = y;
+		unsigned int srcY = AREATEX_HEIGHT - 1 - y;
+		//unsigned int srcY = y;
         memcpy(&tempBuffer[y * AREATEX_PITCH], areaTexBytes + srcY * AREATEX_PITCH, AREATEX_PITCH);
 	}
 	glTextureSubImage2DEXT(areaTex, GL_TEXTURE_2D, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, &tempBuffer[0]);
@@ -731,8 +731,8 @@ void SMAADemo::initRender() {
 	glGenTextures(1, &searchTex);
 	glTextureStorage2DEXT(searchTex, GL_TEXTURE_2D, 1, GL_R8, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT);
 	for (unsigned int y = 0; y < SEARCHTEX_HEIGHT; y++) {
-		//unsigned int srcY = SEARCHTEX_HEIGHT - 1 - y;
-		unsigned int srcY = y;
+		unsigned int srcY = SEARCHTEX_HEIGHT - 1 - y;
+		//unsigned int srcY = y;
         memcpy(&tempBuffer[y * SEARCHTEX_PITCH], searchTexBytes + srcY * SEARCHTEX_PITCH, SEARCHTEX_PITCH);
 	}
 	glTextureSubImage2DEXT(searchTex, GL_TEXTURE_2D, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, &tempBuffer[0]);
@@ -787,7 +787,7 @@ void SMAADemo::initRender() {
 	tex = 0;
 	glGenTextures(1, &tex);
 	edgesFBO->colorTex = tex;
-	glTextureStorage2DEXT(tex, GL_TEXTURE_2D, 1, GL_RGB8, windowWidth, windowHeight);
+	glTextureStorage2DEXT(tex, GL_TEXTURE_2D, 1, GL_RGBA8, windowWidth, windowHeight);
 	glTextureParameteriEXT(tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTextureParameteriEXT(tex, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTextureParameteriEXT(tex, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -807,7 +807,7 @@ void SMAADemo::initRender() {
 	tex = 0;
 	glGenTextures(1, &tex);
 	blendFBO->colorTex = tex;
-	glTextureStorage2DEXT(tex, GL_TEXTURE_2D, 1, GL_RGB8, windowWidth, windowHeight);
+	glTextureStorage2DEXT(tex, GL_TEXTURE_2D, 1, GL_RGBA8, windowWidth, windowHeight);
 	glTextureParameteriEXT(tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTextureParameteriEXT(tex, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTextureParameteriEXT(tex, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -949,14 +949,14 @@ void SMAADemo::render() {
 
 		case AAMethod::SMAA:
 #if 0
-            // detect edges only
+			// detect edges only
 			builtinFBO->bind();
 			smaaEdgeShader->bind();
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 #endif
 
 #if 0
-            // show blending weights
+			// show blending weights
 			edgesFBO->bind();
 			glClear(GL_COLOR_BUFFER_BIT);
 			smaaEdgeShader->bind();
@@ -968,7 +968,7 @@ void SMAADemo::render() {
 #endif
 
 #if 1
-             // full effect
+			// full effect
 			edgesFBO->bind();
 			glClear(GL_COLOR_BUFFER_BIT);
 			smaaEdgeShader->bind();

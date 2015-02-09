@@ -34,3 +34,13 @@ vec2 triangleVertex(in int vertID, out vec2 texcoord)
 
 	return texcoord * vec2(2.0, -2.0) + vec2(-1.0, 1.0);
 }
+
+
+vec2 flipTexCoord(in vec2 tc) {
+    return tc * vec2(1.0, -1.0) + vec2(0.0, 1.0);
+}
+
+
+vec4 flipTexCoord(in vec4 tc) {
+    return tc * vec4(1.0, -1.0, 1.0, -1.0) + vec4(0.0, 1.0, 0.0, 1.0);
+}

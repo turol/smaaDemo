@@ -1,4 +1,6 @@
 #version 330
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_texture_gather : enable
 
 
 uniform vec4 screenSize;
@@ -16,14 +18,14 @@ out vec4 offset2;
 #define SMAA_INCLUDE_PS 0
 #define SMAA_INCLUDE_VS 1
 
+#include "utils.h"
 #include "smaa.h"
-#include "tribuffer.h"
 
 
 void main(void)
 {
 	vec2 pos = triangleVertex(gl_VertexID, texcoord);
-	texcoord.y = 1.0 - 1.0 * texcoord.y;
+    texcoord = flipTexCoord(texcoord);
 
 	vec4 offsets[3];
 	offsets[0] = vec4(0.0, 0.0, 0.0, 0.0);

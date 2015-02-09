@@ -14,11 +14,12 @@ in vec4 offset2;
 
 #define SMAA_RT_METRICS screenSize
 #define SMAA_GLSL_3 1
-#define SMAA_PRESET_HIGH 1
+#define SMAA_PRESET_LOW 1
 #define SMAA_INCLUDE_PS 1
 #define SMAA_INCLUDE_VS 0
 
 
+#include "utils.h"
 #include "smaa.h"
 
 
