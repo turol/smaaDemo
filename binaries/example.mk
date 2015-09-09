@@ -18,7 +18,7 @@ CC:=gcc
 CFLAGS:=-g -Wall -Wextra -Werror -Wshadow
 CFLAGS+=-Wno-unused-local-typedefs
 CFLAGS+=$(shell sdl2-config --cflags)
-OPTFLAGS:=-O -march=native
+OPTFLAGS:=-O
 OPTFLAGS+=-ffast-math
 OPTFLAGS+=-fdata-sections -ffunction-sections
 
