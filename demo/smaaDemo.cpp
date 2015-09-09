@@ -880,8 +880,10 @@ void SMAADemo::mainLoop() {
 					keepGoing = false;
 				} else if (event.key.keysym.scancode == SDL_SCANCODE_A) {
 					antialiasing = !antialiasing;
+					printf("antialiasing set to %s\n", antialiasing ? "on" : "off");
 				} else if (event.key.keysym.scancode == SDL_SCANCODE_M) {
 					aaMethod = AAMethod::AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
+					printf("aa method set to %d\n", aaMethod);
 				}
 				break;
 			}
