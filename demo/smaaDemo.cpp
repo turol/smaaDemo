@@ -875,15 +875,23 @@ void SMAADemo::mainLoop() {
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_KEYDOWN:
-				// TODO: switch
-				if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+				switch (event.key.keysym.scancode) {
+				case SDL_SCANCODE_ESCAPE:
 					keepGoing = false;
-				} else if (event.key.keysym.scancode == SDL_SCANCODE_A) {
+					break;
+
+				case SDL_SCANCODE_A:
 					antialiasing = !antialiasing;
 					printf("antialiasing set to %s\n", antialiasing ? "on" : "off");
-				} else if (event.key.keysym.scancode == SDL_SCANCODE_M) {
+					break;
+
+				case SDL_SCANCODE_M:
 					aaMethod = AAMethod::AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
 					printf("aa method set to %d\n", aaMethod);
+					break;
+
+				default:
+					break;
 				}
 				break;
 			}
