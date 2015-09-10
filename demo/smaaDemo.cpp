@@ -456,6 +456,22 @@ enum AAMethod {
 	, LAST = SMAA
 };
 
+
+const char *name(AAMethod m) {
+	switch (m) {
+	case FXAA:
+		return "FXAA";
+		break;
+
+	case SMAA:
+		return "SMAA";
+		break;
+	}
+
+	__builtin_unreachable();
+}
+
+
 }  // namespace AAMethod
 
 
@@ -887,7 +903,7 @@ void SMAADemo::mainLoop() {
 
 				case SDL_SCANCODE_M:
 					aaMethod = AAMethod::AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
-					printf("aa method set to %d\n", aaMethod);
+					printf("aa method set to %s\n", AAMethod::name(aaMethod));
 					break;
 
 				default:
