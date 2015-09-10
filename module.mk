@@ -120,20 +120,18 @@ distclean: clean
 # rules here
 
 %$(OBJSUFFIX): %.cpp | bindirs
-ifneq (,$(findstring foreign,$<))
 	$(CXX) -c -MF $*.d -MP -MMD $(CXXFLAGS) -o $@ $<
-else
-	# no warnings in foreign code
-	$(CXX) -c -MF $*.d -MP -MMD $(CXXFLAGS) -w -o $@ $<
-endif
 
 %$(OBJSUFFIX): %.c | bindirs
-ifneq (,$(findstring foreign,$<))
 	$(CC) -c -MF $*.d -MP -MMD $(CFLAGS) -o $@ $<
-else
-	# no warnings in foreign code
-	$(CC) -c -MF $*.d -MP -MMD $(CFLAGS) -w -o $@ $<
-endif
+
+
+# no warnings in foreign code
+foreign/%$(OBJSUFFIX): foreign/%.cpp | bindirs
+	$(CXX) -c -MF foreign/$*.d -MP -MMD $(CXXFLAGS) -w -o $@ $<
+
+foreign/%$(OBJSUFFIX): foreign/%.c | bindirs
+	$(CC) -c -MF foreign/$*.d -MP -MMD $(CFLAGS) -w -o $@ $<
 
 
 # $(call resolve-modules, progname)
