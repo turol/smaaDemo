@@ -86,6 +86,9 @@ union Color {
 };
 
 
+static const Color white = { 0xFFFFFFFF };
+
+
 std::vector<char> readTextFile(std::string filename) {
 	std::unique_ptr<FILE, FILEDeleter> file(fopen(filename.c_str(), "rb"));
 
@@ -572,6 +575,8 @@ public:
 
 	void createCubes();
 
+	void colorCubes();
+
 	void mainLoop();
 
 	void render();
@@ -881,14 +886,10 @@ void SMAADemo::createCubes() {
 	cubes.clear();
 	cubes.reserve(numCubes);
 
-	Color col;
 	for (unsigned int x = 0; x < cubesSide; x++) {
 		for (unsigned int y = 0; y < cubesSide; y++) {
 			for (unsigned int z = 0; z < cubesSide; z++) {
-				// random RGB, alpha = 1.0
 				// TODO: use repeatable random generator and seed
-				// FIXME: we're abusing little-endianness, make it portable
-				col.val = (rand() & 0x00FFFFFF) | 0xFF000000;
 				float qx = float(rand()) / RAND_MAX;
 				float qy = float(rand()) / RAND_MAX;
 				float qz = float(rand()) / RAND_MAX;
@@ -903,7 +904,7 @@ void SMAADemo::createCubes() {
 				                 , (y * cubeDistance) - (bigCubeSide / 2.0f)
 				                 , (z * cubeDistance) - (bigCubeSide / 2.0f)
 				                 , glm::quat(qx, qy, qz, qw)
-				                 , col);
+				                 , white);
 			}
 		}
 	}
@@ -911,11 +912,24 @@ void SMAADemo::createCubes() {
 	// reallocate instance data buffer
 	glBufferData(GL_ARRAY_BUFFER, sizeof(InstanceData) * numCubes, NULL, GL_STREAM_DRAW);
 
+	colorCubes();
+}
+
+
+void SMAADemo::colorCubes() {
+	for (auto &cube : cubes) {
+		Color col;
+		// random RGB, alpha = 1.0
+		// FIXME: we're abusing little-endianness, make it portable
+		col.val = rand() | 0xFF000000;
+		cube.col = col;
+	}
 }
 
 
 static void printHelp() {
 	printf(" a     - toggle antialiasing on/off\n");
+	printf(" c     - re-color cubes\n");
 	printf(" h     - print help\n");
 	printf(" m     - change antialiasing method\n");
 	printf(" SPACE - toggle camera rotation\n");
@@ -950,6 +964,10 @@ void SMAADemo::mainLoop() {
 				case SDL_SCANCODE_A:
 					antialiasing = !antialiasing;
 					printf("antialiasing set to %s\n", antialiasing ? "on" : "off");
+					break;
+
+				case SDL_SCANCODE_C:
+					colorCubes();
 					break;
 
 				case SDL_SCANCODE_D:
