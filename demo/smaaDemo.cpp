@@ -888,11 +888,11 @@ void SMAADemo::createCubes() {
 
 
 static void printHelp() {
-	printf(" a   - toggle antialiasing on/off\n");
-	printf(" h   - print help\n");
-	printf(" m   - change antialiasing method\n");
+	printf(" a     - toggle antialiasing on/off\n");
+	printf(" h     - print help\n");
+	printf(" m     - change antialiasing method\n");
 	printf(" SPACE - toggle camera rotation\n");
-	printf(" ESC - quit\n");
+	printf(" ESC   - quit\n");
 
 }
 
@@ -962,10 +962,10 @@ void SMAADemo::render() {
 	simpleShader->bind();
 
 	if (rotateCamera) {
-	uint32_t ticks = SDL_GetTicks();
-	const uint32_t rotationPeriod = 30 * 1000;
-	ticks = ticks % rotationPeriod;
-	cameraRotation = float(M_PI * 2.0f * ticks) / rotationPeriod;
+		uint32_t ticks = SDL_GetTicks();
+		const uint32_t rotationPeriod = 30 * 1000;
+		ticks = ticks % rotationPeriod;
+		cameraRotation = float(M_PI * 2.0f * ticks) / rotationPeriod;
 	}
 	glm::mat4 view = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -25.0f)), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 proj = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, 0.1f, 100.0f);
