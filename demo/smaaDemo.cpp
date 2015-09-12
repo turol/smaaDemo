@@ -882,6 +882,15 @@ void SMAADemo::createCubes() {
 }
 
 
+static void printHelp() {
+	printf(" a   - toggle antialiasing on/off\n");
+	printf(" h   - print help\n");
+	printf(" m   - change antialiasing method\n");
+	printf(" ESC - quit\n");
+
+}
+
+
 void SMAADemo::mainLoop() {
 	bool keepGoing = true;
 	while (keepGoing) {
@@ -899,6 +908,10 @@ void SMAADemo::mainLoop() {
 				case SDL_SCANCODE_A:
 					antialiasing = !antialiasing;
 					printf("antialiasing set to %s\n", antialiasing ? "on" : "off");
+					break;
+
+				case SDL_SCANCODE_H:
+					printHelp();
 					break;
 
 				case SDL_SCANCODE_M:
@@ -1027,6 +1040,7 @@ int main(int /*argc */, char * /*argv*/ []) {
 
 	demo.initRender();
 	demo.createCubes();
+	printHelp();
 	demo.mainLoop();
 
 	return 0;
