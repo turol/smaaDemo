@@ -600,7 +600,7 @@ struct Vertex {
 const float coord = sqrtf(3.0f) / 2.0f;
 
 
-Vertex vertices[] =
+static const Vertex vertices[] =
 {
 	  { -coord ,  coord, -coord }
 	, {  coord ,  coord, -coord }
@@ -614,7 +614,7 @@ Vertex vertices[] =
 
 
 // FIXME: check vertex winding, some of these are probably wrong side out
-uint32_t indices[] =
+static const uint32_t indices[] =
 {
     // top
 	  0, 1, 2
