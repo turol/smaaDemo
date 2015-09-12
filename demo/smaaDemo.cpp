@@ -507,6 +507,9 @@ class SMAADemo : public boost::noncopyable {
 
 	bool rotateCamera;
 	float cameraRotation;
+	uint64_t lastTime;
+	uint64_t freq;
+	uint64_t rotationTime;
 
 	struct Cube {
 		glm::vec3 pos;
@@ -574,9 +577,15 @@ SMAADemo::SMAADemo()
 , searchTex(0)
 , rotateCamera(false)
 , cameraRotation(0.0f)
+, lastTime(0)
+, freq(0)
+, rotationTime(0)
 {
 	// TODO: check return value
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
+
+	freq = SDL_GetPerformanceFrequency();
+	lastTime = SDL_GetPerformanceCounter();
 
 	// TODO: detect screens, log interesting display parameters etc
 }
@@ -947,6 +956,11 @@ void SMAADemo::mainLoop() {
 
 
 void SMAADemo::render() {
+	uint64_t ticks = SDL_GetPerformanceCounter();
+	uint64_t elapsed = ticks - lastTime;
+
+	lastTime = ticks;
+
 	// TODO: reset all relevant state in case some 3rd-party program fucked them up
 
 	glDepthMask(GL_TRUE);
@@ -962,10 +976,11 @@ void SMAADemo::render() {
 	simpleShader->bind();
 
 	if (rotateCamera) {
-		uint32_t ticks = SDL_GetTicks();
-		const uint32_t rotationPeriod = 30 * 1000;
-		ticks = ticks % rotationPeriod;
-		cameraRotation = float(M_PI * 2.0f * ticks) / rotationPeriod;
+		rotationTime += elapsed;
+
+		const uint64_t rotationPeriod = 30 * freq;
+		rotationTime = rotationTime % rotationPeriod;
+		cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
 	}
 	glm::mat4 view = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -25.0f)), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 proj = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, 0.1f, 100.0f);
