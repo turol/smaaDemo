@@ -475,6 +475,22 @@ const char *name(AAMethod m) {
 }  // namespace AAMethod
 
 
+static const char *smaaDebugModeStr(unsigned int mode) {
+	switch (mode) {
+	case 0:
+		return "none";
+
+	case 1:
+		return "edges";
+
+	case 2:
+		return "blend";
+	}
+
+	__builtin_unreachable();
+}
+
+
 class SMAADemo : public boost::noncopyable {
 	unsigned int windowWidth, windowHeight;
 	SDL_Window *window;
@@ -510,6 +526,7 @@ class SMAADemo : public boost::noncopyable {
 	uint64_t lastTime;
 	uint64_t freq;
 	uint64_t rotationTime;
+	unsigned int debugMode;
 
 	struct Cube {
 		glm::vec3 pos;
@@ -580,6 +597,7 @@ SMAADemo::SMAADemo()
 , lastTime(0)
 , freq(0)
 , rotationTime(0)
+, debugMode(0)
 {
 	// TODO: check return value
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
@@ -934,6 +952,13 @@ void SMAADemo::mainLoop() {
 					printf("antialiasing set to %s\n", antialiasing ? "on" : "off");
 					break;
 
+				case SDL_SCANCODE_D:
+					if (antialiasing && aaMethod == AAMethod::SMAA) {
+						debugMode = (debugMode + 1) % 3;
+						printf("Debug mode set to %s\n", smaaDebugModeStr(debugMode));
+					}
+					break;
+
 				case SDL_SCANCODE_H:
 					printHelp();
 					break;
@@ -1020,41 +1045,38 @@ void SMAADemo::render() {
 			break;
 
 		case AAMethod::SMAA:
-#if 0
-			// detect edges only
-			builtinFBO->bind();
 			smaaEdgeShader->bind();
-			glDrawArrays(GL_TRIANGLES, 0, 3);
-#endif
 
-#if 0
-			// show blending weights
-			edgesFBO->bind();
-			glClear(GL_COLOR_BUFFER_BIT);
-			smaaEdgeShader->bind();
-			glDrawArrays(GL_TRIANGLES, 0, 3);
+			if (debugMode == 1) {
+				// detect edges only
+				builtinFBO->bind();
+				glClear(GL_COLOR_BUFFER_BIT);
+				glDrawArrays(GL_TRIANGLES, 0, 3);
+				break;
+			} else {
+				edgesFBO->bind();
+				glClear(GL_COLOR_BUFFER_BIT);
+				glDrawArrays(GL_TRIANGLES, 0, 3);
+			}
 
-			builtinFBO->bind();
 			smaaBlendWeightShader->bind();
-			glDrawArrays(GL_TRIANGLES, 0, 3);
-#endif
+			if (debugMode == 2) {
+				// show blending weights
+				builtinFBO->bind();
+				glClear(GL_COLOR_BUFFER_BIT);
+				glDrawArrays(GL_TRIANGLES, 0, 3);
+				break;
+			} else {
+				blendFBO->bind();
+				glClear(GL_COLOR_BUFFER_BIT);
+				glDrawArrays(GL_TRIANGLES, 0, 3);
+			}
 
-#if 1
 			// full effect
-			edgesFBO->bind();
-			glClear(GL_COLOR_BUFFER_BIT);
-			smaaEdgeShader->bind();
-			glDrawArrays(GL_TRIANGLES, 0, 3);
-
-			blendFBO->bind();
-			glClear(GL_COLOR_BUFFER_BIT);
-			smaaBlendWeightShader->bind();
-			glDrawArrays(GL_TRIANGLES, 0, 3);
-
-			builtinFBO->bind();
 			smaaNeighborShader->bind();
+			builtinFBO->bind();
+			glClear(GL_COLOR_BUFFER_BIT);
 			glDrawArrays(GL_TRIANGLES, 0, 3);
-#endif
 			break;
 		}
 
