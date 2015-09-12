@@ -505,6 +505,9 @@ class SMAADemo : public boost::noncopyable {
 	GLuint areaTex;
 	GLuint searchTex;
 
+	bool rotateCamera;
+	float cameraRotation;
+
 	struct Cube {
 		glm::vec3 pos;
 		glm::quat orient;
@@ -569,6 +572,8 @@ SMAADemo::SMAADemo()
 , aaMethod(AAMethod::SMAA)
 , areaTex(0)
 , searchTex(0)
+, rotateCamera(false)
+, cameraRotation(0.0f)
 {
 	// TODO: check return value
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
@@ -886,6 +891,7 @@ static void printHelp() {
 	printf(" a   - toggle antialiasing on/off\n");
 	printf(" h   - print help\n");
 	printf(" m   - change antialiasing method\n");
+	printf(" SPACE - toggle camera rotation\n");
 	printf(" ESC - quit\n");
 
 }
@@ -907,6 +913,11 @@ void SMAADemo::mainLoop() {
 				switch (event.key.keysym.scancode) {
 				case SDL_SCANCODE_ESCAPE:
 					keepGoing = false;
+					break;
+
+				case SDL_SCANCODE_SPACE:
+					rotateCamera = !rotateCamera;
+					printf("camera rotation is %s\n", rotateCamera ? "on" : "off");
 					break;
 
 				case SDL_SCANCODE_A:
@@ -950,10 +961,13 @@ void SMAADemo::render() {
 
 	simpleShader->bind();
 
-	uint32_t ticks = 0 ;//SDL_GetTicks();
+	if (rotateCamera) {
+	uint32_t ticks = SDL_GetTicks();
 	const uint32_t rotationPeriod = 30 * 1000;
 	ticks = ticks % rotationPeriod;
-	glm::mat4 view = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -25.0f)), float(M_PI * 2.0f * ticks) / rotationPeriod, glm::vec3(0.0f, 1.0f, 0.0f));
+	cameraRotation = float(M_PI * 2.0f * ticks) / rotationPeriod;
+	}
+	glm::mat4 view = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -25.0f)), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 proj = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, 0.1f, 100.0f);
 	glm::mat4 viewProj = proj * view;
 	glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, glm::value_ptr(viewProj));
