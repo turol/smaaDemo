@@ -530,6 +530,9 @@ class SMAADemo : public boost::noncopyable {
 	uint64_t freq;
 	uint64_t rotationTime;
 	unsigned int debugMode;
+	unsigned int colorMode;
+	bool rightShift, leftShift;
+
 
 	struct Cube {
 		glm::vec3 pos;
@@ -603,6 +606,9 @@ SMAADemo::SMAADemo()
 , freq(0)
 , rotationTime(0)
 , debugMode(0)
+, colorMode(0)
+, rightShift(false)
+, leftShift(false)
 {
 	// TODO: check return value
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
@@ -917,12 +923,38 @@ void SMAADemo::createCubes() {
 
 
 void SMAADemo::colorCubes() {
+	if (colorMode == 0) {
 	for (auto &cube : cubes) {
 		Color col;
 		// random RGB, alpha = 1.0
 		// FIXME: we're abusing little-endianness, make it portable
 		col.val = rand() | 0xFF000000;
 		cube.col = col;
+	}
+	} else {
+		for (auto &cube : cubes) {
+			Color col;
+			// YCbCr, fixed luma, random chroma, alpha = 1.0
+			// worst case scenario for luma edge detection
+			// TODO: use the same luma as shader
+
+			float y = 0.5f;
+			const float c_red = 0.299
+				, c_green = 0.587
+			, c_blue = 0.114;
+			float cb = (float(rand()) / RAND_MAX);
+			float cr = (float(rand()) / RAND_MAX);
+
+			float r = cr * (2 - 2 * c_red) + y;
+			float g = (y - c_blue * cb - c_red * cr) / c_green;
+			float b = cb * (2 - 2 * c_blue) + y;
+
+			col.r = 255 * r;
+			col.g = 255 * g;
+			col.b = 255 * b;
+			col.a = 0xFF;
+			cube.col = col;
+		}
 	}
 }
 
@@ -956,6 +988,14 @@ void SMAADemo::mainLoop() {
 					keepGoing = false;
 					break;
 
+				case SDL_SCANCODE_LSHIFT:
+					leftShift = true;
+					break;
+
+				case SDL_SCANCODE_RSHIFT:
+					rightShift = true;
+					break;
+
 				case SDL_SCANCODE_SPACE:
 					rotateCamera = !rotateCamera;
 					printf("camera rotation is %s\n", rotateCamera ? "on" : "off");
@@ -967,6 +1007,10 @@ void SMAADemo::mainLoop() {
 					break;
 
 				case SDL_SCANCODE_C:
+					if (rightShift || leftShift) {
+						colorMode = (colorMode + 1) % 2;
+						printf("color mode set to %s\n", colorMode ? "YCbCr" : "RGB");
+					}
 					colorCubes();
 					break;
 
@@ -984,6 +1028,21 @@ void SMAADemo::mainLoop() {
 				case SDL_SCANCODE_M:
 					aaMethod = AAMethod::AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
 					printf("aa method set to %s\n", AAMethod::name(aaMethod));
+					break;
+
+				default:
+					break;
+				}
+				break;
+
+			case SDL_KEYUP:
+				switch (event.key.keysym.scancode) {
+				case SDL_SCANCODE_LSHIFT:
+					leftShift = false;
+					break;
+
+				case SDL_SCANCODE_RSHIFT:
+					rightShift = false;
 					break;
 
 				default:
