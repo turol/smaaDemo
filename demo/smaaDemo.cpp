@@ -34,8 +34,15 @@
 #define TEXUNIT_BLEND 4
 
 
-// FIXME: should be ifdeffed out on compilers which already have it
+#ifdef _MSC_VER
+#define fileno _fileno
+#define __builtin_unreachable() assert(false)
+#endif
+
+
+// should be ifdeffed out on compilers which already have it (eg. VS2013)
 // http://isocpp.org/files/papers/N3656.txt
+#ifndef _MSC_VER
 namespace std {
 
     template<class T> struct _Unique_if {
@@ -69,6 +76,7 @@ namespace std {
 
 
 }  // namespace std
+#endif
 
 
 struct FILEDeleter {
