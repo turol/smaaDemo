@@ -924,13 +924,13 @@ void SMAADemo::createCubes() {
 
 void SMAADemo::colorCubes() {
 	if (colorMode == 0) {
-	for (auto &cube : cubes) {
-		Color col;
-		// random RGB, alpha = 1.0
-		// FIXME: we're abusing little-endianness, make it portable
-		col.val = rand() | 0xFF000000;
-		cube.col = col;
-	}
+		for (auto &cube : cubes) {
+			Color col;
+			// random RGB, alpha = 1.0
+			// FIXME: we're abusing little-endianness, make it portable
+			col.val = rand() | 0xFF000000;
+			cube.col = col;
+		}
 	} else {
 		for (auto &cube : cubes) {
 			Color col;
