@@ -576,6 +576,10 @@ public:
 
 	void initRender();
 
+	void buildFXAAShader();
+
+	void buildSMAAShaders();
+
 	void createCubes();
 
 	void colorCubes();
@@ -688,6 +692,36 @@ static const uint32_t indices[] =
 #define VBO_OFFSETOF(st, member) reinterpret_cast<GLvoid *>(offsetof(st, member))
 
 
+void SMAADemo::buildFXAAShader() {
+	glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
+	fxaaShader = std::make_unique<Shader>("fxaa.vert", "fxaa.frag");
+	GLint screenSizeLoc = fxaaShader->getUniformLocation("screenSize");
+	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
+}
+
+
+void SMAADemo::buildSMAAShaders() {
+	glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
+	{
+	smaaEdgeShader = std::make_unique<Shader>("smaaEdge.vert", "smaaEdge.frag");
+	GLint screenSizeLoc = smaaEdgeShader->getUniformLocation("screenSize");
+	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
+	}
+
+	{
+	smaaBlendWeightShader = std::make_unique<Shader>("smaaBlendWeight.vert", "smaaBlendWeight.frag");
+	GLint screenSizeLoc = smaaBlendWeightShader->getUniformLocation("screenSize");
+	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
+	}
+
+	{
+	smaaNeighborShader = std::make_unique<Shader>("smaaNeighbor.vert", "smaaNeighbor.frag");
+	GLint screenSizeLoc = smaaNeighborShader->getUniformLocation("screenSize");
+	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
+	}
+}
+
+
 void SMAADemo::initRender() {
 	assert(window == NULL);
 	assert(context == NULL);
@@ -724,30 +758,8 @@ void SMAADemo::initRender() {
 	simpleShader = std::make_unique<Shader>("simpleVS.vert", "simpleFS.frag");
 	viewProjLoc = simpleShader->getUniformLocation("viewProj");
 
-	glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
-	{
-	smaaEdgeShader = std::make_unique<Shader>("smaaEdge.vert", "smaaEdge.frag");
-	GLint screenSizeLoc = smaaEdgeShader->getUniformLocation("screenSize");
-	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
-	}
-
-	{
-	smaaBlendWeightShader = std::make_unique<Shader>("smaaBlendWeight.vert", "smaaBlendWeight.frag");
-	GLint screenSizeLoc = smaaBlendWeightShader->getUniformLocation("screenSize");
-	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
-	}
-
-	{
-	smaaNeighborShader = std::make_unique<Shader>("smaaNeighbor.vert", "smaaNeighbor.frag");
-	GLint screenSizeLoc = smaaNeighborShader->getUniformLocation("screenSize");
-	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
-	}
-
-	{
-	fxaaShader = std::make_unique<Shader>("fxaa.vert", "fxaa.frag");
-	GLint screenSizeLoc = fxaaShader->getUniformLocation("screenSize");
-	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
-	}
+	buildSMAAShaders();
+	buildFXAAShader();
 
 	// TODO: DSA
 	glGenBuffers(1, &vbo);
