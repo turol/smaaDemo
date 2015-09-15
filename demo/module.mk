@@ -7,8 +7,13 @@ FILES:= \
 	# empty line
 
 
-smaaDemo_MODULES:=glew
+smaaDemo_MODULES:=
 smaaDemo_SRC:=$(dir)/smaaDemo.cpp
+
+
+ifeq ($(USE_GLEW),y)
+smaaDemo_MODULES+=glew
+endif  # USE_GLEW
 
 
 PROGRAMS+= \

@@ -11,7 +11,20 @@
 
 #include <SDL.h>
 
+
+#ifdef USE_GLEW
+
 #include <GL/glew.h>
+
+#else  // USE_GLEW
+
+#define GL_GLEXT_PROTOTYPES 1
+#include <GL/gl.h>
+#include <GL/glext.h>
+
+#endif  // USE_GLEW
+
+
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

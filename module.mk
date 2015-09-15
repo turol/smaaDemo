@@ -48,6 +48,11 @@ LDFLAGS+=$(LTOLDFLAGS) $(OPTFLAGS)
 endif
 
 
+ifeq ($(USE_GLEW),y)
+CFLAGS+=-DUSE_GLEW
+endif  # USE_GLEW
+
+
 CFLAGS+=$(OPTFLAGS)
 
 CFLAGS+=-I$(TOPDIR)
