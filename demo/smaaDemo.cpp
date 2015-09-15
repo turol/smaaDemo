@@ -9,8 +9,6 @@
 #include <string>
 #include <vector>
 
-#include <boost/utility.hpp>
-
 #include <SDL.h>
 
 #include <GL/glew.h>
@@ -162,8 +160,15 @@ std::vector<char> readFile(std::string filename) {
 }
 
 
-class Shader : public boost::noncopyable {
+class Shader {
     GLuint program;
+
+	Shader() = delete;
+	Shader(const Shader &) = delete;
+	Shader &operator=(const Shader &) = delete;
+
+	Shader(Shader &&) = delete;
+	Shader &operator=(Shader &&) = delete;
 
 public:
 	Shader(std::string vertexShaderName, std::string fragmentShaderName);
@@ -376,7 +381,7 @@ void Shader::bind() {
 class SMAADemo;
 
 
-class Framebuffer : public boost::noncopyable {
+class Framebuffer {
 	// TODO: need a proper Render object to control the others
 	friend class SMAADemo;
 
@@ -385,6 +390,13 @@ class Framebuffer : public boost::noncopyable {
 	GLuint depthTex;
 
 	unsigned int width, height;
+
+	Framebuffer() = delete;
+	Framebuffer(const Framebuffer &) = delete;
+	Framebuffer &operator=(const Framebuffer &) = delete;
+
+	Framebuffer(Framebuffer &&) = delete;
+	Framebuffer &operator=(Framebuffer &&) = delete;
 
 public:
 
@@ -478,7 +490,7 @@ static const char *smaaDebugModeStr(unsigned int mode) {
 }
 
 
-class SMAADemo : public boost::noncopyable {
+class SMAADemo {
 	unsigned int windowWidth, windowHeight;
 	SDL_Window *window;
 	SDL_GLContext context;
@@ -551,6 +563,10 @@ class SMAADemo : public boost::noncopyable {
 
 	std::vector<InstanceData> instances;
 
+	SMAADemo(const SMAADemo &) = delete;
+	SMAADemo &operator=(const SMAADemo &) = delete;
+	SMAADemo(SMAADemo &&) = delete;
+	SMAADemo &operator=(SMAADemo &&) = delete;
 
 public:
 
