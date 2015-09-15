@@ -181,6 +181,51 @@ std::vector<char> readFile(std::string filename) {
 }
 
 
+class Shader;
+
+
+class VertexShader {
+	GLuint shader;
+
+	VertexShader() = delete;
+
+	VertexShader(const VertexShader &) = delete;
+	VertexShader &operator=(const VertexShader &) = delete;
+
+	VertexShader(VertexShader &&) = delete;
+	VertexShader &operator=(VertexShader &&) = delete;
+
+	friend class Shader;
+
+public:
+
+	VertexShader(const std::string &filename);
+
+	~VertexShader();
+};
+
+
+class FragmentShader {
+	GLuint shader;
+
+	FragmentShader() = delete;
+
+	FragmentShader(const FragmentShader &) = delete;
+	FragmentShader &operator=(const FragmentShader &) = delete;
+
+	FragmentShader(FragmentShader &&) = delete;
+	FragmentShader &operator=(FragmentShader &&) = delete;
+
+	friend class Shader;
+
+public:
+
+	FragmentShader(const std::string &filename);
+
+	~FragmentShader();
+};
+
+
 class Shader {
     GLuint program;
 
@@ -321,11 +366,41 @@ static GLuint createShader(GLenum type, const std::string &filename) {
 }
 
 
+VertexShader::VertexShader(const std::string &filename)
+: shader(0)
+{
+	shader = createShader(GL_VERTEX_SHADER, filename);
+}
+
+
+VertexShader::~VertexShader() {
+	assert(shader != 0);
+
+	glDeleteShader(shader);
+	shader = 0;
+}
+
+
+FragmentShader::FragmentShader(const std::string &filename)
+: shader(0)
+{
+	shader = createShader(GL_FRAGMENT_SHADER, filename);
+}
+
+
+FragmentShader::~FragmentShader() {
+	assert(shader != 0);
+
+	glDeleteShader(shader);
+	shader = 0;
+}
+
+
 Shader::Shader(std::string vertexShaderName, std::string fragmentShaderName)
 : program(0)
 {
-	GLuint vertexShader = createShader(GL_VERTEX_SHADER, vertexShaderName);
-	GLuint fragmentShader = createShader(GL_FRAGMENT_SHADER, fragmentShaderName);
+	VertexShader vertexShader(vertexShaderName);
+	FragmentShader fragmentShader(fragmentShaderName);
 
 	program = glCreateProgram();
 	glBindAttribLocation(program, ATTR_POS, "position");
@@ -333,11 +408,9 @@ Shader::Shader(std::string vertexShaderName, std::string fragmentShaderName)
 	glBindAttribLocation(program, ATTR_CUBEPOS, "cubePos");
 	glBindAttribLocation(program, ATTR_ROT, "rotationQuat");
 
-	glAttachShader(program, vertexShader);
-	glAttachShader(program, fragmentShader);
+	glAttachShader(program, vertexShader.shader);
+	glAttachShader(program, fragmentShader.shader);
 	glLinkProgram(program);
-	glDeleteShader(fragmentShader);
-	glDeleteShader(vertexShader);
 
 	GLint status = 0;
     glGetProgramiv(program, GL_LINK_STATUS, &status);
