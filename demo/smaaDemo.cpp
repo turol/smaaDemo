@@ -490,7 +490,25 @@ static const char *smaaDebugModeStr(unsigned int mode) {
 }
 
 
+// *Really* minimal PCG32 code / (c) 2014 M.E. O'Neill / pcg-random.org
+// Licensed under Apache License 2.0 (NO WARRANTY, etc. see website)
+
+typedef struct { uint64_t state;  uint64_t inc; } pcg32_random_t;
+
+static uint32_t pcg32_random_r(pcg32_random_t* rng)
+{
+    uint64_t oldstate = rng->state;
+    // Advance internal state
+    rng->state = oldstate * 6364136223846793005ULL + (rng->inc|1);
+    // Calculate output function (XSH RR), uses old state for max ILP
+    uint32_t xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
+    uint32_t rot = oldstate >> 59u;
+    return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
+}
+
+
 class RandomGen {
+	pcg32_random_t rng;
 
 	RandomGen(const RandomGen &) = delete;
 	RandomGen &operator=(const RandomGen &) = delete;
@@ -499,18 +517,25 @@ class RandomGen {
 
 public:
 
-	RandomGen()
+	RandomGen(uint64_t seed)
 	{
+		rng.state = seed;
+		rng.inc = 1;
+		// spin it once for proper initialization
+		pcg32_random_r(&rng);
 	}
 
 
 	float randFloat() {
-		return float(rand()) / RAND_MAX;
+		uint32_t u = randU32();
+		// because 24 bits mantissa
+		u &= 0x00FFFFFFU;
+		return float(u) / 0x00FFFFFFU;
 	}
 
 
 	uint32_t randU32() {
-		return rand();
+		return pcg32_random_r(&rng);
 	}
 };
 
@@ -639,6 +664,7 @@ SMAADemo::SMAADemo()
 , colorMode(0)
 , rightShift(false)
 , leftShift(false)
+, random(1)
 {
 	// TODO: check return value
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
@@ -647,6 +673,7 @@ SMAADemo::SMAADemo()
 	lastTime = SDL_GetPerformanceCounter();
 
 	// TODO: detect screens, log interesting display parameters etc
+	// TODO: initialize random using external source
 }
 
 
