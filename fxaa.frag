@@ -1,21 +1,17 @@
 #version 330
 #extension GL_ARB_gpu_shader5 : enable
 
-
-uniform sampler2D color;
-uniform vec4 screenSize;
-
-
-in vec2 texcoord;
-
-
 #define FXAA_PC 1
 #define FXAA_GLSL_130 1
 #define FXAA_QUALITY__PRESET 39
 
-
+#include "utils.h"
 #include "fxaa3_11.h"
 
+uniform sampler2D color;
+uniform vec4 screenSize;
+
+in vec2 texcoord;
 
 void main(void)
 {
