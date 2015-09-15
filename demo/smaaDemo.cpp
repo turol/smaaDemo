@@ -262,61 +262,44 @@ static std::vector<char> processShaderIncludes(std::vector<char> shaderSource) {
 }
 
 
-Shader::Shader(std::string vertexShaderName, std::string fragmentShaderName)
-: program(0)
-{
-	auto vsSrc = processShaderIncludes(readTextFile(vertexShaderName));
-	auto fsSrc = processShaderIncludes(readTextFile(fragmentShaderName));
+static GLuint createShader(GLenum type, const std::string &filename) {
+	assert(type == GL_VERTEX_SHADER || type == GL_FRAGMENT_SHADER);
+	auto src = processShaderIncludes(readTextFile(filename));
 
 	std::vector<const char *> sourcePointers;
-	sourcePointers.push_back(&vsSrc[0]);
+	sourcePointers.push_back(&src[0]);
 
-	// TODO: refactor to separate function
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &sourcePointers[0], NULL);
-	glCompileShader(vertexShader);
+	GLuint shader = glCreateShader(type);
+	glShaderSource(shader, 1, &sourcePointers[0], NULL);
+	glCompileShader(shader);
 
 	// TODO: defer checking to enable multithreaded shader compile
 	GLint status = 0;
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
 
 	{
 		GLint infoLogLen = 0;
-		glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &infoLogLen);
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLen);
 		std::vector<char> infoLog(infoLogLen + 1, '\0');
 		// TODO: better logging
-		glGetShaderInfoLog(vertexShader, infoLogLen, NULL, &infoLog[0]);
-		printf("vert shader \"%s\" info log: %s\n", vertexShaderName.c_str(), &infoLog[0]); fflush(stdout);
+		glGetShaderInfoLog(shader, infoLogLen, NULL, &infoLog[0]);
+		printf("shader \"%s\" info log: %s\n", filename.c_str(), &infoLog[0]); fflush(stdout);
 	}
 
 	if (status != GL_TRUE) {
-		glDeleteShader(vertexShader);
-		throw std::runtime_error("VS compile failed");
+		glDeleteShader(shader);
+		throw std::runtime_error("shader compile failed");
 	}
 
-	sourcePointers[0] = &fsSrc[0];
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &sourcePointers[0], NULL);
-	glCompileShader(fragmentShader);
+	return shader;
+}
 
-	// TODO: defer checking to enable multithreaded shader compile
-	status = 0;
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &status);
 
-	{
-		GLint infoLogLen = 0;
-		glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &infoLogLen);
-		std::vector<char> infoLog(infoLogLen + 1, '\0');
-		// TODO: better logging
-		glGetShaderInfoLog(fragmentShader, infoLogLen, NULL, &infoLog[0]);
-		printf("frag shader \"%s\" info log: %s\n", fragmentShaderName.c_str(), &infoLog[0]); fflush(stdout);
-	}
-
-	if (status != GL_TRUE) {
-		glDeleteShader(fragmentShader);
-		glDeleteShader(vertexShader);
-		throw std::runtime_error("FS compile failed");
-	}
+Shader::Shader(std::string vertexShaderName, std::string fragmentShaderName)
+: program(0)
+{
+	GLuint vertexShader = createShader(GL_VERTEX_SHADER, vertexShaderName);
+	GLuint fragmentShader = createShader(GL_FRAGMENT_SHADER, fragmentShaderName);
 
 	program = glCreateProgram();
 	glBindAttribLocation(program, ATTR_POS, "position");
@@ -330,6 +313,7 @@ Shader::Shader(std::string vertexShaderName, std::string fragmentShaderName)
 	glDeleteShader(fragmentShader);
 	glDeleteShader(vertexShader);
 
+	GLint status = 0;
     glGetProgramiv(program, GL_LINK_STATUS, &status);
 	if (status != GL_TRUE) {
 		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &status);
