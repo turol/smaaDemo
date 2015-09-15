@@ -490,6 +490,31 @@ static const char *smaaDebugModeStr(unsigned int mode) {
 }
 
 
+class RandomGen {
+
+	RandomGen(const RandomGen &) = delete;
+	RandomGen &operator=(const RandomGen &) = delete;
+	RandomGen(RandomGen &&) = delete;
+	RandomGen &operator=(RandomGen &&) = delete;
+
+public:
+
+	RandomGen()
+	{
+	}
+
+
+	float randFloat() {
+		return float(rand()) / RAND_MAX;
+	}
+
+
+	uint32_t randU32() {
+		return rand();
+	}
+};
+
+
 class SMAADemo {
 	unsigned int windowWidth, windowHeight;
 	SDL_Window *window;
@@ -528,6 +553,7 @@ class SMAADemo {
 	unsigned int debugMode;
 	unsigned int colorMode;
 	bool rightShift, leftShift;
+	RandomGen random;
 
 
 	struct Cube {
@@ -907,11 +933,10 @@ void SMAADemo::createCubes() {
 	for (unsigned int x = 0; x < cubesSide; x++) {
 		for (unsigned int y = 0; y < cubesSide; y++) {
 			for (unsigned int z = 0; z < cubesSide; z++) {
-				// TODO: use repeatable random generator and seed
-				float qx = float(rand()) / RAND_MAX;
-				float qy = float(rand()) / RAND_MAX;
-				float qz = float(rand()) / RAND_MAX;
-				float qw = float(rand()) / RAND_MAX;
+				float qx = random.randFloat();
+				float qy = random.randFloat();
+				float qz = random.randFloat();
+				float qw = random.randFloat();
 				float reciprocLen = 1.0f / sqrtf(qx*qx + qy*qy + qz*qz + qw*qw);
 				qx *= reciprocLen;
 				qy *= reciprocLen;
@@ -940,7 +965,7 @@ void SMAADemo::colorCubes() {
 			Color col;
 			// random RGB, alpha = 1.0
 			// FIXME: we're abusing little-endianness, make it portable
-			col.val = rand() | 0xFF000000;
+			col.val = random.randU32() | 0xFF000000;
 			cube.col = col;
 		}
 	} else {
@@ -954,8 +979,8 @@ void SMAADemo::colorCubes() {
 			const float c_red = 0.299
 				, c_green = 0.587
 			, c_blue = 0.114;
-			float cb = (float(rand()) / RAND_MAX);
-			float cr = (float(rand()) / RAND_MAX);
+			float cb = random.randFloat();
+			float cr = random.randFloat();
 
 			float r = cr * (2 - 2 * c_red) + y;
 			float g = (y - c_blue * cb - c_red * cr) / c_green;
