@@ -1141,7 +1141,35 @@ void SMAADemo::buildSMAAShaders() {
 	}
 
 	{
-	smaaNeighborShader = std::make_unique<Shader>("smaaNeighbor.vert", "smaaNeighbor.frag");
+		ShaderBuilder vert(commonVert);
+
+		vert.pushLine("out vec2 texcoord;");
+		vert.pushLine("out vec4 offset;");
+		vert.pushLine("void main(void)");
+		vert.pushLine("{");
+		vert.pushLine("    vec2 pos = triangleVertex(gl_VertexID, texcoord);");
+		vert.pushLine("    texcoord = flipTexCoord(texcoord);");
+		vert.pushLine("    offset = vec4(0.0, 0.0, 0.0, 0.0);");
+		vert.pushLine("    SMAANeighborhoodBlendingVS(texcoord, offset);");
+		vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
+		vert.pushLine("}");
+
+		VertexShader vShader("smaaNeighbor.vert", vert);
+
+		ShaderBuilder frag(commonFrag);
+
+		frag.pushLine("uniform sampler2D blendTex;");
+		frag.pushLine("uniform sampler2D colorTex;");
+		frag.pushLine("in vec2 texcoord;");
+		frag.pushLine("in vec4 offset;");
+		frag.pushLine("void main(void)");
+		frag.pushLine("{");
+		frag.pushLine("    gl_FragColor = SMAANeighborhoodBlendingPS(texcoord, offset, colorTex, blendTex);");
+		frag.pushLine("}");
+
+		FragmentShader fShader("smaaNeighbor.frag", frag);
+
+		smaaNeighborShader = std::make_unique<Shader>(vShader, fShader);
 	GLint screenSizeLoc = smaaNeighborShader->getUniformLocation("screenSize");
 	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
 	}
