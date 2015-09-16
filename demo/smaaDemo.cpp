@@ -47,6 +47,36 @@
 #define TEXUNIT_BLEND 4
 
 
+#ifndef USE_GLEW
+void glTextureStorage2DEXT(GLuint texture, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height) {
+	glBindTexture(GL_TEXTURE_2D, texture);
+	GLenum format;
+	switch (internalformat) {
+	case GL_RG8:
+		format = GL_RG;
+		break;
+
+	case GL_R8:
+		format = GL_RED;
+		break;
+
+	case GL_RGBA8:
+		format = GL_RGBA;
+		break;
+
+	case GL_DEPTH_COMPONENT16:
+		format =  GL_DEPTH_COMPONENT;
+		break;
+	}
+	for (GLsizei i = 0; i < levels; i++) {
+		glTexImage2D(target, i, internalformat, width, height, 0, format, GL_BYTE, NULL);
+		width = std::max(1.0, floor(width / 2));
+		height = std::max(1.0, floor(height / 2));
+	}
+}
+#endif  // USE_GLEW
+
+
 #ifdef _MSC_VER
 #define fileno _fileno
 #define __builtin_unreachable() assert(false)
@@ -1004,7 +1034,7 @@ void SMAADemo::initRender() {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
-#endif
+#endif  // EMSCRIPTEN
 
 	window = SDL_CreateWindow("SMAA Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_OPENGL);
 
@@ -1017,7 +1047,7 @@ void SMAADemo::initRender() {
 #ifdef USE_GLEW
 	glewExperimental = true;
 	glewInit();
-#endif
+#endif  // USE_GLEW
 
 	// TODO: check extensions
 	// at least direct state access, texture storage
