@@ -3,22 +3,22 @@
 #extension GL_ARB_texture_gather : enable
 
 
+#define SMAA_RT_METRICS screenSize
+#define SMAA_GLSL_3 1
+#define SMAA_PRESET_ULTRA 1
+
 uniform vec4 screenSize;
+
+#include "utils.h"
+
+#define SMAA_INCLUDE_PS 0
+#define SMAA_INCLUDE_VS 1
+
+#include "smaa.h"
 
 
 out vec2 texcoord;
 out vec4 offset;
-
-
-#define SMAA_RT_METRICS screenSize
-#define SMAA_GLSL_3 1
-#define SMAA_PRESET_ULTRA 1
-#define SMAA_INCLUDE_PS 0
-#define SMAA_INCLUDE_VS 1
-
-
-#include "utils.h"
-#include "smaa.h"
 
 
 void main(void)

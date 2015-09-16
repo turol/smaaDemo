@@ -3,10 +3,23 @@
 #extension GL_ARB_texture_gather : enable
 
 
+#define SMAA_RT_METRICS screenSize
+#define SMAA_GLSL_3 1
+#define SMAA_PRESET_ULTRA 1
+
+uniform vec4 screenSize;
+
+#include "utils.h"
+
+#define SMAA_INCLUDE_PS 1
+#define SMAA_INCLUDE_VS 0
+
+#include "smaa.h"
+
+
 uniform sampler2D edgesTex;
 uniform sampler2D areaTex;
 uniform sampler2D searchTex;
-uniform vec4 screenSize;
 
 
 in vec2 texcoord;
@@ -14,17 +27,6 @@ in vec2 pixcoord;
 in vec4 offset0;
 in vec4 offset1;
 in vec4 offset2;
-
-
-#define SMAA_RT_METRICS screenSize
-#define SMAA_GLSL_3 1
-#define SMAA_PRESET_ULTRA 1
-#define SMAA_INCLUDE_PS 1
-#define SMAA_INCLUDE_VS 0
-
-
-#include "utils.h"
-#include "smaa.h"
 
 
 void main(void)
