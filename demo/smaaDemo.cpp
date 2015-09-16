@@ -181,72 +181,6 @@ std::vector<char> readFile(std::string filename) {
 }
 
 
-class Shader;
-
-
-class VertexShader {
-	GLuint shader;
-
-	VertexShader() = delete;
-
-	VertexShader(const VertexShader &) = delete;
-	VertexShader &operator=(const VertexShader &) = delete;
-
-	VertexShader(VertexShader &&) = delete;
-	VertexShader &operator=(VertexShader &&) = delete;
-
-	friend class Shader;
-
-public:
-
-	VertexShader(const std::string &filename);
-
-	~VertexShader();
-};
-
-
-class FragmentShader {
-	GLuint shader;
-
-	FragmentShader() = delete;
-
-	FragmentShader(const FragmentShader &) = delete;
-	FragmentShader &operator=(const FragmentShader &) = delete;
-
-	FragmentShader(FragmentShader &&) = delete;
-	FragmentShader &operator=(FragmentShader &&) = delete;
-
-	friend class Shader;
-
-public:
-
-	FragmentShader(const std::string &filename);
-
-	~FragmentShader();
-};
-
-
-class Shader {
-    GLuint program;
-
-	Shader() = delete;
-	Shader(const Shader &) = delete;
-	Shader &operator=(const Shader &) = delete;
-
-	Shader(Shader &&) = delete;
-	Shader &operator=(Shader &&) = delete;
-
-public:
-	Shader(std::string vertexShaderName, std::string fragmentShaderName);
-
-	~Shader();
-
-	GLint getUniformLocation(const char *name);
-
-	void bind();
-};
-
-
 static std::vector<char> processShaderIncludes(std::vector<char> shaderSource) {
 	std::vector<char> output(shaderSource);
 
@@ -364,6 +298,72 @@ static GLuint createShader(GLenum type, const std::string &filename) {
 
 	return shader;
 }
+
+
+class Shader;
+
+
+class VertexShader {
+	GLuint shader;
+
+	VertexShader() = delete;
+
+	VertexShader(const VertexShader &) = delete;
+	VertexShader &operator=(const VertexShader &) = delete;
+
+	VertexShader(VertexShader &&) = delete;
+	VertexShader &operator=(VertexShader &&) = delete;
+
+	friend class Shader;
+
+public:
+
+	VertexShader(const std::string &filename);
+
+	~VertexShader();
+};
+
+
+class FragmentShader {
+	GLuint shader;
+
+	FragmentShader() = delete;
+
+	FragmentShader(const FragmentShader &) = delete;
+	FragmentShader &operator=(const FragmentShader &) = delete;
+
+	FragmentShader(FragmentShader &&) = delete;
+	FragmentShader &operator=(FragmentShader &&) = delete;
+
+	friend class Shader;
+
+public:
+
+	FragmentShader(const std::string &filename);
+
+	~FragmentShader();
+};
+
+
+class Shader {
+    GLuint program;
+
+	Shader() = delete;
+	Shader(const Shader &) = delete;
+	Shader &operator=(const Shader &) = delete;
+
+	Shader(Shader &&) = delete;
+	Shader &operator=(Shader &&) = delete;
+
+public:
+	Shader(std::string vertexShaderName, std::string fragmentShaderName);
+
+	~Shader();
+
+	GLint getUniformLocation(const char *name);
+
+	void bind();
+};
 
 
 VertexShader::VertexShader(const std::string &filename)
