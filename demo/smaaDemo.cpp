@@ -1000,9 +1000,11 @@ void SMAADemo::initRender() {
 	// TODO: check errors
 	// TODO: other GL attributes as necessary
 	// TODO: use core context (and maybe debug as necessary)
+#ifndef EMSCRIPTEN
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+#endif
 
 	window = SDL_CreateWindow("SMAA Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_OPENGL);
 
@@ -1012,8 +1014,10 @@ void SMAADemo::initRender() {
 
 	applyVSync();
 
+#ifdef USE_GLEW
 	glewExperimental = true;
 	glewInit();
+#endif
 
 	// TODO: check extensions
 	// at least direct state access, texture storage
