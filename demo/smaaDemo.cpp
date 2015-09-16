@@ -48,8 +48,10 @@
 
 
 #ifndef USE_GLEW
+
+
 void glTextureStorage2DEXT(GLuint texture, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height) {
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glBindTexture(target, texture);
 	GLenum format;
 	switch (internalformat) {
 	case GL_RG8:
@@ -67,6 +69,10 @@ void glTextureStorage2DEXT(GLuint texture, GLenum target, GLsizei levels, GLenum
 	case GL_DEPTH_COMPONENT16:
 		format =  GL_DEPTH_COMPONENT;
 		break;
+
+	default:
+		assert(false);  // No matching internalformat
+		break;
 	}
 	for (GLsizei i = 0; i < levels; i++) {
 		glTexImage2D(target, i, internalformat, width, height, 0, format, GL_BYTE, NULL);
@@ -74,6 +80,8 @@ void glTextureStorage2DEXT(GLuint texture, GLenum target, GLsizei levels, GLenum
 		height = std::max(1.0, floor(height / 2));
 	}
 }
+
+
 #endif  // USE_GLEW
 
 
