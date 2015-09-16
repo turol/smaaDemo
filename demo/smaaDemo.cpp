@@ -1088,7 +1088,54 @@ void SMAADemo::buildSMAAShaders() {
 	}
 
 	{
-	smaaBlendWeightShader = std::make_unique<Shader>("smaaBlendWeight.vert", "smaaBlendWeight.frag");
+		ShaderBuilder vert(commonVert);
+
+		vert.pushLine("out vec2 texcoord;");
+		vert.pushLine("out vec2 pixcoord;");
+		vert.pushLine("out vec4 offset0;");
+		vert.pushLine("out vec4 offset1;");
+		vert.pushLine("out vec4 offset2;");
+		vert.pushLine("void main(void)");
+		vert.pushLine("{");
+		vert.pushLine("    vec2 pos = triangleVertex(gl_VertexID, texcoord);");
+		vert.pushLine("    texcoord = flipTexCoord(texcoord);");
+		vert.pushLine("    vec4 offsets[3];");
+		vert.pushLine("    offsets[0] = vec4(0.0, 0.0, 0.0, 0.0);");
+		vert.pushLine("    offsets[1] = vec4(0.0, 0.0, 0.0, 0.0);");
+		vert.pushLine("    offsets[2] = vec4(0.0, 0.0, 0.0, 0.0);");
+		vert.pushLine("    pixcoord = vec2(0.0, 0.0);");
+		vert.pushLine("    SMAABlendingWeightCalculationVS(texcoord, pixcoord, offsets);");
+		vert.pushLine("    offset0 = offsets[0];");
+		vert.pushLine("    offset1 = offsets[1];");
+		vert.pushLine("    offset2 = offsets[2];");
+		vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
+		vert.pushLine("}");
+
+		VertexShader vShader("smaaBlendWeight.vert", vert);
+
+		ShaderBuilder frag(commonFrag);
+
+		frag.pushLine("uniform sampler2D edgesTex;");
+		frag.pushLine("uniform sampler2D areaTex;");
+		frag.pushLine("uniform sampler2D searchTex;");
+		frag.pushLine("in vec2 texcoord;");
+		frag.pushLine("in vec2 pixcoord;");
+		frag.pushLine("in vec4 offset0;");
+		frag.pushLine("in vec4 offset1;");
+		frag.pushLine("in vec4 offset2;");
+		frag.pushLine("void main(void)");
+		frag.pushLine("{");
+		frag.pushLine("    vec4 offsets[3];");
+		frag.pushLine("    offsets[0] = offset0;");
+		frag.pushLine("    offsets[1] = offset1;");
+		frag.pushLine("    offsets[2] = offset2;");
+		frag.pushLine("    gl_FragColor = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offsets, edgesTex, areaTex, searchTex, vec4(0.0, 0.0, 0.0, 0.0));");
+		frag.pushLine("}");
+
+		FragmentShader fShader("smaaBlendWeight.frag", frag);
+
+		smaaBlendWeightShader = std::make_unique<Shader>(vShader, fShader);
+
 	GLint screenSizeLoc = smaaBlendWeightShader->getUniformLocation("screenSize");
 	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
 	}
