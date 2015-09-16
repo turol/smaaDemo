@@ -308,6 +308,7 @@ static GLuint createShader(GLenum type, const std::string &filename) {
 
 
 class Shader;
+class ShaderBuilder;
 
 
 class VertexShader {
@@ -326,6 +327,8 @@ class VertexShader {
 public:
 
 	VertexShader(const std::string &filename);
+
+	VertexShader(const std::string &name, const ShaderBuilder &builder);
 
 	~VertexShader();
 };
@@ -348,8 +351,58 @@ public:
 
 	FragmentShader(const std::string &filename);
 
+	FragmentShader(const std::string &name, const ShaderBuilder &builder);
+
 	~FragmentShader();
 };
+
+
+class ShaderBuilder {
+	std::vector<char> source;
+
+	ShaderBuilder &operator=(const ShaderBuilder &) = delete;
+
+	ShaderBuilder(ShaderBuilder &&) = delete;
+	ShaderBuilder &operator=(ShaderBuilder &&) = delete;
+
+	friend class VertexShader;
+	friend class FragmentShader;
+
+public:
+	ShaderBuilder();
+	ShaderBuilder(const ShaderBuilder &other);
+
+	VertexShader compileVertex();
+	FragmentShader compileFragment();
+
+	void pushLine(const std::string &line);
+	void pushFile(const std::string &filename);
+};
+
+
+ShaderBuilder::ShaderBuilder()
+{
+	source.reserve(512);
+}
+
+
+ShaderBuilder::ShaderBuilder(const ShaderBuilder &other) {
+	source = other.source;
+}
+
+
+void ShaderBuilder::pushLine(const std::string &line) {
+	source.reserve(source.size() + line.size() + 1);
+	source.insert(source.end(), line.begin(), line.end());
+	source.push_back('\n');
+}
+
+
+void ShaderBuilder::pushFile(const std::string &filename) {
+	// TODO: grab file here, don't use #include
+	// which we'll just end up parsing back later
+	pushLine("#include \"" + filename + "\"");
+}
 
 
 class Shader {
@@ -364,6 +417,7 @@ class Shader {
 
 public:
 	Shader(std::string vertexShaderName, std::string fragmentShaderName);
+	Shader(const VertexShader &vertexShader, const FragmentShader &fragmentShader);
 
 	~Shader();
 
@@ -377,6 +431,13 @@ VertexShader::VertexShader(const std::string &filename)
 : shader(0)
 {
 	shader = createShader(GL_VERTEX_SHADER, filename);
+}
+
+
+VertexShader::VertexShader(const std::string &name, const ShaderBuilder &builder)
+: shader(0)
+{
+	shader = createShader(GL_VERTEX_SHADER, name, builder.source);
 }
 
 
@@ -395,6 +456,13 @@ FragmentShader::FragmentShader(const std::string &filename)
 }
 
 
+FragmentShader::FragmentShader(const std::string &name, const ShaderBuilder &builder)
+: shader(0)
+{
+	shader = createShader(GL_FRAGMENT_SHADER, name, builder.source);
+}
+
+
 FragmentShader::~FragmentShader() {
 	assert(shader != 0);
 
@@ -404,11 +472,18 @@ FragmentShader::~FragmentShader() {
 
 
 Shader::Shader(std::string vertexShaderName, std::string fragmentShaderName)
+: Shader(
+         VertexShader(vertexShaderName)
+       , FragmentShader(fragmentShaderName)
+        )
+{
+}
+
+
+
+Shader::Shader(const VertexShader &vertexShader, const FragmentShader &fragmentShader)
 : program(0)
 {
-	VertexShader vertexShader(vertexShaderName);
-	FragmentShader fragmentShader(fragmentShaderName);
-
 	program = glCreateProgram();
 	glBindAttribLocation(program, ATTR_POS, "position");
 	glBindAttribLocation(program, ATTR_COLOR, "color");
@@ -852,7 +927,44 @@ static const uint32_t indices[] =
 
 void SMAADemo::buildFXAAShader() {
 	glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
-	fxaaShader = std::make_unique<Shader>("fxaa.vert", "fxaa.frag");
+
+	ShaderBuilder s;
+	// TODO: GLSL version
+	// TODO: extensions
+	// TODO: adjustable quality
+	s.pushLine("#version 330");
+	s.pushLine("#extension GL_ARB_gpu_shader5 : enable");
+	s.pushLine("#define FXAA_PC 1");
+	s.pushLine("#define FXAA_GLSL_130 1");
+	s.pushLine("#define FXAA_QUALITY__PRESET 39");
+	s.pushFile("utils.h");
+
+	ShaderBuilder vert(s);
+	vert.pushLine("out vec2 texcoord;");
+	vert.pushLine("void main(void)");
+	vert.pushLine("{");
+	vert.pushLine("    vec2 pos = triangleVertex(gl_VertexID, texcoord);");
+	vert.pushLine("    texcoord = flipTexCoord(texcoord);");
+	vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
+	vert.pushLine("}");
+
+	VertexShader vShader("fxaa.vert", vert);
+
+	// fragment
+	ShaderBuilder frag(s);
+	frag.pushFile("fxaa3_11.h");
+	frag.pushLine("uniform sampler2D color;");
+	frag.pushLine("uniform vec4 screenSize;");
+	frag.pushLine("in vec2 texcoord;");
+	frag.pushLine("void main(void)");
+	frag.pushLine("{");
+	frag.pushLine("    vec4 zero = vec4(0.0, 0.0, 0.0, 0.0);");
+	frag.pushLine("    gl_FragColor = FxaaPixelShader(texcoord, zero, color, color, color, screenSize.xy, zero, zero, zero, 0.75, 0.166, 0.0833, 8.0, 0.125, 0.05, zero);");
+	frag.pushLine("}");
+
+	FragmentShader fShader("fxaa.frag", frag);
+
+	fxaaShader = std::make_unique<Shader>(vShader, fShader);
 	GLint screenSizeLoc = fxaaShader->getUniformLocation("screenSize");
 	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
 }
