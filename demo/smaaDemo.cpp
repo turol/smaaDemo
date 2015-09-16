@@ -222,8 +222,7 @@ static std::vector<char> processShaderIncludes(std::vector<char> shaderSource) {
 					}
 				}
 			} else if (*includePos == '#' ) {
-				includePos++;
-				std::string directive(includePos, std::min(includePos + 7, output.end()));
+				std::string directive(includePos + 1, std::min(includePos + 8, output.end()));
 				if (directive == "include") {
 					// we have an "#include"
 					break;
