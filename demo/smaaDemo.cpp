@@ -244,8 +244,6 @@ static std::vector<char> processShaderIncludes(std::vector<char> shaderSource) {
 		auto filenameEnd = std::min(std::find(filenamePos, output.end(), '"'), std::find(filenamePos, output.end(), '>'));
 		std::string filename(filenamePos, filenameEnd);
 
-		printf("Filename: %s\n", filename.c_str());
-
 		// we don't want a terminating '\0'
 		auto includeContents = readFile(filename);
 		// TODO: strip other errant '\0's
@@ -267,9 +265,9 @@ static std::vector<char> processShaderIncludes(std::vector<char> shaderSource) {
 }
 
 
-static GLuint createShader(GLenum type, const std::string &filename) {
+static GLuint createShader(GLenum type, const std::string &name, const std::vector<char> &rawSrc) {
 	assert(type == GL_VERTEX_SHADER || type == GL_FRAGMENT_SHADER);
-	auto src = processShaderIncludes(readTextFile(filename));
+	auto src = processShaderIncludes(rawSrc);
 
 	std::vector<const char *> sourcePointers;
 	sourcePointers.push_back(&src[0]);
@@ -288,7 +286,7 @@ static GLuint createShader(GLenum type, const std::string &filename) {
 		std::vector<char> infoLog(infoLogLen + 1, '\0');
 		// TODO: better logging
 		glGetShaderInfoLog(shader, infoLogLen, NULL, &infoLog[0]);
-		printf("shader \"%s\" info log: %s\n", filename.c_str(), &infoLog[0]); fflush(stdout);
+		printf("shader \"%s\" info log: %s\n", name.c_str(), &infoLog[0]); fflush(stdout);
 	}
 
 	if (status != GL_TRUE) {
@@ -297,6 +295,12 @@ static GLuint createShader(GLenum type, const std::string &filename) {
 	}
 
 	return shader;
+}
+
+
+static GLuint createShader(GLenum type, const std::string &filename) {
+	auto src = readTextFile(filename);
+	return createShader(type, filename, src);
 }
 
 
