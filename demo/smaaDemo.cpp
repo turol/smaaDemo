@@ -1009,9 +1009,80 @@ void SMAADemo::buildFXAAShader() {
 
 
 void SMAADemo::buildSMAAShaders() {
+	ShaderBuilder s;
+	// TODO: GLSL version
+	// TODO: extensions
+	// TODO: adjustable quality
+	s.pushLine("#version 330");
+	s.pushLine("#extension GL_ARB_gpu_shader5 : enable");
+	s.pushLine("#extension GL_ARB_texture_gather : enable");
+
+	s.pushLine("#define SMAA_RT_METRICS screenSize");
+	s.pushLine("#define SMAA_GLSL_3 1");
+	s.pushLine("#define SMAA_PRESET_ULTRA 1");
+
+	s.pushLine("uniform vec4 screenSize;");
+
+	s.pushFile("utils.h");
+
+	ShaderBuilder commonVert(s);
+
+	commonVert.pushLine("#define SMAA_INCLUDE_PS 0");
+	commonVert.pushLine("#define SMAA_INCLUDE_VS 1");
+
+	commonVert.pushFile("smaa.h");
+
+	ShaderBuilder commonFrag(s);
+
+	commonFrag.pushLine("#define SMAA_INCLUDE_PS 1");
+	commonFrag.pushLine("#define SMAA_INCLUDE_VS 0");
+
+	commonFrag.pushFile("smaa.h");
+
 	glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 	{
-	smaaEdgeShader = std::make_unique<Shader>("smaaEdge.vert", "smaaEdge.frag");
+		ShaderBuilder vert(commonVert);
+
+		vert.pushLine("out vec2 texcoord;");
+		vert.pushLine("out vec4 offset0;");
+		vert.pushLine("out vec4 offset1;");
+		vert.pushLine("out vec4 offset2;");
+		vert.pushLine("void main(void)");
+		vert.pushLine("{");
+		vert.pushLine("    vec2 pos = triangleVertex(gl_VertexID, texcoord);");
+		vert.pushLine("    texcoord = flipTexCoord(texcoord);");
+		vert.pushLine("    vec4 offsets[3];");
+		vert.pushLine("    offsets[0] = vec4(0.0, 0.0, 0.0, 0.0);");
+		vert.pushLine("    offsets[1] = vec4(0.0, 0.0, 0.0, 0.0);");
+		vert.pushLine("    offsets[2] = vec4(0.0, 0.0, 0.0, 0.0);");
+		vert.pushLine("    SMAAEdgeDetectionVS(texcoord, offsets);");
+		vert.pushLine("    offset0 = offsets[0];");
+		vert.pushLine("    offset1 = offsets[1];");
+		vert.pushLine("    offset2 = offsets[2];");
+		vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
+		vert.pushLine("}");
+
+		VertexShader vShader("smaaEdge.vert", vert);
+
+		ShaderBuilder frag(commonFrag);
+
+		frag.pushLine("uniform sampler2D color;");
+		frag.pushLine("in vec2 texcoord;");
+		frag.pushLine("in vec4 offset0;");
+		frag.pushLine("in vec4 offset1;");
+		frag.pushLine("in vec4 offset2;");
+		frag.pushLine("void main(void)");
+		frag.pushLine("{");
+		frag.pushLine("    vec4 offsets[3];");
+		frag.pushLine("    offsets[0] = offset0;");
+		frag.pushLine("    offsets[1] = offset1;");
+		frag.pushLine("    offsets[2] = offset2;");
+		frag.pushLine("    gl_FragColor = vec4(SMAAColorEdgeDetectionPS(texcoord, offsets, color), 0.0, 0.0);");
+		frag.pushLine("}");
+
+		FragmentShader fShader("smaaEdge.frag", frag);
+
+		smaaEdgeShader = std::make_unique<Shader>(vShader, fShader);
 	GLint screenSizeLoc = smaaEdgeShader->getUniformLocation("screenSize");
 	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
 	}
