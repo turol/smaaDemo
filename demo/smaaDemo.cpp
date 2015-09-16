@@ -282,10 +282,14 @@ static GLuint createShader(GLenum type, const std::string &name, const std::vect
 	{
 		GLint infoLogLen = 0;
 		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLen);
+		if (infoLogLen != 0) {
 		std::vector<char> infoLog(infoLogLen + 1, '\0');
 		// TODO: better logging
 		glGetShaderInfoLog(shader, infoLogLen, NULL, &infoLog[0]);
-		printf("shader \"%s\" info log: %s\n", name.c_str(), &infoLog[0]); fflush(stdout);
+		if (infoLog[0] != '\0') {
+		printf("shader \"%s\" info log:\n%s\ninfo log end\n", name.c_str(), &infoLog[0]); fflush(stdout);
+		}
+		}
 	}
 
 	if (status != GL_TRUE) {
