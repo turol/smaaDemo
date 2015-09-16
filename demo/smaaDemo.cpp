@@ -636,6 +636,7 @@ public:
 
 class SMAADemo {
 	unsigned int windowWidth, windowHeight;
+	bool vsync;
 	SDL_Window *window;
 	SDL_GLContext context;
 
@@ -721,6 +722,8 @@ public:
 
 	void initRender();
 
+	void applyVSync();
+
 	void buildFXAAShader();
 
 	void buildSMAAShaders();
@@ -738,6 +741,7 @@ public:
 SMAADemo::SMAADemo()
 : windowWidth(1280)
 , windowHeight(720)
+, vsync(true)
 , window(NULL)
 , context(NULL)
 , viewProjLoc(-1)
@@ -887,11 +891,7 @@ void SMAADemo::initRender() {
 
 	// TODO: call SDL_GL_GetDrawableSize, log GL attributes etc.
 
-    // enable vsync, using late swap tearing if possible
-	int retval = SDL_GL_SetSwapInterval(-1);
-	if (retval != 0) {
-		SDL_GL_SetSwapInterval(1);
-	}
+	applyVSync();
 
 	glewExperimental = true;
 	glewInit();
@@ -1036,6 +1036,23 @@ void SMAADemo::initRender() {
 }
 
 
+void SMAADemo::applyVSync() {
+	if (vsync) {
+		// enable vsync, using late swap tearing if possible
+		int retval = SDL_GL_SetSwapInterval(-1);
+		if (retval != 0) {
+			// TODO: check return val
+			SDL_GL_SetSwapInterval(1);
+		}
+		printf("VSync is on\n");
+	} else {
+		// TODO: check return val
+		SDL_GL_SetSwapInterval(0);
+		printf("VSync is off\n");
+	}
+}
+
+
 void SMAADemo::createCubes() {
 	// cubes on a side is some power of 2
 	const unsigned int cubesSide = pow(2, cubePower);
@@ -1122,6 +1139,7 @@ static void printHelp() {
 	printf(" c     - re-color cubes\n");
 	printf(" h     - print help\n");
 	printf(" m     - change antialiasing method\n");
+	printf(" v     - toggle vsync\n");
 	printf(" SPACE - toggle camera rotation\n");
 	printf(" ESC   - quit\n");
 
@@ -1186,6 +1204,11 @@ void SMAADemo::mainLoop() {
 				case SDL_SCANCODE_M:
 					aaMethod = AAMethod::AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
 					printf("aa method set to %s\n", AAMethod::name(aaMethod));
+					break;
+
+				case SDL_SCANCODE_V:
+					vsync = !vsync;
+					applyVSync();
 					break;
 
 				default:
