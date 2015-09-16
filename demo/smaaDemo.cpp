@@ -268,11 +268,11 @@ static GLuint createShader(GLenum type, const std::string &name, const std::vect
 	assert(type == GL_VERTEX_SHADER || type == GL_FRAGMENT_SHADER);
 	auto src = processShaderIncludes(rawSrc);
 
-	std::vector<const char *> sourcePointers;
-	sourcePointers.push_back(&src[0]);
+	const char *sourcePointer = &src[0];
+	GLint sourceLen = src.size();
 
 	GLuint shader = glCreateShader(type);
-	glShaderSource(shader, 1, &sourcePointers[0], NULL);
+	glShaderSource(shader, 1, &sourcePointer, &sourceLen);
 	glCompileShader(shader);
 
 	// TODO: defer checking to enable multithreaded shader compile
