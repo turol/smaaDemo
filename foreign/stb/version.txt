@@ -1,0 +1,6 @@
+commit 6b8938124e79a8dce343e77ee905ab5adc07a68b
+Merge: d5b8af1 3657418
+Author: Sean Barrett <sean2@nothings.org>
+Date:   Sun Sep 13 11:09:23 2015 -0700
+
+    Merge branch 'fix-vs2015-warnings' of https://github.com/Reedbeta/stb into working
