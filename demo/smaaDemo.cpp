@@ -88,6 +88,9 @@ void glTextureStorage2DEXT(GLuint texture, GLenum target, GLsizei levels, GLenum
 #ifdef EMSCRIPTEN
 
 
+#include <emscripten.h>
+
+
 // a collection of emscripten hacks to avoid polluting main code with them
 
 Uint64 SDL_GetPerformanceFrequency() {
@@ -909,7 +912,11 @@ public:
 
 	void colorCubes();
 
-	void mainLoop();
+	void mainLoopIteration();
+
+	bool shouldKeepGoing() const {
+		return keepGoing;
+	}
 
 	void render();
 };
@@ -1516,8 +1523,7 @@ static void printHelp() {
 }
 
 
-void SMAADemo::mainLoop() {
-	while (keepGoing) {
+void SMAADemo::mainLoopIteration() {
 		// TODO: timing
 		SDL_Event event;
 		memset(&event, 0, sizeof(SDL_Event));
@@ -1630,7 +1636,6 @@ void SMAADemo::mainLoop() {
 		}
 
 		render();
-	}
 }
 
 
@@ -1742,6 +1747,18 @@ void SMAADemo::render() {
 }
 
 
+#ifdef EMSCRIPTEN
+
+
+static void mainLoopWrapper(void *smaaDemo_) {
+	SMAADemo *demo = reinterpret_cast<SMAADemo *>(smaaDemo_);
+	demo->mainLoopIteration();
+}
+
+
+#endif  // EMSCRIPTEN
+
+
 int main(int /*argc */, char * /*argv*/ []) {
 	SMAADemo demo;
 
@@ -1750,7 +1767,18 @@ int main(int /*argc */, char * /*argv*/ []) {
 	demo.initRender();
 	demo.createCubes();
 	printHelp();
-	demo.mainLoop();
+
+#ifdef EMSCRIPTEN
+
+	emscripten_set_main_loop_arg(mainLoopWrapper, &demo, 0, 1);
+
+#else  // EMSCRIPTEN
+
+	while (demo.shouldKeepGoing()) {
+		demo.mainLoopIteration();
+	}
+
+#endif  // EMSCRIPTEN
 
 	return 0;
 }
