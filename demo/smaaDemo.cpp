@@ -905,6 +905,8 @@ public:
 
 	void initRender();
 
+	void createFramebuffers();
+
 	void applyVSync();
 
 	void buildFXAAShader();
@@ -1318,7 +1320,7 @@ void SMAADemo::initRender() {
 	for (unsigned int y = 0; y < AREATEX_HEIGHT; y++) {
 		unsigned int srcY = AREATEX_HEIGHT - 1 - y;
 		//unsigned int srcY = y;
-        memcpy(&tempBuffer[y * AREATEX_PITCH], areaTexBytes + srcY * AREATEX_PITCH, AREATEX_PITCH);
+		memcpy(&tempBuffer[y * AREATEX_PITCH], areaTexBytes + srcY * AREATEX_PITCH, AREATEX_PITCH);
 	}
 	glTextureSubImage2DEXT(areaTex, GL_TEXTURE_2D, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, &tempBuffer[0]);
 	glTextureParameteriEXT(areaTex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -1332,7 +1334,7 @@ void SMAADemo::initRender() {
 	for (unsigned int y = 0; y < SEARCHTEX_HEIGHT; y++) {
 		unsigned int srcY = SEARCHTEX_HEIGHT - 1 - y;
 		//unsigned int srcY = y;
-        memcpy(&tempBuffer[y * SEARCHTEX_PITCH], searchTexBytes + srcY * SEARCHTEX_PITCH, SEARCHTEX_PITCH);
+		memcpy(&tempBuffer[y * SEARCHTEX_PITCH], searchTexBytes + srcY * SEARCHTEX_PITCH, SEARCHTEX_PITCH);
 	}
 	glTextureSubImage2DEXT(searchTex, GL_TEXTURE_2D, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, &tempBuffer[0]);
 	glTextureParameteriEXT(searchTex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -1345,7 +1347,10 @@ void SMAADemo::initRender() {
 	builtinFBO->width = windowWidth;
 	builtinFBO->height = windowHeight;
 
-	// TODO: move to a helper method
+	createFramebuffers();
+}
+
+void SMAADemo::createFramebuffers()	{
 	GLuint fbo = 0;
 	glGenFramebuffers(1, &fbo);
 	renderFBO = std::make_unique<Framebuffer>(fbo);
