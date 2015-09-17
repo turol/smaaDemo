@@ -9,6 +9,9 @@
 #include <string>
 #include <vector>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 #include <SDL.h>
 
 
@@ -1759,14 +1762,21 @@ static void mainLoopWrapper(void *smaaDemo_) {
 #endif  // EMSCRIPTEN
 
 
-int main(int /*argc */, char * /*argv*/ []) {
+int main(int argc, char *argv[]) {
 	auto demo = std::make_unique<SMAADemo>();
-
-	// TODO: parse command line arguments and/or config file
 
 	demo->initRender();
 	demo->createCubes();
 	printHelp();
+
+	// TODO: better command line parsing
+	for (int i = 1; i < argc; i++) {
+		printf("image \"%s\"\n", argv[i]);
+		int width = 0, height = 0;
+		unsigned char *imageData = stbi_load(argv[i], &width, &height, NULL, 3);
+		printf(" %p  %dx%d\n", imageData, width, height);
+		stbi_image_free(imageData);
+	}
 
 #ifdef EMSCRIPTEN
 
