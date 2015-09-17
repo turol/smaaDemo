@@ -1760,12 +1760,12 @@ static void mainLoopWrapper(void *smaaDemo_) {
 
 
 int main(int /*argc */, char * /*argv*/ []) {
-	SMAADemo demo;
+	auto demo = std::make_unique<SMAADemo>();
 
 	// TODO: parse command line arguments and/or config file
 
-	demo.initRender();
-	demo.createCubes();
+	demo->initRender();
+	demo->createCubes();
 	printHelp();
 
 #ifdef EMSCRIPTEN
@@ -1774,8 +1774,8 @@ int main(int /*argc */, char * /*argv*/ []) {
 
 #else  // EMSCRIPTEN
 
-	while (demo.shouldKeepGoing()) {
-		demo.mainLoopIteration();
+	while (demo->shouldKeepGoing()) {
+		demo->mainLoopIteration();
 	}
 
 #endif  // EMSCRIPTEN
