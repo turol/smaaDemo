@@ -55,6 +55,9 @@ CFLAGS+=-DUSE_GLEW -DGLEW_STATIC -DGLEW_NO_GLU
 endif  # USE_GLEW
 
 
+LDFLAGS+=$(foreach f, $(PRELOAD_FILES), --preload-file $(TOPDIR)/$(f)@$(f))
+
+
 CFLAGS+=$(OPTFLAGS)
 
 CFLAGS+=-I$(TOPDIR)
