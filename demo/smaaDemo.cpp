@@ -115,8 +115,20 @@ SDL_Window* SDL_CreateWindow(const char* /* title */,
                              int         /* y */,
                              int         w,
                              int         h,
-                             Uint32      flags)
+                             Uint32      flags_)
 {
+	Uint32 flags = SDL_DOUBLEBUF;
+
+	if ((flags_ & SDL_WINDOW_RESIZABLE) != 0) {
+		flags |= SDL_RESIZABLE;
+	}
+	if ((flags_ & SDL_WINDOW_FULLSCREEN) != 0) {
+		flags |= SDL_FULLSCREEN;
+	}
+	if ((flags_ & SDL_WINDOW_OPENGL) != 0) {
+		flags |= SDL_OPENGL;
+	}
+
 	SDL_SetVideoMode(w, h, 32, flags);
 
 	return new SDL_Window();
