@@ -850,6 +850,7 @@ class SMAADemo {
 	RandomGen random;
 	unsigned int fxaaQuality;
 	unsigned int smaaQuality;
+	bool keepGoing;
 
 
 	struct Cube {
@@ -941,6 +942,7 @@ SMAADemo::SMAADemo()
 , random(1)
 , fxaaQuality(maxFXAAQuality - 1)
 , smaaQuality(maxSMAAQuality - 1)
+, keepGoing(true)
 {
 	// TODO: check return value
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
@@ -1515,7 +1517,6 @@ static void printHelp() {
 
 
 void SMAADemo::mainLoop() {
-	bool keepGoing = true;
 	while (keepGoing) {
 		// TODO: timing
 		SDL_Event event;
