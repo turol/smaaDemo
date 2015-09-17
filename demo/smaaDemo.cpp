@@ -85,6 +85,46 @@ void glTextureStorage2DEXT(GLuint texture, GLenum target, GLsizei levels, GLenum
 #endif  // USE_GLEW
 
 
+#ifdef EMSCRIPTEN
+
+
+// a collection of emscripten hacks to avoid polluting main code with them
+
+Uint64 SDL_GetPerformanceFrequency() {
+	return 1000;
+}
+
+
+Uint64 SDL_GetPerformanceCounter() {
+	return SDL_GetTicks();
+}
+
+
+struct SDL_Window {
+};
+
+
+SDL_Window* SDL_CreateWindow(const char* /* title */,
+                             int         /* x */,
+                             int         /* y */,
+                             int         w,
+                             int         h,
+                             Uint32      flags)
+{
+	SDL_SetVideoMode(w, h, 32, flags);
+
+	return new SDL_Window();
+}
+
+
+SDL_GLContext SDL_GL_CreateContext(SDL_Window* window) {
+	return reinterpret_cast<SDL_GLContext>(window);
+}
+
+
+#endif  // EMSCRIPTEN
+
+
 #ifdef _MSC_VER
 #define fileno _fileno
 #define __builtin_unreachable() assert(false)
