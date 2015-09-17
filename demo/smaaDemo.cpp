@@ -754,6 +754,20 @@ public:
 };
 
 
+static const char *fxaaQualityLevels[] =
+{ "10", "15", "20", "29", "39" };
+
+
+static const unsigned int maxFXAAQuality = sizeof(fxaaQualityLevels) / sizeof(fxaaQualityLevels[0]);
+
+
+static const char *smaaQualityLevels[] =
+{ "LOW", "MEDIUM", "HIGH", "ULTRA" };
+
+
+static const unsigned int maxSMAAQuality = sizeof(smaaQualityLevels) / sizeof(smaaQualityLevels[0]);
+
+
 class SMAADemo {
 	unsigned int windowWidth, windowHeight;
 	bool vsync;
@@ -794,6 +808,8 @@ class SMAADemo {
 	unsigned int colorMode;
 	bool rightShift, leftShift;
 	RandomGen random;
+	unsigned int fxaaQuality;
+	unsigned int smaaQuality;
 
 
 	struct Cube {
@@ -883,6 +899,8 @@ SMAADemo::SMAADemo()
 , rightShift(false)
 , leftShift(false)
 , random(1)
+, fxaaQuality(maxFXAAQuality - 1)
+, smaaQuality(maxSMAAQuality - 1)
 {
 	// TODO: check return value
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
@@ -974,7 +992,8 @@ void SMAADemo::buildFXAAShader() {
 	s.pushLine("#extension GL_ARB_gpu_shader5 : enable");
 	s.pushLine("#define FXAA_PC 1");
 	s.pushLine("#define FXAA_GLSL_130 1");
-	s.pushLine("#define FXAA_QUALITY__PRESET 39");
+	// TODO: cache shader based on quality level
+	s.pushLine("#define FXAA_QUALITY__PRESET " + std::string(fxaaQualityLevels[fxaaQuality]));
 	s.pushFile("utils.h");
 
 	ShaderBuilder vert(s);
@@ -1019,7 +1038,8 @@ void SMAADemo::buildSMAAShaders() {
 
 	s.pushLine("#define SMAA_RT_METRICS screenSize");
 	s.pushLine("#define SMAA_GLSL_3 1");
-	s.pushLine("#define SMAA_PRESET_ULTRA 1");
+	// TODO: cache shader based on quality level
+	s.pushLine("#define SMAA_PRESET_"  + std::string(smaaQualityLevels[smaaQuality]) + " 1");
 
 	s.pushLine("uniform vec4 screenSize;");
 
@@ -1446,6 +1466,7 @@ static void printHelp() {
 	printf(" c     - re-color cubes\n");
 	printf(" h     - print help\n");
 	printf(" m     - change antialiasing method\n");
+	printf(" q     - toggle quality\n");
 	printf(" v     - toggle vsync\n");
 	printf(" SPACE - toggle camera rotation\n");
 	printf(" ESC   - quit\n");
@@ -1511,6 +1532,33 @@ void SMAADemo::mainLoop() {
 				case SDL_SCANCODE_M:
 					aaMethod = AAMethod::AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
 					printf("aa method set to %s\n", AAMethod::name(aaMethod));
+					break;
+
+				case SDL_SCANCODE_Q:
+					switch (aaMethod) {
+					case AAMethod::FXAA:
+						if (leftShift || rightShift) {
+							fxaaQuality = fxaaQuality + maxFXAAQuality - 1;
+						} else {
+							fxaaQuality = fxaaQuality + 1;
+						}
+						fxaaQuality = fxaaQuality % maxFXAAQuality;
+						buildFXAAShader();
+						printf("FXAA quality set to %s (%u)\n", fxaaQualityLevels[fxaaQuality], fxaaQuality);
+						break;
+
+					case AAMethod::SMAA:
+						if (leftShift || rightShift) {
+							smaaQuality = smaaQuality + maxSMAAQuality - 1;
+						} else {
+							smaaQuality = smaaQuality + 1;
+						}
+						smaaQuality = smaaQuality % maxSMAAQuality;
+						buildSMAAShaders();
+						printf("SMAA quality set to %s (%u)\n", smaaQualityLevels[smaaQuality], smaaQuality);
+						break;
+
+					}
 					break;
 
 				case SDL_SCANCODE_V:
