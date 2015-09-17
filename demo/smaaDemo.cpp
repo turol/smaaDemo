@@ -1262,7 +1262,9 @@ void SMAADemo::initRender() {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 #endif  // EMSCRIPTEN
 
-	window = SDL_CreateWindow("SMAA Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_OPENGL);
+	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+
+	window = SDL_CreateWindow("SMAA Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, flags);
 
 	context = SDL_GL_CreateContext(window);
 
@@ -1634,6 +1636,12 @@ void SMAADemo::mainLoopIteration() {
 				default:
 					break;
 				}
+				break;
+
+			case SDL_WINDOWEVENT_RESIZED:
+				windowWidth = event.window.data1;
+				windowHeight = event.window.data2;
+				// TODO: resize framebuffer
 				break;
 			}
 		}
