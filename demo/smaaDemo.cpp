@@ -96,6 +96,10 @@ void glTextureStorage2DEXT(GLuint texture, GLenum target, GLsizei levels, GLenum
 
 // a collection of emscripten hacks to avoid polluting main code with them
 
+
+#define SDL_WINDOW_FULLSCREEN_DESKTOP SDL_WINDOW_FULLSCREEN
+
+
 Uint64 SDL_GetPerformanceFrequency() {
 	return 1000;
 }
@@ -1624,6 +1628,9 @@ void SMAADemo::applyVSync() {
 
 
 void SMAADemo::applyFullscreen() {
+#ifndef EMSCRIPTEN
+	// emscripten doesn't allow program-initiated fullscreen without exterme trickery
+
 	if (fullscreen) {
 		// TODO: check return val?
 		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
@@ -1632,6 +1639,7 @@ void SMAADemo::applyFullscreen() {
 		SDL_SetWindowFullscreen(window, 0);
 		printf("Windowed\n");
 	}
+#endif  // EMSCRIPTEN
 }
 
 
