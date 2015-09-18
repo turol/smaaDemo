@@ -831,6 +831,7 @@ class SMAADemo {
 	bool vsync;
 	SDL_Window *window;
 	SDL_GLContext context;
+	std::string glslVersion;
 
 	std::unique_ptr<Shader> cubeShader;
 	// TODO: these are shader properties
@@ -1061,8 +1062,7 @@ static const uint32_t indices[] =
 
 void SMAADemo::buildCubeShader() {
 	ShaderBuilder s;
-	// TODO: GLSL version
-	s.pushLine("#version 330");
+	s.pushLine("#version " + glslVersion);
 
 	ShaderBuilder vert(s);
 	vert.pushLine("uniform mat4 viewProj;");
@@ -1111,10 +1111,9 @@ void SMAADemo::buildFXAAShader() {
 	glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 
 	ShaderBuilder s;
-	// TODO: GLSL version
 	// TODO: extensions
 	// TODO: adjustable quality
-	s.pushLine("#version 330");
+	s.pushLine("#version " + glslVersion);
 	s.pushLine("#extension GL_ARB_gpu_shader5 : enable");
 	s.pushLine("#define FXAA_PC 1");
 	s.pushLine("#define FXAA_GLSL_130 1");
@@ -1155,10 +1154,9 @@ void SMAADemo::buildFXAAShader() {
 
 void SMAADemo::buildSMAAShaders() {
 	ShaderBuilder s;
-	// TODO: GLSL version
 	// TODO: extensions
 	// TODO: adjustable quality
-	s.pushLine("#version 330");
+	s.pushLine("#version " + glslVersion);
 	s.pushLine("#extension GL_ARB_gpu_shader5 : enable");
 	s.pushLine("#extension GL_ARB_texture_gather : enable");
 
@@ -1334,6 +1332,13 @@ void SMAADemo::initRender() {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+
+	glslVersion = "330";
+
+#else  // EMSCRIPTEN
+
+	glslVersion = "100";
+
 #endif  // EMSCRIPTEN
 
 	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
