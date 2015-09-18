@@ -1233,8 +1233,7 @@ void SMAADemo::buildFXAAShader() {
 	FragmentShader fShader("fxaa.frag", frag);
 
 	fxaaShader = std::make_unique<Shader>(vShader, fShader);
-	GLint screenSizeLoc = fxaaShader->getUniformLocation("screenSize");
-	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
+	glUniform4fv(fxaaShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
 }
 
 
@@ -1872,6 +1871,7 @@ void SMAADemo::render() {
 
 		glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 
+		glUniform4fv(fxaaShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
 		glUniform4fv(smaaEdgeShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
 		glUniform4fv(smaaBlendWeightShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
 		glUniform4fv(smaaNeighborShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
