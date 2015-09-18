@@ -904,6 +904,7 @@ class SMAADemo {
 	unsigned int windowWidth, windowHeight;
 	unsigned int resizeWidth, resizeHeight;
 	bool vsync;
+	bool fullscreen;
 	SDL_Window *window;
 	SDL_GLContext context;
 
@@ -1005,6 +1006,8 @@ public:
 
 	void applyVSync();
 
+	void applyFullscreen();
+
 	void buildCubeShader();
 
 	void buildFXAAShader();
@@ -1035,6 +1038,7 @@ SMAADemo::SMAADemo()
 : windowWidth(1280)
 , windowHeight(720)
 , vsync(true)
+, fullscreen(false)
 , window(NULL)
 , context(NULL)
 , viewProjLoc(-1)
@@ -1411,6 +1415,10 @@ void SMAADemo::initRender() {
 
 	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 
+	if (fullscreen) {
+		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+	}
+
 	window = SDL_CreateWindow("SMAA Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, flags);
 
 	context = SDL_GL_CreateContext(window);
@@ -1615,6 +1623,18 @@ void SMAADemo::applyVSync() {
 }
 
 
+void SMAADemo::applyFullscreen() {
+	if (fullscreen) {
+		// TODO: check return val?
+		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+		printf("Fullscreen\n");
+	} else {
+		SDL_SetWindowFullscreen(window, 0);
+		printf("Windowed\n");
+	}
+}
+
+
 void SMAADemo::createCubes() {
 	// cubes on a side is some power of 2
 	const unsigned int cubesSide = pow(2, cubePower);
@@ -1801,6 +1821,11 @@ void SMAADemo::mainLoopIteration() {
 				case SDL_SCANCODE_V:
 					vsync = !vsync;
 					applyVSync();
+					break;
+
+				case SDL_SCANCODE_F:
+					fullscreen = !fullscreen;
+					applyFullscreen();
 					break;
 
 				default:
