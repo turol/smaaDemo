@@ -1820,6 +1820,15 @@ void SMAADemo::render() {
 		windowWidth = resizeWidth;
 		windowHeight = resizeHeight;
 		createFramebuffers();
+
+		glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
+
+		GLint screenSizeLoc = smaaEdgeShader->getUniformLocation("screenSize");
+		glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
+		screenSizeLoc = smaaBlendWeightShader->getUniformLocation("screenSize");
+		glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
+		screenSizeLoc = smaaNeighborShader->getUniformLocation("screenSize");
+		glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
 	}
 
 	uint64_t ticks = SDL_GetPerformanceCounter();
