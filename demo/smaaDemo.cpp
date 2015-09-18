@@ -832,7 +832,7 @@ class SMAADemo {
 	SDL_Window *window;
 	SDL_GLContext context;
 
-	std::unique_ptr<Shader> simpleShader;
+	std::unique_ptr<Shader> cubeShader;
 	// TODO: these are shader properties
 	// better yet use UBOs
 	GLint viewProjLoc;
@@ -1307,8 +1307,8 @@ void SMAADemo::initRender() {
 	// swap once to get better traces
 	SDL_GL_SwapWindow(window);
 
-	simpleShader = std::make_unique<Shader>("simpleVS.vert", "simpleFS.frag");
-	viewProjLoc = simpleShader->getUniformLocation("viewProj");
+	cubeShader = std::make_unique<Shader>("cube.vert", "cube.frag");
+	viewProjLoc = cubeShader->getUniformLocation("viewProj");
 
 	buildSMAAShaders();
 	buildFXAAShader();
@@ -1722,7 +1722,7 @@ void SMAADemo::render() {
 	renderFBO->bind();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	simpleShader->bind();
+	cubeShader->bind();
 
 	if (rotateCamera) {
 		rotationTime += elapsed;

@@ -13,7 +13,7 @@ UBSAN:=n
 
 
 USE_GLEW:=n
-PRELOAD_FILES:=fxaa3_11.h simpleFS.frag simpleVS.vert smaa.h utils.h
+PRELOAD_FILES:=fxaa3_11.h cube.frag cube.vert smaa.h utils.h
 
 
 # compiler options etc
