@@ -490,6 +490,10 @@ ShaderBuilder::ShaderBuilder()
 #ifdef EMSCRIPTEN
 
 	pushLine("#version 100");
+
+	// FIXME: is this universally available on WebGL implementations?
+	pushLine("#extension GL_EXT_shader_texture_lod : enable");
+
 	pushLine("precision highp float;");
 
 #else  // EMSCRIPTEN
@@ -1211,7 +1215,17 @@ void SMAADemo::buildFXAAShader() {
 	ShaderBuilder s;
 
 	s.pushLine("#define FXAA_PC 1");
+
+#ifdef EMSCRIPTEN
+
+	s.pushLine("#define FXAA_GLSL_120 1");
+
+#else  // EMSCRIPTEN
+
 	s.pushLine("#define FXAA_GLSL_130 1");
+
+#endif  // EMSCRIPTEN
+
 	// TODO: cache shader based on quality level
 	s.pushLine("#define FXAA_QUALITY_PRESET " + std::string(fxaaQualityLevels[fxaaQuality]));
 
