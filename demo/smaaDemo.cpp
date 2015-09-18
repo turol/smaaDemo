@@ -1753,7 +1753,11 @@ void SMAADemo::mainLoopIteration() {
 
 				case SDL_SCANCODE_D:
 					if (antialiasing && aaMethod == AAMethod::SMAA) {
-						debugMode = (debugMode + 1) % 3;
+						if (leftShift || rightShift) {
+							debugMode = (debugMode + 3 - 1) % 3;
+						} else {
+							debugMode = (debugMode + 1) % 3;
+						}
 						printf("Debug mode set to %s\n", smaaDebugModeStr(debugMode));
 					}
 					break;
