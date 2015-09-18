@@ -914,6 +914,7 @@ class SMAADemo {
 
 	// TODO: create helper classes for these
 	GLuint cubeVBO, cubeIBO;
+	GLuint fullscreenVBO;
 	GLuint instanceVBO;
 
 	unsigned int cubePower;
@@ -1016,6 +1017,8 @@ public:
 
 	void setCubeVBO();
 
+	void setFullscreenVBO();
+
 	void mainLoopIteration();
 
 	bool shouldKeepGoing() const {
@@ -1037,6 +1040,7 @@ SMAADemo::SMAADemo()
 , viewProjLoc(-1)
 , cubeVBO(0)
 , cubeIBO(0)
+, fullscreenVBO(0)
 , instanceVBO(0)
 , cubePower(3)
 , antialiasing(true)
@@ -1104,6 +1108,14 @@ static const Vertex vertices[] =
 	, {  coord , -coord, -coord }
 	, { -coord , -coord,  coord }
 	, {  coord , -coord,  coord }
+};
+
+
+static const float fullscreenVertices[] =
+{
+	  -1.0f, -1.0f
+	,  3.0f, -1.0f
+	, -1.0f,  3.0f
 };
 
 
@@ -1194,14 +1206,13 @@ void SMAADemo::buildFXAAShader() {
 	s.pushLine("#define FXAA_GLSL_130 1");
 	// TODO: cache shader based on quality level
 	s.pushLine("#define FXAA_QUALITY__PRESET " + std::string(fxaaQualityLevels[fxaaQuality]));
-	s.pushFile("utils.h");
 
 	ShaderBuilder vert(s);
+	vert.pushVertexAttr("vec2 pos;");
 	vert.pushVertexVarying("vec2 texcoord;");
 	vert.pushLine("void main(void)");
 	vert.pushLine("{");
-	vert.pushLine("    vec2 pos = triangleVertex(gl_VertexID, texcoord);");
-	vert.pushLine("    texcoord = flipTexCoord(texcoord);");
+	vert.pushLine("    texcoord = pos * 0.5 + 0.5;");
 	vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
 	vert.pushLine("}");
 
@@ -1237,8 +1248,6 @@ void SMAADemo::buildSMAAShaders() {
 
 	s.pushLine("uniform vec4 screenSize;");
 
-	s.pushFile("utils.h");
-
 	ShaderBuilder commonVert(s);
 
 	commonVert.pushLine("#define SMAA_INCLUDE_PS 0");
@@ -1257,14 +1266,14 @@ void SMAADemo::buildSMAAShaders() {
 	{
 		ShaderBuilder vert(commonVert);
 
+		vert.pushVertexAttr("vec2 pos;");
 		vert.pushVertexVarying("vec2 texcoord;");
 		vert.pushVertexVarying("vec4 offset0;");
 		vert.pushVertexVarying("vec4 offset1;");
 		vert.pushVertexVarying("vec4 offset2;");
 		vert.pushLine("void main(void)");
 		vert.pushLine("{");
-		vert.pushLine("    vec2 pos = triangleVertex(gl_VertexID, texcoord);");
-		vert.pushLine("    texcoord = flipTexCoord(texcoord);");
+		vert.pushLine("    texcoord = pos * 0.5 + 0.5;");
 		vert.pushLine("    vec4 offsets[3];");
 		vert.pushLine("    offsets[0] = vec4(0.0, 0.0, 0.0, 0.0);");
 		vert.pushLine("    offsets[1] = vec4(0.0, 0.0, 0.0, 0.0);");
@@ -1303,6 +1312,7 @@ void SMAADemo::buildSMAAShaders() {
 	{
 		ShaderBuilder vert(commonVert);
 
+		vert.pushVertexAttr("vec2 pos;");
 		vert.pushVertexVarying("vec2 texcoord;");
 		vert.pushVertexVarying("vec2 pixcoord;");
 		vert.pushVertexVarying("vec4 offset0;");
@@ -1310,8 +1320,7 @@ void SMAADemo::buildSMAAShaders() {
 		vert.pushVertexVarying("vec4 offset2;");
 		vert.pushLine("void main(void)");
 		vert.pushLine("{");
-		vert.pushLine("    vec2 pos = triangleVertex(gl_VertexID, texcoord);");
-		vert.pushLine("    texcoord = flipTexCoord(texcoord);");
+		vert.pushLine("    texcoord = pos * 0.5 + 0.5;");
 		vert.pushLine("    vec4 offsets[3];");
 		vert.pushLine("    offsets[0] = vec4(0.0, 0.0, 0.0, 0.0);");
 		vert.pushLine("    offsets[1] = vec4(0.0, 0.0, 0.0, 0.0);");
@@ -1354,12 +1363,12 @@ void SMAADemo::buildSMAAShaders() {
 	{
 		ShaderBuilder vert(commonVert);
 
+		vert.pushVertexAttr("vec2 pos;");
 		vert.pushVertexVarying("vec2 texcoord;");
 		vert.pushVertexVarying("vec4 offset;");
 		vert.pushLine("void main(void)");
 		vert.pushLine("{");
-		vert.pushLine("    vec2 pos = triangleVertex(gl_VertexID, texcoord);");
-		vert.pushLine("    texcoord = flipTexCoord(texcoord);");
+		vert.pushLine("    texcoord = pos * 0.5 + 0.5;");
 		vert.pushLine("    offset = vec4(0.0, 0.0, 0.0, 0.0);");
 		vert.pushLine("    SMAANeighborhoodBlendingVS(texcoord, offset);");
 		vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
@@ -1435,6 +1444,10 @@ void SMAADemo::initRender() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices[0], GL_STATIC_DRAW);
 
+	glGenBuffers(1, &fullscreenVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, fullscreenVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(fullscreenVertices), &fullscreenVertices[0], GL_STATIC_DRAW);
+
 	glGenBuffers(1, &instanceVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(InstanceData), NULL, GL_STREAM_DRAW);
@@ -1496,6 +1509,18 @@ void SMAADemo::setCubeVBO() {
 	glEnableVertexAttribArray(ATTR_CUBEPOS);
 	glEnableVertexAttribArray(ATTR_ROT);
 	glEnableVertexAttribArray(ATTR_COLOR);
+}
+
+
+void SMAADemo::setFullscreenVBO() {
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, fullscreenVBO);
+	glVertexAttribPointer(ATTR_POS, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, NULL);
+
+	glEnableVertexAttribArray(ATTR_POS);
+	glDisableVertexAttribArray(ATTR_CUBEPOS);
+	glDisableVertexAttribArray(ATTR_ROT);
+	glDisableVertexAttribArray(ATTR_COLOR);
 }
 
 
@@ -1897,10 +1922,7 @@ void SMAADemo::render() {
 
 	glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
 
-	glDisableVertexAttribArray(ATTR_POS);
-	glDisableVertexAttribArray(ATTR_CUBEPOS);
-	glDisableVertexAttribArray(ATTR_ROT);
-	glDisableVertexAttribArray(ATTR_COLOR);
+	setFullscreenVBO();
 
 	if (antialiasing) {
 		glDisable(GL_DEPTH_TEST);

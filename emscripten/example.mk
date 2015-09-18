@@ -13,7 +13,7 @@ UBSAN:=n
 
 
 USE_GLEW:=n
-PRELOAD_FILES:=fxaa3_11.h smaa.h utils.h
+PRELOAD_FILES:=fxaa3_11.h smaa.h
 
 
 # compiler options etc
