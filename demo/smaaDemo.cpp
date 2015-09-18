@@ -144,6 +144,21 @@ SDL_GLContext SDL_GL_CreateContext(SDL_Window* window) {
 }
 
 
+int SDL_GetNumVideoDisplays() {
+	return 0;
+}
+
+
+int SDL_GetNumDisplayModes(int displayIndex) {
+	return 0;
+}
+
+
+int SDL_GetDisplayMode(int displayIndex, int modeIndex, SDL_DisplayMode* mode) {
+	return 0;
+}
+
+
 #endif  // EMSCRIPTEN
 
 
