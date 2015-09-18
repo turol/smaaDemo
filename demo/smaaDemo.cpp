@@ -871,6 +871,14 @@ class SMAADemo {
 	bool keepGoing;
 
 
+	struct Image {
+		std::string filename;
+		GLuint tex;
+	};
+
+	std::vector<Image> images;
+
+
 	struct Cube {
 		glm::vec3 pos;
 		glm::quat orient;
@@ -934,6 +942,8 @@ public:
 	bool shouldKeepGoing() const {
 		return keepGoing;
 	}
+
+	void addImage(const char *filename);
 
 	void render();
 };
@@ -1667,6 +1677,33 @@ void SMAADemo::mainLoopIteration() {
 }
 
 
+void SMAADemo::addImage(const char *filename) {
+	int width = 0, height = 0;
+	unsigned char *imageData = stbi_load(filename, &width, &height, NULL, 3);
+	printf(" %p  %dx%d\n", imageData, width, height);
+
+	images.push_back(Image());
+	Image &img = images.back();
+	img.filename = filename;
+	glGenTextures(1, &img.tex);
+
+	// flip it
+	std::vector<unsigned char> temp(3 * width * height, 0);
+	for (int i = 0; i < height; i++) {
+		memcpy(&temp[i * width * 3], &imageData[(height - 1 - i) * width * 3], width * 3);
+	}
+
+	glTextureStorage2DEXT(img.tex, GL_TEXTURE_2D, 1, GL_RGB8, width, height);
+	glTextureSubImage2DEXT(img.tex, GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, &temp[0]);
+	glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	stbi_image_free(imageData);
+}
+
+
 void SMAADemo::render() {
 	uint64_t ticks = SDL_GetPerformanceCounter();
 	uint64_t elapsed = ticks - lastTime;
@@ -1797,10 +1834,7 @@ int main(int argc, char *argv[]) {
 	// TODO: better command line parsing
 	for (int i = 1; i < argc; i++) {
 		printf("image \"%s\"\n", argv[i]);
-		int width = 0, height = 0;
-		unsigned char *imageData = stbi_load(argv[i], &width, &height, NULL, 3);
-		printf(" %p  %dx%d\n", imageData, width, height);
-		stbi_image_free(imageData);
+		demo->addImage(argv[i]);
 	}
 
 #ifdef EMSCRIPTEN
