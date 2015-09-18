@@ -566,6 +566,8 @@ void ShaderBuilder::pushFile(const std::string &filename) {
 class Shader {
     GLuint program;
 
+	GLint screenSizeLoc;
+
 	Shader() = delete;
 	Shader(const Shader &) = delete;
 	Shader &operator=(const Shader &) = delete;
@@ -580,6 +582,8 @@ public:
 	~Shader();
 
 	GLint getUniformLocation(const char *name);
+
+	GLint getScreenSizeLocation();
 
 	void bind();
 };
@@ -641,6 +645,7 @@ Shader::Shader(std::string vertexShaderName, std::string fragmentShaderName)
 
 Shader::Shader(const VertexShader &vertexShader, const FragmentShader &fragmentShader)
 : program(0)
+, screenSizeLoc(0)
 {
 	program = glCreateProgram();
 	glBindAttribLocation(program, ATTR_POS, "position");
@@ -686,6 +691,8 @@ Shader::Shader(const VertexShader &vertexShader, const FragmentShader &fragmentS
 	if (blendTexLoc >= 0) {
 		glUniform1i(blendTexLoc, TEXUNIT_BLEND);
 	}
+
+	screenSizeLoc = getUniformLocation("screenSize");
 }
 
 
@@ -702,6 +709,11 @@ GLint Shader::getUniformLocation(const char *name) {
 	assert(name != NULL);
 
 	return glGetUniformLocation(program, name);
+}
+
+
+GLint Shader::getScreenSizeLocation() {
+	return screenSizeLoc;
 }
 
 
@@ -1283,8 +1295,7 @@ void SMAADemo::buildSMAAShaders() {
 		FragmentShader fShader("smaaEdge.frag", frag);
 
 		smaaEdgeShader = std::make_unique<Shader>(vShader, fShader);
-	GLint screenSizeLoc = smaaEdgeShader->getUniformLocation("screenSize");
-	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
+		glUniform4fv(smaaEdgeShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
 	}
 
 	{
@@ -1335,9 +1346,7 @@ void SMAADemo::buildSMAAShaders() {
 		FragmentShader fShader("smaaBlendWeight.frag", frag);
 
 		smaaBlendWeightShader = std::make_unique<Shader>(vShader, fShader);
-
-	GLint screenSizeLoc = smaaBlendWeightShader->getUniformLocation("screenSize");
-	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
+		glUniform4fv(smaaBlendWeightShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
 	}
 
 	{
@@ -1370,8 +1379,7 @@ void SMAADemo::buildSMAAShaders() {
 		FragmentShader fShader("smaaNeighbor.frag", frag);
 
 		smaaNeighborShader = std::make_unique<Shader>(vShader, fShader);
-	GLint screenSizeLoc = smaaNeighborShader->getUniformLocation("screenSize");
-	glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
+		glUniform4fv(smaaNeighborShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
 	}
 }
 
@@ -1823,12 +1831,9 @@ void SMAADemo::render() {
 
 		glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 
-		GLint screenSizeLoc = smaaEdgeShader->getUniformLocation("screenSize");
-		glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
-		screenSizeLoc = smaaBlendWeightShader->getUniformLocation("screenSize");
-		glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
-		screenSizeLoc = smaaNeighborShader->getUniformLocation("screenSize");
-		glUniform4fv(screenSizeLoc, 1, glm::value_ptr(screenSize));
+		glUniform4fv(smaaEdgeShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
+		glUniform4fv(smaaBlendWeightShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
+		glUniform4fv(smaaNeighborShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
 	}
 
 	uint64_t ticks = SDL_GetPerformanceCounter();
