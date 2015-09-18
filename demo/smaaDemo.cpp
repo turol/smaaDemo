@@ -1825,6 +1825,7 @@ static void mainLoopWrapper(void *smaaDemo_) {
 
 
 int main(int argc, char *argv[]) {
+	try {
 	auto demo = std::make_unique<SMAADemo>();
 
 	demo->initRender();
@@ -1849,5 +1850,14 @@ int main(int argc, char *argv[]) {
 
 #endif  // EMSCRIPTEN
 
+	} catch (std::exception &e) {
+		printf("caught std::exception \"%s\"\n", e.what());
+		// so native dumps core
+		throw;
+	} catch (...) {
+		printf("unknown exception\n");
+		// so native dumps core
+		throw;
+	}
 	return 0;
 }
