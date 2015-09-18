@@ -468,8 +468,10 @@ class ShaderBuilder {
 	friend class VertexShader;
 	friend class FragmentShader;
 
+	bool glES;
+
 public:
-	ShaderBuilder();
+	explicit ShaderBuilder(bool glES_);
 	ShaderBuilder(const ShaderBuilder &other);
 
 	VertexShader compileVertex();
@@ -483,22 +485,23 @@ public:
 };
 
 
-ShaderBuilder::ShaderBuilder()
+ShaderBuilder::ShaderBuilder(bool glES_)
+: glES(glES_)
 {
 	source.reserve(512);
 
-#ifdef EMSCRIPTEN
-
+	if (glES) {
 	pushLine("#version 100");
 
 	// FIXME: is this universally available on WebGL implementations?
 	pushLine("#extension GL_EXT_shader_texture_lod : enable");
 
 	pushLine("precision highp float;");
-
-#else  // EMSCRIPTEN
-
+	} else {
 	pushLine("#version 330");
+
+#ifdef USE_GLEW
+
 	if (GLEW_ARB_gpu_shader5) {
 		pushLine("#extension GL_ARB_gpu_shader5 : enable");
 	}
@@ -506,11 +509,15 @@ ShaderBuilder::ShaderBuilder()
 		pushLine("#extension GL_ARB_texture_gather : enable");
 	}
 
-#endif  // EMSCRIPTEN
+#endif  // USE_GLEW
+
+	}
 }
 
 
-ShaderBuilder::ShaderBuilder(const ShaderBuilder &other) {
+ShaderBuilder::ShaderBuilder(const ShaderBuilder &other)
+: glES(other.glES)
+{
 	source = other.source;
 }
 
@@ -523,44 +530,30 @@ void ShaderBuilder::pushLine(const std::string &line) {
 
 
 void ShaderBuilder::pushVertexAttr(const std::string &attr) {
-#ifdef EMSCRIPTEN
-
+	if (glES) {
 	pushLine("attribute " + attr);
-
-#else  // EMSCRIPTEN
-
+	} else {
 	pushLine("in " + attr);
-
-#endif  // EMSCRIPTEN
+	}
 
 }
 
 
 void ShaderBuilder::pushVertexVarying(const std::string &var) {
-#ifdef EMSCRIPTEN
-
+	if (glES) {
 	pushLine("varying " + var);
-
-#else  // EMSCRIPTEN
-
+	} else {
 	pushLine("out " + var);
-
-#endif  // EMSCRIPTEN
-
+	}
 }
 
 
 void ShaderBuilder::pushFragmentVarying(const std::string &var) {
-#ifdef EMSCRIPTEN
-
+	if (glES) {
 	pushLine("varying " + var);
-
-#else  // EMSCRIPTEN
-
+	} else {
 	pushLine("in " + var);
-
-#endif  // EMSCRIPTEN
-
+	}
 }
 
 
@@ -915,6 +908,7 @@ class SMAADemo {
 	bool fullscreen;
 	SDL_Window *window;
 	SDL_GLContext context;
+	bool glES;
 
 	std::unique_ptr<Shader> cubeShader;
 	// TODO: these are shader properties
@@ -1049,6 +1043,7 @@ SMAADemo::SMAADemo()
 , fullscreen(false)
 , window(NULL)
 , context(NULL)
+, glES(false)
 , viewProjLoc(-1)
 , cubeVBO(0)
 , cubeIBO(0)
@@ -1164,7 +1159,7 @@ static const uint32_t indices[] =
 
 
 void SMAADemo::buildCubeShader() {
-	ShaderBuilder s;
+	ShaderBuilder s(glES);
 
 	ShaderBuilder vert(s);
 	vert.pushLine("uniform mat4 viewProj;");
@@ -1212,7 +1207,7 @@ void SMAADemo::buildCubeShader() {
 void SMAADemo::buildFXAAShader() {
 	glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 
-	ShaderBuilder s;
+	ShaderBuilder s(glES);
 
 	s.pushLine("#define FXAA_PC 1");
 
@@ -1260,7 +1255,7 @@ void SMAADemo::buildFXAAShader() {
 
 
 void SMAADemo::buildSMAAShaders() {
-	ShaderBuilder s;
+	ShaderBuilder s(glES);
 
 	s.pushLine("#define SMAA_RT_METRICS screenSize");
 	s.pushLine("#define SMAA_GLSL_3 1");
@@ -1425,9 +1420,16 @@ void SMAADemo::initRender() {
 	// TODO: other GL attributes as necessary
 	// TODO: use core context (and maybe debug as necessary)
 #ifndef EMSCRIPTEN
+
+	if (glES) {
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+	} else {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+	}
 
 #endif  // EMSCRIPTEN
 
