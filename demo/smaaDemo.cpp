@@ -1014,6 +1014,8 @@ public:
 
 	void colorCubes();
 
+	void setCubeVBO();
+
 	void mainLoopIteration();
 
 	bool shouldKeepGoing() const {
@@ -1432,20 +1434,10 @@ void SMAADemo::initRender() {
 	glGenBuffers(1, &ibo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices[0], GL_STATIC_DRAW);
-	glVertexAttribPointer(ATTR_POS, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
 
 	glGenBuffers(1, &instanceVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(InstanceData), NULL, GL_STREAM_DRAW);
-
-	glVertexAttribPointer(ATTR_CUBEPOS, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, x));
-	glVertexAttribDivisor(ATTR_CUBEPOS, 1);
-
-	glVertexAttribPointer(ATTR_ROT, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, qx));
-	glVertexAttribDivisor(ATTR_ROT, 1);
-
-	glVertexAttribPointer(ATTR_COLOR, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, col));
-	glVertexAttribDivisor(ATTR_COLOR, 1);
 
 	glGenTextures(1, &areaTex);
 	glTextureStorage2DEXT(areaTex, GL_TEXTURE_2D, 1, GL_RG8, AREATEX_WIDTH, AREATEX_HEIGHT);
@@ -1482,6 +1474,30 @@ void SMAADemo::initRender() {
 
 	createFramebuffers();
 }
+
+
+void SMAADemo::setCubeVBO() {
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glVertexAttribPointer(ATTR_POS, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
+
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glVertexAttribPointer(ATTR_CUBEPOS, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, x));
+	glVertexAttribDivisor(ATTR_CUBEPOS, 1);
+
+	glVertexAttribPointer(ATTR_ROT, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, qx));
+	glVertexAttribDivisor(ATTR_ROT, 1);
+
+	glVertexAttribPointer(ATTR_COLOR, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, col));
+	glVertexAttribDivisor(ATTR_COLOR, 1);
+
+	glEnableVertexAttribArray(ATTR_POS);
+	glEnableVertexAttribArray(ATTR_CUBEPOS);
+	glEnableVertexAttribArray(ATTR_ROT);
+	glEnableVertexAttribArray(ATTR_COLOR);
+}
+
 
 void SMAADemo::createFramebuffers()	{
 	renderFBO.reset();
@@ -1874,14 +1890,11 @@ void SMAADemo::render() {
 		instances.emplace_back(cube.orient, cube.pos, cube.col);
 	}
 
+	setCubeVBO();
 	// FIXME: depends on instance data vbo remaining bound
 	// use dsa instead
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(InstanceData) * instances.size(), &instances[0]);
 
-	glEnableVertexAttribArray(ATTR_POS);
-	glEnableVertexAttribArray(ATTR_CUBEPOS);
-	glEnableVertexAttribArray(ATTR_ROT);
-	glEnableVertexAttribArray(ATTR_COLOR);
 	glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
 
 	glDisableVertexAttribArray(ATTR_POS);
