@@ -873,6 +873,7 @@ static const unsigned int maxSMAAQuality = sizeof(smaaQualityLevels) / sizeof(sm
 
 class SMAADemo {
 	unsigned int windowWidth, windowHeight;
+	unsigned int resizeWidth, resizeHeight;
 	bool vsync;
 	SDL_Window *window;
 	SDL_GLContext context;
@@ -1026,6 +1027,9 @@ SMAADemo::SMAADemo()
 , smaaQuality(maxSMAAQuality - 1)
 , keepGoing(true)
 {
+	resizeWidth = windowWidth;
+	resizeHeight = windowHeight;
+
 	// TODO: check return value
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
 
@@ -1471,6 +1475,7 @@ void SMAADemo::initRender() {
 }
 
 void SMAADemo::createFramebuffers()	{
+	renderFBO.reset();
 	GLuint fbo = 0;
 	glGenFramebuffers(1, &fbo);
 	renderFBO = std::make_unique<Framebuffer>(fbo);
@@ -1501,6 +1506,7 @@ void SMAADemo::createFramebuffers()	{
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_COLOR, GL_TEXTURE_2D, renderFBO->colorTex);
 
 	// SMAA edges texture and FBO
+	edgesFBO.reset();
 	fbo = 0;
 	glGenFramebuffers(1, &fbo);
 	edgesFBO = std::make_unique<Framebuffer>(fbo);
@@ -1521,6 +1527,7 @@ void SMAADemo::createFramebuffers()	{
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_EDGES, GL_TEXTURE_2D, edgesFBO->colorTex);
 
 	// SMAA blending weights texture and FBO
+	blendFBO.reset();
 	fbo = 0;
 	glGenFramebuffers(1, &fbo);
 	blendFBO = std::make_unique<Framebuffer>(fbo);
@@ -1763,11 +1770,16 @@ void SMAADemo::mainLoopIteration() {
 				}
 				break;
 
-			case SDL_WINDOWEVENT_RESIZED:
-				windowWidth = event.window.data1;
-				windowHeight = event.window.data2;
-				// TODO: resize framebuffer
-				break;
+			case SDL_WINDOWEVENT:
+				switch (event.window.event) {
+				case SDL_WINDOWEVENT_SIZE_CHANGED:
+				case SDL_WINDOWEVENT_RESIZED:
+					resizeWidth = event.window.data1;
+					resizeHeight = event.window.data2;
+					break;
+				default:
+					break;
+				}
 			}
 		}
 
@@ -1803,6 +1815,12 @@ void SMAADemo::addImage(const char *filename) {
 
 
 void SMAADemo::render() {
+	if (resizeWidth != windowWidth || resizeHeight != windowHeight) {
+		windowWidth = resizeWidth;
+		windowHeight = resizeHeight;
+		createFramebuffers();
+	}
+
 	uint64_t ticks = SDL_GetPerformanceCounter();
 	uint64_t elapsed = ticks - lastTime;
 
