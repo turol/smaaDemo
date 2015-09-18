@@ -1417,6 +1417,21 @@ void SMAADemo::initRender() {
 
 #endif  // EMSCRIPTEN
 
+	SDL_DisplayMode mode;
+	memset(&mode, 0, sizeof(mode));
+	int numDisplays = SDL_GetNumVideoDisplays();
+	printf("Number of displays detected: %i\n", numDisplays);
+
+	for (int i = 0; i < numDisplays; i++) {
+		int numModes = SDL_GetNumDisplayModes(i);
+		printf("Number of display modes for display %i : %i\n", i, numModes);
+
+		for (int j = 0; j < numModes; j++) {
+			SDL_GetDisplayMode(i, j, &mode);
+			printf("Display mode %i : width %i, height %i, BPP %i\n", j, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format));
+		}
+	}
+
 	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 
 	if (fullscreen) {
