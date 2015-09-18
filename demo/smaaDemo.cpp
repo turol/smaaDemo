@@ -913,7 +913,7 @@ class SMAADemo {
 	GLint viewProjLoc;
 
 	// TODO: create helper classes for these
-	GLuint vbo, ibo;
+	GLuint cubeVBO, cubeIBO;
 	GLuint instanceVBO;
 
 	unsigned int cubePower;
@@ -1035,8 +1035,8 @@ SMAADemo::SMAADemo()
 , window(NULL)
 , context(NULL)
 , viewProjLoc(-1)
-, vbo(0)
-, ibo(0)
+, cubeVBO(0)
+, cubeIBO(0)
 , instanceVBO(0)
 , cubePower(3)
 , antialiasing(true)
@@ -1427,12 +1427,12 @@ void SMAADemo::initRender() {
 	buildFXAAShader();
 
 	// TODO: DSA
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glGenBuffers(1, &cubeVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices[0], GL_STATIC_DRAW);
 
-	glGenBuffers(1, &ibo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glGenBuffers(1, &cubeIBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices[0], GL_STATIC_DRAW);
 
 	glGenBuffers(1, &instanceVBO);
@@ -1477,9 +1477,9 @@ void SMAADemo::initRender() {
 
 
 void SMAADemo::setCubeVBO() {
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
 	glVertexAttribPointer(ATTR_POS, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
 
 	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
