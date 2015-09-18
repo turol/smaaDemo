@@ -1213,7 +1213,7 @@ void SMAADemo::buildFXAAShader() {
 	s.pushLine("#define FXAA_PC 1");
 	s.pushLine("#define FXAA_GLSL_130 1");
 	// TODO: cache shader based on quality level
-	s.pushLine("#define FXAA_QUALITY__PRESET " + std::string(fxaaQualityLevels[fxaaQuality]));
+	s.pushLine("#define FXAA_QUALITY_PRESET " + std::string(fxaaQualityLevels[fxaaQuality]));
 
 	ShaderBuilder vert(s);
 	vert.pushVertexAttr("vec2 pos;");
