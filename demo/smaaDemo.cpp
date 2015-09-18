@@ -929,6 +929,8 @@ public:
 
 	void applyVSync();
 
+	void buildCubeShader();
+
 	void buildFXAAShader();
 
 	void buildSMAAShaders();
@@ -1055,6 +1057,12 @@ static const uint32_t indices[] =
 
 
 #define VBO_OFFSETOF(st, member) reinterpret_cast<GLvoid *>(offsetof(st, member))
+
+
+void SMAADemo::buildCubeShader() {
+	cubeShader = std::make_unique<Shader>("cube.vert", "cube.frag");
+	viewProjLoc = cubeShader->getUniformLocation("viewProj");
+}
 
 
 void SMAADemo::buildFXAAShader() {
@@ -1307,9 +1315,7 @@ void SMAADemo::initRender() {
 	// swap once to get better traces
 	SDL_GL_SwapWindow(window);
 
-	cubeShader = std::make_unique<Shader>("cube.vert", "cube.frag");
-	viewProjLoc = cubeShader->getUniformLocation("viewProj");
-
+	buildCubeShader();
 	buildSMAAShaders();
 	buildFXAAShader();
 
