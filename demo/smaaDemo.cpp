@@ -1060,7 +1060,49 @@ static const uint32_t indices[] =
 
 
 void SMAADemo::buildCubeShader() {
-	cubeShader = std::make_unique<Shader>("cube.vert", "cube.frag");
+	ShaderBuilder s;
+	// TODO: GLSL version
+	s.pushLine("#version 330");
+
+	ShaderBuilder vert(s);
+	vert.pushLine("uniform mat4 viewProj;");
+	vert.pushLine("in vec3 rotationQuat;");
+	vert.pushLine("in vec3 cubePos;");
+	vert.pushLine("in vec3 color;");
+	vert.pushLine("in vec3 position;");
+	vert.pushLine("out vec3 colorFrag;");
+	vert.pushLine("void main(void)");
+	vert.pushLine("{");
+	vert.pushLine("    // our quaternions are normalized and have w > 0.0");
+	vert.pushLine("    float qw = sqrt(1.0 - dot(rotationQuat, rotationQuat));");
+	vert.pushLine("    // rotate");
+	vert.pushLine("    // this is quaternion multiplication from glm");
+	vert.pushLine("    vec3 v = position;");
+	vert.pushLine("    vec3 uv = cross(rotationQuat, v);");
+	vert.pushLine("    vec3 uuv = cross(rotationQuat, uv);");
+	vert.pushLine("    uv *= (2.0 * qw);");
+	vert.pushLine("    uuv *= 2.0;");
+	vert.pushLine("    vec3 rotatedPos = v + uv + uuv;");
+	vert.pushLine("");
+	vert.pushLine("    gl_Position = viewProj * vec4(rotatedPos + cubePos, 1.0);");
+	vert.pushLine("    colorFrag = color;");
+	vert.pushLine("}");
+
+	VertexShader vShader("cube.vert", vert);
+
+	// fragment
+	ShaderBuilder frag(s);
+
+	frag.pushLine("in vec3 colorFrag;");
+	frag.pushLine("void main(void)");
+	frag.pushLine("{");
+	frag.pushLine("    gl_FragColor.xyz = colorFrag;");
+	frag.pushLine("    gl_FragColor.w = dot(colorFrag, vec3(0.299, 0.587, 0.114));");
+	frag.pushLine("}");
+
+	FragmentShader fShader("cube.frag", frag);
+
+	cubeShader = std::make_unique<Shader>(vShader, fShader);
 	viewProjLoc = cubeShader->getUniformLocation("viewProj");
 }
 
