@@ -472,6 +472,9 @@ public:
 	FragmentShader compileFragment();
 
 	void pushLine(const std::string &line);
+	void pushVertexAttr(const std::string &attr);
+	void pushVertexVarying(const std::string &var);
+	void pushFragmentVarying(const std::string &var);
 	void pushFile(const std::string &filename);
 };
 
@@ -491,6 +494,48 @@ void ShaderBuilder::pushLine(const std::string &line) {
 	source.reserve(source.size() + line.size() + 1);
 	source.insert(source.end(), line.begin(), line.end());
 	source.push_back('\n');
+}
+
+
+void ShaderBuilder::pushVertexAttr(const std::string &attr) {
+#ifdef EMSCRIPTEN
+
+	pushLine("attribute " + attr);
+
+#else  // EMSCRIPTEN
+
+	pushLine("in " + attr);
+
+#endif  // EMSCRIPTEN
+
+}
+
+
+void ShaderBuilder::pushVertexVarying(const std::string &var) {
+#ifdef EMSCRIPTEN
+
+	pushLine("varying " + var);
+
+#else  // EMSCRIPTEN
+
+	pushLine("out " + var);
+
+#endif  // EMSCRIPTEN
+
+}
+
+
+void ShaderBuilder::pushFragmentVarying(const std::string &var) {
+#ifdef EMSCRIPTEN
+
+	pushLine("varying " + var);
+
+#else  // EMSCRIPTEN
+
+	pushLine("in " + var);
+
+#endif  // EMSCRIPTEN
+
 }
 
 
@@ -1066,11 +1111,11 @@ void SMAADemo::buildCubeShader() {
 
 	ShaderBuilder vert(s);
 	vert.pushLine("uniform mat4 viewProj;");
-	vert.pushLine("in vec3 rotationQuat;");
-	vert.pushLine("in vec3 cubePos;");
-	vert.pushLine("in vec3 color;");
-	vert.pushLine("in vec3 position;");
-	vert.pushLine("out vec3 colorFrag;");
+	vert.pushVertexAttr("vec3 rotationQuat;");
+	vert.pushVertexAttr("vec3 cubePos;");
+	vert.pushVertexAttr("vec3 color;");
+	vert.pushVertexAttr("vec3 position;");
+	vert.pushVertexVarying("vec3 colorFrag;");
 	vert.pushLine("void main(void)");
 	vert.pushLine("{");
 	vert.pushLine("    // our quaternions are normalized and have w > 0.0");
@@ -1093,7 +1138,7 @@ void SMAADemo::buildCubeShader() {
 	// fragment
 	ShaderBuilder frag(s);
 
-	frag.pushLine("in vec3 colorFrag;");
+	frag.pushFragmentVarying("vec3 colorFrag;");
 	frag.pushLine("void main(void)");
 	frag.pushLine("{");
 	frag.pushLine("    gl_FragColor.xyz = colorFrag;");
@@ -1122,7 +1167,7 @@ void SMAADemo::buildFXAAShader() {
 	s.pushFile("utils.h");
 
 	ShaderBuilder vert(s);
-	vert.pushLine("out vec2 texcoord;");
+	vert.pushVertexVarying("vec2 texcoord;");
 	vert.pushLine("void main(void)");
 	vert.pushLine("{");
 	vert.pushLine("    vec2 pos = triangleVertex(gl_VertexID, texcoord);");
@@ -1137,7 +1182,7 @@ void SMAADemo::buildFXAAShader() {
 	frag.pushFile("fxaa3_11.h");
 	frag.pushLine("uniform sampler2D color;");
 	frag.pushLine("uniform vec4 screenSize;");
-	frag.pushLine("in vec2 texcoord;");
+	frag.pushFragmentVarying("vec2 texcoord;");
 	frag.pushLine("void main(void)");
 	frag.pushLine("{");
 	frag.pushLine("    vec4 zero = vec4(0.0, 0.0, 0.0, 0.0);");
@@ -1187,10 +1232,10 @@ void SMAADemo::buildSMAAShaders() {
 	{
 		ShaderBuilder vert(commonVert);
 
-		vert.pushLine("out vec2 texcoord;");
-		vert.pushLine("out vec4 offset0;");
-		vert.pushLine("out vec4 offset1;");
-		vert.pushLine("out vec4 offset2;");
+		vert.pushVertexVarying("vec2 texcoord;");
+		vert.pushVertexVarying("vec4 offset0;");
+		vert.pushVertexVarying("vec4 offset1;");
+		vert.pushVertexVarying("vec4 offset2;");
 		vert.pushLine("void main(void)");
 		vert.pushLine("{");
 		vert.pushLine("    vec2 pos = triangleVertex(gl_VertexID, texcoord);");
@@ -1211,10 +1256,10 @@ void SMAADemo::buildSMAAShaders() {
 		ShaderBuilder frag(commonFrag);
 
 		frag.pushLine("uniform sampler2D color;");
-		frag.pushLine("in vec2 texcoord;");
-		frag.pushLine("in vec4 offset0;");
-		frag.pushLine("in vec4 offset1;");
-		frag.pushLine("in vec4 offset2;");
+		frag.pushFragmentVarying("vec2 texcoord;");
+		frag.pushFragmentVarying("vec4 offset0;");
+		frag.pushFragmentVarying("vec4 offset1;");
+		frag.pushFragmentVarying("vec4 offset2;");
 		frag.pushLine("void main(void)");
 		frag.pushLine("{");
 		frag.pushLine("    vec4 offsets[3];");
@@ -1234,11 +1279,11 @@ void SMAADemo::buildSMAAShaders() {
 	{
 		ShaderBuilder vert(commonVert);
 
-		vert.pushLine("out vec2 texcoord;");
-		vert.pushLine("out vec2 pixcoord;");
-		vert.pushLine("out vec4 offset0;");
-		vert.pushLine("out vec4 offset1;");
-		vert.pushLine("out vec4 offset2;");
+		vert.pushVertexVarying("vec2 texcoord;");
+		vert.pushVertexVarying("vec2 pixcoord;");
+		vert.pushVertexVarying("vec4 offset0;");
+		vert.pushVertexVarying("vec4 offset1;");
+		vert.pushVertexVarying("vec4 offset2;");
 		vert.pushLine("void main(void)");
 		vert.pushLine("{");
 		vert.pushLine("    vec2 pos = triangleVertex(gl_VertexID, texcoord);");
@@ -1262,11 +1307,11 @@ void SMAADemo::buildSMAAShaders() {
 		frag.pushLine("uniform sampler2D edgesTex;");
 		frag.pushLine("uniform sampler2D areaTex;");
 		frag.pushLine("uniform sampler2D searchTex;");
-		frag.pushLine("in vec2 texcoord;");
-		frag.pushLine("in vec2 pixcoord;");
-		frag.pushLine("in vec4 offset0;");
-		frag.pushLine("in vec4 offset1;");
-		frag.pushLine("in vec4 offset2;");
+		frag.pushFragmentVarying("vec2 texcoord;");
+		frag.pushFragmentVarying("vec2 pixcoord;");
+		frag.pushFragmentVarying("vec4 offset0;");
+		frag.pushFragmentVarying("vec4 offset1;");
+		frag.pushFragmentVarying("vec4 offset2;");
 		frag.pushLine("void main(void)");
 		frag.pushLine("{");
 		frag.pushLine("    vec4 offsets[3];");
@@ -1287,8 +1332,8 @@ void SMAADemo::buildSMAAShaders() {
 	{
 		ShaderBuilder vert(commonVert);
 
-		vert.pushLine("out vec2 texcoord;");
-		vert.pushLine("out vec4 offset;");
+		vert.pushVertexVarying("vec2 texcoord;");
+		vert.pushVertexVarying("vec4 offset;");
 		vert.pushLine("void main(void)");
 		vert.pushLine("{");
 		vert.pushLine("    vec2 pos = triangleVertex(gl_VertexID, texcoord);");
@@ -1304,8 +1349,8 @@ void SMAADemo::buildSMAAShaders() {
 
 		frag.pushLine("uniform sampler2D blendTex;");
 		frag.pushLine("uniform sampler2D colorTex;");
-		frag.pushLine("in vec2 texcoord;");
-		frag.pushLine("in vec4 offset;");
+		frag.pushFragmentVarying("vec2 texcoord;");
+		frag.pushFragmentVarying("vec4 offset;");
 		frag.pushLine("void main(void)");
 		frag.pushLine("{");
 		frag.pushLine("    gl_FragColor = SMAANeighborhoodBlendingPS(texcoord, offset, colorTex, blendTex);");
