@@ -482,7 +482,7 @@
 #endif
 
 /**
- * On some compilers, discard cannot be used in vertex shaders. Thus, they need
+ * On some compilers, discard and texture cannot be used in vertex shaders. Thus, they need
  * to be compiled separately.
  */
 #ifndef SMAA_INCLUDE_VS
@@ -605,6 +605,7 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 //-----------------------------------------------------------------------------
 // Misc functions
 
+#if SMAA_INCLUDE_PS
 /**
  * Gathers current pixel, and the top-left neighbors.
  */
@@ -632,6 +633,8 @@ float2 SMAACalculatePredicatedThreshold(float2 texcoord,
     float2 edges = step(SMAA_PREDICATION_THRESHOLD, delta);
     return SMAA_PREDICATION_SCALE * SMAA_THRESHOLD * (1.0 - SMAA_PREDICATION_STRENGTH * edges);
 }
+
+#endif  // SMAA_INCLUDE_PS
 
 /**
  * Conditional move:
