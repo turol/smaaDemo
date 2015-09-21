@@ -1588,26 +1588,26 @@ void SMAADemo::initRender() {
 
 	for (auto &img : images) {
 		const auto filename = img.filename.c_str();
-	int width = 0, height = 0;
-	unsigned char *imageData = stbi_load(filename, &width, &height, NULL, 3);
-	printf(" %p  %dx%d\n", imageData, width, height);
+		int width = 0, height = 0;
+		unsigned char *imageData = stbi_load(filename, &width, &height, NULL, 3);
+		printf(" %p  %dx%d\n", imageData, width, height);
 
-	glGenTextures(1, &img.tex);
+		glGenTextures(1, &img.tex);
 
-	// flip it
-	std::vector<unsigned char> temp(3 * width * height, 0);
-	for (int i = 0; i < height; i++) {
-		memcpy(&temp[i * width * 3], &imageData[(height - 1 - i) * width * 3], width * 3);
-	}
+		// flip it
+		std::vector<unsigned char> temp(3 * width * height, 0);
+		for (int i = 0; i < height; i++) {
+			memcpy(&temp[i * width * 3], &imageData[(height - 1 - i) * width * 3], width * 3);
+		}
 
-	glTextureStorage2DEXT(img.tex, GL_TEXTURE_2D, 1, GL_RGB8, width, height);
-	glTextureSubImage2DEXT(img.tex, GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, &temp[0]);
-	glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTextureStorage2DEXT(img.tex, GL_TEXTURE_2D, 1, GL_RGB8, width, height);
+		glTextureSubImage2DEXT(img.tex, GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, &temp[0]);
+		glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	stbi_image_free(imageData);
+		stbi_image_free(imageData);
 	}
 }
 
