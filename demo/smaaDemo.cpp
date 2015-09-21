@@ -1051,8 +1051,6 @@ public:
 		return keepGoing;
 	}
 
-	void addImage(const char *filename);
-
 	void render();
 };
 
@@ -1451,8 +1449,12 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		glES = glesSwitch.getValue();
 
 		const auto &imageFiles = imagesArg.getValue();
+		images.reserve(imageFiles.size());
 		for (const auto &filename : imageFiles) {
-			printf("Image \"%s\"\n", filename.c_str());
+			images.push_back(Image());
+			auto &img = images.back();
+			img.tex = 0;
+			img.filename = filename;
 		}
 
 	} catch (TCLAP::ArgException &e) {
@@ -1583,6 +1585,30 @@ void SMAADemo::initRender() {
 	builtinFBO->height = windowHeight;
 
 	createFramebuffers();
+
+	for (auto &img : images) {
+		const auto filename = img.filename.c_str();
+	int width = 0, height = 0;
+	unsigned char *imageData = stbi_load(filename, &width, &height, NULL, 3);
+	printf(" %p  %dx%d\n", imageData, width, height);
+
+	glGenTextures(1, &img.tex);
+
+	// flip it
+	std::vector<unsigned char> temp(3 * width * height, 0);
+	for (int i = 0; i < height; i++) {
+		memcpy(&temp[i * width * 3], &imageData[(height - 1 - i) * width * 3], width * 3);
+	}
+
+	glTextureStorage2DEXT(img.tex, GL_TEXTURE_2D, 1, GL_RGB8, width, height);
+	glTextureSubImage2DEXT(img.tex, GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, &temp[0]);
+	glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	stbi_image_free(imageData);
+	}
 }
 
 
@@ -1955,33 +1981,6 @@ void SMAADemo::mainLoopIteration() {
 		}
 
 		render();
-}
-
-
-void SMAADemo::addImage(const char *filename) {
-	int width = 0, height = 0;
-	unsigned char *imageData = stbi_load(filename, &width, &height, NULL, 3);
-	printf(" %p  %dx%d\n", imageData, width, height);
-
-	images.push_back(Image());
-	Image &img = images.back();
-	img.filename = filename;
-	glGenTextures(1, &img.tex);
-
-	// flip it
-	std::vector<unsigned char> temp(3 * width * height, 0);
-	for (int i = 0; i < height; i++) {
-		memcpy(&temp[i * width * 3], &imageData[(height - 1 - i) * width * 3], width * 3);
-	}
-
-	glTextureStorage2DEXT(img.tex, GL_TEXTURE_2D, 1, GL_RGB8, width, height);
-	glTextureSubImage2DEXT(img.tex, GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, &temp[0]);
-	glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	stbi_image_free(imageData);
 }
 
 
