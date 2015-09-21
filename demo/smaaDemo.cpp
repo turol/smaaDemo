@@ -2213,7 +2213,7 @@ int main(int argc, char *argv[]) {
 
 #ifdef EMSCRIPTEN
 
-	emscripten_set_main_loop_arg(mainLoopWrapper, &demo, 0, 1);
+	emscripten_set_main_loop_arg(mainLoopWrapper, demo.release(), 0, 1);
 
 #else  // EMSCRIPTEN
 
