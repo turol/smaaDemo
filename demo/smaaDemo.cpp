@@ -1316,6 +1316,7 @@ void SMAADemo::buildFXAAShader() {
 
 
 void SMAADemo::buildSMAAShaders() {
+	try {
 	ShaderBuilder s(glES);
 
 	s.pushLine("#define SMAA_RT_METRICS screenSize");
@@ -1468,6 +1469,10 @@ void SMAADemo::buildSMAAShaders() {
 
 		smaaNeighborShader = std::make_unique<Shader>(vShader, fShader);
 		glUniform4fv(smaaNeighborShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
+	}
+	}
+	catch (std::exception &e) {
+		printf("SMAA shader compile failed: \"%s\"\n", e.what());
 	}
 }
 
