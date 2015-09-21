@@ -519,6 +519,7 @@ ShaderBuilder::ShaderBuilder(bool glES_)
 
 		pushLine("#define round(x) floor((x) + 0.5)");
 		pushLine("#define textureLod texture2DLodEXT");
+		pushLine("#define texture2DLod texture2DLodEXT");
 	} else {
 		pushLine("#version 330");
 
@@ -1271,6 +1272,7 @@ void SMAADemo::buildFXAAShader() {
 
 #ifdef EMSCRIPTEN
 
+	s.pushLine("#define FXAA_FAST_PIXEL_OFFSET 0");
 	s.pushLine("#define FXAA_GLSL_120 1");
 
 #else  // EMSCRIPTEN
