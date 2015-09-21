@@ -1272,16 +1272,13 @@ void SMAADemo::buildFXAAShader() {
 
 	s.pushLine("#define FXAA_PC 1");
 
-#ifdef EMSCRIPTEN
-
+	if (glES) {
 	s.pushLine("#define FXAA_FAST_PIXEL_OFFSET 0");
+	s.pushLine("#define ivec2 vec2");
 	s.pushLine("#define FXAA_GLSL_120 1");
-
-#else  // EMSCRIPTEN
-
+	} else {
 	s.pushLine("#define FXAA_GLSL_130 1");
-
-#endif  // EMSCRIPTEN
+	}
 
 	// TODO: cache shader based on quality level
 	s.pushLine("#define FXAA_QUALITY_PRESET " + std::string(fxaaQualityLevels[fxaaQuality]));
