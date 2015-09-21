@@ -1472,6 +1472,7 @@ void SMAADemo::buildSMAAShaders() {
 		}
 	} catch (std::exception &e) {
 		printf("SMAA shader compile failed: \"%s\"\n", e.what());
+		aaMethod = AAMethod::FXAA;
 	}
 }
 
