@@ -33,6 +33,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#ifndef EMSCRIPTEN
+#include <tclap/CmdLine.h>
+#endif  // EMSCRIPTEN
+
 #include "AreaTex.h"
 #include "SearchTex.h"
 
@@ -1017,6 +1021,8 @@ public:
 
 	~SMAADemo();
 
+	void parseCommandLine(int argc, char *argv[]);
+
 	void initRender();
 
 	void createFramebuffers();
@@ -1428,6 +1434,36 @@ void SMAADemo::buildSMAAShaders() {
 		glUniform4fv(smaaNeighborShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
 	}
 }
+
+
+#ifndef EMSCRIPTEN
+
+
+void SMAADemo::parseCommandLine(int argc, char *argv[]) {
+	try {
+		TCLAP::CmdLine cmd("SMAA demo", ' ', "1.0");
+
+		TCLAP::SwitchArg glesSwitch("", "gles", "Use OpenGL ES", cmd, false);
+		TCLAP::UnlabeledMultiArg<std::string> imagesArg("images", "image files", false, "image file", cmd, true, nullptr);
+
+		cmd.parse(argc, argv);
+
+		glES = glesSwitch.getValue();
+
+		const auto &imageFiles = imagesArg.getValue();
+		for (const auto &filename : imageFiles) {
+			printf("Image \"%s\"\n", filename.c_str());
+		}
+
+	} catch (TCLAP::ArgException &e) {
+		printf("parseCommandLine exception: %s for arg %s\n", e.error().c_str(), e.argId().c_str());
+	} catch (...) {
+		printf("parseCommandLine: unknown exception\n");
+	}
+}
+
+
+#endif  // EMSCRIPTEN
 
 
 void SMAADemo::initRender() {
@@ -2081,15 +2117,20 @@ int main(int argc, char *argv[]) {
 	try {
 	auto demo = std::make_unique<SMAADemo>();
 
+#ifdef EMSCRIPTEN
+
+	(void) argc;
+	(void) argv;
+
+#else  // EMSRIPTEN
+
+	demo->parseCommandLine(argc, argv);
+
+#endif  // EMSCRIPTEN
+
 	demo->initRender();
 	demo->createCubes();
 	printHelp();
-
-	// TODO: better command line parsing
-	for (int i = 1; i < argc; i++) {
-		printf("image \"%s\"\n", argv[i]);
-		demo->addImage(argv[i]);
-	}
 
 #ifdef EMSCRIPTEN
 
