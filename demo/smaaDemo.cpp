@@ -1317,161 +1317,160 @@ void SMAADemo::buildFXAAShader() {
 
 void SMAADemo::buildSMAAShaders() {
 	try {
-	ShaderBuilder s(glES);
+		ShaderBuilder s(glES);
 
-	s.pushLine("#define SMAA_RT_METRICS screenSize");
-	s.pushLine("#define SMAA_GLSL_3 1");
-	// TODO: cache shader based on quality level
-	s.pushLine("#define SMAA_PRESET_"  + std::string(smaaQualityLevels[smaaQuality]) + " 1");
+		s.pushLine("#define SMAA_RT_METRICS screenSize");
+		s.pushLine("#define SMAA_GLSL_3 1");
+		// TODO: cache shader based on quality level
+		s.pushLine("#define SMAA_PRESET_"  + std::string(smaaQualityLevels[smaaQuality]) + " 1");
 
-	s.pushLine("uniform vec4 screenSize;");
+		s.pushLine("uniform vec4 screenSize;");
 
-	ShaderBuilder commonVert(s);
+		ShaderBuilder commonVert(s);
 
-	commonVert.pushLine("#define SMAA_INCLUDE_PS 0");
-	commonVert.pushLine("#define SMAA_INCLUDE_VS 1");
+		commonVert.pushLine("#define SMAA_INCLUDE_PS 0");
+		commonVert.pushLine("#define SMAA_INCLUDE_VS 1");
 
-	commonVert.pushFile("smaa.h");
+		commonVert.pushFile("smaa.h");
 
-	ShaderBuilder commonFrag(s);
+		ShaderBuilder commonFrag(s);
 
-	commonFrag.pushLine("#define SMAA_INCLUDE_PS 1");
-	commonFrag.pushLine("#define SMAA_INCLUDE_VS 0");
+		commonFrag.pushLine("#define SMAA_INCLUDE_PS 1");
+		commonFrag.pushLine("#define SMAA_INCLUDE_VS 0");
 
-	commonFrag.pushFile("smaa.h");
+		commonFrag.pushFile("smaa.h");
 
-	glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
-	{
-		ShaderBuilder vert(commonVert);
+		glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
+		{
+			ShaderBuilder vert(commonVert);
 
-		vert.pushVertexAttr("vec2 pos;");
-		vert.pushVertexVarying("vec2 texcoord;");
-		vert.pushVertexVarying("vec4 offset0;");
-		vert.pushVertexVarying("vec4 offset1;");
-		vert.pushVertexVarying("vec4 offset2;");
-		vert.pushLine("void main(void)");
-		vert.pushLine("{");
-		vert.pushLine("    texcoord = pos * 0.5 + 0.5;");
-		vert.pushLine("    vec4 offsets[3];");
-		vert.pushLine("    offsets[0] = vec4(0.0, 0.0, 0.0, 0.0);");
-		vert.pushLine("    offsets[1] = vec4(0.0, 0.0, 0.0, 0.0);");
-		vert.pushLine("    offsets[2] = vec4(0.0, 0.0, 0.0, 0.0);");
-		vert.pushLine("    SMAAEdgeDetectionVS(texcoord, offsets);");
-		vert.pushLine("    offset0 = offsets[0];");
-		vert.pushLine("    offset1 = offsets[1];");
-		vert.pushLine("    offset2 = offsets[2];");
-		vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
-		vert.pushLine("}");
+			vert.pushVertexAttr("vec2 pos;");
+			vert.pushVertexVarying("vec2 texcoord;");
+			vert.pushVertexVarying("vec4 offset0;");
+			vert.pushVertexVarying("vec4 offset1;");
+			vert.pushVertexVarying("vec4 offset2;");
+			vert.pushLine("void main(void)");
+			vert.pushLine("{");
+			vert.pushLine("    texcoord = pos * 0.5 + 0.5;");
+			vert.pushLine("    vec4 offsets[3];");
+			vert.pushLine("    offsets[0] = vec4(0.0, 0.0, 0.0, 0.0);");
+			vert.pushLine("    offsets[1] = vec4(0.0, 0.0, 0.0, 0.0);");
+			vert.pushLine("    offsets[2] = vec4(0.0, 0.0, 0.0, 0.0);");
+			vert.pushLine("    SMAAEdgeDetectionVS(texcoord, offsets);");
+			vert.pushLine("    offset0 = offsets[0];");
+			vert.pushLine("    offset1 = offsets[1];");
+			vert.pushLine("    offset2 = offsets[2];");
+			vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
+			vert.pushLine("}");
 
-		VertexShader vShader("smaaEdge.vert", vert);
+			VertexShader vShader("smaaEdge.vert", vert);
 
-		ShaderBuilder frag(commonFrag);
+			ShaderBuilder frag(commonFrag);
 
-		frag.pushLine("uniform sampler2D color;");
-		frag.pushFragmentVarying("vec2 texcoord;");
-		frag.pushFragmentVarying("vec4 offset0;");
-		frag.pushFragmentVarying("vec4 offset1;");
-		frag.pushFragmentVarying("vec4 offset2;");
-		frag.pushLine("void main(void)");
-		frag.pushLine("{");
-		frag.pushLine("    vec4 offsets[3];");
-		frag.pushLine("    offsets[0] = offset0;");
-		frag.pushLine("    offsets[1] = offset1;");
-		frag.pushLine("    offsets[2] = offset2;");
-		frag.pushLine("    gl_FragColor = vec4(SMAAColorEdgeDetectionPS(texcoord, offsets, color), 0.0, 0.0);");
-		frag.pushLine("}");
+			frag.pushLine("uniform sampler2D color;");
+			frag.pushFragmentVarying("vec2 texcoord;");
+			frag.pushFragmentVarying("vec4 offset0;");
+			frag.pushFragmentVarying("vec4 offset1;");
+			frag.pushFragmentVarying("vec4 offset2;");
+			frag.pushLine("void main(void)");
+			frag.pushLine("{");
+			frag.pushLine("    vec4 offsets[3];");
+			frag.pushLine("    offsets[0] = offset0;");
+			frag.pushLine("    offsets[1] = offset1;");
+			frag.pushLine("    offsets[2] = offset2;");
+			frag.pushLine("    gl_FragColor = vec4(SMAAColorEdgeDetectionPS(texcoord, offsets, color), 0.0, 0.0);");
+			frag.pushLine("}");
 
-		FragmentShader fShader("smaaEdge.frag", frag);
+			FragmentShader fShader("smaaEdge.frag", frag);
 
-		smaaEdgeShader = std::make_unique<Shader>(vShader, fShader);
-		glUniform4fv(smaaEdgeShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
-	}
+			smaaEdgeShader = std::make_unique<Shader>(vShader, fShader);
+			glUniform4fv(smaaEdgeShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
+		}
 
-	{
-		ShaderBuilder vert(commonVert);
+		{
+			ShaderBuilder vert(commonVert);
 
-		vert.pushVertexAttr("vec2 pos;");
-		vert.pushVertexVarying("vec2 texcoord;");
-		vert.pushVertexVarying("vec2 pixcoord;");
-		vert.pushVertexVarying("vec4 offset0;");
-		vert.pushVertexVarying("vec4 offset1;");
-		vert.pushVertexVarying("vec4 offset2;");
-		vert.pushLine("void main(void)");
-		vert.pushLine("{");
-		vert.pushLine("    texcoord = pos * 0.5 + 0.5;");
-		vert.pushLine("    vec4 offsets[3];");
-		vert.pushLine("    offsets[0] = vec4(0.0, 0.0, 0.0, 0.0);");
-		vert.pushLine("    offsets[1] = vec4(0.0, 0.0, 0.0, 0.0);");
-		vert.pushLine("    offsets[2] = vec4(0.0, 0.0, 0.0, 0.0);");
-		vert.pushLine("    pixcoord = vec2(0.0, 0.0);");
-		vert.pushLine("    SMAABlendingWeightCalculationVS(texcoord, pixcoord, offsets);");
-		vert.pushLine("    offset0 = offsets[0];");
-		vert.pushLine("    offset1 = offsets[1];");
-		vert.pushLine("    offset2 = offsets[2];");
-		vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
-		vert.pushLine("}");
+			vert.pushVertexAttr("vec2 pos;");
+			vert.pushVertexVarying("vec2 texcoord;");
+			vert.pushVertexVarying("vec2 pixcoord;");
+			vert.pushVertexVarying("vec4 offset0;");
+			vert.pushVertexVarying("vec4 offset1;");
+			vert.pushVertexVarying("vec4 offset2;");
+			vert.pushLine("void main(void)");
+			vert.pushLine("{");
+			vert.pushLine("    texcoord = pos * 0.5 + 0.5;");
+			vert.pushLine("    vec4 offsets[3];");
+			vert.pushLine("    offsets[0] = vec4(0.0, 0.0, 0.0, 0.0);");
+			vert.pushLine("    offsets[1] = vec4(0.0, 0.0, 0.0, 0.0);");
+			vert.pushLine("    offsets[2] = vec4(0.0, 0.0, 0.0, 0.0);");
+			vert.pushLine("    pixcoord = vec2(0.0, 0.0);");
+			vert.pushLine("    SMAABlendingWeightCalculationVS(texcoord, pixcoord, offsets);");
+			vert.pushLine("    offset0 = offsets[0];");
+			vert.pushLine("    offset1 = offsets[1];");
+			vert.pushLine("    offset2 = offsets[2];");
+			vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
+			vert.pushLine("}");
 
-		VertexShader vShader("smaaBlendWeight.vert", vert);
+			VertexShader vShader("smaaBlendWeight.vert", vert);
 
-		ShaderBuilder frag(commonFrag);
+			ShaderBuilder frag(commonFrag);
 
-		frag.pushLine("uniform sampler2D edgesTex;");
-		frag.pushLine("uniform sampler2D areaTex;");
-		frag.pushLine("uniform sampler2D searchTex;");
-		frag.pushFragmentVarying("vec2 texcoord;");
-		frag.pushFragmentVarying("vec2 pixcoord;");
-		frag.pushFragmentVarying("vec4 offset0;");
-		frag.pushFragmentVarying("vec4 offset1;");
-		frag.pushFragmentVarying("vec4 offset2;");
-		frag.pushLine("void main(void)");
-		frag.pushLine("{");
-		frag.pushLine("    vec4 offsets[3];");
-		frag.pushLine("    offsets[0] = offset0;");
-		frag.pushLine("    offsets[1] = offset1;");
-		frag.pushLine("    offsets[2] = offset2;");
-		frag.pushLine("    gl_FragColor = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offsets, edgesTex, areaTex, searchTex, vec4(0.0, 0.0, 0.0, 0.0));");
-		frag.pushLine("}");
+			frag.pushLine("uniform sampler2D edgesTex;");
+			frag.pushLine("uniform sampler2D areaTex;");
+			frag.pushLine("uniform sampler2D searchTex;");
+			frag.pushFragmentVarying("vec2 texcoord;");
+			frag.pushFragmentVarying("vec2 pixcoord;");
+			frag.pushFragmentVarying("vec4 offset0;");
+			frag.pushFragmentVarying("vec4 offset1;");
+			frag.pushFragmentVarying("vec4 offset2;");
+			frag.pushLine("void main(void)");
+			frag.pushLine("{");
+			frag.pushLine("    vec4 offsets[3];");
+			frag.pushLine("    offsets[0] = offset0;");
+			frag.pushLine("    offsets[1] = offset1;");
+			frag.pushLine("    offsets[2] = offset2;");
+			frag.pushLine("    gl_FragColor = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offsets, edgesTex, areaTex, searchTex, vec4(0.0, 0.0, 0.0, 0.0));");
+			frag.pushLine("}");
 
-		FragmentShader fShader("smaaBlendWeight.frag", frag);
+			FragmentShader fShader("smaaBlendWeight.frag", frag);
 
-		smaaBlendWeightShader = std::make_unique<Shader>(vShader, fShader);
-		glUniform4fv(smaaBlendWeightShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
-	}
+			smaaBlendWeightShader = std::make_unique<Shader>(vShader, fShader);
+			glUniform4fv(smaaBlendWeightShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
+		}
 
-	{
-		ShaderBuilder vert(commonVert);
+		{
+			ShaderBuilder vert(commonVert);
 
-		vert.pushVertexAttr("vec2 pos;");
-		vert.pushVertexVarying("vec2 texcoord;");
-		vert.pushVertexVarying("vec4 offset;");
-		vert.pushLine("void main(void)");
-		vert.pushLine("{");
-		vert.pushLine("    texcoord = pos * 0.5 + 0.5;");
-		vert.pushLine("    offset = vec4(0.0, 0.0, 0.0, 0.0);");
-		vert.pushLine("    SMAANeighborhoodBlendingVS(texcoord, offset);");
-		vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
-		vert.pushLine("}");
+			vert.pushVertexAttr("vec2 pos;");
+			vert.pushVertexVarying("vec2 texcoord;");
+			vert.pushVertexVarying("vec4 offset;");
+			vert.pushLine("void main(void)");
+			vert.pushLine("{");
+			vert.pushLine("    texcoord = pos * 0.5 + 0.5;");
+			vert.pushLine("    offset = vec4(0.0, 0.0, 0.0, 0.0);");
+			vert.pushLine("    SMAANeighborhoodBlendingVS(texcoord, offset);");
+			vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
+			vert.pushLine("}");
 
-		VertexShader vShader("smaaNeighbor.vert", vert);
+			VertexShader vShader("smaaNeighbor.vert", vert);
 
-		ShaderBuilder frag(commonFrag);
+			ShaderBuilder frag(commonFrag);
 
-		frag.pushLine("uniform sampler2D blendTex;");
-		frag.pushLine("uniform sampler2D colorTex;");
-		frag.pushFragmentVarying("vec2 texcoord;");
-		frag.pushFragmentVarying("vec4 offset;");
-		frag.pushLine("void main(void)");
-		frag.pushLine("{");
-		frag.pushLine("    gl_FragColor = SMAANeighborhoodBlendingPS(texcoord, offset, colorTex, blendTex);");
-		frag.pushLine("}");
+			frag.pushLine("uniform sampler2D blendTex;");
+			frag.pushLine("uniform sampler2D colorTex;");
+			frag.pushFragmentVarying("vec2 texcoord;");
+			frag.pushFragmentVarying("vec4 offset;");
+			frag.pushLine("void main(void)");
+			frag.pushLine("{");
+			frag.pushLine("    gl_FragColor = SMAANeighborhoodBlendingPS(texcoord, offset, colorTex, blendTex);");
+			frag.pushLine("}");
 
-		FragmentShader fShader("smaaNeighbor.frag", frag);
+			FragmentShader fShader("smaaNeighbor.frag", frag);
 
-		smaaNeighborShader = std::make_unique<Shader>(vShader, fShader);
-		glUniform4fv(smaaNeighborShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
-	}
-	}
-	catch (std::exception &e) {
+			smaaNeighborShader = std::make_unique<Shader>(vShader, fShader);
+			glUniform4fv(smaaNeighborShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
+		}
+	} catch (std::exception &e) {
 		printf("SMAA shader compile failed: \"%s\"\n", e.what());
 	}
 }
