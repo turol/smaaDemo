@@ -506,23 +506,23 @@ ShaderBuilder::ShaderBuilder(bool glES_)
 	source.reserve(512);
 
 	if (glES) {
-	pushLine("#version 100");
+		pushLine("#version 100");
 
-	// FIXME: is this universally available on WebGL implementations?
-	pushLine("#extension GL_EXT_shader_texture_lod : enable");
+		// FIXME: is this universally available on WebGL implementations?
+		pushLine("#extension GL_EXT_shader_texture_lod : enable");
 
-	pushLine("precision highp float;");
+		pushLine("precision highp float;");
 	} else {
-	pushLine("#version 330");
+		pushLine("#version 330");
 
 #ifdef USE_GLEW
 
-	if (GLEW_ARB_gpu_shader5) {
-		pushLine("#extension GL_ARB_gpu_shader5 : enable");
-	}
-	if (GLEW_ARB_texture_gather) {
-		pushLine("#extension GL_ARB_texture_gather : enable");
-	}
+		if (GLEW_ARB_gpu_shader5) {
+			pushLine("#extension GL_ARB_gpu_shader5 : enable");
+		}
+		if (GLEW_ARB_texture_gather) {
+			pushLine("#extension GL_ARB_texture_gather : enable");
+		}
 
 #endif  // USE_GLEW
 
@@ -546,9 +546,9 @@ void ShaderBuilder::pushLine(const std::string &line) {
 
 void ShaderBuilder::pushVertexAttr(const std::string &attr) {
 	if (glES) {
-	pushLine("attribute " + attr);
+		pushLine("attribute " + attr);
 	} else {
-	pushLine("in " + attr);
+		pushLine("in " + attr);
 	}
 
 }
@@ -556,18 +556,18 @@ void ShaderBuilder::pushVertexAttr(const std::string &attr) {
 
 void ShaderBuilder::pushVertexVarying(const std::string &var) {
 	if (glES) {
-	pushLine("varying " + var);
+		pushLine("varying " + var);
 	} else {
-	pushLine("out " + var);
+		pushLine("out " + var);
 	}
 }
 
 
 void ShaderBuilder::pushFragmentVarying(const std::string &var) {
 	if (glES) {
-	pushLine("varying " + var);
+		pushLine("varying " + var);
 	} else {
-	pushLine("in " + var);
+		pushLine("in " + var);
 	}
 }
 
@@ -674,7 +674,7 @@ Shader::Shader(const VertexShader &vertexShader, const FragmentShader &fragmentS
 	glLinkProgram(program);
 
 	GLint status = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
+	glGetProgramiv(program, GL_LINK_STATUS, &status);
 	if (status != GL_TRUE) {
 		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &status);
 		std::vector<char> infoLog(status + 1, '\0');
@@ -1445,9 +1445,9 @@ void SMAADemo::initRender() {
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 	} else {
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 	}
 
 #endif  // EMSCRIPTEN
@@ -1783,7 +1783,6 @@ static void printHelp() {
 	printf(" v     - toggle vsync\n");
 	printf(" SPACE - toggle camera rotation\n");
 	printf(" ESC   - quit\n");
-
 }
 
 
