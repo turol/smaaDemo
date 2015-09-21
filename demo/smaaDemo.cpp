@@ -932,6 +932,7 @@ class SMAADemo {
 	SDL_Window *window;
 	SDL_GLContext context;
 	bool glES;
+	bool smaaSupported;
 
 	std::unique_ptr<Shader> cubeShader;
 	std::unique_ptr<Shader> imageShader;
@@ -1074,6 +1075,7 @@ SMAADemo::SMAADemo()
 #else  // EMSCRIPTEN
 , glES(false)
 #endif  // EMSCRIPTEN
+, smaaSupported(true)
 , viewProjLoc(-1)
 , cubeVBO(0)
 , cubeIBO(0)
@@ -1474,6 +1476,7 @@ void SMAADemo::buildSMAAShaders() {
 		}
 	} catch (std::exception &e) {
 		printf("SMAA shader compile failed: \"%s\"\n", e.what());
+		smaaSupported = false;
 		aaMethod = AAMethod::FXAA;
 	}
 }
@@ -1946,6 +1949,10 @@ void SMAADemo::mainLoopIteration() {
 
 				case SDL_SCANCODE_M:
 					aaMethod = AAMethod::AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
+					if (aaMethod == AAMethod::SMAA && !smaaSupported) {
+						// Skip to next method
+						aaMethod = AAMethod::AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
+					}
 					printf("aa method set to %s\n", AAMethod::name(aaMethod));
 					break;
 
