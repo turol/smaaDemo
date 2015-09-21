@@ -1238,7 +1238,7 @@ void SMAADemo::buildImageShader() {
 	vert.pushVertexVarying("vec2 texcoord;");
 	vert.pushLine("void main(void)");
 	vert.pushLine("{");
-	vert.pushLine("    texcoord = pos * 0.5 + 0.5;");
+	vert.pushLine("    texcoord = pos * vec2(0.5, -0.5) + vec2(0.5, 0.5);");
 	vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
 	vert.pushLine("}");
 
@@ -1626,15 +1626,8 @@ void SMAADemo::initRender() {
 		printf(" %p  %dx%d\n", imageData, width, height);
 
 		glGenTextures(1, &img.tex);
-
-		// flip it
-		std::vector<unsigned char> temp(3 * width * height, 0);
-		for (int i = 0; i < height; i++) {
-			memcpy(&temp[i * width * 3], &imageData[(height - 1 - i) * width * 3], width * 3);
-		}
-
 		glTextureStorage2DEXT(img.tex, GL_TEXTURE_2D, 1, GL_RGB8, width, height);
-		glTextureSubImage2DEXT(img.tex, GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, &temp[0]);
+		glTextureSubImage2DEXT(img.tex, GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, imageData);
 		glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTextureParameteriEXT(img.tex, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
