@@ -930,6 +930,7 @@ class SMAADemo {
 	bool glES;
 
 	std::unique_ptr<Shader> cubeShader;
+	std::unique_ptr<Shader> imageShader;
 	// TODO: these are shader properties
 	// better yet use UBOs
 	GLint viewProjLoc;
@@ -1032,6 +1033,8 @@ public:
 	void applyFullscreen();
 
 	void buildCubeShader();
+
+	void buildImageShader();
 
 	void buildFXAAShader();
 
@@ -1224,6 +1227,35 @@ void SMAADemo::buildCubeShader() {
 
 	cubeShader = std::make_unique<Shader>(vShader, fShader);
 	viewProjLoc = cubeShader->getUniformLocation("viewProj");
+}
+
+
+void SMAADemo::buildImageShader() {
+	ShaderBuilder s(glES);
+
+	ShaderBuilder vert(s);
+	vert.pushVertexAttr("vec2 pos;");
+	vert.pushVertexVarying("vec2 texcoord;");
+	vert.pushLine("void main(void)");
+	vert.pushLine("{");
+	vert.pushLine("    texcoord = pos * 0.5 + 0.5;");
+	vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
+	vert.pushLine("}");
+
+	VertexShader vShader("image.vert", vert);
+
+	// fragment
+	ShaderBuilder frag(s);
+	frag.pushLine("uniform sampler2D color;");
+	frag.pushFragmentVarying("vec2 texcoord;");
+	frag.pushLine("void main(void)");
+	frag.pushLine("{");
+	frag.pushLine("    gl_FragColor = texture2D(color, texcoord);");
+	frag.pushLine("}");
+
+	FragmentShader fShader("image.frag", frag);
+
+	imageShader = std::make_unique<Shader>(vShader, fShader);
 }
 
 
@@ -1531,6 +1563,7 @@ void SMAADemo::initRender() {
 	SDL_GL_SwapWindow(window);
 
 	buildCubeShader();
+	buildImageShader();
 	buildSMAAShaders();
 	buildFXAAShader();
 
@@ -2016,6 +2049,7 @@ void SMAADemo::render() {
 	renderFBO->bind();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	if (images.empty()) {
 	cubeShader->bind();
 
 	if (rotateCamera) {
@@ -2042,6 +2076,19 @@ void SMAADemo::render() {
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(InstanceData) * instances.size(), &instances[0]);
 
 	glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
+
+	} else {
+		// images not empty, draw one
+		// TODO: switching between images
+		glDisable(GL_DEPTH_TEST);
+		glDepthMask(GL_FALSE);
+		const auto &image = images.back();
+		imageShader->bind();
+		glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_COLOR, GL_TEXTURE_2D, image.tex);
+		setFullscreenVBO();
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_COLOR, GL_TEXTURE_2D, renderFBO->colorTex);
+	}
 
 	setFullscreenVBO();
 
