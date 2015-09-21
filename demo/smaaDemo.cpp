@@ -445,7 +445,7 @@ class VertexShader {
 
 public:
 
-	VertexShader(const std::string &filename);
+	explicit VertexShader(const std::string &filename);
 
 	VertexShader(const std::string &name, const ShaderBuilder &builder);
 
@@ -468,7 +468,7 @@ class FragmentShader {
 
 public:
 
-	FragmentShader(const std::string &filename);
+	explicit FragmentShader(const std::string &filename);
 
 	FragmentShader(const std::string &name, const ShaderBuilder &builder);
 
@@ -887,7 +887,7 @@ class RandomGen {
 
 public:
 
-	RandomGen(uint64_t seed)
+	explicit RandomGen(uint64_t seed)
 	{
 		rng.state = seed;
 		rng.inc = 1;
