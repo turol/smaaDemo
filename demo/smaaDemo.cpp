@@ -518,6 +518,7 @@ ShaderBuilder::ShaderBuilder(bool glES_)
 		pushLine("precision highp float;");
 
 		pushLine("#define round(x) floor((x) + 0.5)");
+		pushLine("#define textureLod texture2DLodEXT");
 	} else {
 		pushLine("#version 330");
 
@@ -1294,6 +1295,9 @@ void SMAADemo::buildFXAAShader() {
 
 	// fragment
 	ShaderBuilder frag(s);
+	if (glES) {
+		frag.pushLine("#define FXAA_GATHER4_ALPHA 0");
+	}
 	frag.pushFile("fxaa3_11.h");
 	frag.pushLine("uniform sampler2D color;");
 	frag.pushLine("uniform vec4 screenSize;");
