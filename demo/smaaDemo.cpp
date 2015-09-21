@@ -2050,33 +2050,32 @@ void SMAADemo::render() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (images.empty()) {
-	cubeShader->bind();
+		cubeShader->bind();
 
-	if (rotateCamera) {
-		rotationTime += elapsed;
+		if (rotateCamera) {
+			rotationTime += elapsed;
 
-		const uint64_t rotationPeriod = 30 * freq;
-		rotationTime = rotationTime % rotationPeriod;
-		cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
-	}
-	glm::mat4 view = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -25.0f)), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 proj = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, 0.1f, 100.0f);
-	glm::mat4 viewProj = proj * view;
-	glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, glm::value_ptr(viewProj));
+			const uint64_t rotationPeriod = 30 * freq;
+			rotationTime = rotationTime % rotationPeriod;
+			cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
+		}
+		glm::mat4 view = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -25.0f)), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 proj = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, 0.1f, 100.0f);
+		glm::mat4 viewProj = proj * view;
+		glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, glm::value_ptr(viewProj));
 
-	instances.clear();
-	instances.reserve(cubes.size());
-	for (const auto &cube : cubes) {
-		instances.emplace_back(cube.orient, cube.pos, cube.col);
-	}
+		instances.clear();
+		instances.reserve(cubes.size());
+		for (const auto &cube : cubes) {
+			instances.emplace_back(cube.orient, cube.pos, cube.col);
+		}
 
-	setCubeVBO();
-	// FIXME: depends on instance data vbo remaining bound
-	// use dsa instead
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(InstanceData) * instances.size(), &instances[0]);
+		setCubeVBO();
+		// FIXME: depends on instance data vbo remaining bound
+		// use dsa instead
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(InstanceData) * instances.size(), &instances[0]);
 
-	glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
-
+		glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
 	} else {
 		// images not empty, draw one
 		// TODO: switching between images
