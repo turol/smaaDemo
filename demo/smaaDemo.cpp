@@ -516,6 +516,8 @@ ShaderBuilder::ShaderBuilder(bool glES_)
 		pushLine("#extension GL_EXT_shader_texture_lod : enable");
 
 		pushLine("precision highp float;");
+
+		pushLine("#define round(x) floor((x) + 0.5)");
 	} else {
 		pushLine("#version 330");
 
