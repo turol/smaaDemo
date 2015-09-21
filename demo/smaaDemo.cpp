@@ -89,6 +89,30 @@ void glTextureStorage2DEXT(GLuint texture, GLenum target, GLsizei levels, GLenum
 }
 
 
+void glTextureSubImage2DEXT(GLuint texture, GLenum target, int level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels) {
+	glBindTexture(target, texture);
+	glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
+}
+
+
+void glTextureParameteriEXT(GLuint texture, GLenum target, GLenum pname, GLint param) {
+	glBindTexture(target, texture);
+	glTexParameteri(target, pname, param);
+}
+
+
+void glBindMultiTextureEXT(GLenum texunit, GLenum target, GLuint texture) {
+	glActiveTexture(texunit);
+	glBindTexture(target, texture);
+}
+
+
+void glNamedFramebufferTextureEXT(GLuint framebuffer, GLenum attachment, GLuint texture, GLint level) {
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texture, level);
+}
+
+
 #endif  // USE_GLEW
 
 
