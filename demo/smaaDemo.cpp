@@ -149,12 +149,12 @@ int SDL_GetNumVideoDisplays() {
 }
 
 
-int SDL_GetNumDisplayModes(int displayIndex) {
+int SDL_GetNumDisplayModes(int /* displayIndex */) {
 	return 0;
 }
 
 
-int SDL_GetDisplayMode(int displayIndex, int modeIndex, SDL_DisplayMode* mode) {
+int SDL_GetDisplayMode(int /* displayIndex */, int /* modeIndex */, SDL_DisplayMode* /* mode */) {
 	return 0;
 }
 
