@@ -1058,7 +1058,11 @@ SMAADemo::SMAADemo()
 , fullscreen(false)
 , window(NULL)
 , context(NULL)
+#ifdef EMSCRIPTEN
+, glES(true)
+#else  // EMSCRIPTEN
 , glES(false)
+#endif  // EMSCRIPTEN
 , viewProjLoc(-1)
 , cubeVBO(0)
 , cubeIBO(0)
