@@ -631,7 +631,7 @@ public:
 
 	GLint getUniformLocation(const char *name);
 
-	GLint getScreenSizeLocation();
+	const GLint getScreenSizeLocation();
 
 	void bind();
 };
@@ -760,7 +760,7 @@ GLint Shader::getUniformLocation(const char *name) {
 }
 
 
-GLint Shader::getScreenSizeLocation() {
+const GLint Shader::getScreenSizeLocation() {
 	return screenSizeLoc;
 }
 
