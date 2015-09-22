@@ -1010,12 +1010,14 @@ class SMAADemo {
 	bool glDebug;
 	bool smaaSupported;
 	bool useInstancing;
+	bool useVAO;
 
 	std::unique_ptr<Shader> cubeInstanceShader;
 	std::unique_ptr<Shader> cubeShader;
 	std::unique_ptr<Shader> imageShader;
 
 	// TODO: create helper classes for these
+	GLuint vao;
 	GLuint cubeVBO, cubeIBO;
 	GLuint fullscreenVBO;
 	GLuint instanceVBO;
@@ -1153,6 +1155,8 @@ SMAADemo::SMAADemo()
 , glDebug(false)
 , smaaSupported(true)
 , useInstancing(true)
+, useVAO(false)
+, vao(0)
 , cubeVBO(0)
 , cubeIBO(0)
 , fullscreenVBO(0)
@@ -1844,6 +1848,11 @@ void SMAADemo::initRender() {
 		}
 	}
 
+	if (GLEW_VERSION_3_0 || GLEW_ARB_vertex_array_object) {
+		printf("Vertex array objects enabled\n");
+		useVAO = true;
+	}
+
 #endif  // USE_GLEW
 
 	auto glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
@@ -1857,6 +1866,11 @@ void SMAADemo::initRender() {
 	buildImageShader();
 	buildSMAAShaders();
 	buildFXAAShader();
+
+	if (useVAO) {
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
+	}
 
 	// TODO: DSA
 	glGenBuffers(1, &cubeVBO);
