@@ -72,6 +72,11 @@ void GLAPIENTRY glTextureSubImage2DEXTEmulated(GLuint texture, GLint level, GLin
 	glTextureSubImage2DEXT(texture, GL_TEXTURE_2D, level, xoffset, yoffset, width, height, format, type, pixels);
 }
 
+
+void GLAPIENTRY glTextureParameteriEXTEmulated(GLuint texture, GLenum pname, GLint param) {
+	glTextureParameteriEXT(texture, GL_TEXTURE_2D, pname, param);
+}
+
 }  // extern "C"
 
 
@@ -1654,6 +1659,7 @@ void SMAADemo::initRender() {
 		printf("EXT_direct_state_access found\n");
 		glTextureStorage2D = glTextureStorage2DEXTEmulated;
 		glTextureSubImage2D = glTextureSubImage2DEXTEmulated;
+		glTextureParameteri = glTextureParameteriEXTEmulated;
 	} else {
 		printf("No direct state access\n");
 	}
