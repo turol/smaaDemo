@@ -2081,8 +2081,6 @@ void SMAADemo::render() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (images.empty()) {
-		cubeInstanceShader->bind();
-
 		if (rotateCamera) {
 			rotationTime += elapsed;
 
@@ -2093,6 +2091,8 @@ void SMAADemo::render() {
 		glm::mat4 view = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -25.0f)), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 proj = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, 0.1f, 100.0f);
 		glm::mat4 viewProj = proj * view;
+
+		cubeInstanceShader->bind();
 		GLint viewProjLoc = cubeInstanceShader->getUniformLocation("viewProj");
 		glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, glm::value_ptr(viewProj));
 
