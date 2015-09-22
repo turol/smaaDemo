@@ -47,11 +47,12 @@
 #define ATTR_ROT     3
 
 
-#define TEXUNIT_COLOR 0
-#define TEXUNIT_AREATEX 1
-#define TEXUNIT_SEARCHTEX 2
-#define TEXUNIT_EDGES 3
-#define TEXUNIT_BLEND 4
+#define TEXUNIT_TEMP 0
+#define TEXUNIT_COLOR 1
+#define TEXUNIT_AREATEX 2
+#define TEXUNIT_SEARCHTEX 3
+#define TEXUNIT_EDGES 4
+#define TEXUNIT_BLEND 5
 
 
 extern "C" {
@@ -80,6 +81,7 @@ void GLAPIENTRY glTextureParameteriEXTEmulated(GLuint texture, GLenum pname, GLi
 
 void GLAPIENTRY glTextureStorage2DEmulated(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height) {
 	const GLenum target = GL_TEXTURE_2D;
+	glActiveTexture(TEXUNIT_TEMP);
 	glBindTexture(target, texture);
 	GLenum format;
 	switch (internalformat) {
@@ -113,6 +115,7 @@ void GLAPIENTRY glTextureStorage2DEmulated(GLuint texture, GLsizei levels, GLenu
 
 void GLAPIENTRY glTextureSubImage2DEmulated(GLuint texture, int level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels) {
 	const GLenum target = GL_TEXTURE_2D;
+	glActiveTexture(TEXUNIT_TEMP);
 	glBindTexture(target, texture);
 	glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
 }
@@ -120,6 +123,7 @@ void GLAPIENTRY glTextureSubImage2DEmulated(GLuint texture, int level, GLint xof
 
 void GLAPIENTRY glTextureParameteriEmulated(GLuint texture, GLenum pname, GLint param) {
 	const GLenum target = GL_TEXTURE_2D;
+	glActiveTexture(TEXUNIT_TEMP);
 	glBindTexture(target, texture);
 	glTexParameteri(target, pname, param);
 }
@@ -2031,7 +2035,7 @@ void SMAADemo::createFramebuffers()	{
 	tex = 0;
 	glGenTextures(1, &tex);
 	renderFBO->depthTex = tex;
-	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_EDGES, GL_TEXTURE_2D, renderFBO->depthTex);
+	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_TEMP, GL_TEXTURE_2D, renderFBO->depthTex);
 	glTextureStorage2D(tex, 1, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
 	glTextureParameteri(tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTextureParameteri(tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
