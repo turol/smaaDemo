@@ -57,7 +57,7 @@
 extern "C" {
 
 
-void glBindMultiTextureEXTEmulated(GLenum texunit, GLenum target, GLuint texture) {
+void GLAPIENTRY glBindMultiTextureEXTEmulated(GLenum texunit, GLenum target, GLuint texture) {
 	glActiveTexture(texunit);
 	glBindTexture(target, texture);
 }
