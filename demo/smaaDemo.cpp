@@ -77,13 +77,9 @@ void GLAPIENTRY glTextureParameteriEXTEmulated(GLuint texture, GLenum pname, GLi
 	glTextureParameteriEXT(texture, GL_TEXTURE_2D, pname, param);
 }
 
-}  // extern "C"
 
-
-#ifndef USE_GLEW
-
-
-void glTextureStorage2DEXT(GLuint texture, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height) {
+void GLAPIENTRY glTextureStorage2DEmulated(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height) {
+	const GLenum target = GL_TEXTURE_2D;
 	glBindTexture(target, texture);
 	GLenum format;
 	switch (internalformat) {
@@ -115,31 +111,33 @@ void glTextureStorage2DEXT(GLuint texture, GLenum target, GLsizei levels, GLenum
 }
 
 
-void glTextureSubImage2DEXT(GLuint texture, GLenum target, int level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels) {
+void GLAPIENTRY glTextureSubImage2DEmulated(GLuint texture, int level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels) {
+	const GLenum target = GL_TEXTURE_2D;
 	glBindTexture(target, texture);
 	glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
 }
 
 
-void glTextureParameteriEXT(GLuint texture, GLenum target, GLenum pname, GLint param) {
+void GLAPIENTRY glTextureParameteriEmulated(GLuint texture, GLenum pname, GLint param) {
+	const GLenum target = GL_TEXTURE_2D;
 	glBindTexture(target, texture);
 	glTexParameteri(target, pname, param);
 }
 
 
-void glBindMultiTextureEXT(GLenum texunit, GLenum target, GLuint texture) {
+void GLAPIENTRY glBindMultiTextureEmulated(GLenum texunit, GLenum target, GLuint texture) {
 	glActiveTexture(texunit);
 	glBindTexture(target, texture);
 }
 
 
-void glNamedFramebufferTextureEXT(GLuint framebuffer, GLenum attachment, GLuint texture, GLint level) {
+void GLAPIENTRY glNamedFramebufferTextureEmulated(GLuint framebuffer, GLenum attachment, GLuint texture, GLint level) {
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texture, level);
 }
 
 
-#endif  // USE_GLEW
+}  // extern "C"
 
 
 #ifdef EMSCRIPTEN
@@ -1850,6 +1848,10 @@ void SMAADemo::initRender() {
 		glNamedFramebufferTexture = glNamedFramebufferTextureEXT;
 	} else {
 		printf("No direct state access\n");
+		glTextureStorage2D = glTextureStorage2DEmulated;
+		glTextureSubImage2D = glTextureSubImage2DEmulated;
+		glTextureParameteri = glTextureParameteriEmulated;
+		glNamedFramebufferTexture = glNamedFramebufferTextureEmulated;
 	}
 
 	if (!GLEW_EXT_direct_state_access) {
