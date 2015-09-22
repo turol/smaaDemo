@@ -545,7 +545,7 @@ ShaderBuilder::ShaderBuilder(bool glES_)
 		pushLine("#define textureLod texture2DLodEXT");
 		pushLine("#define texture2DLod texture2DLodEXT");
 	} else {
-		pushLine("#version 330");
+		pushLine("#version 130");
 
 #ifdef USE_GLEW
 
@@ -1618,12 +1618,17 @@ void SMAADemo::initRender() {
 #ifdef USE_GLEW
 	glewExperimental = true;
 	glewInit();
-#endif  // USE_GLEW
 
 	// TODO: check extensions
 	// at least direct state access, texture storage
 
+#endif  // USE_GLEW
+
+	auto glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
+	printf("GLSL version: %s\n", glslVersion);
+
 	// swap once to get better traces
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	SDL_GL_SwapWindow(window);
 
 	buildCubeShader();
