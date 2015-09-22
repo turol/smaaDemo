@@ -958,7 +958,7 @@ class SMAADemo {
 	bool glES;
 	bool smaaSupported;
 
-	std::unique_ptr<Shader> cubeShader;
+	std::unique_ptr<Shader> cubeInstanceShader;
 	std::unique_ptr<Shader> imageShader;
 	// TODO: these are shader properties
 	// better yet use UBOs
@@ -1255,8 +1255,8 @@ void SMAADemo::buildCubeShader() {
 
 	FragmentShader fShader("cube.frag", frag);
 
-	cubeShader = std::make_unique<Shader>(vShader, fShader);
-	viewProjLoc = cubeShader->getUniformLocation("viewProj");
+	cubeInstanceShader = std::make_unique<Shader>(vShader, fShader);
+	viewProjLoc = cubeInstanceShader->getUniformLocation("viewProj");
 }
 
 
@@ -2086,7 +2086,7 @@ void SMAADemo::render() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (images.empty()) {
-		cubeShader->bind();
+		cubeInstanceShader->bind();
 
 		if (rotateCamera) {
 			rotationTime += elapsed;
