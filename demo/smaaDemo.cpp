@@ -1660,6 +1660,7 @@ void SMAADemo::initRender() {
 		glTextureStorage2D = glTextureStorage2DEXTEmulated;
 		glTextureSubImage2D = glTextureSubImage2DEXTEmulated;
 		glTextureParameteri = glTextureParameteriEXTEmulated;
+		glNamedFramebufferTexture = glNamedFramebufferTextureEXT;
 	} else {
 		printf("No direct state access\n");
 	}
