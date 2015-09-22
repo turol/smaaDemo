@@ -54,6 +54,18 @@
 #define TEXUNIT_BLEND 4
 
 
+extern "C" {
+
+
+void glBindMultiTextureEXTEmulated(GLenum texunit, GLenum target, GLuint texture) {
+	glActiveTexture(texunit);
+	glBindTexture(target, texture);
+}
+
+
+}  // extern "C"
+
+
 #ifndef USE_GLEW
 
 
@@ -1621,6 +1633,18 @@ void SMAADemo::initRender() {
 
 	// TODO: check extensions
 	// at least direct state access, texture storage
+
+	if (GLEW_ARB_direct_state_access) {
+		printf("ARB_direct_state_access found\n");
+	} else if (GLEW_EXT_direct_state_access) {
+		printf("EXT_direct_state_access found\n");
+	} else {
+		printf("No direct state access\n");
+	}
+
+	if (!GLEW_EXT_direct_state_access) {
+		glBindMultiTextureEXT = glBindMultiTextureEXTEmulated;
+	}
 
 #endif  // USE_GLEW
 
