@@ -1593,7 +1593,7 @@ void SMAADemo::initRender() {
 	} else {
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	}
 
 #endif  // EMSCRIPTEN
@@ -1630,6 +1630,11 @@ void SMAADemo::initRender() {
 #ifdef USE_GLEW
 	glewExperimental = true;
 	glewInit();
+
+	printf("GL vendor: \"%s\"\n", glGetString(GL_VENDOR));
+	printf("GL renderer: \"%s\"\n", glGetString(GL_RENDERER));
+	printf("GL version: \"%s\"\n", glGetString(GL_VERSION));
+	printf("GLSL version: \"%s\"\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 	// TODO: check extensions
 	// at least direct state access, texture storage
