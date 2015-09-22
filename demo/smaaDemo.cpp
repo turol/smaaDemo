@@ -1007,6 +1007,7 @@ class SMAADemo {
 	SDL_Window *window;
 	SDL_GLContext context;
 	bool glES;
+	bool glDebug;
 	bool smaaSupported;
 	bool useInstancing;
 
@@ -1149,6 +1150,7 @@ SMAADemo::SMAADemo()
 #else  // EMSCRIPTEN
 , glES(false)
 #endif  // EMSCRIPTEN
+, glDebug(false)
 , smaaSupported(true)
 , useInstancing(true)
 , cubeVBO(0)
@@ -1593,12 +1595,14 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::CmdLine cmd("SMAA demo", ' ', "1.0");
 
 		TCLAP::SwitchArg glesSwitch("", "gles", "Use OpenGL ES", cmd, false);
+		TCLAP::SwitchArg glDebugSwitch("", "gldebug", "Enable OpenGL debugging", cmd, false);
 		TCLAP::SwitchArg noinstancingSwitch("", "noinstancing", "Don't use instanced rendering", cmd, false);
 		TCLAP::UnlabeledMultiArg<std::string> imagesArg("images", "image files", false, "image file", cmd, true, nullptr);
 
 		cmd.parse(argc, argv);
 
 		glES = glesSwitch.getValue();
+		glDebug = glDebugSwitch.getValue();
 		useInstancing = !noinstancingSwitch.getValue();
 
 		const auto &imageFiles = imagesArg.getValue();
@@ -1621,6 +1625,130 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 #endif  // EMSCRIPTEN
 
 
+#ifdef USE_GLEW
+
+
+static const char *errorSource(GLenum source)
+{
+	switch (source)
+	{
+	case GL_DEBUG_SOURCE_API:
+		return "API";
+		break;
+
+	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+		return "window system";
+		break;
+
+	case GL_DEBUG_SOURCE_SHADER_COMPILER:
+		return "shader compiler";
+		break;
+
+	case GL_DEBUG_SOURCE_THIRD_PARTY:
+		return "third party";
+		break;
+
+	case GL_DEBUG_SOURCE_APPLICATION:
+		return "application";
+		break;
+
+	case GL_DEBUG_SOURCE_OTHER:
+		return "other";
+		break;
+
+	default:
+		break;
+	}
+
+	return "unknown source";
+}
+
+
+static const char *errorType(GLenum type)
+{
+	switch (type)
+	{
+	case GL_DEBUG_TYPE_ERROR:
+	case GL_DEBUG_CATEGORY_API_ERROR_AMD:
+		return "error";
+		break;
+
+	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+	case GL_DEBUG_CATEGORY_DEPRECATION_AMD:
+		return "deprecated behavior";
+		break;
+
+	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+	case GL_DEBUG_CATEGORY_UNDEFINED_BEHAVIOR_AMD:
+		return "undefined behavior";
+		break;
+
+	case GL_DEBUG_TYPE_PORTABILITY:
+		return "portability";
+		break;
+
+	case GL_DEBUG_TYPE_PERFORMANCE:
+	case GL_DEBUG_CATEGORY_PERFORMANCE_AMD:
+		return "performance";
+		break;
+
+	case GL_DEBUG_TYPE_OTHER:
+	case GL_DEBUG_CATEGORY_OTHER_AMD:
+		return "other";
+		break;
+
+	case GL_DEBUG_CATEGORY_WINDOW_SYSTEM_AMD:
+		return "window system error";
+		break;
+
+	case GL_DEBUG_CATEGORY_SHADER_COMPILER_AMD:
+		return "shader compiler error";
+		break;
+
+	case GL_DEBUG_CATEGORY_APPLICATION_AMD:
+		return "application error";
+		break;
+
+	default:
+		break;
+
+	}
+
+	return "unknown type";
+}
+
+
+#ifndef CALLBACK
+#define CALLBACK
+#endif  // CALLBACK
+
+
+void CALLBACK glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /* length */, const GLchar *message, const void * /* userParam */)
+{
+	switch (severity)
+	{
+	case GL_DEBUG_SEVERITY_HIGH_ARB:
+		printf("GL error from %s type %s: (%d) %s\n", errorSource(source), errorType(type), id, message);
+		break;
+
+	case GL_DEBUG_SEVERITY_MEDIUM_ARB:
+		printf("GL warning from %s type %s: (%d) %s\n", errorSource(source), errorType(type), id, message);
+		break;
+
+	case GL_DEBUG_SEVERITY_LOW_ARB:
+		printf("GL debug from %s type %s: (%d) %s\n", errorSource(source), errorType(type), id, message);
+		break;
+
+	default:
+		printf("GL error of unknown severity %x from %s type %s: (%d) %s\n", severity, errorSource(source), errorType(type), id, message);
+		break;
+	}
+}
+
+
+#endif  // USE_GLEW
+
+
 void SMAADemo::initRender() {
 	assert(window == NULL);
 	assert(context == NULL);
@@ -1639,6 +1767,9 @@ void SMAADemo::initRender() {
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+		if (glDebug) {
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+		}
 	}
 
 #endif  // EMSCRIPTEN
@@ -1698,6 +1829,19 @@ void SMAADemo::initRender() {
 
 	if (!GLEW_EXT_direct_state_access) {
 		glBindMultiTextureEXT = glBindMultiTextureEXTEmulated;
+	}
+
+	if (glDebug) {
+		if (GLEW_KHR_debug) {
+			printf("KHR_debug found\n");
+
+			glDebugMessageCallback(glDebugCallback, NULL);
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+
+			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		} else {
+			printf("KHR_debug not found\n");
+		}
 	}
 
 #endif  // USE_GLEW

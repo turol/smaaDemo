@@ -19,6 +19,7 @@ Usage
 
 Command line options:
 "--gles" - Use OpenGL ES.
+"--gldebug" - Enable OpenGL debugging.
 "<file path> ..." - Load specified image(s). Cycling through images not yet supported.
 
 Key commands:
