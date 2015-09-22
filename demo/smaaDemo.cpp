@@ -892,6 +892,18 @@ void Framebuffer::blitTo(Framebuffer &target) {
 }
 
 
+namespace DSAMode {
+
+enum DSAMode {
+	  None
+	, EXT
+	, ARB
+};
+
+
+}  // namespace DSAMode
+
+
 namespace AAMethod {
 
 enum AAMethod {
@@ -1011,6 +1023,7 @@ class SMAADemo {
 	bool smaaSupported;
 	bool useInstancing;
 	bool useVAO;
+	DSAMode::DSAMode dsaMode;
 
 	std::unique_ptr<Shader> cubeInstanceShader;
 	std::unique_ptr<Shader> cubeShader;
@@ -1156,6 +1169,7 @@ SMAADemo::SMAADemo()
 , smaaSupported(true)
 , useInstancing(true)
 , useVAO(false)
+, dsaMode(DSAMode::ARB)
 , vao(0)
 , cubeVBO(0)
 , cubeIBO(0)
@@ -1601,6 +1615,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::SwitchArg glesSwitch("", "gles", "Use OpenGL ES", cmd, false);
 		TCLAP::SwitchArg glDebugSwitch("", "gldebug", "Enable OpenGL debugging", cmd, false);
 		TCLAP::SwitchArg noinstancingSwitch("", "noinstancing", "Don't use instanced rendering", cmd, false);
+		TCLAP::ValueArg<std::string> dsaSwitch("", "dsa", "Select DSA mode", false, "arb", "arb, ext or none", cmd);
 		TCLAP::UnlabeledMultiArg<std::string> imagesArg("images", "image files", false, "image file", cmd, true, nullptr);
 
 		cmd.parse(argc, argv);
@@ -1608,6 +1623,12 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		glES = glesSwitch.getValue();
 		glDebug = glDebugSwitch.getValue();
 		useInstancing = !noinstancingSwitch.getValue();
+		std::string dsaString = dsaSwitch.getValue();
+		if (dsaString == "ext") {
+			dsaMode = DSAMode::EXT;
+		} else if (dsaString == "none") {
+			dsaMode = DSAMode::None;
+		}
 
 		const auto &imageFiles = imagesArg.getValue();
 		images.reserve(imageFiles.size());
@@ -1819,9 +1840,9 @@ void SMAADemo::initRender() {
 	// TODO: check extensions
 	// at least direct state access, texture storage
 
-	if (GLEW_ARB_direct_state_access) {
+	if (GLEW_ARB_direct_state_access && dsaMode == DSAMode::ARB) {
 		printf("ARB_direct_state_access found\n");
-	} else if (GLEW_EXT_direct_state_access) {
+	} else if (GLEW_EXT_direct_state_access && dsaMode != DSAMode::None) {
 		printf("EXT_direct_state_access found\n");
 		glTextureStorage2D = glTextureStorage2DEXTEmulated;
 		glTextureSubImage2D = glTextureSubImage2DEXTEmulated;
