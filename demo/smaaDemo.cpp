@@ -63,6 +63,11 @@ void GLAPIENTRY glBindMultiTextureEXTEmulated(GLenum texunit, GLenum target, GLu
 }
 
 
+void GLAPIENTRY glTextureStorage2DEXTEmulated(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height) {
+	glTextureStorage2DEXT(texture, GL_TEXTURE_2D, levels, internalformat, width, height);
+}
+
+
 }  // extern "C"
 
 
@@ -1643,6 +1648,7 @@ void SMAADemo::initRender() {
 		printf("ARB_direct_state_access found\n");
 	} else if (GLEW_EXT_direct_state_access) {
 		printf("EXT_direct_state_access found\n");
+		glTextureStorage2D = glTextureStorage2DEXTEmulated;
 	} else {
 		printf("No direct state access\n");
 	}
