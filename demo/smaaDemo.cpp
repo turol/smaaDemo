@@ -957,8 +957,10 @@ class SMAADemo {
 	SDL_GLContext context;
 	bool glES;
 	bool smaaSupported;
+	bool useInstancing;
 
 	std::unique_ptr<Shader> cubeInstanceShader;
+	std::unique_ptr<Shader> cubeShader;
 	std::unique_ptr<Shader> imageShader;
 
 	// TODO: create helper classes for these
@@ -1097,6 +1099,7 @@ SMAADemo::SMAADemo()
 , glES(false)
 #endif  // EMSCRIPTEN
 , smaaSupported(true)
+, useInstancing(true)
 , cubeVBO(0)
 , cubeIBO(0)
 , fullscreenVBO(0)
@@ -1252,6 +1255,33 @@ void SMAADemo::buildCubeShader() {
 	FragmentShader fShader("cube.frag", frag);
 
 	cubeInstanceShader = std::make_unique<Shader>(vShader, fShader);
+
+	ShaderBuilder vert2(s);
+	vert2.pushLine("uniform mat4 viewProj;");
+	vert2.pushLine("uniform vec3 rotationQuat;");
+	vert2.pushLine("uniform vec3 cubePos;");
+	vert2.pushLine("uniform vec3 color;");
+	vert2.pushVertexAttr("vec3 position;");
+	vert2.pushVertexVarying("vec3 colorFrag;");
+	vert2.pushLine("void main(void)");
+	vert2.pushLine("{");
+	vert2.pushLine("    // our quaternions are normalized and have w > 0.0");
+	vert2.pushLine("    float qw = sqrt(1.0 - dot(rotationQuat, rotationQuat));");
+	vert2.pushLine("    // rotate");
+	vert2.pushLine("    // this is quaternion multiplication from glm");
+	vert2.pushLine("    vec3 v = position;");
+	vert2.pushLine("    vec3 uv = cross(rotationQuat, v);");
+	vert2.pushLine("    vec3 uuv = cross(rotationQuat, uv);");
+	vert2.pushLine("    uv *= (2.0 * qw);");
+	vert2.pushLine("    uuv *= 2.0;");
+	vert2.pushLine("    vec3 rotatedPos = v + uv + uuv;");
+	vert2.pushLine("");
+	vert2.pushLine("    gl_Position = viewProj * vec4(rotatedPos + cubePos, 1.0);");
+	vert2.pushLine("    colorFrag = color;");
+	vert2.pushLine("}");
+
+	VertexShader vShader2("cube2.vert", vert2);
+	cubeShader = std::make_unique<Shader>(vShader2, fShader);
 }
 
 
@@ -1506,11 +1536,13 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::CmdLine cmd("SMAA demo", ' ', "1.0");
 
 		TCLAP::SwitchArg glesSwitch("", "gles", "Use OpenGL ES", cmd, false);
+		TCLAP::SwitchArg noinstancingSwitch("", "noinstancing", "Don't use instanced rendering", cmd, false);
 		TCLAP::UnlabeledMultiArg<std::string> imagesArg("images", "image files", false, "image file", cmd, true, nullptr);
 
 		cmd.parse(argc, argv);
 
 		glES = glesSwitch.getValue();
+		useInstancing = !noinstancingSwitch.getValue();
 
 		const auto &imageFiles = imagesArg.getValue();
 		images.reserve(imageFiles.size());
@@ -1676,6 +1708,9 @@ void SMAADemo::setCubeVBO() {
 	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
 	glVertexAttribPointer(ATTR_POS, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
 
+	glEnableVertexAttribArray(ATTR_POS);
+
+	if (useInstancing) {
 	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
 	glVertexAttribPointer(ATTR_CUBEPOS, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, x));
 	glVertexAttribDivisor(ATTR_CUBEPOS, 1);
@@ -1686,10 +1721,14 @@ void SMAADemo::setCubeVBO() {
 	glVertexAttribPointer(ATTR_COLOR, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, col));
 	glVertexAttribDivisor(ATTR_COLOR, 1);
 
-	glEnableVertexAttribArray(ATTR_POS);
 	glEnableVertexAttribArray(ATTR_CUBEPOS);
 	glEnableVertexAttribArray(ATTR_ROT);
 	glEnableVertexAttribArray(ATTR_COLOR);
+	} else {
+		glDisableVertexAttribArray(ATTR_CUBEPOS);
+		glDisableVertexAttribArray(ATTR_ROT);
+		glDisableVertexAttribArray(ATTR_COLOR);
+	}
 }
 
 
@@ -2092,6 +2131,7 @@ void SMAADemo::render() {
 		glm::mat4 proj = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, 0.1f, 100.0f);
 		glm::mat4 viewProj = proj * view;
 
+		if (useInstancing) {
 		cubeInstanceShader->bind();
 		GLint viewProjLoc = cubeInstanceShader->getUniformLocation("viewProj");
 		glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, glm::value_ptr(viewProj));
@@ -2108,6 +2148,29 @@ void SMAADemo::render() {
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(InstanceData) * instances.size(), &instances[0]);
 
 		glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
+		} else {
+			cubeShader->bind();
+			GLint viewProjLoc = cubeShader->getUniformLocation("viewProj");
+			glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, glm::value_ptr(viewProj));
+
+			GLint cubePosLoc = cubeShader->getUniformLocation("cubePos");
+			GLint rotationQuatLoc = cubeShader->getUniformLocation("rotationQuat");
+			GLint colorLoc = cubeShader->getUniformLocation("color");
+
+			setCubeVBO();
+
+			for (const auto &cube : cubes) {
+				glUniform3fv(cubePosLoc, 1, glm::value_ptr(cube.pos));
+				glUniform3fv(rotationQuatLoc, 1, glm::value_ptr(cube.orient));
+				glm::vec3 colorF;
+				colorF.x = float(cube.col.r) / 255.0f;
+				colorF.y = float(cube.col.g) / 255.0f;
+				colorF.z = float(cube.col.b) / 255.0f;
+				glUniform3fv(colorLoc, 1, glm::value_ptr(colorF));
+				glDrawElements(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL);
+			}
+
+		}
 	} else {
 		// images not empty, draw one
 		// TODO: switching between images
