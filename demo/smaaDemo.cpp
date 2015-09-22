@@ -729,7 +729,7 @@ Shader::Shader(const VertexShader &vertexShader, const FragmentShader &fragmentS
 	}
 	glUseProgram(program);
 
-	GLint colorLoc = getUniformLocation("color");
+	GLint colorLoc = getUniformLocation("colorTex");
 	glUniform1i(colorLoc, TEXUNIT_COLOR);
 
 	GLint areaTexLoc = getUniformLocation("areaTex");
@@ -1313,11 +1313,11 @@ void SMAADemo::buildImageShader() {
 
 	// fragment
 	ShaderBuilder frag(s);
-	frag.pushLine("uniform sampler2D color;");
+	frag.pushLine("uniform sampler2D colorTex;");
 	frag.pushFragmentVarying("vec2 texcoord;");
 	frag.pushLine("void main(void)");
 	frag.pushLine("{");
-	frag.pushLine("    gl_FragColor = texture2D(color, texcoord);");
+	frag.pushLine("    gl_FragColor = texture2D(colorTex, texcoord);");
 	frag.pushLine("}");
 
 	FragmentShader fShader("image.frag", frag);
@@ -1361,13 +1361,13 @@ void SMAADemo::buildFXAAShader() {
 		frag.pushLine("#define FXAA_GATHER4_ALPHA 0");
 	}
 	frag.pushFile("fxaa3_11.h");
-	frag.pushLine("uniform sampler2D color;");
+	frag.pushLine("uniform sampler2D colorTex;");
 	frag.pushLine("uniform vec4 screenSize;");
 	frag.pushFragmentVarying("vec2 texcoord;");
 	frag.pushLine("void main(void)");
 	frag.pushLine("{");
 	frag.pushLine("    vec4 zero = vec4(0.0, 0.0, 0.0, 0.0);");
-	frag.pushLine("    gl_FragColor = FxaaPixelShader(texcoord, zero, color, color, color, screenSize.xy, zero, zero, zero, 0.75, 0.166, 0.0833, 8.0, 0.125, 0.05, zero);");
+	frag.pushLine("    gl_FragColor = FxaaPixelShader(texcoord, zero, colorTex, colorTex, colorTex, screenSize.xy, zero, zero, zero, 0.75, 0.166, 0.0833, 8.0, 0.125, 0.05, zero);");
 	frag.pushLine("}");
 
 	FragmentShader fShader("fxaa.frag", frag);
@@ -1429,7 +1429,7 @@ void SMAADemo::buildSMAAShaders() {
 
 			ShaderBuilder frag(commonFrag);
 
-			frag.pushLine("uniform sampler2D color;");
+			frag.pushLine("uniform sampler2D colorTex;");
 			frag.pushFragmentVarying("vec2 texcoord;");
 			frag.pushFragmentVarying("vec4 offset0;");
 			frag.pushFragmentVarying("vec4 offset1;");
@@ -1440,7 +1440,7 @@ void SMAADemo::buildSMAAShaders() {
 			frag.pushLine("    offsets[0] = offset0;");
 			frag.pushLine("    offsets[1] = offset1;");
 			frag.pushLine("    offsets[2] = offset2;");
-			frag.pushLine("    gl_FragColor = vec4(SMAAColorEdgeDetectionPS(texcoord, offsets, color), 0.0, 0.0);");
+			frag.pushLine("    gl_FragColor = vec4(SMAAColorEdgeDetectionPS(texcoord, offsets, colorTex), 0.0, 0.0);");
 			frag.pushLine("}");
 
 			FragmentShader fShader("smaaEdge.frag", frag);
