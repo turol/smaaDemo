@@ -176,6 +176,14 @@ void GLAPIENTRY glNamedFramebufferTextureEmulated(GLuint framebuffer, GLenum att
 }
 
 
+void GLAPIENTRY glCreateSamplersEmulated(GLsizei n, GLuint *samplers) {
+	for (GLsizei i = 0; i < n; i++) {
+		glGenSamplers(i, samplers);
+		glBindSampler(i, samplers[i]);
+	}
+}
+
+
 }  // extern "C"
 
 
@@ -1863,6 +1871,7 @@ void SMAADemo::initRender() {
 		glTextureSubImage2D = glTextureSubImage2DEXTEmulated;
 		glTextureParameteri = glTextureParameteriEXTEmulated;
 		glNamedFramebufferTexture = glNamedFramebufferTextureEXT;
+		glCreateSamplers = glCreateSamplersEmulated;
 	} else {
 		printf("No direct state access\n");
 		glCreateTextures = glCreateTexturesEmulated;
@@ -1870,6 +1879,7 @@ void SMAADemo::initRender() {
 		glTextureSubImage2D = glTextureSubImage2DEmulated;
 		glTextureParameteri = glTextureParameteriEmulated;
 		glNamedFramebufferTexture = glNamedFramebufferTextureEmulated;
+		glCreateSamplers = glCreateSamplersEmulated;
 	}
 
 	if (!GLEW_EXT_direct_state_access) {
