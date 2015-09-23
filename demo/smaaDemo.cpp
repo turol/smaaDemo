@@ -58,6 +58,24 @@
 extern "C" {
 
 
+#ifndef USE_GLEW
+
+
+// prototypes so the code compiles
+// these are not supposed to be called so they're not defined
+void GLAPIENTRY glTextureStorage2DEXT(GLuint texture, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height);
+
+
+#define glBindMultiTextureEXT glBindMultiTextureEXTEmulated
+#define glNamedFramebufferTexture glNamedFramebufferTextureEmulated
+#define glTextureParameteri glTextureParameteriEmulated
+#define glTextureStorage2D glTextureStorage2DEmulated
+#define glTextureSubImage2D glTextureSubImage2DEmulated
+
+
+#endif  // USE_GLEW
+
+
 void GLAPIENTRY glBindMultiTextureEXTEmulated(GLenum texunit, GLenum target, GLuint texture) {
 	glActiveTexture(texunit);
 	glBindTexture(target, texture);
