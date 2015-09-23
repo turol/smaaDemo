@@ -192,7 +192,7 @@ void GLAPIENTRY glCreateBuffersEmulated(GLsizei n, GLuint *buffers) {
 }
 
 
-void GLAPIENTRY glNamedBufferDataEmulated(GLuint buffer, GLsizei size, const void *data, GLenum usage) {
+void GLAPIENTRY glNamedBufferDataEmulated(GLuint buffer, GLsizeiptr size, const void *data, GLenum usage) {
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glBufferData(GL_ARRAY_BUFFER, size, data, usage);	// TODO: better wrapper so we can set "target" parameter
 }
