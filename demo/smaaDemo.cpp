@@ -81,7 +81,7 @@ void GLAPIENTRY glTextureParameteriEXTEmulated(GLuint texture, GLenum pname, GLi
 
 void GLAPIENTRY glTextureStorage2DEmulated(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height) {
 	const GLenum target = GL_TEXTURE_2D;
-	glActiveTexture(TEXUNIT_TEMP);
+	glActiveTexture(GL_TEXTURE0 + TEXUNIT_TEMP);
 	glBindTexture(target, texture);
 	GLenum format;
 	switch (internalformat) {
@@ -115,7 +115,7 @@ void GLAPIENTRY glTextureStorage2DEmulated(GLuint texture, GLsizei levels, GLenu
 
 void GLAPIENTRY glTextureSubImage2DEmulated(GLuint texture, int level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels) {
 	const GLenum target = GL_TEXTURE_2D;
-	glActiveTexture(TEXUNIT_TEMP);
+	glActiveTexture(GL_TEXTURE0 + TEXUNIT_TEMP);
 	glBindTexture(target, texture);
 	glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
 }
@@ -123,7 +123,7 @@ void GLAPIENTRY glTextureSubImage2DEmulated(GLuint texture, int level, GLint xof
 
 void GLAPIENTRY glTextureParameteriEmulated(GLuint texture, GLenum pname, GLint param) {
 	const GLenum target = GL_TEXTURE_2D;
-	glActiveTexture(TEXUNIT_TEMP);
+	glActiveTexture(GL_TEXTURE0 + TEXUNIT_TEMP);
 	glBindTexture(target, texture);
 	glTexParameteri(target, pname, param);
 }
