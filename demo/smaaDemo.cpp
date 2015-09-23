@@ -1043,6 +1043,8 @@ class SMAADemo {
 	SDL_GLContext context;
 	bool glES;
 	bool glDebug;
+	unsigned int glMajor;
+	unsigned int glMinor;
 	bool smaaSupported;
 	bool useInstancing;
 	bool useVAO;
@@ -1197,6 +1199,8 @@ SMAADemo::SMAADemo()
 , glES(false)
 #endif  // EMSCRIPTEN
 , glDebug(false)
+, glMajor(3)
+, glMinor(1)
 , smaaSupported(true)
 , useInstancing(true)
 , useVAO(false)
@@ -1652,6 +1656,8 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::SwitchArg glDebugSwitch("", "gldebug", "Enable OpenGL debugging", cmd, false);
 		TCLAP::SwitchArg noinstancingSwitch("", "noinstancing", "Don't use instanced rendering", cmd, false);
 		TCLAP::ValueArg<std::string> dsaSwitch("", "dsa", "Select DSA mode", false, "arb", "arb, ext or none", cmd);
+		TCLAP::ValueArg<unsigned int> glMajorSwitch("", "glmajor", "OpenGL major version", false, glMajor, "version", cmd);
+		TCLAP::ValueArg<unsigned int> glMinorSwitch("", "glminor", "OpenGL minor version", false, glMinor, "version", cmd);
 		TCLAP::UnlabeledMultiArg<std::string> imagesArg("images", "image files", false, "image file", cmd, true, nullptr);
 
 		cmd.parse(argc, argv);
@@ -1665,6 +1671,8 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		} else if (dsaString == "none") {
 			dsaMode = DSAMode::None;
 		}
+		glMajor = glMajorSwitch.getValue();
+		glMinor = glMinorSwitch.getValue();
 
 		const auto &imageFiles = imagesArg.getValue();
 		images.reserve(imageFiles.size());
@@ -1815,13 +1823,11 @@ void SMAADemo::initRender() {
 	// TODO: use core context (and maybe debug as necessary)
 #ifndef EMSCRIPTEN
 
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, glMajor);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glMinor);
 	if (glES) {
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 	} else {
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 		if (glDebug) {
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
