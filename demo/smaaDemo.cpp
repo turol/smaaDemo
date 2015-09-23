@@ -1930,22 +1930,22 @@ void SMAADemo::initRender() {
 		glSamplerParameteri(nearestSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 
-	// TODO: DSA
+	// TODO: more DSA
 	glGenBuffers(1, &cubeVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices[0], GL_STATIC_DRAW);
+	glNamedBufferData(cubeVBO, sizeof(vertices), &vertices[0], GL_STATIC_DRAW);
 
 	glGenBuffers(1, &cubeIBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices[0], GL_STATIC_DRAW);
+	glNamedBufferData(cubeIBO, sizeof(indices), &indices[0], GL_STATIC_DRAW);
 
 	glGenBuffers(1, &fullscreenVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, fullscreenVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(fullscreenVertices), &fullscreenVertices[0], GL_STATIC_DRAW);
+	glNamedBufferData(fullscreenVBO, sizeof(fullscreenVertices), &fullscreenVertices[0], GL_STATIC_DRAW);
 
 	glGenBuffers(1, &instanceVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(InstanceData), NULL, GL_STREAM_DRAW);
+	glNamedBufferData(instanceVBO, sizeof(InstanceData), NULL, GL_STREAM_DRAW);
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &areaTex);
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_AREATEX, GL_TEXTURE_2D, areaTex);
@@ -2166,7 +2166,7 @@ void SMAADemo::createCubes() {
 	}
 
 	// reallocate instance data buffer
-	glBufferData(GL_ARRAY_BUFFER, sizeof(InstanceData) * numCubes, NULL, GL_STREAM_DRAW);
+	glNamedBufferData(instanceVBO, sizeof(InstanceData) * numCubes, NULL, GL_STREAM_DRAW);
 
 	colorCubes();
 }
@@ -2431,9 +2431,7 @@ void SMAADemo::render() {
 		}
 
 		setCubeVBO();
-		// FIXME: depends on instance data vbo remaining bound
-		// use dsa instead
-		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(InstanceData) * instances.size(), &instances[0]);
+		glNamedBufferSubData(instanceVBO, 0, sizeof(InstanceData) * instances.size(), &instances[0]);
 
 		glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
 		} else {
