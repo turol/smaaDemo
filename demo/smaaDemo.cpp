@@ -1032,8 +1032,9 @@ class SMAADemo {
 	std::unique_ptr<Shader> imageShader;
 
 	// TODO: create helper classes for these
-	GLuint vao;
+	GLuint cubeVAO;
 	GLuint cubeVBO, cubeIBO;
+	GLuint fullscreenVAO;
 	GLuint fullscreenVBO;
 	GLuint instanceVBO;
 
@@ -1179,9 +1180,10 @@ SMAADemo::SMAADemo()
 , useVAO(false)
 , useSamplerObjects(false)
 , dsaMode(DSAMode::ARB)
-, vao(0)
+, cubeVAO(0)
 , cubeVBO(0)
 , cubeIBO(0)
+, fullscreenVAO(0)
 , fullscreenVBO(0)
 , instanceVBO(0)
 , linearSampler(0)
@@ -1911,11 +1913,6 @@ void SMAADemo::initRender() {
 	buildSMAAShaders();
 	buildFXAAShader();
 
-	if (useVAO) {
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
-	}
-
 	if (useSamplerObjects) {
 		glCreateSamplers(1, &linearSampler);
 		glSamplerParameteri(linearSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -1930,22 +1927,54 @@ void SMAADemo::initRender() {
 		glSamplerParameteri(nearestSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 
-	// TODO: more DSA
-	glGenBuffers(1, &cubeVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+	glCreateBuffers(1, &cubeVBO);
 	glNamedBufferData(cubeVBO, sizeof(vertices), &vertices[0], GL_STATIC_DRAW);
 
-	glGenBuffers(1, &cubeIBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO);
+	glCreateBuffers(1, &cubeIBO);
 	glNamedBufferData(cubeIBO, sizeof(indices), &indices[0], GL_STATIC_DRAW);
 
-	glGenBuffers(1, &fullscreenVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, fullscreenVBO);
+	glCreateBuffers(1, &instanceVBO);
+	glNamedBufferData(instanceVBO, sizeof(InstanceData), NULL, GL_STREAM_DRAW);
+
+	if (useVAO) {
+		glCreateVertexArrays(1, &cubeVAO);
+		glVertexArrayElementBuffer(cubeVAO, cubeIBO);
+
+		glBindVertexArray(cubeVAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+		glVertexAttribPointer(ATTR_POS, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
+
+		glEnableVertexArrayAttrib(cubeVAO, ATTR_POS);
+
+		if (useInstancing) {
+			glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+			glVertexAttribPointer(ATTR_CUBEPOS, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, x));
+			glVertexAttribDivisor(ATTR_CUBEPOS, 1);
+
+			glVertexAttribPointer(ATTR_ROT, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, qx));
+			glVertexAttribDivisor(ATTR_ROT, 1);
+
+			glVertexAttribPointer(ATTR_COLOR, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, col));
+			glVertexAttribDivisor(ATTR_COLOR, 1);
+
+			glEnableVertexArrayAttrib(cubeVAO, ATTR_CUBEPOS);
+			glEnableVertexArrayAttrib(cubeVAO, ATTR_ROT);
+			glEnableVertexArrayAttrib(cubeVAO, ATTR_COLOR);
+		}
+	}
+
+	glCreateBuffers(1, &fullscreenVBO);
 	glNamedBufferData(fullscreenVBO, sizeof(fullscreenVertices), &fullscreenVertices[0], GL_STATIC_DRAW);
 
-	glGenBuffers(1, &instanceVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-	glNamedBufferData(instanceVBO, sizeof(InstanceData), NULL, GL_STREAM_DRAW);
+	if (useVAO) {
+		glCreateVertexArrays(1, &fullscreenVAO);
+		glBindVertexArray(fullscreenVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, fullscreenVBO);
+		glVertexAttribPointer(ATTR_POS, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, NULL);
+
+		glEnableVertexArrayAttrib(fullscreenVAO, ATTR_POS);
+	}
 
 	const bool flipSMAATextures = true;
 
@@ -2008,6 +2037,9 @@ void SMAADemo::initRender() {
 
 
 void SMAADemo::setCubeVBO() {
+	if (useVAO) {
+		glBindVertexArray(cubeVAO);
+	} else {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
@@ -2034,10 +2066,14 @@ void SMAADemo::setCubeVBO() {
 		glDisableVertexAttribArray(ATTR_ROT);
 		glDisableVertexAttribArray(ATTR_COLOR);
 	}
+	}
 }
 
 
 void SMAADemo::setFullscreenVBO() {
+	if (useVAO) {
+		glBindVertexArray(fullscreenVAO);
+	} else {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, fullscreenVBO);
 	glVertexAttribPointer(ATTR_POS, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, NULL);
@@ -2046,6 +2082,7 @@ void SMAADemo::setFullscreenVBO() {
 	glDisableVertexAttribArray(ATTR_CUBEPOS);
 	glDisableVertexAttribArray(ATTR_ROT);
 	glDisableVertexAttribArray(ATTR_COLOR);
+	}
 }
 
 
