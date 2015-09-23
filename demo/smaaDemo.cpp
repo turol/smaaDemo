@@ -181,9 +181,9 @@ void GLAPIENTRY glNamedFramebufferTextureEmulated(GLuint framebuffer, GLenum att
 
 
 void GLAPIENTRY glCreateSamplersEmulated(GLsizei n, GLuint *samplers) {
+	glGenSamplers(n, samplers);
 	for (GLsizei i = 0; i < n; i++) {
-		glGenSamplers(i, samplers);
-		glBindSampler(i, samplers[i]);
+		glBindSampler(TEXUNIT_TEMP, samplers[i]);
 	}
 }
 
