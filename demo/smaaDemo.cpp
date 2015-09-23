@@ -1947,27 +1947,40 @@ void SMAADemo::initRender() {
 	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
 	glNamedBufferData(instanceVBO, sizeof(InstanceData), NULL, GL_STREAM_DRAW);
 
+	const bool flipSMAATextures = true;
+
 	glCreateTextures(GL_TEXTURE_2D, 1, &areaTex);
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_AREATEX, GL_TEXTURE_2D, areaTex);
 	glTextureStorage2D(areaTex, 1, GL_RG8, AREATEX_WIDTH, AREATEX_HEIGHT);
-	std::vector<unsigned char> tempBuffer(std::max(AREATEX_SIZE, SEARCHTEX_SIZE), 0);
+
+	if (flipSMAATextures) {
+		std::vector<unsigned char> tempBuffer(AREATEX_SIZE);
 	for (unsigned int y = 0; y < AREATEX_HEIGHT; y++) {
 		unsigned int srcY = AREATEX_HEIGHT - 1 - y;
 		//unsigned int srcY = y;
 		memcpy(&tempBuffer[y * AREATEX_PITCH], areaTexBytes + srcY * AREATEX_PITCH, AREATEX_PITCH);
 	}
 	glTextureSubImage2D(areaTex, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, &tempBuffer[0]);
+	} else {
+		glTextureSubImage2D(areaTex, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, areaTexBytes);
+	}
 	glBindSampler(TEXUNIT_AREATEX, linearSampler);
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &searchTex);
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_SEARCHTEX, GL_TEXTURE_2D, searchTex);
 	glTextureStorage2D(searchTex, 1, GL_R8, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT);
+	if (flipSMAATextures) {
+		std::vector<unsigned char> tempBuffer(SEARCHTEX_SIZE);
 	for (unsigned int y = 0; y < SEARCHTEX_HEIGHT; y++) {
 		unsigned int srcY = SEARCHTEX_HEIGHT - 1 - y;
 		//unsigned int srcY = y;
 		memcpy(&tempBuffer[y * SEARCHTEX_PITCH], searchTexBytes + srcY * SEARCHTEX_PITCH, SEARCHTEX_PITCH);
 	}
 	glTextureSubImage2D(searchTex, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, &tempBuffer[0]);
+	} else {
+		glTextureSubImage2D(searchTex, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, searchTexBytes);
+	}
+
 	glBindSampler(TEXUNIT_SEARCHTEX, linearSampler);
 
 	builtinFBO = std::make_unique<Framebuffer>(0);
