@@ -2048,7 +2048,7 @@ void SMAADemo::initRender() {
 		printf(" %p  %dx%d\n", imageData, width, height);
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &img.tex);
-		glTextureStorage2DEXT(img.tex, GL_TEXTURE_2D, 1, GL_RGB8, width, height);
+		glTextureStorage2D(img.tex, 1, GL_RGB8, width, height);
 		glTextureSubImage2D(img.tex, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, imageData);
 
 		stbi_image_free(imageData);
