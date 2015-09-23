@@ -1083,6 +1083,9 @@ class SMAADemo {
 	unsigned int fxaaQuality;
 	unsigned int smaaQuality;
 	bool keepGoing;
+	// 0 for cubes
+	// 1.. for images
+	unsigned int activeScene;
 
 
 	struct Image {
@@ -1213,6 +1216,7 @@ SMAADemo::SMAADemo()
 , fxaaQuality(maxFXAAQuality - 1)
 , smaaQuality(maxSMAAQuality - 1)
 , keepGoing(true)
+, activeScene(0)
 {
 	resizeWidth = windowWidth;
 	resizeHeight = windowHeight;
@@ -1985,6 +1989,9 @@ void SMAADemo::initRender() {
 
 		stbi_image_free(imageData);
 	}
+
+	// default scene to last image or cubes if none
+	activeScene = images.size();
 }
 
 
@@ -2237,6 +2244,7 @@ void SMAADemo::mainLoopIteration() {
 		SDL_Event event;
 		memset(&event, 0, sizeof(SDL_Event));
 		while (SDL_PollEvent(&event)) {
+			int sceneIncrement = 1;
 			switch (event.type) {
 			case SDL_QUIT:
 				keepGoing = false;
@@ -2335,6 +2343,17 @@ void SMAADemo::mainLoopIteration() {
 					applyFullscreen();
 					break;
 
+				case SDL_SCANCODE_LEFT:
+					sceneIncrement = -1;
+					// fallthrough
+				case SDL_SCANCODE_RIGHT:
+					{
+						// all images + cubes scene
+						unsigned int numScenes = images.size() + 1;
+						activeScene = (activeScene + sceneIncrement + numScenes) % numScenes;
+					}
+					break;
+
 				default:
 					break;
 				}
@@ -2404,7 +2423,7 @@ void SMAADemo::render() {
 	renderFBO->bind();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	if (images.empty()) {
+	if (activeScene == 0) {
 		if (rotateCamera) {
 			rotationTime += elapsed;
 
@@ -2457,11 +2476,11 @@ void SMAADemo::render() {
 
 		}
 	} else {
-		// images not empty, draw one
-		// TODO: switching between images
 		glDisable(GL_DEPTH_TEST);
 		glDepthMask(GL_FALSE);
-		const auto &image = images.back();
+
+		assert(activeScene - 1 < images.size());
+		const auto &image = images[activeScene - 1];
 		imageShader->bind();
 		glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_COLOR, GL_TEXTURE_2D, image.tex);
 		setFullscreenVBO();
