@@ -2047,6 +2047,7 @@ void SMAADemo::initRender() {
 	glCreateTextures(GL_TEXTURE_2D, 1, &areaTex);
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_AREATEX, GL_TEXTURE_2D, areaTex);
 	glTextureStorage2D(areaTex, 1, GL_RG8, AREATEX_WIDTH, AREATEX_HEIGHT);
+	glTextureParameteri(areaTex, GL_TEXTURE_MAX_LEVEL, 0);
 
 	if (flipSMAATextures) {
 		std::vector<unsigned char> tempBuffer(AREATEX_SIZE);
@@ -2064,6 +2065,7 @@ void SMAADemo::initRender() {
 	glCreateTextures(GL_TEXTURE_2D, 1, &searchTex);
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_SEARCHTEX, GL_TEXTURE_2D, searchTex);
 	glTextureStorage2D(searchTex, 1, GL_R8, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT);
+	glTextureParameteri(searchTex, GL_TEXTURE_MAX_LEVEL, 0);
 	if (flipSMAATextures) {
 		std::vector<unsigned char> tempBuffer(SEARCHTEX_SIZE);
 		for (unsigned int y = 0; y < SEARCHTEX_HEIGHT; y++) {
@@ -2092,6 +2094,7 @@ void SMAADemo::initRender() {
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &img.tex);
 		glTextureStorage2D(img.tex, 1, GL_RGB8, width, height);
+		glTextureParameteri(img.tex, GL_TEXTURE_MAX_LEVEL, 0);
 		glTextureSubImage2D(img.tex, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, imageData);
 
 		stbi_image_free(imageData);
@@ -2166,6 +2169,7 @@ void SMAADemo::createFramebuffers()	{
 	renderFBO->colorTex = tex;
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_COLOR, GL_TEXTURE_2D, renderFBO->colorTex);
 	glTextureStorage2D(tex, 1, GL_RGBA8, windowWidth, windowHeight);
+	glTextureParameteri(tex, GL_TEXTURE_MAX_LEVEL, 0);
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
 
 	tex = 0;
@@ -2173,6 +2177,7 @@ void SMAADemo::createFramebuffers()	{
 	renderFBO->depthTex = tex;
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_TEMP, GL_TEXTURE_2D, renderFBO->depthTex);
 	glTextureStorage2D(tex, 1, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
+	glTextureParameteri(tex, GL_TEXTURE_MAX_LEVEL, 0);
 	glNamedFramebufferTexture(fbo, GL_DEPTH_ATTACHMENT, tex, 0);
 
 	// SMAA edges texture and FBO
@@ -2189,6 +2194,7 @@ void SMAADemo::createFramebuffers()	{
 	edgesFBO->colorTex = tex;
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_EDGES, GL_TEXTURE_2D, edgesFBO->colorTex);
 	glTextureStorage2D(tex, 1, GL_RGBA8, windowWidth, windowHeight);
+	glTextureParameteri(tex, GL_TEXTURE_MAX_LEVEL, 0);
 	glBindSampler(TEXUNIT_EDGES, linearSampler);
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
 
@@ -2206,6 +2212,7 @@ void SMAADemo::createFramebuffers()	{
 	blendFBO->colorTex = tex;
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_BLEND, GL_TEXTURE_2D, blendFBO->colorTex);
 	glTextureStorage2D(tex, 1, GL_RGBA8, windowWidth, windowHeight);
+	glTextureParameteri(tex, GL_TEXTURE_MAX_LEVEL, 0);
 	glBindSampler(TEXUNIT_BLEND, linearSampler);
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
 }
