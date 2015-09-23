@@ -202,6 +202,14 @@ void GLAPIENTRY glNamedBufferDataEmulated(GLuint buffer, GLsizeiptr size, const 
 }
 
 
+void GLAPIENTRY glCreateVertexArraysEmulated(GLsizei n, GLuint *vaos) {
+	glGenVertexArrays(n, vaos);
+	for (GLsizei i = 0; i < n; i++) {
+		glBindVertexArray(vaos[i]);
+	}
+}
+
+
 }  // extern "C"
 
 
@@ -1893,6 +1901,7 @@ void SMAADemo::initRender() {
 		glCreateSamplers = glCreateSamplersEmulated;
 		glNamedBufferData = glNamedBufferDataEmulated;
 		glCreateBuffers = glCreateBuffersEmulated;
+		glCreateVertexArrays = glCreateVertexArraysEmulated;
 	} else {
 		printf("No direct state access\n");
 		glCreateTextures = glCreateTexturesEmulated;
@@ -1903,6 +1912,7 @@ void SMAADemo::initRender() {
 		glCreateSamplers = glCreateSamplersEmulated;
 		glNamedBufferData = glNamedBufferDataEmulated;
 		glCreateBuffers = glCreateBuffersEmulated;
+		glCreateVertexArrays = glCreateVertexArraysEmulated;
 	}
 
 	if (!GLEW_EXT_direct_state_access) {
