@@ -128,6 +128,10 @@ void GLAPIENTRY glTextureStorage2DEmulated(GLuint texture, GLsizei levels, GLenu
 		format = GL_RED;
 		break;
 
+	case GL_RGB8:
+		format = GL_RGB;
+		break;
+
 	case GL_RGBA8:
 		format = GL_RGBA;
 		break;
