@@ -215,6 +215,12 @@ void GLAPIENTRY glVertexArrayElementBufferEmulated(GLuint vao, GLuint ibo) {
 }
 
 
+void GLAPIENTRY glEnableVertexArrayAttribEmulated(GLuint vao, GLuint index) {
+	glBindVertexArray(vao);
+	glEnableVertexAttribArray(index);
+}
+
+
 }  // extern "C"
 
 
@@ -1908,6 +1914,7 @@ void SMAADemo::initRender() {
 		glCreateBuffers = glCreateBuffersEmulated;
 		glCreateVertexArrays = glCreateVertexArraysEmulated;
 		glVertexArrayElementBuffer = glVertexArrayElementBufferEmulated;
+		glEnableVertexArrayAttrib = glEnableVertexArrayAttribEXT;
 	} else {
 		printf("No direct state access\n");
 		glCreateTextures = glCreateTexturesEmulated;
@@ -1920,6 +1927,7 @@ void SMAADemo::initRender() {
 		glCreateBuffers = glCreateBuffersEmulated;
 		glCreateVertexArrays = glCreateVertexArraysEmulated;
 		glVertexArrayElementBuffer = glVertexArrayElementBufferEmulated;
+		glEnableVertexArrayAttrib = glEnableVertexArrayAttribEmulated;
 	}
 
 	if (!GLEW_EXT_direct_state_access) {
