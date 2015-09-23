@@ -1765,12 +1765,7 @@ static const char *errorType(GLenum type)
 }
 
 
-#ifndef CALLBACK
-#define CALLBACK
-#endif  // CALLBACK
-
-
-void CALLBACK glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /* length */, const GLchar *message, const void * /* userParam */)
+void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /* length */, const GLchar *message, const void * /* userParam */)
 {
 	switch (severity)
 	{
