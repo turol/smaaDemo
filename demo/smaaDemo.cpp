@@ -76,6 +76,23 @@ void GLAPIENTRY glTextureStorage2DEXT(GLuint texture, GLenum target, GLsizei lev
 #endif  // USE_GLEW
 
 
+void GLAPIENTRY glCreateTexturesEXTEmulated(GLenum target, GLsizei n, GLuint *textures) {
+	glGenTextures(n, textures);
+	for (GLsizei i = 0; i < n; i++) {
+		glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_TEMP, target, textures[i]);
+	}
+}
+
+
+void GLAPIENTRY glCreateTexturesEmulated(GLenum target, GLsizei n, GLuint *textures) {
+	glActiveTexture(GL_TEXTURE0 + TEXUNIT_TEMP);
+	glGenTextures(n, textures);
+	for (GLsizei i = 0; i < n; i++) {
+		glBindTexture(target, textures[i]);
+	}
+}
+
+
 void GLAPIENTRY glBindMultiTextureEXTEmulated(GLenum texunit, GLenum target, GLuint texture) {
 	glActiveTexture(texunit);
 	glBindTexture(target, texture);
@@ -1868,12 +1885,14 @@ void SMAADemo::initRender() {
 		printf("ARB_direct_state_access found\n");
 	} else if (GLEW_EXT_direct_state_access && dsaMode != DSAMode::None) {
 		printf("EXT_direct_state_access found\n");
+		glCreateTextures = glCreateTexturesEXTEmulated;
 		glTextureStorage2D = glTextureStorage2DEXTEmulated;
 		glTextureSubImage2D = glTextureSubImage2DEXTEmulated;
 		glTextureParameteri = glTextureParameteriEXTEmulated;
 		glNamedFramebufferTexture = glNamedFramebufferTextureEXT;
 	} else {
 		printf("No direct state access\n");
+		glCreateTextures = glCreateTexturesEmulated;
 		glTextureStorage2D = glTextureStorage2DEmulated;
 		glTextureSubImage2D = glTextureSubImage2DEmulated;
 		glTextureParameteri = glTextureParameteriEmulated;
@@ -1938,7 +1957,7 @@ void SMAADemo::initRender() {
 	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(InstanceData), NULL, GL_STREAM_DRAW);
 
-	glGenTextures(1, &areaTex);
+	glCreateTextures(GL_TEXTURE_2D, 1, &areaTex);
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_AREATEX, GL_TEXTURE_2D, areaTex);
 	glTextureStorage2D(areaTex, 1, GL_RG8, AREATEX_WIDTH, AREATEX_HEIGHT);
 	std::vector<unsigned char> tempBuffer(std::max(AREATEX_SIZE, SEARCHTEX_SIZE), 0);
@@ -1953,7 +1972,7 @@ void SMAADemo::initRender() {
 	glTextureParameteri(areaTex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTextureParameteri(areaTex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	glGenTextures(1, &searchTex);
+	glCreateTextures(GL_TEXTURE_2D, 1, &searchTex);
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_SEARCHTEX, GL_TEXTURE_2D, searchTex);
 	glTextureStorage2D(searchTex, 1, GL_R8, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT);
 	for (unsigned int y = 0; y < SEARCHTEX_HEIGHT; y++) {
@@ -1979,7 +1998,7 @@ void SMAADemo::initRender() {
 		unsigned char *imageData = stbi_load(filename, &width, &height, NULL, 3);
 		printf(" %p  %dx%d\n", imageData, width, height);
 
-		glGenTextures(1, &img.tex);
+		glCreateTextures(GL_TEXTURE_2D, 1, &img.tex);
 		glTextureStorage2DEXT(img.tex, GL_TEXTURE_2D, 1, GL_RGB8, width, height);
 		glTextureSubImage2D(img.tex, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, imageData);
 		glTextureParameteri(img.tex, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -2047,7 +2066,7 @@ void SMAADemo::createFramebuffers()	{
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
 	GLuint tex = 0;
-	glGenTextures(1, &tex);
+	glCreateTextures(GL_TEXTURE_2D, 1, &tex);
 	renderFBO->colorTex = tex;
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_COLOR, GL_TEXTURE_2D, renderFBO->colorTex);
 	glTextureStorage2D(tex, 1, GL_RGBA8, windowWidth, windowHeight);
@@ -2058,7 +2077,7 @@ void SMAADemo::createFramebuffers()	{
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
 
 	tex = 0;
-	glGenTextures(1, &tex);
+	glCreateTextures(GL_TEXTURE_2D, 1, &tex);
 	renderFBO->depthTex = tex;
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_TEMP, GL_TEXTURE_2D, renderFBO->depthTex);
 	glTextureStorage2D(tex, 1, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
@@ -2079,7 +2098,7 @@ void SMAADemo::createFramebuffers()	{
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
 	tex = 0;
-	glGenTextures(1, &tex);
+	glCreateTextures(GL_TEXTURE_2D, 1, &tex);
 	edgesFBO->colorTex = tex;
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_EDGES, GL_TEXTURE_2D, edgesFBO->colorTex);
 	glTextureStorage2D(tex, 1, GL_RGBA8, windowWidth, windowHeight);
@@ -2099,7 +2118,7 @@ void SMAADemo::createFramebuffers()	{
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
 	tex = 0;
-	glGenTextures(1, &tex);
+	glCreateTextures(GL_TEXTURE_2D, 1, &tex);
 	blendFBO->colorTex = tex;
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_BLEND, GL_TEXTURE_2D, blendFBO->colorTex);
 	glTextureStorage2D(tex, 1, GL_RGBA8, windowWidth, windowHeight);
