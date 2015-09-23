@@ -1024,6 +1024,7 @@ class SMAADemo {
 	bool smaaSupported;
 	bool useInstancing;
 	bool useVAO;
+	bool useSamplerObjects;
 	DSAMode::DSAMode dsaMode;
 
 	std::unique_ptr<Shader> cubeInstanceShader;
@@ -1035,6 +1036,9 @@ class SMAADemo {
 	GLuint cubeVBO, cubeIBO;
 	GLuint fullscreenVBO;
 	GLuint instanceVBO;
+
+	GLuint linearSampler;
+	GLuint nearestSampler;
 
 	unsigned int cubePower;
 
@@ -1173,12 +1177,15 @@ SMAADemo::SMAADemo()
 , smaaSupported(true)
 , useInstancing(true)
 , useVAO(false)
+, useSamplerObjects(false)
 , dsaMode(DSAMode::ARB)
 , vao(0)
 , cubeVBO(0)
 , cubeIBO(0)
 , fullscreenVBO(0)
 , instanceVBO(0)
+, linearSampler(0)
+, nearestSampler(0)
 , cubePower(3)
 , antialiasing(true)
 , aaMethod(AAMethod::SMAA)
@@ -1885,6 +1892,11 @@ void SMAADemo::initRender() {
 		useVAO = true;
 	}
 
+	if (GLEW_VERSION_3_3 || GLEW_ARB_sampler_objects) {
+		printf("Sampler objects enabled\n");
+		useSamplerObjects = true;
+	}
+
 #endif  // USE_GLEW
 
 	auto glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
@@ -1902,6 +1914,20 @@ void SMAADemo::initRender() {
 	if (useVAO) {
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
+	}
+
+	if (useSamplerObjects) {
+		glCreateSamplers(1, &linearSampler);
+		glSamplerParameteri(linearSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glSamplerParameteri(linearSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glSamplerParameteri(linearSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glSamplerParameteri(linearSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		glCreateSamplers(1, &nearestSampler);
+		glSamplerParameteri(nearestSampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glSamplerParameteri(nearestSampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glSamplerParameteri(nearestSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glSamplerParameteri(nearestSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 
 	// TODO: DSA
@@ -1931,10 +1957,7 @@ void SMAADemo::initRender() {
 		memcpy(&tempBuffer[y * AREATEX_PITCH], areaTexBytes + srcY * AREATEX_PITCH, AREATEX_PITCH);
 	}
 	glTextureSubImage2D(areaTex, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, &tempBuffer[0]);
-	glTextureParameteri(areaTex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTextureParameteri(areaTex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTextureParameteri(areaTex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTextureParameteri(areaTex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindSampler(TEXUNIT_AREATEX, linearSampler);
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &searchTex);
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_SEARCHTEX, GL_TEXTURE_2D, searchTex);
@@ -1945,10 +1968,7 @@ void SMAADemo::initRender() {
 		memcpy(&tempBuffer[y * SEARCHTEX_PITCH], searchTexBytes + srcY * SEARCHTEX_PITCH, SEARCHTEX_PITCH);
 	}
 	glTextureSubImage2D(searchTex, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, &tempBuffer[0]);
-	glTextureParameteri(searchTex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTextureParameteri(searchTex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTextureParameteri(searchTex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTextureParameteri(searchTex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindSampler(TEXUNIT_SEARCHTEX, linearSampler);
 
 	builtinFBO = std::make_unique<Framebuffer>(0);
 	builtinFBO->width = windowWidth;
@@ -1965,10 +1985,6 @@ void SMAADemo::initRender() {
 		glCreateTextures(GL_TEXTURE_2D, 1, &img.tex);
 		glTextureStorage2DEXT(img.tex, GL_TEXTURE_2D, 1, GL_RGB8, width, height);
 		glTextureSubImage2D(img.tex, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, imageData);
-		glTextureParameteri(img.tex, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTextureParameteri(img.tex, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTextureParameteri(img.tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTextureParameteri(img.tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		stbi_image_free(imageData);
 	}
@@ -2034,10 +2050,6 @@ void SMAADemo::createFramebuffers()	{
 	renderFBO->colorTex = tex;
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_COLOR, GL_TEXTURE_2D, renderFBO->colorTex);
 	glTextureStorage2D(tex, 1, GL_RGBA8, windowWidth, windowHeight);
-	glTextureParameteri(tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTextureParameteri(tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTextureParameteri(tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTextureParameteri(tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
 
 	tex = 0;
@@ -2045,12 +2057,7 @@ void SMAADemo::createFramebuffers()	{
 	renderFBO->depthTex = tex;
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_TEMP, GL_TEXTURE_2D, renderFBO->depthTex);
 	glTextureStorage2D(tex, 1, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
-	glTextureParameteri(tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTextureParameteri(tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTextureParameteri(tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTextureParameteri(tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glNamedFramebufferTexture(fbo, GL_DEPTH_ATTACHMENT, tex, 0);
-
 
 	// SMAA edges texture and FBO
 	edgesFBO.reset();
@@ -2066,10 +2073,7 @@ void SMAADemo::createFramebuffers()	{
 	edgesFBO->colorTex = tex;
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_EDGES, GL_TEXTURE_2D, edgesFBO->colorTex);
 	glTextureStorage2D(tex, 1, GL_RGBA8, windowWidth, windowHeight);
-	glTextureParameteri(tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTextureParameteri(tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTextureParameteri(tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTextureParameteri(tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindSampler(TEXUNIT_EDGES, linearSampler);
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
 
 	// SMAA blending weights texture and FBO
@@ -2086,10 +2090,7 @@ void SMAADemo::createFramebuffers()	{
 	blendFBO->colorTex = tex;
 	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_BLEND, GL_TEXTURE_2D, blendFBO->colorTex);
 	glTextureStorage2D(tex, 1, GL_RGBA8, windowWidth, windowHeight);
-	glTextureParameteri(tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTextureParameteri(tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTextureParameteri(tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTextureParameteri(tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindSampler(TEXUNIT_BLEND, linearSampler);
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
 }
 
@@ -2466,9 +2467,11 @@ void SMAADemo::render() {
 		const auto &image = images[activeScene - 1];
 		imageShader->bind();
 		glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_COLOR, GL_TEXTURE_2D, image.tex);
+		glBindSampler(TEXUNIT_COLOR, nearestSampler);
 		setFullscreenVBO();
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_COLOR, GL_TEXTURE_2D, renderFBO->colorTex);
+		glBindSampler(TEXUNIT_COLOR, linearSampler);
 	}
 
 	setFullscreenVBO();
