@@ -2040,32 +2040,32 @@ void SMAADemo::setCubeVBO() {
 	if (useVAO) {
 		glBindVertexArray(cubeVAO);
 	} else {
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-	glVertexAttribPointer(ATTR_POS, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
+		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+		glVertexAttribPointer(ATTR_POS, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
 
-	glEnableVertexAttribArray(ATTR_POS);
+		glEnableVertexAttribArray(ATTR_POS);
 
-	if (useInstancing) {
-		glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-		glVertexAttribPointer(ATTR_CUBEPOS, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, x));
-		glVertexAttribDivisor(ATTR_CUBEPOS, 1);
+		if (useInstancing) {
+			glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+			glVertexAttribPointer(ATTR_CUBEPOS, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, x));
+			glVertexAttribDivisor(ATTR_CUBEPOS, 1);
 
-		glVertexAttribPointer(ATTR_ROT, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, qx));
-		glVertexAttribDivisor(ATTR_ROT, 1);
+			glVertexAttribPointer(ATTR_ROT, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, qx));
+			glVertexAttribDivisor(ATTR_ROT, 1);
 
-		glVertexAttribPointer(ATTR_COLOR, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, col));
-		glVertexAttribDivisor(ATTR_COLOR, 1);
+			glVertexAttribPointer(ATTR_COLOR, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, col));
+			glVertexAttribDivisor(ATTR_COLOR, 1);
 
-		glEnableVertexAttribArray(ATTR_CUBEPOS);
-		glEnableVertexAttribArray(ATTR_ROT);
-		glEnableVertexAttribArray(ATTR_COLOR);
-	} else {
-		glDisableVertexAttribArray(ATTR_CUBEPOS);
-		glDisableVertexAttribArray(ATTR_ROT);
-		glDisableVertexAttribArray(ATTR_COLOR);
-	}
+			glEnableVertexAttribArray(ATTR_CUBEPOS);
+			glEnableVertexAttribArray(ATTR_ROT);
+			glEnableVertexAttribArray(ATTR_COLOR);
+		} else {
+			glDisableVertexAttribArray(ATTR_CUBEPOS);
+			glDisableVertexAttribArray(ATTR_ROT);
+			glDisableVertexAttribArray(ATTR_COLOR);
+		}
 	}
 }
 
@@ -2074,14 +2074,14 @@ void SMAADemo::setFullscreenVBO() {
 	if (useVAO) {
 		glBindVertexArray(fullscreenVAO);
 	} else {
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, fullscreenVBO);
-	glVertexAttribPointer(ATTR_POS, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, NULL);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, fullscreenVBO);
+		glVertexAttribPointer(ATTR_POS, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, NULL);
 
-	glEnableVertexAttribArray(ATTR_POS);
-	glDisableVertexAttribArray(ATTR_CUBEPOS);
-	glDisableVertexAttribArray(ATTR_ROT);
-	glDisableVertexAttribArray(ATTR_COLOR);
+		glEnableVertexAttribArray(ATTR_POS);
+		glDisableVertexAttribArray(ATTR_CUBEPOS);
+		glDisableVertexAttribArray(ATTR_ROT);
+		glDisableVertexAttribArray(ATTR_COLOR);
 	}
 }
 
