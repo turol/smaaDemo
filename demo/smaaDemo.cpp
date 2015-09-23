@@ -507,12 +507,6 @@ static GLuint createShader(GLenum type, const std::string &name, const std::vect
 }
 
 
-static GLuint createShader(GLenum type, const std::string &filename) {
-	auto src = readTextFile(filename);
-	return createShader(type, filename, src);
-}
-
-
 class Shader;
 class ShaderBuilder;
 
@@ -531,8 +525,6 @@ class VertexShader {
 	friend class Shader;
 
 public:
-
-	explicit VertexShader(const std::string &filename);
 
 	VertexShader(const std::string &name, const ShaderBuilder &builder);
 
@@ -555,8 +547,6 @@ class FragmentShader {
 	friend class Shader;
 
 public:
-
-	explicit FragmentShader(const std::string &filename);
 
 	FragmentShader(const std::string &name, const ShaderBuilder &builder);
 
@@ -706,7 +696,6 @@ class Shader {
 	Shader &operator=(Shader &&) = delete;
 
 public:
-	Shader(std::string vertexShaderName, std::string fragmentShaderName);
 	Shader(const VertexShader &vertexShader, const FragmentShader &fragmentShader);
 
 	~Shader();
@@ -717,13 +706,6 @@ public:
 
 	void bind();
 };
-
-
-VertexShader::VertexShader(const std::string &filename)
-: shader(0)
-{
-	shader = createShader(GL_VERTEX_SHADER, filename);
-}
 
 
 VertexShader::VertexShader(const std::string &name, const ShaderBuilder &builder)
@@ -741,14 +723,6 @@ VertexShader::~VertexShader() {
 }
 
 
-FragmentShader::FragmentShader(const std::string &filename)
-: shader(0)
-, glES(false)
-{
-	shader = createShader(GL_FRAGMENT_SHADER, filename);
-}
-
-
 FragmentShader::FragmentShader(const std::string &name, const ShaderBuilder &builder)
 : shader(0)
 , glES(builder.glES)
@@ -763,16 +737,6 @@ FragmentShader::~FragmentShader() {
 	glDeleteShader(shader);
 	shader = 0;
 }
-
-
-Shader::Shader(std::string vertexShaderName, std::string fragmentShaderName)
-: Shader(
-         VertexShader(vertexShaderName)
-       , FragmentShader(fragmentShaderName)
-        )
-{
-}
-
 
 
 Shader::Shader(const VertexShader &vertexShader, const FragmentShader &fragmentShader)
