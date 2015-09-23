@@ -184,6 +184,14 @@ void GLAPIENTRY glCreateSamplersEmulated(GLsizei n, GLuint *samplers) {
 }
 
 
+void GLAPIENTRY glCreateBuffersEmulated(GLsizei n, GLuint *buffers) {
+	glGenBuffers(n, buffers);
+	for (GLsizei i = 0; i < n; i++) {
+		glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
+	}
+}
+
+
 void GLAPIENTRY glNamedBufferDataEmulated(GLuint buffer, GLsizei size, const void *data, GLenum usage) {
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glBufferData(GL_ARRAY_BUFFER, size, data, usage);	// TODO: better wrapper so we can set "target" parameter
@@ -1874,6 +1882,7 @@ void SMAADemo::initRender() {
 		glNamedFramebufferTexture = glNamedFramebufferTextureEXT;
 		glCreateSamplers = glCreateSamplersEmulated;
 		glNamedBufferData = glNamedBufferDataEmulated;
+		glCreateBuffers = glCreateBuffersEmulated;
 	} else {
 		printf("No direct state access\n");
 		glCreateTextures = glCreateTexturesEmulated;
@@ -1883,6 +1892,7 @@ void SMAADemo::initRender() {
 		glNamedFramebufferTexture = glNamedFramebufferTextureEmulated;
 		glCreateSamplers = glCreateSamplersEmulated;
 		glNamedBufferData = glNamedBufferDataEmulated;
+		glCreateBuffers = glCreateBuffersEmulated;
 	}
 
 	if (!GLEW_EXT_direct_state_access) {
