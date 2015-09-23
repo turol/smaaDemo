@@ -1955,12 +1955,12 @@ void SMAADemo::initRender() {
 
 	if (flipSMAATextures) {
 		std::vector<unsigned char> tempBuffer(AREATEX_SIZE);
-	for (unsigned int y = 0; y < AREATEX_HEIGHT; y++) {
-		unsigned int srcY = AREATEX_HEIGHT - 1 - y;
-		//unsigned int srcY = y;
-		memcpy(&tempBuffer[y * AREATEX_PITCH], areaTexBytes + srcY * AREATEX_PITCH, AREATEX_PITCH);
-	}
-	glTextureSubImage2D(areaTex, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, &tempBuffer[0]);
+		for (unsigned int y = 0; y < AREATEX_HEIGHT; y++) {
+			unsigned int srcY = AREATEX_HEIGHT - 1 - y;
+			//unsigned int srcY = y;
+			memcpy(&tempBuffer[y * AREATEX_PITCH], areaTexBytes + srcY * AREATEX_PITCH, AREATEX_PITCH);
+		}
+		glTextureSubImage2D(areaTex, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, &tempBuffer[0]);
 	} else {
 		glTextureSubImage2D(areaTex, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, areaTexBytes);
 	}
@@ -1971,12 +1971,12 @@ void SMAADemo::initRender() {
 	glTextureStorage2D(searchTex, 1, GL_R8, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT);
 	if (flipSMAATextures) {
 		std::vector<unsigned char> tempBuffer(SEARCHTEX_SIZE);
-	for (unsigned int y = 0; y < SEARCHTEX_HEIGHT; y++) {
-		unsigned int srcY = SEARCHTEX_HEIGHT - 1 - y;
-		//unsigned int srcY = y;
-		memcpy(&tempBuffer[y * SEARCHTEX_PITCH], searchTexBytes + srcY * SEARCHTEX_PITCH, SEARCHTEX_PITCH);
-	}
-	glTextureSubImage2D(searchTex, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, &tempBuffer[0]);
+		for (unsigned int y = 0; y < SEARCHTEX_HEIGHT; y++) {
+			unsigned int srcY = SEARCHTEX_HEIGHT - 1 - y;
+			//unsigned int srcY = y;
+			memcpy(&tempBuffer[y * SEARCHTEX_PITCH], searchTexBytes + srcY * SEARCHTEX_PITCH, SEARCHTEX_PITCH);
+		}
+		glTextureSubImage2D(searchTex, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, &tempBuffer[0]);
 	} else {
 		glTextureSubImage2D(searchTex, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, searchTexBytes);
 	}
@@ -2016,19 +2016,19 @@ void SMAADemo::setCubeVBO() {
 	glEnableVertexAttribArray(ATTR_POS);
 
 	if (useInstancing) {
-	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-	glVertexAttribPointer(ATTR_CUBEPOS, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, x));
-	glVertexAttribDivisor(ATTR_CUBEPOS, 1);
+		glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+		glVertexAttribPointer(ATTR_CUBEPOS, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, x));
+		glVertexAttribDivisor(ATTR_CUBEPOS, 1);
 
-	glVertexAttribPointer(ATTR_ROT, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, qx));
-	glVertexAttribDivisor(ATTR_ROT, 1);
+		glVertexAttribPointer(ATTR_ROT, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, qx));
+		glVertexAttribDivisor(ATTR_ROT, 1);
 
-	glVertexAttribPointer(ATTR_COLOR, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, col));
-	glVertexAttribDivisor(ATTR_COLOR, 1);
+		glVertexAttribPointer(ATTR_COLOR, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, col));
+		glVertexAttribDivisor(ATTR_COLOR, 1);
 
-	glEnableVertexAttribArray(ATTR_CUBEPOS);
-	glEnableVertexAttribArray(ATTR_ROT);
-	glEnableVertexAttribArray(ATTR_COLOR);
+		glEnableVertexAttribArray(ATTR_CUBEPOS);
+		glEnableVertexAttribArray(ATTR_ROT);
+		glEnableVertexAttribArray(ATTR_COLOR);
 	} else {
 		glDisableVertexAttribArray(ATTR_CUBEPOS);
 		glDisableVertexAttribArray(ATTR_ROT);
@@ -2433,20 +2433,20 @@ void SMAADemo::render() {
 		glm::mat4 viewProj = proj * view;
 
 		if (useInstancing) {
-		cubeInstanceShader->bind();
-		GLint viewProjLoc = cubeInstanceShader->getUniformLocation("viewProj");
-		glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, glm::value_ptr(viewProj));
+			cubeInstanceShader->bind();
+			GLint viewProjLoc = cubeInstanceShader->getUniformLocation("viewProj");
+			glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, glm::value_ptr(viewProj));
 
-		instances.clear();
-		instances.reserve(cubes.size());
-		for (const auto &cube : cubes) {
-			instances.emplace_back(cube.orient, cube.pos, cube.col);
-		}
+			instances.clear();
+			instances.reserve(cubes.size());
+			for (const auto &cube : cubes) {
+				instances.emplace_back(cube.orient, cube.pos, cube.col);
+			}
 
-		setCubeVBO();
-		glNamedBufferSubData(instanceVBO, 0, sizeof(InstanceData) * instances.size(), &instances[0]);
+			setCubeVBO();
+			glNamedBufferSubData(instanceVBO, 0, sizeof(InstanceData) * instances.size(), &instances[0]);
 
-		glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
+			glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
 		} else {
 			cubeShader->bind();
 			GLint viewProjLoc = cubeShader->getUniformLocation("viewProj");
