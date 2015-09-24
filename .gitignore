@@ -5,3 +5,9 @@
 core
 vgcore.*
 *.trace
+
+*.exe
+*.dll
+
+mingw/*.h
+mingw/*.lib
