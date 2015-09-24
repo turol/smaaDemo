@@ -89,13 +89,33 @@ extern "C" {
 void GLAPIENTRY glTextureStorage2DEXT(GLuint texture, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height);
 
 
+#define glBindTextureUnit glBindTextureUnitEmulated
+#define glCreateBuffers glCreateBuffersEmulated
+#define glCreateSamplers glCreateSamplersEmulated
+#define glCreateTextures glCreateTexturesEmulated
+#define glCreateVertexArrays glCreateVertexArraysEmulated
+#define glEnableVertexArrayAttrib glEnableVertexArrayAttribEmulated
+#define glNamedBufferData glNamedBufferDataEmulated
+#define glNamedBufferSubData glNamedBufferSubDataEmulated
 #define glNamedFramebufferTexture glNamedFramebufferTextureEmulated
 #define glTextureParameteri glTextureParameteriEmulated
 #define glTextureStorage2D glTextureStorage2DEmulated
 #define glTextureSubImage2D glTextureSubImage2DEmulated
+#define glVertexArrayElementBuffer glVertexArrayElementBufferEmulated
 
 
 #endif  // USE_GLEW
+
+
+void GLAPIENTRY glBindTextureUnitEXTEmulated(GLuint unit, GLuint texture) {
+	glBindMultiTextureEXT(GL_TEXTURE0 + unit, GL_TEXTURE_2D, texture);
+}
+
+
+void GLAPIENTRY glBindTextureUnitEmulated(GLuint unit, GLuint texture) {
+	glActiveTexture(GL_TEXTURE0 + unit);
+	glBindTexture(GL_TEXTURE_2D, texture);
+}
 
 
 void GLAPIENTRY glCreateTexturesEXTEmulated(GLenum /* target */, GLsizei n, GLuint *textures) {
@@ -234,17 +254,6 @@ void GLAPIENTRY glEnableVertexArrayAttribEmulated(GLuint vao, GLuint index) {
 void GLAPIENTRY glNamedBufferSubDataEmulated(GLuint buffer, GLintptr offset, GLsizeiptr size, const GLvoid *data) {
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
-}
-
-
-void GLAPIENTRY glBindTextureUnitEXTEmulated(GLuint unit, GLuint texture) {
-	glBindMultiTextureEXT(GL_TEXTURE0 + unit, GL_TEXTURE_2D, texture);
-}
-
-
-void GLAPIENTRY glBindTextureUnitEmulated(GLuint unit, GLuint texture) {
-	glActiveTexture(GL_TEXTURE0 + unit);
-	glBindTexture(GL_TEXTURE_2D, texture);
 }
 
 
