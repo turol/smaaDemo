@@ -45,8 +45,8 @@ THE SOFTWARE.
 #else  // USE_GLEW
 
 #define GL_GLEXT_PROTOTYPES 1
-#include <GL/gl.h>
-#include <GL/glext.h>
+#include <GLES3/gl3.h>
+#include <GLES3/gl2ext.h>
 
 #endif  // USE_GLEW
 
@@ -84,9 +84,18 @@ extern "C" {
 #ifndef USE_GLEW
 
 
+#ifndef GLAPIENTRY
+#define GLAPIENTRY
+#endif  // GLAPIENTRY
+
+
 // prototypes so the code compiles
 // these are not supposed to be called so they're not defined
+void GLAPIENTRY glBindFragDataLocation(GLuint program,  GLuint colorNumber, const char *name);
+void GLAPIENTRY glBindMultiTextureEXT(GLenum texunit, GLuint texture, GLenum target);
+void GLAPIENTRY glTextureParameteriEXT(GLuint texture, GLuint target, GLenum pname, GLint param);
 void GLAPIENTRY glTextureStorage2DEXT(GLuint texture, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height);
+void GLAPIENTRY glTextureSubImage2DEXT(GLuint texture, GLuint target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels);
 
 
 #define glBindTextureUnit glBindTextureUnitEmulated
