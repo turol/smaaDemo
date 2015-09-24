@@ -20,6 +20,10 @@ Usage
 Command line options:
 "--gles" - Use OpenGL ES.
 "--gldebug" - Enable OpenGL debugging.
+"--noinstancing" - Disable instancing.
+"--dsa <mode>" - Select DSA mode: "arb", "ext", "none".
+"--glmajor <version>" - Specify OpenGL major version.
+"--glminor <version>" - Specify OpenGL minor version.
 "<file path> ..." - Load specified image(s). Cycling through images not yet supported.
 
 Key commands:
