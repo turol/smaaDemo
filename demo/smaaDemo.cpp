@@ -134,7 +134,7 @@ void GLAPIENTRY glTextureStorage2DEmulated(GLuint texture, GLsizei levels, GLenu
 	const GLenum target = GL_TEXTURE_2D;
 	glActiveTexture(GL_TEXTURE0 + TEXUNIT_TEMP);
 	glBindTexture(target, texture);
-	GLenum format;
+	GLenum format = GL_NONE;
 	switch (internalformat) {
 	case GL_RG8:
 		format = GL_RG;
