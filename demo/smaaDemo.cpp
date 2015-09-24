@@ -1327,6 +1327,24 @@ SMAADemo::~SMAADemo() {
 		window = NULL;
 	}
 
+	if (useVAO) {
+		glDeleteVertexArrays(1, &cubeVAO);
+		glDeleteVertexArrays(1, &fullscreenVAO);
+	}
+	
+	glDeleteBuffers(1, &cubeVBO);
+	glDeleteBuffers(1, &cubeIBO);
+	glDeleteBuffers(1, &fullscreenVBO);
+	glDeleteBuffers(1, &instanceVBO);
+
+	if (useSamplerObjects) {
+		glDeleteSamplers(1, &linearSampler);
+		glDeleteSamplers(1, &nearestSampler);
+	}
+
+	glDeleteTextures(1, &areaTex);
+	glDeleteTextures(1, &searchTex);
+
 	SDL_Quit();
 }
 
