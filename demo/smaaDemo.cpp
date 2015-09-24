@@ -66,7 +66,6 @@ extern "C" {
 void GLAPIENTRY glTextureStorage2DEXT(GLuint texture, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height);
 
 
-#define glBindMultiTextureEXT glBindMultiTextureEXTEmulated
 #define glNamedFramebufferTexture glNamedFramebufferTextureEmulated
 #define glTextureParameteri glTextureParameteriEmulated
 #define glTextureStorage2D glTextureStorage2DEmulated
@@ -76,10 +75,10 @@ void GLAPIENTRY glTextureStorage2DEXT(GLuint texture, GLenum target, GLsizei lev
 #endif  // USE_GLEW
 
 
-void GLAPIENTRY glCreateTexturesEXTEmulated(GLenum target, GLsizei n, GLuint *textures) {
+void GLAPIENTRY glCreateTexturesEXTEmulated(GLenum /* target */, GLsizei n, GLuint *textures) {
 	glGenTextures(n, textures);
 	for (GLsizei i = 0; i < n; i++) {
-		glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_TEMP, target, textures[i]);
+		glBindTextureUnit(TEXUNIT_TEMP, textures[i]);
 	}
 }
 
@@ -90,12 +89,6 @@ void GLAPIENTRY glCreateTexturesEmulated(GLenum target, GLsizei n, GLuint *textu
 	for (GLsizei i = 0; i < n; i++) {
 		glBindTexture(target, textures[i]);
 	}
-}
-
-
-void GLAPIENTRY glBindMultiTextureEXTEmulated(GLenum texunit, GLenum target, GLuint texture) {
-	glActiveTexture(texunit);
-	glBindTexture(target, texture);
 }
 
 
@@ -168,12 +161,6 @@ void GLAPIENTRY glTextureParameteriEmulated(GLuint texture, GLenum pname, GLint 
 }
 
 
-void GLAPIENTRY glBindMultiTextureEmulated(GLenum texunit, GLenum target, GLuint texture) {
-	glActiveTexture(texunit);
-	glBindTexture(target, texture);
-}
-
-
 void GLAPIENTRY glNamedFramebufferTextureEmulated(GLuint framebuffer, GLenum attachment, GLuint texture, GLint level) {
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texture, level);
@@ -224,6 +211,17 @@ void GLAPIENTRY glEnableVertexArrayAttribEmulated(GLuint vao, GLuint index) {
 void GLAPIENTRY glNamedBufferSubDataEmulated(GLuint buffer, GLintptr offset, GLsizeiptr size, const GLvoid *data) {
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
+}
+
+
+void GLAPIENTRY glBindTextureUnitEXTEmulated(GLuint unit, GLuint texture) {
+	glBindMultiTextureEXT(GL_TEXTURE0 + unit, GL_TEXTURE_2D, texture);
+}
+
+
+void GLAPIENTRY glBindTextureUnitEmulated(GLuint unit, GLuint texture) {
+	glActiveTexture(GL_TEXTURE0 + unit);
+	glBindTexture(GL_TEXTURE_2D, texture);
 }
 
 
@@ -1922,6 +1920,7 @@ void SMAADemo::initRender() {
 		glVertexArrayElementBuffer = glVertexArrayElementBufferEmulated;
 		glEnableVertexArrayAttrib = glEnableVertexArrayAttribEXT;
 		glNamedBufferSubData = glNamedBufferSubDataEXT;
+		glBindTextureUnit = glBindTextureUnitEXTEmulated;
 	} else {
 		printf("No direct state access\n");
 		glCreateTextures = glCreateTexturesEmulated;
@@ -1936,10 +1935,7 @@ void SMAADemo::initRender() {
 		glVertexArrayElementBuffer = glVertexArrayElementBufferEmulated;
 		glEnableVertexArrayAttrib = glEnableVertexArrayAttribEmulated;
 		glNamedBufferSubData = glNamedBufferSubDataEmulated;
-	}
-
-	if (!GLEW_EXT_direct_state_access) {
-		glBindMultiTextureEXT = glBindMultiTextureEXTEmulated;
+		glBindTextureUnit = glBindTextureUnitEmulated;
 	}
 
 	if (glDebug) {
@@ -2045,7 +2041,7 @@ void SMAADemo::initRender() {
 	const bool flipSMAATextures = true;
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &areaTex);
-	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_AREATEX, GL_TEXTURE_2D, areaTex);
+	glBindTextureUnit(TEXUNIT_AREATEX, areaTex);
 	glTextureStorage2D(areaTex, 1, GL_RG8, AREATEX_WIDTH, AREATEX_HEIGHT);
 	glTextureParameteri(areaTex, GL_TEXTURE_MAX_LEVEL, 0);
 
@@ -2063,7 +2059,7 @@ void SMAADemo::initRender() {
 	glBindSampler(TEXUNIT_AREATEX, linearSampler);
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &searchTex);
-	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_SEARCHTEX, GL_TEXTURE_2D, searchTex);
+	glBindTextureUnit(TEXUNIT_SEARCHTEX, searchTex);
 	glTextureStorage2D(searchTex, 1, GL_R8, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT);
 	glTextureParameteri(searchTex, GL_TEXTURE_MAX_LEVEL, 0);
 	if (flipSMAATextures) {
@@ -2167,7 +2163,7 @@ void SMAADemo::createFramebuffers()	{
 	GLuint tex = 0;
 	glCreateTextures(GL_TEXTURE_2D, 1, &tex);
 	renderFBO->colorTex = tex;
-	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_COLOR, GL_TEXTURE_2D, renderFBO->colorTex);
+	glBindTextureUnit(TEXUNIT_COLOR, renderFBO->colorTex);
 	glTextureStorage2D(tex, 1, GL_RGBA8, windowWidth, windowHeight);
 	glTextureParameteri(tex, GL_TEXTURE_MAX_LEVEL, 0);
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
@@ -2175,7 +2171,7 @@ void SMAADemo::createFramebuffers()	{
 	tex = 0;
 	glCreateTextures(GL_TEXTURE_2D, 1, &tex);
 	renderFBO->depthTex = tex;
-	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_TEMP, GL_TEXTURE_2D, renderFBO->depthTex);
+	glBindTextureUnit(TEXUNIT_TEMP, renderFBO->depthTex);
 	glTextureStorage2D(tex, 1, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
 	glTextureParameteri(tex, GL_TEXTURE_MAX_LEVEL, 0);
 	glNamedFramebufferTexture(fbo, GL_DEPTH_ATTACHMENT, tex, 0);
@@ -2192,7 +2188,7 @@ void SMAADemo::createFramebuffers()	{
 	tex = 0;
 	glCreateTextures(GL_TEXTURE_2D, 1, &tex);
 	edgesFBO->colorTex = tex;
-	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_EDGES, GL_TEXTURE_2D, edgesFBO->colorTex);
+	glBindTextureUnit(TEXUNIT_EDGES, edgesFBO->colorTex);
 	glTextureStorage2D(tex, 1, GL_RGBA8, windowWidth, windowHeight);
 	glTextureParameteri(tex, GL_TEXTURE_MAX_LEVEL, 0);
 	glBindSampler(TEXUNIT_EDGES, linearSampler);
@@ -2210,7 +2206,7 @@ void SMAADemo::createFramebuffers()	{
 	tex = 0;
 	glCreateTextures(GL_TEXTURE_2D, 1, &tex);
 	blendFBO->colorTex = tex;
-	glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_BLEND, GL_TEXTURE_2D, blendFBO->colorTex);
+	glBindTextureUnit(TEXUNIT_BLEND, blendFBO->colorTex);
 	glTextureStorage2D(tex, 1, GL_RGBA8, windowWidth, windowHeight);
 	glTextureParameteri(tex, GL_TEXTURE_MAX_LEVEL, 0);
 	glBindSampler(TEXUNIT_BLEND, linearSampler);
@@ -2587,11 +2583,11 @@ void SMAADemo::render() {
 		assert(activeScene - 1 < images.size());
 		const auto &image = images[activeScene - 1];
 		imageShader->bind();
-		glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_COLOR, GL_TEXTURE_2D, image.tex);
+		glBindTextureUnit(TEXUNIT_COLOR, image.tex);
 		glBindSampler(TEXUNIT_COLOR, nearestSampler);
 		setFullscreenVBO();
 		glDrawArrays(GL_TRIANGLES, 0, 3);
-		glBindMultiTextureEXT(GL_TEXTURE0 + TEXUNIT_COLOR, GL_TEXTURE_2D, renderFBO->colorTex);
+		glBindTextureUnit(TEXUNIT_COLOR, renderFBO->colorTex);
 		glBindSampler(TEXUNIT_COLOR, linearSampler);
 	}
 
