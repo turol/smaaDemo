@@ -1744,6 +1744,8 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::ValueArg<std::string> dsaSwitch("", "dsa", "Select DSA mode", false, "arb", "arb, ext or none", cmd);
 		TCLAP::ValueArg<unsigned int> glMajorSwitch("", "glmajor", "OpenGL major version", false, glMajor, "version", cmd);
 		TCLAP::ValueArg<unsigned int> glMinorSwitch("", "glminor", "OpenGL minor version", false, glMinor, "version", cmd);
+		TCLAP::ValueArg<unsigned int> windowWidthSwitch("", "width", "Window width", false, windowWidth, "width", cmd);
+		TCLAP::ValueArg<unsigned int> windowHeightSwitch("", "height", "Window height", false, windowHeight, "height", cmd);
 		TCLAP::UnlabeledMultiArg<std::string> imagesArg("images", "image files", false, "image file", cmd, true, nullptr);
 
 		cmd.parse(argc, argv);
@@ -1759,6 +1761,10 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		}
 		glMajor = glMajorSwitch.getValue();
 		glMinor = glMinorSwitch.getValue();
+		windowWidth = windowWidthSwitch.getValue();
+		windowHeight = windowHeightSwitch.getValue();
+		resizeWidth = windowWidth;
+		resizeHeight = windowHeight;
 
 		const auto &imageFiles = imagesArg.getValue();
 		images.reserve(imageFiles.size());

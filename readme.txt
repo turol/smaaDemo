@@ -24,6 +24,8 @@ Command line options:
 "--dsa <mode>" - Select DSA mode: "arb", "ext", "none".
 "--glmajor <version>" - Specify OpenGL major version.
 "--glminor <version>" - Specify OpenGL minor version.
+"--width <value>" - Specify window width.
+"--height <value>" - Specify window height.
 "<file path> ..." - Load specified image(s). Cycling through images not yet supported.
 
 Key commands:
