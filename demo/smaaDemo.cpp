@@ -1961,11 +1961,6 @@ void SMAADemo::initRender() {
 	glewExperimental = true;
 	glewInit();
 
-	printf("GL vendor: \"%s\"\n", glGetString(GL_VENDOR));
-	printf("GL renderer: \"%s\"\n", glGetString(GL_RENDERER));
-	printf("GL version: \"%s\"\n", glGetString(GL_VERSION));
-	printf("GLSL version: \"%s\"\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
-
 	// TODO: check extensions
 	// at least direct state access, texture storage
 
@@ -2028,8 +2023,10 @@ void SMAADemo::initRender() {
 
 #endif  // USE_GLEW
 
-	auto glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
-	printf("GLSL version: %s\n", glslVersion);
+	printf("GL vendor: \"%s\"\n", glGetString(GL_VENDOR));
+	printf("GL renderer: \"%s\"\n", glGetString(GL_RENDERER));
+	printf("GL version: \"%s\"\n", glGetString(GL_VERSION));
+	printf("GLSL version: \"%s\"\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 	// swap once to get better traces
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
