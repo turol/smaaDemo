@@ -32,7 +32,9 @@ CXXFLAGS+=-std=c++11
 
 
 LDFLAGS:=-g -Wl,-rpath,. -Wl,-rpath,/usr/local/lib:./lib32
-LDFLAGS+=-Wl,--gc-sections,--icf=all
+LDFLAGS+=-Wl,--gc-sections
+# enable this if you're using gold linker
+#LFDLAGS+=-Wl,--icf=all
 LDLIBS:=
 LDLIBS+=$(shell sdl2-config --libs) -lGL
 
