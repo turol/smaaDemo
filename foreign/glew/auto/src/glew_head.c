@@ -6,7 +6,9 @@
 #  include <GL/glxew.h>
 #endif
 
+#include <alloca.h>
 #include <stddef.h>  /* For size_t */
+#include <string.h>
 
 /*
  * Define glewGetContext and related helper macros.
@@ -211,7 +213,7 @@ static GLboolean _glewStrSame (const GLubyte* a, const GLubyte* b, GLuint n)
   return i == n ? GL_TRUE : GL_FALSE;
 }
 
-static GLboolean _glewStrSame1 (GLubyte** a, GLuint* na, const GLubyte* b, GLuint nb)
+static GLboolean _glewStrSame1 (const GLubyte** a, GLuint* na, const GLubyte* b, GLuint nb)
 {
   while (*na > 0 && (**a == ' ' || **a == '\n' || **a == '\r' || **a == '\t'))
   {
@@ -232,7 +234,7 @@ static GLboolean _glewStrSame1 (GLubyte** a, GLuint* na, const GLubyte* b, GLuin
   return GL_FALSE;
 }
 
-static GLboolean _glewStrSame2 (GLubyte** a, GLuint* na, const GLubyte* b, GLuint nb)
+static GLboolean _glewStrSame2 (const GLubyte** a, GLuint* na, const GLubyte* b, GLuint nb)
 {
   if(*na >= nb)
   {
@@ -248,7 +250,7 @@ static GLboolean _glewStrSame2 (GLubyte** a, GLuint* na, const GLubyte* b, GLuin
   return GL_FALSE;
 }
 
-static GLboolean _glewStrSame3 (GLubyte** a, GLuint* na, const GLubyte* b, GLuint nb)
+static GLboolean _glewStrSame3 (const GLubyte** a, GLuint* na, const GLubyte* b, GLuint nb)
 {
   if(*na >= nb)
   {
