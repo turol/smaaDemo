@@ -2579,6 +2579,7 @@ void SMAADemo::render() {
 	glViewport(0, 0, windowWidth, windowHeight);
 	glDepthMask(GL_TRUE);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 
 	builtinFBO->bind();
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
