@@ -1359,14 +1359,14 @@ const float coord = sqrtf(3.0f) / 2.0f;
 
 static const Vertex vertices[] =
 {
-	  { -coord ,  coord, -coord }
-	, {  coord ,  coord, -coord }
-	, { -coord ,  coord,  coord }
-	, {  coord ,  coord,  coord }
-	, { -coord , -coord, -coord }
+	  { -coord , -coord, -coord }
+	, { -coord ,  coord, -coord }
 	, {  coord , -coord, -coord }
+	, {  coord ,  coord, -coord }
 	, { -coord , -coord,  coord }
+	, { -coord ,  coord,  coord }
 	, {  coord , -coord,  coord }
+	, {  coord ,  coord,  coord }
 };
 
 
@@ -1378,32 +1378,31 @@ static const float fullscreenVertices[] =
 };
 
 
-// FIXME: check vertex winding, some of these are probably wrong side out
 static const uint32_t indices[] =
 {
-    // top
-	  0, 1, 2
-	, 1, 2, 3
+	// top
+	  1, 3, 5
+	, 5, 3, 7
 
 	// front
-	, 0, 4, 1
-    , 4, 1, 5
+	, 0, 2, 1
+	, 1, 2, 3
 
 	// back
-	, 2, 3, 6
-    , 3, 6, 7
+	, 7, 6, 5
+	, 5, 6, 4
 
 	// left
-	, 0, 2, 4
-    , 2, 4, 6
+	, 0, 1, 4
+	, 4, 1, 5
 
 	// right
-	, 1, 3, 7
-    , 3, 7, 8
+	, 2, 6, 3
+	, 3, 6, 7
 
 	// bottom
-	, 4, 5, 6
-	, 5, 6, 7
+	, 2, 0, 6
+	, 6, 0, 4
 };
 
 
