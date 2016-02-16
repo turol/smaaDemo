@@ -1,6 +1,7 @@
 WGL_NV_DX_interop
 http://www.opengl.org/registry/specs/NV/DX_interop.txt
 WGL_NV_DX_interop
+
 	WGL_ACCESS_READ_ONLY_NV 0x0000
 	WGL_ACCESS_READ_WRITE_NV 0x0001
 	WGL_ACCESS_WRITE_DISCARD_NV 0x0002

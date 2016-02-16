@@ -1,6 +1,7 @@
 GL_ANGLE_timer_query
 https://code.google.com/p/angleproject/source/browse/#git%2Fextensions
 GL_ANGLE_timer_query
+
 	GL_QUERY_COUNTER_BITS_ANGLE 0x8864
 	GL_CURRENT_QUERY_ANGLE 0x8865
 	GL_QUERY_RESULT_ANGLE 0x8866

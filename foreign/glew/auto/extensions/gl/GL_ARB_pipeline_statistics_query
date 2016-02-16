@@ -1,6 +1,7 @@
 GL_ARB_pipeline_statistics_query
 http://www.opengl.org/registry/specs/ARB/pipeline_statistics_query.txt
 GL_ARB_pipeline_statistics_query
+
 	GL_VERTICES_SUBMITTED_ARB 0x82EE
 	GL_PRIMITIVES_SUBMITTED_ARB 0x82EF
 	GL_VERTEX_SHADER_INVOCATIONS_ARB 0x82F0

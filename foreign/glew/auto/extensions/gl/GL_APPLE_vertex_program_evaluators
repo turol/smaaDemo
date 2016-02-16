@@ -1,6 +1,7 @@
 GL_APPLE_vertex_program_evaluators
 http://www.opengl.org/registry/specs/APPLE/vertex_program_evaluators.txt
 GL_APPLE_vertex_program_evaluators
+
 	GL_VERTEX_ATTRIB_MAP1_APPLE 0x8A00
 	GL_VERTEX_ATTRIB_MAP2_APPLE 0x8A01
 	GL_VERTEX_ATTRIB_MAP1_SIZE_APPLE 0x8A02

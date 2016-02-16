@@ -1,6 +1,6 @@
 /*
 ** The OpenGL Extension Wrangler Library
-** Copyright (C) 2008-2014, Nigel Stewart <nigels[]users sourceforge net>
+** Copyright (C) 2008-2015, Nigel Stewart <nigels[]users sourceforge net>
 ** Copyright (C) 2002-2008, Milan Ikits <milan ikits[]ieee org>
 ** Copyright (C) 2002-2008, Marcelo E. Magallon <mmagallo[]debian org>
 ** Copyright (C) 2002, Lev Povalahev
@@ -34,10 +34,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <GL/glew.h>
-#if defined(_WIN32)
+#if defined(GLEW_EGL)
+#include <GL/eglew.h>
+#elif defined(GLEW_OSMESA)
+#define GLAPI extern
+#include <GL/osmesa.h>
+#elif defined(_WIN32)
 #include <GL/wglew.h>
 #elif !defined(__APPLE__) && !defined(__HAIKU__) || defined(GLEW_APPLE_GLX)
 #include <GL/glxew.h>
+#endif
+
+#if defined(__APPLE__)
+#include <AvailabilityMacros.h>
 #endif
 
 #ifdef GLEW_REGAL
@@ -46,29 +55,28 @@
 
 static FILE* f;
 
-#ifdef GLEW_MX
-GLEWContext _glewctx;
-#define glewGetContext() (&_glewctx)
-#ifdef _WIN32
-WGLEWContext _wglewctx;
-#define wglewGetContext() (&_wglewctx)
-#elif !defined(__APPLE__) && !defined(__HAIKU__) || defined(GLEW_APPLE_GLX)
-GLXEWContext _glxewctx;
-#define glxewGetContext() (&_glxewctx)
-#endif
-#endif
+/* Command-line parameters for GL context creation */
 
-#if defined(_WIN32)
-GLboolean glewCreateContext (int* pixelformat);
+struct createParams
+{
+#if defined(GLEW_OSMESA)
+#elif defined(GLEW_EGL)
+#elif defined(_WIN32)
+  int         pixelformat;
 #elif !defined(__APPLE__) && !defined(__HAIKU__) || defined(GLEW_APPLE_GLX)
-GLboolean glewCreateContext (const char* display, int* visual);
-#else
-GLboolean glewCreateContext ();
+  const char* display;
+  int         visual;
 #endif
+  int         major, minor;  /* GL context version number */
 
-#if defined(_WIN32) || !defined(__APPLE__) || defined(GLEW_APPLE_GLX)
-GLboolean glewParseArgs (int argc, char** argv, char** display, int* visual);
-#endif
+  /* https://www.opengl.org/registry/specs/ARB/glx_create_context.txt */
+  int         profile;       /* core = 1, compatibility = 2 */
+  int         flags;         /* debug = 1, forward compatible = 2 */
+};
+
+GLboolean glewCreateContext (struct createParams *params);
+
+GLboolean glewParseArgs (int argc, char** argv, struct createParams *);
 
 void glewDestroyContext ();
 
@@ -554,6 +562,11 @@ static void _glewInfo_GL_VERSION_4_4 (void)
 static void _glewInfo_GL_VERSION_4_5 (void)
 {
   glewPrintExt("GL_VERSION_4_5", GLEW_VERSION_4_5, GLEW_VERSION_4_5, GLEW_VERSION_4_5);
+
+  glewInfoFunc("glGetGraphicsResetStatus", glGetGraphicsResetStatus == NULL);
+  glewInfoFunc("glGetnCompressedTexImage", glGetnCompressedTexImage == NULL);
+  glewInfoFunc("glGetnTexImage", glGetnTexImage == NULL);
+  glewInfoFunc("glGetnUniformdv", glGetnUniformdv == NULL);
 }
 
 #endif /* GL_VERSION_4_5 */
@@ -6906,6 +6919,15 @@ static void _glewInfo_GL_NV_video_capture (void)
 
 #endif /* GL_NV_video_capture */
 
+#ifdef GL_NV_viewport_array2
+
+static void _glewInfo_GL_NV_viewport_array2 (void)
+{
+  glewPrintExt("GL_NV_viewport_array2", GLEW_NV_viewport_array2, glewIsSupported("GL_NV_viewport_array2"), glewGetExtension("GL_NV_viewport_array2"));
+}
+
+#endif /* GL_NV_viewport_array2 */
+
 #ifdef GL_OES_byte_coordinates
 
 static void _glewInfo_GL_OES_byte_coordinates (void)
@@ -7802,7 +7824,967 @@ static void _glewInfo_GL_WIN_swap_hint (void)
 
 #endif /* GL_WIN_swap_hint */
 
-#ifdef _WIN32
+#if defined(GLEW_EGL)
+
+#ifdef EGL_VERSION_1_0
+
+static void _glewInfo_EGL_VERSION_1_0 (void)
+{
+  glewPrintExt("EGL_VERSION_1_0", EGLEW_VERSION_1_0, EGLEW_VERSION_1_0, EGLEW_VERSION_1_0);
+
+  glewInfoFunc("eglChooseConfig", eglChooseConfig == NULL);
+  glewInfoFunc("eglCopyBuffers", eglCopyBuffers == NULL);
+  glewInfoFunc("eglCreateContext", eglCreateContext == NULL);
+  glewInfoFunc("eglCreatePbufferSurface", eglCreatePbufferSurface == NULL);
+  glewInfoFunc("eglCreatePixmapSurface", eglCreatePixmapSurface == NULL);
+  glewInfoFunc("eglCreateWindowSurface", eglCreateWindowSurface == NULL);
+  glewInfoFunc("eglDestroyContext", eglDestroyContext == NULL);
+  glewInfoFunc("eglDestroySurface", eglDestroySurface == NULL);
+  glewInfoFunc("eglGetConfigAttrib", eglGetConfigAttrib == NULL);
+  glewInfoFunc("eglGetConfigs", eglGetConfigs == NULL);
+  glewInfoFunc("eglGetCurrentDisplay", eglGetCurrentDisplay == NULL);
+  glewInfoFunc("eglGetCurrentSurface", eglGetCurrentSurface == NULL);
+  glewInfoFunc("eglGetDisplay", eglGetDisplay == NULL);
+  glewInfoFunc("eglGetError", eglGetError == NULL);
+  glewInfoFunc("eglGetProcAddress", eglGetProcAddress == NULL);
+  glewInfoFunc("eglInitialize", eglInitialize == NULL);
+  glewInfoFunc("eglMakeCurrent", eglMakeCurrent == NULL);
+  glewInfoFunc("eglQueryContext", eglQueryContext == NULL);
+  glewInfoFunc("eglQueryString", eglQueryString == NULL);
+  glewInfoFunc("eglQuerySurface", eglQuerySurface == NULL);
+  glewInfoFunc("eglSwapBuffers", eglSwapBuffers == NULL);
+  glewInfoFunc("eglTerminate", eglTerminate == NULL);
+  glewInfoFunc("eglWaitGL", eglWaitGL == NULL);
+  glewInfoFunc("eglWaitNative", eglWaitNative == NULL);
+}
+
+#endif /* EGL_VERSION_1_0 */
+
+#ifdef EGL_VERSION_1_1
+
+static void _glewInfo_EGL_VERSION_1_1 (void)
+{
+  glewPrintExt("EGL_VERSION_1_1", EGLEW_VERSION_1_1, EGLEW_VERSION_1_1, EGLEW_VERSION_1_1);
+
+  glewInfoFunc("eglBindTexImage", eglBindTexImage == NULL);
+  glewInfoFunc("eglReleaseTexImage", eglReleaseTexImage == NULL);
+  glewInfoFunc("eglSurfaceAttrib", eglSurfaceAttrib == NULL);
+  glewInfoFunc("eglSwapInterval", eglSwapInterval == NULL);
+}
+
+#endif /* EGL_VERSION_1_1 */
+
+#ifdef EGL_VERSION_1_2
+
+static void _glewInfo_EGL_VERSION_1_2 (void)
+{
+  glewPrintExt("EGL_VERSION_1_2", EGLEW_VERSION_1_2, EGLEW_VERSION_1_2, EGLEW_VERSION_1_2);
+
+  glewInfoFunc("eglBindAPI", eglBindAPI == NULL);
+  glewInfoFunc("eglCreatePbufferFromClientBuffer", eglCreatePbufferFromClientBuffer == NULL);
+  glewInfoFunc("eglQueryAPI", eglQueryAPI == NULL);
+  glewInfoFunc("eglReleaseThread", eglReleaseThread == NULL);
+  glewInfoFunc("eglWaitClient", eglWaitClient == NULL);
+}
+
+#endif /* EGL_VERSION_1_2 */
+
+#ifdef EGL_VERSION_1_3
+
+static void _glewInfo_EGL_VERSION_1_3 (void)
+{
+  glewPrintExt("EGL_VERSION_1_3", EGLEW_VERSION_1_3, EGLEW_VERSION_1_3, EGLEW_VERSION_1_3);
+}
+
+#endif /* EGL_VERSION_1_3 */
+
+#ifdef EGL_VERSION_1_4
+
+static void _glewInfo_EGL_VERSION_1_4 (void)
+{
+  glewPrintExt("EGL_VERSION_1_4", EGLEW_VERSION_1_4, EGLEW_VERSION_1_4, EGLEW_VERSION_1_4);
+
+  glewInfoFunc("eglGetCurrentContext", eglGetCurrentContext == NULL);
+}
+
+#endif /* EGL_VERSION_1_4 */
+
+#ifdef EGL_VERSION_1_5
+
+static void _glewInfo_EGL_VERSION_1_5 (void)
+{
+  glewPrintExt("EGL_VERSION_1_5", EGLEW_VERSION_1_5, EGLEW_VERSION_1_5, EGLEW_VERSION_1_5);
+
+  glewInfoFunc("eglClientWaitSync", eglClientWaitSync == NULL);
+  glewInfoFunc("eglCreateImage", eglCreateImage == NULL);
+  glewInfoFunc("eglCreatePlatformPixmapSurface", eglCreatePlatformPixmapSurface == NULL);
+  glewInfoFunc("eglCreatePlatformWindowSurface", eglCreatePlatformWindowSurface == NULL);
+  glewInfoFunc("eglCreateSync", eglCreateSync == NULL);
+  glewInfoFunc("eglDestroyImage", eglDestroyImage == NULL);
+  glewInfoFunc("eglDestroySync", eglDestroySync == NULL);
+  glewInfoFunc("eglGetPlatformDisplay", eglGetPlatformDisplay == NULL);
+  glewInfoFunc("eglGetSyncAttrib", eglGetSyncAttrib == NULL);
+  glewInfoFunc("eglWaitSync", eglWaitSync == NULL);
+}
+
+#endif /* EGL_VERSION_1_5 */
+
+#ifdef EGL_ANDROID_blob_cache
+
+static void _glewInfo_EGL_ANDROID_blob_cache (void)
+{
+  glewPrintExt("EGL_ANDROID_blob_cache", EGLEW_ANDROID_blob_cache, eglewIsSupported("EGL_ANDROID_blob_cache"), eglewGetExtension("EGL_ANDROID_blob_cache"));
+
+  glewInfoFunc("eglSetBlobCacheFuncsANDROID", eglSetBlobCacheFuncsANDROID == NULL);
+}
+
+#endif /* EGL_ANDROID_blob_cache */
+
+#ifdef EGL_ANDROID_framebuffer_target
+
+static void _glewInfo_EGL_ANDROID_framebuffer_target (void)
+{
+  glewPrintExt("EGL_ANDROID_framebuffer_target", EGLEW_ANDROID_framebuffer_target, eglewIsSupported("EGL_ANDROID_framebuffer_target"), eglewGetExtension("EGL_ANDROID_framebuffer_target"));
+}
+
+#endif /* EGL_ANDROID_framebuffer_target */
+
+#ifdef EGL_ANDROID_image_native_buffer
+
+static void _glewInfo_EGL_ANDROID_image_native_buffer (void)
+{
+  glewPrintExt("EGL_ANDROID_image_native_buffer", EGLEW_ANDROID_image_native_buffer, eglewIsSupported("EGL_ANDROID_image_native_buffer"), eglewGetExtension("EGL_ANDROID_image_native_buffer"));
+}
+
+#endif /* EGL_ANDROID_image_native_buffer */
+
+#ifdef EGL_ANDROID_native_fence_sync
+
+static void _glewInfo_EGL_ANDROID_native_fence_sync (void)
+{
+  glewPrintExt("EGL_ANDROID_native_fence_sync", EGLEW_ANDROID_native_fence_sync, eglewIsSupported("EGL_ANDROID_native_fence_sync"), eglewGetExtension("EGL_ANDROID_native_fence_sync"));
+
+  glewInfoFunc("eglDupNativeFenceFDANDROID", eglDupNativeFenceFDANDROID == NULL);
+}
+
+#endif /* EGL_ANDROID_native_fence_sync */
+
+#ifdef EGL_ANDROID_recordable
+
+static void _glewInfo_EGL_ANDROID_recordable (void)
+{
+  glewPrintExt("EGL_ANDROID_recordable", EGLEW_ANDROID_recordable, eglewIsSupported("EGL_ANDROID_recordable"), eglewGetExtension("EGL_ANDROID_recordable"));
+}
+
+#endif /* EGL_ANDROID_recordable */
+
+#ifdef EGL_ANGLE_d3d_share_handle_client_buffer
+
+static void _glewInfo_EGL_ANGLE_d3d_share_handle_client_buffer (void)
+{
+  glewPrintExt("EGL_ANGLE_d3d_share_handle_client_buffer", EGLEW_ANGLE_d3d_share_handle_client_buffer, eglewIsSupported("EGL_ANGLE_d3d_share_handle_client_buffer"), eglewGetExtension("EGL_ANGLE_d3d_share_handle_client_buffer"));
+}
+
+#endif /* EGL_ANGLE_d3d_share_handle_client_buffer */
+
+#ifdef EGL_ANGLE_query_surface_pointer
+
+static void _glewInfo_EGL_ANGLE_query_surface_pointer (void)
+{
+  glewPrintExt("EGL_ANGLE_query_surface_pointer", EGLEW_ANGLE_query_surface_pointer, eglewIsSupported("EGL_ANGLE_query_surface_pointer"), eglewGetExtension("EGL_ANGLE_query_surface_pointer"));
+
+  glewInfoFunc("eglQuerySurfacePointerANGLE", eglQuerySurfacePointerANGLE == NULL);
+}
+
+#endif /* EGL_ANGLE_query_surface_pointer */
+
+#ifdef EGL_ANGLE_surface_d3d_texture_2d_share_handle
+
+static void _glewInfo_EGL_ANGLE_surface_d3d_texture_2d_share_handle (void)
+{
+  glewPrintExt("EGL_ANGLE_surface_d3d_texture_2d_share_handle", EGLEW_ANGLE_surface_d3d_texture_2d_share_handle, eglewIsSupported("EGL_ANGLE_surface_d3d_texture_2d_share_handle"), eglewGetExtension("EGL_ANGLE_surface_d3d_texture_2d_share_handle"));
+}
+
+#endif /* EGL_ANGLE_surface_d3d_texture_2d_share_handle */
+
+#ifdef EGL_ANGLE_window_fixed_size
+
+static void _glewInfo_EGL_ANGLE_window_fixed_size (void)
+{
+  glewPrintExt("EGL_ANGLE_window_fixed_size", EGLEW_ANGLE_window_fixed_size, eglewIsSupported("EGL_ANGLE_window_fixed_size"), eglewGetExtension("EGL_ANGLE_window_fixed_size"));
+}
+
+#endif /* EGL_ANGLE_window_fixed_size */
+
+#ifdef EGL_ARM_pixmap_multisample_discard
+
+static void _glewInfo_EGL_ARM_pixmap_multisample_discard (void)
+{
+  glewPrintExt("EGL_ARM_pixmap_multisample_discard", EGLEW_ARM_pixmap_multisample_discard, eglewIsSupported("EGL_ARM_pixmap_multisample_discard"), eglewGetExtension("EGL_ARM_pixmap_multisample_discard"));
+}
+
+#endif /* EGL_ARM_pixmap_multisample_discard */
+
+#ifdef EGL_EXT_buffer_age
+
+static void _glewInfo_EGL_EXT_buffer_age (void)
+{
+  glewPrintExt("EGL_EXT_buffer_age", EGLEW_EXT_buffer_age, eglewIsSupported("EGL_EXT_buffer_age"), eglewGetExtension("EGL_EXT_buffer_age"));
+}
+
+#endif /* EGL_EXT_buffer_age */
+
+#ifdef EGL_EXT_client_extensions
+
+static void _glewInfo_EGL_EXT_client_extensions (void)
+{
+  glewPrintExt("EGL_EXT_client_extensions", EGLEW_EXT_client_extensions, eglewIsSupported("EGL_EXT_client_extensions"), eglewGetExtension("EGL_EXT_client_extensions"));
+}
+
+#endif /* EGL_EXT_client_extensions */
+
+#ifdef EGL_EXT_create_context_robustness
+
+static void _glewInfo_EGL_EXT_create_context_robustness (void)
+{
+  glewPrintExt("EGL_EXT_create_context_robustness", EGLEW_EXT_create_context_robustness, eglewIsSupported("EGL_EXT_create_context_robustness"), eglewGetExtension("EGL_EXT_create_context_robustness"));
+}
+
+#endif /* EGL_EXT_create_context_robustness */
+
+#ifdef EGL_EXT_device_base
+
+static void _glewInfo_EGL_EXT_device_base (void)
+{
+  glewPrintExt("EGL_EXT_device_base", EGLEW_EXT_device_base, eglewIsSupported("EGL_EXT_device_base"), eglewGetExtension("EGL_EXT_device_base"));
+
+  glewInfoFunc("eglQueryDeviceAttribEXT", eglQueryDeviceAttribEXT == NULL);
+  glewInfoFunc("eglQueryDeviceStringEXT", eglQueryDeviceStringEXT == NULL);
+  glewInfoFunc("eglQueryDevicesEXT", eglQueryDevicesEXT == NULL);
+  glewInfoFunc("eglQueryDisplayAttribEXT", eglQueryDisplayAttribEXT == NULL);
+}
+
+#endif /* EGL_EXT_device_base */
+
+#ifdef EGL_EXT_device_drm
+
+static void _glewInfo_EGL_EXT_device_drm (void)
+{
+  glewPrintExt("EGL_EXT_device_drm", EGLEW_EXT_device_drm, eglewIsSupported("EGL_EXT_device_drm"), eglewGetExtension("EGL_EXT_device_drm"));
+}
+
+#endif /* EGL_EXT_device_drm */
+
+#ifdef EGL_EXT_device_openwf
+
+static void _glewInfo_EGL_EXT_device_openwf (void)
+{
+  glewPrintExt("EGL_EXT_device_openwf", EGLEW_EXT_device_openwf, eglewIsSupported("EGL_EXT_device_openwf"), eglewGetExtension("EGL_EXT_device_openwf"));
+}
+
+#endif /* EGL_EXT_device_openwf */
+
+#ifdef EGL_EXT_image_dma_buf_import
+
+static void _glewInfo_EGL_EXT_image_dma_buf_import (void)
+{
+  glewPrintExt("EGL_EXT_image_dma_buf_import", EGLEW_EXT_image_dma_buf_import, eglewIsSupported("EGL_EXT_image_dma_buf_import"), eglewGetExtension("EGL_EXT_image_dma_buf_import"));
+}
+
+#endif /* EGL_EXT_image_dma_buf_import */
+
+#ifdef EGL_EXT_multiview_window
+
+static void _glewInfo_EGL_EXT_multiview_window (void)
+{
+  glewPrintExt("EGL_EXT_multiview_window", EGLEW_EXT_multiview_window, eglewIsSupported("EGL_EXT_multiview_window"), eglewGetExtension("EGL_EXT_multiview_window"));
+}
+
+#endif /* EGL_EXT_multiview_window */
+
+#ifdef EGL_EXT_output_base
+
+static void _glewInfo_EGL_EXT_output_base (void)
+{
+  glewPrintExt("EGL_EXT_output_base", EGLEW_EXT_output_base, eglewIsSupported("EGL_EXT_output_base"), eglewGetExtension("EGL_EXT_output_base"));
+
+  glewInfoFunc("eglGetOutputLayersEXT", eglGetOutputLayersEXT == NULL);
+  glewInfoFunc("eglGetOutputPortsEXT", eglGetOutputPortsEXT == NULL);
+  glewInfoFunc("eglOutputLayerAttribEXT", eglOutputLayerAttribEXT == NULL);
+  glewInfoFunc("eglOutputPortAttribEXT", eglOutputPortAttribEXT == NULL);
+  glewInfoFunc("eglQueryOutputLayerAttribEXT", eglQueryOutputLayerAttribEXT == NULL);
+  glewInfoFunc("eglQueryOutputLayerStringEXT", eglQueryOutputLayerStringEXT == NULL);
+  glewInfoFunc("eglQueryOutputPortAttribEXT", eglQueryOutputPortAttribEXT == NULL);
+  glewInfoFunc("eglQueryOutputPortStringEXT", eglQueryOutputPortStringEXT == NULL);
+}
+
+#endif /* EGL_EXT_output_base */
+
+#ifdef EGL_EXT_output_drm
+
+static void _glewInfo_EGL_EXT_output_drm (void)
+{
+  glewPrintExt("EGL_EXT_output_drm", EGLEW_EXT_output_drm, eglewIsSupported("EGL_EXT_output_drm"), eglewGetExtension("EGL_EXT_output_drm"));
+}
+
+#endif /* EGL_EXT_output_drm */
+
+#ifdef EGL_EXT_output_openwf
+
+static void _glewInfo_EGL_EXT_output_openwf (void)
+{
+  glewPrintExt("EGL_EXT_output_openwf", EGLEW_EXT_output_openwf, eglewIsSupported("EGL_EXT_output_openwf"), eglewGetExtension("EGL_EXT_output_openwf"));
+}
+
+#endif /* EGL_EXT_output_openwf */
+
+#ifdef EGL_EXT_platform_base
+
+static void _glewInfo_EGL_EXT_platform_base (void)
+{
+  glewPrintExt("EGL_EXT_platform_base", EGLEW_EXT_platform_base, eglewIsSupported("EGL_EXT_platform_base"), eglewGetExtension("EGL_EXT_platform_base"));
+
+  glewInfoFunc("eglCreatePlatformPixmapSurfaceEXT", eglCreatePlatformPixmapSurfaceEXT == NULL);
+  glewInfoFunc("eglCreatePlatformWindowSurfaceEXT", eglCreatePlatformWindowSurfaceEXT == NULL);
+  glewInfoFunc("eglGetPlatformDisplayEXT", eglGetPlatformDisplayEXT == NULL);
+}
+
+#endif /* EGL_EXT_platform_base */
+
+#ifdef EGL_EXT_platform_device
+
+static void _glewInfo_EGL_EXT_platform_device (void)
+{
+  glewPrintExt("EGL_EXT_platform_device", EGLEW_EXT_platform_device, eglewIsSupported("EGL_EXT_platform_device"), eglewGetExtension("EGL_EXT_platform_device"));
+}
+
+#endif /* EGL_EXT_platform_device */
+
+#ifdef EGL_EXT_platform_wayland
+
+static void _glewInfo_EGL_EXT_platform_wayland (void)
+{
+  glewPrintExt("EGL_EXT_platform_wayland", EGLEW_EXT_platform_wayland, eglewIsSupported("EGL_EXT_platform_wayland"), eglewGetExtension("EGL_EXT_platform_wayland"));
+}
+
+#endif /* EGL_EXT_platform_wayland */
+
+#ifdef EGL_EXT_platform_x11
+
+static void _glewInfo_EGL_EXT_platform_x11 (void)
+{
+  glewPrintExt("EGL_EXT_platform_x11", EGLEW_EXT_platform_x11, eglewIsSupported("EGL_EXT_platform_x11"), eglewGetExtension("EGL_EXT_platform_x11"));
+}
+
+#endif /* EGL_EXT_platform_x11 */
+
+#ifdef EGL_EXT_protected_surface
+
+static void _glewInfo_EGL_EXT_protected_surface (void)
+{
+  glewPrintExt("EGL_EXT_protected_surface", EGLEW_EXT_protected_surface, eglewIsSupported("EGL_EXT_protected_surface"), eglewGetExtension("EGL_EXT_protected_surface"));
+}
+
+#endif /* EGL_EXT_protected_surface */
+
+#ifdef EGL_EXT_stream_consumer_egloutput
+
+static void _glewInfo_EGL_EXT_stream_consumer_egloutput (void)
+{
+  glewPrintExt("EGL_EXT_stream_consumer_egloutput", EGLEW_EXT_stream_consumer_egloutput, eglewIsSupported("EGL_EXT_stream_consumer_egloutput"), eglewGetExtension("EGL_EXT_stream_consumer_egloutput"));
+
+  glewInfoFunc("eglStreamConsumerOutputEXT", eglStreamConsumerOutputEXT == NULL);
+}
+
+#endif /* EGL_EXT_stream_consumer_egloutput */
+
+#ifdef EGL_EXT_swap_buffers_with_damage
+
+static void _glewInfo_EGL_EXT_swap_buffers_with_damage (void)
+{
+  glewPrintExt("EGL_EXT_swap_buffers_with_damage", EGLEW_EXT_swap_buffers_with_damage, eglewIsSupported("EGL_EXT_swap_buffers_with_damage"), eglewGetExtension("EGL_EXT_swap_buffers_with_damage"));
+
+  glewInfoFunc("eglSwapBuffersWithDamageEXT", eglSwapBuffersWithDamageEXT == NULL);
+}
+
+#endif /* EGL_EXT_swap_buffers_with_damage */
+
+#ifdef EGL_HI_clientpixmap
+
+static void _glewInfo_EGL_HI_clientpixmap (void)
+{
+  glewPrintExt("EGL_HI_clientpixmap", EGLEW_HI_clientpixmap, eglewIsSupported("EGL_HI_clientpixmap"), eglewGetExtension("EGL_HI_clientpixmap"));
+
+  glewInfoFunc("eglCreatePixmapSurfaceHI", eglCreatePixmapSurfaceHI == NULL);
+}
+
+#endif /* EGL_HI_clientpixmap */
+
+#ifdef EGL_HI_colorformats
+
+static void _glewInfo_EGL_HI_colorformats (void)
+{
+  glewPrintExt("EGL_HI_colorformats", EGLEW_HI_colorformats, eglewIsSupported("EGL_HI_colorformats"), eglewGetExtension("EGL_HI_colorformats"));
+}
+
+#endif /* EGL_HI_colorformats */
+
+#ifdef EGL_IMG_context_priority
+
+static void _glewInfo_EGL_IMG_context_priority (void)
+{
+  glewPrintExt("EGL_IMG_context_priority", EGLEW_IMG_context_priority, eglewIsSupported("EGL_IMG_context_priority"), eglewGetExtension("EGL_IMG_context_priority"));
+}
+
+#endif /* EGL_IMG_context_priority */
+
+#ifdef EGL_KHR_cl_event
+
+static void _glewInfo_EGL_KHR_cl_event (void)
+{
+  glewPrintExt("EGL_KHR_cl_event", EGLEW_KHR_cl_event, eglewIsSupported("EGL_KHR_cl_event"), eglewGetExtension("EGL_KHR_cl_event"));
+}
+
+#endif /* EGL_KHR_cl_event */
+
+#ifdef EGL_KHR_cl_event2
+
+static void _glewInfo_EGL_KHR_cl_event2 (void)
+{
+  glewPrintExt("EGL_KHR_cl_event2", EGLEW_KHR_cl_event2, eglewIsSupported("EGL_KHR_cl_event2"), eglewGetExtension("EGL_KHR_cl_event2"));
+
+  glewInfoFunc("eglCreateSync64KHR", eglCreateSync64KHR == NULL);
+}
+
+#endif /* EGL_KHR_cl_event2 */
+
+#ifdef EGL_KHR_client_get_all_proc_addresses
+
+static void _glewInfo_EGL_KHR_client_get_all_proc_addresses (void)
+{
+  glewPrintExt("EGL_KHR_client_get_all_proc_addresses", EGLEW_KHR_client_get_all_proc_addresses, eglewIsSupported("EGL_KHR_client_get_all_proc_addresses"), eglewGetExtension("EGL_KHR_client_get_all_proc_addresses"));
+}
+
+#endif /* EGL_KHR_client_get_all_proc_addresses */
+
+#ifdef EGL_KHR_config_attribs
+
+static void _glewInfo_EGL_KHR_config_attribs (void)
+{
+  glewPrintExt("EGL_KHR_config_attribs", EGLEW_KHR_config_attribs, eglewIsSupported("EGL_KHR_config_attribs"), eglewGetExtension("EGL_KHR_config_attribs"));
+}
+
+#endif /* EGL_KHR_config_attribs */
+
+#ifdef EGL_KHR_create_context
+
+static void _glewInfo_EGL_KHR_create_context (void)
+{
+  glewPrintExt("EGL_KHR_create_context", EGLEW_KHR_create_context, eglewIsSupported("EGL_KHR_create_context"), eglewGetExtension("EGL_KHR_create_context"));
+}
+
+#endif /* EGL_KHR_create_context */
+
+#ifdef EGL_KHR_fence_sync
+
+static void _glewInfo_EGL_KHR_fence_sync (void)
+{
+  glewPrintExt("EGL_KHR_fence_sync", EGLEW_KHR_fence_sync, eglewIsSupported("EGL_KHR_fence_sync"), eglewGetExtension("EGL_KHR_fence_sync"));
+}
+
+#endif /* EGL_KHR_fence_sync */
+
+#ifdef EGL_KHR_get_all_proc_addresses
+
+static void _glewInfo_EGL_KHR_get_all_proc_addresses (void)
+{
+  glewPrintExt("EGL_KHR_get_all_proc_addresses", EGLEW_KHR_get_all_proc_addresses, eglewIsSupported("EGL_KHR_get_all_proc_addresses"), eglewGetExtension("EGL_KHR_get_all_proc_addresses"));
+}
+
+#endif /* EGL_KHR_get_all_proc_addresses */
+
+#ifdef EGL_KHR_gl_colorspace
+
+static void _glewInfo_EGL_KHR_gl_colorspace (void)
+{
+  glewPrintExt("EGL_KHR_gl_colorspace", EGLEW_KHR_gl_colorspace, eglewIsSupported("EGL_KHR_gl_colorspace"), eglewGetExtension("EGL_KHR_gl_colorspace"));
+}
+
+#endif /* EGL_KHR_gl_colorspace */
+
+#ifdef EGL_KHR_gl_renderbuffer_image
+
+static void _glewInfo_EGL_KHR_gl_renderbuffer_image (void)
+{
+  glewPrintExt("EGL_KHR_gl_renderbuffer_image", EGLEW_KHR_gl_renderbuffer_image, eglewIsSupported("EGL_KHR_gl_renderbuffer_image"), eglewGetExtension("EGL_KHR_gl_renderbuffer_image"));
+}
+
+#endif /* EGL_KHR_gl_renderbuffer_image */
+
+#ifdef EGL_KHR_gl_texture_2D_image
+
+static void _glewInfo_EGL_KHR_gl_texture_2D_image (void)
+{
+  glewPrintExt("EGL_KHR_gl_texture_2D_image", EGLEW_KHR_gl_texture_2D_image, eglewIsSupported("EGL_KHR_gl_texture_2D_image"), eglewGetExtension("EGL_KHR_gl_texture_2D_image"));
+}
+
+#endif /* EGL_KHR_gl_texture_2D_image */
+
+#ifdef EGL_KHR_gl_texture_3D_image
+
+static void _glewInfo_EGL_KHR_gl_texture_3D_image (void)
+{
+  glewPrintExt("EGL_KHR_gl_texture_3D_image", EGLEW_KHR_gl_texture_3D_image, eglewIsSupported("EGL_KHR_gl_texture_3D_image"), eglewGetExtension("EGL_KHR_gl_texture_3D_image"));
+}
+
+#endif /* EGL_KHR_gl_texture_3D_image */
+
+#ifdef EGL_KHR_gl_texture_cubemap_image
+
+static void _glewInfo_EGL_KHR_gl_texture_cubemap_image (void)
+{
+  glewPrintExt("EGL_KHR_gl_texture_cubemap_image", EGLEW_KHR_gl_texture_cubemap_image, eglewIsSupported("EGL_KHR_gl_texture_cubemap_image"), eglewGetExtension("EGL_KHR_gl_texture_cubemap_image"));
+}
+
+#endif /* EGL_KHR_gl_texture_cubemap_image */
+
+#ifdef EGL_KHR_image
+
+static void _glewInfo_EGL_KHR_image (void)
+{
+  glewPrintExt("EGL_KHR_image", EGLEW_KHR_image, eglewIsSupported("EGL_KHR_image"), eglewGetExtension("EGL_KHR_image"));
+
+  glewInfoFunc("eglCreateImageKHR", eglCreateImageKHR == NULL);
+  glewInfoFunc("eglDestroyImageKHR", eglDestroyImageKHR == NULL);
+}
+
+#endif /* EGL_KHR_image */
+
+#ifdef EGL_KHR_image_base
+
+static void _glewInfo_EGL_KHR_image_base (void)
+{
+  glewPrintExt("EGL_KHR_image_base", EGLEW_KHR_image_base, eglewIsSupported("EGL_KHR_image_base"), eglewGetExtension("EGL_KHR_image_base"));
+
+  glewInfoFunc("eglCreateImageKHR", eglCreateImageKHR == NULL);
+  glewInfoFunc("eglDestroyImageKHR", eglDestroyImageKHR == NULL);
+}
+
+#endif /* EGL_KHR_image_base */
+
+#ifdef EGL_KHR_image_pixmap
+
+static void _glewInfo_EGL_KHR_image_pixmap (void)
+{
+  glewPrintExt("EGL_KHR_image_pixmap", EGLEW_KHR_image_pixmap, eglewIsSupported("EGL_KHR_image_pixmap"), eglewGetExtension("EGL_KHR_image_pixmap"));
+}
+
+#endif /* EGL_KHR_image_pixmap */
+
+#ifdef EGL_KHR_lock_surface
+
+static void _glewInfo_EGL_KHR_lock_surface (void)
+{
+  glewPrintExt("EGL_KHR_lock_surface", EGLEW_KHR_lock_surface, eglewIsSupported("EGL_KHR_lock_surface"), eglewGetExtension("EGL_KHR_lock_surface"));
+
+  glewInfoFunc("eglLockSurfaceKHR", eglLockSurfaceKHR == NULL);
+  glewInfoFunc("eglUnlockSurfaceKHR", eglUnlockSurfaceKHR == NULL);
+}
+
+#endif /* EGL_KHR_lock_surface */
+
+#ifdef EGL_KHR_lock_surface2
+
+static void _glewInfo_EGL_KHR_lock_surface2 (void)
+{
+  glewPrintExt("EGL_KHR_lock_surface2", EGLEW_KHR_lock_surface2, eglewIsSupported("EGL_KHR_lock_surface2"), eglewGetExtension("EGL_KHR_lock_surface2"));
+}
+
+#endif /* EGL_KHR_lock_surface2 */
+
+#ifdef EGL_KHR_lock_surface3
+
+static void _glewInfo_EGL_KHR_lock_surface3 (void)
+{
+  glewPrintExt("EGL_KHR_lock_surface3", EGLEW_KHR_lock_surface3, eglewIsSupported("EGL_KHR_lock_surface3"), eglewGetExtension("EGL_KHR_lock_surface3"));
+
+  glewInfoFunc("eglLockSurfaceKHR", eglLockSurfaceKHR == NULL);
+  glewInfoFunc("eglQuerySurface64KHR", eglQuerySurface64KHR == NULL);
+  glewInfoFunc("eglUnlockSurfaceKHR", eglUnlockSurfaceKHR == NULL);
+}
+
+#endif /* EGL_KHR_lock_surface3 */
+
+#ifdef EGL_KHR_partial_update
+
+static void _glewInfo_EGL_KHR_partial_update (void)
+{
+  glewPrintExt("EGL_KHR_partial_update", EGLEW_KHR_partial_update, eglewIsSupported("EGL_KHR_partial_update"), eglewGetExtension("EGL_KHR_partial_update"));
+
+  glewInfoFunc("eglSetDamageRegionKHR", eglSetDamageRegionKHR == NULL);
+}
+
+#endif /* EGL_KHR_partial_update */
+
+#ifdef EGL_KHR_platform_android
+
+static void _glewInfo_EGL_KHR_platform_android (void)
+{
+  glewPrintExt("EGL_KHR_platform_android", EGLEW_KHR_platform_android, eglewIsSupported("EGL_KHR_platform_android"), eglewGetExtension("EGL_KHR_platform_android"));
+}
+
+#endif /* EGL_KHR_platform_android */
+
+#ifdef EGL_KHR_platform_gbm
+
+static void _glewInfo_EGL_KHR_platform_gbm (void)
+{
+  glewPrintExt("EGL_KHR_platform_gbm", EGLEW_KHR_platform_gbm, eglewIsSupported("EGL_KHR_platform_gbm"), eglewGetExtension("EGL_KHR_platform_gbm"));
+}
+
+#endif /* EGL_KHR_platform_gbm */
+
+#ifdef EGL_KHR_platform_wayland
+
+static void _glewInfo_EGL_KHR_platform_wayland (void)
+{
+  glewPrintExt("EGL_KHR_platform_wayland", EGLEW_KHR_platform_wayland, eglewIsSupported("EGL_KHR_platform_wayland"), eglewGetExtension("EGL_KHR_platform_wayland"));
+}
+
+#endif /* EGL_KHR_platform_wayland */
+
+#ifdef EGL_KHR_platform_x11
+
+static void _glewInfo_EGL_KHR_platform_x11 (void)
+{
+  glewPrintExt("EGL_KHR_platform_x11", EGLEW_KHR_platform_x11, eglewIsSupported("EGL_KHR_platform_x11"), eglewGetExtension("EGL_KHR_platform_x11"));
+}
+
+#endif /* EGL_KHR_platform_x11 */
+
+#ifdef EGL_KHR_reusable_sync
+
+static void _glewInfo_EGL_KHR_reusable_sync (void)
+{
+  glewPrintExt("EGL_KHR_reusable_sync", EGLEW_KHR_reusable_sync, eglewIsSupported("EGL_KHR_reusable_sync"), eglewGetExtension("EGL_KHR_reusable_sync"));
+
+  glewInfoFunc("eglClientWaitSyncKHR", eglClientWaitSyncKHR == NULL);
+  glewInfoFunc("eglCreateSyncKHR", eglCreateSyncKHR == NULL);
+  glewInfoFunc("eglDestroySyncKHR", eglDestroySyncKHR == NULL);
+  glewInfoFunc("eglGetSyncAttribKHR", eglGetSyncAttribKHR == NULL);
+  glewInfoFunc("eglSignalSyncKHR", eglSignalSyncKHR == NULL);
+}
+
+#endif /* EGL_KHR_reusable_sync */
+
+#ifdef EGL_KHR_stream
+
+static void _glewInfo_EGL_KHR_stream (void)
+{
+  glewPrintExt("EGL_KHR_stream", EGLEW_KHR_stream, eglewIsSupported("EGL_KHR_stream"), eglewGetExtension("EGL_KHR_stream"));
+
+  glewInfoFunc("eglCreateStreamKHR", eglCreateStreamKHR == NULL);
+  glewInfoFunc("eglDestroyStreamKHR", eglDestroyStreamKHR == NULL);
+  glewInfoFunc("eglQueryStreamKHR", eglQueryStreamKHR == NULL);
+  glewInfoFunc("eglQueryStreamu64KHR", eglQueryStreamu64KHR == NULL);
+  glewInfoFunc("eglStreamAttribKHR", eglStreamAttribKHR == NULL);
+}
+
+#endif /* EGL_KHR_stream */
+
+#ifdef EGL_KHR_stream_consumer_gltexture
+
+static void _glewInfo_EGL_KHR_stream_consumer_gltexture (void)
+{
+  glewPrintExt("EGL_KHR_stream_consumer_gltexture", EGLEW_KHR_stream_consumer_gltexture, eglewIsSupported("EGL_KHR_stream_consumer_gltexture"), eglewGetExtension("EGL_KHR_stream_consumer_gltexture"));
+
+  glewInfoFunc("eglStreamConsumerAcquireKHR", eglStreamConsumerAcquireKHR == NULL);
+  glewInfoFunc("eglStreamConsumerGLTextureExternalKHR", eglStreamConsumerGLTextureExternalKHR == NULL);
+  glewInfoFunc("eglStreamConsumerReleaseKHR", eglStreamConsumerReleaseKHR == NULL);
+}
+
+#endif /* EGL_KHR_stream_consumer_gltexture */
+
+#ifdef EGL_KHR_stream_cross_process_fd
+
+static void _glewInfo_EGL_KHR_stream_cross_process_fd (void)
+{
+  glewPrintExt("EGL_KHR_stream_cross_process_fd", EGLEW_KHR_stream_cross_process_fd, eglewIsSupported("EGL_KHR_stream_cross_process_fd"), eglewGetExtension("EGL_KHR_stream_cross_process_fd"));
+
+  glewInfoFunc("eglCreateStreamFromFileDescriptorKHR", eglCreateStreamFromFileDescriptorKHR == NULL);
+  glewInfoFunc("eglGetStreamFileDescriptorKHR", eglGetStreamFileDescriptorKHR == NULL);
+}
+
+#endif /* EGL_KHR_stream_cross_process_fd */
+
+#ifdef EGL_KHR_stream_fifo
+
+static void _glewInfo_EGL_KHR_stream_fifo (void)
+{
+  glewPrintExt("EGL_KHR_stream_fifo", EGLEW_KHR_stream_fifo, eglewIsSupported("EGL_KHR_stream_fifo"), eglewGetExtension("EGL_KHR_stream_fifo"));
+
+  glewInfoFunc("eglQueryStreamTimeKHR", eglQueryStreamTimeKHR == NULL);
+}
+
+#endif /* EGL_KHR_stream_fifo */
+
+#ifdef EGL_KHR_stream_producer_aldatalocator
+
+static void _glewInfo_EGL_KHR_stream_producer_aldatalocator (void)
+{
+  glewPrintExt("EGL_KHR_stream_producer_aldatalocator", EGLEW_KHR_stream_producer_aldatalocator, eglewIsSupported("EGL_KHR_stream_producer_aldatalocator"), eglewGetExtension("EGL_KHR_stream_producer_aldatalocator"));
+}
+
+#endif /* EGL_KHR_stream_producer_aldatalocator */
+
+#ifdef EGL_KHR_stream_producer_eglsurface
+
+static void _glewInfo_EGL_KHR_stream_producer_eglsurface (void)
+{
+  glewPrintExt("EGL_KHR_stream_producer_eglsurface", EGLEW_KHR_stream_producer_eglsurface, eglewIsSupported("EGL_KHR_stream_producer_eglsurface"), eglewGetExtension("EGL_KHR_stream_producer_eglsurface"));
+
+  glewInfoFunc("eglCreateStreamProducerSurfaceKHR", eglCreateStreamProducerSurfaceKHR == NULL);
+}
+
+#endif /* EGL_KHR_stream_producer_eglsurface */
+
+#ifdef EGL_KHR_surfaceless_context
+
+static void _glewInfo_EGL_KHR_surfaceless_context (void)
+{
+  glewPrintExt("EGL_KHR_surfaceless_context", EGLEW_KHR_surfaceless_context, eglewIsSupported("EGL_KHR_surfaceless_context"), eglewGetExtension("EGL_KHR_surfaceless_context"));
+}
+
+#endif /* EGL_KHR_surfaceless_context */
+
+#ifdef EGL_KHR_swap_buffers_with_damage
+
+static void _glewInfo_EGL_KHR_swap_buffers_with_damage (void)
+{
+  glewPrintExt("EGL_KHR_swap_buffers_with_damage", EGLEW_KHR_swap_buffers_with_damage, eglewIsSupported("EGL_KHR_swap_buffers_with_damage"), eglewGetExtension("EGL_KHR_swap_buffers_with_damage"));
+
+  glewInfoFunc("eglSwapBuffersWithDamageKHR", eglSwapBuffersWithDamageKHR == NULL);
+}
+
+#endif /* EGL_KHR_swap_buffers_with_damage */
+
+#ifdef EGL_KHR_vg_parent_image
+
+static void _glewInfo_EGL_KHR_vg_parent_image (void)
+{
+  glewPrintExt("EGL_KHR_vg_parent_image", EGLEW_KHR_vg_parent_image, eglewIsSupported("EGL_KHR_vg_parent_image"), eglewGetExtension("EGL_KHR_vg_parent_image"));
+}
+
+#endif /* EGL_KHR_vg_parent_image */
+
+#ifdef EGL_KHR_wait_sync
+
+static void _glewInfo_EGL_KHR_wait_sync (void)
+{
+  glewPrintExt("EGL_KHR_wait_sync", EGLEW_KHR_wait_sync, eglewIsSupported("EGL_KHR_wait_sync"), eglewGetExtension("EGL_KHR_wait_sync"));
+
+  glewInfoFunc("eglWaitSyncKHR", eglWaitSyncKHR == NULL);
+}
+
+#endif /* EGL_KHR_wait_sync */
+
+#ifdef EGL_MESA_drm_image
+
+static void _glewInfo_EGL_MESA_drm_image (void)
+{
+  glewPrintExt("EGL_MESA_drm_image", EGLEW_MESA_drm_image, eglewIsSupported("EGL_MESA_drm_image"), eglewGetExtension("EGL_MESA_drm_image"));
+
+  glewInfoFunc("eglCreateDRMImageMESA", eglCreateDRMImageMESA == NULL);
+  glewInfoFunc("eglExportDRMImageMESA", eglExportDRMImageMESA == NULL);
+}
+
+#endif /* EGL_MESA_drm_image */
+
+#ifdef EGL_MESA_platform_gbm
+
+static void _glewInfo_EGL_MESA_platform_gbm (void)
+{
+  glewPrintExt("EGL_MESA_platform_gbm", EGLEW_MESA_platform_gbm, eglewIsSupported("EGL_MESA_platform_gbm"), eglewGetExtension("EGL_MESA_platform_gbm"));
+}
+
+#endif /* EGL_MESA_platform_gbm */
+
+#ifdef EGL_NOK_swap_region
+
+static void _glewInfo_EGL_NOK_swap_region (void)
+{
+  glewPrintExt("EGL_NOK_swap_region", EGLEW_NOK_swap_region, eglewIsSupported("EGL_NOK_swap_region"), eglewGetExtension("EGL_NOK_swap_region"));
+
+  glewInfoFunc("eglSwapBuffersRegionNOK", eglSwapBuffersRegionNOK == NULL);
+}
+
+#endif /* EGL_NOK_swap_region */
+
+#ifdef EGL_NOK_swap_region2
+
+static void _glewInfo_EGL_NOK_swap_region2 (void)
+{
+  glewPrintExt("EGL_NOK_swap_region2", EGLEW_NOK_swap_region2, eglewIsSupported("EGL_NOK_swap_region2"), eglewGetExtension("EGL_NOK_swap_region2"));
+
+  glewInfoFunc("eglSwapBuffersRegion2NOK", eglSwapBuffersRegion2NOK == NULL);
+}
+
+#endif /* EGL_NOK_swap_region2 */
+
+#ifdef EGL_NOK_texture_from_pixmap
+
+static void _glewInfo_EGL_NOK_texture_from_pixmap (void)
+{
+  glewPrintExt("EGL_NOK_texture_from_pixmap", EGLEW_NOK_texture_from_pixmap, eglewIsSupported("EGL_NOK_texture_from_pixmap"), eglewGetExtension("EGL_NOK_texture_from_pixmap"));
+}
+
+#endif /* EGL_NOK_texture_from_pixmap */
+
+#ifdef EGL_NV_3dvision_surface
+
+static void _glewInfo_EGL_NV_3dvision_surface (void)
+{
+  glewPrintExt("EGL_NV_3dvision_surface", EGLEW_NV_3dvision_surface, eglewIsSupported("EGL_NV_3dvision_surface"), eglewGetExtension("EGL_NV_3dvision_surface"));
+}
+
+#endif /* EGL_NV_3dvision_surface */
+
+#ifdef EGL_NV_coverage_sample
+
+static void _glewInfo_EGL_NV_coverage_sample (void)
+{
+  glewPrintExt("EGL_NV_coverage_sample", EGLEW_NV_coverage_sample, eglewIsSupported("EGL_NV_coverage_sample"), eglewGetExtension("EGL_NV_coverage_sample"));
+}
+
+#endif /* EGL_NV_coverage_sample */
+
+#ifdef EGL_NV_coverage_sample_resolve
+
+static void _glewInfo_EGL_NV_coverage_sample_resolve (void)
+{
+  glewPrintExt("EGL_NV_coverage_sample_resolve", EGLEW_NV_coverage_sample_resolve, eglewIsSupported("EGL_NV_coverage_sample_resolve"), eglewGetExtension("EGL_NV_coverage_sample_resolve"));
+}
+
+#endif /* EGL_NV_coverage_sample_resolve */
+
+#ifdef EGL_NV_cuda_event
+
+static void _glewInfo_EGL_NV_cuda_event (void)
+{
+  glewPrintExt("EGL_NV_cuda_event", EGLEW_NV_cuda_event, eglewIsSupported("EGL_NV_cuda_event"), eglewGetExtension("EGL_NV_cuda_event"));
+}
+
+#endif /* EGL_NV_cuda_event */
+
+#ifdef EGL_NV_depth_nonlinear
+
+static void _glewInfo_EGL_NV_depth_nonlinear (void)
+{
+  glewPrintExt("EGL_NV_depth_nonlinear", EGLEW_NV_depth_nonlinear, eglewIsSupported("EGL_NV_depth_nonlinear"), eglewGetExtension("EGL_NV_depth_nonlinear"));
+}
+
+#endif /* EGL_NV_depth_nonlinear */
+
+#ifdef EGL_NV_device_cuda
+
+static void _glewInfo_EGL_NV_device_cuda (void)
+{
+  glewPrintExt("EGL_NV_device_cuda", EGLEW_NV_device_cuda, eglewIsSupported("EGL_NV_device_cuda"), eglewGetExtension("EGL_NV_device_cuda"));
+}
+
+#endif /* EGL_NV_device_cuda */
+
+#ifdef EGL_NV_native_query
+
+static void _glewInfo_EGL_NV_native_query (void)
+{
+  glewPrintExt("EGL_NV_native_query", EGLEW_NV_native_query, eglewIsSupported("EGL_NV_native_query"), eglewGetExtension("EGL_NV_native_query"));
+
+  glewInfoFunc("eglQueryNativeDisplayNV", eglQueryNativeDisplayNV == NULL);
+  glewInfoFunc("eglQueryNativePixmapNV", eglQueryNativePixmapNV == NULL);
+  glewInfoFunc("eglQueryNativeWindowNV", eglQueryNativeWindowNV == NULL);
+}
+
+#endif /* EGL_NV_native_query */
+
+#ifdef EGL_NV_post_convert_rounding
+
+static void _glewInfo_EGL_NV_post_convert_rounding (void)
+{
+  glewPrintExt("EGL_NV_post_convert_rounding", EGLEW_NV_post_convert_rounding, eglewIsSupported("EGL_NV_post_convert_rounding"), eglewGetExtension("EGL_NV_post_convert_rounding"));
+}
+
+#endif /* EGL_NV_post_convert_rounding */
+
+#ifdef EGL_NV_post_sub_buffer
+
+static void _glewInfo_EGL_NV_post_sub_buffer (void)
+{
+  glewPrintExt("EGL_NV_post_sub_buffer", EGLEW_NV_post_sub_buffer, eglewIsSupported("EGL_NV_post_sub_buffer"), eglewGetExtension("EGL_NV_post_sub_buffer"));
+
+  glewInfoFunc("eglPostSubBufferNV", eglPostSubBufferNV == NULL);
+}
+
+#endif /* EGL_NV_post_sub_buffer */
+
+#ifdef EGL_NV_stream_sync
+
+static void _glewInfo_EGL_NV_stream_sync (void)
+{
+  glewPrintExt("EGL_NV_stream_sync", EGLEW_NV_stream_sync, eglewIsSupported("EGL_NV_stream_sync"), eglewGetExtension("EGL_NV_stream_sync"));
+
+  glewInfoFunc("eglCreateStreamSyncNV", eglCreateStreamSyncNV == NULL);
+}
+
+#endif /* EGL_NV_stream_sync */
+
+#ifdef EGL_NV_sync
+
+static void _glewInfo_EGL_NV_sync (void)
+{
+  glewPrintExt("EGL_NV_sync", EGLEW_NV_sync, eglewIsSupported("EGL_NV_sync"), eglewGetExtension("EGL_NV_sync"));
+
+  glewInfoFunc("eglClientWaitSyncNV", eglClientWaitSyncNV == NULL);
+  glewInfoFunc("eglCreateFenceSyncNV", eglCreateFenceSyncNV == NULL);
+  glewInfoFunc("eglDestroySyncNV", eglDestroySyncNV == NULL);
+  glewInfoFunc("eglFenceNV", eglFenceNV == NULL);
+  glewInfoFunc("eglGetSyncAttribNV", eglGetSyncAttribNV == NULL);
+  glewInfoFunc("eglSignalSyncNV", eglSignalSyncNV == NULL);
+}
+
+#endif /* EGL_NV_sync */
+
+#ifdef EGL_NV_system_time
+
+static void _glewInfo_EGL_NV_system_time (void)
+{
+  glewPrintExt("EGL_NV_system_time", EGLEW_NV_system_time, eglewIsSupported("EGL_NV_system_time"), eglewGetExtension("EGL_NV_system_time"));
+
+  glewInfoFunc("eglGetSystemTimeFrequencyNV", eglGetSystemTimeFrequencyNV == NULL);
+  glewInfoFunc("eglGetSystemTimeNV", eglGetSystemTimeNV == NULL);
+}
+
+#endif /* EGL_NV_system_time */
+
+#ifdef EGL_TIZEN_image_native_buffer
+
+static void _glewInfo_EGL_TIZEN_image_native_buffer (void)
+{
+  glewPrintExt("EGL_TIZEN_image_native_buffer", EGLEW_TIZEN_image_native_buffer, eglewIsSupported("EGL_TIZEN_image_native_buffer"), eglewGetExtension("EGL_TIZEN_image_native_buffer"));
+}
+
+#endif /* EGL_TIZEN_image_native_buffer */
+
+#ifdef EGL_TIZEN_image_native_surface
+
+static void _glewInfo_EGL_TIZEN_image_native_surface (void)
+{
+  glewPrintExt("EGL_TIZEN_image_native_surface", EGLEW_TIZEN_image_native_surface, eglewIsSupported("EGL_TIZEN_image_native_surface"), eglewGetExtension("EGL_TIZEN_image_native_surface"));
+}
+
+#endif /* EGL_TIZEN_image_native_surface */
+
+#elif _WIN32
 
 #ifdef WGL_3DFX_multisample
 
@@ -10678,6 +11660,9 @@ static void glewInfo (void)
 #ifdef GL_NV_video_capture
   _glewInfo_GL_NV_video_capture();
 #endif /* GL_NV_video_capture */
+#ifdef GL_NV_viewport_array2
+  _glewInfo_GL_NV_viewport_array2();
+#endif /* GL_NV_viewport_array2 */
 #ifdef GL_OES_byte_coordinates
   _glewInfo_GL_OES_byte_coordinates();
 #endif /* GL_OES_byte_coordinates */
@@ -10916,7 +11901,7 @@ static void glewInfo (void)
 
 /* ------------------------------------------------------------------------ */
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(GLEW_EGL) && !defined(GLEW_OSMESA)
 
 static void wglewInfo ()
 {
@@ -11084,7 +12069,7 @@ static void wglewInfo ()
 #endif /* WGL_OML_sync_control */
 }
 
-#else /* _UNIX */
+#elif !defined(GLEW_EGL) && !defined(GLEW_OSMESA) /* _UNIX */
 
 static void glxewInfo ()
 {
@@ -11294,63 +12279,353 @@ static void glxewInfo ()
 #endif /* GLX_SUN_video_resize */
 }
 
+#elif defined(GLEW_EGL)
+
+static void eglewInfo ()
+{
+#ifdef EGL_VERSION_1_0
+  _glewInfo_EGL_VERSION_1_0();
+#endif /* EGL_VERSION_1_0 */
+#ifdef EGL_VERSION_1_1
+  _glewInfo_EGL_VERSION_1_1();
+#endif /* EGL_VERSION_1_1 */
+#ifdef EGL_VERSION_1_2
+  _glewInfo_EGL_VERSION_1_2();
+#endif /* EGL_VERSION_1_2 */
+#ifdef EGL_VERSION_1_3
+  _glewInfo_EGL_VERSION_1_3();
+#endif /* EGL_VERSION_1_3 */
+#ifdef EGL_VERSION_1_4
+  _glewInfo_EGL_VERSION_1_4();
+#endif /* EGL_VERSION_1_4 */
+#ifdef EGL_VERSION_1_5
+  _glewInfo_EGL_VERSION_1_5();
+#endif /* EGL_VERSION_1_5 */
+#ifdef EGL_ANDROID_blob_cache
+  _glewInfo_EGL_ANDROID_blob_cache();
+#endif /* EGL_ANDROID_blob_cache */
+#ifdef EGL_ANDROID_framebuffer_target
+  _glewInfo_EGL_ANDROID_framebuffer_target();
+#endif /* EGL_ANDROID_framebuffer_target */
+#ifdef EGL_ANDROID_image_native_buffer
+  _glewInfo_EGL_ANDROID_image_native_buffer();
+#endif /* EGL_ANDROID_image_native_buffer */
+#ifdef EGL_ANDROID_native_fence_sync
+  _glewInfo_EGL_ANDROID_native_fence_sync();
+#endif /* EGL_ANDROID_native_fence_sync */
+#ifdef EGL_ANDROID_recordable
+  _glewInfo_EGL_ANDROID_recordable();
+#endif /* EGL_ANDROID_recordable */
+#ifdef EGL_ANGLE_d3d_share_handle_client_buffer
+  _glewInfo_EGL_ANGLE_d3d_share_handle_client_buffer();
+#endif /* EGL_ANGLE_d3d_share_handle_client_buffer */
+#ifdef EGL_ANGLE_query_surface_pointer
+  _glewInfo_EGL_ANGLE_query_surface_pointer();
+#endif /* EGL_ANGLE_query_surface_pointer */
+#ifdef EGL_ANGLE_surface_d3d_texture_2d_share_handle
+  _glewInfo_EGL_ANGLE_surface_d3d_texture_2d_share_handle();
+#endif /* EGL_ANGLE_surface_d3d_texture_2d_share_handle */
+#ifdef EGL_ANGLE_window_fixed_size
+  _glewInfo_EGL_ANGLE_window_fixed_size();
+#endif /* EGL_ANGLE_window_fixed_size */
+#ifdef EGL_ARM_pixmap_multisample_discard
+  _glewInfo_EGL_ARM_pixmap_multisample_discard();
+#endif /* EGL_ARM_pixmap_multisample_discard */
+#ifdef EGL_EXT_buffer_age
+  _glewInfo_EGL_EXT_buffer_age();
+#endif /* EGL_EXT_buffer_age */
+#ifdef EGL_EXT_client_extensions
+  _glewInfo_EGL_EXT_client_extensions();
+#endif /* EGL_EXT_client_extensions */
+#ifdef EGL_EXT_create_context_robustness
+  _glewInfo_EGL_EXT_create_context_robustness();
+#endif /* EGL_EXT_create_context_robustness */
+#ifdef EGL_EXT_device_base
+  _glewInfo_EGL_EXT_device_base();
+#endif /* EGL_EXT_device_base */
+#ifdef EGL_EXT_device_drm
+  _glewInfo_EGL_EXT_device_drm();
+#endif /* EGL_EXT_device_drm */
+#ifdef EGL_EXT_device_openwf
+  _glewInfo_EGL_EXT_device_openwf();
+#endif /* EGL_EXT_device_openwf */
+#ifdef EGL_EXT_image_dma_buf_import
+  _glewInfo_EGL_EXT_image_dma_buf_import();
+#endif /* EGL_EXT_image_dma_buf_import */
+#ifdef EGL_EXT_multiview_window
+  _glewInfo_EGL_EXT_multiview_window();
+#endif /* EGL_EXT_multiview_window */
+#ifdef EGL_EXT_output_base
+  _glewInfo_EGL_EXT_output_base();
+#endif /* EGL_EXT_output_base */
+#ifdef EGL_EXT_output_drm
+  _glewInfo_EGL_EXT_output_drm();
+#endif /* EGL_EXT_output_drm */
+#ifdef EGL_EXT_output_openwf
+  _glewInfo_EGL_EXT_output_openwf();
+#endif /* EGL_EXT_output_openwf */
+#ifdef EGL_EXT_platform_base
+  _glewInfo_EGL_EXT_platform_base();
+#endif /* EGL_EXT_platform_base */
+#ifdef EGL_EXT_platform_device
+  _glewInfo_EGL_EXT_platform_device();
+#endif /* EGL_EXT_platform_device */
+#ifdef EGL_EXT_platform_wayland
+  _glewInfo_EGL_EXT_platform_wayland();
+#endif /* EGL_EXT_platform_wayland */
+#ifdef EGL_EXT_platform_x11
+  _glewInfo_EGL_EXT_platform_x11();
+#endif /* EGL_EXT_platform_x11 */
+#ifdef EGL_EXT_protected_surface
+  _glewInfo_EGL_EXT_protected_surface();
+#endif /* EGL_EXT_protected_surface */
+#ifdef EGL_EXT_stream_consumer_egloutput
+  _glewInfo_EGL_EXT_stream_consumer_egloutput();
+#endif /* EGL_EXT_stream_consumer_egloutput */
+#ifdef EGL_EXT_swap_buffers_with_damage
+  _glewInfo_EGL_EXT_swap_buffers_with_damage();
+#endif /* EGL_EXT_swap_buffers_with_damage */
+#ifdef EGL_HI_clientpixmap
+  _glewInfo_EGL_HI_clientpixmap();
+#endif /* EGL_HI_clientpixmap */
+#ifdef EGL_HI_colorformats
+  _glewInfo_EGL_HI_colorformats();
+#endif /* EGL_HI_colorformats */
+#ifdef EGL_IMG_context_priority
+  _glewInfo_EGL_IMG_context_priority();
+#endif /* EGL_IMG_context_priority */
+#ifdef EGL_KHR_cl_event
+  _glewInfo_EGL_KHR_cl_event();
+#endif /* EGL_KHR_cl_event */
+#ifdef EGL_KHR_cl_event2
+  _glewInfo_EGL_KHR_cl_event2();
+#endif /* EGL_KHR_cl_event2 */
+#ifdef EGL_KHR_client_get_all_proc_addresses
+  _glewInfo_EGL_KHR_client_get_all_proc_addresses();
+#endif /* EGL_KHR_client_get_all_proc_addresses */
+#ifdef EGL_KHR_config_attribs
+  _glewInfo_EGL_KHR_config_attribs();
+#endif /* EGL_KHR_config_attribs */
+#ifdef EGL_KHR_create_context
+  _glewInfo_EGL_KHR_create_context();
+#endif /* EGL_KHR_create_context */
+#ifdef EGL_KHR_fence_sync
+  _glewInfo_EGL_KHR_fence_sync();
+#endif /* EGL_KHR_fence_sync */
+#ifdef EGL_KHR_get_all_proc_addresses
+  _glewInfo_EGL_KHR_get_all_proc_addresses();
+#endif /* EGL_KHR_get_all_proc_addresses */
+#ifdef EGL_KHR_gl_colorspace
+  _glewInfo_EGL_KHR_gl_colorspace();
+#endif /* EGL_KHR_gl_colorspace */
+#ifdef EGL_KHR_gl_renderbuffer_image
+  _glewInfo_EGL_KHR_gl_renderbuffer_image();
+#endif /* EGL_KHR_gl_renderbuffer_image */
+#ifdef EGL_KHR_gl_texture_2D_image
+  _glewInfo_EGL_KHR_gl_texture_2D_image();
+#endif /* EGL_KHR_gl_texture_2D_image */
+#ifdef EGL_KHR_gl_texture_3D_image
+  _glewInfo_EGL_KHR_gl_texture_3D_image();
+#endif /* EGL_KHR_gl_texture_3D_image */
+#ifdef EGL_KHR_gl_texture_cubemap_image
+  _glewInfo_EGL_KHR_gl_texture_cubemap_image();
+#endif /* EGL_KHR_gl_texture_cubemap_image */
+#ifdef EGL_KHR_image
+  _glewInfo_EGL_KHR_image();
+#endif /* EGL_KHR_image */
+#ifdef EGL_KHR_image_base
+  _glewInfo_EGL_KHR_image_base();
+#endif /* EGL_KHR_image_base */
+#ifdef EGL_KHR_image_pixmap
+  _glewInfo_EGL_KHR_image_pixmap();
+#endif /* EGL_KHR_image_pixmap */
+#ifdef EGL_KHR_lock_surface
+  _glewInfo_EGL_KHR_lock_surface();
+#endif /* EGL_KHR_lock_surface */
+#ifdef EGL_KHR_lock_surface2
+  _glewInfo_EGL_KHR_lock_surface2();
+#endif /* EGL_KHR_lock_surface2 */
+#ifdef EGL_KHR_lock_surface3
+  _glewInfo_EGL_KHR_lock_surface3();
+#endif /* EGL_KHR_lock_surface3 */
+#ifdef EGL_KHR_partial_update
+  _glewInfo_EGL_KHR_partial_update();
+#endif /* EGL_KHR_partial_update */
+#ifdef EGL_KHR_platform_android
+  _glewInfo_EGL_KHR_platform_android();
+#endif /* EGL_KHR_platform_android */
+#ifdef EGL_KHR_platform_gbm
+  _glewInfo_EGL_KHR_platform_gbm();
+#endif /* EGL_KHR_platform_gbm */
+#ifdef EGL_KHR_platform_wayland
+  _glewInfo_EGL_KHR_platform_wayland();
+#endif /* EGL_KHR_platform_wayland */
+#ifdef EGL_KHR_platform_x11
+  _glewInfo_EGL_KHR_platform_x11();
+#endif /* EGL_KHR_platform_x11 */
+#ifdef EGL_KHR_reusable_sync
+  _glewInfo_EGL_KHR_reusable_sync();
+#endif /* EGL_KHR_reusable_sync */
+#ifdef EGL_KHR_stream
+  _glewInfo_EGL_KHR_stream();
+#endif /* EGL_KHR_stream */
+#ifdef EGL_KHR_stream_consumer_gltexture
+  _glewInfo_EGL_KHR_stream_consumer_gltexture();
+#endif /* EGL_KHR_stream_consumer_gltexture */
+#ifdef EGL_KHR_stream_cross_process_fd
+  _glewInfo_EGL_KHR_stream_cross_process_fd();
+#endif /* EGL_KHR_stream_cross_process_fd */
+#ifdef EGL_KHR_stream_fifo
+  _glewInfo_EGL_KHR_stream_fifo();
+#endif /* EGL_KHR_stream_fifo */
+#ifdef EGL_KHR_stream_producer_aldatalocator
+  _glewInfo_EGL_KHR_stream_producer_aldatalocator();
+#endif /* EGL_KHR_stream_producer_aldatalocator */
+#ifdef EGL_KHR_stream_producer_eglsurface
+  _glewInfo_EGL_KHR_stream_producer_eglsurface();
+#endif /* EGL_KHR_stream_producer_eglsurface */
+#ifdef EGL_KHR_surfaceless_context
+  _glewInfo_EGL_KHR_surfaceless_context();
+#endif /* EGL_KHR_surfaceless_context */
+#ifdef EGL_KHR_swap_buffers_with_damage
+  _glewInfo_EGL_KHR_swap_buffers_with_damage();
+#endif /* EGL_KHR_swap_buffers_with_damage */
+#ifdef EGL_KHR_vg_parent_image
+  _glewInfo_EGL_KHR_vg_parent_image();
+#endif /* EGL_KHR_vg_parent_image */
+#ifdef EGL_KHR_wait_sync
+  _glewInfo_EGL_KHR_wait_sync();
+#endif /* EGL_KHR_wait_sync */
+#ifdef EGL_MESA_drm_image
+  _glewInfo_EGL_MESA_drm_image();
+#endif /* EGL_MESA_drm_image */
+#ifdef EGL_MESA_platform_gbm
+  _glewInfo_EGL_MESA_platform_gbm();
+#endif /* EGL_MESA_platform_gbm */
+#ifdef EGL_NOK_swap_region
+  _glewInfo_EGL_NOK_swap_region();
+#endif /* EGL_NOK_swap_region */
+#ifdef EGL_NOK_swap_region2
+  _glewInfo_EGL_NOK_swap_region2();
+#endif /* EGL_NOK_swap_region2 */
+#ifdef EGL_NOK_texture_from_pixmap
+  _glewInfo_EGL_NOK_texture_from_pixmap();
+#endif /* EGL_NOK_texture_from_pixmap */
+#ifdef EGL_NV_3dvision_surface
+  _glewInfo_EGL_NV_3dvision_surface();
+#endif /* EGL_NV_3dvision_surface */
+#ifdef EGL_NV_coverage_sample
+  _glewInfo_EGL_NV_coverage_sample();
+#endif /* EGL_NV_coverage_sample */
+#ifdef EGL_NV_coverage_sample_resolve
+  _glewInfo_EGL_NV_coverage_sample_resolve();
+#endif /* EGL_NV_coverage_sample_resolve */
+#ifdef EGL_NV_cuda_event
+  _glewInfo_EGL_NV_cuda_event();
+#endif /* EGL_NV_cuda_event */
+#ifdef EGL_NV_depth_nonlinear
+  _glewInfo_EGL_NV_depth_nonlinear();
+#endif /* EGL_NV_depth_nonlinear */
+#ifdef EGL_NV_device_cuda
+  _glewInfo_EGL_NV_device_cuda();
+#endif /* EGL_NV_device_cuda */
+#ifdef EGL_NV_native_query
+  _glewInfo_EGL_NV_native_query();
+#endif /* EGL_NV_native_query */
+#ifdef EGL_NV_post_convert_rounding
+  _glewInfo_EGL_NV_post_convert_rounding();
+#endif /* EGL_NV_post_convert_rounding */
+#ifdef EGL_NV_post_sub_buffer
+  _glewInfo_EGL_NV_post_sub_buffer();
+#endif /* EGL_NV_post_sub_buffer */
+#ifdef EGL_NV_stream_sync
+  _glewInfo_EGL_NV_stream_sync();
+#endif /* EGL_NV_stream_sync */
+#ifdef EGL_NV_sync
+  _glewInfo_EGL_NV_sync();
+#endif /* EGL_NV_sync */
+#ifdef EGL_NV_system_time
+  _glewInfo_EGL_NV_system_time();
+#endif /* EGL_NV_system_time */
+#ifdef EGL_TIZEN_image_native_buffer
+  _glewInfo_EGL_TIZEN_image_native_buffer();
+#endif /* EGL_TIZEN_image_native_buffer */
+#ifdef EGL_TIZEN_image_native_surface
+  _glewInfo_EGL_TIZEN_image_native_surface();
+#endif /* EGL_TIZEN_image_native_surface */
+}
+
 #endif /* _WIN32 */
 
 /* ------------------------------------------------------------------------ */
 
-#if defined(_WIN32) || !defined(__APPLE__) || defined(GLEW_APPLE_GLX)
 int main (int argc, char** argv)
-#else
-int main (void)
-#endif
 {
   GLuint err;
-
-#if defined(_WIN32) || !defined(__APPLE__) || defined(GLEW_APPLE_GLX)
-  char* display = NULL;
-  int visual = -1;
-
-  if (glewParseArgs(argc-1, argv+1, &display, &visual))
+  struct createParams params =
   {
-#if defined(_WIN32)
-    fprintf(stderr, "Usage: glewinfo [-pf <id>]\n");
-#else
-    fprintf(stderr, "Usage: glewinfo [-display <display>] [-visual <id>]\n");
+#if defined(GLEW_OSMESA)
+#elif defined(GLEW_EGL)
+#elif defined(_WIN32)
+    -1,  /* pixelformat */
+#elif !defined(__HAIKU__) && !defined(__APPLE__) || defined(GLEW_APPLE_GLX)
+    "",  /* display */
+    -1,  /* visual */
 #endif
+    0,   /* major */
+    0,   /* minor */
+    0,   /* profile mask */
+    0    /* flags */
+  };
+
+#if defined(GLEW_EGL)
+  typedef const GLubyte* (GLAPIENTRY * PFNGLGETSTRINGPROC) (GLenum name);
+  PFNGLGETSTRINGPROC getString;
+#endif
+
+  if (glewParseArgs(argc-1, argv+1, &params))
+  {
+    fprintf(stderr, "Usage: glewinfo "
+#if defined(GLEW_OSMESA)
+#elif defined(GLEW_EGL)
+#elif defined(_WIN32)
+      "[-pf <pixelformat>] "
+#elif !defined(__HAIKU__) && !defined(__APPLE__) || defined(GLEW_APPLE_GLX)
+      "[-display <display>] "
+      "[-visual <visual id>] "
+#endif
+      "[-version <OpenGL version>] "
+      "[-profile core|compatibility] "
+      "[-flag debug|forward]"
+      "\n");
     return 1;
   }
-#endif
 
-#if defined(_WIN32)
-  if (GL_TRUE == glewCreateContext(&visual))
-#elif defined(__APPLE__) && !defined(GLEW_APPLE_GLX)
-  if (GL_TRUE == glewCreateContext())
-#else
-  if (GL_TRUE == glewCreateContext(display, &visual))
-#endif
+  if (GL_TRUE == glewCreateContext(&params))
   {
     fprintf(stderr, "Error: glewCreateContext failed\n");
     glewDestroyContext();
     return 1;
   }
   glewExperimental = GL_TRUE;
-#ifdef GLEW_MX
-  err = glewContextInit(glewGetContext());
-#ifdef _WIN32
-  err = err || wglewContextInit(wglewGetContext());
-#elif !defined(__APPLE__) || defined(GLEW_APPLE_GLX)
-  err = err || glxewContextInit(glxewGetContext());
-#endif
-
-#else
   err = glewInit();
-#endif
   if (GLEW_OK != err)
   {
     fprintf(stderr, "Error [main]: glewInit failed: %s\n", glewGetErrorString(err));
     glewDestroyContext();
     return 1;
   }
+
+#if defined(GLEW_EGL)
+  getString = (PFNGLGETSTRINGPROC) eglGetProcAddress("glGetString");
+  if (!getString)
+  {
+    fprintf(stderr, "Error: eglGetProcAddress failed to fetch glGetString\n");
+    glewDestroyContext();
+    return 1;
+  }
+#endif
+
 #if defined(_WIN32)
 #if defined(_MSC_VER) && (_MSC_VER >= 1400)
   if (fopen_s(&f, "glewinfo.txt", "w") != 0)
@@ -11366,17 +12641,28 @@ int main (void)
   fprintf(f, "    GLEW Extension Info\n");
   fprintf(f, "---------------------------\n\n");
   fprintf(f, "GLEW version %s\n", glewGetString(GLEW_VERSION));
-#if defined(_WIN32)
-  fprintf(f, "Reporting capabilities of pixelformat %d\n", visual);
+#if defined(GLEW_OSMESA)
+#elif defined(GLEW_EGL)
+#elif defined(_WIN32)
+  fprintf(f, "Reporting capabilities of pixelformat %d\n", params.pixelformat);
 #elif !defined(__APPLE__) || defined(GLEW_APPLE_GLX)
-  fprintf(f, "Reporting capabilities of display %s, visual 0x%x\n", 
-    display == NULL ? getenv("DISPLAY") : display, visual);
+  fprintf(f, "Reporting capabilities of display %s, visual 0x%x\n",
+    params.display == NULL ? getenv("DISPLAY") : params.display, params.visual);
 #endif
-  fprintf(f, "Running on a %s from %s\n", 
-	  glGetString(GL_RENDERER), glGetString(GL_VENDOR));
+#if defined(GLEW_EGL)
+  fprintf(f, "Running on a %s from %s\n",
+    getString(GL_RENDERER), getString(GL_VENDOR));
+  fprintf(f, "OpenGL version %s is supported\n", getString(GL_VERSION));
+#else
+  fprintf(f, "Running on a %s from %s\n",
+    glGetString(GL_RENDERER), glGetString(GL_VENDOR));
   fprintf(f, "OpenGL version %s is supported\n", glGetString(GL_VERSION));
+#endif
   glewInfo();
-#if defined(_WIN32)
+#if defined(GLEW_OSMESA)
+#elif defined(GLEW_EGL)
+  eglewInfo();
+#elif defined(_WIN32)
   wglewInfo();
 #else
   glxewInfo();
@@ -11388,49 +12674,215 @@ int main (void)
 
 /* ------------------------------------------------------------------------ */
 
-#if defined(_WIN32) || !defined(__APPLE__) || defined(GLEW_APPLE_GLX)
-GLboolean glewParseArgs (int argc, char** argv, char** display, int* visual)
+GLboolean glewParseArgs (int argc, char** argv, struct createParams *params)
 {
   int p = 0;
   while (p < argc)
   {
-#if defined(_WIN32)
-    if (!strcmp(argv[p], "-pf") || !strcmp(argv[p], "-pixelformat"))
+    if (!strcmp(argv[p], "-version"))
     {
       if (++p >= argc) return GL_TRUE;
-      *display = 0;
-      *visual = strtol(argv[p++], NULL, 0);
+      if (sscanf(argv[p++], "%d.%d", &params->major, &params->minor) != 2) return GL_TRUE;
     }
-    else
-      return GL_TRUE;
-#else
-    if (!strcmp(argv[p], "-display"))
+    else if (!strcmp(argv[p], "-profile"))
     {
       if (++p >= argc) return GL_TRUE;
-      *display = argv[p++];
+      if      (strcmp("core",         argv[p]) == 0) params->profile |= 1;
+      else if (strcmp("compatibility",argv[p]) == 0) params->profile |= 2;
+      else return GL_TRUE;
+      ++p;
     }
+    else if (!strcmp(argv[p], "-flag"))
+    {
+      if (++p >= argc) return GL_TRUE;
+      if      (strcmp("debug",  argv[p]) == 0) params->flags |= 1;
+      else if (strcmp("forward",argv[p]) == 0) params->flags |= 2;
+      else return GL_TRUE;
+      ++p;
+    }
+#if defined(GLEW_OSMESA)
+#elif defined(GLEW_EGL)
+#elif defined(_WIN32)
+    else if (!strcmp(argv[p], "-pf") || !strcmp(argv[p], "-pixelformat"))
+    {
+      if (++p >= argc) return GL_TRUE;
+      params->pixelformat = strtol(argv[p++], NULL, 0);
+    }
+#elif !defined(__HAIKU__) && !defined(__APPLE__) || defined(GLEW_APPLE_GLX)
+    else if (!strcmp(argv[p], "-display"))
+    {
+      if (++p >= argc) return GL_TRUE;
+      params->display = argv[p++];
+     }
     else if (!strcmp(argv[p], "-visual"))
     {
       if (++p >= argc) return GL_TRUE;
-      *visual = (int)strtol(argv[p++], NULL, 0);
+      params->visual = (int)strtol(argv[p++], NULL, 0);
     }
+#endif
     else
       return GL_TRUE;
-#endif
   }
   return GL_FALSE;
 }
-#endif
 
 /* ------------------------------------------------------------------------ */
 
-#if defined(_WIN32)
+#if defined(GLEW_EGL)
+EGLDisplay  display;
+EGLContext  ctx;
+
+/* See: http://stackoverflow.com/questions/12662227/opengl-es2-0-offscreen-context-for-fbo-rendering */
+
+GLboolean glewCreateContext (struct createParams *params)
+{
+  EGLDeviceEXT devices[1];
+  EGLint numDevices;
+  EGLSurface  surface;
+  EGLint majorVersion, minorVersion;
+  EGLint configAttribs[] = {
+        EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+        EGL_RED_SIZE, 1,
+        EGL_GREEN_SIZE, 1,
+        EGL_BLUE_SIZE, 1,
+        EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+        EGL_NONE
+   };
+  static const EGLint contextAttribs[] = {
+    EGL_CONTEXT_CLIENT_VERSION, 2,
+    EGL_NONE
+  };
+  static const EGLint pBufferAttribs[] = {
+    EGL_WIDTH,  128,
+    EGL_HEIGHT, 128,
+    EGL_NONE
+  };
+  EGLConfig config;
+  EGLint numConfig;
+  EGLBoolean pBuffer;
+
+  PFNEGLQUERYDEVICESEXTPROC       queryDevices = NULL;
+  PFNEGLGETPLATFORMDISPLAYEXTPROC getPlatformDisplay = NULL;
+  PFNEGLGETERRORPROC              getError = NULL;
+  PFNEGLGETDISPLAYPROC            getDisplay = NULL;
+  PFNEGLINITIALIZEPROC            initialize = NULL;
+  PFNEGLBINDAPIPROC               bindAPI    = NULL;
+  PFNEGLCHOOSECONFIGPROC          chooseConfig = NULL;
+  PFNEGLCREATEWINDOWSURFACEPROC   createWindowSurface = NULL;
+  PFNEGLCREATECONTEXTPROC         createContext = NULL;
+  PFNEGLMAKECURRENTPROC           makeCurrent = NULL;
+  PFNEGLCREATEPBUFFERSURFACEPROC  createPbufferSurface = NULL;
+
+  /* Load necessary entry points */
+  queryDevices         = (PFNEGLQUERYDEVICESEXTPROC)       eglGetProcAddress("eglQueryDevicesEXT");
+  getPlatformDisplay   = (PFNEGLGETPLATFORMDISPLAYEXTPROC) eglGetProcAddress("eglGetPlatformDisplayEXT");
+  getError             = (PFNEGLGETERRORPROC)              eglGetProcAddress("eglGetError");
+  getDisplay           = (PFNEGLGETDISPLAYPROC)            eglGetProcAddress("eglGetDisplay");
+  initialize           = (PFNEGLINITIALIZEPROC)            eglGetProcAddress("eglInitialize");
+  bindAPI              = (PFNEGLBINDAPIPROC)               eglGetProcAddress("eglBindAPI");
+  chooseConfig         = (PFNEGLCHOOSECONFIGPROC)          eglGetProcAddress("eglChooseConfig");
+  createWindowSurface  = (PFNEGLCREATEWINDOWSURFACEPROC)   eglGetProcAddress("eglCreateWindowSurface");
+  createPbufferSurface = (PFNEGLCREATEPBUFFERSURFACEPROC)  eglGetProcAddress("eglCreatePbufferSurface");
+  createContext        = (PFNEGLCREATECONTEXTPROC)         eglGetProcAddress("eglCreateContext");
+  makeCurrent          = (PFNEGLMAKECURRENTPROC)           eglGetProcAddress("eglMakeCurrent");
+  if (!getError || !getDisplay || !initialize || !bindAPI || !chooseConfig || !createWindowSurface || !createContext || !makeCurrent)
+    return GL_TRUE;
+
+  pBuffer = 0;
+  display = EGL_NO_DISPLAY;
+  if (queryDevices && getPlatformDisplay)
+  {
+    queryDevices(1, devices, &numDevices);
+    if (numDevices==1)
+    {
+      /* Nvidia EGL doesn't need X11 for p-buffer surface */
+      display = getPlatformDisplay(EGL_PLATFORM_DEVICE_EXT, devices[0], 0);
+      configAttribs[1] = EGL_PBUFFER_BIT;
+      pBuffer = 1;
+    }
+  }
+  if (display==EGL_NO_DISPLAY)
+  {
+    /* Fall-back to X11 surface, works on Mesa */
+    display = getDisplay(EGL_DEFAULT_DISPLAY);
+  }
+  if (display == EGL_NO_DISPLAY)
+    return GL_TRUE;
+
+  eglewInit(display);
+
+  if (bindAPI(EGL_OPENGL_API) != EGL_TRUE)
+    return GL_TRUE;
+
+  if (chooseConfig(display, configAttribs, &config, 1, &numConfig) != EGL_TRUE || (numConfig != 1))
+    return GL_TRUE;
+
+  ctx = createContext(display, config, EGL_NO_CONTEXT, pBuffer ? contextAttribs : NULL);
+  if (NULL == ctx)
+    return GL_TRUE;
+
+  surface = EGL_NO_SURFACE;
+  /* Create a p-buffer surface if possible */
+  if (pBuffer && createPbufferSurface)
+  {
+    surface = createPbufferSurface(display, config, pBufferAttribs);
+  }
+  /* Create a generic surface without a native window, if necessary */
+  if (surface==EGL_NO_SURFACE)
+  {
+    surface = createWindowSurface(display, config, (EGLNativeWindowType) NULL, NULL);
+  }
+#if 0
+  if (surface == EGL_NO_SURFACE)
+    return GL_TRUE;
+#endif
+
+  if (makeCurrent(display, surface, surface, ctx) != EGL_TRUE)
+    return GL_TRUE;
+
+  return GL_FALSE;
+}
+
+void glewDestroyContext ()
+{
+  if (NULL != ctx) eglDestroyContext(display, ctx);
+}
+
+#elif defined(GLEW_OSMESA)
+OSMesaContext ctx;
+
+static const GLint osmFormat = GL_UNSIGNED_BYTE;
+static const GLint osmWidth = 640;
+static const GLint osmHeight = 480;
+static GLubyte *osmPixels = NULL;
+
+GLboolean glewCreateContext (struct createParams *params)
+{
+  ctx = OSMesaCreateContext(OSMESA_RGBA, NULL);
+  if (NULL == ctx) return GL_TRUE;
+  if (NULL == osmPixels)
+  {
+    osmPixels = (GLubyte *) calloc(osmWidth*osmHeight*4, 1);
+  }
+  if (!OSMesaMakeCurrent(ctx, osmPixels, GL_UNSIGNED_BYTE, osmWidth, osmHeight))
+  {
+      return GL_TRUE;
+  }
+  return GL_FALSE;
+}
+
+void glewDestroyContext ()
+{
+  if (NULL != ctx) OSMesaDestroyContext(ctx);
+}
+
+#elif defined(_WIN32)
 
 HWND wnd = NULL;
 HDC dc = NULL;
 HGLRC rc = NULL;
 
-GLboolean glewCreateContext (int* pixelformat)
+GLboolean glewCreateContext (struct createParams* params)
 {
   WNDCLASS wc;
   PIXELFORMATDESCRIPTOR pfd;
@@ -11441,7 +12893,7 @@ GLboolean glewCreateContext (int* pixelformat)
   wc.lpszClassName = "GLEW";
   if (0 == RegisterClass(&wc)) return GL_TRUE;
   /* create window */
-  wnd = CreateWindow("GLEW", "GLEW", 0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, 
+  wnd = CreateWindow("GLEW", "GLEW", 0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
                      CW_USEDEFAULT, NULL, NULL, GetModuleHandle(NULL), NULL);
   if (NULL == wnd) return GL_TRUE;
   /* get the device context */
@@ -11449,20 +12901,58 @@ GLboolean glewCreateContext (int* pixelformat)
   if (NULL == dc) return GL_TRUE;
   /* find pixel format */
   ZeroMemory(&pfd, sizeof(PIXELFORMATDESCRIPTOR));
-  if (*pixelformat == -1) /* find default */
+  if (params->pixelformat == -1) /* find default */
   {
     pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
     pfd.nVersion = 1;
     pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL;
-    *pixelformat = ChoosePixelFormat(dc, &pfd);
-    if (*pixelformat == 0) return GL_TRUE;
+    params->pixelformat = ChoosePixelFormat(dc, &pfd);
+    if (params->pixelformat == 0) return GL_TRUE;
   }
   /* set the pixel format for the dc */
-  if (FALSE == SetPixelFormat(dc, *pixelformat, &pfd)) return GL_TRUE;
+  if (FALSE == SetPixelFormat(dc, params->pixelformat, &pfd)) return GL_TRUE;
   /* create rendering context */
   rc = wglCreateContext(dc);
   if (NULL == rc) return GL_TRUE;
   if (FALSE == wglMakeCurrent(dc, rc)) return GL_TRUE;
+  if (params->major || params->profile || params->flags)
+  {
+    HGLRC oldRC = rc;
+    int contextAttrs[20];
+    int i;
+
+    wglewInit();
+
+    /* Intel HD 3000 has WGL_ARB_create_context, but not WGL_ARB_create_context_profile */
+    if (!wglewGetExtension("WGL_ARB_create_context"))
+      return GL_TRUE;
+
+    i = 0;
+    if (params->major)
+    {
+      contextAttrs[i++] = WGL_CONTEXT_MAJOR_VERSION_ARB;
+      contextAttrs[i++] = params->major;
+      contextAttrs[i++] = WGL_CONTEXT_MINOR_VERSION_ARB;
+      contextAttrs[i++] = params->minor;
+    }
+    if (params->profile)
+    {
+      contextAttrs[i++] = WGL_CONTEXT_PROFILE_MASK_ARB;
+      contextAttrs[i++] = params->profile;
+    }
+    if (params->flags)
+    {
+      contextAttrs[i++] = WGL_CONTEXT_FLAGS_ARB;
+      contextAttrs[i++] = params->flags;
+    }
+    contextAttrs[i++] = 0;
+    rc = wglCreateContextAttribsARB(dc, 0, contextAttrs);
+
+    if (NULL == rc) return GL_TRUE;
+    if (!wglMakeCurrent(dc, rc)) return GL_TRUE;
+
+    wglDeleteContext(oldRC);
+  }
   return GL_FALSE;
 }
 
@@ -11479,26 +12969,43 @@ void glewDestroyContext ()
 
 #elif defined(__APPLE__) && !defined(GLEW_APPLE_GLX)
 
-#include <AGL/agl.h>
+#include <OpenGL/OpenGL.h>
+#include <OpenGL/CGLTypes.h>
 
-AGLContext ctx, octx;
+CGLContextObj ctx, octx;
 
-GLboolean glewCreateContext ()
+GLboolean glewCreateContext (struct createParams *params)
 {
-  int attrib[] = { AGL_RGBA, AGL_NONE };
-  AGLPixelFormat pf;
-  /*int major, minor;
-  SetPortWindowPort(wnd);
-  aglGetVersion(&major, &minor);
-  fprintf(stderr, "GL %d.%d\n", major, minor);*/
-  pf = aglChoosePixelFormat(NULL, 0, attrib);
-  if (NULL == pf) return GL_TRUE;
-  ctx = aglCreateContext(pf, NULL);
-  if (NULL == ctx || AGL_NO_ERROR != aglGetError()) return GL_TRUE;
-  aglDestroyPixelFormat(pf);
-  /*aglSetDrawable(ctx, GetWindowPort(wnd));*/
-  octx = aglGetCurrentContext();
-  if (GL_FALSE == aglSetCurrentContext(ctx)) return GL_TRUE;
+  CGLPixelFormatAttribute contextAttrs[20];
+  int i;
+  CGLPixelFormatObj pf;
+  GLint npix;
+  CGLError error;
+
+  i = 0;
+  contextAttrs[i++] = kCGLPFAAccelerated; /* No software rendering */
+
+  #if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
+  if (params->profile & GL_CONTEXT_CORE_PROFILE_BIT)
+  {
+    if (params->major==3 && params->minor>=2)
+    {
+      contextAttrs[i++] = kCGLPFAOpenGLProfile;                                /* OSX 10.7 Lion onwards */
+      contextAttrs[i++] = (CGLPixelFormatAttribute) kCGLOGLPVersion_3_2_Core;  /* 3.2 Core Context      */
+    }
+  }
+  #endif
+
+  contextAttrs[i++] = 0;
+
+  error = CGLChoosePixelFormat(contextAttrs, &pf, &npix);
+  if (error) return GL_TRUE;
+  error = CGLCreateContext(pf, NULL, &ctx);
+  if (error) return GL_TRUE;
+  CGLReleasePixelFormat(pf);
+  octx = CGLGetCurrentContext();
+  error = CGLSetCurrentContext(ctx);
+  if (error) return GL_TRUE;
   /* Needed for Regal on the Mac */
   #if defined(GLEW_REGAL) && defined(__APPLE__)
   RegalMakeCurrent(ctx);
@@ -11508,15 +13015,15 @@ GLboolean glewCreateContext ()
 
 void glewDestroyContext ()
 {
-  aglSetCurrentContext(octx);
-  if (NULL != ctx) aglDestroyContext(ctx);
+  CGLSetCurrentContext(octx);
+  CGLReleaseContext(ctx);
 }
 
 /* ------------------------------------------------------------------------ */
 
 #elif defined(__HAIKU__)
 
-GLboolean glewCreateContext ()
+GLboolean glewCreateContext (struct createParams *params)
 {
   /* TODO: Haiku: We need to call C++ code here */
   return GL_FALSE;
@@ -11538,22 +13045,22 @@ GLXContext ctx = NULL;
 Window wnd = 0;
 Colormap cmap = 0;
 
-GLboolean glewCreateContext (const char* display, int* visual)
+GLboolean glewCreateContext (struct createParams *params)
 {
   int attrib[] = { GLX_RGBA, GLX_DOUBLEBUFFER, None };
   int erb, evb;
   XSetWindowAttributes swa;
   /* open display */
-  dpy = XOpenDisplay(display);
+  dpy = XOpenDisplay(params->display);
   if (NULL == dpy) return GL_TRUE;
   /* query for glx */
   if (!glXQueryExtension(dpy, &erb, &evb)) return GL_TRUE;
   /* choose visual */
-  if (*visual == -1)
+  if (params->visual == -1)
   {
     vi = glXChooseVisual(dpy, DefaultScreen(dpy), attrib);
     if (NULL == vi) return GL_TRUE;
-    *visual = (int)XVisualIDFromVisual(vi->visual);
+    params->visual = (int)XVisualIDFromVisual(vi->visual);
   }
   else
   {
@@ -11561,7 +13068,7 @@ GLboolean glewCreateContext (const char* display, int* visual)
     vis = XGetVisualInfo(dpy, 0, NULL, &n_vis);
     for (i=0; i<n_vis; i++)
     {
-      if ((int)XVisualIDFromVisual(vis[i].visual) == *visual)
+      if ((int)XVisualIDFromVisual(vis[i].visual) == params->visual)
         vi = &vis[i];
     }
     if (vi == NULL) return GL_TRUE;
@@ -11574,11 +13081,59 @@ GLboolean glewCreateContext (const char* display, int* visual)
   cmap = XCreateColormap(dpy, RootWindow(dpy, vi->screen), vi->visual, AllocNone);
   swa.border_pixel = 0;
   swa.colormap = cmap;
-  wnd = XCreateWindow(dpy, RootWindow(dpy, vi->screen), 
-                      0, 0, 1, 1, 0, vi->depth, InputOutput, vi->visual, 
+  wnd = XCreateWindow(dpy, RootWindow(dpy, vi->screen),
+                      0, 0, 1, 1, 0, vi->depth, InputOutput, vi->visual,
                       CWBorderPixel | CWColormap, &swa);
   /* make context current */
   if (!glXMakeCurrent(dpy, wnd, ctx)) return GL_TRUE;
+  if (params->major || params->profile || params->flags)
+  {
+    GLXContext oldCtx = ctx;
+    GLXFBConfig *FBConfigs;
+    int FBConfigAttrs[] = { GLX_FBCONFIG_ID, 0, None };
+    int contextAttrs[20];
+    int nelems, i;
+
+    glxewInit();
+
+    if (!glxewGetExtension("GLX_ARB_create_context"))
+      return GL_TRUE;
+
+    if (glXQueryContext(dpy, oldCtx, GLX_FBCONFIG_ID, &FBConfigAttrs[1]))
+      return GL_TRUE;
+    FBConfigs = glXChooseFBConfig(dpy, vi->screen, FBConfigAttrs, &nelems);
+
+    if (nelems < 1)
+      return GL_TRUE;
+
+    i = 0;
+    if (params->major)
+    {
+      contextAttrs[i++] = GLX_CONTEXT_MAJOR_VERSION_ARB;
+      contextAttrs[i++] = params->major;
+      contextAttrs[i++] = GLX_CONTEXT_MINOR_VERSION_ARB;
+      contextAttrs[i++] = params->minor;
+    }
+    if (params->profile)
+    {
+      contextAttrs[i++] = GLX_CONTEXT_PROFILE_MASK_ARB;
+      contextAttrs[i++] = params->profile;
+    }
+    if (params->flags)
+    {
+      contextAttrs[i++] = GLX_CONTEXT_FLAGS_ARB;
+      contextAttrs[i++] = params->flags;
+    }
+    contextAttrs[i++] = None;
+    ctx = glXCreateContextAttribsARB(dpy, *FBConfigs, NULL, True, contextAttrs);
+
+    if (NULL == ctx) return GL_TRUE;
+    if (!glXMakeCurrent(dpy, wnd, ctx)) return GL_TRUE;
+
+    glXDestroyContext(dpy, oldCtx);
+
+    XFree(FBConfigs);
+  }
   return GL_FALSE;
 }
 

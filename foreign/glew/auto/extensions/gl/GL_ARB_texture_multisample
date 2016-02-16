@@ -1,6 +1,7 @@
 GL_ARB_texture_multisample
 http://www.opengl.org/registry/specs/ARB/texture_multisample.txt
 GL_ARB_texture_multisample
+
 	GL_SAMPLE_POSITION 0x8E50
 	GL_SAMPLE_MASK 0x8E51
 	GL_SAMPLE_MASK_VALUE 0x8E52

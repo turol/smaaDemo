@@ -1,0 +1,95 @@
+Name
+
+    REGAL_extension_query
+
+Name Strings
+
+    GL_REGAL_extension_query
+
+Contact
+
+    Cass Everitt, NVIDIA (ceveritt 'at' nvidia.com)
+    Nigel Stewart, NVIDIA (nstewart 'at' nvidia.com)
+    Scott Nations, NVIDIA (snations 'at' nvidia.com)
+
+Contributors
+
+    None.
+
+Status
+
+    XXX - Experimental - not approved by Khronos.
+
+Version
+
+    Last Modified Date: July 23, 2012
+    Revision: 1
+
+Number
+
+    REGAL Extension #2
+
+Dependencies
+
+    None.
+
+    This extension is written against the OpenGL 4.2
+    Specification (April 27, 20012).
+
+Overview
+
+    This extension provides the same functionality as
+    glewGetExtension and glewIsSupported as implemented
+    by The OpenGL Extension Wrangler Library (GLEW).
+
+    It is provided as part of Regal for the purpose of
+    easing the retargeting of desktop OpenGL code
+    to without requiring GLEW for extension query
+    purposes.
+
+IP Status
+
+    No known IP claims.
+
+    glewGetExtension and glewIsSupported are implemented
+    by The OpenGL Extension Wrangler Library (GLEW).
+
+New Procedures and Functions
+
+    boolean GetExtensionREGAL(const char *ext);
+
+    boolean IsSupportedREGAL(const char *ext);
+
+New Types
+
+    None
+
+New Tokens
+
+    None
+
+Additions to Chapter x of the OpenGL 4.2 (Core Profile) Specification
+(OpenGL Operation)
+
+    TODO
+
+Errors
+
+    None.
+
+New State
+
+    None.
+
+New Implementation Dependent State
+
+    None.
+
+Issues
+
+    None.
+
+Revision History
+
+    Revision 1, 2012/07/23
+      - Initial revision.

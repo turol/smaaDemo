@@ -1,0 +1,94 @@
+Name
+
+    REGAL_error_string
+
+Name Strings
+
+    GL_REGAL_error_string
+
+Contact
+
+    Cass Everitt, NVIDIA (ceveritt 'at' nvidia.com)
+    Nigel Stewart, NVIDIA (nstewart 'at' nvidia.com)
+    Scott Nations, NVIDIA (snations 'at' nvidia.com)
+
+Contributors
+
+    None.
+
+Status
+
+    XXX - Experimental - not approved by Khronos.
+
+Version
+
+    Last Modified Date: July 23, 2012
+    Revision: 1
+
+Number
+
+    REGAL Extension #1
+
+Dependencies
+
+    None.
+
+    This extension is written against the OpenGL 4.2
+    Specification (April 27, 20012).
+
+Overview
+
+    This extension provides the same functionality as
+    gluErrorString as specified in Chapter 8 of The
+    OpenGL Graphics System Utility Library, Version 1.3.
+
+    It is provided as part of Regal for the purpose of
+    easing the retargeting of desktop OpenGL code
+    to platforms without GLU library support, such as
+    ES.
+
+IP Status
+
+    No known IP claims.
+
+    gluErrorString was part of the OpenGL Graphics System
+    Utility Library, Version 1.3 as specific by Silicon
+    Graphics Inc.
+
+New Procedures and Functions
+
+    const char *ErrorStringREGAL(enum error);
+
+New Types
+
+    None
+
+New Tokens
+
+    None
+
+Additions to Chapter x of the OpenGL 4.2 (Core Profile) Specification
+(OpenGL Operation)
+
+    TODO
+
+Errors
+
+    None.
+
+New State
+
+    None.
+
+New Implementation Dependent State
+
+    None.
+
+Issues
+
+    None.
+
+Revision History
+
+    Revision 1, 2012/07/23
+      - Initial revision.

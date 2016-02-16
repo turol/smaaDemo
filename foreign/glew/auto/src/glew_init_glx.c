@@ -12,13 +12,13 @@ GLboolean glxewGetExtension (const char* name)
   return _glewSearchExtension(name, start, end);
 }
 
-GLenum glxewContextInit (GLXEW_CONTEXT_ARG_DEF_LIST)
+GLenum glxewInit ()
 {
   int major, minor;
   const GLubyte* extStart;
   const GLubyte* extEnd;
   /* initialize core GLX 1.2 */
-  if (_glewInit_GLX_VERSION_1_2(GLEW_CONTEXT_ARG_VAR_INIT)) return GLEW_ERROR_GLX_VERSION_11_ONLY;
+  if (_glewInit_GLX_VERSION_1_2()) return GLEW_ERROR_GLX_VERSION_11_ONLY;
   /* initialize flags */
   GLXEW_VERSION_1_0 = GL_TRUE;
   GLXEW_VERSION_1_1 = GL_TRUE;

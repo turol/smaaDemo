@@ -1,6 +1,7 @@
 GL_ARB_uniform_buffer_object
 http://www.opengl.org/registry/specs/ARB/uniform_buffer_object.txt
 GL_ARB_uniform_buffer_object
+
 	GL_UNIFORM_BUFFER 0x8A11
 	GL_UNIFORM_BUFFER_BINDING 0x8A28
 	GL_UNIFORM_BUFFER_START 0x8A29

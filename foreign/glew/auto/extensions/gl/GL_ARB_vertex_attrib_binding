@@ -1,6 +1,7 @@
 GL_ARB_vertex_attrib_binding
 http://www.opengl.org/registry/specs/ARB/vertex_attrib_binding.txt
 GL_ARB_vertex_attrib_binding
+
 	GL_VERTEX_ATTRIB_BINDING 0x82D4
 	GL_VERTEX_ATTRIB_RELATIVE_OFFSET 0x82D5
 	GL_VERTEX_BINDING_DIVISOR 0x82D6

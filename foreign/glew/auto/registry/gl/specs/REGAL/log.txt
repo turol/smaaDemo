@@ -1,0 +1,107 @@
+Name
+
+    REGAL_log
+
+Name Strings
+
+    GL_REGAL_log
+
+Contact
+
+    Cass Everitt, NVIDIA (ceveritt 'at' nvidia.com)
+    Nigel Stewart, NVIDIA (nstewart 'at' nvidia.com)
+    Scott Nations, NVIDIA (snations 'at' nvidia.com)
+
+Contributors
+
+    None.
+
+Status
+
+    XXX - Experimental - not approved by Khronos.
+
+Version
+
+    Last Modified Date: July 23, 2012
+    Revision: 1
+
+Number
+
+    REGAL Extension #3
+
+Dependencies
+
+    None.
+
+    This extension is written against the OpenGL 4.2
+    Specification (April 27, 20012).
+
+Overview
+
+    This extension provides runtime configuration of
+    the Regal logging facilities.
+
+IP Status
+
+    No known IP claims.
+
+New Procedures and Functions
+
+    void LogMessageCallbackREGAL(LOGPROCREGAL callback);
+
+New Types
+
+    The callback function that applications can define, and
+    is accepted by LogMessageCallbackREGAL, is defined as:
+
+        typedef void (APIENTRY *LOGPROCREGAL)(enum stream,
+                                              sizei length,
+                                              const char *message,
+                                              void *context);
+
+    Note that this function pointer is defined as having the
+    same calling convention as the GL functions.
+
+New Tokens
+
+    Accepted by the <cap> parameter of Enable, Disable, and
+    IsEnabled:
+
+    LOG_ERROR_REGAL    0x9319
+    LOG_WARNING_REGAL  0x931A
+    LOG_INFO_REGAL     0x931B
+    LOG_APP_REGAL      0x931C
+    LOG_DRIVER_REGAL   0x931D
+    LOG_INTERNAL_REGAL 0x931E
+    LOG_DEBUG_REGAL    0x931F
+    LOG_STATUS_REGAL   0x9320
+    LOG_HTTP_REGAL     0x9321
+
+Additions to Chapter x of the OpenGL 4.2 (Core Profile) Specification
+(OpenGL Operation)
+
+    TODO
+
+Errors
+
+    None.
+
+New State
+
+    None.
+
+New Implementation Dependent State
+
+    None.
+
+Issues
+
+    None.
+
+Revision History
+
+    Revision 2, 2012/08/12
+      - Add LogMessageCallbackREGAL.
+
+    Revision 1, 2012/07/23
+      - Initial revision.

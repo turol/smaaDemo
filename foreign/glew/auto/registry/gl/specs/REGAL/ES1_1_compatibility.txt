@@ -1,0 +1,95 @@
+Name
+
+    REGAL_ES1_1_compatibility
+
+Name Strings
+
+    GL_REGAL_ES1_1_compatibility
+
+Contact
+
+    Cass Everitt, NVIDIA (ceveritt 'at' nvidia.com)
+    Nigel Stewart, NVIDIA (nstewart 'at' nvidia.com)
+    Scott Nations, NVIDIA (snations 'at' nvidia.com)
+
+Contributors
+
+    None.
+
+Status
+
+    XXX - Experimental - not approved by Khronos.
+
+Version
+
+    Last Modified Date: August 18, 2012
+    Revision: 1
+
+Number
+
+    REGAL Extension #6
+
+Dependencies
+
+    None.
+
+    This extension is written against the OpenGL 4.2
+    Specification (April 27, 20012).
+
+Overview
+
+    OpenGL ES 1.1
+
+IP Status
+
+    Not known.
+
+New Procedures and Functions
+
+    void glClipPlanef (GLenum plane, const GLfloat *equation)
+    void glGetClipPlanef (GLenum pname, GLfloat eqn[4])
+    void glClipPlanex (GLenum plane, const GLfixed *equation)
+    void glGetClipPlanex (GLenum pname, GLfixed eqn[4])
+    void glGetFixedv (GLenum pname, GLfixed *params)
+    void glGetLightxv (GLenum light, GLenum pname, GLfixed *params)
+    void glGetMaterialxv (GLenum face, GLenum pname, GLfixed *params)
+    void glGetTexEnvxv (GLenum env, GLenum pname, GLfixed *params)
+    void glGetTexParameterxv (GLenum target, GLenum pname, GLfixed *params)
+    void glPointParameterx (GLenum pname, GLfixed param)
+    void glPointParameterxv (GLenum pname, const GLfixed *params)
+    void glTexParameterxv (GLenum target, GLenum pname, const GLfixed *params)
+    void glPointSizePointerOES (GLenum type, GLsizei stride, const GLvoid *pointer)
+	
+New Types
+
+    None
+
+New Tokens
+
+    None
+
+Additions to Chapter x of the OpenGL 4.2 (Core Profile) Specification
+(OpenGL Operation)
+
+    TODO
+
+Errors
+
+    None.
+
+New State
+
+    None.
+
+New Implementation Dependent State
+
+    None.
+
+Issues
+
+    None.
+
+Revision History
+
+    Revision 1, 2012/08/18
+      - Initial revision.

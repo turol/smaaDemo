@@ -1,6 +1,7 @@
 GL_EXT_direct_state_access
 http://www.opengl.org/registry/specs/EXT/direct_state_access.txt
 GL_EXT_direct_state_access
+
 	GL_PROGRAM_MATRIX_EXT 0x8E2D
 	GL_TRANSPOSE_PROGRAM_MATRIX_EXT 0x8E2E
 	GL_PROGRAM_MATRIX_STACK_DEPTH_EXT 0x8E2F

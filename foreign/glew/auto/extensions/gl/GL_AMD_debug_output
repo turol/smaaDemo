@@ -1,6 +1,7 @@
 GL_AMD_debug_output
 http://www.opengl.org/registry/specs/AMD/debug_output.txt
 GL_AMD_debug_output
+
 	GL_MAX_DEBUG_MESSAGE_LENGTH_AMD 0x9143
 	GL_MAX_DEBUG_LOGGED_MESSAGES_AMD 0x9144
 	GL_DEBUG_LOGGED_MESSAGES_AMD 0x9145

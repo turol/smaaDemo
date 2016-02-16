@@ -1,6 +1,7 @@
 GL_ARB_sampler_objects
 http://www.opengl.org/registry/specs/ARB/sampler_objects.txt
 GL_ARB_sampler_objects
+
 	GL_SAMPLER_BINDING 0x8919
 	void glBindSampler (GLuint unit, GLuint sampler)
 	void glDeleteSamplers (GLsizei count, const GLuint * samplers)

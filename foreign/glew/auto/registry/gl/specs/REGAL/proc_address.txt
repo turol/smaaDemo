@@ -1,0 +1,88 @@
+Name
+
+    REGAL_proc_address
+
+Name Strings
+
+    GL_REGAL_proc_address
+
+Contact
+
+    Nigel Stewart, NVIDIA (nstewart 'at' nvidia.com)
+
+Contributors
+
+    None.
+
+Status
+
+    XXX - Experimental - not approved by Khronos.
+
+Version
+
+    Last Modified Date: January 14, 2014
+    Revision: 1
+
+Number
+
+    REGAL Extension #7
+
+Dependencies
+
+    None.
+
+Overview
+
+    This extension provides the same functionality as
+    glutGetProcAddress as implemented by The OpenGL Utility
+    Toolkit (GLUT) and freeglut.
+
+    It is provided as part of Regal for the purpose of
+    easing the retargeting of desktop OpenGL code
+    without requiring GLUT or freeglut for procedure
+    address query purposes.
+
+IP Status
+
+    No known IP claims.
+
+    glutGetProcAddress is implemented by The OpenGL Utility
+    Toolkit (GLUT) and freeglut.
+
+New Procedures and Functions
+
+    void *glGetProcAddressREGAL(const char *name);
+
+New Types
+
+    None
+
+New Tokens
+
+    None
+
+Additions to Chapter x of the OpenGL 4.2 (Core Profile) Specification
+(OpenGL Operation)
+
+    TODO
+
+Errors
+
+    None.
+
+New State
+
+    None.
+
+New Implementation Dependent State
+
+    None.
+
+Issues
+
+    None.
+
+Revision History
+
+    Revision 1, 2014/01/14
+      - Initial revision.

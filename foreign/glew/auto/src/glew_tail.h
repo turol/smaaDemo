@@ -13,34 +13,29 @@
 #define GLEW_VERSION_MINOR 3
 #define GLEW_VERSION_MICRO 4
 
+/* ------------------------------------------------------------------------- */
+
+/* GLEW version info */
+
+/*
+VERSION GLEW_VERSION_STRING
+VERSION_MAJOR GLEW_VERSION_MAJOR_STRING
+VERSION_MINOR GLEW_VERSION_MINOR_STRING
+VERSION_MICRO GLEW_VERSION_MICRO_STRING
+*/
+
 /* API */
-#ifdef GLEW_MX
-
-typedef struct GLEWContextStruct GLEWContext;
-GLEWAPI GLenum GLEWAPIENTRY glewContextInit (GLEWContext *ctx);
-GLEWAPI GLboolean GLEWAPIENTRY glewContextIsSupported (const GLEWContext *ctx, const char *name);
-
-#define glewInit() glewContextInit(glewGetContext())
-#define glewIsSupported(x) glewContextIsSupported(glewGetContext(), x)
-#define glewIsExtensionSupported(x) glewIsSupported(x)
-
-#define GLEW_GET_VAR(x) (*(const GLboolean*)&(glewGetContext()->x))
-#ifdef _WIN32
-#  define GLEW_GET_FUN(x) glewGetContext()->x
-#else
-#  define GLEW_GET_FUN(x) x
-#endif
-
-#else /* GLEW_MX */
-
 GLEWAPI GLenum GLEWAPIENTRY glewInit (void);
 GLEWAPI GLboolean GLEWAPIENTRY glewIsSupported (const char *name);
 #define glewIsExtensionSupported(x) glewIsSupported(x)
 
+#ifndef GLEW_GET_VAR
 #define GLEW_GET_VAR(x) (*(const GLboolean*)&x)
-#define GLEW_GET_FUN(x) x
+#endif
 
-#endif /* GLEW_MX */
+#ifndef GLEW_GET_FUN
+#define GLEW_GET_FUN(x) x
+#endif
 
 GLEWAPI GLboolean glewExperimental;
 GLEWAPI GLboolean GLEWAPIENTRY glewGetExtension (const char *name);

@@ -1,6 +1,7 @@
 GL_NV_sample_locations
 http://www.opengl.org/registry/specs/NV/sample_locations.txt
 GL_NV_sample_locations
+
 	GL_SAMPLE_LOCATION_NV 0x8E50
 	GL_SAMPLE_LOCATION_SUBPIXEL_BITS_NV 0x933D
 	GL_SAMPLE_LOCATION_PIXEL_GRID_WIDTH_NV 0x933E

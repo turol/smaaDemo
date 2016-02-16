@@ -1,6 +1,7 @@
 GL_EXT_vertex_attrib_64bit
 http://www.opengl.org/registry/specs/EXT/vertex_attrib_64bit.txt
 GL_EXT_vertex_attrib_64bit
+
 	GL_DOUBLE_MAT2_EXT 0x8F46
 	GL_DOUBLE_MAT3_EXT 0x8F47
 	GL_DOUBLE_MAT4_EXT 0x8F48

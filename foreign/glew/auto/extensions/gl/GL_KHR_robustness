@@ -1,6 +1,7 @@
 GL_KHR_robustness
 http://www.opengl.org/registry/specs/KHR/robustness.txt
 GL_KHR_robustness
+
 	GL_CONTEXT_LOST 0x0507
 	GL_LOSE_CONTEXT_ON_RESET 0x8252
 	GL_GUILTY_CONTEXT_RESET 0x8253

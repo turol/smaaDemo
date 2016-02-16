@@ -1,6 +1,7 @@
 GL_REGAL_enable
 https://github.com/p3/regal/tree/master/doc/extensions
 GL_REGAL_enable
+
 	GL_ERROR_REGAL 0x9322
 	GL_DEBUG_REGAL 0x9323
 	GL_LOG_REGAL 0x9324

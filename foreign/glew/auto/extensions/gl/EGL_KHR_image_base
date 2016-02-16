@@ -1,0 +1,8 @@
+EGL_KHR_image_base
+https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
+EGL_KHR_image_base
+
+	EGL_NO_IMAGE_KHR ((EGLImageKHR)0)
+	EGL_IMAGE_PRESERVED_KHR 0x30D2
+	EGLImageKHR  eglCreateImageKHR (EGLDisplay  dpy, EGLContext  ctx, EGLenum  target, EGLClientBuffer  buffer, const EGLint * attrib_list)
+	EGLBoolean  eglDestroyImageKHR (EGLDisplay  dpy, EGLImageKHR  image)

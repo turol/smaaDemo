@@ -1,6 +1,7 @@
 GL_NV_framebuffer_mixed_samples
 http://www.opengl.org/registry/specs/NV/framebuffer_mixed_samples.txt
 GL_NV_framebuffer_mixed_samples
+
 	GL_COLOR_SAMPLES_NV 0x8E20
 	GL_RASTER_MULTISAMPLE_EXT 0x9327
 	GL_RASTER_SAMPLES_EXT 0x9328

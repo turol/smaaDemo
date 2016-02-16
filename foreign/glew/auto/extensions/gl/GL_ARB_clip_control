@@ -1,6 +1,7 @@
 GL_ARB_clip_control
 http://www.opengl.org/registry/specs/ARB/clip_control.txt
 GL_ARB_clip_control
+
 	GL_LOWER_LEFT 0x8CA1
 	GL_UPPER_LEFT 0x8CA2
 	GL_CLIP_ORIGIN 0x935C

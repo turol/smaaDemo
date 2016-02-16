@@ -1,6 +1,7 @@
 GL_INTEL_performance_query
 http://www.opengl.org/registry/specs/INTEL/performance_query.txt
 GL_INTEL_performance_query
+
 	GL_PERFQUERY_SINGLE_CONTEXT_INTEL 0x0000
 	GL_PERFQUERY_GLOBAL_CONTEXT_INTEL 0x0001
 	GL_PERFQUERY_DONOT_FLUSH_INTEL 0x83F9

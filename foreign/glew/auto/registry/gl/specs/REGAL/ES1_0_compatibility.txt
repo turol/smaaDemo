@@ -1,0 +1,113 @@
+Name
+
+    REGAL_ES1_0_compatibility
+
+Name Strings
+
+    GL_REGAL_ES1_0_compatibility
+
+Contact
+
+    Cass Everitt, NVIDIA (ceveritt 'at' nvidia.com)
+    Nigel Stewart, NVIDIA (nstewart 'at' nvidia.com)
+    Scott Nations, NVIDIA (snations 'at' nvidia.com)
+
+Contributors
+
+    None.
+
+Status
+
+    XXX - Experimental - not approved by Khronos.
+
+Version
+
+    Last Modified Date: August 18, 2012
+    Revision: 1
+
+Number
+
+    REGAL Extension #5
+
+Dependencies
+
+    None.
+
+    This extension is written against the OpenGL 4.2
+    Specification (April 27, 20012).
+
+Overview
+
+    OpenGL ES 1.0
+
+IP Status
+
+    Not known.
+
+New Procedures and Functions
+
+    void glAlphaFuncx (GLenum func, GLclampx ref)
+    void glClearColorx (GLclampx red, GLclampx green, GLclampx blue, GLclampx alpha)
+    void glClearDepthx (GLclampx depth)
+    void glColor4x (GLfixed red, GLfixed green, GLfixed blue, GLfixed alpha)
+    void glDepthRangex (GLclampx zNear, GLclampx zFar)
+    void glFogx (GLenum pname, GLfixed param)
+    void glFogxv (GLenum pname, const GLfixed *params)
+    void glFrustumf (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar)
+    void glFrustumx (GLfixed left, GLfixed right, GLfixed bottom, GLfixed top, GLfixed zNear, GLfixed zFar)
+    void glLightModelx (GLenum pname, GLfixed param)
+    void glLightModelxv (GLenum pname, const GLfixed *params)
+    void glLightx (GLenum light, GLenum pname, GLfixed param)
+    void glLightxv (GLenum light, GLenum pname, const GLfixed *params)
+    void glLineWidthx (GLfixed width)
+    void glLoadMatrixx (const GLfixed *m)
+    void glMaterialx (GLenum face, GLenum pname, GLfixed param)
+    void glMaterialxv (GLenum face, GLenum pname, const GLfixed *params)
+    void glMultMatrixx (const GLfixed *m)
+    void glMultiTexCoord4x (GLenum target, GLfixed s, GLfixed t, GLfixed r, GLfixed q)
+    void glNormal3x (GLfixed nx, GLfixed ny, GLfixed nz)
+    void glOrthof (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar)
+    void glOrthox (GLfixed left, GLfixed right, GLfixed bottom, GLfixed top, GLfixed zNear, GLfixed zFar)
+    void glPointSizex (GLfixed size)
+    void glPolygonOffsetx (GLfixed factor, GLfixed units)
+    void glRotatex (GLfixed angle, GLfixed x, GLfixed y, GLfixed z)
+    void glSampleCoveragex (GLclampx value, GLboolean invert)
+    void glScalex (GLfixed x, GLfixed y, GLfixed z)
+    void glTexEnvx (GLenum target, GLenum pname, GLfixed param)
+    void glTexEnvxv (GLenum target, GLenum pname, const GLfixed *params)
+    void glTexParameterx (GLenum target, GLenum pname, GLfixed param)
+    void glTranslatex (GLfixed x, GLfixed y, GLfixed z)
+
+New Types
+
+    None
+
+New Tokens
+
+    None
+
+Additions to Chapter x of the OpenGL 4.2 (Core Profile) Specification
+(OpenGL Operation)
+
+    TODO
+
+Errors
+
+    None.
+
+New State
+
+    None.
+
+New Implementation Dependent State
+
+    None.
+
+Issues
+
+    None.
+
+Revision History
+
+    Revision 1, 2012/08/18
+      - Initial revision.

@@ -1,6 +1,7 @@
 GL_NV_shader_buffer_load
 http://www.opengl.org/registry/specs/NV/shader_buffer_load.txt
 GL_NV_shader_buffer_load
+
 	GL_BUFFER_GPU_ADDRESS_NV 0x8F1D
 	GL_GPU_ADDRESS_NV 0x8F34
 	GL_MAX_SHADER_BUFFER_ADDRESS_NV 0x8F35

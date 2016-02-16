@@ -1,6 +1,7 @@
 GL_ARB_direct_state_access
 http://www.opengl.org/registry/specs/ARB/direct_state_access.txt
 GL_ARB_direct_state_access
+
 	GL_TEXTURE_TARGET 0x1006
 	GL_QUERY_TARGET 0x82EA
 	GL_TEXTURE_BINDING 0x82EB

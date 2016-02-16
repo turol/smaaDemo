@@ -1,6 +1,7 @@
 GLX_NV_video_out
 http://www.opengl.org/registry/specs/NV/glx_video_output.txt
 GLX_NV_video_out
+
 	GLX_VIDEO_OUT_COLOR_NV 0x20C3
 	GLX_VIDEO_OUT_ALPHA_NV 0x20C4
 	GLX_VIDEO_OUT_DEPTH_NV 0x20C5

@@ -1,6 +1,6 @@
 /*
 ** The OpenGL Extension Wrangler Library
-** Copyright (C) 2008-2014, Nigel Stewart <nigels[]users sourceforge net>
+** Copyright (C) 2008-2015, Nigel Stewart <nigels[]users sourceforge net>
 ** Copyright (C) 2002-2008, Milan Ikits <milan ikits[]ieee org>
 ** Copyright (C) 2002-2008, Marcelo E. Magallon <mmagallo[]debian org>
 ** Copyright (C) 2002, Lev Povalahev
@@ -262,6 +262,9 @@ typedef _W64 int ptrdiff_t;
 #ifndef GLEWAPIENTRY
 #define GLEWAPIENTRY
 #endif
+
+#define GLEW_VAR_EXPORT GLEWAPI
+#define GLEW_FUN_EXPORT GLEWAPI
 
 #ifdef __cplusplus
 extern "C" {
@@ -2434,10 +2437,14 @@ typedef void (GLAPIENTRY * PFNGLMINSAMPLESHADINGPROC) (GLclampf value);
 #ifndef GL_VERSION_4_2
 #define GL_VERSION_4_2 1
 
+#define GL_TRANSFORM_FEEDBACK_PAUSED 0x8E23
+#define GL_TRANSFORM_FEEDBACK_ACTIVE 0x8E24
 #define GL_COMPRESSED_RGBA_BPTC_UNORM 0x8E8C
 #define GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM 0x8E8D
 #define GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT 0x8E8E
 #define GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT 0x8E8F
+#define GL_COPY_READ_BUFFER_BINDING 0x8F36
+#define GL_COPY_WRITE_BUFFER_BINDING 0x8F37
 
 #define GLEW_VERSION_4_2 GLEW_GET_VAR(__GLEW_VERSION_4_2)
 
@@ -2472,6 +2479,18 @@ typedef void (GLAPIENTRY * PFNGLMINSAMPLESHADINGPROC) (GLclampf value);
 
 #ifndef GL_VERSION_4_5
 #define GL_VERSION_4_5 1
+
+#define GL_CONTEXT_FLAG_ROBUST_ACCESS_BIT 0x00000004
+
+typedef GLenum (GLAPIENTRY * PFNGLGETGRAPHICSRESETSTATUSPROC) (void);
+typedef void (GLAPIENTRY * PFNGLGETNCOMPRESSEDTEXIMAGEPROC) (GLenum target, GLint lod, GLsizei bufSize, GLvoid *pixels);
+typedef void (GLAPIENTRY * PFNGLGETNTEXIMAGEPROC) (GLenum tex, GLint level, GLenum format, GLenum type, GLsizei bufSize, GLvoid *pixels);
+typedef void (GLAPIENTRY * PFNGLGETNUNIFORMDVPROC) (GLuint program, GLint location, GLsizei bufSize, GLdouble *params);
+
+#define glGetGraphicsResetStatus GLEW_GET_FUN(__glewGetGraphicsResetStatus)
+#define glGetnCompressedTexImage GLEW_GET_FUN(__glewGetnCompressedTexImage)
+#define glGetnTexImage GLEW_GET_FUN(__glewGetnTexImage)
+#define glGetnUniformdv GLEW_GET_FUN(__glewGetnUniformdv)
 
 #define GLEW_VERSION_4_5 GLEW_GET_VAR(__GLEW_VERSION_4_5)
 
@@ -14682,6 +14701,15 @@ typedef void (GLAPIENTRY * PFNGLVIDEOCAPTURESTREAMPARAMETERIVNVPROC) (GLuint vid
 
 #endif /* GL_NV_video_capture */
 
+/* ------------------------- GL_NV_viewport_array2 ------------------------- */
+
+#ifndef GL_NV_viewport_array2
+#define GL_NV_viewport_array2 1
+
+#define GLEW_NV_viewport_array2 GLEW_GET_VAR(__GLEW_NV_viewport_array2)
+
+#endif /* GL_NV_viewport_array2 */
+
 /* ------------------------ GL_OES_byte_coordinates ------------------------ */
 
 #ifndef GL_OES_byte_coordinates
@@ -16085,22 +16113,7 @@ typedef void (GLAPIENTRY * PFNGLADDSWAPHINTRECTWINPROC) (GLint x, GLint y, GLsiz
 
 /* ------------------------------------------------------------------------- */
 
-#if defined(GLEW_MX) && defined(_WIN32)
-#define GLEW_FUN_EXPORT
-#else
-#define GLEW_FUN_EXPORT GLEWAPI
-#endif /* GLEW_MX */
 
-#if defined(GLEW_MX)
-#define GLEW_VAR_EXPORT
-#else
-#define GLEW_VAR_EXPORT GLEWAPI
-#endif /* GLEW_MX */
-
-#if defined(GLEW_MX) && defined(_WIN32)
-struct GLEWContextStruct
-{
-#endif /* GLEW_MX */
 
 GLEW_FUN_EXPORT PFNGLCOPYTEXSUBIMAGE3DPROC __glewCopyTexSubImage3D;
 GLEW_FUN_EXPORT PFNGLDRAWRANGEELEMENTSPROC __glewDrawRangeElements;
@@ -16395,6 +16408,11 @@ GLEW_FUN_EXPORT PFNGLBLENDEQUATIONIPROC __glewBlendEquationi;
 GLEW_FUN_EXPORT PFNGLBLENDFUNCSEPARATEIPROC __glewBlendFuncSeparatei;
 GLEW_FUN_EXPORT PFNGLBLENDFUNCIPROC __glewBlendFunci;
 GLEW_FUN_EXPORT PFNGLMINSAMPLESHADINGPROC __glewMinSampleShading;
+
+GLEW_FUN_EXPORT PFNGLGETGRAPHICSRESETSTATUSPROC __glewGetGraphicsResetStatus;
+GLEW_FUN_EXPORT PFNGLGETNCOMPRESSEDTEXIMAGEPROC __glewGetnCompressedTexImage;
+GLEW_FUN_EXPORT PFNGLGETNTEXIMAGEPROC __glewGetnTexImage;
+GLEW_FUN_EXPORT PFNGLGETNUNIFORMDVPROC __glewGetnUniformdv;
 
 GLEW_FUN_EXPORT PFNGLTBUFFERMASK3DFXPROC __glewTbufferMask3DFX;
 
@@ -18697,12 +18715,6 @@ GLEW_FUN_EXPORT PFNGLTEXCOORD4FVERTEX4FSUNPROC __glewTexCoord4fVertex4fSUN;
 GLEW_FUN_EXPORT PFNGLTEXCOORD4FVERTEX4FVSUNPROC __glewTexCoord4fVertex4fvSUN;
 
 GLEW_FUN_EXPORT PFNGLADDSWAPHINTRECTWINPROC __glewAddSwapHintRectWIN;
-
-#if defined(GLEW_MX) && !defined(_WIN32)
-struct GLEWContextStruct
-{
-#endif /* GLEW_MX */
-
 GLEW_VAR_EXPORT GLboolean __GLEW_VERSION_1_1;
 GLEW_VAR_EXPORT GLboolean __GLEW_VERSION_1_2;
 GLEW_VAR_EXPORT GLboolean __GLEW_VERSION_1_2_1;
@@ -19192,6 +19204,7 @@ GLEW_VAR_EXPORT GLboolean __GLEW_NV_vertex_program2_option;
 GLEW_VAR_EXPORT GLboolean __GLEW_NV_vertex_program3;
 GLEW_VAR_EXPORT GLboolean __GLEW_NV_vertex_program4;
 GLEW_VAR_EXPORT GLboolean __GLEW_NV_video_capture;
+GLEW_VAR_EXPORT GLboolean __GLEW_NV_viewport_array2;
 GLEW_VAR_EXPORT GLboolean __GLEW_OES_byte_coordinates;
 GLEW_VAR_EXPORT GLboolean __GLEW_OES_compressed_paletted_texture;
 GLEW_VAR_EXPORT GLboolean __GLEW_OES_read_format;
@@ -19270,11 +19283,6 @@ GLEW_VAR_EXPORT GLboolean __GLEW_SUN_vertex;
 GLEW_VAR_EXPORT GLboolean __GLEW_WIN_phong_shading;
 GLEW_VAR_EXPORT GLboolean __GLEW_WIN_specular_fog;
 GLEW_VAR_EXPORT GLboolean __GLEW_WIN_swap_hint;
-
-#ifdef GLEW_MX
-}; /* GLEWContextStruct */
-#endif /* GLEW_MX */
-
 /* ------------------------------------------------------------------------- */
 
 /* error codes */
@@ -19290,34 +19298,29 @@ GLEW_VAR_EXPORT GLboolean __GLEW_WIN_swap_hint;
 #define GLEW_VERSION_MINOR 3
 #define GLEW_VERSION_MICRO 4
 
+/* ------------------------------------------------------------------------- */
+
+/* GLEW version info */
+
+/*
+VERSION 2.0.0
+VERSION_MAJOR 2
+VERSION_MINOR 0
+VERSION_MICRO 0
+*/
+
 /* API */
-#ifdef GLEW_MX
-
-typedef struct GLEWContextStruct GLEWContext;
-GLEWAPI GLenum GLEWAPIENTRY glewContextInit (GLEWContext *ctx);
-GLEWAPI GLboolean GLEWAPIENTRY glewContextIsSupported (const GLEWContext *ctx, const char *name);
-
-#define glewInit() glewContextInit(glewGetContext())
-#define glewIsSupported(x) glewContextIsSupported(glewGetContext(), x)
-#define glewIsExtensionSupported(x) glewIsSupported(x)
-
-#define GLEW_GET_VAR(x) (*(const GLboolean*)&(glewGetContext()->x))
-#ifdef _WIN32
-#  define GLEW_GET_FUN(x) glewGetContext()->x
-#else
-#  define GLEW_GET_FUN(x) x
-#endif
-
-#else /* GLEW_MX */
-
 GLEWAPI GLenum GLEWAPIENTRY glewInit (void);
 GLEWAPI GLboolean GLEWAPIENTRY glewIsSupported (const char *name);
 #define glewIsExtensionSupported(x) glewIsSupported(x)
 
+#ifndef GLEW_GET_VAR
 #define GLEW_GET_VAR(x) (*(const GLboolean*)&x)
-#define GLEW_GET_FUN(x) x
+#endif
 
-#endif /* GLEW_MX */
+#ifndef GLEW_GET_FUN
+#define GLEW_GET_FUN(x) x
+#endif
 
 GLEWAPI GLboolean glewExperimental;
 GLEWAPI GLboolean GLEWAPIENTRY glewGetExtension (const char *name);

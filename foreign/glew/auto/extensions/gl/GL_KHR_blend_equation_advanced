@@ -1,6 +1,7 @@
 GL_KHR_blend_equation_advanced
 http://www.opengl.org/registry/specs/KHR/blend_equation_advanced.txt
 GL_KHR_blend_equation_advanced
+
 	GL_BLEND_ADVANCED_COHERENT_KHR 0x9285
 	GL_MULTIPLY_KHR 0x9294
 	GL_SCREEN_KHR 0x9295

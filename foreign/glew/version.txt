@@ -1,7 +1,5 @@
-https://github.com/turol/glew
+commit 281e38de7d9ffd963c58062646bc06cca3cdea9f
+Author: Nigel Stewart <nigels@users.sourceforge.net>
+Date:   Sat Feb 6 13:12:27 2016 +1000
 
-commit f1aac50e30c261e684f62e29374fed576972ccda
-Author: Turo Lamminen <turotl@gmail.com>
-Date:   Mon Dec 22 00:29:59 2014 +0200
-
-    Fix glewGetExtension on core context
+    PYTHON make variable for using python2, optionally

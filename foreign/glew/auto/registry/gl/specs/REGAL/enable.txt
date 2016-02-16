@@ -1,0 +1,103 @@
+Name
+
+    REGAL_enable
+
+Name Strings
+
+    GL_REGAL_enable
+
+Contact
+
+    Cass Everitt, NVIDIA (ceveritt 'at' nvidia.com)
+    Nigel Stewart, NVIDIA (nstewart 'at' nvidia.com)
+    Scott Nations, NVIDIA (snations 'at' nvidia.com)
+
+Contributors
+
+    None.
+
+Status
+
+    XXX - Experimental - not approved by Khronos.
+
+Version
+
+    Last Modified Date: June 21, 2013
+    Revision: 3
+
+Number
+
+    REGAL Extension #4
+
+Dependencies
+
+    None.
+
+    This extension is written against the OpenGL 4.2
+    Specification (April 27, 20012).
+
+Overview
+
+    This extension provides runtime configuration of
+    the Regal features via the OpenGL API.
+
+IP Status
+
+    No known IP claims.
+
+New Procedures and Functions
+
+    None.
+
+New Types
+
+    None.
+
+New Tokens
+
+    Accepted by the <cap> parameter of Enable, Disable, and
+    IsEnabled:
+
+    ERROR_REGAL        0x9322
+    DEBUG_REGAL        0x9323
+    LOG_REGAL          0x9324
+    EMULATION_REGAL    0x9325
+    DRIVER_REGAL       0x9326
+    MISSING_REGAL      0x9360
+    TRACE_REGAL        0x9361
+    CACHE_REGAL        0x9362
+    CODE_REGAL         0x9363
+    STATISTICS_REGAL   0x9364
+
+Additions to Chapter x of the OpenGL 4.2 (Core Profile) Specification
+(OpenGL Operation)
+
+    TODO
+
+Errors
+
+    None.
+
+New State
+
+    None.
+
+New Implementation Dependent State
+
+    None.
+
+Issues
+
+    None.
+
+Revision History
+
+    Revision 2, 2013/06/21
+      - Added MISSING_REGAL, TRACE_REGAL, CACHE_REGAL, CODE_REGAL
+        and STATISTICS_REGAL.
+
+    Revision 2, 2012/08/22
+      - LOADER_REGAL renamed to DRIVER_REGAL
+
+    Revision 1, 2012/08/14
+      - Initial revision.

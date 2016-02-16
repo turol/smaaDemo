@@ -1,6 +1,7 @@
 GL_ARB_invalidate_subdata
 http://www.opengl.org/registry/specs/ARB/invalidate_subdata.txt
 GL_ARB_invalidate_subdata
+
 	void glInvalidateBufferData (GLuint buffer)
 	void glInvalidateBufferSubData (GLuint buffer, GLintptr offset, GLsizeiptr length)
 	void glInvalidateFramebuffer (GLenum target, GLsizei numAttachments, const GLenum* attachments)
