@@ -665,7 +665,6 @@ class SMAADemo {
 	bool useVAO;
 	bool useSamplerObjects;
 
-	std::unique_ptr<Shader> cubeInstanceShader;
 	std::unique_ptr<Shader> cubeShader;
 	std::unique_ptr<Shader> imageShader;
 
@@ -992,34 +991,7 @@ void SMAADemo::buildCubeShader() {
 
 	FragmentShader fShader("cube.frag", frag);
 
-	cubeInstanceShader = std::make_unique<Shader>(vShader, fShader);
-
-	ShaderBuilder vert2(s);
-	vert2.pushLine("uniform mat4 viewProj;");
-	vert2.pushLine("uniform vec3 rotationQuat;");
-	vert2.pushLine("uniform vec3 cubePos;");
-	vert2.pushLine("uniform vec3 color;");
-	vert2.pushVertexAttr("vec3 position;");
-	vert2.pushVertexVarying("vec3 colorFrag;");
-	vert2.pushLine("void main(void)");
-	vert2.pushLine("{");
-	vert2.pushLine("    // our quaternions are normalized and have w > 0.0");
-	vert2.pushLine("    float qw = sqrt(1.0 - dot(rotationQuat, rotationQuat));");
-	vert2.pushLine("    // rotate");
-	vert2.pushLine("    // this is quaternion multiplication from glm");
-	vert2.pushLine("    vec3 v = position;");
-	vert2.pushLine("    vec3 uv = cross(rotationQuat, v);");
-	vert2.pushLine("    vec3 uuv = cross(rotationQuat, uv);");
-	vert2.pushLine("    uv *= (2.0 * qw);");
-	vert2.pushLine("    uuv *= 2.0;");
-	vert2.pushLine("    vec3 rotatedPos = v + uv + uuv;");
-	vert2.pushLine("");
-	vert2.pushLine("    gl_Position = viewProj * vec4(rotatedPos + cubePos, 1.0);");
-	vert2.pushLine("    colorFrag = color;");
-	vert2.pushLine("}");
-
-	VertexShader vShader2("cube2.vert", vert2);
-	cubeShader = std::make_unique<Shader>(vShader2, fShader);
+	cubeShader = std::make_unique<Shader>(vShader, fShader);
 }
 
 
@@ -2057,8 +2029,8 @@ void SMAADemo::render() {
 		glm::mat4 proj = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, 0.1f, 100.0f);
 		glm::mat4 viewProj = proj * view;
 
-			cubeInstanceShader->bind();
-			GLint viewProjLoc = cubeInstanceShader->getUniformLocation("viewProj");
+			cubeShader->bind();
+			GLint viewProjLoc = cubeShader->getUniformLocation("viewProj");
 			glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, glm::value_ptr(viewProj));
 
 			instances.clear();
