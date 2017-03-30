@@ -8,7 +8,7 @@ FILES:= \
 
 
 smaaDemo_MODULES:=glew
-smaaDemo_SRC:=$(dir)/smaaDemo.cpp
+smaaDemo_SRC:=$(dir)/smaaDemo.cpp $(dir)/Utils.cpp
 
 
 PROGRAMS+= \
