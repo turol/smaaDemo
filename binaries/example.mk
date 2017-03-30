@@ -12,9 +12,6 @@ TSAN:=n
 UBSAN:=n
 
 
-USE_GLEW:=y
-
-
 # compiler options etc
 CXX:=g++
 CC:=gcc

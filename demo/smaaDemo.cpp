@@ -38,17 +38,7 @@ THE SOFTWARE.
 #include <SDL.h>
 
 
-#ifdef USE_GLEW
-
 #include <GL/glew.h>
-
-#else  // USE_GLEW
-
-#define GL_GLEXT_PROTOTYPES 1
-#include <GLES3/gl3.h>
-#include <GLES3/gl2ext.h>
-
-#endif  // USE_GLEW
 
 
 #define GLM_FORCE_RADIANS
@@ -77,41 +67,6 @@ THE SOFTWARE.
 
 
 extern "C" {
-
-
-#ifndef USE_GLEW
-
-
-#ifndef GLAPIENTRY
-#define GLAPIENTRY
-#endif  // GLAPIENTRY
-
-
-// prototypes so the code compiles
-// these are not supposed to be called so they're not defined
-void GLAPIENTRY glBindFragDataLocation(GLuint program,  GLuint colorNumber, const char *name);
-void GLAPIENTRY glBindMultiTextureEXT(GLenum texunit, GLuint texture, GLenum target);
-void GLAPIENTRY glTextureParameteriEXT(GLuint texture, GLuint target, GLenum pname, GLint param);
-void GLAPIENTRY glTextureStorage2DEXT(GLuint texture, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height);
-void GLAPIENTRY glTextureSubImage2DEXT(GLuint texture, GLuint target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels);
-
-
-#define glBindTextureUnit glBindTextureUnitEmulated
-#define glCreateBuffers glCreateBuffersEmulated
-#define glCreateSamplers glCreateSamplersEmulated
-#define glCreateTextures glCreateTexturesEmulated
-#define glCreateVertexArrays glCreateVertexArraysEmulated
-#define glEnableVertexArrayAttrib glEnableVertexArrayAttribEmulated
-#define glNamedBufferData glNamedBufferDataEmulated
-#define glNamedBufferSubData glNamedBufferSubDataEmulated
-#define glNamedFramebufferTexture glNamedFramebufferTextureEmulated
-#define glTextureParameteri glTextureParameteriEmulated
-#define glTextureStorage2D glTextureStorage2DEmulated
-#define glTextureSubImage2D glTextureSubImage2DEmulated
-#define glVertexArrayElementBuffer glVertexArrayElementBufferEmulated
-
-
-#endif  // USE_GLEW
 
 
 void GLAPIENTRY glBindTextureUnitEXTEmulated(GLuint unit, GLuint texture) {
@@ -617,17 +572,12 @@ ShaderBuilder::ShaderBuilder(bool glES_)
 	} else {
 		pushLine("#version 130");
 
-#ifdef USE_GLEW
-
 		if (GLEW_ARB_gpu_shader5) {
 			pushLine("#extension GL_ARB_gpu_shader5 : enable");
 		}
 		if (GLEW_ARB_texture_gather) {
 			pushLine("#extension GL_ARB_texture_gather : enable");
 		}
-
-#endif  // USE_GLEW
-
 	}
 }
 
@@ -1699,9 +1649,6 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 }
 
 
-#ifdef USE_GLEW
-
-
 static const char *errorSource(GLenum source)
 {
 	switch (source)
@@ -1815,9 +1762,6 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 }
 
 
-#endif  // USE_GLEW
-
-
 void SMAADemo::initRender() {
 	assert(window == NULL);
 	assert(context == NULL);
@@ -1867,7 +1811,6 @@ void SMAADemo::initRender() {
 
 	applyVSync();
 
-#ifdef USE_GLEW
 	glewExperimental = true;
 	glewInit();
 
@@ -1930,8 +1873,6 @@ void SMAADemo::initRender() {
 		printf("Sampler objects enabled\n");
 		useSamplerObjects = true;
 	}
-
-#endif  // USE_GLEW
 
 	printf("GL vendor: \"%s\"\n", glGetString(GL_VENDOR));
 	printf("GL renderer: \"%s\"\n", glGetString(GL_RENDERER));

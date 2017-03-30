@@ -48,11 +48,7 @@ LDFLAGS+=$(LTOLDFLAGS) $(OPTFLAGS)
 endif
 
 
-ifeq ($(USE_GLEW),y)
-
-CFLAGS+=-DUSE_GLEW -DGLEW_STATIC -DGLEW_NO_GLU
-
-endif  # USE_GLEW
+CFLAGS+=-DGLEW_STATIC -DGLEW_NO_GLU
 
 
 LDFLAGS+=$(foreach f, $(PRELOAD_FILES), --preload-file $(TOPDIR)/$(f)@$(f))
