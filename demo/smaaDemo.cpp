@@ -66,162 +66,6 @@ THE SOFTWARE.
 #define TEXUNIT_BLEND 5
 
 
-extern "C" {
-
-
-void GLAPIENTRY glBindTextureUnitEXTEmulated(GLuint unit, GLuint texture) {
-	glBindMultiTextureEXT(GL_TEXTURE0 + unit, GL_TEXTURE_2D, texture);
-}
-
-
-void GLAPIENTRY glBindTextureUnitEmulated(GLuint unit, GLuint texture) {
-	glActiveTexture(GL_TEXTURE0 + unit);
-	glBindTexture(GL_TEXTURE_2D, texture);
-}
-
-
-void GLAPIENTRY glCreateTexturesEXTEmulated(GLenum /* target */, GLsizei n, GLuint *textures) {
-	glGenTextures(n, textures);
-	for (GLsizei i = 0; i < n; i++) {
-		glBindTextureUnit(TEXUNIT_TEMP, textures[i]);
-	}
-}
-
-
-void GLAPIENTRY glCreateTexturesEmulated(GLenum target, GLsizei n, GLuint *textures) {
-	glActiveTexture(GL_TEXTURE0 + TEXUNIT_TEMP);
-	glGenTextures(n, textures);
-	for (GLsizei i = 0; i < n; i++) {
-		glBindTexture(target, textures[i]);
-	}
-}
-
-
-void GLAPIENTRY glTextureStorage2DEXTEmulated(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height) {
-	glTextureStorage2DEXT(texture, GL_TEXTURE_2D, levels, internalformat, width, height);
-}
-
-
-void GLAPIENTRY glTextureSubImage2DEXTEmulated(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels) {
-	glTextureSubImage2DEXT(texture, GL_TEXTURE_2D, level, xoffset, yoffset, width, height, format, type, pixels);
-}
-
-
-void GLAPIENTRY glTextureParameteriEXTEmulated(GLuint texture, GLenum pname, GLint param) {
-	glTextureParameteriEXT(texture, GL_TEXTURE_2D, pname, param);
-}
-
-
-void GLAPIENTRY glTextureStorage2DEmulated(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height) {
-	const GLenum target = GL_TEXTURE_2D;
-	glActiveTexture(GL_TEXTURE0 + TEXUNIT_TEMP);
-	glBindTexture(target, texture);
-	GLenum format = GL_NONE;
-	switch (internalformat) {
-	case GL_RG8:
-		format = GL_RG;
-		break;
-
-	case GL_R8:
-		format = GL_RED;
-		break;
-
-	case GL_RGB8:
-		format = GL_RGB;
-		break;
-
-	case GL_RGBA8:
-		format = GL_RGBA;
-		break;
-
-	case GL_DEPTH_COMPONENT16:
-		format =  GL_DEPTH_COMPONENT;
-		break;
-
-	default:
-		assert(false);  // No matching internalformat
-		break;
-	}
-	for (GLsizei i = 0; i < levels; i++) {
-		glTexImage2D(target, i, internalformat, width, height, 0, format, GL_BYTE, NULL);
-		width = std::max(1.0, floor(width / 2));
-		height = std::max(1.0, floor(height / 2));
-	}
-}
-
-
-void GLAPIENTRY glTextureSubImage2DEmulated(GLuint texture, int level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels) {
-	const GLenum target = GL_TEXTURE_2D;
-	glActiveTexture(GL_TEXTURE0 + TEXUNIT_TEMP);
-	glBindTexture(target, texture);
-	glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
-}
-
-
-void GLAPIENTRY glTextureParameteriEmulated(GLuint texture, GLenum pname, GLint param) {
-	const GLenum target = GL_TEXTURE_2D;
-	glActiveTexture(GL_TEXTURE0 + TEXUNIT_TEMP);
-	glBindTexture(target, texture);
-	glTexParameteri(target, pname, param);
-}
-
-
-void GLAPIENTRY glNamedFramebufferTextureEmulated(GLuint framebuffer, GLenum attachment, GLuint texture, GLint level) {
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texture, level);
-}
-
-
-void GLAPIENTRY glCreateSamplersEmulated(GLsizei n, GLuint *samplers) {
-	glGenSamplers(n, samplers);
-	for (GLsizei i = 0; i < n; i++) {
-		glBindSampler(TEXUNIT_TEMP, samplers[i]);
-	}
-}
-
-
-void GLAPIENTRY glCreateBuffersEmulated(GLsizei n, GLuint *buffers) {
-	glGenBuffers(n, buffers);
-	for (GLsizei i = 0; i < n; i++) {
-		glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
-	}
-}
-
-
-void GLAPIENTRY glNamedBufferDataEmulated(GLuint buffer, GLsizeiptr size, const void *data, GLenum usage) {
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, size, data, usage);	// TODO: better wrapper so we can set "target" parameter
-}
-
-
-void GLAPIENTRY glCreateVertexArraysEmulated(GLsizei n, GLuint *vaos) {
-	glGenVertexArrays(n, vaos);
-	for (GLsizei i = 0; i < n; i++) {
-		glBindVertexArray(vaos[i]);
-	}
-}
-
-void GLAPIENTRY glVertexArrayElementBufferEmulated(GLuint vao, GLuint ibo) {
-	glBindVertexArray(vao);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-}
-
-
-void GLAPIENTRY glEnableVertexArrayAttribEmulated(GLuint vao, GLuint index) {
-	glBindVertexArray(vao);
-	glEnableVertexAttribArray(index);
-}
-
-
-void GLAPIENTRY glNamedBufferSubDataEmulated(GLuint buffer, GLintptr offset, GLsizeiptr size, const GLvoid *data) {
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
-}
-
-
-}  // extern "C"
-
-
 #ifdef _MSC_VER
 #define fileno _fileno
 #define __builtin_unreachable() assert(false)
@@ -857,18 +701,6 @@ void Framebuffer::blitTo(Framebuffer &target) {
 }
 
 
-namespace DSAMode {
-
-enum DSAMode {
-	  None
-	, EXT
-	, ARB
-};
-
-
-}  // namespace DSAMode
-
-
 namespace AAMethod {
 
 enum AAMethod {
@@ -991,7 +823,6 @@ class SMAADemo {
 	bool useInstancing;
 	bool useVAO;
 	bool useSamplerObjects;
-	DSAMode::DSAMode dsaMode;
 
 	std::unique_ptr<Shader> cubeInstanceShader;
 	std::unique_ptr<Shader> cubeShader;
@@ -1143,7 +974,6 @@ SMAADemo::SMAADemo()
 , useInstancing(true)
 , useVAO(false)
 , useSamplerObjects(false)
-, dsaMode(DSAMode::ARB)
 , cubeVAO(0)
 , cubeVBO(0)
 , cubeIBO(0)
@@ -1619,12 +1449,6 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		glES = glesSwitch.getValue();
 		glDebug = glDebugSwitch.getValue();
 		useInstancing = !noinstancingSwitch.getValue();
-		std::string dsaString = dsaSwitch.getValue();
-		if (dsaString == "ext") {
-			dsaMode = DSAMode::EXT;
-		} else if (dsaString == "none") {
-			dsaMode = DSAMode::None;
-		}
 		glMajor = glMajorSwitch.getValue();
 		glMinor = glMinorSwitch.getValue();
 		windowWidth = windowWidthSwitch.getValue();
@@ -1817,38 +1641,9 @@ void SMAADemo::initRender() {
 	// TODO: check extensions
 	// at least direct state access, texture storage
 
-	if (GLEW_ARB_direct_state_access && dsaMode == DSAMode::ARB) {
-		printf("ARB_direct_state_access found\n");
-	} else if (GLEW_EXT_direct_state_access && dsaMode != DSAMode::None) {
-		printf("EXT_direct_state_access found\n");
-		glCreateTextures = glCreateTexturesEXTEmulated;
-		glTextureStorage2D = glTextureStorage2DEXTEmulated;
-		glTextureSubImage2D = glTextureSubImage2DEXTEmulated;
-		glTextureParameteri = glTextureParameteriEXTEmulated;
-		glNamedFramebufferTexture = glNamedFramebufferTextureEXT;
-		glCreateSamplers = glCreateSamplersEmulated;
-		glNamedBufferData = glNamedBufferDataEmulated;
-		glCreateBuffers = glCreateBuffersEmulated;
-		glCreateVertexArrays = glCreateVertexArraysEmulated;
-		glVertexArrayElementBuffer = glVertexArrayElementBufferEmulated;
-		glEnableVertexArrayAttrib = glEnableVertexArrayAttribEXT;
-		glNamedBufferSubData = glNamedBufferSubDataEXT;
-		glBindTextureUnit = glBindTextureUnitEXTEmulated;
-	} else {
-		printf("No direct state access\n");
-		glCreateTextures = glCreateTexturesEmulated;
-		glTextureStorage2D = glTextureStorage2DEmulated;
-		glTextureSubImage2D = glTextureSubImage2DEmulated;
-		glTextureParameteri = glTextureParameteriEmulated;
-		glNamedFramebufferTexture = glNamedFramebufferTextureEmulated;
-		glCreateSamplers = glCreateSamplersEmulated;
-		glNamedBufferData = glNamedBufferDataEmulated;
-		glCreateBuffers = glCreateBuffersEmulated;
-		glCreateVertexArrays = glCreateVertexArraysEmulated;
-		glVertexArrayElementBuffer = glVertexArrayElementBufferEmulated;
-		glEnableVertexArrayAttrib = glEnableVertexArrayAttribEmulated;
-		glNamedBufferSubData = glNamedBufferSubDataEmulated;
-		glBindTextureUnit = glBindTextureUnitEmulated;
+	if (!GLEW_ARB_direct_state_access) {
+		printf("ARB_direct_state_access not found\n");
+		exit(1);
 	}
 
 	if (glDebug) {
