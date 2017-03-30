@@ -347,7 +347,6 @@ public:
 
 class FragmentShader {
 	GLuint shader;
-	bool glES;
 
 	FragmentShader() = delete;
 
@@ -378,10 +377,8 @@ class ShaderBuilder {
 	friend class VertexShader;
 	friend class FragmentShader;
 
-	bool glES;
-
 public:
-	explicit ShaderBuilder(bool glES_);
+	ShaderBuilder();
 	ShaderBuilder(const ShaderBuilder &other);
 
 	VertexShader compileVertex();
@@ -397,23 +394,10 @@ public:
 };
 
 
-ShaderBuilder::ShaderBuilder(bool glES_)
-: glES(glES_)
+ShaderBuilder::ShaderBuilder()
 {
 	source.reserve(512);
 
-	if (glES) {
-		pushLine("#version 100");
-
-		// FIXME: is this universally available on WebGL implementations?
-		pushLine("#extension GL_EXT_shader_texture_lod : enable");
-
-		pushLine("precision highp float;");
-
-		pushLine("#define round(x) floor((x) + 0.5)");
-		pushLine("#define textureLod texture2DLodEXT");
-		pushLine("#define texture2DLod texture2DLodEXT");
-	} else {
 		pushLine("#version 130");
 
 		if (GLEW_ARB_gpu_shader5) {
@@ -422,12 +406,10 @@ ShaderBuilder::ShaderBuilder(bool glES_)
 		if (GLEW_ARB_texture_gather) {
 			pushLine("#extension GL_ARB_texture_gather : enable");
 		}
-	}
 }
 
 
 ShaderBuilder::ShaderBuilder(const ShaderBuilder &other)
-: glES(other.glES)
 {
 	source = other.source;
 }
@@ -441,46 +423,27 @@ void ShaderBuilder::pushLine(const std::string &line) {
 
 
 void ShaderBuilder::pushVertexAttr(const std::string &attr) {
-	if (glES) {
-		pushLine("attribute " + attr);
-	} else {
 		pushLine("in " + attr);
-	}
-
 }
 
 
 void ShaderBuilder::pushVertexVarying(const std::string &var) {
-	if (glES) {
-		pushLine("varying " + var);
-	} else {
 		pushLine("out " + var);
-	}
 }
 
 
 void ShaderBuilder::pushFragmentVarying(const std::string &var) {
-	if (glES) {
-		pushLine("varying " + var);
-	} else {
 		pushLine("in " + var);
-	}
 }
 
 
 void ShaderBuilder::pushFragmentOutput(const std::string &expr) {
-	if (glES) {
-		pushLine("    gl_FragColor = " + expr);
-	} else {
 		pushLine("    outColor = " + expr);
-	}
 }
 
 
 void ShaderBuilder::pushFragmentOutputDecl() {
-	if (!glES) {
 		pushLine("out vec4 outColor;");
-	}
 }
 
 
@@ -533,7 +496,6 @@ VertexShader::~VertexShader() {
 
 FragmentShader::FragmentShader(const std::string &name, const ShaderBuilder &builder)
 : shader(0)
-, glES(builder.glES)
 {
 	shader = createShader(GL_FRAGMENT_SHADER, name, builder.source);
 }
@@ -573,9 +535,7 @@ Shader::Shader(const VertexShader &vertexShader, const FragmentShader &fragmentS
 	}
 	glUseProgram(program);
 
-	if (!fragmentShader.glES) {
 		glBindFragDataLocation(program, 0, "outColor");
-	}
 
 	GLint colorLoc = getUniformLocation("colorTex");
 	glUniform1i(colorLoc, TEXUNIT_COLOR);
@@ -815,7 +775,6 @@ class SMAADemo {
 	bool fullscreen;
 	SDL_Window *window;
 	SDL_GLContext context;
-	bool glES;
 	bool glDebug;
 	unsigned int glMajor;
 	unsigned int glMinor;
@@ -966,7 +925,6 @@ SMAADemo::SMAADemo()
 , fullscreen(false)
 , window(NULL)
 , context(NULL)
-, glES(false)
 , glDebug(false)
 , glMajor(3)
 , glMinor(1)
@@ -1110,7 +1068,7 @@ static const uint32_t indices[] =
 
 
 void SMAADemo::buildCubeShader() {
-	ShaderBuilder s(glES);
+	ShaderBuilder s;
 
 	ShaderBuilder vert(s);
 	vert.pushLine("uniform mat4 viewProj;");
@@ -1185,7 +1143,7 @@ void SMAADemo::buildCubeShader() {
 
 
 void SMAADemo::buildImageShader() {
-	ShaderBuilder s(glES);
+	ShaderBuilder s;
 
 	ShaderBuilder vert(s);
 	vert.pushVertexAttr("vec2 pos;");
@@ -1217,17 +1175,11 @@ void SMAADemo::buildImageShader() {
 void SMAADemo::buildFXAAShader() {
 	glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 
-	ShaderBuilder s(glES);
+	ShaderBuilder s;
 
 	s.pushLine("#define FXAA_PC 1");
 
-	if (glES) {
-		s.pushLine("#define FXAA_FAST_PIXEL_OFFSET 0");
-		s.pushLine("#define ivec2 vec2");
-		s.pushLine("#define FXAA_GLSL_120 1");
-	} else {
 		s.pushLine("#define FXAA_GLSL_130 1");
-	}
 
 	// TODO: cache shader based on quality level
 	s.pushLine("#define FXAA_QUALITY_PRESET " + std::string(fxaaQualityLevels[fxaaQuality]));
@@ -1245,9 +1197,6 @@ void SMAADemo::buildFXAAShader() {
 
 	// fragment
 	ShaderBuilder frag(s);
-	if (glES) {
-		frag.pushLine("#define FXAA_GATHER4_ALPHA 0");
-	}
 	frag.pushFile("fxaa3_11.h");
 	frag.pushLine("uniform sampler2D colorTex;");
 	frag.pushLine("uniform vec4 screenSize;");
@@ -1268,7 +1217,7 @@ void SMAADemo::buildFXAAShader() {
 
 void SMAADemo::buildSMAAShaders() {
 	try {
-		ShaderBuilder s(glES);
+		ShaderBuilder s;
 
 		s.pushLine("#define SMAA_RT_METRICS screenSize");
 		s.pushLine("#define SMAA_GLSL_3 1");
@@ -1434,7 +1383,6 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 	try {
 		TCLAP::CmdLine cmd("SMAA demo", ' ', "1.0");
 
-		TCLAP::SwitchArg glesSwitch("", "gles", "Use OpenGL ES", cmd, false);
 		TCLAP::SwitchArg glDebugSwitch("", "gldebug", "Enable OpenGL debugging", cmd, false);
 		TCLAP::SwitchArg noinstancingSwitch("", "noinstancing", "Don't use instanced rendering", cmd, false);
 		TCLAP::ValueArg<std::string> dsaSwitch("", "dsa", "Select DSA mode", false, "arb", "arb, ext or none", cmd);
@@ -1446,7 +1394,6 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 
 		cmd.parse(argc, argv);
 
-		glES = glesSwitch.getValue();
 		glDebug = glDebugSwitch.getValue();
 		useInstancing = !noinstancingSwitch.getValue();
 		glMajor = glMajorSwitch.getValue();
@@ -1597,14 +1544,10 @@ void SMAADemo::initRender() {
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, glMajor);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glMinor);
-	if (glES) {
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-	} else {
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 		if (glDebug) {
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 		}
-	}
 
 	SDL_DisplayMode mode;
 	memset(&mode, 0, sizeof(mode));
