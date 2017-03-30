@@ -662,7 +662,6 @@ class SMAADemo {
 	unsigned int glMajor;
 	unsigned int glMinor;
 	bool smaaSupported;
-	bool useInstancing;
 	bool useVAO;
 	bool useSamplerObjects;
 
@@ -812,7 +811,6 @@ SMAADemo::SMAADemo()
 , glMajor(3)
 , glMinor(1)
 , smaaSupported(true)
-, useInstancing(true)
 , useVAO(false)
 , useSamplerObjects(false)
 , cubeVAO(0)
@@ -1267,7 +1265,6 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::CmdLine cmd("SMAA demo", ' ', "1.0");
 
 		TCLAP::SwitchArg glDebugSwitch("", "gldebug", "Enable OpenGL debugging", cmd, false);
-		TCLAP::SwitchArg noinstancingSwitch("", "noinstancing", "Don't use instanced rendering", cmd, false);
 		TCLAP::ValueArg<std::string> dsaSwitch("", "dsa", "Select DSA mode", false, "arb", "arb, ext or none", cmd);
 		TCLAP::ValueArg<unsigned int> glMajorSwitch("", "glmajor", "OpenGL major version", false, glMajor, "version", cmd);
 		TCLAP::ValueArg<unsigned int> glMinorSwitch("", "glminor", "OpenGL minor version", false, glMinor, "version", cmd);
@@ -1278,7 +1275,6 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		cmd.parse(argc, argv);
 
 		glDebug = glDebugSwitch.getValue();
-		useInstancing = !noinstancingSwitch.getValue();
 		glMajor = glMajorSwitch.getValue();
 		glMinor = glMinorSwitch.getValue();
 		windowWidth = windowWidthSwitch.getValue();
@@ -1543,7 +1539,6 @@ void SMAADemo::initRender() {
 
 		glEnableVertexArrayAttrib(cubeVAO, ATTR_POS);
 
-		if (useInstancing) {
 			glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
 			glVertexAttribPointer(ATTR_CUBEPOS, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, x));
 			glVertexAttribDivisor(ATTR_CUBEPOS, 1);
@@ -1557,7 +1552,6 @@ void SMAADemo::initRender() {
 			glEnableVertexArrayAttrib(cubeVAO, ATTR_CUBEPOS);
 			glEnableVertexArrayAttrib(cubeVAO, ATTR_ROT);
 			glEnableVertexArrayAttrib(cubeVAO, ATTR_COLOR);
-		}
 	}
 
 	glCreateBuffers(1, &fullscreenVBO);
@@ -1646,7 +1640,6 @@ void SMAADemo::setCubeVBO() {
 
 		glEnableVertexAttribArray(ATTR_POS);
 
-		if (useInstancing) {
 			glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
 			glVertexAttribPointer(ATTR_CUBEPOS, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, x));
 			glVertexAttribDivisor(ATTR_CUBEPOS, 1);
@@ -1660,11 +1653,6 @@ void SMAADemo::setCubeVBO() {
 			glEnableVertexAttribArray(ATTR_CUBEPOS);
 			glEnableVertexAttribArray(ATTR_ROT);
 			glEnableVertexAttribArray(ATTR_COLOR);
-		} else {
-			glDisableVertexAttribArray(ATTR_CUBEPOS);
-			glDisableVertexAttribArray(ATTR_ROT);
-			glDisableVertexAttribArray(ATTR_COLOR);
-		}
 	}
 }
 
@@ -2069,7 +2057,6 @@ void SMAADemo::render() {
 		glm::mat4 proj = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, 0.1f, 100.0f);
 		glm::mat4 viewProj = proj * view;
 
-		if (useInstancing) {
 			cubeInstanceShader->bind();
 			GLint viewProjLoc = cubeInstanceShader->getUniformLocation("viewProj");
 			glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, glm::value_ptr(viewProj));
@@ -2084,29 +2071,6 @@ void SMAADemo::render() {
 			glNamedBufferSubData(instanceVBO, 0, sizeof(InstanceData) * instances.size(), &instances[0]);
 
 			glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
-		} else {
-			cubeShader->bind();
-			GLint viewProjLoc = cubeShader->getUniformLocation("viewProj");
-			glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, glm::value_ptr(viewProj));
-
-			GLint cubePosLoc = cubeShader->getUniformLocation("cubePos");
-			GLint rotationQuatLoc = cubeShader->getUniformLocation("rotationQuat");
-			GLint colorLoc = cubeShader->getUniformLocation("color");
-
-			setCubeVBO();
-
-			for (const auto &cube : cubes) {
-				glUniform3fv(cubePosLoc, 1, glm::value_ptr(cube.pos));
-				glUniform3fv(rotationQuatLoc, 1, glm::value_ptr(cube.orient));
-				glm::vec3 colorF;
-				colorF.x = float(cube.col.r) / 255.0f;
-				colorF.y = float(cube.col.g) / 255.0f;
-				colorF.z = float(cube.col.b) / 255.0f;
-				glUniform3fv(colorLoc, 1, glm::value_ptr(colorF));
-				glDrawElements(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL);
-			}
-
-		}
 	} else {
 		glDisable(GL_DEPTH_TEST);
 		glDepthMask(GL_FALSE);
