@@ -398,7 +398,7 @@ ShaderBuilder::ShaderBuilder()
 {
 	source.reserve(512);
 
-		pushLine("#version 130");
+		pushLine("#version 450");
 
 		if (GLEW_ARB_gpu_shader5) {
 			pushLine("#extension GL_ARB_gpu_shader5 : enable");
