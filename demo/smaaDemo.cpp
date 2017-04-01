@@ -681,7 +681,6 @@ class SMAADemo {
 	unsigned int glMinor;
 	bool smaaSupported;
 	bool useVAO;
-	bool useSamplerObjects;
 
 	std::unique_ptr<Shader> cubeShader;
 	std::unique_ptr<Shader> imageShader;
@@ -827,7 +826,6 @@ SMAADemo::SMAADemo()
 , glMinor(1)
 , smaaSupported(true)
 , useVAO(false)
-, useSamplerObjects(false)
 , cubeVAO(0)
 , cubeVBO(0)
 , cubeIBO(0)
@@ -891,10 +889,8 @@ SMAADemo::~SMAADemo() {
 	glDeleteBuffers(1, &fullscreenVBO);
 	glDeleteBuffers(1, &instanceVBO);
 
-	if (useSamplerObjects) {
 		glDeleteSamplers(1, &linearSampler);
 		glDeleteSamplers(1, &nearestSampler);
-	}
 
 	glDeleteTextures(1, &areaTex);
 	glDeleteTextures(1, &searchTex);
@@ -1426,11 +1422,6 @@ void SMAADemo::initRender() {
 		useVAO = true;
 	}
 
-	if (GLEW_VERSION_3_3 || GLEW_ARB_sampler_objects) {
-		printf("Sampler objects enabled\n");
-		useSamplerObjects = true;
-	}
-
 	printf("GL vendor: \"%s\"\n", glGetString(GL_VENDOR));
 	printf("GL renderer: \"%s\"\n", glGetString(GL_RENDERER));
 	printf("GL version: \"%s\"\n", glGetString(GL_VERSION));
@@ -1445,7 +1436,6 @@ void SMAADemo::initRender() {
 	buildSMAAShaders();
 	buildFXAAShader();
 
-	if (useSamplerObjects) {
 		glCreateSamplers(1, &linearSampler);
 		glSamplerParameteri(linearSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glSamplerParameteri(linearSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -1457,7 +1447,6 @@ void SMAADemo::initRender() {
 		glSamplerParameteri(nearestSampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glSamplerParameteri(nearestSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glSamplerParameteri(nearestSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	}
 
 	glCreateBuffers(1, &cubeVBO);
 	glNamedBufferData(cubeVBO, sizeof(vertices), &vertices[0], GL_STATIC_DRAW);
