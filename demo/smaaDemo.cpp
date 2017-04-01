@@ -223,6 +223,7 @@ class VertexShader {
 public:
 
 	VertexShader(const std::string &name, const ShaderBuilder &builder);
+	explicit VertexShader(const std::string &name);
 
 	~VertexShader();
 };
@@ -244,6 +245,7 @@ class FragmentShader {
 public:
 
 	FragmentShader(const std::string &name, const ShaderBuilder &builder);
+	explicit FragmentShader(const std::string &name);
 
 	~FragmentShader();
 };
@@ -369,6 +371,14 @@ VertexShader::VertexShader(const std::string &name, const ShaderBuilder &builder
 }
 
 
+VertexShader::VertexShader(const std::string &name)
+: shader(0)
+{
+	auto source = readTextFile(name);
+	shader = createShader(GL_VERTEX_SHADER, name, source);
+}
+
+
 VertexShader::~VertexShader() {
 	assert(shader != 0);
 
@@ -381,6 +391,14 @@ FragmentShader::FragmentShader(const std::string &name, const ShaderBuilder &bui
 : shader(0)
 {
 	shader = createShader(GL_FRAGMENT_SHADER, name, builder.source);
+}
+
+
+FragmentShader::FragmentShader(const std::string &name)
+: shader(0)
+{
+	auto source = readTextFile(name);
+	shader = createShader(GL_FRAGMENT_SHADER, name, source);
 }
 
 
@@ -773,8 +791,6 @@ public:
 
 	void applyFullscreen();
 
-	void buildCubeShader();
-
 	void buildImageShader();
 
 	void buildFXAAShader();
@@ -945,54 +961,6 @@ static const uint32_t indices[] =
 
 
 #define VBO_OFFSETOF(st, member) reinterpret_cast<GLvoid *>(offsetof(st, member))
-
-
-void SMAADemo::buildCubeShader() {
-	ShaderBuilder s;
-
-	ShaderBuilder vert(s);
-	vert.pushLine("uniform mat4 viewProj;");
-	vert.pushVertexAttr("vec3 rotationQuat;");
-	vert.pushVertexAttr("vec3 cubePos;");
-	vert.pushVertexAttr("vec3 color;");
-	vert.pushVertexAttr("vec3 position;");
-	vert.pushVertexVarying("vec3 colorFrag;");
-	vert.pushLine("void main(void)");
-	vert.pushLine("{");
-	vert.pushLine("    // our quaternions are normalized and have w > 0.0");
-	vert.pushLine("    float qw = sqrt(1.0 - dot(rotationQuat, rotationQuat));");
-	vert.pushLine("    // rotate");
-	vert.pushLine("    // this is quaternion multiplication from glm");
-	vert.pushLine("    vec3 v = position;");
-	vert.pushLine("    vec3 uv = cross(rotationQuat, v);");
-	vert.pushLine("    vec3 uuv = cross(rotationQuat, uv);");
-	vert.pushLine("    uv *= (2.0 * qw);");
-	vert.pushLine("    uuv *= 2.0;");
-	vert.pushLine("    vec3 rotatedPos = v + uv + uuv;");
-	vert.pushLine("");
-	vert.pushLine("    gl_Position = viewProj * vec4(rotatedPos + cubePos, 1.0);");
-	vert.pushLine("    colorFrag = color;");
-	vert.pushLine("}");
-
-	VertexShader vShader("cube.vert", vert);
-
-	// fragment
-	ShaderBuilder frag(s);
-
-	frag.pushFragmentVarying("vec3 colorFrag;");
-	frag.pushFragmentOutputDecl();
-	frag.pushLine("void main(void)");
-	frag.pushLine("{");
-	frag.pushLine("    vec4 temp;");
-	frag.pushLine("    temp.xyz = colorFrag;");
-	frag.pushLine("    temp.w = dot(colorFrag, vec3(0.299, 0.587, 0.114));");
-	frag.pushFragmentOutput("temp;");
-	frag.pushLine("}");
-
-	FragmentShader fShader("cube.frag", frag);
-
-	cubeShader = std::make_unique<Shader>(vShader, fShader);
-}
 
 
 void SMAADemo::buildImageShader() {
@@ -1472,7 +1440,7 @@ void SMAADemo::initRender() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	SDL_GL_SwapWindow(window);
 
-	buildCubeShader();
+	cubeShader = std::make_unique<Shader>(VertexShader("cube.vert"), FragmentShader("cube.frag"));
 	buildImageShader();
 	buildSMAAShaders();
 	buildFXAAShader();
