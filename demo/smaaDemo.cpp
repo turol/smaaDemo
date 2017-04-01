@@ -679,7 +679,6 @@ class SMAADemo {
 	bool glDebug;
 	unsigned int glMajor;
 	unsigned int glMinor;
-	bool smaaSupported;
 
 	std::unique_ptr<Shader> cubeShader;
 	std::unique_ptr<Shader> imageShader;
@@ -823,7 +822,6 @@ SMAADemo::SMAADemo()
 , glDebug(false)
 , glMajor(3)
 , glMinor(1)
-, smaaSupported(true)
 , cubeVAO(0)
 , cubeVBO(0)
 , cubeIBO(0)
@@ -1029,7 +1027,6 @@ void SMAADemo::buildFXAAShader() {
 
 
 void SMAADemo::buildSMAAShaders() {
-	try {
 		ShaderBuilder s;
 
 		s.pushLine("#define SMAA_RT_METRICS screenSize");
@@ -1184,11 +1181,6 @@ void SMAADemo::buildSMAAShaders() {
 			smaaNeighborShader = std::make_unique<Shader>(vShader, fShader);
 			glUniform4fv(smaaNeighborShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
 		}
-	} catch (std::exception &e) {
-		printf("SMAA shader compile failed: \"%s\"\n", e.what());
-		smaaSupported = false;
-		aaMethod = AAMethod::FXAA;
-	}
 }
 
 
@@ -1802,10 +1794,6 @@ void SMAADemo::mainLoopIteration() {
 
 				case SDL_SCANCODE_M:
 					aaMethod = AAMethod::AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
-					if (aaMethod == AAMethod::SMAA && !smaaSupported) {
-						// Skip to next method
-						aaMethod = AAMethod::AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
-					}
 					printf("aa method set to %s\n", AAMethod::name(aaMethod));
 					break;
 
