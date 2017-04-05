@@ -11,8 +11,7 @@ ASAN:=n
 TSAN:=n
 UBSAN:=n
 
-
-USE_GLEW:=y
+RENDERER:=opengl
 
 
 # compiler options etc

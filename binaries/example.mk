@@ -11,6 +11,8 @@ ASAN:=n
 TSAN:=n
 UBSAN:=n
 
+RENDERER:=opengl
+
 
 # compiler options etc
 CXX:=g++

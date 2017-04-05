@@ -19,7 +19,7 @@ OPTFLAGS+=-fsanitize=address
 LDFLAGS_asan?=-fsanitize=address
 LDFLAGS+=$(LDFLAGS_asan)
 
-endif
+endif  # ASAN
 
 
 ifeq ($(TSAN),y)
@@ -29,7 +29,7 @@ OPTFLAGS+=-fsanitize=thread -fpic
 LDFLAGS_tsan?=-fsanitize=thread -pie
 LDFLAGS+=$(LDFLAGS_tsan)
 
-endif
+endif  # TSAN
 
 
 ifeq ($(UBSAN),y)
@@ -37,7 +37,7 @@ ifeq ($(UBSAN),y)
 OPTFLAGS+=-fsanitize=undefined -fno-sanitize-recover
 LDFLAGS+=-fsanitize=undefined -fno-sanitize-recover
 
-endif
+endif  # UBSAN
 
 
 ifeq ($(LTO),y)
@@ -45,10 +45,7 @@ ifeq ($(LTO),y)
 CFLAGS+=$(LTOCFLAGS)
 LDFLAGS+=$(LTOLDFLAGS) $(OPTFLAGS)
 
-endif
-
-
-CFLAGS+=-DGLEW_STATIC -DGLEW_NO_GLU
+endif  # LTO
 
 
 LDFLAGS+=$(foreach f, $(PRELOAD_FILES), --preload-file $(TOPDIR)/$(f)@$(f))
