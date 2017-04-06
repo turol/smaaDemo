@@ -29,6 +29,9 @@ class VertexShader;
 #include <GL/glew.h>
 
 
+void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /* length */, const GLchar *message, const void * /* userParam */);
+
+
 class Framebuffer {
 	// TODO: need a proper Render object to control the others
 	friend class SMAADemo;
