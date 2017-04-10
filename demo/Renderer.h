@@ -2,6 +2,10 @@
 #define RENDERER_H
 
 
+#include <string>
+#include <unordered_map>
+
+
 #define ATTR_POS   0
 #define ATTR_COLOR   1
 #define ATTR_CUBEPOS 2
@@ -15,6 +19,8 @@
 #define TEXUNIT_EDGES 4
 #define TEXUNIT_BLEND 5
 
+#define MAX_COLOR_RENDERTARGETS 2
+
 
 class FragmentShader;
 class Framebuffer;
@@ -23,13 +29,122 @@ class ShaderBuilder;
 class VertexShader;
 
 
+typedef uint32_t BufferHandle;
+typedef uint32_t FramebufferHandle;
+typedef uint32_t PipelineHandle;
+typedef uint32_t RenderPassHandle;
+typedef uint32_t RenderTargetHandle;
+typedef uint32_t SamplerHandle;
+typedef uint32_t UniformBufferHandle;
+
+
+struct SwapchainDesc {
+	unsigned int width, height;
+	unsigned int numFrames;
+	bool vsync;
+};
+
+
+enum Format {
+};
+
+
+struct RenderTargetDesc {
+	unsigned int width, height;
+	unsigned int multisample;
+	Format format;
+};
+
+
+struct FramebufferDesc {
+	RenderTargetHandle depthStencil;
+	RenderTargetHandle colors[MAX_COLOR_RENDERTARGETS];
+};
+
+
+typedef std::unordered_map<std::string, std::string> ShaderMacros;
+
+
+enum FilterMode {
+	  Nearest
+	, Linear
+};
+
+
+enum WrapMode {
+	  Clamp
+	, Wrap
+};
+
+struct SamplerDesc {
+	FilterMode  min, mag;
+	uint32_t    anisotropy;
+	WrapMode    wrapMode;
+};
+
+
+class PipelineDesc {
+	std::string shaderName;
+	ShaderMacros macros;
+
+	FramebufferHandle framebuffer;
+	// depthstencil
+	// blending
+};
+
+
 #ifdef RENDERER_OPENGL
 
 
 #include <GL/glew.h>
 
-
 void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /* length */, const GLchar *message, const void * /* userParam */);
+
+class Renderer {
+	Renderer();
+	Renderer(const Renderer &);
+	Renderer(Renderer &&);
+
+	Renderer &operator=(const Renderer &);
+	Renderer &operator=(Renderer &&);
+
+
+public:
+
+	static Renderer *CreateRenderer();
+
+	~Renderer();
+
+
+	// render target
+	RenderTargetHandle  createFramebuffer(const RenderTargetDesc &desc);
+	FramebufferHandle   createFramebuffer(const FramebufferDesc &desc);
+	PipelineHandle      createPipeline(const PipelineDesc &desc);
+	BufferHandle        createBuffer(uint32_t size, const char *contents);
+	BufferHandle        createEphemeralBuffer(uint32_t size, const char *contents);
+	// texture
+	// image ?
+	// descriptor set
+
+
+
+	void resizeSwapchain(const SwapchainDesc &desc);
+
+	// rendering
+	void beginFrame();
+	void presentFrame();
+
+	void beginRenderPass(RenderPassHandle);
+	void endRenderPass();
+
+	void bindFramebuffer(FramebufferHandle);
+	void bindPipeline(PipelineHandle);
+	void bindIndexBuffer();
+	void bindVertexBuffer();
+	// descriptor set
+
+	void draw();
+};
 
 
 class Framebuffer {

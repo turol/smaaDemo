@@ -27,7 +27,6 @@ THE SOFTWARE.
 #include <cstdio>
 #include <memory>
 #include <stdexcept>
-#include <string>
 #include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -47,12 +46,6 @@ THE SOFTWARE.
 
 #include "AreaTex.h"
 #include "SearchTex.h"
-
-
-#ifdef _MSC_VER
-#define fileno _fileno
-#define __builtin_unreachable() assert(false)
-#endif
 
 
 union Color {
