@@ -42,6 +42,17 @@ struct SwapchainDesc {
 	unsigned int width, height;
 	unsigned int numFrames;
 	bool vsync;
+	bool fullscreen;
+
+
+	SwapchainDesc()
+	: width(0)
+	, height(0)
+	, numFrames(0)
+	, vsync(true)
+	, fullscreen(false)
+	{
+	}
 };
 
 
@@ -97,21 +108,45 @@ class PipelineDesc {
 
 
 #include <GL/glew.h>
+#include <SDL.h>
+
 
 void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /* length */, const GLchar *message, const void * /* userParam */);
 
-class Renderer {
-	Renderer();
-	Renderer(const Renderer &);
-	Renderer(Renderer &&);
 
-	Renderer &operator=(const Renderer &);
-	Renderer &operator=(Renderer &&);
+struct RendererDesc {
+	bool debug;
+	SwapchainDesc swapchain;
+
+
+	RendererDesc()
+	: debug(false)
+	{
+	}
+};
+
+class Renderer {
+#ifdef RENDERER_OPENGL
+
+	SDL_Window *window;
+	SDL_GLContext context;
+
+	SwapchainDesc swapchainDesc;
+
+#endif  // RENDERER_OPENGL
+
+
+	explicit Renderer(const RendererDesc &desc);
+	Renderer(const Renderer &)            = delete;
+	Renderer(Renderer &&)                 = delete;
+
+	Renderer &operator=(const Renderer &) = delete;
+	Renderer &operator=(Renderer &&)      = delete;
 
 
 public:
 
-	static Renderer *CreateRenderer();
+	static Renderer *createRenderer(const RendererDesc &desc);
 
 	~Renderer();
 
@@ -128,7 +163,7 @@ public:
 
 
 
-	void resizeSwapchain(const SwapchainDesc &desc);
+	void recreateSwapchain(const SwapchainDesc &desc);
 
 	// rendering
 	void beginFrame();

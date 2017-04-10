@@ -462,4 +462,150 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 }
 
 
+Renderer::Renderer(const RendererDesc &desc)
+: window(nullptr)
+, context(nullptr)
+{
+	// TODO: check return value
+	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
+
+	// TODO: fullscreen, resizable, highdpi etc. as necessary
+	// TODO: check errors
+	// TODO: other GL attributes as necessary
+	// TODO: use core context (and maybe debug as necessary)
+
+	unsigned int glMajor = 4;
+	unsigned int glMinor = 5;
+
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, glMajor);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glMinor);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	if (desc.debug) {
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+	}
+
+	SDL_DisplayMode mode;
+	memset(&mode, 0, sizeof(mode));
+	int numDisplays = SDL_GetNumVideoDisplays();
+	printf("Number of displays detected: %i\n", numDisplays);
+
+	for (int i = 0; i < numDisplays; i++) {
+		int numModes = SDL_GetNumDisplayModes(i);
+		printf("Number of display modes for display %i : %i\n", i, numModes);
+
+		for (int j = 0; j < numModes; j++) {
+			SDL_GetDisplayMode(i, j, &mode);
+			printf("Display mode %i : width %i, height %i, BPP %i\n", j, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format));
+		}
+	}
+
+	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+
+	if (desc.swapchain.fullscreen) {
+		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+	}
+
+	window = SDL_CreateWindow("SMAA Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, desc.swapchain.width, desc.swapchain.height, flags);
+
+	context = SDL_GL_CreateContext(window);
+
+	if (desc.swapchain.vsync) {
+		// enable vsync, using late swap tearing if possible
+		int retval = SDL_GL_SetSwapInterval(-1);
+		if (retval != 0) {
+			// TODO: check return val
+			SDL_GL_SetSwapInterval(1);
+		}
+		printf("VSync is on\n");
+	}
+
+	// TODO: call SDL_GL_GetDrawableSize, log GL attributes etc.
+
+	glewExperimental = true;
+	glewInit();
+
+	// TODO: check extensions
+	// at least direct state access, texture storage
+
+	if (!GLEW_ARB_direct_state_access) {
+		printf("ARB_direct_state_access not found\n");
+		exit(1);
+	}
+
+	if (desc.debug) {
+		if (GLEW_KHR_debug) {
+			printf("KHR_debug found\n");
+
+			glDebugMessageCallback(glDebugCallback, NULL);
+			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+
+			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		} else {
+			printf("KHR_debug not found\n");
+		}
+	}
+
+	printf("GL vendor: \"%s\"\n", glGetString(GL_VENDOR));
+	printf("GL renderer: \"%s\"\n", glGetString(GL_RENDERER));
+	printf("GL version: \"%s\"\n", glGetString(GL_VERSION));
+	printf("GLSL version: \"%s\"\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+	// swap once to get better traces
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	SDL_GL_SwapWindow(window);
+}
+
+
+Renderer *Renderer::createRenderer(const RendererDesc &desc) {
+	return new Renderer(desc);
+}
+
+
+Renderer::~Renderer() {
+	SDL_GL_DeleteContext(context);
+	SDL_DestroyWindow(window);
+
+	SDL_Quit();
+}
+
+
+void Renderer::recreateSwapchain(const SwapchainDesc &desc) {
+	if (swapchainDesc.fullscreen != desc.fullscreen) {
+		if (desc.fullscreen) {
+			// TODO: check return val?
+			SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+			printf("Fullscreen\n");
+		} else {
+			SDL_SetWindowFullscreen(window, 0);
+			printf("Windowed\n");
+		}
+	}
+
+	if (swapchainDesc.vsync != desc.vsync) {
+		if (desc.vsync) {
+			// enable vsync, using late swap tearing if possible
+			int retval = SDL_GL_SetSwapInterval(-1);
+			if (retval != 0) {
+				// TODO: check return val
+				SDL_GL_SetSwapInterval(1);
+			}
+			printf("VSync is on\n");
+		} else {
+			// TODO: check return val
+			SDL_GL_SetSwapInterval(0);
+			printf("VSync is off\n");
+		}
+	}
+
+	// we currently don't touch window width and height
+
+	swapchainDesc = desc;
+}
+
+
+void Renderer::presentFrame() {
+	SDL_GL_SwapWindow(window);
+}
+
+
 #endif //  RENDERER_OPENGL

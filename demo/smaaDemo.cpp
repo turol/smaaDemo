@@ -32,8 +32,6 @@ THE SOFTWARE.
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include <SDL.h>
-
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -171,11 +169,11 @@ static const unsigned int maxSMAAQuality = sizeof(smaaQualityLevels) / sizeof(sm
 
 class SMAADemo {
 	unsigned int windowWidth, windowHeight;
-	unsigned int resizeWidth, resizeHeight;
 	bool vsync;
 	bool fullscreen;
-	SDL_Window *window;
-	SDL_GLContext context;
+	bool recreateSwapchain;
+
+	Renderer *renderer;
 	bool glDebug;
 	unsigned int glMajor;
 	unsigned int glMinor;
@@ -284,10 +282,6 @@ public:
 
 	void createFramebuffers();
 
-	void applyVSync();
-
-	void applyFullscreen();
-
 	void buildImageShader();
 
 	void buildFXAAShader();
@@ -317,8 +311,8 @@ SMAADemo::SMAADemo()
 , windowHeight(720)
 , vsync(true)
 , fullscreen(false)
-, window(NULL)
-, context(NULL)
+, recreateSwapchain(false)
+, renderer(nullptr)
 , glDebug(false)
 , glMajor(3)
 , glMinor(1)
@@ -350,12 +344,6 @@ SMAADemo::SMAADemo()
 , keepGoing(true)
 , activeScene(0)
 {
-	resizeWidth = windowWidth;
-	resizeHeight = windowHeight;
-
-	// TODO: check return value
-	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
-
 	freq = SDL_GetPerformanceFrequency();
 	lastTime = SDL_GetPerformanceCounter();
 
@@ -365,14 +353,9 @@ SMAADemo::SMAADemo()
 
 
 SMAADemo::~SMAADemo() {
-	if (context != NULL) {
-		SDL_GL_DeleteContext(context);
-		context = NULL;
-	}
-
-	if (window != NULL) {
-		SDL_DestroyWindow(window);
-		window = NULL;
+	if (renderer) {
+		delete renderer;
+		renderer = nullptr;
 	}
 
 		glDeleteVertexArrays(1, &cubeVAO);
@@ -388,8 +371,6 @@ SMAADemo::~SMAADemo() {
 
 	glDeleteTextures(1, &areaTex);
 	glDeleteTextures(1, &searchTex);
-
-	SDL_Quit();
 }
 
 
@@ -681,8 +662,6 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		glMinor = glMinorSwitch.getValue();
 		windowWidth = windowWidthSwitch.getValue();
 		windowHeight = windowHeightSwitch.getValue();
-		resizeWidth = windowWidth;
-		resizeHeight = windowHeight;
 
 		const auto &imageFiles = imagesArg.getValue();
 		images.reserve(imageFiles.size());
@@ -702,82 +681,16 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 
 
 void SMAADemo::initRender() {
-	assert(window == NULL);
-	assert(context == NULL);
+	assert(renderer == nullptr);
 
-	// TODO: fullscreen, resizable, highdpi etc. as necessary
-	// TODO: check errors
-	// TODO: other GL attributes as necessary
-	// TODO: use core context (and maybe debug as necessary)
+	RendererDesc desc;
+	desc.debug                = glDebug;
+	desc.swapchain.fullscreen = fullscreen;
+	desc.swapchain.width      = windowWidth;
+	desc.swapchain.height     = windowHeight;
+	desc.swapchain.vsync      = vsync;
 
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, glMajor);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glMinor);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-		if (glDebug) {
-			SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-		}
-
-	SDL_DisplayMode mode;
-	memset(&mode, 0, sizeof(mode));
-	int numDisplays = SDL_GetNumVideoDisplays();
-	printf("Number of displays detected: %i\n", numDisplays);
-
-	for (int i = 0; i < numDisplays; i++) {
-		int numModes = SDL_GetNumDisplayModes(i);
-		printf("Number of display modes for display %i : %i\n", i, numModes);
-
-		for (int j = 0; j < numModes; j++) {
-			SDL_GetDisplayMode(i, j, &mode);
-			printf("Display mode %i : width %i, height %i, BPP %i\n", j, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format));
-		}
-	}
-
-	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
-
-	if (fullscreen) {
-		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-	}
-
-	window = SDL_CreateWindow("SMAA Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, flags);
-
-	context = SDL_GL_CreateContext(window);
-
-	// TODO: call SDL_GL_GetDrawableSize, log GL attributes etc.
-
-	applyVSync();
-
-	glewExperimental = true;
-	glewInit();
-
-	// TODO: check extensions
-	// at least direct state access, texture storage
-
-	if (!GLEW_ARB_direct_state_access) {
-		printf("ARB_direct_state_access not found\n");
-		exit(1);
-	}
-
-	if (glDebug) {
-		if (GLEW_KHR_debug) {
-			printf("KHR_debug found\n");
-
-			glDebugMessageCallback(glDebugCallback, NULL);
-			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
-
-			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-		} else {
-			printf("KHR_debug not found\n");
-		}
-	}
-
-	printf("GL vendor: \"%s\"\n", glGetString(GL_VENDOR));
-	printf("GL renderer: \"%s\"\n", glGetString(GL_RENDERER));
-	printf("GL version: \"%s\"\n", glGetString(GL_VERSION));
-	printf("GLSL version: \"%s\"\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
-
-	// swap once to get better traces
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	SDL_GL_SwapWindow(window);
+	renderer = Renderer::createRenderer(desc);
 
 	cubeShader = std::make_unique<Shader>(VertexShader("cube.vert"), FragmentShader("cube.frag"));
 	buildImageShader();
@@ -975,35 +888,6 @@ void SMAADemo::createFramebuffers()	{
 }
 
 
-void SMAADemo::applyVSync() {
-	if (vsync) {
-		// enable vsync, using late swap tearing if possible
-		int retval = SDL_GL_SetSwapInterval(-1);
-		if (retval != 0) {
-			// TODO: check return val
-			SDL_GL_SetSwapInterval(1);
-		}
-		printf("VSync is on\n");
-	} else {
-		// TODO: check return val
-		SDL_GL_SetSwapInterval(0);
-		printf("VSync is off\n");
-	}
-}
-
-
-void SMAADemo::applyFullscreen() {
-	if (fullscreen) {
-		// TODO: check return val?
-		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-		printf("Fullscreen\n");
-	} else {
-		SDL_SetWindowFullscreen(window, 0);
-		printf("Windowed\n");
-	}
-}
-
-
 void SMAADemo::createCubes() {
 	// cubes on a side is some power of 2
 	const unsigned int cubesSide = pow(2, cubePower);
@@ -1191,12 +1075,12 @@ void SMAADemo::mainLoopIteration() {
 
 				case SDL_SCANCODE_V:
 					vsync = !vsync;
-					applyVSync();
+					recreateSwapchain = true;
 					break;
 
 				case SDL_SCANCODE_F:
 					fullscreen = !fullscreen;
-					applyFullscreen();
+					recreateSwapchain = true;
 					break;
 
 				case SDL_SCANCODE_LEFT:
@@ -1234,8 +1118,9 @@ void SMAADemo::mainLoopIteration() {
 				switch (event.window.event) {
 				case SDL_WINDOWEVENT_SIZE_CHANGED:
 				case SDL_WINDOWEVENT_RESIZED:
-					resizeWidth = event.window.data1;
-					resizeHeight = event.window.data2;
+					windowWidth  = event.window.data1;
+					windowHeight = event.window.data2;
+					recreateSwapchain = true;
 					break;
 				default:
 					break;
@@ -1248,9 +1133,16 @@ void SMAADemo::mainLoopIteration() {
 
 
 void SMAADemo::render() {
-	if (resizeWidth != windowWidth || resizeHeight != windowHeight) {
-		windowWidth = resizeWidth;
-		windowHeight = resizeHeight;
+	if (recreateSwapchain) {
+		SwapchainDesc desc;
+		desc.fullscreen = fullscreen;
+		desc.width      = windowWidth;
+		desc.height     = windowHeight;
+		desc.vsync      = vsync;
+
+		renderer->recreateSwapchain(desc);
+		recreateSwapchain = false;
+
 		createFramebuffers();
 
 		glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
@@ -1374,7 +1266,7 @@ void SMAADemo::render() {
 		renderFBO->blitTo(*builtinFBO);
 	}
 
-	SDL_GL_SwapWindow(window);
+	renderer->presentFrame();
 }
 
 
