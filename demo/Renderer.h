@@ -25,7 +25,6 @@
 class FragmentShader;
 class Framebuffer;
 class Shader;
-class ShaderBuilder;
 class VertexShader;
 
 
@@ -220,34 +219,6 @@ public:
 };
 
 
-class ShaderBuilder {
-	std::vector<char> source;
-
-	ShaderBuilder &operator=(const ShaderBuilder &) = delete;
-
-	ShaderBuilder(ShaderBuilder &&) = delete;
-	ShaderBuilder &operator=(ShaderBuilder &&) = delete;
-
-	friend class VertexShader;
-	friend class FragmentShader;
-
-public:
-	ShaderBuilder();
-	ShaderBuilder(const ShaderBuilder &other);
-
-	VertexShader compileVertex();
-	FragmentShader compileFragment();
-
-	void pushLine(const std::string &line);
-	void pushVertexAttr(const std::string &attr);
-	void pushVertexVarying(const std::string &var);
-	void pushFragmentVarying(const std::string &var);
-	void pushFragmentOutputDecl();
-	void pushFragmentOutput(const std::string &expr);
-	void pushFile(const std::string &filename);
-};
-
-
 class VertexShader {
 	GLuint shader;
 
@@ -263,7 +234,6 @@ class VertexShader {
 
 public:
 
-	VertexShader(const std::string &name, const ShaderBuilder &builder, const ShaderMacros &macros);
 	VertexShader(const std::string &name, const ShaderMacros &macros);
 
 	~VertexShader();
@@ -285,7 +255,6 @@ class FragmentShader {
 
 public:
 
-	FragmentShader(const std::string &name, const ShaderBuilder &builder, const ShaderMacros &macros);
 	FragmentShader(const std::string &name, const ShaderMacros &macros);
 
 	~FragmentShader();

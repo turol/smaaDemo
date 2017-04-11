@@ -145,73 +145,6 @@ static GLuint createShader(GLenum type, const std::string &name, const std::vect
 }
 
 
-ShaderBuilder::ShaderBuilder()
-{
-	source.reserve(512);
-
-		pushLine("#version 450");
-
-		if (GLEW_ARB_gpu_shader5) {
-			pushLine("#extension GL_ARB_gpu_shader5 : enable");
-		}
-		if (GLEW_ARB_texture_gather) {
-			pushLine("#extension GL_ARB_texture_gather : enable");
-		}
-}
-
-
-ShaderBuilder::ShaderBuilder(const ShaderBuilder &other)
-{
-	source = other.source;
-}
-
-
-void ShaderBuilder::pushLine(const std::string &line) {
-	source.reserve(source.size() + line.size() + 1);
-	source.insert(source.end(), line.begin(), line.end());
-	source.push_back('\n');
-}
-
-
-void ShaderBuilder::pushVertexAttr(const std::string &attr) {
-		pushLine("in " + attr);
-}
-
-
-void ShaderBuilder::pushVertexVarying(const std::string &var) {
-		pushLine("out " + var);
-}
-
-
-void ShaderBuilder::pushFragmentVarying(const std::string &var) {
-		pushLine("in " + var);
-}
-
-
-void ShaderBuilder::pushFragmentOutput(const std::string &expr) {
-		pushLine("    outColor = " + expr);
-}
-
-
-void ShaderBuilder::pushFragmentOutputDecl() {
-		pushLine("out vec4 outColor;");
-}
-
-
-void ShaderBuilder::pushFile(const std::string &filename) {
-	// TODO: grab file here, don't use #include
-	// which we'll just end up parsing back later
-	pushLine("#include \"" + filename + "\"");
-}
-
-
-VertexShader::VertexShader(const std::string &name, const ShaderBuilder &builder, const ShaderMacros &macros)
-: shader(0)
-{
-	shader = createShader(GL_VERTEX_SHADER, name, builder.source, macros);
-}
-
-
 VertexShader::VertexShader(const std::string &name, const ShaderMacros &macros)
 : shader(0)
 {
@@ -225,13 +158,6 @@ VertexShader::~VertexShader() {
 
 	glDeleteShader(shader);
 	shader = 0;
-}
-
-
-FragmentShader::FragmentShader(const std::string &name, const ShaderBuilder &builder, const ShaderMacros &macros)
-: shader(0)
-{
-	shader = createShader(GL_FRAGMENT_SHADER, name, builder.source, macros);
 }
 
 

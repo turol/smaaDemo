@@ -446,43 +446,14 @@ void SMAADemo::buildImageShader() {
 void SMAADemo::buildFXAAShader() {
 	glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 
-	ShaderBuilder s;
-
-	s.pushLine("#define FXAA_PC 1");
-
-		s.pushLine("#define FXAA_GLSL_130 1");
-
 	// TODO: cache shader based on quality level
 	std::string qualityString(fxaaQualityLevels[fxaaQuality]);
 
 	ShaderMacros macros;
 	macros.emplace("FXAA_QUALITY_PRESET", qualityString);
 
-	ShaderBuilder vert(s);
-	vert.pushVertexAttr("vec2 pos;");
-	vert.pushVertexVarying("vec2 texcoord;");
-	vert.pushLine("void main(void)");
-	vert.pushLine("{");
-	vert.pushLine("    texcoord = pos * 0.5 + 0.5;");
-	vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
-	vert.pushLine("}");
-
-	VertexShader vShader("fxaa.vert", vert, macros);
-
-	// fragment
-	ShaderBuilder frag(s);
-	frag.pushFile("fxaa3_11.h");
-	frag.pushLine("uniform sampler2D colorTex;");
-	frag.pushLine("uniform vec4 screenSize;");
-	frag.pushFragmentVarying("vec2 texcoord;");
-	frag.pushFragmentOutputDecl();
-	frag.pushLine("void main(void)");
-	frag.pushLine("{");
-	frag.pushLine("    vec4 zero = vec4(0.0, 0.0, 0.0, 0.0);");
-	frag.pushFragmentOutput("FxaaPixelShader(texcoord, zero, colorTex, colorTex, colorTex, screenSize.xy, zero, zero, zero, 0.75, 0.166, 0.0833, 8.0, 0.125, 0.05, zero);");
-	frag.pushLine("}");
-
-	FragmentShader fShader("fxaa.frag", frag, macros);
+	VertexShader vShader("fxaa.vert", macros);
+	FragmentShader fShader("fxaa.frag", macros);
 
 	fxaaShader = std::make_unique<Shader>(vShader, fShader);
 	glUniform4fv(fxaaShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
@@ -494,155 +465,29 @@ void SMAADemo::buildSMAAShaders() {
 	std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 	macros.emplace(qualityString, "1");
 
-		ShaderBuilder s;
-
-		s.pushLine("#define SMAA_RT_METRICS screenSize");
-		s.pushLine("#define SMAA_GLSL_3 1");
-		// TODO: cache shader based on quality level
-
-		s.pushLine("uniform vec4 screenSize;");
-
-		ShaderBuilder commonVert(s);
-
-		commonVert.pushLine("#define SMAA_INCLUDE_PS 0");
-		commonVert.pushLine("#define SMAA_INCLUDE_VS 1");
-
-		commonVert.pushFile("smaa.h");
-
-		ShaderBuilder commonFrag(s);
-
-		commonFrag.pushLine("#define SMAA_INCLUDE_PS 1");
-		commonFrag.pushLine("#define SMAA_INCLUDE_VS 0");
-
-		commonFrag.pushFile("smaa.h");
-		commonFrag.pushFragmentOutputDecl();
-
 		glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 		{
-			ShaderBuilder vert(commonVert);
+			VertexShader vShader("smaaEdge.vert", macros);
 
-			vert.pushVertexAttr("vec2 pos;");
-			vert.pushVertexVarying("vec2 texcoord;");
-			vert.pushVertexVarying("vec4 offset0;");
-			vert.pushVertexVarying("vec4 offset1;");
-			vert.pushVertexVarying("vec4 offset2;");
-			vert.pushLine("void main(void)");
-			vert.pushLine("{");
-			vert.pushLine("    texcoord = pos * 0.5 + 0.5;");
-			vert.pushLine("    vec4 offsets[3];");
-			vert.pushLine("    offsets[0] = vec4(0.0, 0.0, 0.0, 0.0);");
-			vert.pushLine("    offsets[1] = vec4(0.0, 0.0, 0.0, 0.0);");
-			vert.pushLine("    offsets[2] = vec4(0.0, 0.0, 0.0, 0.0);");
-			vert.pushLine("    SMAAEdgeDetectionVS(texcoord, offsets);");
-			vert.pushLine("    offset0 = offsets[0];");
-			vert.pushLine("    offset1 = offsets[1];");
-			vert.pushLine("    offset2 = offsets[2];");
-			vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
-			vert.pushLine("}");
-
-			VertexShader vShader("smaaEdge.vert", vert, macros);
-
-			ShaderBuilder frag(commonFrag);
-
-			frag.pushLine("uniform sampler2D colorTex;");
-			frag.pushFragmentVarying("vec2 texcoord;");
-			frag.pushFragmentVarying("vec4 offset0;");
-			frag.pushFragmentVarying("vec4 offset1;");
-			frag.pushFragmentVarying("vec4 offset2;");
-			frag.pushLine("void main(void)");
-			frag.pushLine("{");
-			frag.pushLine("    vec4 offsets[3];");
-			frag.pushLine("    offsets[0] = offset0;");
-			frag.pushLine("    offsets[1] = offset1;");
-			frag.pushLine("    offsets[2] = offset2;");
-			frag.pushFragmentOutput("vec4(SMAAColorEdgeDetectionPS(texcoord, offsets, colorTex), 0.0, 0.0);");
-			frag.pushLine("}");
-
-			FragmentShader fShader("smaaEdge.frag", frag, macros);
+			FragmentShader fShader("smaaEdge.frag", macros);
 
 			smaaEdgeShader = std::make_unique<Shader>(vShader, fShader);
 			glUniform4fv(smaaEdgeShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
 		}
 
 		{
-			ShaderBuilder vert(commonVert);
+			VertexShader vShader("smaaBlendWeight.vert", macros);
 
-			vert.pushVertexAttr("vec2 pos;");
-			vert.pushVertexVarying("vec2 texcoord;");
-			vert.pushVertexVarying("vec2 pixcoord;");
-			vert.pushVertexVarying("vec4 offset0;");
-			vert.pushVertexVarying("vec4 offset1;");
-			vert.pushVertexVarying("vec4 offset2;");
-			vert.pushLine("void main(void)");
-			vert.pushLine("{");
-			vert.pushLine("    texcoord = pos * 0.5 + 0.5;");
-			vert.pushLine("    vec4 offsets[3];");
-			vert.pushLine("    offsets[0] = vec4(0.0, 0.0, 0.0, 0.0);");
-			vert.pushLine("    offsets[1] = vec4(0.0, 0.0, 0.0, 0.0);");
-			vert.pushLine("    offsets[2] = vec4(0.0, 0.0, 0.0, 0.0);");
-			vert.pushLine("    pixcoord = vec2(0.0, 0.0);");
-			vert.pushLine("    SMAABlendingWeightCalculationVS(texcoord, pixcoord, offsets);");
-			vert.pushLine("    offset0 = offsets[0];");
-			vert.pushLine("    offset1 = offsets[1];");
-			vert.pushLine("    offset2 = offsets[2];");
-			vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
-			vert.pushLine("}");
-
-			VertexShader vShader("smaaBlendWeight.vert", vert, macros);
-
-			ShaderBuilder frag(commonFrag);
-
-			frag.pushLine("uniform sampler2D edgesTex;");
-			frag.pushLine("uniform sampler2D areaTex;");
-			frag.pushLine("uniform sampler2D searchTex;");
-			frag.pushFragmentVarying("vec2 texcoord;");
-			frag.pushFragmentVarying("vec2 pixcoord;");
-			frag.pushFragmentVarying("vec4 offset0;");
-			frag.pushFragmentVarying("vec4 offset1;");
-			frag.pushFragmentVarying("vec4 offset2;");
-			frag.pushLine("void main(void)");
-			frag.pushLine("{");
-			frag.pushLine("    vec4 offsets[3];");
-			frag.pushLine("    offsets[0] = offset0;");
-			frag.pushLine("    offsets[1] = offset1;");
-			frag.pushLine("    offsets[2] = offset2;");
-			frag.pushFragmentOutput("SMAABlendingWeightCalculationPS(texcoord, pixcoord, offsets, edgesTex, areaTex, searchTex, vec4(0.0, 0.0, 0.0, 0.0));");
-			frag.pushLine("}");
-
-			FragmentShader fShader("smaaBlendWeight.frag", frag, macros);
+			FragmentShader fShader("smaaBlendWeight.frag", macros);
 
 			smaaBlendWeightShader = std::make_unique<Shader>(vShader, fShader);
 			glUniform4fv(smaaBlendWeightShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
 		}
 
 		{
-			ShaderBuilder vert(commonVert);
+			VertexShader vShader("smaaNeighbor.vert", macros);
 
-			vert.pushVertexAttr("vec2 pos;");
-			vert.pushVertexVarying("vec2 texcoord;");
-			vert.pushVertexVarying("vec4 offset;");
-			vert.pushLine("void main(void)");
-			vert.pushLine("{");
-			vert.pushLine("    texcoord = pos * 0.5 + 0.5;");
-			vert.pushLine("    offset = vec4(0.0, 0.0, 0.0, 0.0);");
-			vert.pushLine("    SMAANeighborhoodBlendingVS(texcoord, offset);");
-			vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
-			vert.pushLine("}");
-
-			VertexShader vShader("smaaNeighbor.vert", vert, macros);
-
-			ShaderBuilder frag(commonFrag);
-
-			frag.pushLine("uniform sampler2D blendTex;");
-			frag.pushLine("uniform sampler2D colorTex;");
-			frag.pushFragmentVarying("vec2 texcoord;");
-			frag.pushFragmentVarying("vec4 offset;");
-			frag.pushLine("void main(void)");
-			frag.pushLine("{");
-			frag.pushFragmentOutput("SMAANeighborhoodBlendingPS(texcoord, offset, colorTex, blendTex);");
-			frag.pushLine("}");
-
-			FragmentShader fShader("smaaNeighbor.frag", frag, macros);
+			FragmentShader fShader("smaaNeighbor.frag", macros);
 
 			smaaNeighborShader = std::make_unique<Shader>(vShader, fShader);
 			glUniform4fv(smaaNeighborShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
