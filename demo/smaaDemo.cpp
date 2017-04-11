@@ -454,7 +454,6 @@ void SMAADemo::buildFXAAShader() {
 
 	// TODO: cache shader based on quality level
 	std::string qualityString(fxaaQualityLevels[fxaaQuality]);
-	s.pushLine("#define FXAA_QUALITY_PRESET " + qualityString);
 
 	ShaderMacros macros;
 	macros.emplace("FXAA_QUALITY_PRESET", qualityString);
@@ -500,7 +499,6 @@ void SMAADemo::buildSMAAShaders() {
 		s.pushLine("#define SMAA_RT_METRICS screenSize");
 		s.pushLine("#define SMAA_GLSL_3 1");
 		// TODO: cache shader based on quality level
-		s.pushLine("#define " + qualityString + " 1");
 
 		s.pushLine("uniform vec4 screenSize;");
 

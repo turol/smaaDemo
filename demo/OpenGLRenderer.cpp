@@ -10,10 +10,11 @@
 #include "Utils.h"
 
 
-static std::vector<char> processShaderIncludes(std::vector<char> shaderSource) {
+static std::vector<char> processShaderIncludes(std::vector<char> shaderSource, const ShaderMacros &macros) {
 	std::vector<char> output(shaderSource);
 
 	auto includePos = output.begin();
+	std::string::size_type lastExtPos = 0;
 
 	while (true) {
 		// find an #include
@@ -55,6 +56,8 @@ static std::vector<char> processShaderIncludes(std::vector<char> shaderSource) {
 				if (directive == "include") {
 					// we have an "#include"
 					break;
+				} else if (directive == "version" || directive == "extensi") {
+					lastExtPos = std::distance(output.begin(), includePos);
 				}
 				includePos++;
 			} else {
@@ -89,13 +92,25 @@ static std::vector<char> processShaderIncludes(std::vector<char> shaderSource) {
 		// go again in case of recursive includes
 	}
 
+	// add macros after last #version and #extension
+	if (!macros.empty()) {
+		std::vector<char> defines;
+		for (const auto &p : macros) {
+			std::string macro = std::string("#define ") + p.first + " " + p.second + "\n";
+			defines.insert(defines.end(), macro.begin(), macro.end());
+		}
+
+		auto nextLine = std::find(output.begin() + lastExtPos, output.end(), '\n') + 1;
+		output.insert(nextLine, defines.begin(), defines.end());
+	}
+
 	return output;
 }
 
 
-static GLuint createShader(GLenum type, const std::string &name, const std::vector<char> &rawSrc, const ShaderMacros &) {
+static GLuint createShader(GLenum type, const std::string &name, const std::vector<char> &rawSrc, const ShaderMacros &macros) {
 	assert(type == GL_VERTEX_SHADER || type == GL_FRAGMENT_SHADER);
-	auto src = processShaderIncludes(rawSrc);
+	auto src = processShaderIncludes(rawSrc, macros);
 
 	const char *sourcePointer = &src[0];
 	GLint sourceLen = src.size();
