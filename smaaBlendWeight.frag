@@ -14,13 +14,15 @@ uniform vec4 screenSize;
 
 out vec4 outColor;
 
-uniform sampler2D colorTex;
+uniform sampler2D edgesTex;
+uniform sampler2D areaTex;
+uniform sampler2D searchTex;
 
 in vec2 texcoord;
+in vec2 pixcoord;
 in vec4 offset0;
 in vec4 offset1;
 in vec4 offset2;
-
 
 void main(void)
 {
@@ -28,5 +30,5 @@ void main(void)
     offsets[0] = offset0;
     offsets[1] = offset1;
     offsets[2] = offset2;
-    outColor = vec4(SMAAColorEdgeDetectionPS(texcoord, offsets, colorTex), 0.0, 0.0);
+    outColor = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offsets, edgesTex, areaTex, searchTex, vec4(0.0, 0.0, 0.0, 0.0));
 }

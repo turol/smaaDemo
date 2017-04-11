@@ -15,6 +15,7 @@ uniform vec4 screenSize;
 in vec2 pos;
 
 out vec2 texcoord;
+out vec2 pixcoord;
 out vec4 offset0;
 out vec4 offset1;
 out vec4 offset2;
@@ -26,7 +27,8 @@ void main(void)
     offsets[0] = vec4(0.0, 0.0, 0.0, 0.0);
     offsets[1] = vec4(0.0, 0.0, 0.0, 0.0);
     offsets[2] = vec4(0.0, 0.0, 0.0, 0.0);
-    SMAAEdgeDetectionVS(texcoord, offsets);
+    pixcoord = vec2(0.0, 0.0);
+    SMAABlendingWeightCalculationVS(texcoord, pixcoord, offsets);
     offset0 = offsets[0];
     offset1 = offsets[1];
     offset2 = offsets[2];
