@@ -95,12 +95,14 @@ struct SamplerDesc {
 
 
 class PipelineDesc {
+#if 0   // clang warns...
 	std::string shaderName;
 	ShaderMacros macros;
 
 	FramebufferHandle framebuffer;
 	// depthstencil
 	// blending
+#endif // 0
 };
 
 
