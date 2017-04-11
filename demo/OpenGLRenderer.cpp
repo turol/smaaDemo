@@ -203,8 +203,6 @@ Shader::Shader(const VertexShader &vertexShader, const FragmentShader &fragmentS
 	}
 	glUseProgram(program);
 
-		glBindFragDataLocation(program, 0, "outColor");
-
 	GLint colorLoc = getUniformLocation("colorTex");
 	glUniform1i(colorLoc, TEXUNIT_COLOR);
 

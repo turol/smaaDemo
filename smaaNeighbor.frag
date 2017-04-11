@@ -12,7 +12,7 @@ uniform vec4 screenSize;
 #include "smaa.h"
 
 
-out vec4 outColor;
+layout (location = 0) out vec4 outColor;
 
 uniform sampler2D blendTex;
 uniform sampler2D colorTex;
