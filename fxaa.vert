@@ -1,5 +1,7 @@
 #version 450
 
+#include "shaderDefines.h"
+
 #define FXAA_PC 1
 #define FXAA_GLSL_130 1
 

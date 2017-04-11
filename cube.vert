@@ -1,5 +1,7 @@
 #version 450
 
+#include "shaderDefines.h"
+
 
 uniform mat4 viewProj;
 

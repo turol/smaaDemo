@@ -1,5 +1,7 @@
 #version 450
 
+#include "shaderDefines.h"
+
 in vec2 pos;
 
 out vec2 texcoord;

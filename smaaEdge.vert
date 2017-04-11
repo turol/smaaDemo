@@ -1,5 +1,7 @@
 #version 450
 
+#include "shaderDefines.h"
+
 #define SMAA_RT_METRICS screenSize
 #define SMAA_GLSL_4 1
 

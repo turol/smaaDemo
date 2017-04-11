@@ -1,5 +1,7 @@
 #version 450
 
+#include "shaderDefines.h"
+
 uniform sampler2D colorTex;
 
 in vec2 texcoord;
