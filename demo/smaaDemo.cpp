@@ -175,8 +175,6 @@ class SMAADemo {
 
 	Renderer *renderer;
 	bool glDebug;
-	unsigned int glMajor;
-	unsigned int glMinor;
 
 	std::unique_ptr<Shader> cubeShader;
 	std::unique_ptr<Shader> imageShader;
@@ -314,8 +312,6 @@ SMAADemo::SMAADemo()
 , recreateSwapchain(false)
 , renderer(nullptr)
 , glDebug(false)
-, glMajor(3)
-, glMinor(1)
 , cubeVAO(0)
 , cubeVBO(0)
 , cubeIBO(0)
@@ -500,9 +496,6 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::CmdLine cmd("SMAA demo", ' ', "1.0");
 
 		TCLAP::SwitchArg glDebugSwitch("", "gldebug", "Enable OpenGL debugging", cmd, false);
-		TCLAP::ValueArg<std::string> dsaSwitch("", "dsa", "Select DSA mode", false, "arb", "arb, ext or none", cmd);
-		TCLAP::ValueArg<unsigned int> glMajorSwitch("", "glmajor", "OpenGL major version", false, glMajor, "version", cmd);
-		TCLAP::ValueArg<unsigned int> glMinorSwitch("", "glminor", "OpenGL minor version", false, glMinor, "version", cmd);
 		TCLAP::ValueArg<unsigned int> windowWidthSwitch("", "width", "Window width", false, windowWidth, "width", cmd);
 		TCLAP::ValueArg<unsigned int> windowHeightSwitch("", "height", "Window height", false, windowHeight, "height", cmd);
 		TCLAP::UnlabeledMultiArg<std::string> imagesArg("images", "image files", false, "image file", cmd, true, nullptr);
@@ -510,8 +503,6 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		cmd.parse(argc, argv);
 
 		glDebug = glDebugSwitch.getValue();
-		glMajor = glMajorSwitch.getValue();
-		glMinor = glMinorSwitch.getValue();
 		windowWidth = windowWidthSwitch.getValue();
 		windowHeight = windowHeightSwitch.getValue();
 
