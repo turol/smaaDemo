@@ -5,10 +5,10 @@
 
 uniform mat4 viewProj;
 
-in vec3 rotationQuat;
-in vec3 cubePos;
-in vec3 color;
-in vec3 position;
+layout(location = ATTR_ROT) in vec3 rotationQuat;
+layout(location = ATTR_CUBEPOS) in vec3 cubePos;
+layout(location = ATTR_COLOR) in vec3 color;
+layout(location = ATTR_POS) in vec3 position;
 
 out vec3 colorFrag;
 

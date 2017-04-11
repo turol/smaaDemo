@@ -182,10 +182,6 @@ Shader::Shader(const VertexShader &vertexShader, const FragmentShader &fragmentS
 , screenSizeLoc(0)
 {
 	program = glCreateProgram();
-	glBindAttribLocation(program, ATTR_POS, "position");
-	glBindAttribLocation(program, ATTR_COLOR, "color");
-	glBindAttribLocation(program, ATTR_CUBEPOS, "cubePos");
-	glBindAttribLocation(program, ATTR_ROT, "rotationQuat");
 
 	glAttachShader(program, vertexShader.shader);
 	glAttachShader(program, fragmentShader.shader);

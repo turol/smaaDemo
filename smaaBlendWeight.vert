@@ -14,7 +14,7 @@ uniform vec4 screenSize;
 #include "smaa.h"
 
 
-in vec2 pos;
+layout(location = ATTR_POS) in vec2 pos;
 
 out vec2 texcoord;
 out vec2 pixcoord;
