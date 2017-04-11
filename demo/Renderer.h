@@ -263,8 +263,8 @@ class VertexShader {
 
 public:
 
-	VertexShader(const std::string &name, const ShaderBuilder &builder);
-	explicit VertexShader(const std::string &name);
+	VertexShader(const std::string &name, const ShaderBuilder &builder, const ShaderMacros &macros);
+	VertexShader(const std::string &name, const ShaderMacros &macros);
 
 	~VertexShader();
 };
@@ -285,8 +285,8 @@ class FragmentShader {
 
 public:
 
-	FragmentShader(const std::string &name, const ShaderBuilder &builder);
-	explicit FragmentShader(const std::string &name);
+	FragmentShader(const std::string &name, const ShaderBuilder &builder, const ShaderMacros &macros);
+	FragmentShader(const std::string &name, const ShaderMacros &macros);
 
 	~FragmentShader();
 };

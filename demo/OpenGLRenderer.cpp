@@ -93,7 +93,7 @@ static std::vector<char> processShaderIncludes(std::vector<char> shaderSource) {
 }
 
 
-static GLuint createShader(GLenum type, const std::string &name, const std::vector<char> &rawSrc) {
+static GLuint createShader(GLenum type, const std::string &name, const std::vector<char> &rawSrc, const ShaderMacros &) {
 	assert(type == GL_VERTEX_SHADER || type == GL_FRAGMENT_SHADER);
 	auto src = processShaderIncludes(rawSrc);
 
@@ -190,18 +190,18 @@ void ShaderBuilder::pushFile(const std::string &filename) {
 }
 
 
-VertexShader::VertexShader(const std::string &name, const ShaderBuilder &builder)
+VertexShader::VertexShader(const std::string &name, const ShaderBuilder &builder, const ShaderMacros &macros)
 : shader(0)
 {
-	shader = createShader(GL_VERTEX_SHADER, name, builder.source);
+	shader = createShader(GL_VERTEX_SHADER, name, builder.source, macros);
 }
 
 
-VertexShader::VertexShader(const std::string &name)
+VertexShader::VertexShader(const std::string &name, const ShaderMacros &macros)
 : shader(0)
 {
 	auto source = readTextFile(name);
-	shader = createShader(GL_VERTEX_SHADER, name, source);
+	shader = createShader(GL_VERTEX_SHADER, name, source, macros);
 }
 
 
@@ -213,18 +213,18 @@ VertexShader::~VertexShader() {
 }
 
 
-FragmentShader::FragmentShader(const std::string &name, const ShaderBuilder &builder)
+FragmentShader::FragmentShader(const std::string &name, const ShaderBuilder &builder, const ShaderMacros &macros)
 : shader(0)
 {
-	shader = createShader(GL_FRAGMENT_SHADER, name, builder.source);
+	shader = createShader(GL_FRAGMENT_SHADER, name, builder.source, macros);
 }
 
 
-FragmentShader::FragmentShader(const std::string &name)
+FragmentShader::FragmentShader(const std::string &name, const ShaderMacros &macros)
 : shader(0)
 {
 	auto source = readTextFile(name);
-	shader = createShader(GL_FRAGMENT_SHADER, name, source);
+	shader = createShader(GL_FRAGMENT_SHADER, name, source, macros);
 }
 
 

@@ -435,8 +435,9 @@ static const uint32_t indices[] =
 
 
 void SMAADemo::buildImageShader() {
-	VertexShader vShader("image.vert");
-	FragmentShader fShader("image.frag");
+	ShaderMacros macros;
+	VertexShader vShader("image.vert", macros);
+	FragmentShader fShader("image.frag", macros);
 
 	imageShader = std::make_unique<Shader>(vShader, fShader);
 }
@@ -452,7 +453,11 @@ void SMAADemo::buildFXAAShader() {
 		s.pushLine("#define FXAA_GLSL_130 1");
 
 	// TODO: cache shader based on quality level
-	s.pushLine("#define FXAA_QUALITY_PRESET " + std::string(fxaaQualityLevels[fxaaQuality]));
+	std::string qualityString(fxaaQualityLevels[fxaaQuality]);
+	s.pushLine("#define FXAA_QUALITY_PRESET " + qualityString);
+
+	ShaderMacros macros;
+	macros.emplace("FXAA_QUALITY_PRESET", qualityString);
 
 	ShaderBuilder vert(s);
 	vert.pushVertexAttr("vec2 pos;");
@@ -463,7 +468,7 @@ void SMAADemo::buildFXAAShader() {
 	vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
 	vert.pushLine("}");
 
-	VertexShader vShader("fxaa.vert", vert);
+	VertexShader vShader("fxaa.vert", vert, macros);
 
 	// fragment
 	ShaderBuilder frag(s);
@@ -478,7 +483,7 @@ void SMAADemo::buildFXAAShader() {
 	frag.pushFragmentOutput("FxaaPixelShader(texcoord, zero, colorTex, colorTex, colorTex, screenSize.xy, zero, zero, zero, 0.75, 0.166, 0.0833, 8.0, 0.125, 0.05, zero);");
 	frag.pushLine("}");
 
-	FragmentShader fShader("fxaa.frag", frag);
+	FragmentShader fShader("fxaa.frag", frag, macros);
 
 	fxaaShader = std::make_unique<Shader>(vShader, fShader);
 	glUniform4fv(fxaaShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
@@ -486,12 +491,16 @@ void SMAADemo::buildFXAAShader() {
 
 
 void SMAADemo::buildSMAAShaders() {
+	ShaderMacros macros;
+	std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
+	macros.emplace(qualityString, "1");
+
 		ShaderBuilder s;
 
 		s.pushLine("#define SMAA_RT_METRICS screenSize");
 		s.pushLine("#define SMAA_GLSL_3 1");
 		// TODO: cache shader based on quality level
-		s.pushLine("#define SMAA_PRESET_"  + std::string(smaaQualityLevels[smaaQuality]) + " 1");
+		s.pushLine("#define " + qualityString + " 1");
 
 		s.pushLine("uniform vec4 screenSize;");
 
@@ -533,7 +542,7 @@ void SMAADemo::buildSMAAShaders() {
 			vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
 			vert.pushLine("}");
 
-			VertexShader vShader("smaaEdge.vert", vert);
+			VertexShader vShader("smaaEdge.vert", vert, macros);
 
 			ShaderBuilder frag(commonFrag);
 
@@ -551,7 +560,7 @@ void SMAADemo::buildSMAAShaders() {
 			frag.pushFragmentOutput("vec4(SMAAColorEdgeDetectionPS(texcoord, offsets, colorTex), 0.0, 0.0);");
 			frag.pushLine("}");
 
-			FragmentShader fShader("smaaEdge.frag", frag);
+			FragmentShader fShader("smaaEdge.frag", frag, macros);
 
 			smaaEdgeShader = std::make_unique<Shader>(vShader, fShader);
 			glUniform4fv(smaaEdgeShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
@@ -581,7 +590,7 @@ void SMAADemo::buildSMAAShaders() {
 			vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
 			vert.pushLine("}");
 
-			VertexShader vShader("smaaBlendWeight.vert", vert);
+			VertexShader vShader("smaaBlendWeight.vert", vert, macros);
 
 			ShaderBuilder frag(commonFrag);
 
@@ -602,7 +611,7 @@ void SMAADemo::buildSMAAShaders() {
 			frag.pushFragmentOutput("SMAABlendingWeightCalculationPS(texcoord, pixcoord, offsets, edgesTex, areaTex, searchTex, vec4(0.0, 0.0, 0.0, 0.0));");
 			frag.pushLine("}");
 
-			FragmentShader fShader("smaaBlendWeight.frag", frag);
+			FragmentShader fShader("smaaBlendWeight.frag", frag, macros);
 
 			smaaBlendWeightShader = std::make_unique<Shader>(vShader, fShader);
 			glUniform4fv(smaaBlendWeightShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
@@ -622,7 +631,7 @@ void SMAADemo::buildSMAAShaders() {
 			vert.pushLine("    gl_Position = vec4(pos, 1.0, 1.0);");
 			vert.pushLine("}");
 
-			VertexShader vShader("smaaNeighbor.vert", vert);
+			VertexShader vShader("smaaNeighbor.vert", vert, macros);
 
 			ShaderBuilder frag(commonFrag);
 
@@ -635,7 +644,7 @@ void SMAADemo::buildSMAAShaders() {
 			frag.pushFragmentOutput("SMAANeighborhoodBlendingPS(texcoord, offset, colorTex, blendTex);");
 			frag.pushLine("}");
 
-			FragmentShader fShader("smaaNeighbor.frag", frag);
+			FragmentShader fShader("smaaNeighbor.frag", frag, macros);
 
 			smaaNeighborShader = std::make_unique<Shader>(vShader, fShader);
 			glUniform4fv(smaaNeighborShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
@@ -692,7 +701,9 @@ void SMAADemo::initRender() {
 
 	renderer = Renderer::createRenderer(desc);
 
-	cubeShader = std::make_unique<Shader>(VertexShader("cube.vert"), FragmentShader("cube.frag"));
+	ShaderMacros macros;
+
+	cubeShader = std::make_unique<Shader>(VertexShader("cube.vert", macros), FragmentShader("cube.frag", macros));
 	buildImageShader();
 	buildSMAAShaders();
 	buildFXAAShader();
