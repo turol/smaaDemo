@@ -181,7 +181,7 @@ class SMAADemo {
 	GLuint cubeVAO;
 	GLuint cubeVBO, cubeIBO;
 	GLuint fullscreenVAO;
-	GLuint instanceVBO;
+	GLuint instanceSSBO;
 	GLuint globalsUBO;
 
 	GLuint linearSampler;
@@ -227,39 +227,7 @@ class SMAADemo {
 
 	std::vector<Image> images;
 
-
-	struct Cube {
-		glm::vec3 pos;
-		glm::quat orient;
-		Color col;
-
-
-		Cube(float x_, float y_, float z_, glm::quat orient_, Color col_)
-		: pos(x_, y_, z_), orient(orient_), col(col_)
-		{
-		}
-	};
-
-	std::vector<Cube> cubes;
-
-
-	struct InstanceData {
-		float x, y, z;
-		float qx, qy, qz;
-		Color col;
-
-
-		InstanceData(glm::quat rot, glm::vec3 pos, Color col_)
-			: x(pos.x), y(pos.y), z(pos.z)
-			, qx(rot.x), qy(rot.y), qz(rot.z)
-			, col(col_)
-		{
-			// shader assumes this and uses it to calculate w from other components
-			assert(rot.w >= 0.0);
-		}
-	};
-
-	std::vector<InstanceData> instances;
+	std::vector<ShaderDefines::Cube> cubes;
 
 	SMAADemo(const SMAADemo &) = delete;
 	SMAADemo &operator=(const SMAADemo &) = delete;
@@ -312,7 +280,7 @@ SMAADemo::SMAADemo()
 , cubeVBO(0)
 , cubeIBO(0)
 , fullscreenVAO(0)
-, instanceVBO(0)
+, instanceSSBO(0)
 , globalsUBO(0)
 , linearSampler(0)
 , nearestSampler(0)
@@ -350,7 +318,7 @@ SMAADemo::~SMAADemo() {
 
 	glDeleteBuffers(1, &cubeVBO);
 	glDeleteBuffers(1, &cubeIBO);
-	glDeleteBuffers(1, &instanceVBO);
+	glDeleteBuffers(1, &instanceSSBO);
 	glDeleteBuffers(1, &globalsUBO);
 
 	glDeleteSamplers(1, &linearSampler);
@@ -536,8 +504,7 @@ void SMAADemo::initRender() {
 	glCreateBuffers(1, &cubeIBO);
 	glNamedBufferData(cubeIBO, sizeof(indices), &indices[0], GL_STATIC_DRAW);
 
-	glCreateBuffers(1, &instanceVBO);
-	glNamedBufferData(instanceVBO, sizeof(InstanceData), NULL, GL_STREAM_DRAW);
+	glCreateBuffers(1, &instanceSSBO);
 
 	glCreateVertexArrays(1, &fullscreenVAO);
 
@@ -550,20 +517,6 @@ void SMAADemo::initRender() {
 	glVertexAttribPointer(ATTR_POS, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
 
 	glEnableVertexArrayAttrib(cubeVAO, ATTR_POS);
-
-	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-	glVertexAttribPointer(ATTR_CUBEPOS, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, x));
-	glVertexAttribDivisor(ATTR_CUBEPOS, 1);
-
-	glVertexAttribPointer(ATTR_ROT, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, qx));
-	glVertexAttribDivisor(ATTR_ROT, 1);
-
-	glVertexAttribPointer(ATTR_COLOR, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, col));
-	glVertexAttribDivisor(ATTR_COLOR, 1);
-
-	glEnableVertexArrayAttrib(cubeVAO, ATTR_CUBEPOS);
-	glEnableVertexArrayAttrib(cubeVAO, ATTR_ROT);
-	glEnableVertexArrayAttrib(cubeVAO, ATTR_COLOR);
 
 	glCreateBuffers(1, &globalsUBO);
 	glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), NULL, GL_STREAM_DRAW);
@@ -727,17 +680,20 @@ void SMAADemo::createCubes() {
 				qz *= reciprocLen;
 				qw *= reciprocLen;
 
-				cubes.emplace_back((x * cubeDistance) - (bigCubeSide / 2.0f)
-				                 , (y * cubeDistance) - (bigCubeSide / 2.0f)
-				                 , (z * cubeDistance) - (bigCubeSide / 2.0f)
-				                 , glm::quat(qx, qy, qz, qw)
-				                 , white);
+				ShaderDefines::Cube cube;
+				cube.position = glm::vec3((x * cubeDistance) - (bigCubeSide / 2.0f)
+				                        , (y * cubeDistance) - (bigCubeSide / 2.0f)
+				                        , (z * cubeDistance) - (bigCubeSide / 2.0f));
+
+				cube.rotation = glm::vec4(qx, qy, qz, qw);
+				cube.color = white.val;
+				cubes.emplace_back(cube);
 			}
 		}
 	}
 
 	// reallocate instance data buffer
-	glNamedBufferData(instanceVBO, sizeof(InstanceData) * numCubes, NULL, GL_STREAM_DRAW);
+	glNamedBufferData(instanceSSBO, sizeof(ShaderDefines::Cube) * numCubes, NULL, GL_STREAM_DRAW);
 
 	colorCubes();
 }
@@ -750,7 +706,7 @@ void SMAADemo::colorCubes() {
 			// random RGB, alpha = 1.0
 			// FIXME: we're abusing little-endianness, make it portable
 			col.val = random.randU32() | 0xFF000000;
-			cube.col = col;
+			cube.color = col.val;
 		}
 	} else {
 		for (auto &cube : cubes) {
@@ -774,7 +730,7 @@ void SMAADemo::colorCubes() {
 			col.g = 255 * g;
 			col.b = 255 * b;
 			col.a = 0xFF;
-			cube.col = col;
+			cube.color = col.val;
 		}
 	}
 }
@@ -995,14 +951,9 @@ void SMAADemo::render() {
 
 		cubeShader->bind();
 
-		instances.clear();
-		instances.reserve(cubes.size());
-		for (const auto &cube : cubes) {
-			instances.emplace_back(cube.orient, cube.pos, cube.col);
-		}
-
 		setCubeVBO();
-		glNamedBufferSubData(instanceVBO, 0, sizeof(InstanceData) * instances.size(), &instances[0]);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, instanceSSBO);
+		glNamedBufferData(instanceSSBO, sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0], GL_STREAM_DRAW);
 
 		glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
 	} else {
