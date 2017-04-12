@@ -9,7 +9,7 @@
 #include "fxaa3_11.h"
 
 
-uniform sampler2D colorTex;
+layout(binding = TEXUNIT_COLOR) uniform sampler2D colorTex;
 uniform vec4 screenSize;
 
 in vec2 texcoord;

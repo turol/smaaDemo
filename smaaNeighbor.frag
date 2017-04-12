@@ -16,8 +16,8 @@ uniform vec4 screenSize;
 
 layout (location = 0) out vec4 outColor;
 
-uniform sampler2D blendTex;
-uniform sampler2D colorTex;
+layout(binding = TEXUNIT_BLEND) uniform sampler2D blendTex;
+layout(binding = TEXUNIT_COLOR) uniform sampler2D colorTex;
 
 in vec2 texcoord;
 in vec4 offset;

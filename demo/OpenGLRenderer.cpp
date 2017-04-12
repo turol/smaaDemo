@@ -199,29 +199,6 @@ Shader::Shader(const VertexShader &vertexShader, const FragmentShader &fragmentS
 	}
 	glUseProgram(program);
 
-	GLint colorLoc = getUniformLocation("colorTex");
-	glUniform1i(colorLoc, TEXUNIT_COLOR);
-
-	GLint areaTexLoc = getUniformLocation("areaTex");
-	if (areaTexLoc >= 0) {
-		glUniform1i(areaTexLoc, TEXUNIT_AREATEX);
-	}
-
-	GLint searchTexLoc = getUniformLocation("searchTex");
-	if (searchTexLoc >= 0) {
-		glUniform1i(searchTexLoc, TEXUNIT_SEARCHTEX);
-	}
-
-	GLint edgesTexLoc = getUniformLocation("edgesTex");
-	if (edgesTexLoc >= 0) {
-		glUniform1i(edgesTexLoc, TEXUNIT_EDGES);
-	}
-
-	GLint blendTexLoc = getUniformLocation("blendTex");
-	if (blendTexLoc >= 0) {
-		glUniform1i(blendTexLoc, TEXUNIT_BLEND);
-	}
-
 	screenSizeLoc = getUniformLocation("screenSize");
 }
 

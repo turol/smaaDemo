@@ -2,7 +2,7 @@
 
 #include "shaderDefines.h"
 
-uniform sampler2D colorTex;
+layout(binding = TEXUNIT_COLOR) uniform sampler2D colorTex;
 
 in vec2 texcoord;
 

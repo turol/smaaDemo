@@ -16,9 +16,9 @@ uniform vec4 screenSize;
 
 layout (location = 0) out vec4 outColor;
 
-uniform sampler2D edgesTex;
-uniform sampler2D areaTex;
-uniform sampler2D searchTex;
+layout(binding = TEXUNIT_EDGES)     uniform sampler2D edgesTex;
+layout(binding = TEXUNIT_AREATEX)   uniform sampler2D areaTex;
+layout(binding = TEXUNIT_SEARCHTEX) uniform sampler2D searchTex;
 
 in vec2 texcoord;
 in vec2 pixcoord;
