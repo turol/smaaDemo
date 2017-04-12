@@ -179,7 +179,6 @@ FragmentShader::~FragmentShader() {
 
 Shader::Shader(const VertexShader &vertexShader, const FragmentShader &fragmentShader)
 : program(0)
-, screenSizeLoc(0)
 {
 	program = glCreateProgram();
 
@@ -198,8 +197,6 @@ Shader::Shader(const VertexShader &vertexShader, const FragmentShader &fragmentS
 		throw std::runtime_error("shader link failed");
 	}
 	glUseProgram(program);
-
-	screenSizeLoc = getUniformLocation("screenSize");
 }
 
 
@@ -208,19 +205,6 @@ Shader::~Shader() {
 		glDeleteProgram(program);
 		program = 0;
 	}
-}
-
-
-GLint Shader::getUniformLocation(const char *name) {
-	assert(program != 0);
-	assert(name != NULL);
-
-	return glGetUniformLocation(program, name);
-}
-
-
-GLint Shader::getScreenSizeLocation() const {
-	return screenSizeLoc;
 }
 
 

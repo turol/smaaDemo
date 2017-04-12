@@ -5,8 +5,6 @@
 #define SMAA_RT_METRICS screenSize
 #define SMAA_GLSL_4 1
 
-uniform vec4 screenSize;
-
 #define SMAA_INCLUDE_PS 0
 #define SMAA_INCLUDE_VS 1
 

@@ -32,8 +32,6 @@ THE SOFTWARE.
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#define GLM_FORCE_RADIANS
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -185,6 +183,7 @@ class SMAADemo {
 	GLuint fullscreenVAO;
 	GLuint fullscreenVBO;
 	GLuint instanceVBO;
+	GLuint globalsUBO;
 
 	GLuint linearSampler;
 	GLuint nearestSampler;
@@ -318,6 +317,7 @@ SMAADemo::SMAADemo()
 , fullscreenVAO(0)
 , fullscreenVBO(0)
 , instanceVBO(0)
+, globalsUBO(0)
 , linearSampler(0)
 , nearestSampler(0)
 , cubePower(3)
@@ -361,6 +361,7 @@ SMAADemo::~SMAADemo() {
 	glDeleteBuffers(1, &cubeIBO);
 	glDeleteBuffers(1, &fullscreenVBO);
 	glDeleteBuffers(1, &instanceVBO);
+	glDeleteBuffers(1, &globalsUBO);
 
 	glDeleteSamplers(1, &linearSampler);
 	glDeleteSamplers(1, &nearestSampler);
@@ -440,8 +441,6 @@ void SMAADemo::buildImageShader() {
 
 
 void SMAADemo::buildFXAAShader() {
-	glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
-
 	// TODO: cache shader based on quality level
 	std::string qualityString(fxaaQualityLevels[fxaaQuality]);
 
@@ -452,7 +451,6 @@ void SMAADemo::buildFXAAShader() {
 	FragmentShader fShader("fxaa.frag", macros);
 
 	fxaaShader = std::make_unique<Shader>(vShader, fShader);
-	glUniform4fv(fxaaShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
 }
 
 
@@ -461,14 +459,12 @@ void SMAADemo::buildSMAAShaders() {
 	std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 	macros.emplace(qualityString, "1");
 
-	glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 	{
 		VertexShader vShader("smaaEdge.vert", macros);
 
 		FragmentShader fShader("smaaEdge.frag", macros);
 
 		smaaEdgeShader = std::make_unique<Shader>(vShader, fShader);
-		glUniform4fv(smaaEdgeShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
 	}
 
 	{
@@ -477,7 +473,6 @@ void SMAADemo::buildSMAAShaders() {
 		FragmentShader fShader("smaaBlendWeight.frag", macros);
 
 		smaaBlendWeightShader = std::make_unique<Shader>(vShader, fShader);
-		glUniform4fv(smaaBlendWeightShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
 	}
 
 	{
@@ -486,7 +481,6 @@ void SMAADemo::buildSMAAShaders() {
 		FragmentShader fShader("smaaNeighbor.frag", macros);
 
 		smaaNeighborShader = std::make_unique<Shader>(vShader, fShader);
-		glUniform4fv(smaaNeighborShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
 	}
 }
 
@@ -596,6 +590,9 @@ void SMAADemo::initRender() {
 	glVertexAttribPointer(ATTR_POS, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, NULL);
 
 	glEnableVertexArrayAttrib(fullscreenVAO, ATTR_POS);
+
+	glCreateBuffers(1, &globalsUBO);
+	glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), NULL, GL_STREAM_DRAW);
 
 	const bool flipSMAATextures = true;
 
@@ -989,13 +986,6 @@ void SMAADemo::render() {
 		recreateSwapchain = false;
 
 		createFramebuffers();
-
-		glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
-
-		glUniform4fv(fxaaShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
-		glUniform4fv(smaaEdgeShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
-		glUniform4fv(smaaBlendWeightShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
-		glUniform4fv(smaaNeighborShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
 	}
 
 	uint64_t ticks = SDL_GetPerformanceCounter();
@@ -1017,6 +1007,10 @@ void SMAADemo::render() {
 	renderFBO->bind();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	ShaderDefines::Globals globals;
+	globals.screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalsUBO);
+
 	if (activeScene == 0) {
 		if (rotateCamera) {
 			rotationTime += elapsed;
@@ -1027,11 +1021,10 @@ void SMAADemo::render() {
 		}
 		glm::mat4 view = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -25.0f)), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 proj = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, 0.1f, 100.0f);
-		glm::mat4 viewProj = proj * view;
+		globals.viewProj = proj * view;
+		glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), &globals, GL_STREAM_DRAW);
 
 		cubeShader->bind();
-		GLint viewProjLoc = cubeShader->getUniformLocation("viewProj");
-		glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, glm::value_ptr(viewProj));
 
 		instances.clear();
 		instances.reserve(cubes.size());
@@ -1044,6 +1037,8 @@ void SMAADemo::render() {
 
 		glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
 	} else {
+		glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), &globals, GL_STREAM_DRAW);
+
 		glDisable(GL_DEPTH_TEST);
 		glDepthMask(GL_FALSE);
 

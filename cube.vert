@@ -3,8 +3,6 @@
 #include "shaderDefines.h"
 
 
-uniform mat4 viewProj;
-
 layout(location = ATTR_ROT) in vec3 rotationQuat;
 layout(location = ATTR_CUBEPOS) in vec3 cubePos;
 layout(location = ATTR_COLOR) in vec3 color;

@@ -5,7 +5,17 @@
 #include <string>
 #include <unordered_map>
 
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+
+
+namespace ShaderDefines {
+
+using namespace glm;
+
 #include "../shaderDefines.h"
+
+}  // namespace ShaderDefines
 
 
 #define MAX_COLOR_RENDERTARGETS 2
@@ -253,8 +263,6 @@ public:
 class Shader {
     GLuint program;
 
-	GLint screenSizeLoc;
-
 	Shader() = delete;
 	Shader(const Shader &) = delete;
 	Shader &operator=(const Shader &) = delete;
@@ -266,10 +274,6 @@ public:
 	Shader(const VertexShader &vertexShader, const FragmentShader &fragmentShader);
 
 	~Shader();
-
-	GLint getUniformLocation(const char *name);
-
-	GLint getScreenSizeLocation() const;
 
 	void bind();
 };
