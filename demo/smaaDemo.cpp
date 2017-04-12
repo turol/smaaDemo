@@ -171,7 +171,7 @@ class SMAADemo {
 	bool fullscreen;
 	bool recreateSwapchain;
 
-	Renderer *renderer;
+	std::unique_ptr<Renderer> renderer;
 	bool glDebug;
 
 	std::unique_ptr<Shader> cubeShader;
@@ -349,11 +349,6 @@ SMAADemo::SMAADemo()
 
 
 SMAADemo::~SMAADemo() {
-	if (renderer) {
-		delete renderer;
-		renderer = nullptr;
-	}
-
 	glDeleteVertexArrays(1, &cubeVAO);
 	glDeleteVertexArrays(1, &fullscreenVAO);
 
@@ -527,7 +522,7 @@ void SMAADemo::initRender() {
 	desc.swapchain.height     = windowHeight;
 	desc.swapchain.vsync      = vsync;
 
-	renderer = Renderer::createRenderer(desc);
+	renderer.reset(Renderer::createRenderer(desc));
 
 	ShaderMacros macros;
 
