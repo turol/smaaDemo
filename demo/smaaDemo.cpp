@@ -354,16 +354,16 @@ SMAADemo::~SMAADemo() {
 		renderer = nullptr;
 	}
 
-		glDeleteVertexArrays(1, &cubeVAO);
-		glDeleteVertexArrays(1, &fullscreenVAO);
-	
+	glDeleteVertexArrays(1, &cubeVAO);
+	glDeleteVertexArrays(1, &fullscreenVAO);
+
 	glDeleteBuffers(1, &cubeVBO);
 	glDeleteBuffers(1, &cubeIBO);
 	glDeleteBuffers(1, &fullscreenVBO);
 	glDeleteBuffers(1, &instanceVBO);
 
-		glDeleteSamplers(1, &linearSampler);
-		glDeleteSamplers(1, &nearestSampler);
+	glDeleteSamplers(1, &linearSampler);
+	glDeleteSamplers(1, &nearestSampler);
 
 	glDeleteTextures(1, &areaTex);
 	glDeleteTextures(1, &searchTex);
@@ -461,33 +461,33 @@ void SMAADemo::buildSMAAShaders() {
 	std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 	macros.emplace(qualityString, "1");
 
-		glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
-		{
-			VertexShader vShader("smaaEdge.vert", macros);
+	glm::vec4 screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
+	{
+		VertexShader vShader("smaaEdge.vert", macros);
 
-			FragmentShader fShader("smaaEdge.frag", macros);
+		FragmentShader fShader("smaaEdge.frag", macros);
 
-			smaaEdgeShader = std::make_unique<Shader>(vShader, fShader);
-			glUniform4fv(smaaEdgeShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
-		}
+		smaaEdgeShader = std::make_unique<Shader>(vShader, fShader);
+		glUniform4fv(smaaEdgeShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
+	}
 
-		{
-			VertexShader vShader("smaaBlendWeight.vert", macros);
+	{
+		VertexShader vShader("smaaBlendWeight.vert", macros);
 
-			FragmentShader fShader("smaaBlendWeight.frag", macros);
+		FragmentShader fShader("smaaBlendWeight.frag", macros);
 
-			smaaBlendWeightShader = std::make_unique<Shader>(vShader, fShader);
-			glUniform4fv(smaaBlendWeightShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
-		}
+		smaaBlendWeightShader = std::make_unique<Shader>(vShader, fShader);
+		glUniform4fv(smaaBlendWeightShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
+	}
 
-		{
-			VertexShader vShader("smaaNeighbor.vert", macros);
+	{
+		VertexShader vShader("smaaNeighbor.vert", macros);
 
-			FragmentShader fShader("smaaNeighbor.frag", macros);
+		FragmentShader fShader("smaaNeighbor.frag", macros);
 
-			smaaNeighborShader = std::make_unique<Shader>(vShader, fShader);
-			glUniform4fv(smaaNeighborShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
-		}
+		smaaNeighborShader = std::make_unique<Shader>(vShader, fShader);
+		glUniform4fv(smaaNeighborShader->getScreenSizeLocation(), 1, glm::value_ptr(screenSize));
+	}
 }
 
 
@@ -542,17 +542,17 @@ void SMAADemo::initRender() {
 	buildSMAAShaders();
 	buildFXAAShader();
 
-		glCreateSamplers(1, &linearSampler);
-		glSamplerParameteri(linearSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glSamplerParameteri(linearSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glSamplerParameteri(linearSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glSamplerParameteri(linearSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glCreateSamplers(1, &linearSampler);
+	glSamplerParameteri(linearSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glSamplerParameteri(linearSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glSamplerParameteri(linearSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glSamplerParameteri(linearSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-		glCreateSamplers(1, &nearestSampler);
-		glSamplerParameteri(nearestSampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glSamplerParameteri(nearestSampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glSamplerParameteri(nearestSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glSamplerParameteri(nearestSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glCreateSamplers(1, &nearestSampler);
+	glSamplerParameteri(nearestSampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glSamplerParameteri(nearestSampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glSamplerParameteri(nearestSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glSamplerParameteri(nearestSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	glCreateBuffers(1, &cubeVBO);
 	glNamedBufferData(cubeVBO, sizeof(vertices), &vertices[0], GL_STATIC_DRAW);
@@ -563,39 +563,39 @@ void SMAADemo::initRender() {
 	glCreateBuffers(1, &instanceVBO);
 	glNamedBufferData(instanceVBO, sizeof(InstanceData), NULL, GL_STREAM_DRAW);
 
-		glCreateVertexArrays(1, &cubeVAO);
-		glVertexArrayElementBuffer(cubeVAO, cubeIBO);
+	glCreateVertexArrays(1, &cubeVAO);
+	glVertexArrayElementBuffer(cubeVAO, cubeIBO);
 
-		glBindVertexArray(cubeVAO);
+	glBindVertexArray(cubeVAO);
 
-		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-		glVertexAttribPointer(ATTR_POS, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+	glVertexAttribPointer(ATTR_POS, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
 
-		glEnableVertexArrayAttrib(cubeVAO, ATTR_POS);
+	glEnableVertexArrayAttrib(cubeVAO, ATTR_POS);
 
-			glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-			glVertexAttribPointer(ATTR_CUBEPOS, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, x));
-			glVertexAttribDivisor(ATTR_CUBEPOS, 1);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glVertexAttribPointer(ATTR_CUBEPOS, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, x));
+	glVertexAttribDivisor(ATTR_CUBEPOS, 1);
 
-			glVertexAttribPointer(ATTR_ROT, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, qx));
-			glVertexAttribDivisor(ATTR_ROT, 1);
+	glVertexAttribPointer(ATTR_ROT, 3, GL_FLOAT, GL_FALSE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, qx));
+	glVertexAttribDivisor(ATTR_ROT, 1);
 
-			glVertexAttribPointer(ATTR_COLOR, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, col));
-			glVertexAttribDivisor(ATTR_COLOR, 1);
+	glVertexAttribPointer(ATTR_COLOR, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(InstanceData), VBO_OFFSETOF(InstanceData, col));
+	glVertexAttribDivisor(ATTR_COLOR, 1);
 
-			glEnableVertexArrayAttrib(cubeVAO, ATTR_CUBEPOS);
-			glEnableVertexArrayAttrib(cubeVAO, ATTR_ROT);
-			glEnableVertexArrayAttrib(cubeVAO, ATTR_COLOR);
+	glEnableVertexArrayAttrib(cubeVAO, ATTR_CUBEPOS);
+	glEnableVertexArrayAttrib(cubeVAO, ATTR_ROT);
+	glEnableVertexArrayAttrib(cubeVAO, ATTR_COLOR);
 
 	glCreateBuffers(1, &fullscreenVBO);
 	glNamedBufferData(fullscreenVBO, sizeof(fullscreenVertices), &fullscreenVertices[0], GL_STATIC_DRAW);
 
-		glCreateVertexArrays(1, &fullscreenVAO);
-		glBindVertexArray(fullscreenVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, fullscreenVBO);
-		glVertexAttribPointer(ATTR_POS, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, NULL);
+	glCreateVertexArrays(1, &fullscreenVAO);
+	glBindVertexArray(fullscreenVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, fullscreenVBO);
+	glVertexAttribPointer(ATTR_POS, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, NULL);
 
-		glEnableVertexArrayAttrib(fullscreenVAO, ATTR_POS);
+	glEnableVertexArrayAttrib(fullscreenVAO, ATTR_POS);
 
 	const bool flipSMAATextures = true;
 
@@ -661,12 +661,12 @@ void SMAADemo::initRender() {
 
 
 void SMAADemo::setCubeVBO() {
-		glBindVertexArray(cubeVAO);
+	glBindVertexArray(cubeVAO);
 }
 
 
 void SMAADemo::setFullscreenVBO() {
-		glBindVertexArray(fullscreenVAO);
+	glBindVertexArray(fullscreenVAO);
 }
 
 
@@ -829,151 +829,151 @@ static void printHelp() {
 
 
 void SMAADemo::mainLoopIteration() {
-		// TODO: timing
-		SDL_Event event;
-		memset(&event, 0, sizeof(SDL_Event));
-		while (SDL_PollEvent(&event)) {
-			int sceneIncrement = 1;
-			switch (event.type) {
-			case SDL_QUIT:
+	// TODO: timing
+	SDL_Event event;
+	memset(&event, 0, sizeof(SDL_Event));
+	while (SDL_PollEvent(&event)) {
+		int sceneIncrement = 1;
+		switch (event.type) {
+		case SDL_QUIT:
+			keepGoing = false;
+			break;
+
+		case SDL_KEYDOWN:
+			switch (event.key.keysym.scancode) {
+			case SDL_SCANCODE_ESCAPE:
 				keepGoing = false;
 				break;
 
-			case SDL_KEYDOWN:
-				switch (event.key.keysym.scancode) {
-				case SDL_SCANCODE_ESCAPE:
-					keepGoing = false;
-					break;
+			case SDL_SCANCODE_LSHIFT:
+				leftShift = true;
+				break;
 
-				case SDL_SCANCODE_LSHIFT:
-					leftShift = true;
-					break;
+			case SDL_SCANCODE_RSHIFT:
+				rightShift = true;
+				break;
 
-				case SDL_SCANCODE_RSHIFT:
-					rightShift = true;
-					break;
+			case SDL_SCANCODE_SPACE:
+				rotateCamera = !rotateCamera;
+				printf("camera rotation is %s\n", rotateCamera ? "on" : "off");
+				break;
 
-				case SDL_SCANCODE_SPACE:
-					rotateCamera = !rotateCamera;
-					printf("camera rotation is %s\n", rotateCamera ? "on" : "off");
-					break;
+			case SDL_SCANCODE_A:
+				antialiasing = !antialiasing;
+				printf("antialiasing set to %s\n", antialiasing ? "on" : "off");
+				break;
 
-				case SDL_SCANCODE_A:
-					antialiasing = !antialiasing;
-					printf("antialiasing set to %s\n", antialiasing ? "on" : "off");
-					break;
+			case SDL_SCANCODE_C:
+				if (rightShift || leftShift) {
+					colorMode = (colorMode + 1) % 2;
+					printf("color mode set to %s\n", colorMode ? "YCbCr" : "RGB");
+				}
+				colorCubes();
+				break;
 
-				case SDL_SCANCODE_C:
-					if (rightShift || leftShift) {
-						colorMode = (colorMode + 1) % 2;
-						printf("color mode set to %s\n", colorMode ? "YCbCr" : "RGB");
+			case SDL_SCANCODE_D:
+				if (antialiasing && aaMethod == AAMethod::SMAA) {
+					if (leftShift || rightShift) {
+						debugMode = (debugMode + 3 - 1) % 3;
+					} else {
+						debugMode = (debugMode + 1) % 3;
 					}
-					colorCubes();
-					break;
-
-				case SDL_SCANCODE_D:
-					if (antialiasing && aaMethod == AAMethod::SMAA) {
-						if (leftShift || rightShift) {
-							debugMode = (debugMode + 3 - 1) % 3;
-						} else {
-							debugMode = (debugMode + 1) % 3;
-						}
-						printf("Debug mode set to %s\n", smaaDebugModeStr(debugMode));
-					}
-					break;
-
-				case SDL_SCANCODE_H:
-					printHelp();
-					break;
-
-				case SDL_SCANCODE_M:
-					aaMethod = AAMethod::AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
-					printf("aa method set to %s\n", AAMethod::name(aaMethod));
-					break;
-
-				case SDL_SCANCODE_Q:
-					switch (aaMethod) {
-					case AAMethod::FXAA:
-						if (leftShift || rightShift) {
-							fxaaQuality = fxaaQuality + maxFXAAQuality - 1;
-						} else {
-							fxaaQuality = fxaaQuality + 1;
-						}
-						fxaaQuality = fxaaQuality % maxFXAAQuality;
-						buildFXAAShader();
-						printf("FXAA quality set to %s (%u)\n", fxaaQualityLevels[fxaaQuality], fxaaQuality);
-						break;
-
-					case AAMethod::SMAA:
-						if (leftShift || rightShift) {
-							smaaQuality = smaaQuality + maxSMAAQuality - 1;
-						} else {
-							smaaQuality = smaaQuality + 1;
-						}
-						smaaQuality = smaaQuality % maxSMAAQuality;
-						buildSMAAShaders();
-						printf("SMAA quality set to %s (%u)\n", smaaQualityLevels[smaaQuality], smaaQuality);
-						break;
-
-					}
-					break;
-
-				case SDL_SCANCODE_V:
-					vsync = !vsync;
-					recreateSwapchain = true;
-					break;
-
-				case SDL_SCANCODE_F:
-					fullscreen = !fullscreen;
-					recreateSwapchain = true;
-					break;
-
-				case SDL_SCANCODE_LEFT:
-					sceneIncrement = -1;
-					// fallthrough
-				case SDL_SCANCODE_RIGHT:
-					{
-						// all images + cubes scene
-						unsigned int numScenes = images.size() + 1;
-						activeScene = (activeScene + sceneIncrement + numScenes) % numScenes;
-					}
-					break;
-
-				default:
-					break;
+					printf("Debug mode set to %s\n", smaaDebugModeStr(debugMode));
 				}
 				break;
 
-			case SDL_KEYUP:
-				switch (event.key.keysym.scancode) {
-				case SDL_SCANCODE_LSHIFT:
-					leftShift = false;
+			case SDL_SCANCODE_H:
+				printHelp();
+				break;
+
+			case SDL_SCANCODE_M:
+				aaMethod = AAMethod::AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
+				printf("aa method set to %s\n", AAMethod::name(aaMethod));
+				break;
+
+			case SDL_SCANCODE_Q:
+				switch (aaMethod) {
+				case AAMethod::FXAA:
+					if (leftShift || rightShift) {
+						fxaaQuality = fxaaQuality + maxFXAAQuality - 1;
+					} else {
+						fxaaQuality = fxaaQuality + 1;
+					}
+					fxaaQuality = fxaaQuality % maxFXAAQuality;
+					buildFXAAShader();
+					printf("FXAA quality set to %s (%u)\n", fxaaQualityLevels[fxaaQuality], fxaaQuality);
 					break;
 
-				case SDL_SCANCODE_RSHIFT:
-					rightShift = false;
+				case AAMethod::SMAA:
+					if (leftShift || rightShift) {
+						smaaQuality = smaaQuality + maxSMAAQuality - 1;
+					} else {
+						smaaQuality = smaaQuality + 1;
+					}
+					smaaQuality = smaaQuality % maxSMAAQuality;
+					buildSMAAShaders();
+					printf("SMAA quality set to %s (%u)\n", smaaQualityLevels[smaaQuality], smaaQuality);
 					break;
 
-				default:
-					break;
 				}
 				break;
 
-			case SDL_WINDOWEVENT:
-				switch (event.window.event) {
-				case SDL_WINDOWEVENT_SIZE_CHANGED:
-				case SDL_WINDOWEVENT_RESIZED:
-					windowWidth  = event.window.data1;
-					windowHeight = event.window.data2;
-					recreateSwapchain = true;
-					break;
-				default:
-					break;
+			case SDL_SCANCODE_V:
+				vsync = !vsync;
+				recreateSwapchain = true;
+				break;
+
+			case SDL_SCANCODE_F:
+				fullscreen = !fullscreen;
+				recreateSwapchain = true;
+				break;
+
+			case SDL_SCANCODE_LEFT:
+				sceneIncrement = -1;
+				// fallthrough
+			case SDL_SCANCODE_RIGHT:
+				{
+					// all images + cubes scene
+					unsigned int numScenes = images.size() + 1;
+					activeScene = (activeScene + sceneIncrement + numScenes) % numScenes;
 				}
+				break;
+
+			default:
+				break;
+			}
+			break;
+
+		case SDL_KEYUP:
+			switch (event.key.keysym.scancode) {
+			case SDL_SCANCODE_LSHIFT:
+				leftShift = false;
+				break;
+
+			case SDL_SCANCODE_RSHIFT:
+				rightShift = false;
+				break;
+
+			default:
+				break;
+			}
+			break;
+
+		case SDL_WINDOWEVENT:
+			switch (event.window.event) {
+			case SDL_WINDOWEVENT_SIZE_CHANGED:
+			case SDL_WINDOWEVENT_RESIZED:
+				windowWidth  = event.window.data1;
+				windowHeight = event.window.data2;
+				recreateSwapchain = true;
+				break;
+			default:
+				break;
 			}
 		}
+	}
 
-		render();
+	render();
 }
 
 
@@ -1029,20 +1029,20 @@ void SMAADemo::render() {
 		glm::mat4 proj = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, 0.1f, 100.0f);
 		glm::mat4 viewProj = proj * view;
 
-			cubeShader->bind();
-			GLint viewProjLoc = cubeShader->getUniformLocation("viewProj");
-			glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, glm::value_ptr(viewProj));
+		cubeShader->bind();
+		GLint viewProjLoc = cubeShader->getUniformLocation("viewProj");
+		glUniformMatrix4fv(viewProjLoc, 1, GL_FALSE, glm::value_ptr(viewProj));
 
-			instances.clear();
-			instances.reserve(cubes.size());
-			for (const auto &cube : cubes) {
-				instances.emplace_back(cube.orient, cube.pos, cube.col);
-			}
+		instances.clear();
+		instances.reserve(cubes.size());
+		for (const auto &cube : cubes) {
+			instances.emplace_back(cube.orient, cube.pos, cube.col);
+		}
 
-			setCubeVBO();
-			glNamedBufferSubData(instanceVBO, 0, sizeof(InstanceData) * instances.size(), &instances[0]);
+		setCubeVBO();
+		glNamedBufferSubData(instanceVBO, 0, sizeof(InstanceData) * instances.size(), &instances[0]);
 
-			glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
+		glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
 	} else {
 		glDisable(GL_DEPTH_TEST);
 		glDepthMask(GL_FALSE);
@@ -1117,18 +1117,17 @@ void SMAADemo::render() {
 
 int main(int argc, char *argv[]) {
 	try {
-	auto demo = std::make_unique<SMAADemo>();
+		auto demo = std::make_unique<SMAADemo>();
 
-	demo->parseCommandLine(argc, argv);
+		demo->parseCommandLine(argc, argv);
 
-	demo->initRender();
-	demo->createCubes();
-	printHelp();
+		demo->initRender();
+		demo->createCubes();
+		printHelp();
 
-	while (demo->shouldKeepGoing()) {
-		demo->mainLoopIteration();
-	}
-
+		while (demo->shouldKeepGoing()) {
+			demo->mainLoopIteration();
+		}
 	} catch (std::exception &e) {
 		printf("caught std::exception \"%s\"\n", e.what());
 		// so native dumps core
