@@ -10,16 +10,16 @@
 
 
 #include "smaa.h"
+#include "utils.h"
 
-
-layout(location = ATTR_POS) in vec2 pos;
 
 out vec2 texcoord;
 out vec4 offset;
 
 void main(void)
 {
-    texcoord = pos * 0.5 + 0.5;
+    vec2 pos = triangleVertex(gl_VertexID, texcoord);
+    texcoord = flipTexCoord(texcoord);
     offset = vec4(0.0, 0.0, 0.0, 0.0);
     SMAANeighborhoodBlendingVS(texcoord, offset);
     gl_Position = vec4(pos, 1.0, 1.0);

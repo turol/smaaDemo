@@ -10,9 +10,7 @@
 
 
 #include "smaa.h"
-
-
-layout(location = ATTR_POS) in vec2 pos;
+#include "utils.h"
 
 
 out vec2 texcoord;
@@ -23,7 +21,8 @@ out vec4 offset2;
 
 void main(void)
 {
-    texcoord = pos * 0.5 + 0.5;
+    vec2 pos = triangleVertex(gl_VertexID, texcoord);
+    texcoord = flipTexCoord(texcoord);
     vec4 offsets[3];
     offsets[0] = vec4(0.0, 0.0, 0.0, 0.0);
     offsets[1] = vec4(0.0, 0.0, 0.0, 0.0);

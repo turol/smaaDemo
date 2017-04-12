@@ -181,7 +181,6 @@ class SMAADemo {
 	GLuint cubeVAO;
 	GLuint cubeVBO, cubeIBO;
 	GLuint fullscreenVAO;
-	GLuint fullscreenVBO;
 	GLuint instanceVBO;
 	GLuint globalsUBO;
 
@@ -291,8 +290,6 @@ public:
 
 	void setCubeVBO();
 
-	void setFullscreenVBO();
-
 	void mainLoopIteration();
 
 	bool shouldKeepGoing() const {
@@ -315,7 +312,6 @@ SMAADemo::SMAADemo()
 , cubeVBO(0)
 , cubeIBO(0)
 , fullscreenVAO(0)
-, fullscreenVBO(0)
 , instanceVBO(0)
 , globalsUBO(0)
 , linearSampler(0)
@@ -354,7 +350,6 @@ SMAADemo::~SMAADemo() {
 
 	glDeleteBuffers(1, &cubeVBO);
 	glDeleteBuffers(1, &cubeIBO);
-	glDeleteBuffers(1, &fullscreenVBO);
 	glDeleteBuffers(1, &instanceVBO);
 	glDeleteBuffers(1, &globalsUBO);
 
@@ -384,14 +379,6 @@ static const Vertex vertices[] =
 	, { -coord ,  coord,  coord }
 	, {  coord , -coord,  coord }
 	, {  coord ,  coord,  coord }
-};
-
-
-static const float fullscreenVertices[] =
-{
-	  -1.0f, -1.0f
-	,  3.0f, -1.0f
-	, -1.0f,  3.0f
 };
 
 
@@ -552,6 +539,8 @@ void SMAADemo::initRender() {
 	glCreateBuffers(1, &instanceVBO);
 	glNamedBufferData(instanceVBO, sizeof(InstanceData), NULL, GL_STREAM_DRAW);
 
+	glCreateVertexArrays(1, &fullscreenVAO);
+
 	glCreateVertexArrays(1, &cubeVAO);
 	glVertexArrayElementBuffer(cubeVAO, cubeIBO);
 
@@ -575,16 +564,6 @@ void SMAADemo::initRender() {
 	glEnableVertexArrayAttrib(cubeVAO, ATTR_CUBEPOS);
 	glEnableVertexArrayAttrib(cubeVAO, ATTR_ROT);
 	glEnableVertexArrayAttrib(cubeVAO, ATTR_COLOR);
-
-	glCreateBuffers(1, &fullscreenVBO);
-	glNamedBufferData(fullscreenVBO, sizeof(fullscreenVertices), &fullscreenVertices[0], GL_STATIC_DRAW);
-
-	glCreateVertexArrays(1, &fullscreenVAO);
-	glBindVertexArray(fullscreenVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, fullscreenVBO);
-	glVertexAttribPointer(ATTR_POS, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, NULL);
-
-	glEnableVertexArrayAttrib(fullscreenVAO, ATTR_POS);
 
 	glCreateBuffers(1, &globalsUBO);
 	glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), NULL, GL_STREAM_DRAW);
@@ -654,11 +633,6 @@ void SMAADemo::initRender() {
 
 void SMAADemo::setCubeVBO() {
 	glBindVertexArray(cubeVAO);
-}
-
-
-void SMAADemo::setFullscreenVBO() {
-	glBindVertexArray(fullscreenVAO);
 }
 
 
@@ -1042,13 +1016,13 @@ void SMAADemo::render() {
 		imageShader->bind();
 		glBindTextureUnit(TEXUNIT_COLOR, image.tex);
 		glBindSampler(TEXUNIT_COLOR, nearestSampler);
-		setFullscreenVBO();
+		glBindVertexArray(fullscreenVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glBindTextureUnit(TEXUNIT_COLOR, renderFBO->colorTex);
 		glBindSampler(TEXUNIT_COLOR, linearSampler);
 	}
 
-	setFullscreenVBO();
+	glBindVertexArray(fullscreenVAO);
 
 	if (antialiasing) {
 		glDisable(GL_DEPTH_TEST);
