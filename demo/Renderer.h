@@ -9,6 +9,30 @@
 #include <glm/glm.hpp>
 
 
+#ifdef RENDERER_OPENGL
+
+#include <GL/glew.h>
+#include <SDL.h>
+
+
+void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /* length */, const GLchar *message, const void * /* userParam */);
+
+
+#elif defined(RENDERER_VULKAN)
+
+#include <vulkan/vulkan.hpp>
+
+
+#elif defined(RENDERER_NULL)
+
+#else
+
+#error "No renderer specififued"
+
+
+#endif  // RENDERER
+
+
 namespace ShaderDefines {
 
 using namespace glm;
@@ -104,16 +128,6 @@ class PipelineDesc {
 };
 
 
-#ifdef RENDERER_OPENGL
-
-
-#include <GL/glew.h>
-#include <SDL.h>
-
-
-void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /* length */, const GLchar *message, const void * /* userParam */);
-
-
 struct RendererDesc {
 	bool debug;
 	SwapchainDesc swapchain;
@@ -124,6 +138,7 @@ struct RendererDesc {
 	{
 	}
 };
+
 
 class Renderer {
 #ifdef RENDERER_OPENGL
@@ -186,11 +201,15 @@ class Framebuffer {
 	// TODO: need a proper Render object to control the others
 	friend class SMAADemo;
 
+#ifdef RENDERER_OPENGL
+
 	GLuint fbo;
 	GLuint colorTex;
 	GLuint depthTex;
 
 	unsigned int width, height;
+
+#endif  // RENDERER_OPENGL
 
 	Framebuffer() = delete;
 	Framebuffer(const Framebuffer &) = delete;
@@ -201,6 +220,8 @@ class Framebuffer {
 
 public:
 
+#ifdef RENDERER_OPENGL
+
 	explicit Framebuffer(GLuint fbo_)
 	: fbo(fbo_)
 	, colorTex(0)
@@ -209,6 +230,9 @@ public:
 	, height(0)
 	{
 	}
+
+#endif  // RENDERER_OPENGL
+
 
 	~Framebuffer();
 
@@ -219,7 +243,11 @@ public:
 
 
 class VertexShader {
+#ifdef RENDERER_OPENGL
+
 	GLuint shader;
+
+#endif  // RENDERER_OPENGL
 
 	VertexShader() = delete;
 
@@ -240,7 +268,11 @@ public:
 
 
 class FragmentShader {
+#ifdef RENDERER_OPENGL
+
 	GLuint shader;
+
+#endif  // RENDERER_OPENGL
 
 	FragmentShader() = delete;
 
@@ -261,7 +293,11 @@ public:
 
 
 class Shader {
+#ifdef RENDERER_OPENGL
+
     GLuint program;
+
+#endif  // RENDERER_OPENGL
 
 	Shader() = delete;
 	Shader(const Shader &) = delete;
@@ -277,22 +313,6 @@ public:
 
 	void bind();
 };
-
-
-#elif defined(RENDERER_VULKAN)
-
-#include <vulkan/vulkan.hpp>
-
-
-#elif defined(RENDERER_NULL)
-
-#else
-
-#error "No renderer specififued"
-
-
-#endif  // RENDERER
-
 
 
 #endif  // RENDERER_H
