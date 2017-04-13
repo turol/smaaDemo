@@ -148,6 +148,8 @@ class Renderer {
 
 	SwapchainDesc swapchainDesc;
 
+	GLuint vao;
+
 #endif  // RENDERER_OPENGL
 
 

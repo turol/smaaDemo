@@ -361,6 +361,7 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 Renderer::Renderer(const RendererDesc &desc)
 : window(nullptr)
 , context(nullptr)
+, vao(0)
 {
 	// TODO: check return value
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
@@ -446,6 +447,9 @@ Renderer::Renderer(const RendererDesc &desc)
 	printf("GL version: \"%s\"\n", glGetString(GL_VERSION));
 	printf("GLSL version: \"%s\"\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
+	glCreateVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
 	// swap once to get better traces
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	SDL_GL_SwapWindow(window);
@@ -458,6 +462,9 @@ Renderer *Renderer::createRenderer(const RendererDesc &desc) {
 
 
 Renderer::~Renderer() {
+	glBindVertexArray(0);
+	glDeleteVertexArrays(1, &vao);
+
 	SDL_GL_DeleteContext(context);
 	SDL_DestroyWindow(window);
 

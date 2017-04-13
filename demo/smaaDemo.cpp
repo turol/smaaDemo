@@ -178,9 +178,7 @@ class SMAADemo {
 	std::unique_ptr<Shader> imageShader;
 
 	// TODO: create helper classes for these
-	GLuint cubeVAO;
 	GLuint cubeVBO, cubeIBO;
-	GLuint fullscreenVAO;
 	GLuint instanceSSBO;
 	GLuint globalsUBO;
 
@@ -274,10 +272,8 @@ SMAADemo::SMAADemo()
 , recreateSwapchain(false)
 , renderer(nullptr)
 , glDebug(false)
-, cubeVAO(0)
 , cubeVBO(0)
 , cubeIBO(0)
-, fullscreenVAO(0)
 , instanceSSBO(0)
 , globalsUBO(0)
 , linearSampler(0)
@@ -311,9 +307,6 @@ SMAADemo::SMAADemo()
 
 
 SMAADemo::~SMAADemo() {
-	glDeleteVertexArrays(1, &cubeVAO);
-	glDeleteVertexArrays(1, &fullscreenVAO);
-
 	glDeleteBuffers(1, &cubeVBO);
 	glDeleteBuffers(1, &cubeIBO);
 	glDeleteBuffers(1, &instanceSSBO);
@@ -503,18 +496,6 @@ void SMAADemo::initRender() {
 	glNamedBufferData(cubeIBO, sizeof(indices), &indices[0], GL_STATIC_DRAW);
 
 	glCreateBuffers(1, &instanceSSBO);
-
-	glCreateVertexArrays(1, &fullscreenVAO);
-
-	glCreateVertexArrays(1, &cubeVAO);
-	glVertexArrayElementBuffer(cubeVAO, cubeIBO);
-
-	glBindVertexArray(cubeVAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-	glVertexAttribPointer(ATTR_POS, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
-
-	glEnableVertexArrayAttrib(cubeVAO, ATTR_POS);
 
 	glCreateBuffers(1, &globalsUBO);
 	glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), NULL, GL_STREAM_DRAW);
@@ -944,12 +925,16 @@ void SMAADemo::render() {
 
 		cubeShader->bind();
 
-		glBindVertexArray(cubeVAO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO);
+		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+		glVertexAttribPointer(ATTR_POS, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
+		glEnableVertexAttribArray(ATTR_POS);
 
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, instanceSSBO);
 		glNamedBufferData(instanceSSBO, sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0], GL_STREAM_DRAW);
 
 		glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
+		glDisableVertexAttribArray(ATTR_POS);
 	} else {
 		glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), &globals, GL_STREAM_DRAW);
 
@@ -961,13 +946,10 @@ void SMAADemo::render() {
 		imageShader->bind();
 		glBindTextureUnit(TEXUNIT_COLOR, image.tex);
 		glBindSampler(TEXUNIT_COLOR, nearestSampler);
-		glBindVertexArray(fullscreenVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glBindTextureUnit(TEXUNIT_COLOR, renderFBO->colorTex);
 		glBindSampler(TEXUNIT_COLOR, linearSampler);
 	}
-
-	glBindVertexArray(fullscreenVAO);
 
 	if (antialiasing) {
 		glDisable(GL_DEPTH_TEST);
