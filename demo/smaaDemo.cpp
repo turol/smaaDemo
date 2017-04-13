@@ -887,11 +887,11 @@ void SMAADemo::render() {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-	builtinFBO->bind();
+	renderer->bindFramebuffer(builtinFBO);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	renderFBO->bind();
+	renderer->bindFramebuffer(renderFBO);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	ShaderDefines::Globals globals;
@@ -950,7 +950,7 @@ void SMAADemo::render() {
 
 		switch (aaMethod) {
 		case AAMethod::FXAA:
-			builtinFBO->bind();
+			renderer->bindFramebuffer(builtinFBO);
 			fxaaShader->bind();
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 			break;
@@ -965,12 +965,12 @@ void SMAADemo::render() {
 
 			if (debugMode == 1) {
 				// detect edges only
-				builtinFBO->bind();
+				renderer->bindFramebuffer(builtinFBO);
 				glClear(GL_COLOR_BUFFER_BIT);
 				glDrawArrays(GL_TRIANGLES, 0, 3);
 				break;
 			} else {
-				edgesFBO->bind();
+				renderer->bindFramebuffer(edgesFBO);
 				glClear(GL_COLOR_BUFFER_BIT);
 				glDrawArrays(GL_TRIANGLES, 0, 3);
 			}
@@ -978,19 +978,19 @@ void SMAADemo::render() {
 			smaaBlendWeightShader->bind();
 			if (debugMode == 2) {
 				// show blending weights
-				builtinFBO->bind();
+				renderer->bindFramebuffer(builtinFBO);
 				glClear(GL_COLOR_BUFFER_BIT);
 				glDrawArrays(GL_TRIANGLES, 0, 3);
 				break;
 			} else {
-				blendFBO->bind();
+				renderer->bindFramebuffer(blendFBO);
 				glClear(GL_COLOR_BUFFER_BIT);
 				glDrawArrays(GL_TRIANGLES, 0, 3);
 			}
 
 			// full effect
 			smaaNeighborShader->bind();
-			builtinFBO->bind();
+			renderer->bindFramebuffer(builtinFBO);
 			glClear(GL_COLOR_BUFFER_BIT);
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 			break;

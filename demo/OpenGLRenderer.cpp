@@ -279,11 +279,6 @@ Framebuffer::~Framebuffer() {
 }
 
 
-void Framebuffer::bind() {
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-}
-
-
 void Framebuffer::blitTo(Framebuffer &target) {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target.fbo);
@@ -617,6 +612,19 @@ void Renderer::recreateSwapchain(const SwapchainDesc &desc) {
 
 void Renderer::presentFrame() {
 	SDL_GL_SwapWindow(window);
+}
+
+
+void Renderer::bindFramebuffer(const std::unique_ptr<Framebuffer> &fbo) {
+	assert(fbo);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo);
+
+}
+
+
+void Renderer::bindFramebuffer(FramebufferHandle fbo) {
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 }
 
 

@@ -2,6 +2,7 @@
 #define RENDERER_H
 
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -291,6 +292,7 @@ public:
 	void beginRenderPass(RenderPassHandle);
 	void endRenderPass();
 
+	void bindFramebuffer(const std::unique_ptr<Framebuffer> &fbo);
 	void bindFramebuffer(FramebufferHandle);
 	void bindPipeline(PipelineHandle);
 	void bindIndexBuffer();
@@ -303,6 +305,7 @@ public:
 
 class Framebuffer {
 	// TODO: need a proper Render object to control the others
+	friend class Renderer;
 	friend class SMAADemo;
 
 #ifdef RENDERER_OPENGL
@@ -339,8 +342,6 @@ public:
 
 
 	~Framebuffer();
-
-	void bind();
 
 	void blitTo(Framebuffer &target);
 };
