@@ -477,17 +477,8 @@ void SMAADemo::initRender() {
 	buildSMAAShaders();
 	buildFXAAShader();
 
-	glCreateSamplers(1, &linearSampler);
-	glSamplerParameteri(linearSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glSamplerParameteri(linearSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glSamplerParameteri(linearSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glSamplerParameteri(linearSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	glCreateSamplers(1, &nearestSampler);
-	glSamplerParameteri(nearestSampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glSamplerParameteri(nearestSampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glSamplerParameteri(nearestSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glSamplerParameteri(nearestSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	linearSampler  = renderer->createSampler(SamplerDesc().minFilter(Linear). magFilter(Linear));
+	nearestSampler = renderer->createSampler(SamplerDesc().minFilter(Nearest).magFilter(Nearest));
 
 	glCreateBuffers(1, &cubeVBO);
 	glNamedBufferData(cubeVBO, sizeof(vertices), &vertices[0], GL_STATIC_DRAW);

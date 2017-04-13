@@ -472,6 +472,19 @@ Renderer::~Renderer() {
 }
 
 
+SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
+	GLuint sampler = 0;
+	glCreateSamplers(1, &sampler);
+
+	glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, (desc.min == Nearest) ? GL_NEAREST: GL_LINEAR);
+	glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, (desc.mag == Nearest) ? GL_NEAREST: GL_LINEAR);
+	glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S,     (desc.wrapMode == Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+	glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T,     (desc.wrapMode == Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+
+	return sampler;
+}
+
+
 void Renderer::deleteBuffer(BufferHandle handle) {
 	glDeleteBuffers(1, &handle);
 }
@@ -485,7 +498,6 @@ void Renderer::deleteSampler(SamplerHandle handle) {
 void Renderer::deleteTexture(TextureHandle handle) {
 	glDeleteTextures(1, &handle);
 }
-
 
 
 void Renderer::recreateSwapchain(const SwapchainDesc &desc) {

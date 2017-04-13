@@ -111,10 +111,41 @@ enum WrapMode {
 	, Wrap
 };
 
+
 struct SamplerDesc {
+	SamplerDesc()
+	: min(Nearest)
+	, mag(Nearest)
+	, anisotropy(0)
+	, wrapMode(Wrap)
+	{
+	}
+
+	SamplerDesc(const SamplerDesc &desc) = default;
+	SamplerDesc(SamplerDesc &&desc)      = default;
+
+	SamplerDesc &operator=(const SamplerDesc &desc) = default;
+	SamplerDesc &operator=(SamplerDesc &&desc)      = default;
+
+	~SamplerDesc() {}
+
+	SamplerDesc &minFilter(FilterMode m) {
+		min = m;
+		return *this;
+	}
+
+	SamplerDesc &magFilter(FilterMode m) {
+		mag = m;
+		return *this;
+	}
+
+private:
+
 	FilterMode  min, mag;
 	uint32_t    anisotropy;
 	WrapMode    wrapMode;
+
+	friend class Renderer;
 };
 
 
@@ -179,6 +210,7 @@ public:
 	// texture
 	// image ?
 	// descriptor set
+	SamplerHandle       createSampler(const SamplerDesc &desc);
 
 	void deleteBuffer(BufferHandle handle);
 	void deleteSampler(SamplerHandle handle);
