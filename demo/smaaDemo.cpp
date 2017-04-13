@@ -178,7 +178,8 @@ class SMAADemo {
 	std::unique_ptr<Shader> imageShader;
 
 	// TODO: create helper classes for these
-	GLuint cubeVBO, cubeIBO;
+	GLuint cubeVBO;
+	GLuint cubeIBO;
 	GLuint instanceSSBO;
 	GLuint globalsUBO;
 
