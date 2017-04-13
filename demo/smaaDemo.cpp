@@ -550,6 +550,9 @@ void SMAADemo::createFramebuffers()	{
 	builtinFBO->height = windowHeight;
 
 	renderFBO.reset();
+	edgesFBO.reset();
+	blendFBO.reset();
+
 	GLuint fbo = 0;
 	glGenFramebuffers(1, &fbo);
 	renderFBO = std::make_unique<Framebuffer>(fbo);
@@ -574,7 +577,6 @@ void SMAADemo::createFramebuffers()	{
 	glNamedFramebufferTexture(fbo, GL_DEPTH_ATTACHMENT, tex, 0);
 
 	// SMAA edges texture and FBO
-	edgesFBO.reset();
 	fbo = 0;
 	glGenFramebuffers(1, &fbo);
 	edgesFBO = std::make_unique<Framebuffer>(fbo);
@@ -592,7 +594,6 @@ void SMAADemo::createFramebuffers()	{
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
 
 	// SMAA blending weights texture and FBO
-	blendFBO.reset();
 	fbo = 0;
 	glGenFramebuffers(1, &fbo);
 	blendFBO = std::make_unique<Framebuffer>(fbo);
