@@ -256,8 +256,6 @@ public:
 
 	void colorCubes();
 
-	void setCubeVBO();
-
 	void mainLoopIteration();
 
 	bool shouldKeepGoing() const {
@@ -581,11 +579,6 @@ void SMAADemo::initRender() {
 
 	// default scene to last image or cubes if none
 	activeScene = images.size();
-}
-
-
-void SMAADemo::setCubeVBO() {
-	glBindVertexArray(cubeVAO);
 }
 
 
@@ -951,7 +944,8 @@ void SMAADemo::render() {
 
 		cubeShader->bind();
 
-		setCubeVBO();
+		glBindVertexArray(cubeVAO);
+
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, instanceSSBO);
 		glNamedBufferData(instanceSSBO, sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0], GL_STREAM_DRAW);
 
