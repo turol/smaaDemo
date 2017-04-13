@@ -560,21 +560,17 @@ void SMAADemo::createFramebuffers()	{
 	renderFBO->height = windowHeight;
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-	GLuint tex = 0;
-	glCreateTextures(GL_TEXTURE_2D, 1, &tex);
-	renderFBO->colorTex = tex;
+	glCreateTextures(GL_TEXTURE_2D, 1, &renderFBO->colorTex);
 	glBindTextureUnit(TEXUNIT_COLOR, renderFBO->colorTex);
-	glTextureStorage2D(tex, 1, GL_RGBA8, windowWidth, windowHeight);
-	glTextureParameteri(tex, GL_TEXTURE_MAX_LEVEL, 0);
-	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
+	glTextureStorage2D(renderFBO->colorTex, 1, GL_RGBA8, windowWidth, windowHeight);
+	glTextureParameteri(renderFBO->colorTex, GL_TEXTURE_MAX_LEVEL, 0);
+	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, renderFBO->colorTex, 0);
 
-	tex = 0;
-	glCreateTextures(GL_TEXTURE_2D, 1, &tex);
-	renderFBO->depthTex = tex;
+	glCreateTextures(GL_TEXTURE_2D, 1, &renderFBO->depthTex);
 	glBindTextureUnit(TEXUNIT_TEMP, renderFBO->depthTex);
-	glTextureStorage2D(tex, 1, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
-	glTextureParameteri(tex, GL_TEXTURE_MAX_LEVEL, 0);
-	glNamedFramebufferTexture(fbo, GL_DEPTH_ATTACHMENT, tex, 0);
+	glTextureStorage2D(renderFBO->depthTex, 1, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
+	glTextureParameteri(renderFBO->depthTex, GL_TEXTURE_MAX_LEVEL, 0);
+	glNamedFramebufferTexture(fbo, GL_DEPTH_ATTACHMENT, renderFBO->depthTex, 0);
 
 	// SMAA edges texture and FBO
 	fbo = 0;
@@ -584,14 +580,12 @@ void SMAADemo::createFramebuffers()	{
 	edgesFBO->height = windowHeight;
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-	tex = 0;
-	glCreateTextures(GL_TEXTURE_2D, 1, &tex);
-	edgesFBO->colorTex = tex;
+	glCreateTextures(GL_TEXTURE_2D, 1, &edgesFBO->colorTex);
 	glBindTextureUnit(TEXUNIT_EDGES, edgesFBO->colorTex);
-	glTextureStorage2D(tex, 1, GL_RGBA8, windowWidth, windowHeight);
-	glTextureParameteri(tex, GL_TEXTURE_MAX_LEVEL, 0);
+	glTextureStorage2D(edgesFBO->colorTex, 1, GL_RGBA8, windowWidth, windowHeight);
+	glTextureParameteri(edgesFBO->colorTex, GL_TEXTURE_MAX_LEVEL, 0);
 	glBindSampler(TEXUNIT_EDGES, linearSampler);
-	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
+	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, edgesFBO->colorTex, 0);
 
 	// SMAA blending weights texture and FBO
 	fbo = 0;
@@ -601,14 +595,12 @@ void SMAADemo::createFramebuffers()	{
 	blendFBO->height = windowHeight;
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-	tex = 0;
-	glCreateTextures(GL_TEXTURE_2D, 1, &tex);
-	blendFBO->colorTex = tex;
+	glCreateTextures(GL_TEXTURE_2D, 1, &blendFBO->colorTex);
 	glBindTextureUnit(TEXUNIT_BLEND, blendFBO->colorTex);
-	glTextureStorage2D(tex, 1, GL_RGBA8, windowWidth, windowHeight);
-	glTextureParameteri(tex, GL_TEXTURE_MAX_LEVEL, 0);
+	glTextureStorage2D(blendFBO->colorTex, 1, GL_RGBA8, windowWidth, windowHeight);
+	glTextureParameteri(blendFBO->colorTex, GL_TEXTURE_MAX_LEVEL, 0);
 	glBindSampler(TEXUNIT_BLEND, linearSampler);
-	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
+	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, blendFBO->colorTex, 0);
 }
 
 
