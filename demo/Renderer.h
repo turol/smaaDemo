@@ -81,6 +81,11 @@ struct SwapchainDesc {
 
 
 enum Format {
+	  Invalid
+	, R8
+	, RG8
+	, RGB8
+	, RGBA8
 };
 
 
@@ -94,6 +99,65 @@ struct RenderTargetDesc {
 struct FramebufferDesc {
 	RenderTargetHandle depthStencil;
 	RenderTargetHandle colors[MAX_COLOR_RENDERTARGETS];
+};
+
+
+#define MAX_TEXTURE_MIPLEVELS 14
+#define MAX_TEXTURE_SIZE      (1 << (MAX_TEXTURE_MIPLEVELS - 1))
+
+
+
+struct TextureDesc {
+	TextureDesc()
+	: width_(0)
+	, height_(0)
+	, numMips_(1)
+	, format_(Invalid)
+	{
+		std::fill(mipData_.begin(), mipData_.end(), nullptr);
+	}
+
+	~TextureDesc() { }
+
+	TextureDesc(const TextureDesc &) = default;
+	TextureDesc(TextureDesc &&)      = default;
+
+	TextureDesc &operator=(const TextureDesc &) = default;
+	TextureDesc &operator=(TextureDesc &&)      = default;
+
+
+	TextureDesc &width(unsigned int w) {
+		assert(w < MAX_TEXTURE_SIZE);
+		width_ = w;
+		return *this;
+	}
+
+	TextureDesc &height(unsigned int h) {
+		assert(h < MAX_TEXTURE_SIZE);
+		height_ = h;
+		return *this;
+	}
+
+	TextureDesc &format(Format f) {
+		format_ = f;
+		return *this;
+	}
+
+	TextureDesc &mipLevelData(unsigned int level, const void *data) {
+		assert(level < numMips_);
+		mipData_[level] = data;
+		return *this;
+	}
+
+
+private:
+
+	unsigned int  width_, height_;
+	unsigned int  numMips_;
+	Format        format_;
+	std::array<const void *, MAX_TEXTURE_MIPLEVELS> mipData_;
+
+	friend class Renderer;
 };
 
 
@@ -208,10 +272,10 @@ public:
 	// TODO: add buffer usage flags
 	BufferHandle        createBuffer(uint32_t size, const void *contents);
 	BufferHandle        createEphemeralBuffer(uint32_t size, const void *contents);
-	// texture
 	// image ?
 	// descriptor set
 	SamplerHandle       createSampler(const SamplerDesc &desc);
+	TextureHandle       createTexture(const TextureDesc &desc);
 
 	void deleteBuffer(BufferHandle handle);
 	void deleteSampler(SamplerHandle handle);

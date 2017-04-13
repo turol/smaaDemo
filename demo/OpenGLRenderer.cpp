@@ -145,6 +145,52 @@ static GLuint createShader(GLenum type, const std::string &name, const std::vect
 }
 
 
+static GLenum glTexFormat(Format format) {
+	switch (format) {
+	case Invalid:
+		__builtin_unreachable();
+
+	case R8:
+		return GL_R8;
+
+	case RG8:
+		return GL_RG8;
+
+	case RGB8:
+		return GL_RGB8;
+
+	case RGBA8:
+		return GL_RGBA8;
+
+	}
+
+	__builtin_unreachable();
+}
+
+
+static GLenum glTexBaseFormat(Format format) {
+	switch (format) {
+	case Invalid:
+		__builtin_unreachable();
+
+	case R8:
+		return GL_RED;
+
+	case RG8:
+		return GL_RG;
+
+	case RGB8:
+		return GL_RGB;
+
+	case RGBA8:
+		return GL_RGBA;
+
+	}
+
+	__builtin_unreachable();
+}
+
+
 VertexShader::VertexShader(const std::string &name, const ShaderMacros &macros)
 : shader(0)
 {
@@ -494,6 +540,29 @@ SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
 	glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T,     (desc.wrapMode == Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 
 	return sampler;
+}
+
+
+TextureHandle Renderer::createTexture(const TextureDesc &desc) {
+	assert(desc.width_   > 0);
+	assert(desc.height_  > 0);
+	assert(desc.numMips_ > 0);
+
+	GLuint texture = 0;
+	glCreateTextures(GL_TEXTURE_2D, 1, &texture);
+	glTextureStorage2D(texture, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
+	glTextureParameteri(texture, GL_TEXTURE_MAX_LEVEL, desc.numMips_ - 1);
+	unsigned int w = desc.width_, h = desc.height_;
+
+	for (unsigned int i = 0; i < desc.numMips_; i++) {
+		assert(desc.mipData_[i] != nullptr);
+		glTextureSubImage2D(texture, i, 0, 0, w, h, glTexBaseFormat(desc.format_), GL_UNSIGNED_BYTE, desc.mipData_[i]);
+
+		w = std::max(w / 2, 1u);
+		h = std::max(h / 2, 1u);
+	}
+
+	return texture;
 }
 
 

@@ -485,10 +485,10 @@ void SMAADemo::initRender() {
 
 	const bool flipSMAATextures = true;
 
-	glCreateTextures(GL_TEXTURE_2D, 1, &areaTex);
-	glBindTextureUnit(TEXUNIT_AREATEX, areaTex);
-	glTextureStorage2D(areaTex, 1, GL_RG8, AREATEX_WIDTH, AREATEX_HEIGHT);
-	glTextureParameteri(areaTex, GL_TEXTURE_MAX_LEVEL, 0);
+	TextureDesc texDesc;
+	texDesc.width(AREATEX_WIDTH)
+	       .height(AREATEX_HEIGHT)
+	       .format(RG8);
 
 	if (flipSMAATextures) {
 		std::vector<unsigned char> tempBuffer(AREATEX_SIZE);
@@ -497,16 +497,18 @@ void SMAADemo::initRender() {
 			//unsigned int srcY = y;
 			memcpy(&tempBuffer[y * AREATEX_PITCH], areaTexBytes + srcY * AREATEX_PITCH, AREATEX_PITCH);
 		}
-		glTextureSubImage2D(areaTex, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, &tempBuffer[0]);
+		texDesc.mipLevelData(0, &tempBuffer[0]);
+		areaTex = renderer->createTexture(texDesc);
 	} else {
-		glTextureSubImage2D(areaTex, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, areaTexBytes);
+		texDesc.mipLevelData(0, areaTexBytes);
+		areaTex = renderer->createTexture(texDesc);
 	}
+	glBindTextureUnit(TEXUNIT_AREATEX, areaTex);
 	glBindSampler(TEXUNIT_AREATEX, linearSampler);
 
-	glCreateTextures(GL_TEXTURE_2D, 1, &searchTex);
-	glBindTextureUnit(TEXUNIT_SEARCHTEX, searchTex);
-	glTextureStorage2D(searchTex, 1, GL_R8, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT);
-	glTextureParameteri(searchTex, GL_TEXTURE_MAX_LEVEL, 0);
+	texDesc.width(SEARCHTEX_WIDTH)
+	       .height(SEARCHTEX_HEIGHT)
+	       .format(R8);
 	if (flipSMAATextures) {
 		std::vector<unsigned char> tempBuffer(SEARCHTEX_SIZE);
 		for (unsigned int y = 0; y < SEARCHTEX_HEIGHT; y++) {
@@ -514,11 +516,14 @@ void SMAADemo::initRender() {
 			//unsigned int srcY = y;
 			memcpy(&tempBuffer[y * SEARCHTEX_PITCH], searchTexBytes + srcY * SEARCHTEX_PITCH, SEARCHTEX_PITCH);
 		}
-		glTextureSubImage2D(searchTex, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, &tempBuffer[0]);
+		texDesc.mipLevelData(0, &tempBuffer[0]);
+		searchTex = renderer->createTexture(texDesc);
 	} else {
-		glTextureSubImage2D(searchTex, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, searchTexBytes);
+		texDesc.mipLevelData(0, searchTexBytes);
+		searchTex = renderer->createTexture(texDesc);
 	}
 
+	glBindTextureUnit(TEXUNIT_SEARCHTEX, searchTex);
 	glBindSampler(TEXUNIT_SEARCHTEX, linearSampler);
 
 	builtinFBO = std::make_unique<Framebuffer>(0);
@@ -533,10 +538,12 @@ void SMAADemo::initRender() {
 		unsigned char *imageData = stbi_load(filename, &width, &height, NULL, 3);
 		printf(" %p  %dx%d\n", imageData, width, height);
 
-		glCreateTextures(GL_TEXTURE_2D, 1, &img.tex);
-		glTextureStorage2D(img.tex, 1, GL_RGB8, width, height);
-		glTextureParameteri(img.tex, GL_TEXTURE_MAX_LEVEL, 0);
-		glTextureSubImage2D(img.tex, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, imageData);
+		texDesc.width(width)
+		       .height(height)
+		       .format(RGB8);
+
+		texDesc.mipLevelData(0, imageData);
+		img.tex = renderer->createTexture(texDesc);
 
 		stbi_image_free(imageData);
 	}
