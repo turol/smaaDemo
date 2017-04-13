@@ -315,8 +315,8 @@ SMAADemo::~SMAADemo() {
 	renderer->deleteSampler(linearSampler);
 	renderer->deleteSampler(nearestSampler);
 
-	glDeleteTextures(1, &areaTex);
-	glDeleteTextures(1, &searchTex);
+	renderer->deleteTexture(areaTex);
+	renderer->deleteTexture(searchTex);
 }
 
 

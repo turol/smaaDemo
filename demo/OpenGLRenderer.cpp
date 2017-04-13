@@ -482,6 +482,12 @@ void Renderer::deleteSampler(SamplerHandle handle) {
 }
 
 
+void Renderer::deleteTexture(TextureHandle handle) {
+	glDeleteTextures(1, &handle);
+}
+
+
+
 void Renderer::recreateSwapchain(const SwapchainDesc &desc) {
 	if (swapchainDesc.fullscreen != desc.fullscreen) {
 		if (desc.fullscreen) {

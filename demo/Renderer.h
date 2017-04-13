@@ -182,6 +182,7 @@ public:
 
 	void deleteBuffer(BufferHandle handle);
 	void deleteSampler(SamplerHandle handle);
+	void deleteTexture(TextureHandle handle);
 
 
 	void recreateSwapchain(const SwapchainDesc &desc);
