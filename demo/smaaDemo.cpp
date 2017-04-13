@@ -312,8 +312,8 @@ SMAADemo::~SMAADemo() {
 	renderer->deleteBuffer(instanceSSBO);
 	renderer->deleteBuffer(globalsUBO);
 
-	glDeleteSamplers(1, &linearSampler);
-	glDeleteSamplers(1, &nearestSampler);
+	renderer->deleteSampler(linearSampler);
+	renderer->deleteSampler(nearestSampler);
 
 	glDeleteTextures(1, &areaTex);
 	glDeleteTextures(1, &searchTex);

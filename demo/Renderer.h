@@ -181,6 +181,7 @@ public:
 	// descriptor set
 
 	void deleteBuffer(BufferHandle handle);
+	void deleteSampler(SamplerHandle handle);
 
 
 	void recreateSwapchain(const SwapchainDesc &desc);

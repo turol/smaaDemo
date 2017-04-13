@@ -477,6 +477,11 @@ void Renderer::deleteBuffer(BufferHandle handle) {
 }
 
 
+void Renderer::deleteSampler(SamplerHandle handle) {
+	glDeleteSamplers(1, &handle);
+}
+
+
 void Renderer::recreateSwapchain(const SwapchainDesc &desc) {
 	if (swapchainDesc.fullscreen != desc.fullscreen) {
 		if (desc.fullscreen) {
