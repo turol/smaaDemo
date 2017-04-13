@@ -180,6 +180,7 @@ public:
 	// image ?
 	// descriptor set
 
+	void deleteBuffer(BufferHandle handle);
 
 
 	void recreateSwapchain(const SwapchainDesc &desc);

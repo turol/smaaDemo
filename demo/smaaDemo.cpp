@@ -307,10 +307,10 @@ SMAADemo::SMAADemo()
 
 
 SMAADemo::~SMAADemo() {
-	glDeleteBuffers(1, &cubeVBO);
-	glDeleteBuffers(1, &cubeIBO);
-	glDeleteBuffers(1, &instanceSSBO);
-	glDeleteBuffers(1, &globalsUBO);
+	renderer->deleteBuffer(cubeVBO);
+	renderer->deleteBuffer(cubeIBO);
+	renderer->deleteBuffer(instanceSSBO);
+	renderer->deleteBuffer(globalsUBO);
 
 	glDeleteSamplers(1, &linearSampler);
 	glDeleteSamplers(1, &nearestSampler);
