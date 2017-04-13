@@ -5,11 +5,14 @@
 
 layout(location = ATTR_POS) in vec3 position;
 
+
 readonly restrict layout(std430, binding = 0) buffer cubeData {
     Cube cubes[];
 };
 
-out vec3 colorFrag;
+
+flat out int instance;
+
 
 void main(void)
 {
@@ -27,9 +30,5 @@ void main(void)
     vec3 rotatedPos = v + uv + uuv;
 
     gl_Position = viewProj * vec4(rotatedPos + cube.position, 1.0);
-    vec3 color = vec3(float((cube.color & 0x000000FF) >>  0) / 255.0
-                    , float((cube.color & 0x0000FF00) >>  8) / 255.0
-                    , float((cube.color & 0x00FF0000) >> 16) / 255.0);
-
-    colorFrag = color;
+    instance = gl_InstanceID;
 }
