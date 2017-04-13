@@ -503,8 +503,6 @@ void SMAADemo::initRender() {
 		texDesc.mipLevelData(0, areaTexBytes);
 		areaTex = renderer->createTexture(texDesc);
 	}
-	glBindTextureUnit(TEXUNIT_AREATEX, areaTex);
-	glBindSampler(TEXUNIT_AREATEX, linearSampler);
 
 	texDesc.width(SEARCHTEX_WIDTH)
 	       .height(SEARCHTEX_HEIGHT)
@@ -522,9 +520,6 @@ void SMAADemo::initRender() {
 		texDesc.mipLevelData(0, searchTexBytes);
 		searchTex = renderer->createTexture(texDesc);
 	}
-
-	glBindTextureUnit(TEXUNIT_SEARCHTEX, searchTex);
-	glBindSampler(TEXUNIT_SEARCHTEX, linearSampler);
 
 	builtinFBO = std::make_unique<Framebuffer>(0);
 	builtinFBO->width = windowWidth;
@@ -962,6 +957,11 @@ void SMAADemo::render() {
 
 		case AAMethod::SMAA:
 			smaaEdgeShader->bind();
+
+			glBindTextureUnit(TEXUNIT_AREATEX, areaTex);
+			glBindSampler(TEXUNIT_AREATEX, linearSampler);
+			glBindTextureUnit(TEXUNIT_SEARCHTEX, searchTex);
+			glBindSampler(TEXUNIT_SEARCHTEX, linearSampler);
 
 			if (debugMode == 1) {
 				// detect edges only
