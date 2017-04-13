@@ -480,11 +480,8 @@ void SMAADemo::initRender() {
 	linearSampler  = renderer->createSampler(SamplerDesc().minFilter(Linear). magFilter(Linear));
 	nearestSampler = renderer->createSampler(SamplerDesc().minFilter(Nearest).magFilter(Nearest));
 
-	glCreateBuffers(1, &cubeVBO);
-	glNamedBufferData(cubeVBO, sizeof(vertices), &vertices[0], GL_STATIC_DRAW);
-
-	glCreateBuffers(1, &cubeIBO);
-	glNamedBufferData(cubeIBO, sizeof(indices), &indices[0], GL_STATIC_DRAW);
+	cubeVBO = renderer->createBuffer(sizeof(vertices), &vertices[0]);
+	cubeIBO = renderer->createBuffer(sizeof(indices), &indices[0]);
 
 	glCreateBuffers(1, &globalsUBO);
 	glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), NULL, GL_STREAM_DRAW);

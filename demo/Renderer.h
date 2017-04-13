@@ -205,8 +205,9 @@ public:
 	RenderTargetHandle  createFramebuffer(const RenderTargetDesc &desc);
 	FramebufferHandle   createFramebuffer(const FramebufferDesc &desc);
 	PipelineHandle      createPipeline(const PipelineDesc &desc);
-	BufferHandle        createBuffer(uint32_t size, const char *contents);
-	BufferHandle        createEphemeralBuffer(uint32_t size, const char *contents);
+	// TODO: add buffer usage flags
+	BufferHandle        createBuffer(uint32_t size, const void *contents);
+	BufferHandle        createEphemeralBuffer(uint32_t size, const void *contents);
 	// texture
 	// image ?
 	// descriptor set

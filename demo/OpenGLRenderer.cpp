@@ -472,6 +472,18 @@ Renderer::~Renderer() {
 }
 
 
+BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
+	assert(size != 0);
+	assert(contents != nullptr);
+
+	GLuint buffer = 0;
+	glCreateBuffers(1, &buffer);
+	glNamedBufferData(buffer, size, contents, GL_STATIC_DRAW);
+
+	return buffer;
+}
+
+
 SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
 	GLuint sampler = 0;
 	glCreateSamplers(1, &sampler);
