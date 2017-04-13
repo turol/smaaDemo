@@ -8,11 +8,12 @@
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 
+#include <SDL.h>
+
 
 #ifdef RENDERER_OPENGL
 
 #include <GL/glew.h>
-#include <SDL.h>
 
 
 void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /* length */, const GLchar *message, const void * /* userParam */);
