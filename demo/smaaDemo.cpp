@@ -521,10 +521,6 @@ void SMAADemo::initRender() {
 		searchTex = renderer->createTexture(texDesc);
 	}
 
-	builtinFBO = std::make_unique<Framebuffer>(0);
-	builtinFBO->width = windowWidth;
-	builtinFBO->height = windowHeight;
-
 	createFramebuffers();
 
 	for (auto &img : images) {
@@ -549,6 +545,10 @@ void SMAADemo::initRender() {
 
 
 void SMAADemo::createFramebuffers()	{
+	builtinFBO = std::make_unique<Framebuffer>(0);
+	builtinFBO->width = windowWidth;
+	builtinFBO->height = windowHeight;
+
 	renderFBO.reset();
 	GLuint fbo = 0;
 	glGenFramebuffers(1, &fbo);
