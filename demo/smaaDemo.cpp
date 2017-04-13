@@ -486,8 +486,6 @@ void SMAADemo::initRender() {
 	glCreateBuffers(1, &cubeIBO);
 	glNamedBufferData(cubeIBO, sizeof(indices), &indices[0], GL_STATIC_DRAW);
 
-	glCreateBuffers(1, &instanceSSBO);
-
 	glCreateBuffers(1, &globalsUBO);
 	glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), NULL, GL_STREAM_DRAW);
 
@@ -658,6 +656,9 @@ void SMAADemo::createCubes() {
 	}
 
 	// reallocate instance data buffer
+	if (!instanceSSBO) {
+		glCreateBuffers(1, &instanceSSBO);
+	}
 	glNamedBufferData(instanceSSBO, sizeof(ShaderDefines::Cube) * numCubes, NULL, GL_STREAM_DRAW);
 
 	colorCubes();
