@@ -57,6 +57,7 @@ typedef uint32_t PipelineHandle;
 typedef uint32_t RenderPassHandle;
 typedef uint32_t RenderTargetHandle;
 typedef uint32_t SamplerHandle;
+typedef uint32_t TextureHandle;
 typedef uint32_t UniformBufferHandle;
 
 

@@ -177,14 +177,13 @@ class SMAADemo {
 	std::unique_ptr<Shader> cubeShader;
 	std::unique_ptr<Shader> imageShader;
 
-	// TODO: create helper classes for these
-	GLuint cubeVBO;
-	GLuint cubeIBO;
-	GLuint instanceSSBO;
-	GLuint globalsUBO;
+	BufferHandle cubeVBO;
+	BufferHandle cubeIBO;
+	BufferHandle instanceSSBO;
+	BufferHandle globalsUBO;
 
-	GLuint linearSampler;
-	GLuint nearestSampler;
+	SamplerHandle linearSampler;
+	SamplerHandle nearestSampler;
 
 	unsigned int cubePower;
 
@@ -199,8 +198,8 @@ class SMAADemo {
 	std::unique_ptr<Shader> smaaEdgeShader;
 	std::unique_ptr<Shader> smaaBlendWeightShader;
 	std::unique_ptr<Shader> smaaNeighborShader;
-	GLuint areaTex;
-	GLuint searchTex;
+	TextureHandle areaTex;
+	TextureHandle searchTex;
 
 	bool rotateCamera;
 	float cameraRotation;
@@ -221,7 +220,7 @@ class SMAADemo {
 
 	struct Image {
 		std::string filename;
-		GLuint tex;
+		TextureHandle tex;
 	};
 
 	std::vector<Image> images;
