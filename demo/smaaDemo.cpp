@@ -483,9 +483,6 @@ void SMAADemo::initRender() {
 	cubeVBO = renderer->createBuffer(sizeof(vertices), &vertices[0]);
 	cubeIBO = renderer->createBuffer(sizeof(indices), &indices[0]);
 
-	glCreateBuffers(1, &globalsUBO);
-	glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), NULL, GL_STREAM_DRAW);
-
 	const bool flipSMAATextures = true;
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &areaTex);
@@ -897,6 +894,11 @@ void SMAADemo::render() {
 
 	ShaderDefines::Globals globals;
 	globals.screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
+
+	if (globalsUBO == 0) {
+		glCreateBuffers(1, &globalsUBO);
+		glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), NULL, GL_STREAM_DRAW);
+	}
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalsUBO);
 
 	if (activeScene == 0) {
@@ -920,12 +922,12 @@ void SMAADemo::render() {
 		glEnableVertexAttribArray(ATTR_POS);
 
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, instanceSSBO);
-		glNamedBufferData(instanceSSBO, sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0], GL_STREAM_DRAW);
+		glNamedBufferSubData(instanceSSBO, 0, sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0]);
 
 		glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
 		glDisableVertexAttribArray(ATTR_POS);
 	} else {
-		glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), &globals, GL_STREAM_DRAW);
+		glNamedBufferSubData(globalsUBO, 0, sizeof(ShaderDefines::Globals), &globals);
 
 		glDisable(GL_DEPTH_TEST);
 		glDepthMask(GL_FALSE);
