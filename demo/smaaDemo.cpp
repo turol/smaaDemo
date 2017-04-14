@@ -561,13 +561,11 @@ void SMAADemo::createFramebuffers()	{
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &renderFBO->colorTex);
-	glBindTextureUnit(TEXUNIT_COLOR, renderFBO->colorTex);
 	glTextureStorage2D(renderFBO->colorTex, 1, GL_RGBA8, windowWidth, windowHeight);
 	glTextureParameteri(renderFBO->colorTex, GL_TEXTURE_MAX_LEVEL, 0);
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, renderFBO->colorTex, 0);
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &renderFBO->depthTex);
-	glBindTextureUnit(TEXUNIT_TEMP, renderFBO->depthTex);
 	glTextureStorage2D(renderFBO->depthTex, 1, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
 	glTextureParameteri(renderFBO->depthTex, GL_TEXTURE_MAX_LEVEL, 0);
 	glNamedFramebufferTexture(fbo, GL_DEPTH_ATTACHMENT, renderFBO->depthTex, 0);
@@ -581,10 +579,8 @@ void SMAADemo::createFramebuffers()	{
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &edgesFBO->colorTex);
-	glBindTextureUnit(TEXUNIT_EDGES, edgesFBO->colorTex);
 	glTextureStorage2D(edgesFBO->colorTex, 1, GL_RGBA8, windowWidth, windowHeight);
 	glTextureParameteri(edgesFBO->colorTex, GL_TEXTURE_MAX_LEVEL, 0);
-	glBindSampler(TEXUNIT_EDGES, linearSampler);
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, edgesFBO->colorTex, 0);
 
 	// SMAA blending weights texture and FBO
@@ -596,10 +592,8 @@ void SMAADemo::createFramebuffers()	{
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &blendFBO->colorTex);
-	glBindTextureUnit(TEXUNIT_BLEND, blendFBO->colorTex);
 	glTextureStorage2D(blendFBO->colorTex, 1, GL_RGBA8, windowWidth, windowHeight);
 	glTextureParameteri(blendFBO->colorTex, GL_TEXTURE_MAX_LEVEL, 0);
-	glBindSampler(TEXUNIT_BLEND, linearSampler);
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, blendFBO->colorTex, 0);
 }
 
@@ -941,6 +935,8 @@ void SMAADemo::render() {
 		glDisable(GL_DEPTH_TEST);
 		glDepthMask(GL_FALSE);
 
+		glBindTextureUnit(TEXUNIT_COLOR, renderFBO->colorTex);
+
 		switch (aaMethod) {
 		case AAMethod::FXAA:
 			renderer->bindFramebuffer(builtinFBO);
@@ -968,6 +964,9 @@ void SMAADemo::render() {
 				glDrawArrays(GL_TRIANGLES, 0, 3);
 			}
 
+			glBindTextureUnit(TEXUNIT_EDGES, edgesFBO->colorTex);
+			glBindSampler(TEXUNIT_EDGES, linearSampler);
+
 			smaaBlendWeightShader->bind();
 			if (debugMode == 2) {
 				// show blending weights
@@ -982,6 +981,9 @@ void SMAADemo::render() {
 			}
 
 			// full effect
+			glBindTextureUnit(TEXUNIT_BLEND, blendFBO->colorTex);
+			glBindSampler(TEXUNIT_BLEND, linearSampler);
+
 			smaaNeighborShader->bind();
 			renderer->bindFramebuffer(builtinFBO);
 			glClear(GL_COLOR_BUFFER_BIT);
