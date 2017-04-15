@@ -81,19 +81,61 @@ struct SwapchainDesc {
 };
 
 
+#define MAX_TEXTURE_MIPLEVELS 14
+#define MAX_TEXTURE_SIZE      (1 << (MAX_TEXTURE_MIPLEVELS - 1))
+
+
 enum Format {
 	  Invalid
 	, R8
 	, RG8
 	, RGB8
 	, RGBA8
+	, Depth16
 };
 
 
 struct RenderTargetDesc {
-	unsigned int width, height;
-	unsigned int multisample;
-	Format format;
+	RenderTargetDesc()
+	: width_(0)
+	, height_(0)
+	, format_(Invalid)
+	{
+	}
+
+	~RenderTargetDesc() { }
+
+	RenderTargetDesc(const RenderTargetDesc &) = default;
+	RenderTargetDesc(RenderTargetDesc &&)      = default;
+
+	RenderTargetDesc &operator=(const RenderTargetDesc &) = default;
+	RenderTargetDesc &operator=(RenderTargetDesc &&)      = default;
+
+
+	RenderTargetDesc &width(unsigned int w) {
+		assert(w < MAX_TEXTURE_SIZE);
+		width_ = w;
+		return *this;
+	}
+
+	RenderTargetDesc &height(unsigned int h) {
+		assert(h < MAX_TEXTURE_SIZE);
+		height_ = h;
+		return *this;
+	}
+
+	RenderTargetDesc &format(Format f) {
+		format_ = f;
+		return *this;
+	}
+
+private:
+
+	unsigned int width_, height_;
+	// TODO: unsigned int multisample;
+	Format format_;
+
+	friend class Renderer;
 };
 
 
@@ -101,11 +143,6 @@ struct FramebufferDesc {
 	RenderTargetHandle depthStencil;
 	RenderTargetHandle colors[MAX_COLOR_RENDERTARGETS];
 };
-
-
-#define MAX_TEXTURE_MIPLEVELS 14
-#define MAX_TEXTURE_SIZE      (1 << (MAX_TEXTURE_MIPLEVELS - 1))
-
 
 
 struct TextureDesc {
@@ -267,7 +304,7 @@ public:
 
 
 	// render target
-	RenderTargetHandle  createFramebuffer(const RenderTargetDesc &desc);
+	RenderTargetHandle  createRenderTarget(const RenderTargetDesc &desc);
 	FramebufferHandle   createFramebuffer(const FramebufferDesc &desc);
 	PipelineHandle      createPipeline(const PipelineDesc &desc);
 	// TODO: add buffer usage flags

@@ -560,14 +560,14 @@ void SMAADemo::createFramebuffers()	{
 	renderFBO->height = windowHeight;
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-	glCreateTextures(GL_TEXTURE_2D, 1, &renderFBO->colorTex);
-	glTextureStorage2D(renderFBO->colorTex, 1, GL_RGBA8, windowWidth, windowHeight);
-	glTextureParameteri(renderFBO->colorTex, GL_TEXTURE_MAX_LEVEL, 0);
+	RenderTargetDesc rtDesc;
+
+	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8);
+	renderFBO->colorTex = renderer->createRenderTarget(rtDesc);
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, renderFBO->colorTex, 0);
 
-	glCreateTextures(GL_TEXTURE_2D, 1, &renderFBO->depthTex);
-	glTextureStorage2D(renderFBO->depthTex, 1, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
-	glTextureParameteri(renderFBO->depthTex, GL_TEXTURE_MAX_LEVEL, 0);
+	rtDesc.format(Depth16);
+	renderFBO->depthTex = renderer->createRenderTarget(rtDesc);
 	glNamedFramebufferTexture(fbo, GL_DEPTH_ATTACHMENT, renderFBO->depthTex, 0);
 
 	// SMAA edges texture and FBO
@@ -578,9 +578,8 @@ void SMAADemo::createFramebuffers()	{
 	edgesFBO->height = windowHeight;
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-	glCreateTextures(GL_TEXTURE_2D, 1, &edgesFBO->colorTex);
-	glTextureStorage2D(edgesFBO->colorTex, 1, GL_RGBA8, windowWidth, windowHeight);
-	glTextureParameteri(edgesFBO->colorTex, GL_TEXTURE_MAX_LEVEL, 0);
+	rtDesc.format(RGBA8);
+	edgesFBO->colorTex = renderer->createRenderTarget(rtDesc);
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, edgesFBO->colorTex, 0);
 
 	// SMAA blending weights texture and FBO
@@ -591,9 +590,7 @@ void SMAADemo::createFramebuffers()	{
 	blendFBO->height = windowHeight;
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-	glCreateTextures(GL_TEXTURE_2D, 1, &blendFBO->colorTex);
-	glTextureStorage2D(blendFBO->colorTex, 1, GL_RGBA8, windowWidth, windowHeight);
-	glTextureParameteri(blendFBO->colorTex, GL_TEXTURE_MAX_LEVEL, 0);
+	blendFBO->colorTex = renderer->createRenderTarget(rtDesc);
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, blendFBO->colorTex, 0);
 }
 

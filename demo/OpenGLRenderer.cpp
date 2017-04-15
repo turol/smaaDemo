@@ -162,6 +162,9 @@ static GLenum glTexFormat(Format format) {
 	case RGBA8:
 		return GL_RGBA8;
 
+	case Depth16:
+		return GL_DEPTH_COMPONENT16;
+
 	}
 
 	__builtin_unreachable();
@@ -184,6 +187,11 @@ static GLenum glTexBaseFormat(Format format) {
 
 	case RGBA8:
 		return GL_RGBA;
+
+	case Depth16:
+		// not supposed to use this format here
+		assert(false);
+		return GL_NONE;
 
 	}
 
@@ -522,6 +530,17 @@ BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
 	glNamedBufferData(buffer, size, contents, GL_STATIC_DRAW);
 
 	return buffer;
+}
+
+
+RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
+	GLuint rt = 0;
+
+	glCreateTextures(GL_TEXTURE_2D, 1, &rt);
+	glTextureStorage2D(rt, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
+	glTextureParameteri(rt, GL_TEXTURE_MAX_LEVEL, 0);
+
+	return rt;
 }
 
 
