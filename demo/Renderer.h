@@ -140,8 +140,37 @@ private:
 
 
 struct FramebufferDesc {
-	RenderTargetHandle depthStencil;
-	RenderTargetHandle colors[MAX_COLOR_RENDERTARGETS];
+	FramebufferDesc()
+	: depthStencil_(0)
+	{
+		std::fill(colors_.begin(), colors_.end(), 0);
+	}
+
+	~FramebufferDesc() { }
+
+	FramebufferDesc(const FramebufferDesc &) = default;
+	FramebufferDesc(FramebufferDesc &&)      = default;
+
+	FramebufferDesc &operator=(const FramebufferDesc &) = default;
+	FramebufferDesc &operator=(FramebufferDesc &&)      = default;
+
+	FramebufferDesc &depthStencil(RenderTargetHandle ds) {
+		depthStencil_ = ds;
+		return *this;
+	}
+
+	FramebufferDesc &color(unsigned int index, RenderTargetHandle c) {
+		assert(index < MAX_COLOR_RENDERTARGETS);
+		colors_[index] = c;
+		return *this;
+	}
+
+private:
+
+	RenderTargetHandle depthStencil_;
+	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS> colors_;
+
+	friend class Renderer;
 };
 
 
@@ -287,6 +316,8 @@ class Renderer {
 
 #endif  // RENDERER_OPENGL
 
+	std::unordered_map<RenderTargetHandle, RenderTargetDesc> renderTargets;
+
 
 	explicit Renderer(const RendererDesc &desc);
 	Renderer(const Renderer &)            = delete;
@@ -305,7 +336,8 @@ public:
 
 	// render target
 	RenderTargetHandle  createRenderTarget(const RenderTargetDesc &desc);
-	FramebufferHandle   createFramebuffer(const FramebufferDesc &desc);
+	// FramebufferHandle   createFramebuffer(const FramebufferDesc &desc);
+	std::unique_ptr<Framebuffer> createFramebuffer(const FramebufferDesc &desc);
 	PipelineHandle      createPipeline(const PipelineDesc &desc);
 	// TODO: add buffer usage flags
 	BufferHandle        createBuffer(uint32_t size, const void *contents);

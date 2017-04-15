@@ -553,45 +553,28 @@ void SMAADemo::createFramebuffers()	{
 	edgesFBO.reset();
 	blendFBO.reset();
 
-	GLuint fbo = 0;
-	glGenFramebuffers(1, &fbo);
-	renderFBO = std::make_unique<Framebuffer>(fbo);
-	renderFBO->width = windowWidth;
-	renderFBO->height = windowHeight;
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
 	RenderTargetDesc rtDesc;
 
 	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8);
-	renderFBO->colorTex = renderer->createRenderTarget(rtDesc);
-	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, renderFBO->colorTex, 0);
+	RenderTargetHandle c = renderer->createRenderTarget(rtDesc);
 
 	rtDesc.format(Depth16);
-	renderFBO->depthTex = renderer->createRenderTarget(rtDesc);
-	glNamedFramebufferTexture(fbo, GL_DEPTH_ATTACHMENT, renderFBO->depthTex, 0);
+	RenderTargetHandle ds = renderer->createRenderTarget(rtDesc);
+
+	FramebufferDesc fbDesc;
+	fbDesc.depthStencil(ds).color(0, c);
+	renderFBO = renderer->createFramebuffer(fbDesc);
 
 	// SMAA edges texture and FBO
-	fbo = 0;
-	glGenFramebuffers(1, &fbo);
-	edgesFBO = std::make_unique<Framebuffer>(fbo);
-	edgesFBO->width = windowWidth;
-	edgesFBO->height = windowHeight;
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-	rtDesc.format(RGBA8);
-	edgesFBO->colorTex = renderer->createRenderTarget(rtDesc);
-	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, edgesFBO->colorTex, 0);
+	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8);
+	c = renderer->createRenderTarget(rtDesc);
+	fbDesc.depthStencil(0).color(0, c);
+	edgesFBO = renderer->createFramebuffer(fbDesc);
 
 	// SMAA blending weights texture and FBO
-	fbo = 0;
-	glGenFramebuffers(1, &fbo);
-	blendFBO = std::make_unique<Framebuffer>(fbo);
-	blendFBO->width = windowWidth;
-	blendFBO->height = windowHeight;
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-	blendFBO->colorTex = renderer->createRenderTarget(rtDesc);
-	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, blendFBO->colorTex, 0);
+	c = renderer->createRenderTarget(rtDesc);
+	fbDesc.depthStencil(0).color(0, c);
+	blendFBO = renderer->createFramebuffer(fbDesc);
 }
 
 

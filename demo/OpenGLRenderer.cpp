@@ -533,12 +533,37 @@ BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
 }
 
 
+std::unique_ptr<Framebuffer> Renderer::createFramebuffer(const FramebufferDesc &desc) {
+	GLuint fbo = 0;
+
+	glCreateFramebuffers(1, &fbo);
+	auto fb = std::make_unique<Framebuffer>(fbo);
+
+	fb->colorTex = desc.colors_[0];
+	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, fb->colorTex, 0);
+	assert(desc.colors_[1] == 0);
+
+	if (desc.depthStencil_ != 0) {
+		fb->depthTex = desc.depthStencil_;
+		glNamedFramebufferTexture(fbo, GL_DEPTH_ATTACHMENT, fb->depthTex, 0);
+	}
+
+	const auto &colorDesc = renderTargets[desc.colors_[0]];
+	fb->width  = colorDesc.width_;
+	fb->height = colorDesc.height_;
+
+	return fb;
+}
+
+
 RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	GLuint rt = 0;
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &rt);
 	glTextureStorage2D(rt, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
 	glTextureParameteri(rt, GL_TEXTURE_MAX_LEVEL, 0);
+
+	renderTargets.emplace(rt, desc);
 
 	return rt;
 }
