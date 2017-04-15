@@ -1,4 +1,4 @@
-.PHONY: default all bindirs clean distclean
+.PHONY: default all bindirs clean cppcheck distclean
 
 
 .SUFFIXES:
@@ -183,6 +183,13 @@ compile_commands.json: $(ALLSRC)
 	@echo '[' > $@
 	@$(TOPDIR)/compile_commands.sh $(filter %.cpp,$(ALLSRC)) >> $@
 	@echo ']' >> $@
+
+
+JOBS?=1
+
+
+cppcheck:
+	cppcheck -j $(JOBS) $(foreach directory,$(INCLUDEDIRS),-I $(directory)) -i $(TOPDIR)/foreign --enable=all -D__x86_64 -DRENDERER_OPENGL -DGLEW_STATIC -U__CYGWIN__ -U__MINGW32__ -UANDROID -U__ANDROID__ -U_MSC_VER -U_WIN32 -U_WIN64 -UGLEW_MX -U__BORLANDC__ -U__APPLE__ -U__APPLE_CC__ -UTARGET_OS_IPHONE -UGLM_FORCE_AVX -UGLM_FORCE_AVX2 -UGLM_FORCE_COMPILER_UNKNOWN -UGLM_FORCE_CXX98 -UGLM_FORCE_CXX03 -UGLM_FORCE_CXX11 -UGLM_FORCE_CXX14 -UGLM_EXTERNAL_TEMPLATE -UGLM_FORCE_EXPLICIT_CTOR -UGLM_FORCE_INLINE $(TOPDIR) 2> cppcheck.log
 
 
 -include $(foreach FILE,$(ALLSRC),$(patsubst %.c,%.d,$(patsubst %.cpp,%.d,$(FILE))))

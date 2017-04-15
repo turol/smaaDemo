@@ -29,7 +29,7 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 
 #else
 
-#error "No renderer specififued"
+#error "No renderer specified"
 
 
 #endif  // RENDERER
