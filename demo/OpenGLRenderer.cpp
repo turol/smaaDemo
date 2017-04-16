@@ -262,13 +262,6 @@ Shader::~Shader() {
 }
 
 
-void Shader::bind() {
-	assert(program != 0);
-
-	glUseProgram(program);
-}
-
-
 Framebuffer::~Framebuffer() {
 	if (colorTex != 0) {
 		glDeleteTextures(1, &colorTex);
@@ -669,6 +662,14 @@ void Renderer::bindFramebuffer(const std::unique_ptr<Framebuffer> &fbo) {
 
 void Renderer::bindFramebuffer(FramebufferHandle fbo) {
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+}
+
+
+void Renderer::bindShader(const std::unique_ptr<Shader> &shader) {
+	assert(shader);
+	assert(shader->program != 0);
+
+	glUseProgram(shader->program);
 }
 
 

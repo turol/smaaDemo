@@ -364,6 +364,7 @@ public:
 	void bindFramebuffer(const std::unique_ptr<Framebuffer> &fbo);
 	void bindFramebuffer(FramebufferHandle);
 	void bindPipeline(PipelineHandle);
+	void bindShader(const std::unique_ptr<Shader> &shader);
 	void bindIndexBuffer();
 	void bindVertexBuffer();
 	// descriptor set
@@ -485,7 +486,7 @@ public:
 
 	~Shader();
 
-	void bind();
+	friend class Renderer;
 };
 
 

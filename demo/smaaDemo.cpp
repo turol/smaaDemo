@@ -908,7 +908,7 @@ void SMAADemo::render() {
 		globals.viewProj = proj * view;
 		glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), &globals, GL_STREAM_DRAW);
 
-		cubeShader->bind();
+		renderer->bindShader(cubeShader);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO);
 		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
@@ -928,7 +928,7 @@ void SMAADemo::render() {
 
 		assert(activeScene - 1 < images.size());
 		const auto &image = images[activeScene - 1];
-		imageShader->bind();
+		renderer->bindShader(imageShader);
 		glBindTextureUnit(TEXUNIT_COLOR, image.tex);
 		glBindSampler(TEXUNIT_COLOR, nearestSampler);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -945,12 +945,12 @@ void SMAADemo::render() {
 		switch (aaMethod) {
 		case AAMethod::FXAA:
 			renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
-			fxaaShader->bind();
+			renderer->bindShader(fxaaShader);
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 			break;
 
 		case AAMethod::SMAA:
-			smaaEdgeShader->bind();
+			renderer->bindShader(smaaEdgeShader);
 
 			glBindTextureUnit(TEXUNIT_AREATEX, areaTex);
 			glBindSampler(TEXUNIT_AREATEX, linearSampler);
@@ -972,7 +972,7 @@ void SMAADemo::render() {
 			glBindTextureUnit(TEXUNIT_EDGES, fbos[Framebuffers::Edges]->colorTex);
 			glBindSampler(TEXUNIT_EDGES, linearSampler);
 
-			smaaBlendWeightShader->bind();
+			renderer->bindShader(smaaBlendWeightShader);
 			if (debugMode == 2) {
 				// show blending weights
 				renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
@@ -989,7 +989,7 @@ void SMAADemo::render() {
 			glBindTextureUnit(TEXUNIT_BLEND, fbos[Framebuffers::BlendWeights]->colorTex);
 			glBindSampler(TEXUNIT_BLEND, linearSampler);
 
-			smaaNeighborShader->bind();
+			renderer->bindShader(smaaNeighborShader);
 			renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
 			glClear(GL_COLOR_BUFFER_BIT);
 			glDrawArrays(GL_TRIANGLES, 0, 3);
