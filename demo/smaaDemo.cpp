@@ -214,10 +214,7 @@ class SMAADemo {
 
 	unsigned int cubePower;
 
-	std::unique_ptr<Framebuffer> builtinFBO;
-	std::unique_ptr<Framebuffer> renderFBO;
-	std::unique_ptr<Framebuffer> edgesFBO;
-	std::unique_ptr<Framebuffer> blendFBO;
+	std::array<std::unique_ptr<Framebuffer>, RenderTargets::Count> fbos;
 
 	bool antialiasing;
 	AAMethod::AAMethod aaMethod;
@@ -572,13 +569,13 @@ void SMAADemo::initRender() {
 
 
 void SMAADemo::createFramebuffers()	{
-	builtinFBO = std::make_unique<Framebuffer>(0);
-	builtinFBO->width = windowWidth;
-	builtinFBO->height = windowHeight;
+	fbos[Framebuffers::FinalRender] = std::make_unique<Framebuffer>(0);
+	fbos[Framebuffers::FinalRender]->width = windowWidth;
+	fbos[Framebuffers::FinalRender]->height = windowHeight;
 
-	renderFBO.reset();
-	edgesFBO.reset();
-	blendFBO.reset();
+	fbos[Framebuffers::MainRender].reset();
+	fbos[Framebuffers::Edges].reset();
+	fbos[Framebuffers::BlendWeights].reset();
 
 	RenderTargetDesc rtDesc;
 	std::array<RenderTargetHandle, RenderTargets::Count> rts;
@@ -591,18 +588,18 @@ void SMAADemo::createFramebuffers()	{
 
 	FramebufferDesc fbDesc;
 	fbDesc.depthStencil(rts[RenderTargets::MainDepth]).color(0, rts[RenderTargets::MainColor]);
-	renderFBO = renderer->createFramebuffer(fbDesc);
+	fbos[Framebuffers::MainRender] = renderer->createFramebuffer(fbDesc);
 
 	// SMAA edges texture and FBO
 	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8);
 	rts[RenderTargets::Edges] = renderer->createRenderTarget(rtDesc);
 	fbDesc.depthStencil(0).color(0, rts[RenderTargets::Edges]);
-	edgesFBO = renderer->createFramebuffer(fbDesc);
+	fbos[Framebuffers::Edges] = renderer->createFramebuffer(fbDesc);
 
 	// SMAA blending weights texture and FBO
 	rts[RenderTargets::BlendWeights] = renderer->createRenderTarget(rtDesc);
 	fbDesc.depthStencil(0).color(0, rts[RenderTargets::BlendWeights]);
-	blendFBO = renderer->createFramebuffer(fbDesc);
+	fbos[Framebuffers::BlendWeights] = renderer->createFramebuffer(fbDesc);
 }
 
 
@@ -882,11 +879,11 @@ void SMAADemo::render() {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-	renderer->bindFramebuffer(builtinFBO);
+	renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	renderer->bindFramebuffer(renderFBO);
+	renderer->bindFramebuffer(fbos[Framebuffers::MainRender]);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	ShaderDefines::Globals globals;
@@ -935,7 +932,7 @@ void SMAADemo::render() {
 		glBindTextureUnit(TEXUNIT_COLOR, image.tex);
 		glBindSampler(TEXUNIT_COLOR, nearestSampler);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
-		glBindTextureUnit(TEXUNIT_COLOR, renderFBO->colorTex);
+		glBindTextureUnit(TEXUNIT_COLOR, fbos[Framebuffers::MainRender]->colorTex);
 		glBindSampler(TEXUNIT_COLOR, linearSampler);
 	}
 
@@ -943,11 +940,11 @@ void SMAADemo::render() {
 		glDisable(GL_DEPTH_TEST);
 		glDepthMask(GL_FALSE);
 
-		glBindTextureUnit(TEXUNIT_COLOR, renderFBO->colorTex);
+		glBindTextureUnit(TEXUNIT_COLOR, fbos[Framebuffers::MainRender]->colorTex);
 
 		switch (aaMethod) {
 		case AAMethod::FXAA:
-			renderer->bindFramebuffer(builtinFBO);
+			renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
 			fxaaShader->bind();
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 			break;
@@ -962,45 +959,45 @@ void SMAADemo::render() {
 
 			if (debugMode == 1) {
 				// detect edges only
-				renderer->bindFramebuffer(builtinFBO);
+				renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
 				glClear(GL_COLOR_BUFFER_BIT);
 				glDrawArrays(GL_TRIANGLES, 0, 3);
 				break;
 			} else {
-				renderer->bindFramebuffer(edgesFBO);
+				renderer->bindFramebuffer(fbos[Framebuffers::Edges]);
 				glClear(GL_COLOR_BUFFER_BIT);
 				glDrawArrays(GL_TRIANGLES, 0, 3);
 			}
 
-			glBindTextureUnit(TEXUNIT_EDGES, edgesFBO->colorTex);
+			glBindTextureUnit(TEXUNIT_EDGES, fbos[Framebuffers::Edges]->colorTex);
 			glBindSampler(TEXUNIT_EDGES, linearSampler);
 
 			smaaBlendWeightShader->bind();
 			if (debugMode == 2) {
 				// show blending weights
-				renderer->bindFramebuffer(builtinFBO);
+				renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
 				glClear(GL_COLOR_BUFFER_BIT);
 				glDrawArrays(GL_TRIANGLES, 0, 3);
 				break;
 			} else {
-				renderer->bindFramebuffer(blendFBO);
+				renderer->bindFramebuffer(fbos[Framebuffers::BlendWeights]);
 				glClear(GL_COLOR_BUFFER_BIT);
 				glDrawArrays(GL_TRIANGLES, 0, 3);
 			}
 
 			// full effect
-			glBindTextureUnit(TEXUNIT_BLEND, blendFBO->colorTex);
+			glBindTextureUnit(TEXUNIT_BLEND, fbos[Framebuffers::BlendWeights]->colorTex);
 			glBindSampler(TEXUNIT_BLEND, linearSampler);
 
 			smaaNeighborShader->bind();
-			renderer->bindFramebuffer(builtinFBO);
+			renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
 			glClear(GL_COLOR_BUFFER_BIT);
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 			break;
 		}
 
 	} else {
-		renderFBO->blitTo(*builtinFBO);
+		fbos[Framebuffers::MainRender]->blitTo(*fbos[Framebuffers::FinalRender]);
 	}
 
 	renderer->presentFrame();
