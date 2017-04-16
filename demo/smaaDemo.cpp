@@ -165,6 +165,33 @@ static const char *smaaQualityLevels[] =
 static const unsigned int maxSMAAQuality = sizeof(smaaQualityLevels) / sizeof(smaaQualityLevels[0]);
 
 
+namespace RenderTargets {
+
+	enum RenderTargets {
+		  MainColor
+		, MainDepth
+		, Edges
+		, BlendWeights
+		, FinalRender
+		, Count        = FinalRender
+	};
+
+}  // namespace RenderTargets
+
+
+namespace Framebuffers {
+
+	enum Framebuffers {
+		  MainRender
+		, Edges
+		, BlendWeights
+		, FinalRender
+		, Count        = FinalRender
+	};
+
+}  // namespace Framebuffers
+
+
 class SMAADemo {
 	unsigned int windowWidth, windowHeight;
 	bool vsync;
@@ -554,26 +581,27 @@ void SMAADemo::createFramebuffers()	{
 	blendFBO.reset();
 
 	RenderTargetDesc rtDesc;
+	std::array<RenderTargetHandle, RenderTargets::Count> rts;
 
 	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8);
-	RenderTargetHandle c = renderer->createRenderTarget(rtDesc);
+	rts[RenderTargets::MainColor] = renderer->createRenderTarget(rtDesc);
 
 	rtDesc.format(Depth16);
-	RenderTargetHandle ds = renderer->createRenderTarget(rtDesc);
+	rts[RenderTargets::MainDepth] = renderer->createRenderTarget(rtDesc);
 
 	FramebufferDesc fbDesc;
-	fbDesc.depthStencil(ds).color(0, c);
+	fbDesc.depthStencil(rts[RenderTargets::MainDepth]).color(0, rts[RenderTargets::MainColor]);
 	renderFBO = renderer->createFramebuffer(fbDesc);
 
 	// SMAA edges texture and FBO
 	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8);
-	c = renderer->createRenderTarget(rtDesc);
-	fbDesc.depthStencil(0).color(0, c);
+	rts[RenderTargets::Edges] = renderer->createRenderTarget(rtDesc);
+	fbDesc.depthStencil(0).color(0, rts[RenderTargets::Edges]);
 	edgesFBO = renderer->createFramebuffer(fbDesc);
 
 	// SMAA blending weights texture and FBO
-	c = renderer->createRenderTarget(rtDesc);
-	fbDesc.depthStencil(0).color(0, c);
+	rts[RenderTargets::BlendWeights] = renderer->createRenderTarget(rtDesc);
+	fbDesc.depthStencil(0).color(0, rts[RenderTargets::BlendWeights]);
 	blendFBO = renderer->createFramebuffer(fbDesc);
 }
 
