@@ -54,7 +54,7 @@ class VertexShader;
 
 
 typedef uint32_t BufferHandle;
-typedef uint32_t FramebufferHandle;
+typedef std::unique_ptr<Framebuffer> FramebufferHandle;
 typedef uint32_t PipelineHandle;
 typedef uint32_t RenderPassHandle;
 typedef uint32_t RenderTargetHandle;
@@ -337,7 +337,7 @@ public:
 	// render target
 	RenderTargetHandle  createRenderTarget(const RenderTargetDesc &desc);
 	// FramebufferHandle   createFramebuffer(const FramebufferDesc &desc);
-	std::unique_ptr<Framebuffer> createFramebuffer(const FramebufferDesc &desc);
+	FramebufferHandle   createFramebuffer(const FramebufferDesc &desc);
 	PipelineHandle      createPipeline(const PipelineDesc &desc);
 	// TODO: add buffer usage flags
 	BufferHandle        createBuffer(uint32_t size, const void *contents);
@@ -361,10 +361,9 @@ public:
 	void beginRenderPass(RenderPassHandle);
 	void endRenderPass();
 
-	void blitFBO(const std::unique_ptr<Framebuffer> &src, const std::unique_ptr<Framebuffer> &dest);
+	void blitFBO(const FramebufferHandle &src, const FramebufferHandle &dest);
 
-	void bindFramebuffer(const std::unique_ptr<Framebuffer> &fbo);
-	void bindFramebuffer(FramebufferHandle);
+	void bindFramebuffer(const FramebufferHandle &fbo);
 	void bindPipeline(PipelineHandle);
 	void bindShader(const std::unique_ptr<Shader> &shader);
 	void bindIndexBuffer();

@@ -215,7 +215,7 @@ class SMAADemo {
 	unsigned int cubePower;
 
 	std::array<RenderTargetHandle, RenderTargets::Count> rts;
-	std::array<std::unique_ptr<Framebuffer>, RenderTargets::Count> fbos;
+	std::array<FramebufferHandle, RenderTargets::Count> fbos;
 
 	bool antialiasing;
 	AAMethod::AAMethod aaMethod;

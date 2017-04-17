@@ -519,7 +519,7 @@ BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
 }
 
 
-std::unique_ptr<Framebuffer> Renderer::createFramebuffer(const FramebufferDesc &desc) {
+FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	GLuint fbo = 0;
 
 	glCreateFramebuffers(1, &fbo);
@@ -645,7 +645,7 @@ void Renderer::presentFrame() {
 }
 
 
-void Renderer::blitFBO(const std::unique_ptr<Framebuffer> &src, const std::unique_ptr<Framebuffer> &dest) {
+void Renderer::blitFBO(const FramebufferHandle &src, const FramebufferHandle &dest) {
 	assert(src);
 	assert(dest);
 	assert(src->width  == dest->width);
@@ -657,16 +657,10 @@ void Renderer::blitFBO(const std::unique_ptr<Framebuffer> &src, const std::uniqu
 }
 
 
-void Renderer::bindFramebuffer(const std::unique_ptr<Framebuffer> &fbo) {
+void Renderer::bindFramebuffer(const FramebufferHandle &fbo) {
 	assert(fbo);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo);
-
-}
-
-
-void Renderer::bindFramebuffer(FramebufferHandle fbo) {
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 }
 
 
