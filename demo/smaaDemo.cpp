@@ -214,6 +214,7 @@ class SMAADemo {
 
 	unsigned int cubePower;
 
+	std::array<RenderTargetHandle, RenderTargets::Count> rts;
 	std::array<std::unique_ptr<Framebuffer>, RenderTargets::Count> fbos;
 
 	bool antialiasing;
@@ -322,6 +323,8 @@ SMAADemo::SMAADemo()
 , keepGoing(true)
 , activeScene(0)
 {
+	std::fill(rts.begin(), rts.end(), 0);
+
 	freq = SDL_GetPerformanceFrequency();
 	lastTime = SDL_GetPerformanceCounter();
 
@@ -578,7 +581,6 @@ void SMAADemo::createFramebuffers()	{
 	fbos[Framebuffers::BlendWeights].reset();
 
 	RenderTargetDesc rtDesc;
-	std::array<RenderTargetHandle, RenderTargets::Count> rts;
 
 	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8);
 	rts[RenderTargets::MainColor] = renderer->createRenderTarget(rtDesc);
