@@ -997,7 +997,7 @@ void SMAADemo::render() {
 		}
 
 	} else {
-		fbos[Framebuffers::MainRender]->blitTo(*fbos[Framebuffers::FinalRender]);
+		renderer->blitFBO(fbos[Framebuffers::MainRender], fbos[Framebuffers::FinalRender]);
 	}
 
 	renderer->presentFrame();

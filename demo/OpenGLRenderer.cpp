@@ -280,13 +280,6 @@ Framebuffer::~Framebuffer() {
 }
 
 
-void Framebuffer::blitTo(Framebuffer &target) {
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target.fbo);
-	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-}
-
-
 static const char *errorSource(GLenum source)
 {
 	switch (source)
@@ -649,6 +642,18 @@ void Renderer::recreateSwapchain(const SwapchainDesc &desc) {
 
 void Renderer::presentFrame() {
 	SDL_GL_SwapWindow(window);
+}
+
+
+void Renderer::blitFBO(const std::unique_ptr<Framebuffer> &src, const std::unique_ptr<Framebuffer> &dest) {
+	assert(src);
+	assert(dest);
+	assert(src->width  == dest->width);
+	assert(src->height == dest->height);
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, src->fbo);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->fbo);
+	glBlitFramebuffer(0, 0, src->width, src->height, 0, 0, src->width, src->height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
 

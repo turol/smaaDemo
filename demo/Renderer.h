@@ -361,6 +361,8 @@ public:
 	void beginRenderPass(RenderPassHandle);
 	void endRenderPass();
 
+	void blitFBO(const std::unique_ptr<Framebuffer> &src, const std::unique_ptr<Framebuffer> &dest);
+
 	void bindFramebuffer(const std::unique_ptr<Framebuffer> &fbo);
 	void bindFramebuffer(FramebufferHandle);
 	void bindPipeline(PipelineHandle);
@@ -412,8 +414,6 @@ public:
 
 
 	~Framebuffer();
-
-	void blitTo(Framebuffer &target);
 };
 
 
