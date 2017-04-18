@@ -639,10 +639,10 @@ void SMAADemo::createCubes() {
 	}
 
 	// reallocate instance data buffer
-	if (!instanceSSBO) {
-		glCreateBuffers(1, &instanceSSBO);
+	if (instanceSSBO) {
+		renderer->deleteBuffer(instanceSSBO);
 	}
-	glNamedBufferData(instanceSSBO, sizeof(ShaderDefines::Cube) * numCubes, NULL, GL_STREAM_DRAW);
+	instanceSSBO = renderer->createBuffer(sizeof(ShaderDefines::Cube) * numCubes, NULL);
 
 	colorCubes();
 }

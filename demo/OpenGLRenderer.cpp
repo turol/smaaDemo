@@ -562,7 +562,6 @@ Renderer::~Renderer() {
 
 BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
 	assert(size != 0);
-	assert(contents != nullptr);
 
 	GLuint buffer = 0;
 	glCreateBuffers(1, &buffer);
