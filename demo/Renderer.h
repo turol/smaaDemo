@@ -416,56 +416,6 @@ public:
 };
 
 
-class VertexShader {
-#ifdef RENDERER_OPENGL
-
-	GLuint shader;
-
-#endif  // RENDERER_OPENGL
-
-	VertexShader() = delete;
-
-	VertexShader(const VertexShader &) = delete;
-	VertexShader &operator=(const VertexShader &) = delete;
-
-	VertexShader(VertexShader &&) = delete;
-	VertexShader &operator=(VertexShader &&) = delete;
-
-	friend class Shader;
-
-public:
-
-	VertexShader(const std::string &name, const ShaderMacros &macros);
-
-	~VertexShader();
-};
-
-
-class FragmentShader {
-#ifdef RENDERER_OPENGL
-
-	GLuint shader;
-
-#endif  // RENDERER_OPENGL
-
-	FragmentShader() = delete;
-
-	FragmentShader(const FragmentShader &) = delete;
-	FragmentShader &operator=(const FragmentShader &) = delete;
-
-	FragmentShader(FragmentShader &&) = delete;
-	FragmentShader &operator=(FragmentShader &&) = delete;
-
-	friend class Shader;
-
-public:
-
-	FragmentShader(const std::string &name, const ShaderMacros &macros);
-
-	~FragmentShader();
-};
-
-
 class Shader {
 #ifdef RENDERER_OPENGL
 
@@ -481,7 +431,7 @@ class Shader {
 	Shader &operator=(Shader &&) = delete;
 
 public:
-	Shader(const VertexShader &vertexShader, const FragmentShader &fragmentShader);
+	Shader(const std::string &name, const ShaderMacros &macros);
 
 	~Shader();
 

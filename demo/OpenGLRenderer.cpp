@@ -10,6 +10,56 @@
 #include "Utils.h"
 
 
+class VertexShader {
+#ifdef RENDERER_OPENGL
+
+	GLuint shader;
+
+#endif  // RENDERER_OPENGL
+
+	VertexShader() = delete;
+
+	VertexShader(const VertexShader &) = delete;
+	VertexShader &operator=(const VertexShader &) = delete;
+
+	VertexShader(VertexShader &&) = delete;
+	VertexShader &operator=(VertexShader &&) = delete;
+
+	friend class Shader;
+
+public:
+
+	VertexShader(const std::string &name, const ShaderMacros &macros);
+
+	~VertexShader();
+};
+
+
+class FragmentShader {
+#ifdef RENDERER_OPENGL
+
+	GLuint shader;
+
+#endif  // RENDERER_OPENGL
+
+	FragmentShader() = delete;
+
+	FragmentShader(const FragmentShader &) = delete;
+	FragmentShader &operator=(const FragmentShader &) = delete;
+
+	FragmentShader(FragmentShader &&) = delete;
+	FragmentShader &operator=(FragmentShader &&) = delete;
+
+	friend class Shader;
+
+public:
+
+	FragmentShader(const std::string &name, const ShaderMacros &macros);
+
+	~FragmentShader();
+};
+
+
 static std::vector<char> processShaderIncludes(std::vector<char> shaderSource, const ShaderMacros &macros) {
 	std::vector<char> output(shaderSource);
 
@@ -231,9 +281,12 @@ FragmentShader::~FragmentShader() {
 }
 
 
-Shader::Shader(const VertexShader &vertexShader, const FragmentShader &fragmentShader)
+Shader::Shader(const std::string &name, const ShaderMacros &macros)
 : program(0)
 {
+	VertexShader   vertexShader(name + ".vert", macros);
+	FragmentShader fragmentShader(name + ".frag", macros);
+
 	program = glCreateProgram();
 
 	glAttachShader(program, vertexShader.shader);

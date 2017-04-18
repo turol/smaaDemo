@@ -401,10 +401,8 @@ static const uint32_t indices[] =
 
 void SMAADemo::buildImageShader() {
 	ShaderMacros macros;
-	VertexShader vShader("image.vert", macros);
-	FragmentShader fShader("image.frag", macros);
 
-	imageShader = std::make_unique<Shader>(vShader, fShader);
+	imageShader = std::make_unique<Shader>("image", macros);
 }
 
 
@@ -415,10 +413,7 @@ void SMAADemo::buildFXAAShader() {
 	ShaderMacros macros;
 	macros.emplace("FXAA_QUALITY_PRESET", qualityString);
 
-	VertexShader vShader("fxaa.vert", macros);
-	FragmentShader fShader("fxaa.frag", macros);
-
-	fxaaShader = std::make_unique<Shader>(vShader, fShader);
+	fxaaShader = std::make_unique<Shader>("fxaa", macros);
 }
 
 
@@ -428,27 +423,15 @@ void SMAADemo::buildSMAAShaders() {
 	macros.emplace(qualityString, "1");
 
 	{
-		VertexShader vShader("smaaEdge.vert", macros);
-
-		FragmentShader fShader("smaaEdge.frag", macros);
-
-		smaaEdgeShader = std::make_unique<Shader>(vShader, fShader);
+		smaaEdgeShader = std::make_unique<Shader>("smaaEdge", macros);
 	}
 
 	{
-		VertexShader vShader("smaaBlendWeight.vert", macros);
-
-		FragmentShader fShader("smaaBlendWeight.frag", macros);
-
-		smaaBlendWeightShader = std::make_unique<Shader>(vShader, fShader);
+		smaaBlendWeightShader = std::make_unique<Shader>("smaaBlendWeight", macros);
 	}
 
 	{
-		VertexShader vShader("smaaNeighbor.vert", macros);
-
-		FragmentShader fShader("smaaNeighbor.frag", macros);
-
-		smaaNeighborShader = std::make_unique<Shader>(vShader, fShader);
+		smaaNeighborShader = std::make_unique<Shader>("smaaNeighbor", macros);
 	}
 }
 
@@ -499,7 +482,7 @@ void SMAADemo::initRender() {
 
 	ShaderMacros macros;
 
-	cubeShader = std::make_unique<Shader>(VertexShader("cube.vert", macros), FragmentShader("cube.frag", macros));
+	cubeShader = std::make_unique<Shader>("cube", macros);
 	buildImageShader();
 	buildSMAAShaders();
 	buildFXAAShader();
