@@ -649,6 +649,16 @@ void Renderer::deleteBuffer(BufferHandle handle) {
 }
 
 
+void Renderer::deleteFramebuffer(FramebufferHandle &fbo) {
+	fbo.reset();
+}
+
+
+void Renderer::deleteRenderTarget(RenderTargetHandle &) {
+	// TODO...
+}
+
+
 void Renderer::deleteSampler(SamplerHandle handle) {
 	glDeleteSamplers(1, &handle);
 }

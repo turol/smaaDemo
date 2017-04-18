@@ -349,8 +349,10 @@ public:
 	TextureHandle       createTexture(const TextureDesc &desc);
 
 	void deleteBuffer(BufferHandle handle);
+	void deleteFramebuffer(FramebufferHandle &fbo);
 	void deleteSampler(SamplerHandle handle);
 	void deleteTexture(TextureHandle handle);
+	void deleteRenderTarget(RenderTargetHandle &fbo);
 
 
 	void recreateSwapchain(const SwapchainDesc &desc);

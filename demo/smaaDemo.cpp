@@ -555,13 +555,21 @@ void SMAADemo::initRender() {
 
 
 void SMAADemo::createFramebuffers()	{
+	if (fbos[0]) {
+		for (unsigned int i = 0; i < Framebuffers::Count; i++) {
+			assert(fbos[i]);
+			renderer->deleteFramebuffer(fbos[i]);
+		}
+
+		for (unsigned int i = 0; i < RenderTargets::Count; i++) {
+			assert(rendertargets[i]);
+			renderer->deleteRenderTarget(rendertargets[i]);
+		}
+	}
+
 	fbos[Framebuffers::FinalRender] = std::make_unique<Framebuffer>(0);
 	fbos[Framebuffers::FinalRender]->width = windowWidth;
 	fbos[Framebuffers::FinalRender]->height = windowHeight;
-
-	fbos[Framebuffers::MainRender].reset();
-	fbos[Framebuffers::Edges].reset();
-	fbos[Framebuffers::BlendWeights].reset();
 
 	RenderTargetDesc rtDesc;
 
