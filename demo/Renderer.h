@@ -361,7 +361,7 @@ public:
 	void beginFrame();
 	void presentFrame(const FramebufferHandle &fbo);
 
-	void beginRenderPass(RenderPassHandle);
+	void beginRenderPass(RenderPassHandle, FramebufferHandle);
 	void endRenderPass();
 
 	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);

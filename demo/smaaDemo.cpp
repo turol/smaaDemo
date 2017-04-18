@@ -867,16 +867,6 @@ void SMAADemo::render() {
 
 	lastTime = ticks;
 
-	// TODO: reset all relevant state in case some 3rd-party program fucked them up
-
-	renderer->beginFrame();
-
-	renderer->setViewport(0, 0, windowWidth, windowHeight);
-
-	glDepthMask(GL_TRUE);
-	renderer->bindFramebuffer(fbos[Framebuffers::MainRender]);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	ShaderDefines::Globals globals;
 	globals.screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 
@@ -885,6 +875,14 @@ void SMAADemo::render() {
 		glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), NULL, GL_STREAM_DRAW);
 	}
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalsUBO);
+
+	renderer->beginFrame();
+
+	renderer->setViewport(0, 0, windowWidth, windowHeight);
+
+	glDepthMask(GL_TRUE);
+	renderer->bindFramebuffer(fbos[Framebuffers::MainRender]);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (activeScene == 0) {
 		if (rotateCamera) {

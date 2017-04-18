@@ -705,6 +705,8 @@ void Renderer::recreateSwapchain(const SwapchainDesc &desc) {
 void Renderer::beginFrame() {
 	// TODO: some asserting here
 
+	// TODO: reset all relevant state in case some 3rd-party program fucked them up
+
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	// TODO: only clear depth/stencil if we have it
 	// TODO: set color/etc write masks if necessary
