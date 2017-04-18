@@ -702,6 +702,15 @@ void Renderer::recreateSwapchain(const SwapchainDesc &desc) {
 }
 
 
+void Renderer::beginFrame() {
+	// TODO: some asserting here
+
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	// TODO: only clear depth/stencil if we have it
+	// TODO: set color/etc write masks if necessary
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+}
+
 void Renderer::presentFrame(const FramebufferHandle &fbo) {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo->fbo);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
