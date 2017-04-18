@@ -870,14 +870,12 @@ void SMAADemo::render() {
 	// TODO: reset all relevant state in case some 3rd-party program fucked them up
 
 	renderer->setViewport(0, 0, windowWidth, windowHeight);
-	glDepthMask(GL_TRUE);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
 
 	renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+	glDepthMask(GL_TRUE);
 	renderer->bindFramebuffer(fbos[Framebuffers::MainRender]);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -905,6 +903,8 @@ void SMAADemo::render() {
 
 		renderer->bindShader(cubeShader);
 
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_CULL_FACE);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO);
 		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
 		glVertexAttribPointer(ATTR_POS, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
@@ -918,6 +918,7 @@ void SMAADemo::render() {
 	} else {
 		glNamedBufferSubData(globalsUBO, 0, sizeof(ShaderDefines::Globals), &globals);
 
+		glEnable(GL_CULL_FACE);
 		glDisable(GL_DEPTH_TEST);
 		glDepthMask(GL_FALSE);
 
