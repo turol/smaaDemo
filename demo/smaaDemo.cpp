@@ -869,7 +869,7 @@ void SMAADemo::render() {
 
 	// TODO: reset all relevant state in case some 3rd-party program fucked them up
 
-	glViewport(0, 0, windowWidth, windowHeight);
+	renderer->setViewport(0, 0, windowWidth, windowHeight);
 	glDepthMask(GL_TRUE);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);

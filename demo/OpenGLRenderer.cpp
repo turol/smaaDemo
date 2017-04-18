@@ -711,6 +711,11 @@ void Renderer::presentFrame(const FramebufferHandle &fbo) {
 }
 
 
+void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+	glViewport(x, y, width, height);
+}
+
+
 void Renderer::blitFBO(const FramebufferHandle &src, const FramebufferHandle &dest) {
 	assert(src);
 	assert(dest);

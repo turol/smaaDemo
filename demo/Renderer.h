@@ -364,6 +364,8 @@ public:
 	void beginRenderPass(RenderPassHandle);
 	void endRenderPass();
 
+	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
+
 	void blitFBO(const FramebufferHandle &src, const FramebufferHandle &dest);
 
 	void bindFramebuffer(const FramebufferHandle &fbo);
