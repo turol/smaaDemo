@@ -201,8 +201,8 @@ class SMAADemo {
 	std::unique_ptr<Renderer> renderer;
 	bool glDebug;
 
-	std::unique_ptr<Shader> cubeShader;
-	std::unique_ptr<Shader> imageShader;
+	ShaderHandle cubeShader;
+	ShaderHandle imageShader;
 
 	BufferHandle cubeVBO;
 	BufferHandle cubeIBO;
@@ -219,10 +219,10 @@ class SMAADemo {
 
 	bool antialiasing;
 	AAMethod::AAMethod aaMethod;
-	std::unique_ptr<Shader> fxaaShader;
-	std::unique_ptr<Shader> smaaEdgeShader;
-	std::unique_ptr<Shader> smaaBlendWeightShader;
-	std::unique_ptr<Shader> smaaNeighborShader;
+	ShaderHandle fxaaShader;
+	ShaderHandle smaaEdgeShader;
+	ShaderHandle smaaBlendWeightShader;
+	ShaderHandle smaaNeighborShader;
 	TextureHandle areaTex;
 	TextureHandle searchTex;
 

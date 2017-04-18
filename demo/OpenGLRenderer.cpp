@@ -717,7 +717,7 @@ void Renderer::bindFramebuffer(const FramebufferHandle &fbo) {
 }
 
 
-void Renderer::bindShader(const std::unique_ptr<Shader> &shader) {
+void Renderer::bindShader(const ShaderHandle &shader) {
 	assert(shader);
 	assert(shader->program != 0);
 

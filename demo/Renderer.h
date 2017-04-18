@@ -59,6 +59,7 @@ typedef uint32_t PipelineHandle;
 typedef uint32_t RenderPassHandle;
 typedef uint32_t RenderTargetHandle;
 typedef uint32_t SamplerHandle;
+typedef std::unique_ptr<Shader> ShaderHandle;
 typedef uint32_t TextureHandle;
 typedef uint32_t UniformBufferHandle;
 
@@ -365,7 +366,7 @@ public:
 
 	void bindFramebuffer(const FramebufferHandle &fbo);
 	void bindPipeline(PipelineHandle);
-	void bindShader(const std::unique_ptr<Shader> &shader);
+	void bindShader(const ShaderHandle &shader);
 	void bindIndexBuffer();
 	void bindVertexBuffer();
 	// descriptor set
