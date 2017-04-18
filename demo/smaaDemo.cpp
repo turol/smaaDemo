@@ -567,14 +567,13 @@ void SMAADemo::createFramebuffers()	{
 		}
 	}
 
-	fbos[Framebuffers::FinalRender] = std::make_unique<Framebuffer>(0);
-	fbos[Framebuffers::FinalRender]->width = windowWidth;
-	fbos[Framebuffers::FinalRender]->height = windowHeight;
-
 	RenderTargetDesc rtDesc;
 
 	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8);
 	rendertargets[RenderTargets::MainColor] = renderer->createRenderTarget(rtDesc);
+
+	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8);
+	rendertargets[RenderTargets::FinalRender] = renderer->createRenderTarget(rtDesc);
 
 	rtDesc.format(Depth16);
 	rendertargets[RenderTargets::MainDepth] = renderer->createRenderTarget(rtDesc);
@@ -582,6 +581,9 @@ void SMAADemo::createFramebuffers()	{
 	FramebufferDesc fbDesc;
 	fbDesc.depthStencil(rendertargets[RenderTargets::MainDepth]).color(0, rendertargets[RenderTargets::MainColor]);
 	fbos[Framebuffers::MainRender] = renderer->createFramebuffer(fbDesc);
+
+	fbDesc.depthStencil(0).color(0, rendertargets[RenderTargets::FinalRender]);
+	fbos[Framebuffers::FinalRender] = renderer->createFramebuffer(fbDesc);
 
 	// SMAA edges texture and FBO
 	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8);
@@ -990,10 +992,11 @@ void SMAADemo::render() {
 		}
 
 	} else {
+		// TODO: not necessary?
 		renderer->blitFBO(fbos[Framebuffers::MainRender], fbos[Framebuffers::FinalRender]);
 	}
 
-	renderer->presentFrame();
+	renderer->presentFrame(fbos[Framebuffers::FinalRender]);
 }
 
 

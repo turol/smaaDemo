@@ -703,7 +703,11 @@ void Renderer::recreateSwapchain(const SwapchainDesc &desc) {
 }
 
 
-void Renderer::presentFrame() {
+void Renderer::presentFrame(const FramebufferHandle &fbo) {
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo->fbo);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBlitFramebuffer(0, 0, fbo->width, fbo->height, 0, 0, fbo->width, fbo->height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
 	SDL_GL_SwapWindow(window);
 }
 

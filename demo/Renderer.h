@@ -359,7 +359,7 @@ public:
 
 	// rendering
 	void beginFrame();
-	void presentFrame();
+	void presentFrame(const FramebufferHandle &fbo);
 
 	void beginRenderPass(RenderPassHandle);
 	void endRenderPass();
