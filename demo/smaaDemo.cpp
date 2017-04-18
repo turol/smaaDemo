@@ -214,7 +214,7 @@ class SMAADemo {
 
 	unsigned int cubePower;
 
-	std::array<RenderTargetHandle, RenderTargets::Count> rts;
+	std::array<RenderTargetHandle, RenderTargets::Count> rendertargets;
 	std::array<FramebufferHandle, RenderTargets::Count> fbos;
 
 	bool antialiasing;
@@ -323,7 +323,7 @@ SMAADemo::SMAADemo()
 , keepGoing(true)
 , activeScene(0)
 {
-	std::fill(rts.begin(), rts.end(), 0);
+	std::fill(rendertargets.begin(), rendertargets.end(), 0);
 
 	freq = SDL_GetPerformanceFrequency();
 	lastTime = SDL_GetPerformanceCounter();
@@ -566,24 +566,24 @@ void SMAADemo::createFramebuffers()	{
 	RenderTargetDesc rtDesc;
 
 	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8);
-	rts[RenderTargets::MainColor] = renderer->createRenderTarget(rtDesc);
+	rendertargets[RenderTargets::MainColor] = renderer->createRenderTarget(rtDesc);
 
 	rtDesc.format(Depth16);
-	rts[RenderTargets::MainDepth] = renderer->createRenderTarget(rtDesc);
+	rendertargets[RenderTargets::MainDepth] = renderer->createRenderTarget(rtDesc);
 
 	FramebufferDesc fbDesc;
-	fbDesc.depthStencil(rts[RenderTargets::MainDepth]).color(0, rts[RenderTargets::MainColor]);
+	fbDesc.depthStencil(rendertargets[RenderTargets::MainDepth]).color(0, rendertargets[RenderTargets::MainColor]);
 	fbos[Framebuffers::MainRender] = renderer->createFramebuffer(fbDesc);
 
 	// SMAA edges texture and FBO
 	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8);
-	rts[RenderTargets::Edges] = renderer->createRenderTarget(rtDesc);
-	fbDesc.depthStencil(0).color(0, rts[RenderTargets::Edges]);
+	rendertargets[RenderTargets::Edges] = renderer->createRenderTarget(rtDesc);
+	fbDesc.depthStencil(0).color(0, rendertargets[RenderTargets::Edges]);
 	fbos[Framebuffers::Edges] = renderer->createFramebuffer(fbDesc);
 
 	// SMAA blending weights texture and FBO
-	rts[RenderTargets::BlendWeights] = renderer->createRenderTarget(rtDesc);
-	fbDesc.depthStencil(0).color(0, rts[RenderTargets::BlendWeights]);
+	rendertargets[RenderTargets::BlendWeights] = renderer->createRenderTarget(rtDesc);
+	fbDesc.depthStencil(0).color(0, rendertargets[RenderTargets::BlendWeights]);
 	fbos[Framebuffers::BlendWeights] = renderer->createFramebuffer(fbDesc);
 }
 
