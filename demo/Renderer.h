@@ -375,7 +375,7 @@ public:
 	void bindVertexBuffer();
 	// descriptor set
 
-	void draw();
+	void draw(unsigned int firstVertex, unsigned int vertexCount);
 };
 
 

@@ -923,7 +923,7 @@ void SMAADemo::render() {
 		renderer->bindShader(imageShader);
 		glBindTextureUnit(TEXUNIT_COLOR, image.tex);
 		glBindSampler(TEXUNIT_COLOR, nearestSampler);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		renderer->draw(0, 3);
 		glBindTextureUnit(TEXUNIT_COLOR, fbos[Framebuffers::MainRender]->colorTex);
 		glBindSampler(TEXUNIT_COLOR, linearSampler);
 	}
@@ -938,7 +938,7 @@ void SMAADemo::render() {
 		case AAMethod::FXAA:
 			renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
 			renderer->bindShader(fxaaShader);
-			glDrawArrays(GL_TRIANGLES, 0, 3);
+			renderer->draw(0, 3);
 			break;
 
 		case AAMethod::SMAA:
@@ -953,12 +953,12 @@ void SMAADemo::render() {
 				// detect edges only
 				renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
 				glClear(GL_COLOR_BUFFER_BIT);
-				glDrawArrays(GL_TRIANGLES, 0, 3);
+				renderer->draw(0, 3);
 				break;
 			} else {
 				renderer->bindFramebuffer(fbos[Framebuffers::Edges]);
 				glClear(GL_COLOR_BUFFER_BIT);
-				glDrawArrays(GL_TRIANGLES, 0, 3);
+				renderer->draw(0, 3);
 			}
 
 			glBindTextureUnit(TEXUNIT_EDGES, fbos[Framebuffers::Edges]->colorTex);
@@ -969,12 +969,12 @@ void SMAADemo::render() {
 				// show blending weights
 				renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
 				glClear(GL_COLOR_BUFFER_BIT);
-				glDrawArrays(GL_TRIANGLES, 0, 3);
+				renderer->draw(0, 3);
 				break;
 			} else {
 				renderer->bindFramebuffer(fbos[Framebuffers::BlendWeights]);
 				glClear(GL_COLOR_BUFFER_BIT);
-				glDrawArrays(GL_TRIANGLES, 0, 3);
+				renderer->draw(0, 3);
 			}
 
 			// full effect
@@ -984,7 +984,7 @@ void SMAADemo::render() {
 			renderer->bindShader(smaaNeighborShader);
 			renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
 			glClear(GL_COLOR_BUFFER_BIT);
-			glDrawArrays(GL_TRIANGLES, 0, 3);
+			renderer->draw(0, 3);
 			break;
 		}
 
