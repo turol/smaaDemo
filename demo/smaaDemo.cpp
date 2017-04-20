@@ -923,14 +923,14 @@ void SMAADemo::render() {
 		renderer->bindShader(imageShader);
 		renderer->bindTexture(TEXUNIT_COLOR, image.tex, nearestSampler);
 		renderer->draw(0, 3);
-		renderer->bindTexture(TEXUNIT_COLOR, fbos[Framebuffers::MainRender]->colorTex, linearSampler);
+		renderer->bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::MainColor], linearSampler);
 	}
 
 	if (antialiasing) {
 		glDisable(GL_DEPTH_TEST);
 		glDepthMask(GL_FALSE);
 
-		renderer->bindTexture(TEXUNIT_COLOR, fbos[Framebuffers::MainRender]->colorTex, linearSampler);
+		renderer->bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::MainColor], linearSampler);
 
 		switch (aaMethod) {
 		case AAMethod::FXAA:
@@ -957,7 +957,7 @@ void SMAADemo::render() {
 				renderer->draw(0, 3);
 			}
 
-			renderer->bindTexture(TEXUNIT_EDGES, fbos[Framebuffers::Edges]->colorTex, linearSampler);
+			renderer->bindTexture(TEXUNIT_EDGES, rendertargets[RenderTargets::Edges], linearSampler);
 
 			renderer->bindShader(smaaBlendWeightShader);
 			if (debugMode == 2) {
@@ -973,7 +973,7 @@ void SMAADemo::render() {
 			}
 
 			// full effect
-			renderer->bindTexture(TEXUNIT_BLEND, fbos[Framebuffers::BlendWeights]->colorTex, linearSampler);
+			renderer->bindTexture(TEXUNIT_BLEND, rendertargets[RenderTargets::BlendWeights], linearSampler);
 
 			renderer->bindShader(smaaNeighborShader);
 			renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
