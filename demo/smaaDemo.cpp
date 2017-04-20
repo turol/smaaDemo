@@ -921,18 +921,16 @@ void SMAADemo::render() {
 		assert(activeScene - 1 < images.size());
 		const auto &image = images[activeScene - 1];
 		renderer->bindShader(imageShader);
-		glBindTextureUnit(TEXUNIT_COLOR, image.tex);
-		glBindSampler(TEXUNIT_COLOR, nearestSampler);
+		renderer->bindTexture(TEXUNIT_COLOR, image.tex, nearestSampler);
 		renderer->draw(0, 3);
-		glBindTextureUnit(TEXUNIT_COLOR, fbos[Framebuffers::MainRender]->colorTex);
-		glBindSampler(TEXUNIT_COLOR, linearSampler);
+		renderer->bindTexture(TEXUNIT_COLOR, fbos[Framebuffers::MainRender]->colorTex, linearSampler);
 	}
 
 	if (antialiasing) {
 		glDisable(GL_DEPTH_TEST);
 		glDepthMask(GL_FALSE);
 
-		glBindTextureUnit(TEXUNIT_COLOR, fbos[Framebuffers::MainRender]->colorTex);
+		renderer->bindTexture(TEXUNIT_COLOR, fbos[Framebuffers::MainRender]->colorTex, linearSampler);
 
 		switch (aaMethod) {
 		case AAMethod::FXAA:
@@ -944,10 +942,8 @@ void SMAADemo::render() {
 		case AAMethod::SMAA:
 			renderer->bindShader(smaaEdgeShader);
 
-			glBindTextureUnit(TEXUNIT_AREATEX, areaTex);
-			glBindSampler(TEXUNIT_AREATEX, linearSampler);
-			glBindTextureUnit(TEXUNIT_SEARCHTEX, searchTex);
-			glBindSampler(TEXUNIT_SEARCHTEX, linearSampler);
+			renderer->bindTexture(TEXUNIT_AREATEX, areaTex, linearSampler);
+			renderer->bindTexture(TEXUNIT_SEARCHTEX, searchTex, linearSampler);
 
 			if (debugMode == 1) {
 				// detect edges only
@@ -961,8 +957,7 @@ void SMAADemo::render() {
 				renderer->draw(0, 3);
 			}
 
-			glBindTextureUnit(TEXUNIT_EDGES, fbos[Framebuffers::Edges]->colorTex);
-			glBindSampler(TEXUNIT_EDGES, linearSampler);
+			renderer->bindTexture(TEXUNIT_EDGES, fbos[Framebuffers::Edges]->colorTex, linearSampler);
 
 			renderer->bindShader(smaaBlendWeightShader);
 			if (debugMode == 2) {
@@ -978,8 +973,7 @@ void SMAADemo::render() {
 			}
 
 			// full effect
-			glBindTextureUnit(TEXUNIT_BLEND, fbos[Framebuffers::BlendWeights]->colorTex);
-			glBindSampler(TEXUNIT_BLEND, linearSampler);
+			renderer->bindTexture(TEXUNIT_BLEND, fbos[Framebuffers::BlendWeights]->colorTex, linearSampler);
 
 			renderer->bindShader(smaaNeighborShader);
 			renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);

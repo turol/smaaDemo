@@ -373,7 +373,9 @@ public:
 	void bindShader(const ShaderHandle &shader);
 	void bindIndexBuffer();
 	void bindVertexBuffer();
-	// descriptor set
+
+	// TODO: replace with descriptor set stuff
+	void bindTexture(unsigned int unit, TextureHandle tex, SamplerHandle sampler);
 
 	void draw(unsigned int firstVertex, unsigned int vertexCount);
 };

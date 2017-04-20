@@ -754,6 +754,12 @@ void Renderer::bindShader(const ShaderHandle &shader) {
 }
 
 
+void Renderer::bindTexture(unsigned int unit, TextureHandle tex, SamplerHandle sampler) {
+	glBindTextureUnit(unit, tex);
+	glBindSampler(unit, sampler);
+}
+
+
 void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	// TODO: get primitive from current pipeline
 	glDrawArrays(GL_TRIANGLES, firstVertex, vertexCount);
