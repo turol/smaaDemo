@@ -389,12 +389,12 @@ struct RendererDesc {
 
 
 class Renderer {
+	SwapchainDesc swapchainDesc;
+
 #ifdef RENDERER_OPENGL
 
 	SDL_Window *window;
 	SDL_GLContext context;
-
-	SwapchainDesc swapchainDesc;
 
 	GLuint vao;
 
@@ -402,9 +402,9 @@ class Renderer {
 	std::unordered_map<GLuint, std::unique_ptr<Shader> > shaders;
 	std::unordered_map<uint32_t, PipelineDesc>                 pipelines;
 
-#endif  // RENDERER_OPENGL
-
 	std::unordered_map<RenderTargetHandle, RenderTargetDesc> renderTargets;
+
+#endif  // RENDERER_OPENGL
 
 
 	explicit Renderer(const RendererDesc &desc);
