@@ -272,8 +272,6 @@ public:
 
 	void createFramebuffers();
 
-	void buildImageShader();
-
 	void buildFXAAShader();
 
 	void buildSMAAShaders();
@@ -402,19 +400,6 @@ static const uint32_t indices[] =
 #define VBO_OFFSETOF(st, member) reinterpret_cast<GLvoid *>(offsetof(st, member))
 
 
-void SMAADemo::buildImageShader() {
-	ShaderMacros macros;
-
-	imageShader = renderer->createShader("image", macros);
-
-	PipelineDesc plDesc;
-	plDesc.shader(imageShader);
-	plDesc.cullFaces(true);
-
-	imagePipeline = renderer->createPipeline(plDesc);
-}
-
-
 void SMAADemo::buildFXAAShader() {
 	// TODO: cache shader based on quality level
 	std::string qualityString(fxaaQualityLevels[fxaaQuality]);
@@ -499,7 +484,16 @@ void SMAADemo::initRender() {
 	      .cullFaces(true);
 
 	cubePipeline = renderer->createPipeline(plDesc);
-	buildImageShader();
+
+	imageShader = renderer->createShader("image", macros);
+
+	plDesc.shader(imageShader);
+	plDesc.depthWrite(false)
+	      .depthTest(false)
+	      .cullFaces(true);
+
+	imagePipeline = renderer->createPipeline(plDesc);
+
 	buildSMAAShaders();
 	buildFXAAShader();
 
