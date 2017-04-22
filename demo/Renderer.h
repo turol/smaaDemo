@@ -472,27 +472,4 @@ public:
 };
 
 
-class Shader {
-#ifdef RENDERER_OPENGL
-
-    GLuint program;
-
-#endif  // RENDERER_OPENGL
-
-	Shader() = delete;
-	Shader(const Shader &) = delete;
-	Shader &operator=(const Shader &) = delete;
-
-	Shader(Shader &&) = delete;
-	Shader &operator=(Shader &&) = delete;
-
-public:
-	Shader(const std::string &name, const ShaderMacros &macros);
-
-	~Shader();
-
-	friend class Renderer;
-};
-
-
 #endif  // RENDERER_H
