@@ -480,7 +480,7 @@ Renderer::Renderer(const RendererDesc &desc)
 
 		for (int j = 0; j < numModes; j++) {
 			SDL_GetDisplayMode(i, j, &mode);
-			printf("Display mode %i : width %i, height %i, BPP %i\n", j, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format));
+			printf("Display mode %i : width %i, height %i, BPP %i, refresh %u Hz\n", j, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format), mode.refresh_rate);
 		}
 	}
 
