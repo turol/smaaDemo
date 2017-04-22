@@ -83,6 +83,48 @@ public:
 };
 
 
+class Framebuffer {
+	// TODO: need a proper Render object to control the others
+	friend class Renderer;
+	friend class SMAADemo;
+
+#ifdef RENDERER_OPENGL
+
+	GLuint fbo;
+	GLuint colorTex;
+	GLuint depthTex;
+
+	unsigned int width, height;
+
+#endif  // RENDERER_OPENGL
+
+	Framebuffer() = delete;
+	Framebuffer(const Framebuffer &) = delete;
+	Framebuffer &operator=(const Framebuffer &) = delete;
+
+	Framebuffer(Framebuffer &&) = delete;
+	Framebuffer &operator=(Framebuffer &&) = delete;
+
+public:
+
+#ifdef RENDERER_OPENGL
+
+	explicit Framebuffer(GLuint fbo_)
+	: fbo(fbo_)
+	, colorTex(0)
+	, depthTex(0)
+	, width(0)
+	, height(0)
+	{
+	}
+
+#endif  // RENDERER_OPENGL
+
+
+	~Framebuffer();
+};
+
+
 static std::vector<char> processShaderIncludes(std::vector<char> shaderSource, const ShaderMacros &macros) {
 	std::vector<char> output(shaderSource);
 
