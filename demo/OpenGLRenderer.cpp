@@ -584,6 +584,9 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	glCreateFramebuffers(1, &fbo);
 	auto fb = std::make_unique<Framebuffer>(fbo);
 
+	auto it = renderTargets.find(desc.colors_[0]);
+	assert(it != renderTargets.end());
+
 	fb->colorTex = desc.colors_[0];
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, fb->colorTex, 0);
 	assert(desc.colors_[1] == 0);
@@ -599,7 +602,9 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	fb->width  = colorDesc.width_;
 	fb->height = colorDesc.height_;
 
-	return fb;
+	framebuffers.emplace(fbo, std::move(fb));
+
+	return FramebufferHandle(fbo);
 }
 
 
@@ -661,8 +666,12 @@ void Renderer::deleteBuffer(BufferHandle handle) {
 }
 
 
-void Renderer::deleteFramebuffer(FramebufferHandle &fbo) {
-	fbo.reset();
+void Renderer::deleteFramebuffer(FramebufferHandle fbo) {
+	assert(fbo.handle != 0);
+	auto it = framebuffers.find(fbo.handle);
+	assert(it != framebuffers.end());
+
+	framebuffers.erase(it);
 }
 
 
@@ -726,10 +735,24 @@ void Renderer::beginFrame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
-void Renderer::presentFrame(const FramebufferHandle &fbo) {
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo->fbo);
+void Renderer::presentFrame(FramebufferHandle fbo) {
+	auto it = framebuffers.find(fbo.handle);
+	assert(it != framebuffers.end());
+
+	unsigned int width  = it->second->width;
+	unsigned int height = it->second->height;
+
+	// TODO: necessary? should do linear blit?
+	assert(width  == swapchainDesc.width);
+	assert(height == swapchainDesc.height);
+
+	assert(width > 0);
+	assert(height > 0);
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo.handle);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	glBlitFramebuffer(0, 0, fbo->width, fbo->height, 0, 0, fbo->width, fbo->height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 	SDL_GL_SwapWindow(window);
 }
@@ -740,22 +763,39 @@ void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, u
 }
 
 
-void Renderer::blitFBO(const FramebufferHandle &src, const FramebufferHandle &dest) {
-	assert(src);
-	assert(dest);
-	assert(src->width  == dest->width);
-	assert(src->height == dest->height);
+void Renderer::blitFBO(FramebufferHandle src, FramebufferHandle dest) {
+	assert(src.handle);
+	assert(dest.handle);
 
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, src->fbo);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest->fbo);
-	glBlitFramebuffer(0, 0, src->width, src->height, 0, 0, src->width, src->height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	auto itSrc    = framebuffers.find(src.handle);
+	assert(itSrc != framebuffers.end());
+	auto itDest    = framebuffers.find(dest.handle);
+	assert(itDest != framebuffers.end());
+
+	unsigned int srcWidth   = itSrc->second->width;
+	unsigned int srcHeight  = itSrc->second->height;
+	unsigned int dstWidth   = itDest->second->width;
+	unsigned int dstHeight  = itDest->second->height;
+
+	assert(srcWidth  == dstWidth);
+	assert(srcHeight == srcHeight);
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, src.handle);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest.handle);
+	glBlitFramebuffer(0, 0, srcWidth, srcHeight, 0, 0, dstWidth, dstHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
 
-void Renderer::bindFramebuffer(const FramebufferHandle &fbo) {
-	assert(fbo);
+void Renderer::bindFramebuffer(FramebufferHandle fbo) {
+	assert(fbo.handle);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo);
+	auto it = framebuffers.find(fbo.handle);
+	assert(it != framebuffers.end());
+
+	assert(it->second->width > 0);
+	assert(it->second->height > 0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo.handle);
 }
 
 

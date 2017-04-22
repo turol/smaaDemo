@@ -54,7 +54,37 @@ class VertexShader;
 
 
 typedef uint32_t BufferHandle;
-typedef std::unique_ptr<Framebuffer> FramebufferHandle;
+
+class FramebufferHandle {
+	uint32_t handle;
+
+	friend class Renderer;
+
+	FramebufferHandle(uint32_t h)
+	: handle(h)
+	{
+	}
+
+public:
+
+	FramebufferHandle()
+	: handle(0)
+	{
+	}
+
+	FramebufferHandle(const FramebufferHandle &) = default;
+	FramebufferHandle(FramebufferHandle &&)      = default;
+
+	FramebufferHandle &operator=(const FramebufferHandle &) = default;
+	FramebufferHandle &operator=(FramebufferHandle &&)      = default;
+
+
+
+	operator bool() const {
+		return handle;
+	}
+};
+
 typedef uint32_t PipelineHandle;
 typedef uint32_t RenderPassHandle;
 typedef uint32_t RenderTargetHandle;
@@ -315,6 +345,8 @@ class Renderer {
 
 	GLuint vao;
 
+	std::unordered_map<GLuint, std::unique_ptr<Framebuffer> > framebuffers;
+
 #endif  // RENDERER_OPENGL
 
 	std::unordered_map<RenderTargetHandle, RenderTargetDesc> renderTargets;
@@ -348,7 +380,7 @@ public:
 	TextureHandle       createTexture(const TextureDesc &desc);
 
 	void deleteBuffer(BufferHandle handle);
-	void deleteFramebuffer(FramebufferHandle &fbo);
+	void deleteFramebuffer(FramebufferHandle fbo);
 	void deleteSampler(SamplerHandle handle);
 	void deleteTexture(TextureHandle handle);
 	void deleteRenderTarget(RenderTargetHandle &fbo);
@@ -358,16 +390,16 @@ public:
 
 	// rendering
 	void beginFrame();
-	void presentFrame(const FramebufferHandle &fbo);
+	void presentFrame(FramebufferHandle fbo);
 
 	void beginRenderPass(RenderPassHandle, FramebufferHandle);
 	void endRenderPass();
 
 	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 
-	void blitFBO(const FramebufferHandle &src, const FramebufferHandle &dest);
+	void blitFBO(FramebufferHandle src, FramebufferHandle dest);
 
-	void bindFramebuffer(const FramebufferHandle &fbo);
+	void bindFramebuffer(FramebufferHandle fbo);
 	void bindPipeline(PipelineHandle);
 	void bindShader(const ShaderHandle &shader);
 	void bindIndexBuffer();
