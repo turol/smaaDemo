@@ -592,6 +592,8 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	}
 
 	const auto &colorDesc = renderTargets[desc.colors_[0]];
+	assert(colorDesc.width_ > 0);
+	assert(colorDesc.height_ > 0);
 	fb->width  = colorDesc.width_;
 	fb->height = colorDesc.height_;
 
@@ -601,6 +603,10 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 
 RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	GLuint rt = 0;
+
+	assert(desc.width_  > 0);
+	assert(desc.height_ > 0);
+	assert(desc.format_ != Invalid);
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &rt);
 	glTextureStorage2D(rt, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
