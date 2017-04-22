@@ -173,7 +173,7 @@ namespace RenderTargets {
 		, Edges
 		, BlendWeights
 		, FinalRender
-		, Count        = FinalRender
+		, Count
 	};
 
 }  // namespace RenderTargets
@@ -186,7 +186,7 @@ namespace Framebuffers {
 		, Edges
 		, BlendWeights
 		, FinalRender
-		, Count        = FinalRender
+		, Count
 	};
 
 }  // namespace Framebuffers
