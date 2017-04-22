@@ -571,6 +571,11 @@ BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
 }
 
 
+ShaderHandle Renderer::createShader(const std::string &name, const ShaderMacros &macros) {
+	return std::make_unique<Shader>(name, macros);
+}
+
+
 FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	GLuint fbo = 0;
 

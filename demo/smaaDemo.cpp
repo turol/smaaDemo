@@ -402,7 +402,7 @@ static const uint32_t indices[] =
 void SMAADemo::buildImageShader() {
 	ShaderMacros macros;
 
-	imageShader = std::make_unique<Shader>("image", macros);
+	imageShader = renderer->createShader("image", macros);
 }
 
 
@@ -413,7 +413,7 @@ void SMAADemo::buildFXAAShader() {
 	ShaderMacros macros;
 	macros.emplace("FXAA_QUALITY_PRESET", qualityString);
 
-	fxaaShader = std::make_unique<Shader>("fxaa", macros);
+	fxaaShader = renderer->createShader("fxaa", macros);
 }
 
 
@@ -423,15 +423,15 @@ void SMAADemo::buildSMAAShaders() {
 	macros.emplace(qualityString, "1");
 
 	{
-		smaaEdgeShader = std::make_unique<Shader>("smaaEdge", macros);
+		smaaEdgeShader = renderer->createShader("smaaEdge", macros);
 	}
 
 	{
-		smaaBlendWeightShader = std::make_unique<Shader>("smaaBlendWeight", macros);
+		smaaBlendWeightShader = renderer->createShader("smaaBlendWeight", macros);
 	}
 
 	{
-		smaaNeighborShader = std::make_unique<Shader>("smaaNeighbor", macros);
+		smaaNeighborShader = renderer->createShader("smaaNeighbor", macros);
 	}
 }
 
@@ -482,7 +482,7 @@ void SMAADemo::initRender() {
 
 	ShaderMacros macros;
 
-	cubeShader = std::make_unique<Shader>("cube", macros);
+	cubeShader = renderer->createShader("cube", macros);
 	buildImageShader();
 	buildSMAAShaders();
 	buildFXAAShader();

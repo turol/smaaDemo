@@ -335,10 +335,9 @@ public:
 	~Renderer();
 
 
-	// render target
 	RenderTargetHandle  createRenderTarget(const RenderTargetDesc &desc);
-	// FramebufferHandle   createFramebuffer(const FramebufferDesc &desc);
 	FramebufferHandle   createFramebuffer(const FramebufferDesc &desc);
+	ShaderHandle        createShader(const std::string &name, const ShaderMacros &macros);
 	PipelineHandle      createPipeline(const PipelineDesc &desc);
 	// TODO: add buffer usage flags
 	BufferHandle        createBuffer(uint32_t size, const void *contents);
