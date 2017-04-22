@@ -61,11 +61,7 @@ public:
 
 
 class Shader {
-#ifdef RENDERER_OPENGL
-
-    GLuint program;
-
-#endif  // RENDERER_OPENGL
+	GLuint program;
 
 	Shader() = delete;
 	Shader(const Shader &) = delete;
@@ -84,11 +80,7 @@ public:
 
 
 class Framebuffer {
-	// TODO: need a proper Render object to control the others
 	friend class Renderer;
-	friend class SMAADemo;
-
-#ifdef RENDERER_OPENGL
 
 	GLuint fbo;
 	GLuint colorTex;
@@ -96,7 +88,6 @@ class Framebuffer {
 
 	unsigned int width, height;
 
-#endif  // RENDERER_OPENGL
 
 	Framebuffer() = delete;
 	Framebuffer(const Framebuffer &) = delete;
