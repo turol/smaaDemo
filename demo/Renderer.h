@@ -357,14 +357,22 @@ public:
 		return *this;
 	}
 
-	PipelineDesc();
-	~PipelineDesc();
+	PipelineDesc()
+	: depthWrite_(false)
+	, depthTest_(false)
+	, cullFaces_(false)
+	{
+	}
+
+	~PipelineDesc() {}
 
 	PipelineDesc(const PipelineDesc &desc) = default;
 	PipelineDesc(PipelineDesc &&desc)      = default;
 
 	PipelineDesc &operator=(const PipelineDesc &desc) = default;
 	PipelineDesc &operator=(PipelineDesc &&desc)      = default;
+
+	friend class Renderer;
 };
 
 
@@ -392,6 +400,7 @@ class Renderer {
 
 	std::unordered_map<GLuint, std::unique_ptr<Framebuffer> > framebuffers;
 	std::unordered_map<GLuint, std::unique_ptr<Shader> > shaders;
+	std::unordered_map<uint32_t, PipelineDesc>                 pipelines;
 
 #endif  // RENDERER_OPENGL
 
@@ -446,7 +455,7 @@ public:
 	void blitFBO(FramebufferHandle src, FramebufferHandle dest);
 
 	void bindFramebuffer(FramebufferHandle fbo);
-	void bindPipeline(PipelineHandle);
+	void bindPipeline(PipelineHandle pipeline);
 	void bindShader(ShaderHandle shader);
 	void bindIndexBuffer();
 	void bindVertexBuffer();

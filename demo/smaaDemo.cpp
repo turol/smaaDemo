@@ -204,6 +204,9 @@ class SMAADemo {
 	ShaderHandle cubeShader;
 	ShaderHandle imageShader;
 
+	PipelineHandle cubePipeline;
+	PipelineHandle imagePipeline;
+
 	BufferHandle cubeVBO;
 	BufferHandle cubeIBO;
 	BufferHandle instanceSSBO;
@@ -403,6 +406,12 @@ void SMAADemo::buildImageShader() {
 	ShaderMacros macros;
 
 	imageShader = renderer->createShader("image", macros);
+
+	PipelineDesc plDesc;
+	plDesc.shader(imageShader);
+	plDesc.cullFaces(true);
+
+	imagePipeline = renderer->createPipeline(plDesc);
 }
 
 
@@ -483,6 +492,13 @@ void SMAADemo::initRender() {
 	ShaderMacros macros;
 
 	cubeShader = renderer->createShader("cube", macros);
+	PipelineDesc plDesc;
+	plDesc.shader(cubeShader);
+	plDesc.depthWrite(true)
+	      .depthTest(true)
+	      .cullFaces(true);
+
+	cubePipeline = renderer->createPipeline(plDesc);
 	buildImageShader();
 	buildSMAAShaders();
 	buildFXAAShader();
@@ -897,10 +913,8 @@ void SMAADemo::render() {
 		globals.viewProj = proj * view;
 		glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), &globals, GL_STREAM_DRAW);
 
-		renderer->bindShader(cubeShader);
+		renderer->bindPipeline(cubePipeline);
 
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_CULL_FACE);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO);
 		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
 		glVertexAttribPointer(ATTR_POS, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
@@ -914,13 +928,10 @@ void SMAADemo::render() {
 	} else {
 		glNamedBufferSubData(globalsUBO, 0, sizeof(ShaderDefines::Globals), &globals);
 
-		glEnable(GL_CULL_FACE);
-		glDisable(GL_DEPTH_TEST);
-		glDepthMask(GL_FALSE);
+		renderer->bindPipeline(imagePipeline);
 
 		assert(activeScene - 1 < images.size());
 		const auto &image = images[activeScene - 1];
-		renderer->bindShader(imageShader);
 		renderer->bindTexture(TEXUNIT_COLOR, image.tex, nearestSampler);
 		renderer->draw(0, 3);
 		renderer->bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::MainColor], linearSampler);

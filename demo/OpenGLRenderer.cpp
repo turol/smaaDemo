@@ -639,6 +639,21 @@ ShaderHandle Renderer::createShader(const std::string &name, const ShaderMacros 
 }
 
 
+PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
+	// TODO: something better
+	uint32_t handle = pipelines.size() + 1;
+	auto it = pipelines.find(handle);
+	while (it != pipelines.end()) {
+		handle++;
+		it = pipelines.find(handle);
+	}
+
+	pipelines.emplace(handle, desc);
+
+	return handle;
+}
+
+
 FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	GLuint fbo = 0;
 
@@ -864,6 +879,36 @@ void Renderer::bindShader(ShaderHandle shader) {
 	// TODO: check it's valid
 
 	glUseProgram(shader.handle);
+}
+
+
+void Renderer::bindPipeline(PipelineHandle pipeline) {
+	assert(pipeline != 0);
+
+	auto it = pipelines.find(pipeline);
+	assert(it != pipelines.end());
+
+	const auto &p = it->second;
+
+	// TODO: shadow state, set only necessary
+	bindShader(p.shader_);
+	if (p.depthWrite_) {
+		glDepthMask(GL_TRUE);
+	} else {
+		glDepthMask(GL_FALSE);
+	}
+
+	if (p.depthTest_) {
+		glEnable(GL_DEPTH_TEST);
+	} else {
+		glDisable(GL_DEPTH_TEST);
+	}
+
+	if (p.cullFaces_) {
+		glEnable(GL_CULL_FACE);
+	} else {
+		glDisable(GL_CULL_FACE);
+	}
 }
 
 
