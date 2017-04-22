@@ -451,6 +451,8 @@ Renderer::Renderer(const RendererDesc &desc)
 , context(nullptr)
 , vao(0)
 {
+	swapchainDesc = desc.swapchain;
+
 	// TODO: check return value
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
 
