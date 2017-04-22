@@ -89,7 +89,24 @@ typedef uint32_t PipelineHandle;
 typedef uint32_t RenderPassHandle;
 typedef uint32_t RenderTargetHandle;
 typedef uint32_t SamplerHandle;
-typedef std::unique_ptr<Shader> ShaderHandle;
+
+class ShaderHandle {
+	uint32_t handle;
+
+	friend class Renderer;
+
+	explicit ShaderHandle(uint32_t h)
+	: handle(h)
+	{
+	}
+
+public:
+	ShaderHandle()
+	: handle(0)
+	{
+	}
+};
+
 typedef uint32_t TextureHandle;
 typedef uint32_t UniformBufferHandle;
 
@@ -346,6 +363,7 @@ class Renderer {
 	GLuint vao;
 
 	std::unordered_map<GLuint, std::unique_ptr<Framebuffer> > framebuffers;
+	std::unordered_map<GLuint, std::unique_ptr<Shader> > shaders;
 
 #endif  // RENDERER_OPENGL
 
@@ -401,7 +419,7 @@ public:
 
 	void bindFramebuffer(FramebufferHandle fbo);
 	void bindPipeline(PipelineHandle);
-	void bindShader(const ShaderHandle &shader);
+	void bindShader(ShaderHandle shader);
 	void bindIndexBuffer();
 	void bindVertexBuffer();
 

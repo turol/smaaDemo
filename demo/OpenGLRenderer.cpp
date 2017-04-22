@@ -574,7 +574,12 @@ BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
 
 
 ShaderHandle Renderer::createShader(const std::string &name, const ShaderMacros &macros) {
-	return std::make_unique<Shader>(name, macros);
+	auto shader = std::make_unique<Shader>(name, macros);
+	auto handle = shader->program;
+
+	shaders.emplace(handle, std::move(shader));
+
+	return ShaderHandle(handle);
 }
 
 
@@ -799,11 +804,10 @@ void Renderer::bindFramebuffer(FramebufferHandle fbo) {
 }
 
 
-void Renderer::bindShader(const ShaderHandle &shader) {
-	assert(shader);
-	assert(shader->program != 0);
+void Renderer::bindShader(ShaderHandle shader) {
+	// TODO: check it's valid
 
-	glUseProgram(shader->program);
+	glUseProgram(shader.handle);
 }
 
 
