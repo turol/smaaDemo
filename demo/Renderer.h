@@ -329,14 +329,42 @@ private:
 
 
 class PipelineDesc {
-#if 0   // clang warns...
-	std::string shaderName;
-	ShaderMacros macros;
+	ShaderHandle shader_;
+	bool depthWrite_;
+	bool depthTest_;
+	bool cullFaces_;
 
-	FramebufferHandle framebuffer;
-	// depthstencil
-	// blending
-#endif // 0
+
+public:
+
+	PipelineDesc &shader(ShaderHandle h) {
+		shader_ = h;
+		return *this;
+	}
+
+	PipelineDesc &depthWrite(bool d) {
+		depthWrite_ = d;
+		return *this;
+	}
+
+	PipelineDesc &depthTest(bool d) {
+		depthTest_ = d;
+		return *this;
+	}
+
+	PipelineDesc &cullFaces(bool c) {
+		cullFaces_ = c;
+		return *this;
+	}
+
+	PipelineDesc();
+	~PipelineDesc();
+
+	PipelineDesc(const PipelineDesc &desc) = default;
+	PipelineDesc(PipelineDesc &&desc)      = default;
+
+	PipelineDesc &operator=(const PipelineDesc &desc) = default;
+	PipelineDesc &operator=(PipelineDesc &&desc)      = default;
 };
 
 
