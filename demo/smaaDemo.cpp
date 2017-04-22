@@ -416,9 +416,9 @@ void SMAADemo::buildSMAAShaders() {
 	std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 	macros.emplace(qualityString, "1");
 
-		smaaEdgeShader = renderer->createShader("smaaEdge", macros);
-		smaaBlendWeightShader = renderer->createShader("smaaBlendWeight", macros);
-		smaaNeighborShader = renderer->createShader("smaaNeighbor", macros);
+	smaaEdgeShader = renderer->createShader("smaaEdge", macros);
+	smaaBlendWeightShader = renderer->createShader("smaaBlendWeight", macros);
+	smaaNeighborShader = renderer->createShader("smaaNeighbor", macros);
 }
 
 
