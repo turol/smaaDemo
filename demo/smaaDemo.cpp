@@ -222,7 +222,7 @@ class SMAADemo {
 
 	bool antialiasing;
 	AAMethod::AAMethod aaMethod;
-	ShaderHandle fxaaShader;
+	std::array<ShaderHandle, maxFXAAQuality> fxaaShaders;
 	ShaderHandle smaaEdgeShader;
 	ShaderHandle smaaBlendWeightShader;
 	ShaderHandle smaaNeighborShader;
@@ -401,13 +401,15 @@ static const uint32_t indices[] =
 
 
 void SMAADemo::buildFXAAShader() {
-	// TODO: cache shader based on quality level
-	std::string qualityString(fxaaQualityLevels[fxaaQuality]);
-
 	ShaderMacros macros;
-	macros.emplace("FXAA_QUALITY_PRESET", qualityString);
 
-	fxaaShader = renderer->createShader("fxaa", macros);
+	// TODO: vertex shader not affected by quality, share it
+	for (unsigned int i = 0; i < maxFXAAQuality; i++) {
+		std::string qualityString(fxaaQualityLevels[i]);
+
+		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
+		fxaaShaders[i] = renderer->createShader("fxaa", macros);
+	}
 }
 
 
@@ -773,7 +775,6 @@ void SMAADemo::mainLoopIteration() {
 						fxaaQuality = fxaaQuality + 1;
 					}
 					fxaaQuality = fxaaQuality % maxFXAAQuality;
-					buildFXAAShader();
 					printf("FXAA quality set to %s (%u)\n", fxaaQualityLevels[fxaaQuality], fxaaQuality);
 					break;
 
@@ -932,7 +933,7 @@ void SMAADemo::render() {
 		switch (aaMethod) {
 		case AAMethod::FXAA:
 			renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
-			renderer->bindShader(fxaaShader);
+			renderer->bindShader(fxaaShaders[fxaaQuality]);
 			renderer->draw(0, 3);
 			break;
 
