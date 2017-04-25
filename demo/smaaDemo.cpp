@@ -913,11 +913,13 @@ void SMAADemo::render() {
 		glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), &globals, GL_STREAM_DRAW);
 
 		renderer->bindPipeline(cubePipeline);
+		glEnableVertexAttribArray(ATTR_POS);
+
+		glVertexAttribFormat(ATTR_POS, 3, GL_FLOAT, GL_FALSE, 0);
+		glVertexAttribBinding(ATTR_POS, 0);
+		glBindVertexBuffer(0, cubeVBO, 0, sizeof(Vertex));
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO);
-		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-		glVertexAttribPointer(ATTR_POS, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
-		glEnableVertexAttribArray(ATTR_POS);
 
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, instanceSSBO);
 		glNamedBufferSubData(instanceSSBO, 0, sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0]);
