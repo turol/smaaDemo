@@ -223,9 +223,9 @@ class SMAADemo {
 	bool antialiasing;
 	AAMethod::AAMethod aaMethod;
 	std::array<ShaderHandle, maxFXAAQuality> fxaaShaders;
-	ShaderHandle smaaEdgeShader;
-	ShaderHandle smaaBlendWeightShader;
-	ShaderHandle smaaNeighborShader;
+	std::array<ShaderHandle, maxSMAAQuality> smaaEdgeShaders;
+	std::array<ShaderHandle, maxSMAAQuality> smaaBlendWeightShaders;
+	std::array<ShaderHandle, maxSMAAQuality> smaaNeighborShaders;
 	TextureHandle areaTex;
 	TextureHandle searchTex;
 
@@ -414,13 +414,16 @@ void SMAADemo::buildFXAAShader() {
 
 
 void SMAADemo::buildSMAAShaders() {
-	ShaderMacros macros;
-	std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
-	macros.emplace(qualityString, "1");
+	// TODO: figure out which variants and stages are not affect by quality
+	for (unsigned int i = 0; i < maxSMAAQuality; i++) {
+		ShaderMacros macros;
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[i]);
+		macros.emplace(qualityString, "1");
 
-	smaaEdgeShader = renderer->createShader("smaaEdge", macros);
-	smaaBlendWeightShader = renderer->createShader("smaaBlendWeight", macros);
-	smaaNeighborShader = renderer->createShader("smaaNeighbor", macros);
+		smaaEdgeShaders[i]         = renderer->createShader("smaaEdge", macros);
+		smaaBlendWeightShaders[i]  = renderer->createShader("smaaBlendWeight", macros);
+		smaaNeighborShaders[i]     = renderer->createShader("smaaNeighbor", macros);
+	}
 }
 
 
@@ -785,7 +788,6 @@ void SMAADemo::mainLoopIteration() {
 						smaaQuality = smaaQuality + 1;
 					}
 					smaaQuality = smaaQuality % maxSMAAQuality;
-					buildSMAAShaders();
 					printf("SMAA quality set to %s (%u)\n", smaaQualityLevels[smaaQuality], smaaQuality);
 					break;
 
@@ -938,7 +940,7 @@ void SMAADemo::render() {
 			break;
 
 		case AAMethod::SMAA:
-			renderer->bindShader(smaaEdgeShader);
+			renderer->bindShader(smaaEdgeShaders[smaaQuality]);
 
 			renderer->bindTexture(TEXUNIT_AREATEX, areaTex, linearSampler);
 			renderer->bindTexture(TEXUNIT_SEARCHTEX, searchTex, linearSampler);
@@ -957,7 +959,7 @@ void SMAADemo::render() {
 
 			renderer->bindTexture(TEXUNIT_EDGES, rendertargets[RenderTargets::Edges], linearSampler);
 
-			renderer->bindShader(smaaBlendWeightShader);
+			renderer->bindShader(smaaBlendWeightShaders[smaaQuality]);
 			if (debugMode == 2) {
 				// show blending weights
 				renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
@@ -973,7 +975,7 @@ void SMAADemo::render() {
 			// full effect
 			renderer->bindTexture(TEXUNIT_BLEND, rendertargets[RenderTargets::BlendWeights], linearSampler);
 
-			renderer->bindShader(smaaNeighborShader);
+			renderer->bindShader(smaaNeighborShaders[smaaQuality]);
 			renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
 			glClear(GL_COLOR_BUFFER_BIT);
 			renderer->draw(0, 3);
