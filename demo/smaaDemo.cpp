@@ -440,7 +440,10 @@ void SMAADemo::initRender() {
 
 	renderer.reset(Renderer::createRenderer(desc));
 
-	// TODO: figure out which variants and stages are not affect by quality
+	// all shader stages are affected by quality (SMAA_MAX_SEARCH_STEPS)
+	// TODO: fix that
+	// final blend is not affected by quality, TODO: check
+	// if so, share
 	for (unsigned int i = 0; i < maxSMAAQuality; i++) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[i]);
