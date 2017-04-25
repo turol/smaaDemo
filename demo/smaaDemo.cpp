@@ -471,6 +471,9 @@ void SMAADemo::initRender() {
 
 	renderer.reset(Renderer::createRenderer(desc));
 
+	buildSMAAShaders();
+	buildFXAAShader();
+
 	ShaderMacros macros;
 
 	cubeShader = renderer->createShader("cube", macros);
@@ -490,9 +493,6 @@ void SMAADemo::initRender() {
 	      .cullFaces(true);
 
 	imagePipeline = renderer->createPipeline(plDesc);
-
-	buildSMAAShaders();
-	buildFXAAShader();
 
 	linearSampler  = renderer->createSampler(SamplerDesc().minFilter(Linear). magFilter(Linear));
 	nearestSampler = renderer->createSampler(SamplerDesc().minFilter(Nearest).magFilter(Nearest));
