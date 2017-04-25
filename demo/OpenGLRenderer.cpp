@@ -29,7 +29,7 @@ class VertexShader {
 
 public:
 
-	VertexShader(const std::string &name, const ShaderMacros &macros);
+	VertexShader(const std::string &name, const std::vector<char> &source, const ShaderMacros &macros);
 
 	~VertexShader();
 };
@@ -54,7 +54,7 @@ class FragmentShader {
 
 public:
 
-	FragmentShader(const std::string &name, const ShaderMacros &macros);
+	FragmentShader(const std::string &name, const std::vector<char> &source, const ShaderMacros &macros);
 
 	~FragmentShader();
 };
@@ -305,10 +305,9 @@ static GLenum glTexBaseFormat(Format format) {
 }
 
 
-VertexShader::VertexShader(const std::string &name, const ShaderMacros &macros)
+VertexShader::VertexShader(const std::string &name, const std::vector<char> &source, const ShaderMacros &macros)
 : shader(0)
 {
-	auto source = readTextFile(name);
 	shader = createShader(GL_VERTEX_SHADER, name, source, macros);
 }
 
@@ -321,10 +320,9 @@ VertexShader::~VertexShader() {
 }
 
 
-FragmentShader::FragmentShader(const std::string &name, const ShaderMacros &macros)
+FragmentShader::FragmentShader(const std::string &name, const std::vector<char> &source, const ShaderMacros &macros)
 : shader(0)
 {
-	auto source = readTextFile(name);
 	shader = createShader(GL_FRAGMENT_SHADER, name, source, macros);
 }
 
@@ -340,8 +338,14 @@ FragmentShader::~FragmentShader() {
 Shader::Shader(const std::string &name, const ShaderMacros &macros)
 : program(0)
 {
-	VertexShader   vertexShader(name + ".vert", macros);
-	FragmentShader fragmentShader(name + ".frag", macros);
+	std::string vertexShaderName   = name + ".vert";
+	std::string fragmentShaderName = name + ".frag";
+
+	auto vertexSrc = readFile(vertexShaderName);
+	auto fragSrc   = readFile(fragmentShaderName);
+
+	VertexShader   vertexShader  (vertexShaderName,   vertexSrc, macros);
+	FragmentShader fragmentShader(fragmentShaderName, fragSrc,   macros);
 
 	program = glCreateProgram();
 
