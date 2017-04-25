@@ -272,8 +272,6 @@ public:
 
 	void createFramebuffers();
 
-	void buildSMAAShaders();
-
 	void createCubes();
 
 	void colorCubes();
@@ -398,20 +396,6 @@ static const uint32_t indices[] =
 #define VBO_OFFSETOF(st, member) reinterpret_cast<GLvoid *>(offsetof(st, member))
 
 
-void SMAADemo::buildSMAAShaders() {
-	// TODO: figure out which variants and stages are not affect by quality
-	for (unsigned int i = 0; i < maxSMAAQuality; i++) {
-		ShaderMacros macros;
-		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[i]);
-		macros.emplace(qualityString, "1");
-
-		smaaEdgeShaders[i]         = renderer->createShader("smaaEdge", macros);
-		smaaBlendWeightShaders[i]  = renderer->createShader("smaaBlendWeight", macros);
-		smaaNeighborShaders[i]     = renderer->createShader("smaaNeighbor", macros);
-	}
-}
-
-
 void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 	try {
 		TCLAP::CmdLine cmd("SMAA demo", ' ', "1.0");
@@ -456,7 +440,17 @@ void SMAADemo::initRender() {
 
 	renderer.reset(Renderer::createRenderer(desc));
 
-	buildSMAAShaders();
+	// TODO: figure out which variants and stages are not affect by quality
+	for (unsigned int i = 0; i < maxSMAAQuality; i++) {
+		ShaderMacros macros;
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[i]);
+		macros.emplace(qualityString, "1");
+
+		smaaEdgeShaders[i]         = renderer->createShader("smaaEdge", macros);
+		smaaBlendWeightShaders[i]  = renderer->createShader("smaaBlendWeight", macros);
+		smaaNeighborShaders[i]     = renderer->createShader("smaaNeighbor", macros);
+	}
+
 	ShaderMacros macros;
 
 	// TODO: vertex shader not affected by quality, share it
