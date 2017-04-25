@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -405,6 +406,10 @@ class Renderer {
 	std::unordered_map<RenderTargetHandle, RenderTargetDesc> renderTargets;
 
 #endif  // RENDERER_OPENGL
+
+	std::unordered_map<std::string, std::vector<char> > shaderSources;
+
+	std::vector<char> loadSource(const std::string &name);
 
 
 	explicit Renderer(const RendererDesc &desc);

@@ -606,12 +606,24 @@ BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
 }
 
 
+std::vector<char> Renderer::loadSource(const std::string &name) {
+	auto it = shaderSources.find(name);
+	if (it != shaderSources.end()) {
+		return it->second;
+	} else {
+		auto source = readTextFile(name);
+		shaderSources.emplace(name, source);
+		return source;
+	}
+}
+
+
 ShaderHandle Renderer::createShader(const std::string &name, const ShaderMacros &macros) {
 	std::string vertexShaderName   = name + ".vert";
 	std::string fragmentShaderName = name + ".frag";
 
-	auto vertexSrc = readFile(vertexShaderName);
-	auto fragSrc   = readFile(fragmentShaderName);
+	auto vertexSrc = loadSource(vertexShaderName);
+	auto fragSrc   = loadSource(fragmentShaderName);
 
 	VertexShader   vertexShader  (vertexShaderName,   vertexSrc, macros);
 	FragmentShader fragmentShader(fragmentShaderName, fragSrc,   macros);
