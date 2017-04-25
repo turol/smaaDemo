@@ -222,7 +222,10 @@ class SMAADemo {
 
 	bool antialiasing;
 	AAMethod::AAMethod aaMethod;
+
 	std::array<ShaderHandle, maxFXAAQuality> fxaaShaders;
+	std::array<PipelineHandle, maxFXAAQuality> fxaaPipelines;
+
 	std::array<ShaderHandle, maxSMAAQuality> smaaEdgeShaders;
 	std::array<ShaderHandle, maxSMAAQuality> smaaBlendWeightShaders;
 	std::array<ShaderHandle, maxSMAAQuality> smaaNeighborShaders;
@@ -440,6 +443,11 @@ void SMAADemo::initRender() {
 
 	renderer.reset(Renderer::createRenderer(desc));
 
+	PipelineDesc plDesc;
+	plDesc.depthWrite(false)
+	      .depthTest(false)
+	      .cullFaces(true);
+
 	// all shader stages are affected by quality (SMAA_MAX_SEARCH_STEPS)
 	// TODO: fix that
 	// final blend is not affected by quality, TODO: check
@@ -462,12 +470,13 @@ void SMAADemo::initRender() {
 
 		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
 		fxaaShaders[i] = renderer->createShader("fxaa", macros);
+		plDesc.shader(fxaaShaders[i]);
+		fxaaPipelines[i] = renderer->createPipeline(plDesc);
 	}
 
 	macros.clear();
 
 	cubeShader = renderer->createShader("cube", macros);
-	PipelineDesc plDesc;
 	plDesc.shader(cubeShader);
 	plDesc.depthWrite(true)
 	      .depthTest(true)
@@ -925,7 +934,7 @@ void SMAADemo::render() {
 		switch (aaMethod) {
 		case AAMethod::FXAA:
 			renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
-			renderer->bindShader(fxaaShaders[fxaaQuality]);
+			renderer->bindPipeline(fxaaPipelines[fxaaQuality]);
 			renderer->draw(0, 3);
 			break;
 
