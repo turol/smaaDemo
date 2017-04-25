@@ -227,8 +227,11 @@ class SMAADemo {
 	std::array<PipelineHandle, maxFXAAQuality> fxaaPipelines;
 
 	std::array<ShaderHandle, maxSMAAQuality> smaaEdgeShaders;
+	std::array<PipelineHandle, maxSMAAQuality> smaaEdgePipelines;
 	std::array<ShaderHandle, maxSMAAQuality> smaaBlendWeightShaders;
+	std::array<PipelineHandle, maxSMAAQuality> smaaBlendWeightPipelines;
 	std::array<ShaderHandle, maxSMAAQuality> smaaNeighborShaders;
+	std::array<PipelineHandle, maxSMAAQuality> smaaNeighborPipelines;
 	TextureHandle areaTex;
 	TextureHandle searchTex;
 
@@ -458,8 +461,16 @@ void SMAADemo::initRender() {
 		macros.emplace(qualityString, "1");
 
 		smaaEdgeShaders[i]         = renderer->createShader("smaaEdge", macros);
+		plDesc.shader(smaaEdgeShaders[i]);
+		smaaEdgePipelines[i]       = renderer->createPipeline(plDesc);
+
 		smaaBlendWeightShaders[i]  = renderer->createShader("smaaBlendWeight", macros);
+		plDesc.shader(smaaBlendWeightShaders[i]);
+		smaaBlendWeightPipelines[i] = renderer->createPipeline(plDesc);
+
 		smaaNeighborShaders[i]     = renderer->createShader("smaaNeighbor", macros);
+		plDesc.shader(smaaNeighborShaders[i]);
+		smaaNeighborPipelines[i]   = renderer->createPipeline(plDesc);
 	}
 
 	ShaderMacros macros;
@@ -926,9 +937,6 @@ void SMAADemo::render() {
 	}
 
 	if (antialiasing) {
-		glDisable(GL_DEPTH_TEST);
-		glDepthMask(GL_FALSE);
-
 		renderer->bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::MainColor], linearSampler);
 
 		switch (aaMethod) {
@@ -939,7 +947,7 @@ void SMAADemo::render() {
 			break;
 
 		case AAMethod::SMAA:
-			renderer->bindShader(smaaEdgeShaders[smaaQuality]);
+			renderer->bindPipeline(smaaEdgePipelines[smaaQuality]);
 
 			renderer->bindTexture(TEXUNIT_AREATEX, areaTex, linearSampler);
 			renderer->bindTexture(TEXUNIT_SEARCHTEX, searchTex, linearSampler);
@@ -958,7 +966,7 @@ void SMAADemo::render() {
 
 			renderer->bindTexture(TEXUNIT_EDGES, rendertargets[RenderTargets::Edges], linearSampler);
 
-			renderer->bindShader(smaaBlendWeightShaders[smaaQuality]);
+			renderer->bindPipeline(smaaBlendWeightPipelines[smaaQuality]);
 			if (debugMode == 2) {
 				// show blending weights
 				renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
@@ -974,7 +982,7 @@ void SMAADemo::render() {
 			// full effect
 			renderer->bindTexture(TEXUNIT_BLEND, rendertargets[RenderTargets::BlendWeights], linearSampler);
 
-			renderer->bindShader(smaaNeighborShaders[smaaQuality]);
+			renderer->bindPipeline(smaaNeighborPipelines[smaaQuality]);
 			renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
 			glClear(GL_COLOR_BUFFER_BIT);
 			renderer->draw(0, 3);
