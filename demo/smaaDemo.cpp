@@ -272,8 +272,6 @@ public:
 
 	void createFramebuffers();
 
-	void buildFXAAShader();
-
 	void buildSMAAShaders();
 
 	void createCubes();
@@ -400,19 +398,6 @@ static const uint32_t indices[] =
 #define VBO_OFFSETOF(st, member) reinterpret_cast<GLvoid *>(offsetof(st, member))
 
 
-void SMAADemo::buildFXAAShader() {
-	ShaderMacros macros;
-
-	// TODO: vertex shader not affected by quality, share it
-	for (unsigned int i = 0; i < maxFXAAQuality; i++) {
-		std::string qualityString(fxaaQualityLevels[i]);
-
-		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
-		fxaaShaders[i] = renderer->createShader("fxaa", macros);
-	}
-}
-
-
 void SMAADemo::buildSMAAShaders() {
 	// TODO: figure out which variants and stages are not affect by quality
 	for (unsigned int i = 0; i < maxSMAAQuality; i++) {
@@ -472,9 +457,17 @@ void SMAADemo::initRender() {
 	renderer.reset(Renderer::createRenderer(desc));
 
 	buildSMAAShaders();
-	buildFXAAShader();
-
 	ShaderMacros macros;
+
+	// TODO: vertex shader not affected by quality, share it
+	for (unsigned int i = 0; i < maxFXAAQuality; i++) {
+		std::string qualityString(fxaaQualityLevels[i]);
+
+		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
+		fxaaShaders[i] = renderer->createShader("fxaa", macros);
+	}
+
+	macros.clear();
 
 	cubeShader = renderer->createShader("cube", macros);
 	PipelineDesc plDesc;
