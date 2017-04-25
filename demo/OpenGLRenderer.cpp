@@ -25,7 +25,8 @@ class VertexShader {
 	VertexShader(VertexShader &&) = delete;
 	VertexShader &operator=(VertexShader &&) = delete;
 
-	friend class Shader;
+	friend class Renderer;
+	friend struct Shader;
 
 public:
 
@@ -50,7 +51,8 @@ class FragmentShader {
 	FragmentShader(FragmentShader &&) = delete;
 	FragmentShader &operator=(FragmentShader &&) = delete;
 
-	friend class Shader;
+	friend class Renderer;
+	friend struct Shader;
 
 public:
 
@@ -60,7 +62,7 @@ public:
 };
 
 
-class Shader {
+struct Shader {
 	GLuint program;
 
 	Shader() = delete;
@@ -70,12 +72,9 @@ class Shader {
 	Shader(Shader &&) = delete;
 	Shader &operator=(Shader &&) = delete;
 
-public:
-	Shader(const std::string &name, const ShaderMacros &macros);
+	explicit Shader(GLuint program_);
 
 	~Shader();
-
-	friend class Renderer;
 };
 
 
@@ -335,35 +334,9 @@ FragmentShader::~FragmentShader() {
 }
 
 
-Shader::Shader(const std::string &name, const ShaderMacros &macros)
-: program(0)
+Shader::Shader(GLuint program_)
+: program(program_)
 {
-	std::string vertexShaderName   = name + ".vert";
-	std::string fragmentShaderName = name + ".frag";
-
-	auto vertexSrc = readFile(vertexShaderName);
-	auto fragSrc   = readFile(fragmentShaderName);
-
-	VertexShader   vertexShader  (vertexShaderName,   vertexSrc, macros);
-	FragmentShader fragmentShader(fragmentShaderName, fragSrc,   macros);
-
-	program = glCreateProgram();
-
-	glAttachShader(program, vertexShader.shader);
-	glAttachShader(program, fragmentShader.shader);
-	glLinkProgram(program);
-
-	GLint status = 0;
-	glGetProgramiv(program, GL_LINK_STATUS, &status);
-	if (status != GL_TRUE) {
-		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &status);
-		std::vector<char> infoLog(status + 1, '\0');
-		// TODO: better logging
-		glGetProgramInfoLog(program, status, NULL, &infoLog[0]);
-		printf("info log: %s\n", &infoLog[0]); fflush(stdout);
-		throw std::runtime_error("shader link failed");
-	}
-	glUseProgram(program);
 }
 
 
@@ -634,12 +607,36 @@ BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
 
 
 ShaderHandle Renderer::createShader(const std::string &name, const ShaderMacros &macros) {
-	auto shader = std::make_unique<Shader>(name, macros);
-	auto handle = shader->program;
+	std::string vertexShaderName   = name + ".vert";
+	std::string fragmentShaderName = name + ".frag";
 
-	shaders.emplace(handle, std::move(shader));
+	auto vertexSrc = readFile(vertexShaderName);
+	auto fragSrc   = readFile(fragmentShaderName);
 
-	return ShaderHandle(handle);
+	VertexShader   vertexShader  (vertexShaderName,   vertexSrc, macros);
+	FragmentShader fragmentShader(fragmentShaderName, fragSrc,   macros);
+
+	GLuint program = glCreateProgram();
+
+	glAttachShader(program, vertexShader.shader);
+	glAttachShader(program, fragmentShader.shader);
+	glLinkProgram(program);
+
+	GLint status = 0;
+	glGetProgramiv(program, GL_LINK_STATUS, &status);
+	if (status != GL_TRUE) {
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &status);
+		std::vector<char> infoLog(status + 1, '\0');
+		// TODO: better logging
+		glGetProgramInfoLog(program, status, NULL, &infoLog[0]);
+		printf("info log: %s\n", &infoLog[0]); fflush(stdout);
+		throw std::runtime_error("shader link failed");
+	}
+	glUseProgram(program);
+
+	shaders.emplace(program, std::make_unique<Shader>(program));
+
+	return ShaderHandle(program);
 }
 
 

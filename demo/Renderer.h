@@ -49,7 +49,7 @@ using namespace glm;
 
 class FragmentShader;
 class Framebuffer;
-class Shader;
+struct Shader;
 class VertexShader;
 
 
