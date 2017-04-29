@@ -922,6 +922,8 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 	} else {
 		glDisable(GL_CULL_FACE);
 	}
+
+	currentPipeline = p;
 }
 
 

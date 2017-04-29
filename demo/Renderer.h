@@ -402,6 +402,8 @@ class Renderer {
 
 #ifdef RENDERER_OPENGL
 
+	PipelineDesc  currentPipeline;
+
 	SDL_Window *window;
 	SDL_GLContext context;
 
