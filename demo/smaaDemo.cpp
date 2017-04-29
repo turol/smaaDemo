@@ -919,8 +919,7 @@ void SMAADemo::render() {
 		glVertexAttribBinding(ATTR_POS, 0);
 
 		renderer->bindVertexBuffer(0, cubeVBO, sizeof(Vertex));
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO);
+		renderer->bindIndexBuffer(cubeIBO);
 
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, instanceSSBO);
 		glNamedBufferSubData(instanceSSBO, 0, sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0]);

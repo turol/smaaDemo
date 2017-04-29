@@ -925,6 +925,11 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 }
 
 
+void Renderer::bindIndexBuffer(BufferHandle buffer) {
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer);
+}
+
+
 void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer, unsigned int stride) {
 	// TODO: get stride from current Pipeline?
 	glBindVertexBuffer(binding, buffer, 0, stride);

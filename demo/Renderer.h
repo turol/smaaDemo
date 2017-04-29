@@ -462,7 +462,7 @@ public:
 	void bindFramebuffer(FramebufferHandle fbo);
 	void bindPipeline(PipelineHandle pipeline);
 	void bindShader(ShaderHandle shader);
-	void bindIndexBuffer();
+	void bindIndexBuffer(BufferHandle buffer);
 	void bindVertexBuffer(unsigned int binding, BufferHandle buffer, unsigned int stride);
 
 	// TODO: replace with descriptor set stuff
