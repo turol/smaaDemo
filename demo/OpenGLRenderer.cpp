@@ -925,6 +925,12 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 }
 
 
+void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer, unsigned int stride) {
+	// TODO: get stride from current Pipeline?
+	glBindVertexBuffer(binding, buffer, 0, stride);
+}
+
+
 void Renderer::bindTexture(unsigned int unit, TextureHandle tex, SamplerHandle sampler) {
 	glBindTextureUnit(unit, tex);
 	glBindSampler(unit, sampler);

@@ -917,7 +917,8 @@ void SMAADemo::render() {
 
 		glVertexAttribFormat(ATTR_POS, 3, GL_FLOAT, GL_FALSE, 0);
 		glVertexAttribBinding(ATTR_POS, 0);
-		glBindVertexBuffer(0, cubeVBO, 0, sizeof(Vertex));
+
+		renderer->bindVertexBuffer(0, cubeVBO, sizeof(Vertex));
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO);
 

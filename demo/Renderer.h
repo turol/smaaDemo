@@ -463,7 +463,7 @@ public:
 	void bindPipeline(PipelineHandle pipeline);
 	void bindShader(ShaderHandle shader);
 	void bindIndexBuffer();
-	void bindVertexBuffer();
+	void bindVertexBuffer(unsigned int binding, BufferHandle buffer, unsigned int stride);
 
 	// TODO: replace with descriptor set stuff
 	void bindTexture(unsigned int unit, TextureHandle tex, SamplerHandle sampler);
