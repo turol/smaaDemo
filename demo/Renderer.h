@@ -469,6 +469,7 @@ public:
 	void bindTexture(unsigned int unit, TextureHandle tex, SamplerHandle sampler);
 
 	void draw(unsigned int firstVertex, unsigned int vertexCount);
+	void drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount);
 };
 
 

@@ -937,4 +937,11 @@ void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 }
 
 
+void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
+	// TODO: get primitive from current pipeline
+	// TODO: get index type from current index buffer
+	glDrawElementsInstanced(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, NULL, instanceCount);
+}
+
+
 #endif //  RENDERER_OPENGL

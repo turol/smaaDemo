@@ -924,7 +924,7 @@ void SMAADemo::render() {
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, instanceSSBO);
 		glNamedBufferSubData(instanceSSBO, 0, sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0]);
 
-		glDrawElementsInstanced(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, NULL, cubes.size());
+		renderer->drawIndexedInstanced(3 * 2 * 6, cubes.size());
 		glDisableVertexAttribArray(ATTR_POS);
 	} else {
 		glNamedBufferSubData(globalsUBO, 0, sizeof(ShaderDefines::Globals), &globals);
