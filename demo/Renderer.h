@@ -331,6 +331,7 @@ private:
 
 class PipelineDesc {
 	ShaderHandle shader_;
+	uint32_t vertexAttribMask;
 	bool depthWrite_;
 	bool depthTest_;
 	bool cullFaces_;
@@ -340,6 +341,12 @@ public:
 
 	PipelineDesc &shader(ShaderHandle h) {
 		shader_ = h;
+		return *this;
+	}
+
+	PipelineDesc &vertexAttrib(uint32_t attrib) {
+		assert(attrib < 32);
+		vertexAttribMask |= (1 << attrib);
 		return *this;
 	}
 
@@ -359,7 +366,8 @@ public:
 	}
 
 	PipelineDesc()
-	: depthWrite_(false)
+	: vertexAttribMask(0)
+	, depthWrite_(false)
 	, depthTest_(false)
 	, cullFaces_(false)
 	{

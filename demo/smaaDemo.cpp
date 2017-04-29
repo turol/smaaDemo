@@ -488,12 +488,14 @@ void SMAADemo::initRender() {
 	macros.clear();
 
 	cubeShader = renderer->createShader("cube", macros);
-	plDesc.shader(cubeShader);
-	plDesc.depthWrite(true)
-	      .depthTest(true)
-	      .cullFaces(true);
 
-	cubePipeline = renderer->createPipeline(plDesc);
+	cubePipeline = renderer->createPipeline(PipelineDesc()
+	                                        .shader(cubeShader)
+	                                        .vertexAttrib(ATTR_POS)
+	                                        .depthWrite(true)
+	                                        .depthTest(true)
+	                                        .cullFaces(true)
+	                                       );
 
 	imageShader = renderer->createShader("image", macros);
 
