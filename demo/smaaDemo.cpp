@@ -915,7 +915,6 @@ void SMAADemo::render() {
 		glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), &globals, GL_STREAM_DRAW);
 
 		renderer->bindPipeline(cubePipeline);
-		glEnableVertexAttribArray(ATTR_POS);
 
 		glVertexAttribFormat(ATTR_POS, 3, GL_FLOAT, GL_FALSE, 0);
 		glVertexAttribBinding(ATTR_POS, 0);
@@ -927,7 +926,6 @@ void SMAADemo::render() {
 		glNamedBufferSubData(instanceSSBO, 0, sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0]);
 
 		renderer->drawIndexedInstanced(3 * 2 * 6, cubes.size());
-		glDisableVertexAttribArray(ATTR_POS);
 	} else {
 		glNamedBufferSubData(globalsUBO, 0, sizeof(ShaderDefines::Globals), &globals);
 

@@ -923,6 +923,23 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 		glDisable(GL_CULL_FACE);
 	}
 
+	uint32_t oldMask = currentPipeline.vertexAttribMask;
+	uint32_t newMask = p.vertexAttribMask;
+
+	uint32_t vattrChanged = oldMask ^ newMask;
+	while (vattrChanged != 0) {
+		int bit = __builtin_ctz(vattrChanged);
+		uint32_t mask = 1 << bit;
+
+		if (newMask & mask) {
+			glEnableVertexAttribArray(bit);
+		} else {
+			glDisableVertexAttribArray(bit);
+		}
+
+		vattrChanged &= ~mask;
+	}
+
 	currentPipeline = p;
 }
 
