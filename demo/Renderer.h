@@ -46,6 +46,7 @@ using namespace glm;
 
 
 #define MAX_COLOR_RENDERTARGETS 2
+#define MAX_VERTEX_ATTRIBS      1
 
 
 class FragmentShader;
@@ -336,6 +337,15 @@ class PipelineDesc {
 	bool depthTest_;
 	bool cullFaces_;
 
+	struct VertexAttr {
+		// TODO: format
+		uint8_t bufBinding;
+		uint8_t count;
+		uint8_t offset;
+	};
+
+	std::array<VertexAttr, MAX_VERTEX_ATTRIBS> vertexAttribs;
+
 
 public:
 
@@ -344,8 +354,14 @@ public:
 		return *this;
 	}
 
-	PipelineDesc &vertexAttrib(uint32_t attrib) {
-		assert(attrib < 32);
+	PipelineDesc &vertexAttrib(uint32_t attrib, uint8_t bufBinding, uint8_t count, uint8_t offset) {
+		assert(attrib < MAX_VERTEX_ATTRIBS);
+
+		vertexAttribs[attrib].bufBinding = bufBinding;
+		vertexAttribs[attrib].count      = count;
+		vertexAttribs[attrib].offset     = offset;
+
+
 		vertexAttribMask |= (1 << attrib);
 		return *this;
 	}
@@ -371,6 +387,11 @@ public:
 	, depthTest_(false)
 	, cullFaces_(false)
 	{
+		for (unsigned int i = 0; i < MAX_VERTEX_ATTRIBS; i++) {
+			vertexAttribs[i].bufBinding = 0;
+			vertexAttribs[i].count      = 0;
+			vertexAttribs[i].offset     = 0;
+		}
 	}
 
 	~PipelineDesc() {}

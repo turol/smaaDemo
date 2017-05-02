@@ -926,6 +926,7 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 	uint32_t oldMask = currentPipeline.vertexAttribMask;
 	uint32_t newMask = p.vertexAttribMask;
 
+	// enable/disable changed attributes
 	uint32_t vattrChanged = oldMask ^ newMask;
 	while (vattrChanged != 0) {
 		int bit = __builtin_ctz(vattrChanged);
@@ -938,6 +939,18 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 		}
 
 		vattrChanged &= ~mask;
+	}
+
+	// set format on new attributes
+	const auto &attribs = p.vertexAttribs;
+	while (newMask) {
+		int bit = __builtin_ctz(newMask);
+		uint32_t mask = 1 << bit;
+
+		const auto &attr = attribs[bit];
+		glVertexAttribFormat(bit, attr.count, GL_FLOAT, GL_FALSE, attr.offset);
+		glVertexAttribBinding(bit, attr.bufBinding);
+		newMask &= ~mask;
 	}
 
 	currentPipeline = p;

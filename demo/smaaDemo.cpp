@@ -491,7 +491,7 @@ void SMAADemo::initRender() {
 
 	cubePipeline = renderer->createPipeline(PipelineDesc()
 	                                        .shader(cubeShader)
-	                                        .vertexAttrib(ATTR_POS)
+	                                        .vertexAttrib(ATTR_POS, 0, 3, 0)
 	                                        .depthWrite(true)
 	                                        .depthTest(true)
 	                                        .cullFaces(true)
@@ -915,9 +915,6 @@ void SMAADemo::render() {
 		glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), &globals, GL_STREAM_DRAW);
 
 		renderer->bindPipeline(cubePipeline);
-
-		glVertexAttribFormat(ATTR_POS, 3, GL_FLOAT, GL_FALSE, 0);
-		glVertexAttribBinding(ATTR_POS, 0);
 
 		renderer->bindVertexBuffer(0, cubeVBO, sizeof(Vertex));
 		renderer->bindIndexBuffer(cubeIBO);
