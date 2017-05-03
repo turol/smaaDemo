@@ -440,8 +440,8 @@ class Renderer {
 
 	std::unordered_map<std::string, std::vector<char> > shaderSources;
 
-	std::vector<char> loadSource(const std::string &name);
 
+	std::vector<char> loadSource(const std::string &name);
 
 	explicit Renderer(const RendererDesc &desc);
 	Renderer(const Renderer &)            = delete;
