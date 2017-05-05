@@ -483,6 +483,7 @@ Renderer::Renderer(const RendererDesc &desc)
 : window(nullptr)
 , context(nullptr)
 , vao(0)
+, inRenderPass(false)
 {
 	swapchainDesc = desc.swapchain;
 
@@ -844,6 +845,20 @@ void Renderer::presentFrame(FramebufferHandle fbo) {
 	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 	SDL_GL_SwapWindow(window);
+}
+
+
+void Renderer::beginRenderPass(FramebufferHandle fbo) {
+	assert(!inRenderPass);
+	inRenderPass = true;
+
+	bindFramebuffer(fbo);
+}
+
+
+void Renderer::endRenderPass() {
+	assert(inRenderPass);
+	inRenderPass = false;
 }
 
 

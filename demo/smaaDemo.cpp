@@ -898,7 +898,7 @@ void SMAADemo::render() {
 	renderer->setViewport(0, 0, windowWidth, windowHeight);
 
 	glDepthMask(GL_TRUE);
-	renderer->bindFramebuffer(fbos[Framebuffers::MainRender]);
+	renderer->beginRenderPass(fbos[Framebuffers::MainRender]);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (activeScene == 0) {
@@ -934,15 +934,17 @@ void SMAADemo::render() {
 		renderer->draw(0, 3);
 		renderer->bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::MainColor], linearSampler);
 	}
+	renderer->endRenderPass();
 
 	if (antialiasing) {
 		renderer->bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::MainColor], linearSampler);
 
 		switch (aaMethod) {
 		case AAMethod::FXAA:
-			renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
+			renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
 			renderer->bindPipeline(fxaaPipelines[fxaaQuality]);
 			renderer->draw(0, 3);
+			renderer->endRenderPass();
 			break;
 
 		case AAMethod::SMAA:
@@ -953,14 +955,16 @@ void SMAADemo::render() {
 
 			if (debugMode == 1) {
 				// detect edges only
-				renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
+				renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
 				glClear(GL_COLOR_BUFFER_BIT);
 				renderer->draw(0, 3);
+				renderer->endRenderPass();
 				break;
 			} else {
-				renderer->bindFramebuffer(fbos[Framebuffers::Edges]);
+				renderer->beginRenderPass(fbos[Framebuffers::Edges]);
 				glClear(GL_COLOR_BUFFER_BIT);
 				renderer->draw(0, 3);
+				renderer->endRenderPass();
 			}
 
 			renderer->bindTexture(TEXUNIT_EDGES, rendertargets[RenderTargets::Edges], linearSampler);
@@ -968,23 +972,26 @@ void SMAADemo::render() {
 			renderer->bindPipeline(smaaBlendWeightPipelines[smaaQuality]);
 			if (debugMode == 2) {
 				// show blending weights
-				renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
+				renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
 				glClear(GL_COLOR_BUFFER_BIT);
 				renderer->draw(0, 3);
+				renderer->endRenderPass();
 				break;
 			} else {
-				renderer->bindFramebuffer(fbos[Framebuffers::BlendWeights]);
+				renderer->beginRenderPass(fbos[Framebuffers::BlendWeights]);
 				glClear(GL_COLOR_BUFFER_BIT);
 				renderer->draw(0, 3);
+				renderer->endRenderPass();
 			}
 
 			// full effect
 			renderer->bindTexture(TEXUNIT_BLEND, rendertargets[RenderTargets::BlendWeights], linearSampler);
 
 			renderer->bindPipeline(smaaNeighborPipelines[smaaQuality]);
-			renderer->bindFramebuffer(fbos[Framebuffers::FinalRender]);
+			renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
 			glClear(GL_COLOR_BUFFER_BIT);
 			renderer->draw(0, 3);
+			renderer->endRenderPass();
 			break;
 		}
 

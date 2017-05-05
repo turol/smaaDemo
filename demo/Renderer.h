@@ -440,6 +440,8 @@ class Renderer {
 
 	std::unordered_map<std::string, std::vector<char> > shaderSources;
 
+	bool inRenderPass;
+
 
 	std::vector<char> loadSource(const std::string &name);
 
@@ -483,7 +485,7 @@ public:
 	void beginFrame();
 	void presentFrame(FramebufferHandle fbo);
 
-	void beginRenderPass(RenderPassHandle, FramebufferHandle);
+	void beginRenderPass(FramebufferHandle fbo);
 	void endRenderPass();
 
 	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
