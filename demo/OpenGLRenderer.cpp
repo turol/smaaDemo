@@ -833,6 +833,7 @@ void Renderer::beginFrame() {
 	// TODO: some asserting here
 
 	// TODO: reset all relevant state in case some 3rd-party program fucked them up
+	glDepthMask(GL_TRUE);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	// TODO: only clear depth/stencil if we have it

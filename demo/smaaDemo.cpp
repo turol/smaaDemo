@@ -879,7 +879,6 @@ void SMAADemo::render() {
 
 	renderer->setViewport(0, 0, windowWidth, windowHeight);
 
-	glDepthMask(GL_TRUE);
 	renderer->beginRenderPass(fbos[Framebuffers::MainRender]);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
