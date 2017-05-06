@@ -209,7 +209,6 @@ class SMAADemo {
 
 	BufferHandle cubeVBO;
 	BufferHandle cubeIBO;
-	BufferHandle instanceSSBO;
 
 	SamplerHandle linearSampler;
 	SamplerHandle nearestSampler;
@@ -301,7 +300,6 @@ SMAADemo::SMAADemo()
 , glDebug(false)
 , cubeVBO(0)
 , cubeIBO(0)
-, instanceSSBO(0)
 , linearSampler(0)
 , nearestSampler(0)
 , cubePower(3)
@@ -337,7 +335,6 @@ SMAADemo::SMAADemo()
 SMAADemo::~SMAADemo() {
 	renderer->deleteBuffer(cubeVBO);
 	renderer->deleteBuffer(cubeIBO);
-	renderer->deleteBuffer(instanceSSBO);
 
 	renderer->deleteSampler(linearSampler);
 	renderer->deleteSampler(nearestSampler);
@@ -654,12 +651,6 @@ void SMAADemo::createCubes() {
 		}
 	}
 
-	// reallocate instance data buffer
-	if (instanceSSBO) {
-		renderer->deleteBuffer(instanceSSBO);
-	}
-	instanceSSBO = renderer->createBuffer(sizeof(ShaderDefines::Cube) * numCubes, NULL);
-
 	colorCubes();
 }
 
@@ -911,8 +902,8 @@ void SMAADemo::render() {
 		renderer->bindVertexBuffer(0, cubeVBO, sizeof(Vertex));
 		renderer->bindIndexBuffer(cubeIBO);
 
+		BufferHandle instanceSSBO = renderer->createEphemeralBuffer(sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0]);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, instanceSSBO);
-		glNamedBufferSubData(instanceSSBO, 0, sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0]);
 
 		renderer->drawIndexedInstanced(3 * 2 * 6, cubes.size());
 	} else {
