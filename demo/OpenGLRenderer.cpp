@@ -989,6 +989,11 @@ void Renderer::bindTexture(unsigned int unit, TextureHandle tex, SamplerHandle s
 }
 
 
+void Renderer::bindUniformBuffer(unsigned int index, BufferHandle buffer) {
+	glBindBufferBase(GL_UNIFORM_BUFFER, index, buffer);
+}
+
+
 void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	// TODO: get primitive from current pipeline
 	glDrawArrays(GL_TRIANGLES, firstVertex, vertexCount);

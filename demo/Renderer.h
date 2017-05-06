@@ -500,6 +500,7 @@ public:
 
 	// TODO: replace with descriptor set stuff
 	void bindTexture(unsigned int unit, TextureHandle tex, SamplerHandle sampler);
+	void bindUniformBuffer(unsigned int index, BufferHandle buffer);
 
 	void draw(unsigned int firstVertex, unsigned int vertexCount);
 	void drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount);
