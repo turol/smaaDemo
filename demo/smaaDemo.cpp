@@ -891,7 +891,6 @@ void SMAADemo::render() {
 		glCreateBuffers(1, &globalsUBO);
 		glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), NULL, GL_STREAM_DRAW);
 	}
-	glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalsUBO);
 
 	renderer->beginFrame();
 
@@ -913,6 +912,7 @@ void SMAADemo::render() {
 		glm::mat4 proj = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, 0.1f, 100.0f);
 		globals.viewProj = proj * view;
 		glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), &globals, GL_STREAM_DRAW);
+		glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalsUBO);
 
 		renderer->bindPipeline(cubePipeline);
 
@@ -925,6 +925,7 @@ void SMAADemo::render() {
 		renderer->drawIndexedInstanced(3 * 2 * 6, cubes.size());
 	} else {
 		glNamedBufferSubData(globalsUBO, 0, sizeof(ShaderDefines::Globals), &globals);
+		glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalsUBO);
 
 		renderer->bindPipeline(imagePipeline);
 
