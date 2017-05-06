@@ -440,6 +440,19 @@ class Renderer {
 
 #endif  // RENDERER_OPENGL
 
+
+#ifdef RENDERER_NULL
+
+	PipelineDesc  currentPipeline;
+
+	unsigned int numBuffers;
+	unsigned int numPipelines;
+	unsigned int numSamplers;
+	unsigned int numTextures;
+
+#endif   // RENDERER_NULL
+
+
 	std::unordered_map<std::string, std::vector<char> > shaderSources;
 
 	bool inRenderPass;

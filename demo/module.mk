@@ -8,7 +8,7 @@ FILES:= \
 
 
 smaaDemo_MODULES:=
-smaaDemo_SRC:=$(foreach f, OpenGLRenderer.cpp smaaDemo.cpp Utils.cpp, $(dir)/$(f))
+smaaDemo_SRC:=$(foreach f, OpenGLRenderer.cpp NullRenderer.cpp smaaDemo.cpp Utils.cpp, $(dir)/$(f))
 
 
 
