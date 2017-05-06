@@ -436,6 +436,8 @@ class Renderer {
 
 	std::unordered_map<RenderTargetHandle, RenderTargetDesc> renderTargets;
 
+	std::vector<BufferHandle> ephemeralBuffers;
+
 #endif  // RENDERER_OPENGL
 
 	std::unordered_map<std::string, std::vector<char> > shaderSources;

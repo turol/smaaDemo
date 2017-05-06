@@ -210,7 +210,6 @@ class SMAADemo {
 	BufferHandle cubeVBO;
 	BufferHandle cubeIBO;
 	BufferHandle instanceSSBO;
-	BufferHandle globalsUBO;
 
 	SamplerHandle linearSampler;
 	SamplerHandle nearestSampler;
@@ -303,7 +302,6 @@ SMAADemo::SMAADemo()
 , cubeVBO(0)
 , cubeIBO(0)
 , instanceSSBO(0)
-, globalsUBO(0)
 , linearSampler(0)
 , nearestSampler(0)
 , cubePower(3)
@@ -340,7 +338,6 @@ SMAADemo::~SMAADemo() {
 	renderer->deleteBuffer(cubeVBO);
 	renderer->deleteBuffer(cubeIBO);
 	renderer->deleteBuffer(instanceSSBO);
-	renderer->deleteBuffer(globalsUBO);
 
 	renderer->deleteSampler(linearSampler);
 	renderer->deleteSampler(nearestSampler);
@@ -887,11 +884,6 @@ void SMAADemo::render() {
 	ShaderDefines::Globals globals;
 	globals.screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 
-	if (globalsUBO == 0) {
-		glCreateBuffers(1, &globalsUBO);
-		glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), NULL, GL_STREAM_DRAW);
-	}
-
 	renderer->beginFrame();
 
 	renderer->setViewport(0, 0, windowWidth, windowHeight);
@@ -911,7 +903,7 @@ void SMAADemo::render() {
 		glm::mat4 view = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -25.0f)), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 proj = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, 0.1f, 100.0f);
 		globals.viewProj = proj * view;
-		glNamedBufferData(globalsUBO, sizeof(ShaderDefines::Globals), &globals, GL_STREAM_DRAW);
+		BufferHandle globalsUBO = renderer->createEphemeralBuffer(sizeof(ShaderDefines::Globals), &globals);
 		renderer->bindUniformBuffer(0, globalsUBO);
 
 		renderer->bindPipeline(cubePipeline);
@@ -924,7 +916,7 @@ void SMAADemo::render() {
 
 		renderer->drawIndexedInstanced(3 * 2 * 6, cubes.size());
 	} else {
-		glNamedBufferSubData(globalsUBO, 0, sizeof(ShaderDefines::Globals), &globals);
+		BufferHandle globalsUBO = renderer->createEphemeralBuffer(sizeof(ShaderDefines::Globals), &globals);
 		renderer->bindUniformBuffer(0, globalsUBO);
 
 		renderer->bindPipeline(imagePipeline);

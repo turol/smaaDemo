@@ -607,6 +607,21 @@ BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
 }
 
 
+BufferHandle Renderer::createEphemeralBuffer(uint32_t size, const void *contents) {
+	assert(size != 0);
+	assert(contents != nullptr);
+
+	// TODO: sub-allocate from persistent coherent buffer
+	GLuint buffer = 0;
+	glCreateBuffers(1, &buffer);
+	glNamedBufferData(buffer, size, contents, GL_STREAM_DRAW);
+
+	ephemeralBuffers.push_back(buffer);
+
+	return buffer;
+}
+
+
 std::vector<char> Renderer::loadSource(const std::string &name) {
 	auto it = shaderSources.find(name);
 	if (it != shaderSources.end()) {
@@ -845,6 +860,13 @@ void Renderer::presentFrame(FramebufferHandle fbo) {
 	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 	SDL_GL_SwapWindow(window);
+
+	// TODO: multiple frames, only delete after no longer in use by GPU
+	// TODO: use persistent coherent buffer
+	for (const auto &buffer : ephemeralBuffers) {
+		glDeleteBuffers(1, &buffer);
+	}
+	ephemeralBuffers.clear();
 }
 
 
