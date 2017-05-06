@@ -880,7 +880,6 @@ void SMAADemo::render() {
 	renderer->setViewport(0, 0, windowWidth, windowHeight);
 
 	renderer->beginRenderPass(fbos[Framebuffers::MainRender]);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (activeScene == 0) {
 		if (rotateCamera) {
@@ -939,13 +938,11 @@ void SMAADemo::render() {
 			if (debugMode == 1) {
 				// detect edges only
 				renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
-				glClear(GL_COLOR_BUFFER_BIT);
 				renderer->draw(0, 3);
 				renderer->endRenderPass();
 				break;
 			} else {
 				renderer->beginRenderPass(fbos[Framebuffers::Edges]);
-				glClear(GL_COLOR_BUFFER_BIT);
 				renderer->draw(0, 3);
 				renderer->endRenderPass();
 			}
@@ -956,13 +953,11 @@ void SMAADemo::render() {
 			if (debugMode == 2) {
 				// show blending weights
 				renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
-				glClear(GL_COLOR_BUFFER_BIT);
 				renderer->draw(0, 3);
 				renderer->endRenderPass();
 				break;
 			} else {
 				renderer->beginRenderPass(fbos[Framebuffers::BlendWeights]);
-				glClear(GL_COLOR_BUFFER_BIT);
 				renderer->draw(0, 3);
 				renderer->endRenderPass();
 			}
@@ -972,7 +967,6 @@ void SMAADemo::render() {
 
 			renderer->bindPipeline(smaaNeighborPipelines[smaaQuality]);
 			renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
-			glClear(GL_COLOR_BUFFER_BIT);
 			renderer->draw(0, 3);
 			renderer->endRenderPass();
 			break;

@@ -875,7 +875,20 @@ void Renderer::beginRenderPass(FramebufferHandle fbo) {
 	assert(!inRenderPass);
 	inRenderPass = true;
 
+	// TODO: should get clear bits from RenderPass object
+	assert(fbo != 0);
+	auto it = framebuffers.find(fbo);
+	assert(it != framebuffers.end());
+
+	const auto &fb = it->second;
+
+	GLbitfield mask = GL_COLOR_BUFFER_BIT;
+	if (fb->depthTex != 0) {
+		mask |= GL_DEPTH_BUFFER_BIT;
+	}
+
 	bindFramebuffer(fbo);
+	glClear(mask);
 }
 
 
