@@ -903,7 +903,7 @@ void SMAADemo::render() {
 		renderer->bindIndexBuffer(cubeIBO);
 
 		BufferHandle instanceSSBO = renderer->createEphemeralBuffer(sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0]);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, instanceSSBO);
+		renderer->bindStorageBuffer(0, instanceSSBO);
 
 		renderer->drawIndexedInstanced(3 * 2 * 6, cubes.size());
 	} else {
