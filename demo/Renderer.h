@@ -297,7 +297,6 @@ struct SamplerDesc {
 	SamplerDesc()
 	: min(Nearest)
 	, mag(Nearest)
-	, anisotropy(0)
 	, wrapMode(Wrap)
 	{
 	}
@@ -323,7 +322,6 @@ struct SamplerDesc {
 private:
 
 	FilterMode  min, mag;
-	uint32_t    anisotropy;
 	WrapMode    wrapMode;
 
 	friend class Renderer;
