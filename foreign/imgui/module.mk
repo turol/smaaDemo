@@ -4,8 +4,6 @@ d              := $(dir)
 
 
 SUBDIRS:= \
-	glew \
-	imgui
 	# empty line
 
 DIRS:=$(addprefix $(d)/,$(SUBDIRS))
@@ -14,10 +12,12 @@ $(eval $(foreach directory, $(DIRS), $(call directory-module,$(directory)) ))
 
 
 FILES:= \
+	imgui.cpp \
+	imgui_draw.cpp \
 	# empty line
 
 
-SRC_$(d):=$(addprefix $(d)/,$(FILES))
+SRC_imgui:=$(addprefix $(d)/,$(FILES))
 
 
 d  := $(dirstack_$(sp))
