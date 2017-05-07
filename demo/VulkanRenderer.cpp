@@ -179,8 +179,8 @@ void Renderer::bindShader(ShaderHandle shader) {
 }
 
 
-void Renderer::bindPipeline(PipelineHandle pipeline) {
-	assert(pipeline != 0);
+void Renderer::bindPipeline(PipelineHandle /* pipeline */) {
+	// assert(pipeline != 0);
 
 	STUBBED("");
 }
