@@ -451,6 +451,13 @@ class Renderer {
 #endif   // RENDERER_NULL
 
 
+#ifdef RENDERER_VULKAN
+
+	SDL_Window *window;
+
+#endif   // RENDERER_VULKAN
+
+
 	std::unordered_map<std::string, std::vector<char> > shaderSources;
 
 	bool inRenderPass;

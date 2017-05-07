@@ -21,15 +21,22 @@ Renderer *Renderer::createRenderer(const RendererDesc &desc) {
 }
 
 
-Renderer::Renderer(const RendererDesc & /* desc */)
+Renderer::Renderer(const RendererDesc &desc)
 : inRenderPass(false)
 {
 	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
+
+	int flags = SDL_WINDOW_RESIZABLE;
+
+	window = SDL_CreateWindow("SMAA Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, desc.swapchain.width, desc.swapchain.height, flags);
+
 	STUBBED("");
 }
 
 
 Renderer::~Renderer() {
+	SDL_DestroyWindow(window);
+
 	SDL_Quit();
 }
 
