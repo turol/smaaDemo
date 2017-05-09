@@ -235,6 +235,8 @@ class SMAADemo {
 	TextureHandle areaTex;
 	TextureHandle searchTex;
 
+	TextureHandle imguiFontsTex;
+
 	bool rotateCamera;
 	float cameraRotation;
 	uint64_t lastTime;
@@ -335,6 +337,8 @@ SMAADemo::SMAADemo()
 
 
 SMAADemo::~SMAADemo() {
+	ImGui::Shutdown();
+
 	renderer->deleteBuffer(cubeVBO);
 	renderer->deleteBuffer(cubeIBO);
 
@@ -566,6 +570,47 @@ void SMAADemo::initRender() {
 
 	// default scene to last image or cubes if none
 	activeScene = images.size();
+
+	// imgui setup
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		io.KeyMap[ImGuiKey_Tab]        = SDLK_TAB;                     // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
+		io.KeyMap[ImGuiKey_LeftArrow]  = SDL_SCANCODE_LEFT;
+		io.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
+		io.KeyMap[ImGuiKey_UpArrow]    = SDL_SCANCODE_UP;
+		io.KeyMap[ImGuiKey_DownArrow]  = SDL_SCANCODE_DOWN;
+		io.KeyMap[ImGuiKey_PageUp]     = SDL_SCANCODE_PAGEUP;
+		io.KeyMap[ImGuiKey_PageDown]   = SDL_SCANCODE_PAGEDOWN;
+		io.KeyMap[ImGuiKey_Home]       = SDL_SCANCODE_HOME;
+		io.KeyMap[ImGuiKey_End]        = SDL_SCANCODE_END;
+		io.KeyMap[ImGuiKey_Delete]     = SDLK_DELETE;
+		io.KeyMap[ImGuiKey_Backspace]  = SDLK_BACKSPACE;
+		io.KeyMap[ImGuiKey_Enter]      = SDLK_RETURN;
+		io.KeyMap[ImGuiKey_Escape]     = SDLK_ESCAPE;
+		io.KeyMap[ImGuiKey_A]          = SDLK_a;
+		io.KeyMap[ImGuiKey_C]          = SDLK_c;
+		io.KeyMap[ImGuiKey_V]          = SDLK_v;
+		io.KeyMap[ImGuiKey_X]          = SDLK_x;
+		io.KeyMap[ImGuiKey_Y]          = SDLK_y;
+		io.KeyMap[ImGuiKey_Z]          = SDLK_z;
+
+		// TODO: clipboard
+		io.SetClipboardTextFn = nullptr;
+		io.GetClipboardTextFn = nullptr;
+		io.ClipboardUserData  = nullptr;
+
+		// Build texture atlas
+		unsigned char *pixels = nullptr;
+		int width = 0, height = 0;
+		io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+
+		texDesc.width(width)
+		       .height(height)
+		       .format(RGBA8)
+		       .mipLevelData(0, pixels);
+		imguiFontsTex = renderer->createTexture(texDesc);
+		io.Fonts->TexID = nullptr;
+	}
 }
 
 
@@ -709,6 +754,8 @@ static void printHelp() {
 
 
 void SMAADemo::mainLoopIteration() {
+	ImGuiIO& io = ImGui::GetIO();
+
 	// TODO: timing
 	SDL_Event event;
 	memset(&event, 0, sizeof(SDL_Event));
@@ -848,6 +895,9 @@ void SMAADemo::mainLoopIteration() {
 			default:
 				break;
 			}
+
+		case SDL_MOUSEMOTION:
+			io.MousePos = ImVec2(event.motion.x, event.motion.y);
 		}
 	}
 
@@ -977,6 +1027,37 @@ void SMAADemo::render() {
 	} else {
 		// TODO: not necessary?
 		renderer->blitFBO(fbos[Framebuffers::MainRender], fbos[Framebuffers::FinalRender]);
+	}
+
+	{
+		ImGuiIO& io = ImGui::GetIO();
+
+		io.DisplaySize = ImVec2(windowWidth, windowHeight);
+		io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+
+		ImGui::NewFrame();
+		bool imguiVisible = true;
+		ImGui::ShowTestWindow(&imguiVisible);
+		ImGui::Render();
+
+		auto drawData = ImGui::GetDrawData();
+		assert(drawData->Valid);
+		if (drawData->CmdListsCount > 0) {
+			assert(drawData->CmdLists      != nullptr);
+			assert(drawData->TotalVtxCount >  0);
+			assert(drawData->TotalIdxCount >  0);
+
+			// TODO: draw
+#if 0
+			printf("CmdListsCount: %d\n", drawData->CmdListsCount);
+			printf("TotalVtxCount: %d\n", drawData->TotalVtxCount);
+			printf("TotalIdxCount: %d\n", drawData->TotalIdxCount);
+#endif // 0
+		} else {
+			assert(drawData->CmdLists      == nullptr);
+			assert(drawData->TotalVtxCount == 0);
+			assert(drawData->TotalIdxCount == 0);
+		}
 	}
 
 	renderer->presentFrame(fbos[Framebuffers::FinalRender]);

@@ -13,6 +13,7 @@ $(eval $(foreach directory, $(DIRS), $(call directory-module,$(directory)) ))
 
 FILES:= \
 	imgui.cpp \
+	imgui_demo.cpp \
 	imgui_draw.cpp \
 	# empty line
 
