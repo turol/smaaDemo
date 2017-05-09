@@ -14,6 +14,7 @@ Renderer::Renderer(const RendererDesc & /* desc */)
 , numPipelines(0)
 , numSamplers(0)
 , numTextures(0)
+, inRenderPass(false)
 {
 
 	SDL_Init(SDL_INIT_EVENTS);
