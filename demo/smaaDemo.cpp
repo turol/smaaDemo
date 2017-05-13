@@ -492,7 +492,7 @@ void SMAADemo::initRender() {
 
 	cubePipeline = renderer->createPipeline(PipelineDesc()
 	                                        .shader(cubeShader)
-	                                        .vertexAttrib(ATTR_POS, 0, 3, 0)
+	                                        .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
 	                                        .depthWrite(true)
 	                                        .depthTest(true)
 	                                        .cullFaces(true)

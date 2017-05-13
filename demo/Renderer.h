@@ -46,7 +46,7 @@ using namespace glm;
 
 
 #define MAX_COLOR_RENDERTARGETS 2
-#define MAX_VERTEX_ATTRIBS      1
+#define MAX_VERTEX_ATTRIBS      4
 
 
 class FragmentShader;
@@ -144,6 +144,16 @@ enum Format {
 	, Depth16
 };
 
+
+namespace VtxFormat {
+
+
+enum VtxFormat {
+	  Float
+	, UNorm8
+};
+
+}  // namespace VtxFormat
 
 struct RenderTargetDesc {
 	RenderTargetDesc()
@@ -336,9 +346,9 @@ class PipelineDesc {
 	bool cullFaces_;
 
 	struct VertexAttr {
-		// TODO: format
 		uint8_t bufBinding;
 		uint8_t count;
+		VtxFormat::VtxFormat format;
 		uint8_t offset;
 	};
 
@@ -352,11 +362,12 @@ public:
 		return *this;
 	}
 
-	PipelineDesc &vertexAttrib(uint32_t attrib, uint8_t bufBinding, uint8_t count, uint8_t offset) {
+	PipelineDesc &vertexAttrib(uint32_t attrib, uint8_t bufBinding, uint8_t count, VtxFormat::VtxFormat format, uint8_t offset) {
 		assert(attrib < MAX_VERTEX_ATTRIBS);
 
 		vertexAttribs[attrib].bufBinding = bufBinding;
 		vertexAttribs[attrib].count      = count;
+		vertexAttribs[attrib].format     = format;
 		vertexAttribs[attrib].offset     = offset;
 
 

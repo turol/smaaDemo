@@ -999,7 +999,20 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 		uint32_t mask = 1 << bit;
 
 		const auto &attr = attribs[bit];
-		glVertexAttribFormat(bit, attr.count, GL_FLOAT, GL_FALSE, attr.offset);
+		bool normalized = false;
+		GLenum format = GL_NONE;
+		switch (attr.format) {
+		case VtxFormat::Float:
+			format = GL_FLOAT;
+			break;
+
+		case VtxFormat::UNorm8:
+			format = GL_UNSIGNED_BYTE;
+			normalized = true;
+			break;
+		}
+
+		glVertexAttribFormat(bit, attr.count, format, normalized ? GL_TRUE : GL_FALSE, attr.offset);
 		glVertexAttribBinding(bit, attr.bufBinding);
 		newMask &= ~mask;
 	}
