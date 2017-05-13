@@ -527,6 +527,7 @@ public:
 	void endRenderPass();
 
 	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
+	void setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 
 	void blitFBO(FramebufferHandle src, FramebufferHandle dest);
 

@@ -223,6 +223,11 @@ void Renderer::setViewport(unsigned int /* x */, unsigned int /* y */, unsigned 
 }
 
 
+void Renderer::setScissorRect(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
+	STUBBED("");
+}
+
+
 void Renderer::draw(unsigned int /* firstVertex */, unsigned int /* vertexCount */) {
 	assert(inRenderPass);
 

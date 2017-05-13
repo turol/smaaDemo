@@ -903,6 +903,11 @@ void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, u
 }
 
 
+void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+	glScissor(x, y, width, height);
+}
+
+
 void Renderer::blitFBO(FramebufferHandle src, FramebufferHandle dest) {
 	assert(src.handle);
 	assert(dest.handle);
