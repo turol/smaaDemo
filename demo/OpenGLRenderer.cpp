@@ -974,6 +974,12 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 		glDisable(GL_CULL_FACE);
 	}
 
+	if (p.scissorTest_) {
+		glEnable(GL_SCISSOR_TEST);
+	} else {
+		glDisable(GL_SCISSOR_TEST);
+	}
+
 	uint32_t oldMask = currentPipeline.vertexAttribMask;
 	uint32_t newMask = p.vertexAttribMask;
 

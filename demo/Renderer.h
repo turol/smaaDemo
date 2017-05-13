@@ -344,6 +344,7 @@ class PipelineDesc {
 	bool depthWrite_;
 	bool depthTest_;
 	bool cullFaces_;
+	bool scissorTest_;
 
 	struct VertexAttr {
 		uint8_t bufBinding;
@@ -390,11 +391,17 @@ public:
 		return *this;
 	}
 
+	PipelineDesc &scissorTest(bool s) {
+		scissorTest_ = s;
+		return *this;
+	}
+
 	PipelineDesc()
 	: vertexAttribMask(0)
 	, depthWrite_(false)
 	, depthTest_(false)
 	, cullFaces_(false)
+	, scissorTest_(false)
 	{
 		for (unsigned int i = 0; i < MAX_VERTEX_ATTRIBS; i++) {
 			vertexAttribs[i].bufBinding = 0;
