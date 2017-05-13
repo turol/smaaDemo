@@ -445,6 +445,7 @@ class Renderer {
 	SDL_GLContext context;
 
 	GLuint vao;
+	bool idxBuf16Bit;
 
 	std::unordered_map<GLuint, std::unique_ptr<Framebuffer> > framebuffers;
 	std::unordered_map<GLuint, std::unique_ptr<Shader> > shaders;
@@ -534,7 +535,7 @@ public:
 	void bindFramebuffer(FramebufferHandle fbo);
 	void bindPipeline(PipelineHandle pipeline);
 	void bindShader(ShaderHandle shader);
-	void bindIndexBuffer(BufferHandle buffer);
+	void bindIndexBuffer(BufferHandle buffer, bool bit16);
 	void bindVertexBuffer(unsigned int binding, BufferHandle buffer, unsigned int stride);
 
 	// TODO: replace with descriptor set stuff

@@ -962,7 +962,7 @@ void SMAADemo::render() {
 		renderer->bindPipeline(cubePipeline);
 
 		renderer->bindVertexBuffer(0, cubeVBO, sizeof(Vertex));
-		renderer->bindIndexBuffer(cubeIBO);
+		renderer->bindIndexBuffer(cubeIBO, false);
 
 		BufferHandle instanceSSBO = renderer->createEphemeralBuffer(sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0]);
 		renderer->bindStorageBuffer(0, instanceSSBO);

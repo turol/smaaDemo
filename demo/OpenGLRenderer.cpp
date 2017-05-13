@@ -483,6 +483,7 @@ Renderer::Renderer(const RendererDesc &desc)
 : window(nullptr)
 , context(nullptr)
 , vao(0)
+, idxBuf16Bit(false)
 , inRenderPass(false)
 {
 	swapchainDesc = desc.swapchain;
@@ -1032,8 +1033,9 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 }
 
 
-void Renderer::bindIndexBuffer(BufferHandle buffer) {
+void Renderer::bindIndexBuffer(BufferHandle buffer, bool bit16) {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer);
+	idxBuf16Bit = bit16;
 }
 
 
@@ -1065,8 +1067,8 @@ void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 
 void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
 	// TODO: get primitive from current pipeline
-	// TODO: get index type from current index buffer
-	glDrawElementsInstanced(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, NULL, instanceCount);
+	GLenum format = idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT ;
+	glDrawElementsInstanced(GL_TRIANGLES, vertexCount, format, NULL, instanceCount);
 }
 
 

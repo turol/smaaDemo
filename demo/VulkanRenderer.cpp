@@ -193,7 +193,7 @@ void Renderer::bindPipeline(PipelineHandle /* pipeline */) {
 }
 
 
-void Renderer::bindIndexBuffer(BufferHandle /* buffer */ ) {
+void Renderer::bindIndexBuffer(BufferHandle /* buffer */, bool /* bit16 */ ) {
 	STUBBED("");
 }
 
