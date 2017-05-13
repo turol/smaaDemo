@@ -34,8 +34,8 @@ endif  # TSAN
 
 ifeq ($(UBSAN),y)
 
-OPTFLAGS+=-fsanitize=undefined -fno-sanitize-recover
-LDFLAGS+=-fsanitize=undefined -fno-sanitize-recover
+OPTFLAGS+=-fsanitize=undefined -fno-sanitize-recover=all
+LDFLAGS+=-fsanitize=undefined -fno-sanitize-recover=all
 
 endif  # UBSAN
 
