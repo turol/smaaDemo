@@ -1059,7 +1059,39 @@ void SMAADemo::render() {
 			assert(drawData->TotalVtxCount >  0);
 			assert(drawData->TotalIdxCount >  0);
 
-			// TODO: draw
+#if 0
+			renderer->bindPipeline(guiPipeline);
+			renderer->bindTexture(TEXUNIT_COLOR, imguiFontsTex, linearSampler);
+			// TODO: upload all buffers first, render after
+			// and one buffer each vertex/index
+
+			for (int n = 0; n < drawData->CmdListsCount; n++) {
+				const ImDrawList* cmd_list = drawData->CmdLists[n];
+
+				BufferHandle vtxBuf = renderer->createEphemeralBuffer(cmd_list->VtxBuffer.Size * sizeof(ImDrawVert), cmd_list->VtxBuffer.Data);
+				BufferHandle idxBuf = renderer->createEphemeralBuffer(cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx), cmd_list->IdxBuffer.Data);
+				renderer->bindIndexBuffer(idxBuf, true);
+				renderer->bindVertexBuffer(0, vtxBuf, sizeof(ImDrawVert));
+
+				const ImDrawIdx* idx_buffer_offset = 0;
+				for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++) {
+					const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
+					if (pcmd->UserCallback) {
+						// TODO: this probably does nothing useful for us
+						assert(false);
+
+						pcmd->UserCallback(cmd_list, pcmd);
+					} else {
+						assert(pcmd->TextureId == 0);
+						renderer->setScissorRect(pcmd->ClipRect.x, pcmd->ClipRect.w, pcmd->ClipRect.z - pcmd->ClipRect.x, pcmd->ClipRect.w - pcmd->ClipRect.y);
+						// TODO: drawIndexed without instance
+						// and with offset
+						renderer->drawIndexedInstanced(pcmd->ElemCount, 1);
+					}
+					idx_buffer_offset += pcmd->ElemCount;
+				}
+			}
+#endif  // 0
 #if 0
 			printf("CmdListsCount: %d\n", drawData->CmdListsCount);
 			printf("TotalVtxCount: %d\n", drawData->TotalVtxCount);
