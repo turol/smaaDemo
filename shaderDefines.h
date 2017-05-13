@@ -1,4 +1,6 @@
 #define ATTR_POS   0
+#define ATTR_UV    1
+#define ATTR_COLOR 2
 
 
 #define TEXUNIT_TEMP 0
@@ -21,6 +23,7 @@ layout(binding = 0, std140) uniform Globals
 {
 	vec4 screenSize;
 	mat4 viewProj;
+	mat4 guiOrtho;
 };
 
 

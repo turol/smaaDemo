@@ -205,6 +205,7 @@ class SMAADemo {
 
 	ShaderHandle cubeShader;
 	ShaderHandle imageShader;
+	ShaderHandle guiShader;
 
 	PipelineHandle cubePipeline;
 	PipelineHandle imagePipeline;
@@ -505,6 +506,10 @@ void SMAADemo::initRender() {
 	      .cullFaces(true);
 
 	imagePipeline = renderer->createPipeline(plDesc);
+
+	macros.clear();
+
+	guiShader = renderer->createShader("gui", macros);
 
 	linearSampler  = renderer->createSampler(SamplerDesc().minFilter(Linear). magFilter(Linear));
 	nearestSampler = renderer->createSampler(SamplerDesc().minFilter(Nearest).magFilter(Nearest));
@@ -926,6 +931,7 @@ void SMAADemo::render() {
 
 	ShaderDefines::Globals globals;
 	globals.screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
+	globals.guiOrtho   = glm::ortho(0.0f, float(windowWidth), 0.0f, float(windowHeight));
 
 	renderer->beginFrame();
 
