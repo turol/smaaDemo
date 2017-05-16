@@ -293,6 +293,8 @@ public:
 	}
 
 	void render();
+
+	void drawGUI();
 };
 
 
@@ -1055,7 +1057,14 @@ void SMAADemo::render() {
 		renderer->blitFBO(fbos[Framebuffers::MainRender], fbos[Framebuffers::FinalRender]);
 	}
 
-	{
+	drawGUI();
+
+	renderer->presentFrame(fbos[Framebuffers::FinalRender]);
+
+}
+
+
+void SMAADemo::drawGUI() {
 		ImGuiIO& io = ImGui::GetIO();
 
 		io.DisplaySize = ImVec2(windowWidth, windowHeight);
@@ -1116,9 +1125,6 @@ void SMAADemo::render() {
 			assert(drawData->TotalVtxCount == 0);
 			assert(drawData->TotalIdxCount == 0);
 		}
-	}
-
-	renderer->presentFrame(fbos[Framebuffers::FinalRender]);
 }
 
 
