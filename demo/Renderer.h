@@ -345,6 +345,9 @@ class PipelineDesc {
 	bool depthTest_;
 	bool cullFaces_;
 	bool scissorTest_;
+	bool blending_;
+	// TODO: blend equation and function
+	// TODO: per-MRT blending
 
 	struct VertexAttr {
 		uint8_t bufBinding;
@@ -376,6 +379,11 @@ public:
 		return *this;
 	}
 
+	PipelineDesc &blending(bool b) {
+		blending_ = b;
+		return *this;
+	}
+
 	PipelineDesc &depthWrite(bool d) {
 		depthWrite_ = d;
 		return *this;
@@ -402,6 +410,7 @@ public:
 	, depthTest_(false)
 	, cullFaces_(false)
 	, scissorTest_(false)
+	, blending_(false)
 	{
 		for (unsigned int i = 0; i < MAX_VERTEX_ATTRIBS; i++) {
 			vertexAttribs[i].bufBinding = 0;

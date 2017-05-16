@@ -986,6 +986,15 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 		glDisable(GL_SCISSOR_TEST);
 	}
 
+	if (p.blending_) {
+		glEnable(GL_BLEND);
+		// TODO: get from Pipeline
+		glBlendEquation(GL_FUNC_ADD);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	} else {
+		glDisable(GL_BLEND);
+	}
+
 	uint32_t oldMask = currentPipeline.vertexAttribMask;
 	uint32_t newMask = p.vertexAttribMask;
 
