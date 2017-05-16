@@ -912,6 +912,17 @@ void SMAADemo::mainLoopIteration() {
 
 		case SDL_MOUSEMOTION:
 			io.MousePos = ImVec2(event.motion.x, event.motion.y);
+			break;
+
+		case SDL_MOUSEBUTTONDOWN:
+		case SDL_MOUSEBUTTONUP:
+			if (event.button.button < 6) {
+				// SDL and imgui have left and middle in different order
+				static const uint8_t SDLMouseLookup[5] = { 0, 2, 1, 3, 4 };
+				io.MouseDown[SDLMouseLookup[event.button.button - 1]] = (event.button.state == SDL_PRESSED);
+			}
+			break;
+
 		}
 	}
 
