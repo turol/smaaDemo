@@ -849,6 +849,9 @@ void Renderer::presentFrame(FramebufferHandle fbo) {
 	unsigned int width  = it->second->width;
 	unsigned int height = it->second->height;
 
+	// TODO: only if enabled
+	glDisable(GL_SCISSOR_TEST);
+
 	// TODO: necessary? should do linear blit?
 	assert(width  == swapchainDesc.width);
 	assert(height == swapchainDesc.height);
@@ -905,7 +908,8 @@ void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, u
 
 
 void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
-	glScissor(x, y, width, height);
+	// TODO: should use current FB height
+	glScissor(x, swapchainDesc.height - y, width, height);
 }
 
 
