@@ -511,7 +511,10 @@ void SMAADemo::initRender() {
 	macros.clear();
 
 	guiShader = renderer->createShader("gui", macros);
-	plDesc.shader(guiShader);
+	plDesc.shader(guiShader)
+	      .cullFaces(false)
+	      .blending(true)
+	      .scissorTest(true);
 	plDesc.vertexAttrib(ATTR_POS,   0, 2, VtxFormat::Float,  offsetof(ImDrawVert, pos))
 	      .vertexAttrib(ATTR_UV,    0, 2, VtxFormat::Float,  offsetof(ImDrawVert, uv))
 	      .vertexAttrib(ATTR_COLOR, 0, 4, VtxFormat::UNorm8, offsetof(ImDrawVert, col));
@@ -937,7 +940,7 @@ void SMAADemo::render() {
 
 	ShaderDefines::Globals globals;
 	globals.screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
-	globals.guiOrtho   = glm::ortho(0.0f, float(windowWidth), 0.0f, float(windowHeight));
+	globals.guiOrtho   = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
 
 	renderer->beginFrame();
 
