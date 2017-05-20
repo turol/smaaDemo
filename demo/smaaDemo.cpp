@@ -1109,7 +1109,7 @@ void SMAADemo::drawGUI() {
 					renderer->setScissorRect(pcmd->ClipRect.x, pcmd->ClipRect.w, pcmd->ClipRect.z - pcmd->ClipRect.x, pcmd->ClipRect.w - pcmd->ClipRect.y);
 					// TODO: drawIndexed without instance
 					// and with offset
-					renderer->drawIndexedInstanced(pcmd->ElemCount, 1);
+					renderer->drawIndexedInstanced(pcmd->ElemCount * 3, 1);
 				}
 				idx_buffer_offset += pcmd->ElemCount;
 			}
