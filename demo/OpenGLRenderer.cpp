@@ -1073,12 +1073,16 @@ void Renderer::bindStorageBuffer(unsigned int index, BufferHandle buffer) {
 }
 
 void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
+	assert(inRenderPass);
+
 	// TODO: get primitive from current pipeline
 	glDrawArrays(GL_TRIANGLES, firstVertex, vertexCount);
 }
 
 
 void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
+	assert(inRenderPass);
+
 	// TODO: get primitive from current pipeline
 	GLenum format = idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT ;
 	glDrawElementsInstanced(GL_TRIANGLES, vertexCount, format, NULL, instanceCount);
