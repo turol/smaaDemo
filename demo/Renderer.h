@@ -486,6 +486,8 @@ class Renderer {
 
 	SDL_Window *window;
 	vk::Instance instance;
+	vk::PhysicalDevice physicalDevice;
+	vk::PhysicalDeviceProperties deviceProperties;
 
 #endif   // RENDERER_VULKAN
 

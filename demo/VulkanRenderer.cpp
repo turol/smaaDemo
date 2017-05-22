@@ -58,6 +58,7 @@ Renderer *Renderer::createRenderer(const RendererDesc &desc) {
 
 Renderer::Renderer(const RendererDesc &desc)
 : instance(nullptr)
+, physicalDevice(nullptr)
 , inRenderPass(false)
 {
 	// TODO: get from desc.debug when this is finished
@@ -123,6 +124,37 @@ Renderer::Renderer(const RendererDesc &desc)
 	instanceCreateInfo.ppEnabledExtensionNames  = &extensions[0];
 
 	instance = vk::createInstance(instanceCreateInfo);
+
+	std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
+	if (physicalDevices.empty()) {
+		printf("No hysical Vulkan devices found\n");
+		instance.destroy();
+		instance = nullptr;
+		SDL_DestroyWindow(window);
+		window = nullptr;
+		exit(1);
+	}
+	printf("%u physical devices\n", static_cast<unsigned int>(physicalDevices.size()));
+	physicalDevice = physicalDevices[0];
+
+	deviceProperties = physicalDevice.getProperties();
+	printf("Device API version %u.%u.%u\n", VK_VERSION_MAJOR(deviceProperties.apiVersion), VK_VERSION_MINOR(deviceProperties.apiVersion), VK_VERSION_PATCH(deviceProperties.apiVersion));
+	printf("Driver version %u.%u.%u (%u) (0x%08x)\n", VK_VERSION_MAJOR(deviceProperties.driverVersion), VK_VERSION_MINOR(deviceProperties.driverVersion), VK_VERSION_PATCH(deviceProperties.driverVersion), deviceProperties.driverVersion, deviceProperties.driverVersion);
+	printf("VendorId 0x%x\n", deviceProperties.vendorID);
+	printf("DeviceId 0x%x\n", deviceProperties.deviceID);
+	printf("Type %s\n", vk::to_string(deviceProperties.deviceType).c_str());
+	printf("Name \"%s\"\n", deviceProperties.deviceName);
+
+	std::vector<vk::QueueFamilyProperties> queueProps = physicalDevice.getQueueFamilyProperties();
+	printf("%u queue families\n", static_cast<unsigned int>(queueProps.size()));
+	for (uint32_t i = 0; i < queueProps.size(); i++) {
+		const auto &queue = queueProps[i];
+		printf(" Queue family %u\n", i);
+		printf("  Flags: %s\n", vk::to_string(queue.queueFlags).c_str());
+		printf("  Count: %u\n", queue.queueCount);
+		printf("  Timestamp valid bits: %u\n", queue.timestampValidBits);
+		printf("  Image transfer granularity: (%u, %u, %u)\n", queue.minImageTransferGranularity.width, queue.minImageTransferGranularity.height, queue.minImageTransferGranularity.depth);
+	}
 
 	STUBBED("");
 }
