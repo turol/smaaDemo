@@ -16,6 +16,41 @@
 #include "Utils.h"
 
 
+// TODO: remove these when officially in SDL
+#include <xcb/xcb.h>
+#define SDL_WINDOW_VULKAN 0x10000000
+
+
+static SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount, const char **userNames, unsigned nameCount, const char *const *names) {
+    if(userNames)
+    {
+        if(*userCount != nameCount)
+        {
+            SDL_SetError(
+                "count doesn't match count from previous call of SDL_Vulkan_GetInstanceExtensions");
+            return SDL_FALSE;
+        }
+        for(unsigned i = 0; i < nameCount; i++)
+        {
+            userNames[i] = names[i];
+        }
+    }
+    else
+    {
+        *userCount = nameCount;
+    }
+    return SDL_TRUE;
+}
+
+static SDL_bool SDL_Vulkan_GetInstanceExtensions(SDL_Window * /*window */, unsigned *count, const char **names) {
+	static const char *const extensionsForXCB[] = {
+		VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_XCB_SURFACE_EXTENSION_NAME,
+	};
+	return SDL_Vulkan_GetInstanceExtensions_Helper(
+		count, names, SDL_arraysize(extensionsForXCB), extensionsForXCB);
+}
+
+
 Renderer *Renderer::createRenderer(const RendererDesc &desc) {
 	return new Renderer(desc);
 }
@@ -26,9 +61,36 @@ Renderer::Renderer(const RendererDesc &desc)
 {
 	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
 
+	SDL_DisplayMode mode;
+	memset(&mode, 0, sizeof(mode));
+	int numDisplays = SDL_GetNumVideoDisplays();
+	printf("Number of displays detected: %i\n", numDisplays);
+
+	for (int i = 0; i < numDisplays; i++) {
+		int numModes = SDL_GetNumDisplayModes(i);
+		printf("Number of display modes for display %i : %i\n", i, numModes);
+
+		for (int j = 0; j < numModes; j++) {
+			SDL_GetDisplayMode(i, j, &mode);
+			printf("Display mode %i : width %i, height %i, BPP %i, refresh %u Hz\n", j, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format), mode.refresh_rate);
+		}
+	}
+
 	int flags = SDL_WINDOW_RESIZABLE;
+	flags |= SDL_WINDOW_VULKAN;
+	// TODO: fullscreen, resizable
 
 	window = SDL_CreateWindow("SMAA Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, desc.swapchain.width, desc.swapchain.height, flags);
+
+	// TODO: log stuff about window size, screen modes etc
+
+	unsigned int extensionCount = 0;
+	if (!SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, NULL)) {
+		printf("SDL_Vulkan_GetInstanceExtensions failed\n");
+		exit(1);
+	}
+
+	printf("Vulkan extension count: %u\n", extensionCount);
 
 	STUBBED("");
 }

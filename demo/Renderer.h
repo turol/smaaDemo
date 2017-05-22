@@ -23,6 +23,9 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 
 #elif defined(RENDERER_VULKAN)
 
+// TODO: _WIN32
+#define VK_USE_PLATFORM_XCB_KHR 1
+
 #include <vulkan/vulkan.hpp>
 
 
