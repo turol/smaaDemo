@@ -17,8 +17,20 @@
 
 
 // TODO: remove these when officially in SDL
-#include <xcb/xcb.h>
+#include <SDL_syswm.h>
+#include <X11/Xlib-xcb.h>
 #define SDL_WINDOW_VULKAN 0x10000000
+
+
+/**
+ *  \brief An opaque handle to a Vulkan instance.
+ */
+typedef void *SDL_vulkanInstance; /* VK_DEFINE_HANDLE(VkInstance) */
+
+/**
+ *  \brief An opaque handle to a Vulkan surface.
+ */
+typedef Uint64 SDL_vulkanSurface; /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkSurfaceKHR) */
 
 
 static SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount, const char **userNames, unsigned nameCount, const char *const *names) {
@@ -51,6 +63,45 @@ static SDL_bool SDL_Vulkan_GetInstanceExtensions(SDL_Window * /*window */, unsig
 }
 
 
+static SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window, SDL_vulkanInstance instance, SDL_vulkanSurface *surface) {
+	SDL_SysWMinfo wminfo;
+	memset(&wminfo, 0, sizeof(wminfo));
+	SDL_VERSION(&wminfo.version);
+
+	bool success = SDL_GetWindowWMInfo(window, &wminfo);
+	if (!success) {
+		printf("SDL_GetWindowWMInfo failed: %s\n", SDL_GetError());
+		exit(1);
+	}
+
+	if (wminfo.subsystem != SDL_SYSWM_X11) {
+		printf("unsupported wm subsystem\n");
+		exit(1);
+	}
+
+	VkXcbSurfaceCreateInfoKHR createInfo;
+	createInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+	createInfo.connection = XGetXCBConnection(wminfo.info.x11.display);
+	if(!createInfo.connection)
+	{
+		printf("XGetXCBConnection failed");
+		exit(1);
+	}
+	createInfo.window = (xcb_window_t) wminfo.info.x11.window;
+
+	VkSurfaceKHR outSurface = VK_NULL_HANDLE;
+	auto result = vkCreateXcbSurfaceKHR(reinterpret_cast<VkInstance>(instance), &createInfo, nullptr, &outSurface);
+	if (result != VK_SUCCESS)  {
+		SDL_SetError("vkCreateXcbSurfaceKHR failed: %u", result);
+		return SDL_FALSE;
+	}
+
+	*surface = reinterpret_cast<SDL_vulkanSurface>(outSurface);
+
+	return SDL_TRUE;
+}
+
+
 Renderer *Renderer::createRenderer(const RendererDesc &desc) {
 	return new Renderer(desc);
 }
@@ -59,6 +110,7 @@ Renderer *Renderer::createRenderer(const RendererDesc &desc) {
 Renderer::Renderer(const RendererDesc &desc)
 : instance(VK_NULL_HANDLE)
 , physicalDevice(VK_NULL_HANDLE)
+, surface(VK_NULL_HANDLE)
 , inRenderPass(false)
 {
 	// TODO: get from desc.debug when this is finished
@@ -156,15 +208,28 @@ Renderer::Renderer(const RendererDesc &desc)
 		printf("  Image transfer granularity: (%u, %u, %u)\n", queue.minImageTransferGranularity.width, queue.minImageTransferGranularity.height, queue.minImageTransferGranularity.depth);
 	}
 
+	if(!SDL_Vulkan_CreateSurface(window,
+								 (SDL_vulkanInstance) instance,
+								 (SDL_vulkanSurface *)&surface))
+	{
+		printf("failed to create Vulkan surface");
+		// TODO: free instance, window etc...
+		exit(1);
+	}
+
 	STUBBED("");
 }
 
 
 Renderer::~Renderer() {
 	assert(instance);
+	assert(surface);
+
+	instance.destroySurfaceKHR(surface);
+	surface = VK_NULL_HANDLE;
 
 	instance.destroy();
-	instance = nullptr;
+	instance = VK_NULL_HANDLE;
 
 	SDL_DestroyWindow(window);
 
