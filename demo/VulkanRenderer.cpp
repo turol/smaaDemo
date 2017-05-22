@@ -84,13 +84,24 @@ Renderer::Renderer(const RendererDesc &desc)
 
 	// TODO: log stuff about window size, screen modes etc
 
-	unsigned int extensionCount = 0;
-	if (!SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, NULL)) {
+	unsigned int numExtensions = 0;
+	if (!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, NULL)) {
 		printf("SDL_Vulkan_GetInstanceExtensions failed\n");
 		exit(1);
 	}
 
-	printf("Vulkan extension count: %u\n", extensionCount);
+	printf("Vulkan extension count: %u\n", numExtensions);
+
+	std::vector<const char *> extensions(numExtensions, nullptr);
+
+	if(!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, &extensions[0])) {
+		printf("SDL_Vulkan_GetInstanceExtensions failed\n");
+		exit(1);
+	}
+
+	for (const auto &e : extensions) {
+		printf("%s\n", e);
+	}
 
 	STUBBED("");
 }
