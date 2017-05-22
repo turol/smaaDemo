@@ -8,28 +8,28 @@ https://github.com/nigels-com/glew
 
 [![Build Status](https://travis-ci.org/nigels-com/glew.svg?branch=master)](https://travis-ci.org/nigels-com/glew)
 [![Gitter](https://badges.gitter.im/nigels-com/glew.svg)](https://gitter.im/nigels-com/glew?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Download](https://img.shields.io/sourceforge/dm/glew.svg)](https://sourceforge.net/projects/glew/files/latest/download)
 
 ## Downloads
 
-Current release is [1.13.0](https://sourceforge.net/projects/glew/files/glew/1.13.0/).
+Current release is [2.0.0](https://sourceforge.net/projects/glew/files/glew/2.0.0/).
 [(Change Log)](http://glew.sourceforge.net/log.html)
 
 Sources available as 
-[ZIP](https://sourceforge.net/projects/glew/files/glew/1.13.0/glew-1.13.0.zip/download) or
-[TGZ](https://sourceforge.net/projects/glew/files/glew/1.13.0/glew-1.13.0.tgz/download).
+[ZIP](https://sourceforge.net/projects/glew/files/glew/2.0.0/glew-2.0.0.zip/download) or
+[TGZ](https://sourceforge.net/projects/glew/files/glew/2.0.0/glew-2.0.0.tgz/download).
 
-Windows binaries for [32-bit and 64-bit](https://sourceforge.net/projects/glew/files/glew/1.13.0/glew-1.13.0-win32.zip/download).
+Windows binaries for [32-bit and 64-bit](https://sourceforge.net/projects/glew/files/glew/2.0.0/glew-2.0.0-win32.zip/download).
 
 ### Recent snapshots
 
 Snapshots may contain new features, bug-fixes or new OpenGL extensions ahead of tested, official releases.
 
-[glew-20160131.tgz](http://sourceforge.net/projects/glew/files/glew/snapshots/glew-20160131.tgz/download) 
-*GLEW 2.0.0 release candidate: Core context support, MX discontinued*
+[glew-20160708.tgz](http://sourceforge.net/projects/glew/files/glew/snapshots/glew-20160708.tgz/download)
+*GLEW 2.0.0 RC: Core context, EGL support, no MX*
 
-[glew-20151117.tgz](http://sourceforge.net/projects/glew/files/glew/snapshots/glew-20151117.tgz/download)
-
-[glew-20150805.tgz](http://sourceforge.net/projects/glew/files/glew/snapshots/glew-20150805.tgz/download)
+[glew-20160402.tgz](http://sourceforge.net/projects/glew/files/glew/snapshots/glew-20160402.tgz/download)
+*GLEW 2.0.0 RC: Core context, EGL support, no MX*
 
 ## Build
 
@@ -41,7 +41,7 @@ From a downloaded tarball or zip archive:
 
 ##### Install build tools
 
-Debian/Ubuntu/Mint:    `$ sudo apt-get install build-essential libXmu-dev libXi-dev libgl-dev git`
+Debian/Ubuntu/Mint:    `$ sudo apt-get install build-essential libxmu-dev libxi-dev libgl-dev libosmesa-dev git`
 
 RedHat/CentOS/Fedora:  `$ sudo yum install libXmu-devel libXi-devel libGL-devel git`
 
@@ -70,6 +70,23 @@ RedHat/CentOS/Fedora: `$ sudo yum install libXmu-devel libXi-devel libGL-devel g
 	$ cd build
 	$ cmake ./cmake 
 	$ make -j4
+
+| Target     | Description |
+| ---------- | ----------- |
+| glew       | Build the glew shared library. |
+| glew_s     | Build the glew static library. |
+| glewinfo   | Build the `glewinfo` executable (requires `BUILD_UTILS` to be `ON`). |
+| visualinfo | Build the `visualinfo` executable (requires `BUILD_UTILS` to be `ON`). |
+| install    | Install all enabled targets into `CMAKE_INSTALL_PREFIX`. |
+| clean      | Clean up build artifacts. |
+| all        | Build all enabled targets (default target). |
+
+| Variables       | Description |
+| --------------- | ----------- |
+| BUILD_UTILS     | Build the `glewinfo` and `visualinfo` executables. |
+| GLEW_REGAL      | Build in Regal mode. |
+| GLEW_OSMESA     | Build in off-screen Mesa mode. |
+| BUILD_FRAMEWORK | Build as MacOSX Framework.  Setting `CMAKE_INSTALL_PREFIX` to `/Library/Frameworks` is recommended. |
 
 ### Windows
 

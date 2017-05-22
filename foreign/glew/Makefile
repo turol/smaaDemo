@@ -51,16 +51,17 @@ ifneq ($(GLEW_NO_GLU), -DGLEW_NO_GLU)
 LIBGLU = glu
 endif
 
-DIST_NAME     ?= glew-$(GLEW_VERSION)
+DIST_NAME    ?= glew-$(GLEW_VERSION)
 DIST_SRC_ZIP ?= $(shell pwd)/$(DIST_NAME).zip
 DIST_SRC_TGZ ?= $(shell pwd)/$(DIST_NAME).tgz
 DIST_WIN32   ?= $(shell pwd)/$(DIST_NAME)-win32.zip
 
 DIST_DIR := $(shell mktemp -d /tmp/glew.XXXXXX)/$(DIST_NAME)
 
-# To disable stripping of binaries either:
+# To disable stripping of linked binaries either:
 #   - use STRIP= on gmake command-line
 #   - edit this makefile to set STRIP to the empty string
+# (Note: STRIP does not affect the strip in the install step)
 #
 # To disable symlinks:
 #   - use LN= on gmake command-line
@@ -291,6 +292,7 @@ dist-src:
 	cp -a src $(DIST_DIR)
 	cp -a doc $(DIST_DIR)
 	cp -a include $(DIST_DIR)
+	cp -a *.md $(DIST_DIR)
 	cp -a *.txt $(DIST_DIR)
 	cp -a Makefile $(DIST_DIR)
 	cp -a glew.pc.in $(DIST_DIR)
@@ -306,6 +308,7 @@ dist-src:
 	$(UNIX2DOS) $(DIST_DIR)/auto/extensions/*
 	find $(DIST_DIR) -name '*.h' | xargs $(UNIX2DOS)
 	find $(DIST_DIR) -name '*.c' | xargs $(UNIX2DOS)
+	find $(DIST_DIR) -name '*.md' | xargs $(UNIX2DOS)
 	find $(DIST_DIR) -name '*.txt' | xargs $(UNIX2DOS)
 	find $(DIST_DIR) -name '*.html' | xargs $(UNIX2DOS)
 	find $(DIST_DIR) -name '*.css' | xargs $(UNIX2DOS)
@@ -324,6 +327,7 @@ dist-src:
 	$(DOS2UNIX) $(DIST_DIR)/auto/extensions/*
 	find $(DIST_DIR) -name '*.h' | xargs $(DOS2UNIX)
 	find $(DIST_DIR) -name '*.c' | xargs $(DOS2UNIX)
+	find $(DIST_DIR) -name '*.md' | xargs $(DOS2UNIX)
 	find $(DIST_DIR) -name '*.txt' | xargs $(DOS2UNIX)
 	find $(DIST_DIR) -name '*.html' | xargs $(DOS2UNIX)
 	find $(DIST_DIR) -name '*.css' | xargs $(DOS2UNIX)

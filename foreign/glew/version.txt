@@ -1,5 +1,1 @@
-commit 281e38de7d9ffd963c58062646bc06cca3cdea9f
-Author: Nigel Stewart <nigels@users.sourceforge.net>
-Date:   Sat Feb 6 13:12:27 2016 +1000
-
-    PYTHON make variable for using python2, optionally
+2.0.0

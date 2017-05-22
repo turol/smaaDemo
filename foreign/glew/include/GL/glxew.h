@@ -451,8 +451,8 @@ typedef GLXContext ( * PFNGLXCREATECONTEXTATTRIBSARBPROC) (Display* dpy, GLXFBCo
 #ifndef GLX_ARB_fbconfig_float
 #define GLX_ARB_fbconfig_float 1
 
-#define GLX_RGBA_FLOAT_BIT 0x00000004
-#define GLX_RGBA_FLOAT_TYPE 0x20B9
+#define GLX_RGBA_FLOAT_BIT_ARB 0x00000004
+#define GLX_RGBA_FLOAT_TYPE_ARB 0x20B9
 
 #define GLXEW_ARB_fbconfig_float GLXEW_GET_VAR(__GLXEW_ARB_fbconfig_float)
 
@@ -669,6 +669,17 @@ typedef int ( * PFNGLXQUERYCONTEXTINFOEXTPROC) (Display* dpy, GLXContext context
 #define GLXEW_EXT_import_context GLXEW_GET_VAR(__GLXEW_EXT_import_context)
 
 #endif /* GLX_EXT_import_context */
+
+/* ---------------------------- GLX_EXT_libglvnd --------------------------- */
+
+#ifndef GLX_EXT_libglvnd
+#define GLX_EXT_libglvnd 1
+
+#define GLX_VENDOR_NAMES_EXT 0x20F6
+
+#define GLXEW_EXT_libglvnd GLXEW_GET_VAR(__GLXEW_EXT_libglvnd)
+
+#endif /* GLX_EXT_libglvnd */
 
 /* -------------------------- GLX_EXT_scene_marker ------------------------- */
 
@@ -1014,6 +1025,17 @@ typedef unsigned int* ( * PFNGLXENUMERATEVIDEODEVICESNVPROC) (Display *dpy, int 
 #define GLXEW_NV_present_video GLXEW_GET_VAR(__GLXEW_NV_present_video)
 
 #endif /* GLX_NV_present_video */
+
+/* ------------------ GLX_NV_robustness_video_memory_purge ----------------- */
+
+#ifndef GLX_NV_robustness_video_memory_purge
+#define GLX_NV_robustness_video_memory_purge 1
+
+#define GLX_GENERATE_RESET_ON_VIDEO_MEMORY_PURGE_NV 0x20F7
+
+#define GLXEW_NV_robustness_video_memory_purge GLXEW_GET_VAR(__GLXEW_NV_robustness_video_memory_purge)
+
+#endif /* GLX_NV_robustness_video_memory_purge */
 
 /* --------------------------- GLX_NV_swap_group --------------------------- */
 
@@ -1679,6 +1701,7 @@ GLXEW_VAR_EXPORT GLboolean __GLXEW_EXT_create_context_es_profile;
 GLXEW_VAR_EXPORT GLboolean __GLXEW_EXT_fbconfig_packed_float;
 GLXEW_VAR_EXPORT GLboolean __GLXEW_EXT_framebuffer_sRGB;
 GLXEW_VAR_EXPORT GLboolean __GLXEW_EXT_import_context;
+GLXEW_VAR_EXPORT GLboolean __GLXEW_EXT_libglvnd;
 GLXEW_VAR_EXPORT GLboolean __GLXEW_EXT_scene_marker;
 GLXEW_VAR_EXPORT GLboolean __GLXEW_EXT_stereo_tree;
 GLXEW_VAR_EXPORT GLboolean __GLXEW_EXT_swap_control;
@@ -1700,6 +1723,7 @@ GLXEW_VAR_EXPORT GLboolean __GLXEW_NV_delay_before_swap;
 GLXEW_VAR_EXPORT GLboolean __GLXEW_NV_float_buffer;
 GLXEW_VAR_EXPORT GLboolean __GLXEW_NV_multisample_coverage;
 GLXEW_VAR_EXPORT GLboolean __GLXEW_NV_present_video;
+GLXEW_VAR_EXPORT GLboolean __GLXEW_NV_robustness_video_memory_purge;
 GLXEW_VAR_EXPORT GLboolean __GLXEW_NV_swap_group;
 GLXEW_VAR_EXPORT GLboolean __GLXEW_NV_vertex_array_range;
 GLXEW_VAR_EXPORT GLboolean __GLXEW_NV_video_capture;
