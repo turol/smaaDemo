@@ -23,6 +23,7 @@ CFLAGS+=-DRENDERER_NULL
 
 else ifeq ($(RENDERER),vulkan)
 
+smaaDemo_MODULES+=vulkan
 CFLAGS+=-DRENDERER_VULKAN
 
 else

@@ -485,6 +485,7 @@ class Renderer {
 #ifdef RENDERER_VULKAN
 
 	SDL_Window *window;
+	vk::Instance instance;
 
 #endif   // RENDERER_VULKAN
 

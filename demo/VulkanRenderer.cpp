@@ -57,8 +57,12 @@ Renderer *Renderer::createRenderer(const RendererDesc &desc) {
 
 
 Renderer::Renderer(const RendererDesc &desc)
-: inRenderPass(false)
+: instance(nullptr)
+, inRenderPass(false)
 {
+	// TODO: get from desc.debug when this is finished
+	bool enableValidation = true;
+
 	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
 
 	SDL_DisplayMode mode;
@@ -90,8 +94,6 @@ Renderer::Renderer(const RendererDesc &desc)
 		exit(1);
 	}
 
-	printf("Vulkan extension count: %u\n", numExtensions);
-
 	std::vector<const char *> extensions(numExtensions, nullptr);
 
 	if(!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, &extensions[0])) {
@@ -99,15 +101,39 @@ Renderer::Renderer(const RendererDesc &desc)
 		exit(1);
 	}
 
-	for (const auto &e : extensions) {
-		printf("%s\n", e);
+	vk::ApplicationInfo appInfo;
+	appInfo.pApplicationName    = "SMAA demo";
+	appInfo.applicationVersion  = VK_MAKE_VERSION(1, 0, 0);
+	appInfo.pEngineName         = "SMAA demo";
+	appInfo.engineVersion       = VK_MAKE_VERSION(1, 0, 0);
+	appInfo.apiVersion          = VK_MAKE_VERSION(1, 0, 24);
+
+	vk::InstanceCreateInfo instanceCreateInfo;
+	instanceCreateInfo.pApplicationInfo         = &appInfo;
+
+	std::vector<const char *> validationLayers = { "VK_LAYER_LUNARG_standard_validation" };
+
+	if (enableValidation) {
+		extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+		instanceCreateInfo.enabledLayerCount    = validationLayers.size();
+		instanceCreateInfo.ppEnabledLayerNames  = &validationLayers[0];
 	}
+
+	instanceCreateInfo.enabledExtensionCount    = extensions.size();
+	instanceCreateInfo.ppEnabledExtensionNames  = &extensions[0];
+
+	instance = vk::createInstance(instanceCreateInfo);
 
 	STUBBED("");
 }
 
 
 Renderer::~Renderer() {
+	assert(instance);
+
+	instance.destroy();
+	instance = nullptr;
+
 	SDL_DestroyWindow(window);
 
 	SDL_Quit();
