@@ -57,8 +57,8 @@ Renderer *Renderer::createRenderer(const RendererDesc &desc) {
 
 
 Renderer::Renderer(const RendererDesc &desc)
-: instance(nullptr)
-, physicalDevice(nullptr)
+: instance(VK_NULL_HANDLE)
+, physicalDevice(VK_NULL_HANDLE)
 , inRenderPass(false)
 {
 	// TODO: get from desc.debug when this is finished
