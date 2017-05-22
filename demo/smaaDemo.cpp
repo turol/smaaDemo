@@ -1006,6 +1006,7 @@ void SMAADemo::render() {
 			renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
 			renderer->bindPipeline(fxaaPipelines[fxaaQuality]);
 			renderer->draw(0, 3);
+			drawGUI();
 			renderer->endRenderPass();
 			break;
 
@@ -1019,6 +1020,7 @@ void SMAADemo::render() {
 				// detect edges only
 				renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
 				renderer->draw(0, 3);
+				drawGUI();
 				renderer->endRenderPass();
 				break;
 			} else {
@@ -1034,6 +1036,7 @@ void SMAADemo::render() {
 				// show blending weights
 				renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
 				renderer->draw(0, 3);
+				drawGUI();
 				renderer->endRenderPass();
 				break;
 			} else {
@@ -1048,16 +1051,19 @@ void SMAADemo::render() {
 			renderer->bindPipeline(smaaNeighborPipelines[smaaQuality]);
 			renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
 			renderer->draw(0, 3);
+			drawGUI();
+
 			renderer->endRenderPass();
 			break;
 		}
 
 	} else {
+		renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
 		// TODO: not necessary?
 		renderer->blitFBO(fbos[Framebuffers::MainRender], fbos[Framebuffers::FinalRender]);
+		drawGUI();
+		renderer->endRenderPass();
 	}
-
-	drawGUI();
 
 	renderer->presentFrame(fbos[Framebuffers::FinalRender]);
 
