@@ -294,7 +294,7 @@ public:
 
 	void render();
 
-	void drawGUI();
+	void drawGUI(uint64_t elapsed);
 };
 
 
@@ -1006,7 +1006,7 @@ void SMAADemo::render() {
 			renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
 			renderer->bindPipeline(fxaaPipelines[fxaaQuality]);
 			renderer->draw(0, 3);
-			drawGUI();
+			drawGUI(elapsed);
 			renderer->endRenderPass();
 			break;
 
@@ -1020,7 +1020,7 @@ void SMAADemo::render() {
 				// detect edges only
 				renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
 				renderer->draw(0, 3);
-				drawGUI();
+				drawGUI(elapsed);
 				renderer->endRenderPass();
 				break;
 			} else {
@@ -1036,7 +1036,7 @@ void SMAADemo::render() {
 				// show blending weights
 				renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
 				renderer->draw(0, 3);
-				drawGUI();
+				drawGUI(elapsed);
 				renderer->endRenderPass();
 				break;
 			} else {
@@ -1051,7 +1051,7 @@ void SMAADemo::render() {
 			renderer->bindPipeline(smaaNeighborPipelines[smaaQuality]);
 			renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
 			renderer->draw(0, 3);
-			drawGUI();
+			drawGUI(elapsed);
 
 			renderer->endRenderPass();
 			break;
@@ -1061,7 +1061,7 @@ void SMAADemo::render() {
 		renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
 		// TODO: not necessary?
 		renderer->blitFBO(fbos[Framebuffers::MainRender], fbos[Framebuffers::FinalRender]);
-		drawGUI();
+		drawGUI(elapsed);
 		renderer->endRenderPass();
 	}
 
@@ -1070,8 +1070,9 @@ void SMAADemo::render() {
 }
 
 
-void SMAADemo::drawGUI() {
+void SMAADemo::drawGUI(uint64_t elapsed) {
 	ImGuiIO& io = ImGui::GetIO();
+	io.DeltaTime = float(double(elapsed) / double(1000000000ULL));
 
 	io.DisplaySize = ImVec2(windowWidth, windowHeight);
 	io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
