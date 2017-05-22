@@ -1071,8 +1071,22 @@ void SMAADemo::drawGUI() {
 	io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
 	ImGui::NewFrame();
-	bool imguiVisible = true;
-	ImGui::ShowTestWindow(&imguiVisible);
+
+	bool windowVisible = true;
+	int flags = 0;
+	flags |= ImGuiWindowFlags_NoTitleBar;
+
+	if (ImGui::Begin("SMAA", &windowVisible, flags)) {
+		ImGui::Checkbox("Antialiasing", &antialiasing);
+	}
+
+	ImGui::End();
+
+#if 0
+	bool demoVisible = true;
+	ImGui::ShowTestWindow(&demoVisible);
+#endif  // 0
+
 	ImGui::Render();
 
 	auto drawData = ImGui::GetDrawData();
@@ -1082,7 +1096,6 @@ void SMAADemo::drawGUI() {
 		assert(drawData->TotalVtxCount >  0);
 		assert(drawData->TotalIdxCount >  0);
 
-#if 0
 		renderer->bindPipeline(guiPipeline);
 		renderer->bindTexture(TEXUNIT_COLOR, imguiFontsTex, linearSampler);
 		// TODO: upload all buffers first, render after
@@ -1114,7 +1127,6 @@ void SMAADemo::drawGUI() {
 				idx_buffer_offset += pcmd->ElemCount;
 			}
 		}
-#endif  // 0
 #if 0
 		printf("CmdListsCount: %d\n", drawData->CmdListsCount);
 		printf("TotalVtxCount: %d\n", drawData->TotalVtxCount);
