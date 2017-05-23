@@ -1096,6 +1096,10 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 	if (ImGui::Begin("SMAA", &windowVisible, flags)) {
 		ImGui::Checkbox("Antialiasing", &antialiasing);
+		int aa = static_cast<int>(aaMethod);
+		ImGui::RadioButton("FXAA", &aa, static_cast<int>(AAMethod::FXAA)); ImGui::SameLine();
+		ImGui::RadioButton("SMAA", &aa, static_cast<int>(AAMethod::SMAA));
+		aaMethod = static_cast<AAMethod::AAMethod>(aa);
 	}
 
 	ImGui::End();
