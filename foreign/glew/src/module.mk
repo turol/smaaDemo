@@ -17,6 +17,7 @@ FILES:= \
 
 
 SRC_glew:=$(addprefix $(d)/,$(FILES))
+DEPENDS_glew:=opengl
 
 
 d  := $(dirstack_$(sp))
