@@ -496,11 +496,18 @@ class Renderer {
 	GLuint vao;
 	bool idxBuf16Bit;
 
+	struct Pipeline : public PipelineDesc {
+		Pipeline(const PipelineDesc &desc)
+		: PipelineDesc(desc)
+		{
+		}
+	};
+
 	std::unordered_map<GLuint, std::unique_ptr<Framebuffer> > framebuffers;
 	std::unordered_map<GLuint, std::unique_ptr<VertexShader> >    vertexShaders;
 	std::unordered_map<GLuint, std::unique_ptr<FragmentShader> >  fragmentShaders;
 	std::unordered_map<GLuint, std::unique_ptr<Shader> > shaders;
-	std::unordered_map<uint32_t, PipelineDesc>                 pipelines;
+	std::unordered_map<uint32_t, Pipeline>                        pipelines;
 
 	std::unordered_map<RenderTargetHandle, RenderTargetDesc> renderTargets;
 

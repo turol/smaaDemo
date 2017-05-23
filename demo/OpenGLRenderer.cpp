@@ -700,7 +700,9 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 		it = pipelines.find(handle);
 	}
 
-	pipelines.emplace(handle, desc);
+	Pipeline pipeline(desc);
+
+	pipelines.emplace(handle, pipeline);
 
 	return handle;
 }
