@@ -112,6 +112,7 @@ Renderer::Renderer(const RendererDesc &desc)
 : instance(VK_NULL_HANDLE)
 , physicalDevice(VK_NULL_HANDLE)
 , surface(VK_NULL_HANDLE)
+, swapchain(VK_NULL_HANDLE)
 , inRenderPass(false)
 {
 	// TODO: get from desc.debug when this is finished
@@ -263,7 +264,6 @@ Renderer::Renderer(const RendererDesc &desc)
 	device = physicalDevice.createDevice(deviceCreateInfo);
 
 	surfaceFormats      = physicalDevice.getSurfaceFormatsKHR(surface);
-	surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
 	surfacePresentModes = physicalDevice.getSurfacePresentModesKHR(surface);
 
 	printf("%u surface formats\n", static_cast<uint32_t>(surfaceFormats.size()));
@@ -276,12 +276,6 @@ Renderer::Renderer(const RendererDesc &desc)
 		printf(" %s\n", vk::to_string(presentMode).c_str());
 	}
 
-	printf("image count min-max %u - %u\n", surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
-	printf("image extent min-max %ux%u - %ux%u\n", surfaceCapabilities.minImageExtent.width, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.width, surfaceCapabilities.maxImageExtent.height);
-	printf("supported surface transforms: %s\n", vk::to_string(surfaceCapabilities.supportedTransforms).c_str());
-	printf("supported surface alpha composite flags: %s\n", vk::to_string(surfaceCapabilities.supportedCompositeAlpha).c_str());
-	printf("supported surface usage flags: %s\n", vk::to_string(surfaceCapabilities.supportedUsageFlags).c_str());
-
 	recreateSwapchain(desc.swapchain);
 
 	// TODO: load pipeline cache
@@ -292,8 +286,12 @@ Renderer::~Renderer() {
 	assert(instance);
 	assert(device);
 	assert(surface);
+	assert(swapchain);
 
 	// TODO: save pipeline cache
+
+	device.destroySwapchainKHR(swapchain);
+	swapchain = VK_NULL_HANDLE;
 
 	instance.destroySurfaceKHR(surface);
 	surface = VK_NULL_HANDLE;
@@ -405,8 +403,101 @@ void Renderer::deleteTexture(TextureHandle /* handle */) {
 }
 
 
-void Renderer::recreateSwapchain(const SwapchainDesc & /* desc */) {
-	STUBBED("");
+void Renderer::recreateSwapchain(const SwapchainDesc &desc) {
+	surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
+	printf("image count min-max %u - %u\n", surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
+	printf("image extent min-max %ux%u - %ux%u\n", surfaceCapabilities.minImageExtent.width, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.width, surfaceCapabilities.maxImageExtent.height);
+	printf("current image extent %ux%u\n", surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height);
+	printf("supported surface transforms: %s\n", vk::to_string(surfaceCapabilities.supportedTransforms).c_str());
+	printf("supported surface alpha composite flags: %s\n", vk::to_string(surfaceCapabilities.supportedCompositeAlpha).c_str());
+	printf("supported surface usage flags: %s\n", vk::to_string(surfaceCapabilities.supportedUsageFlags).c_str());
+
+	unsigned int numImages = desc.numFrames;
+	numImages = std::max(numImages, surfaceCapabilities.minImageCount);
+	if (surfaceCapabilities.maxImageCount != 0) {
+		numImages = std::min(numImages, surfaceCapabilities.maxImageCount);
+	}
+
+	printf("Want %u images, using %u images\n", desc.numFrames, numImages);
+
+	vk::Extent2D imageExtent;
+	if (surfaceCapabilities.currentExtent.width == 0xFFFFFFFF) {
+		assert(surfaceCapabilities.currentExtent.height == 0xFFFFFFFF);
+		// TODO: check against min and max
+		imageExtent.width  = desc.width;
+		imageExtent.height = desc.height;
+	} else {
+		if ((surfaceCapabilities.currentExtent.width != desc.width) || (surfaceCapabilities.currentExtent.height != desc.height)) {
+			printf("warning: surface current extent (%ux%u) differs from requested (%ux%u)\n", surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height, desc.width, desc.height);
+			// TODO: should we use requested? can we? spec says platform-specific behavior
+		}
+		imageExtent = surfaceCapabilities.currentExtent;
+	}
+
+	if (!(surfaceCapabilities.supportedTransforms & vk::SurfaceTransformFlagBitsKHR::eIdentity)) {
+		printf("warning: identity transform not supported\n");
+	}
+
+	if (surfaceCapabilities.currentTransform != vk::SurfaceTransformFlagBitsKHR::eIdentity) {
+		printf("warning: current transform is not identity\n");
+	}
+
+	if (!(surfaceCapabilities.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eOpaque)) {
+		printf("warning: opaque alpha not supported\n");
+	}
+
+	// FIFO is guaranteed to be supported
+	vk::PresentModeKHR swapchainPresentMode = vk::PresentModeKHR::eFifo;
+	if (desc.vsync) {
+		for (const auto &mode : surfacePresentModes) {
+			if (mode == vk::PresentModeKHR::eMailbox) {
+				swapchainPresentMode = vk::PresentModeKHR::eMailbox;
+				// mailbox is "best", get out
+				break;
+			} else if (mode == vk::PresentModeKHR::eFifoRelaxed) {
+				swapchainPresentMode = vk::PresentModeKHR::eFifoRelaxed;
+				// keep looking in case we find a better one
+			}
+		}
+	} else {
+		for (const auto &mode : surfacePresentModes) {
+			if (mode == vk::PresentModeKHR::eImmediate) {
+				swapchainPresentMode = vk::PresentModeKHR::eImmediate;
+				break;
+			}
+		}
+	}
+
+	printf("using present mode %s\n", vk::to_string(swapchainPresentMode).c_str());
+
+	vk::SwapchainCreateInfoKHR swapchainCreateInfo;
+	swapchainCreateInfo.flags                 = vk::SwapchainCreateFlagBitsKHR();
+	swapchainCreateInfo.surface               = surface;
+	swapchainCreateInfo.minImageCount         = numImages;
+	// TODO: better way to choose a format, should care about sRGB
+	swapchainCreateInfo.imageFormat           = surfaceFormats[0].format;
+	swapchainCreateInfo.imageColorSpace       = surfaceFormats[0].colorSpace;
+	swapchainCreateInfo.imageExtent           = imageExtent;
+	swapchainCreateInfo.imageArrayLayers      = 1;
+	swapchainCreateInfo.imageUsage            = vk::ImageUsageFlagBits::eTransferDst;
+
+	// no concurrent access
+	swapchainCreateInfo.imageSharingMode      = vk::SharingMode::eExclusive;
+	swapchainCreateInfo.queueFamilyIndexCount = 0;
+	swapchainCreateInfo.pQueueFamilyIndices   = nullptr;
+
+	swapchainCreateInfo.preTransform          = vk::SurfaceTransformFlagBitsKHR::eIdentity;
+	swapchainCreateInfo.compositeAlpha        = vk::CompositeAlphaFlagBitsKHR::eOpaque;
+	swapchainCreateInfo.presentMode           = swapchainPresentMode;
+	swapchainCreateInfo.clipped               = true;
+	swapchainCreateInfo.oldSwapchain          = swapchain;
+
+	vk::SwapchainKHR newSwapchain = device.createSwapchainKHR(swapchainCreateInfo);
+
+	if (swapchain) {
+		device.destroySwapchainKHR(swapchain);
+	}
+	swapchain = newSwapchain;
 }
 
 
