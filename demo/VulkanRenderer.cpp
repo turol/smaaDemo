@@ -261,7 +261,29 @@ Renderer::Renderer(const RendererDesc &desc)
 
 	device = physicalDevice.createDevice(deviceCreateInfo);
 
-	STUBBED("");
+	surfaceFormats      = physicalDevice.getSurfaceFormatsKHR(surface);
+	surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
+	surfacePresentModes = physicalDevice.getSurfacePresentModesKHR(surface);
+
+	printf("%u surface formats\n", static_cast<uint32_t>(surfaceFormats.size()));
+	for (const auto &format : surfaceFormats) {
+		printf(" %s\t%s\n", vk::to_string(format.format).c_str(), vk::to_string(format.colorSpace).c_str());
+	}
+
+	printf("%u present modes\n",   static_cast<uint32_t>(surfacePresentModes.size()));
+	for (const auto &presentMode : surfacePresentModes) {
+		printf(" %s\n", vk::to_string(presentMode).c_str());
+	}
+
+	printf("image count min-max %u - %u\n", surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
+	printf("image extent min-max %ux%u - %ux%u\n", surfaceCapabilities.minImageExtent.width, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.width, surfaceCapabilities.maxImageExtent.height);
+	printf("supported surface transforms: %s\n", vk::to_string(surfaceCapabilities.supportedTransforms).c_str());
+	printf("supported surface alpha composite flags: %s\n", vk::to_string(surfaceCapabilities.supportedCompositeAlpha).c_str());
+	printf("supported surface usage flags: %s\n", vk::to_string(surfaceCapabilities.supportedUsageFlags).c_str());
+
+	recreateSwapchain(desc.swapchain);
+
+	// TODO: load pipeline cache
 }
 
 
@@ -269,6 +291,8 @@ Renderer::~Renderer() {
 	assert(instance);
 	assert(device);
 	assert(surface);
+
+	// TODO: save pipeline cache
 
 	instance.destroySurfaceKHR(surface);
 	surface = VK_NULL_HANDLE;

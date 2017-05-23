@@ -491,6 +491,9 @@ class Renderer {
 	vk::PhysicalDeviceFeatures   deviceFeatures;
 	vk::Device                   device;
 	vk::SurfaceKHR               surface;
+	std::vector<vk::SurfaceFormatKHR>  surfaceFormats;
+	vk::SurfaceCapabilitiesKHR         surfaceCapabilities;
+	std::vector<vk::PresentModeKHR>    surfacePresentModes;
 
 #endif   // RENDERER_VULKAN
 
