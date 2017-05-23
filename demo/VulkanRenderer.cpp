@@ -331,7 +331,7 @@ BufferHandle Renderer::createEphemeralBuffer(uint32_t size, const void *contents
 FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc & /* desc */) {
 	STUBBED("");
 
-	return 0;
+	return FramebufferHandle(0);
 }
 
 

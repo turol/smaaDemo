@@ -65,7 +65,7 @@ class FramebufferHandle {
 
 	friend class Renderer;
 
-	FramebufferHandle(uint32_t h)
+	explicit FramebufferHandle(uint32_t h)
 	: handle(h)
 	{
 	}
