@@ -949,7 +949,7 @@ void Renderer::blitFBO(FramebufferHandle src, FramebufferHandle dest) {
 	unsigned int dstHeight  = itDest->second->height;
 
 	assert(srcWidth  == dstWidth);
-	assert(srcHeight == srcHeight);
+	assert(srcHeight == dstHeight);
 
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, src.handle);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest.handle);
