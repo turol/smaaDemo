@@ -95,23 +95,6 @@ typedef uint32_t RenderPassHandle;
 typedef uint32_t RenderTargetHandle;
 typedef uint32_t SamplerHandle;
 
-class ShaderHandle {
-	uint32_t handle;
-
-	friend class Renderer;
-
-	explicit ShaderHandle(uint32_t h)
-	: handle(h)
-	{
-	}
-
-public:
-	ShaderHandle()
-	: handle(0)
-	{
-	}
-};
-
 
 class VertexShaderHandle {
 	uint32_t handle;
@@ -379,7 +362,8 @@ private:
 
 
 class PipelineDesc {
-	ShaderHandle shader_;
+	VertexShaderHandle vertexShader_;
+	FragmentShaderHandle fragmentShader_;
 	uint32_t vertexAttribMask;
 	bool depthWrite_;
 	bool depthTest_;
@@ -401,8 +385,13 @@ class PipelineDesc {
 
 public:
 
-	PipelineDesc &shader(ShaderHandle h) {
-		shader_ = h;
+	PipelineDesc &vertexShader(VertexShaderHandle h) {
+		vertexShader_ = h;
+		return *this;
+	}
+
+	PipelineDesc &fragmentShader(FragmentShaderHandle h) {
+		fragmentShader_ = h;
 		return *this;
 	}
 
@@ -497,8 +486,11 @@ class Renderer {
 	bool idxBuf16Bit;
 
 	struct Pipeline : public PipelineDesc {
-		Pipeline(const PipelineDesc &desc)
+		GLuint shader;
+
+		Pipeline(const PipelineDesc &desc, GLuint shader_)
 		: PipelineDesc(desc)
+		, shader(shader_)
 		{
 		}
 	};
@@ -571,7 +563,6 @@ public:
 	FramebufferHandle   createFramebuffer(const FramebufferDesc &desc);
 	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
 	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);
-	ShaderHandle         createShader(VertexShaderHandle vertexShader, FragmentShaderHandle fragmentShader);
 	PipelineHandle      createPipeline(const PipelineDesc &desc);
 	// TODO: add buffer usage flags
 	BufferHandle        createBuffer(uint32_t size, const void *contents);

@@ -203,10 +203,6 @@ class SMAADemo {
 	std::unique_ptr<Renderer> renderer;
 	bool glDebug;
 
-	ShaderHandle cubeShader;
-	ShaderHandle imageShader;
-	ShaderHandle guiShader;
-
 	PipelineHandle cubePipeline;
 	PipelineHandle imagePipeline;
 	PipelineHandle guiPipeline;
@@ -225,14 +221,10 @@ class SMAADemo {
 	bool antialiasing;
 	AAMethod::AAMethod aaMethod;
 
-	std::array<ShaderHandle, maxFXAAQuality> fxaaShaders;
 	std::array<PipelineHandle, maxFXAAQuality> fxaaPipelines;
 
-	std::array<ShaderHandle, maxSMAAQuality> smaaEdgeShaders;
 	std::array<PipelineHandle, maxSMAAQuality> smaaEdgePipelines;
-	std::array<ShaderHandle, maxSMAAQuality> smaaBlendWeightShaders;
 	std::array<PipelineHandle, maxSMAAQuality> smaaBlendWeightPipelines;
-	std::array<ShaderHandle, maxSMAAQuality> smaaNeighborShaders;
 	std::array<PipelineHandle, maxSMAAQuality> smaaNeighborPipelines;
 	TextureHandle areaTex;
 	TextureHandle searchTex;
@@ -467,20 +459,20 @@ void SMAADemo::initRender() {
         auto vertexShader   = renderer->createVertexShader("smaaEdge", macros);
         auto fragmentShader = renderer->createFragmentShader("smaaEdge", macros);
 
-		smaaEdgeShaders[i]         = renderer->createShader(vertexShader, fragmentShader);
-		plDesc.shader(smaaEdgeShaders[i]);
+		plDesc.vertexShader(vertexShader)
+		      .fragmentShader(fragmentShader);
 		smaaEdgePipelines[i]       = renderer->createPipeline(plDesc);
 
 		vertexShader                = renderer->createVertexShader("smaaBlendWeight", macros);
 		fragmentShader              = renderer->createFragmentShader("smaaBlendWeight", macros);
-		smaaBlendWeightShaders[i]   = renderer->createShader(vertexShader, fragmentShader);
-		plDesc.shader(smaaBlendWeightShaders[i]);
+		plDesc.vertexShader(vertexShader)
+		      .fragmentShader(fragmentShader);
 		smaaBlendWeightPipelines[i] = renderer->createPipeline(plDesc);
 
 		vertexShader                = renderer->createVertexShader("smaaNeighbor", macros);
 		fragmentShader              = renderer->createFragmentShader("smaaNeighbor", macros);
-		smaaNeighborShaders[i]      = renderer->createShader(vertexShader, fragmentShader);
-		plDesc.shader(smaaNeighborShaders[i]);
+		plDesc.vertexShader(vertexShader)
+		      .fragmentShader(fragmentShader);
 		smaaNeighborPipelines[i]   = renderer->createPipeline(plDesc);
 	}
 
@@ -493,8 +485,8 @@ void SMAADemo::initRender() {
 		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
 		auto vertexShader   = renderer->createVertexShader("fxaa", macros);
 		auto fragmentShader = renderer->createFragmentShader("fxaa", macros);
-		fxaaShaders[i]      = renderer->createShader(vertexShader, fragmentShader);
-		plDesc.shader(fxaaShaders[i]);
+		plDesc.vertexShader(vertexShader)
+		      .fragmentShader(fragmentShader);
 		fxaaPipelines[i] = renderer->createPipeline(plDesc);
 	}
 
@@ -502,10 +494,10 @@ void SMAADemo::initRender() {
 
 	auto vertexShader   = renderer->createVertexShader("cube", macros);
 	auto fragmentShader = renderer->createFragmentShader("cube", macros);
-	cubeShader          = renderer->createShader(vertexShader, fragmentShader);
 
 	cubePipeline = renderer->createPipeline(PipelineDesc()
-	                                        .shader(cubeShader)
+	                                        .vertexShader(vertexShader)
+	                                        .fragmentShader(fragmentShader)
 	                                        .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
 	                                        .depthWrite(true)
 	                                        .depthTest(true)
@@ -514,9 +506,9 @@ void SMAADemo::initRender() {
 
 	vertexShader   = renderer->createVertexShader("image", macros);
 	fragmentShader = renderer->createFragmentShader("image", macros);
-	imageShader    = renderer->createShader(vertexShader, fragmentShader);
 
-	plDesc.shader(imageShader);
+	plDesc.vertexShader(vertexShader)
+	      .fragmentShader(fragmentShader);
 	plDesc.depthWrite(false)
 	      .depthTest(false)
 	      .cullFaces(true);
@@ -527,8 +519,8 @@ void SMAADemo::initRender() {
 
 	vertexShader   = renderer->createVertexShader("gui", macros);
 	fragmentShader = renderer->createFragmentShader("gui", macros);
-	guiShader = renderer->createShader(vertexShader, fragmentShader);
-	plDesc.shader(guiShader)
+	plDesc.vertexShader(vertexShader)
+	      .fragmentShader(fragmentShader)
 	      .cullFaces(false)
 	      .blending(true)
 	      .scissorTest(true);

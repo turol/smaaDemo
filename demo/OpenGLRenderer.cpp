@@ -663,14 +663,24 @@ FragmentShaderHandle Renderer::createFragmentShader(const std::string &name, con
 }
 
 
-ShaderHandle Renderer::createShader(VertexShaderHandle vertexShader, FragmentShaderHandle fragmentShader) {
-	assert(vertexShader.handle != 0);
-	assert(fragmentShader.handle != 0);
+PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
+	// TODO: something better
+	uint32_t handle = pipelines.size() + 1;
+	auto it = pipelines.find(handle);
+	while (it != pipelines.end()) {
+		handle++;
+		it = pipelines.find(handle);
+	}
+
+	// TODO: cache shaders
+
+	assert(desc.vertexShader_.handle != 0);
+	assert(desc.fragmentShader_.handle != 0);
 
 	GLuint program = glCreateProgram();
 
-	glAttachShader(program, vertexShader.handle);
-	glAttachShader(program, fragmentShader.handle);
+	glAttachShader(program, desc.vertexShader_.handle);
+	glAttachShader(program, desc.fragmentShader_.handle);
 	glLinkProgram(program);
 
 	GLint status = 0;
@@ -687,20 +697,7 @@ ShaderHandle Renderer::createShader(VertexShaderHandle vertexShader, FragmentSha
 
 	shaders.emplace(program, std::make_unique<Shader>(program));
 
-	return ShaderHandle(program);
-}
-
-
-PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
-	// TODO: something better
-	uint32_t handle = pipelines.size() + 1;
-	auto it = pipelines.find(handle);
-	while (it != pipelines.end()) {
-		handle++;
-		it = pipelines.find(handle);
-	}
-
-	Pipeline pipeline(desc);
+	Pipeline pipeline(desc, program);
 
 	pipelines.emplace(handle, pipeline);
 
@@ -982,7 +979,7 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 	const auto &p = it->second;
 
 	// TODO: shadow state, set only necessary
-	glUseProgram(p.shader_.handle);
+	glUseProgram(p.shader);
 	if (p.depthWrite_) {
 		glDepthMask(GL_TRUE);
 	} else {
