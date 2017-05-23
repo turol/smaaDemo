@@ -360,6 +360,27 @@ SamplerHandle Renderer::createSampler(const SamplerDesc & /* desc */) {
 }
 
 
+VertexShaderHandle Renderer::createVertexShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
+	STUBBED("");
+
+	return VertexShaderHandle (0);
+}
+
+
+FragmentShaderHandle Renderer::createFragmentShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
+	STUBBED("");
+
+	return FragmentShaderHandle (0);
+}
+
+
+ShaderHandle Renderer::createShader(VertexShaderHandle /* vertexShader */, FragmentShaderHandle /* fragmentShader */) {
+	STUBBED("");
+
+	return ShaderHandle (0);
+}
+
+
 ShaderHandle Renderer::createShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
 	STUBBED("");
 

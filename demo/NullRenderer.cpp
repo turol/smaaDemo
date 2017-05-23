@@ -73,6 +73,21 @@ SamplerHandle Renderer::createSampler(const SamplerDesc & /* desc */) {
 }
 
 
+VertexShaderHandle Renderer::createVertexShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
+	return VertexShaderHandle (0);
+}
+
+
+FragmentShaderHandle Renderer::createFragmentShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
+	return FragmentShaderHandle (0);
+}
+
+
+ShaderHandle Renderer::createShader(VertexShaderHandle /* vertexShader */, FragmentShaderHandle /* fragmentShader */) {
+	return ShaderHandle (0);
+}
+
+
 ShaderHandle Renderer::createShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
 	return ShaderHandle (0);
 }

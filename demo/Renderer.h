@@ -112,6 +112,43 @@ public:
 	}
 };
 
+
+class VertexShaderHandle {
+	uint32_t handle;
+
+	friend class Renderer;
+
+	explicit VertexShaderHandle(uint32_t h)
+	: handle(h)
+	{
+	}
+
+public:
+	VertexShaderHandle()
+	: handle(0)
+	{
+	}
+};
+
+
+class FragmentShaderHandle {
+	uint32_t handle;
+
+	friend class Renderer;
+
+	explicit FragmentShaderHandle(uint32_t h)
+	: handle(h)
+	{
+	}
+
+public:
+	FragmentShaderHandle()
+	: handle(0)
+	{
+	}
+};
+
+
 typedef uint32_t TextureHandle;
 typedef uint32_t UniformBufferHandle;
 
@@ -460,6 +497,8 @@ class Renderer {
 	bool idxBuf16Bit;
 
 	std::unordered_map<GLuint, std::unique_ptr<Framebuffer> > framebuffers;
+	std::unordered_map<GLuint, std::unique_ptr<VertexShader> >    vertexShaders;
+	std::unordered_map<GLuint, std::unique_ptr<FragmentShader> >  fragmentShaders;
 	std::unordered_map<GLuint, std::unique_ptr<Shader> > shaders;
 	std::unordered_map<uint32_t, PipelineDesc>                 pipelines;
 
@@ -523,6 +562,9 @@ public:
 
 	RenderTargetHandle  createRenderTarget(const RenderTargetDesc &desc);
 	FramebufferHandle   createFramebuffer(const FramebufferDesc &desc);
+	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
+	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);
+	ShaderHandle         createShader(VertexShaderHandle vertexShader, FragmentShaderHandle fragmentShader);
 	ShaderHandle        createShader(const std::string &name, const ShaderMacros &macros);
 	PipelineHandle      createPipeline(const PipelineDesc &desc);
 	// TODO: add buffer usage flags

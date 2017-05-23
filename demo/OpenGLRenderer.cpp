@@ -635,6 +635,62 @@ std::vector<char> Renderer::loadSource(const std::string &name) {
 }
 
 
+VertexShaderHandle Renderer::createVertexShader(const std::string &name, const ShaderMacros &macros) {
+	std::string vertexShaderName   = name + ".vert";
+
+	auto vertexSrc = loadSource(vertexShaderName);
+
+	auto v = std::make_unique<VertexShader>(vertexShaderName, vertexSrc, macros);
+	auto id = v->shader;
+
+	vertexShaders.emplace(id, std::move(v));
+
+	return VertexShaderHandle(id);
+}
+
+
+FragmentShaderHandle Renderer::createFragmentShader(const std::string &name, const ShaderMacros &macros) {
+	std::string fragmentShaderName = name + ".frag";
+
+	auto fragSrc = loadSource(fragmentShaderName);
+
+	auto f = std::make_unique<FragmentShader>(fragmentShaderName, fragSrc, macros);
+	auto id = f->shader;
+
+	fragmentShaders.emplace(id, std::move(f));
+
+	return FragmentShaderHandle(id);
+}
+
+
+ShaderHandle Renderer::createShader(VertexShaderHandle vertexShader, FragmentShaderHandle fragmentShader) {
+	assert(vertexShader.handle != 0);
+	assert(fragmentShader.handle != 0);
+
+	GLuint program = glCreateProgram();
+
+	glAttachShader(program, vertexShader.handle);
+	glAttachShader(program, fragmentShader.handle);
+	glLinkProgram(program);
+
+	GLint status = 0;
+	glGetProgramiv(program, GL_LINK_STATUS, &status);
+	if (status != GL_TRUE) {
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &status);
+		std::vector<char> infoLog(status + 1, '\0');
+		// TODO: better logging
+		glGetProgramInfoLog(program, status, NULL, &infoLog[0]);
+		printf("info log: %s\n", &infoLog[0]); fflush(stdout);
+		throw std::runtime_error("shader link failed");
+	}
+	glUseProgram(program);
+
+	shaders.emplace(program, std::make_unique<Shader>(program));
+
+	return ShaderHandle(program);
+}
+
+
 ShaderHandle Renderer::createShader(const std::string &name, const ShaderMacros &macros) {
 	std::string vertexShaderName   = name + ".vert";
 	std::string fragmentShaderName = name + ".frag";

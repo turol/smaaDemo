@@ -464,7 +464,10 @@ void SMAADemo::initRender() {
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[i]);
 		macros.emplace(qualityString, "1");
 
-		smaaEdgeShaders[i]         = renderer->createShader("smaaEdge", macros);
+        auto vertexShader   = renderer->createVertexShader("smaaEdge", macros);
+        auto fragmentShader = renderer->createFragmentShader("smaaEdge", macros);
+
+		smaaEdgeShaders[i]         = renderer->createShader(vertexShader, fragmentShader);
 		plDesc.shader(smaaEdgeShaders[i]);
 		smaaEdgePipelines[i]       = renderer->createPipeline(plDesc);
 
