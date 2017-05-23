@@ -973,13 +973,6 @@ void Renderer::bindFramebuffer(FramebufferHandle fbo) {
 }
 
 
-void Renderer::bindShader(ShaderHandle shader) {
-	// TODO: check it's valid
-
-	glUseProgram(shader.handle);
-}
-
-
 void Renderer::bindPipeline(PipelineHandle pipeline) {
 	assert(pipeline != 0);
 
@@ -989,7 +982,7 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 	const auto &p = it->second;
 
 	// TODO: shadow state, set only necessary
-	bindShader(p.shader_);
+	glUseProgram(p.shader_.handle);
 	if (p.depthWrite_) {
 		glDepthMask(GL_TRUE);
 	} else {

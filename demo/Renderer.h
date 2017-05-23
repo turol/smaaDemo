@@ -604,7 +604,6 @@ public:
 
 	void bindFramebuffer(FramebufferHandle fbo);
 	void bindPipeline(PipelineHandle pipeline);
-	void bindShader(ShaderHandle shader);
 	void bindIndexBuffer(BufferHandle buffer, bool bit16);
 	void bindVertexBuffer(unsigned int binding, BufferHandle buffer, unsigned int stride);
 

@@ -153,11 +153,6 @@ void Renderer::bindFramebuffer(FramebufferHandle fbo) {
 }
 
 
-void Renderer::bindShader(ShaderHandle shader) {
-	assert(shader.handle != 0);
-}
-
-
 void Renderer::bindPipeline(PipelineHandle pipeline) {
 	assert(pipeline != 0);
 }
