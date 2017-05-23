@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <shaderc/shaderc.hpp>
+
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 
@@ -474,6 +476,8 @@ struct RendererDesc {
 
 class Renderer {
 	SwapchainDesc swapchainDesc;
+
+	shaderc::Compiler compiler;
 
 #ifdef RENDERER_OPENGL
 

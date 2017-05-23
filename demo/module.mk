@@ -7,7 +7,7 @@ FILES:= \
 	# empty line
 
 
-smaaDemo_MODULES:=imgui sdl2
+smaaDemo_MODULES:=imgui sdl2 shaderc
 smaaDemo_SRC:=$(foreach f, OpenGLRenderer.cpp NullRenderer.cpp VulkanRenderer.cpp smaaDemo.cpp Utils.cpp, $(dir)/$(f))
 
 
