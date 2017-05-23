@@ -80,6 +80,7 @@ static SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window, SDL_vulkanInstance 
 	}
 
 	VkXcbSurfaceCreateInfoKHR createInfo;
+	memset(&createInfo, 0, sizeof(createInfo));
 	createInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
 	createInfo.connection = XGetXCBConnection(wminfo.info.x11.display);
 	if(!createInfo.connection)
