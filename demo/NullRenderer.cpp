@@ -9,8 +9,9 @@ Renderer *Renderer::createRenderer(const RendererDesc &desc) {
 }
 
 
-Renderer::Renderer(const RendererDesc & /* desc */)
-: numBuffers(0)
+Renderer::Renderer(const RendererDesc &desc)
+: swapchainDesc(desc.swapchain)
+, numBuffers(0)
 , numPipelines(0)
 , numSamplers(0)
 , numTextures(0)

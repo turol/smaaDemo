@@ -480,13 +480,13 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 
 
 Renderer::Renderer(const RendererDesc &desc)
-: window(nullptr)
+: swapchainDesc(desc.swapchain)
+, window(nullptr)
 , context(nullptr)
 , vao(0)
 , idxBuf16Bit(false)
 , inRenderPass(false)
 {
-	swapchainDesc = desc.swapchain;
 
 	// TODO: check return value
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
