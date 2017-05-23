@@ -471,11 +471,15 @@ void SMAADemo::initRender() {
 		plDesc.shader(smaaEdgeShaders[i]);
 		smaaEdgePipelines[i]       = renderer->createPipeline(plDesc);
 
-		smaaBlendWeightShaders[i]  = renderer->createShader("smaaBlendWeight", macros);
+		vertexShader                = renderer->createVertexShader("smaaBlendWeight", macros);
+		fragmentShader              = renderer->createFragmentShader("smaaBlendWeight", macros);
+		smaaBlendWeightShaders[i]   = renderer->createShader(vertexShader, fragmentShader);
 		plDesc.shader(smaaBlendWeightShaders[i]);
 		smaaBlendWeightPipelines[i] = renderer->createPipeline(plDesc);
 
-		smaaNeighborShaders[i]     = renderer->createShader("smaaNeighbor", macros);
+		vertexShader                = renderer->createVertexShader("smaaNeighbor", macros);
+		fragmentShader              = renderer->createFragmentShader("smaaNeighbor", macros);
+		smaaNeighborShaders[i]      = renderer->createShader(vertexShader, fragmentShader);
 		plDesc.shader(smaaNeighborShaders[i]);
 		smaaNeighborPipelines[i]   = renderer->createPipeline(plDesc);
 	}
@@ -487,14 +491,18 @@ void SMAADemo::initRender() {
 		std::string qualityString(fxaaQualityLevels[i]);
 
 		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
-		fxaaShaders[i] = renderer->createShader("fxaa", macros);
+		auto vertexShader   = renderer->createVertexShader("fxaa", macros);
+		auto fragmentShader = renderer->createFragmentShader("fxaa", macros);
+		fxaaShaders[i]      = renderer->createShader(vertexShader, fragmentShader);
 		plDesc.shader(fxaaShaders[i]);
 		fxaaPipelines[i] = renderer->createPipeline(plDesc);
 	}
 
 	macros.clear();
 
-	cubeShader = renderer->createShader("cube", macros);
+	auto vertexShader   = renderer->createVertexShader("cube", macros);
+	auto fragmentShader = renderer->createFragmentShader("cube", macros);
+	cubeShader          = renderer->createShader(vertexShader, fragmentShader);
 
 	cubePipeline = renderer->createPipeline(PipelineDesc()
 	                                        .shader(cubeShader)
@@ -504,7 +512,9 @@ void SMAADemo::initRender() {
 	                                        .cullFaces(true)
 	                                       );
 
-	imageShader = renderer->createShader("image", macros);
+	vertexShader   = renderer->createVertexShader("image", macros);
+	fragmentShader = renderer->createFragmentShader("image", macros);
+	imageShader    = renderer->createShader(vertexShader, fragmentShader);
 
 	plDesc.shader(imageShader);
 	plDesc.depthWrite(false)
@@ -515,7 +525,9 @@ void SMAADemo::initRender() {
 
 	macros.clear();
 
-	guiShader = renderer->createShader("gui", macros);
+	vertexShader   = renderer->createVertexShader("gui", macros);
+	fragmentShader = renderer->createFragmentShader("gui", macros);
+	guiShader = renderer->createShader(vertexShader, fragmentShader);
 	plDesc.shader(guiShader)
 	      .cullFaces(false)
 	      .blending(true)

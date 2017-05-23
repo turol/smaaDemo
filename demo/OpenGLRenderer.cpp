@@ -691,40 +691,6 @@ ShaderHandle Renderer::createShader(VertexShaderHandle vertexShader, FragmentSha
 }
 
 
-ShaderHandle Renderer::createShader(const std::string &name, const ShaderMacros &macros) {
-	std::string vertexShaderName   = name + ".vert";
-	std::string fragmentShaderName = name + ".frag";
-
-	auto vertexSrc = loadSource(vertexShaderName);
-	auto fragSrc   = loadSource(fragmentShaderName);
-
-	VertexShader   vertexShader  (vertexShaderName,   vertexSrc, macros);
-	FragmentShader fragmentShader(fragmentShaderName, fragSrc,   macros);
-
-	GLuint program = glCreateProgram();
-
-	glAttachShader(program, vertexShader.shader);
-	glAttachShader(program, fragmentShader.shader);
-	glLinkProgram(program);
-
-	GLint status = 0;
-	glGetProgramiv(program, GL_LINK_STATUS, &status);
-	if (status != GL_TRUE) {
-		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &status);
-		std::vector<char> infoLog(status + 1, '\0');
-		// TODO: better logging
-		glGetProgramInfoLog(program, status, NULL, &infoLog[0]);
-		printf("info log: %s\n", &infoLog[0]); fflush(stdout);
-		throw std::runtime_error("shader link failed");
-	}
-	glUseProgram(program);
-
-	shaders.emplace(program, std::make_unique<Shader>(program));
-
-	return ShaderHandle(program);
-}
-
-
 PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	// TODO: something better
 	uint32_t handle = pipelines.size() + 1;

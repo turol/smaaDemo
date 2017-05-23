@@ -88,11 +88,6 @@ ShaderHandle Renderer::createShader(VertexShaderHandle /* vertexShader */, Fragm
 }
 
 
-ShaderHandle Renderer::createShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
-	return ShaderHandle (0);
-}
-
-
 TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 	assert(desc.width_   > 0);
 	assert(desc.height_  > 0);

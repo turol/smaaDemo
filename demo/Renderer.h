@@ -565,7 +565,6 @@ public:
 	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
 	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);
 	ShaderHandle         createShader(VertexShaderHandle vertexShader, FragmentShaderHandle fragmentShader);
-	ShaderHandle        createShader(const std::string &name, const ShaderMacros &macros);
 	PipelineHandle      createPipeline(const PipelineDesc &desc);
 	// TODO: add buffer usage flags
 	BufferHandle        createBuffer(uint32_t size, const void *contents);
