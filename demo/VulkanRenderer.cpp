@@ -197,16 +197,7 @@ Renderer::Renderer(const RendererDesc &desc)
 	printf("Type %s\n", vk::to_string(deviceProperties.deviceType).c_str());
 	printf("Name \"%s\"\n", deviceProperties.deviceName);
 
-	std::vector<vk::QueueFamilyProperties> queueProps = physicalDevice.getQueueFamilyProperties();
-	printf("%u queue families\n", static_cast<unsigned int>(queueProps.size()));
-	for (uint32_t i = 0; i < queueProps.size(); i++) {
-		const auto &queue = queueProps[i];
-		printf(" Queue family %u\n", i);
-		printf("  Flags: %s\n", vk::to_string(queue.queueFlags).c_str());
-		printf("  Count: %u\n", queue.queueCount);
-		printf("  Timestamp valid bits: %u\n", queue.timestampValidBits);
-		printf("  Image transfer granularity: (%u, %u, %u)\n", queue.minImageTransferGranularity.width, queue.minImageTransferGranularity.height, queue.minImageTransferGranularity.depth);
-	}
+	deviceFeatures = physicalDevice.getFeatures();
 
 	if(!SDL_Vulkan_CreateSurface(window,
 								 (SDL_vulkanInstance) instance,
@@ -217,16 +208,73 @@ Renderer::Renderer(const RendererDesc &desc)
 		exit(1);
 	}
 
+	std::vector<vk::QueueFamilyProperties> queueProps = physicalDevice.getQueueFamilyProperties();
+	printf("%u queue families\n", static_cast<unsigned int>(queueProps.size()));
+
+	uint32_t graphicsQueueIndex = queueProps.size();
+	for (uint32_t i = 0; i < queueProps.size(); i++) {
+		const auto &queue = queueProps[i];
+		printf(" Queue family %u\n", i);
+		printf("  Flags: %s\n", vk::to_string(queue.queueFlags).c_str());
+		printf("  Count: %u\n", queue.queueCount);
+		printf("  Timestamp valid bits: %u\n", queue.timestampValidBits);
+		printf("  Image transfer granularity: (%u, %u, %u)\n", queue.minImageTransferGranularity.width, queue.minImageTransferGranularity.height, queue.minImageTransferGranularity.depth);
+
+		if (queue.queueFlags & vk::QueueFlagBits::eGraphics) {
+			if (physicalDevice.getSurfaceSupportKHR(i, surface)) {
+				printf("  Can present to our surface\n");
+				graphicsQueueIndex = i;
+			} else {
+				printf("  Can't present to our surface\n");
+			}
+		}
+	}
+
+	if (graphicsQueueIndex == queueProps.size()) {
+		printf("Error: no graphics queue\n");
+		exit(1);
+	}
+
+	printf("Using queue %u for graphics\n", graphicsQueueIndex);
+
+	std::array<float, 1> queuePriorities = { 0.0f };
+
+	vk::DeviceQueueCreateInfo queueCreateInfo;
+	queueCreateInfo.queueFamilyIndex  = graphicsQueueIndex;
+	queueCreateInfo.queueCount        = 1;
+	queueCreateInfo.pQueuePriorities  = &queuePriorities[0];;
+
+	std::vector<const char *> deviceExtensions;
+	deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
+	vk::DeviceCreateInfo deviceCreateInfo;
+	deviceCreateInfo.queueCreateInfoCount     = 1;
+	deviceCreateInfo.pQueueCreateInfos        = &queueCreateInfo;
+	// TODO: enable only features we need
+	deviceCreateInfo.pEnabledFeatures         = &deviceFeatures;
+	deviceCreateInfo.enabledExtensionCount    = deviceExtensions.size();
+	deviceCreateInfo.ppEnabledExtensionNames  = &deviceExtensions[0];
+	if (enableValidation) {
+		deviceCreateInfo.enabledLayerCount    = validationLayers.size();
+		deviceCreateInfo.ppEnabledLayerNames  = &validationLayers[0];
+	}
+
+	device = physicalDevice.createDevice(deviceCreateInfo);
+
 	STUBBED("");
 }
 
 
 Renderer::~Renderer() {
 	assert(instance);
+	assert(device);
 	assert(surface);
 
 	instance.destroySurfaceKHR(surface);
 	surface = VK_NULL_HANDLE;
+
+	device.destroy();
+	device = VK_NULL_HANDLE;
 
 	instance.destroy();
 	instance = VK_NULL_HANDLE;

@@ -488,6 +488,8 @@ class Renderer {
 	vk::Instance instance;
 	vk::PhysicalDevice physicalDevice;
 	vk::PhysicalDeviceProperties deviceProperties;
+	vk::PhysicalDeviceFeatures   deviceFeatures;
+	vk::Device                   device;
 	vk::SurfaceKHR               surface;
 
 #endif   // RENDERER_VULKAN
