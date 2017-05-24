@@ -211,9 +211,8 @@ static std::vector<char> processShaderIncludes(std::vector<char> shaderSource, c
 }
 
 
-static GLuint createShader(GLenum type, const std::string &name, const std::vector<char> &rawSrc, const ShaderMacros &macros) {
+static GLuint createShader(GLenum type, const std::string &name, const std::vector<char> &src) {
 	assert(type == GL_VERTEX_SHADER || type == GL_FRAGMENT_SHADER);
-	auto src = processShaderIncludes(rawSrc, macros);
 
 	const char *sourcePointer = &src[0];
 	GLint sourceLen = src.size();
@@ -319,7 +318,8 @@ VertexShader::~VertexShader() {
 FragmentShader::FragmentShader(const std::string &name, const std::vector<char> &source, const ShaderMacros &macros)
 : shader(0)
 {
-	shader = createShader(GL_FRAGMENT_SHADER, name, source, macros);
+	auto src = processShaderIncludes(source, macros);
+	shader = createShader(GL_FRAGMENT_SHADER, name, src);
 }
 
 
@@ -624,9 +624,10 @@ VertexShaderHandle Renderer::createVertexShader(const std::string &name, const S
 	std::string vertexShaderName   = name + ".vert";
 
 	auto vertexSrc = loadSource(vertexShaderName);
+	auto src = processShaderIncludes(vertexSrc, macros);
 
 	auto v = std::make_unique<VertexShader>();
-	auto id = createShader(GL_VERTEX_SHADER, vertexShaderName, vertexSrc, macros);
+	auto id = createShader(GL_VERTEX_SHADER, vertexShaderName, src);
 	v->shader = id;
 
 	vertexShaders.emplace(id, std::move(v));
