@@ -537,6 +537,7 @@ class Renderer {
 	vk::SurfaceCapabilitiesKHR         surfaceCapabilities;
 	std::vector<vk::PresentModeKHR>    surfacePresentModes;
 	vk::SwapchainKHR                   swapchain;
+	std::vector<vk::Image>             swapchainImages;
 
 #endif   // RENDERER_VULKAN
 

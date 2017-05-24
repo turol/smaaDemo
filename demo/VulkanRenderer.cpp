@@ -506,6 +506,10 @@ void Renderer::recreateSwapchain(const SwapchainDesc &desc) {
 		device.destroySwapchainKHR(swapchain);
 	}
 	swapchain = newSwapchain;
+
+	swapchainImages = device.getSwapchainImagesKHR(swapchain);
+    printf("Got %u swapchain images\n", static_cast<unsigned int>(swapchainImages.size()));
+
 }
 
 
