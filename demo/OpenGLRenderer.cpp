@@ -17,8 +17,6 @@ class VertexShader {
 
 #endif  // RENDERER_OPENGL
 
-	VertexShader() = delete;
-
 	VertexShader(const VertexShader &) = delete;
 	VertexShader &operator=(const VertexShader &) = delete;
 
@@ -30,7 +28,7 @@ class VertexShader {
 
 public:
 
-	VertexShader(const std::string &name, const std::vector<char> &source, const ShaderMacros &macros);
+	VertexShader();
 
 	~VertexShader();
 };
@@ -304,10 +302,9 @@ static GLenum glTexBaseFormat(Format format) {
 }
 
 
-VertexShader::VertexShader(const std::string &name, const std::vector<char> &source, const ShaderMacros &macros)
+VertexShader::VertexShader()
 : shader(0)
 {
-	shader = createShader(GL_VERTEX_SHADER, name, source, macros);
 }
 
 
@@ -628,8 +625,9 @@ VertexShaderHandle Renderer::createVertexShader(const std::string &name, const S
 
 	auto vertexSrc = loadSource(vertexShaderName);
 
-	auto v = std::make_unique<VertexShader>(vertexShaderName, vertexSrc, macros);
-	auto id = v->shader;
+	auto v = std::make_unique<VertexShader>();
+	auto id = createShader(GL_VERTEX_SHADER, vertexShaderName, vertexSrc, macros);
+	v->shader = id;
 
 	vertexShaders.emplace(id, std::move(v));
 
