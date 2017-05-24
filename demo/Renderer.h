@@ -533,11 +533,14 @@ class Renderer {
 	vk::PhysicalDeviceFeatures   deviceFeatures;
 	vk::Device                   device;
 	vk::SurfaceKHR               surface;
+	uint32_t                           graphicsQueueIndex;
 	std::vector<vk::SurfaceFormatKHR>  surfaceFormats;
 	vk::SurfaceCapabilitiesKHR         surfaceCapabilities;
 	std::vector<vk::PresentModeKHR>    surfacePresentModes;
 	vk::SwapchainKHR                   swapchain;
 	std::vector<vk::Image>             swapchainImages;
+
+	vk::CommandPool                    commandPool;
 
 #endif   // RENDERER_VULKAN
 

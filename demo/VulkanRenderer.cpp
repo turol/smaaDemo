@@ -113,6 +113,7 @@ Renderer::Renderer(const RendererDesc &desc)
 , instance(VK_NULL_HANDLE)
 , physicalDevice(VK_NULL_HANDLE)
 , surface(VK_NULL_HANDLE)
+, graphicsQueueIndex(0)
 , swapchain(VK_NULL_HANDLE)
 , inRenderPass(false)
 {
@@ -214,7 +215,7 @@ Renderer::Renderer(const RendererDesc &desc)
 	std::vector<vk::QueueFamilyProperties> queueProps = physicalDevice.getQueueFamilyProperties();
 	printf("%u queue families\n", static_cast<unsigned int>(queueProps.size()));
 
-	uint32_t graphicsQueueIndex = queueProps.size();
+	graphicsQueueIndex = queueProps.size();
 	for (uint32_t i = 0; i < queueProps.size(); i++) {
 		const auto &queue = queueProps[i];
 		printf(" Queue family %u\n", i);
@@ -279,6 +280,12 @@ Renderer::Renderer(const RendererDesc &desc)
 
 	recreateSwapchain(desc.swapchain);
 
+	{
+		vk::CommandPoolCreateInfo cp;
+		cp.queueFamilyIndex = graphicsQueueIndex;
+		commandPool = device.createCommandPool(cp);
+	}
+
 	// TODO: load pipeline cache
 }
 
@@ -288,8 +295,11 @@ Renderer::~Renderer() {
 	assert(device);
 	assert(surface);
 	assert(swapchain);
+	assert(commandPool);
 
 	// TODO: save pipeline cache
+
+	device.destroyCommandPool(commandPool);
 
 	device.destroySwapchainKHR(swapchain);
 	swapchain = VK_NULL_HANDLE;
