@@ -110,6 +110,7 @@ Renderer *Renderer::createRenderer(const RendererDesc &desc) {
 
 Renderer::Renderer(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
+, savePreprocessedShaders(false)
 , instance(VK_NULL_HANDLE)
 , physicalDevice(VK_NULL_HANDLE)
 , surface(VK_NULL_HANDLE)

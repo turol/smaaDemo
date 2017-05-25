@@ -478,6 +478,7 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 
 Renderer::Renderer(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
+, savePreprocessedShaders(false)
 , window(nullptr)
 , context(nullptr)
 , vao(0)
@@ -625,6 +626,9 @@ VertexShaderHandle Renderer::createVertexShader(const std::string &name, const S
 
 	auto vertexSrc = loadSource(vertexShaderName);
 	auto src = processShaderIncludes(vertexSrc, macros);
+	if (savePreprocessedShaders) {
+		writeFile(vertexShaderName + ".prep", src);
+	}
 
 	auto v = std::make_unique<VertexShader>();
 	auto id = createShader(GL_VERTEX_SHADER, vertexShaderName, src);

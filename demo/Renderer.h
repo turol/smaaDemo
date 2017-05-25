@@ -479,6 +479,8 @@ class Renderer {
 
 	shaderc::Compiler compiler;
 
+	bool savePreprocessedShaders;
+
 #ifdef RENDERER_OPENGL
 
 	PipelineDesc  currentPipeline;

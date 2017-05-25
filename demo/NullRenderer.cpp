@@ -11,6 +11,7 @@ Renderer *Renderer::createRenderer(const RendererDesc &desc) {
 
 Renderer::Renderer(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
+, savePreprocessedShaders(false)
 , numBuffers(0)
 , numPipelines(0)
 , numSamplers(0)
