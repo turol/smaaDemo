@@ -82,3 +82,11 @@ std::vector<char> readFile(std::string filename) {
 
 	return buf;
 }
+
+
+void writeFile(const std::string &filename, const std::vector<char> &contents) {
+	std::unique_ptr<FILE, FILEDeleter> file(fopen(filename.c_str(), "wb"));
+
+	fwrite(&contents[0], 1, contents.size(), file.get());
+}
+
