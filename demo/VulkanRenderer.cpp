@@ -111,6 +111,7 @@ Renderer *Renderer::createRenderer(const RendererDesc &desc) {
 Renderer::Renderer(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
 , savePreprocessedShaders(false)
+, frameNum(0)
 , instance(VK_NULL_HANDLE)
 , physicalDevice(VK_NULL_HANDLE)
 , surface(VK_NULL_HANDLE)
@@ -218,14 +219,14 @@ Renderer::Renderer(const RendererDesc &desc)
 
 	graphicsQueueIndex = queueProps.size();
 	for (uint32_t i = 0; i < queueProps.size(); i++) {
-		const auto &queue = queueProps[i];
+		const auto &q = queueProps[i];
 		printf(" Queue family %u\n", i);
-		printf("  Flags: %s\n", vk::to_string(queue.queueFlags).c_str());
-		printf("  Count: %u\n", queue.queueCount);
-		printf("  Timestamp valid bits: %u\n", queue.timestampValidBits);
-		printf("  Image transfer granularity: (%u, %u, %u)\n", queue.minImageTransferGranularity.width, queue.minImageTransferGranularity.height, queue.minImageTransferGranularity.depth);
+		printf("  Flags: %s\n", vk::to_string(q.queueFlags).c_str());
+		printf("  Count: %u\n", q.queueCount);
+		printf("  Timestamp valid bits: %u\n", q.timestampValidBits);
+		printf("  Image transfer granularity: (%u, %u, %u)\n", q.minImageTransferGranularity.width, q.minImageTransferGranularity.height, q.minImageTransferGranularity.depth);
 
-		if (queue.queueFlags & vk::QueueFlagBits::eGraphics) {
+		if (q.queueFlags & vk::QueueFlagBits::eGraphics) {
 			if (physicalDevice.getSurfaceSupportKHR(i, surface)) {
 				printf("  Can present to our surface\n");
 				graphicsQueueIndex = i;
@@ -265,6 +266,8 @@ Renderer::Renderer(const RendererDesc &desc)
 	}
 
 	device = physicalDevice.createDevice(deviceCreateInfo);
+
+	queue = device.getQueue(graphicsQueueIndex, 0);
 
 	surfaceFormats      = physicalDevice.getSurfaceFormatsKHR(surface);
 	surfacePresentModes = physicalDevice.getSurfacePresentModesKHR(surface);
@@ -530,12 +533,102 @@ void Renderer::blitFBO(FramebufferHandle /* src */, FramebufferHandle /* dest */
 
 
 void Renderer::beginFrame() {
+	// TODO: check how many frames are outstanding, wait if maximum
+	// here or in presentFrame?
+
+	// TODO: acquire next image here or in presentFrame?
+
+	// create command buffer
+	// TODO: should have multiple sets of these ready and just reset
+	// the appropriate pool
+	vk::CommandBufferAllocateInfo info(commandPool, vk::CommandBufferLevel::ePrimary, 1);
+	auto bufs = device.allocateCommandBuffers(info);
+
+	currentCommandBuffer = bufs[0];
+
+	// set command buffer to recording
+	currentCommandBuffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+
 	STUBBED("");
 }
 
 
 void Renderer::presentFrame(FramebufferHandle /* fbo */) {
-	STUBBED("");
+	// TODO: shouldn't recreate constantly...
+	vk::Fence fence = device.createFence(vk::FenceCreateInfo());
+
+	auto imageIdx_         = device.acquireNextImageKHR(swapchain, UINT64_MAX, vk::Semaphore(), fence);
+	uint32_t imageIdx      = imageIdx_.value;
+	vk::Image image        = swapchainImages[imageIdx];
+	vk::ImageLayout layout = vk::ImageLayout::eTransferDstOptimal;
+
+	// transition image to transfer dst optimal
+	vk::ImageMemoryBarrier barrier;
+	barrier.srcAccessMask       = vk::AccessFlagBits::eMemoryWrite;
+	barrier.dstAccessMask       = vk::AccessFlagBits::eTransferWrite;
+	barrier.oldLayout           = vk::ImageLayout::eUndefined;
+	barrier.newLayout           = layout;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.image               = image;
+
+	vk::ImageSubresourceRange range;
+	range.aspectMask            = vk::ImageAspectFlagBits::eColor;
+	range.baseMipLevel          = 0;
+	range.levelCount            = VK_REMAINING_MIP_LEVELS;
+	range.baseArrayLayer        = 0;
+	range.layerCount            = VK_REMAINING_ARRAY_LAYERS;
+	barrier.subresourceRange    = range;
+
+	currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { barrier });
+
+	// clear image
+	STUBBED("blit real draw image to presentation image");
+	double crap = 0.0;
+	float c = modf(frameNum / 60.0f, &crap);
+	std::array<float, 4> color = { c, c, c, c };
+	currentCommandBuffer.clearColorImage(image, layout, vk::ClearColorValue(color), { range });
+
+	// transition to present
+	barrier.srcAccessMask       = vk::AccessFlagBits::eTransferWrite;
+	barrier.dstAccessMask       = vk::AccessFlagBits::eMemoryRead;
+	barrier.oldLayout           = layout;
+	barrier.newLayout           = vk::ImageLayout::ePresentSrcKHR;
+	currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { barrier });
+
+	// submit command buffer
+	currentCommandBuffer.end();
+	vk::SubmitInfo submit;
+	submit.waitSemaphoreCount   = 0;
+	submit.commandBufferCount   = 1;
+	submit.pCommandBuffers      = &currentCommandBuffer;
+	submit.signalSemaphoreCount = 0;
+	queue.submit({ submit }, vk::Fence());
+
+	// present
+	device.waitForFences({ fence }, true, UINT64_MAX);
+	vk::PresentInfoKHR presentInfo;
+	presentInfo.waitSemaphoreCount = 0;
+	presentInfo.swapchainCount     = 1;
+	presentInfo.pSwapchains        = &swapchain;
+	presentInfo.pImageIndices      = &imageIdx;
+
+	queue.presentKHR(presentInfo);
+
+	// wait until complete
+	// TODO: don't
+	queue.waitIdle();
+
+	// delete command buffer
+	// TODO: shouldn't do that, reuse it
+	device.freeCommandBuffers(commandPool, {currentCommandBuffer} );
+
+	// reset command pool
+	device.resetCommandPool(commandPool, vk::CommandPoolResetFlags());
+
+	device.destroyFence(fence);
+
+	frameNum++;
 }
 
 

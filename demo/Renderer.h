@@ -480,6 +480,7 @@ class Renderer {
 	shaderc::Compiler compiler;
 
 	bool savePreprocessedShaders;
+	unsigned int frameNum;
 
 #ifdef RENDERER_OPENGL
 
@@ -541,8 +542,11 @@ class Renderer {
 	std::vector<vk::PresentModeKHR>    surfacePresentModes;
 	vk::SwapchainKHR                   swapchain;
 	std::vector<vk::Image>             swapchainImages;
+	vk::Queue                          queue;
 
 	vk::CommandPool                    commandPool;
+
+	vk::CommandBuffer                  currentCommandBuffer;
 
 #endif   // RENDERER_VULKAN
 
