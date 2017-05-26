@@ -7,7 +7,7 @@ std::vector<char> Renderer::loadSource(const std::string &name) {
 	if (it != shaderSources.end()) {
 		return it->second;
 	} else {
-		auto source = readTextFile(name);
+		auto source = readFile(name);
 		shaderSources.emplace(name, source);
 		return source;
 	}
