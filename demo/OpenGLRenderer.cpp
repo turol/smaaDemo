@@ -41,8 +41,6 @@ class FragmentShader {
 
 #endif  // RENDERER_OPENGL
 
-	FragmentShader() = delete;
-
 	FragmentShader(const FragmentShader &) = delete;
 	FragmentShader &operator=(const FragmentShader &) = delete;
 
@@ -54,7 +52,7 @@ class FragmentShader {
 
 public:
 
-	FragmentShader(const std::string &name, const std::vector<char> &source, const ShaderMacros &macros);
+	FragmentShader();
 
 	~FragmentShader();
 };
@@ -111,104 +109,6 @@ public:
 
 	~Framebuffer();
 };
-
-
-static std::vector<char> processShaderIncludes(std::vector<char> shaderSource, const ShaderMacros &macros) {
-	std::vector<char> output(shaderSource);
-
-	auto includePos = output.begin();
-	std::string::size_type lastExtPos = 0;
-
-	while (true) {
-		// find an #include
-		while (includePos < output.end()) {
-			// is it a comment?
-			if (*includePos == '/') {
-				includePos++;
-				if (includePos == output.end()) {
-					break;
-				}
-
-				if (*includePos == '/') {
-					// until line end
-					includePos = std::find(includePos, output.end(), '\n');
-				} else if (*includePos == '*') {
-					// until "*/"
-					while (true) {
-						includePos = std::find(includePos + 1, output.end(), '*');
-						if (includePos == output.end()) {
-							break;
-						}
-
-						includePos++;
-						if (includePos == output.end()) {
-							break;
-						}
-
-						if (*includePos == '/') {
-							includePos++;
-							break;
-						} else if (*includePos == '*') {
-							// handle "**/"
-							includePos--;
-						}
-					}
-				}
-			} else if (*includePos == '#' ) {
-				std::string directive(includePos + 1, std::min(includePos + 8, output.end()));
-				if (directive == "include") {
-					// we have an "#include"
-					break;
-				} else if (directive == "version" || directive == "extensi") {
-					lastExtPos = std::distance(output.begin(), includePos);
-				}
-				includePos++;
-			} else {
-				includePos++;
-			}
-		}
-
-		if (includePos == output.end()) {
-			// not found, we're done
-			break;
-		}
-
-		// find first of either " or <
-		auto filenamePos = std::min(std::find(includePos, output.end(), '"'), std::find(includePos, output.end(), '<')) + 1;
-		auto filenameEnd = std::min(std::find(filenamePos, output.end(), '"'), std::find(filenamePos, output.end(), '>'));
-		std::string filename(filenamePos, filenameEnd);
-
-		// we don't want a terminating '\0'
-		auto includeContents = readFile(filename);
-		// TODO: strip other errant '\0's
-
-		std::vector<char> newOutput;
-		// TODO: could reduce this a bit
-		newOutput.reserve(output.size() + includeContents.size());
-		newOutput.insert(newOutput.end(), output.begin(), includePos);
-		newOutput.insert(newOutput.end(), includeContents.begin(), includeContents.end());
-		newOutput.insert(newOutput.end(), filenameEnd + 1, output.end());
-
-		auto dist = std::distance(output.begin(), includePos);
-		std::swap(output, newOutput);
-		includePos = output.begin() + dist;
-		// go again in case of recursive includes
-	}
-
-	// add macros after last #version and #extension
-	if (!macros.empty()) {
-		std::vector<char> defines;
-		for (const auto &p : macros) {
-			std::string macro = std::string("#define ") + p.first + " " + p.second + "\n";
-			defines.insert(defines.end(), macro.begin(), macro.end());
-		}
-
-		auto nextLine = std::find(output.begin() + lastExtPos, output.end(), '\n') + 1;
-		output.insert(nextLine, defines.begin(), defines.end());
-	}
-
-	return output;
-}
 
 
 static GLuint createShader(GLenum type, const std::string &name, const std::vector<char> &src) {
@@ -315,11 +215,9 @@ VertexShader::~VertexShader() {
 }
 
 
-FragmentShader::FragmentShader(const std::string &name, const std::vector<char> &source, const ShaderMacros &macros)
+FragmentShader::FragmentShader()
 : shader(0)
 {
-	auto src = processShaderIncludes(source, macros);
-	shader = createShader(GL_FRAGMENT_SHADER, name, src);
 }
 
 
@@ -695,8 +593,29 @@ FragmentShaderHandle Renderer::createFragmentShader(const std::string &name, con
 
 	auto fragSrc = loadSource(fragmentShaderName);
 
-	auto f = std::make_unique<FragmentShader>(fragmentShaderName, fragSrc, macros);
-	auto id = f->shader;
+	shaderc::CompileOptions options;
+	// TODO: optimization level?
+	// TODO: cache includes globally
+	options.SetIncluder(std::make_unique<Includer>());
+
+	for (const auto &p : macros) {
+		options.AddMacroDefinition(p.first, p.second);
+	}
+
+	auto result = compiler.PreprocessGlsl(&fragSrc[0], fragSrc.size(), shaderc_glsl_fragment_shader, fragmentShaderName.c_str(), options);
+	if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
+		printf("Shader %s preprocess failed: %s\n", fragmentShaderName.c_str(), result.GetErrorMessage().c_str());
+		exit(1);
+	}
+	std::vector<char> src(result.cbegin(), result.cend());
+
+	if (savePreprocessedShaders) {
+		writeFile(fragmentShaderName + ".prep", src);
+	}
+
+	auto f = std::make_unique<FragmentShader>();
+	auto id = createShader(GL_FRAGMENT_SHADER, name, src);
+	f->shader = id;
 
 	fragmentShaders.emplace(id, std::move(f));
 
