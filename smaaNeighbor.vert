@@ -18,7 +18,7 @@ layout (location = 1) out vec4 offset;
 
 void main(void)
 {
-    vec2 pos = triangleVertex(gl_VertexID, texcoord);
+    vec2 pos = triangleVertex(gl_VertexIndex, texcoord);
     texcoord = flipTexCoord(texcoord);
     offset = vec4(0.0, 0.0, 0.0, 0.0);
     SMAANeighborhoodBlendingVS(texcoord, offset);

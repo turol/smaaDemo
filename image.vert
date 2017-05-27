@@ -7,6 +7,6 @@ layout (location = 0) out vec2 texcoord;
 
 void main(void)
 {
-    vec2 pos = triangleVertex(gl_VertexID, texcoord);
+    vec2 pos = triangleVertex(gl_VertexIndex, texcoord);
     gl_Position = vec4(pos, 1.0, 1.0);
 }

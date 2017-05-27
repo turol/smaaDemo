@@ -16,7 +16,7 @@ layout(location = 0) flat out int instance;
 
 void main(void)
 {
-    Cube cube = cubes[gl_InstanceID];
+    Cube cube = cubes[gl_InstanceIndex];
 
     // rotate
     // this is quaternion multiplication from glm
@@ -30,5 +30,5 @@ void main(void)
     vec3 rotatedPos = v + uv + uuv;
 
     gl_Position = viewProj * vec4(rotatedPos + cube.position, 1.0);
-    instance = gl_InstanceID;
+    instance = gl_InstanceIndex;
 }

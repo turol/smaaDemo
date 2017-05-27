@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <vector>
 
+#include <spirv_glsl.hpp>
+
 #include "Renderer.h"
 #include "Utils.h"
 
@@ -567,14 +569,22 @@ VertexShaderHandle Renderer::createVertexShader(const std::string &name, const S
 		options.AddMacroDefinition(p.first, p.second);
 	}
 
-	auto result = compiler.PreprocessGlsl(&vertexSrc[0], vertexSrc.size(), shaderc_glsl_vertex_shader, vertexShaderName.c_str(), options);
+	auto result = compiler.CompileGlslToSpv(&vertexSrc[0], vertexSrc.size(), shaderc_glsl_vertex_shader, vertexShaderName.c_str(), options);
 	if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-		printf("Shader %s preprocess failed: %s\n", vertexShaderName.c_str(), result.GetErrorMessage().c_str());
+		printf("Shader %s compile failed: %s\n", vertexShaderName.c_str(), result.GetErrorMessage().c_str());
 		exit(1);
 	}
-	std::vector<char> src(result.cbegin(), result.cend());
+
+	spirv_cross::CompilerGLSL glsl(std::vector<uint32_t>(result.cbegin(), result.cend()));
+	spirv_cross::CompilerGLSL::Options glslOptions;
+	glslOptions.vertex.fixup_clipspace = false;
+	glsl.set_options(glslOptions);
+	std::string src_ = glsl.compile();
+
+	std::vector<char> src(src_.begin(), src_.end());
 
 	if (savePreprocessedShaders) {
+		// FIXME: name not really accurate
 		writeFile(vertexShaderName + ".prep", src);
 	}
 
@@ -602,14 +612,22 @@ FragmentShaderHandle Renderer::createFragmentShader(const std::string &name, con
 		options.AddMacroDefinition(p.first, p.second);
 	}
 
-	auto result = compiler.PreprocessGlsl(&fragSrc[0], fragSrc.size(), shaderc_glsl_fragment_shader, fragmentShaderName.c_str(), options);
+	auto result = compiler.CompileGlslToSpv(&fragSrc[0], fragSrc.size(), shaderc_glsl_fragment_shader, fragmentShaderName.c_str(), options);
 	if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-		printf("Shader %s preprocess failed: %s\n", fragmentShaderName.c_str(), result.GetErrorMessage().c_str());
+		printf("Shader %s compile failed: %s\n", fragmentShaderName.c_str(), result.GetErrorMessage().c_str());
 		exit(1);
 	}
-	std::vector<char> src(result.cbegin(), result.cend());
+
+	spirv_cross::CompilerGLSL glsl(std::vector<uint32_t>(result.cbegin(), result.cend()));
+	spirv_cross::CompilerGLSL::Options glslOptions;
+	glslOptions.vertex.fixup_clipspace = false;
+	glsl.set_options(glslOptions);
+	std::string src_ = glsl.compile();
+
+	std::vector<char> src(src_.begin(), src_.end());
 
 	if (savePreprocessedShaders) {
+		// FIXME: name not really accurate
 		writeFile(fragmentShaderName + ".prep", src);
 	}
 

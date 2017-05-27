@@ -21,7 +21,7 @@ layout (location = 3) out vec4 offset2;
 
 void main(void)
 {
-    vec2 pos = triangleVertex(gl_VertexID, texcoord);
+    vec2 pos = triangleVertex(gl_VertexIndex, texcoord);
     texcoord = flipTexCoord(texcoord);
     vec4 offsets[3];
     offsets[0] = vec4(0.0, 0.0, 0.0, 0.0);
