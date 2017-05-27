@@ -6,7 +6,7 @@
 #define FXAA_PC 1
 #define FXAA_GLSL_130 1
 
-out vec2 texcoord;
+layout (location = 0) out vec2 texcoord;
 
 void main(void)
 {

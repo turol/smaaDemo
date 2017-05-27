@@ -6,7 +6,7 @@
 layout(binding = TEXUNIT_COLOR) uniform sampler2D colorTex;
 
 
-in Data {
+layout (location = 0) in Data {
     vec2 uv;
     vec4 color;
 };

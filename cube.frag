@@ -7,7 +7,7 @@ readonly restrict layout(std430, binding = 0) buffer cubeData {
 };
 
 
-flat in int instance;
+layout(location = 0) flat in int instance;
 
 
 layout (location = 0) out vec4 outColor;

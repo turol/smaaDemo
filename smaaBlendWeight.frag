@@ -18,11 +18,11 @@ layout(binding = TEXUNIT_EDGES)     uniform sampler2D edgesTex;
 layout(binding = TEXUNIT_AREATEX)   uniform sampler2D areaTex;
 layout(binding = TEXUNIT_SEARCHTEX) uniform sampler2D searchTex;
 
-in vec2 texcoord;
-in vec2 pixcoord;
-in vec4 offset0;
-in vec4 offset1;
-in vec4 offset2;
+layout (location = 0) in vec2 texcoord;
+layout (location = 1) in vec2 pixcoord;
+layout (location = 2) in vec4 offset0;
+layout (location = 3) in vec4 offset1;
+layout (location = 4) in vec4 offset2;
 
 void main(void)
 {

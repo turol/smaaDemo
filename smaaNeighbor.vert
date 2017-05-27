@@ -13,8 +13,8 @@
 #include "utils.h"
 
 
-out vec2 texcoord;
-out vec4 offset;
+layout (location = 0) out vec2 texcoord;
+layout (location = 1) out vec4 offset;
 
 void main(void)
 {

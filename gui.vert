@@ -9,7 +9,7 @@ layout(location = ATTR_UV)    in vec2 uv;
 layout(location = ATTR_COLOR) in vec4 color;
 
 
-out Data {
+layout (location = 0) out Data {
     vec2 uv;
     vec4 color;
 } outputs;

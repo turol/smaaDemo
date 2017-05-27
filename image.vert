@@ -3,7 +3,7 @@
 #include "shaderDefines.h"
 #include "utils.h"
 
-out vec2 texcoord;
+layout (location = 0) out vec2 texcoord;
 
 void main(void)
 {

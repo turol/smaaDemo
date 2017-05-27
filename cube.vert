@@ -11,7 +11,7 @@ readonly restrict layout(std430, binding = 0) buffer cubeData {
 };
 
 
-flat out int instance;
+layout(location = 0) flat out int instance;
 
 
 void main(void)
