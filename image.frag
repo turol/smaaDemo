@@ -10,5 +10,5 @@ layout (location = 0) out vec4 outColor;
 
 void main(void)
 {
-    outColor = texture2D(colorTex, texcoord);
+    outColor = texture(colorTex, texcoord);
 }
