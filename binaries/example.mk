@@ -39,7 +39,7 @@ LDLIBS_sdl2:=$(shell sdl2-config --libs)
 LDLIBS_opengl:=-lGL
 LDLIBS_vulkan:=-lvulkan -lX11-xcb
 LDLIBS_shaderc:=-L/usr/local/lib -lshaderc_combined -lpthread
-LDLIBS_spirv-cross:=-lspirv-cross
+LDLIBS_spirv-cross:=-lspirv-cross-glsl -lspirv-cross-core
 
 LTOCFLAGS:=-flto -fuse-linker-plugin -fno-fat-lto-objects
 LTOLDFLAGS:=-flto -fuse-linker-plugin
