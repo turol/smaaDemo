@@ -1,15 +1,11 @@
 #ifdef RENDERER_NULL
 
-#include "Renderer.h"
+#include "RendererInternal.h"
 #include "Utils.h"
 
 
-Renderer *Renderer::createRenderer(const RendererDesc &desc) {
-	return new Renderer(desc);
-}
 
-
-Renderer::Renderer(const RendererDesc &desc)
+RendererImpl::RendererImpl(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
 , savePreprocessedShaders(false)
 , numBuffers(0)
@@ -23,12 +19,12 @@ Renderer::Renderer(const RendererDesc &desc)
 }
 
 
-Renderer::~Renderer() {
+RendererImpl::~RendererImpl() {
 	SDL_Quit();
 }
 
 
-BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
+BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	assert(size != 0);
 	assert(contents != nullptr);
 
@@ -39,7 +35,7 @@ BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
 }
 
 
-BufferHandle Renderer::createEphemeralBuffer(uint32_t size, const void *contents) {
+BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *contents) {
 	assert(size != 0);
 	assert(contents != nullptr);
 
@@ -47,18 +43,18 @@ BufferHandle Renderer::createEphemeralBuffer(uint32_t size, const void *contents
 }
 
 
-FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc & /* desc */) {
+FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc & /* desc */) {
 	return FramebufferHandle(0);
 }
 
 
-PipelineHandle Renderer::createPipeline(const PipelineDesc & /* desc */) {
+PipelineHandle RendererImpl::createPipeline(const PipelineDesc & /* desc */) {
 	numPipelines++;
 	return numPipelines;
 }
 
 
-RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
+RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc) {
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
 	assert(desc.format_ != Invalid);
@@ -67,7 +63,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 }
 
 
-SamplerHandle Renderer::createSampler(const SamplerDesc & /* desc */) {
+SamplerHandle RendererImpl::createSampler(const SamplerDesc & /* desc */) {
 	// TODO: check desc
 
 	numSamplers++;
@@ -75,17 +71,17 @@ SamplerHandle Renderer::createSampler(const SamplerDesc & /* desc */) {
 }
 
 
-VertexShaderHandle Renderer::createVertexShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
+VertexShaderHandle RendererImpl::createVertexShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
 	return VertexShaderHandle (0);
 }
 
 
-FragmentShaderHandle Renderer::createFragmentShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
+FragmentShaderHandle RendererImpl::createFragmentShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
 	return FragmentShaderHandle (0);
 }
 
 
-TextureHandle Renderer::createTexture(const TextureDesc &desc) {
+TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	assert(desc.width_   > 0);
 	assert(desc.height_  > 0);
 	assert(desc.numMips_ > 0);
@@ -97,98 +93,98 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 }
 
 
-void Renderer::deleteBuffer(BufferHandle /* handle */) {
+void RendererImpl::deleteBuffer(BufferHandle /* handle */) {
 }
 
 
-void Renderer::deleteFramebuffer(FramebufferHandle /* fbo */) {
+void RendererImpl::deleteFramebuffer(FramebufferHandle /* fbo */) {
 }
 
 
-void Renderer::deleteRenderTarget(RenderTargetHandle &) {
+void RendererImpl::deleteRenderTarget(RenderTargetHandle &) {
 }
 
 
-void Renderer::deleteSampler(SamplerHandle /* handle */) {
+void RendererImpl::deleteSampler(SamplerHandle /* handle */) {
 }
 
 
-void Renderer::deleteTexture(TextureHandle /* handle */) {
+void RendererImpl::deleteTexture(TextureHandle /* handle */) {
 }
 
 
-void Renderer::recreateSwapchain(const SwapchainDesc & /* desc */) {
+void RendererImpl::recreateSwapchain(const SwapchainDesc & /* desc */) {
 }
 
 
-void Renderer::blitFBO(FramebufferHandle /* src */, FramebufferHandle /* dest */) {
+void RendererImpl::blitFBO(FramebufferHandle /* src */, FramebufferHandle /* dest */) {
 }
 
 
-void Renderer::beginFrame() {
+void RendererImpl::beginFrame() {
 }
 
 
-void Renderer::presentFrame(FramebufferHandle /* fbo */) {
+void RendererImpl::presentFrame(FramebufferHandle /* fbo */) {
 }
 
 
-void Renderer::beginRenderPass(FramebufferHandle /* fbo */) {
+void RendererImpl::beginRenderPass(FramebufferHandle /* fbo */) {
 	assert(!inRenderPass);
 	inRenderPass = true;
 }
 
 
-void Renderer::endRenderPass() {
+void RendererImpl::endRenderPass() {
 	assert(inRenderPass);
 	inRenderPass = false;
 }
 
 
-void Renderer::bindFramebuffer(FramebufferHandle fbo) {
+void RendererImpl::bindFramebuffer(FramebufferHandle fbo) {
 	assert(fbo.handle);
 }
 
 
-void Renderer::bindPipeline(PipelineHandle pipeline) {
+void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	assert(pipeline != 0);
 }
 
 
-void Renderer::bindIndexBuffer(BufferHandle /* buffer */, bool /* bit16 */ ) {
+void RendererImpl::bindIndexBuffer(BufferHandle /* buffer */, bool /* bit16 */ ) {
 }
 
 
-void Renderer::bindVertexBuffer(unsigned int /* binding */, BufferHandle /* buffer */, unsigned int /* stride */) {
+void RendererImpl::bindVertexBuffer(unsigned int /* binding */, BufferHandle /* buffer */, unsigned int /* stride */) {
 }
 
 
-void Renderer::bindTexture(unsigned int /* unit */, TextureHandle /* tex */, SamplerHandle /* sampler */) {
+void RendererImpl::bindTexture(unsigned int /* unit */, TextureHandle /* tex */, SamplerHandle /* sampler */) {
 }
 
 
-void Renderer::bindUniformBuffer(unsigned int /* index */, BufferHandle /* buffer */) {
+void RendererImpl::bindUniformBuffer(unsigned int /* index */, BufferHandle /* buffer */) {
 }
 
 
-void Renderer::bindStorageBuffer(unsigned int /* index */, BufferHandle /* buffer */) {
+void RendererImpl::bindStorageBuffer(unsigned int /* index */, BufferHandle /* buffer */) {
 }
 
 
-void Renderer::setViewport(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
+void RendererImpl::setViewport(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
 }
 
 
-void Renderer::setScissorRect(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
+void RendererImpl::setScissorRect(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
 }
 
 
-void Renderer::draw(unsigned int /* firstVertex */, unsigned int /* vertexCount */) {
+void RendererImpl::draw(unsigned int /* firstVertex */, unsigned int /* vertexCount */) {
 	assert(inRenderPass);
 }
 
 
-void Renderer::drawIndexedInstanced(unsigned int /* vertexCount */, unsigned int /* instanceCount */) {
+void RendererImpl::drawIndexedInstanced(unsigned int /* vertexCount */, unsigned int /* instanceCount */) {
 	assert(inRenderPass);
 }
 

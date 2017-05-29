@@ -200,7 +200,7 @@ class SMAADemo {
 	bool fullscreen;
 	bool recreateSwapchain;
 
-	std::unique_ptr<Renderer> renderer;
+	Renderer renderer;
 	bool glDebug;
 
 	PipelineHandle cubePipeline;
@@ -296,7 +296,6 @@ SMAADemo::SMAADemo()
 , vsync(true)
 , fullscreen(false)
 , recreateSwapchain(false)
-, renderer(nullptr)
 , glDebug(false)
 , cubePipeline(0)
 , imagePipeline(0)
@@ -339,14 +338,14 @@ SMAADemo::SMAADemo()
 SMAADemo::~SMAADemo() {
 	ImGui::Shutdown();
 
-	renderer->deleteBuffer(cubeVBO);
-	renderer->deleteBuffer(cubeIBO);
+	renderer.deleteBuffer(cubeVBO);
+	renderer.deleteBuffer(cubeIBO);
 
-	renderer->deleteSampler(linearSampler);
-	renderer->deleteSampler(nearestSampler);
+	renderer.deleteSampler(linearSampler);
+	renderer.deleteSampler(nearestSampler);
 
-	renderer->deleteTexture(areaTex);
-	renderer->deleteTexture(searchTex);
+	renderer.deleteTexture(areaTex);
+	renderer.deleteTexture(searchTex);
 }
 
 
@@ -435,8 +434,6 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 
 
 void SMAADemo::initRender() {
-	assert(renderer == nullptr);
-
 	RendererDesc desc;
 	desc.debug                = glDebug;
 	desc.swapchain.fullscreen = fullscreen;
@@ -444,7 +441,7 @@ void SMAADemo::initRender() {
 	desc.swapchain.height     = windowHeight;
 	desc.swapchain.vsync      = vsync;
 
-	renderer.reset(Renderer::createRenderer(desc));
+	renderer = Renderer::createRenderer(desc);
 
 	PipelineDesc plDesc;
 	plDesc.depthWrite(false)
@@ -460,24 +457,24 @@ void SMAADemo::initRender() {
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[i]);
 		macros.emplace(qualityString, "1");
 
-        auto vertexShader   = renderer->createVertexShader("smaaEdge", macros);
-        auto fragmentShader = renderer->createFragmentShader("smaaEdge", macros);
+        auto vertexShader   = renderer.createVertexShader("smaaEdge", macros);
+        auto fragmentShader = renderer.createFragmentShader("smaaEdge", macros);
 
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
-		smaaEdgePipelines[i]       = renderer->createPipeline(plDesc);
+		smaaEdgePipelines[i]       = renderer.createPipeline(plDesc);
 
-		vertexShader                = renderer->createVertexShader("smaaBlendWeight", macros);
-		fragmentShader              = renderer->createFragmentShader("smaaBlendWeight", macros);
+		vertexShader                = renderer.createVertexShader("smaaBlendWeight", macros);
+		fragmentShader              = renderer.createFragmentShader("smaaBlendWeight", macros);
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
-		smaaBlendWeightPipelines[i] = renderer->createPipeline(plDesc);
+		smaaBlendWeightPipelines[i] = renderer.createPipeline(plDesc);
 
-		vertexShader                = renderer->createVertexShader("smaaNeighbor", macros);
-		fragmentShader              = renderer->createFragmentShader("smaaNeighbor", macros);
+		vertexShader                = renderer.createVertexShader("smaaNeighbor", macros);
+		fragmentShader              = renderer.createFragmentShader("smaaNeighbor", macros);
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
-		smaaNeighborPipelines[i]   = renderer->createPipeline(plDesc);
+		smaaNeighborPipelines[i]   = renderer.createPipeline(plDesc);
 	}
 
 	ShaderMacros macros;
@@ -487,19 +484,19 @@ void SMAADemo::initRender() {
 		std::string qualityString(fxaaQualityLevels[i]);
 
 		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
-		auto vertexShader   = renderer->createVertexShader("fxaa", macros);
-		auto fragmentShader = renderer->createFragmentShader("fxaa", macros);
+		auto vertexShader   = renderer.createVertexShader("fxaa", macros);
+		auto fragmentShader = renderer.createFragmentShader("fxaa", macros);
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
-		fxaaPipelines[i] = renderer->createPipeline(plDesc);
+		fxaaPipelines[i] = renderer.createPipeline(plDesc);
 	}
 
 	macros.clear();
 
-	auto vertexShader   = renderer->createVertexShader("cube", macros);
-	auto fragmentShader = renderer->createFragmentShader("cube", macros);
+	auto vertexShader   = renderer.createVertexShader("cube", macros);
+	auto fragmentShader = renderer.createFragmentShader("cube", macros);
 
-	cubePipeline = renderer->createPipeline(PipelineDesc()
+	cubePipeline = renderer.createPipeline(PipelineDesc()
 	                                        .vertexShader(vertexShader)
 	                                        .fragmentShader(fragmentShader)
 	                                        .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
@@ -508,8 +505,8 @@ void SMAADemo::initRender() {
 	                                        .cullFaces(true)
 	                                       );
 
-	vertexShader   = renderer->createVertexShader("image", macros);
-	fragmentShader = renderer->createFragmentShader("image", macros);
+	vertexShader   = renderer.createVertexShader("image", macros);
+	fragmentShader = renderer.createFragmentShader("image", macros);
 
 	plDesc.vertexShader(vertexShader)
 	      .fragmentShader(fragmentShader);
@@ -517,12 +514,12 @@ void SMAADemo::initRender() {
 	      .depthTest(false)
 	      .cullFaces(true);
 
-	imagePipeline = renderer->createPipeline(plDesc);
+	imagePipeline = renderer.createPipeline(plDesc);
 
 	macros.clear();
 
-	vertexShader   = renderer->createVertexShader("gui", macros);
-	fragmentShader = renderer->createFragmentShader("gui", macros);
+	vertexShader   = renderer.createVertexShader("gui", macros);
+	fragmentShader = renderer.createFragmentShader("gui", macros);
 	plDesc.vertexShader(vertexShader)
 	      .fragmentShader(fragmentShader)
 	      .cullFaces(false)
@@ -531,13 +528,13 @@ void SMAADemo::initRender() {
 	plDesc.vertexAttrib(ATTR_POS,   0, 2, VtxFormat::Float,  offsetof(ImDrawVert, pos))
 	      .vertexAttrib(ATTR_UV,    0, 2, VtxFormat::Float,  offsetof(ImDrawVert, uv))
 	      .vertexAttrib(ATTR_COLOR, 0, 4, VtxFormat::UNorm8, offsetof(ImDrawVert, col));
-	guiPipeline = renderer->createPipeline(plDesc);
+	guiPipeline = renderer.createPipeline(plDesc);
 
-	linearSampler  = renderer->createSampler(SamplerDesc().minFilter(Linear). magFilter(Linear));
-	nearestSampler = renderer->createSampler(SamplerDesc().minFilter(Nearest).magFilter(Nearest));
+	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(Linear). magFilter(Linear));
+	nearestSampler = renderer.createSampler(SamplerDesc().minFilter(Nearest).magFilter(Nearest));
 
-	cubeVBO = renderer->createBuffer(sizeof(vertices), &vertices[0]);
-	cubeIBO = renderer->createBuffer(sizeof(indices), &indices[0]);
+	cubeVBO = renderer.createBuffer(sizeof(vertices), &vertices[0]);
+	cubeIBO = renderer.createBuffer(sizeof(indices), &indices[0]);
 
 	const bool flipSMAATextures = true;
 
@@ -554,10 +551,10 @@ void SMAADemo::initRender() {
 			memcpy(&tempBuffer[y * AREATEX_PITCH], areaTexBytes + srcY * AREATEX_PITCH, AREATEX_PITCH);
 		}
 		texDesc.mipLevelData(0, &tempBuffer[0]);
-		areaTex = renderer->createTexture(texDesc);
+		areaTex = renderer.createTexture(texDesc);
 	} else {
 		texDesc.mipLevelData(0, areaTexBytes);
-		areaTex = renderer->createTexture(texDesc);
+		areaTex = renderer.createTexture(texDesc);
 	}
 
 	texDesc.width(SEARCHTEX_WIDTH)
@@ -571,10 +568,10 @@ void SMAADemo::initRender() {
 			memcpy(&tempBuffer[y * SEARCHTEX_PITCH], searchTexBytes + srcY * SEARCHTEX_PITCH, SEARCHTEX_PITCH);
 		}
 		texDesc.mipLevelData(0, &tempBuffer[0]);
-		searchTex = renderer->createTexture(texDesc);
+		searchTex = renderer.createTexture(texDesc);
 	} else {
 		texDesc.mipLevelData(0, searchTexBytes);
-		searchTex = renderer->createTexture(texDesc);
+		searchTex = renderer.createTexture(texDesc);
 	}
 
 	createFramebuffers();
@@ -590,7 +587,7 @@ void SMAADemo::initRender() {
 		       .format(RGB8);
 
 		texDesc.mipLevelData(0, imageData);
-		img.tex = renderer->createTexture(texDesc);
+		img.tex = renderer.createTexture(texDesc);
 
 		stbi_image_free(imageData);
 	}
@@ -635,7 +632,7 @@ void SMAADemo::initRender() {
 		       .height(height)
 		       .format(RGBA8)
 		       .mipLevelData(0, pixels);
-		imguiFontsTex = renderer->createTexture(texDesc);
+		imguiFontsTex = renderer.createTexture(texDesc);
 		io.Fonts->TexID = nullptr;
 	}
 }
@@ -645,43 +642,43 @@ void SMAADemo::createFramebuffers()	{
 	if (fbos[0]) {
 		for (unsigned int i = 0; i < Framebuffers::Count; i++) {
 			assert(fbos[i]);
-			renderer->deleteFramebuffer(fbos[i]);
+			renderer.deleteFramebuffer(fbos[i]);
 		}
 
 		for (unsigned int i = 0; i < RenderTargets::Count; i++) {
 			assert(rendertargets[i]);
-			renderer->deleteRenderTarget(rendertargets[i]);
+			renderer.deleteRenderTarget(rendertargets[i]);
 		}
 	}
 
 	RenderTargetDesc rtDesc;
 
 	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8);
-	rendertargets[RenderTargets::MainColor] = renderer->createRenderTarget(rtDesc);
+	rendertargets[RenderTargets::MainColor] = renderer.createRenderTarget(rtDesc);
 
 	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8);
-	rendertargets[RenderTargets::FinalRender] = renderer->createRenderTarget(rtDesc);
+	rendertargets[RenderTargets::FinalRender] = renderer.createRenderTarget(rtDesc);
 
 	rtDesc.format(Depth16);
-	rendertargets[RenderTargets::MainDepth] = renderer->createRenderTarget(rtDesc);
+	rendertargets[RenderTargets::MainDepth] = renderer.createRenderTarget(rtDesc);
 
 	FramebufferDesc fbDesc;
 	fbDesc.depthStencil(rendertargets[RenderTargets::MainDepth]).color(0, rendertargets[RenderTargets::MainColor]);
-	fbos[Framebuffers::MainRender] = renderer->createFramebuffer(fbDesc);
+	fbos[Framebuffers::MainRender] = renderer.createFramebuffer(fbDesc);
 
 	fbDesc.depthStencil(0).color(0, rendertargets[RenderTargets::FinalRender]);
-	fbos[Framebuffers::FinalRender] = renderer->createFramebuffer(fbDesc);
+	fbos[Framebuffers::FinalRender] = renderer.createFramebuffer(fbDesc);
 
 	// SMAA edges texture and FBO
 	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8);
-	rendertargets[RenderTargets::Edges] = renderer->createRenderTarget(rtDesc);
+	rendertargets[RenderTargets::Edges] = renderer.createRenderTarget(rtDesc);
 	fbDesc.depthStencil(0).color(0, rendertargets[RenderTargets::Edges]);
-	fbos[Framebuffers::Edges] = renderer->createFramebuffer(fbDesc);
+	fbos[Framebuffers::Edges] = renderer.createFramebuffer(fbDesc);
 
 	// SMAA blending weights texture and FBO
-	rendertargets[RenderTargets::BlendWeights] = renderer->createRenderTarget(rtDesc);
+	rendertargets[RenderTargets::BlendWeights] = renderer.createRenderTarget(rtDesc);
 	fbDesc.depthStencil(0).color(0, rendertargets[RenderTargets::BlendWeights]);
-	fbos[Framebuffers::BlendWeights] = renderer->createFramebuffer(fbDesc);
+	fbos[Framebuffers::BlendWeights] = renderer.createFramebuffer(fbDesc);
 }
 
 
@@ -951,7 +948,7 @@ void SMAADemo::render() {
 		desc.height     = windowHeight;
 		desc.vsync      = vsync;
 
-		renderer->recreateSwapchain(desc);
+		renderer.recreateSwapchain(desc);
 		recreateSwapchain = false;
 
 		createFramebuffers();
@@ -966,11 +963,11 @@ void SMAADemo::render() {
 	globals.screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 	globals.guiOrtho   = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
 
-	renderer->beginFrame();
+	renderer.beginFrame();
 
-	renderer->setViewport(0, 0, windowWidth, windowHeight);
+	renderer.setViewport(0, 0, windowWidth, windowHeight);
 
-	renderer->beginRenderPass(fbos[Framebuffers::MainRender]);
+	renderer.beginRenderPass(fbos[Framebuffers::MainRender]);
 
 	if (activeScene == 0) {
 		if (rotateCamera) {
@@ -983,100 +980,100 @@ void SMAADemo::render() {
 		glm::mat4 view = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -25.0f)), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 proj = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, 0.1f, 100.0f);
 		globals.viewProj = proj * view;
-		BufferHandle globalsUBO = renderer->createEphemeralBuffer(sizeof(ShaderDefines::Globals), &globals);
-		renderer->bindUniformBuffer(0, globalsUBO);
+		BufferHandle globalsUBO = renderer.createEphemeralBuffer(sizeof(ShaderDefines::Globals), &globals);
+		renderer.bindUniformBuffer(0, globalsUBO);
 
-		renderer->bindPipeline(cubePipeline);
+		renderer.bindPipeline(cubePipeline);
 
-		renderer->bindVertexBuffer(0, cubeVBO, sizeof(Vertex));
-		renderer->bindIndexBuffer(cubeIBO, false);
+		renderer.bindVertexBuffer(0, cubeVBO, sizeof(Vertex));
+		renderer.bindIndexBuffer(cubeIBO, false);
 
-		BufferHandle instanceSSBO = renderer->createEphemeralBuffer(sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0]);
-		renderer->bindStorageBuffer(0, instanceSSBO);
+		BufferHandle instanceSSBO = renderer.createEphemeralBuffer(sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0]);
+		renderer.bindStorageBuffer(0, instanceSSBO);
 
-		renderer->drawIndexedInstanced(3 * 2 * 6, cubes.size());
+		renderer.drawIndexedInstanced(3 * 2 * 6, cubes.size());
 	} else {
-		BufferHandle globalsUBO = renderer->createEphemeralBuffer(sizeof(ShaderDefines::Globals), &globals);
-		renderer->bindUniformBuffer(0, globalsUBO);
+		BufferHandle globalsUBO = renderer.createEphemeralBuffer(sizeof(ShaderDefines::Globals), &globals);
+		renderer.bindUniformBuffer(0, globalsUBO);
 
-		renderer->bindPipeline(imagePipeline);
+		renderer.bindPipeline(imagePipeline);
 
 		assert(activeScene - 1 < images.size());
 		const auto &image = images[activeScene - 1];
-		renderer->bindTexture(TEXUNIT_COLOR, image.tex, nearestSampler);
-		renderer->draw(0, 3);
-		renderer->bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::MainColor], linearSampler);
+		renderer.bindTexture(TEXUNIT_COLOR, image.tex, nearestSampler);
+		renderer.draw(0, 3);
+		renderer.bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::MainColor], linearSampler);
 	}
-	renderer->endRenderPass();
+	renderer.endRenderPass();
 
 	if (antialiasing) {
-		renderer->bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::MainColor], linearSampler);
+		renderer.bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::MainColor], linearSampler);
 
 		switch (aaMethod) {
 		case AAMethod::FXAA:
-			renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
-			renderer->bindPipeline(fxaaPipelines[fxaaQuality]);
-			renderer->draw(0, 3);
+			renderer.beginRenderPass(fbos[Framebuffers::FinalRender]);
+			renderer.bindPipeline(fxaaPipelines[fxaaQuality]);
+			renderer.draw(0, 3);
 			drawGUI(elapsed);
-			renderer->endRenderPass();
+			renderer.endRenderPass();
 			break;
 
 		case AAMethod::SMAA:
-			renderer->bindPipeline(smaaEdgePipelines[smaaQuality]);
+			renderer.bindPipeline(smaaEdgePipelines[smaaQuality]);
 
-			renderer->bindTexture(TEXUNIT_AREATEX, areaTex, linearSampler);
-			renderer->bindTexture(TEXUNIT_SEARCHTEX, searchTex, linearSampler);
+			renderer.bindTexture(TEXUNIT_AREATEX, areaTex, linearSampler);
+			renderer.bindTexture(TEXUNIT_SEARCHTEX, searchTex, linearSampler);
 
 			if (debugMode == 1) {
 				// detect edges only
-				renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
-				renderer->draw(0, 3);
+				renderer.beginRenderPass(fbos[Framebuffers::FinalRender]);
+				renderer.draw(0, 3);
 				drawGUI(elapsed);
-				renderer->endRenderPass();
+				renderer.endRenderPass();
 				break;
 			} else {
-				renderer->beginRenderPass(fbos[Framebuffers::Edges]);
-				renderer->draw(0, 3);
-				renderer->endRenderPass();
+				renderer.beginRenderPass(fbos[Framebuffers::Edges]);
+				renderer.draw(0, 3);
+				renderer.endRenderPass();
 			}
 
-			renderer->bindTexture(TEXUNIT_EDGES, rendertargets[RenderTargets::Edges], linearSampler);
+			renderer.bindTexture(TEXUNIT_EDGES, rendertargets[RenderTargets::Edges], linearSampler);
 
-			renderer->bindPipeline(smaaBlendWeightPipelines[smaaQuality]);
+			renderer.bindPipeline(smaaBlendWeightPipelines[smaaQuality]);
 			if (debugMode == 2) {
 				// show blending weights
-				renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
-				renderer->draw(0, 3);
+				renderer.beginRenderPass(fbos[Framebuffers::FinalRender]);
+				renderer.draw(0, 3);
 				drawGUI(elapsed);
-				renderer->endRenderPass();
+				renderer.endRenderPass();
 				break;
 			} else {
-				renderer->beginRenderPass(fbos[Framebuffers::BlendWeights]);
-				renderer->draw(0, 3);
-				renderer->endRenderPass();
+				renderer.beginRenderPass(fbos[Framebuffers::BlendWeights]);
+				renderer.draw(0, 3);
+				renderer.endRenderPass();
 			}
 
 			// full effect
-			renderer->bindTexture(TEXUNIT_BLEND, rendertargets[RenderTargets::BlendWeights], linearSampler);
+			renderer.bindTexture(TEXUNIT_BLEND, rendertargets[RenderTargets::BlendWeights], linearSampler);
 
-			renderer->bindPipeline(smaaNeighborPipelines[smaaQuality]);
-			renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
-			renderer->draw(0, 3);
+			renderer.bindPipeline(smaaNeighborPipelines[smaaQuality]);
+			renderer.beginRenderPass(fbos[Framebuffers::FinalRender]);
+			renderer.draw(0, 3);
 			drawGUI(elapsed);
 
-			renderer->endRenderPass();
+			renderer.endRenderPass();
 			break;
 		}
 
 	} else {
-		renderer->beginRenderPass(fbos[Framebuffers::FinalRender]);
+		renderer.beginRenderPass(fbos[Framebuffers::FinalRender]);
 		// TODO: not necessary?
-		renderer->blitFBO(fbos[Framebuffers::MainRender], fbos[Framebuffers::FinalRender]);
+		renderer.blitFBO(fbos[Framebuffers::MainRender], fbos[Framebuffers::FinalRender]);
 		drawGUI(elapsed);
-		renderer->endRenderPass();
+		renderer.endRenderPass();
 	}
 
-	renderer->presentFrame(fbos[Framebuffers::FinalRender]);
+	renderer.presentFrame(fbos[Framebuffers::FinalRender]);
 
 }
 
@@ -1118,18 +1115,18 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		assert(drawData->TotalVtxCount >  0);
 		assert(drawData->TotalIdxCount >  0);
 
-		renderer->bindPipeline(guiPipeline);
-		renderer->bindTexture(TEXUNIT_COLOR, imguiFontsTex, linearSampler);
+		renderer.bindPipeline(guiPipeline);
+		renderer.bindTexture(TEXUNIT_COLOR, imguiFontsTex, linearSampler);
 		// TODO: upload all buffers first, render after
 		// and one buffer each vertex/index
 
 		for (int n = 0; n < drawData->CmdListsCount; n++) {
 			const ImDrawList* cmd_list = drawData->CmdLists[n];
 
-			BufferHandle vtxBuf = renderer->createEphemeralBuffer(cmd_list->VtxBuffer.Size * sizeof(ImDrawVert), cmd_list->VtxBuffer.Data);
-			BufferHandle idxBuf = renderer->createEphemeralBuffer(cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx), cmd_list->IdxBuffer.Data);
-			renderer->bindIndexBuffer(idxBuf, true);
-			renderer->bindVertexBuffer(0, vtxBuf, sizeof(ImDrawVert));
+			BufferHandle vtxBuf = renderer.createEphemeralBuffer(cmd_list->VtxBuffer.Size * sizeof(ImDrawVert), cmd_list->VtxBuffer.Data);
+			BufferHandle idxBuf = renderer.createEphemeralBuffer(cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx), cmd_list->IdxBuffer.Data);
+			renderer.bindIndexBuffer(idxBuf, true);
+			renderer.bindVertexBuffer(0, vtxBuf, sizeof(ImDrawVert));
 
 			const ImDrawIdx* idx_buffer_offset = 0;
 			for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++) {
@@ -1141,10 +1138,10 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 					pcmd->UserCallback(cmd_list, pcmd);
 				} else {
 					assert(pcmd->TextureId == 0);
-					renderer->setScissorRect(pcmd->ClipRect.x, pcmd->ClipRect.w, pcmd->ClipRect.z - pcmd->ClipRect.x, pcmd->ClipRect.w - pcmd->ClipRect.y);
+					renderer.setScissorRect(pcmd->ClipRect.x, pcmd->ClipRect.w, pcmd->ClipRect.z - pcmd->ClipRect.x, pcmd->ClipRect.w - pcmd->ClipRect.y);
 					// TODO: drawIndexed without instance
 					// and with offset
-					renderer->drawIndexedInstanced(pcmd->ElemCount * 3, 1);
+					renderer.drawIndexedInstanced(pcmd->ElemCount * 3, 1);
 				}
 				idx_buffer_offset += pcmd->ElemCount;
 			}

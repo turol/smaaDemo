@@ -2,43 +2,13 @@
 #define RENDERER_H
 
 
-#include <memory>
 #include <string>
 #include <unordered_map>
-#include <vector>
-
-#include <shaderc/shaderc.hpp>
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 
 #include <SDL.h>
-
-
-#ifdef RENDERER_OPENGL
-
-#include <GL/glew.h>
-
-
-void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /* length */, const GLchar *message, const void * /* userParam */);
-
-
-#elif defined(RENDERER_VULKAN)
-
-// TODO: _WIN32
-#define VK_USE_PLATFORM_XCB_KHR 1
-
-#include <vulkan/vulkan.hpp>
-
-
-#elif defined(RENDERER_NULL)
-
-#else
-
-#error "No renderer specified"
-
-
-#endif  // RENDERER
 
 
 namespace ShaderDefines {
@@ -54,10 +24,11 @@ using namespace glm;
 #define MAX_VERTEX_ATTRIBS      4
 
 
-class FragmentShader;
-class Framebuffer;
+struct RendererImpl;
+struct FragmentShader;
+struct Framebuffer;
 struct Shader;
-class VertexShader;
+struct VertexShader;
 
 
 typedef uint32_t BufferHandle;
@@ -65,7 +36,7 @@ typedef uint32_t BufferHandle;
 class FramebufferHandle {
 	uint32_t handle;
 
-	friend class Renderer;
+	friend struct RendererImpl;
 
 	explicit FramebufferHandle(uint32_t h)
 	: handle(h)
@@ -101,7 +72,7 @@ typedef uint32_t SamplerHandle;
 class VertexShaderHandle {
 	uint32_t handle;
 
-	friend class Renderer;
+	friend struct RendererImpl;
 
 	explicit VertexShaderHandle(uint32_t h)
 	: handle(h)
@@ -119,7 +90,7 @@ public:
 class FragmentShaderHandle {
 	uint32_t handle;
 
-	friend class Renderer;
+	friend struct RendererImpl;
 
 	explicit FragmentShaderHandle(uint32_t h)
 	: handle(h)
@@ -220,7 +191,7 @@ private:
 	// TODO: unsigned int multisample;
 	Format format_;
 
-	friend class Renderer;
+	friend struct RendererImpl;
 };
 
 
@@ -255,7 +226,7 @@ private:
 	RenderTargetHandle depthStencil_;
 	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS> colors_;
 
-	friend class Renderer;
+	friend struct RendererImpl;
 };
 
 
@@ -309,7 +280,7 @@ private:
 	Format        format_;
 	std::array<const void *, MAX_TEXTURE_MIPLEVELS> mipData_;
 
-	friend class Renderer;
+	friend struct RendererImpl;
 };
 
 
@@ -359,7 +330,7 @@ private:
 	FilterMode  min, mag;
 	WrapMode    wrapMode;
 
-	friend class Renderer;
+	friend struct RendererImpl;
 };
 
 
@@ -458,7 +429,7 @@ public:
 	PipelineDesc &operator=(const PipelineDesc &desc) = default;
 	PipelineDesc &operator=(PipelineDesc &&desc)      = default;
 
-	friend class Renderer;
+	friend struct RendererImpl;
 };
 
 
@@ -475,101 +446,22 @@ struct RendererDesc {
 
 
 class Renderer {
-	SwapchainDesc swapchainDesc;
+	RendererImpl *impl;
 
-	shaderc::Compiler compiler;
-
-	bool savePreprocessedShaders;
-	unsigned int frameNum;
-
-#ifdef RENDERER_OPENGL
-
-	PipelineDesc  currentPipeline;
-
-	SDL_Window *window;
-	SDL_GLContext context;
-
-	GLuint vao;
-	bool idxBuf16Bit;
-
-	struct Pipeline : public PipelineDesc {
-		GLuint shader;
-
-		Pipeline(const PipelineDesc &desc, GLuint shader_)
-		: PipelineDesc(desc)
-		, shader(shader_)
-		{
-		}
-	};
-
-	std::unordered_map<GLuint, std::unique_ptr<Framebuffer> > framebuffers;
-	std::unordered_map<GLuint, std::unique_ptr<VertexShader> >    vertexShaders;
-	std::unordered_map<GLuint, std::unique_ptr<FragmentShader> >  fragmentShaders;
-	std::unordered_map<GLuint, std::unique_ptr<Shader> > shaders;
-	std::unordered_map<uint32_t, Pipeline>                        pipelines;
-
-	std::unordered_map<RenderTargetHandle, RenderTargetDesc> renderTargets;
-
-	std::vector<BufferHandle> ephemeralBuffers;
-
-#endif  // RENDERER_OPENGL
-
-
-#ifdef RENDERER_NULL
-
-	PipelineDesc  currentPipeline;
-
-	unsigned int numBuffers;
-	unsigned int numPipelines;
-	unsigned int numSamplers;
-	unsigned int numTextures;
-
-#endif   // RENDERER_NULL
-
-
-#ifdef RENDERER_VULKAN
-
-	SDL_Window *window;
-	vk::Instance instance;
-	vk::PhysicalDevice physicalDevice;
-	vk::PhysicalDeviceProperties deviceProperties;
-	vk::PhysicalDeviceFeatures   deviceFeatures;
-	vk::Device                   device;
-	vk::SurfaceKHR               surface;
-	uint32_t                           graphicsQueueIndex;
-	std::vector<vk::SurfaceFormatKHR>  surfaceFormats;
-	vk::SurfaceCapabilitiesKHR         surfaceCapabilities;
-	std::vector<vk::PresentModeKHR>    surfacePresentModes;
-	vk::SwapchainKHR                   swapchain;
-	std::vector<vk::Image>             swapchainImages;
-	vk::Queue                          queue;
-
-	vk::CommandPool                    commandPool;
-
-	vk::CommandBuffer                  currentCommandBuffer;
-
-#endif   // RENDERER_VULKAN
-
-
-	std::unordered_map<std::string, std::vector<char> > shaderSources;
-
-	bool inRenderPass;
-
-
-	std::vector<char> loadSource(const std::string &name);
-
-	explicit Renderer(const RendererDesc &desc);
-	Renderer(const Renderer &)            = delete;
-	Renderer(Renderer &&)                 = delete;
-
-	Renderer &operator=(const Renderer &) = delete;
-	Renderer &operator=(Renderer &&)      = delete;
+	explicit Renderer(RendererImpl *impl_);
 
 
 public:
 
-	static Renderer *createRenderer(const RendererDesc &desc);
+	static Renderer createRenderer(const RendererDesc &desc);
 
+	Renderer(const Renderer &)            = delete;
+	Renderer &operator=(const Renderer &) = delete;
+
+	Renderer &operator=(Renderer &&);
+	Renderer(Renderer &&);
+
+	Renderer();
 	~Renderer();
 
 

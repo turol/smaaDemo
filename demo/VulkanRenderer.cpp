@@ -12,7 +12,7 @@
 
 
 
-#include "Renderer.h"
+#include "RendererInternal.h"
 #include "Utils.h"
 
 
@@ -103,12 +103,7 @@ static SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window, SDL_vulkanInstance 
 }
 
 
-Renderer *Renderer::createRenderer(const RendererDesc &desc) {
-	return new Renderer(desc);
-}
-
-
-Renderer::Renderer(const RendererDesc &desc)
+RendererImpl::RendererImpl(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
 , savePreprocessedShaders(false)
 , frameNum(0)
@@ -294,7 +289,7 @@ Renderer::Renderer(const RendererDesc &desc)
 }
 
 
-Renderer::~Renderer() {
+RendererImpl::~RendererImpl() {
 	assert(instance);
 	assert(device);
 	assert(surface);
@@ -323,7 +318,7 @@ Renderer::~Renderer() {
 }
 
 
-BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
+BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	assert(size != 0);
 	assert(contents != nullptr);
 
@@ -333,7 +328,7 @@ BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
 }
 
 
-BufferHandle Renderer::createEphemeralBuffer(uint32_t size, const void *contents) {
+BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *contents) {
 	assert(size != 0);
 	assert(contents != nullptr);
 
@@ -343,21 +338,21 @@ BufferHandle Renderer::createEphemeralBuffer(uint32_t size, const void *contents
 }
 
 
-FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc & /* desc */) {
+FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc & /* desc */) {
 	STUBBED("");
 
 	return FramebufferHandle(0);
 }
 
 
-PipelineHandle Renderer::createPipeline(const PipelineDesc & /* desc */) {
+PipelineHandle RendererImpl::createPipeline(const PipelineDesc & /* desc */) {
 	STUBBED("");
 
 	return 0;
 }
 
 
-RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
+RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc) {
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
 	assert(desc.format_ != Invalid);
@@ -368,28 +363,28 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 }
 
 
-SamplerHandle Renderer::createSampler(const SamplerDesc & /* desc */) {
+SamplerHandle RendererImpl::createSampler(const SamplerDesc & /* desc */) {
 	STUBBED("");
 
 	return 0;
 }
 
 
-VertexShaderHandle Renderer::createVertexShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
+VertexShaderHandle RendererImpl::createVertexShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
 	STUBBED("");
 
 	return VertexShaderHandle (0);
 }
 
 
-FragmentShaderHandle Renderer::createFragmentShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
+FragmentShaderHandle RendererImpl::createFragmentShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
 	STUBBED("");
 
 	return FragmentShaderHandle (0);
 }
 
 
-TextureHandle Renderer::createTexture(const TextureDesc &desc) {
+TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	assert(desc.width_   > 0);
 	assert(desc.height_  > 0);
 	assert(desc.numMips_ > 0);
@@ -400,32 +395,32 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 }
 
 
-void Renderer::deleteBuffer(BufferHandle /* handle */) {
+void RendererImpl::deleteBuffer(BufferHandle /* handle */) {
 	STUBBED("");
 }
 
 
-void Renderer::deleteFramebuffer(FramebufferHandle /* fbo */) {
+void RendererImpl::deleteFramebuffer(FramebufferHandle /* fbo */) {
 	STUBBED("");
 }
 
 
-void Renderer::deleteRenderTarget(RenderTargetHandle &) {
+void RendererImpl::deleteRenderTarget(RenderTargetHandle &) {
 	STUBBED("");
 }
 
 
-void Renderer::deleteSampler(SamplerHandle /* handle */) {
+void RendererImpl::deleteSampler(SamplerHandle /* handle */) {
 	STUBBED("");
 }
 
 
-void Renderer::deleteTexture(TextureHandle /* handle */) {
+void RendererImpl::deleteTexture(TextureHandle /* handle */) {
 	STUBBED("");
 }
 
 
-void Renderer::recreateSwapchain(const SwapchainDesc &desc) {
+void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
 	printf("image count min-max %u - %u\n", surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
 	printf("image extent min-max %ux%u - %ux%u\n", surfaceCapabilities.minImageExtent.width, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.width, surfaceCapabilities.maxImageExtent.height);
@@ -527,12 +522,12 @@ void Renderer::recreateSwapchain(const SwapchainDesc &desc) {
 }
 
 
-void Renderer::blitFBO(FramebufferHandle /* src */, FramebufferHandle /* dest */) {
+void RendererImpl::blitFBO(FramebufferHandle /* src */, FramebufferHandle /* dest */) {
 	STUBBED("");
 }
 
 
-void Renderer::beginFrame() {
+void RendererImpl::beginFrame() {
 	// TODO: check how many frames are outstanding, wait if maximum
 	// here or in presentFrame?
 
@@ -553,7 +548,7 @@ void Renderer::beginFrame() {
 }
 
 
-void Renderer::presentFrame(FramebufferHandle /* fbo */) {
+void RendererImpl::presentFrame(FramebufferHandle /* fbo */) {
 	// TODO: shouldn't recreate constantly...
 	vk::Fence fence = device.createFence(vk::FenceCreateInfo());
 
@@ -632,7 +627,7 @@ void Renderer::presentFrame(FramebufferHandle /* fbo */) {
 }
 
 
-void Renderer::beginRenderPass(FramebufferHandle /* fbo */) {
+void RendererImpl::beginRenderPass(FramebufferHandle /* fbo */) {
 	assert(!inRenderPass);
 	inRenderPass = true;
 
@@ -640,7 +635,7 @@ void Renderer::beginRenderPass(FramebufferHandle /* fbo */) {
 }
 
 
-void Renderer::endRenderPass() {
+void RendererImpl::endRenderPass() {
 	assert(inRenderPass);
 	inRenderPass = false;
 
@@ -648,63 +643,63 @@ void Renderer::endRenderPass() {
 }
 
 
-void Renderer::bindFramebuffer(FramebufferHandle fbo) {
+void RendererImpl::bindFramebuffer(FramebufferHandle fbo) {
 	assert(fbo.handle);
 
 	STUBBED("");
 }
 
 
-void Renderer::bindPipeline(PipelineHandle /* pipeline */) {
+void RendererImpl::bindPipeline(PipelineHandle /* pipeline */) {
 	// assert(pipeline != 0);
 
 	STUBBED("");
 }
 
 
-void Renderer::bindIndexBuffer(BufferHandle /* buffer */, bool /* bit16 */ ) {
+void RendererImpl::bindIndexBuffer(BufferHandle /* buffer */, bool /* bit16 */ ) {
 	STUBBED("");
 }
 
 
-void Renderer::bindVertexBuffer(unsigned int /* binding */, BufferHandle /* buffer */, unsigned int /* stride */) {
+void RendererImpl::bindVertexBuffer(unsigned int /* binding */, BufferHandle /* buffer */, unsigned int /* stride */) {
 	STUBBED("");
 }
 
 
-void Renderer::bindTexture(unsigned int /* unit */, TextureHandle /* tex */, SamplerHandle /* sampler */) {
+void RendererImpl::bindTexture(unsigned int /* unit */, TextureHandle /* tex */, SamplerHandle /* sampler */) {
 	STUBBED("");
 }
 
 
-void Renderer::bindUniformBuffer(unsigned int /* index */, BufferHandle /* buffer */) {
+void RendererImpl::bindUniformBuffer(unsigned int /* index */, BufferHandle /* buffer */) {
 	STUBBED("");
 }
 
 
-void Renderer::bindStorageBuffer(unsigned int /* index */, BufferHandle /* buffer */) {
+void RendererImpl::bindStorageBuffer(unsigned int /* index */, BufferHandle /* buffer */) {
 	STUBBED("");
 }
 
 
-void Renderer::setViewport(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
+void RendererImpl::setViewport(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
 	STUBBED("");
 }
 
 
-void Renderer::setScissorRect(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
+void RendererImpl::setScissorRect(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
 	STUBBED("");
 }
 
 
-void Renderer::draw(unsigned int /* firstVertex */, unsigned int /* vertexCount */) {
+void RendererImpl::draw(unsigned int /* firstVertex */, unsigned int /* vertexCount */) {
 	assert(inRenderPass);
 
 	STUBBED("");
 }
 
 
-void Renderer::drawIndexedInstanced(unsigned int /* vertexCount */, unsigned int /* instanceCount */) {
+void RendererImpl::drawIndexedInstanced(unsigned int /* vertexCount */, unsigned int /* instanceCount */) {
 	assert(inRenderPass);
 
 	STUBBED("");

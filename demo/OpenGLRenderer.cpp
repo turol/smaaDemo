@@ -13,7 +13,7 @@
 #include "RendererInternal.h"
 
 
-class VertexShader {
+struct VertexShader {
 #ifdef RENDERER_OPENGL
 
 	GLuint shader;
@@ -26,18 +26,13 @@ class VertexShader {
 	VertexShader(VertexShader &&) = delete;
 	VertexShader &operator=(VertexShader &&) = delete;
 
-	friend class Renderer;
-	friend struct Shader;
-
-public:
-
 	VertexShader();
 
 	~VertexShader();
 };
 
 
-class FragmentShader {
+struct FragmentShader {
 #ifdef RENDERER_OPENGL
 
 	GLuint shader;
@@ -50,10 +45,6 @@ class FragmentShader {
 	FragmentShader(FragmentShader &&) = delete;
 	FragmentShader &operator=(FragmentShader &&) = delete;
 
-	friend class Renderer;
-	friend struct Shader;
-
-public:
 
 	FragmentShader();
 
@@ -77,9 +68,7 @@ struct Shader {
 };
 
 
-class Framebuffer {
-	friend class Renderer;
-
+struct Framebuffer {
 	GLuint fbo;
 	GLuint colorTex;
 	GLuint depthTex;
@@ -94,7 +83,6 @@ class Framebuffer {
 	Framebuffer(Framebuffer &&) = delete;
 	Framebuffer &operator=(Framebuffer &&) = delete;
 
-public:
 
 #ifdef RENDERER_OPENGL
 
@@ -377,7 +365,7 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 }
 
 
-Renderer::Renderer(const RendererDesc &desc)
+RendererImpl::RendererImpl(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
 , savePreprocessedShaders(false)
 , window(nullptr)
@@ -480,12 +468,7 @@ Renderer::Renderer(const RendererDesc &desc)
 }
 
 
-Renderer *Renderer::createRenderer(const RendererDesc &desc) {
-	return new Renderer(desc);
-}
-
-
-Renderer::~Renderer() {
+RendererImpl::~RendererImpl() {
 	glBindVertexArray(0);
 	glDeleteVertexArrays(1, &vao);
 
@@ -496,7 +479,7 @@ Renderer::~Renderer() {
 }
 
 
-BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
+BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	assert(size != 0);
 
 	GLuint buffer = 0;
@@ -507,7 +490,7 @@ BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
 }
 
 
-BufferHandle Renderer::createEphemeralBuffer(uint32_t size, const void *contents) {
+BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *contents) {
 	assert(size != 0);
 	assert(contents != nullptr);
 
@@ -522,7 +505,7 @@ BufferHandle Renderer::createEphemeralBuffer(uint32_t size, const void *contents
 }
 
 
-VertexShaderHandle Renderer::createVertexShader(const std::string &name, const ShaderMacros &macros) {
+VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros) {
 	std::string vertexShaderName   = name + ".vert";
 
 	auto vertexSrc = loadSource(vertexShaderName);
@@ -565,7 +548,7 @@ VertexShaderHandle Renderer::createVertexShader(const std::string &name, const S
 }
 
 
-FragmentShaderHandle Renderer::createFragmentShader(const std::string &name, const ShaderMacros &macros) {
+FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros &macros) {
 	std::string fragmentShaderName = name + ".frag";
 
 	auto fragSrc = loadSource(fragmentShaderName);
@@ -608,7 +591,7 @@ FragmentShaderHandle Renderer::createFragmentShader(const std::string &name, con
 }
 
 
-PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
+PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	// TODO: something better
 	uint32_t handle = pipelines.size() + 1;
 	auto it = pipelines.find(handle);
@@ -650,7 +633,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 }
 
 
-FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
+FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	GLuint fbo = 0;
 
 	glCreateFramebuffers(1, &fbo);
@@ -680,7 +663,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 }
 
 
-RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
+RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc) {
 	GLuint rt = 0;
 
 	assert(desc.width_  > 0);
@@ -697,7 +680,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 }
 
 
-SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
+SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
 	GLuint sampler = 0;
 	glCreateSamplers(1, &sampler);
 
@@ -710,7 +693,7 @@ SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
 }
 
 
-TextureHandle Renderer::createTexture(const TextureDesc &desc) {
+TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	assert(desc.width_   > 0);
 	assert(desc.height_  > 0);
 	assert(desc.numMips_ > 0);
@@ -733,12 +716,12 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 }
 
 
-void Renderer::deleteBuffer(BufferHandle handle) {
+void RendererImpl::deleteBuffer(BufferHandle handle) {
 	glDeleteBuffers(1, &handle);
 }
 
 
-void Renderer::deleteFramebuffer(FramebufferHandle fbo) {
+void RendererImpl::deleteFramebuffer(FramebufferHandle fbo) {
 	assert(fbo.handle != 0);
 	auto it = framebuffers.find(fbo.handle);
 	assert(it != framebuffers.end());
@@ -747,22 +730,22 @@ void Renderer::deleteFramebuffer(FramebufferHandle fbo) {
 }
 
 
-void Renderer::deleteRenderTarget(RenderTargetHandle &) {
+void RendererImpl::deleteRenderTarget(RenderTargetHandle &) {
 	// TODO...
 }
 
 
-void Renderer::deleteSampler(SamplerHandle handle) {
+void RendererImpl::deleteSampler(SamplerHandle handle) {
 	glDeleteSamplers(1, &handle);
 }
 
 
-void Renderer::deleteTexture(TextureHandle handle) {
+void RendererImpl::deleteTexture(TextureHandle handle) {
 	glDeleteTextures(1, &handle);
 }
 
 
-void Renderer::recreateSwapchain(const SwapchainDesc &desc) {
+void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	if (swapchainDesc.fullscreen != desc.fullscreen) {
 		if (desc.fullscreen) {
 			// TODO: check return val?
@@ -796,7 +779,7 @@ void Renderer::recreateSwapchain(const SwapchainDesc &desc) {
 }
 
 
-void Renderer::beginFrame() {
+void RendererImpl::beginFrame() {
 	// TODO: some asserting here
 
 	// TODO: reset all relevant state in case some 3rd-party program fucked them up
@@ -808,7 +791,7 @@ void Renderer::beginFrame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
-void Renderer::presentFrame(FramebufferHandle fbo) {
+void RendererImpl::presentFrame(FramebufferHandle fbo) {
 	auto it = framebuffers.find(fbo.handle);
 	assert(it != framebuffers.end());
 
@@ -841,7 +824,7 @@ void Renderer::presentFrame(FramebufferHandle fbo) {
 }
 
 
-void Renderer::beginRenderPass(FramebufferHandle fbo) {
+void RendererImpl::beginRenderPass(FramebufferHandle fbo) {
 	assert(!inRenderPass);
 	inRenderPass = true;
 
@@ -862,24 +845,24 @@ void Renderer::beginRenderPass(FramebufferHandle fbo) {
 }
 
 
-void Renderer::endRenderPass() {
+void RendererImpl::endRenderPass() {
 	assert(inRenderPass);
 	inRenderPass = false;
 }
 
 
-void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 	glViewport(x, y, width, height);
 }
 
 
-void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 	// TODO: should use current FB height
 	glScissor(x, swapchainDesc.height - y, width, height);
 }
 
 
-void Renderer::blitFBO(FramebufferHandle src, FramebufferHandle dest) {
+void RendererImpl::blitFBO(FramebufferHandle src, FramebufferHandle dest) {
 	assert(src.handle);
 	assert(dest.handle);
 
@@ -902,7 +885,7 @@ void Renderer::blitFBO(FramebufferHandle src, FramebufferHandle dest) {
 }
 
 
-void Renderer::bindFramebuffer(FramebufferHandle fbo) {
+void RendererImpl::bindFramebuffer(FramebufferHandle fbo) {
 	assert(fbo.handle);
 
 	auto it = framebuffers.find(fbo.handle);
@@ -915,7 +898,7 @@ void Renderer::bindFramebuffer(FramebufferHandle fbo) {
 }
 
 
-void Renderer::bindPipeline(PipelineHandle pipeline) {
+void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	assert(pipeline != 0);
 
 	auto it = pipelines.find(pipeline);
@@ -1005,33 +988,33 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 }
 
 
-void Renderer::bindIndexBuffer(BufferHandle buffer, bool bit16) {
+void RendererImpl::bindIndexBuffer(BufferHandle buffer, bool bit16) {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer);
 	idxBuf16Bit = bit16;
 }
 
 
-void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer, unsigned int stride) {
+void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle buffer, unsigned int stride) {
 	// TODO: get stride from current Pipeline?
 	glBindVertexBuffer(binding, buffer, 0, stride);
 }
 
 
-void Renderer::bindTexture(unsigned int unit, TextureHandle tex, SamplerHandle sampler) {
+void RendererImpl::bindTexture(unsigned int unit, TextureHandle tex, SamplerHandle sampler) {
 	glBindTextureUnit(unit, tex);
 	glBindSampler(unit, sampler);
 }
 
 
-void Renderer::bindUniformBuffer(unsigned int index, BufferHandle buffer) {
+void RendererImpl::bindUniformBuffer(unsigned int index, BufferHandle buffer) {
 	glBindBufferBase(GL_UNIFORM_BUFFER, index, buffer);
 }
 
-void Renderer::bindStorageBuffer(unsigned int index, BufferHandle buffer) {
+void RendererImpl::bindStorageBuffer(unsigned int index, BufferHandle buffer) {
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, buffer);
 }
 
-void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
+void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	assert(inRenderPass);
 
 	// TODO: get primitive from current pipeline
@@ -1039,7 +1022,7 @@ void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 }
 
 
-void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
+void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
 	assert(inRenderPass);
 
 	// TODO: get primitive from current pipeline
