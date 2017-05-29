@@ -40,6 +40,22 @@ struct VertexShader {
 };
 
 
+struct FragmentShader {
+	vk::ShaderModule shaderModule;
+
+
+	FragmentShader() {}
+
+	FragmentShader(const FragmentShader &)            = delete;
+	FragmentShader &operator=(const FragmentShader &) = delete;
+
+	FragmentShader(FragmentShader &&)                 = default;
+	FragmentShader &operator=(FragmentShader &&)      = default;
+
+	~FragmentShader() {}
+};
+
+
 #elif defined(RENDERER_NULL)
 
 #else
@@ -159,6 +175,7 @@ struct RendererImpl {
 	vk::CommandBuffer                  currentCommandBuffer;
 
 	std::unordered_map<unsigned int, VertexShader>  vertexShaders;
+	std::unordered_map<unsigned int, FragmentShader>  fragmentShaders;
 
 #endif   // RENDERER_VULKAN
 

@@ -303,6 +303,11 @@ RendererImpl::~RendererImpl() {
 		v.second.shaderModule = vk::ShaderModule();
 	}
 
+	for (auto &f : fragmentShaders) {
+		device.destroyShaderModule(f.second.shaderModule);
+		f.second.shaderModule = vk::ShaderModule();
+	}
+
 	device.destroyCommandPool(commandPool);
 
 	device.destroySwapchainKHR(swapchain);
@@ -415,10 +420,43 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 }
 
 
-FragmentShaderHandle RendererImpl::createFragmentShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
-	STUBBED("");
+FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros &macros) {
+	std::string fragmentShaderName   = name + ".frag";
 
-	return FragmentShaderHandle (0);
+	auto fragmentSrc = loadSource(fragmentShaderName);
+
+	shaderc::CompileOptions options;
+	// TODO: optimization level?
+	// TODO: cache includes globally
+	options.SetIncluder(std::make_unique<Includer>());
+
+	for (const auto &p : macros) {
+		options.AddMacroDefinition(p.first, p.second);
+	}
+
+	auto result = compiler.CompileGlslToSpv(&fragmentSrc[0], fragmentSrc.size(), shaderc_glsl_fragment_shader, fragmentShaderName.c_str(), options);
+	if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
+		printf("Shader %s compile failed: %s\n", fragmentShaderName.c_str(), result.GetErrorMessage().c_str());
+		exit(1);
+	}
+
+	std::vector<uint32_t> spirv(result.cbegin(), result.cend());
+
+	if (savePreprocessedShaders) {
+		// TODO: save SPIR-V?
+	}
+
+	FragmentShader f;
+	vk::ShaderModuleCreateInfo info;
+	info.codeSize = spirv.size() * 4;
+	info.pCode    = &spirv[0];
+	f.shaderModule = device.createShaderModule(info);
+	auto id = fragmentShaders.size() + 1;
+
+	auto temp = fragmentShaders.emplace(id, std::move(f));
+	assert(temp.second);
+
+	return FragmentShaderHandle(id);
 }
 
 
