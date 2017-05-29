@@ -24,6 +24,22 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 #include <vulkan/vulkan.hpp>
 
 
+struct VertexShader {
+	vk::ShaderModule shaderModule;
+
+
+	VertexShader() {}
+
+	VertexShader(const VertexShader &)            = delete;
+	VertexShader &operator=(const VertexShader &) = delete;
+
+	VertexShader(VertexShader &&)                 = default;
+	VertexShader &operator=(VertexShader &&)      = default;
+
+	~VertexShader() {}
+};
+
+
 #elif defined(RENDERER_NULL)
 
 #else
@@ -141,6 +157,8 @@ struct RendererImpl {
 	vk::CommandPool                    commandPool;
 
 	vk::CommandBuffer                  currentCommandBuffer;
+
+	std::unordered_map<unsigned int, VertexShader>  vertexShaders;
 
 #endif   // RENDERER_VULKAN
 

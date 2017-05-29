@@ -298,6 +298,11 @@ RendererImpl::~RendererImpl() {
 
 	// TODO: save pipeline cache
 
+	for (auto &v : vertexShaders) {
+		device.destroyShaderModule(v.second.shaderModule);
+		v.second.shaderModule = vk::ShaderModule();
+	}
+
 	device.destroyCommandPool(commandPool);
 
 	device.destroySwapchainKHR(swapchain);
@@ -370,10 +375,43 @@ SamplerHandle RendererImpl::createSampler(const SamplerDesc & /* desc */) {
 }
 
 
-VertexShaderHandle RendererImpl::createVertexShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
-	STUBBED("");
+VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros) {
+	std::string vertexShaderName   = name + ".vert";
 
-	return VertexShaderHandle (0);
+	auto vertexSrc = loadSource(vertexShaderName);
+
+	shaderc::CompileOptions options;
+	// TODO: optimization level?
+	// TODO: cache includes globally
+	options.SetIncluder(std::make_unique<Includer>());
+
+	for (const auto &p : macros) {
+		options.AddMacroDefinition(p.first, p.second);
+	}
+
+	auto result = compiler.CompileGlslToSpv(&vertexSrc[0], vertexSrc.size(), shaderc_glsl_vertex_shader, vertexShaderName.c_str(), options);
+	if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
+		printf("Shader %s compile failed: %s\n", vertexShaderName.c_str(), result.GetErrorMessage().c_str());
+		exit(1);
+	}
+
+	std::vector<uint32_t> spirv(result.cbegin(), result.cend());
+
+	if (savePreprocessedShaders) {
+		// TODO: save SPIR-V?
+	}
+
+	VertexShader v;
+	vk::ShaderModuleCreateInfo info;
+	info.codeSize = spirv.size() * 4;
+	info.pCode    = &spirv[0];
+	v.shaderModule = device.createShaderModule(info);
+	auto id = vertexShaders.size() + 1;
+
+	auto temp = vertexShaders.emplace(id, std::move(v));
+	assert(temp.second);
+
+	return VertexShaderHandle(id);
 }
 
 
