@@ -22,6 +22,7 @@ using namespace glm;
 
 #define MAX_COLOR_RENDERTARGETS 2
 #define MAX_VERTEX_ATTRIBS      4
+#define MAX_VERTEX_BUFFERS      1
 
 
 struct RendererImpl;
@@ -353,7 +354,12 @@ class PipelineDesc {
 		uint8_t offset;
 	};
 
+	struct VertexBuf {
+		uint32_t stride;
+	};
+
 	std::array<VertexAttr, MAX_VERTEX_ATTRIBS> vertexAttribs;
+	std::array<VertexBuf,  MAX_VERTEX_BUFFERS> vertexBuffers;
 
 
 public:
@@ -378,6 +384,13 @@ public:
 
 
 		vertexAttribMask |= (1 << attrib);
+		return *this;
+	}
+
+	PipelineDesc &vertexBufferStride(uint8_t buf, uint32_t stride) {
+		assert(buf < MAX_VERTEX_BUFFERS);
+		vertexBuffers[buf].stride = stride;
+
 		return *this;
 	}
 
@@ -418,6 +431,10 @@ public:
 			vertexAttribs[i].bufBinding = 0;
 			vertexAttribs[i].count      = 0;
 			vertexAttribs[i].offset     = 0;
+		}
+
+		for (unsigned int i = 0; i < MAX_VERTEX_BUFFERS; i++) {
+			vertexBuffers[i].stride = 0;
 		}
 	}
 
