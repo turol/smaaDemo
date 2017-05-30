@@ -171,8 +171,8 @@ void Renderer::bindIndexBuffer(BufferHandle buffer, bool bit16) {
 }
 
 
-void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer, unsigned int stride) {
-	impl->bindVertexBuffer(binding, buffer, stride);
+void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
+	impl->bindVertexBuffer(binding, buffer);
 }
 
 

@@ -738,7 +738,7 @@ void RendererImpl::bindIndexBuffer(BufferHandle /* buffer */, bool /* bit16 */ )
 }
 
 
-void RendererImpl::bindVertexBuffer(unsigned int /* binding */, BufferHandle /* buffer */, unsigned int /* stride */) {
+void RendererImpl::bindVertexBuffer(unsigned int /* binding */, BufferHandle /* buffer */) {
 	STUBBED("");
 }
 

@@ -987,7 +987,7 @@ void SMAADemo::render() {
 
 		renderer.bindPipeline(cubePipeline);
 
-		renderer.bindVertexBuffer(0, cubeVBO, sizeof(Vertex));
+		renderer.bindVertexBuffer(0, cubeVBO);
 		renderer.bindIndexBuffer(cubeIBO, false);
 
 		BufferHandle instanceSSBO = renderer.createEphemeralBuffer(sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0]);
@@ -1128,7 +1128,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			BufferHandle vtxBuf = renderer.createEphemeralBuffer(cmd_list->VtxBuffer.Size * sizeof(ImDrawVert), cmd_list->VtxBuffer.Data);
 			BufferHandle idxBuf = renderer.createEphemeralBuffer(cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx), cmd_list->IdxBuffer.Data);
 			renderer.bindIndexBuffer(idxBuf, true);
-			renderer.bindVertexBuffer(0, vtxBuf, sizeof(ImDrawVert));
+			renderer.bindVertexBuffer(0, vtxBuf);
 
 			const ImDrawIdx* idx_buffer_offset = 0;
 			for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++) {

@@ -519,7 +519,7 @@ public:
 	void bindFramebuffer(FramebufferHandle fbo);
 	void bindPipeline(PipelineHandle pipeline);
 	void bindIndexBuffer(BufferHandle buffer, bool bit16);
-	void bindVertexBuffer(unsigned int binding, BufferHandle buffer, unsigned int stride);
+	void bindVertexBuffer(unsigned int binding, BufferHandle buffer);
 
 	// TODO: replace with descriptor set stuff
 	void bindTexture(unsigned int unit, TextureHandle tex, SamplerHandle sampler);

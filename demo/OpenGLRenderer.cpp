@@ -994,10 +994,8 @@ void RendererImpl::bindIndexBuffer(BufferHandle buffer, bool bit16) {
 }
 
 
-void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle buffer, unsigned int stride) {
-	// TODO: get stride from current Pipeline?
-	assert(stride == currentPipeline.vertexBuffers[binding].stride);
-	glBindVertexBuffer(binding, buffer, 0, stride);
+void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
+	glBindVertexBuffer(binding, buffer, 0, currentPipeline.vertexBuffers[binding].stride);
 }
 
 
