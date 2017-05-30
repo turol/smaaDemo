@@ -298,6 +298,11 @@ RendererImpl::~RendererImpl() {
 
 	// TODO: save pipeline cache
 
+	for (auto &r : renderPasses) {
+		device.destroyRenderPass(r.second.renderPass);
+		r.second.renderPass = vk::RenderPass();
+	}
+
 	for (auto &v : vertexShaders) {
 		device.destroyShaderModule(v.second.shaderModule);
 		v.second.shaderModule = vk::ShaderModule();
@@ -356,8 +361,40 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc & /* des
 
 
 RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc & /* desc */) {
-	STUBBED("");
-	return RenderPassHandle(0);
+	vk::RenderPassCreateInfo info;
+
+	STUBBED("depth attachment");
+	// TODO: multiple render targets
+	vk::AttachmentDescription attach;
+	STUBBED("get format from RenderPassDesc");
+	attach.format         = vk::Format::eR8G8B8A8Unorm;
+	attach.loadOp         = vk::AttachmentLoadOp::eClear;
+	attach.storeOp        = vk::AttachmentStoreOp::eStore;
+	attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
+	attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+	attach.initialLayout  = vk::ImageLayout::eColorAttachmentOptimal;
+	attach.finalLayout    = vk::ImageLayout::eShaderReadOnlyOptimal;
+
+	info.attachmentCount = 1;
+	info.pAttachments    = &attach;
+
+	vk::SubpassDescription subpass;
+	STUBBED("subpass description");
+	info.subpassCount    = 1;
+	info.pSubpasses      = &subpass;
+
+	STUBBED("subpass dependencies");
+
+	auto result = device.createRenderPass(info);
+	RenderPass r;
+	r.renderPass = result;
+
+	auto id = renderPasses.size() + 1;
+
+	auto temp = renderPasses.emplace(id, std::move(r));
+	assert(temp.second);
+
+	return RenderPassHandle(id);
 }
 
 

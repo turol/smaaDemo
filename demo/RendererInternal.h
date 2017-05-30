@@ -56,6 +56,21 @@ struct FragmentShader {
 };
 
 
+struct RenderPass {
+	vk::RenderPass renderPass;
+
+	RenderPass() {}
+
+	RenderPass(const RenderPass &)            = delete;
+	RenderPass &operator=(const RenderPass &) = delete;
+
+	RenderPass(RenderPass &&)                 = default;
+	RenderPass &operator=(RenderPass &&)      = default;
+
+	~RenderPass() {}
+};
+
+
 #elif defined(RENDERER_NULL)
 
 #else
@@ -176,6 +191,7 @@ struct RendererImpl {
 
 	std::unordered_map<unsigned int, VertexShader>  vertexShaders;
 	std::unordered_map<unsigned int, FragmentShader>  fragmentShaders;
+	std::unordered_map<unsigned int, RenderPass>      renderPasses;
 
 #endif   // RENDERER_VULKAN
 
