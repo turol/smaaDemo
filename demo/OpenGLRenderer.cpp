@@ -14,11 +14,8 @@
 
 
 struct VertexShader {
-#ifdef RENDERER_OPENGL
-
 	GLuint shader;
 
-#endif  // RENDERER_OPENGL
 
 	VertexShader(const VertexShader &) = delete;
 	VertexShader &operator=(const VertexShader &) = delete;
@@ -33,11 +30,8 @@ struct VertexShader {
 
 
 struct FragmentShader {
-#ifdef RENDERER_OPENGL
-
 	GLuint shader;
 
-#endif  // RENDERER_OPENGL
 
 	FragmentShader(const FragmentShader &) = delete;
 	FragmentShader &operator=(const FragmentShader &) = delete;
@@ -84,8 +78,6 @@ struct Framebuffer {
 	Framebuffer &operator=(Framebuffer &&) = delete;
 
 
-#ifdef RENDERER_OPENGL
-
 	explicit Framebuffer(GLuint fbo_)
 	: fbo(fbo_)
 	, colorTex(0)
@@ -94,8 +86,6 @@ struct Framebuffer {
 	, height(0)
 	{
 	}
-
-#endif  // RENDERER_OPENGL
 
 
 	~Framebuffer();
