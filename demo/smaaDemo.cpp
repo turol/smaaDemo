@@ -500,6 +500,7 @@ void SMAADemo::initRender() {
 	                                        .vertexShader(vertexShader)
 	                                        .fragmentShader(fragmentShader)
 	                                        .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
+	                                        .vertexBufferStride(ATTR_POS, sizeof(Vertex))
 	                                        .depthWrite(true)
 	                                        .depthTest(true)
 	                                        .cullFaces(true)
@@ -527,7 +528,8 @@ void SMAADemo::initRender() {
 	      .scissorTest(true);
 	plDesc.vertexAttrib(ATTR_POS,   0, 2, VtxFormat::Float,  offsetof(ImDrawVert, pos))
 	      .vertexAttrib(ATTR_UV,    0, 2, VtxFormat::Float,  offsetof(ImDrawVert, uv))
-	      .vertexAttrib(ATTR_COLOR, 0, 4, VtxFormat::UNorm8, offsetof(ImDrawVert, col));
+	      .vertexAttrib(ATTR_COLOR, 0, 4, VtxFormat::UNorm8, offsetof(ImDrawVert, col))
+	      .vertexBufferStride(ATTR_POS, sizeof(ImDrawVert));
 	guiPipeline = renderer.createPipeline(plDesc);
 
 	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(Linear). magFilter(Linear));
