@@ -185,6 +185,54 @@ struct RenderPass {
 #endif  // RENDERER
 
 
+template <class T>
+class ResourceContainer {
+	std::unordered_map<unsigned int, T> resources;
+
+
+public:
+	ResourceContainer() {}
+
+	ResourceContainer(const ResourceContainer<T> &)            = delete;
+	ResourceContainer &operator=(const ResourceContainer<T> &) = delete;
+
+	ResourceContainer(ResourceContainer<T> &&)                 = delete;
+	ResourceContainer &operator=(ResourceContainer<T> &&)      = delete;
+
+	~ResourceContainer() {}
+
+	std::pair<T &, unsigned int> add();
+
+	T &add(unsigned int handle) {
+		auto result = resources.emplace(handle, T());
+		assert(result.second);
+		return result.first->second;
+	}
+
+	const T &get(unsigned int handle) const {
+		auto it = resources.find(handle);
+		assert(it != resources.end());
+
+		return it->second;
+	}
+
+	T &get(unsigned int handle) {
+		auto it = resources.find(handle);
+		assert(it != resources.end());
+
+		return it->second;
+	}
+
+	void remove(unsigned int handle) {
+		auto it = resources.find(handle);
+		assert(it != resources.end());
+		resources.erase(it);
+	}
+
+	void clear();
+};
+
+
 class Includer final : public shaderc::CompileOptions::IncluderInterface {
 	std::unordered_map<std::string, std::vector<char> > cache;
 
