@@ -16,6 +16,85 @@
 void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /* length */, const GLchar *message, const void * /* userParam */);
 
 
+struct VertexShader {
+	GLuint shader;
+
+
+	VertexShader(const VertexShader &) = delete;
+	VertexShader &operator=(const VertexShader &) = delete;
+
+	VertexShader(VertexShader &&) = delete;
+	VertexShader &operator=(VertexShader &&) = delete;
+
+	VertexShader();
+
+	~VertexShader();
+};
+
+
+struct FragmentShader {
+	GLuint shader;
+
+
+	FragmentShader(const FragmentShader &) = delete;
+	FragmentShader &operator=(const FragmentShader &) = delete;
+
+	FragmentShader(FragmentShader &&) = delete;
+	FragmentShader &operator=(FragmentShader &&) = delete;
+
+
+	FragmentShader();
+
+	~FragmentShader();
+};
+
+
+struct Shader {
+	GLuint program;
+
+	Shader() = delete;
+	Shader(const Shader &) = delete;
+	Shader &operator=(const Shader &) = delete;
+
+	Shader(Shader &&) = delete;
+	Shader &operator=(Shader &&) = delete;
+
+	explicit Shader(GLuint program_);
+
+	~Shader();
+};
+
+
+struct Framebuffer {
+	GLuint fbo;
+	GLuint colorTex;
+	GLuint depthTex;
+
+	unsigned int width, height;
+
+
+	Framebuffer() = delete;
+	Framebuffer(const Framebuffer &) = delete;
+	Framebuffer &operator=(const Framebuffer &) = delete;
+
+	Framebuffer(Framebuffer &&) = delete;
+	Framebuffer &operator=(Framebuffer &&) = delete;
+
+
+	explicit Framebuffer(GLuint fbo_)
+	: fbo(fbo_)
+	, colorTex(0)
+	, depthTex(0)
+	, width(0)
+	, height(0)
+	{
+	}
+
+
+	~Framebuffer();
+};
+
+
 #elif defined(RENDERER_VULKAN)
 
 // TODO: _WIN32
