@@ -450,6 +450,8 @@ void SMAADemo::initRender() {
 
 	renderer = Renderer::createRenderer(desc);
 
+	createFramebuffers();
+
 	sceneRenderPass        = renderer.createRenderPass(RenderPassDesc());
 	finalRenderPass        = renderer.createRenderPass(RenderPassDesc());
 	fxaaRenderPass         = renderer.createRenderPass(RenderPassDesc());
@@ -589,8 +591,6 @@ void SMAADemo::initRender() {
 		texDesc.mipLevelData(0, searchTexBytes);
 		searchTex = renderer.createTexture(texDesc);
 	}
-
-	createFramebuffers();
 
 	for (auto &img : images) {
 		const auto filename = img.filename.c_str();
