@@ -73,7 +73,6 @@ struct Framebuffer {
 	unsigned int width, height;
 
 
-	Framebuffer() = delete;
 	Framebuffer(const Framebuffer &) = delete;
 	Framebuffer &operator=(const Framebuffer &) = delete;
 
@@ -106,8 +105,8 @@ struct Framebuffer {
 	}
 
 
-	explicit Framebuffer(GLuint fbo_)
-	: fbo(fbo_)
+	Framebuffer()
+	: fbo(0)
 	, colorTex(0)
 	, depthTex(0)
 	, width(0)
@@ -295,7 +294,7 @@ struct RendererImpl {
 		}
 	};
 
-	std::unordered_map<GLuint, Framebuffer> framebuffers;
+	ResourceContainer<Framebuffer> framebuffers;
 	std::unordered_map<GLuint, std::unique_ptr<VertexShader> >    vertexShaders;
 	std::unordered_map<GLuint, std::unique_ptr<FragmentShader> >  fragmentShaders;
 	std::unordered_map<GLuint, std::unique_ptr<Shader> > shaders;
