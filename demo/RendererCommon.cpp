@@ -71,6 +71,11 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 }
 
 
+RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
+	return impl->createRenderPass(desc);
+}
+
+
 PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	return impl->createPipeline(desc);
 }
@@ -146,8 +151,8 @@ void Renderer::presentFrame(FramebufferHandle fbo) {
 }
 
 
-void Renderer::beginRenderPass(FramebufferHandle fbo) {
-	impl->beginRenderPass(fbo);
+void Renderer::beginRenderPass(RenderPassHandle pass, FramebufferHandle fbo) {
+	impl->beginRenderPass(pass, fbo);
 }
 
 

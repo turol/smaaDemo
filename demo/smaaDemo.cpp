@@ -207,6 +207,9 @@ class SMAADemo {
 	PipelineHandle imagePipeline;
 	PipelineHandle guiPipeline;
 
+	RenderPassHandle sceneRenderPass;
+	RenderPassHandle finalRenderPass;
+
 	BufferHandle cubeVBO;
 	BufferHandle cubeIBO;
 
@@ -222,10 +225,14 @@ class SMAADemo {
 	AAMethod::AAMethod aaMethod;
 
 	std::array<PipelineHandle, maxFXAAQuality> fxaaPipelines;
+	RenderPassHandle fxaaRenderPass;
 
 	std::array<PipelineHandle, maxSMAAQuality> smaaEdgePipelines;
 	std::array<PipelineHandle, maxSMAAQuality> smaaBlendWeightPipelines;
 	std::array<PipelineHandle, maxSMAAQuality> smaaNeighborPipelines;
+	RenderPassHandle smaaEdgesRenderPass;
+	RenderPassHandle smaaWeightsRenderPass;
+	RenderPassHandle smaaNeighborRenderPass;
 	TextureHandle areaTex;
 	TextureHandle searchTex;
 
@@ -442,6 +449,13 @@ void SMAADemo::initRender() {
 	desc.swapchain.vsync      = vsync;
 
 	renderer = Renderer::createRenderer(desc);
+
+	sceneRenderPass        = renderer.createRenderPass(RenderPassDesc());
+	finalRenderPass        = renderer.createRenderPass(RenderPassDesc());
+	fxaaRenderPass         = renderer.createRenderPass(RenderPassDesc());
+	smaaEdgesRenderPass    = renderer.createRenderPass(RenderPassDesc());
+	smaaWeightsRenderPass  = renderer.createRenderPass(RenderPassDesc());
+	smaaNeighborRenderPass = renderer.createRenderPass(RenderPassDesc());
 
 	PipelineDesc plDesc;
 	plDesc.depthWrite(false)
@@ -969,7 +983,7 @@ void SMAADemo::render() {
 
 	renderer.setViewport(0, 0, windowWidth, windowHeight);
 
-	renderer.beginRenderPass(fbos[Framebuffers::MainRender]);
+	renderer.beginRenderPass(sceneRenderPass, fbos[Framebuffers::MainRender]);
 
 	if (activeScene == 0) {
 		if (rotateCamera) {
@@ -1013,7 +1027,7 @@ void SMAADemo::render() {
 
 		switch (aaMethod) {
 		case AAMethod::FXAA:
-			renderer.beginRenderPass(fbos[Framebuffers::FinalRender]);
+			renderer.beginRenderPass(fxaaRenderPass, fbos[Framebuffers::FinalRender]);
 			renderer.bindPipeline(fxaaPipelines[fxaaQuality]);
 			renderer.draw(0, 3);
 			drawGUI(elapsed);
@@ -1028,13 +1042,13 @@ void SMAADemo::render() {
 
 			if (debugMode == 1) {
 				// detect edges only
-				renderer.beginRenderPass(fbos[Framebuffers::FinalRender]);
+				renderer.beginRenderPass(finalRenderPass, fbos[Framebuffers::FinalRender]);
 				renderer.draw(0, 3);
 				drawGUI(elapsed);
 				renderer.endRenderPass();
 				break;
 			} else {
-				renderer.beginRenderPass(fbos[Framebuffers::Edges]);
+				renderer.beginRenderPass(smaaEdgesRenderPass, fbos[Framebuffers::Edges]);
 				renderer.draw(0, 3);
 				renderer.endRenderPass();
 			}
@@ -1044,13 +1058,13 @@ void SMAADemo::render() {
 			renderer.bindPipeline(smaaBlendWeightPipelines[smaaQuality]);
 			if (debugMode == 2) {
 				// show blending weights
-				renderer.beginRenderPass(fbos[Framebuffers::FinalRender]);
+				renderer.beginRenderPass(finalRenderPass, fbos[Framebuffers::FinalRender]);
 				renderer.draw(0, 3);
 				drawGUI(elapsed);
 				renderer.endRenderPass();
 				break;
 			} else {
-				renderer.beginRenderPass(fbos[Framebuffers::BlendWeights]);
+				renderer.beginRenderPass(smaaWeightsRenderPass, fbos[Framebuffers::BlendWeights]);
 				renderer.draw(0, 3);
 				renderer.endRenderPass();
 			}
@@ -1059,7 +1073,7 @@ void SMAADemo::render() {
 			renderer.bindTexture(TEXUNIT_BLEND, rendertargets[RenderTargets::BlendWeights], linearSampler);
 
 			renderer.bindPipeline(smaaNeighborPipelines[smaaQuality]);
-			renderer.beginRenderPass(fbos[Framebuffers::FinalRender]);
+			renderer.beginRenderPass(smaaNeighborRenderPass, fbos[Framebuffers::FinalRender]);
 			renderer.draw(0, 3);
 			drawGUI(elapsed);
 
@@ -1068,7 +1082,7 @@ void SMAADemo::render() {
 		}
 
 	} else {
-		renderer.beginRenderPass(fbos[Framebuffers::FinalRender]);
+		renderer.beginRenderPass(finalRenderPass, fbos[Framebuffers::FinalRender]);
 		// TODO: not necessary?
 		renderer.blitFBO(fbos[Framebuffers::MainRender], fbos[Framebuffers::FinalRender]);
 		drawGUI(elapsed);

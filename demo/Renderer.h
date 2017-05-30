@@ -335,6 +335,10 @@ private:
 };
 
 
+class RenderPassDesc {
+};
+
+
 class PipelineDesc {
 	VertexShaderHandle vertexShader_;
 	FragmentShaderHandle fragmentShader_;
@@ -486,6 +490,7 @@ public:
 	FramebufferHandle   createFramebuffer(const FramebufferDesc &desc);
 	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
 	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);
+	RenderPassHandle     createRenderPass(const RenderPassDesc &desc);
 	PipelineHandle      createPipeline(const PipelineDesc &desc);
 	// TODO: add buffer usage flags
 	BufferHandle        createBuffer(uint32_t size, const void *contents);
@@ -508,7 +513,7 @@ public:
 	void beginFrame();
 	void presentFrame(FramebufferHandle fbo);
 
-	void beginRenderPass(FramebufferHandle fbo);
+	void beginRenderPass(RenderPassHandle pass, FramebufferHandle fbo);
 	void endRenderPass();
 
 	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);

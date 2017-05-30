@@ -591,6 +591,11 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 }
 
 
+RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc & /* desc */) {
+	return RenderPassHandle(0);
+}
+
+
 PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	// TODO: something better
 	uint32_t handle = pipelines.size() + 1;
@@ -824,7 +829,7 @@ void RendererImpl::presentFrame(FramebufferHandle fbo) {
 }
 
 
-void RendererImpl::beginRenderPass(FramebufferHandle fbo) {
+void RendererImpl::beginRenderPass(RenderPassHandle /* pass */, FramebufferHandle fbo) {
 	assert(!inRenderPass);
 	inRenderPass = true;
 

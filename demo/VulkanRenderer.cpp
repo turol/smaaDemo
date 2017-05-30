@@ -355,6 +355,12 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc & /* des
 }
 
 
+RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc & /* desc */) {
+	STUBBED("");
+	return RenderPassHandle(0);
+}
+
+
 PipelineHandle RendererImpl::createPipeline(const PipelineDesc & /* desc */) {
 	STUBBED("");
 
@@ -703,7 +709,7 @@ void RendererImpl::presentFrame(FramebufferHandle /* fbo */) {
 }
 
 
-void RendererImpl::beginRenderPass(FramebufferHandle /* fbo */) {
+void RendererImpl::beginRenderPass(RenderPassHandle /* pass */, FramebufferHandle /* fbo */) {
 	assert(!inRenderPass);
 	inRenderPass = true;
 
