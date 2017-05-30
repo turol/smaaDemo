@@ -553,25 +553,25 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	GLuint fbo = 0;
 
 	glCreateFramebuffers(1, &fbo);
-	auto fb = std::make_unique<Framebuffer>(fbo);
+	Framebuffer fb(fbo);
 
 	auto it = renderTargets.find(desc.colors_[0]);
 	assert(it != renderTargets.end());
 
-	fb->colorTex = desc.colors_[0];
-	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, fb->colorTex, 0);
+	fb.colorTex = desc.colors_[0];
+	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, fb.colorTex, 0);
 	assert(desc.colors_[1] == 0);
 
 	if (desc.depthStencil_ != 0) {
-		fb->depthTex = desc.depthStencil_;
-		glNamedFramebufferTexture(fbo, GL_DEPTH_ATTACHMENT, fb->depthTex, 0);
+		fb.depthTex = desc.depthStencil_;
+		glNamedFramebufferTexture(fbo, GL_DEPTH_ATTACHMENT, fb.depthTex, 0);
 	}
 
 	const auto &colorDesc = renderTargets[desc.colors_[0]];
 	assert(colorDesc.width_ > 0);
 	assert(colorDesc.height_ > 0);
-	fb->width  = colorDesc.width_;
-	fb->height = colorDesc.height_;
+	fb.width  = colorDesc.width_;
+	fb.height = colorDesc.height_;
 
 	framebuffers.emplace(fbo, std::move(fb));
 
@@ -711,8 +711,8 @@ void RendererImpl::presentFrame(FramebufferHandle fbo) {
 	auto it = framebuffers.find(fbo.handle);
 	assert(it != framebuffers.end());
 
-	unsigned int width  = it->second->width;
-	unsigned int height = it->second->height;
+	unsigned int width  = it->second.width;
+	unsigned int height = it->second.height;
 
 	// TODO: only if enabled
 	glDisable(GL_SCISSOR_TEST);
@@ -752,7 +752,7 @@ void RendererImpl::beginRenderPass(RenderPassHandle /* pass */, FramebufferHandl
 	const auto &fb = it->second;
 
 	GLbitfield mask = GL_COLOR_BUFFER_BIT;
-	if (fb->depthTex != 0) {
+	if (fb.depthTex != 0) {
 		mask |= GL_DEPTH_BUFFER_BIT;
 	}
 
@@ -787,10 +787,10 @@ void RendererImpl::blitFBO(FramebufferHandle src, FramebufferHandle dest) {
 	auto itDest    = framebuffers.find(dest.handle);
 	assert(itDest != framebuffers.end());
 
-	unsigned int srcWidth   = itSrc->second->width;
-	unsigned int srcHeight  = itSrc->second->height;
-	unsigned int dstWidth   = itDest->second->width;
-	unsigned int dstHeight  = itDest->second->height;
+	unsigned int srcWidth   = itSrc->second.width;
+	unsigned int srcHeight  = itSrc->second.height;
+	unsigned int dstWidth   = itDest->second.width;
+	unsigned int dstHeight  = itDest->second.height;
 
 	assert(srcWidth  == dstWidth);
 	assert(srcHeight == dstHeight);
@@ -807,8 +807,8 @@ void RendererImpl::bindFramebuffer(FramebufferHandle fbo) {
 	auto it = framebuffers.find(fbo.handle);
 	assert(it != framebuffers.end());
 
-	assert(it->second->width > 0);
-	assert(it->second->height > 0);
+	assert(it->second.width > 0);
+	assert(it->second.height > 0);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo.handle);
 }

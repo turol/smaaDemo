@@ -77,8 +77,33 @@ struct Framebuffer {
 	Framebuffer(const Framebuffer &) = delete;
 	Framebuffer &operator=(const Framebuffer &) = delete;
 
-	Framebuffer(Framebuffer &&) = delete;
-	Framebuffer &operator=(Framebuffer &&) = delete;
+	Framebuffer(Framebuffer &&other)
+	: fbo(other.fbo)
+	, colorTex(other.colorTex)
+	, depthTex(other.depthTex)
+	, width(other.width)
+	, height(other.height)
+	{
+		other.fbo      = 0;
+		other.colorTex = 0;
+		other.depthTex = 0;
+		other.width    = 0;
+		other.height   = 0;
+	}
+
+	Framebuffer &operator=(Framebuffer &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		std::swap(fbo,      other.fbo);
+		std::swap(colorTex, other.colorTex);
+		std::swap(depthTex, other.depthTex);
+		std::swap(width,    other.width);
+		std::swap(height,   other.height);
+
+		return *this;
+	}
 
 
 	explicit Framebuffer(GLuint fbo_)
@@ -222,7 +247,7 @@ struct RendererImpl {
 		}
 	};
 
-	std::unordered_map<GLuint, std::unique_ptr<Framebuffer> > framebuffers;
+	std::unordered_map<GLuint, Framebuffer> framebuffers;
 	std::unordered_map<GLuint, std::unique_ptr<VertexShader> >    vertexShaders;
 	std::unordered_map<GLuint, std::unique_ptr<FragmentShader> >  fragmentShaders;
 	std::unordered_map<GLuint, std::unique_ptr<Shader> > shaders;
