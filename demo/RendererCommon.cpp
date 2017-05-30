@@ -71,8 +71,8 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 }
 
 
-RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
-	return impl->createRenderPass(desc);
+RenderPassHandle Renderer::createRenderPass(FramebufferHandle fbo, const RenderPassDesc &desc) {
+	return impl->createRenderPass(fbo, desc);
 }
 
 

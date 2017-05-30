@@ -48,7 +48,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc & /* des
 }
 
 
-RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc & /* desc */) {
+RenderPassHandle RendererImpl::createRenderPass(FramebufferHandle /* fbo */, const RenderPassDesc & /* desc */) {
 	return RenderPassHandle(0);
 }
 

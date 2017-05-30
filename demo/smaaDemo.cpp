@@ -452,12 +452,12 @@ void SMAADemo::initRender() {
 
 	createFramebuffers();
 
-	sceneRenderPass        = renderer.createRenderPass(RenderPassDesc());
-	finalRenderPass        = renderer.createRenderPass(RenderPassDesc());
-	fxaaRenderPass         = renderer.createRenderPass(RenderPassDesc());
-	smaaEdgesRenderPass    = renderer.createRenderPass(RenderPassDesc());
-	smaaWeightsRenderPass  = renderer.createRenderPass(RenderPassDesc());
-	smaaNeighborRenderPass = renderer.createRenderPass(RenderPassDesc());
+	sceneRenderPass        = renderer.createRenderPass(fbos[Framebuffers::MainRender],   RenderPassDesc());
+	finalRenderPass        = renderer.createRenderPass(fbos[Framebuffers::FinalRender],  RenderPassDesc());
+	fxaaRenderPass         = renderer.createRenderPass(fbos[Framebuffers::FinalRender],  RenderPassDesc());
+	smaaEdgesRenderPass    = renderer.createRenderPass(fbos[Framebuffers::Edges],        RenderPassDesc());
+	smaaWeightsRenderPass  = renderer.createRenderPass(fbos[Framebuffers::BlendWeights], RenderPassDesc());
+	smaaNeighborRenderPass = renderer.createRenderPass(fbos[Framebuffers::FinalRender],  RenderPassDesc());
 
 	PipelineDesc plDesc;
 	plDesc.depthWrite(false)

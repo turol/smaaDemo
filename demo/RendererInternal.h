@@ -219,7 +219,7 @@ struct RendererImpl {
 	FramebufferHandle    createFramebuffer(const FramebufferDesc &desc);
 	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
 	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);
-	RenderPassHandle     createRenderPass(const RenderPassDesc &desc);
+	RenderPassHandle     createRenderPass(FramebufferHandle fbo, const RenderPassDesc &desc);
 	PipelineHandle       createPipeline(const PipelineDesc &desc);
 	BufferHandle         createBuffer(uint32_t size, const void *contents);
 	BufferHandle         createEphemeralBuffer(uint32_t size, const void *contents);

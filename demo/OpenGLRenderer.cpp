@@ -591,7 +591,7 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 }
 
 
-RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc & /* desc */) {
+RenderPassHandle RendererImpl::createRenderPass(FramebufferHandle /* fbo */, const RenderPassDesc & /* desc */) {
 	return RenderPassHandle(0);
 }
 

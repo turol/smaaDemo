@@ -360,7 +360,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc & /* des
 }
 
 
-RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc & /* desc */) {
+RenderPassHandle RendererImpl::createRenderPass(FramebufferHandle /* fbo */, const RenderPassDesc & /* desc */) {
 	vk::RenderPassCreateInfo info;
 
 	STUBBED("depth attachment");
