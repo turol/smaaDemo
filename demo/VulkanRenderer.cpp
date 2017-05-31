@@ -103,6 +103,32 @@ static SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window, SDL_vulkanInstance 
 }
 
 
+vk::DeviceMemory RendererImpl::allocateMemory(uint32_t size, uint32_t /* align */, uint32_t typeBits) {
+	// TODO: allocate large chunks, subdivide as necessary
+	vk::MemoryAllocateInfo info;
+	info.allocationSize = size;
+
+	for (unsigned int i = 0; i < memoryProperties.memoryTypeCount; i++) {
+		// check if we can allocate this resource from this type
+		if (!(typeBits & (1 << i))) {
+			continue;
+		}
+
+		// consider only device-local types
+		if (!(memoryProperties.memoryTypes[i].propertyFlags & vk::MemoryPropertyFlagBits::eDeviceLocal)) {
+			continue;
+		}
+		printf("allocate from type %u\n", i);
+		info.memoryTypeIndex = i;
+		auto result = device.allocateMemory(info);
+		return result;
+	}
+
+	printf("failed to allocate %u bytes\n", size);
+	exit(1);
+}
+
+
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
 , savePreprocessedShaders(false)
@@ -209,7 +235,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		exit(1);
 	}
 
-	auto memoryProperties = physicalDevice.getMemoryProperties();
+	memoryProperties = physicalDevice.getMemoryProperties();
 	printf("%u memory types\n", memoryProperties.memoryTypeCount);
 	for (unsigned int i = 0; i < memoryProperties.memoryTypeCount; i++ ) {
 		printf(" %u  heap %u  %s\n", i, memoryProperties.memoryTypes[i].heapIndex, vk::to_string(memoryProperties.memoryTypes[i].propertyFlags).c_str());
@@ -325,6 +351,7 @@ RendererImpl::~RendererImpl() {
 
 	renderTargets.clearWith([this](RenderTarget &rt) {
 		this->device.destroyImage(rt.image);
+		this->device.freeMemory(rt.mem);
 	} );
 
 	device.destroyCommandPool(commandPool);
@@ -479,8 +506,8 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	printf("image memory alignment: %u\n", static_cast<unsigned int>(memReq.alignment));
 	printf("image memory type bits: 0x%x\n", memReq.memoryTypeBits);
 
-	STUBBED("allocate memory");
-
+	rt.mem = allocateMemory(memReq.size, memReq.alignment, memReq.memoryTypeBits);
+	device.bindImageMemory(rt.image, rt.mem, 0);
 
 	STUBBED("imageView");
 

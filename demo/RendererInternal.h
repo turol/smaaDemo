@@ -176,6 +176,8 @@ struct RenderPass {
 
 struct RenderTarget{
 	vk::Image     image;
+	// TODO: use one large allocation
+	vk::DeviceMemory  mem;
 
 	RenderTarget() {}
 
@@ -357,6 +359,7 @@ struct RendererImpl {
 	vk::PhysicalDeviceFeatures   deviceFeatures;
 	vk::Device                   device;
 	vk::SurfaceKHR               surface;
+	vk::PhysicalDeviceMemoryProperties memoryProperties;
 	uint32_t                           graphicsQueueIndex;
 	std::vector<vk::SurfaceFormatKHR>  surfaceFormats;
 	vk::SurfaceCapabilitiesKHR         surfaceCapabilities;
@@ -374,6 +377,9 @@ struct RendererImpl {
 	std::unordered_map<unsigned int, RenderPass>      renderPasses;
 
 	ResourceContainer<RenderTarget>  renderTargets;
+
+
+	vk::DeviceMemory allocateMemory(uint32_t size, uint32_t align, uint32_t typeBits);
 
 #endif   // RENDERER_VULKAN
 
