@@ -8,6 +8,13 @@
 #include <cstdio>
 
 
+#ifdef _MSC_VER
+#define fileno _fileno
+// TODO: we should not define macros starting with two underscores since those are reserved for the compiler
+#define __builtin_unreachable() assert(false)
+#endif
+
+
 // should be ifdeffed out on compilers which already have it (eg. VS2013)
 // http://isocpp.org/files/papers/N3656.txt
 #ifndef _MSC_VER

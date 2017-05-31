@@ -5,12 +5,6 @@
 #include "Utils.h"
 
 
-#ifdef _MSC_VER
-#define fileno _fileno
-#define __builtin_unreachable() assert(false)
-#endif
-
-
 std::vector<char> readTextFile(std::string filename) {
 	std::unique_ptr<FILE, FILEDeleter> file(fopen(filename.c_str(), "rb"));
 
