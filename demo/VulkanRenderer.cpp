@@ -209,6 +209,16 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		exit(1);
 	}
 
+	auto memoryProperties = physicalDevice.getMemoryProperties();
+	printf("%u memory types\n", memoryProperties.memoryTypeCount);
+	for (unsigned int i = 0; i < memoryProperties.memoryTypeCount; i++ ) {
+		printf(" %u  heap %u  %s\n", i, memoryProperties.memoryTypes[i].heapIndex, vk::to_string(memoryProperties.memoryTypes[i].propertyFlags).c_str());
+	}
+	printf("%u memory heaps\n", memoryProperties.memoryHeapCount);
+	for (unsigned int i = 0; i < memoryProperties.memoryHeapCount; i++ ) {
+		printf(" %u  size %lu  %s\n", i, memoryProperties.memoryHeaps[i].size, vk::to_string(memoryProperties.memoryHeaps[i].flags).c_str());
+	}
+
 	std::vector<vk::QueueFamilyProperties> queueProps = physicalDevice.getQueueFamilyProperties();
 	printf("%u queue families\n", static_cast<unsigned int>(queueProps.size()));
 
@@ -464,8 +474,15 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	RenderTarget &rt = result.first;
 	rt.image = device.createImage(info);
 
+	auto memReq = device.getImageMemoryRequirements(rt.image);
+	printf("image memory required: %u\n", static_cast<unsigned int>(memReq.size));
+	printf("image memory alignment: %u\n", static_cast<unsigned int>(memReq.alignment));
+	printf("image memory type bits: 0x%x\n", memReq.memoryTypeBits);
+
+	STUBBED("allocate memory");
+
+
 	STUBBED("imageView");
-	STUBBED("allocate memory?");
 
 	return result.second;
 }
