@@ -200,7 +200,13 @@ public:
 
 	~ResourceContainer() {}
 
-	std::pair<T &, unsigned int> add();
+	std::pair<T &, unsigned int> add() {
+		// TODO: something better, this breaks with remove()
+		unsigned int handle = resources.size() + 1;
+		auto result = resources.emplace(handle, T());
+		assert(result.second);
+		return std::make_pair(std::ref(result.first->second), handle);
+	}
 
 	T &add(unsigned int handle) {
 		auto result = resources.emplace(handle, T());
