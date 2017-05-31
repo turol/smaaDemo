@@ -235,6 +235,14 @@ public:
 	}
 
 	void clear();
+
+	template <typename F> void clearWith(F &&f) {
+		auto it = resources.begin();
+		while (it != resources.end()) {
+			f(it->second);
+			it = resources.erase(it);
+		}
+	}
 };
 
 
