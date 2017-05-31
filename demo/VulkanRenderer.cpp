@@ -313,6 +313,10 @@ RendererImpl::~RendererImpl() {
 		f.second.shaderModule = vk::ShaderModule();
 	}
 
+	renderTargets.clearWith([this](RenderTarget &rt) {
+		this->device.destroyImage(rt.image);
+	} );
+
 	device.destroyCommandPool(commandPool);
 
 	device.destroySwapchainKHR(swapchain);
@@ -405,14 +409,65 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc & /* desc */) {
 }
 
 
+static vk::Format vulkanFormat(Format format) {
+	switch (format) {
+	case Invalid:
+		assert(false);
+		return vk::Format::eUndefined;
+
+	case R8:
+		return vk::Format::eR8Unorm;
+
+	case RG8:
+		return vk::Format::eR8G8Unorm;
+
+	case RGB8:
+		return vk::Format::eR8G8B8Unorm;
+
+	case RGBA8:
+		return vk::Format::eR8G8B8A8Unorm;
+
+	case Depth16:
+		return vk::Format::eD16Unorm;
+
+	}
+
+	assert(false);
+	return vk::Format::eUndefined;
+}
+
+
 RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc) {
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
 	assert(desc.format_ != Invalid);
 
-	STUBBED("");
+	// TODO: use NV_dedicated_allocation when available
 
-	return 0;
+	vk::ImageCreateInfo info;
+	info.imageType   = vk::ImageType::e2D;
+	info.format      = vulkanFormat(desc.format_);
+	info.extent      = vk::Extent3D(desc.width_, desc.height_, 1);
+	info.mipLevels   = 1;
+	info.arrayLayers = 1;
+	// TODO: samples when multisampling
+	// TODO: usage should come from desc
+	vk::ImageUsageFlags flags(vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
+	if (desc.format_ == Depth16) {
+		flags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
+	} else {
+		flags |= vk::ImageUsageFlagBits::eColorAttachment;
+	}
+	info.usage       = flags;
+
+	auto result = renderTargets.add();
+	RenderTarget &rt = result.first;
+	rt.image = device.createImage(info);
+
+	STUBBED("imageView");
+	STUBBED("allocate memory?");
+
+	return result.second;
 }
 
 

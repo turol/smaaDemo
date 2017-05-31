@@ -174,6 +174,21 @@ struct RenderPass {
 };
 
 
+struct RenderTarget{
+	vk::Image     image;
+
+	RenderTarget() {}
+
+	RenderTarget(const RenderTarget &)            = delete;
+	RenderTarget &operator=(const RenderTarget &) = delete;
+
+	RenderTarget(RenderTarget &&)                 = default;
+	RenderTarget &operator=(RenderTarget &&)      = default;
+
+	~RenderTarget() {}
+};
+
+
 #elif defined(RENDERER_NULL)
 
 #else
@@ -357,6 +372,8 @@ struct RendererImpl {
 	std::unordered_map<unsigned int, VertexShader>  vertexShaders;
 	std::unordered_map<unsigned int, FragmentShader>  fragmentShaders;
 	std::unordered_map<unsigned int, RenderPass>      renderPasses;
+
+	ResourceContainer<RenderTarget>  renderTargets;
 
 #endif   // RENDERER_VULKAN
 
