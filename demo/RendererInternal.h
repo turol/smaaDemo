@@ -178,6 +178,7 @@ struct RenderTarget{
 	vk::Image     image;
 	// TODO: use one large allocation
 	vk::DeviceMemory  mem;
+	vk::ImageView imageView;
 
 	RenderTarget() {}
 

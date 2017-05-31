@@ -350,6 +350,7 @@ RendererImpl::~RendererImpl() {
 	}
 
 	renderTargets.clearWith([this](RenderTarget &rt) {
+		this->device.destroyImageView(rt.imageView);
 		this->device.destroyImage(rt.image);
 		this->device.freeMemory(rt.mem);
 	} );
@@ -509,7 +510,18 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	rt.mem = allocateMemory(memReq.size, memReq.alignment, memReq.memoryTypeBits);
 	device.bindImageMemory(rt.image, rt.mem, 0);
 
-	STUBBED("imageView");
+	vk::ImageViewCreateInfo viewInfo;
+	viewInfo.image    = rt.image;
+	viewInfo.viewType = vk::ImageViewType::e2D;
+	viewInfo.format   = info.format;
+	if (desc.format_ == Depth16) {
+		viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+	} else {
+		viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+	}
+	viewInfo.subresourceRange.levelCount = 1;
+	viewInfo.subresourceRange.layerCount = 1;
+	rt.imageView = device.createImageView(viewInfo);
 
 	return result.second;
 }
