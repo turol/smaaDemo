@@ -205,6 +205,7 @@ class SMAADemo {
 
 	PipelineHandle cubePipeline;
 	PipelineHandle imagePipeline;
+	PipelineHandle blitPipeline;
 	PipelineHandle guiPipeline;
 
 	RenderPassHandle sceneRenderPass;
@@ -306,6 +307,7 @@ SMAADemo::SMAADemo()
 , glDebug(false)
 , cubePipeline(0)
 , imagePipeline(0)
+, blitPipeline(0)
 , guiPipeline(0)
 , cubeVBO(0)
 , cubeIBO(0)
@@ -532,6 +534,13 @@ void SMAADemo::initRender() {
 	      .cullFaces(true);
 
 	imagePipeline = renderer.createPipeline(plDesc);
+
+	vertexShader   = renderer.createVertexShader("blit", macros);
+	fragmentShader = renderer.createFragmentShader("blit", macros);
+
+	plDesc.vertexShader(vertexShader)
+	      .fragmentShader(fragmentShader);
+	blitPipeline = renderer.createPipeline(plDesc);
 
 	macros.clear();
 
@@ -1083,8 +1092,9 @@ void SMAADemo::render() {
 
 	} else {
 		renderer.beginRenderPass(finalRenderPass, fbos[Framebuffers::FinalRender]);
-		// TODO: not necessary?
-		renderer.blitFBO(fbos[Framebuffers::MainRender], fbos[Framebuffers::FinalRender]);
+		renderer.bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::MainColor], linearSampler);
+		renderer.bindPipeline(blitPipeline);
+		renderer.draw(0, 3);
 		drawGUI(elapsed);
 		renderer.endRenderPass();
 	}
