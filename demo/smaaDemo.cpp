@@ -226,14 +226,12 @@ class SMAADemo {
 	AAMethod::AAMethod aaMethod;
 
 	std::array<PipelineHandle, maxFXAAQuality> fxaaPipelines;
-	RenderPassHandle fxaaRenderPass;
 
 	std::array<PipelineHandle, maxSMAAQuality> smaaEdgePipelines;
 	std::array<PipelineHandle, maxSMAAQuality> smaaBlendWeightPipelines;
 	std::array<PipelineHandle, maxSMAAQuality> smaaNeighborPipelines;
 	RenderPassHandle smaaEdgesRenderPass;
 	RenderPassHandle smaaWeightsRenderPass;
-	RenderPassHandle smaaNeighborRenderPass;
 	TextureHandle areaTex;
 	TextureHandle searchTex;
 
@@ -456,10 +454,8 @@ void SMAADemo::initRender() {
 
 	sceneRenderPass        = renderer.createRenderPass(fbos[Framebuffers::MainRender],   RenderPassDesc());
 	finalRenderPass        = renderer.createRenderPass(fbos[Framebuffers::FinalRender],  RenderPassDesc());
-	fxaaRenderPass         = renderer.createRenderPass(fbos[Framebuffers::FinalRender],  RenderPassDesc());
 	smaaEdgesRenderPass    = renderer.createRenderPass(fbos[Framebuffers::Edges],        RenderPassDesc());
 	smaaWeightsRenderPass  = renderer.createRenderPass(fbos[Framebuffers::BlendWeights], RenderPassDesc());
-	smaaNeighborRenderPass = renderer.createRenderPass(fbos[Framebuffers::FinalRender],  RenderPassDesc());
 
 	PipelineDesc plDesc;
 	plDesc.depthWrite(false)
@@ -1036,7 +1032,7 @@ void SMAADemo::render() {
 
 		switch (aaMethod) {
 		case AAMethod::FXAA:
-			renderer.beginRenderPass(fxaaRenderPass, fbos[Framebuffers::FinalRender]);
+			renderer.beginRenderPass(finalRenderPass, fbos[Framebuffers::FinalRender]);
 			renderer.bindPipeline(fxaaPipelines[fxaaQuality]);
 			renderer.draw(0, 3);
 			drawGUI(elapsed);
@@ -1082,7 +1078,7 @@ void SMAADemo::render() {
 			renderer.bindTexture(TEXUNIT_BLEND, rendertargets[RenderTargets::BlendWeights], linearSampler);
 
 			renderer.bindPipeline(smaaNeighborPipelines[smaaQuality]);
-			renderer.beginRenderPass(smaaNeighborRenderPass, fbos[Framebuffers::FinalRender]);
+			renderer.beginRenderPass(finalRenderPass, fbos[Framebuffers::FinalRender]);
 			renderer.draw(0, 3);
 			drawGUI(elapsed);
 
