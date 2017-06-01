@@ -1089,7 +1089,7 @@ void SMAADemo::render() {
 		renderer.endRenderPass();
 	}
 
-	renderer.presentFrame(fbos[Framebuffers::FinalRender]);
+	renderer.presentFrame(rendertargets[RenderTargets::FinalRender]);
 
 }
 

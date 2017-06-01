@@ -512,7 +512,7 @@ public:
 
 	// rendering
 	void beginFrame();
-	void presentFrame(FramebufferHandle fbo);
+	void presentFrame(RenderTargetHandle image);
 
 	void beginRenderPass(RenderPassHandle pass, FramebufferHandle fbo);
 	void endRenderPass();

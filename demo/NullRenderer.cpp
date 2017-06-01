@@ -130,7 +130,7 @@ void RendererImpl::beginFrame() {
 }
 
 
-void RendererImpl::presentFrame(FramebufferHandle /* fbo */) {
+void RendererImpl::presentFrame(RenderTargetHandle /* rt */) {
 }
 
 

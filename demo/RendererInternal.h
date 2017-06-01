@@ -67,11 +67,13 @@ struct Shader {
 
 struct RenderTarget {
 	GLuint tex;
+	GLuint readFBO;
 	unsigned int width, height;
 
 
 	RenderTarget()
 	: tex(0)
+	, readFBO(0)
 	, width(0)
 	, height(0)
 	{
@@ -82,10 +84,12 @@ struct RenderTarget {
 
 	RenderTarget(RenderTarget &&other)
 	: tex(other.tex)
+	, readFBO(other.readFBO)
 	, width(other.width)
 	, height(other.height)
 	{
 		other.tex    = 0;
+		other.readFBO = 0;
 		other.width  = 0;
 		other.height = 0;
 	}
@@ -96,6 +100,7 @@ struct RenderTarget {
 		}
 
 		std::swap(tex,    other.tex);
+		std::swap(readFBO, other.readFBO);
 		std::swap(width,  other.width);
 		std::swap(height, other.height);
 
@@ -468,7 +473,7 @@ struct RendererImpl {
 	void recreateSwapchain(const SwapchainDesc &desc);
 
 	void beginFrame();
-	void presentFrame(FramebufferHandle fbo);
+	void presentFrame(RenderTargetHandle image);
 
 	void beginRenderPass(RenderPassHandle pass, FramebufferHandle fbo);
 	void endRenderPass();

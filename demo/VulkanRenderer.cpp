@@ -778,7 +778,7 @@ void RendererImpl::beginFrame() {
 }
 
 
-void RendererImpl::presentFrame(FramebufferHandle /* fbo */) {
+void RendererImpl::presentFrame(RenderTargetHandle /* rt */) {
 	// TODO: shouldn't recreate constantly...
 	vk::Fence fence = device.createFence(vk::FenceCreateInfo());
 

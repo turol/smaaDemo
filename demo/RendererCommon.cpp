@@ -146,8 +146,8 @@ void Renderer::beginFrame() {
 }
 
 
-void Renderer::presentFrame(FramebufferHandle fbo) {
-	impl->presentFrame(fbo);
+void Renderer::presentFrame(RenderTargetHandle image) {
+	impl->presentFrame(image);
 }
 
 

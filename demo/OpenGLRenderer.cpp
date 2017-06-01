@@ -149,6 +149,13 @@ RenderTarget::~RenderTarget() {
 	if (tex != 0) {
 		glDeleteTextures(1, &tex);
 		tex = 0;
+
+		if (readFBO != 0) {
+			glDeleteFramebuffers(1, &readFBO);
+			readFBO = 0;
+		}
+	} else {
+		assert(readFBO == 0);
 	}
 }
 
@@ -717,11 +724,11 @@ void RendererImpl::beginFrame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
-void RendererImpl::presentFrame(FramebufferHandle fbo) {
-	const auto &fb = framebuffers.get(fbo.handle);
+void RendererImpl::presentFrame(RenderTargetHandle image) {
+	auto &rt = renderTargets.get(image);
 
-	unsigned int width  = fb.width;
-	unsigned int height = fb.height;
+	unsigned int width  = rt.width;
+	unsigned int height = rt.height;
 
 	// TODO: only if enabled
 	glDisable(GL_SCISSOR_TEST);
@@ -733,7 +740,11 @@ void RendererImpl::presentFrame(FramebufferHandle fbo) {
 	assert(width > 0);
 	assert(height > 0);
 
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo.handle);
+	if (rt.readFBO == 0) {
+		glCreateFramebuffers(1, &rt.readFBO);
+		glNamedFramebufferTexture(rt.readFBO, GL_COLOR_ATTACHMENT0, rt.tex, 0);
+	}
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, rt.readFBO);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
 	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
