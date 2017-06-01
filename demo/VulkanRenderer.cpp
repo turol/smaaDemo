@@ -752,11 +752,6 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 }
 
 
-void RendererImpl::blitFBO(FramebufferHandle /* src */, FramebufferHandle /* dest */) {
-	STUBBED("");
-}
-
-
 void RendererImpl::beginFrame() {
 	// TODO: check how many frames are outstanding, wait if maximum
 	// here or in presentFrame?

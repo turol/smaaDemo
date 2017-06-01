@@ -136,11 +136,6 @@ void Renderer::recreateSwapchain(const SwapchainDesc &desc) {
 }
 
 
-void Renderer::blitFBO(FramebufferHandle src, FramebufferHandle dest) {
-	impl->blitFBO(src, dest);
-}
-
-
 void Renderer::beginFrame() {
 	impl->beginFrame();
 }

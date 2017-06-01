@@ -520,8 +520,6 @@ public:
 	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 	void setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 
-	void blitFBO(FramebufferHandle src, FramebufferHandle dest);
-
 	void bindPipeline(PipelineHandle pipeline);
 	void bindIndexBuffer(BufferHandle buffer, bool bit16);
 	void bindVertexBuffer(unsigned int binding, BufferHandle buffer);

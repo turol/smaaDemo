@@ -800,27 +800,6 @@ void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int w
 }
 
 
-void RendererImpl::blitFBO(FramebufferHandle src, FramebufferHandle dest) {
-	assert(src.handle);
-	assert(dest.handle);
-
-	const auto &srcFB = framebuffers.get(src.handle);
-	const auto &dstFB = framebuffers.get(dest.handle);
-
-	unsigned int srcWidth   = srcFB.width;
-	unsigned int srcHeight  = srcFB.height;
-	unsigned int dstWidth   = dstFB.width;
-	unsigned int dstHeight  = dstFB.height;
-
-	assert(srcWidth  == dstWidth);
-	assert(srcHeight == dstHeight);
-
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, src.handle);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest.handle);
-	glBlitFramebuffer(0, 0, srcWidth, srcHeight, 0, 0, dstWidth, dstHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-}
-
-
 void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	assert(pipeline != 0);
 
