@@ -145,6 +145,14 @@ Shader::~Shader() {
 }
 
 
+RenderTarget::~RenderTarget() {
+	if (tex != 0) {
+		glDeleteTextures(1, &tex);
+		tex = 0;
+	}
+}
+
+
 Framebuffer::~Framebuffer() {
 	if (colorTex != 0) {
 		glDeleteTextures(1, &colorTex);
@@ -380,6 +388,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 
 RendererImpl::~RendererImpl() {
+	renderTargets.clear();
+
 	glBindVertexArray(0);
 	glDeleteVertexArrays(1, &vao);
 
@@ -569,29 +579,35 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	}
 
 	const auto &colorDesc = renderTargets[desc.colors_[0]];
-	assert(colorDesc.width_ > 0);
-	assert(colorDesc.height_ > 0);
-	fb.width  = colorDesc.width_;
-	fb.height = colorDesc.height_;
+	assert(fb.colorTex == colorDesc.tex);
+	assert(colorDesc.width > 0);
+	assert(colorDesc.height > 0);
+	fb.width  = colorDesc.width;
+	fb.height = colorDesc.height;
 
 	return FramebufferHandle(fbo);
 }
 
 
 RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc) {
-	GLuint rt = 0;
+	GLuint id = 0;
 
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
 	assert(desc.format_ != Invalid);
 
-	glCreateTextures(GL_TEXTURE_2D, 1, &rt);
-	glTextureStorage2D(rt, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
-	glTextureParameteri(rt, GL_TEXTURE_MAX_LEVEL, 0);
+	glCreateTextures(GL_TEXTURE_2D, 1, &id);
+	glTextureStorage2D(id, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
+	glTextureParameteri(id, GL_TEXTURE_MAX_LEVEL, 0);
 
-	renderTargets.emplace(rt, desc);
+	RenderTarget rt;
+	rt.tex    = id;
+	rt.width  = desc.width_;
+	rt.height = desc.height_;
 
-	return rt;
+	renderTargets.emplace(id, std::move(rt));
+
+	return id;
 }
 
 
@@ -642,8 +658,10 @@ void RendererImpl::deleteFramebuffer(FramebufferHandle fbo) {
 }
 
 
-void RendererImpl::deleteRenderTarget(RenderTargetHandle &) {
-	// TODO...
+void RendererImpl::deleteRenderTarget(RenderTargetHandle &rt) {
+	auto it = renderTargets.find(rt);
+	assert(it != renderTargets.end());
+	renderTargets.erase(it);
 }
 
 

@@ -65,6 +65,47 @@ struct Shader {
 };
 
 
+struct RenderTarget {
+	GLuint tex;
+	unsigned int width, height;
+
+
+	RenderTarget()
+	: tex(0)
+	, width(0)
+	, height(0)
+	{
+	}
+
+	RenderTarget(const RenderTarget &)            = delete;
+	RenderTarget &operator=(const RenderTarget &) = delete;
+
+	RenderTarget(RenderTarget &&other)
+	: tex(other.tex)
+	, width(other.width)
+	, height(other.height)
+	{
+		other.tex    = 0;
+		other.width  = 0;
+		other.height = 0;
+	}
+
+	RenderTarget &operator=(RenderTarget &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		std::swap(tex,    other.tex);
+		std::swap(width,  other.width);
+		std::swap(height, other.height);
+
+		return *this;
+	};
+
+	~RenderTarget();
+};
+
+
 struct Framebuffer {
 	GLuint fbo;
 	GLuint colorTex;
@@ -332,7 +373,7 @@ struct RendererImpl {
 	std::unordered_map<GLuint, std::unique_ptr<Shader> > shaders;
 	std::unordered_map<uint32_t, Pipeline>                        pipelines;
 
-	std::unordered_map<RenderTargetHandle, RenderTargetDesc> renderTargets;
+	std::unordered_map<RenderTargetHandle, RenderTarget>          renderTargets;
 
 	std::vector<BufferHandle> ephemeralBuffers;
 
