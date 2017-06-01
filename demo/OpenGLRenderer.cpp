@@ -385,7 +385,13 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 
 RendererImpl::~RendererImpl() {
+	framebuffers.clear();
 	renderTargets.clear();
+
+	pipelines.clear();
+	shaders.clear();
+	vertexShaders.clear();
+	fragmentShaders.clear();
 
 	glBindVertexArray(0);
 	glDeleteVertexArrays(1, &vao);
