@@ -566,24 +566,24 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	Framebuffer &fb = framebuffers.add(fbo);
 	fb.fbo = fbo;
 
-	auto it = renderTargets.find(desc.colors_[0]);
-	assert(it != renderTargets.end());
+	auto &colorRT = renderTargets.get(desc.colors_[0]);
 
-	fb.colorTex = desc.colors_[0];
+	fb.colorTex = colorRT.tex;
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, fb.colorTex, 0);
 	assert(desc.colors_[1] == 0);
 
 	if (desc.depthStencil_ != 0) {
-		fb.depthTex = desc.depthStencil_;
+		auto &depthRT = renderTargets.get(desc.depthStencil_);
+		fb.depthTex = depthRT.tex;
+		assert(colorRT.width  == depthRT.width);
+		assert(colorRT.height == depthRT.height);
 		glNamedFramebufferTexture(fbo, GL_DEPTH_ATTACHMENT, fb.depthTex, 0);
 	}
 
-	const auto &colorDesc = renderTargets[desc.colors_[0]];
-	assert(fb.colorTex == colorDesc.tex);
-	assert(colorDesc.width > 0);
-	assert(colorDesc.height > 0);
-	fb.width  = colorDesc.width;
-	fb.height = colorDesc.height;
+	assert(colorRT.width > 0);
+	assert(colorRT.height > 0);
+	fb.width  = colorRT.width;
+	fb.height = colorRT.height;
 
 	return FramebufferHandle(fbo);
 }
@@ -600,12 +600,10 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	glTextureStorage2D(id, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
 	glTextureParameteri(id, GL_TEXTURE_MAX_LEVEL, 0);
 
-	RenderTarget rt;
+	RenderTarget &rt = renderTargets.add(id);
 	rt.tex    = id;
 	rt.width  = desc.width_;
 	rt.height = desc.height_;
-
-	renderTargets.emplace(id, std::move(rt));
 
 	return id;
 }
@@ -659,9 +657,7 @@ void RendererImpl::deleteFramebuffer(FramebufferHandle fbo) {
 
 
 void RendererImpl::deleteRenderTarget(RenderTargetHandle &rt) {
-	auto it = renderTargets.find(rt);
-	assert(it != renderTargets.end());
-	renderTargets.erase(it);
+	renderTargets.remove(rt);
 }
 
 

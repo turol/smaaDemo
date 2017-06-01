@@ -293,7 +293,9 @@ public:
 		resources.erase(it);
 	}
 
-	void clear();
+	void clear() {
+		resources.clear();
+	}
 
 	template <typename F> void clearWith(F &&f) {
 		auto it = resources.begin();
@@ -373,7 +375,7 @@ struct RendererImpl {
 	std::unordered_map<GLuint, std::unique_ptr<Shader> > shaders;
 	std::unordered_map<uint32_t, Pipeline>                        pipelines;
 
-	std::unordered_map<RenderTargetHandle, RenderTarget>          renderTargets;
+	ResourceContainer<RenderTarget> renderTargets;
 
 	std::vector<BufferHandle> ephemeralBuffers;
 
