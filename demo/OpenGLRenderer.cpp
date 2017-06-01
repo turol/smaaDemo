@@ -161,16 +161,6 @@ RenderTarget::~RenderTarget() {
 
 
 Framebuffer::~Framebuffer() {
-	if (colorTex != 0) {
-		glDeleteTextures(1, &colorTex);
-		colorTex = 0;
-	}
-
-	if (depthTex != 0) {
-		glDeleteTextures(1, &depthTex);
-		depthTex = 0;
-	}
-
 	if (fbo != 0) {
 		glDeleteFramebuffers(1, &fbo);
 		fbo = 0;
