@@ -774,7 +774,11 @@ void RendererImpl::beginRenderPass(RenderPassHandle /* pass */, FramebufferHandl
 		mask |= GL_DEPTH_BUFFER_BIT;
 	}
 
-	bindFramebuffer(fbo);
+	assert(fbo.handle);
+	assert(fb.width > 0);
+	assert(fb.height > 0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo.handle);
 	glClear(mask);
 }
 
@@ -814,18 +818,6 @@ void RendererImpl::blitFBO(FramebufferHandle src, FramebufferHandle dest) {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, src.handle);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dest.handle);
 	glBlitFramebuffer(0, 0, srcWidth, srcHeight, 0, 0, dstWidth, dstHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-}
-
-
-void RendererImpl::bindFramebuffer(FramebufferHandle fbo) {
-	assert(fbo.handle);
-
-	const auto &fb = framebuffers.get(fbo.handle);
-
-	assert(fb.width > 0);
-	assert(fb.height > 0);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo.handle);
 }
 
 

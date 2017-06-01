@@ -134,20 +134,16 @@ void RendererImpl::presentFrame(RenderTargetHandle /* rt */) {
 }
 
 
-void RendererImpl::beginRenderPass(RenderPassHandle /* pass */, FramebufferHandle /* fbo */) {
+void RendererImpl::beginRenderPass(RenderPassHandle /* pass */, FramebufferHandle fbo) {
 	assert(!inRenderPass);
 	inRenderPass = true;
+	assert(fbo.handle);
 }
 
 
 void RendererImpl::endRenderPass() {
 	assert(inRenderPass);
 	inRenderPass = false;
-}
-
-
-void RendererImpl::bindFramebuffer(FramebufferHandle fbo) {
-	assert(fbo.handle);
 }
 
 

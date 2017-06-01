@@ -161,11 +161,6 @@ void Renderer::endRenderPass() {
 }
 
 
-void Renderer::bindFramebuffer(FramebufferHandle fbo) {
-	impl->bindFramebuffer(fbo);
-}
-
-
 void Renderer::bindPipeline(PipelineHandle pipeline) {
 	impl->bindPipeline(pipeline);
 }

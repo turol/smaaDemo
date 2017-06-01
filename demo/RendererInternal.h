@@ -483,7 +483,6 @@ struct RendererImpl {
 
 	void blitFBO(FramebufferHandle src, FramebufferHandle dest);
 
-	void bindFramebuffer(FramebufferHandle fbo);
 	void bindPipeline(PipelineHandle pipeline);
 	void bindIndexBuffer(BufferHandle buffer, bool bit16);
 	void bindVertexBuffer(unsigned int binding, BufferHandle buffer);
