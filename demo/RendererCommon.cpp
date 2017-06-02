@@ -66,13 +66,8 @@ BufferHandle Renderer::createEphemeralBuffer(uint32_t size, const void *contents
 }
 
 
-FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
-	return impl->createFramebuffer(desc);
-}
-
-
-RenderPassHandle Renderer::createRenderPass(FramebufferHandle fbo, const RenderPassDesc &desc) {
-	return impl->createRenderPass(fbo, desc);
+RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
+	return impl->createRenderPass(desc);
 }
 
 
@@ -111,11 +106,6 @@ void Renderer::deleteBuffer(BufferHandle handle) {
 }
 
 
-void Renderer::deleteFramebuffer(FramebufferHandle fbo) {
-	impl->deleteFramebuffer(fbo);
-}
-
-
 void Renderer::deleteRenderTarget(RenderTargetHandle &rt) {
 	impl->deleteRenderTarget(rt);
 }
@@ -146,8 +136,8 @@ void Renderer::presentFrame(RenderTargetHandle image) {
 }
 
 
-void Renderer::beginRenderPass(RenderPassHandle pass, FramebufferHandle fbo) {
-	impl->beginRenderPass(pass, fbo);
+void Renderer::beginRenderPass(RenderPassHandle pass) {
+	impl->beginRenderPass(pass);
 }
 
 

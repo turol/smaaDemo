@@ -35,28 +35,28 @@ struct VertexShader;
 
 typedef uint32_t BufferHandle;
 
-class FramebufferHandle {
+class RenderPassHandle {
 	uint32_t handle;
 
 	friend struct RendererImpl;
 
-	explicit FramebufferHandle(uint32_t h)
+	explicit RenderPassHandle(uint32_t h)
 	: handle(h)
 	{
 	}
 
 public:
 
-	FramebufferHandle()
+	RenderPassHandle()
 	: handle(0)
 	{
 	}
 
-	FramebufferHandle(const FramebufferHandle &) = default;
-	FramebufferHandle(FramebufferHandle &&)      = default;
+	RenderPassHandle(const RenderPassHandle &) = default;
+	RenderPassHandle(RenderPassHandle &&)      = default;
 
-	FramebufferHandle &operator=(const FramebufferHandle &) = default;
-	FramebufferHandle &operator=(FramebufferHandle &&)      = default;
+	RenderPassHandle &operator=(const RenderPassHandle &) = default;
+	RenderPassHandle &operator=(RenderPassHandle &&)      = default;
 
 
 
@@ -66,7 +66,6 @@ public:
 };
 
 typedef uint32_t PipelineHandle;
-typedef uint32_t RenderPassHandle;
 typedef uint32_t RenderTargetHandle;
 typedef uint32_t SamplerHandle;
 
@@ -197,41 +196,6 @@ private:
 };
 
 
-struct FramebufferDesc {
-	FramebufferDesc()
-	: depthStencil_(0)
-	{
-		std::fill(colors_.begin(), colors_.end(), 0);
-	}
-
-	~FramebufferDesc() { }
-
-	FramebufferDesc(const FramebufferDesc &) = default;
-	FramebufferDesc(FramebufferDesc &&)      = default;
-
-	FramebufferDesc &operator=(const FramebufferDesc &) = default;
-	FramebufferDesc &operator=(FramebufferDesc &&)      = default;
-
-	FramebufferDesc &depthStencil(RenderTargetHandle ds) {
-		depthStencil_ = ds;
-		return *this;
-	}
-
-	FramebufferDesc &color(unsigned int index, RenderTargetHandle c) {
-		assert(index < MAX_COLOR_RENDERTARGETS);
-		colors_[index] = c;
-		return *this;
-	}
-
-private:
-
-	RenderTargetHandle depthStencil_;
-	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS> colors_;
-
-	friend struct RendererImpl;
-};
-
-
 struct TextureDesc {
 	TextureDesc()
 	: width_(0)
@@ -336,7 +300,38 @@ private:
 };
 
 
-class RenderPassDesc {
+struct RenderPassDesc {
+	RenderPassDesc()
+	: depthStencil_(0)
+	{
+		std::fill(colors_.begin(), colors_.end(), 0);
+	}
+
+	~RenderPassDesc() { }
+
+	RenderPassDesc(const RenderPassDesc &) = default;
+	RenderPassDesc(RenderPassDesc &&)      = default;
+
+	RenderPassDesc &operator=(const RenderPassDesc &) = default;
+	RenderPassDesc &operator=(RenderPassDesc &&)      = default;
+
+	RenderPassDesc &depthStencil(RenderTargetHandle ds) {
+		depthStencil_ = ds;
+		return *this;
+	}
+
+	RenderPassDesc &color(unsigned int index, RenderTargetHandle c) {
+		assert(index < MAX_COLOR_RENDERTARGETS);
+		colors_[index] = c;
+		return *this;
+	}
+
+private:
+
+	RenderTargetHandle depthStencil_;
+	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS> colors_;
+
+	friend struct RendererImpl;
 };
 
 
@@ -488,10 +483,9 @@ public:
 
 
 	RenderTargetHandle  createRenderTarget(const RenderTargetDesc &desc);
-	FramebufferHandle   createFramebuffer(const FramebufferDesc &desc);
 	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
 	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);
-	RenderPassHandle     createRenderPass(FramebufferHandle fbo, const RenderPassDesc &desc);
+	RenderPassHandle     createRenderPass(const RenderPassDesc &desc);
 	PipelineHandle      createPipeline(const PipelineDesc &desc);
 	// TODO: add buffer usage flags
 	BufferHandle        createBuffer(uint32_t size, const void *contents);
@@ -502,7 +496,7 @@ public:
 	TextureHandle       createTexture(const TextureDesc &desc);
 
 	void deleteBuffer(BufferHandle handle);
-	void deleteFramebuffer(FramebufferHandle fbo);
+	void deleteFramebuffer(RenderPassHandle fbo);
 	void deleteSampler(SamplerHandle handle);
 	void deleteTexture(TextureHandle handle);
 	void deleteRenderTarget(RenderTargetHandle &fbo);
@@ -514,7 +508,7 @@ public:
 	void beginFrame();
 	void presentFrame(RenderTargetHandle image);
 
-	void beginRenderPass(RenderPassHandle pass, FramebufferHandle fbo);
+	void beginRenderPass(RenderPassHandle pass);
 	void endRenderPass();
 
 	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);

@@ -395,14 +395,7 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 }
 
 
-FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc & /* desc */) {
-	STUBBED("");
-
-	return FramebufferHandle(0);
-}
-
-
-RenderPassHandle RendererImpl::createRenderPass(FramebufferHandle /* fbo */, const RenderPassDesc & /* desc */) {
+RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc & /* desc */) {
 	vk::RenderPassCreateInfo info;
 
 	STUBBED("depth attachment");
@@ -630,7 +623,7 @@ void RendererImpl::deleteBuffer(BufferHandle /* handle */) {
 }
 
 
-void RendererImpl::deleteFramebuffer(FramebufferHandle /* fbo */) {
+void RendererImpl::deleteRenderPass(RenderPassHandle /* pass */) {
 	STUBBED("");
 }
 
@@ -852,11 +845,9 @@ void RendererImpl::presentFrame(RenderTargetHandle /* rt */) {
 }
 
 
-void RendererImpl::beginRenderPass(RenderPassHandle /* pass */, FramebufferHandle fbo) {
+void RendererImpl::beginRenderPass(RenderPassHandle /* pass */) {
 	assert(!inRenderPass);
 	inRenderPass = true;
-
-	assert(fbo.handle);
 
 	STUBBED("");
 }

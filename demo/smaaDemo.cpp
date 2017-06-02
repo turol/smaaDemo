@@ -181,19 +181,6 @@ namespace RenderTargets {
 }  // namespace RenderTargets
 
 
-namespace Framebuffers {
-
-	enum Framebuffers {
-		  MainRender
-		, Edges
-		, BlendWeights
-		, FinalRender
-		, Count
-	};
-
-}  // namespace Framebuffers
-
-
 class SMAADemo {
 	unsigned int windowWidth, windowHeight;
 	bool vsync;
@@ -220,7 +207,6 @@ class SMAADemo {
 	unsigned int cubePower;
 
 	std::array<RenderTargetHandle, RenderTargets::Count> rendertargets;
-	std::array<FramebufferHandle, Framebuffers::Count> fbos;
 
 	bool antialiasing;
 	AAMethod::AAMethod aaMethod;
@@ -452,11 +438,6 @@ void SMAADemo::initRender() {
 
 	createFramebuffers();
 
-	sceneRenderPass        = renderer.createRenderPass(fbos[Framebuffers::MainRender],   RenderPassDesc());
-	finalRenderPass        = renderer.createRenderPass(fbos[Framebuffers::FinalRender],  RenderPassDesc());
-	smaaEdgesRenderPass    = renderer.createRenderPass(fbos[Framebuffers::Edges],        RenderPassDesc());
-	smaaWeightsRenderPass  = renderer.createRenderPass(fbos[Framebuffers::BlendWeights], RenderPassDesc());
-
 	PipelineDesc plDesc;
 	plDesc.depthWrite(false)
 	      .depthTest(false)
@@ -660,11 +641,8 @@ void SMAADemo::initRender() {
 
 
 void SMAADemo::createFramebuffers()	{
-	if (fbos[0]) {
-		for (unsigned int i = 0; i < Framebuffers::Count; i++) {
-			assert(fbos[i]);
-			renderer.deleteFramebuffer(fbos[i]);
-		}
+	if (rendertargets[0]) {
+		// TODO: delete render passes
 
 		for (unsigned int i = 0; i < RenderTargets::Count; i++) {
 			assert(rendertargets[i]);
@@ -683,23 +661,23 @@ void SMAADemo::createFramebuffers()	{
 	rtDesc.format(Depth16);
 	rendertargets[RenderTargets::MainDepth] = renderer.createRenderTarget(rtDesc);
 
-	FramebufferDesc fbDesc;
-	fbDesc.depthStencil(rendertargets[RenderTargets::MainDepth]).color(0, rendertargets[RenderTargets::MainColor]);
-	fbos[Framebuffers::MainRender] = renderer.createFramebuffer(fbDesc);
+	RenderPassDesc rpDesc;
+	rpDesc.depthStencil(rendertargets[RenderTargets::MainDepth]).color(0, rendertargets[RenderTargets::MainColor]);
+	sceneRenderPass = renderer.createRenderPass(rpDesc);
 
-	fbDesc.depthStencil(0).color(0, rendertargets[RenderTargets::FinalRender]);
-	fbos[Framebuffers::FinalRender] = renderer.createFramebuffer(fbDesc);
+	rpDesc.depthStencil(0).color(0, rendertargets[RenderTargets::FinalRender]);
+	finalRenderPass = renderer.createRenderPass(rpDesc);
 
 	// SMAA edges texture and FBO
 	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8);
 	rendertargets[RenderTargets::Edges] = renderer.createRenderTarget(rtDesc);
-	fbDesc.depthStencil(0).color(0, rendertargets[RenderTargets::Edges]);
-	fbos[Framebuffers::Edges] = renderer.createFramebuffer(fbDesc);
+	rpDesc.depthStencil(0).color(0, rendertargets[RenderTargets::Edges]);
+	smaaEdgesRenderPass = renderer.createRenderPass(rpDesc);
 
 	// SMAA blending weights texture and FBO
 	rendertargets[RenderTargets::BlendWeights] = renderer.createRenderTarget(rtDesc);
-	fbDesc.depthStencil(0).color(0, rendertargets[RenderTargets::BlendWeights]);
-	fbos[Framebuffers::BlendWeights] = renderer.createFramebuffer(fbDesc);
+	rpDesc.depthStencil(0).color(0, rendertargets[RenderTargets::BlendWeights]);
+	smaaWeightsRenderPass = renderer.createRenderPass(rpDesc);
 }
 
 
@@ -988,7 +966,7 @@ void SMAADemo::render() {
 
 	renderer.setViewport(0, 0, windowWidth, windowHeight);
 
-	renderer.beginRenderPass(sceneRenderPass, fbos[Framebuffers::MainRender]);
+	renderer.beginRenderPass(sceneRenderPass);
 
 	if (activeScene == 0) {
 		if (rotateCamera) {
@@ -1032,7 +1010,7 @@ void SMAADemo::render() {
 
 		switch (aaMethod) {
 		case AAMethod::FXAA:
-			renderer.beginRenderPass(finalRenderPass, fbos[Framebuffers::FinalRender]);
+			renderer.beginRenderPass(finalRenderPass);
 			renderer.bindPipeline(fxaaPipelines[fxaaQuality]);
 			renderer.draw(0, 3);
 			drawGUI(elapsed);
@@ -1047,13 +1025,13 @@ void SMAADemo::render() {
 
 			if (debugMode == 1) {
 				// detect edges only
-				renderer.beginRenderPass(finalRenderPass, fbos[Framebuffers::FinalRender]);
+				renderer.beginRenderPass(finalRenderPass);
 				renderer.draw(0, 3);
 				drawGUI(elapsed);
 				renderer.endRenderPass();
 				break;
 			} else {
-				renderer.beginRenderPass(smaaEdgesRenderPass, fbos[Framebuffers::Edges]);
+				renderer.beginRenderPass(smaaEdgesRenderPass);
 				renderer.draw(0, 3);
 				renderer.endRenderPass();
 			}
@@ -1063,13 +1041,13 @@ void SMAADemo::render() {
 			renderer.bindPipeline(smaaBlendWeightPipelines[smaaQuality]);
 			if (debugMode == 2) {
 				// show blending weights
-				renderer.beginRenderPass(finalRenderPass, fbos[Framebuffers::FinalRender]);
+				renderer.beginRenderPass(finalRenderPass);
 				renderer.draw(0, 3);
 				drawGUI(elapsed);
 				renderer.endRenderPass();
 				break;
 			} else {
-				renderer.beginRenderPass(smaaWeightsRenderPass, fbos[Framebuffers::BlendWeights]);
+				renderer.beginRenderPass(smaaWeightsRenderPass);
 				renderer.draw(0, 3);
 				renderer.endRenderPass();
 			}
@@ -1078,7 +1056,7 @@ void SMAADemo::render() {
 			renderer.bindTexture(TEXUNIT_BLEND, rendertargets[RenderTargets::BlendWeights], linearSampler);
 
 			renderer.bindPipeline(smaaNeighborPipelines[smaaQuality]);
-			renderer.beginRenderPass(finalRenderPass, fbos[Framebuffers::FinalRender]);
+			renderer.beginRenderPass(finalRenderPass);
 			renderer.draw(0, 3);
 			drawGUI(elapsed);
 
@@ -1087,7 +1065,7 @@ void SMAADemo::render() {
 		}
 
 	} else {
-		renderer.beginRenderPass(finalRenderPass, fbos[Framebuffers::FinalRender]);
+		renderer.beginRenderPass(finalRenderPass);
 		renderer.bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::MainColor], linearSampler);
 		renderer.bindPipeline(blitPipeline);
 		renderer.draw(0, 3);

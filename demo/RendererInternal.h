@@ -111,7 +111,7 @@ struct RenderTarget {
 };
 
 
-struct Framebuffer {
+struct RenderPass {
 	GLuint fbo;
 	GLuint colorTex;
 	GLuint depthTex;
@@ -119,10 +119,10 @@ struct Framebuffer {
 	unsigned int width, height;
 
 
-	Framebuffer(const Framebuffer &) = delete;
-	Framebuffer &operator=(const Framebuffer &) = delete;
+	RenderPass(const RenderPass &) = delete;
+	RenderPass &operator=(const RenderPass &) = delete;
 
-	Framebuffer(Framebuffer &&other)
+	RenderPass(RenderPass &&other)
 	: fbo(other.fbo)
 	, colorTex(other.colorTex)
 	, depthTex(other.depthTex)
@@ -136,22 +136,9 @@ struct Framebuffer {
 		other.height   = 0;
 	}
 
-	Framebuffer &operator=(Framebuffer &&other) {
-		if (this == &other) {
-			return *this;
-		}
+	RenderPass &operator=(RenderPass &&other) = delete;
 
-		std::swap(fbo,      other.fbo);
-		std::swap(colorTex, other.colorTex);
-		std::swap(depthTex, other.depthTex);
-		std::swap(width,    other.width);
-		std::swap(height,   other.height);
-
-		return *this;
-	}
-
-
-	Framebuffer()
+	RenderPass()
 	: fbo(0)
 	, colorTex(0)
 	, depthTex(0)
@@ -161,7 +148,7 @@ struct Framebuffer {
 	}
 
 
-	~Framebuffer();
+	~RenderPass();
 };
 
 
@@ -374,7 +361,7 @@ struct RendererImpl {
 		}
 	};
 
-	ResourceContainer<Framebuffer> framebuffers;
+	ResourceContainer<RenderPass> renderPasses;
 	std::unordered_map<GLuint, std::unique_ptr<VertexShader> >    vertexShaders;
 	std::unordered_map<GLuint, std::unique_ptr<FragmentShader> >  fragmentShaders;
 	std::unordered_map<GLuint, std::unique_ptr<Shader> > shaders;
@@ -453,10 +440,9 @@ struct RendererImpl {
 
 
 	RenderTargetHandle   createRenderTarget(const RenderTargetDesc &desc);
-	FramebufferHandle    createFramebuffer(const FramebufferDesc &desc);
 	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
 	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);
-	RenderPassHandle     createRenderPass(FramebufferHandle fbo, const RenderPassDesc &desc);
+	RenderPassHandle     createRenderPass(const RenderPassDesc &desc);
 	PipelineHandle       createPipeline(const PipelineDesc &desc);
 	BufferHandle         createBuffer(uint32_t size, const void *contents);
 	BufferHandle         createEphemeralBuffer(uint32_t size, const void *contents);
@@ -464,7 +450,7 @@ struct RendererImpl {
 	TextureHandle        createTexture(const TextureDesc &desc);
 
 	void deleteBuffer(BufferHandle handle);
-	void deleteFramebuffer(FramebufferHandle fbo);
+	void deleteRenderPass(RenderPassHandle fbo);
 	void deleteSampler(SamplerHandle handle);
 	void deleteTexture(TextureHandle handle);
 	void deleteRenderTarget(RenderTargetHandle &fbo);
@@ -475,7 +461,7 @@ struct RendererImpl {
 	void beginFrame();
 	void presentFrame(RenderTargetHandle image);
 
-	void beginRenderPass(RenderPassHandle pass, FramebufferHandle fbo);
+	void beginRenderPass(RenderPassHandle pass);
 	void endRenderPass();
 
 	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);

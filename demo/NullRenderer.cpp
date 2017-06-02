@@ -43,12 +43,7 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 }
 
 
-FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc & /* desc */) {
-	return FramebufferHandle(0);
-}
-
-
-RenderPassHandle RendererImpl::createRenderPass(FramebufferHandle /* fbo */, const RenderPassDesc & /* desc */) {
+RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc & /* desc */) {
 	return RenderPassHandle(0);
 }
 
@@ -102,7 +97,7 @@ void RendererImpl::deleteBuffer(BufferHandle /* handle */) {
 }
 
 
-void RendererImpl::deleteFramebuffer(FramebufferHandle /* fbo */) {
+void RendererImpl::deleteRenderPass(RenderPassHandle /* fbo */) {
 }
 
 
@@ -130,10 +125,9 @@ void RendererImpl::presentFrame(RenderTargetHandle /* rt */) {
 }
 
 
-void RendererImpl::beginRenderPass(RenderPassHandle /* pass */, FramebufferHandle fbo) {
+void RendererImpl::beginRenderPass(RenderPassHandle /* pass */) {
 	assert(!inRenderPass);
 	inRenderPass = true;
-	assert(fbo.handle);
 }
 
 
