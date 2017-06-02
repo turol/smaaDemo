@@ -395,30 +395,70 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 }
 
 
-RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc & /* desc */) {
+RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	vk::RenderPassCreateInfo info;
-
-	STUBBED("depth attachment");
-	// TODO: multiple render targets
-	vk::AttachmentDescription attach;
-	STUBBED("get format from RenderPassDesc");
-	attach.format         = vk::Format::eR8G8B8A8Unorm;
-	attach.loadOp         = vk::AttachmentLoadOp::eClear;
-	attach.storeOp        = vk::AttachmentStoreOp::eStore;
-	attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
-	attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-	attach.initialLayout  = vk::ImageLayout::eColorAttachmentOptimal;
-	attach.finalLayout    = vk::ImageLayout::eShaderReadOnlyOptimal;
-
-	info.attachmentCount = 1;
-	info.pAttachments    = &attach;
-
 	vk::SubpassDescription subpass;
-	STUBBED("subpass description");
+
+	std::vector<vk::AttachmentDescription> attachments;
+	std::vector<vk::AttachmentReference> colorAttachments;
+
+	// TODO: multiple render targets
+	{
+		const auto &colorRT = renderTargets.get(desc.colors_[0]);
+		vk::ImageLayout layout = vk::ImageLayout::eColorAttachmentOptimal;
+
+		vk::AttachmentDescription attach;
+		attach.format         = colorRT.format;
+		// TODO: these should be customizable via RenderPassDesc
+		attach.loadOp         = vk::AttachmentLoadOp::eClear;
+		attach.storeOp        = vk::AttachmentStoreOp::eStore;
+		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
+		attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+		attach.initialLayout  = layout;
+		// TODO: finalLayout should be transfer dst for final render pass
+		attach.finalLayout    = vk::ImageLayout::eShaderReadOnlyOptimal;
+		attachments.push_back(attach);
+
+		vk::AttachmentReference ref;
+		ref.attachment = attachments.size() - 1;
+		ref.layout     = layout;
+		colorAttachments.push_back(ref);
+	}
+	subpass.colorAttachmentCount = colorAttachments.size();
+	subpass.pColorAttachments    = &colorAttachments[0];
+
+	vk::AttachmentReference depthAttachment;
+	if (desc.depthStencil_) {
+		const auto &depthRT = renderTargets.get(desc.depthStencil_);
+		vk::ImageLayout layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+
+		vk::AttachmentDescription attach;
+		attach.format         = depthRT.format;
+		// TODO: these should be customizable via RenderPassDesc
+		attach.loadOp         = vk::AttachmentLoadOp::eClear;
+		attach.storeOp        = vk::AttachmentStoreOp::eStore;
+		// TODO: stencil
+		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
+		attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+		attach.initialLayout  = layout;
+		attach.finalLayout    = vk::ImageLayout::eShaderReadOnlyOptimal;
+		attachments.push_back(attach);
+
+		depthAttachment.attachment = attachments.size() - 1;
+		depthAttachment.layout     = layout;
+		subpass.pDepthStencilAttachment = &depthAttachment;
+	}
+
+	info.attachmentCount = attachments.size();
+	info.pAttachments    = &attachments[0];
+
+	// no input attachments
+	// no resolved attachments (multisample TODO)
+	// no preserved attachments
 	info.subpassCount    = 1;
 	info.pSubpasses      = &subpass;
 
-	STUBBED("subpass dependencies");
+	// TODO: do we need (external) subpass dependencies?
 
 	auto result = device.createRenderPass(info);
 	RenderPass r;
@@ -428,6 +468,8 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc & /* desc *
 
 	auto temp = renderPasses.emplace(id, std::move(r));
 	assert(temp.second);
+
+	// TODO: Framebuffer
 
 	return RenderPassHandle(id);
 }

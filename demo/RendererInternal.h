@@ -194,6 +194,9 @@ struct FragmentShader {
 
 struct RenderPass {
 	vk::RenderPass renderPass;
+	// TODO: vk::FrameBuffer
+	// TODO: store info about attachments to allow tracking layout
+
 
 	RenderPass() {}
 
@@ -213,6 +216,8 @@ struct RenderTarget{
 	// TODO: use one large allocation
 	vk::DeviceMemory  mem;
 	vk::ImageView imageView;
+	// TODO: track current layout
+
 
 	RenderTarget() {}
 
