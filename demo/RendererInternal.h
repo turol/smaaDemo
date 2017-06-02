@@ -209,6 +209,7 @@ struct RenderPass {
 
 struct RenderTarget{
 	vk::Image     image;
+	vk::Format    format;
 	// TODO: use one large allocation
 	vk::DeviceMemory  mem;
 	vk::ImageView imageView;

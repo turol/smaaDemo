@@ -475,9 +475,10 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 
 	// TODO: use NV_dedicated_allocation when available
 
+	vk::Format format = vulkanFormat(desc.format_);
 	vk::ImageCreateInfo info;
 	info.imageType   = vk::ImageType::e2D;
-	info.format      = vulkanFormat(desc.format_);
+	info.format      = format;
 	info.extent      = vk::Extent3D(desc.width_, desc.height_, 1);
 	info.mipLevels   = 1;
 	info.arrayLayers = 1;
@@ -494,6 +495,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	auto result = renderTargets.add();
 	RenderTarget &rt = result.first;
 	rt.image = device.createImage(info);
+	rt.format = format;
 
 	auto memReq = device.getImageMemoryRequirements(rt.image);
 	printf("image memory required: %u\n", static_cast<unsigned int>(memReq.size));
@@ -506,7 +508,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	vk::ImageViewCreateInfo viewInfo;
 	viewInfo.image    = rt.image;
 	viewInfo.viewType = vk::ImageViewType::e2D;
-	viewInfo.format   = info.format;
+	viewInfo.format   = format;
 	if (desc.format_ == Depth16) {
 		viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
 	} else {
