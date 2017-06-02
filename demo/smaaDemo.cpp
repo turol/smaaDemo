@@ -455,18 +455,21 @@ void SMAADemo::initRender() {
         auto vertexShader   = renderer.createVertexShader("smaaEdge", macros);
         auto fragmentShader = renderer.createFragmentShader("smaaEdge", macros);
 
+		plDesc.renderPass(smaaEdgesRenderPass);
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
 		smaaEdgePipelines[i]       = renderer.createPipeline(plDesc);
 
 		vertexShader                = renderer.createVertexShader("smaaBlendWeight", macros);
 		fragmentShader              = renderer.createFragmentShader("smaaBlendWeight", macros);
+		plDesc.renderPass(smaaWeightsRenderPass);
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
 		smaaBlendWeightPipelines[i] = renderer.createPipeline(plDesc);
 
 		vertexShader                = renderer.createVertexShader("smaaNeighbor", macros);
 		fragmentShader              = renderer.createFragmentShader("smaaNeighbor", macros);
+		plDesc.renderPass(finalRenderPass);
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
 		smaaNeighborPipelines[i]   = renderer.createPipeline(plDesc);
@@ -481,6 +484,7 @@ void SMAADemo::initRender() {
 		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
 		auto vertexShader   = renderer.createVertexShader("fxaa", macros);
 		auto fragmentShader = renderer.createFragmentShader("fxaa", macros);
+		plDesc.renderPass(finalRenderPass);
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
 		fxaaPipelines[i] = renderer.createPipeline(plDesc);
@@ -494,6 +498,7 @@ void SMAADemo::initRender() {
 	cubePipeline = renderer.createPipeline(PipelineDesc()
 	                                        .vertexShader(vertexShader)
 	                                        .fragmentShader(fragmentShader)
+	                                        .renderPass(sceneRenderPass)
 	                                        .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
 	                                        .vertexBufferStride(ATTR_POS, sizeof(Vertex))
 	                                        .depthWrite(true)
@@ -504,6 +509,7 @@ void SMAADemo::initRender() {
 	vertexShader   = renderer.createVertexShader("image", macros);
 	fragmentShader = renderer.createFragmentShader("image", macros);
 
+	plDesc.renderPass(sceneRenderPass);
 	plDesc.vertexShader(vertexShader)
 	      .fragmentShader(fragmentShader);
 	plDesc.depthWrite(false)
@@ -515,6 +521,7 @@ void SMAADemo::initRender() {
 	vertexShader   = renderer.createVertexShader("blit", macros);
 	fragmentShader = renderer.createFragmentShader("blit", macros);
 
+	plDesc.renderPass(finalRenderPass);
 	plDesc.vertexShader(vertexShader)
 	      .fragmentShader(fragmentShader);
 	blitPipeline = renderer.createPipeline(plDesc);
@@ -523,6 +530,7 @@ void SMAADemo::initRender() {
 
 	vertexShader   = renderer.createVertexShader("gui", macros);
 	fragmentShader = renderer.createFragmentShader("gui", macros);
+	plDesc.renderPass(finalRenderPass);
 	plDesc.vertexShader(vertexShader)
 	      .fragmentShader(fragmentShader)
 	      .cullFaces(false)

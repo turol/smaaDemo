@@ -338,6 +338,7 @@ private:
 class PipelineDesc {
 	VertexShaderHandle vertexShader_;
 	FragmentShaderHandle fragmentShader_;
+	RenderPassHandle     renderPass_;
 	uint32_t vertexAttribMask;
 	bool depthWrite_;
 	bool depthTest_;
@@ -371,6 +372,11 @@ public:
 
 	PipelineDesc &fragmentShader(FragmentShaderHandle h) {
 		fragmentShader_ = h;
+		return *this;
+	}
+
+	PipelineDesc &renderPass(RenderPassHandle h) {
+		renderPass_ = h;
 		return *this;
 	}
 

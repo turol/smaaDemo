@@ -528,6 +528,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 
 	assert(desc.vertexShader_.handle != 0);
 	assert(desc.fragmentShader_.handle != 0);
+	assert(desc.renderPass_.handle != 0);
 
 	GLuint program = glCreateProgram();
 
@@ -796,6 +797,7 @@ void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int w
 
 void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	assert(pipeline != 0);
+	// TODO: make sure current renderpass matches the one in pipeline
 
 	auto it = pipelines.find(pipeline);
 	assert(it != pipelines.end());
