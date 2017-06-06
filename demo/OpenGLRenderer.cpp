@@ -942,10 +942,6 @@ void RendererImpl::bindTexture(unsigned int unit, TextureHandle tex, SamplerHand
 }
 
 
-void RendererImpl::bindStorageBuffer(unsigned int index, BufferHandle buffer) {
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, buffer);
-}
-
 void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	assert(inRenderPass);
 

@@ -171,11 +171,6 @@ void Renderer::bindTexture(unsigned int unit, TextureHandle tex, SamplerHandle s
 }
 
 
-void Renderer::bindStorageBuffer(unsigned int index, BufferHandle buffer) {
-	impl->bindStorageBuffer(index, buffer);
-}
-
-
 void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 	impl->setViewport(x, y, width, height);
 }

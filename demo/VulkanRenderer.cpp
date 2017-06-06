@@ -932,11 +932,6 @@ void RendererImpl::bindTexture(unsigned int /* unit */, TextureHandle /* tex */,
 }
 
 
-void RendererImpl::bindStorageBuffer(unsigned int /* index */, BufferHandle /* buffer */) {
-	STUBBED("");
-}
-
-
 void RendererImpl::setViewport(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
 	STUBBED("");
 }
