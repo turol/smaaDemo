@@ -477,6 +477,8 @@ struct RendererImpl {
 	void bindIndexBuffer(BufferHandle buffer, bool bit16);
 	void bindVertexBuffer(unsigned int binding, BufferHandle buffer);
 
+	void bindDescriptorSet(unsigned int index, const DescriptorLayout *layout, const void *data);
+
 	// TODO: replace with descriptor set stuff
 	void bindTexture(unsigned int unit, TextureHandle tex, SamplerHandle sampler);
 	void bindUniformBuffer(unsigned int index, BufferHandle buffer);

@@ -110,6 +110,22 @@ typedef uint32_t TextureHandle;
 typedef uint32_t UniformBufferHandle;
 
 
+enum DescriptorType {
+	  End
+	, UniformBuffer
+	, StorageBuffer
+	, Sampler
+	, Texture
+};
+
+
+struct DescriptorLayout {
+	DescriptorType  type;
+	unsigned int    offset;
+	unsigned int    index;
+};
+
+
 struct SwapchainDesc {
 	unsigned int width, height;
 	unsigned int numFrames;
@@ -523,6 +539,11 @@ public:
 	void bindPipeline(PipelineHandle pipeline);
 	void bindIndexBuffer(BufferHandle buffer, bool bit16);
 	void bindVertexBuffer(unsigned int binding, BufferHandle buffer);
+
+	void bindDescriptorSet(unsigned int index, const DescriptorLayout *layout, const void *data);
+	template <typename T> void bindDescriptorSet(unsigned int index, const T &data) {
+		bindDescriptorSet(index, T::layout, &data);
+	}
 
 	// TODO: replace with descriptor set stuff
 	void bindTexture(unsigned int unit, TextureHandle tex, SamplerHandle sampler);

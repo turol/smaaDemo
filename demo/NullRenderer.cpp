@@ -150,6 +150,10 @@ void RendererImpl::bindVertexBuffer(unsigned int /* binding */, BufferHandle /* 
 }
 
 
+void RendererImpl::bindDescriptorSet(unsigned int /* index */, const DescriptorLayout * /* layout */, const void * /* data_ */) {
+}
+
+
 void RendererImpl::bindTexture(unsigned int /* unit */, TextureHandle /* tex */, SamplerHandle /* sampler */) {
 }
 

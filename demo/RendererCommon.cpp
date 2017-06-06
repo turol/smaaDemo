@@ -161,6 +161,11 @@ void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 }
 
 
+void Renderer::bindDescriptorSet(unsigned int index, const DescriptorLayout *layout, const void *data) {
+	impl->bindDescriptorSet(index, layout, data);
+}
+
+
 void Renderer::bindTexture(unsigned int unit, TextureHandle tex, SamplerHandle sampler) {
 	impl->bindTexture(unit, tex, sampler);
 }

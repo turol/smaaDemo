@@ -897,6 +897,43 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 }
 
 
+void RendererImpl::bindDescriptorSet(unsigned int /* index */, const DescriptorLayout *layout, const void *data_) {
+	// TODO: get shader bindings from current pipeline, use index
+	const char *data = reinterpret_cast<const char *>(data_);
+	while (layout->type != End) {
+		switch (layout->type) {
+		case End:
+			// because we checked in loop condition
+			// TODO: should the exit condition be here?
+			assert(false);
+			break;
+
+		case UniformBuffer: {
+			// this is part of the struct, we know it's correctly aligned and right type
+			// FIXME: index is not right here
+			GLuint buffer = *reinterpret_cast<const BufferHandle *>(data + layout->offset);
+			glBindBufferBase(GL_UNIFORM_BUFFER, layout->index, buffer);
+		} break;
+
+		case StorageBuffer:
+			assert(false); // TODO: implement
+			break;
+
+		case Sampler:
+			assert(false); // TODO: implement
+			break;
+
+		case Texture:
+			assert(false); // TODO: implement
+			break;
+
+		}
+		layout++;
+	}
+	assert(layout->offset == 0);
+}
+
+
 void RendererImpl::bindTexture(unsigned int unit, TextureHandle tex, SamplerHandle sampler) {
 	glBindTextureUnit(unit, tex);
 	glBindSampler(unit, sampler);
