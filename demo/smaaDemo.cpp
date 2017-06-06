@@ -1061,40 +1061,42 @@ void SMAADemo::render() {
 			renderer.bindTexture(TEXUNIT_AREATEX, areaTex, linearSampler);
 			renderer.bindTexture(TEXUNIT_SEARCHTEX, searchTex, linearSampler);
 
-			if (debugMode == 1) {
-				// detect edges only
-				renderer.beginRenderPass(finalRenderPass);
-				renderer.draw(0, 3);
-				drawGUI(elapsed);
-				renderer.endRenderPass();
-				break;
-			} else {
+			// edges pass
 				renderer.beginRenderPass(smaaEdgesRenderPass);
 				renderer.draw(0, 3);
 				renderer.endRenderPass();
-			}
 
+			// blendweights pass
 			renderer.bindTexture(TEXUNIT_EDGES, rendertargets[RenderTargets::Edges], linearSampler);
 
 			renderer.bindPipeline(smaaBlendWeightPipelines[smaaQuality]);
-			if (debugMode == 2) {
-				// show blending weights
-				renderer.beginRenderPass(finalRenderPass);
-				renderer.draw(0, 3);
-				drawGUI(elapsed);
-				renderer.endRenderPass();
-				break;
-			} else {
 				renderer.beginRenderPass(smaaWeightsRenderPass);
 				renderer.draw(0, 3);
 				renderer.endRenderPass();
+
+			// final blending pass/debug pass
+				renderer.beginRenderPass(finalRenderPass);
+
+			switch (debugMode) {
+			case 0:
+				// full effect
+				renderer.bindTexture(TEXUNIT_BLEND, rendertargets[RenderTargets::BlendWeights], linearSampler);
+				renderer.bindPipeline(smaaNeighborPipelines[smaaQuality]);
+				break;
+
+			case 1:
+				// visualize edges
+				renderer.bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::Edges], linearSampler);
+				renderer.bindPipeline(blitPipeline);
+				break;
+
+			case 2:
+                // visualize blend weights
+				renderer.bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::BlendWeights], linearSampler);
+				renderer.bindPipeline(blitPipeline);
+				break;
+
 			}
-
-			// full effect
-			renderer.bindTexture(TEXUNIT_BLEND, rendertargets[RenderTargets::BlendWeights], linearSampler);
-
-			renderer.bindPipeline(smaaNeighborPipelines[smaaQuality]);
-			renderer.beginRenderPass(finalRenderPass);
 			renderer.draw(0, 3);
 			drawGUI(elapsed);
 
