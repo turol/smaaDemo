@@ -1040,7 +1040,6 @@ void SMAADemo::render() {
 		const auto &image = images[activeScene - 1];
 		renderer.bindTexture(TEXUNIT_COLOR, image.tex, nearestSampler);
 		renderer.draw(0, 3);
-		renderer.bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::MainColor], linearSampler);
 	}
 	renderer.endRenderPass();
 
