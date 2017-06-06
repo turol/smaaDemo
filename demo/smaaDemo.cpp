@@ -1062,20 +1062,20 @@ void SMAADemo::render() {
 			renderer.bindTexture(TEXUNIT_SEARCHTEX, searchTex, linearSampler);
 
 			// edges pass
-				renderer.beginRenderPass(smaaEdgesRenderPass);
-				renderer.draw(0, 3);
-				renderer.endRenderPass();
+			renderer.beginRenderPass(smaaEdgesRenderPass);
+			renderer.draw(0, 3);
+			renderer.endRenderPass();
 
 			// blendweights pass
 			renderer.bindTexture(TEXUNIT_EDGES, rendertargets[RenderTargets::Edges], linearSampler);
 
 			renderer.bindPipeline(smaaBlendWeightPipelines[smaaQuality]);
-				renderer.beginRenderPass(smaaWeightsRenderPass);
-				renderer.draw(0, 3);
-				renderer.endRenderPass();
+			renderer.beginRenderPass(smaaWeightsRenderPass);
+			renderer.draw(0, 3);
+			renderer.endRenderPass();
 
 			// final blending pass/debug pass
-				renderer.beginRenderPass(finalRenderPass);
+			renderer.beginRenderPass(finalRenderPass);
 
 			switch (debugMode) {
 			case 0:
