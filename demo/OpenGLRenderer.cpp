@@ -915,9 +915,11 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, const DescriptorL
 			glBindBufferBase(GL_UNIFORM_BUFFER, layout->index, buffer);
 		} break;
 
-		case StorageBuffer:
-			assert(false); // TODO: implement
-			break;
+		case StorageBuffer: {
+			GLuint buffer = *reinterpret_cast<const BufferHandle *>(data + layout->offset);
+			// FIXME: index is not right here
+			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, layout->index, buffer);
+		} break;
 
 		case Sampler:
 			assert(false); // TODO: implement

@@ -440,6 +440,19 @@ const DescriptorLayout GlobalDS::layout[] = {
 };
 
 
+struct CubeSceneDS {
+    BufferHandle instances;
+
+	static const DescriptorLayout layout[];
+};
+
+
+const DescriptorLayout CubeSceneDS::layout[] = {
+	  { StorageBuffer,  offsetof(CubeSceneDS, instances), 0 }
+	, { End,            0,                                0 }
+};
+
+
 void SMAADemo::initRender() {
 	RendererDesc desc;
 	desc.debug                = glDebug;
@@ -1011,8 +1024,9 @@ void SMAADemo::render() {
 		renderer.bindVertexBuffer(0, cubeVBO);
 		renderer.bindIndexBuffer(cubeIBO, false);
 
-		BufferHandle instanceSSBO = renderer.createEphemeralBuffer(sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0]);
-		renderer.bindStorageBuffer(0, instanceSSBO);
+		CubeSceneDS cubeDS;
+		cubeDS.instances = renderer.createEphemeralBuffer(sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0]);
+		renderer.bindDescriptorSet(1, cubeDS);
 
 		renderer.drawIndexedInstanced(3 * 2 * 6, cubes.size());
 	} else {
