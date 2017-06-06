@@ -932,11 +932,6 @@ void RendererImpl::bindTexture(unsigned int /* unit */, TextureHandle /* tex */,
 }
 
 
-void RendererImpl::bindUniformBuffer(unsigned int /* index */, BufferHandle /* buffer */) {
-	STUBBED("");
-}
-
-
 void RendererImpl::bindStorageBuffer(unsigned int /* index */, BufferHandle /* buffer */) {
 	STUBBED("");
 }

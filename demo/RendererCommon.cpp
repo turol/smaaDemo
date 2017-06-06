@@ -171,11 +171,6 @@ void Renderer::bindTexture(unsigned int unit, TextureHandle tex, SamplerHandle s
 }
 
 
-void Renderer::bindUniformBuffer(unsigned int index, BufferHandle buffer) {
-	impl->bindUniformBuffer(index, buffer);
-}
-
-
 void Renderer::bindStorageBuffer(unsigned int index, BufferHandle buffer) {
 	impl->bindStorageBuffer(index, buffer);
 }
