@@ -453,6 +453,21 @@ const DescriptorLayout CubeSceneDS::layout[] = {
 };
 
 
+struct ColorTexDS {
+	TextureHandle color;
+	SamplerHandle sampler;
+
+	static const DescriptorLayout layout[];
+};
+
+
+const DescriptorLayout ColorTexDS::layout[] = {
+	  { Texture,  offsetof(ColorTexDS, color),   TEXUNIT_COLOR }
+	, { Sampler,  offsetof(ColorTexDS, sampler), TEXUNIT_COLOR }
+	, { End,            0,                       0             }
+};
+
+
 void SMAADemo::initRender() {
 	RendererDesc desc;
 	desc.debug                = glDebug;
@@ -1038,24 +1053,29 @@ void SMAADemo::render() {
 
 		assert(activeScene - 1 < images.size());
 		const auto &image = images[activeScene - 1];
-		renderer.bindTexture(TEXUNIT_COLOR, image.tex, nearestSampler);
+		ColorTexDS colorDS;
+		colorDS.color   = image.tex;
+		colorDS.sampler = nearestSampler;
+		renderer.bindDescriptorSet(1, colorDS);
 		renderer.draw(0, 3);
 	}
 	renderer.endRenderPass();
 
 	if (antialiasing) {
-		renderer.bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::MainColor], linearSampler);
-
 		switch (aaMethod) {
-		case AAMethod::FXAA:
+		case AAMethod::FXAA: {
 			renderer.beginRenderPass(finalRenderPass);
 			renderer.bindPipeline(fxaaPipelines[fxaaQuality]);
+			ColorTexDS colorDS;
+			colorDS.color   = rendertargets[RenderTargets::MainColor];
+			colorDS.sampler = linearSampler;
+			renderer.bindDescriptorSet(1, colorDS);
 			renderer.draw(0, 3);
 			drawGUI(elapsed);
 			renderer.endRenderPass();
-			break;
+		} break;
 
-		case AAMethod::SMAA:
+		case AAMethod::SMAA: {
 			renderer.bindPipeline(smaaEdgePipelines[smaaQuality]);
 
 			renderer.bindTexture(TEXUNIT_AREATEX, areaTex, linearSampler);
@@ -1063,6 +1083,10 @@ void SMAADemo::render() {
 
 			// edges pass
 			renderer.beginRenderPass(smaaEdgesRenderPass);
+			ColorTexDS colorDS;
+			colorDS.color   = rendertargets[RenderTargets::MainColor];
+			colorDS.sampler = linearSampler;
+			renderer.bindDescriptorSet(1, colorDS);
 			renderer.draw(0, 3);
 			renderer.endRenderPass();
 
@@ -1080,19 +1104,22 @@ void SMAADemo::render() {
 			switch (debugMode) {
 			case 0:
 				// full effect
+				renderer.bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::MainColor], linearSampler);
 				renderer.bindTexture(TEXUNIT_BLEND, rendertargets[RenderTargets::BlendWeights], linearSampler);
 				renderer.bindPipeline(smaaNeighborPipelines[smaaQuality]);
 				break;
 
 			case 1:
 				// visualize edges
-				renderer.bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::Edges], linearSampler);
+				colorDS.color   = rendertargets[RenderTargets::Edges];
+				renderer.bindDescriptorSet(1, colorDS);
 				renderer.bindPipeline(blitPipeline);
 				break;
 
 			case 2:
                 // visualize blend weights
-				renderer.bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::BlendWeights], linearSampler);
+				colorDS.color   = rendertargets[RenderTargets::BlendWeights];
+				renderer.bindDescriptorSet(1, colorDS);
 				renderer.bindPipeline(blitPipeline);
 				break;
 
@@ -1101,7 +1128,7 @@ void SMAADemo::render() {
 			drawGUI(elapsed);
 
 			renderer.endRenderPass();
-			break;
+		} break;
 		}
 
 	} else {

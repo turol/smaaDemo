@@ -921,13 +921,16 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, const DescriptorL
 			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, layout->index, buffer);
 		} break;
 
-		case Sampler:
-			assert(false); // TODO: implement
-			break;
+		case Sampler: {
+			GLuint sampler = *reinterpret_cast<const SamplerHandle *>(data + layout->offset);
+			glBindSampler(layout->index, sampler);
+		} break;
 
-		case Texture:
-			assert(false); // TODO: implement
-			break;
+		case Texture: {
+			GLuint tex = *reinterpret_cast<const TextureHandle *>(data + layout->offset);
+			// FIXME: index is not right here
+			glBindTextureUnit(layout->index, tex);
+		} break;
 
 		}
 		layout++;
