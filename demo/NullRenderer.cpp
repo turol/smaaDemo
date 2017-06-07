@@ -154,10 +154,6 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, const DescriptorL
 }
 
 
-void RendererImpl::bindTexture(unsigned int /* unit */, TextureHandle /* tex */, SamplerHandle /* sampler */) {
-}
-
-
 void RendererImpl::setViewport(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
 }
 

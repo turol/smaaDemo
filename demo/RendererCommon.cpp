@@ -166,11 +166,6 @@ void Renderer::bindDescriptorSet(unsigned int index, const DescriptorLayout *lay
 }
 
 
-void Renderer::bindTexture(unsigned int unit, TextureHandle tex, SamplerHandle sampler) {
-	impl->bindTexture(unit, tex, sampler);
-}
-
-
 void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 	impl->setViewport(x, y, width, height);
 }

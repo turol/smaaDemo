@@ -939,12 +939,6 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, const DescriptorL
 }
 
 
-void RendererImpl::bindTexture(unsigned int unit, TextureHandle tex, SamplerHandle sampler) {
-	glBindTextureUnit(unit, tex);
-	glBindSampler(unit, sampler);
-}
-
-
 void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	assert(inRenderPass);
 
