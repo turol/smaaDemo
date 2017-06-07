@@ -491,6 +491,25 @@ const DescriptorLayout BlendWeightDS::layout[] = {
 };
 
 
+struct NeighborBlendDS {
+	TextureHandle color;
+	SamplerHandle colorSampler;
+	TextureHandle blendweights;
+	SamplerHandle blendweightSampler;
+
+	static const DescriptorLayout layout[];
+};
+
+
+const DescriptorLayout NeighborBlendDS::layout[] = {
+	  { Texture,  offsetof(NeighborBlendDS, color),              TEXUNIT_COLOR }
+	, { Sampler,  offsetof(NeighborBlendDS, colorSampler),       TEXUNIT_COLOR }
+	, { Texture,  offsetof(NeighborBlendDS, blendweights),       TEXUNIT_BLEND }
+	, { Sampler,  offsetof(NeighborBlendDS, blendweightSampler), TEXUNIT_BLEND }
+	, { End,      0,                                             0             }
+};
+
+
 void SMAADemo::initRender() {
 	RendererDesc desc;
 	desc.debug                = glDebug;
@@ -1131,8 +1150,13 @@ void SMAADemo::render() {
 			switch (debugMode) {
 			case 0:
 				// full effect
-				renderer.bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::MainColor], linearSampler);
-				renderer.bindTexture(TEXUNIT_BLEND, rendertargets[RenderTargets::BlendWeights], linearSampler);
+				NeighborBlendDS neighborBlendDS;
+				neighborBlendDS.color              = rendertargets[RenderTargets::MainColor];
+				neighborBlendDS.colorSampler       = linearSampler;
+				neighborBlendDS.blendweights       = rendertargets[RenderTargets::BlendWeights];
+				neighborBlendDS.blendweightSampler = linearSampler;
+				renderer.bindDescriptorSet(1, neighborBlendDS);
+
 				renderer.bindPipeline(smaaNeighborPipelines[smaaQuality]);
 				break;
 
