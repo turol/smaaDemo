@@ -10,5 +10,7 @@ layout (location = 0) out vec4 outColor;
 
 void main(void)
 {
-    outColor = texture(colorTex, texcoord);
+    vec4 color = texture(colorTex, texcoord);
+    color.w = dot(color.xyz, vec3(0.299, 0.587, 0.114));
+    outColor = color;
 }
