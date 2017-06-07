@@ -1184,8 +1184,11 @@ void SMAADemo::render() {
 
 	} else {
 		renderer.beginRenderPass(finalRenderPass);
-		renderer.bindTexture(TEXUNIT_COLOR, rendertargets[RenderTargets::MainColor], linearSampler);
 		renderer.bindPipeline(blitPipeline);
+		ColorTexDS colorDS;
+		colorDS.color   = rendertargets[RenderTargets::MainColor];
+		colorDS.sampler = linearSampler;
+		renderer.bindDescriptorSet(1, colorDS);
 		renderer.draw(0, 3);
 		drawGUI(elapsed);
 		renderer.endRenderPass();
@@ -1234,7 +1237,10 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		assert(drawData->TotalIdxCount >  0);
 
 		renderer.bindPipeline(guiPipeline);
-		renderer.bindTexture(TEXUNIT_COLOR, imguiFontsTex, linearSampler);
+		ColorTexDS colorDS;
+		colorDS.color   = imguiFontsTex;
+		colorDS.sampler = linearSampler;
+		renderer.bindDescriptorSet(1, colorDS);
 		// TODO: upload all buffers first, render after
 		// and one buffer each vertex/index
 
