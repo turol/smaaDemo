@@ -1078,9 +1078,6 @@ void SMAADemo::render() {
 		case AAMethod::SMAA: {
 			renderer.bindPipeline(smaaEdgePipelines[smaaQuality]);
 
-			renderer.bindTexture(TEXUNIT_AREATEX, areaTex, linearSampler);
-			renderer.bindTexture(TEXUNIT_SEARCHTEX, searchTex, linearSampler);
-
 			// edges pass
 			renderer.beginRenderPass(smaaEdgesRenderPass);
 			ColorTexDS colorDS;
@@ -1092,6 +1089,8 @@ void SMAADemo::render() {
 
 			// blendweights pass
 			renderer.bindTexture(TEXUNIT_EDGES, rendertargets[RenderTargets::Edges], linearSampler);
+			renderer.bindTexture(TEXUNIT_AREATEX, areaTex, linearSampler);
+			renderer.bindTexture(TEXUNIT_SEARCHTEX, searchTex, linearSampler);
 
 			renderer.bindPipeline(smaaBlendWeightPipelines[smaaQuality]);
 			renderer.beginRenderPass(smaaWeightsRenderPass);
