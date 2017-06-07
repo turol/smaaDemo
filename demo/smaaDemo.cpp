@@ -468,6 +468,29 @@ const DescriptorLayout ColorTexDS::layout[] = {
 };
 
 
+struct BlendWeightDS {
+	TextureHandle edgesTex;
+	SamplerHandle edgeSampler;
+	TextureHandle areaTex;
+	SamplerHandle areaSampler;
+	TextureHandle searchTex;
+	SamplerHandle searchSampler;
+
+	static const DescriptorLayout layout[];
+};
+
+
+const DescriptorLayout BlendWeightDS::layout[] = {
+	  { Texture,  offsetof(BlendWeightDS, edgesTex),      TEXUNIT_EDGES     }
+	, { Sampler,  offsetof(BlendWeightDS, edgeSampler),   TEXUNIT_EDGES     }
+	, { Texture,  offsetof(BlendWeightDS, areaTex),       TEXUNIT_AREATEX   }
+	, { Sampler,  offsetof(BlendWeightDS, areaSampler),   TEXUNIT_AREATEX   }
+	, { Texture,  offsetof(BlendWeightDS, searchTex),     TEXUNIT_SEARCHTEX }
+	, { Sampler,  offsetof(BlendWeightDS, searchSampler), TEXUNIT_SEARCHTEX }
+	, { End,            0,                                0                 }
+};
+
+
 void SMAADemo::initRender() {
 	RendererDesc desc;
 	desc.debug                = glDebug;
@@ -1088,9 +1111,14 @@ void SMAADemo::render() {
 			renderer.endRenderPass();
 
 			// blendweights pass
-			renderer.bindTexture(TEXUNIT_EDGES, rendertargets[RenderTargets::Edges], linearSampler);
-			renderer.bindTexture(TEXUNIT_AREATEX, areaTex, linearSampler);
-			renderer.bindTexture(TEXUNIT_SEARCHTEX, searchTex, linearSampler);
+			BlendWeightDS blendWeightDS;
+			blendWeightDS.edgesTex      = rendertargets[RenderTargets::Edges];
+			blendWeightDS.edgeSampler   = linearSampler;
+			blendWeightDS.areaTex       = areaTex;
+			blendWeightDS.areaSampler   = linearSampler;
+			blendWeightDS.searchTex     = searchTex;
+			blendWeightDS.searchSampler = linearSampler;
+			renderer.bindDescriptorSet(1, blendWeightDS);
 
 			renderer.bindPipeline(smaaBlendWeightPipelines[smaaQuality]);
 			renderer.beginRenderPass(smaaWeightsRenderPass);
