@@ -911,45 +911,44 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 }
 
 
-void RendererImpl::bindDescriptorSet(unsigned int /* index */, const DescriptorLayout *layout, const void *data_) {
+void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayoutHandle layoutHandle, const void *data_) {
 	// TODO: get shader bindings from current pipeline, use index
+	const DescriptorSetLayout &layout = dsLayouts.get(layoutHandle);
+
 	const char *data = reinterpret_cast<const char *>(data_);
-	while (layout->type != End) {
-		switch (layout->type) {
+	for (const auto &l : layout.layout) {
+		switch (l.type) {
 		case End:
-			// because we checked in loop condition
-			// TODO: should the exit condition be here?
+            // can't happene because createDesciptorSetLayout doesn't let it
 			assert(false);
 			break;
 
 		case UniformBuffer: {
 			// this is part of the struct, we know it's correctly aligned and right type
 			// FIXME: index is not right here
-			GLuint buffer = *reinterpret_cast<const BufferHandle *>(data + layout->offset);
-			glBindBufferBase(GL_UNIFORM_BUFFER, layout->index, buffer);
+			GLuint buffer = *reinterpret_cast<const BufferHandle *>(data + l.offset);
+			glBindBufferBase(GL_UNIFORM_BUFFER, l.index, buffer);
 		} break;
 
 		case StorageBuffer: {
-			GLuint buffer = *reinterpret_cast<const BufferHandle *>(data + layout->offset);
+			GLuint buffer = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			// FIXME: index is not right here
-			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, layout->index, buffer);
+			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, l.index, buffer);
 		} break;
 
 		case Sampler: {
-			GLuint sampler = *reinterpret_cast<const SamplerHandle *>(data + layout->offset);
-			glBindSampler(layout->index, sampler);
+			GLuint sampler = *reinterpret_cast<const SamplerHandle *>(data + l.offset);
+			glBindSampler(l.index, sampler);
 		} break;
 
 		case Texture: {
-			GLuint tex = *reinterpret_cast<const TextureHandle *>(data + layout->offset);
+			GLuint tex = *reinterpret_cast<const TextureHandle *>(data + l.offset);
 			// FIXME: index is not right here
-			glBindTextureUnit(layout->index, tex);
+			glBindTextureUnit(l.index, tex);
 		} break;
 
 		}
-		layout++;
 	}
-	assert(layout->offset == 0);
 }
 
 

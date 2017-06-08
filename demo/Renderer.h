@@ -547,9 +547,9 @@ public:
 	void bindIndexBuffer(BufferHandle buffer, bool bit16);
 	void bindVertexBuffer(unsigned int binding, BufferHandle buffer);
 
-	void bindDescriptorSet(unsigned int index, const DescriptorLayout *layout, const void *data);
+	void bindDescriptorSet(unsigned int index, const DescriptorSetLayoutHandle layout, const void *data);
 	template <typename T> void bindDescriptorSet(unsigned int index, const T &data) {
-		bindDescriptorSet(index, T::layout, &data);
+		bindDescriptorSet(index, T::layoutHandle, &data);
 	}
 
 	void draw(unsigned int firstVertex, unsigned int vertexCount);

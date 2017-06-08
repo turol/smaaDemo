@@ -928,7 +928,7 @@ void RendererImpl::bindVertexBuffer(unsigned int /* binding */, BufferHandle /* 
 }
 
 
-void RendererImpl::bindDescriptorSet(unsigned int /* index */, const DescriptorLayout * /* layout */, const void * /* data_ */) {
+void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayoutHandle /* layout */, const void * /* data_ */) {
 	STUBBED("");
 }
 

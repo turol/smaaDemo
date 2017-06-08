@@ -485,7 +485,7 @@ struct RendererImpl {
 	void bindIndexBuffer(BufferHandle buffer, bool bit16);
 	void bindVertexBuffer(unsigned int binding, BufferHandle buffer);
 
-	void bindDescriptorSet(unsigned int index, const DescriptorLayout *layout, const void *data);
+	void bindDescriptorSet(unsigned int index, DescriptorSetLayoutHandle layout, const void *data);
 
 	void draw(unsigned int firstVertex, unsigned int vertexCount);
 	void drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount);

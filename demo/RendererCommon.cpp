@@ -166,7 +166,7 @@ void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 }
 
 
-void Renderer::bindDescriptorSet(unsigned int index, const DescriptorLayout *layout, const void *data) {
+void Renderer::bindDescriptorSet(unsigned int index, DescriptorSetLayoutHandle layout, const void *data) {
 	impl->bindDescriptorSet(index, layout, data);
 }
 
