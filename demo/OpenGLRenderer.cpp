@@ -646,6 +646,20 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 }
 
 
+DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout *layout) {
+	auto result = dsLayouts.add();
+	DescriptorSetLayout &dsLayout = result.first;
+
+	while (layout->type != End) {
+		dsLayout.layout.push_back(*layout);
+		layout++;
+	}
+	assert(layout->offset == 0);
+
+	return DescriptorSetLayoutHandle(result.second);
+}
+
+
 void RendererImpl::deleteBuffer(BufferHandle handle) {
 	glDeleteBuffers(1, &handle);
 }

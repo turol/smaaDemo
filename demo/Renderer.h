@@ -27,6 +27,7 @@ using namespace glm;
 
 
 struct RendererImpl;
+struct DescriptorSetLayout;
 struct FragmentShader;
 struct Framebuffer;
 struct Shader;
@@ -34,6 +35,7 @@ struct VertexShader;
 
 
 typedef uint32_t BufferHandle;
+typedef uint32_t DescriptorSetLayoutHandle;
 
 class RenderPassHandle {
 	uint32_t handle;
@@ -516,6 +518,11 @@ public:
 	// descriptor set
 	SamplerHandle       createSampler(const SamplerDesc &desc);
 	TextureHandle       createTexture(const TextureDesc &desc);
+
+	DescriptorSetLayoutHandle createDescriptorSetLayout(const DescriptorLayout *layout);
+	template <typename T> void registerDescriptorSetLayout() {
+		T::layoutHandle = createDescriptorSetLayout(T::layout);
+	}
 
 	void deleteBuffer(BufferHandle handle);
 	void deleteFramebuffer(RenderPassHandle fbo);

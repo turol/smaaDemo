@@ -431,6 +431,7 @@ struct GlobalDS {
 
 
 	static const DescriptorLayout layout[];
+	static DescriptorSetLayoutHandle layoutHandle;
 };
 
 
@@ -439,11 +440,14 @@ const DescriptorLayout GlobalDS::layout[] = {
 	, { End,            0,                                  0 }
 };
 
+DescriptorSetLayoutHandle GlobalDS::layoutHandle;
+
 
 struct CubeSceneDS {
     BufferHandle instances;
 
 	static const DescriptorLayout layout[];
+	static DescriptorSetLayoutHandle layoutHandle;
 };
 
 
@@ -452,12 +456,15 @@ const DescriptorLayout CubeSceneDS::layout[] = {
 	, { End,            0,                                0 }
 };
 
+DescriptorSetLayoutHandle CubeSceneDS::layoutHandle;
+
 
 struct ColorTexDS {
 	TextureHandle color;
 	SamplerHandle sampler;
 
 	static const DescriptorLayout layout[];
+	static DescriptorSetLayoutHandle layoutHandle;
 };
 
 
@@ -466,6 +473,8 @@ const DescriptorLayout ColorTexDS::layout[] = {
 	, { Sampler,  offsetof(ColorTexDS, sampler), TEXUNIT_COLOR }
 	, { End,            0,                       0             }
 };
+
+DescriptorSetLayoutHandle ColorTexDS::layoutHandle;
 
 
 struct BlendWeightDS {
@@ -477,6 +486,7 @@ struct BlendWeightDS {
 	SamplerHandle searchSampler;
 
 	static const DescriptorLayout layout[];
+	static DescriptorSetLayoutHandle layoutHandle;
 };
 
 
@@ -490,6 +500,8 @@ const DescriptorLayout BlendWeightDS::layout[] = {
 	, { End,            0,                                0                 }
 };
 
+DescriptorSetLayoutHandle BlendWeightDS::layoutHandle;
+
 
 struct NeighborBlendDS {
 	TextureHandle color;
@@ -498,6 +510,7 @@ struct NeighborBlendDS {
 	SamplerHandle blendweightSampler;
 
 	static const DescriptorLayout layout[];
+	static DescriptorSetLayoutHandle layoutHandle;
 };
 
 
@@ -509,6 +522,8 @@ const DescriptorLayout NeighborBlendDS::layout[] = {
 	, { End,      0,                                             0             }
 };
 
+DescriptorSetLayoutHandle NeighborBlendDS::layoutHandle;
+
 
 void SMAADemo::initRender() {
 	RendererDesc desc;
@@ -519,6 +534,12 @@ void SMAADemo::initRender() {
 	desc.swapchain.vsync      = vsync;
 
 	renderer = Renderer::createRenderer(desc);
+
+	renderer.registerDescriptorSetLayout<GlobalDS>();
+	renderer.registerDescriptorSetLayout<CubeSceneDS>();
+	renderer.registerDescriptorSetLayout<ColorTexDS>();
+	renderer.registerDescriptorSetLayout<BlendWeightDS>();
+	renderer.registerDescriptorSetLayout<NeighborBlendDS>();
 
 	createFramebuffers();
 

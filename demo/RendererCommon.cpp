@@ -101,6 +101,11 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 }
 
 
+DescriptorSetLayoutHandle Renderer::createDescriptorSetLayout(const DescriptorLayout *layout) {
+	return impl->createDescriptorSetLayout(layout);
+}
+
+
 void Renderer::deleteBuffer(BufferHandle handle) {
 	impl->deleteBuffer(handle);
 }

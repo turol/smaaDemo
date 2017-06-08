@@ -16,6 +16,11 @@
 void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /* length */, const GLchar *message, const void * /* userParam */);
 
 
+struct DescriptorSetLayout {
+	std::vector<DescriptorLayout> layout;
+};
+
+
 struct VertexShader {
 	GLuint shader;
 
@@ -367,6 +372,7 @@ struct RendererImpl {
 		}
 	};
 
+	ResourceContainer<DescriptorSetLayout> dsLayouts;
 	ResourceContainer<RenderPass> renderPasses;
 	std::unordered_map<GLuint, std::unique_ptr<VertexShader> >    vertexShaders;
 	std::unordered_map<GLuint, std::unique_ptr<FragmentShader> >  fragmentShaders;
@@ -454,6 +460,8 @@ struct RendererImpl {
 	BufferHandle         createEphemeralBuffer(uint32_t size, const void *contents);
 	SamplerHandle        createSampler(const SamplerDesc &desc);
 	TextureHandle        createTexture(const TextureDesc &desc);
+
+	DescriptorSetLayoutHandle createDescriptorSetLayout(const DescriptorLayout *layout);
 
 	void deleteBuffer(BufferHandle handle);
 	void deleteRenderPass(RenderPassHandle fbo);
