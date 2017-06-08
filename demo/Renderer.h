@@ -476,6 +476,10 @@ public:
 		for (unsigned int i = 0; i < MAX_VERTEX_BUFFERS; i++) {
 			vertexBuffers[i].stride = 0;
 		}
+
+		for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
+			descriptorSetLayouts[i] = 0;
+		}
 	}
 
 	~PipelineDesc() {}
