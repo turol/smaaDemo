@@ -547,6 +547,7 @@ void SMAADemo::initRender() {
 	plDesc.depthWrite(false)
 	      .depthTest(false)
 	      .cullFaces(true);
+	plDesc.descriptorSetLayout<GlobalDS>(0);
 
 	// all shader stages are affected by quality (SMAA_MAX_SEARCH_STEPS)
 	// TODO: fix that
@@ -563,6 +564,7 @@ void SMAADemo::initRender() {
 		plDesc.renderPass(smaaEdgesRenderPass);
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
+		plDesc.descriptorSetLayout<ColorTexDS>(1);
 		smaaEdgePipelines[i]       = renderer.createPipeline(plDesc);
 
 		vertexShader                = renderer.createVertexShader("smaaBlendWeight", macros);
@@ -570,6 +572,7 @@ void SMAADemo::initRender() {
 		plDesc.renderPass(smaaWeightsRenderPass);
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
+		plDesc.descriptorSetLayout<BlendWeightDS>(1);
 		smaaBlendWeightPipelines[i] = renderer.createPipeline(plDesc);
 
 		vertexShader                = renderer.createVertexShader("smaaNeighbor", macros);
@@ -577,6 +580,7 @@ void SMAADemo::initRender() {
 		plDesc.renderPass(finalRenderPass);
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
+		plDesc.descriptorSetLayout<NeighborBlendDS>(1);
 		smaaNeighborPipelines[i]   = renderer.createPipeline(plDesc);
 	}
 
@@ -592,6 +596,7 @@ void SMAADemo::initRender() {
 		plDesc.renderPass(finalRenderPass);
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
+		plDesc.descriptorSetLayout<ColorTexDS>(1);
 		fxaaPipelines[i] = renderer.createPipeline(plDesc);
 	}
 
@@ -604,6 +609,7 @@ void SMAADemo::initRender() {
 	                                        .vertexShader(vertexShader)
 	                                        .fragmentShader(fragmentShader)
 	                                        .renderPass(sceneRenderPass)
+	                                        .descriptorSetLayout<GlobalDS>(0)
 	                                        .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
 	                                        .vertexBufferStride(ATTR_POS, sizeof(Vertex))
 	                                        .depthWrite(true)
@@ -620,6 +626,7 @@ void SMAADemo::initRender() {
 	plDesc.depthWrite(false)
 	      .depthTest(false)
 	      .cullFaces(true);
+	plDesc.descriptorSetLayout<ColorTexDS>(1);
 
 	imagePipeline = renderer.createPipeline(plDesc);
 

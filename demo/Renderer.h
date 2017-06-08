@@ -24,6 +24,7 @@ using namespace glm;
 #define MAX_COLOR_RENDERTARGETS 2
 #define MAX_VERTEX_ATTRIBS      4
 #define MAX_VERTEX_BUFFERS      1
+#define MAX_DESCRIPTOR_SETS     2  // per pipeline
 
 
 struct RendererImpl;
@@ -380,6 +381,8 @@ class PipelineDesc {
 
 	std::array<VertexAttr, MAX_VERTEX_ATTRIBS> vertexAttribs;
 	std::array<VertexBuf,  MAX_VERTEX_BUFFERS> vertexBuffers;
+	std::array<DescriptorSetLayoutHandle, MAX_DESCRIPTOR_SETS> descriptorSetLayouts;
+
 
 
 public:
@@ -416,6 +419,18 @@ public:
 		assert(buf < MAX_VERTEX_BUFFERS);
 		vertexBuffers[buf].stride = stride;
 
+		return *this;
+	}
+
+	PipelineDesc &descriptorSetLayout(unsigned int index, DescriptorSetLayoutHandle handle) {
+		assert(index < MAX_DESCRIPTOR_SETS);
+		descriptorSetLayouts[index] = handle;
+		return *this;
+	}
+
+	template <typename T> PipelineDesc &descriptorSetLayout(unsigned int index) {
+		assert(index < MAX_DESCRIPTOR_SETS);
+		descriptorSetLayouts[index] = T::layoutHandle;
 		return *this;
 	}
 
