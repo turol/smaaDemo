@@ -339,6 +339,11 @@ RendererImpl::~RendererImpl() {
 		r.second.renderPass = vk::RenderPass();
 	}
 
+	for (auto &r : renderPasses) {
+		device.destroyRenderPass(r.second.renderPass);
+		r.second.renderPass = vk::RenderPass();
+	}
+
 	for (auto &v : vertexShaders) {
 		device.destroyShaderModule(v.second.shaderModule);
 		v.second.shaderModule = vk::ShaderModule();
@@ -348,6 +353,10 @@ RendererImpl::~RendererImpl() {
 		device.destroyShaderModule(f.second.shaderModule);
 		f.second.shaderModule = vk::ShaderModule();
 	}
+
+	dsLayouts.clearWith([this](DescriptorSetLayout &l) {
+		this->device.destroyDescriptorSetLayout(l.layout);
+	} );
 
 	renderTargets.clearWith([this](RenderTarget &rt) {
 		this->device.destroyImageView(rt.imageView);
@@ -662,9 +671,45 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 }
 
 
-DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout * /* layout */) {
-	STUBBED("");
-	return 0;
+static const std::array<vk::DescriptorType, 4> descriptorTypes =
+{
+	  vk::DescriptorType::eUniformBuffer
+	, vk::DescriptorType::eStorageBuffer
+	, vk::DescriptorType::eSampler
+	, vk::DescriptorType::eSampledImage
+};
+
+
+DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout *layout) {
+	std::vector<vk::DescriptorSetLayoutBinding> bindings;
+
+	unsigned int i = 0;
+	while (layout->type != End) {
+		vk::DescriptorSetLayoutBinding b;
+
+		b.binding         = i;
+		// TODO: make layout End last in enum so this is nicer
+		b.descriptorType  = descriptorTypes[layout->type - 1];
+		b.descriptorCount = 0;
+		// TODO: should specify stages in layout
+		b.stageFlags      = vk::ShaderStageFlagBits::eAll;
+
+		bindings.push_back(b);
+
+		layout++;
+		i++;
+	}
+	assert(layout->offset == 0);
+
+	vk::DescriptorSetLayoutCreateInfo info;
+	info.bindingCount = bindings.size();
+	info.pBindings    = &bindings[0];
+
+	auto result = dsLayouts.add();
+	DescriptorSetLayout &dsLayout = result.first;
+	dsLayout.layout = device.createDescriptorSetLayout(info);
+
+	return DescriptorSetLayoutHandle(result.second);
 }
 
 

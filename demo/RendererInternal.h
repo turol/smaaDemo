@@ -165,6 +165,22 @@ struct RenderPass {
 #include <vulkan/vulkan.hpp>
 
 
+struct DescriptorSetLayout {
+	vk::DescriptorSetLayout layout;
+
+
+	DescriptorSetLayout() {}
+
+	DescriptorSetLayout(const DescriptorSetLayout &)            = delete;
+	DescriptorSetLayout &operator=(const DescriptorSetLayout &) = delete;
+
+	DescriptorSetLayout(DescriptorSetLayout &&)                 = default;
+	DescriptorSetLayout &operator=(DescriptorSetLayout &&)      = default;
+
+	~DescriptorSetLayout() {}
+};
+
+
 struct VertexShader {
 	vk::ShaderModule shaderModule;
 
@@ -424,6 +440,7 @@ struct RendererImpl {
 	std::unordered_map<unsigned int, FragmentShader>  fragmentShaders;
 	std::unordered_map<unsigned int, RenderPass>      renderPasses;
 
+	ResourceContainer<DescriptorSetLayout> dsLayouts;
 	ResourceContainer<RenderTarget>  renderTargets;
 
 
