@@ -7,6 +7,8 @@
 
 #include <shaderc/shaderc.hpp>
 
+#include <spirv_cross.hpp>
+
 
 #ifdef RENDERER_OPENGL
 
@@ -23,6 +25,7 @@ struct DescriptorSetLayout {
 
 struct VertexShader {
 	GLuint shader;
+	spirv_cross::ShaderResources resources;
 
 
 	VertexShader(const VertexShader &) = delete;
@@ -39,6 +42,7 @@ struct VertexShader {
 
 struct FragmentShader {
 	GLuint shader;
+	spirv_cross::ShaderResources resources;
 
 
 	FragmentShader(const FragmentShader &) = delete;

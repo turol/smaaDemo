@@ -456,6 +456,10 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	spirv_cross::CompilerGLSL::Options glslOptions;
 	glslOptions.vertex.fixup_clipspace = false;
 	glsl.set_options(glslOptions);
+
+	// TODO: map descriptor sets to opengl indices
+	// TODO: call build_combined_image_samplers()
+
 	std::string src_ = glsl.compile();
 
 	std::vector<char> src(src_.begin(), src_.end());
@@ -468,6 +472,7 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	auto v = std::make_unique<VertexShader>();
 	auto id = createShader(GL_VERTEX_SHADER, vertexShaderName, src);
 	v->shader = id;
+	v->resources = glsl.get_shader_resources();
 
 	vertexShaders.emplace(id, std::move(v));
 
@@ -499,6 +504,10 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	spirv_cross::CompilerGLSL::Options glslOptions;
 	glslOptions.vertex.fixup_clipspace = false;
 	glsl.set_options(glslOptions);
+
+	// TODO: map descriptor sets to opengl indices
+	// TODO: call build_combined_image_samplers()
+
 	std::string src_ = glsl.compile();
 
 	std::vector<char> src(src_.begin(), src_.end());
@@ -511,6 +520,7 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	auto f = std::make_unique<FragmentShader>();
 	auto id = createShader(GL_FRAGMENT_SHADER, name, src);
 	f->shader = id;
+	f->resources = glsl.get_shader_resources();
 
 	fragmentShaders.emplace(id, std::move(f));
 
