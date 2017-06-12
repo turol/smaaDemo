@@ -451,7 +451,12 @@ struct RendererImpl {
 
 	std::unordered_map<std::string, std::vector<char> > shaderSources;
 
+	// debugging
+	// TODO: remove when NDEBUG?
+	bool inFrame;
 	bool inRenderPass;
+	bool validPipeline;
+	bool pipelineDrawn;
 
 
 	std::vector<char> loadSource(const std::string &name);

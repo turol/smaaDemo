@@ -138,7 +138,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , surface(VK_NULL_HANDLE)
 , graphicsQueueIndex(0)
 , swapchain(VK_NULL_HANDLE)
+, inFrame(false)
 , inRenderPass(false)
+, validPipeline(false)
+, pipelineDrawn(false)
 {
 	// TODO: get from desc.debug when this is finished
 	bool enableValidation = true;
@@ -841,6 +844,12 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 
 
 void RendererImpl::beginFrame() {
+	assert(!inFrame);
+	inFrame       = true;
+	inRenderPass  = false;
+	validPipeline = false;
+	pipelineDrawn = true;
+
 	// TODO: check how many frames are outstanding, wait if maximum
 	// here or in presentFrame?
 
@@ -862,6 +871,9 @@ void RendererImpl::beginFrame() {
 
 
 void RendererImpl::presentFrame(RenderTargetHandle /* rt */) {
+	assert(inFrame);
+	inFrame = false;
+
 	// TODO: shouldn't recreate constantly...
 	vk::Fence fence = device.createFence(vk::FenceCreateInfo());
 
@@ -941,14 +953,17 @@ void RendererImpl::presentFrame(RenderTargetHandle /* rt */) {
 
 
 void RendererImpl::beginRenderPass(RenderPassHandle /* pass */) {
+	assert(inFrame);
 	assert(!inRenderPass);
-	inRenderPass = true;
+	inRenderPass  = true;
+	validPipeline = false;
 
 	STUBBED("");
 }
 
 
 void RendererImpl::endRenderPass() {
+	assert(inFrame);
 	assert(inRenderPass);
 	inRenderPass = false;
 
@@ -957,6 +972,11 @@ void RendererImpl::endRenderPass() {
 
 
 void RendererImpl::bindPipeline(PipelineHandle /* pipeline */) {
+	assert(inFrame);
+	assert(inRenderPass);
+	assert(pipelineDrawn);
+	pipelineDrawn = false;
+	validPipeline = true;
 	// assert(pipeline != 0);
 
 	STUBBED("");
@@ -964,32 +984,46 @@ void RendererImpl::bindPipeline(PipelineHandle /* pipeline */) {
 
 
 void RendererImpl::bindIndexBuffer(BufferHandle /* buffer */, bool /* bit16 */ ) {
+	assert(inFrame);
+	assert(validPipeline);
+
 	STUBBED("");
 }
 
 
 void RendererImpl::bindVertexBuffer(unsigned int /* binding */, BufferHandle /* buffer */) {
+	assert(inFrame);
+	assert(validPipeline);
+
 	STUBBED("");
 }
 
 
 void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayoutHandle /* layout */, const void * /* data_ */) {
+	assert(validPipeline);
+
 	STUBBED("");
 }
 
 
 void RendererImpl::setViewport(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
+	assert(inFrame);
+
 	STUBBED("");
 }
 
 
 void RendererImpl::setScissorRect(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
+	assert(validPipeline);
+
 	STUBBED("");
 }
 
 
 void RendererImpl::draw(unsigned int /* firstVertex */, unsigned int /* vertexCount */) {
 	assert(inRenderPass);
+	assert(validPipeline);
+	pipelineDrawn = true;
 
 	STUBBED("");
 }
@@ -997,6 +1031,8 @@ void RendererImpl::draw(unsigned int /* firstVertex */, unsigned int /* vertexCo
 
 void RendererImpl::drawIndexedInstanced(unsigned int /* vertexCount */, unsigned int /* instanceCount */) {
 	assert(inRenderPass);
+	assert(validPipeline);
+	pipelineDrawn = true;
 
 	STUBBED("");
 }

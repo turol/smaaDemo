@@ -288,7 +288,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , context(nullptr)
 , vao(0)
 , idxBuf16Bit(false)
+, inFrame(false)
 , inRenderPass(false)
+, validPipeline(false)
+, pipelineDrawn(false)
 {
 
 	// TODO: check return value
@@ -516,6 +519,8 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 
 
 PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
+	// TODO: match shader resources against pipeline layouts
+
 	// TODO: something better
 	uint32_t handle = pipelines.size() + 1;
 	auto it = pipelines.find(handle);
@@ -721,7 +726,11 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 
 
 void RendererImpl::beginFrame() {
-	// TODO: some asserting here
+	assert(!inFrame);
+	inFrame       = true;
+	inRenderPass  = false;
+	validPipeline = false;
+	pipelineDrawn = true;
 
 	// TODO: reset all relevant state in case some 3rd-party program fucked them up
 	glDepthMask(GL_TRUE);
@@ -733,6 +742,9 @@ void RendererImpl::beginFrame() {
 }
 
 void RendererImpl::presentFrame(RenderTargetHandle image) {
+	assert(inFrame);
+	inFrame = false;
+
 	auto &rt = renderTargets.get(image);
 
 	unsigned int width  = rt.width;
@@ -769,8 +781,10 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 
 
 void RendererImpl::beginRenderPass(RenderPassHandle id) {
+	assert(inFrame);
 	assert(!inRenderPass);
-	inRenderPass = true;
+	inRenderPass  = true;
+	validPipeline = false;
 
 	assert(id != 0);
 	const auto &pass = renderPasses.get(id.handle);
@@ -793,24 +807,35 @@ void RendererImpl::beginRenderPass(RenderPassHandle id) {
 
 
 void RendererImpl::endRenderPass() {
+	assert(inFrame);
 	assert(inRenderPass);
 	inRenderPass = false;
 }
 
 
 void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+	assert(inFrame);
 	glViewport(x, y, width, height);
 }
 
 
 void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+	assert(validPipeline);
+	// TODO: check current pipeline has scissor enabled
+
 	// TODO: should use current FB height
 	glScissor(x, swapchainDesc.height - y, width, height);
 }
 
 
 void RendererImpl::bindPipeline(PipelineHandle pipeline) {
+	assert(inFrame);
 	assert(pipeline != 0);
+	assert(inRenderPass);
+	assert(pipelineDrawn);
+	pipelineDrawn = false;
+	validPipeline = true;
+
 	// TODO: make sure current renderpass matches the one in pipeline
 
 	auto it = pipelines.find(pipeline);
@@ -901,17 +926,23 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 
 
 void RendererImpl::bindIndexBuffer(BufferHandle buffer, bool bit16) {
+	assert(inFrame);
+	assert(validPipeline);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer);
 	idxBuf16Bit = bit16;
 }
 
 
 void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
+	assert(inFrame);
+	assert(validPipeline);
 	glBindVertexBuffer(binding, buffer, 0, currentPipeline.vertexBuffers[binding].stride);
 }
 
 
 void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayoutHandle layoutHandle, const void *data_) {
+	assert(validPipeline);
+
 	// TODO: get shader bindings from current pipeline, use index
 	const DescriptorSetLayout &layout = dsLayouts.get(layoutHandle);
 
@@ -954,6 +985,8 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 
 void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	assert(inRenderPass);
+	assert(validPipeline);
+	pipelineDrawn = true;
 
 	// TODO: get primitive from current pipeline
 	glDrawArrays(GL_TRIANGLES, firstVertex, vertexCount);
@@ -962,6 +995,8 @@ void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
 
 void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
 	assert(inRenderPass);
+	assert(validPipeline);
+	pipelineDrawn = true;
 
 	// TODO: get primitive from current pipeline
 	GLenum format = idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT ;

@@ -1089,6 +1089,8 @@ void SMAADemo::render() {
 	renderer.beginRenderPass(sceneRenderPass);
 
 	if (activeScene == 0) {
+		renderer.bindPipeline(cubePipeline);
+
 		if (rotateCamera) {
 			rotationTime += elapsed;
 
@@ -1104,8 +1106,6 @@ void SMAADemo::render() {
 		globalDS.globalUniforms = renderer.createEphemeralBuffer(sizeof(ShaderDefines::Globals), &globals);
 		renderer.bindDescriptorSet(0, globalDS);
 
-		renderer.bindPipeline(cubePipeline);
-
 		renderer.bindVertexBuffer(0, cubeVBO);
 		renderer.bindIndexBuffer(cubeIBO, false);
 
@@ -1115,11 +1115,11 @@ void SMAADemo::render() {
 
 		renderer.drawIndexedInstanced(3 * 2 * 6, cubes.size());
 	} else {
+		renderer.bindPipeline(imagePipeline);
+
 		GlobalDS globalDS;
 		globalDS.globalUniforms = renderer.createEphemeralBuffer(sizeof(ShaderDefines::Globals), &globals);
 		renderer.bindDescriptorSet(0, globalDS);
-
-		renderer.bindPipeline(imagePipeline);
 
 		assert(activeScene - 1 < images.size());
 		const auto &image = images[activeScene - 1];
@@ -1146,10 +1146,10 @@ void SMAADemo::render() {
 		} break;
 
 		case AAMethod::SMAA: {
-			renderer.bindPipeline(smaaEdgePipelines[smaaQuality]);
-
 			// edges pass
 			renderer.beginRenderPass(smaaEdgesRenderPass);
+			renderer.bindPipeline(smaaEdgePipelines[smaaQuality]);
+
 			ColorTexDS colorDS;
 			colorDS.color   = rendertargets[RenderTargets::MainColor];
 			colorDS.sampler = linearSampler;
@@ -1158,6 +1158,8 @@ void SMAADemo::render() {
 			renderer.endRenderPass();
 
 			// blendweights pass
+			renderer.beginRenderPass(smaaWeightsRenderPass);
+			renderer.bindPipeline(smaaBlendWeightPipelines[smaaQuality]);
 			BlendWeightDS blendWeightDS;
 			blendWeightDS.edgesTex      = rendertargets[RenderTargets::Edges];
 			blendWeightDS.edgeSampler   = linearSampler;
@@ -1167,8 +1169,6 @@ void SMAADemo::render() {
 			blendWeightDS.searchSampler = linearSampler;
 			renderer.bindDescriptorSet(1, blendWeightDS);
 
-			renderer.bindPipeline(smaaBlendWeightPipelines[smaaQuality]);
-			renderer.beginRenderPass(smaaWeightsRenderPass);
 			renderer.draw(0, 3);
 			renderer.endRenderPass();
 
@@ -1178,28 +1178,28 @@ void SMAADemo::render() {
 			switch (debugMode) {
 			case 0:
 				// full effect
+				renderer.bindPipeline(smaaNeighborPipelines[smaaQuality]);
+
 				NeighborBlendDS neighborBlendDS;
 				neighborBlendDS.color              = rendertargets[RenderTargets::MainColor];
 				neighborBlendDS.colorSampler       = linearSampler;
 				neighborBlendDS.blendweights       = rendertargets[RenderTargets::BlendWeights];
 				neighborBlendDS.blendweightSampler = linearSampler;
 				renderer.bindDescriptorSet(1, neighborBlendDS);
-
-				renderer.bindPipeline(smaaNeighborPipelines[smaaQuality]);
 				break;
 
 			case 1:
 				// visualize edges
+				renderer.bindPipeline(blitPipeline);
 				colorDS.color   = rendertargets[RenderTargets::Edges];
 				renderer.bindDescriptorSet(1, colorDS);
-				renderer.bindPipeline(blitPipeline);
 				break;
 
 			case 2:
                 // visualize blend weights
+				renderer.bindPipeline(blitPipeline);
 				colorDS.color   = rendertargets[RenderTargets::BlendWeights];
 				renderer.bindDescriptorSet(1, colorDS);
-				renderer.bindPipeline(blitPipeline);
 				break;
 
 			}
