@@ -432,6 +432,55 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 }
 
 
+static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerGLSL &glsl) {
+	auto spvResources = glsl.get_shader_resources();
+
+	// TODO: assert
+	// these should be created by us, not specified by shader
+	if (!spvResources.sampled_images.empty()) {
+		printf("error: shader has sampled images\n");
+	}
+
+	// TODO: map descriptor sets to opengl indices for textures/samplers
+	// TODO: call build_combined_image_samplers() ?
+	std::vector<ShaderResource> resources;
+
+	for (const auto &ubo : spvResources.uniform_buffers) {
+		ShaderResource r;
+		r.set     = glsl.get_decoration(ubo.id, spv::DecorationDescriptorSet);
+		r.binding = glsl.get_decoration(ubo.id, spv::DecorationBinding);
+		r.type    = UniformBuffer;
+		resources.push_back(r);
+	}
+
+	for (const auto &ssbo : spvResources.storage_buffers) {
+		ShaderResource r;
+		r.set     = glsl.get_decoration(ssbo.id, spv::DecorationDescriptorSet);
+		r.binding = glsl.get_decoration(ssbo.id, spv::DecorationBinding);
+		r.type    = StorageBuffer;
+		resources.push_back(r);
+	}
+
+	for (const auto &s : spvResources.separate_samplers) {
+		ShaderResource r;
+		r.set     = glsl.get_decoration(s.id, spv::DecorationDescriptorSet);
+		r.binding = glsl.get_decoration(s.id, spv::DecorationBinding);
+		r.type    = Sampler;
+		resources.push_back(r);
+	}
+
+	for (const auto &tex : spvResources.separate_images) {
+		ShaderResource r;
+        r.set     = glsl.get_decoration(tex.id, spv::DecorationDescriptorSet);
+		r.binding = glsl.get_decoration(tex.id, spv::DecorationBinding);
+		r.type    = Texture;
+        resources.push_back(r);
+	}
+
+	return resources;
+}
+
+
 VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros) {
 	std::string vertexShaderName   = name + ".vert";
 
@@ -457,11 +506,8 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	glslOptions.vertex.fixup_clipspace = false;
 	glsl.set_options(glslOptions);
 
-	// TODO: map descriptor sets to opengl indices
-	// TODO: call build_combined_image_samplers()
-
+	auto resources = processShaderResources(glsl);
 	std::string src_ = glsl.compile();
-
 	std::vector<char> src(src_.begin(), src_.end());
 
 	if (savePreprocessedShaders) {
@@ -472,7 +518,7 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	auto v = std::make_unique<VertexShader>();
 	auto id = createShader(GL_VERTEX_SHADER, vertexShaderName, src);
 	v->shader = id;
-	v->resources = glsl.get_shader_resources();
+	v->resources = std::move(resources);
 
 	vertexShaders.emplace(id, std::move(v));
 
@@ -505,11 +551,8 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	glslOptions.vertex.fixup_clipspace = false;
 	glsl.set_options(glslOptions);
 
-	// TODO: map descriptor sets to opengl indices
-	// TODO: call build_combined_image_samplers()
-
+	auto resources = processShaderResources(glsl);
 	std::string src_ = glsl.compile();
-
 	std::vector<char> src(src_.begin(), src_.end());
 
 	if (savePreprocessedShaders) {
@@ -520,7 +563,7 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	auto f = std::make_unique<FragmentShader>();
 	auto id = createShader(GL_FRAGMENT_SHADER, name, src);
 	f->shader = id;
-	f->resources = glsl.get_shader_resources();
+	f->resources = std::move(resources);
 
 	fragmentShaders.emplace(id, std::move(f));
 
@@ -528,9 +571,21 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 }
 
 
-PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
-	// TODO: match shader resources against pipeline layouts
+static void checkShaderResources(const std::vector<ShaderResource> &resources, const std::vector<std::vector<DescriptorLayout> > &layouts) {
+	for (const auto &r : resources) {
+		assert(r.set < MAX_DESCRIPTOR_SETS);
+		const auto &set = layouts[r.set];
 
+		assert(r.binding < set.size());
+
+		if (set[r.binding].type != r.type) {
+			printf("error: set %u binding %u type in shader (%u) doesn't match ds layout (%u)\n", r.set, r.binding, r.type, set[r.binding].type);
+		}
+	}
+}
+
+
+PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	// TODO: something better
 	uint32_t handle = pipelines.size() + 1;
 	auto it = pipelines.find(handle);
@@ -539,12 +594,30 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		it = pipelines.find(handle);
 	}
 
-	// TODO: cache shaders
-
 	assert(desc.vertexShader_.handle != 0);
 	assert(desc.fragmentShader_.handle != 0);
 	assert(desc.renderPass_.handle != 0);
 
+	auto vit = vertexShaders.find(desc.vertexShader_.handle);
+	assert(vit != vertexShaders.end());
+
+	auto fit = fragmentShaders.find(desc.fragmentShader_.handle);
+	assert(fit != fragmentShaders.end());
+
+	// match shader resources against pipeline layouts
+	{
+		std::vector<std::vector<DescriptorLayout> > layouts;
+		layouts.resize(MAX_DESCRIPTOR_SETS);
+		for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
+			if (desc.descriptorSetLayouts[i]) {
+				layouts[i] = dsLayouts.get(desc.descriptorSetLayouts[i]).layout;
+			}
+		}
+		checkShaderResources(vit->second->resources, layouts);
+		checkShaderResources(fit->second->resources, layouts);
+	}
+
+	// TODO: cache shaders
 	GLuint program = glCreateProgram();
 
 	glAttachShader(program, desc.vertexShader_.handle);

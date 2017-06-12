@@ -18,6 +18,13 @@
 void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /* length */, const GLchar *message, const void * /* userParam */);
 
 
+struct ShaderResource {
+	unsigned int    set;
+	unsigned int    binding;
+	DescriptorType  type;
+};
+
+
 struct DescriptorSetLayout {
 	std::vector<DescriptorLayout> layout;
 };
@@ -25,7 +32,7 @@ struct DescriptorSetLayout {
 
 struct VertexShader {
 	GLuint shader;
-	spirv_cross::ShaderResources resources;
+	std::vector<ShaderResource> resources;
 
 
 	VertexShader(const VertexShader &) = delete;
@@ -42,7 +49,7 @@ struct VertexShader {
 
 struct FragmentShader {
 	GLuint shader;
-	spirv_cross::ShaderResources resources;
+	std::vector<ShaderResource> resources;
 
 
 	FragmentShader(const FragmentShader &) = delete;
