@@ -32,6 +32,7 @@ struct DescriptorSetLayout {
 
 struct VertexShader {
 	GLuint shader;
+	std::string name;
 	std::vector<ShaderResource> resources;
 
 
@@ -49,6 +50,7 @@ struct VertexShader {
 
 struct FragmentShader {
 	GLuint shader;
+	std::string name;
 	std::vector<ShaderResource> resources;
 
 

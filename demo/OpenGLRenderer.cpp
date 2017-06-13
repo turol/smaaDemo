@@ -435,12 +435,6 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerGLSL &glsl) {
 	auto spvResources = glsl.get_shader_resources();
 
-	// TODO: assert
-	// these should be created by us, not specified by shader
-	if (!spvResources.sampled_images.empty()) {
-		printf("error: shader has sampled images\n");
-	}
-
 	// TODO: map descriptor sets to opengl indices for textures/samplers
 	// TODO: call build_combined_image_samplers() ?
 	std::vector<ShaderResource> resources;
@@ -518,6 +512,7 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	auto v = std::make_unique<VertexShader>();
 	auto id = createShader(GL_VERTEX_SHADER, vertexShaderName, src);
 	v->shader = id;
+	v->name      = vertexShaderName;
 	v->resources = std::move(resources);
 
 	vertexShaders.emplace(id, std::move(v));
@@ -563,6 +558,7 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	auto f = std::make_unique<FragmentShader>();
 	auto id = createShader(GL_FRAGMENT_SHADER, name, src);
 	f->shader = id;
+	f->name      = fragmentShaderName;
 	f->resources = std::move(resources);
 
 	fragmentShaders.emplace(id, std::move(f));
@@ -571,7 +567,31 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 }
 
 
-static void checkShaderResources(const std::vector<ShaderResource> &resources, const std::vector<std::vector<DescriptorLayout> > &layouts) {
+static const char *descriptorTypeName(DescriptorType t) {
+	switch (t) {
+	case End:
+		return "End";
+
+	case UniformBuffer:
+		return "UniformBuffer";
+
+	case StorageBuffer:
+		return "StorageBuffer";
+
+	case Sampler:
+		return "Sampler";
+
+	case Texture:
+		return "Texture";
+
+	}
+
+	assert(false);
+	return "ERROR!";
+}
+
+
+static void checkShaderResources(const std::string &name, const std::vector<ShaderResource> &resources, const std::vector<std::vector<DescriptorLayout> > &layouts) {
 	for (const auto &r : resources) {
 		assert(r.set < MAX_DESCRIPTOR_SETS);
 		const auto &set = layouts[r.set];
@@ -579,7 +599,7 @@ static void checkShaderResources(const std::vector<ShaderResource> &resources, c
 		assert(r.binding < set.size());
 
 		if (set[r.binding].type != r.type) {
-			printf("error: set %u binding %u type in shader (%u) doesn't match ds layout (%u)\n", r.set, r.binding, r.type, set[r.binding].type);
+			printf("ERROR: set %u binding %u type in shader \"%s\" (%s) doesn't match ds layout (%s)\n", r.set, r.binding, name.c_str(), descriptorTypeName(r.type), descriptorTypeName(set[r.binding].type));
 		}
 	}
 }
@@ -613,8 +633,8 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 				layouts[i] = dsLayouts.get(desc.descriptorSetLayouts[i]).layout;
 			}
 		}
-		checkShaderResources(vit->second->resources, layouts);
-		checkShaderResources(fit->second->resources, layouts);
+		checkShaderResources(vit->second->name, vit->second->resources, layouts);
+		checkShaderResources(fit->second->name, fit->second->resources, layouts);
 	}
 
 	// TODO: cache shaders
