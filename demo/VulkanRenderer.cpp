@@ -734,10 +734,40 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 }
 
 
-SamplerHandle RendererImpl::createSampler(const SamplerDesc & /* desc */) {
-	STUBBED("");
+static vk::Filter vulkanFiltermode(FilterMode m) {
+	switch (m) {
+	case Nearest:
+        return vk::Filter::eNearest;
 
-	return 0;
+	case Linear:
+        return vk::Filter::eLinear;
+	}
+
+	assert(false);
+
+	return vk::Filter::eNearest;
+}
+
+
+SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
+	vk::SamplerCreateInfo info;
+
+	info.magFilter = vulkanFiltermode(desc.mag);
+	info.minFilter = vulkanFiltermode(desc.min);
+
+	vk::SamplerAddressMode m = vk::SamplerAddressMode::eClampToEdge;
+	if (desc.wrapMode == Wrap) {
+		m = vk::SamplerAddressMode::eRepeat;
+	}
+	info.addressModeU = m;
+	info.addressModeV = m;
+	info.addressModeW = m;
+
+	auto result = samplers.add();
+	struct Sampler &sampler = result.first;
+	sampler.sampler    = device.createSampler(info);
+
+	return SamplerHandle(result.second);
 }
 
 

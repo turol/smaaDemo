@@ -282,6 +282,22 @@ struct Pipeline {
 };
 
 
+struct Sampler {
+	vk::Sampler sampler;
+
+
+	Sampler() {}
+
+	Sampler(const Sampler &)            = delete;
+	Sampler &operator=(const Sampler &) = delete;
+
+	Sampler(Sampler &&)                 = default;
+	Sampler &operator=(Sampler &&)      = default;
+
+	~Sampler() {}
+};
+
+
 #elif defined(RENDERER_NULL)
 
 #else
@@ -472,6 +488,7 @@ struct RendererImpl {
 
 	ResourceContainer<DescriptorSetLayout> dsLayouts;
 	ResourceContainer<Pipeline>            pipelines;
+	ResourceContainer<struct Sampler>      samplers;
 	ResourceContainer<RenderTarget>  renderTargets;
 
 
