@@ -265,6 +265,23 @@ struct RenderTarget{
 };
 
 
+struct Pipeline {
+	vk::Pipeline       pipeline;
+	vk::PipelineLayout layout;
+
+
+	Pipeline() {}
+
+	Pipeline(const Pipeline &)            = delete;
+	Pipeline &operator=(const Pipeline &) = delete;
+
+	Pipeline(Pipeline &&)                 = default;
+	Pipeline &operator=(Pipeline &&)      = default;
+
+	~Pipeline() {}
+};
+
+
 #elif defined(RENDERER_NULL)
 
 #else
@@ -454,6 +471,7 @@ struct RendererImpl {
 	std::unordered_map<unsigned int, RenderPass>      renderPasses;
 
 	ResourceContainer<DescriptorSetLayout> dsLayouts;
+	ResourceContainer<Pipeline>            pipelines;
 	ResourceContainer<RenderTarget>  renderTargets;
 
 

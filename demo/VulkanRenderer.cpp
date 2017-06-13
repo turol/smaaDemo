@@ -129,6 +129,35 @@ vk::DeviceMemory RendererImpl::allocateMemory(uint32_t size, uint32_t /* align *
 }
 
 
+static vk::Format vulkanVertexFormat(VtxFormat::VtxFormat format, uint8_t count) {
+	switch (format) {
+	case VtxFormat::Float:
+		switch (count) {
+		case 2:
+			return vk::Format::eR32G32Sfloat;
+
+		case 3:
+			return vk::Format::eR32G32B32Sfloat;
+
+		case 4:
+			return vk::Format::eR32G32B32A32Sfloat;
+
+		}
+
+		assert(false);
+		return vk::Format::eUndefined;
+
+	case VtxFormat::UNorm8:
+		assert(count == 4);
+		return vk::Format::eR8G8B8A8Unorm;
+
+	}
+
+	assert(false);
+	return vk::Format::eUndefined;
+}
+
+
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
 , savePreprocessedShaders(false)
@@ -487,10 +516,139 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 }
 
 
-PipelineHandle RendererImpl::createPipeline(const PipelineDesc & /* desc */) {
-	STUBBED("");
+PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
+	vk::GraphicsPipelineCreateInfo info;
 
-	return 0;
+	auto vit = vertexShaders.find(desc.vertexShader_.handle);
+	assert(vit != vertexShaders.end());
+
+	auto fit = fragmentShaders.find(desc.fragmentShader_.handle);
+	assert(fit != fragmentShaders.end());
+
+	std::array<vk::PipelineShaderStageCreateInfo, 2> stages;
+	stages[0].stage  = vk::ShaderStageFlagBits::eVertex;
+	stages[0].module = vit->second.shaderModule;
+	stages[0].pName  = "main";
+	stages[1].stage  = vk::ShaderStageFlagBits::eFragment;
+	stages[1].module = fit->second.shaderModule;
+	stages[1].pName  = "main";
+
+	info.stageCount = 2;
+	info.pStages = &stages[0];
+
+	vk::PipelineVertexInputStateCreateInfo vinput;
+	std::vector<vk::VertexInputAttributeDescription> attrs;
+	std::vector<vk::VertexInputBindingDescription> bindings;
+	if (desc.vertexAttribMask) {
+		uint32_t bufmask = 0;
+
+		uint32_t mask = desc.vertexAttribMask;
+		while (mask) {
+			int bit = __builtin_ctz(mask);
+			vk::VertexInputAttributeDescription attr;
+			const auto &attrDesc = desc.vertexAttribs.at(bit);
+			attr.location = bit;
+			attr.binding  = attrDesc.bufBinding;
+			attr.format   = vulkanVertexFormat(attrDesc.format, attrDesc.count);
+			attr.offset   = attrDesc.offset;
+			attrs.push_back(attr);
+			mask    &= ~(1 << bit);
+			bufmask |=  (1 << attrDesc.bufBinding);
+		}
+
+		// currently we support only 1 buffer, TODO: need more?
+		assert(bufmask == 1);
+		assert(desc.vertexBuffers[0].stride != 0);
+		vk::VertexInputBindingDescription bind;
+		bind.binding   = 0;
+		bind.stride    = desc.vertexBuffers[0].stride;
+		bind.inputRate = vk::VertexInputRate::eVertex;
+		bindings.push_back(bind);
+
+		vinput.vertexBindingDescriptionCount   = bindings.size();
+		vinput.pVertexBindingDescriptions      = &bindings[0];
+		vinput.vertexAttributeDescriptionCount = attrs.size();
+		vinput.pVertexAttributeDescriptions    = &attrs[0];
+
+	}
+	info.pVertexInputState = &vinput;
+
+	vk::PipelineInputAssemblyStateCreateInfo inputAsm;
+	inputAsm.topology               = vk::PrimitiveTopology::eTriangleList;
+	inputAsm.primitiveRestartEnable = false;
+	info.pInputAssemblyState        = &inputAsm;
+
+	vk::PipelineViewportStateCreateInfo vp;
+	vp.viewportCount = 1;
+	vp.scissorCount  = 1;
+	// leave pointers null, we use dynamic states for them
+	info.pViewportState = &vp;
+
+	vk::PipelineRasterizationStateCreateInfo raster;
+	if (desc.cullFaces_) {
+		raster.cullMode = vk::CullModeFlagBits::eBack;
+	}
+	raster.lineWidth = 1.0;
+	info.pRasterizationState        = &raster;
+
+	vk::PipelineMultisampleStateCreateInfo multisample;
+	info.pMultisampleState = &multisample;
+
+	vk::PipelineDepthStencilStateCreateInfo ds;
+	ds.depthTestEnable  = desc.depthTest_;
+	ds.depthWriteEnable = desc.depthWrite_;
+	ds.depthCompareOp   = vk::CompareOp::eLess;
+	info.pDepthStencilState = &ds;
+
+	std::vector<vk::PipelineColorBlendAttachmentState> colorBlendStates;
+	{
+		// TODO: for all color render targets
+		vk::PipelineColorBlendAttachmentState cb;
+		if (desc.blending_) {
+			STUBBED("blending");
+		}
+		cb.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
+		colorBlendStates.push_back(cb);
+	}
+	vk::PipelineColorBlendStateCreateInfo blendInfo;
+	blendInfo.attachmentCount = colorBlendStates.size();
+	blendInfo.pAttachments    = &colorBlendStates[0];
+	info.pColorBlendState     = &blendInfo;
+
+	vk::PipelineDynamicStateCreateInfo dyn;
+	std::vector<vk::DynamicState> dynStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
+	dyn.dynamicStateCount = dynStates.size();
+	dyn.pDynamicStates    = &dynStates[0];
+	info.pDynamicState    = &dyn;
+
+	std::vector<vk::DescriptorSetLayout> layouts;
+	for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
+		if (desc.descriptorSetLayouts[i]) {
+			const auto &layout = dsLayouts.get(desc.descriptorSetLayouts[i]);
+			layouts.push_back(layout.layout);
+		}
+	}
+
+	vk::PipelineLayoutCreateInfo layoutInfo;
+	layoutInfo.setLayoutCount = layouts.size();
+	layoutInfo.pSetLayouts    = &layouts[0];
+
+	auto layout = device.createPipelineLayout(layoutInfo);
+	info.layout = layout;
+
+	assert(desc.renderPass_.handle != 0);
+	const auto it = renderPasses.find(desc.renderPass_.handle);
+	assert(it != renderPasses.end());
+	info.renderPass = it->second.renderPass;
+
+	auto result = device.createGraphicsPipeline(vk::PipelineCache(), info);
+
+	auto id = pipelines.add();
+	Pipeline &p = id.first;
+	p.pipeline = result;
+	p.layout   = layout;
+
+	return PipelineHandle(id.second);
 }
 
 
