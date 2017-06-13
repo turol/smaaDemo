@@ -674,12 +674,13 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 }
 
 
-static const std::array<vk::DescriptorType, 4> descriptorTypes =
+static const std::array<vk::DescriptorType, Count - 1> descriptorTypes =
 {
 	  vk::DescriptorType::eUniformBuffer
 	, vk::DescriptorType::eStorageBuffer
 	, vk::DescriptorType::eSampler
 	, vk::DescriptorType::eSampledImage
+	, vk::DescriptorType::eCombinedImageSampler
 };
 
 

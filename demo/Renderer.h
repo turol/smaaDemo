@@ -120,6 +120,7 @@ enum DescriptorType {
 	, Sampler
 	, Texture
 	, CombinedSampler
+	, Count
 };
 
 

@@ -599,6 +599,10 @@ static const char *descriptorTypeName(DescriptorType t) {
 	case CombinedSampler:
 		return "CombinedSampler";
 
+	case Count:
+		assert(false);  // shouldn't happen
+		return "Count";
+
 	}
 
 	assert(false);
@@ -1100,13 +1104,16 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 			glBindTextureUnit(index, tex);
 		} break;
 
-
 		case CombinedSampler: {
 			const CSampler &combined = *reinterpret_cast<const CSampler *>(data + l.offset);
 			// FIXME: index is not right here
 			glBindTextureUnit(index, combined.tex);
 			glBindSampler(index, combined.sampler);
 		} break;
+
+		case Count:
+			assert(false); // shouldn't happen
+			break;
 
 		}
 
