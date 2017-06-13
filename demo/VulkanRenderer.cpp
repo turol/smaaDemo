@@ -693,7 +693,7 @@ DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const Descript
 		b.binding         = i;
 		// TODO: make layout End last in enum so this is nicer
 		b.descriptorType  = descriptorTypes[layout->type - 1];
-		b.descriptorCount = 0;
+		b.descriptorCount = 1;
 		// TODO: should specify stages in layout
 		b.stageFlags      = vk::ShaderStageFlagBits::eAll;
 
