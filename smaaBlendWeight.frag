@@ -14,9 +14,9 @@
 
 layout (location = 0) out vec4 outColor;
 
-layout(binding = TEXUNIT_EDGES)     uniform sampler2D edgesTex;
-layout(binding = TEXUNIT_AREATEX)   uniform sampler2D areaTex;
-layout(binding = TEXUNIT_SEARCHTEX) uniform sampler2D searchTex;
+layout(set = 1, binding = 0) uniform sampler2D edgesTex;
+layout(set = 1, binding = 1) uniform sampler2D areaTex;
+layout(set = 1, binding = 2) uniform sampler2D searchTex;
 
 layout (location = 0) in vec2 texcoord;
 layout (location = 1) in vec2 pixcoord;

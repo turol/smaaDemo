@@ -436,8 +436,8 @@ struct GlobalDS {
 
 
 const DescriptorLayout GlobalDS::layout[] = {
-	  { UniformBuffer,  offsetof(GlobalDS, globalUniforms), 0 }
-	, { End,            0,                                  0 }
+	  { UniformBuffer,  offsetof(GlobalDS, globalUniforms) }
+	, { End,            0                                  }
 };
 
 DescriptorSetLayoutHandle GlobalDS::layoutHandle;
@@ -452,16 +452,15 @@ struct CubeSceneDS {
 
 
 const DescriptorLayout CubeSceneDS::layout[] = {
-	  { StorageBuffer,  offsetof(CubeSceneDS, instances), 0 }
-	, { End,            0,                                0 }
+	  { StorageBuffer,  offsetof(CubeSceneDS, instances) }
+	, { End,            0                                }
 };
 
 DescriptorSetLayoutHandle CubeSceneDS::layoutHandle;
 
 
 struct ColorTexDS {
-	TextureHandle color;
-	SamplerHandle sampler;
+	CSampler color;
 
 	static const DescriptorLayout layout[];
 	static DescriptorSetLayoutHandle layoutHandle;
@@ -469,21 +468,17 @@ struct ColorTexDS {
 
 
 const DescriptorLayout ColorTexDS::layout[] = {
-	  { Texture,  offsetof(ColorTexDS, color),   TEXUNIT_COLOR }
-	, { Sampler,  offsetof(ColorTexDS, sampler), TEXUNIT_COLOR }
-	, { End,            0,                       0             }
+	  { CombinedSampler,  offsetof(ColorTexDS, color) }
+	, { End,              0,                          }
 };
 
 DescriptorSetLayoutHandle ColorTexDS::layoutHandle;
 
 
 struct BlendWeightDS {
-	TextureHandle edgesTex;
-	SamplerHandle edgeSampler;
-	TextureHandle areaTex;
-	SamplerHandle areaSampler;
-	TextureHandle searchTex;
-	SamplerHandle searchSampler;
+	CSampler edgesTex;
+	CSampler areaTex;
+	CSampler searchTex;
 
 	static const DescriptorLayout layout[];
 	static DescriptorSetLayoutHandle layoutHandle;
@@ -491,23 +486,18 @@ struct BlendWeightDS {
 
 
 const DescriptorLayout BlendWeightDS::layout[] = {
-	  { Texture,  offsetof(BlendWeightDS, edgesTex),      TEXUNIT_EDGES     }
-	, { Sampler,  offsetof(BlendWeightDS, edgeSampler),   TEXUNIT_EDGES     }
-	, { Texture,  offsetof(BlendWeightDS, areaTex),       TEXUNIT_AREATEX   }
-	, { Sampler,  offsetof(BlendWeightDS, areaSampler),   TEXUNIT_AREATEX   }
-	, { Texture,  offsetof(BlendWeightDS, searchTex),     TEXUNIT_SEARCHTEX }
-	, { Sampler,  offsetof(BlendWeightDS, searchSampler), TEXUNIT_SEARCHTEX }
-	, { End,            0,                                0                 }
+	  { CombinedSampler,  offsetof(BlendWeightDS, edgesTex)       }
+	, { CombinedSampler,  offsetof(BlendWeightDS, areaTex)        }
+	, { CombinedSampler,  offsetof(BlendWeightDS, searchTex)      }
+	, { End,              0,                                      }
 };
 
 DescriptorSetLayoutHandle BlendWeightDS::layoutHandle;
 
 
 struct NeighborBlendDS {
-	TextureHandle color;
-	SamplerHandle colorSampler;
-	TextureHandle blendweights;
-	SamplerHandle blendweightSampler;
+	CSampler color;
+	CSampler blendweights;
 
 	static const DescriptorLayout layout[];
 	static DescriptorSetLayoutHandle layoutHandle;
@@ -515,11 +505,9 @@ struct NeighborBlendDS {
 
 
 const DescriptorLayout NeighborBlendDS::layout[] = {
-	  { Texture,  offsetof(NeighborBlendDS, color),              TEXUNIT_COLOR }
-	, { Sampler,  offsetof(NeighborBlendDS, colorSampler),       TEXUNIT_COLOR }
-	, { Texture,  offsetof(NeighborBlendDS, blendweights),       TEXUNIT_BLEND }
-	, { Sampler,  offsetof(NeighborBlendDS, blendweightSampler), TEXUNIT_BLEND }
-	, { End,      0,                                             0             }
+	  { CombinedSampler,  offsetof(NeighborBlendDS, color)              }
+	, { CombinedSampler,  offsetof(NeighborBlendDS, blendweights)       }
+	, { End        ,      0                                             }
 };
 
 DescriptorSetLayoutHandle NeighborBlendDS::layoutHandle;
@@ -610,6 +598,7 @@ void SMAADemo::initRender() {
 	                                        .fragmentShader(fragmentShader)
 	                                        .renderPass(sceneRenderPass)
 	                                        .descriptorSetLayout<GlobalDS>(0)
+	                                        .descriptorSetLayout<CubeSceneDS>(1)
 	                                        .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
 	                                        .vertexBufferStride(ATTR_POS, sizeof(Vertex))
 	                                        .depthWrite(true)
@@ -1124,8 +1113,8 @@ void SMAADemo::render() {
 		assert(activeScene - 1 < images.size());
 		const auto &image = images[activeScene - 1];
 		ColorTexDS colorDS;
-		colorDS.color   = image.tex;
-		colorDS.sampler = nearestSampler;
+		colorDS.color.tex     = image.tex;
+		colorDS.color.sampler = nearestSampler;
 		renderer.bindDescriptorSet(1, colorDS);
 		renderer.draw(0, 3);
 	}
@@ -1137,8 +1126,8 @@ void SMAADemo::render() {
 			renderer.beginRenderPass(finalRenderPass);
 			renderer.bindPipeline(fxaaPipelines[fxaaQuality]);
 			ColorTexDS colorDS;
-			colorDS.color   = rendertargets[RenderTargets::MainColor];
-			colorDS.sampler = linearSampler;
+			colorDS.color.tex     = rendertargets[RenderTargets::MainColor];
+			colorDS.color.sampler = linearSampler;
 			renderer.bindDescriptorSet(1, colorDS);
 			renderer.draw(0, 3);
 			drawGUI(elapsed);
@@ -1151,8 +1140,8 @@ void SMAADemo::render() {
 			renderer.bindPipeline(smaaEdgePipelines[smaaQuality]);
 
 			ColorTexDS colorDS;
-			colorDS.color   = rendertargets[RenderTargets::MainColor];
-			colorDS.sampler = linearSampler;
+			colorDS.color.tex     = rendertargets[RenderTargets::MainColor];
+			colorDS.color.sampler = linearSampler;
 			renderer.bindDescriptorSet(1, colorDS);
 			renderer.draw(0, 3);
 			renderer.endRenderPass();
@@ -1161,12 +1150,12 @@ void SMAADemo::render() {
 			renderer.beginRenderPass(smaaWeightsRenderPass);
 			renderer.bindPipeline(smaaBlendWeightPipelines[smaaQuality]);
 			BlendWeightDS blendWeightDS;
-			blendWeightDS.edgesTex      = rendertargets[RenderTargets::Edges];
-			blendWeightDS.edgeSampler   = linearSampler;
-			blendWeightDS.areaTex       = areaTex;
-			blendWeightDS.areaSampler   = linearSampler;
-			blendWeightDS.searchTex     = searchTex;
-			blendWeightDS.searchSampler = linearSampler;
+			blendWeightDS.edgesTex.tex      = rendertargets[RenderTargets::Edges];
+			blendWeightDS.edgesTex.sampler  = linearSampler;
+			blendWeightDS.areaTex.tex       = areaTex;
+			blendWeightDS.areaTex.sampler   = linearSampler;
+			blendWeightDS.searchTex.tex     = searchTex;
+			blendWeightDS.searchTex.sampler = linearSampler;
 			renderer.bindDescriptorSet(1, blendWeightDS);
 
 			renderer.draw(0, 3);
@@ -1181,24 +1170,24 @@ void SMAADemo::render() {
 				renderer.bindPipeline(smaaNeighborPipelines[smaaQuality]);
 
 				NeighborBlendDS neighborBlendDS;
-				neighborBlendDS.color              = rendertargets[RenderTargets::MainColor];
-				neighborBlendDS.colorSampler       = linearSampler;
-				neighborBlendDS.blendweights       = rendertargets[RenderTargets::BlendWeights];
-				neighborBlendDS.blendweightSampler = linearSampler;
+				neighborBlendDS.color.tex            = rendertargets[RenderTargets::MainColor];
+				neighborBlendDS.color.sampler        = linearSampler;
+				neighborBlendDS.blendweights.tex     = rendertargets[RenderTargets::BlendWeights];
+				neighborBlendDS.blendweights.sampler = linearSampler;
 				renderer.bindDescriptorSet(1, neighborBlendDS);
 				break;
 
 			case 1:
 				// visualize edges
 				renderer.bindPipeline(blitPipeline);
-				colorDS.color   = rendertargets[RenderTargets::Edges];
+				colorDS.color.tex   = rendertargets[RenderTargets::Edges];
 				renderer.bindDescriptorSet(1, colorDS);
 				break;
 
 			case 2:
                 // visualize blend weights
 				renderer.bindPipeline(blitPipeline);
-				colorDS.color   = rendertargets[RenderTargets::BlendWeights];
+				colorDS.color.tex   = rendertargets[RenderTargets::BlendWeights];
 				renderer.bindDescriptorSet(1, colorDS);
 				break;
 
@@ -1214,8 +1203,8 @@ void SMAADemo::render() {
 		renderer.beginRenderPass(finalRenderPass);
 		renderer.bindPipeline(blitPipeline);
 		ColorTexDS colorDS;
-		colorDS.color   = rendertargets[RenderTargets::MainColor];
-		colorDS.sampler = linearSampler;
+		colorDS.color.tex     = rendertargets[RenderTargets::MainColor];
+		colorDS.color.sampler = linearSampler;
 		renderer.bindDescriptorSet(1, colorDS);
 		renderer.draw(0, 3);
 		drawGUI(elapsed);
@@ -1266,8 +1255,8 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 		renderer.bindPipeline(guiPipeline);
 		ColorTexDS colorDS;
-		colorDS.color   = imguiFontsTex;
-		colorDS.sampler = linearSampler;
+		colorDS.color.tex     = imguiFontsTex;
+		colorDS.color.sampler = linearSampler;
 		renderer.bindDescriptorSet(1, colorDS);
 		// TODO: upload all buffers first, render after
 		// and one buffer each vertex/index

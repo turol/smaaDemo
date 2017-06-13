@@ -477,6 +477,10 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 		r.binding = glsl.get_decoration(s.id, spv::DecorationBinding);
 		r.type    = CombinedSampler;
 		resources.push_back(r);
+
+		// opengl doesn't like set decorations, strip them
+		// TODO: check that indices don't conflict
+		glsl.unset_decoration(s.id, spv::DecorationDescriptorSet);
 	}
 
 	return resources;
@@ -1064,6 +1068,7 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 	const DescriptorSetLayout &layout = dsLayouts.get(layoutHandle);
 
 	const char *data = reinterpret_cast<const char *>(data_);
+	unsigned int index = 0;
 	for (const auto &l : layout.layout) {
 		switch (l.type) {
 		case End:
@@ -1075,35 +1080,37 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 			// this is part of the struct, we know it's correctly aligned and right type
 			// FIXME: index is not right here
 			GLuint buffer = *reinterpret_cast<const BufferHandle *>(data + l.offset);
-			glBindBufferBase(GL_UNIFORM_BUFFER, l.index, buffer);
+			glBindBufferBase(GL_UNIFORM_BUFFER, index, buffer);
 		} break;
 
 		case StorageBuffer: {
 			GLuint buffer = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			// FIXME: index is not right here
-			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, l.index, buffer);
+			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, buffer);
 		} break;
 
 		case Sampler: {
 			GLuint sampler = *reinterpret_cast<const SamplerHandle *>(data + l.offset);
-			glBindSampler(l.index, sampler);
+			glBindSampler(index, sampler);
 		} break;
 
 		case Texture: {
 			GLuint tex = *reinterpret_cast<const TextureHandle *>(data + l.offset);
 			// FIXME: index is not right here
-			glBindTextureUnit(l.index, tex);
+			glBindTextureUnit(index, tex);
 		} break;
 
 
 		case CombinedSampler: {
 			const CSampler &combined = *reinterpret_cast<const CSampler *>(data + l.offset);
 			// FIXME: index is not right here
-			glBindTextureUnit(l.index, combined.tex);
-			glBindSampler(l.index, combined.sampler);
+			glBindTextureUnit(index, combined.tex);
+			glBindSampler(index, combined.sampler);
 		} break;
 
 		}
+
+		index++;
 	}
 }
 

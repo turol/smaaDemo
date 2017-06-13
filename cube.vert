@@ -6,7 +6,7 @@
 layout(location = ATTR_POS) in vec3 position;
 
 
-readonly restrict layout(std430, binding = 0) buffer cubeData {
+readonly restrict layout(std430, set = 1, binding = 0) buffer cubeData {
     Cube cubes[];
 };
 

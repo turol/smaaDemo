@@ -9,7 +9,7 @@
 #include "fxaa3_11.h"
 
 
-layout(binding = TEXUNIT_COLOR) uniform sampler2D colorTex;
+layout(set = 1, binding = 0) uniform sampler2D colorTex;
 
 layout (location = 0) in vec2 texcoord;
 
