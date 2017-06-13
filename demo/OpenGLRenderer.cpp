@@ -471,6 +471,14 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
         resources.push_back(r);
 	}
 
+	for (const auto &s : spvResources.sampled_images) {
+		ShaderResource r;
+		r.set     = glsl.get_decoration(s.id, spv::DecorationDescriptorSet);
+		r.binding = glsl.get_decoration(s.id, spv::DecorationBinding);
+		r.type    = CombinedSampler;
+		resources.push_back(r);
+	}
+
 	return resources;
 }
 
@@ -584,6 +592,9 @@ static const char *descriptorTypeName(DescriptorType t) {
 	case Texture:
 		return "Texture";
 
+	case CombinedSampler:
+		return "CombinedSampler";
+
 	}
 
 	assert(false);
@@ -596,10 +607,13 @@ static void checkShaderResources(const std::string &name, const std::vector<Shad
 		assert(r.set < MAX_DESCRIPTOR_SETS);
 		const auto &set = layouts[r.set];
 
-		assert(r.binding < set.size());
+		if (r.binding >= set.size()) {
+			printf("ERROR: set %u binding %u type %s in shader \"%s\" greater than set size (%u)\n", r.set, r.binding, descriptorTypeName(r.type), name.c_str(), static_cast<unsigned int>(set.size()));
+			continue;
+		}
 
 		if (set[r.binding].type != r.type) {
-			printf("ERROR: set %u binding %u type in shader \"%s\" (%s) doesn't match ds layout (%s)\n", r.set, r.binding, name.c_str(), descriptorTypeName(r.type), descriptorTypeName(set[r.binding].type));
+			printf("ERROR: set %u binding %u type %s in shader \"%s\" doesn't match ds layout (%s)\n", r.set, r.binding, descriptorTypeName(r.type), name.c_str(), descriptorTypeName(set[r.binding].type));
 		}
 	}
 }
@@ -1079,6 +1093,14 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 			GLuint tex = *reinterpret_cast<const TextureHandle *>(data + l.offset);
 			// FIXME: index is not right here
 			glBindTextureUnit(l.index, tex);
+		} break;
+
+
+		case CombinedSampler: {
+			const CSampler &combined = *reinterpret_cast<const CSampler *>(data + l.offset);
+			// FIXME: index is not right here
+			glBindTextureUnit(l.index, combined.tex);
+			glBindSampler(l.index, combined.sampler);
 		} break;
 
 		}

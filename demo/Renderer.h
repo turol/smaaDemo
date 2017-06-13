@@ -119,6 +119,14 @@ enum DescriptorType {
 	, StorageBuffer
 	, Sampler
 	, Texture
+	, CombinedSampler
+};
+
+
+// CombinedSampler helper
+struct CSampler {
+	TextureHandle tex;
+	SamplerHandle sampler;
 };
 
 
