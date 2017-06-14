@@ -16,6 +16,9 @@
 #include "Utils.h"
 
 
+#ifndef SDL_VIDEO_VULKAN_SURFACE
+
+
 // TODO: remove these when officially in SDL
 #include <SDL_syswm.h>
 #include <X11/Xlib-xcb.h>
@@ -101,6 +104,9 @@ static SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window, SDL_vulkanInstance 
 
 	return SDL_TRUE;
 }
+
+
+#endif  // SDL_VIDEO_VULKAN_SURFACE
 
 
 vk::DeviceMemory RendererImpl::allocateMemory(uint32_t size, uint32_t /* align */, uint32_t typeBits) {

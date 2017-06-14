@@ -172,8 +172,15 @@ struct RenderPass {
 
 #elif defined(RENDERER_VULKAN)
 
+
+#ifndef SDL_VIDEO_VULKAN_SURFACE
+
+
 // TODO: _WIN32
 #define VK_USE_PLATFORM_XCB_KHR 1
+
+#endif  // SDL_VIDEO_VULKAN_SURFACE
+
 
 #include <vulkan/vulkan.hpp>
 
