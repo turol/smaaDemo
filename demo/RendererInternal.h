@@ -30,6 +30,16 @@ struct DescriptorSetLayout {
 };
 
 
+struct Pipeline : public PipelineDesc {
+	GLuint shader;
+
+	Pipeline(const PipelineDesc &desc, GLuint shader_)
+	: PipelineDesc(desc)
+	, shader(shader_)
+	{
+	}
+};
+
 struct VertexShader {
 	GLuint shader;
 	std::string name;
@@ -449,16 +459,6 @@ struct RendererImpl {
 
 	GLuint vao;
 	bool idxBuf16Bit;
-
-	struct Pipeline : public PipelineDesc {
-		GLuint shader;
-
-		Pipeline(const PipelineDesc &desc, GLuint shader_)
-		: PipelineDesc(desc)
-		, shader(shader_)
-		{
-		}
-	};
 
 	ResourceContainer<DescriptorSetLayout> dsLayouts;
 	ResourceContainer<RenderPass> renderPasses;
