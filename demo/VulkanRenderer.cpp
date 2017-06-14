@@ -372,6 +372,11 @@ RendererImpl::~RendererImpl() {
 
 	// TODO: save pipeline cache
 
+	buffers.clearWith([this](struct Buffer &b) {
+		this->device.destroyBuffer(b.buffer);
+		this->device.freeMemory(b.memory);
+	} );
+
 	samplers.clearWith([this](struct Sampler &s) {
 		this->device.destroySampler(s.sampler);
 	} );
@@ -430,9 +435,26 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	STUBBED("");
+	vk::BufferCreateInfo info;
+	info.size  = size;
+	// TODO: usage flags should be parameters
+	info.usage = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eVertexBuffer;
 
-	return 0;
+	auto result    = buffers.add();
+	Buffer &buffer = result.first;
+	buffer.buffer  = device.createBuffer(info);
+
+	vk::MemoryRequirements memReq = device.getBufferMemoryRequirements(buffer.buffer);
+	printf("createBuffer size: %u\n", size);
+	printf("buffer memory required: %u\n", static_cast<unsigned int>(memReq.size));
+	printf("buffer memory alignment: %u\n", static_cast<unsigned int>(memReq.alignment));
+	printf("buffer memory type bits: 0x%x\n", memReq.memoryTypeBits);
+	buffer.memory = allocateMemory(memReq.size, memReq.alignment, memReq.memoryTypeBits);
+	device.bindBufferMemory(buffer.buffer, buffer.memory, 0);
+
+	STUBBED("copy buffer contents");
+
+	return BufferHandle(result.second);
 }
 
 

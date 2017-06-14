@@ -185,6 +185,25 @@ struct RenderPass {
 #include <vulkan/vulkan.hpp>
 
 
+struct Buffer {
+	vk::Buffer buffer;
+	// TODO: suballocate from a larger buffer
+	vk::DeviceMemory memory;
+	// TODO: access type bits (for debugging)
+
+
+	Buffer() {}
+
+	Buffer(const Buffer &)            = delete;
+	Buffer &operator=(const Buffer &) = delete;
+
+	Buffer(Buffer &&)                 = default;
+	Buffer &operator=(Buffer &&)      = default;
+
+	~Buffer() {}
+};
+
+
 struct DescriptorSetLayout {
 	vk::DescriptorSetLayout layout;
 
@@ -493,6 +512,7 @@ struct RendererImpl {
 	std::unordered_map<unsigned int, FragmentShader>  fragmentShaders;
 	std::unordered_map<unsigned int, RenderPass>      renderPasses;
 
+	ResourceContainer<Buffer>              buffers;
 	ResourceContainer<DescriptorSetLayout> dsLayouts;
 	ResourceContainer<Pipeline>            pipelines;
 	ResourceContainer<struct Sampler>      samplers;
