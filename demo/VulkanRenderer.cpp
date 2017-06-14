@@ -366,6 +366,10 @@ RendererImpl::~RendererImpl() {
 
 	// TODO: save pipeline cache
 
+	samplers.clearWith([this](struct Sampler &s) {
+		this->device.destroySampler(s.sampler);
+	} );
+
 	pipelines.clearWith([this](Pipeline &p) {
 		this->device.destroyPipelineLayout(p.layout);
 		this->device.destroyPipeline(p.pipeline);
