@@ -55,8 +55,8 @@ struct VertexShader {
 	VertexShader(const VertexShader &) = delete;
 	VertexShader &operator=(const VertexShader &) = delete;
 
-	VertexShader(VertexShader &&) = delete;
-	VertexShader &operator=(VertexShader &&) = delete;
+	VertexShader(VertexShader &&)            = default;
+	VertexShader &operator=(VertexShader &&) = default;
 
 	VertexShader();
 
@@ -452,7 +452,7 @@ struct RendererImpl {
 
 	ResourceContainer<DescriptorSetLayout> dsLayouts;
 	ResourceContainer<RenderPass> renderPasses;
-	std::unordered_map<GLuint, std::unique_ptr<VertexShader> >    vertexShaders;
+	ResourceContainer<VertexShader>    vertexShaders;
 	std::unordered_map<GLuint, std::unique_ptr<FragmentShader> >  fragmentShaders;
 	ResourceContainer<Pipeline>                        pipelines;
 

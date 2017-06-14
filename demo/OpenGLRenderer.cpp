@@ -110,10 +110,6 @@ VertexShader::VertexShader()
 
 
 VertexShader::~VertexShader() {
-	assert(shader != 0);
-
-	glDeleteShader(shader);
-	shader = 0;
 }
 
 
@@ -388,7 +384,12 @@ RendererImpl::~RendererImpl() {
 	renderTargets.clear();
 
 	pipelines.clear();
-	vertexShaders.clear();
+	vertexShaders.clearWith([](VertexShader &v) {
+		assert(v.shader != 0);
+		glDeleteShader(v.shader);
+		v.shader = 0;
+	} );
+
 	fragmentShaders.clear();
 
 	glBindVertexArray(0);
@@ -516,13 +517,11 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 		writeFile(vertexShaderName + ".prep", src);
 	}
 
-	auto v = std::make_unique<VertexShader>();
 	auto id = createShader(GL_VERTEX_SHADER, vertexShaderName, src);
-	v->shader = id;
-	v->name      = vertexShaderName;
-	v->resources = std::move(resources);
-
-	vertexShaders.emplace(id, std::move(v));
+	auto &v = vertexShaders.add(id);
+	v.shader    = id;
+	v.name      = vertexShaderName;
+	v.resources = std::move(resources);
 
 	return VertexShaderHandle(id);
 }
@@ -627,8 +626,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	assert(desc.fragmentShader_.handle != 0);
 	assert(desc.renderPass_.handle != 0);
 
-	auto vit = vertexShaders.find(desc.vertexShader_.handle);
-	assert(vit != vertexShaders.end());
+	const auto &v = vertexShaders.get(desc.vertexShader_.handle);
 
 	auto fit = fragmentShaders.find(desc.fragmentShader_.handle);
 	assert(fit != fragmentShaders.end());
@@ -642,7 +640,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 				layouts[i] = dsLayouts.get(desc.descriptorSetLayouts[i]).layout;
 			}
 		}
-		checkShaderResources(vit->second->name, vit->second->resources, layouts);
+		checkShaderResources(v.name, v.resources, layouts);
 		checkShaderResources(fit->second->name, fit->second->resources, layouts);
 	}
 
