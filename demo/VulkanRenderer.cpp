@@ -366,10 +366,10 @@ RendererImpl::~RendererImpl() {
 
 	// TODO: save pipeline cache
 
-	for (auto &r : renderPasses) {
-		device.destroyRenderPass(r.second.renderPass);
-		r.second.renderPass = vk::RenderPass();
-	}
+	pipelines.clearWith([this](Pipeline &p) {
+		this->device.destroyPipelineLayout(p.layout);
+		this->device.destroyPipeline(p.pipeline);
+	} );
 
 	for (auto &r : renderPasses) {
 		device.destroyRenderPass(r.second.renderPass);
