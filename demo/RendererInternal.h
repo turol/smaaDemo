@@ -30,14 +30,20 @@ struct DescriptorSetLayout {
 };
 
 
-struct Pipeline : public PipelineDesc {
-	GLuint shader;
+struct Pipeline {
+	PipelineDesc  desc;
+	GLuint        shader;
 
-	Pipeline(const PipelineDesc &desc, GLuint shader_)
-	: PipelineDesc(desc)
-	, shader(shader_)
-	{
-	}
+
+	Pipeline(const Pipeline &)            = delete;
+	Pipeline &operator=(const Pipeline &) = delete;
+
+	Pipeline(Pipeline &&)            = default;
+	Pipeline &operator=(Pipeline &&) = default;
+
+	Pipeline();
+
+	~Pipeline();
 };
 
 struct VertexShader {
@@ -74,22 +80,6 @@ struct FragmentShader {
 	FragmentShader();
 
 	~FragmentShader();
-};
-
-
-struct Shader {
-	GLuint program;
-
-	Shader() = delete;
-	Shader(const Shader &) = delete;
-	Shader &operator=(const Shader &) = delete;
-
-	Shader(Shader &&) = delete;
-	Shader &operator=(Shader &&) = delete;
-
-	explicit Shader(GLuint program_);
-
-	~Shader();
 };
 
 
@@ -464,8 +454,7 @@ struct RendererImpl {
 	ResourceContainer<RenderPass> renderPasses;
 	std::unordered_map<GLuint, std::unique_ptr<VertexShader> >    vertexShaders;
 	std::unordered_map<GLuint, std::unique_ptr<FragmentShader> >  fragmentShaders;
-	std::unordered_map<GLuint, std::unique_ptr<Shader> > shaders;
-	std::unordered_map<uint32_t, Pipeline>                        pipelines;
+	ResourceContainer<Pipeline>                        pipelines;
 
 	ResourceContainer<RenderTarget> renderTargets;
 

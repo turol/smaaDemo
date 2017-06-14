@@ -31,7 +31,6 @@ struct RendererImpl;
 struct DescriptorSetLayout;
 struct FragmentShader;
 struct Framebuffer;
-struct Shader;
 struct VertexShader;
 
 

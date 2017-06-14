@@ -131,17 +131,13 @@ FragmentShader::~FragmentShader() {
 }
 
 
-Shader::Shader(GLuint program_)
-: program(program_)
+Pipeline::Pipeline()
+: shader(0)
 {
 }
 
 
-Shader::~Shader() {
-	if (program != 0) {
-		glDeleteProgram(program);
-		program = 0;
-	}
+Pipeline::~Pipeline() {
 }
 
 
@@ -392,7 +388,6 @@ RendererImpl::~RendererImpl() {
 	renderTargets.clear();
 
 	pipelines.clear();
-	shaders.clear();
 	vertexShaders.clear();
 	fragmentShaders.clear();
 
@@ -628,14 +623,6 @@ static void checkShaderResources(const std::string &name, const std::vector<Shad
 
 
 PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
-	// TODO: something better
-	uint32_t handle = pipelines.size() + 1;
-	auto it = pipelines.find(handle);
-	while (it != pipelines.end()) {
-		handle++;
-		it = pipelines.find(handle);
-	}
-
 	assert(desc.vertexShader_.handle != 0);
 	assert(desc.fragmentShader_.handle != 0);
 	assert(desc.renderPass_.handle != 0);
@@ -678,13 +665,11 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	}
 	glUseProgram(program);
 
-	shaders.emplace(program, std::make_unique<Shader>(program));
+	Pipeline &pipeline = pipelines.add(program);
+	pipeline.desc      = desc;
+	pipeline.shader    = program;
 
-	Pipeline pipeline(desc, program);
-
-	pipelines.emplace(handle, pipeline);
-
-	return handle;
+	return PipelineHandle(program);
 }
 
 
@@ -963,38 +948,35 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 
 	// TODO: make sure current renderpass matches the one in pipeline
 
-	auto it = pipelines.find(pipeline);
-	assert(it != pipelines.end());
-
-	const auto &p = it->second;
+	const auto &p = pipelines.get(pipeline);
 
 	// TODO: shadow state, set only necessary
 	glUseProgram(p.shader);
-	if (p.depthWrite_) {
+	if (p.desc.depthWrite_) {
 		glDepthMask(GL_TRUE);
 	} else {
 		glDepthMask(GL_FALSE);
 	}
 
-	if (p.depthTest_) {
+	if (p.desc.depthTest_) {
 		glEnable(GL_DEPTH_TEST);
 	} else {
 		glDisable(GL_DEPTH_TEST);
 	}
 
-	if (p.cullFaces_) {
+	if (p.desc.cullFaces_) {
 		glEnable(GL_CULL_FACE);
 	} else {
 		glDisable(GL_CULL_FACE);
 	}
 
-	if (p.scissorTest_) {
+	if (p.desc.scissorTest_) {
 		glEnable(GL_SCISSOR_TEST);
 	} else {
 		glDisable(GL_SCISSOR_TEST);
 	}
 
-	if (p.blending_) {
+	if (p.desc.blending_) {
 		glEnable(GL_BLEND);
 		// TODO: get from Pipeline
 		glBlendEquation(GL_FUNC_ADD);
@@ -1004,7 +986,7 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	}
 
 	uint32_t oldMask = currentPipeline.vertexAttribMask;
-	uint32_t newMask = p.vertexAttribMask;
+	uint32_t newMask = p.desc.vertexAttribMask;
 
 	// enable/disable changed attributes
 	uint32_t vattrChanged = oldMask ^ newMask;
@@ -1022,7 +1004,7 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	}
 
 	// set format on new attributes
-	const auto &attribs = p.vertexAttribs;
+	const auto &attribs = p.desc.vertexAttribs;
 	while (newMask) {
 		int bit = __builtin_ctz(newMask);
 		uint32_t mask = 1 << bit;
@@ -1046,7 +1028,7 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 		newMask &= ~mask;
 	}
 
-	currentPipeline = p;
+	currentPipeline = p.desc;
 }
 
 
