@@ -1243,10 +1243,17 @@ void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int widt
 }
 
 
-void RendererImpl::setScissorRect(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
+void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 	assert(validPipeline);
+	// TODO: check current pipeline has scissor enabled
 
-	STUBBED("");
+	vk::Rect2D rect;
+	rect.offset.x      = x;
+	rect.offset.y      = y;
+	rect.extent.width  = width;
+	rect.extent.height = height;
+
+	currentCommandBuffer.setScissor(0, 1, &rect);
 }
 
 
