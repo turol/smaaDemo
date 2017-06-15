@@ -73,8 +73,8 @@ struct FragmentShader {
 	FragmentShader(const FragmentShader &) = delete;
 	FragmentShader &operator=(const FragmentShader &) = delete;
 
-	FragmentShader(FragmentShader &&) = delete;
-	FragmentShader &operator=(FragmentShader &&) = delete;
+	FragmentShader(FragmentShader &&)            = default;
+	FragmentShader &operator=(FragmentShader &&) = default;
 
 
 	FragmentShader();
@@ -453,7 +453,7 @@ struct RendererImpl {
 	ResourceContainer<DescriptorSetLayout> dsLayouts;
 	ResourceContainer<RenderPass> renderPasses;
 	ResourceContainer<VertexShader>    vertexShaders;
-	std::unordered_map<GLuint, std::unique_ptr<FragmentShader> >  fragmentShaders;
+	ResourceContainer<FragmentShader>  fragmentShaders;
 	ResourceContainer<Pipeline>                        pipelines;
 
 	ResourceContainer<RenderTarget> renderTargets;

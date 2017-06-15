@@ -120,10 +120,6 @@ FragmentShader::FragmentShader()
 
 
 FragmentShader::~FragmentShader() {
-	assert(shader != 0);
-
-	glDeleteShader(shader);
-	shader = 0;
 }
 
 
@@ -390,7 +386,11 @@ RendererImpl::~RendererImpl() {
 		v.shader = 0;
 	} );
 
-	fragmentShaders.clear();
+	fragmentShaders.clearWith([](FragmentShader &f) {
+		assert(f.shader != 0);
+		glDeleteShader(f.shader);
+		f.shader = 0;
+	} );
 
 	glBindVertexArray(0);
 	glDeleteVertexArrays(1, &vao);
@@ -561,13 +561,11 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 		writeFile(fragmentShaderName + ".prep", src);
 	}
 
-	auto f = std::make_unique<FragmentShader>();
 	auto id = createShader(GL_FRAGMENT_SHADER, name, src);
-	f->shader = id;
-	f->name      = fragmentShaderName;
-	f->resources = std::move(resources);
-
-	fragmentShaders.emplace(id, std::move(f));
+	auto &f = fragmentShaders.add(id);
+	f.shader = id;
+	f.name      = fragmentShaderName;
+	f.resources = std::move(resources);
 
 	return FragmentShaderHandle(id);
 }
@@ -627,9 +625,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	assert(desc.renderPass_.handle != 0);
 
 	const auto &v = vertexShaders.get(desc.vertexShader_.handle);
-
-	auto fit = fragmentShaders.find(desc.fragmentShader_.handle);
-	assert(fit != fragmentShaders.end());
+    const auto &f = fragmentShaders.get(desc.fragmentShader_.handle);
 
 	// match shader resources against pipeline layouts
 	{
@@ -641,7 +637,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 			}
 		}
 		checkShaderResources(v.name, v.resources, layouts);
-		checkShaderResources(fit->second->name, fit->second->resources, layouts);
+		checkShaderResources(f.name, f.resources, layouts);
 	}
 
 	// TODO: cache shaders
