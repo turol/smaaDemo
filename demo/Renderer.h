@@ -503,11 +503,13 @@ public:
 
 struct RendererDesc {
 	bool debug;
+	unsigned int  ephemeralRingBufSize;
 	SwapchainDesc swapchain;
 
 
 	RendererDesc()
 	: debug(false)
+	, ephemeralRingBufSize(16 * 1048576)
 	{
 	}
 };

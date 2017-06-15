@@ -442,6 +442,12 @@ struct RendererImpl {
 
 #ifdef RENDERER_OPENGL
 
+	unsigned int  ringBufSize;
+	unsigned int  ringBufPtr;
+	bool          persistentMapInUse;
+	GLuint        persistentBuf;
+	char         *persistentMapping;
+
 	PipelineDesc  currentPipeline;
 
 	SDL_Window *window;

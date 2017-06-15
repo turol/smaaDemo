@@ -272,6 +272,12 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
 , savePreprocessedShaders(false)
+, frameNum(0)
+, ringBufSize(0)
+, ringBufPtr(0)
+, persistentMapInUse(false)
+, persistentBuf(0)
+, persistentMapping(nullptr)
 , window(nullptr)
 , context(nullptr)
 , vao(0)
@@ -348,6 +354,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		exit(1);
 	}
 
+	if (!GLEW_ARB_buffer_storage) {
+		printf("ARB_buffer_storage not found\n");
+		exit(1);
+	}
+
 	if (desc.debug) {
 		if (GLEW_KHR_debug) {
 			printf("KHR_debug found\n");
@@ -369,6 +380,32 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	glCreateVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
+	// set up ring buffer
+	glCreateBuffers(1, &persistentBuf);
+	// TODO: proper error checking
+	assert(persistentBuf != 0);
+	assert(desc.ephemeralRingBufSize > 0);
+	unsigned int bufferFlags = 0;
+	// TODO: if debug on, disable persistent buffer because apitrace can't trace it
+	// TODO: should have separate toggles for debug messages and debug tracing
+	persistentMapInUse = true;
+
+	if (!persistentMapInUse) {
+		// need GL_DYNAMIC_STORAGE_BIT since we intend to glBufferSubData it
+		bufferFlags |= GL_DYNAMIC_STORAGE_BIT;
+	} else {
+		// TODO: do we need GL_DYNAMIC_STORAGE_BIT?
+		// spec seems to say only for glBufferSubData, not persistent mapping
+		bufferFlags |= GL_MAP_WRITE_BIT;
+		bufferFlags |= GL_MAP_PERSISTENT_BIT;
+		bufferFlags |= GL_MAP_COHERENT_BIT;
+	}
+
+	glNamedBufferStorage(persistentBuf, desc.ephemeralRingBufSize, nullptr, bufferFlags);
+	if (persistentMapInUse) {
+		persistentMapping = reinterpret_cast<char *>(glMapNamedBufferRange(persistentBuf, 0, desc.ephemeralRingBufSize, bufferFlags));
+	}
+
 	// swap once to get better traces
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	SDL_GL_SwapWindow(window);
@@ -376,6 +413,18 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 
 RendererImpl::~RendererImpl() {
+	assert(persistentBuf != 0);
+	// TODO: need to wait until GPU finished with last frames?
+	if (persistentMapInUse) {
+		glUnmapNamedBuffer(persistentBuf);
+		persistentMapping = nullptr;
+	} else {
+		assert(persistentMapping == nullptr);
+	}
+
+	glDeleteBuffers(1, &persistentBuf);
+	persistentBuf = 0;
+
 	renderPasses.clear();
 	renderTargets.clear();
 
