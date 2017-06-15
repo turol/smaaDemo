@@ -1192,15 +1192,17 @@ void RendererImpl::endRenderPass() {
 }
 
 
-void RendererImpl::bindPipeline(PipelineHandle /* pipeline */) {
+void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	assert(inFrame);
 	assert(inRenderPass);
 	assert(pipelineDrawn);
 	pipelineDrawn = false;
 	validPipeline = true;
-	// assert(pipeline != 0);
 
-	STUBBED("");
+	// TODO: make sure current renderpass matches the one in pipeline
+
+	const auto &p = pipelines.get(pipeline);
+	currentCommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, p.pipeline);
 }
 
 
