@@ -1229,10 +1229,17 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 }
 
 
-void RendererImpl::setViewport(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
+void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 	assert(inFrame);
 
-	STUBBED("");
+	vk::Viewport vp;
+	vp.x        = x;
+	STUBBED("check viewport y direction");
+	vp.y        = y;
+	vp.width    = width;
+	vp.height   = height;
+	vp.maxDepth = 1.0f;
+	currentCommandBuffer.setViewport(0, 1, &vp);
 }
 
 
