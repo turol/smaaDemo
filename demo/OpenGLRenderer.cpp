@@ -400,6 +400,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	// TODO: if debug on, disable persistent buffer because apitrace can't trace it
 	// TODO: should have separate toggles for debug messages and debug tracing
 	persistentMapInUse = true;
+	ringBufSize        = desc.ephemeralRingBufSize;
 
 	if (!persistentMapInUse) {
 		// need GL_DYNAMIC_STORAGE_BIT since we intend to glBufferSubData it
@@ -412,9 +413,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		bufferFlags |= GL_MAP_COHERENT_BIT;
 	}
 
-	glNamedBufferStorage(persistentBuf, desc.ephemeralRingBufSize, nullptr, bufferFlags);
+	glNamedBufferStorage(persistentBuf, ringBufSize, nullptr, bufferFlags);
 	if (persistentMapInUse) {
-		persistentMapping = reinterpret_cast<char *>(glMapNamedBufferRange(persistentBuf, 0, desc.ephemeralRingBufSize, bufferFlags));
+		persistentMapping = reinterpret_cast<char *>(glMapNamedBufferRange(persistentBuf, 0, ringBufSize, bufferFlags));
 	}
 
 	// swap once to get better traces
