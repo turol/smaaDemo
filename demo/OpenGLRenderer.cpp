@@ -506,6 +506,10 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 		r.binding = glsl.get_decoration(ubo.id, spv::DecorationBinding);
 		r.type    = UniformBuffer;
 		resources.push_back(r);
+
+		// opengl doesn't like set decorations, strip them
+		// TODO: check that indices don't conflict
+		glsl.unset_decoration(ubo.id, spv::DecorationDescriptorSet);
 	}
 
 	for (const auto &ssbo : spvResources.storage_buffers) {
@@ -514,6 +518,10 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 		r.binding = glsl.get_decoration(ssbo.id, spv::DecorationBinding);
 		r.type    = StorageBuffer;
 		resources.push_back(r);
+
+		// opengl doesn't like set decorations, strip them
+		// TODO: check that indices don't conflict
+		glsl.unset_decoration(ssbo.id, spv::DecorationDescriptorSet);
 	}
 
 	for (const auto &s : spvResources.separate_samplers) {
@@ -522,6 +530,10 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 		r.binding = glsl.get_decoration(s.id, spv::DecorationBinding);
 		r.type    = Sampler;
 		resources.push_back(r);
+
+		// opengl doesn't like set decorations, strip them
+		// TODO: check that indices don't conflict
+		glsl.unset_decoration(s.id, spv::DecorationDescriptorSet);
 	}
 
 	for (const auto &tex : spvResources.separate_images) {
@@ -530,6 +542,10 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 		r.binding = glsl.get_decoration(tex.id, spv::DecorationBinding);
 		r.type    = Texture;
 		resources.push_back(r);
+
+		// opengl doesn't like set decorations, strip them
+		// TODO: check that indices don't conflict
+		glsl.unset_decoration(tex.id, spv::DecorationDescriptorSet);
 	}
 
 	for (const auto &s : spvResources.sampled_images) {
