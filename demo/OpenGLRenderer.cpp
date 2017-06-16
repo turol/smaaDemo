@@ -526,10 +526,10 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 
 	for (const auto &tex : spvResources.separate_images) {
 		ShaderResource r;
-        r.set     = glsl.get_decoration(tex.id, spv::DecorationDescriptorSet);
+		r.set     = glsl.get_decoration(tex.id, spv::DecorationDescriptorSet);
 		r.binding = glsl.get_decoration(tex.id, spv::DecorationBinding);
 		r.type    = Texture;
-        resources.push_back(r);
+		resources.push_back(r);
 	}
 
 	for (const auto &s : spvResources.sampled_images) {
