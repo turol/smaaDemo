@@ -337,10 +337,14 @@ struct Sampler {
 template <class T>
 class ResourceContainer {
 	std::unordered_map<unsigned int, T> resources;
+	unsigned int                        next;
 
 
 public:
-	ResourceContainer() {}
+	ResourceContainer()
+	: next(1)
+	{
+	}
 
 	ResourceContainer(const ResourceContainer<T> &)            = delete;
 	ResourceContainer &operator=(const ResourceContainer<T> &) = delete;
@@ -352,13 +356,17 @@ public:
 
 	std::pair<T &, unsigned int> add() {
 		// TODO: something better, this breaks with remove()
-		unsigned int handle = resources.size() + 1;
+		unsigned int handle = next;
+		next++;
 		auto result = resources.emplace(handle, T());
 		assert(result.second);
 		return std::make_pair(std::ref(result.first->second), handle);
 	}
 
 	T &add(unsigned int handle) {
+		if (handle >= next) {
+			next = handle;
+		}
 		auto result = resources.emplace(handle, T());
 		assert(result.second);
 		return result.first->second;
