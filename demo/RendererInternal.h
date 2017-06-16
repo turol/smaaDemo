@@ -482,6 +482,7 @@ struct RendererImpl {
 
 	GLuint vao;
 	bool idxBuf16Bit;
+	unsigned int  indexBufByteOffset;
 
 	ResourceContainer<DescriptorSetLayout> dsLayouts;
 	ResourceContainer<RenderPass> renderPasses;

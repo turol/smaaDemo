@@ -293,6 +293,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , context(nullptr)
 , vao(0)
 , idxBuf16Bit(false)
+, indexBufByteOffset(0)
 , inFrame(false)
 , inRenderPass(false)
 , validPipeline(false)
@@ -1121,6 +1122,7 @@ void RendererImpl::bindIndexBuffer(BufferHandle handle, bool bit16) {
 	const Buffer &buffer = buffers.get(handle);
 	assert(buffer.buffer != 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.buffer);
+	indexBufByteOffset = 0;
 	idxBuf16Bit = bit16;
 }
 
@@ -1213,7 +1215,8 @@ void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int i
 
 	// TODO: get primitive from current pipeline
 	GLenum format = idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT ;
-	glDrawElementsInstanced(GL_TRIANGLES, vertexCount, format, NULL, instanceCount);
+	auto ptr = reinterpret_cast<const void *>(indexBufByteOffset);
+	glDrawElementsInstanced(GL_TRIANGLES, vertexCount, format, ptr, instanceCount);
 }
 
 
