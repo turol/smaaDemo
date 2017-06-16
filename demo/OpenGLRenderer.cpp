@@ -103,6 +103,17 @@ static GLenum glTexBaseFormat(Format format) {
 }
 
 
+Buffer::Buffer()
+: buffer(0)
+, size(0)
+{
+}
+
+
+Buffer::~Buffer() {
+}
+
+
 VertexShader::VertexShader()
 : shader(0)
 {
@@ -454,11 +465,15 @@ RendererImpl::~RendererImpl() {
 BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	assert(size != 0);
 
-	GLuint buffer = 0;
-	glCreateBuffers(1, &buffer);
-	glNamedBufferData(buffer, size, contents, GL_STATIC_DRAW);
+	GLuint handle = 0;
+	glCreateBuffers(1, &handle);
+	glNamedBufferData(handle, size, contents, GL_STATIC_DRAW);
 
-	return buffer;
+	Buffer &buffer = buffers.add(handle);
+	buffer.buffer = handle;
+	buffer.size   = size;
+
+	return handle;
 }
 
 
@@ -467,13 +482,17 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	assert(contents != nullptr);
 
 	// TODO: sub-allocate from persistent coherent buffer
-	GLuint buffer = 0;
-	glCreateBuffers(1, &buffer);
-	glNamedBufferData(buffer, size, contents, GL_STREAM_DRAW);
+	GLuint handle = 0;
+	glCreateBuffers(1, &handle);
+	glNamedBufferData(handle, size, contents, GL_STREAM_DRAW);
 
-	ephemeralBuffers.push_back(buffer);
+	Buffer &buffer = buffers.add(handle);
+	buffer.buffer = handle;
+	buffer.size   = size;
 
-	return buffer;
+	ephemeralBuffers.push_back(handle);
+
+	return handle;
 }
 
 
@@ -819,6 +838,7 @@ DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const Descript
 
 
 void RendererImpl::deleteBuffer(BufferHandle handle) {
+	buffers.remove(handle);
 	glDeleteBuffers(1, &handle);
 }
 
@@ -927,6 +947,7 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 	// TODO: multiple frames, only delete after no longer in use by GPU
 	// TODO: use persistent coherent buffer
 	for (const auto &buffer : ephemeralBuffers) {
+		buffers.remove(buffer);
 		glDeleteBuffers(1, &buffer);
 	}
 	ephemeralBuffers.clear();

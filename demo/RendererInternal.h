@@ -46,6 +46,25 @@ struct Pipeline {
 	~Pipeline();
 };
 
+
+struct Buffer {
+	GLuint        buffer;
+	unsigned int  size;
+	// TODO: usage flags for debugging
+
+
+	Buffer(const Buffer &)            = delete;
+	Buffer &operator=(const Buffer &) = delete;
+
+	Buffer(Buffer &&)            = default;
+	Buffer &operator=(Buffer &&) = default;
+
+	Buffer();
+
+	~Buffer();
+};
+
+
 struct VertexShader {
 	GLuint shader;
 	std::string name;
@@ -469,6 +488,7 @@ struct RendererImpl {
 	ResourceContainer<VertexShader>    vertexShaders;
 	ResourceContainer<FragmentShader>  fragmentShaders;
 	ResourceContainer<Pipeline>                        pipelines;
+	ResourceContainer<Buffer>              buffers;
 
 	ResourceContainer<RenderTarget> renderTargets;
 
