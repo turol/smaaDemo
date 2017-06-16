@@ -465,15 +465,13 @@ RendererImpl::~RendererImpl() {
 BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	assert(size != 0);
 
-	GLuint handle = 0;
-	glCreateBuffers(1, &handle);
-	glNamedBufferData(handle, size, contents, GL_STATIC_DRAW);
-
-	Buffer &buffer = buffers.add(handle);
-	buffer.buffer = handle;
+	auto result    = buffers.add();
+	Buffer &buffer = result.first;
+	glCreateBuffers(1, &buffer.buffer);
+	glNamedBufferData(buffer.buffer, size, contents, GL_STATIC_DRAW);
 	buffer.size   = size;
 
-	return handle;
+	return result.second;
 }
 
 
@@ -482,17 +480,15 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	assert(contents != nullptr);
 
 	// TODO: sub-allocate from persistent coherent buffer
-	GLuint handle = 0;
-	glCreateBuffers(1, &handle);
-	glNamedBufferData(handle, size, contents, GL_STREAM_DRAW);
-
-	Buffer &buffer = buffers.add(handle);
-	buffer.buffer = handle;
+	auto result    = buffers.add();
+	Buffer &buffer = result.first;
+	glCreateBuffers(1, &buffer.buffer);
+	glNamedBufferData(buffer.buffer, size, contents, GL_STREAM_DRAW);
 	buffer.size   = size;
 
-	ephemeralBuffers.push_back(handle);
+	ephemeralBuffers.push_back(result.second);
 
-	return handle;
+	return result.second;
 }
 
 
@@ -838,8 +834,11 @@ DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const Descript
 
 
 void RendererImpl::deleteBuffer(BufferHandle handle) {
+	Buffer &buffer = buffers.get(handle);
+	glDeleteBuffers(1, &buffer.buffer);
+	buffer.buffer = 0;
+
 	buffers.remove(handle);
-	glDeleteBuffers(1, &handle);
 }
 
 
@@ -946,9 +945,11 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 
 	// TODO: multiple frames, only delete after no longer in use by GPU
 	// TODO: use persistent coherent buffer
-	for (const auto &buffer : ephemeralBuffers) {
-		buffers.remove(buffer);
-		glDeleteBuffers(1, &buffer);
+	for (auto handle : ephemeralBuffers) {
+		Buffer &buffer = buffers.get(handle);
+		glDeleteBuffers(1, &buffer.buffer);
+		buffer.buffer = 0;
+		buffers.remove(handle);
 	}
 	ephemeralBuffers.clear();
 }
@@ -1096,18 +1097,24 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 }
 
 
-void RendererImpl::bindIndexBuffer(BufferHandle buffer, bool bit16) {
+void RendererImpl::bindIndexBuffer(BufferHandle handle, bool bit16) {
 	assert(inFrame);
 	assert(validPipeline);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer);
+
+	const Buffer &buffer = buffers.get(handle);
+	assert(buffer.buffer != 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.buffer);
 	idxBuf16Bit = bit16;
 }
 
 
-void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
+void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 	assert(inFrame);
 	assert(validPipeline);
-	glBindVertexBuffer(binding, buffer, 0, currentPipeline.vertexBuffers[binding].stride);
+
+	const Buffer &buffer = buffers.get(handle);
+	assert(buffer.buffer != 0);
+	glBindVertexBuffer(binding, buffer.buffer, 0, currentPipeline.vertexBuffers[binding].stride);
 }
 
 
@@ -1128,15 +1135,19 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 
 		case UniformBuffer: {
 			// this is part of the struct, we know it's correctly aligned and right type
+			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
+			const Buffer &buffer = buffers.get(handle);
+			assert(buffer.buffer != 0);
 			// FIXME: index is not right here
-			GLuint buffer = *reinterpret_cast<const BufferHandle *>(data + l.offset);
-			glBindBufferBase(GL_UNIFORM_BUFFER, index, buffer);
+			glBindBufferBase(GL_UNIFORM_BUFFER, index, buffer.buffer);
 		} break;
 
 		case StorageBuffer: {
-			GLuint buffer = *reinterpret_cast<const BufferHandle *>(data + l.offset);
+			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
+			const Buffer &buffer = buffers.get(handle);
+			assert(buffer.buffer != 0);
 			// FIXME: index is not right here
-			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, buffer);
+			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, buffer.buffer);
 		} break;
 
 		case Sampler: {
