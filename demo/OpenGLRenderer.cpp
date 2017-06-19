@@ -1211,12 +1211,17 @@ void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
 void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
 	assert(inRenderPass);
 	assert(validPipeline);
+	assert(instanceCount > 0);
 	pipelineDrawn = true;
 
 	// TODO: get primitive from current pipeline
 	GLenum format = idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT ;
 	auto ptr = reinterpret_cast<const void *>(indexBufByteOffset);
+	if (instanceCount == 1) {
+		glDrawElements(GL_TRIANGLES, vertexCount, format, ptr);
+	} else {
 	glDrawElementsInstanced(GL_TRIANGLES, vertexCount, format, ptr, instanceCount);
+	}
 }
 
 
