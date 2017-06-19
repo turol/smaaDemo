@@ -1220,7 +1220,7 @@ void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int i
 	if (instanceCount == 1) {
 		glDrawElements(GL_TRIANGLES, vertexCount, format, ptr);
 	} else {
-	glDrawElementsInstanced(GL_TRIANGLES, vertexCount, format, ptr, instanceCount);
+		glDrawElementsInstanced(GL_TRIANGLES, vertexCount, format, ptr, instanceCount);
 	}
 }
 
