@@ -1275,4 +1275,13 @@ void RendererImpl::drawIndexedInstanced(unsigned int /* vertexCount */, unsigned
 }
 
 
+void RendererImpl::drawIndexedOffset(unsigned int /* vertexCount */, unsigned int /* firstIndex */) {
+	assert(inRenderPass);
+	assert(validPipeline);
+	pipelineDrawn = true;
+
+	STUBBED("");
+}
+
+
 #endif  // RENDERER_VULKAN

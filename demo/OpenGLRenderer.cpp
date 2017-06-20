@@ -1225,4 +1225,13 @@ void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int i
 }
 
 
+void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex) {
+	GLenum format        = idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
+	unsigned int idxSize = idxBuf16Bit ? 2                 : 4 ;
+	auto ptr = reinterpret_cast<const char *>(firstIndex * idxSize + indexBufByteOffset);
+	// TODO: get primitive from current pipeline
+	glDrawElements(GL_TRIANGLES, vertexCount, format, ptr);
+}
+
+
 #endif //  RENDERER_OPENGL
