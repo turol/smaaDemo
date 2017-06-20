@@ -1269,7 +1269,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			renderer.bindIndexBuffer(idxBuf, true);
 			renderer.bindVertexBuffer(0, vtxBuf);
 
-			const ImDrawIdx* idx_buffer_offset = 0;
+			unsigned int idx_buffer_offset = 0;
 			for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++) {
 				const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
 				if (pcmd->UserCallback) {
