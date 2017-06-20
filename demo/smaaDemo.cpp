@@ -1280,9 +1280,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 				} else {
 					assert(pcmd->TextureId == 0);
 					renderer.setScissorRect(pcmd->ClipRect.x, pcmd->ClipRect.w, pcmd->ClipRect.z - pcmd->ClipRect.x, pcmd->ClipRect.w - pcmd->ClipRect.y);
-					// TODO: drawIndexed without instance
-					// and with offset
-					renderer.drawIndexedInstanced(pcmd->ElemCount, 1);
+					renderer.drawIndexedOffset(pcmd->ElemCount, idx_buffer_offset);
 				}
 				idx_buffer_offset += pcmd->ElemCount;
 			}
