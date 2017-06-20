@@ -105,6 +105,7 @@ static GLenum glTexBaseFormat(Format format) {
 
 Buffer::Buffer()
 : buffer(0)
+, ringBufferAlloc(false)
 , size(0)
 {
 }
@@ -1121,6 +1122,7 @@ void RendererImpl::bindIndexBuffer(BufferHandle handle, bool bit16) {
 
 	const Buffer &buffer = buffers.get(handle);
 	assert(buffer.buffer != 0);
+	assert(!buffer.ringBufferAlloc);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.buffer);
 	indexBufByteOffset = 0;
 	idxBuf16Bit = bit16;
@@ -1133,6 +1135,7 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 
 	const Buffer &buffer = buffers.get(handle);
 	assert(buffer.buffer != 0);
+	assert(!buffer.ringBufferAlloc);
 	glBindVertexBuffer(binding, buffer.buffer, 0, currentPipeline.vertexBuffers[binding].stride);
 }
 
@@ -1157,6 +1160,7 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			const Buffer &buffer = buffers.get(handle);
 			assert(buffer.buffer != 0);
+			assert(!buffer.ringBufferAlloc);
 			// FIXME: index is not right here
 			glBindBufferBase(GL_UNIFORM_BUFFER, index, buffer.buffer);
 		} break;
@@ -1165,6 +1169,7 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			const Buffer &buffer = buffers.get(handle);
 			assert(buffer.buffer != 0);
+			assert(!buffer.ringBufferAlloc);
 			// FIXME: index is not right here
 			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, buffer.buffer);
 		} break;
