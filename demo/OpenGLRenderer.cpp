@@ -287,8 +287,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , frameNum(0)
 , ringBufSize(0)
 , ringBufPtr(0)
+, ringBuffer(0)
 , persistentMapInUse(false)
-, persistentBuf(0)
 , persistentMapping(nullptr)
 , window(nullptr)
 , context(nullptr)
@@ -394,9 +394,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	glBindVertexArray(vao);
 
 	// set up ring buffer
-	glCreateBuffers(1, &persistentBuf);
+	glCreateBuffers(1, &ringBuffer);
 	// TODO: proper error checking
-	assert(persistentBuf != 0);
+	assert(ringBuffer != 0);
 	assert(desc.ephemeralRingBufSize > 0);
 	unsigned int bufferFlags = 0;
 	// TODO: if debug on, disable persistent buffer because apitrace can't trace it
@@ -415,9 +415,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		bufferFlags |= GL_MAP_COHERENT_BIT;
 	}
 
-	glNamedBufferStorage(persistentBuf, ringBufSize, nullptr, bufferFlags);
+	glNamedBufferStorage(ringBuffer, ringBufSize, nullptr, bufferFlags);
 	if (persistentMapInUse) {
-		persistentMapping = reinterpret_cast<char *>(glMapNamedBufferRange(persistentBuf, 0, ringBufSize, bufferFlags));
+		persistentMapping = reinterpret_cast<char *>(glMapNamedBufferRange(ringBuffer, 0, ringBufSize, bufferFlags));
 	}
 
 	// swap once to get better traces
@@ -427,17 +427,17 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 
 RendererImpl::~RendererImpl() {
-	assert(persistentBuf != 0);
+	assert(ringBuffer != 0);
 	// TODO: need to wait until GPU finished with last frames?
 	if (persistentMapInUse) {
-		glUnmapNamedBuffer(persistentBuf);
+		glUnmapNamedBuffer(ringBuffer);
 		persistentMapping = nullptr;
 	} else {
 		assert(persistentMapping == nullptr);
 	}
 
-	glDeleteBuffers(1, &persistentBuf);
-	persistentBuf = 0;
+	glDeleteBuffers(1, &ringBuffer);
+	ringBuffer = 0;
 
 	renderPasses.clear();
 	renderTargets.clear();

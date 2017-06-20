@@ -472,8 +472,8 @@ struct RendererImpl {
 
 	unsigned int  ringBufSize;
 	unsigned int  ringBufPtr;
+	GLuint        ringBuffer;
 	bool          persistentMapInUse;
-	GLuint        persistentBuf;
 	char         *persistentMapping;
 
 	PipelineDesc  currentPipeline;
