@@ -50,6 +50,7 @@ struct Pipeline {
 struct Buffer {
 	GLuint        buffer;
 	bool          ringBufferAlloc;
+	unsigned int  beginOffs;
 	unsigned int  size;
 	// TODO: usage flags for debugging
 

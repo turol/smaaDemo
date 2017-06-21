@@ -390,6 +390,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	printf("GL version: \"%s\"\n", glGetString(GL_VERSION));
 	printf("GLSL version: \"%s\"\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
+	GLint uboAlign = -1;
+	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uboAlign);
+	printf("UBO align: %d\n", uboAlign);
+	// FIXME: should store this and use it in createEphemeralBuffer
+	assert(uboAlign <= (1 << 8));
+
 	glCreateVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
@@ -472,7 +478,9 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	Buffer &buffer = result.first;
 	glCreateBuffers(1, &buffer.buffer);
 	glNamedBufferData(buffer.buffer, size, contents, GL_STATIC_DRAW);
-	buffer.size   = size;
+	buffer.ringBufferAlloc = false;
+	buffer.beginOffs       = 0;
+	buffer.size            = size;
 
 	return result.second;
 }
@@ -482,12 +490,42 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	// TODO: sub-allocate from persistent coherent buffer
+	// sub-allocate from persistent coherent buffer
+	// round current pointer up to necessary alignment
+	// TODO: UBOs need alignment queried from implementation
+	// TODO: need buffer usage flags for that
+	const unsigned int align = 8;
+	const unsigned int add   = (1 << align) - 1;
+	const unsigned int mask  = ~add;
+	unsigned int alignedPtr  = (ringBufPtr + add) & mask;
+	assert(ringBufPtr <= alignedPtr);
+	// TODO: ring buffer size should be pow2, se should use add & mask here too
+	unsigned int beginPtr    =  alignedPtr % ringBufSize;
+
+	if (beginPtr + size >= ringBufSize) {
+		// we went past the end and have to go back to beginning
+		// TODO: add and mask here too
+		ringBufPtr = (ringBufPtr / ringBufSize + 1) * ringBufSize;
+		assert((ringBufPtr & ~mask) == 0);
+		alignedPtr  = (ringBufPtr + add) & mask;
+		beginPtr    =  alignedPtr % ringBufSize;
+		assert(beginPtr + size < ringBufSize);
+		assert(beginPtr == 0);
+	}
+	ringBufPtr = alignedPtr + size;
+
+	if (persistentMapInUse) {
+		memcpy(persistentMapping + beginPtr, contents, size);
+	} else {
+		glNamedBufferSubData(ringBuffer, beginPtr, size, contents);
+	}
+
 	auto result    = buffers.add();
 	Buffer &buffer = result.first;
-	glCreateBuffers(1, &buffer.buffer);
-	glNamedBufferData(buffer.buffer, size, contents, GL_STREAM_DRAW);
-	buffer.size   = size;
+	buffer.buffer          = ringBuffer;
+	buffer.ringBufferAlloc = true;
+	buffer.beginOffs       = beginPtr;
+	buffer.size            = size;
 
 	ephemeralBuffers.push_back(result.second);
 
@@ -966,8 +1004,8 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 	// TODO: use persistent coherent buffer
 	for (auto handle : ephemeralBuffers) {
 		Buffer &buffer = buffers.get(handle);
-		glDeleteBuffers(1, &buffer.buffer);
-		buffer.buffer = 0;
+		assert(buffer.buffer == ringBuffer);
+		assert(buffer.size   >  0);
 		buffers.remove(handle);
 	}
 	ephemeralBuffers.clear();
@@ -1121,10 +1159,16 @@ void RendererImpl::bindIndexBuffer(BufferHandle handle, bool bit16) {
 	assert(validPipeline);
 
 	const Buffer &buffer = buffers.get(handle);
-	assert(buffer.buffer != 0);
-	assert(!buffer.ringBufferAlloc);
+	assert(buffer.size > 0);
+	if (buffer.ringBufferAlloc) {
+		assert(buffer.buffer == ringBuffer);
+		assert(buffer.beginOffs + buffer.size < ringBufSize);
+	} else {
+		assert(buffer.buffer    != 0);
+		assert(buffer.beginOffs == 0);
+	}
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.buffer);
-	indexBufByteOffset = 0;
+	indexBufByteOffset = buffer.beginOffs;
 	idxBuf16Bit = bit16;
 }
 
@@ -1134,9 +1178,15 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 	assert(validPipeline);
 
 	const Buffer &buffer = buffers.get(handle);
-	assert(buffer.buffer != 0);
-	assert(!buffer.ringBufferAlloc);
-	glBindVertexBuffer(binding, buffer.buffer, 0, currentPipeline.vertexBuffers[binding].stride);
+	assert(buffer.size >  0);
+	if (buffer.ringBufferAlloc) {
+		assert(buffer.buffer == ringBuffer);
+		assert(buffer.beginOffs + buffer.size < ringBufSize);
+	} else {
+		assert(buffer.buffer    != 0);
+		assert(buffer.beginOffs == 0);
+	}
+	glBindVertexBuffer(binding, buffer.buffer, buffer.beginOffs, currentPipeline.vertexBuffers[binding].stride);
 }
 
 
@@ -1159,19 +1209,31 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 			// this is part of the struct, we know it's correctly aligned and right type
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			const Buffer &buffer = buffers.get(handle);
-			assert(buffer.buffer != 0);
-			assert(!buffer.ringBufferAlloc);
+			assert(buffer.size > 0);
+			if (buffer.ringBufferAlloc) {
+				assert(buffer.buffer == ringBuffer);
+				assert(buffer.beginOffs + buffer.size < ringBufSize);
+			} else {
+				assert(buffer.buffer    != 0);
+				assert(buffer.beginOffs == 0);
+			}
 			// FIXME: index is not right here
-			glBindBufferBase(GL_UNIFORM_BUFFER, index, buffer.buffer);
+			glBindBufferRange(GL_UNIFORM_BUFFER, index, buffer.buffer, buffer.beginOffs, buffer.size);
 		} break;
 
 		case StorageBuffer: {
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			const Buffer &buffer = buffers.get(handle);
-			assert(buffer.buffer != 0);
-			assert(!buffer.ringBufferAlloc);
+			assert(buffer.size  > 0);
+			if (buffer.ringBufferAlloc) {
+				assert(buffer.buffer == ringBuffer);
+				assert(buffer.beginOffs + buffer.size < ringBufSize);
+			} else {
+				assert(buffer.buffer    != 0);
+				assert(buffer.beginOffs == 0);
+			}
 			// FIXME: index is not right here
-			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, buffer.buffer);
+			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, index, buffer.buffer, buffer.beginOffs, buffer.size);
 		} break;
 
 		case Sampler: {
