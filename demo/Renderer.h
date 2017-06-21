@@ -509,7 +509,7 @@ struct RendererDesc {
 
 	RendererDesc()
 	: debug(false)
-	, ephemeralRingBufSize(16 * 1048576)
+	, ephemeralRingBufSize(1 * 1048576)
 	{
 	}
 };
