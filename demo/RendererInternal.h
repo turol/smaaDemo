@@ -469,10 +469,11 @@ struct RendererImpl {
 	bool savePreprocessedShaders;
 	unsigned int frameNum;
 
-#ifdef RENDERER_OPENGL
-
 	unsigned int  ringBufSize;
 	unsigned int  ringBufPtr;
+
+#ifdef RENDERER_OPENGL
+
 	GLuint        ringBuffer;
 	bool          persistentMapInUse;
 	char         *persistentMapping;
