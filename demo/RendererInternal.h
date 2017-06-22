@@ -205,6 +205,9 @@ struct RenderPass {
 
 #include <vulkan/vulkan.hpp>
 
+#include <limits.h>  // required but not included by vk_mem_alloc.h
+#include "vk_mem_alloc.h"
+
 
 struct Buffer {
 	vk::Buffer buffer;
@@ -559,6 +562,8 @@ struct RendererImpl {
 	vk::CommandPool                    commandPool;
 
 	vk::CommandBuffer                  currentCommandBuffer;
+
+	VmaAllocator                       allocator;
 
 	std::unordered_map<unsigned int, VertexShader>  vertexShaders;
 	std::unordered_map<unsigned int, FragmentShader>  fragmentShaders;

@@ -59,6 +59,7 @@ CFLAGS+=-isystem$(TOPDIR)/foreign/glm
 CFLAGS+=-isystem$(TOPDIR)/foreign/imgui
 CFLAGS+=-isystem$(TOPDIR)/foreign/stb
 CFLAGS+=-isystem$(TOPDIR)/foreign/tclap/include
+CFLAGS+=-isystem$(TOPDIR)/foreign/vulkanMemoryAllocator/src
 
 
 # (call directory-module, dirname)

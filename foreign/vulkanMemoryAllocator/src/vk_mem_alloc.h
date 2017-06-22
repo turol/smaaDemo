@@ -241,7 +241,7 @@ void vmaCalculateStats(
     VmaAllocator allocator,
     VmaStats* pStats);
 
-#define VMA_STATS_STRING_ENABLED 1
+#define VMA_STATS_STRING_ENABLED 0
 
 #if VMA_STATS_STRING_ENABLED
 
@@ -463,7 +463,7 @@ CONFIGURATION
 Change these definitions depending on your environment.
 */
 
-#define VMA_USE_STL_CONTAINERS 0
+#define VMA_USE_STL_CONTAINERS 1
 
 /* Set this macro to 1 to make the library including and using STL containers:
 std::pair, std::vector, std::list, std::unordered_map.
@@ -511,9 +511,19 @@ remove them if not needed.
 // Value used as null pointer. Define it to e.g.: nullptr, NULL, 0, (void*)0.
 #define VMA_NULL   nullptr
 
+#ifdef _WIN32
+
 #define VMA_ALIGN_OF(type)       (__alignof(type))
 #define VMA_SYSTEM_ALIGNED_MALLOC(size, alignment)   (_aligned_malloc((size), (alignment)))
 #define VMA_SYSTEM_FREE(ptr)     _aligned_free(ptr)
+
+#else  // _WIN32
+
+#define VMA_ALIGN_OF(type)       (__alignof(type))
+#define VMA_SYSTEM_ALIGNED_MALLOC(size, alignment)   (aligned_alloc((size), (alignment)))
+#define VMA_SYSTEM_FREE(ptr)     free(ptr)
+
+#endif  // _WIN32
 
 #define VMA_MIN(v1, v2)          (std::min((v1), (v2)))
 #define VMA_MAX(v1, v2)          (std::max((v1), (v2)))
@@ -886,7 +896,7 @@ public:
     
     VmaVector(const VmaVector<T, AllocatorT>& src) :
         m_Allocator(src.m_Allocator),
-        m_pArray(src.m_Count ? (T*)VmaAllocateArray<T>(allocator->m_pCallbacks, src.m_Count) : VMA_NULL),
+        m_pArray(src.m_Count ? (T*)VmaAllocateArray<T>(m_Allocator->m_pCallbacks, src.m_Count) : VMA_NULL),
         m_Count(src.m_Count),
         m_Capacity(src.m_Count)
     {
@@ -956,7 +966,7 @@ public:
         
         if(newCapacity != m_Capacity)
         {
-            T* const newArray = newCapacity ? VmaAllocateArray<T>(m_hAllocator, newCapacity) : VMA_NULL;
+            T* const newArray = newCapacity ? VmaAllocateArray<T>(m_Allocator, newCapacity) : VMA_NULL;
             if(m_Count != 0)
                 memcpy(newArray, m_pArray, m_Count * sizeof(T));
             VmaFree(m_Allocator.m_pCallbacks, m_pArray);
@@ -1340,7 +1350,7 @@ VmaListItem<T>* VmaRawList<T>::PushFront(const T& value)
 {
     ItemType* const pNewItem = PushFront();
     pNewItem->Value = value;
-    return newItem;
+    return pNewItem;
 }
 
 template<typename T>
