@@ -1,0 +1,5 @@
+commit 9137407734dac874333e3cd6f55dbe9bd8c331e4
+Author: Adam Sawicki <Adam.Sawicki@amd.com>
+Date:   Tue Jun 20 12:52:26 2017 +0200
+
+    Small addition to the documentation.
