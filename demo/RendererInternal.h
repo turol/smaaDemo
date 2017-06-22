@@ -510,14 +510,13 @@ struct RendererImpl {
 	bool idxBuf16Bit;
 	unsigned int  indexBufByteOffset;
 
-	ResourceContainer<DescriptorSetLayout> dsLayouts;
-	ResourceContainer<RenderPass> renderPasses;
-	ResourceContainer<VertexShader>    vertexShaders;
-	ResourceContainer<FragmentShader>  fragmentShaders;
-	ResourceContainer<Pipeline>                        pipelines;
-	ResourceContainer<Buffer>              buffers;
-
-	ResourceContainer<RenderTarget> renderTargets;
+	ResourceContainer<DescriptorSetLayout>  dsLayouts;
+	ResourceContainer<RenderPass>           renderPasses;
+	ResourceContainer<VertexShader>         vertexShaders;
+	ResourceContainer<FragmentShader>       fragmentShaders;
+	ResourceContainer<Pipeline>             pipelines;
+	ResourceContainer<Buffer>               buffers;
+	ResourceContainer<RenderTarget>         renderTargets;
 
 	std::vector<BufferHandle> ephemeralBuffers;
 
