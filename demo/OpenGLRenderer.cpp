@@ -1005,6 +1005,7 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 	for (auto handle : ephemeralBuffers) {
 		Buffer &buffer = buffers.get(handle);
 		assert(buffer.buffer == ringBuffer);
+		assert(buffer.ringBufferAlloc);
 		assert(buffer.size   >  0);
 		buffers.remove(handle);
 	}
