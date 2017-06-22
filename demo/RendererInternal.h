@@ -347,6 +347,26 @@ struct Sampler {
 
 #elif defined(RENDERER_NULL)
 
+
+struct Buffer {
+	bool          ringBufferAlloc;
+	unsigned int  beginOffs;
+	unsigned int  size;
+	// TODO: usage flags for debugging
+
+
+	Buffer(const Buffer &)            = delete;
+	Buffer &operator=(const Buffer &) = delete;
+
+	Buffer(Buffer &&)            = default;
+	Buffer &operator=(Buffer &&) = default;
+
+	Buffer();
+
+	~Buffer();
+};
+
+
 #else
 
 #error "No renderer specified"
@@ -503,12 +523,17 @@ struct RendererImpl {
 
 #ifdef RENDERER_NULL
 
+	std::vector<char> ringBuffer;
+	ResourceContainer<Buffer>              buffers;
+
 	PipelineDesc  currentPipeline;
 
 	unsigned int numBuffers;
 	unsigned int numPipelines;
 	unsigned int numSamplers;
 	unsigned int numTextures;
+
+	std::vector<BufferHandle> ephemeralBuffers;
 
 #endif   // RENDERER_NULL
 

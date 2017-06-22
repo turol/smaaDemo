@@ -4,12 +4,22 @@
 #include "Utils.h"
 
 
+Buffer::Buffer()
+: ringBufferAlloc(false)
+, size(0)
+{
+}
+
+
+Buffer::~Buffer() {
+}
+
 
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
 , savePreprocessedShaders(false)
 , frameNum(0)
-, ringBufSize(0)
+, ringBufSize(desc.ephemeralRingBufSize)
 , ringBufPtr(0)
 , numBuffers(0)
 , numPipelines(0)
@@ -20,8 +30,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , validPipeline(false)
 , pipelineDrawn(false)
 {
-
 	SDL_Init(SDL_INIT_EVENTS);
+
+	ringBuffer.resize(ringBufSize, 0);
+	// TODO: use valgrind to make sure we only write to intended parts of ring buffer
 }
 
 
@@ -45,7 +57,40 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	return 0;
+	// sub-allocate from persistent coherent buffer
+	// round current pointer up to necessary alignment
+	const unsigned int align = 8;
+	const unsigned int add   = (1 << align) - 1;
+	const unsigned int mask  = ~add;
+	unsigned int alignedPtr  = (ringBufPtr + add) & mask;
+	assert(ringBufPtr <= alignedPtr);
+	// TODO: ring buffer size should be pow2, se should use add & mask here too
+	unsigned int beginPtr    =  alignedPtr % ringBufSize;
+
+	if (beginPtr + size >= ringBufSize) {
+		// we went past the end and have to go back to beginning
+		// TODO: add and mask here too
+		ringBufPtr = (ringBufPtr / ringBufSize + 1) * ringBufSize;
+		assert((ringBufPtr & ~mask) == 0);
+		alignedPtr  = (ringBufPtr + add) & mask;
+		beginPtr    =  alignedPtr % ringBufSize;
+		assert(beginPtr + size < ringBufSize);
+		assert(beginPtr == 0);
+	}
+	ringBufPtr = alignedPtr + size;
+
+	// TODO: use valgrind to enforce we only write to intended parts of ring buffer
+	memcpy(&ringBuffer[beginPtr], contents, size);
+
+	auto result    = buffers.add();
+	Buffer &buffer = result.first;
+	buffer.ringBufferAlloc = true;
+	buffer.beginOffs       = beginPtr;
+	buffer.size            = size;
+
+	ephemeralBuffers.push_back(result.second);
+
+	return result.second;
 }
 
 
@@ -140,6 +185,15 @@ void RendererImpl::beginFrame() {
 void RendererImpl::presentFrame(RenderTargetHandle /* rt */) {
 	assert(inFrame);
 	inFrame = false;
+
+	// TODO: multiple frames, only delete after no longer in use by (simulated) GPU
+	for (auto handle : ephemeralBuffers) {
+		Buffer &buffer = buffers.get(handle);
+		assert(buffer.ringBufferAlloc);
+		assert(buffer.size   >  0);
+		buffers.remove(handle);
+	}
+	ephemeralBuffers.clear();
 }
 
 
