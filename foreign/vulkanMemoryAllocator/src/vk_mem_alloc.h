@@ -520,7 +520,7 @@ remove them if not needed.
 #else  // _WIN32
 
 #define VMA_ALIGN_OF(type)       (__alignof(type))
-#define VMA_SYSTEM_ALIGNED_MALLOC(size, alignment)   (aligned_alloc((size), (alignment)))
+#define VMA_SYSTEM_ALIGNED_MALLOC(size, alignment)   (aligned_alloc((alignment), (size)))
 #define VMA_SYSTEM_FREE(ptr)     free(ptr)
 
 #endif  // _WIN32
