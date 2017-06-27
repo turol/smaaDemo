@@ -211,12 +211,13 @@ struct RenderPass {
 
 struct Buffer {
 	vk::Buffer buffer;
-	// TODO: suballocate from a larger buffer
-	vk::DeviceMemory memory;
+	VkMappedMemoryRange  memory;
 	// TODO: access type bits (for debugging)
 
 
-	Buffer() {}
+	Buffer()
+	: memory(vk::MappedMemoryRange())
+	{}
 
 	Buffer(const Buffer &)            = delete;
 	Buffer &operator=(const Buffer &) = delete;

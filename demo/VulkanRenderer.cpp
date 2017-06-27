@@ -386,7 +386,10 @@ RendererImpl::~RendererImpl() {
 
 	buffers.clearWith([this](struct Buffer &b) {
 		this->device.destroyBuffer(b.buffer);
-		this->device.freeMemory(b.memory);
+		assert(b.memory.memory != VK_NULL_HANDLE);
+		assert(b.memory.size   >  0);
+		vmaFreeMemory(this->allocator, &b.memory);
+		memset(&b.memory, 0, sizeof(b.memory));
 	} );
 
 	samplers.clearWith([this](struct Sampler &s) {
@@ -431,6 +434,9 @@ RendererImpl::~RendererImpl() {
 	instance.destroySurfaceKHR(surface);
 	surface = VK_NULL_HANDLE;
 
+	vmaDestroyAllocator(allocator);
+	allocator = VK_NULL_HANDLE;
+
 	device.destroy();
 	device = VK_NULL_HANDLE;
 
@@ -456,13 +462,15 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	Buffer &buffer = result.first;
 	buffer.buffer  = device.createBuffer(info);
 
-	vk::MemoryRequirements memReq = device.getBufferMemoryRequirements(buffer.buffer);
-	printf("createBuffer size: %u\n", size);
-	printf("buffer memory required: %u\n", static_cast<unsigned int>(memReq.size));
-	printf("buffer memory alignment: %u\n", static_cast<unsigned int>(memReq.alignment));
-	printf("buffer memory type bits: 0x%x\n", memReq.memoryTypeBits);
-	buffer.memory = allocateMemory(memReq.size, memReq.alignment, memReq.memoryTypeBits);
-	device.bindBufferMemory(buffer.buffer, buffer.memory, 0);
+	VmaMemoryRequirements  req       = { false, VMA_MEMORY_USAGE_GPU_ONLY, 0, 0, false };
+	uint32_t               typeIndex = 0;
+
+	vmaAllocateMemoryForBuffer(allocator, buffer.buffer, &req, &buffer.memory, &typeIndex);
+	printf("buffer memory type index: %u\n",  typeIndex);
+	printf("buffer memory: %p\n",             buffer.memory.memory);
+	printf("buffer memory offset: %u\n",      static_cast<unsigned int>(buffer.memory.offset));
+	printf("buffer memory size: %u\n",        static_cast<unsigned int>(buffer.memory.size));
+	device.bindBufferMemory(buffer.buffer, buffer.memory.memory, buffer.memory.offset);
 
 	STUBBED("copy buffer contents");
 
