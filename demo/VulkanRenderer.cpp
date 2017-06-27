@@ -423,7 +423,10 @@ RendererImpl::~RendererImpl() {
 	renderTargets.clearWith([this](RenderTarget &rt) {
 		this->device.destroyImageView(rt.imageView);
 		this->device.destroyImage(rt.image);
-		this->device.freeMemory(rt.mem);
+		assert(rt.memory.memory != VK_NULL_HANDLE);
+		assert(rt.memory.size   >  0);
+		vmaFreeMemory(this->allocator, &rt.memory);
+		memset(&rt.memory, 0, sizeof(rt.memory));
 	} );
 
 	device.destroyCommandPool(commandPool);
@@ -761,13 +764,15 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	rt.image = device.createImage(info);
 	rt.format = format;
 
-	auto memReq = device.getImageMemoryRequirements(rt.image);
-	printf("image memory required: %u\n", static_cast<unsigned int>(memReq.size));
-	printf("image memory alignment: %u\n", static_cast<unsigned int>(memReq.alignment));
-	printf("image memory type bits: 0x%x\n", memReq.memoryTypeBits);
+	VmaMemoryRequirements  req       = { false, VMA_MEMORY_USAGE_GPU_ONLY, 0, 0, false };
+	uint32_t               typeIndex = 0;
 
-	rt.mem = allocateMemory(memReq.size, memReq.alignment, memReq.memoryTypeBits);
-	device.bindImageMemory(rt.image, rt.mem, 0);
+	vmaAllocateMemoryForImage(allocator, rt.image, &req, &rt.memory, &typeIndex);
+	printf("image memory type index: %u\n",  typeIndex);
+	printf("image memory: %p\n",             rt.memory.memory);
+	printf("image memory offset: %u\n",      static_cast<unsigned int>(rt.memory.offset));
+	printf("image memory size: %u\n",        static_cast<unsigned int>(rt.memory.size));
+	device.bindImageMemory(rt.image, rt.memory.memory, rt.memory.offset);
 
 	vk::ImageViewCreateInfo viewInfo;
 	viewInfo.image    = rt.image;
