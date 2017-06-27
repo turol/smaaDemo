@@ -278,12 +278,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		exit(1);
 	}
 
-	VmaAllocatorCreateInfo allocatorInfo = {};
-	allocatorInfo.physicalDevice = physicalDevice;
-	allocatorInfo.device         = device;
-
-	vmaCreateAllocator(&allocatorInfo, &allocator);
-
 	memoryProperties = physicalDevice.getMemoryProperties();
 	printf("%u memory types\n", memoryProperties.memoryTypeCount);
 	for (unsigned int i = 0; i < memoryProperties.memoryTypeCount; i++ ) {
@@ -346,6 +340,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	device = physicalDevice.createDevice(deviceCreateInfo);
+
+	VmaAllocatorCreateInfo allocatorInfo = {};
+	allocatorInfo.physicalDevice = physicalDevice;
+	allocatorInfo.device         = device;
+
+	vmaCreateAllocator(&allocatorInfo, &allocator);
 
 	queue = device.getQueue(graphicsQueueIndex, 0);
 
