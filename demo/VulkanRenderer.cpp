@@ -1300,11 +1300,18 @@ void RendererImpl::bindIndexBuffer(BufferHandle /* buffer */, bool /* bit16 */ )
 }
 
 
-void RendererImpl::bindVertexBuffer(unsigned int /* binding */, BufferHandle /* buffer */) {
+void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 	assert(inFrame);
 	assert(validPipeline);
 
-	STUBBED("");
+	auto &b = buffers.get(buffer);
+	// "normal" buffers begin from beginning of buffer
+	vk::DeviceSize offset = 0;
+	if (b.ringBufferAlloc) {
+		// but ephemeral buffers use the ringbuffer and an offset
+		offset = b.memory.offset;
+	}
+	currentCommandBuffer.bindVertexBuffers(binding, 1, &b.buffer, &offset);
 }
 
 
