@@ -211,12 +211,14 @@ struct RenderPass {
 
 struct Buffer {
 	vk::Buffer buffer;
+	bool                 ringBufferAlloc;
 	VkMappedMemoryRange  memory;
 	// TODO: access type bits (for debugging)
 
 
 	Buffer()
-	: memory(vk::MappedMemoryRange())
+	: ringBufferAlloc(false)
+	, memory(vk::MappedMemoryRange())
 	{}
 
 	Buffer(const Buffer &)            = delete;
@@ -577,6 +579,8 @@ struct RendererImpl {
 	vk::Buffer           ringBuffer;
 	VkMappedMemoryRange  ringBufferMem;
 	char                *persistentMapping;
+
+	std::vector<BufferHandle> ephemeralBuffers;
 
 #endif   // RENDERER_VULKAN
 

@@ -390,6 +390,8 @@ RendererImpl::~RendererImpl() {
 	assert(ringBufferMem.size   > 0);
 	assert(persistentMapping);
 
+	assert(ephemeralBuffers.empty());
+
 	// TODO: save pipeline cache
 
 	device.unmapMemory(ringBufferMem.memory);
@@ -400,6 +402,7 @@ RendererImpl::~RendererImpl() {
 	memset(&ringBufferMem, 0, sizeof(ringBufferMem));
 
 	buffers.clearWith([this](struct Buffer &b) {
+		assert(!b.ringBufferAlloc);
 		this->device.destroyBuffer(b.buffer);
 		assert(b.memory.memory != VK_NULL_HANDLE);
 		assert(b.memory.size   >  0);
@@ -500,9 +503,42 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	STUBBED("");
+	// sub-allocate from persistent coherent buffer
+	// round current pointer up to necessary alignment
+	// TODO: UBOs need alignment queried from implementation
+	// TODO: need buffer usage flags for that
+	const unsigned int align = 8;
+	const unsigned int add   = (1 << align) - 1;
+	const unsigned int mask  = ~add;
+	unsigned int alignedPtr  = (ringBufPtr + add) & mask;
+	assert(ringBufPtr <= alignedPtr);
+	// TODO: ring buffer size should be pow2, se should use add & mask here too
+	unsigned int beginPtr    =  alignedPtr % ringBufSize;
 
-	return 0;
+	if (beginPtr + size >= ringBufSize) {
+		// we went past the end and have to go back to beginning
+		// TODO: add and mask here too
+		ringBufPtr = (ringBufPtr / ringBufSize + 1) * ringBufSize;
+		assert((ringBufPtr & ~mask) == 0);
+		alignedPtr  = (ringBufPtr + add) & mask;
+		beginPtr    =  alignedPtr % ringBufSize;
+		assert(beginPtr + size < ringBufSize);
+		assert(beginPtr == 0);
+	}
+	ringBufPtr = alignedPtr + size;
+
+	memcpy(persistentMapping + beginPtr, contents, size);
+
+	auto result    = buffers.add();
+	Buffer &buffer = result.first;
+	buffer.buffer          = ringBuffer;
+	buffer.ringBufferAlloc = true;
+	buffer.memory.offset   = beginPtr;
+	buffer.memory.size     = size;
+
+	ephemeralBuffers.push_back(result.second);
+
+	return result.second;
 }
 
 
@@ -1208,6 +1244,16 @@ void RendererImpl::presentFrame(RenderTargetHandle /* rt */) {
 	device.resetCommandPool(commandPool, vk::CommandPoolResetFlags());
 
 	device.destroyFence(fence);
+
+	// TODO: multiple frames, only delete after no longer in use by GPU
+	for (auto handle : ephemeralBuffers) {
+		Buffer &buffer = buffers.get(handle);
+		assert(buffer.buffer == ringBuffer);
+		assert(buffer.ringBufferAlloc);
+		assert(buffer.memory.size   >  0);
+		buffers.remove(handle);
+	}
+	ephemeralBuffers.clear();
 
 	frameNum++;
 }
