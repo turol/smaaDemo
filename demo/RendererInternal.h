@@ -575,8 +575,6 @@ struct RendererImpl {
 	ResourceContainer<RenderTarget>  renderTargets;
 
 
-	vk::DeviceMemory allocateMemory(uint32_t size, uint32_t align, uint32_t typeBits);
-
 #endif   // RENDERER_VULKAN
 
 

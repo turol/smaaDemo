@@ -112,32 +112,6 @@ static SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window, SDL_vulkanInstance 
 #endif  // SDL_VIDEO_VULKAN_SURFACE
 
 
-vk::DeviceMemory RendererImpl::allocateMemory(uint32_t size, uint32_t /* align */, uint32_t typeBits) {
-	// TODO: allocate large chunks, subdivide as necessary
-	vk::MemoryAllocateInfo info;
-	info.allocationSize = size;
-
-	for (unsigned int i = 0; i < memoryProperties.memoryTypeCount; i++) {
-		// check if we can allocate this resource from this type
-		if (!(typeBits & (1 << i))) {
-			continue;
-		}
-
-		// consider only device-local types
-		if (!(memoryProperties.memoryTypes[i].propertyFlags & vk::MemoryPropertyFlagBits::eDeviceLocal)) {
-			continue;
-		}
-		printf("allocate from type %u\n", i);
-		info.memoryTypeIndex = i;
-		auto result = device.allocateMemory(info);
-		return result;
-	}
-
-	printf("failed to allocate %u bytes\n", size);
-	exit(1);
-}
-
-
 static vk::Format vulkanVertexFormat(VtxFormat::VtxFormat format, uint8_t count) {
 	switch (format) {
 	case VtxFormat::Float:
