@@ -1292,11 +1292,18 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 }
 
 
-void RendererImpl::bindIndexBuffer(BufferHandle /* buffer */, bool /* bit16 */ ) {
+void RendererImpl::bindIndexBuffer(BufferHandle buffer, bool bit16) {
 	assert(inFrame);
 	assert(validPipeline);
 
-	STUBBED("");
+	auto &b = buffers.get(buffer);
+	// "normal" buffers begin from beginning of buffer
+	vk::DeviceSize offset = 0;
+	if (b.ringBufferAlloc) {
+		// but ephemeral buffers use the ringbuffer and an offset
+		offset = b.memory.offset;
+	}
+	currentCommandBuffer.bindIndexBuffer(b.buffer, offset, bit16 ? vk::IndexType::eUint16 : vk::IndexType::eUint32);
 }
 
 
