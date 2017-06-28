@@ -574,6 +574,9 @@ struct RendererImpl {
 	ResourceContainer<struct Sampler>      samplers;
 	ResourceContainer<RenderTarget>  renderTargets;
 
+	vk::Buffer           ringBuffer;
+	VkMappedMemoryRange  ringBufferMem;
+	char                *persistentMapping;
 
 #endif   // RENDERER_VULKAN
 

@@ -145,13 +145,15 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
 , savePreprocessedShaders(false)
 , frameNum(0)
-, ringBufSize(0)
+, ringBufSize(desc.ephemeralRingBufSize)
 , ringBufPtr(0)
 , instance(VK_NULL_HANDLE)
 , physicalDevice(VK_NULL_HANDLE)
 , surface(VK_NULL_HANDLE)
 , graphicsQueueIndex(0)
 , swapchain(VK_NULL_HANDLE)
+, ringBufferMem(vk::MappedMemoryRange())
+, persistentMapping(nullptr)
 , inFrame(false)
 , inRenderPass(false)
 , validPipeline(false)
@@ -344,7 +346,35 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		commandPool = device.createCommandPool(cp);
 	}
 
-	// TODO: create ringbuffer
+	// create ringbuffer
+	{
+		vk::BufferCreateInfo rbInfo;
+		rbInfo.size  = ringBufSize;
+		rbInfo.usage = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eVertexBuffer;
+		ringBuffer   = device.createBuffer(rbInfo);
+
+		assert(ringBufferMem.memory == VK_NULL_HANDLE);
+		assert(ringBufferMem.size   == 0);
+		assert(ringBufferMem.offset == 0);
+
+		VmaMemoryRequirements  req       = { true, VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 0, false };
+		uint32_t               typeIndex = 0;
+
+		vmaAllocateMemoryForBuffer(allocator, ringBuffer, &req, &ringBufferMem, &typeIndex);
+		printf("ringbuffer memory type index: %u\n",  typeIndex);
+		printf("ringbuffer memory: %p\n",             ringBufferMem.memory);
+		printf("ringbuffer memory offset: %u\n",      static_cast<unsigned int>(ringBufferMem.offset));
+		printf("ringbuffer memory size: %u\n",        static_cast<unsigned int>(ringBufferMem.size));
+		assert(ringBufferMem.memory != VK_NULL_HANDLE);
+		assert(ringBufferMem.size   == ringBufSize);
+		assert(ringBufferMem.offset == 0);
+
+		device.bindBufferMemory(ringBuffer, ringBufferMem.memory, ringBufferMem.offset);
+
+		persistentMapping = reinterpret_cast<char *>(device.mapMemory(ringBufferMem.memory, 0, VK_WHOLE_SIZE, vk::MemoryMapFlags()));
+		assert(persistentMapping != nullptr);
+	}
+
 	// TODO: load pipeline cache
 }
 
@@ -355,8 +385,19 @@ RendererImpl::~RendererImpl() {
 	assert(surface);
 	assert(swapchain);
 	assert(commandPool);
+	assert(ringBuffer);
+	assert(ringBufferMem.memory);
+	assert(ringBufferMem.size   > 0);
+	assert(persistentMapping);
 
 	// TODO: save pipeline cache
+
+	device.unmapMemory(ringBufferMem.memory);
+	persistentMapping = nullptr;
+	device.destroyBuffer(ringBuffer);
+	ringBuffer = VK_NULL_HANDLE;
+	vmaFreeMemory(this->allocator, &ringBufferMem);
+	memset(&ringBufferMem, 0, sizeof(ringBufferMem));
 
 	buffers.clearWith([this](struct Buffer &b) {
 		this->device.destroyBuffer(b.buffer);
