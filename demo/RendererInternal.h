@@ -298,6 +298,7 @@ struct RenderPass {
 
 
 struct RenderTarget{
+	unsigned int  width, height;
 	vk::Image     image;
 	vk::Format    format;
 	VkMappedMemoryRange  memory;
@@ -305,7 +306,10 @@ struct RenderTarget{
 	// TODO: track current layout
 
 
-	RenderTarget() {}
+	RenderTarget()
+	: width(0)
+	, height(0)
+	{}
 
 	RenderTarget(const RenderTarget &)            = delete;
 	RenderTarget &operator=(const RenderTarget &) = delete;

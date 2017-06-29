@@ -546,12 +546,18 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	vk::RenderPassCreateInfo info;
 	vk::SubpassDescription subpass;
 
+	unsigned int width = 0, height = 0;
+
 	std::vector<vk::AttachmentDescription> attachments;
 	std::vector<vk::AttachmentReference> colorAttachments;
 
 	// TODO: multiple render targets
 	{
 		const auto &colorRT = renderTargets.get(desc.colors_[0]);
+		assert(colorRT.width  > 0);
+		assert(colorRT.height > 0);
+		width  = colorRT.width;
+		height = colorRT.height;
 		vk::ImageLayout layout = vk::ImageLayout::eColorAttachmentOptimal;
 
 		vk::AttachmentDescription attach;
@@ -577,6 +583,8 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	vk::AttachmentReference depthAttachment;
 	if (desc.depthStencil_) {
 		const auto &depthRT = renderTargets.get(desc.depthStencil_);
+		assert(depthRT.width  == width);
+		assert(depthRT.height == height);
 		vk::ImageLayout layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
 		vk::AttachmentDescription attach;
@@ -812,6 +820,8 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 
 	auto result = renderTargets.add();
 	RenderTarget &rt = result.first;
+	rt.width  = desc.width_;
+	rt.height = desc.height_;
 	rt.image = device.createImage(info);
 	rt.format = format;
 
