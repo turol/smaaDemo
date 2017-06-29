@@ -281,7 +281,7 @@ struct FragmentShader {
 
 struct RenderPass {
 	vk::RenderPass renderPass;
-	// TODO: vk::FrameBuffer
+	vk::Framebuffer  framebuffer;
 	// TODO: store info about attachments to allow tracking layout
 
 

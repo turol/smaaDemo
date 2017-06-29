@@ -420,6 +420,8 @@ RendererImpl::~RendererImpl() {
 	} );
 
 	for (auto &r : renderPasses) {
+		device.destroyFramebuffer(r.second.framebuffer);
+		r.second.framebuffer = vk::Framebuffer();
 		device.destroyRenderPass(r.second.renderPass);
 		r.second.renderPass = vk::RenderPass();
 	}
@@ -550,6 +552,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 
 	std::vector<vk::AttachmentDescription> attachments;
 	std::vector<vk::AttachmentReference> colorAttachments;
+	std::vector<vk::ImageView>             attachmentViews;
 
 	// TODO: multiple render targets
 	{
@@ -576,6 +579,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		ref.attachment = attachments.size() - 1;
 		ref.layout     = layout;
 		colorAttachments.push_back(ref);
+		attachmentViews.push_back(colorRT.imageView);
 	}
 	subpass.colorAttachmentCount = colorAttachments.size();
 	subpass.pColorAttachments    = &colorAttachments[0];
@@ -598,6 +602,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		attach.initialLayout  = layout;
 		attach.finalLayout    = vk::ImageLayout::eShaderReadOnlyOptimal;
 		attachments.push_back(attach);
+		attachmentViews.push_back(depthRT.imageView);
 
 		depthAttachment.attachment = attachments.size() - 1;
 		depthAttachment.layout     = layout;
@@ -618,13 +623,23 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	auto result = device.createRenderPass(info);
 	RenderPass r;
 	r.renderPass = result;
+	{
+		vk::FramebufferCreateInfo fbInfo;
+		fbInfo.renderPass       = r.renderPass;
+		assert(!attachmentViews.empty());
+		fbInfo.attachmentCount  = attachmentViews.size();
+		fbInfo.pAttachments     = &attachmentViews[0];
+		fbInfo.width            = width;
+		fbInfo.height           = height;
+		fbInfo.layers           = 1;  // TODO: multiple render targets?
+
+		r.framebuffer = device.createFramebuffer(fbInfo);
+	}
 
 	auto id = renderPasses.size() + 1;
 
 	auto temp = renderPasses.emplace(id, std::move(r));
 	assert(temp.second);
-
-	// TODO: Framebuffer
 
 	return RenderPassHandle(id);
 }
