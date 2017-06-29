@@ -419,12 +419,12 @@ RendererImpl::~RendererImpl() {
 		this->device.destroyPipeline(p.pipeline);
 	} );
 
-	for (auto &r : renderPasses) {
-		device.destroyFramebuffer(r.second.framebuffer);
-		r.second.framebuffer = vk::Framebuffer();
-		device.destroyRenderPass(r.second.renderPass);
-		r.second.renderPass = vk::RenderPass();
-	}
+	renderPasses.clearWith([this](RenderPass &r) {
+		this->device.destroyFramebuffer(r.framebuffer);
+		r.framebuffer = vk::Framebuffer();
+		this->device.destroyRenderPass(r.renderPass);
+		r.renderPass = vk::RenderPass();
+	} );
 
 	for (auto &v : vertexShaders) {
 		device.destroyShaderModule(v.second.shaderModule);
@@ -620,9 +620,9 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 
 	// TODO: do we need (external) subpass dependencies?
 
-	auto result = device.createRenderPass(info);
-	RenderPass r;
-	r.renderPass = result;
+	auto result   = renderPasses.add();
+	RenderPass &r = result.first;
+	r.renderPass  = device.createRenderPass(info);;
 	{
 		vk::FramebufferCreateInfo fbInfo;
 		fbInfo.renderPass       = r.renderPass;
@@ -636,12 +636,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		r.framebuffer = device.createFramebuffer(fbInfo);
 	}
 
-	auto id = renderPasses.size() + 1;
-
-	auto temp = renderPasses.emplace(id, std::move(r));
-	assert(temp.second);
-
-	return RenderPassHandle(id);
+	return RenderPassHandle(result.second);
 }
 
 
@@ -765,10 +760,8 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	auto layout = device.createPipelineLayout(layoutInfo);
 	info.layout = layout;
 
-	assert(desc.renderPass_.handle != 0);
-	const auto it = renderPasses.find(desc.renderPass_.handle);
-	assert(it != renderPasses.end());
-	info.renderPass = it->second.renderPass;
+	const auto &renderPass = renderPasses.get(desc.renderPass_.handle);
+	info.renderPass = renderPass.renderPass;
 
 	auto result = device.createGraphicsPipeline(vk::PipelineCache(), info);
 

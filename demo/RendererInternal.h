@@ -572,11 +572,11 @@ struct RendererImpl {
 
 	std::unordered_map<unsigned int, VertexShader>  vertexShaders;
 	std::unordered_map<unsigned int, FragmentShader>  fragmentShaders;
-	std::unordered_map<unsigned int, RenderPass>      renderPasses;
 
 	ResourceContainer<Buffer>              buffers;
 	ResourceContainer<DescriptorSetLayout> dsLayouts;
 	ResourceContainer<Pipeline>            pipelines;
+	ResourceContainer<RenderPass>          renderPasses;
 	ResourceContainer<struct Sampler>      samplers;
 	ResourceContainer<RenderTarget>  renderTargets;
 
