@@ -622,6 +622,8 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 
 	auto result   = renderPasses.add();
 	RenderPass &r = result.first;
+	r.width       = width;
+	r.height      = height;
 	r.renderPass  = device.createRenderPass(info);;
 	{
 		vk::FramebufferCreateInfo fbInfo;
