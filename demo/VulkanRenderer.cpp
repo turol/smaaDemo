@@ -1319,13 +1319,62 @@ void RendererImpl::presentFrame(RenderTargetHandle /* rt */) {
 }
 
 
-void RendererImpl::beginRenderPass(RenderPassHandle /* pass */) {
+void RendererImpl::beginRenderPass(RenderPassHandle handle) {
 	assert(inFrame);
 	assert(!inRenderPass);
 	inRenderPass  = true;
 	validPipeline = false;
 
-	STUBBED("");
+	const auto &pass = renderPasses.get(handle);
+
+	// TODO: is this really necessary?
+	{
+        const auto &colorRT = renderTargets.get(pass.desc.colors_[0]);
+
+		std::vector<vk::ImageMemoryBarrier> barriers;
+		vk::ImageMemoryBarrier b;
+		b.srcAccessMask               = vk::AccessFlagBits::eColorAttachmentRead;
+		b.dstAccessMask               = vk::AccessFlagBits::eColorAttachmentWrite;
+		b.oldLayout                   = vk::ImageLayout::eUndefined;
+		b.newLayout                   = vk::ImageLayout::eColorAttachmentOptimal;
+		b.image                       = colorRT.image;
+		b.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+		b.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+		b.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+		barriers.push_back(b);
+
+		currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eBottomOfPipe, vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::DependencyFlagBits::eByRegion, {}, {}, barriers);
+
+		if (pass.desc.depthStencil_) {
+			const auto &depthRT = renderTargets.get(pass.desc.depthStencil_);
+			b.srcAccessMask               = vk::AccessFlagBits::eDepthStencilAttachmentRead;
+			b.dstAccessMask               = vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+			b.oldLayout                   = vk::ImageLayout::eUndefined;
+			b.newLayout                   = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+			b.image                       = depthRT.image;
+			b.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+			b.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+			b.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+			barriers.push_back(b);
+	
+			currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eBottomOfPipe, vk::PipelineStageFlagBits::eEarlyFragmentTests, vk::DependencyFlagBits::eByRegion, {}, {}, barriers);
+		}
+	}
+
+	// TODO: should be customizable
+	std::array<vk::ClearValue, 2> clearValues;
+	clearValues[0].color        = vk::ClearColorValue();  // default constructor 0s
+	clearValues[1].depthStencil = vk::ClearDepthStencilValue(1.0f, 0);
+
+	vk::RenderPassBeginInfo info;
+	info.renderPass                = pass.renderPass;
+	info.framebuffer               = pass.framebuffer;
+	info.renderArea.extent.width   = pass.width;
+	info.renderArea.extent.height  = pass.height;
+	info.clearValueCount           = 2;
+	info.pClearValues              = &clearValues[0];
+
+	currentCommandBuffer.beginRenderPass(info, vk::SubpassContents::eInline);
 }
 
 
@@ -1334,7 +1383,7 @@ void RendererImpl::endRenderPass() {
 	assert(inRenderPass);
 	inRenderPass = false;
 
-	STUBBED("");
+	currentCommandBuffer.endRenderPass();
 }
 
 
