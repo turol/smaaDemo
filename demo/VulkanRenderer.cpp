@@ -618,7 +618,46 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	info.subpassCount    = 1;
 	info.pSubpasses      = &subpass;
 
-	// TODO: do we need (external) subpass dependencies?
+	// subpass dependencies (external)
+	// TODO: are these really necessary?
+	std::vector<vk::SubpassDependency> dependencies;
+	dependencies.reserve(desc.depthStencil_ ? 4 : 2);
+	{
+		vk::SubpassDependency d;
+		d.srcSubpass       = VK_SUBPASS_EXTERNAL;
+		d.dstSubpass       = 0;
+		d.srcStageMask     = vk::PipelineStageFlagBits::eBottomOfPipe;
+		d.dstStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+		d.srcAccessMask    = vk::AccessFlagBits::eMemoryRead;
+		d.dstAccessMask    = vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
+		d.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
+		dependencies.push_back(d);
+
+		if (desc.depthStencil_) {
+			d.dstStageMask     = vk::PipelineStageFlagBits::eEarlyFragmentTests;
+			d.dstAccessMask    = vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+			dependencies.push_back(d);
+		}
+	}
+	{
+		vk::SubpassDependency d;
+		d.srcSubpass       = 0;
+		d.dstSubpass       = VK_SUBPASS_EXTERNAL;
+		d.srcStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+		d.dstStageMask     = vk::PipelineStageFlagBits::eBottomOfPipe;
+		d.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
+		d.dstAccessMask    = vk::AccessFlagBits::eMemoryRead;
+		d.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
+		dependencies.push_back(d);
+
+		if (desc.depthStencil_) {
+			d.srcStageMask     = vk::PipelineStageFlagBits::eEarlyFragmentTests;
+			d.srcAccessMask    = vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+			dependencies.push_back(d);
+		}
+	}
+	info.dependencyCount = dependencies.size();
+	info.pDependencies   = &dependencies[0];
 
 	auto result   = renderPasses.add();
 	RenderPass &r = result.first;
