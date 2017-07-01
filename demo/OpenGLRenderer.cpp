@@ -1054,7 +1054,8 @@ void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int widt
 
 void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 	assert(validPipeline);
-	// TODO: check current pipeline has scissor enabled
+	// check current pipeline has scissor enabled
+	assert(currentPipeline.scissorTest_);
 
 	// TODO: should use current FB height
 	glScissor(x, swapchainDesc.height - y, width, height);
