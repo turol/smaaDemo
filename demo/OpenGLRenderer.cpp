@@ -299,6 +299,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , inRenderPass(false)
 , validPipeline(false)
 , pipelineDrawn(false)
+, scissorSet(false)
 {
 
 	// TODO: check return value
@@ -1054,8 +1055,8 @@ void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int widt
 
 void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 	assert(validPipeline);
-	// check current pipeline has scissor enabled
 	assert(currentPipeline.scissorTest_);
+	scissorSet = true;
 
 	// TODO: should use current FB height
 	glScissor(x, swapchainDesc.height - y, width, height);
@@ -1069,6 +1070,7 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	assert(pipelineDrawn);
 	pipelineDrawn = false;
 	validPipeline = true;
+	scissorSet = false;
 
 	// TODO: make sure current renderpass matches the one in pipeline
 
@@ -1270,6 +1272,7 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	assert(inRenderPass);
 	assert(validPipeline);
+	assert(!currentPipeline.scissorTest_ || scissorSet);
 	pipelineDrawn = true;
 
 	// TODO: get primitive from current pipeline
@@ -1281,6 +1284,7 @@ void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int i
 	assert(inRenderPass);
 	assert(validPipeline);
 	assert(instanceCount > 0);
+	assert(!currentPipeline.scissorTest_ || scissorSet);
 	pipelineDrawn = true;
 
 	// TODO: get primitive from current pipeline
@@ -1295,6 +1299,12 @@ void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int i
 
 
 void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex) {
+	assert(inRenderPass);
+	assert(validPipeline);
+	assert(vertexCount > 0);
+	assert(!currentPipeline.scissorTest_ || scissorSet);
+	pipelineDrawn = true;
+
 	GLenum format        = idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
 	unsigned int idxSize = idxBuf16Bit ? 2                 : 4 ;
 	auto ptr = reinterpret_cast<const char *>(firstIndex * idxSize + indexBufByteOffset);

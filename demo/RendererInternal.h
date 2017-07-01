@@ -602,6 +602,7 @@ struct RendererImpl {
 	bool inRenderPass;
 	bool validPipeline;
 	bool pipelineDrawn;
+	bool scissorSet;
 
 
 	std::vector<char> loadSource(const std::string &name);

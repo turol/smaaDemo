@@ -158,6 +158,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , inRenderPass(false)
 , validPipeline(false)
 , pipelineDrawn(false)
+, scissorSet(false)
 {
 	// TODO: get from desc.debug when this is finished
 	bool enableValidation = true;
@@ -1393,6 +1394,7 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	assert(pipelineDrawn);
 	pipelineDrawn = false;
 	validPipeline = true;
+	scissorSet = false;
 
 	// TODO: make sure current renderpass matches the one in pipeline
 
@@ -1454,7 +1456,7 @@ void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int widt
 
 void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 	assert(validPipeline);
-	// TODO: check current pipeline has scissor enabled
+	scissorSet = true;
 
 	vk::Rect2D rect;
 	rect.offset.x      = x;
@@ -1475,18 +1477,20 @@ void RendererImpl::draw(unsigned int /* firstVertex */, unsigned int /* vertexCo
 }
 
 
-void RendererImpl::drawIndexedInstanced(unsigned int /* vertexCount */, unsigned int /* instanceCount */) {
+void RendererImpl::drawIndexedInstanced(unsigned int /* vertexCount */, unsigned int instanceCount) {
 	assert(inRenderPass);
 	assert(validPipeline);
+	assert(instanceCount > 0);
 	pipelineDrawn = true;
 
 	STUBBED("");
 }
 
 
-void RendererImpl::drawIndexedOffset(unsigned int /* vertexCount */, unsigned int /* firstIndex */) {
+void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int /* firstIndex */) {
 	assert(inRenderPass);
 	assert(validPipeline);
+	assert(vertexCount > 0);
 	pipelineDrawn = true;
 
 	STUBBED("");

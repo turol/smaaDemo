@@ -28,6 +28,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , inRenderPass(false)
 , validPipeline(false)
 , pipelineDrawn(false)
+, scissorSet(false)
 {
 	SDL_Init(SDL_INIT_EVENTS);
 
@@ -219,6 +220,9 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	assert(pipelineDrawn);
 	pipelineDrawn = false;
 	validPipeline = true;
+	scissorSet = false;
+
+	currentPipeline = pipelines.get(pipeline);
 }
 
 
@@ -246,12 +250,15 @@ void RendererImpl::setViewport(unsigned int /* x */, unsigned int /* y */, unsig
 
 void RendererImpl::setScissorRect(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
 	assert(validPipeline);
+	assert(currentPipeline.scissorTest_);
+	scissorSet = true;
 }
 
 
 void RendererImpl::draw(unsigned int /* firstVertex */, unsigned int /* vertexCount */) {
 	assert(inRenderPass);
 	assert(validPipeline);
+	assert(!currentPipeline.scissorTest_ || scissorSet);
 	pipelineDrawn = true;
 }
 
@@ -259,6 +266,7 @@ void RendererImpl::draw(unsigned int /* firstVertex */, unsigned int /* vertexCo
 void RendererImpl::drawIndexedInstanced(unsigned int /* vertexCount */, unsigned int /* instanceCount */) {
 	assert(inRenderPass);
 	assert(validPipeline);
+	assert(!currentPipeline.scissorTest_ || scissorSet);
 	pipelineDrawn = true;
 }
 
@@ -266,6 +274,7 @@ void RendererImpl::drawIndexedInstanced(unsigned int /* vertexCount */, unsigned
 void RendererImpl::drawIndexedOffset(unsigned int /* vertexCount */, unsigned int /* firstIndex */) {
 	assert(inRenderPass);
 	assert(validPipeline);
+	assert(!currentPipeline.scissorTest_ || scissorSet);
 	pipelineDrawn = true;
 }
 
