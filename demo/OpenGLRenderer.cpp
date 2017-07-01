@@ -478,7 +478,7 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	auto result    = buffers.add();
 	Buffer &buffer = result.first;
 	glCreateBuffers(1, &buffer.buffer);
-	glNamedBufferData(buffer.buffer, size, contents, GL_STATIC_DRAW);
+	glNamedBufferStorage(buffer.buffer, size, contents, 0);
 	buffer.ringBufferAlloc = false;
 	buffer.beginOffs       = 0;
 	buffer.size            = size;
