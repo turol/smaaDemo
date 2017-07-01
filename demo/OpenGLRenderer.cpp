@@ -1272,6 +1272,7 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	assert(inRenderPass);
 	assert(validPipeline);
+	assert(vertexCount > 0);
 	assert(!currentPipeline.scissorTest_ || scissorSet);
 	pipelineDrawn = true;
 
@@ -1284,6 +1285,7 @@ void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int i
 	assert(inRenderPass);
 	assert(validPipeline);
 	assert(instanceCount > 0);
+	assert(vertexCount > 0);
 	assert(!currentPipeline.scissorTest_ || scissorSet);
 	pipelineDrawn = true;
 

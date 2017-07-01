@@ -255,25 +255,29 @@ void RendererImpl::setScissorRect(unsigned int /* x */, unsigned int /* y */, un
 }
 
 
-void RendererImpl::draw(unsigned int /* firstVertex */, unsigned int /* vertexCount */) {
+void RendererImpl::draw(unsigned int /* firstVertex */, unsigned int vertexCount) {
 	assert(inRenderPass);
 	assert(validPipeline);
+	assert(vertexCount > 0);
 	assert(!currentPipeline.scissorTest_ || scissorSet);
 	pipelineDrawn = true;
 }
 
 
-void RendererImpl::drawIndexedInstanced(unsigned int /* vertexCount */, unsigned int /* instanceCount */) {
+void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
 	assert(inRenderPass);
 	assert(validPipeline);
+	assert(vertexCount > 0);
+	assert(instanceCount > 0);
 	assert(!currentPipeline.scissorTest_ || scissorSet);
 	pipelineDrawn = true;
 }
 
 
-void RendererImpl::drawIndexedOffset(unsigned int /* vertexCount */, unsigned int /* firstIndex */) {
+void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int /* firstIndex */) {
 	assert(inRenderPass);
 	assert(validPipeline);
+	assert(vertexCount > 0);
 	assert(!currentPipeline.scissorTest_ || scissorSet);
 	pipelineDrawn = true;
 }
