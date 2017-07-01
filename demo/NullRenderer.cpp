@@ -46,10 +46,15 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	// TODO: check desc
+	auto result    = buffers.add();
+	Buffer &buffer = result.first;
+	buffer.ringBufferAlloc = false;
+	buffer.beginOffs       = 0;
+	buffer.size            = size;
 
-	numBuffers++;
-	return numBuffers;
+	// TODO: store contents into buffer
+
+	return result.second;
 }
 
 
