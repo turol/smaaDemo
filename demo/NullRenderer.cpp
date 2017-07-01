@@ -22,7 +22,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , ringBufSize(desc.ephemeralRingBufSize)
 , ringBufPtr(0)
 , numBuffers(0)
-, numPipelines(0)
 , numSamplers(0)
 , numTextures(0)
 , inFrame(false)
@@ -99,9 +98,10 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc & /* desc *
 }
 
 
-PipelineHandle RendererImpl::createPipeline(const PipelineDesc & /* desc */) {
-	numPipelines++;
-	return numPipelines;
+PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
+	auto result = pipelines.add();
+	result.first = desc;
+	return result.second;
 }
 
 

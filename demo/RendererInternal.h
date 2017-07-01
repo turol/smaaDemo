@@ -538,11 +538,11 @@ struct RendererImpl {
 
 	std::vector<char> ringBuffer;
 	ResourceContainer<Buffer>              buffers;
+	ResourceContainer<PipelineDesc>        pipelines;
 
 	PipelineDesc  currentPipeline;
 
 	unsigned int numBuffers;
-	unsigned int numPipelines;
 	unsigned int numSamplers;
 	unsigned int numTextures;
 
