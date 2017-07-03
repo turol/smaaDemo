@@ -163,6 +163,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	// TODO: get from desc.debug when this is finished
 	bool enableValidation = true;
 
+	// renderdoc crashes if SDL tries to init GL renderer so disable it
+	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
 	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
 
 	SDL_DisplayMode mode;
