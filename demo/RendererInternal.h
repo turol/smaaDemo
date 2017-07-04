@@ -597,9 +597,6 @@ struct RendererImpl {
 	std::vector<BufferHandle> ephemeralBuffers;
 
 
-	unsigned int ringBufferAlloc(unsigned int size);
-
-
 #endif   // RENDERER_VULKAN
 
 
@@ -616,6 +613,7 @@ struct RendererImpl {
 
 	std::vector<char> loadSource(const std::string &name);
 
+	unsigned int ringBufferAlloc(unsigned int size);
 
 	RendererImpl(const RendererDesc &desc);
 
