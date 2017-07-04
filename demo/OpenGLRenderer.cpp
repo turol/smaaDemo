@@ -13,6 +13,9 @@
 #include "RendererInternal.h"
 
 
+void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /* length */, const GLchar *message, const void * /* userParam */);
+
+
 static GLuint createShader(GLenum type, const std::string &name, const std::vector<char> &src) {
 	assert(type == GL_VERTEX_SHADER || type == GL_FRAGMENT_SHADER);
 
@@ -281,13 +284,8 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 }
 
 
-RendererImpl::RendererImpl(const RendererDesc &desc)
-: swapchainDesc(desc.swapchain)
-, savePreprocessedShaders(false)
-, frameNum(0)
-, ringBufSize(0)
-, ringBufPtr(0)
-, ringBuffer(0)
+RendererBase::RendererBase()
+: ringBuffer(0)
 , persistentMapInUse(false)
 , persistentMapping(nullptr)
 , window(nullptr)
@@ -295,6 +293,21 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , vao(0)
 , idxBuf16Bit(false)
 , indexBufByteOffset(0)
+{
+}
+
+
+RendererBase::~RendererBase()
+{
+}
+
+
+RendererImpl::RendererImpl(const RendererDesc &desc)
+: swapchainDesc(desc.swapchain)
+, savePreprocessedShaders(false)
+, frameNum(0)
+, ringBufSize(0)
+, ringBufPtr(0)
 , inFrame(false)
 , inRenderPass(false)
 , validPipeline(false)

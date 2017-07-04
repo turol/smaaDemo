@@ -141,19 +141,29 @@ static vk::Format vulkanVertexFormat(VtxFormat::VtxFormat format, uint8_t count)
 }
 
 
-RendererImpl::RendererImpl(const RendererDesc &desc)
-: swapchainDesc(desc.swapchain)
-, savePreprocessedShaders(false)
-, frameNum(0)
-, ringBufSize(desc.ephemeralRingBufSize)
-, ringBufPtr(0)
-, instance(VK_NULL_HANDLE)
+RendererBase::RendererBase()
+: instance(VK_NULL_HANDLE)
 , physicalDevice(VK_NULL_HANDLE)
 , surface(VK_NULL_HANDLE)
 , graphicsQueueIndex(0)
 , swapchain(VK_NULL_HANDLE)
 , ringBufferMem(vk::MappedMemoryRange())
 , persistentMapping(nullptr)
+{
+}
+
+
+RendererBase::~RendererBase()
+{
+}
+
+
+RendererImpl::RendererImpl(const RendererDesc &desc)
+: swapchainDesc(desc.swapchain)
+, savePreprocessedShaders(false)
+, frameNum(0)
+, ringBufSize(desc.ephemeralRingBufSize)
+, ringBufPtr(0)
 , inFrame(false)
 , inRenderPass(false)
 , validPipeline(false)

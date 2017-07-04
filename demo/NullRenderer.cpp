@@ -15,15 +15,24 @@ Buffer::~Buffer() {
 }
 
 
+RendererBase::RendererBase()
+: numBuffers(0)
+, numSamplers(0)
+, numTextures(0)
+{
+}
+
+
+RendererBase::~RendererBase() {
+}
+
+
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
 , savePreprocessedShaders(false)
 , frameNum(0)
 , ringBufSize(desc.ephemeralRingBufSize)
 , ringBufPtr(0)
-, numBuffers(0)
-, numSamplers(0)
-, numTextures(0)
 , inFrame(false)
 , inRenderPass(false)
 , validPipeline(false)
