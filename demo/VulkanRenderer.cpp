@@ -547,6 +547,24 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 }
 
 
+static vk::ImageLayout vulkanLayout(Layout l) {
+	switch (l) {
+	case Invalid:
+		assert(false);
+		return vk::ImageLayout::eUndefined;
+
+	case ShaderRead:
+		return vk::ImageLayout::eShaderReadOnlyOptimal;
+
+	case TransferSrc:
+		return vk::ImageLayout::eTransferSrcOptimal;
+	}
+
+	assert(false);
+	return vk::ImageLayout::eUndefined;
+}
+
+
 RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	vk::RenderPassCreateInfo info;
 	vk::SubpassDescription subpass;
@@ -574,8 +592,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
 		attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
 		attach.initialLayout  = layout;
-		// TODO: finalLayout should be transfer dst for final render pass
-		attach.finalLayout    = vk::ImageLayout::eShaderReadOnlyOptimal;
+		attach.finalLayout    = vulkanLayout(desc.colorFinalLayout_);
 		attachments.push_back(attach);
 
 		vk::AttachmentReference ref;
@@ -603,6 +620,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
 		attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
 		attach.initialLayout  = layout;
+		// TODO: finalLayout should come from desc
 		attach.finalLayout    = vk::ImageLayout::eShaderReadOnlyOptimal;
 		attachments.push_back(attach);
 		attachmentViews.push_back(depthRT.imageView);
