@@ -509,7 +509,7 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	device.bindBufferMemory(buffer.buffer, buffer.memory.memory, buffer.memory.offset);
 
 	// copy contents to GPU memory
-	unsigned int beginPtr = ringBufferAlloc(size);
+	unsigned int beginPtr = ringBufferAllocate(size);
 
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
@@ -544,7 +544,7 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	unsigned int beginPtr = ringBufferAlloc(size);
+	unsigned int beginPtr = ringBufferAllocate(size);
 
 	memcpy(persistentMapping + beginPtr, contents, size);
 

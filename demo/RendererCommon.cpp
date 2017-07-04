@@ -196,7 +196,7 @@ void Renderer::drawIndexedOffset(unsigned int vertexCount, unsigned int firstInd
 }
 
 
-unsigned int RendererImpl::ringBufferAlloc(unsigned int size) {
+unsigned int RendererImpl::ringBufferAllocate(unsigned int size) {
 	// sub-allocate from persistent coherent buffer
 	// round current pointer up to necessary alignment
 	// TODO: UBOs need alignment queried from implementation
