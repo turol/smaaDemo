@@ -794,6 +794,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 
 	glCreateFramebuffers(1, &fbo);
 	RenderPass &pass = renderPasses.add(fbo);
+	pass.desc = desc;
 	pass.fbo = fbo;
 
 	auto &colorRT = renderTargets.get(desc.colors_[0]);

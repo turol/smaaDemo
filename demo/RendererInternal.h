@@ -151,6 +151,7 @@ struct RenderTarget {
 
 
 struct RenderPass {
+	RenderPassDesc  desc;
 	GLuint fbo;
 	GLuint colorTex;
 	GLuint depthTex;
