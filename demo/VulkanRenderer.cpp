@@ -353,7 +353,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	{
 		vk::BufferCreateInfo rbInfo;
 		rbInfo.size  = ringBufSize;
-		rbInfo.usage = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eVertexBuffer;
+		rbInfo.usage = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferSrc;
 		ringBuffer   = device.createBuffer(rbInfo);
 
 		assert(ringBufferMem.memory == VK_NULL_HANDLE);
@@ -482,7 +482,7 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	vk::BufferCreateInfo info;
 	info.size  = size;
 	// TODO: usage flags should be parameters
-	info.usage = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eVertexBuffer;
+	info.usage = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst;
 
 	auto result    = buffers.add();
 	Buffer &buffer = result.first;
@@ -498,7 +498,33 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	printf("buffer memory size: %u\n",        static_cast<unsigned int>(buffer.memory.size));
 	device.bindBufferMemory(buffer.buffer, buffer.memory.memory, buffer.memory.offset);
 
-	STUBBED("copy buffer contents");
+	// copy contents to GPU memory
+	unsigned int beginPtr = ringBufferAlloc(size);
+
+	// TODO: reuse command buffer for multiple copies
+	// TODO: use transfer queue instead of main queue
+	vk::CommandBufferAllocateInfo cmdInfo(commandPool, vk::CommandBufferLevel::ePrimary, 1);
+	auto cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
+
+	vk::BufferCopy copyRegion;
+	copyRegion.srcOffset = beginPtr;
+	copyRegion.dstOffset = 0;
+	copyRegion.size      = size;
+
+	cmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+	cmdBuf.copyBuffer(ringBuffer, buffer.buffer, 1, &copyRegion);
+	cmdBuf.end();
+
+	vk::SubmitInfo submit;
+	submit.waitSemaphoreCount   = 0;
+	submit.commandBufferCount   = 1;
+	submit.pCommandBuffers      = &cmdBuf;
+	submit.signalSemaphoreCount = 0;
+	queue.submit({ submit }, vk::Fence());
+
+	// TODO: don't wait for idle here, use fence to make frame submit wait for it
+	queue.waitIdle();
+	device.freeCommandBuffers(commandPool, { cmdBuf } );
 
 	return BufferHandle(result.second);
 }
