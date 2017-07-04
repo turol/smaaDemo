@@ -545,7 +545,7 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 		ShaderResource r;
 		r.set     = glsl.get_decoration(ubo.id, spv::DecorationDescriptorSet);
 		r.binding = glsl.get_decoration(ubo.id, spv::DecorationBinding);
-		r.type    = UniformBuffer;
+		r.type    = DescriptorType::UniformBuffer;
 		resources.push_back(r);
 
 		// opengl doesn't like set decorations, strip them
@@ -557,7 +557,7 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 		ShaderResource r;
 		r.set     = glsl.get_decoration(ssbo.id, spv::DecorationDescriptorSet);
 		r.binding = glsl.get_decoration(ssbo.id, spv::DecorationBinding);
-		r.type    = StorageBuffer;
+		r.type    = DescriptorType::StorageBuffer;
 		resources.push_back(r);
 
 		// opengl doesn't like set decorations, strip them
@@ -569,7 +569,7 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 		ShaderResource r;
 		r.set     = glsl.get_decoration(s.id, spv::DecorationDescriptorSet);
 		r.binding = glsl.get_decoration(s.id, spv::DecorationBinding);
-		r.type    = Sampler;
+		r.type    = DescriptorType::Sampler;
 		resources.push_back(r);
 
 		// opengl doesn't like set decorations, strip them
@@ -581,7 +581,7 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 		ShaderResource r;
 		r.set     = glsl.get_decoration(tex.id, spv::DecorationDescriptorSet);
 		r.binding = glsl.get_decoration(tex.id, spv::DecorationBinding);
-		r.type    = Texture;
+		r.type    = DescriptorType::Texture;
 		resources.push_back(r);
 
 		// opengl doesn't like set decorations, strip them
@@ -593,7 +593,7 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 		ShaderResource r;
 		r.set     = glsl.get_decoration(s.id, spv::DecorationDescriptorSet);
 		r.binding = glsl.get_decoration(s.id, spv::DecorationBinding);
-		r.type    = CombinedSampler;
+		r.type    = DescriptorType::CombinedSampler;
 		resources.push_back(r);
 
 		// opengl doesn't like set decorations, strip them
@@ -695,25 +695,25 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 
 static const char *descriptorTypeName(DescriptorType t) {
 	switch (t) {
-	case End:
+	case DescriptorType::End:
 		return "End";
 
-	case UniformBuffer:
+	case DescriptorType::UniformBuffer:
 		return "UniformBuffer";
 
-	case StorageBuffer:
+	case DescriptorType::StorageBuffer:
 		return "StorageBuffer";
 
-	case Sampler:
+	case DescriptorType::Sampler:
 		return "Sampler";
 
-	case Texture:
+	case DescriptorType::Texture:
 		return "Texture";
 
-	case CombinedSampler:
+	case DescriptorType::CombinedSampler:
 		return "CombinedSampler";
 
-	case Count:
+	case DescriptorType::Count:
 		assert(false);  // shouldn't happen
 		return "Count";
 
@@ -882,7 +882,7 @@ DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const Descript
 	auto result = dsLayouts.add();
 	DescriptorSetLayout &dsLayout = result.first;
 
-	while (layout->type != End) {
+	while (layout->type != DescriptorType::End) {
 		dsLayout.layout.push_back(*layout);
 		layout++;
 	}
@@ -1215,12 +1215,12 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 	unsigned int index = 0;
 	for (const auto &l : layout.layout) {
 		switch (l.type) {
-		case End:
-            // can't happene because createDesciptorSetLayout doesn't let it
+		case DescriptorType::End:
+			// can't happen because createDesciptorSetLayout doesn't let it
 			assert(false);
 			break;
 
-		case UniformBuffer: {
+		case DescriptorType::UniformBuffer: {
 			// this is part of the struct, we know it's correctly aligned and right type
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			const Buffer &buffer = buffers.get(handle);
@@ -1236,7 +1236,7 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 			glBindBufferRange(GL_UNIFORM_BUFFER, index, buffer.buffer, buffer.beginOffs, buffer.size);
 		} break;
 
-		case StorageBuffer: {
+		case DescriptorType::StorageBuffer: {
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			const Buffer &buffer = buffers.get(handle);
 			assert(buffer.size  > 0);
@@ -1251,25 +1251,25 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, index, buffer.buffer, buffer.beginOffs, buffer.size);
 		} break;
 
-		case Sampler: {
+		case DescriptorType::Sampler: {
 			GLuint sampler = *reinterpret_cast<const SamplerHandle *>(data + l.offset);
 			glBindSampler(index, sampler);
 		} break;
 
-		case Texture: {
+		case DescriptorType::Texture: {
 			GLuint tex = *reinterpret_cast<const TextureHandle *>(data + l.offset);
 			// FIXME: index is not right here
 			glBindTextureUnit(index, tex);
 		} break;
 
-		case CombinedSampler: {
+		case DescriptorType::CombinedSampler: {
 			const CSampler &combined = *reinterpret_cast<const CSampler *>(data + l.offset);
 			// FIXME: index is not right here
 			glBindTextureUnit(index, combined.tex);
 			glBindSampler(index, combined.sampler);
 		} break;
 
-		case Count:
+		case DescriptorType::Count:
 			assert(false); // shouldn't happen
 			break;
 

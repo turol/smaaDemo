@@ -436,8 +436,8 @@ struct GlobalDS {
 
 
 const DescriptorLayout GlobalDS::layout[] = {
-	  { UniformBuffer,  offsetof(GlobalDS, globalUniforms) }
-	, { End,            0                                  }
+	  { DescriptorType::UniformBuffer,  offsetof(GlobalDS, globalUniforms) }
+	, { DescriptorType::End,            0                                  }
 };
 
 DescriptorSetLayoutHandle GlobalDS::layoutHandle;
@@ -452,8 +452,8 @@ struct CubeSceneDS {
 
 
 const DescriptorLayout CubeSceneDS::layout[] = {
-	  { StorageBuffer,  offsetof(CubeSceneDS, instances) }
-	, { End,            0                                }
+	  { DescriptorType::StorageBuffer,  offsetof(CubeSceneDS, instances) }
+	, { DescriptorType::End,            0                                }
 };
 
 DescriptorSetLayoutHandle CubeSceneDS::layoutHandle;
@@ -468,8 +468,8 @@ struct ColorTexDS {
 
 
 const DescriptorLayout ColorTexDS::layout[] = {
-	  { CombinedSampler,  offsetof(ColorTexDS, color) }
-	, { End,              0,                          }
+	  { DescriptorType::CombinedSampler,  offsetof(ColorTexDS, color) }
+	, { DescriptorType::End,              0,                          }
 };
 
 DescriptorSetLayoutHandle ColorTexDS::layoutHandle;
@@ -486,10 +486,10 @@ struct BlendWeightDS {
 
 
 const DescriptorLayout BlendWeightDS::layout[] = {
-	  { CombinedSampler,  offsetof(BlendWeightDS, edgesTex)       }
-	, { CombinedSampler,  offsetof(BlendWeightDS, areaTex)        }
-	, { CombinedSampler,  offsetof(BlendWeightDS, searchTex)      }
-	, { End,              0,                                      }
+	  { DescriptorType::CombinedSampler,  offsetof(BlendWeightDS, edgesTex)       }
+	, { DescriptorType::CombinedSampler,  offsetof(BlendWeightDS, areaTex)        }
+	, { DescriptorType::CombinedSampler,  offsetof(BlendWeightDS, searchTex)      }
+	, { DescriptorType::End,              0,                                      }
 };
 
 DescriptorSetLayoutHandle BlendWeightDS::layoutHandle;
@@ -505,9 +505,9 @@ struct NeighborBlendDS {
 
 
 const DescriptorLayout NeighborBlendDS::layout[] = {
-	  { CombinedSampler,  offsetof(NeighborBlendDS, color)              }
-	, { CombinedSampler,  offsetof(NeighborBlendDS, blendweights)       }
-	, { End        ,      0                                             }
+	  { DescriptorType::CombinedSampler,  offsetof(NeighborBlendDS, color)              }
+	, { DescriptorType::CombinedSampler,  offsetof(NeighborBlendDS, blendweights)       }
+	, { DescriptorType::End        ,      0                                             }
 };
 
 DescriptorSetLayoutHandle NeighborBlendDS::layoutHandle;

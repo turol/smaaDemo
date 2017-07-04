@@ -1084,7 +1084,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 }
 
 
-static const std::array<vk::DescriptorType, Count - 1> descriptorTypes =
+static const std::array<vk::DescriptorType, uint8_t(DescriptorType::Count) - 1> descriptorTypes =
 {
 	  vk::DescriptorType::eUniformBuffer
 	, vk::DescriptorType::eStorageBuffer
@@ -1098,12 +1098,12 @@ DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const Descript
 	std::vector<vk::DescriptorSetLayoutBinding> bindings;
 
 	unsigned int i = 0;
-	while (layout->type != End) {
+	while (layout->type != DescriptorType::End) {
 		vk::DescriptorSetLayoutBinding b;
 
 		b.binding         = i;
 		// TODO: make layout End last in enum so this is nicer
-		b.descriptorType  = descriptorTypes[layout->type - 1];
+		b.descriptorType  = descriptorTypes[uint8_t(layout->type) - 1];
 		b.descriptorCount = 1;
 		// TODO: should specify stages in layout
 		b.stageFlags      = vk::ShaderStageFlagBits::eAll;

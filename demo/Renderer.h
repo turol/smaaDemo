@@ -112,7 +112,7 @@ typedef uint32_t TextureHandle;
 typedef uint32_t UniformBufferHandle;
 
 
-enum DescriptorType {
+enum class DescriptorType : uint8_t {
 	  End
 	, UniformBuffer
 	, StorageBuffer
