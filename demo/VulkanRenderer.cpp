@@ -1262,7 +1262,7 @@ void RendererImpl::presentFrame(RenderTargetHandle /* rt */) {
 
 	// transition image to transfer dst optimal
 	vk::ImageMemoryBarrier barrier;
-	barrier.srcAccessMask       = vk::AccessFlagBits::eMemoryWrite;
+	barrier.srcAccessMask       = vk::AccessFlagBits();
 	barrier.dstAccessMask       = vk::AccessFlagBits::eTransferWrite;
 	barrier.oldLayout           = vk::ImageLayout::eUndefined;
 	barrier.newLayout           = layout;
@@ -1354,7 +1354,7 @@ void RendererImpl::beginRenderPass(RenderPassHandle handle) {
 
 		std::vector<vk::ImageMemoryBarrier> barriers;
 		vk::ImageMemoryBarrier b;
-		b.srcAccessMask               = vk::AccessFlagBits::eColorAttachmentRead;
+		b.srcAccessMask               = vk::AccessFlagBits();
 		b.dstAccessMask               = vk::AccessFlagBits::eColorAttachmentWrite;
 		b.oldLayout                   = vk::ImageLayout::eUndefined;
 		b.newLayout                   = vk::ImageLayout::eColorAttachmentOptimal;
@@ -1368,7 +1368,7 @@ void RendererImpl::beginRenderPass(RenderPassHandle handle) {
 
 		if (pass.desc.depthStencil_) {
 			const auto &depthRT = renderTargets.get(pass.desc.depthStencil_);
-			b.srcAccessMask               = vk::AccessFlagBits::eDepthStencilAttachmentRead;
+			b.srcAccessMask               = vk::AccessFlagBits();
 			b.dstAccessMask               = vk::AccessFlagBits::eDepthStencilAttachmentWrite;
 			b.oldLayout                   = vk::ImageLayout::eUndefined;
 			b.newLayout                   = vk::ImageLayout::eDepthStencilAttachmentOptimal;
