@@ -171,6 +171,11 @@ RenderPass::~RenderPass() {
 }
 
 
+Texture::~Texture()
+{
+}
+
+
 static const char *errorSource(GLenum source)
 {
 	switch (source)
@@ -864,6 +869,11 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		w = std::max(w / 2, 1u);
 		h = std::max(h / 2, 1u);
 	}
+
+	auto &tex  = textures.add(texture);
+	tex.tex    = texture;
+	tex.width  = desc.width_;
+	tex.height = desc.height_;
 
 	return texture;
 }

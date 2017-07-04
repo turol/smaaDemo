@@ -181,6 +181,45 @@ struct RenderPass {
 };
 
 
+struct Texture {
+	// TODO: need target for anything?
+	GLuint tex;
+	unsigned int width, height;
+
+
+	Texture(const Texture &) = delete;
+	Texture &operator=(const Texture &) = delete;
+
+	Texture(Texture &&other)
+	: tex(other.tex)
+	, width(other.width)
+	, height(other.height)
+	{
+		other.tex      = 0;
+		other.width    = 0;
+		other.height   = 0;
+	}
+
+	Texture &operator=(Texture &&other) {
+		std::swap(tex,    other.tex);
+		std::swap(width,  other.width);
+		std::swap(height, other.height);
+
+		return *this;
+	}
+
+	Texture()
+	: tex(0)
+	, width(0)
+	, height(0)
+	{
+	}
+
+
+	~Texture();
+};
+
+
 struct RendererBase {
 	GLuint        ringBuffer;
 	bool          persistentMapInUse;
@@ -202,6 +241,7 @@ struct RendererBase {
 	ResourceContainer<Pipeline>             pipelines;
 	ResourceContainer<RenderPass>           renderPasses;
 	ResourceContainer<RenderTarget>         renderTargets;
+	ResourceContainer<Texture>              textures;
 	ResourceContainer<VertexShader>         vertexShaders;
 
 	std::vector<BufferHandle> ephemeralBuffers;
