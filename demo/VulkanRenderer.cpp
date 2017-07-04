@@ -504,10 +504,7 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 }
 
 
-BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *contents) {
-	assert(size != 0);
-	assert(contents != nullptr);
-
+unsigned int RendererImpl::ringBufferAlloc(unsigned int size) {
 	// sub-allocate from persistent coherent buffer
 	// round current pointer up to necessary alignment
 	// TODO: UBOs need alignment queried from implementation
@@ -531,6 +528,16 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 		assert(beginPtr == 0);
 	}
 	ringBufPtr = alignedPtr + size;
+
+	return beginPtr;
+}
+
+
+BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *contents) {
+	assert(size != 0);
+	assert(contents != nullptr);
+
+	unsigned int beginPtr = ringBufferAlloc(size);
 
 	memcpy(persistentMapping + beginPtr, contents, size);
 
