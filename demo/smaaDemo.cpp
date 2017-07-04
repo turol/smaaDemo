@@ -775,12 +775,14 @@ void SMAADemo::createFramebuffers()	{
 	sceneRenderPass = renderer.createRenderPass(rpDesc);
 
 	rpDesc.depthStencil(0).color(0, rendertargets[RenderTargets::FinalRender]);
+	rpDesc.colorFinalLayout(TransferSrc);
 	finalRenderPass = renderer.createRenderPass(rpDesc);
 
 	// SMAA edges texture and FBO
 	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8);
 	rendertargets[RenderTargets::Edges] = renderer.createRenderTarget(rtDesc);
 	rpDesc.depthStencil(0).color(0, rendertargets[RenderTargets::Edges]);
+	rpDesc.colorFinalLayout(ShaderRead);
 	smaaEdgesRenderPass = renderer.createRenderPass(rpDesc);
 
 	// SMAA blending weights texture and FBO

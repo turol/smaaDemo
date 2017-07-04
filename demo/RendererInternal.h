@@ -108,6 +108,7 @@ struct RenderTarget {
 	GLuint tex;
 	GLuint readFBO;
 	unsigned int width, height;
+	Layout               currentLayout;
 
 
 	RenderTarget()
@@ -115,6 +116,7 @@ struct RenderTarget {
 	, readFBO(0)
 	, width(0)
 	, height(0)
+	, currentLayout(InvalidLayout)
 	{
 	}
 
@@ -309,12 +311,13 @@ struct RenderTarget{
 	vk::Format    format;
 	VkMappedMemoryRange  memory;
 	vk::ImageView imageView;
-	// TODO: track current layout
+	Layout               currentLayout;
 
 
 	RenderTarget()
 	: width(0)
 	, height(0)
+	, currentLayout(InvalidLayout)
 	{}
 
 	RenderTarget(const RenderTarget &)            = delete;
@@ -514,6 +517,7 @@ struct RendererImpl {
 	char         *persistentMapping;
 
 	PipelineDesc  currentPipeline;
+	RenderPassHandle  currentRenderPass;
 
 	SDL_Window *window;
 	SDL_GLContext context;

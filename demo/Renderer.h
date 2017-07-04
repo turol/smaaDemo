@@ -327,9 +327,17 @@ private:
 };
 
 
+enum Layout : uint8_t {
+	  InvalidLayout
+	, ShaderRead
+	, TransferSrc
+};
+
+
 struct RenderPassDesc {
 	RenderPassDesc()
 	: depthStencil_(0)
+	, colorFinalLayout_(ShaderRead)
 	{
 		std::fill(colors_.begin(), colors_.end(), 0);
 	}
@@ -353,10 +361,16 @@ struct RenderPassDesc {
 		return *this;
 	}
 
+	RenderPassDesc &colorFinalLayout(Layout l) {
+		colorFinalLayout_ = l;
+		return *this;
+	}
+
 private:
 
 	RenderTargetHandle depthStencil_;
 	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS> colors_;
+	Layout   colorFinalLayout_;
 
 	friend struct RendererImpl;
 };

@@ -977,6 +977,7 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 	inFrame = false;
 
 	auto &rt = renderTargets.get(image);
+	assert(rt.currentLayout == TransferSrc);
 
 	unsigned int width  = rt.width;
 	unsigned int height = rt.height;
@@ -1038,6 +1039,8 @@ void RendererImpl::beginRenderPass(RenderPassHandle id) {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, pass.fbo);
 	glClear(mask);
+
+	currentRenderPass = id;
 }
 
 
@@ -1045,6 +1048,13 @@ void RendererImpl::endRenderPass() {
 	assert(inFrame);
 	assert(inRenderPass);
 	inRenderPass = false;
+
+	const auto &pass = renderPasses.get(currentRenderPass.handle);
+
+	auto &rt = renderTargets.get(pass.desc.colors_[0]);
+	rt.currentLayout = pass.desc.colorFinalLayout_;
+
+	currentRenderPass = RenderPassHandle();
 }
 
 
