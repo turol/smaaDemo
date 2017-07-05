@@ -186,6 +186,7 @@ struct RendererBase {
 	vk::Queue                          queue;
 
 	vk::CommandPool                    commandPool;
+	vk::DescriptorPool                 dsPool;
 
 	vk::CommandBuffer                  currentCommandBuffer;
 

@@ -398,6 +398,24 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		assert(persistentMapping != nullptr);
 	}
 
+	// descriptor pool
+	{
+		// TODO: these limits are arbitrary, find better ones
+		std::vector<vk::DescriptorPoolSize> poolSizes;
+		for (const auto t : descriptorTypes ) {
+			vk::DescriptorPoolSize s;
+			s.type            = t;
+			s.descriptorCount = 32;
+			poolSizes.push_back(s);
+		}
+
+		vk::DescriptorPoolCreateInfo dsInfo;
+		dsInfo.maxSets       = 256;
+		dsInfo.poolSizeCount = poolSizes.size();
+		dsInfo.pPoolSizes    = &poolSizes[0];
+
+		dsPool = device.createDescriptorPool(dsInfo);
+	}
 	// TODO: load pipeline cache
 }
 
@@ -408,6 +426,7 @@ RendererImpl::~RendererImpl() {
 	assert(surface);
 	assert(swapchain);
 	assert(commandPool);
+	assert(dsPool);
 	assert(ringBuffer);
 	assert(ringBufferMem.memory);
 	assert(ringBufferMem.size   > 0);
@@ -473,6 +492,7 @@ RendererImpl::~RendererImpl() {
 	} );
 
 	device.destroyCommandPool(commandPool);
+	device.destroyDescriptorPool(dsPool);
 
 	device.destroySwapchainKHR(swapchain);
 	swapchain = VK_NULL_HANDLE;
@@ -1340,6 +1360,8 @@ void RendererImpl::presentFrame(RenderTargetHandle /* rt */) {
 
 	// reset command pool
 	device.resetCommandPool(commandPool, vk::CommandPoolResetFlags());
+
+	device.resetDescriptorPool(dsPool);
 
 	device.destroyFence(fence);
 
