@@ -200,7 +200,7 @@ struct RendererBase {
 	ResourceContainer<DescriptorSetLayout> dsLayouts;
 	ResourceContainer<Pipeline>            pipelines;
 	ResourceContainer<RenderPass>          renderPasses;
-	ResourceContainer<struct Sampler>      samplers;
+	ResourceContainer<Sampler>             samplers;
 	ResourceContainer<RenderTarget>  renderTargets;
 
 	vk::Buffer           ringBuffer;
