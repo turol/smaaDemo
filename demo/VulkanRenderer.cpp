@@ -1281,6 +1281,8 @@ void RendererImpl::beginFrame() {
 	// set command buffer to recording
 	currentCommandBuffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 
+	currentPipelineLayout = vk::PipelineLayout();
+
 	STUBBED("");
 }
 
@@ -1435,6 +1437,8 @@ void RendererImpl::beginRenderPass(RenderPassHandle handle) {
 	info.pClearValues              = &clearValues[0];
 
 	currentCommandBuffer.beginRenderPass(info, vk::SubpassContents::eInline);
+
+	currentPipelineLayout = vk::PipelineLayout();
 }
 
 
@@ -1459,6 +1463,7 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 
 	const auto &p = pipelines.get(pipeline);
 	currentCommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, p.pipeline);
+	currentPipelineLayout = p.layout;
 }
 
 

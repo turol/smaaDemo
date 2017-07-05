@@ -189,6 +189,7 @@ struct RendererBase {
 	vk::DescriptorPool                 dsPool;
 
 	vk::CommandBuffer                  currentCommandBuffer;
+	vk::PipelineLayout                 currentPipelineLayout;
 
 	VmaAllocator                       allocator;
 
