@@ -1497,12 +1497,17 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 }
 
 
-void RendererImpl::bindDescriptorSet(unsigned int /* dsIndex */, DescriptorSetLayoutHandle layoutHandle, const void *data_) {
+void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DescriptorSetLayoutHandle layoutHandle, const void *data_) {
 	assert(validPipeline);
 
-	STUBBED("allocate descriptor set");
-
 	const DescriptorSetLayout &layout = dsLayouts.get(layoutHandle);
+
+	vk::DescriptorSetAllocateInfo dsInfo;
+	dsInfo.descriptorPool      = dsPool;
+	dsInfo.descriptorSetCount  = 1;
+	dsInfo.pSetLayouts         = &layout.layout;
+
+	vk::DescriptorSet ds = device.allocateDescriptorSets(dsInfo)[0];
 
 	const char *data = reinterpret_cast<const char *>(data_);
 	unsigned int index = 0;
@@ -1550,6 +1555,8 @@ void RendererImpl::bindDescriptorSet(unsigned int /* dsIndex */, DescriptorSetLa
 
 		index++;
 	}
+
+	currentCommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, currentPipelineLayout, dsIndex, { ds }, {});
 }
 
 
