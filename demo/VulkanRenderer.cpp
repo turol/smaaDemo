@@ -540,6 +540,7 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 
 	// copy contents to GPU memory
 	unsigned int beginPtr = ringBufferAllocate(size);
+	memcpy(persistentMapping + beginPtr, contents, size);
 
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
