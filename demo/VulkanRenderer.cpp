@@ -112,6 +112,16 @@ static SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window, SDL_vulkanInstance 
 #endif  // SDL_VIDEO_VULKAN_SURFACE
 
 
+static const std::array<vk::DescriptorType, uint8_t(DescriptorType::Count) - 1> descriptorTypes =
+{
+	  vk::DescriptorType::eUniformBuffer
+	, vk::DescriptorType::eStorageBuffer
+	, vk::DescriptorType::eSampler
+	, vk::DescriptorType::eSampledImage
+	, vk::DescriptorType::eCombinedImageSampler
+};
+
+
 static vk::Format vulkanVertexFormat(VtxFormat::VtxFormat format, uint8_t count) {
 	switch (format) {
 	case VtxFormat::Float:
@@ -1063,16 +1073,6 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 
 	return 0;
 }
-
-
-static const std::array<vk::DescriptorType, uint8_t(DescriptorType::Count) - 1> descriptorTypes =
-{
-	  vk::DescriptorType::eUniformBuffer
-	, vk::DescriptorType::eStorageBuffer
-	, vk::DescriptorType::eSampler
-	, vk::DescriptorType::eSampledImage
-	, vk::DescriptorType::eCombinedImageSampler
-};
 
 
 DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout *layout) {
