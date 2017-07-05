@@ -40,6 +40,7 @@ struct Buffer {
 
 struct DescriptorSetLayout {
 	vk::DescriptorSetLayout layout;
+	std::vector<DescriptorLayout>  descriptors;
 
 
 	DescriptorSetLayout() {}

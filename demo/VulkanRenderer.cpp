@@ -1079,6 +1079,7 @@ DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const Descript
 	std::vector<vk::DescriptorSetLayoutBinding> bindings;
 
 	unsigned int i = 0;
+	std::vector<DescriptorLayout> descriptors;
 	while (layout->type != DescriptorType::End) {
 		vk::DescriptorSetLayoutBinding b;
 
@@ -1090,6 +1091,7 @@ DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const Descript
 		b.stageFlags      = vk::ShaderStageFlagBits::eAll;
 
 		bindings.push_back(b);
+		descriptors.push_back(*layout);
 
 		layout++;
 		i++;
@@ -1103,6 +1105,7 @@ DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const Descript
 	auto result = dsLayouts.add();
 	DescriptorSetLayout &dsLayout = result.first;
 	dsLayout.layout = device.createDescriptorSetLayout(info);
+	dsLayout.descriptors = std::move(descriptors);
 
 	return DescriptorSetLayoutHandle(result.second);
 }
@@ -1467,10 +1470,59 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 }
 
 
-void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayoutHandle /* layout */, const void * /* data_ */) {
+void RendererImpl::bindDescriptorSet(unsigned int /* dsIndex */, DescriptorSetLayoutHandle layoutHandle, const void *data_) {
 	assert(validPipeline);
 
-	STUBBED("");
+	STUBBED("allocate descriptor set");
+
+	const DescriptorSetLayout &layout = dsLayouts.get(layoutHandle);
+
+	const char *data = reinterpret_cast<const char *>(data_);
+	unsigned int index = 0;
+	for (const auto &l : layout.descriptors) {
+		switch (l.type) {
+		case DescriptorType::End:
+			// can't happen because createDesciptorSetLayout doesn't let it
+			assert(false);
+			break;
+
+		case DescriptorType::UniformBuffer: {
+			// this is part of the struct, we know it's correctly aligned and right type
+			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
+			const Buffer &buffer = buffers.get(handle);
+			assert(buffer.memory.size > 0);
+			STUBBED("descriptor set uniform buffer");
+
+		} break;
+
+		case DescriptorType::StorageBuffer: {
+			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
+			const Buffer &buffer = buffers.get(handle);
+			assert(buffer.memory.size > 0);
+			STUBBED("descriptor set storage buffer");
+
+		} break;
+
+		case DescriptorType::Sampler: {
+			STUBBED("descriptor set sampler");
+		} break;
+
+		case DescriptorType::Texture: {
+			STUBBED("descriptor set texture");
+		} break;
+
+		case DescriptorType::CombinedSampler: {
+			STUBBED("descriptor set combined sampler");
+		} break;
+
+		case DescriptorType::Count:
+			assert(false); // shouldn't happen
+			break;
+
+		}
+
+		index++;
+	}
 }
 
 
