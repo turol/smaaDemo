@@ -1509,9 +1509,23 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DescriptorSetLayoutHa
 
 	vk::DescriptorSet ds = device.allocateDescriptorSets(dsInfo)[0];
 
+	std::vector<vk::WriteDescriptorSet>   writes;
+	std::vector<vk::DescriptorBufferInfo> bufferWrites;
+
+	unsigned int numWrites = layout.descriptors.size();
+	writes.reserve(numWrites);
+	bufferWrites.reserve(numWrites);
+
 	const char *data = reinterpret_cast<const char *>(data_);
 	unsigned int index = 0;
 	for (const auto &l : layout.descriptors) {
+		vk::WriteDescriptorSet write;
+		write.dstSet          = ds;
+		write.dstBinding      = index;
+		write.descriptorCount = 1;
+		// TODO: move to a helper function
+		write.descriptorType  = descriptorTypes[uint8_t(l.type) - 1];
+
 		switch (l.type) {
 		case DescriptorType::End:
 			// can't happen because createDesciptorSetLayout doesn't let it
@@ -1523,8 +1537,18 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DescriptorSetLayoutHa
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			const Buffer &buffer = buffers.get(handle);
 			assert(buffer.memory.size > 0);
-			STUBBED("descriptor set uniform buffer");
 
+			vk::DescriptorBufferInfo  bufWrite;
+			bufWrite.buffer = buffer.buffer;
+			bufWrite.offset = buffer.memory.offset;
+			bufWrite.range  = buffer.memory.size;
+
+			// we trust that reserve() above makes sure this doesn't reallocate the storage
+			bufferWrites.push_back(bufWrite);
+
+			write.pBufferInfo = &bufferWrites.back();
+
+			writes.push_back(write);
 		} break;
 
 		case DescriptorType::StorageBuffer: {
@@ -1556,6 +1580,7 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DescriptorSetLayoutHa
 		index++;
 	}
 
+	device.updateDescriptorSets(writes, {});
 	currentCommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, currentPipelineLayout, dsIndex, { ds }, {});
 }
 
