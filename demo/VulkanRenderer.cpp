@@ -1532,7 +1532,8 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DescriptorSetLayoutHa
 			assert(false);
 			break;
 
-		case DescriptorType::UniformBuffer: {
+		case DescriptorType::UniformBuffer:
+		case DescriptorType::StorageBuffer: {
 			// this is part of the struct, we know it's correctly aligned and right type
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			const Buffer &buffer = buffers.get(handle);
@@ -1549,14 +1550,6 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DescriptorSetLayoutHa
 			write.pBufferInfo = &bufferWrites.back();
 
 			writes.push_back(write);
-		} break;
-
-		case DescriptorType::StorageBuffer: {
-			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
-			const Buffer &buffer = buffers.get(handle);
-			assert(buffer.memory.size > 0);
-			STUBBED("descriptor set storage buffer");
-
 		} break;
 
 		case DescriptorType::Sampler: {
