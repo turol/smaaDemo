@@ -149,17 +149,8 @@ Pipeline::~Pipeline() {
 
 
 RenderTarget::~RenderTarget() {
-	if (tex != 0) {
-		glDeleteTextures(1, &tex);
-		tex = 0;
-
-		if (readFBO != 0) {
-			glDeleteFramebuffers(1, &readFBO);
-			readFBO = 0;
-		}
-	} else {
-		assert(readFBO == 0);
-	}
+	assert(readFBO  == 0);
+	assert(tex      == 0);
 }
 
 
@@ -465,7 +456,25 @@ RendererImpl::~RendererImpl() {
 	ringBuffer = 0;
 
 	renderPasses.clear();
-	renderTargets.clear();
+	renderTargets.clearWith([this](RenderTarget &rt) {
+		assert(rt.tex != 0);
+		assert(rt.texture);;
+
+		if (rt.readFBO != 0) {
+			glDeleteFramebuffers(1, &rt.readFBO);
+			rt.readFBO = 0;
+		}
+
+		auto &tex = this->textures.get(rt.texture);
+		assert(tex.renderTarget);
+		assert(tex.tex == rt.tex);
+		tex.tex = 0;
+		this->textures.remove(rt.texture);
+
+		glDeleteTextures(1, &rt.tex);
+		rt.tex = 0;
+	} );
+
 
 	pipelines.clear();
 	vertexShaders.clearWith([](VertexShader &v) {
@@ -478,6 +487,14 @@ RendererImpl::~RendererImpl() {
 		assert(f.shader != 0);
 		glDeleteShader(f.shader);
 		f.shader = 0;
+	} );
+
+	textures.clearWith([](Texture &tex) {
+		assert(!tex.renderTarget);
+		assert(tex.tex != 0);
+
+		glDeleteTextures(1, &tex.tex);
+		tex.tex = 0;
 	} );
 
 	glBindVertexArray(0);
@@ -829,10 +846,19 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	glTextureStorage2D(id, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
 	glTextureParameteri(id, GL_TEXTURE_MAX_LEVEL, 0);
 
+	auto textureResult = textures.add();
+	Texture &tex = textureResult.first;
+	tex.tex           = id;
+	tex.width         = desc.width_;
+	tex.height        = desc.height_;
+	tex.renderTarget  = true;
+
 	RenderTarget &rt = renderTargets.add(id);
 	rt.tex    = id;
 	rt.width  = desc.width_;
 	rt.height = desc.height_;
+	// TODO: std::move?
+	rt.texture = textureResult.second;
 
 	return id;
 }
@@ -909,8 +935,26 @@ void RendererImpl::deleteRenderPass(RenderPassHandle fbo) {
 }
 
 
-void RendererImpl::deleteRenderTarget(RenderTargetHandle &rt) {
-	renderTargets.remove(rt);
+void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
+	renderTargets.removeWith(handle, [this](RenderTarget &rt) {
+		assert(rt.tex != 0);
+		assert(rt.texture);;
+
+		if (rt.readFBO != 0) {
+			glDeleteFramebuffers(1, &rt.readFBO);
+			rt.readFBO = 0;
+		}
+
+		auto &tex = this->textures.get(rt.texture);
+		assert(tex.renderTarget);
+		assert(tex.tex == rt.tex);
+		tex.tex = 0;
+		this->textures.remove(rt.texture);
+		rt.texture = TextureHandle();
+
+		glDeleteTextures(1, &rt.tex);
+		rt.tex = 0;
+	} );
 }
 
 

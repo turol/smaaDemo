@@ -96,6 +96,7 @@ struct RenderTarget {
 	GLuint readFBO;
 	unsigned int width, height;
 	Layout               currentLayout;
+	TextureHandle        texture;
 
 
 	RenderTarget()
@@ -185,6 +186,7 @@ struct Texture {
 	// TODO: need target for anything?
 	GLuint tex;
 	unsigned int width, height;
+	bool         renderTarget;
 
 
 	Texture(const Texture &) = delete;
@@ -194,6 +196,7 @@ struct Texture {
 	: tex(other.tex)
 	, width(other.width)
 	, height(other.height)
+	, renderTarget(other.renderTarget)
 	{
 		other.tex      = 0;
 		other.width    = 0;
@@ -212,6 +215,7 @@ struct Texture {
 	: tex(0)
 	, width(0)
 	, height(0)
+	, renderTarget(false)
 	{
 	}
 
