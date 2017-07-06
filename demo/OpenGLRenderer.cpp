@@ -831,7 +831,9 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		glNamedFramebufferTexture(fbo, GL_DEPTH_ATTACHMENT, pass.depthTex, 0);
 	}
 
-	return RenderPassHandle(fbo);
+	RenderPassHandle h;
+	h.handle = fbo;
+	return h;
 }
 
 
@@ -930,7 +932,6 @@ void RendererImpl::deleteBuffer(BufferHandle handle) {
 
 
 void RendererImpl::deleteRenderPass(RenderPassHandle fbo) {
-	assert(fbo != 0);
 	renderPasses.remove(fbo);
 }
 
@@ -1062,16 +1063,16 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 }
 
 
-void RendererImpl::beginRenderPass(RenderPassHandle id) {
+void RendererImpl::beginRenderPass(RenderPassHandle handle) {
 	assert(inFrame);
 	assert(!inRenderPass);
 	inRenderPass  = true;
 	validPipeline = false;
 
-	assert(id != 0);
-	const auto &pass = renderPasses.get(id.handle);
+	assert(handle);
+	const auto &pass = renderPasses.get(handle.handle);
 	assert(pass.fbo != 0);
-	assert(pass.fbo == id.handle);
+	assert(pass.fbo == handle.handle);
 
 	// TODO: should get clear bits from RenderPass object
 	GLbitfield mask = GL_COLOR_BUFFER_BIT;
@@ -1086,7 +1087,7 @@ void RendererImpl::beginRenderPass(RenderPassHandle id) {
 	glBindFramebuffer(GL_FRAMEBUFFER, pass.fbo);
 	glClear(mask);
 
-	currentRenderPass = id;
+	currentRenderPass = handle;
 }
 
 

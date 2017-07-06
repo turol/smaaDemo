@@ -89,7 +89,7 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 
 
 RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc & /* desc */) {
-	return RenderPassHandle(0);
+	return RenderPassHandle();
 }
 
 

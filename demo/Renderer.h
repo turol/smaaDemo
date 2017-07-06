@@ -31,6 +31,7 @@ struct RendererImpl;
 struct DescriptorSetLayout;
 struct FragmentShader;
 struct Framebuffer;
+struct RenderPass;
 struct VertexShader;
 
 
@@ -95,35 +96,7 @@ struct Handle {
 typedef uint32_t BufferHandle;
 typedef uint32_t DescriptorSetLayoutHandle;
 
-class RenderPassHandle {
-	uint32_t handle;
-
-	friend struct RendererImpl;
-
-	explicit RenderPassHandle(uint32_t h)
-	: handle(h)
-	{
-	}
-
-public:
-
-	RenderPassHandle()
-	: handle(0)
-	{
-	}
-
-	RenderPassHandle(const RenderPassHandle &) = default;
-	RenderPassHandle(RenderPassHandle &&)      = default;
-
-	RenderPassHandle &operator=(const RenderPassHandle &) = default;
-	RenderPassHandle &operator=(RenderPassHandle &&)      = default;
-
-
-
-	operator bool() const {
-		return handle;
-	}
-};
+typedef Handle<RenderPass>  RenderPassHandle;
 
 typedef uint32_t PipelineHandle;
 typedef uint32_t RenderTargetHandle;

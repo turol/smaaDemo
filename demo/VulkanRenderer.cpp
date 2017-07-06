@@ -754,7 +754,9 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		r.framebuffer = device.createFramebuffer(fbInfo);
 	}
 
-	return RenderPassHandle(result.second);
+	RenderPassHandle handle;
+	handle.handle = result.second;
+	return handle;
 }
 
 
