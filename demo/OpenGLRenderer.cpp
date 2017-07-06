@@ -1303,9 +1303,10 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 		} break;
 
 		case DescriptorType::Texture: {
-			GLuint tex = *reinterpret_cast<const TextureHandle *>(data + l.offset);
+			TextureHandle texHandle = *reinterpret_cast<const TextureHandle *>(data + l.offset);
+			const auto &tex = textures.get(texHandle);
 			// FIXME: index is not right here
-			glBindTextureUnit(index, tex);
+			glBindTextureUnit(index, tex.tex);
 		} break;
 
 		case DescriptorType::CombinedSampler: {
