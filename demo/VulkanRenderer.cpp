@@ -491,6 +491,15 @@ RendererImpl::~RendererImpl() {
 		memset(&rt.memory, 0, sizeof(rt.memory));
 	} );
 
+	textures.clearWith([this](Texture &tex) {
+		this->device.destroyImageView(tex.imageView);
+		this->device.destroyImage(tex.image);
+		assert(tex.memory.memory != VK_NULL_HANDLE);
+		assert(tex.memory.size   >  0);
+		vmaFreeMemory(this->allocator, &tex.memory);
+		memset(&tex.memory, 0, sizeof(tex.memory));
+	} );
+
 	device.destroyCommandPool(commandPool);
 	device.destroyDescriptorPool(dsPool);
 
@@ -544,6 +553,7 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
+	// TODO: share some of this stuff with createTexture
 	vk::CommandBufferAllocateInfo cmdInfo(commandPool, vk::CommandBufferLevel::ePrimary, 1);
 	auto cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
 
@@ -1090,9 +1100,130 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	assert(desc.height_  > 0);
 	assert(desc.numMips_ > 0);
 
-	STUBBED("");
+	// TODO: check PhysicalDeviceFormatProperties
 
-	return 0;
+	vk::Format format = vulkanFormat(desc.format_);
+
+	vk::ImageCreateInfo info;
+	info.imageType   = vk::ImageType::e2D;
+	info.format      = format;
+	info.extent      = vk::Extent3D(desc.width_, desc.height_, 1);
+	info.mipLevels   = desc.numMips_;
+	info.arrayLayers = 1;
+
+	vk::ImageUsageFlags flags(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
+	assert(desc.format_ != Depth16);
+	info.usage       = flags;
+
+	auto result = textures.add();
+	Texture &tex = result.first;
+	tex.width  = desc.width_;
+	tex.height = desc.height_;
+	tex.image  = device.createImage(info);
+
+	VmaMemoryRequirements  req       = { false, VMA_MEMORY_USAGE_GPU_ONLY, 0, 0, false };
+	uint32_t               typeIndex = 0;
+
+	vmaAllocateMemoryForImage(allocator, tex.image, &req, &tex.memory, &typeIndex);
+	printf("texture image memory type index: %u\n",  typeIndex);
+	printf("texture image memory: %p\n",             tex.memory.memory);
+	printf("texture image memory offset: %u\n",      static_cast<unsigned int>(tex.memory.offset));
+	printf("texture image memory size: %u\n",        static_cast<unsigned int>(tex.memory.size));
+	device.bindImageMemory(tex.image, tex.memory.memory, tex.memory.offset);
+
+	vk::ImageViewCreateInfo viewInfo;
+	viewInfo.image    = tex.image;
+	viewInfo.viewType = vk::ImageViewType::e2D;
+	viewInfo.format   = format;
+	viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+	viewInfo.subresourceRange.levelCount = desc.numMips_;
+	viewInfo.subresourceRange.layerCount = 1;
+	tex.imageView = device.createImageView(viewInfo);
+
+	// TODO: reuse command buffer for multiple copies
+	// TODO: use transfer queue instead of main queue
+	// TODO: share some of this stuff with createBuffer
+	vk::CommandBufferAllocateInfo cmdInfo(commandPool, vk::CommandBufferLevel::ePrimary, 1);
+	auto cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
+
+	cmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+
+	// transition to transfer destination
+	{
+		vk::ImageSubresourceRange range;
+		range.aspectMask            = vk::ImageAspectFlagBits::eColor;
+		range.baseMipLevel          = 0;
+		range.levelCount            = VK_REMAINING_MIP_LEVELS;
+		range.baseArrayLayer        = 0;
+		range.layerCount            = VK_REMAINING_ARRAY_LAYERS;
+
+		vk::ImageMemoryBarrier barrier;
+		barrier.srcAccessMask        = vk::AccessFlagBits();
+		barrier.dstAccessMask        = vk::AccessFlagBits::eTransferWrite;
+		barrier.oldLayout            = vk::ImageLayout::eUndefined;
+		barrier.newLayout            = vk::ImageLayout::eTransferDstOptimal;
+		barrier.srcQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image                = tex.image;
+		barrier.subresourceRange     = range;
+
+		// TODO: relax stage flag bits
+		cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { barrier });
+
+		// copy contents via ring buffer
+		std::vector<vk::BufferImageCopy> regions;
+
+		vk::ImageSubresourceLayers layers;
+		layers.aspectMask = vk::ImageAspectFlagBits::eColor;
+		layers.layerCount = 1;
+
+		unsigned int w = desc.width_, h = desc.height_;
+		for (unsigned int i = 0; i < desc.numMips_; i++) {
+			assert(desc.mipData_[i].data != nullptr);
+			assert(desc.mipData_[i].size != 0);
+			unsigned int size = desc.mipData_[i].size;
+
+			// copy contents to GPU memory
+			unsigned int beginPtr = ringBufferAllocate(size);
+			memcpy(persistentMapping + beginPtr, desc.mipData_[i].data, size);
+
+			layers.mipLevel = i;
+
+			vk::BufferImageCopy region;
+			region.bufferOffset     = beginPtr;
+			// leave row length and image height 0 for tight packing
+			region.imageSubresource = layers;
+			region.imageExtent      = vk::Extent3D(w, h, 1);
+			regions.push_back(region);
+
+			w = std::max(w / 2, 1u);
+			h = std::max(h / 2, 1u);
+		}
+		cmdBuf.copyBufferToImage(ringBuffer, tex.image, vk::ImageLayout::eTransferDstOptimal, regions);
+
+		// transition to shader use
+		barrier.srcAccessMask       = vk::AccessFlagBits::eTransferWrite;
+		barrier.dstAccessMask       = vk::AccessFlagBits::eShaderRead;
+		barrier.oldLayout           = vk::ImageLayout::eTransferDstOptimal;
+		barrier.newLayout           = vk::ImageLayout::eShaderReadOnlyOptimal;
+		// TODO: relax stage flag bits
+		cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { barrier });
+	}
+
+	cmdBuf.end();
+
+	vk::SubmitInfo submit;
+	submit.waitSemaphoreCount   = 0;
+	submit.commandBufferCount   = 1;
+	submit.pCommandBuffers      = &cmdBuf;
+	submit.signalSemaphoreCount = 0;
+	queue.submit({ submit }, vk::Fence());
+
+	// TODO: don't wait for idle here, use fence to make frame submit wait for it
+	queue.waitIdle();
+	device.freeCommandBuffers(commandPool, { cmdBuf } );
+
+	return result.second;
 }
 
 

@@ -168,6 +168,25 @@ struct Sampler {
 };
 
 
+struct Texture {
+	unsigned int         width, height;
+	vk::Image            image;
+	vk::ImageView        imageView;
+	VkMappedMemoryRange  memory;
+
+
+	Texture() {}
+
+	Texture(const Texture &)            = delete;
+	Texture &operator=(const Texture &) = delete;
+
+	Texture(Texture &&)                 = default;
+	Texture &operator=(Texture &&)      = default;
+
+	~Texture() {}
+};
+
+
 struct RendererBase {
 	SDL_Window *window;
 	vk::Instance instance;
@@ -202,6 +221,7 @@ struct RendererBase {
 	ResourceContainer<RenderPass>          renderPasses;
 	ResourceContainer<Sampler>             samplers;
 	ResourceContainer<RenderTarget>  renderTargets;
+	ResourceContainer<Texture>             textures;
 
 	vk::Buffer           ringBuffer;
 	VkMappedMemoryRange  ringBufferMem;
