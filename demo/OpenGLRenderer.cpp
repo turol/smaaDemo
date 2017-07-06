@@ -1084,9 +1084,8 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	validPipeline = true;
 	scissorSet = false;
 
-	// TODO: make sure current renderpass matches the one in pipeline
-
 	const auto &p = pipelines.get(pipeline);
+	assert(p.desc.renderPass_ == currentRenderPass);
 
 	// TODO: shadow state, set only necessary
 	glUseProgram(p.shader);
@@ -1286,6 +1285,7 @@ void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	assert(validPipeline);
 	assert(vertexCount > 0);
 	assert(!currentPipeline.scissorTest_ || scissorSet);
+	assert(currentPipeline.renderPass_ == currentRenderPass);
 	pipelineDrawn = true;
 
 	// TODO: get primitive from current pipeline
@@ -1299,6 +1299,7 @@ void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int i
 	assert(instanceCount > 0);
 	assert(vertexCount > 0);
 	assert(!currentPipeline.scissorTest_ || scissorSet);
+	assert(currentPipeline.renderPass_ == currentRenderPass);
 	pipelineDrawn = true;
 
 	// TODO: get primitive from current pipeline
@@ -1317,6 +1318,7 @@ void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int firs
 	assert(validPipeline);
 	assert(vertexCount > 0);
 	assert(!currentPipeline.scissorTest_ || scissorSet);
+	assert(currentPipeline.renderPass_ == currentRenderPass);
 	pipelineDrawn = true;
 
 	GLenum format        = idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
