@@ -34,6 +34,64 @@ struct Framebuffer;
 struct VertexShader;
 
 
+template <class T>
+struct Handle {
+	// FIXME: make private, mark ResourceContainer as friend
+	uint32_t handle;
+
+
+	Handle()
+	: handle(0)
+	{
+	}
+
+
+	~Handle() {
+		// TODO: assert(handle == 0);
+	};
+
+
+	Handle(const Handle<T> &other)
+	: handle(other.handle)
+	{
+	}
+
+
+	Handle &operator=(const Handle<T> &other) {
+		// TODO: assert(handle == 0);
+		handle = other.handle;
+
+		return *this;
+	}
+
+
+	Handle(Handle<T> &&other)
+	: handle(other.handle)
+	{
+		other.handle = 0;
+	}
+
+
+	Handle<T> &operator=(Handle<T> &&other) {
+		// TODO: assert(handle == 0);
+		handle       = other.handle;
+		other.handle = 0;
+
+		return *this;
+	}
+
+
+	bool operator==(const Handle<T> &other) const {
+		return handle == other.handle;
+	}
+
+
+	operator bool() const {
+		return handle != 0;
+	}
+};
+
+
 typedef uint32_t BufferHandle;
 typedef uint32_t DescriptorSetLayoutHandle;
 
