@@ -1167,7 +1167,7 @@ void SMAADemo::render() {
 			renderer.beginRenderPass(finalRenderPass);
 
 			switch (debugMode) {
-			case 0:
+			case 0: {
 				// full effect
 				renderer.bindPipeline(smaaNeighborPipelines[smaaQuality]);
 
@@ -1177,21 +1177,21 @@ void SMAADemo::render() {
 				neighborBlendDS.blendweights.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::BlendWeights]);
 				neighborBlendDS.blendweights.sampler = linearSampler;
 				renderer.bindDescriptorSet(1, neighborBlendDS);
-				break;
+			} break;
 
-			case 1:
+			case 1: {
 				// visualize edges
 				renderer.bindPipeline(blitPipeline);
 				colorDS.color.tex   = renderer.getRenderTargetTexture(rendertargets[RenderTargets::Edges]);
 				renderer.bindDescriptorSet(1, colorDS);
-				break;
+			} break;
 
-			case 2:
+			case 2: {
                 // visualize blend weights
 				renderer.bindPipeline(blitPipeline);
 				colorDS.color.tex   = renderer.getRenderTargetTexture(rendertargets[RenderTargets::BlendWeights]);
 				renderer.bindDescriptorSet(1, colorDS);
-				break;
+			} break;
 
 			}
 			renderer.draw(0, 3);
