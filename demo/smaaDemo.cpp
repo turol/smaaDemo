@@ -1187,7 +1187,7 @@ void SMAADemo::render() {
 			} break;
 
 			case 2: {
-                // visualize blend weights
+				// visualize blend weights
 				renderer.bindPipeline(blitPipeline);
 				colorDS.color.tex   = renderer.getRenderTargetTexture(rendertargets[RenderTargets::BlendWeights]);
 				renderer.bindDescriptorSet(1, colorDS);
