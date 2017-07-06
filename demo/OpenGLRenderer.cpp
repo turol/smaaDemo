@@ -838,12 +838,11 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 
 
 RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc) {
-	GLuint id = 0;
-
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
 	assert(desc.format_ != Invalid);
 
+	GLuint id = 0;
 	glCreateTextures(GL_TEXTURE_2D, 1, &id);
 	glTextureStorage2D(id, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
 	glTextureParameteri(id, GL_TEXTURE_MAX_LEVEL, 0);
@@ -855,14 +854,15 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	tex.height        = desc.height_;
 	tex.renderTarget  = true;
 
-	RenderTarget &rt = renderTargets.add(id);
+	auto result = renderTargets.add();
+	RenderTarget &rt = result.first;
 	rt.tex    = id;
 	rt.width  = desc.width_;
 	rt.height = desc.height_;
 	// TODO: std::move?
 	rt.texture = textureResult.second;
 
-	return id;
+	return result.second;
 }
 
 
