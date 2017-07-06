@@ -68,6 +68,14 @@ public:
 		resources.erase(it);
 	}
 
+
+	void remove(Handle<T> handle) {
+		auto it = resources.find(handle.handle);
+		assert(it != resources.end());
+		resources.erase(it);
+	}
+
+
 	template <typename F> void removeWith(unsigned int handle, F &&f) {
 		auto it = resources.find(handle);
 		assert(it != resources.end());
