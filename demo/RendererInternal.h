@@ -199,6 +199,8 @@ struct RendererImpl : public RendererBase {
 
 	DescriptorSetLayoutHandle createDescriptorSetLayout(const DescriptorLayout *layout);
 
+	TextureHandle        getRenderTargetTexture(RenderTargetHandle handle);
+
 	void deleteBuffer(BufferHandle handle);
 	void deleteRenderPass(RenderPassHandle fbo);
 	void deleteSampler(SamplerHandle handle);

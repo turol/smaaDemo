@@ -610,6 +610,10 @@ public:
 		T::layoutHandle = createDescriptorSetLayout(T::layout);
 	}
 
+	// gets the textures of a rendertarget to be used for sampling
+	// might be ephemeral, don't store
+	TextureHandle        getRenderTargetTexture(RenderTargetHandle handle);
+
 	void deleteBuffer(BufferHandle handle);
 	void deleteFramebuffer(RenderPassHandle fbo);
 	void deleteSampler(SamplerHandle handle);

@@ -1128,7 +1128,7 @@ void SMAADemo::render() {
 			renderer.beginRenderPass(finalRenderPass);
 			renderer.bindPipeline(fxaaPipelines[fxaaQuality]);
 			ColorTexDS colorDS;
-			colorDS.color.tex     = rendertargets[RenderTargets::MainColor];
+			colorDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainColor]);
 			colorDS.color.sampler = linearSampler;
 			renderer.bindDescriptorSet(1, colorDS);
 			renderer.draw(0, 3);
@@ -1142,7 +1142,7 @@ void SMAADemo::render() {
 			renderer.bindPipeline(smaaEdgePipelines[smaaQuality]);
 
 			ColorTexDS colorDS;
-			colorDS.color.tex     = rendertargets[RenderTargets::MainColor];
+			colorDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainColor]);
 			colorDS.color.sampler = linearSampler;
 			renderer.bindDescriptorSet(1, colorDS);
 			renderer.draw(0, 3);
@@ -1152,7 +1152,7 @@ void SMAADemo::render() {
 			renderer.beginRenderPass(smaaWeightsRenderPass);
 			renderer.bindPipeline(smaaBlendWeightPipelines[smaaQuality]);
 			BlendWeightDS blendWeightDS;
-			blendWeightDS.edgesTex.tex      = rendertargets[RenderTargets::Edges];
+			blendWeightDS.edgesTex.tex      = renderer.getRenderTargetTexture(rendertargets[RenderTargets::Edges]);
 			blendWeightDS.edgesTex.sampler  = linearSampler;
 			blendWeightDS.areaTex.tex       = areaTex;
 			blendWeightDS.areaTex.sampler   = linearSampler;
@@ -1172,9 +1172,9 @@ void SMAADemo::render() {
 				renderer.bindPipeline(smaaNeighborPipelines[smaaQuality]);
 
 				NeighborBlendDS neighborBlendDS;
-				neighborBlendDS.color.tex            = rendertargets[RenderTargets::MainColor];
+				neighborBlendDS.color.tex            = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainColor]);
 				neighborBlendDS.color.sampler        = linearSampler;
-				neighborBlendDS.blendweights.tex     = rendertargets[RenderTargets::BlendWeights];
+				neighborBlendDS.blendweights.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::BlendWeights]);
 				neighborBlendDS.blendweights.sampler = linearSampler;
 				renderer.bindDescriptorSet(1, neighborBlendDS);
 				break;
@@ -1182,14 +1182,14 @@ void SMAADemo::render() {
 			case 1:
 				// visualize edges
 				renderer.bindPipeline(blitPipeline);
-				colorDS.color.tex   = rendertargets[RenderTargets::Edges];
+				colorDS.color.tex   = renderer.getRenderTargetTexture(rendertargets[RenderTargets::Edges]);
 				renderer.bindDescriptorSet(1, colorDS);
 				break;
 
 			case 2:
                 // visualize blend weights
 				renderer.bindPipeline(blitPipeline);
-				colorDS.color.tex   = rendertargets[RenderTargets::BlendWeights];
+				colorDS.color.tex   = renderer.getRenderTargetTexture(rendertargets[RenderTargets::BlendWeights]);
 				renderer.bindDescriptorSet(1, colorDS);
 				break;
 
@@ -1205,7 +1205,7 @@ void SMAADemo::render() {
 		renderer.beginRenderPass(finalRenderPass);
 		renderer.bindPipeline(blitPipeline);
 		ColorTexDS colorDS;
-		colorDS.color.tex     = rendertargets[RenderTargets::MainColor];
+		colorDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainColor]);
 		colorDS.color.sampler = linearSampler;
 		renderer.bindDescriptorSet(1, colorDS);
 		renderer.draw(0, 3);

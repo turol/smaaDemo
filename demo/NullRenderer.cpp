@@ -144,6 +144,11 @@ DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const Descript
 }
 
 
+TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle /* handle */) {
+	return 0;
+}
+
+
 void RendererImpl::deleteBuffer(BufferHandle /* handle */) {
 }
 

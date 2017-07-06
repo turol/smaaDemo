@@ -106,6 +106,11 @@ DescriptorSetLayoutHandle Renderer::createDescriptorSetLayout(const DescriptorLa
 }
 
 
+TextureHandle Renderer::getRenderTargetTexture(RenderTargetHandle handle) {
+	return impl->getRenderTargetTexture(handle);
+}
+
+
 void Renderer::deleteBuffer(BufferHandle handle) {
 	impl->deleteBuffer(handle);
 }

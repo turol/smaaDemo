@@ -922,6 +922,13 @@ DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const Descript
 }
 
 
+TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
+	const auto &rt = renderTargets.get(handle);
+
+	return rt.texture;
+}
+
+
 void RendererImpl::deleteBuffer(BufferHandle handle) {
 	Buffer &buffer = buffers.get(handle);
 	glDeleteBuffers(1, &buffer.buffer);
