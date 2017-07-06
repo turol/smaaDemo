@@ -663,10 +663,10 @@ void SMAADemo::initRender() {
 			//unsigned int srcY = y;
 			memcpy(&tempBuffer[y * AREATEX_PITCH], areaTexBytes + srcY * AREATEX_PITCH, AREATEX_PITCH);
 		}
-		texDesc.mipLevelData(0, &tempBuffer[0]);
+		texDesc.mipLevelData(0, &tempBuffer[0], AREATEX_SIZE);
 		areaTex = renderer.createTexture(texDesc);
 	} else {
-		texDesc.mipLevelData(0, areaTexBytes);
+		texDesc.mipLevelData(0, areaTexBytes, AREATEX_SIZE);
 		areaTex = renderer.createTexture(texDesc);
 	}
 
@@ -680,10 +680,10 @@ void SMAADemo::initRender() {
 			//unsigned int srcY = y;
 			memcpy(&tempBuffer[y * SEARCHTEX_PITCH], searchTexBytes + srcY * SEARCHTEX_PITCH, SEARCHTEX_PITCH);
 		}
-		texDesc.mipLevelData(0, &tempBuffer[0]);
+		texDesc.mipLevelData(0, &tempBuffer[0], SEARCHTEX_SIZE);
 		searchTex = renderer.createTexture(texDesc);
 	} else {
-		texDesc.mipLevelData(0, searchTexBytes);
+		texDesc.mipLevelData(0, searchTexBytes, SEARCHTEX_SIZE);
 		searchTex = renderer.createTexture(texDesc);
 	}
 
@@ -697,7 +697,7 @@ void SMAADemo::initRender() {
 		       .height(height)
 		       .format(RGB8);
 
-		texDesc.mipLevelData(0, imageData);
+		texDesc.mipLevelData(0, imageData, width * height * 3);
 		img.tex = renderer.createTexture(texDesc);
 
 		stbi_image_free(imageData);
@@ -742,7 +742,7 @@ void SMAADemo::initRender() {
 		texDesc.width(width)
 		       .height(height)
 		       .format(RGBA8)
-		       .mipLevelData(0, pixels);
+		       .mipLevelData(0, pixels, width * height * 4);
 		imguiFontsTex = renderer.createTexture(texDesc);
 		io.Fonts->TexID = nullptr;
 	}

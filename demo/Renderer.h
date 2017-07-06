@@ -230,7 +230,7 @@ struct TextureDesc {
 	, numMips_(1)
 	, format_(Invalid)
 	{
-		std::fill(mipData_.begin(), mipData_.end(), nullptr);
+		std::fill(mipData_.begin(), mipData_.end(), MipLevel());
 	}
 
 	~TextureDesc() { }
@@ -259,19 +259,31 @@ struct TextureDesc {
 		return *this;
 	}
 
-	TextureDesc &mipLevelData(unsigned int level, const void *data) {
+	TextureDesc &mipLevelData(unsigned int level, const void *data, unsigned int size) {
 		assert(level < numMips_);
-		mipData_[level] = data;
+		mipData_[level].data = data;
+		mipData_[level].size = size;
 		return *this;
 	}
 
 
 private:
 
+	struct MipLevel {
+		const void   *data;
+		unsigned int  size;
+
+		MipLevel()
+		: data(nullptr)
+		, size(0)
+		{
+		}
+	};
+
 	unsigned int  width_, height_;
 	unsigned int  numMips_;
 	Format        format_;
-	std::array<const void *, MAX_TEXTURE_MIPLEVELS> mipData_;
+	std::array<MipLevel, MAX_TEXTURE_MIPLEVELS> mipData_;
 
 	friend struct RendererImpl;
 };

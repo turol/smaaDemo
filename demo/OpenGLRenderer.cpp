@@ -863,8 +863,9 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	unsigned int w = desc.width_, h = desc.height_;
 
 	for (unsigned int i = 0; i < desc.numMips_; i++) {
-		assert(desc.mipData_[i] != nullptr);
-		glTextureSubImage2D(texture, i, 0, 0, w, h, glTexBaseFormat(desc.format_), GL_UNSIGNED_BYTE, desc.mipData_[i]);
+		assert(desc.mipData_[i].data != nullptr);
+		assert(desc.mipData_[i].size != 0);
+		glTextureSubImage2D(texture, i, 0, 0, w, h, glTexBaseFormat(desc.format_), GL_UNSIGNED_BYTE, desc.mipData_[i].data);
 
 		w = std::max(w / 2, 1u);
 		h = std::max(h / 2, 1u);
