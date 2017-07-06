@@ -899,12 +899,13 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		h = std::max(h / 2, 1u);
 	}
 
-	auto &tex  = textures.add(texture);
+	auto result  = textures.add();
+	Texture &tex = result.first;
 	tex.tex    = texture;
 	tex.width  = desc.width_;
 	tex.height = desc.height_;
 
-	return texture;
+	return result.second;
 }
 
 
