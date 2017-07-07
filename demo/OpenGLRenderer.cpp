@@ -164,6 +164,8 @@ RenderPass::~RenderPass() {
 
 Texture::~Texture()
 {
+	// it should have been deleted by Renderer before destroying this
+	assert(tex == 0);
 }
 
 
@@ -973,7 +975,13 @@ void RendererImpl::deleteSampler(SamplerHandle handle) {
 
 
 void RendererImpl::deleteTexture(TextureHandle handle) {
-	glDeleteTextures(1, &handle);
+	textures.removeWith(handle, [](Texture &tex) {
+		assert(!tex.renderTarget);
+		assert(tex.tex != 0);
+
+		glDeleteTextures(1, &tex.tex);
+		tex.tex = 0;
+	} );
 }
 
 
