@@ -117,6 +117,7 @@ struct RenderTarget{
 	VkMappedMemoryRange  memory;
 	vk::ImageView imageView;
 	Layout               currentLayout;
+	TextureHandle        texture;
 
 
 	RenderTarget()
@@ -173,9 +174,15 @@ struct Texture {
 	vk::Image            image;
 	vk::ImageView        imageView;
 	VkMappedMemoryRange  memory;
+	bool                 renderTarget;
 
 
-	Texture() {}
+	Texture()
+	: width(0)
+	, height(0)
+	, renderTarget(false)
+	{}
+
 
 	Texture(const Texture &)            = delete;
 	Texture &operator=(const Texture &) = delete;

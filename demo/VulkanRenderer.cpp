@@ -483,6 +483,16 @@ RendererImpl::~RendererImpl() {
 	} );
 
 	renderTargets.clearWith([this](RenderTarget &rt) {
+		assert(rt.texture);
+		auto &tex = this->textures.get(rt.texture);
+		assert(tex.image == rt.image);
+		assert(tex.imageView == rt.imageView);
+		tex.image        = vk::Image();
+		tex.imageView    = vk::ImageView();
+		tex.renderTarget = false;
+		this->textures.remove(rt.texture);
+		rt.texture = TextureHandle(0);
+
 		this->device.destroyImageView(rt.imageView);
 		this->device.destroyImage(rt.image);
 		assert(rt.memory.memory != VK_NULL_HANDLE);
@@ -492,6 +502,7 @@ RendererImpl::~RendererImpl() {
 	} );
 
 	textures.clearWith([this](Texture &tex) {
+		assert(!tex.renderTarget);
 		this->device.destroyImageView(tex.imageView);
 		this->device.destroyImage(tex.image);
 		assert(tex.memory.memory != VK_NULL_HANDLE);
@@ -976,6 +987,16 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	viewInfo.subresourceRange.layerCount = 1;
 	rt.imageView = device.createImageView(viewInfo);
 
+	auto texResult   = textures.add();
+	Texture &tex     = texResult.first;
+	tex.width        = desc.width_;
+	tex.height       = desc.height_;
+	tex.image        = rt.image;
+	tex.imageView    = rt.imageView;
+	tex.renderTarget = true;
+	// TODO: std::move ?
+	rt.texture       = texResult.second;
+
 	return result.second;
 }
 
@@ -1265,9 +1286,10 @@ DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const Descript
 }
 
 
-TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle /* handle */) {
-	STUBBED("");
-	return 0;
+TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
+	const auto &rt = renderTargets.get(handle);
+
+	return rt.texture;
 }
 
 
