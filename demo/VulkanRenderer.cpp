@@ -112,6 +112,33 @@ static SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window, SDL_vulkanInstance 
 #endif  // SDL_VIDEO_VULKAN_SURFACE
 
 
+// this part of the C++ bindings sucks...
+
+static PFN_vkCreateDebugReportCallbackEXT   pfn_vkCreateDebugReportCallbackEXT   = nullptr;
+static PFN_vkDestroyDebugReportCallbackEXT  pfn_vkDestroyDebugReportCallbackEXT  = nullptr;
+
+
+VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugReportCallbackEXT(
+    VkInstance                                  instance,
+    const VkDebugReportCallbackCreateInfoEXT*   pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkDebugReportCallbackEXT*                   pCallback)
+{
+	assert(pfn_vkCreateDebugReportCallbackEXT);
+	return pfn_vkCreateDebugReportCallbackEXT(instance, pCreateInfo, pAllocator, pCallback);
+}
+
+
+VKAPI_ATTR void VKAPI_CALL vkDestroyDebugReportCallbackEXT(
+    VkInstance                                  instance,
+    VkDebugReportCallbackEXT                    callback,
+    const VkAllocationCallbacks*                pAllocator)
+{
+	assert(pfn_vkDestroyDebugReportCallbackEXT);
+	return pfn_vkDestroyDebugReportCallbackEXT(instance, callback, pAllocator);
+}
+
+
 static const std::array<vk::DescriptorType, uint8_t(DescriptorType::Count) - 1> descriptorTypes =
 {
 	  vk::DescriptorType::eUniformBuffer
@@ -165,6 +192,15 @@ RendererBase::RendererBase()
 
 RendererBase::~RendererBase()
 {
+}
+
+
+static VkBool32 debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t /* messageCode */, const char * pLayerPrefix, const char * pMessage, void * /* pUserData*/) {
+	printf("layer %s %s object %lu type %s location %lu: %s\n", pLayerPrefix, vk::to_string(vk::DebugReportFlagBitsEXT(flags)).c_str(), object, vk::to_string(vk::DebugReportObjectTypeEXT(objectType)).c_str(), location, pMessage);
+	// make errors fatal
+	abort();
+
+	return VK_FALSE;
 }
 
 
@@ -245,6 +281,16 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	instanceCreateInfo.ppEnabledExtensionNames  = &extensions[0];
 
 	instance = vk::createInstance(instanceCreateInfo);
+
+	if (enableValidation) {
+		pfn_vkCreateDebugReportCallbackEXT   = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(instance.getProcAddr("vkCreateDebugReportCallbackEXT"));
+		pfn_vkDestroyDebugReportCallbackEXT  = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(instance.getProcAddr("vkDestroyDebugReportCallbackEXT"));
+
+		vk::DebugReportCallbackCreateInfoEXT callbackInfo;
+		callbackInfo.flags       = vk::DebugReportFlagBitsEXT::eError;
+		callbackInfo.pfnCallback = debugCallbackFunc;
+		debugCallback = instance.createDebugReportCallbackEXT(callbackInfo);
+	}
 
 	std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
 	if (physicalDevices.empty()) {
@@ -525,6 +571,11 @@ RendererImpl::~RendererImpl() {
 
 	device.destroy();
 	device = VK_NULL_HANDLE;
+
+	if (debugCallback) {
+		instance.destroyDebugReportCallbackEXT(debugCallback);
+		debugCallback = VK_NULL_HANDLE;
+	}
 
 	instance.destroy();
 	instance = VK_NULL_HANDLE;

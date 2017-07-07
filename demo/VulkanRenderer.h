@@ -200,6 +200,7 @@ struct Texture {
 struct RendererBase {
 	SDL_Window *window;
 	vk::Instance instance;
+	vk::DebugReportCallbackEXT         debugCallback;
 	vk::PhysicalDevice physicalDevice;
 	vk::PhysicalDeviceProperties deviceProperties;
 	vk::PhysicalDeviceFeatures   deviceFeatures;
