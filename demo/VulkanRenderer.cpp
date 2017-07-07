@@ -1673,10 +1673,12 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DescriptorSetLayoutHa
 
 	std::vector<vk::WriteDescriptorSet>   writes;
 	std::vector<vk::DescriptorBufferInfo> bufferWrites;
+	std::vector<vk::DescriptorImageInfo>  imageWrites;
 
 	unsigned int numWrites = layout.descriptors.size();
 	writes.reserve(numWrites);
 	bufferWrites.reserve(numWrites);
+	imageWrites.reserve(numWrites);
 
 	const char *data = reinterpret_cast<const char *>(data_);
 	unsigned int index = 0;
@@ -1723,7 +1725,25 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DescriptorSetLayoutHa
 		} break;
 
 		case DescriptorType::CombinedSampler: {
-			STUBBED("descriptor set combined sampler");
+			const CSampler &combined = *reinterpret_cast<const CSampler *>(data + l.offset);
+
+			const Texture &tex = textures.get(combined.tex);
+			assert(tex.image);
+			assert(tex.imageView);
+			const Sampler &s   = samplers.get(combined.sampler);
+			assert(s.sampler);
+
+			vk::DescriptorImageInfo  imgWrite;
+			imgWrite.sampler      = s.sampler;
+			imgWrite.imageView    = tex.imageView;
+			imgWrite.imageLayout  = vk::ImageLayout::eShaderReadOnlyOptimal;
+
+			// we trust that reserve() above makes sure this doesn't reallocate the storage
+			imageWrites.push_back(imgWrite);
+
+			write.pImageInfo = &imageWrites.back();
+
+			writes.push_back(write);
 		} break;
 
 		case DescriptorType::Count:
