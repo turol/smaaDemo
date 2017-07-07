@@ -900,6 +900,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	Pipeline &p = id.first;
 	p.pipeline = result;
 	p.layout   = layout;
+	p.scissor  = desc.scissorTest_;
 
 	return PipelineHandle(id.second);
 }
@@ -1626,6 +1627,21 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	const auto &p = pipelines.get(pipeline);
 	currentCommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, p.pipeline);
 	currentPipelineLayout = p.layout;
+
+	if (!p.scissor) {
+		// Vulkan always requires a scissor rect
+		// if we don't use scissor set default here
+		// TODO: shouldn't need this is previous pipeline didn't use scissor
+		// except for first pipeline of the command buffer
+		vk::Rect2D rect;
+		rect.offset.x      = currentViewport.x;
+		rect.offset.y      = currentViewport.y;
+		rect.extent.width  = currentViewport.width;
+		rect.extent.height = currentViewport.height;
+
+		currentCommandBuffer.setScissor(0, 1, &rect);
+		scissorSet = true;
+	}
 }
 
 
@@ -1763,14 +1779,13 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DescriptorSetLayoutHa
 void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 	assert(inFrame);
 
-	vk::Viewport vp;
-	vp.x        = x;
+	currentViewport.x        = x;
 	STUBBED("check viewport y direction");
-	vp.y        = y;
-	vp.width    = width;
-	vp.height   = height;
-	vp.maxDepth = 1.0f;
-	currentCommandBuffer.setViewport(0, 1, &vp);
+	currentViewport.y        = y;
+	currentViewport.width    = width;
+	currentViewport.height   = height;
+	currentViewport.maxDepth = 1.0f;
+	currentCommandBuffer.setViewport(0, 1, &currentViewport);
 }
 
 

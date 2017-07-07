@@ -139,9 +139,12 @@ struct RenderTarget{
 struct Pipeline {
 	vk::Pipeline       pipeline;
 	vk::PipelineLayout layout;
+	bool               scissor;
 
 
-	Pipeline() {}
+	Pipeline()
+	: scissor(false)
+	{}
 
 	Pipeline(const Pipeline &)            = delete;
 	Pipeline &operator=(const Pipeline &) = delete;
@@ -216,6 +219,7 @@ struct RendererBase {
 
 	vk::CommandBuffer                  currentCommandBuffer;
 	vk::PipelineLayout                 currentPipelineLayout;
+	vk::Viewport                       currentViewport;
 
 	VmaAllocator                       allocator;
 
