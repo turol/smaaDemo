@@ -706,7 +706,9 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	f.name      = fragmentShaderName;
 	f.resources = std::move(resources);
 
-	return FragmentShaderHandle(id);
+	FragmentShaderHandle handle;
+	handle.handle = id;
+	return handle;
 }
 
 

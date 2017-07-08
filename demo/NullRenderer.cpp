@@ -124,7 +124,8 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string & /* name 
 
 
 FragmentShaderHandle RendererImpl::createFragmentShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
-	return FragmentShaderHandle (0);
+	FragmentShaderHandle handle;
+	return handle;
 }
 
 

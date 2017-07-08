@@ -103,25 +103,7 @@ typedef uint32_t RenderTargetHandle;
 typedef uint32_t SamplerHandle;
 
 typedef Handle<VertexShader>  VertexShaderHandle;
-
-
-class FragmentShaderHandle {
-	uint32_t handle;
-
-	friend struct RendererImpl;
-
-	explicit FragmentShaderHandle(uint32_t h)
-	: handle(h)
-	{
-	}
-
-public:
-	FragmentShaderHandle()
-	: handle(0)
-	{
-	}
-};
-
+typedef Handle<FragmentShader>  FragmentShaderHandle;
 
 typedef uint32_t TextureHandle;
 typedef uint32_t UniformBufferHandle;

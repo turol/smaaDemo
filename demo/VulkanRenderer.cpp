@@ -1168,7 +1168,9 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	auto temp = fragmentShaders.emplace(id, std::move(f));
 	assert(temp.second);
 
-	return FragmentShaderHandle(id);
+	FragmentShaderHandle handle;
+	handle.handle = id;
+	return handle;
 }
 
 
