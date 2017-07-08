@@ -421,9 +421,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	assert(ringBuffer != 0);
 	assert(desc.ephemeralRingBufSize > 0);
 	unsigned int bufferFlags = 0;
-	// TODO: if debug on, disable persistent buffer because apitrace can't trace it
+	// if debug is on, disable persistent buffer because apitrace can't trace it
 	// TODO: should have separate toggles for debug messages and debug tracing
-	persistentMapInUse = true;
+	persistentMapInUse = !debug;
 	ringBufSize        = desc.ephemeralRingBufSize;
 
 	if (!persistentMapInUse) {
