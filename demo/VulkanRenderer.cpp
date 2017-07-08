@@ -1126,7 +1126,9 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	auto temp = vertexShaders.emplace(id, std::move(v));
 	assert(temp.second);
 
-	return VertexShaderHandle(id);
+	VertexShaderHandle handle;
+	handle.handle = id;
+	return handle;
 }
 
 

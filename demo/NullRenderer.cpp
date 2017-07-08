@@ -118,7 +118,8 @@ SamplerHandle RendererImpl::createSampler(const SamplerDesc & /* desc */) {
 
 
 VertexShaderHandle RendererImpl::createVertexShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
-	return VertexShaderHandle (0);
+	VertexShaderHandle handle;
+	return handle;
 }
 
 

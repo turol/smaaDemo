@@ -102,23 +102,7 @@ typedef uint32_t PipelineHandle;
 typedef uint32_t RenderTargetHandle;
 typedef uint32_t SamplerHandle;
 
-
-class VertexShaderHandle {
-	uint32_t handle;
-
-	friend struct RendererImpl;
-
-	explicit VertexShaderHandle(uint32_t h)
-	: handle(h)
-	{
-	}
-
-public:
-	VertexShaderHandle()
-	: handle(0)
-	{
-	}
-};
+typedef Handle<VertexShader>  VertexShaderHandle;
 
 
 class FragmentShaderHandle {

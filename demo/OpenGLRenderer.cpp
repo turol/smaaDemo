@@ -660,7 +660,9 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	v.name      = vertexShaderName;
 	v.resources = std::move(resources);
 
-	return VertexShaderHandle(id);
+	VertexShaderHandle handle;
+	handle.handle = id;
+	return handle;
 }
 
 
