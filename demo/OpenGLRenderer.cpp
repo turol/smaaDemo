@@ -1327,8 +1327,12 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 
 		case DescriptorType::CombinedSampler: {
 			const CSampler &combined = *reinterpret_cast<const CSampler *>(data + l.offset);
+
+			const Texture &tex = textures.get(combined.tex);
+			assert(tex.tex);
+
 			// FIXME: index is not right here
-			glBindTextureUnit(index, combined.tex);
+			glBindTextureUnit(index, tex.tex);
 			glBindSampler(index, combined.sampler);
 		} break;
 
