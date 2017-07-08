@@ -166,6 +166,7 @@ Texture::~Texture()
 {
 	// it should have been deleted by Renderer before destroying this
 	assert(tex == 0);
+	assert(!renderTarget);
 }
 
 
@@ -460,18 +461,23 @@ RendererImpl::~RendererImpl() {
 	renderPasses.clear();
 	renderTargets.clearWith([this](RenderTarget &rt) {
 		assert(rt.tex != 0);
-		assert(rt.texture);;
+		assert(rt.texture);
 
 		if (rt.readFBO != 0) {
 			glDeleteFramebuffers(1, &rt.readFBO);
 			rt.readFBO = 0;
 		}
 
-		auto &tex = this->textures.get(rt.texture);
-		assert(tex.renderTarget);
-		assert(tex.tex == rt.tex);
-		tex.tex = 0;
+		{
+			auto &tex = this->textures.get(rt.texture);
+			assert(tex.renderTarget);
+			tex.renderTarget = false;
+			assert(tex.tex == rt.tex);
+			tex.tex = 0;
+		}
+
 		this->textures.remove(rt.texture);
+		rt.texture = TextureHandle(0);
 
 		glDeleteTextures(1, &rt.tex);
 		rt.tex = 0;
@@ -910,6 +916,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	tex.tex    = texture;
 	tex.width  = desc.width_;
 	tex.height = desc.height_;
+	assert(!tex.renderTarget);
 
 	return result.second;
 }
@@ -931,6 +938,9 @@ DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const Descript
 
 TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
 	const auto &rt = renderTargets.get(handle);
+
+	const auto &tex = textures.get(rt.texture);
+	assert(tex.renderTarget);
 
 	return rt.texture;
 }
@@ -960,12 +970,15 @@ void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
 			rt.readFBO = 0;
 		}
 
-		auto &tex = this->textures.get(rt.texture);
-		assert(tex.renderTarget);
-		assert(tex.tex == rt.tex);
-		tex.tex = 0;
+		{
+			auto &tex = this->textures.get(rt.texture);
+			assert(tex.renderTarget);
+			tex.renderTarget = false;
+			assert(tex.tex == rt.tex);
+			tex.tex = 0;
+		}
 		this->textures.remove(rt.texture);
-		rt.texture = TextureHandle();
+		rt.texture = TextureHandle(0);
 
 		glDeleteTextures(1, &rt.tex);
 		rt.tex = 0;

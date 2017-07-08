@@ -201,12 +201,14 @@ struct Texture {
 		other.tex      = 0;
 		other.width    = 0;
 		other.height   = 0;
+		other.renderTarget = false;
 	}
 
 	Texture &operator=(Texture &&other) {
 		std::swap(tex,    other.tex);
 		std::swap(width,  other.width);
 		std::swap(height, other.height);
+		std::swap(renderTarget, other.renderTarget);
 
 		return *this;
 	}
