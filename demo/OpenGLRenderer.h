@@ -237,6 +237,7 @@ struct RendererBase {
 	SDL_Window *window;
 	SDL_GLContext context;
 
+	bool           debug;
 	GLuint vao;
 	bool idxBuf16Bit;
 	unsigned int  indexBufByteOffset;

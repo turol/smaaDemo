@@ -181,6 +181,7 @@ struct RenderTargetDesc {
 	: width_(0)
 	, height_(0)
 	, format_(Invalid)
+	, name_(nullptr)
 	{
 	}
 
@@ -210,11 +211,17 @@ struct RenderTargetDesc {
 		return *this;
 	}
 
+	RenderTargetDesc &name(const char *str) {
+		name_ = str;
+		return *this;
+	}
+
 private:
 
 	unsigned int width_, height_;
 	// TODO: unsigned int multisample;
 	Format format_;
+	const char  *name_;
 
 	friend struct RendererImpl;
 };

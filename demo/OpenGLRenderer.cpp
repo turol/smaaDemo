@@ -289,6 +289,7 @@ RendererBase::RendererBase()
 , persistentMapping(nullptr)
 , window(nullptr)
 , context(nullptr)
+, debug(false)
 , vao(0)
 , idxBuf16Bit(false)
 , indexBufByteOffset(0)
@@ -393,6 +394,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
 
 			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+			debug = true;
 		} else {
 			printf("KHR_debug not found\n");
 		}
@@ -853,11 +856,15 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
 	assert(desc.format_ != Invalid);
+	assert(desc.name_   != nullptr);
 
 	GLuint id = 0;
 	glCreateTextures(GL_TEXTURE_2D, 1, &id);
 	glTextureStorage2D(id, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
 	glTextureParameteri(id, GL_TEXTURE_MAX_LEVEL, 0);
+	if (debug) {
+		glObjectLabel(GL_TEXTURE, id, -1, desc.name_);
+	}
 
 	auto textureResult = textures.add();
 	Texture &tex = textureResult.first;
