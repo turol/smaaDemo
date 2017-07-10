@@ -354,6 +354,7 @@ struct RenderPassDesc {
 	RenderPassDesc()
 	: depthStencil_(0)
 	, colorFinalLayout_(ShaderRead)
+	, name_(nullptr)
 	{
 		std::fill(colors_.begin(), colors_.end(), 0);
 	}
@@ -382,11 +383,17 @@ struct RenderPassDesc {
 		return *this;
 	}
 
+	RenderPassDesc &name(const char *str) {
+		name_ = str;
+		return *this;
+	}
+
 private:
 
 	RenderTargetHandle depthStencil_;
 	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS> colors_;
 	Layout   colorFinalLayout_;
+	const char                                             *name_;
 
 	friend struct RendererImpl;
 };

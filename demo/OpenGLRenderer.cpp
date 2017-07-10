@@ -818,6 +818,8 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 
 
 RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
+	assert(desc.name_ != nullptr);
+
 	GLuint fbo = 0;
 
 	glCreateFramebuffers(1, &fbo);
@@ -844,6 +846,10 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		assert(colorRT.width  == depthRT.width);
 		assert(colorRT.height == depthRT.height);
 		glNamedFramebufferTexture(fbo, GL_DEPTH_ATTACHMENT, pass.depthTex, 0);
+	}
+
+	if (debug) {
+		glObjectLabel(GL_FRAMEBUFFER, fbo, -1, desc.name_);
 	}
 
 	RenderPassHandle h;

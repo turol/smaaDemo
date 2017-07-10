@@ -772,10 +772,12 @@ void SMAADemo::createFramebuffers()	{
 
 	RenderPassDesc rpDesc;
 	rpDesc.depthStencil(rendertargets[RenderTargets::MainDepth]).color(0, rendertargets[RenderTargets::MainColor]);
+	rpDesc.name("scene");
 	sceneRenderPass = renderer.createRenderPass(rpDesc);
 
 	rpDesc.depthStencil(0).color(0, rendertargets[RenderTargets::FinalRender]);
 	rpDesc.colorFinalLayout(TransferSrc);
+	rpDesc.name("final");
 	finalRenderPass = renderer.createRenderPass(rpDesc);
 
 	// SMAA edges texture and FBO
@@ -783,12 +785,14 @@ void SMAADemo::createFramebuffers()	{
 	rendertargets[RenderTargets::Edges] = renderer.createRenderTarget(rtDesc);
 	rpDesc.depthStencil(0).color(0, rendertargets[RenderTargets::Edges]);
 	rpDesc.colorFinalLayout(ShaderRead);
+	rpDesc.name("SMAA edges");
 	smaaEdgesRenderPass = renderer.createRenderPass(rpDesc);
 
 	// SMAA blending weights texture and FBO
 	rtDesc.name("SMAA weights");
 	rendertargets[RenderTargets::BlendWeights] = renderer.createRenderTarget(rtDesc);
 	rpDesc.depthStencil(0).color(0, rendertargets[RenderTargets::BlendWeights]);
+	rpDesc.name("SMAA weights");
 	smaaWeightsRenderPass = renderer.createRenderPass(rpDesc);
 }
 
