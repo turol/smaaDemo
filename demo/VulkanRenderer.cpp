@@ -1016,14 +1016,15 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	rt.image = device.createImage(info);
 	rt.format = format;
 
+	// TODO: better check
+	if (debugCallback) {
+		printf("Created rendertarget image %p: %s\n", VkImage(rt.image), desc.name_);
+	}
+
 	VmaMemoryRequirements  req       = { false, VMA_MEMORY_USAGE_GPU_ONLY, 0, 0, false };
 	uint32_t               typeIndex = 0;
 
 	vmaAllocateMemoryForImage(allocator, rt.image, &req, &rt.memory, &typeIndex);
-	printf("image memory type index: %u\n",  typeIndex);
-	printf("image memory: %p\n",             rt.memory.memory);
-	printf("image memory offset: %u\n",      static_cast<unsigned int>(rt.memory.offset));
-	printf("image memory size: %u\n",        static_cast<unsigned int>(rt.memory.size));
 	device.bindImageMemory(rt.image, rt.memory.memory, rt.memory.offset);
 
 	vk::ImageViewCreateInfo viewInfo;
