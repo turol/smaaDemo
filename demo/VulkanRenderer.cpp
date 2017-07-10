@@ -1508,9 +1508,11 @@ void RendererImpl::beginFrame() {
 }
 
 
-void RendererImpl::presentFrame(RenderTargetHandle /* rt */) {
+void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	assert(inFrame);
 	inFrame = false;
+
+	const auto &rt = renderTargets.get(rtHandle);
 
 	// TODO: shouldn't recreate constantly...
 	vk::Fence fence = device.createFence(vk::FenceCreateInfo());
@@ -1538,21 +1540,25 @@ void RendererImpl::presentFrame(RenderTargetHandle /* rt */) {
 	range.layerCount            = VK_REMAINING_ARRAY_LAYERS;
 	barrier.subresourceRange    = range;
 
-	currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { barrier });
+	currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
 
-	// clear image
-	STUBBED("blit real draw image to presentation image");
-	double crap = 0.0;
-	float c = modf(frameNum / 60.0f, &crap);
-	std::array<float, 4> color = { c, c, c, c };
-	currentCommandBuffer.clearColorImage(image, layout, vk::ClearColorValue(color), { range });
+	vk::ImageBlit blit;
+	blit.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+	blit.srcSubresource.layerCount = 1;
+	blit.srcOffsets[1]             = vk::Offset3D(rt.width, rt.height, 1);
+	blit.dstSubresource            = blit.srcSubresource;
+	blit.dstOffsets[1]             = blit.srcOffsets[1];
+
+	// blit draw image to presentation image
+	currentCommandBuffer.blitImage(rt.image, vk::ImageLayout::eTransferSrcOptimal, image, layout, { blit }, vk::Filter::eNearest);
 
 	// transition to present
 	barrier.srcAccessMask       = vk::AccessFlagBits::eTransferWrite;
 	barrier.dstAccessMask       = vk::AccessFlagBits::eMemoryRead;
 	barrier.oldLayout           = layout;
 	barrier.newLayout           = vk::ImageLayout::ePresentSrcKHR;
-	currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { barrier });
+	barrier.image               = image;
+	currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
 
 	// submit command buffer
 	currentCommandBuffer.end();
@@ -1610,8 +1616,14 @@ void RendererImpl::beginRenderPass(RenderPassHandle handle) {
 
 	const auto &pass = renderPasses.get(handle.handle);
 	// TODO: should be customizable
+	// clear image
+	STUBBED("remove fixed color clear when something is rendering");
+	double crap = 0.0;
+	float c = modf(frameNum / 60.0f, &crap);
+	std::array<float, 4> color = { 1.0f, c, c, c };
+
 	std::array<vk::ClearValue, 2> clearValues;
-	clearValues[0].color        = vk::ClearColorValue();  // default constructor 0s
+	clearValues[0].color        = vk::ClearColorValue(color);  // default constructor 0s
 	clearValues[1].depthStencil = vk::ClearDepthStencilValue(1.0f, 0);
 
 	vk::RenderPassBeginInfo info;
