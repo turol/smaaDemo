@@ -812,6 +812,8 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		r.framebuffer = device.createFramebuffer(fbInfo);
 	}
 
+	printf("Renderpass %p  framebuffer %p  %s\n", VkRenderPass(r.renderPass), VkFramebuffer(r.framebuffer), desc.name_);
+
 	RenderPassHandle handle;
 	handle.handle = result.second;
 	return handle;
@@ -948,6 +950,8 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	p.pipeline = result;
 	p.layout   = layout;
 	p.scissor  = desc.scissorTest_;
+
+	printf("Pipeline %p  %s\n", VkPipeline(p.pipeline), desc.name_);
 
 	return PipelineHandle(id.second);
 }
