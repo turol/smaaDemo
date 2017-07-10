@@ -526,7 +526,7 @@ RendererImpl::~RendererImpl() {
 
 	renderTargets.clearWith([this](RenderTarget &rt) {
 		assert(rt.texture);
-		auto &tex = this->textures.get(rt.texture);
+		auto &tex = this->textures.get(rt.texture.handle);
 		assert(tex.image == rt.image);
 		assert(tex.imageView == rt.imageView);
 		tex.image        = vk::Image();
@@ -1801,7 +1801,7 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DescriptorSetLayoutHa
 		case DescriptorType::CombinedSampler: {
 			const CSampler &combined = *reinterpret_cast<const CSampler *>(data + l.offset);
 
-			const Texture &tex = textures.get(combined.tex);
+			const Texture &tex = textures.get(combined.tex.handle);
 			assert(tex.image);
 			assert(tex.imageView);
 			const Sampler &s   = samplers.get(combined.sampler);
