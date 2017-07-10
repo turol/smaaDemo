@@ -179,11 +179,7 @@ static vk::Format vulkanVertexFormat(VtxFormat::VtxFormat format, uint8_t count)
 
 
 RendererBase::RendererBase()
-: instance(VK_NULL_HANDLE)
-, physicalDevice(VK_NULL_HANDLE)
-, surface(VK_NULL_HANDLE)
-, graphicsQueueIndex(0)
-, swapchain(VK_NULL_HANDLE)
+: graphicsQueueIndex(0)
 , ringBufferMem(vk::MappedMemoryRange())
 , persistentMapping(nullptr)
 {
@@ -485,7 +481,7 @@ RendererImpl::~RendererImpl() {
 	device.unmapMemory(ringBufferMem.memory);
 	persistentMapping = nullptr;
 	device.destroyBuffer(ringBuffer);
-	ringBuffer = VK_NULL_HANDLE;
+	ringBuffer = vk::Buffer();
 	vmaFreeMemory(this->allocator, &ringBufferMem);
 	memset(&ringBufferMem, 0, sizeof(ringBufferMem));
 
@@ -561,24 +557,24 @@ RendererImpl::~RendererImpl() {
 	device.destroyDescriptorPool(dsPool);
 
 	device.destroySwapchainKHR(swapchain);
-	swapchain = VK_NULL_HANDLE;
+	swapchain = vk::SwapchainKHR();
 
 	instance.destroySurfaceKHR(surface);
-	surface = VK_NULL_HANDLE;
+	surface = vk::SurfaceKHR();
 
 	vmaDestroyAllocator(allocator);
 	allocator = VK_NULL_HANDLE;
 
 	device.destroy();
-	device = VK_NULL_HANDLE;
+	device = vk::Device();
 
 	if (debugCallback) {
 		instance.destroyDebugReportCallbackEXT(debugCallback);
-		debugCallback = VK_NULL_HANDLE;
+		debugCallback = vk::DebugReportCallbackEXT();
 	}
 
 	instance.destroy();
-	instance = VK_NULL_HANDLE;
+	instance = vk::Instance();
 
 	SDL_DestroyWindow(window);
 
