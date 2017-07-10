@@ -1838,13 +1838,13 @@ void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int w
 }
 
 
-void RendererImpl::draw(unsigned int /* firstVertex */, unsigned int vertexCount) {
+void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	assert(inRenderPass);
 	assert(validPipeline);
 	assert(vertexCount > 0);
 	pipelineDrawn = true;
 
-	STUBBED("");
+	currentCommandBuffer.draw(vertexCount, 1, firstVertex, 0);
 }
 
 
@@ -1855,17 +1855,17 @@ void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int i
 	assert(instanceCount > 0);
 	pipelineDrawn = true;
 
-	STUBBED("");
+	currentCommandBuffer.drawIndexed(vertexCount, instanceCount, 0, 0, 0);
 }
 
 
-void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int /* firstIndex */) {
+void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex) {
 	assert(inRenderPass);
 	assert(validPipeline);
 	assert(vertexCount > 0);
 	pipelineDrawn = true;
 
-	STUBBED("");
+	currentCommandBuffer.drawIndexed(vertexCount, 1, firstIndex, 0, 0);
 }
 
 
