@@ -427,6 +427,7 @@ class PipelineDesc {
 	std::array<VertexBuf,  MAX_VERTEX_BUFFERS> vertexBuffers;
 	std::array<DescriptorSetLayoutHandle, MAX_DESCRIPTOR_SETS> descriptorSetLayouts;
 
+	const char                                                 *name_;
 
 
 public:
@@ -503,6 +504,11 @@ public:
 		return *this;
 	}
 
+	PipelineDesc &name(const char *str) {
+		name_ = str;
+		return *this;
+	}
+
 	PipelineDesc()
 	: vertexAttribMask(0)
 	, depthWrite_(false)
@@ -510,6 +516,7 @@ public:
 	, cullFaces_(false)
 	, scissorTest_(false)
 	, blending_(false)
+	, name_(nullptr)
 	{
 		for (unsigned int i = 0; i < MAX_VERTEX_ATTRIBS; i++) {
 			vertexAttribs[i].bufBinding = 0;

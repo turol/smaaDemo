@@ -553,6 +553,8 @@ void SMAADemo::initRender() {
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
 		plDesc.descriptorSetLayout<ColorTexDS>(1);
+		std::string passName = std::string("SMAA edges ") + std::to_string(i);
+		plDesc.name(passName.c_str());
 		smaaEdgePipelines[i]       = renderer.createPipeline(plDesc);
 
 		vertexShader                = renderer.createVertexShader("smaaBlendWeight", macros);
@@ -561,6 +563,8 @@ void SMAADemo::initRender() {
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
 		plDesc.descriptorSetLayout<BlendWeightDS>(1);
+		passName = std::string("SMAA weights ") + std::to_string(i);
+		plDesc.name(passName.c_str());
 		smaaBlendWeightPipelines[i] = renderer.createPipeline(plDesc);
 
 		vertexShader                = renderer.createVertexShader("smaaNeighbor", macros);
@@ -569,6 +573,8 @@ void SMAADemo::initRender() {
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
 		plDesc.descriptorSetLayout<NeighborBlendDS>(1);
+		passName = std::string("SMAA blend ") + std::to_string(i);
+		plDesc.name(passName.c_str());
 		smaaNeighborPipelines[i]   = renderer.createPipeline(plDesc);
 	}
 
@@ -585,6 +591,8 @@ void SMAADemo::initRender() {
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
 		plDesc.descriptorSetLayout<ColorTexDS>(1);
+		std::string passName = std::string("FXAA ") + std::to_string(i);
+		plDesc.name(passName.c_str());
 		fxaaPipelines[i] = renderer.createPipeline(plDesc);
 	}
 
@@ -604,6 +612,7 @@ void SMAADemo::initRender() {
 	                                        .depthWrite(true)
 	                                        .depthTest(true)
 	                                        .cullFaces(true)
+	                                        .name("cubes")
 	                                       );
 
 	vertexShader   = renderer.createVertexShader("image", macros);
@@ -615,6 +624,7 @@ void SMAADemo::initRender() {
 	plDesc.depthWrite(false)
 	      .depthTest(false)
 	      .cullFaces(true);
+	plDesc.name("image");
 	plDesc.descriptorSetLayout<ColorTexDS>(1);
 
 	imagePipeline = renderer.createPipeline(plDesc);
@@ -625,6 +635,7 @@ void SMAADemo::initRender() {
 	plDesc.renderPass(finalRenderPass);
 	plDesc.vertexShader(vertexShader)
 	      .fragmentShader(fragmentShader);
+	plDesc.name("blit");
 	blitPipeline = renderer.createPipeline(plDesc);
 
 	macros.clear();
@@ -641,6 +652,7 @@ void SMAADemo::initRender() {
 	      .vertexAttrib(ATTR_UV,    0, 2, VtxFormat::Float,  offsetof(ImDrawVert, uv))
 	      .vertexAttrib(ATTR_COLOR, 0, 4, VtxFormat::UNorm8, offsetof(ImDrawVert, col))
 	      .vertexBufferStride(ATTR_POS, sizeof(ImDrawVert));
+	plDesc.name("gui");
 	guiPipeline = renderer.createPipeline(plDesc);
 
 	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(Linear). magFilter(Linear));

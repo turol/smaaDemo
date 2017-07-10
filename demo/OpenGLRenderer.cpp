@@ -773,6 +773,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	assert(desc.vertexShader_.handle != 0);
 	assert(desc.fragmentShader_.handle != 0);
 	assert(desc.renderPass_.handle != 0);
+	assert(desc.name_ != nullptr);
 
 	const auto &v = vertexShaders.get(desc.vertexShader_.handle);
     const auto &f = fragmentShaders.get(desc.fragmentShader_.handle);
