@@ -32,6 +32,7 @@ struct DescriptorSetLayout;
 struct FragmentShader;
 struct Framebuffer;
 struct RenderPass;
+struct Texture;
 struct VertexShader;
 
 
@@ -105,7 +106,7 @@ typedef uint32_t SamplerHandle;
 typedef Handle<VertexShader>  VertexShaderHandle;
 typedef Handle<FragmentShader>  FragmentShaderHandle;
 
-typedef uint32_t TextureHandle;
+typedef Handle<Texture> TextureHandle;
 typedef uint32_t UniformBufferHandle;
 
 

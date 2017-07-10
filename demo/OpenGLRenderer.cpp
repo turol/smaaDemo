@@ -472,7 +472,7 @@ RendererImpl::~RendererImpl() {
 		}
 
 		{
-			auto &tex = this->textures.get(rt.texture);
+			auto &tex = this->textures.get(rt.texture.handle);
 			assert(tex.renderTarget);
 			tex.renderTarget = false;
 			assert(tex.tex == rt.tex);
@@ -480,7 +480,7 @@ RendererImpl::~RendererImpl() {
 		}
 
 		this->textures.remove(rt.texture);
-		rt.texture = TextureHandle(0);
+		rt.texture = TextureHandle();
 
 		glDeleteTextures(1, &rt.tex);
 		rt.tex = 0;
@@ -886,7 +886,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	rt.width  = desc.width_;
 	rt.height = desc.height_;
 	// TODO: std::move?
-	rt.texture = textureResult.second;
+	rt.texture.handle = textureResult.second;
 
 	return result.second;
 }
@@ -932,7 +932,9 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	tex.height = desc.height_;
 	assert(!tex.renderTarget);
 
-	return result.second;
+	TextureHandle handle;
+	handle.handle = result.second;
+	return handle;
 }
 
 
@@ -953,7 +955,7 @@ DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const Descript
 TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
 	const auto &rt = renderTargets.get(handle);
 
-	const auto &tex = textures.get(rt.texture);
+	const auto &tex = textures.get(rt.texture.handle);
 	assert(tex.renderTarget);
 
 	return rt.texture;
@@ -985,14 +987,14 @@ void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
 		}
 
 		{
-			auto &tex = this->textures.get(rt.texture);
+			auto &tex = this->textures.get(rt.texture.handle);
 			assert(tex.renderTarget);
 			tex.renderTarget = false;
 			assert(tex.tex == rt.tex);
 			tex.tex = 0;
 		}
 		this->textures.remove(rt.texture);
-		rt.texture = TextureHandle(0);
+		rt.texture = TextureHandle();
 
 		glDeleteTextures(1, &rt.tex);
 		rt.tex = 0;
@@ -1351,7 +1353,7 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 
 		case DescriptorType::Texture: {
 			TextureHandle texHandle = *reinterpret_cast<const TextureHandle *>(data + l.offset);
-			const auto &tex = textures.get(texHandle);
+			const auto &tex = textures.get(texHandle.handle);
 			// FIXME: index is not right here
 			glBindTextureUnit(index, tex.tex);
 		} break;
@@ -1359,7 +1361,7 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 		case DescriptorType::CombinedSampler: {
 			const CSampler &combined = *reinterpret_cast<const CSampler *>(data + l.offset);
 
-			const Texture &tex = textures.get(combined.tex);
+			const Texture &tex = textures.get(combined.tex.handle);
 			assert(tex.tex);
 
 			// FIXME: index is not right here

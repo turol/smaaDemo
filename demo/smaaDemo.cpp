@@ -300,9 +300,6 @@ SMAADemo::SMAADemo()
 , cubePower(3)
 , antialiasing(true)
 , aaMethod(AAMethod::SMAA)
-, areaTex(0)
-, searchTex(0)
-, imguiFontsTex(0)
 , rotateCamera(false)
 , cameraRotation(0.0f)
 , lastTime(0)
@@ -414,7 +411,6 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		for (const auto &filename : imageFiles) {
 			images.push_back(Image());
 			auto &img = images.back();
-			img.tex = 0;
 			img.filename = filename;
 		}
 

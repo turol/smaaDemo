@@ -137,7 +137,9 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	// TODO: check data
 
 	numTextures++;
-	return numTextures;
+	TextureHandle handle;
+	handle.handle = numTextures;
+	return handle;
 }
 
 
@@ -147,7 +149,9 @@ DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const Descript
 
 
 TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle /* handle */) {
-	return 0;
+	TextureHandle handle;
+
+	return handle;
 }
 
 

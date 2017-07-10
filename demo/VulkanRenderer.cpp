@@ -533,7 +533,7 @@ RendererImpl::~RendererImpl() {
 		tex.imageView    = vk::ImageView();
 		tex.renderTarget = false;
 		this->textures.remove(rt.texture);
-		rt.texture = TextureHandle(0);
+		rt.texture = TextureHandle();
 
 		this->device.destroyImageView(rt.imageView);
 		this->device.destroyImage(rt.image);
@@ -1044,7 +1044,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	tex.imageView    = rt.imageView;
 	tex.renderTarget = true;
 	// TODO: std::move ?
-	rt.texture       = texResult.second;
+	rt.texture.handle = texResult.second;
 
 	return result.second;
 }
@@ -1299,7 +1299,9 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	queue.waitIdle();
 	device.freeCommandBuffers(commandPool, { cmdBuf } );
 
-	return result.second;
+	TextureHandle handle;
+	handle.handle = result.second;
+	return handle;
 }
 
 
