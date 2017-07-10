@@ -704,7 +704,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		attach.storeOp        = vk::AttachmentStoreOp::eStore;
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
 		attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-		attach.initialLayout  = layout;
+		attach.initialLayout  = vk::ImageLayout::eUndefined;
 		attach.finalLayout    = vulkanLayout(desc.colorFinalLayout_);
 		attachments.push_back(attach);
 
@@ -732,7 +732,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		// TODO: stencil
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
 		attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-		attach.initialLayout  = layout;
+		attach.initialLayout  = vk::ImageLayout::eUndefined;
 		// TODO: finalLayout should come from desc
 		attach.finalLayout    = vk::ImageLayout::eShaderReadOnlyOptimal;
 		attachments.push_back(attach);
