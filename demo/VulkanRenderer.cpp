@@ -782,7 +782,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		d.srcSubpass       = 0;
 		d.dstSubpass       = VK_SUBPASS_EXTERNAL;
 		d.srcStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-		d.dstStageMask     = vk::PipelineStageFlagBits::eBottomOfPipe;
+		d.dstStageMask     = vk::PipelineStageFlagBits::eTopOfPipe;
 		d.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
 		d.dstAccessMask    = vk::AccessFlagBits::eMemoryRead;
 		d.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
