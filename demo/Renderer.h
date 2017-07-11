@@ -27,6 +27,7 @@ using namespace glm;
 #define MAX_DESCRIPTOR_SETS     2  // per pipeline
 
 
+struct Buffer;
 struct RendererImpl;
 struct DescriptorSetLayout;
 struct FragmentShader;
@@ -106,7 +107,7 @@ struct Handle {
 };
 
 
-typedef uint32_t BufferHandle;
+typedef Handle<Buffer>      BufferHandle;
 typedef uint32_t DescriptorSetLayoutHandle;
 
 typedef Handle<RenderPass>  RenderPassHandle;

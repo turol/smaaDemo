@@ -657,9 +657,9 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	buffer.memory.offset   = beginPtr;
 	buffer.memory.size     = size;
 
-	ephemeralBuffers.push_back(result.second);
+	ephemeralBuffers.push_back(BufferHandle(result.second));
 
-	return result.second;
+	return BufferHandle(result.second);
 }
 
 

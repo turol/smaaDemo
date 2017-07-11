@@ -63,7 +63,7 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 
 	// TODO: store contents into buffer
 
-	return result.second;
+	return BufferHandle(result.second);
 }
 
 
@@ -82,9 +82,9 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	buffer.beginOffs       = beginPtr;
 	buffer.size            = size;
 
-	ephemeralBuffers.push_back(result.second);
+	ephemeralBuffers.push_back(BufferHandle(result.second));
 
-	return result.second;
+	return BufferHandle(result.second);
 }
 
 
