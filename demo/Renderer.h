@@ -91,6 +91,18 @@ struct Handle {
 	operator bool() const {
 		return handle != 0;
 	}
+
+
+	// TODO: remove these
+	explicit Handle(uint32_t handle_)
+	: handle(handle_)
+	{
+	}
+
+
+	explicit operator uint32_t() const {
+		return handle;
+	}
 };
 
 
