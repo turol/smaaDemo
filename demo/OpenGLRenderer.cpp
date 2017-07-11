@@ -847,9 +847,9 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	pass.height   = colorRT.height;
 
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, pass.colorTex, 0);
-	assert(desc.colors_[1] == 0);
+	assert(!desc.colors_[1]);
 
-	if (desc.depthStencil_ != 0) {
+	if (desc.depthStencil_) {
 		auto &depthRT = renderTargets.get(desc.depthStencil_);
 		assert(depthRT.tex != 0);
 		pass.depthTex = depthRT.tex;

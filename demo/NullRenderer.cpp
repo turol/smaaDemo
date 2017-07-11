@@ -106,7 +106,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	assert(desc.height_ > 0);
 	assert(desc.format_ != Invalid);
 
-	return 0;
+	return RenderTargetHandle();
 }
 
 

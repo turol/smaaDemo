@@ -316,8 +316,6 @@ SMAADemo::SMAADemo()
 , keepGoing(true)
 , activeScene(0)
 {
-	std::fill(rendertargets.begin(), rendertargets.end(), 0);
-
 	freq = SDL_GetPerformanceFrequency();
 	lastTime = SDL_GetPerformanceCounter();
 
@@ -787,7 +785,7 @@ void SMAADemo::createFramebuffers()	{
 	rpDesc.name("scene");
 	sceneRenderPass = renderer.createRenderPass(rpDesc);
 
-	rpDesc.depthStencil(0).color(0, rendertargets[RenderTargets::FinalRender]);
+	rpDesc.depthStencil(RenderTargetHandle()).color(0, rendertargets[RenderTargets::FinalRender]);
 	rpDesc.colorFinalLayout(TransferSrc);
 	rpDesc.name("final");
 	finalRenderPass = renderer.createRenderPass(rpDesc);
@@ -795,7 +793,7 @@ void SMAADemo::createFramebuffers()	{
 	// SMAA edges texture and FBO
 	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8).name("SMAA edges");
 	rendertargets[RenderTargets::Edges] = renderer.createRenderTarget(rtDesc);
-	rpDesc.depthStencil(0).color(0, rendertargets[RenderTargets::Edges]);
+	rpDesc.depthStencil(RenderTargetHandle()).color(0, rendertargets[RenderTargets::Edges]);
 	rpDesc.colorFinalLayout(ShaderRead);
 	rpDesc.name("SMAA edges");
 	smaaEdgesRenderPass = renderer.createRenderPass(rpDesc);
@@ -803,7 +801,7 @@ void SMAADemo::createFramebuffers()	{
 	// SMAA blending weights texture and FBO
 	rtDesc.name("SMAA weights");
 	rendertargets[RenderTargets::BlendWeights] = renderer.createRenderTarget(rtDesc);
-	rpDesc.depthStencil(0).color(0, rendertargets[RenderTargets::BlendWeights]);
+	rpDesc.depthStencil(RenderTargetHandle()).color(0, rendertargets[RenderTargets::BlendWeights]);
 	rpDesc.name("SMAA weights");
 	smaaWeightsRenderPass = renderer.createRenderPass(rpDesc);
 }

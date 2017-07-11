@@ -34,6 +34,7 @@ struct FragmentShader;
 struct Framebuffer;
 struct Pipeline;
 struct RenderPass;
+struct RenderTarget;
 struct Texture;
 struct VertexShader;
 
@@ -114,7 +115,7 @@ typedef Handle<DescriptorSetLayout>  DescriptorSetLayoutHandle;
 typedef Handle<RenderPass>  RenderPassHandle;
 
 typedef Handle<Pipeline>             PipelineHandle;
-typedef uint32_t RenderTargetHandle;
+typedef Handle<RenderTarget>         RenderTargetHandle;
 typedef uint32_t SamplerHandle;
 
 typedef Handle<VertexShader>  VertexShaderHandle;
@@ -370,7 +371,6 @@ struct RenderPassDesc {
 	, colorFinalLayout_(ShaderRead)
 	, name_(nullptr)
 	{
-		std::fill(colors_.begin(), colors_.end(), 0);
 	}
 
 	~RenderPassDesc() { }
