@@ -55,12 +55,22 @@ public:
 		return it->second;
 	}
 
+	// TODO: remove
 	T &get(unsigned int handle) {
 		auto it = resources.find(handle);
 		assert(it != resources.end());
 
 		return it->second;
 	}
+
+
+	T &get(Handle<T> handle) {
+		auto it = resources.find(handle.handle);
+		assert(it != resources.end());
+
+		return it->second;
+	}
+
 
 	void remove(unsigned int handle) {
 		auto it = resources.find(handle);
