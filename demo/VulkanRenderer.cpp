@@ -382,9 +382,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	device = physicalDevice.createDevice(deviceCreateInfo);
 
-	VmaAllocatorCreateInfo allocatorInfo = {};
+	VmaAllocatorCreateInfo allocatorInfo;
 	allocatorInfo.physicalDevice = physicalDevice;
 	allocatorInfo.device         = device;
+	allocatorInfo.preferredLargeHeapBlockSize  = 0;
+	allocatorInfo.preferredSmallHeapBlockSize  = 0;
+	allocatorInfo.pAllocationCallbacks         = nullptr;
 
 	vmaCreateAllocator(&allocatorInfo, &allocator);
 
