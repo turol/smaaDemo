@@ -513,6 +513,13 @@ RendererImpl::~RendererImpl() {
 		tex.tex = 0;
 	} );
 
+	samplers.clearWith([](Sampler &sampler) {
+		assert(sampler.sampler != 0);
+
+		glDeleteSamplers(1, &sampler.sampler);
+		sampler.sampler = 0;
+	} );
+
 	glBindVertexArray(0);
 	glDeleteVertexArrays(1, &vao);
 
@@ -899,15 +906,16 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 
 
 SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
-	GLuint sampler = 0;
-	glCreateSamplers(1, &sampler);
+	auto result = samplers.add();
+	Sampler &sampler = result.first;
+	glCreateSamplers(1, &sampler.sampler);
 
-	glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, (desc.min == Nearest) ? GL_NEAREST: GL_LINEAR);
-	glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, (desc.mag == Nearest) ? GL_NEAREST: GL_LINEAR);
-	glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S,     (desc.wrapMode == Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-	glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T,     (desc.wrapMode == Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+	glSamplerParameteri(sampler.sampler, GL_TEXTURE_MIN_FILTER, (desc.min == Nearest) ? GL_NEAREST: GL_LINEAR);
+	glSamplerParameteri(sampler.sampler, GL_TEXTURE_MAG_FILTER, (desc.mag == Nearest) ? GL_NEAREST: GL_LINEAR);
+	glSamplerParameteri(sampler.sampler, GL_TEXTURE_WRAP_S,     (desc.wrapMode == Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+	glSamplerParameteri(sampler.sampler, GL_TEXTURE_WRAP_T,     (desc.wrapMode == Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 
-	return sampler;
+	return SamplerHandle(result.second);
 }
 
 
@@ -1352,8 +1360,9 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 		} break;
 
 		case DescriptorType::Sampler: {
-			GLuint sampler = *reinterpret_cast<const SamplerHandle *>(data + l.offset);
-			glBindSampler(index, sampler);
+			const auto &sampler = samplers.get(*reinterpret_cast<const SamplerHandle *>(data + l.offset));
+			assert(sampler.sampler);
+			glBindSampler(index, sampler.sampler);
 		} break;
 
 		case DescriptorType::Texture: {
@@ -1369,9 +1378,12 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 			const Texture &tex = textures.get(combined.tex.handle);
 			assert(tex.tex);
 
+			const auto &sampler = samplers.get(combined.sampler);
+			assert(sampler.sampler);
+
 			// FIXME: index is not right here
 			glBindTextureUnit(index, tex.tex);
-			glBindSampler(index, combined.sampler);
+			glBindSampler(index, sampler.sampler);
 		} break;
 
 		case DescriptorType::Count:

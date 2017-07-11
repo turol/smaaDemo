@@ -182,6 +182,38 @@ struct RenderPass {
 };
 
 
+struct Sampler {
+	GLuint sampler;
+
+
+	Sampler(const Sampler &) = delete;
+	Sampler &operator=(const Sampler &) = delete;
+
+	Sampler(Sampler &&other)
+	: sampler(other.sampler)
+	{
+		other.sampler = 0;
+	}
+
+	Sampler &operator=(Sampler &&other) {
+		std::swap(sampler, other.sampler);
+
+		return *this;
+	}
+
+	Sampler()
+	: sampler(0)
+	{
+	}
+
+
+	~Sampler()
+	{
+		assert(sampler == 0);
+	}
+};
+
+
 struct Texture {
 	// TODO: need target for anything?
 	GLuint tex;
@@ -248,6 +280,7 @@ struct RendererBase {
 	ResourceContainer<Pipeline>             pipelines;
 	ResourceContainer<RenderPass>           renderPasses;
 	ResourceContainer<RenderTarget>         renderTargets;
+	ResourceContainer<Sampler>              samplers;
 	ResourceContainer<Texture>              textures;
 	ResourceContainer<VertexShader>         vertexShaders;
 
