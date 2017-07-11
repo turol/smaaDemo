@@ -34,9 +34,6 @@ THE SOFTWARE.
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 #include <tclap/CmdLine.h>
 
 #include "Renderer.h"
@@ -44,6 +41,10 @@ THE SOFTWARE.
 
 #include "AreaTex.h"
 #include "SearchTex.h"
+
+// AFTER Renderer.h because it sets GLM_FORCE_* macros which affect these
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 
 union Color {
