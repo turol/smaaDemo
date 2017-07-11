@@ -668,14 +668,14 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 		writeFile(vertexShaderName + ".prep", src);
 	}
 
-	auto id = createShader(GL_VERTEX_SHADER, vertexShaderName, src);
-	auto &v = vertexShaders.add(id);
-	v.shader    = id;
+	auto result_ = vertexShaders.add();
+	auto &v = result_.first;
+	v.shader    = createShader(GL_VERTEX_SHADER, vertexShaderName, src);
 	v.name      = vertexShaderName;
 	v.resources = std::move(resources);
 
 	VertexShaderHandle handle;
-	handle.handle = id;
+	handle.handle = result_.second;
 	return handle;
 }
 
