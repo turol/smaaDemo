@@ -226,7 +226,6 @@ struct RendererBase {
 
 	VmaAllocator                       allocator;
 
-	std::unordered_map<unsigned int, VertexShader>  vertexShaders;
 	std::unordered_map<unsigned int, FragmentShader>  fragmentShaders;
 
 	ResourceContainer<Buffer>              buffers;
@@ -236,6 +235,7 @@ struct RendererBase {
 	ResourceContainer<Sampler>             samplers;
 	ResourceContainer<RenderTarget>  renderTargets;
 	ResourceContainer<Texture>             textures;
+	ResourceContainer<VertexShader>        vertexShaders;
 
 	vk::Buffer           ringBuffer;
 	VkMappedMemoryRange  ringBufferMem;

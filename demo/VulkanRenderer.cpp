@@ -513,10 +513,10 @@ RendererImpl::~RendererImpl() {
 		r.renderPass = vk::RenderPass();
 	} );
 
-	for (auto &v : vertexShaders) {
-		device.destroyShaderModule(v.second.shaderModule);
-		v.second.shaderModule = vk::ShaderModule();
-	}
+	vertexShaders.clearWith([this](VertexShader &v) {
+		device.destroyShaderModule(v.shaderModule);
+		v.shaderModule = vk::ShaderModule();
+	} );
 
 	for (auto &f : fragmentShaders) {
 		device.destroyShaderModule(f.second.shaderModule);
@@ -826,15 +826,14 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	vk::GraphicsPipelineCreateInfo info;
 
-	auto vit = vertexShaders.find(desc.vertexShader_.handle);
-	assert(vit != vertexShaders.end());
+	const auto &v = vertexShaders.get(desc.vertexShader_);
 
 	auto fit = fragmentShaders.find(desc.fragmentShader_.handle);
 	assert(fit != fragmentShaders.end());
 
 	std::array<vk::PipelineShaderStageCreateInfo, 2> stages;
 	stages[0].stage  = vk::ShaderStageFlagBits::eVertex;
-	stages[0].module = vit->second.shaderModule;
+	stages[0].module = v.shaderModule;
 	stages[0].pName  = "main";
 	stages[1].stage  = vk::ShaderStageFlagBits::eFragment;
 	stages[1].module = fit->second.shaderModule;
@@ -1120,18 +1119,16 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 		// TODO: save SPIR-V?
 	}
 
-	VertexShader v;
+	auto result_ = vertexShaders.add();
+
+	VertexShader &v = result_.first;
 	vk::ShaderModuleCreateInfo info;
 	info.codeSize = spirv.size() * 4;
 	info.pCode    = &spirv[0];
 	v.shaderModule = device.createShaderModule(info);
-	auto id = vertexShaders.size() + 1;
-
-	auto temp = vertexShaders.emplace(id, std::move(v));
-	assert(temp.second);
 
 	VertexShaderHandle handle;
-	handle.handle = id;
+	handle.handle = result_.second;
 	return handle;
 }
 
