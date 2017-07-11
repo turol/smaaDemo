@@ -27,8 +27,11 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.h>
 
+#pragma warning(push, 4)
+#pragma warning(disable: 4127) // warning C4127: conditional expression is constant
 #define VMA_IMPLEMENTATION
 #include "vk_mem_alloc.h"
+#pragma warning(pop)
 
 #define MATHFU_COMPILE_WITHOUT_SIMD_SUPPORT
 #include <mathfu/glsl_mappings.h>
@@ -288,7 +291,7 @@ static void CreateMesh()
     vbInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     vbInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     VmaMemoryRequirements vbMemReq = {};
-    vbMemReq.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+    vbMemReq.usage = VMA_MEMORY_USAGE_CPU_ONLY;
     VkMappedMemoryRange stagingVertexBufferMem;
     VkBuffer stagingVertexBuffer = VK_NULL_HANDLE;
     ERR_GUARD_VULKAN( vmaCreateBuffer(g_hAllocator, &vbInfo, &vbMemReq, &stagingVertexBuffer, &stagingVertexBufferMem, nullptr) );
@@ -297,6 +300,8 @@ static void CreateMesh()
     ERR_GUARD_VULKAN( vmaMapMemory(g_hAllocator, &stagingVertexBufferMem, &pVbData) );
     memcpy(pVbData, vertices, vertexBufferSize);
     vmaUnmapMemory(g_hAllocator, &stagingVertexBufferMem);
+
+    // No need to flush stagingVertexBuffer memory because CPU_ONLY memory is always HOST_COHERENT.
 
     vbInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
     vbMemReq.usage = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -309,7 +314,7 @@ static void CreateMesh()
     ibInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     ibInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     VmaMemoryRequirements ibMemReq = {};
-    ibMemReq.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+    ibMemReq.usage = VMA_MEMORY_USAGE_CPU_ONLY;
     VkMappedMemoryRange stagingIndexBufferMem;
     VkBuffer stagingIndexBuffer = VK_NULL_HANDLE;
     ERR_GUARD_VULKAN( vmaCreateBuffer(g_hAllocator, &ibInfo, &ibMemReq, &stagingIndexBuffer, &stagingIndexBufferMem, nullptr) );
@@ -318,6 +323,8 @@ static void CreateMesh()
     ERR_GUARD_VULKAN( vmaMapMemory(g_hAllocator, &stagingIndexBufferMem, &pIbData) );
     memcpy(pIbData, indices, indexBufferSize);
     vmaUnmapMemory(g_hAllocator, &stagingIndexBufferMem);
+
+    // No need to flush stagingIndexBuffer memory because CPU_ONLY memory is always HOST_COHERENT.
 
     ibInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
     ibMemReq.usage = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -469,7 +476,7 @@ static void CreateTexture(uint32_t sizeX, uint32_t sizeY)
     stagingImageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     stagingImageInfo.flags = 0;
     VmaMemoryRequirements stagingImageMemReq = {};
-    stagingImageMemReq.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+    stagingImageMemReq.usage = VMA_MEMORY_USAGE_CPU_ONLY;
     VkImage stagingImage = VK_NULL_HANDLE;
     VkMappedMemoryRange stagingImageMem;
     ERR_GUARD_VULKAN( vmaCreateImage(g_hAllocator, &stagingImageInfo, &stagingImageMemReq, &stagingImage, &stagingImageMem, nullptr) );
@@ -503,6 +510,8 @@ static void CreateTexture(uint32_t sizeX, uint32_t sizeY)
     }
 
     vmaUnmapMemory(g_hAllocator, &stagingImageMem);
+
+    // No need to flush stagingImage memory because CPU_ONLY memory is always HOST_COHERENT.
 
     VkImageCreateInfo imageInfo = { VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO };
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -1701,7 +1710,7 @@ int main()
     RECT rect = { 0, 0, g_SizeX, g_SizeY };
     AdjustWindowRectEx(&rect, style, FALSE, exStyle);
 
-    HWND hWnd = CreateWindowEx(
+    CreateWindowEx(
         exStyle, WINDOW_CLASS_NAME, APP_TITLE_W, style,
         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
         NULL, NULL, g_hAppInstance, NULL);

@@ -25,7 +25,7 @@
 
 /** \mainpage Vulkan Memory Allocator
 
-Version 1.0, 2017-05-10
+Version 1.0.1 (2017-07-04)
 
 Members grouped: see <a href="modules.html"><b>Modules</b></a>.
 
@@ -130,15 +130,11 @@ This function would also free memory bound to it.
 
 \section configuration Configuration
 
-Set VMA_STATS_STRING_ENABLED macro in vk_mem_alloc.h to 0 or 1 to disable/enable
-compilation of code for dumping internal allocator state to string in JSON
-format.
-
-Please check "CONFIGURATION" section in vk_mem_alloc.cpp file to find macros and
-other definitions that you can change to connect the library to your own
-implementation of basic facilities like assert, min and max functions, mutex
-etc. C++ STL is used by default, but changing these allows you to get rid of any
-STL usage if you want, as many game developers tend to do.
+Please check "CONFIGURATION SECTION" in the code to find macros that you can define
+before each #include of this file or change directly in this file to provide
+your own implementation of basic facilities like assert, min and max functions,
+mutex etc. C++ STL is used by default, but changing these allows you to get rid
+of any STL usage if you want, as many game developers tend to do.
 
 \section custom_memory_allocator Custom memory allocator
 
@@ -241,7 +237,9 @@ void vmaCalculateStats(
     VmaAllocator allocator,
     VmaStats* pStats);
 
-#define VMA_STATS_STRING_ENABLED 0
+#ifndef VMA_STATS_STRING_ENABLED
+   #define VMA_STATS_STRING_ENABLED 1
+#endif
 
 #if VMA_STATS_STRING_ENABLED
 
@@ -455,15 +453,18 @@ void vmaDestroyImage(
 
 #ifdef VMA_IMPLEMENTATION
 
+#include <cstdint>
 #include <cstdlib>
 
 /*******************************************************************************
-CONFIGURATION
+CONFIGURATION SECTION
 
-Change these definitions depending on your environment.
+Define some of these macros before each #include of this header or change them
+here if you need other then default behavior depending on your environment.
 */
 
-#define VMA_USE_STL_CONTAINERS 1
+// Define this macro to 1 to make the library use STL containers instead of its own implementation.
+//#define VMA_USE_STL_CONTAINERS 1
 
 /* Set this macro to 1 to make the library including and using STL containers:
 std::pair, std::vector, std::list, std::unordered_map.
@@ -472,21 +473,21 @@ Set it to 0 or undefined to make the library using its own implementation of
 the containers.
 */
 #if VMA_USE_STL_CONTAINERS
-#define VMA_USE_STL_VECTOR 1
-#define VMA_USE_STL_UNORDERED_MAP 1
-#define VMA_USE_STL_LIST 1
+   #define VMA_USE_STL_VECTOR 1
+   #define VMA_USE_STL_UNORDERED_MAP 1
+   #define VMA_USE_STL_LIST 1
 #endif
 
 #if VMA_USE_STL_VECTOR
-#include <vector>
+   #include <vector>
 #endif
 
 #if VMA_USE_STL_UNORDERED_MAP
-#include <unordered_map>
+   #include <unordered_map>
 #endif
 
 #if VMA_USE_STL_LIST
-#include <list>
+   #include <list>
 #endif
 
 /*
@@ -497,120 +498,172 @@ remove them if not needed.
 #include <algorithm> // for min, max
 #include <mutex> // for std::mutex
 
-#ifdef _DEBUG
-    // Normal assert to check for programmer's errors, especially in Debug configuration.
-    #define VMA_ASSERT(expr)         assert(expr)
-    // Assert that will be called very often, like inside data structures e.g. operator[].
-    // Making it non-empty can make program slow.
-    #define VMA_HEAVY_ASSERT(expr)   //VMA_ASSERT(expr)
-#else
-    #define VMA_ASSERT(expr)
-    #define VMA_HEAVY_ASSERT(expr)
+#if !defined(_WIN32)
+    #include <malloc.h> // for aligned_alloc()
 #endif
 
-// Value used as null pointer. Define it to e.g.: nullptr, NULL, 0, (void*)0.
-#define VMA_NULL   nullptr
+// Normal assert to check for programmer's errors, especially in Debug configuration.
+#ifndef VMA_ASSERT
+   #ifdef _DEBUG
+       #define VMA_ASSERT(expr)         assert(expr)
+   #else
+       #define VMA_ASSERT(expr)
+   #endif
+#endif
 
-#ifdef _WIN32
+// Assert that will be called very often, like inside data structures e.g. operator[].
+// Making it non-empty can make program slow.
+#ifndef VMA_HEAVY_ASSERT
+   #ifdef _DEBUG
+       #define VMA_HEAVY_ASSERT(expr)   //VMA_ASSERT(expr)
+   #else
+       #define VMA_HEAVY_ASSERT(expr)
+   #endif
+#endif
 
-#define VMA_ALIGN_OF(type)       (__alignof(type))
-#define VMA_SYSTEM_ALIGNED_MALLOC(size, alignment)   (_aligned_malloc((size), (alignment)))
-#define VMA_SYSTEM_FREE(ptr)     _aligned_free(ptr)
+#ifndef VMA_NULL
+   // Value used as null pointer. Define it to e.g.: nullptr, NULL, 0, (void*)0.
+   #define VMA_NULL   nullptr
+#endif
 
-#else  // _WIN32
+#ifndef VMA_ALIGN_OF
+   #define VMA_ALIGN_OF(type)       (__alignof(type))
+#endif
 
-#define VMA_ALIGN_OF(type)       (__alignof(type))
-#define VMA_SYSTEM_ALIGNED_MALLOC(size, alignment)   (aligned_alloc((alignment), (size)))
-#define VMA_SYSTEM_FREE(ptr)     free(ptr)
+#ifndef VMA_SYSTEM_ALIGNED_MALLOC
+   #if defined(_WIN32)
+       #define VMA_SYSTEM_ALIGNED_MALLOC(size, alignment)   (_aligned_malloc((size), (alignment)))
+   #else
+       #define VMA_SYSTEM_ALIGNED_MALLOC(size, alignment)   (aligned_alloc((alignment), (size) ))
+   #endif
+#endif
 
-#endif  // _WIN32
+#ifndef VMA_SYSTEM_FREE
+   #if defined(_WIN32)
+       #define VMA_SYSTEM_FREE(ptr)   _aligned_free(ptr)
+   #else
+       #define VMA_SYSTEM_FREE(ptr)   free(ptr)
+   #endif
+#endif
 
-#define VMA_MIN(v1, v2)          (std::min((v1), (v2)))
-#define VMA_MAX(v1, v2)          (std::max((v1), (v2)))
-#define VMA_SWAP(v1, v2)         std::swap((v1), (v2))
+#ifndef VMA_MIN
+   #define VMA_MIN(v1, v2)    (std::min((v1), (v2)))
+#endif
 
-#define VMA_DEBUG_LOG(format, ...)
-/*
-#define VMA_DEBUG_LOG(format, ...) do { \
-    printf(format, __VA_ARGS__); \
-    printf("\n"); \
-} while(false)
-*/
+#ifndef VMA_MAX
+   #define VMA_MAX(v1, v2)    (std::max((v1), (v2)))
+#endif
 
+#ifndef VMA_SWAP
+   #define VMA_SWAP(v1, v2)   std::swap((v1), (v2))
+#endif
+
+#ifndef VMA_DEBUG_LOG
+   #define VMA_DEBUG_LOG(format, ...)
+   /*
+   #define VMA_DEBUG_LOG(format, ...) do { \
+       printf(format, __VA_ARGS__); \
+       printf("\n"); \
+   } while(false)
+   */
+#endif
+
+// Define this macro to 1 to enable functions: vmaBuildStatsString, vmaFreeStatsString.
 #if VMA_STATS_STRING_ENABLED
+   static inline void VmaUint32ToStr(char* outStr, size_t strLen, uint32_t num)
+   {
+       _ultoa_s(num, outStr, strLen, 10);
+   }
+   static inline void VmaUint64ToStr(char* outStr, size_t strLen, uint64_t num)
+   {
+       _ui64toa_s(num, outStr, strLen, 10);
+   }
+#endif
 
-static inline void VmaUint32ToStr(char* outStr, size_t strLen, uint32_t num)
-{
-    _ultoa_s(num, outStr, strLen, 10);
-}
-static inline void VmaUint64ToStr(char* outStr, size_t strLen, uint64_t num)
-{
-    _ui64toa_s(num, outStr, strLen, 10);
-}
+#ifndef VMA_MUTEX
+   class VmaMutex
+   {
+   public:
+       VmaMutex() { }
+       ~VmaMutex() { }
+       void Lock() { m_Mutex.lock(); }
+       void Unlock() { m_Mutex.unlock(); }
+   private:
+       std::mutex m_Mutex;
+   };
+   #define VMA_MUTEX VmaMutex
+#endif
 
-#endif // #if VMA_STATS_STRING_ENABLED
+#ifndef VMA_BEST_FIT
+   /**
+   Main parameter for function assessing how good is a free suballocation for a new
+   allocation request.
 
-class VmaMutex
-{
-public:
-    VmaMutex() { }
-    ~VmaMutex() { }
-    void Lock() { m_Mutex.lock(); }
-    void Unlock() { m_Mutex.unlock(); }
-private:
-    std::mutex m_Mutex;
-};
+   - Set to 1 to use Best-Fit algorithm - prefer smaller blocks, as close to the
+     size of requested allocations as possible.
+   - Set to 0 to use Worst-Fit algorithm - prefer larger blocks, as large as
+     possible.
 
-/*
-Main parameter for function assessing how good is a free suballocation for a new
-allocation request.
+   Experiments in special testing environment showed that Best-Fit algorithm is
+   better.
+   */
+   #define VMA_BEST_FIT (1)
+#endif
 
-- Set to true to use Best-Fit algorithm - prefer smaller blocks, as close to the
-  size of requested allocations as possible.
-- Set to false to use Worst-Fit algorithm - prefer larger blocks, as large as
-  possible.
+#ifndef VMA_DEBUG_ALWAYS_OWN_MEMORY
+   /**
+   Every object will have its own allocation.
+   Define to 1 for debugging purposes only.
+   */
+   #define VMA_DEBUG_ALWAYS_OWN_MEMORY (0)
+#endif
 
-Experiments in special testing environment showed that Best-Fit algorithm is
-better.
-*/
-static const bool VMA_BEST_FIT = true;
+#ifndef VMA_DEBUG_ALIGNMENT
+   /**
+   Minimum alignment of all suballocations, in bytes.
+   Set to more than 1 for debugging purposes only. Must be power of two.
+   */
+   #define VMA_DEBUG_ALIGNMENT (1)
+#endif
 
-/*
-Every object will have its own allocation.
-Enable for debugging purposes only.
-*/
-static const bool VMA_DEBUG_ALWAYS_OWN_MEMORY = false;
+#ifndef VMA_DEBUG_MARGIN
+   /**
+   Minimum margin between suballocations, in bytes.
+   Set nonzero for debugging purposes only.
+   */
+   #define VMA_DEBUG_MARGIN (0)
+#endif
 
-/*
-Minimum alignment of all suballocations, in bytes.
-Set to more than 1 for debugging purposes only. Must be power of two.
-*/
-static const VkDeviceSize VMA_DEBUG_ALIGNMENT = 1;
+#ifndef VMA_DEBUG_GLOBAL_MUTEX
+   /**
+   Set this to 1 for debugging purposes only, to enable single mutex protecting all
+   entry calls to the library. Can be useful for debugging multithreading issues.
+   */
+   #define VMA_DEBUG_GLOBAL_MUTEX (0)
+#endif
 
-/*
-Minimum margin between suballocations, in bytes.
-Set nonzero for debugging purposes only.
-*/
-static const VkDeviceSize VMA_DEBUG_MARGIN = 0;
+#ifndef VMA_DEBUG_MIN_BUFFER_IMAGE_GRANULARITY
+   /**
+   Minimum value for VkPhysicalDeviceLimits::bufferImageGranularity.
+   Set to more than 1 for debugging purposes only. Must be power of two.
+   */
+   #define VMA_DEBUG_MIN_BUFFER_IMAGE_GRANULARITY (1)
+#endif
 
-/*
-Set this to 1 for debugging purposes only, to enable single mutex protecting all
-entry calls to the library. Can be useful for debugging multithreading issues.
-*/
-#define VMA_DEBUG_GLOBAL_MUTEX 0
+#ifndef VMA_SMALL_HEAP_MAX_SIZE
+   /// Maximum size of a memory heap in Vulkan to consider it "small".
+   #define VMA_SMALL_HEAP_MAX_SIZE (512 * 1024 * 1024)
+#endif
 
-/*
-Minimum value for VkPhysicalDeviceLimits::bufferImageGranularity.
-Set to more than 1 for debugging purposes only. Must be power of two.
-*/
-static const VkDeviceSize VMA_DEBUG_MIN_BUFFER_IMAGE_GRANULARITY = 1;
+#ifndef VMA_DEFAULT_LARGE_HEAP_BLOCK_SIZE
+   /// Default size of a block allocated as single VkDeviceMemory from a "large" heap.
+   #define VMA_DEFAULT_LARGE_HEAP_BLOCK_SIZE (256 * 1024 * 1024)
+#endif
 
-// Maximum size of a memory heap in Vulkan to consider it "small".
-static const VkDeviceSize VMA_SMALL_HEAP_MAX_SIZE = 512 * 1024 * 1024;
-// Default size of a block allocated as single VkDeviceMemory from a "large" heap.
-static const VkDeviceSize VMA_DEFAULT_LARGE_HEAP_BLOCK_SIZE = 256 * 1024 * 1024;
-// Default size of a block allocated as single VkDeviceMemory from a "small" heap.
-static const VkDeviceSize VMA_DEFAULT_SMALL_HEAP_BLOCK_SIZE =  64 * 1024 * 1024;
+#ifndef VMA_DEFAULT_SMALL_HEAP_BLOCK_SIZE
+   /// Default size of a block allocated as single VkDeviceMemory from a "small" heap.
+   #define VMA_DEFAULT_SMALL_HEAP_BLOCK_SIZE (64 * 1024 * 1024)
+#endif
 
 /*******************************************************************************
 END OF CONFIGURATION
@@ -719,15 +772,15 @@ static inline bool VmaIsBufferImageGranularityConflict(
 struct VmaMutexLock
 {
 public:
-    VmaMutexLock(VmaMutex& mutex) : m_Mutex(mutex) { mutex.Lock(); }
+    VmaMutexLock(VMA_MUTEX& mutex) : m_Mutex(mutex) { mutex.Lock(); }
     ~VmaMutexLock() { m_Mutex.Unlock(); }
 
 private:
-    VmaMutex& m_Mutex;
+    VMA_MUTEX& m_Mutex;
 };
 
 #if VMA_DEBUG_GLOBAL_MUTEX
-    static VmaMutex gDebugGlobalMutex;
+    static VMA_MUTEX gDebugGlobalMutex;
     #define VMA_DEBUG_GLOBAL_MUTEX_LOCK VmaMutexLock debugGlobalMutexLock(gDebugGlobalMutex);
 #else
     #define VMA_DEBUG_GLOBAL_MUTEX_LOCK
@@ -851,6 +904,8 @@ public:
     {
         return m_pCallbacks != rhs.m_pCallbacks;
     }
+
+    VmaStlAllocator& operator=(const VmaStlAllocator& x) = delete;
 };
 
 #if VMA_USE_STL_VECTOR
@@ -878,6 +933,14 @@ template<typename T, typename AllocatorT>
 class VmaVector
 {
 public:
+    VmaVector(const AllocatorT& allocator) :
+        m_Allocator(allocator),
+        m_pArray(VMA_NULL),
+        m_Count(0),
+        m_Capacity(0)
+    {
+    }
+
     VmaVector(AllocatorT& allocator) :
         m_Allocator(allocator),
         m_pArray(VMA_NULL),
@@ -896,7 +959,7 @@ public:
     
     VmaVector(const VmaVector<T, AllocatorT>& src) :
         m_Allocator(src.m_Allocator),
-        m_pArray(src.m_Count ? (T*)VmaAllocateArray<T>(m_Allocator->m_pCallbacks, src.m_Count) : VMA_NULL),
+        m_pArray(src.m_Count ? (T*)VmaAllocateArray<T>(src->m_pCallbacks, src.m_Count) : VMA_NULL),
         m_Count(src.m_Count),
         m_Capacity(src.m_Count)
     {
@@ -1139,7 +1202,7 @@ T* VmaPoolAllocator<T>::Alloc()
     {
         ItemBlock& block = m_ItemBlocks[i];
         // This block has some free items: Use first one.
-        if(block.FirstFreeIndex != UINT_MAX)
+        if(block.FirstFreeIndex != UINT32_MAX)
         {
             Item* const pItem = &block.pItems[block.FirstFreeIndex];
             block.FirstFreeIndex = pItem->NextFreeIndex;
@@ -1189,7 +1252,7 @@ typename VmaPoolAllocator<T>::ItemBlock& VmaPoolAllocator<T>::CreateNewBlock()
     // Setup singly-linked list of all free items in this block.
     for(uint32_t i = 0; i < m_ItemsPerBlock - 1; ++i)
         newBlock.pItems[i].NextFreeIndex = i + 1;
-    newBlock.pItems[m_ItemsPerBlock - 1].NextFreeIndex = UINT_MAX;
+    newBlock.pItems[m_ItemsPerBlock - 1].NextFreeIndex = UINT32_MAX;
     return m_ItemBlocks.back();
 }
 
@@ -1631,6 +1694,7 @@ public:
     };
 
     VmaList(AllocatorT& allocator) : m_RawList(allocator.m_pCallbacks) { }
+    VmaList(const AllocatorT& allocator) : m_RawList(allocator.m_pCallbacks) { }
 
     bool empty() const { return m_RawList.IsEmpty(); }
     size_t size() const { return m_RawList.GetCount(); }
@@ -1685,6 +1749,7 @@ public:
     typedef PairType* iterator;
 
     VmaMap(VmaStlAllocator<PairType>& allocator) : m_Vector(allocator) { }
+    VmaMap(const VmaStlAllocator<PairType>& allocator) : m_Vector(allocator) { }
 
     iterator begin() { return m_Vector.begin(); }
     iterator end() { return m_Vector.end(); }
@@ -1913,19 +1978,19 @@ struct VmaAllocator_T
     hysteresis to avoid pessimistic case of alternating creation and destruction
     of a VkDeviceMemory. */
     bool m_HasEmptyAllocation[VK_MAX_MEMORY_TYPES];
-    VmaMutex m_AllocationsMutex[VK_MAX_MEMORY_TYPES];
+    VMA_MUTEX m_AllocationsMutex[VK_MAX_MEMORY_TYPES];
 
     // Each vector is sorted by memory (handle value).
     typedef VmaVector< VmaOwnAllocation, VmaStlAllocator<VmaOwnAllocation> > OwnAllocationVectorType;
     OwnAllocationVectorType* m_pOwnAllocations[VK_MAX_MEMORY_TYPES];
-    VmaMutex m_OwnAllocationsMutex[VK_MAX_MEMORY_TYPES];
+    VMA_MUTEX m_OwnAllocationsMutex[VK_MAX_MEMORY_TYPES];
 
     // Sorted by first (VkBuffer handle value).
     VMA_MAP_TYPE(VkBuffer, VkMappedMemoryRange) m_BufferToMemoryMap;
-    VmaMutex m_BufferToMemoryMapMutex;
+    VMA_MUTEX m_BufferToMemoryMapMutex;
     // Sorted by first (VkImage handle value).
     VMA_MAP_TYPE(VkImage, VkMappedMemoryRange) m_ImageToMemoryMap;
-    VmaMutex m_ImageToMemoryMapMutex;
+    VMA_MUTEX m_ImageToMemoryMapMutex;
     
     VmaAllocator_T(const VmaAllocatorCreateInfo* pCreateInfo);
     ~VmaAllocator_T();
@@ -1940,7 +2005,7 @@ struct VmaAllocator_T
     VkDeviceSize GetBufferImageGranularity() const
     {
         return VMA_MAX(
-            VMA_DEBUG_MIN_BUFFER_IMAGE_GRANULARITY,
+            static_cast<VkDeviceSize>(VMA_DEBUG_MIN_BUFFER_IMAGE_GRANULARITY),
             m_PhysicalDeviceProperties.limits.bufferImageGranularity);
     }
 
@@ -2289,7 +2354,7 @@ bool VmaAllocation::Validate() const
 How many suitable free suballocations to analyze before choosing best one.
 - Set to 1 to use First-Fit algorithm - first suitable free suballocation will
   be chosen.
-- Set to UINT_MAX to use Best-Fit/Worst-Fit algorithm - all suitable free
+- Set to UINT32_MAX to use Best-Fit/Worst-Fit algorithm - all suitable free
   suballocations will be analized and best one will be chosen.
 - Any other value is also acceptable.
 */
@@ -2310,8 +2375,6 @@ bool VmaAllocation::CreateAllocationRequest(
     // There is not enough total free space in this allocation to fullfill the request: Early return.
     if(m_SumFreeSize < allocSize)
         return false;
-
-    bool found = false;
 
     // Old brute-force algorithm, linearly searching suballocations.
     /*
@@ -2415,7 +2478,7 @@ bool VmaAllocation::CheckAllocation(
         *pOffset += VMA_DEBUG_MARGIN;
     
     // Apply alignment.
-    const VkDeviceSize alignment = VMA_MAX(allocAlignment, VMA_DEBUG_ALIGNMENT);
+    const VkDeviceSize alignment = VMA_MAX(allocAlignment, static_cast<VkDeviceSize>(VMA_DEBUG_ALIGNMENT));
     *pOffset = VmaAlignUp(*pOffset, alignment);
     
     // Check previous suballocations for BufferImageGranularity conflicts.
@@ -2890,9 +2953,9 @@ VmaAllocator_T::VmaAllocator_T(const VmaAllocatorCreateInfo* pCreateInfo) :
     memset(&m_pOwnAllocations, 0, sizeof(m_pOwnAllocations));
 
     m_PreferredLargeHeapBlockSize = (pCreateInfo->preferredLargeHeapBlockSize != 0) ?
-        pCreateInfo->preferredLargeHeapBlockSize : VMA_DEFAULT_LARGE_HEAP_BLOCK_SIZE;
+        pCreateInfo->preferredLargeHeapBlockSize : static_cast<VkDeviceSize>(VMA_DEFAULT_LARGE_HEAP_BLOCK_SIZE);
     m_PreferredSmallHeapBlockSize = (pCreateInfo->preferredSmallHeapBlockSize != 0) ?
-        pCreateInfo->preferredSmallHeapBlockSize : VMA_DEFAULT_SMALL_HEAP_BLOCK_SIZE;
+        pCreateInfo->preferredSmallHeapBlockSize : static_cast<VkDeviceSize>(VMA_DEFAULT_SMALL_HEAP_BLOCK_SIZE);
 
     vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_PhysicalDeviceProperties);
     vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_MemProps);
@@ -3138,7 +3201,7 @@ VkResult VmaAllocator_T::AllocateMemory(
 
     // Bit mask of memory Vulkan types acceptable for this allocation.
     uint32_t memoryTypeBits = vkMemReq.memoryTypeBits;
-    uint32_t memTypeIndex = UINT_MAX;
+    uint32_t memTypeIndex = UINT32_MAX;
     VkResult res = vmaFindMemoryTypeIndex(this, memoryTypeBits, &vmaMemReq, &memTypeIndex);
     if(res == VK_SUCCESS)
     {
@@ -3563,7 +3626,7 @@ VkResult vmaFindMemoryTypeIndex(
     uint32_t preferredFlags = pMemoryRequirements->preferredFlags;
     if(preferredFlags == 0)
         preferredFlags = requiredFlags;
-    // preferredFlags, if not 0, must be subset of requiredFlags.
+    // preferredFlags, if not 0, must be a superset of requiredFlags.
     VMA_ASSERT((requiredFlags & ~preferredFlags) == 0);
 
     // Convert usage to requiredFlags and preferredFlags.
@@ -3589,8 +3652,8 @@ VkResult vmaFindMemoryTypeIndex(
         break;
     }
 
-    *pMemoryTypeIndex = UINT_MAX;
-    uint32_t minCost = UINT_MAX;
+    *pMemoryTypeIndex = UINT32_MAX;
+    uint32_t minCost = UINT32_MAX;
     for(uint32_t memTypeIndex = 0, memTypeBit = 1;
         memTypeIndex < allocator->GetMemoryTypeCount();
         ++memTypeIndex, memTypeBit <<= 1)
@@ -3616,7 +3679,7 @@ VkResult vmaFindMemoryTypeIndex(
             }
         }
     }
-    return (*pMemoryTypeIndex != UINT_MAX) ? VK_SUCCESS : VK_ERROR_FEATURE_NOT_PRESENT;
+    return (*pMemoryTypeIndex != UINT32_MAX) ? VK_SUCCESS : VK_ERROR_FEATURE_NOT_PRESENT;
 }
 
 VkResult vmaAllocateMemory(
