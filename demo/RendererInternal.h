@@ -39,14 +39,6 @@ public:
 		return std::make_pair(std::ref(result.first->second), handle);
 	}
 
-	T &add(unsigned int handle) {
-		if (handle >= next) {
-			next = handle;
-		}
-		auto result = resources.emplace(handle, T());
-		assert(result.second);
-		return result.first->second;
-	}
 
 	const T &get(unsigned int handle) const {
 		auto it = resources.find(handle);
