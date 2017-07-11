@@ -799,8 +799,8 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	// TODO: cache shaders
 	GLuint program = glCreateProgram();
 
-	glAttachShader(program, desc.vertexShader_.handle);
-	glAttachShader(program, desc.fragmentShader_.handle);
+	glAttachShader(program, v.shader);
+	glAttachShader(program, f.shader);
 	glLinkProgram(program);
 
 	GLint status = 0;
