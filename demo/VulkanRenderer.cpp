@@ -518,10 +518,10 @@ RendererImpl::~RendererImpl() {
 		v.shaderModule = vk::ShaderModule();
 	} );
 
-	for (auto &f : fragmentShaders) {
-		device.destroyShaderModule(f.second.shaderModule);
-		f.second.shaderModule = vk::ShaderModule();
-	}
+	fragmentShaders.clearWith([this](FragmentShader &f) {
+		device.destroyShaderModule(f.shaderModule);
+		f.shaderModule = vk::ShaderModule();
+	} );
 
 	dsLayouts.clearWith([this](DescriptorSetLayout &l) {
 		this->device.destroyDescriptorSetLayout(l.layout);
@@ -827,16 +827,14 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	vk::GraphicsPipelineCreateInfo info;
 
 	const auto &v = vertexShaders.get(desc.vertexShader_);
-
-	auto fit = fragmentShaders.find(desc.fragmentShader_.handle);
-	assert(fit != fragmentShaders.end());
+	const auto &f = fragmentShaders.get(desc.fragmentShader_);
 
 	std::array<vk::PipelineShaderStageCreateInfo, 2> stages;
 	stages[0].stage  = vk::ShaderStageFlagBits::eVertex;
 	stages[0].module = v.shaderModule;
 	stages[0].pName  = "main";
 	stages[1].stage  = vk::ShaderStageFlagBits::eFragment;
-	stages[1].module = fit->second.shaderModule;
+	stages[1].module = f.shaderModule;
 	stages[1].pName  = "main";
 
 	info.stageCount = 2;
@@ -1159,18 +1157,16 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 		// TODO: save SPIR-V?
 	}
 
-	FragmentShader f;
+	auto result_ = fragmentShaders.add();
+
+	FragmentShader &f = result_.first;
 	vk::ShaderModuleCreateInfo info;
 	info.codeSize = spirv.size() * 4;
 	info.pCode    = &spirv[0];
 	f.shaderModule = device.createShaderModule(info);
-	auto id = fragmentShaders.size() + 1;
-
-	auto temp = fragmentShaders.emplace(id, std::move(f));
-	assert(temp.second);
 
 	FragmentShaderHandle handle;
-	handle.handle = id;
+	handle.handle = result_.second;
 	return handle;
 }
 

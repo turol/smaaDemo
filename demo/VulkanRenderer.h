@@ -226,10 +226,9 @@ struct RendererBase {
 
 	VmaAllocator                       allocator;
 
-	std::unordered_map<unsigned int, FragmentShader>  fragmentShaders;
-
 	ResourceContainer<Buffer>              buffers;
 	ResourceContainer<DescriptorSetLayout> dsLayouts;
+	ResourceContainer<FragmentShader>      fragmentShaders;
 	ResourceContainer<Pipeline>            pipelines;
 	ResourceContainer<RenderPass>          renderPasses;
 	ResourceContainer<Sampler>             samplers;
