@@ -21,10 +21,26 @@ struct Buffer {
 };
 
 
+struct Pipeline {
+	PipelineDesc  desc;
+
+
+	Pipeline(const Pipeline &)            = default;
+	Pipeline &operator=(const Pipeline &) = default;
+
+	Pipeline(Pipeline &&)            = default;
+	Pipeline &operator=(Pipeline &&) = default;
+
+	Pipeline() {}
+
+	~Pipeline() {}
+};
+
+
 struct RendererBase {
 	std::vector<char> ringBuffer;
 	ResourceContainer<Buffer>              buffers;
-	ResourceContainer<PipelineDesc>        pipelines;
+	ResourceContainer<Pipeline>            pipelines;
 
 	PipelineDesc  currentPipeline;
 

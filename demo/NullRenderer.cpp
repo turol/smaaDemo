@@ -95,7 +95,8 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc & /* desc *
 
 PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	auto result = pipelines.add();
-	result.first = desc;
+	auto &pipeline = result.first;
+	pipeline.desc = desc;
 	return result.second;
 }
 
@@ -227,7 +228,7 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	validPipeline = true;
 	scissorSet = false;
 
-	currentPipeline = pipelines.get(pipeline);
+	currentPipeline = pipelines.get(pipeline).desc;
 }
 
 
