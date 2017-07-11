@@ -386,6 +386,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		exit(1);
 	}
 
+	if (!GLEW_ARB_clip_control) {
+		printf("ARB_clip_control not found\n");
+		exit(1);
+	}
+
 	if (desc.debug) {
 		if (GLEW_KHR_debug) {
 			printf("KHR_debug found\n");
