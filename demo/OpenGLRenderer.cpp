@@ -827,11 +827,11 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	assert(desc.name_ != nullptr);
 
-	GLuint fbo = 0;
-
-	glCreateFramebuffers(1, &fbo);
-	RenderPass &pass = renderPasses.add(fbo);
+	auto result = renderPasses.add();
+	RenderPass &pass = result.first;
 	pass.desc = desc;
+	GLuint fbo = 0;
+	glCreateFramebuffers(1, &fbo);
 	pass.fbo = fbo;
 
 	auto &colorRT = renderTargets.get(desc.colors_[0]);
@@ -1127,7 +1127,6 @@ void RendererImpl::beginRenderPass(RenderPassHandle handle) {
 	assert(handle);
 	const auto &pass = renderPasses.get(handle.handle);
 	assert(pass.fbo != 0);
-	assert(pass.fbo == handle.handle);
 
 	// TODO: should get clear bits from RenderPass object
 	GLbitfield mask = GL_COLOR_BUFFER_BIT;
