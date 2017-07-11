@@ -93,6 +93,15 @@ public:
 		resources.erase(it);
 	}
 
+
+	template <typename F> void removeWith(Handle<T> handle, F &&f) {
+		auto it = resources.find(handle.handle);
+		assert(it != resources.end());
+		f(it->second);
+		resources.erase(it);
+	}
+
+
 	void clear() {
 		resources.clear();
 	}
