@@ -827,7 +827,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	pipeline.desc      = desc;
 	pipeline.shader    = program;
 
-	return result.second;
+	return PipelineHandle(result.second);
 }
 
 
@@ -1185,7 +1185,7 @@ void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int w
 
 void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	assert(inFrame);
-	assert(pipeline != 0);
+	assert(pipeline);
 	assert(inRenderPass);
 	assert(pipelineDrawn);
 	pipelineDrawn = false;

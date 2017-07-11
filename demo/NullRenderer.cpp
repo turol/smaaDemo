@@ -97,7 +97,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	auto result = pipelines.add();
 	auto &pipeline = result.first;
 	pipeline.desc = desc;
-	return result.second;
+	return PipelineHandle(result.second);
 }
 
 
@@ -221,7 +221,7 @@ void RendererImpl::endRenderPass() {
 
 void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	assert(inFrame);
-	assert(pipeline != 0);
+	assert(pipeline);
 	assert(inRenderPass);
 	assert(pipelineDrawn);
 	pipelineDrawn = false;

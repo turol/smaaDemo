@@ -32,6 +32,7 @@ struct RendererImpl;
 struct DescriptorSetLayout;
 struct FragmentShader;
 struct Framebuffer;
+struct Pipeline;
 struct RenderPass;
 struct Texture;
 struct VertexShader;
@@ -112,7 +113,7 @@ typedef Handle<DescriptorSetLayout>  DescriptorSetLayoutHandle;
 
 typedef Handle<RenderPass>  RenderPassHandle;
 
-typedef uint32_t PipelineHandle;
+typedef Handle<Pipeline>             PipelineHandle;
 typedef uint32_t RenderTargetHandle;
 typedef uint32_t SamplerHandle;
 
