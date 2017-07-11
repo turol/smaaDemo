@@ -714,14 +714,14 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 		writeFile(fragmentShaderName + ".prep", src);
 	}
 
-	auto id = createShader(GL_FRAGMENT_SHADER, name, src);
-	auto &f = fragmentShaders.add(id);
-	f.shader = id;
+	auto result_ = fragmentShaders.add();
+	auto &f = result_.first;
+	f.shader = createShader(GL_FRAGMENT_SHADER, name, src);
 	f.name      = fragmentShaderName;
 	f.resources = std::move(resources);
 
 	FragmentShaderHandle handle;
-	handle.handle = id;
+	handle.handle = result_.second;
 	return handle;
 }
 
