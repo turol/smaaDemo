@@ -1620,10 +1620,7 @@ void RendererImpl::beginRenderPass(RenderPassHandle handle) {
 	const auto &pass = renderPasses.get(handle.handle);
 	// TODO: should be customizable
 	// clear image
-	STUBBED("remove fixed color clear when something is rendering");
-	double crap = 0.0;
-	float c = modf(frameNum / 60.0f, &crap);
-	std::array<float, 4> color = { 1.0f, c, c, c };
+	std::array<float, 4> color = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 	std::array<vk::ClearValue, 2> clearValues;
 	clearValues[0].color        = vk::ClearColorValue(color);  // default constructor 0s
