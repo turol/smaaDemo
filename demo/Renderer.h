@@ -107,7 +107,6 @@ typedef Handle<VertexShader>  VertexShaderHandle;
 typedef Handle<FragmentShader>  FragmentShaderHandle;
 
 typedef Handle<Texture> TextureHandle;
-typedef uint32_t UniformBufferHandle;
 
 
 enum class DescriptorType : uint8_t {
