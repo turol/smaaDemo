@@ -325,7 +325,7 @@ struct SamplerDesc {
 	SamplerDesc()
 	: min(Nearest)
 	, mag(Nearest)
-	, wrapMode(Wrap)
+	, wrapMode(Clamp)
 	{
 	}
 
