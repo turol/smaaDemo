@@ -815,11 +815,12 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	}
 	glUseProgram(program);
 
-	Pipeline &pipeline = pipelines.add(program);
+	auto result = pipelines.add();
+	Pipeline &pipeline = result.first;
 	pipeline.desc      = desc;
 	pipeline.shader    = program;
 
-	return PipelineHandle(program);
+	return result.second;
 }
 
 
