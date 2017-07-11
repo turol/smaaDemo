@@ -817,9 +817,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 
 	printf("Renderpass %p  framebuffer %p  %s\n", VkRenderPass(r.renderPass), VkFramebuffer(r.framebuffer), desc.name_);
 
-	RenderPassHandle handle;
-	handle.handle = result.second;
-	return handle;
+	return result.second;
 }
 
 
@@ -1048,9 +1046,9 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	tex.imageView    = rt.imageView;
 	tex.renderTarget = true;
 	// TODO: std::move ?
-	rt.texture.handle = texResult.second;
+	rt.texture = texResult.second;
 
-	return result.second;
+	return RenderTargetHandle(result.second);
 }
 
 
@@ -1125,9 +1123,7 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	info.pCode    = &spirv[0];
 	v.shaderModule = device.createShaderModule(info);
 
-	VertexShaderHandle handle;
-	handle.handle = result_.second;
-	return handle;
+	return result_.second;
 }
 
 
@@ -1165,9 +1161,7 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	info.pCode    = &spirv[0];
 	f.shaderModule = device.createShaderModule(info);
 
-	FragmentShaderHandle handle;
-	handle.handle = result_.second;
-	return handle;
+	return result_.second;
 }
 
 
@@ -1299,9 +1293,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	queue.waitIdle();
 	device.freeCommandBuffers(commandPool, { cmdBuf } );
 
-	TextureHandle handle;
-	handle.handle = result.second;
-	return handle;
+	return result.second;
 }
 
 

@@ -681,9 +681,7 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	v.name      = vertexShaderName;
 	v.resources = std::move(resources);
 
-	VertexShaderHandle handle;
-	handle.handle = result_.second;
-	return handle;
+	return result_.second;
 }
 
 
@@ -727,9 +725,7 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	f.name      = fragmentShaderName;
 	f.resources = std::move(resources);
 
-	FragmentShaderHandle handle;
-	handle.handle = result_.second;
-	return handle;
+	return result_.second;
 }
 
 
@@ -899,9 +895,9 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	rt.width  = desc.width_;
 	rt.height = desc.height_;
 	// TODO: std::move?
-	rt.texture.handle = textureResult.second;
+	rt.texture = textureResult.second;
 
-	return result.second;
+	return RenderTargetHandle(result.second);
 }
 
 
@@ -946,9 +942,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	tex.height = desc.height_;
 	assert(!tex.renderTarget);
 
-	TextureHandle handle;
-	handle.handle = result.second;
-	return handle;
+	return result.second;
 }
 
 
