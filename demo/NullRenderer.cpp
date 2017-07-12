@@ -114,7 +114,7 @@ SamplerHandle RendererImpl::createSampler(const SamplerDesc & /* desc */) {
 	// TODO: check desc
 
 	numSamplers++;
-	return numSamplers;
+	return SamplerHandle(numSamplers);
 }
 
 

@@ -1011,7 +1011,12 @@ void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
 
 
 void RendererImpl::deleteSampler(SamplerHandle handle) {
-	glDeleteSamplers(1, &handle);
+	samplers.removeWith(handle, [](Sampler &sampler) {
+		assert(sampler.sampler != 0);
+
+		glDeleteSamplers(1, &sampler.sampler);
+		sampler.sampler = 0;
+	} );
 }
 
 

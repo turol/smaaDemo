@@ -35,6 +35,7 @@ struct Framebuffer;
 struct Pipeline;
 struct RenderPass;
 struct RenderTarget;
+struct Sampler;
 struct Texture;
 struct VertexShader;
 
@@ -116,7 +117,7 @@ typedef Handle<RenderPass>  RenderPassHandle;
 
 typedef Handle<Pipeline>             PipelineHandle;
 typedef Handle<RenderTarget>         RenderTargetHandle;
-typedef uint32_t SamplerHandle;
+typedef Handle<Sampler>              SamplerHandle;
 
 typedef Handle<VertexShader>  VertexShaderHandle;
 typedef Handle<FragmentShader>  FragmentShaderHandle;
