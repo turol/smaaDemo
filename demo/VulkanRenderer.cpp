@@ -1368,8 +1368,16 @@ void RendererImpl::deleteSampler(SamplerHandle /* handle */) {
 }
 
 
-void RendererImpl::deleteTexture(TextureHandle /* handle */) {
-	STUBBED("");
+void RendererImpl::deleteTexture(TextureHandle handle) {
+	textures.removeWith(handle, [this](Texture &tex) {
+		assert(!tex.renderTarget);
+		this->device.destroyImageView(tex.imageView);
+		this->device.destroyImage(tex.image);
+		assert(tex.memory.memory != VK_NULL_HANDLE);
+		assert(tex.memory.size   >  0);
+		vmaFreeMemory(this->allocator, &tex.memory);
+		memset(&tex.memory, 0, sizeof(tex.memory));
+	} );
 }
 
 
