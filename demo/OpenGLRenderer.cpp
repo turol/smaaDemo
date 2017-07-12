@@ -155,10 +155,7 @@ RenderTarget::~RenderTarget() {
 
 
 RenderPass::~RenderPass() {
-	if (fbo != 0) {
-		glDeleteFramebuffers(1, &fbo);
-		fbo = 0;
-	}
+	assert(fbo == 0);
 }
 
 
@@ -466,7 +463,12 @@ RendererImpl::~RendererImpl() {
 	glDeleteBuffers(1, &ringBuffer);
 	ringBuffer = 0;
 
-	renderPasses.clear();
+	renderPasses.clearWith([](RenderPass &rp) {
+		assert(rp.fbo != 0);
+		glDeleteFramebuffers(1, &rp.fbo);
+		rp.fbo = 0;
+	} );
+
 	renderTargets.clearWith([this](RenderTarget &rt) {
 		assert(rt.tex != 0);
 		assert(rt.texture);
@@ -979,8 +981,12 @@ void RendererImpl::deleteBuffer(BufferHandle handle) {
 }
 
 
-void RendererImpl::deleteRenderPass(RenderPassHandle fbo) {
-	renderPasses.remove(fbo);
+void RendererImpl::deleteRenderPass(RenderPassHandle handle) {
+	renderPasses.removeWith(handle, [](RenderPass &rp) {
+		assert(rp.fbo != 0);
+		glDeleteFramebuffers(1, &rp.fbo);
+		rp.fbo = 0;
+	} );
 }
 
 
