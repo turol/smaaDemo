@@ -1340,8 +1340,16 @@ TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
 }
 
 
-void RendererImpl::deleteBuffer(BufferHandle /* handle */) {
-	STUBBED("");
+void RendererImpl::deleteBuffer(BufferHandle handle) {
+	buffers.removeWith(handle, [this](struct Buffer &b) {
+		assert(!b.ringBufferAlloc);
+		this->device.destroyBuffer(b.buffer);
+		assert(b.memory.memory != VK_NULL_HANDLE);
+		assert(b.memory.size   >  0);
+		vmaFreeMemory(this->allocator, &b.memory);
+		memset(&b.memory, 0, sizeof(b.memory));
+	} );
+
 }
 
 
