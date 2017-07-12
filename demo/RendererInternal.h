@@ -31,7 +31,6 @@ public:
 	~ResourceContainer() {}
 
 	std::pair<T &, Handle<T> > add() {
-		// TODO: something better, this breaks with remove()
 		unsigned int handle = next;
 		next++;
 		auto result = resources.emplace(handle, T());
