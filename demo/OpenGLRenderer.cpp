@@ -1033,7 +1033,7 @@ void RendererImpl::deleteSampler(SamplerHandle handle) {
 
 
 void RendererImpl::deleteTexture(TextureHandle handle) {
-	textures.removeWith(handle.handle, [](Texture &tex) {
+	textures.removeWith(handle, [](Texture &tex) {
 		assert(!tex.renderTarget);
 		assert(tex.tex != 0);
 
