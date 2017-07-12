@@ -529,7 +529,7 @@ RendererImpl::~RendererImpl() {
 
 	renderTargets.clearWith([this](RenderTarget &rt) {
 		assert(rt.texture);
-		auto &tex = this->textures.get(rt.texture.handle);
+		auto &tex = this->textures.get(rt.texture);
 		assert(tex.image == rt.image);
 		assert(tex.imageView == rt.imageView);
 		tex.image        = vk::Image();
@@ -938,7 +938,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	auto layout = device.createPipelineLayout(layoutInfo);
 	info.layout = layout;
 
-	const auto &renderPass = renderPasses.get(desc.renderPass_.handle);
+	const auto &renderPass = renderPasses.get(desc.renderPass_);
 	info.renderPass = renderPass.renderPass;
 
 	auto result = device.createGraphicsPipeline(vk::PipelineCache(), info);
@@ -1602,7 +1602,7 @@ void RendererImpl::beginRenderPass(RenderPassHandle handle) {
 	inRenderPass  = true;
 	validPipeline = false;
 
-	const auto &pass = renderPasses.get(handle.handle);
+	const auto &pass = renderPasses.get(handle);
 	// TODO: should be customizable
 	// clear image
 	std::array<float, 4> color = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -1763,7 +1763,7 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DescriptorSetLayoutHa
 		case DescriptorType::CombinedSampler: {
 			const CSampler &combined = *reinterpret_cast<const CSampler *>(data + l.offset);
 
-			const Texture &tex = textures.get(combined.tex.handle);
+			const Texture &tex = textures.get(combined.tex);
 			assert(tex.image);
 			assert(tex.imageView);
 			const Sampler &s   = samplers.get(combined.sampler);
