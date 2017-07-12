@@ -72,13 +72,6 @@ public:
 	}
 
 
-	void remove(unsigned int handle) {
-		auto it = resources.find(handle);
-		assert(it != resources.end());
-		resources.erase(it);
-	}
-
-
 	void remove(Handle<T> handle) {
 		auto it = resources.find(handle.handle);
 		assert(it != resources.end());
