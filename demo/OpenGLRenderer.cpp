@@ -145,6 +145,7 @@ Pipeline::Pipeline()
 
 
 Pipeline::~Pipeline() {
+	assert(shader == 0);
 }
 
 
@@ -494,7 +495,12 @@ RendererImpl::~RendererImpl() {
 	} );
 
 
-	pipelines.clear();
+	pipelines.clearWith([](Pipeline &p) {
+		assert(p.shader != 0);
+		glDeleteProgram(p.shader);
+		p.shader = 0;
+	} );
+
 	vertexShaders.clearWith([](VertexShader &v) {
 		assert(v.shader != 0);
 		glDeleteShader(v.shader);
