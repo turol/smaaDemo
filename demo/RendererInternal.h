@@ -39,24 +39,8 @@ public:
 	}
 
 
-	// TODO: remove
-	const T &get(unsigned int handle) const {
-		auto it = resources.find(handle);
-		assert(it != resources.end());
-
-		return it->second;
-	}
-
 	const T &get(Handle<T> handle) const {
 		auto it = resources.find(handle.handle);
-		assert(it != resources.end());
-
-		return it->second;
-	}
-
-	// TODO: remove
-	T &get(unsigned int handle) {
-		auto it = resources.find(handle);
 		assert(it != resources.end());
 
 		return it->second;
