@@ -498,7 +498,9 @@ RendererImpl::~RendererImpl() {
 	} );
 
 	samplers.clearWith([this](struct Sampler &s) {
+		assert(s.sampler);
 		this->device.destroySampler(s.sampler);
+		s.sampler = vk::Sampler();
 	} );
 
 	pipelines.clearWith([this](Pipeline &p) {
@@ -1363,8 +1365,13 @@ void RendererImpl::deleteRenderTarget(RenderTargetHandle &) {
 }
 
 
-void RendererImpl::deleteSampler(SamplerHandle /* handle */) {
-	STUBBED("");
+void RendererImpl::deleteSampler(SamplerHandle handle) {
+	samplers.removeWith(handle, [this](struct Sampler &s) {
+		assert(s.sampler);
+		this->device.destroySampler(s.sampler);
+		s.sampler = vk::Sampler();
+	} );
+
 }
 
 
