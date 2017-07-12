@@ -415,6 +415,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	// FIXME: should store this and use it in createEphemeralBuffer
 	assert(uboAlign <= (1 << 8));
 
+	// TODO: use GL_UPPER_LEFT to match Vulkan
+	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+
 	glCreateVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
