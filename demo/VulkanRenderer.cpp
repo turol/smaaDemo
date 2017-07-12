@@ -909,7 +909,14 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		// TODO: for all color render targets
 		vk::PipelineColorBlendAttachmentState cb;
 		if (desc.blending_) {
-			STUBBED("blending");
+			cb.blendEnable          = true;
+			// TODO: get from Pipeline
+			cb.srcColorBlendFactor  = vk::BlendFactor::eSrcAlpha;
+			cb.dstColorBlendFactor  = vk::BlendFactor::eOneMinusSrcAlpha;
+			cb.colorBlendOp         = vk::BlendOp::eAdd;
+			cb.srcAlphaBlendFactor  = vk::BlendFactor::eOne;
+			cb.dstAlphaBlendFactor  = vk::BlendFactor::eOne;
+			cb.alphaBlendOp         = vk::BlendOp::eAdd;
 		}
 		cb.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
 		colorBlendStates.push_back(cb);
