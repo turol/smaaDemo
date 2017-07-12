@@ -480,7 +480,7 @@ RendererImpl::~RendererImpl() {
 		}
 
 		{
-			auto &tex = this->textures.get(rt.texture.handle);
+			auto &tex = this->textures.get(rt.texture);
 			assert(tex.renderTarget);
 			tex.renderTarget = false;
 			assert(tex.tex == rt.tex);
@@ -786,13 +786,13 @@ static void checkShaderResources(const std::string &name, const std::vector<Shad
 
 
 PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
-	assert(desc.vertexShader_.handle != 0);
-	assert(desc.fragmentShader_.handle != 0);
-	assert(desc.renderPass_.handle != 0);
+	assert(desc.vertexShader_);
+	assert(desc.fragmentShader_);
+	assert(desc.renderPass_);
 	assert(desc.name_ != nullptr);
 
-	const auto &v = vertexShaders.get(desc.vertexShader_.handle);
-    const auto &f = fragmentShaders.get(desc.fragmentShader_.handle);
+	const auto &v = vertexShaders.get(desc.vertexShader_);
+    const auto &f = fragmentShaders.get(desc.fragmentShader_);
 
 	// match shader resources against pipeline layouts
 	{
@@ -971,7 +971,7 @@ DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const Descript
 TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
 	const auto &rt = renderTargets.get(handle);
 
-	const auto &tex = textures.get(rt.texture.handle);
+	const auto &tex = textures.get(rt.texture);
 	assert(tex.renderTarget);
 
 	return rt.texture;
@@ -1007,7 +1007,7 @@ void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
 		}
 
 		{
-			auto &tex = this->textures.get(rt.texture.handle);
+			auto &tex = this->textures.get(rt.texture);
 			assert(tex.renderTarget);
 			tex.renderTarget = false;
 			assert(tex.tex == rt.tex);
@@ -1144,7 +1144,7 @@ void RendererImpl::beginRenderPass(RenderPassHandle handle) {
 	validPipeline = false;
 
 	assert(handle);
-	const auto &pass = renderPasses.get(handle.handle);
+	const auto &pass = renderPasses.get(handle);
 	assert(pass.fbo != 0);
 
 	// TODO: should get clear bits from RenderPass object
@@ -1169,7 +1169,7 @@ void RendererImpl::endRenderPass() {
 	assert(inRenderPass);
 	inRenderPass = false;
 
-	const auto &pass = renderPasses.get(currentRenderPass.handle);
+	const auto &pass = renderPasses.get(currentRenderPass);
 
 	auto &rt = renderTargets.get(pass.desc.colors_[0]);
 	rt.currentLayout = pass.desc.colorFinalLayout_;
@@ -1378,7 +1378,7 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 
 		case DescriptorType::Texture: {
 			TextureHandle texHandle = *reinterpret_cast<const TextureHandle *>(data + l.offset);
-			const auto &tex = textures.get(texHandle.handle);
+			const auto &tex = textures.get(texHandle);
 			// FIXME: index is not right here
 			glBindTextureUnit(index, tex.tex);
 		} break;
@@ -1386,7 +1386,7 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 		case DescriptorType::CombinedSampler: {
 			const CSampler &combined = *reinterpret_cast<const CSampler *>(data + l.offset);
 
-			const Texture &tex = textures.get(combined.tex.handle);
+			const Texture &tex = textures.get(combined.tex);
 			assert(tex.tex);
 
 			const auto &sampler = samplers.get(combined.sampler);
