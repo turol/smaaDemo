@@ -700,14 +700,14 @@ void SMAADemo::initRender() {
 	for (auto &img : images) {
 		const auto filename = img.filename.c_str();
 		int width = 0, height = 0;
-		unsigned char *imageData = stbi_load(filename, &width, &height, NULL, 3);
+		unsigned char *imageData = stbi_load(filename, &width, &height, NULL, 4);
 		printf(" %p  %dx%d\n", imageData, width, height);
 
 		texDesc.width(width)
 		       .height(height)
-		       .format(RGB8);
+		       .format(RGBA8);
 
-		texDesc.mipLevelData(0, imageData, width * height * 3);
+		texDesc.mipLevelData(0, imageData, width * height * 4);
 		img.tex = renderer.createTexture(texDesc);
 
 		stbi_image_free(imageData);
