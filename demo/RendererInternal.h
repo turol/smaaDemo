@@ -102,10 +102,6 @@ public:
 	}
 
 
-	void clear() {
-		resources.clear();
-	}
-
 	template <typename F> void clearWith(F &&f) {
 		auto it = resources.begin();
 		while (it != resources.end()) {
