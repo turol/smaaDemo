@@ -31,4 +31,8 @@ void main(void)
 
     gl_Position = viewProj * vec4(rotatedPos + cube.position, 1.0);
     instance = gl_InstanceIndex;
+
+#ifdef VULKAN_FLIP
+    gl_Position.y = -gl_Position.y;
+#endif
 }

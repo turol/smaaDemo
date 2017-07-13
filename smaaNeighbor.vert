@@ -19,8 +19,16 @@ layout (location = 1) out vec4 offset;
 void main(void)
 {
     vec2 pos = triangleVertex(gl_VertexIndex, texcoord);
+
+#ifndef VULKAN_FLIP
     texcoord = flipTexCoord(texcoord);
+#endif  // VULKAN_FLIP
+
     offset = vec4(0.0, 0.0, 0.0, 0.0);
     SMAANeighborhoodBlendingVS(texcoord, offset);
     gl_Position = vec4(pos, 1.0, 1.0);
+
+#ifdef VULKAN_FLIP
+    gl_Position.y = -gl_Position.y;
+#endif
 }

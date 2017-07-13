@@ -1108,6 +1108,7 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	// TODO: cache includes globally
 	options.SetIncluder(std::make_unique<Includer>());
 
+	options.AddMacroDefinition("VULKAN_FLIP", "1");
 	for (const auto &p : macros) {
 		options.AddMacroDefinition(p.first, p.second);
 	}
@@ -1146,6 +1147,7 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	// TODO: cache includes globally
 	options.SetIncluder(std::make_unique<Includer>());
 
+	options.AddMacroDefinition("VULKAN_FLIP", "1");
 	for (const auto &p : macros) {
 		options.AddMacroDefinition(p.first, p.second);
 	}

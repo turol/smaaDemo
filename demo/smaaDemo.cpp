@@ -659,7 +659,15 @@ void SMAADemo::initRender() {
 	cubeVBO = renderer.createBuffer(sizeof(vertices), &vertices[0]);
 	cubeIBO = renderer.createBuffer(sizeof(indices), &indices[0]);
 
+#ifdef RENDERER_OPENGL
+
 	const bool flipSMAATextures = true;
+
+#else  // RENDERER_OPENGL
+
+	const bool flipSMAATextures = false;
+
+#endif  // RENDERER_OPENGL
 
 	TextureDesc texDesc;
 	texDesc.width(AREATEX_WIDTH)
@@ -1086,7 +1094,12 @@ void SMAADemo::render() {
 
 	ShaderDefines::Globals globals;
 	globals.screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
+
+#ifdef RENDERER_VULKAN
+	globals.guiOrtho   = glm::ortho(0.0f, float(windowWidth), 0.0f, float(windowHeight));
+#else
 	globals.guiOrtho   = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
+#endif
 
 	renderer.beginFrame();
 

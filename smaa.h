@@ -565,10 +565,23 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #endif
 #endif
 #if defined(SMAA_GLSL_3) || defined(SMAA_GLSL_4)
+
+#ifdef VULKAN_FLIP
+
+#define API_V_DIR(v) v
+#define API_V_COORD(v) v
+#define API_V_BELOW(v1, v2)	v1 > v2
+#define API_V_ABOVE(v1, v2)	v1 < v2
+
+#else  // VULKAN_FLIP
+
 #define API_V_DIR(v) -(v)
 #define API_V_COORD(v) (1.0 - v)
 #define API_V_BELOW(v1, v2)	v1 < v2
 #define API_V_ABOVE(v1, v2)	v1 > v2
+
+#endif  // VULKAN_FLIP
+
 #define SMAATexture2D(tex) sampler2D tex
 #define SMAATexturePass2D(tex) tex
 #define SMAASampleLevelZero(tex, coord) textureLod(tex, coord, 0.0)
