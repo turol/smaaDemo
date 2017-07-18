@@ -527,10 +527,9 @@ void SMAADemo::initRender() {
 	createFramebuffers();
 
 	PipelineDesc plDesc;
-	// TODO: sort out Vulkan triangle winding and re-enable culling
 	plDesc.depthWrite(false)
 	      .depthTest(false)
-	      .cullFaces(false);
+	      .cullFaces(true);
 	plDesc.descriptorSetLayout<GlobalDS>(0);
 
 	// all shader stages are affected by quality (SMAA_MAX_SEARCH_STEPS)
@@ -597,7 +596,6 @@ void SMAADemo::initRender() {
 	auto vertexShader   = renderer.createVertexShader("cube", macros);
 	auto fragmentShader = renderer.createFragmentShader("cube", macros);
 
-	// TODO: sort out Vulkan triangle winding and re-enable culling
 	cubePipeline = renderer.createPipeline(PipelineDesc()
 	                                        .vertexShader(vertexShader)
 	                                        .fragmentShader(fragmentShader)
@@ -608,7 +606,7 @@ void SMAADemo::initRender() {
 	                                        .vertexBufferStride(ATTR_POS, sizeof(Vertex))
 	                                        .depthWrite(true)
 	                                        .depthTest(true)
-	                                        .cullFaces(false)
+	                                        .cullFaces(true)
 	                                        .name("cubes")
 	                                       );
 
@@ -618,10 +616,9 @@ void SMAADemo::initRender() {
 	plDesc.renderPass(sceneRenderPass);
 	plDesc.vertexShader(vertexShader)
 	      .fragmentShader(fragmentShader);
-	// TODO: sort out Vulkan triangle winding and re-enable culling
 	plDesc.depthWrite(false)
 	      .depthTest(false)
-	      .cullFaces(false);
+	      .cullFaces(true);
 	plDesc.name("image");
 	plDesc.descriptorSetLayout<ColorTexDS>(1);
 
