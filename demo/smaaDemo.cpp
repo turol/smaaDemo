@@ -244,6 +244,23 @@ class SMAADemo {
 	struct Image {
 		std::string filename;
 		TextureHandle tex;
+		unsigned int  width, height;
+
+
+		Image()
+		: width(0)
+		, height(0)
+		{
+		}
+
+
+		Image(const Image &)             = default;
+		Image(Image &&)                  = default;
+
+		Image &operator=(const Image &)  = default;
+		Image &operator=(Image &&)       = default;
+
+		~Image() {}
 	};
 
 	std::vector<Image> images;
@@ -713,6 +730,8 @@ void SMAADemo::initRender() {
 		       .format(RGBA8);
 
 		texDesc.mipLevelData(0, imageData, width * height * 4);
+		img.width  = width;
+		img.height = height;
 		img.tex = renderer.createTexture(texDesc);
 
 		stbi_image_free(imageData);
