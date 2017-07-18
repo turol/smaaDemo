@@ -1680,10 +1680,7 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	currentCommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, p.pipeline);
 	currentPipelineLayout = p.layout;
 
-	if (p.scissor) {
-		STUBBED("fix scissor");
-	}
-	if (true) {  // if (!p.scissor) {
+	if (!p.scissor) {
 		// Vulkan always requires a scissor rect
 		// if we don't use scissor set default here
 		// TODO: shouldn't need this is previous pipeline didn't use scissor
@@ -1854,10 +1851,7 @@ void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int w
 	rect.extent.width  = width;
 	rect.extent.height = height;
 
-	STUBBED("fix scissor");
-#if 0
 	currentCommandBuffer.setScissor(0, 1, &rect);
-#endif  // 0
 }
 
 

@@ -1192,8 +1192,9 @@ void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int w
 	assert(currentPipeline.scissorTest_);
 	scissorSet = true;
 
+	// flip y from Vulkan convention to OpenGL convention
 	// TODO: should use current FB height
-	glScissor(x, swapchainDesc.height - y, width, height);
+	glScissor(x, swapchainDesc.height - (y + height), width, height);
 }
 
 
