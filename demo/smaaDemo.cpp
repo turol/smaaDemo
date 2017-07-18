@@ -1118,9 +1118,6 @@ void SMAADemo::render() {
 #endif
 
 	renderer.beginFrame();
-
-	renderer.setViewport(0, 0, windowWidth, windowHeight);
-
 	renderer.beginRenderPass(sceneRenderPass);
 
 	if (activeScene == 0) {
@@ -1139,6 +1136,8 @@ void SMAADemo::render() {
 		glm::mat4 proj = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, 0.1f, 100.0f);
 		globals.viewProj = proj * view * model;
 
+		renderer.setViewport(0, 0, windowWidth, windowHeight);
+
 		GlobalDS globalDS;
 		globalDS.globalUniforms = renderer.createEphemeralBuffer(sizeof(ShaderDefines::Globals), &globals);
 		renderer.bindDescriptorSet(0, globalDS);
@@ -1154,12 +1153,15 @@ void SMAADemo::render() {
 	} else {
 		renderer.bindPipeline(imagePipeline);
 
+		const auto &image = images[activeScene - 1];
+
+		renderer.setViewport(0, 0, windowWidth, windowHeight);
+
 		GlobalDS globalDS;
 		globalDS.globalUniforms = renderer.createEphemeralBuffer(sizeof(ShaderDefines::Globals), &globals);
 		renderer.bindDescriptorSet(0, globalDS);
 
 		assert(activeScene - 1 < images.size());
-		const auto &image = images[activeScene - 1];
 		ColorTexDS colorDS;
 		colorDS.color.tex     = image.tex;
 		colorDS.color.sampler = nearestSampler;
