@@ -1285,6 +1285,16 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		ImGui::RadioButton("FXAA", &aa, static_cast<int>(AAMethod::FXAA)); ImGui::SameLine();
 		ImGui::RadioButton("SMAA", &aa, static_cast<int>(AAMethod::SMAA));
 		aaMethod = static_cast<AAMethod::AAMethod>(aa);
+
+		ImGui::Separator();
+		int newColorMode = colorMode;
+		ImGui::RadioButton("RGB",   &newColorMode, 0);
+		ImGui::RadioButton("YCbCr", &newColorMode, 1);
+		colorMode = newColorMode;
+
+		if (ImGui::Button("Re-color cubes")) {
+			colorCubes();
+		}
 	}
 
 	ImGui::End();
