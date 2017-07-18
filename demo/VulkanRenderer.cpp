@@ -537,15 +537,17 @@ RendererImpl::~RendererImpl() {
 		tex.image        = vk::Image();
 		tex.imageView    = vk::ImageView();
 		tex.renderTarget = false;
+
+		assert(tex.memory.memory != VK_NULL_HANDLE);
+		assert(tex.memory.size   >  0);
+		vmaFreeMemory(this->allocator, &tex.memory);
+		memset(&tex.memory, 0, sizeof(tex.memory));
+
 		this->textures.remove(rt.texture);
 		rt.texture = TextureHandle();
 
 		this->device.destroyImageView(rt.imageView);
 		this->device.destroyImage(rt.image);
-		assert(rt.memory.memory != VK_NULL_HANDLE);
-		assert(rt.memory.size   >  0);
-		vmaFreeMemory(this->allocator, &rt.memory);
-		memset(&rt.memory, 0, sizeof(rt.memory));
 	} );
 
 	textures.clearWith([this](Texture &tex) {
@@ -1028,11 +1030,18 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 		printf("Created rendertarget image %p: %s\n", VkImage(rt.image), desc.name_);
 	}
 
+	auto texResult   = textures.add();
+	Texture &tex     = texResult.first;
+	tex.width        = desc.width_;
+	tex.height       = desc.height_;
+	tex.image        = rt.image;
+	tex.renderTarget = true;
+
 	VmaMemoryRequirements  req       = { false, VMA_MEMORY_USAGE_GPU_ONLY, 0, 0, false };
 	uint32_t               typeIndex = 0;
 
-	vmaAllocateMemoryForImage(allocator, rt.image, &req, &rt.memory, &typeIndex);
-	device.bindImageMemory(rt.image, rt.memory.memory, rt.memory.offset);
+	vmaAllocateMemoryForImage(allocator, rt.image, &req, &tex.memory, &typeIndex);
+	device.bindImageMemory(rt.image, tex.memory.memory, tex.memory.offset);
 
 	vk::ImageViewCreateInfo viewInfo;
 	viewInfo.image    = rt.image;
@@ -1046,14 +1055,8 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	viewInfo.subresourceRange.levelCount = 1;
 	viewInfo.subresourceRange.layerCount = 1;
 	rt.imageView = device.createImageView(viewInfo);
-
-	auto texResult   = textures.add();
-	Texture &tex     = texResult.first;
-	tex.width        = desc.width_;
-	tex.height       = desc.height_;
-	tex.image        = rt.image;
 	tex.imageView    = rt.imageView;
-	tex.renderTarget = true;
+
 	// TODO: std::move ?
 	rt.texture = texResult.second;
 

@@ -116,7 +116,6 @@ struct RenderTarget{
 	unsigned int  width, height;
 	vk::Image     image;
 	vk::Format    format;
-	VkMappedMemoryRange  memory;
 	vk::ImageView imageView;
 	Layout               currentLayout;
 	TextureHandle        texture;
