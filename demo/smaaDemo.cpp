@@ -1191,7 +1191,7 @@ void SMAADemo::render() {
 
 			ColorTexDS colorDS;
 			colorDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainColor]);
-			colorDS.color.sampler = linearSampler;
+			colorDS.color.sampler = nearestSampler;
 			renderer.bindDescriptorSet(1, colorDS);
 			renderer.draw(0, 3);
 			renderer.endRenderPass();
