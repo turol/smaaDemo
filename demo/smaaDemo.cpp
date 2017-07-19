@@ -1310,11 +1310,6 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		assert(d < 3);
 		debugMode = d;
 
-		/* TODO:
-		 vsync
-		 fullscreen
-		 */
-
 		ImGui::Separator();
 		{
 			// TODO: don't regenerate this on every frame
@@ -1344,6 +1339,10 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		if (ImGui::Button("Re-color cubes")) {
 			colorCubes();
 		}
+
+		ImGui::Separator();
+		recreateSwapchain = ImGui::Checkbox("Fullscreen", &fullscreen);
+		recreateSwapchain = ImGui::Checkbox("V-Sync", &vsync)          || recreateSwapchain;
 
 		ImGui::Separator();
 		if (ImGui::Button("Quit")) {
