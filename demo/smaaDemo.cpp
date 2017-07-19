@@ -743,6 +743,7 @@ void SMAADemo::initRender() {
 	// imgui setup
 	{
 		ImGuiIO& io = ImGui::GetIO();
+		io.IniFilename                 = nullptr;
 		io.KeyMap[ImGuiKey_Tab]        = SDLK_TAB;                     // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
 		io.KeyMap[ImGuiKey_LeftArrow]  = SDL_SCANCODE_LEFT;
 		io.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
