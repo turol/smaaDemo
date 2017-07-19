@@ -88,19 +88,11 @@ const char *name(AAMethod m) {
 }  // namespace AAMethod
 
 
+const char *smaaDebugModes[3] = { "None", "Edges", "Weights" };
+
+
 static const char *smaaDebugModeStr(unsigned int mode) {
-	switch (mode) {
-	case 0:
-		return "none";
-
-	case 1:
-		return "edges";
-
-	case 2:
-		return "blend";
-	}
-
-	__builtin_unreachable();
+	return smaaDebugModes[mode];
 }
 
 
@@ -1311,8 +1303,14 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		assert(fq < int(maxFXAAQuality));
 		fxaaQuality = fq;
 
+		int d = debugMode;
+		ImGui::Separator();
+		ImGui::Combo("SMAA debug", &d, smaaDebugModes, 3);
+		assert(d >= 0);
+		assert(d < 3);
+		debugMode = d;
+
 		/* TODO:
-		 smaa debug modes
 		 vsync
 		 fullscreen
 		 */
