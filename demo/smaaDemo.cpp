@@ -243,6 +243,7 @@ class SMAADemo {
 
 	struct Image {
 		std::string filename;
+		std::string   shortName;
 		TextureHandle tex;
 		unsigned int  width, height;
 
@@ -428,6 +429,12 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 			images.push_back(Image());
 			auto &img = images.back();
 			img.filename = filename;
+			auto lastSlash = filename.rfind('/');
+			if (lastSlash != std::string::npos) {
+                img.shortName = filename.substr(lastSlash + 1);
+			} else {
+				img.shortName = filename;
+			}
 		}
 
 	} catch (TCLAP::ArgException &e) {
@@ -1318,8 +1325,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			scenes.reserve(images.size() + 1);
 			scenes.push_back("Cubes");
 			for (const auto &img : images) {
-				// TODO: use name without full path
-				scenes.push_back(img.filename.c_str());
+				scenes.push_back(img.shortName.c_str());
 			}
 			assert(activeScene < scenes.size());
 			int s = activeScene;
