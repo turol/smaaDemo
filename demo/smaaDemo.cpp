@@ -1310,10 +1310,10 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		 smaa debug modes
 		 vsync
 		 fullscreen
-		 quit
 		 */
 
 		ImGui::Separator();
+		ImGui::Text("Cube coloring mode");
 		int newColorMode = colorMode;
 		ImGui::RadioButton("RGB",   &newColorMode, 0);
 		ImGui::RadioButton("YCbCr", &newColorMode, 1);
@@ -1321,6 +1321,11 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 		if (ImGui::Button("Re-color cubes")) {
 			colorCubes();
+		}
+
+		ImGui::Separator();
+		if (ImGui::Button("Quit")) {
+			keepGoing = false;
 		}
 	}
 
