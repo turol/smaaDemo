@@ -224,7 +224,7 @@ class SMAADemo {
 
 	TextureHandle imguiFontsTex;
 
-	bool rotateCamera;
+	bool rotateCubes;
 	float cameraRotation;
 	uint64_t lastTime;
 	uint64_t freq;
@@ -319,7 +319,7 @@ SMAADemo::SMAADemo()
 , cubePower(3)
 , antialiasing(true)
 , aaMethod(AAMethod::SMAA)
-, rotateCamera(false)
+, rotateCubes(false)
 , cameraRotation(0.0f)
 , lastTime(0)
 , freq(0)
@@ -930,7 +930,7 @@ static void printHelp() {
 	printf(" m     - change antialiasing method\n");
 	printf(" q     - cycle through AA quality levels\n");
 	printf(" v     - toggle vsync\n");
-	printf(" SPACE - toggle camera rotation\n");
+	printf(" SPACE - toggle cube rotation\n");
 	printf(" ESC   - quit\n");
 }
 
@@ -963,8 +963,8 @@ void SMAADemo::mainLoopIteration() {
 				break;
 
 			case SDL_SCANCODE_SPACE:
-				rotateCamera = !rotateCamera;
-				printf("camera rotation is %s\n", rotateCamera ? "on" : "off");
+				rotateCubes = !rotateCubes;
+				printf("cube rotation is %s\n", rotateCubes ? "on" : "off");
 				break;
 
 			case SDL_SCANCODE_A:
@@ -1132,7 +1132,7 @@ void SMAADemo::render() {
 	if (activeScene == 0) {
 		renderer.bindPipeline(cubePipeline);
 
-		if (rotateCamera) {
+		if (rotateCubes) {
 			rotationTime += elapsed;
 
 			const uint64_t rotationPeriod = 30 * freq;
