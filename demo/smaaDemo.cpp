@@ -1290,10 +1290,23 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		ImGui::RadioButton("SMAA", &aa, static_cast<int>(AAMethod::SMAA));
 		aaMethod = static_cast<AAMethod::AAMethod>(aa);
 
+		int sq = smaaQuality;
+		ImGui::Separator();
+		ImGui::Combo("SMAA quality", &sq, smaaQualityLevels, maxSMAAQuality);
+		assert(sq >= 0);
+		assert(sq < int(maxSMAAQuality));
+		smaaQuality = sq;
+
+		int fq = fxaaQuality;
+		ImGui::Separator();
+		ImGui::Combo("FXAA quality", &fq, fxaaQualityLevels, maxFXAAQuality);
+		assert(fq >= 0);
+		assert(fq < int(maxFXAAQuality));
+		fxaaQuality = fq;
+
 		/* TODO:
 		 change scene
 		 rotate
-		 aa quality
 		 smaa debug modes
 		 vsync
 		 fullscreen
