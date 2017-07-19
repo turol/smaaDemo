@@ -111,19 +111,15 @@ struct Handle {
 };
 
 
-typedef Handle<Buffer>      BufferHandle;
+typedef Handle<Buffer>               BufferHandle;
 typedef Handle<DescriptorSetLayout>  DescriptorSetLayoutHandle;
-
-typedef Handle<RenderPass>  RenderPassHandle;
-
+typedef Handle<RenderPass>           RenderPassHandle;
 typedef Handle<Pipeline>             PipelineHandle;
 typedef Handle<RenderTarget>         RenderTargetHandle;
 typedef Handle<Sampler>              SamplerHandle;
-
-typedef Handle<VertexShader>  VertexShaderHandle;
-typedef Handle<FragmentShader>  FragmentShaderHandle;
-
-typedef Handle<Texture> TextureHandle;
+typedef Handle<VertexShader>         VertexShaderHandle;
+typedef Handle<FragmentShader>       FragmentShaderHandle;
+typedef Handle<Texture>              TextureHandle;
 
 
 enum class DescriptorType : uint8_t {
