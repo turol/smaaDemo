@@ -1305,12 +1305,29 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		fxaaQuality = fq;
 
 		/* TODO:
-		 change scene
 		 rotate
 		 smaa debug modes
 		 vsync
 		 fullscreen
 		 */
+
+		ImGui::Separator();
+		{
+			// TODO: don't regenerate this on every frame
+			std::vector<const char *> scenes;
+			scenes.reserve(images.size() + 1);
+			scenes.push_back("Cubes");
+			for (const auto &img : images) {
+				// TODO: use name without full path
+				scenes.push_back(img.filename.c_str());
+			}
+			assert(activeScene < scenes.size());
+			int s = activeScene;
+			ImGui::Combo("Scene", &s, &scenes[0], scenes.size());
+			assert(s >= 0);
+			assert(s < int(scenes.size()));
+			activeScene = s;
+		}
 
 		ImGui::Separator();
 		ImGui::Text("Cube coloring mode");
