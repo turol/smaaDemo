@@ -780,6 +780,7 @@ void SMAADemo::initRender() {
 		       .mipLevelData(0, pixels, width * height * 4);
 		imguiFontsTex = renderer.createTexture(texDesc);
 		io.Fonts->TexID = nullptr;
+		ImGui::SetNextWindowPosCenter();
 	}
 }
 
@@ -1279,6 +1280,8 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 	bool windowVisible = true;
 	int flags = 0;
 	flags |= ImGuiWindowFlags_NoTitleBar;
+	flags |= ImGuiWindowFlags_NoResize;
+	flags |= ImGuiWindowFlags_AlwaysAutoResize;
 
 	if (ImGui::Begin("SMAA", &windowVisible, flags)) {
 		ImGui::Checkbox("Antialiasing", &antialiasing);
@@ -1307,6 +1310,12 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			colorCubes();
 		}
 	}
+
+	// move the window to right edge of screen
+	float w = ImGui::GetWindowWidth();
+	ImVec2 pos = ImGui::GetWindowPos();
+	pos.x = windowWidth - (w * 1.25f);
+	ImGui::SetWindowPos(pos);
 
 	ImGui::End();
 
