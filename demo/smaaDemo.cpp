@@ -1312,7 +1312,6 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		fxaaQuality = fq;
 
 		/* TODO:
-		 rotate
 		 smaa debug modes
 		 vsync
 		 fullscreen
@@ -1334,6 +1333,8 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			assert(s < int(scenes.size()));
 			activeScene = s;
 		}
+
+		ImGui::Checkbox("Rotate cubes", &rotateCubes);
 
 		ImGui::Separator();
 		ImGui::Text("Cube coloring mode");
