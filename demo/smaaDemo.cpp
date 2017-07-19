@@ -1287,6 +1287,16 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		ImGui::RadioButton("SMAA", &aa, static_cast<int>(AAMethod::SMAA));
 		aaMethod = static_cast<AAMethod::AAMethod>(aa);
 
+		/* TODO:
+		 change scene
+		 rotate
+		 aa quality
+		 smaa debug modes
+		 vsync
+		 fullscreen
+		 quit
+		 */
+
 		ImGui::Separator();
 		int newColorMode = colorMode;
 		ImGui::RadioButton("RGB",   &newColorMode, 0);
