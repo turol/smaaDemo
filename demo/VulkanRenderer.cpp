@@ -178,6 +178,34 @@ static vk::Format vulkanVertexFormat(VtxFormat::VtxFormat format, uint8_t count)
 }
 
 
+static vk::Format vulkanFormat(Format format) {
+	switch (format) {
+	case Invalid:
+		assert(false);
+		return vk::Format::eUndefined;
+
+	case R8:
+		return vk::Format::eR8Unorm;
+
+	case RG8:
+		return vk::Format::eR8G8Unorm;
+
+	case RGB8:
+		return vk::Format::eR8G8B8Unorm;
+
+	case RGBA8:
+		return vk::Format::eR8G8B8A8Unorm;
+
+	case Depth16:
+		return vk::Format::eD16Unorm;
+
+	}
+
+	assert(false);
+	return vk::Format::eUndefined;
+}
+
+
 RendererBase::RendererBase()
 : graphicsQueueIndex(0)
 , ringBufferMem(vk::MappedMemoryRange())
@@ -963,34 +991,6 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	printf("Pipeline %p  %s\n", VkPipeline(p.pipeline), desc.name_);
 
 	return PipelineHandle(id.second);
-}
-
-
-static vk::Format vulkanFormat(Format format) {
-	switch (format) {
-	case Invalid:
-		assert(false);
-		return vk::Format::eUndefined;
-
-	case R8:
-		return vk::Format::eR8Unorm;
-
-	case RG8:
-		return vk::Format::eR8G8Unorm;
-
-	case RGB8:
-		return vk::Format::eR8G8B8Unorm;
-
-	case RGBA8:
-		return vk::Format::eR8G8B8A8Unorm;
-
-	case Depth16:
-		return vk::Format::eD16Unorm;
-
-	}
-
-	assert(false);
-	return vk::Format::eUndefined;
 }
 
 
