@@ -116,11 +116,15 @@ struct RenderTarget {
 	, readFBO(other.readFBO)
 	, width(other.width)
 	, height(other.height)
+	, currentLayout(other.currentLayout)
+	, texture(other.texture)   // TODO: use std::move
 	{
 		other.tex    = 0;
 		other.readFBO = 0;
 		other.width  = 0;
 		other.height = 0;
+		other.currentLayout = Layout::InvalidLayout;
+		other.texture       = TextureHandle();
 	}
 
 	RenderTarget &operator=(RenderTarget &&other) {
@@ -132,6 +136,8 @@ struct RenderTarget {
 		std::swap(readFBO, other.readFBO);
 		std::swap(width,  other.width);
 		std::swap(height, other.height);
+		std::swap(currentLayout, other.currentLayout);
+		std::swap(texture,       other.texture);
 
 		return *this;
 	};
