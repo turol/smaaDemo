@@ -92,7 +92,6 @@ struct FragmentShader {
 
 
 struct RenderTarget {
-	GLuint tex;
 	GLuint readFBO;
 	unsigned int width, height;
 	Layout               currentLayout;
@@ -100,8 +99,7 @@ struct RenderTarget {
 
 
 	RenderTarget()
-	: tex(0)
-	, readFBO(0)
+	: readFBO(0)
 	, width(0)
 	, height(0)
 	, currentLayout(InvalidLayout)
@@ -112,14 +110,12 @@ struct RenderTarget {
 	RenderTarget &operator=(const RenderTarget &) = delete;
 
 	RenderTarget(RenderTarget &&other)
-	: tex(other.tex)
-	, readFBO(other.readFBO)
+	: readFBO(other.readFBO)
 	, width(other.width)
 	, height(other.height)
 	, currentLayout(other.currentLayout)
 	, texture(other.texture)   // TODO: use std::move
 	{
-		other.tex    = 0;
 		other.readFBO = 0;
 		other.width  = 0;
 		other.height = 0;
@@ -132,7 +128,6 @@ struct RenderTarget {
 			return *this;
 		}
 
-		std::swap(tex,    other.tex);
 		std::swap(readFBO, other.readFBO);
 		std::swap(width,  other.width);
 		std::swap(height, other.height);

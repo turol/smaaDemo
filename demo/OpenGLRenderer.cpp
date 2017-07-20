@@ -151,7 +151,7 @@ Pipeline::~Pipeline() {
 
 RenderTarget::~RenderTarget() {
 	assert(readFBO  == 0);
-	assert(tex      == 0);
+	assert(!texture);
 }
 
 
@@ -474,7 +474,6 @@ RendererImpl::~RendererImpl() {
 	} );
 
 	renderTargets.clearWith([this](RenderTarget &rt) {
-		assert(rt.tex != 0);
 		assert(rt.texture);
 
 		if (rt.readFBO != 0) {
@@ -486,15 +485,12 @@ RendererImpl::~RendererImpl() {
 			auto &tex = this->textures.get(rt.texture);
 			assert(tex.renderTarget);
 			tex.renderTarget = false;
-			assert(tex.tex == rt.tex);
+			glDeleteTextures(1, &tex.tex);
 			tex.tex = 0;
 		}
 
 		this->textures.remove(rt.texture);
 		rt.texture = TextureHandle();
-
-		glDeleteTextures(1, &rt.tex);
-		rt.tex = 0;
 	} );
 
 
@@ -848,24 +844,31 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	glCreateFramebuffers(1, &fbo);
 	pass.fbo = fbo;
 
-	auto &colorRT = renderTargets.get(desc.colors_[0]);
+	const auto &colorRT = renderTargets.get(desc.colors_[0]);
 
 	assert(colorRT.width  > 0);
 	assert(colorRT.height > 0);
-	assert(colorRT.tex   != 0);
-	pass.colorTex = colorRT.tex;
+	assert(colorRT.texture);
 	pass.width    = colorRT.width;
 	pass.height   = colorRT.height;
+
+	const auto &colorRTtex = textures.get(colorRT.texture);
+	assert(colorRTtex.renderTarget);
+	assert(colorRTtex.tex != 0);
+	pass.colorTex = colorRTtex.tex;
 
 	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, pass.colorTex, 0);
 	assert(!desc.colors_[1]);
 
 	if (desc.depthStencil_) {
-		auto &depthRT = renderTargets.get(desc.depthStencil_);
-		assert(depthRT.tex != 0);
-		pass.depthTex = depthRT.tex;
+		const auto &depthRT = renderTargets.get(desc.depthStencil_);
 		assert(colorRT.width  == depthRT.width);
 		assert(colorRT.height == depthRT.height);
+		assert(depthRT.texture);
+		const auto &depthRTtex = textures.get(depthRT.texture);
+		assert(depthRTtex.renderTarget);
+		assert(depthRTtex.tex != 0);
+		pass.depthTex = depthRTtex.tex;
 		glNamedFramebufferTexture(fbo, GL_DEPTH_ATTACHMENT, pass.depthTex, 0);
 	}
 
@@ -902,7 +905,6 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 
 	auto result = renderTargets.add();
 	RenderTarget &rt = result.first;
-	rt.tex    = id;
 	rt.width  = desc.width_;
 	rt.height = desc.height_;
 	// TODO: std::move?
@@ -1001,8 +1003,7 @@ void RendererImpl::deleteRenderPass(RenderPassHandle handle) {
 
 void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
 	renderTargets.removeWith(handle, [this](RenderTarget &rt) {
-		assert(rt.tex != 0);
-		assert(rt.texture);;
+		assert(rt.texture);
 
 		if (rt.readFBO != 0) {
 			glDeleteFramebuffers(1, &rt.readFBO);
@@ -1013,14 +1014,12 @@ void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
 			auto &tex = this->textures.get(rt.texture);
 			assert(tex.renderTarget);
 			tex.renderTarget = false;
-			assert(tex.tex == rt.tex);
+			assert(tex.tex != 0);
+			glDeleteTextures(1, &tex.tex);
 			tex.tex = 0;
 		}
 		this->textures.remove(rt.texture);
 		rt.texture = TextureHandle();
-
-		glDeleteTextures(1, &rt.tex);
-		rt.tex = 0;
 	} );
 }
 
@@ -1118,7 +1117,10 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 
 	if (rt.readFBO == 0) {
 		glCreateFramebuffers(1, &rt.readFBO);
-		glNamedFramebufferTexture(rt.readFBO, GL_COLOR_ATTACHMENT0, rt.tex, 0);
+		const auto &colorTex = textures.get(rt.texture);
+		assert(colorTex.renderTarget);
+		assert(colorTex.tex != 0);
+		glNamedFramebufferTexture(rt.readFBO, GL_COLOR_ATTACHMENT0, colorTex.tex, 0);
 	}
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, rt.readFBO);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
