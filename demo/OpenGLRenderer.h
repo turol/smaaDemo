@@ -96,6 +96,7 @@ struct RenderTarget {
 	unsigned int width, height;
 	Layout               currentLayout;
 	TextureHandle        texture;
+	Format               format;
 
 
 	RenderTarget()
@@ -115,12 +116,14 @@ struct RenderTarget {
 	, height(other.height)
 	, currentLayout(other.currentLayout)
 	, texture(other.texture)   // TODO: use std::move
+	, format(other.format)
 	{
 		other.readFBO = 0;
 		other.width  = 0;
 		other.height = 0;
 		other.currentLayout = Layout::InvalidLayout;
 		other.texture       = TextureHandle();
+		other.format        = Invalid;
 	}
 
 	RenderTarget &operator=(RenderTarget &&other) {
@@ -133,6 +136,7 @@ struct RenderTarget {
 		std::swap(height, other.height);
 		std::swap(currentLayout, other.currentLayout);
 		std::swap(texture,       other.texture);
+		std::swap(format,        other.format);
 
 		return *this;
 	};
@@ -141,40 +145,60 @@ struct RenderTarget {
 };
 
 
-struct RenderPass {
-	RenderPassDesc  desc;
+struct Framebuffer {
 	GLuint fbo;
-	GLuint colorTex;
-	GLuint depthTex;
+	RenderTargetHandle                                       depthStencil;
+	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS>  colors;
+	RenderPassHandle                                         renderPass;
 
 	unsigned int width, height;
+
+
+	Framebuffer(const Framebuffer &)            = delete;
+	Framebuffer &operator=(const Framebuffer &) = delete;
+
+	Framebuffer(Framebuffer &&other)
+	: fbo(other.fbo)
+	, depthStencil(other.depthStencil)
+	, width(other.width)
+	, height(other.height)
+	{
+		other.fbo      = 0;
+		other.width    = 0;
+		other.height   = 0;
+		// TODO: use std::move
+		assert(!other.colors[1]);
+		this->colors[0]    = other.colors[0];
+		other.colors[0]    = RenderTargetHandle();
+		other.depthStencil = RenderTargetHandle();
+	}
+
+	Framebuffer &operator=(Framebuffer &&other) = delete;
+
+	Framebuffer()
+	: fbo(0)
+	, width(0)
+	, height(0)
+	{
+	}
+};
+
+
+struct RenderPass {
+	RenderPassDesc  desc;
 
 
 	RenderPass(const RenderPass &) = delete;
 	RenderPass &operator=(const RenderPass &) = delete;
 
 	RenderPass(RenderPass &&other)
-	: fbo(other.fbo)
-	, colorTex(other.colorTex)
-	, depthTex(other.depthTex)
-	, width(other.width)
-	, height(other.height)
+	: desc(other.desc)
 	{
-		other.fbo      = 0;
-		other.colorTex = 0;
-		other.depthTex = 0;
-		other.width    = 0;
-		other.height   = 0;
 	}
 
 	RenderPass &operator=(RenderPass &&other) = delete;
 
 	RenderPass()
-	: fbo(0)
-	, colorTex(0)
-	, depthTex(0)
-	, width(0)
-	, height(0)
 	{
 	}
 
@@ -266,6 +290,7 @@ struct RendererBase {
 
 	PipelineDesc  currentPipeline;
 	RenderPassHandle  currentRenderPass;
+	FramebufferHandle currentFramebuffer;
 
 	SDL_Window *window;
 	SDL_GLContext context;
@@ -278,6 +303,7 @@ struct RendererBase {
 	ResourceContainer<Buffer>               buffers;
 	ResourceContainer<DescriptorSetLayout>  dsLayouts;
 	ResourceContainer<FragmentShader>       fragmentShaders;
+	ResourceContainer<Framebuffer>          framebuffers;
 	ResourceContainer<Pipeline>             pipelines;
 	ResourceContainer<RenderPass>           renderPasses;
 	ResourceContainer<RenderTarget>         renderTargets;

@@ -66,6 +66,11 @@ BufferHandle Renderer::createEphemeralBuffer(uint32_t size, const void *contents
 }
 
 
+FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
+	return impl->createFramebuffer(desc);
+}
+
+
 RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 	return impl->createRenderPass(desc);
 }
@@ -146,8 +151,8 @@ void Renderer::presentFrame(RenderTargetHandle image) {
 }
 
 
-void Renderer::beginRenderPass(RenderPassHandle pass) {
-	impl->beginRenderPass(pass);
+void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle) {
+	impl->beginRenderPass(rpHandle, fbHandle);
 }
 
 

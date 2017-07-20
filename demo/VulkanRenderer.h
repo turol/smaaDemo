@@ -89,18 +89,33 @@ struct FragmentShader {
 };
 
 
-struct RenderPass {
-	vk::RenderPass renderPass;
+struct Framebuffer {
 	vk::Framebuffer  framebuffer;
-	RenderPassDesc   desc;
+	FramebufferDesc   desc;
 	unsigned int     width, height;
 	// TODO: store info about attachments to allow tracking layout
 
 
-	RenderPass()
+	Framebuffer()
 	: width(0)
 	, height(0)
 	{}
+
+	Framebuffer(const Framebuffer &)            = delete;
+	Framebuffer &operator=(const Framebuffer &) = delete;
+
+	Framebuffer(Framebuffer &&)                 = default;
+	Framebuffer &operator=(Framebuffer &&)      = default;
+
+	~Framebuffer() {}
+};
+
+
+struct RenderPass {
+	vk::RenderPass renderPass;
+
+
+	RenderPass() {}
 
 	RenderPass(const RenderPass &)            = delete;
 	RenderPass &operator=(const RenderPass &) = delete;
@@ -228,6 +243,7 @@ struct RendererBase {
 	ResourceContainer<Buffer>              buffers;
 	ResourceContainer<DescriptorSetLayout> dsLayouts;
 	ResourceContainer<FragmentShader>      fragmentShaders;
+	ResourceContainer<Framebuffer>         framebuffers;
 	ResourceContainer<Pipeline>            pipelines;
 	ResourceContainer<RenderPass>          renderPasses;
 	ResourceContainer<Sampler>             samplers;

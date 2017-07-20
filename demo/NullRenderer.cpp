@@ -88,6 +88,15 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 }
 
 
+FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
+	auto result = framebuffers.add();
+	auto &fb = result.first;
+	fb.renderPass = desc.renderPass_;
+
+	return result.second;
+}
+
+
 RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc & /* desc */) {
 	return RenderPassHandle();
 }
@@ -204,11 +213,17 @@ void RendererImpl::presentFrame(RenderTargetHandle /* rt */) {
 }
 
 
-void RendererImpl::beginRenderPass(RenderPassHandle /* pass */) {
+void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle) {
 	assert(inFrame);
 	assert(!inRenderPass);
 	inRenderPass  = true;
 	validPipeline = false;
+
+	assert(fbHandle);
+	const auto &fb = framebuffers.get(fbHandle);
+
+	// make sure renderpass and framebuffer match
+	assert(fb.renderPass == rpHandle);
 }
 
 

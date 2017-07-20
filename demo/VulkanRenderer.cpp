@@ -536,9 +536,12 @@ RendererImpl::~RendererImpl() {
 		this->device.destroyPipeline(p.pipeline);
 	} );
 
+	framebuffers.clearWith([this](Framebuffer &fb) {
+		this->device.destroyFramebuffer(fb.framebuffer);
+		fb.framebuffer = vk::Framebuffer();
+	} );
+
 	renderPasses.clearWith([this](RenderPass &r) {
-		this->device.destroyFramebuffer(r.framebuffer);
-		r.framebuffer = vk::Framebuffer();
 		this->device.destroyRenderPass(r.renderPass);
 		r.renderPass = vk::RenderPass();
 	} );
@@ -713,27 +716,72 @@ static vk::ImageLayout vulkanLayout(Layout l) {
 }
 
 
-RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
-	vk::RenderPassCreateInfo info;
-	vk::SubpassDescription subpass;
-
-	unsigned int width = 0, height = 0;
-
-	std::vector<vk::AttachmentDescription> attachments;
-	std::vector<vk::AttachmentReference> colorAttachments;
-	std::vector<vk::ImageView>             attachmentViews;
+FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
+	std::vector<vk::ImageView> attachmentViews;
+	unsigned int width, height;
 
 	// TODO: multiple render targets
+	assert(desc.colors_[0]);
+	assert(!desc.colors_[1]);
+	// TODO: make sure renderPass formats match actual framebuffer attachments
+	const auto &pass = renderPasses.get(desc.renderPass_);
+	assert(pass.renderPass);
 	{
 		const auto &colorRT = renderTargets.get(desc.colors_[0]);
 		assert(colorRT.width  > 0);
 		assert(colorRT.height > 0);
+		assert(colorRT.imageView);
 		width  = colorRT.width;
 		height = colorRT.height;
+		attachmentViews.push_back(colorRT.imageView);
+	}
+
+	if (desc.depthStencil_) {
+		const auto &depthRT = renderTargets.get(desc.depthStencil_);
+		assert(depthRT.width  == width);
+		assert(depthRT.height == height);
+		assert(depthRT.imageView);
+		attachmentViews.push_back(depthRT.imageView);
+	}
+
+	vk::FramebufferCreateInfo fbInfo;
+
+	fbInfo.renderPass       = pass.renderPass;
+	assert(!attachmentViews.empty());
+	fbInfo.attachmentCount  = attachmentViews.size();
+	fbInfo.pAttachments     = &attachmentViews[0];
+	fbInfo.width            = width;
+	fbInfo.height           = height;
+	fbInfo.layers           = 1;  // TODO: multiple render targets?
+
+	auto result     = framebuffers.add();
+	Framebuffer &fb = result.first;
+	fb.desc         = desc;
+	fb.width        = width;
+	fb.height       = height;
+	fb.framebuffer  = device.createFramebuffer(fbInfo);
+
+	printf("framebuffer %p  %s\n", VkFramebuffer(fb.framebuffer), desc.name_);
+
+	return result.second;
+}
+
+
+RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
+	vk::RenderPassCreateInfo info;
+	vk::SubpassDescription subpass;
+
+	std::vector<vk::AttachmentDescription> attachments;
+	std::vector<vk::AttachmentReference> colorAttachments;
+
+	// TODO: multiple render targets
+	assert(desc.colorFormats_[0] != Format::Invalid);
+	assert(desc.colorFormats_[1] == Format::Invalid);
+	{
 		vk::ImageLayout layout = vk::ImageLayout::eColorAttachmentOptimal;
 
 		vk::AttachmentDescription attach;
-		attach.format         = colorRT.format;
+		attach.format         = vulkanFormat(desc.colorFormats_[0]);
 		// TODO: these should be customizable via RenderPassDesc
 		attach.loadOp         = vk::AttachmentLoadOp::eClear;
 		attach.storeOp        = vk::AttachmentStoreOp::eStore;
@@ -747,20 +795,17 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		ref.attachment = attachments.size() - 1;
 		ref.layout     = layout;
 		colorAttachments.push_back(ref);
-		attachmentViews.push_back(colorRT.imageView);
 	}
 	subpass.colorAttachmentCount = colorAttachments.size();
 	subpass.pColorAttachments    = &colorAttachments[0];
 
+	bool hasDepthStencil = (desc.depthStencilFormat_ != Format::Invalid);
 	vk::AttachmentReference depthAttachment;
-	if (desc.depthStencil_) {
-		const auto &depthRT = renderTargets.get(desc.depthStencil_);
-		assert(depthRT.width  == width);
-		assert(depthRT.height == height);
+	if (hasDepthStencil) {
 		vk::ImageLayout layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
 		vk::AttachmentDescription attach;
-		attach.format         = depthRT.format;
+		attach.format         = vulkanFormat(desc.depthStencilFormat_);
 		// TODO: these should be customizable via RenderPassDesc
 		attach.loadOp         = vk::AttachmentLoadOp::eClear;
 		attach.storeOp        = vk::AttachmentStoreOp::eStore;
@@ -771,7 +816,6 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		// TODO: finalLayout should come from desc
 		attach.finalLayout    = vk::ImageLayout::eShaderReadOnlyOptimal;
 		attachments.push_back(attach);
-		attachmentViews.push_back(depthRT.imageView);
 
 		depthAttachment.attachment = attachments.size() - 1;
 		depthAttachment.layout     = layout;
@@ -790,7 +834,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	// subpass dependencies (external)
 	// TODO: are these really necessary?
 	std::vector<vk::SubpassDependency> dependencies;
-	dependencies.reserve(desc.depthStencil_ ? 4 : 2);
+	dependencies.reserve(hasDepthStencil ? 4 : 2);
 	{
 		vk::SubpassDependency d;
 		d.srcSubpass       = VK_SUBPASS_EXTERNAL;
@@ -802,7 +846,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		d.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
 		dependencies.push_back(d);
 
-		if (desc.depthStencil_) {
+		if (hasDepthStencil) {
 			d.dstStageMask     = vk::PipelineStageFlagBits::eEarlyFragmentTests;
 			d.dstAccessMask    = vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
 			dependencies.push_back(d);
@@ -819,7 +863,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		d.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
 		dependencies.push_back(d);
 
-		if (desc.depthStencil_) {
+		if (hasDepthStencil) {
 			d.srcStageMask     = vk::PipelineStageFlagBits::eEarlyFragmentTests;
 			d.srcAccessMask    = vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
 			dependencies.push_back(d);
@@ -830,24 +874,9 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 
 	auto result   = renderPasses.add();
 	RenderPass &r = result.first;
-	r.desc        = desc;
-	r.width       = width;
-	r.height      = height;
 	r.renderPass  = device.createRenderPass(info);;
-	{
-		vk::FramebufferCreateInfo fbInfo;
-		fbInfo.renderPass       = r.renderPass;
-		assert(!attachmentViews.empty());
-		fbInfo.attachmentCount  = attachmentViews.size();
-		fbInfo.pAttachments     = &attachmentViews[0];
-		fbInfo.width            = width;
-		fbInfo.height           = height;
-		fbInfo.layers           = 1;  // TODO: multiple render targets?
 
-		r.framebuffer = device.createFramebuffer(fbInfo);
-	}
-
-	printf("Renderpass %p  framebuffer %p  %s\n", VkRenderPass(r.renderPass), VkFramebuffer(r.framebuffer), desc.name_);
+	printf("Renderpass %p  %s\n", VkRenderPass(r.renderPass), desc.name_);
 
 	return result.second;
 }
@@ -1631,13 +1660,18 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 }
 
 
-void RendererImpl::beginRenderPass(RenderPassHandle handle) {
+void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle) {
 	assert(inFrame);
 	assert(!inRenderPass);
 	inRenderPass  = true;
 	validPipeline = false;
 
-	const auto &pass = renderPasses.get(handle);
+	const auto &pass = renderPasses.get(rpHandle);
+	assert(pass.renderPass);
+	const auto &fb   = framebuffers.get(fbHandle);
+	assert(fb.framebuffer);
+	assert(fb.width  > 0);
+	assert(fb.height > 0);
 	// TODO: should be customizable
 	// clear image
 	std::array<float, 4> color = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -1648,9 +1682,9 @@ void RendererImpl::beginRenderPass(RenderPassHandle handle) {
 
 	vk::RenderPassBeginInfo info;
 	info.renderPass                = pass.renderPass;
-	info.framebuffer               = pass.framebuffer;
-	info.renderArea.extent.width   = pass.width;
-	info.renderArea.extent.height  = pass.height;
+	info.framebuffer               = fb.framebuffer;
+	info.renderArea.extent.width   = fb.width;
+	info.renderArea.extent.height  = fb.height;
 	info.clearValueCount           = 2;
 	info.pClearValues              = &clearValues[0];
 

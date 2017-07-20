@@ -21,6 +21,22 @@ struct Buffer {
 };
 
 
+struct Framebuffer {
+	RenderPassHandle  renderPass;
+
+
+	Framebuffer(const Framebuffer &)            = default;
+	Framebuffer &operator=(const Framebuffer &) = default;
+
+	Framebuffer(Framebuffer &&)                 = default;
+	Framebuffer &operator=(Framebuffer &&)      = default;
+
+	Framebuffer() {}
+
+	~Framebuffer() {}
+};
+
+
 struct Pipeline {
 	PipelineDesc  desc;
 
@@ -40,6 +56,7 @@ struct Pipeline {
 struct RendererBase {
 	std::vector<char> ringBuffer;
 	ResourceContainer<Buffer>              buffers;
+	ResourceContainer<Framebuffer>         framebuffers;
 	ResourceContainer<Pipeline>            pipelines;
 
 	PipelineDesc  currentPipeline;

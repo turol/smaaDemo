@@ -156,7 +156,6 @@ RenderTarget::~RenderTarget() {
 
 
 RenderPass::~RenderPass() {
-	assert(fbo == 0);
 }
 
 
@@ -467,10 +466,13 @@ RendererImpl::~RendererImpl() {
 	glDeleteBuffers(1, &ringBuffer);
 	ringBuffer = 0;
 
-	renderPasses.clearWith([](RenderPass &rp) {
-		assert(rp.fbo != 0);
-		glDeleteFramebuffers(1, &rp.fbo);
-		rp.fbo = 0;
+	framebuffers.clearWith([](Framebuffer &fb) {
+		assert(fb.fbo != 0);
+		glDeleteFramebuffers(1, &fb.fbo);
+		fb.fbo = 0;
+	} );
+
+	renderPasses.clearWith([](RenderPass &) {
 	} );
 
 	renderTargets.clearWith([this](RenderTarget &rt) {
@@ -834,51 +836,64 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 }
 
 
-RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
+FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	assert(desc.name_ != nullptr);
+	assert(desc.renderPass_);
 
-	auto result = renderPasses.add();
-	RenderPass &pass = result.first;
-	pass.desc = desc;
-	GLuint fbo = 0;
-	glCreateFramebuffers(1, &fbo);
-	pass.fbo = fbo;
+	auto &renderPass = renderPasses.get(desc.renderPass_);
+
+	auto result = framebuffers.add();
+	Framebuffer &fb = result.first;
+	glCreateFramebuffers(1, &fb.fbo);
 
 	const auto &colorRT = renderTargets.get(desc.colors_[0]);
 
 	assert(colorRT.width  > 0);
 	assert(colorRT.height > 0);
 	assert(colorRT.texture);
-	pass.width    = colorRT.width;
-	pass.height   = colorRT.height;
+	assert(colorRT.format == renderPass.desc.colorFormats_[0]);
+	fb.renderPass = desc.renderPass_;
+	fb.colors[0]  = desc.colors_[0];
+	fb.width      = colorRT.width;
+	fb.height     = colorRT.height;
 
 	const auto &colorRTtex = textures.get(colorRT.texture);
 	assert(colorRTtex.renderTarget);
 	assert(colorRTtex.tex != 0);
-	pass.colorTex = colorRTtex.tex;
 
-	glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, pass.colorTex, 0);
+	glNamedFramebufferTexture(fb.fbo, GL_COLOR_ATTACHMENT0, colorRTtex.tex, 0);
 	assert(!desc.colors_[1]);
 
 	if (desc.depthStencil_) {
 		const auto &depthRT = renderTargets.get(desc.depthStencil_);
-		assert(colorRT.width  == depthRT.width);
-		assert(colorRT.height == depthRT.height);
+		assert(depthRT.format == renderPass.desc.depthStencilFormat_);
+		assert(depthRT.width  == colorRT.width);
+		assert(depthRT.height == colorRT.height);
 		assert(depthRT.texture);
 		const auto &depthRTtex = textures.get(depthRT.texture);
 		assert(depthRTtex.renderTarget);
 		assert(depthRTtex.tex != 0);
-		pass.depthTex = depthRTtex.tex;
-		glNamedFramebufferTexture(fbo, GL_DEPTH_ATTACHMENT, pass.depthTex, 0);
+		fb.depthStencil = desc.depthStencil_;
+		glNamedFramebufferTexture(fb.fbo, GL_DEPTH_ATTACHMENT, depthRTtex.tex, 0);
+	} else {
+		assert(renderPass.desc.depthStencilFormat_ == Invalid);
 	}
 
 	if (debug) {
-		glObjectLabel(GL_FRAMEBUFFER, fbo, -1, desc.name_);
+		glObjectLabel(GL_FRAMEBUFFER, fb.fbo, -1, desc.name_);
 	}
 
-	RenderPassHandle h;
-	h.handle = fbo;
-	return h;
+	return result.second;
+}
+
+
+RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
+	assert(desc.name_ != nullptr);
+
+	auto result = renderPasses.add();
+	RenderPass &pass = result.first;
+	pass.desc = desc;
+	return result.second;
 }
 
 
@@ -907,6 +922,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	RenderTarget &rt = result.first;
 	rt.width  = desc.width_;
 	rt.height = desc.height_;
+	rt.format = desc.format_;
 	// TODO: std::move?
 	rt.texture = textureResult.second;
 
@@ -992,11 +1008,17 @@ void RendererImpl::deleteBuffer(BufferHandle handle) {
 }
 
 
+void RendererImpl::deleteFramebuffer(FramebufferHandle handle) {
+	framebuffers.removeWith(handle, [](Framebuffer &fb) {
+		assert(fb.fbo != 0);
+		glDeleteFramebuffers(1, &fb.fbo);
+		fb.fbo = 0;
+	} );
+}
+
+
 void RendererImpl::deleteRenderPass(RenderPassHandle handle) {
-	renderPasses.removeWith(handle, [](RenderPass &rp) {
-		assert(rp.fbo != 0);
-		glDeleteFramebuffers(1, &rp.fbo);
-		rp.fbo = 0;
+	renderPasses.removeWith(handle, [](RenderPass &) {
 	} );
 }
 
@@ -1142,30 +1164,35 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 }
 
 
-void RendererImpl::beginRenderPass(RenderPassHandle handle) {
+void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle) {
 	assert(inFrame);
 	assert(!inRenderPass);
 	inRenderPass  = true;
 	validPipeline = false;
 
-	assert(handle);
-	const auto &pass = renderPasses.get(handle);
-	assert(pass.fbo != 0);
+	assert(fbHandle);
+	const auto &fb = framebuffers.get(fbHandle);
+	assert(fb.fbo != 0);
+
+	// make sure renderpass and framebuffer match
+	// OpenGL doesn't care but Vulkan does
+	assert(fb.renderPass == rpHandle);
 
 	// TODO: should get clear bits from RenderPass object
 	GLbitfield mask = GL_COLOR_BUFFER_BIT;
-	if (pass.depthTex != 0) {
+	if (fb.depthStencil) {
 		mask |= GL_DEPTH_BUFFER_BIT;
 	}
 
-	assert(pass.fbo != 0);
-	assert(pass.width > 0);
-	assert(pass.height > 0);
+	assert(fb.fbo != 0);
+	assert(fb.width > 0);
+	assert(fb.height > 0);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, pass.fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fb.fbo);
 	glClear(mask);
 
-	currentRenderPass = handle;
+	currentRenderPass  = rpHandle;
+	currentFramebuffer = fbHandle;
 }
 
 
@@ -1175,11 +1202,14 @@ void RendererImpl::endRenderPass() {
 	inRenderPass = false;
 
 	const auto &pass = renderPasses.get(currentRenderPass);
+	const auto &fb = framebuffers.get(currentFramebuffer);
 
-	auto &rt = renderTargets.get(pass.desc.colors_[0]);
+	// TODO: track depthstencil layout too
+	auto &rt = renderTargets.get(fb.colors[0]);
 	rt.currentLayout = pass.desc.colorFinalLayout_;
 
 	currentRenderPass = RenderPassHandle();
+	currentFramebuffer = FramebufferHandle();
 }
 
 

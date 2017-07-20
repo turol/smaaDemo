@@ -114,6 +114,7 @@ struct Handle {
 typedef Handle<Buffer>               BufferHandle;
 typedef Handle<DescriptorSetLayout>  DescriptorSetLayoutHandle;
 typedef Handle<FragmentShader>       FragmentShaderHandle;
+typedef Handle<Framebuffer>          FramebufferHandle;
 typedef Handle<Pipeline>             PipelineHandle;
 typedef Handle<RenderPass>           RenderPassHandle;
 typedef Handle<RenderTarget>         RenderTargetHandle;
@@ -365,10 +366,11 @@ enum Layout : uint8_t {
 
 struct RenderPassDesc {
 	RenderPassDesc()
-	: depthStencil_(0)
+	: depthStencilFormat_(Invalid)
 	, colorFinalLayout_(ShaderRead)
 	, name_(nullptr)
 	{
+		std::fill(colorFormats_.begin(), colorFormats_.end(), Invalid);
 	}
 
 	~RenderPassDesc() { }
@@ -379,14 +381,14 @@ struct RenderPassDesc {
 	RenderPassDesc &operator=(const RenderPassDesc &) = default;
 	RenderPassDesc &operator=(RenderPassDesc &&)      = default;
 
-	RenderPassDesc &depthStencil(RenderTargetHandle ds) {
-		depthStencil_ = ds;
+	RenderPassDesc &depthStencil(Format ds) {
+		depthStencilFormat_ = ds;
 		return *this;
 	}
 
-	RenderPassDesc &color(unsigned int index, RenderTargetHandle c) {
+	RenderPassDesc &color(unsigned int index, Format c) {
 		assert(index < MAX_COLOR_RENDERTARGETS);
-		colors_[index] = c;
+		colorFormats_[index] = c;
 		return *this;
 	}
 
@@ -402,10 +404,59 @@ struct RenderPassDesc {
 
 private:
 
-	RenderTargetHandle depthStencil_;
-	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS> colors_;
+	Format                                       depthStencilFormat_;
+	std::array<Format, MAX_COLOR_RENDERTARGETS>  colorFormats_;
 	Layout   colorFinalLayout_;
 	const char                                             *name_;
+
+	friend struct RendererImpl;
+};
+
+
+struct FramebufferDesc {
+	FramebufferDesc()
+	: depthStencil_(0)
+	, name_(nullptr)
+	{
+	}
+
+	~FramebufferDesc() { }
+
+	FramebufferDesc(const FramebufferDesc &) = default;
+	FramebufferDesc(FramebufferDesc &&)      = default;
+
+	FramebufferDesc &operator=(const FramebufferDesc &) = default;
+	FramebufferDesc &operator=(FramebufferDesc &&)      = default;
+
+
+	FramebufferDesc &renderPass(RenderPassHandle rp) {
+		renderPass_ = rp;
+		return *this;
+	}
+
+	FramebufferDesc &depthStencil(RenderTargetHandle ds) {
+		depthStencil_ = ds;
+		return *this;
+	}
+
+	FramebufferDesc &color(unsigned int index, RenderTargetHandle c) {
+		assert(index < MAX_COLOR_RENDERTARGETS);
+		colors_[index] = c;
+		return *this;
+	}
+
+	FramebufferDesc &name(const char *str) {
+		name_ = str;
+		return *this;
+	}
+
+
+private:
+
+	RenderPassHandle                                         renderPass_;
+	RenderTargetHandle                                       depthStencil_;
+	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS>  colors_;
+	const char                                              *name_;
 
 	friend struct RendererImpl;
 };
@@ -590,6 +641,7 @@ public:
 	RenderTargetHandle  createRenderTarget(const RenderTargetDesc &desc);
 	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
 	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);
+	FramebufferHandle    createFramebuffer(const FramebufferDesc &desc);
 	RenderPassHandle     createRenderPass(const RenderPassDesc &desc);
 	PipelineHandle      createPipeline(const PipelineDesc &desc);
 	// TODO: add buffer usage flags
@@ -610,7 +662,8 @@ public:
 	TextureHandle        getRenderTargetTexture(RenderTargetHandle handle);
 
 	void deleteBuffer(BufferHandle handle);
-	void deleteFramebuffer(RenderPassHandle fbo);
+	void deleteFramebuffer(FramebufferHandle fbo);
+	void deleteRenderpass(RenderPassHandle fbo);
 	void deleteSampler(SamplerHandle handle);
 	void deleteTexture(TextureHandle handle);
 	void deleteRenderTarget(RenderTargetHandle &fbo);
@@ -622,7 +675,7 @@ public:
 	void beginFrame();
 	void presentFrame(RenderTargetHandle image);
 
-	void beginRenderPass(RenderPassHandle pass);
+	void beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle);
 	void endRenderPass();
 
 	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);

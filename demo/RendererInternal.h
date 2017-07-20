@@ -173,6 +173,7 @@ struct RendererImpl : public RendererBase {
 	RenderTargetHandle   createRenderTarget(const RenderTargetDesc &desc);
 	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
 	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);
+	FramebufferHandle    createFramebuffer(const FramebufferDesc &desc);
 	RenderPassHandle     createRenderPass(const RenderPassDesc &desc);
 	PipelineHandle       createPipeline(const PipelineDesc &desc);
 	BufferHandle         createBuffer(uint32_t size, const void *contents);
@@ -185,6 +186,7 @@ struct RendererImpl : public RendererBase {
 	TextureHandle        getRenderTargetTexture(RenderTargetHandle handle);
 
 	void deleteBuffer(BufferHandle handle);
+	void deleteFramebuffer(FramebufferHandle fbo);
 	void deleteRenderPass(RenderPassHandle fbo);
 	void deleteSampler(SamplerHandle handle);
 	void deleteTexture(TextureHandle handle);
@@ -196,7 +198,7 @@ struct RendererImpl : public RendererBase {
 	void beginFrame();
 	void presentFrame(RenderTargetHandle image);
 
-	void beginRenderPass(RenderPassHandle pass);
+	void beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle);
 	void endRenderPass();
 
 	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
