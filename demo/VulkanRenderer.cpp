@@ -592,7 +592,10 @@ RendererImpl::~RendererImpl() {
 	} );
 
 	device.destroyCommandPool(commandPool);
+	commandPool = vk::CommandPool();
+
 	device.destroyDescriptorPool(dsPool);
+	dsPool = vk::DescriptorPool();
 
 	device.destroySwapchainKHR(swapchain);
 	swapchain = vk::SwapchainKHR();
