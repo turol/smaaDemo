@@ -181,6 +181,8 @@ struct Framebuffer {
 	, height(0)
 	{
 	}
+
+	~Framebuffer();
 };
 
 

@@ -118,6 +118,11 @@ Buffer::~Buffer() {
 }
 
 
+Framebuffer::~Framebuffer() {
+	assert(fbo == 0);
+}
+
+
 VertexShader::VertexShader()
 : shader(0)
 {
