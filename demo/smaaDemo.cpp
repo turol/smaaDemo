@@ -544,6 +544,18 @@ void SMAADemo::initRender() {
 	renderer.registerDescriptorSetLayout<BlendWeightDS>();
 	renderer.registerDescriptorSetLayout<NeighborBlendDS>();
 
+	RenderPassDesc rpDesc;
+	rpDesc.color(0, RGBA8);
+	rpDesc.colorFinalLayout(TransferSrc);
+	finalRenderPass       = renderer.createRenderPass(rpDesc.name("final"));
+
+	rpDesc.colorFinalLayout(ShaderRead);
+	smaaEdgesRenderPass   = renderer.createRenderPass(rpDesc.name("SMAA edges"));
+	smaaWeightsRenderPass = renderer.createRenderPass(rpDesc.name("SMAA weights"));
+
+	rpDesc.depthStencil(Depth16);
+	sceneRenderPass       = renderer.createRenderPass(rpDesc.name("scene"));
+
 	createFramebuffers();
 
 	PipelineDesc plDesc;
@@ -789,18 +801,6 @@ void SMAADemo::initRender() {
 
 
 void SMAADemo::createFramebuffers()	{
-	RenderPassDesc rpDesc;
-	rpDesc.color(0, RGBA8);
-	rpDesc.colorFinalLayout(TransferSrc);
-	finalRenderPass       = renderer.createRenderPass(rpDesc.name("final"));
-
-	rpDesc.colorFinalLayout(ShaderRead);
-	smaaEdgesRenderPass   = renderer.createRenderPass(rpDesc.name("SMAA edges"));
-	smaaWeightsRenderPass = renderer.createRenderPass(rpDesc.name("SMAA weights"));
-
-	rpDesc.depthStencil(Depth16);
-	sceneRenderPass       = renderer.createRenderPass(rpDesc.name("scene"));
-
 	if (rendertargets[0]) {
 		// TODO: delete render passes
 
