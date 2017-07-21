@@ -318,7 +318,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
 	if (physicalDevices.empty()) {
-		printf("No hysical Vulkan devices found\n");
+		printf("No physical Vulkan devices found\n");
 		instance.destroy();
 		instance = nullptr;
 		SDL_DestroyWindow(window);
