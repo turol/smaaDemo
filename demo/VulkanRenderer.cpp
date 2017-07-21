@@ -1680,7 +1680,7 @@ void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle 
 	std::array<float, 4> color = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 	std::array<vk::ClearValue, 2> clearValues;
-	clearValues[0].color        = vk::ClearColorValue(color);  // default constructor 0s
+	clearValues[0].color        = vk::ClearColorValue(color);
 	clearValues[1].depthStencil = vk::ClearDepthStencilValue(1.0f, 0);
 
 	vk::RenderPassBeginInfo info;
