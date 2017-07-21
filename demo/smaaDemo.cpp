@@ -1372,9 +1372,9 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 	}
 
 	// move the window to right edge of screen
-	float w = ImGui::GetWindowWidth();
-	ImVec2 pos = ImGui::GetWindowPos();
-	pos.x = windowWidth - (w * 1.25f);
+	ImVec2 pos;
+	pos.x =  windowWidth  - ImGui::GetWindowWidth();
+	pos.y = (windowHeight - ImGui::GetWindowHeight()) / 2.0;
 	ImGui::SetWindowPos(pos);
 
 	ImGui::End();
