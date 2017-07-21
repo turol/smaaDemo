@@ -1100,6 +1100,10 @@ void SMAADemo::mainLoopIteration() {
 			}
 			break;
 
+		case SDL_MOUSEWHEEL:
+			io.MouseWheel = event.wheel.y;
+			break;
+
 		}
 	}
 
