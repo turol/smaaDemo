@@ -1369,6 +1369,11 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		if (ImGui::Button("Quit")) {
 			keepGoing = false;
 		}
+
+		ImGui::Separator();
+		// TODO: measure actual GPU time
+		ImGui::LabelText("FPS", "%.1f", io.Framerate);
+		ImGui::LabelText("Frame time ms", "%.1f", 1000.0f / io.Framerate);
 	}
 
 	// move the window to right edge of screen
