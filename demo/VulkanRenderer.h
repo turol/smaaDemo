@@ -213,6 +213,10 @@ struct Texture {
 };
 
 
+struct Frame {
+};
+
+
 struct RendererBase {
 	SDL_Window *window;
 	vk::Instance instance;
@@ -228,6 +232,7 @@ struct RendererBase {
 	vk::SurfaceCapabilitiesKHR         surfaceCapabilities;
 	std::vector<vk::PresentModeKHR>    surfacePresentModes;
 	vk::SwapchainKHR                   swapchain;
+	// TODO: move swapchainImages to frames
 	std::vector<vk::Image>             swapchainImages;
 	vk::Queue                          queue;
 
@@ -256,6 +261,8 @@ struct RendererBase {
 	char                *persistentMapping;
 
 	std::vector<BufferHandle> ephemeralBuffers;
+
+	std::vector<Frame>        frames;
 
 
 	unsigned int ringBufferAlloc(unsigned int size);

@@ -1451,6 +1451,24 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 
 	printf("Want %u images, using %u images\n", desc.numFrames, numImages);
 
+	if (frames.size() != numImages) {
+		if (numImages < frames.size()) {
+			// decreasing, delete old and resize
+			for (unsigned int i = numImages; i < frames.size(); i++) {
+				// TODO: delete Frame
+			}
+			frames.resize(numImages);
+		} else {
+			// increasing, resize and initialize new
+			unsigned int oldSize = frames.size();
+			frames.resize(numImages);
+
+			for (unsigned int i = oldSize; i < frames.size(); i++) {
+				// TODO: initialize Frame
+			}
+		}
+	}
+
 	vk::Extent2D imageExtent;
 	if (surfaceCapabilities.currentExtent.width == 0xFFFFFFFF) {
 		assert(surfaceCapabilities.currentExtent.height == 0xFFFFFFFF);
@@ -1576,6 +1594,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 
 	auto imageIdx_         = device.acquireNextImageKHR(swapchain, UINT64_MAX, vk::Semaphore(), fence);
 	uint32_t imageIdx      = imageIdx_.value;
+	assert(imageIdx < frames.size());
 	vk::Image image        = swapchainImages[imageIdx];
 	vk::ImageLayout layout = vk::ImageLayout::eTransferDstOptimal;
 
