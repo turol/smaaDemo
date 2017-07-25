@@ -1590,9 +1590,10 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	const auto &rt = renderTargets.get(rtHandle);
 
 	// TODO: shouldn't recreate constantly...
-	vk::Fence fence = device.createFence(vk::FenceCreateInfo());
+	vk::Semaphore acquireSem    = device.createSemaphore(vk::SemaphoreCreateInfo());
+	vk::Semaphore renderDoneSem = device.createSemaphore(vk::SemaphoreCreateInfo());
 
-	auto imageIdx_         = device.acquireNextImageKHR(swapchain, UINT64_MAX, vk::Semaphore(), fence);
+	auto imageIdx_         = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence());
 	uint32_t imageIdx      = imageIdx_.value;
 	assert(imageIdx < frames.size());
 	vk::Image image        = swapchainImages[imageIdx];
@@ -1637,18 +1638,24 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
 
 	// submit command buffer
+	// TODO: reduce wait mask
+	vk::PipelineStageFlags acquireWaitStage = vk::PipelineStageFlagBits::eAllCommands;
+
 	currentCommandBuffer.end();
 	vk::SubmitInfo submit;
-	submit.waitSemaphoreCount   = 0;
+	submit.waitSemaphoreCount   = 1;
+	submit.pWaitSemaphores      = &acquireSem;
+	submit.pWaitDstStageMask    = &acquireWaitStage;
 	submit.commandBufferCount   = 1;
 	submit.pCommandBuffers      = &currentCommandBuffer;
-	submit.signalSemaphoreCount = 0;
+	submit.signalSemaphoreCount = 1;
+	submit.pSignalSemaphores    = &renderDoneSem;
 	queue.submit({ submit }, vk::Fence());
 
 	// present
-	device.waitForFences({ fence }, true, UINT64_MAX);
 	vk::PresentInfoKHR presentInfo;
-	presentInfo.waitSemaphoreCount = 0;
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores    = &renderDoneSem;
 	presentInfo.swapchainCount     = 1;
 	presentInfo.pSwapchains        = &swapchain;
 	presentInfo.pImageIndices      = &imageIdx;
@@ -1668,7 +1675,8 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 
 	device.resetDescriptorPool(dsPool);
 
-	device.destroyFence(fence);
+	device.destroySemaphore(renderDoneSem);
+	device.destroySemaphore(acquireSem);
 
 	// TODO: multiple frames, only delete after no longer in use by GPU
 	for (auto handle : ephemeralBuffers) {
