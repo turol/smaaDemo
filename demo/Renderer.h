@@ -158,7 +158,7 @@ struct SwapchainDesc {
 	SwapchainDesc()
 	: width(0)
 	, height(0)
-	, numFrames(0)
+	, numFrames(3)
 	, vsync(true)
 	, fullscreen(false)
 	{
