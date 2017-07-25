@@ -264,7 +264,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	int flags = SDL_WINDOW_RESIZABLE;
 	flags |= SDL_WINDOW_VULKAN;
-	// TODO: fullscreen, resizable
+	if (desc.swapchain.fullscreen) {
+		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+	}
 
 	window = SDL_CreateWindow("SMAA Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, desc.swapchain.width, desc.swapchain.height, flags);
 
