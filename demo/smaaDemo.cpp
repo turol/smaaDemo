@@ -176,6 +176,7 @@ namespace RenderTargets {
 
 class SMAADemo {
 	unsigned int windowWidth, windowHeight;
+	unsigned int numFrames;
 	bool vsync;
 	bool fullscreen;
 	bool recreateSwapchain;
@@ -300,6 +301,7 @@ public:
 SMAADemo::SMAADemo()
 : windowWidth(1280)
 , windowHeight(720)
+, numFrames(3)
 , vsync(true)
 , fullscreen(false)
 , recreateSwapchain(false)
@@ -1117,6 +1119,7 @@ void SMAADemo::render() {
 	if (recreateSwapchain) {
 		SwapchainDesc desc;
 		desc.fullscreen = fullscreen;
+		desc.numFrames  = numFrames;
 		desc.width      = windowWidth;
 		desc.height     = windowHeight;
 		desc.vsync      = vsync;
@@ -1366,6 +1369,13 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		ImGui::Separator();
 		recreateSwapchain = ImGui::Checkbox("Fullscreen", &fullscreen);
 		recreateSwapchain = ImGui::Checkbox("V-Sync", &vsync)          || recreateSwapchain;
+
+		int n = numFrames;
+		// TODO: ask Renderer for the limits
+		if (ImGui::SliderInt("frames ahead", &n, 1, 16)) {
+			numFrames = n;
+			recreateSwapchain = true;
+		}
 
 		ImGui::Separator();
 		if (ImGui::Button("Quit")) {
