@@ -409,6 +409,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::CmdLine cmd("SMAA demo", ' ', "1.0");
 
 		TCLAP::SwitchArg glDebugSwitch("", "gldebug", "Enable OpenGL debugging", cmd, false);
+		TCLAP::SwitchArg fullscreenSwitch("f", "fullscreen", "Start in full screen mode", cmd, false);
 		TCLAP::ValueArg<unsigned int> windowWidthSwitch("", "width", "Window width", false, windowWidth, "width", cmd);
 		TCLAP::ValueArg<unsigned int> windowHeightSwitch("", "height", "Window height", false, windowHeight, "height", cmd);
 		TCLAP::UnlabeledMultiArg<std::string> imagesArg("images", "image files", false, "image file", cmd, true, nullptr);
@@ -416,6 +417,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		cmd.parse(argc, argv);
 
 		glDebug = glDebugSwitch.getValue();
+		fullscreen   = fullscreenSwitch.getValue();
 		windowWidth = windowWidthSwitch.getValue();
 		windowHeight = windowHeightSwitch.getValue();
 
