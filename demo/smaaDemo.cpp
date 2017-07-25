@@ -1457,7 +1457,7 @@ int main(int argc, char *argv[]) {
 
 		while (demo->shouldKeepGoing()) {
 			try {
-			demo->mainLoopIteration();
+				demo->mainLoopIteration();
 			} catch (std::exception &e) {
 				printf("caught std::exception: \"%s\"\n", e.what());
 				break;
