@@ -186,6 +186,21 @@
     <ClCompile Include="..\foreign\glslang\StandAlone\ResourceLimits.cpp">
       <Filter>Source Files\glslang</Filter>
     </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\preprocessor\Pp.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\preprocessor\PpAtom.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\preprocessor\PpContext.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\preprocessor\PpScanner.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\preprocessor\PpTokens.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\fxaa.frag">

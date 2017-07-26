@@ -169,8 +169,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SPIRV-Tools.lib;SPIRV-Tools-comp.lib;SPIRV-Tools-opt.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../foreign/SPIRV-Tools</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SPIRV-Tools.lib;SPIRV-Tools-comp.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../foreign/SPIRV-Tools;../foreign/SPIRV-Cross/Build/Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug OpenGL|x64'">
@@ -323,6 +323,11 @@
     <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\ParseContextBase.cpp" />
     <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\ParseHelper.cpp" />
     <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\PoolAlloc.cpp" />
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\preprocessor\Pp.cpp" />
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\preprocessor\PpAtom.cpp" />
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\preprocessor\PpContext.cpp" />
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\preprocessor\PpScanner.cpp" />
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\preprocessor\PpTokens.cpp" />
     <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\propagateNoContraction.cpp" />
     <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\reflection.cpp" />
     <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\RemoveTree.cpp" />
