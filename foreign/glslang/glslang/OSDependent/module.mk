@@ -4,11 +4,7 @@ d              := $(dir)
 
 
 SUBDIRS:= \
-	glew \
-	glslang \
-	imgui \
-	shaderc \
-	SPIRV-Tools \
+	Unix \
 	# empty line
 
 DIRS:=$(addprefix $(d)/,$(SUBDIRS))
@@ -20,7 +16,7 @@ FILES:= \
 	# empty line
 
 
-SRC_$(d):=$(addprefix $(d)/,$(FILES))
+SRC_$(d):=$(addprefix $(d)/,$(FILES)) $(foreach directory, $(DIRS), $(SRC_$(directory)) )
 
 
 d  := $(dirstack_$(sp))

@@ -4,11 +4,6 @@ d              := $(dir)
 
 
 SUBDIRS:= \
-	glew \
-	glslang \
-	imgui \
-	shaderc \
-	SPIRV-Tools \
 	# empty line
 
 DIRS:=$(addprefix $(d)/,$(SUBDIRS))
@@ -17,10 +12,17 @@ $(eval $(foreach directory, $(DIRS), $(call directory-module,$(directory)) ))
 
 
 FILES:= \
+	disassemble.cpp \
+	doc.cpp \
+	GlslangToSpv.cpp \
+	InReadableOrder.cpp \
+	Logger.cpp \
+	SpvBuilder.cpp \
+	SPVRemapper.cpp \
 	# empty line
 
 
-SRC_$(d):=$(addprefix $(d)/,$(FILES))
+SRC_$(d):=$(addprefix $(d)/,$(FILES)) $(foreach directory, $(DIRS), $(SRC_$(directory)) )
 
 
 d  := $(dirstack_$(sp))

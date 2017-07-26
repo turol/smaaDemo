@@ -34,12 +34,11 @@ LDFLAGS:=-g -Wl,-rpath,. -Wl,-rpath,/usr/local/lib:./lib32
 LDFLAGS+=-Wl,--gc-sections
 # enable this if you're using gold linker
 #LFDLAGS+=-Wl,--icf=all
-LDLIBS:=
+LDLIBS:=-lpthread
 LDLIBS_sdl2:=$(shell sdl2-config --libs)
 LDLIBS_opengl:=-lGL
 LDLIBS_vulkan:=-lvulkan -lX11-xcb
-LDLIBS_shaderc:=-L/usr/local/lib -lshaderc_combined -lpthread
-LDLIBS_spirv-cross:=-lspirv-cross-glsl -lspirv-cross-core
+LDLIBS_spirv-cross:=-L/usr/local/lib -lspirv-cross-glsl -lspirv-cross-core
 
 LTOCFLAGS:=-flto -fuse-linker-plugin -fno-fat-lto-objects
 LTOLDFLAGS:=-flto -fuse-linker-plugin
