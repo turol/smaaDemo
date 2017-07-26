@@ -1557,9 +1557,13 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	}
 	swapchain = newSwapchain;
 
-	swapchainImages = device.getSwapchainImagesKHR(swapchain);
-    printf("Got %u swapchain images\n", static_cast<unsigned int>(swapchainImages.size()));
+	std::vector<vk::Image> swapchainImages = device.getSwapchainImagesKHR(swapchain);
+	assert(swapchainImages.size() == frames.size());
+	assert(swapchainImages.size() == numImages);
 
+	for (unsigned int i = 0; i < numImages; i++) {
+		frames[i].image = swapchainImages[i];
+	}
 }
 
 
@@ -1601,7 +1605,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	auto imageIdx_         = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence());
 	uint32_t imageIdx      = imageIdx_.value;
 	assert(imageIdx < frames.size());
-	vk::Image image        = swapchainImages[imageIdx];
+	vk::Image image        = frames[imageIdx].image;
 	vk::ImageLayout layout = vk::ImageLayout::eTransferDstOptimal;
 
 	// transition image to transfer dst optimal

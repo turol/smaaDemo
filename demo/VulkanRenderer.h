@@ -214,6 +214,7 @@ struct Texture {
 
 
 struct Frame {
+	vk::Image          image;
 };
 
 
@@ -232,8 +233,6 @@ struct RendererBase {
 	vk::SurfaceCapabilitiesKHR         surfaceCapabilities;
 	std::vector<vk::PresentModeKHR>    surfacePresentModes;
 	vk::SwapchainKHR                   swapchain;
-	// TODO: move swapchainImages to frames
-	std::vector<vk::Image>             swapchainImages;
 	vk::Queue                          queue;
 
 	vk::Semaphore                      acquireSem;
