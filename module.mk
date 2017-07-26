@@ -60,6 +60,7 @@ CFLAGS+=-isystem$(TOPDIR)/foreign/glslang
 CFLAGS+=-isystem$(TOPDIR)/foreign/imgui
 CFLAGS+=-isystem$(TOPDIR)/foreign/shaderc/libshaderc/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/shaderc/libshaderc_util/include
+CFLAGS+=-isystem$(TOPDIR)/foreign/SPIRV-Cross
 CFLAGS+=-isystem$(TOPDIR)/foreign/SPIRV-Headers/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/SPIRV-Tools/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/SPIRV-Tools/source
