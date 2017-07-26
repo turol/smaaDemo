@@ -236,6 +236,9 @@ struct RendererBase {
 	std::vector<vk::Image>             swapchainImages;
 	vk::Queue                          queue;
 
+	vk::Semaphore                      acquireSem;
+	vk::Semaphore                      renderDoneSem;
+
 	vk::CommandPool                    commandPool;
 	vk::DescriptorPool                 dsPool;
 

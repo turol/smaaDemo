@@ -473,6 +473,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		assert(persistentMapping != nullptr);
 	}
 
+	acquireSem    = device.createSemaphore(vk::SemaphoreCreateInfo());
+	renderDoneSem = device.createSemaphore(vk::SemaphoreCreateInfo());
+
 	// descriptor pool
 	{
 		// TODO: these limits are arbitrary, find better ones
@@ -510,6 +513,12 @@ RendererImpl::~RendererImpl() {
 	assert(ephemeralBuffers.empty());
 
 	// TODO: save pipeline cache
+
+	device.destroySemaphore(renderDoneSem);
+	renderDoneSem = vk::Semaphore();
+
+	device.destroySemaphore(acquireSem);
+	acquireSem = vk::Semaphore();
 
 	device.unmapMemory(ringBufferMem.memory);
 	persistentMapping = nullptr;
@@ -1589,10 +1598,6 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 
 	const auto &rt = renderTargets.get(rtHandle);
 
-	// TODO: shouldn't recreate constantly...
-	vk::Semaphore acquireSem    = device.createSemaphore(vk::SemaphoreCreateInfo());
-	vk::Semaphore renderDoneSem = device.createSemaphore(vk::SemaphoreCreateInfo());
-
 	auto imageIdx_         = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence());
 	uint32_t imageIdx      = imageIdx_.value;
 	assert(imageIdx < frames.size());
@@ -1674,9 +1679,6 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	device.resetCommandPool(commandPool, vk::CommandPoolResetFlags());
 
 	device.resetDescriptorPool(dsPool);
-
-	device.destroySemaphore(renderDoneSem);
-	device.destroySemaphore(acquireSem);
 
 	// TODO: multiple frames, only delete after no longer in use by GPU
 	for (auto handle : ephemeralBuffers) {
