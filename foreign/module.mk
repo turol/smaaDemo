@@ -5,7 +5,7 @@ d              := $(dir)
 
 SUBDIRS:= \
 	glew \
-	imgui
+	imgui \
 	# empty line
 
 DIRS:=$(addprefix $(d)/,$(SUBDIRS))
