@@ -136,6 +136,9 @@ distclean: clean
 foreign/%$(OBJSUFFIX): foreign/%.cpp | bindirs
 	$(CXX) -c -MF foreign/$*.d -MP -MMD $(CXXFLAGS) -w -o $@ $<
 
+foreign/%$(OBJSUFFIX): foreign/%.cc | bindirs
+	$(CXX) -c -MF foreign/$*.d -MP -MMD $(CXXFLAGS) -w -o $@ $<
+
 foreign/%$(OBJSUFFIX): foreign/%.c | bindirs
 	$(CC) -c -MF foreign/$*.d -MP -MMD $(CFLAGS) -w -o $@ $<
 
@@ -162,10 +165,12 @@ $(eval $(foreach PROGRAM,$(PROGRAMS), $(call resolve-modules,$(PROGRAM)) ) )
 define program-target
 
 ALLSRC+=$$(filter %.cpp,$$($1_SRC))
+ALLSRC+=$$(filter %.cc,$$($1_SRC))
 ALLSRC+=$$(filter %.c,$$($1_SRC))
 
 $1_SRC+=$$(foreach module, $$($1_MODULES), $$(SRC_$$(module)))
 $1_OBJ:=$$($1_SRC:.cpp=$(OBJSUFFIX))
+$1_OBJ:=$$($1_OBJ:.cc=$(OBJSUFFIX))
 $1_OBJ:=$$($1_OBJ:.c=$(OBJSUFFIX))
 $(EXEPREFIX)$1$(EXESUFFIX): $$($1_OBJ) | bindirs
 	$(CXX) $(LDFLAGS) -o $$@ $$^ $$(foreach module, $$($1_MODULES), $$(LDLIBS_$$(module))) $$($1_LIBS) $(LDLIBS)
@@ -183,7 +188,7 @@ export TOPDIR
 
 compile_commands.json: $(ALLSRC)
 	@echo '[' > $@
-	@$(TOPDIR)/compile_commands.sh $(filter %.cpp,$(ALLSRC)) >> $@
+	@$(TOPDIR)/compile_commands.sh $(filter %.cpp,$(filter %.cc,$(ALLSRC))) >> $@
 	@echo ']' >> $@
 
 
@@ -194,4 +199,4 @@ cppcheck:
 	cppcheck -j $(JOBS) $(foreach directory,$(INCLUDEDIRS),-I $(directory)) -i $(TOPDIR)/foreign --enable=all -D__x86_64 -DRENDERER_OPENGL -DGLEW_STATIC -U__CYGWIN__ -U__MINGW32__ -UANDROID -U__ANDROID__ -U_MSC_VER -U_WIN32 -U_WIN64 -UGLEW_MX -U__BORLANDC__ -U__APPLE__ -U__APPLE_CC__ -UTARGET_OS_IPHONE -UGLM_FORCE_AVX -UGLM_FORCE_AVX2 -UGLM_FORCE_COMPILER_UNKNOWN -UGLM_FORCE_CXX98 -UGLM_FORCE_CXX03 -UGLM_FORCE_CXX11 -UGLM_FORCE_CXX14 -UGLM_EXTERNAL_TEMPLATE -UGLM_FORCE_EXPLICIT_CTOR -UGLM_FORCE_INLINE $(TOPDIR) 2> cppcheck.log
 
 
--include $(foreach FILE,$(ALLSRC),$(patsubst %.c,%.d,$(patsubst %.cpp,%.d,$(FILE))))
+-include $(foreach FILE,$(ALLSRC),$(patsubst %.c,%.d,$(patsubst %.cpp,%.d,$(patsubst %.cc,%.d,$(FILE)))))
