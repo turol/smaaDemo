@@ -1,0 +1,8 @@
+commit 4a7a9fdaa984af968a382e24ebe1bc3fedc4e73a
+Merge: 661ad91 1a19bc7
+Author: John Kessenich <johnkslang@users.noreply.github.com>
+Date:   Fri Jul 21 14:26:56 2017 +0900
+
+    Merge pull request #41 from metora/master
+    
+    Reserve number 16 to Mesa-IR/SPIR-V Translator
