@@ -1,0 +1,7 @@
+commit 9f6efc76c8b8edf644194bec2c70cc3c4612726b
+Author: Lei Zhang <antiagainst@google.com>
+Date:   Mon Jul 24 11:43:47 2017 -0400
+
+    Opt: HasOnlySupportedRefs should consider OpCopyObject
+    
+    This fixes test failure after merging the previous pull request.
