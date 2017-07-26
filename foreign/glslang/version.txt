@@ -1,0 +1,5 @@
+commit d2d3a14237d464ad69f2e3d4b6b43be2c51eb1de
+Author: John Kessenich <cepheus@frii.com>
+Date:   Tue Jul 25 21:03:29 2017 -0600
+
+    SPV: Update to latest 1.0 headers, removing redundancies in GLSL.ext.AMD.h.
