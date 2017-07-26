@@ -19,6 +19,15 @@
     <Filter Include="Source Files\shader">
       <UniqueIdentifier>{a066c79c-3052-497a-a167-33564433bcf2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\imgui">
+      <UniqueIdentifier>{be173d4f-aa82-48b1-b285-463093ec90e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\shaderc">
+      <UniqueIdentifier>{d48c62b7-c6ff-4b2c-9448-1a46f083a3e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\glslang">
+      <UniqueIdentifier>{d765ceb4-e3a4-4ba5-aa59-d657d5d3afef}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\demo\smaaDemo.cpp">
@@ -26,6 +35,156 @@
     </ClCompile>
     <ClCompile Include="..\foreign\glew\src\glew.c">
       <Filter>Source Files\glew</Filter>
+    </ClCompile>
+    <ClCompile Include="..\demo\NullRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\demo\OpenGLRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\demo\RendererCommon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\demo\Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\demo\VulkanRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\imgui\imgui.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\imgui\imgui_demo.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\imgui\imgui_draw.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\shaderc\libshaderc\src\shaderc.cc">
+      <Filter>Source Files\shaderc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\compiler.cc">
+      <Filter>Source Files\shaderc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\file_finder.cc">
+      <Filter>Source Files\shaderc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\io.cc">
+      <Filter>Source Files\shaderc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\message.cc">
+      <Filter>Source Files\shaderc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\resources.cc">
+      <Filter>Source Files\shaderc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\shader_stage.cc">
+      <Filter>Source Files\shaderc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\spirv_tools_wrapper.cc">
+      <Filter>Source Files\shaderc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\version_profile.cc">
+      <Filter>Source Files\shaderc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\GenericCodeGen\CodeGen.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\GenericCodeGen\Link.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\Constant.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\glslang_tab.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\InfoSink.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\Initialize.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\Intermediate.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\intermOut.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\IntermTraverse.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\iomapper.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\limits.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\linkValidate.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\parseConst.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\ParseContextBase.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\ParseHelper.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\PoolAlloc.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\propagateNoContraction.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\reflection.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\RemoveTree.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\Scan.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\ShaderLang.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\SymbolTable.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\Versions.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\OSDependent\Windows\ossource.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\OGLCompilersDLL\InitializeDll.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\SPIRV\disassemble.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\SPIRV\doc.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\SPIRV\GlslangToSpv.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\SPIRV\InReadableOrder.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\SPIRV\Logger.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\SPIRV\SpvBuilder.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\SPIRV\SPVRemapper.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\StandAlone\ResourceLimits.cpp">
+      <Filter>Source Files\glslang</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -75,6 +234,15 @@
     </ClInclude>
     <ClInclude Include="..\utils.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\demo\Renderer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\demo\RendererInternal.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\demo\Utils.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

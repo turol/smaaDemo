@@ -1,20 +1,38 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SMAADemo", "SMAADemo.vcxproj", "{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Win32 = Debug|Win32
+		Debug Null|Win32 = Debug Null|Win32
+		Debug Null|x64 = Debug Null|x64
+		Debug OpenGL|Win32 = Debug OpenGL|Win32
+		Debug OpenGL|x64 = Debug OpenGL|x64
+		Debug Vulkan|Win32 = Debug Vulkan|Win32
+		Debug Vulkan|x64 = Debug Vulkan|x64
 		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}.Debug|Win32.ActiveCfg = Debug|Win32
-		{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}.Debug|Win32.Build.0 = Debug|Win32
+		{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}.Debug Null|Win32.ActiveCfg = Debug Null|Win32
+		{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}.Debug Null|Win32.Build.0 = Debug Null|Win32
+		{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}.Debug Null|x64.ActiveCfg = Debug Null|x64
+		{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}.Debug Null|x64.Build.0 = Debug Null|x64
+		{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}.Debug OpenGL|Win32.ActiveCfg = Debug OpenGL|Win32
+		{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}.Debug OpenGL|Win32.Build.0 = Debug OpenGL|Win32
+		{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}.Debug OpenGL|x64.ActiveCfg = Debug OpenGL|x64
+		{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}.Debug OpenGL|x64.Build.0 = Debug OpenGL|x64
+		{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}.Debug Vulkan|Win32.ActiveCfg = Debug Vulkan|Win32
+		{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}.Debug Vulkan|Win32.Build.0 = Debug Vulkan|Win32
+		{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}.Debug Vulkan|x64.ActiveCfg = Debug Vulkan|x64
+		{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}.Debug Vulkan|x64.Build.0 = Debug Vulkan|x64
 		{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}.Release|Win32.ActiveCfg = Release|Win32
 		{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}.Release|Win32.Build.0 = Release|Win32
+		{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}.Release|x64.ActiveCfg = Release|x64
+		{6E717EB1-184F-4AC5-B9C4-A4065B9D4712}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
