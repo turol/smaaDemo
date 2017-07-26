@@ -608,6 +608,17 @@ RendererImpl::~RendererImpl() {
 	device.destroyDescriptorPool(dsPool);
 	dsPool = vk::DescriptorPool();
 
+	for (auto &f : frames) {
+		assert(f.image);
+		// owned by swapchain, don't delete
+		f.image = vk::Image();
+
+		assert(f.fence);
+		device.destroyFence(f.fence);
+		f.fence = vk::Fence();
+	}
+	frames.clear();
+
 	device.destroySwapchainKHR(swapchain);
 	swapchain = vk::SwapchainKHR();
 
@@ -1464,7 +1475,14 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 		if (numImages < frames.size()) {
 			// decreasing, delete old and resize
 			for (unsigned int i = numImages; i < frames.size(); i++) {
-				// TODO: delete Frame
+				// delete contents of Frame
+				auto &f = frames[i];
+				assert(f.fence);
+				device.destroyFence(f.fence);
+				f.fence = vk::Fence();
+
+				// owned by swapchain, don't delete
+				f.image = vk::Image();
 			}
 			frames.resize(numImages);
 		} else {
@@ -1473,7 +1491,12 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 			frames.resize(numImages);
 
 			for (unsigned int i = oldSize; i < frames.size(); i++) {
-				// TODO: initialize Frame
+				auto &f = frames[i];
+				assert(!f.fence);
+				f.fence = device.createFence(vk::FenceCreateInfo());
+
+				// we fill this in after we've created the swapchain
+				assert(!f.image);
 			}
 		}
 	}
@@ -1605,6 +1628,8 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	auto imageIdx_         = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence());
 	uint32_t imageIdx      = imageIdx_.value;
 	assert(imageIdx < frames.size());
+	device.resetFences( { frames[imageIdx].fence } );
+
 	vk::Image image        = frames[imageIdx].image;
 	vk::ImageLayout layout = vk::ImageLayout::eTransferDstOptimal;
 
@@ -1659,7 +1684,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	submit.pCommandBuffers      = &currentCommandBuffer;
 	submit.signalSemaphoreCount = 1;
 	submit.pSignalSemaphores    = &renderDoneSem;
-	queue.submit({ submit }, vk::Fence());
+	queue.submit({ submit }, frames[imageIdx].fence);
 
 	// present
 	vk::PresentInfoKHR presentInfo;
@@ -1672,8 +1697,9 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	queue.presentKHR(presentInfo);
 
 	// wait until complete
-	// TODO: don't
-	queue.waitIdle();
+	// TODO: don't do it here, do before starting rendering of next frame which needs this image
+	// TODO: handle device lost and timeout
+	device.waitForFences({ frames[imageIdx].fence }, true, 1000000000ull);
 
 	// delete command buffer
 	// TODO: shouldn't do that, reuse it

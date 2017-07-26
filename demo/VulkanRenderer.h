@@ -215,6 +215,36 @@ struct Texture {
 
 struct Frame {
 	vk::Image          image;
+	vk::Fence          fence;
+
+
+	Frame() {}
+
+	~Frame() {
+		assert(!image);
+		assert(!fence);
+	}
+
+	Frame(const Frame &)            = delete;
+	Frame &operator=(const Frame &) = delete;
+
+	Frame(Frame &&other)
+	: image(other.image)
+	, fence(other.fence)
+	{
+		other.image = vk::Image();
+		other.fence = vk::Fence();
+	}
+
+	Frame &operator=(Frame &&other) {
+		assert(!image);
+		image = other.image;
+		other.image = vk::Image();
+
+		assert(!fence);
+		fence = other.fence;
+		other.fence = vk::Fence();
+	}
 };
 
 
