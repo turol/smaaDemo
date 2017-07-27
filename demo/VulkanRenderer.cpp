@@ -477,24 +477,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	acquireSem    = device.createSemaphore(vk::SemaphoreCreateInfo());
 	renderDoneSem = device.createSemaphore(vk::SemaphoreCreateInfo());
 
-	// descriptor pool
-	{
-		// TODO: these limits are arbitrary, find better ones
-		std::vector<vk::DescriptorPoolSize> poolSizes;
-		for (const auto t : descriptorTypes ) {
-			vk::DescriptorPoolSize s;
-			s.type            = t;
-			s.descriptorCount = 32;
-			poolSizes.push_back(s);
-		}
-
-		vk::DescriptorPoolCreateInfo dsInfo;
-		dsInfo.maxSets       = 256;
-		dsInfo.poolSizeCount = poolSizes.size();
-		dsInfo.pPoolSizes    = &poolSizes[0];
-
-		dsPool = device.createDescriptorPool(dsInfo);
-	}
 	// TODO: load pipeline cache
 }
 
@@ -505,7 +487,6 @@ RendererImpl::~RendererImpl() {
 	assert(surface);
 	assert(swapchain);
 	assert(commandPool);
-	assert(dsPool);
 	assert(ringBuffer);
 	assert(ringBufferMem.memory);
 	assert(ringBufferMem.size   > 0);
@@ -606,10 +587,11 @@ RendererImpl::~RendererImpl() {
 	device.destroyCommandPool(commandPool);
 	commandPool = vk::CommandPool();
 
-	device.destroyDescriptorPool(dsPool);
-	dsPool = vk::DescriptorPool();
-
 	for (auto &f : frames) {
+		assert(f.dsPool);
+		device.destroyDescriptorPool(f.dsPool);
+		f.dsPool = vk::DescriptorPool();
+
 		assert(f.image);
 		// owned by swapchain, don't delete
 		f.image = vk::Image();
@@ -1495,12 +1477,31 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 
 				// owned by swapchain, don't delete
 				f.image = vk::Image();
+
+				assert(f.dsPool);
+				device.destroyDescriptorPool(f.dsPool);
+				f.dsPool = vk::DescriptorPool();
 			}
 			frames.resize(numImages);
 		} else {
 			// increasing, resize and initialize new
 			unsigned int oldSize = frames.size();
 			frames.resize(numImages);
+
+			// descriptor pool
+			// TODO: these limits are arbitrary, find better ones
+			std::vector<vk::DescriptorPoolSize> poolSizes;
+			for (const auto t : descriptorTypes ) {
+				vk::DescriptorPoolSize s;
+				s.type            = t;
+				s.descriptorCount = 32;
+				poolSizes.push_back(s);
+			}
+
+			vk::DescriptorPoolCreateInfo dsInfo;
+			dsInfo.maxSets       = 256;
+			dsInfo.poolSizeCount = poolSizes.size();
+			dsInfo.pPoolSizes    = &poolSizes[0];
 
 			for (unsigned int i = oldSize; i < frames.size(); i++) {
 				auto &f = frames[i];
@@ -1509,6 +1510,9 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 
 				// we fill this in after we've created the swapchain
 				assert(!f.image);
+
+				assert(!f.dsPool);
+				f.dsPool = device.createDescriptorPool(dsInfo);
 			}
 		}
 	}
@@ -1642,7 +1646,10 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 
 	const auto &rt = renderTargets.get(rtHandle);
 
-	vk::Image image        = frames[currentFrameIdx].image;
+	auto &frame = frames[currentFrameIdx];
+	device.resetFences( { frame.fence } );
+
+	vk::Image image        = frame.image;
 	vk::ImageLayout layout = vk::ImageLayout::eTransferDstOptimal;
 
 	// transition image to transfer dst optimal
@@ -1696,7 +1703,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	submit.pCommandBuffers      = &currentCommandBuffer;
 	submit.signalSemaphoreCount = 1;
 	submit.pSignalSemaphores    = &renderDoneSem;
-	queue.submit({ submit }, frames[currentFrameIdx].fence);
+	queue.submit({ submit }, frame.fence);
 
 	// present
 	vk::PresentInfoKHR presentInfo;
@@ -1711,7 +1718,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	// wait until complete
 	// TODO: don't do it here, do before starting rendering of next frame which needs this image
 	// TODO: handle device lost and timeout
-	device.waitForFences({ frames[currentFrameIdx].fence }, true, 1000000000ull);
+	device.waitForFences({ frame.fence }, true, 1000000000ull);
 
 	// delete command buffer
 	// TODO: shouldn't do that, reuse it
@@ -1720,7 +1727,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	// reset command pool
 	device.resetCommandPool(commandPool, vk::CommandPoolResetFlags());
 
-	device.resetDescriptorPool(dsPool);
+	device.resetDescriptorPool(frame.dsPool);
 
 	// TODO: multiple frames, only delete after no longer in use by GPU
 	for (auto handle : ephemeralBuffers) {
@@ -1841,12 +1848,13 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 
 
 void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DescriptorSetLayoutHandle layoutHandle, const void *data_) {
+	assert(inFrame);
 	assert(validPipeline);
 
 	const DescriptorSetLayout &layout = dsLayouts.get(layoutHandle);
 
 	vk::DescriptorSetAllocateInfo dsInfo;
-	dsInfo.descriptorPool      = dsPool;
+	dsInfo.descriptorPool      = frames[currentFrameIdx].dsPool;
 	dsInfo.descriptorSetCount  = 1;
 	dsInfo.pSetLayouts         = &layout.layout;
 
