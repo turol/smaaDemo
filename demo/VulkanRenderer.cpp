@@ -439,12 +439,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	recreateSwapchain(desc.swapchain);
 
-	{
-		vk::CommandPoolCreateInfo cp;
-		cp.queueFamilyIndex = graphicsQueueIndex;
-		commandPool = device.createCommandPool(cp);
-	}
-
 	// create ringbuffer
 	{
 		vk::BufferCreateInfo rbInfo;
@@ -486,7 +480,6 @@ RendererImpl::~RendererImpl() {
 	assert(device);
 	assert(surface);
 	assert(swapchain);
-	assert(commandPool);
 	assert(ringBuffer);
 	assert(ringBufferMem.memory);
 	assert(ringBufferMem.size   > 0);
@@ -584,10 +577,11 @@ RendererImpl::~RendererImpl() {
 		memset(&tex.memory, 0, sizeof(tex.memory));
 	} );
 
-	device.destroyCommandPool(commandPool);
-	commandPool = vk::CommandPool();
-
 	for (auto &f : frames) {
+		assert(f.commandPool);
+		device.destroyCommandPool(f.commandPool);
+		f.commandPool = vk::CommandPool();
+
 		assert(f.dsPool);
 		device.destroyDescriptorPool(f.dsPool);
 		f.dsPool = vk::DescriptorPool();
@@ -658,7 +652,10 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
 	// TODO: share some of this stuff with createTexture
-	vk::CommandBufferAllocateInfo cmdInfo(commandPool, vk::CommandBufferLevel::ePrimary, 1);
+	// FIXME: this uses the wrong command bool if we're not in a frame
+	//        for example during startup
+	//        add separate command pool(s) for transfers
+	vk::CommandBufferAllocateInfo cmdInfo(frames[currentFrameIdx].commandPool, vk::CommandBufferLevel::ePrimary, 1);
 	auto cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
 
 	vk::BufferCopy copyRegion;
@@ -679,7 +676,7 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 
 	// TODO: don't wait for idle here, use fence to make frame submit wait for it
 	queue.waitIdle();
-	device.freeCommandBuffers(commandPool, { cmdBuf } );
+	device.freeCommandBuffers(frames[currentFrameIdx].commandPool, { cmdBuf } );
 
 	return BufferHandle(result.second);
 }
@@ -1264,7 +1261,10 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
 	// TODO: share some of this stuff with createBuffer
-	vk::CommandBufferAllocateInfo cmdInfo(commandPool, vk::CommandBufferLevel::ePrimary, 1);
+	// FIXME: this uses the wrong command bool if we're not in a frame
+	//        for example during startup
+	//        add separate command pool(s) for transfers
+	vk::CommandBufferAllocateInfo cmdInfo(frames[currentFrameIdx].commandPool, vk::CommandBufferLevel::ePrimary, 1);
 	auto cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
 
 	cmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
@@ -1342,7 +1342,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 
 	// TODO: don't wait for idle here, use fence to make frame submit wait for it
 	queue.waitIdle();
-	device.freeCommandBuffers(commandPool, { cmdBuf } );
+	device.freeCommandBuffers(frames[currentFrameIdx].commandPool, { cmdBuf } );
 
 	return result.second;
 }
@@ -1481,6 +1481,10 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 				assert(f.dsPool);
 				device.destroyDescriptorPool(f.dsPool);
 				f.dsPool = vk::DescriptorPool();
+
+				assert(f.commandPool);
+				device.destroyCommandPool(f.commandPool);
+				f.commandPool = vk::CommandPool();
 			}
 			frames.resize(numImages);
 		} else {
@@ -1503,6 +1507,9 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 			dsInfo.poolSizeCount = poolSizes.size();
 			dsInfo.pPoolSizes    = &poolSizes[0];
 
+			vk::CommandPoolCreateInfo cp;
+			cp.queueFamilyIndex = graphicsQueueIndex;
+
 			for (unsigned int i = oldSize; i < frames.size(); i++) {
 				auto &f = frames[i];
 				assert(!f.fence);
@@ -1513,6 +1520,9 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 
 				assert(!f.dsPool);
 				f.dsPool = device.createDescriptorPool(dsInfo);
+
+				assert(!f.commandPool);
+				f.commandPool = device.createCommandPool(cp);
 			}
 		}
 	}
@@ -1621,12 +1631,13 @@ void RendererImpl::beginFrame() {
 	auto imageIdx_         = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence());
 	currentFrameIdx        = imageIdx_.value;
 	assert(currentFrameIdx < frames.size());
-	device.resetFences( { frames[currentFrameIdx].fence } );
+	auto &frame            = frames[currentFrameIdx];
+	device.resetFences( { frame.fence } );
 
 	// create command buffer
 	// TODO: should have multiple sets of these ready and just reset
 	// the appropriate pool
-	vk::CommandBufferAllocateInfo info(commandPool, vk::CommandBufferLevel::ePrimary, 1);
+	vk::CommandBufferAllocateInfo info(frame.commandPool, vk::CommandBufferLevel::ePrimary, 1);
 	auto bufs = device.allocateCommandBuffers(info);
 
 	currentCommandBuffer = bufs[0];
@@ -1722,10 +1733,10 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 
 	// delete command buffer
 	// TODO: shouldn't do that, reuse it
-	device.freeCommandBuffers(commandPool, {currentCommandBuffer} );
+	device.freeCommandBuffers(frame.commandPool, {currentCommandBuffer} );
 
 	// reset command pool
-	device.resetCommandPool(commandPool, vk::CommandPoolResetFlags());
+	device.resetCommandPool(frame.commandPool, vk::CommandPoolResetFlags());
 
 	device.resetDescriptorPool(frame.dsPool);
 

@@ -217,6 +217,7 @@ struct Frame {
 	vk::Image          image;
 	vk::Fence          fence;
 	vk::DescriptorPool dsPool;
+	vk::CommandPool    commandPool;
 
 
 	Frame() {}
@@ -225,6 +226,7 @@ struct Frame {
 		assert(!image);
 		assert(!fence);
 		assert(!dsPool);
+		assert(!commandPool);
 	}
 
 	Frame(const Frame &)            = delete;
@@ -234,10 +236,12 @@ struct Frame {
 	: image(other.image)
 	, fence(other.fence)
 	, dsPool(other.dsPool)
+	, commandPool(other.commandPool)
 	{
 		other.image = vk::Image();
 		other.fence = vk::Fence();
 		other.dsPool = vk::DescriptorPool();
+		other.commandPool = vk::CommandPool();
 	}
 
 	Frame &operator=(Frame &&other) {
@@ -252,6 +256,10 @@ struct Frame {
 		assert(!dsPool);
 		dsPool = other.dsPool;
 		other.dsPool = vk::DescriptorPool();
+
+		assert(!commandPool);
+		commandPool = other.commandPool;
+		other.commandPool = vk::CommandPool();
 	}
 };
 
@@ -275,8 +283,6 @@ struct RendererBase {
 
 	vk::Semaphore                      acquireSem;
 	vk::Semaphore                      renderDoneSem;
-
-	vk::CommandPool                    commandPool;
 
 	vk::CommandBuffer                  currentCommandBuffer;
 	vk::PipelineLayout                 currentPipelineLayout;
