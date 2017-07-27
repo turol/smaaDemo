@@ -374,9 +374,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\AreaTex.h" />
+    <ClInclude Include="..\demo\NullRenderer.h" />
+    <ClInclude Include="..\demo\OpenGLRenderer.h" />
     <ClInclude Include="..\demo\Renderer.h" />
     <ClInclude Include="..\demo\RendererInternal.h" />
     <ClInclude Include="..\demo\Utils.h" />
+    <ClInclude Include="..\demo\VulkanRenderer.h" />
     <ClInclude Include="..\fxaa3_11.h" />
     <ClInclude Include="..\SearchTex.h" />
     <ClInclude Include="..\smaa.h" />
