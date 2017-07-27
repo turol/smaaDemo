@@ -578,6 +578,10 @@ RendererImpl::~RendererImpl() {
 	} );
 
 	for (auto &f : frames) {
+		assert(f.commandBuffer);
+		device.freeCommandBuffers(f.commandPool, { f.commandBuffer });
+		f.commandBuffer = vk::CommandBuffer();
+
 		assert(f.commandPool);
 		device.destroyCommandPool(f.commandPool);
 		f.commandPool = vk::CommandPool();
@@ -1482,6 +1486,10 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 				device.destroyDescriptorPool(f.dsPool);
 				f.dsPool = vk::DescriptorPool();
 
+				assert(f.commandBuffer);
+				device.freeCommandBuffers(f.commandPool, { f.commandBuffer });
+				f.commandBuffer = vk::CommandBuffer();
+
 				assert(f.commandPool);
 				device.destroyCommandPool(f.commandPool);
 				f.commandPool = vk::CommandPool();
@@ -1523,6 +1531,13 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 
 				assert(!f.commandPool);
 				f.commandPool = device.createCommandPool(cp);
+
+				assert(!f.commandBuffer);
+				// create command buffer
+				vk::CommandBufferAllocateInfo info(f.commandPool, vk::CommandBufferLevel::ePrimary, 1);
+				auto bufs = device.allocateCommandBuffers(info);
+				assert(bufs.size() == 1);
+				f.commandBuffer = bufs[0];
 			}
 		}
 	}
@@ -1634,15 +1649,8 @@ void RendererImpl::beginFrame() {
 	auto &frame            = frames[currentFrameIdx];
 	device.resetFences( { frame.fence } );
 
-	// create command buffer
-	// TODO: should have multiple sets of these ready and just reset
-	// the appropriate pool
-	vk::CommandBufferAllocateInfo info(frame.commandPool, vk::CommandBufferLevel::ePrimary, 1);
-	auto bufs = device.allocateCommandBuffers(info);
-
-	currentCommandBuffer = bufs[0];
-
 	// set command buffer to recording
+	currentCommandBuffer = frame.commandBuffer;
 	currentCommandBuffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 
 	currentPipelineLayout = vk::PipelineLayout();
@@ -1730,10 +1738,6 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	// TODO: don't do it here, do before starting rendering of next frame which needs this image
 	// TODO: handle device lost and timeout
 	device.waitForFences({ frame.fence }, true, 1000000000ull);
-
-	// delete command buffer
-	// TODO: shouldn't do that, reuse it
-	device.freeCommandBuffers(frame.commandPool, {currentCommandBuffer} );
 
 	// reset command pool
 	device.resetCommandPool(frame.commandPool, vk::CommandPoolResetFlags());

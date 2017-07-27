@@ -218,6 +218,7 @@ struct Frame {
 	vk::Fence          fence;
 	vk::DescriptorPool dsPool;
 	vk::CommandPool    commandPool;
+	vk::CommandBuffer  commandBuffer;
 
 
 	Frame() {}
@@ -227,6 +228,7 @@ struct Frame {
 		assert(!fence);
 		assert(!dsPool);
 		assert(!commandPool);
+		assert(!commandBuffer);
 	}
 
 	Frame(const Frame &)            = delete;
@@ -237,11 +239,13 @@ struct Frame {
 	, fence(other.fence)
 	, dsPool(other.dsPool)
 	, commandPool(other.commandPool)
+	, commandBuffer(other.commandBuffer)
 	{
 		other.image = vk::Image();
 		other.fence = vk::Fence();
 		other.dsPool = vk::DescriptorPool();
 		other.commandPool = vk::CommandPool();
+		other.commandBuffer = vk::CommandBuffer();
 	}
 
 	Frame &operator=(Frame &&other) {
@@ -260,6 +264,10 @@ struct Frame {
 		assert(!commandPool);
 		commandPool = other.commandPool;
 		other.commandPool = vk::CommandPool();
+
+		assert(!commandBuffer);
+		commandBuffer = other.commandBuffer;
+		other.commandBuffer = vk::CommandBuffer();
 	}
 };
 
