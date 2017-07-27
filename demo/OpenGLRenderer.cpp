@@ -1412,8 +1412,9 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 }
 
 
-void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayoutHandle layoutHandle, const void *data_) {
+void RendererImpl::bindDescriptorSet(unsigned int index, DescriptorSetLayoutHandle layoutHandle, const void *data_) {
 	assert(validPipeline);
+	assert(currentPipeline.descriptorSetLayouts[index] == layoutHandle);
 
 	// TODO: get shader bindings from current pipeline, use index
 	const DescriptorSetLayout &layout = dsLayouts.get(layoutHandle);
