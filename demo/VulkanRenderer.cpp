@@ -1455,6 +1455,17 @@ void RendererImpl::deleteTexture(TextureHandle handle) {
 
 
 void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
+	if (swapchainDesc.fullscreen != desc.fullscreen) {
+		if (desc.fullscreen) {
+			// TODO: check return val?
+			SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+			printf("Fullscreen\n");
+		} else {
+			SDL_SetWindowFullscreen(window, 0);
+			printf("Windowed\n");
+		}
+	}
+
 	surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
 	printf("image count min-max %u - %u\n", surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
 	printf("image extent min-max %ux%u - %ux%u\n", surfaceCapabilities.minImageExtent.width, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.width, surfaceCapabilities.maxImageExtent.height);
@@ -1587,6 +1598,8 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	for (unsigned int i = 0; i < numImages; i++) {
 		frames[i].image = swapchainImages[i];
 	}
+
+	swapchainDesc = desc;
 }
 
 
