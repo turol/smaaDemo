@@ -210,6 +210,7 @@ RendererBase::RendererBase()
 : graphicsQueueIndex(0)
 , ringBufferMem(vk::MappedMemoryRange())
 , persistentMapping(nullptr)
+, currentFrameIdx(0)
 {
 }
 
@@ -1611,9 +1612,12 @@ void RendererImpl::beginFrame() {
 	pipelineDrawn = true;
 
 	// TODO: check how many frames are outstanding, wait if maximum
-	// here or in presentFrame?
 
-	// TODO: acquire next image here or in presentFrame?
+	// acquire next image?
+	auto imageIdx_         = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence());
+	currentFrameIdx        = imageIdx_.value;
+	assert(currentFrameIdx < frames.size());
+	device.resetFences( { frames[currentFrameIdx].fence } );
 
 	// create command buffer
 	// TODO: should have multiple sets of these ready and just reset
@@ -1638,12 +1642,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 
 	const auto &rt = renderTargets.get(rtHandle);
 
-	auto imageIdx_         = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence());
-	uint32_t imageIdx      = imageIdx_.value;
-	assert(imageIdx < frames.size());
-	device.resetFences( { frames[imageIdx].fence } );
-
-	vk::Image image        = frames[imageIdx].image;
+	vk::Image image        = frames[currentFrameIdx].image;
 	vk::ImageLayout layout = vk::ImageLayout::eTransferDstOptimal;
 
 	// transition image to transfer dst optimal
@@ -1697,7 +1696,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	submit.pCommandBuffers      = &currentCommandBuffer;
 	submit.signalSemaphoreCount = 1;
 	submit.pSignalSemaphores    = &renderDoneSem;
-	queue.submit({ submit }, frames[imageIdx].fence);
+	queue.submit({ submit }, frames[currentFrameIdx].fence);
 
 	// present
 	vk::PresentInfoKHR presentInfo;
@@ -1705,14 +1704,14 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	presentInfo.pWaitSemaphores    = &renderDoneSem;
 	presentInfo.swapchainCount     = 1;
 	presentInfo.pSwapchains        = &swapchain;
-	presentInfo.pImageIndices      = &imageIdx;
+	presentInfo.pImageIndices      = &currentFrameIdx;
 
 	queue.presentKHR(presentInfo);
 
 	// wait until complete
 	// TODO: don't do it here, do before starting rendering of next frame which needs this image
 	// TODO: handle device lost and timeout
-	device.waitForFences({ frames[imageIdx].fence }, true, 1000000000ull);
+	device.waitForFences({ frames[currentFrameIdx].fence }, true, 1000000000ull);
 
 	// delete command buffer
 	// TODO: shouldn't do that, reuse it

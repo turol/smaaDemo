@@ -295,6 +295,7 @@ struct RendererBase {
 	std::vector<BufferHandle> ephemeralBuffers;
 
 	std::vector<Frame>        frames;
+	uint32_t                  currentFrameIdx;
 
 
 	unsigned int ringBufferAlloc(unsigned int size);
