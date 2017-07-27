@@ -1419,7 +1419,7 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 	const DescriptorSetLayout &layout = dsLayouts.get(layoutHandle);
 
 	const char *data = reinterpret_cast<const char *>(data_);
-	unsigned int index = 0;
+	unsigned int descIndex = 0;
 	for (const auto &l : layout.layout) {
 		switch (l.type) {
 		case DescriptorType::End:
@@ -1439,8 +1439,8 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 				assert(buffer.buffer    != 0);
 				assert(buffer.beginOffs == 0);
 			}
-			// FIXME: index is not right here
-			glBindBufferRange(GL_UNIFORM_BUFFER, index, buffer.buffer, buffer.beginOffs, buffer.size);
+			// FIXME: descIndex is not right here
+			glBindBufferRange(GL_UNIFORM_BUFFER, descIndex, buffer.buffer, buffer.beginOffs, buffer.size);
 		} break;
 
 		case DescriptorType::StorageBuffer: {
@@ -1454,21 +1454,21 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 				assert(buffer.buffer    != 0);
 				assert(buffer.beginOffs == 0);
 			}
-			// FIXME: index is not right here
-			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, index, buffer.buffer, buffer.beginOffs, buffer.size);
+			// FIXME: descIndex is not right here
+			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, descIndex, buffer.buffer, buffer.beginOffs, buffer.size);
 		} break;
 
 		case DescriptorType::Sampler: {
 			const auto &sampler = samplers.get(*reinterpret_cast<const SamplerHandle *>(data + l.offset));
 			assert(sampler.sampler);
-			glBindSampler(index, sampler.sampler);
+			glBindSampler(descIndex, sampler.sampler);
 		} break;
 
 		case DescriptorType::Texture: {
 			TextureHandle texHandle = *reinterpret_cast<const TextureHandle *>(data + l.offset);
 			const auto &tex = textures.get(texHandle);
-			// FIXME: index is not right here
-			glBindTextureUnit(index, tex.tex);
+			// FIXME: descIndex is not right here
+			glBindTextureUnit(descIndex, tex.tex);
 		} break;
 
 		case DescriptorType::CombinedSampler: {
@@ -1480,9 +1480,9 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 			const auto &sampler = samplers.get(combined.sampler);
 			assert(sampler.sampler);
 
-			// FIXME: index is not right here
-			glBindTextureUnit(index, tex.tex);
-			glBindSampler(index, sampler.sampler);
+			// FIXME: descIndex is not right here
+			glBindTextureUnit(descIndex, tex.tex);
+			glBindSampler(descIndex, sampler.sampler);
 		} break;
 
 		case DescriptorType::Count:
@@ -1491,7 +1491,7 @@ void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayo
 
 		}
 
-		index++;
+		descIndex++;
 	}
 }
 
