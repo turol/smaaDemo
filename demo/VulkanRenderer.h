@@ -5,6 +5,9 @@
 #ifndef SDL_VIDEO_VULKAN_SURFACE
 
 #ifdef _WIN32
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+
 #define VK_USE_PLATFORM_WIN32_KHR 1
 #else
 #define VK_USE_PLATFORM_XCB_KHR 1
