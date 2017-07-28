@@ -116,6 +116,9 @@ Buffer::Buffer()
 
 
 Buffer::~Buffer() {
+	assert(buffer == 0);
+	assert(!ringBufferAlloc);
+	assert(size   == 0);
 }
 
 
@@ -1007,8 +1010,14 @@ TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
 
 void RendererImpl::deleteBuffer(BufferHandle handle) {
 	Buffer &buffer = buffers.get(handle);
+	assert(buffer.buffer != 0);
 	glDeleteBuffers(1, &buffer.buffer);
 	buffer.buffer = 0;
+
+	assert(buffer.size != 0);
+	buffer.size   = 0;
+
+	assert(!buffer.ringBufferAlloc);
 
 	buffers.remove(handle);
 }
@@ -1162,8 +1171,14 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 	for (auto handle : ephemeralBuffers) {
 		Buffer &buffer = buffers.get(handle);
 		assert(buffer.buffer == ringBuffer);
+		buffer.buffer = 0;
+
 		assert(buffer.ringBufferAlloc);
+		buffer.ringBufferAlloc = false;
+
 		assert(buffer.size   >  0);
+		buffer.size = 0;
+
 		buffers.remove(handle);
 	}
 	ephemeralBuffers.clear();
