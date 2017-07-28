@@ -6,10 +6,8 @@
 layout(set = 1, binding = 0) uniform sampler2D colorTex;
 
 
-layout (location = 0) in Data {
-    vec2 uv;
-    vec4 color;
-};
+layout (location = 0) in vec4 color;
+layout (location = 1) in vec2 uv;
 
 
 layout (location = 0) out vec4 outColor;
