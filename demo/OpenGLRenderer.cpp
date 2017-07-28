@@ -109,6 +109,7 @@ static GLenum glTexBaseFormat(Format format) {
 Buffer::Buffer()
 : buffer(0)
 , ringBufferAlloc(false)
+, beginOffs(0)
 , size(0)
 {
 }
