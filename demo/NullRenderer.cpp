@@ -71,7 +71,7 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	unsigned int beginPtr = ringBufferAllocate(size);
+	unsigned int beginPtr = ringBufferAllocate(size, 256);
 
 	// TODO: use valgrind to enforce we only write to intended parts of ring buffer
 	memcpy(&ringBuffer[beginPtr], contents, size);

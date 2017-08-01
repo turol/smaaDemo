@@ -567,7 +567,9 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	unsigned int beginPtr = ringBufferAllocate(size);
+	// TODO: UBOs need alignment queried from implementation
+	// TODO: need buffer usage flags for that
+	unsigned int beginPtr = ringBufferAllocate(size, 256);
 
 	if (persistentMapInUse) {
 		memcpy(persistentMapping + beginPtr, contents, size);

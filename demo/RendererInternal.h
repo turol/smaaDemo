@@ -157,7 +157,7 @@ struct RendererImpl : public RendererBase {
 
 	std::vector<char> loadSource(const std::string &name);
 
-	unsigned int ringBufferAllocate(unsigned int size);
+	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);
 
 	RendererImpl(const RendererDesc &desc);
 

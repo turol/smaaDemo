@@ -650,7 +650,7 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	device.bindBufferMemory(buffer.buffer, buffer.memory.memory, buffer.memory.offset);
 
 	// copy contents to GPU memory
-	unsigned int beginPtr = ringBufferAllocate(size);
+	unsigned int beginPtr = ringBufferAllocate(size, 256);
 	memcpy(persistentMapping + beginPtr, contents, size);
 
 	// TODO: reuse command buffer for multiple copies
@@ -690,7 +690,7 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	unsigned int beginPtr = ringBufferAllocate(size);
+	unsigned int beginPtr = ringBufferAllocate(size, 256);
 
 	memcpy(persistentMapping + beginPtr, contents, size);
 
@@ -1309,7 +1309,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 			unsigned int size = desc.mipData_[i].size;
 
 			// copy contents to GPU memory
-			unsigned int beginPtr = ringBufferAllocate(size);
+			unsigned int beginPtr = ringBufferAllocate(size, 256);
 			memcpy(persistentMapping + beginPtr, desc.mipData_[i].data, size);
 
 			layers.mipLevel = i;

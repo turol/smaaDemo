@@ -206,13 +206,10 @@ void Renderer::drawIndexedOffset(unsigned int vertexCount, unsigned int firstInd
 }
 
 
-unsigned int RendererImpl::ringBufferAllocate(unsigned int size) {
+unsigned int RendererImpl::ringBufferAllocate(unsigned int size, unsigned int alignment) {
 	// sub-allocate from persistent coherent buffer
 	// round current pointer up to necessary alignment
-	// TODO: UBOs need alignment queried from implementation
-	// TODO: need buffer usage flags for that
-	const unsigned int align = 8;
-	const unsigned int add   = (1 << align) - 1;
+	const unsigned int add   = alignment - 1;
 	const unsigned int mask  = ~add;
 	unsigned int alignedPtr  = (ringBufPtr + add) & mask;
 	assert(ringBufPtr <= alignedPtr);
