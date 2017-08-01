@@ -327,6 +327,9 @@ struct RendererBase {
 	bool idxBuf16Bit;
 	unsigned int  indexBufByteOffset;
 
+	unsigned int   uboAlign;
+	unsigned int   ssboAlign;
+
 	ResourceContainer<Buffer>               buffers;
 	ResourceContainer<DescriptorSetLayout>  dsLayouts;
 	ResourceContainer<FragmentShader>       fragmentShaders;

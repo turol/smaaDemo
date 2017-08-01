@@ -299,6 +299,8 @@ RendererBase::RendererBase()
 , vao(0)
 , idxBuf16Bit(false)
 , indexBufByteOffset(0)
+, uboAlign(0)
+, ssboAlign(0)
 {
 }
 
@@ -417,17 +419,14 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	printf("GL version: \"%s\"\n", glGetString(GL_VERSION));
 	printf("GLSL version: \"%s\"\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
-	GLint uboAlign = -1;
-	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uboAlign);
+	GLint temp = -1;
+	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &temp);
+	uboAlign = temp;
 	printf("UBO align: %d\n", uboAlign);
-	// FIXME: should store this and use it in createEphemeralBuffer
-	assert(uboAlign <= (1 << 8));
 
-	GLint ssboAlign = -1;
-	glGetIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, &ssboAlign);
+	glGetIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, &temp);
+	ssboAlign = temp;
 	printf("SSBO align: %d\n", ssboAlign);
-	// FIXME: should store this and use it in createEphemeralBuffer
-	assert(ssboAlign <= (1 << 8));
 
 	// TODO: use GL_UPPER_LEFT to match Vulkan
 	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
@@ -573,9 +572,9 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	// TODO: UBOs need alignment queried from implementation
+	// TODO: use appropriate alignment
 	// TODO: need buffer usage flags for that
-	unsigned int beginPtr = ringBufferAllocate(size, 256);
+	unsigned int beginPtr = ringBufferAllocate(size, std::max(uboAlign, ssboAlign));
 
 	if (persistentMapInUse) {
 		memcpy(persistentMapping + beginPtr, contents, size);
