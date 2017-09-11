@@ -1,8 +1,5 @@
-commit 7600059ae73caa6bdcb4dfee40c5a1aeac47319c
-Merge: f1ce3ad d0f7c97
+commit 0c1c663062c923c3dfdcc86c8024cfed9b24680a
 Author: Adam Sawicki <adam.sawicki@amd.com>
-Date:   Tue Jul 11 10:13:10 2017 +0200
+Date:   Fri Aug 25 17:28:57 2017 +0200
 
-    Merge pull request #1 from dylanede/patch-1
-    
-    Correct wording of comment about required flags
+    Two small fixes.

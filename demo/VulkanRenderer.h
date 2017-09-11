@@ -27,13 +27,15 @@
 struct Buffer {
 	vk::Buffer buffer;
 	bool                 ringBufferAlloc;
-	VkMappedMemoryRange  memory;
+	VmaAllocation        memory;
+	uint32_t             size;
+	uint32_t             offset;
 	// TODO: access type bits (for debugging)
 
 
 	Buffer()
 	: ringBufferAlloc(false)
-	, memory(vk::MappedMemoryRange())
+	, memory(nullptr)
 	{}
 
 	Buffer(const Buffer &)            = delete;
@@ -198,13 +200,14 @@ struct Texture {
 	unsigned int         width, height;
 	vk::Image            image;
 	vk::ImageView        imageView;
-	VkMappedMemoryRange  memory;
+	VmaAllocation        memory;
 	bool                 renderTarget;
 
 
 	Texture()
 	: width(0)
 	, height(0)
+	, memory(nullptr)
 	, renderTarget(false)
 	{}
 
@@ -316,7 +319,7 @@ struct RendererBase {
 	ResourceContainer<VertexShader>        vertexShaders;
 
 	vk::Buffer           ringBuffer;
-	VkMappedMemoryRange  ringBufferMem;
+	VmaAllocation        ringBufferMem;
 	char                *persistentMapping;
 
 	std::vector<BufferHandle> ephemeralBuffers;

@@ -208,7 +208,7 @@ static vk::Format vulkanFormat(Format format) {
 
 RendererBase::RendererBase()
 : graphicsQueueIndex(0)
-, ringBufferMem(vk::MappedMemoryRange())
+, ringBufferMem(nullptr)
 , persistentMapping(nullptr)
 , currentFrameIdx(0)
 {
@@ -414,11 +414,13 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	device = physicalDevice.createDevice(deviceCreateInfo);
 
 	VmaAllocatorCreateInfo allocatorInfo;
+	allocatorInfo.flags                        = 0;
 	allocatorInfo.physicalDevice = physicalDevice;
 	allocatorInfo.device         = device;
 	allocatorInfo.preferredLargeHeapBlockSize  = 0;
 	allocatorInfo.preferredSmallHeapBlockSize  = 0;
 	allocatorInfo.pAllocationCallbacks         = nullptr;
+	allocatorInfo.pDeviceMemoryCallbacks       = nullptr;
 
 	vmaCreateAllocator(&allocatorInfo, &allocator);
 
@@ -446,25 +448,27 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		rbInfo.usage = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferSrc;
 		ringBuffer   = device.createBuffer(rbInfo);
 
-		assert(ringBufferMem.memory == VK_NULL_HANDLE);
-		assert(ringBufferMem.size   == 0);
-		assert(ringBufferMem.offset == 0);
+		assert(ringBufferMem == nullptr);
 
-		VmaMemoryRequirements  req       = { true, VMA_MEMORY_USAGE_CPU_TO_GPU, VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 0, false };
-		uint32_t               typeIndex = 0;
+		VmaMemoryRequirements req;
+		req.flags          = VMA_MEMORY_REQUIREMENT_OWN_MEMORY_BIT | VMA_MEMORY_REQUIREMENT_PERSISTENT_MAP_BIT;
+		req.usage          = VMA_MEMORY_USAGE_CPU_TO_GPU;
+		req.requiredFlags  = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+		req.preferredFlags = 0;
+		req.pUserData      = nullptr;
+		VmaAllocationInfo  allocationInfo = {};
 
-		vmaAllocateMemoryForBuffer(allocator, ringBuffer, &req, &ringBufferMem, &typeIndex);
-		printf("ringbuffer memory type index: %u\n",  typeIndex);
-		printf("ringbuffer memory: %p\n",             ringBufferMem.memory);
-		printf("ringbuffer memory offset: %u\n",      static_cast<unsigned int>(ringBufferMem.offset));
-		printf("ringbuffer memory size: %u\n",        static_cast<unsigned int>(ringBufferMem.size));
-		assert(ringBufferMem.memory != VK_NULL_HANDLE);
-		assert(ringBufferMem.size   == ringBufSize);
-		assert(ringBufferMem.offset == 0);
+		vmaAllocateMemoryForBuffer(allocator, ringBuffer, &req, &ringBufferMem, &allocationInfo);
+		printf("ringbuffer memory type: %u\n",    allocationInfo.memoryType);
+		printf("ringbuffer memory offset: %u\n",  static_cast<unsigned int>(allocationInfo.offset));
+		printf("ringbuffer memory size: %u\n",    static_cast<unsigned int>(allocationInfo.size));
+		assert(ringBufferMem != nullptr);
+		assert(allocationInfo.offset == 0);
+		assert(allocationInfo.pMappedData != nullptr);
 
-		device.bindBufferMemory(ringBuffer, ringBufferMem.memory, ringBufferMem.offset);
+		device.bindBufferMemory(ringBuffer, allocationInfo.deviceMemory, allocationInfo.offset);
 
-		persistentMapping = reinterpret_cast<char *>(device.mapMemory(ringBufferMem.memory, 0, VK_WHOLE_SIZE, vk::MemoryMapFlags()));
+		persistentMapping = reinterpret_cast<char *>(allocationInfo.pMappedData);
 		assert(persistentMapping != nullptr);
 	}
 
@@ -481,8 +485,6 @@ RendererImpl::~RendererImpl() {
 	assert(surface);
 	assert(swapchain);
 	assert(ringBuffer);
-	assert(ringBufferMem.memory);
-	assert(ringBufferMem.size   > 0);
 	assert(persistentMapping);
 
 	assert(ephemeralBuffers.empty());
@@ -495,20 +497,18 @@ RendererImpl::~RendererImpl() {
 	device.destroySemaphore(acquireSem);
 	acquireSem = vk::Semaphore();
 
-	device.unmapMemory(ringBufferMem.memory);
+	vmaFreeMemory(allocator, ringBufferMem);
+	ringBufferMem = nullptr;
 	persistentMapping = nullptr;
 	device.destroyBuffer(ringBuffer);
 	ringBuffer = vk::Buffer();
-	vmaFreeMemory(this->allocator, &ringBufferMem);
-	memset(&ringBufferMem, 0, sizeof(ringBufferMem));
 
 	buffers.clearWith([this](struct Buffer &b) {
 		assert(!b.ringBufferAlloc);
 		this->device.destroyBuffer(b.buffer);
-		assert(b.memory.memory != VK_NULL_HANDLE);
-		assert(b.memory.size   >  0);
-		vmaFreeMemory(this->allocator, &b.memory);
-		memset(&b.memory, 0, sizeof(b.memory));
+		assert(b.memory != nullptr);
+		vmaFreeMemory(this->allocator, b.memory);
+		b.memory = nullptr;
 	} );
 
 	samplers.clearWith([this](struct Sampler &s) {
@@ -555,10 +555,9 @@ RendererImpl::~RendererImpl() {
 		tex.imageView    = vk::ImageView();
 		tex.renderTarget = false;
 
-		assert(tex.memory.memory != VK_NULL_HANDLE);
-		assert(tex.memory.size   >  0);
-		vmaFreeMemory(this->allocator, &tex.memory);
-		memset(&tex.memory, 0, sizeof(tex.memory));
+		assert(tex.memory != nullptr);
+		vmaFreeMemory(this->allocator, tex.memory);
+		tex.memory = nullptr;
 
 		this->textures.remove(rt.texture);
 		rt.texture = TextureHandle();
@@ -571,10 +570,9 @@ RendererImpl::~RendererImpl() {
 		assert(!tex.renderTarget);
 		this->device.destroyImageView(tex.imageView);
 		this->device.destroyImage(tex.image);
-		assert(tex.memory.memory != VK_NULL_HANDLE);
-		assert(tex.memory.size   >  0);
-		vmaFreeMemory(this->allocator, &tex.memory);
-		memset(&tex.memory, 0, sizeof(tex.memory));
+		assert(tex.memory != nullptr);
+		vmaFreeMemory(this->allocator, tex.memory);
+		tex.memory = nullptr;
 	} );
 
 	for (auto &f : frames) {
@@ -639,15 +637,23 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	Buffer &buffer = result.first;
 	buffer.buffer  = device.createBuffer(info);
 
-	VmaMemoryRequirements  req       = { false, VMA_MEMORY_USAGE_GPU_ONLY, 0, 0, false };
-	uint32_t               typeIndex = 0;
+	VmaMemoryRequirements req;
+	req.flags          = 0;
+	req.usage          = VMA_MEMORY_USAGE_GPU_ONLY;
+	req.requiredFlags  = 0;
+	req.preferredFlags = 0;
+	req.pUserData      = nullptr;
+	VmaAllocationInfo  allocationInfo = {};
 
-	vmaAllocateMemoryForBuffer(allocator, buffer.buffer, &req, &buffer.memory, &typeIndex);
-	printf("buffer memory type index: %u\n",  typeIndex);
-	printf("buffer memory: %p\n",             buffer.memory.memory);
-	printf("buffer memory offset: %u\n",      static_cast<unsigned int>(buffer.memory.offset));
-	printf("buffer memory size: %u\n",        static_cast<unsigned int>(buffer.memory.size));
-	device.bindBufferMemory(buffer.buffer, buffer.memory.memory, buffer.memory.offset);
+	vmaAllocateMemoryForBuffer(allocator, buffer.buffer, &req, &buffer.memory, &allocationInfo);
+	printf("buffer memory type: %u\n",    allocationInfo.memoryType);
+	printf("buffer memory offset: %u\n",  static_cast<unsigned int>(allocationInfo.offset));
+	printf("buffer memory size: %u\n",    static_cast<unsigned int>(allocationInfo.size));
+	assert(allocationInfo.size > 0);
+	assert(allocationInfo.pMappedData == nullptr);
+	device.bindBufferMemory(buffer.buffer, allocationInfo.deviceMemory, allocationInfo.offset);
+	buffer.offset = allocationInfo.offset;
+	buffer.size   = allocationInfo.size;
 
 	// copy contents to GPU memory
 	unsigned int beginPtr = ringBufferAllocate(size, 256);
@@ -698,8 +704,8 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	Buffer &buffer = result.first;
 	buffer.buffer          = ringBuffer;
 	buffer.ringBufferAlloc = true;
-	buffer.memory.offset   = beginPtr;
-	buffer.memory.size     = size;
+	buffer.offset          = beginPtr;
+	buffer.size            = size;
 
 	ephemeralBuffers.push_back(BufferHandle(result.second));
 
@@ -1075,11 +1081,16 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	tex.image        = rt.image;
 	tex.renderTarget = true;
 
-	VmaMemoryRequirements  req       = { false, VMA_MEMORY_USAGE_GPU_ONLY, 0, 0, false };
-	uint32_t               typeIndex = 0;
+	VmaMemoryRequirements req;
+	req.flags          = 0;
+	req.usage          = VMA_MEMORY_USAGE_GPU_ONLY;
+	req.requiredFlags  = 0;
+	req.preferredFlags = 0;
+	req.pUserData      = nullptr;
+	VmaAllocationInfo  allocationInfo = {};
 
-	vmaAllocateMemoryForImage(allocator, rt.image, &req, &tex.memory, &typeIndex);
-	device.bindImageMemory(rt.image, tex.memory.memory, tex.memory.offset);
+	vmaAllocateMemoryForImage(allocator, rt.image, &req, &tex.memory, &allocationInfo);
+	device.bindImageMemory(rt.image, allocationInfo.deviceMemory, allocationInfo.offset);
 
 	vk::ImageViewCreateInfo viewInfo;
 	viewInfo.image    = rt.image;
@@ -1243,15 +1254,19 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	tex.height = desc.height_;
 	tex.image  = device.createImage(info);
 
-	VmaMemoryRequirements  req       = { false, VMA_MEMORY_USAGE_GPU_ONLY, 0, 0, false };
-	uint32_t               typeIndex = 0;
+	VmaMemoryRequirements req;
+	req.flags          = 0;
+	req.usage          = VMA_MEMORY_USAGE_GPU_ONLY;
+	req.requiredFlags  = 0;
+	req.preferredFlags = 0;
+	req.pUserData      = nullptr;
+	VmaAllocationInfo  allocationInfo = {};
 
-	vmaAllocateMemoryForImage(allocator, tex.image, &req, &tex.memory, &typeIndex);
-	printf("texture image memory type index: %u\n",  typeIndex);
-	printf("texture image memory: %p\n",             tex.memory.memory);
-	printf("texture image memory offset: %u\n",      static_cast<unsigned int>(tex.memory.offset));
-	printf("texture image memory size: %u\n",        static_cast<unsigned int>(tex.memory.size));
-	device.bindImageMemory(tex.image, tex.memory.memory, tex.memory.offset);
+	vmaAllocateMemoryForImage(allocator, tex.image, &req, &tex.memory, &allocationInfo);
+	printf("texture image memory type: %u\n",   allocationInfo.memoryType);
+	printf("texture image memory offset: %u\n", static_cast<unsigned int>(allocationInfo.offset));
+	printf("texture image memory size: %u\n",   static_cast<unsigned int>(allocationInfo.size));
+	device.bindImageMemory(tex.image, allocationInfo.deviceMemory, allocationInfo.offset);
 
 	vk::ImageViewCreateInfo viewInfo;
 	viewInfo.image    = tex.image;
@@ -1399,10 +1414,9 @@ void RendererImpl::deleteBuffer(BufferHandle handle) {
 	buffers.removeWith(handle, [this](struct Buffer &b) {
 		assert(!b.ringBufferAlloc);
 		this->device.destroyBuffer(b.buffer);
-		assert(b.memory.memory != VK_NULL_HANDLE);
-		assert(b.memory.size   >  0);
-		vmaFreeMemory(this->allocator, &b.memory);
-		memset(&b.memory, 0, sizeof(b.memory));
+		assert(b.memory != nullptr);
+		vmaFreeMemory(this->allocator, b.memory);
+		b.memory = nullptr;
 	} );
 
 }
@@ -1433,10 +1447,9 @@ void RendererImpl::deleteTexture(TextureHandle handle) {
 		assert(!tex.renderTarget);
 		this->device.destroyImageView(tex.imageView);
 		this->device.destroyImage(tex.image);
-		assert(tex.memory.memory != VK_NULL_HANDLE);
-		assert(tex.memory.size   >  0);
-		vmaFreeMemory(this->allocator, &tex.memory);
-		memset(&tex.memory, 0, sizeof(tex.memory));
+		assert(tex.memory != nullptr);
+		vmaFreeMemory(this->allocator, tex.memory);
+		tex.memory = nullptr;
 	} );
 }
 
@@ -1749,7 +1762,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 		Buffer &buffer = buffers.get(handle);
 		assert(buffer.buffer == ringBuffer);
 		assert(buffer.ringBufferAlloc);
-		assert(buffer.memory.size   >  0);
+		assert(buffer.size   >  0);
 		buffers.remove(handle);
 	}
 	ephemeralBuffers.clear();
@@ -1841,7 +1854,7 @@ void RendererImpl::bindIndexBuffer(BufferHandle buffer, bool bit16) {
 	vk::DeviceSize offset = 0;
 	if (b.ringBufferAlloc) {
 		// but ephemeral buffers use the ringbuffer and an offset
-		offset = b.memory.offset;
+		offset = b.offset;
 	}
 	currentCommandBuffer.bindIndexBuffer(b.buffer, offset, bit16 ? vk::IndexType::eUint16 : vk::IndexType::eUint32);
 }
@@ -1856,7 +1869,7 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 	vk::DeviceSize offset = 0;
 	if (b.ringBufferAlloc) {
 		// but ephemeral buffers use the ringbuffer and an offset
-		offset = b.memory.offset;
+		offset = b.offset;
 	}
 	currentCommandBuffer.bindVertexBuffers(binding, 1, &b.buffer, &offset);
 }
@@ -1905,12 +1918,12 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DescriptorSetLayoutHa
 			// this is part of the struct, we know it's correctly aligned and right type
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			const Buffer &buffer = buffers.get(handle);
-			assert(buffer.memory.size > 0);
+			assert(buffer.size > 0);
 
 			vk::DescriptorBufferInfo  bufWrite;
 			bufWrite.buffer = buffer.buffer;
-			bufWrite.offset = buffer.memory.offset;
-			bufWrite.range  = buffer.memory.size;
+			bufWrite.offset = buffer.offset;
+			bufWrite.range  = buffer.size;
 
 			// we trust that reserve() above makes sure this doesn't reallocate the storage
 			bufferWrites.push_back(bufWrite);
