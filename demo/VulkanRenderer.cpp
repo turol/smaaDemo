@@ -392,8 +392,6 @@ RendererImpl::~RendererImpl() {
 	assert(ringBuffer);
 	assert(persistentMapping);
 
-	assert(ephemeralBuffers.empty());
-
 	// TODO: save pipeline cache
 
 	device.destroySemaphore(renderDoneSem);
@@ -500,6 +498,8 @@ RendererImpl::~RendererImpl() {
 		assert(f.fence);
 		device.destroyFence(f.fence);
 		f.fence = vk::Fence();
+
+		assert(f.ephemeralBuffers.empty());
 	}
 	frames.clear();
 
@@ -612,7 +612,7 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	buffer.offset          = beginPtr;
 	buffer.size            = size;
 
-	ephemeralBuffers.push_back(BufferHandle(result.second));
+	frames[currentFrameIdx].ephemeralBuffers.push_back(BufferHandle(result.second));
 
 	return BufferHandle(result.second);
 }
@@ -1663,14 +1663,14 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	device.resetDescriptorPool(frame.dsPool);
 
 	// TODO: multiple frames, only delete after no longer in use by GPU
-	for (auto handle : ephemeralBuffers) {
+	for (auto handle : frame.ephemeralBuffers) {
 		Buffer &buffer = buffers.get(handle);
 		assert(buffer.buffer == ringBuffer);
 		assert(buffer.ringBufferAlloc);
 		assert(buffer.size   >  0);
 		buffers.remove(handle);
 	}
-	ephemeralBuffers.clear();
+	frame.ephemeralBuffers.clear();
 
 	frameNum++;
 }

@@ -214,6 +214,7 @@ struct Frame {
 	vk::DescriptorPool dsPool;
 	vk::CommandPool    commandPool;
 	vk::CommandBuffer  commandBuffer;
+	std::vector<BufferHandle> ephemeralBuffers;
 
 
 	Frame() {}
@@ -263,6 +264,8 @@ struct Frame {
 		assert(!commandBuffer);
 		commandBuffer = other.commandBuffer;
 		other.commandBuffer = vk::CommandBuffer();
+
+		assert(ephemeralBuffers.empty());
 	}
 };
 
@@ -307,8 +310,6 @@ struct RendererBase {
 	vk::Buffer           ringBuffer;
 	VmaAllocation        ringBufferMem;
 	char                *persistentMapping;
-
-	std::vector<BufferHandle> ephemeralBuffers;
 
 	std::vector<Frame>        frames;
 	uint32_t                  currentFrameIdx;
