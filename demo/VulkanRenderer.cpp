@@ -11,105 +11,14 @@
 	}
 
 
+#include <SDL_vulkan.h>
+
 // needs to be before RendererInternal.h
 // TODO: have implementation in a separate file for compile time?
 #define VMA_IMPLEMENTATION
 
 #include "RendererInternal.h"
 #include "Utils.h"
-
-
-#ifndef SDL_VIDEO_VULKAN_SURFACE
-
-
-// TODO: remove these when officially in SDL
-#include <SDL_syswm.h>
-#include <X11/Xlib-xcb.h>
-#define SDL_WINDOW_VULKAN 0x10000000
-
-
-/**
- *  \brief An opaque handle to a Vulkan instance.
- */
-typedef void *SDL_vulkanInstance; /* VK_DEFINE_HANDLE(VkInstance) */
-
-/**
- *  \brief An opaque handle to a Vulkan surface.
- */
-typedef Uint64 SDL_vulkanSurface; /* VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkSurfaceKHR) */
-
-
-static SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount, const char **userNames, unsigned nameCount, const char *const *names) {
-    if(userNames)
-    {
-        if(*userCount != nameCount)
-        {
-            SDL_SetError(
-                "count doesn't match count from previous call of SDL_Vulkan_GetInstanceExtensions");
-            return SDL_FALSE;
-        }
-        for(unsigned i = 0; i < nameCount; i++)
-        {
-            userNames[i] = names[i];
-        }
-    }
-    else
-    {
-        *userCount = nameCount;
-    }
-    return SDL_TRUE;
-}
-
-static SDL_bool SDL_Vulkan_GetInstanceExtensions(SDL_Window * /*window */, unsigned *count, const char **names) {
-	static const char *const extensionsForXCB[] = {
-		VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_XCB_SURFACE_EXTENSION_NAME,
-	};
-	return SDL_Vulkan_GetInstanceExtensions_Helper(
-		count, names, SDL_arraysize(extensionsForXCB), extensionsForXCB);
-}
-
-
-static SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window, SDL_vulkanInstance instance, SDL_vulkanSurface *surface) {
-	SDL_SysWMinfo wminfo;
-	memset(&wminfo, 0, sizeof(wminfo));
-	SDL_VERSION(&wminfo.version);
-
-	bool success = SDL_GetWindowWMInfo(window, &wminfo);
-	if (!success) {
-		printf("SDL_GetWindowWMInfo failed: %s\n", SDL_GetError());
-		exit(1);
-	}
-
-	if (wminfo.subsystem != SDL_SYSWM_X11) {
-		printf("unsupported wm subsystem\n");
-		exit(1);
-	}
-
-	VkXcbSurfaceCreateInfoKHR createInfo;
-	memset(&createInfo, 0, sizeof(createInfo));
-	createInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-	createInfo.connection = XGetXCBConnection(wminfo.info.x11.display);
-	if(!createInfo.connection)
-	{
-		printf("XGetXCBConnection failed");
-		exit(1);
-	}
-	createInfo.window = (xcb_window_t) wminfo.info.x11.window;
-
-	VkSurfaceKHR outSurface = VK_NULL_HANDLE;
-	auto result = vkCreateXcbSurfaceKHR(reinterpret_cast<VkInstance>(instance), &createInfo, nullptr, &outSurface);
-	if (result != VK_SUCCESS)  {
-		SDL_SetError("vkCreateXcbSurfaceKHR failed: %u", result);
-		return SDL_FALSE;
-	}
-
-	*surface = reinterpret_cast<SDL_vulkanSurface>(outSurface);
-
-	return SDL_TRUE;
-}
-
-
-#endif  // SDL_VIDEO_VULKAN_SURFACE
 
 
 // this part of the C++ bindings sucks...
