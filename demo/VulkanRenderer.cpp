@@ -500,6 +500,7 @@ RendererImpl::~RendererImpl() {
 		f.fence = vk::Fence();
 
 		assert(f.ephemeralBuffers.empty());
+		assert(!f.outstanding);
 	}
 	frames.clear();
 
@@ -1651,6 +1652,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	presentInfo.pImageIndices      = &currentFrameIdx;
 
 	queue.presentKHR(presentInfo);
+	frame.outstanding = true;
 
 	// wait until complete
 	// TODO: don't do it here, do before starting rendering of next frame which needs this image
@@ -1671,6 +1673,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 		buffers.remove(handle);
 	}
 	frame.ephemeralBuffers.clear();
+	frame.outstanding = false;
 
 	frameNum++;
 }

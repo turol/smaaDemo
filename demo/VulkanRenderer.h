@@ -215,6 +215,7 @@ struct Frame {
 	vk::CommandPool    commandPool;
 	vk::CommandBuffer  commandBuffer;
 	std::vector<BufferHandle> ephemeralBuffers;
+	bool                      outstanding;
 
 
 	Frame() {}
@@ -225,6 +226,8 @@ struct Frame {
 		assert(!dsPool);
 		assert(!commandPool);
 		assert(!commandBuffer);
+		assert(ephemeralBuffers.empty());
+		assert(!outstanding);
 	}
 
 	Frame(const Frame &)            = delete;
@@ -236,12 +239,15 @@ struct Frame {
 	, dsPool(other.dsPool)
 	, commandPool(other.commandPool)
 	, commandBuffer(other.commandBuffer)
+	, ephemeralBuffers(std::move(other.ephemeralBuffers))
+	, outstanding(other.outstanding)
 	{
 		other.image = vk::Image();
 		other.fence = vk::Fence();
 		other.dsPool = vk::DescriptorPool();
 		other.commandPool = vk::CommandPool();
 		other.commandBuffer = vk::CommandBuffer();
+		other.outstanding      = false;
 	}
 
 	Frame &operator=(Frame &&other) {
@@ -266,6 +272,8 @@ struct Frame {
 		other.commandBuffer = vk::CommandBuffer();
 
 		assert(ephemeralBuffers.empty());
+		ephemeralBuffers = std::move(other.ephemeralBuffers);
+		assert(other.ephemeralBuffers.empty());
 	}
 };
 
