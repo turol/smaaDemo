@@ -8,7 +8,7 @@ FILES:= \
 
 
 smaaDemo_MODULES:=imgui sdl2 shaderc spirv-cross
-smaaDemo_SRC:=$(foreach f, OpenGLRenderer.cpp NullRenderer.cpp VulkanRenderer.cpp RendererCommon.cpp smaaDemo.cpp Utils.cpp, $(dir)/$(f))
+smaaDemo_SRC:=$(foreach f, OpenGLRenderer.cpp NullRenderer.cpp VulkanRenderer.cpp VulkanMemoryAllocator.cpp RendererCommon.cpp smaaDemo.cpp Utils.cpp, $(dir)/$(f))
 
 
 
