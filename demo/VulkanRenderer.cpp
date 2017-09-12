@@ -394,6 +394,32 @@ RendererImpl::~RendererImpl() {
 
 	// TODO: save pipeline cache
 
+	for (auto &f : frames) {
+		assert(f.commandBuffer);
+		device.freeCommandBuffers(f.commandPool, { f.commandBuffer });
+		f.commandBuffer = vk::CommandBuffer();
+
+		assert(f.commandPool);
+		device.destroyCommandPool(f.commandPool);
+		f.commandPool = vk::CommandPool();
+
+		assert(f.dsPool);
+		device.destroyDescriptorPool(f.dsPool);
+		f.dsPool = vk::DescriptorPool();
+
+		assert(f.image);
+		// owned by swapchain, don't delete
+		f.image = vk::Image();
+
+		assert(f.fence);
+		device.destroyFence(f.fence);
+		f.fence = vk::Fence();
+
+		assert(f.ephemeralBuffers.empty());
+		assert(!f.outstanding);
+	}
+	frames.clear();
+
 	device.destroySemaphore(renderDoneSem);
 	renderDoneSem = vk::Semaphore();
 
@@ -477,32 +503,6 @@ RendererImpl::~RendererImpl() {
 		vmaFreeMemory(this->allocator, tex.memory);
 		tex.memory = nullptr;
 	} );
-
-	for (auto &f : frames) {
-		assert(f.commandBuffer);
-		device.freeCommandBuffers(f.commandPool, { f.commandBuffer });
-		f.commandBuffer = vk::CommandBuffer();
-
-		assert(f.commandPool);
-		device.destroyCommandPool(f.commandPool);
-		f.commandPool = vk::CommandPool();
-
-		assert(f.dsPool);
-		device.destroyDescriptorPool(f.dsPool);
-		f.dsPool = vk::DescriptorPool();
-
-		assert(f.image);
-		// owned by swapchain, don't delete
-		f.image = vk::Image();
-
-		assert(f.fence);
-		device.destroyFence(f.fence);
-		f.fence = vk::Fence();
-
-		assert(f.ephemeralBuffers.empty());
-		assert(!f.outstanding);
-	}
-	frames.clear();
 
 	device.destroySwapchainKHR(swapchain);
 	swapchain = vk::SwapchainKHR();
