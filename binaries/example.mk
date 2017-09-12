@@ -37,7 +37,7 @@ LDFLAGS+=-Wl,--gc-sections
 LDLIBS:=-lpthread
 LDLIBS_sdl2:=$(shell sdl2-config --libs)
 LDLIBS_opengl:=-lGL
-LDLIBS_vulkan:=-lvulkan -lX11-xcb
+LDLIBS_vulkan:=-lvulkan
 
 LTOCFLAGS:=-flto -fuse-linker-plugin -fno-fat-lto-objects
 LTOLDFLAGS:=-flto -fuse-linker-plugin
