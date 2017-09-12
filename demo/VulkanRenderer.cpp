@@ -1656,6 +1656,18 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 
 	// wait until complete
 	// TODO: don't do it here, do before starting rendering of next frame which needs this image
+	waitForFrame(currentFrameIdx);
+
+	frameNum++;
+}
+
+
+void RendererBase::waitForFrame(unsigned int frameIdx) {
+	assert(frameIdx < frames.size());
+
+	Frame &frame = frames[frameIdx];
+	assert(frame.outstanding);
+
 	// TODO: handle device lost and timeout
 	device.waitForFences({ frame.fence }, true, 1000000000ull);
 
@@ -1674,8 +1686,6 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	}
 	frame.ephemeralBuffers.clear();
 	frame.outstanding = false;
-
-	frameNum++;
 }
 
 

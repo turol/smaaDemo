@@ -325,6 +325,8 @@ struct RendererBase {
 
 	unsigned int ringBufferAlloc(unsigned int size);
 
+	void waitForFrame(unsigned int frameIdx);
+
 	RendererBase();
 
 	~RendererBase();
