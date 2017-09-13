@@ -330,6 +330,7 @@ struct RendererBase {
 
 	std::vector<Frame>        frames;
 	uint32_t                  currentFrameIdx;
+	uint32_t                  lastSyncedFrame;
 
 
 	unsigned int ringBufferAlloc(unsigned int size);

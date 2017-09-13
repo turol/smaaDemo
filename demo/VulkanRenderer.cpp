@@ -116,6 +116,7 @@ RendererBase::RendererBase()
 , ringBufferMem(nullptr)
 , persistentMapping(nullptr)
 , currentFrameIdx(0)
+, lastSyncedFrame(0)
 {
 }
 
@@ -1648,6 +1649,7 @@ void RendererBase::waitForFrame(unsigned int frameIdx) {
 	}
 	frame.ephemeralBuffers.clear();
 	frame.outstanding = false;
+	lastSyncedFrame = std::max(lastSyncedFrame, frame.lastFrameNum);
 }
 
 
