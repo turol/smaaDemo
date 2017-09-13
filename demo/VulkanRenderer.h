@@ -216,9 +216,13 @@ struct Frame {
 	vk::CommandBuffer  commandBuffer;
 	std::vector<BufferHandle> ephemeralBuffers;
 	bool                      outstanding;
+	uint32_t                  lastFrameNum;
 
 
-	Frame() {}
+	Frame()
+	: outstanding(false)
+	, lastFrameNum(0)
+	{}
 
 	~Frame() {
 		assert(!image);
@@ -241,6 +245,7 @@ struct Frame {
 	, commandBuffer(other.commandBuffer)
 	, ephemeralBuffers(std::move(other.ephemeralBuffers))
 	, outstanding(other.outstanding)
+	, lastFrameNum(other.lastFrameNum)
 	{
 		other.image = vk::Image();
 		other.fence = vk::Fence();
@@ -248,6 +253,7 @@ struct Frame {
 		other.commandPool = vk::CommandPool();
 		other.commandBuffer = vk::CommandBuffer();
 		other.outstanding      = false;
+		other.lastFrameNum     = 0;
 	}
 
 	Frame &operator=(Frame &&other) {
@@ -274,6 +280,9 @@ struct Frame {
 		assert(ephemeralBuffers.empty());
 		ephemeralBuffers = std::move(other.ephemeralBuffers);
 		assert(other.ephemeralBuffers.empty());
+
+		lastFrameNum = other.lastFrameNum;
+		other.lastFrameNum = 0;
 	}
 };
 

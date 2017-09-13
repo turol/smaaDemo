@@ -1619,6 +1619,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	// TODO: don't do it here, do before starting rendering of next frame which needs this image
 	waitForFrame(currentFrameIdx);
 
+	frame.lastFrameNum = frameNum;
 	frameNum++;
 }
 
