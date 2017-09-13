@@ -1299,6 +1299,7 @@ TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
 void RendererImpl::deleteBuffer(BufferHandle handle) {
 	buffers.removeWith(handle, [this](struct Buffer &b) {
 		assert(!b.ringBufferAlloc);
+		assert(b.lastUsedFrame <= lastSyncedFrame);
 		this->device.destroyBuffer(b.buffer);
 		assert(b.memory != nullptr);
 		vmaFreeMemory(this->allocator, b.memory);
@@ -1822,8 +1823,9 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DescriptorSetLayoutHa
 		case DescriptorType::StorageBuffer: {
 			// this is part of the struct, we know it's correctly aligned and right type
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
-			const Buffer &buffer = buffers.get(handle);
+			Buffer &buffer = buffers.get(handle);
 			assert(buffer.size > 0);
+			buffer.lastUsedFrame = frameNum;
 
 			vk::DescriptorBufferInfo  bufWrite;
 			bufWrite.buffer = buffer.buffer;

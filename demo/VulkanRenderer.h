@@ -16,12 +16,16 @@ struct Buffer {
 	VmaAllocation        memory;
 	uint32_t             size;
 	uint32_t             offset;
+	uint32_t             lastUsedFrame;
 	// TODO: access type bits (for debugging)
 
 
 	Buffer()
 	: ringBufferAlloc(false)
 	, memory(nullptr)
+	, size(0)
+	, offset(0)
+	, lastUsedFrame(0)
 	{}
 
 	Buffer(const Buffer &)            = delete;
