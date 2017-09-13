@@ -1651,6 +1651,7 @@ void RendererBase::waitForFrame(unsigned int frameIdx) {
 
 
 void RendererBase::deleteFrameInternal(Frame &f) {
+	assert(!f.outstanding);
 	assert(f.fence);
 	device.destroyFence(f.fence);
 	f.fence = vk::Fence();
