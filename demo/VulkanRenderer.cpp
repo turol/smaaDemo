@@ -395,28 +395,7 @@ RendererImpl::~RendererImpl() {
 	// TODO: save pipeline cache
 
 	for (auto &f : frames) {
-		assert(f.commandBuffer);
-		device.freeCommandBuffers(f.commandPool, { f.commandBuffer });
-		f.commandBuffer = vk::CommandBuffer();
-
-		assert(f.commandPool);
-		device.destroyCommandPool(f.commandPool);
-		f.commandPool = vk::CommandPool();
-
-		assert(f.dsPool);
-		device.destroyDescriptorPool(f.dsPool);
-		f.dsPool = vk::DescriptorPool();
-
-		assert(f.image);
-		// owned by swapchain, don't delete
-		f.image = vk::Image();
-
-		assert(f.fence);
-		device.destroyFence(f.fence);
-		f.fence = vk::Fence();
-
-		assert(f.ephemeralBuffers.empty());
-		assert(!f.outstanding);
+		deleteFrameInternal(f);
 	}
 	frames.clear();
 
@@ -1393,25 +1372,7 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 			// decreasing, delete old and resize
 			for (unsigned int i = numImages; i < frames.size(); i++) {
 				// delete contents of Frame
-				auto &f = frames[i];
-				assert(f.fence);
-				device.destroyFence(f.fence);
-				f.fence = vk::Fence();
-
-				// owned by swapchain, don't delete
-				f.image = vk::Image();
-
-				assert(f.dsPool);
-				device.destroyDescriptorPool(f.dsPool);
-				f.dsPool = vk::DescriptorPool();
-
-				assert(f.commandBuffer);
-				device.freeCommandBuffers(f.commandPool, { f.commandBuffer });
-				f.commandBuffer = vk::CommandBuffer();
-
-				assert(f.commandPool);
-				device.destroyCommandPool(f.commandPool);
-				f.commandPool = vk::CommandPool();
+				deleteFrameInternal(frames[i]);
 			}
 			frames.resize(numImages);
 		} else {
@@ -1686,6 +1647,28 @@ void RendererBase::waitForFrame(unsigned int frameIdx) {
 	}
 	frame.ephemeralBuffers.clear();
 	frame.outstanding = false;
+}
+
+
+void RendererBase::deleteFrameInternal(Frame &f) {
+	assert(f.fence);
+	device.destroyFence(f.fence);
+	f.fence = vk::Fence();
+
+	// owned by swapchain, don't delete
+	f.image = vk::Image();
+
+	assert(f.dsPool);
+	device.destroyDescriptorPool(f.dsPool);
+	f.dsPool = vk::DescriptorPool();
+
+	assert(f.commandBuffer);
+	device.freeCommandBuffers(f.commandPool, { f.commandBuffer });
+	f.commandBuffer = vk::CommandBuffer();
+
+	assert(f.commandPool);
+	device.destroyCommandPool(f.commandPool);
+	f.commandPool = vk::CommandPool();
 }
 
 
