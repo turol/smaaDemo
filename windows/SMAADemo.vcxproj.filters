@@ -201,6 +201,9 @@
     <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\preprocessor\PpTokens.cpp">
       <Filter>Source Files\glslang</Filter>
     </ClCompile>
+    <ClCompile Include="..\demo\VulkanMemoryAllocator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\fxaa.frag">
