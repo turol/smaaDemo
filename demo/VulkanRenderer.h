@@ -285,6 +285,9 @@ struct Frame {
 		ephemeralBuffers = std::move(other.ephemeralBuffers);
 		assert(other.ephemeralBuffers.empty());
 
+		outstanding = other.outstanding;
+		other.outstanding = false;
+
 		lastFrameNum = other.lastFrameNum;
 		other.lastFrameNum = 0;
 
