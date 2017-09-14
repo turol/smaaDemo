@@ -1,6 +1,10 @@
 #ifdef RENDERER_VULKAN
 
 
+#ifdef _MSC_VER
+#define __PRETTY_FUNCTION__  __FUNCTION__
+#endif
+
 #define STUBBED(str) \
 	{ \
 		static bool seen = false; \
@@ -126,7 +130,7 @@ RendererBase::~RendererBase()
 }
 
 
-static VkBool32 debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t /* messageCode */, const char * pLayerPrefix, const char * pMessage, void * /* pUserData*/) {
+static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t /* messageCode */, const char * pLayerPrefix, const char * pMessage, void * /* pUserData*/) {
 	printf("layer %s %s object %lu type %s location %lu: %s\n", pLayerPrefix, vk::to_string(vk::DebugReportFlagBitsEXT(flags)).c_str(), object, vk::to_string(vk::DebugReportObjectTypeEXT(objectType)).c_str(), location, pMessage);
 	// make errors fatal
 	abort();
