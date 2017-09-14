@@ -287,6 +287,8 @@ struct Frame {
 
 		lastFrameNum = other.lastFrameNum;
 		other.lastFrameNum = 0;
+
+		return *this;
 	}
 };
 
