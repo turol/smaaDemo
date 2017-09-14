@@ -1756,6 +1756,7 @@ void RendererImpl::bindIndexBuffer(BufferHandle buffer, bool bit16) {
 	assert(validPipeline);
 
 	auto &b = buffers.get(buffer);
+	b.lastUsedFrame = frameNum;
 	// "normal" buffers begin from beginning of buffer
 	vk::DeviceSize offset = 0;
 	if (b.ringBufferAlloc) {
@@ -1771,6 +1772,7 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 	assert(validPipeline);
 
 	auto &b = buffers.get(buffer);
+	b.lastUsedFrame = frameNum;
 	// "normal" buffers begin from beginning of buffer
 	vk::DeviceSize offset = 0;
 	if (b.ringBufferAlloc) {
