@@ -263,11 +263,13 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	memoryProperties = physicalDevice.getMemoryProperties();
 	printf("%u memory types\n", memoryProperties.memoryTypeCount);
 	for (unsigned int i = 0; i < memoryProperties.memoryTypeCount; i++ ) {
-		printf(" %u  heap %u  %s\n", i, memoryProperties.memoryTypes[i].heapIndex, vk::to_string(memoryProperties.memoryTypes[i].propertyFlags).c_str());
+		std::string tempString = vk::to_string(memoryProperties.memoryTypes[i].propertyFlags);
+		printf(" %u  heap %u  %s\n", i, memoryProperties.memoryTypes[i].heapIndex, tempString.c_str());
 	}
 	printf("%u memory heaps\n", memoryProperties.memoryHeapCount);
 	for (unsigned int i = 0; i < memoryProperties.memoryHeapCount; i++ ) {
-		printf(" %u  size %lu  %s\n", i, memoryProperties.memoryHeaps[i].size, vk::to_string(memoryProperties.memoryHeaps[i].flags).c_str());
+		std::string tempString = vk::to_string(memoryProperties.memoryHeaps[i].flags);
+		printf(" %u  size %lu  %s\n", i, memoryProperties.memoryHeaps[i].size, tempString.c_str());
 	}
 
 	std::vector<vk::QueueFamilyProperties> queueProps = physicalDevice.getQueueFamilyProperties();
