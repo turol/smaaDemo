@@ -131,7 +131,7 @@ RendererBase::~RendererBase()
 
 
 static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t /* messageCode */, const char * pLayerPrefix, const char * pMessage, void * /* pUserData*/) {
-	printf("layer %s %s object %lu type %s location %lu: %s\n", pLayerPrefix, vk::to_string(vk::DebugReportFlagBitsEXT(flags)).c_str(), object, vk::to_string(vk::DebugReportObjectTypeEXT(objectType)).c_str(), location, pMessage);
+	printf("layer %s %s object %lu type %s location %lu: %s\n", pLayerPrefix, vk::to_string(vk::DebugReportFlagBitsEXT(flags)).c_str(), static_cast<unsigned long>(object), vk::to_string(vk::DebugReportObjectTypeEXT(objectType)).c_str(), location, pMessage);
 	// make errors fatal
 	abort();
 
@@ -269,7 +269,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	printf("%u memory heaps\n", memoryProperties.memoryHeapCount);
 	for (unsigned int i = 0; i < memoryProperties.memoryHeapCount; i++ ) {
 		std::string tempString = vk::to_string(memoryProperties.memoryHeaps[i].flags);
-		printf(" %u  size %lu  %s\n", i, memoryProperties.memoryHeaps[i].size, tempString.c_str());
+		printf(" %u  size %lu  %s\n", i, static_cast<unsigned long>(memoryProperties.memoryHeaps[i].size), tempString.c_str());
 	}
 
 	std::vector<vk::QueueFamilyProperties> queueProps = physicalDevice.getQueueFamilyProperties();
