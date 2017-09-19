@@ -401,7 +401,12 @@ RendererImpl::~RendererImpl() {
 
 	// TODO: save pipeline cache
 
-	for (auto &f : frames) {
+	for (unsigned int i = 0; i < frames.size(); i++) {
+		auto &f = frames[i];
+		if (f.outstanding) {
+			// wait until complete
+			waitForFrame(i);
+		}
 		deleteFrameInternal(f);
 	}
 	frames.clear();
