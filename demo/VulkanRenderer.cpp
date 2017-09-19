@@ -1362,12 +1362,8 @@ void RendererImpl::deleteSampler(SamplerHandle handle) {
 
 void RendererImpl::deleteTexture(TextureHandle handle) {
 	textures.removeWith(handle, [this](Texture &tex) {
-		assert(!tex.renderTarget);
-		this->device.destroyImageView(tex.imageView);
-		this->device.destroyImage(tex.image);
-		assert(tex.memory != nullptr);
-		vmaFreeMemory(this->allocator, tex.memory);
-		tex.memory = nullptr;
+		// TODO: if lastUsedFrame has already been synced we could delete immediately
+		this->deleteResources.emplace_back(std::move(tex));
 	} );
 }
 
@@ -1722,6 +1718,16 @@ void RendererBase::deleteSamplerInternal(Sampler &s) {
 }
 
 
+void RendererBase::deleteTextureInternal(Texture &tex) {
+	assert(!tex.renderTarget);
+	this->device.destroyImageView(tex.imageView);
+	this->device.destroyImage(tex.image);
+	assert(tex.memory != nullptr);
+	vmaFreeMemory(this->allocator, tex.memory);
+	tex.memory = nullptr;
+}
+
+
 // https://stackoverflow.com/questions/7867555/best-way-to-do-variant-visitation-with-lambdas
 // https://stackoverflow.com/questions/7870498/using-declaration-in-variadic-template/7870614#7870614
 
@@ -1774,6 +1780,7 @@ void RendererBase::deleteResourceInternal(Resource &r) {
 	boost::apply_visitor(make_lambda_visitor<void>(
 	                        [this] (Buffer &b)  { deleteBufferInternal(b);  }
 	                      , [this] (Sampler &s) { deleteSamplerInternal(s); }
+	                      , [this] (Texture &t) { deleteTextureInternal(t); }
 	                      )
 	                   , r);
 }
