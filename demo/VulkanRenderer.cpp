@@ -402,7 +402,7 @@ RendererImpl::~RendererImpl() {
 	// TODO: save pipeline cache
 
 	// TODO: if last frame is still pending we could add these to its list
-	for (auto &b : deleteBuffers) {
+	for (auto &b : deleteResources) {
 		this->deleteBufferInternal(b);
 	}
 
@@ -1334,7 +1334,7 @@ TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
 void RendererImpl::deleteBuffer(BufferHandle handle) {
 	buffers.removeWith(handle, [this](struct Buffer &b) {
 		// TODO: if b.lastUsedFrame has already been synced we could delete immediately
-		this->deleteBuffers.emplace_back(std::move(b));
+		this->deleteResources.emplace_back(std::move(b));
 	} );
 }
 
@@ -1569,10 +1569,10 @@ void RendererImpl::beginFrame() {
 
 	// mark buffers deleted during gap between frames to be deleted when this frame has synced
 	// TODO: we could move this earlier and add these to the previous frame's list
-	if (!deleteBuffers.empty()) {
-		assert(frame.deleteBuffers.empty());
-		frame.deleteBuffers = std::move(deleteBuffers);
-		assert(deleteBuffers.empty());
+	if (!deleteResources.empty()) {
+		assert(frame.deleteResources.empty());
+		frame.deleteResources = std::move(deleteResources);
+		assert(deleteResources.empty());
 	}
 
 	STUBBED("");
@@ -1657,10 +1657,10 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	frame.lastFrameNum = frameNum;
 
 	// mark buffers deleted during frame to be deleted when the frame has synced
-	if (!deleteBuffers.empty()) {
-		assert(frame.deleteBuffers.empty());
-		frame.deleteBuffers = std::move(deleteBuffers);
-		assert(deleteBuffers.empty());
+	if (!deleteResources.empty()) {
+		assert(frame.deleteResources.empty());
+		frame.deleteResources = std::move(deleteResources);
+		assert(deleteResources.empty());
 	}
 
 	// wait until complete
@@ -1686,10 +1686,10 @@ void RendererBase::waitForFrame(unsigned int frameIdx) {
 	device.resetDescriptorPool(frame.dsPool);
 
 	// TODO: multiple frames, only delete after no longer in use by GPU
-	for (auto &b : frame.deleteBuffers) {
+	for (auto &b : frame.deleteResources) {
 		this->deleteBufferInternal(b);
 	}
-	frame.deleteBuffers.clear();
+	frame.deleteResources.clear();
 
 	for (auto handle : frame.ephemeralBuffers) {
 		Buffer &buffer = buffers.get(handle);
@@ -1735,7 +1735,7 @@ void RendererBase::deleteFrameInternal(Frame &f) {
 	device.destroyCommandPool(f.commandPool);
 	f.commandPool = vk::CommandPool();
 
-	assert(f.deleteBuffers.empty());
+	assert(f.deleteResources.empty());
 }
 
 

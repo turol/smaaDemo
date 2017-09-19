@@ -223,7 +223,7 @@ struct Frame {
 	bool                      outstanding;
 	uint32_t                  lastFrameNum;
 
-	std::vector<Buffer>       deleteBuffers;
+	std::vector<Buffer>       deleteResources;
 
 
 	Frame()
@@ -239,7 +239,7 @@ struct Frame {
 		assert(!commandBuffer);
 		assert(ephemeralBuffers.empty());
 		assert(!outstanding);
-		assert(deleteBuffers.empty());
+		assert(deleteResources.empty());
 	}
 
 	Frame(const Frame &)            = delete;
@@ -254,7 +254,7 @@ struct Frame {
 	, ephemeralBuffers(std::move(other.ephemeralBuffers))
 	, outstanding(other.outstanding)
 	, lastFrameNum(other.lastFrameNum)
-	, deleteBuffers(std::move(other.deleteBuffers))
+	, deleteResources(std::move(other.deleteResources))
 	{
 		other.image = vk::Image();
 		other.fence = vk::Fence();
@@ -263,7 +263,7 @@ struct Frame {
 		other.commandBuffer = vk::CommandBuffer();
 		other.outstanding      = false;
 		other.lastFrameNum     = 0;
-		assert(other.deleteBuffers.empty());
+		assert(other.deleteResources.empty());
 	}
 
 	Frame &operator=(Frame &&other) {
@@ -297,8 +297,8 @@ struct Frame {
 		lastFrameNum = other.lastFrameNum;
 		other.lastFrameNum = 0;
 
-		deleteBuffers = std::move(other.deleteBuffers);
-		assert(other.deleteBuffers.empty());
+		deleteResources = std::move(other.deleteResources);
+		assert(other.deleteResources.empty());
 
 		return *this;
 	}
@@ -350,7 +350,7 @@ struct RendererBase {
 	uint32_t                  currentFrameIdx;
 	uint32_t                  lastSyncedFrame;
 
-	std::vector<Buffer>       deleteBuffers;
+	std::vector<Buffer>       deleteResources;
 
 
 	unsigned int ringBufferAlloc(unsigned int size);
