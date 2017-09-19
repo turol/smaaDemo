@@ -401,6 +401,11 @@ RendererImpl::~RendererImpl() {
 
 	// TODO: save pipeline cache
 
+	// TODO: if last frame is still pending we could add these to its list
+	for (auto &b : deleteBuffers) {
+		this->deleteBufferInternal(b);
+	}
+
 	for (unsigned int i = 0; i < frames.size(); i++) {
 		auto &f = frames[i];
 		if (f.outstanding) {
@@ -1328,7 +1333,8 @@ TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
 
 void RendererImpl::deleteBuffer(BufferHandle handle) {
 	buffers.removeWith(handle, [this](struct Buffer &b) {
-		this->deleteBufferInternal(b);
+		// TODO: if b.lastUsedFrame has already been synced we could delete immediately
+		this->deleteBuffers.emplace_back(std::move(b));
 	} );
 }
 
@@ -1561,6 +1567,14 @@ void RendererImpl::beginFrame() {
 
 	currentPipelineLayout = vk::PipelineLayout();
 
+	// mark buffers deleted during gap between frames to be deleted when this frame has synced
+	// TODO: we could move this earlier and add these to the previous frame's list
+	if (!deleteBuffers.empty()) {
+		assert(frame.deleteBuffers.empty());
+		frame.deleteBuffers = std::move(deleteBuffers);
+		assert(deleteBuffers.empty());
+	}
+
 	STUBBED("");
 }
 
@@ -1642,6 +1656,13 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	frame.outstanding = true;
 	frame.lastFrameNum = frameNum;
 
+	// mark buffers deleted during frame to be deleted when the frame has synced
+	if (!deleteBuffers.empty()) {
+		assert(frame.deleteBuffers.empty());
+		frame.deleteBuffers = std::move(deleteBuffers);
+		assert(deleteBuffers.empty());
+	}
+
 	// wait until complete
 	// TODO: don't do it here, do before starting rendering of next frame which needs this image
 	waitForFrame(currentFrameIdx);
@@ -1665,7 +1686,10 @@ void RendererBase::waitForFrame(unsigned int frameIdx) {
 	device.resetDescriptorPool(frame.dsPool);
 
 	// TODO: multiple frames, only delete after no longer in use by GPU
-	assert(frame.deleteBuffers.empty());
+	for (auto &b : frame.deleteBuffers) {
+		this->deleteBufferInternal(b);
+	}
+	frame.deleteBuffers.clear();
 
 	for (auto handle : frame.ephemeralBuffers) {
 		Buffer &buffer = buffers.get(handle);

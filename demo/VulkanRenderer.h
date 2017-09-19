@@ -350,6 +350,8 @@ struct RendererBase {
 	uint32_t                  currentFrameIdx;
 	uint32_t                  lastSyncedFrame;
 
+	std::vector<Buffer>       deleteBuffers;
+
 
 	unsigned int ringBufferAlloc(unsigned int size);
 
