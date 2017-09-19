@@ -1732,7 +1732,7 @@ struct lambda_visitor< ReturnType, Lambda1 , Lambdas...>
     using Lambda1::operator();
     using lambda_visitor< ReturnType , Lambdas...>::operator();
     lambda_visitor(Lambda1 l1, Lambdas... lambdas)
-      : Lambda1(l1), lambda_visitor< ReturnType , Lambdas...> (lambdas...)
+      : lambda_visitor< ReturnType , Lambdas...> (lambdas...), Lambda1(l1)
     {}
 };
 
