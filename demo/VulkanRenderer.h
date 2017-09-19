@@ -223,6 +223,8 @@ struct Frame {
 	bool                      outstanding;
 	uint32_t                  lastFrameNum;
 
+	std::vector<Buffer>       deleteBuffers;
+
 
 	Frame()
 	: outstanding(false)
@@ -237,6 +239,7 @@ struct Frame {
 		assert(!commandBuffer);
 		assert(ephemeralBuffers.empty());
 		assert(!outstanding);
+		assert(deleteBuffers.empty());
 	}
 
 	Frame(const Frame &)            = delete;
@@ -251,6 +254,7 @@ struct Frame {
 	, ephemeralBuffers(std::move(other.ephemeralBuffers))
 	, outstanding(other.outstanding)
 	, lastFrameNum(other.lastFrameNum)
+	, deleteBuffers(std::move(other.deleteBuffers))
 	{
 		other.image = vk::Image();
 		other.fence = vk::Fence();
@@ -259,6 +263,7 @@ struct Frame {
 		other.commandBuffer = vk::CommandBuffer();
 		other.outstanding      = false;
 		other.lastFrameNum     = 0;
+		assert(other.deleteBuffers.empty());
 	}
 
 	Frame &operator=(Frame &&other) {
@@ -291,6 +296,9 @@ struct Frame {
 
 		lastFrameNum = other.lastFrameNum;
 		other.lastFrameNum = 0;
+
+		deleteBuffers = std::move(other.deleteBuffers);
+		assert(other.deleteBuffers.empty());
 
 		return *this;
 	}

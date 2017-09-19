@@ -1671,6 +1671,8 @@ void RendererBase::waitForFrame(unsigned int frameIdx) {
 	device.resetDescriptorPool(frame.dsPool);
 
 	// TODO: multiple frames, only delete after no longer in use by GPU
+	assert(frame.deleteBuffers.empty());
+
 	for (auto handle : frame.ephemeralBuffers) {
 		Buffer &buffer = buffers.get(handle);
 		assert(buffer.buffer == ringBuffer);
@@ -1704,6 +1706,8 @@ void RendererBase::deleteFrameInternal(Frame &f) {
 	assert(f.commandPool);
 	device.destroyCommandPool(f.commandPool);
 	f.commandPool = vk::CommandPool();
+
+	assert(f.deleteBuffers.empty());
 }
 
 
