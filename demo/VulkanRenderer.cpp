@@ -404,10 +404,7 @@ RendererImpl::~RendererImpl() {
 
 	// TODO: save pipeline cache
 
-	// TODO: if last frame is still pending we could add these to its list
-	for (auto &r : deleteResources) {
-		this->deleteResourceInternal(r);
-	}
+	// TODO: if last frame is still pending we could add deleted resources to its list
 
 	for (unsigned int i = 0; i < frames.size(); i++) {
 		auto &f = frames[i];
@@ -418,6 +415,10 @@ RendererImpl::~RendererImpl() {
 		deleteFrameInternal(f);
 	}
 	frames.clear();
+
+	for (auto &r : deleteResources) {
+		this->deleteResourceInternal(r);
+	}
 
 	device.destroySemaphore(renderDoneSem);
 	renderDoneSem = vk::Semaphore();
@@ -1400,8 +1401,13 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 		if (numImages < frames.size()) {
 			// decreasing, delete old and resize
 			for (unsigned int i = numImages; i < frames.size(); i++) {
+				auto &f = frames[i];
+				if (f.outstanding) {
+					// wait until complete
+					waitForFrame(i);
+				}
 				// delete contents of Frame
-				deleteFrameInternal(frames[i]);
+				deleteFrameInternal(f);
 			}
 			frames.resize(numImages);
 		} else {
@@ -1556,6 +1562,14 @@ void RendererImpl::beginFrame() {
 	currentFrameIdx        = imageIdx_.value;
 	assert(currentFrameIdx < frames.size());
 	auto &frame            = frames[currentFrameIdx];
+
+	// frames are a ringbuffer
+	// if the frame we want to reuse is still pending on the GPU, wait for it
+	if (frame.outstanding) {
+		waitForFrame(currentFrameIdx);
+	}
+	assert(!frame.outstanding);
+
 	device.resetFences( { frame.fence } );
 
 	// set command buffer to recording
@@ -1659,10 +1673,6 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 		frame.deleteResources = std::move(deleteResources);
 		assert(deleteResources.empty());
 	}
-
-	// wait until complete
-	// TODO: don't do it here, do before starting rendering of next frame which needs this image
-	waitForFrame(currentFrameIdx);
 
 	frameNum++;
 }
