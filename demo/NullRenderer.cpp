@@ -169,6 +169,10 @@ void RendererImpl::deleteBuffer(BufferHandle /* handle */) {
 }
 
 
+void RendererImpl::deleteFramebuffer(FramebufferHandle /*  */) {
+}
+
+
 void RendererImpl::deleteRenderPass(RenderPassHandle /* fbo */) {
 }
 

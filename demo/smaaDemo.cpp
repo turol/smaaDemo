@@ -806,7 +806,17 @@ void SMAADemo::initRender() {
 
 void SMAADemo::createFramebuffers()	{
 	if (rendertargets[0]) {
-		// TODO: delete render passes
+		assert(sceneFramebuffer);
+		renderer.deleteFramebuffer(sceneFramebuffer);
+
+		assert(finalFramebuffer);
+		renderer.deleteFramebuffer(finalFramebuffer);
+
+		assert(smaaEdgesFramebuffer);
+		renderer.deleteFramebuffer(smaaEdgesFramebuffer);
+
+		assert(smaaWeightsFramebuffer);
+		renderer.deleteFramebuffer(smaaWeightsFramebuffer);
 
 		for (unsigned int i = 0; i < RenderTargets::Count; i++) {
 			assert(rendertargets[i]);

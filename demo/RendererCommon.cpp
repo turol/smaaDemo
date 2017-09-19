@@ -121,6 +121,11 @@ void Renderer::deleteBuffer(BufferHandle handle) {
 }
 
 
+void Renderer::deleteFramebuffer(FramebufferHandle handle) {
+	impl->deleteFramebuffer(handle);
+}
+
+
 void Renderer::deleteRenderTarget(RenderTargetHandle &rt) {
 	impl->deleteRenderTarget(rt);
 }

@@ -1343,6 +1343,11 @@ void RendererImpl::deleteBuffer(BufferHandle handle) {
 }
 
 
+void RendererImpl::deleteFramebuffer(FramebufferHandle /*  */) {
+	STUBBED("");
+}
+
+
 void RendererImpl::deleteRenderPass(RenderPassHandle /* pass */) {
 	STUBBED("");
 }
