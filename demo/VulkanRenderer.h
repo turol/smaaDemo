@@ -3,6 +3,11 @@
 
 #define VULKAN_HPP_TYPESAFE_CONVERSION 1
 
+
+// TODO: use std::variant if the compiler has C++17
+#include <boost/variant/variant.hpp>
+
+
 #include <vulkan/vulkan.hpp>
 
 #include <limits.h>  // required but not included by vk_mem_alloc.h
@@ -213,6 +218,9 @@ struct Texture {
 };
 
 
+typedef boost::variant<Buffer> Resource;
+
+
 struct Frame {
 	vk::Image          image;
 	vk::Fence          fence;
@@ -223,7 +231,7 @@ struct Frame {
 	bool                      outstanding;
 	uint32_t                  lastFrameNum;
 
-	std::vector<Buffer>       deleteResources;
+	std::vector<Resource>     deleteResources;
 
 
 	Frame()
@@ -350,7 +358,7 @@ struct RendererBase {
 	uint32_t                  currentFrameIdx;
 	uint32_t                  lastSyncedFrame;
 
-	std::vector<Buffer>       deleteResources;
+	std::vector<Resource>     deleteResources;
 
 
 	unsigned int ringBufferAlloc(unsigned int size);
@@ -358,6 +366,7 @@ struct RendererBase {
 	void waitForFrame(unsigned int frameIdx);
 
 	void deleteBufferInternal(Buffer &b);
+	void deleteResourceInternal(Resource &r);
 	void deleteFrameInternal(Frame &f);
 
 	RendererBase();

@@ -20,6 +20,9 @@
 #include "RendererInternal.h"
 #include "Utils.h"
 
+#include <boost/variant/apply_visitor.hpp>
+#include <boost/variant/static_visitor.hpp>
+
 
 // this part of the C++ bindings sucks...
 
@@ -402,8 +405,8 @@ RendererImpl::~RendererImpl() {
 	// TODO: save pipeline cache
 
 	// TODO: if last frame is still pending we could add these to its list
-	for (auto &b : deleteResources) {
-		this->deleteBufferInternal(b);
+	for (auto &r : deleteResources) {
+		this->deleteResourceInternal(r);
 	}
 
 	for (unsigned int i = 0; i < frames.size(); i++) {
@@ -1686,8 +1689,8 @@ void RendererBase::waitForFrame(unsigned int frameIdx) {
 	device.resetDescriptorPool(frame.dsPool);
 
 	// TODO: multiple frames, only delete after no longer in use by GPU
-	for (auto &b : frame.deleteResources) {
-		this->deleteBufferInternal(b);
+	for (auto &r : frame.deleteResources) {
+		this->deleteResourceInternal(r);
 	}
 	frame.deleteResources.clear();
 
@@ -1711,6 +1714,61 @@ void RendererBase::deleteBufferInternal(Buffer &b) {
 	assert(b.memory != nullptr);
 	vmaFreeMemory(this->allocator, b.memory);
 	b.memory = nullptr;
+}
+
+
+// https://stackoverflow.com/questions/7867555/best-way-to-do-variant-visitation-with-lambdas
+// https://stackoverflow.com/questions/7870498/using-declaration-in-variadic-template/7870614#7870614
+
+
+template <typename ReturnType, typename... Lambdas>
+struct lambda_visitor;
+
+
+template <typename ReturnType, typename Lambda1, typename... Lambdas>
+struct lambda_visitor< ReturnType, Lambda1 , Lambdas...>
+  : public lambda_visitor<ReturnType, Lambdas...>, public Lambda1 {
+
+    using Lambda1::operator();
+    using lambda_visitor< ReturnType , Lambdas...>::operator();
+    lambda_visitor(Lambda1 l1, Lambdas... lambdas)
+      : Lambda1(l1), lambda_visitor< ReturnType , Lambdas...> (lambdas...)
+    {}
+};
+
+
+template <typename ReturnType, typename Lambda1>
+struct lambda_visitor<ReturnType, Lambda1>
+  : public boost::static_visitor<ReturnType>, public Lambda1 {
+
+    using Lambda1::operator();
+    lambda_visitor(Lambda1 l1)
+      : boost::static_visitor<ReturnType>(), Lambda1(l1)
+    {}
+};
+
+
+template <typename ReturnType>
+struct lambda_visitor<ReturnType>
+  : public boost::static_visitor<ReturnType> {
+
+    lambda_visitor() : boost::static_visitor<ReturnType>() {}
+};
+
+
+template <typename ReturnType, typename... Lambdas>
+lambda_visitor<ReturnType, Lambdas...> make_lambda_visitor(Lambdas... lambdas) {
+    return { lambdas... };
+    // you can use the following instead if your compiler doesn't
+    // support list-initialization yet
+    // return lambda_visitor<ReturnType, Lambdas...>(lambdas...);
+}
+
+
+void RendererBase::deleteResourceInternal(Resource &r) {
+	boost::apply_visitor(make_lambda_visitor<void>(
+	                      [this] (Buffer &b) { deleteBufferInternal(b); })
+	                      , r);
 }
 
 
