@@ -1328,14 +1328,8 @@ TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
 
 void RendererImpl::deleteBuffer(BufferHandle handle) {
 	buffers.removeWith(handle, [this](struct Buffer &b) {
-		assert(!b.ringBufferAlloc);
-		assert(b.lastUsedFrame <= lastSyncedFrame);
-		this->device.destroyBuffer(b.buffer);
-		assert(b.memory != nullptr);
-		vmaFreeMemory(this->allocator, b.memory);
-		b.memory = nullptr;
+		this->deleteBufferInternal(b);
 	} );
-
 }
 
 
@@ -1683,6 +1677,16 @@ void RendererBase::waitForFrame(unsigned int frameIdx) {
 	frame.ephemeralBuffers.clear();
 	frame.outstanding = false;
 	lastSyncedFrame = std::max(lastSyncedFrame, frame.lastFrameNum);
+}
+
+
+void RendererBase::deleteBufferInternal(Buffer &b) {
+	assert(!b.ringBufferAlloc);
+	assert(b.lastUsedFrame <= lastSyncedFrame);
+	this->device.destroyBuffer(b.buffer);
+	assert(b.memory != nullptr);
+	vmaFreeMemory(this->allocator, b.memory);
+	b.memory = nullptr;
 }
 
 
