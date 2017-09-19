@@ -1354,11 +1354,9 @@ void RendererImpl::deleteRenderTarget(RenderTargetHandle &) {
 
 void RendererImpl::deleteSampler(SamplerHandle handle) {
 	samplers.removeWith(handle, [this](struct Sampler &s) {
-		assert(s.sampler);
-		this->device.destroySampler(s.sampler);
-		s.sampler = vk::Sampler();
+		// TODO: if lastUsedFrame has already been synced we could delete immediately
+		this->deleteResources.emplace_back(std::move(s));
 	} );
-
 }
 
 
@@ -1717,6 +1715,13 @@ void RendererBase::deleteBufferInternal(Buffer &b) {
 }
 
 
+void RendererBase::deleteSamplerInternal(Sampler &s) {
+	assert(s.sampler);
+	this->device.destroySampler(s.sampler);
+	s.sampler = vk::Sampler();
+}
+
+
 // https://stackoverflow.com/questions/7867555/best-way-to-do-variant-visitation-with-lambdas
 // https://stackoverflow.com/questions/7870498/using-declaration-in-variadic-template/7870614#7870614
 
@@ -1767,8 +1772,10 @@ lambda_visitor<ReturnType, Lambdas...> make_lambda_visitor(Lambdas... lambdas) {
 
 void RendererBase::deleteResourceInternal(Resource &r) {
 	boost::apply_visitor(make_lambda_visitor<void>(
-	                      [this] (Buffer &b) { deleteBufferInternal(b); })
-	                      , r);
+	                        [this] (Buffer &b)  { deleteBufferInternal(b);  }
+	                      , [this] (Sampler &s) { deleteSamplerInternal(s); }
+	                      )
+	                   , r);
 }
 
 

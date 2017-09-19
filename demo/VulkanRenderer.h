@@ -218,7 +218,7 @@ struct Texture {
 };
 
 
-typedef boost::variant<Buffer> Resource;
+typedef boost::variant<Buffer, Sampler> Resource;
 
 
 struct Frame {
@@ -367,6 +367,7 @@ struct RendererBase {
 
 	void deleteBufferInternal(Buffer &b);
 	void deleteResourceInternal(Resource &r);
+	void deleteSamplerInternal(Sampler &s);
 	void deleteFrameInternal(Frame &f);
 
 	RendererBase();
