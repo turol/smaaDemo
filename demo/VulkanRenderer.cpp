@@ -841,22 +841,22 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 			bufmask |=  (1 << attrDesc.bufBinding);
 		}
 #else
-    while (true) {
-      unsigned long bit = 0;
-      if (!_BitScanForward(&bit, mask)) {
-        break;
-      }
-      vk::VertexInputAttributeDescription attr;
-      const auto &attrDesc = desc.vertexAttribs.at(bit);
-      attr.location = bit;
-      attr.binding = attrDesc.bufBinding;
-      attr.format = vulkanVertexFormat(attrDesc.format, attrDesc.count);
-      attr.offset = attrDesc.offset;
-      attrs.push_back(attr);
-      mask &= ~(1 << bit);
-      bufmask |= (1 << attrDesc.bufBinding);
-    }
-    assert(mask == 0);
+		while (true) {
+			unsigned long bit = 0;
+			if (!_BitScanForward(&bit, mask)) {
+				break;
+			}
+			vk::VertexInputAttributeDescription attr;
+			const auto &attrDesc = desc.vertexAttribs.at(bit);
+			attr.location = bit;
+			attr.binding  = attrDesc.bufBinding;
+			attr.format   = vulkanVertexFormat(attrDesc.format, attrDesc.count);
+			attr.offset   = attrDesc.offset;
+			attrs.push_back(attr);
+			mask    &= ~(1 << bit);
+			bufmask |=  (1 << attrDesc.bufBinding);
+		}
+		assert(mask == 0);
 #endif
 
 		// currently we support only 1 buffer, TODO: need more?
