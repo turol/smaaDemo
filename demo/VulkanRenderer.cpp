@@ -433,11 +433,7 @@ RendererImpl::~RendererImpl() {
 	ringBuffer = vk::Buffer();
 
 	buffers.clearWith([this](struct Buffer &b) {
-		assert(!b.ringBufferAlloc);
-		this->device.destroyBuffer(b.buffer);
-		assert(b.memory != nullptr);
-		vmaFreeMemory(this->allocator, b.memory);
-		b.memory = nullptr;
+		deleteBufferInternal(b);
 	} );
 
 	samplers.clearWith([this](struct Sampler &s) {
