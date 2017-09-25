@@ -432,11 +432,11 @@ RendererImpl::~RendererImpl() {
 	device.destroyBuffer(ringBuffer);
 	ringBuffer = vk::Buffer();
 
-	buffers.clearWith([this](struct Buffer &b) {
+	buffers.clearWith([this](Buffer &b) {
 		deleteBufferInternal(b);
 	} );
 
-	samplers.clearWith([this](struct Sampler &s) {
+	samplers.clearWith([this](Sampler &s) {
 		assert(s.sampler);
 		this->device.destroySampler(s.sampler);
 		s.sampler = vk::Sampler();
