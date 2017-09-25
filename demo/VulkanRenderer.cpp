@@ -437,9 +437,7 @@ RendererImpl::~RendererImpl() {
 	} );
 
 	samplers.clearWith([this](Sampler &s) {
-		assert(s.sampler);
-		this->device.destroySampler(s.sampler);
-		s.sampler = vk::Sampler();
+		deleteSamplerInternal(s);
 	} );
 
 	pipelines.clearWith([this](Pipeline &p) {
