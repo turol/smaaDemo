@@ -469,23 +469,7 @@ RendererImpl::~RendererImpl() {
 	} );
 
 	renderTargets.clearWith([this](RenderTarget &rt) {
-		assert(rt.texture);
-		auto &tex = this->textures.get(rt.texture);
-		assert(tex.image == rt.image);
-		assert(tex.imageView == rt.imageView);
-		tex.image        = vk::Image();
-		tex.imageView    = vk::ImageView();
-		tex.renderTarget = false;
-
-		assert(tex.memory != nullptr);
-		vmaFreeMemory(this->allocator, tex.memory);
-		tex.memory = nullptr;
-
-		this->textures.remove(rt.texture);
-		rt.texture = TextureHandle();
-
-		this->device.destroyImageView(rt.imageView);
-		this->device.destroyImage(rt.image);
+		deleteRenderTargetInternal(rt);
 	} );
 
 	textures.clearWith([this](Texture &tex) {
@@ -1719,6 +1703,27 @@ void RendererBase::deleteFramebufferInternal(Framebuffer &fb) {
 	fb.framebuffer = vk::Framebuffer();
 	fb.width       = 0;
 	fb.height      = 0;
+}
+
+
+void RendererBase::deleteRenderTargetInternal(RenderTarget &rt) {
+	assert(rt.texture);
+	auto &tex = this->textures.get(rt.texture);
+	assert(tex.image == rt.image);
+	assert(tex.imageView == rt.imageView);
+	tex.image        = vk::Image();
+	tex.imageView    = vk::ImageView();
+	tex.renderTarget = false;
+
+	assert(tex.memory != nullptr);
+	vmaFreeMemory(this->allocator, tex.memory);
+	tex.memory = nullptr;
+
+	this->textures.remove(rt.texture);
+	rt.texture = TextureHandle();
+
+	this->device.destroyImageView(rt.imageView);
+	this->device.destroyImage(rt.image);
 }
 
 
