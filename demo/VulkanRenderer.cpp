@@ -52,13 +52,13 @@ VKAPI_ATTR void VKAPI_CALL vkDestroyDebugReportCallbackEXT(
 
 
 static const std::array<vk::DescriptorType, uint8_t(DescriptorType::Count) - 1> descriptorTypes =
-{
+{ {
 	  vk::DescriptorType::eUniformBuffer
 	, vk::DescriptorType::eStorageBuffer
 	, vk::DescriptorType::eSampler
 	, vk::DescriptorType::eSampledImage
 	, vk::DescriptorType::eCombinedImageSampler
-};
+} };
 
 
 static vk::Format vulkanVertexFormat(VtxFormat::VtxFormat format, uint8_t count) {
@@ -304,7 +304,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	printf("Using queue %u for graphics\n", graphicsQueueIndex);
 
-	std::array<float, 1> queuePriorities = { 0.0f };
+	std::array<float, 1> queuePriorities = { { 0.0f } };
 
 	vk::DeviceQueueCreateInfo queueCreateInfo;
 	queueCreateInfo.queueFamilyIndex  = graphicsQueueIndex;
@@ -1840,7 +1840,7 @@ void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle 
 	assert(fb.height > 0);
 	// TODO: should be customizable
 	// clear image
-	std::array<float, 4> color = { 0.0f, 0.0f, 0.0f, 0.0f };
+	std::array<float, 4> color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
 
 	std::array<vk::ClearValue, 2> clearValues;
 	clearValues[0].color        = vk::ClearColorValue(color);
