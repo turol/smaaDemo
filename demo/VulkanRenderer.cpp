@@ -446,8 +446,7 @@ RendererImpl::~RendererImpl() {
 	} );
 
 	framebuffers.clearWith([this](Framebuffer &fb) {
-		this->device.destroyFramebuffer(fb.framebuffer);
-		fb.framebuffer = vk::Framebuffer();
+		deleteFramebufferInternal(fb);
 	} );
 
 	renderPasses.clearWith([this](RenderPass &r) {
@@ -1712,6 +1711,14 @@ void RendererBase::deleteBufferInternal(Buffer &b) {
 	assert(b.memory != nullptr);
 	vmaFreeMemory(this->allocator, b.memory);
 	b.memory = nullptr;
+}
+
+
+void RendererBase::deleteFramebufferInternal(Framebuffer &fb) {
+	device.destroyFramebuffer(fb.framebuffer);
+	fb.framebuffer = vk::Framebuffer();
+	fb.width       = 0;
+	fb.height      = 0;
 }
 
 

@@ -366,6 +366,7 @@ struct RendererBase {
 	void waitForFrame(unsigned int frameIdx);
 
 	void deleteBufferInternal(Buffer &b);
+	void deleteFramebufferInternal(Framebuffer &fb);
 	void deleteResourceInternal(Resource &r);
 	void deleteSamplerInternal(Sampler &s);
 	void deleteTextureInternal(Texture &tex);
