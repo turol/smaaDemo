@@ -490,12 +490,7 @@ RendererImpl::~RendererImpl() {
 	} );
 
 	textures.clearWith([this](Texture &tex) {
-		assert(!tex.renderTarget);
-		this->device.destroyImageView(tex.imageView);
-		this->device.destroyImage(tex.image);
-		assert(tex.memory != nullptr);
-		vmaFreeMemory(this->allocator, tex.memory);
-		tex.memory = nullptr;
+		deleteTextureInternal(tex);
 	} );
 
 	device.destroySwapchainKHR(swapchain);
