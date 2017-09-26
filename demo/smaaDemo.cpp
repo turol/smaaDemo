@@ -343,6 +343,23 @@ SMAADemo::SMAADemo()
 SMAADemo::~SMAADemo() {
 	ImGui::Shutdown();
 
+	assert(sceneFramebuffer);
+	renderer.deleteFramebuffer(sceneFramebuffer);
+
+	assert(finalFramebuffer);
+	renderer.deleteFramebuffer(finalFramebuffer);
+
+	assert(smaaEdgesFramebuffer);
+	renderer.deleteFramebuffer(smaaEdgesFramebuffer);
+
+	assert(smaaWeightsFramebuffer);
+	renderer.deleteFramebuffer(smaaWeightsFramebuffer);
+
+	for (unsigned int i = 0; i < RenderTargets::Count; i++) {
+		assert(rendertargets[i]);
+		renderer.deleteRenderTarget(rendertargets[i]);
+	}
+
 	renderer.deleteBuffer(cubeVBO);
 	renderer.deleteBuffer(cubeIBO);
 
