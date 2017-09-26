@@ -415,8 +415,7 @@ private:
 
 struct FramebufferDesc {
 	FramebufferDesc()
-	: depthStencil_(0)
-	, name_(nullptr)
+	: name_(nullptr)
 	{
 	}
 
