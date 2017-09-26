@@ -103,11 +103,6 @@ struct Handle {
 	: handle(handle_)
 	{
 	}
-
-
-	explicit operator uint32_t() const {
-		return handle;
-	}
 };
 
 
