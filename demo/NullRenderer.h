@@ -53,16 +53,32 @@ struct Pipeline {
 };
 
 
+struct Sampler {
+	SamplerDesc desc;
+
+
+	Sampler(const Sampler &)            = default;
+	Sampler &operator=(const Sampler &) = default;
+
+	Sampler(Sampler &&)                 = default;
+	Sampler &operator=(Sampler &&)      = default;
+
+	Sampler() {}
+
+	~Sampler() {}
+};
+
+
 struct RendererBase {
 	std::vector<char> ringBuffer;
 	ResourceContainer<Buffer>              buffers;
 	ResourceContainer<Framebuffer>         framebuffers;
 	ResourceContainer<Pipeline>            pipelines;
+	ResourceContainer<Sampler>             samplers;
 
 	PipelineDesc  currentPipeline;
 
 	unsigned int numBuffers;
-	unsigned int numSamplers;
 	unsigned int numTextures;
 
 	std::vector<BufferHandle> ephemeralBuffers;

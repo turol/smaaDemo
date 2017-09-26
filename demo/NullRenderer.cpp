@@ -17,7 +17,6 @@ Buffer::~Buffer() {
 
 RendererBase::RendererBase()
 : numBuffers(0)
-, numSamplers(0)
 , numTextures(0)
 {
 }
@@ -119,11 +118,13 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 }
 
 
-SamplerHandle RendererImpl::createSampler(const SamplerDesc & /* desc */) {
+SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
+	auto result = samplers.add();
+	Sampler &sampler = result.first;
 	// TODO: check desc
+	sampler.desc = desc;
 
-	numSamplers++;
-	return SamplerHandle(numSamplers);
+	return SamplerHandle(result.second);
 }
 
 
