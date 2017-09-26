@@ -1323,8 +1323,11 @@ void RendererImpl::deleteRenderPass(RenderPassHandle /* pass */) {
 }
 
 
-void RendererImpl::deleteRenderTarget(RenderTargetHandle &) {
-	STUBBED("");
+void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
+	renderTargets.removeWith(handle, [this](struct RenderTarget &rt) {
+		// TODO: if lastUsedFrame has already been synced we could delete immediately
+		this->deleteResources.emplace(std::move(rt));
+	} );
 }
 
 

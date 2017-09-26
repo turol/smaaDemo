@@ -163,6 +163,15 @@ struct RenderTarget{
 	RenderTarget &operator=(RenderTarget &&)      = default;
 
 	~RenderTarget() {}
+
+
+	bool operator==(const RenderTarget &other) const {
+		return this->image == other.image;
+	}
+
+	size_t getHash() const {
+		return std::hash<uintptr_t>()(reinterpret_cast<uintptr_t>(VkImage(image)));
+	}
 };
 
 
@@ -244,12 +253,16 @@ struct Texture {
 };
 
 
-typedef boost::variant<Buffer, Sampler, Texture> Resource;
+typedef boost::variant<Buffer, RenderTarget, Sampler, Texture> Resource;
 
 
 struct ResourceHasher final : public boost::static_visitor<size_t> {
 	size_t operator()(const Buffer &b) const {
 		return b.getHash();
+	}
+
+	size_t operator()(const RenderTarget &rt) const {
+		return rt.getHash();
 	}
 
 	size_t operator()(const Sampler &s) const {
@@ -451,6 +464,10 @@ struct RendererBase {
 
 		void operator()(Buffer &b) const {
 			r->deleteBufferInternal(b);
+		}
+
+		void operator()(RenderTarget &rt) const {
+			r->deleteRenderTargetInternal(rt);
 		}
 
 		void operator()(Sampler &s) const {
