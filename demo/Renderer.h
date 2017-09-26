@@ -45,11 +45,18 @@ template <class T> class ResourceContainer;
 
 
 template <class T>
-struct Handle {
+class Handle {
 	friend class ResourceContainer<T>;
 
-	// FIXME: make private
 	uint32_t handle;
+
+
+	explicit Handle(uint32_t handle_)
+	: handle(handle_)
+	{
+	}
+
+public:
 
 
 	Handle()
@@ -100,13 +107,6 @@ struct Handle {
 
 	explicit operator bool() const {
 		return handle != 0;
-	}
-
-
-	// TODO: remove these
-	explicit Handle(uint32_t handle_)
-	: handle(handle_)
-	{
 	}
 };
 
