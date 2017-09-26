@@ -1313,8 +1313,11 @@ void RendererImpl::deleteBuffer(BufferHandle handle) {
 }
 
 
-void RendererImpl::deleteFramebuffer(FramebufferHandle /*  */) {
-	STUBBED("");
+void RendererImpl::deleteFramebuffer(FramebufferHandle handle) {
+	framebuffers.removeWith(handle, [this](Framebuffer &fb) {
+		// TODO: if lastUsedFrame has already been synced we could delete immediately
+		this->deleteResources.emplace(std::move(fb));
+	} );
 }
 
 

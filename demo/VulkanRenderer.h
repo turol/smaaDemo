@@ -122,6 +122,15 @@ struct Framebuffer {
 	Framebuffer &operator=(Framebuffer &&)      = default;
 
 	~Framebuffer() {}
+
+
+	bool operator==(const Framebuffer &other) const {
+		return this->framebuffer == other.framebuffer;
+	}
+
+	size_t getHash() const {
+		return std::hash<uintptr_t>()(reinterpret_cast<uintptr_t>(VkFramebuffer(framebuffer)));
+	}
 };
 
 
@@ -253,12 +262,16 @@ struct Texture {
 };
 
 
-typedef boost::variant<Buffer, RenderTarget, Sampler, Texture> Resource;
+typedef boost::variant<Buffer, Framebuffer, RenderTarget, Sampler, Texture> Resource;
 
 
 struct ResourceHasher final : public boost::static_visitor<size_t> {
 	size_t operator()(const Buffer &b) const {
 		return b.getHash();
+	}
+
+	size_t operator()(const Framebuffer &fb) const {
+		return fb.getHash();
 	}
 
 	size_t operator()(const RenderTarget &rt) const {
@@ -464,6 +477,10 @@ struct RendererBase {
 
 		void operator()(Buffer &b) const {
 			r->deleteBufferInternal(b);
+		}
+
+		void operator()(Framebuffer &fb) const {
+			r->deleteFramebufferInternal(fb);
 		}
 
 		void operator()(RenderTarget &rt) const {
