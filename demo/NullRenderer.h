@@ -53,6 +53,22 @@ struct Pipeline {
 };
 
 
+struct RenderTarget {
+	RenderTargetDesc  desc;
+
+
+	RenderTarget(const RenderTarget &)            = default;
+	RenderTarget &operator=(const RenderTarget &) = default;
+
+	RenderTarget(RenderTarget &&)                 = default;
+	RenderTarget &operator=(RenderTarget &&)      = default;
+
+	RenderTarget() {}
+
+	~RenderTarget() {}
+};
+
+
 struct Sampler {
 	SamplerDesc desc;
 
@@ -74,6 +90,7 @@ struct RendererBase {
 	ResourceContainer<Buffer>              buffers;
 	ResourceContainer<Framebuffer>         framebuffers;
 	ResourceContainer<Pipeline>            pipelines;
+	ResourceContainer<RenderTarget>        rendertargets;
 	ResourceContainer<Sampler>             samplers;
 
 	PipelineDesc  currentPipeline;
