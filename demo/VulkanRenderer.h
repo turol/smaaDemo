@@ -6,6 +6,7 @@
 
 // TODO: use std::variant if the compiler has C++17
 #include <boost/variant/variant.hpp>
+#include <boost/variant/static_visitor.hpp>
 
 
 #include <vulkan/vulkan.hpp>
@@ -376,6 +377,39 @@ struct RendererBase {
 	RendererBase();
 
 	~RendererBase();
+
+
+	struct ResourceDeleter final : public boost::static_visitor<> {
+		RendererBase *r;
+
+
+		ResourceDeleter(RendererBase *r_)
+		: r(r_)
+		{
+		}
+
+		ResourceDeleter(const ResourceDeleter &)            = default;
+		ResourceDeleter(ResourceDeleter &&)                 = default;
+
+		ResourceDeleter &operator=(const ResourceDeleter &) = default;
+		ResourceDeleter &operator=(ResourceDeleter &&)      = default;
+
+		~ResourceDeleter() {}
+
+		void operator()(Buffer &b) const {
+			r->deleteBufferInternal(b);
+		}
+
+		void operator()(Sampler &s) const {
+			r->deleteSamplerInternal(s);
+		}
+
+		void operator()(Texture &t) const {
+			r->deleteTextureInternal(t);
+		}
+
+	};
+
 };
 
 
