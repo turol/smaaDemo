@@ -20,8 +20,6 @@
 #include "RendererInternal.h"
 #include "Utils.h"
 
-#include <boost/variant/apply_visitor.hpp>
-
 
 // this part of the C++ bindings sucks...
 
@@ -416,8 +414,9 @@ RendererImpl::~RendererImpl() {
 	frames.clear();
 
 	for (auto &r : deleteResources) {
-		this->deleteResourceInternal(r);
+		this->deleteResourceInternal(const_cast<Resource &>(r));
 	}
+	deleteResources.clear();
 
 	device.destroySemaphore(renderDoneSem);
 	renderDoneSem = vk::Semaphore();
@@ -1309,7 +1308,7 @@ TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
 void RendererImpl::deleteBuffer(BufferHandle handle) {
 	buffers.removeWith(handle, [this](struct Buffer &b) {
 		// TODO: if b.lastUsedFrame has already been synced we could delete immediately
-		this->deleteResources.emplace_back(std::move(b));
+		this->deleteResources.emplace(std::move(b));
 	} );
 }
 
@@ -1332,7 +1331,7 @@ void RendererImpl::deleteRenderTarget(RenderTargetHandle &) {
 void RendererImpl::deleteSampler(SamplerHandle handle) {
 	samplers.removeWith(handle, [this](struct Sampler &s) {
 		// TODO: if lastUsedFrame has already been synced we could delete immediately
-		this->deleteResources.emplace_back(std::move(s));
+		this->deleteResources.emplace(std::move(s));
 	} );
 }
 
@@ -1340,7 +1339,7 @@ void RendererImpl::deleteSampler(SamplerHandle handle) {
 void RendererImpl::deleteTexture(TextureHandle handle) {
 	textures.removeWith(handle, [this](Texture &tex) {
 		// TODO: if lastUsedFrame has already been synced we could delete immediately
-		this->deleteResources.emplace_back(std::move(tex));
+		this->deleteResources.emplace(std::move(tex));
 	} );
 }
 
@@ -1670,7 +1669,7 @@ void RendererBase::waitForFrame(unsigned int frameIdx) {
 
 	// TODO: multiple frames, only delete after no longer in use by GPU
 	for (auto &r : frame.deleteResources) {
-		this->deleteResourceInternal(r);
+		this->deleteResourceInternal(const_cast<Resource &>(r));
 	}
 	frame.deleteResources.clear();
 

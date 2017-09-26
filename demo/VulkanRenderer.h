@@ -6,6 +6,7 @@
 
 // TODO: use std::variant if the compiler has C++17
 #include <boost/variant/variant.hpp>
+#include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
 
 
@@ -42,6 +43,14 @@ struct Buffer {
 	Buffer &operator=(Buffer &&)      = default;
 
 	~Buffer() {}
+
+	bool operator==(const Buffer &other) const {
+		return this->buffer == other.buffer;
+	}
+
+	size_t getHash() const {
+		return std::hash<uintptr_t>()(reinterpret_cast<uintptr_t>(VkBuffer(buffer)));
+	}
 };
 
 
@@ -190,6 +199,14 @@ struct Sampler {
 	Sampler &operator=(Sampler &&)      = default;
 
 	~Sampler() {}
+
+	bool operator==(const Sampler &other) const {
+		return this->sampler == other.sampler;
+	}
+
+	size_t getHash() const {
+		return std::hash<uintptr_t>()(reinterpret_cast<uintptr_t>(VkSampler(sampler)));
+	}
 };
 
 
@@ -216,10 +233,44 @@ struct Texture {
 	Texture &operator=(Texture &&)      = default;
 
 	~Texture() {}
+
+	bool operator==(const Texture &other) const {
+		return this->image == other.image;
+	}
+
+	size_t getHash() const {
+		return std::hash<uintptr_t>()(reinterpret_cast<uintptr_t>(VkImage(image)));
+	}
 };
 
 
 typedef boost::variant<Buffer, Sampler, Texture> Resource;
+
+
+struct ResourceHasher final : public boost::static_visitor<size_t> {
+	size_t operator()(const Buffer &b) const {
+		return b.getHash();
+	}
+
+	size_t operator()(const Sampler &s) const {
+		return s.getHash();
+	}
+
+	size_t operator()(const Texture &t) const {
+		return t.getHash();
+	}
+};
+
+
+namespace std {
+
+	template <> struct hash<Resource> {
+		size_t operator()(const Resource &r) const {
+			return boost::apply_visitor(ResourceHasher(), r);
+		}
+	};
+
+}  // namespace std
 
 
 struct Frame {
@@ -232,7 +283,8 @@ struct Frame {
 	bool                      outstanding;
 	uint32_t                  lastFrameNum;
 
-	std::vector<Resource>     deleteResources;
+	// std::vector has some kind of issue with variant with non-copyable types, so use unordered_set
+	std::unordered_set<Resource>     deleteResources;
 
 
 	Frame()
@@ -359,7 +411,8 @@ struct RendererBase {
 	uint32_t                  currentFrameIdx;
 	uint32_t                  lastSyncedFrame;
 
-	std::vector<Resource>     deleteResources;
+	// std::vector has some kind of issue with variant with non-copyable types, so use unordered_set
+	std::unordered_set<Resource>     deleteResources;
 
 
 	unsigned int ringBufferAlloc(unsigned int size);
