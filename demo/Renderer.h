@@ -41,9 +41,14 @@ struct Texture;
 struct VertexShader;
 
 
+template <class T> class ResourceContainer;
+
+
 template <class T>
 struct Handle {
-	// FIXME: make private, mark ResourceContainer as friend
+	friend class ResourceContainer<T>;
+
+	// FIXME: make private
 	uint32_t handle;
 
 
