@@ -666,10 +666,8 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 }
 
 
-VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros) {
-	std::string vertexShaderName   = name + ".vert";
-
-	auto vertexSrc = loadSource(vertexShaderName);
+std::vector<uint32_t> RendererImpl::compileSpirv(const std::string &name, const ShaderMacros &macros, shaderc_shader_kind kind) {
+	auto src = loadSource(name);
 
 	shaderc::CompileOptions options;
 	// TODO: optimization level?
@@ -680,13 +678,22 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 		options.AddMacroDefinition(p.first, p.second);
 	}
 
-	auto result = compiler.CompileGlslToSpv(&vertexSrc[0], vertexSrc.size(), shaderc_glsl_vertex_shader, vertexShaderName.c_str(), options);
+	auto result = compiler.CompileGlslToSpv(&src[0], src.size(), kind, name.c_str(), options);
 	if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-		printf("Shader %s compile failed: %s\n", vertexShaderName.c_str(), result.GetErrorMessage().c_str());
+		printf("Shader %s compile failed: %s\n", name.c_str(), result.GetErrorMessage().c_str());
 		exit(1);
 	}
 
-	spirv_cross::CompilerGLSL glsl(std::vector<uint32_t>(result.cbegin(), result.cend()));
+	return std::vector<uint32_t>(result.cbegin(), result.cend());
+}
+
+
+VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros) {
+	std::string vertexShaderName   = name + ".vert";
+
+    std::vector<uint32_t> spirv = compileSpirv(vertexShaderName, macros, shaderc_glsl_vertex_shader);
+
+	spirv_cross::CompilerGLSL glsl(spirv);
 	spirv_cross::CompilerGLSL::Options glslOptions;
 	glslOptions.vertex.fixup_clipspace = false;
 	glsl.set_options(glslOptions);
@@ -713,24 +720,9 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros &macros) {
 	std::string fragmentShaderName = name + ".frag";
 
-	auto fragSrc = loadSource(fragmentShaderName);
+	std::vector<uint32_t> spirv = compileSpirv(fragmentShaderName, macros, shaderc_glsl_fragment_shader);
 
-	shaderc::CompileOptions options;
-	// TODO: optimization level?
-	// TODO: cache includes globally
-	options.SetIncluder(std::make_unique<Includer>());
-
-	for (const auto &p : macros) {
-		options.AddMacroDefinition(p.first, p.second);
-	}
-
-	auto result = compiler.CompileGlslToSpv(&fragSrc[0], fragSrc.size(), shaderc_glsl_fragment_shader, fragmentShaderName.c_str(), options);
-	if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-		printf("Shader %s compile failed: %s\n", fragmentShaderName.c_str(), result.GetErrorMessage().c_str());
-		exit(1);
-	}
-
-	spirv_cross::CompilerGLSL glsl(std::vector<uint32_t>(result.cbegin(), result.cend()));
+	spirv_cross::CompilerGLSL glsl(spirv);
 	spirv_cross::CompilerGLSL::Options glslOptions;
 	glslOptions.vertex.fixup_clipspace = false;
 	glsl.set_options(glslOptions);

@@ -157,6 +157,8 @@ struct RendererImpl : public RendererBase {
 
 	std::vector<char> loadSource(const std::string &name);
 
+	std::vector<uint32_t> compileSpirv(const std::string &name, const ShaderMacros &macros, shaderc_shader_kind kind);
+
 	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);
 
 	RendererImpl(const RendererDesc &desc);
