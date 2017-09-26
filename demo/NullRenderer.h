@@ -85,6 +85,22 @@ struct Sampler {
 };
 
 
+struct Texture {
+	TextureDesc desc;
+
+
+	Texture(const Texture &)            = default;
+	Texture &operator=(const Texture &) = default;
+
+	Texture(Texture &&)                 = default;
+	Texture &operator=(Texture &&)      = default;
+
+	Texture() {}
+
+	~Texture() {}
+};
+
+
 struct RendererBase {
 	std::vector<char> ringBuffer;
 	ResourceContainer<Buffer>              buffers;
@@ -92,6 +108,7 @@ struct RendererBase {
 	ResourceContainer<Pipeline>            pipelines;
 	ResourceContainer<RenderTarget>        rendertargets;
 	ResourceContainer<Sampler>             samplers;
+	ResourceContainer<Texture>             textures;
 
 	PipelineDesc  currentPipeline;
 

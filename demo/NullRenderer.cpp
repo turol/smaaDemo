@@ -150,10 +150,12 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 
 	// TODO: check data
 
-	numTextures++;
-	TextureHandle handle;
-	handle.handle = numTextures;
-	return handle;
+	auto result = textures.add();
+	Texture &texture = result.first;
+	// TODO: check desc
+	texture.desc = desc;
+
+	return result.second;
 }
 
 
