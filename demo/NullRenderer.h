@@ -21,6 +21,22 @@ struct Buffer {
 };
 
 
+struct DescriptorSetLayout {
+	std::vector<DescriptorLayout> layout;
+
+
+	DescriptorSetLayout() {}
+
+	DescriptorSetLayout(const DescriptorSetLayout &)            = delete;
+	DescriptorSetLayout &operator=(const DescriptorSetLayout &) = delete;
+
+	DescriptorSetLayout(DescriptorSetLayout &&)                 = default;
+	DescriptorSetLayout &operator=(DescriptorSetLayout &&)      = default;
+
+	~DescriptorSetLayout() {}
+};
+
+
 struct Framebuffer {
 	RenderPassHandle  renderPass;
 
@@ -104,6 +120,7 @@ struct Texture {
 struct RendererBase {
 	std::vector<char> ringBuffer;
 	ResourceContainer<Buffer>              buffers;
+	ResourceContainer<DescriptorSetLayout>  dsLayouts;
 	ResourceContainer<Framebuffer>         framebuffers;
 	ResourceContainer<Pipeline>            pipelines;
 	ResourceContainer<RenderTarget>        rendertargets;

@@ -159,8 +159,17 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 }
 
 
-DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout * /* layout */) {
-	return DescriptorSetLayoutHandle(0);
+DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout *layout) {
+	auto result = dsLayouts.add();
+	DescriptorSetLayout &dsLayout = result.first;
+
+	while (layout->type != DescriptorType::End) {
+		dsLayout.layout.push_back(*layout);
+		layout++;
+	}
+	assert(layout->offset == 0);
+
+	return result.second;
 }
 
 
