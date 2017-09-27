@@ -1,6 +1,8 @@
 #include "RendererInternal.h"
 #include "Utils.h"
 
+#include <shaderc/shaderc.hpp>
+
 
 class Includer final : public shaderc::CompileOptions::IncluderInterface {
 	std::unordered_map<std::string, std::vector<char> > cache;
