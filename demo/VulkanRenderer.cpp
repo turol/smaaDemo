@@ -1048,25 +1048,10 @@ SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
 VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros) {
 	std::string vertexShaderName   = name + ".vert";
 
-	auto vertexSrc = loadSource(vertexShaderName);
+	ShaderMacros macros_(macros);
+	macros_.emplace("VULKAN_FLIP", "1");
 
-	shaderc::CompileOptions options;
-	// TODO: optimization level?
-	// TODO: cache includes globally
-	options.SetIncluder(std::make_unique<Includer>());
-
-	options.AddMacroDefinition("VULKAN_FLIP", "1");
-	for (const auto &p : macros) {
-		options.AddMacroDefinition(p.first, p.second);
-	}
-
-	auto result = compiler.CompileGlslToSpv(&vertexSrc[0], vertexSrc.size(), shaderc_glsl_vertex_shader, vertexShaderName.c_str(), options);
-	if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-		printf("Shader %s compile failed: %s\n", vertexShaderName.c_str(), result.GetErrorMessage().c_str());
-		exit(1);
-	}
-
-	std::vector<uint32_t> spirv(result.cbegin(), result.cend());
+	std::vector<uint32_t> spirv = compileSpirv(vertexShaderName, macros_, shaderc_glsl_vertex_shader);
 
 	if (savePreprocessedShaders) {
 		// TODO: save SPIR-V?
@@ -1087,25 +1072,10 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros &macros) {
 	std::string fragmentShaderName   = name + ".frag";
 
-	auto fragmentSrc = loadSource(fragmentShaderName);
+	ShaderMacros macros_(macros);
+	macros_.emplace("VULKAN_FLIP", "1");
 
-	shaderc::CompileOptions options;
-	// TODO: optimization level?
-	// TODO: cache includes globally
-	options.SetIncluder(std::make_unique<Includer>());
-
-	options.AddMacroDefinition("VULKAN_FLIP", "1");
-	for (const auto &p : macros) {
-		options.AddMacroDefinition(p.first, p.second);
-	}
-
-	auto result = compiler.CompileGlslToSpv(&fragmentSrc[0], fragmentSrc.size(), shaderc_glsl_fragment_shader, fragmentShaderName.c_str(), options);
-	if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-		printf("Shader %s compile failed: %s\n", fragmentShaderName.c_str(), result.GetErrorMessage().c_str());
-		exit(1);
-	}
-
-	std::vector<uint32_t> spirv(result.cbegin(), result.cend());
+	std::vector<uint32_t> spirv = compileSpirv(fragmentShaderName, macros_, shaderc_glsl_fragment_shader);
 
 	if (savePreprocessedShaders) {
 		// TODO: save SPIR-V?
