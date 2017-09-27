@@ -660,28 +660,6 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 }
 
 
-std::vector<uint32_t> RendererImpl::compileSpirv(const std::string &name, const ShaderMacros &macros, shaderc_shader_kind kind) {
-	auto src = loadSource(name);
-
-	shaderc::CompileOptions options;
-	// TODO: optimization level?
-	// TODO: cache includes globally
-	options.SetIncluder(std::make_unique<Includer>());
-
-	for (const auto &p : macros) {
-		options.AddMacroDefinition(p.first, p.second);
-	}
-
-	auto result = compiler.CompileGlslToSpv(&src[0], src.size(), kind, name.c_str(), options);
-	if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-		printf("Shader %s compile failed: %s\n", name.c_str(), result.GetErrorMessage().c_str());
-		exit(1);
-	}
-
-	return std::vector<uint32_t>(result.cbegin(), result.cend());
-}
-
-
 VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros) {
 	std::string vertexShaderName   = name + ".vert";
 
