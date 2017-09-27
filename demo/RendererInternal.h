@@ -100,8 +100,6 @@ public:
 struct RendererImpl : public RendererBase {
 	SwapchainDesc swapchainDesc;
 
-	shaderc::Compiler compiler;
-
 	bool savePreprocessedShaders;
 	unsigned int frameNum;
 
