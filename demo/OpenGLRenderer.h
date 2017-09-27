@@ -156,12 +156,22 @@ struct RenderTarget {
 			return *this;
 		}
 
-		std::swap(readFBO, other.readFBO);
-		std::swap(width,  other.width);
-		std::swap(height, other.height);
-		std::swap(currentLayout, other.currentLayout);
-		std::swap(texture,       other.texture);
-		std::swap(format,        other.format);
+		assert(!readFBO);
+		assert(!texture);
+
+		readFBO       = other.readFBO;
+		width         = other.width;
+		height        = other.height;
+		currentLayout = other.currentLayout;
+		texture       = other.texture;
+		format        = other.format;
+
+		other.readFBO       = 0;
+		other.width         = 0;
+		other.height        = 0;
+		other.currentLayout = Layout::Invalid;
+		other.texture       = TextureHandle();
+		other.format        = Invalid;
 
 		return *this;
 	};
