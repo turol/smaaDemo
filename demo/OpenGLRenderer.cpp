@@ -980,7 +980,7 @@ TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
 
 
 void RendererImpl::deleteBuffer(BufferHandle handle) {
-	buffers.removeWith(handle, [this](struct Buffer &b) {
+	buffers.removeWith(handle, [](struct Buffer &b) {
 		assert(b.buffer != 0);
 		glDeleteBuffers(1, &b.buffer);
 		b.buffer = 0;
