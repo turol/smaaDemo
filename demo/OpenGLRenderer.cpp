@@ -158,12 +158,6 @@ Pipeline::~Pipeline() {
 }
 
 
-RenderTarget::~RenderTarget() {
-	assert(readFBO  == 0);
-	assert(!texture);
-}
-
-
 RenderPass::~RenderPass() {
 }
 

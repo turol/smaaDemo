@@ -166,7 +166,11 @@ struct RenderTarget {
 		return *this;
 	};
 
-	~RenderTarget();
+	~RenderTarget() {
+		assert(readFBO  == 0);
+		assert(!texture);
+	}
+
 };
 
 
