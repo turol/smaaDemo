@@ -36,7 +36,8 @@ LDFLAGS:=-mwindows
 LDFLAGS+=-gstabs
 LDFLAGS+=-L.
 LDFLAGS+=-static-libstdc++ -static-libgcc
-LDLIBS:=-lSDL2main -lSDL2 -lopengl32
+LDLIBS:=-lSDL2main -lSDL2
+LDLIBS_opengl:=-lopengl32
 
 
 LTOCFLAGS:=-flto
