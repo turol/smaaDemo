@@ -357,8 +357,8 @@ private:
 };
 
 
-enum Layout : uint8_t {
-	  InvalidLayout
+enum class Layout : uint8_t {
+	  Invalid
 	, ShaderRead
 	, TransferSrc
 };
@@ -367,7 +367,7 @@ enum Layout : uint8_t {
 struct RenderPassDesc {
 	RenderPassDesc()
 	: depthStencilFormat_(Invalid)
-	, colorFinalLayout_(ShaderRead)
+	, colorFinalLayout_(Layout::ShaderRead)
 	, name_(nullptr)
 	{
 		std::fill(colorFormats_.begin(), colorFormats_.end(), Invalid);

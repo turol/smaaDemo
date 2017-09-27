@@ -128,7 +128,7 @@ struct RenderTarget {
 	: readFBO(0)
 	, width(0)
 	, height(0)
-	, currentLayout(InvalidLayout)
+	, currentLayout(Layout::Invalid)
 	{
 	}
 
@@ -146,7 +146,7 @@ struct RenderTarget {
 		other.readFBO = 0;
 		other.width  = 0;
 		other.height = 0;
-		other.currentLayout = Layout::InvalidLayout;
+		other.currentLayout = Layout::Invalid;
 		other.texture       = TextureHandle();
 		other.format        = Invalid;
 	}

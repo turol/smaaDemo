@@ -162,7 +162,7 @@ struct RenderTarget{
 	RenderTarget()
 	: width(0)
 	, height(0)
-	, currentLayout(InvalidLayout)
+	, currentLayout(Layout::Invalid)
 	{}
 
 	RenderTarget(const RenderTarget &)            = delete;

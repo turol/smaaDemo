@@ -559,10 +559,10 @@ void SMAADemo::initRender() {
 
 	RenderPassDesc rpDesc;
 	rpDesc.color(0, RGBA8);
-	rpDesc.colorFinalLayout(TransferSrc);
+	rpDesc.colorFinalLayout(Layout::TransferSrc);
 	finalRenderPass       = renderer.createRenderPass(rpDesc.name("final"));
 
-	rpDesc.colorFinalLayout(ShaderRead);
+	rpDesc.colorFinalLayout(Layout::ShaderRead);
 	smaaEdgesRenderPass   = renderer.createRenderPass(rpDesc.name("SMAA edges"));
 	smaaWeightsRenderPass = renderer.createRenderPass(rpDesc.name("SMAA weights"));
 

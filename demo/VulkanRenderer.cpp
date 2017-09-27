@@ -591,14 +591,14 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 
 static vk::ImageLayout vulkanLayout(Layout l) {
 	switch (l) {
-	case Invalid:
+	case Layout::Invalid:
 		assert(false);
 		return vk::ImageLayout::eUndefined;
 
-	case ShaderRead:
+	case Layout::ShaderRead:
 		return vk::ImageLayout::eShaderReadOnlyOptimal;
 
-	case TransferSrc:
+	case Layout::TransferSrc:
 		return vk::ImageLayout::eTransferSrcOptimal;
 	}
 

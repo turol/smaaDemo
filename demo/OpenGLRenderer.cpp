@@ -1136,7 +1136,7 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 	inFrame = false;
 
 	auto &rt = renderTargets.get(image);
-	assert(rt.currentLayout == TransferSrc);
+	assert(rt.currentLayout == Layout::TransferSrc);
 
 	unsigned int width  = rt.width;
 	unsigned int height = rt.height;
