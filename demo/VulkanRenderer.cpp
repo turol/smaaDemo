@@ -1668,12 +1668,10 @@ void RendererBase::waitForFrame(unsigned int frameIdx) {
 	// TODO: handle device lost and timeout
 	device.waitForFences({ frame.fence }, true, 1000000000ull);
 
-	// reset command pool
+	// reset per-frame pools
 	device.resetCommandPool(frame.commandPool, vk::CommandPoolResetFlags());
-
 	device.resetDescriptorPool(frame.dsPool);
 
-	// TODO: multiple frames, only delete after no longer in use by GPU
 	for (auto &r : frame.deleteResources) {
 		this->deleteResourceInternal(const_cast<Resource &>(r));
 	}
