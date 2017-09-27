@@ -4,6 +4,8 @@
 #define VULKAN_HPP_TYPESAFE_CONVERSION 1
 
 
+#include <unordered_set>
+
 // TODO: use std::variant if the compiler has C++17
 #include <boost/variant/variant.hpp>
 #include <boost/variant/apply_visitor.hpp>

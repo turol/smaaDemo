@@ -7,8 +7,6 @@
 
 #include <shaderc/shaderc.hpp>
 
-#include <spirv_cross.hpp>
-
 
 template <class T>
 class ResourceContainer {
