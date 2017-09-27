@@ -1008,17 +1008,16 @@ TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
 
 
 void RendererImpl::deleteBuffer(BufferHandle handle) {
-	Buffer &buffer = buffers.get(handle);
-	assert(buffer.buffer != 0);
-	glDeleteBuffers(1, &buffer.buffer);
-	buffer.buffer = 0;
+	buffers.removeWith(handle, [this](struct Buffer &b) {
+		assert(b.buffer != 0);
+		glDeleteBuffers(1, &b.buffer);
+		b.buffer = 0;
 
-	assert(buffer.size != 0);
-	buffer.size   = 0;
+		assert(b.size != 0);
+		b.size   = 0;
 
-	assert(!buffer.ringBufferAlloc);
-
-	buffers.remove(handle);
+		assert(!b.ringBufferAlloc);
+	} );
 }
 
 
