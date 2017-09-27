@@ -15,7 +15,7 @@ OLD_TOPDIR:=$(TOPDIR)
 # if topdir changed, re-read config so CFLAGS etc. go right
 ifneq ($(OLD_TOPDIR),$(TOPDIR))
 
-include $(TOPDIR)/binaries/example.mk
+include $(TOPDIR)/mingw/example.mk
 include local.mk
 
 endif

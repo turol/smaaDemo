@@ -17,6 +17,7 @@ RENDERER:=opengl
 # compiler options etc
 CC:=i686-w64-mingw32-gcc
 CXX:=i686-w64-mingw32-g++
+WIN32:=y
 
 
 CFLAGS:=-gstabs -mwindows
@@ -28,7 +29,7 @@ OPTFLAGS+=-ffast-math
 
 # lazy assignment because CFLAGS is changed later
 CXXFLAGS=$(CFLAGS)
-CXXFLAGS+=-std=c++11
+CXXFLAGS+=-std=gnu++11
 
 
 LDFLAGS:=-mwindows

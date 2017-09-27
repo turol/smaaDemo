@@ -17,6 +17,7 @@ RENDERER:=opengl
 # compiler options etc
 CXX:=g++
 CC:=gcc
+WIN32:=n
 CFLAGS:=-g -Wall -Wextra -Werror -Wshadow
 CFLAGS+=-Wno-unused-local-typedefs
 CFLAGS+=$(shell sdl2-config --cflags)

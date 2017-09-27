@@ -4,8 +4,6 @@ d              := $(dir)
 
 
 SUBDIRS:= \
-	Unix \
-	Windows \
 	# empty line
 
 DIRS:=$(addprefix $(d)/,$(SUBDIRS))
@@ -14,18 +12,11 @@ $(eval $(foreach directory, $(DIRS), $(call directory-module,$(directory)) ))
 
 
 FILES:= \
+	ossource.cpp \
 	# empty line
 
 
-ifeq ($(WIN32),y)
-
-SRC_$(d):=$(addprefix $(d)/,$(FILES)) $(SRC_$(d)/Windows)
-
-else  # WIN32
-
-SRC_$(d):=$(addprefix $(d)/,$(FILES)) $(SRC_$(d)/Unix)
-
-endif  # WIN32
+SRC_$(d):=$(addprefix $(d)/,$(FILES)) $(foreach directory, $(DIRS), $(SRC_$(directory)) )
 
 
 d  := $(dirstack_$(sp))
