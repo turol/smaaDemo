@@ -290,13 +290,14 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>RENDERER_NULL;WIN32;USE_GLEW;GLEW_STATIC;GLEW_NO_GLU;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;C:\Projects\VulkanSDK\1.0.54.0\Include;C:\Projects\VulkanSDK\1.0.54.0\Source\SPIRV-Cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/SPIRV-Tools/source;C:\Projects\VulkanSDK\1.0.54.0\Include;C:\Projects\VulkanSDK\1.0.54.0\Source\SPIRV-Cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;shaderc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SPIRV-Tools.lib;SPIRV-Tools-comp.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build64/source/Debug;../foreign/SPIRV-Tools/Build64/source/opt/Debug;../foreign/SPIRV-Tools/Build64/source/comp/Debug;../foreign/SPIRV-Cross/Build64/Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
