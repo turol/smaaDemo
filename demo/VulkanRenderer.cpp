@@ -564,7 +564,7 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	queue.waitIdle();
 	device.freeCommandBuffers(frames[currentFrameIdx].commandPool, { cmdBuf } );
 
-	return BufferHandle(result.second);
+	return result.second;
 }
 
 
@@ -583,9 +583,9 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	buffer.offset          = beginPtr;
 	buffer.size            = size;
 
-	frames[currentFrameIdx].ephemeralBuffers.push_back(BufferHandle(result.second));
+	frames[currentFrameIdx].ephemeralBuffers.push_back(result.second);
 
-	return BufferHandle(result.second);
+	return result.second;
 }
 
 
@@ -929,7 +929,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 
 	printf("Pipeline %p  %s\n", VkPipeline(p.pipeline), desc.name_);
 
-	return PipelineHandle(id.second);
+	return id.second;
 }
 
 
@@ -1004,7 +1004,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	// TODO: std::move ?
 	rt.texture = texResult.second;
 
-	return RenderTargetHandle(result.second);
+	return result.second;
 }
 
 
@@ -1041,7 +1041,7 @@ SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
 	struct Sampler &sampler = result.first;
 	sampler.sampler    = device.createSampler(info);
 
-	return SamplerHandle(result.second);
+	return result.second;
 }
 
 
@@ -1264,7 +1264,7 @@ DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const Descript
 	dsLayout.layout = device.createDescriptorSetLayout(info);
 	dsLayout.descriptors = std::move(descriptors);
 
-	return DescriptorSetLayoutHandle(result.second);
+	return result.second;
 }
 
 

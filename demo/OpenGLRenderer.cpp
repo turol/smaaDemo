@@ -558,7 +558,7 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	buffer.beginOffs       = 0;
 	buffer.size            = size;
 
-	return BufferHandle(result.second);
+	return result.second;
 }
 
 
@@ -583,9 +583,9 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	buffer.beginOffs       = beginPtr;
 	buffer.size            = size;
 
-	ephemeralBuffers.push_back(BufferHandle(result.second));
+	ephemeralBuffers.push_back(result.second);
 
-	return BufferHandle(result.second);
+	return result.second;
 }
 
 
@@ -812,7 +812,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	pipeline.desc      = desc;
 	pipeline.shader    = program;
 
-	return PipelineHandle(result.second);
+	return result.second;
 }
 
 
@@ -906,7 +906,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	// TODO: std::move?
 	rt.texture = textureResult.second;
 
-	return RenderTargetHandle(result.second);
+	return result.second;
 }
 
 
@@ -920,7 +920,7 @@ SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
 	glSamplerParameteri(sampler.sampler, GL_TEXTURE_WRAP_S,     (desc.wrapMode == Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 	glSamplerParameteri(sampler.sampler, GL_TEXTURE_WRAP_T,     (desc.wrapMode == Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 
-	return SamplerHandle(result.second);
+	return result.second;
 }
 
 
@@ -965,7 +965,7 @@ DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const Descript
 	}
 	assert(layout->offset == 0);
 
-	return DescriptorSetLayoutHandle(result.second);
+	return result.second;
 }
 
 

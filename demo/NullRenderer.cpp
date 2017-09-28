@@ -62,7 +62,7 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 
 	// TODO: store contents into buffer
 
-	return BufferHandle(result.second);
+	return result.second;
 }
 
 
@@ -81,9 +81,9 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	buffer.beginOffs       = beginPtr;
 	buffer.size            = size;
 
-	ephemeralBuffers.push_back(BufferHandle(result.second));
+	ephemeralBuffers.push_back(result.second);
 
-	return BufferHandle(result.second);
+	return result.second;
 }
 
 
@@ -105,7 +105,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	auto result = pipelines.add();
 	auto &pipeline = result.first;
 	pipeline.desc = desc;
-	return PipelineHandle(result.second);
+	return result.second;
 }
 
 
@@ -127,7 +127,7 @@ SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
 	// TODO: check desc
 	sampler.desc = desc;
 
-	return SamplerHandle(result.second);
+	return result.second;
 }
 
 
