@@ -1102,14 +1102,15 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 			printf("VSync is off\n");
 		}
 	}
+	swapchainDesc = desc;
 
 	int w = -1, h = -1;
 	SDL_GL_GetDrawableSize(window, &w, &h);
-	printf("drawable size: %dx%d\n", w , h);
-
-	// we currently don't touch window width and height
-
-	swapchainDesc = desc;
+	if (w <= 0 || h <= 0) {
+		throw std::runtime_error("drawable size is negative");
+	}
+	swapchainDesc.width  = w;
+	swapchainDesc.height = h;
 }
 
 

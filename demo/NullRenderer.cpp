@@ -227,7 +227,8 @@ void RendererImpl::deleteTexture(TextureHandle /* handle */) {
 }
 
 
-void RendererImpl::recreateSwapchain(const SwapchainDesc & /* desc */) {
+void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
+	swapchainDesc  = desc;
 }
 
 

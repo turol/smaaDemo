@@ -1146,6 +1146,11 @@ void SMAADemo::render() {
 		renderer.recreateSwapchain(desc);
 		recreateSwapchain = false;
 
+		glm::uvec2 size = renderer.getDrawableSize();
+		printf("drawable size: %ux%u\n", size.x, size.y);
+		windowWidth  = size.x;
+		windowHeight = size.y;
+
 		createFramebuffers();
 	}
 

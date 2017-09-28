@@ -318,3 +318,7 @@ unsigned int RendererImpl::ringBufferAllocate(unsigned int size, unsigned int al
 	return beginPtr;
 }
 
+
+glm::uvec2 Renderer::getDrawableSize() const {
+	return glm::uvec2(impl->swapchainDesc.width, impl->swapchainDesc.height);
+}

@@ -692,6 +692,7 @@ public:
 
 
 	void recreateSwapchain(const SwapchainDesc &desc);
+	glm::uvec2 getDrawableSize() const;
 
 	// rendering
 	void beginFrame();

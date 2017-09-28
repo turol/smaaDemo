@@ -1363,9 +1363,15 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	printf("supported surface alpha composite flags: %s\n", vk::to_string(surfaceCapabilities.supportedCompositeAlpha).c_str());
 	printf("supported surface usage flags: %s\n", vk::to_string(surfaceCapabilities.supportedUsageFlags).c_str());
 
+	swapchainDesc = desc;
+
 	int w = -1, h = -1;
 	SDL_Vulkan_GetDrawableSize(window, &w, &h);
-	printf("drawable size: %dx%d\n", w , h);
+	if (w <= 0 || h <= 0) {
+		throw std::runtime_error("drawable size is negative");
+	}
+	swapchainDesc.width  = w;
+	swapchainDesc.height = h;
 
 	unsigned int numImages = desc.numFrames;
 	numImages = std::max(numImages, surfaceCapabilities.minImageCount);
@@ -1436,18 +1442,9 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	}
 
 	vk::Extent2D imageExtent;
-	if (surfaceCapabilities.currentExtent.width == 0xFFFFFFFF) {
-		assert(surfaceCapabilities.currentExtent.height == 0xFFFFFFFF);
-		// TODO: check against min and max
-		imageExtent.width  = desc.width;
-		imageExtent.height = desc.height;
-	} else {
-		if ((surfaceCapabilities.currentExtent.width != desc.width) || (surfaceCapabilities.currentExtent.height != desc.height)) {
-			printf("warning: surface current extent (%ux%u) differs from requested (%ux%u)\n", surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height, desc.width, desc.height);
-			// TODO: should we use requested? can we? spec says platform-specific behavior
-		}
-		imageExtent = surfaceCapabilities.currentExtent;
-	}
+	// TODO: check against min and max
+	imageExtent.width  = swapchainDesc.width;
+	imageExtent.height = swapchainDesc.height;
 
 	if (!(surfaceCapabilities.supportedTransforms & vk::SurfaceTransformFlagBitsKHR::eIdentity)) {
 		printf("warning: identity transform not supported\n");
@@ -1521,8 +1518,6 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	for (unsigned int i = 0; i < numImages; i++) {
 		frames[i].image = swapchainImages[i];
 	}
-
-	swapchainDesc = desc;
 }
 
 
