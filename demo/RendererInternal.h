@@ -61,6 +61,8 @@ public:
 
 
 	const T &get(Handle<T> handle) const {
+		assert(handle.handle != 0);
+
 		auto it = resources.find(handle.handle);
 		assert(it != resources.end());
 
@@ -69,6 +71,8 @@ public:
 
 
 	T &get(Handle<T> handle) {
+		assert(handle.handle != 0);
+
 		auto it = resources.find(handle.handle);
 		assert(it != resources.end());
 
@@ -77,6 +81,8 @@ public:
 
 
 	void remove(Handle<T> handle) {
+		assert(handle.handle != 0);
+
 		auto it = resources.find(handle.handle);
 		assert(it != resources.end());
 		resources.erase(it);
@@ -84,6 +90,8 @@ public:
 
 
 	template <typename F> void removeWith(Handle<T> handle, F &&f) {
+		assert(handle.handle != 0);
+
 		auto it = resources.find(handle.handle);
 		assert(it != resources.end());
 		f(it->second);
