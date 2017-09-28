@@ -208,15 +208,15 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	unsigned int numExtensions = 0;
 	if (!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, NULL)) {
-		printf("SDL_Vulkan_GetInstanceExtensions failed\n");
-		exit(1);
+		printf("SDL_Vulkan_GetInstanceExtensions failed: %s\n", SDL_GetError());
+		throw std::runtime_error("SDL_Vulkan_GetInstanceExtensions failed");
 	}
 
 	std::vector<const char *> extensions(numExtensions, nullptr);
 
 	if(!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, &extensions[0])) {
-		printf("SDL_Vulkan_GetInstanceExtensions failed\n");
-		exit(1);
+		printf("SDL_Vulkan_GetInstanceExtensions failed: %s\n", SDL_GetError());
+		throw std::runtime_error("SDL_Vulkan_GetInstanceExtensions failed");
 	}
 
 	vk::ApplicationInfo appInfo;
@@ -259,7 +259,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		instance = nullptr;
 		SDL_DestroyWindow(window);
 		window = nullptr;
-		exit(1);
+		throw std::runtime_error("No physical Vulkan devices found");
 	}
 	printf("%u physical devices\n", static_cast<unsigned int>(physicalDevices.size()));
 	physicalDevice = physicalDevices[0];
@@ -278,9 +278,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 								 (SDL_vulkanInstance) instance,
 								 (SDL_vulkanSurface *)&surface))
 	{
-		printf("failed to create Vulkan surface");
+		printf("Failed to create Vulkan surface: %s\n", SDL_GetError());
 		// TODO: free instance, window etc...
-		exit(1);
+		throw std::runtime_error("Failed to create Vulkan surface");
 	}
 
 	memoryProperties = physicalDevice.getMemoryProperties();
@@ -319,7 +319,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	if (graphicsQueueIndex == queueProps.size()) {
 		printf("Error: no graphics queue\n");
-		exit(1);
+		throw std::runtime_error("Error: no graphics queue");
 	}
 
 	printf("Using queue %u for graphics\n", graphicsQueueIndex);

@@ -403,17 +403,17 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	if (!GLEW_ARB_direct_state_access) {
 		printf("ARB_direct_state_access not found\n");
-		exit(1);
+		throw std::runtime_error("ARB_direct_state_access not found");
 	}
 
 	if (!GLEW_ARB_buffer_storage) {
 		printf("ARB_buffer_storage not found\n");
-		exit(1);
+		throw std::runtime_error("ARB_buffer_storage not found");
 	}
 
 	if (!GLEW_ARB_clip_control) {
 		printf("ARB_clip_control not found\n");
-		exit(1);
+		throw std::runtime_error("ARB_clip_control not found");
 	}
 
 	if (desc.debug) {

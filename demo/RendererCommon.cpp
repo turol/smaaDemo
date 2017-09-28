@@ -89,7 +89,7 @@ std::vector<uint32_t> RendererImpl::compileSpirv(const std::string &name, const 
 	auto result = compiler.CompileGlslToSpv(&src[0], src.size(), kind, name.c_str(), options);
 	if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
 		printf("Shader %s compile failed: %s\n", name.c_str(), result.GetErrorMessage().c_str());
-		exit(1);
+		throw std::runtime_error("Shader compile failed");
 	}
 
 	return std::vector<uint32_t>(result.cbegin(), result.cend());
