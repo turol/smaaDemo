@@ -443,10 +443,16 @@
     <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\version_profile.cc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\blit.frag" />
+    <None Include="..\blit.vert" />
+    <None Include="..\cube.frag" />
+    <None Include="..\cube.vert" />
     <None Include="..\fxaa.frag" />
     <None Include="..\fxaa.vert" />
-    <None Include="..\simpleFS.frag" />
-    <None Include="..\simpleVS.vert" />
+    <None Include="..\gui.frag" />
+    <None Include="..\gui.vert" />
+    <None Include="..\image.frag" />
+    <None Include="..\image.vert" />
     <None Include="..\smaaBlendWeight.frag" />
     <None Include="..\smaaBlendWeight.vert" />
     <None Include="..\smaaEdge.frag" />
@@ -465,7 +471,6 @@
     <ClInclude Include="..\fxaa3_11.h" />
     <ClInclude Include="..\SearchTex.h" />
     <ClInclude Include="..\smaa.h" />
-    <ClInclude Include="..\utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -212,12 +212,6 @@
     <None Include="..\fxaa.vert">
       <Filter>Source Files\shader</Filter>
     </None>
-    <None Include="..\simpleFS.frag">
-      <Filter>Source Files\shader</Filter>
-    </None>
-    <None Include="..\simpleVS.vert">
-      <Filter>Source Files\shader</Filter>
-    </None>
     <None Include="..\smaaBlendWeight.frag">
       <Filter>Source Files\shader</Filter>
     </None>
@@ -236,6 +230,30 @@
     <None Include="..\smaaNeighbor.vert">
       <Filter>Source Files\shader</Filter>
     </None>
+    <None Include="..\blit.frag">
+      <Filter>Source Files\shader</Filter>
+    </None>
+    <None Include="..\cube.frag">
+      <Filter>Source Files\shader</Filter>
+    </None>
+    <None Include="..\gui.frag">
+      <Filter>Source Files\shader</Filter>
+    </None>
+    <None Include="..\image.frag">
+      <Filter>Source Files\shader</Filter>
+    </None>
+    <None Include="..\blit.vert">
+      <Filter>Source Files\shader</Filter>
+    </None>
+    <None Include="..\cube.vert">
+      <Filter>Source Files\shader</Filter>
+    </None>
+    <None Include="..\gui.vert">
+      <Filter>Source Files\shader</Filter>
+    </None>
+    <None Include="..\image.vert">
+      <Filter>Source Files\shader</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\AreaTex.h">
@@ -248,9 +266,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\smaa.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\demo\Renderer.h">
