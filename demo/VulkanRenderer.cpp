@@ -1340,6 +1340,10 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	printf("supported surface alpha composite flags: %s\n", vk::to_string(surfaceCapabilities.supportedCompositeAlpha).c_str());
 	printf("supported surface usage flags: %s\n", vk::to_string(surfaceCapabilities.supportedUsageFlags).c_str());
 
+	int w = -1, h = -1;
+	SDL_Vulkan_GetDrawableSize(window, &w, &h);
+	printf("drawable size: %dx%d\n", w , h);
+
 	unsigned int numImages = desc.numFrames;
 	numImages = std::max(numImages, surfaceCapabilities.minImageCount);
 	if (surfaceCapabilities.maxImageCount != 0) {
