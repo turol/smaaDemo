@@ -352,14 +352,29 @@ SMAADemo::~SMAADemo() {
 		renderer.deleteRenderTarget(rendertargets[i]);
 	}
 
-	renderer.deleteBuffer(cubeVBO);
-	renderer.deleteBuffer(cubeIBO);
+	if (cubeVBO) {
+		renderer.deleteBuffer(cubeVBO);
+		cubeVBO = BufferHandle();
 
-	renderer.deleteSampler(linearSampler);
-	renderer.deleteSampler(nearestSampler);
+		renderer.deleteBuffer(cubeIBO);
+		cubeIBO = BufferHandle();
+	}
 
-	renderer.deleteTexture(areaTex);
-	renderer.deleteTexture(searchTex);
+	if (linearSampler) {
+		renderer.deleteSampler(linearSampler);
+		linearSampler = SamplerHandle();
+
+		renderer.deleteSampler(nearestSampler);
+		nearestSampler = SamplerHandle();
+	}
+
+	if (areaTex) {
+		renderer.deleteTexture(areaTex);
+		areaTex = TextureHandle();
+
+		renderer.deleteTexture(searchTex);
+		searchTex = TextureHandle();
+	}
 }
 
 
