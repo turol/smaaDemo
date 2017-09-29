@@ -1096,6 +1096,14 @@ void SMAADemo::mainLoopIteration() {
 			default:
 				break;
 			}
+
+			io.KeysDown[event.key.keysym.scancode] = true;
+
+			// TODO: use SDL text input
+			if (event.key.keysym.scancode >= SDL_SCANCODE_A && event.key.keysym.scancode <= SDL_SCANCODE_0) {
+				io.AddInputCharactersUTF8(SDL_GetKeyName(event.key.keysym.sym));
+			}
+
 			break;
 
 		case SDL_KEYUP:
@@ -1111,6 +1119,9 @@ void SMAADemo::mainLoopIteration() {
 			default:
 				break;
 			}
+
+			io.KeysDown[event.key.keysym.scancode] = false;
+
 			break;
 
 		case SDL_WINDOWEVENT:
@@ -1143,6 +1154,28 @@ void SMAADemo::mainLoopIteration() {
 			break;
 
 		}
+	}
+
+	SDL_Keymod modstate = SDL_GetModState();
+	if (modstate & KMOD_CTRL) {
+		io.KeyCtrl = true;
+	} else {
+		io.KeyCtrl = false;
+	}
+	if (modstate & KMOD_SHIFT) {
+		io.KeyShift = true;
+	} else {
+		io.KeyShift = false;
+	}
+	if (modstate & KMOD_ALT) {
+		io.KeyAlt = true;
+	} else {
+		io.KeyAlt = false;
+	}
+	if (modstate & KMOD_GUI) {
+		io.KeySuper = true;
+	} else {
+		io.KeySuper = false;
 	}
 
 	render();
