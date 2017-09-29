@@ -699,7 +699,7 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 
 	if (savePreprocessedShaders) {
 		// FIXME: name not really accurate
-		writeFile(vertexShaderName + ".prep", src);
+		writeFile(vertexShaderName + ".prep", &src_[0], src_.size());
 	}
 
 	auto result_ = vertexShaders.add();
@@ -728,7 +728,7 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 
 	if (savePreprocessedShaders) {
 		// FIXME: name not really accurate
-		writeFile(fragmentShaderName + ".prep", src);
+		writeFile(fragmentShaderName + ".prep", &src_[0], src_.size());
 	}
 
 	auto result_ = fragmentShaders.add();

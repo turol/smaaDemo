@@ -101,9 +101,9 @@ std::vector<char> readFile(std::string filename) {
 }
 
 
-void writeFile(const std::string &filename, const std::vector<char> &contents) {
+void writeFile(const std::string &filename, const void *contents, size_t size) {
 	std::unique_ptr<FILE, FILEDeleter> file(fopen(filename.c_str(), "wb"));
 
-	fwrite(&contents[0], 1, contents.size(), file.get());
+	fwrite(contents, 1, size, file.get());
 }
 
