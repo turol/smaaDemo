@@ -63,6 +63,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 {
 	SDL_Init(SDL_INIT_EVENTS);
 
+	spirvCacheDir.reset(SDL_GetPrefPath(nullptr, "SMAADemo"));
+
 	ringBuffer.resize(ringBufSize, 0);
 	// TODO: use valgrind to make sure we only write to intended parts of ring buffer
 }

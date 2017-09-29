@@ -343,6 +343,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	// TODO: check return value
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
 
+	spirvCacheDir.reset(SDL_GetPrefPath(nullptr, "SMAADemo"));
+
 	// TODO: fullscreen, resizable, highdpi etc. as necessary
 	// TODO: check errors
 	// TODO: other GL attributes as necessary

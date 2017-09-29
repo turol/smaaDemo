@@ -148,6 +148,13 @@ struct RendererImpl : public RendererBase {
 	bool scissorSet;
 
 
+	struct SDLPrefDirDel {
+		void operator()(char *ptr) const;
+	};
+
+	std::unique_ptr<char, SDLPrefDirDel> spirvCacheDir;
+
+
 	std::vector<char> loadSource(const std::string &name);
 
 	std::vector<uint32_t> compileSpirv(const std::string &name, const ShaderMacros &macros, shaderc_shader_kind kind);

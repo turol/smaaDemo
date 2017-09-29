@@ -24,7 +24,14 @@ THE SOFTWARE.
 #include "RendererInternal.h"
 #include "Utils.h"
 
+#include <algorithm>
+
 #include <shaderc/shaderc.hpp>
+
+
+void RendererImpl::SDLPrefDirDel::operator()(char *ptr) const {
+	SDL_free(ptr);
+}
 
 
 class Includer final : public shaderc::CompileOptions::IncluderInterface {
@@ -74,6 +81,44 @@ std::vector<char> RendererImpl::loadSource(const std::string &name) {
 
 
 std::vector<uint32_t> RendererImpl::compileSpirv(const std::string &name, const ShaderMacros &macros, shaderc_shader_kind kind) {
+	// check spir-v cache first
+
+	std::string spvName = std::string(spirvCacheDir.get()) + name;
+	{
+		std::vector<std::string> sorted;
+		sorted.reserve(macros.size());
+		for (const auto &macro : macros) {
+			std::string s = macro.first;
+			if (!macro.second.empty()) {
+				s += "=";
+				s += macro.second;
+			}
+			sorted.emplace_back(std::move(s));
+		}
+
+		std::sort(sorted.begin(), sorted.end());
+		for (const auto &s : sorted) {
+			spvName += "_" + s;
+		}
+	}
+	spvName = spvName + ".spv";
+
+	// TODO: check timestamp against source file
+	// TODO: should also check headers included during original compilation
+	if (fileExists(spvName)) {
+		auto temp = readFile(spvName);
+		if (temp.size() % 4 == 0) {
+			std::vector<uint32_t> spirv;
+			spirv.resize(temp.size() / 4);
+			memcpy(&spirv[0], &temp[0], temp.size());
+			printf("Loaded shader \"%s\" from cache\n", spvName.c_str());
+
+			return spirv;
+		}
+
+		// incorrect size...
+	}
+
 	auto src = loadSource(name);
 
 	shaderc::CompileOptions options;
@@ -92,7 +137,11 @@ std::vector<uint32_t> RendererImpl::compileSpirv(const std::string &name, const 
 		throw std::runtime_error("Shader compile failed");
 	}
 
-	return std::vector<uint32_t>(result.cbegin(), result.cend());
+	std::vector<uint32_t> spirv(result.cbegin(), result.cend());
+
+	writeFile(spvName, &spirv[0], spirv.size() * 4);
+
+	return spirv;
 }
 
 

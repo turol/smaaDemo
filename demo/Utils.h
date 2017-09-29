@@ -86,5 +86,7 @@ struct FILEDeleter {
 std::vector<char> readTextFile(std::string filename);
 std::vector<char> readFile(std::string filename);
 void writeFile(const std::string &filename, const void *contents, size_t size);
+bool fileExists(const std::string &filename);
+
 
 #endif  // UTILS_H

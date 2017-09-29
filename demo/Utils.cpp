@@ -107,3 +107,13 @@ void writeFile(const std::string &filename, const void *contents, size_t size) {
 	fwrite(contents, 1, size, file.get());
 }
 
+
+bool fileExists(const std::string &filename) {
+	std::unique_ptr<FILE, FILEDeleter> file(fopen(filename.c_str(), "rb"));
+
+	if (file) {
+		return true;
+	} else {
+		return false;
+	}
+}
