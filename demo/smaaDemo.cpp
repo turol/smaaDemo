@@ -236,6 +236,7 @@ class SMAADemo {
 	// 0 for cubes
 	// 1.. for images
 	unsigned int activeScene;
+	bool textInputActive;
 
 
 	struct Image {
@@ -323,6 +324,7 @@ SMAADemo::SMAADemo()
 , smaaQuality(maxSMAAQuality - 1)
 , keepGoing(true)
 , activeScene(0)
+, textInputActive(false)
 {
 	freq = SDL_GetPerformanceFrequency();
 	lastTime = SDL_GetPerformanceCounter();
@@ -996,6 +998,12 @@ void SMAADemo::mainLoopIteration() {
 			break;
 
 		case SDL_KEYDOWN:
+			io.KeysDown[event.key.keysym.scancode] = true;
+
+			if (textInputActive) {
+				break;
+			}
+
 			switch (event.key.keysym.scancode) {
 			case SDL_SCANCODE_ESCAPE:
 				keepGoing = false;
@@ -1097,16 +1105,11 @@ void SMAADemo::mainLoopIteration() {
 				break;
 			}
 
-			io.KeysDown[event.key.keysym.scancode] = true;
-
-			// TODO: use SDL text input
-			if (event.key.keysym.scancode >= SDL_SCANCODE_A && event.key.keysym.scancode <= SDL_SCANCODE_0) {
-				io.AddInputCharactersUTF8(SDL_GetKeyName(event.key.keysym.sym));
-			}
-
 			break;
 
 		case SDL_KEYUP:
+			io.KeysDown[event.key.keysym.scancode] = false;
+
 			switch (event.key.keysym.scancode) {
 			case SDL_SCANCODE_LSHIFT:
 				leftShift = false;
@@ -1120,8 +1123,10 @@ void SMAADemo::mainLoopIteration() {
 				break;
 			}
 
-			io.KeysDown[event.key.keysym.scancode] = false;
+			break;
 
+		case SDL_TEXTINPUT:
+			io.AddInputCharactersUTF8(event.text.text);
 			break;
 
 		case SDL_WINDOWEVENT:
@@ -1373,6 +1378,15 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 	io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
 	ImGui::NewFrame();
+
+	if (io.WantTextInput != textInputActive) {
+		textInputActive = io.WantTextInput;
+		if (textInputActive) {
+			SDL_StartTextInput();
+		} else {
+			SDL_StopTextInput();
+		}
+	}
 
 	bool windowVisible = true;
 	int flags = 0;
