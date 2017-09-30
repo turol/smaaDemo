@@ -685,9 +685,46 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 }
 
 
-static std::vector<char> spirv2glsl(spirv_cross::CompilerGLSL &glsl) {
+static void pushString(std::vector<char> &v, const std::string &str) {
+	v.insert(v.end(), str.begin(), str.end());
+}
+
+
+static std::vector<char> spirv2glsl(const std::string &name, const ShaderMacros &macros, spirv_cross::CompilerGLSL &glsl) {
 	std::string src_ = glsl.compile();
-	return std::vector<char>(src_.begin(), src_.end());
+
+	std::vector<char> result;
+	{
+		size_t size = src_.size() + 3 + name.size() + 1;
+		std::vector<std::string> sorted;
+		sorted.reserve(macros.size());
+		for (const auto &macro : macros) {
+			std::string str = macro.first;
+			if (!macro.second.empty()) {
+				str += "=";
+				str += macro.second;
+			}
+			size += 3 + str.size() + 1;
+			sorted.emplace_back(std::move(str));
+		}
+
+		std::sort(sorted.begin(), sorted.end());
+
+		result.reserve(size);
+
+		pushString(result, "// ");
+		pushString(result, name);
+		result.push_back('\n');
+
+		for (const auto &s : sorted) {
+			pushString(result, "// ");
+			pushString(result, s);
+			result.push_back('\n');
+		}
+	}
+
+	result.insert(result.end(), src_.begin(), src_.end());
+	return result;
 }
 
 
@@ -702,7 +739,7 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	glsl.set_options(glslOptions);
 
 	auto resources = processShaderResources(glsl);
-	std::vector<char> src = spirv2glsl(glsl);
+	std::vector<char> src = spirv2glsl(name, macros, glsl);
 
 	if (savePreprocessedShaders) {
 		// FIXME: name not really accurate
@@ -730,7 +767,7 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	glsl.set_options(glslOptions);
 
 	auto resources = processShaderResources(glsl);
-	std::vector<char> src = spirv2glsl(glsl);
+	std::vector<char> src = spirv2glsl(name, macros, glsl);
 
 	if (savePreprocessedShaders) {
 		// FIXME: name not really accurate
