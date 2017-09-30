@@ -685,6 +685,12 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 }
 
 
+static std::vector<char> spirv2glsl(spirv_cross::CompilerGLSL &glsl) {
+	std::string src_ = glsl.compile();
+	return std::vector<char>(src_.begin(), src_.end());
+}
+
+
 VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros) {
 	std::string vertexShaderName   = name + ".vert";
 
@@ -696,12 +702,11 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	glsl.set_options(glslOptions);
 
 	auto resources = processShaderResources(glsl);
-	std::string src_ = glsl.compile();
-	std::vector<char> src(src_.begin(), src_.end());
+	std::vector<char> src = spirv2glsl(glsl);
 
 	if (savePreprocessedShaders) {
 		// FIXME: name not really accurate
-		writeFile(vertexShaderName + ".prep", &src_[0], src_.size());
+		writeFile(vertexShaderName + ".prep", &src[0], src.size());
 	}
 
 	auto result_ = vertexShaders.add();
@@ -725,12 +730,11 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	glsl.set_options(glslOptions);
 
 	auto resources = processShaderResources(glsl);
-	std::string src_ = glsl.compile();
-	std::vector<char> src(src_.begin(), src_.end());
+	std::vector<char> src = spirv2glsl(glsl);
 
 	if (savePreprocessedShaders) {
 		// FIXME: name not really accurate
-		writeFile(fragmentShaderName + ".prep", &src_[0], src_.size());
+		writeFile(fragmentShaderName + ".prep", &src[0], src.size());
 	}
 
 	auto result_ = fragmentShaders.add();
