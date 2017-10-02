@@ -39,7 +39,6 @@ THE SOFTWARE.
 
 #include <limits.h>  // required but not included by vk_mem_alloc.h
 
-#define VMA_STATS_STRING_ENABLED 0
 #include "vk_mem_alloc.h"
 
 
