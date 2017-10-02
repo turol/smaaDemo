@@ -235,11 +235,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	if (enableValidation) {
 		extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-		instanceCreateInfo.enabledLayerCount    = validationLayers.size();
+		instanceCreateInfo.enabledLayerCount    = static_cast<uint32_t>(validationLayers.size());
 		instanceCreateInfo.ppEnabledLayerNames  = &validationLayers[0];
 	}
 
-	instanceCreateInfo.enabledExtensionCount    = extensions.size();
+	instanceCreateInfo.enabledExtensionCount    = static_cast<uint32_t>(extensions.size());
 	instanceCreateInfo.ppEnabledExtensionNames  = &extensions[0];
 
 	instance = vk::createInstance(instanceCreateInfo);
@@ -300,7 +300,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	std::vector<vk::QueueFamilyProperties> queueProps = physicalDevice.getQueueFamilyProperties();
 	printf("%u queue families\n", static_cast<unsigned int>(queueProps.size()));
 
-	graphicsQueueIndex = queueProps.size();
+	graphicsQueueIndex = static_cast<uint32_t>(queueProps.size());
 	for (uint32_t i = 0; i < queueProps.size(); i++) {
 		const auto &q = queueProps[i];
 		printf(" Queue family %u\n", i);
@@ -341,10 +341,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	deviceCreateInfo.pQueueCreateInfos        = &queueCreateInfo;
 	// TODO: enable only features we need
 	deviceCreateInfo.pEnabledFeatures         = &deviceFeatures;
-	deviceCreateInfo.enabledExtensionCount    = deviceExtensions.size();
+	deviceCreateInfo.enabledExtensionCount    = static_cast<uint32_t>(deviceExtensions.size());
 	deviceCreateInfo.ppEnabledExtensionNames  = &deviceExtensions[0];
 	if (enableValidation) {
-		deviceCreateInfo.enabledLayerCount    = validationLayers.size();
+		deviceCreateInfo.enabledLayerCount    = static_cast<uint32_t>(validationLayers.size());
 		deviceCreateInfo.ppEnabledLayerNames  = &validationLayers[0];
 	}
 
@@ -553,8 +553,8 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	assert(allocationInfo.size > 0);
 	assert(allocationInfo.pMappedData == nullptr);
 	device.bindBufferMemory(buffer.buffer, allocationInfo.deviceMemory, allocationInfo.offset);
-	buffer.offset = allocationInfo.offset;
-	buffer.size   = allocationInfo.size;
+	buffer.offset = static_cast<uint32_t>(allocationInfo.offset);
+	buffer.size   = static_cast<uint32_t>(allocationInfo.size);
 
 	// copy contents to GPU memory
 	unsigned int beginPtr = ringBufferAllocate(size, 256);
@@ -664,7 +664,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 
 	fbInfo.renderPass       = pass.renderPass;
 	assert(!attachmentViews.empty());
-	fbInfo.attachmentCount  = attachmentViews.size();
+	fbInfo.attachmentCount  = static_cast<uint32_t>(attachmentViews.size());
 	fbInfo.pAttachments     = &attachmentViews[0];
 	fbInfo.width            = width;
 	fbInfo.height           = height;
@@ -708,11 +708,11 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		attachments.push_back(attach);
 
 		vk::AttachmentReference ref;
-		ref.attachment = attachments.size() - 1;
+		ref.attachment = static_cast<uint32_t>(attachments.size()) - 1;
 		ref.layout     = layout;
 		colorAttachments.push_back(ref);
 	}
-	subpass.colorAttachmentCount = colorAttachments.size();
+	subpass.colorAttachmentCount = static_cast<uint32_t>(colorAttachments.size());
 	subpass.pColorAttachments    = &colorAttachments[0];
 
 	bool hasDepthStencil = (desc.depthStencilFormat_ != Format::Invalid);
@@ -733,12 +733,12 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		attach.finalLayout    = vk::ImageLayout::eShaderReadOnlyOptimal;
 		attachments.push_back(attach);
 
-		depthAttachment.attachment = attachments.size() - 1;
+		depthAttachment.attachment = static_cast<uint32_t>(attachments.size()) - 1;
 		depthAttachment.layout     = layout;
 		subpass.pDepthStencilAttachment = &depthAttachment;
 	}
 
-	info.attachmentCount = attachments.size();
+	info.attachmentCount = static_cast<uint32_t>(attachments.size());
 	info.pAttachments    = &attachments[0];
 
 	// no input attachments
@@ -785,7 +785,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 			dependencies.push_back(d);
 		}
 	}
-	info.dependencyCount = dependencies.size();
+	info.dependencyCount = static_cast<uint32_t>(dependencies.size());
 	info.pDependencies   = &dependencies[0];
 
 	auto result   = renderPasses.add();
@@ -863,9 +863,9 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		bind.inputRate = vk::VertexInputRate::eVertex;
 		bindings.push_back(bind);
 
-		vinput.vertexBindingDescriptionCount   = bindings.size();
+		vinput.vertexBindingDescriptionCount   = static_cast<uint32_t>(bindings.size());
 		vinput.pVertexBindingDescriptions      = &bindings[0];
-		vinput.vertexAttributeDescriptionCount = attrs.size();
+		vinput.vertexAttributeDescriptionCount = static_cast<uint32_t>(attrs.size());
 		vinput.pVertexAttributeDescriptions    = &attrs[0];
 
 	}
@@ -916,13 +916,13 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		colorBlendStates.push_back(cb);
 	}
 	vk::PipelineColorBlendStateCreateInfo blendInfo;
-	blendInfo.attachmentCount = colorBlendStates.size();
+	blendInfo.attachmentCount = static_cast<uint32_t>(colorBlendStates.size());
 	blendInfo.pAttachments    = &colorBlendStates[0];
 	info.pColorBlendState     = &blendInfo;
 
 	vk::PipelineDynamicStateCreateInfo dyn;
 	std::vector<vk::DynamicState> dynStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
-	dyn.dynamicStateCount = dynStates.size();
+	dyn.dynamicStateCount = static_cast<uint32_t>(dynStates.size());
 	dyn.pDynamicStates    = &dynStates[0];
 	info.pDynamicState    = &dyn;
 
@@ -935,7 +935,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	}
 
 	vk::PipelineLayoutCreateInfo layoutInfo;
-	layoutInfo.setLayoutCount = layouts.size();
+	layoutInfo.setLayoutCount = static_cast<uint32_t>(layouts.size());
 	layoutInfo.pSetLayouts    = &layouts[0];
 
 	auto layout = device.createPipelineLayout(layoutInfo);
@@ -1281,7 +1281,7 @@ DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const Descript
 	assert(layout->offset == 0);
 
 	vk::DescriptorSetLayoutCreateInfo info;
-	info.bindingCount = bindings.size();
+	info.bindingCount = static_cast<uint32_t>(bindings.size());
 	info.pBindings    = &bindings[0];
 
 	auto result = dsLayouts.add();
@@ -1398,7 +1398,7 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 			frames.resize(numImages);
 		} else {
 			// increasing, resize and initialize new
-			unsigned int oldSize = frames.size();
+			unsigned int oldSize = static_cast<unsigned int>(frames.size());
 			frames.resize(numImages);
 
 			// descriptor pool
@@ -1413,7 +1413,7 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 
 			vk::DescriptorPoolCreateInfo dsInfo;
 			dsInfo.maxSets       = 256;
-			dsInfo.poolSizeCount = poolSizes.size();
+			dsInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 			dsInfo.pPoolSizes    = &poolSizes[0];
 
 			vk::CommandPoolCreateInfo cp;
@@ -1833,10 +1833,10 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 		// TODO: shouldn't need this is previous pipeline didn't use scissor
 		// except for first pipeline of the command buffer
 		vk::Rect2D rect;
-		rect.offset.x      = currentViewport.x;
-		rect.offset.y      = currentViewport.y;
-		rect.extent.width  = currentViewport.width;
-		rect.extent.height = currentViewport.height;
+		rect.offset.x      = static_cast<int32_t>(currentViewport.x);
+		rect.offset.y      = static_cast<int32_t>(currentViewport.y);
+		rect.extent.width  = static_cast<uint32_t>(currentViewport.width);
+		rect.extent.height = static_cast<uint32_t>(currentViewport.height);
 
 		currentCommandBuffer.setScissor(0, 1, &rect);
 		scissorSet = true;
@@ -1893,7 +1893,7 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DescriptorSetLayoutHa
 	std::vector<vk::DescriptorBufferInfo> bufferWrites;
 	std::vector<vk::DescriptorImageInfo>  imageWrites;
 
-	unsigned int numWrites = layout.descriptors.size();
+	unsigned int numWrites = static_cast<unsigned int>(layout.descriptors.size());
 	writes.reserve(numWrites);
 	bufferWrites.reserve(numWrites);
 	imageWrites.reserve(numWrites);
@@ -1982,11 +1982,11 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DescriptorSetLayoutHa
 void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 	assert(inFrame);
 
-	currentViewport.x        = x;
+	currentViewport.x        = static_cast<float>(x);
 	STUBBED("check viewport y direction");
-	currentViewport.y        = y;
-	currentViewport.width    = width;
-	currentViewport.height   = height;
+	currentViewport.y        = static_cast<float>(y);
+	currentViewport.width    = static_cast<float>(width);
+	currentViewport.height   = static_cast<float>(height);
 	currentViewport.maxDepth = 1.0f;
 	currentCommandBuffer.setViewport(0, 1, &currentViewport);
 }
