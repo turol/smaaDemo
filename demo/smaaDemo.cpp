@@ -1565,12 +1565,16 @@ int main(int argc, char *argv[]) {
 		}
 	} catch (std::exception &e) {
 		printf("caught std::exception \"%s\"\n", e.what());
+#ifndef _MSC_VER
 		// so native dumps core
 		throw;
+#endif
 	} catch (...) {
 		printf("unknown exception\n");
+#ifndef _MSC_VER
 		// so native dumps core
 		throw;
+#endif
 	}
 	return 0;
 }
