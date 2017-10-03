@@ -329,7 +329,7 @@ private:
 typedef std::unordered_map<std::string, std::string> ShaderMacros;
 
 
-enum FilterMode {
+enum class FilterMode : uint8_t{
 	  Nearest
 	, Linear
 };
@@ -343,8 +343,8 @@ enum WrapMode {
 
 struct SamplerDesc {
 	SamplerDesc()
-	: min(Nearest)
-	, mag(Nearest)
+	: min(FilterMode::Nearest)
+	, mag(FilterMode::Nearest)
 	, wrapMode(Clamp)
 	{
 	}

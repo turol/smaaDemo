@@ -708,8 +708,8 @@ void SMAADemo::initRender() {
 	plDesc.name("gui");
 	guiPipeline = renderer.createPipeline(plDesc);
 
-	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(Linear). magFilter(Linear));
-	nearestSampler = renderer.createSampler(SamplerDesc().minFilter(Nearest).magFilter(Nearest));
+	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear));
+	nearestSampler = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Nearest).magFilter(FilterMode::Nearest));
 
 	cubeVBO = renderer.createBuffer(sizeof(vertices), &vertices[0]);
 	cubeIBO = renderer.createBuffer(sizeof(indices), &indices[0]);

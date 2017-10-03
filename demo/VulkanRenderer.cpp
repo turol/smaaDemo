@@ -1035,10 +1035,10 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 
 static vk::Filter vulkanFiltermode(FilterMode m) {
 	switch (m) {
-	case Nearest:
+	case FilterMode::Nearest:
         return vk::Filter::eNearest;
 
-	case Linear:
+	case FilterMode::Linear:
         return vk::Filter::eLinear;
 	}
 
