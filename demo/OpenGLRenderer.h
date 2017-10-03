@@ -318,7 +318,8 @@ struct Sampler {
 	}
 
 	Sampler &operator=(Sampler &&other) {
-		std::swap(sampler, other.sampler);
+		sampler       = other.sampler;
+		other.sampler = 0;
 
 		return *this;
 	}
@@ -359,10 +360,15 @@ struct Texture {
 	}
 
 	Texture &operator=(Texture &&other) {
-		std::swap(tex,    other.tex);
-		std::swap(width,  other.width);
-		std::swap(height, other.height);
-		std::swap(renderTarget, other.renderTarget);
+		tex                = other.tex;
+		width              = other.width;
+		height             = other.height;
+		renderTarget       = other.renderTarget;
+
+		other.tex          = 0;
+		other.width        = 0;
+		other.height       = 0;
+		other.renderTarget = false;
 
 		return *this;
 	}
