@@ -477,7 +477,7 @@ struct GlobalDS {
 
 
 	static const DescriptorLayout layout[];
-	static DescriptorSetLayoutHandle layoutHandle;
+	static DSLayoutHandle layoutHandle;
 };
 
 
@@ -486,14 +486,14 @@ const DescriptorLayout GlobalDS::layout[] = {
 	, { DescriptorType::End,            0                                  }
 };
 
-DescriptorSetLayoutHandle GlobalDS::layoutHandle;
+DSLayoutHandle GlobalDS::layoutHandle;
 
 
 struct CubeSceneDS {
     BufferHandle instances;
 
 	static const DescriptorLayout layout[];
-	static DescriptorSetLayoutHandle layoutHandle;
+	static DSLayoutHandle layoutHandle;
 };
 
 
@@ -502,14 +502,14 @@ const DescriptorLayout CubeSceneDS::layout[] = {
 	, { DescriptorType::End,            0                                }
 };
 
-DescriptorSetLayoutHandle CubeSceneDS::layoutHandle;
+DSLayoutHandle CubeSceneDS::layoutHandle;
 
 
 struct ColorTexDS {
 	CSampler color;
 
 	static const DescriptorLayout layout[];
-	static DescriptorSetLayoutHandle layoutHandle;
+	static DSLayoutHandle layoutHandle;
 };
 
 
@@ -518,7 +518,7 @@ const DescriptorLayout ColorTexDS::layout[] = {
 	, { DescriptorType::End,              0,                          }
 };
 
-DescriptorSetLayoutHandle ColorTexDS::layoutHandle;
+DSLayoutHandle ColorTexDS::layoutHandle;
 
 
 struct BlendWeightDS {
@@ -527,7 +527,7 @@ struct BlendWeightDS {
 	CSampler searchTex;
 
 	static const DescriptorLayout layout[];
-	static DescriptorSetLayoutHandle layoutHandle;
+	static DSLayoutHandle layoutHandle;
 };
 
 
@@ -538,7 +538,7 @@ const DescriptorLayout BlendWeightDS::layout[] = {
 	, { DescriptorType::End,              0,                                      }
 };
 
-DescriptorSetLayoutHandle BlendWeightDS::layoutHandle;
+DSLayoutHandle BlendWeightDS::layoutHandle;
 
 
 struct NeighborBlendDS {
@@ -546,7 +546,7 @@ struct NeighborBlendDS {
 	CSampler blendweights;
 
 	static const DescriptorLayout layout[];
-	static DescriptorSetLayoutHandle layoutHandle;
+	static DSLayoutHandle layoutHandle;
 };
 
 
@@ -556,7 +556,7 @@ const DescriptorLayout NeighborBlendDS::layout[] = {
 	, { DescriptorType::End        ,      0                                             }
 };
 
-DescriptorSetLayoutHandle NeighborBlendDS::layoutHandle;
+DSLayoutHandle NeighborBlendDS::layoutHandle;
 
 
 void SMAADemo::initRender() {

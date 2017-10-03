@@ -135,7 +135,7 @@ public:
 
 
 typedef Handle<Buffer>               BufferHandle;
-typedef Handle<DescriptorSetLayout>  DescriptorSetLayoutHandle;
+typedef Handle<DescriptorSetLayout>  DSLayoutHandle;
 typedef Handle<FragmentShader>       FragmentShaderHandle;
 typedef Handle<Framebuffer>          FramebufferHandle;
 typedef Handle<Pipeline>             PipelineHandle;
@@ -510,7 +510,7 @@ class PipelineDesc {
 
 	std::array<VertexAttr, MAX_VERTEX_ATTRIBS> vertexAttribs;
 	std::array<VertexBuf,  MAX_VERTEX_BUFFERS> vertexBuffers;
-	std::array<DescriptorSetLayoutHandle, MAX_DESCRIPTOR_SETS> descriptorSetLayouts;
+	std::array<DSLayoutHandle, MAX_DESCRIPTOR_SETS> descriptorSetLayouts;
 
 	const char                                                 *name_;
 
@@ -552,7 +552,7 @@ public:
 		return *this;
 	}
 
-	PipelineDesc &descriptorSetLayout(unsigned int index, DescriptorSetLayoutHandle handle) {
+	PipelineDesc &descriptorSetLayout(unsigned int index, DSLayoutHandle handle) {
 		assert(index < MAX_DESCRIPTOR_SETS);
 		descriptorSetLayouts[index] = handle;
 		return *this;
@@ -674,7 +674,7 @@ public:
 	SamplerHandle       createSampler(const SamplerDesc &desc);
 	TextureHandle       createTexture(const TextureDesc &desc);
 
-	DescriptorSetLayoutHandle createDescriptorSetLayout(const DescriptorLayout *layout);
+	DSLayoutHandle createDescriptorSetLayout(const DescriptorLayout *layout);
 	template <typename T> void registerDescriptorSetLayout() {
 		T::layoutHandle = createDescriptorSetLayout(T::layout);
 	}
@@ -708,7 +708,7 @@ public:
 	void bindIndexBuffer(BufferHandle buffer, bool bit16);
 	void bindVertexBuffer(unsigned int binding, BufferHandle buffer);
 
-	void bindDescriptorSet(unsigned int index, const DescriptorSetLayoutHandle layout, const void *data);
+	void bindDescriptorSet(unsigned int index, const DSLayoutHandle layout, const void *data);
 	template <typename T> void bindDescriptorSet(unsigned int index, const T &data) {
 		bindDescriptorSet(index, T::layoutHandle, &data);
 	}

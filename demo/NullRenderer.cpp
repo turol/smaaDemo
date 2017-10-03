@@ -184,7 +184,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 }
 
 
-DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout *layout) {
+DSLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout *layout) {
 	auto result = dsLayouts.add();
 	DescriptorSetLayout &dsLayout = result.first;
 
@@ -304,7 +304,7 @@ void RendererImpl::bindVertexBuffer(unsigned int /* binding */, BufferHandle /* 
 }
 
 
-void RendererImpl::bindDescriptorSet(unsigned int /* index */, DescriptorSetLayoutHandle /* layout */, const void * /* data_ */) {
+void RendererImpl::bindDescriptorSet(unsigned int /* index */, DSLayoutHandle /* layout */, const void * /* data_ */) {
 	assert(validPipeline);
 }
 

@@ -183,7 +183,7 @@ struct RendererImpl : public RendererBase {
 	SamplerHandle        createSampler(const SamplerDesc &desc);
 	TextureHandle        createTexture(const TextureDesc &desc);
 
-	DescriptorSetLayoutHandle createDescriptorSetLayout(const DescriptorLayout *layout);
+	DSLayoutHandle       createDescriptorSetLayout(const DescriptorLayout *layout);
 
 	TextureHandle        getRenderTargetTexture(RenderTargetHandle handle);
 
@@ -210,7 +210,7 @@ struct RendererImpl : public RendererBase {
 	void bindIndexBuffer(BufferHandle buffer, bool bit16);
 	void bindVertexBuffer(unsigned int binding, BufferHandle buffer);
 
-	void bindDescriptorSet(unsigned int index, DescriptorSetLayoutHandle layout, const void *data);
+	void bindDescriptorSet(unsigned int index, DSLayoutHandle layout, const void *data);
 
 	void draw(unsigned int firstVertex, unsigned int vertexCount);
 	void drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount);

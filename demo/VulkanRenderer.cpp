@@ -1257,7 +1257,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 }
 
 
-DescriptorSetLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout *layout) {
+DSLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout *layout) {
 	std::vector<vk::DescriptorSetLayoutBinding> bindings;
 
 	unsigned int i = 0;
@@ -1876,7 +1876,7 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 }
 
 
-void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DescriptorSetLayoutHandle layoutHandle, const void *data_) {
+void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHandle, const void *data_) {
 	assert(inFrame);
 	assert(validPipeline);
 

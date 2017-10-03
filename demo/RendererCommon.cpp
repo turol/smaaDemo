@@ -237,7 +237,7 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 }
 
 
-DescriptorSetLayoutHandle Renderer::createDescriptorSetLayout(const DescriptorLayout *layout) {
+DSLayoutHandle Renderer::createDescriptorSetLayout(const DescriptorLayout *layout) {
 	return impl->createDescriptorSetLayout(layout);
 }
 
@@ -312,7 +312,7 @@ void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 }
 
 
-void Renderer::bindDescriptorSet(unsigned int index, DescriptorSetLayoutHandle layout, const void *data) {
+void Renderer::bindDescriptorSet(unsigned int index, DSLayoutHandle layout, const void *data) {
 	impl->bindDescriptorSet(index, layout, data);
 }
 
