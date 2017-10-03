@@ -335,7 +335,7 @@ enum class FilterMode : uint8_t{
 };
 
 
-enum WrapMode {
+enum class WrapMode : uint8_t {
 	  Clamp
 	, Wrap
 };
@@ -345,7 +345,7 @@ struct SamplerDesc {
 	SamplerDesc()
 	: min(FilterMode::Nearest)
 	, mag(FilterMode::Nearest)
-	, wrapMode(Clamp)
+	, wrapMode(WrapMode::Clamp)
 	{
 	}
 
