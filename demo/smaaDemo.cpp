@@ -61,9 +61,7 @@ static const Color white = { 0xFFFFFFFF };
 class SMAADemo;
 
 
-namespace AAMethod {
-
-enum AAMethod {
+enum class AAMethod : uint8_t {
 	  FXAA
 	, SMAA
 	, LAST = SMAA
@@ -72,20 +70,17 @@ enum AAMethod {
 
 const char *name(AAMethod m) {
 	switch (m) {
-	case FXAA:
+	case AAMethod::FXAA:
 		return "FXAA";
 		break;
 
-	case SMAA:
+	case AAMethod::SMAA:
 		return "SMAA";
 		break;
 	}
 
 	__builtin_unreachable();
 }
-
-
-}  // namespace AAMethod
 
 
 const char *smaaDebugModes[3] = { "None", "Edges", "Weights" };
@@ -200,7 +195,7 @@ class SMAADemo {
 	std::array<RenderTargetHandle, RenderTargets::Count> rendertargets;
 
 	bool antialiasing;
-	AAMethod::AAMethod aaMethod;
+	AAMethod aaMethod;
 
 	std::array<PipelineHandle, maxFXAAQuality> fxaaPipelines;
 
@@ -1043,7 +1038,7 @@ void SMAADemo::mainLoopIteration() {
 				break;
 
 			case SDL_SCANCODE_M:
-				aaMethod = AAMethod::AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
+				aaMethod = AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
 				break;
 
 			case SDL_SCANCODE_Q:
@@ -1388,7 +1383,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		int aa = static_cast<int>(aaMethod);
 		ImGui::RadioButton("FXAA", &aa, static_cast<int>(AAMethod::FXAA)); ImGui::SameLine();
 		ImGui::RadioButton("SMAA", &aa, static_cast<int>(AAMethod::SMAA));
-		aaMethod = static_cast<AAMethod::AAMethod>(aa);
+		aaMethod = static_cast<AAMethod>(aa);
 
 		int sq = smaaQuality;
 		ImGui::Separator();
