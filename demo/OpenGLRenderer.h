@@ -250,6 +250,7 @@ struct Framebuffer {
 	Framebuffer(Framebuffer &&other)
 	: fbo(other.fbo)
 	, depthStencil(other.depthStencil)
+	, renderPass(other.renderPass)
 	, width(other.width)
 	, height(other.height)
 	{
@@ -260,6 +261,7 @@ struct Framebuffer {
 		assert(!other.colors[1]);
 		this->colors[0]    = other.colors[0];
 		other.colors[0]    = RenderTargetHandle();
+		other.renderPass   = RenderPassHandle();
 		other.depthStencil = RenderTargetHandle();
 	}
 
