@@ -50,7 +50,7 @@ std::vector<char> readTextFile(std::string filename) {
 		throw std::runtime_error("fstat failed");
 	}
 
-	uint64_t filesize = static_cast<uint64_t>(statbuf.st_size);
+	unsigned int filesize = static_cast<unsigned int>(statbuf.st_size);
 	// ensure NUL -termination
 	std::vector<char> buf(filesize + 1, '\0');
 
@@ -87,7 +87,7 @@ std::vector<char> readFile(std::string filename) {
 		throw std::runtime_error("fstat failed");
 	}
 
-	uint64_t filesize = static_cast<uint64_t>(statbuf.st_size);
+	unsigned int filesize = static_cast<unsigned int>(statbuf.st_size);
 	std::vector<char> buf(filesize, '\0');
 
 	size_t ret = fread(&buf[0], 1, filesize, file.get());
