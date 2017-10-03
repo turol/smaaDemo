@@ -373,7 +373,12 @@ struct Texture {
 	}
 
 
-	~Texture();
+	~Texture()
+	{
+		// it should have been deleted by Renderer before destroying this
+		assert(tex == 0);
+		assert(!renderTarget);
+	}
 };
 
 

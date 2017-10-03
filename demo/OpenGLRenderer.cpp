@@ -129,14 +129,6 @@ static GLenum glTexBaseFormat(Format format) {
 }
 
 
-Texture::~Texture()
-{
-	// it should have been deleted by Renderer before destroying this
-	assert(tex == 0);
-	assert(!renderTarget);
-}
-
-
 static const char *errorSource(GLenum source)
 {
 	switch (source)
