@@ -1523,7 +1523,8 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 					pcmd->UserCallback(cmd_list, pcmd);
 				} else {
 					assert(pcmd->TextureId == 0);
-					renderer.setScissorRect(pcmd->ClipRect.x, pcmd->ClipRect.y, pcmd->ClipRect.z - pcmd->ClipRect.x, pcmd->ClipRect.w - pcmd->ClipRect.y);
+					renderer.setScissorRect(static_cast<unsigned int>(pcmd->ClipRect.x), static_cast<unsigned int>(pcmd->ClipRect.y),
+						static_cast<unsigned int>(pcmd->ClipRect.z - pcmd->ClipRect.x), static_cast<unsigned int>(pcmd->ClipRect.w - pcmd->ClipRect.y));
 					renderer.drawIndexedOffset(pcmd->ElemCount, idx_buffer_offset);
 				}
 				idx_buffer_offset += pcmd->ElemCount;
