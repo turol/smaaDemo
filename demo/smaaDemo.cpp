@@ -784,7 +784,7 @@ void SMAADemo::initRender() {
 	}
 
 	// default scene to last image or cubes if none
-	activeScene = images.size();
+	activeScene = static_cast<unsigned int>(images.size());
 
 	// imgui setup
 	{
@@ -892,10 +892,10 @@ void SMAADemo::createFramebuffers()	{
 
 void SMAADemo::createCubes() {
 	// cubes on a side is some power of 2
-	const unsigned int cubesSide = pow(2, cubePower);
+	const unsigned int cubesSide = static_cast<unsigned int>(pow(2, cubePower));
 
 	// cube of cubes, n^3 cubes total
-	const unsigned int numCubes = pow(cubesSide, 3);
+	const unsigned int numCubes = static_cast<unsigned int>(pow(cubesSide, 3));
 
 	const float cubeDiameter = sqrtf(3.0f);
 	const float cubeDistance = cubeDiameter + 1.0f;
@@ -951,9 +951,9 @@ void SMAADemo::colorCubes() {
 			// TODO: use the same luma as shader
 
 			float y = 0.5f;
-			const float c_red = 0.299
-				, c_green = 0.587
-			, c_blue = 0.114;
+			const float c_red = 0.299f
+				, c_green = 0.587f
+			, c_blue = 0.114f;
 			float cb = random.randFloat();
 			float cr = random.randFloat();
 
@@ -961,9 +961,9 @@ void SMAADemo::colorCubes() {
 			float g = (y - c_blue * cb - c_red * cr) / c_green;
 			float b = cb * (2 - 2 * c_blue) + y;
 
-			col.r = 255 * r;
-			col.g = 255 * g;
-			col.b = 255 * b;
+			col.r = static_cast<uint8_t>(255.0f * r);
+			col.g = static_cast<uint8_t>(255.0f * g);
+			col.b = static_cast<uint8_t>(255.0f * b);
 			col.a = 0xFF;
 			cube.color = col.val;
 		}
@@ -1097,7 +1097,7 @@ void SMAADemo::mainLoopIteration() {
 			case SDL_SCANCODE_RIGHT:
 				{
 					// all images + cubes scene
-					unsigned int numScenes = images.size() + 1;
+					unsigned int numScenes = static_cast<unsigned int>(images.size()) + 1;
 					activeScene = (activeScene + sceneIncrement + numScenes) % numScenes;
 				}
 				break;
@@ -1143,7 +1143,7 @@ void SMAADemo::mainLoopIteration() {
 			}
 
 		case SDL_MOUSEMOTION:
-			io.MousePos = ImVec2(event.motion.x, event.motion.y);
+			io.MousePos = ImVec2(static_cast<float>(event.motion.x), static_cast<float>(event.motion.y));
 			break;
 
 		case SDL_MOUSEBUTTONDOWN:
@@ -1156,7 +1156,7 @@ void SMAADemo::mainLoopIteration() {
 			break;
 
 		case SDL_MOUSEWHEEL:
-			io.MouseWheel = event.wheel.y;
+			io.MouseWheel = static_cast<float>(event.wheel.y);
 			break;
 
 		}
@@ -1251,10 +1251,10 @@ void SMAADemo::render() {
 		renderer.bindIndexBuffer(cubeIBO, false);
 
 		CubeSceneDS cubeDS;
-		cubeDS.instances = renderer.createEphemeralBuffer(sizeof(ShaderDefines::Cube) * cubes.size(), &cubes[0]);
+		cubeDS.instances = renderer.createEphemeralBuffer(static_cast<uint32_t>(sizeof(ShaderDefines::Cube) * cubes.size()), &cubes[0]);
 		renderer.bindDescriptorSet(1, cubeDS);
 
-		renderer.drawIndexedInstanced(3 * 2 * 6, cubes.size());
+		renderer.drawIndexedInstanced(3 * 2 * 6, static_cast<unsigned int>(cubes.size()));
 	} else {
 		renderer.bindPipeline(imagePipeline);
 
@@ -1375,7 +1375,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 	ImGuiIO& io = ImGui::GetIO();
 	io.DeltaTime = float(double(elapsed) / double(1000000000ULL));
 
-	io.DisplaySize = ImVec2(windowWidth, windowHeight);
+	io.DisplaySize = ImVec2(static_cast<float>(windowWidth), static_cast<float>(windowHeight));
 	io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
 	ImGui::NewFrame();
@@ -1434,7 +1434,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			}
 			assert(activeScene < scenes.size());
 			int s = activeScene;
-			ImGui::Combo("Scene", &s, &scenes[0], scenes.size());
+			ImGui::Combo("Scene", &s, &scenes[0], static_cast<int>(scenes.size()));
 			assert(s >= 0);
 			assert(s < int(scenes.size()));
 			activeScene = s;
@@ -1478,7 +1478,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 	// move the window to right edge of screen
 	ImVec2 pos;
 	pos.x =  windowWidth  - ImGui::GetWindowWidth();
-	pos.y = (windowHeight - ImGui::GetWindowHeight()) / 2.0;
+	pos.y = (windowHeight - ImGui::GetWindowHeight()) / 2.0f;
 	ImGui::SetWindowPos(pos);
 
 	ImGui::End();
