@@ -390,7 +390,10 @@
     <ClCompile Include="..\demo\Utils.cpp" />
     <ClCompile Include="..\demo\VulkanMemoryAllocator.cpp" />
     <ClCompile Include="..\demo\VulkanRenderer.cpp" />
-    <ClCompile Include="..\foreign\glew\src\glew.c" />
+    <ClCompile Include="..\foreign\glew\src\glew.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Vulkan|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Vulkan|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\foreign\glslang\glslang\GenericCodeGen\CodeGen.cpp" />
     <ClCompile Include="..\foreign\glslang\glslang\GenericCodeGen\Link.cpp" />
     <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\Constant.cpp" />
