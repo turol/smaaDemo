@@ -129,17 +129,6 @@ static GLenum glTexBaseFormat(Format format) {
 }
 
 
-Pipeline::Pipeline()
-: shader(0)
-{
-}
-
-
-Pipeline::~Pipeline() {
-	assert(shader == 0);
-}
-
-
 RenderPass::~RenderPass() {
 }
 

@@ -51,9 +51,15 @@ struct Pipeline {
 	Pipeline(Pipeline &&)            = default;
 	Pipeline &operator=(Pipeline &&) = default;
 
-	Pipeline();
+	Pipeline()
+	: shader(0)
+	{
+	}
 
-	~Pipeline();
+
+	~Pipeline() {
+		assert(shader == 0);
+	}
 };
 
 
