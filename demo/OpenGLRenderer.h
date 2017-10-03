@@ -96,9 +96,20 @@ struct Buffer {
 		return *this;
 	}
 
-	Buffer();
+	Buffer()
+	: buffer(0)
+	, ringBufferAlloc(false)
+	, beginOffs(0)
+	, size(0)
+	{
+	}
 
-	~Buffer();
+
+	~Buffer() {
+		assert(buffer == 0);
+		assert(!ringBufferAlloc);
+		assert(size   == 0);
+	}
 };
 
 
