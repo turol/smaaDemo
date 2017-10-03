@@ -125,9 +125,14 @@ struct VertexShader {
 	VertexShader(VertexShader &&)            = default;
 	VertexShader &operator=(VertexShader &&) = default;
 
-	VertexShader();
+	VertexShader()
+	: shader(0)
+	{
+	}
 
-	~VertexShader();
+
+	~VertexShader() {
+	}
 };
 
 

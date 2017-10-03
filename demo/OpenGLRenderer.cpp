@@ -134,16 +134,6 @@ Framebuffer::~Framebuffer() {
 }
 
 
-VertexShader::VertexShader()
-: shader(0)
-{
-}
-
-
-VertexShader::~VertexShader() {
-}
-
-
 FragmentShader::FragmentShader()
 : shader(0)
 {
