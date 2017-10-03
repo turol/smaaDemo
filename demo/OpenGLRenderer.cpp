@@ -134,16 +134,6 @@ Framebuffer::~Framebuffer() {
 }
 
 
-FragmentShader::FragmentShader()
-: shader(0)
-{
-}
-
-
-FragmentShader::~FragmentShader() {
-}
-
-
 Pipeline::Pipeline()
 : shader(0)
 {

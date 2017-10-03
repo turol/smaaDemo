@@ -149,9 +149,14 @@ struct FragmentShader {
 	FragmentShader &operator=(FragmentShader &&) = default;
 
 
-	FragmentShader();
+	FragmentShader()
+	: shader(0)
+	{
+	}
 
-	~FragmentShader();
+
+	~FragmentShader() {
+	}
 };
 
 
