@@ -465,9 +465,9 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		}
 
 	} catch (TCLAP::ArgException &e) {
-		printf("parseCommandLine exception: %s for arg %s\n", e.error().c_str(), e.argId().c_str());
+		LOG("parseCommandLine exception: %s for arg %s\n", e.error().c_str(), e.argId().c_str());
 	} catch (...) {
-		printf("parseCommandLine: unknown exception\n");
+		LOG("parseCommandLine: unknown exception\n");
 	}
 }
 
@@ -769,7 +769,7 @@ void SMAADemo::initRender() {
 		const auto filename = img.filename.c_str();
 		int width = 0, height = 0;
 		unsigned char *imageData = stbi_load(filename, &width, &height, NULL, 4);
-		printf(" %p  %dx%d\n", imageData, width, height);
+		LOG(" %s : %p  %dx%d\n", filename, imageData, width, height);
 
 		texDesc.width(width)
 		       .height(height)
@@ -1020,18 +1020,15 @@ void SMAADemo::mainLoopIteration() {
 
 			case SDL_SCANCODE_SPACE:
 				rotateCubes = !rotateCubes;
-				printf("cube rotation is %s\n", rotateCubes ? "on" : "off");
 				break;
 
 			case SDL_SCANCODE_A:
 				antialiasing = !antialiasing;
-				printf("antialiasing set to %s\n", antialiasing ? "on" : "off");
 				break;
 
 			case SDL_SCANCODE_C:
 				if (rightShift || leftShift) {
 					colorMode = (colorMode + 1) % 2;
-					printf("color mode set to %s\n", colorMode ? "YCbCr" : "RGB");
 				}
 				colorCubes();
 				break;
@@ -1043,7 +1040,6 @@ void SMAADemo::mainLoopIteration() {
 					} else {
 						debugMode = (debugMode + 1) % 3;
 					}
-					printf("Debug mode set to %s\n", smaaDebugModeStr(debugMode));
 				}
 				break;
 
@@ -1053,7 +1049,6 @@ void SMAADemo::mainLoopIteration() {
 
 			case SDL_SCANCODE_M:
 				aaMethod = AAMethod::AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
-				printf("aa method set to %s\n", AAMethod::name(aaMethod));
 				break;
 
 			case SDL_SCANCODE_Q:
@@ -1065,7 +1060,6 @@ void SMAADemo::mainLoopIteration() {
 						fxaaQuality = fxaaQuality + 1;
 					}
 					fxaaQuality = fxaaQuality % maxFXAAQuality;
-					printf("FXAA quality set to %s (%u)\n", fxaaQualityLevels[fxaaQuality], fxaaQuality);
 					break;
 
 				case AAMethod::SMAA:
@@ -1075,7 +1069,6 @@ void SMAADemo::mainLoopIteration() {
 						smaaQuality = smaaQuality + 1;
 					}
 					smaaQuality = smaaQuality % maxSMAAQuality;
-					printf("SMAA quality set to %s (%u)\n", smaaQualityLevels[smaaQuality], smaaQuality);
 					break;
 
 				}
@@ -1201,7 +1194,7 @@ void SMAADemo::render() {
 		recreateSwapchain = false;
 
 		glm::uvec2 size = renderer.getDrawableSize();
-		printf("drawable size: %ux%u\n", size.x, size.y);
+		LOG("drawable size: %ux%u\n", size.x, size.y);
 		windowWidth  = size.x;
 		windowHeight = size.y;
 
@@ -1531,9 +1524,9 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			}
 		}
 #if 0
-		printf("CmdListsCount: %d\n", drawData->CmdListsCount);
-		printf("TotalVtxCount: %d\n", drawData->TotalVtxCount);
-		printf("TotalIdxCount: %d\n", drawData->TotalIdxCount);
+		LOG("CmdListsCount: %d\n", drawData->CmdListsCount);
+		LOG("TotalVtxCount: %d\n", drawData->TotalVtxCount);
+		LOG("TotalIdxCount: %d\n", drawData->TotalIdxCount);
 #endif // 0
 	} else {
 		assert(drawData->CmdLists      == nullptr);
@@ -1557,21 +1550,21 @@ int main(int argc, char *argv[]) {
 			try {
 				demo->mainLoopIteration();
 			} catch (std::exception &e) {
-				printf("caught std::exception: \"%s\"\n", e.what());
+				LOG("caught std::exception: \"%s\"\n", e.what());
 				break;
 			} catch (...) {
-				printf("caught unknown exception\n");
+				LOG("caught unknown exception\n");
 				break;
 			}
 		}
 	} catch (std::exception &e) {
-		printf("caught std::exception \"%s\"\n", e.what());
+		LOG("caught std::exception \"%s\"\n", e.what());
 #ifndef _MSC_VER
 		// so native dumps core
 		throw;
 #endif
 	} catch (...) {
-		printf("unknown exception\n");
+		LOG("unknown exception\n");
 #ifndef _MSC_VER
 		// so native dumps core
 		throw;
