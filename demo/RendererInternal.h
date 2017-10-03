@@ -161,7 +161,7 @@ struct RendererImpl : public RendererBase {
 
 	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);
 
-	RendererImpl(const RendererDesc &desc);
+	explicit RendererImpl(const RendererDesc &desc);
 
 	RendererImpl(const RendererImpl &)            = default;
 	RendererImpl(RendererImpl &&)                 = default;
