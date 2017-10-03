@@ -199,7 +199,7 @@ struct RenderTarget {
 		other.height        = 0;
 		other.currentLayout = Layout::Invalid;
 		other.texture       = TextureHandle();
-		other.format        = Invalid;
+		other.format        = Format::Invalid;
 	}
 
 	RenderTarget &operator=(RenderTarget &&other) {
@@ -222,7 +222,7 @@ struct RenderTarget {
 		other.height        = 0;
 		other.currentLayout = Layout::Invalid;
 		other.texture       = TextureHandle();
-		other.format        = Invalid;
+		other.format        = Format::Invalid;
 
 		return *this;
 	};

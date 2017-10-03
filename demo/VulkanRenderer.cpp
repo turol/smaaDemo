@@ -112,23 +112,23 @@ static vk::Format vulkanVertexFormat(VtxFormat::VtxFormat format, uint8_t count)
 
 static vk::Format vulkanFormat(Format format) {
 	switch (format) {
-	case Invalid:
+	case Format::Invalid:
 		assert(false);
 		return vk::Format::eUndefined;
 
-	case R8:
+	case Format::R8:
 		return vk::Format::eR8Unorm;
 
-	case RG8:
+	case Format::RG8:
 		return vk::Format::eR8G8Unorm;
 
-	case RGB8:
+	case Format::RGB8:
 		return vk::Format::eR8G8B8Unorm;
 
-	case RGBA8:
+	case Format::RGBA8:
 		return vk::Format::eR8G8B8A8Unorm;
 
-	case Depth16:
+	case Format::Depth16:
 		return vk::Format::eD16Unorm;
 
 	}
@@ -961,7 +961,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc) {
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
-	assert(desc.format_ != Invalid);
+	assert(desc.format_ != Format::Invalid);
 
 	// TODO: use NV_dedicated_allocation when available
 
@@ -975,7 +975,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	// TODO: samples when multisampling
 	// TODO: usage should come from desc
 	vk::ImageUsageFlags flags(vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
-	if (desc.format_ == Depth16) {
+	if (desc.format_ == Format::Depth16) {
 		flags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
 	} else {
 		flags |= vk::ImageUsageFlagBits::eColorAttachment;
@@ -1016,7 +1016,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	viewInfo.image    = rt.image;
 	viewInfo.viewType = vk::ImageViewType::e2D;
 	viewInfo.format   = format;
-	if (desc.format_ == Depth16) {
+	if (desc.format_ == Format::Depth16) {
 		viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
 	} else {
 		viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
@@ -1135,7 +1135,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	info.arrayLayers = 1;
 
 	vk::ImageUsageFlags flags(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
-	assert(desc.format_ != Depth16);
+	assert(desc.format_ != Format::Depth16);
 	info.usage       = flags;
 
 	auto result = textures.add();

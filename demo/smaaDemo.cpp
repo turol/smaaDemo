@@ -571,7 +571,7 @@ void SMAADemo::initRender() {
 	renderer.registerDescriptorSetLayout<NeighborBlendDS>();
 
 	RenderPassDesc rpDesc;
-	rpDesc.color(0, RGBA8);
+	rpDesc.color(0, Format::RGBA8);
 	rpDesc.colorFinalLayout(Layout::TransferSrc);
 	finalRenderPass       = renderer.createRenderPass(rpDesc.name("final"));
 
@@ -579,7 +579,7 @@ void SMAADemo::initRender() {
 	smaaEdgesRenderPass   = renderer.createRenderPass(rpDesc.name("SMAA edges"));
 	smaaWeightsRenderPass = renderer.createRenderPass(rpDesc.name("SMAA weights"));
 
-	rpDesc.depthStencil(Depth16);
+	rpDesc.depthStencil(Format::Depth16);
 	sceneRenderPass       = renderer.createRenderPass(rpDesc.name("scene"));
 
 	createFramebuffers();
@@ -727,7 +727,7 @@ void SMAADemo::initRender() {
 	TextureDesc texDesc;
 	texDesc.width(AREATEX_WIDTH)
 	       .height(AREATEX_HEIGHT)
-	       .format(RG8);
+	       .format(Format::RG8);
 
 	if (flipSMAATextures) {
 		std::vector<unsigned char> tempBuffer(AREATEX_SIZE);
@@ -745,7 +745,7 @@ void SMAADemo::initRender() {
 
 	texDesc.width(SEARCHTEX_WIDTH)
 	       .height(SEARCHTEX_HEIGHT)
-	       .format(R8);
+	       .format(Format::R8);
 	if (flipSMAATextures) {
 		std::vector<unsigned char> tempBuffer(SEARCHTEX_SIZE);
 		for (unsigned int y = 0; y < SEARCHTEX_HEIGHT; y++) {
@@ -768,7 +768,7 @@ void SMAADemo::initRender() {
 
 		texDesc.width(width)
 		       .height(height)
-		       .format(RGBA8);
+		       .format(Format::RGBA8);
 
 		texDesc.mipLevelData(0, imageData, width * height * 4);
 		img.width  = width;
@@ -817,7 +817,7 @@ void SMAADemo::initRender() {
 
 		texDesc.width(width)
 		       .height(height)
-		       .format(RGBA8)
+		       .format(Format::RGBA8)
 		       .mipLevelData(0, pixels, width * height * 4);
 		imguiFontsTex = renderer.createTexture(texDesc);
 		io.Fonts->TexID = nullptr;
@@ -847,13 +847,13 @@ void SMAADemo::createFramebuffers()	{
 	}
 
 	RenderTargetDesc rtDesc;
-	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8).name("main color");
+	rtDesc.width(windowWidth).height(windowHeight).format(Format::RGBA8).name("main color");
 	rendertargets[RenderTargets::MainColor] = renderer.createRenderTarget(rtDesc);
 
-	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8).name("final");
+	rtDesc.width(windowWidth).height(windowHeight).format(Format::RGBA8).name("final");
 	rendertargets[RenderTargets::FinalRender] = renderer.createRenderTarget(rtDesc);
 
-	rtDesc.format(Depth16).name("main depth");
+	rtDesc.format(Format::Depth16).name("main depth");
 	rendertargets[RenderTargets::MainDepth] = renderer.createRenderTarget(rtDesc);
 
 	FramebufferDesc fbDesc;
@@ -868,7 +868,7 @@ void SMAADemo::createFramebuffers()	{
 	finalFramebuffer = renderer.createFramebuffer(fbDesc);
 
 	// SMAA edges texture and FBO
-	rtDesc.width(windowWidth).height(windowHeight).format(RGBA8).name("SMAA edges");
+	rtDesc.width(windowWidth).height(windowHeight).format(Format::RGBA8).name("SMAA edges");
 	rendertargets[RenderTargets::Edges] = renderer.createRenderTarget(rtDesc);
 	fbDesc.depthStencil(RenderTargetHandle()).color(0, rendertargets[RenderTargets::Edges]);
 	fbDesc.name("SMAA edges");

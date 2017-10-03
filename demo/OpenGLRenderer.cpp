@@ -77,22 +77,22 @@ static GLuint createShader(GLenum type, const std::string &name, const std::vect
 
 static GLenum glTexFormat(Format format) {
 	switch (format) {
-	case Invalid:
+	case Format::Invalid:
 		__builtin_unreachable();
 
-	case R8:
+	case Format::R8:
 		return GL_R8;
 
-	case RG8:
+	case Format::RG8:
 		return GL_RG8;
 
-	case RGB8:
+	case Format::RGB8:
 		return GL_RGB8;
 
-	case RGBA8:
+	case Format::RGBA8:
 		return GL_RGBA8;
 
-	case Depth16:
+	case Format::Depth16:
 		return GL_DEPTH_COMPONENT16;
 
 	}
@@ -103,22 +103,22 @@ static GLenum glTexFormat(Format format) {
 
 static GLenum glTexBaseFormat(Format format) {
 	switch (format) {
-	case Invalid:
+	case Format::Invalid:
 		__builtin_unreachable();
 
-	case R8:
+	case Format::R8:
 		return GL_RED;
 
-	case RG8:
+	case Format::RG8:
 		return GL_RG;
 
-	case RGB8:
+	case Format::RGB8:
 		return GL_RGB;
 
-	case RGBA8:
+	case Format::RGBA8:
 		return GL_RGBA;
 
-	case Depth16:
+	case Format::Depth16:
 		// not supposed to use this format here
 		assert(false);
 		return GL_NONE;
@@ -858,7 +858,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 		fb.depthStencil = desc.depthStencil_;
 		glNamedFramebufferTexture(fb.fbo, GL_DEPTH_ATTACHMENT, depthRTtex.tex, 0);
 	} else {
-		assert(renderPass.desc.depthStencilFormat_ == Invalid);
+		assert(renderPass.desc.depthStencilFormat_ == Format::Invalid);
 	}
 
 	if (debug) {
@@ -882,7 +882,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc) {
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
-	assert(desc.format_ != Invalid);
+	assert(desc.format_ != Format::Invalid);
 	assert(desc.name_   != nullptr);
 
 	GLuint id = 0;

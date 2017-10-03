@@ -193,7 +193,7 @@ struct SwapchainDesc {
 #define MAX_TEXTURE_SIZE      (1 << (MAX_TEXTURE_MIPLEVELS - 1))
 
 
-enum Format {
+enum class Format : uint8_t {
 	  Invalid
 	, R8
 	, RG8
@@ -217,7 +217,7 @@ struct RenderTargetDesc {
 	RenderTargetDesc()
 	: width_(0)
 	, height_(0)
-	, format_(Invalid)
+	, format_(Format::Invalid)
 	, name_(nullptr)
 	{
 	}
@@ -269,7 +269,7 @@ struct TextureDesc {
 	: width_(0)
 	, height_(0)
 	, numMips_(1)
-	, format_(Invalid)
+	, format_(Format::Invalid)
 	{
 		std::fill(mipData_.begin(), mipData_.end(), MipLevel());
 	}
@@ -389,11 +389,11 @@ enum class Layout : uint8_t {
 
 struct RenderPassDesc {
 	RenderPassDesc()
-	: depthStencilFormat_(Invalid)
+	: depthStencilFormat_(Format::Invalid)
 	, colorFinalLayout_(Layout::ShaderRead)
 	, name_(nullptr)
 	{
-		std::fill(colorFormats_.begin(), colorFormats_.end(), Invalid);
+		std::fill(colorFormats_.begin(), colorFormats_.end(), Format::Invalid);
 	}
 
 	~RenderPassDesc() { }
