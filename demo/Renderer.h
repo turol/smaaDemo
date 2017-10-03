@@ -172,10 +172,10 @@ struct DescriptorLayout {
 
 
 struct SwapchainDesc {
-	unsigned int width, height;
-	unsigned int numFrames;
-	bool vsync;
-	bool fullscreen;
+	unsigned int  width, height;
+	unsigned int  numFrames;
+	bool          vsync;
+	bool          fullscreen;
 
 
 	SwapchainDesc()
@@ -220,8 +220,8 @@ struct RenderTargetDesc {
 
 	~RenderTargetDesc() { }
 
-	RenderTargetDesc(const RenderTargetDesc &) = default;
-	RenderTargetDesc(RenderTargetDesc &&)      = default;
+	RenderTargetDesc(const RenderTargetDesc &)            = default;
+	RenderTargetDesc(RenderTargetDesc &&)                 = default;
 
 	RenderTargetDesc &operator=(const RenderTargetDesc &) = default;
 	RenderTargetDesc &operator=(RenderTargetDesc &&)      = default;
@@ -251,10 +251,10 @@ struct RenderTargetDesc {
 
 private:
 
-	unsigned int width_, height_;
+	unsigned int   width_, height_;
 	// TODO: unsigned int multisample;
-	Format format_;
-	const char  *name_;
+	Format         format_;
+	const char     *name_;
 
 	friend struct RendererImpl;
 };
@@ -272,8 +272,8 @@ struct TextureDesc {
 
 	~TextureDesc() { }
 
-	TextureDesc(const TextureDesc &) = default;
-	TextureDesc(TextureDesc &&)      = default;
+	TextureDesc(const TextureDesc &)            = default;
+	TextureDesc(TextureDesc &&)                 = default;
 
 	TextureDesc &operator=(const TextureDesc &) = default;
 	TextureDesc &operator=(TextureDesc &&)      = default;
@@ -317,10 +317,10 @@ private:
 		}
 	};
 
-	unsigned int  width_, height_;
-	unsigned int  numMips_;
-	Format        format_;
-	std::array<MipLevel, MAX_TEXTURE_MIPLEVELS> mipData_;
+	unsigned int                                 width_, height_;
+	unsigned int                                 numMips_;
+	Format                                       format_;
+	std::array<MipLevel, MAX_TEXTURE_MIPLEVELS>  mipData_;
 
 	friend struct RendererImpl;
 };
@@ -349,8 +349,8 @@ struct SamplerDesc {
 	{
 	}
 
-	SamplerDesc(const SamplerDesc &desc) = default;
-	SamplerDesc(SamplerDesc &&desc)      = default;
+	SamplerDesc(const SamplerDesc &desc)            = default;
+	SamplerDesc(SamplerDesc &&desc)                 = default;
 
 	SamplerDesc &operator=(const SamplerDesc &desc) = default;
 	SamplerDesc &operator=(SamplerDesc &&desc)      = default;
@@ -394,8 +394,8 @@ struct RenderPassDesc {
 
 	~RenderPassDesc() { }
 
-	RenderPassDesc(const RenderPassDesc &) = default;
-	RenderPassDesc(RenderPassDesc &&)      = default;
+	RenderPassDesc(const RenderPassDesc &)            = default;
+	RenderPassDesc(RenderPassDesc &&)                 = default;
 
 	RenderPassDesc &operator=(const RenderPassDesc &) = default;
 	RenderPassDesc &operator=(RenderPassDesc &&)      = default;
@@ -425,8 +425,8 @@ private:
 
 	Format                                       depthStencilFormat_;
 	std::array<Format, MAX_COLOR_RENDERTARGETS>  colorFormats_;
-	Layout   colorFinalLayout_;
-	const char                                             *name_;
+	Layout                                       colorFinalLayout_;
+	const char                                   *name_;
 
 	friend struct RendererImpl;
 };
@@ -440,8 +440,8 @@ struct FramebufferDesc {
 
 	~FramebufferDesc() { }
 
-	FramebufferDesc(const FramebufferDesc &) = default;
-	FramebufferDesc(FramebufferDesc &&)      = default;
+	FramebufferDesc(const FramebufferDesc &)            = default;
+	FramebufferDesc(FramebufferDesc &&)                 = default;
 
 	FramebufferDesc &operator=(const FramebufferDesc &) = default;
 	FramebufferDesc &operator=(FramebufferDesc &&)      = default;
@@ -474,22 +474,22 @@ private:
 	RenderPassHandle                                         renderPass_;
 	RenderTargetHandle                                       depthStencil_;
 	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS>  colors_;
-	const char                                              *name_;
+	const char                                               *name_;
 
 	friend struct RendererImpl;
 };
 
 
 class PipelineDesc {
-	VertexShaderHandle vertexShader_;
-	FragmentShaderHandle fragmentShader_;
-	RenderPassHandle     renderPass_;
-	uint32_t vertexAttribMask;
-	bool depthWrite_;
-	bool depthTest_;
-	bool cullFaces_;
-	bool scissorTest_;
-	bool blending_;
+	VertexShaderHandle    vertexShader_;
+	FragmentShaderHandle  fragmentShader_;
+	RenderPassHandle      renderPass_;
+	uint32_t              vertexAttribMask;
+	bool                  depthWrite_;
+	bool                  depthTest_;
+	bool                  cullFaces_;
+	bool                  scissorTest_;
+	bool                  blending_;
 	// TODO: blend equation and function
 	// TODO: per-MRT blending
 
@@ -504,11 +504,11 @@ class PipelineDesc {
 		uint32_t stride;
 	};
 
-	std::array<VertexAttr, MAX_VERTEX_ATTRIBS> vertexAttribs;
-	std::array<VertexBuf,  MAX_VERTEX_BUFFERS> vertexBuffers;
-	std::array<DSLayoutHandle, MAX_DESCRIPTOR_SETS> descriptorSetLayouts;
+	std::array<VertexAttr,     MAX_VERTEX_ATTRIBS>   vertexAttribs;
+	std::array<VertexBuf,      MAX_VERTEX_BUFFERS>   vertexBuffers;
+	std::array<DSLayoutHandle, MAX_DESCRIPTOR_SETS>  descriptorSetLayouts;
 
-	const char                                                 *name_;
+	const char                                       *name_;
 
 
 public:
@@ -612,8 +612,8 @@ public:
 
 	~PipelineDesc() {}
 
-	PipelineDesc(const PipelineDesc &desc) = default;
-	PipelineDesc(PipelineDesc &&desc)      = default;
+	PipelineDesc(const PipelineDesc &desc)            = default;
+	PipelineDesc(PipelineDesc &&desc)                 = default;
 
 	PipelineDesc &operator=(const PipelineDesc &desc) = default;
 	PipelineDesc &operator=(PipelineDesc &&desc)      = default;
@@ -623,9 +623,9 @@ public:
 
 
 struct RendererDesc {
-	bool debug;
-	unsigned int  ephemeralRingBufSize;
-	SwapchainDesc swapchain;
+	bool           debug;
+	unsigned int   ephemeralRingBufSize;
+	SwapchainDesc  swapchain;
 
 
 	RendererDesc()
@@ -656,19 +656,19 @@ public:
 	~Renderer();
 
 
-	RenderTargetHandle  createRenderTarget(const RenderTargetDesc &desc);
-	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
-	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);
-	FramebufferHandle    createFramebuffer(const FramebufferDesc &desc);
-	RenderPassHandle     createRenderPass(const RenderPassDesc &desc);
-	PipelineHandle      createPipeline(const PipelineDesc &desc);
+	RenderTargetHandle    createRenderTarget(const RenderTargetDesc &desc);
+	VertexShaderHandle    createVertexShader(const std::string &name, const ShaderMacros &macros);
+	FragmentShaderHandle  createFragmentShader(const std::string &name, const ShaderMacros &macros);
+	FramebufferHandle     createFramebuffer(const FramebufferDesc &desc);
+	RenderPassHandle      createRenderPass(const RenderPassDesc &desc);
+	PipelineHandle        createPipeline(const PipelineDesc &desc);
 	// TODO: add buffer usage flags
-	BufferHandle        createBuffer(uint32_t size, const void *contents);
-	BufferHandle        createEphemeralBuffer(uint32_t size, const void *contents);
+	BufferHandle          createBuffer(uint32_t size, const void *contents);
+	BufferHandle          createEphemeralBuffer(uint32_t size, const void *contents);
 	// image ?
 	// descriptor set
-	SamplerHandle       createSampler(const SamplerDesc &desc);
-	TextureHandle       createTexture(const TextureDesc &desc);
+	SamplerHandle         createSampler(const SamplerDesc &desc);
+	TextureHandle         createTexture(const TextureDesc &desc);
 
 	DSLayoutHandle createDescriptorSetLayout(const DescriptorLayout *layout);
 	template <typename T> void registerDescriptorSetLayout() {
