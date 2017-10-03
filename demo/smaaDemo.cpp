@@ -338,21 +338,21 @@ SMAADemo::~SMAADemo() {
 	ImGui::Shutdown();
 
 	if (sceneFramebuffer) {
-	renderer.deleteFramebuffer(sceneFramebuffer);
+		renderer.deleteFramebuffer(sceneFramebuffer);
 
-	assert(finalFramebuffer);
-	renderer.deleteFramebuffer(finalFramebuffer);
+		assert(finalFramebuffer);
+		renderer.deleteFramebuffer(finalFramebuffer);
 
-	assert(smaaEdgesFramebuffer);
-	renderer.deleteFramebuffer(smaaEdgesFramebuffer);
+		assert(smaaEdgesFramebuffer);
+		renderer.deleteFramebuffer(smaaEdgesFramebuffer);
 
-	assert(smaaWeightsFramebuffer);
-	renderer.deleteFramebuffer(smaaWeightsFramebuffer);
+		assert(smaaWeightsFramebuffer);
+		renderer.deleteFramebuffer(smaaWeightsFramebuffer);
 
-	for (unsigned int i = 0; i < RenderTargets::Count; i++) {
-		assert(rendertargets[i]);
-		renderer.deleteRenderTarget(rendertargets[i]);
-	}
+		for (unsigned int i = 0; i < RenderTargets::Count; i++) {
+			assert(rendertargets[i]);
+			renderer.deleteRenderTarget(rendertargets[i]);
+		}
 	}
 
 	if (cubeVBO) {
