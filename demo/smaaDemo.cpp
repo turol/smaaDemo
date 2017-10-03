@@ -91,11 +91,6 @@ const char *name(AAMethod m) {
 const char *smaaDebugModes[3] = { "None", "Edges", "Weights" };
 
 
-static const char *smaaDebugModeStr(unsigned int mode) {
-	return smaaDebugModes[mode];
-}
-
-
 // *Really* minimal PCG32 code / (c) 2014 M.E. O'Neill / pcg-random.org
 // Licensed under Apache License 2.0 (NO WARRANTY, etc. see website)
 
