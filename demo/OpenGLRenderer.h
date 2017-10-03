@@ -179,6 +179,7 @@ struct RenderTarget {
 	, width(0)
 	, height(0)
 	, currentLayout(Layout::Invalid)
+	, format(Format::Invalid)
 	{
 	}
 
