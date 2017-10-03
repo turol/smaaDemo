@@ -129,10 +129,6 @@ static GLenum glTexBaseFormat(Format format) {
 }
 
 
-RenderPass::~RenderPass() {
-}
-
-
 Texture::~Texture()
 {
 	// it should have been deleted by Renderer before destroying this

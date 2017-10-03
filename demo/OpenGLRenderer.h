@@ -296,7 +296,8 @@ struct RenderPass {
 	}
 
 
-	~RenderPass();
+	~RenderPass() {
+	}
 };
 
 
