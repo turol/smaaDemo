@@ -167,7 +167,7 @@ struct CSampler {
 struct DescriptorLayout {
 	DescriptorType  type;
 	unsigned int    offset;
-	// TODO: stage glags
+	// TODO: stage flags
 };
 
 
