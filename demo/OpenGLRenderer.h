@@ -167,11 +167,11 @@ struct FragmentShader {
 
 
 struct RenderTarget {
-	GLuint readFBO;
-	unsigned int width, height;
-	Layout               currentLayout;
-	TextureHandle        texture;
-	Format               format;
+	GLuint         readFBO;
+	unsigned int   width, height;
+	Layout         currentLayout;
+	TextureHandle  texture;
+	Format         format;
 
 
 	RenderTarget()
@@ -194,9 +194,9 @@ struct RenderTarget {
 	, texture(other.texture)   // TODO: use std::move
 	, format(other.format)
 	{
-		other.readFBO = 0;
-		other.width  = 0;
-		other.height = 0;
+		other.readFBO       = 0;
+		other.width         = 0;
+		other.height        = 0;
 		other.currentLayout = Layout::Invalid;
 		other.texture       = TextureHandle();
 		other.format        = Invalid;
