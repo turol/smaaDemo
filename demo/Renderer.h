@@ -203,15 +203,11 @@ enum class Format : uint8_t {
 };
 
 
-namespace VtxFormat {
-
-
-enum VtxFormat {
+enum class VtxFormat : uint8_t {
 	  Float
 	, UNorm8
 };
 
-}  // namespace VtxFormat
 
 struct RenderTargetDesc {
 	RenderTargetDesc()
@@ -500,7 +496,7 @@ class PipelineDesc {
 	struct VertexAttr {
 		uint8_t bufBinding;
 		uint8_t count;
-		VtxFormat::VtxFormat format;
+		VtxFormat format;
 		uint8_t offset;
 	};
 
@@ -532,7 +528,7 @@ public:
 		return *this;
 	}
 
-	PipelineDesc &vertexAttrib(uint32_t attrib, uint8_t bufBinding, uint8_t count, VtxFormat::VtxFormat format, uint8_t offset) {
+	PipelineDesc &vertexAttrib(uint32_t attrib, uint8_t bufBinding, uint8_t count, VtxFormat format, uint8_t offset) {
 		assert(attrib < MAX_VERTEX_ATTRIBS);
 
 		vertexAttribs[attrib].bufBinding = bufBinding;

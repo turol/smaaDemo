@@ -81,7 +81,7 @@ static const std::array<vk::DescriptorType, uint8_t(DescriptorType::Count) - 1> 
 } };
 
 
-static vk::Format vulkanVertexFormat(VtxFormat::VtxFormat format, uint8_t count) {
+static vk::Format vulkanVertexFormat(VtxFormat format, uint8_t count) {
 	switch (format) {
 	case VtxFormat::Float:
 		switch (count) {
