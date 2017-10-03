@@ -265,7 +265,9 @@ struct Framebuffer {
 	{
 	}
 
-	~Framebuffer();
+	~Framebuffer() {
+		assert(fbo == 0);
+	}
 };
 
 
