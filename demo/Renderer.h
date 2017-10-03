@@ -681,7 +681,7 @@ public:
 
 	void deleteBuffer(BufferHandle handle);
 	void deleteFramebuffer(FramebufferHandle fbo);
-	void deleteRenderpass(RenderPassHandle fbo);
+	void deleteRenderPass(RenderPassHandle fbo);
 	void deleteSampler(SamplerHandle handle);
 	void deleteTexture(TextureHandle handle);
 	void deleteRenderTarget(RenderTargetHandle &fbo);

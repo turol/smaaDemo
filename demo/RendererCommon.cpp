@@ -262,6 +262,11 @@ void Renderer::deleteRenderTarget(RenderTargetHandle &rt) {
 }
 
 
+void Renderer::deleteRenderPass(RenderPassHandle handle) {
+	impl->deleteRenderPass(handle);
+}
+
+
 void Renderer::deleteSampler(SamplerHandle handle) {
 	impl->deleteSampler(handle);
 }

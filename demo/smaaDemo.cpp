@@ -343,6 +343,15 @@ SMAADemo::~SMAADemo() {
 			assert(rendertargets[i]);
 			renderer.deleteRenderTarget(rendertargets[i]);
 		}
+
+		assert(sceneRenderPass);
+		renderer.deleteRenderPass(sceneRenderPass);
+		assert(finalRenderPass);
+		renderer.deleteRenderPass(finalRenderPass);
+		assert(smaaEdgesRenderPass);
+		renderer.deleteRenderPass(smaaEdgesRenderPass);
+		assert(smaaWeightsRenderPass);
+		renderer.deleteRenderPass(smaaWeightsRenderPass);
 	}
 
 	if (cubeVBO) {
