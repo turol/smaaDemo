@@ -337,7 +337,7 @@ SMAADemo::SMAADemo()
 SMAADemo::~SMAADemo() {
 	ImGui::Shutdown();
 
-	assert(sceneFramebuffer);
+	if (sceneFramebuffer) {
 	renderer.deleteFramebuffer(sceneFramebuffer);
 
 	assert(finalFramebuffer);
@@ -352,6 +352,7 @@ SMAADemo::~SMAADemo() {
 	for (unsigned int i = 0; i < RenderTargets::Count; i++) {
 		assert(rendertargets[i]);
 		renderer.deleteRenderTarget(rendertargets[i]);
+	}
 	}
 
 	if (cubeVBO) {
