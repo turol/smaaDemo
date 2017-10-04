@@ -126,8 +126,23 @@ struct DescriptorSetLayout {
 	DescriptorSetLayout(const DescriptorSetLayout &)            = delete;
 	DescriptorSetLayout &operator=(const DescriptorSetLayout &) = delete;
 
-	DescriptorSetLayout(DescriptorSetLayout &&)                 = default;
-	DescriptorSetLayout &operator=(DescriptorSetLayout &&)      = default;
+	DescriptorSetLayout(DescriptorSetLayout &&other)
+	: layout(other.layout)
+	, descriptors(std::move(other.descriptors))
+	{
+		other.layout = vk::DescriptorSetLayout();
+		assert(descriptors.empty());
+	}
+
+	DescriptorSetLayout &operator=(DescriptorSetLayout &&other) {
+		layout       = other.layout;
+		descriptors  = std::move(other.descriptors);
+
+		other.layout = vk::DescriptorSetLayout();
+		assert(descriptors.empty());
+
+		return *this;
+	}
 
 	~DescriptorSetLayout() {}
 };
