@@ -154,7 +154,7 @@ RendererBase::~RendererBase()
 
 
 static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t /* messageCode */, const char * pLayerPrefix, const char * pMessage, void * /* pUserData*/) {
-	printf("layer %s %s object %lu type %s location %lu: %s\n", pLayerPrefix, vk::to_string(vk::DebugReportFlagBitsEXT(flags)).c_str(), static_cast<unsigned long>(object), vk::to_string(vk::DebugReportObjectTypeEXT(objectType)).c_str(), static_cast<unsigned long>(location), pMessage);
+	LOG("layer %s %s object %lu type %s location %lu: %s\n", pLayerPrefix, vk::to_string(vk::DebugReportFlagBitsEXT(flags)).c_str(), static_cast<unsigned long>(object), vk::to_string(vk::DebugReportObjectTypeEXT(objectType)).c_str(), static_cast<unsigned long>(location), pMessage);
 	// make errors fatal
 	abort();
 
@@ -186,15 +186,15 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	SDL_DisplayMode mode;
 	memset(&mode, 0, sizeof(mode));
 	int numDisplays = SDL_GetNumVideoDisplays();
-	printf("Number of displays detected: %i\n", numDisplays);
+	LOG("Number of displays detected: %i\n", numDisplays);
 
 	for (int i = 0; i < numDisplays; i++) {
 		int numModes = SDL_GetNumDisplayModes(i);
-		printf("Number of display modes for display %i : %i\n", i, numModes);
+		LOG("Number of display modes for display %i : %i\n", i, numModes);
 
 		for (int j = 0; j < numModes; j++) {
 			SDL_GetDisplayMode(i, j, &mode);
-			printf("Display mode %i : width %i, height %i, BPP %i, refresh %u Hz\n", j, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format), mode.refresh_rate);
+			LOG("Display mode %i : width %i, height %i, BPP %i, refresh %u Hz\n", j, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format), mode.refresh_rate);
 		}
 	}
 
@@ -210,14 +210,14 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	unsigned int numExtensions = 0;
 	if (!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, NULL)) {
-		printf("SDL_Vulkan_GetInstanceExtensions failed: %s\n", SDL_GetError());
+		LOG("SDL_Vulkan_GetInstanceExtensions failed: %s\n", SDL_GetError());
 		throw std::runtime_error("SDL_Vulkan_GetInstanceExtensions failed");
 	}
 
 	std::vector<const char *> extensions(numExtensions, nullptr);
 
 	if(!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, &extensions[0])) {
-		printf("SDL_Vulkan_GetInstanceExtensions failed: %s\n", SDL_GetError());
+		LOG("SDL_Vulkan_GetInstanceExtensions failed: %s\n", SDL_GetError());
 		throw std::runtime_error("SDL_Vulkan_GetInstanceExtensions failed");
 	}
 
@@ -256,23 +256,23 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
 	if (physicalDevices.empty()) {
-		printf("No physical Vulkan devices found\n");
+		LOG("No physical Vulkan devices found\n");
 		instance.destroy();
 		instance = nullptr;
 		SDL_DestroyWindow(window);
 		window = nullptr;
 		throw std::runtime_error("No physical Vulkan devices found");
 	}
-	printf("%u physical devices\n", static_cast<unsigned int>(physicalDevices.size()));
+	LOG("%u physical devices\n", static_cast<unsigned int>(physicalDevices.size()));
 	physicalDevice = physicalDevices[0];
 
 	deviceProperties = physicalDevice.getProperties();
-	printf("Device API version %u.%u.%u\n", VK_VERSION_MAJOR(deviceProperties.apiVersion), VK_VERSION_MINOR(deviceProperties.apiVersion), VK_VERSION_PATCH(deviceProperties.apiVersion));
-	printf("Driver version %u.%u.%u (%u) (0x%08x)\n", VK_VERSION_MAJOR(deviceProperties.driverVersion), VK_VERSION_MINOR(deviceProperties.driverVersion), VK_VERSION_PATCH(deviceProperties.driverVersion), deviceProperties.driverVersion, deviceProperties.driverVersion);
-	printf("VendorId 0x%x\n", deviceProperties.vendorID);
-	printf("DeviceId 0x%x\n", deviceProperties.deviceID);
-	printf("Type %s\n", vk::to_string(deviceProperties.deviceType).c_str());
-	printf("Name \"%s\"\n", deviceProperties.deviceName);
+	LOG("Device API version %u.%u.%u\n", VK_VERSION_MAJOR(deviceProperties.apiVersion), VK_VERSION_MINOR(deviceProperties.apiVersion), VK_VERSION_PATCH(deviceProperties.apiVersion));
+	LOG("Driver version %u.%u.%u (%u) (0x%08x)\n", VK_VERSION_MAJOR(deviceProperties.driverVersion), VK_VERSION_MINOR(deviceProperties.driverVersion), VK_VERSION_PATCH(deviceProperties.driverVersion), deviceProperties.driverVersion, deviceProperties.driverVersion);
+	LOG("VendorId 0x%x\n", deviceProperties.vendorID);
+	LOG("DeviceId 0x%x\n", deviceProperties.deviceID);
+	LOG("Type %s\n", vk::to_string(deviceProperties.deviceType).c_str());
+	LOG("Name \"%s\"\n", deviceProperties.deviceName);
 
 	deviceFeatures = physicalDevice.getFeatures();
 
@@ -280,51 +280,51 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 								 (SDL_vulkanInstance) instance,
 								 (SDL_vulkanSurface *)&surface))
 	{
-		printf("Failed to create Vulkan surface: %s\n", SDL_GetError());
+		LOG("Failed to create Vulkan surface: %s\n", SDL_GetError());
 		// TODO: free instance, window etc...
 		throw std::runtime_error("Failed to create Vulkan surface");
 	}
 
 	memoryProperties = physicalDevice.getMemoryProperties();
-	printf("%u memory types\n", memoryProperties.memoryTypeCount);
+	LOG("%u memory types\n", memoryProperties.memoryTypeCount);
 	for (unsigned int i = 0; i < memoryProperties.memoryTypeCount; i++ ) {
 		std::string tempString = vk::to_string(memoryProperties.memoryTypes[i].propertyFlags);
-		printf(" %u  heap %u  %s\n", i, memoryProperties.memoryTypes[i].heapIndex, tempString.c_str());
+		LOG(" %u  heap %u  %s\n", i, memoryProperties.memoryTypes[i].heapIndex, tempString.c_str());
 	}
-	printf("%u memory heaps\n", memoryProperties.memoryHeapCount);
+	LOG("%u memory heaps\n", memoryProperties.memoryHeapCount);
 	for (unsigned int i = 0; i < memoryProperties.memoryHeapCount; i++ ) {
 		std::string tempString = vk::to_string(memoryProperties.memoryHeaps[i].flags);
-		printf(" %u  size %lu  %s\n", i, static_cast<unsigned long>(memoryProperties.memoryHeaps[i].size), tempString.c_str());
+		LOG(" %u  size %lu  %s\n", i, static_cast<unsigned long>(memoryProperties.memoryHeaps[i].size), tempString.c_str());
 	}
 
 	std::vector<vk::QueueFamilyProperties> queueProps = physicalDevice.getQueueFamilyProperties();
-	printf("%u queue families\n", static_cast<unsigned int>(queueProps.size()));
+	LOG("%u queue families\n", static_cast<unsigned int>(queueProps.size()));
 
 	graphicsQueueIndex = static_cast<uint32_t>(queueProps.size());
 	for (uint32_t i = 0; i < queueProps.size(); i++) {
 		const auto &q = queueProps[i];
-		printf(" Queue family %u\n", i);
-		printf("  Flags: %s\n", vk::to_string(q.queueFlags).c_str());
-		printf("  Count: %u\n", q.queueCount);
-		printf("  Timestamp valid bits: %u\n", q.timestampValidBits);
-		printf("  Image transfer granularity: (%u, %u, %u)\n", q.minImageTransferGranularity.width, q.minImageTransferGranularity.height, q.minImageTransferGranularity.depth);
+		LOG(" Queue family %u\n", i);
+		LOG("  Flags: %s\n", vk::to_string(q.queueFlags).c_str());
+		LOG("  Count: %u\n", q.queueCount);
+		LOG("  Timestamp valid bits: %u\n", q.timestampValidBits);
+		LOG("  Image transfer granularity: (%u, %u, %u)\n", q.minImageTransferGranularity.width, q.minImageTransferGranularity.height, q.minImageTransferGranularity.depth);
 
 		if (q.queueFlags & vk::QueueFlagBits::eGraphics) {
 			if (physicalDevice.getSurfaceSupportKHR(i, surface)) {
-				printf("  Can present to our surface\n");
+				LOG("  Can present to our surface\n");
 				graphicsQueueIndex = i;
 			} else {
-				printf("  Can't present to our surface\n");
+				LOG("  Can't present to our surface\n");
 			}
 		}
 	}
 
 	if (graphicsQueueIndex == queueProps.size()) {
-		printf("Error: no graphics queue\n");
+		LOG("Error: no graphics queue\n");
 		throw std::runtime_error("Error: no graphics queue");
 	}
 
-	printf("Using queue %u for graphics\n", graphicsQueueIndex);
+	LOG("Using queue %u for graphics\n", graphicsQueueIndex);
 
 	std::array<float, 1> queuePriorities = { { 0.0f } };
 
@@ -366,14 +366,14 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	surfaceFormats      = physicalDevice.getSurfaceFormatsKHR(surface);
 	surfacePresentModes = physicalDevice.getSurfacePresentModesKHR(surface);
 
-	printf("%u surface formats\n", static_cast<uint32_t>(surfaceFormats.size()));
+	LOG("%u surface formats\n", static_cast<uint32_t>(surfaceFormats.size()));
 	for (const auto &format : surfaceFormats) {
-		printf(" %s\t%s\n", vk::to_string(format.format).c_str(), vk::to_string(format.colorSpace).c_str());
+		LOG(" %s\t%s\n", vk::to_string(format.format).c_str(), vk::to_string(format.colorSpace).c_str());
 	}
 
-	printf("%u present modes\n",   static_cast<uint32_t>(surfacePresentModes.size()));
+	LOG("%u present modes\n",   static_cast<uint32_t>(surfacePresentModes.size()));
 	for (const auto &presentMode : surfacePresentModes) {
-		printf(" %s\n", vk::to_string(presentMode).c_str());
+		LOG(" %s\n", vk::to_string(presentMode).c_str());
 	}
 
 	recreateSwapchain(desc.swapchain);
@@ -396,9 +396,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		VmaAllocationInfo  allocationInfo = {};
 
 		vmaAllocateMemoryForBuffer(allocator, ringBuffer, &req, &ringBufferMem, &allocationInfo);
-		printf("ringbuffer memory type: %u\n",    allocationInfo.memoryType);
-		printf("ringbuffer memory offset: %u\n",  static_cast<unsigned int>(allocationInfo.offset));
-		printf("ringbuffer memory size: %u\n",    static_cast<unsigned int>(allocationInfo.size));
+		LOG("ringbuffer memory type: %u\n",    allocationInfo.memoryType);
+		LOG("ringbuffer memory offset: %u\n",  static_cast<unsigned int>(allocationInfo.offset));
+		LOG("ringbuffer memory size: %u\n",    static_cast<unsigned int>(allocationInfo.size));
 		assert(ringBufferMem != nullptr);
 		assert(allocationInfo.offset == 0);
 		assert(allocationInfo.pMappedData != nullptr);
@@ -546,9 +546,9 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	VmaAllocationInfo  allocationInfo = {};
 
 	vmaAllocateMemoryForBuffer(allocator, buffer.buffer, &req, &buffer.memory, &allocationInfo);
-	printf("buffer memory type: %u\n",    allocationInfo.memoryType);
-	printf("buffer memory offset: %u\n",  static_cast<unsigned int>(allocationInfo.offset));
-	printf("buffer memory size: %u\n",    static_cast<unsigned int>(allocationInfo.size));
+	LOG("buffer memory type: %u\n",    allocationInfo.memoryType);
+	LOG("buffer memory offset: %u\n",  static_cast<unsigned int>(allocationInfo.offset));
+	LOG("buffer memory size: %u\n",    static_cast<unsigned int>(allocationInfo.size));
 	assert(allocationInfo.size > 0);
 	assert(allocationInfo.pMappedData == nullptr);
 	device.bindBufferMemory(buffer.buffer, allocationInfo.deviceMemory, allocationInfo.offset);
@@ -676,7 +676,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	fb.height       = height;
 	fb.framebuffer  = device.createFramebuffer(fbInfo);
 
-	printf("framebuffer %p  %s\n", VkFramebuffer(fb.framebuffer), desc.name_);
+	LOG("Framebuffer %p  %s\n", VkFramebuffer(fb.framebuffer), desc.name_);
 
 	return result.second;
 }
@@ -791,7 +791,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	RenderPass &r = result.first;
 	r.renderPass  = device.createRenderPass(info);;
 
-	printf("Renderpass %p  %s\n", VkRenderPass(r.renderPass), desc.name_);
+	LOG("Renderpass %p  %s\n", VkRenderPass(r.renderPass), desc.name_);
 
 	return result.second;
 }
@@ -951,7 +951,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	p.layout   = layout;
 	p.scissor  = desc.scissorTest_;
 
-	printf("Pipeline %p  %s\n", VkPipeline(p.pipeline), desc.name_);
+	LOG("Pipeline %p  %s\n", VkPipeline(p.pipeline), desc.name_);
 
 	return id.second;
 }
@@ -990,7 +990,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 
 	// TODO: better check
 	if (debugCallback) {
-		printf("Created rendertarget image %p: %s\n", VkImage(rt.image), desc.name_);
+		LOG("Created rendertarget image %p: %s\n", VkImage(rt.image), desc.name_);
 	}
 
 	auto texResult   = textures.add();
@@ -1152,9 +1152,9 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	VmaAllocationInfo  allocationInfo = {};
 
 	vmaAllocateMemoryForImage(allocator, tex.image, &req, &tex.memory, &allocationInfo);
-	printf("texture image memory type: %u\n",   allocationInfo.memoryType);
-	printf("texture image memory offset: %u\n", static_cast<unsigned int>(allocationInfo.offset));
-	printf("texture image memory size: %u\n",   static_cast<unsigned int>(allocationInfo.size));
+	LOG("texture image memory type: %u\n",   allocationInfo.memoryType);
+	LOG("texture image memory offset: %u\n", static_cast<unsigned int>(allocationInfo.offset));
+	LOG("texture image memory size: %u\n",   static_cast<unsigned int>(allocationInfo.size));
 	device.bindImageMemory(tex.image, allocationInfo.deviceMemory, allocationInfo.offset);
 
 	vk::ImageViewCreateInfo viewInfo;
@@ -1352,20 +1352,20 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 		if (desc.fullscreen) {
 			// TODO: check return val?
 			SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-			printf("Fullscreen\n");
+			LOG("Fullscreen\n");
 		} else {
 			SDL_SetWindowFullscreen(window, 0);
-			printf("Windowed\n");
+			LOG("Windowed\n");
 		}
 	}
 
 	surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
-	printf("image count min-max %u - %u\n", surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
-	printf("image extent min-max %ux%u - %ux%u\n", surfaceCapabilities.minImageExtent.width, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.width, surfaceCapabilities.maxImageExtent.height);
-	printf("current image extent %ux%u\n", surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height);
-	printf("supported surface transforms: %s\n", vk::to_string(surfaceCapabilities.supportedTransforms).c_str());
-	printf("supported surface alpha composite flags: %s\n", vk::to_string(surfaceCapabilities.supportedCompositeAlpha).c_str());
-	printf("supported surface usage flags: %s\n", vk::to_string(surfaceCapabilities.supportedUsageFlags).c_str());
+	LOG("image count min-max %u - %u\n", surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
+	LOG("image extent min-max %ux%u - %ux%u\n", surfaceCapabilities.minImageExtent.width, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.width, surfaceCapabilities.maxImageExtent.height);
+	LOG("current image extent %ux%u\n", surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height);
+	LOG("supported surface transforms: %s\n", vk::to_string(surfaceCapabilities.supportedTransforms).c_str());
+	LOG("supported surface alpha composite flags: %s\n", vk::to_string(surfaceCapabilities.supportedCompositeAlpha).c_str());
+	LOG("supported surface usage flags: %s\n", vk::to_string(surfaceCapabilities.supportedUsageFlags).c_str());
 
 	swapchainDesc = desc;
 
@@ -1383,7 +1383,7 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 		numImages = std::min(numImages, surfaceCapabilities.maxImageCount);
 	}
 
-	printf("Want %u images, using %u images\n", desc.numFrames, numImages);
+	LOG("Want %u images, using %u images\n", desc.numFrames, numImages);
 
 	if (frames.size() != numImages) {
 		if (numImages < frames.size()) {
@@ -1451,15 +1451,15 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	imageExtent.height = swapchainDesc.height;
 
 	if (!(surfaceCapabilities.supportedTransforms & vk::SurfaceTransformFlagBitsKHR::eIdentity)) {
-		printf("warning: identity transform not supported\n");
+		LOG("warning: identity transform not supported\n");
 	}
 
 	if (surfaceCapabilities.currentTransform != vk::SurfaceTransformFlagBitsKHR::eIdentity) {
-		printf("warning: current transform is not identity\n");
+		LOG("warning: current transform is not identity\n");
 	}
 
 	if (!(surfaceCapabilities.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eOpaque)) {
-		printf("warning: opaque alpha not supported\n");
+		LOG("warning: opaque alpha not supported\n");
 	}
 
 	// FIFO is guaranteed to be supported
@@ -1484,7 +1484,7 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 		}
 	}
 
-	printf("using present mode %s\n", vk::to_string(swapchainPresentMode).c_str());
+	LOG("Using present mode %s\n", vk::to_string(swapchainPresentMode).c_str());
 
 	vk::SwapchainCreateInfoKHR swapchainCreateInfo;
 	swapchainCreateInfo.flags                 = vk::SwapchainCreateFlagBitsKHR();
