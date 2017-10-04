@@ -61,7 +61,7 @@ static GLuint createShader(GLenum type, const std::string &name, const std::vect
 			// TODO: better logging
 			glGetShaderInfoLog(shader, infoLogLen, NULL, &infoLog[0]);
 			if (infoLog[0] != '\0') {
-				printf("shader \"%s\" info log:\n%s\ninfo log end\n", name.c_str(), &infoLog[0]); fflush(stdout);
+				LOG("shader \"%s\" info log:\n%s\ninfo log end\n", name.c_str(), &infoLog[0]); fflush(stdout);
 			}
 		}
 	}
@@ -224,19 +224,19 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 	switch (severity)
 	{
 	case GL_DEBUG_SEVERITY_HIGH_ARB:
-		printf("GL error from %s type %s: (%d) %s\n", errorSource(source), errorType(type), id, message);
+		LOG("GL error from %s type %s: (%d) %s\n", errorSource(source), errorType(type), id, message);
 		break;
 
 	case GL_DEBUG_SEVERITY_MEDIUM_ARB:
-		printf("GL warning from %s type %s: (%d) %s\n", errorSource(source), errorType(type), id, message);
+		LOG("GL warning from %s type %s: (%d) %s\n", errorSource(source), errorType(type), id, message);
 		break;
 
 	case GL_DEBUG_SEVERITY_LOW_ARB:
-		printf("GL debug from %s type %s: (%d) %s\n", errorSource(source), errorType(type), id, message);
+		LOG("GL debug from %s type %s: (%d) %s\n", errorSource(source), errorType(type), id, message);
 		break;
 
 	default:
-		printf("GL error of unknown severity %x from %s type %s: (%d) %s\n", severity, errorSource(source), errorType(type), id, message);
+		LOG("GL error of unknown severity %x from %s type %s: (%d) %s\n", severity, errorSource(source), errorType(type), id, message);
 		break;
 	}
 }
@@ -299,15 +299,15 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	SDL_DisplayMode mode;
 	memset(&mode, 0, sizeof(mode));
 	int numDisplays = SDL_GetNumVideoDisplays();
-	printf("Number of displays detected: %i\n", numDisplays);
+	LOG("Number of displays detected: %i\n", numDisplays);
 
 	for (int i = 0; i < numDisplays; i++) {
 		int numModes = SDL_GetNumDisplayModes(i);
-		printf("Number of display modes for display %i : %i\n", i, numModes);
+		LOG("Number of display modes for display %i : %i\n", i, numModes);
 
 		for (int j = 0; j < numModes; j++) {
 			SDL_GetDisplayMode(i, j, &mode);
-			printf("Display mode %i : width %i, height %i, BPP %i, refresh %u Hz\n", j, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format), mode.refresh_rate);
+			LOG("Display mode %i : width %i, height %i, BPP %i, refresh %u Hz\n", j, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format), mode.refresh_rate);
 		}
 	}
 
@@ -328,7 +328,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			// TODO: check return val
 			SDL_GL_SetSwapInterval(1);
 		}
-		printf("VSync is on\n");
+		LOG("VSync is on\n");
 	}
 
 	// TODO: call SDL_GL_GetDrawableSize, log GL attributes etc.
@@ -340,23 +340,23 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	// at least direct state access, texture storage
 
 	if (!GLEW_ARB_direct_state_access) {
-		printf("ARB_direct_state_access not found\n");
+		LOG("ARB_direct_state_access not found\n");
 		throw std::runtime_error("ARB_direct_state_access not found");
 	}
 
 	if (!GLEW_ARB_buffer_storage) {
-		printf("ARB_buffer_storage not found\n");
+		LOG("ARB_buffer_storage not found\n");
 		throw std::runtime_error("ARB_buffer_storage not found");
 	}
 
 	if (!GLEW_ARB_clip_control) {
-		printf("ARB_clip_control not found\n");
+		LOG("ARB_clip_control not found\n");
 		throw std::runtime_error("ARB_clip_control not found");
 	}
 
 	if (desc.debug) {
 		if (GLEW_KHR_debug) {
-			printf("KHR_debug found\n");
+			LOG("KHR_debug found\n");
 
 			glDebugMessageCallback(glDebugCallback, NULL);
 			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
@@ -365,23 +365,23 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 			debug = true;
 		} else {
-			printf("KHR_debug not found\n");
+			LOG("KHR_debug not found\n");
 		}
 	}
 
-	printf("GL vendor: \"%s\"\n", glGetString(GL_VENDOR));
-	printf("GL renderer: \"%s\"\n", glGetString(GL_RENDERER));
-	printf("GL version: \"%s\"\n", glGetString(GL_VERSION));
-	printf("GLSL version: \"%s\"\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+	LOG("GL vendor: \"%s\"\n", glGetString(GL_VENDOR));
+	LOG("GL renderer: \"%s\"\n", glGetString(GL_RENDERER));
+	LOG("GL version: \"%s\"\n", glGetString(GL_VERSION));
+	LOG("GLSL version: \"%s\"\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 	GLint temp = -1;
 	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &temp);
 	uboAlign = temp;
-	printf("UBO align: %d\n", uboAlign);
+	LOG("UBO align: %d\n", uboAlign);
 
 	glGetIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, &temp);
 	ssboAlign = temp;
-	printf("SSBO align: %d\n", ssboAlign);
+	LOG("SSBO align: %d\n", ssboAlign);
 
 	// TODO: use GL_UPPER_LEFT to match Vulkan
 	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
@@ -757,12 +757,12 @@ static void checkShaderResources(const std::string &name, const std::vector<Shad
 		const auto &set = layouts[r.set];
 
 		if (r.binding >= set.size()) {
-			printf("ERROR: set %u binding %u type %s in shader \"%s\" greater than set size (%u)\n", r.set, r.binding, descriptorTypeName(r.type), name.c_str(), static_cast<unsigned int>(set.size()));
+			LOG("ERROR: set %u binding %u type %s in shader \"%s\" greater than set size (%u)\n", r.set, r.binding, descriptorTypeName(r.type), name.c_str(), static_cast<unsigned int>(set.size()));
 			continue;
 		}
 
 		if (set[r.binding].type != r.type) {
-			printf("ERROR: set %u binding %u type %s in shader \"%s\" doesn't match ds layout (%s)\n", r.set, r.binding, descriptorTypeName(r.type), name.c_str(), descriptorTypeName(set[r.binding].type));
+			LOG("ERROR: set %u binding %u type %s in shader \"%s\" doesn't match ds layout (%s)\n", r.set, r.binding, descriptorTypeName(r.type), name.c_str(), descriptorTypeName(set[r.binding].type));
 		}
 	}
 }
@@ -804,7 +804,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		std::vector<char> infoLog(status + 1, '\0');
 		// TODO: better logging
 		glGetProgramInfoLog(program, status, NULL, &infoLog[0]);
-		printf("info log: %s\n", &infoLog[0]); fflush(stdout);
+		LOG("info log: %s\n", &infoLog[0]); fflush(stdout);
 		throw std::runtime_error("shader link failed");
 	}
 	glUseProgram(program);
@@ -1059,10 +1059,10 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 		if (desc.fullscreen) {
 			// TODO: check return val?
 			SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-			printf("Fullscreen\n");
+			LOG("Fullscreen\n");
 		} else {
 			SDL_SetWindowFullscreen(window, 0);
-			printf("Windowed\n");
+			LOG("Windowed\n");
 		}
 	}
 
@@ -1074,11 +1074,11 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 				// TODO: check return val
 				SDL_GL_SetSwapInterval(1);
 			}
-			printf("VSync is on\n");
+			LOG("VSync is on\n");
 		} else {
 			// TODO: check return val
 			SDL_GL_SetSwapInterval(0);
-			printf("VSync is off\n");
+			LOG("VSync is off\n");
 		}
 	}
 	swapchainDesc = desc;
