@@ -111,7 +111,7 @@ std::vector<uint32_t> RendererImpl::compileSpirv(const std::string &name, const 
 			std::vector<uint32_t> spirv;
 			spirv.resize(temp.size() / 4);
 			memcpy(&spirv[0], &temp[0], temp.size());
-			printf("Loaded shader \"%s\" from cache\n", spvName.c_str());
+			LOG("Loaded shader \"%s\" from cache\n", spvName.c_str());
 
 			return spirv;
 		}
@@ -133,7 +133,7 @@ std::vector<uint32_t> RendererImpl::compileSpirv(const std::string &name, const 
 	shaderc::Compiler compiler;
 	auto result = compiler.CompileGlslToSpv(&src[0], src.size(), kind, name.c_str(), options);
 	if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-		printf("Shader %s compile failed: %s\n", name.c_str(), result.GetErrorMessage().c_str());
+		LOG("Shader %s compile failed: %s\n", name.c_str(), result.GetErrorMessage().c_str());
 		throw std::runtime_error("Shader compile failed");
 	}
 
