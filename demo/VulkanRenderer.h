@@ -63,8 +63,40 @@ struct Buffer {
 	Buffer(const Buffer &)            = delete;
 	Buffer &operator=(const Buffer &) = delete;
 
-	Buffer(Buffer &&)                 = default;
-	Buffer &operator=(Buffer &&)      = default;
+	Buffer(Buffer &&other)
+	: buffer(other.buffer)
+	, ringBufferAlloc(other.ringBufferAlloc)
+	, memory(other.memory)
+	, size(other.size)
+	, offset(other.offset)
+	, lastUsedFrame(other.lastUsedFrame)
+	{
+
+		other.buffer          = vk::Buffer();
+		other.ringBufferAlloc = false;
+		other.memory          = 0;
+		other.size            = 0;
+		other.offset          = 0;
+		other.lastUsedFrame   = 0;
+	}
+
+	Buffer &operator=(Buffer &&other) {
+		buffer                = other.buffer;
+		ringBufferAlloc       = other.ringBufferAlloc;
+		memory                = other.memory;
+		size                  = other.size;
+		offset                = other.offset;
+		lastUsedFrame         = other.lastUsedFrame;
+
+		other.buffer          = vk::Buffer();
+		other.ringBufferAlloc = false;
+		other.memory          = 0;
+		other.size            = 0;
+		other.offset          = 0;
+		other.lastUsedFrame   = 0;
+
+		return *this;
+	}
 
 	~Buffer() {}
 
