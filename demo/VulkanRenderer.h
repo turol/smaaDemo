@@ -194,8 +194,17 @@ struct FragmentShader {
 	FragmentShader(const FragmentShader &)            = delete;
 	FragmentShader &operator=(const FragmentShader &) = delete;
 
-	FragmentShader(FragmentShader &&)                 = default;
-	FragmentShader &operator=(FragmentShader &&)      = default;
+	FragmentShader(FragmentShader &&other)
+	: shaderModule(other.shaderModule)
+	{
+		other.shaderModule = vk::ShaderModule();
+	}
+
+	FragmentShader &operator=(FragmentShader &&other) {
+		assert(!shaderModule);
+		shaderModule       = other.shaderModule;
+		other.shaderModule = vk::ShaderModule();
+	}
 
 	~FragmentShader() {}
 };
