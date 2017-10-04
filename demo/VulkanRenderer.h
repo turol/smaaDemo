@@ -172,7 +172,9 @@ struct VertexShader {
 		return *this;
 	}
 
-	~VertexShader() {}
+	~VertexShader() {
+		assert(!shaderModule);
+	}
 };
 
 
