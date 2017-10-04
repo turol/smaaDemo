@@ -144,7 +144,9 @@ struct DescriptorSetLayout {
 		return *this;
 	}
 
-	~DescriptorSetLayout() {}
+	~DescriptorSetLayout() {
+		assert(!layout);
+	}
 };
 
 
