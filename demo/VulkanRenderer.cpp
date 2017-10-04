@@ -488,6 +488,7 @@ RendererImpl::~RendererImpl() {
 
 	dsLayouts.clearWith([this](DescriptorSetLayout &l) {
 		this->device.destroyDescriptorSetLayout(l.layout);
+		l.layout = vk::DescriptorSetLayout();
 	} );
 
 	renderTargets.clearWith([this](RenderTarget &rt) {
