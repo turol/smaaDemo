@@ -212,7 +212,7 @@ struct FragmentShader {
 
 struct Framebuffer {
 	vk::Framebuffer  framebuffer;
-	FramebufferDesc   desc;
+	FramebufferDesc  desc;
 	unsigned int     width, height;
 	// TODO: store info about attachments to allow tracking layout
 
