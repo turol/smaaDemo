@@ -43,12 +43,12 @@ THE SOFTWARE.
 
 
 struct Buffer {
-	vk::Buffer buffer;
-	bool                 ringBufferAlloc;
-	VmaAllocation        memory;
-	uint32_t             size;
-	uint32_t             offset;
-	uint32_t             lastUsedFrame;
+	vk::Buffer     buffer;
+	bool           ringBufferAlloc;
+	VmaAllocation  memory;
+	uint32_t       size;
+	uint32_t       offset;
+	uint32_t       lastUsedFrame;
 	// TODO: access type bits (for debugging)
 
 
