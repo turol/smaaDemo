@@ -227,8 +227,31 @@ struct Framebuffer {
 	Framebuffer(const Framebuffer &)            = delete;
 	Framebuffer &operator=(const Framebuffer &) = delete;
 
-	Framebuffer(Framebuffer &&)                 = default;
-	Framebuffer &operator=(Framebuffer &&)      = default;
+	Framebuffer(Framebuffer &&other)
+	: framebuffer(other.framebuffer)
+	, desc(other.desc)
+	, width(other.width)
+	, height(other.height)
+	{
+		other.framebuffer = vk::Framebuffer();
+		other.width       = 0;
+		other.height      = 0;
+	}
+
+	Framebuffer &operator=(Framebuffer &&other) {
+		assert(!framebuffer);
+
+		framebuffer       = other.framebuffer;
+		desc              = other.desc;
+		width             = other.width;
+		height            = other.height;
+
+		other.framebuffer = vk::Framebuffer();
+		other.width       = 0;
+		other.height      = 0;
+
+		return *this;
+	}
 
 	~Framebuffer() {}
 
