@@ -81,6 +81,9 @@ struct Buffer {
 	}
 
 	Buffer &operator=(Buffer &&other) {
+		assert(!buffer);
+		assert(!memory);
+
 		buffer                = other.buffer;
 		ringBufferAlloc       = other.ringBufferAlloc;
 		memory                = other.memory;
@@ -135,6 +138,8 @@ struct DescriptorSetLayout {
 	}
 
 	DescriptorSetLayout &operator=(DescriptorSetLayout &&other) {
+		assert(!layout);
+
 		layout       = other.layout;
 		descriptors  = std::move(other.descriptors);
 
@@ -166,6 +171,8 @@ struct VertexShader {
 	}
 
 	VertexShader &operator=(VertexShader &&other) {
+		assert(!shaderModule);
+
 		shaderModule       = other.shaderModule;
 		other.shaderModule = vk::ShaderModule();
 
