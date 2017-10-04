@@ -98,7 +98,13 @@ struct Buffer {
 		return *this;
 	}
 
-	~Buffer() {}
+	~Buffer() {
+		assert(!buffer);
+		assert(!ringBufferAlloc);
+		assert(!memory);
+		assert(size   == 0);
+		assert(offset == 0);
+	}
 
 	bool operator==(const Buffer &other) const {
 		return this->buffer == other.buffer;
