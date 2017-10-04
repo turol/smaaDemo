@@ -253,7 +253,9 @@ struct Framebuffer {
 		return *this;
 	}
 
-	~Framebuffer() {}
+	~Framebuffer() {
+		assert(!framebuffer);
+	}
 
 
 	bool operator==(const Framebuffer &other) const {
