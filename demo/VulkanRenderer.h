@@ -171,6 +171,14 @@ struct RenderPass {
 	RenderPass &operator=(RenderPass &&)      = default;
 
 	~RenderPass() {}
+
+	bool operator==(const RenderPass &other) const {
+		return this->renderPass == other.renderPass;
+	}
+
+	size_t getHash() const {
+		return std::hash<uintptr_t>()(reinterpret_cast<uintptr_t>(VkRenderPass(renderPass)));
+	}
 };
 
 
@@ -286,7 +294,7 @@ struct Texture {
 };
 
 
-typedef boost::variant<Buffer, Framebuffer, RenderTarget, Sampler, Texture> Resource;
+typedef boost::variant<Buffer, Framebuffer, RenderPass, RenderTarget, Sampler, Texture> Resource;
 
 
 struct ResourceHasher final : public boost::static_visitor<size_t> {
@@ -296,6 +304,10 @@ struct ResourceHasher final : public boost::static_visitor<size_t> {
 
 	size_t operator()(const Framebuffer &fb) const {
 		return fb.getHash();
+	}
+
+	size_t operator()(const RenderPass &rp) const {
+		return rp.getHash();
 	}
 
 	size_t operator()(const RenderTarget &rt) const {
@@ -471,6 +483,7 @@ struct RendererBase {
 
 	void deleteBufferInternal(Buffer &b);
 	void deleteFramebufferInternal(Framebuffer &fb);
+	void deleteRenderPassInternal(RenderPass &rp);
 	void deleteRenderTargetInternal(RenderTarget &rt);
 	void deleteResourceInternal(Resource &r);
 	void deleteSamplerInternal(Sampler &s);
@@ -505,6 +518,10 @@ struct RendererBase {
 
 		void operator()(Framebuffer &fb) const {
 			r->deleteFramebufferInternal(fb);
+		}
+
+		void operator()(RenderPass &rp) const {
+			r->deleteRenderPassInternal(rp);
 		}
 
 		void operator()(RenderTarget &rt) const {

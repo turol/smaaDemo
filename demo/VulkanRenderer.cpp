@@ -473,8 +473,7 @@ RendererImpl::~RendererImpl() {
 	} );
 
 	renderPasses.clearWith([this](RenderPass &r) {
-		this->device.destroyRenderPass(r.renderPass);
-		r.renderPass = vk::RenderPass();
+		deleteRenderPassInternal(r);
 	} );
 
 	vertexShaders.clearWith([this](VertexShader &v) {
@@ -1316,8 +1315,11 @@ void RendererImpl::deleteFramebuffer(FramebufferHandle handle) {
 }
 
 
-void RendererImpl::deleteRenderPass(RenderPassHandle /* pass */) {
-	STUBBED("");
+void RendererImpl::deleteRenderPass(RenderPassHandle handle) {
+	renderPasses.removeWith(handle, [this](RenderPass &rp) {
+		// TODO: if lastUsedFrame has already been synced we could delete immediately
+		this->deleteResources.emplace(std::move(rp));
+	} );
 }
 
 
@@ -1720,6 +1722,12 @@ void RendererBase::deleteRenderTargetInternal(RenderTarget &rt) {
 
 	this->device.destroyImageView(rt.imageView);
 	this->device.destroyImage(rt.image);
+}
+
+
+void RendererBase::deleteRenderPassInternal(RenderPass &rp) {
+	this->device.destroyRenderPass(rp.renderPass);
+	rp.renderPass = vk::RenderPass();
 }
 
 
