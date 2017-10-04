@@ -1541,6 +1541,8 @@ int main(int argc, char *argv[]) {
 
 		demo->parseCommandLine(argc, argv);
 
+		logInit();
+
 		demo->initRender();
 		demo->createCubes();
 		printHelp();
@@ -1559,15 +1561,18 @@ int main(int argc, char *argv[]) {
 	} catch (std::exception &e) {
 		LOG("caught std::exception \"%s\"\n", e.what());
 #ifndef _MSC_VER
+		logShutdown();
 		// so native dumps core
 		throw;
 #endif
 	} catch (...) {
 		LOG("unknown exception\n");
 #ifndef _MSC_VER
+		logShutdown();
 		// so native dumps core
 		throw;
 #endif
 	}
+	logShutdown();
 	return 0;
 }

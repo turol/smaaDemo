@@ -22,10 +22,35 @@ THE SOFTWARE.
 
 
 #include <cstring>
+#include <cassert>
 
 #include <sys/stat.h>
 
 #include "Utils.h"
+
+#include <SDL.h>
+
+
+static FILE *logFile;
+
+void logInit() {
+	assert(!logFile);
+
+	char *logFilePath = SDL_GetPrefPath(nullptr, "SMAADemo");
+	std::string logFileName(logFilePath);
+	SDL_free(logFilePath);
+	logFileName += "logfile.txt";
+	logFile = fopen(logFileName.c_str(), "wb");
+}
+
+
+void logShutdown() {
+	assert(logFile);
+
+	fflush(logFile);
+	fclose(logFile);
+	logFile = nullptr;
+}
 
 
 std::vector<char> readTextFile(std::string filename) {

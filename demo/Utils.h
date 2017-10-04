@@ -84,6 +84,9 @@ struct FILEDeleter {
 
 #define LOG(msg, ...) printf(msg, ##__VA_ARGS__)
 
+void logInit();
+void logShutdown();
+
 std::vector<char> readTextFile(std::string filename);
 std::vector<char> readFile(std::string filename);
 void writeFile(const std::string &filename, const void *contents, size_t size);
