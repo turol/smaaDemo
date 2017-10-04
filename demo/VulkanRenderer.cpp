@@ -1678,6 +1678,14 @@ void RendererBase::waitForFrame(unsigned int frameIdx) {
 		assert(buffer.buffer == ringBuffer);
 		assert(buffer.ringBufferAlloc);
 		assert(buffer.size   >  0);
+
+		buffer.buffer          = vk::Buffer();
+		buffer.ringBufferAlloc = false;
+		buffer.memory          = 0;
+		buffer.size            = 0;
+		buffer.offset          = 0;
+		buffer.lastUsedFrame   = 0;
+
 		buffers.remove(handle);
 	}
 	frame.ephemeralBuffers.clear();
