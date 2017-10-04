@@ -204,6 +204,8 @@ struct FragmentShader {
 		assert(!shaderModule);
 		shaderModule       = other.shaderModule;
 		other.shaderModule = vk::ShaderModule();
+
+		return *this;
 	}
 
 	~FragmentShader() {
