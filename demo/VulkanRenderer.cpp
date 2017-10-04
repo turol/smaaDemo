@@ -1700,7 +1700,13 @@ void RendererBase::deleteBufferInternal(Buffer &b) {
 	this->device.destroyBuffer(b.buffer);
 	assert(b.memory != nullptr);
 	vmaFreeMemory(this->allocator, b.memory);
-	b.memory = nullptr;
+
+	b.buffer          = vk::Buffer();
+	b.ringBufferAlloc = false;
+	b.memory          = 0;
+	b.size            = 0;
+	b.offset          = 0;
+	b.lastUsedFrame   = 0;
 }
 
 
