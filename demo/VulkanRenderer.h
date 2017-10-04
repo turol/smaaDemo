@@ -159,8 +159,18 @@ struct VertexShader {
 	VertexShader(const VertexShader &)            = delete;
 	VertexShader &operator=(const VertexShader &) = delete;
 
-	VertexShader(VertexShader &&)                 = default;
-	VertexShader &operator=(VertexShader &&)      = default;
+	VertexShader(VertexShader &&other)
+	: shaderModule(other.shaderModule)
+	{
+		other.shaderModule = vk::ShaderModule();
+	}
+
+	VertexShader &operator=(VertexShader &&other) {
+		shaderModule       = other.shaderModule;
+		other.shaderModule = vk::ShaderModule();
+
+		return *this;
+	}
 
 	~VertexShader() {}
 };
