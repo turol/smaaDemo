@@ -36,7 +36,13 @@ THE SOFTWARE.
 #define fileno _fileno
 // TODO: we should not define macros starting with two underscores since those are reserved for the compiler
 #define __builtin_unreachable() assert(false)
-#endif
+#define PRINTF(x, y)
+
+#else   // _MSC_VER
+
+#define PRINTF(x, y) __attribute__((format(printf, x, y)))
+
+#endif  // _MSC_VER
 
 
 // should be ifdeffed out on compilers which already have it (eg. VS2013)
@@ -85,7 +91,7 @@ struct FILEDeleter {
 #define LOG(msg, ...) logWrite(msg, ##__VA_ARGS__)
 
 void logInit();
-void logWrite(const char* message, ...);
+void logWrite(const char* message, ...) PRINTF(1, 2);
 void logShutdown();
 
 std::vector<char> readTextFile(std::string filename);
