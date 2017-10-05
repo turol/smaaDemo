@@ -291,7 +291,7 @@ struct RenderPass {
 	RenderPass &operator=(RenderPass &&other) {
 		assert(!renderPass);
 
-		renderPass = other.renderPass;
+		renderPass       = other.renderPass;
 
 		other.renderPass = vk::RenderPass();
 
