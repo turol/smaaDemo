@@ -359,8 +359,30 @@ struct Pipeline {
 	Pipeline(const Pipeline &)            = delete;
 	Pipeline &operator=(const Pipeline &) = delete;
 
-	Pipeline(Pipeline &&)                 = default;
-	Pipeline &operator=(Pipeline &&)      = default;
+	Pipeline(Pipeline &&other)
+	: pipeline(other.pipeline)
+	, layout(other.layout)
+	, scissor(other.scissor)
+	{
+		other.pipeline = vk::Pipeline();
+		other.layout   = vk::PipelineLayout();
+		other.scissor  = false;
+	}
+
+	Pipeline &operator=(Pipeline &&other) {
+		assert(!pipeline);
+		assert(!layout);
+
+		pipeline       = other.pipeline;
+		layout         = other.layout;
+		scissor        = other.scissor;
+
+		other.pipeline = vk::Pipeline();
+		other.layout   = vk::PipelineLayout();
+		other.scissor  = false;
+
+		return *this;
+	}
 
 	~Pipeline() {}
 };
