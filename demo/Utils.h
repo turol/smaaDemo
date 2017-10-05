@@ -82,9 +82,10 @@ struct FILEDeleter {
 	void operator()(FILE *f) { fclose(f); }
 };
 
-#define LOG(msg, ...) printf(msg, ##__VA_ARGS__)
+#define LOG(msg, ...) logWrite(msg, ##__VA_ARGS__)
 
 void logInit();
+void logWrite(const char* message, ...);
 void logShutdown();
 
 std::vector<char> readTextFile(std::string filename);
