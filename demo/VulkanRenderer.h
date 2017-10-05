@@ -282,8 +282,21 @@ struct RenderPass {
 	RenderPass(const RenderPass &)            = delete;
 	RenderPass &operator=(const RenderPass &) = delete;
 
-	RenderPass(RenderPass &&)                 = default;
-	RenderPass &operator=(RenderPass &&)      = default;
+	RenderPass(RenderPass &&other)
+	: renderPass(other.renderPass)
+	{
+		other.renderPass = vk::RenderPass();
+	}
+
+	RenderPass &operator=(RenderPass &&other) {
+		assert(!renderPass);
+
+		renderPass = other.renderPass;
+
+		other.renderPass = vk::RenderPass();
+
+		return *this;
+	}
 
 	~RenderPass() {}
 
