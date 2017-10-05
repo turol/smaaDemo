@@ -25,6 +25,9 @@ THE SOFTWARE.
 #define NULLRENDERER_H
 
 
+namespace renderer {
+
+
 struct Buffer {
 	bool          ringBufferAlloc;
 	unsigned int  beginOffs;
@@ -162,6 +165,9 @@ struct RendererBase {
 
 	~RendererBase();
 };
+
+
+} // namespace renderer
 
 
 #endif  // NULLRENDERER_H

@@ -42,6 +42,9 @@ THE SOFTWARE.
 #include "vk_mem_alloc.h"
 
 
+namespace renderer {
+
+
 struct Buffer {
 	vk::Buffer     buffer;
 	bool           ringBufferAlloc;
@@ -436,15 +439,21 @@ struct ResourceHasher final : public boost::static_visitor<size_t> {
 };
 
 
+}	// namespace renderer
+
+
 namespace std {
 
-	template <> struct hash<Resource> {
-		size_t operator()(const Resource &r) const {
-			return boost::apply_visitor(ResourceHasher(), r);
+	template <> struct hash<renderer::Resource> {
+		size_t operator()(const renderer::Resource &r) const {
+			return boost::apply_visitor(renderer::ResourceHasher(), r);
 		}
 	};
 
 }  // namespace std
+
+
+namespace renderer {
 
 
 struct Frame {
@@ -651,6 +660,9 @@ struct RendererBase {
 	};
 
 };
+
+
+}	// namespace renderer
 
 
 #endif  // VULKANRENDERER_H

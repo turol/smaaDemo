@@ -71,6 +71,9 @@ VKAPI_ATTR void VKAPI_CALL vkDestroyDebugReportCallbackEXT(
 }
 
 
+namespace renderer {
+
+
 static const std::array<vk::DescriptorType, uint8_t(DescriptorType::Count) - 1> descriptorTypes =
 { {
 	  vk::DescriptorType::eUniformBuffer
@@ -2058,6 +2061,9 @@ void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int firs
 
 	currentCommandBuffer.drawIndexed(vertexCount, 1, firstIndex, 0, 0);
 }
+
+
+} // namespace renderer
 
 
 #endif  // RENDERER_VULKAN

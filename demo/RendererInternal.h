@@ -31,6 +31,9 @@ THE SOFTWARE.
 #include <shaderc/shaderc.h>
 
 
+namespace renderer {
+
+
 template <class T>
 class ResourceContainer {
 	std::unordered_map<unsigned int, T> resources;
@@ -109,6 +112,9 @@ public:
 };
 
 
+}		// namespace renderer
+
+
 #ifdef RENDERER_OPENGL
 
 #include "OpenGLRenderer.h"
@@ -126,6 +132,9 @@ public:
 #error "No renderer specified"
 
 #endif  // RENDERER
+
+
+namespace renderer {
 
 
 struct RendererImpl : public RendererBase {
@@ -217,5 +226,7 @@ struct RendererImpl : public RendererBase {
 	void drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex);
 };
 
+
+}  // namespace renderer
 
 #endif  // RENDERERINTERNAL_H

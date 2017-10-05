@@ -28,6 +28,9 @@ THE SOFTWARE.
 #include <GL/glew.h>
 
 
+namespace renderer {
+
+
 struct ShaderResource {
 	unsigned int    set;
 	unsigned int    binding;
@@ -429,6 +432,9 @@ struct RendererBase {
 
 	~RendererBase();
 };
+
+
+} // namespace renderer
 
 
 #endif  // OPENGLRENDERER_H

@@ -36,6 +36,9 @@ THE SOFTWARE.
 #include "RendererInternal.h"
 
 
+namespace renderer {
+
+
 void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /* length */, const GLchar *message, const void * /* userParam */);
 
 
@@ -1537,6 +1540,9 @@ void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int firs
 	// TODO: get primitive from current pipeline
 	glDrawElements(GL_TRIANGLES, vertexCount, format, ptr);
 }
+
+
+} // namespace renderer
 
 
 #endif //  RENDERER_OPENGL

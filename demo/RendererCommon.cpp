@@ -29,6 +29,9 @@ THE SOFTWARE.
 #include <shaderc/shaderc.hpp>
 
 
+namespace renderer {
+
+
 void RendererImpl::SDLPrefDirDel::operator()(char *ptr) const {
 	SDL_free(ptr);
 }
@@ -376,3 +379,6 @@ unsigned int RendererImpl::ringBufferAllocate(unsigned int size, unsigned int al
 glm::uvec2 Renderer::getDrawableSize() const {
 	return glm::uvec2(impl->swapchainDesc.width, impl->swapchainDesc.height);
 }
+
+
+}	// namespace renderer

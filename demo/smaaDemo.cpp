@@ -47,6 +47,9 @@ THE SOFTWARE.
 #include <glm/gtc/type_ptr.hpp>
 
 
+using namespace renderer;
+
+
 union Color {
 	uint32_t val;
 	struct {

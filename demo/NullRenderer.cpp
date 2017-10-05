@@ -27,6 +27,9 @@ THE SOFTWARE.
 #include "Utils.h"
 
 
+namespace renderer {
+
+
 Buffer::Buffer()
 : ringBufferAlloc(false)
 , size(0)
@@ -347,6 +350,9 @@ void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int /* f
 	assert(!currentPipeline.scissorTest_ || scissorSet);
 	pipelineDrawn = true;
 }
+
+
+} // namespace renderer
 
 
 #endif //  RENDERER_NULL

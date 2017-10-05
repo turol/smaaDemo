@@ -45,6 +45,9 @@ using namespace glm;
 }  // namespace ShaderDefines
 
 
+namespace renderer {
+
+
 #define MAX_COLOR_RENDERTARGETS 2
 #define MAX_VERTEX_ATTRIBS      4
 #define MAX_VERTEX_BUFFERS      1
@@ -713,6 +716,9 @@ public:
 	void drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount);
 	void drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex);
 };
+
+
+}  // namespace renderer
 
 
 #endif  // RENDERER_H
