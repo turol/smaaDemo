@@ -298,7 +298,9 @@ struct RenderPass {
 		return *this;
 	}
 
-	~RenderPass() {}
+	~RenderPass() {
+		assert(!renderPass);
+	}
 
 	bool operator==(const RenderPass &other) const {
 		return this->renderPass == other.renderPass;
