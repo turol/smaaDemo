@@ -489,8 +489,40 @@ struct Texture {
 	Texture(const Texture &)            = delete;
 	Texture &operator=(const Texture &) = delete;
 
-	Texture(Texture &&)                 = default;
-	Texture &operator=(Texture &&)      = default;
+	Texture(Texture &&other)
+		: width(other.width)
+		, height(other.height)
+		, image(other.image)
+		, imageView(other.imageView)
+		, memory(other.memory)
+		, renderTarget(other.renderTarget)
+	{
+		other.width        = 0;
+		other.height       = 0;
+		other.image        = vk::Image();
+		other.imageView    = vk::ImageView();
+		other.memory       = 0;
+		other.renderTarget = false;
+	}
+
+	Texture &operator=(Texture &&other)
+	{
+		width              = other.width;
+		height             = other.height;
+		image              = other.image;
+		imageView          = other.imageView;
+		memory             = other.memory;
+		renderTarget       = other.renderTarget;
+
+		other.width        = 0;
+		other.height       = 0;
+		other.image        = vk::Image();
+		other.imageView    = vk::ImageView();
+		other.memory       = 0;
+		other.renderTarget = false;
+
+		return *this;
+	}
 
 	~Texture() {}
 
