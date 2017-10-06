@@ -384,7 +384,10 @@ struct Pipeline {
 		return *this;
 	}
 
-	~Pipeline() {}
+	~Pipeline() {
+		assert(!pipeline);
+		assert(!layout);
+	}
 };
 
 
