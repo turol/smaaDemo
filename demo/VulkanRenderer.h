@@ -456,7 +456,9 @@ struct Sampler {
 		return *this;
 	}
 
-	~Sampler() {}
+	~Sampler() {
+		assert(!sampler);
+	}
 
 	bool operator==(const Sampler &other) const {
 		return this->sampler == other.sampler;
