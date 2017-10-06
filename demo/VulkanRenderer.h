@@ -524,7 +524,10 @@ struct Texture {
 		return *this;
 	}
 
-	~Texture() {}
+	~Texture() {
+		assert(!image);
+		assert(!imageView);
+	}
 
 	bool operator==(const Texture &other) const {
 		return this->image == other.image;
