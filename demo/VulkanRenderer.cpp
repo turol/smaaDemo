@@ -1646,7 +1646,12 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	presentInfo.pSwapchains        = &swapchain;
 	presentInfo.pImageIndices      = &currentFrameIdx;
 
-	queue.presentKHR(presentInfo);
+	auto presentResult = queue.presentKHR(presentInfo);
+	if (presentResult != vk::Result::eSuccess) {
+		// TODO: handle these somehow
+		LOG("present result is not success: %s\n", vk::to_string(presentResult).c_str());
+		throw std::runtime_error("present result is not success");
+	}
 	frame.outstanding = true;
 	frame.lastFrameNum = frameNum;
 
@@ -1667,8 +1672,12 @@ void RendererBase::waitForFrame(unsigned int frameIdx) {
 	Frame &frame = frames[frameIdx];
 	assert(frame.outstanding);
 
-	// TODO: handle device lost and timeout
-	device.waitForFences({ frame.fence }, true, 1000000000ull);
+	auto waitResult = device.waitForFences({ frame.fence }, true, 1000000000ull);
+	if (waitResult != vk::Result::eSuccess) {
+		// TODO: handle these somehow
+		LOG("wait result is not success: %s\n", vk::to_string(waitResult).c_str());
+		throw std::runtime_error("wait result is not success");
+	}
 
 	// reset per-frame pools
 	device.resetCommandPool(frame.commandPool, vk::CommandPoolResetFlags());
