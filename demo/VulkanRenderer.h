@@ -490,12 +490,12 @@ struct Texture {
 	Texture &operator=(const Texture &) = delete;
 
 	Texture(Texture &&other)
-		: width(other.width)
-		, height(other.height)
-		, image(other.image)
-		, imageView(other.imageView)
-		, memory(other.memory)
-		, renderTarget(other.renderTarget)
+	: width(other.width)
+	, height(other.height)
+	, image(other.image)
+	, imageView(other.imageView)
+	, memory(other.memory)
+	, renderTarget(other.renderTarget)
 	{
 		other.width        = 0;
 		other.height       = 0;
