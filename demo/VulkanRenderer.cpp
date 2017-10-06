@@ -468,7 +468,9 @@ RendererImpl::~RendererImpl() {
 
 	pipelines.clearWith([this](Pipeline &p) {
 		this->device.destroyPipelineLayout(p.layout);
+		p.layout = vk::PipelineLayout();
 		this->device.destroyPipeline(p.pipeline);
+		p.pipeline = vk::Pipeline();
 	} );
 
 	framebuffers.clearWith([this](Framebuffer &fb) {
