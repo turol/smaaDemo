@@ -371,7 +371,10 @@ struct RenderTarget{
 		return *this;
 	}
 
-	~RenderTarget() {}
+	~RenderTarget() {
+		assert(!image);
+		assert(!imageView);
+	}
 
 
 	bool operator==(const RenderTarget &other) const {
