@@ -1742,6 +1742,8 @@ void RendererBase::deleteRenderTargetInternal(RenderTarget &rt) {
 
 	this->device.destroyImageView(rt.imageView);
 	this->device.destroyImage(rt.image);
+	rt.imageView = vk::ImageView();
+	rt.image     = vk::Image();
 }
 
 
