@@ -441,8 +441,20 @@ struct Sampler {
 	Sampler(const Sampler &)            = delete;
 	Sampler &operator=(const Sampler &) = delete;
 
-	Sampler(Sampler &&)                 = default;
-	Sampler &operator=(Sampler &&)      = default;
+	Sampler(Sampler &&other)
+	: sampler(other.sampler)
+	{
+		other.sampler = vk::Sampler();
+	}
+
+	Sampler &operator=(Sampler &&other)
+	{
+		sampler       = other.sampler;
+
+		other.sampler = vk::Sampler();
+
+		return *this;
+	}
 
 	~Sampler() {}
 
