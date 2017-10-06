@@ -1764,6 +1764,8 @@ void RendererBase::deleteTextureInternal(Texture &tex) {
 	assert(!tex.renderTarget);
 	this->device.destroyImageView(tex.imageView);
 	this->device.destroyImage(tex.image);
+	tex.imageView = vk::ImageView();
+	tex.image     = vk::Image();
 	assert(tex.memory != nullptr);
 	vmaFreeMemory(this->allocator, tex.memory);
 	tex.memory = nullptr;
