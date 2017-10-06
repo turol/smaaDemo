@@ -330,8 +330,46 @@ struct RenderTarget{
 	RenderTarget(const RenderTarget &)            = delete;
 	RenderTarget &operator=(const RenderTarget &) = delete;
 
-	RenderTarget(RenderTarget &&)                 = default;
-	RenderTarget &operator=(RenderTarget &&)      = default;
+	RenderTarget(RenderTarget &&other)
+	: width(other.width)
+	, height(other.height)
+	, image(other.image)
+	, format(other.format)
+	, imageView(other.imageView)
+	, currentLayout(other.currentLayout)
+	, texture(other.texture)
+	{
+		other.width         = 0;
+		other.height        = 0;
+		other.image         = vk::Image();
+		other.format        = vk::Format::eUndefined;
+		other.imageView     = vk::ImageView();
+		other.currentLayout = Layout::Invalid;
+		other.texture       = TextureHandle();
+	}
+
+	RenderTarget &operator=(RenderTarget &&other) {
+		assert(!image);
+		assert(!imageView);
+
+		width               = other.width;
+		height              = other.height;
+		image               = other.image;
+		format              = other.format;
+		imageView           = other.imageView;
+		currentLayout       = other.currentLayout;
+		texture             = other.texture;
+
+		other.width         = 0;
+		other.height        = 0;
+		other.image         = vk::Image();
+		other.format        = vk::Format::eUndefined;
+		other.imageView     = vk::ImageView();
+		other.currentLayout = Layout::Invalid;
+		other.texture       = TextureHandle();
+
+		return *this;
+	}
 
 	~RenderTarget() {}
 
