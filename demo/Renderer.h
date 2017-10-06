@@ -36,15 +36,6 @@ THE SOFTWARE.
 #include <SDL.h>
 
 
-namespace ShaderDefines {
-
-using namespace glm;
-
-#include "../shaderDefines.h"
-
-}  // namespace ShaderDefines
-
-
 namespace renderer {
 
 

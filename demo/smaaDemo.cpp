@@ -47,6 +47,15 @@ THE SOFTWARE.
 #include <glm/gtc/type_ptr.hpp>
 
 
+namespace ShaderDefines {
+
+using namespace glm;
+
+#include "../shaderDefines.h"
+
+}  // namespace ShaderDefines
+
+
 using namespace renderer;
 
 
