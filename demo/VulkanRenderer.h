@@ -84,6 +84,10 @@ struct Buffer {
 	}
 
 	Buffer &operator=(Buffer &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
 		assert(!buffer);
 		assert(!memory);
 
@@ -141,6 +145,10 @@ struct DescriptorSetLayout {
 	}
 
 	DescriptorSetLayout &operator=(DescriptorSetLayout &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
 		assert(!layout);
 
 		layout       = other.layout;
@@ -174,6 +182,10 @@ struct VertexShader {
 	}
 
 	VertexShader &operator=(VertexShader &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
 		assert(!shaderModule);
 
 		shaderModule       = other.shaderModule;
@@ -204,6 +216,10 @@ struct FragmentShader {
 	}
 
 	FragmentShader &operator=(FragmentShader &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
 		assert(!shaderModule);
 		shaderModule       = other.shaderModule;
 		other.shaderModule = vk::ShaderModule();
@@ -244,6 +260,10 @@ struct Framebuffer {
 	}
 
 	Framebuffer &operator=(Framebuffer &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
 		assert(!framebuffer);
 
 		framebuffer       = other.framebuffer;
@@ -289,6 +309,10 @@ struct RenderPass {
 	}
 
 	RenderPass &operator=(RenderPass &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
 		assert(!renderPass);
 
 		renderPass       = other.renderPass;
@@ -349,6 +373,10 @@ struct RenderTarget{
 	}
 
 	RenderTarget &operator=(RenderTarget &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
 		assert(!image);
 		assert(!imageView);
 
@@ -411,6 +439,10 @@ struct Pipeline {
 	}
 
 	Pipeline &operator=(Pipeline &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
 		assert(!pipeline);
 		assert(!layout);
 
@@ -449,6 +481,10 @@ struct Sampler {
 
 	Sampler &operator=(Sampler &&other)
 	{
+		if (this == &other) {
+			return *this;
+		}
+
 		sampler       = other.sampler;
 
 		other.sampler = vk::Sampler();
@@ -507,6 +543,10 @@ struct Texture {
 
 	Texture &operator=(Texture &&other)
 	{
+		if (this == &other) {
+			return *this;
+		}
+
 		width              = other.width;
 		height             = other.height;
 		image              = other.image;
