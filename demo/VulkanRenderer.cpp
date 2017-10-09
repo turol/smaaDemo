@@ -99,7 +99,7 @@ static vk::Format vulkanVertexFormat(VtxFormat format, uint8_t count) {
 
 		}
 
-		assert(false);
+		UNREACHABLE();
 		return vk::Format::eUndefined;
 
 	case VtxFormat::UNorm8:
@@ -108,7 +108,7 @@ static vk::Format vulkanVertexFormat(VtxFormat format, uint8_t count) {
 
 	}
 
-	assert(false);
+	UNREACHABLE();
 	return vk::Format::eUndefined;
 }
 
@@ -116,7 +116,7 @@ static vk::Format vulkanVertexFormat(VtxFormat format, uint8_t count) {
 static vk::Format vulkanFormat(Format format) {
 	switch (format) {
 	case Format::Invalid:
-		assert(false);
+		UNREACHABLE();
 		return vk::Format::eUndefined;
 
 	case Format::R8:
@@ -136,7 +136,7 @@ static vk::Format vulkanFormat(Format format) {
 
 	}
 
-	assert(false);
+	UNREACHABLE();
 	return vk::Format::eUndefined;
 }
 
@@ -622,7 +622,7 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 static vk::ImageLayout vulkanLayout(Layout l) {
 	switch (l) {
 	case Layout::Invalid:
-		assert(false);
+		UNREACHABLE();
 		return vk::ImageLayout::eUndefined;
 
 	case Layout::ShaderRead:
@@ -632,7 +632,7 @@ static vk::ImageLayout vulkanLayout(Layout l) {
 		return vk::ImageLayout::eTransferSrcOptimal;
 	}
 
-	assert(false);
+	UNREACHABLE();
 	return vk::ImageLayout::eUndefined;
 }
 
@@ -1047,7 +1047,7 @@ static vk::Filter vulkanFiltermode(FilterMode m) {
         return vk::Filter::eLinear;
 	}
 
-	assert(false);
+	UNREACHABLE();
 
 	return vk::Filter::eNearest;
 }
@@ -1952,7 +1952,7 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layout
 		switch (l.type) {
 		case DescriptorType::End:
 			// can't happen because createDesciptorSetLayout doesn't let it
-			assert(false);
+			UNREACHABLE();
 			break;
 
 		case DescriptorType::UniformBuffer:
@@ -2007,7 +2007,7 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layout
 		} break;
 
 		case DescriptorType::Count:
-			assert(false); // shouldn't happen
+			UNREACHABLE(); // shouldn't happen
 			break;
 
 		}

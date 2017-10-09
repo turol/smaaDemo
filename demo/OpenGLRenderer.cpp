@@ -744,12 +744,12 @@ static const char *descriptorTypeName(DescriptorType t) {
 		return "CombinedSampler";
 
 	case DescriptorType::Count:
-		assert(false);  // shouldn't happen
+		UNREACHABLE();  // shouldn't happen
 		return "Count";
 
 	}
 
-	assert(false);
+	UNREACHABLE();
 	return "ERROR!";
 }
 
@@ -1421,7 +1421,7 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 		switch (l.type) {
 		case DescriptorType::End:
 			// can't happen because createDesciptorSetLayout doesn't let it
-			assert(false);
+			UNREACHABLE();
 			break;
 
 		case DescriptorType::UniformBuffer: {
@@ -1483,7 +1483,7 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 		} break;
 
 		case DescriptorType::Count:
-			assert(false); // shouldn't happen
+			UNREACHABLE(); // shouldn't happen
 			break;
 
 		}
