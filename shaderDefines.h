@@ -9,7 +9,7 @@ struct Globals
 
 #else  // __cplusplus
 
-layout(binding = 0, std140) uniform Globals
+layout(set = 0, binding = 0, std140) uniform Globals
 
 #endif  // __cplusplus
 {
