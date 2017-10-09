@@ -485,6 +485,8 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 
 struct GlobalDS {
 	BufferHandle   globalUniforms;
+	SamplerHandle  linearSampler;
+	SamplerHandle  nearestSampler;
 
 
 	static const DescriptorLayout layout[];
@@ -494,6 +496,8 @@ struct GlobalDS {
 
 const DescriptorLayout GlobalDS::layout[] = {
 	  { DescriptorType::UniformBuffer,  offsetof(GlobalDS, globalUniforms) }
+	, { DescriptorType::Sampler,        offsetof(GlobalDS, linearSampler ) }
+	, { DescriptorType::Sampler,        offsetof(GlobalDS, nearestSampler) }
 	, { DescriptorType::End,            0                                  }
 };
 
@@ -1249,6 +1253,8 @@ void SMAADemo::render() {
 
 		GlobalDS globalDS;
 		globalDS.globalUniforms = renderer.createEphemeralBuffer(sizeof(ShaderDefines::Globals), &globals);
+		globalDS.linearSampler  = linearSampler;
+		globalDS.nearestSampler = nearestSampler;
 		renderer.bindDescriptorSet(0, globalDS);
 
 		renderer.bindVertexBuffer(0, cubeVBO);

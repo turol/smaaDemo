@@ -9,6 +9,9 @@ struct Globals
 
 #else  // __cplusplus
 
+layout(set = 0, binding = 1) uniform sampler linearSampler;
+layout(set = 0, binding = 2) uniform sampler nearestSampler;
+
 layout(set = 0, binding = 0, std140) uniform Globals
 
 #endif  // __cplusplus
