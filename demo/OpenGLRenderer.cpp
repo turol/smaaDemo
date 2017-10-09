@@ -81,7 +81,7 @@ static GLuint createShader(GLenum type, const std::string &name, const std::vect
 static GLenum glTexFormat(Format format) {
 	switch (format) {
 	case Format::Invalid:
-		__builtin_unreachable();
+		UNREACHABLE();
 
 	case Format::R8:
 		return GL_R8;
@@ -100,14 +100,14 @@ static GLenum glTexFormat(Format format) {
 
 	}
 
-	__builtin_unreachable();
+	UNREACHABLE();
 }
 
 
 static GLenum glTexBaseFormat(Format format) {
 	switch (format) {
 	case Format::Invalid:
-		__builtin_unreachable();
+		UNREACHABLE();
 
 	case Format::R8:
 		return GL_RED;
@@ -128,7 +128,7 @@ static GLenum glTexBaseFormat(Format format) {
 
 	}
 
-	__builtin_unreachable();
+	UNREACHABLE();
 }
 
 

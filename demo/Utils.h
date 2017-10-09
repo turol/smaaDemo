@@ -33,13 +33,14 @@ THE SOFTWARE.
 
 
 #ifdef _MSC_VER
+
 #define fileno _fileno
-// TODO: we should not define macros starting with two underscores since those are reserved for the compiler
-#define __builtin_unreachable() assert(false)
+#define UNREACHABLE() abort()
 #define PRINTF(x, y)
 
 #else   // _MSC_VER
 
+#define UNREACHABLE() __builtin_unreachable()
 #define PRINTF(x, y) __attribute__((format(printf, x, y)))
 
 #endif  // _MSC_VER

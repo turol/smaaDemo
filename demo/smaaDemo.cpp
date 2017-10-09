@@ -91,7 +91,7 @@ const char *name(AAMethod m) {
 		break;
 	}
 
-	__builtin_unreachable();
+	UNREACHABLE();
 }
 
 
