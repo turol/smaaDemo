@@ -122,7 +122,7 @@ std::vector<uint32_t> RendererImpl::compileSpirv(const std::string &name, const 
 
 				return spirv;
 			}
-			// TODO: incorrect size...
+			LOG("Shader \"%s\" has incorrect size\n", spvName.c_str());
 		}
 	}
 
