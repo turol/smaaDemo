@@ -106,9 +106,13 @@ std::vector<uint32_t> RendererImpl::compileSpirv(const std::string &name, const 
 	}
 	spvName = spvName + ".spv";
 
-	// TODO: check timestamp against source file
-	// TODO: should also check headers included during original compilation
 	if (fileExists(spvName)) {
+		// check timestamp against source file
+		// TODO: should also check headers included during original compilation
+		int64_t sourceTime = getFileTimestamp(name);
+		int64_t cacheTime = getFileTimestamp(spvName);
+
+		if (sourceTime <= cacheTime) {
 		auto temp = readFile(spvName);
 		if (temp.size() % 4 == 0) {
 			std::vector<uint32_t> spirv;
@@ -117,6 +121,7 @@ std::vector<uint32_t> RendererImpl::compileSpirv(const std::string &name, const 
 			LOG("Loaded shader \"%s\" from cache\n", spvName.c_str());
 
 			return spirv;
+		}
 		}
 
 		// incorrect size...
