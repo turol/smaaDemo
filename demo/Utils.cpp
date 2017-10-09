@@ -157,3 +157,15 @@ bool fileExists(const std::string &filename) {
 		return false;
 	}
 }
+
+
+int64_t getFileTimestamp(const std::string &filename) {
+	struct stat statbuf;
+	memset(&statbuf, 0, sizeof(struct stat));
+	int retval = stat(filename.c_str(), &statbuf);
+	if (retval < 0) {
+		// TODO: better exception
+		throw std::runtime_error("fstat failed");
+	}
+	return statbuf.st_mtime;
+}
