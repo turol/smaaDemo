@@ -113,18 +113,17 @@ std::vector<uint32_t> RendererImpl::compileSpirv(const std::string &name, const 
 		int64_t cacheTime = getFileTimestamp(spvName);
 
 		if (sourceTime <= cacheTime) {
-		auto temp = readFile(spvName);
-		if (temp.size() % 4 == 0) {
-			std::vector<uint32_t> spirv;
-			spirv.resize(temp.size() / 4);
-			memcpy(&spirv[0], &temp[0], temp.size());
-			LOG("Loaded shader \"%s\" from cache\n", spvName.c_str());
+			auto temp = readFile(spvName);
+			if (temp.size() % 4 == 0) {
+				std::vector<uint32_t> spirv;
+				spirv.resize(temp.size() / 4);
+				memcpy(&spirv[0], &temp[0], temp.size());
+				LOG("Loaded shader \"%s\" from cache\n", spvName.c_str());
 
-			return spirv;
+				return spirv;
+			}
+			// TODO: incorrect size...
 		}
-		}
-
-		// incorrect size...
 	}
 
 	auto src = loadSource(name);
