@@ -1488,8 +1488,8 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		ImGui::Separator();
 		// VMA memory allocation stats
 		MemoryStats stats = renderer.getMemStats();
-		ImGui::LabelText("Allocation count", "%lu", stats.allocationCount);
-		ImGui::LabelText("Suballocation count", "%lu", stats.subAllocationCount);
+		ImGui::LabelText("Allocation count", "%u", stats.allocationCount);
+		ImGui::LabelText("Suballocation count", "%u", stats.subAllocationCount);
 		ImGui::LabelText("Total bytes", "%lu", stats.usedBytes + stats.unusedBytes);
 		ImGui::LabelText("Used bytes", "%lu", stats.usedBytes);
 #endif
