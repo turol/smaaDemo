@@ -1977,11 +1977,36 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layout
 		} break;
 
 		case DescriptorType::Sampler: {
-			STUBBED("descriptor set sampler");
+			const auto &sampler = samplers.get(*reinterpret_cast<const SamplerHandle *>(data + l.offset));
+			assert(sampler.sampler);
+
+			vk::DescriptorImageInfo imgWrite;
+			imgWrite.sampler = sampler.sampler;
+
+			// we trust that reserve() above makes sure this doesn't reallocate the storage
+			imageWrites.push_back(imgWrite);
+
+			write.pImageInfo = &imageWrites.back();
+
+			writes.push_back(write);
 		} break;
 
 		case DescriptorType::Texture: {
-			STUBBED("descriptor set texture");
+			TextureHandle texHandle = *reinterpret_cast<const TextureHandle *>(data + l.offset);
+			const auto &tex = textures.get(texHandle);
+			assert(tex.image);
+			assert(tex.imageView);
+
+			vk::DescriptorImageInfo imgWrite;
+			imgWrite.imageView   = tex.imageView;
+			imgWrite.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+
+			// we trust that reserve() above makes sure this doesn't reallocate the storage
+			imageWrites.push_back(imgWrite);
+
+			write.pImageInfo = &imageWrites.back();
+
+			writes.push_back(write);
 		} break;
 
 		case DescriptorType::CombinedSampler: {
