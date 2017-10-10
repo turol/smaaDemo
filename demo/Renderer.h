@@ -630,6 +630,31 @@ struct RendererDesc {
 };
 
 
+struct MemoryStats {
+	uint32_t allocationCount;
+	uint32_t subAllocationCount;
+	uint64_t usedBytes;
+	uint64_t unusedBytes;
+
+
+	MemoryStats()
+	: allocationCount(0)
+	, subAllocationCount(0)
+	, usedBytes(0)
+	, unusedBytes(0)
+	{
+	}
+
+	~MemoryStats() {}
+
+	MemoryStats(const MemoryStats &stats)            = default;
+	MemoryStats(MemoryStats &&stats)                 = default;
+
+	MemoryStats &operator=(const MemoryStats &stats) = default;
+	MemoryStats &operator=(MemoryStats &&stats)      = default;
+};
+
+
 class Renderer {
 	RendererImpl *impl;
 
@@ -683,6 +708,7 @@ public:
 
 	void recreateSwapchain(const SwapchainDesc &desc);
 	glm::uvec2 getDrawableSize() const;
+	MemoryStats getMemStats() const;
 
 	// rendering
 	void beginFrame();

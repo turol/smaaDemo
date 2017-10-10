@@ -1100,6 +1100,12 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 }
 
 
+MemoryStats RendererImpl::getMemStats() const {
+	MemoryStats stats;
+	return stats;
+}
+
+
 void RendererImpl::beginFrame() {
 	assert(!inFrame);
 	inFrame       = true;

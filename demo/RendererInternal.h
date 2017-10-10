@@ -205,6 +205,7 @@ struct RendererImpl : public RendererBase {
 
 
 	void recreateSwapchain(const SwapchainDesc &desc);
+	MemoryStats getMemStats() const;
 
 	void beginFrame();
 	void presentFrame(RenderTargetHandle image);

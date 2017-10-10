@@ -1531,6 +1531,19 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 }
 
 
+MemoryStats RendererImpl::getMemStats() const {
+	VmaStats vmaStats;
+	memset(&vmaStats, 0, sizeof(VmaStats));
+	vmaCalculateStats(allocator, &vmaStats);
+	MemoryStats stats;
+	stats.allocationCount    = vmaStats.total.AllocationCount;
+	stats.subAllocationCount = vmaStats.total.SuballocationCount;
+	stats.usedBytes          = vmaStats.total.UsedBytes;
+	stats.unusedBytes        = vmaStats.total.UnusedBytes;
+	return stats;
+}
+
+
 void RendererImpl::beginFrame() {
 	assert(!inFrame);
 	inFrame       = true;

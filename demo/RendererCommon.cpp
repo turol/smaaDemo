@@ -289,6 +289,11 @@ void Renderer::recreateSwapchain(const SwapchainDesc &desc) {
 }
 
 
+MemoryStats Renderer::getMemStats() const {
+	return impl->getMemStats();
+}
+
+
 void Renderer::beginFrame() {
 	impl->beginFrame();
 }
