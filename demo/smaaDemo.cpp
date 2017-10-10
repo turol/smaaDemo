@@ -202,7 +202,7 @@ class SMAADemo {
 	SamplerHandle linearSampler;
 	SamplerHandle nearestSampler;
 
-	unsigned int cubePower;
+	unsigned int cubesPerSide;
 
 	std::array<RenderTargetHandle, RenderTargets::Count> rendertargets;
 
@@ -309,7 +309,7 @@ SMAADemo::SMAADemo()
 , fullscreen(false)
 , recreateSwapchain(false)
 , glDebug(false)
-, cubePower(3)
+, cubesPerSide(8)
 , antialiasing(true)
 , aaMethod(AAMethod::SMAA)
 , rotateCubes(false)
@@ -906,9 +906,6 @@ void SMAADemo::createFramebuffers()	{
 
 
 void SMAADemo::createCubes() {
-	// cubes on a side is some power of 2
-	const unsigned int cubesPerSide = static_cast<unsigned int>(pow(2, cubePower));
-
 	// cube of cubes, n^3 cubes total
 	const unsigned int numCubes = static_cast<unsigned int>(pow(cubesPerSide, 3));
 
