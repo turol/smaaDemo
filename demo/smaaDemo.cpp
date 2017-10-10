@@ -907,22 +907,22 @@ void SMAADemo::createFramebuffers()	{
 
 void SMAADemo::createCubes() {
 	// cubes on a side is some power of 2
-	const unsigned int cubesSide = static_cast<unsigned int>(pow(2, cubePower));
+	const unsigned int cubesPerSide = static_cast<unsigned int>(pow(2, cubePower));
 
 	// cube of cubes, n^3 cubes total
-	const unsigned int numCubes = static_cast<unsigned int>(pow(cubesSide, 3));
+	const unsigned int numCubes = static_cast<unsigned int>(pow(cubesPerSide, 3));
 
 	const float cubeDiameter = sqrtf(3.0f);
 	const float cubeDistance = cubeDiameter + 1.0f;
 
-	const float bigCubeSide = cubeDistance * cubesSide;
+	const float bigCubeSide = cubeDistance * cubesPerSide;
 
 	cubes.clear();
 	cubes.reserve(numCubes);
 
-	for (unsigned int x = 0; x < cubesSide; x++) {
-		for (unsigned int y = 0; y < cubesSide; y++) {
-			for (unsigned int z = 0; z < cubesSide; z++) {
+	for (unsigned int x = 0; x < cubesPerSide; x++) {
+		for (unsigned int y = 0; y < cubesPerSide; y++) {
+			for (unsigned int z = 0; z < cubesPerSide; z++) {
 				float qx = random.randFloat();
 				float qy = random.randFloat();
 				float qz = random.randFloat();
