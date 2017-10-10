@@ -1373,7 +1373,9 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	LOG("supported surface alpha composite flags: %s\n", vk::to_string(surfaceCapabilities.supportedCompositeAlpha).c_str());
 	LOG("supported surface usage flags: %s\n", vk::to_string(surfaceCapabilities.supportedUsageFlags).c_str());
 
-	swapchainDesc = desc;
+	swapchainDesc.fullscreen = desc.fullscreen;
+	swapchainDesc.numFrames = desc.numFrames;
+	swapchainDesc.vsync = desc.vsync;
 
 	int w = -1, h = -1;
 	SDL_Vulkan_GetDrawableSize(window, &w, &h);
