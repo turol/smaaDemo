@@ -557,7 +557,11 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 	auto spvResources = glsl.get_shader_resources();
 
 	// TODO: map descriptor sets to opengl indices for textures/samplers
-	// TODO: call build_combined_image_samplers() ?
+
+	// build combined image samplers
+	// TODO: need to store this info
+	glsl.build_combined_image_samplers();
+
 	std::vector<ShaderResource> resources;
 
 	for (const auto &ubo : spvResources.uniform_buffers) {
