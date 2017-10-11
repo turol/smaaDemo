@@ -249,6 +249,7 @@ RendererBase::RendererBase()
 : ringBuffer(0)
 , persistentMapInUse(false)
 , persistentMapping(nullptr)
+, decriptorSetsDirty(true)
 , window(nullptr)
 , context(nullptr)
 , debug(false)
@@ -1249,6 +1250,7 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	pipelineDrawn = false;
 	validPipeline = true;
 	scissorSet = false;
+	decriptorSetsDirty = true;
 
 	const auto &p = pipelines.get(pipeline);
 	assert(p.desc.renderPass_ == currentRenderPass);
@@ -1421,6 +1423,7 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHandle, const void *data_) {
 	assert(validPipeline);
 	assert(currentPipeline.descriptorSetLayouts[index] == layoutHandle);
+	decriptorSetsDirty = true;
 
 	// TODO: get shader bindings from current pipeline, use index
 	const DescriptorSetLayout &layout = dsLayouts.get(layoutHandle);
@@ -1503,6 +1506,13 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 }
 
 
+void RendererBase::rebindDescriptorSets() {
+	decriptorSetsDirty = false;
+
+	// TODO: actually rebind them...
+}
+
+
 void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	assert(inRenderPass);
 	assert(validPipeline);
@@ -1510,6 +1520,11 @@ void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	assert(!currentPipeline.scissorTest_ || scissorSet);
 	assert(currentPipeline.renderPass_ == currentRenderPass);
 	pipelineDrawn = true;
+
+	if (decriptorSetsDirty) {
+		rebindDescriptorSets();
+	}
+	assert(!decriptorSetsDirty);
 
 	// TODO: get primitive from current pipeline
 	glDrawArrays(GL_TRIANGLES, firstVertex, vertexCount);
@@ -1524,6 +1539,11 @@ void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int i
 	assert(!currentPipeline.scissorTest_ || scissorSet);
 	assert(currentPipeline.renderPass_ == currentRenderPass);
 	pipelineDrawn = true;
+
+	if (decriptorSetsDirty) {
+		rebindDescriptorSets();
+	}
+	assert(!decriptorSetsDirty);
 
 	// TODO: get primitive from current pipeline
 	GLenum format = idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT ;
@@ -1543,6 +1563,11 @@ void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int firs
 	assert(!currentPipeline.scissorTest_ || scissorSet);
 	assert(currentPipeline.renderPass_ == currentRenderPass);
 	pipelineDrawn = true;
+
+	if (decriptorSetsDirty) {
+		rebindDescriptorSets();
+	}
+	assert(!decriptorSetsDirty);
 
 	GLenum format        = idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
 	unsigned int idxSize = idxBuf16Bit ? 2                 : 4 ;

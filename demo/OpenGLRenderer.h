@@ -403,6 +403,8 @@ struct RendererBase {
 	RenderPassHandle  currentRenderPass;
 	FramebufferHandle currentFramebuffer;
 
+	bool decriptorSetsDirty;
+
 	SDL_Window *window;
 	SDL_GLContext context;
 
@@ -427,6 +429,8 @@ struct RendererBase {
 
 	std::vector<BufferHandle> ephemeralBuffers;
 
+
+	void rebindDescriptorSets();
 
 	RendererBase();
 
