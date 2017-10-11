@@ -1447,6 +1447,13 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			activeScene = s;
 		}
 
+		int m = cubesPerSide;
+		bool changed = ImGui::InputInt("Cubes per side", &m);
+		if (changed && m > 0 && m < 128) {
+			cubesPerSide = m;
+			createCubes();
+		}
+
 		ImGui::Checkbox("Rotate cubes", &rotateCubes);
 
 		ImGui::Separator();
