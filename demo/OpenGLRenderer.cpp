@@ -766,11 +766,12 @@ static void checkShaderResources(const std::string &name, const std::vector<Shad
 
 		if (r.binding >= set.size()) {
 			LOG("ERROR: set %u binding %u type %s in shader \"%s\" greater than set size (%u)\n", r.set, r.binding, descriptorTypeName(r.type), name.c_str(), static_cast<unsigned int>(set.size()));
-			continue;
+			throw std::runtime_error("no required descriptor in set");
 		}
 
 		if (set[r.binding].type != r.type) {
 			LOG("ERROR: set %u binding %u type %s in shader \"%s\" doesn't match ds layout (%s)\n", r.set, r.binding, descriptorTypeName(r.type), name.c_str(), descriptorTypeName(set[r.binding].type));
+			throw std::runtime_error("descriptor set layout mismatch");
 		}
 	}
 }
