@@ -1479,11 +1479,6 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		}
 
 		ImGui::Separator();
-		if (ImGui::Button("Quit")) {
-			keepGoing = false;
-		}
-
-		ImGui::Separator();
 		// TODO: measure actual GPU time
 		ImGui::LabelText("FPS", "%.1f", io.Framerate);
 		ImGui::LabelText("Frame time ms", "%.1f", 1000.0f / io.Framerate);
@@ -1499,6 +1494,11 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		ImGui::LabelText("Used memory (MB)", "%.2f", usedMegabytes);
 		ImGui::LabelText("Total memory (MB)", "%.2f", totalMegabytes);
 #endif
+
+		ImGui::Separator();
+		if (ImGui::Button("Quit")) {
+			keepGoing = false;
+		}
 	}
 
 	// move the window to right edge of screen
