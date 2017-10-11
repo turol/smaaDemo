@@ -1114,6 +1114,8 @@ void RendererImpl::beginFrame() {
 	validPipeline = false;
 	pipelineDrawn = true;
 
+	descriptors.clear();
+
 	// TODO: reset all relevant state in case some 3rd-party program fucked them up
 	glDepthMask(GL_TRUE);
 
@@ -1431,6 +1433,10 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 	const char *data = reinterpret_cast<const char *>(data_);
 	unsigned int descIndex = 0;
 	for (const auto &l : layout.layout) {
+		DSIndex idx;
+		idx.set     = index;
+		idx.binding = descIndex;
+
 		switch (l.type) {
 		case DescriptorType::End:
 			// can't happen because createDesciptorSetLayout doesn't let it
@@ -1451,6 +1457,7 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 			}
 			// FIXME: descIndex is not right here
 			glBindBufferRange(GL_UNIFORM_BUFFER, descIndex, buffer.buffer, buffer.beginOffs, buffer.size);
+			descriptors[idx] = handle;
 		} break;
 
 		case DescriptorType::StorageBuffer: {
@@ -1466,12 +1473,15 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 			}
 			// FIXME: descIndex is not right here
 			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, descIndex, buffer.buffer, buffer.beginOffs, buffer.size);
+			descriptors[idx] = handle;
 		} break;
 
 		case DescriptorType::Sampler: {
-			const auto &sampler = samplers.get(*reinterpret_cast<const SamplerHandle *>(data + l.offset));
+			SamplerHandle handle = *reinterpret_cast<const SamplerHandle *>(data + l.offset);
+			const auto &sampler = samplers.get(handle);
 			assert(sampler.sampler);
 			glBindSampler(descIndex, sampler.sampler);
+			descriptors[idx] = handle;
 		} break;
 
 		case DescriptorType::Texture: {
@@ -1479,6 +1489,7 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 			const auto &tex = textures.get(texHandle);
 			// FIXME: descIndex is not right here
 			glBindTextureUnit(descIndex, tex.tex);
+			descriptors[idx] = texHandle;
 		} break;
 
 		case DescriptorType::CombinedSampler: {
@@ -1493,6 +1504,7 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 			// FIXME: descIndex is not right here
 			glBindTextureUnit(descIndex, tex.tex);
 			glBindSampler(descIndex, sampler.sampler);
+			descriptors[idx] = combined;
 		} break;
 
 		case DescriptorType::Count:

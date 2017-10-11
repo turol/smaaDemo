@@ -27,6 +27,11 @@ THE SOFTWARE.
 
 #include <GL/glew.h>
 
+// TODO: use std::variant if the compiler has C++17
+#include <boost/variant/variant.hpp>
+#include <boost/variant/apply_visitor.hpp>
+#include <boost/variant/static_visitor.hpp>
+
 
 namespace renderer {
 
@@ -394,6 +399,38 @@ struct Texture {
 };
 
 
+typedef boost::variant<BufferHandle, CSampler, SamplerHandle, TextureHandle> Descriptor;
+
+
+struct DSIndex {
+	uint8_t set;
+	uint8_t binding;
+
+
+	bool operator==(const DSIndex &other) const {
+		return (set == other.set) && (binding == other.binding);
+	}
+};
+
+
+}  // namespace renderer
+
+
+namespace std {
+
+	template <> struct hash<renderer::DSIndex> {
+		size_t operator()(const renderer::DSIndex &ds) const {
+			uint16_t val = (uint16_t(ds.set) << 8) | ds.binding;
+			return hash<uint16_t>()(val);
+		}
+	};
+
+}  // namespace std
+
+
+namespace renderer {
+
+
 struct RendererBase {
 	GLuint        ringBuffer;
 	bool          persistentMapInUse;
@@ -404,6 +441,7 @@ struct RendererBase {
 	FramebufferHandle currentFramebuffer;
 
 	bool decriptorSetsDirty;
+	std::unordered_map<DSIndex, Descriptor>  descriptors;
 
 	SDL_Window *window;
 	SDL_GLContext context;
