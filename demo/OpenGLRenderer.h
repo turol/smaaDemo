@@ -440,7 +440,7 @@ struct RendererBase {
 	bool          persistentMapInUse;
 	char         *persistentMapping;
 
-	PipelineDesc  currentPipeline;
+	PipelineHandle    currentPipeline;
 	RenderPassHandle  currentRenderPass;
 	FramebufferHandle currentFramebuffer;
 

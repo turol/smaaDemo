@@ -1233,7 +1233,9 @@ void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int widt
 
 void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 	assert(validPipeline);
-	assert(currentPipeline.scissorTest_);
+
+	const auto &p = pipelines.get(currentPipeline);
+	assert(p.desc.scissorTest_);
 	scissorSet = true;
 
 	// flip y from Vulkan convention to OpenGL convention
@@ -1290,7 +1292,7 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 		glDisable(GL_BLEND);
 	}
 
-	uint32_t oldMask = currentPipeline.vertexAttribMask;
+	uint32_t oldMask = currentPipeline ? (pipelines.get(currentPipeline).desc.vertexAttribMask) : 0;
 	uint32_t newMask = p.desc.vertexAttribMask;
 
 	// enable/disable changed attributes
@@ -1380,7 +1382,7 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
   }
 #endif
 
-	currentPipeline = p.desc;
+	currentPipeline = pipeline;
 }
 
 
@@ -1416,13 +1418,15 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 		assert(buffer.buffer    != 0);
 		assert(buffer.beginOffs == 0);
 	}
-	glBindVertexBuffer(binding, buffer.buffer, buffer.beginOffs, currentPipeline.vertexBuffers[binding].stride);
+	const auto &p = pipelines.get(currentPipeline);
+	glBindVertexBuffer(binding, buffer.buffer, buffer.beginOffs, p.desc.vertexBuffers[binding].stride);
 }
 
 
 void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHandle, const void *data_) {
 	assert(validPipeline);
-	assert(currentPipeline.descriptorSetLayouts[index] == layoutHandle);
+	const auto &p = pipelines.get(currentPipeline);
+	assert(p.desc.descriptorSetLayouts[index] == layoutHandle);
 	decriptorSetsDirty = true;
 
 	// TODO: get shader bindings from current pipeline, use index
@@ -1573,8 +1577,9 @@ void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	assert(inRenderPass);
 	assert(validPipeline);
 	assert(vertexCount > 0);
-	assert(!currentPipeline.scissorTest_ || scissorSet);
-	assert(currentPipeline.renderPass_ == currentRenderPass);
+	const auto &p = pipelines.get(currentPipeline);
+	assert(!p.desc.scissorTest_ || scissorSet);
+	assert(p.desc.renderPass_ == currentRenderPass);
 	pipelineDrawn = true;
 
 	if (decriptorSetsDirty) {
@@ -1592,8 +1597,9 @@ void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int i
 	assert(validPipeline);
 	assert(instanceCount > 0);
 	assert(vertexCount > 0);
-	assert(!currentPipeline.scissorTest_ || scissorSet);
-	assert(currentPipeline.renderPass_ == currentRenderPass);
+	const auto &p = pipelines.get(currentPipeline);
+	assert(!p.desc.scissorTest_ || scissorSet);
+	assert(p.desc.renderPass_ == currentRenderPass);
 	pipelineDrawn = true;
 
 	if (decriptorSetsDirty) {
@@ -1616,8 +1622,9 @@ void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int firs
 	assert(inRenderPass);
 	assert(validPipeline);
 	assert(vertexCount > 0);
-	assert(!currentPipeline.scissorTest_ || scissorSet);
-	assert(currentPipeline.renderPass_ == currentRenderPass);
+	const auto &p = pipelines.get(currentPipeline);
+	assert(!p.desc.scissorTest_ || scissorSet);
+	assert(p.desc.renderPass_ == currentRenderPass);
 	pipelineDrawn = true;
 
 	if (decriptorSetsDirty) {
