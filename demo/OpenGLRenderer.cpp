@@ -245,6 +245,30 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 }
 
 
+
+void mergeShaderResources(ShaderResources &first, const ShaderResources &second) {
+	// FIXME: this is O(n^2), use std::unordered_map instead
+	for (const auto &r : second) {
+		bool found = false;
+
+		for (const auto &old : first) {
+			if (old.set == r.set && old.binding == r.binding) {
+				if (old.type != r.type) {
+					LOG("ERROR: mismatch when merging shader resources, (%u, %u) is %s when expecting %s\n", r.set, r.binding, descriptorTypeName(r.type), descriptorTypeName(old.type));
+					throw std::runtime_error("resource mismatch");
+				}
+				found = true;
+				break;
+			}
+		}
+
+		if (!found) {
+			first.push_back(r);
+		}
+	}
+}
+
+
 RendererBase::RendererBase()
 : ringBuffer(0)
 , persistentMapInUse(false)
@@ -755,6 +779,9 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	const auto &v = vertexShaders.get(desc.vertexShader_);
     const auto &f = fragmentShaders.get(desc.fragmentShader_);
 
+	ShaderResources resources = v.resources;
+	mergeShaderResources(resources, f.resources);
+
 	// match shader resources against pipeline layouts
 	{
 		std::vector<std::vector<DescriptorLayout> > layouts;
@@ -791,6 +818,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	Pipeline &pipeline = result.first;
 	pipeline.desc      = desc;
 	pipeline.shader    = program;
+	pipeline.resources = std::move(resources);
 
 	return result.second;
 }

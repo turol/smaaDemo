@@ -54,6 +54,7 @@ typedef std::vector<ShaderResource> ShaderResources;
 struct Pipeline {
 	PipelineDesc  desc;
 	GLuint        shader;
+	ShaderResources  resources;
 
 
 	Pipeline(const Pipeline &)            = delete;
