@@ -29,6 +29,8 @@ THE SOFTWARE.
 #include <algorithm>
 #include <vector>
 
+#include <boost/variant/get.hpp>
+
 #include <spirv_glsl.hpp>
 
 #include "Renderer.h"
@@ -1471,8 +1473,7 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 				assert(buffer.buffer    != 0);
 				assert(buffer.beginOffs == 0);
 			}
-			// FIXME: descIndex is not right here
-			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, descIndex, buffer.buffer, buffer.beginOffs, buffer.size);
+			descriptors[idx] = handle;
 		} break;
 
 		case DescriptorType::Sampler: {
@@ -1513,60 +1514,57 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 void RendererBase::rebindDescriptorSets() {
 	assert(decriptorSetsDirty);
 
-	// FIXME: this is almost entirely wrong...
-	struct BindVisitor : public boost::static_visitor<> {
-		RendererBase  *r;
-		unsigned int  descIndex;
-		GLenum        bufferTarget;
+	const auto &pipeline  = pipelines.get(currentPipeline);
+	const auto &resources = pipeline.resources;
 
+	// TODO: only change what is necessary
+	for (const auto &r : resources) {
+		DSIndex idx;
+		idx.set     = r.set;
+		idx.binding = r.binding;
 
-		BindVisitor(RendererBase *r_, unsigned int descIndex_, GLenum bufferTarget_)
-		: r(r_)
-		, descIndex(descIndex_)
-		, bufferTarget(bufferTarget_)
-		{
-		}
+		// FIXME: descIndex is not right here
+		unsigned int descIndex = r.binding;
 
-		~BindVisitor() {}
+		// it should be impossible for boost::get to fail since we have checked
+		// the descriptor set layout against these in createPipeline
+		const auto &descriptor = descriptors[idx];
 
-		BindVisitor(const BindVisitor &)            = default;
-		BindVisitor(BindVisitor &&)                 = default;
+		switch (r.type) {
+		case DescriptorType::End:
+		case DescriptorType::Count: {
+			UNREACHABLE();
+		} break;
 
-		BindVisitor &operator=(const BindVisitor &) = default;
-		BindVisitor &operator=(BindVisitor &&)      = default;
+		case DescriptorType::UniformBuffer: {
+			const Buffer &buffer = buffers.get(boost::get<BufferHandle>(descriptor));
+			glBindBufferRange(GL_UNIFORM_BUFFER, descIndex, buffer.buffer, buffer.beginOffs, buffer.size);
+		} break;
 
+		case DescriptorType::StorageBuffer: {
+			const Buffer &buffer = buffers.get(boost::get<BufferHandle>(descriptor));
+			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, descIndex, buffer.buffer, buffer.beginOffs, buffer.size);
+		} break;
 
-		void operator()(const BufferHandle &handle) const {
-			const Buffer &buffer = r->buffers.get(handle);
-			glBindBufferRange(bufferTarget, descIndex, buffer.buffer, buffer.beginOffs, buffer.size);
-		}
-
-
-		void operator()(const CSampler &combined) const {
-			const Texture &tex  = r->textures.get(combined.tex);
-			glBindTextureUnit(descIndex, tex.tex);
-			const auto &sampler = r->samplers.get(combined.sampler);
+		case DescriptorType::Sampler: {
+			const auto &sampler = samplers.get(boost::get<SamplerHandle>(descriptor));
 			glBindSampler(descIndex, sampler.sampler);
-		}
+		} break;
 
-
-		void operator()(const SamplerHandle &handle) const {
-			const auto &sampler = r->samplers.get(handle);
-			glBindSampler(descIndex, sampler.sampler);
-		}
-
-		void operator()(const TextureHandle &handle) const {
-			const auto &tex = r->textures.get(handle);
+		case DescriptorType::Texture: {
+			const auto &tex = textures.get(boost::get<TextureHandle>(descriptor));
 			glBindTextureUnit(descIndex, tex.tex);
-		}
-	};
+		} break;
 
-	for (const auto &pair : descriptors) {
-		const DSIndex   idx = pair.first;
-		const Descriptor &d = pair.second;
-		// FIXME: idx.binding is not right, need to get it from pipeline
-		// FIXME: GL_UNIFORM_BUFFER it not right, need to get it from pipeline
-		boost::apply_visitor(BindVisitor(this, idx.binding, GL_UNIFORM_BUFFER), d);
+		case DescriptorType::CombinedSampler: {
+			const CSampler &combined = boost::get<CSampler>(descriptor);
+			const Texture &tex  = textures.get(combined.tex);
+			glBindTextureUnit(descIndex, tex.tex);
+			const auto &sampler = samplers.get(combined.sampler);
+			glBindSampler(descIndex, sampler.sampler);
+		} break;
+
+		}
 	}
 
 	decriptorSetsDirty = false;
