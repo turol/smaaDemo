@@ -1276,6 +1276,8 @@ void SMAADemo::render() {
 
 		GlobalDS globalDS;
 		globalDS.globalUniforms = renderer.createEphemeralBuffer(sizeof(ShaderDefines::Globals), &globals);
+		globalDS.linearSampler = linearSampler;
+		globalDS.nearestSampler = nearestSampler;
 		renderer.bindDescriptorSet(0, globalDS);
 
 		assert(activeScene - 1 < images.size());
