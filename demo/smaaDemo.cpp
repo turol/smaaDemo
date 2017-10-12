@@ -787,6 +787,10 @@ void SMAADemo::initRender() {
 		int width = 0, height = 0;
 		unsigned char *imageData = stbi_load(filename, &width, &height, NULL, 4);
 		LOG(" %s : %p  %dx%d\n", filename, imageData, width, height);
+		if (!imageData) {
+			LOG("Bad image: %s\n", stbi_failure_reason());
+			continue;
+		}
 
 		texDesc.width(width)
 		       .height(height)
@@ -798,6 +802,15 @@ void SMAADemo::initRender() {
 		img.tex = renderer.createTexture(texDesc);
 
 		stbi_image_free(imageData);
+	}
+
+	// remove failed images
+	for (auto it = images.begin(); it != images.end(); ) {
+		if (!it->tex) {
+			it = images.erase(it);
+		} else {
+			++it;
+		}
 	}
 
 	// default scene to last image or cubes if none
