@@ -1456,8 +1456,6 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 				assert(buffer.buffer    != 0);
 				assert(buffer.beginOffs == 0);
 			}
-			// FIXME: descIndex is not right here
-			glBindBufferRange(GL_UNIFORM_BUFFER, descIndex, buffer.buffer, buffer.beginOffs, buffer.size);
 			descriptors[idx] = handle;
 		} break;
 
@@ -1474,22 +1472,17 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 			}
 			// FIXME: descIndex is not right here
 			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, descIndex, buffer.buffer, buffer.beginOffs, buffer.size);
-			descriptors[idx] = handle;
 		} break;
 
 		case DescriptorType::Sampler: {
 			SamplerHandle handle = *reinterpret_cast<const SamplerHandle *>(data + l.offset);
 			const auto &sampler = samplers.get(handle);
 			assert(sampler.sampler);
-			glBindSampler(descIndex, sampler.sampler);
 			descriptors[idx] = handle;
 		} break;
 
 		case DescriptorType::Texture: {
 			TextureHandle texHandle = *reinterpret_cast<const TextureHandle *>(data + l.offset);
-			const auto &tex = textures.get(texHandle);
-			// FIXME: descIndex is not right here
-			glBindTextureUnit(descIndex, tex.tex);
 			descriptors[idx] = texHandle;
 		} break;
 
@@ -1502,9 +1495,6 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 			const auto &sampler = samplers.get(combined.sampler);
 			assert(sampler.sampler);
 
-			// FIXME: descIndex is not right here
-			glBindTextureUnit(descIndex, tex.tex);
-			glBindSampler(descIndex, sampler.sampler);
 			descriptors[idx] = combined;
 		} break;
 
@@ -1520,9 +1510,65 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 
 
 void RendererBase::rebindDescriptorSets() {
-	decriptorSetsDirty = false;
+	assert(decriptorSetsDirty);
 
-	// TODO: actually rebind them...
+	// FIXME: this is almost entirely wrong...
+	struct BindVisitor : public boost::static_visitor<> {
+		RendererBase  *r;
+		unsigned int  descIndex;
+		GLenum        bufferTarget;
+
+
+		BindVisitor(RendererBase *r_, unsigned int descIndex_, GLenum bufferTarget_)
+		: r(r_)
+		, descIndex(descIndex_)
+		, bufferTarget(bufferTarget_)
+		{
+		}
+
+		~BindVisitor() {}
+
+		BindVisitor(const BindVisitor &)            = default;
+		BindVisitor(BindVisitor &&)                 = default;
+
+		BindVisitor &operator=(const BindVisitor &) = default;
+		BindVisitor &operator=(BindVisitor &&)      = default;
+
+
+		void operator()(const BufferHandle &handle) const {
+			const Buffer &buffer = r->buffers.get(handle);
+			glBindBufferRange(bufferTarget, descIndex, buffer.buffer, buffer.beginOffs, buffer.size);
+		}
+
+
+		void operator()(const CSampler &combined) const {
+			const Texture &tex  = r->textures.get(combined.tex);
+			glBindTextureUnit(descIndex, tex.tex);
+			const auto &sampler = r->samplers.get(combined.sampler);
+			glBindSampler(descIndex, sampler.sampler);
+		}
+
+
+		void operator()(const SamplerHandle &handle) const {
+			const auto &sampler = r->samplers.get(handle);
+			glBindSampler(descIndex, sampler.sampler);
+		}
+
+		void operator()(const TextureHandle &handle) const {
+			const auto &tex = r->textures.get(handle);
+			glBindTextureUnit(descIndex, tex.tex);
+		}
+	};
+
+	for (const auto &pair : descriptors) {
+		const DSIndex   idx = pair.first;
+		const Descriptor &d = pair.second;
+		// FIXME: idx.binding is not right, need to get it from pipeline
+		// FIXME: GL_UNIFORM_BUFFER it not right, need to get it from pipeline
+		boost::apply_visitor(BindVisitor(this, idx.binding, GL_UNIFORM_BUFFER), d);
+	}
+
+	decriptorSetsDirty = false;
 }
 
 
