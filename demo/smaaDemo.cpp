@@ -1454,13 +1454,13 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 		int m = cubesPerSide;
 		bool changed = ImGui::InputInt("Cubes per side", &m);
-		if (changed && m > 0 && m < 128) {
+		if (changed && m > 0 && m < 64) {
 			cubesPerSide = m;
 			createCubes();
 		}
 
 		float l = cameraDistance;
-		if (ImGui::SliderFloat("Camera distance", &l, 1.0f, 128.0f, "%.1f")) {
+		if (ImGui::SliderFloat("Camera distance", &l, 1.0f, 256.0f, "%.1f")) {
 			cameraDistance = l;
 		}
 
