@@ -48,6 +48,9 @@ struct DescriptorSetLayout {
 };
 
 
+typedef std::vector<ShaderResource> ShaderResources;
+
+
 struct Pipeline {
 	PipelineDesc  desc;
 	GLuint        shader;
@@ -130,7 +133,7 @@ struct Buffer {
 struct VertexShader {
 	GLuint shader;
 	std::string name;
-	std::vector<ShaderResource> resources;
+	ShaderResources resources;
 
 
 	VertexShader(const VertexShader &) = delete;
@@ -153,7 +156,7 @@ struct VertexShader {
 struct FragmentShader {
 	GLuint shader;
 	std::string name;
-	std::vector<ShaderResource> resources;
+	ShaderResources resources;
 
 
 	FragmentShader(const FragmentShader &) = delete;
