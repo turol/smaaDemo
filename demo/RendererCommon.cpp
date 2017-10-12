@@ -32,6 +32,37 @@ THE SOFTWARE.
 namespace renderer {
 
 
+const char *descriptorTypeName(DescriptorType t) {
+	switch (t) {
+	case DescriptorType::End:
+		return "End";
+
+	case DescriptorType::UniformBuffer:
+		return "UniformBuffer";
+
+	case DescriptorType::StorageBuffer:
+		return "StorageBuffer";
+
+	case DescriptorType::Sampler:
+		return "Sampler";
+
+	case DescriptorType::Texture:
+		return "Texture";
+
+	case DescriptorType::CombinedSampler:
+		return "CombinedSampler";
+
+	case DescriptorType::Count:
+		UNREACHABLE();  // shouldn't happen
+		return "Count";
+
+	}
+
+	UNREACHABLE();
+	return "ERROR!";
+}
+
+
 void RendererImpl::SDLPrefDirDel::operator()(char *ptr) const {
 	SDL_free(ptr);
 }

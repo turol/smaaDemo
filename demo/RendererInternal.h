@@ -137,6 +137,9 @@ public:
 namespace renderer {
 
 
+const char *descriptorTypeName(DescriptorType t);
+
+
 struct RendererImpl : public RendererBase {
 	SwapchainDesc swapchainDesc;
 

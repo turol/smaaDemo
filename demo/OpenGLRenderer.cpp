@@ -728,37 +728,6 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 }
 
 
-static const char *descriptorTypeName(DescriptorType t) {
-	switch (t) {
-	case DescriptorType::End:
-		return "End";
-
-	case DescriptorType::UniformBuffer:
-		return "UniformBuffer";
-
-	case DescriptorType::StorageBuffer:
-		return "StorageBuffer";
-
-	case DescriptorType::Sampler:
-		return "Sampler";
-
-	case DescriptorType::Texture:
-		return "Texture";
-
-	case DescriptorType::CombinedSampler:
-		return "CombinedSampler";
-
-	case DescriptorType::Count:
-		UNREACHABLE();  // shouldn't happen
-		return "Count";
-
-	}
-
-	UNREACHABLE();
-	return "ERROR!";
-}
-
-
 static void checkShaderResources(const std::string &name, const std::vector<ShaderResource> &resources, const std::vector<std::vector<DescriptorLayout> > &layouts) {
 	for (const auto &r : resources) {
 		assert(r.set < MAX_DESCRIPTOR_SETS);
