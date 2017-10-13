@@ -251,7 +251,7 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 void mergeShaderResources(ShaderResources &first, const ShaderResources &second) {
 	for (unsigned int i = 0; i < second.ubos.size(); i++) {
 		DSIndex idx = second.ubos.at(i);
-		if (first.ubos.size() >= i) {
+		if (i < first.ubos.size()) {
 			DSIndex other = first.ubos.at(i);
 			if (idx != other) {
 				LOG("ERROR: mismatch when merging shader UBOs, %u is (%u, %u) when expecting (%u, %u)\n", i, idx.set, idx.binding, other.set, other.binding);
@@ -264,7 +264,7 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 
 	for (unsigned int i = 0; i < second.ssbos.size(); i++) {
 		DSIndex idx = second.ssbos.at(i);
-		if (first.ssbos.size() >= i) {
+		if (i < first.ssbos.size()) {
 			DSIndex other = first.ssbos.at(i);
 			if (idx != other) {
 				LOG("ERROR: mismatch when merging shader SSBOs, %u is (%u, %u) when expecting (%u, %u)\n", i, idx.set, idx.binding, other.set, other.binding);
