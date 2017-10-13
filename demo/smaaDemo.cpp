@@ -265,6 +265,8 @@ class SMAADemo {
 		~Image() {}
 	};
 
+	std::vector<std::string> imageFiles;
+
 	std::vector<Image> images;
 
 	std::vector<ShaderDefines::Cube> cubes;
@@ -465,19 +467,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		windowWidth = windowWidthSwitch.getValue();
 		windowHeight = windowHeightSwitch.getValue();
 
-		const auto &imageFiles = imagesArg.getValue();
-		images.reserve(imageFiles.size());
-		for (const auto &filename : imageFiles) {
-			images.push_back(Image());
-			auto &img = images.back();
-			img.filename = filename;
-			auto lastSlash = filename.rfind('/');
-			if (lastSlash != std::string::npos) {
-                img.shortName = filename.substr(lastSlash + 1);
-			} else {
-				img.shortName = filename;
-			}
-		}
+		imageFiles = imagesArg.getValue();
 
 	} catch (TCLAP::ArgException &e) {
 		LOG("parseCommandLine exception: %s for arg %s\n", e.error().c_str(), e.argId().c_str());
@@ -784,39 +774,10 @@ void SMAADemo::initRender() {
 		searchTex = renderer.createTexture(texDesc);
 	}
 
-	for (auto &img : images) {
-		const auto filename = img.filename.c_str();
-		int width = 0, height = 0;
-		unsigned char *imageData = stbi_load(filename, &width, &height, NULL, 4);
-		LOG(" %s : %p  %dx%d\n", filename, imageData, width, height);
-		if (!imageData) {
-			LOG("Bad image: %s\n", stbi_failure_reason());
-			continue;
-		}
-
-		texDesc.width(width)
-		       .height(height)
-		       .format(Format::RGBA8);
-
-		texDesc.mipLevelData(0, imageData, width * height * 4);
-		img.width  = width;
-		img.height = height;
-		img.tex = renderer.createTexture(texDesc);
-
-		stbi_image_free(imageData);
+	images.reserve(imageFiles.size());
+	for (const auto &filename : imageFiles) {
+		loadImage(filename);
 	}
-
-	// remove failed images
-	for (auto it = images.begin(); it != images.end(); ) {
-		if (!it->tex) {
-			it = images.erase(it);
-		} else {
-			++it;
-		}
-	}
-
-	// default scene to last image or cubes if none
-	activeScene = static_cast<unsigned int>(images.size());
 
 	// imgui setup
 	{
