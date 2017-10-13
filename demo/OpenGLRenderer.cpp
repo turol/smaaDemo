@@ -250,10 +250,10 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 
 void mergeShaderResources(ShaderResources &first, const ShaderResources &second) {
 	// FIXME: this is O(n^2), use std::unordered_map instead
-	for (const auto &r : second) {
+	for (const auto &r : second.resources) {
 		bool found = false;
 
-		for (const auto &old : first) {
+		for (const auto &old : first.resources) {
 			if (old.set == r.set && old.binding == r.binding) {
 				if (old.type != r.type) {
 					LOG("ERROR: mismatch when merging shader resources, (%u, %u) is %s when expecting %s\n", r.set, r.binding, descriptorTypeName(r.type), descriptorTypeName(old.type));
@@ -265,7 +265,7 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 		}
 
 		if (!found) {
-			first.push_back(r);
+			first.resources.push_back(r);
 		}
 	}
 }
@@ -580,7 +580,7 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 }
 
 
-static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerGLSL &glsl) {
+ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl) {
 	auto spvResources = glsl.get_shader_resources();
 
 	// TODO: map descriptor sets to opengl indices for textures/samplers
@@ -589,14 +589,14 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 	// TODO: need to store this info
 	glsl.build_combined_image_samplers();
 
-	std::vector<ShaderResource> resources;
+	ShaderResources resources;
 
 	for (const auto &ubo : spvResources.uniform_buffers) {
 		ShaderResource r;
 		r.set     = glsl.get_decoration(ubo.id, spv::DecorationDescriptorSet);
 		r.binding = glsl.get_decoration(ubo.id, spv::DecorationBinding);
 		r.type    = DescriptorType::UniformBuffer;
-		resources.push_back(r);
+		resources.resources.push_back(r);
 
 		// opengl doesn't like set decorations, strip them
 		// TODO: check that indices don't conflict
@@ -608,7 +608,7 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 		r.set     = glsl.get_decoration(ssbo.id, spv::DecorationDescriptorSet);
 		r.binding = glsl.get_decoration(ssbo.id, spv::DecorationBinding);
 		r.type    = DescriptorType::StorageBuffer;
-		resources.push_back(r);
+		resources.resources.push_back(r);
 
 		// opengl doesn't like set decorations, strip them
 		// TODO: check that indices don't conflict
@@ -620,7 +620,7 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 		r.set     = glsl.get_decoration(s.id, spv::DecorationDescriptorSet);
 		r.binding = glsl.get_decoration(s.id, spv::DecorationBinding);
 		r.type    = DescriptorType::Sampler;
-		resources.push_back(r);
+		resources.resources.push_back(r);
 
 		// opengl doesn't like set decorations, strip them
 		// TODO: check that indices don't conflict
@@ -632,7 +632,7 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 		r.set     = glsl.get_decoration(tex.id, spv::DecorationDescriptorSet);
 		r.binding = glsl.get_decoration(tex.id, spv::DecorationBinding);
 		r.type    = DescriptorType::Texture;
-		resources.push_back(r);
+		resources.resources.push_back(r);
 
 		// opengl doesn't like set decorations, strip them
 		// TODO: check that indices don't conflict
@@ -644,7 +644,7 @@ static std::vector<ShaderResource> processShaderResources(spirv_cross::CompilerG
 		r.set     = glsl.get_decoration(s.id, spv::DecorationDescriptorSet);
 		r.binding = glsl.get_decoration(s.id, spv::DecorationBinding);
 		r.type    = DescriptorType::CombinedSampler;
-		resources.push_back(r);
+		resources.resources.push_back(r);
 
 		// opengl doesn't like set decorations, strip them
 		// TODO: check that indices don't conflict
@@ -754,8 +754,8 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 }
 
 
-static void checkShaderResources(const std::string &name, const std::vector<ShaderResource> &resources, const std::vector<std::vector<DescriptorLayout> > &layouts) {
-	for (const auto &r : resources) {
+static void checkShaderResources(const std::string &name, const ShaderResources &resources, const std::vector<std::vector<DescriptorLayout> > &layouts) {
+	for (const auto &r : resources.resources) {
 		assert(r.set < MAX_DESCRIPTOR_SETS);
 		const auto &set = layouts[r.set];
 
@@ -1518,7 +1518,7 @@ void RendererBase::rebindDescriptorSets() {
 	const auto &resources = pipeline.resources;
 
 	// TODO: only change what is necessary
-	for (const auto &r : resources) {
+	for (const auto &r : resources.resources) {
 		DSIndex idx;
 		idx.set     = r.set;
 		idx.binding = r.binding;

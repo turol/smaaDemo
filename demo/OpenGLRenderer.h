@@ -48,7 +48,25 @@ struct DescriptorSetLayout {
 };
 
 
-typedef std::vector<ShaderResource> ShaderResources;
+struct ShaderResources {
+	std::vector<ShaderResource> resources;
+
+
+	explicit ShaderResources(std::vector<ShaderResource> &&resources_)
+	: resources(std::move(resources_))
+	{
+	}
+
+	ShaderResources() {}
+	~ShaderResources() {}
+
+	ShaderResources(const ShaderResources &)            = default;
+	ShaderResources(ShaderResources &&)                 = default;
+
+	ShaderResources &operator=(const ShaderResources &) = default;
+	ShaderResources &operator=(ShaderResources &&)      = default;
+
+};
 
 
 struct Pipeline {
