@@ -36,6 +36,17 @@ THE SOFTWARE.
 namespace renderer {
 
 
+struct DSIndex {
+	uint8_t set;
+	uint8_t binding;
+
+
+	bool operator==(const DSIndex &other) const {
+		return (set == other.set) && (binding == other.binding);
+	}
+};
+
+
 struct ShaderResource {
 	unsigned int    set;
 	unsigned int    binding;
@@ -422,17 +433,6 @@ struct Texture {
 
 
 typedef boost::variant<BufferHandle, CSampler, SamplerHandle, TextureHandle> Descriptor;
-
-
-struct DSIndex {
-	uint8_t set;
-	uint8_t binding;
-
-
-	bool operator==(const DSIndex &other) const {
-		return (set == other.set) && (binding == other.binding);
-	}
-};
 
 
 }  // namespace renderer
