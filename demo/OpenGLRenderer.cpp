@@ -249,6 +249,19 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 
 
 void mergeShaderResources(ShaderResources &first, const ShaderResources &second) {
+	for (unsigned int i = 0; i < second.ssbos.size(); i++) {
+		DSIndex idx = second.ssbos.at(i);
+		if (first.ssbos.size() >= i) {
+			DSIndex other = first.ssbos.at(i);
+			if (idx != other) {
+				LOG("ERROR: mismatch when merging shader SSBOs, %u is (%u, %u) when expecting (%u, %u)\n", i, idx.set, idx.binding, other.set, other.binding);
+				throw std::runtime_error("resource mismatch");
+			}
+		} else {
+			first.ssbos.push_back(idx);
+		}
+	}
+
 	// FIXME: this is O(n^2), use std::unordered_map instead
 	for (const auto &r : second.resources) {
 		bool found = false;
@@ -604,15 +617,16 @@ ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl) {
 	}
 
 	for (const auto &ssbo : spvResources.storage_buffers) {
-		ShaderResource r;
-		r.set     = glsl.get_decoration(ssbo.id, spv::DecorationDescriptorSet);
-		r.binding = glsl.get_decoration(ssbo.id, spv::DecorationBinding);
-		r.type    = DescriptorType::StorageBuffer;
-		resources.resources.push_back(r);
+		DSIndex idx;
+		idx.set     = glsl.get_decoration(ssbo.id, spv::DecorationDescriptorSet);
+		idx.binding = glsl.get_decoration(ssbo.id, spv::DecorationBinding);
+
+		unsigned int openglIDX = resources.ssbos.size();
+		resources.ssbos.push_back(idx);
 
 		// opengl doesn't like set decorations, strip them
-		// TODO: check that indices don't conflict
 		glsl.unset_decoration(ssbo.id, spv::DecorationDescriptorSet);
+		glsl.set_decoration(ssbo.id, spv::DecorationBinding, openglIDX);
 	}
 
 	for (const auto &s : spvResources.separate_samplers) {
@@ -1518,6 +1532,13 @@ void RendererBase::rebindDescriptorSets() {
 	const auto &resources = pipeline.resources;
 
 	// TODO: only change what is necessary
+	for (unsigned int i = 0; i < resources.ssbos.size(); i++) {
+		const auto &r = resources.ssbos.at(i);
+		const auto &d = descriptors.at(r);
+		const Buffer &buffer = buffers.get(boost::get<BufferHandle>(d));
+		glBindBufferRange(GL_SHADER_STORAGE_BUFFER, i, buffer.buffer, buffer.beginOffs, buffer.size);
+	}
+
 	for (const auto &r : resources.resources) {
 		DSIndex idx;
 		idx.set     = r.set;
@@ -1542,8 +1563,7 @@ void RendererBase::rebindDescriptorSets() {
 		} break;
 
 		case DescriptorType::StorageBuffer: {
-			const Buffer &buffer = buffers.get(boost::get<BufferHandle>(descriptor));
-			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, descIndex, buffer.buffer, buffer.beginOffs, buffer.size);
+			assert(false);
 		} break;
 
 		case DescriptorType::Sampler: {

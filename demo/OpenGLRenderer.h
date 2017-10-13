@@ -44,6 +44,10 @@ struct DSIndex {
 	bool operator==(const DSIndex &other) const {
 		return (set == other.set) && (binding == other.binding);
 	}
+
+	bool operator!=(const DSIndex &other) const {
+		return (set != other.set) || (binding != other.binding);
+	}
 };
 
 
@@ -61,6 +65,7 @@ struct DescriptorSetLayout {
 
 struct ShaderResources {
 	std::vector<ShaderResource> resources;
+	std::vector<DSIndex>        ssbos;
 
 
 	explicit ShaderResources(std::vector<ShaderResource> &&resources_)
