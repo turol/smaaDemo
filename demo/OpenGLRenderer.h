@@ -65,6 +65,7 @@ struct DescriptorSetLayout {
 
 struct ShaderResources {
 	std::vector<ShaderResource> resources;
+	std::vector<DSIndex>        ubos;
 	std::vector<DSIndex>        ssbos;
 
 
