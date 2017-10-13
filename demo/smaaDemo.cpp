@@ -299,6 +299,8 @@ public:
 	void render();
 
 	void drawGUI(uint64_t elapsed);
+
+	void loadImage(const std::string &filename);
 };
 
 
@@ -861,6 +863,42 @@ void SMAADemo::initRender() {
 }
 
 
+void SMAADemo::loadImage(const std::string &filename) {
+	int width = 0, height = 0;
+	unsigned char *imageData = stbi_load(filename.c_str(), &width, &height, NULL, 4);
+	LOG(" %s : %p  %dx%d\n", filename.c_str(), imageData, width, height);
+	if (!imageData) {
+		LOG("Bad image: %s\n", stbi_failure_reason());
+		return;
+	}
+
+	images.push_back(Image());
+	auto &img = images.back();
+	img.filename = filename;
+	auto lastSlash = filename.rfind('/');
+	if (lastSlash != std::string::npos) {
+		img.shortName = filename.substr(lastSlash + 1);
+	}
+	else {
+		img.shortName = filename;
+	}
+
+	TextureDesc texDesc;
+	texDesc.width(width)
+		.height(height)
+		.format(Format::RGBA8);
+
+	texDesc.mipLevelData(0, imageData, width * height * 4);
+	img.width  = width;
+	img.height = height;
+	img.tex    = renderer.createTexture(texDesc);
+
+	stbi_image_free(imageData);
+
+	activeScene = static_cast<unsigned int>(images.size());
+}
+
+
 void SMAADemo::createFramebuffers()	{
 	if (rendertargets[0]) {
 		assert(sceneFramebuffer);
@@ -1178,6 +1216,13 @@ void SMAADemo::mainLoopIteration() {
 		case SDL_MOUSEWHEEL:
 			io.MouseWheel = static_cast<float>(event.wheel.y);
 			break;
+
+		case SDL_DROPFILE: {
+				char* droppedFile = event.drop.file;
+				std::string filestring(droppedFile);
+				SDL_free(droppedFile);
+				loadImage(filestring);
+			} break;
 
 		}
 	}
