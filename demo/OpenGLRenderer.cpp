@@ -275,6 +275,32 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 		}
 	}
 
+	for (unsigned int i = 0; i < second.textures.size(); i++) {
+		DSIndex idx = second.textures.at(i);
+		if (i < first.textures.size()) {
+			DSIndex other = first.textures.at(i);
+			if (idx != other) {
+				LOG("ERROR: mismatch when merging shader textures, %u is (%u, %u) when expecting (%u, %u)\n", i, idx.set, idx.binding, other.set, other.binding);
+				throw std::runtime_error("resource mismatch");
+			}
+		} else {
+			first.textures.push_back(idx);
+		}
+	}
+
+	for (unsigned int i = 0; i < second.samplers.size(); i++) {
+		DSIndex idx = second.samplers.at(i);
+		if (i < first.samplers.size()) {
+			DSIndex other = first.samplers.at(i);
+			if (idx != other) {
+				LOG("ERROR: mismatch when merging shader textures, %u is (%u, %u) when expecting (%u, %u)\n", i, idx.set, idx.binding, other.set, other.binding);
+				throw std::runtime_error("resource mismatch");
+			}
+		} else {
+			first.samplers.push_back(idx);
+		}
+	}
+
 	// FIXME: this is O(n^2), use std::unordered_map instead
 	for (const auto &r : second.resources) {
 		bool found = false;
@@ -643,40 +669,19 @@ ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl) {
 		glsl.set_decoration(ssbo.id, spv::DecorationBinding, openglIDX);
 	}
 
-	for (const auto &s : spvResources.separate_samplers) {
-		ShaderResource r;
-		r.set     = glsl.get_decoration(s.id, spv::DecorationDescriptorSet);
-		r.binding = glsl.get_decoration(s.id, spv::DecorationBinding);
-		r.type    = DescriptorType::Sampler;
-		resources.resources.push_back(r);
-
-		// opengl doesn't like set decorations, strip them
-		// TODO: check that indices don't conflict
-		glsl.unset_decoration(s.id, spv::DecorationDescriptorSet);
-	}
-
-	for (const auto &tex : spvResources.separate_images) {
-		ShaderResource r;
-		r.set     = glsl.get_decoration(tex.id, spv::DecorationDescriptorSet);
-		r.binding = glsl.get_decoration(tex.id, spv::DecorationBinding);
-		r.type    = DescriptorType::Texture;
-		resources.resources.push_back(r);
-
-		// opengl doesn't like set decorations, strip them
-		// TODO: check that indices don't conflict
-		glsl.unset_decoration(tex.id, spv::DecorationDescriptorSet);
-	}
-
 	for (const auto &s : spvResources.sampled_images) {
-		ShaderResource r;
-		r.set     = glsl.get_decoration(s.id, spv::DecorationDescriptorSet);
-		r.binding = glsl.get_decoration(s.id, spv::DecorationBinding);
-		r.type    = DescriptorType::CombinedSampler;
-		resources.resources.push_back(r);
+		DSIndex idx;
+		idx.set     = glsl.get_decoration(s.id, spv::DecorationDescriptorSet);
+		idx.binding = glsl.get_decoration(s.id, spv::DecorationBinding);
+
+		unsigned int openglIDX = resources.textures.size();
+		assert(openglIDX == resources.samplers.size());
+		resources.textures.push_back(idx);
+		resources.samplers.push_back(idx);
 
 		// opengl doesn't like set decorations, strip them
-		// TODO: check that indices don't conflict
 		glsl.unset_decoration(s.id, spv::DecorationDescriptorSet);
+		glsl.set_decoration(s.id, spv::DecorationBinding, openglIDX);
 	}
 
 	return resources;
@@ -1560,6 +1565,22 @@ void RendererBase::rebindDescriptorSets() {
 		glBindBufferRange(GL_SHADER_STORAGE_BUFFER, i, buffer.buffer, buffer.beginOffs, buffer.size);
 	}
 
+	for (unsigned int i = 0; i < resources.textures.size(); i++) {
+		const auto &r = resources.textures.at(i);
+		const auto &d = descriptors.at(r);
+		const CSampler &combined = boost::get<CSampler>(d);
+		const Texture &tex  = textures.get(combined.tex);
+		glBindTextureUnit(i, tex.tex);
+	}
+
+	for (unsigned int i = 0; i < resources.samplers.size(); i++) {
+		const auto &r = resources.samplers.at(i);
+		const auto &d = descriptors.at(r);
+		const CSampler &combined = boost::get<CSampler>(d);
+		const auto &sampler = samplers.get(combined.sampler);
+		glBindSampler(i, sampler.sampler);
+	}
+
 	for (const auto &r : resources.resources) {
 		DSIndex idx;
 		idx.set     = r.set;
@@ -1597,11 +1618,7 @@ void RendererBase::rebindDescriptorSets() {
 		} break;
 
 		case DescriptorType::CombinedSampler: {
-			const CSampler &combined = boost::get<CSampler>(descriptor);
-			const Texture &tex  = textures.get(combined.tex);
-			glBindTextureUnit(descIndex, tex.tex);
-			const auto &sampler = samplers.get(combined.sampler);
-			glBindSampler(descIndex, sampler.sampler);
+			assert(false);
 		} break;
 
 		}

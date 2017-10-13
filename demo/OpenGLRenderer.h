@@ -67,6 +67,8 @@ struct ShaderResources {
 	std::vector<ShaderResource> resources;
 	std::vector<DSIndex>        ubos;
 	std::vector<DSIndex>        ssbos;
+	std::vector<DSIndex>        textures;
+	std::vector<DSIndex>        samplers;
 
 
 	explicit ShaderResources(std::vector<ShaderResource> &&resources_)
