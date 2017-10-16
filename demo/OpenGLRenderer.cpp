@@ -787,20 +787,7 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 }
 
 
-static void checkShaderResources(const std::string &name, const ShaderResources &resources, const std::vector<std::vector<DescriptorLayout> > &layouts) {
-	// construct layout map
-	// TODO: move this to caller so it can be shared it between stages
-	std::unordered_map<DSIndex, DescriptorType> layoutMap;
-	for (unsigned int set = 0; set < layouts.size(); set++) {
-		const auto &setLayout = layouts.at(set);
-		for (unsigned int binding = 0; binding < setLayout.size(); binding++) {
-			DSIndex idx;
-			idx.set     = set;
-			idx.binding = binding;
-			layoutMap.emplace(idx, setLayout.at(binding).type);
-		}
-	}
-
+static void checkShaderResources(const std::string &name, const ShaderResources &resources, const std::unordered_map<DSIndex, DescriptorType> &layoutMap) {
 	for (const auto &r : resources.ubos) {
 		auto type = layoutMap.at(r);
 		if (type != DescriptorType::UniformBuffer) {
@@ -851,15 +838,21 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 
 	// match shader resources against pipeline layouts
 	{
-		std::vector<std::vector<DescriptorLayout> > layouts;
-		layouts.resize(MAX_DESCRIPTOR_SETS);
+		// construct layout map
+		std::unordered_map<DSIndex, DescriptorType> layoutMap;
 		for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
 			if (desc.descriptorSetLayouts[i]) {
-				layouts[i] = dsLayouts.get(desc.descriptorSetLayouts[i]).layout;
+				const auto &layoutDesc = dsLayouts.get(desc.descriptorSetLayouts[i]).layout;
+				for (unsigned int binding = 0; binding < layoutDesc.size(); binding++) {
+					DSIndex idx;
+					idx.set     = i;
+					idx.binding = binding;
+					layoutMap.emplace(idx, layoutDesc.at(binding).type);
+				}
 			}
 		}
-		checkShaderResources(v.name, v.resources, layouts);
-		checkShaderResources(f.name, f.resources, layouts);
+		checkShaderResources(v.name, v.resources, layoutMap);
+		checkShaderResources(f.name, f.resources, layoutMap);
 	}
 
 	// TODO: cache shaders
