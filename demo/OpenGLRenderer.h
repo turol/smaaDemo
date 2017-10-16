@@ -51,30 +51,17 @@ struct DSIndex {
 };
 
 
-struct ShaderResource {
-	unsigned int    set;
-	unsigned int    binding;
-	DescriptorType  type;
-};
-
-
 struct DescriptorSetLayout {
 	std::vector<DescriptorLayout> layout;
 };
 
 
 struct ShaderResources {
-	std::vector<ShaderResource> resources;
 	std::vector<DSIndex>        ubos;
 	std::vector<DSIndex>        ssbos;
 	std::vector<DSIndex>        textures;
 	std::vector<DSIndex>        samplers;
 
-
-	explicit ShaderResources(std::vector<ShaderResource> &&resources_)
-	: resources(std::move(resources_))
-	{
-	}
 
 	ShaderResources() {}
 	~ShaderResources() {}

@@ -300,26 +300,6 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 			first.samplers.push_back(idx);
 		}
 	}
-
-	// FIXME: this is O(n^2), use std::unordered_map instead
-	for (const auto &r : second.resources) {
-		bool found = false;
-
-		for (const auto &old : first.resources) {
-			if (old.set == r.set && old.binding == r.binding) {
-				if (old.type != r.type) {
-					LOG("ERROR: mismatch when merging shader resources, (%u, %u) is %s when expecting %s\n", r.set, r.binding, descriptorTypeName(r.type), descriptorTypeName(old.type));
-					throw std::runtime_error("resource mismatch");
-				}
-				found = true;
-				break;
-			}
-		}
-
-		if (!found) {
-			first.resources.push_back(r);
-		}
-	}
 }
 
 
@@ -819,8 +799,6 @@ static void checkShaderResources(const std::string &name, const ShaderResources 
 			throw std::runtime_error("descriptor set layout mismatch");
 		}
 	}
-
-	assert(resources.resources.empty());
 }
 
 
@@ -1604,49 +1582,6 @@ void RendererBase::rebindDescriptorSets() {
 		const CSampler &combined = boost::get<CSampler>(d);
 		const auto &sampler = samplers.get(combined.sampler);
 		glBindSampler(i, sampler.sampler);
-	}
-
-	for (const auto &r : resources.resources) {
-		DSIndex idx;
-		idx.set     = r.set;
-		idx.binding = r.binding;
-
-		// FIXME: descIndex is not right here
-		unsigned int descIndex = r.binding;
-
-		// it should be impossible for boost::get to fail since we have checked
-		// the descriptor set layout against these in createPipeline
-		const auto &descriptor = descriptors[idx];
-
-		switch (r.type) {
-		case DescriptorType::End:
-		case DescriptorType::Count: {
-			UNREACHABLE();
-		} break;
-
-		case DescriptorType::UniformBuffer: {
-			assert(false);
-		} break;
-
-		case DescriptorType::StorageBuffer: {
-			assert(false);
-		} break;
-
-		case DescriptorType::Sampler: {
-			const auto &sampler = samplers.get(boost::get<SamplerHandle>(descriptor));
-			glBindSampler(descIndex, sampler.sampler);
-		} break;
-
-		case DescriptorType::Texture: {
-			const auto &tex = textures.get(boost::get<TextureHandle>(descriptor));
-			glBindTextureUnit(descIndex, tex.tex);
-		} break;
-
-		case DescriptorType::CombinedSampler: {
-			assert(false);
-		} break;
-
-		}
 	}
 
 	decriptorSetsDirty = false;
