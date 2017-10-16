@@ -115,7 +115,7 @@ const char* GetClipboardText(void* user_data) {
 }
 
 
-void SetClipboardText(void* user_data, const char* text) {
+void SetClipboardText(void* /* user_data */, const char* text) {
 	SDL_SetClipboardText(text);
 }
 
