@@ -97,6 +97,8 @@ const char *name(AAMethod m) {
 
 const char *smaaDebugModes[3] = { "None", "Edges", "Weights" };
 
+static const unsigned int inputTextBufferSize = 1024;
+
 
 // *Really* minimal PCG32 code / (c) 2014 M.E. O'Neill / pcg-random.org
 // Licensed under Apache License 2.0 (NO WARRANTY, etc. see website)
@@ -240,6 +242,7 @@ class SMAADemo {
 	// 1.. for images
 	unsigned int activeScene;
 	bool textInputActive;
+	char imageFileName[inputTextBufferSize];
 
 
 	struct Image {
@@ -336,6 +339,8 @@ SMAADemo::SMAADemo()
 {
 	freq = SDL_GetPerformanceFrequency();
 	lastTime = SDL_GetPerformanceCounter();
+
+	memset(imageFileName, 0, inputTextBufferSize);
 
 	// TODO: detect screens, log interesting display parameters etc
 	// TODO: initialize random using external source
@@ -1471,6 +1476,23 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			assert(s >= 0);
 			assert(s < int(scenes.size()));
 			activeScene = s;
+		}
+
+		ImGui::InputText("Load image", imageFileName, inputTextBufferSize);
+
+		if (ImGui::Button("Paste")) {
+			char *clipboard = SDL_GetClipboardText();
+			if (clipboard) {
+				size_t length = strnlen(clipboard, inputTextBufferSize - 1);
+				strncpy(imageFileName, clipboard, length);
+				imageFileName[length] = '\0';
+				SDL_free(clipboard);
+			}
+		}
+
+		if (ImGui::Button("Load")) {
+			std::string filename(imageFileName);
+			loadImage(filename);
 		}
 
 		int m = cubesPerSide;
