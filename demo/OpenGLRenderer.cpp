@@ -788,20 +788,52 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 
 
 static void checkShaderResources(const std::string &name, const ShaderResources &resources, const std::vector<std::vector<DescriptorLayout> > &layouts) {
-	for (const auto &r : resources.resources) {
-		assert(r.set < MAX_DESCRIPTOR_SETS);
-		const auto &set = layouts[r.set];
-
-		if (r.binding >= set.size()) {
-			LOG("ERROR: set %u binding %u type %s in shader \"%s\" greater than set size (%u)\n", r.set, r.binding, descriptorTypeName(r.type), name.c_str(), static_cast<unsigned int>(set.size()));
-			throw std::runtime_error("no required descriptor in set");
+	// construct layout map
+	// TODO: move this to caller so it can be shared it between stages
+	std::unordered_map<DSIndex, DescriptorType> layoutMap;
+	for (unsigned int set = 0; set < layouts.size(); set++) {
+		const auto &setLayout = layouts.at(set);
+		for (unsigned int binding = 0; binding < setLayout.size(); binding++) {
+			DSIndex idx;
+			idx.set     = set;
+			idx.binding = binding;
+			layoutMap.emplace(idx, setLayout.at(binding).type);
 		}
+	}
 
-		if (set[r.binding].type != r.type) {
-			LOG("ERROR: set %u binding %u type %s in shader \"%s\" doesn't match ds layout (%s)\n", r.set, r.binding, descriptorTypeName(r.type), name.c_str(), descriptorTypeName(set[r.binding].type));
+	for (const auto &r : resources.ubos) {
+		auto type = layoutMap.at(r);
+		if (type != DescriptorType::UniformBuffer) {
+			LOG("ERROR: set %u binding %u type %s in shader \"%s\" doesn't match ds layout (%s)\n", r.set, r.binding, descriptorTypeName(DescriptorType::UniformBuffer), name.c_str(), descriptorTypeName(type));
 			throw std::runtime_error("descriptor set layout mismatch");
 		}
 	}
+
+	for (const auto &r : resources.ssbos) {
+		auto type = layoutMap.at(r);
+		if (type != DescriptorType::StorageBuffer) {
+			LOG("ERROR: set %u binding %u type %s in shader \"%s\" doesn't match ds layout (%s)\n", r.set, r.binding, descriptorTypeName(DescriptorType::StorageBuffer), name.c_str(), descriptorTypeName(type));
+			throw std::runtime_error("descriptor set layout mismatch");
+		}
+	}
+
+	for (const auto &r : resources.textures) {
+		auto type = layoutMap.at(r);
+		if (type != DescriptorType::Texture && type != DescriptorType::CombinedSampler) {
+			LOG("ERROR: set %u binding %u type texture in shader \"%s\" doesn't match ds layout (%s)\n", r.set, r.binding, name.c_str(), descriptorTypeName(type));
+			throw std::runtime_error("descriptor set layout mismatch");
+		}
+	}
+
+	for (const auto &r : resources.samplers) {
+		auto type = layoutMap.at(r);
+		if (type != DescriptorType::Sampler && type != DescriptorType::CombinedSampler) {
+			LOG("ERROR: set %u binding %u type sampler in shader \"%s\" doesn't match ds layout (%s)\n", r.set, r.binding, name.c_str(), descriptorTypeName(type));
+			throw std::runtime_error("descriptor set layout mismatch");
+		}
+	}
+
+	assert(resources.resources.empty());
 }
 
 
