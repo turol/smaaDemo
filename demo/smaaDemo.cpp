@@ -100,6 +100,26 @@ const char *smaaDebugModes[3] = { "None", "Edges", "Weights" };
 static const unsigned int inputTextBufferSize = 1024;
 
 
+const char* GetClipboardText(void* user_data) {
+	char *clipboard = SDL_GetClipboardText();
+	if (clipboard) {
+		char *text = static_cast<char*>(user_data);
+		size_t length = strnlen(clipboard, inputTextBufferSize - 1);
+		strncpy(text, clipboard, length);
+		text[length] = '\0';
+		SDL_free(clipboard);
+		return text;
+	} else {
+		return nullptr;
+	}
+}
+
+
+void SetClipboardText(void* user_data, const char* text) {
+	SDL_SetClipboardText(text);
+}
+
+
 // *Really* minimal PCG32 code / (c) 2014 M.E. O'Neill / pcg-random.org
 // Licensed under Apache License 2.0 (NO WARRANTY, etc. see website)
 
@@ -243,6 +263,7 @@ class SMAADemo {
 	unsigned int activeScene;
 	bool textInputActive;
 	char imageFileName[inputTextBufferSize];
+	char clipboardText[inputTextBufferSize];
 
 
 	struct Image {
@@ -341,6 +362,7 @@ SMAADemo::SMAADemo()
 	lastTime = SDL_GetPerformanceCounter();
 
 	memset(imageFileName, 0, inputTextBufferSize);
+	memset(clipboardText, 0, inputTextBufferSize);
 
 	// TODO: detect screens, log interesting display parameters etc
 	// TODO: initialize random using external source
@@ -809,9 +831,9 @@ void SMAADemo::initRender() {
 		io.KeyMap[ImGuiKey_Z]          = SDL_SCANCODE_Z;
 
 		// TODO: clipboard
-		io.SetClipboardTextFn = nullptr;
-		io.GetClipboardTextFn = nullptr;
-		io.ClipboardUserData  = nullptr;
+		io.SetClipboardTextFn = SetClipboardText;
+		io.GetClipboardTextFn = GetClipboardText;
+		io.ClipboardUserData  = clipboardText;
 
 		// Build texture atlas
 		unsigned char *pixels = nullptr;
