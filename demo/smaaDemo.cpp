@@ -1480,6 +1480,8 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 		ImGui::InputText("Load image", imageFileName, inputTextBufferSize);
 
+		ImGui::Columns(2);
+
 		if (ImGui::Button("Paste")) {
 			char *clipboard = SDL_GetClipboardText();
 			if (clipboard) {
@@ -1489,11 +1491,13 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 				SDL_free(clipboard);
 			}
 		}
-
+		ImGui::NextColumn();
 		if (ImGui::Button("Load")) {
 			std::string filename(imageFileName);
 			loadImage(filename);
 		}
+
+		ImGui::Columns(1);
 
 		int m = cubesPerSide;
 		bool changed = ImGui::InputInt("Cubes per side", &m);
