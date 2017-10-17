@@ -539,6 +539,22 @@ const DescriptorLayout ColorCombinedDS::layout[] = {
 DSLayoutHandle ColorCombinedDS::layoutHandle;
 
 
+struct ColorTexDS {
+	TextureHandle color;
+
+	static const DescriptorLayout layout[];
+	static DSLayoutHandle layoutHandle;
+};
+
+
+const DescriptorLayout ColorTexDS::layout[] = {
+	  { DescriptorType::Texture,  offsetof(ColorTexDS, color) }
+	, { DescriptorType::End,      0,                        }
+};
+
+DSLayoutHandle ColorTexDS::layoutHandle;
+
+
 struct BlendWeightDS {
 	CSampler edgesTex;
 	CSampler areaTex;
@@ -590,6 +606,7 @@ void SMAADemo::initRender() {
 	renderer.registerDescriptorSetLayout<GlobalDS>();
 	renderer.registerDescriptorSetLayout<CubeSceneDS>();
 	renderer.registerDescriptorSetLayout<ColorCombinedDS>();
+	renderer.registerDescriptorSetLayout<ColorTexDS>();
 	renderer.registerDescriptorSetLayout<BlendWeightDS>();
 	renderer.registerDescriptorSetLayout<NeighborBlendDS>();
 
