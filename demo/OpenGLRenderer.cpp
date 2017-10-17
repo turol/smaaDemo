@@ -1596,17 +1596,50 @@ void RendererBase::rebindDescriptorSets() {
 	for (unsigned int i = 0; i < resources.textures.size(); i++) {
 		const auto &r = resources.textures.at(i);
 		const auto &d = descriptors.at(r);
-		const CSampler &combined = boost::get<CSampler>(d);
-		const Texture &tex  = textures.get(combined.tex);
-		glBindTextureUnit(i, tex.tex);
+
+		// TODO: find a better way than magic numbers
+		// std::variant has holds_alternative
+		switch (d.which()) {
+		case 1: {
+			const CSampler &combined = boost::get<CSampler>(d);
+			const Texture &tex  = textures.get(combined.tex);
+			glBindTextureUnit(i, tex.tex);
+		} break;
+
+		case 3: {
+			const TextureHandle &handle = boost::get<TextureHandle>(d);
+			const Texture &tex  = textures.get(handle);
+			glBindTextureUnit(i, tex.tex);
+		} break;
+
+		default:
+			UNREACHABLE();
+			break;
+		}
 	}
 
 	for (unsigned int i = 0; i < resources.samplers.size(); i++) {
 		const auto &r = resources.samplers.at(i);
 		const auto &d = descriptors.at(r);
-		const CSampler &combined = boost::get<CSampler>(d);
-		const auto &sampler = samplers.get(combined.sampler);
-		glBindSampler(i, sampler.sampler);
+		// TODO: find a better way than magic numbers
+		// std::variant has holds_alternative
+		switch (d.which()) {
+		case 1: {
+			const CSampler &combined = boost::get<CSampler>(d);
+			const auto &sampler = samplers.get(combined.sampler);
+			glBindSampler(i, sampler.sampler);
+		} break;
+
+		case 2: {
+			const SamplerHandle &handle = boost::get<SamplerHandle>(d);
+			const auto &sampler = samplers.get(handle);
+			glBindSampler(i, sampler.sampler);
+		} break;
+
+		default:
+			UNREACHABLE();
+			break;
+		}
 	}
 
 	decriptorSetsDirty = false;
