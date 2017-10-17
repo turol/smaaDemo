@@ -1203,7 +1203,10 @@ public:
         return baseclass::period_pow2() + table_size*extvalclass::period_pow2();
     }
 
-    __attribute__((always_inline)) result_type operator()()
+#ifdef __GNUC__
+    __attribute__((always_inline))
+#endif
+			result_type operator()()
     {
         result_type rhs = get_extended_value();
         result_type lhs = this->baseclass::operator()();
