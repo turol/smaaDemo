@@ -154,6 +154,8 @@ std::vector<uint32_t> RendererImpl::compileSpirv(const std::string &name, const 
 				return spirv;
 			}
 			LOG("Shader \"%s\" has incorrect size\n", spvName.c_str());
+		} else {
+			LOG("Shader \"%s\" in cache is older than source, recompiling\n", spvName.c_str());
 		}
 	}
 
