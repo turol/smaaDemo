@@ -664,6 +664,31 @@ ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl) {
 		glsl.set_decoration(s.id, spv::DecorationBinding, openglIDX);
 	}
 
+	for (const spirv_cross::CombinedImageSampler &c : glsl.get_combined_image_samplers()) {
+		assert(resources.textures.size() == resources.samplers.size());
+		unsigned int openglIDX = resources.textures.size();
+
+		DSIndex idx;
+		idx.set     = glsl.get_decoration(c.image_id, spv::DecorationDescriptorSet);
+		idx.binding = glsl.get_decoration(c.image_id, spv::DecorationBinding);
+		resources.textures.push_back(idx);
+
+		idx.set     = glsl.get_decoration(c.sampler_id, spv::DecorationDescriptorSet);
+		idx.binding = glsl.get_decoration(c.sampler_id, spv::DecorationBinding);
+		resources.samplers.push_back(idx);
+
+		// don't clear the set decoration because other combined samplers might need it
+		glsl.set_decoration(c.combined_id, spv::DecorationBinding, openglIDX);
+	}
+
+	// now clear the set decorations
+	for (const spirv_cross::CombinedImageSampler &c : glsl.get_combined_image_samplers()) {
+		glsl.unset_decoration(c.image_id,    spv::DecorationDescriptorSet);
+		glsl.unset_decoration(c.image_id,    spv::DecorationBinding);
+		glsl.unset_decoration(c.sampler_id, spv::DecorationDescriptorSet);
+		glsl.unset_decoration(c.sampler_id, spv::DecorationBinding);
+	}
+
 	return resources;
 }
 
