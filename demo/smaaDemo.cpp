@@ -523,7 +523,7 @@ const DescriptorLayout CubeSceneDS::layout[] = {
 DSLayoutHandle CubeSceneDS::layoutHandle;
 
 
-struct ColorTexDS {
+struct ColorCombinedDS {
 	CSampler color;
 
 	static const DescriptorLayout layout[];
@@ -531,12 +531,12 @@ struct ColorTexDS {
 };
 
 
-const DescriptorLayout ColorTexDS::layout[] = {
-	  { DescriptorType::CombinedSampler,  offsetof(ColorTexDS, color) }
+const DescriptorLayout ColorCombinedDS::layout[] = {
+	  { DescriptorType::CombinedSampler,  offsetof(ColorCombinedDS, color) }
 	, { DescriptorType::End,              0,                          }
 };
 
-DSLayoutHandle ColorTexDS::layoutHandle;
+DSLayoutHandle ColorCombinedDS::layoutHandle;
 
 
 struct BlendWeightDS {
@@ -589,7 +589,7 @@ void SMAADemo::initRender() {
 
 	renderer.registerDescriptorSetLayout<GlobalDS>();
 	renderer.registerDescriptorSetLayout<CubeSceneDS>();
-	renderer.registerDescriptorSetLayout<ColorTexDS>();
+	renderer.registerDescriptorSetLayout<ColorCombinedDS>();
 	renderer.registerDescriptorSetLayout<BlendWeightDS>();
 	renderer.registerDescriptorSetLayout<NeighborBlendDS>();
 
@@ -628,7 +628,7 @@ void SMAADemo::initRender() {
 		plDesc.renderPass(smaaEdgesRenderPass);
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
-		plDesc.descriptorSetLayout<ColorTexDS>(1);
+		plDesc.descriptorSetLayout<ColorCombinedDS>(1);
 		std::string passName = std::string("SMAA edges ") + std::to_string(i);
 		plDesc.name(passName.c_str());
 		smaaEdgePipelines[i]       = renderer.createPipeline(plDesc);
@@ -666,7 +666,7 @@ void SMAADemo::initRender() {
 		plDesc.renderPass(finalRenderPass);
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
-		plDesc.descriptorSetLayout<ColorTexDS>(1);
+		plDesc.descriptorSetLayout<ColorCombinedDS>(1);
 		std::string passName = std::string("FXAA ") + std::to_string(i);
 		plDesc.name(passName.c_str());
 		fxaaPipelines[i] = renderer.createPipeline(plDesc);
@@ -701,7 +701,7 @@ void SMAADemo::initRender() {
 	      .depthTest(false)
 	      .cullFaces(true);
 	plDesc.name("image");
-	plDesc.descriptorSetLayout<ColorTexDS>(1);
+	plDesc.descriptorSetLayout<ColorCombinedDS>(1);
 
 	imagePipeline = renderer.createPipeline(plDesc);
 
@@ -1309,7 +1309,7 @@ void SMAADemo::render() {
 		renderer.bindDescriptorSet(0, globalDS);
 
 		assert(activeScene - 1 < images.size());
-		ColorTexDS colorDS;
+		ColorCombinedDS colorDS;
 		colorDS.color.tex     = image.tex;
 		colorDS.color.sampler = nearestSampler;
 		renderer.bindDescriptorSet(1, colorDS);
@@ -1322,7 +1322,7 @@ void SMAADemo::render() {
 		case AAMethod::FXAA: {
 			renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
 			renderer.bindPipeline(fxaaPipelines[fxaaQuality]);
-			ColorTexDS colorDS;
+			ColorCombinedDS colorDS;
 			colorDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainColor]);
 			colorDS.color.sampler = linearSampler;
 			renderer.bindDescriptorSet(1, colorDS);
@@ -1336,7 +1336,7 @@ void SMAADemo::render() {
 			renderer.beginRenderPass(smaaEdgesRenderPass, smaaEdgesFramebuffer);
 			renderer.bindPipeline(smaaEdgePipelines[smaaQuality]);
 
-			ColorTexDS colorDS;
+			ColorCombinedDS colorDS;
 			colorDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainColor]);
 			colorDS.color.sampler = nearestSampler;
 			renderer.bindDescriptorSet(1, colorDS);
@@ -1399,7 +1399,7 @@ void SMAADemo::render() {
 	} else {
 		renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
 		renderer.bindPipeline(blitPipeline);
-		ColorTexDS colorDS;
+		ColorCombinedDS colorDS;
 		colorDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainColor]);
 		colorDS.color.sampler = linearSampler;
 		renderer.bindDescriptorSet(1, colorDS);
@@ -1585,7 +1585,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		assert(drawData->TotalIdxCount >  0);
 
 		renderer.bindPipeline(guiPipeline);
-		ColorTexDS colorDS;
+		ColorCombinedDS colorDS;
 		colorDS.color.tex     = imguiFontsTex;
 		colorDS.color.sampler = linearSampler;
 		renderer.bindDescriptorSet(1, colorDS);
