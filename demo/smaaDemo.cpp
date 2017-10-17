@@ -729,6 +729,7 @@ void SMAADemo::initRender() {
 	plDesc.vertexShader(vertexShader)
 	      .fragmentShader(fragmentShader);
 	plDesc.name("blit");
+	plDesc.descriptorSetLayout<ColorTexDS>(1);
 	blitPipeline = renderer.createPipeline(plDesc);
 
 	macros.clear();
@@ -746,7 +747,6 @@ void SMAADemo::initRender() {
 	      .vertexAttrib(ATTR_COLOR, 0, 4, VtxFormat::UNorm8, offsetof(ImDrawVert, col))
 	      .vertexBufferStride(ATTR_POS, sizeof(ImDrawVert));
 	plDesc.name("gui");
-	plDesc.descriptorSetLayout<ColorTexDS>(1);
 	guiPipeline = renderer.createPipeline(plDesc);
 
 	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear));
@@ -1394,16 +1394,18 @@ void SMAADemo::render() {
 
 			case 1: {
 				// visualize edges
+				ColorTexDS blitDS;
 				renderer.bindPipeline(blitPipeline);
-				colorDS.color.tex   = renderer.getRenderTargetTexture(rendertargets[RenderTargets::Edges]);
-				renderer.bindDescriptorSet(1, colorDS);
+				blitDS.color   = renderer.getRenderTargetTexture(rendertargets[RenderTargets::Edges]);
+				renderer.bindDescriptorSet(1, blitDS);
 			} break;
 
 			case 2: {
 				// visualize blend weights
+				ColorTexDS blitDS;
 				renderer.bindPipeline(blitPipeline);
-				colorDS.color.tex   = renderer.getRenderTargetTexture(rendertargets[RenderTargets::BlendWeights]);
-				renderer.bindDescriptorSet(1, colorDS);
+				blitDS.color   = renderer.getRenderTargetTexture(rendertargets[RenderTargets::BlendWeights]);
+				renderer.bindDescriptorSet(1, blitDS);
 			} break;
 
 			}
@@ -1417,9 +1419,8 @@ void SMAADemo::render() {
 	} else {
 		renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
 		renderer.bindPipeline(blitPipeline);
-		ColorCombinedDS colorDS;
-		colorDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainColor]);
-		colorDS.color.sampler = linearSampler;
+		ColorTexDS colorDS;
+		colorDS.color     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainColor]);
 		renderer.bindDescriptorSet(1, colorDS);
 		renderer.draw(0, 3);
 		drawGUI(elapsed);
