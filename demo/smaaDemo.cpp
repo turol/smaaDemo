@@ -746,6 +746,7 @@ void SMAADemo::initRender() {
 	      .vertexAttrib(ATTR_COLOR, 0, 4, VtxFormat::UNorm8, offsetof(ImDrawVert, col))
 	      .vertexBufferStride(ATTR_POS, sizeof(ImDrawVert));
 	plDesc.name("gui");
+	plDesc.descriptorSetLayout<ColorTexDS>(1);
 	guiPipeline = renderer.createPipeline(plDesc);
 
 	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear));
@@ -1602,9 +1603,8 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		assert(drawData->TotalIdxCount >  0);
 
 		renderer.bindPipeline(guiPipeline);
-		ColorCombinedDS colorDS;
-		colorDS.color.tex     = imguiFontsTex;
-		colorDS.color.sampler = linearSampler;
+		ColorTexDS colorDS;
+		colorDS.color = imguiFontsTex;
 		renderer.bindDescriptorSet(1, colorDS);
 		// TODO: upload all buffers first, render after
 		// and one buffer each vertex/index
