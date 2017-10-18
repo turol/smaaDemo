@@ -619,7 +619,7 @@ void SMAADemo::initRender() {
 	smaaEdgesRenderPass   = renderer.createRenderPass(rpDesc.name("SMAA edges"));
 	smaaWeightsRenderPass = renderer.createRenderPass(rpDesc.name("SMAA weights"));
 
-	rpDesc.depthStencil(Format::Depth16);
+	rpDesc.depthStencil(Format::Depth24);
 	sceneRenderPass       = renderer.createRenderPass(rpDesc.name("scene"));
 
 	createFramebuffers();
@@ -913,7 +913,7 @@ void SMAADemo::createFramebuffers()	{
 	rtDesc.width(windowWidth).height(windowHeight).format(Format::RGBA8).name("final");
 	rendertargets[RenderTargets::FinalRender] = renderer.createRenderTarget(rtDesc);
 
-	rtDesc.format(Format::Depth16).name("main depth");
+	rtDesc.format(Format::Depth24).name("main depth");
 	rendertargets[RenderTargets::MainDepth] = renderer.createRenderTarget(rtDesc);
 
 	FramebufferDesc fbDesc;
