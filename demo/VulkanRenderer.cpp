@@ -1080,7 +1080,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	viewInfo.image    = rt.image;
 	viewInfo.viewType = vk::ImageViewType::e2D;
 	viewInfo.format   = format;
-	if (desc.format_ == Format::Depth16) {
+	if (isDepthFormat(desc.format_)) {
 		viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
 	} else {
 		viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
