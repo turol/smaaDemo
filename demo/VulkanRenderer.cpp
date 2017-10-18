@@ -151,6 +151,34 @@ static vk::Format vulkanFormat(Format format) {
 }
 
 
+static bool isDepthFormat(Format format) {
+	switch (format) {
+	case Format::Invalid:
+		UNREACHABLE();
+		return false;
+
+	case Format::R8:
+		return false;
+
+	case Format::RG8:
+		return false;
+
+	case Format::RGB8:
+		return false;
+
+	case Format::RGBA8:
+		return false;
+
+	case Format::Depth16:
+		return true;
+
+	}
+
+	UNREACHABLE();
+	return false;
+};
+
+
 RendererBase::RendererBase()
 : graphicsQueueIndex(0)
 , ringBufferMem(nullptr)
@@ -1011,7 +1039,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	// TODO: samples when multisampling
 	// TODO: usage should come from desc
 	vk::ImageUsageFlags flags(vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
-	if (desc.format_ == Format::Depth16) {
+	if (isDepthFormat(desc.format_)) {
 		flags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
 	} else {
 		flags |= vk::ImageUsageFlagBits::eColorAttachment;
