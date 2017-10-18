@@ -321,7 +321,7 @@ SMAADemo::SMAADemo()
 , fullscreen(false)
 , recreateSwapchain(false)
 , glDebug(false)
-, depthFormat(Format::Depth24)
+, depthFormat(Format::Invalid)
 , cubesPerSide(8)
 , antialiasing(true)
 , aaMethod(AAMethod::SMAA)
@@ -604,6 +604,14 @@ void SMAADemo::initRender() {
 	desc.swapchain.vsync      = vsync;
 
 	renderer = Renderer::createRenderer(desc);
+
+	if (renderer.isRenderTargetFormatSupported(Format::Depth24)) {
+		depthFormat = Format::Depth24;
+	} else if (renderer.isRenderTargetFormatSupported(Format::Depth16)) {
+		depthFormat = Format::Depth16;
+	} else {
+		throw std::runtime_error("no supported depth formats");
+	}
 
 	renderer.registerDescriptorSetLayout<GlobalDS>();
 	renderer.registerDescriptorSetLayout<CubeSceneDS>();

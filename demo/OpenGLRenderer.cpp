@@ -578,6 +578,12 @@ RendererImpl::~RendererImpl() {
 }
 
 
+bool RendererImpl::isRenderTargetFormatSupported(Format /* format */) const {
+	// TODO: actually check it...
+	return true;
+}
+
+
 BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	assert(size != 0);
 

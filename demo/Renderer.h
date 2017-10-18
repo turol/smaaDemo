@@ -676,6 +676,8 @@ public:
 	~Renderer();
 
 
+	bool isRenderTargetFormatSupported(Format format) const;
+
 	RenderTargetHandle    createRenderTarget(const RenderTargetDesc &desc);
 	VertexShaderHandle    createVertexShader(const std::string &name, const ShaderMacros &macros);
 	FragmentShaderHandle  createFragmentShader(const std::string &name, const ShaderMacros &macros);
