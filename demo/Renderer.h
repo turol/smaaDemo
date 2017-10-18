@@ -194,6 +194,7 @@ enum class Format : uint8_t {
 	, RGB8
 	, RGBA8
 	, Depth16
+	, Depth24
 };
 
 

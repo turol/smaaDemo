@@ -100,6 +100,9 @@ static GLenum glTexFormat(Format format) {
 	case Format::Depth16:
 		return GL_DEPTH_COMPONENT16;
 
+	case Format::Depth24:
+		return GL_DEPTH_COMPONENT24;
+
 	}
 
 	UNREACHABLE();
@@ -124,6 +127,11 @@ static GLenum glTexBaseFormat(Format format) {
 		return GL_RGBA;
 
 	case Format::Depth16:
+		// not supposed to use this format here
+		assert(false);
+		return GL_NONE;
+
+	case Format::Depth24:
 		// not supposed to use this format here
 		assert(false);
 		return GL_NONE;

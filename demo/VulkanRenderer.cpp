@@ -144,6 +144,9 @@ static vk::Format vulkanFormat(Format format) {
 	case Format::Depth16:
 		return vk::Format::eD16Unorm;
 
+	case Format::Depth24:
+		return vk::Format::eX8D24UnormPack32;
+
 	}
 
 	UNREACHABLE();
@@ -170,6 +173,9 @@ static bool isDepthFormat(Format format) {
 		return false;
 
 	case Format::Depth16:
+		return true;
+
+	case Format::Depth24:
 		return true;
 
 	}
