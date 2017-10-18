@@ -305,7 +305,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		throw std::runtime_error("No physical Vulkan devices found");
 	}
 	LOG("%u physical devices\n", static_cast<unsigned int>(physicalDevices.size()));
-	physicalDevice = physicalDevices[0];
+	physicalDevice = physicalDevices.at(0);
 
 	deviceProperties = physicalDevice.getProperties();
 	LOG("Device API version %u.%u.%u\n", VK_VERSION_MAJOR(deviceProperties.apiVersion), VK_VERSION_MINOR(deviceProperties.apiVersion), VK_VERSION_PATCH(deviceProperties.apiVersion));
@@ -343,7 +343,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	graphicsQueueIndex = static_cast<uint32_t>(queueProps.size());
 	for (uint32_t i = 0; i < queueProps.size(); i++) {
-		const auto &q = queueProps[i];
+		const auto &q = queueProps.at(i);
 		LOG(" Queue family %u\n", i);
 		LOG("  Flags: %s\n", vk::to_string(q.queueFlags).c_str());
 		LOG("  Count: %u\n", q.queueCount);
@@ -491,7 +491,7 @@ RendererImpl::~RendererImpl() {
 	// TODO: if last frame is still pending we could add deleted resources to its list
 
 	for (unsigned int i = 0; i < frames.size(); i++) {
-		auto &f = frames[i];
+		auto &f = frames.at(i);
 		if (f.outstanding) {
 			// wait until complete
 			waitForFrame(i);
@@ -630,7 +630,7 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	// FIXME: this uses the wrong command bool if we're not in a frame
 	//        for example during startup
 	//        add separate command pool(s) for transfers
-	vk::CommandBufferAllocateInfo cmdInfo(frames[currentFrameIdx].commandPool, vk::CommandBufferLevel::ePrimary, 1);
+	vk::CommandBufferAllocateInfo cmdInfo(frames.at(currentFrameIdx).commandPool, vk::CommandBufferLevel::ePrimary, 1);
 	auto cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
 
 	vk::BufferCopy copyRegion;
@@ -651,7 +651,7 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 
 	// TODO: don't wait for idle here, use fence to make frame submit wait for it
 	queue.waitIdle();
-	device.freeCommandBuffers(frames[currentFrameIdx].commandPool, { cmdBuf } );
+	device.freeCommandBuffers(frames.at(currentFrameIdx).commandPool, { cmdBuf } );
 
 	return result.second;
 }
@@ -672,7 +672,7 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	buffer.offset          = beginPtr;
 	buffer.size            = size;
 
-	frames[currentFrameIdx].ephemeralBuffers.push_back(result.second);
+	frames.at(currentFrameIdx).ephemeralBuffers.push_back(result.second);
 
 	return result.second;
 }
@@ -1237,7 +1237,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	// FIXME: this uses the wrong command bool if we're not in a frame
 	//        for example during startup
 	//        add separate command pool(s) for transfers
-	vk::CommandBufferAllocateInfo cmdInfo(frames[currentFrameIdx].commandPool, vk::CommandBufferLevel::ePrimary, 1);
+	vk::CommandBufferAllocateInfo cmdInfo(frames.at(currentFrameIdx).commandPool, vk::CommandBufferLevel::ePrimary, 1);
 	auto cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
 
 	cmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
@@ -1315,7 +1315,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 
 	// TODO: don't wait for idle here, use fence to make frame submit wait for it
 	queue.waitIdle();
-	device.freeCommandBuffers(frames[currentFrameIdx].commandPool, { cmdBuf } );
+	device.freeCommandBuffers(frames.at(currentFrameIdx).commandPool, { cmdBuf } );
 
 	return result.second;
 }
@@ -1456,7 +1456,7 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 		if (numImages < frames.size()) {
 			// decreasing, delete old and resize
 			for (unsigned int i = numImages; i < frames.size(); i++) {
-				auto &f = frames[i];
+				auto &f = frames.at(i);
 				if (f.outstanding) {
 					// wait until complete
 					waitForFrame(i);
@@ -1489,7 +1489,7 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 			cp.queueFamilyIndex = graphicsQueueIndex;
 
 			for (unsigned int i = oldSize; i < frames.size(); i++) {
-				auto &f = frames[i];
+				auto &f = frames.at(i);
 				assert(!f.fence);
 				f.fence = device.createFence(vk::FenceCreateInfo());
 
@@ -1507,7 +1507,7 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 				vk::CommandBufferAllocateInfo info(f.commandPool, vk::CommandBufferLevel::ePrimary, 1);
 				auto bufs = device.allocateCommandBuffers(info);
 				assert(bufs.size() == 1);
-				f.commandBuffer = bufs[0];
+				f.commandBuffer = bufs.at(0);
 			}
 		}
 	}
@@ -1558,8 +1558,8 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	swapchainCreateInfo.surface               = surface;
 	swapchainCreateInfo.minImageCount         = numImages;
 	// TODO: better way to choose a format, should care about sRGB
-	swapchainCreateInfo.imageFormat           = surfaceFormats[0].format;
-	swapchainCreateInfo.imageColorSpace       = surfaceFormats[0].colorSpace;
+	swapchainCreateInfo.imageFormat           = surfaceFormats.at(0).format;
+	swapchainCreateInfo.imageColorSpace       = surfaceFormats.at(0).colorSpace;
 	swapchainCreateInfo.imageExtent           = imageExtent;
 	swapchainCreateInfo.imageArrayLayers      = 1;
 	swapchainCreateInfo.imageUsage            = vk::ImageUsageFlagBits::eTransferDst;
@@ -1587,7 +1587,7 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	assert(swapchainImages.size() == numImages);
 
 	for (unsigned int i = 0; i < numImages; i++) {
-		frames[i].image = swapchainImages[i];
+		frames.at(i).image = swapchainImages.at(i);
 	}
 }
 
@@ -1616,7 +1616,7 @@ void RendererImpl::beginFrame() {
 	auto imageIdx_         = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence());
 	currentFrameIdx        = imageIdx_.value;
 	assert(currentFrameIdx < frames.size());
-	auto &frame            = frames[currentFrameIdx];
+	auto &frame            = frames.at(currentFrameIdx);
 
 	// frames are a ringbuffer
 	// if the frame we want to reuse is still pending on the GPU, wait for it
@@ -1651,7 +1651,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 
 	const auto &rt = renderTargets.get(rtHandle);
 
-	auto &frame = frames[currentFrameIdx];
+	auto &frame = frames.at(currentFrameIdx);
 	device.resetFences( { frame.fence } );
 
 	vk::Image image        = frame.image;
@@ -1741,7 +1741,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 void RendererBase::waitForFrame(unsigned int frameIdx) {
 	assert(frameIdx < frames.size());
 
-	Frame &frame = frames[frameIdx];
+	Frame &frame = frames.at(frameIdx);
 	assert(frame.outstanding);
 
 	auto waitResult = device.waitForFences({ frame.fence }, true, 1000000000ull);
@@ -1996,7 +1996,7 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layout
 	const DescriptorSetLayout &layout = dsLayouts.get(layoutHandle);
 
 	vk::DescriptorSetAllocateInfo dsInfo;
-	dsInfo.descriptorPool      = frames[currentFrameIdx].dsPool;
+	dsInfo.descriptorPool      = frames.at(currentFrameIdx).dsPool;
 	dsInfo.descriptorSetCount  = 1;
 	dsInfo.pSetLayouts         = &layout.layout;
 

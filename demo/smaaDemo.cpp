@@ -1316,7 +1316,7 @@ void SMAADemo::render() {
 	} else {
 		renderer.bindPipeline(imagePipeline);
 
-		const auto &image = images[activeScene - 1];
+		const auto &image = images.at(activeScene - 1);
 
 		renderer.setViewport(0, 0, windowWidth, windowHeight);
 
