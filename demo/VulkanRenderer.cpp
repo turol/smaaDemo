@@ -44,6 +44,16 @@ THE SOFTWARE.
 #include "Utils.h"
 
 
+// in case of old header
+#ifndef VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME
+#define VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME "VK_KHR_dedicated_allocation"
+#endif  // VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME
+
+#ifndef VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME
+#define VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME "VK_KHR_get_memory_requirements2"
+#endif  // VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME
+
+
 // this part of the C++ bindings sucks...
 
 static PFN_vkCreateDebugReportCallbackEXT   pfn_vkCreateDebugReportCallbackEXT   = nullptr;
@@ -336,8 +346,29 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	queueCreateInfo.queueCount        = 1;
 	queueCreateInfo.pQueuePriorities  = &queuePriorities[0];;
 
+	std::unordered_set<std::string> availableExtensions;
+	{
+		auto exts = physicalDevice.enumerateDeviceExtensionProperties();
+		LOG("%u device extensions:\n", static_cast<unsigned int>(exts.size()));
+		for (const auto &ext : exts) {
+			LOG("%s\n", ext.extensionName);
+			availableExtensions.insert(std::string(ext.extensionName));
+		}
+	}
+
 	std::vector<const char *> deviceExtensions;
+
+	auto checkExt = [&deviceExtensions, &availableExtensions] (const char *ext) {
+		if (availableExtensions.find(std::string(ext)) != availableExtensions.end()) {
+			LOG("Activating extension %s\n", ext);
+			deviceExtensions.push_back(ext);
+		}
+	};
+
 	deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+	checkExt(VK_NV_DEDICATED_ALLOCATION_EXTENSION_NAME);
+	checkExt(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
+	checkExt(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME);
 
 	vk::DeviceCreateInfo deviceCreateInfo;
 	deviceCreateInfo.queueCreateInfoCount     = 1;
