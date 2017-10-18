@@ -595,9 +595,18 @@ RendererImpl::~RendererImpl() {
 }
 
 
-bool RendererImpl::isRenderTargetFormatSupported(Format /* format */) const {
-	// TODO: actually check it...
-	return true;
+bool RendererImpl::isRenderTargetFormatSupported(Format format) const {
+	// TODO: cache these at startup
+	vk::ImageUsageFlags flags(vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
+	if (isDepthFormat(format)) {
+		flags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
+	} else {
+		flags |= vk::ImageUsageFlagBits::eColorAttachment;
+	}
+	vk::ImageFormatProperties prop;
+	auto result = physicalDevice.getImageFormatProperties(vulkanFormat(format), vk::ImageType::e2D, vk::ImageTiling::eOptimal, flags, vk::ImageCreateFlags(), &prop);
+
+	return (result == vk::Result::eSuccess);
 }
 
 
