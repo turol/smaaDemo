@@ -1584,9 +1584,7 @@ void RendererImpl::beginFrame() {
 	validPipeline = false;
 	pipelineDrawn = true;
 
-	// TODO: check how many frames are outstanding, wait if maximum
-
-	// acquire next image?
+	// acquire next image
 	auto imageIdx_         = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence());
 	currentFrameIdx        = imageIdx_.value;
 	assert(currentFrameIdx < frames.size());
