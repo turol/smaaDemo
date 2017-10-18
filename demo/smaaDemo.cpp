@@ -718,7 +718,7 @@ void SMAADemo::initRender() {
 	      .depthTest(false)
 	      .cullFaces(true);
 	plDesc.name("image");
-	plDesc.descriptorSetLayout<ColorCombinedDS>(1);
+	plDesc.descriptorSetLayout<ColorTexDS>(1);
 
 	imagePipeline = renderer.createPipeline(plDesc);
 
@@ -729,7 +729,6 @@ void SMAADemo::initRender() {
 	plDesc.vertexShader(vertexShader)
 	      .fragmentShader(fragmentShader);
 	plDesc.name("blit");
-	plDesc.descriptorSetLayout<ColorTexDS>(1);
 	blitPipeline = renderer.createPipeline(plDesc);
 
 	macros.clear();
@@ -1327,9 +1326,8 @@ void SMAADemo::render() {
 		renderer.bindDescriptorSet(0, globalDS);
 
 		assert(activeScene - 1 < images.size());
-		ColorCombinedDS colorDS;
-		colorDS.color.tex     = image.tex;
-		colorDS.color.sampler = nearestSampler;
+		ColorTexDS colorDS;
+		colorDS.color = image.tex;
 		renderer.bindDescriptorSet(1, colorDS);
 		renderer.draw(0, 3);
 	}
