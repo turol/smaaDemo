@@ -189,6 +189,7 @@ class SMAADemo {
 
 	Renderer renderer;
 	bool glDebug;
+	Format            depthFormat;
 
 	PipelineHandle cubePipeline;
 	PipelineHandle imagePipeline;
@@ -320,6 +321,7 @@ SMAADemo::SMAADemo()
 , fullscreen(false)
 , recreateSwapchain(false)
 , glDebug(false)
+, depthFormat(Format::Depth24)
 , cubesPerSide(8)
 , antialiasing(true)
 , aaMethod(AAMethod::SMAA)
@@ -619,7 +621,7 @@ void SMAADemo::initRender() {
 	smaaEdgesRenderPass   = renderer.createRenderPass(rpDesc.name("SMAA edges"));
 	smaaWeightsRenderPass = renderer.createRenderPass(rpDesc.name("SMAA weights"));
 
-	rpDesc.depthStencil(Format::Depth24);
+	rpDesc.depthStencil(depthFormat);
 	sceneRenderPass       = renderer.createRenderPass(rpDesc.name("scene"));
 
 	createFramebuffers();
@@ -913,7 +915,7 @@ void SMAADemo::createFramebuffers()	{
 	rtDesc.width(windowWidth).height(windowHeight).format(Format::RGBA8).name("final");
 	rendertargets[RenderTargets::FinalRender] = renderer.createRenderTarget(rtDesc);
 
-	rtDesc.format(Format::Depth24).name("main depth");
+	rtDesc.format(depthFormat).name("main depth");
 	rendertargets[RenderTargets::MainDepth] = renderer.createRenderTarget(rtDesc);
 
 	FramebufferDesc fbDesc;
