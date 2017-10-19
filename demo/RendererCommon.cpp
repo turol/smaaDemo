@@ -137,7 +137,7 @@ std::vector<uint32_t> RendererImpl::compileSpirv(const std::string &name, const 
 	}
 	spvName = spvName + ".spv";
 
-	if (fileExists(spvName)) {
+	if (!skipShaderCache && fileExists(spvName)) {
 		// check timestamp against source file
 		// TODO: should also check headers included during original compilation
 		int64_t sourceTime = getFileTimestamp(name);

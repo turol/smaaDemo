@@ -211,6 +211,7 @@ static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebug
 
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
+, skipShaderCache(desc.skipShaderCache)
 , savePreprocessedShaders(false)
 , frameNum(0)
 , ringBufSize(desc.ephemeralRingBufSize)

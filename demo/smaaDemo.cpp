@@ -189,6 +189,7 @@ class SMAADemo {
 
 	Renderer renderer;
 	bool glDebug;
+	bool              skipShaderCache;
 	Format            depthFormat;
 
 	PipelineHandle cubePipeline;
@@ -321,6 +322,7 @@ SMAADemo::SMAADemo()
 , fullscreen(false)
 , recreateSwapchain(false)
 , glDebug(false)
+, skipShaderCache(false)
 , depthFormat(Format::Invalid)
 , cubesPerSide(8)
 , antialiasing(true)
@@ -466,6 +468,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::CmdLine cmd("SMAA demo", ' ', "1.0");
 
 		TCLAP::SwitchArg glDebugSwitch("", "gldebug", "Enable OpenGL debugging", cmd, false);
+		TCLAP::SwitchArg skipCacheSwitch("", "skipcache", "Skip loading shaders from cache", cmd, false);
 		TCLAP::SwitchArg fullscreenSwitch("f", "fullscreen", "Start in full screen mode", cmd, false);
 		TCLAP::ValueArg<unsigned int> windowWidthSwitch("", "width", "Window width", false, windowWidth, "width", cmd);
 		TCLAP::ValueArg<unsigned int> windowHeightSwitch("", "height", "Window height", false, windowHeight, "height", cmd);
@@ -474,6 +477,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		cmd.parse(argc, argv);
 
 		glDebug = glDebugSwitch.getValue();
+		skipShaderCache = skipCacheSwitch.getValue();
 		fullscreen   = fullscreenSwitch.getValue();
 		windowWidth = windowWidthSwitch.getValue();
 		windowHeight = windowHeightSwitch.getValue();
@@ -598,6 +602,7 @@ DSLayoutHandle NeighborBlendDS::layoutHandle;
 void SMAADemo::initRender() {
 	RendererDesc desc;
 	desc.debug                = glDebug;
+	desc.skipShaderCache      = skipShaderCache;
 	desc.swapchain.fullscreen = fullscreen;
 	desc.swapchain.width      = windowWidth;
 	desc.swapchain.height     = windowHeight;

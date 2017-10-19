@@ -143,6 +143,7 @@ const char *descriptorTypeName(DescriptorType t);
 struct RendererImpl : public RendererBase {
 	SwapchainDesc swapchainDesc;
 
+	bool skipShaderCache;
 	bool savePreprocessedShaders;
 	unsigned int frameNum;
 

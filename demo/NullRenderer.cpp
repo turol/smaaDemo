@@ -54,6 +54,7 @@ RendererBase::~RendererBase() {
 
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
+, skipShaderCache(desc.skipShaderCache)
 , savePreprocessedShaders(false)
 , frameNum(0)
 , ringBufSize(desc.ephemeralRingBufSize)

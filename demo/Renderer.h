@@ -619,12 +619,14 @@ public:
 
 struct RendererDesc {
 	bool           debug;
+	bool           skipShaderCache;
 	unsigned int   ephemeralRingBufSize;
 	SwapchainDesc  swapchain;
 
 
 	RendererDesc()
 	: debug(false)
+	, skipShaderCache(false)
 	, ephemeralRingBufSize(16 * 1048576)
 	{
 	}
