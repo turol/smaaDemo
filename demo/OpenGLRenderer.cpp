@@ -635,7 +635,7 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	buffer.beginOffs       = beginPtr;
 	buffer.size            = size;
 
-	ephemeralBuffers.push_back(result.second);
+	frames.at(currentFrameIdx).ephemeralBuffers.push_back(result.second);
 
 	return result.second;
 }
@@ -1291,7 +1291,7 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 
 	// TODO: multiple frames, only delete after no longer in use by GPU
 	// TODO: use persistent coherent buffer
-	for (auto handle : ephemeralBuffers) {
+	for (auto handle : frames.at(currentFrameIdx).ephemeralBuffers) {
 		Buffer &buffer = buffers.get(handle);
 		assert(buffer.buffer == ringBuffer);
 		buffer.buffer = 0;
@@ -1304,7 +1304,7 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 
 		buffers.remove(handle);
 	}
-	ephemeralBuffers.clear();
+	frames.at(currentFrameIdx).ephemeralBuffers.clear();
 
 	frame.outstanding  = true;
 	frame.lastFrameNum = frameNum;

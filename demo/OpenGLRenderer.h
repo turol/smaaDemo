@@ -451,6 +451,7 @@ namespace renderer {
 struct Frame {
 	bool                      outstanding;
 	uint32_t                  lastFrameNum;
+	std::vector<BufferHandle> ephemeralBuffers;
 
 
 	Frame()
@@ -460,6 +461,7 @@ struct Frame {
 
 	~Frame() {
 		assert(!outstanding);
+		assert(ephemeralBuffers.empty());
 	}
 
 	Frame(const Frame &)            = delete;
@@ -467,14 +469,20 @@ struct Frame {
 
 	Frame(Frame &&other)
 	: outstanding(other.outstanding)
+	, ephemeralBuffers(std::move(other.ephemeralBuffers))
 	{
 		other.outstanding = false;
+		assert(other.ephemeralBuffers.empty());
 	}
 
 	Frame &operator=(Frame &&other) {
 		assert(!outstanding);
 		outstanding = other.outstanding;
 		other.outstanding = false;
+
+		assert(ephemeralBuffers.empty());
+		ephemeralBuffers = std::move(other.ephemeralBuffers);
+		assert(other.ephemeralBuffers.empty());
 
 		return *this;
 	}
@@ -514,8 +522,6 @@ struct RendererBase {
 	ResourceContainer<Sampler>              samplers;
 	ResourceContainer<Texture>              textures;
 	ResourceContainer<VertexShader>         vertexShaders;
-
-	std::vector<BufferHandle> ephemeralBuffers;
 
 	std::vector<Frame>        frames;
 	uint32_t                  currentFrameIdx;
