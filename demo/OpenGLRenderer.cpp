@@ -1289,6 +1289,7 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 
 	SDL_GL_SwapWindow(window);
 
+	frame.fence        = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 	frame.outstanding  = true;
 	frame.lastFrameNum = frameNum;
 
@@ -1302,7 +1303,17 @@ void RendererBase::waitForFrame(unsigned int frameIdx) {
 	Frame &frame = frames.at(frameIdx);
 	assert(frame.outstanding);
 
-	// TODO: wait for fence
+	// wait for the fence
+	assert(frame.fence);
+	GLenum result = glClientWaitSync(frame.fence, GL_SYNC_FLUSH_COMMANDS_BIT, 10ULL * 1000000000ULL);
+	// TODO: collect statistics if it was already signaled or not
+	if (result == GL_TIMEOUT_EXPIRED || result == GL_WAIT_FAILED) {
+		// TODO: do something better
+		LOG("glClientWaitSync failed: 0x%04x\n", result);
+		throw std::runtime_error("glClientWaitSync failed");
+	}
+	glDeleteSync(frame.fence);
+	frame.fence = nullptr;
 
 	for (auto handle : frame.ephemeralBuffers) {
 		Buffer &buffer = buffers.get(handle);
