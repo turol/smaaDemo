@@ -1289,23 +1289,6 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 
 	SDL_GL_SwapWindow(window);
 
-	// TODO: multiple frames, only delete after no longer in use by GPU
-	// TODO: use persistent coherent buffer
-	for (auto handle : frames.at(currentFrameIdx).ephemeralBuffers) {
-		Buffer &buffer = buffers.get(handle);
-		assert(buffer.buffer == ringBuffer);
-		buffer.buffer = 0;
-
-		assert(buffer.ringBufferAlloc);
-		buffer.ringBufferAlloc = false;
-
-		assert(buffer.size   >  0);
-		buffer.size = 0;
-
-		buffers.remove(handle);
-	}
-	frames.at(currentFrameIdx).ephemeralBuffers.clear();
-
 	frame.outstanding  = true;
 	frame.lastFrameNum = frameNum;
 
@@ -1320,6 +1303,21 @@ void RendererBase::waitForFrame(unsigned int frameIdx) {
 	assert(frame.outstanding);
 
 	// TODO: wait for fence
+
+	for (auto handle : frame.ephemeralBuffers) {
+		Buffer &buffer = buffers.get(handle);
+		assert(buffer.buffer == ringBuffer);
+		buffer.buffer = 0;
+
+		assert(buffer.ringBufferAlloc);
+		buffer.ringBufferAlloc = false;
+
+		assert(buffer.size   >  0);
+		buffer.size = 0;
+
+		buffers.remove(handle);
+	}
+	frame.ephemeralBuffers.clear();
 	frame.outstanding = false;
 	lastSyncedFrame = std::max(lastSyncedFrame, frame.lastFrameNum);
 }
