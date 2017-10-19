@@ -472,6 +472,7 @@ struct Frame {
 
 	Frame(Frame &&other)
 	: outstanding(other.outstanding)
+	, lastFrameNum(other.lastFrameNum)
 	, fence(other.fence)
 	, ephemeralBuffers(std::move(other.ephemeralBuffers))
 	{
@@ -484,6 +485,8 @@ struct Frame {
 		assert(!outstanding);
 		outstanding = other.outstanding;
 		other.outstanding = false;
+
+		lastFrameNum = other.lastFrameNum;
 
 		assert(!fence);
 		fence       = other.fence;
