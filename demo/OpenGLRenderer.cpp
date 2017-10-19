@@ -324,6 +324,8 @@ RendererBase::RendererBase()
 , indexBufByteOffset(0)
 , uboAlign(0)
 , ssboAlign(0)
+, currentFrameIdx(0)
+, lastSyncedFrame(0)
 {
 }
 
@@ -459,6 +461,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	glCreateVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
+	recreateSwapchain(desc.swapchain);
+
 	// set up ring buffer
 	glCreateBuffers(1, &ringBuffer);
 	// TODO: proper error checking
@@ -494,7 +498,18 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 RendererImpl::~RendererImpl() {
 	assert(ringBuffer != 0);
-	// TODO: need to wait until GPU finished with last frames?
+
+	for (unsigned int i = 0; i < frames.size(); i++) {
+		auto &f = frames.at(i);
+		if (f.outstanding) {
+			// wait until complete
+			waitForFrame(i);
+		}
+		deleteFrameInternal(f);
+	}
+	frames.clear();
+
+
 	if (persistentMapInUse) {
 		glUnmapNamedBuffer(ringBuffer);
 		persistentMapping = nullptr;
@@ -1173,6 +1188,33 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	}
 	swapchainDesc.width  = w;
 	swapchainDesc.height = h;
+
+	unsigned int numImages = desc.numFrames;
+	numImages = std::max(numImages, 1U);
+
+	LOG("Want %u images, using %u images\n", desc.numFrames, numImages);
+
+	if (frames.size() != numImages) {
+		if (numImages < frames.size()) {
+			// decreasing, delete old and resize
+			for (unsigned int i = numImages; i < frames.size(); i++) {
+				auto &f = frames.at(i);
+				if (f.outstanding) {
+					// wait until complete
+					waitForFrame(i);
+				}
+				// delete contents of Frame
+				deleteFrameInternal(f);
+			}
+			frames.resize(numImages);
+		} else {
+			// increasing, resize and initialize new
+			frames.resize(numImages);
+
+			// TODO: put some stuff here
+		}
+	}
+
 }
 
 
@@ -1189,6 +1231,17 @@ void RendererImpl::beginFrame() {
 	validPipeline = false;
 	pipelineDrawn = true;
 
+	currentFrameIdx        = frameNum % frames.size();
+	assert(currentFrameIdx < frames.size());
+	auto &frame            = frames.at(currentFrameIdx);
+
+	// frames are a ringbuffer
+	// if the frame we want to reuse is still pending on the GPU, wait for it
+	if (frame.outstanding) {
+		waitForFrame(currentFrameIdx);
+	}
+	assert(!frame.outstanding);
+
 	descriptors.clear();
 
 	// TODO: reset all relevant state in case some 3rd-party program fucked them up
@@ -1203,6 +1256,8 @@ void RendererImpl::beginFrame() {
 void RendererImpl::presentFrame(RenderTargetHandle image) {
 	assert(inFrame);
 	inFrame = false;
+
+	auto &frame = frames.at(currentFrameIdx);
 
 	auto &rt = renderTargets.get(image);
 	assert(rt.currentLayout == Layout::TransferSrc);
@@ -1250,6 +1305,28 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 		buffers.remove(handle);
 	}
 	ephemeralBuffers.clear();
+
+	frame.outstanding  = true;
+	frame.lastFrameNum = frameNum;
+
+	frameNum++;
+}
+
+
+void RendererBase::waitForFrame(unsigned int frameIdx) {
+	assert(frameIdx < frames.size());
+
+	Frame &frame = frames.at(frameIdx);
+	assert(frame.outstanding);
+
+	// TODO: wait for fence
+	frame.outstanding = false;
+	lastSyncedFrame = std::max(lastSyncedFrame, frame.lastFrameNum);
+}
+
+
+void RendererBase::deleteFrameInternal(Frame &f) {
+	assert(!f.outstanding);
 }
 
 

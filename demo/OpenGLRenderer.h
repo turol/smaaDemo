@@ -448,6 +448,39 @@ namespace std {
 namespace renderer {
 
 
+struct Frame {
+	bool                      outstanding;
+	uint32_t                  lastFrameNum;
+
+
+	Frame()
+	: outstanding(false)
+	, lastFrameNum(0)
+	{}
+
+	~Frame() {
+		assert(!outstanding);
+	}
+
+	Frame(const Frame &)            = delete;
+	Frame &operator=(const Frame &) = delete;
+
+	Frame(Frame &&other)
+	: outstanding(other.outstanding)
+	{
+		other.outstanding = false;
+	}
+
+	Frame &operator=(Frame &&other) {
+		assert(!outstanding);
+		outstanding = other.outstanding;
+		other.outstanding = false;
+
+		return *this;
+	}
+};
+
+
 struct RendererBase {
 	GLuint        ringBuffer;
 	bool          persistentMapInUse;
@@ -484,8 +517,15 @@ struct RendererBase {
 
 	std::vector<BufferHandle> ephemeralBuffers;
 
+	std::vector<Frame>        frames;
+	uint32_t                  currentFrameIdx;
+	uint32_t                  lastSyncedFrame;
+
 
 	void rebindDescriptorSets();
+
+	void waitForFrame(unsigned int frameIdx);
+	void deleteFrameInternal(Frame &f);
 
 	RendererBase();
 
