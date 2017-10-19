@@ -770,6 +770,8 @@ struct RendererBase {
 	std::vector<Frame>        frames;
 	uint32_t                  currentFrameIdx;
 	uint32_t                  lastSyncedFrame;
+	// we have synced with the GPU up to this ringbuffer index
+	unsigned int              lastSyncedRingBufPtr;
 
 	// std::vector has some kind of issue with variant with non-copyable types, so use unordered_set
 	std::unordered_set<Resource>     deleteResources;

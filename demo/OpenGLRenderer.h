@@ -545,6 +545,8 @@ struct RendererBase {
 	std::vector<Frame>        frames;
 	uint32_t                  currentFrameIdx;
 	uint32_t                  lastSyncedFrame;
+	// we have synced with the GPU up to this ringbuffer index
+	unsigned int              lastSyncedRingBufPtr;
 
 
 	void rebindDescriptorSets();

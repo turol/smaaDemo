@@ -326,6 +326,7 @@ RendererBase::RendererBase()
 , ssboAlign(0)
 , currentFrameIdx(0)
 , lastSyncedFrame(0)
+, lastSyncedRingBufPtr(0)
 {
 }
 
@@ -1334,6 +1335,7 @@ void RendererBase::waitForFrame(unsigned int frameIdx) {
 	frame.ephemeralBuffers.clear();
 	frame.outstanding = false;
 	lastSyncedFrame = std::max(lastSyncedFrame, frame.lastFrameNum);
+	lastSyncedRingBufPtr = std::max(lastSyncedRingBufPtr, frame.usedRingBufPtr);
 }
 
 
