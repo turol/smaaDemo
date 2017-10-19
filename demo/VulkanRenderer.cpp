@@ -1745,6 +1745,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 		LOG("present result is not success: %s\n", vk::to_string(presentResult).c_str());
 		throw std::runtime_error("present result is not success");
 	}
+	frame.usedRingBufPtr = ringBufPtr;
 	frame.outstanding = true;
 	frame.lastFrameNum = frameNum;
 

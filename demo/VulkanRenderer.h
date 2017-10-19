@@ -635,6 +635,7 @@ struct Frame {
 	std::vector<BufferHandle> ephemeralBuffers;
 	bool                      outstanding;
 	uint32_t                  lastFrameNum;
+	unsigned int              usedRingBufPtr;
 
 	// std::vector has some kind of issue with variant with non-copyable types, so use unordered_set
 	std::unordered_set<Resource>     deleteResources;
@@ -643,6 +644,7 @@ struct Frame {
 	Frame()
 	: outstanding(false)
 	, lastFrameNum(0)
+	, usedRingBufPtr(0)
 	{}
 
 	~Frame() {
@@ -668,6 +670,7 @@ struct Frame {
 	, ephemeralBuffers(std::move(other.ephemeralBuffers))
 	, outstanding(other.outstanding)
 	, lastFrameNum(other.lastFrameNum)
+	, usedRingBufPtr(other.usedRingBufPtr)
 	, deleteResources(std::move(other.deleteResources))
 	{
 		other.image = vk::Image();
@@ -677,6 +680,7 @@ struct Frame {
 		other.commandBuffer = vk::CommandBuffer();
 		other.outstanding      = false;
 		other.lastFrameNum     = 0;
+		other.usedRingBufPtr   = 0;
 		assert(other.deleteResources.empty());
 	}
 
@@ -710,6 +714,9 @@ struct Frame {
 
 		lastFrameNum = other.lastFrameNum;
 		other.lastFrameNum = 0;
+
+		usedRingBufPtr       = other.usedRingBufPtr;
+		other.usedRingBufPtr = 0;
 
 		deleteResources = std::move(other.deleteResources);
 		assert(other.deleteResources.empty());

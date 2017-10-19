@@ -1291,6 +1291,7 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 	SDL_GL_SwapWindow(window);
 
 	frame.fence        = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+	frame.usedRingBufPtr = ringBufPtr;
 	frame.outstanding  = true;
 	frame.lastFrameNum = frameNum;
 

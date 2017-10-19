@@ -451,6 +451,7 @@ namespace renderer {
 struct Frame {
 	bool                      outstanding;
 	uint32_t                  lastFrameNum;
+	unsigned int              usedRingBufPtr;
 	GLsync                    fence;
 	std::vector<BufferHandle> ephemeralBuffers;
 
@@ -458,6 +459,7 @@ struct Frame {
 	Frame()
 	: outstanding(false)
 	, lastFrameNum(0)
+	, usedRingBufPtr(0)
 	, fence(nullptr)
 	{}
 
@@ -473,11 +475,13 @@ struct Frame {
 	Frame(Frame &&other)
 	: outstanding(other.outstanding)
 	, lastFrameNum(other.lastFrameNum)
+	, usedRingBufPtr(other.usedRingBufPtr)
 	, fence(other.fence)
 	, ephemeralBuffers(std::move(other.ephemeralBuffers))
 	{
 		other.outstanding = false;
 		other.fence       = nullptr;
+		other.usedRingBufPtr   = 0;
 		assert(other.ephemeralBuffers.empty());
 	}
 
@@ -487,6 +491,9 @@ struct Frame {
 		other.outstanding = false;
 
 		lastFrameNum = other.lastFrameNum;
+
+		usedRingBufPtr         = other.usedRingBufPtr;
+		other.usedRingBufPtr   = 0;
 
 		assert(!fence);
 		fence       = other.fence;
