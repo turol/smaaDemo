@@ -203,8 +203,23 @@ struct Sampler {
 	Sampler(const Sampler &)            = default;
 	Sampler &operator=(const Sampler &) = default;
 
-	Sampler(Sampler &&)                 = default;
-	Sampler &operator=(Sampler &&)      = default;
+	Sampler(Sampler &&other)
+	: desc(other.desc)
+	{
+		other.desc = SamplerDesc();
+	}
+
+	Sampler &operator=(Sampler &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		desc       = other.desc;
+
+		other.desc = SamplerDesc();
+
+		return *this;
+	}
 
 	Sampler() {}
 
@@ -219,8 +234,24 @@ struct Texture {
 	Texture(const Texture &)            = default;
 	Texture &operator=(const Texture &) = default;
 
-	Texture(Texture &&)                 = default;
-	Texture &operator=(Texture &&)      = default;
+	Texture(Texture &&other)
+	: desc(other.desc)
+	{
+		other.desc = TextureDesc();
+	}
+
+	Texture &operator=(Texture &&other)
+	{
+		if (this == &other) {
+			return *this;
+		}
+
+		desc = other.desc;
+
+		other.desc = TextureDesc();
+
+		return *this;
+	}
 
 	Texture() {}
 
