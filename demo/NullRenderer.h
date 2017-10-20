@@ -108,8 +108,25 @@ struct Framebuffer {
 	Framebuffer(const Framebuffer &)            = default;
 	Framebuffer &operator=(const Framebuffer &) = default;
 
-	Framebuffer(Framebuffer &&)                 = default;
-	Framebuffer &operator=(Framebuffer &&)      = default;
+	Framebuffer(Framebuffer &&other)
+		: renderPass(other.renderPass)
+	{
+		other.renderPass = RenderPassHandle();
+	}
+
+	Framebuffer &operator=(Framebuffer &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		assert(!renderPass);
+
+		renderPass       = other.renderPass;
+
+		other.renderPass = RenderPassHandle();
+
+		return *this;
+	}
 
 	Framebuffer() {}
 
