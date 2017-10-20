@@ -84,8 +84,31 @@ struct Pipeline {
 	Pipeline(const Pipeline &)            = delete;
 	Pipeline &operator=(const Pipeline &) = delete;
 
-	Pipeline(Pipeline &&)            = default;
-	Pipeline &operator=(Pipeline &&) = default;
+	Pipeline(Pipeline &&other)
+	: desc(other.desc)
+	, shader(other.shader)
+	, resources(other.resources)
+	{
+		other.desc      = PipelineDesc();
+		other.shader    = 0;
+		other.resources = ShaderResources();
+	}
+
+	Pipeline &operator=(Pipeline &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		desc            = other.desc;
+		shader          = other.shader;
+		resources       = other.resources;
+
+		other.desc      = PipelineDesc();
+		other.shader    = 0;
+		other.resources = ShaderResources();
+
+		return *this;
+	}
 
 	Pipeline()
 	: shader(0)
