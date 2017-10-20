@@ -79,8 +79,23 @@ struct DescriptorSetLayout {
 	DescriptorSetLayout(const DescriptorSetLayout &)            = delete;
 	DescriptorSetLayout &operator=(const DescriptorSetLayout &) = delete;
 
-	DescriptorSetLayout(DescriptorSetLayout &&)                 = default;
-	DescriptorSetLayout &operator=(DescriptorSetLayout &&)      = default;
+	DescriptorSetLayout(DescriptorSetLayout &&other)
+	: layout(std::move(other.layout))
+	{
+		assert(other.layout.empty());
+	}
+
+	DescriptorSetLayout &operator=(DescriptorSetLayout &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		assert(layout.empty());
+		layout = std::move(other.layout);
+		assert(other.layout.empty());
+
+		return *this;
+	}
 
 	~DescriptorSetLayout() {}
 };
