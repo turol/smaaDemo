@@ -109,7 +109,7 @@ struct Framebuffer {
 	Framebuffer &operator=(const Framebuffer &) = default;
 
 	Framebuffer(Framebuffer &&other)
-		: renderPass(other.renderPass)
+	: renderPass(other.renderPass)
 	{
 		other.renderPass = RenderPassHandle();
 	}
@@ -172,8 +172,23 @@ struct RenderTarget {
 	RenderTarget(const RenderTarget &)            = default;
 	RenderTarget &operator=(const RenderTarget &) = default;
 
-	RenderTarget(RenderTarget &&)                 = default;
-	RenderTarget &operator=(RenderTarget &&)      = default;
+	RenderTarget(RenderTarget &&other)
+	: desc(other.desc)
+	{
+		other.desc = RenderTargetDesc();
+	}
+
+	RenderTarget &operator=(RenderTarget &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		desc       = other.desc;
+
+		other.desc = RenderTargetDesc();
+
+		return *this;
+	}
 
 	RenderTarget() {}
 
