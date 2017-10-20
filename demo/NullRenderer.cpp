@@ -41,27 +41,6 @@ Buffer::~Buffer() {
 }
 
 
-RendererBase::RendererBase(const RendererDesc &desc)
-: swapchainDesc(desc.swapchain)
-, skipShaderCache(desc.skipShaderCache)
-, savePreprocessedShaders(false)
-, frameNum(0)
-, ringBufSize(desc.ephemeralRingBufSize)
-, ringBufPtr(0)
-, lastSyncedRingBufPtr(0)
-, inFrame(false)
-, inRenderPass(false)
-, validPipeline(false)
-, pipelineDrawn(false)
-, scissorSet(false)
-{
-}
-
-
-RendererBase::~RendererBase() {
-}
-
-
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
 , numBuffers(0)

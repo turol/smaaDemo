@@ -185,28 +185,6 @@ static bool isDepthFormat(Format format) {
 };
 
 
-RendererBase::RendererBase(const RendererDesc &desc)
-: swapchainDesc(desc.swapchain)
-, skipShaderCache(desc.skipShaderCache)
-, savePreprocessedShaders(false)
-, frameNum(0)
-, ringBufSize(desc.ephemeralRingBufSize)
-, ringBufPtr(0)
-, lastSyncedRingBufPtr(0)
-, inFrame(false)
-, inRenderPass(false)
-, validPipeline(false)
-, pipelineDrawn(false)
-, scissorSet(false)
-{
-}
-
-
-RendererBase::~RendererBase()
-{
-}
-
-
 static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t /* messageCode */, const char * pLayerPrefix, const char * pMessage, void * /* pUserData*/) {
 	LOG("layer %s %s object %lu type %s location %lu: %s\n", pLayerPrefix, vk::to_string(vk::DebugReportFlagBitsEXT(flags)).c_str(), static_cast<unsigned long>(object), vk::to_string(vk::DebugReportObjectTypeEXT(objectType)).c_str(), static_cast<unsigned long>(location), pMessage);
 	// make errors fatal

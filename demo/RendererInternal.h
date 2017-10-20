@@ -151,7 +151,22 @@ struct RendererBase {
 
 	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);
 
-	explicit RendererBase(const RendererDesc &desc);
+	explicit RendererBase(const RendererDesc &desc)
+	: swapchainDesc(desc.swapchain)
+	, skipShaderCache(desc.skipShaderCache)
+	, savePreprocessedShaders(false)
+	, frameNum(0)
+	, ringBufSize(0)
+	, ringBufPtr(0)
+	, lastSyncedRingBufPtr(0)
+	, inFrame(false)
+	, inRenderPass(false)
+	, validPipeline(false)
+	, pipelineDrawn(false)
+	, scissorSet(false)
+	{
+	}
+
 
 	RendererBase(const RendererBase &)            = default;
 	RendererBase(RendererBase &&)                 = default;
@@ -159,7 +174,7 @@ struct RendererBase {
 	RendererBase &operator=(const RendererBase &) = default;
 	RendererBase &operator=(RendererBase &&)      = default;
 
-	~RendererBase();
+	~RendererBase() {}
 };
 
 

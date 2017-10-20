@@ -311,28 +311,6 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 }
 
 
-RendererBase::RendererBase(const RendererDesc &desc)
-: swapchainDesc(desc.swapchain)
-, skipShaderCache(desc.skipShaderCache)
-, savePreprocessedShaders(false)
-, frameNum(0)
-, ringBufSize(0)
-, ringBufPtr(0)
-, lastSyncedRingBufPtr(0)
-, inFrame(false)
-, inRenderPass(false)
-, validPipeline(false)
-, pipelineDrawn(false)
-, scissorSet(false)
-{
-}
-
-
-RendererBase::~RendererBase()
-{
-}
-
-
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
 , ringBuffer(0)
