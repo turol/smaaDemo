@@ -156,7 +156,7 @@ struct RendererBase {
 	, skipShaderCache(desc.skipShaderCache)
 	, savePreprocessedShaders(false)
 	, frameNum(0)
-	, ringBufSize(0)
+	, ringBufSize(desc.ephemeralRingBufSize)
 	, ringBufPtr(0)
 	, lastSyncedRingBufPtr(0)
 	, inFrame(false)
