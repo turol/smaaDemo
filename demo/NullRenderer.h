@@ -141,8 +141,23 @@ struct Pipeline {
 	Pipeline(const Pipeline &)            = default;
 	Pipeline &operator=(const Pipeline &) = default;
 
-	Pipeline(Pipeline &&)            = default;
-	Pipeline &operator=(Pipeline &&) = default;
+	Pipeline(Pipeline &&other)
+	: desc(other.desc)
+	{
+		other.desc = PipelineDesc();
+	}
+
+	Pipeline &operator=(Pipeline &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		desc       = other.desc;
+
+		other.desc = PipelineDesc();
+
+		return *this;
+	}
 
 	Pipeline() {}
 
