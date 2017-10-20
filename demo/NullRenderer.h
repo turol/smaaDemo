@@ -38,8 +38,31 @@ struct Buffer {
 	Buffer(const Buffer &)            = delete;
 	Buffer &operator=(const Buffer &) = delete;
 
-	Buffer(Buffer &&)            = default;
-	Buffer &operator=(Buffer &&) = default;
+	Buffer(Buffer &&other)
+	: ringBufferAlloc(other.ringBufferAlloc)
+	, beginOffs(other.beginOffs)
+	, size(other.size)
+	{
+		other.ringBufferAlloc = false;
+		other.beginOffs       = 0;
+		other.size            = 0;
+	}
+
+	Buffer &operator=(Buffer &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		ringBufferAlloc       = other.ringBufferAlloc;
+		beginOffs             = other.beginOffs;
+		size                  = other.size;
+
+		other.ringBufferAlloc = false;
+		other.beginOffs       = 0;
+		other.size            = 0;
+
+		return *this;
+	}
 
 	Buffer();
 
