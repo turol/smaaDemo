@@ -102,7 +102,7 @@ class Includer final : public shaderc::CompileOptions::IncluderInterface {
 };
 
 
-std::vector<char> RendererImpl::loadSource(const std::string &name) {
+std::vector<char> RendererBase::loadSource(const std::string &name) {
 	auto it = shaderSources.find(name);
 	if (it != shaderSources.end()) {
 		return it->second;
@@ -114,7 +114,7 @@ std::vector<char> RendererImpl::loadSource(const std::string &name) {
 }
 
 
-std::vector<uint32_t> RendererImpl::compileSpirv(const std::string &name, const ShaderMacros &macros, shaderc_shader_kind kind) {
+std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, shaderc_shader_kind kind) {
 	// check spir-v cache first
 
 	std::string spvName = std::string(spirvCacheDir.get()) + name;
@@ -397,7 +397,7 @@ void Renderer::drawIndexedOffset(unsigned int vertexCount, unsigned int firstInd
 }
 
 
-unsigned int RendererImpl::ringBufferAllocate(unsigned int size, unsigned int alignment) {
+unsigned int RendererBase::ringBufferAllocate(unsigned int size, unsigned int alignment) {
 	// sub-allocate from persistent coherent buffer
 	// round current pointer up to necessary alignment
 	const unsigned int add   = alignment - 1;

@@ -112,35 +112,10 @@ public:
 };
 
 
-}		// namespace renderer
-
-
-#ifdef RENDERER_OPENGL
-
-#include "OpenGLRenderer.h"
-
-#elif defined(RENDERER_VULKAN)
-
-#include "VulkanRenderer.h"
-
-#elif defined(RENDERER_NULL)
-
-#include "NullRenderer.h"
-
-#else
-
-#error "No renderer specified"
-
-#endif  // RENDERER
-
-
-namespace renderer {
-
-
 const char *descriptorTypeName(DescriptorType t);
 
 
-struct RendererImpl : public RendererBase {
+struct RendererBase {
 	SwapchainDesc swapchainDesc;
 
 	bool skipShaderCache;
@@ -174,66 +149,38 @@ struct RendererImpl : public RendererBase {
 
 	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);
 
-	explicit RendererImpl(const RendererDesc &desc);
+	explicit RendererBase(const RendererDesc &desc);
 
-	RendererImpl(const RendererImpl &)            = default;
-	RendererImpl(RendererImpl &&)                 = default;
+	RendererBase(const RendererBase &)            = default;
+	RendererBase(RendererBase &&)                 = default;
 
-	RendererImpl &operator=(const RendererImpl &) = default;
-	RendererImpl &operator=(RendererImpl &&)      = default;
+	RendererBase &operator=(const RendererBase &) = default;
+	RendererBase &operator=(RendererBase &&)      = default;
 
-	~RendererImpl();
-
-
-	bool isRenderTargetFormatSupported(Format format) const;
-
-	RenderTargetHandle   createRenderTarget(const RenderTargetDesc &desc);
-	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
-	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);
-	FramebufferHandle    createFramebuffer(const FramebufferDesc &desc);
-	RenderPassHandle     createRenderPass(const RenderPassDesc &desc);
-	PipelineHandle       createPipeline(const PipelineDesc &desc);
-	BufferHandle         createBuffer(uint32_t size, const void *contents);
-	BufferHandle         createEphemeralBuffer(uint32_t size, const void *contents);
-	SamplerHandle        createSampler(const SamplerDesc &desc);
-	TextureHandle        createTexture(const TextureDesc &desc);
-
-	DSLayoutHandle       createDescriptorSetLayout(const DescriptorLayout *layout);
-
-	TextureHandle        getRenderTargetTexture(RenderTargetHandle handle);
-
-	void deleteBuffer(BufferHandle handle);
-	void deleteFramebuffer(FramebufferHandle fbo);
-	void deleteRenderPass(RenderPassHandle fbo);
-	void deleteSampler(SamplerHandle handle);
-	void deleteTexture(TextureHandle handle);
-	void deleteRenderTarget(RenderTargetHandle &fbo);
-
-
-	void recreateSwapchain(const SwapchainDesc &desc);
-	MemoryStats getMemStats() const;
-
-	void beginFrame();
-	void presentFrame(RenderTargetHandle image);
-
-	void beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle);
-	void endRenderPass();
-
-	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
-	void setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
-
-	void bindPipeline(PipelineHandle pipeline);
-	void bindIndexBuffer(BufferHandle buffer, bool bit16);
-	void bindVertexBuffer(unsigned int binding, BufferHandle buffer);
-
-	void bindDescriptorSet(unsigned int index, DSLayoutHandle layout, const void *data);
-
-	void draw(unsigned int firstVertex, unsigned int vertexCount);
-	void drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount);
-	void drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex);
+	~RendererBase();
 };
 
 
-}  // namespace renderer
+}		// namespace renderer
+
+
+#ifdef RENDERER_OPENGL
+
+#include "OpenGLRenderer.h"
+
+#elif defined(RENDERER_VULKAN)
+
+#include "VulkanRenderer.h"
+
+#elif defined(RENDERER_NULL)
+
+#include "NullRenderer.h"
+
+#else
+
+#error "No renderer specified"
+
+#endif  // RENDERER
+
 
 #endif  // RENDERERINTERNAL_H

@@ -41,18 +41,7 @@ Buffer::~Buffer() {
 }
 
 
-RendererBase::RendererBase()
-: numBuffers(0)
-, numTextures(0)
-{
-}
-
-
-RendererBase::~RendererBase() {
-}
-
-
-RendererImpl::RendererImpl(const RendererDesc &desc)
+RendererBase::RendererBase(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
 , skipShaderCache(desc.skipShaderCache)
 , savePreprocessedShaders(false)
@@ -64,6 +53,18 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , validPipeline(false)
 , pipelineDrawn(false)
 , scissorSet(false)
+{
+}
+
+
+RendererBase::~RendererBase() {
+}
+
+
+RendererImpl::RendererImpl(const RendererDesc &desc)
+: RendererBase(desc)
+, numBuffers(0)
+, numTextures(0)
 {
 	SDL_Init(SDL_INIT_EVENTS);
 

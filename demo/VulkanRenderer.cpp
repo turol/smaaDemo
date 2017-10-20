@@ -185,13 +185,18 @@ static bool isDepthFormat(Format format) {
 };
 
 
-RendererBase::RendererBase()
-: graphicsQueueIndex(0)
-, ringBufferMem(nullptr)
-, persistentMapping(nullptr)
-, currentFrameIdx(0)
-, lastSyncedFrame(0)
-, lastSyncedRingBufPtr(0)
+RendererBase::RendererBase(const RendererDesc &desc)
+: swapchainDesc(desc.swapchain)
+, skipShaderCache(desc.skipShaderCache)
+, savePreprocessedShaders(false)
+, frameNum(0)
+, ringBufSize(desc.ephemeralRingBufSize)
+, ringBufPtr(0)
+, inFrame(false)
+, inRenderPass(false)
+, validPipeline(false)
+, pipelineDrawn(false)
+, scissorSet(false)
 {
 }
 
@@ -211,17 +216,13 @@ static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebug
 
 
 RendererImpl::RendererImpl(const RendererDesc &desc)
-: swapchainDesc(desc.swapchain)
-, skipShaderCache(desc.skipShaderCache)
-, savePreprocessedShaders(false)
-, frameNum(0)
-, ringBufSize(desc.ephemeralRingBufSize)
-, ringBufPtr(0)
-, inFrame(false)
-, inRenderPass(false)
-, validPipeline(false)
-, pipelineDrawn(false)
-, scissorSet(false)
+: RendererBase(desc)
+, graphicsQueueIndex(0)
+, ringBufferMem(nullptr)
+, persistentMapping(nullptr)
+, currentFrameIdx(0)
+, lastSyncedFrame(0)
+, lastSyncedRingBufPtr(0)
 {
 	// TODO: get from desc.debug when this is finished
 	bool enableValidation = true;
@@ -1762,7 +1763,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 }
 
 
-void RendererBase::waitForFrame(unsigned int frameIdx) {
+void RendererImpl::waitForFrame(unsigned int frameIdx) {
 	assert(frameIdx < frames.size());
 
 	Frame &frame = frames.at(frameIdx);
@@ -1806,7 +1807,7 @@ void RendererBase::waitForFrame(unsigned int frameIdx) {
 }
 
 
-void RendererBase::deleteBufferInternal(Buffer &b) {
+void RendererImpl::deleteBufferInternal(Buffer &b) {
 	assert(!b.ringBufferAlloc);
 	assert(b.lastUsedFrame <= lastSyncedFrame);
 	this->device.destroyBuffer(b.buffer);
@@ -1822,7 +1823,7 @@ void RendererBase::deleteBufferInternal(Buffer &b) {
 }
 
 
-void RendererBase::deleteFramebufferInternal(Framebuffer &fb) {
+void RendererImpl::deleteFramebufferInternal(Framebuffer &fb) {
 	device.destroyFramebuffer(fb.framebuffer);
 	fb.framebuffer = vk::Framebuffer();
 	fb.width       = 0;
@@ -1830,7 +1831,7 @@ void RendererBase::deleteFramebufferInternal(Framebuffer &fb) {
 }
 
 
-void RendererBase::deleteRenderTargetInternal(RenderTarget &rt) {
+void RendererImpl::deleteRenderTargetInternal(RenderTarget &rt) {
 	assert(rt.texture);
 	auto &tex = this->textures.get(rt.texture);
 	assert(tex.image == rt.image);
@@ -1853,20 +1854,20 @@ void RendererBase::deleteRenderTargetInternal(RenderTarget &rt) {
 }
 
 
-void RendererBase::deleteRenderPassInternal(RenderPass &rp) {
+void RendererImpl::deleteRenderPassInternal(RenderPass &rp) {
 	this->device.destroyRenderPass(rp.renderPass);
 	rp.renderPass = vk::RenderPass();
 }
 
 
-void RendererBase::deleteSamplerInternal(Sampler &s) {
+void RendererImpl::deleteSamplerInternal(Sampler &s) {
 	assert(s.sampler);
 	this->device.destroySampler(s.sampler);
 	s.sampler = vk::Sampler();
 }
 
 
-void RendererBase::deleteTextureInternal(Texture &tex) {
+void RendererImpl::deleteTextureInternal(Texture &tex) {
 	assert(!tex.renderTarget);
 	this->device.destroyImageView(tex.imageView);
 	this->device.destroyImage(tex.image);
@@ -1878,12 +1879,12 @@ void RendererBase::deleteTextureInternal(Texture &tex) {
 }
 
 
-void RendererBase::deleteResourceInternal(Resource &r) {
+void RendererImpl::deleteResourceInternal(Resource &r) {
 	boost::apply_visitor(ResourceDeleter(this), r);
 }
 
 
-void RendererBase::deleteFrameInternal(Frame &f) {
+void RendererImpl::deleteFrameInternal(Frame &f) {
 	assert(!f.outstanding);
 	assert(f.fence);
 	device.destroyFence(f.fence);

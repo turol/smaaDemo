@@ -311,8 +311,30 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 }
 
 
-RendererBase::RendererBase()
-: ringBuffer(0)
+RendererBase::RendererBase(const RendererDesc &desc)
+: swapchainDesc(desc.swapchain)
+, skipShaderCache(desc.skipShaderCache)
+, savePreprocessedShaders(false)
+, frameNum(0)
+, ringBufSize(0)
+, ringBufPtr(0)
+, inFrame(false)
+, inRenderPass(false)
+, validPipeline(false)
+, pipelineDrawn(false)
+, scissorSet(false)
+{
+}
+
+
+RendererBase::~RendererBase()
+{
+}
+
+
+RendererImpl::RendererImpl(const RendererDesc &desc)
+: RendererBase(desc)
+, ringBuffer(0)
 , persistentMapInUse(false)
 , persistentMapping(nullptr)
 , decriptorSetsDirty(true)
@@ -327,27 +349,6 @@ RendererBase::RendererBase()
 , currentFrameIdx(0)
 , lastSyncedFrame(0)
 , lastSyncedRingBufPtr(0)
-{
-}
-
-
-RendererBase::~RendererBase()
-{
-}
-
-
-RendererImpl::RendererImpl(const RendererDesc &desc)
-: swapchainDesc(desc.swapchain)
-, skipShaderCache(desc.skipShaderCache)
-, savePreprocessedShaders(false)
-, frameNum(0)
-, ringBufSize(0)
-, ringBufPtr(0)
-, inFrame(false)
-, inRenderPass(false)
-, validPipeline(false)
-, pipelineDrawn(false)
-, scissorSet(false)
 {
 
 	// TODO: check return value
@@ -1301,7 +1302,7 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 }
 
 
-void RendererBase::waitForFrame(unsigned int frameIdx) {
+void RendererImpl::waitForFrame(unsigned int frameIdx) {
 	assert(frameIdx < frames.size());
 
 	Frame &frame = frames.at(frameIdx);
@@ -1339,7 +1340,7 @@ void RendererBase::waitForFrame(unsigned int frameIdx) {
 }
 
 
-void RendererBase::deleteFrameInternal(Frame &f) {
+void RendererImpl::deleteFrameInternal(Frame &f) {
 	assert(!f.outstanding);
 }
 
@@ -1677,7 +1678,7 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 }
 
 
-void RendererBase::rebindDescriptorSets() {
+void RendererImpl::rebindDescriptorSets() {
 	assert(decriptorSetsDirty);
 
 	const auto &pipeline  = pipelines.get(currentPipeline);
