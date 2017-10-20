@@ -130,7 +130,9 @@ struct Framebuffer {
 
 	Framebuffer() {}
 
-	~Framebuffer() {}
+	~Framebuffer() {
+		assert(!renderPass);
+	}
 };
 
 
