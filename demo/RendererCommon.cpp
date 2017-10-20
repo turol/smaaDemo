@@ -419,6 +419,10 @@ unsigned int RendererBase::ringBufferAllocate(unsigned int size, unsigned int al
 	}
 	ringBufPtr = alignedPtr + size;
 
+	// ran out of buffer space?
+	// TODO: handle this better, allocate a new buffer
+	assert(ringBufPtr < lastSyncedRingBufPtr + ringBufSize);
+
 	return beginPtr;
 }
 
