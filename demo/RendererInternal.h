@@ -124,6 +124,8 @@ struct RendererBase {
 
 	unsigned int  ringBufSize;
 	unsigned int  ringBufPtr;
+	// we have synced with the GPU up to this ringbuffer index
+	unsigned int              lastSyncedRingBufPtr;
 
 	std::unordered_map<std::string, std::vector<char> > shaderSources;
 

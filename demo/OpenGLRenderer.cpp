@@ -318,6 +318,7 @@ RendererBase::RendererBase(const RendererDesc &desc)
 , frameNum(0)
 , ringBufSize(0)
 , ringBufPtr(0)
+, lastSyncedRingBufPtr(0)
 , inFrame(false)
 , inRenderPass(false)
 , validPipeline(false)
@@ -348,7 +349,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , ssboAlign(0)
 , currentFrameIdx(0)
 , lastSyncedFrame(0)
-, lastSyncedRingBufPtr(0)
 {
 
 	// TODO: check return value

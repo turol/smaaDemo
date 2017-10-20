@@ -192,6 +192,7 @@ RendererBase::RendererBase(const RendererDesc &desc)
 , frameNum(0)
 , ringBufSize(desc.ephemeralRingBufSize)
 , ringBufPtr(0)
+, lastSyncedRingBufPtr(0)
 , inFrame(false)
 , inRenderPass(false)
 , validPipeline(false)
@@ -222,7 +223,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , persistentMapping(nullptr)
 , currentFrameIdx(0)
 , lastSyncedFrame(0)
-, lastSyncedRingBufPtr(0)
 {
 	// TODO: get from desc.debug when this is finished
 	bool enableValidation = true;
