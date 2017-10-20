@@ -187,8 +187,31 @@ struct VertexShader {
 	VertexShader(const VertexShader &) = delete;
 	VertexShader &operator=(const VertexShader &) = delete;
 
-	VertexShader(VertexShader &&)            = default;
-	VertexShader &operator=(VertexShader &&) = default;
+	VertexShader(VertexShader &&other)
+	: shader(other.shader)
+	, name(other.name)
+	, resources(other.resources)
+	{
+		other.shader    = 0;
+		other.name      = std::string();
+		other.resources = ShaderResources();
+	}
+
+	VertexShader &operator=(VertexShader &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		shader          = other.shader;
+		name            = other.name;
+		resources       = other.resources;
+
+		other.shader    = 0;
+		other.name      = std::string();
+		other.resources = ShaderResources();
+
+		return *this;
+	}
 
 	VertexShader()
 	: shader(0)
@@ -210,8 +233,31 @@ struct FragmentShader {
 	FragmentShader(const FragmentShader &) = delete;
 	FragmentShader &operator=(const FragmentShader &) = delete;
 
-	FragmentShader(FragmentShader &&)            = default;
-	FragmentShader &operator=(FragmentShader &&) = default;
+	FragmentShader(FragmentShader &&other)
+	: shader(other.shader)
+	, name(other.name)
+	, resources(other.resources)
+	{
+		other.shader    = 0;
+		other.name      = std::string();
+		other.resources = ShaderResources();
+	}
+
+	FragmentShader &operator=(FragmentShader &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		shader          = other.shader;
+		name            = other.name;
+		resources       = other.resources;
+
+		other.shader    = 0;
+		other.name      = std::string();
+		other.resources = ShaderResources();
+
+		return *this;
+	}
 
 
 	FragmentShader()
