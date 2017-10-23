@@ -448,6 +448,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	glCreateBuffers(1, &ringBuffer);
 	// TODO: proper error checking
 	assert(ringBuffer != 0);
+	assert(ringBufSize               == 0);
+	assert(ringBufPtr                == 0);
+	assert(persistentMapping         == nullptr);
 	assert(desc.ephemeralRingBufSize > 0);
 	unsigned int bufferFlags = 0;
 	// if debug is on, disable persistent buffer because apitrace can't trace it

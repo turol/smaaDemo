@@ -429,6 +429,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	// create ringbuffer
 	{
+		assert(ringBufSize       == 0);
+		assert(ringBufPtr        == 0);
+		assert(persistentMapping == nullptr);
+
+		ringBufSize = desc.ephemeralRingBufSize;
+
 		vk::BufferCreateInfo rbInfo;
 		rbInfo.size  = ringBufSize;
 		rbInfo.usage = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferSrc;
