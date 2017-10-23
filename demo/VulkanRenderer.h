@@ -775,8 +775,6 @@ struct RendererImpl : public RendererBase {
 	std::unordered_set<Resource>     deleteResources;
 
 
-	unsigned int ringBufferAlloc(unsigned int size);
-
 	void waitForFrame(unsigned int frameIdx);
 
 	void deleteBufferInternal(Buffer &b);
