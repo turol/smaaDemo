@@ -439,7 +439,34 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 	assert(newSize > 0);
 
-	// TODO: if buffer already exists, free it after it's no longer in use
+	// if buffer already exists, free it after it's no longer in use
+	if (ringBuffer) {
+		assert(ringBufSize       != 0);
+		assert(persistentMapping != nullptr);
+
+		// create a Buffer object which we can put into deleteResources
+		Buffer buffer;
+		buffer.buffer          = ringBuffer;
+		ringBuffer             = vk::Buffer();
+
+		buffer.ringBufferAlloc = false;
+
+		buffer.memory          = ringBufferMem;
+		ringBufferMem          = VK_NULL_HANDLE;
+		persistentMapping      = nullptr;
+
+		buffer.size            = ringBufSize;
+		ringBufSize            = 0;
+
+		buffer.offset          = ringBufPtr;
+		ringBufPtr             = 0;
+
+		buffer.lastUsedFrame   = frameNum;
+
+		deleteResources.emplace(std::move(buffer));
+	}
+
+	assert(!ringBuffer);
 	assert(ringBufSize       == 0);
 	assert(ringBufPtr        == 0);
 	assert(persistentMapping == nullptr);
@@ -1780,8 +1807,6 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 
 	for (auto handle : frame.ephemeralBuffers) {
 		Buffer &buffer = buffers.get(handle);
-		assert(buffer.buffer == ringBuffer);
-		assert(buffer.ringBufferAlloc);
 		assert(buffer.size   >  0);
 
 		buffer.buffer          = vk::Buffer();
