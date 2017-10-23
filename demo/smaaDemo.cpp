@@ -599,6 +599,10 @@ const DescriptorLayout NeighborBlendDS::layout[] = {
 DSLayoutHandle NeighborBlendDS::layoutHandle;
 
 
+static const int numDepths = 2;
+static const std::array<Format, numDepths> depths = { Format::Depth24, Format::Depth16 };
+
+
 void SMAADemo::initRender() {
 	RendererDesc desc;
 	desc.debug                = glDebug;
@@ -610,11 +614,13 @@ void SMAADemo::initRender() {
 
 	renderer = Renderer::createRenderer(desc);
 
-	if (renderer.isRenderTargetFormatSupported(Format::Depth24)) {
-		depthFormat = Format::Depth24;
-	} else if (renderer.isRenderTargetFormatSupported(Format::Depth16)) {
-		depthFormat = Format::Depth16;
-	} else {
+	for (auto depth : depths) {
+		if (renderer.isRenderTargetFormatSupported(depth)) {
+			depthFormat = depth;
+			break;
+		}
+	}
+	if (depthFormat == Format::Invalid) {
 		throw std::runtime_error("no supported depth formats");
 	}
 
