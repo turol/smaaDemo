@@ -439,40 +439,40 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 	assert(newSize > 0);
 
-		// TODO: if buffer already exists, free it after it's no longer in use
-		assert(ringBufSize       == 0);
-		assert(ringBufPtr        == 0);
-		assert(persistentMapping == nullptr);
-		ringBufSize = newSize;
+	// TODO: if buffer already exists, free it after it's no longer in use
+	assert(ringBufSize       == 0);
+	assert(ringBufPtr        == 0);
+	assert(persistentMapping == nullptr);
+	ringBufSize = newSize;
 
-		// create ringbuffer
-		vk::BufferCreateInfo rbInfo;
-		rbInfo.size  = newSize;
-		rbInfo.usage = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferSrc;
-		ringBuffer   = device.createBuffer(rbInfo);
+	// create ringbuffer
+	vk::BufferCreateInfo rbInfo;
+	rbInfo.size  = newSize;
+	rbInfo.usage = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferSrc;
+	ringBuffer   = device.createBuffer(rbInfo);
 
-		assert(ringBufferMem == nullptr);
+	assert(ringBufferMem == nullptr);
 
-		VmaMemoryRequirements req;
-		req.flags          = VMA_MEMORY_REQUIREMENT_OWN_MEMORY_BIT | VMA_MEMORY_REQUIREMENT_PERSISTENT_MAP_BIT;
-		req.usage          = VMA_MEMORY_USAGE_CPU_TO_GPU;
-		req.requiredFlags  = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-		req.preferredFlags = 0;
-		req.pUserData      = nullptr;
-		VmaAllocationInfo  allocationInfo = {};
+	VmaMemoryRequirements req;
+	req.flags          = VMA_MEMORY_REQUIREMENT_OWN_MEMORY_BIT | VMA_MEMORY_REQUIREMENT_PERSISTENT_MAP_BIT;
+	req.usage          = VMA_MEMORY_USAGE_CPU_TO_GPU;
+	req.requiredFlags  = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+	req.preferredFlags = 0;
+	req.pUserData      = nullptr;
+	VmaAllocationInfo  allocationInfo = {};
 
-		vmaAllocateMemoryForBuffer(allocator, ringBuffer, &req, &ringBufferMem, &allocationInfo);
-		LOG("ringbuffer memory type: %u\n",    allocationInfo.memoryType);
-		LOG("ringbuffer memory offset: %u\n",  static_cast<unsigned int>(allocationInfo.offset));
-		LOG("ringbuffer memory size: %u\n",    static_cast<unsigned int>(allocationInfo.size));
-		assert(ringBufferMem != nullptr);
-		assert(allocationInfo.offset == 0);
-		assert(allocationInfo.pMappedData != nullptr);
+	vmaAllocateMemoryForBuffer(allocator, ringBuffer, &req, &ringBufferMem, &allocationInfo);
+	LOG("ringbuffer memory type: %u\n",    allocationInfo.memoryType);
+	LOG("ringbuffer memory offset: %u\n",  static_cast<unsigned int>(allocationInfo.offset));
+	LOG("ringbuffer memory size: %u\n",    static_cast<unsigned int>(allocationInfo.size));
+	assert(ringBufferMem != nullptr);
+	assert(allocationInfo.offset == 0);
+	assert(allocationInfo.pMappedData != nullptr);
 
-		device.bindBufferMemory(ringBuffer, allocationInfo.deviceMemory, allocationInfo.offset);
+	device.bindBufferMemory(ringBuffer, allocationInfo.deviceMemory, allocationInfo.offset);
 
-		persistentMapping = reinterpret_cast<char *>(allocationInfo.pMappedData);
-		assert(persistentMapping != nullptr);
+	persistentMapping = reinterpret_cast<char *>(allocationInfo.pMappedData);
+	assert(persistentMapping != nullptr);
 }
 
 
