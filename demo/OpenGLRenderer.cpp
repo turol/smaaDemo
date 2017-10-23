@@ -444,6 +444,19 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	recreateSwapchain(desc.swapchain);
 
+	recreateRingBuffer(desc.ephemeralRingBufSize);
+
+	// swap once to get better traces
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	SDL_GL_SwapWindow(window);
+}
+
+
+void RendererImpl::recreateRingBuffer(unsigned int newSize) {
+	assert(newSize > 0);
+
+	// TODO: if buffer already exists, free it after it's no longer in use
+
 	// set up ring buffer
 	glCreateBuffers(1, &ringBuffer);
 	// TODO: proper error checking
@@ -451,12 +464,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	assert(ringBufSize               == 0);
 	assert(ringBufPtr                == 0);
 	assert(persistentMapping         == nullptr);
-	assert(desc.ephemeralRingBufSize > 0);
 	unsigned int bufferFlags = 0;
 	// if debug is on, disable persistent buffer because apitrace can't trace it
 	// TODO: should have separate toggles for debug messages and debug tracing
 	persistentMapInUse = !debug;
-	ringBufSize        = desc.ephemeralRingBufSize;
+	ringBufSize        = newSize;
 
 	if (!persistentMapInUse) {
 		// need GL_DYNAMIC_STORAGE_BIT since we intend to glBufferSubData it
@@ -473,10 +485,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	if (persistentMapInUse) {
 		persistentMapping = reinterpret_cast<char *>(glMapNamedBufferRange(ringBuffer, 0, ringBufSize, bufferFlags));
 	}
-
-	// swap once to get better traces
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	SDL_GL_SwapWindow(window);
 }
 
 
