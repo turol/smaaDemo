@@ -1765,6 +1765,10 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 		throw std::runtime_error("wait result is not success");
 	}
 
+	frame.outstanding    = false;
+	lastSyncedFrame      = std::max(lastSyncedFrame, frame.lastFrameNum);
+	lastSyncedRingBufPtr = std::max(lastSyncedRingBufPtr, frame.usedRingBufPtr);
+
 	// reset per-frame pools
 	device.resetCommandPool(frame.commandPool, vk::CommandPoolResetFlags());
 	device.resetDescriptorPool(frame.dsPool);
@@ -1790,9 +1794,6 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 		buffers.remove(handle);
 	}
 	frame.ephemeralBuffers.clear();
-	frame.outstanding = false;
-	lastSyncedFrame = std::max(lastSyncedFrame, frame.lastFrameNum);
-	lastSyncedRingBufPtr = std::max(lastSyncedRingBufPtr, frame.usedRingBufPtr);
 }
 
 
