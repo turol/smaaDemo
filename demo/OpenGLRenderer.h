@@ -618,6 +618,8 @@ struct RendererImpl : public RendererBase {
 
 	void rebindDescriptorSets();
 
+	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);
+
 	void waitForFrame(unsigned int frameIdx);
 	void deleteFrameInternal(Frame &f);
 

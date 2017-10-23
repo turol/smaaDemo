@@ -149,8 +149,6 @@ struct RendererBase {
 
 	std::vector<uint32_t> compileSpirv(const std::string &name, const ShaderMacros &macros, shaderc_shader_kind kind);
 
-	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);
-
 	explicit RendererBase(const RendererDesc &desc)
 	: swapchainDesc(desc.swapchain)
 	, skipShaderCache(desc.skipShaderCache)

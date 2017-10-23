@@ -279,6 +279,8 @@ struct RendererImpl : public RendererBase {
 	std::vector<BufferHandle> ephemeralBuffers;
 
 
+	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);
+
 	explicit RendererImpl(const RendererDesc &desc);
 
 	~RendererImpl();
