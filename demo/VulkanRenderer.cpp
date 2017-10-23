@@ -427,16 +427,27 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	recreateSwapchain(desc.swapchain);
 
-	// create ringbuffer
-	{
+	recreateRingBuffer(desc.ephemeralRingBufSize);
+
+	acquireSem    = device.createSemaphore(vk::SemaphoreCreateInfo());
+	renderDoneSem = device.createSemaphore(vk::SemaphoreCreateInfo());
+
+	// TODO: load pipeline cache
+}
+
+
+void RendererImpl::recreateRingBuffer(unsigned int newSize) {
+	assert(newSize > 0);
+
+		// TODO: if buffer already exists, free it after it's no longer in use
 		assert(ringBufSize       == 0);
 		assert(ringBufPtr        == 0);
 		assert(persistentMapping == nullptr);
+		ringBufSize = newSize;
 
-		ringBufSize = desc.ephemeralRingBufSize;
-
+		// create ringbuffer
 		vk::BufferCreateInfo rbInfo;
-		rbInfo.size  = ringBufSize;
+		rbInfo.size  = newSize;
 		rbInfo.usage = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferSrc;
 		ringBuffer   = device.createBuffer(rbInfo);
 
@@ -462,12 +473,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 		persistentMapping = reinterpret_cast<char *>(allocationInfo.pMappedData);
 		assert(persistentMapping != nullptr);
-	}
-
-	acquireSem    = device.createSemaphore(vk::SemaphoreCreateInfo());
-	renderDoneSem = device.createSemaphore(vk::SemaphoreCreateInfo());
-
-	// TODO: load pipeline cache
 }
 
 
