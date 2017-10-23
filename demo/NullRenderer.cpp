@@ -50,7 +50,15 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	spirvCacheDir.reset(SDL_GetPrefPath(nullptr, "SMAADemo"));
 
-	ringBuffer.resize(ringBufSize, 0);
+	recreateRingBuffer(desc.ephemeralRingBufSize);
+}
+
+
+void RendererImpl::recreateRingBuffer(unsigned int newSize) {
+	assert(newSize > 0);
+
+	ringBufSize = newSize;
+	ringBuffer.resize(newSize, 0);
 	// TODO: use valgrind to make sure we only write to intended parts of ring buffer
 }
 
