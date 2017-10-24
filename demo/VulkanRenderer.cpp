@@ -197,6 +197,8 @@ static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebug
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
 , graphicsQueueIndex(0)
+, uboAlign(0)
+, ssboAlign(0)
 , ringBufferMem(nullptr)
 , persistentMapping(nullptr)
 , currentFrameIdx(0)
@@ -303,7 +305,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	LOG("Name \"%s\"\n", deviceProperties.deviceName);
 	LOG("uniform buffer alignment %u\n", static_cast<unsigned int>(deviceProperties.limits.minUniformBufferOffsetAlignment));
 	LOG("storage buffer alignment %u\n", static_cast<unsigned int>(deviceProperties.limits.minStorageBufferOffsetAlignment));
-	LOG("texel buffer alignment %u\n",   static_cast<unsigned int>(deviceProperties.limits.minStorageBufferOffsetAlignment));
+	LOG("texel buffer alignment %u\n",   static_cast<unsigned int>(deviceProperties.limits.minTexelBufferOffsetAlignment));
+
+	uboAlign  = deviceProperties.limits.minUniformBufferOffsetAlignment;
+	ssboAlign = deviceProperties.limits.minStorageBufferOffsetAlignment;
 
 	deviceFeatures = physicalDevice.getFeatures();
 
@@ -664,7 +669,8 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	buffer.size   = static_cast<uint32_t>(allocationInfo.size);
 
 	// copy contents to GPU memory
-	unsigned int beginPtr = ringBufferAllocate(size, 256);
+	// TODO: pick proper alignment based on usage flags
+	unsigned int beginPtr = ringBufferAllocate(size, std::max(uboAlign, ssboAlign));
 	memcpy(persistentMapping + beginPtr, contents, size);
 
 	// TODO: reuse command buffer for multiple copies
@@ -704,7 +710,8 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	unsigned int beginPtr = ringBufferAllocate(size, 256);
+	// TODO: pick proper alignment based on usage flags
+	unsigned int beginPtr = ringBufferAllocate(size, std::max(uboAlign, ssboAlign));
 
 	memcpy(persistentMapping + beginPtr, contents, size);
 

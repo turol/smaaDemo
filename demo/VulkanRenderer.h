@@ -752,6 +752,9 @@ struct RendererImpl : public RendererBase {
 
 	VmaAllocator                       allocator;
 
+	unsigned int   uboAlign;
+	unsigned int   ssboAlign;
+
 	ResourceContainer<Buffer>              buffers;
 	ResourceContainer<DescriptorSetLayout> dsLayouts;
 	ResourceContainer<FragmentShader>      fragmentShaders;
