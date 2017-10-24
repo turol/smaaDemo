@@ -301,6 +301,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	LOG("DeviceId 0x%x\n", deviceProperties.deviceID);
 	LOG("Type %s\n", vk::to_string(deviceProperties.deviceType).c_str());
 	LOG("Name \"%s\"\n", deviceProperties.deviceName);
+	LOG("uniform buffer alignment %u\n", static_cast<unsigned int>(deviceProperties.limits.minUniformBufferOffsetAlignment));
+	LOG("storage buffer alignment %u\n", static_cast<unsigned int>(deviceProperties.limits.minStorageBufferOffsetAlignment));
+	LOG("texel buffer alignment %u\n",   static_cast<unsigned int>(deviceProperties.limits.minStorageBufferOffsetAlignment));
 
 	deviceFeatures = physicalDevice.getFeatures();
 
