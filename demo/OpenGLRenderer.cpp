@@ -455,7 +455,31 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 	assert(newSize > 0);
 
-	// TODO: if buffer already exists, free it after it's no longer in use
+	// if buffer already exists, free it after it's no longer in use
+	if (ringBuffer) {
+		assert(ringBufSize       != 0);
+
+		if (persistentMapInUse) {
+			glUnmapNamedBuffer(ringBuffer);
+			persistentMapping = nullptr;
+		}
+
+		auto result = buffers.add();
+		frames.at(currentFrameIdx).ephemeralBuffers.push_back(result.second);
+
+		Buffer &buffer = result.first;
+
+		buffer.buffer          = ringBuffer;
+		ringBuffer             = 0;
+
+		buffer.ringBufferAlloc = false;
+		buffer.beginOffs       = 0;
+
+		buffer.size            = ringBufSize;
+		ringBufSize            = 0;
+
+		ringBufPtr             = 0;
+	}
 
 	// set up ring buffer
 	glCreateBuffers(1, &ringBuffer);
@@ -1311,11 +1335,13 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 
 	for (auto handle : frame.ephemeralBuffers) {
 		Buffer &buffer = buffers.get(handle);
-		assert(buffer.buffer == ringBuffer);
-		buffer.buffer = 0;
-
-		assert(buffer.ringBufferAlloc);
-		buffer.ringBufferAlloc = false;
+		if (buffer.ringBufferAlloc) {
+			buffer.buffer          = 0;
+			buffer.ringBufferAlloc = false;
+		} else {
+			glDeleteBuffers(1, &buffer.buffer);
+			buffer.buffer = 0;
+		}
 
 		assert(buffer.size   >  0);
 		buffer.size = 0;
@@ -1570,7 +1596,9 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 	const Buffer &buffer = buffers.get(handle);
 	assert(buffer.size >  0);
 	if (buffer.ringBufferAlloc) {
-		assert(buffer.buffer == ringBuffer);
+		// this is not strictly correct since we might have reallocated the ringbuf bigger
+		// but it should never fail, at worst it will not spot some errors immediately after realloc
+		// which are rare events anyway
 		assert(buffer.beginOffs + buffer.size < ringBufSize);
 	} else {
 		assert(buffer.buffer    != 0);
