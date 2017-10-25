@@ -115,6 +115,9 @@ public:
 const char *descriptorTypeName(DescriptorType t);
 
 
+bool isDepthFormat(Format format);
+
+
 struct RendererBase {
 	SwapchainDesc swapchainDesc;
 

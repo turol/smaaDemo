@@ -63,6 +63,37 @@ const char *descriptorTypeName(DescriptorType t) {
 }
 
 
+bool isDepthFormat(Format format) {
+	switch (format) {
+	case Format::Invalid:
+		UNREACHABLE();
+		return false;
+
+	case Format::R8:
+		return false;
+
+	case Format::RG8:
+		return false;
+
+	case Format::RGB8:
+		return false;
+
+	case Format::RGBA8:
+		return false;
+
+	case Format::Depth16:
+		return true;
+
+	case Format::Depth24:
+		return true;
+
+	}
+
+	UNREACHABLE();
+	return false;
+}
+
+
 void RendererImpl::SDLPrefDirDel::operator()(char *ptr) const {
 	SDL_free(ptr);
 }
