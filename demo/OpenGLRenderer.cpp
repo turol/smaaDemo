@@ -609,8 +609,30 @@ RendererImpl::~RendererImpl() {
 }
 
 
-bool RendererImpl::isRenderTargetFormatSupported(Format /* format */) const {
-	// TODO: actually check it...
+bool RendererImpl::isRenderTargetFormatSupported(Format format) const {
+	GLenum target         = GL_TEXTURE_2D;
+	GLenum internalFormat = glTexFormat(format);
+	int params            = 0;
+
+	glGetInternalformativ(target, internalFormat, GL_INTERNALFORMAT_SUPPORTED, sizeof(int), &params);
+	if (params == GL_FALSE) {
+		return false;
+	}
+
+	params = 0;
+	glGetInternalformativ(target, internalFormat, GL_FRAMEBUFFER_RENDERABLE, sizeof(int), &params);
+	if (params != GL_FULL_SUPPORT) {
+		return false;
+	}
+
+	GLenum renderable = isDepthFormat(format) ? GL_DEPTH_RENDERABLE : GL_COLOR_RENDERABLE;
+
+	params = 0;
+	glGetInternalformativ(target, internalFormat, renderable, sizeof(int), &params);
+	if (params == GL_FALSE) {
+		return false;
+	}
+
 	return true;
 }
 
