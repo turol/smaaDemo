@@ -23,9 +23,9 @@ layout(set = 0, binding = 0, std140) uniform Globals
 
 
 struct Cube {
-	vec4 rotation;
-	vec3 position;
-	float pad0;
-	vec3  color;
-	float pad1;
+	vec4   rotation;
+	vec3   position;
+	float  pad0;
+	vec3   color;
+	float  pad1;
 };

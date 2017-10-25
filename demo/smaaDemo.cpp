@@ -1019,9 +1019,9 @@ void SMAADemo::colorCubes() {
 			// TODO: use the same luma as shader
 
 			float y = 0.5f;
-			const float c_red = 0.299f
-				, c_green = 0.587f
-			, c_blue = 0.114f;
+			const float c_red   = 0.299f
+			          , c_green = 0.587f
+			          , c_blue  = 0.114f;
 			float cb = random.randFloat();
 			float cr = random.randFloat();
 
