@@ -423,14 +423,24 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	surfaceFormats      = physicalDevice.getSurfaceFormatsKHR(surface);
 	surfacePresentModes = physicalDevice.getSurfacePresentModesKHR(surface);
 
+	// TODO: sRGB
+	bool found = false;
 	LOG("%u surface formats\n", static_cast<uint32_t>(surfaceFormats.size()));
 	for (const auto &format : surfaceFormats) {
 		LOG(" %s\t%s\n", vk::to_string(format.format).c_str(), vk::to_string(format.colorSpace).c_str());
+		if (format.format == vk::Format::eB8G8R8A8Unorm && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
+			found = true;
+		}
 	}
 
 	LOG("%u present modes\n",   static_cast<uint32_t>(surfacePresentModes.size()));
 	for (const auto &presentMode : surfacePresentModes) {
 		LOG(" %s\n", vk::to_string(presentMode).c_str());
+	}
+
+	if (!found) {
+		LOG("surface format %s colorspace %s not supported\n", vk::to_string(vk::Format::eB8G8R8A8Unorm).c_str(), vk::to_string(vk::ColorSpaceKHR::eSrgbNonlinear).c_str());
+		throw std::runtime_error("surface format not supported");
 	}
 
 	recreateSwapchain(desc.swapchain);
@@ -1608,8 +1618,8 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	swapchainCreateInfo.surface               = surface;
 	swapchainCreateInfo.minImageCount         = numImages;
 	// TODO: better way to choose a format, should care about sRGB
-	swapchainCreateInfo.imageFormat           = surfaceFormats.at(0).format;
-	swapchainCreateInfo.imageColorSpace       = surfaceFormats.at(0).colorSpace;
+	swapchainCreateInfo.imageFormat           = vk::Format::eB8G8R8A8Unorm;
+	swapchainCreateInfo.imageColorSpace       = vk::ColorSpaceKHR::eSrgbNonlinear;
 	swapchainCreateInfo.imageExtent           = imageExtent;
 	swapchainCreateInfo.imageArrayLayers      = 1;
 	swapchainCreateInfo.imageUsage            = vk::ImageUsageFlagBits::eTransferDst;
