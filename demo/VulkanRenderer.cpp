@@ -770,8 +770,6 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	fb.height       = height;
 	fb.framebuffer  = device.createFramebuffer(fbInfo);
 
-	LOG("Framebuffer %p  %s\n", VkFramebuffer(fb.framebuffer), desc.name_);
-
 	return result.second;
 }
 
@@ -884,8 +882,6 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	auto result   = renderPasses.add();
 	RenderPass &r = result.first;
 	r.renderPass  = device.createRenderPass(info);;
-
-	LOG("Renderpass %p  %s\n", VkRenderPass(r.renderPass), desc.name_);
 
 	return result.second;
 }
@@ -1045,8 +1041,6 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	p.layout   = layout;
 	p.scissor  = desc.scissorTest_;
 
-	LOG("Pipeline %p  %s\n", VkPipeline(p.pipeline), desc.name_);
-
 	return id.second;
 }
 
@@ -1081,11 +1075,6 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	rt.height = desc.height_;
 	rt.image = device.createImage(info);
 	rt.format = format;
-
-	// TODO: better check
-	if (debugCallback) {
-		LOG("Created rendertarget image %p: %s\n", VkImage(rt.image), desc.name_);
-	}
 
 	auto texResult   = textures.add();
 	Texture &tex     = texResult.first;
