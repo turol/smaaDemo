@@ -183,7 +183,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
 	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
 
-	spirvCacheDir.reset(SDL_GetPrefPath(nullptr, "SMAADemo"));
+	spirvCacheDir.reset(SDL_GetPrefPath("", "SMAADemo"));
 
 	SDL_DisplayMode mode;
 	memset(&mode, 0, sizeof(mode));

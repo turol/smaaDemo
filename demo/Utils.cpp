@@ -36,7 +36,7 @@ static FILE *logFile;
 void logInit() {
 	assert(!logFile);
 
-	char *logFilePath = SDL_GetPrefPath(nullptr, "SMAADemo");
+	char *logFilePath = SDL_GetPrefPath("", "SMAADemo");
 	std::string logFileName(logFilePath);
 	SDL_free(logFilePath);
 	logFileName += "logfile.txt";
