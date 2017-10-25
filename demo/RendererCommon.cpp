@@ -97,6 +97,39 @@ bool isDepthFormat(Format format) {
 }
 
 
+const char *formatName(Format format) {
+   switch (format) {
+	case Format::Invalid:
+		return "Invalid";
+
+	case Format::R8:
+		return "R8";
+
+	case Format::RG8:
+		return "RG8";
+
+	case Format::RGB8:
+		return "RGB8";
+
+	case Format::RGBA8:
+		return "RGBA8";
+
+	case Format::Depth16:
+		return "Depth16";
+
+	case Format::Depth24:
+		return "Depth24";
+
+	case Format::Depth32:
+		return "Depth32";
+
+	}
+
+	UNREACHABLE();
+	return "";
+}
+
+
 void RendererImpl::SDLPrefDirDel::operator()(char *ptr) const {
 	SDL_free(ptr);
 }

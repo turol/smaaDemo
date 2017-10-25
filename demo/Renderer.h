@@ -199,6 +199,9 @@ enum class Format : uint8_t {
 };
 
 
+const char *formatName(Format format);
+
+
 enum class VtxFormat : uint8_t {
 	  Float
 	, UNorm8

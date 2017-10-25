@@ -620,6 +620,7 @@ void SMAADemo::initRender() {
 	if (depthFormat == Format::Invalid) {
 		throw std::runtime_error("no supported depth formats");
 	}
+	LOG("Using depth format %s\n", formatName(depthFormat));
 
 	renderer.registerDescriptorSetLayout<GlobalDS>();
 	renderer.registerDescriptorSetLayout<CubeSceneDS>();
