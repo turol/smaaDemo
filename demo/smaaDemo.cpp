@@ -1018,12 +1018,12 @@ void SMAADemo::colorCubes() {
 			// worst case scenario for luma edge detection
 			// TODO: use the same luma as shader
 
-			float y = 0.5f;
+			float y = 0.3f;
 			const float c_red   = 0.299f
 			          , c_green = 0.587f
 			          , c_blue  = 0.114f;
-			float cb = random.randFloat();
-			float cr = random.randFloat();
+			float cb = random.randFloat() * 2.0f - 1.0f;
+			float cr = random.randFloat() * 2.0f - 1.0f;
 
 			float r = cr * (2 - 2 * c_red) + y;
 			float g = (y - c_blue * cb - c_red * cr) / c_green;
