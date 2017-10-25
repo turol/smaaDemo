@@ -596,8 +596,8 @@ const DescriptorLayout NeighborBlendDS::layout[] = {
 DSLayoutHandle NeighborBlendDS::layoutHandle;
 
 
-static const int numDepths = 2;
-static const std::array<Format, numDepths> depths = { { Format::Depth24, Format::Depth16 } };
+static const int numDepths = 3;
+static const std::array<Format, numDepths> depths = { { Format::Depth32, Format::Depth24, Format::Depth16 } };
 
 
 void SMAADemo::initRender() {

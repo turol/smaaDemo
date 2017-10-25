@@ -87,6 +87,9 @@ bool isDepthFormat(Format format) {
 	case Format::Depth24:
 		return true;
 
+	case Format::Depth32:
+		return true;
+
 	}
 
 	UNREACHABLE();

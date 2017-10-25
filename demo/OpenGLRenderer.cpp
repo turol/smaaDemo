@@ -103,6 +103,9 @@ static GLenum glTexFormat(Format format) {
 	case Format::Depth24:
 		return GL_DEPTH_COMPONENT24;
 
+	case Format::Depth32:
+		return GL_DEPTH_COMPONENT32F;
+
 	}
 
 	UNREACHABLE();
@@ -132,6 +135,11 @@ static GLenum glTexBaseFormat(Format format) {
 		return GL_NONE;
 
 	case Format::Depth24:
+		// not supposed to use this format here
+		assert(false);
+		return GL_NONE;
+
+	case Format::Depth32:
 		// not supposed to use this format here
 		assert(false);
 		return GL_NONE;

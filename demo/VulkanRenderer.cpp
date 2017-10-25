@@ -147,6 +147,9 @@ static vk::Format vulkanFormat(Format format) {
 	case Format::Depth24:
 		return vk::Format::eX8D24UnormPack32;
 
+	case Format::Depth32:
+		return vk::Format::eD32Sfloat;
+
 	}
 
 	UNREACHABLE();
