@@ -69,9 +69,6 @@ union Color {
 };
 
 
-static const Color white = { 0xFFFFFFFF };
-
-
 class SMAADemo;
 
 
@@ -997,7 +994,7 @@ void SMAADemo::createCubes() {
 				                        , (z * cubeDistance) - (bigCubeSide / 2.0f));
 
 				cube.rotation = glm::vec4(qx, qy, qz, qw);
-				cube.color = white.val;
+				cube.color = glm::vec3(1.0f, 1.0f, 1.0f);
 				cubes.emplace_back(cube);
 			}
 		}
@@ -1010,15 +1007,13 @@ void SMAADemo::createCubes() {
 void SMAADemo::colorCubes() {
 	if (colorMode == 0) {
 		for (auto &cube : cubes) {
-			Color col;
-			// random RGB, alpha = 1.0
-			// FIXME: we're abusing little-endianness, make it portable
-			col.val = random.randU32() | 0xFF000000;
-			cube.color = col.val;
+			// random RGB
+			cube.color.x = random.randFloat();
+			cube.color.y = random.randFloat();
+			cube.color.z = random.randFloat();
 		}
 	} else {
 		for (auto &cube : cubes) {
-			Color col;
 			// YCbCr, fixed luma, random chroma, alpha = 1.0
 			// worst case scenario for luma edge detection
 			// TODO: use the same luma as shader
@@ -1034,11 +1029,9 @@ void SMAADemo::colorCubes() {
 			float g = (y - c_blue * cb - c_red * cr) / c_green;
 			float b = cb * (2 - 2 * c_blue) + y;
 
-			col.r = static_cast<uint8_t>(255.0f * r);
-			col.g = static_cast<uint8_t>(255.0f * g);
-			col.b = static_cast<uint8_t>(255.0f * b);
-			col.a = 0xFF;
-			cube.color = col.val;
+			cube.color.x = r;
+			cube.color.y = g;
+			cube.color.z = b;
 		}
 	}
 }
