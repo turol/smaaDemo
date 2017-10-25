@@ -121,7 +121,7 @@ struct Buffer {
 	}
 
 	size_t getHash() const {
-		return std::hash<uintptr_t>()(reinterpret_cast<uintptr_t>(VkBuffer(buffer)));
+		return std::hash<uint64_t>()(reinterpret_cast<uint64_t>(VkBuffer(buffer)));
 	}
 };
 
@@ -288,7 +288,7 @@ struct Framebuffer {
 	}
 
 	size_t getHash() const {
-		return std::hash<uintptr_t>()(reinterpret_cast<uintptr_t>(VkFramebuffer(framebuffer)));
+		return std::hash<uint64_t>()(reinterpret_cast<uint64_t>(VkFramebuffer(framebuffer)));
 	}
 };
 
@@ -331,7 +331,7 @@ struct RenderPass {
 	}
 
 	size_t getHash() const {
-		return std::hash<uintptr_t>()(reinterpret_cast<uintptr_t>(VkRenderPass(renderPass)));
+		return std::hash<uint64_t>()(reinterpret_cast<uint64_t>(VkRenderPass(renderPass)));
 	}
 };
 
@@ -410,7 +410,7 @@ struct RenderTarget{
 	}
 
 	size_t getHash() const {
-		return std::hash<uintptr_t>()(reinterpret_cast<uintptr_t>(VkImage(image)));
+		return std::hash<uint64_t>()(reinterpret_cast<uint64_t>(VkImage(image)));
 	}
 };
 
@@ -501,7 +501,7 @@ struct Sampler {
 	}
 
 	size_t getHash() const {
-		return std::hash<uintptr_t>()(reinterpret_cast<uintptr_t>(VkSampler(sampler)));
+		return std::hash<uint64_t>()(reinterpret_cast<uint64_t>(VkSampler(sampler)));
 	}
 };
 
@@ -574,7 +574,7 @@ struct Texture {
 	}
 
 	size_t getHash() const {
-		return std::hash<uintptr_t>()(reinterpret_cast<uintptr_t>(VkImage(image)));
+		return std::hash<uint64_t>()(reinterpret_cast<uint64_t>(VkImage(image)));
 	}
 };
 
