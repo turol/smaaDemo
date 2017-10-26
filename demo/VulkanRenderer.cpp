@@ -144,10 +144,16 @@ static vk::Format vulkanFormat(Format format) {
 	case Format::Depth16:
 		return vk::Format::eD16Unorm;
 
-	case Format::Depth24:
+	case Format::Depth16S8:
+		return vk::Format::eD16UnormS8Uint;
+
+	case Format::Depth24S8:
+		return vk::Format::eD24UnormS8Uint;
+
+	case Format::Depth24X8:
 		return vk::Format::eX8D24UnormPack32;
 
-	case Format::Depth32:
+	case Format::Depth32Float:
 		return vk::Format::eD32Sfloat;
 
 	}

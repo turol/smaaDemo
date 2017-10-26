@@ -100,10 +100,16 @@ static GLenum glTexFormat(Format format) {
 	case Format::Depth16:
 		return GL_DEPTH_COMPONENT16;
 
-	case Format::Depth24:
+	case Format::Depth16S8:
+		return GL_DEPTH24_STENCIL8;
+
+	case Format::Depth24S8:
+		return GL_DEPTH24_STENCIL8;
+
+	case Format::Depth24X8:
 		return GL_DEPTH_COMPONENT24;
 
-	case Format::Depth32:
+	case Format::Depth32Float:
 		return GL_DEPTH_COMPONENT32F;
 
 	}
@@ -134,12 +140,22 @@ static GLenum glTexBaseFormat(Format format) {
 		assert(false);
 		return GL_NONE;
 
-	case Format::Depth24:
+	case Format::Depth16S8:
 		// not supposed to use this format here
 		assert(false);
 		return GL_NONE;
 
-	case Format::Depth32:
+	case Format::Depth24S8:
+		// not supposed to use this format here
+		assert(false);
+		return GL_NONE;
+
+	case Format::Depth24X8:
+		// not supposed to use this format here
+		assert(false);
+		return GL_NONE;
+
+	case Format::Depth32Float:
 		// not supposed to use this format here
 		assert(false);
 		return GL_NONE;

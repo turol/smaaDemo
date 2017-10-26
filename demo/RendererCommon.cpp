@@ -84,10 +84,16 @@ bool isDepthFormat(Format format) {
 	case Format::Depth16:
 		return true;
 
-	case Format::Depth24:
+	case Format::Depth16S8:
 		return true;
 
-	case Format::Depth32:
+	case Format::Depth24S8:
+		return true;
+
+	case Format::Depth24X8:
+		return true;
+
+	case Format::Depth32Float:
 		return true;
 
 	}
@@ -117,11 +123,17 @@ const char *formatName(Format format) {
 	case Format::Depth16:
 		return "Depth16";
 
-	case Format::Depth24:
-		return "Depth24";
+	case Format::Depth16S8:
+		return "Depth16S8";
 
-	case Format::Depth32:
-		return "Depth32";
+	case Format::Depth24S8:
+		return "Depth24S8";
+
+	case Format::Depth24X8:
+		return "Depth24X8";
+
+	case Format::Depth32Float:
+		return "Depth32Float";
 
 	}
 
