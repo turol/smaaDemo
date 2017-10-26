@@ -42,6 +42,9 @@ THE SOFTWARE.
 #include "vk_mem_alloc.h"
 
 
+#define VK_HASH(x) std::hash<uint64_t>()(reinterpret_cast<uint64_t>(x))
+
+
 namespace renderer {
 
 
@@ -121,7 +124,7 @@ struct Buffer {
 	}
 
 	size_t getHash() const {
-		return std::hash<uint64_t>()(reinterpret_cast<uint64_t>(VkBuffer(buffer)));
+		return VK_HASH(VkBuffer(buffer));
 	}
 };
 
@@ -288,7 +291,7 @@ struct Framebuffer {
 	}
 
 	size_t getHash() const {
-		return std::hash<uint64_t>()(reinterpret_cast<uint64_t>(VkFramebuffer(framebuffer)));
+		return VK_HASH(VkFramebuffer(framebuffer));
 	}
 };
 
@@ -331,7 +334,7 @@ struct RenderPass {
 	}
 
 	size_t getHash() const {
-		return std::hash<uint64_t>()(reinterpret_cast<uint64_t>(VkRenderPass(renderPass)));
+		return VK_HASH(VkRenderPass(renderPass));
 	}
 };
 
@@ -410,7 +413,7 @@ struct RenderTarget{
 	}
 
 	size_t getHash() const {
-		return std::hash<uint64_t>()(reinterpret_cast<uint64_t>(VkImage(image)));
+		return VK_HASH(VkImage(image));
 	}
 };
 
@@ -501,7 +504,7 @@ struct Sampler {
 	}
 
 	size_t getHash() const {
-		return std::hash<uint64_t>()(reinterpret_cast<uint64_t>(VkSampler(sampler)));
+		return VK_HASH(VkSampler(sampler));
 	}
 };
 
@@ -574,7 +577,7 @@ struct Texture {
 	}
 
 	size_t getHash() const {
-		return std::hash<uint64_t>()(reinterpret_cast<uint64_t>(VkImage(image)));
+		return VK_HASH(VkImage(image));
 	}
 };
 
