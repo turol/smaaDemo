@@ -1215,7 +1215,10 @@ void RendererImpl::deleteTexture(TextureHandle handle) {
 
 
 void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
+	bool changed = false;
+
 	if (swapchainDesc.fullscreen != desc.fullscreen) {
+		changed = true;
 		if (desc.fullscreen) {
 			// TODO: check return val?
 			SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
@@ -1227,6 +1230,7 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	}
 
 	if (swapchainDesc.vsync != desc.vsync) {
+		changed = true;
 		if (desc.vsync) {
 			// enable vsync, using late swap tearing if possible
 			int retval = SDL_GL_SetSwapInterval(-1);
@@ -1241,20 +1245,36 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 			LOG("VSync is off\n");
 		}
 	}
-	swapchainDesc = desc;
 
 	int w = -1, h = -1;
 	SDL_GL_GetDrawableSize(window, &w, &h);
 	if (w <= 0 || h <= 0) {
 		throw std::runtime_error("drawable size is negative");
 	}
+
+	if (swapchainDesc.width != static_cast<unsigned int>(w) || swapchainDesc.height != static_cast<unsigned int>(h)) {
+		changed = true;
+	}
+
 	swapchainDesc.width  = w;
 	swapchainDesc.height = h;
 
 	unsigned int numImages = desc.numFrames;
 	numImages = std::max(numImages, 1U);
 
+	if (swapchainDesc.numFrames != numImages) {
+		changed = true;
+	}
+
+	if (!changed && !frames.empty()) {
+		return;
+	}
+
 	LOG("Want %u images, using %u images\n", desc.numFrames, numImages);
+
+	swapchainDesc.fullscreen = desc.fullscreen;
+	swapchainDesc.numFrames  = desc.numFrames;
+	swapchainDesc.vsync      = desc.vsync;
 
 	if (frames.size() != numImages) {
 		if (numImages < frames.size()) {
