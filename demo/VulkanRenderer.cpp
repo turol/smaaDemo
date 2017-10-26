@@ -1462,7 +1462,7 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 		throw std::runtime_error("drawable size is negative");
 	}
 
-	if (swapchainDesc.width != w || swapchainDesc.height != h) {
+	if (swapchainDesc.width != static_cast<unsigned int>(w) || swapchainDesc.height != static_cast<unsigned int>(h)) {
 		changed = true;
 	}
 
