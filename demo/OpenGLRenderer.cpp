@@ -906,7 +906,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	assert(desc.vertexShader_);
 	assert(desc.fragmentShader_);
 	assert(desc.renderPass_);
-	assert(desc.name_ != nullptr);
+	assert(!desc.name_.empty());
 
 	const auto &v = vertexShaders.get(desc.vertexShader_);
     const auto &f = fragmentShaders.get(desc.fragmentShader_);
@@ -963,7 +963,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 
 
 FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
-	assert(desc.name_ != nullptr);
+	assert(!desc.name_.empty());
 	assert(desc.renderPass_);
 
 	auto &renderPass = renderPasses.get(desc.renderPass_);
@@ -1006,7 +1006,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	}
 
 	if (debug) {
-		glObjectLabel(GL_FRAMEBUFFER, fb.fbo, -1, desc.name_);
+		glObjectLabel(GL_FRAMEBUFFER, fb.fbo, desc.name_.size(), desc.name_.c_str());
 	}
 
 	return result.second;
@@ -1014,7 +1014,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 
 
 RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
-	assert(desc.name_ != nullptr);
+	assert(!desc.name_.empty());
 
 	auto result = renderPasses.add();
 	RenderPass &pass = result.first;
@@ -1027,14 +1027,14 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
 	assert(desc.format_ != Format::Invalid);
-	assert(desc.name_   != nullptr);
+	assert(!desc.name_.empty());
 
 	GLuint id = 0;
 	glCreateTextures(GL_TEXTURE_2D, 1, &id);
 	glTextureStorage2D(id, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
 	glTextureParameteri(id, GL_TEXTURE_MAX_LEVEL, 0);
 	if (debug) {
-		glObjectLabel(GL_TEXTURE, id, -1, desc.name_);
+		glObjectLabel(GL_TEXTURE, id, desc.name_.size(), desc.name_.c_str());
 	}
 
 	auto textureResult = textures.add();

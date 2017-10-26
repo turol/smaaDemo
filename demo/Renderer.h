@@ -213,7 +213,6 @@ struct RenderTargetDesc {
 	: width_(0)
 	, height_(0)
 	, format_(Format::Invalid)
-	, name_(nullptr)
 	{
 	}
 
@@ -243,7 +242,7 @@ struct RenderTargetDesc {
 		return *this;
 	}
 
-	RenderTargetDesc &name(const char *str) {
+	RenderTargetDesc &name(const std::string &str) {
 		name_ = str;
 		return *this;
 	}
@@ -253,7 +252,7 @@ private:
 	unsigned int   width_, height_;
 	// TODO: unsigned int multisample;
 	Format         format_;
-	const char     *name_;
+	std::string    name_;
 
 	friend struct RendererImpl;
 };
@@ -386,7 +385,6 @@ struct RenderPassDesc {
 	RenderPassDesc()
 	: depthStencilFormat_(Format::Invalid)
 	, colorFinalLayout_(Layout::ShaderRead)
-	, name_(nullptr)
 	{
 		std::fill(colorFormats_.begin(), colorFormats_.end(), Format::Invalid);
 	}
@@ -415,7 +413,7 @@ struct RenderPassDesc {
 		return *this;
 	}
 
-	RenderPassDesc &name(const char *str) {
+	RenderPassDesc &name(const std::string &str) {
 		name_ = str;
 		return *this;
 	}
@@ -425,7 +423,7 @@ private:
 	Format                                       depthStencilFormat_;
 	std::array<Format, MAX_COLOR_RENDERTARGETS>  colorFormats_;
 	Layout                                       colorFinalLayout_;
-	const char                                   *name_;
+	std::string                                  name_;
 
 	friend struct RendererImpl;
 };
@@ -433,7 +431,6 @@ private:
 
 struct FramebufferDesc {
 	FramebufferDesc()
-	: name_(nullptr)
 	{
 	}
 
@@ -462,7 +459,7 @@ struct FramebufferDesc {
 		return *this;
 	}
 
-	FramebufferDesc &name(const char *str) {
+	FramebufferDesc &name(const std::string &str) {
 		name_ = str;
 		return *this;
 	}
@@ -473,7 +470,7 @@ private:
 	RenderPassHandle                                         renderPass_;
 	RenderTargetHandle                                       depthStencil_;
 	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS>  colors_;
-	const char                                               *name_;
+	std::string                                              name_;
 
 	friend struct RendererImpl;
 };
@@ -507,7 +504,7 @@ class PipelineDesc {
 	std::array<VertexBuf,      MAX_VERTEX_BUFFERS>   vertexBuffers;
 	std::array<DSLayoutHandle, MAX_DESCRIPTOR_SETS>  descriptorSetLayouts;
 
-	const char                                       *name_;
+	std::string                                      name_;
 
 
 public:
@@ -584,7 +581,7 @@ public:
 		return *this;
 	}
 
-	PipelineDesc &name(const char *str) {
+	PipelineDesc &name(const std::string &str) {
 		name_ = str;
 		return *this;
 	}
@@ -596,7 +593,6 @@ public:
 	, cullFaces_(false)
 	, scissorTest_(false)
 	, blending_(false)
-	, name_(nullptr)
 	{
 		for (unsigned int i = 0; i < MAX_VERTEX_ATTRIBS; i++) {
 			vertexAttribs[i].bufBinding = 0;
