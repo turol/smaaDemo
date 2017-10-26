@@ -1434,7 +1434,10 @@ void RendererImpl::deleteTexture(TextureHandle handle) {
 
 
 void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
+	bool changed = false;
+
 	if (swapchainDesc.fullscreen != desc.fullscreen) {
+		changed = true;
 		if (desc.fullscreen) {
 			// TODO: check return val?
 			SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
@@ -1453,15 +1456,16 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	LOG("supported surface alpha composite flags: %s\n", vk::to_string(surfaceCapabilities.supportedCompositeAlpha).c_str());
 	LOG("supported surface usage flags: %s\n", vk::to_string(surfaceCapabilities.supportedUsageFlags).c_str());
 
-	swapchainDesc.fullscreen = desc.fullscreen;
-	swapchainDesc.numFrames = desc.numFrames;
-	swapchainDesc.vsync = desc.vsync;
-
 	int w = -1, h = -1;
 	SDL_Vulkan_GetDrawableSize(window, &w, &h);
 	if (w <= 0 || h <= 0) {
 		throw std::runtime_error("drawable size is negative");
 	}
+
+	if (swapchainDesc.width != w || swapchainDesc.height != h) {
+		changed = true;
+	}
+
 	swapchainDesc.width  = w;
 	swapchainDesc.height = h;
 
@@ -1471,7 +1475,19 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 		numImages = std::min(numImages, surfaceCapabilities.maxImageCount);
 	}
 
+	if (swapchainDesc.numFrames != numImages  || swapchainDesc.vsync != desc.vsync) {
+		changed = true;
+	}
+
+	if (!changed && swapchain) {
+		return;
+	}
+
 	LOG("Want %u images, using %u images\n", desc.numFrames, numImages);
+
+	swapchainDesc.fullscreen = desc.fullscreen;
+	swapchainDesc.numFrames  = desc.numFrames;
+	swapchainDesc.vsync      = desc.vsync;
 
 	if (frames.size() != numImages) {
 		if (numImages < frames.size()) {
