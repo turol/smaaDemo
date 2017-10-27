@@ -1720,11 +1720,11 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 int main(int argc, char *argv[]) {
 	try {
+		logInit();
+
 		auto demo = std::make_unique<SMAADemo>();
 
 		demo->parseCommandLine(argc, argv);
-
-		logInit();
 
 		demo->initRender();
 		demo->createCubes();
