@@ -384,8 +384,17 @@ SMAADemo::SMAADemo()
 
 	lastTime = getNanoseconds();
 
-	// TODO: find a better fudge factor
-	sleepFudge = 100ULL * 1000ULL;
+	// measure minimum sleep length and use it as fudge factor
+	sleepFudge = 1000ULL * 1000ULL;
+	for (unsigned int i = 0; i < 8; i++) {
+		std::this_thread::sleep_for(std::chrono::nanoseconds(1));
+		uint64_t ticks = getNanoseconds();
+		uint64_t diff  = ticks - lastTime;
+		sleepFudge     = std::min(sleepFudge, diff);
+		lastTime       = ticks;
+	}
+
+	LOG("sleep fudge (nanoseconds): %lu\n", sleepFudge);
 
 	memset(imageFileName, 0, inputTextBufferSize);
 	memset(clipboardText, 0, inputTextBufferSize);
