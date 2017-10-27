@@ -189,6 +189,7 @@ class SMAADemo {
 	bool recreateSwapchain;
 	bool      fpsLimitActive;
 	uint32_t  fpsLimit;
+	uint64_t  sleepFudge;
 
 	Renderer renderer;
 	bool glDebug;
@@ -344,6 +345,7 @@ SMAADemo::SMAADemo()
 , recreateSwapchain(false)
 , fpsLimitActive(true)
 , fpsLimit(0)
+, sleepFudge(0)
 , glDebug(false)
 , skipShaderCache(false)
 , depthFormat(Format::Invalid)
@@ -379,6 +381,9 @@ SMAADemo::SMAADemo()
 	freqDiv   /= g;
 
 	lastTime = getNanoseconds();
+
+	// TODO: find a better fudge factor
+	sleepFudge = 100ULL * 1000ULL;
 
 	memset(imageFileName, 0, inputTextBufferSize);
 	memset(clipboardText, 0, inputTextBufferSize);
@@ -1320,11 +1325,9 @@ void SMAADemo::render() {
 
 	if (fpsLimitActive) {
 		uint64_t nsLimit = 1000000000ULL / fpsLimit;
-		// TODO: find a better fudge factor
-		uint64_t fudge = 100ULL * 1000ULL;
-		while (elapsed + fudge < nsLimit) {
+		while (elapsed + sleepFudge < nsLimit) {
 			// limit reached, throttle
-			uint64_t nsWait = nsLimit - (elapsed + fudge);
+			uint64_t nsWait = nsLimit - (elapsed + sleepFudge);
 			std::this_thread::sleep_for(std::chrono::nanoseconds(nsWait));
 			ticks   = getNanoseconds();
 			elapsed = ticks - lastTime;
