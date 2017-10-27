@@ -1325,8 +1325,7 @@ void SMAADemo::render() {
 		while (elapsed + fudge < nsLimit) {
 			// limit reached, throttle
 			uint64_t nsWait = nsLimit - (elapsed + fudge);
-			uint64_t usWait = nsWait / 1000ULL;
-			std::this_thread::sleep_for(std::chrono::microseconds(usWait));
+			std::this_thread::sleep_for(std::chrono::nanoseconds(nsWait));
 			ticks   = getNanoseconds();
 			elapsed = ticks - lastTime;
 		}
