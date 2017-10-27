@@ -379,6 +379,8 @@ SMAADemo::SMAADemo()
 	uint64_t g = gcd(freqMult, freqDiv);
 	freqMult  /= g;
 	freqDiv   /= g;
+	LOG("freqMult: %lu\n", freqMult);
+	LOG("freqDiv: %lu\n",  freqDiv);
 
 	lastTime = getNanoseconds();
 
