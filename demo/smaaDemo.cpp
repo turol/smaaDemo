@@ -21,10 +21,13 @@ THE SOFTWARE.
 */
 
 
-#include <algorithm>
 #include <cassert>
 #include <cfloat>
 #include <cstdio>
+
+#include <unistd.h>
+
+#include <algorithm>
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -183,6 +186,8 @@ class SMAADemo {
 	bool vsync;
 	bool fullscreen;
 	bool recreateSwapchain;
+	bool      fpsLimitActive;
+	uint32_t  fpsLimit;
 
 	Renderer renderer;
 	bool glDebug;
@@ -318,6 +323,8 @@ SMAADemo::SMAADemo()
 , vsync(true)
 , fullscreen(false)
 , recreateSwapchain(false)
+, fpsLimitActive(true)
+, fpsLimit(0)
 , glDebug(false)
 , skipShaderCache(false)
 , depthFormat(Format::Invalid)
@@ -611,6 +618,9 @@ void SMAADemo::initRender() {
 	desc.swapchain.vsync      = vsync;
 
 	renderer = Renderer::createRenderer(desc);
+
+	// TODO: ask display refresh rate from renderer
+	fpsLimit = 2 * 60;
 
 	for (auto depth : depths) {
 		if (renderer.isRenderTargetFormatSupported(depth)) {
@@ -1279,6 +1289,20 @@ void SMAADemo::render() {
 	uint64_t ticks = SDL_GetPerformanceCounter();
 	uint64_t elapsed = ticks - lastTime;
 
+	if (fpsLimitActive) {
+		uint64_t nsLimit = 1000000000ULL / fpsLimit;
+		// TODO: find a better fudge factor
+		uint64_t fudge = 100ULL * 1000ULL;
+		while (elapsed + fudge < nsLimit) {
+			// limit reached, throttle
+			uint64_t nsWait = nsLimit - (elapsed + fudge);
+			uint64_t usWait = nsWait / 1000ULL;
+			usleep(usWait);
+			ticks = SDL_GetPerformanceCounter();
+			elapsed = ticks - lastTime;
+		}
+	}
+
 	lastTime = ticks;
 
 	ShaderDefines::Globals globals;
@@ -1572,6 +1596,8 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			numFrames = n;
 			recreateSwapchain = true;
 		}
+
+		ImGui::Checkbox("FPS limit", &fpsLimitActive);
 
 		ImGui::Separator();
 		// TODO: measure actual GPU time
