@@ -1443,6 +1443,20 @@ void RendererImpl::deleteTexture(TextureHandle handle) {
 }
 
 
+static const unsigned int numPresentModes = 4;
+static const std::array<vk::PresentModeKHR, numPresentModes> vsyncModes
+= {{ vk::PresentModeKHR::eFifoRelaxed
+   , vk::PresentModeKHR::eFifo
+   , vk::PresentModeKHR::eMailbox
+   , vk::PresentModeKHR::eImmediate }};
+
+static const std::array<vk::PresentModeKHR, numPresentModes> nonVSyncModes
+= {{ vk::PresentModeKHR::eImmediate
+   , vk::PresentModeKHR::eMailbox
+   , vk::PresentModeKHR::eFifoRelaxed
+   , vk::PresentModeKHR::eFifo }};
+
+
 void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	bool changed = false;
 
@@ -1578,23 +1592,12 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 
 	// FIFO is guaranteed to be supported
 	vk::PresentModeKHR swapchainPresentMode = vk::PresentModeKHR::eFifo;
-	if (desc.vsync) {
-		for (const auto &mode : surfacePresentModes) {
-			if (mode == vk::PresentModeKHR::eMailbox) {
-				swapchainPresentMode = vk::PresentModeKHR::eMailbox;
-				// mailbox is "best", get out
-				break;
-			} else if (mode == vk::PresentModeKHR::eFifoRelaxed) {
-				swapchainPresentMode = vk::PresentModeKHR::eFifoRelaxed;
-				// keep looking in case we find a better one
-			}
-		}
-	} else {
-		for (const auto &mode : surfacePresentModes) {
-			if (mode == vk::PresentModeKHR::eImmediate) {
-				swapchainPresentMode = vk::PresentModeKHR::eImmediate;
-				break;
-			}
+	// pick from the supported modes based on a prioritized
+	// list depending on whether we want vsync or not
+	for (const auto presentMode : (desc.vsync ? vsyncModes : nonVSyncModes)) {
+		if (surfacePresentModes.find(presentMode) != surfacePresentModes.end()) {
+			swapchainPresentMode = presentMode;
+			break;
 		}
 	}
 
