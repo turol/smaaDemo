@@ -25,7 +25,8 @@ THE SOFTWARE.
 #include <cfloat>
 #include <cstdio>
 
-#include <unistd.h>
+#include <thread>
+#include <chrono>
 
 #include <algorithm>
 #include <memory>
@@ -1325,7 +1326,7 @@ void SMAADemo::render() {
 			// limit reached, throttle
 			uint64_t nsWait = nsLimit - (elapsed + fudge);
 			uint64_t usWait = nsWait / 1000ULL;
-			usleep(usWait);
+			std::this_thread::sleep_for(std::chrono::microseconds(usWait));
 			ticks   = getNanoseconds();
 			elapsed = ticks - lastTime;
 		}
