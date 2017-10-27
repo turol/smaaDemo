@@ -234,8 +234,10 @@ class SMAADemo {
 	bool rotateCubes;
 	float cameraRotation;
 	float cameraDistance;
+	uint64_t tickBase;
 	uint64_t lastTime;
-	uint64_t freq;
+	uint64_t freqMult;
+	uint64_t freqDiv;
 	uint64_t rotationTime;
 	unsigned int debugMode;
 	unsigned int colorMode;
@@ -313,7 +315,23 @@ public:
 	void drawGUI(uint64_t elapsed);
 
 	void loadImage(const std::string &filename);
+
+	uint64_t getNanoseconds() {
+		return (SDL_GetPerformanceCounter() - tickBase) * freqMult / freqDiv;
+	}
+
 };
+
+
+static uint64_t gcd(uint64_t a, uint64_t b) {
+	uint64_t c;
+	while (a != 0) {
+		c = a;
+		a = b % a;
+		b = c;
+	}
+	return b;
+}
 
 
 SMAADemo::SMAADemo()
@@ -334,8 +352,10 @@ SMAADemo::SMAADemo()
 , rotateCubes(false)
 , cameraRotation(0.0f)
 , cameraDistance(25.0f)
+, tickBase(0)
 , lastTime(0)
-, freq(0)
+, freqMult(0)
+, freqDiv(0)
 , rotationTime(0)
 , debugMode(0)
 , colorMode(0)
@@ -348,8 +368,16 @@ SMAADemo::SMAADemo()
 , activeScene(0)
 , textInputActive(false)
 {
-	freq = SDL_GetPerformanceFrequency();
-	lastTime = SDL_GetPerformanceCounter();
+	uint64_t freq = SDL_GetPerformanceFrequency();
+	tickBase      = SDL_GetPerformanceCounter();
+
+	freqMult   = 1000000000ULL;
+	freqDiv    = freq;
+	uint64_t g = gcd(freqMult, freqDiv);
+	freqMult  /= g;
+	freqDiv   /= g;
+
+	lastTime = getNanoseconds();
 
 	memset(imageFileName, 0, inputTextBufferSize);
 	memset(clipboardText, 0, inputTextBufferSize);
@@ -1286,7 +1314,7 @@ void SMAADemo::render() {
 		createFramebuffers();
 	}
 
-	uint64_t ticks = SDL_GetPerformanceCounter();
+	uint64_t ticks = getNanoseconds();
 	uint64_t elapsed = ticks - lastTime;
 
 	if (fpsLimitActive) {
@@ -1298,7 +1326,7 @@ void SMAADemo::render() {
 			uint64_t nsWait = nsLimit - (elapsed + fudge);
 			uint64_t usWait = nsWait / 1000ULL;
 			usleep(usWait);
-			ticks = SDL_GetPerformanceCounter();
+			ticks   = getNanoseconds();
 			elapsed = ticks - lastTime;
 		}
 	}
@@ -1323,7 +1351,7 @@ void SMAADemo::render() {
 		if (rotateCubes) {
 			rotationTime += elapsed;
 
-			const uint64_t rotationPeriod = 30 * freq;
+			const uint64_t rotationPeriod = 30 * 1000000000ULL;
 			rotationTime = rotationTime % rotationPeriod;
 			cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
 		}
