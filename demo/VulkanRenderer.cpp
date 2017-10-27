@@ -398,9 +398,18 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	queue = device.getQueue(graphicsQueueIndex, 0);
 
-	surfaceFormats      = physicalDevice.getSurfaceFormatsKHR(surface);
-	surfacePresentModes = physicalDevice.getSurfacePresentModesKHR(surface);
+	{
+		auto surfacePresentModes_ = physicalDevice.getSurfacePresentModesKHR(surface);
+		surfacePresentModes.reserve(surfacePresentModes_.size());
+		LOG("%u present modes\n",   static_cast<uint32_t>(surfacePresentModes_.size()));
 
+		for (const auto &presentMode : surfacePresentModes_) {
+			LOG(" %s\n", vk::to_string(presentMode).c_str());
+			surfacePresentModes.insert(presentMode);
+		}
+	}
+
+	surfaceFormats      = physicalDevice.getSurfaceFormatsKHR(surface);
 	// TODO: sRGB
 	bool found = false;
 	LOG("%u surface formats\n", static_cast<uint32_t>(surfaceFormats.size()));
@@ -409,11 +418,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		if (format.format == vk::Format::eB8G8R8A8Unorm && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
 			found = true;
 		}
-	}
-
-	LOG("%u present modes\n",   static_cast<uint32_t>(surfacePresentModes.size()));
-	for (const auto &presentMode : surfacePresentModes) {
-		LOG(" %s\n", vk::to_string(presentMode).c_str());
 	}
 
 	if (!found) {
