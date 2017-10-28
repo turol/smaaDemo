@@ -23,6 +23,7 @@ THE SOFTWARE.
 
 #include <cassert>
 #include <cfloat>
+#include <cinttypes>
 #include <cstdio>
 
 #include <thread>
@@ -379,8 +380,8 @@ SMAADemo::SMAADemo()
 	uint64_t g = gcd(freqMult, freqDiv);
 	freqMult  /= g;
 	freqDiv   /= g;
-	LOG("freqMult: %lu\n", freqMult);
-	LOG("freqDiv: %lu\n",  freqDiv);
+	LOG("freqMult: %" PRIu64 "\n", freqMult);
+	LOG("freqDiv: %"  PRIu64 "\n", freqDiv);
 
 	lastTime = getNanoseconds();
 
@@ -394,7 +395,7 @@ SMAADemo::SMAADemo()
 		lastTime       = ticks;
 	}
 
-	LOG("sleep fudge (nanoseconds): %lu\n", sleepFudge);
+	LOG("sleep fudge (nanoseconds): %" PRIu64 "\n", sleepFudge);
 
 	memset(imageFileName, 0, inputTextBufferSize);
 	memset(clipboardText, 0, inputTextBufferSize);
