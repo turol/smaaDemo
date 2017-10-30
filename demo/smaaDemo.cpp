@@ -1651,6 +1651,12 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 		ImGui::Checkbox("FPS limit", &fpsLimitActive);
 
+		int f = fpsLimit;
+		changed = ImGui::InputInt("Max FPS", &f);
+		if (changed && f > 0) {
+			fpsLimit = f;
+		}
+
 		ImGui::Separator();
 		// TODO: measure actual GPU time
 		ImGui::LabelText("FPS", "%.1f", io.Framerate);
