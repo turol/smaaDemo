@@ -49,6 +49,17 @@ THE SOFTWARE.
 #endif
 
 
+namespace std {
+
+	template <> struct hash<vk::PresentModeKHR> {
+		size_t operator()(const vk::PresentModeKHR &m) const {
+			return hash<uint32_t>()(static_cast<uint32_t>(VkPresentModeKHR(m)));
+		}
+	};
+
+}  // namespace std
+
+
 namespace renderer {
 
 
