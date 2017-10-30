@@ -285,8 +285,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	LOG("storage buffer alignment %u\n", static_cast<unsigned int>(deviceProperties.limits.minStorageBufferOffsetAlignment));
 	LOG("texel buffer alignment %u\n",   static_cast<unsigned int>(deviceProperties.limits.minTexelBufferOffsetAlignment));
 
-	uboAlign  = deviceProperties.limits.minUniformBufferOffsetAlignment;
-	ssboAlign = deviceProperties.limits.minStorageBufferOffsetAlignment;
+	uboAlign  = static_cast<unsigned int>(deviceProperties.limits.minUniformBufferOffsetAlignment);
+	ssboAlign = static_cast<unsigned int>(deviceProperties.limits.minStorageBufferOffsetAlignment);
 
 	deviceFeatures = physicalDevice.getFeatures();
 
