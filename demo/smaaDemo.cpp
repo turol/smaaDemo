@@ -54,6 +54,15 @@ THE SOFTWARE.
 #include <glm/gtc/type_ptr.hpp>
 
 
+// mingw fuckery...
+#if defined(__GNUC__) && defined(_WIN32)
+
+#undef  PRIu64
+#define PRIu64 "I64u"
+
+#endif  // defined(__GNUC__) && defined(_WIN32)
+
+
 namespace ShaderDefines {
 
 using namespace glm;
