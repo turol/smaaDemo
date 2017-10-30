@@ -57,6 +57,8 @@ THE SOFTWARE.
 // mingw fuckery...
 #if defined(__GNUC__) && defined(_WIN32)
 
+#include <mingw.thread.h>
+
 #undef  PRIu64
 #define PRIu64 "I64u"
 

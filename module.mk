@@ -58,6 +58,7 @@ CFLAGS+=-isystem$(TOPDIR)/foreign/glew/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/glm
 CFLAGS+=-isystem$(TOPDIR)/foreign/glslang
 CFLAGS+=-isystem$(TOPDIR)/foreign/imgui
+CFLAGS+=-isystem$(TOPDIR)/foreign/mingw-std-threads
 CFLAGS+=-isystem$(TOPDIR)/foreign/pcg-cpp/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/shaderc/libshaderc/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/shaderc/libshaderc_util/include
