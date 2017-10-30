@@ -1,0 +1,8 @@
+commit dad05201ad4e096c5d1b2043081f412aeb8f5efb
+Merge: ddfb856 aabf8e3
+Author: alxvasilev <alxvasilev@users.noreply.github.com>
+Date:   Thu May 25 09:20:02 2017 +0300
+
+    Merge pull request #18 from sdlpal/master
+    
+    Fix typo bug for condition_variable::wait_until
