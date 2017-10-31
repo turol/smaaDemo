@@ -122,7 +122,6 @@ struct RendererBase {
 	SwapchainDesc swapchainDesc;
 
 	bool skipShaderCache;
-	bool savePreprocessedShaders;
 	unsigned int frameNum;
 
 	unsigned int  ringBufSize;
@@ -155,7 +154,6 @@ struct RendererBase {
 	explicit RendererBase(const RendererDesc &desc)
 	: swapchainDesc(desc.swapchain)
 	, skipShaderCache(desc.skipShaderCache)
-	, savePreprocessedShaders(false)
 	, frameNum(0)
 	, ringBufSize(0)
 	, ringBufPtr(0)

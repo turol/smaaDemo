@@ -1247,10 +1247,6 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 
 	std::vector<uint32_t> spirv = compileSpirv(vertexShaderName, macros_, shaderc_glsl_vertex_shader);
 
-	if (savePreprocessedShaders) {
-		// TODO: save SPIR-V?
-	}
-
 	auto result_ = vertexShaders.add();
 
 	VertexShader &v = result_.first;
@@ -1270,10 +1266,6 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	macros_.emplace("VULKAN_FLIP", "1");
 
 	std::vector<uint32_t> spirv = compileSpirv(fragmentShaderName, macros_, shaderc_glsl_fragment_shader);
-
-	if (savePreprocessedShaders) {
-		// TODO: save SPIR-V?
-	}
 
 	auto result_ = fragmentShaders.add();
 

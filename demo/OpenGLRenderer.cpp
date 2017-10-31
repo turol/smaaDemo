@@ -847,11 +847,6 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	auto resources = processShaderResources(glsl);
 	std::vector<char> src = spirv2glsl(name, macros, glsl);
 
-	if (savePreprocessedShaders) {
-		// FIXME: name not really accurate
-		writeFile(vertexShaderName + ".prep", &src[0], src.size());
-	}
-
 	auto result_ = vertexShaders.add();
 	auto &v = result_.first;
 	v.shader    = createShader(GL_VERTEX_SHADER, vertexShaderName, src);
@@ -874,11 +869,6 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 
 	auto resources = processShaderResources(glsl);
 	std::vector<char> src = spirv2glsl(name, macros, glsl);
-
-	if (savePreprocessedShaders) {
-		// FIXME: name not really accurate
-		writeFile(fragmentShaderName + ".prep", &src[0], src.size());
-	}
 
 	auto result_ = fragmentShaders.add();
 	auto &f = result_.first;
