@@ -58,6 +58,7 @@ THE SOFTWARE.
 
 static PFN_vkCreateDebugReportCallbackEXT   pfn_vkCreateDebugReportCallbackEXT   = nullptr;
 static PFN_vkDestroyDebugReportCallbackEXT  pfn_vkDestroyDebugReportCallbackEXT  = nullptr;
+static PFN_vkDebugMarkerSetObjectNameEXT    pfn_vkDebugMarkerSetObjectNameEXT    = nullptr;
 
 
 VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugReportCallbackEXT(
@@ -78,6 +79,15 @@ VKAPI_ATTR void VKAPI_CALL vkDestroyDebugReportCallbackEXT(
 {
 	assert(pfn_vkDestroyDebugReportCallbackEXT);
 	return pfn_vkDestroyDebugReportCallbackEXT(instance, callback, pAllocator);
+}
+
+
+VKAPI_ATTR VkResult VKAPI_CALL vkDebugMarkerSetObjectNameEXT(
+    VkDevice                                    device,
+    VkDebugMarkerObjectNameInfoEXT*             pNameInfo)
+{
+	assert(pfn_vkDebugMarkerSetObjectNameEXT);
+	return pfn_vkDebugMarkerSetObjectNameEXT(device, pNameInfo);
 }
 
 
@@ -262,6 +272,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		callbackInfo.flags       = vk::DebugReportFlagBitsEXT::eError;
 		callbackInfo.pfnCallback = debugCallbackFunc;
 		debugCallback = instance.createDebugReportCallbackEXT(callbackInfo);
+
+		pfn_vkDebugMarkerSetObjectNameEXT = reinterpret_cast<PFN_vkDebugMarkerSetObjectNameEXT>(instance.getProcAddr("vkDebugMarkerSetObjectNameEXT"));
 	}
 
 	std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
