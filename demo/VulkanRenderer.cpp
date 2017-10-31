@@ -1073,6 +1073,15 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 
 	auto result = device.createGraphicsPipeline(vk::PipelineCache(), info);
 
+	if (debugMarkers) {
+		vk::DebugMarkerObjectNameInfoEXT markerName;
+		markerName.objectType  = vk::DebugReportObjectTypeEXT::ePipeline;
+		markerName.object      = static_cast<uint64_t>(VkPipeline(result));
+		markerName.pObjectName = desc.name_.c_str();
+
+		device.debugMarkerSetObjectNameEXT(&markerName);
+	}
+
 	auto id = pipelines.add();
 	Pipeline &p = id.first;
 	p.pipeline = result;
