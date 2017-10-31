@@ -372,6 +372,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	checkExt(VK_NV_DEDICATED_ALLOCATION_EXTENSION_NAME);
 	checkExt(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
 	checkExt(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME);
+	if (enableValidation) {
+		checkExt(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
+	}
 
 	vk::DeviceCreateInfo deviceCreateInfo;
 	deviceCreateInfo.queueCreateInfoCount     = 1;
