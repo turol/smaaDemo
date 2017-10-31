@@ -482,6 +482,9 @@ void Renderer::drawIndexedOffset(unsigned int vertexCount, unsigned int firstInd
 
 
 unsigned int RendererImpl::ringBufferAllocate(unsigned int size, unsigned int alignment) {
+	assert(alignment != 0);
+	assert(isPow2(alignment));
+
 	// sub-allocate from persistent coherent buffer
 	// round current pointer up to necessary alignment
 	const unsigned int add   = alignment - 1;

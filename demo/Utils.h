@@ -101,5 +101,10 @@ void writeFile(const std::string &filename, const void *contents, size_t size);
 bool fileExists(const std::string &filename);
 int64_t getFileTimestamp(const std::string &filename);
 
+// From https://graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2
+static inline bool isPow2(unsigned int value) {
+	return (value & (value - 1)) == 0;
+}
+
 
 #endif  // UTILS_H
