@@ -303,6 +303,11 @@ struct TextureDesc {
 		return *this;
 	}
 
+	TextureDesc &name(const std::string &str) {
+		name_ = str;
+		return *this;
+	}
+
 
 private:
 
@@ -321,6 +326,7 @@ private:
 	unsigned int                                 numMips_;
 	Format                                       format_;
 	std::array<MipLevel, MAX_TEXTURE_MIPLEVELS>  mipData_;
+	std::string                                  name_;
 
 	friend struct RendererImpl;
 };
@@ -367,10 +373,16 @@ struct SamplerDesc {
 		return *this;
 	}
 
+	SamplerDesc &name(const std::string &str) {
+		name_ = str;
+		return *this;
+	}
+
 private:
 
 	FilterMode  min, mag;
 	WrapMode    wrapMode;
+	std::string name_;
 
 	friend struct RendererImpl;
 };
