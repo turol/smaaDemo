@@ -188,6 +188,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , uboAlign(0)
 , ssboAlign(0)
 , maxRefreshRate(0)
+, debugMarkers(false)
 , ringBufferMem(nullptr)
 , persistentMapping(nullptr)
 , currentFrameIdx(0)
@@ -377,7 +378,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		if (availableExtensions.find(std::string(ext)) != availableExtensions.end()) {
 			LOG("Activating extension %s\n", ext);
 			deviceExtensions.push_back(ext);
+			return true;
 		}
+		return false;
 	};
 
 	deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
@@ -385,7 +388,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	checkExt(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
 	checkExt(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME);
 	if (enableValidation) {
-		checkExt(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
+		debugMarkers = checkExt(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
 	}
 
 	vk::DeviceCreateInfo deviceCreateInfo;

@@ -774,6 +774,7 @@ struct RendererImpl : public RendererBase {
 	unsigned int   ssboAlign;
 
 	unsigned int   maxRefreshRate;
+	bool           debugMarkers;
 
 	ResourceContainer<Buffer>              buffers;
 	ResourceContainer<DescriptorSetLayout> dsLayouts;
