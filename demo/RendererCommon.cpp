@@ -311,6 +311,11 @@ bool Renderer::isRenderTargetFormatSupported(Format format) const {
 }
 
 
+unsigned int Renderer::getMaxRefreshRate() const {
+	return impl->getMaxRefreshRate();
+}
+
+
 BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
 	return impl->createBuffer(size, contents);
 }

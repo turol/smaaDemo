@@ -74,6 +74,11 @@ bool RendererImpl::isRenderTargetFormatSupported(Format /* format */) const {
 }
 
 
+unsigned int RendererImpl::getMaxRefreshRate() const {
+	return 60;
+}
+
+
 BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	assert(size != 0);
 	assert(contents != nullptr);

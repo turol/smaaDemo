@@ -681,6 +681,7 @@ public:
 
 
 	bool isRenderTargetFormatSupported(Format format) const;
+	unsigned int getMaxRefreshRate() const;
 
 	RenderTargetHandle    createRenderTarget(const RenderTargetDesc &desc);
 	VertexShaderHandle    createVertexShader(const std::string &name, const ShaderMacros &macros);

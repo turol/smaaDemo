@@ -177,6 +177,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , graphicsQueueIndex(0)
 , uboAlign(0)
 , ssboAlign(0)
+, maxRefreshRate(0)
 , ringBufferMem(nullptr)
 , persistentMapping(nullptr)
 , currentFrameIdx(0)
@@ -203,6 +204,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		for (int j = 0; j < numModes; j++) {
 			SDL_GetDisplayMode(i, j, &mode);
 			LOG("Display mode %i : width %i, height %i, BPP %i, refresh %u Hz\n", j, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format), mode.refresh_rate);
+			maxRefreshRate = std::max(static_cast<unsigned int>(mode.refresh_rate), maxRefreshRate);
 		}
 	}
 
@@ -626,6 +628,11 @@ bool RendererImpl::isRenderTargetFormatSupported(Format format) const {
 	auto result = physicalDevice.getImageFormatProperties(vulkanFormat(format), vk::ImageType::e2D, vk::ImageTiling::eOptimal, flags, vk::ImageCreateFlags(), &prop);
 
 	return (result == vk::Result::eSuccess);
+}
+
+
+unsigned int RendererImpl::getMaxRefreshRate() const {
+	return maxRefreshRate;
 }
 
 

@@ -600,6 +600,8 @@ struct RendererImpl : public RendererBase {
 	unsigned int   uboAlign;
 	unsigned int   ssboAlign;
 
+	unsigned int   maxRefreshRate;
+
 	ResourceContainer<Buffer>               buffers;
 	ResourceContainer<DescriptorSetLayout>  dsLayouts;
 	ResourceContainer<FragmentShader>       fragmentShaders;
@@ -630,6 +632,7 @@ struct RendererImpl : public RendererBase {
 
 
 	bool isRenderTargetFormatSupported(Format format) const;
+	unsigned int getMaxRefreshRate() const;
 
 	RenderTargetHandle   createRenderTarget(const RenderTargetDesc &desc);
 	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
