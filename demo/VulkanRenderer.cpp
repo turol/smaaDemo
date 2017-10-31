@@ -82,9 +82,21 @@ VKAPI_ATTR void VKAPI_CALL vkDestroyDebugReportCallbackEXT(
 }
 
 
+// this prototype changed in 1.0.55
+#if VK_HEADER_VERSION >= 55
+
+#define CONSTHACK const
+
+#else  // VK_HEADER_VERSION >= 55
+
+#define CONSTHACK
+
+#endif  // VK_HEADER_VERSION >= 55
+
+
 VKAPI_ATTR VkResult VKAPI_CALL vkDebugMarkerSetObjectNameEXT(
     VkDevice                                    device,
-    VkDebugMarkerObjectNameInfoEXT*             pNameInfo)
+    CONSTHACK VkDebugMarkerObjectNameInfoEXT*   pNameInfo)
 {
 	assert(pfn_vkDebugMarkerSetObjectNameEXT);
 	return pfn_vkDebugMarkerSetObjectNameEXT(device, pNameInfo);
