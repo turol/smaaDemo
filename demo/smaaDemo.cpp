@@ -840,8 +840,8 @@ void SMAADemo::initRender() {
 	plDesc.name("gui");
 	guiPipeline = renderer.createPipeline(plDesc);
 
-	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear));
-	nearestSampler = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Nearest).magFilter(FilterMode::Nearest));
+	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear) .name("linear"));
+	nearestSampler = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Nearest).magFilter(FilterMode::Nearest).name("nearest"));
 
 	cubeVBO = renderer.createBuffer(sizeof(vertices), &vertices[0]);
 	cubeIBO = renderer.createBuffer(sizeof(indices), &indices[0]);
@@ -860,6 +860,7 @@ void SMAADemo::initRender() {
 	texDesc.width(AREATEX_WIDTH)
 	       .height(AREATEX_HEIGHT)
 	       .format(Format::RG8);
+	texDesc.name("SMAA area texture");
 
 	if (flipSMAATextures) {
 		std::vector<unsigned char> tempBuffer(AREATEX_SIZE);
@@ -878,6 +879,7 @@ void SMAADemo::initRender() {
 	texDesc.width(SEARCHTEX_WIDTH)
 	       .height(SEARCHTEX_HEIGHT)
 	       .format(Format::R8);
+	texDesc.name("SMAA search texture");
 	if (flipSMAATextures) {
 		std::vector<unsigned char> tempBuffer(SEARCHTEX_SIZE);
 		for (unsigned int y = 0; y < SEARCHTEX_HEIGHT; y++) {
@@ -966,6 +968,7 @@ void SMAADemo::loadImage(const std::string &filename) {
 	texDesc.width(width)
 		.height(height)
 		.format(Format::RGBA8);
+	texDesc.name(filename);
 
 	texDesc.mipLevelData(0, imageData, width * height * 4);
 	img.width  = width;
