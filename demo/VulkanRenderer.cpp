@@ -227,7 +227,30 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	window = SDL_CreateWindow("SMAA Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, desc.swapchain.width, desc.swapchain.height, flags);
 
-	// TODO: log stuff about window size, screen modes etc
+	{
+		auto extensions = vk::enumerateInstanceExtensionProperties();
+		std::sort(extensions.begin(), extensions.end()
+		  , [] (const vk::ExtensionProperties &a, const vk::ExtensionProperties &b) {
+			  return strcmp(a.extensionName, b.extensionName) < 0;
+		});
+
+
+		size_t maxLen = 0;
+		for (const auto &ext : extensions) {
+			maxLen = std::max(strlen(ext.extensionName), maxLen);
+		}
+
+		LOG("Instance extensions:\n");
+		std::vector<char> padding;
+		padding.reserve(maxLen + 1);
+		for (unsigned int i = 0; i < maxLen; i++) {
+			padding.push_back(' ');
+		}
+		padding.push_back('\0');
+		for (const auto &ext : extensions) {
+			LOG(" %s %s %u\n", ext.extensionName, &padding[strnlen(ext.extensionName, maxLen)], ext.specVersion);
+		}
+	}
 
 	unsigned int numExtensions = 0;
 	if (!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, NULL)) {
@@ -258,6 +281,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 		instanceCreateInfo.enabledLayerCount    = static_cast<uint32_t>(validationLayers.size());
 		instanceCreateInfo.ppEnabledLayerNames  = &validationLayers[0];
+	}
+
+	LOG("Active instance extensions:\n");
+	for (const auto ext : extensions) {
+		LOG(" %s\n", ext);
 	}
 
 	instanceCreateInfo.enabledExtensionCount    = static_cast<uint32_t>(extensions.size());
