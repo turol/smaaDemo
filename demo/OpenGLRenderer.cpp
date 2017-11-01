@@ -400,15 +400,24 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	context = SDL_GL_CreateContext(window);
 
+	bool vsync = false;
 	if (desc.swapchain.vsync) {
 		// enable vsync, using late swap tearing if possible
 		int retval = SDL_GL_SetSwapInterval(-1);
 		if (retval != 0) {
-			// TODO: check return val
-			SDL_GL_SetSwapInterval(1);
+			LOG("Failed to set late swap tearing vsync: %s\n", SDL_GetError());
+			retval = SDL_GL_SetSwapInterval(1);
+			if (retval != 0) {
+				LOG("Failed to set vsync: %s\n", SDL_GetError());
+			} else {
+				vsync = true;
+			}
+		} else {
+			vsync = true;
 		}
-		LOG("VSync is on\n");
 	}
+
+	LOG("VSync is %s\n", vsync ? "on" : "off");
 
 	// TODO: call SDL_GL_GetDrawableSize, log GL attributes etc.
 
