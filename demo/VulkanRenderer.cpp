@@ -1258,6 +1258,14 @@ SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
 	struct Sampler &sampler = result.first;
 	sampler.sampler    = device.createSampler(info);
 
+	if (debugMarkers) {
+		vk::DebugMarkerObjectNameInfoEXT markerName;
+		markerName.objectType  = vk::DebugReportObjectTypeEXT::eSampler;
+		markerName.object      = uint64_t(VkSampler(sampler.sampler));
+		markerName.pObjectName = desc.name_.c_str();
+		device.debugMarkerSetObjectNameEXT(&markerName);
+	}
+
 	return result.second;
 }
 
