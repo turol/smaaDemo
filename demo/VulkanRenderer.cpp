@@ -1344,6 +1344,20 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	viewInfo.subresourceRange.layerCount = 1;
 	tex.imageView = device.createImageView(viewInfo);
 
+	if (debugMarkers) {
+		vk::DebugMarkerObjectNameInfoEXT markerNameImage;
+		markerNameImage.objectType = vk::DebugReportObjectTypeEXT::eImage;
+		markerNameImage.object = uint64_t(VkImage(tex.image));
+		markerNameImage.pObjectName = desc.name_.c_str();
+		device.debugMarkerSetObjectNameEXT(&markerNameImage);
+
+		vk::DebugMarkerObjectNameInfoEXT markerNameImageView;
+		markerNameImageView.objectType = vk::DebugReportObjectTypeEXT::eImageView;
+		markerNameImageView.object = uint64_t(VkImageView(tex.imageView));
+		markerNameImageView.pObjectName = desc.name_.c_str();
+		device.debugMarkerSetObjectNameEXT(&markerNameImageView);
+	}
+
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
 	// TODO: share some of this stuff with createBuffer
