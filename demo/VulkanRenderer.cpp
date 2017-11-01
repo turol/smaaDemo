@@ -1210,6 +1210,14 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	rt.imageView = device.createImageView(viewInfo);
 	tex.imageView    = rt.imageView;
 
+	if (debugMarkers) {
+		vk::DebugMarkerObjectNameInfoEXT markerNameImageView;
+		markerNameImageView.objectType = vk::DebugReportObjectTypeEXT::eImageView;
+		markerNameImageView.object = uint64_t(VkImageView(tex.imageView));
+		markerNameImageView.pObjectName = desc.name_.c_str();
+		device.debugMarkerSetObjectNameEXT(&markerNameImageView);
+	}
+
 	// TODO: std::move ?
 	rt.texture = texResult.second;
 
