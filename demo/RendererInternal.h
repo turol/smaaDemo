@@ -120,6 +120,9 @@ bool isDepthFormat(Format format);
 
 struct RendererBase {
 	SwapchainDesc swapchainDesc;
+	SwapchainDesc wantedSwapchain;
+	bool          swapchainDirty;
+	glm::uvec2    drawableSize;
 
 	bool skipShaderCache;
 	unsigned int frameNum;
@@ -153,6 +156,8 @@ struct RendererBase {
 
 	explicit RendererBase(const RendererDesc &desc)
 	: swapchainDesc(desc.swapchain)
+	, wantedSwapchain(desc.swapchain)
+	, swapchainDirty(true)
 	, skipShaderCache(desc.skipShaderCache)
 	, frameNum(0)
 	, ringBufSize(0)

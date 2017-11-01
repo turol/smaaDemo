@@ -314,7 +314,7 @@ struct RendererImpl : public RendererBase {
 	void deleteRenderTarget(RenderTargetHandle &fbo);
 
 
-	void recreateSwapchain(const SwapchainDesc &desc);
+	void setSwapchainDesc(const SwapchainDesc &desc);
 	MemoryStats getMemStats() const;
 
 	void beginFrame();

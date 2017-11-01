@@ -729,7 +729,7 @@ public:
 	void deleteRenderTarget(RenderTargetHandle &fbo);
 
 
-	void recreateSwapchain(const SwapchainDesc &desc);
+	void setSwapchainDesc(const SwapchainDesc &desc);
 	glm::uvec2 getDrawableSize() const;
 	MemoryStats getMemStats() const;
 

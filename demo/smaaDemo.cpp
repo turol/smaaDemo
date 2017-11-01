@@ -1351,7 +1351,7 @@ void SMAADemo::render() {
 		desc.height     = windowHeight;
 		desc.vsync      = vsync;
 
-		renderer.recreateSwapchain(desc);
+		renderer.setSwapchainDesc(desc);
 		recreateSwapchain = false;
 
 		glm::uvec2 size = renderer.getDrawableSize();

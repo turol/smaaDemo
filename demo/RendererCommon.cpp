@@ -411,8 +411,8 @@ void Renderer::deleteTexture(TextureHandle handle) {
 }
 
 
-void Renderer::recreateSwapchain(const SwapchainDesc &desc) {
-	impl->recreateSwapchain(desc);
+void Renderer::setSwapchainDesc(const SwapchainDesc &desc) {
+	impl->setSwapchainDesc(desc);
 }
 
 
@@ -529,7 +529,7 @@ unsigned int RendererImpl::ringBufferAllocate(unsigned int size, unsigned int al
 
 
 glm::uvec2 Renderer::getDrawableSize() const {
-	return glm::uvec2(impl->swapchainDesc.width, impl->swapchainDesc.height);
+	return impl->drawableSize;
 }
 
 

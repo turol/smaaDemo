@@ -486,8 +486,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	glCreateVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	recreateSwapchain(desc.swapchain);
-
+	recreateSwapchain();
 	recreateRingBuffer(desc.ephemeralRingBufSize);
 
 	// swap once to get better traces
@@ -1234,7 +1233,7 @@ void RendererImpl::deleteTexture(TextureHandle handle) {
 }
 
 
-void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
+void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 	bool changed = false;
 
 	if (swapchainDesc.fullscreen != desc.fullscreen) {
@@ -1266,35 +1265,51 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 		}
 	}
 
+	if (swapchainDesc.numFrames != desc.numFrames) {
+		changed = true;
+	}
+
 	int w = -1, h = -1;
 	SDL_GL_GetDrawableSize(window, &w, &h);
 	if (w <= 0 || h <= 0) {
 		throw std::runtime_error("drawable size is negative");
 	}
 
-	if (swapchainDesc.width != static_cast<unsigned int>(w) || swapchainDesc.height != static_cast<unsigned int>(h)) {
+	if (static_cast<unsigned int>(w) != drawableSize.x
+	 || static_cast<unsigned int>(h) != drawableSize.y) {
 		changed = true;
 	}
+
+	if (changed) {
+		wantedSwapchain = desc;
+		swapchainDirty  = true;
+		drawableSize    = glm::uvec2(w, h);
+	}
+}
+
+
+void RendererImpl::recreateSwapchain() {
+	assert(swapchainDirty);
+
+	int w = -1, h = -1;
+	SDL_GL_GetDrawableSize(window, &w, &h);
+	if (w <= 0 || h <= 0) {
+		throw std::runtime_error("drawable size is negative");
+	}
+
+	drawableSize = glm::uvec2(w, h);
 
 	swapchainDesc.width  = w;
 	swapchainDesc.height = h;
 
-	unsigned int numImages = desc.numFrames;
+	unsigned int numImages = wantedSwapchain.numFrames;
 	numImages = std::max(numImages, 1U);
 
-	if (swapchainDesc.numFrames != numImages) {
-		changed = true;
-	}
+	LOG("Want %u images, using %u images\n", wantedSwapchain.numFrames, numImages);
 
-	if (!changed && !frames.empty()) {
-		return;
-	}
-
-	LOG("Want %u images, using %u images\n", desc.numFrames, numImages);
-
-	swapchainDesc.fullscreen = desc.fullscreen;
-	swapchainDesc.numFrames  = desc.numFrames;
-	swapchainDesc.vsync      = desc.vsync;
+	swapchainDesc.fullscreen = wantedSwapchain.fullscreen;
+	swapchainDesc.numFrames  = numImages;
+	swapchainDesc.vsync      = wantedSwapchain.vsync;
 
 	if (frames.size() != numImages) {
 		if (numImages < frames.size()) {
@@ -1317,6 +1332,7 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 		}
 	}
 
+	swapchainDirty = false;
 }
 
 
@@ -1332,6 +1348,11 @@ void RendererImpl::beginFrame() {
 	inRenderPass  = false;
 	validPipeline = false;
 	pipelineDrawn = true;
+
+	if (swapchainDirty) {
+		recreateSwapchain();
+		assert(!swapchainDirty);
+	}
 
 	currentFrameIdx        = frameNum % frames.size();
 	assert(currentFrameIdx < frames.size());

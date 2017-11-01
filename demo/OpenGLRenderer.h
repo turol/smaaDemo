@@ -621,6 +621,7 @@ struct RendererImpl : public RendererBase {
 
 	void rebindDescriptorSets();
 
+	void recreateSwapchain();
 	void recreateRingBuffer(unsigned int newSize);
 	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);
 
@@ -659,7 +660,7 @@ struct RendererImpl : public RendererBase {
 	void deleteRenderTarget(RenderTargetHandle &fbo);
 
 
-	void recreateSwapchain(const SwapchainDesc &desc);
+	void setSwapchainDesc(const SwapchainDesc &desc);
 	MemoryStats getMemStats() const;
 
 	void beginFrame();

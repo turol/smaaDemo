@@ -496,8 +496,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		throw std::runtime_error("surface format not supported");
 	}
 
-	recreateSwapchain(desc.swapchain);
-
+	recreateSwapchain();
 	recreateRingBuffer(desc.ephemeralRingBufSize);
 
 	acquireSem    = device.createSemaphore(vk::SemaphoreCreateInfo());
@@ -1539,6 +1538,48 @@ void RendererImpl::deleteTexture(TextureHandle handle) {
 }
 
 
+void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
+	bool changed = false;
+
+	if (swapchainDesc.fullscreen != desc.fullscreen) {
+		changed = true;
+		if (desc.fullscreen) {
+			// TODO: check return val?
+			SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+			LOG("Fullscreen\n");
+		} else {
+			SDL_SetWindowFullscreen(window, 0);
+			LOG("Windowed\n");
+		}
+	}
+
+	if (swapchainDesc.vsync != desc.vsync) {
+		changed = true;
+	}
+
+	if (swapchainDesc.numFrames != desc.numFrames) {
+		changed = true;
+	}
+
+	int w = -1, h = -1;
+	SDL_Vulkan_GetDrawableSize(window, &w, &h);
+	if (w <= 0 || h <= 0) {
+		throw std::runtime_error("drawable size is negative");
+	}
+
+	if (static_cast<unsigned int>(w) != drawableSize.x
+	 || static_cast<unsigned int>(h) != drawableSize.y) {
+		changed = true;
+	}
+
+	if (changed) {
+		wantedSwapchain = desc;
+		swapchainDirty  = true;
+		drawableSize    = glm::uvec2(w, h);
+	}
+}
+
+
 static const unsigned int numPresentModes = 4;
 static const std::array<vk::PresentModeKHR, numPresentModes> vsyncModes
 = {{ vk::PresentModeKHR::eFifoRelaxed
@@ -1553,20 +1594,8 @@ static const std::array<vk::PresentModeKHR, numPresentModes> nonVSyncModes
    , vk::PresentModeKHR::eFifo }};
 
 
-void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
-	bool changed = false;
-
-	if (swapchainDesc.fullscreen != desc.fullscreen) {
-		changed = true;
-		if (desc.fullscreen) {
-			// TODO: check return val?
-			SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-			LOG("Fullscreen\n");
-		} else {
-			SDL_SetWindowFullscreen(window, 0);
-			LOG("Windowed\n");
-		}
-	}
+void RendererImpl::recreateSwapchain() {
+	assert(swapchainDirty);
 
 	surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
 	LOG("image count min-max %u - %u\n", surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
@@ -1587,32 +1616,22 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	unsigned int w = std::max(surfaceCapabilities.minImageExtent.width,  std::min(static_cast<unsigned int>(tempW), surfaceCapabilities.maxImageExtent.width));
 	unsigned int h = std::max(surfaceCapabilities.minImageExtent.height, std::min(static_cast<unsigned int>(tempH), surfaceCapabilities.maxImageExtent.height));
 
-	if (swapchainDesc.width != w || swapchainDesc.height != h) {
-		changed = true;
-	}
+	drawableSize = glm::uvec2(w, h);
 
 	swapchainDesc.width  = w;
 	swapchainDesc.height = h;
 
-	unsigned int numImages = desc.numFrames;
+	unsigned int numImages = wantedSwapchain.numFrames;
 	numImages = std::max(numImages, surfaceCapabilities.minImageCount);
 	if (surfaceCapabilities.maxImageCount != 0) {
 		numImages = std::min(numImages, surfaceCapabilities.maxImageCount);
 	}
 
-	if (swapchainDesc.numFrames != numImages  || swapchainDesc.vsync != desc.vsync) {
-		changed = true;
-	}
+	LOG("Want %u images, using %u images\n", wantedSwapchain.numFrames, numImages);
 
-	if (!changed && swapchain) {
-		return;
-	}
-
-	LOG("Want %u images, using %u images\n", desc.numFrames, numImages);
-
-	swapchainDesc.fullscreen = desc.fullscreen;
-	swapchainDesc.numFrames  = desc.numFrames;
-	swapchainDesc.vsync      = desc.vsync;
+	swapchainDesc.fullscreen = wantedSwapchain.fullscreen;
+	swapchainDesc.numFrames  = numImages;
+	swapchainDesc.vsync      = wantedSwapchain.vsync;
 
 	if (frames.size() != numImages) {
 		if (numImages < frames.size()) {
@@ -1695,7 +1714,7 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	vk::PresentModeKHR swapchainPresentMode = vk::PresentModeKHR::eFifo;
 	// pick from the supported modes based on a prioritized
 	// list depending on whether we want vsync or not
-	for (const auto presentMode : (desc.vsync ? vsyncModes : nonVSyncModes)) {
+	for (const auto presentMode : (swapchainDesc.vsync ? vsyncModes : nonVSyncModes)) {
 		if (surfacePresentModes.find(presentMode) != surfacePresentModes.end()) {
 			swapchainPresentMode = presentMode;
 			break;
@@ -1740,6 +1759,8 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	for (unsigned int i = 0; i < numImages; i++) {
 		frames.at(i).image = swapchainImages.at(i);
 	}
+
+	swapchainDirty = false;
 }
 
 
@@ -1762,6 +1783,11 @@ void RendererImpl::beginFrame() {
 	inRenderPass  = false;
 	validPipeline = false;
 	pipelineDrawn = true;
+
+	if (swapchainDirty) {
+		recreateSwapchain();
+		assert(!swapchainDirty);
+	}
 
 	// acquire next image
 	auto imageIdx_         = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence());

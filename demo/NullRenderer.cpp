@@ -51,6 +51,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	spirvCacheDir.reset(SDL_GetPrefPath(nullptr, "SMAADemo"));
 
 	recreateRingBuffer(desc.ephemeralRingBufSize);
+	drawableSize   = glm::uvec2(desc.width, desc.height);
 }
 
 
@@ -238,8 +239,9 @@ void RendererImpl::deleteTexture(TextureHandle /* handle */) {
 }
 
 
-void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
+void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 	swapchainDesc  = desc;
+	drawableSize   = glm::uvec2(desc.width, desc.height);
 }
 
 
