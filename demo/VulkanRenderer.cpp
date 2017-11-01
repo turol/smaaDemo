@@ -1560,13 +1560,18 @@ void RendererImpl::recreateSwapchain(const SwapchainDesc &desc) {
 	LOG("supported surface alpha composite flags: %s\n", vk::to_string(surfaceCapabilities.supportedCompositeAlpha).c_str());
 	LOG("supported surface usage flags: %s\n", vk::to_string(surfaceCapabilities.supportedUsageFlags).c_str());
 
-	int w = -1, h = -1;
-	SDL_Vulkan_GetDrawableSize(window, &w, &h);
-	if (w <= 0 || h <= 0) {
+	int tempW = -1, tempH = -1;
+	SDL_Vulkan_GetDrawableSize(window, &tempW, &tempH);
+	if (tempW <= 0 || tempH <= 0) {
 		throw std::runtime_error("drawable size is negative");
 	}
 
-	if (swapchainDesc.width != static_cast<unsigned int>(w) || swapchainDesc.height != static_cast<unsigned int>(h)) {
+	// this is nasty but apparently surface might not have resized yet
+	// FIXME: find a better way
+	unsigned int w = std::max(surfaceCapabilities.minImageExtent.width,  std::min(static_cast<unsigned int>(tempW), surfaceCapabilities.maxImageExtent.width));
+	unsigned int h = std::max(surfaceCapabilities.minImageExtent.height, std::min(static_cast<unsigned int>(tempH), surfaceCapabilities.maxImageExtent.height));
+
+	if (swapchainDesc.width != w || swapchainDesc.height != h) {
 		changed = true;
 	}
 
