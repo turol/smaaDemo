@@ -74,6 +74,11 @@ bool RendererImpl::isRenderTargetFormatSupported(Format /* format */) const {
 }
 
 
+unsigned int RendererImpl::getCurrentRefreshRate() const {
+	return 60;
+}
+
+
 unsigned int RendererImpl::getMaxRefreshRate() const {
 	return 60;
 }

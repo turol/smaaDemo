@@ -676,12 +676,18 @@ void SMAADemo::initRender() {
 
 	renderer = Renderer::createRenderer(desc);
 
-	unsigned int maxRefreshRate = renderer.getMaxRefreshRate();
-	if (maxRefreshRate == 0) {
-		LOG("Failed to get max refresh rate from SDL, defaulting to 60");
+	unsigned int refreshRate = renderer.getCurrentRefreshRate();
+
+	if (refreshRate == 0) {
+		LOG("Failed to get current refresh rate, using max\n");
+		refreshRate = renderer.getMaxRefreshRate();
+	}
+
+	if (refreshRate == 0) {
+		LOG("Failed to get refresh rate, defaulting to 60\n");
 		fpsLimit = 2 * 60;
 	} else {
-		fpsLimit = 2 * maxRefreshRate;
+		fpsLimit = 2 * refreshRate;
 	}
 
 	for (auto depth : depths) {

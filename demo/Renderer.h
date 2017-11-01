@@ -693,6 +693,7 @@ public:
 
 
 	bool isRenderTargetFormatSupported(Format format) const;
+	unsigned int getCurrentRefreshRate() const;
 	unsigned int getMaxRefreshRate() const;
 
 	RenderTargetHandle    createRenderTarget(const RenderTargetDesc &desc);

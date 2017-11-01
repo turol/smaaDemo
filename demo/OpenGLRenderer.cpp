@@ -349,6 +349,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , indexBufByteOffset(0)
 , uboAlign(0)
 , ssboAlign(0)
+, currentRefreshRate(0)
 , maxRefreshRate(0)
 , currentFrameIdx(0)
 , lastSyncedFrame(0)
@@ -380,6 +381,14 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	LOG("Number of displays detected: %i\n", numDisplays);
 
 	for (int i = 0; i < numDisplays; i++) {
+		int retval = SDL_GetDesktopDisplayMode(i, &mode);
+		if (retval == 0) {
+			LOG("Desktop mode for display %d: %dx%d, refresh %d Hz\n", i, mode.w, mode.h, mode.refresh_rate);
+			currentRefreshRate = mode.refresh_rate;
+		} else {
+			LOG("Failed to get desktop display mode for display %d\n", i);
+		}
+
 		int numModes = SDL_GetNumDisplayModes(i);
 		LOG("Number of display modes for display %i : %i\n", i, numModes);
 
@@ -669,6 +678,11 @@ bool RendererImpl::isRenderTargetFormatSupported(Format format) const {
 	}
 
 	return true;
+}
+
+
+unsigned int RendererImpl::getCurrentRefreshRate() const {
+	return currentRefreshRate;
 }
 
 

@@ -600,6 +600,7 @@ struct RendererImpl : public RendererBase {
 	unsigned int   uboAlign;
 	unsigned int   ssboAlign;
 
+	unsigned int   currentRefreshRate;
 	unsigned int   maxRefreshRate;
 
 	ResourceContainer<Buffer>               buffers;
@@ -632,6 +633,7 @@ struct RendererImpl : public RendererBase {
 
 
 	bool isRenderTargetFormatSupported(Format format) const;
+	unsigned int getCurrentRefreshRate() const;
 	unsigned int getMaxRefreshRate() const;
 
 	RenderTargetHandle   createRenderTarget(const RenderTargetDesc &desc);
