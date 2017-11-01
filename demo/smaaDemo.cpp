@@ -205,6 +205,7 @@ class SMAADemo {
 
 	Renderer renderer;
 	bool glDebug;
+	bool tracing;
 	bool              skipShaderCache;
 	Format            depthFormat;
 
@@ -359,6 +360,7 @@ SMAADemo::SMAADemo()
 , fpsLimit(0)
 , sleepFudge(0)
 , glDebug(false)
+, tracing(false)
 , skipShaderCache(false)
 , depthFormat(Format::Invalid)
 , cubesPerSide(8)
@@ -528,7 +530,8 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 	try {
 		TCLAP::CmdLine cmd("SMAA demo", ' ', "1.0");
 
-		TCLAP::SwitchArg glDebugSwitch("", "gldebug", "Enable OpenGL debugging", cmd, false);
+		TCLAP::SwitchArg debugSwitch("", "debug", "Enable renderer debugging", cmd, false);
+		TCLAP::SwitchArg tracingSwitch("", "tracing", "Enable renderer tracing", cmd, false);
 		TCLAP::SwitchArg skipCacheSwitch("", "skipcache", "Skip loading shaders from cache", cmd, false);
 		TCLAP::SwitchArg fullscreenSwitch("f", "fullscreen", "Start in full screen mode", cmd, false);
 		TCLAP::ValueArg<unsigned int> windowWidthSwitch("", "width", "Window width", false, windowWidth, "width", cmd);
@@ -537,7 +540,8 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 
 		cmd.parse(argc, argv);
 
-		glDebug = glDebugSwitch.getValue();
+		glDebug = debugSwitch.getValue();
+		tracing = tracingSwitch.getValue();
 		skipShaderCache = skipCacheSwitch.getValue();
 		fullscreen   = fullscreenSwitch.getValue();
 		windowWidth = windowWidthSwitch.getValue();
@@ -668,6 +672,7 @@ static const std::array<Format, numDepths> depths
 void SMAADemo::initRender() {
 	RendererDesc desc;
 	desc.debug                = glDebug;
+	desc.tracing              = tracing;
 	desc.skipShaderCache      = skipShaderCache;
 	desc.swapchain.fullscreen = fullscreen;
 	desc.swapchain.width      = windowWidth;

@@ -633,6 +633,7 @@ public:
 
 struct RendererDesc {
 	bool           debug;
+	bool           tracing;
 	bool           skipShaderCache;
 	unsigned int   ephemeralRingBufSize;
 	SwapchainDesc  swapchain;
@@ -640,6 +641,7 @@ struct RendererDesc {
 
 	RendererDesc()
 	: debug(false)
+	, tracing(false)
 	, skipShaderCache(false)
 	, ephemeralRingBufSize(1 * 1048576)
 	{

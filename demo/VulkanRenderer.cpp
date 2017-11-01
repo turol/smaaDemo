@@ -207,8 +207,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , currentFrameIdx(0)
 , lastSyncedFrame(0)
 {
-	// TODO: get from desc.debug when this is finished
-	bool enableValidation = true;
+	bool enableValidation = desc.debug;
+	bool enableMarkers    = desc.tracing;
 
 	// renderdoc crashes if SDL tries to init GL renderer so disable it
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
@@ -322,7 +322,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		callbackInfo.flags       = vk::DebugReportFlagBitsEXT::eError;
 		callbackInfo.pfnCallback = debugCallbackFunc;
 		debugCallback = instance.createDebugReportCallbackEXT(callbackInfo);
+	}
 
+	if (enableMarkers) {
 		pfn_vkDebugMarkerSetObjectNameEXT = reinterpret_cast<PFN_vkDebugMarkerSetObjectNameEXT>(instance.getProcAddr("vkDebugMarkerSetObjectNameEXT"));
 	}
 
@@ -436,7 +438,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	checkExt(VK_NV_DEDICATED_ALLOCATION_EXTENSION_NAME);
 	checkExt(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
 	checkExt(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME);
-	if (enableValidation) {
+	if (enableMarkers) {
 		debugMarkers = checkExt(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
 	}
 
