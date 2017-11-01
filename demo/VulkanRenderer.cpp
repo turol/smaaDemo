@@ -863,6 +863,14 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	fb.height       = height;
 	fb.framebuffer  = device.createFramebuffer(fbInfo);
 
+	if (debugMarkers) {
+		vk::DebugMarkerObjectNameInfoEXT markerName;
+		markerName.objectType  = vk::DebugReportObjectTypeEXT::eFramebuffer;
+		markerName.object      = uint64_t(VkFramebuffer(fb.framebuffer));
+		markerName.pObjectName = desc.name_.c_str();
+		device.debugMarkerSetObjectNameEXT(&markerName);
+	}
+
 	return result.second;
 }
 
@@ -974,7 +982,15 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 
 	auto result   = renderPasses.add();
 	RenderPass &r = result.first;
-	r.renderPass  = device.createRenderPass(info);;
+	r.renderPass  = device.createRenderPass(info);
+
+	if (debugMarkers) {
+		vk::DebugMarkerObjectNameInfoEXT markerName;
+		markerName.objectType  = vk::DebugReportObjectTypeEXT::eRenderPass;
+		markerName.object      = uint64_t(VkRenderPass(r.renderPass));
+		markerName.pObjectName = desc.name_.c_str();
+		device.debugMarkerSetObjectNameEXT(&markerName);
+	}
 
 	return result.second;
 }
