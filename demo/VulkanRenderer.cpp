@@ -1212,8 +1212,8 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 
 	if (debugMarkers) {
 		vk::DebugMarkerObjectNameInfoEXT markerNameImageView;
-		markerNameImageView.objectType = vk::DebugReportObjectTypeEXT::eImageView;
-		markerNameImageView.object = uint64_t(VkImageView(tex.imageView));
+		markerNameImageView.objectType  = vk::DebugReportObjectTypeEXT::eImageView;
+		markerNameImageView.object      = uint64_t(VkImageView(tex.imageView));
 		markerNameImageView.pObjectName = desc.name_.c_str();
 		device.debugMarkerSetObjectNameEXT(&markerNameImageView);
 	}
@@ -1361,14 +1361,14 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 
 	if (debugMarkers) {
 		vk::DebugMarkerObjectNameInfoEXT markerNameImage;
-		markerNameImage.objectType = vk::DebugReportObjectTypeEXT::eImage;
-		markerNameImage.object = uint64_t(VkImage(tex.image));
+		markerNameImage.objectType  = vk::DebugReportObjectTypeEXT::eImage;
+		markerNameImage.object      = uint64_t(VkImage(tex.image));
 		markerNameImage.pObjectName = desc.name_.c_str();
 		device.debugMarkerSetObjectNameEXT(&markerNameImage);
 
 		vk::DebugMarkerObjectNameInfoEXT markerNameImageView;
-		markerNameImageView.objectType = vk::DebugReportObjectTypeEXT::eImageView;
-		markerNameImageView.object = uint64_t(VkImageView(tex.imageView));
+		markerNameImageView.objectType  = vk::DebugReportObjectTypeEXT::eImageView;
+		markerNameImageView.object      = uint64_t(VkImageView(tex.imageView));
 		markerNameImageView.pObjectName = desc.name_.c_str();
 		device.debugMarkerSetObjectNameEXT(&markerNameImageView);
 	}
