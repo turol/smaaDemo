@@ -37,6 +37,10 @@ THE SOFTWARE.
 
 #include <vulkan/vulkan.hpp>
 
+#if VK_HEADER_VERSION < 55
+#error "Vulkan header too old"
+#endif  // VK_HEADER_VERSION < 55
+
 #include <limits.h>  // required but not included by vk_mem_alloc.h
 
 #include "vk_mem_alloc.h"

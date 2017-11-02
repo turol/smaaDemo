@@ -44,16 +44,6 @@ THE SOFTWARE.
 #include "Utils.h"
 
 
-// in case of old header
-#ifndef VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME
-#define VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME "VK_KHR_dedicated_allocation"
-#endif  // VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME
-
-#ifndef VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME
-#define VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME "VK_KHR_get_memory_requirements2"
-#endif  // VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME
-
-
 // this part of the C++ bindings sucks...
 
 static PFN_vkCreateDebugReportCallbackEXT   pfn_vkCreateDebugReportCallbackEXT   = nullptr;
@@ -82,21 +72,9 @@ VKAPI_ATTR void VKAPI_CALL vkDestroyDebugReportCallbackEXT(
 }
 
 
-// this prototype changed in 1.0.55
-#if VK_HEADER_VERSION >= 55
-
-#define CONSTHACK const
-
-#else  // VK_HEADER_VERSION >= 55
-
-#define CONSTHACK
-
-#endif  // VK_HEADER_VERSION >= 55
-
-
 VKAPI_ATTR VkResult VKAPI_CALL vkDebugMarkerSetObjectNameEXT(
     VkDevice                                    device,
-    CONSTHACK VkDebugMarkerObjectNameInfoEXT*   pNameInfo)
+    const VkDebugMarkerObjectNameInfoEXT*       pNameInfo)
 {
 	assert(pfn_vkDebugMarkerSetObjectNameEXT);
 	return pfn_vkDebugMarkerSetObjectNameEXT(device, pNameInfo);
