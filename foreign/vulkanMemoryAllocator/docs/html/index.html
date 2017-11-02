@@ -62,93 +62,30 @@ $(function() {
 <div class="title">Vulkan Memory Allocator </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Version 2.0.0-alpha.2 (2017-07-11)</p>
-<p>Members grouped: see <a href="modules.html"><b>Modules</b></a>.</p>
-<p>All members: see <a class="el" href="vk__mem__alloc_8h.html">vk_mem_alloc.h</a>.</p>
-<h1><a class="anchor" id="problem"></a>
-Problem Statement</h1>
-<p>Memory allocation and resource (buffer and image) creation in Vulkan is difficult (comparing to older graphics API-s, like D3D11 or OpenGL) for several reasons:</p>
+<div class="textblock"><p><b>Version 2.0.0-alpha.4</b> (2017-10-02)</p>
+<p>Copyright (c) 2017 Advanced Micro Devices, Inc. All rights reserved. <br />
+License: MIT</p>
+<p>Documentation of all members: <a class="el" href="vk__mem__alloc_8h.html">vk_mem_alloc.h</a></p>
+<p>Table of contents:</p>
 <ul>
-<li>It requires a lot of boilerplate code, just like everything else in Vulkan, because it is a low-level and high-performance API.</li>
-<li>There is additional level of indirection: VkDeviceMemory is allocated separately from creating VkBuffer/VkImage and they must be bound together. The binding cannot be changed later - resource must be recreated.</li>
-<li>Driver must be queried for supported memory heaps and memory types. Different IHV-s provide different types of it.</li>
-<li>It is recommended practice to allocate bigger chunks of memory and assign parts of them to particular resources.</li>
-</ul>
-<h1><a class="anchor" id="features"></a>
-Features</h1>
-<p>This library is helps game developers to manage memory allocations and resource creation by offering some higher-level functions. Features of the library could be divided into several layers, low level to high level:</p>
-<ol type="1">
-<li>Functions that help to choose correct and optimal memory type based on intended usage of the memory.<ul>
-<li>Required or preferred traits of the memory are expressed using higher-level description comparing to Vulkan flags.</li>
+<li>User guide<ul>
+<li><a class="el" href="quick_start.html">Quick start</a></li>
+<li><a class="el" href="persistently_mapped_memory.html">Persistently mapped memory</a></li>
+<li><a class="el" href="custom_memory_pools.html">Custom memory pools</a></li>
+<li><a class="el" href="defragmentation.html">Defragmentation</a></li>
+<li><a class="el" href="lost_allocations.html">Lost allocations</a></li>
 </ul>
 </li>
-<li>Functions that allocate memory blocks, reserve and return parts of them (VkDeviceMemory + offset + size) to the user.<ul>
-<li>Library keeps track of allocated memory blocks, used and unused ranges inside them, finds best matching unused ranges for new allocations, takes all the rules of alignment into consideration.</li>
+<li><a class="el" href="configuration.html">Configuration</a><ul>
+<li><a class="el" href="vk_khr_dedicated_allocation.html">VK_KHR_dedicated_allocation</a></li>
 </ul>
 </li>
-<li>Functions that can create an image/buffer, allocate memory for it and bind them together - all in one call.</li>
-</ol>
-<h1><a class="anchor" id="prequisites"></a>
-Prequisites</h1>
-<ul>
-<li>Self-contained C++ library in single header file. No external dependencies other than standard C and C++ library and of course Vulkan.</li>
-<li>Public interface in C, in same convention as Vulkan API. Implementation in C++.</li>
-<li>Interface documented using Doxygen-style comments.</li>
-<li>Platform-independent, but developed and tested on Windows using Visual Studio.</li>
-<li>Error handling implemented by returning VkResult error codes - same way as in Vulkan.</li>
+<li><a class="el" href="thread_safety.html">Thread safety</a></li>
 </ul>
-<h1><a class="anchor" id="quick_start"></a>
-Quick Start</h1>
-<p>In your project code:</p>
-<ol type="1">
-<li>Include "vk_mem_alloc.h" file wherever you want to use the library.</li>
-<li>In exacly one C++ file define following macro before include to build library implementation.</li>
-</ol>
-<pre class="fragment">#define VMA_IMPLEMENTATION
-#include "vk_mem_alloc.h"
-</pre><p>At program startup:</p>
-<ol type="1">
-<li>Initialize Vulkan to have VkPhysicalDevice and VkDevice object.</li>
-<li>Fill <a class="el" href="struct_vma_allocator_create_info.html" title="Description of a Allocator to be created. ">VmaAllocatorCreateInfo</a> structure and create VmaAllocator object by calling <a class="el" href="group__general.html#ga200692051ddb34240248234f5f4c17bb" title="Creates Allocator object. ">vmaCreateAllocator()</a>.</li>
-</ol>
-<pre class="fragment">VmaAllocatorCreateInfo allocatorInfo = {};
-allocatorInfo.physicalDevice = physicalDevice;
-allocatorInfo.device = device;
-
-VmaAllocator allocator;
-vmaCreateAllocator(&amp;allocatorInfo, &amp;allocator);
-</pre><p>When you want to create a buffer or image:</p>
-<ol type="1">
-<li>Fill VkBufferCreateInfo / VkImageCreateInfo structure.</li>
-<li>Fill <a class="el" href="struct_vma_memory_requirements.html">VmaMemoryRequirements</a> structure.</li>
-<li>Call <a class="el" href="group__layer3.html#ga2f711e32e95cf9bf8dff4917230c2e9b">vmaCreateBuffer()</a> / <a class="el" href="group__layer3.html#ga9e34bc318ff4b25d1958e79b9db3f1aa" title="Function similar to vmaCreateBuffer(). ">vmaCreateImage()</a> to get VkBuffer/VkImage with memory already allocated and bound to it.</li>
-</ol>
-<pre class="fragment">VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-bufferInfo.size = myBufferSize;
-bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-
-VmaMemoryRequirements memReq = {};
-memReq.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-
-VkBuffer buffer;
-VmaAllocation allocation;
-vmaCreateBuffer(allocator, &amp;bufferInfo, &amp;memReq, &amp;buffer, &amp;allocation, nullptr);
-</pre><p>Don't forget to destroy your objects:</p>
-<pre class="fragment">vmaDestroyBuffer(allocator, buffer, allocation);
-vmaDestroyAllocator(allocator);
-</pre><h1><a class="anchor" id="configuration"></a>
-Configuration</h1>
-<p>Please check "CONFIGURATION SECTION" in the code to find macros that you can define before each #include of this file or change directly in this file to provide your own implementation of basic facilities like assert, min and max functions, mutex etc. C++ STL is used by default, but changing these allows you to get rid of any STL usage if you want, as many game developers tend to do.</p>
-<h1><a class="anchor" id="custom_memory_allocator"></a>
-Custom memory allocator</h1>
-<p>You can use custom memory allocator by filling optional member <a class="el" href="struct_vma_allocator_create_info.html#a6e409087e3be55400d0e4ccbe43c608d" title="Custom allocation callbacks. ">VmaAllocatorCreateInfo::pAllocationCallbacks</a>. These functions will be passed to Vulkan, as well as used by the library itself to make any CPU-side allocations.</p>
-<h1><a class="anchor" id="thread_safety"></a>
-Thread safety</h1>
+<p>See also:</p>
 <ul>
-<li>The library has no global state, so separate VmaAllocator objects can be used independently.</li>
-<li>By default, all calls to functions that take VmaAllocator as first parameter are safe to call from multiple threads simultaneously because they are synchronized internally when needed.</li>
-<li>When the allocator is created with VMA_ALLOCATOR_EXTERNALLY_SYNCHRONIZED_BIT flag, calls to functions that take such VmaAllocator object must be synchronized externally.</li>
-<li>Access to a VmaAllocation object must be externally synchronized. For example, you must not call <a class="el" href="group__layer2.html#ga86dd08aba8633bfa4ad0df2e76481d8b" title="Returns current information about specified allocation. ">vmaGetAllocationInfo()</a> and <a class="el" href="group__layer2.html#ga6aced90fcc7b39882b6654a740a0b9bb" title="Compacts memory by moving allocations. ">vmaDefragment()</a> from different threads at the same time if you pass the same VmaAllocation object to these functions. </li>
+<li><a href="https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator">Source repository on GitHub</a></li>
+<li><a href="https://gpuopen.com/gaming-product/vulkan-memory-allocator/">Product page on GPUOpen</a> </li>
 </ul>
 </div></div><!-- contents -->
 <!-- start footer part -->

@@ -456,14 +456,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	device = physicalDevice.createDevice(deviceCreateInfo);
 
-	VmaAllocatorCreateInfo allocatorInfo;
-	allocatorInfo.flags                        = 0;
+	VmaAllocatorCreateInfo allocatorInfo = {};
 	allocatorInfo.physicalDevice = physicalDevice;
 	allocatorInfo.device         = device;
-	allocatorInfo.preferredLargeHeapBlockSize  = 0;
-	allocatorInfo.preferredSmallHeapBlockSize  = 0;
-	allocatorInfo.pAllocationCallbacks         = nullptr;
-	allocatorInfo.pDeviceMemoryCallbacks       = nullptr;
 
 	vmaCreateAllocator(&allocatorInfo, &allocator);
 
@@ -550,15 +545,19 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 
 	assert(ringBufferMem == nullptr);
 
-	VmaMemoryRequirements req;
-	req.flags          = VMA_MEMORY_REQUIREMENT_OWN_MEMORY_BIT | VMA_MEMORY_REQUIREMENT_PERSISTENT_MAP_BIT;
+	VmaAllocationCreateInfo req = {};
+	req.flags          = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_PERSISTENT_MAP_BIT;
 	req.usage          = VMA_MEMORY_USAGE_CPU_TO_GPU;
 	req.requiredFlags  = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-	req.preferredFlags = 0;
-	req.pUserData      = nullptr;
-	VmaAllocationInfo  allocationInfo = {};
 
-	vmaAllocateMemoryForBuffer(allocator, ringBuffer, &req, &ringBufferMem, &allocationInfo);
+	VmaAllocationInfo  allocationInfo = {};
+	auto result = vmaAllocateMemoryForBuffer(allocator, ringBuffer, &req, &ringBufferMem, &allocationInfo);
+
+	if (result != VK_SUCCESS) {
+		LOG("vmaAllocateMemoryForBuffer failed: %s\n", vk::to_string(vk::Result(result)).c_str());
+		throw std::runtime_error("vmaAllocateMemoryForBuffer failed");
+	}
+
 	LOG("ringbuffer memory type: %u\n",    allocationInfo.memoryType);
 	LOG("ringbuffer memory offset: %u\n",  static_cast<unsigned int>(allocationInfo.offset));
 	LOG("ringbuffer memory size: %u\n",    static_cast<unsigned int>(allocationInfo.size));
@@ -722,12 +721,8 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	Buffer &buffer = result.first;
 	buffer.buffer  = device.createBuffer(info);
 
-	VmaMemoryRequirements req;
-	req.flags          = 0;
+	VmaAllocationCreateInfo req = {};
 	req.usage          = VMA_MEMORY_USAGE_GPU_ONLY;
-	req.requiredFlags  = 0;
-	req.preferredFlags = 0;
-	req.pUserData      = nullptr;
 	VmaAllocationInfo  allocationInfo = {};
 
 	vmaAllocateMemoryForBuffer(allocator, buffer.buffer, &req, &buffer.memory, &allocationInfo);
@@ -1209,12 +1204,8 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 		device.debugMarkerSetObjectNameEXT(&markerNameImage);
 	}
 
-	VmaMemoryRequirements req;
-	req.flags          = 0;
+	VmaAllocationCreateInfo req = {};
 	req.usage          = VMA_MEMORY_USAGE_GPU_ONLY;
-	req.requiredFlags  = 0;
-	req.preferredFlags = 0;
-	req.pUserData      = nullptr;
 	VmaAllocationInfo  allocationInfo = {};
 
 	vmaAllocateMemoryForImage(allocator, rt.image, &req, &tex.memory, &allocationInfo);
@@ -1360,12 +1351,8 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	tex.height = desc.height_;
 	tex.image  = device.createImage(info);
 
-	VmaMemoryRequirements req;
-	req.flags          = 0;
+	VmaAllocationCreateInfo  req = {};
 	req.usage          = VMA_MEMORY_USAGE_GPU_ONLY;
-	req.requiredFlags  = 0;
-	req.preferredFlags = 0;
-	req.pUserData      = nullptr;
 	VmaAllocationInfo  allocationInfo = {};
 
 	vmaAllocateMemoryForImage(allocator, tex.image, &req, &tex.memory, &allocationInfo);
@@ -1810,10 +1797,10 @@ MemoryStats RendererImpl::getMemStats() const {
 	memset(&vmaStats, 0, sizeof(VmaStats));
 	vmaCalculateStats(allocator, &vmaStats);
 	MemoryStats stats;
-	stats.allocationCount    = vmaStats.total.AllocationCount;
-	stats.subAllocationCount = vmaStats.total.SuballocationCount;
-	stats.usedBytes          = vmaStats.total.UsedBytes;
-	stats.unusedBytes        = vmaStats.total.UnusedBytes;
+	stats.allocationCount    = vmaStats.total.allocationCount;
+	stats.subAllocationCount = vmaStats.total.unusedRangeCount;
+	stats.usedBytes          = vmaStats.total.usedBytes;
+	stats.unusedBytes        = vmaStats.total.unusedBytes;
 	return stats;
 }
 

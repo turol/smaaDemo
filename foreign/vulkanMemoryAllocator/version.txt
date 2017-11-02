@@ -1,5 +1,5 @@
-commit 0c1c663062c923c3dfdcc86c8024cfed9b24680a
+commit ee92a03f59e2b61fe655ffcc739297c0e8f916c6
 Author: Adam Sawicki <adam.sawicki@amd.com>
-Date:   Fri Aug 25 17:28:57 2017 +0200
+Date:   Wed Oct 18 15:35:00 2017 +0200
 
-    Two small fixes.
+    VmaAllocator_T::AllocateMemoryOfType: Fixed major bug when VMA_ALLOCATION_CREATE_PERSISTENT_MAP_BIT is used with VMA_MEMORY_USAGE_GPU_ONLY.

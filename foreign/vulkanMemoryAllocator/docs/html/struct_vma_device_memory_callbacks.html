@@ -62,27 +62,28 @@ $(function() {
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="struct_vma_device_memory_callbacks-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">VmaDeviceMemoryCallbacks Struct Reference<div class="ingroups"><a class="el" href="group__general.html">General</a></div></div>  </div>
+<div class="title">VmaDeviceMemoryCallbacks Struct Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Set of callbacks that the library will call for vkAllocateMemory and vkFreeMemory.  
+<p>Set of callbacks that the library will call for <code>vkAllocateMemory</code> and <code>vkFreeMemory</code>.  
  <a href="struct_vma_device_memory_callbacks.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="vk__mem__alloc_8h_source.html">vk_mem_alloc.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a4f17f7b255101e733b44d5633aceabfb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__general.html#gab6a6477cda1ce775b30bde96d766203b">PFN_vmaAllocateDeviceMemoryFunction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_vma_device_memory_callbacks.html#a4f17f7b255101e733b44d5633aceabfb">pfnAllocate</a></td></tr>
+<tr class="memitem:a4f17f7b255101e733b44d5633aceabfb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="vk__mem__alloc_8h.html#ab6a6477cda1ce775b30bde96d766203b">PFN_vmaAllocateDeviceMemoryFunction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_vma_device_memory_callbacks.html#a4f17f7b255101e733b44d5633aceabfb">pfnAllocate</a></td></tr>
 <tr class="memdesc:a4f17f7b255101e733b44d5633aceabfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optional, can be null.  <a href="#a4f17f7b255101e733b44d5633aceabfb">More...</a><br /></td></tr>
 <tr class="separator:a4f17f7b255101e733b44d5633aceabfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abe8a3328bbc916f6f712fdb6b299444c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__general.html#gaef2545dc2e9dd4f29ab9ba6ac6fe2f49">PFN_vmaFreeDeviceMemoryFunction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_vma_device_memory_callbacks.html#abe8a3328bbc916f6f712fdb6b299444c">pfnFree</a></td></tr>
+<tr class="memitem:abe8a3328bbc916f6f712fdb6b299444c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="vk__mem__alloc_8h.html#aef2545dc2e9dd4f29ab9ba6ac6fe2f49">PFN_vmaFreeDeviceMemoryFunction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_vma_device_memory_callbacks.html#abe8a3328bbc916f6f712fdb6b299444c">pfnFree</a></td></tr>
 <tr class="memdesc:abe8a3328bbc916f6f712fdb6b299444c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optional, can be null.  <a href="#abe8a3328bbc916f6f712fdb6b299444c">More...</a><br /></td></tr>
 <tr class="separator:abe8a3328bbc916f6f712fdb6b299444c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Set of callbacks that the library will call for vkAllocateMemory and vkFreeMemory. </p>
-<p>Provided for informative purpose, e.g. to gather statistics about number of allocations or total amount of memory allocated in Vulkan. </p>
+<div class="textblock"><p>Set of callbacks that the library will call for <code>vkAllocateMemory</code> and <code>vkFreeMemory</code>. </p>
+<p>Provided for informative purpose, e.g. to gather statistics about number of allocations or total amount of memory allocated in Vulkan.</p>
+<p>Used in <a class="el" href="struct_vma_allocator_create_info.html#af1380969b5e1ea4c3184a877892d260e" title="Informative callbacks for vkAllocateMemory, vkFreeMemory. ">VmaAllocatorCreateInfo::pDeviceMemoryCallbacks</a>. </p>
 </div><h2 class="groupheader">Member Data Documentation</h2>
 <a id="a4f17f7b255101e733b44d5633aceabfb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4f17f7b255101e733b44d5633aceabfb">&#9670;&nbsp;</a></span>pfnAllocate</h2>
@@ -91,7 +92,7 @@ Public Attributes</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="group__general.html#gab6a6477cda1ce775b30bde96d766203b">PFN_vmaAllocateDeviceMemoryFunction</a> VmaDeviceMemoryCallbacks::pfnAllocate</td>
+          <td class="memname"><a class="el" href="vk__mem__alloc_8h.html#ab6a6477cda1ce775b30bde96d766203b">PFN_vmaAllocateDeviceMemoryFunction</a> VmaDeviceMemoryCallbacks::pfnAllocate</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -107,7 +108,7 @@ Public Attributes</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="group__general.html#gaef2545dc2e9dd4f29ab9ba6ac6fe2f49">PFN_vmaFreeDeviceMemoryFunction</a> VmaDeviceMemoryCallbacks::pfnFree</td>
+          <td class="memname"><a class="el" href="vk__mem__alloc_8h.html#aef2545dc2e9dd4f29ab9ba6ac6fe2f49">PFN_vmaFreeDeviceMemoryFunction</a> VmaDeviceMemoryCallbacks::pfnFree</td>
         </tr>
       </table>
 </div><div class="memdoc">

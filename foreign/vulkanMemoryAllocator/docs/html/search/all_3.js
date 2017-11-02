@@ -1,4 +1,7 @@
 var searchData=
 [
-  ['flags',['flags',['../struct_vma_allocator_create_info.html#a35d3b42ac5a3be3758926819dc053859',1,'VmaAllocatorCreateInfo::flags()'],['../struct_vma_memory_requirements.html#a53c9ea8c3cbcc12dddbe9ae23bb85eb6',1,'VmaMemoryRequirements::flags()']]]
+  ['defragmentation',['Defragmentation',['../defragmentation.html',1,'index']]],
+  ['device',['device',['../struct_vma_allocator_create_info.html#ad924ddd77b04039c88d0c09b0ffcd500',1,'VmaAllocatorCreateInfo']]],
+  ['devicememory',['deviceMemory',['../struct_vma_allocation_info.html#ae0bfb7dfdf79a76ffefc9a94677a2f67',1,'VmaAllocationInfo']]],
+  ['devicememoryblocksfreed',['deviceMemoryBlocksFreed',['../struct_vma_defragmentation_stats.html#a0113f1877904a5d1ee8f409216ff276b',1,'VmaDefragmentationStats']]]
 ];
