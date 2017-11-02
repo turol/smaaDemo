@@ -994,6 +994,10 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	pipeline.shader    = program;
 	pipeline.resources = std::move(resources);
 
+	if (tracing) {
+		glObjectLabel(GL_PROGRAM, program, desc.name_.size(), desc.name_.c_str());
+	}
+
 	return result.second;
 }
 
@@ -1102,6 +1106,10 @@ SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
 	glSamplerParameteri(sampler.sampler, GL_TEXTURE_WRAP_S,     (desc.wrapMode == WrapMode::Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 	glSamplerParameteri(sampler.sampler, GL_TEXTURE_WRAP_T,     (desc.wrapMode == WrapMode::Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 
+	if (tracing) {
+		glObjectLabel(GL_SAMPLER, sampler.sampler, desc.name_.size(), desc.name_.c_str());
+	}
+
 	return result.second;
 }
 
@@ -1132,6 +1140,10 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	tex.width  = desc.width_;
 	tex.height = desc.height_;
 	assert(!tex.renderTarget);
+
+	if (tracing) {
+		glObjectLabel(GL_TEXTURE, texture, desc.name_.size(), desc.name_.c_str());
+	}
 
 	return result.second;
 }
