@@ -344,6 +344,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , window(nullptr)
 , context(nullptr)
 , debug(false)
+, tracing(desc.tracing)
 , vao(0)
 , idxBuf16Bit(false)
 , indexBufByteOffset(0)
@@ -371,7 +372,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, glMajor);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glMinor);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	if (desc.debug) {
+	if (desc.debug || tracing) {
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 	}
 
@@ -464,6 +465,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		} else {
 			LOG("KHR_debug not found\n");
 		}
+	}
+
+	if (tracing && !GLEW_KHR_debug) {
+		LOG("Tracing requested but KHR_debug not found, tracing disabled\n");
+		tracing = false;
 	}
 
 	LOG("GL vendor: \"%s\"\n", glGetString(GL_VENDOR));
@@ -1040,7 +1046,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 		assert(renderPass.desc.depthStencilFormat_ == Format::Invalid);
 	}
 
-	if (debug) {
+	if (tracing) {
 		glObjectLabel(GL_FRAMEBUFFER, fb.fbo, desc.name_.size(), desc.name_.c_str());
 	}
 
@@ -1068,7 +1074,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	glCreateTextures(GL_TEXTURE_2D, 1, &id);
 	glTextureStorage2D(id, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
 	glTextureParameteri(id, GL_TEXTURE_MAX_LEVEL, 0);
-	if (debug) {
+	if (tracing) {
 		glObjectLabel(GL_TEXTURE, id, desc.name_.size(), desc.name_.c_str());
 	}
 

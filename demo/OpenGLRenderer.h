@@ -593,6 +593,7 @@ struct RendererImpl : public RendererBase {
 	SDL_GLContext context;
 
 	bool           debug;
+	bool           tracing;
 	GLuint vao;
 	bool idxBuf16Bit;
 	unsigned int  indexBufByteOffset;
