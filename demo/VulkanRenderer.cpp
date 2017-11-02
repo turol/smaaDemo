@@ -1204,7 +1204,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	if (debugMarkers) {
 		vk::DebugMarkerObjectNameInfoEXT markerNameImage;
 		markerNameImage.objectType  = vk::DebugReportObjectTypeEXT::eImage;
-		markerNameImage.object      = uint64_t(VkImageView(tex.image));
+		markerNameImage.object      = uint64_t(VkImage(tex.image));
 		markerNameImage.pObjectName = desc.name_.c_str();
 		device.debugMarkerSetObjectNameEXT(&markerNameImage);
 	}
