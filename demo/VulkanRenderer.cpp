@@ -1201,6 +1201,14 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	tex.image        = rt.image;
 	tex.renderTarget = true;
 
+	if (debugMarkers) {
+		vk::DebugMarkerObjectNameInfoEXT markerNameImage;
+		markerNameImage.objectType  = vk::DebugReportObjectTypeEXT::eImage;
+		markerNameImage.object      = uint64_t(VkImageView(tex.image));
+		markerNameImage.pObjectName = desc.name_.c_str();
+		device.debugMarkerSetObjectNameEXT(&markerNameImage);
+	}
+
 	VmaMemoryRequirements req;
 	req.flags          = 0;
 	req.usage          = VMA_MEMORY_USAGE_GPU_ONLY;
