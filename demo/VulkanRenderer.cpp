@@ -1674,6 +1674,7 @@ void RendererImpl::recreateSwapchain() {
 					// wait until complete
 					waitForFrame(i);
 				}
+				assert(!f.outstanding);
 				// delete contents of Frame
 				deleteFrameInternal(f);
 			}
@@ -1823,6 +1824,27 @@ void RendererImpl::beginFrame() {
 
 	// acquire next image
 	auto imageIdx_         = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence());
+	if (imageIdx_.result == vk::Result::eSuccess) {
+		// nothing to do
+	} else if (imageIdx_.result == vk::Result::eErrorOutOfDateKHR) {
+		// swapchain went out of date during acquire, recreate and try again
+		LOG("swapchain out of date during acquireNextImageKHR, recreating...\n");
+		swapchainDirty = true;
+		recreateSwapchain();
+		assert(!swapchainDirty);
+
+		imageIdx_ = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence());
+		if (imageIdx_.result != vk::Result::eSuccess) {
+			// nope, still wrong
+			LOG("acquireNextImageKHR failed: %s\n", vk::to_string(imageIdx_.result).c_str());
+			throw std::runtime_error("acquireNextImageKHR failed");
+		}
+		LOG("swapchain recreated\n");
+	} else {
+		LOG("acquireNextImageKHR failed: %s\n", vk::to_string(imageIdx_.result).c_str());
+		throw std::runtime_error("acquireNextImageKHR failed");
+	}
+
 	currentFrameIdx        = imageIdx_.value;
 	assert(currentFrameIdx < frames.size());
 	auto &frame            = frames.at(currentFrameIdx);
@@ -1927,11 +1949,16 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	presentInfo.pSwapchains        = &swapchain;
 	presentInfo.pImageIndices      = &currentFrameIdx;
 
-	auto presentResult = queue.presentKHR(presentInfo);
-	if (presentResult != vk::Result::eSuccess) {
-		// TODO: handle these somehow
-		LOG("present result is not success: %s\n", vk::to_string(presentResult).c_str());
-		throw std::runtime_error("present result is not success");
+	auto presentResult = queue.presentKHR(&presentInfo);
+	if (presentResult == vk::Result::eSuccess) {
+		// nothing to do
+	} else if (presentResult == vk::Result::eErrorOutOfDateKHR) {
+		LOG("swapchain out of date during presentKHR, marking dirty\n");
+		// swapchain went out of date during present, mark it dirty
+		swapchainDirty = true;
+	} else {
+		LOG("presentKHR failed: %s\n", vk::to_string(presentResult).c_str());
+		throw std::runtime_error("presentKHR failed");
 	}
 	frame.usedRingBufPtr = ringBufPtr;
 	frame.outstanding = true;
