@@ -452,8 +452,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		throw std::runtime_error("ARB_clip_control not found");
 	}
 
-	if (desc.debug) {
-		if (GLEW_KHR_debug) {
+	if (GLEW_KHR_debug && desc.debug) {
 			LOG("KHR_debug found\n");
 
 			glDebugMessageCallback(glDebugCallback, NULL);
@@ -462,14 +461,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
 			debug = true;
-		} else {
-			LOG("KHR_debug not found\n");
-		}
-	}
-
-	if (tracing && !GLEW_KHR_debug) {
+	} else if (tracing) {
 		LOG("Tracing requested but KHR_debug not found, tracing disabled\n");
 		tracing = false;
+	} else if (desc.debug) {
+		LOG("KHR_debug not found\n");
 	}
 
 	LOG("GL vendor: \"%s\"\n", glGetString(GL_VENDOR));
