@@ -538,9 +538,8 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 	assert(ringBufPtr                == 0);
 	assert(persistentMapping         == nullptr);
 	unsigned int bufferFlags = 0;
-	// if debug is on, disable persistent buffer because apitrace can't trace it
-	// TODO: should have separate toggles for debug messages and debug tracing
-	persistentMapInUse = !debug;
+	// if debug or tracing is on, disable persistent buffer because apitrace can't trace it
+	persistentMapInUse = !(debug || tracing);
 	ringBufSize        = newSize;
 
 	if (!persistentMapInUse) {
