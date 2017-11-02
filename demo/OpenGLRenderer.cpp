@@ -453,14 +453,14 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	if (GLEW_KHR_debug && desc.debug) {
-			LOG("KHR_debug found\n");
+		LOG("KHR_debug found\n");
 
-			glDebugMessageCallback(glDebugCallback, NULL);
-			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+		glDebugMessageCallback(glDebugCallback, NULL);
+		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
 
-			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
-			debug = true;
+		debug = true;
 	} else if (tracing) {
 		LOG("Tracing requested but KHR_debug not found, tracing disabled\n");
 		tracing = false;
