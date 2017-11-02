@@ -1352,14 +1352,6 @@ void SMAADemo::render() {
 		desc.vsync      = vsync;
 
 		renderer.setSwapchainDesc(desc);
-		recreateSwapchain = false;
-
-		glm::uvec2 size = renderer.getDrawableSize();
-		LOG("drawable size: %ux%u\n", size.x, size.y);
-		windowWidth  = size.x;
-		windowHeight = size.y;
-
-		createFramebuffers();
 	}
 
 	uint64_t ticks = getNanoseconds();
@@ -1378,6 +1370,18 @@ void SMAADemo::render() {
 
 	lastTime = ticks;
 
+	renderer.beginFrame();
+	if (recreateSwapchain) {
+		recreateSwapchain = false;
+
+		glm::uvec2 size = renderer.getDrawableSize();
+		LOG("drawable size: %ux%u\n", size.x, size.y);
+		windowWidth  = size.x;
+		windowHeight = size.y;
+
+		createFramebuffers();
+	}
+
 	ShaderDefines::Globals globals;
 	globals.screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 
@@ -1387,7 +1391,6 @@ void SMAADemo::render() {
 	globals.guiOrtho   = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
 #endif
 
-	renderer.beginFrame();
 	renderer.beginRenderPass(sceneRenderPass, sceneFramebuffer);
 
 	if (activeScene == 0) {
