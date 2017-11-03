@@ -795,6 +795,7 @@ struct RendererImpl : public RendererBase {
 	vk::Buffer           ringBuffer;
 	VmaAllocation        ringBufferMem;
 	char                *persistentMapping;
+	bool                 unmapPersistentSubmit;
 
 	std::vector<Frame>        frames;
 	uint32_t                  currentFrameIdx;
