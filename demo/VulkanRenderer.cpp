@@ -732,7 +732,7 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
 	// TODO: share some of this stuff with createTexture
-	// FIXME: this uses the wrong command bool if we're not in a frame
+	// TODO:  this uses the wrong command pool if we're not in a frame
 	//        for example during startup
 	//        add separate command pool(s) for transfers
 	vk::CommandBufferAllocateInfo cmdInfo(frames.at(currentFrameIdx).commandPool, vk::CommandBufferLevel::ePrimary, 1);
