@@ -77,14 +77,6 @@ using namespace glm;
 using namespace renderer;
 
 
-union Color {
-	uint32_t val;
-	struct {
-		uint8_t r, g, b, a;
-	};
-};
-
-
 class SMAADemo;
 
 
