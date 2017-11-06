@@ -186,36 +186,36 @@ namespace RenderTargets {
 
 
 class SMAADemo {
-	unsigned int windowWidth, windowHeight;
-	unsigned int numFrames;
-	bool vsync;
-	bool fullscreen;
-	bool recreateSwapchain;
-	bool      fpsLimitActive;
-	uint32_t  fpsLimit;
-	uint64_t  sleepFudge;
+	unsigned int    windowWidth, windowHeight;
+	unsigned int    numFrames;
+	bool            vsync;
+	bool            fullscreen;
+	bool            recreateSwapchain;
+	bool            fpsLimitActive;
+	uint32_t        fpsLimit;
+	uint64_t        sleepFudge;
 
-	Renderer renderer;
-	bool glDebug;
-	bool tracing;
-	bool              skipShaderCache;
-	Format            depthFormat;
+	Renderer        renderer;
+	bool            glDebug;
+	bool            tracing;
+	bool            skipShaderCache;
+	Format          depthFormat;
 
-	PipelineHandle cubePipeline;
-	PipelineHandle imagePipeline;
-	PipelineHandle blitPipeline;
-	PipelineHandle guiPipeline;
+	PipelineHandle     cubePipeline;
+	PipelineHandle     imagePipeline;
+	PipelineHandle     blitPipeline;
+	PipelineHandle     guiPipeline;
 
-	RenderPassHandle sceneRenderPass;
-	FramebufferHandle sceneFramebuffer;
-	RenderPassHandle finalRenderPass;
-	FramebufferHandle finalFramebuffer;
+	RenderPassHandle   sceneRenderPass;
+	FramebufferHandle  sceneFramebuffer;
+	RenderPassHandle   finalRenderPass;
+	FramebufferHandle  finalFramebuffer;
 
-	BufferHandle cubeVBO;
-	BufferHandle cubeIBO;
+	BufferHandle       cubeVBO;
+	BufferHandle       cubeIBO;
 
-	SamplerHandle linearSampler;
-	SamplerHandle nearestSampler;
+	SamplerHandle      linearSampler;
+	SamplerHandle      nearestSampler;
 
 	unsigned int cubesPerSide;
 
@@ -224,48 +224,48 @@ class SMAADemo {
 	bool antialiasing;
 	AAMethod aaMethod;
 
-	std::array<PipelineHandle, maxFXAAQuality> fxaaPipelines;
+	std::array<PipelineHandle, maxFXAAQuality>  fxaaPipelines;
 
-	std::array<PipelineHandle, maxSMAAQuality> smaaEdgePipelines;
-	std::array<PipelineHandle, maxSMAAQuality> smaaBlendWeightPipelines;
-	std::array<PipelineHandle, maxSMAAQuality> smaaNeighborPipelines;
-	FramebufferHandle smaaEdgesFramebuffer;
-	FramebufferHandle smaaWeightsFramebuffer;
-	RenderPassHandle smaaEdgesRenderPass;
-	RenderPassHandle smaaWeightsRenderPass;
-	TextureHandle areaTex;
-	TextureHandle searchTex;
+	std::array<PipelineHandle, maxSMAAQuality>  smaaEdgePipelines;
+	std::array<PipelineHandle, maxSMAAQuality>  smaaBlendWeightPipelines;
+	std::array<PipelineHandle, maxSMAAQuality>  smaaNeighborPipelines;
+	FramebufferHandle                           smaaEdgesFramebuffer;
+	FramebufferHandle                           smaaWeightsFramebuffer;
+	RenderPassHandle                            smaaEdgesRenderPass;
+	RenderPassHandle                            smaaWeightsRenderPass;
+	TextureHandle                               areaTex;
+	TextureHandle                               searchTex;
 
 	TextureHandle imguiFontsTex;
 
-	bool rotateCubes;
-	float cameraRotation;
-	float cameraDistance;
-	uint64_t tickBase;
-	uint64_t lastTime;
-	uint64_t freqMult;
-	uint64_t freqDiv;
-	uint64_t rotationTime;
-	unsigned int debugMode;
-	unsigned int colorMode;
-	bool rightShift, leftShift;
-	RandomGen random;
-	unsigned int fxaaQuality;
-	unsigned int smaaQuality;
+	bool          rotateCubes;
+	float         cameraRotation;
+	float         cameraDistance;
+	uint64_t      tickBase;
+	uint64_t      lastTime;
+	uint64_t      freqMult;
+	uint64_t      freqDiv;
+	uint64_t      rotationTime;
+	unsigned int  debugMode;
+	unsigned int  colorMode;
+	bool          rightShift, leftShift;
+	RandomGen     random;
+	unsigned int  fxaaQuality;
+	unsigned int  smaaQuality;
 	bool keepGoing;
 	// 0 for cubes
 	// 1.. for images
-	unsigned int activeScene;
-	bool textInputActive;
-	char imageFileName[inputTextBufferSize];
-	char clipboardText[inputTextBufferSize];
+	unsigned int  activeScene;
+	bool          textInputActive;
+	char          imageFileName[inputTextBufferSize];
+	char          clipboardText[inputTextBufferSize];
 
 
 	struct Image {
-		std::string filename;
-		std::string   shortName;
-		TextureHandle tex;
-		unsigned int  width, height;
+		std::string    filename;
+		std::string    shortName;
+		TextureHandle  tex;
+		unsigned int   width, height;
 
 
 		Image()
