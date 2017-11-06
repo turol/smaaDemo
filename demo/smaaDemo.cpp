@@ -330,17 +330,6 @@ public:
 };
 
 
-static uint64_t gcd(uint64_t a, uint64_t b) {
-	uint64_t c;
-	while (a != 0) {
-		c = a;
-		a = b % a;
-		b = c;
-	}
-	return b;
-}
-
-
 SMAADemo::SMAADemo()
 : windowWidth(1280)
 , windowHeight(720)

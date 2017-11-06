@@ -121,4 +121,15 @@ static inline uint32_t nextPow2(unsigned int v) {
 }
 
 
+static inline uint64_t gcd(uint64_t a, uint64_t b) {
+	uint64_t c;
+	while (a != 0) {
+		c = a;
+		a = b % a;
+		b = c;
+	}
+	return b;
+}
+
+
 #endif  // UTILS_H
