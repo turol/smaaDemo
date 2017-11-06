@@ -490,6 +490,14 @@ unsigned int RendererImpl::ringBufferAllocate(unsigned int size, unsigned int al
 	assert(alignment != 0);
 	assert(isPow2(alignment));
 
+	if (size > ringBufSize) {
+		unsigned int newSize = nextPow2(size);
+		LOG("WARNING: out of ringbuffer space, reallocating to %u bytes\n", newSize);
+		recreateRingBuffer(newSize);
+
+		assert(ringBufPtr == 0);
+	}
+
 	// sub-allocate from persistent coherent buffer
 	// round current pointer up to necessary alignment
 	const unsigned int add   = alignment - 1;

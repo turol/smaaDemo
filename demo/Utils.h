@@ -107,4 +107,18 @@ static inline bool isPow2(unsigned int value) {
 }
 
 
+// https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+static inline uint32_t nextPow2(unsigned int v) {
+	v--;
+	v |= v >> 1;
+	v |= v >> 2;
+	v |= v >> 4;
+	v |= v >> 8;
+	v |= v >> 16;
+	v++;
+
+	return v;
+}
+
+
 #endif  // UTILS_H
