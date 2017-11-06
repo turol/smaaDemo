@@ -394,7 +394,6 @@ SMAADemo::SMAADemo()
 	memset(imageFileName, 0, inputTextBufferSize);
 	memset(clipboardText, 0, inputTextBufferSize);
 
-	// TODO: detect screens, log interesting display parameters etc
 	// TODO: initialize random using external source
 }
 
