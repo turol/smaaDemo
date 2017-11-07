@@ -958,8 +958,8 @@ void SMAADemo::loadImage(const std::string &filename) {
 	}
 
 	images.push_back(Image());
-	auto &img = images.back();
-	img.filename = filename;
+	auto &img      = images.back();
+	img.filename   = filename;
 	auto lastSlash = filename.rfind('/');
 	if (lastSlash != std::string::npos) {
 		img.shortName = filename.substr(lastSlash + 1);
@@ -970,8 +970,8 @@ void SMAADemo::loadImage(const std::string &filename) {
 
 	TextureDesc texDesc;
 	texDesc.width(width)
-		.height(height)
-		.format(Format::RGBA8);
+	       .height(height)
+	       .format(Format::RGBA8);
 	texDesc.name(filename);
 
 	texDesc.mipLevelData(0, imageData, width * height * 4);
@@ -985,7 +985,7 @@ void SMAADemo::loadImage(const std::string &filename) {
 }
 
 
-void SMAADemo::createFramebuffers()	{
+void SMAADemo::createFramebuffers() {
 	if (rendertargets[0]) {
 		assert(sceneFramebuffer);
 		renderer.deleteFramebuffer(sceneFramebuffer);
@@ -1075,7 +1075,7 @@ void SMAADemo::createCubes() {
 				                        , (z * cubeDistance) - (bigCubeSide / 2.0f));
 
 				cube.rotation = glm::vec4(qx, qy, qz, qw);
-				cube.color = glm::vec3(1.0f, 1.0f, 1.0f);
+				cube.color    = glm::vec3(1.0f, 1.0f, 1.0f);
 				cubes.emplace_back(cube);
 			}
 		}
@@ -1347,7 +1347,7 @@ void SMAADemo::render() {
 		renderer.setSwapchainDesc(desc);
 	}
 
-	uint64_t ticks = getNanoseconds();
+	uint64_t ticks   = getNanoseconds();
 	uint64_t elapsed = ticks - lastTime;
 
 	if (fpsLimitActive) {
@@ -1393,17 +1393,17 @@ void SMAADemo::render() {
 			rotationTime += elapsed;
 
 			const uint64_t rotationPeriod = 30 * 1000000000ULL;
-			rotationTime = rotationTime % rotationPeriod;
+			rotationTime   = rotationTime % rotationPeriod;
 			cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
 		}
 
 		// TODO: better calculation, and check cube size (side is sqrt(3) currently)
-		float farPlane = cameraDistance + 4.0f * float(cubesPerSide);
+		float farPlane  = cameraDistance + 4.0f * float(cubesPerSide);
 		float nearPlane = 0.1f;
 
-		glm::mat4 model = glm::rotate(glm::mat4(1.0f), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
-		glm::mat4 view = glm::lookAt(glm::vec3(cameraDistance, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		glm::mat4 proj = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, nearPlane, farPlane);
+		glm::mat4 model  = glm::rotate(glm::mat4(1.0f), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 view   = glm::lookAt(glm::vec3(cameraDistance, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 proj   = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, nearPlane, farPlane);
 		globals.viewProj = proj * view * model;
 
 		renderer.setViewport(0, 0, windowWidth, windowHeight);
@@ -1541,9 +1541,8 @@ void SMAADemo::render() {
 
 
 void SMAADemo::drawGUI(uint64_t elapsed) {
-	ImGuiIO& io = ImGui::GetIO();
-	io.DeltaTime = float(double(elapsed) / double(1000000000ULL));
-
+	ImGuiIO& io    = ImGui::GetIO();
+	io.DeltaTime   = float(double(elapsed) / double(1000000000ULL));
 	io.DisplaySize = ImVec2(static_cast<float>(windowWidth), static_cast<float>(windowHeight));
 	io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
@@ -1668,7 +1667,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 		ImGui::Checkbox("FPS limit", &fpsLimitActive);
 
-		int f = fpsLimit;
+		int f   = fpsLimit;
 		changed = ImGui::InputInt("Max FPS", &f);
 		if (changed && f > 0) {
 			fpsLimit = f;
