@@ -78,6 +78,13 @@ struct Buffer {
 	// TODO: usage flags for debugging
 
 
+	Buffer()
+	: buffer(0)
+	, ringBufferAlloc(false)
+	, beginOffs(0)
+	, size(0)
+	{}
+
 	Buffer(const Buffer &)            = delete;
 	Buffer &operator=(const Buffer &) = delete;
 
@@ -108,15 +115,6 @@ struct Buffer {
 
 		return *this;
 	}
-
-	Buffer()
-	: buffer(0)
-	, ringBufferAlloc(false)
-	, beginOffs(0)
-	, size(0)
-	{
-	}
-
 
 	~Buffer() {
 		assert(buffer == 0);
@@ -270,6 +268,30 @@ struct Pipeline {
 };
 
 
+struct RenderPass {
+	RenderPassDesc  desc;
+
+
+	RenderPass(const RenderPass &) = delete;
+	RenderPass &operator=(const RenderPass &) = delete;
+
+	RenderPass(RenderPass &&other)
+	: desc(other.desc)
+	{
+	}
+
+	RenderPass &operator=(RenderPass &&other) = delete;
+
+	RenderPass()
+	{
+	}
+
+
+	~RenderPass() {
+	}
+};
+
+
 struct RenderTarget {
 	GLuint         readFBO;
 	unsigned int   width, height;
@@ -336,30 +358,6 @@ struct RenderTarget {
 		assert(!texture);
 	}
 
-};
-
-
-struct RenderPass {
-	RenderPassDesc  desc;
-
-
-	RenderPass(const RenderPass &) = delete;
-	RenderPass &operator=(const RenderPass &) = delete;
-
-	RenderPass(RenderPass &&other)
-	: desc(other.desc)
-	{
-	}
-
-	RenderPass &operator=(RenderPass &&other) = delete;
-
-	RenderPass()
-	{
-	}
-
-
-	~RenderPass() {
-	}
 };
 
 
