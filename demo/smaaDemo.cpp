@@ -185,6 +185,30 @@ namespace RenderTargets {
 }  // namespace RenderTargets
 
 
+struct Image {
+	std::string    filename;
+	std::string    shortName;
+	TextureHandle  tex;
+	unsigned int   width, height;
+
+
+	Image()
+	: width(0)
+	, height(0)
+	{
+	}
+
+
+	Image(const Image &)             = default;
+	Image(Image &&)                  = default;
+
+	Image &operator=(const Image &)  = default;
+	Image &operator=(Image &&)       = default;
+
+	~Image() {}
+};
+
+
 class SMAADemo {
 	unsigned int    windowWidth, windowHeight;
 	unsigned int    numFrames;
@@ -260,29 +284,6 @@ class SMAADemo {
 	char          imageFileName[inputTextBufferSize];
 	char          clipboardText[inputTextBufferSize];
 
-
-	struct Image {
-		std::string    filename;
-		std::string    shortName;
-		TextureHandle  tex;
-		unsigned int   width, height;
-
-
-		Image()
-		: width(0)
-		, height(0)
-		{
-		}
-
-
-		Image(const Image &)             = default;
-		Image(Image &&)                  = default;
-
-		Image &operator=(const Image &)  = default;
-		Image &operator=(Image &&)       = default;
-
-		~Image() {}
-	};
 
 	std::vector<std::string> imageFiles;
 
