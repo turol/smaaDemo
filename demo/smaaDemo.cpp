@@ -525,6 +525,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::SwitchArg                       tracingSwitch("",      "trace",      "Enable renderer tracing",       cmd, false);
 		TCLAP::SwitchArg                       noCacheSwitch("",      "nocache",    "Don't load shaders from cache", cmd, false);
 		TCLAP::SwitchArg                       fullscreenSwitch("f",  "fullscreen", "Start in fullscreen mode",      cmd, false);
+		TCLAP::SwitchArg                       noVsyncSwitch("",      "novsync",    "Disable vsync",                 cmd, false);
 
 		TCLAP::ValueArg<unsigned int>          windowWidthSwitch("",  "width",      "Window width",  false, windowWidth,  "width",  cmd);
 		TCLAP::ValueArg<unsigned int>          windowHeightSwitch("", "height",     "Window height", false, windowHeight, "height", cmd);
@@ -539,6 +540,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		fullscreen    = fullscreenSwitch.getValue();
 		windowWidth   = windowWidthSwitch.getValue();
 		windowHeight  = windowHeightSwitch.getValue();
+		vsync         = !noVsyncSwitch.getValue();
 
 		imageFiles    = imagesArg.getValue();
 
