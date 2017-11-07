@@ -126,6 +126,33 @@ struct Buffer {
 
 struct DescriptorSetLayout {
 	std::vector<DescriptorLayout>  descriptors;
+
+
+	DescriptorSetLayout() {}
+
+	DescriptorSetLayout(const DescriptorSetLayout &)            = delete;
+	DescriptorSetLayout &operator=(const DescriptorSetLayout &) = delete;
+
+	DescriptorSetLayout(DescriptorSetLayout &&other)
+	: descriptors(std::move(other.descriptors))
+	{
+		assert(descriptors.empty());
+	}
+
+	DescriptorSetLayout &operator=(DescriptorSetLayout &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		descriptors  = std::move(other.descriptors);
+
+		assert(descriptors.empty());
+
+		return *this;
+	}
+
+	~DescriptorSetLayout() {
+	}
 };
 
 
