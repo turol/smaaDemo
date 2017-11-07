@@ -156,9 +156,9 @@ struct DescriptorSetLayout {
 
 
 struct FragmentShader {
-	GLuint shader;
-	std::string name;
-	ShaderResources resources;
+	GLuint           shader;
+	std::string      name;
+	ShaderResources  resources;
 
 
 	FragmentShader()
@@ -166,8 +166,7 @@ struct FragmentShader {
 	{
 	}
 
-
-	FragmentShader(const FragmentShader &) = delete;
+	FragmentShader(const FragmentShader &)            = delete;
 	FragmentShader &operator=(const FragmentShader &) = delete;
 
 	FragmentShader(FragmentShader &&other)
@@ -195,7 +194,6 @@ struct FragmentShader {
 
 		return *this;
 	}
-
 
 	~FragmentShader() {
 	}
