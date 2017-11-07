@@ -406,8 +406,6 @@ SMAADemo::SMAADemo()
 
 	memset(imageFileName, 0, inputTextBufferSize);
 	memset(clipboardText, 0, inputTextBufferSize);
-
-	// TODO: initialize random using external source
 }
 
 
@@ -722,16 +720,16 @@ void SMAADemo::initRender() {
 
 	createFramebuffers();
 
+	// TODO: the following is a mess, clean it up
+
 	PipelineDesc plDesc;
 	plDesc.depthWrite(false)
 	      .depthTest(false)
 	      .cullFaces(true);
 	plDesc.descriptorSetLayout<GlobalDS>(0);
 
-	// all shader stages are affected by quality (SMAA_MAX_SEARCH_STEPS)
-	// TODO: fix that
-	// final blend is not affected by quality, TODO: check
-	// if so, share
+	// TODO: final blend pass appears to not be affected by quality
+	// verify that and if so, share it
 	for (unsigned int i = 0; i < maxSMAAQuality; i++) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[i]);
