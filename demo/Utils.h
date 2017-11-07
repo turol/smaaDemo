@@ -46,6 +46,20 @@ THE SOFTWARE.
 #endif  // _MSC_VER
 
 
+#ifdef _MSC_VER
+#define __PRETTY_FUNCTION__  __FUNCTION__
+#endif
+
+#define STUBBED(str) \
+	{ \
+		static bool seen = false; \
+		if (!seen) { \
+			printf("STUBBED: %s in %s at %s:%d\n", str, __PRETTY_FUNCTION__, __FILE__,  __LINE__); \
+			seen = true; \
+		} \
+	}
+
+
 // should be ifdeffed out on compilers which already have it (eg. VS2013)
 // http://isocpp.org/files/papers/N3656.txt
 #ifndef _MSC_VER

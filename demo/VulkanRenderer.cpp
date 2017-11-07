@@ -24,20 +24,6 @@ THE SOFTWARE.
 #ifdef RENDERER_VULKAN
 
 
-#ifdef _MSC_VER
-#define __PRETTY_FUNCTION__  __FUNCTION__
-#endif
-
-#define STUBBED(str) \
-	{ \
-		static bool seen = false; \
-		if (!seen) { \
-			printf("STUBBED: %s in %s at %s:%d\n", str, __PRETTY_FUNCTION__, __FILE__,  __LINE__); \
-			seen = true; \
-		} \
-	}
-
-
 #include <SDL_vulkan.h>
 
 #include "RendererInternal.h"
