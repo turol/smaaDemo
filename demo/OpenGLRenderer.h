@@ -145,7 +145,6 @@ struct DescriptorSetLayout {
 		}
 
 		descriptors  = std::move(other.descriptors);
-
 		assert(descriptors.empty());
 
 		return *this;

@@ -149,8 +149,8 @@ struct Buffer {
 
 
 struct DescriptorSetLayout {
-	vk::DescriptorSetLayout        layout;
 	std::vector<DescriptorLayout>  descriptors;
+	vk::DescriptorSetLayout        layout;
 
 
 	DescriptorSetLayout() {}
@@ -159,8 +159,8 @@ struct DescriptorSetLayout {
 	DescriptorSetLayout &operator=(const DescriptorSetLayout &) = delete;
 
 	DescriptorSetLayout(DescriptorSetLayout &&other)
-	: layout(other.layout)
-	, descriptors(std::move(other.descriptors))
+	: descriptors(std::move(other.descriptors))
+	, layout(other.layout)
 	{
 		other.layout = vk::DescriptorSetLayout();
 		assert(descriptors.empty());
@@ -173,11 +173,11 @@ struct DescriptorSetLayout {
 
 		assert(!layout);
 
-		layout       = other.layout;
 		descriptors  = std::move(other.descriptors);
-
-		other.layout = vk::DescriptorSetLayout();
 		assert(descriptors.empty());
+
+		layout       = other.layout;
+		other.layout = vk::DescriptorSetLayout();
 
 		return *this;
 	}
