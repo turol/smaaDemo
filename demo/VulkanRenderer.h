@@ -188,40 +188,6 @@ struct DescriptorSetLayout {
 };
 
 
-struct VertexShader {
-	vk::ShaderModule shaderModule;
-
-
-	VertexShader() {}
-
-	VertexShader(const VertexShader &)            = delete;
-	VertexShader &operator=(const VertexShader &) = delete;
-
-	VertexShader(VertexShader &&other)
-	: shaderModule(other.shaderModule)
-	{
-		other.shaderModule = vk::ShaderModule();
-	}
-
-	VertexShader &operator=(VertexShader &&other) {
-		if (this == &other) {
-			return *this;
-		}
-
-		assert(!shaderModule);
-
-		shaderModule       = other.shaderModule;
-		other.shaderModule = vk::ShaderModule();
-
-		return *this;
-	}
-
-	~VertexShader() {
-		assert(!shaderModule);
-	}
-};
-
-
 struct FragmentShader {
 	vk::ShaderModule shaderModule;
 
@@ -311,6 +277,55 @@ struct Framebuffer {
 
 	size_t getHash() const {
 		return VK_HASH(VkFramebuffer(framebuffer));
+	}
+};
+
+
+struct Pipeline {
+	vk::Pipeline       pipeline;
+	vk::PipelineLayout layout;
+	bool               scissor;
+
+
+	Pipeline()
+	: scissor(false)
+	{}
+
+	Pipeline(const Pipeline &)            = delete;
+	Pipeline &operator=(const Pipeline &) = delete;
+
+	Pipeline(Pipeline &&other)
+	: pipeline(other.pipeline)
+	, layout(other.layout)
+	, scissor(other.scissor)
+	{
+		other.pipeline = vk::Pipeline();
+		other.layout   = vk::PipelineLayout();
+		other.scissor  = false;
+	}
+
+	Pipeline &operator=(Pipeline &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		assert(!pipeline);
+		assert(!layout);
+
+		pipeline       = other.pipeline;
+		layout         = other.layout;
+		scissor        = other.scissor;
+
+		other.pipeline = vk::Pipeline();
+		other.layout   = vk::PipelineLayout();
+		other.scissor  = false;
+
+		return *this;
+	}
+
+	~Pipeline() {
+		assert(!pipeline);
+		assert(!layout);
 	}
 };
 
@@ -437,55 +452,6 @@ struct RenderTarget{
 };
 
 
-struct Pipeline {
-	vk::Pipeline       pipeline;
-	vk::PipelineLayout layout;
-	bool               scissor;
-
-
-	Pipeline()
-	: scissor(false)
-	{}
-
-	Pipeline(const Pipeline &)            = delete;
-	Pipeline &operator=(const Pipeline &) = delete;
-
-	Pipeline(Pipeline &&other)
-	: pipeline(other.pipeline)
-	, layout(other.layout)
-	, scissor(other.scissor)
-	{
-		other.pipeline = vk::Pipeline();
-		other.layout   = vk::PipelineLayout();
-		other.scissor  = false;
-	}
-
-	Pipeline &operator=(Pipeline &&other) {
-		if (this == &other) {
-			return *this;
-		}
-
-		assert(!pipeline);
-		assert(!layout);
-
-		pipeline       = other.pipeline;
-		layout         = other.layout;
-		scissor        = other.scissor;
-
-		other.pipeline = vk::Pipeline();
-		other.layout   = vk::PipelineLayout();
-		other.scissor  = false;
-
-		return *this;
-	}
-
-	~Pipeline() {
-		assert(!pipeline);
-		assert(!layout);
-	}
-};
-
-
 struct Sampler {
 	vk::Sampler sampler;
 
@@ -597,6 +563,40 @@ struct Texture {
 
 	size_t getHash() const {
 		return VK_HASH(VkImage(image));
+	}
+};
+
+
+struct VertexShader {
+	vk::ShaderModule shaderModule;
+
+
+	VertexShader() {}
+
+	VertexShader(const VertexShader &)            = delete;
+	VertexShader &operator=(const VertexShader &) = delete;
+
+	VertexShader(VertexShader &&other)
+	: shaderModule(other.shaderModule)
+	{
+		other.shaderModule = vk::ShaderModule();
+	}
+
+	VertexShader &operator=(VertexShader &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		assert(!shaderModule);
+
+		shaderModule       = other.shaderModule;
+		other.shaderModule = vk::ShaderModule();
+
+		return *this;
+	}
+
+	~VertexShader() {
+		assert(!shaderModule);
 	}
 };
 

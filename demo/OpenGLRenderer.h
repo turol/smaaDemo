@@ -51,11 +51,6 @@ struct DSIndex {
 };
 
 
-struct DescriptorSetLayout {
-	std::vector<DescriptorLayout> layout;
-};
-
-
 struct ShaderResources {
 	std::vector<DSIndex>        ubos;
 	std::vector<DSIndex>        ssbos;
@@ -72,53 +67,6 @@ struct ShaderResources {
 	ShaderResources &operator=(const ShaderResources &) = default;
 	ShaderResources &operator=(ShaderResources &&)      = default;
 
-};
-
-
-struct Pipeline {
-	PipelineDesc  desc;
-	GLuint        shader;
-	ShaderResources  resources;
-
-
-	Pipeline(const Pipeline &)            = delete;
-	Pipeline &operator=(const Pipeline &) = delete;
-
-	Pipeline(Pipeline &&other)
-	: desc(other.desc)
-	, shader(other.shader)
-	, resources(other.resources)
-	{
-		other.desc      = PipelineDesc();
-		other.shader    = 0;
-		other.resources = ShaderResources();
-	}
-
-	Pipeline &operator=(Pipeline &&other) {
-		if (this == &other) {
-			return *this;
-		}
-
-		desc            = other.desc;
-		shader          = other.shader;
-		resources       = other.resources;
-
-		other.desc      = PipelineDesc();
-		other.shader    = 0;
-		other.resources = ShaderResources();
-
-		return *this;
-	}
-
-	Pipeline()
-	: shader(0)
-	{
-	}
-
-
-	~Pipeline() {
-		assert(shader == 0);
-	}
 };
 
 
@@ -178,49 +126,8 @@ struct Buffer {
 };
 
 
-struct VertexShader {
-	GLuint shader;
-	std::string name;
-	ShaderResources resources;
-
-
-	VertexShader(const VertexShader &) = delete;
-	VertexShader &operator=(const VertexShader &) = delete;
-
-	VertexShader(VertexShader &&other)
-	: shader(other.shader)
-	, name(other.name)
-	, resources(other.resources)
-	{
-		other.shader    = 0;
-		other.name      = std::string();
-		other.resources = ShaderResources();
-	}
-
-	VertexShader &operator=(VertexShader &&other) {
-		if (this == &other) {
-			return *this;
-		}
-
-		shader          = other.shader;
-		name            = other.name;
-		resources       = other.resources;
-
-		other.shader    = 0;
-		other.name      = std::string();
-		other.resources = ShaderResources();
-
-		return *this;
-	}
-
-	VertexShader()
-	: shader(0)
-	{
-	}
-
-
-	~VertexShader() {
-	}
+struct DescriptorSetLayout {
+	std::vector<DescriptorLayout> layout;
 };
 
 
@@ -267,6 +174,98 @@ struct FragmentShader {
 
 
 	~FragmentShader() {
+	}
+};
+
+
+struct Framebuffer {
+	GLuint fbo;
+	RenderTargetHandle                                       depthStencil;
+	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS>  colors;
+	RenderPassHandle                                         renderPass;
+
+	unsigned int width, height;
+
+
+	Framebuffer(const Framebuffer &)            = delete;
+	Framebuffer &operator=(const Framebuffer &) = delete;
+
+	Framebuffer(Framebuffer &&other)
+	: fbo(other.fbo)
+	, depthStencil(other.depthStencil)
+	, renderPass(other.renderPass)
+	, width(other.width)
+	, height(other.height)
+	{
+		other.fbo      = 0;
+		other.width    = 0;
+		other.height   = 0;
+		// TODO: use std::move
+		assert(!other.colors[1]);
+		this->colors[0]    = other.colors[0];
+		other.colors[0]    = RenderTargetHandle();
+		other.renderPass   = RenderPassHandle();
+		other.depthStencil = RenderTargetHandle();
+	}
+
+	Framebuffer &operator=(Framebuffer &&other) = delete;
+
+	Framebuffer()
+	: fbo(0)
+	, width(0)
+	, height(0)
+	{
+	}
+
+	~Framebuffer() {
+		assert(fbo == 0);
+	}
+};
+
+
+struct Pipeline {
+	PipelineDesc  desc;
+	GLuint        shader;
+	ShaderResources  resources;
+
+
+	Pipeline(const Pipeline &)            = delete;
+	Pipeline &operator=(const Pipeline &) = delete;
+
+	Pipeline(Pipeline &&other)
+	: desc(other.desc)
+	, shader(other.shader)
+	, resources(other.resources)
+	{
+		other.desc      = PipelineDesc();
+		other.shader    = 0;
+		other.resources = ShaderResources();
+	}
+
+	Pipeline &operator=(Pipeline &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		desc            = other.desc;
+		shader          = other.shader;
+		resources       = other.resources;
+
+		other.desc      = PipelineDesc();
+		other.shader    = 0;
+		other.resources = ShaderResources();
+
+		return *this;
+	}
+
+	Pipeline()
+	: shader(0)
+	{
+	}
+
+
+	~Pipeline() {
+		assert(shader == 0);
 	}
 };
 
@@ -337,51 +336,6 @@ struct RenderTarget {
 		assert(!texture);
 	}
 
-};
-
-
-struct Framebuffer {
-	GLuint fbo;
-	RenderTargetHandle                                       depthStencil;
-	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS>  colors;
-	RenderPassHandle                                         renderPass;
-
-	unsigned int width, height;
-
-
-	Framebuffer(const Framebuffer &)            = delete;
-	Framebuffer &operator=(const Framebuffer &) = delete;
-
-	Framebuffer(Framebuffer &&other)
-	: fbo(other.fbo)
-	, depthStencil(other.depthStencil)
-	, renderPass(other.renderPass)
-	, width(other.width)
-	, height(other.height)
-	{
-		other.fbo      = 0;
-		other.width    = 0;
-		other.height   = 0;
-		// TODO: use std::move
-		assert(!other.colors[1]);
-		this->colors[0]    = other.colors[0];
-		other.colors[0]    = RenderTargetHandle();
-		other.renderPass   = RenderPassHandle();
-		other.depthStencil = RenderTargetHandle();
-	}
-
-	Framebuffer &operator=(Framebuffer &&other) = delete;
-
-	Framebuffer()
-	: fbo(0)
-	, width(0)
-	, height(0)
-	{
-	}
-
-	~Framebuffer() {
-		assert(fbo == 0);
-	}
 };
 
 
@@ -492,6 +446,52 @@ struct Texture {
 		// it should have been deleted by Renderer before destroying this
 		assert(tex == 0);
 		assert(!renderTarget);
+	}
+};
+
+
+struct VertexShader {
+	GLuint shader;
+	std::string name;
+	ShaderResources resources;
+
+
+	VertexShader(const VertexShader &) = delete;
+	VertexShader &operator=(const VertexShader &) = delete;
+
+	VertexShader(VertexShader &&other)
+	: shader(other.shader)
+	, name(other.name)
+	, resources(other.resources)
+	{
+		other.shader    = 0;
+		other.name      = std::string();
+		other.resources = ShaderResources();
+	}
+
+	VertexShader &operator=(VertexShader &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		shader          = other.shader;
+		name            = other.name;
+		resources       = other.resources;
+
+		other.shader    = 0;
+		other.name      = std::string();
+		other.resources = ShaderResources();
+
+		return *this;
+	}
+
+	VertexShader()
+	: shader(0)
+	{
+	}
+
+
+	~VertexShader() {
 	}
 };
 
