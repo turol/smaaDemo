@@ -210,19 +210,52 @@ struct Image {
 
 
 class SMAADemo {
-	unsigned int    windowWidth, windowHeight;
-	unsigned int    numFrames;
-	bool            vsync;
-	bool            fullscreen;
-	bool            recreateSwapchain;
-	bool            fpsLimitActive;
-	uint32_t        fpsLimit;
-	uint64_t        sleepFudge;
-
-	Renderer        renderer;
+	// command line things
 	bool            glDebug;
 	bool            tracing;
 	bool            skipShaderCache;
+	std::vector<std::string> imageFiles;
+
+	// global window things
+	unsigned int    windowWidth, windowHeight;
+	bool            fullscreen;
+	bool            vsync;
+
+	unsigned int    numFrames;
+	bool            recreateSwapchain;
+	bool keepGoing;
+
+	// aa things
+	bool antialiasing;
+	AAMethod aaMethod;
+	unsigned int  debugMode;
+	unsigned int  colorMode;
+	unsigned int  fxaaQuality;
+	unsigned int  smaaQuality;
+
+	// timing things
+	bool            fpsLimitActive;
+	uint32_t        fpsLimit;
+	uint64_t        sleepFudge;
+	uint64_t      tickBase;
+	uint64_t      lastTime;
+	uint64_t      freqMult;
+	uint64_t      freqDiv;
+
+	// scene things
+	// 0 for cubes
+	// 1.. for images
+	unsigned int  activeScene;
+	unsigned int cubesPerSide;
+	bool          rotateCubes;
+	float         cameraRotation;
+	float         cameraDistance;
+	uint64_t      rotationTime;
+	RandomGen     random;
+	std::vector<Image> images;
+	std::vector<ShaderDefines::Cube> cubes;
+
+	Renderer        renderer;
 	Format          depthFormat;
 
 	PipelineHandle     cubePipeline;
@@ -241,12 +274,7 @@ class SMAADemo {
 	SamplerHandle      linearSampler;
 	SamplerHandle      nearestSampler;
 
-	unsigned int cubesPerSide;
-
 	std::array<RenderTargetHandle, RenderTargets::Count> rendertargets;
-
-	bool antialiasing;
-	AAMethod aaMethod;
 
 	std::array<PipelineHandle, maxFXAAQuality>  fxaaPipelines;
 
@@ -260,36 +288,13 @@ class SMAADemo {
 	TextureHandle                               areaTex;
 	TextureHandle                               searchTex;
 
+	// gui / input things
 	TextureHandle imguiFontsTex;
-
-	bool          rotateCubes;
-	float         cameraRotation;
-	float         cameraDistance;
-	uint64_t      tickBase;
-	uint64_t      lastTime;
-	uint64_t      freqMult;
-	uint64_t      freqDiv;
-	uint64_t      rotationTime;
-	unsigned int  debugMode;
-	unsigned int  colorMode;
-	bool          rightShift, leftShift;
-	RandomGen     random;
-	unsigned int  fxaaQuality;
-	unsigned int  smaaQuality;
-	bool keepGoing;
-	// 0 for cubes
-	// 1.. for images
-	unsigned int  activeScene;
 	bool          textInputActive;
+	bool          rightShift, leftShift;
 	char          imageFileName[inputTextBufferSize];
 	char          clipboardText[inputTextBufferSize];
 
-
-	std::vector<std::string> imageFiles;
-
-	std::vector<Image> images;
-
-	std::vector<ShaderDefines::Cube> cubes;
 
 	SMAADemo(const SMAADemo &) = delete;
 	SMAADemo &operator=(const SMAADemo &) = delete;
@@ -332,40 +337,47 @@ public:
 
 
 SMAADemo::SMAADemo()
-: windowWidth(1280)
+: glDebug(false)
+, tracing(false)
+, skipShaderCache(false)
+
+, windowWidth(1280)
 , windowHeight(720)
-, numFrames(3)
-, vsync(true)
 , fullscreen(false)
+, vsync(true)
+
+, numFrames(3)
 , recreateSwapchain(false)
+, keepGoing(true)
+
+, antialiasing(true)
+, aaMethod(AAMethod::SMAA)
+, debugMode(0)
+, colorMode(0)
+, fxaaQuality(maxFXAAQuality - 1)
+, smaaQuality(maxSMAAQuality - 1)
+
 , fpsLimitActive(true)
 , fpsLimit(0)
 , sleepFudge(0)
-, glDebug(false)
-, tracing(false)
-, skipShaderCache(false)
-, depthFormat(Format::Invalid)
-, cubesPerSide(8)
-, antialiasing(true)
-, aaMethod(AAMethod::SMAA)
-, rotateCubes(false)
-, cameraRotation(0.0f)
-, cameraDistance(25.0f)
 , tickBase(0)
 , lastTime(0)
 , freqMult(0)
 , freqDiv(0)
+
+, activeScene(0)
+, cubesPerSide(8)
+, rotateCubes(false)
+, cameraRotation(0.0f)
+, cameraDistance(25.0f)
 , rotationTime(0)
-, debugMode(0)
-, colorMode(0)
+, random(1)
+
+, depthFormat(Format::Invalid)
+
+, textInputActive(false)
 , rightShift(false)
 , leftShift(false)
-, random(1)
-, fxaaQuality(maxFXAAQuality - 1)
-, smaaQuality(maxSMAAQuality - 1)
-, keepGoing(true)
-, activeScene(0)
-, textInputActive(false)
 {
 	uint64_t freq = SDL_GetPerformanceFrequency();
 	tickBase      = SDL_GetPerformanceCounter();
