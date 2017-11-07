@@ -213,7 +213,7 @@ class SMAADemo {
 	// command line things
 	bool            glDebug;
 	bool            tracing;
-	bool            skipShaderCache;
+	bool            noShaderCache;
 	std::vector<std::string> imageFiles;
 
 	// global window things
@@ -339,7 +339,7 @@ public:
 SMAADemo::SMAADemo()
 : glDebug(false)
 , tracing(false)
-, skipShaderCache(false)
+, noShaderCache(false)
 
 , windowWidth(1280)
 , windowHeight(720)
@@ -524,9 +524,9 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::CmdLine cmd("SMAA demo", ' ', "1.0");
 
 		TCLAP::SwitchArg debugSwitch("", "debug", "Enable renderer debugging", cmd, false);
-		TCLAP::SwitchArg tracingSwitch("", "tracing", "Enable renderer tracing", cmd, false);
-		TCLAP::SwitchArg skipCacheSwitch("", "skipcache", "Skip loading shaders from cache", cmd, false);
-		TCLAP::SwitchArg fullscreenSwitch("f", "fullscreen", "Start in full screen mode", cmd, false);
+		TCLAP::SwitchArg tracingSwitch("", "trace", "Enable renderer tracing", cmd, false);
+		TCLAP::SwitchArg noCacheSwitch("", "nocache", "Don't load shaders from cache", cmd, false);
+		TCLAP::SwitchArg fullscreenSwitch("f", "fullscreen", "Start in fullscreen mode", cmd, false);
 		TCLAP::ValueArg<unsigned int> windowWidthSwitch("", "width", "Window width", false, windowWidth, "width", cmd);
 		TCLAP::ValueArg<unsigned int> windowHeightSwitch("", "height", "Window height", false, windowHeight, "height", cmd);
 		TCLAP::UnlabeledMultiArg<std::string> imagesArg("images", "image files", false, "image file", cmd, true, nullptr);
@@ -535,7 +535,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 
 		glDebug = debugSwitch.getValue();
 		tracing = tracingSwitch.getValue();
-		skipShaderCache = skipCacheSwitch.getValue();
+		noShaderCache = noCacheSwitch.getValue();
 		fullscreen   = fullscreenSwitch.getValue();
 		windowWidth = windowWidthSwitch.getValue();
 		windowHeight = windowHeightSwitch.getValue();
@@ -666,7 +666,7 @@ void SMAADemo::initRender() {
 	RendererDesc desc;
 	desc.debug                = glDebug;
 	desc.tracing              = tracing;
-	desc.skipShaderCache      = skipShaderCache;
+	desc.skipShaderCache      = noShaderCache;
 	desc.swapchain.fullscreen = fullscreen;
 	desc.swapchain.width      = windowWidth;
 	desc.swapchain.height     = windowHeight;
