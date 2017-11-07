@@ -956,7 +956,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		std::unordered_map<DSIndex, DescriptorType> layoutMap;
 		for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
 			if (desc.descriptorSetLayouts[i]) {
-				const auto &layoutDesc = dsLayouts.get(desc.descriptorSetLayouts[i]).layout;
+				const auto &layoutDesc = dsLayouts.get(desc.descriptorSetLayouts[i]).descriptors;
 				for (unsigned int binding = 0; binding < layoutDesc.size(); binding++) {
 					DSIndex idx;
 					idx.set     = i;
@@ -1154,7 +1154,7 @@ DSLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout *l
 	DescriptorSetLayout &dsLayout = result.first;
 
 	while (layout->type != DescriptorType::End) {
-		dsLayout.layout.push_back(*layout);
+		dsLayout.descriptors.push_back(*layout);
 		layout++;
 	}
 	assert(layout->offset == 0);
@@ -1740,7 +1740,7 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 
 	const char *data = reinterpret_cast<const char *>(data_);
 	unsigned int descIndex = 0;
-	for (const auto &l : layout.layout) {
+	for (const auto &l : layout.descriptors) {
 		DSIndex idx;
 		idx.set     = index;
 		idx.binding = descIndex;

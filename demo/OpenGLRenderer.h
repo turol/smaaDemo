@@ -125,7 +125,7 @@ struct Buffer {
 
 
 struct DescriptorSetLayout {
-	std::vector<DescriptorLayout> layout;
+	std::vector<DescriptorLayout>  descriptors;
 };
 
 
