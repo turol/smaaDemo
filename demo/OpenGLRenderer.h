@@ -161,6 +161,12 @@ struct FragmentShader {
 	ShaderResources resources;
 
 
+	FragmentShader()
+	: shader(0)
+	{
+	}
+
+
 	FragmentShader(const FragmentShader &) = delete;
 	FragmentShader &operator=(const FragmentShader &) = delete;
 
@@ -188,12 +194,6 @@ struct FragmentShader {
 		other.resources = ShaderResources();
 
 		return *this;
-	}
-
-
-	FragmentShader()
-	: shader(0)
-	{
 	}
 
 
