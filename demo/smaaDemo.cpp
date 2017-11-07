@@ -1651,7 +1651,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		ImGui::RadioButton("RGB",   &newColorMode, 0);
 		ImGui::RadioButton("YCbCr", &newColorMode, 1);
 
-		if (colorMode != newColorMode) {
+		if (int(colorMode) != newColorMode) {
 			colorMode = newColorMode;
 			colorCubes();
 		}
