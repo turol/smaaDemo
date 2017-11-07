@@ -523,24 +523,26 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 	try {
 		TCLAP::CmdLine cmd("SMAA demo", ' ', "1.0");
 
-		TCLAP::SwitchArg debugSwitch("", "debug", "Enable renderer debugging", cmd, false);
-		TCLAP::SwitchArg tracingSwitch("", "trace", "Enable renderer tracing", cmd, false);
-		TCLAP::SwitchArg noCacheSwitch("", "nocache", "Don't load shaders from cache", cmd, false);
-		TCLAP::SwitchArg fullscreenSwitch("f", "fullscreen", "Start in fullscreen mode", cmd, false);
-		TCLAP::ValueArg<unsigned int> windowWidthSwitch("", "width", "Window width", false, windowWidth, "width", cmd);
-		TCLAP::ValueArg<unsigned int> windowHeightSwitch("", "height", "Window height", false, windowHeight, "height", cmd);
-		TCLAP::UnlabeledMultiArg<std::string> imagesArg("images", "image files", false, "image file", cmd, true, nullptr);
+		TCLAP::SwitchArg                       debugSwitch("",        "debug",      "Enable renderer debugging",     cmd, false);
+		TCLAP::SwitchArg                       tracingSwitch("",      "trace",      "Enable renderer tracing",       cmd, false);
+		TCLAP::SwitchArg                       noCacheSwitch("",      "nocache",    "Don't load shaders from cache", cmd, false);
+		TCLAP::SwitchArg                       fullscreenSwitch("f",  "fullscreen", "Start in fullscreen mode",      cmd, false);
+
+		TCLAP::ValueArg<unsigned int>          windowWidthSwitch("",  "width",      "Window width",  false, windowWidth,  "width",  cmd);
+		TCLAP::ValueArg<unsigned int>          windowHeightSwitch("", "height",     "Window height", false, windowHeight, "height", cmd);
+
+		TCLAP::UnlabeledMultiArg<std::string>  imagesArg("images",    "image files", false, "image file", cmd, true, nullptr);
 
 		cmd.parse(argc, argv);
 
-		glDebug = debugSwitch.getValue();
-		tracing = tracingSwitch.getValue();
+		glDebug       = debugSwitch.getValue();
+		tracing       = tracingSwitch.getValue();
 		noShaderCache = noCacheSwitch.getValue();
-		fullscreen   = fullscreenSwitch.getValue();
-		windowWidth = windowWidthSwitch.getValue();
-		windowHeight = windowHeightSwitch.getValue();
+		fullscreen    = fullscreenSwitch.getValue();
+		windowWidth   = windowWidthSwitch.getValue();
+		windowHeight  = windowHeightSwitch.getValue();
 
-		imageFiles = imagesArg.getValue();
+		imageFiles    = imagesArg.getValue();
 
 	} catch (TCLAP::ArgException &e) {
 		LOG("parseCommandLine exception: %s for arg %s\n", e.error().c_str(), e.argId().c_str());
