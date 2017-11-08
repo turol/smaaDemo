@@ -75,7 +75,7 @@ struct Buffer {
 	uint32_t      size;
 	uint32_t      offset;
 	GLuint        buffer;
-	// TODO: usage flags for debugging
+	// TODO: access type bits (for debugging)
 
 
 	Buffer()
