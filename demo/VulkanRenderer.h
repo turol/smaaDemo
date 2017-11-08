@@ -787,8 +787,8 @@ struct RendererImpl : public RendererBase {
 	ResourceContainer<Framebuffer>         framebuffers;
 	ResourceContainer<Pipeline>            pipelines;
 	ResourceContainer<RenderPass>          renderPasses;
-	ResourceContainer<Sampler>             samplers;
 	ResourceContainer<RenderTarget>  renderTargets;
+	ResourceContainer<Sampler>             samplers;
 	ResourceContainer<Texture>             textures;
 	ResourceContainer<VertexShader>        vertexShaders;
 
