@@ -231,236 +231,7 @@ struct MemoryStats {
 typedef std::unordered_map<std::string, std::string> ShaderMacros;
 
 
-struct SwapchainDesc {
-	unsigned int  width, height;
-	unsigned int  numFrames;
-	bool          vsync;
-	bool          fullscreen;
-
-
-	SwapchainDesc()
-	: width(0)
-	, height(0)
-	, numFrames(3)
-	, vsync(true)
-	, fullscreen(false)
-	{
-	}
-};
-
-
 const char *formatName(Format format);
-
-
-struct RenderTargetDesc {
-	RenderTargetDesc()
-	: width_(0)
-	, height_(0)
-	, format_(Format::Invalid)
-	{
-	}
-
-	~RenderTargetDesc() { }
-
-	RenderTargetDesc(const RenderTargetDesc &)            = default;
-	RenderTargetDesc(RenderTargetDesc &&)                 = default;
-
-	RenderTargetDesc &operator=(const RenderTargetDesc &) = default;
-	RenderTargetDesc &operator=(RenderTargetDesc &&)      = default;
-
-
-	RenderTargetDesc &width(unsigned int w) {
-		assert(w < MAX_TEXTURE_SIZE);
-		width_ = w;
-		return *this;
-	}
-
-	RenderTargetDesc &height(unsigned int h) {
-		assert(h < MAX_TEXTURE_SIZE);
-		height_ = h;
-		return *this;
-	}
-
-	RenderTargetDesc &format(Format f) {
-		format_ = f;
-		return *this;
-	}
-
-	RenderTargetDesc &name(const std::string &str) {
-		name_ = str;
-		return *this;
-	}
-
-private:
-
-	unsigned int   width_, height_;
-	// TODO: unsigned int multisample;
-	Format         format_;
-	std::string    name_;
-
-	friend struct RendererImpl;
-};
-
-
-struct TextureDesc {
-	TextureDesc()
-	: width_(0)
-	, height_(0)
-	, numMips_(1)
-	, format_(Format::Invalid)
-	{
-		std::fill(mipData_.begin(), mipData_.end(), MipLevel());
-	}
-
-	~TextureDesc() { }
-
-	TextureDesc(const TextureDesc &)            = default;
-	TextureDesc(TextureDesc &&)                 = default;
-
-	TextureDesc &operator=(const TextureDesc &) = default;
-	TextureDesc &operator=(TextureDesc &&)      = default;
-
-
-	TextureDesc &width(unsigned int w) {
-		assert(w < MAX_TEXTURE_SIZE);
-		width_ = w;
-		return *this;
-	}
-
-	TextureDesc &height(unsigned int h) {
-		assert(h < MAX_TEXTURE_SIZE);
-		height_ = h;
-		return *this;
-	}
-
-	TextureDesc &format(Format f) {
-		format_ = f;
-		return *this;
-	}
-
-	TextureDesc &mipLevelData(unsigned int level, const void *data, unsigned int size) {
-		assert(level < numMips_);
-		mipData_[level].data = data;
-		mipData_[level].size = size;
-		return *this;
-	}
-
-	TextureDesc &name(const std::string &str) {
-		name_ = str;
-		return *this;
-	}
-
-
-private:
-
-	struct MipLevel {
-		const void   *data;
-		unsigned int  size;
-
-		MipLevel()
-		: data(nullptr)
-		, size(0)
-		{
-		}
-	};
-
-	unsigned int                                 width_, height_;
-	unsigned int                                 numMips_;
-	Format                                       format_;
-	std::array<MipLevel, MAX_TEXTURE_MIPLEVELS>  mipData_;
-	std::string                                  name_;
-
-	friend struct RendererImpl;
-};
-
-
-struct SamplerDesc {
-	SamplerDesc()
-	: min(FilterMode::Nearest)
-	, mag(FilterMode::Nearest)
-	, wrapMode(WrapMode::Clamp)
-	{
-	}
-
-	SamplerDesc(const SamplerDesc &desc)            = default;
-	SamplerDesc(SamplerDesc &&desc)                 = default;
-
-	SamplerDesc &operator=(const SamplerDesc &desc) = default;
-	SamplerDesc &operator=(SamplerDesc &&desc)      = default;
-
-	~SamplerDesc() {}
-
-	SamplerDesc &minFilter(FilterMode m) {
-		min = m;
-		return *this;
-	}
-
-	SamplerDesc &magFilter(FilterMode m) {
-		mag = m;
-		return *this;
-	}
-
-	SamplerDesc &name(const std::string &str) {
-		name_ = str;
-		return *this;
-	}
-
-private:
-
-	FilterMode  min, mag;
-	WrapMode    wrapMode;
-	std::string name_;
-
-	friend struct RendererImpl;
-};
-
-
-struct RenderPassDesc {
-	RenderPassDesc()
-	: depthStencilFormat_(Format::Invalid)
-	, colorFinalLayout_(Layout::ShaderRead)
-	{
-		std::fill(colorFormats_.begin(), colorFormats_.end(), Format::Invalid);
-	}
-
-	~RenderPassDesc() { }
-
-	RenderPassDesc(const RenderPassDesc &)            = default;
-	RenderPassDesc(RenderPassDesc &&)                 = default;
-
-	RenderPassDesc &operator=(const RenderPassDesc &) = default;
-	RenderPassDesc &operator=(RenderPassDesc &&)      = default;
-
-	RenderPassDesc &depthStencil(Format ds) {
-		depthStencilFormat_ = ds;
-		return *this;
-	}
-
-	RenderPassDesc &color(unsigned int index, Format c) {
-		assert(index < MAX_COLOR_RENDERTARGETS);
-		colorFormats_[index] = c;
-		return *this;
-	}
-
-	RenderPassDesc &colorFinalLayout(Layout l) {
-		colorFinalLayout_ = l;
-		return *this;
-	}
-
-	RenderPassDesc &name(const std::string &str) {
-		name_ = str;
-		return *this;
-	}
-
-private:
-
-	Format                                       depthStencilFormat_;
-	std::array<Format, MAX_COLOR_RENDERTARGETS>  colorFormats_;
-	Layout                                       colorFinalLayout_;
-	std::string                                  name_;
-
-	friend struct RendererImpl;
-};
 
 
 struct FramebufferDesc {
@@ -646,6 +417,235 @@ public:
 
 	PipelineDesc &operator=(const PipelineDesc &desc) = default;
 	PipelineDesc &operator=(PipelineDesc &&desc)      = default;
+
+	friend struct RendererImpl;
+};
+
+
+struct RenderPassDesc {
+	RenderPassDesc()
+	: depthStencilFormat_(Format::Invalid)
+	, colorFinalLayout_(Layout::ShaderRead)
+	{
+		std::fill(colorFormats_.begin(), colorFormats_.end(), Format::Invalid);
+	}
+
+	~RenderPassDesc() { }
+
+	RenderPassDesc(const RenderPassDesc &)            = default;
+	RenderPassDesc(RenderPassDesc &&)                 = default;
+
+	RenderPassDesc &operator=(const RenderPassDesc &) = default;
+	RenderPassDesc &operator=(RenderPassDesc &&)      = default;
+
+	RenderPassDesc &depthStencil(Format ds) {
+		depthStencilFormat_ = ds;
+		return *this;
+	}
+
+	RenderPassDesc &color(unsigned int index, Format c) {
+		assert(index < MAX_COLOR_RENDERTARGETS);
+		colorFormats_[index] = c;
+		return *this;
+	}
+
+	RenderPassDesc &colorFinalLayout(Layout l) {
+		colorFinalLayout_ = l;
+		return *this;
+	}
+
+	RenderPassDesc &name(const std::string &str) {
+		name_ = str;
+		return *this;
+	}
+
+private:
+
+	Format                                       depthStencilFormat_;
+	std::array<Format, MAX_COLOR_RENDERTARGETS>  colorFormats_;
+	Layout                                       colorFinalLayout_;
+	std::string                                  name_;
+
+	friend struct RendererImpl;
+};
+
+
+struct RenderTargetDesc {
+	RenderTargetDesc()
+	: width_(0)
+	, height_(0)
+	, format_(Format::Invalid)
+	{
+	}
+
+	~RenderTargetDesc() { }
+
+	RenderTargetDesc(const RenderTargetDesc &)            = default;
+	RenderTargetDesc(RenderTargetDesc &&)                 = default;
+
+	RenderTargetDesc &operator=(const RenderTargetDesc &) = default;
+	RenderTargetDesc &operator=(RenderTargetDesc &&)      = default;
+
+
+	RenderTargetDesc &width(unsigned int w) {
+		assert(w < MAX_TEXTURE_SIZE);
+		width_ = w;
+		return *this;
+	}
+
+	RenderTargetDesc &height(unsigned int h) {
+		assert(h < MAX_TEXTURE_SIZE);
+		height_ = h;
+		return *this;
+	}
+
+	RenderTargetDesc &format(Format f) {
+		format_ = f;
+		return *this;
+	}
+
+	RenderTargetDesc &name(const std::string &str) {
+		name_ = str;
+		return *this;
+	}
+
+private:
+
+	unsigned int   width_, height_;
+	// TODO: unsigned int multisample;
+	Format         format_;
+	std::string    name_;
+
+	friend struct RendererImpl;
+};
+
+
+struct SamplerDesc {
+	SamplerDesc()
+	: min(FilterMode::Nearest)
+	, mag(FilterMode::Nearest)
+	, wrapMode(WrapMode::Clamp)
+	{
+	}
+
+	SamplerDesc(const SamplerDesc &desc)            = default;
+	SamplerDesc(SamplerDesc &&desc)                 = default;
+
+	SamplerDesc &operator=(const SamplerDesc &desc) = default;
+	SamplerDesc &operator=(SamplerDesc &&desc)      = default;
+
+	~SamplerDesc() {}
+
+	SamplerDesc &minFilter(FilterMode m) {
+		min = m;
+		return *this;
+	}
+
+	SamplerDesc &magFilter(FilterMode m) {
+		mag = m;
+		return *this;
+	}
+
+	SamplerDesc &name(const std::string &str) {
+		name_ = str;
+		return *this;
+	}
+
+private:
+
+	FilterMode  min, mag;
+	WrapMode    wrapMode;
+	std::string name_;
+
+	friend struct RendererImpl;
+};
+
+
+struct SwapchainDesc {
+	unsigned int  width, height;
+	unsigned int  numFrames;
+	bool          vsync;
+	bool          fullscreen;
+
+
+	SwapchainDesc()
+	: width(0)
+	, height(0)
+	, numFrames(3)
+	, vsync(true)
+	, fullscreen(false)
+	{
+	}
+};
+
+
+struct TextureDesc {
+	TextureDesc()
+	: width_(0)
+	, height_(0)
+	, numMips_(1)
+	, format_(Format::Invalid)
+	{
+		std::fill(mipData_.begin(), mipData_.end(), MipLevel());
+	}
+
+	~TextureDesc() { }
+
+	TextureDesc(const TextureDesc &)            = default;
+	TextureDesc(TextureDesc &&)                 = default;
+
+	TextureDesc &operator=(const TextureDesc &) = default;
+	TextureDesc &operator=(TextureDesc &&)      = default;
+
+
+	TextureDesc &width(unsigned int w) {
+		assert(w < MAX_TEXTURE_SIZE);
+		width_ = w;
+		return *this;
+	}
+
+	TextureDesc &height(unsigned int h) {
+		assert(h < MAX_TEXTURE_SIZE);
+		height_ = h;
+		return *this;
+	}
+
+	TextureDesc &format(Format f) {
+		format_ = f;
+		return *this;
+	}
+
+	TextureDesc &mipLevelData(unsigned int level, const void *data, unsigned int size) {
+		assert(level < numMips_);
+		mipData_[level].data = data;
+		mipData_[level].size = size;
+		return *this;
+	}
+
+	TextureDesc &name(const std::string &str) {
+		name_ = str;
+		return *this;
+	}
+
+
+private:
+
+	struct MipLevel {
+		const void   *data;
+		unsigned int  size;
+
+		MipLevel()
+		: data(nullptr)
+		, size(0)
+		{
+		}
+	};
+
+	unsigned int                                 width_, height_;
+	unsigned int                                 numMips_;
+	Format                                       format_;
+	std::array<MipLevel, MAX_TEXTURE_MIPLEVELS>  mipData_;
+	std::string                                  name_;
 
 	friend struct RendererImpl;
 };
