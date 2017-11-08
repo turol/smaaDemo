@@ -71,55 +71,55 @@ struct ShaderResources {
 
 
 struct Buffer {
-	GLuint        buffer;
 	bool          ringBufferAlloc;
-	uint32_t      offset;
 	uint32_t      size;
+	uint32_t      offset;
+	GLuint        buffer;
 	// TODO: usage flags for debugging
 
 
 	Buffer()
-	: buffer(0)
-	, ringBufferAlloc(false)
-	, offset(0)
+	: ringBufferAlloc(false)
 	, size(0)
+	, offset(0)
+	, buffer(0)
 	{}
 
 	Buffer(const Buffer &)            = delete;
 	Buffer &operator=(const Buffer &) = delete;
 
 	Buffer(Buffer &&other)
-	: buffer(other.buffer)
-	, ringBufferAlloc(other.ringBufferAlloc)
-	, offset(other.offset)
+	: ringBufferAlloc(other.ringBufferAlloc)
 	, size(other.size)
+	, offset(other.offset)
+	, buffer(other.buffer)
 	{
-		other.buffer          = 0;
 		other.ringBufferAlloc = false;
-		other.offset          = 0;
 		other.size            = 0;
+		other.offset          = 0;
+		other.buffer          = 0;
 	}
 
 	Buffer &operator=(Buffer &&other) {
-		buffer                = other.buffer;
-		other.buffer          = 0;
-
 		ringBufferAlloc       = other.ringBufferAlloc;
 		other.ringBufferAlloc = false;
+
+		size                  = other.size;
+		other.size            = 0;
 
 		offset                = other.offset;
 		other.offset          = 0;
 
-		size                  = other.size;
-		other.size            = 0;
+		buffer                = other.buffer;
+		other.buffer          = 0;
 
 		return *this;
 	}
 
 	~Buffer() {
-		assert(buffer == 0);
 		assert(!ringBufferAlloc);
 		assert(size   == 0);
+		assert(buffer == 0);
 	}
 };
 

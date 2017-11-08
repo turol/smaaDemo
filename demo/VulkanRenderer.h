@@ -68,20 +68,20 @@ namespace renderer {
 
 
 struct Buffer {
-	vk::Buffer     buffer;
 	bool           ringBufferAlloc;
-	VmaAllocation  memory;
 	uint32_t       size;
 	uint32_t       offset;
+	vk::Buffer     buffer;
+	VmaAllocation  memory;
 	uint32_t       lastUsedFrame;
 	// TODO: access type bits (for debugging)
 
 
 	Buffer()
 	: ringBufferAlloc(false)
-	, memory(nullptr)
 	, size(0)
 	, offset(0)
+	, memory(nullptr)
 	, lastUsedFrame(0)
 	{}
 
@@ -89,19 +89,19 @@ struct Buffer {
 	Buffer &operator=(const Buffer &) = delete;
 
 	Buffer(Buffer &&other)
-	: buffer(other.buffer)
-	, ringBufferAlloc(other.ringBufferAlloc)
-	, memory(other.memory)
+	: ringBufferAlloc(other.ringBufferAlloc)
 	, size(other.size)
 	, offset(other.offset)
+	, buffer(other.buffer)
+	, memory(other.memory)
 	, lastUsedFrame(other.lastUsedFrame)
 	{
 
-		other.buffer          = vk::Buffer();
 		other.ringBufferAlloc = false;
-		other.memory          = 0;
 		other.size            = 0;
 		other.offset          = 0;
+		other.buffer          = vk::Buffer();
+		other.memory          = 0;
 		other.lastUsedFrame   = 0;
 	}
 
@@ -113,29 +113,29 @@ struct Buffer {
 		assert(!buffer);
 		assert(!memory);
 
-		buffer                = other.buffer;
 		ringBufferAlloc       = other.ringBufferAlloc;
-		memory                = other.memory;
 		size                  = other.size;
 		offset                = other.offset;
+		buffer                = other.buffer;
+		memory                = other.memory;
 		lastUsedFrame         = other.lastUsedFrame;
 
-		other.buffer          = vk::Buffer();
 		other.ringBufferAlloc = false;
-		other.memory          = 0;
 		other.size            = 0;
 		other.offset          = 0;
+		other.buffer          = vk::Buffer();
+		other.memory          = 0;
 		other.lastUsedFrame   = 0;
 
 		return *this;
 	}
 
 	~Buffer() {
-		assert(!buffer);
 		assert(!ringBufferAlloc);
-		assert(!memory);
 		assert(size   == 0);
 		assert(offset == 0);
+		assert(!buffer);
+		assert(!memory);
 	}
 
 	bool operator==(const Buffer &other) const {
