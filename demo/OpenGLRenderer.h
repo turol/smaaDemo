@@ -101,6 +101,12 @@ struct Buffer {
 	}
 
 	Buffer &operator=(Buffer &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		assert(!buffer);
+
 		ringBufferAlloc       = other.ringBufferAlloc;
 		other.ringBufferAlloc = false;
 
