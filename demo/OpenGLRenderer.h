@@ -73,7 +73,7 @@ struct ShaderResources {
 struct Buffer {
 	GLuint        buffer;
 	bool          ringBufferAlloc;
-	uint32_t      beginOffs;
+	uint32_t      offset;
 	uint32_t      size;
 	// TODO: usage flags for debugging
 
@@ -81,7 +81,7 @@ struct Buffer {
 	Buffer()
 	: buffer(0)
 	, ringBufferAlloc(false)
-	, beginOffs(0)
+	, offset(0)
 	, size(0)
 	{}
 
@@ -91,12 +91,12 @@ struct Buffer {
 	Buffer(Buffer &&other)
 	: buffer(other.buffer)
 	, ringBufferAlloc(other.ringBufferAlloc)
-	, beginOffs(other.beginOffs)
+	, offset(other.offset)
 	, size(other.size)
 	{
 		other.buffer          = 0;
 		other.ringBufferAlloc = false;
-		other.beginOffs       = 0;
+		other.offset          = 0;
 		other.size            = 0;
 	}
 
@@ -107,8 +107,8 @@ struct Buffer {
 		ringBufferAlloc       = other.ringBufferAlloc;
 		other.ringBufferAlloc = false;
 
-		beginOffs             = other.beginOffs;
-		other.beginOffs       = 0;
+		offset                = other.offset;
+		other.offset          = 0;
 
 		size                  = other.size;
 		other.size            = 0;

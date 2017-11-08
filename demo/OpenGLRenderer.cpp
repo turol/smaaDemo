@@ -518,7 +518,7 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 		ringBuffer             = 0;
 
 		buffer.ringBufferAlloc = false;
-		buffer.beginOffs       = 0;
+		buffer.offset          = 0;
 
 		buffer.size            = ringBufSize;
 		ringBufSize            = 0;
@@ -699,7 +699,7 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	glCreateBuffers(1, &buffer.buffer);
 	glNamedBufferStorage(buffer.buffer, size, contents, 0);
 	buffer.ringBufferAlloc = false;
-	buffer.beginOffs       = 0;
+	buffer.offset          = 0;
 	buffer.size            = size;
 
 	return result.second;
@@ -724,7 +724,7 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	Buffer &buffer = result.first;
 	buffer.buffer          = ringBuffer;
 	buffer.ringBufferAlloc = true;
-	buffer.beginOffs       = beginPtr;
+	buffer.offset          = beginPtr;
 	buffer.size            = size;
 
 	frames.at(currentFrameIdx).ephemeralBuffers.push_back(result.second);
@@ -1698,13 +1698,13 @@ void RendererImpl::bindIndexBuffer(BufferHandle handle, bool bit16) {
 	assert(buffer.size > 0);
 	if (buffer.ringBufferAlloc) {
 		assert(buffer.buffer == ringBuffer);
-		assert(buffer.beginOffs + buffer.size < ringBufSize);
+		assert(buffer.offset + buffer.size < ringBufSize);
 	} else {
 		assert(buffer.buffer    != 0);
-		assert(buffer.beginOffs == 0);
+		assert(buffer.offset == 0);
 	}
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.buffer);
-	indexBufByteOffset = buffer.beginOffs;
+	indexBufByteOffset = buffer.offset;
 	idxBuf16Bit = bit16;
 }
 
@@ -1719,13 +1719,13 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 		// this is not strictly correct since we might have reallocated the ringbuf bigger
 		// but it should never fail, at worst it will not spot some errors immediately after realloc
 		// which are rare events anyway
-		assert(buffer.beginOffs + buffer.size < ringBufSize);
+		assert(buffer.offset + buffer.size < ringBufSize);
 	} else {
 		assert(buffer.buffer    != 0);
-		assert(buffer.beginOffs == 0);
+		assert(buffer.offset == 0);
 	}
 	const auto &p = pipelines.get(currentPipeline);
-	glBindVertexBuffer(binding, buffer.buffer, buffer.beginOffs, p.desc.vertexBuffers[binding].stride);
+	glBindVertexBuffer(binding, buffer.buffer, buffer.offset, p.desc.vertexBuffers[binding].stride);
 }
 
 
@@ -1758,10 +1758,10 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 			assert(buffer.size > 0);
 			if (buffer.ringBufferAlloc) {
 				assert(buffer.buffer == ringBuffer);
-				assert(buffer.beginOffs + buffer.size < ringBufSize);
+				assert(buffer.offset + buffer.size < ringBufSize);
 			} else {
 				assert(buffer.buffer    != 0);
-				assert(buffer.beginOffs == 0);
+				assert(buffer.offset == 0);
 			}
 			descriptors[idx] = handle;
 		} break;
@@ -1772,10 +1772,10 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 			assert(buffer.size  > 0);
 			if (buffer.ringBufferAlloc) {
 				assert(buffer.buffer == ringBuffer);
-				assert(buffer.beginOffs + buffer.size < ringBufSize);
+				assert(buffer.offset + buffer.size < ringBufSize);
 			} else {
 				assert(buffer.buffer    != 0);
-				assert(buffer.beginOffs == 0);
+				assert(buffer.offset == 0);
 			}
 			descriptors[idx] = handle;
 		} break;
@@ -1826,14 +1826,14 @@ void RendererImpl::rebindDescriptorSets() {
 		const auto &r = resources.ubos.at(i);
 		const auto &d = descriptors.at(r);
 		const Buffer &buffer = buffers.get(boost::get<BufferHandle>(d));
-		glBindBufferRange(GL_UNIFORM_BUFFER, i, buffer.buffer, buffer.beginOffs, buffer.size);
+		glBindBufferRange(GL_UNIFORM_BUFFER, i, buffer.buffer, buffer.offset, buffer.size);
 	}
 
 	for (unsigned int i = 0; i < resources.ssbos.size(); i++) {
 		const auto &r = resources.ssbos.at(i);
 		const auto &d = descriptors.at(r);
 		const Buffer &buffer = buffers.get(boost::get<BufferHandle>(d));
-		glBindBufferRange(GL_SHADER_STORAGE_BUFFER, i, buffer.buffer, buffer.beginOffs, buffer.size);
+		glBindBufferRange(GL_SHADER_STORAGE_BUFFER, i, buffer.buffer, buffer.offset, buffer.size);
 	}
 
 	for (unsigned int i = 0; i < resources.textures.size(); i++) {
