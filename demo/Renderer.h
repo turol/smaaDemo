@@ -203,6 +203,34 @@ struct DescriptorLayout {
 };
 
 
+struct MemoryStats {
+	uint32_t allocationCount;
+	uint32_t subAllocationCount;
+	uint64_t usedBytes;
+	uint64_t unusedBytes;
+
+
+	MemoryStats()
+	: allocationCount(0)
+	, subAllocationCount(0)
+	, usedBytes(0)
+	, unusedBytes(0)
+	{
+	}
+
+	~MemoryStats() {}
+
+	MemoryStats(const MemoryStats &stats)            = default;
+	MemoryStats(MemoryStats &&stats)                 = default;
+
+	MemoryStats &operator=(const MemoryStats &stats) = default;
+	MemoryStats &operator=(MemoryStats &&stats)      = default;
+};
+
+
+typedef std::unordered_map<std::string, std::string> ShaderMacros;
+
+
 struct SwapchainDesc {
 	unsigned int  width, height;
 	unsigned int  numFrames;
@@ -344,9 +372,6 @@ private:
 
 	friend struct RendererImpl;
 };
-
-
-typedef std::unordered_map<std::string, std::string> ShaderMacros;
 
 
 struct SamplerDesc {
@@ -641,31 +666,6 @@ struct RendererDesc {
 	, ephemeralRingBufSize(1 * 1048576)
 	{
 	}
-};
-
-
-struct MemoryStats {
-	uint32_t allocationCount;
-	uint32_t subAllocationCount;
-	uint64_t usedBytes;
-	uint64_t unusedBytes;
-
-
-	MemoryStats()
-	: allocationCount(0)
-	, subAllocationCount(0)
-	, usedBytes(0)
-	, unusedBytes(0)
-	{
-	}
-
-	~MemoryStats() {}
-
-	MemoryStats(const MemoryStats &stats)            = default;
-	MemoryStats(MemoryStats &&stats)                 = default;
-
-	MemoryStats &operator=(const MemoryStats &stats) = default;
-	MemoryStats &operator=(MemoryStats &&stats)      = default;
 };
 
 
