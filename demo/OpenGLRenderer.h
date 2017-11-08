@@ -123,7 +123,8 @@ struct Buffer {
 	~Buffer() {
 		assert(!ringBufferAlloc);
 		assert(size   == 0);
-		assert(buffer == 0);
+		assert(offset == 0);
+		assert(!buffer);
 	}
 };
 

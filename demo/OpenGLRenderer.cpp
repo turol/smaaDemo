@@ -1465,6 +1465,7 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 
 		assert(buffer.size   >  0);
 		buffer.size = 0;
+		buffer.offset = 0;
 
 		buffers.remove(handle);
 	}
