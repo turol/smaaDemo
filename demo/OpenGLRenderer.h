@@ -201,6 +201,7 @@ struct FragmentShader {
 	}
 
 	~FragmentShader() {
+		assert(!shader);
 	}
 };
 
@@ -519,6 +520,7 @@ struct VertexShader {
 
 
 	~VertexShader() {
+		assert(!shader);
 	}
 };
 
