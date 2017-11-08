@@ -142,12 +142,7 @@ struct RendererBase {
 	bool pipelineDrawn;
 	bool scissorSet;
 
-
-	struct SDLPrefDirDel {
-		void operator()(char *ptr) const;
-	};
-
-	std::unique_ptr<char, SDLPrefDirDel> spirvCacheDir;
+	std::string spirvCacheDir;
 
 
 	std::vector<char> loadSource(const std::string &name);

@@ -359,7 +359,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	// TODO: check return value
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
 
-	spirvCacheDir.reset(SDL_GetPrefPath("", "SMAADemo"));
+	{
+		char *prefPath = SDL_GetPrefPath("", "SMAADemo");
+		spirvCacheDir = prefPath;
+		SDL_free(prefPath);
+	}
 
 	// TODO: fullscreen, resizable, highdpi etc. as necessary
 	// TODO: check errors

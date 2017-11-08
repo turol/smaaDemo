@@ -142,11 +142,6 @@ const char *formatName(Format format) {
 }
 
 
-void RendererImpl::SDLPrefDirDel::operator()(char *ptr) const {
-	SDL_free(ptr);
-}
-
-
 class Includer final : public shaderc::CompileOptions::IncluderInterface {
 	std::unordered_map<std::string, std::vector<char> > cache;
 
@@ -196,7 +191,7 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, shaderc_shader_kind kind) {
 	// check spir-v cache first
 
-	std::string spvName = std::string(spirvCacheDir.get()) + name;
+	std::string spvName = spirvCacheDir + name;
 	{
 		std::vector<std::string> sorted;
 		sorted.reserve(macros.size());
