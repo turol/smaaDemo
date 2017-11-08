@@ -127,6 +127,9 @@ struct RendererBase {
 	bool skipShaderCache;
 	unsigned int frameNum;
 
+	unsigned int   uboAlign;
+	unsigned int   ssboAlign;
+
 	unsigned int  ringBufSize;
 	unsigned int  ringBufPtr;
 	// we have synced with the GPU up to this ringbuffer index
@@ -155,6 +158,8 @@ struct RendererBase {
 	, swapchainDirty(true)
 	, skipShaderCache(desc.skipShaderCache)
 	, frameNum(0)
+	, uboAlign(0)
+	, ssboAlign(0)
 	, ringBufSize(0)
 	, ringBufPtr(0)
 	, lastSyncedRingBufPtr(0)

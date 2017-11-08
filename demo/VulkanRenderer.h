@@ -774,9 +774,6 @@ struct RendererImpl : public RendererBase {
 
 	VmaAllocator                       allocator;
 
-	unsigned int   uboAlign;
-	unsigned int   ssboAlign;
-
 	unsigned int   currentRefreshRate;
 	unsigned int   maxRefreshRate;
 	bool           debugMarkers;
