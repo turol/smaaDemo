@@ -207,27 +207,26 @@ struct FragmentShader {
 
 
 struct Framebuffer {
+	unsigned int width, height;
 	GLuint fbo;
 	RenderTargetHandle                                       depthStencil;
 	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS>  colors;
 	RenderPassHandle                                         renderPass;
-
-	unsigned int width, height;
 
 
 	Framebuffer(const Framebuffer &)            = delete;
 	Framebuffer &operator=(const Framebuffer &) = delete;
 
 	Framebuffer(Framebuffer &&other)
-	: fbo(other.fbo)
+	: width(other.width)
+	, height(other.height)
+	, fbo(other.fbo)
 	, depthStencil(other.depthStencil)
 	, renderPass(other.renderPass)
-	, width(other.width)
-	, height(other.height)
 	{
-		other.fbo      = 0;
 		other.width    = 0;
 		other.height   = 0;
+		other.fbo      = 0;
 		// TODO: use std::move
 		assert(!other.colors[1]);
 		this->colors[0]    = other.colors[0];
@@ -239,9 +238,9 @@ struct Framebuffer {
 	Framebuffer &operator=(Framebuffer &&other) = delete;
 
 	Framebuffer()
-	: fbo(0)
-	, width(0)
+	: width(0)
 	, height(0)
+	, fbo(0)
 	{
 	}
 

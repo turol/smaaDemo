@@ -222,9 +222,9 @@ struct FragmentShader {
 
 
 struct Framebuffer {
+	unsigned int     width, height;
 	vk::Framebuffer  framebuffer;
 	FramebufferDesc  desc;
-	unsigned int     width, height;
 	// TODO: store info about attachments to allow tracking layout
 
 
@@ -237,14 +237,14 @@ struct Framebuffer {
 	Framebuffer &operator=(const Framebuffer &) = delete;
 
 	Framebuffer(Framebuffer &&other)
-	: framebuffer(other.framebuffer)
-	, desc(other.desc)
-	, width(other.width)
+	: width(other.width)
 	, height(other.height)
+	, framebuffer(other.framebuffer)
+	, desc(other.desc)
 	{
-		other.framebuffer = vk::Framebuffer();
 		other.width       = 0;
 		other.height      = 0;
+		other.framebuffer = vk::Framebuffer();
 	}
 
 	Framebuffer &operator=(Framebuffer &&other) {
@@ -254,14 +254,14 @@ struct Framebuffer {
 
 		assert(!framebuffer);
 
-		framebuffer       = other.framebuffer;
-		desc              = other.desc;
 		width             = other.width;
 		height            = other.height;
+		framebuffer       = other.framebuffer;
+		desc              = other.desc;
 
-		other.framebuffer = vk::Framebuffer();
 		other.width       = 0;
 		other.height      = 0;
+		other.framebuffer = vk::Framebuffer();
 
 		return *this;
 	}
