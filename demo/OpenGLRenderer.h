@@ -108,15 +108,13 @@ struct Buffer {
 		assert(!buffer);
 
 		ringBufferAlloc       = other.ringBufferAlloc;
-		other.ringBufferAlloc = false;
-
 		size                  = other.size;
-		other.size            = 0;
-
 		offset                = other.offset;
-		other.offset          = 0;
-
 		buffer                = other.buffer;
+
+		other.ringBufferAlloc = false;
+		other.size            = 0;
+		other.offset          = 0;
 		other.buffer          = 0;
 
 		return *this;
