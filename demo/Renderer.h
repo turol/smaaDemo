@@ -148,6 +148,45 @@ enum class DescriptorType : uint8_t {
 };
 
 
+enum class FilterMode : uint8_t{
+	  Nearest
+	, Linear
+};
+
+
+enum class Format : uint8_t {
+	  Invalid
+	, R8
+	, RG8
+	, RGB8
+	, RGBA8
+	, Depth16
+	, Depth16S8
+	, Depth24S8
+	, Depth24X8
+	, Depth32Float
+};
+
+
+enum class Layout : uint8_t {
+	  Invalid
+	, ShaderRead
+	, TransferSrc
+};
+
+
+enum class VtxFormat : uint8_t {
+	  Float
+	, UNorm8
+};
+
+
+enum class WrapMode : uint8_t {
+	  Clamp
+	, Wrap
+};
+
+
 // CombinedSampler helper
 struct CSampler {
 	TextureHandle tex;
@@ -184,27 +223,7 @@ struct SwapchainDesc {
 #define MAX_TEXTURE_SIZE      (1 << (MAX_TEXTURE_MIPLEVELS - 1))
 
 
-enum class Format : uint8_t {
-	  Invalid
-	, R8
-	, RG8
-	, RGB8
-	, RGBA8
-	, Depth16
-	, Depth16S8
-	, Depth24S8
-	, Depth24X8
-	, Depth32Float
-};
-
-
 const char *formatName(Format format);
-
-
-enum class VtxFormat : uint8_t {
-	  Float
-	, UNorm8
-};
 
 
 struct RenderTargetDesc {
@@ -332,18 +351,6 @@ private:
 typedef std::unordered_map<std::string, std::string> ShaderMacros;
 
 
-enum class FilterMode : uint8_t{
-	  Nearest
-	, Linear
-};
-
-
-enum class WrapMode : uint8_t {
-	  Clamp
-	, Wrap
-};
-
-
 struct SamplerDesc {
 	SamplerDesc()
 	: min(FilterMode::Nearest)
@@ -382,13 +389,6 @@ private:
 	std::string name_;
 
 	friend struct RendererImpl;
-};
-
-
-enum class Layout : uint8_t {
-	  Invalid
-	, ShaderRead
-	, TransferSrc
 };
 
 
