@@ -43,6 +43,8 @@ namespace renderer {
 #define MAX_VERTEX_ATTRIBS      4
 #define MAX_VERTEX_BUFFERS      1
 #define MAX_DESCRIPTOR_SETS     2  // per pipeline
+#define MAX_TEXTURE_MIPLEVELS 14
+#define MAX_TEXTURE_SIZE      (1 << (MAX_TEXTURE_MIPLEVELS - 1))
 
 
 struct Buffer;
@@ -217,10 +219,6 @@ struct SwapchainDesc {
 	{
 	}
 };
-
-
-#define MAX_TEXTURE_MIPLEVELS 14
-#define MAX_TEXTURE_SIZE      (1 << (MAX_TEXTURE_MIPLEVELS - 1))
 
 
 const char *formatName(Format format);
