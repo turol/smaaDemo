@@ -83,7 +83,6 @@ public:
 
 
 	~Handle() {
-		// TODO: assert(handle == 0);
 	};
 
 
@@ -94,7 +93,6 @@ public:
 
 
 	Handle &operator=(const Handle<T> &other) {
-		// TODO: assert(handle == 0);
 		handle = other.handle;
 
 		return *this;
@@ -109,7 +107,6 @@ public:
 
 
 	Handle<T> &operator=(Handle<T> &&other) {
-		// TODO: assert(handle == 0);
 		handle       = other.handle;
 		other.handle = 0;
 
