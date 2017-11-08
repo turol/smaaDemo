@@ -1700,7 +1700,7 @@ void RendererImpl::bindIndexBuffer(BufferHandle handle, bool bit16) {
 		assert(buffer.buffer == ringBuffer);
 		assert(buffer.offset + buffer.size < ringBufSize);
 	} else {
-		assert(buffer.buffer    != 0);
+		assert(buffer.buffer != 0);
 		assert(buffer.offset == 0);
 	}
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.buffer);
@@ -1721,7 +1721,7 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 		// which are rare events anyway
 		assert(buffer.offset + buffer.size < ringBufSize);
 	} else {
-		assert(buffer.buffer    != 0);
+		assert(buffer.buffer != 0);
 		assert(buffer.offset == 0);
 	}
 	const auto &p = pipelines.get(currentPipeline);
@@ -1760,7 +1760,7 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 				assert(buffer.buffer == ringBuffer);
 				assert(buffer.offset + buffer.size < ringBufSize);
 			} else {
-				assert(buffer.buffer    != 0);
+				assert(buffer.buffer != 0);
 				assert(buffer.offset == 0);
 			}
 			descriptors[idx] = handle;
@@ -1774,7 +1774,7 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 				assert(buffer.buffer == ringBuffer);
 				assert(buffer.offset + buffer.size < ringBufSize);
 			} else {
-				assert(buffer.buffer    != 0);
+				assert(buffer.buffer != 0);
 				assert(buffer.offset == 0);
 			}
 			descriptors[idx] = handle;

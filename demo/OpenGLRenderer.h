@@ -71,10 +71,10 @@ struct ShaderResources {
 
 
 struct Buffer {
-	bool          ringBufferAlloc;
-	uint32_t      size;
-	uint32_t      offset;
-	GLuint        buffer;
+	bool           ringBufferAlloc;
+	uint32_t       size;
+	uint32_t       offset;
+	GLuint         buffer;
 	// TODO: access type bits (for debugging)
 
 
