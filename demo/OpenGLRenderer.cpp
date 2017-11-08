@@ -365,10 +365,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		SDL_free(prefPath);
 	}
 
-	// TODO: fullscreen, resizable, highdpi etc. as necessary
+	// TODO: highdpi
 	// TODO: check errors
-	// TODO: other GL attributes as necessary
-	// TODO: use core context (and maybe debug as necessary)
 
 	unsigned int glMajor = 4;
 	unsigned int glMinor = 5;
