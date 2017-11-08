@@ -606,6 +606,9 @@ struct Frame {
 
 
 struct RendererImpl : public RendererBase {
+	SDL_Window *window;
+	SDL_GLContext context;
+
 	GLuint        ringBuffer;
 	bool          persistentMapInUse;
 	char         *persistentMapping;
@@ -616,9 +619,6 @@ struct RendererImpl : public RendererBase {
 
 	bool decriptorSetsDirty;
 	std::unordered_map<DSIndex, Descriptor>  descriptors;
-
-	SDL_Window *window;
-	SDL_GLContext context;
 
 	bool           debug;
 	bool           tracing;
