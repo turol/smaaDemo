@@ -426,9 +426,6 @@ struct RendererImpl : public RendererBase {
 
 	PipelineDesc  currentPipeline;
 
-	unsigned int numBuffers;
-	unsigned int numTextures;
-
 	std::vector<BufferHandle> ephemeralBuffers;
 
 

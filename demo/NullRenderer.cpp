@@ -43,8 +43,6 @@ Buffer::~Buffer() {
 
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
-, numBuffers(0)
-, numTextures(0)
 {
 	SDL_Init(SDL_INIT_EVENTS);
 
