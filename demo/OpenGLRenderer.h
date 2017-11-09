@@ -51,6 +51,24 @@ struct DSIndex {
 };
 
 
+}  // namespace renderer
+
+
+namespace std {
+
+	template <> struct hash<renderer::DSIndex> {
+		size_t operator()(const renderer::DSIndex &ds) const {
+			uint16_t val = (uint16_t(ds.set) << 8) | ds.binding;
+			return hash<uint16_t>()(val);
+		}
+	};
+
+}  // namespace std
+
+
+namespace renderer {
+
+
 struct ShaderResources {
 	std::vector<DSIndex>        ubos;
 	std::vector<DSIndex>        ssbos;
@@ -537,24 +555,6 @@ struct VertexShader {
 
 
 typedef boost::variant<BufferHandle, CSampler, SamplerHandle, TextureHandle> Descriptor;
-
-
-}  // namespace renderer
-
-
-namespace std {
-
-	template <> struct hash<renderer::DSIndex> {
-		size_t operator()(const renderer::DSIndex &ds) const {
-			uint16_t val = (uint16_t(ds.set) << 8) | ds.binding;
-			return hash<uint16_t>()(val);
-		}
-	};
-
-}  // namespace std
-
-
-namespace renderer {
 
 
 struct Frame {
