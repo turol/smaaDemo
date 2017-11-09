@@ -730,8 +730,7 @@ public:
 	// TODO: add buffer usage flags
 	BufferHandle          createBuffer(uint32_t size, const void *contents);
 	BufferHandle          createEphemeralBuffer(uint32_t size, const void *contents);
-	// image ?
-	// descriptor set
+	// TODO: non-ephemeral descriptor set
 	SamplerHandle         createSampler(const SamplerDesc &desc);
 	TextureHandle         createTexture(const TextureDesc &desc);
 
