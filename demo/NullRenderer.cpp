@@ -40,6 +40,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	recreateRingBuffer(desc.ephemeralRingBufSize);
 	drawableSize   = glm::uvec2(desc.swapchain.width, desc.swapchain.height);
+
+	frames.resize(desc.swapchain.numFrames);
 }
 
 
@@ -54,6 +56,16 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 
 
 RendererImpl::~RendererImpl() {
+	for (unsigned int i = 0; i < frames.size(); i++) {
+		auto &f = frames.at(i);
+		if (f.outstanding) {
+			// wait until complete
+			waitForFrame(i);
+		}
+		deleteFrameInternal(f);
+	}
+	frames.clear();
+
 	SDL_Quit();
 }
 
@@ -95,7 +107,7 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 	buffer.beginOffs       = beginPtr;
 	buffer.size            = size;
 
-	ephemeralBuffers.push_back(result.second);
+	frames.at(currentFrameIdx).ephemeralBuffers.push_back(result.second);
 
 	return result.second;
 }
@@ -250,6 +262,17 @@ void RendererImpl::beginFrame() {
 	inRenderPass  = false;
 	validPipeline = false;
 	pipelineDrawn = true;
+
+	currentFrameIdx        = frameNum % frames.size();
+	assert(currentFrameIdx < frames.size());
+	auto &frame            = frames.at(currentFrameIdx);
+
+	// frames are a ringbuffer
+	// if the frame we want to reuse is still pending on the GPU, wait for it
+	if (frame.outstanding) {
+		waitForFrame(currentFrameIdx);
+	}
+	assert(!frame.outstanding);
 }
 
 
@@ -257,14 +280,43 @@ void RendererImpl::presentFrame(RenderTargetHandle /* rt */) {
 	assert(inFrame);
 	inFrame = false;
 
-	// TODO: multiple frames, only delete after no longer in use by (simulated) GPU
-	for (auto handle : ephemeralBuffers) {
+	auto &frame = frames.at(currentFrameIdx);
+
+	frame.usedRingBufPtr = ringBufPtr;
+	frame.outstanding    = true;
+	frame.lastFrameNum   = frameNum;
+
+	frameNum++;
+}
+
+
+void RendererImpl::waitForFrame(unsigned int frameIdx) {
+	assert(frameIdx < frames.size());
+
+	Frame &frame = frames.at(frameIdx);
+	assert(frame.outstanding);
+
+	for (auto handle : frame.ephemeralBuffers) {
 		Buffer &buffer = buffers.get(handle);
-		assert(buffer.ringBufferAlloc);
+		if (buffer.ringBufferAlloc) {
+			buffer.ringBufferAlloc = false;
+		}
+
 		assert(buffer.size   >  0);
+		buffer.size = 0;
+		buffer.beginOffs = 0;
+
 		buffers.remove(handle);
 	}
-	ephemeralBuffers.clear();
+	frame.ephemeralBuffers.clear();
+	frame.outstanding    = false;
+	lastSyncedFrame      = std::max(lastSyncedFrame, frame.lastFrameNum);
+	lastSyncedRingBufPtr = std::max(lastSyncedRingBufPtr, frame.usedRingBufPtr);
+}
+
+
+void RendererImpl::deleteFrameInternal(Frame &f) {
+	assert(!f.outstanding);
 }
 
 

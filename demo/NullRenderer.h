@@ -418,6 +418,9 @@ struct Frame {
 
 struct RendererImpl : public RendererBase {
 	std::vector<char> ringBuffer;
+
+	std::vector<Frame>                       frames;
+
 	ResourceContainer<Buffer>              buffers;
 	ResourceContainer<DescriptorSetLayout>  dsLayouts;
 	ResourceContainer<FragmentShader>        fragmentShaders;
@@ -431,11 +434,12 @@ struct RendererImpl : public RendererBase {
 
 	PipelineDesc  currentPipeline;
 
-	std::vector<BufferHandle> ephemeralBuffers;
-
 
 	void recreateRingBuffer(unsigned int newSize);
 	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);
+
+	void waitForFrame(unsigned int frameIdx);
+	void deleteFrameInternal(Frame &f);
 
 	explicit RendererImpl(const RendererDesc &desc);
 
