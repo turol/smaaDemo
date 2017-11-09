@@ -375,11 +375,11 @@ struct RenderPass {
 
 struct RenderTarget{
 	unsigned int  width, height;
+	Layout               currentLayout;
+	TextureHandle        texture;
 	vk::Image     image;
 	vk::Format    format;
 	vk::ImageView imageView;
-	Layout               currentLayout;
-	TextureHandle        texture;
 
 
 	RenderTarget()
@@ -394,19 +394,19 @@ struct RenderTarget{
 	RenderTarget(RenderTarget &&other)
 	: width(other.width)
 	, height(other.height)
+	, currentLayout(other.currentLayout)
+	, texture(other.texture)
 	, image(other.image)
 	, format(other.format)
 	, imageView(other.imageView)
-	, currentLayout(other.currentLayout)
-	, texture(other.texture)
 	{
 		other.width         = 0;
 		other.height        = 0;
+		other.currentLayout = Layout::Invalid;
+		other.texture       = TextureHandle();
 		other.image         = vk::Image();
 		other.format        = vk::Format::eUndefined;
 		other.imageView     = vk::ImageView();
-		other.currentLayout = Layout::Invalid;
-		other.texture       = TextureHandle();
 	}
 
 	RenderTarget &operator=(RenderTarget &&other) {
@@ -419,19 +419,19 @@ struct RenderTarget{
 
 		width               = other.width;
 		height              = other.height;
+		currentLayout       = other.currentLayout;
+		texture             = other.texture;
 		image               = other.image;
 		format              = other.format;
 		imageView           = other.imageView;
-		currentLayout       = other.currentLayout;
-		texture             = other.texture;
 
 		other.width         = 0;
 		other.height        = 0;
+		other.currentLayout = Layout::Invalid;
+		other.texture       = TextureHandle();
 		other.image         = vk::Image();
 		other.format        = vk::Format::eUndefined;
 		other.imageView     = vk::ImageView();
-		other.currentLayout = Layout::Invalid;
-		other.texture       = TextureHandle();
 
 		return *this;
 	}

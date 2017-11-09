@@ -327,18 +327,18 @@ struct RenderPass {
 
 
 struct RenderTarget {
-	GLuint         readFBO;
 	unsigned int   width, height;
 	Layout         currentLayout;
 	TextureHandle  texture;
+	GLuint         readFBO;
 	Format         format;
 
 
 	RenderTarget()
-	: readFBO(0)
-	, width(0)
+	: width(0)
 	, height(0)
 	, currentLayout(Layout::Invalid)
+	, readFBO(0)
 	, format(Format::Invalid)
 	{
 	}
@@ -347,18 +347,18 @@ struct RenderTarget {
 	RenderTarget &operator=(const RenderTarget &) = delete;
 
 	RenderTarget(RenderTarget &&other)
-	: readFBO(other.readFBO)
-	, width(other.width)
+	: width(other.width)
 	, height(other.height)
 	, currentLayout(other.currentLayout)
 	, texture(other.texture)   // TODO: use std::move
+	, readFBO(other.readFBO)
 	, format(other.format)
 	{
-		other.readFBO       = 0;
 		other.width         = 0;
 		other.height        = 0;
 		other.currentLayout = Layout::Invalid;
 		other.texture       = TextureHandle();
+		other.readFBO       = 0;
 		other.format        = Format::Invalid;
 	}
 
@@ -370,18 +370,18 @@ struct RenderTarget {
 		assert(!readFBO);
 		assert(!texture);
 
-		readFBO       = other.readFBO;
 		width         = other.width;
 		height        = other.height;
 		currentLayout = other.currentLayout;
 		texture       = other.texture;
+		readFBO       = other.readFBO;
 		format        = other.format;
 
-		other.readFBO       = 0;
 		other.width         = 0;
 		other.height        = 0;
 		other.currentLayout = Layout::Invalid;
 		other.texture       = TextureHandle();
+		other.readFBO       = 0;
 		other.format        = Format::Invalid;
 
 		return *this;
