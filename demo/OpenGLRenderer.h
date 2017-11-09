@@ -399,6 +399,11 @@ struct Sampler {
 	GLuint sampler;
 
 
+	Sampler()
+	: sampler(0)
+	{
+	}
+
 	Sampler(const Sampler &) = delete;
 	Sampler &operator=(const Sampler &) = delete;
 
@@ -409,21 +414,20 @@ struct Sampler {
 	}
 
 	Sampler &operator=(Sampler &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
 		sampler       = other.sampler;
+
 		other.sampler = 0;
 
 		return *this;
 	}
 
-	Sampler()
-	: sampler(0)
-	{
-	}
-
-
 	~Sampler()
 	{
-		assert(sampler == 0);
+		assert(!sampler);
 	}
 };
 

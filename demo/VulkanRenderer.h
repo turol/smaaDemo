@@ -456,7 +456,9 @@ struct Sampler {
 	vk::Sampler sampler;
 
 
-	Sampler() {}
+	Sampler()
+	{
+	}
 
 	Sampler(const Sampler &)            = delete;
 	Sampler &operator=(const Sampler &) = delete;
