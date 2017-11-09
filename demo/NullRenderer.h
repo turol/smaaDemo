@@ -139,8 +139,8 @@ struct Framebuffer {
 	RenderPassHandle  renderPass;
 
 
-	Framebuffer(const Framebuffer &)            = default;
-	Framebuffer &operator=(const Framebuffer &) = default;
+	Framebuffer(const Framebuffer &)            = delete;
+	Framebuffer &operator=(const Framebuffer &) = delete;
 
 	Framebuffer(Framebuffer &&other)
 	: renderPass(other.renderPass)
@@ -173,8 +173,8 @@ struct Pipeline {
 	PipelineDesc  desc;
 
 
-	Pipeline(const Pipeline &)            = default;
-	Pipeline &operator=(const Pipeline &) = default;
+	Pipeline(const Pipeline &)            = delete;
+	Pipeline &operator=(const Pipeline &) = delete;
 
 	Pipeline(Pipeline &&other)
 	: desc(other.desc)
@@ -204,8 +204,8 @@ struct RenderPass {
 	RenderPassDesc  desc;
 
 
-	RenderPass(const RenderPass &)            = default;
-	RenderPass &operator=(const RenderPass &) = default;
+	RenderPass(const RenderPass &)            = delete;
+	RenderPass &operator=(const RenderPass &) = delete;
 
 	RenderPass(RenderPass &&other)
 	: desc(other.desc)
@@ -235,8 +235,8 @@ struct RenderTarget {
 	RenderTargetDesc  desc;
 
 
-	RenderTarget(const RenderTarget &)            = default;
-	RenderTarget &operator=(const RenderTarget &) = default;
+	RenderTarget(const RenderTarget &)            = delete;
+	RenderTarget &operator=(const RenderTarget &) = delete;
 
 	RenderTarget(RenderTarget &&other)
 	: desc(other.desc)
@@ -266,8 +266,8 @@ struct Sampler {
 	SamplerDesc desc;
 
 
-	Sampler(const Sampler &)            = default;
-	Sampler &operator=(const Sampler &) = default;
+	Sampler(const Sampler &)            = delete;
+	Sampler &operator=(const Sampler &) = delete;
 
 	Sampler(Sampler &&other)
 	: desc(other.desc)
@@ -297,8 +297,8 @@ struct Texture {
 	TextureDesc desc;
 
 
-	Texture(const Texture &)            = default;
-	Texture &operator=(const Texture &) = default;
+	Texture(const Texture &)            = delete;
+	Texture &operator=(const Texture &) = delete;
 
 	Texture(Texture &&other)
 	: desc(other.desc)
