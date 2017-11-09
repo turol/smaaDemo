@@ -301,6 +301,8 @@ struct RenderPass {
 	RenderPassDesc  desc;
 
 
+	RenderPass() {}
+
 	RenderPass(const RenderPass &) = delete;
 	RenderPass &operator=(const RenderPass &) = delete;
 
@@ -309,12 +311,15 @@ struct RenderPass {
 	{
 	}
 
-	RenderPass &operator=(RenderPass &&other) = delete;
+	RenderPass &operator=(RenderPass &&other) {
+		if (this == &other) {
+			return *this;
+		}
 
-	RenderPass()
-	{
+		desc            = other.desc;
+
+		return *this;
 	}
-
 
 	~RenderPass() {
 	}
