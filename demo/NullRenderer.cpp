@@ -162,15 +162,25 @@ SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
 }
 
 
-VertexShaderHandle RendererImpl::createVertexShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
-	VertexShaderHandle handle;
-	return handle;
+VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros & /* macros */) {
+	std::string vertexShaderName   = name + ".vert";
+
+	auto result_ = vertexShaders.add();
+	auto &v = result_.first;
+	v.name      = vertexShaderName;
+
+	return result_.second;
 }
 
 
-FragmentShaderHandle RendererImpl::createFragmentShader(const std::string & /* name */, const ShaderMacros & /* macros */) {
-	FragmentShaderHandle handle;
-	return handle;
+FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros & /* macros */) {
+	std::string fragmentShaderName = name + ".frag";
+
+	auto result_ = fragmentShaders.add();
+	auto &f = result_.first;
+	f.name      = fragmentShaderName;
+
+	return result_.second;
 }
 
 

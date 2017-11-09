@@ -101,6 +101,40 @@ struct DescriptorSetLayout {
 };
 
 
+struct FragmentShader {
+	std::string      name;
+
+
+	FragmentShader()
+	{
+	}
+
+	FragmentShader(const FragmentShader &)            = delete;
+	FragmentShader &operator=(const FragmentShader &) = delete;
+
+	FragmentShader(FragmentShader &&other)
+	: name(std::move(other.name))
+	{
+		assert(other.name.empty());
+	}
+
+	FragmentShader &operator=(FragmentShader &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		name            = std::move(other.name);
+
+		assert(other.name.empty());
+
+		return *this;
+	}
+
+	~FragmentShader() {
+	}
+};
+
+
 struct Framebuffer {
 	RenderPassHandle  renderPass;
 
@@ -291,6 +325,41 @@ struct Texture {
 };
 
 
+struct VertexShader {
+	std::string name;
+
+
+	VertexShader()
+	{
+	}
+
+
+	VertexShader(const VertexShader &) = delete;
+	VertexShader &operator=(const VertexShader &) = delete;
+
+	VertexShader(VertexShader &&other)
+	: name(std::move(other.name))
+	{
+		assert(other.name.empty());
+	}
+
+	VertexShader &operator=(VertexShader &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		name            = std::move(other.name);
+
+		assert(other.name.empty());
+
+		return *this;
+	}
+
+	~VertexShader() {
+	}
+};
+
+
 struct Frame {
 	bool                      outstanding;
 	uint32_t                  lastFrameNum;
@@ -346,12 +415,14 @@ struct RendererImpl : public RendererBase {
 	std::vector<char> ringBuffer;
 	ResourceContainer<Buffer>              buffers;
 	ResourceContainer<DescriptorSetLayout>  dsLayouts;
+	ResourceContainer<FragmentShader>        fragmentShaders;
 	ResourceContainer<Framebuffer>         framebuffers;
 	ResourceContainer<Pipeline>            pipelines;
 	ResourceContainer<RenderPass>          renderpasses;
 	ResourceContainer<RenderTarget>        rendertargets;
 	ResourceContainer<Sampler>             samplers;
 	ResourceContainer<Texture>             textures;
+	ResourceContainer<VertexShader>          vertexShaders;
 
 	PipelineDesc  currentPipeline;
 
