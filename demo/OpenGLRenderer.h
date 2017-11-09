@@ -495,6 +495,12 @@ struct VertexShader {
 	ShaderResources resources;
 
 
+	VertexShader()
+	: shader(0)
+	{
+	}
+
+
 	VertexShader(const VertexShader &) = delete;
 	VertexShader &operator=(const VertexShader &) = delete;
 
@@ -523,12 +529,6 @@ struct VertexShader {
 
 		return *this;
 	}
-
-	VertexShader()
-	: shader(0)
-	{
-	}
-
 
 	~VertexShader() {
 		assert(!shader);

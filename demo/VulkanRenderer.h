@@ -572,7 +572,9 @@ struct VertexShader {
 	vk::ShaderModule shaderModule;
 
 
-	VertexShader() {}
+	VertexShader()
+	{
+	}
 
 	VertexShader(const VertexShader &)            = delete;
 	VertexShader &operator=(const VertexShader &) = delete;
