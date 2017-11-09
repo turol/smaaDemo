@@ -202,7 +202,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>RENDERER_OPENGL;WIN32;USE_GLEW;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLEW_NO_GLU;__i386;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/pcg-cpp/include;../foreign/SPIRV-Tools/source;C:\Projects\VulkanSDK\1.0.54.0\Include;C:\Projects\VulkanSDK\1.0.54.0\Source\SPIRV-Cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/pcg-cpp/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -220,7 +220,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>RENDERER_OPENGL;WIN32;USE_GLEW;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLEW_NO_GLU;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/SPIRV-Tools/source;C:\Projects\VulkanSDK\1.0.54.0\Include;C:\Projects\VulkanSDK\1.0.54.0\Source\SPIRV-Cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <AdditionalOptions>/D_ITERATOR_DEBUG_LEVEL=0 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -240,7 +240,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>RENDERER_VULKAN;WIN32;USE_GLEW;GLEW_STATIC;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;__i386;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/src;C:\Projects\VulkanSDK\1.0.61.1\Include;C:\Projects\VulkanSDK\1.0.61.1\Source\SPIRV-Cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -257,7 +257,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>RENDERER_VULKAN;WIN32;USE_GLEW;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;__x86_64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/src;C:\Projects\VulkanSDK\1.0.61.1\Include;C:\Projects\VulkanSDK\1.0.61.1\Source\SPIRV-Cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -274,7 +274,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>RENDERER_NULL;WIN32;USE_GLEW;GLEW_STATIC;GLEW_NO_GLU;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;__i386;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/pcg-cpp/include;../foreign/SPIRV-Tools/source;C:\Projects\VulkanSDK\1.0.54.0\Include;C:\Projects\VulkanSDK\1.0.54.0\Source\SPIRV-Cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/pcg-cpp/include;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -292,7 +292,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>RENDERER_NULL;WIN32;USE_GLEW;GLEW_STATIC;GLEW_NO_GLU;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/SPIRV-Tools/source;C:\Projects\VulkanSDK\1.0.54.0\Include;C:\Projects\VulkanSDK\1.0.54.0\Source\SPIRV-Cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -312,7 +312,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;USE_GLEW;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/SPIRV-Tools/source;C:\Projects\VulkanSDK\1.0.54.0\Include;C:\Projects\VulkanSDK\1.0.54.0\Source\SPIRV-Cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -332,7 +332,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>RENDERER_VULKAN;WIN32;USE_GLEW;GLEW_STATIC;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/SPIRV-Tools/source;../foreign/vulkanMemoryAllocator/src;C:\Projects\VulkanSDK\1.0.61.1\Include;C:\Projects\VulkanSDK\1.0.61.1\Source\SPIRV-Cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/SPIRV-Tools/source;../foreign/vulkanMemoryAllocator/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -353,7 +353,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;USE_GLEW;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;C:\Projects\VulkanSDK\1.0.54.0\Include;C:\Projects\VulkanSDK\1.0.54.0\Source\SPIRV-Cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -373,7 +373,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>RENDERER_VULKAN;WIN32;USE_GLEW;GLEW_STATIC;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;__x86_64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/src;C:\Projects\VulkanSDK\1.0.61.1\Include;C:\Projects\VulkanSDK\1.0.61.1\Source\SPIRV-Cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
