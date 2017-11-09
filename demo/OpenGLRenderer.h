@@ -180,7 +180,7 @@ struct FragmentShader {
 	, resources(other.resources)
 	{
 		other.shader    = 0;
-		assert(name.empty());
+		assert(other.name.empty());
 		other.resources = ShaderResources();
 	}
 
@@ -194,7 +194,7 @@ struct FragmentShader {
 		resources       = other.resources;
 
 		other.shader    = 0;
-		assert(name.empty());
+		assert(other.name.empty());
 		other.resources = ShaderResources();
 
 		return *this;
@@ -510,7 +510,7 @@ struct VertexShader {
 	, resources(other.resources)
 	{
 		other.shader    = 0;
-		assert(name.empty());
+		assert(other.name.empty());
 		other.resources = ShaderResources();
 	}
 
@@ -524,7 +524,7 @@ struct VertexShader {
 		resources       = other.resources;
 
 		other.shader    = 0;
-		assert(name.empty());
+		assert(other.name.empty());
 		other.resources = ShaderResources();
 
 		return *this;
