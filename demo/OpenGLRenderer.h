@@ -439,6 +439,15 @@ struct Texture {
 	GLuint tex;
 
 
+	Texture()
+	: width(0)
+	, height(0)
+	, renderTarget(false)
+	, tex(0)
+	{
+	}
+
+
 	Texture(const Texture &) = delete;
 	Texture &operator=(const Texture &) = delete;
 
@@ -455,6 +464,10 @@ struct Texture {
 	}
 
 	Texture &operator=(Texture &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
 		width              = other.width;
 		height             = other.height;
 		renderTarget       = other.renderTarget;
@@ -468,17 +481,7 @@ struct Texture {
 		return *this;
 	}
 
-	Texture()
-	: width(0)
-	, height(0)
-	, renderTarget(false)
-	, tex(0)
-	{
-	}
-
-
-	~Texture()
-	{
+	~Texture() {
 		// it should have been deleted by Renderer before destroying this
 		assert(tex == 0);
 		assert(!renderTarget);

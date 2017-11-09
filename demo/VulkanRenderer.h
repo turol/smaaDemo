@@ -508,7 +508,8 @@ struct Texture {
 	, height(0)
 	, renderTarget(false)
 	, memory(nullptr)
-	{}
+	{
+	}
 
 
 	Texture(const Texture &)            = delete;
@@ -530,8 +531,7 @@ struct Texture {
 		other.renderTarget = false;
 	}
 
-	Texture &operator=(Texture &&other)
-	{
+	Texture &operator=(Texture &&other) {
 		if (this == &other) {
 			return *this;
 		}
