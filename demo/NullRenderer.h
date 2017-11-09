@@ -35,6 +35,12 @@ struct Buffer {
 	// TODO: usage flags for debugging
 
 
+	Buffer()
+	: ringBufferAlloc(false)
+	, size(0)
+	{
+	}
+
 	Buffer(const Buffer &)            = delete;
 	Buffer &operator=(const Buffer &) = delete;
 
@@ -64,9 +70,8 @@ struct Buffer {
 		return *this;
 	}
 
-	Buffer();
-
-	~Buffer();
+	~Buffer() {
+	}
 };
 
 

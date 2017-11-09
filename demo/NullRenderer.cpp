@@ -30,17 +30,6 @@ THE SOFTWARE.
 namespace renderer {
 
 
-Buffer::Buffer()
-: ringBufferAlloc(false)
-, size(0)
-{
-}
-
-
-Buffer::~Buffer() {
-}
-
-
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
 {
