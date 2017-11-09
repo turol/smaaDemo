@@ -561,8 +561,8 @@ struct Frame {
 	bool                      outstanding;
 	uint32_t                  lastFrameNum;
 	unsigned int              usedRingBufPtr;
-	GLsync                    fence;
 	std::vector<BufferHandle> ephemeralBuffers;
+	GLsync                    fence;
 
 
 	Frame()
@@ -585,8 +585,8 @@ struct Frame {
 	: outstanding(other.outstanding)
 	, lastFrameNum(other.lastFrameNum)
 	, usedRingBufPtr(other.usedRingBufPtr)
-	, fence(other.fence)
 	, ephemeralBuffers(std::move(other.ephemeralBuffers))
+	, fence(other.fence)
 	{
 		other.outstanding = false;
 		other.fence       = nullptr;

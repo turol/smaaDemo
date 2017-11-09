@@ -652,15 +652,15 @@ namespace renderer {
 
 
 struct Frame {
-	vk::Image          image;
-	vk::Fence          fence;
-	vk::DescriptorPool dsPool;
-	vk::CommandPool    commandPool;
-	vk::CommandBuffer  commandBuffer;
-	std::vector<BufferHandle> ephemeralBuffers;
 	bool                      outstanding;
 	uint32_t                  lastFrameNum;
 	unsigned int              usedRingBufPtr;
+	std::vector<BufferHandle> ephemeralBuffers;
+	vk::Fence          fence;
+	vk::Image          image;
+	vk::DescriptorPool dsPool;
+	vk::CommandPool    commandPool;
+	vk::CommandBuffer  commandBuffer;
 
 	// std::vector has some kind of issue with variant with non-copyable types, so use unordered_set
 	std::unordered_set<Resource>     deleteResources;
@@ -673,12 +673,12 @@ struct Frame {
 	{}
 
 	~Frame() {
-		assert(!image);
+		assert(ephemeralBuffers.empty());
 		assert(!fence);
+		assert(!image);
 		assert(!dsPool);
 		assert(!commandPool);
 		assert(!commandBuffer);
-		assert(ephemeralBuffers.empty());
 		assert(!outstanding);
 		assert(deleteResources.empty());
 	}
@@ -687,15 +687,15 @@ struct Frame {
 	Frame &operator=(const Frame &) = delete;
 
 	Frame(Frame &&other)
-	: image(other.image)
+	: outstanding(other.outstanding)
+	, lastFrameNum(other.lastFrameNum)
+	, usedRingBufPtr(other.usedRingBufPtr)
+	, ephemeralBuffers(std::move(other.ephemeralBuffers))
 	, fence(other.fence)
+	, image(other.image)
 	, dsPool(other.dsPool)
 	, commandPool(other.commandPool)
 	, commandBuffer(other.commandBuffer)
-	, ephemeralBuffers(std::move(other.ephemeralBuffers))
-	, outstanding(other.outstanding)
-	, lastFrameNum(other.lastFrameNum)
-	, usedRingBufPtr(other.usedRingBufPtr)
 	, deleteResources(std::move(other.deleteResources))
 	{
 		other.image = vk::Image();
