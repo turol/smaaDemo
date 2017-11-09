@@ -291,6 +291,57 @@ struct Texture {
 };
 
 
+struct Frame {
+	bool                      outstanding;
+	uint32_t                  lastFrameNum;
+	unsigned int              usedRingBufPtr;
+	std::vector<BufferHandle> ephemeralBuffers;
+
+
+	Frame()
+	: outstanding(false)
+	, lastFrameNum(0)
+	, usedRingBufPtr(0)
+	{}
+
+	~Frame() {
+		assert(ephemeralBuffers.empty());
+		assert(!outstanding);
+	}
+
+	Frame(const Frame &)            = delete;
+	Frame &operator=(const Frame &) = delete;
+
+	Frame(Frame &&other)
+	: outstanding(other.outstanding)
+	, lastFrameNum(other.lastFrameNum)
+	, usedRingBufPtr(other.usedRingBufPtr)
+	, ephemeralBuffers(std::move(other.ephemeralBuffers))
+	{
+		other.outstanding      = false;
+		other.lastFrameNum     = 0;
+		other.usedRingBufPtr   = 0;
+	}
+
+	Frame &operator=(Frame &&other) {
+		assert(ephemeralBuffers.empty());
+		ephemeralBuffers = std::move(other.ephemeralBuffers);
+		assert(other.ephemeralBuffers.empty());
+
+		outstanding = other.outstanding;
+		other.outstanding = false;
+
+		lastFrameNum = other.lastFrameNum;
+		other.lastFrameNum = 0;
+
+		usedRingBufPtr       = other.usedRingBufPtr;
+		other.usedRingBufPtr = 0;
+
+		return *this;
+	}
+};
+
+
 struct RendererImpl : public RendererBase {
 	std::vector<char> ringBuffer;
 	ResourceContainer<Buffer>              buffers;
