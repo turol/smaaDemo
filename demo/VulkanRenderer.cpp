@@ -160,8 +160,6 @@ static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebug
 
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
-, currentFrameIdx(0)
-, lastSyncedFrame(0)
 , graphicsQueueIndex(0)
 , debugMarkers(false)
 , ringBufferMem(nullptr)

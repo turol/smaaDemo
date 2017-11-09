@@ -622,8 +622,6 @@ struct RendererImpl : public RendererBase {
 	SDL_GLContext                            context;
 
 	std::vector<Frame>                       frames;
-	uint32_t                                 currentFrameIdx;
-	uint32_t                                 lastSyncedFrame;
 
 	ResourceContainer<Buffer>                buffers;
 	ResourceContainer<DescriptorSetLayout>   dsLayouts;

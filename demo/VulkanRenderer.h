@@ -755,8 +755,6 @@ struct RendererImpl : public RendererBase {
 	SDL_Window                              *window;
 
 	std::vector<Frame>                      frames;
-	uint32_t                                currentFrameIdx;
-	uint32_t                                lastSyncedFrame;
 
 	ResourceContainer<Buffer>               buffers;
 	ResourceContainer<DescriptorSetLayout>  dsLayouts;
