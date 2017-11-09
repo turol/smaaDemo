@@ -621,6 +621,24 @@ struct RendererImpl : public RendererBase {
 	SDL_Window                               *window;
 	SDL_GLContext                            context;
 
+	unsigned int                             currentRefreshRate;
+	unsigned int                             maxRefreshRate;
+
+	std::vector<Frame>                       frames;
+	uint32_t                                 currentFrameIdx;
+	uint32_t                                 lastSyncedFrame;
+
+	ResourceContainer<Buffer>                buffers;
+	ResourceContainer<DescriptorSetLayout>   dsLayouts;
+	ResourceContainer<FragmentShader>        fragmentShaders;
+	ResourceContainer<Framebuffer>           framebuffers;
+	ResourceContainer<Pipeline>              pipelines;
+	ResourceContainer<RenderPass>            renderPasses;
+	ResourceContainer<RenderTarget>          renderTargets;
+	ResourceContainer<Sampler>               samplers;
+	ResourceContainer<Texture>               textures;
+	ResourceContainer<VertexShader>          vertexShaders;
+
 	GLuint                                   ringBuffer;
 	bool                                     persistentMapInUse;
 	char                                     *persistentMapping;
@@ -637,24 +655,6 @@ struct RendererImpl : public RendererBase {
 	GLuint                                   vao;
 	bool                                     idxBuf16Bit;
 	unsigned int                             indexBufByteOffset;
-
-	unsigned int                             currentRefreshRate;
-	unsigned int                             maxRefreshRate;
-
-	ResourceContainer<Buffer>                buffers;
-	ResourceContainer<DescriptorSetLayout>   dsLayouts;
-	ResourceContainer<FragmentShader>        fragmentShaders;
-	ResourceContainer<Framebuffer>           framebuffers;
-	ResourceContainer<Pipeline>              pipelines;
-	ResourceContainer<RenderPass>            renderPasses;
-	ResourceContainer<RenderTarget>          renderTargets;
-	ResourceContainer<Sampler>               samplers;
-	ResourceContainer<Texture>               textures;
-	ResourceContainer<VertexShader>          vertexShaders;
-
-	std::vector<Frame>                       frames;
-	uint32_t                                 currentFrameIdx;
-	uint32_t                                 lastSyncedFrame;
 
 
 	void rebindDescriptorSets();

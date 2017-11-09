@@ -160,15 +160,15 @@ static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebug
 
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
-, graphicsQueueIndex(0)
 , currentRefreshRate(0)
 , maxRefreshRate(0)
+, currentFrameIdx(0)
+, lastSyncedFrame(0)
+, graphicsQueueIndex(0)
 , debugMarkers(false)
 , ringBufferMem(nullptr)
 , persistentMapping(nullptr)
 , unmapPersistentSubmit(false)
-, currentFrameIdx(0)
-, lastSyncedFrame(0)
 {
 	bool enableValidation = desc.debug;
 	bool enableMarkers    = desc.tracing;

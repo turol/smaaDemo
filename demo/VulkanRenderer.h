@@ -753,6 +753,25 @@ struct Frame {
 
 struct RendererImpl : public RendererBase {
 	SDL_Window                              *window;
+
+	unsigned int                            currentRefreshRate;
+	unsigned int                            maxRefreshRate;
+
+	std::vector<Frame>                      frames;
+	uint32_t                                currentFrameIdx;
+	uint32_t                                lastSyncedFrame;
+
+	ResourceContainer<Buffer>               buffers;
+	ResourceContainer<DescriptorSetLayout>  dsLayouts;
+	ResourceContainer<FragmentShader>       fragmentShaders;
+	ResourceContainer<Framebuffer>          framebuffers;
+	ResourceContainer<Pipeline>             pipelines;
+	ResourceContainer<RenderPass>           renderPasses;
+	ResourceContainer<RenderTarget>         renderTargets;
+	ResourceContainer<Sampler>              samplers;
+	ResourceContainer<Texture>              textures;
+	ResourceContainer<VertexShader>         vertexShaders;
+
 	vk::Instance                            instance;
 	vk::DebugReportCallbackEXT              debugCallback;
 	vk::PhysicalDevice                      physicalDevice;
@@ -777,29 +796,12 @@ struct RendererImpl : public RendererBase {
 
 	VmaAllocator                            allocator;
 
-	unsigned int                            currentRefreshRate;
-	unsigned int                            maxRefreshRate;
 	bool                                    debugMarkers;
-
-	ResourceContainer<Buffer>               buffers;
-	ResourceContainer<DescriptorSetLayout>  dsLayouts;
-	ResourceContainer<FragmentShader>       fragmentShaders;
-	ResourceContainer<Framebuffer>          framebuffers;
-	ResourceContainer<Pipeline>             pipelines;
-	ResourceContainer<RenderPass>           renderPasses;
-	ResourceContainer<RenderTarget>         renderTargets;
-	ResourceContainer<Sampler>              samplers;
-	ResourceContainer<Texture>              textures;
-	ResourceContainer<VertexShader>         vertexShaders;
 
 	vk::Buffer                              ringBuffer;
 	VmaAllocation                           ringBufferMem;
 	char                                    *persistentMapping;
 	bool                                    unmapPersistentSubmit;
-
-	std::vector<Frame>                      frames;
-	uint32_t                                currentFrameIdx;
-	uint32_t                                lastSyncedFrame;
 
 	// std::vector has some kind of issue with variant with non-copyable types, so use unordered_set
 	std::unordered_set<Resource>            deleteResources;
