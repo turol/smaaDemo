@@ -433,20 +433,20 @@ struct Sampler {
 
 
 struct Texture {
-	// TODO: need target for anything?
-	GLuint tex;
 	unsigned int width, height;
 	bool         renderTarget;
+	// TODO: need target for anything?
+	GLuint tex;
 
 
 	Texture(const Texture &) = delete;
 	Texture &operator=(const Texture &) = delete;
 
 	Texture(Texture &&other)
-	: tex(other.tex)
-	, width(other.width)
+	: width(other.width)
 	, height(other.height)
 	, renderTarget(other.renderTarget)
+	, tex(other.tex)
 	{
 		other.tex      = 0;
 		other.width    = 0;
@@ -455,24 +455,24 @@ struct Texture {
 	}
 
 	Texture &operator=(Texture &&other) {
-		tex                = other.tex;
 		width              = other.width;
 		height             = other.height;
 		renderTarget       = other.renderTarget;
+		tex                = other.tex;
 
-		other.tex          = 0;
 		other.width        = 0;
 		other.height       = 0;
 		other.renderTarget = false;
+		other.tex          = 0;
 
 		return *this;
 	}
 
 	Texture()
-	: tex(0)
-	, width(0)
+	: width(0)
 	, height(0)
 	, renderTarget(false)
+	, tex(0)
 	{
 	}
 

@@ -469,8 +469,7 @@ struct Sampler {
 		other.sampler = vk::Sampler();
 	}
 
-	Sampler &operator=(Sampler &&other)
-	{
+	Sampler &operator=(Sampler &&other) {
 		if (this == &other) {
 			return *this;
 		}
@@ -498,17 +497,17 @@ struct Sampler {
 
 struct Texture {
 	unsigned int         width, height;
+	bool                 renderTarget;
 	vk::Image            image;
 	vk::ImageView        imageView;
 	VmaAllocation        memory;
-	bool                 renderTarget;
 
 
 	Texture()
 	: width(0)
 	, height(0)
-	, memory(nullptr)
 	, renderTarget(false)
+	, memory(nullptr)
 	{}
 
 
@@ -518,10 +517,10 @@ struct Texture {
 	Texture(Texture &&other)
 	: width(other.width)
 	, height(other.height)
+	, renderTarget(other.renderTarget)
 	, image(other.image)
 	, imageView(other.imageView)
 	, memory(other.memory)
-	, renderTarget(other.renderTarget)
 	{
 		other.width        = 0;
 		other.height       = 0;
@@ -539,17 +538,17 @@ struct Texture {
 
 		width              = other.width;
 		height             = other.height;
+		renderTarget       = other.renderTarget;
 		image              = other.image;
 		imageView          = other.imageView;
 		memory             = other.memory;
-		renderTarget       = other.renderTarget;
 
 		other.width        = 0;
 		other.height       = 0;
+		other.renderTarget = false;
 		other.image        = vk::Image();
 		other.imageView    = vk::ImageView();
 		other.memory       = 0;
-		other.renderTarget = false;
 
 		return *this;
 	}
