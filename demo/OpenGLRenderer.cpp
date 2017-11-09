@@ -673,16 +673,6 @@ bool RendererImpl::isRenderTargetFormatSupported(Format format) const {
 }
 
 
-unsigned int RendererImpl::getCurrentRefreshRate() const {
-	return currentRefreshRate;
-}
-
-
-unsigned int RendererImpl::getMaxRefreshRate() const {
-	return maxRefreshRate;
-}
-
-
 BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	assert(size != 0);
 

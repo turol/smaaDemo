@@ -278,12 +278,12 @@ bool Renderer::isRenderTargetFormatSupported(Format format) const {
 
 
 unsigned int Renderer::getCurrentRefreshRate() const {
-	return impl->getCurrentRefreshRate();
+	return impl->currentRefreshRate;
 }
 
 
 unsigned int Renderer::getMaxRefreshRate() const {
-	return impl->getMaxRefreshRate();
+	return impl->maxRefreshRate;
 }
 
 

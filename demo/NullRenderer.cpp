@@ -48,6 +48,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 {
 	SDL_Init(SDL_INIT_EVENTS);
 
+	currentRefreshRate = 60;
+	maxRefreshRate     = 60;
+
 	recreateRingBuffer(desc.ephemeralRingBufSize);
 	drawableSize   = glm::uvec2(desc.swapchain.width, desc.swapchain.height);
 }
@@ -71,16 +74,6 @@ RendererImpl::~RendererImpl() {
 bool RendererImpl::isRenderTargetFormatSupported(Format /* format */) const {
 	// TODO: actually check it...
 	return true;
-}
-
-
-unsigned int RendererImpl::getCurrentRefreshRate() const {
-	return 60;
-}
-
-
-unsigned int RendererImpl::getMaxRefreshRate() const {
-	return 60;
 }
 
 
