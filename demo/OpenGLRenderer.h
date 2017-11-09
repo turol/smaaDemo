@@ -621,9 +621,6 @@ struct RendererImpl : public RendererBase {
 	SDL_Window                               *window;
 	SDL_GLContext                            context;
 
-	unsigned int                             currentRefreshRate;
-	unsigned int                             maxRefreshRate;
-
 	std::vector<Frame>                       frames;
 	uint32_t                                 currentFrameIdx;
 	uint32_t                                 lastSyncedFrame;

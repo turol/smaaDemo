@@ -754,9 +754,6 @@ struct Frame {
 struct RendererImpl : public RendererBase {
 	SDL_Window                              *window;
 
-	unsigned int                            currentRefreshRate;
-	unsigned int                            maxRefreshRate;
-
 	std::vector<Frame>                      frames;
 	uint32_t                                currentFrameIdx;
 	uint32_t                                lastSyncedFrame;
