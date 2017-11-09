@@ -251,8 +251,8 @@ struct Framebuffer {
 
 
 struct Pipeline {
-	PipelineDesc  desc;
-	GLuint        shader;
+	PipelineDesc    desc;
+	GLuint          shader;
 	ShaderResources  resources;
 
 
@@ -404,7 +404,7 @@ struct Sampler {
 	{
 	}
 
-	Sampler(const Sampler &) = delete;
+	Sampler(const Sampler &)            = delete;
 	Sampler &operator=(const Sampler &) = delete;
 
 	Sampler(Sampler &&other)
@@ -433,10 +433,10 @@ struct Sampler {
 
 
 struct Texture {
-	unsigned int width, height;
-	bool         renderTarget;
+	unsigned int  width, height;
+	bool          renderTarget;
 	// TODO: need target for anything?
-	GLuint tex;
+	GLuint        tex;
 
 
 	Texture()
@@ -448,7 +448,7 @@ struct Texture {
 	}
 
 
-	Texture(const Texture &) = delete;
+	Texture(const Texture &)            = delete;
 	Texture &operator=(const Texture &) = delete;
 
 	Texture(Texture &&other)
@@ -457,9 +457,9 @@ struct Texture {
 	, renderTarget(other.renderTarget)
 	, tex(other.tex)
 	{
-		other.tex      = 0;
-		other.width    = 0;
-		other.height   = 0;
+		other.tex          = 0;
+		other.width        = 0;
+		other.height       = 0;
 		other.renderTarget = false;
 	}
 
@@ -490,9 +490,9 @@ struct Texture {
 
 
 struct VertexShader {
-	GLuint shader;
-	std::string name;
-	ShaderResources resources;
+	GLuint           shader;
+	std::string      name;
+	ShaderResources  resources;
 
 
 	VertexShader()
@@ -501,7 +501,7 @@ struct VertexShader {
 	}
 
 
-	VertexShader(const VertexShader &) = delete;
+	VertexShader(const VertexShader &)            = delete;
 	VertexShader &operator=(const VertexShader &) = delete;
 
 	VertexShader(VertexShader &&other)
@@ -588,28 +588,28 @@ struct Frame {
 	, ephemeralBuffers(std::move(other.ephemeralBuffers))
 	, fence(other.fence)
 	{
-		other.outstanding = false;
-		other.fence       = nullptr;
-		other.usedRingBufPtr   = 0;
+		other.outstanding     = false;
+		other.fence           = nullptr;
+		other.usedRingBufPtr  = 0;
 		assert(other.ephemeralBuffers.empty());
 	}
 
 	Frame &operator=(Frame &&other) {
 		assert(!outstanding);
-		outstanding = other.outstanding;
-		other.outstanding = false;
+		outstanding            = other.outstanding;
+		other.outstanding      = false;
 
-		lastFrameNum = other.lastFrameNum;
+		lastFrameNum           = other.lastFrameNum;
 
 		usedRingBufPtr         = other.usedRingBufPtr;
 		other.usedRingBufPtr   = 0;
 
 		assert(!fence);
-		fence       = other.fence;
-		other.fence = nullptr;
+		fence                  = other.fence;
+		other.fence            = nullptr;
 
 		assert(ephemeralBuffers.empty());
-		ephemeralBuffers = std::move(other.ephemeralBuffers);
+		ephemeralBuffers       = std::move(other.ephemeralBuffers);
 		assert(other.ephemeralBuffers.empty());
 
 		return *this;
