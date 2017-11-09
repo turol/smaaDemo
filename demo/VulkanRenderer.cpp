@@ -1842,8 +1842,6 @@ void RendererImpl::beginFrame() {
 		frame.deleteResources = std::move(deleteResources);
 		assert(deleteResources.empty());
 	}
-
-	STUBBED("");
 }
 
 
@@ -2341,7 +2339,7 @@ void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int widt
 	assert(inFrame);
 
 	currentViewport.x        = static_cast<float>(x);
-	STUBBED("check viewport y direction");
+	// TODO: check viewport y direction when not using full height
 	currentViewport.y        = static_cast<float>(y);
 	currentViewport.width    = static_cast<float>(width);
 	currentViewport.height   = static_cast<float>(height);
