@@ -169,6 +169,9 @@ struct RendererBase {
 	, pipelineDrawn(false)
 	, scissorSet(false)
 	{
+		char *prefPath = SDL_GetPrefPath("", "SMAADemo");
+		spirvCacheDir = prefPath;
+		SDL_free(prefPath);
 	}
 
 

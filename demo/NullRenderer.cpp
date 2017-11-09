@@ -48,12 +48,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 {
 	SDL_Init(SDL_INIT_EVENTS);
 
-	{
-		char *prefPath = SDL_GetPrefPath("", "SMAADemo");
-		spirvCacheDir = prefPath;
-		SDL_free(prefPath);
-	}
-
 	recreateRingBuffer(desc.ephemeralRingBufSize);
 	drawableSize   = glm::uvec2(desc.swapchain.width, desc.swapchain.height);
 }

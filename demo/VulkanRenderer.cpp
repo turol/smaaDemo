@@ -177,12 +177,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
 	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
 
-	{
-		char *prefPath = SDL_GetPrefPath("", "SMAADemo");
-		spirvCacheDir = prefPath;
-		SDL_free(prefPath);
-	}
-
 	SDL_DisplayMode mode;
 	memset(&mode, 0, sizeof(mode));
 	int numDisplays = SDL_GetNumVideoDisplays();
