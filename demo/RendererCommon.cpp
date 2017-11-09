@@ -297,18 +297,23 @@ BufferHandle Renderer::createEphemeralBuffer(uint32_t size, const void *contents
 }
 
 
+FragmentShaderHandle Renderer::createFragmentShader(const std::string &name, const ShaderMacros &macros) {
+	return impl->createFragmentShader(name, macros);
+}
+
+
 FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	return impl->createFramebuffer(desc);
 }
 
 
-RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
-	return impl->createRenderPass(desc);
+PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
+	return impl->createPipeline(desc);
 }
 
 
-PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
-	return impl->createPipeline(desc);
+RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
+	return impl->createRenderPass(desc);
 }
 
 
@@ -324,11 +329,6 @@ SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
 
 VertexShaderHandle Renderer::createVertexShader(const std::string &name, const ShaderMacros &macros) {
 	return impl->createVertexShader(name, macros);
-}
-
-
-FragmentShaderHandle Renderer::createFragmentShader(const std::string &name, const ShaderMacros &macros) {
-	return impl->createFragmentShader(name, macros);
 }
 
 
@@ -357,13 +357,13 @@ void Renderer::deleteFramebuffer(FramebufferHandle handle) {
 }
 
 
-void Renderer::deleteRenderTarget(RenderTargetHandle &rt) {
-	impl->deleteRenderTarget(rt);
+void Renderer::deleteRenderPass(RenderPassHandle handle) {
+	impl->deleteRenderPass(handle);
 }
 
 
-void Renderer::deleteRenderPass(RenderPassHandle handle) {
-	impl->deleteRenderPass(handle);
+void Renderer::deleteRenderTarget(RenderTargetHandle &rt) {
+	impl->deleteRenderTarget(rt);
 }
 
 
@@ -427,13 +427,13 @@ void Renderer::bindDescriptorSet(unsigned int index, DSLayoutHandle layout, cons
 }
 
 
-void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
-	impl->setViewport(x, y, width, height);
+void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+	impl->setScissorRect(x, y, width, height);
 }
 
 
-void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
-	impl->setScissorRect(x, y, width, height);
+void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+	impl->setViewport(x, y, width, height);
 }
 
 

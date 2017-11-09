@@ -721,18 +721,18 @@ public:
 	unsigned int getCurrentRefreshRate() const;
 	unsigned int getMaxRefreshRate() const;
 
-	RenderTargetHandle    createRenderTarget(const RenderTargetDesc &desc);
-	VertexShaderHandle    createVertexShader(const std::string &name, const ShaderMacros &macros);
-	FragmentShaderHandle  createFragmentShader(const std::string &name, const ShaderMacros &macros);
-	FramebufferHandle     createFramebuffer(const FramebufferDesc &desc);
-	RenderPassHandle      createRenderPass(const RenderPassDesc &desc);
-	PipelineHandle        createPipeline(const PipelineDesc &desc);
 	// TODO: add buffer usage flags
 	BufferHandle          createBuffer(uint32_t size, const void *contents);
 	BufferHandle          createEphemeralBuffer(uint32_t size, const void *contents);
-	// TODO: non-ephemeral descriptor set
+	FragmentShaderHandle  createFragmentShader(const std::string &name, const ShaderMacros &macros);
+	FramebufferHandle     createFramebuffer(const FramebufferDesc &desc);
+	PipelineHandle        createPipeline(const PipelineDesc &desc);
+	RenderPassHandle      createRenderPass(const RenderPassDesc &desc);
+	RenderTargetHandle    createRenderTarget(const RenderTargetDesc &desc);
 	SamplerHandle         createSampler(const SamplerDesc &desc);
 	TextureHandle         createTexture(const TextureDesc &desc);
+	VertexShaderHandle    createVertexShader(const std::string &name, const ShaderMacros &macros);
+	// TODO: non-ephemeral descriptor set
 
 	DSLayoutHandle createDescriptorSetLayout(const DescriptorLayout *layout);
 	template <typename T> void registerDescriptorSetLayout() {
@@ -746,9 +746,9 @@ public:
 	void deleteBuffer(BufferHandle handle);
 	void deleteFramebuffer(FramebufferHandle fbo);
 	void deleteRenderPass(RenderPassHandle fbo);
+	void deleteRenderTarget(RenderTargetHandle &fbo);
 	void deleteSampler(SamplerHandle handle);
 	void deleteTexture(TextureHandle handle);
-	void deleteRenderTarget(RenderTargetHandle &fbo);
 
 
 	void setSwapchainDesc(const SwapchainDesc &desc);
@@ -762,17 +762,17 @@ public:
 	void beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle);
 	void endRenderPass();
 
-	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 	void setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
+	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 
 	void bindPipeline(PipelineHandle pipeline);
-	void bindIndexBuffer(BufferHandle buffer, bool bit16);
-	void bindVertexBuffer(unsigned int binding, BufferHandle buffer);
-
 	void bindDescriptorSet(unsigned int index, const DSLayoutHandle layout, const void *data);
 	template <typename T> void bindDescriptorSet(unsigned int index, const T &data) {
 		bindDescriptorSet(index, T::layoutHandle, &data);
 	}
+
+	void bindIndexBuffer(BufferHandle buffer, bool bit16);
+	void bindVertexBuffer(unsigned int binding, BufferHandle buffer);
 
 	void draw(unsigned int firstVertex, unsigned int vertexCount);
 	void drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount);
