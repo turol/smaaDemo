@@ -618,43 +618,43 @@ struct Frame {
 
 
 struct RendererImpl : public RendererBase {
-	SDL_Window *window;
-	SDL_GLContext context;
+	SDL_Window                               *window;
+	SDL_GLContext                            context;
 
-	GLuint        ringBuffer;
-	bool          persistentMapInUse;
-	char         *persistentMapping;
+	GLuint                                   ringBuffer;
+	bool                                     persistentMapInUse;
+	char                                     *persistentMapping;
 
-	PipelineHandle    currentPipeline;
-	RenderPassHandle  currentRenderPass;
-	FramebufferHandle currentFramebuffer;
+	PipelineHandle                           currentPipeline;
+	RenderPassHandle                         currentRenderPass;
+	FramebufferHandle                        currentFramebuffer;
 
-	bool decriptorSetsDirty;
+	bool                                     decriptorSetsDirty;
 	std::unordered_map<DSIndex, Descriptor>  descriptors;
 
-	bool           debug;
-	bool           tracing;
-	GLuint vao;
-	bool idxBuf16Bit;
-	unsigned int  indexBufByteOffset;
+	bool                                     debug;
+	bool                                     tracing;
+	GLuint                                   vao;
+	bool                                     idxBuf16Bit;
+	unsigned int                             indexBufByteOffset;
 
-	unsigned int   currentRefreshRate;
-	unsigned int   maxRefreshRate;
+	unsigned int                             currentRefreshRate;
+	unsigned int                             maxRefreshRate;
 
-	ResourceContainer<Buffer>               buffers;
-	ResourceContainer<DescriptorSetLayout>  dsLayouts;
-	ResourceContainer<FragmentShader>       fragmentShaders;
-	ResourceContainer<Framebuffer>          framebuffers;
-	ResourceContainer<Pipeline>             pipelines;
-	ResourceContainer<RenderPass>           renderPasses;
-	ResourceContainer<RenderTarget>         renderTargets;
-	ResourceContainer<Sampler>              samplers;
-	ResourceContainer<Texture>              textures;
-	ResourceContainer<VertexShader>         vertexShaders;
+	ResourceContainer<Buffer>                buffers;
+	ResourceContainer<DescriptorSetLayout>   dsLayouts;
+	ResourceContainer<FragmentShader>        fragmentShaders;
+	ResourceContainer<Framebuffer>           framebuffers;
+	ResourceContainer<Pipeline>              pipelines;
+	ResourceContainer<RenderPass>            renderPasses;
+	ResourceContainer<RenderTarget>          renderTargets;
+	ResourceContainer<Sampler>               samplers;
+	ResourceContainer<Texture>               textures;
+	ResourceContainer<VertexShader>          vertexShaders;
 
-	std::vector<Frame>        frames;
-	uint32_t                  currentFrameIdx;
-	uint32_t                  lastSyncedFrame;
+	std::vector<Frame>                       frames;
+	uint32_t                                 currentFrameIdx;
+	uint32_t                                 lastSyncedFrame;
 
 
 	void rebindDescriptorSets();

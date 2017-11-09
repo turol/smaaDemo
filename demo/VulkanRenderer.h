@@ -752,57 +752,57 @@ struct Frame {
 
 
 struct RendererImpl : public RendererBase {
-	SDL_Window *window;
-	vk::Instance instance;
-	vk::DebugReportCallbackEXT         debugCallback;
-	vk::PhysicalDevice physicalDevice;
-	vk::PhysicalDeviceProperties deviceProperties;
-	vk::PhysicalDeviceFeatures   deviceFeatures;
-	vk::Device                   device;
-	vk::SurfaceKHR               surface;
-	vk::PhysicalDeviceMemoryProperties memoryProperties;
-	uint32_t                           graphicsQueueIndex;
-	std::vector<vk::SurfaceFormatKHR>  surfaceFormats;
-	vk::SurfaceCapabilitiesKHR         surfaceCapabilities;
+	SDL_Window                              *window;
+	vk::Instance                            instance;
+	vk::DebugReportCallbackEXT              debugCallback;
+	vk::PhysicalDevice                      physicalDevice;
+	vk::PhysicalDeviceProperties            deviceProperties;
+	vk::PhysicalDeviceFeatures              deviceFeatures;
+	vk::Device                              device;
+	vk::SurfaceKHR                          surface;
+	vk::PhysicalDeviceMemoryProperties      memoryProperties;
+	uint32_t                                graphicsQueueIndex;
+	std::vector<vk::SurfaceFormatKHR>       surfaceFormats;
+	vk::SurfaceCapabilitiesKHR              surfaceCapabilities;
 	std::unordered_set<vk::PresentModeKHR>  surfacePresentModes;
-	vk::SwapchainKHR                   swapchain;
-	vk::Queue                          queue;
+	vk::SwapchainKHR                        swapchain;
+	vk::Queue                               queue;
 
-	vk::Semaphore                      acquireSem;
-	vk::Semaphore                      renderDoneSem;
+	vk::Semaphore                           acquireSem;
+	vk::Semaphore                           renderDoneSem;
 
-	vk::CommandBuffer                  currentCommandBuffer;
-	vk::PipelineLayout                 currentPipelineLayout;
-	vk::Viewport                       currentViewport;
+	vk::CommandBuffer                       currentCommandBuffer;
+	vk::PipelineLayout                      currentPipelineLayout;
+	vk::Viewport                            currentViewport;
 
-	VmaAllocator                       allocator;
+	VmaAllocator                            allocator;
 
-	unsigned int   currentRefreshRate;
-	unsigned int   maxRefreshRate;
-	bool           debugMarkers;
+	unsigned int                            currentRefreshRate;
+	unsigned int                            maxRefreshRate;
+	bool                                    debugMarkers;
 
-	ResourceContainer<Buffer>              buffers;
-	ResourceContainer<DescriptorSetLayout> dsLayouts;
-	ResourceContainer<FragmentShader>      fragmentShaders;
-	ResourceContainer<Framebuffer>         framebuffers;
-	ResourceContainer<Pipeline>            pipelines;
-	ResourceContainer<RenderPass>          renderPasses;
-	ResourceContainer<RenderTarget>  renderTargets;
-	ResourceContainer<Sampler>             samplers;
-	ResourceContainer<Texture>             textures;
-	ResourceContainer<VertexShader>        vertexShaders;
+	ResourceContainer<Buffer>               buffers;
+	ResourceContainer<DescriptorSetLayout>  dsLayouts;
+	ResourceContainer<FragmentShader>       fragmentShaders;
+	ResourceContainer<Framebuffer>          framebuffers;
+	ResourceContainer<Pipeline>             pipelines;
+	ResourceContainer<RenderPass>           renderPasses;
+	ResourceContainer<RenderTarget>         renderTargets;
+	ResourceContainer<Sampler>              samplers;
+	ResourceContainer<Texture>              textures;
+	ResourceContainer<VertexShader>         vertexShaders;
 
-	vk::Buffer           ringBuffer;
-	VmaAllocation        ringBufferMem;
-	char                *persistentMapping;
-	bool                 unmapPersistentSubmit;
+	vk::Buffer                              ringBuffer;
+	VmaAllocation                           ringBufferMem;
+	char                                    *persistentMapping;
+	bool                                    unmapPersistentSubmit;
 
-	std::vector<Frame>        frames;
-	uint32_t                  currentFrameIdx;
-	uint32_t                  lastSyncedFrame;
+	std::vector<Frame>                      frames;
+	uint32_t                                currentFrameIdx;
+	uint32_t                                lastSyncedFrame;
 
 	// std::vector has some kind of issue with variant with non-copyable types, so use unordered_set
-	std::unordered_set<Resource>     deleteResources;
+	std::unordered_set<Resource>            deleteResources;
 
 
 	void recreateSwapchain();
