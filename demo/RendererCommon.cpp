@@ -264,35 +264,6 @@ Renderer Renderer::createRenderer(const RendererDesc &desc) {
 }
 
 
-Renderer &Renderer::operator=(Renderer &&other) {
-	assert(impl == nullptr);
-	impl = other.impl;
-	other.impl = nullptr;
-
-	return *this;
-}
-
-
-Renderer::Renderer(Renderer &&other)
-: impl(other.impl)
-{
-	other.impl = nullptr;
-}
-
-
-Renderer::Renderer()
-: impl(nullptr)
-{
-}
-
-
-Renderer::Renderer(RendererImpl *impl_)
-: impl(impl_)
-{
-	assert(impl != nullptr);
-}
-
-
 Renderer::~Renderer() {
 	if (impl) {
 		delete impl;

@@ -672,7 +672,12 @@ struct RendererDesc {
 class Renderer {
 	RendererImpl *impl;
 
-	explicit Renderer(RendererImpl *impl_);
+	explicit Renderer(RendererImpl *impl_)
+	: impl(impl_)
+	{
+		assert(impl != nullptr);
+	}
+	
 
 
 public:
@@ -682,11 +687,34 @@ public:
 	Renderer(const Renderer &)            = delete;
 	Renderer &operator=(const Renderer &) = delete;
 
-	Renderer &operator=(Renderer &&);
-	Renderer(Renderer &&);
+	Renderer &operator=(Renderer &&other)
+	{
+		if (this == &other) {
+			return *this;
+		}
 
-	Renderer();
+		assert(!impl);
+
+		impl       = other.impl;
+		other.impl = nullptr;
+
+		return *this;
+	}
+
+	Renderer(Renderer &&other)
+	: impl(other.impl)
+	{
+		other.impl = nullptr;
+	}
+
+	Renderer()
+	: impl(nullptr)
+	{
+	}
+
 	~Renderer();
+
+
 
 
 	bool isRenderTargetFormatSupported(Format format) const;
