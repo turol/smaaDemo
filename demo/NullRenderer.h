@@ -334,7 +334,7 @@ struct VertexShader {
 	}
 
 
-	VertexShader(const VertexShader &) = delete;
+	VertexShader(const VertexShader &)            = delete;
 	VertexShader &operator=(const VertexShader &) = delete;
 
 	VertexShader(VertexShader &&other)
