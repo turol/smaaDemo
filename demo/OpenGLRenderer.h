@@ -176,11 +176,11 @@ struct FragmentShader {
 
 	FragmentShader(FragmentShader &&other)
 	: shader(other.shader)
-	, name(other.name)
+	, name(std::move(other.name))
 	, resources(other.resources)
 	{
 		other.shader    = 0;
-		other.name      = std::string();
+		assert(name.empty());
 		other.resources = ShaderResources();
 	}
 
@@ -190,11 +190,11 @@ struct FragmentShader {
 		}
 
 		shader          = other.shader;
-		name            = other.name;
+		name            = std::move(other.name);
 		resources       = other.resources;
 
 		other.shader    = 0;
-		other.name      = std::string();
+		assert(name.empty());
 		other.resources = ShaderResources();
 
 		return *this;
@@ -506,11 +506,11 @@ struct VertexShader {
 
 	VertexShader(VertexShader &&other)
 	: shader(other.shader)
-	, name(other.name)
+	, name(std::move(other.name))
 	, resources(other.resources)
 	{
 		other.shader    = 0;
-		other.name      = std::string();
+		assert(name.empty());
 		other.resources = ShaderResources();
 	}
 
@@ -520,11 +520,11 @@ struct VertexShader {
 		}
 
 		shader          = other.shader;
-		name            = other.name;
+		name            = std::move(other.name);
 		resources       = other.resources;
 
 		other.shader    = 0;
-		other.name      = std::string();
+		assert(name.empty());
 		other.resources = ShaderResources();
 
 		return *this;
