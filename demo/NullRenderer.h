@@ -131,7 +131,6 @@ struct Framebuffer {
 	Framebuffer() {}
 
 	~Framebuffer() {
-		assert(!renderPass);
 	}
 };
 
@@ -164,6 +163,37 @@ struct Pipeline {
 	Pipeline() {}
 
 	~Pipeline() {}
+};
+
+
+struct RenderPass {
+	RenderPassDesc  desc;
+
+
+	RenderPass(const RenderPass &)            = default;
+	RenderPass &operator=(const RenderPass &) = default;
+
+	RenderPass(RenderPass &&other)
+	: desc(other.desc)
+	{
+		other.desc = RenderPassDesc();
+	}
+
+	RenderPass &operator=(RenderPass &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		desc       = other.desc;
+
+		other.desc = RenderPassDesc();
+
+		return *this;
+	}
+
+	RenderPass() {}
+
+	~RenderPass() {}
 };
 
 
@@ -267,6 +297,7 @@ struct RendererImpl : public RendererBase {
 	ResourceContainer<DescriptorSetLayout>  dsLayouts;
 	ResourceContainer<Framebuffer>         framebuffers;
 	ResourceContainer<Pipeline>            pipelines;
+	ResourceContainer<RenderPass>          renderpasses;
 	ResourceContainer<RenderTarget>        rendertargets;
 	ResourceContainer<Sampler>             samplers;
 	ResourceContainer<Texture>             textures;

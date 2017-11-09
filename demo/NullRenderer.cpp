@@ -56,6 +56,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 	assert(newSize > 0);
 
+	ringBufPtr  = 0;
 	ringBufSize = newSize;
 	ringBuffer.resize(newSize, 0);
 	// TODO: use valgrind to make sure we only write to intended parts of ring buffer
@@ -129,8 +130,12 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 }
 
 
-RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc & /* desc */) {
-	return RenderPassHandle();
+RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
+	auto result = renderpasses.add();
+	auto &rp    = result.first;
+	rp.desc     = desc;
+
+	return result.second;
 }
 
 
