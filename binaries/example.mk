@@ -14,7 +14,8 @@ UBSAN:=n
 RENDERER:=opengl
 
 
-# internal or external SPIRV-cross?
+INTERNAL_shaderc:=y
+LDLIBS_shaderc:=
 INTERNAL_spirv-cross:=y
 LDLIBS_spirv-cross:=
 

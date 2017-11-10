@@ -60,11 +60,17 @@ CFLAGS+=-isystem$(TOPDIR)/foreign/glslang
 CFLAGS+=-isystem$(TOPDIR)/foreign/imgui
 CFLAGS+=-isystem$(TOPDIR)/foreign/mingw-std-threads
 CFLAGS+=-isystem$(TOPDIR)/foreign/pcg-cpp/include
-CFLAGS+=-isystem$(TOPDIR)/foreign/shaderc/libshaderc/include
-CFLAGS+=-isystem$(TOPDIR)/foreign/shaderc/libshaderc_util/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/stb
 CFLAGS+=-isystem$(TOPDIR)/foreign/tclap/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/vulkanMemoryAllocator/src
+
+
+ifeq ($(INTERNAL_shaderc),y)
+
+CFLAGS+=-isystem$(TOPDIR)/foreign/shaderc/libshaderc/include
+CFLAGS+=-isystem$(TOPDIR)/foreign/shaderc/libshaderc_util/include
+
+endif  # INTERNAL_shaderc
 
 
 ifeq ($(INTERNAL_spirv-cross),y)

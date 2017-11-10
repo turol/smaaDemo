@@ -17,7 +17,13 @@ FILES:= \
 	# empty line
 
 
+ifeq ($(INTERNAL_shaderc),y)
+
 SRC_shaderc:=$(addprefix $(d)/,$(FILES)) $(foreach directory, $(DIRS), $(SRC_$(directory)) )
+
+endif  # INTERNAL_shaderc
+
+
 DEPENDS_shaderc:=glslang spirv-tools
 
 
