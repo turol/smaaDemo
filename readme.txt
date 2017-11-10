@@ -8,25 +8,26 @@ Building
 
 Linux: Go to /binaries and type make. To change build settings copy example.mk to local.mk in the same directory. You only need to include changed lines in local.mk.
 
-Emscripten: Go to /emscripten and type make. On Windows you will need to run this through MinGW shell configured for Emscripten. Change build settings with local.mk as on Linux.
-Emscripten version is currently broken.
-
-Windows: There is a Visual Studio 2013 solution in /windows/SMAADemo.sln. You will need SDL2 headers and Windows libraries.
+Windows: There is a Visual Studio 2015 solution in /windows/SMAADemo.sln. You will need boost, SDL2 and Vulkan SDK. You also need to build the following libraries from the included sources under /foreign:
+SPIRV-Tools.lib
+SPIRV-Tools-comp.lib
+SPIRV-Tools-opt.lib
+spirv-cross-core.lib
+spirv-cross-glsl.lib
 
 
 Usage
 =====
 
 Command line options:
-"--gles" - Use OpenGL ES.
-"--gldebug" - Enable OpenGL debugging.
-"--noinstancing" - Disable instancing.
-"--dsa <mode>" - Select DSA mode: "arb", "ext", "none".
-"--glmajor <version>" - Specify OpenGL major version.
-"--glminor <version>" - Specify OpenGL minor version.
+"--debug" - Enable renderer debugging.
+"--trace" - Enable renderer tracing.
+"--nocache" - Don't load shaders from cache.
+"-f", "--fullscreen" - Start in fullscreen mode.
+"novsync" - Disable vsync.
 "--width <value>" - Specify window width.
 "--height <value>" - Specify window height.
-"<file path> ..." - Load specified image(s). Cycling through images not yet supported.
+"<file path> ..." - Load specified image(s).
 
 Key commands:
 A - Toggle antialiasing on/off
@@ -37,6 +38,7 @@ H - Print help
 M - Change antialiasing method (SMAA/FXAA)
 Q - Cycle through AA quality levels. Hold SHIFT to cycle in opposite direction.
 V - Toggle vsync
+LEFT/RIGHT ARROW - Cycle through scenes
 SPACE - Toggle camera rotation
 ESC - Quit
 
@@ -46,8 +48,17 @@ Third-party software
 
 GLEW (http://glew.sourceforge.net)
 GLM (OpenGL Mathematics) (http://glm.g-truc.net/0.9.7/)
+glslang (https://github.com/KhronosGroup/glslang)
+Dear ImGui (https://github.com/ocornut/imgui)
+mingw-std-threads (https://github.com/meganz/mingw-std-threads)
+PCG-Random (http://www.pcg-random.org)
+Shaderc (https://github.com/google/shaderc)
+SPIRV-Cross (https://github.com/KhronosGroup/SPIRV-Cross)
+SPIRV-Headers (https://github.com/KhronosGroup/SPIRV-Headers)
+SPIRV-Tools (https://github.com/KhronosGroup/SPIRV-Tools)
 stb_image (https://github.com/nothings/stb/)
 TCLAP (http://tclap.sourceforge.net)
+Vulkan Memory Allocator (https://gpuopen.com/gaming-product/vulkan-memory-allocator/)
 
 
 Authors
@@ -60,6 +71,6 @@ Tuomas Närväinen tuomas.narvainen@alternativegames.net
 Copyright and License
 =====================
 
-Copyright (c) 2015 Alternative Games Ltd / Turo Lamminen
+Copyright (c) 2015-2017 Alternative Games Ltd / Turo Lamminen
 
 This code is licensed under the MIT license (see license.txt).
