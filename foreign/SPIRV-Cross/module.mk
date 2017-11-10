@@ -21,7 +21,11 @@ FILES:= \
 	# empty line
 
 
+ifeq ($(INTERNAL_spirv-cross),y)
+
 SRC_spirv-cross:=$(addprefix $(d)/,$(FILES)) $(foreach directory, $(DIRS), $(SRC_$(directory)) )
+
+endif  # INTERNAL_spirv-cross
 
 
 d  := $(dirstack_$(sp))

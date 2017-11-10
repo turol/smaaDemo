@@ -13,6 +13,10 @@ UBSAN:=n
 
 RENDERER:=opengl
 
+# internal or external SPIRV-cross?
+INTERNAL_spirv-cross:=y
+LDLIBS_spirv-cross:=
+
 
 # compiler options etc
 CXX:=g++
