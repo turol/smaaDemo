@@ -6,7 +6,7 @@ This is a small program demonstrating the use of the Subpixel Morphological Anti
 Building
 ========
 
-Linux: Go to /binaries and type make. To change build settings copy example.mk to local.mk in the same directory. You only need to include changed lines in local.mk.
+Linux: Go to /binaries and type make. To change build settings copy example.mk to local.mk in the same directory. You only need to include changed lines in local.mk. The build defaults to OpenGL renderer, to use Vulkan set "RENDERER:=vulkan" in local.mk.
 
 Windows: There is a Visual Studio 2015 solution in /windows/SMAADemo.sln. You will need boost, SDL2 and Vulkan SDK. You also need to build the following libraries from the included sources under /foreign:
 SPIRV-Tools.lib
@@ -20,14 +20,14 @@ Usage
 =====
 
 Command line options:
-"--debug" - Enable renderer debugging.
-"--trace" - Enable renderer tracing.
-"--nocache" - Don't load shaders from cache.
+"--debug"            - Enable renderer debugging.
+"--trace"            - Enable renderer tracing.
+"--nocache"          - Don't load shaders from cache.
 "-f", "--fullscreen" - Start in fullscreen mode.
-"novsync" - Disable vsync.
-"--width <value>" - Specify window width.
-"--height <value>" - Specify window height.
-"<file path> ..." - Load specified image(s).
+"novsync"            - Disable vsync.
+"--width <value>"    - Specify window width.
+"--height <value>"   - Specify window height.
+"<file path> ..."    - Load specified image(s).
 
 Key commands:
 A - Toggle antialiasing on/off
@@ -47,7 +47,7 @@ Third-party software
 ====================
 
 GLEW (http://glew.sourceforge.net)
-GLM (OpenGL Mathematics) (http://glm.g-truc.net/0.9.7/)
+GLM (OpenGL Mathematics) (http://glm.g-truc.net/0.9.8)
 glslang (https://github.com/KhronosGroup/glslang)
 Dear ImGui (https://github.com/ocornut/imgui)
 mingw-std-threads (https://github.com/meganz/mingw-std-threads)
