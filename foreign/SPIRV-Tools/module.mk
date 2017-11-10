@@ -16,7 +16,11 @@ FILES:= \
 	# empty line
 
 
+ifeq ($(INTERNAL_spirv-tools),y)
+
 SRC_spirv-tools:=$(addprefix $(d)/,$(FILES)) $(foreach directory, $(DIRS), $(SRC_$(directory)) )
+
+endif  # INTERNAL_spirv-tools
 
 
 d  := $(dirstack_$(sp))

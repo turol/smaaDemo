@@ -62,8 +62,6 @@ CFLAGS+=-isystem$(TOPDIR)/foreign/mingw-std-threads
 CFLAGS+=-isystem$(TOPDIR)/foreign/pcg-cpp/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/shaderc/libshaderc/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/shaderc/libshaderc_util/include
-CFLAGS+=-isystem$(TOPDIR)/foreign/SPIRV-Tools/include
-CFLAGS+=-isystem$(TOPDIR)/foreign/SPIRV-Tools/source
 CFLAGS+=-isystem$(TOPDIR)/foreign/stb
 CFLAGS+=-isystem$(TOPDIR)/foreign/tclap/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/vulkanMemoryAllocator/src
@@ -81,6 +79,14 @@ ifeq ($(INTERNAL_spirv-headers),y)
 CFLAGS+=-isystem$(TOPDIR)/foreign/SPIRV-Headers/include
 
 endif  # INTERNAL_spirv-headers
+
+
+ifeq ($(INTERNAL_spirv-tools),y)
+
+CFLAGS+=-isystem$(TOPDIR)/foreign/SPIRV-Tools/include
+CFLAGS+=-isystem$(TOPDIR)/foreign/SPIRV-Tools/source
+
+endif  # INTERNAL_spirv-tools
 
 
 # (call directory-module, dirname)
