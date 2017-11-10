@@ -17,6 +17,7 @@ RENDERER:=opengl
 INTERNAL_spirv-cross:=y
 LDLIBS_spirv-cross:=
 
+INTERNAL_spirv-headers:=y
 
 # compiler options etc
 CXX:=g++

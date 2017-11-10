@@ -62,7 +62,6 @@ CFLAGS+=-isystem$(TOPDIR)/foreign/mingw-std-threads
 CFLAGS+=-isystem$(TOPDIR)/foreign/pcg-cpp/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/shaderc/libshaderc/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/shaderc/libshaderc_util/include
-CFLAGS+=-isystem$(TOPDIR)/foreign/SPIRV-Headers/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/SPIRV-Tools/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/SPIRV-Tools/source
 CFLAGS+=-isystem$(TOPDIR)/foreign/stb
@@ -75,6 +74,13 @@ ifeq ($(INTERNAL_spirv-cross),y)
 CFLAGS+=-isystem$(TOPDIR)/foreign/SPIRV-Cross
 
 endif  # INTERNAL_spirv-cross
+
+
+ifeq ($(INTERNAL_spirv-headers),y)
+
+CFLAGS+=-isystem$(TOPDIR)/foreign/SPIRV-Headers/include
+
+endif  # INTERNAL_spirv-headers
 
 
 # (call directory-module, dirname)
