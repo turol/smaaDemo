@@ -14,6 +14,21 @@ UBSAN:=n
 RENDERER:=opengl
 
 
+INTERNAL_glslang:=y
+LDLIBS_glslang:=
+
+INTERNAL_shaderc:=y
+LDLIBS_shaderc:=
+
+INTERNAL_spirv-cross:=y
+LDLIBS_spirv-cross:=
+
+INTERNAL_spirv-headers:=y
+
+INTERNAL_spirv-tools:=y
+LDLIBS_spirv-tools:=
+
+
 # compiler options etc
 CC:=i686-w64-mingw32-gcc
 CXX:=i686-w64-mingw32-g++
