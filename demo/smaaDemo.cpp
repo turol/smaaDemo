@@ -1121,16 +1121,17 @@ void SMAADemo::colorCubes() {
 
 
 static void printHelp() {
-	printf(" a     - toggle antialiasing on/off\n");
-	printf(" c     - re-color cubes\n");
-	printf(" d     - cycle through debug visualizations\n");
-	printf(" f     - toggle fullscreen\n");
-	printf(" h     - print help\n");
-	printf(" m     - change antialiasing method\n");
-	printf(" q     - cycle through AA quality levels\n");
-	printf(" v     - toggle vsync\n");
-	printf(" SPACE - toggle cube rotation\n");
-	printf(" ESC   - quit\n");
+	printf(" a                - toggle antialiasing on/off\n");
+	printf(" c                - re-color cubes\n");
+	printf(" d                - cycle through debug visualizations\n");
+	printf(" f                - toggle fullscreen\n");
+	printf(" h                - print help\n");
+	printf(" m                - change antialiasing method\n");
+	printf(" q                - cycle through AA quality levels\n");
+	printf(" v                - toggle vsync\n");
+	printf(" LEFT/RIGHT ARROW - cycle through scenes\n");
+	printf(" SPACE            - toggle cube rotation\n");
+	printf(" ESC              - quit\n");
 }
 
 
