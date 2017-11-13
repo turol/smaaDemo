@@ -180,6 +180,7 @@ enum class Layout : uint8_t {
 enum class VSync : uint8_t {
 	  Off
 	, On
+	, LateSwapTear
 };
 
 

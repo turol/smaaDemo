@@ -403,23 +403,27 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	bool vsync = false;
 	int retval = 0;
 	switch (desc.swapchain.vsync) {
-	case VSync::On:
+	case VSync::LateSwapTear:
 		retval = SDL_GL_SetSwapInterval(-1);
 		if (retval != 0) {
 			LOG("Failed to set late swap tearing vsync: %s\n", SDL_GetError());
+		} else {
+			vsync = true;
+			break;
+		}
+		// fallthrough
+
+	case VSync::On:
 			retval = SDL_GL_SetSwapInterval(1);
 			if (retval != 0) {
 				LOG("Failed to set vsync: %s\n", SDL_GetError());
 			} else {
 				vsync = true;
 			}
-		} else {
-			vsync = true;
-		}
 		break;
 
 	case VSync::Off:
-        // nothing here
+		// nothing here
 		break;
 
 	}
@@ -1252,13 +1256,19 @@ void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 		changed = true;
 		int retval = 0;
 		switch (desc.vsync) {
-		case VSync::On:
+		case VSync::LateSwapTear:
 			// enable vsync, using late swap tearing if possible
 			retval = SDL_GL_SetSwapInterval(-1);
-			if (retval != 0) {
+			if (retval == 0) {
+				LOG("VSync is on\n");
+			} else {
+				break;
+			}
+			// fallthrough
+
+		case VSync::On:
 				// TODO: check return val
 				SDL_GL_SetSwapInterval(1);
-			}
 			LOG("VSync is on\n");
 			break;
 

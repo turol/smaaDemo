@@ -1227,6 +1227,10 @@ void SMAADemo::mainLoopIteration() {
 			case SDL_SCANCODE_V:
 				switch (vsync) {
 				case VSync::On:
+					vsync = VSync::LateSwapTear;
+					break;
+
+				case VSync::LateSwapTear:
 					vsync = VSync::Off;
 					break;
 
@@ -1671,9 +1675,17 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 		ImGui::Separator();
 		recreateSwapchain = ImGui::Checkbox("Fullscreen", &fullscreen);
-		bool vsyncTemp = vsync == VSync::On;
-		recreateSwapchain = ImGui::Checkbox("V-Sync", &vsyncTemp)      || recreateSwapchain;
-		vsync = vsyncTemp ? VSync::On : VSync::Off;
+
+		int vsyncTemp = static_cast<int>(vsync);
+		ImGui::Text("V-Sync");
+		ImGui::RadioButton("Off",            &vsyncTemp, 0);
+		ImGui::RadioButton("On",             &vsyncTemp, 1);
+		ImGui::RadioButton("Late swap tear", &vsyncTemp, 2);
+
+		if (vsyncTemp != static_cast<int>(vsync)) {
+			recreateSwapchain = true;
+			vsync             = static_cast<VSync>(vsyncTemp);
+		}
 
 		int n = numFrames;
 		// TODO: ask Renderer for the limits

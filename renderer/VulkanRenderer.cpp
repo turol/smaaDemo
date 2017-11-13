@@ -1585,6 +1585,12 @@ void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 
 static const unsigned int numPresentModes = 4;
 static const std::array<vk::PresentModeKHR, numPresentModes> vsyncModes
+= {{ vk::PresentModeKHR::eFifo
+   , vk::PresentModeKHR::eMailbox
+   , vk::PresentModeKHR::eFifoRelaxed
+   , vk::PresentModeKHR::eImmediate }};
+
+static const std::array<vk::PresentModeKHR, numPresentModes> lateSwapModes
 = {{ vk::PresentModeKHR::eFifoRelaxed
    , vk::PresentModeKHR::eFifo
    , vk::PresentModeKHR::eMailbox
@@ -1604,6 +1610,9 @@ static const std::array<vk::PresentModeKHR, numPresentModes> &vsyncMode(VSync mo
 
 	case VSync::Off:
 		return nonVSyncModes;
+
+	case VSync::LateSwapTear:
+		return lateSwapModes;
 
 	}
 
