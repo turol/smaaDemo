@@ -28,6 +28,12 @@
     <Filter Include="Source Files\glslang">
       <UniqueIdentifier>{d765ceb4-e3a4-4ba5-aa59-d657d5d3afef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\utils">
+      <UniqueIdentifier>{93018a25-bf16-480a-91ad-e0669e862006}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\renderer">
+      <UniqueIdentifier>{915a8b3c-f11b-499a-9e6d-7a4f69697dd3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\demo\smaaDemo.cpp">
@@ -35,21 +41,6 @@
     </ClCompile>
     <ClCompile Include="..\foreign\glew\src\glew.c">
       <Filter>Source Files\glew</Filter>
-    </ClCompile>
-    <ClCompile Include="..\demo\NullRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\demo\OpenGLRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\demo\RendererCommon.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\demo\Utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\demo\VulkanRenderer.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\foreign\imgui\imgui.cpp">
       <Filter>Source Files\imgui</Filter>
@@ -201,8 +192,23 @@
     <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\preprocessor\PpTokens.cpp">
       <Filter>Source Files\glslang</Filter>
     </ClCompile>
-    <ClCompile Include="..\demo\VulkanMemoryAllocator.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\utils\Utils.cpp">
+      <Filter>Source Files\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\renderer\NullRenderer.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\renderer\OpenGLRenderer.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\renderer\RendererCommon.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\renderer\VulkanMemoryAllocator.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\renderer\VulkanRenderer.cpp">
+      <Filter>Source Files\renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -268,22 +274,22 @@
     <ClInclude Include="..\smaa.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\demo\Renderer.h">
+    <ClInclude Include="..\renderer\NullRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\demo\Utils.h">
+    <ClInclude Include="..\renderer\OpenGLRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\demo\RendererInternal.h">
+    <ClInclude Include="..\renderer\Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\demo\VulkanRenderer.h">
+    <ClInclude Include="..\renderer\RendererInternal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\demo\NullRenderer.h">
+    <ClInclude Include="..\renderer\VulkanRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\demo\OpenGLRenderer.h">
+    <ClInclude Include="..\utils\Utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

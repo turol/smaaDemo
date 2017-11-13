@@ -385,13 +385,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\demo\NullRenderer.cpp" />
-    <ClCompile Include="..\demo\OpenGLRenderer.cpp" />
-    <ClCompile Include="..\demo\RendererCommon.cpp" />
     <ClCompile Include="..\demo\smaaDemo.cpp" />
-    <ClCompile Include="..\demo\Utils.cpp" />
-    <ClCompile Include="..\demo\VulkanMemoryAllocator.cpp" />
-    <ClCompile Include="..\demo\VulkanRenderer.cpp" />
     <ClCompile Include="..\foreign\glew\src\glew.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Vulkan|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Vulkan|x64'">true</ExcludedFromBuild>
@@ -446,6 +440,12 @@
     <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\shader_stage.cc" />
     <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\spirv_tools_wrapper.cc" />
     <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\version_profile.cc" />
+    <ClCompile Include="..\renderer\NullRenderer.cpp" />
+    <ClCompile Include="..\renderer\OpenGLRenderer.cpp" />
+    <ClCompile Include="..\renderer\RendererCommon.cpp" />
+    <ClCompile Include="..\renderer\VulkanMemoryAllocator.cpp" />
+    <ClCompile Include="..\renderer\VulkanRenderer.cpp" />
+    <ClCompile Include="..\utils\Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\blit.frag" />
@@ -467,15 +467,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\AreaTex.h" />
-    <ClInclude Include="..\demo\NullRenderer.h" />
-    <ClInclude Include="..\demo\OpenGLRenderer.h" />
-    <ClInclude Include="..\demo\Renderer.h" />
-    <ClInclude Include="..\demo\RendererInternal.h" />
-    <ClInclude Include="..\demo\Utils.h" />
-    <ClInclude Include="..\demo\VulkanRenderer.h" />
     <ClInclude Include="..\fxaa3_11.h" />
+    <ClInclude Include="..\renderer\NullRenderer.h" />
+    <ClInclude Include="..\renderer\OpenGLRenderer.h" />
+    <ClInclude Include="..\renderer\Renderer.h" />
+    <ClInclude Include="..\renderer\RendererInternal.h" />
+    <ClInclude Include="..\renderer\VulkanRenderer.h" />
     <ClInclude Include="..\SearchTex.h" />
     <ClInclude Include="..\smaa.h" />
+    <ClInclude Include="..\utils\Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
