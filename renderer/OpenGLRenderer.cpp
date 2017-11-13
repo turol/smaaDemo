@@ -414,12 +414,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		// fallthrough
 
 	case VSync::On:
-			retval = SDL_GL_SetSwapInterval(1);
-			if (retval != 0) {
-				LOG("Failed to set vsync: %s\n", SDL_GetError());
-			} else {
-				vsync = true;
-			}
+		retval = SDL_GL_SetSwapInterval(1);
+		if (retval != 0) {
+			LOG("Failed to set vsync: %s\n", SDL_GetError());
+		} else {
+			vsync = true;
+		}
 		break;
 
 	case VSync::Off:
@@ -1267,8 +1267,8 @@ void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 			// fallthrough
 
 		case VSync::On:
-				// TODO: check return val
-				SDL_GL_SetSwapInterval(1);
+			// TODO: check return val
+			SDL_GL_SetSwapInterval(1);
 			LOG("VSync is on\n");
 			break;
 
