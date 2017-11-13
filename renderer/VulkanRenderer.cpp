@@ -1597,6 +1597,20 @@ static const std::array<vk::PresentModeKHR, numPresentModes> nonVSyncModes
    , vk::PresentModeKHR::eFifo }};
 
 
+static const std::array<vk::PresentModeKHR, numPresentModes> &vsyncMode(VSync mode) {
+	switch (mode) {
+	case VSync::On:
+		return vsyncModes;
+
+	case VSync::Off:
+		return nonVSyncModes;
+
+	}
+
+	UNREACHABLE();
+}
+
+
 void RendererImpl::recreateSwapchain() {
 	assert(swapchainDirty);
 
@@ -1718,7 +1732,7 @@ void RendererImpl::recreateSwapchain() {
 	vk::PresentModeKHR swapchainPresentMode = vk::PresentModeKHR::eFifo;
 	// pick from the supported modes based on a prioritized
 	// list depending on whether we want vsync or not
-	for (const auto presentMode : ((swapchainDesc.vsync == VSync::On) ? vsyncModes : nonVSyncModes)) {
+	for (const auto presentMode : vsyncMode(swapchainDesc.vsync)) {
 		if (surfacePresentModes.find(presentMode) != surfacePresentModes.end()) {
 			swapchainPresentMode = presentMode;
 			break;

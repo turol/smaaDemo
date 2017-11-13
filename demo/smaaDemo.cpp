@@ -1225,7 +1225,15 @@ void SMAADemo::mainLoopIteration() {
 				break;
 
 			case SDL_SCANCODE_V:
-				vsync = (vsync == VSync::On) ? VSync::Off : VSync::On;
+				switch (vsync) {
+				case VSync::On:
+					vsync = VSync::Off;
+					break;
+
+				case VSync::Off:
+					vsync = VSync::On;
+					break;
+				}
 				recreateSwapchain = true;
 				break;
 

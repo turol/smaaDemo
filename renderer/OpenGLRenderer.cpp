@@ -401,9 +401,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	context = SDL_GL_CreateContext(window);
 
 	bool vsync = false;
-	if (desc.swapchain.vsync == VSync::On) {
-		// enable vsync, using late swap tearing if possible
-		int retval = SDL_GL_SetSwapInterval(-1);
+	int retval = 0;
+	switch (desc.swapchain.vsync) {
+	case VSync::On:
+		retval = SDL_GL_SetSwapInterval(-1);
 		if (retval != 0) {
 			LOG("Failed to set late swap tearing vsync: %s\n", SDL_GetError());
 			retval = SDL_GL_SetSwapInterval(1);
@@ -415,6 +416,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		} else {
 			vsync = true;
 		}
+		break;
+
+	case VSync::Off:
+        // nothing here
+		break;
+
 	}
 
 	LOG("VSync is %s\n", vsync ? "on" : "off");
@@ -1243,18 +1250,23 @@ void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 
 	if (swapchainDesc.vsync != desc.vsync) {
 		changed = true;
-		if (desc.vsync == VSync::On) {
+		int retval = 0;
+		switch (desc.vsync) {
+		case VSync::On:
 			// enable vsync, using late swap tearing if possible
-			int retval = SDL_GL_SetSwapInterval(-1);
+			retval = SDL_GL_SetSwapInterval(-1);
 			if (retval != 0) {
 				// TODO: check return val
 				SDL_GL_SetSwapInterval(1);
 			}
 			LOG("VSync is on\n");
-		} else {
+			break;
+
+		case VSync::Off:
 			// TODO: check return val
 			SDL_GL_SetSwapInterval(0);
 			LOG("VSync is off\n");
+			break;
 		}
 	}
 
