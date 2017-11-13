@@ -219,7 +219,7 @@ class SMAADemo {
 	// global window things
 	unsigned int    windowWidth, windowHeight;
 	bool            fullscreen;
-	bool            vsync;
+	VSync           vsync;
 
 	unsigned int    numFrames;
 	bool            recreateSwapchain;
@@ -344,7 +344,7 @@ SMAADemo::SMAADemo()
 , windowWidth(1280)
 , windowHeight(720)
 , fullscreen(false)
-, vsync(true)
+, vsync(VSync::On)
 
 , numFrames(3)
 , recreateSwapchain(false)
@@ -540,7 +540,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		fullscreen    = fullscreenSwitch.getValue();
 		windowWidth   = windowWidthSwitch.getValue();
 		windowHeight  = windowHeightSwitch.getValue();
-		vsync         = !noVsyncSwitch.getValue();
+		vsync         = noVsyncSwitch.getValue() ? VSync::Off : VSync::On;
 
 		imageFiles    = imagesArg.getValue();
 
@@ -1225,7 +1225,7 @@ void SMAADemo::mainLoopIteration() {
 				break;
 
 			case SDL_SCANCODE_V:
-				vsync = !vsync;
+				vsync = (vsync == VSync::On) ? VSync::Off : VSync::On;
 				recreateSwapchain = true;
 				break;
 
@@ -1663,7 +1663,9 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 		ImGui::Separator();
 		recreateSwapchain = ImGui::Checkbox("Fullscreen", &fullscreen);
-		recreateSwapchain = ImGui::Checkbox("V-Sync", &vsync)          || recreateSwapchain;
+		bool vsyncTemp = vsync == VSync::On;
+		recreateSwapchain = ImGui::Checkbox("V-Sync", &vsyncTemp)      || recreateSwapchain;
+		vsync = vsyncTemp ? VSync::On : VSync::Off;
 
 		int n = numFrames;
 		// TODO: ask Renderer for the limits

@@ -177,6 +177,12 @@ enum class Layout : uint8_t {
 };
 
 
+enum class VSync : uint8_t {
+	  Off
+	, On
+};
+
+
 enum class VtxFormat : uint8_t {
 	  Float
 	, UNorm8
@@ -564,7 +570,7 @@ private:
 struct SwapchainDesc {
 	unsigned int  width, height;
 	unsigned int  numFrames;
-	bool          vsync;
+	VSync         vsync;
 	bool          fullscreen;
 
 
@@ -572,7 +578,7 @@ struct SwapchainDesc {
 	: width(0)
 	, height(0)
 	, numFrames(3)
-	, vsync(true)
+	, vsync(VSync::On)
 	, fullscreen(false)
 	{
 	}

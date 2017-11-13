@@ -401,7 +401,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	context = SDL_GL_CreateContext(window);
 
 	bool vsync = false;
-	if (desc.swapchain.vsync) {
+	if (desc.swapchain.vsync == VSync::On) {
 		// enable vsync, using late swap tearing if possible
 		int retval = SDL_GL_SetSwapInterval(-1);
 		if (retval != 0) {
@@ -1243,7 +1243,7 @@ void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 
 	if (swapchainDesc.vsync != desc.vsync) {
 		changed = true;
-		if (desc.vsync) {
+		if (desc.vsync == VSync::On) {
 			// enable vsync, using late swap tearing if possible
 			int retval = SDL_GL_SetSwapInterval(-1);
 			if (retval != 0) {
