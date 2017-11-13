@@ -34,7 +34,7 @@ THE SOFTWARE.
 #include <spirv_glsl.hpp>
 
 #include "Renderer.h"
-#include "Utils.h"
+#include "utils/Utils.h"
 #include "RendererInternal.h"
 
 

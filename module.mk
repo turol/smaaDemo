@@ -122,6 +122,8 @@ endef
 DIRS:= \
 	demo \
 	foreign \
+	renderer \
+	utils \
 	# empty line
 $(eval $(foreach directory, $(DIRS), $(call directory-module,$(directory)) ))
 

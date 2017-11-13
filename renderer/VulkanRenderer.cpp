@@ -27,7 +27,7 @@ THE SOFTWARE.
 #include <SDL_vulkan.h>
 
 #include "RendererInternal.h"
-#include "Utils.h"
+#include "utils/Utils.h"
 
 
 // this part of the C++ bindings sucks...

@@ -4,16 +4,13 @@ d              := $(dir)
 
 
 FILES:= \
+	Utils.cpp \
 	# empty line
 
 
-smaaDemo_MODULES:=imgui renderer sdl2 shaderc spirv-cross utils
-smaaDemo_SRC:=$(foreach f, smaaDemo.cpp, $(dir)/$(f))
+utils_MODULES:=
+utils_SRC:=$(foreach f, $(FILES), $(dir)/$(f))
 
-
-PROGRAMS+= \
-	smaaDemo \
-	# empty line
 
 SRC_$(d):=$(addprefix $(d)/,$(FILES))
 

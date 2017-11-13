@@ -43,8 +43,8 @@ THE SOFTWARE.
 
 #include <pcg_random.hpp>
 
-#include "Renderer.h"
-#include "Utils.h"
+#include "renderer/Renderer.h"
+#include "utils/Utils.h"
 
 #include "AreaTex.h"
 #include "SearchTex.h"
