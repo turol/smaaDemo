@@ -1580,32 +1580,32 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 	if (ImGui::Begin("SMAA", &windowVisible, flags)) {
 		if (ImGui::CollapsingHeader("Antialiasing properties", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::Checkbox("Antialiasing", &antialiasing);
-		int aa = static_cast<int>(aaMethod);
-		ImGui::RadioButton("FXAA", &aa, static_cast<int>(AAMethod::FXAA)); ImGui::SameLine();
-		ImGui::RadioButton("SMAA", &aa, static_cast<int>(AAMethod::SMAA));
-		aaMethod = static_cast<AAMethod>(aa);
+			ImGui::Checkbox("Antialiasing", &antialiasing);
+			int aa = static_cast<int>(aaMethod);
+			ImGui::RadioButton("FXAA", &aa, static_cast<int>(AAMethod::FXAA)); ImGui::SameLine();
+			ImGui::RadioButton("SMAA", &aa, static_cast<int>(AAMethod::SMAA));
+			aaMethod = static_cast<AAMethod>(aa);
 
-		int sq = smaaQuality;
-		ImGui::Separator();
-		ImGui::Combo("SMAA quality", &sq, smaaQualityLevels, maxSMAAQuality);
-		assert(sq >= 0);
-		assert(sq < int(maxSMAAQuality));
-		smaaQuality = sq;
+			int sq = smaaQuality;
+			ImGui::Separator();
+			ImGui::Combo("SMAA quality", &sq, smaaQualityLevels, maxSMAAQuality);
+			assert(sq >= 0);
+			assert(sq < int(maxSMAAQuality));
+			smaaQuality = sq;
 
-		int fq = fxaaQuality;
-		ImGui::Separator();
-		ImGui::Combo("FXAA quality", &fq, fxaaQualityLevels, maxFXAAQuality);
-		assert(fq >= 0);
-		assert(fq < int(maxFXAAQuality));
-		fxaaQuality = fq;
+			int fq = fxaaQuality;
+			ImGui::Separator();
+			ImGui::Combo("FXAA quality", &fq, fxaaQualityLevels, maxFXAAQuality);
+			assert(fq >= 0);
+			assert(fq < int(maxFXAAQuality));
+			fxaaQuality = fq;
 
-		int d = debugMode;
-		ImGui::Separator();
-		ImGui::Combo("SMAA debug", &d, smaaDebugModes, 3);
-		assert(d >= 0);
-		assert(d < 3);
-		debugMode = d;
+			int d = debugMode;
+			ImGui::Separator();
+			ImGui::Combo("SMAA debug", &d, smaaDebugModes, 3);
+			assert(d >= 0);
+			assert(d < 3);
+			debugMode = d;
 		}
 
 		if (ImGui::CollapsingHeader("Scene properties", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -1623,101 +1623,101 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			assert(s < int(scenes.size()));
 			activeScene = s;
 
-		ImGui::InputText("Load image", imageFileName, inputTextBufferSize);
+			ImGui::InputText("Load image", imageFileName, inputTextBufferSize);
 
-		ImGui::Columns(2);
+			ImGui::Columns(2);
 
-		if (ImGui::Button("Paste")) {
-			char *clipboard = SDL_GetClipboardText();
-			if (clipboard) {
-				size_t length = strnlen(clipboard, inputTextBufferSize - 1);
-				strncpy(imageFileName, clipboard, length);
-				imageFileName[length] = '\0';
-				SDL_free(clipboard);
+			if (ImGui::Button("Paste")) {
+				char *clipboard = SDL_GetClipboardText();
+				if (clipboard) {
+					size_t length = strnlen(clipboard, inputTextBufferSize - 1);
+					strncpy(imageFileName, clipboard, length);
+					imageFileName[length] = '\0';
+					SDL_free(clipboard);
+				}
 			}
-		}
-		ImGui::NextColumn();
-		if (ImGui::Button("Load")) {
-			std::string filename(imageFileName);
-			loadImage(filename);
-		}
+			ImGui::NextColumn();
+			if (ImGui::Button("Load")) {
+				std::string filename(imageFileName);
+				loadImage(filename);
+			}
 
-		ImGui::Columns(1);
+			ImGui::Columns(1);
 
-		int m = cubesPerSide;
-		bool changed = ImGui::InputInt("Cubes per side", &m);
-		if (changed && m > 0 && m < 64) {
-			cubesPerSide = m;
-			createCubes();
-		}
+			int m = cubesPerSide;
+			bool changed = ImGui::InputInt("Cubes per side", &m);
+			if (changed && m > 0 && m < 64) {
+				cubesPerSide = m;
+				createCubes();
+			}
 
-		float l = cameraDistance;
-		if (ImGui::SliderFloat("Camera distance", &l, 1.0f, 256.0f, "%.1f")) {
-			cameraDistance = l;
-		}
+			float l = cameraDistance;
+			if (ImGui::SliderFloat("Camera distance", &l, 1.0f, 256.0f, "%.1f")) {
+				cameraDistance = l;
+			}
 
-		ImGui::Checkbox("Rotate cubes", &rotateCubes);
+			ImGui::Checkbox("Rotate cubes", &rotateCubes);
 
-		ImGui::Separator();
-		ImGui::Text("Cube coloring mode");
-		int newColorMode = colorMode;
-		ImGui::RadioButton("RGB",   &newColorMode, 0);
-		ImGui::RadioButton("YCbCr", &newColorMode, 1);
+			ImGui::Separator();
+			ImGui::Text("Cube coloring mode");
+			int newColorMode = colorMode;
+			ImGui::RadioButton("RGB",   &newColorMode, 0);
+			ImGui::RadioButton("YCbCr", &newColorMode, 1);
 
-		if (int(colorMode) != newColorMode) {
-			colorMode = newColorMode;
-			colorCubes();
-		}
+			if (int(colorMode) != newColorMode) {
+				colorMode = newColorMode;
+				colorCubes();
+			}
 
-		if (ImGui::Button("Re-color cubes")) {
-			colorCubes();
-		}
+			if (ImGui::Button("Re-color cubes")) {
+				colorCubes();
+			}
 		}
 
 		if (ImGui::CollapsingHeader("Swapchain properties", ImGuiTreeNodeFlags_DefaultOpen)) {
-		recreateSwapchain = ImGui::Checkbox("Fullscreen", &fullscreen);
+			recreateSwapchain = ImGui::Checkbox("Fullscreen", &fullscreen);
 
-		int vsyncTemp = static_cast<int>(vsync);
-		ImGui::Text("V-Sync");
-		ImGui::RadioButton("Off",            &vsyncTemp, 0);
-		ImGui::RadioButton("On",             &vsyncTemp, 1);
-		ImGui::RadioButton("Late swap tear", &vsyncTemp, 2);
+			int vsyncTemp = static_cast<int>(vsync);
+			ImGui::Text("V-Sync");
+			ImGui::RadioButton("Off",            &vsyncTemp, 0);
+			ImGui::RadioButton("On",             &vsyncTemp, 1);
+			ImGui::RadioButton("Late swap tear", &vsyncTemp, 2);
 
-		if (vsyncTemp != static_cast<int>(vsync)) {
-			recreateSwapchain = true;
-			vsync             = static_cast<VSync>(vsyncTemp);
-		}
+			if (vsyncTemp != static_cast<int>(vsync)) {
+				recreateSwapchain = true;
+				vsync             = static_cast<VSync>(vsyncTemp);
+			}
 
-		int n = numFrames;
-		// TODO: ask Renderer for the limits
-		if (ImGui::SliderInt("frames ahead", &n, 1, 16)) {
-			numFrames = n;
-			recreateSwapchain = true;
-		}
+			int n = numFrames;
+			// TODO: ask Renderer for the limits
+			if (ImGui::SliderInt("frames ahead", &n, 1, 16)) {
+				numFrames = n;
+				recreateSwapchain = true;
+			}
 
-		ImGui::Checkbox("FPS limit", &fpsLimitActive);
+			ImGui::Checkbox("FPS limit", &fpsLimitActive);
 
-		int f   = fpsLimit;
-		bool changed = ImGui::InputInt("Max FPS", &f);
-		if (changed && f > 0) {
-			fpsLimit = f;
-		}
+			int f   = fpsLimit;
+			bool changed = ImGui::InputInt("Max FPS", &f);
+			if (changed && f > 0) {
+				fpsLimit = f;
+			}
 
-		ImGui::Separator();
-		// TODO: measure actual GPU time
-		ImGui::LabelText("FPS", "%.1f", io.Framerate);
-		ImGui::LabelText("Frame time ms", "%.1f", 1000.0f / io.Framerate);
+			ImGui::Separator();
+			// TODO: measure actual GPU time
+			ImGui::LabelText("FPS", "%.1f", io.Framerate);
+			ImGui::LabelText("Frame time ms", "%.1f", 1000.0f / io.Framerate);
 
 #ifdef RENDERER_VULKAN
-		ImGui::Separator();
-		// VMA memory allocation stats
-		MemoryStats stats = renderer.getMemStats();
-		float usedMegabytes = static_cast<float>(stats.usedBytes) / (1024.0f * 1024.0f);
-		float totalMegabytes = static_cast<float>(stats.usedBytes + stats.unusedBytes) / (1024.0f * 1024.0f);
-		ImGui::LabelText("Allocation count", "%u", stats.allocationCount);
-		ImGui::LabelText("Suballocation count", "%u", stats.subAllocationCount);
-		ImGui::LabelText("Used memory (MB)", "%.2f", usedMegabytes);
-		ImGui::LabelText("Total memory (MB)", "%.2f", totalMegabytes);
+			ImGui::Separator();
+			// VMA memory allocation stats
+			MemoryStats stats = renderer.getMemStats();
+			float usedMegabytes = static_cast<float>(stats.usedBytes) / (1024.0f * 1024.0f);
+			float totalMegabytes = static_cast<float>(stats.usedBytes + stats.unusedBytes) / (1024.0f * 1024.0f);
+			ImGui::LabelText("Allocation count", "%u", stats.allocationCount);
+			ImGui::LabelText("Suballocation count", "%u", stats.subAllocationCount);
+			ImGui::LabelText("Used memory (MB)", "%.2f", usedMegabytes);
+			ImGui::LabelText("Total memory (MB)", "%.2f", totalMegabytes);
 #endif
 		}
 
