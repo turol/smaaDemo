@@ -1579,6 +1579,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 	flags |= ImGuiWindowFlags_AlwaysAutoResize;
 
 	if (ImGui::Begin("SMAA", &windowVisible, flags)) {
+		if (ImGui::CollapsingHeader("Antialiasing properties", ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::Checkbox("Antialiasing", &antialiasing);
 		int aa = static_cast<int>(aaMethod);
 		ImGui::RadioButton("FXAA", &aa, static_cast<int>(AAMethod::FXAA)); ImGui::SameLine();
@@ -1605,9 +1606,9 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		assert(d >= 0);
 		assert(d < 3);
 		debugMode = d;
+		}
 
-		ImGui::Separator();
-		{
+		if (ImGui::CollapsingHeader("Scene properties", ImGuiTreeNodeFlags_DefaultOpen)) {
 			// TODO: don't regenerate this on every frame
 			std::vector<const char *> scenes;
 			scenes.reserve(images.size() + 1);
@@ -1621,7 +1622,6 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			assert(s >= 0);
 			assert(s < int(scenes.size()));
 			activeScene = s;
-		}
 
 		ImGui::InputText("Load image", imageFileName, inputTextBufferSize);
 
@@ -1672,8 +1672,9 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		if (ImGui::Button("Re-color cubes")) {
 			colorCubes();
 		}
+		}
 
-		ImGui::Separator();
+		if (ImGui::CollapsingHeader("Swapchain properties", ImGuiTreeNodeFlags_DefaultOpen)) {
 		recreateSwapchain = ImGui::Checkbox("Fullscreen", &fullscreen);
 
 		int vsyncTemp = static_cast<int>(vsync);
@@ -1697,7 +1698,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		ImGui::Checkbox("FPS limit", &fpsLimitActive);
 
 		int f   = fpsLimit;
-		changed = ImGui::InputInt("Max FPS", &f);
+		bool changed = ImGui::InputInt("Max FPS", &f);
 		if (changed && f > 0) {
 			fpsLimit = f;
 		}
@@ -1718,8 +1719,8 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		ImGui::LabelText("Used memory (MB)", "%.2f", usedMegabytes);
 		ImGui::LabelText("Total memory (MB)", "%.2f", totalMegabytes);
 #endif
+		}
 
-		ImGui::Separator();
 		if (ImGui::Button("Quit")) {
 			keepGoing = false;
 		}
