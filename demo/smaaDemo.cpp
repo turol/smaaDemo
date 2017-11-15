@@ -209,6 +209,35 @@ struct Image {
 };
 
 
+struct SMAAKey {
+	unsigned int quality;
+	// TODO: more options
+
+
+	bool operator==(const SMAAKey &other) const {
+		return this->quality == other.quality;
+	}
+};
+
+
+namespace std {
+
+	template <> struct hash<SMAAKey> {
+		size_t operator()(const SMAAKey &k) const {
+			return hash<uint32_t>()(k.quality);
+		}
+	};
+
+}  // namespace std
+
+
+struct SMAAPipelines {
+	PipelineHandle  edgePipeline;
+	PipelineHandle  blendWeightPipeline;
+	PipelineHandle  neighborPipeline;
+};
+
+
 class SMAADemo {
 	// command line things
 	bool            glDebug;
@@ -278,9 +307,7 @@ class SMAADemo {
 
 	std::array<PipelineHandle, maxFXAAQuality>  fxaaPipelines;
 
-	std::array<PipelineHandle, maxSMAAQuality>  smaaEdgePipelines;
-	std::array<PipelineHandle, maxSMAAQuality>  smaaBlendWeightPipelines;
-	std::array<PipelineHandle, maxSMAAQuality>  smaaNeighborPipelines;
+	std::unordered_map<SMAAKey, SMAAPipelines>  smaaPipelines;
 	FramebufferHandle                           smaaEdgesFramebuffer;
 	FramebufferHandle                           smaaWeightsFramebuffer;
 	RenderPassHandle                            smaaEdgesRenderPass;
@@ -300,6 +327,9 @@ class SMAADemo {
 	SMAADemo &operator=(const SMAADemo &) = delete;
 	SMAADemo(SMAADemo &&) = delete;
 	SMAADemo &operator=(SMAADemo &&) = delete;
+
+	const SMAAPipelines &getSMAAPipelines(unsigned int q);
+
 
 public:
 
@@ -730,6 +760,7 @@ void SMAADemo::initRender() {
 	      .cullFaces(true);
 	plDesc.descriptorSetLayout<GlobalDS>(0);
 
+	// TODO: create lazily in getSMAAPipelines
 	// TODO: final blend pass appears to not be affected by quality
 	// verify that and if so, share it
 	for (unsigned int i = 0; i < maxSMAAQuality; i++) {
@@ -746,7 +777,9 @@ void SMAADemo::initRender() {
 		plDesc.descriptorSetLayout<ColorCombinedDS>(1);
 		std::string passName = std::string("SMAA edges ") + std::to_string(i);
 		plDesc.name(passName.c_str());
-		smaaEdgePipelines[i]       = renderer.createPipeline(plDesc);
+
+		SMAAPipelines pipelines;
+		pipelines.edgePipeline      = renderer.createPipeline(plDesc);
 
 		vertexShader                = renderer.createVertexShader("smaaBlendWeight", macros);
 		fragmentShader              = renderer.createFragmentShader("smaaBlendWeight", macros);
@@ -756,7 +789,7 @@ void SMAADemo::initRender() {
 		plDesc.descriptorSetLayout<BlendWeightDS>(1);
 		passName = std::string("SMAA weights ") + std::to_string(i);
 		plDesc.name(passName.c_str());
-		smaaBlendWeightPipelines[i] = renderer.createPipeline(plDesc);
+		pipelines.blendWeightPipeline = renderer.createPipeline(plDesc);
 
 		vertexShader                = renderer.createVertexShader("smaaNeighbor", macros);
 		fragmentShader              = renderer.createFragmentShader("smaaNeighbor", macros);
@@ -766,7 +799,11 @@ void SMAADemo::initRender() {
 		plDesc.descriptorSetLayout<NeighborBlendDS>(1);
 		passName = std::string("SMAA blend ") + std::to_string(i);
 		plDesc.name(passName.c_str());
-		smaaNeighborPipelines[i]   = renderer.createPipeline(plDesc);
+		pipelines.neighborPipeline = renderer.createPipeline(plDesc);
+
+		SMAAKey key;
+		key.quality = i;
+		smaaPipelines.emplace(std::move(key), std::move(pipelines));
 	}
 
 	ShaderMacros macros;
@@ -947,6 +984,18 @@ void SMAADemo::initRender() {
 		io.Fonts->TexID = nullptr;
 		ImGui::SetNextWindowPosCenter();
 	}
+}
+
+
+const SMAAPipelines &SMAADemo::getSMAAPipelines(unsigned int q) {
+	SMAAKey key;
+	key.quality = q;
+
+	auto it = smaaPipelines.find(key);
+	// TODO: create lazily if missing
+	assert(it != smaaPipelines.end());
+
+	return it->second;
 }
 
 
@@ -1474,8 +1523,9 @@ void SMAADemo::render() {
 
 		case AAMethod::SMAA: {
 			// edges pass
+			const SMAAPipelines &pipelines = getSMAAPipelines(smaaQuality);
 			renderer.beginRenderPass(smaaEdgesRenderPass, smaaEdgesFramebuffer);
-			renderer.bindPipeline(smaaEdgePipelines[smaaQuality]);
+			renderer.bindPipeline(pipelines.edgePipeline);
 
 			ColorCombinedDS colorDS;
 			colorDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainColor]);
@@ -1486,7 +1536,7 @@ void SMAADemo::render() {
 
 			// blendweights pass
 			renderer.beginRenderPass(smaaWeightsRenderPass, smaaWeightsFramebuffer);
-			renderer.bindPipeline(smaaBlendWeightPipelines[smaaQuality]);
+			renderer.bindPipeline(pipelines.blendWeightPipeline);
 			BlendWeightDS blendWeightDS;
 			blendWeightDS.edgesTex.tex      = renderer.getRenderTargetTexture(rendertargets[RenderTargets::Edges]);
 			blendWeightDS.edgesTex.sampler  = linearSampler;
@@ -1505,7 +1555,7 @@ void SMAADemo::render() {
 			switch (debugMode) {
 			case 0: {
 				// full effect
-				renderer.bindPipeline(smaaNeighborPipelines[smaaQuality]);
+				renderer.bindPipeline(pipelines.neighborPipeline);
 
 				NeighborBlendDS neighborBlendDS;
 				neighborBlendDS.color.tex            = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainColor]);
