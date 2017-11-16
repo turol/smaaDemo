@@ -779,29 +779,6 @@ void SMAADemo::initRender() {
 
 	ShaderMacros macros;
 
-	// TODO: vertex shader not affected by quality, share it
-	// TODO: create lazily in getFXAAPipeline
-	for (unsigned int i = 0; i < maxFXAAQuality; i++) {
-		FXAAKey key;
-		key.quality = i;
-
-		std::string qualityString(fxaaQualityLevels[i]);
-
-		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
-		auto vertexShader   = renderer.createVertexShader("fxaa", macros);
-		auto fragmentShader = renderer.createFragmentShader("fxaa", macros);
-		plDesc.renderPass(finalRenderPass);
-		plDesc.vertexShader(vertexShader)
-		      .fragmentShader(fragmentShader);
-		plDesc.descriptorSetLayout<ColorCombinedDS>(1);
-		std::string passName = std::string("FXAA ") + std::to_string(i);
-		plDesc.name(passName.c_str());
-
-		fxaaPipelines.emplace(std::move(key), renderer.createPipeline(plDesc));
-	}
-
-	macros.clear();
-
 	auto vertexShader   = renderer.createVertexShader("cube", macros);
 	auto fragmentShader = renderer.createFragmentShader("cube", macros);
 
@@ -1029,8 +1006,33 @@ const PipelineHandle &SMAADemo::getFXAAPipeline(unsigned int q) {
 	key.quality = q;
 
 	auto it = fxaaPipelines.find(key);
-	// TODO: create lazily if missing
-	assert(it != fxaaPipelines.end());
+	// create lazily if missing
+	if (it == fxaaPipelines.end()) {
+		// TODO: vertex shader not affected by quality, share it
+		PipelineDesc plDesc;
+		plDesc.depthWrite(false)
+			  .depthTest(false)
+			  .cullFaces(true);
+		plDesc.descriptorSetLayout<GlobalDS>(0);
+
+		std::string qualityString(fxaaQualityLevels[q]);
+
+		ShaderMacros macros;
+		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
+		auto vertexShader   = renderer.createVertexShader("fxaa", macros);
+		auto fragmentShader = renderer.createFragmentShader("fxaa", macros);
+		plDesc.renderPass(finalRenderPass);
+		plDesc.vertexShader(vertexShader)
+		      .fragmentShader(fragmentShader);
+		plDesc.descriptorSetLayout<ColorCombinedDS>(1);
+		std::string passName = std::string("FXAA ") + std::to_string(q);
+		plDesc.name(passName.c_str());
+
+		bool inserted = false;
+		std::tie(it, inserted) = fxaaPipelines.emplace(std::move(key), renderer.createPipeline(plDesc));
+		assert(inserted);
+	}
+
 
 	return it->second;
 }
