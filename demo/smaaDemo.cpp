@@ -209,6 +209,17 @@ struct Image {
 };
 
 
+struct FXAAKey {
+	unsigned int quality;
+	// TODO: more options
+
+
+	bool operator==(const FXAAKey &other) const {
+		return this->quality == other.quality;
+	}
+};
+
+
 struct SMAAKey {
 	unsigned int quality;
 	// TODO: more options
@@ -224,6 +235,12 @@ namespace std {
 
 	template <> struct hash<SMAAKey> {
 		size_t operator()(const SMAAKey &k) const {
+			return hash<uint32_t>()(k.quality);
+		}
+	};
+
+	template <> struct hash<FXAAKey> {
+		size_t operator()(const FXAAKey &k) const {
 			return hash<uint32_t>()(k.quality);
 		}
 	};
@@ -305,8 +322,7 @@ class SMAADemo {
 
 	std::array<RenderTargetHandle, RenderTargets::Count> rendertargets;
 
-	std::array<PipelineHandle, maxFXAAQuality>  fxaaPipelines;
-
+	std::unordered_map<FXAAKey, PipelineHandle> fxaaPipelines;
 	std::unordered_map<SMAAKey, SMAAPipelines>  smaaPipelines;
 	FramebufferHandle                           smaaEdgesFramebuffer;
 	FramebufferHandle                           smaaWeightsFramebuffer;
@@ -329,6 +345,7 @@ class SMAADemo {
 	SMAADemo &operator=(SMAADemo &&) = delete;
 
 	const SMAAPipelines &getSMAAPipelines(unsigned int q);
+	const PipelineHandle &getFXAAPipeline(unsigned int q);
 
 
 public:
@@ -763,7 +780,11 @@ void SMAADemo::initRender() {
 	ShaderMacros macros;
 
 	// TODO: vertex shader not affected by quality, share it
+	// TODO: create lazily in getFXAAPipeline
 	for (unsigned int i = 0; i < maxFXAAQuality; i++) {
+		FXAAKey key;
+		key.quality = i;
+
 		std::string qualityString(fxaaQualityLevels[i]);
 
 		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
@@ -775,7 +796,8 @@ void SMAADemo::initRender() {
 		plDesc.descriptorSetLayout<ColorCombinedDS>(1);
 		std::string passName = std::string("FXAA ") + std::to_string(i);
 		plDesc.name(passName.c_str());
-		fxaaPipelines[i] = renderer.createPipeline(plDesc);
+
+		fxaaPipelines.emplace(std::move(key), renderer.createPipeline(plDesc));
 	}
 
 	macros.clear();
@@ -997,6 +1019,18 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(unsigned int q) {
 		std::tie(it, inserted) = smaaPipelines.emplace(std::move(key), std::move(pipelines));
 		assert(inserted);
 	}
+
+	return it->second;
+}
+
+
+const PipelineHandle &SMAADemo::getFXAAPipeline(unsigned int q) {
+	FXAAKey key;
+	key.quality = q;
+
+	auto it = fxaaPipelines.find(key);
+	// TODO: create lazily if missing
+	assert(it != fxaaPipelines.end());
 
 	return it->second;
 }
@@ -1514,7 +1548,7 @@ void SMAADemo::render() {
 		switch (aaMethod) {
 		case AAMethod::FXAA: {
 			renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
-			renderer.bindPipeline(fxaaPipelines[fxaaQuality]);
+			renderer.bindPipeline(getFXAAPipeline(fxaaQuality));
 			ColorCombinedDS colorDS;
 			colorDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainColor]);
 			colorDS.color.sampler = linearSampler;
