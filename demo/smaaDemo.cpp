@@ -760,52 +760,6 @@ void SMAADemo::initRender() {
 	      .cullFaces(true);
 	plDesc.descriptorSetLayout<GlobalDS>(0);
 
-	// TODO: create lazily in getSMAAPipelines
-	// TODO: final blend pass appears to not be affected by quality
-	// verify that and if so, share it
-	for (unsigned int i = 0; i < maxSMAAQuality; i++) {
-		ShaderMacros macros;
-		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[i]);
-		macros.emplace(qualityString, "1");
-
-		auto vertexShader   = renderer.createVertexShader("smaaEdge", macros);
-		auto fragmentShader = renderer.createFragmentShader("smaaEdge", macros);
-
-		plDesc.renderPass(smaaEdgesRenderPass);
-		plDesc.vertexShader(vertexShader)
-		      .fragmentShader(fragmentShader);
-		plDesc.descriptorSetLayout<ColorCombinedDS>(1);
-		std::string passName = std::string("SMAA edges ") + std::to_string(i);
-		plDesc.name(passName.c_str());
-
-		SMAAPipelines pipelines;
-		pipelines.edgePipeline      = renderer.createPipeline(plDesc);
-
-		vertexShader                = renderer.createVertexShader("smaaBlendWeight", macros);
-		fragmentShader              = renderer.createFragmentShader("smaaBlendWeight", macros);
-		plDesc.renderPass(smaaWeightsRenderPass);
-		plDesc.vertexShader(vertexShader)
-		      .fragmentShader(fragmentShader);
-		plDesc.descriptorSetLayout<BlendWeightDS>(1);
-		passName = std::string("SMAA weights ") + std::to_string(i);
-		plDesc.name(passName.c_str());
-		pipelines.blendWeightPipeline = renderer.createPipeline(plDesc);
-
-		vertexShader                = renderer.createVertexShader("smaaNeighbor", macros);
-		fragmentShader              = renderer.createFragmentShader("smaaNeighbor", macros);
-		plDesc.renderPass(finalRenderPass);
-		plDesc.vertexShader(vertexShader)
-		      .fragmentShader(fragmentShader);
-		plDesc.descriptorSetLayout<NeighborBlendDS>(1);
-		passName = std::string("SMAA blend ") + std::to_string(i);
-		plDesc.name(passName.c_str());
-		pipelines.neighborPipeline = renderer.createPipeline(plDesc);
-
-		SMAAKey key;
-		key.quality = i;
-		smaaPipelines.emplace(std::move(key), std::move(pipelines));
-	}
-
 	ShaderMacros macros;
 
 	// TODO: vertex shader not affected by quality, share it
@@ -992,8 +946,57 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(unsigned int q) {
 	key.quality = q;
 
 	auto it = smaaPipelines.find(key);
-	// TODO: create lazily if missing
-	assert(it != smaaPipelines.end());
+	// create lazily if missing
+	// TODO: final blend pass appears to not be affected by quality
+	// verify that and if so, share it
+	if (it == smaaPipelines.end()) {
+		PipelineDesc plDesc;
+		plDesc.depthWrite(false)
+			  .depthTest(false)
+			  .cullFaces(true);
+		plDesc.descriptorSetLayout<GlobalDS>(0);
+
+		ShaderMacros macros;
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[q]);
+		macros.emplace(qualityString, "1");
+
+		auto vertexShader   = renderer.createVertexShader("smaaEdge", macros);
+		auto fragmentShader = renderer.createFragmentShader("smaaEdge", macros);
+
+		plDesc.renderPass(smaaEdgesRenderPass);
+		plDesc.vertexShader(vertexShader)
+		      .fragmentShader(fragmentShader);
+		plDesc.descriptorSetLayout<ColorCombinedDS>(1);
+		std::string passName = std::string("SMAA edges ") + std::to_string(q);
+		plDesc.name(passName.c_str());
+
+		SMAAPipelines pipelines;
+		pipelines.edgePipeline      = renderer.createPipeline(plDesc);
+
+		vertexShader                = renderer.createVertexShader("smaaBlendWeight", macros);
+		fragmentShader              = renderer.createFragmentShader("smaaBlendWeight", macros);
+		plDesc.renderPass(smaaWeightsRenderPass);
+		plDesc.vertexShader(vertexShader)
+		      .fragmentShader(fragmentShader);
+		plDesc.descriptorSetLayout<BlendWeightDS>(1);
+		passName = std::string("SMAA weights ") + std::to_string(q);
+		plDesc.name(passName.c_str());
+		pipelines.blendWeightPipeline = renderer.createPipeline(plDesc);
+
+		vertexShader                = renderer.createVertexShader("smaaNeighbor", macros);
+		fragmentShader              = renderer.createFragmentShader("smaaNeighbor", macros);
+		plDesc.renderPass(finalRenderPass);
+		plDesc.vertexShader(vertexShader)
+		      .fragmentShader(fragmentShader);
+		plDesc.descriptorSetLayout<NeighborBlendDS>(1);
+		passName = std::string("SMAA blend ") + std::to_string(q);
+		plDesc.name(passName.c_str());
+		pipelines.neighborPipeline = renderer.createPipeline(plDesc);
+
+		bool inserted = false;
+		std::tie(it, inserted) = smaaPipelines.emplace(std::move(key), std::move(pipelines));
+		assert(inserted);
+	}
 
 	return it->second;
 }
