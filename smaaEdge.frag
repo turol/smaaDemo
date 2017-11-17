@@ -31,6 +31,9 @@ THE SOFTWARE.
 #define SMAA_INCLUDE_PS 1
 #define SMAA_INCLUDE_VS 0
 
+#ifndef EDGEMETHOD
+#define EDGEMETHOD 0
+#endif
 
 #include "smaa.h"
 
@@ -53,5 +56,19 @@ void main(void)
     offsets[0] = offset0;
     offsets[1] = offset1;
     offsets[2] = offset2;
+
+#if EDGEMETHOD == 0
+
     outColor = vec4(SMAAColorEdgeDetectionPS(texcoord, offsets, colorTex), 0.0, 0.0);
+
+#elif EDGEMETHOD == 1
+
+    outColor = vec4(SMAALumaEdgeDetectionPS(texcoord, offsets, colorTex), 0.0, 0.0);
+
+#else
+
+#error Bad EDGEMETHOD
+
+#endif
+
 }

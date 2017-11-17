@@ -171,6 +171,13 @@ static const char *smaaQualityLevels[] =
 static const unsigned int maxSMAAQuality = sizeof(smaaQualityLevels) / sizeof(smaaQualityLevels[0]);
 
 
+enum class SMAAEdgeMethod : uint8_t {
+	  Color
+	, Luma
+	// TODO: Depth
+};
+
+
 namespace RenderTargets {
 
 	enum RenderTargets {
@@ -222,11 +229,35 @@ struct FXAAKey {
 
 struct SMAAKey {
 	unsigned int quality;
+	SMAAEdgeMethod  edgeMethod;
 	// TODO: more options
 
 
+	SMAAKey()
+	: quality(0)
+	, edgeMethod(SMAAEdgeMethod::Color)
+	{
+	}
+
+	SMAAKey(const SMAAKey &)            = default;
+	SMAAKey(SMAAKey &&)                 = default;
+
+	SMAAKey &operator=(const SMAAKey &) = default;
+	SMAAKey &operator=(SMAAKey &&)      = default;
+
+	~SMAAKey() {}
+
+
 	bool operator==(const SMAAKey &other) const {
-		return this->quality == other.quality;
+		if (this->quality    != other.quality) {
+			return false;
+		}
+
+		if (this->edgeMethod != other.edgeMethod) {
+			return false;
+		}
+
+		return true;
 	}
 };
 
@@ -235,7 +266,11 @@ namespace std {
 
 	template <> struct hash<SMAAKey> {
 		size_t operator()(const SMAAKey &k) const {
-			return hash<uint32_t>()(k.quality);
+			uint64_t temp = 0;
+			temp |= (static_cast<uint64_t>(k.quality)    <<  0);
+			temp |= (static_cast<uint64_t>(k.edgeMethod) <<  8);
+
+			return hash<uint64_t>()(temp);
 		}
 	};
 
@@ -278,6 +313,7 @@ class SMAADemo {
 	unsigned int  colorMode;
 	unsigned int  fxaaQuality;
 	unsigned int  smaaQuality;
+	SMAAEdgeMethod  smaaEdgeMethod;
 
 	// timing things
 	bool            fpsLimitActive;
@@ -344,7 +380,7 @@ class SMAADemo {
 	SMAADemo(SMAADemo &&) = delete;
 	SMAADemo &operator=(SMAADemo &&) = delete;
 
-	const SMAAPipelines &getSMAAPipelines(unsigned int q);
+	const SMAAPipelines &getSMAAPipelines(unsigned int q, SMAAEdgeMethod em);
 	const PipelineHandle &getFXAAPipeline(unsigned int q);
 
 
@@ -940,9 +976,10 @@ void SMAADemo::initRender() {
 }
 
 
-const SMAAPipelines &SMAADemo::getSMAAPipelines(unsigned int q) {
+const SMAAPipelines &SMAADemo::getSMAAPipelines(unsigned int q, SMAAEdgeMethod em) {
 	SMAAKey key;
 	key.quality = q;
+	key.edgeMethod = em;
 
 	auto it = smaaPipelines.find(key);
 	// create lazily if missing
@@ -958,6 +995,11 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(unsigned int q) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[q]);
 		macros.emplace(qualityString, "1");
+		if (em != SMAAEdgeMethod::Color) {
+			// TODO: edge detection method only affects the first pass, share others
+			// TODO: also doesn't affect vertex shader
+			macros.emplace("EDGEMETHOD", std::to_string(static_cast<uint8_t>(em)));
+		}
 
 		auto vertexShader   = renderer.createVertexShader("smaaEdge", macros);
 		auto fragmentShader = renderer.createFragmentShader("smaaEdge", macros);
@@ -1562,7 +1604,7 @@ void SMAADemo::render() {
 
 		case AAMethod::SMAA: {
 			// edges pass
-			const SMAAPipelines &pipelines = getSMAAPipelines(smaaQuality);
+			const SMAAPipelines &pipelines = getSMAAPipelines(smaaQuality, smaaEdgeMethod);
 			renderer.beginRenderPass(smaaEdgesRenderPass, smaaEdgesFramebuffer);
 			renderer.bindPipeline(pipelines.edgePipeline);
 
@@ -1681,6 +1723,12 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			assert(sq >= 0);
 			assert(sq < int(maxSMAAQuality));
 			smaaQuality = sq;
+
+			int em = static_cast<int>(smaaEdgeMethod);
+			ImGui::Text("SMAA edge detection");
+			ImGui::RadioButton("Color", &em, static_cast<int>(SMAAEdgeMethod::Color));
+			ImGui::RadioButton("Luma",  &em, static_cast<int>(SMAAEdgeMethod::Luma));
+			smaaEdgeMethod = static_cast<SMAAEdgeMethod>(em);
 
 			int fq = fxaaQuality;
 			ImGui::Separator();
