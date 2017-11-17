@@ -1539,8 +1539,11 @@ void SMAADemo::render() {
 		}
 
 		// TODO: better calculation, and check cube size (side is sqrt(3) currently)
-		float farPlane  = cameraDistance + 4.0f * float(cubesPerSide);
-		float nearPlane = 0.1f;
+		const float cubeDiameter = sqrtf(3.0f);
+		const float cubeDistance = cubeDiameter + 1.0f;
+
+		float farPlane  = cameraDistance + cubeDistance * float(cubesPerSide + 1);
+		float nearPlane = std::max(0.1f, cameraDistance - cubeDistance * float(cubesPerSide + 1));
 
 		glm::mat4 model  = glm::rotate(glm::mat4(1.0f), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 view   = glm::lookAt(glm::vec3(cameraDistance, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
