@@ -1611,7 +1611,7 @@ void SMAADemo::render() {
 			if (smaaKey.edgeMethod == SMAAEdgeMethod::Depth) {
 				colorDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainDepth]);
 			} else {
-			colorDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainColor]);
+				colorDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainColor]);
 			}
 			colorDS.color.sampler = nearestSampler;
 			renderer.bindDescriptorSet(1, colorDS);
