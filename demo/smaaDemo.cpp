@@ -174,7 +174,7 @@ static const unsigned int maxSMAAQuality = sizeof(smaaQualityLevels) / sizeof(sm
 enum class SMAAEdgeMethod : uint8_t {
 	  Color
 	, Luma
-	// TODO: Depth
+	, Depth
 };
 
 
@@ -1608,7 +1608,11 @@ void SMAADemo::render() {
 			renderer.bindPipeline(pipelines.edgePipeline);
 
 			ColorCombinedDS colorDS;
+			if (smaaKey.edgeMethod == SMAAEdgeMethod::Depth) {
+				colorDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainDepth]);
+			} else {
 			colorDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainColor]);
+			}
 			colorDS.color.sampler = nearestSampler;
 			renderer.bindDescriptorSet(1, colorDS);
 			renderer.draw(0, 3);
@@ -1727,6 +1731,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			ImGui::Text("SMAA edge detection");
 			ImGui::RadioButton("Color", &em, static_cast<int>(SMAAEdgeMethod::Color));
 			ImGui::RadioButton("Luma",  &em, static_cast<int>(SMAAEdgeMethod::Luma));
+			ImGui::RadioButton("Depth", &em, static_cast<int>(SMAAEdgeMethod::Depth));
 			smaaKey.edgeMethod = static_cast<SMAAEdgeMethod>(em);
 
 			int fq = fxaaQuality;

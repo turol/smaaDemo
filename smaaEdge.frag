@@ -41,7 +41,15 @@ THE SOFTWARE.
 layout (location = 0) out vec4 outColor;
 
 
+#if EDGEMETHOD == 2
+
+layout(set = 1, binding = 0) uniform sampler2D depthTex;
+
+#else  // EDGEMETHOD
+
 layout(set = 1, binding = 0) uniform sampler2D colorTex;
+
+#endif  // EDGEMETHOD
 
 
 layout (location = 0) in vec2 texcoord;
@@ -64,6 +72,10 @@ void main(void)
 #elif EDGEMETHOD == 1
 
     outColor = vec4(SMAALumaEdgeDetectionPS(texcoord, offsets, colorTex), 0.0, 0.0);
+
+#elif EDGEMETHOD == 2
+
+    outColor = vec4(SMAADepthEdgeDetectionPS(texcoord, offsets, depthTex), 0.0, 0.0);
 
 #else
 
