@@ -143,7 +143,23 @@ const char *formatName(Format format) {
 
 
 class Includer final : public shaderc::CompileOptions::IncluderInterface {
-	std::unordered_map<std::string, std::vector<char> > cache;
+	std::unordered_map<std::string, std::vector<char> > &cache;
+
+
+public:
+
+	Includer(std::unordered_map<std::string, std::vector<char> > &cache_)
+	: cache(cache_)
+	{
+	}
+
+	Includer(const Includer &)            = delete;
+	Includer(Includer &&)                 = default;
+
+	Includer &operator=(const Includer &) = delete;
+	Includer &operator=(Includer &&)      = default;
+
+	~Includer() {}
 
 
 	virtual shaderc_include_result* GetInclude(const char* requested_source, shaderc_include_type /* type */, const char* /* requesting_source */, size_t /* include_depth */) {
@@ -170,7 +186,7 @@ class Includer final : public shaderc::CompileOptions::IncluderInterface {
 	}
 
 	virtual void ReleaseInclude(shaderc_include_result* data) {
-		// no need to delete any of data's contents, they're owned by this class
+		// no need to delete any of data's contents, they're owned by someone else
 		delete data;
 	}
 };
@@ -186,6 +202,11 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 		return source;
 	}
 }
+
+
+// increase this when the shader compiler options change
+// so that the same source generates a different SPV
+const unsigned int shaderVersion = 1;
 
 
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, shaderc_shader_kind kind) {
@@ -209,13 +230,39 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			spvName += "_" + s;
 		}
 	}
+	LOG("Looking for \"%s\" in cache...\n", spvName.c_str());
+	std::string cacheName = spvName + ".cache";
 	spvName = spvName + ".spv";
 
-	if (!skipShaderCache && fileExists(spvName)) {
-		// check timestamp against source file
-		// TODO: should also check headers included during original compilation
+	if (!skipShaderCache && fileExists(cacheName) && fileExists(spvName)) {
+		auto cacheStr_ = readFile(cacheName);
+		std::string cacheStr(cacheStr_.begin(), cacheStr_.end());
+		int version = atoi(cacheStr.c_str());
+		if (version != int(shaderVersion)) {
+			LOG("version mismatch, found %d when expected %u\n", version, shaderVersion);
+		} else {
+		// check timestamp against source and header files
 		int64_t sourceTime = getFileTimestamp(name);
 		int64_t cacheTime = getFileTimestamp(spvName);
+
+			auto comma = cacheStr.find(',');
+			if (comma != std::string::npos) {
+				std::string str = cacheStr.substr(comma + 1);
+				while (!str.empty()) {
+					comma = str.find(',');
+					std::string filename;
+					if (comma == std::string::npos) {
+						filename = str;
+						str.clear();
+					} else {
+						filename = str.substr(0, comma);
+					}
+					int64_t includeTime = getFileTimestamp(filename);
+					sourceTime = std::max(sourceTime, includeTime);
+
+					str = str.substr(comma + 1);
+				}
+			}
 
 		if (sourceTime <= cacheTime) {
 			auto temp = readFile(spvName);
@@ -231,14 +278,16 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		} else {
 			LOG("Shader \"%s\" in cache is older than source, recompiling\n", spvName.c_str());
 		}
+		}
 	}
 
 	auto src = loadSource(name);
 
+	// TODO: cache includes globally
+	std::unordered_map<std::string, std::vector<char> > cache;
 	shaderc::CompileOptions options;
 	// TODO: optimization level?
-	// TODO: cache includes globally
-	options.SetIncluder(std::make_unique<Includer>());
+	options.SetIncluder(std::make_unique<Includer>(cache));
 
 	for (const auto &p : macros) {
 		options.AddMacroDefinition(p.first, p.second);
@@ -251,8 +300,18 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		throw std::runtime_error("Shader compile failed");
 	}
 
-	std::vector<uint32_t> spirv(result.cbegin(), result.cend());
+	{
+		std::string cacheStr = std::to_string(shaderVersion);
 
+		for (const auto &p : cache) {
+			cacheStr += ",";
+			cacheStr += p.first;
+		}
+
+		writeFile(cacheName, cacheStr.c_str(), cacheStr.size());
+	}
+
+	std::vector<uint32_t> spirv(result.cbegin(), result.cend());
 	writeFile(spvName, &spirv[0], spirv.size() * 4);
 
 	return spirv;
