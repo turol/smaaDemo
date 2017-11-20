@@ -629,8 +629,14 @@ float3 SMAAGatherNeighbours(float2 texcoord,
                             float4 offset[3],
                             SMAATexture2D(tex)) {
     #ifdef SMAAGather
+
+    #if SMAA_FLIP_Y
+    return SMAAGather(tex, texcoord + SMAA_RT_METRICS.xy * float2(-0.5,  0.5)).zwy;
+    #else  // SMAA_FLIP_Y
     return SMAAGather(tex, texcoord + SMAA_RT_METRICS.xy * float2(-0.5, -0.5)).grb;
-    #else
+    #endif  // SMAA_FLIP_Y
+
+    #else  // SMAAGather
     float P = SMAASamplePoint(tex, texcoord).r;
     float Pleft = SMAASamplePoint(tex, offset[0].xy).r;
     float Ptop  = SMAASamplePoint(tex, offset[0].zw).r;
