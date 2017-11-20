@@ -526,10 +526,9 @@
 // Porting Functions
 
 #if defined(SMAA_HLSL_3)
-#define API_V_DIR(v) v
-#define API_V_COORD(v) v
-#define API_V_BELOW(v1, v2)	v1 > v2
-#define API_V_ABOVE(v1, v2)	v1 < v2
+#ifndef SMAA_FLIP_Y
+#define SMAA_FLIP_Y 0
+#endif  // SMAA_FLIP_Y
 #define SMAATexture2D(tex) sampler2D tex
 #define SMAATexturePass2D(tex) tex
 #define SMAASampleLevelZero(tex, coord) tex2Dlod(tex, float4(coord, 0.0, 0.0))
@@ -542,10 +541,9 @@
 #define SMAA_BRANCH [branch]
 #endif
 #if defined(SMAA_HLSL_4) || defined(SMAA_HLSL_4_1)
-#define API_V_DIR(v) v
-#define API_V_COORD(v) v
-#define API_V_BELOW(v1, v2)	v1 > v2
-#define API_V_ABOVE(v1, v2)	v1 < v2
+#ifndef SMAA_FLIP_Y
+#define SMAA_FLIP_Y 0
+#endif  // SMAA_FLIP_Y
 SamplerState LinearSampler { Filter = MIN_MAG_LINEAR_MIP_POINT; AddressU = Clamp; AddressV = Clamp; };
 SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; AddressV = Clamp; };
 #define SMAATexture2D(tex) Texture2D tex
@@ -565,22 +563,9 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #endif
 #endif
 #if defined(SMAA_GLSL_3) || defined(SMAA_GLSL_4)
-
-#ifdef VULKAN_FLIP
-
-#define API_V_DIR(v) v
-#define API_V_COORD(v) v
-#define API_V_BELOW(v1, v2)	v1 > v2
-#define API_V_ABOVE(v1, v2)	v1 < v2
-
-#else  // VULKAN_FLIP
-
-#define API_V_DIR(v) -(v)
-#define API_V_COORD(v) (1.0 - v)
-#define API_V_BELOW(v1, v2)	v1 < v2
-#define API_V_ABOVE(v1, v2)	v1 > v2
-
-#endif  // VULKAN_FLIP
+#ifndef SMAA_FLIP_Y
+#define SMAA_FLIP_Y 1
+#endif  // SMAA_FLIP_Y
 
 #define SMAATexture2D(tex) sampler2D tex
 #define SMAATexturePass2D(tex) tex
@@ -614,6 +599,24 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #if !defined(SMAA_HLSL_3) && !defined(SMAA_HLSL_4) && !defined(SMAA_HLSL_4_1) && !defined(SMAA_GLSL_3) && !defined(SMAA_GLSL_4) && !defined(SMAA_CUSTOM_SL)
 #error you must define the shading language: SMAA_HLSL_*, SMAA_GLSL_* or SMAA_CUSTOM_SL
 #endif
+
+
+#if SMAA_FLIP_Y
+
+#define API_V_DIR(v) -(v)
+#define API_V_COORD(v) (1.0 - v)
+#define API_V_BELOW(v1, v2)	v1 < v2
+#define API_V_ABOVE(v1, v2)	v1 > v2
+
+#else  // VULKAN_FLIP
+
+#define API_V_DIR(v) v
+#define API_V_COORD(v) v
+#define API_V_BELOW(v1, v2)	v1 > v2
+#define API_V_ABOVE(v1, v2)	v1 < v2
+
+#endif  // VULKAN_FLIP
+
 
 //-----------------------------------------------------------------------------
 // Misc functions

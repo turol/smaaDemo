@@ -31,6 +31,10 @@ THE SOFTWARE.
 #define SMAA_INCLUDE_PS 0
 #define SMAA_INCLUDE_VS 1
 
+#ifdef VULKAN_FLIP
+#define SMAA_FLIP_Y 0
+#endif
+
 
 #include "smaa.h"
 #include "utils.h"

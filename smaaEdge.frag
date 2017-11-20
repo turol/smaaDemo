@@ -31,9 +31,14 @@ THE SOFTWARE.
 #define SMAA_INCLUDE_PS 1
 #define SMAA_INCLUDE_VS 0
 
+#ifdef VULKAN_FLIP
+#define SMAA_FLIP_Y 0
+#endif
+
 #ifndef EDGEMETHOD
 #define EDGEMETHOD 0
 #endif
+
 
 #include "smaa.h"
 
