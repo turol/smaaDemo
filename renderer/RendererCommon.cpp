@@ -81,6 +81,9 @@ bool isDepthFormat(Format format) {
 	case Format::RGBA8:
 		return false;
 
+	case Format::sRGBA8:
+		return false;
+
 	case Format::Depth16:
 		return true;
 
@@ -119,6 +122,9 @@ const char *formatName(Format format) {
 
 	case Format::RGBA8:
 		return "RGBA8";
+
+	case Format::sRGBA8:
+		return "sRGBA8";
 
 	case Format::Depth16:
 		return "Depth16";
