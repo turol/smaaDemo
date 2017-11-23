@@ -445,20 +445,16 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 	}
 
-	surfaceFormats      = physicalDevice.getSurfaceFormatsKHR(surface);
-	// TODO: sRGB
-	bool found = false;
-	LOG("%u surface formats\n", static_cast<uint32_t>(surfaceFormats.size()));
-	for (const auto &format : surfaceFormats) {
-		LOG(" %s\t%s\n", vk::to_string(format.format).c_str(), vk::to_string(format.colorSpace).c_str());
-		if (format.format == vk::Format::eB8G8R8A8Unorm && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
-			found = true;
-		}
-	}
+	{
+		auto surfaceFormats_ = physicalDevice.getSurfaceFormatsKHR(surface);
 
-	if (!found) {
-		LOG("surface format %s colorspace %s not supported\n", vk::to_string(vk::Format::eB8G8R8A8Unorm).c_str(), vk::to_string(vk::ColorSpaceKHR::eSrgbNonlinear).c_str());
-		throw std::runtime_error("surface format not supported");
+		LOG("%u surface formats\n", static_cast<uint32_t>(surfaceFormats_.size()));
+		for (const auto &format : surfaceFormats_) {
+			LOG(" %s\t%s\n", vk::to_string(format.format).c_str(), vk::to_string(format.colorSpace).c_str());
+			if (format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
+				surfaceFormats.insert(format.format);
+			}
+		}
 	}
 
 	recreateSwapchain();
@@ -1753,12 +1749,16 @@ void RendererImpl::recreateSwapchain() {
 
 	LOG("Using present mode %s\n", vk::to_string(swapchainPresentMode).c_str());
 
+
+	// TODO: better way to choose a format, should care about sRGB
+	vk::Format surfaceFormat = vk::Format::eB8G8R8A8Unorm;
+	assert(surfaceFormats.find(surfaceFormat) != surfaceFormats.end());
+
 	vk::SwapchainCreateInfoKHR swapchainCreateInfo;
 	swapchainCreateInfo.flags                 = vk::SwapchainCreateFlagBitsKHR();
 	swapchainCreateInfo.surface               = surface;
 	swapchainCreateInfo.minImageCount         = numImages;
-	// TODO: better way to choose a format, should care about sRGB
-	swapchainCreateInfo.imageFormat           = vk::Format::eB8G8R8A8Unorm;
+	swapchainCreateInfo.imageFormat           = surfaceFormat;
 	swapchainCreateInfo.imageColorSpace       = vk::ColorSpaceKHR::eSrgbNonlinear;
 	swapchainCreateInfo.imageExtent           = imageExtent;
 	swapchainCreateInfo.imageArrayLayers      = 1;

@@ -776,7 +776,7 @@ struct RendererImpl : public RendererBase {
 	vk::SurfaceKHR                          surface;
 	vk::PhysicalDeviceMemoryProperties      memoryProperties;
 	uint32_t                                graphicsQueueIndex;
-	std::vector<vk::SurfaceFormatKHR>       surfaceFormats;
+	std::unordered_set<vk::Format>          surfaceFormats;
 	vk::SurfaceCapabilitiesKHR              surfaceCapabilities;
 	std::unordered_set<vk::PresentModeKHR>  surfacePresentModes;
 	vk::SwapchainKHR                        swapchain;
