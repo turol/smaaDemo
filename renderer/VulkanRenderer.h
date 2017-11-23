@@ -55,6 +55,12 @@ THE SOFTWARE.
 
 namespace std {
 
+	template <> struct hash<vk::Format> {
+		size_t operator()(const vk::Format &f) const {
+			return hash<uint32_t>()(static_cast<uint32_t>(VkFormat(f)));
+		}
+	};
+
 	template <> struct hash<vk::PresentModeKHR> {
 		size_t operator()(const vk::PresentModeKHR &m) const {
 			return hash<uint32_t>()(static_cast<uint32_t>(VkPresentModeKHR(m)));
