@@ -968,6 +968,7 @@ void SMAADemo::initRender() {
 		texDesc.width(width)
 		       .height(height)
 		       .format(Format::RGBA8)
+		       .name("GUI")
 		       .mipLevelData(0, pixels, width * height * 4);
 		imguiFontsTex = renderer.createTexture(texDesc);
 		io.Fonts->TexID = nullptr;
@@ -1099,8 +1100,8 @@ void SMAADemo::loadImage(const std::string &filename) {
 	TextureDesc texDesc;
 	texDesc.width(width)
 	       .height(height)
+	       .name(img.shortName)
 	       .format(Format::RGBA8);
-	texDesc.name(filename);
 
 	texDesc.mipLevelData(0, imageData, width * height * 4);
 	img.width  = width;
