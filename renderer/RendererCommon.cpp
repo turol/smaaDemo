@@ -106,6 +106,35 @@ bool isDepthFormat(Format format) {
 }
 
 
+bool issRGBFormat(Format format) {
+	switch (format) {
+	case Format::Invalid:
+		UNREACHABLE();
+		return false;
+
+	case Format::R8:
+	case Format::RG8:
+	case Format::RGB8:
+	case Format::RGBA8:
+		return false;
+
+	case Format::sRGBA8:
+		return true;
+
+	case Format::Depth16:
+	case Format::Depth16S8:
+	case Format::Depth24S8:
+	case Format::Depth24X8:
+	case Format::Depth32Float:
+		return false;
+
+	}
+
+	UNREACHABLE();
+	return false;
+}
+
+
 const char *formatName(Format format) {
    switch (format) {
 	case Format::Invalid:

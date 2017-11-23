@@ -368,6 +368,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, glMajor);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glMinor);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
 	if (desc.debug || tracing) {
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 	}
@@ -405,6 +406,13 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	window = SDL_CreateWindow("SMAA Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, desc.swapchain.width, desc.swapchain.height, flags);
 
 	context = SDL_GL_CreateContext(window);
+
+	{
+		int value = -1;
+		SDL_GL_GetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, &value);
+		LOG("sRGB framebuffer: %d\n", value);
+		sRGBFramebuffer = value;
+	}
 
 	bool vsync = false;
 	int retval = 0;
@@ -1017,6 +1025,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	assert(colorRT.format == renderPass.desc.colorFormats_[0]);
 	fb.renderPass = desc.renderPass_;
 	fb.colors[0]  = desc.colors_[0];
+	fb.sRGB       = issRGBFormat(colorRT.format);
 	fb.width      = colorRT.width;
 	fb.height     = colorRT.height;
 
@@ -1391,6 +1400,12 @@ void RendererImpl::beginFrame() {
 	// TODO: reset all relevant state in case some 3rd-party program fucked them up
 	glDepthMask(GL_TRUE);
 
+	if (sRGBFramebuffer) {
+		glEnable(GL_FRAMEBUFFER_SRGB);
+	} else {
+		glDisable(GL_FRAMEBUFFER_SRGB);
+	}
+
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	// TODO: only clear depth/stencil if we have it
 	// TODO: set color/etc write masks if necessary
@@ -1412,6 +1427,12 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 
 	// TODO: only if enabled
 	glDisable(GL_SCISSOR_TEST);
+	if (sRGBFramebuffer) {
+		glEnable(GL_FRAMEBUFFER_SRGB);
+	} else {
+		glDisable(GL_FRAMEBUFFER_SRGB);
+	}
+
 
 	// TODO: necessary? should do linear blit?
 	assert(width  == swapchainDesc.width);
@@ -1515,6 +1536,12 @@ void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fb.fbo);
 	glClear(mask);
+
+	if (fb.sRGB) {
+		glEnable(GL_FRAMEBUFFER_SRGB);
+	} else {
+		glDisable(GL_FRAMEBUFFER_SRGB);
+	}
 
 	currentRenderPass  = rpHandle;
 	currentFramebuffer = fbHandle;

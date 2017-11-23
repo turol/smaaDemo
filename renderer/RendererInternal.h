@@ -116,6 +116,7 @@ const char *descriptorTypeName(DescriptorType t);
 
 
 bool isDepthFormat(Format format);
+bool issRGBFormat(Format format);
 
 
 struct RendererBase {

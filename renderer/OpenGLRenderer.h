@@ -226,6 +226,7 @@ struct FragmentShader {
 
 struct Framebuffer {
 	unsigned int                                             width, height;
+	bool                                                     sRGB;
 	GLuint                                                   fbo;
 	RenderTargetHandle                                       depthStencil;
 	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS>  colors;
@@ -238,6 +239,7 @@ struct Framebuffer {
 	Framebuffer(Framebuffer &&other)
 	: width(other.width)
 	, height(other.height)
+	, sRGB(false)
 	, fbo(other.fbo)
 	, depthStencil(other.depthStencil)
 	, renderPass(other.renderPass)
@@ -620,6 +622,7 @@ struct Frame {
 struct RendererImpl : public RendererBase {
 	SDL_Window                               *window;
 	SDL_GLContext                            context;
+	bool                                     sRGBFramebuffer;
 
 	std::vector<Frame>                       frames;
 

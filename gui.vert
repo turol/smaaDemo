@@ -40,5 +40,6 @@ void main(void)
 {
     gl_Position   = guiOrtho * vec4(position, 0.0, 1.0);
     out_uv        = uv;
-    out_color     = color;
+    out_color.xyz = sRGB2linear(color.xyz);
+    out_color.a   = color.a;
 }

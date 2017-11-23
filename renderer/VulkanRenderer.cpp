@@ -1749,10 +1749,11 @@ void RendererImpl::recreateSwapchain() {
 
 	LOG("Using present mode %s\n", vk::to_string(swapchainPresentMode).c_str());
 
-
-	// TODO: better way to choose a format, should care about sRGB
-	vk::Format surfaceFormat = vk::Format::eB8G8R8A8Unorm;
-	assert(surfaceFormats.find(surfaceFormat) != surfaceFormats.end());
+	// TODO: should fallback to Unorm and communicate back to demo
+	vk::Format surfaceFormat = vk::Format::eB8G8R8A8Srgb;
+	if (surfaceFormats.find(surfaceFormat) == surfaceFormats.end()) {
+		throw std::runtime_error("No sRGB format backbuffer support");
+	}
 
 	vk::SwapchainCreateInfoKHR swapchainCreateInfo;
 	swapchainCreateInfo.flags                 = vk::SwapchainCreateFlagBitsKHR();

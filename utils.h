@@ -44,3 +44,18 @@ vec2 flipTexCoord(in vec2 tc) {
 vec4 flipTexCoord(in vec4 tc) {
     return tc * vec4(1.0, -1.0, 1.0, -1.0) + vec4(0.0, 1.0, 0.0, 1.0);
 }
+
+
+float sRGB2linear(float v) {
+    if (v <= 0.04045) {
+        return v / 12.92;
+    } else {
+        return pow((v + 0.055) / 1.055, 2.4);
+    }
+}
+
+
+vec3 sRGB2linear(vec3 v) {
+    return vec3(sRGB2linear(v.x), sRGB2linear(v.y), sRGB2linear(v.z));
+}
+

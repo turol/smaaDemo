@@ -792,14 +792,16 @@ void SMAADemo::initRender() {
 	renderer.registerDescriptorSetLayout<NeighborBlendDS>();
 
 	RenderPassDesc rpDesc;
-	rpDesc.color(0, Format::RGBA8);
+	rpDesc.color(0, Format::sRGBA8);
 	rpDesc.colorFinalLayout(Layout::TransferSrc);
 	finalRenderPass       = renderer.createRenderPass(rpDesc.name("final"));
 
 	rpDesc.colorFinalLayout(Layout::ShaderRead);
+	rpDesc.color(0, Format::RGBA8);
 	smaaEdgesRenderPass   = renderer.createRenderPass(rpDesc.name("SMAA edges"));
 	smaaWeightsRenderPass = renderer.createRenderPass(rpDesc.name("SMAA weights"));
 
+	rpDesc.color(0, Format::sRGBA8);
 	rpDesc.depthStencil(depthFormat);
 	sceneRenderPass       = renderer.createRenderPass(rpDesc.name("scene"));
 
@@ -967,7 +969,7 @@ void SMAADemo::initRender() {
 
 		texDesc.width(width)
 		       .height(height)
-		       .format(Format::RGBA8)
+		       .format(Format::sRGBA8)
 		       .name("GUI")
 		       .mipLevelData(0, pixels, width * height * 4);
 		imguiFontsTex = renderer.createTexture(texDesc);
@@ -1101,7 +1103,7 @@ void SMAADemo::loadImage(const std::string &filename) {
 	texDesc.width(width)
 	       .height(height)
 	       .name(img.shortName)
-	       .format(Format::RGBA8);
+	       .format(Format::sRGBA8);
 
 	texDesc.mipLevelData(0, imageData, width * height * 4);
 	img.width  = width;
@@ -1135,10 +1137,10 @@ void SMAADemo::createFramebuffers() {
 	}
 
 	RenderTargetDesc rtDesc;
-	rtDesc.width(windowWidth).height(windowHeight).format(Format::RGBA8).name("main color");
+	rtDesc.width(windowWidth).height(windowHeight).format(Format::sRGBA8).name("main color");
 	rendertargets[RenderTargets::MainColor] = renderer.createRenderTarget(rtDesc);
 
-	rtDesc.width(windowWidth).height(windowHeight).format(Format::RGBA8).name("final");
+	rtDesc.width(windowWidth).height(windowHeight).format(Format::sRGBA8).name("final");
 	rendertargets[RenderTargets::FinalRender] = renderer.createRenderTarget(rtDesc);
 
 	rtDesc.format(depthFormat).name("main depth");
@@ -1214,13 +1216,22 @@ void SMAADemo::createCubes() {
 }
 
 
+static float sRGB2linear(float v) {
+    if (v <= 0.04045) {
+        return v / 12.92;
+    } else {
+        return powf((v + 0.055) / 1.055, 2.4);
+    }
+}
+
+
 void SMAADemo::colorCubes() {
 	if (colorMode == 0) {
 		for (auto &cube : cubes) {
 			// random RGB
-			cube.color.x = random.randFloat();
-			cube.color.y = random.randFloat();
-			cube.color.z = random.randFloat();
+			cube.color.x = sRGB2linear(random.randFloat());
+			cube.color.y = sRGB2linear(random.randFloat());
+			cube.color.z = sRGB2linear(random.randFloat());
 		}
 	} else {
 		for (auto &cube : cubes) {
@@ -1239,9 +1250,9 @@ void SMAADemo::colorCubes() {
 			float g = (y - c_blue * cb - c_red * cr) / c_green;
 			float b = cb * (2 - 2 * c_blue) + y;
 
-			cube.color.x = r;
-			cube.color.y = g;
-			cube.color.z = b;
+			cube.color.x = sRGB2linear(r);
+			cube.color.y = sRGB2linear(g);
+			cube.color.z = sRGB2linear(b);
 		}
 	}
 }
