@@ -467,6 +467,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		throw std::runtime_error("ARB_clip_control not found");
 	}
 
+	if (!(GLEW_ARB_texture_view || GLEW_VERSION_4_3)) {
+		LOG("ARB_texture_view not found\n");
+		throw std::runtime_error("ARB_texture_view not found");
+	}
+
 	if (GLEW_KHR_debug && desc.debug) {
 		LOG("KHR_debug found\n");
 
@@ -622,6 +627,17 @@ RendererImpl::~RendererImpl() {
 
 		this->textures.remove(rt.texture);
 		rt.texture = TextureHandle();
+
+		if (rt.additionalView) {
+			auto &view = this->textures.get(rt.additionalView);
+			assert(view.renderTarget);
+			view.renderTarget = false;
+			assert(view.tex != 0);
+			glDeleteTextures(1, &view.tex);
+			view.tex = 0;
+			this->textures.remove(rt.additionalView);
+			rt.additionalView = TextureHandle();
+		}
 	} );
 
 
@@ -1098,6 +1114,20 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	// TODO: std::move?
 	rt.texture = textureResult.second;
 
+	if (desc.additionalViewFormat_ != Format::Invalid) {
+		GLuint viewId = 0;
+		glGenTextures(1, &viewId);
+		glTextureView(viewId, GL_TEXTURE_2D, id, glTexFormat(desc.additionalViewFormat_), 0, 1, 0, 1);
+
+		auto viewResult   = textures.add();
+		Texture &view     = viewResult.first;
+		view.tex          = viewId;
+		view.width        = desc.width_;
+		view.height       = desc.height_;
+		view.renderTarget = true;
+		rt.additionalView = viewResult.second;
+	}
+
 	return result.second;
 }
 
@@ -1179,6 +1209,16 @@ TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
 }
 
 
+TextureHandle RendererImpl::getRenderTargetView(RenderTargetHandle handle, Format /* f */) {
+	const auto &rt = renderTargets.get(handle);
+
+	const auto &tex = textures.get(rt.additionalView);
+	assert(tex.renderTarget);
+
+	return rt.additionalView;
+}
+
+
 void RendererImpl::deleteBuffer(BufferHandle handle) {
 	buffers.removeWith(handle, [](struct Buffer &b) {
 		assert(b.buffer != 0);
@@ -1227,6 +1267,17 @@ void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
 		}
 		this->textures.remove(rt.texture);
 		rt.texture = TextureHandle();
+
+		if (rt.additionalView) {
+			auto &view = this->textures.get(rt.additionalView);
+			assert(view.renderTarget);
+			view.renderTarget = false;
+			assert(view.tex != 0);
+			glDeleteTextures(1, &view.tex);
+			view.tex = 0;
+			this->textures.remove(rt.additionalView);
+			rt.additionalView = TextureHandle();
+		}
 	} );
 }
 

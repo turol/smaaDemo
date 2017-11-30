@@ -220,6 +220,13 @@ TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle /* handle 
 }
 
 
+TextureHandle RendererImpl::getRenderTargetView(RenderTargetHandle /* handle */, Format /* f */) {
+	TextureHandle handle;
+
+	return handle;
+}
+
+
 void RendererImpl::deleteBuffer(BufferHandle /* handle */) {
 }
 

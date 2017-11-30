@@ -1138,7 +1138,9 @@ void SMAADemo::createFramebuffers() {
 
 	RenderTargetDesc rtDesc;
 	rtDesc.width(windowWidth).height(windowHeight).format(Format::sRGBA8).name("main color");
+	rtDesc.additionalViewFormat(Format::RGBA8);
 	rendertargets[RenderTargets::MainColor] = renderer.createRenderTarget(rtDesc);
+	rtDesc.additionalViewFormat(Format::Invalid);
 
 	rtDesc.width(windowWidth).height(windowHeight).format(Format::sRGBA8).name("final");
 	rendertargets[RenderTargets::FinalRender] = renderer.createRenderTarget(rtDesc);
@@ -1623,7 +1625,7 @@ void SMAADemo::render() {
 			if (smaaKey.edgeMethod == SMAAEdgeMethod::Depth) {
 				colorDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainDepth]);
 			} else {
-				colorDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainColor]);
+				colorDS.color.tex     = renderer.getRenderTargetView(rendertargets[RenderTargets::MainColor], Format::RGBA8);
 			}
 			colorDS.color.sampler = nearestSampler;
 			renderer.bindDescriptorSet(1, colorDS);

@@ -1133,6 +1133,9 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 
 	vk::Format format = vulkanFormat(desc.format_);
 	vk::ImageCreateInfo info;
+	if (desc.additionalViewFormat_ != Format::Invalid) {
+		info.flags   = vk::ImageCreateFlagBits::eMutableFormat;
+	}
 	info.imageType   = vk::ImageType::e2D;
 	info.format      = format;
 	info.extent      = vk::Extent3D(desc.width_, desc.height_, 1);
@@ -1201,6 +1204,29 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 
 	// TODO: std::move ?
 	rt.texture = texResult.second;
+
+	if (desc.additionalViewFormat_ != Format::Invalid) {
+		assert(isDepthFormat(desc.format_) == isDepthFormat(desc.additionalViewFormat_));
+		auto viewResult   = textures.add();
+		Texture &view     = viewResult.first;
+		rt.additionalView = viewResult.second;
+		view.width        = desc.width_;
+		view.height       = desc.height_;
+		view.image        = rt.image;
+		view.renderTarget = true;
+
+		viewInfo.format   = vulkanFormat(desc.additionalViewFormat_);
+		view.imageView    = device.createImageView(viewInfo);
+
+		if (debugMarkers) {
+			std::string viewName = desc.name_ + " " + formatName(desc.additionalViewFormat_) + " view";
+			vk::DebugMarkerObjectNameInfoEXT markerNameImageView;
+			markerNameImageView.objectType  = vk::DebugReportObjectTypeEXT::eImageView;
+			markerNameImageView.object      = uint64_t(VkImageView(view.imageView));
+			markerNameImageView.pObjectName = viewName.c_str();
+			device.debugMarkerSetObjectNameEXT(&markerNameImageView);
+		}
+	}
 
 	return result.second;
 }
@@ -1489,6 +1515,17 @@ TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
 	const auto &rt = renderTargets.get(handle);
 
 	return rt.texture;
+}
+
+
+TextureHandle RendererImpl::getRenderTargetView(RenderTargetHandle handle, Format /* f */) {
+	const auto &rt = renderTargets.get(handle);
+
+	const auto &tex = textures.get(rt.additionalView);
+	assert(tex.renderTarget);
+	//assert(tex.format == f);
+
+	return rt.additionalView;
 }
 
 
@@ -2055,6 +2092,24 @@ void RendererImpl::deleteRenderTargetInternal(RenderTarget &rt) {
 	auto &tex = this->textures.get(rt.texture);
 	assert(tex.image == rt.image);
 	assert(tex.imageView == rt.imageView);
+
+	if (rt.additionalView) {
+		auto &view = this->textures.get(rt.additionalView);
+		assert(view.image     == rt.image);
+		assert(view.imageView != tex.imageView);
+		assert(view.imageView);
+		assert(view.renderTarget);
+
+		this->device.destroyImageView(view.imageView);
+
+		view.image        = vk::Image();
+		view.imageView    = vk::ImageView();
+		view.renderTarget = false;
+
+		this->textures.remove(rt.additionalView);
+		rt.additionalView = TextureHandle();
+	}
+
 	tex.image        = vk::Image();
 	tex.imageView    = vk::ImageView();
 	tex.renderTarget = false;

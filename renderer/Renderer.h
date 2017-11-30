@@ -483,6 +483,7 @@ struct RenderTargetDesc {
 	: width_(0)
 	, height_(0)
 	, format_(Format::Invalid)
+	, additionalViewFormat_(Format::Invalid)
 	{
 	}
 
@@ -512,6 +513,11 @@ struct RenderTargetDesc {
 		return *this;
 	}
 
+	RenderTargetDesc &additionalViewFormat(Format f) {
+		additionalViewFormat_ = f;
+		return *this;
+	}
+
 	RenderTargetDesc &name(const std::string &str) {
 		name_ = str;
 		return *this;
@@ -522,6 +528,7 @@ private:
 	unsigned int   width_, height_;
 	// TODO: unsigned int multisample;
 	Format         format_;
+	Format         additionalViewFormat_;
 	std::string    name_;
 
 	friend struct RendererImpl;
@@ -750,6 +757,7 @@ public:
 	// gets the textures of a rendertarget to be used for sampling
 	// might be ephemeral, don't store
 	TextureHandle        getRenderTargetTexture(RenderTargetHandle handle);
+	TextureHandle        getRenderTargetView(RenderTargetHandle handle, Format f);
 
 	void deleteBuffer(BufferHandle handle);
 	void deleteFramebuffer(FramebufferHandle fbo);

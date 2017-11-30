@@ -441,6 +441,11 @@ TextureHandle Renderer::getRenderTargetTexture(RenderTargetHandle handle) {
 }
 
 
+TextureHandle Renderer::getRenderTargetView(RenderTargetHandle handle, Format f) {
+	return impl->getRenderTargetView(handle, f);
+}
+
+
 void Renderer::deleteBuffer(BufferHandle handle) {
 	impl->deleteBuffer(handle);
 }

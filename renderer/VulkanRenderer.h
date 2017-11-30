@@ -383,6 +383,7 @@ struct RenderTarget{
 	unsigned int  width, height;
 	Layout               currentLayout;
 	TextureHandle        texture;
+	TextureHandle        additionalView;
 	vk::Image     image;
 	vk::Format    format;
 	vk::ImageView imageView;
@@ -402,6 +403,7 @@ struct RenderTarget{
 	, height(other.height)
 	, currentLayout(other.currentLayout)
 	, texture(other.texture)
+	, additionalView(other.additionalView)
 	, image(other.image)
 	, format(other.format)
 	, imageView(other.imageView)
@@ -410,6 +412,7 @@ struct RenderTarget{
 		other.height        = 0;
 		other.currentLayout = Layout::Invalid;
 		other.texture       = TextureHandle();
+		other.additionalView = TextureHandle();
 		other.image         = vk::Image();
 		other.format        = vk::Format::eUndefined;
 		other.imageView     = vk::ImageView();
@@ -427,6 +430,7 @@ struct RenderTarget{
 		height              = other.height;
 		currentLayout       = other.currentLayout;
 		texture             = other.texture;
+		additionalView      = other.additionalView;
 		image               = other.image;
 		format              = other.format;
 		imageView           = other.imageView;
@@ -435,6 +439,7 @@ struct RenderTarget{
 		other.height        = 0;
 		other.currentLayout = Layout::Invalid;
 		other.texture       = TextureHandle();
+		other.additionalView = TextureHandle();
 		other.image         = vk::Image();
 		other.format        = vk::Format::eUndefined;
 		other.imageView     = vk::ImageView();
@@ -888,6 +893,7 @@ struct RendererImpl : public RendererBase {
 	DSLayoutHandle       createDescriptorSetLayout(const DescriptorLayout *layout);
 
 	TextureHandle        getRenderTargetTexture(RenderTargetHandle handle);
+	TextureHandle        getRenderTargetView(RenderTargetHandle handle, Format f);
 
 	void deleteBuffer(BufferHandle handle);
 	void deleteFramebuffer(FramebufferHandle fbo);

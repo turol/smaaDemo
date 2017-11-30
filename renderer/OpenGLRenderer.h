@@ -350,6 +350,7 @@ struct RenderTarget {
 	unsigned int   width, height;
 	Layout         currentLayout;
 	TextureHandle  texture;
+	TextureHandle  additionalView;
 	GLuint         readFBO;
 	Format         format;
 
@@ -371,6 +372,7 @@ struct RenderTarget {
 	, height(other.height)
 	, currentLayout(other.currentLayout)
 	, texture(other.texture)   // TODO: use std::move
+	, additionalView(other.additionalView)
 	, readFBO(other.readFBO)
 	, format(other.format)
 	{
@@ -378,6 +380,7 @@ struct RenderTarget {
 		other.height        = 0;
 		other.currentLayout = Layout::Invalid;
 		other.texture       = TextureHandle();
+		other.additionalView = TextureHandle();
 		other.readFBO       = 0;
 		other.format        = Format::Invalid;
 	}
@@ -394,6 +397,7 @@ struct RenderTarget {
 		height        = other.height;
 		currentLayout = other.currentLayout;
 		texture       = other.texture;
+		additionalView = other.additionalView;
 		readFBO       = other.readFBO;
 		format        = other.format;
 
@@ -401,6 +405,7 @@ struct RenderTarget {
 		other.height        = 0;
 		other.currentLayout = Layout::Invalid;
 		other.texture       = TextureHandle();
+		other.additionalView = TextureHandle();
 		other.readFBO       = 0;
 		other.format        = Format::Invalid;
 
@@ -685,6 +690,7 @@ struct RendererImpl : public RendererBase {
 	DSLayoutHandle       createDescriptorSetLayout(const DescriptorLayout *layout);
 
 	TextureHandle        getRenderTargetTexture(RenderTargetHandle handle);
+	TextureHandle        getRenderTargetView(RenderTargetHandle handle, Format f);
 
 	void deleteBuffer(BufferHandle handle);
 	void deleteFramebuffer(FramebufferHandle fbo);
