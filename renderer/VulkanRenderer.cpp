@@ -710,7 +710,7 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	submit.pCommandBuffers      = &cmdBuf;
 	submit.signalSemaphoreCount = 0;
 
-		queue.submit({ submit }, vk::Fence());
+	queue.submit({ submit }, vk::Fence());
 
 	// TODO: don't wait for idle here, use fence to make frame submit wait for it
 	queue.waitIdle();
@@ -1438,7 +1438,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	submit.pCommandBuffers      = &cmdBuf;
 	submit.signalSemaphoreCount = 0;
 
-		queue.submit({ submit }, vk::Fence());
+	queue.submit({ submit }, vk::Fence());
 
 	// TODO: don't wait for idle here, use fence to make frame submit wait for it
 	queue.waitIdle();
