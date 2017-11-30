@@ -807,7 +807,6 @@ struct RendererImpl : public RendererBase {
 	vk::Buffer                              ringBuffer;
 	VmaAllocation                           ringBufferMem;
 	char                                    *persistentMapping;
-	bool                                    unmapPersistentSubmit;
 
 	// std::vector has some kind of issue with variant with non-copyable types, so use unordered_set
 	std::unordered_set<Resource>            deleteResources;

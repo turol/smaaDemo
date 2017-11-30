@@ -167,7 +167,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , debugMarkers(false)
 , ringBufferMem(nullptr)
 , persistentMapping(nullptr)
-, unmapPersistentSubmit(false)
 {
 	bool enableValidation = desc.debug;
 	bool enableMarkers    = desc.tracing;
@@ -301,15 +300,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	physicalDevice = physicalDevices.at(0);
 
 	deviceProperties = physicalDevice.getProperties();
-
-	// on AMD and windows unmap persistent buffers during submit
-	// see VMA documentation for details
-#ifdef _WIN32
-	if (deviceProperties.vendorID == 0x1002) {
-		LOG("Unmapping persistent buffers during submit\n");
-		unmapPersistentSubmit = true;
-	}
-#endif  // _WIN32
 
 	LOG("Device API version %u.%u.%u\n", VK_VERSION_MAJOR(deviceProperties.apiVersion), VK_VERSION_MINOR(deviceProperties.apiVersion), VK_VERSION_PATCH(deviceProperties.apiVersion));
 	LOG("Driver version %u.%u.%u (%u) (0x%08x)\n", VK_VERSION_MAJOR(deviceProperties.driverVersion), VK_VERSION_MINOR(deviceProperties.driverVersion), VK_VERSION_PATCH(deviceProperties.driverVersion), deviceProperties.driverVersion, deviceProperties.driverVersion);
@@ -720,16 +710,7 @@ BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	submit.pCommandBuffers      = &cmdBuf;
 	submit.signalSemaphoreCount = 0;
 
-	if (unmapPersistentSubmit) {
-		vmaUnmapPersistentlyMappedMemory(allocator);
 		queue.submit({ submit }, vk::Fence());
-		vmaMapPersistentlyMappedMemory(allocator);
-		allocationInfo = {};
-		vmaGetAllocationInfo(allocator, ringBufferMem, &allocationInfo);
-		persistentMapping = reinterpret_cast<char *>(allocationInfo.pMappedData);
-	} else {
-		queue.submit({ submit }, vk::Fence());
-	}
 
 	// TODO: don't wait for idle here, use fence to make frame submit wait for it
 	queue.waitIdle();
@@ -1456,16 +1437,8 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	submit.commandBufferCount   = 1;
 	submit.pCommandBuffers      = &cmdBuf;
 	submit.signalSemaphoreCount = 0;
-	if (unmapPersistentSubmit) {
-		vmaUnmapPersistentlyMappedMemory(allocator);
+
 		queue.submit({ submit }, vk::Fence());
-		vmaMapPersistentlyMappedMemory(allocator);
-		allocationInfo = {};
-		vmaGetAllocationInfo(allocator, ringBufferMem, &allocationInfo);
-		persistentMapping = reinterpret_cast<char *>(allocationInfo.pMappedData);
-	} else {
-		queue.submit({ submit }, vk::Fence());
-	}
 
 	// TODO: don't wait for idle here, use fence to make frame submit wait for it
 	queue.waitIdle();
@@ -1973,10 +1946,6 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	submit.signalSemaphoreCount = 1;
 	submit.pSignalSemaphores    = &renderDoneSem;
 
-	if (unmapPersistentSubmit) {
-		vmaUnmapPersistentlyMappedMemory(allocator);
-	}
-
 	queue.submit({ submit }, frame.fence);
 
 	// present
@@ -2001,13 +1970,6 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	frame.usedRingBufPtr = ringBufPtr;
 	frame.outstanding = true;
 	frame.lastFrameNum = frameNum;
-
-	if (unmapPersistentSubmit) {
-		vmaMapPersistentlyMappedMemory(allocator);
-		VmaAllocationInfo  allocationInfo = {};
-		vmaGetAllocationInfo(allocator, ringBufferMem, &allocationInfo);
-		persistentMapping = reinterpret_cast<char *>(allocationInfo.pMappedData);
-	}
 
 	// mark buffers deleted during frame to be deleted when the frame has synced
 	if (!deleteResources.empty()) {
