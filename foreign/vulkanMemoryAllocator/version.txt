@@ -1,5 +1,5 @@
-commit ee92a03f59e2b61fe655ffcc739297c0e8f916c6
+commit 594a56260f0af9f1d32f0e7217d90c98b109911a
 Author: Adam Sawicki <adam.sawicki@amd.com>
-Date:   Wed Oct 18 15:35:00 2017 +0200
+Date:   Tue Nov 21 15:01:29 2017 +0100
 
-    VmaAllocator_T::AllocateMemoryOfType: Fixed major bug when VMA_ALLOCATION_CREATE_PERSISTENT_MAP_BIT is used with VMA_MEMORY_USAGE_GPU_ONLY.
+    Added VmaAllocationCreateInfo::memoryTypeBits. Wrote more documentation, including new page "Choosing memory type".

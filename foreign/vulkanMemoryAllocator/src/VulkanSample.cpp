@@ -301,7 +301,7 @@ static void CreateMesh()
 
     VmaAllocationCreateInfo vbAllocCreateInfo = {};
     vbAllocCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-    vbAllocCreateInfo.flags = VMA_ALLOCATION_CREATE_PERSISTENT_MAP_BIT;
+    vbAllocCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
     VkBuffer stagingVertexBuffer = VK_NULL_HANDLE;
     VmaAllocation stagingVertexBufferAlloc = VK_NULL_HANDLE;
@@ -326,7 +326,7 @@ static void CreateMesh()
     
     VmaAllocationCreateInfo ibAllocCreateInfo = {};
     ibAllocCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-    ibAllocCreateInfo.flags = VMA_ALLOCATION_CREATE_PERSISTENT_MAP_BIT;
+    ibAllocCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
     
     VkBuffer stagingIndexBuffer = VK_NULL_HANDLE;
     VmaAllocation stagingIndexBufferAlloc = VK_NULL_HANDLE;
@@ -364,45 +364,6 @@ static void CreateMesh()
     vmaDestroyBuffer(g_hAllocator, stagingVertexBuffer, stagingVertexBufferAlloc);
 }
 
-static void ImageBarrier(
-   VkImage image,
-   VkImageAspectFlags aspectMask,
-   uint32_t mipLevelCount,
-   VkImageLayout oldLayout,
-   VkImageLayout newLayout,
-   VkAccessFlags srcAccessMask,
-   VkAccessFlags dstAccessMask,
-   VkPipelineStageFlags srcStageMask,
-   VkPipelineStageFlags dstStageMask)
-{
-    BeginSingleTimeCommands();
-
-    VkImageMemoryBarrier imgMemBarrier = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
-    imgMemBarrier.oldLayout = oldLayout;
-    imgMemBarrier.newLayout = newLayout;
-    imgMemBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    imgMemBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    imgMemBarrier.image = image;
-    imgMemBarrier.subresourceRange.aspectMask = aspectMask;
-    imgMemBarrier.subresourceRange.baseMipLevel = 0;
-    imgMemBarrier.subresourceRange.levelCount = mipLevelCount;
-    imgMemBarrier.subresourceRange.baseArrayLayer = 0;
-    imgMemBarrier.subresourceRange.layerCount = 1;
-    imgMemBarrier.srcAccessMask = srcAccessMask;
-    imgMemBarrier.dstAccessMask = dstAccessMask;
-
-    vkCmdPipelineBarrier(
-        g_hTemporaryCommandBuffer,
-        srcStageMask,
-        dstStageMask,
-        0,
-        0, nullptr,
-        0, nullptr,
-        1, &imgMemBarrier);
-
-    EndSingleTimeCommands();
-}
-
 static void CreateTexture(uint32_t sizeX, uint32_t sizeY)
 {
     // Create Image
@@ -426,7 +387,7 @@ static void CreateTexture(uint32_t sizeX, uint32_t sizeY)
     
     VmaAllocationCreateInfo stagingImageAllocCreateInfo = {};
     stagingImageAllocCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-    stagingImageAllocCreateInfo.flags = VMA_ALLOCATION_CREATE_PERSISTENT_MAP_BIT;
+    stagingImageAllocCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
     
     VkImage stagingImage = VK_NULL_HANDLE;
     VmaAllocation stagingImageAlloc = VK_NULL_HANDLE;
@@ -792,37 +753,6 @@ static void CreateSwapchain()
     depthImageViewInfo.subresourceRange.layerCount = 1;
 
     ERR_GUARD_VULKAN( vkCreateImageView(g_hDevice, &depthImageViewInfo, nullptr, &g_hDepthImageView) );
-
-    // Transition image layout of g_hDepthImage.
-
-    BeginSingleTimeCommands();
-
-    VkImageMemoryBarrier imgMemBarrier = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
-    imgMemBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    imgMemBarrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-    imgMemBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    imgMemBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    imgMemBarrier.image = g_hDepthImage;
-    imgMemBarrier.subresourceRange.aspectMask = g_DepthFormat == VK_FORMAT_D32_SFLOAT ?
-        VK_IMAGE_ASPECT_DEPTH_BIT :
-        VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
-    imgMemBarrier.subresourceRange.baseMipLevel = 0;
-    imgMemBarrier.subresourceRange.levelCount = 1;
-    imgMemBarrier.subresourceRange.baseArrayLayer = 0;
-    imgMemBarrier.subresourceRange.layerCount = 1;
-    imgMemBarrier.srcAccessMask = 0;
-    imgMemBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-    vkCmdPipelineBarrier(
-        g_hTemporaryCommandBuffer,
-        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-        VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-        0,
-        0, nullptr,
-        0, nullptr,
-        1, &imgMemBarrier);
-
-    EndSingleTimeCommands();
 
     // Create pipeline layout
     {

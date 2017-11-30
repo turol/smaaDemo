@@ -502,7 +502,7 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 	assert(ringBufferMem == nullptr);
 
 	VmaAllocationCreateInfo req = {};
-	req.flags          = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_PERSISTENT_MAP_BIT;
+	req.flags          = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 	req.usage          = VMA_MEMORY_USAGE_CPU_TO_GPU;
 	req.requiredFlags  = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
