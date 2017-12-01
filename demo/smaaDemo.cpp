@@ -1748,19 +1748,19 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			ImGui::RadioButton("Depth", &em, static_cast<int>(SMAAEdgeMethod::Depth));
 			smaaKey.edgeMethod = static_cast<SMAAEdgeMethod>(em);
 
-			int fq = fxaaQuality;
-			ImGui::Separator();
-			ImGui::Combo("FXAA quality", &fq, fxaaQualityLevels, maxFXAAQuality);
-			assert(fq >= 0);
-			assert(fq < int(maxFXAAQuality));
-			fxaaQuality = fq;
-
 			int d = debugMode;
 			ImGui::Separator();
 			ImGui::Combo("SMAA debug", &d, smaaDebugModes, 3);
 			assert(d >= 0);
 			assert(d < 3);
 			debugMode = d;
+
+			int fq = fxaaQuality;
+			ImGui::Separator();
+			ImGui::Combo("FXAA quality", &fq, fxaaQualityLevels, maxFXAAQuality);
+			assert(fq >= 0);
+			assert(fq < int(maxFXAAQuality));
+			fxaaQuality = fq;
 		}
 
 		if (ImGui::CollapsingHeader("Scene properties", ImGuiTreeNodeFlags_DefaultOpen)) {
