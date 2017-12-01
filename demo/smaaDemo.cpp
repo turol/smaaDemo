@@ -704,6 +704,22 @@ const DescriptorLayout ColorTexDS::layout[] = {
 DSLayoutHandle ColorTexDS::layoutHandle;
 
 
+struct EdgeDetectionDS {
+	CSampler color;
+
+	static const DescriptorLayout layout[];
+	static DSLayoutHandle layoutHandle;
+};
+
+
+const DescriptorLayout EdgeDetectionDS::layout[] = {
+	  { DescriptorType::CombinedSampler,  offsetof(EdgeDetectionDS, color) }
+	, { DescriptorType::End,              0,                               }
+};
+
+DSLayoutHandle EdgeDetectionDS::layoutHandle;
+
+
 struct BlendWeightDS {
 	CSampler edgesTex;
 	CSampler areaTex;
@@ -788,6 +804,7 @@ void SMAADemo::initRender() {
 	renderer.registerDescriptorSetLayout<CubeSceneDS>();
 	renderer.registerDescriptorSetLayout<ColorCombinedDS>();
 	renderer.registerDescriptorSetLayout<ColorTexDS>();
+	renderer.registerDescriptorSetLayout<EdgeDetectionDS>();
 	renderer.registerDescriptorSetLayout<BlendWeightDS>();
 	renderer.registerDescriptorSetLayout<NeighborBlendDS>();
 
@@ -1006,7 +1023,7 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		plDesc.renderPass(smaaEdgesRenderPass);
 		plDesc.vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader);
-		plDesc.descriptorSetLayout<ColorCombinedDS>(1);
+		plDesc.descriptorSetLayout<EdgeDetectionDS>(1);
 		std::string passName = std::string("SMAA edges ") + std::to_string(key.quality);
 		plDesc.name(passName.c_str());
 
@@ -1621,14 +1638,14 @@ void SMAADemo::render() {
 			renderer.beginRenderPass(smaaEdgesRenderPass, smaaEdgesFramebuffer);
 			renderer.bindPipeline(pipelines.edgePipeline);
 
-			ColorCombinedDS colorDS;
+			EdgeDetectionDS edgeDS;
 			if (smaaKey.edgeMethod == SMAAEdgeMethod::Depth) {
-				colorDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainDepth]);
+				edgeDS.color.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainDepth]);
 			} else {
-				colorDS.color.tex     = renderer.getRenderTargetView(rendertargets[RenderTargets::MainColor], Format::RGBA8);
+				edgeDS.color.tex     = renderer.getRenderTargetView(rendertargets[RenderTargets::MainColor], Format::RGBA8);
 			}
-			colorDS.color.sampler = nearestSampler;
-			renderer.bindDescriptorSet(1, colorDS);
+			edgeDS.color.sampler = nearestSampler;
+			renderer.bindDescriptorSet(1, edgeDS);
 			renderer.draw(0, 3);
 			renderer.endRenderPass();
 
