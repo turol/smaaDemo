@@ -230,12 +230,14 @@ struct FXAAKey {
 struct SMAAKey {
 	unsigned int quality;
 	SMAAEdgeMethod  edgeMethod;
+	bool            predication;
 	// TODO: more options
 
 
 	SMAAKey()
 	: quality(0)
 	, edgeMethod(SMAAEdgeMethod::Color)
+    , predication(false)
 	{
 	}
 
@@ -257,6 +259,10 @@ struct SMAAKey {
 			return false;
 		}
 
+		if (this->predication != other.predication) {
+			return false;
+		}
+
 		return true;
 	}
 };
@@ -269,6 +275,7 @@ namespace std {
 			uint64_t temp = 0;
 			temp |= (static_cast<uint64_t>(k.quality)    <<  0);
 			temp |= (static_cast<uint64_t>(k.edgeMethod) <<  8);
+			temp |= (static_cast<uint64_t>(k.predication) <<  9);
 
 			return hash<uint64_t>()(temp);
 		}
@@ -706,6 +713,7 @@ DSLayoutHandle ColorTexDS::layoutHandle;
 
 struct EdgeDetectionDS {
 	CSampler color;
+	CSampler predicationTex;
 
 	static const DescriptorLayout layout[];
 	static DSLayoutHandle layoutHandle;
@@ -714,6 +722,7 @@ struct EdgeDetectionDS {
 
 const DescriptorLayout EdgeDetectionDS::layout[] = {
 	  { DescriptorType::CombinedSampler,  offsetof(EdgeDetectionDS, color) }
+	, { DescriptorType::CombinedSampler,  offsetof(EdgeDetectionDS, predicationTex) }
 	, { DescriptorType::End,              0,                               }
 };
 
@@ -1015,6 +1024,12 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 			// TODO: edge detection method only affects the first pass, share others
 			// TODO: also doesn't affect vertex shader
 			macros.emplace("EDGEMETHOD", std::to_string(static_cast<uint8_t>(key.edgeMethod)));
+		}
+
+		if (key.predication && key.edgeMethod != SMAAEdgeMethod::Depth) {
+			// TODO: predication only affects the first pass, share others
+			// TODO: also doesn't affect vertex shader
+			macros.emplace("SMAA_PREDICATION", "1");
 		}
 
 		auto vertexShader   = renderer.createVertexShader("smaaEdge", macros);
@@ -1645,6 +1660,8 @@ void SMAADemo::render() {
 				edgeDS.color.tex     = renderer.getRenderTargetView(rendertargets[RenderTargets::MainColor], Format::RGBA8);
 			}
 			edgeDS.color.sampler = nearestSampler;
+			edgeDS.predicationTex.tex     = renderer.getRenderTargetTexture(rendertargets[RenderTargets::MainDepth]);
+			edgeDS.predicationTex.sampler = nearestSampler;
 			renderer.bindDescriptorSet(1, edgeDS);
 			renderer.draw(0, 3);
 			renderer.endRenderPass();
@@ -1757,6 +1774,8 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			assert(sq >= 0);
 			assert(sq < int(maxSMAAQuality));
 			smaaKey.quality = sq;
+
+			ImGui::Checkbox("Predicated thresholding", &smaaKey.predication);
 
 			int em = static_cast<int>(smaaKey.edgeMethod);
 			ImGui::Text("SMAA edge detection");
