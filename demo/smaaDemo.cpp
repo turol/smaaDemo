@@ -1251,10 +1251,10 @@ void SMAADemo::createCubes() {
 
 
 static float sRGB2linear(float v) {
-    if (v <= 0.04045) {
-        return v / 12.92;
+    if (v <= 0.04045f) {
+        return v / 12.92f;
     } else {
-        return powf((v + 0.055) / 1.055, 2.4);
+        return powf((v + 0.055f) / 1.055f, 2.4f);
     }
 }
 
