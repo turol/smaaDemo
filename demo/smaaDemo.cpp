@@ -321,6 +321,10 @@ class SMAADemo {
 	unsigned int  fxaaQuality;
 	SMAAKey       smaaKey;
 
+	float         predicationThreshold;
+	float         predicationScale;
+	float         predicationStrength;
+
 	// timing things
 	bool            fpsLimitActive;
 	uint32_t        fpsLimit;
@@ -444,6 +448,9 @@ SMAADemo::SMAADemo()
 , debugMode(0)
 , colorMode(0)
 , fxaaQuality(maxFXAAQuality - 1)
+, predicationThreshold(0.01f)
+, predicationScale(2.0f)
+, predicationStrength(0.4f)
 
 , fpsLimitActive(true)
 , fpsLimit(0)
@@ -1571,9 +1578,9 @@ void SMAADemo::render() {
 	globals.guiOrtho   = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
 #endif
 
-	globals.predicationThreshold = 0.01f;
-	globals.predicationScale     = 2.0f;
-	globals.predicationStrength  = 0.4f;
+	globals.predicationThreshold = predicationThreshold;
+	globals.predicationScale     = predicationScale;
+	globals.predicationStrength  = predicationStrength;
 	globals.pad0                 = 0.0f;
 
 	renderer.beginRenderPass(sceneRenderPass, sceneFramebuffer);
@@ -1781,6 +1788,15 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			smaaKey.quality = sq;
 
 			ImGui::Checkbox("Predicated thresholding", &smaaKey.predication);
+
+			ImGui::SliderFloat("Predication threshold", &predicationThreshold, 0.0f, 1.0f, "%.4f", 3.0f);
+			ImGui::SliderFloat("Predication scale",     &predicationScale,     1.0f, 5.0f);
+			ImGui::SliderFloat("Predication strength",  &predicationStrength,  0.0f, 1.0f);
+			if (ImGui::Button("Reset predication values")) {
+				predicationThreshold = 0.01f;
+				predicationScale     = 2.0f;
+				predicationStrength  = 0.4f;
+			}
 
 			int em = static_cast<int>(smaaKey.edgeMethod);
 			ImGui::Text("SMAA edge detection");
