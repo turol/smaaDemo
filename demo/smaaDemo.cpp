@@ -1571,6 +1571,11 @@ void SMAADemo::render() {
 	globals.guiOrtho   = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
 #endif
 
+	globals.predicationThreshold = 0.01f;
+	globals.predicationScale     = 2.0f;
+	globals.predicationStrength  = 0.4f;
+	globals.pad0                 = 0.0f;
+
 	renderer.beginRenderPass(sceneRenderPass, sceneFramebuffer);
 
 	if (activeScene == 0) {

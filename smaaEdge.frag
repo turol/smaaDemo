@@ -40,6 +40,11 @@ THE SOFTWARE.
 #endif
 
 
+#define SMAA_PREDICATION_THRESHOLD  predicationThreshold
+#define SMAA_PREDICATION_SCALE      predicationScale
+#define SMAA_PREDICATION_STRENGTH   predicationStrength
+
+
 #include "smaa.h"
 
 

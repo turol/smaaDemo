@@ -19,6 +19,11 @@ layout(set = 0, binding = 0, std140) uniform Globals
 	vec4 screenSize;
 	mat4 viewProj;
 	mat4 guiOrtho;
+
+	float predicationThreshold;
+	float predicationScale;
+	float predicationStrength;
+	float pad0;
 };
 
 
