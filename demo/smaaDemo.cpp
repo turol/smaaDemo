@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include <vector>
 
 #include <imgui.h>
+#include <imgui_internal.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -1805,6 +1806,13 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 				}
 			}
 
+			// parameters can only be changed in custom mode
+			// https://github.com/ocornut/imgui/issues/211
+			if (smaaKey.quality != 0) {
+				ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+			}
+
 			ImGui::SliderFloat("SMAA color/luma edge threshold", &smaaParameters.threshold,      0.0f, 0.5f);
 			ImGui::SliderFloat("SMAA depth edge threshold",      &smaaParameters.depthThreshold, 0.0f, 1.0f);
 
@@ -1820,7 +1828,17 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			ImGui::SliderInt("Corner rounding",   &s, 0, 100);
 			smaaParameters.cornerRounding = s;
 
+			if (smaaKey.quality != 0) {
+				ImGui::PopItemFlag();
+				ImGui::PopStyleVar();
+			}
+
 			ImGui::Checkbox("Predicated thresholding", &smaaKey.predication);
+
+			if (!smaaKey.predication) {
+				ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+			}
 
 			ImGui::SliderFloat("Predication threshold", &predicationThreshold, 0.0f, 1.0f, "%.4f", 3.0f);
 			ImGui::SliderFloat("Predication scale",     &predicationScale,     1.0f, 5.0f);
@@ -1829,6 +1847,11 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 				predicationThreshold = 0.01f;
 				predicationScale     = 2.0f;
 				predicationStrength  = 0.4f;
+			}
+
+			if (!smaaKey.predication) {
+				ImGui::PopItemFlag();
+				ImGui::PopStyleVar();
 			}
 
 			int em = static_cast<int>(smaaKey.edgeMethod);
