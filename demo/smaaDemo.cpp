@@ -165,10 +165,20 @@ static const unsigned int maxFXAAQuality = sizeof(fxaaQualityLevels) / sizeof(fx
 
 
 static const char *smaaQualityLevels[] =
-{ "LOW", "MEDIUM", "HIGH", "ULTRA" };
+{ "CUSTOM", "LOW", "MEDIUM", "HIGH", "ULTRA" };
 
 
 static const unsigned int maxSMAAQuality = sizeof(smaaQualityLevels) / sizeof(smaaQualityLevels[0]);
+
+
+static const std::array<ShaderDefines::SMAAParameters, maxSMAAQuality> defaultSMAAParameters =
+{ {
+	  { 0.05f, 0.1f * 0.15f, 32u, 16u, 25 }  // custom
+	, { 0.15f, 0.1f * 0.15f,  1u,  8u, 25 }  // low
+	, { 0.10f, 0.1f * 0.10f,  1u,  8u, 25 }  // medium
+	, { 0.10f, 0.1f * 0.10f, 16u,  8u, 25 }  // high
+	, { 0.05f, 0.1f * 0.05f, 32u, 16u, 25 }  // ultra
+} };
 
 
 enum class SMAAEdgeMethod : uint8_t {
@@ -320,6 +330,7 @@ class SMAADemo {
 	unsigned int  colorMode;
 	unsigned int  fxaaQuality;
 	SMAAKey       smaaKey;
+	ShaderDefines::SMAAParameters  smaaParameters;
 
 	float         predicationThreshold;
 	float         predicationScale;
@@ -475,6 +486,7 @@ SMAADemo::SMAADemo()
 , leftShift(false)
 {
 	smaaKey.quality = maxSMAAQuality - 1;
+	smaaParameters  = defaultSMAAParameters[smaaKey.quality];
 
 	uint64_t freq = SDL_GetPerformanceFrequency();
 	tickBase      = SDL_GetPerformanceCounter();
@@ -1578,10 +1590,11 @@ void SMAADemo::render() {
 	globals.guiOrtho   = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
 #endif
 
+	globals.smaaParameters       = smaaParameters;
+
 	globals.predicationThreshold = predicationThreshold;
 	globals.predicationScale     = predicationScale;
 	globals.predicationStrength  = predicationStrength;
-	globals.pad0                 = 0.0f;
 
 	renderer.beginRenderPass(sceneRenderPass, sceneFramebuffer);
 
@@ -1785,7 +1798,27 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			ImGui::Combo("SMAA quality", &sq, smaaQualityLevels, maxSMAAQuality);
 			assert(sq >= 0);
 			assert(sq < int(maxSMAAQuality));
+			if (int(smaaKey.quality) != sq) {
 			smaaKey.quality = sq;
+				if (sq != 0) {
+					smaaParameters  = defaultSMAAParameters[sq];
+				}
+			}
+
+			ImGui::SliderFloat("SMAA color/luma edge threshold", &smaaParameters.threshold,      0.0f, 0.5f);
+			ImGui::SliderFloat("SMAA depth edge threshold",      &smaaParameters.depthThreshold, 0.0f, 1.0f);
+
+			int s = smaaParameters.maxSearchSteps;
+			ImGui::SliderInt("Max search steps",  &s, 0, 112);
+			smaaParameters.maxSearchSteps = s;
+
+			s = smaaParameters.maxSearchStepsDiag;
+			ImGui::SliderInt("Max diagonal search steps", &s, 0, 20);
+			smaaParameters.maxSearchStepsDiag = s;
+
+			s = smaaParameters.cornerRounding;
+			ImGui::SliderInt("Corner rounding",   &s, 0, 100);
+			smaaParameters.cornerRounding = s;
 
 			ImGui::Checkbox("Predicated thresholding", &smaaKey.predication);
 
