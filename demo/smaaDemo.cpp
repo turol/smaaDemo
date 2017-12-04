@@ -1800,7 +1800,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			assert(sq >= 0);
 			assert(sq < int(maxSMAAQuality));
 			if (int(smaaKey.quality) != sq) {
-			smaaKey.quality = sq;
+				smaaKey.quality = sq;
 				if (sq != 0) {
 					smaaParameters  = defaultSMAAParameters[sq];
 				}
