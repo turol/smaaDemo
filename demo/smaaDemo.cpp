@@ -174,11 +174,11 @@ static const unsigned int maxSMAAQuality = sizeof(smaaQualityLevels) / sizeof(sm
 
 static const std::array<ShaderDefines::SMAAParameters, maxSMAAQuality> defaultSMAAParameters =
 { {
-	  { 0.05f, 0.1f * 0.15f, 32u, 16u, 25 }  // custom
-	, { 0.15f, 0.1f * 0.15f,  1u,  8u, 25 }  // low
-	, { 0.10f, 0.1f * 0.10f,  1u,  8u, 25 }  // medium
-	, { 0.10f, 0.1f * 0.10f, 16u,  8u, 25 }  // high
-	, { 0.05f, 0.1f * 0.05f, 32u, 16u, 25 }  // ultra
+	  { 0.05f, 0.1f * 0.15f, 32u, 16u, 25u, 0u, 0u, 0u }  // custom
+	, { 0.15f, 0.1f * 0.15f,  1u,  8u, 25u, 0u, 0u, 0u }  // low
+	, { 0.10f, 0.1f * 0.10f,  1u,  8u, 25u, 0u, 0u, 0u }  // medium
+	, { 0.10f, 0.1f * 0.10f, 16u,  8u, 25u, 0u, 0u, 0u }  // high
+	, { 0.05f, 0.1f * 0.05f, 32u, 16u, 25u, 0u, 0u, 0u }  // ultra
 } };
 
 
@@ -1596,6 +1596,7 @@ void SMAADemo::render() {
 	globals.predicationThreshold = predicationThreshold;
 	globals.predicationScale     = predicationScale;
 	globals.predicationStrength  = predicationStrength;
+	globals.pad0 = 0;
 
 	renderer.beginRenderPass(sceneRenderPass, sceneFramebuffer);
 
