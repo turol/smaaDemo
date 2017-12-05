@@ -569,6 +569,11 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 		bufferFlags |= GL_MAP_COHERENT_BIT;
 	}
 
+	// when tracing add read bit so qapitrace can see buffer contents
+	if (tracing) {
+		bufferFlags |= GL_MAP_READ_BIT;
+	}
+
 	glNamedBufferStorage(ringBuffer, ringBufSize, nullptr, bufferFlags);
 	if (persistentMapInUse) {
 		persistentMapping = reinterpret_cast<char *>(glMapNamedBufferRange(ringBuffer, 0, ringBufSize, bufferFlags));
