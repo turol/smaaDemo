@@ -629,6 +629,8 @@ struct RendererImpl : public RendererBase {
 	SDL_GLContext                            context;
 	bool                                     sRGBFramebuffer;
 
+	std::unordered_map<GLenum, int>          glValues;
+
 	std::vector<Frame>                       frames;
 
 	ResourceContainer<Buffer>                buffers;

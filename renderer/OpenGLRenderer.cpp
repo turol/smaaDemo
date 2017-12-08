@@ -53,6 +53,8 @@ static const GLValueName interestingValues[] = {
 	  GLVALUE(GL_MAX_COLOR_TEXTURE_SAMPLES)
 	, GLVALUE(GL_MAX_DEPTH_TEXTURE_SAMPLES)
 	, GLVALUE(GL_MAX_INTEGER_SAMPLES)
+	, GLVALUE(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT)
+	, GLVALUE(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT)
 };
 
 
@@ -516,21 +518,17 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	LOG("GL version: \"%s\"\n", glGetString(GL_VERSION));
 	LOG("GLSL version: \"%s\"\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
-	GLint temp = -1;
-	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &temp);
-	uboAlign = temp;
-	LOG("UBO align: %d\n", uboAlign);
-
-	glGetIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, &temp);
-	ssboAlign = temp;
-	LOG("SSBO align: %d\n", ssboAlign);
-
 	LOG("Interesting GL values:\n");
+	glValues.reserve(sizeof(interestingValues) / sizeof(interestingValues[0]));
 	for (const auto &v : interestingValues) {
-		temp = -1;
+		GLint temp = -1;
 		glGetIntegerv(v.value, &temp);
 		LOG("%s: %d\n", v.name, temp);
+		glValues.emplace(v.value, temp);
 	}
+
+	uboAlign   = glValues[GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT];
+	ssboAlign  = glValues[GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT];
 
 	// TODO: use GL_UPPER_LEFT to match Vulkan
 	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
