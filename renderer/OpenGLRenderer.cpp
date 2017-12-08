@@ -349,7 +349,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , persistentMapInUse(false)
 , persistentMapping(nullptr)
 , decriptorSetsDirty(true)
-, debug(false)
+, debug(desc.debug)
 , tracing(desc.tracing)
 , vao(0)
 , idxBuf16Bit(false)
@@ -369,7 +369,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glMinor);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
-	if (desc.debug || tracing) {
+	bool wantKHRDebug = debug || tracing;
+	if (wantKHRDebug) {
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 	}
 
@@ -472,20 +473,19 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		throw std::runtime_error("ARB_texture_view not found");
 	}
 
-	if (GLEW_KHR_debug && desc.debug) {
-		LOG("KHR_debug found\n");
-
+	if (wantKHRDebug) {
+		if (!GLEW_KHR_debug) {
+			LOG("KHR_debug not found\n");
+			throw std::runtime_error("KHR_debug not found");
+		} else {
+			LOG("KHR_debug found\n");
+			if (debug) {
 		glDebugMessageCallback(glDebugCallback, NULL);
 		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
 
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-
-		debug = true;
-	} else if (tracing) {
-		LOG("Tracing requested but KHR_debug not found, tracing disabled\n");
-		tracing = false;
-	} else if (desc.debug) {
-		LOG("KHR_debug not found\n");
+			}
+		}
 	}
 
 	LOG("GL vendor: \"%s\"\n", glGetString(GL_VENDOR));
