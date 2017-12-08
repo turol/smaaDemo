@@ -41,6 +41,24 @@ THE SOFTWARE.
 namespace renderer {
 
 
+struct GLValueName {
+	GLenum      value;
+	const char  *name;
+};
+
+
+#define GLVALUE(x) { x, "" #x }
+
+static const GLValueName interestingValues[] = {
+	  GLVALUE(GL_MAX_COLOR_TEXTURE_SAMPLES)
+	, GLVALUE(GL_MAX_DEPTH_TEXTURE_SAMPLES)
+	, GLVALUE(GL_MAX_INTEGER_SAMPLES)
+};
+
+
+#undef GLVALUE
+
+
 void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /* length */, const GLchar *message, const void * /* userParam */);
 
 
@@ -473,6 +491,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		throw std::runtime_error("ARB_texture_view not found");
 	}
 
+	if (!GLEW_ARB_texture_storage_multisample) {
+		LOG("ARB_texture_storage_multisample not found\n");
+		throw std::runtime_error("ARB_texture_storage_multisample not found");
+	}
+
 	if (wantKHRDebug) {
 		if (!GLEW_KHR_debug) {
 			LOG("KHR_debug not found\n");
@@ -501,6 +524,13 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	glGetIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, &temp);
 	ssboAlign = temp;
 	LOG("SSBO align: %d\n", ssboAlign);
+
+	LOG("Interesting GL values:\n");
+	for (const auto &v : interestingValues) {
+		temp = -1;
+		glGetIntegerv(v.value, &temp);
+		LOG("%s: %d\n", v.name, temp);
+	}
 
 	// TODO: use GL_UPPER_LEFT to match Vulkan
 	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
