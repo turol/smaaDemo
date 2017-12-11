@@ -1216,16 +1216,22 @@ void SMAADemo::createFramebuffers() {
 	rendertargets[RenderTargets::MainDepth] = renderer.createRenderTarget(rtDesc);
 	}
 
-	FramebufferDesc fbDesc;
-	fbDesc.depthStencil(rendertargets[RenderTargets::MainDepth]).color(0, rendertargets[RenderTargets::MainColor]);
-	fbDesc.name("scene");
-	fbDesc.renderPass(sceneRenderPass);
+	{
+		FramebufferDesc fbDesc;
+		fbDesc.name("scene")
+		      .renderPass(sceneRenderPass)
+		      .depthStencil(rendertargets[RenderTargets::MainDepth])
+		      .color(0, rendertargets[RenderTargets::MainColor]);
 	sceneFramebuffer = renderer.createFramebuffer(fbDesc);
+	}
 
-	fbDesc.depthStencil(RenderTargetHandle()).color(0, rendertargets[RenderTargets::FinalRender]);
-	fbDesc.name("final");
-	fbDesc.renderPass(finalRenderPass);
+	{
+		FramebufferDesc fbDesc;
+		fbDesc.name("final")
+		      .renderPass(finalRenderPass)
+		      .color(0, rendertargets[RenderTargets::FinalRender]);
 	finalFramebuffer = renderer.createFramebuffer(fbDesc);
+	}
 
 	// SMAA edges texture and FBO
 	{
@@ -1236,9 +1242,10 @@ void SMAADemo::createFramebuffers() {
 		      .height(windowHeight);
 	rendertargets[RenderTargets::Edges] = renderer.createRenderTarget(rtDesc);
 
-	fbDesc.depthStencil(RenderTargetHandle()).color(0, rendertargets[RenderTargets::Edges]);
-	fbDesc.name("SMAA edges");
-	fbDesc.renderPass(smaaEdgesRenderPass);
+		FramebufferDesc fbDesc;
+		fbDesc.name("SMAA edges")
+		      .renderPass(smaaEdgesRenderPass)
+		      .color(0, rendertargets[RenderTargets::Edges]);
 	smaaEdgesFramebuffer = renderer.createFramebuffer(fbDesc);
 	}
 
@@ -1251,9 +1258,10 @@ void SMAADemo::createFramebuffers() {
 		      .height(windowHeight);
 	rendertargets[RenderTargets::BlendWeights] = renderer.createRenderTarget(rtDesc);
 
-	fbDesc.depthStencil(RenderTargetHandle()).color(0, rendertargets[RenderTargets::BlendWeights]);
-	fbDesc.name("SMAA weights");
-	fbDesc.renderPass(smaaWeightsRenderPass);
+		FramebufferDesc fbDesc;
+		fbDesc.name("SMAA weights")
+		      .renderPass(smaaWeightsRenderPass)
+		      .color(0, rendertargets[RenderTargets::BlendWeights]);
 	smaaWeightsFramebuffer = renderer.createFramebuffer(fbDesc);
 	}
 }
