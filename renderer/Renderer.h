@@ -482,6 +482,7 @@ struct RenderTargetDesc {
 	RenderTargetDesc()
 	: width_(0)
 	, height_(0)
+	, numSamples_(1)
 	, format_(Format::Invalid)
 	, additionalViewFormat_(Format::Invalid)
 	{
@@ -508,6 +509,12 @@ struct RenderTargetDesc {
 		return *this;
 	}
 
+	RenderTargetDesc &numSamples(unsigned int s) {
+		assert(s > 0);
+		numSamples_ = s;
+		return *this;
+	}
+
 	RenderTargetDesc &format(Format f) {
 		format_ = f;
 		return *this;
@@ -526,7 +533,7 @@ struct RenderTargetDesc {
 private:
 
 	unsigned int   width_, height_;
-	// TODO: unsigned int multisample;
+	unsigned int   numSamples_;
 	Format         format_;
 	Format         additionalViewFormat_;
 	std::string    name_;
