@@ -1188,17 +1188,33 @@ void SMAADemo::createFramebuffers() {
 		}
 	}
 
-	RenderTargetDesc rtDesc;
-	rtDesc.width(windowWidth).height(windowHeight).format(Format::sRGBA8).name("main color");
-	rtDesc.additionalViewFormat(Format::RGBA8);
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("main color")
+		      .format(Format::sRGBA8)
+		      .additionalViewFormat(Format::RGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
 	rendertargets[RenderTargets::MainColor] = renderer.createRenderTarget(rtDesc);
-	rtDesc.additionalViewFormat(Format::Invalid);
+	}
 
-	rtDesc.width(windowWidth).height(windowHeight).format(Format::sRGBA8).name("final");
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("final")
+		      .format(Format::sRGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
 	rendertargets[RenderTargets::FinalRender] = renderer.createRenderTarget(rtDesc);
+	}
 
-	rtDesc.format(depthFormat).name("main depth");
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("main depth")
+		      .format(depthFormat)
+		      .width(windowWidth)
+		      .height(windowHeight);
 	rendertargets[RenderTargets::MainDepth] = renderer.createRenderTarget(rtDesc);
+	}
 
 	FramebufferDesc fbDesc;
 	fbDesc.depthStencil(rendertargets[RenderTargets::MainDepth]).color(0, rendertargets[RenderTargets::MainColor]);
@@ -1212,20 +1228,34 @@ void SMAADemo::createFramebuffers() {
 	finalFramebuffer = renderer.createFramebuffer(fbDesc);
 
 	// SMAA edges texture and FBO
-	rtDesc.width(windowWidth).height(windowHeight).format(Format::RGBA8).name("SMAA edges");
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("SMAA edges")
+		      .format(Format::RGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
 	rendertargets[RenderTargets::Edges] = renderer.createRenderTarget(rtDesc);
+
 	fbDesc.depthStencil(RenderTargetHandle()).color(0, rendertargets[RenderTargets::Edges]);
 	fbDesc.name("SMAA edges");
 	fbDesc.renderPass(smaaEdgesRenderPass);
 	smaaEdgesFramebuffer = renderer.createFramebuffer(fbDesc);
+	}
 
 	// SMAA blending weights texture and FBO
-	fbDesc.name("SMAA weights");
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("SMAA weights")
+		      .format(Format::RGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
 	rendertargets[RenderTargets::BlendWeights] = renderer.createRenderTarget(rtDesc);
+
 	fbDesc.depthStencil(RenderTargetHandle()).color(0, rendertargets[RenderTargets::BlendWeights]);
 	fbDesc.name("SMAA weights");
 	fbDesc.renderPass(smaaWeightsRenderPass);
 	smaaWeightsFramebuffer = renderer.createFramebuffer(fbDesc);
+	}
 }
 
 
