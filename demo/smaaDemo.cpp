@@ -1195,7 +1195,7 @@ void SMAADemo::createFramebuffers() {
 		      .additionalViewFormat(Format::RGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
-	rendertargets[RenderTargets::MainColor] = renderer.createRenderTarget(rtDesc);
+		rendertargets[RenderTargets::MainColor] = renderer.createRenderTarget(rtDesc);
 	}
 
 	{
@@ -1204,7 +1204,7 @@ void SMAADemo::createFramebuffers() {
 		      .format(Format::sRGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
-	rendertargets[RenderTargets::FinalRender] = renderer.createRenderTarget(rtDesc);
+		rendertargets[RenderTargets::FinalRender] = renderer.createRenderTarget(rtDesc);
 	}
 
 	{
@@ -1213,7 +1213,7 @@ void SMAADemo::createFramebuffers() {
 		      .format(depthFormat)
 		      .width(windowWidth)
 		      .height(windowHeight);
-	rendertargets[RenderTargets::MainDepth] = renderer.createRenderTarget(rtDesc);
+		rendertargets[RenderTargets::MainDepth] = renderer.createRenderTarget(rtDesc);
 	}
 
 	{
@@ -1222,7 +1222,7 @@ void SMAADemo::createFramebuffers() {
 		      .renderPass(sceneRenderPass)
 		      .depthStencil(rendertargets[RenderTargets::MainDepth])
 		      .color(0, rendertargets[RenderTargets::MainColor]);
-	sceneFramebuffer = renderer.createFramebuffer(fbDesc);
+		sceneFramebuffer = renderer.createFramebuffer(fbDesc);
 	}
 
 	{
@@ -1230,7 +1230,7 @@ void SMAADemo::createFramebuffers() {
 		fbDesc.name("final")
 		      .renderPass(finalRenderPass)
 		      .color(0, rendertargets[RenderTargets::FinalRender]);
-	finalFramebuffer = renderer.createFramebuffer(fbDesc);
+		finalFramebuffer = renderer.createFramebuffer(fbDesc);
 	}
 
 	// SMAA edges texture and FBO
@@ -1240,13 +1240,13 @@ void SMAADemo::createFramebuffers() {
 		      .format(Format::RGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
-	rendertargets[RenderTargets::Edges] = renderer.createRenderTarget(rtDesc);
+		rendertargets[RenderTargets::Edges] = renderer.createRenderTarget(rtDesc);
 
 		FramebufferDesc fbDesc;
 		fbDesc.name("SMAA edges")
 		      .renderPass(smaaEdgesRenderPass)
 		      .color(0, rendertargets[RenderTargets::Edges]);
-	smaaEdgesFramebuffer = renderer.createFramebuffer(fbDesc);
+		smaaEdgesFramebuffer = renderer.createFramebuffer(fbDesc);
 	}
 
 	// SMAA blending weights texture and FBO
@@ -1256,13 +1256,13 @@ void SMAADemo::createFramebuffers() {
 		      .format(Format::RGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
-	rendertargets[RenderTargets::BlendWeights] = renderer.createRenderTarget(rtDesc);
+		rendertargets[RenderTargets::BlendWeights] = renderer.createRenderTarget(rtDesc);
 
 		FramebufferDesc fbDesc;
 		fbDesc.name("SMAA weights")
 		      .renderPass(smaaWeightsRenderPass)
 		      .color(0, rendertargets[RenderTargets::BlendWeights]);
-	smaaWeightsFramebuffer = renderer.createFramebuffer(fbDesc);
+		smaaWeightsFramebuffer = renderer.createFramebuffer(fbDesc);
 	}
 }
 
