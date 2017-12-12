@@ -350,6 +350,7 @@ struct RenderPass {
 
 struct RenderTarget {
 	unsigned int   width, height;
+	unsigned int   numSamples;
 	Layout         currentLayout;
 	TextureHandle  texture;
 	TextureHandle  additionalView;
@@ -360,6 +361,7 @@ struct RenderTarget {
 	RenderTarget()
 	: width(0)
 	, height(0)
+	, numSamples(0)
 	, currentLayout(Layout::Invalid)
 	, readFBO(0)
 	, format(Format::Invalid)
@@ -372,6 +374,7 @@ struct RenderTarget {
 	RenderTarget(RenderTarget &&other)
 	: width(other.width)
 	, height(other.height)
+	, numSamples(other.numSamples)
 	, currentLayout(other.currentLayout)
 	, texture(other.texture)   // TODO: use std::move
 	, additionalView(other.additionalView)
@@ -380,6 +383,7 @@ struct RenderTarget {
 	{
 		other.width         = 0;
 		other.height        = 0;
+		other.numSamples    = 0;
 		other.currentLayout = Layout::Invalid;
 		other.texture       = TextureHandle();
 		other.additionalView = TextureHandle();
@@ -397,6 +401,7 @@ struct RenderTarget {
 
 		width         = other.width;
 		height        = other.height;
+		numSamples     = other.numSamples;
 		currentLayout = other.currentLayout;
 		texture       = other.texture;
 		additionalView = other.additionalView;
@@ -405,6 +410,7 @@ struct RenderTarget {
 
 		other.width         = 0;
 		other.height        = 0;
+		other.numSamples     = 0;
 		other.currentLayout = Layout::Invalid;
 		other.texture       = TextureHandle();
 		other.additionalView = TextureHandle();
@@ -415,6 +421,7 @@ struct RenderTarget {
 	};
 
 	~RenderTarget() {
+		assert(numSamples == 0);
 		assert(readFBO  == 0);
 		assert(!texture);
 	}

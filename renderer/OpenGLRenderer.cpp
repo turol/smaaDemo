@@ -1155,6 +1155,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	rt.width  = desc.width_;
 	rt.height = desc.height_;
 	rt.format = desc.format_;
+	rt.numSamples = desc.numSamples_;
 	// TODO: std::move?
 	rt.texture = textureResult.second;
 
@@ -1298,7 +1299,9 @@ void RendererImpl::deleteRenderPass(RenderPassHandle handle) {
 void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
 	renderTargets.removeWith(handle, [this](RenderTarget &rt) {
 		assert(rt.texture);
+		assert(rt.numSamples > 0);
 
+		rt.numSamples = 0;
 		if (rt.readFBO != 0) {
 			glDeleteFramebuffers(1, &rt.readFBO);
 			rt.readFBO = 0;
