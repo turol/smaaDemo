@@ -695,9 +695,11 @@ RendererImpl::~RendererImpl() {
 	textures.clearWith([](Texture &tex) {
 		assert(!tex.renderTarget);
 		assert(tex.tex != 0);
+		assert(tex.target != GL_NONE);
 
 		glDeleteTextures(1, &tex.tex);
 		tex.tex = 0;
+		tex.target = GL_NONE;
 	} );
 
 	samplers.clearWith([](Sampler &sampler) {
@@ -1125,7 +1127,8 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	assert(!desc.name_.empty());
 
 	GLuint id = 0;
-	glCreateTextures(GL_TEXTURE_2D, 1, &id);
+	GLenum target = GL_TEXTURE_2D;
+	glCreateTextures(target, 1, &id);
 	glTextureStorage2D(id, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
 	glTextureParameteri(id, GL_TEXTURE_MAX_LEVEL, 0);
 	if (tracing) {
@@ -1138,6 +1141,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	tex.width         = desc.width_;
 	tex.height        = desc.height_;
 	tex.renderTarget  = true;
+	tex.target        = target;
 
 	auto result = renderTargets.add();
 	RenderTarget &rt = result.first;
@@ -1150,7 +1154,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	if (desc.additionalViewFormat_ != Format::Invalid) {
 		GLuint viewId = 0;
 		glGenTextures(1, &viewId);
-		glTextureView(viewId, GL_TEXTURE_2D, id, glTexFormat(desc.additionalViewFormat_), 0, 1, 0, 1);
+		glTextureView(viewId, tex.target, id, glTexFormat(desc.additionalViewFormat_), 0, 1, 0, 1);
 
 		auto viewResult   = textures.add();
 		Texture &view     = viewResult.first;
@@ -1158,6 +1162,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 		view.width        = desc.width_;
 		view.height       = desc.height_;
 		view.renderTarget = true;
+		view.target       = target;
 		rt.additionalView = viewResult.second;
 	}
 
@@ -1189,7 +1194,8 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	assert(desc.numMips_ > 0);
 
 	GLuint texture = 0;
-	glCreateTextures(GL_TEXTURE_2D, 1, &texture);
+	GLenum target = GL_TEXTURE_2D;
+	glCreateTextures(target, 1, &texture);
 	glTextureStorage2D(texture, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
 	glTextureParameteri(texture, GL_TEXTURE_MAX_LEVEL, desc.numMips_ - 1);
 	unsigned int w = desc.width_, h = desc.height_;
@@ -1208,6 +1214,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	tex.tex    = texture;
 	tex.width  = desc.width_;
 	tex.height = desc.height_;
+	tex.target = target;
 	assert(!tex.renderTarget);
 
 	if (tracing) {
@@ -1293,10 +1300,12 @@ void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
 		{
 			auto &tex = this->textures.get(rt.texture);
 			assert(tex.renderTarget);
+			assert(tex.target != GL_NONE);
 			tex.renderTarget = false;
 			assert(tex.tex != 0);
 			glDeleteTextures(1, &tex.tex);
 			tex.tex = 0;
+			tex.target = GL_NONE;
 		}
 		this->textures.remove(rt.texture);
 		rt.texture = TextureHandle();
@@ -1304,10 +1313,12 @@ void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
 		if (rt.additionalView) {
 			auto &view = this->textures.get(rt.additionalView);
 			assert(view.renderTarget);
+			assert(view.target != GL_NONE);
 			view.renderTarget = false;
 			assert(view.tex != 0);
 			glDeleteTextures(1, &view.tex);
 			view.tex = 0;
+			view.target = GL_NONE;
 			this->textures.remove(rt.additionalView);
 			rt.additionalView = TextureHandle();
 		}
@@ -1329,9 +1340,11 @@ void RendererImpl::deleteTexture(TextureHandle handle) {
 	textures.removeWith(handle, [](Texture &tex) {
 		assert(!tex.renderTarget);
 		assert(tex.tex != 0);
+		assert(tex.target != GL_NONE);
 
 		glDeleteTextures(1, &tex.tex);
 		tex.tex = 0;
+		tex.target = GL_NONE;
 	} );
 }
 

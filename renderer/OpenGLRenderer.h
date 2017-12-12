@@ -460,8 +460,8 @@ struct Sampler {
 struct Texture {
 	unsigned int  width, height;
 	bool          renderTarget;
-	// TODO: need target for anything?
 	GLuint        tex;
+	GLenum        target;
 
 
 	Texture()
@@ -469,6 +469,7 @@ struct Texture {
 	, height(0)
 	, renderTarget(false)
 	, tex(0)
+	, target(GL_NONE)
 	{
 	}
 
@@ -481,11 +482,13 @@ struct Texture {
 	, height(other.height)
 	, renderTarget(other.renderTarget)
 	, tex(other.tex)
+	, target(other.target)
 	{
 		other.tex          = 0;
 		other.width        = 0;
 		other.height       = 0;
 		other.renderTarget = false;
+		other.target       = GL_NONE;
 	}
 
 	Texture &operator=(Texture &&other) {
@@ -497,11 +500,13 @@ struct Texture {
 		height             = other.height;
 		renderTarget       = other.renderTarget;
 		tex                = other.tex;
+		target             = other.target;
 
 		other.width        = 0;
 		other.height       = 0;
 		other.renderTarget = false;
 		other.tex          = 0;
+		other.target       = GL_NONE;
 
 		return *this;
 	}
@@ -510,6 +515,7 @@ struct Texture {
 		// it should have been deleted by Renderer before destroying this
 		assert(tex == 0);
 		assert(!renderTarget);
+		assert(target == GL_NONE);
 	}
 };
 
