@@ -239,13 +239,14 @@ struct Framebuffer {
 	Framebuffer(Framebuffer &&other)
 	: width(other.width)
 	, height(other.height)
-	, sRGB(false)
+	, sRGB(other.sRGB)
 	, fbo(other.fbo)
 	, depthStencil(other.depthStencil)
 	, renderPass(other.renderPass)
 	{
 		other.width        = 0;
 		other.height       = 0;
+		other.sRGB         = false;
 		other.fbo          = 0;
 		// TODO: use std::move
 		assert(!other.colors[1]);
@@ -260,6 +261,7 @@ struct Framebuffer {
 	Framebuffer()
 	: width(0)
 	, height(0)
+	, sRGB(false)
 	, fbo(0)
 	{
 	}
