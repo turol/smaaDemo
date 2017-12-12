@@ -1127,9 +1127,16 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	assert(!desc.name_.empty());
 
 	GLuint id = 0;
-	GLenum target = GL_TEXTURE_2D;
+	GLenum target;
+	if (desc.numSamples_ > 1) {
+		target = GL_TEXTURE_2D_MULTISAMPLE;
+		glCreateTextures(target, 1, &id);
+		glTextureStorage2DMultisample(id, desc.numSamples_, glTexFormat(desc.format_), desc.width_, desc.height_, true);
+	} else {
+		target = GL_TEXTURE_2D;
 	glCreateTextures(target, 1, &id);
 	glTextureStorage2D(id, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
+	}
 	glTextureParameteri(id, GL_TEXTURE_MAX_LEVEL, 0);
 	if (tracing) {
 		glObjectLabel(GL_TEXTURE, id, desc.name_.size(), desc.name_.c_str());
