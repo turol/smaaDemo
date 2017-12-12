@@ -536,6 +536,11 @@ void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, u
 }
 
 
+void Renderer::resolveMSAA(FramebufferHandle source, FramebufferHandle target) {
+	impl->resolveMSAA(source, target);
+}
+
+
 void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	impl->draw(firstVertex, vertexCount);
 }

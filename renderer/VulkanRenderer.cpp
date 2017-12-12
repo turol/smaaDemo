@@ -2406,6 +2406,16 @@ void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int w
 }
 
 
+void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle target) {
+	assert(source);
+	assert(target);
+
+	assert(!inRenderPass);
+
+	STUBBED("");
+}
+
+
 void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	assert(inRenderPass);
 	assert(validPipeline);

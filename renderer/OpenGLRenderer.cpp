@@ -2043,6 +2043,37 @@ void RendererImpl::rebindDescriptorSets() {
 }
 
 
+void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle target) {
+	assert(source);
+	assert(target);
+
+	assert(!inRenderPass);
+
+	const auto &srcFb = framebuffers.get(source);
+	assert(srcFb.fbo         != 0);
+	assert(srcFb.numSamples  >  1);
+	assert(srcFb.fbo         != 0);
+	assert(srcFb.width       >  0);
+	assert(srcFb.height      >  0);
+
+	const auto &destFb = framebuffers.get(target);
+	assert(destFb.fbo        != 0);
+	assert(destFb.numSamples == 1);
+	assert(destFb.fbo        != 0);
+	assert(destFb.width      >  0);
+	assert(destFb.height     >  0);
+
+	assert(srcFb.fbo         != destFb.fbo);
+	assert(srcFb.width       == destFb.width);
+	assert(srcFb.height      == destFb.height);
+
+	glBlitNamedFramebuffer(srcFb.fbo, destFb.fbo
+	                     , 0, 0, srcFb.width, srcFb.height
+	                     , 0, 0, destFb.width, destFb.height
+	                     , GL_COLOR_BUFFER_BIT, GL_LINEAR);
+}
+
+
 void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	assert(inRenderPass);
 	assert(validPipeline);
