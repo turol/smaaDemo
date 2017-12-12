@@ -1188,9 +1188,12 @@ void SMAADemo::createFramebuffers() {
 		}
 	}
 
+	unsigned int numSamples = 1;
+
 	{
 		RenderTargetDesc rtDesc;
 		rtDesc.name("main color")
+		      .numSamples(numSamples)
 		      .format(Format::sRGBA8)
 		      .additionalViewFormat(Format::RGBA8)
 		      .width(windowWidth)
@@ -1210,6 +1213,7 @@ void SMAADemo::createFramebuffers() {
 	{
 		RenderTargetDesc rtDesc;
 		rtDesc.name("main depth")
+		      .numSamples(numSamples)
 		      .format(depthFormat)
 		      .width(windowWidth)
 		      .height(windowHeight);
