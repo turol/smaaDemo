@@ -635,8 +635,10 @@ RendererImpl::~RendererImpl() {
 
 	framebuffers.clearWith([](Framebuffer &fb) {
 		assert(fb.fbo != 0);
+		assert(fb.numSamples > 0);
 		glDeleteFramebuffers(1, &fb.fbo);
 		fb.fbo = 0;
+		fb.numSamples = 0;
 	} );
 
 	renderPasses.clearWith([](RenderPass &) {
@@ -1072,9 +1074,12 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 
 	assert(colorRT.width  > 0);
 	assert(colorRT.height > 0);
+	assert(colorRT.numSamples > 0);
+	assert(colorRT.numSamples <= static_cast<unsigned int>(glValues[GL_MAX_COLOR_TEXTURE_SAMPLES]));
 	assert(colorRT.texture);
 	assert(colorRT.format == renderPass.desc.colorFormats_[0]);
 	fb.renderPass = desc.renderPass_;
+	fb.numSamples = colorRT.numSamples;
 	fb.colors[0]  = desc.colors_[0];
 	fb.sRGB       = issRGBFormat(colorRT.format);
 	fb.width      = colorRT.width;
@@ -1093,6 +1098,10 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 		assert(depthRT.width  == colorRT.width);
 		assert(depthRT.height == colorRT.height);
 		assert(depthRT.texture);
+		assert(depthRT.numSamples > 0);
+		assert(depthRT.numSamples <= static_cast<unsigned int>(glValues[GL_MAX_DEPTH_TEXTURE_SAMPLES]));
+		assert(depthRT.numSamples == colorRT.numSamples);
+
 		const auto &depthRTtex = textures.get(depthRT.texture);
 		assert(depthRTtex.renderTarget);
 		assert(depthRTtex.tex != 0);
@@ -1284,8 +1293,10 @@ void RendererImpl::deleteBuffer(BufferHandle handle) {
 void RendererImpl::deleteFramebuffer(FramebufferHandle handle) {
 	framebuffers.removeWith(handle, [](Framebuffer &fb) {
 		assert(fb.fbo != 0);
+		assert(fb.numSamples > 0);
 		glDeleteFramebuffers(1, &fb.fbo);
 		fb.fbo = 0;
+		fb.numSamples = 0;
 	} );
 }
 

@@ -226,6 +226,7 @@ struct FragmentShader {
 
 struct Framebuffer {
 	unsigned int                                             width, height;
+	unsigned int                                             numSamples;
 	bool                                                     sRGB;
 	GLuint                                                   fbo;
 	RenderTargetHandle                                       depthStencil;
@@ -239,6 +240,7 @@ struct Framebuffer {
 	Framebuffer(Framebuffer &&other)
 	: width(other.width)
 	, height(other.height)
+	, numSamples(other.numSamples)
 	, sRGB(other.sRGB)
 	, fbo(other.fbo)
 	, depthStencil(other.depthStencil)
@@ -246,6 +248,7 @@ struct Framebuffer {
 	{
 		other.width        = 0;
 		other.height       = 0;
+		other.numSamples   = 0;
 		other.sRGB         = false;
 		other.fbo          = 0;
 		// TODO: use std::move
@@ -261,6 +264,7 @@ struct Framebuffer {
 	Framebuffer()
 	: width(0)
 	, height(0)
+	, numSamples(0)
 	, sRGB(false)
 	, fbo(0)
 	{
@@ -268,6 +272,7 @@ struct Framebuffer {
 
 	~Framebuffer() {
 		assert(fbo == 0);
+		assert(numSamples == 0);
 	}
 };
 
