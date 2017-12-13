@@ -1109,6 +1109,8 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
 	assert(desc.format_ != Format::Invalid);
+	assert(isPow2(desc.numSamples_));
+	assert(!desc.name_.empty());
 
 	// TODO: use NV_dedicated_allocation when available
 
