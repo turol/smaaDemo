@@ -322,6 +322,7 @@ class SMAADemo {
 
 	unsigned int    numFrames;
 	bool            recreateSwapchain;
+	bool            recreateFramebuffers;
 	bool keepGoing;
 
 	// aa things
@@ -453,6 +454,7 @@ SMAADemo::SMAADemo()
 
 , numFrames(3)
 , recreateSwapchain(false)
+, recreateFramebuffers(false)
 , keepGoing(true)
 
 , antialiasing(true)
@@ -1613,8 +1615,9 @@ void SMAADemo::render() {
 	lastTime = ticks;
 
 	renderer.beginFrame();
-	if (recreateSwapchain) {
+	if (recreateSwapchain || recreateFramebuffers) {
 		recreateSwapchain = false;
+		recreateFramebuffers = false;
 
 		glm::uvec2 size = renderer.getDrawableSize();
 		LOG("drawable size: %ux%u\n", size.x, size.y);
