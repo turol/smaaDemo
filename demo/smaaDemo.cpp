@@ -1532,6 +1532,7 @@ void SMAADemo::mainLoopIteration() {
 			default:
 				break;
 			}
+			break;
 
 		case SDL_MOUSEMOTION:
 			io.MousePos = ImVec2(static_cast<float>(event.motion.x), static_cast<float>(event.motion.y));
