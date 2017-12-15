@@ -203,7 +203,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>RENDERER_OPENGL;WIN32;USE_GLEW;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLEW_NO_GLU;__i386;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc_util/include;../foreign/pcg-cpp/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc/include/shaderc;../foreign/shaderc/libshaderc_util/include;../foreign/pcg-cpp/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
