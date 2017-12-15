@@ -839,19 +839,28 @@ void SMAADemo::initRender() {
 	renderer.registerDescriptorSetLayout<BlendWeightDS>();
 	renderer.registerDescriptorSetLayout<NeighborBlendDS>();
 
+	{
 	RenderPassDesc rpDesc;
-	rpDesc.color(0, Format::sRGBA8);
-	rpDesc.colorFinalLayout(Layout::TransferSrc);
+		rpDesc.color(0, Format::sRGBA8)
+		      .colorFinalLayout(Layout::TransferSrc);
 	finalRenderPass       = renderer.createRenderPass(rpDesc.name("final"));
+	}
 
-	rpDesc.colorFinalLayout(Layout::ShaderRead);
-	rpDesc.color(0, Format::RGBA8);
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8)
+		      .colorFinalLayout(Layout::ShaderRead);
+
 	smaaEdgesRenderPass   = renderer.createRenderPass(rpDesc.name("SMAA edges"));
 	smaaWeightsRenderPass = renderer.createRenderPass(rpDesc.name("SMAA weights"));
+	}
 
-	rpDesc.color(0, Format::sRGBA8);
-	rpDesc.depthStencil(depthFormat);
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::sRGBA8)
+		      .depthStencil(depthFormat);
 	sceneRenderPass       = renderer.createRenderPass(rpDesc.name("scene"));
+	}
 
 	createFramebuffers();
 
