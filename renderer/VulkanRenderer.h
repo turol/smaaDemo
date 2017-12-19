@@ -338,17 +338,33 @@ struct Pipeline {
 
 struct RenderPass {
 	vk::RenderPass renderPass;
+	unsigned int                   clearValueCount;
+	std::array<vk::ClearValue, 2>  clearValues;
 
 
-	RenderPass() {}
+	RenderPass()
+	: clearValueCount(0)
+	{
+		std::array<float, 4> color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+
+		clearValues[0].color        = vk::ClearColorValue(color);
+		clearValues[1].depthStencil = vk::ClearDepthStencilValue(1.0f, 0);
+		clearValueCount             = 2;
+	}
 
 	RenderPass(const RenderPass &)            = delete;
 	RenderPass &operator=(const RenderPass &) = delete;
 
 	RenderPass(RenderPass &&other)
 	: renderPass(other.renderPass)
+	, clearValueCount(other.clearValueCount)
 	{
+		for (unsigned int i = 0; i < other.clearValueCount; i++) {
+			clearValues[i] = other.clearValues[i];
+		}
+
 		other.renderPass = vk::RenderPass();
+		other.clearValueCount = 0;
 	}
 
 	RenderPass &operator=(RenderPass &&other) {
@@ -359,14 +375,21 @@ struct RenderPass {
 		assert(!renderPass);
 
 		renderPass       = other.renderPass;
+		clearValueCount  = other.clearValueCount;
+
+		for (unsigned int i = 0; i < other.clearValueCount; i++) {
+			clearValues[i] = other.clearValues[i];
+		}
 
 		other.renderPass = vk::RenderPass();
+		other.clearValueCount = 0;
 
 		return *this;
 	}
 
 	~RenderPass() {
 		assert(!renderPass);
+		assert(clearValueCount == 0);
 	}
 
 	bool operator==(const RenderPass &other) const {

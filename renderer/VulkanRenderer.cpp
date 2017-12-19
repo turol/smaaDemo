@@ -2096,6 +2096,7 @@ void RendererImpl::deleteRenderTargetInternal(RenderTarget &rt) {
 void RendererImpl::deleteRenderPassInternal(RenderPass &rp) {
 	this->device.destroyRenderPass(rp.renderPass);
 	rp.renderPass = vk::RenderPass();
+	rp.clearValueCount = 0;
 }
 
 
@@ -2160,21 +2161,15 @@ void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle 
 	assert(fb.framebuffer);
 	assert(fb.width  > 0);
 	assert(fb.height > 0);
-	// TODO: should be customizable
 	// clear image
-	std::array<float, 4> color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
-
-	std::array<vk::ClearValue, 2> clearValues;
-	clearValues[0].color        = vk::ClearColorValue(color);
-	clearValues[1].depthStencil = vk::ClearDepthStencilValue(1.0f, 0);
 
 	vk::RenderPassBeginInfo info;
 	info.renderPass                = pass.renderPass;
 	info.framebuffer               = fb.framebuffer;
 	info.renderArea.extent.width   = fb.width;
 	info.renderArea.extent.height  = fb.height;
-	info.clearValueCount           = 2;
-	info.pClearValues              = &clearValues[0];
+	info.clearValueCount           = pass.clearValueCount;
+	info.pClearValues              = &pass.clearValues[0];
 
 	currentCommandBuffer.beginRenderPass(info, vk::SubpassContents::eInline);
 
