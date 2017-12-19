@@ -824,6 +824,9 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	std::vector<vk::AttachmentDescription> attachments;
 	std::vector<vk::AttachmentReference> colorAttachments;
 
+	auto result   = renderPasses.add();
+	RenderPass &r = result.first;
+
 	// TODO: multiple render targets
 	assert(desc.colorFormats_[0] != Format::Invalid);
 	assert(desc.colorFormats_[1] == Format::Invalid);
@@ -922,8 +925,6 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	info.dependencyCount = static_cast<uint32_t>(dependencies.size());
 	info.pDependencies   = &dependencies[0];
 
-	auto result   = renderPasses.add();
-	RenderPass &r = result.first;
 	r.renderPass  = device.createRenderPass(info);
 
 	if (debugMarkers) {
