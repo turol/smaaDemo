@@ -345,11 +345,6 @@ struct RenderPass {
 	RenderPass()
 	: clearValueCount(0)
 	{
-		std::array<float, 4> color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
-
-		clearValues[0].color        = vk::ClearColorValue(color);
-		clearValues[1].depthStencil = vk::ClearDepthStencilValue(1.0f, 0);
-		clearValueCount             = 2;
 	}
 
 	RenderPass(const RenderPass &)            = delete;

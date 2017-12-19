@@ -434,6 +434,10 @@ struct RenderPassDesc {
 	RenderPassDesc()
 	: depthStencilFormat_(Format::Invalid)
 	, colorFinalLayout_(Layout::ShaderRead)
+	, clearColorAttachments(false)
+	, clearDepthAttachment(false)
+	, colorClearValue(0.0f, 0.0f, 0.0f, 0.0f)
+	, depthClearValue(1.0f)
 	{
 		std::fill(colorFormats_.begin(), colorFormats_.end(), Format::Invalid);
 	}
@@ -462,6 +466,18 @@ struct RenderPassDesc {
 		return *this;
 	}
 
+	RenderPassDesc &clearColors(glm::vec4 v) {
+		clearColorAttachments = true;
+		colorClearValue       = v;
+		return *this;
+	}
+
+	RenderPassDesc &clearDepth(float v) {
+		clearDepthAttachment  = true;
+		depthClearValue       = v;
+		return *this;
+	}
+
 	RenderPassDesc &name(const std::string &str) {
 		name_ = str;
 		return *this;
@@ -473,6 +489,11 @@ private:
 	std::array<Format, MAX_COLOR_RENDERTARGETS>  colorFormats_;
 	Layout                                       colorFinalLayout_;
 	std::string                                  name_;
+	bool                                         clearColorAttachments;
+	bool                                         clearDepthAttachment;
+	glm::vec4                                    colorClearValue;
+	float                                        depthClearValue;
+
 
 	friend struct RendererImpl;
 };

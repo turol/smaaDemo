@@ -842,6 +842,7 @@ void SMAADemo::initRender() {
 	{
 		RenderPassDesc rpDesc;
 		rpDesc.color(0, Format::sRGBA8)
+		      .clearColors(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f))
 		      .colorFinalLayout(Layout::TransferSrc);
 		finalRenderPass       = renderer.createRenderPass(rpDesc.name("final"));
 	}
@@ -849,6 +850,7 @@ void SMAADemo::initRender() {
 	{
 		RenderPassDesc rpDesc;
 		rpDesc.color(0, Format::RGBA8)
+		      .clearColors(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f))
 		      .colorFinalLayout(Layout::ShaderRead);
 
 		smaaEdgesRenderPass   = renderer.createRenderPass(rpDesc.name("SMAA edges"));
@@ -858,7 +860,9 @@ void SMAADemo::initRender() {
 	{
 		RenderPassDesc rpDesc;
 		rpDesc.color(0, Format::sRGBA8)
+		      .clearColors(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f))
 		      .depthStencil(depthFormat)
+		      .clearDepth(1.0f)
 		      .colorFinalLayout(Layout::ShaderRead);
 		sceneRenderPass       = renderer.createRenderPass(rpDesc.name("scene"));
 	}

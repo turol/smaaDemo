@@ -326,6 +326,9 @@ struct Pipeline {
 
 struct RenderPass {
 	RenderPassDesc  desc;
+	glm::vec4       colorClearValue;
+	float           depthClearValue;
+	GLbitfield      clearMask;
 
 
 	RenderPass() {}
@@ -335,6 +338,9 @@ struct RenderPass {
 
 	RenderPass(RenderPass &&other)
 	: desc(other.desc)
+	, colorClearValue(other.colorClearValue)
+	, depthClearValue(other.depthClearValue)
+	, clearMask(other.clearMask)
 	{
 	}
 
@@ -344,6 +350,9 @@ struct RenderPass {
 		}
 
 		desc            = other.desc;
+		colorClearValue = other.colorClearValue;
+		depthClearValue = other.depthClearValue;
+		clearMask       = other.clearMask;
 
 		return *this;
 	}

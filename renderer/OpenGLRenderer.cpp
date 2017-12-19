@@ -1122,9 +1122,22 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	assert(!desc.name_.empty());
 
+	GLbitfield clearMask = 0;
+	if (desc.clearColorAttachments) {
+		clearMask |= GL_COLOR_BUFFER_BIT;
+	}
+	
+	if (desc.clearDepthAttachment) {
+		clearMask |= GL_DEPTH_BUFFER_BIT;
+	}
+
 	auto result = renderPasses.add();
 	RenderPass &pass = result.first;
 	pass.desc = desc;
+	pass.colorClearValue = desc.colorClearValue;
+	pass.depthClearValue = desc.depthClearValue;
+	pass.clearMask       = clearMask;
+
 	return result.second;
 }
 
@@ -1639,27 +1652,35 @@ void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle 
 	const auto &fb = framebuffers.get(fbHandle);
 	assert(fb.fbo != 0);
 
+	assert(rpHandle);
+	const auto &rp = renderPasses.get(rpHandle);
+
 	// make sure renderpass and framebuffer match
 	// OpenGL doesn't care but Vulkan does
+	// TODO: should check compatibility instead of identity
 	assert(fb.renderPass == rpHandle);
-
-	// TODO: should get clear bits from RenderPass object
-	GLbitfield mask = GL_COLOR_BUFFER_BIT;
-	if (fb.depthStencil) {
-		mask |= GL_DEPTH_BUFFER_BIT;
-	}
 
 	assert(fb.fbo != 0);
 	assert(fb.width > 0);
 	assert(fb.height > 0);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fb.fbo);
-	glClear(mask);
-
 	if (fb.sRGB) {
 		glEnable(GL_FRAMEBUFFER_SRGB);
 	} else {
 		glDisable(GL_FRAMEBUFFER_SRGB);
+	}
+
+	if (rp.clearMask) {
+		if ((rp.clearMask & GL_COLOR_BUFFER_BIT) != 0) {
+			glClearColor(rp.colorClearValue.x, rp.colorClearValue.y, rp.colorClearValue.z, rp.colorClearValue.w);
+		}
+
+		if ((rp.clearMask & GL_DEPTH_BUFFER_BIT) != 0) {
+			glClearDepth(rp.depthClearValue);
+		}
+
+		glClear(rp.clearMask);
 	}
 
 	currentRenderPass  = rpHandle;

@@ -839,7 +839,15 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		vk::AttachmentDescription attach;
 		attach.format         = vulkanFormat(desc.colorFormats_[0]);
 		// TODO: these should be customizable via RenderPassDesc
-		attach.loadOp         = vk::AttachmentLoadOp::eClear;
+		attach.loadOp         = vk::AttachmentLoadOp::eDontCare;
+		if (desc.clearColorAttachments) {
+			attach.loadOp     = vk::AttachmentLoadOp::eClear;
+			std::array<float, 4> color = { { desc.colorClearValue.x, desc.colorClearValue.y, desc.colorClearValue.z, desc.colorClearValue.a } };
+			r.clearValueCount = attachNum + 1;
+			assert(r.clearValueCount <= 2);
+			r.clearValues[attachNum].color = vk::ClearColorValue(color);
+
+		}
 		attach.storeOp        = vk::AttachmentStoreOp::eStore;
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
 		attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
@@ -864,7 +872,13 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		uint32_t attachNum    = static_cast<uint32_t>(attachments.size());
 		attach.format         = vulkanFormat(desc.depthStencilFormat_);
 		// TODO: these should be customizable via RenderPassDesc
-		attach.loadOp         = vk::AttachmentLoadOp::eClear;
+		attach.loadOp         = vk::AttachmentLoadOp::eDontCare;
+		if (desc.clearDepthAttachment) {
+			attach.loadOp     = vk::AttachmentLoadOp::eClear;
+			r.clearValueCount = attachNum + 1;
+			assert(r.clearValueCount <= 2);
+			r.clearValues[attachNum].depthStencil = vk::ClearDepthStencilValue(1.0f, 0);
+		}
 		attach.storeOp        = vk::AttachmentStoreOp::eStore;
 		// TODO: stencil
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
