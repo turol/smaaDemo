@@ -833,6 +833,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	assert(desc.colorFormats_[0] != Format::Invalid);
 	assert(desc.colorFormats_[1] == Format::Invalid);
 	{
+		uint32_t attachNum    = static_cast<uint32_t>(attachments.size());
 		vk::ImageLayout layout = vk::ImageLayout::eColorAttachmentOptimal;
 
 		vk::AttachmentDescription attach;
@@ -847,7 +848,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		attachments.push_back(attach);
 
 		vk::AttachmentReference ref;
-		ref.attachment = static_cast<uint32_t>(attachments.size()) - 1;
+		ref.attachment = attachNum;
 		ref.layout     = layout;
 		colorAttachments.push_back(ref);
 	}
@@ -860,6 +861,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		vk::ImageLayout layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
 		vk::AttachmentDescription attach;
+		uint32_t attachNum    = static_cast<uint32_t>(attachments.size());
 		attach.format         = vulkanFormat(desc.depthStencilFormat_);
 		// TODO: these should be customizable via RenderPassDesc
 		attach.loadOp         = vk::AttachmentLoadOp::eClear;
@@ -872,7 +874,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		attach.finalLayout    = vk::ImageLayout::eShaderReadOnlyOptimal;
 		attachments.push_back(attach);
 
-		depthAttachment.attachment = static_cast<uint32_t>(attachments.size()) - 1;
+		depthAttachment.attachment = attachNum;
 		depthAttachment.layout     = layout;
 		subpass.pDepthStencilAttachment = &depthAttachment;
 	}
