@@ -818,6 +818,8 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 
 
 RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
+	assert(!desc.name_.empty());
+
 	vk::RenderPassCreateInfo info;
 	vk::SubpassDescription subpass;
 
