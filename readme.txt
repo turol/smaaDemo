@@ -15,6 +15,8 @@ SPIRV-Tools-opt.lib
 spirv-cross-core.lib
 spirv-cross-glsl.lib
 
+You can use the included windows/build-foreign.bat file to automatically build the required libraries with cmake.
+
 
 Usage
 =====
