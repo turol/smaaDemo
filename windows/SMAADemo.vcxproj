@@ -33,12 +33,12 @@
       <Configuration>Release Vulkan</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
+    <ProjectConfiguration Include="Release OpenGL|Win32">
+      <Configuration>Release OpenGL</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
+    <ProjectConfiguration Include="Release OpenGL|x64">
+      <Configuration>Release OpenGL</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
@@ -85,7 +85,7 @@
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release OpenGL|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
@@ -99,7 +99,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release OpenGL|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
@@ -134,13 +134,13 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug Null|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release OpenGL|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release Vulkan|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release OpenGL|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release Vulkan|x64'" Label="PropertySheets">
@@ -176,7 +176,7 @@
     <LinkIncremental>true</LinkIncremental>
     <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release OpenGL|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>$(LibraryPath)</LibraryPath>
     <OutDir>../</OutDir>
@@ -186,7 +186,7 @@
     <LibraryPath>$(LibraryPath)</LibraryPath>
     <OutDir>../</OutDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release OpenGL|x64'">
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
@@ -302,7 +302,7 @@
       <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build64/source/Debug;../foreign/SPIRV-Tools/Build64/source/opt/Debug;../foreign/SPIRV-Tools/Build64/source/comp/Debug;../foreign/SPIRV-Cross/Build64/Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release OpenGL|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
@@ -310,7 +310,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;USE_GLEW;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RENDERER_OPENGL;WIN32;USE_GLEW;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLEW_NO_GLU;__i386;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc/include;../foreign/shaderc/libshaderc_util/include;../foreign/pcg-cpp/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -319,7 +319,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;shaderc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SPIRV-Tools.lib;SPIRV-Tools-comp.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build/source/Release;../foreign/SPIRV-Tools/Build/source/opt/Release;../foreign/SPIRV-Tools/Build/source/comp/Release;../foreign/SPIRV-Cross/Build/Release</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -344,7 +344,7 @@
       <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build/source/Release;../foreign/SPIRV-Tools/Build/source/opt/Release;../foreign/SPIRV-Tools/Build/source/comp/Release;../foreign/SPIRV-Cross/Build/Release</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release OpenGL|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
@@ -352,16 +352,16 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;USE_GLEW;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RENDERER_OPENGL;WIN32;USE_GLEW;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLEW_NO_GLU;__x86_64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc/include;../foreign/shaderc/libshaderc_util/include;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc/include;../foreign/shaderc/libshaderc_util/include;../foreign/pcg-cpp/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;shaderc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SPIRV-Tools.lib;SPIRV-Tools-comp.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build64/source/Release;../foreign/SPIRV-Tools/Build64/source/opt/Release;../foreign/SPIRV-Tools/Build64/source/comp/Release;../foreign/SPIRV-Cross/Build64/Release</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
