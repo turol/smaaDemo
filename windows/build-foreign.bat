@@ -12,12 +12,14 @@ mkdir build
 cd build
 cmake -G%GENERATOR% -DSPIRV-Headers_SOURCE_DIR=%cd%/../../SPIRV-Headers ..
 cmake --build .
+cmake --build . --config Release
 cd ..
 
 mkdir build64
 cd build64
 cmake -G%GENERATOR64% -DSPIRV-Headers_SOURCE_DIR=%cd%/../../SPIRV-Headers ..
 cmake --build .
+cmake --build . --config Release
 cd ..
 
 cd ..
@@ -28,12 +30,14 @@ mkdir build
 cd build
 cmake -G%GENERATOR% ..
 cmake --build .
+cmake --build . --config Release
 cd ..
 
 mkdir build64
 cd build64
 cmake -G%GENERATOR64% ..
 cmake --build .
+cmake --build . --config Release
 cd ..
 
 cd ..
