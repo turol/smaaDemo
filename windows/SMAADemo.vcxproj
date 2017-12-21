@@ -223,7 +223,8 @@
       <SDLCheck>false</SDLCheck>
       <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc/include;../foreign/shaderc/libshaderc_util/include;../foreign/pcg-cpp/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalOptions>/D_ITERATOR_DEBUG_LEVEL=0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>
+      </AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
