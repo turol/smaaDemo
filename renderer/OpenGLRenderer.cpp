@@ -1137,6 +1137,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	pass.colorClearValue = desc.colorClearValue;
 	pass.depthClearValue = desc.depthClearValue;
 	pass.clearMask       = clearMask;
+	pass.numSamples      = desc.numSamples_;
 
 	return result.second;
 }

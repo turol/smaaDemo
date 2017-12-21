@@ -817,6 +817,36 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 }
 
 
+static vk::SampleCountFlagBits sampleCountFlagsFromNum(unsigned int numSamples) {
+	switch (numSamples) {
+	case 1:
+		return vk::SampleCountFlagBits::e1;
+
+	case 2:
+		return vk::SampleCountFlagBits::e2;
+
+	case 4:
+		return vk::SampleCountFlagBits::e4;
+
+	case 8:
+		return vk::SampleCountFlagBits::e8;
+
+	case 16:
+		return vk::SampleCountFlagBits::e16;
+
+	case 32:
+		return vk::SampleCountFlagBits::e32;
+
+	case 64:
+		return vk::SampleCountFlagBits::e64;
+
+	}
+
+	UNREACHABLE();
+	return vk::SampleCountFlagBits::e1;
+}
+
+
 RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	assert(!desc.name_.empty());
 
@@ -829,6 +859,8 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	auto result   = renderPasses.add();
 	RenderPass &r = result.first;
 
+	vk::SampleCountFlagBits samples = sampleCountFlagsFromNum(desc.numSamples_);
+
 	// TODO: multiple render targets
 	assert(desc.colorFormats_[0] != Format::Invalid);
 	assert(desc.colorFormats_[1] == Format::Invalid);
@@ -838,6 +870,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 
 		vk::AttachmentDescription attach;
 		attach.format         = vulkanFormat(desc.colorFormats_[0]);
+		attach.samples        = samples;
 		// TODO: these should be customizable via RenderPassDesc
 		attach.loadOp         = vk::AttachmentLoadOp::eDontCare;
 		if (desc.clearColorAttachments) {
@@ -871,6 +904,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		vk::AttachmentDescription attach;
 		uint32_t attachNum    = static_cast<uint32_t>(attachments.size());
 		attach.format         = vulkanFormat(desc.depthStencilFormat_);
+		attach.samples        = samples;
 		// TODO: these should be customizable via RenderPassDesc
 		attach.loadOp         = vk::AttachmentLoadOp::eDontCare;
 		if (desc.clearDepthAttachment) {

@@ -329,6 +329,7 @@ struct RenderPass {
 	glm::vec4       colorClearValue;
 	float           depthClearValue;
 	GLbitfield      clearMask;
+	unsigned int    numSamples;
 
 
 	RenderPass() {}
@@ -341,6 +342,7 @@ struct RenderPass {
 	, colorClearValue(other.colorClearValue)
 	, depthClearValue(other.depthClearValue)
 	, clearMask(other.clearMask)
+	, numSamples(other.numSamples)
 	{
 	}
 
@@ -353,6 +355,7 @@ struct RenderPass {
 		colorClearValue = other.colorClearValue;
 		depthClearValue = other.depthClearValue;
 		clearMask       = other.clearMask;
+		numSamples      = other.numSamples;
 
 		return *this;
 	}

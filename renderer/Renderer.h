@@ -434,6 +434,7 @@ struct RenderPassDesc {
 	RenderPassDesc()
 	: depthStencilFormat_(Format::Invalid)
 	, colorFinalLayout_(Layout::ShaderRead)
+	, numSamples_(1)
 	, clearColorAttachments(false)
 	, clearDepthAttachment(false)
 	, colorClearValue(0.0f, 0.0f, 0.0f, 0.0f)
@@ -483,11 +484,17 @@ struct RenderPassDesc {
 		return *this;
 	}
 
+	RenderPassDesc &numSamples(unsigned int n) {
+		numSamples_ = n;
+		return *this;
+	}
+
 private:
 
 	Format                                       depthStencilFormat_;
 	std::array<Format, MAX_COLOR_RENDERTARGETS>  colorFormats_;
 	Layout                                       colorFinalLayout_;
+	unsigned int                                 numSamples_;
 	std::string                                  name_;
 	bool                                         clearColorAttachments;
 	bool                                         clearDepthAttachment;
