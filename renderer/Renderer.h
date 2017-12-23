@@ -719,6 +719,21 @@ struct RendererDesc {
 };
 
 
+struct RendererFeatures {
+	uint32_t  maxMSAAQuality;
+	bool      sRGBFramebuffer;
+	bool      SSBOSupported;
+
+
+	RendererFeatures()
+	: maxMSAAQuality(1)
+	, sRGBFramebuffer(false)
+	, SSBOSupported(false)
+	{
+	}
+};
+
+
 class Renderer {
 	RendererImpl *impl;
 
@@ -770,6 +785,8 @@ public:
 	bool isRenderTargetFormatSupported(Format format) const;
 	unsigned int getCurrentRefreshRate() const;
 	unsigned int getMaxRefreshRate() const;
+
+	const RendererFeatures &getFeatures() const;
 
 	// TODO: add buffer usage flags
 	BufferHandle          createBuffer(uint32_t size, const void *contents);

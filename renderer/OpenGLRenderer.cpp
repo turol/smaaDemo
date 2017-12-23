@@ -432,7 +432,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		int value = -1;
 		SDL_GL_GetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, &value);
 		LOG("sRGB framebuffer: %d\n", value);
-		sRGBFramebuffer = value;
+		features.sRGBFramebuffer = value;
 	}
 
 	bool vsync = false;
@@ -472,6 +472,14 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	// TODO: check extensions
 	// at least direct state access, texture storage
+
+	if (GLEW_VERSION_4_3 || GLEW_ARB_shader_storage_buffer_object) {
+		features.SSBOSupported = true;
+		LOG("Shader storage buffer supported\n");
+	} else {
+		features.SSBOSupported = false;
+		LOG("Shader storage buffer not supported\n");
+	}
 
 	if (!GLEW_ARB_direct_state_access) {
 		LOG("ARB_direct_state_access not found\n");
@@ -529,6 +537,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	uboAlign   = glValues[GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT];
 	ssboAlign  = glValues[GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT];
+
+	features.maxMSAAQuality = std::min(glValues[GL_MAX_COLOR_TEXTURE_SAMPLES], glValues[GL_MAX_DEPTH_TEXTURE_SAMPLES]);
 
 	// TODO: use GL_UPPER_LEFT to match Vulkan
 	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
@@ -1536,7 +1546,7 @@ void RendererImpl::beginFrame() {
 	// TODO: reset all relevant state in case some 3rd-party program fucked them up
 	glDepthMask(GL_TRUE);
 
-	if (sRGBFramebuffer) {
+	if (features.sRGBFramebuffer) {
 		glEnable(GL_FRAMEBUFFER_SRGB);
 	} else {
 		glDisable(GL_FRAMEBUFFER_SRGB);
@@ -1563,7 +1573,7 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 
 	// TODO: only if enabled
 	glDisable(GL_SCISSOR_TEST);
-	if (sRGBFramebuffer) {
+	if (features.sRGBFramebuffer) {
 		glEnable(GL_FRAMEBUFFER_SRGB);
 	} else {
 		glDisable(GL_FRAMEBUFFER_SRGB);
