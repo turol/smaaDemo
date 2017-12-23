@@ -997,15 +997,15 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	GLuint vertexShader = 0;
     ShaderResources resources;
 	{
-	spirv_cross::CompilerGLSL glsl(v.spirv);
-	spirv_cross::CompilerGLSL::Options glslOptions;
-	glslOptions.vertex.fixup_clipspace = false;
-	glsl.set_options(glslOptions);
+		spirv_cross::CompilerGLSL glsl(v.spirv);
+		spirv_cross::CompilerGLSL::Options glslOptions;
+		glslOptions.vertex.fixup_clipspace = false;
+		glsl.set_options(glslOptions);
 
-	resources = processShaderResources(glsl);
+		resources = processShaderResources(glsl);
 
-	std::vector<char> vertexSrc = spirv2glsl(v.name, v.macros, glsl);
-	vertexShader = createShader(GL_VERTEX_SHADER, v.name, vertexSrc);
+		std::vector<char> vertexSrc = spirv2glsl(v.name, v.macros, glsl);
+		vertexShader = createShader(GL_VERTEX_SHADER, v.name, vertexSrc);
 	}
 
 	mergeShaderResources(resources, f.resources);
