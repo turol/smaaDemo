@@ -335,6 +335,8 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		throw std::runtime_error("Shader compile failed");
 	}
 
+	std::vector<uint32_t> spirv(result.cbegin(), result.cend());
+
 	{
 		std::string cacheStr = std::to_string(shaderVersion);
 
@@ -346,7 +348,6 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		writeFile(cacheName, cacheStr.c_str(), cacheStr.size());
 	}
 
-	std::vector<uint32_t> spirv(result.cbegin(), result.cend());
 	writeFile(spvName, &spirv[0], spirv.size() * 4);
 
 	return spirv;
