@@ -547,13 +547,12 @@ struct Texture {
 
 
 struct VertexShader {
-	GLuint           shader;
 	std::string      name;
-	ShaderResources  resources;
+	std::vector<uint32_t>  spirv;
+	ShaderMacros           macros;
 
 
 	VertexShader()
-	: shader(0)
 	{
 	}
 
@@ -562,13 +561,12 @@ struct VertexShader {
 	VertexShader &operator=(const VertexShader &) = delete;
 
 	VertexShader(VertexShader &&other)
-	: shader(other.shader)
-	, name(std::move(other.name))
-	, resources(other.resources)
+	: name(std::move(other.name))
+	, spirv(std::move(other.spirv))
+	, macros(other.macros)
 	{
-		other.shader    = 0;
 		assert(other.name.empty());
-		other.resources = ShaderResources();
+		assert(other.spirv.empty());
 	}
 
 	VertexShader &operator=(VertexShader &&other) {
@@ -576,19 +574,17 @@ struct VertexShader {
 			return *this;
 		}
 
-		shader          = other.shader;
+		spirv           = std::move(other.spirv);
 		name            = std::move(other.name);
-		resources       = other.resources;
+		macros          = std::move(other.macros);
 
-		other.shader    = 0;
+		assert(other.spirv.empty());
 		assert(other.name.empty());
-		other.resources = ShaderResources();
 
 		return *this;
 	}
 
 	~VertexShader() {
-		assert(!shader);
 	}
 };
 

@@ -682,10 +682,7 @@ RendererImpl::~RendererImpl() {
 		p.shader = 0;
 	} );
 
-	vertexShaders.clearWith([](VertexShader &v) {
-		assert(v.shader != 0);
-		glDeleteShader(v.shader);
-		v.shader = 0;
+	vertexShaders.clearWith([](VertexShader &) {
 	} );
 
 	fragmentShaders.clearWith([](FragmentShader &f) {
@@ -920,19 +917,11 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 
     std::vector<uint32_t> spirv = compileSpirv(vertexShaderName, macros, shaderc_glsl_vertex_shader);
 
-	spirv_cross::CompilerGLSL glsl(spirv);
-	spirv_cross::CompilerGLSL::Options glslOptions;
-	glslOptions.vertex.fixup_clipspace = false;
-	glsl.set_options(glslOptions);
-
-	auto resources = processShaderResources(glsl);
-	std::vector<char> src = spirv2glsl(name, macros, glsl);
-
 	auto result_ = vertexShaders.add();
 	auto &v = result_.first;
-	v.shader    = createShader(GL_VERTEX_SHADER, vertexShaderName, src);
 	v.name      = vertexShaderName;
-	v.resources = std::move(resources);
+	v.spirv     = std::move(spirv);
+	v.macros    = macros;
 
 	return result_.second;
 }
@@ -1005,7 +994,16 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	const auto &v = vertexShaders.get(desc.vertexShader_);
     const auto &f = fragmentShaders.get(desc.fragmentShader_);
 
-	ShaderResources resources = v.resources;
+	spirv_cross::CompilerGLSL glsl(v.spirv);
+	spirv_cross::CompilerGLSL::Options glslOptions;
+	glslOptions.vertex.fixup_clipspace = false;
+	glsl.set_options(glslOptions);
+
+	ShaderResources resources = processShaderResources(glsl);
+
+	std::vector<char> vertexSrc = spirv2glsl(v.name, v.macros, glsl);
+	GLuint vertexShader = createShader(GL_VERTEX_SHADER, v.name, vertexSrc);
+
 	mergeShaderResources(resources, f.resources);
 
 	// match shader resources against pipeline layouts
@@ -1023,16 +1021,17 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 				}
 			}
 		}
-		checkShaderResources(v.name, v.resources, layoutMap);
+		checkShaderResources(v.name, resources, layoutMap);
 		checkShaderResources(f.name, f.resources, layoutMap);
 	}
 
 	// TODO: cache shaders
 	GLuint program = glCreateProgram();
 
-	glAttachShader(program, v.shader);
+	glAttachShader(program, vertexShader);
 	glAttachShader(program, f.shader);
 	glLinkProgram(program);
+	glDeleteShader(vertexShader);
 
 	GLint status = 0;
 	glGetProgramiv(program, GL_LINK_STATUS, &status);
