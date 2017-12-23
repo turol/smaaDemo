@@ -984,7 +984,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 
 	GLuint vertexShader = 0;
 	GLuint fragmentShader = 0;
-    ShaderResources resources;
+	ShaderResources resources;
 	{
 		spirv_cross::CompilerGLSL glsl(v.spirv);
 		spirv_cross::CompilerGLSL::Options glslOptions;

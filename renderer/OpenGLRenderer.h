@@ -179,7 +179,7 @@ struct DescriptorSetLayout {
 
 
 struct FragmentShader {
-	std::string      name;
+	std::string            name;
 	std::vector<uint32_t>  spirv;
 	ShaderMacros           macros;
 
@@ -194,7 +194,7 @@ struct FragmentShader {
 	FragmentShader(FragmentShader &&other)
 	: name(std::move(other.name))
 	, spirv(std::move(other.spirv))
-		, macros(std::move(other.macros))
+	, macros(std::move(other.macros))
 	{
 		assert(other.name.empty());
 		assert(other.spirv.empty());
@@ -543,7 +543,7 @@ struct Texture {
 
 
 struct VertexShader {
-	std::string      name;
+	std::string            name;
 	std::vector<uint32_t>  spirv;
 	ShaderMacros           macros;
 
