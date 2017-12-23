@@ -685,10 +685,7 @@ RendererImpl::~RendererImpl() {
 	vertexShaders.clearWith([](VertexShader &) {
 	} );
 
-	fragmentShaders.clearWith([](FragmentShader &f) {
-		assert(f.shader != 0);
-		glDeleteShader(f.shader);
-		f.shader = 0;
+	fragmentShaders.clearWith([](FragmentShader &) {
 	} );
 
 	textures.clearWith([](Texture &tex) {
@@ -932,19 +929,10 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 
 	std::vector<uint32_t> spirv = compileSpirv(fragmentShaderName, macros, shaderc_glsl_fragment_shader);
 
-	spirv_cross::CompilerGLSL glsl(spirv);
-	spirv_cross::CompilerGLSL::Options glslOptions;
-	glslOptions.vertex.fixup_clipspace = false;
-	glsl.set_options(glslOptions);
-
-	auto resources = processShaderResources(glsl);
-	std::vector<char> src = spirv2glsl(name, macros, glsl);
-
 	auto result_ = fragmentShaders.add();
 	auto &f = result_.first;
-	f.shader = createShader(GL_FRAGMENT_SHADER, name, src);
 	f.name      = fragmentShaderName;
-	f.resources = std::move(resources);
+	f.spirv     = std::move(spirv);
 
 	return result_.second;
 }
@@ -995,6 +983,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
     const auto &f = fragmentShaders.get(desc.fragmentShader_);
 
 	GLuint vertexShader = 0;
+	GLuint fragmentShader = 0;
     ShaderResources resources;
 	{
 		spirv_cross::CompilerGLSL glsl(v.spirv);
@@ -1008,7 +997,18 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		vertexShader = createShader(GL_VERTEX_SHADER, v.name, vertexSrc);
 	}
 
-	mergeShaderResources(resources, f.resources);
+	{
+		spirv_cross::CompilerGLSL glsl(f.spirv);
+		spirv_cross::CompilerGLSL::Options glslOptions;
+		glslOptions.vertex.fixup_clipspace = false;
+		glsl.set_options(glslOptions);
+
+		auto fragResources = processShaderResources(glsl);
+		std::vector<char> fragmentSrc = spirv2glsl(f.name, f.macros, glsl);
+		fragmentShader = createShader(GL_FRAGMENT_SHADER, f.name, fragmentSrc);
+
+		mergeShaderResources(resources, fragResources);
+	}
 
 	// match shader resources against pipeline layouts
 	{
@@ -1026,16 +1026,16 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 			}
 		}
 		checkShaderResources(v.name, resources, layoutMap);
-		checkShaderResources(f.name, f.resources, layoutMap);
 	}
 
 	// TODO: cache shaders
 	GLuint program = glCreateProgram();
 
 	glAttachShader(program, vertexShader);
-	glAttachShader(program, f.shader);
+	glAttachShader(program, fragmentShader);
 	glLinkProgram(program);
 	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
 
 	GLint status = 0;
 	glGetProgramiv(program, GL_LINK_STATUS, &status);

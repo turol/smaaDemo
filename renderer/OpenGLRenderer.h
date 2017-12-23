@@ -179,13 +179,12 @@ struct DescriptorSetLayout {
 
 
 struct FragmentShader {
-	GLuint           shader;
 	std::string      name;
-	ShaderResources  resources;
+	std::vector<uint32_t>  spirv;
+	ShaderMacros           macros;
 
 
 	FragmentShader()
-	: shader(0)
 	{
 	}
 
@@ -193,13 +192,12 @@ struct FragmentShader {
 	FragmentShader &operator=(const FragmentShader &) = delete;
 
 	FragmentShader(FragmentShader &&other)
-	: shader(other.shader)
-	, name(std::move(other.name))
-	, resources(other.resources)
+	: name(std::move(other.name))
+	, spirv(std::move(other.spirv))
+		, macros(std::move(other.macros))
 	{
-		other.shader    = 0;
 		assert(other.name.empty());
-		other.resources = ShaderResources();
+		assert(other.spirv.empty());
 	}
 
 	FragmentShader &operator=(FragmentShader &&other) {
@@ -207,19 +205,17 @@ struct FragmentShader {
 			return *this;
 		}
 
-		shader          = other.shader;
 		name            = std::move(other.name);
-		resources       = other.resources;
+		spirv           = std::move(other.spirv);
+		macros          = std::move(other.macros);
 
-		other.shader    = 0;
 		assert(other.name.empty());
-		other.resources = ShaderResources();
+		assert(other.spirv.empty());
 
 		return *this;
 	}
 
 	~FragmentShader() {
-		assert(!shader);
 	}
 };
 
