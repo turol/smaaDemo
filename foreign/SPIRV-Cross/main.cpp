@@ -15,6 +15,7 @@
  */
 
 #include "spirv_cpp.hpp"
+#include "spirv_glsl.hpp"
 #include "spirv_hlsl.hpp"
 #include "spirv_msl.hpp"
 #include <algorithm>
@@ -36,12 +37,12 @@ using namespace spirv_cross;
 using namespace std;
 
 #ifdef SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS
-#define THROW(x)                   \
-	do                             \
-	{                              \
-		fprintf(stderr, "%s.", x); \
-		exit(1);                   \
-	} while (0)
+static inline void THROW(const char *str)
+{
+	fprintf(stderr, "SPIRV-Cross will abort: %s\n", str);
+	fflush(stderr);
+	abort();
+}
 #else
 #define THROW(x) throw runtime_error(x)
 #endif
@@ -398,6 +399,21 @@ static void print_spec_constants(const Compiler &compiler)
 	fprintf(stderr, "==================\n\n");
 }
 
+static void print_capabilities_and_extensions(const Compiler &compiler)
+{
+	fprintf(stderr, "Capabilities\n");
+	fprintf(stderr, "============\n");
+	for (auto &capability : compiler.get_declared_capabilities())
+		fprintf(stderr, "Capability: %u\n", static_cast<unsigned>(capability));
+	fprintf(stderr, "============\n\n");
+
+	fprintf(stderr, "Extensions\n");
+	fprintf(stderr, "============\n");
+	for (auto &ext : compiler.get_declared_extensions())
+		fprintf(stderr, "Extension: %s\n", ext.c_str());
+	fprintf(stderr, "============\n\n");
+}
+
 struct PLSArg
 {
 	PlsFormat format;
@@ -431,14 +447,17 @@ struct CLIArguments
 	const char *cpp_interface_name = nullptr;
 	uint32_t version = 0;
 	uint32_t shader_model = 0;
+	uint32_t msl_version = 0;
 	bool es = false;
 	bool set_version = false;
 	bool set_shader_model = false;
+	bool set_msl_version = false;
 	bool set_es = false;
 	bool dump_resources = false;
 	bool force_temporary = false;
 	bool flatten_ubo = false;
 	bool fixup = false;
+	bool yflip = false;
 	bool sso = false;
 	vector<PLSArg> pls_in;
 	vector<PLSArg> pls_out;
@@ -446,7 +465,10 @@ struct CLIArguments
 	vector<string> extensions;
 	vector<VariableTypeRemap> variable_type_remaps;
 	vector<InterfaceVariableRename> interface_variable_renames;
+	vector<HLSLVertexAttributeRemap> hlsl_attr_remap;
 	string entry;
+
+	vector<pair<string, string>> entry_point_rename;
 
 	uint32_t iterations = 1;
 	bool cpp = false;
@@ -455,6 +477,7 @@ struct CLIArguments
 	bool hlsl_compat = false;
 	bool vulkan_semantics = false;
 	bool flatten_multidimensional_arrays = false;
+	bool use_420pack_extension = true;
 	bool remove_unused = false;
 	bool cfg_analysis = true;
 };
@@ -463,16 +486,18 @@ static void print_help()
 {
 	fprintf(stderr, "Usage: spirv-cross [--output <output path>] [SPIR-V file] [--es] [--no-es] [--no-cfg-analysis] "
 	                "[--version <GLSL version>] [--dump-resources] [--help] [--force-temporary] "
-	                "[--vulkan-semantics] [--flatten-ubo] [--fixup-clipspace] [--iterations iter] "
+	                "[--vulkan-semantics] [--flatten-ubo] [--fixup-clipspace] [--flip-vert-y] [--iterations iter] "
 	                "[--cpp] [--cpp-interface-name <name>] "
-	                "[--msl] "
+	                "[--msl] [--msl-version <MMmmpp>]"
 	                "[--hlsl] [--shader-model] [--hlsl-enable-compat] "
 	                "[--separate-shader-objects]"
 	                "[--pls-in format input-name] [--pls-out format output-name] [--remap source_name target_name "
 	                "components] [--extension ext] [--entry name] [--remove-unused-variables] "
-	                "[--flatten-multidimensional-arrays] "
+	                "[--flatten-multidimensional-arrays] [--no-420pack-extension] "
 	                "[--remap-variable-type <variable_name> <new_variable_type>] "
 	                "[--rename-interface-variable <in|out> <location> <new_variable_name>] "
+	                "[--set-hlsl-vertex-input-semantic <location> <semantic>] "
+	                "[--rename-entry-point <old> <new>] "
 	                "\n");
 }
 
@@ -572,11 +597,22 @@ void rename_interface_variable(Compiler &compiler, const vector<Resource> &resou
 		if (loc != rename.location)
 			continue;
 
+		auto &type = compiler.get_type(v.base_type_id);
+
+		// This is more of a friendly variant. If we need to rename interface variables, we might have to rename
+		// structs as well and make sure all the names match up.
+		if (type.basetype == SPIRType::Struct)
+		{
+			compiler.set_name(v.base_type_id, join("SPIRV_Cross_Interface_Location", rename.location));
+			for (uint32_t i = 0; i < uint32_t(type.member_types.size()); i++)
+				compiler.set_member_name(v.base_type_id, i, join("InterfaceMember", i));
+		}
+
 		compiler.set_name(v.id, rename.variable_name);
 	}
 }
 
-int main(int argc, char *argv[])
+static int main_inner(int argc, char *argv[])
 {
 	CLIArguments args;
 	CLICallbacks cbs;
@@ -603,6 +639,7 @@ int main(int argc, char *argv[])
 	cbs.add("--force-temporary", [&args](CLIParser &) { args.force_temporary = true; });
 	cbs.add("--flatten-ubo", [&args](CLIParser &) { args.flatten_ubo = true; });
 	cbs.add("--fixup-clipspace", [&args](CLIParser &) { args.fixup = true; });
+	cbs.add("--flip-vert-y", [&args](CLIParser &) { args.yflip = true; });
 	cbs.add("--iterations", [&args](CLIParser &parser) { args.iterations = parser.next_uint(); });
 	cbs.add("--cpp", [&args](CLIParser &) { args.cpp = true; });
 	cbs.add("--cpp-interface-name", [&args](CLIParser &parser) { args.cpp_interface_name = parser.next_string(); });
@@ -612,9 +649,22 @@ int main(int argc, char *argv[])
 	cbs.add("--hlsl-enable-compat", [&args](CLIParser &) { args.hlsl_compat = true; });
 	cbs.add("--vulkan-semantics", [&args](CLIParser &) { args.vulkan_semantics = true; });
 	cbs.add("--flatten-multidimensional-arrays", [&args](CLIParser &) { args.flatten_multidimensional_arrays = true; });
+	cbs.add("--no-420pack-extension", [&args](CLIParser &) { args.use_420pack_extension = false; });
 	cbs.add("--extension", [&args](CLIParser &parser) { args.extensions.push_back(parser.next_string()); });
+	cbs.add("--rename-entry-point", [&args](CLIParser &parser) {
+		auto old_name = parser.next_string();
+		auto new_name = parser.next_string();
+		args.entry_point_rename.push_back({ old_name, new_name });
+	});
 	cbs.add("--entry", [&args](CLIParser &parser) { args.entry = parser.next_string(); });
 	cbs.add("--separate-shader-objects", [&args](CLIParser &) { args.sso = true; });
+	cbs.add("--set-hlsl-vertex-input-semantic", [&args](CLIParser &parser) {
+		HLSLVertexAttributeRemap remap;
+		remap.location = parser.next_uint();
+		remap.semantic = parser.next_string();
+		args.hlsl_attr_remap.push_back(move(remap));
+	});
+
 	cbs.add("--remap", [&args](CLIParser &parser) {
 		string src = parser.next_string();
 		string dst = parser.next_string();
@@ -655,6 +705,10 @@ int main(int argc, char *argv[])
 		args.shader_model = parser.next_uint();
 		args.set_shader_model = true;
 	});
+	cbs.add("--msl-version", [&args](CLIParser &parser) {
+		args.msl_version = parser.next_uint();
+		args.set_msl_version = true;
+	});
 
 	cbs.add("--remove-unused-variables", [&args](CLIParser &) { args.remove_unused = true; });
 
@@ -694,6 +748,8 @@ int main(int argc, char *argv[])
 
 		auto *msl_comp = static_cast<CompilerMSL *>(compiler.get());
 		auto msl_opts = msl_comp->get_options();
+		if (args.set_msl_version)
+			msl_opts.msl_version = args.msl_version;
 		msl_comp->set_options(msl_opts);
 	}
 	else if (args.hlsl)
@@ -715,6 +771,9 @@ int main(int argc, char *argv[])
 		compiler->set_variable_type_remap_callback(move(remap_cb));
 	}
 
+	for (auto &rename : args.entry_point_rename)
+		compiler->rename_entry_point(rename.first, rename.second);
+
 	if (!args.entry.empty())
 		compiler->set_entry_point(args.entry);
 
@@ -733,8 +792,10 @@ int main(int argc, char *argv[])
 	opts.force_temporary = args.force_temporary;
 	opts.separate_shader_objects = args.sso;
 	opts.flatten_multidimensional_arrays = args.flatten_multidimensional_arrays;
+	opts.enable_420pack_extension = args.use_420pack_extension;
 	opts.vulkan_semantics = args.vulkan_semantics;
 	opts.vertex.fixup_clipspace = args.fixup;
+	opts.vertex.flip_vert_y = args.yflip;
 	opts.cfg_analysis = args.cfg_analysis;
 	compiler->set_options(opts);
 
@@ -815,6 +876,7 @@ int main(int argc, char *argv[])
 		print_resources(*compiler, res);
 		print_push_constant_resources(*compiler, res.push_constant_buffers);
 		print_spec_constants(*compiler);
+		print_capabilities_and_extensions(*compiler);
 	}
 
 	if (combined_image_samplers)
@@ -830,10 +892,35 @@ int main(int argc, char *argv[])
 
 	string glsl;
 	for (uint32_t i = 0; i < args.iterations; i++)
-		glsl = compiler->compile();
+	{
+		if (args.hlsl)
+			glsl = static_cast<CompilerHLSL *>(compiler.get())->compile(move(args.hlsl_attr_remap));
+		else
+			glsl = compiler->compile();
+	}
 
 	if (args.output)
 		write_string_to_file(args.output, glsl.c_str());
 	else
 		printf("%s", glsl.c_str());
+
+	return EXIT_SUCCESS;
+}
+
+int main(int argc, char *argv[])
+{
+#ifdef SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS
+	return main_inner(argc, argv);
+#else
+	// Make sure we catch the exception or it just disappears into the aether on Windows.
+	try
+	{
+		return main_inner(argc, argv);
+	}
+	catch (const std::exception &e)
+	{
+		fprintf(stderr, "SPIRV-Cross threw an exception: %s\n", e.what());
+		return EXIT_FAILURE;
+	}
+#endif
 }

@@ -171,8 +171,9 @@ void CompilerCPP::emit_resources()
 			auto &type = get<SPIRType>(var.basetype);
 
 			if (var.storage != StorageClassFunction && type.pointer && type.storage == StorageClassUniform &&
-			    !is_hidden_variable(var) && (meta[type.self].decoration.decoration_flags &
-			                                 ((1ull << DecorationBlock) | (1ull << DecorationBufferBlock))))
+			    !is_hidden_variable(var) &&
+			    (meta[type.self].decoration.decoration_flags &
+			     ((1ull << DecorationBlock) | (1ull << DecorationBufferBlock))))
 			{
 				emit_buffer_block(var);
 			}
@@ -241,6 +242,8 @@ void CompilerCPP::emit_resources()
 
 	if (emitted)
 		statement("");
+
+	declare_undefined_values();
 
 	statement("inline void init(spirv_cross_shader& s)");
 	begin_scope();
@@ -326,6 +329,9 @@ string CompilerCPP::compile()
 
 	// Emit C entry points
 	emit_c_linkage();
+
+	// Entry point in CPP is always main() for the time being.
+	get_entry_point().name = "main";
 
 	return buffer->str();
 }

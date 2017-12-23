@@ -23,14 +23,19 @@
 
 namespace spirv_cross
 {
+// Interface which remaps vertex inputs to a fixed semantic name to make linking easier.
+struct HLSLVertexAttributeRemap
+{
+	uint32_t location;
+	std::string semantic;
+};
+
 class CompilerHLSL : public CompilerGLSL
 {
 public:
 	struct Options
 	{
 		uint32_t shader_model = 30; // TODO: map ps_4_0_level_9_0,... somehow
-		bool fixup_clipspace = false;
-		bool flip_vert_y = false;
 
 		// Allows the PointSize builtin, and ignores it, as PointSize is not supported in HLSL.
 		bool point_size_compat = false;
@@ -56,6 +61,11 @@ public:
 		options = opts;
 	}
 
+	// Compiles and remaps vertex attributes at specific locations to a fixed semantic.
+	// The default is TEXCOORD# where # denotes location.
+	// Matrices are unrolled to vectors with notation ${SEMANTIC}_#, where # denotes row.
+	// $SEMANTIC is either TEXCOORD# or a semantic name specified here.
+	std::string compile(std::vector<HLSLVertexAttributeRemap> vertex_attributes);
 	std::string compile() override;
 
 private:
@@ -80,6 +90,9 @@ private:
 	void emit_uniform(const SPIRVariable &var) override;
 	void emit_modern_uniform(const SPIRVariable &var);
 	void emit_legacy_uniform(const SPIRVariable &var);
+	void emit_specialization_constants();
+	void emit_fixup() override;
+	std::string builtin_to_glsl(spv::BuiltIn builtin, spv::StorageClass storage) override;
 	std::string layout_for_member(const SPIRType &type, uint32_t index) override;
 	std::string to_interpolation_qualifiers(uint64_t flags) override;
 	std::string bitcast_glsl_op(const SPIRType &result_type, const SPIRType &argument_type) override;
@@ -88,20 +101,64 @@ private:
 	std::string to_resource_binding(const SPIRVariable &var);
 	std::string to_resource_binding_sampler(const SPIRVariable &var);
 	void emit_sampled_image_op(uint32_t result_type, uint32_t result_id, uint32_t image_id, uint32_t samp_id) override;
+	void emit_access_chain(const Instruction &instruction);
+	void emit_load(const Instruction &instruction);
+	std::string read_access_chain(const SPIRAccessChain &chain);
+	void write_access_chain(const SPIRAccessChain &chain, uint32_t value);
+	void emit_store(const Instruction &instruction);
+	void emit_atomic(const uint32_t *ops, uint32_t length, spv::Op op);
+	const Instruction *get_next_instruction_in_block(const Instruction &instr);
+
+	void emit_struct_member(const SPIRType &type, uint32_t member_type_id, uint32_t index,
+	                        const std::string &qualifier) override;
 
 	const char *to_storage_qualifiers_glsl(const SPIRVariable &var) override;
 
 	Options options;
 	bool requires_op_fmod = false;
 	bool requires_textureProj = false;
+	bool requires_fp16_packing = false;
+	bool requires_unorm8_packing = false;
+	bool requires_snorm8_packing = false;
+	bool requires_unorm16_packing = false;
+	bool requires_snorm16_packing = false;
+	bool requires_bitfield_insert = false;
+	bool requires_bitfield_extract = false;
+	uint64_t required_textureSizeVariants = 0;
+	void require_texture_query_variant(const SPIRType &type);
+
+	enum TextureQueryVariantDim
+	{
+		Query1D = 0,
+		Query1DArray,
+		Query2D,
+		Query2DArray,
+		Query3D,
+		QueryBuffer,
+		QueryCube,
+		QueryCubeArray,
+		Query2DMS,
+		Query2DMSArray,
+		QueryDimCount
+	};
+
+	enum TextureQueryVariantType
+	{
+		QueryTypeFloat = 0,
+		QueryTypeInt = 16,
+		QueryTypeUInt = 32,
+		QueryTypeCount = 3
+	};
 
 	void emit_builtin_variables();
 	bool require_output = false;
 	bool require_input = false;
+	std::vector<HLSLVertexAttributeRemap> remap_vertex_attributes;
 
 	uint32_t type_to_consumed_locations(const SPIRType &type) const;
 
 	void emit_io_block(const SPIRVariable &var);
+	std::string to_semantic(uint32_t vertex_location);
 };
 }
 

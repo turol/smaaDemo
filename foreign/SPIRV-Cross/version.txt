@@ -1,8 +1,8 @@
-commit 7fd7dc9266b9640728f08963e38b96bb9e73ec2d
-Merge: 2e4422d 0d14448
+commit bcc96d8c7011d5be504174ddbbadcacad227ea89
+Merge: fa27b56 3376198
 Author: Hans-Kristian Arntzen <hans-kristian.arntzen@arm.com>
-Date:   Tue Jul 25 21:13:59 2017 +0200
+Date:   Wed Dec 13 20:01:09 2017 +0100
 
-    Merge pull request #229 from KhronosGroup/cfg-walk-optimize
+    Merge pull request #358 from zeux/master
     
-    Optimize CFG walking
+    msl generator enhancements/fixes
