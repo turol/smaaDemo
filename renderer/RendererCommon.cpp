@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include <algorithm>
 
 #include <shaderc/shaderc.hpp>
+#include <spirv-tools/optimizer.hpp>
 
 
 namespace renderer {
@@ -336,6 +337,38 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	}
 
 	std::vector<uint32_t> spirv(result.cbegin(), result.cend());
+
+	// optimization, disabled for now until tested more
+	if (false) {
+		// TODO: better target environment selection?
+		spvtools::Optimizer opt(SPV_ENV_UNIVERSAL_1_1);
+
+		opt.SetMessageConsumer([] (spv_message_level_t level, const char *source, const spv_position_t &position, const char *message) {
+			logWrite("%u: %s %u:%u:%u %s\n", level, source, uint32_t(position.line), uint32_t(position.column), uint32_t(position.index), message);
+		});
+
+		// optimization passes, from the 1.0 whitepaper
+		opt.RegisterPass(spvtools::CreateInlinePass());
+		opt.RegisterPass(spvtools::CreateLocalAccessChainConvertPass());
+		opt.RegisterPass(spvtools::CreateLocalSingleBlockLoadStoreElimPass());
+		opt.RegisterPass(spvtools::CreateLocalSingleStoreElimPass());
+		opt.RegisterPass(spvtools::CreateInsertExtractElimPass());
+		opt.RegisterPass(spvtools::CreateAggressiveDCEPass());
+		opt.RegisterPass(spvtools::CreateDeadBranchElimPass());
+		opt.RegisterPass(spvtools::CreateBlockMergePass());
+		opt.RegisterPass(spvtools::CreateLocalSingleBlockLoadStoreElimPass());
+		opt.RegisterPass(spvtools::CreateLocalSingleStoreElimPass());
+		opt.RegisterPass(spvtools::CreateLocalMultiStoreElimPass());
+		opt.RegisterPass(spvtools::CreateAggressiveDCEPass());
+		opt.RegisterPass(spvtools::CreateCompactIdsPass());
+
+		std::vector<uint32_t> optimized;
+		optimized.reserve(spirv.size());
+		bool success = opt.Run(&spirv[0], spirv.size(), &optimized);
+		assert(success);
+
+		std::swap(spirv, optimized);
+	}
 
 	{
 		std::string cacheStr = std::to_string(shaderVersion);
