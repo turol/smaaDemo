@@ -242,7 +242,7 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 
 // increase this when the shader compiler options change
 // so that the same source generates a different SPV
-const unsigned int shaderVersion = 3;
+const unsigned int shaderVersion = 4;
 
 
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, shaderc_shader_kind kind) {
@@ -348,20 +348,9 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			logWrite("%u: %s %u:%u:%u %s\n", level, source, uint32_t(position.line), uint32_t(position.column), uint32_t(position.index), message);
 		});
 
-		// optimization passes, from the 1.0 whitepaper
-		opt.RegisterPass(spvtools::CreateInlineExhaustivePass());
-		opt.RegisterPass(spvtools::CreateLocalAccessChainConvertPass());
-		opt.RegisterPass(spvtools::CreateLocalSingleBlockLoadStoreElimPass());
-		opt.RegisterPass(spvtools::CreateLocalSingleStoreElimPass());
-		opt.RegisterPass(spvtools::CreateInsertExtractElimPass());
-		opt.RegisterPass(spvtools::CreateAggressiveDCEPass());
-		opt.RegisterPass(spvtools::CreateDeadBranchElimPass());
-		opt.RegisterPass(spvtools::CreateBlockMergePass());
-		opt.RegisterPass(spvtools::CreateLocalSingleBlockLoadStoreElimPass());
-		opt.RegisterPass(spvtools::CreateLocalSingleStoreElimPass());
-		opt.RegisterPass(spvtools::CreateLocalMultiStoreElimPass());
-		opt.RegisterPass(spvtools::CreateAggressiveDCEPass());
-		opt.RegisterPass(spvtools::CreateCompactIdsPass());
+		opt.RegisterPerformancePasses();
+
+		// TODO: use spir-v remapper from glslang
 
 		std::vector<uint32_t> optimized;
 		optimized.reserve(spirv.size());
