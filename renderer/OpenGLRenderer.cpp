@@ -756,10 +756,15 @@ bool RendererImpl::isRenderTargetFormatSupported(Format format) const {
 BufferHandle RendererImpl::createBuffer(uint32_t size, const void *contents) {
 	assert(size != 0);
 
+	unsigned int bufferFlags = 0;
+	if (tracing) {
+		bufferFlags |= GL_MAP_READ_BIT;
+	}
+
 	auto result    = buffers.add();
 	Buffer &buffer = result.first;
 	glCreateBuffers(1, &buffer.buffer);
-	glNamedBufferStorage(buffer.buffer, size, contents, 0);
+	glNamedBufferStorage(buffer.buffer, size, contents, bufferFlags);
 	buffer.ringBufferAlloc = false;
 	buffer.offset          = 0;
 	buffer.size            = size;
