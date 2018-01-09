@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 #include <shaderc/shaderc.hpp>
 #include <spirv-tools/optimizer.hpp>
+#include <SPIRV/SPVRemapper.h>
 
 
 namespace renderer {
@@ -242,7 +243,7 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 
 // increase this when the shader compiler options change
 // so that the same source generates a different SPV
-const unsigned int shaderVersion = 4;
+const unsigned int shaderVersion = 5;
 
 
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, shaderc_shader_kind kind) {
@@ -348,14 +349,19 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			logWrite("%u: %s %u:%u:%u %s\n", level, source, uint32_t(position.line), uint32_t(position.column), uint32_t(position.index), message);
 		});
 
+		// SPIRV-Tools optimizer
 		opt.RegisterPerformancePasses();
-
-		// TODO: use spir-v remapper from glslang
 
 		std::vector<uint32_t> optimized;
 		optimized.reserve(spirv.size());
 		bool success = opt.Run(&spirv[0], spirv.size(), &optimized);
 		assert(success);
+
+		// glslang SPV remapper
+		{
+			spv::spirvbin_t remapper;
+			remapper.remap(optimized);
+		}
 
 		std::swap(spirv, optimized);
 	}
