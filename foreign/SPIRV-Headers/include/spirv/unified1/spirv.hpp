@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 The Khronos Group Inc.
+// Copyright (c) 2014-2018 The Khronos Group Inc.
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and/or associated documentation files (the "Materials"),
@@ -47,11 +47,11 @@ namespace spv {
 typedef unsigned int Id;
 
 #define SPV_VERSION 0x10200
-#define SPV_REVISION 2
+#define SPV_REVISION 3
 
 static const unsigned int MagicNumber = 0x07230203;
 static const unsigned int Version = 0x00010200;
-static const unsigned int Revision = 2;
+static const unsigned int Revision = 3;
 static const unsigned int OpCodeMask = 0xffff;
 static const unsigned int WordCountShift = 16;
 
@@ -461,6 +461,7 @@ enum BuiltIn {
     BuiltInSecondaryViewportMaskNV = 5258,
     BuiltInPositionPerViewNV = 5261,
     BuiltInViewportMaskPerViewNV = 5262,
+    BuiltInFullyCoveredEXT = 5264,
     BuiltInMax = 0x7fffffff,
 };
 
@@ -669,6 +670,7 @@ enum Capability {
     CapabilityShaderViewportMaskNV = 5255,
     CapabilityShaderStereoViewNV = 5259,
     CapabilityPerViewAttributesNV = 5260,
+    CapabilityFragmentFullyCoveredEXT = 5265,
     CapabilitySubgroupShuffleINTEL = 5568,
     CapabilitySubgroupBufferBlockIOINTEL = 5569,
     CapabilitySubgroupImageBlockIOINTEL = 5570,

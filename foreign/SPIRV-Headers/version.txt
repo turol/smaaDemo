@@ -1,8 +1,5 @@
-commit 4a7a9fdaa984af968a382e24ebe1bc3fedc4e73a
-Merge: 661ad91 1a19bc7
-Author: John Kessenich <johnkslang@users.noreply.github.com>
-Date:   Fri Jul 21 14:26:56 2017 +0900
+commit 7bfaab982d2452bd990804f9815775342b3467cb
+Author: John Kessenich <cepheus@frii.com>
+Date:   Wed Jan 3 16:43:17 2018 -0700
 
-    Merge pull request #41 from metora/master
-    
-    Reserve number 16 to Mesa-IR/SPIR-V Translator
+    Add headers for the 1.2 unified (1.0, 1.1, and 1.2) specification.

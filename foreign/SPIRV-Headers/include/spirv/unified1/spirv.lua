@@ -1,4 +1,4 @@
--- Copyright (c) 2014-2017 The Khronos Group Inc.
+-- Copyright (c) 2014-2018 The Khronos Group Inc.
 -- 
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
 -- of this software and/or associated documentation files (the "Materials"),
@@ -42,7 +42,7 @@
 spv = {
     MagicNumber = 0x07230203,
     Version = 0x00010200,
-    Revision = 2,
+    Revision = 3,
     OpCodeMask = 0xffff,
     WordCountShift = 16,
 
@@ -433,6 +433,7 @@ spv = {
         SecondaryViewportMaskNV = 5258,
         PositionPerViewNV = 5261,
         ViewportMaskPerViewNV = 5262,
+        FullyCoveredEXT = 5264,
     },
 
     SelectionControlShift = {
@@ -631,6 +632,7 @@ spv = {
         ShaderViewportMaskNV = 5255,
         ShaderStereoViewNV = 5259,
         PerViewAttributesNV = 5260,
+        FragmentFullyCoveredEXT = 5265,
         SubgroupShuffleINTEL = 5568,
         SubgroupBufferBlockIOINTEL = 5569,
         SubgroupImageBlockIOINTEL = 5570,

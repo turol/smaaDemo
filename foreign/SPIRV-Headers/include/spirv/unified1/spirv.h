@@ -1,5 +1,5 @@
 /*
-** Copyright (c) 2014-2017 The Khronos Group Inc.
+** Copyright (c) 2014-2018 The Khronos Group Inc.
 ** 
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and/or associated documentation files (the "Materials"),
@@ -50,12 +50,12 @@
 
 typedef unsigned int SpvId;
 
-#define SPV_VERSION 0x10100
-#define SPV_REVISION 8
+#define SPV_VERSION 0x10200
+#define SPV_REVISION 3
 
 static const unsigned int SpvMagicNumber = 0x07230203;
-static const unsigned int SpvVersion = 0x00010100;
-static const unsigned int SpvRevision = 8;
+static const unsigned int SpvVersion = 0x00010200;
+static const unsigned int SpvRevision = 3;
 static const unsigned int SpvOpCodeMask = 0xffff;
 static const unsigned int SpvWordCountShift = 16;
 
@@ -130,6 +130,9 @@ typedef enum SpvExecutionMode_ {
     SpvExecutionModeFinalizer = 34,
     SpvExecutionModeSubgroupSize = 35,
     SpvExecutionModeSubgroupsPerWorkgroup = 36,
+    SpvExecutionModeSubgroupsPerWorkgroupId = 37,
+    SpvExecutionModeLocalSizeId = 38,
+    SpvExecutionModeLocalSizeHintId = 39,
     SpvExecutionModePostDepthCoverage = 4446,
     SpvExecutionModeStencilRefReplacingEXT = 5027,
     SpvExecutionModeMax = 0x7fffffff,
@@ -387,6 +390,8 @@ typedef enum SpvDecoration_ {
     SpvDecorationInputAttachmentIndex = 43,
     SpvDecorationAlignment = 44,
     SpvDecorationMaxByteOffset = 45,
+    SpvDecorationAlignmentId = 46,
+    SpvDecorationMaxByteOffsetId = 47,
     SpvDecorationExplicitInterpAMD = 4999,
     SpvDecorationOverrideCoverageNV = 5248,
     SpvDecorationPassthroughNV = 5250,
@@ -460,6 +465,7 @@ typedef enum SpvBuiltIn_ {
     SpvBuiltInSecondaryViewportMaskNV = 5258,
     SpvBuiltInPositionPerViewNV = 5261,
     SpvBuiltInViewportMaskPerViewNV = 5262,
+    SpvBuiltInFullyCoveredEXT = 5264,
     SpvBuiltInMax = 0x7fffffff,
 } SpvBuiltIn;
 
@@ -668,6 +674,7 @@ typedef enum SpvCapability_ {
     SpvCapabilityShaderViewportMaskNV = 5255,
     SpvCapabilityShaderStereoViewNV = 5259,
     SpvCapabilityPerViewAttributesNV = 5260,
+    SpvCapabilityFragmentFullyCoveredEXT = 5265,
     SpvCapabilitySubgroupShuffleINTEL = 5568,
     SpvCapabilitySubgroupBufferBlockIOINTEL = 5569,
     SpvCapabilitySubgroupImageBlockIOINTEL = 5570,
@@ -979,6 +986,8 @@ typedef enum SpvOp_ {
     SpvOpNamedBarrierInitialize = 328,
     SpvOpMemoryNamedBarrier = 329,
     SpvOpModuleProcessed = 330,
+    SpvOpExecutionModeId = 331,
+    SpvOpDecorateId = 332,
     SpvOpSubgroupBallotKHR = 4421,
     SpvOpSubgroupFirstInvocationKHR = 4422,
     SpvOpSubgroupAllKHR = 4428,
