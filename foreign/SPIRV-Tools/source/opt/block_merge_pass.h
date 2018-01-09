@@ -26,6 +26,7 @@
 
 #include "basic_block.h"
 #include "def_use_manager.h"
+#include "ir_context.h"
 #include "module.h"
 #include "pass.h"
 
@@ -36,13 +37,10 @@ namespace opt {
 class BlockMergePass : public Pass {
  public:
   BlockMergePass();
-  const char* name() const override { return "sroa"; }
-  Status Process(ir::Module*) override;
+  const char* name() const override { return "merge-blocks"; }
+  Status Process(ir::IRContext*) override;
 
  private:
-  // Return true if |block_ptr| is loop header block
-  bool IsLoopHeader(ir::BasicBlock* block_ptr);
-
   // Return true if |labId| has multiple refs. Do not count OpName.
   bool HasMultipleRefs(uint32_t labId);
 
@@ -59,17 +57,8 @@ class BlockMergePass : public Pass {
   // Return true if all extensions in this module are allowed by this pass.
   bool AllExtensionsSupported() const;
 
-  void Initialize(ir::Module* module);
+  void Initialize(ir::IRContext* c);
   Pass::Status ProcessImpl();
-
-  // Module this pass is processing
-  ir::Module* module_;
-
-  // Def-Uses for the module we are processing
-  std::unique_ptr<analysis::DefUseManager> def_use_mgr_;
-
-  // Map from function's result id to function
-  std::unordered_map<uint32_t, ir::Function*> id2function_;
 
   // Extensions supported by this pass.
   std::unordered_set<std::string> extensions_whitelist_;
@@ -79,4 +68,3 @@ class BlockMergePass : public Pass {
 }  // namespace spvtools
 
 #endif  // LIBSPIRV_OPT_BLOCK_MERGE_PASS_H_
-

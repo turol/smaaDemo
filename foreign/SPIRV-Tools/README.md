@@ -18,11 +18,6 @@ own library, which depends on the core library.
 The interfaces have stabilized:
 We don't anticipate making a breaking change for existing features.
 
-See [`projects.md`](projects.md) to see how we use the
-[GitHub Project
-feature](https://help.github.com/articles/tracking-the-progress-of-your-work-with-projects/)
-to organize planned and in-progress work.
-
 SPIR-V is defined by the Khronos Group Inc.
 See the [SPIR-V Registry][spirv-registry] for the SPIR-V specification,
 headers, and XML registry.
@@ -48,11 +43,12 @@ version.  An API call reports the software version as a C-style string.
 
 ### Assembler, binary parser, and disassembler
 
-* Based on SPIR-V version 1.1 Rev 3
+* Support for SPIR-V 1.0, 1.1, 1.2
+  * Based on SPIR-V syntax described by JSON grammar files in the
+    [SPIRV-Headers](spirv-headers) repository.
 * Support for extended instruction sets:
   * GLSL std450 version 1.0 Rev 3
   * OpenCL version 1.0 Rev 2
-* Support for SPIR-V 1.0 (with or without additional restrictions from Vulkan 1.0)
 * Assembler only does basic syntax checking.  No cross validation of
   IDs or types is performed, except to check literal arguments to
   `OpConstant`, `OpSpecConstant`, and `OpSwitch`.
@@ -86,19 +82,49 @@ limits accepted by a more than minimally capable SPIR-V consumer.
 
 ### Optimizer
 
-*Warning:* The optimizer is still under development.
+*Note:* The optimizer is still under development.
 
 Currently supported optimizations:
-* Strip debug info
-* Set spec constant default value
-* Freeze spec constant
-* Fold `OpSpecConstantOp` and `OpSpecConstantComposite`
-* Unify constants
-* Eliminate dead constant
-* Inline all function calls in entry points
+* General
+  * Strip debug info
+* Specialization Constants
+  * Set spec constant default value
+  * Freeze spec constant
+  * Fold `OpSpecConstantOp` and `OpSpecConstantComposite`
+  * Unify constants
+  * Eliminate dead constant
+* Code Reduction
+  * Inline all function calls exhaustively
+  * Convert local access chains to inserts/extracts
+  * Eliminate local load/store in single block
+  * Eliminate local load/store with single store
+  * Eliminate local load/store with multiple stores
+  * Eliminate local extract from insert
+  * Eliminate dead instructions (aggressive)
+  * Eliminate dead branches
+  * Merge single successor / single predecessor block pairs
+  * Eliminate common uniform loads
+  * Remove duplicates: Capabilities, extended instruction imports, types, and
+    decorations.
 
 For the latest list with detailed documentation, please refer to
 [`include/spirv-tools/optimizer.hpp`](include/spirv-tools/optimizer.hpp).
+
+For suggestions on using the code reduction options, please refer to this [white paper](https://www.lunarg.com/shader-compiler-technologies/white-paper-spirv-opt/).
+
+
+### Linker
+
+*Note:* The linker is still under development.
+
+Current features:
+* Combine multiple SPIR-V binary modules together.
+* Combine into a library (exports are retained) or an executable (no symbols
+  are exported).
+
+See the [CHANGES](CHANGES) file for reports on completed work, and the [General
+sub-project](https://github.com/KhronosGroup/SPIRV-Tools/projects/2) for
+planned and in-progress work.
 
 ### Extras
 
@@ -107,15 +133,31 @@ For the latest list with detailed documentation, please refer to
   Copy that file into your `$HOME/.vim/syntax` directory to get SPIR-V assembly syntax
   highlighting in Vim.  This build target is not built by default.
 
-## Source code
+## Contributing
 
-The SPIR-V Tools are maintained by members of the The Khronos Group Inc.,
-at https://github.com/KhronosGroup/SPIRV-Tools.
+The SPIR-V Tools project is maintained by members of the The Khronos Group Inc.,
+and is hosted at https://github.com/KhronosGroup/SPIRV-Tools.
+
+Consider joining the `public_spirv_tools_dev@khronos.org` mailing list, via
+[https://www.khronos.org/spir/spirv-tools-mailing-list/](https://www.khronos.org/spir/spirv-tools-mailing-list/).
+The mailing list is used to discuss development plans for the SPIRV-Tools as an open source project.
+Once discussion is resolved,
+specific work is tracked via issues and sometimes in one of the
+[projects][spirv-tools-projects].
+
+(To provide feedback on the SPIR-V _specification_, file an issue on the
+[SPIRV-Headers][spirv-headers] GitHub repository.)
+
+See [`projects.md`](projects.md) to see how we use the
+[GitHub Project
+feature](https://help.github.com/articles/tracking-the-progress-of-your-work-with-projects/)
+to organize planned and in-progress work.
 
 Contributions via merge request are welcome. Changes should:
 * Be provided under the [Apache 2.0](#license).
-  You'll be prompted with a one-time "click-through" Contributor's License
-  Agreement (CLA) dialog as part of submitting your pull request or
+* You'll be prompted with a one-time "click-through"
+  [Khronos Open Source Contributor License Agreement][spirv-tools-cla]
+  (CLA) dialog as part of submitting your pull request or
   other contribution to GitHub.
 * Include tests to cover updated functionality.
 * C++ code should follow the [Google C++ Style Guide][cpp-style-guide].
@@ -129,6 +171,11 @@ We intend to maintain a linear history on the GitHub `master` branch.
 * `example`: demo code of using SPIRV-Tools APIs
 * `external/googletest`: Intended location for the
   [googletest][googletest] sources, not provided
+* `external/effcee`: Location of [Effcee][effcee] sources, if the `effcee` library
+  is not already configured by an enclosing project.
+* `external/re2`: Location of [RE2][re2] sources, if the `effcee` library is not already
+  configured by an enclosing project.
+  (The Effcee project already requires RE2.)
 * `include/`: API clients should add this directory to the include search path
 * `external/spirv-headers`: Intended location for
   [SPIR-V headers][spirv-headers], not provided
@@ -136,6 +183,14 @@ We intend to maintain a linear history on the GitHub `master` branch.
 * `source/`: API implementation
 * `test/`: Tests, using the [googletest][googletest] framework
 * `tools/`: Command line executables
+
+Example of getting sources, assuming SPIRV-Tools is configured as a standalone project:
+
+    git clone https://github.com/KhronosGroup/SPIRV-Tools.git   spirv-tools
+    git clone https://github.com/KhronosGroup/SPIRV-Headers.git spirv-tools/external/spirv-headers
+    git clone https://github.com/google/googletest.git          spirv-tools/external/googletest
+    git clone https://github.com/google/effcee.git              spirv-tools/external/effcee
+    git clone https://github.com/google/re2.git                 spirv-tools/external/re2
 
 ### Tests
 
@@ -155,7 +210,25 @@ tests:
 The fix is included on the googletest master branch any time after 2015-11-10.
 In particular, googletest must be newer than version 1.7.0.
 
+### Optional dependency on Effcee
+
+Some tests depend on the [Effcee][effcee] library for stateful matching.
+Effcee itself depends on [RE2][re2].
+
+* If SPIRV-Tools is configured as part of a larger project that already uses
+  Effcee, then that project should include Effcee before SPIRV-Tools.
+* Otherwise, SPIRV-Tools expects Effcee sources to appear in `external/effcee`
+  and RE2 sources to appear in `external/re2`.
+
+Currently Effcee is an optional dependency, but soon it will be required.
+
 ## Build
+
+Instead of building manually, you can also download the binaries for your
+platform directly from the [master-tot release][master-tot-release] on GitHub.
+Those binaries are automatically uploaded by the buildbots after successful
+testing and they always reflect the current top of the tree of the master
+branch.
 
 The project uses [CMake][cmake] to generate platform-specific build
 configurations. Assume that `<spirv-dir>` is the root directory of the checked
@@ -182,6 +255,8 @@ The following CMake options are supported:
   the command line tools.  This will prevent the tests from being built.
 * `SPIRV_SKIP_EXECUTABLES={ON|OFF}`, default `OFF`- Build only the library, not
   the command line tools and tests.
+* `SPIRV_BUILD_COMPRESSION={ON|OFF}`, default `OFF`- Build SPIR-V compressing
+  codec.
 * `SPIRV_USE_SANITIZER=<sanitizer>`, default is no sanitizing - On UNIX
   platforms with an appropriate version of `clang` this option enables the use
   of the sanitizers documented [here][clang-sanitizers].
@@ -193,6 +268,11 @@ The following CMake options are supported:
 * `SPIRV_WERROR={ON|OFF}`, default `ON` - Forces a compilation error on any
   warnings encountered by enabling the compiler-specific compiler front-end
   option.
+
+Additionally, you can pass additional C preprocessor definitions to SPIRV-Tools
+via setting `SPIRV_TOOLS_EXTRA_DEFINITIONS`. For example, by setting it to
+`/D_ITERATOR_DEBUG_LEVEL=0` on Windows, you can disable checked iterators and
+iterator debugging.
 
 ## Library
 
@@ -233,10 +313,11 @@ There are five main entry points into the library in the C interface:
 * `spvValidate` implements the validator functionality. *Incomplete*
 * `spvValidateBinary` implements the validator functionality. *Incomplete*
 
-The C++ interface is comprised of two classes, `SpirvTools` and `Optimizer`,
-both in the `spvtools` namespace.
+The C++ interface is comprised of three classes, `SpirvTools`, `Optimizer` and
+`Linker`, all in the `spvtools` namespace.
 * `SpirvTools` provides `Assemble`, `Disassemble`, and `Validate` methods.
 * `Optimizer` provides methods for registering and running optimization passes.
+* `Linker` provides methods for combining together multiple binaries.
 
 ## Command line tools
 
@@ -272,6 +353,18 @@ Use option `-h` to print help.
 
 The output includes syntax colouring when printing to the standard output stream,
 on Linux, Windows, and OS X.
+
+### Linker tool
+
+The linker combines multiple SPIR-V binary modules together, resulting in a single
+binary module as output.
+
+This is a work in progress.
+The linker does not support OpenCL program linking options related to math
+flags. (See section 5.6.5.2 in OpenCL 1.2)
+
+* `spirv-link` - the standalone linker
+  * `<spirv-dir>/tools/link`
 
 ### Optimizer tool
 
@@ -373,6 +466,14 @@ for more information._
 
 This is a work in progress.
 
+### Linker
+
+* The linker could accept math transformations such as allowing MADs, or other
+  math flags passed at linking-time in OpenCL.
+* Linkage attributes can not be applied through a group.
+* Check decorations of linked functions attributes.
+* Remove dead instructions, such as OpName targeting imported symbols.
+
 ## Licence
 <a name="license"></a>
 Full license terms are in [LICENSE](LICENSE)
@@ -392,11 +493,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
+[spirv-tools-cla]: https://cla-assistant.io/KhronosGroup/SPIRV-Tools
+[spirv-tools-projects]: https://github.com/KhronosGroup/SPIRV-Tools/projects
+[spirv-tools-mailing-list]: https://www.khronos.org/spir/spirv-tools-mailing-list
 [spirv-registry]: https://www.khronos.org/registry/spir-v/
 [spirv-headers]: https://github.com/KhronosGroup/SPIRV-Headers
 [googletest]: https://github.com/google/googletest
 [googletest-pull-612]: https://github.com/google/googletest/pull/612
 [googletest-issue-610]: https://github.com/google/googletest/issues/610
+[effcee]: https://github.com/google/effcee
+[re2]: https://github.com/google/re2
 [CMake]: https://cmake.org/
 [cpp-style-guide]: https://google.github.io/styleguide/cppguide.html
 [clang-sanitizers]: http://clang.llvm.org/docs/UsersManual.html#controlling-code-generation
+[master-tot-release]: https://github.com/KhronosGroup/SPIRV-Tools/releases/tag/master-tot

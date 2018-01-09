@@ -15,6 +15,7 @@
 #ifndef LIBSPIRV_OPT_FLATTEN_DECORATION_PASS_H_
 #define LIBSPIRV_OPT_FLATTEN_DECORATION_PASS_H_
 
+#include "ir_context.h"
 #include "module.h"
 #include "pass.h"
 
@@ -25,7 +26,7 @@ namespace opt {
 class FlattenDecorationPass : public Pass {
  public:
   const char* name() const override { return "flatten-decoration"; }
-  Status Process(ir::Module*) override;
+  Status Process(ir::IRContext*) override;
 };
 
 }  // namespace opt

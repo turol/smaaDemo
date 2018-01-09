@@ -13,11 +13,12 @@
 // limitations under the License.
 
 #include "flatten_decoration_pass.h"
+#include "ir_context.h"
 
 #include <cassert>
-#include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 namespace spvtools {
 namespace opt {
@@ -28,7 +29,9 @@ using ir::Operand;
 using Words = std::vector<uint32_t>;
 using OrderedUsesMap = std::unordered_map<uint32_t, Words>;
 
-Pass::Status FlattenDecorationPass::Process(ir::Module* module) {
+Pass::Status FlattenDecorationPass::Process(ir::IRContext* c) {
+  InitializeProcessing(c);
+
   bool modified = false;
 
   // The target Id of OpDecorationGroup instructions.
@@ -42,7 +45,7 @@ Pass::Status FlattenDecorationPass::Process(ir::Module* module) {
   // their indices, in of appearance.
   OrderedUsesMap member_uses;
 
-  auto annotations = module->annotations();
+  auto annotations = context()->annotations();
 
   // On the first pass, record each OpDecorationGroup with its ordered uses.
   // Rely on unordered_map::operator[] to create its entries on first access.
@@ -72,7 +75,7 @@ Pass::Status FlattenDecorationPass::Process(ir::Module* module) {
   // equivalent normal and struct member uses.
   auto inst_iter = annotations.begin();
   // We have to re-evaluate the end pointer
-  while (inst_iter != module->annotations().end()) {
+  while (inst_iter != context()->annotations().end()) {
     // Should we replace this instruction?
     bool replace = false;
     switch (inst_iter->opcode()) {
@@ -88,7 +91,7 @@ Pass::Status FlattenDecorationPass::Process(ir::Module* module) {
         const auto normal_uses_iter = normal_uses.find(group);
         if (normal_uses_iter != normal_uses.end()) {
           for (auto target : normal_uses[group]) {
-            std::unique_ptr<Instruction> new_inst(new Instruction(*inst_iter));
+            std::unique_ptr<Instruction> new_inst(inst_iter->Clone(context()));
             new_inst->SetInOperand(0, Words{target});
             inst_iter = inst_iter.InsertBefore(std::move(new_inst));
             ++inst_iter;
@@ -113,8 +116,8 @@ Pass::Status FlattenDecorationPass::Process(ir::Module* module) {
             decoration_operands_iter++;  // Skip the group target.
             operands.insert(operands.end(), decoration_operands_iter,
                             inst_iter->end());
-            std::unique_ptr<Instruction> new_inst(
-                new Instruction(SpvOp::SpvOpMemberDecorate, 0, 0, operands));
+            std::unique_ptr<Instruction> new_inst(new Instruction(
+                context(), SpvOp::SpvOpMemberDecorate, 0, 0, operands));
             inst_iter = inst_iter.InsertBefore(std::move(new_inst));
             ++inst_iter;
             replace = true;
@@ -143,8 +146,8 @@ Pass::Status FlattenDecorationPass::Process(ir::Module* module) {
   // An OpDecorationGroup instruction might not have been used by an
   // OpGroupDecorate or OpGroupMemberDecorate instruction.
   if (!group_ids.empty()) {
-    for (auto debug_inst_iter = module->debug_begin();
-         debug_inst_iter != module->debug_end();) {
+    for (auto debug_inst_iter = context()->debug2_begin();
+         debug_inst_iter != context()->debug2_end();) {
       if (debug_inst_iter->opcode() == SpvOp::SpvOpName) {
         const uint32_t target = debug_inst_iter->GetSingleWordOperand(0);
         if (group_ids.count(target)) {

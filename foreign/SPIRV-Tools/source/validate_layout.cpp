@@ -25,11 +25,11 @@
 #include "val/function.h"
 #include "val/validation_state.h"
 
-using libspirv::ValidationState_t;
-using libspirv::kLayoutMemoryModel;
+using libspirv::FunctionDecl;
 using libspirv::kLayoutFunctionDeclarations;
 using libspirv::kLayoutFunctionDefinitions;
-using libspirv::FunctionDecl;
+using libspirv::kLayoutMemoryModel;
+using libspirv::ValidationState_t;
 
 namespace {
 // Module scoped instructions are processed by determining if the opcode
@@ -50,7 +50,7 @@ spv_result_t ModuleScopedInstructions(ValidationState_t& _,
         }
         break;
       case kLayoutFunctionDeclarations:
-        // All module sections have been processed. Recursivly call
+        // All module sections have been processed. Recursively call
         // ModuleLayoutPass to process the next section of the module
         return libspirv::ModuleLayoutPass(_, inst);
       default:
@@ -170,7 +170,7 @@ spv_result_t FunctionScopedInstructions(ValidationState_t& _,
   }
   return SPV_SUCCESS;
 }
-}  /// namespace
+}  // namespace
 
 namespace libspirv {
 // TODO(umar): Check linkage capabilities for function declarations
@@ -190,6 +190,7 @@ spv_result_t ModuleLayoutPass(ValidationState_t& _,
     case kLayoutExecutionMode:
     case kLayoutDebug1:
     case kLayoutDebug2:
+    case kLayoutDebug3:
     case kLayoutAnnotations:
     case kLayoutTypes:
       if (auto error = ModuleScopedInstructions(_, inst, opcode)) return error;
@@ -203,4 +204,4 @@ spv_result_t ModuleLayoutPass(ValidationState_t& _,
   }
   return SPV_SUCCESS;
 }
-}  /// namespace libspirv
+}  // namespace libspirv

@@ -16,64 +16,117 @@ add_library(SPIRV-Tools-opt
   basic_block.h
   block_merge_pass.h
   build_module.h
+  ccp_pass.h
+  cfg_cleanup_pass.h
+  cfg.h
+  common_uniform_elim_pass.h
   compact_ids_pass.h
   constants.h
   dead_branch_elim_pass.h
+  dead_variable_elimination.h
+  decoration_manager.h
   def_use_manager.h
+  dominator_analysis.h
+  dominator_tree.h
   eliminate_dead_constant_pass.h
+  eliminate_dead_functions_pass.h
+  feature_manager.h
   flatten_decoration_pass.h
-  function.h
+  fold.h
   fold_spec_constant_op_and_composite_pass.h
   freeze_spec_constant_value_pass.h
+  function.h
+  inline_exhaustive_pass.h
+  inline_opaque_pass.h
   inline_pass.h
   insert_extract_elim.h
   instruction.h
+  ir_context.h
   ir_loader.h
   local_access_chain_convert_pass.h
+  local_redundancy_elimination.h
   local_single_block_elim_pass.h
   local_single_store_elim_pass.h
   local_ssa_elim_pass.h
   log.h
+  loop_descriptor.h
+  mem_pass.h
+  merge_return_pass.h
   module.h
   null_pass.h
-  reflect.h
-  pass.h
   passes.h
+  pass.h
   pass_manager.h
+  private_to_local_pass.h
+  propagator.h
+  redundancy_elimination.h
+  reflect.h
+  remove_duplicates_pass.h
+  scalar_replacement_pass.h
   set_spec_constant_default_value_pass.h
+  strength_reduction_pass.h
   strip_debug_info_pass.h
-  types.h
+  tree_iterator.h
   type_manager.h
+  types.h
   unify_const_pass.h
+  value_number_table.h
 
   aggressive_dead_code_elim_pass.cpp
   basic_block.cpp
   block_merge_pass.cpp
   build_module.cpp
+  ccp_pass.cpp
+  cfg_cleanup_pass.cpp
+  cfg.cpp
+  common_uniform_elim_pass.cpp
   compact_ids_pass.cpp
-  def_use_manager.cpp
+  constants.cpp
   dead_branch_elim_pass.cpp
+  dead_variable_elimination.cpp
+  decoration_manager.cpp
+  def_use_manager.cpp
+  dominator_tree.cpp
   eliminate_dead_constant_pass.cpp
+  eliminate_dead_functions_pass.cpp
+  feature_manager.cpp
   flatten_decoration_pass.cpp
-  function.cpp
+  fold.cpp
   fold_spec_constant_op_and_composite_pass.cpp
   freeze_spec_constant_value_pass.cpp
+  function.cpp
+  inline_exhaustive_pass.cpp
+  inline_opaque_pass.cpp
   inline_pass.cpp
   insert_extract_elim.cpp
   instruction.cpp
+  instruction_list.cpp
+  ir_context.cpp
   ir_loader.cpp
   local_access_chain_convert_pass.cpp
+  local_redundancy_elimination.cpp
   local_single_block_elim_pass.cpp
   local_single_store_elim_pass.cpp
   local_ssa_elim_pass.cpp
+  loop_descriptor.cpp
+  mem_pass.cpp
+  merge_return_pass.cpp
   module.cpp
-  set_spec_constant_default_value_pass.cpp
   optimizer.cpp
+  pass.cpp
   pass_manager.cpp
+  private_to_local_pass.cpp
+  propagator.cpp
+  redundancy_elimination.cpp
+  remove_duplicates_pass.cpp
+  scalar_replacement_pass.cpp
+  set_spec_constant_default_value_pass.cpp
+  strength_reduction_pass.cpp
   strip_debug_info_pass.cpp
-  types.cpp
   type_manager.cpp
+  types.cpp
   unify_const_pass.cpp
+  value_number_table.cpp
 )
 
 spvtools_default_compile_options(SPIRV-Tools-opt)
@@ -87,6 +140,7 @@ target_link_libraries(SPIRV-Tools-opt
   PUBLIC ${SPIRV_TOOLS})
 
 set_property(TARGET SPIRV-Tools-opt PROPERTY FOLDER "SPIRV-Tools libraries")
+spvtools_check_symbol_exports(SPIRV-Tools-opt)
 
 if(ENABLE_SPIRV_TOOLS_INSTALL)
   install(TARGETS SPIRV-Tools-opt

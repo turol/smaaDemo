@@ -70,26 +70,26 @@ TEST(PassManager, Interface) {
   EXPECT_STREQ("null-with-args", manager.GetPass(6)->name());
 }
 
-// A pass that appends an OpNop instruction to the debug section.
+// A pass that appends an OpNop instruction to the debug1 section.
 class AppendOpNopPass : public opt::Pass {
  public:
   const char* name() const override { return "AppendOpNop"; }
-  Status Process(ir::Module* module) override {
-    module->AddDebugInst(MakeUnique<ir::Instruction>());
+  Status Process(ir::IRContext* irContext) override {
+    irContext->AddDebug1Inst(MakeUnique<ir::Instruction>(irContext));
     return Status::SuccessWithChange;
   }
 };
 
-// A pass that appends specified number of OpNop instructions to the debug
+// A pass that appends specified number of OpNop instructions to the debug1
 // section.
 class AppendMultipleOpNopPass : public opt::Pass {
  public:
   explicit AppendMultipleOpNopPass(uint32_t num_nop) : num_nop_(num_nop) {}
 
   const char* name() const override { return "AppendOpNop"; }
-  Status Process(ir::Module* module) override {
+  Status Process(ir::IRContext* irContext) override {
     for (uint32_t i = 0; i < num_nop_; i++) {
-      module->AddDebugInst(MakeUnique<ir::Instruction>());
+      irContext->AddDebug1Inst(MakeUnique<ir::Instruction>(irContext));
     }
     return Status::SuccessWithChange;
   }
@@ -98,13 +98,14 @@ class AppendMultipleOpNopPass : public opt::Pass {
   uint32_t num_nop_;
 };
 
-// A pass that duplicates the last instruction in the debug section.
+// A pass that duplicates the last instruction in the debug1 section.
 class DuplicateInstPass : public opt::Pass {
  public:
   const char* name() const override { return "DuplicateInst"; }
-  Status Process(ir::Module* module) override {
-    auto inst = MakeUnique<ir::Instruction>(*(--module->debug_end()));
-    module->AddDebugInst(std::move(inst));
+  Status Process(ir::IRContext* irContext) override {
+    auto inst = MakeUnique<ir::Instruction>(
+        *(--irContext->debug1_end())->Clone(irContext));
+    irContext->AddDebug1Inst(std::move(inst));
     return Status::SuccessWithChange;
   }
 };
@@ -139,10 +140,10 @@ class AppendTypeVoidInstPass : public opt::Pass {
   explicit AppendTypeVoidInstPass(uint32_t result_id) : result_id_(result_id) {}
 
   const char* name() const override { return "AppendTypeVoidInstPass"; }
-  Status Process(ir::Module* module) override {
-    auto inst = MakeUnique<ir::Instruction>(SpvOpTypeVoid, 0, result_id_,
-                                            std::vector<ir::Operand>{});
-    module->AddType(std::move(inst));
+  Status Process(ir::IRContext* irContext) override {
+    auto inst = MakeUnique<ir::Instruction>(
+        irContext, SpvOpTypeVoid, 0, result_id_, std::vector<ir::Operand>{});
+    irContext->AddType(std::move(inst));
     return Status::SuccessWithChange;
   }
 
@@ -151,33 +152,35 @@ class AppendTypeVoidInstPass : public opt::Pass {
 };
 
 TEST(PassManager, RecomputeIdBoundAutomatically) {
-  ir::Module module;
-  EXPECT_THAT(GetIdBound(module), Eq(0u));
-
   opt::PassManager manager;
-  manager.Run(&module);
+  std::unique_ptr<ir::Module> module(new ir::Module());
+  ir::IRContext context(SPV_ENV_UNIVERSAL_1_2, std::move(module),
+                        manager.consumer());
+  EXPECT_THAT(GetIdBound(*context.module()), Eq(0u));
+
+  manager.Run(&context);
   manager.AddPass<AppendOpNopPass>();
   // With no ID changes, the ID bound does not change.
-  EXPECT_THAT(GetIdBound(module), Eq(0u));
+  EXPECT_THAT(GetIdBound(*context.module()), Eq(0u));
 
   // Now we force an Id of 100 to be used.
   manager.AddPass(MakeUnique<AppendTypeVoidInstPass>(100));
-  EXPECT_THAT(GetIdBound(module), Eq(0u));
-  manager.Run(&module);
+  EXPECT_THAT(GetIdBound(*context.module()), Eq(0u));
+  manager.Run(&context);
   // The Id has been updated automatically, even though the pass
   // did not update it.
-  EXPECT_THAT(GetIdBound(module), Eq(101u));
+  EXPECT_THAT(GetIdBound(*context.module()), Eq(101u));
 
   // Try one more time!
   manager.AddPass(MakeUnique<AppendTypeVoidInstPass>(200));
-  manager.Run(&module);
-  EXPECT_THAT(GetIdBound(module), Eq(201u));
+  manager.Run(&context);
+  EXPECT_THAT(GetIdBound(*context.module()), Eq(201u));
 
   // Add another pass, but which uses a lower Id.
   manager.AddPass(MakeUnique<AppendTypeVoidInstPass>(10));
-  manager.Run(&module);
+  manager.Run(&context);
   // The Id stays high.
-  EXPECT_THAT(GetIdBound(module), Eq(201u));
+  EXPECT_THAT(GetIdBound(*context.module()), Eq(201u));
 }
 
 }  // anonymous namespace

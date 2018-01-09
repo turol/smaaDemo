@@ -242,7 +242,7 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 
 // increase this when the shader compiler options change
 // so that the same source generates a different SPV
-const unsigned int shaderVersion = 2;
+const unsigned int shaderVersion = 3;
 
 
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, shaderc_shader_kind kind) {
@@ -349,7 +349,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		});
 
 		// optimization passes, from the 1.0 whitepaper
-		opt.RegisterPass(spvtools::CreateInlinePass());
+		opt.RegisterPass(spvtools::CreateInlineExhaustivePass());
 		opt.RegisterPass(spvtools::CreateLocalAccessChainConvertPass());
 		opt.RegisterPass(spvtools::CreateLocalSingleBlockLoadStoreElimPass());
 		opt.RegisterPass(spvtools::CreateLocalSingleStoreElimPass());

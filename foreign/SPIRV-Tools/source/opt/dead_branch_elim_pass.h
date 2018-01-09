@@ -17,7 +17,6 @@
 #ifndef LIBSPIRV_OPT_DEAD_BRANCH_ELIM_PASS_H_
 #define LIBSPIRV_OPT_DEAD_BRANCH_ELIM_PASS_H_
 
-
 #include <algorithm>
 #include <map>
 #include <queue>
@@ -27,51 +26,36 @@
 
 #include "basic_block.h"
 #include "def_use_manager.h"
+#include "mem_pass.h"
 #include "module.h"
-#include "pass.h"
 
 namespace spvtools {
 namespace opt {
 
 // See optimizer.hpp for documentation.
-class DeadBranchElimPass : public Pass {
-
+class DeadBranchElimPass : public MemPass {
   using cbb_ptr = const ir::BasicBlock*;
 
  public:
-   using GetBlocksFunction =
-     std::function<std::vector<ir::BasicBlock*>*(const ir::BasicBlock*)>;
+  using GetBlocksFunction =
+      std::function<std::vector<ir::BasicBlock*>*(const ir::BasicBlock*)>;
 
   DeadBranchElimPass();
-  const char* name() const override { return "dead-branch-elim"; }
-  Status Process(ir::Module*) override;
+  const char* name() const override { return "eliminate-dead-branches"; }
+  Status Process(ir::IRContext* context) override;
+
+  ir::IRContext::Analysis GetPreservedAnalyses() override {
+    return ir::IRContext::kAnalysisDefUse;
+  }
 
  private:
-  // Returns the id of the merge block declared by a merge instruction in 
-  // this block |blk|, if any. If none, returns zero. If loop merge, returns
-  // the continue target id in |cbid|. Otherwise sets to zero.
-  uint32_t MergeBlockIdIfAny(const ir::BasicBlock& blk, uint32_t* cbid) const;
+  // If |condId| is boolean constant, return conditional value in |condVal| and
+  // return true, otherwise return false.
+  bool GetConstCondition(uint32_t condId, bool* condVal);
 
-  // Compute structured successors for function |func|.
-  // A block's structured successors are the blocks it branches to
-  // together with its declared merge block if it has one.
-  // When order matters, the merge block always appears first and if
-  // a loop merge block, the continue target always appears second.
-  // This assures correct depth first search in the presence of early 
-  // returns and kills. If the successor vector contain duplicates
-  // of the merge and continue blocks, they are safely ignored by DFS.
-  void ComputeStructuredSuccessors(ir::Function* func);
-
-  // Compute structured block order |order| for function |func|. This order
-  // has the property that dominators are before all blocks they dominate and
-  // merge blocks are after all blocks that are in the control constructs of
-  // their header.
-  void ComputeStructuredOrder(
-    ir::Function* func, std::list<ir::BasicBlock*>* order);
-
-  // If |condId| is boolean constant, return value in |condVal| and
-  // |condIsConst| as true, otherwise return |condIsConst| as false.
-  void GetConstCondition(uint32_t condId, bool* condVal, bool* condIsConst);
+  // If |valId| is a 32-bit integer constant, return value via |value| and
+  // return true, otherwise return false.
+  bool GetConstInteger(uint32_t valId, uint32_t* value);
 
   // Add branch to |labelId| to end of block |bp|.
   void AddBranch(uint32_t labelId, ir::BasicBlock* bp);
@@ -82,20 +66,19 @@ class DeadBranchElimPass : public Pass {
   // Add conditional branch of |condId|, |trueLabId| and |falseLabId| to end
   // of block |bp|.
   void AddBranchConditional(uint32_t condId, uint32_t trueLabId,
-      uint32_t falseLabId, ir::BasicBlock* bp);
+                            uint32_t falseLabId, ir::BasicBlock* bp);
 
-  // Kill all instructions in block |bp|.
-  void KillAllInsts(ir::BasicBlock* bp);
-
-  // If block |bp| contains constant conditional branch preceeded by an
+  // If block |bp| contains conditional branch or switch preceeded by an
   // OpSelctionMerge, return true and return branch and merge instructions
-  // in |branchInst| and |mergeInst| and the boolean constant in |condVal|. 
-  bool GetConstConditionalSelectionBranch(ir::BasicBlock* bp,
-    ir::Instruction** branchInst, ir::Instruction** mergeInst,
-    uint32_t *condId, bool *condVal);
+  // in |branchInst| and |mergeInst| and the conditional id in |condId|.
+  bool GetSelectionBranch(ir::BasicBlock* bp, ir::Instruction** branchInst,
+                          ir::Instruction** mergeInst, uint32_t* condId);
 
-  // Return true if |labelId| has any non-phi references
-  bool HasNonPhiRef(uint32_t labelId);
+  // Return true if |labelId| has any non-phi, non-backedge references
+  bool HasNonPhiNonBackedgeRef(uint32_t labelId);
+
+  // Compute backedges for blocks in |structuredOrder|.
+  void ComputeBackEdges(std::list<ir::BasicBlock*>& structuredOrder);
 
   // For function |func|, look for BranchConditionals with constant condition
   // and convert to a Branch to the indicated label. Delete resulting dead
@@ -111,25 +94,11 @@ class DeadBranchElimPass : public Pass {
   // Return true if all extensions in this module are allowed by this pass.
   bool AllExtensionsSupported() const;
 
-  void Initialize(ir::Module* module);
+  void Initialize(ir::IRContext* c);
   Pass::Status ProcessImpl();
 
-  // Module this pass is processing
-  ir::Module* module_;
-
-  // Def-Uses for the module we are processing
-  std::unique_ptr<analysis::DefUseManager> def_use_mgr_;
-
-  // Map from function's result id to function
-  std::unordered_map<uint32_t, ir::Function*> id2function_;
-
-  // Map from block's label id to block.
-  std::unordered_map<uint32_t, ir::BasicBlock*> id2block_;
-
-  // Map from block to its structured successor blocks. See 
-  // ComputeStructuredSuccessors() for definition.
-  std::unordered_map<const ir::BasicBlock*, std::vector<ir::BasicBlock*>>
-      block2structured_succs_;
+  // All backedge branches in current function
+  std::unordered_set<ir::Instruction*> backedges_;
 
   // Extensions supported by this pass.
   std::unordered_set<std::string> extensions_whitelist_;
@@ -139,4 +108,3 @@ class DeadBranchElimPass : public Pass {
 }  // namespace spvtools
 
 #endif  // LIBSPIRV_OPT_DEAD_BRANCH_ELIM_PASS_H_
-

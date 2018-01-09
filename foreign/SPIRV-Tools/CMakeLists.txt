@@ -13,6 +13,9 @@
 # limitations under the License.
 
 cmake_minimum_required(VERSION 2.8.12)
+if (POLICY CMP0048)
+  cmake_policy(SET CMP0048 NEW)
+endif()
 if (POLICY CMP0054)
   # Avoid dereferencing variables or interpret keywords that have been
   # quoted or bracketed.
@@ -45,6 +48,7 @@ else()
   message(FATAL_ERROR "Your platform '${CMAKE_SYSTEM_NAME}' is not supported!")
 endif()
 
+
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
   message(STATUS "No build type selected, default to Debug")
   set(CMAKE_BUILD_TYPE "Debug")
@@ -54,7 +58,9 @@ option(SKIP_SPIRV_TOOLS_INSTALL "Skip installation" ${SKIP_SPIRV_TOOLS_INSTALL})
 if(NOT ${SKIP_SPIRV_TOOLS_INSTALL})
   set(ENABLE_SPIRV_TOOLS_INSTALL ON)
 endif()
- 
+
+option(SPIRV_BUILD_COMPRESSION "Build SPIR-V compressing codec" OFF)
+
 option(SPIRV_WERROR "Enable error on warning" ON)
 if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"))
   set(COMPILER_IS_LIKE_GNU TRUE)
@@ -96,6 +102,10 @@ endif()
 option(SPIRV_LOG_DEBUG "Enable excessive debug output" OFF)
 if(${SPIRV_LOG_DEBUG})
   add_definitions(-DSPIRV_LOG_DEBUG)
+endif()
+
+if (DEFINED SPIRV_TOOLS_EXTRA_DEFINITIONS)
+  add_definitions(${SPIRV_TOOLS_EXTRA_DEFINITIONS})
 endif()
 
 function(spvtools_default_compile_options TARGET)
@@ -153,6 +163,17 @@ endif()
 
 find_host_package(PythonInterp)
 
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+  macro(spvtools_check_symbol_exports TARGET)
+    add_test(NAME spirv-tools-symbol-exports-${TARGET}
+             COMMAND ${PYTHON_EXECUTABLE}
+             ${spirv-tools_SOURCE_DIR}/utils/check_symbol_exports.py "$<TARGET_FILE:${TARGET}>")
+  endmacro()
+else()
+  macro(spvtools_check_symbol_exports TARGET)
+    message("Skipping symbol exports test for ${TARGET}")
+  endmacro()
+endif()
 
 # Defaults to OFF if the user didn't set it.
 option(SPIRV_SKIP_EXECUTABLES
@@ -164,7 +185,18 @@ if ("${SPIRV_SKIP_EXECUTABLES}")
   set(SPIRV_SKIP_TESTS ON)
 endif()
 
+# Defaults to ON.  The checks can be time consuming.
+# Turn off if they take too long.
+option(SPIRV_CHECK_CONTEXT "In a debug build, check if the IR context is in a valid state." ON)
+if (${SPIRV_CHECK_CONTEXT})
+  add_definitions(-DSPIRV_CHECK_CONTEXT)
+endif()
+
 add_subdirectory(external)
+
+if (TARGET effcee)
+  add_definitions(-DSPIRV_EFFCEE)
+endif()
 
 add_subdirectory(source)
 add_subdirectory(tools)
@@ -178,10 +210,38 @@ if(ENABLE_SPIRV_TOOLS_INSTALL)
       ${CMAKE_CURRENT_SOURCE_DIR}/include/spirv-tools/libspirv.h
       ${CMAKE_CURRENT_SOURCE_DIR}/include/spirv-tools/libspirv.hpp
       ${CMAKE_CURRENT_SOURCE_DIR}/include/spirv-tools/optimizer.hpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/include/spirv-tools/linker.hpp
     DESTINATION
       ${CMAKE_INSTALL_INCLUDEDIR}/spirv-tools/)
 endif(ENABLE_SPIRV_TOOLS_INSTALL)
 
-add_test(NAME spirv-tools-copyrights
-         COMMAND ${PYTHON_EXECUTABLE} utils/check_copyright.py
-         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+if (NOT "${SPIRV_SKIP_TESTS}")
+  add_test(NAME spirv-tools-copyrights
+           COMMAND ${PYTHON_EXECUTABLE} utils/check_copyright.py
+           WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+
+set(SPIRV_LIBRARIES "-lSPIRV-Tools -lSPIRV-Tools-link -lSPIRV-Tools-opt")
+if(SPIRV_BUILD_COMPRESSION)
+  set(SPIRV_LIBRARIES "${SPIRV_LIBRARIES} -lSPIRV-Tools-comp")
+endif(SPIRV_BUILD_COMPRESSION)
+
+# Build pkg-config file
+# Use a first-class target so it's regenerated when relevant files are updated.
+add_custom_target(spirv-tools-pkg-config ALL
+        COMMAND cmake -DCHANGES_FILE=${CMAKE_CURRENT_SOURCE_DIR}/CHANGES
+                      -DTEMPLATE_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/SPIRV-Tools.pc.in
+                      -DOUT_FILE=${CMAKE_CURRENT_BINARY_DIR}/SPIRV-Tools.pc
+                      -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+                      -DSPIRV_LIBRARIES=${SPIRV_LIBRARIES}
+                      -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/write_pkg_config.cmake
+        DEPENDS "CHANGES" "cmake/SPIRV-Tools.pc.in" "cmake/write_pkg_config.cmake")
+
+# Install pkg-config file
+if (ENABLE_SPIRV_TOOLS_INSTALL)
+  install(
+    FILES
+      ${CMAKE_CURRENT_BINARY_DIR}/SPIRV-Tools.pc
+    DESTINATION
+      ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+endif()

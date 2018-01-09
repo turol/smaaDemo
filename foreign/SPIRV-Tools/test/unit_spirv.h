@@ -22,8 +22,8 @@
 
 #include "source/assembly_grammar.h"
 #include "source/binary.h"
-#include "source/enum_set.h"
 #include "source/diagnostic.h"
+#include "source/enum_set.h"
 #include "source/opcode.h"
 #include "source/spirv_endian.h"
 #include "source/text.h"
@@ -42,7 +42,7 @@ std::string to_string(const T& val) {
   os << val;
   return os.str();
 }
-}
+}  // namespace std
 #endif
 
 // Determine endianness & predicate tests on it
@@ -208,10 +208,15 @@ inline std::string MakeLongUTF8String(size_t num_4_byte_chars) {
 
 // Returns a vector of all valid target environment enums.
 inline std::vector<spv_target_env> AllTargetEnvironments() {
-  return {SPV_ENV_UNIVERSAL_1_0, SPV_ENV_UNIVERSAL_1_1, SPV_ENV_OPENCL_2_1,
-          SPV_ENV_OPENCL_2_2,    SPV_ENV_VULKAN_1_0,    SPV_ENV_OPENGL_4_0,
-          SPV_ENV_OPENGL_4_1,    SPV_ENV_OPENGL_4_2,    SPV_ENV_OPENGL_4_3,
-          SPV_ENV_OPENGL_4_5,    SPV_ENV_UNIVERSAL_1_2};
+  return {SPV_ENV_UNIVERSAL_1_0, SPV_ENV_UNIVERSAL_1_1,
+          SPV_ENV_OPENCL_1_2,    SPV_ENV_OPENCL_EMBEDDED_1_2,
+          SPV_ENV_OPENCL_2_0,    SPV_ENV_OPENCL_EMBEDDED_2_0,
+          SPV_ENV_OPENCL_2_1,    SPV_ENV_OPENCL_EMBEDDED_2_1,
+          SPV_ENV_OPENCL_2_2,    SPV_ENV_OPENCL_EMBEDDED_2_2,
+          SPV_ENV_VULKAN_1_0,    SPV_ENV_OPENGL_4_0,
+          SPV_ENV_OPENGL_4_1,    SPV_ENV_OPENGL_4_2,
+          SPV_ENV_OPENGL_4_3,    SPV_ENV_OPENGL_4_5,
+          SPV_ENV_UNIVERSAL_1_2};
 }
 
 // Returns the capabilities in a CapabilitySet as an ordered vector.

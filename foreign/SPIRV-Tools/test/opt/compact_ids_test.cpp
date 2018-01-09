@@ -14,6 +14,9 @@
 
 #include <gmock/gmock.h>
 
+#include "spirv-tools/libspirv.hpp"
+#include "spirv-tools/optimizer.hpp"
+
 #include "pass_fixture.h"
 #include "pass_utils.h"
 
@@ -25,7 +28,7 @@ using CompactIdsTest = PassTest<::testing::Test>;
 
 TEST_F(CompactIdsTest, PassOff) {
   const std::string before =
-R"(OpCapability Addresses
+      R"(OpCapability Addresses
 OpCapability Kernel
 OpCapability GenericPointer
 OpCapability Linkage
@@ -45,7 +48,7 @@ OpMemoryModel Physical32 OpenCL
 
 TEST_F(CompactIdsTest, PassOn) {
   const std::string before =
-R"(OpCapability Addresses
+      R"(OpCapability Addresses
 OpCapability Kernel
 OpCapability GenericPointer
 OpCapability Linkage
@@ -64,7 +67,7 @@ OpFunctionEnd
 )";
 
   const std::string after =
-R"(OpCapability Addresses
+      R"(OpCapability Addresses
 OpCapability Kernel
 OpCapability GenericPointer
 OpCapability Linkage
@@ -85,6 +88,108 @@ OpFunctionEnd
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
   SetDisassembleOptions(SPV_BINARY_TO_TEXT_OPTION_NO_HEADER);
   SinglePassRunAndCheck<opt::CompactIdsPass>(before, after, false, false);
+}
+
+TEST(CompactIds, InstructionResultIsUpdated) {
+  // For https://github.com/KhronosGroup/SPIRV-Tools/issues/827
+  // In that bug, the compact Ids pass was directly updating the result Id
+  // word for an OpFunction instruction, but not updating the cached
+  // result_id_ in that Instruction object.
+  //
+  // This test is a bit cheesy.  We don't expose internal interfaces enough
+  // to see the inconsistency.  So reproduce the original scenario, with
+  // compact ids followed by a pass that trips up on the inconsistency.
+
+  const std::string input(R"(OpCapability Shader
+OpMemoryModel Logical Simple
+OpEntryPoint GLCompute %100 "main"
+%200 = OpTypeVoid
+%300 = OpTypeFunction %200
+%100 = OpFunction %300 None %200
+%400 = OpLabel
+OpReturn
+OpFunctionEnd
+)");
+
+  std::vector<uint32_t> binary;
+  const spv_target_env env = SPV_ENV_UNIVERSAL_1_0;
+  spvtools::SpirvTools tools(env);
+  auto assembled = tools.Assemble(
+      input, &binary, SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
+  EXPECT_TRUE(assembled);
+
+  spvtools::Optimizer optimizer(env);
+  optimizer.RegisterPass(CreateCompactIdsPass());
+  // The exhaustive inliner will use the result_id
+  optimizer.RegisterPass(CreateInlineExhaustivePass());
+
+  // This should not crash!
+  optimizer.Run(binary.data(), binary.size(), &binary);
+
+  std::string disassembly;
+  tools.Disassemble(binary, &disassembly, SPV_BINARY_TO_TEXT_OPTION_NO_HEADER);
+
+  const std::string expected(R"(OpCapability Shader
+OpMemoryModel Logical Simple
+OpEntryPoint GLCompute %1 "main"
+%2 = OpTypeVoid
+%3 = OpTypeFunction %2
+%1 = OpFunction %3 None %2
+%4 = OpLabel
+OpReturn
+OpFunctionEnd
+)");
+
+  EXPECT_THAT(disassembly, ::testing::Eq(expected));
+}
+
+TEST(CompactIds, HeaderIsUpdated) {
+  const std::string input(R"(OpCapability Shader
+OpMemoryModel Logical Simple
+OpEntryPoint GLCompute %100 "main"
+%200 = OpTypeVoid
+%300 = OpTypeFunction %200
+%100 = OpFunction %300 None %200
+%400 = OpLabel
+OpReturn
+OpFunctionEnd
+)");
+
+  std::vector<uint32_t> binary;
+  const spv_target_env env = SPV_ENV_UNIVERSAL_1_0;
+  spvtools::SpirvTools tools(env);
+  auto assembled = tools.Assemble(
+      input, &binary, SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
+  EXPECT_TRUE(assembled);
+
+  spvtools::Optimizer optimizer(env);
+  optimizer.RegisterPass(CreateCompactIdsPass());
+  // The exhaustive inliner will use the result_id
+  optimizer.RegisterPass(CreateInlineExhaustivePass());
+
+  // This should not crash!
+  optimizer.Run(binary.data(), binary.size(), &binary);
+
+  std::string disassembly;
+  tools.Disassemble(binary, &disassembly, SPV_BINARY_TO_TEXT_OPTION_NONE);
+
+  const std::string expected(R"(; SPIR-V
+; Version: 1.0
+; Generator: Khronos SPIR-V Tools Assembler; 0
+; Bound: 5
+; Schema: 0
+OpCapability Shader
+OpMemoryModel Logical Simple
+OpEntryPoint GLCompute %1 "main"
+%2 = OpTypeVoid
+%3 = OpTypeFunction %2
+%1 = OpFunction %3 None %2
+%4 = OpLabel
+OpReturn
+OpFunctionEnd
+)");
+
+  EXPECT_THAT(disassembly, ::testing::Eq(expected));
 }
 
 }  // anonymous namespace

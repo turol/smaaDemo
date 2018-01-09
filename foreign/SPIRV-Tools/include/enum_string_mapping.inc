@@ -10,10 +10,20 @@ std::string ExtensionToString(Extension extension) {
       return "SPV_AMD_shader_ballot";
     case Extension::kSPV_AMD_shader_explicit_vertex_parameter:
       return "SPV_AMD_shader_explicit_vertex_parameter";
+    case Extension::kSPV_AMD_shader_fragment_mask:
+      return "SPV_AMD_shader_fragment_mask";
+    case Extension::kSPV_AMD_shader_image_load_store_lod:
+      return "SPV_AMD_shader_image_load_store_lod";
     case Extension::kSPV_AMD_shader_trinary_minmax:
       return "SPV_AMD_shader_trinary_minmax";
     case Extension::kSPV_AMD_texture_gather_bias_lod:
       return "SPV_AMD_texture_gather_bias_lod";
+    case Extension::kSPV_EXT_shader_stencil_export:
+      return "SPV_EXT_shader_stencil_export";
+    case Extension::kSPV_EXT_shader_viewport_index_layer:
+      return "SPV_EXT_shader_viewport_index_layer";
+    case Extension::kSPV_INTEL_subgroups:
+      return "SPV_INTEL_subgroups";
     case Extension::kSPV_KHR_16bit_storage:
       return "SPV_KHR_16bit_storage";
     case Extension::kSPV_KHR_device_group:
@@ -64,10 +74,20 @@ bool GetExtensionFromString(const std::string& str, Extension* extension) {
    Extension::kSPV_AMD_shader_ballot},
   {"SPV_AMD_shader_explicit_vertex_parameter",
    Extension::kSPV_AMD_shader_explicit_vertex_parameter},
+  {"SPV_AMD_shader_fragment_mask",
+   Extension::kSPV_AMD_shader_fragment_mask},
+  {"SPV_AMD_shader_image_load_store_lod",
+   Extension::kSPV_AMD_shader_image_load_store_lod},
   {"SPV_AMD_shader_trinary_minmax",
    Extension::kSPV_AMD_shader_trinary_minmax},
   {"SPV_AMD_texture_gather_bias_lod",
    Extension::kSPV_AMD_texture_gather_bias_lod},
+  {"SPV_EXT_shader_stencil_export",
+   Extension::kSPV_EXT_shader_stencil_export},
+  {"SPV_EXT_shader_viewport_index_layer",
+   Extension::kSPV_EXT_shader_viewport_index_layer},
+  {"SPV_INTEL_subgroups",
+   Extension::kSPV_INTEL_subgroups},
   {"SPV_KHR_16bit_storage",
    Extension::kSPV_KHR_16bit_storage},
   {"SPV_KHR_device_group",
@@ -258,18 +278,30 @@ std::string CapabilityToString(SpvCapability capability) {
       return "SampleMaskPostDepthCoverage";
     case SpvCapabilityImageGatherBiasLodAMD:
       return "ImageGatherBiasLodAMD";
+    case SpvCapabilityFragmentMaskAMD:
+      return "FragmentMaskAMD";
+    case SpvCapabilityStencilExportEXT:
+      return "StencilExportEXT";
+    case SpvCapabilityImageReadWriteLodAMD:
+      return "ImageReadWriteLodAMD";
     case SpvCapabilitySampleMaskOverrideCoverageNV:
       return "SampleMaskOverrideCoverageNV";
     case SpvCapabilityGeometryShaderPassthroughNV:
       return "GeometryShaderPassthroughNV";
-    case SpvCapabilityShaderViewportIndexLayerNV:
-      return "ShaderViewportIndexLayerNV";
+    case SpvCapabilityShaderViewportIndexLayerEXT:
+      return "ShaderViewportIndexLayerEXT";
     case SpvCapabilityShaderViewportMaskNV:
       return "ShaderViewportMaskNV";
     case SpvCapabilityShaderStereoViewNV:
       return "ShaderStereoViewNV";
     case SpvCapabilityPerViewAttributesNV:
       return "PerViewAttributesNV";
+    case SpvCapabilitySubgroupShuffleINTEL:
+      return "SubgroupShuffleINTEL";
+    case SpvCapabilitySubgroupBufferBlockIOINTEL:
+      return "SubgroupBufferBlockIOINTEL";
+    case SpvCapabilitySubgroupImageBlockIOINTEL:
+      return "SubgroupImageBlockIOINTEL";
     case SpvCapabilityMax:
       assert(0 && "Attempting to convert SpvCapabilityMax to string");
       return "";

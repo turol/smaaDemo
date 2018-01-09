@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "def_use_manager.h"
+#include "ir_context.h"
 #include "make_unique.h"
 #include "spirv-tools/libspirv.h"
 #include "type_manager.h"
@@ -31,10 +32,10 @@ namespace spvtools {
 namespace opt {
 
 namespace {
-using spvutils::NumberType;
 using spvutils::EncodeNumberStatus;
-using spvutils::ParseNumber;
+using spvutils::NumberType;
 using spvutils::ParseAndEncodeNumber;
+using spvutils::ParseNumber;
 
 // Given a numeric value in a null-terminated c string and the expected type of
 // the value, parses the string and encodes it in a vector of words. If the
@@ -136,13 +137,12 @@ ir::Instruction* GetSpecIdTargetFromDecorationGroup(
   // the first OpGroupDecoration instruction that uses the given decoration
   // group.
   ir::Instruction* group_decorate_inst = nullptr;
-  for (const auto& u :
-       *def_use_mgr->GetUses(decoration_group_defining_inst.result_id())) {
-    if (u.inst->opcode() == SpvOp::SpvOpGroupDecorate) {
-      group_decorate_inst = u.inst;
-      break;
-    }
-  }
+  def_use_mgr->ForEachUser(&decoration_group_defining_inst,
+                           [&group_decorate_inst](ir::Instruction* user) {
+                             if (user->opcode() == SpvOp::SpvOpGroupDecorate) {
+                               group_decorate_inst = user;
+                             }
+                           });
   if (!group_decorate_inst) return nullptr;
 
   // Scan through the target ids of the OpGroupDecorate instruction. There
@@ -185,9 +185,12 @@ ir::Instruction* GetSpecIdTargetFromDecorationGroup(
   }
   return target_inst;
 }
-};
+};  // namespace
 
-Pass::Status SetSpecConstantDefaultValuePass::Process(ir::Module* module) {
+Pass::Status SetSpecConstantDefaultValuePass::Process(
+    ir::IRContext* irContext) {
+  InitializeProcessing(irContext);
+
   // The operand index of decoration target in an OpDecorate instruction.
   const uint32_t kTargetIdOperandIndex = 0;
   // The operand index of the decoration literal in an OpDecorate instruction.
@@ -201,8 +204,6 @@ Pass::Status SetSpecConstantDefaultValuePass::Process(ir::Module* module) {
   const uint32_t kOpSpecConstantLiteralInOperandIndex = 0;
 
   bool modified = false;
-  analysis::DefUseManager def_use_mgr(consumer(), module);
-  analysis::TypeManager type_mgr(consumer(), *module);
   // Scan through all the annotation instructions to find 'OpDecorate SpecId'
   // instructions. Then extract the decoration target of those instructions.
   // The decoration targets should be spec constant defining instructions with
@@ -212,7 +213,7 @@ Pass::Status SetSpecConstantDefaultValuePass::Process(ir::Module* module) {
   // is found for a spec id, the string will be parsed according to the target
   // spec constant type. The parsed value will be used to replace the original
   // default value of the target spec constant.
-  for (ir::Instruction& inst : module->annotations()) {
+  for (ir::Instruction& inst : irContext->annotations()) {
     // Only process 'OpDecorate SpecId' instructions
     if (inst.opcode() != SpvOp::SpvOpDecorate) continue;
     if (inst.NumOperands() != kOpDecorateSpecIdNumOperands) continue;
@@ -228,10 +229,10 @@ Pass::Status SetSpecConstantDefaultValuePass::Process(ir::Module* module) {
     // Find the spec constant defining instruction. Note that the
     // target_id might be a decoration group id.
     ir::Instruction* spec_inst = nullptr;
-    if (ir::Instruction* target_inst = def_use_mgr.GetDef(target_id)) {
+    if (ir::Instruction* target_inst = get_def_use_mgr()->GetDef(target_id)) {
       if (target_inst->opcode() == SpvOp::SpvOpDecorationGroup) {
         spec_inst =
-            GetSpecIdTargetFromDecorationGroup(*target_inst, &def_use_mgr);
+            GetSpecIdTargetFromDecorationGroup(*target_inst, get_def_use_mgr());
       } else {
         spec_inst = target_inst;
       }
@@ -253,8 +254,9 @@ Pass::Status SetSpecConstantDefaultValuePass::Process(ir::Module* module) {
       // Gets the string of the default value and parses it to bit pattern
       // with the type of the spec constant.
       const std::string& default_value_str = iter->second;
-      bit_pattern = ParseDefaultValueStr(default_value_str.c_str(),
-                                  type_mgr.GetType(spec_inst->type_id()));
+      bit_pattern = ParseDefaultValueStr(
+          default_value_str.c_str(),
+          context()->get_type_mgr()->GetType(spec_inst->type_id()));
 
     } else {
       // Search for the new bit-pattern-form default value for this spec id.
@@ -265,7 +267,8 @@ Pass::Status SetSpecConstantDefaultValuePass::Process(ir::Module* module) {
 
       // Gets the bit-pattern of the default value from the map directly.
       bit_pattern = ParseDefaultValueBitPattern(
-          iter->second, type_mgr.GetType(spec_inst->type_id()));
+          iter->second,
+          context()->get_type_mgr()->GetType(spec_inst->type_id()));
     }
 
     if (bit_pattern.empty()) continue;

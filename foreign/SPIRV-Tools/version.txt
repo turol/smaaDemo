@@ -1,7 +1,14 @@
-commit 9f6efc76c8b8edf644194bec2c70cc3c4612726b
-Author: Lei Zhang <antiagainst@google.com>
-Date:   Mon Jul 24 11:43:47 2017 -0400
+commit e5560d64de40bcc52b38ee44fd8a0bbc42f64399
+Author: Diego Novillo <dnovillo@google.com>
+Date:   Mon Jan 8 11:56:57 2018 -0500
 
-    Opt: HasOnlySupportedRefs should consider OpCopyObject
+    Fix constant propagation of induction variables.
     
-    This fixes test failure after merging the previous pull request.
+    This fixes https://github.com/KhronosGroup/SPIRV-Tools/issues/1143.
+    When an instruction transitions from constant to bottom (varying) in the
+    lattice, we were telling the propagator that the instruction was
+    varying, but never updating the actual value in the values table.
+    
+    This led to incorrect value substitutions at the end of propagation.
+    
+    The patch also re-enables CCP in -O and -Os.

@@ -16,58 +16,40 @@
 
 #include "block_merge_pass.h"
 
+#include "ir_context.h"
 #include "iterator.h"
 
 namespace spvtools {
 namespace opt {
 
-namespace {
-
-const int kEntryPointFunctionIdInIdx = 1;
-
-} // anonymous namespace
-
-bool BlockMergePass::IsLoopHeader(ir::BasicBlock* block_ptr) {
-  auto iItr = block_ptr->tail();
-  if (iItr == block_ptr->begin())
-    return false;
-  --iItr;
-  return iItr->opcode() == SpvOpLoopMerge;
-}
-
 bool BlockMergePass::HasMultipleRefs(uint32_t labId) {
-  const analysis::UseList* uses = def_use_mgr_->GetUses(labId);
   int rcnt = 0;
-  for (const auto u : *uses) {
-    // Don't count OpName
-    if (u.inst->opcode() == SpvOpName)
-      continue;
-    if (rcnt == 1)
-      return true;
-    ++rcnt;
-  }
-  return false;
+  get_def_use_mgr()->ForEachUser(labId, [&rcnt](ir::Instruction* user) {
+    if (user->opcode() != SpvOpName) {
+      ++rcnt;
+    }
+  });
+  return rcnt > 1;
 }
 
 void BlockMergePass::KillInstAndName(ir::Instruction* inst) {
-  const uint32_t id = inst->result_id();
-  if (id != 0) {
-    analysis::UseList* uses = def_use_mgr_->GetUses(id);
-    if (uses != nullptr)
-      for (auto u : *uses)
-        if (u.inst->opcode() == SpvOpName) {
-          def_use_mgr_->KillInst(u.inst);
-          break;
-        }
+  std::vector<ir::Instruction*> to_kill;
+  get_def_use_mgr()->ForEachUser(inst, [&to_kill](ir::Instruction* user) {
+    if (user->opcode() == SpvOpName) {
+      to_kill.push_back(user);
+    }
+  });
+  for (auto i : to_kill) {
+    context()->KillInst(i);
   }
-  def_use_mgr_->KillInst(inst);
+  context()->KillInst(inst);
 }
 
 bool BlockMergePass::MergeBlocks(ir::Function* func) {
   bool modified = false;
-  for (auto bi = func->begin(); bi != func->end(); ) {
+  for (auto bi = func->begin(); bi != func->end();) {
     // Do not merge loop header blocks, at least for now.
-    if (IsLoopHeader(&*bi)) {
+    if (bi->IsLoopHeader()) {
       ++bi;
       continue;
     }
@@ -91,34 +73,24 @@ bool BlockMergePass::MergeBlocks(ir::Function* func) {
       continue;
     }
     // Merge blocks
-    def_use_mgr_->KillInst(br);
+    context()->KillInst(br);
     auto sbi = bi;
     for (; sbi != func->end(); ++sbi)
-      if (sbi->id() == labId)
-        break;
+      if (sbi->id() == labId) break;
     // If bi is sbi's only predecessor, it dominates sbi and thus
     // sbi must follow bi in func's ordering.
     assert(sbi != func->end());
     bi->AddInstructions(&*sbi);
     KillInstAndName(sbi->GetLabelInst());
-    (void) sbi.Erase();
+    (void)sbi.Erase();
     // reprocess block
     modified = true;
   }
   return modified;
 }
 
-void BlockMergePass::Initialize(ir::Module* module) {
-
-  module_ = module;
-
-  // Initialize function and block maps
-  id2function_.clear();
-  for (auto& fn : *module_) 
-    id2function_[fn.result_id()] = &fn;
-
-  // TODO(greg-lunarg): Reuse def/use from previous passes
-  def_use_mgr_.reset(new analysis::DefUseManager(consumer(), module_));
+void BlockMergePass::Initialize(ir::IRContext* c) {
+  InitializeProcessing(c);
 
   // Initialize extension whitelist
   InitExtensions();
@@ -126,9 +98,9 @@ void BlockMergePass::Initialize(ir::Module* module) {
 
 bool BlockMergePass::AllExtensionsSupported() const {
   // If any extension not in whitelist, return false
-  for (auto& ei : module_->extensions()) {
-    const char* extName = reinterpret_cast<const char*>(
-        &ei.GetInOperand(0).words[0]);
+  for (auto& ei : get_module()->extensions()) {
+    const char* extName =
+        reinterpret_cast<const char*>(&ei.GetInOperand(0).words[0]);
     if (extensions_whitelist_.find(extName) == extensions_whitelist_.end())
       return false;
   }
@@ -137,53 +109,47 @@ bool BlockMergePass::AllExtensionsSupported() const {
 
 Pass::Status BlockMergePass::ProcessImpl() {
   // Do not process if any disallowed extensions are enabled
-  if (!AllExtensionsSupported())
-    return Status::SuccessWithoutChange;
-  bool modified = false;
-  for (auto& e : module_->entry_points()) {
-    ir::Function* fn =
-        id2function_[e.GetSingleWordInOperand(kEntryPointFunctionIdInIdx)];
-    modified = MergeBlocks(fn) || modified;
-  }
+  if (!AllExtensionsSupported()) return Status::SuccessWithoutChange;
+  // Process all entry point functions.
+  ProcessFunction pfn = [this](ir::Function* fp) { return MergeBlocks(fp); };
+  bool modified = ProcessEntryPointCallTree(pfn, get_module());
   return modified ? Status::SuccessWithChange : Status::SuccessWithoutChange;
 }
 
-BlockMergePass::BlockMergePass()
-    : module_(nullptr), def_use_mgr_(nullptr) {}
+BlockMergePass::BlockMergePass() {}
 
-Pass::Status BlockMergePass::Process(ir::Module* module) {
-  Initialize(module);
+Pass::Status BlockMergePass::Process(ir::IRContext* c) {
+  Initialize(c);
   return ProcessImpl();
 }
 
 void BlockMergePass::InitExtensions() {
   extensions_whitelist_.clear();
   extensions_whitelist_.insert({
-    "SPV_AMD_shader_explicit_vertex_parameter",
-    "SPV_AMD_shader_trinary_minmax",
-    "SPV_AMD_gcn_shader",
-    "SPV_KHR_shader_ballot",
-    "SPV_AMD_shader_ballot",
-    "SPV_AMD_gpu_shader_half_float",
-    "SPV_KHR_shader_draw_parameters",
-    "SPV_KHR_subgroup_vote",
-    "SPV_KHR_16bit_storage",
-    "SPV_KHR_device_group",
-    "SPV_KHR_multiview",
-    "SPV_NVX_multiview_per_view_attributes",
-    "SPV_NV_viewport_array2",
-    "SPV_NV_stereo_view_rendering",
-    "SPV_NV_sample_mask_override_coverage",
-    "SPV_NV_geometry_shader_passthrough",
-    "SPV_AMD_texture_gather_bias_lod",
-    "SPV_KHR_storage_buffer_storage_class",
-    "SPV_KHR_variable_pointers",
-    "SPV_AMD_gpu_shader_int16",
-    "SPV_KHR_post_depth_coverage",
-    "SPV_KHR_shader_atomic_counter_ops",
+      "SPV_AMD_shader_explicit_vertex_parameter",
+      "SPV_AMD_shader_trinary_minmax",
+      "SPV_AMD_gcn_shader",
+      "SPV_KHR_shader_ballot",
+      "SPV_AMD_shader_ballot",
+      "SPV_AMD_gpu_shader_half_float",
+      "SPV_KHR_shader_draw_parameters",
+      "SPV_KHR_subgroup_vote",
+      "SPV_KHR_16bit_storage",
+      "SPV_KHR_device_group",
+      "SPV_KHR_multiview",
+      "SPV_NVX_multiview_per_view_attributes",
+      "SPV_NV_viewport_array2",
+      "SPV_NV_stereo_view_rendering",
+      "SPV_NV_sample_mask_override_coverage",
+      "SPV_NV_geometry_shader_passthrough",
+      "SPV_AMD_texture_gather_bias_lod",
+      "SPV_KHR_storage_buffer_storage_class",
+      "SPV_KHR_variable_pointers",
+      "SPV_AMD_gpu_shader_int16",
+      "SPV_KHR_post_depth_coverage",
+      "SPV_KHR_shader_atomic_counter_ops",
   });
 }
 
 }  // namespace opt
 }  // namespace spvtools
-

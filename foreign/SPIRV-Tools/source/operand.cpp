@@ -20,48 +20,47 @@
 
 #include "macro.h"
 
-// Pull in operand info tables automatically generated from JSON grammar.
-namespace v1_0 {
 #include "operand.kinds-1.0.inc"
-}  // namespace v1_0
-namespace v1_1 {
 #include "operand.kinds-1.1.inc"
-}  // namespace v1_1
-namespace v1_2 {
 #include "operand.kinds-1.2.inc"
-}  // namespace v1_2
+
+static const spv_operand_table_t kTable_1_0 = {
+    ARRAY_SIZE(pygen_variable_OperandInfoTable_1_0),
+    pygen_variable_OperandInfoTable_1_0};
+static const spv_operand_table_t kTable_1_1 = {
+    ARRAY_SIZE(pygen_variable_OperandInfoTable_1_1),
+    pygen_variable_OperandInfoTable_1_1};
+static const spv_operand_table_t kTable_1_2 = {
+    ARRAY_SIZE(pygen_variable_OperandInfoTable_1_2),
+    pygen_variable_OperandInfoTable_1_2};
 
 spv_result_t spvOperandTableGet(spv_operand_table* pOperandTable,
                                 spv_target_env env) {
   if (!pOperandTable) return SPV_ERROR_INVALID_POINTER;
 
-  static const spv_operand_table_t table_1_0 = {
-      ARRAY_SIZE(v1_0::pygen_variable_OperandInfoTable),
-      v1_0::pygen_variable_OperandInfoTable};
-  static const spv_operand_table_t table_1_1 = {
-      ARRAY_SIZE(v1_1::pygen_variable_OperandInfoTable),
-      v1_1::pygen_variable_OperandInfoTable};
-  static const spv_operand_table_t table_1_2 = {
-      ARRAY_SIZE(v1_2::pygen_variable_OperandInfoTable),
-      v1_2::pygen_variable_OperandInfoTable};
-
   switch (env) {
     case SPV_ENV_UNIVERSAL_1_0:
     case SPV_ENV_VULKAN_1_0:
+    case SPV_ENV_OPENCL_1_2:
+    case SPV_ENV_OPENCL_EMBEDDED_1_2:
+    case SPV_ENV_OPENCL_2_0:
+    case SPV_ENV_OPENCL_EMBEDDED_2_0:
     case SPV_ENV_OPENCL_2_1:
+    case SPV_ENV_OPENCL_EMBEDDED_2_1:
     case SPV_ENV_OPENGL_4_0:
     case SPV_ENV_OPENGL_4_1:
     case SPV_ENV_OPENGL_4_2:
     case SPV_ENV_OPENGL_4_3:
     case SPV_ENV_OPENGL_4_5:
-      *pOperandTable = &table_1_0;
+      *pOperandTable = &kTable_1_0;
       return SPV_SUCCESS;
     case SPV_ENV_UNIVERSAL_1_1:
-      *pOperandTable = &table_1_1;
+      *pOperandTable = &kTable_1_1;
       return SPV_SUCCESS;
     case SPV_ENV_UNIVERSAL_1_2:
     case SPV_ENV_OPENCL_2_2:
-      *pOperandTable = &table_1_2;
+    case SPV_ENV_OPENCL_EMBEDDED_2_2:
+      *pOperandTable = &kTable_1_2;
       return SPV_SUCCESS;
   }
   assert(0 && "Unknown spv_target_env in spvOperandTableGet()");
@@ -201,6 +200,16 @@ const char* spvOperandTypeStr(spv_operand_type_t type) {
       return "image";
     case SPV_OPERAND_TYPE_OPTIONAL_CIV:
       return "context-insensitive value";
+    case SPV_OPERAND_TYPE_DEBUG_INFO_FLAGS:
+      return "debug info flags";
+    case SPV_OPERAND_TYPE_DEBUG_BASE_TYPE_ATTRIBUTE_ENCODING:
+      return "debug base type encoding";
+    case SPV_OPERAND_TYPE_DEBUG_COMPOSITE_TYPE:
+      return "debug composite type";
+    case SPV_OPERAND_TYPE_DEBUG_TYPE_QUALIFIER:
+      return "debug type qualifier";
+    case SPV_OPERAND_TYPE_DEBUG_OPERATION:
+      return "debug operation";
 
     // The next values are for values returned from an instruction, not actually
     // an operand.  So the specific strings don't matter.  But let's add them
@@ -225,7 +234,7 @@ void spvPushOperandTypes(const spv_operand_type_t* types,
   for (endTypes = types; *endTypes != SPV_OPERAND_TYPE_NONE; ++endTypes)
     ;
   while (endTypes-- != types) {
-      pattern->push_back(*endTypes);
+    pattern->push_back(*endTypes);
   }
 }
 
@@ -235,7 +244,8 @@ void spvPushOperandTypesForMask(const spv_operand_table operandTable,
                                 spv_operand_pattern_t* pattern) {
   // Scan from highest bits to lowest bits because we will append in LIFO
   // fashion, and we need the operands for lower order bits to be consumed first
-  for (uint32_t candidate_bit = (1u << 31u); candidate_bit; candidate_bit >>= 1) {
+  for (uint32_t candidate_bit = (1u << 31u); candidate_bit;
+       candidate_bit >>= 1) {
     if (candidate_bit & mask) {
       spv_operand_desc entry = nullptr;
       if (SPV_SUCCESS == spvOperandTableValueLookup(operandTable, type,
@@ -246,9 +256,63 @@ void spvPushOperandTypesForMask(const spv_operand_table operandTable,
   }
 }
 
+bool spvOperandIsConcrete(spv_operand_type_t type) {
+  if (spvIsIdType(type) || spvOperandIsConcreteMask(type)) {
+    return true;
+  }
+  switch (type) {
+    case SPV_OPERAND_TYPE_LITERAL_INTEGER:
+    case SPV_OPERAND_TYPE_EXTENSION_INSTRUCTION_NUMBER:
+    case SPV_OPERAND_TYPE_SPEC_CONSTANT_OP_NUMBER:
+    case SPV_OPERAND_TYPE_TYPED_LITERAL_NUMBER:
+    case SPV_OPERAND_TYPE_LITERAL_STRING:
+    case SPV_OPERAND_TYPE_SOURCE_LANGUAGE:
+    case SPV_OPERAND_TYPE_EXECUTION_MODEL:
+    case SPV_OPERAND_TYPE_ADDRESSING_MODEL:
+    case SPV_OPERAND_TYPE_MEMORY_MODEL:
+    case SPV_OPERAND_TYPE_EXECUTION_MODE:
+    case SPV_OPERAND_TYPE_STORAGE_CLASS:
+    case SPV_OPERAND_TYPE_DIMENSIONALITY:
+    case SPV_OPERAND_TYPE_SAMPLER_ADDRESSING_MODE:
+    case SPV_OPERAND_TYPE_SAMPLER_FILTER_MODE:
+    case SPV_OPERAND_TYPE_SAMPLER_IMAGE_FORMAT:
+    case SPV_OPERAND_TYPE_IMAGE_CHANNEL_ORDER:
+    case SPV_OPERAND_TYPE_IMAGE_CHANNEL_DATA_TYPE:
+    case SPV_OPERAND_TYPE_FP_ROUNDING_MODE:
+    case SPV_OPERAND_TYPE_LINKAGE_TYPE:
+    case SPV_OPERAND_TYPE_ACCESS_QUALIFIER:
+    case SPV_OPERAND_TYPE_FUNCTION_PARAMETER_ATTRIBUTE:
+    case SPV_OPERAND_TYPE_DECORATION:
+    case SPV_OPERAND_TYPE_BUILT_IN:
+    case SPV_OPERAND_TYPE_GROUP_OPERATION:
+    case SPV_OPERAND_TYPE_KERNEL_ENQ_FLAGS:
+    case SPV_OPERAND_TYPE_KERNEL_PROFILING_INFO:
+    case SPV_OPERAND_TYPE_CAPABILITY:
+    case SPV_OPERAND_TYPE_DEBUG_BASE_TYPE_ATTRIBUTE_ENCODING:
+    case SPV_OPERAND_TYPE_DEBUG_COMPOSITE_TYPE:
+    case SPV_OPERAND_TYPE_DEBUG_TYPE_QUALIFIER:
+    case SPV_OPERAND_TYPE_DEBUG_OPERATION:
+      return true;
+    default:
+      break;
+  }
+  return false;
+}
+
 bool spvOperandIsConcreteMask(spv_operand_type_t type) {
-  return SPV_OPERAND_TYPE_FIRST_CONCRETE_MASK_TYPE <= type &&
-         type <= SPV_OPERAND_TYPE_LAST_CONCRETE_MASK_TYPE;
+  switch (type) {
+    case SPV_OPERAND_TYPE_IMAGE:
+    case SPV_OPERAND_TYPE_FP_FAST_MATH_MODE:
+    case SPV_OPERAND_TYPE_SELECTION_CONTROL:
+    case SPV_OPERAND_TYPE_LOOP_CONTROL:
+    case SPV_OPERAND_TYPE_FUNCTION_CONTROL:
+    case SPV_OPERAND_TYPE_MEMORY_ACCESS:
+    case SPV_OPERAND_TYPE_DEBUG_INFO_FLAGS:
+      return true;
+    default:
+      break;
+  }
+  return false;
 }
 
 bool spvOperandIsOptional(spv_operand_type_t type) {
@@ -304,16 +368,17 @@ spv_operand_type_t spvTakeFirstMatchableOperand(
 
 spv_operand_pattern_t spvAlternatePatternFollowingImmediate(
     const spv_operand_pattern_t& pattern) {
-
-  auto it = std::find(pattern.crbegin(), pattern.crend(), SPV_OPERAND_TYPE_RESULT_ID);
+  auto it =
+      std::find(pattern.crbegin(), pattern.crend(), SPV_OPERAND_TYPE_RESULT_ID);
   if (it != pattern.crend()) {
-    spv_operand_pattern_t alternatePattern(it - pattern.crbegin() + 2, SPV_OPERAND_TYPE_OPTIONAL_CIV);
+    spv_operand_pattern_t alternatePattern(it - pattern.crbegin() + 2,
+                                           SPV_OPERAND_TYPE_OPTIONAL_CIV);
     alternatePattern[1] = SPV_OPERAND_TYPE_RESULT_ID;
     return alternatePattern;
   }
 
   // No result-id found, so just expect CIVs.
-  return{ SPV_OPERAND_TYPE_OPTIONAL_CIV };
+  return {SPV_OPERAND_TYPE_OPTIONAL_CIV};
 }
 
 bool spvIsIdType(spv_operand_type_t type) {
@@ -327,4 +392,62 @@ bool spvIsIdType(spv_operand_type_t type) {
     default:
       return false;
   }
+}
+
+std::function<bool(unsigned)> spvOperandCanBeForwardDeclaredFunction(
+    SpvOp opcode) {
+  std::function<bool(unsigned index)> out;
+  switch (opcode) {
+    case SpvOpExecutionMode:
+    case SpvOpEntryPoint:
+    case SpvOpName:
+    case SpvOpMemberName:
+    case SpvOpSelectionMerge:
+    case SpvOpDecorate:
+    case SpvOpMemberDecorate:
+    case SpvOpTypeStruct:
+    case SpvOpBranch:
+    case SpvOpLoopMerge:
+      out = [](unsigned) { return true; };
+      break;
+    case SpvOpGroupDecorate:
+    case SpvOpGroupMemberDecorate:
+    case SpvOpBranchConditional:
+    case SpvOpSwitch:
+      out = [](unsigned index) { return index != 0; };
+      break;
+
+    case SpvOpFunctionCall:
+      // The Function parameter.
+      out = [](unsigned index) { return index == 2; };
+      break;
+
+    case SpvOpPhi:
+      out = [](unsigned index) { return index > 1; };
+      break;
+
+    case SpvOpEnqueueKernel:
+      // The Invoke parameter.
+      out = [](unsigned index) { return index == 8; };
+      break;
+
+    case SpvOpGetKernelNDrangeSubGroupCount:
+    case SpvOpGetKernelNDrangeMaxSubGroupSize:
+      // The Invoke parameter.
+      out = [](unsigned index) { return index == 3; };
+      break;
+
+    case SpvOpGetKernelWorkGroupSize:
+    case SpvOpGetKernelPreferredWorkGroupSizeMultiple:
+      // The Invoke parameter.
+      out = [](unsigned index) { return index == 2; };
+      break;
+    case SpvOpTypeForwardPointer:
+      out = [](unsigned index) { return index == 0; };
+      break;
+    default:
+      out = [](unsigned) { return false; };
+      break;
+  }
+  return out;
 }

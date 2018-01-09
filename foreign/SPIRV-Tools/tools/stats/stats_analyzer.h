@@ -36,6 +36,35 @@ class StatsAnalyzer {
   // level.
   void WriteOpcodeMarkov(std::ostream& out);
 
+  // Writes C++ code containing a function returning opcode histogram.
+  void WriteCodegenOpcodeHist(std::ostream& out);
+
+  // Writes C++ code containing a function returning opcode_and_num_operands
+  // histogram.
+  void WriteCodegenOpcodeAndNumOperandsHist(std::ostream& out);
+
+  // Writes C++ code containing a function returning a map of Huffman codecs
+  // for opcode_and_num_operands. Each Huffman codec is created for a specific
+  // previous opcode.
+  // TODO(atgoo@github.com) Write code which would contain pregenerated Huffman
+  // codecs, instead of code which would generate them every time.
+  void WriteCodegenOpcodeAndNumOperandsMarkovHuffmanCodecs(std::ostream& out);
+
+  // Writes C++ code containing a function returning a map of Huffman codecs
+  // for literal strings. Each Huffman codec is created for a specific opcode.
+  // I.e. OpExtension and OpExtInstImport would use different codecs.
+  void WriteCodegenLiteralStringHuffmanCodecs(std::ostream& out);
+
+  // Writes C++ code containing a function returning a map of Huffman codecs
+  // for single-word non-id operands. Each Huffman codec is created for a
+  // specific operand slot (opcode and operand number).
+  void WriteCodegenNonIdWordHuffmanCodecs(std::ostream& out);
+
+  // Writes C++ code containing a function returning a map of Huffman codecs
+  // for common id descriptors. Each Huffman codec is created for a
+  // specific operand slot (opcode and operand number).
+  void WriteCodegenIdDescriptorHuffmanCodecs(std::ostream& out);
+
  private:
   const libspirv::SpirvStats& stats_;
 
@@ -47,6 +76,5 @@ class StatsAnalyzer {
   std::unordered_map<std::string, double> extension_freq_;
   std::unordered_map<uint32_t, double> opcode_freq_;
 };
-
 
 #endif  // LIBSPIRV_TOOLS_STATS_STATS_ANALYZER_H_

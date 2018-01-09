@@ -31,8 +31,7 @@ void DefUseManager::AnalyzeInstDef(ir::Instruction* inst) {
       ClearInst(iter->second);
     }
     id_to_def_[def_id] = inst;
-  }
-  else {
+  } else {
     ClearInst(inst);
   }
 }
@@ -41,22 +40,24 @@ void DefUseManager::AnalyzeInstUse(ir::Instruction* inst) {
   // Create entry for the given instruction. Note that the instruction may
   // not have any in-operands. In such cases, we still need a entry for those
   // instructions so this manager knows it has seen the instruction later.
-  inst_to_used_ids_[inst] = {};
+  auto& used_ids = inst_to_used_ids_[inst];
+  used_ids.clear();  // It might have existed before.
 
   for (uint32_t i = 0; i < inst->NumOperands(); ++i) {
     switch (inst->GetOperand(i).type) {
       // For any id type but result id type
-    case SPV_OPERAND_TYPE_ID:
-    case SPV_OPERAND_TYPE_TYPE_ID:
-    case SPV_OPERAND_TYPE_MEMORY_SEMANTICS_ID:
-    case SPV_OPERAND_TYPE_SCOPE_ID: {
-      uint32_t use_id = inst->GetSingleWordOperand(i);
-      // use_id is used by the instruction generating def_id.
-      id_to_uses_[use_id].push_back({ inst, i });
-      inst_to_used_ids_[inst].push_back(use_id);
-    } break;
-    default:
-      break;
+      case SPV_OPERAND_TYPE_ID:
+      case SPV_OPERAND_TYPE_TYPE_ID:
+      case SPV_OPERAND_TYPE_MEMORY_SEMANTICS_ID:
+      case SPV_OPERAND_TYPE_SCOPE_ID: {
+        uint32_t use_id = inst->GetSingleWordOperand(i);
+        ir::Instruction* def = GetDef(use_id);
+        assert(def && "Definition is not registered.");
+        id_to_users_.insert(UserEntry(def, inst));
+        used_ids.push_back(use_id);
+      } break;
+      default:
+        break;
     }
   }
 }
@@ -72,89 +73,110 @@ ir::Instruction* DefUseManager::GetDef(uint32_t id) {
   return iter->second;
 }
 
-UseList* DefUseManager::GetUses(uint32_t id) {
-  auto iter = id_to_uses_.find(id);
-  if (iter == id_to_uses_.end()) return nullptr;
-  return &iter->second;
+const ir::Instruction* DefUseManager::GetDef(uint32_t id) const {
+  const auto iter = id_to_def_.find(id);
+  if (iter == id_to_def_.end()) return nullptr;
+  return iter->second;
 }
 
-const UseList* DefUseManager::GetUses(uint32_t id) const {
-  const auto iter = id_to_uses_.find(id);
-  if (iter == id_to_uses_.end()) return nullptr;
-  return &iter->second;
+DefUseManager::IdToUsersMap::const_iterator DefUseManager::UsersBegin(
+    const ir::Instruction* def) const {
+  return id_to_users_.lower_bound(
+      UserEntry(const_cast<ir::Instruction*>(def), nullptr));
+}
+
+bool DefUseManager::UsersNotEnd(const IdToUsersMap::const_iterator& iter,
+                                const IdToUsersMap::const_iterator& cached_end,
+                                const ir::Instruction* inst) const {
+  return (iter != cached_end && iter->first == inst);
+}
+
+bool DefUseManager::UsersNotEnd(const IdToUsersMap::const_iterator& iter,
+                                const ir::Instruction* inst) const {
+  return UsersNotEnd(iter, id_to_users_.end(), inst);
+}
+
+void DefUseManager::ForEachUser(
+    const ir::Instruction* def,
+    const std::function<void(ir::Instruction*)>& f) const {
+  // Ensure that |def| has been registered.
+  assert(def && def == GetDef(def->result_id()) &&
+         "Definition is not registered.");
+  auto end = id_to_users_.end();
+  for (auto iter = UsersBegin(def); UsersNotEnd(iter, end, def); ++iter) {
+    f(iter->second);
+  }
+}
+
+void DefUseManager::ForEachUser(
+    uint32_t id, const std::function<void(ir::Instruction*)>& f) const {
+  ForEachUser(GetDef(id), f);
+}
+
+void DefUseManager::ForEachUse(
+    const ir::Instruction* def,
+    const std::function<void(ir::Instruction*, uint32_t)>& f) const {
+  // Ensure that |def| has been registered.
+  assert(def && def == GetDef(def->result_id()) &&
+         "Definition is not registered.");
+  auto end = id_to_users_.end();
+  for (auto iter = UsersBegin(def); UsersNotEnd(iter, end, def); ++iter) {
+    ir::Instruction* user = iter->second;
+    for (uint32_t idx = 0; idx != user->NumOperands(); ++idx) {
+      const ir::Operand& op = user->GetOperand(idx);
+      if (op.type != SPV_OPERAND_TYPE_RESULT_ID && spvIsIdType(op.type)) {
+        if (def->result_id() == op.words[0]) f(user, idx);
+      }
+    }
+  }
+}
+
+void DefUseManager::ForEachUse(
+    uint32_t id,
+    const std::function<void(ir::Instruction*, uint32_t)>& f) const {
+  ForEachUse(GetDef(id), f);
+}
+
+uint32_t DefUseManager::NumUsers(const ir::Instruction* def) const {
+  uint32_t count = 0;
+  ForEachUser(def, [&count](ir::Instruction*) { ++count; });
+  return count;
+}
+
+uint32_t DefUseManager::NumUsers(uint32_t id) const {
+  return NumUsers(GetDef(id));
+}
+
+uint32_t DefUseManager::NumUses(const ir::Instruction* def) const {
+  uint32_t count = 0;
+  ForEachUse(def, [&count](ir::Instruction*, uint32_t) { ++count; });
+  return count;
+}
+
+uint32_t DefUseManager::NumUses(uint32_t id) const {
+  return NumUses(GetDef(id));
 }
 
 std::vector<ir::Instruction*> DefUseManager::GetAnnotations(uint32_t id) const {
   std::vector<ir::Instruction*> annos;
-  const auto* uses = GetUses(id);
-  if (!uses) return annos;
-  for (const auto& c : *uses) {
-    if (ir::IsAnnotationInst(c.inst->opcode())) {
-      annos.push_back(c.inst);
+  const ir::Instruction* def = GetDef(id);
+  if (!def) return annos;
+
+  ForEachUser(def, [&annos](ir::Instruction* user) {
+    if (ir::IsAnnotationInst(user->opcode())) {
+      annos.push_back(user);
     }
-  }
+  });
   return annos;
-}
-
-bool DefUseManager::KillDef(uint32_t id) {
-  auto iter = id_to_def_.find(id);
-  if (iter == id_to_def_.end()) return false;
-  KillInst(iter->second);
-  return true;
-}
-
-void DefUseManager::KillInst(ir::Instruction* inst) {
-  if (!inst) return;
-  ClearInst(inst);
-  inst->ToNop();
-}
-
-bool DefUseManager::ReplaceAllUsesWith(uint32_t before, uint32_t after) {
-  if (before == after) return false;
-  if (id_to_uses_.count(before) == 0) return false;
-
-  for (auto it = id_to_uses_[before].cbegin(); it != id_to_uses_[before].cend();
-       ++it) {
-    const uint32_t type_result_id_count =
-        (it->inst->result_id() != 0) + (it->inst->type_id() != 0);
-
-    if (it->operand_index < type_result_id_count) {
-      // Update the type_id. Note that result id is immutable so it should
-      // never be updated.
-      if (it->inst->type_id() != 0 && it->operand_index == 0) {
-        it->inst->SetResultType(after);
-      } else if (it->inst->type_id() == 0) {
-        SPIRV_ASSERT(consumer_, false,
-                     "Result type id considered as use while the instruction "
-                     "doesn't have a result type id.");
-        (void)consumer_;  // Makes the compiler happy for release build.
-      } else {
-        SPIRV_ASSERT(consumer_, false,
-                     "Trying setting the immutable result id.");
-      }
-    } else {
-      // Update an in-operand.
-      uint32_t in_operand_pos = it->operand_index - type_result_id_count;
-      // Make the modification in the instruction.
-      it->inst->SetInOperand(in_operand_pos, {after});
-    }
-    // Update inst to used ids map
-    auto iter = inst_to_used_ids_.find(it->inst);
-    if (iter != inst_to_used_ids_.end())
-      for (auto uit = iter->second.begin(); uit != iter->second.end(); uit++)
-        if (*uit == before) *uit = after;
-    // Register the use of |after| id into id_to_uses_.
-    // TODO(antiagainst): de-duplication.
-    id_to_uses_[after].push_back({it->inst, it->operand_index});
-  }
-  id_to_uses_.erase(before);
-  return true;
 }
 
 void DefUseManager::AnalyzeDefUse(ir::Module* module) {
   if (!module) return;
-  module->ForEachInst(std::bind(&DefUseManager::AnalyzeInstDefUse, this,
-                                std::placeholders::_1));
+  // Analyze all the defs before any uses to catch forward references.
+  module->ForEachInst(
+      std::bind(&DefUseManager::AnalyzeInstDef, this, std::placeholders::_1));
+  module->ForEachInst(
+      std::bind(&DefUseManager::AnalyzeInstUse, this, std::placeholders::_1));
 }
 
 void DefUseManager::ClearInst(ir::Instruction* inst) {
@@ -162,7 +184,13 @@ void DefUseManager::ClearInst(ir::Instruction* inst) {
   if (iter != inst_to_used_ids_.end()) {
     EraseUseRecordsOfOperandIds(inst);
     if (inst->result_id() != 0) {
-      id_to_uses_.erase(inst->result_id());  // Remove all uses of this id.
+      // Remove all uses of this inst.
+      auto users_begin = UsersBegin(inst);
+      auto end = id_to_users_.end();
+      auto new_end = users_begin;
+      for (; UsersNotEnd(new_end, end, inst); ++new_end) {
+      }
+      id_to_users_.erase(users_begin, new_end);
       id_to_def_.erase(inst->result_id());
     }
   }
@@ -173,21 +201,27 @@ void DefUseManager::EraseUseRecordsOfOperandIds(const ir::Instruction* inst) {
   // uses of them.
   auto iter = inst_to_used_ids_.find(inst);
   if (iter != inst_to_used_ids_.end()) {
-    for (const auto use_id : iter->second) {
-      auto uses_iter = id_to_uses_.find(use_id);
-      if (uses_iter == id_to_uses_.end()) continue;
-      auto& uses = uses_iter->second;
-      for (auto it = uses.begin(); it != uses.end();) {
-        if (it->inst == inst) {
-          it = uses.erase(it);
-        } else {
-          ++it;
-        }
-      }
-      if (uses.empty()) id_to_uses_.erase(use_id);
+    for (auto use_id : iter->second) {
+      id_to_users_.erase(
+          UserEntry(GetDef(use_id), const_cast<ir::Instruction*>(inst)));
     }
     inst_to_used_ids_.erase(inst);
   }
+}
+
+bool operator==(const DefUseManager& lhs, const DefUseManager& rhs) {
+  if (lhs.id_to_def_ != rhs.id_to_def_) {
+    return false;
+  }
+
+  if (lhs.id_to_users_ != rhs.id_to_users_) {
+    return false;
+  }
+
+  if (lhs.inst_to_used_ids_ != lhs.inst_to_used_ids_) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace analysis

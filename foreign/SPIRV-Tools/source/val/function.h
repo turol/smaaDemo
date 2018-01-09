@@ -17,12 +17,14 @@
 
 #include <functional>
 #include <list>
+#include <map>
+#include <set>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
+#include "latest_version_spirv_header.h"
 #include "spirv-tools/libspirv.h"
-#include "spirv/1.2/spirv.h"
 #include "val/basic_block.h"
 #include "val/construct.h"
 
@@ -133,8 +135,11 @@ class Function {
   /// Returns the number of blocks in the current function being parsed
   size_t block_count() const;
 
-  /// Returns the id of the funciton
+  /// Returns the id of the function
   uint32_t id() const { return id_; }
+
+  /// Returns return type id of the function
+  uint32_t GetResultTypeId() const { return result_type_id_; }
 
   /// Returns the number of blocks in the current function being parsed
   size_t undefined_block_count() const;
@@ -180,7 +185,8 @@ class Function {
   GetBlocksFunction AugmentedCFGSuccessorsFunction() const;
   /// Like AugmentedCFGSuccessorsFunction, but also includes a forward edge from
   /// a loop header block to its continue target, if they are different blocks.
-  GetBlocksFunction AugmentedCFGSuccessorsFunctionIncludingHeaderToContinueEdge() const;
+  GetBlocksFunction
+  AugmentedCFGSuccessorsFunctionIncludingHeaderToContinueEdge() const;
   /// Returns the block predecessors function for the augmented CFG.
   GetBlocksFunction AugmentedCFGPredecessorsFunction() const;
 
@@ -195,6 +201,30 @@ class Function {
 
   /// Prints a directed graph of the CFG of the current funciton
   void PrintBlocks() const;
+
+  /// Registers execution model limitation such as "Feature X is only available
+  /// with Execution Model Y". Only the first message per model type is
+  /// registered.
+  void RegisterExecutionModelLimitation(SpvExecutionModel model,
+                                        const std::string& message) {
+    execution_model_limitations_.emplace(model, message);
+  }
+
+  /// Returns true if the given execution model passes the limitations stored in
+  /// execution_model_limitations_. Returns false otherwise and fills optional
+  /// |reason| parameter.
+  bool IsCompatibleWithExecutionModel(SpvExecutionModel model,
+                                      std::string* reason = nullptr) const;
+
+  // Inserts id to the set of functions called from this function.
+  void AddFunctionCallTarget(uint32_t call_target_id) {
+    function_call_targets_.insert(call_target_id);
+  }
+
+  // Returns a set with ids of all functions called from this function.
+  const std::set<uint32_t> function_call_targets() const {
+    return function_call_targets_;
+  }
 
  private:
   // Computes the representation of the augmented CFG.
@@ -306,8 +336,16 @@ class Function {
 
   /// Stores the control flow nesting depth of a given basic block
   std::unordered_map<BasicBlock*, int> block_depth_;
+
+  /// Stores execution model limitations imposed by instructions used within the
+  /// function. The string contains message explaining why the limitation was
+  /// imposed.
+  std::map<SpvExecutionModel, std::string> execution_model_limitations_;
+
+  /// Stores ids of all functions called from this function.
+  std::set<uint32_t> function_call_targets_;
 };
 
-}  /// namespace libspirv
+}  // namespace libspirv
 
 #endif  /// LIBSPIRV_VAL_FUNCTION_H_

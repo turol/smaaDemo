@@ -51,8 +51,9 @@ TEST_P(EnumCapabilityTest, Sample) {
   ASSERT_EQ(SPV_SUCCESS,
             spvOperandTableValueLookup(operandTable, get<1>(GetParam()).type,
                                        get<1>(GetParam()).value, &entry));
-  EXPECT_THAT(ElementsIn(entry->capabilities),
-              Eq(ElementsIn(get<1>(GetParam()).expected_capabilities)))
+  EXPECT_THAT(
+      ElementsIn(CapabilitySet(entry->numCapabilities, entry->capabilities)),
+      Eq(ElementsIn(get<1>(GetParam()).expected_capabilities)))
       << " capability value " << get<1>(GetParam()).value;
 }
 
@@ -196,7 +197,8 @@ INSTANTIATE_TEST_CASE_P(
     Combine(Values(SPV_ENV_UNIVERSAL_1_0, SPV_ENV_UNIVERSAL_1_1),
             ValuesIn(std::vector<EnumCapabilityCase>{
                 CASE1(DIMENSIONALITY, Dim1D, Sampled1D),
-                CASE0(DIMENSIONALITY, Dim2D), CASE0(DIMENSIONALITY, Dim3D),
+                CASE0(DIMENSIONALITY, Dim2D),
+                CASE0(DIMENSIONALITY, Dim3D),
                 CASE1(DIMENSIONALITY, DimCube, Shader),
                 CASE1(DIMENSIONALITY, DimRect, SampledRect),
                 CASE1(DIMENSIONALITY, DimBuffer, SampledBuffer),
@@ -279,30 +281,30 @@ INSTANTIATE_TEST_CASE_P(
 // See SPIR-V Section 3.12 Image Channel Order
 INSTANTIATE_TEST_CASE_P(
     ImageChannelOrder, EnumCapabilityTest,
-    Combine(
-        Values(SPV_ENV_UNIVERSAL_1_0, SPV_ENV_UNIVERSAL_1_1),
-        ValuesIn(std::vector<EnumCapabilityCase>{
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderR, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderA, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderRG, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderRA, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderRGB, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderRGBA, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderBGRA, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderARGB, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderIntensity, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderLuminance, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderRx, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderRGx, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderRGBx, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderDepth, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderDepthStencil, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrdersRGB, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrdersRGBx, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrdersRGBA, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrdersBGRA, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderABGR, Kernel),
-        })), );
+    Combine(Values(SPV_ENV_UNIVERSAL_1_0, SPV_ENV_UNIVERSAL_1_1),
+            ValuesIn(std::vector<EnumCapabilityCase>{
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderR, Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderA, Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderRG, Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderRA, Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderRGB, Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderRGBA, Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderBGRA, Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderARGB, Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderIntensity, Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderLuminance, Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderRx, Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderRGx, Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderRGBx, Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderDepth, Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderDepthStencil,
+                      Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrdersRGB, Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrdersRGBx, Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrdersRGBA, Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrdersBGRA, Kernel),
+                CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrderABGR, Kernel),
+            })), );
 
 // See SPIR-V Section 3.13 Image Channel Data Type
 INSTANTIATE_TEST_CASE_P(
@@ -514,7 +516,7 @@ INSTANTIATE_TEST_CASE_P(
             CASE1(BUILT_IN, BuiltInFrontFacing, Shader),
             CASE1(BUILT_IN, BuiltInSampleId, SampleRateShading),  // Bug 15234
             CASE1(BUILT_IN, BuiltInSamplePosition, SampleRateShading), // Bug 15234
-            CASE1(BUILT_IN, BuiltInSampleMask, SampleRateShading),  // Bug 15234
+            CASE1(BUILT_IN, BuiltInSampleMask, Shader),  // Bug 15234, Issue 182
             // Value 21 intentionally missing
             CASE1(BUILT_IN, BuiltInFragDepth, Shader),
             CASE1(BUILT_IN, BuiltInHelperInvocation, Shader),
@@ -615,14 +617,16 @@ INSTANTIATE_TEST_CASE_P(
             })), );
 
 // See SPIR-V Section 3.27 Scope <id>
-INSTANTIATE_TEST_CASE_P(
-    Scope, EnumCapabilityTest,
-    Combine(Values(SPV_ENV_UNIVERSAL_1_0, SPV_ENV_UNIVERSAL_1_1),
-            ValuesIn(std::vector<EnumCapabilityCase>{
-                CASE0(SCOPE_ID, ScopeCrossDevice), CASE0(SCOPE_ID, ScopeDevice),
-                CASE0(SCOPE_ID, ScopeWorkgroup), CASE0(SCOPE_ID, ScopeSubgroup),
-                CASE0(SCOPE_ID, ScopeInvocation),
-            })), );
+INSTANTIATE_TEST_CASE_P(Scope, EnumCapabilityTest,
+                        Combine(Values(SPV_ENV_UNIVERSAL_1_0,
+                                       SPV_ENV_UNIVERSAL_1_1),
+                                ValuesIn(std::vector<EnumCapabilityCase>{
+                                    CASE0(SCOPE_ID, ScopeCrossDevice),
+                                    CASE0(SCOPE_ID, ScopeDevice),
+                                    CASE0(SCOPE_ID, ScopeWorkgroup),
+                                    CASE0(SCOPE_ID, ScopeSubgroup),
+                                    CASE0(SCOPE_ID, ScopeInvocation),
+                                })), );
 
 // See SPIR-V Section 3.28 Group Operation
 INSTANTIATE_TEST_CASE_P(

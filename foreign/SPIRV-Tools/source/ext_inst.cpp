@@ -17,57 +17,48 @@
 #include <cassert>
 #include <cstring>
 
-#include "spirv/1.0/GLSL.std.450.h"
-#include "spirv/1.0/OpenCL.std.h"
+// DebugInfo extended instruction set.
+// See https://www.khronos.org/registry/spir-v/specs/1.0/DebugInfo.html
+// TODO(dneto): DebugInfo.h should probably move to SPIRV-Headers.
+#include "DebugInfo.h"
+
+#include "latest_version_glsl_std_450_header.h"
+#include "latest_version_opencl_std_header.h"
+#include "macro.h"
 #include "spirv_definition.h"
 
-#include "macro.h"
+#include "debuginfo.insts.inc"     // defines opencl_entries
+#include "glsl.std.450.insts.inc"  // defines glsl_entries
+#include "opencl.std.insts.inc"    // defines opencl_entries
 
-static const spv_ext_inst_desc_t glslStd450Entries_1_0[] = {
-#include "glsl.std.450.insts-1.0.inc"
-};
-
-static const spv_ext_inst_desc_t openclEntries_1_0[] = {
-#include "opencl.std.insts-1.0.inc"
-};
-
-static const spv_ext_inst_desc_t spv_amd_shader_explicit_vertex_parameter_entries[] = {
-#include "spv-amd-shader-explicit-vertex-parameter.insts.inc"
-};
-
-static const spv_ext_inst_desc_t spv_amd_shader_trinary_minmax_entries[] = {
-#include "spv-amd-shader-trinary-minmax.insts.inc"
-};
-
-static const spv_ext_inst_desc_t spv_amd_gcn_shader_entries[] = {
 #include "spv-amd-gcn-shader.insts.inc"
+#include "spv-amd-shader-ballot.insts.inc"
+#include "spv-amd-shader-explicit-vertex-parameter.insts.inc"
+#include "spv-amd-shader-trinary-minmax.insts.inc"
+
+static const spv_ext_inst_group_t kGroups_1_0[] = {
+    {SPV_EXT_INST_TYPE_GLSL_STD_450, ARRAY_SIZE(glsl_entries), glsl_entries},
+    {SPV_EXT_INST_TYPE_OPENCL_STD, ARRAY_SIZE(opencl_entries), opencl_entries},
+    {SPV_EXT_INST_TYPE_SPV_AMD_SHADER_EXPLICIT_VERTEX_PARAMETER,
+     ARRAY_SIZE(spv_amd_shader_explicit_vertex_parameter_entries),
+     spv_amd_shader_explicit_vertex_parameter_entries},
+    {SPV_EXT_INST_TYPE_SPV_AMD_SHADER_TRINARY_MINMAX,
+     ARRAY_SIZE(spv_amd_shader_trinary_minmax_entries),
+     spv_amd_shader_trinary_minmax_entries},
+    {SPV_EXT_INST_TYPE_SPV_AMD_GCN_SHADER,
+     ARRAY_SIZE(spv_amd_gcn_shader_entries), spv_amd_gcn_shader_entries},
+    {SPV_EXT_INST_TYPE_SPV_AMD_SHADER_BALLOT,
+     ARRAY_SIZE(spv_amd_shader_ballot_entries), spv_amd_shader_ballot_entries},
+    {SPV_EXT_INST_TYPE_DEBUGINFO, ARRAY_SIZE(debuginfo_entries),
+     debuginfo_entries},
 };
 
-static const spv_ext_inst_desc_t spv_amd_shader_ballot_entries[] = {
-#include "spv-amd-shader-ballot.insts.inc"
-};
+static const spv_ext_inst_table_t kTable_1_0 = {ARRAY_SIZE(kGroups_1_0),
+                                                kGroups_1_0};
 
 spv_result_t spvExtInstTableGet(spv_ext_inst_table* pExtInstTable,
                                 spv_target_env env) {
   if (!pExtInstTable) return SPV_ERROR_INVALID_POINTER;
-
-  static const spv_ext_inst_group_t groups_1_0[] = {
-      {SPV_EXT_INST_TYPE_GLSL_STD_450, ARRAY_SIZE(glslStd450Entries_1_0),
-       glslStd450Entries_1_0},
-      {SPV_EXT_INST_TYPE_OPENCL_STD, ARRAY_SIZE(openclEntries_1_0),
-       openclEntries_1_0},
-      {SPV_EXT_INST_TYPE_SPV_AMD_SHADER_EXPLICIT_VERTEX_PARAMETER,
-       ARRAY_SIZE(spv_amd_shader_explicit_vertex_parameter_entries), spv_amd_shader_explicit_vertex_parameter_entries},
-      {SPV_EXT_INST_TYPE_SPV_AMD_SHADER_TRINARY_MINMAX,
-       ARRAY_SIZE(spv_amd_shader_trinary_minmax_entries), spv_amd_shader_trinary_minmax_entries},
-      {SPV_EXT_INST_TYPE_SPV_AMD_GCN_SHADER,
-       ARRAY_SIZE(spv_amd_gcn_shader_entries), spv_amd_gcn_shader_entries},
-      {SPV_EXT_INST_TYPE_SPV_AMD_SHADER_BALLOT,
-       ARRAY_SIZE(spv_amd_shader_ballot_entries), spv_amd_shader_ballot_entries},
-  };
-
-  static const spv_ext_inst_table_t table_1_0 = {ARRAY_SIZE(groups_1_0),
-                                                 groups_1_0};
 
   switch (env) {
     // The extended instruction sets are all version 1.0 so far.
@@ -75,14 +66,20 @@ spv_result_t spvExtInstTableGet(spv_ext_inst_table* pExtInstTable,
     case SPV_ENV_VULKAN_1_0:
     case SPV_ENV_UNIVERSAL_1_1:
     case SPV_ENV_UNIVERSAL_1_2:
+    case SPV_ENV_OPENCL_1_2:
+    case SPV_ENV_OPENCL_EMBEDDED_1_2:
+    case SPV_ENV_OPENCL_2_0:
+    case SPV_ENV_OPENCL_EMBEDDED_2_0:
     case SPV_ENV_OPENCL_2_1:
+    case SPV_ENV_OPENCL_EMBEDDED_2_1:
     case SPV_ENV_OPENCL_2_2:
+    case SPV_ENV_OPENCL_EMBEDDED_2_2:
     case SPV_ENV_OPENGL_4_0:
     case SPV_ENV_OPENGL_4_1:
     case SPV_ENV_OPENGL_4_2:
     case SPV_ENV_OPENGL_4_3:
     case SPV_ENV_OPENGL_4_5:
-      *pExtInstTable = &table_1_0;
+      *pExtInstTable = &kTable_1_0;
       return SPV_SUCCESS;
     default:
       assert(0 && "Unknown spv_target_env in spvExtInstTableGet()");
@@ -110,6 +107,9 @@ spv_ext_inst_type_t spvExtInstImportTypeGet(const char* name) {
   }
   if (!strcmp("SPV_AMD_shader_ballot", name)) {
     return SPV_EXT_INST_TYPE_SPV_AMD_SHADER_BALLOT;
+  }
+  if (!strcmp("DebugInfo", name)) {
+    return SPV_EXT_INST_TYPE_DEBUGINFO;
   }
   return SPV_EXT_INST_TYPE_NONE;
 }

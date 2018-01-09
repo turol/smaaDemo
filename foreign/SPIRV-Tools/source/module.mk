@@ -22,6 +22,7 @@ FILES:= \
 	enum_string_mapping.cpp \
 	extensions.cpp \
 	ext_inst.cpp \
+	id_descriptor.cpp \
 	libspirv.cpp \
 	message.cpp \
 	name_mapper.cpp \
@@ -37,14 +38,25 @@ FILES:= \
 	table.cpp \
 	text.cpp \
 	text_handler.cpp \
+	validate_arithmetics.cpp \
+	validate_atomics.cpp \
+	validate_bitwise.cpp \
 	validate_capability.cpp \
 	validate_cfg.cpp \
+	validate_composites.cpp \
+	validate_conversion.cpp \
 	validate.cpp \
 	validate_datarules.cpp \
 	validate_decorations.cpp \
+	validate_derivatives.cpp \
+	validate_ext_inst.cpp \
 	validate_id.cpp \
+	validate_image.cpp \
 	validate_instruction.cpp \
 	validate_layout.cpp \
+	validate_literals.cpp \
+	validate_logicals.cpp \
+	validate_primitives.cpp \
 	validate_type_unique.cpp \
 	# empty line
 

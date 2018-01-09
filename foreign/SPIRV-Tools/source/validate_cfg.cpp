@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "validate.h"
 #include "cfa.h"
+#include "validate.h"
 
 #include <algorithm>
 #include <cassert>
@@ -298,8 +298,9 @@ spv_result_t PerformCfgChecks(ValidationState_t& _) {
           function.pseudo_exit_block(),
           function.AugmentedCFGPredecessorsFunction(), ignore_block,
           [&](cbb_ptr b) { postdom_postorder.push_back(b); }, ignore_edge);
-      auto postdom_edges = spvtools::CFA<libspirv::BasicBlock>::CalculateDominators(
-          postdom_postorder, function.AugmentedCFGSuccessorsFunction());
+      auto postdom_edges =
+          spvtools::CFA<libspirv::BasicBlock>::CalculateDominators(
+              postdom_postorder, function.AugmentedCFGSuccessorsFunction());
       for (auto edge : postdom_edges) {
         edge.first->SetImmediatePostDominator(edge.second);
       }
@@ -401,11 +402,25 @@ spv_result_t CfgPass(ValidationState_t& _,
       }
       _.current_function().RegisterBlockEnd({cases}, opcode);
     } break;
+    case SpvOpReturn: {
+      const uint32_t return_type = _.current_function().GetResultTypeId();
+      const Instruction* return_type_inst = _.FindDef(return_type);
+      assert(return_type_inst);
+      if (return_type_inst->opcode() != SpvOpTypeVoid)
+        return _.diag(SPV_ERROR_INVALID_CFG)
+               << "OpReturn can only be called from a function with void "
+               << "return type.";
+    }
+    // Fallthrough.
     case SpvOpKill:
-    case SpvOpReturn:
     case SpvOpReturnValue:
     case SpvOpUnreachable:
       _.current_function().RegisterBlockEnd(vector<uint32_t>(), opcode);
+      if (opcode == SpvOpKill) {
+        _.current_function().RegisterExecutionModelLimitation(
+            SpvExecutionModelFragment,
+            "OpKill requires Fragment execution model");
+      }
       break;
     default:
       break;

@@ -42,14 +42,17 @@ spv_result_t TypeUniquePass(ValidationState_t& _,
       return SPV_SUCCESS;
     }
 
+    if (inst->opcode == SpvOpTypePointer &&
+        _.HasExtension(Extension::kSPV_KHR_variable_pointers)) {
+      // Duplicate pointer types are allowed with this extension.
+      return SPV_SUCCESS;
+    }
+
     if (!_.RegisterUniqueTypeDeclaration(*inst)) {
-      // TODO(atgoo@github) Error logging temporarily disabled because it's
-      // failing vulkancts tests. Message in the diagnostics is for unit tests.
-      // See https://github.com/KhronosGroup/SPIRV-Tools/issues/559
-      // return _.diag(SPV_ERROR_INVALID_DATA)
-      return _.diag(SPV_SUCCESS)
-          << "Duplicate non-aggregate type declarations are not allowed."
-          << " Opcode: " << inst->opcode;
+      return _.diag(SPV_ERROR_INVALID_DATA)
+             << "Duplicate non-aggregate type declarations are not allowed."
+             << " Opcode: " << spvOpcodeString(SpvOp(inst->opcode))
+             << " id: " << inst->result_id;
     }
   }
 

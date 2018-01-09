@@ -29,6 +29,9 @@ TEST_F(StripLineDebugInfoTest, LineNoLine) {
                "OpMemoryModel Logical GLSL450",
                "OpEntryPoint Vertex %2 \"main\"",
           "%3 = OpString \"minimal.vert\"",
+               "OpModuleProcessed \"42\"",
+               "OpModuleProcessed \"43\"",
+               "OpModuleProcessed \"44\"",
                "OpNoLine",
                "OpLine %3 10 10",
        "%void = OpTypeVoid",
@@ -62,9 +65,6 @@ TEST_F(StripLineDebugInfoTest, LineNoLine) {
       "OpSourceContinued \"wahahaha\"",
       "OpSourceExtension \"save-the-world-extension\"",
       "OpName %2 \"main\"",
-      "OpModuleProcessed \"42\"",
-      "OpModuleProcessed \"43\"",
-      "OpModuleProcessed \"44\"",
   };
   text.insert(text.begin() + 4, more_text.cbegin(), more_text.cend());
   SinglePassRunAndCheck<opt::StripDebugInfoPass>(JoinAllInsts(text),
@@ -76,7 +76,9 @@ using StripDebugInfoTest = PassTest<::testing::TestWithParam<const char*>>;
 
 TEST_P(StripDebugInfoTest, Kind) {
   std::vector<const char*> text = {
-      "OpCapability Shader", "OpMemoryModel Logical GLSL450", GetParam(),
+      "OpCapability Shader",
+      "OpMemoryModel Logical GLSL450",
+      GetParam(),
   };
   SinglePassRunAndCheck<opt::StripDebugInfoPass>(JoinAllInsts(text),
                                                  JoinNonDebugInsts(text),

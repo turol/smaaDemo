@@ -23,7 +23,7 @@ if (NOT "${SPIRV_SKIP_TESTS}")
   if (TARGET gmock_main)
     message(STATUS "Found Google Mock, building tests.")
   else()
-    message(STATUS "Did not find googletest, tests will not be built."
+    message(STATUS "Did not find googletest, tests will not be built. "
       "To enable tests place googletest in '<spirv-dir>/external/googletest'.")
   endif()
 endif()
@@ -39,6 +39,8 @@ function(add_spvtools_unittest)
     spvtools_default_compile_options(${target})
     if(${COMPILER_IS_LIKE_GNU})
       target_compile_options(${target} PRIVATE -Wno-undef)
+      # Effcee and RE2 headers exhibit shadowing.
+      target_compile_options(${target} PRIVATE -Wno-shadow)
     endif()
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
       # Disable C4503 "decorated name length exceeded" warning,
@@ -46,6 +48,10 @@ function(add_spvtools_unittest)
       # We don't care much about that in test code.
       # Important to do since we have warnings-as-errors.
       target_compile_options(${target} PRIVATE /wd4503)
+      # Googletest accidentally turns off support for ::testing::Combine
+      # in VS 2017.  See https://github.com/google/googletest/issues/1352
+      # Forcibly turn it on again.
+      target_compile_options(${target} PRIVATE /DGTEST_HAS_COMBINE=1)
     endif()
     target_include_directories(${target} PRIVATE
       ${SPIRV_HEADER_INCLUDE_DIR}
@@ -56,7 +62,14 @@ function(add_spvtools_unittest)
       ${gtest_SOURCE_DIR}/include
       ${gmock_SOURCE_DIR}/include
     )
+    if (TARGET effcee)
+      # If using Effcee for testing, then add its include directory.
+      target_include_directories(${target} PRIVATE ${effcee_SOURCE_DIR})
+    endif()
     target_link_libraries(${target} PRIVATE ${ARG_LIBS})
+    if (TARGET effcee)
+      target_link_libraries(${target} PRIVATE effcee)
+    endif()
     target_link_libraries(${target} PRIVATE gmock_main)
     add_test(NAME spirv-tools-${target} COMMAND ${target})
     set_property(TARGET ${target} PROPERTY FOLDER "SPIRV-Tools tests")
@@ -79,6 +92,7 @@ set(TEST_SOURCES
   comment_test.cpp
   enum_string_mapping_test.cpp
   enum_set_test.cpp
+  ext_inst.debuginfo_test.cpp
   ext_inst.glsl_test.cpp
   ext_inst.opencl_test.cpp
   fix_word_test.cpp
@@ -180,6 +194,8 @@ add_spvtools_unittest(
   LIBS ${SPIRV_TOOLS})
 
 add_subdirectory(comp)
+add_subdirectory(link)
 add_subdirectory(opt)
 add_subdirectory(stats)
+add_subdirectory(util)
 add_subdirectory(val)

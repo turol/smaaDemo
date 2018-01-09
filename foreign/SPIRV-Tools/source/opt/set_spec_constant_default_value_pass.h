@@ -19,6 +19,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "ir_context.h"
 #include "module.h"
 #include "pass.h"
 
@@ -37,20 +38,25 @@ class SetSpecConstantDefaultValuePass : public Pass {
   // in the form of string.
   explicit SetSpecConstantDefaultValuePass(
       const SpecIdToValueStrMap& default_values)
-      : spec_id_to_value_str_(default_values), spec_id_to_value_bit_pattern_() {}
+      : spec_id_to_value_str_(default_values),
+        spec_id_to_value_bit_pattern_() {}
   explicit SetSpecConstantDefaultValuePass(SpecIdToValueStrMap&& default_values)
-      : spec_id_to_value_str_(std::move(default_values)), spec_id_to_value_bit_pattern_() {}
+      : spec_id_to_value_str_(std::move(default_values)),
+        spec_id_to_value_bit_pattern_() {}
 
   // Constructs a pass instance with a map from spec ids to default values in
   // the form of bit pattern.
   explicit SetSpecConstantDefaultValuePass(
       const SpecIdToValueBitPatternMap& default_values)
-      : spec_id_to_value_str_(), spec_id_to_value_bit_pattern_(default_values) {}
-  explicit SetSpecConstantDefaultValuePass(SpecIdToValueBitPatternMap&& default_values)
-      : spec_id_to_value_str_(), spec_id_to_value_bit_pattern_(std::move(default_values)) {}
+      : spec_id_to_value_str_(),
+        spec_id_to_value_bit_pattern_(default_values) {}
+  explicit SetSpecConstantDefaultValuePass(
+      SpecIdToValueBitPatternMap&& default_values)
+      : spec_id_to_value_str_(),
+        spec_id_to_value_bit_pattern_(std::move(default_values)) {}
 
   const char* name() const override { return "set-spec-const-default-value"; }
-  Status Process(ir::Module*) override;
+  Status Process(ir::IRContext*) override;
 
   // Parses the given null-terminated C string to get a mapping from Spec Id to
   // default value strings. Returns a unique pointer of the mapping from spec
@@ -95,7 +101,8 @@ class SetSpecConstantDefaultValuePass : public Pass {
 
   // The mapping from spec ids to their string-form default values to be set.
   const SpecIdToValueStrMap spec_id_to_value_str_;
-  // The mapping from spec ids to their bitpattern-form default values to be set.
+  // The mapping from spec ids to their bitpattern-form default values to be
+  // set.
   const SpecIdToValueBitPatternMap spec_id_to_value_bit_pattern_;
 };
 

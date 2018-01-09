@@ -16,6 +16,7 @@
 #define LIBSPIRV_OPERAND_H_
 
 #include <deque>
+#include <functional>
 
 #include "spirv-tools/libspirv.h"
 #include "table.h"
@@ -54,7 +55,10 @@ spv_result_t spvOperandTableValueLookup(const spv_operand_table table,
 // Gets the name string of the non-variable operand type.
 const char* spvOperandTypeStr(spv_operand_type_t type);
 
-// Returns true if the given type is a concrete and also a mask.
+// Returns true if the given type is concrete.
+bool spvOperandIsConcrete(spv_operand_type_t type);
+
+// Returns true if the given type is concrete and also a mask.
 bool spvOperandIsConcreteMask(spv_operand_type_t type);
 
 // Returns true if an operand of the given type is optional.
@@ -123,5 +127,12 @@ spv_operand_pattern_t spvAlternatePatternFollowingImmediate(
 
 // Is the operand an ID?
 bool spvIsIdType(spv_operand_type_t type);
+
+// Takes the opcode of an instruction and returns
+// a function object that will return true if the index
+// of the operand can be forward declared. This function will
+// used in the SSA validation stage of the pipeline
+std::function<bool(unsigned)> spvOperandCanBeForwardDeclaredFunction(
+    SpvOp opcode);
 
 #endif  // LIBSPIRV_OPERAND_H_

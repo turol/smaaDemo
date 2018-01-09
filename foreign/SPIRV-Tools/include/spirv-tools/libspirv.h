@@ -96,11 +96,8 @@ typedef enum spv_operand_type_t {
   // A sentinel value.
   SPV_OPERAND_TYPE_NONE = 0,
 
-#define FIRST_CONCRETE(ENUM) ENUM, SPV_OPERAND_TYPE_FIRST_CONCRETE_TYPE = ENUM
-#define LAST_CONCRETE(ENUM) ENUM, SPV_OPERAND_TYPE_LAST_CONCRETE_TYPE = ENUM
-
   // Set 1:  Operands that are IDs.
-  FIRST_CONCRETE(SPV_OPERAND_TYPE_ID),
+  SPV_OPERAND_TYPE_ID,
   SPV_OPERAND_TYPE_TYPE_ID,
   SPV_OPERAND_TYPE_RESULT_ID,
   SPV_OPERAND_TYPE_MEMORY_SEMANTICS_ID,  // SPIR-V Sec 3.25
@@ -150,21 +147,14 @@ typedef enum spv_operand_type_t {
   SPV_OPERAND_TYPE_KERNEL_PROFILING_INFO,         // SPIR-V Sec 3.30
   SPV_OPERAND_TYPE_CAPABILITY,                    // SPIR-V Sec 3.31
 
-// Set 5:  Operands that are a single word bitmask.
-// Sometimes a set bit indicates the instruction requires still more operands.
-#define FIRST_CONCRETE_MASK(ENUM) \
-  ENUM, SPV_OPERAND_TYPE_FIRST_CONCRETE_MASK_TYPE = ENUM
-  FIRST_CONCRETE_MASK(SPV_OPERAND_TYPE_IMAGE),    // SPIR-V Sec 3.14
-  SPV_OPERAND_TYPE_FP_FAST_MATH_MODE,             // SPIR-V Sec 3.15
-  SPV_OPERAND_TYPE_SELECTION_CONTROL,             // SPIR-V Sec 3.22
-  SPV_OPERAND_TYPE_LOOP_CONTROL,                  // SPIR-V Sec 3.23
-  SPV_OPERAND_TYPE_FUNCTION_CONTROL,              // SPIR-V Sec 3.24
-  LAST_CONCRETE(SPV_OPERAND_TYPE_MEMORY_ACCESS),  // SPIR-V Sec 3.26
-  SPV_OPERAND_TYPE_LAST_CONCRETE_MASK_TYPE =
-      SPV_OPERAND_TYPE_LAST_CONCRETE_TYPE,
-#undef FIRST_CONCRETE_MASK
-#undef FIRST_CONCRETE
-#undef LAST_CONCRETE
+  // Set 5:  Operands that are a single word bitmask.
+  // Sometimes a set bit indicates the instruction requires still more operands.
+  SPV_OPERAND_TYPE_IMAGE,              // SPIR-V Sec 3.14
+  SPV_OPERAND_TYPE_FP_FAST_MATH_MODE,  // SPIR-V Sec 3.15
+  SPV_OPERAND_TYPE_SELECTION_CONTROL,  // SPIR-V Sec 3.22
+  SPV_OPERAND_TYPE_LOOP_CONTROL,       // SPIR-V Sec 3.23
+  SPV_OPERAND_TYPE_FUNCTION_CONTROL,   // SPIR-V Sec 3.24
+  SPV_OPERAND_TYPE_MEMORY_ACCESS,      // SPIR-V Sec 3.26
 
 // The remaining operand types are only used internally by the assembler.
 // There are two categories:
@@ -216,6 +206,13 @@ typedef enum spv_operand_type_t {
   // A sequence of zero or more pairs of (Id, Literal integer)
   LAST_VARIABLE(SPV_OPERAND_TYPE_VARIABLE_ID_LITERAL_INTEGER),
 
+  // The following are concrete enum types.
+  SPV_OPERAND_TYPE_DEBUG_INFO_FLAGS,  // DebugInfo Sec 3.2.  A mask.
+  SPV_OPERAND_TYPE_DEBUG_BASE_TYPE_ATTRIBUTE_ENCODING,  // DebugInfo Sec 3.3
+  SPV_OPERAND_TYPE_DEBUG_COMPOSITE_TYPE,                // DebugInfo Sec 3.4
+  SPV_OPERAND_TYPE_DEBUG_TYPE_QUALIFIER,                // DebugInfo Sec 3.5
+  SPV_OPERAND_TYPE_DEBUG_OPERATION,                     // DebugInfo Sec 3.6
+
   // This is a sentinel value, and does not represent an operand type.
   // It should come last.
   SPV_OPERAND_TYPE_NUM_OPERAND_TYPES,
@@ -231,6 +228,7 @@ typedef enum spv_ext_inst_type_t {
   SPV_EXT_INST_TYPE_SPV_AMD_SHADER_TRINARY_MINMAX,
   SPV_EXT_INST_TYPE_SPV_AMD_GCN_SHADER,
   SPV_EXT_INST_TYPE_SPV_AMD_SHADER_BALLOT,
+  SPV_EXT_INST_TYPE_DEBUGINFO,
 
   SPV_FORCE_32_BIT_ENUM(spv_ext_inst_type_t)
 } spv_ext_inst_type_t;
@@ -374,8 +372,8 @@ typedef enum {
   SPV_ENV_UNIVERSAL_1_0,  // SPIR-V 1.0 latest revision, no other restrictions.
   SPV_ENV_VULKAN_1_0,     // Vulkan 1.0 latest revision.
   SPV_ENV_UNIVERSAL_1_1,  // SPIR-V 1.1 latest revision, no other restrictions.
-  SPV_ENV_OPENCL_2_1,     // OpenCL 2.1 latest revision.
-  SPV_ENV_OPENCL_2_2,     // OpenCL 2.2 latest revision.
+  SPV_ENV_OPENCL_2_1,     // OpenCL Full Profile 2.1 latest revision.
+  SPV_ENV_OPENCL_2_2,     // OpenCL Full Profile 2.2 latest revision.
   SPV_ENV_OPENGL_4_0,     // OpenGL 4.0 plus GL_ARB_gl_spirv, latest revisions.
   SPV_ENV_OPENGL_4_1,     // OpenGL 4.1 plus GL_ARB_gl_spirv, latest revisions.
   SPV_ENV_OPENGL_4_2,     // OpenGL 4.2 plus GL_ARB_gl_spirv, latest revisions.
@@ -383,6 +381,16 @@ typedef enum {
   // There is no variant for OpenGL 4.4.
   SPV_ENV_OPENGL_4_5,     // OpenGL 4.5 plus GL_ARB_gl_spirv, latest revisions.
   SPV_ENV_UNIVERSAL_1_2,  // SPIR-V 1.2, latest revision, no other restrictions.
+  SPV_ENV_OPENCL_1_2,     // OpenCL Full Profile 1.2 plus cl_khr_il_program,
+                          // latest revision.
+  SPV_ENV_OPENCL_EMBEDDED_1_2,  // OpenCL Embedded Profile 1.2 plus
+                                // cl_khr_il_program, latest revision.
+  SPV_ENV_OPENCL_2_0,  // OpenCL Full Profile 2.0 plus cl_khr_il_program,
+                       // latest revision.
+  SPV_ENV_OPENCL_EMBEDDED_2_0,  // OpenCL Embedded Profile 2.0 plus
+                                // cl_khr_il_program, latest revision.
+  SPV_ENV_OPENCL_EMBEDDED_2_1,  // OpenCL Embedded Profile 2.1 latest revision.
+  SPV_ENV_OPENCL_EMBEDDED_2_2,  // OpenCL Embedded Profile 2.2 latest revision.
 } spv_target_env;
 
 // SPIR-V Validator can be parameterized with the following Universal Limits.
@@ -420,6 +428,28 @@ void spvValidatorOptionsSetUniversalLimit(spv_validator_options options,
                                           spv_validator_limit limit_type,
                                           uint32_t limit);
 
+// Record whether or not the validator should relax the rules on types for
+// stores to structs.  When relaxed, it will allow a type mismatch as long as
+// the types are structs with the same layout.  Two structs have the same layout
+// if
+//
+// 1) the members of the structs are either the same type or are structs with
+// same layout, and
+//
+// 2) the decorations that affect the memory layout are identical for both
+// types.  Other decorations are not relevant.
+void spvValidatorOptionsSetRelaxStoreStruct(spv_validator_options options,
+                                            bool val);
+
+// Records whether or not the validator should relax the rules on pointer usage
+// in logical addressing mode.
+//
+// When relaxed, it will allow the following usage cases of pointers:
+// 1) OpVariable allocating an object whose type is a pointer type
+// 2) OpReturnValue returning a pointer value
+void spvValidatorOptionsSetRelaxLogicalPointer(spv_validator_options options,
+                                               bool val);
+
 // Encodes the given SPIR-V assembly text to its binary representation. The
 // length parameter specifies the number of bytes for text. Encoded binary will
 // be stored into *binary. Any error will be written into *diagnostic if
@@ -432,9 +462,11 @@ spv_result_t spvTextToBinary(const spv_const_context context, const char* text,
 // Encodes the given SPIR-V assembly text to its binary representation. Same as
 // spvTextToBinary but with options. The options parameter is a bit field of
 // spv_text_to_binary_options_t.
-spv_result_t spvTextToBinaryWithOptions(
-    const spv_const_context context, const char* text, const size_t length,
-    const uint32_t options, spv_binary* binary, spv_diagnostic* diagnostic);
+spv_result_t spvTextToBinaryWithOptions(const spv_const_context context,
+                                        const char* text, const size_t length,
+                                        const uint32_t options,
+                                        spv_binary* binary,
+                                        spv_diagnostic* diagnostic);
 
 // Frees an allocated text stream. This is a no-op if the text parameter
 // is a null pointer.

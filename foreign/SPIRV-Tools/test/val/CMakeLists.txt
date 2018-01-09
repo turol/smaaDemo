@@ -15,7 +15,6 @@
 set(VAL_TEST_COMMON_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/../test_fixture.h
   ${CMAKE_CURRENT_SOURCE_DIR}/../unit_spirv.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/../unit_spirv.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/val_fixtures.h
   ${CMAKE_CURRENT_SOURCE_DIR}/val_fixtures.cpp
 )
@@ -75,6 +74,66 @@ add_spvtools_unittest(TARGET val_type_unique
   LIBS ${SPIRV_TOOLS}
 )
 
+add_spvtools_unittest(TARGET val_arithmetics
+	SRCS val_arithmetics_test.cpp
+       ${VAL_TEST_COMMON_SRCS}
+  LIBS ${SPIRV_TOOLS}
+)
+
+add_spvtools_unittest(TARGET val_composites
+	SRCS val_composites_test.cpp
+       ${VAL_TEST_COMMON_SRCS}
+  LIBS ${SPIRV_TOOLS}
+)
+
+add_spvtools_unittest(TARGET val_conversion
+	SRCS val_conversion_test.cpp
+       ${VAL_TEST_COMMON_SRCS}
+  LIBS ${SPIRV_TOOLS}
+)
+
+add_spvtools_unittest(TARGET val_derivatives
+	SRCS val_derivatives_test.cpp
+       ${VAL_TEST_COMMON_SRCS}
+  LIBS ${SPIRV_TOOLS}
+)
+
+add_spvtools_unittest(TARGET val_logicals
+	SRCS val_logicals_test.cpp
+       ${VAL_TEST_COMMON_SRCS}
+  LIBS ${SPIRV_TOOLS}
+)
+
+add_spvtools_unittest(TARGET val_bitwise
+	SRCS val_bitwise_test.cpp
+       ${VAL_TEST_COMMON_SRCS}
+  LIBS ${SPIRV_TOOLS}
+)
+
+add_spvtools_unittest(TARGET val_image
+	SRCS val_image_test.cpp
+       ${VAL_TEST_COMMON_SRCS}
+  LIBS ${SPIRV_TOOLS}
+)
+
+add_spvtools_unittest(TARGET val_atomics
+	SRCS val_atomics_test.cpp
+       ${VAL_TEST_COMMON_SRCS}
+  LIBS ${SPIRV_TOOLS}
+)
+
+add_spvtools_unittest(TARGET val_primitives
+        SRCS val_primitives_test.cpp
+       ${VAL_TEST_COMMON_SRCS}
+  LIBS ${SPIRV_TOOLS}
+)
+
+add_spvtools_unittest(TARGET val_ext_inst
+	SRCS val_ext_inst_test.cpp
+       ${VAL_TEST_COMMON_SRCS}
+  LIBS ${SPIRV_TOOLS}
+)
+
 add_spvtools_unittest(TARGET val_limits
 	SRCS val_limits_test.cpp
        ${VAL_TEST_COMMON_SRCS}
@@ -95,6 +154,12 @@ add_spvtools_unittest(TARGET val_decoration
 
 add_spvtools_unittest(TARGET val_instructions
 	SRCS val_instructions_test.cpp
+       ${VAL_TEST_COMMON_SRCS}
+  LIBS ${SPIRV_TOOLS}
+)
+
+add_spvtools_unittest(TARGET val_literals
+	SRCS val_literals_test.cpp
        ${VAL_TEST_COMMON_SRCS}
   LIBS ${SPIRV_TOOLS}
 )

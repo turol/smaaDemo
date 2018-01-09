@@ -111,9 +111,53 @@ spv_result_t ValidateDecorations(ValidationState_t& _);
 spv_result_t TypeUniquePass(ValidationState_t& _,
                             const spv_parsed_instruction_t* inst);
 
+/// Validates correctness of arithmetic instructions.
+spv_result_t ArithmeticsPass(ValidationState_t& _,
+                             const spv_parsed_instruction_t* inst);
+
+/// Validates correctness of composite instructions.
+spv_result_t CompositesPass(ValidationState_t& _,
+                            const spv_parsed_instruction_t* inst);
+
+/// Validates correctness of conversion instructions.
+spv_result_t ConversionPass(ValidationState_t& _,
+                            const spv_parsed_instruction_t* inst);
+
+/// Validates correctness of derivative instructions.
+spv_result_t DerivativesPass(ValidationState_t& _,
+                             const spv_parsed_instruction_t* inst);
+
+/// Validates correctness of logical instructions.
+spv_result_t LogicalsPass(ValidationState_t& _,
+                          const spv_parsed_instruction_t* inst);
+
+/// Validates correctness of bitwise instructions.
+spv_result_t BitwisePass(ValidationState_t& _,
+                         const spv_parsed_instruction_t* inst);
+
+/// Validates correctness of image instructions.
+spv_result_t ImagePass(ValidationState_t& _,
+                       const spv_parsed_instruction_t* inst);
+
+/// Validates correctness of atomic instructions.
+spv_result_t AtomicsPass(ValidationState_t& _,
+                         const spv_parsed_instruction_t* inst);
+
+/// Validates correctness of literal numbers.
+spv_result_t LiteralsPass(ValidationState_t& _,
+                          const spv_parsed_instruction_t* inst);
+
+/// Validates correctness of ExtInst instructions.
+spv_result_t ExtInstPass(ValidationState_t& _,
+                         const spv_parsed_instruction_t* inst);
+
 // Validates that capability declarations use operands allowed in the current
 // context.
 spv_result_t CapabilityPass(ValidationState_t& _,
+                            const spv_parsed_instruction_t* inst);
+
+/// Validates correctness of primitive instructions.
+spv_result_t PrimitivesPass(ValidationState_t& _,
                             const spv_parsed_instruction_t* inst);
 
 }  // namespace libspirv

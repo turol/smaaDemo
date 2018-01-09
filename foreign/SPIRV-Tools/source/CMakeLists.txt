@@ -15,6 +15,11 @@
 set(GRAMMAR_PROCESSING_SCRIPT "${spirv-tools_SOURCE_DIR}/utils/generate_grammar_tables.py")
 set(VIMSYNTAX_PROCESSING_SCRIPT "${spirv-tools_SOURCE_DIR}/utils/generate_vim_syntax.py")
 set(XML_REGISTRY_PROCESSING_SCRIPT "${spirv-tools_SOURCE_DIR}/utils/generate_registry_tables.py")
+set(LANG_HEADER_PROCESSING_SCRIPT "${spirv-tools_SOURCE_DIR}/utils/generate_language_headers.py")
+
+# For now, assume the DebugInfo grammar file is in the current directory.
+# It might migrate to SPIRV-Headers.
+set(DEBUGINFO_GRAMMAR_JSON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/extinst.debuginfo.grammar.json")
 
 # macro() definitions are used in the following because we need to append .inc
 # file paths into some global lists (*_CPP_DEPENDS). And those global lists are
@@ -27,9 +32,10 @@ macro(spvtools_core_tables VERSION)
   add_custom_command(OUTPUT ${GRAMMAR_INSTS_INC_FILE} ${GRAMMAR_KINDS_INC_FILE}
     COMMAND ${PYTHON_EXECUTABLE} ${GRAMMAR_PROCESSING_SCRIPT}
       --spirv-core-grammar=${GRAMMAR_JSON_FILE}
+      --extinst-debuginfo-grammar=${DEBUGINFO_GRAMMAR_JSON_FILE}
       --core-insts-output=${GRAMMAR_INSTS_INC_FILE}
       --operand-kinds-output=${GRAMMAR_KINDS_INC_FILE}
-    DEPENDS ${GRAMMAR_PROCESSING_SCRIPT} ${GRAMMAR_JSON_FILE}
+    DEPENDS ${GRAMMAR_PROCESSING_SCRIPT} ${GRAMMAR_JSON_FILE} ${DEBUGINFO_GRAMMAR_JSON_FILE}
     COMMENT "Generate info tables for SPIR-V v${VERSION} core instructions and operands.")
   list(APPEND OPCODE_CPP_DEPENDS ${GRAMMAR_INSTS_INC_FILE})
   list(APPEND OPERAND_CPP_DEPENDS ${GRAMMAR_KINDS_INC_FILE})
@@ -43,9 +49,10 @@ macro(spvtools_enum_string_mapping VERSION)
      ${GRAMMAR_ENUM_STRING_MAPPING_INC_FILE}
     COMMAND ${PYTHON_EXECUTABLE} ${GRAMMAR_PROCESSING_SCRIPT}
       --spirv-core-grammar=${GRAMMAR_JSON_FILE}
+      --extinst-debuginfo-grammar=${DEBUGINFO_GRAMMAR_JSON_FILE}
       --extension-enum-output=${GRAMMAR_EXTENSION_ENUM_INC_FILE}
       --enum-string-mapping-output=${GRAMMAR_ENUM_STRING_MAPPING_INC_FILE}
-    DEPENDS ${GRAMMAR_PROCESSING_SCRIPT} ${GRAMMAR_JSON_FILE}
+    DEPENDS ${GRAMMAR_PROCESSING_SCRIPT} ${GRAMMAR_JSON_FILE} ${DEBUGINFO_GRAMMAR_JSON_FILE}
     COMMENT "Generate enum-string mapping for SPIR-V v${VERSION}.")
   list(APPEND EXTENSION_H_DEPENDS ${GRAMMAR_EXTENSION_ENUM_INC_FILE})
   list(APPEND ENUM_STRING_MAPPING_CPP_DEPENDS ${GRAMMAR_ENUM_STRING_MAPPING_INC_FILE})
@@ -59,21 +66,21 @@ macro(spvtools_vimsyntax VERSION CLVERSION)
   add_custom_command(OUTPUT ${VIMSYNTAX_FILE}
       COMMAND ${PYTHON_EXECUTABLE} ${VIMSYNTAX_PROCESSING_SCRIPT}
       --spirv-core-grammar=${GRAMMAR_JSON_FILE}
+      --exinst-debuginfo-grammar=${DEBUGINFO_GRAMMAR_JSON_FILE}
       --extinst-glsl-grammar=${GLSL_GRAMMAR_JSON_FILE}
       --extinst-opencl-grammar=${OPENCL_GRAMMAR_JSON_FILE}
       >${VIMSYNTAX_FILE}
     DEPENDS ${VIMSYNTAX_PROCESSING_SCRIPT} ${GRAMMAR_JSON_FILE}
-            ${GLSL_GRAMMAR_JSON_FILE} ${OPENCL_GRAMMAR_JSON_FILE}
+            ${GLSL_GRAMMAR_JSON_FILE} ${OPENCL_GRAMMAR_JSON_FILE} ${DEBUGINFO_GRAMMAR_JSON_FILE}
     COMMENT "Generate spvasm.vim: Vim syntax file for SPIR-V assembly.")
 endmacro(spvtools_vimsyntax)
 
 macro(spvtools_glsl_tables VERSION)
   set(CORE_GRAMMAR_JSON_FILE "${SPIRV_HEADER_INCLUDE_DIR}/spirv/${VERSION}/spirv.core.grammar.json")
   set(GLSL_GRAMMAR_JSON_FILE "${SPIRV_HEADER_INCLUDE_DIR}/spirv/${VERSION}/extinst.glsl.std.450.grammar.json")
-  set(GRAMMAR_INC_FILE "${spirv-tools_BINARY_DIR}/glsl.std.450.insts-${VERSION}.inc")
+  set(GRAMMAR_INC_FILE "${spirv-tools_BINARY_DIR}/glsl.std.450.insts.inc")
   add_custom_command(OUTPUT ${GRAMMAR_INC_FILE}
     COMMAND ${PYTHON_EXECUTABLE} ${GRAMMAR_PROCESSING_SCRIPT}
-      --spirv-core-grammar=${CORE_GRAMMAR_JSON_FILE}
       --extinst-glsl-grammar=${GLSL_GRAMMAR_JSON_FILE}
       --glsl-insts-output=${GRAMMAR_INC_FILE}
     DEPENDS ${GRAMMAR_PROCESSING_SCRIPT} ${CORE_GRAMMAR_JSON_FILE} ${GLSL_GRAMMAR_JSON_FILE}
@@ -84,10 +91,9 @@ endmacro(spvtools_glsl_tables)
 macro(spvtools_opencl_tables VERSION)
   set(CORE_GRAMMAR_JSON_FILE "${SPIRV_HEADER_INCLUDE_DIR}/spirv/${VERSION}/spirv.core.grammar.json")
   set(OPENCL_GRAMMAR_JSON_FILE "${SPIRV_HEADER_INCLUDE_DIR}/spirv/${VERSION}/extinst.opencl.std.100.grammar.json")
-  set(GRAMMAR_INC_FILE "${spirv-tools_BINARY_DIR}/opencl.std.insts-${VERSION}.inc")
+  set(GRAMMAR_INC_FILE "${spirv-tools_BINARY_DIR}/opencl.std.insts.inc")
   add_custom_command(OUTPUT ${GRAMMAR_INC_FILE}
     COMMAND ${PYTHON_EXECUTABLE} ${GRAMMAR_PROCESSING_SCRIPT}
-      --spirv-core-grammar=${CORE_GRAMMAR_JSON_FILE}
       --extinst-opencl-grammar=${OPENCL_GRAMMAR_JSON_FILE}
       --opencl-insts-output=${GRAMMAR_INC_FILE}
     DEPENDS ${GRAMMAR_PROCESSING_SCRIPT} ${CORE_GRAMMAR_JSON_FILE} ${OPENCL_GRAMMAR_JSON_FILE}
@@ -109,16 +115,34 @@ macro(spvtools_vendor_tables VENDOR_TABLE)
   set_property(TARGET spirv-tools-${VENDOR_TABLE} PROPERTY FOLDER "SPIRV-Tools build")
 endmacro(spvtools_vendor_tables)
 
+macro(spvtools_extinst_lang_headers NAME GRAMMAR_FILE)
+  set(OUTBASE ${spirv-tools_BINARY_DIR}/${NAME})
+  set(OUT_H ${OUTBASE}.h)
+  add_custom_command(OUTPUT ${OUT_H}
+    COMMAND ${PYTHON_EXECUTABLE} ${LANG_HEADER_PROCESSING_SCRIPT}
+      --extinst-name=${NAME}
+      --extinst-grammar=${GRAMMAR_FILE}
+      --extinst-output-base=${OUTBASE}
+    DEPENDS ${LANG_HEADER_PROCESSING_SCRIPT} ${GRAMMAR_FILE}
+    COMMENT "Generate language specific header for ${NAME}.")
+  list(APPEND EXTINST_CPP_DEPENDS ${OUT_H})
+  add_custom_target(spirv-tools-header-${NAME} DEPENDS ${OUT_H})
+  set_property(TARGET spirv-tools-header-${NAME} PROPERTY FOLDER "SPIRV-Tools build")
+endmacro(spvtools_extinst_lang_headers)
+
+
 spvtools_core_tables("1.0")
 spvtools_core_tables("1.1")
 spvtools_core_tables("1.2")
 spvtools_enum_string_mapping("1.2")
-spvtools_opencl_tables("1.0")
-spvtools_glsl_tables("1.0")
+spvtools_opencl_tables("1.2")
+spvtools_glsl_tables("1.2")
 spvtools_vendor_tables("spv-amd-shader-explicit-vertex-parameter")
 spvtools_vendor_tables("spv-amd-shader-trinary-minmax")
 spvtools_vendor_tables("spv-amd-gcn-shader")
 spvtools_vendor_tables("spv-amd-shader-ballot")
+spvtools_vendor_tables("debuginfo")
+spvtools_extinst_lang_headers("DebugInfo" ${DEBUGINFO_GRAMMAR_JSON_FILE})
 
 spvtools_vimsyntax("1.2" "1.0")
 add_custom_target(spirv-tools-vimsyntax DEPENDS ${VIMSYNTAX_FILE})
@@ -190,6 +214,7 @@ set_property(TARGET spirv-tools-build-version PROPERTY FOLDER "SPIRV-Tools build
 
 add_subdirectory(comp)
 add_subdirectory(opt)
+add_subdirectory(link)
 
 set(SPIRV_SOURCES
   ${spirv-tools_SOURCE_DIR}/include/spirv-tools/libspirv.h
@@ -207,7 +232,11 @@ set(SPIRV_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/enum_string_mapping.h
   ${CMAKE_CURRENT_SOURCE_DIR}/ext_inst.h
   ${CMAKE_CURRENT_SOURCE_DIR}/extensions.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/id_descriptor.h
   ${CMAKE_CURRENT_SOURCE_DIR}/instruction.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/latest_version_glsl_std_450_header.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/latest_version_opencl_std_header.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/latest_version_spirv_header.h
   ${CMAKE_CURRENT_SOURCE_DIR}/macro.h
   ${CMAKE_CURRENT_SOURCE_DIR}/name_mapper.h
   ${CMAKE_CURRENT_SOURCE_DIR}/opcode.h
@@ -234,6 +263,7 @@ set(SPIRV_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/enum_string_mapping.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/ext_inst.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/extensions.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/id_descriptor.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/libspirv.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/message.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/name_mapper.cpp
@@ -250,13 +280,24 @@ set(SPIRV_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/text.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/text_handler.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/validate.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/validate_cfg.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/validate_arithmetics.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/validate_atomics.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/validate_bitwise.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/validate_capability.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/validate_id.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/validate_instruction.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/validate_cfg.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/validate_composites.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/validate_conversion.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/validate_datarules.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/validate_decorations.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/validate_derivatives.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/validate_ext_inst.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/validate_id.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/validate_image.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/validate_instruction.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/validate_layout.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/validate_literals.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/validate_logicals.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/validate_primitives.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/validate_type_unique.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/val/decoration.h
   ${CMAKE_CURRENT_SOURCE_DIR}/val/basic_block.cpp
@@ -288,6 +329,7 @@ target_include_directories(${SPIRV_TOOLS}
   PRIVATE ${SPIRV_HEADER_INCLUDE_DIR}
   )
 set_property(TARGET ${SPIRV_TOOLS} PROPERTY FOLDER "SPIRV-Tools libraries")
+spvtools_check_symbol_exports(${SPIRV_TOOLS})
 
 if(ENABLE_SPIRV_TOOLS_INSTALL)
   install(TARGETS ${SPIRV_TOOLS}

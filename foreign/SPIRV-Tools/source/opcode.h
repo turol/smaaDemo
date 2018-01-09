@@ -16,8 +16,8 @@
 #define LIBSPIRV_OPCODE_H_
 
 #include "instruction.h"
+#include "latest_version_spirv_header.h"
 #include "spirv-tools/libspirv.h"
-#include "spirv/1.2/spirv.h"
 #include "table.h"
 
 // Returns the name of a registered SPIR-V generator as a null-terminated
@@ -87,4 +87,29 @@ bool spvOpcodeReturnsLogicalVariablePointer(const SpvOp opcode);
 // non-zero otherwise.
 int32_t spvOpcodeGeneratesType(SpvOp opcode);
 
+// Returns true if the opcode adds a decoration to an id.
+bool spvOpcodeIsDecoration(const SpvOp opcode);
+
+// Returns true if the opcode is a load from memory into a result id.  This
+// function only considers core instructions.
+bool spvOpcodeIsLoad(const SpvOp opcode);
+
+// Returns true if the opcode is an atomic operation.
+bool spvOpcodeIsAtomicOp(const SpvOp opcode);
+
+// Returns true if the given opcode is a branch instruction.
+bool spvOpcodeIsBranch(SpvOp opcode);
+
+// Returns true if the given opcode is a return instruction.
+bool spvOpcodeIsReturn(SpvOp opcode);
+
+// Returns true if the given opcode is a return instruction or it aborts
+// execution.
+bool spvOpcodeIsReturnOrAbort(SpvOp opcode);
+
+// Returns true if the given opcode is a basic block terminator.
+bool spvOpcodeIsBlockTerminator(SpvOp opcode);
+
+// Returns true if the given opcode always defines an opaque type.
+bool spvOpcodeIsBaseOpaqueType(SpvOp opcode);
 #endif  // LIBSPIRV_OPCODE_H_
