@@ -978,6 +978,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	info.pDependencies   = &dependencies[0];
 
 	r.renderPass  = device.createRenderPass(info);
+	r.numSamples  = desc.numSamples_;
 
 	if (debugMarkers) {
 		vk::DebugMarkerObjectNameInfoEXT markerName;
@@ -2149,6 +2150,7 @@ void RendererImpl::deleteRenderPassInternal(RenderPass &rp) {
 	this->device.destroyRenderPass(rp.renderPass);
 	rp.renderPass = vk::RenderPass();
 	rp.clearValueCount = 0;
+	rp.numSamples      = 0;
 }
 
 
