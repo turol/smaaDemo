@@ -418,6 +418,7 @@ struct RenderTarget{
 	: width(0)
 	, height(0)
 	, currentLayout(Layout::Invalid)
+	, format(vk::Format::eUndefined)
 	{}
 
 	RenderTarget(const RenderTarget &)            = delete;
