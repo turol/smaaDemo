@@ -406,6 +406,8 @@ class SMAADemo {
 	const SMAAPipelines &getSMAAPipelines(const SMAAKey &key);
 	const PipelineHandle &getFXAAPipeline(unsigned int q);
 
+	PipelineHandle getCubePipeline();
+
 
 public:
 
@@ -1041,6 +1043,11 @@ void SMAADemo::initRender() {
 }
 
 
+PipelineHandle SMAADemo::getCubePipeline() {
+	return cubePipeline;
+}
+
+
 const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 	auto it = smaaPipelines.find(key);
 	// create lazily if missing
@@ -1661,7 +1668,7 @@ void SMAADemo::render() {
 	renderer.beginRenderPass(sceneRenderPass, sceneFramebuffer);
 
 	if (activeScene == 0) {
-		renderer.bindPipeline(cubePipeline);
+		renderer.bindPipeline(getCubePipeline());
 
 		if (rotateCubes) {
 			rotationTime += elapsed;
