@@ -294,6 +294,7 @@ class PipelineDesc {
 	FragmentShaderHandle  fragmentShader_;
 	RenderPassHandle      renderPass_;
 	uint32_t              vertexAttribMask;
+	unsigned int          numSamples_;
 	bool                  depthWrite_;
 	bool                  depthTest_;
 	bool                  cullFaces_;
@@ -399,8 +400,14 @@ public:
 		return *this;
 	}
 
+	PipelineDesc &numSamples(unsigned int n) {
+		numSamples_ = n;
+		return *this;
+	}
+
 	PipelineDesc()
 	: vertexAttribMask(0)
+	, numSamples_(1)
 	, depthWrite_(false)
 	, depthTest_(false)
 	, cullFaces_(false)
