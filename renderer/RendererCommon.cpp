@@ -185,7 +185,7 @@ class Includer final : public shaderc::CompileOptions::IncluderInterface {
 
 public:
 
-	Includer(std::unordered_map<std::string, std::vector<char> > &cache_)
+	explicit Includer(std::unordered_map<std::string, std::vector<char> > &cache_)
 	: cache(cache_)
 	{
 	}
