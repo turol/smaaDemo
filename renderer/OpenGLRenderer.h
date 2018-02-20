@@ -328,7 +328,11 @@ struct RenderPass {
 	unsigned int    numSamples;
 
 
-	RenderPass() {}
+	RenderPass()
+	: depthClearValue(1.0f)
+	, clearMask(0)
+	, numSamples(0)
+	{}
 
 	RenderPass(const RenderPass &) = delete;
 	RenderPass &operator=(const RenderPass &) = delete;
