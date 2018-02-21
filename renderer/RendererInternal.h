@@ -130,6 +130,7 @@ struct RendererBase {
 
 	unsigned int                             currentRefreshRate;
 	unsigned int                             maxRefreshRate;
+	RendererFeatures                         features;
 
 	bool skipShaderCache;
 	unsigned int frameNum;

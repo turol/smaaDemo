@@ -411,6 +411,11 @@ unsigned int Renderer::getMaxRefreshRate() const {
 }
 
 
+const RendererFeatures &Renderer::getFeatures() const {
+	return impl->features;
+}
+
+
 BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
 	return impl->createBuffer(size, contents);
 }

@@ -655,7 +655,6 @@ struct Frame {
 struct RendererImpl : public RendererBase {
 	SDL_Window                               *window;
 	SDL_GLContext                            context;
-	RendererFeatures                         features;
 
 	std::unordered_map<GLenum, int>          glValues;
 
