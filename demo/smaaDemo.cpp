@@ -1033,19 +1033,19 @@ PipelineHandle SMAADemo::getCubePipeline() {
 		auto vertexShader   = renderer.createVertexShader("cube", macros);
 		auto fragmentShader = renderer.createFragmentShader("cube", macros);
 
-		cubePipeline = renderer.createPipeline(PipelineDesc()
-												.vertexShader(vertexShader)
-												.fragmentShader(fragmentShader)
-												.renderPass(sceneRenderPass)
-												.descriptorSetLayout<GlobalDS>(0)
-												.descriptorSetLayout<CubeSceneDS>(1)
-												.vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
-												.vertexBufferStride(ATTR_POS, sizeof(Vertex))
-												.depthWrite(true)
-												.depthTest(true)
-												.cullFaces(true)
-												.name("cubes")
-											   );
+		PipelineDesc plDesc;
+		plDesc.name("cubes")
+		      .vertexShader(vertexShader)
+		      .fragmentShader(fragmentShader)
+		      .renderPass(sceneRenderPass)
+		      .descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<CubeSceneDS>(1)
+		      .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
+		      .vertexBufferStride(ATTR_POS, sizeof(Vertex))
+		      .depthWrite(true)
+		      .depthTest(true)
+		      .cullFaces(true);
+		cubePipeline = renderer.createPipeline(plDesc);
 	}
 	assert(cubePipeline);
 
