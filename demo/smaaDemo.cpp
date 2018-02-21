@@ -328,6 +328,7 @@ class SMAADemo {
 	// aa things
 	bool antialiasing;
 	AAMethod aaMethod;
+	unsigned int  numSamples;
 	unsigned int  debugMode;
 	unsigned int  colorMode;
 	unsigned int  fxaaQuality;
@@ -461,6 +462,7 @@ SMAADemo::SMAADemo()
 
 , antialiasing(true)
 , aaMethod(AAMethod::SMAA)
+, numSamples(1)
 , debugMode(0)
 , colorMode(0)
 , fxaaQuality(maxFXAAQuality - 1)
@@ -1215,8 +1217,6 @@ void SMAADemo::createFramebuffers() {
 			renderer.deleteRenderTarget(rendertargets[i]);
 		}
 	}
-
-	unsigned int numSamples = 1;
 
 	{
 		RenderTargetDesc rtDesc;
