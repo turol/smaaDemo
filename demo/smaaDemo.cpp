@@ -884,14 +884,14 @@ void SMAADemo::initRender() {
 	auto vertexShader   = renderer.createVertexShader("image", macros);
 	auto fragmentShader = renderer.createFragmentShader("image", macros);
 
-	plDesc.renderPass(sceneRenderPass);
-	plDesc.vertexShader(vertexShader)
-	      .fragmentShader(fragmentShader);
-	plDesc.depthWrite(false)
+	plDesc.name("image")
+	      .renderPass(sceneRenderPass)
+	      .vertexShader(vertexShader)
+	      .fragmentShader(fragmentShader)
+	      .depthWrite(false)
 	      .depthTest(false)
-	      .cullFaces(true);
-	plDesc.name("image");
-	plDesc.descriptorSetLayout<ColorTexDS>(1);
+	      .cullFaces(true)
+	      .descriptorSetLayout<ColorTexDS>(1);
 
 	imagePipeline = renderer.createPipeline(plDesc);
 
