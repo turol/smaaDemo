@@ -407,6 +407,7 @@ class SMAADemo {
 	const SMAAPipelines &getSMAAPipelines(const SMAAKey &key);
 	const PipelineHandle &getFXAAPipeline(unsigned int q);
 
+	RenderPassHandle getSceneRenderPass();
 	PipelineHandle getCubePipeline();
 
 
@@ -887,7 +888,7 @@ void SMAADemo::initRender() {
 	auto fragmentShader = renderer.createFragmentShader("image", macros);
 
 	plDesc.name("image")
-	      .renderPass(sceneRenderPass)
+	      .renderPass(getSceneRenderPass())
 	      .vertexShader(vertexShader)
 	      .fragmentShader(fragmentShader)
 	      .depthWrite(false)
@@ -1028,6 +1029,11 @@ void SMAADemo::initRender() {
 }
 
 
+RenderPassHandle SMAADemo::getSceneRenderPass() {
+	return sceneRenderPass;
+}
+
+
 PipelineHandle SMAADemo::getCubePipeline() {
 	if (!cubePipeline) {
 		ShaderMacros macros;
@@ -1039,7 +1045,7 @@ PipelineHandle SMAADemo::getCubePipeline() {
 		plDesc.name("cubes")
 		      .vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader)
-		      .renderPass(sceneRenderPass)
+		      .renderPass(getSceneRenderPass())
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<CubeSceneDS>(1)
 		      .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
@@ -1251,7 +1257,7 @@ void SMAADemo::createFramebuffers() {
 	{
 		FramebufferDesc fbDesc;
 		fbDesc.name("scene")
-		      .renderPass(sceneRenderPass)
+		      .renderPass(getSceneRenderPass())
 		      .depthStencil(rendertargets[RenderTargets::MainDepth])
 		      .color(0, rendertargets[RenderTargets::MainColor]);
 		sceneFramebuffer = renderer.createFramebuffer(fbDesc);
@@ -1670,7 +1676,7 @@ void SMAADemo::render() {
 	globals.predicationStrength  = predicationStrength;
 	globals.pad0 = 0;
 
-	renderer.beginRenderPass(sceneRenderPass, sceneFramebuffer);
+	renderer.beginRenderPass(getSceneRenderPass(), sceneFramebuffer);
 
 	if (activeScene == 0) {
 		renderer.bindPipeline(getCubePipeline());
