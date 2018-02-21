@@ -328,6 +328,9 @@ class SMAADemo {
 	// aa things
 	bool antialiasing;
 	AAMethod aaMethod;
+	// number of samples in current scene fb
+	// 1 or 2 if SMAA
+	// 2.. if MSAA
 	unsigned int  numSamples;
 	unsigned int  debugMode;
 	unsigned int  colorMode;
@@ -407,7 +410,7 @@ class SMAADemo {
 	const SMAAPipelines &getSMAAPipelines(const SMAAKey &key);
 	const PipelineHandle &getFXAAPipeline(unsigned int q);
 
-	RenderPassHandle getSceneRenderPass();
+	RenderPassHandle getSceneRenderPass(unsigned int n);
 	PipelineHandle getCubePipeline();
 
 
@@ -887,8 +890,10 @@ void SMAADemo::initRender() {
 	auto vertexShader   = renderer.createVertexShader("image", macros);
 	auto fragmentShader = renderer.createFragmentShader("image", macros);
 
+	// image is always rendered with 1 sample so we ask for that renderpass
+	// instead of numSamples
 	plDesc.name("image")
-	      .renderPass(getSceneRenderPass())
+	      .renderPass(getSceneRenderPass(1))
 	      .vertexShader(vertexShader)
 	      .fragmentShader(fragmentShader)
 	      .depthWrite(false)
@@ -1029,7 +1034,7 @@ void SMAADemo::initRender() {
 }
 
 
-RenderPassHandle SMAADemo::getSceneRenderPass() {
+RenderPassHandle SMAADemo::getSceneRenderPass(unsigned int) {
 	return sceneRenderPass;
 }
 
@@ -1045,7 +1050,7 @@ PipelineHandle SMAADemo::getCubePipeline() {
 		plDesc.name("cubes")
 		      .vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader)
-		      .renderPass(getSceneRenderPass())
+		      .renderPass(getSceneRenderPass(numSamples))
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<CubeSceneDS>(1)
 		      .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
@@ -1257,7 +1262,7 @@ void SMAADemo::createFramebuffers() {
 	{
 		FramebufferDesc fbDesc;
 		fbDesc.name("scene")
-		      .renderPass(getSceneRenderPass())
+		      .renderPass(getSceneRenderPass(numSamples))
 		      .depthStencil(rendertargets[RenderTargets::MainDepth])
 		      .color(0, rendertargets[RenderTargets::MainColor]);
 		sceneFramebuffer = renderer.createFramebuffer(fbDesc);
@@ -1676,7 +1681,7 @@ void SMAADemo::render() {
 	globals.predicationStrength  = predicationStrength;
 	globals.pad0 = 0;
 
-	renderer.beginRenderPass(getSceneRenderPass(), sceneFramebuffer);
+	renderer.beginRenderPass(getSceneRenderPass(numSamples), sceneFramebuffer);
 
 	if (activeScene == 0) {
 		renderer.bindPipeline(getCubePipeline());
