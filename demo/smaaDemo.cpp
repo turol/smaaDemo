@@ -881,25 +881,8 @@ void SMAADemo::initRender() {
 
 	ShaderMacros macros;
 
-	auto vertexShader   = renderer.createVertexShader("cube", macros);
-	auto fragmentShader = renderer.createFragmentShader("cube", macros);
-
-	cubePipeline = renderer.createPipeline(PipelineDesc()
-	                                        .vertexShader(vertexShader)
-	                                        .fragmentShader(fragmentShader)
-	                                        .renderPass(sceneRenderPass)
-	                                        .descriptorSetLayout<GlobalDS>(0)
-	                                        .descriptorSetLayout<CubeSceneDS>(1)
-	                                        .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
-	                                        .vertexBufferStride(ATTR_POS, sizeof(Vertex))
-	                                        .depthWrite(true)
-	                                        .depthTest(true)
-	                                        .cullFaces(true)
-	                                        .name("cubes")
-	                                       );
-
-	vertexShader   = renderer.createVertexShader("image", macros);
-	fragmentShader = renderer.createFragmentShader("image", macros);
+	auto vertexShader   = renderer.createVertexShader("image", macros);
+	auto fragmentShader = renderer.createFragmentShader("image", macros);
 
 	plDesc.renderPass(sceneRenderPass);
 	plDesc.vertexShader(vertexShader)
@@ -1044,6 +1027,28 @@ void SMAADemo::initRender() {
 
 
 PipelineHandle SMAADemo::getCubePipeline() {
+	if (!cubePipeline) {
+		ShaderMacros macros;
+
+		auto vertexShader   = renderer.createVertexShader("cube", macros);
+		auto fragmentShader = renderer.createFragmentShader("cube", macros);
+
+		cubePipeline = renderer.createPipeline(PipelineDesc()
+												.vertexShader(vertexShader)
+												.fragmentShader(fragmentShader)
+												.renderPass(sceneRenderPass)
+												.descriptorSetLayout<GlobalDS>(0)
+												.descriptorSetLayout<CubeSceneDS>(1)
+												.vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
+												.vertexBufferStride(ATTR_POS, sizeof(Vertex))
+												.depthWrite(true)
+												.depthTest(true)
+												.cullFaces(true)
+												.name("cubes")
+											   );
+	}
+	assert(cubePipeline);
+
 	return cubePipeline;
 }
 
