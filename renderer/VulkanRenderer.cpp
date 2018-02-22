@@ -447,6 +447,24 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 	}
 
+	uint32_t maxSamples = static_cast<uint32_t>(deviceProperties.limits.framebufferColorSampleCounts);
+	maxSamples &= static_cast<uint32_t>(deviceProperties.limits.framebufferDepthSampleCounts);
+	maxSamples &= static_cast<uint32_t>(deviceProperties.limits.framebufferStencilSampleCounts);
+	// TODO: what about sampledImage*SamplerCounts?
+	// those should probably go in a separate variable
+	// we want to count the number of lowest bits set to get highest AA level
+	// TODO: there are better ways to do this
+	// foro example negate and count trailing zeros
+	for (unsigned int i = 0; i < 7; i++) {
+		uint32_t bit = 1 << i;
+		if (uint32_t(maxSamples) & bit) {
+			features.maxMSAAQuality = bit;
+		} else {
+			break;
+		}
+	}
+	features.SSBOSupported  = true;
+
 	recreateSwapchain();
 	recreateRingBuffer(desc.ephemeralRingBufSize);
 
@@ -1820,6 +1838,7 @@ void RendererImpl::recreateSwapchain() {
 	if (surfaceFormats.find(surfaceFormat) == surfaceFormats.end()) {
 		throw std::runtime_error("No sRGB format backbuffer support");
 	}
+	features.sRGBFramebuffer = true;
 
 	vk::SwapchainCreateInfoKHR swapchainCreateInfo;
 	swapchainCreateInfo.flags                 = vk::SwapchainCreateFlagBitsKHR();
