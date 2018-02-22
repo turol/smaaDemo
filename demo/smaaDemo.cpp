@@ -813,6 +813,10 @@ void SMAADemo::initRender() {
 	desc.swapchain.vsync      = vsync;
 
 	renderer = Renderer::createRenderer(desc);
+	const auto &features = renderer.getFeatures();
+	LOG("Max MSAA quality: %u\n",  features.maxMSAAQuality);
+	LOG("sRGB frame buffer: %s\n", features.sRGBFramebuffer ? "yes" : "no");
+	LOG("SSBO support: %s\n",      features.SSBOSupported ? "yes" : "no");
 
 	unsigned int refreshRate = renderer.getCurrentRefreshRate();
 
