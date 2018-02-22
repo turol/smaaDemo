@@ -372,7 +372,7 @@ class SMAADemo {
 	PipelineHandle     blitPipeline;
 	PipelineHandle     guiPipeline;
 
-	RenderPassHandle   sceneRenderPass;
+	std::unordered_map<uint32_t, RenderPassHandle>  sceneRenderPasses;
 	FramebufferHandle  sceneFramebuffer;
 	RenderPassHandle   finalRenderPass;
 	FramebufferHandle  finalFramebuffer;
@@ -549,8 +549,11 @@ SMAADemo::~SMAADemo() {
 			renderer.deleteRenderTarget(rendertargets[i]);
 		}
 
-		assert(sceneRenderPass);
-		renderer.deleteRenderPass(sceneRenderPass);
+		for (auto rp : sceneRenderPasses) {
+			renderer.deleteRenderPass(rp.second);
+		}
+		sceneRenderPasses.clear();
+
 		assert(finalRenderPass);
 		renderer.deleteRenderPass(finalRenderPass);
 		assert(smaaEdgesRenderPass);
@@ -876,7 +879,16 @@ void SMAADemo::initRender() {
 		      .depthStencil(depthFormat)
 		      .clearDepth(1.0f)
 		      .colorFinalLayout(Layout::ShaderRead);
-		sceneRenderPass       = renderer.createRenderPass(rpDesc.name("scene"));
+
+		// TODO: should we create this lazily?
+		uint32_t msaa = 1;
+		do {
+			rpDesc.numSamples(msaa);
+			RenderPassHandle rp = renderer.createRenderPass(rpDesc.name("scene"));
+			sceneRenderPasses.emplace(msaa, rp);
+			msaa *= 2;
+		} while (msaa <= features.maxMSAAQuality);
+
 	}
 
 	createFramebuffers();
@@ -1038,8 +1050,8 @@ void SMAADemo::initRender() {
 }
 
 
-RenderPassHandle SMAADemo::getSceneRenderPass(unsigned int) {
-	return sceneRenderPass;
+RenderPassHandle SMAADemo::getSceneRenderPass(unsigned int n) {
+	return sceneRenderPasses[n];
 }
 
 
