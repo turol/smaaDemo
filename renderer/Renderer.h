@@ -35,6 +35,8 @@ THE SOFTWARE.
 
 #include <SDL.h>
 
+#include "utils/Utils.h"  // for isPow2
+
 
 namespace renderer {
 
@@ -401,6 +403,8 @@ public:
 	}
 
 	PipelineDesc &numSamples(unsigned int n) {
+		assert(n != 0);
+		assert(isPow2(n));
 		numSamples_ = n;
 		return *this;
 	}
