@@ -1102,6 +1102,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	info.pRasterizationState        = &raster;
 
 	vk::PipelineMultisampleStateCreateInfo multisample;
+	multisample.rasterizationSamples = sampleCountFlagsFromNum(desc.numSamples_);
 	info.pMultisampleState = &multisample;
 
 	vk::PipelineDepthStencilStateCreateInfo ds;
