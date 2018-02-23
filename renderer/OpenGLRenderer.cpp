@@ -994,6 +994,9 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	assert(desc.renderPass_);
 	assert(!desc.name_.empty());
 
+	const auto &rp = renderPasses.get(desc.renderPass_);
+	assert(desc.numSamples_ == rp.numSamples);
+
 	const auto &v = vertexShaders.get(desc.vertexShader_);
     const auto &f = fragmentShaders.get(desc.fragmentShader_);
 
