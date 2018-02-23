@@ -411,7 +411,7 @@ class SMAADemo {
 	const PipelineHandle &getFXAAPipeline(unsigned int q);
 
 	RenderPassHandle getSceneRenderPass(unsigned int n);
-	PipelineHandle getCubePipeline();
+	PipelineHandle getCubePipeline(unsigned int n);
 
 
 public:
@@ -1055,7 +1055,7 @@ RenderPassHandle SMAADemo::getSceneRenderPass(unsigned int n) {
 }
 
 
-PipelineHandle SMAADemo::getCubePipeline() {
+PipelineHandle SMAADemo::getCubePipeline(unsigned int n) {
 	if (!cubePipeline) {
 		ShaderMacros macros;
 
@@ -1066,7 +1066,8 @@ PipelineHandle SMAADemo::getCubePipeline() {
 		plDesc.name("cubes")
 		      .vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader)
-		      .renderPass(getSceneRenderPass(numSamples))
+		      .renderPass(getSceneRenderPass(n))
+		      .numSamples(n)
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<CubeSceneDS>(1)
 		      .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
@@ -1700,7 +1701,7 @@ void SMAADemo::render() {
 	renderer.beginRenderPass(getSceneRenderPass(numSamples), sceneFramebuffer);
 
 	if (activeScene == 0) {
-		renderer.bindPipeline(getCubePipeline());
+		renderer.bindPipeline(getCubePipeline(numSamples));
 
 		if (rotateCubes) {
 			rotationTime += elapsed;
