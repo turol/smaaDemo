@@ -1197,7 +1197,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	info.extent      = vk::Extent3D(desc.width_, desc.height_, 1);
 	info.mipLevels   = 1;
 	info.arrayLayers = 1;
-	// TODO: samples when multisampling
+	info.samples     = sampleCountFlagsFromNum(desc.numSamples_);
 	// TODO: usage should come from desc
 	vk::ImageUsageFlags flags(vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
 	if (isDepthFormat(desc.format_)) {
