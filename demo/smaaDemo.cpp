@@ -367,7 +367,7 @@ class SMAADemo {
 	Renderer        renderer;
 	Format          depthFormat;
 
-	PipelineHandle     cubePipeline;
+	std::unordered_map<uint32_t, PipelineHandle>  cubePipelines;
 	PipelineHandle     imagePipeline;
 	PipelineHandle     blitPipeline;
 	PipelineHandle     guiPipeline;
@@ -1056,9 +1056,12 @@ RenderPassHandle SMAADemo::getSceneRenderPass(unsigned int n) {
 
 
 PipelineHandle SMAADemo::getCubePipeline(unsigned int n) {
-	if (!cubePipeline) {
+	auto it = cubePipelines.find(n);
+
+	if (it == cubePipelines.end()) {
 		ShaderMacros macros;
 
+		// TODO: cache these
 		auto vertexShader   = renderer.createVertexShader("cube", macros);
 		auto fragmentShader = renderer.createFragmentShader("cube", macros);
 
@@ -1075,11 +1078,12 @@ PipelineHandle SMAADemo::getCubePipeline(unsigned int n) {
 		      .depthWrite(true)
 		      .depthTest(true)
 		      .cullFaces(true);
-		cubePipeline = renderer.createPipeline(plDesc);
+		bool inserted = false;
+		std::tie(it, inserted) = cubePipelines.emplace(n, renderer.createPipeline(plDesc));
+		assert(inserted);
 	}
-	assert(cubePipeline);
 
-	return cubePipeline;
+	return it->second;
 }
 
 
