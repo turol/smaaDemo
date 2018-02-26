@@ -335,6 +335,7 @@ class SMAADemo {
 	unsigned int  debugMode;
 	unsigned int  colorMode;
 	unsigned int  fxaaQuality;
+	unsigned int  maxMSAAQuality;
 	SMAAKey       smaaKey;
 	ShaderDefines::SMAAParameters  smaaParameters;
 
@@ -470,6 +471,7 @@ SMAADemo::SMAADemo()
 , debugMode(0)
 , colorMode(0)
 , fxaaQuality(maxFXAAQuality - 1)
+, maxMSAAQuality(1)
 , predicationThreshold(0.01f)
 , predicationScale(2.0f)
 , predicationStrength(0.4f)
@@ -820,6 +822,7 @@ void SMAADemo::initRender() {
 	LOG("Max MSAA quality: %u\n",  features.maxMSAAQuality);
 	LOG("sRGB frame buffer: %s\n", features.sRGBFramebuffer ? "yes" : "no");
 	LOG("SSBO support: %s\n",      features.SSBOSupported ? "yes" : "no");
+	maxMSAAQuality = features.maxMSAAQuality;
 
 	unsigned int refreshRate = renderer.getCurrentRefreshRate();
 
@@ -887,7 +890,7 @@ void SMAADemo::initRender() {
 			RenderPassHandle rp = renderer.createRenderPass(rpDesc.name("scene"));
 			sceneRenderPasses.emplace(msaa, rp);
 			msaa *= 2;
-		} while (msaa <= features.maxMSAAQuality);
+		} while (msaa <= maxMSAAQuality);
 
 	}
 
