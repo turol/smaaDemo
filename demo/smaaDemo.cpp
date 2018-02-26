@@ -368,6 +368,9 @@ class SMAADemo {
 	Renderer        renderer;
 	Format          depthFormat;
 
+	VertexShaderHandle    cubeVertexShader;
+	FragmentShaderHandle  cubeFragmentShader;
+
 	std::unordered_map<uint32_t, PipelineHandle>  cubePipelines;
 	PipelineHandle     imagePipeline;
 	PipelineHandle     blitPipeline;
@@ -925,6 +928,9 @@ void SMAADemo::initRender() {
 	vertexShader   = renderer.createVertexShader("blit", macros);
 	fragmentShader = renderer.createFragmentShader("blit", macros);
 
+	cubeVertexShader   = renderer.createVertexShader("cube", macros);
+	cubeFragmentShader = renderer.createFragmentShader("cube", macros);
+
 	plDesc.renderPass(finalRenderPass);
 	plDesc.vertexShader(vertexShader)
 	      .fragmentShader(fragmentShader);
@@ -1064,14 +1070,10 @@ PipelineHandle SMAADemo::getCubePipeline(unsigned int n) {
 	if (it == cubePipelines.end()) {
 		ShaderMacros macros;
 
-		// TODO: cache these
-		auto vertexShader   = renderer.createVertexShader("cube", macros);
-		auto fragmentShader = renderer.createFragmentShader("cube", macros);
-
 		PipelineDesc plDesc;
 		plDesc.name("cubes")
-		      .vertexShader(vertexShader)
-		      .fragmentShader(fragmentShader)
+		      .vertexShader(cubeVertexShader)
+		      .fragmentShader(cubeFragmentShader)
 		      .renderPass(getSceneRenderPass(n))
 		      .numSamples(n)
 		      .descriptorSetLayout<GlobalDS>(0)
