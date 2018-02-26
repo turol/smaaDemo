@@ -2484,7 +2484,37 @@ void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle targe
 
 	assert(!inRenderPass);
 
-	STUBBED("");
+	const auto &srcFb = framebuffers.get(source);
+	assert(srcFb.width       >  0);
+	assert(srcFb.height      >  0);
+
+	const auto &destFb = framebuffers.get(target);
+	assert(destFb.width      >  0);
+	assert(destFb.height     >  0);
+
+	assert(srcFb.width       == destFb.width);
+	assert(srcFb.height      == destFb.height);
+
+	// must have exactly 1 color target
+	// TODO: more targets
+	// or allow picking which one
+	assert(srcFb.desc.colors_[0]);
+	assert(!srcFb.desc.colors_[1]);
+	assert(destFb.desc.colors_[0]);
+	assert(!destFb.desc.colors_[1]);
+
+	auto &srcColor  = renderTargets.get(srcFb.desc.colors_[0]);
+	auto &destColor = renderTargets.get(destFb.desc.colors_[0]);
+
+	vk::ImageResolve r;
+	r.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+	r.srcSubresource.layerCount = 1;
+	r.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+	r.dstSubresource.layerCount = 1;
+	r.extent.width              = srcFb.width;
+	r.extent.height             = srcFb.height;
+	r.extent.depth              = 1;
+	currentCommandBuffer.resolveImage(srcColor.image, vulkanLayout(srcColor.currentLayout), destColor.image, vulkanLayout(destColor.currentLayout), { r } );
 }
 
 
