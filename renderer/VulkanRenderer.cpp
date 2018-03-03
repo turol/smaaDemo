@@ -1870,6 +1870,7 @@ void RendererImpl::recreateSwapchain() {
 	swapchain = newSwapchain;
 
 	std::vector<vk::Image> swapchainImages = device.getSwapchainImagesKHR(swapchain);
+	// TODO: implementation doesn't have to obey size, should resize here
 	assert(swapchainImages.size() == frames.size());
 	assert(swapchainImages.size() == numImages);
 
@@ -1961,6 +1962,9 @@ void RendererImpl::beginFrame() {
 void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	assert(inFrame);
 	inFrame = false;
+
+	// TODO: use multiple command buffers
+	// https://timothylottes.github.io/20180202.html
 
 	const auto &rt = renderTargets.get(rtHandle);
 
