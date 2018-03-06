@@ -1,5 +1,8 @@
-commit 7bfaab982d2452bd990804f9815775342b3467cb
-Author: John Kessenich <cepheus@frii.com>
-Date:   Wed Jan 3 16:43:17 2018 -0700
+commit bd4c092be34081d88ec8342b1a4d9f77bcce4cac
+Merge: 5dac992 5ab1378
+Author: John Kessenich <johnkslang@users.noreply.github.com>
+Date:   Fri Mar 2 14:19:16 2018 -0700
 
-    Add headers for the 1.2 unified (1.0, 1.1, and 1.2) specification.
+    Merge pull request #61 from antiagainst/backport-google-ext
+    
+    Fix Google extension grammar error and backport

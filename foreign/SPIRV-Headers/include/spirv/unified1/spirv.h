@@ -397,6 +397,8 @@ typedef enum SpvDecoration_ {
     SpvDecorationPassthroughNV = 5250,
     SpvDecorationViewportRelativeNV = 5252,
     SpvDecorationSecondaryViewportRelativeNV = 5256,
+    SpvDecorationHlslCounterBufferGOOGLE = 5634,
+    SpvDecorationHlslSemanticGOOGLE = 5635,
     SpvDecorationMax = 0x7fffffff,
 } SpvDecoration;
 
@@ -663,6 +665,7 @@ typedef enum SpvCapability_ {
     SpvCapabilityVariablePointers = 4442,
     SpvCapabilityAtomicStorageOps = 4445,
     SpvCapabilitySampleMaskPostDepthCoverage = 4447,
+    SpvCapabilityFloat16ImageAMD = 5008,
     SpvCapabilityImageGatherBiasLodAMD = 5009,
     SpvCapabilityFragmentMaskAMD = 5010,
     SpvCapabilityStencilExportEXT = 5013,
@@ -1012,6 +1015,8 @@ typedef enum SpvOp_ {
     SpvOpSubgroupBlockWriteINTEL = 5576,
     SpvOpSubgroupImageBlockReadINTEL = 5577,
     SpvOpSubgroupImageBlockWriteINTEL = 5578,
+    SpvOpDecorateStringGOOGLE = 5632,
+    SpvOpMemberDecorateStringGOOGLE = 5633,
     SpvOpMax = 0x7fffffff,
 } SpvOp;
 

@@ -366,6 +366,8 @@ spv = {
         'PassthroughNV' : 5250,
         'ViewportRelativeNV' : 5252,
         'SecondaryViewportRelativeNV' : 5256,
+        'HlslCounterBufferGOOGLE' : 5634,
+        'HlslSemanticGOOGLE' : 5635,
     },
 
     'BuiltIn' : {
@@ -621,6 +623,7 @@ spv = {
         'VariablePointers' : 4442,
         'AtomicStorageOps' : 4445,
         'SampleMaskPostDepthCoverage' : 4447,
+        'Float16ImageAMD' : 5008,
         'ImageGatherBiasLodAMD' : 5009,
         'FragmentMaskAMD' : 5010,
         'StencilExportEXT' : 5013,
@@ -969,6 +972,8 @@ spv = {
         'OpSubgroupBlockWriteINTEL' : 5576,
         'OpSubgroupImageBlockReadINTEL' : 5577,
         'OpSubgroupImageBlockWriteINTEL' : 5578,
+        'OpDecorateStringGOOGLE' : 5632,
+        'OpMemberDecorateStringGOOGLE' : 5633,
     },
 
 }
