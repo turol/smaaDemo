@@ -1,8 +1,5 @@
-commit bcc96d8c7011d5be504174ddbbadcacad227ea89
-Merge: fa27b56 3376198
+commit c9516fa91709b68ac20fa614625e85e0ced3f23f
 Author: Hans-Kristian Arntzen <hans-kristian.arntzen@arm.com>
-Date:   Wed Dec 13 20:01:09 2017 +0100
+Date:   Fri Mar 2 09:29:37 2018 +0100
 
-    Merge pull request #358 from zeux/master
-    
-    msl generator enhancements/fixes
+    Fix OSX Travis.
