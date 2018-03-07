@@ -374,7 +374,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		}
 
 		writeFile(cacheName, cacheStr.c_str(), cacheStr.size());
-	writeFile(spvName, &spirv[0], spirv.size() * 4);
+		writeFile(spvName, &spirv[0], spirv.size() * 4);
 	}
 
 	return spirv;
