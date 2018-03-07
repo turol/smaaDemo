@@ -313,6 +313,7 @@ class SMAADemo {
 	bool            glDebug;
 	bool            tracing;
 	bool            noShaderCache;
+	bool            noShaderOpt;
 	std::vector<std::string> imageFiles;
 
 	// global window things
@@ -457,6 +458,7 @@ SMAADemo::SMAADemo()
 : glDebug(false)
 , tracing(false)
 , noShaderCache(false)
+, noShaderOpt(false)
 
 , windowWidth(1280)
 , windowHeight(720)
@@ -652,6 +654,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::SwitchArg                       debugSwitch("",        "debug",      "Enable renderer debugging",     cmd, false);
 		TCLAP::SwitchArg                       tracingSwitch("",      "trace",      "Enable renderer tracing",       cmd, false);
 		TCLAP::SwitchArg                       noCacheSwitch("",      "nocache",    "Don't load shaders from cache", cmd, false);
+		TCLAP::SwitchArg                       noOptSwitch("",        "noopt",      "Don't optimize shaders",        cmd, false);
 		TCLAP::SwitchArg                       fullscreenSwitch("f",  "fullscreen", "Start in fullscreen mode",      cmd, false);
 		TCLAP::SwitchArg                       noVsyncSwitch("",      "novsync",    "Disable vsync",                 cmd, false);
 
@@ -665,6 +668,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		glDebug       = debugSwitch.getValue();
 		tracing       = tracingSwitch.getValue();
 		noShaderCache = noCacheSwitch.getValue();
+		noShaderOpt   = noOptSwitch.getValue();
 		fullscreen    = fullscreenSwitch.getValue();
 		windowWidth   = windowWidthSwitch.getValue();
 		windowHeight  = windowHeightSwitch.getValue();
@@ -815,6 +819,7 @@ void SMAADemo::initRender() {
 	desc.debug                = glDebug;
 	desc.tracing              = tracing;
 	desc.skipShaderCache      = noShaderCache;
+	desc.optimizeShaders      = !noShaderOpt;
 	desc.swapchain.fullscreen = fullscreen;
 	desc.swapchain.width      = windowWidth;
 	desc.swapchain.height     = windowHeight;

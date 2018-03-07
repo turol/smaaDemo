@@ -340,8 +340,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	std::vector<uint32_t> spirv(result.cbegin(), result.cend());
 
 	// SPIR-V optimization
-	// TODO: should have a flag in RendererDesc for disabling this
-	if (true) {
+	if (optimizeShaders) {
 		// TODO: better target environment selection?
 		spvtools::Optimizer opt(SPV_ENV_UNIVERSAL_1_1);
 
@@ -366,7 +365,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		std::swap(spirv, optimized);
 	}
 
-	{
+	if (!skipShaderCache) {
 		std::string cacheStr = std::to_string(shaderVersion);
 
 		for (const auto &p : cache) {
@@ -375,9 +374,8 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		}
 
 		writeFile(cacheName, cacheStr.c_str(), cacheStr.size());
-	}
-
 	writeFile(spvName, &spirv[0], spirv.size() * 4);
+	}
 
 	return spirv;
 }
