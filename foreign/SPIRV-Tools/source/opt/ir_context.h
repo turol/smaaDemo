@@ -22,6 +22,7 @@
 #include "def_use_manager.h"
 #include "dominator_analysis.h"
 #include "feature_manager.h"
+#include "loop_descriptor.h"
 #include "module.h"
 #include "type_manager.h"
 
@@ -55,12 +56,13 @@ class IRContext {
     kAnalysisCombinators = 1 << 3,
     kAnalysisCFG = 1 << 4,
     kAnalysisDominatorAnalysis = 1 << 5,
-    kAnalysisEnd = 1 << 6
+    kAnalysisLoopAnalysis = 1 << 6,
+    kAnalysisEnd = 1 << 7
   };
 
-  friend inline Analysis operator|(Analysis lhs, Analysis rhs);
+  friend inline constexpr Analysis operator|(Analysis lhs, Analysis rhs);
   friend inline Analysis& operator|=(Analysis& lhs, Analysis rhs);
-  friend inline Analysis operator<<(Analysis a, int shift);
+  friend inline constexpr Analysis operator<<(Analysis a, int shift);
   friend inline Analysis& operator<<=(Analysis& a, int shift);
 
   // Creates an |IRContext| that contains an owned |Module|
@@ -224,8 +226,6 @@ class IRContext {
   void set_instr_block(ir::Instruction* inst, ir::BasicBlock* block) {
     if (AreAnalysesValid(kAnalysisInstrToBlockMapping)) {
       instr_to_block_[inst] = block;
-    } else {
-      BuildInstrToBlockMapping();
     }
   }
 
@@ -365,6 +365,9 @@ class IRContext {
     return cfg_.get();
   }
 
+  // Gets the loop descriptor for function |f|.
+  ir::LoopDescriptor* GetLoopDescriptor(const ir::Function* f);
+
   // Gets the dominator analysis for function |f|.
   opt::DominatorAnalysis* GetDominatorAnalysis(const ir::Function* f,
                                                const ir::CFG&);
@@ -392,6 +395,9 @@ class IRContext {
     }
     return feature_mgr_.get();
   }
+
+  // Returns the grammar for this context.
+  const libspirv::AssemblyGrammar& grammar() const { return grammar_; }
 
  private:
   // Builds the def-use manager from scratch, even if it was already valid.
@@ -430,6 +436,13 @@ class IRContext {
     dominator_trees_.clear();
     post_dominator_trees_.clear();
     valid_analyses_ = valid_analyses_ | kAnalysisDominatorAnalysis;
+  }
+
+  // Removes all computed loop descriptors.
+  void ResetLoopAnalysis() {
+    // Clear the cache.
+    loop_descriptors_.clear();
+    valid_analyses_ = valid_analyses_ | kAnalysisLoopAnalysis;
   }
 
   // Analyzes the features in the owned module. Builds the manager if required.
@@ -498,6 +511,9 @@ class IRContext {
   std::map<const ir::Function*, opt::PostDominatorAnalysis>
       post_dominator_trees_;
 
+  // Cache of loop descriptors for each function.
+  std::unordered_map<const ir::Function*, ir::LoopDescriptor> loop_descriptors_;
+
   // Constant manager for |module_|.
   std::unique_ptr<opt::analysis::ConstantManager> constant_mgr_;
 
@@ -505,8 +521,8 @@ class IRContext {
   std::unique_ptr<opt::analysis::TypeManager> type_mgr_;
 };
 
-inline ir::IRContext::Analysis operator|(ir::IRContext::Analysis lhs,
-                                         ir::IRContext::Analysis rhs) {
+inline constexpr ir::IRContext::Analysis operator|(
+    ir::IRContext::Analysis lhs, ir::IRContext::Analysis rhs) {
   return static_cast<ir::IRContext::Analysis>(static_cast<int>(lhs) |
                                               static_cast<int>(rhs));
 }
@@ -518,8 +534,8 @@ inline ir::IRContext::Analysis& operator|=(ir::IRContext::Analysis& lhs,
   return lhs;
 }
 
-inline ir::IRContext::Analysis operator<<(ir::IRContext::Analysis a,
-                                          int shift) {
+inline constexpr ir::IRContext::Analysis operator<<(ir::IRContext::Analysis a,
+                                                    int shift) {
   return static_cast<ir::IRContext::Analysis>(static_cast<int>(a) << shift);
 }
 

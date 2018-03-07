@@ -107,56 +107,63 @@ Optimizer& Optimizer::RegisterLegalizationPasses() {
           // May need loop unrolling here see
           // https://github.com/Microsoft/DirectXShaderCompiler/pull/930
           .RegisterPass(CreateDeadBranchElimPass())
-          .RegisterPass(CreateCFGCleanupPass())
-          // Get rid of unused code that leave traces of the illegal code.
-          .RegisterPass(CreateAggressiveDCEPass())
-          // TODO: Remove this once ADCE can do it.
-          .RegisterPass(CreateDeadVariableEliminationPass());
+          // Get rid of unused code that contain traces of illegal code
+          // or unused references to unbound external objects
+          .RegisterPass(CreateDeadInsertElimPass())
+          .RegisterPass(CreateAggressiveDCEPass());
 }
 
 Optimizer& Optimizer::RegisterPerformancePasses() {
   return RegisterPass(CreateRemoveDuplicatesPass())
       .RegisterPass(CreateMergeReturnPass())
       .RegisterPass(CreateInlineExhaustivePass())
-      .RegisterPass(CreateEliminateDeadFunctionsPass())
+      .RegisterPass(CreateAggressiveDCEPass())
       .RegisterPass(CreateScalarReplacementPass())
       .RegisterPass(CreateLocalAccessChainConvertPass())
       .RegisterPass(CreateLocalSingleBlockLoadStoreElimPass())
       .RegisterPass(CreateLocalSingleStoreElimPass())
       .RegisterPass(CreateInsertExtractElimPass())
+      .RegisterPass(CreateDeadInsertElimPass())
       .RegisterPass(CreateLocalMultiStoreElimPass())
       .RegisterPass(CreateCCPPass())
       .RegisterPass(CreateAggressiveDCEPass())
       .RegisterPass(CreateDeadBranchElimPass())
+      .RegisterPass(CreateIfConversionPass())
+      .RegisterPass(CreateAggressiveDCEPass())
       .RegisterPass(CreateBlockMergePass())
       .RegisterPass(CreateInsertExtractElimPass())
+      .RegisterPass(CreateDeadInsertElimPass())
       .RegisterPass(CreateRedundancyEliminationPass())
       .RegisterPass(CreateCFGCleanupPass())
       // Currently exposing driver bugs resulting in crashes (#946)
       // .RegisterPass(CreateCommonUniformElimPass())
-      .RegisterPass(CreateDeadVariableEliminationPass());
+      .RegisterPass(CreateAggressiveDCEPass());
 }
 
 Optimizer& Optimizer::RegisterSizePasses() {
   return RegisterPass(CreateRemoveDuplicatesPass())
       .RegisterPass(CreateMergeReturnPass())
       .RegisterPass(CreateInlineExhaustivePass())
-      .RegisterPass(CreateEliminateDeadFunctionsPass())
+      .RegisterPass(CreateAggressiveDCEPass())
       .RegisterPass(CreateLocalAccessChainConvertPass())
       .RegisterPass(CreateLocalSingleBlockLoadStoreElimPass())
       .RegisterPass(CreateLocalSingleStoreElimPass())
       .RegisterPass(CreateInsertExtractElimPass())
+      .RegisterPass(CreateDeadInsertElimPass())
       .RegisterPass(CreateLocalMultiStoreElimPass())
       .RegisterPass(CreateCCPPass())
       .RegisterPass(CreateAggressiveDCEPass())
       .RegisterPass(CreateDeadBranchElimPass())
+      .RegisterPass(CreateIfConversionPass())
+      .RegisterPass(CreateAggressiveDCEPass())
       .RegisterPass(CreateBlockMergePass())
       .RegisterPass(CreateInsertExtractElimPass())
+      .RegisterPass(CreateDeadInsertElimPass())
       .RegisterPass(CreateRedundancyEliminationPass())
       .RegisterPass(CreateCFGCleanupPass())
       // Currently exposing driver bugs resulting in crashes (#946)
       // .RegisterPass(CreateCommonUniformElimPass())
-      .RegisterPass(CreateDeadVariableEliminationPass());
+      .RegisterPass(CreateAggressiveDCEPass());
 }
 
 bool Optimizer::Run(const uint32_t* original_binary,
@@ -280,6 +287,11 @@ Optimizer::PassToken CreateInsertExtractElimPass() {
       MakeUnique<opt::InsertExtractElimPass>());
 }
 
+Optimizer::PassToken CreateDeadInsertElimPass() {
+  return MakeUnique<Optimizer::PassToken::Impl>(
+      MakeUnique<opt::DeadInsertElimPass>());
+}
+
 Optimizer::PassToken CreateDeadBranchElimPass() {
   return MakeUnique<Optimizer::PassToken::Impl>(
       MakeUnique<opt::DeadBranchElimPass>());
@@ -350,6 +362,16 @@ Optimizer::PassToken CreatePrivateToLocalPass() {
 
 Optimizer::PassToken CreateCCPPass() {
   return MakeUnique<Optimizer::PassToken::Impl>(MakeUnique<opt::CCPPass>());
+}
+
+Optimizer::PassToken CreateWorkaround1209Pass() {
+  return MakeUnique<Optimizer::PassToken::Impl>(
+      MakeUnique<opt::Workaround1209>());
+}
+
+Optimizer::PassToken CreateIfConversionPass() {
+  return MakeUnique<Optimizer::PassToken::Impl>(
+      MakeUnique<opt::IfConversion>());
 }
 
 }  // namespace spvtools

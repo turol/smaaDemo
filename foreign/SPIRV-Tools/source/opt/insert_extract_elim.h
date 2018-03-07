@@ -26,37 +26,24 @@
 #include "basic_block.h"
 #include "def_use_manager.h"
 #include "ir_context.h"
+#include "mem_pass.h"
 #include "module.h"
-#include "pass.h"
 
 namespace spvtools {
 namespace opt {
 
 // See optimizer.hpp for documentation.
-class InsertExtractElimPass : public Pass {
+class InsertExtractElimPass : public MemPass {
  public:
   InsertExtractElimPass();
   const char* name() const override { return "eliminate-insert-extract"; }
   Status Process(ir::IRContext*) override;
 
  private:
-  // Return true if indices of extract |extInst| starting at |extOffset|
-  // match indices of insert |insInst|.
-  bool ExtInsMatch(const ir::Instruction* extInst,
-                   const ir::Instruction* insInst,
-                   const uint32_t extOffset) const;
-
-  // Return true if indices of extract |extInst| starting at |extOffset| and
-  // indices of insert |insInst| conflict, specifically, if the insert
-  // changes bits specified by the extract, but changes either more bits
-  // or less bits than the extract specifies, meaning the exact value being
-  // inserted cannot be used to replace the extract.
-  bool ExtInsConflict(const ir::Instruction* extInst,
-                      const ir::Instruction* insInst,
-                      const uint32_t extOffset) const;
-
-  // Return true if |typeId| is a vector type
-  bool IsVectorType(uint32_t typeId);
+  // Return id of component of |cinst| specified by |extIndices| starting with
+  // index at |extOffset|. Return 0 if indices cannot be matched exactly.
+  uint32_t DoExtract(ir::Instruction* cinst, std::vector<uint32_t>* extIndices,
+                     uint32_t extOffset);
 
   // Look for OpExtract on sequence of OpInserts in |func|. If there is a
   // reaching insert which corresponds to the indices of the extract, replace

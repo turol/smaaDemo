@@ -15,6 +15,7 @@ static const SpvCapability pygen_variable_caps_InputAttachment_1_0[] = {SpvCapab
 static const SpvCapability pygen_variable_caps_Int64_1_0[] = {SpvCapabilityInt64};
 static const SpvCapability pygen_variable_caps_Kernel_1_0[] = {SpvCapabilityKernel};
 static const SpvCapability pygen_variable_caps_KernelStorageUniformBufferBlock16StorageUniform16StoragePushConstant16StorageInputOutput16_1_0[] = {SpvCapabilityKernel, SpvCapabilityStorageUniformBufferBlock16, SpvCapabilityStorageUniform16, SpvCapabilityStoragePushConstant16, SpvCapabilityStorageInputOutput16};
+static const SpvCapability pygen_variable_caps_KernelSubgroupBallotKHR_1_0[] = {SpvCapabilityKernel, SpvCapabilitySubgroupBallotKHR};
 static const SpvCapability pygen_variable_caps_Linkage_1_0[] = {SpvCapabilityLinkage};
 static const SpvCapability pygen_variable_caps_Matrix_1_0[] = {SpvCapabilityMatrix};
 static const SpvCapability pygen_variable_caps_MinLod_1_0[] = {SpvCapabilityMinLod};
@@ -45,6 +46,7 @@ static const libspirv::Extension pygen_variable_exts_SPV_AMD_shader_image_load_s
 static const libspirv::Extension pygen_variable_exts_SPV_AMD_texture_gather_bias_lod_1_0[] = {libspirv::Extension::kSPV_AMD_texture_gather_bias_lod};
 static const libspirv::Extension pygen_variable_exts_SPV_EXT_shader_stencil_export_1_0[] = {libspirv::Extension::kSPV_EXT_shader_stencil_export};
 static const libspirv::Extension pygen_variable_exts_SPV_EXT_shader_viewport_index_layer_1_0[] = {libspirv::Extension::kSPV_EXT_shader_viewport_index_layer};
+static const libspirv::Extension pygen_variable_exts_SPV_GOOGLE_hlsl_functionality1_1_0[] = {libspirv::Extension::kSPV_GOOGLE_hlsl_functionality1};
 static const libspirv::Extension pygen_variable_exts_SPV_INTEL_subgroups_1_0[] = {libspirv::Extension::kSPV_INTEL_subgroups};
 static const libspirv::Extension pygen_variable_exts_SPV_KHR_16bit_storage_1_0[] = {libspirv::Extension::kSPV_KHR_16bit_storage};
 static const libspirv::Extension pygen_variable_exts_SPV_KHR_device_group_1_0[] = {libspirv::Extension::kSPV_KHR_device_group};
@@ -399,7 +401,9 @@ static const spv_operand_desc_t pygen_variable_DecorationEntries_1_0[] = {
   {"OverrideCoverageNV", 5248, 1, pygen_variable_caps_SampleMaskOverrideCoverageNV_1_0, 0, nullptr, {}},
   {"PassthroughNV", 5250, 1, pygen_variable_caps_GeometryShaderPassthroughNV_1_0, 0, nullptr, {}},
   {"ViewportRelativeNV", 5252, 1, pygen_variable_caps_ShaderViewportMaskNV_1_0, 0, nullptr, {}},
-  {"SecondaryViewportRelativeNV", 5256, 1, pygen_variable_caps_ShaderStereoViewNV_1_0, 0, nullptr, {SPV_OPERAND_TYPE_LITERAL_INTEGER}}
+  {"SecondaryViewportRelativeNV", 5256, 1, pygen_variable_caps_ShaderStereoViewNV_1_0, 0, nullptr, {SPV_OPERAND_TYPE_LITERAL_INTEGER}},
+  {"HlslCounterBufferGOOGLE", 5634, 0, nullptr, 1, pygen_variable_exts_SPV_GOOGLE_hlsl_functionality1_1_0, {SPV_OPERAND_TYPE_ID}},
+  {"HlslSemanticGOOGLE", 5635, 0, nullptr, 1, pygen_variable_exts_SPV_GOOGLE_hlsl_functionality1_1_0, {SPV_OPERAND_TYPE_LITERAL_STRING}}
 };
 
 static const spv_operand_desc_t pygen_variable_BuiltInEntries_1_0[] = {
@@ -436,12 +440,12 @@ static const spv_operand_desc_t pygen_variable_BuiltInEntries_1_0[] = {
   {"EnqueuedWorkgroupSize", 32, 1, pygen_variable_caps_Kernel_1_0, 0, nullptr, {}},
   {"GlobalOffset", 33, 1, pygen_variable_caps_Kernel_1_0, 0, nullptr, {}},
   {"GlobalLinearId", 34, 1, pygen_variable_caps_Kernel_1_0, 0, nullptr, {}},
-  {"SubgroupSize", 36, 1, pygen_variable_caps_Kernel_1_0, 0, nullptr, {}},
+  {"SubgroupSize", 36, 2, pygen_variable_caps_KernelSubgroupBallotKHR_1_0, 0, nullptr, {}},
   {"SubgroupMaxSize", 37, 1, pygen_variable_caps_Kernel_1_0, 0, nullptr, {}},
   {"NumSubgroups", 38, 1, pygen_variable_caps_Kernel_1_0, 0, nullptr, {}},
   {"NumEnqueuedSubgroups", 39, 1, pygen_variable_caps_Kernel_1_0, 0, nullptr, {}},
   {"SubgroupId", 40, 1, pygen_variable_caps_Kernel_1_0, 0, nullptr, {}},
-  {"SubgroupLocalInvocationId", 41, 1, pygen_variable_caps_Kernel_1_0, 0, nullptr, {}},
+  {"SubgroupLocalInvocationId", 41, 2, pygen_variable_caps_KernelSubgroupBallotKHR_1_0, 0, nullptr, {}},
   {"VertexIndex", 42, 1, pygen_variable_caps_Shader_1_0, 0, nullptr, {}},
   {"InstanceIndex", 43, 1, pygen_variable_caps_Shader_1_0, 0, nullptr, {}},
   {"SubgroupEqMaskKHR", 4416, 1, pygen_variable_caps_SubgroupBallotKHR_1_0, 0, nullptr, {}},

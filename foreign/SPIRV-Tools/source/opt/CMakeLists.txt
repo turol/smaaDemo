@@ -21,8 +21,10 @@ add_library(SPIRV-Tools-opt
   cfg.h
   common_uniform_elim_pass.h
   compact_ids_pass.h
+  composite.h
   constants.h
   dead_branch_elim_pass.h
+  dead_insert_elim_pass.h
   dead_variable_elimination.h
   decoration_manager.h
   def_use_manager.h
@@ -36,6 +38,7 @@ add_library(SPIRV-Tools-opt
   fold_spec_constant_op_and_composite_pass.h
   freeze_spec_constant_value_pass.h
   function.h
+  if_conversion.h
   inline_exhaustive_pass.h
   inline_opaque_pass.h
   inline_pass.h
@@ -71,6 +74,7 @@ add_library(SPIRV-Tools-opt
   types.h
   unify_const_pass.h
   value_number_table.h
+  workaround1209.h
 
   aggressive_dead_code_elim_pass.cpp
   basic_block.cpp
@@ -81,11 +85,14 @@ add_library(SPIRV-Tools-opt
   cfg.cpp
   common_uniform_elim_pass.cpp
   compact_ids_pass.cpp
+  composite.cpp
   constants.cpp
   dead_branch_elim_pass.cpp
+  dead_insert_elim_pass.cpp
   dead_variable_elimination.cpp
   decoration_manager.cpp
   def_use_manager.cpp
+  dominator_analysis.cpp
   dominator_tree.cpp
   eliminate_dead_constant_pass.cpp
   eliminate_dead_functions_pass.cpp
@@ -95,6 +102,7 @@ add_library(SPIRV-Tools-opt
   fold_spec_constant_op_and_composite_pass.cpp
   freeze_spec_constant_value_pass.cpp
   function.cpp
+  if_conversion.cpp
   inline_exhaustive_pass.cpp
   inline_opaque_pass.cpp
   inline_pass.cpp
@@ -127,6 +135,7 @@ add_library(SPIRV-Tools-opt
   types.cpp
   unify_const_pass.cpp
   value_number_table.cpp
+  workaround1209.cpp
 )
 
 spvtools_default_compile_options(SPIRV-Tools-opt)

@@ -523,6 +523,124 @@ TEST_F(CCPTest, LoopInductionVariables) {
   SinglePassRunAndMatch<opt::CCPPass>(spv_asm, true);
 }
 
+TEST_F(CCPTest, HandleCompositeWithUndef) {
+  // Check to make sure that CCP does not crash when given a "constant" struct
+  // with an undef.  If at a later time CCP is enhanced to optimize this case,
+  // it is not wrong.
+  const std::string spv_asm = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %main "main"
+               OpExecutionMode %main OriginUpperLeft
+               OpSource HLSL 500
+               OpName %main "main"
+       %void = OpTypeVoid
+          %4 = OpTypeFunction %void
+        %int = OpTypeInt 32 1
+       %bool = OpTypeBool
+  %_struct_7 = OpTypeStruct %int %int
+      %int_1 = OpConstant %int 1
+          %9 = OpUndef %int
+         %10 = OpConstantComposite %_struct_7 %int_1 %9
+       %main = OpFunction %void None %4
+         %11 = OpLabel
+         %12 = OpCompositeExtract %int %10 0
+         %13 = OpCopyObject %int %12
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  auto res = SinglePassRunToBinary<opt::CCPPass>(spv_asm, true);
+  EXPECT_EQ(std::get<1>(res), opt::Pass::Status::SuccessWithoutChange);
+}
+
+TEST_F(CCPTest, SkipSpecConstantInstrucitons) {
+  const std::string spv_asm = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %main "main"
+               OpExecutionMode %main OriginUpperLeft
+               OpSource HLSL 500
+               OpName %main "main"
+       %void = OpTypeVoid
+          %4 = OpTypeFunction %void
+       %bool = OpTypeBool
+         %10 = OpSpecConstantFalse %bool
+       %main = OpFunction %void None %4
+         %11 = OpLabel
+         %12 = OpBranchConditional %10 %l1 %l2
+         %l1 = OpLabel
+               OpReturn
+         %l2 = OpLabel
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  auto res = SinglePassRunToBinary<opt::CCPPass>(spv_asm, true);
+  EXPECT_EQ(std::get<1>(res), opt::Pass::Status::SuccessWithoutChange);
+}
+
+TEST_F(CCPTest, UpdateSubsequentPhisToVarying) {
+  const std::string text = R"(
+OpCapability Shader
+OpMemoryModel Logical GLSL450
+OpEntryPoint Fragment %func "func" %in
+%void = OpTypeVoid
+%bool = OpTypeBool
+%int = OpTypeInt 32 1
+%false = OpConstantFalse %bool
+%int0 = OpConstant %int 0
+%int1 = OpConstant %int 1
+%int6 = OpConstant %int 6
+%int_ptr_Input = OpTypePointer Input %int
+%in = OpVariable %int_ptr_Input Input
+%undef = OpUndef %int
+%functy = OpTypeFunction %void
+%func = OpFunction %void None %functy
+%1 = OpLabel
+OpBranch %2
+%2 = OpLabel
+%outer_phi = OpPhi %int %int0 %1 %outer_add %15
+%cond1 = OpSLessThanEqual %bool %outer_phi %int6
+OpLoopMerge %3 %15 None
+OpBranchConditional %cond1 %4 %3
+%4 = OpLabel
+%ld = OpLoad %int %in
+%cond2 = OpSGreaterThanEqual %bool %int1 %ld
+OpSelectionMerge %10 None
+OpBranchConditional %cond2 %8 %9
+%8 = OpLabel
+OpBranch %10
+%9 = OpLabel
+OpBranch %10
+%10 = OpLabel
+%extra_phi = OpPhi %int %outer_phi %8 %outer_phi %9
+OpBranch %11
+%11 = OpLabel
+%inner_phi = OpPhi %int %int0 %10 %inner_add %13
+%cond3 = OpSLessThanEqual %bool %inner_phi %int6
+OpLoopMerge %14 %13 None
+OpBranchConditional %cond3 %12 %14
+%12 = OpLabel
+OpBranch %13
+%13 = OpLabel
+%inner_add = OpIAdd %int %inner_phi %int1
+OpBranch %11
+%14 = OpLabel
+OpBranch %15
+%15 = OpLabel
+%outer_add = OpIAdd %int %extra_phi %int1
+OpBranch %2
+%3 = OpLabel
+OpReturn
+OpFunctionEnd
+)";
+
+  auto res = SinglePassRunToBinary<opt::CCPPass>(text, true);
+  EXPECT_EQ(std::get<1>(res), opt::Pass::Status::SuccessWithoutChange);
+}
 #endif
 
 }  // namespace

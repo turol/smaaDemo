@@ -484,12 +484,12 @@ TEST_F(InsertExtractElimTest, ConflictingInsertPreventsOptimization2) {
   // void main()
   // {
   //     S_t s0;
-  //     s0.v1[1] = 1.0;
+  //     s0.v1[1] = 1.0; // dead
   //     s0.v1 = Baseline;
   //     gl_FragColor = vec4(s0.v1[1], 0.0, 0.0, 0.0);
   // }
 
-  const std::string assembly =
+  const std::string before_predefs =
       R"(OpCapability Shader
 %1 = OpExtInstImport "GLSL.std.450"
 OpMemoryModel Logical GLSL450
@@ -521,7 +521,44 @@ OpName %gl_FragColor "gl_FragColor"
 %_ptr_Output_v4float = OpTypePointer Output %v4float
 %gl_FragColor = OpVariable %_ptr_Output_v4float Output
 %float_0 = OpConstant %float 0
-%main = OpFunction %void None %8
+)";
+
+  const std::string after_predefs =
+      R"(OpCapability Shader
+%1 = OpExtInstImport "GLSL.std.450"
+OpMemoryModel Logical GLSL450
+OpEntryPoint Fragment %main "main" %BaseColor %gl_FragColor
+OpExecutionMode %main OriginUpperLeft
+OpSource GLSL 140
+OpName %main "main"
+OpName %S_t "S_t"
+OpMemberName %S_t 0 "v0"
+OpMemberName %S_t 1 "v1"
+OpName %s0 "s0"
+OpName %BaseColor "BaseColor"
+OpName %gl_FragColor "gl_FragColor"
+%void = OpTypeVoid
+%8 = OpTypeFunction %void
+%float = OpTypeFloat 32
+%v4float = OpTypeVector %float 4
+%S_t = OpTypeStruct %v4float %v4float
+%_ptr_Function_S_t = OpTypePointer Function %S_t
+%int = OpTypeInt 32 1
+%int_1 = OpConstant %int 1
+%float_1 = OpConstant %float 1
+%uint = OpTypeInt 32 0
+%uint_1 = OpConstant %uint 1
+%_ptr_Function_float = OpTypePointer Function %float
+%_ptr_Input_v4float = OpTypePointer Input %v4float
+%BaseColor = OpVariable %_ptr_Input_v4float Input
+%_ptr_Function_v4float = OpTypePointer Function %v4float
+%_ptr_Output_v4float = OpTypePointer Output %v4float
+%gl_FragColor = OpVariable %_ptr_Output_v4float Output
+%float_0 = OpConstant %float 0
+)";
+
+  const std::string before =
+      R"(%main = OpFunction %void None %8
 %22 = OpLabel
 %s0 = OpVariable %_ptr_Function_S_t Function
 %23 = OpLoad %S_t %s0
@@ -535,8 +572,289 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::InsertExtractElimPass>(assembly, assembly, true,
-                                                    true);
+  const std::string after =
+      R"(%main = OpFunction %void None %8
+%22 = OpLabel
+%s0 = OpVariable %_ptr_Function_S_t Function
+%23 = OpLoad %S_t %s0
+%24 = OpCompositeInsert %S_t %float_1 %23 1 1
+%25 = OpLoad %v4float %BaseColor
+%26 = OpCompositeInsert %S_t %25 %24 1
+%27 = OpCompositeExtract %float %26 1 1
+%28 = OpCompositeConstruct %v4float %27 %float_0 %float_0 %float_0
+OpStore %gl_FragColor %28
+OpReturn
+OpFunctionEnd
+)";
+
+  SinglePassRunAndCheck<opt::InsertExtractElimPass>(
+      before_predefs + before, after_predefs + after, true, true);
+}
+
+TEST_F(InsertExtractElimTest, MixWithConstants) {
+  // Extract component of FMix with 0.0 or 1.0 as the a-value.
+  //
+  // Note: The SPIR-V assembly has had store/load elimination
+  // performed to allow the inserts and extracts to directly
+  // reference each other.
+  //
+  // #version 450
+  //
+  // layout (location=0) in float bc;
+  // layout (location=1) in float bc2;
+  // layout (location=2) in float m;
+  // layout (location=3) in float m2;
+  // layout (location=0) out vec4 OutColor;
+  //
+  // void main()
+  // {
+  //     vec4 bcv = vec4(bc, bc2, 0.0, 1.0);
+  //     vec4 bcv2 = vec4(bc2, bc, 1.0, 0.0);
+  //     vec4 v = mix(bcv, bcv2, vec4(0.0,1.0,m,m2));
+  //     OutColor = vec4(v.y);
+  // }
+
+  const std::string predefs =
+      R"(OpCapability Shader
+%1 = OpExtInstImport "GLSL.std.450"
+OpMemoryModel Logical GLSL450
+OpEntryPoint Fragment %main "main" %bc %bc2 %m %m2 %OutColor
+OpExecutionMode %main OriginUpperLeft
+OpSource GLSL 450
+OpName %main "main"
+OpName %bc "bc"
+OpName %bc2 "bc2"
+OpName %m "m"
+OpName %m2 "m2"
+OpName %OutColor "OutColor"
+OpDecorate %bc Location 0
+OpDecorate %bc2 Location 1
+OpDecorate %m Location 2
+OpDecorate %m2 Location 3
+OpDecorate %OutColor Location 0
+%void = OpTypeVoid
+%9 = OpTypeFunction %void
+%float = OpTypeFloat 32
+%v4float = OpTypeVector %float 4
+%_ptr_Function_v4float = OpTypePointer Function %v4float
+%_ptr_Input_float = OpTypePointer Input %float
+%bc = OpVariable %_ptr_Input_float Input
+%bc2 = OpVariable %_ptr_Input_float Input
+%float_0 = OpConstant %float 0
+%float_1 = OpConstant %float 1
+%m = OpVariable %_ptr_Input_float Input
+%m2 = OpVariable %_ptr_Input_float Input
+%_ptr_Output_v4float = OpTypePointer Output %v4float
+%OutColor = OpVariable %_ptr_Output_v4float Output
+%uint = OpTypeInt 32 0
+%_ptr_Function_float = OpTypePointer Function %float
+)";
+
+  const std::string before =
+      R"(%main = OpFunction %void None %9
+%19 = OpLabel
+%20 = OpLoad %float %bc
+%21 = OpLoad %float %bc2
+%22 = OpCompositeConstruct %v4float %20 %21 %float_0 %float_1
+%23 = OpLoad %float %bc2
+%24 = OpLoad %float %bc
+%25 = OpCompositeConstruct %v4float %23 %24 %float_1 %float_0
+%26 = OpLoad %float %m
+%27 = OpLoad %float %m2
+%28 = OpCompositeConstruct %v4float %float_0 %float_1 %26 %27
+%29 = OpExtInst %v4float %1 FMix %22 %25 %28
+%30 = OpCompositeExtract %float %29 1
+%31 = OpCompositeConstruct %v4float %30 %30 %30 %30
+OpStore %OutColor %31
+OpReturn
+OpFunctionEnd
+)";
+
+  const std::string after =
+      R"(%main = OpFunction %void None %9
+%19 = OpLabel
+%20 = OpLoad %float %bc
+%21 = OpLoad %float %bc2
+%22 = OpCompositeConstruct %v4float %20 %21 %float_0 %float_1
+%23 = OpLoad %float %bc2
+%24 = OpLoad %float %bc
+%25 = OpCompositeConstruct %v4float %23 %24 %float_1 %float_0
+%26 = OpLoad %float %m
+%27 = OpLoad %float %m2
+%28 = OpCompositeConstruct %v4float %float_0 %float_1 %26 %27
+%29 = OpExtInst %v4float %1 FMix %22 %25 %28
+%31 = OpCompositeConstruct %v4float %24 %24 %24 %24
+OpStore %OutColor %31
+OpReturn
+OpFunctionEnd
+)";
+
+  SinglePassRunAndCheck<opt::InsertExtractElimPass>(
+      predefs + before, predefs + after, true, true);
+}
+
+TEST_F(InsertExtractElimTest, VectorShuffle1) {
+  // Extract component from first vector in VectorShuffle
+  //
+  // Note: The SPIR-V assembly has had store/load elimination
+  // performed to allow the inserts and extracts to directly
+  // reference each other.
+  //
+  // #version 450
+  //
+  // layout (location=0) in float bc;
+  // layout (location=1) in float bc2;
+  // layout (location=0) out vec4 OutColor;
+  //
+  // void main()
+  // {
+  //     vec4 bcv = vec4(bc, bc2, 0.0, 1.0);
+  //     vec4 v = bcv.zwxy;
+  //     OutColor = vec4(v.y);
+  // }
+
+  const std::string predefs =
+      R"(OpCapability Shader
+%1 = OpExtInstImport "GLSL.std.450"
+OpMemoryModel Logical GLSL450
+OpEntryPoint Fragment %main "main" %bc %bc2 %OutColor
+OpExecutionMode %main OriginUpperLeft
+OpSource GLSL 450
+OpName %main "main"
+OpName %bc "bc"
+OpName %bc2 "bc2"
+OpName %OutColor "OutColor"
+OpDecorate %bc Location 0
+OpDecorate %bc2 Location 1
+OpDecorate %OutColor Location 0
+%void = OpTypeVoid
+%7 = OpTypeFunction %void
+%float = OpTypeFloat 32
+%v4float = OpTypeVector %float 4
+%_ptr_Function_v4float = OpTypePointer Function %v4float
+%_ptr_Input_float = OpTypePointer Input %float
+%bc = OpVariable %_ptr_Input_float Input
+%bc2 = OpVariable %_ptr_Input_float Input
+%float_0 = OpConstant %float 0
+%float_1 = OpConstant %float 1
+%_ptr_Output_v4float = OpTypePointer Output %v4float
+%OutColor = OpVariable %_ptr_Output_v4float Output
+%uint = OpTypeInt 32 0
+%_ptr_Function_float = OpTypePointer Function %float
+)";
+
+  const std::string before =
+      R"(%main = OpFunction %void None %7
+%17 = OpLabel
+%18 = OpLoad %float %bc
+%19 = OpLoad %float %bc2
+%20 = OpCompositeConstruct %v4float %18 %19 %float_0 %float_1
+%21 = OpVectorShuffle %v4float %20 %20 2 3 0 1
+%22 = OpCompositeExtract %float %21 1
+%23 = OpCompositeConstruct %v4float %22 %22 %22 %22
+OpStore %OutColor %23
+OpReturn
+OpFunctionEnd
+)";
+
+  const std::string after =
+      R"(%main = OpFunction %void None %7
+%17 = OpLabel
+%18 = OpLoad %float %bc
+%19 = OpLoad %float %bc2
+%20 = OpCompositeConstruct %v4float %18 %19 %float_0 %float_1
+%21 = OpVectorShuffle %v4float %20 %20 2 3 0 1
+%23 = OpCompositeConstruct %v4float %float_1 %float_1 %float_1 %float_1
+OpStore %OutColor %23
+OpReturn
+OpFunctionEnd
+)";
+
+  SinglePassRunAndCheck<opt::InsertExtractElimPass>(
+      predefs + before, predefs + after, true, true);
+}
+
+TEST_F(InsertExtractElimTest, VectorShuffle2) {
+  // Extract component from second vector in VectorShuffle
+  // Identical to test VectorShuffle1 except for the vector
+  // shuffle index of 7.
+  //
+  // Note: The SPIR-V assembly has had store/load elimination
+  // performed to allow the inserts and extracts to directly
+  // reference each other.
+  //
+  // #version 450
+  //
+  // layout (location=0) in float bc;
+  // layout (location=1) in float bc2;
+  // layout (location=0) out vec4 OutColor;
+  //
+  // void main()
+  // {
+  //     vec4 bcv = vec4(bc, bc2, 0.0, 1.0);
+  //     vec4 v = bcv.zwxy;
+  //     OutColor = vec4(v.y);
+  // }
+
+  const std::string predefs =
+      R"(OpCapability Shader
+%1 = OpExtInstImport "GLSL.std.450"
+OpMemoryModel Logical GLSL450
+OpEntryPoint Fragment %main "main" %bc %bc2 %OutColor
+OpExecutionMode %main OriginUpperLeft
+OpSource GLSL 450
+OpName %main "main"
+OpName %bc "bc"
+OpName %bc2 "bc2"
+OpName %OutColor "OutColor"
+OpDecorate %bc Location 0
+OpDecorate %bc2 Location 1
+OpDecorate %OutColor Location 0
+%void = OpTypeVoid
+%7 = OpTypeFunction %void
+%float = OpTypeFloat 32
+%v4float = OpTypeVector %float 4
+%_ptr_Function_v4float = OpTypePointer Function %v4float
+%_ptr_Input_float = OpTypePointer Input %float
+%bc = OpVariable %_ptr_Input_float Input
+%bc2 = OpVariable %_ptr_Input_float Input
+%float_0 = OpConstant %float 0
+%float_1 = OpConstant %float 1
+%_ptr_Output_v4float = OpTypePointer Output %v4float
+%OutColor = OpVariable %_ptr_Output_v4float Output
+%uint = OpTypeInt 32 0
+%_ptr_Function_float = OpTypePointer Function %float
+)";
+
+  const std::string before =
+      R"(%main = OpFunction %void None %7
+%17 = OpLabel
+%18 = OpLoad %float %bc
+%19 = OpLoad %float %bc2
+%20 = OpCompositeConstruct %v4float %18 %19 %float_0 %float_1
+%21 = OpVectorShuffle %v4float %20 %20 2 7 0 1
+%22 = OpCompositeExtract %float %21 1
+%23 = OpCompositeConstruct %v4float %22 %22 %22 %22
+OpStore %OutColor %23
+OpReturn
+OpFunctionEnd
+)";
+
+  const std::string after =
+      R"(%main = OpFunction %void None %7
+%17 = OpLabel
+%18 = OpLoad %float %bc
+%19 = OpLoad %float %bc2
+%20 = OpCompositeConstruct %v4float %18 %19 %float_0 %float_1
+%21 = OpVectorShuffle %v4float %20 %20 2 7 0 1
+%23 = OpCompositeConstruct %v4float %float_1 %float_1 %float_1 %float_1
+OpStore %OutColor %23
+OpReturn
+OpFunctionEnd
+)";
+
+  SinglePassRunAndCheck<opt::InsertExtractElimPass>(
+      predefs + before, predefs + after, true, true);
 }
 
 // TODO(greg-lunarg): Add tests to verify handling of these cases:

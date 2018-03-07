@@ -15,8 +15,11 @@
 #include "basic_block.h"
 #include "function.h"
 #include "module.h"
+#include "reflect.h"
 
 #include "make_unique.h"
+
+#include <ostream>
 
 namespace spvtools {
 namespace ir {
@@ -87,7 +90,7 @@ Instruction* BasicBlock::GetLoopMergeInst() {
 }
 
 void BasicBlock::ForEachSuccessorLabel(
-    const std::function<void(const uint32_t)>& f) {
+    const std::function<void(const uint32_t)>& f) const {
   const auto br = &insts_.back();
   switch (br->opcode()) {
     case SpvOpBranch: {
@@ -104,6 +107,15 @@ void BasicBlock::ForEachSuccessorLabel(
     default:
       break;
   }
+}
+
+bool BasicBlock::IsSuccessor(const ir::BasicBlock* block) const {
+  uint32_t succId = block->id();
+  bool isSuccessor = false;
+  ForEachSuccessorLabel([&isSuccessor, succId](const uint32_t label) {
+    if (label == succId) isSuccessor = true;
+  });
+  return isSuccessor;
 }
 
 void BasicBlock::ForMergeAndContinueLabel(
@@ -144,6 +156,16 @@ uint32_t BasicBlock::ContinueBlockIdIfAny() const {
     }
   }
   return cbid;
+}
+
+std::ostream& operator<<(std::ostream& str, const BasicBlock& block) {
+  block.ForEachInst([&str](const ir::Instruction* inst) {
+    str << *inst;
+    if (!IsTerminatorInst(inst->opcode())) {
+      str << std::endl;
+    }
+  });
+  return str;
 }
 
 }  // namespace ir

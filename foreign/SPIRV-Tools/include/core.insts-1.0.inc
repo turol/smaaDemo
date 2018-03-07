@@ -315,6 +315,7 @@ static const spv_opcode_desc_t kOpcodeTableEntries_1_0[] = {
   {"AtomicFlagTestAndSet", SpvOpAtomicFlagTestAndSet, 1, pygen_variable_caps_Kernel_1_0, 5, {SPV_OPERAND_TYPE_TYPE_ID, SPV_OPERAND_TYPE_RESULT_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_SCOPE_ID, SPV_OPERAND_TYPE_MEMORY_SEMANTICS_ID}, 1, 1},
   {"AtomicFlagClear", SpvOpAtomicFlagClear, 1, pygen_variable_caps_Kernel_1_0, 3, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_SCOPE_ID, SPV_OPERAND_TYPE_MEMORY_SEMANTICS_ID}, 0, 0},
   {"ImageSparseRead", SpvOpImageSparseRead, 1, pygen_variable_caps_SparseResidency_1_0, 5, {SPV_OPERAND_TYPE_TYPE_ID, SPV_OPERAND_TYPE_RESULT_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_OPTIONAL_IMAGE}, 1, 1},
+  {"DecorateId", SpvOpDecorateId, 0, nullptr, 2, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_DECORATION}, 0, 0},
   {"SubgroupBallotKHR", SpvOpSubgroupBallotKHR, 1, pygen_variable_caps_SubgroupBallotKHR_1_0, 3, {SPV_OPERAND_TYPE_TYPE_ID, SPV_OPERAND_TYPE_RESULT_ID, SPV_OPERAND_TYPE_ID}, 1, 1},
   {"SubgroupFirstInvocationKHR", SpvOpSubgroupFirstInvocationKHR, 1, pygen_variable_caps_SubgroupBallotKHR_1_0, 3, {SPV_OPERAND_TYPE_TYPE_ID, SPV_OPERAND_TYPE_RESULT_ID, SPV_OPERAND_TYPE_ID}, 1, 1},
   {"SubgroupAllKHR", SpvOpSubgroupAllKHR, 1, pygen_variable_caps_SubgroupVoteKHR_1_0, 3, {SPV_OPERAND_TYPE_TYPE_ID, SPV_OPERAND_TYPE_RESULT_ID, SPV_OPERAND_TYPE_ID}, 1, 1},
@@ -338,5 +339,7 @@ static const spv_opcode_desc_t kOpcodeTableEntries_1_0[] = {
   {"SubgroupBlockReadINTEL", SpvOpSubgroupBlockReadINTEL, 1, pygen_variable_caps_SubgroupBufferBlockIOINTEL_1_0, 3, {SPV_OPERAND_TYPE_TYPE_ID, SPV_OPERAND_TYPE_RESULT_ID, SPV_OPERAND_TYPE_ID}, 1, 1},
   {"SubgroupBlockWriteINTEL", SpvOpSubgroupBlockWriteINTEL, 1, pygen_variable_caps_SubgroupBufferBlockIOINTEL_1_0, 2, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID}, 0, 0},
   {"SubgroupImageBlockReadINTEL", SpvOpSubgroupImageBlockReadINTEL, 1, pygen_variable_caps_SubgroupImageBlockIOINTEL_1_0, 4, {SPV_OPERAND_TYPE_TYPE_ID, SPV_OPERAND_TYPE_RESULT_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID}, 1, 1},
-  {"SubgroupImageBlockWriteINTEL", SpvOpSubgroupImageBlockWriteINTEL, 1, pygen_variable_caps_SubgroupImageBlockIOINTEL_1_0, 3, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID}, 0, 0}
+  {"SubgroupImageBlockWriteINTEL", SpvOpSubgroupImageBlockWriteINTEL, 1, pygen_variable_caps_SubgroupImageBlockIOINTEL_1_0, 3, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID}, 0, 0},
+  {"DecorateStringGOOGLE", SpvOpDecorateStringGOOGLE, 0, nullptr, 2, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_DECORATION}, 0, 0},
+  {"MemberDecorateStringGOOGLE", SpvOpMemberDecorateStringGOOGLE, 0, nullptr, 3, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_LITERAL_INTEGER, SPV_OPERAND_TYPE_DECORATION}, 0, 0}
 };

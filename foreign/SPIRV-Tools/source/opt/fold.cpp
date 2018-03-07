@@ -13,15 +13,30 @@
 // limitations under the License.
 
 #include "fold.h"
+
 #include "def_use_manager.h"
+#include "ir_context.h"
 
 #include <cassert>
+#include <cstdint>
 #include <vector>
 
 namespace spvtools {
 namespace opt {
 
 namespace {
+
+#ifndef INT32_MIN
+#define INT32_MIN (-2147483648)
+#endif
+
+#ifndef INT32_MAX
+#define INT32_MAX 2147483647
+#endif
+
+#ifndef UINT32_MAX
+#define UINT32_MAX 0xffffffff /* 4294967295U */
+#endif
 
 // Returns the single-word result from performing the given unary operation on
 // the operand value which is passed in as a 32-bit word.
@@ -194,6 +209,266 @@ uint32_t FoldScalars(SpvOp opcode,
   return OperateWords(opcode, operand_values_in_raw_words);
 }
 
+// Returns true if |inst| is a binary operation that takes two integers as
+// parameters and folds to a constant that can be represented as an unsigned
+// 32-bit value when the ids have been replaced by |id_map|.  If |inst| can be
+// folded, the resulting value is returned in |*result|.  Valid result types for
+// the instruction are any integer (signed or unsigned) with 32-bits or less, or
+// a boolean value.
+bool FoldBinaryIntegerOpToConstant(ir::Instruction* inst,
+                                   std::function<uint32_t(uint32_t)> id_map,
+                                   uint32_t* result) {
+  SpvOp opcode = inst->opcode();
+  ir::IRContext* context = inst->context();
+  analysis::ConstantManager* const_manger = context->get_constant_mgr();
+
+  uint32_t ids[2];
+  const analysis::IntConstant* constants[2];
+  for (uint32_t i = 0; i < 2; i++) {
+    const ir::Operand* operand = &inst->GetInOperand(i);
+    if (operand->type != SPV_OPERAND_TYPE_ID) {
+      return false;
+    }
+    ids[i] = id_map(operand->words[0]);
+    const analysis::Constant* constant =
+        const_manger->FindDeclaredConstant(ids[i]);
+    constants[i] = (constant != nullptr ? constant->AsIntConstant() : nullptr);
+  }
+
+  switch (opcode) {
+    // Arthimetics
+    case SpvOp::SpvOpIMul:
+      for (uint32_t i = 0; i < 2; i++) {
+        if (constants[i] != nullptr && constants[i]->IsZero()) {
+          *result = 0;
+          return true;
+        }
+      }
+      break;
+    case SpvOp::SpvOpUDiv:
+    case SpvOp::SpvOpSDiv:
+    case SpvOp::SpvOpSRem:
+    case SpvOp::SpvOpSMod:
+    case SpvOp::SpvOpUMod:
+      // This changes undefined behaviour (ie divide by 0) into a 0.
+      for (uint32_t i = 0; i < 2; i++) {
+        if (constants[i] != nullptr && constants[i]->IsZero()) {
+          *result = 0;
+          return true;
+        }
+      }
+      break;
+
+    // Shifting
+    case SpvOp::SpvOpShiftRightLogical:
+    case SpvOp::SpvOpShiftLeftLogical:
+      if (constants[1] != nullptr) {
+        // When shifting by a value larger than the size of the result, the
+        // result is undefined.  We are setting the undefined behaviour to a
+        // result of 0.
+        uint32_t shift_amount = constants[1]->GetU32BitValue();
+        if (shift_amount >= 32) {
+          *result = 0;
+          return true;
+        }
+      }
+      break;
+
+    // Bitwise operations
+    case SpvOp::SpvOpBitwiseOr:
+      for (uint32_t i = 0; i < 2; i++) {
+        if (constants[i] != nullptr) {
+          // TODO: Change the mask against a value based on the bit width of the
+          // instruction result type.  This way we can handle say 16-bit values
+          // as well.
+          uint32_t mask = constants[i]->GetU32BitValue();
+          if (mask == 0xFFFFFFFF) {
+            *result = 0xFFFFFFFF;
+            return true;
+          }
+        }
+      }
+      break;
+    case SpvOp::SpvOpBitwiseAnd:
+      for (uint32_t i = 0; i < 2; i++) {
+        if (constants[i] != nullptr) {
+          if (constants[i]->IsZero()) {
+            *result = 0;
+            return true;
+          }
+        }
+      }
+      break;
+
+    // Comparison
+    case SpvOp::SpvOpULessThan:
+      if (constants[0] != nullptr &&
+          constants[0]->GetU32BitValue() == UINT32_MAX) {
+        *result = false;
+        return true;
+      }
+      if (constants[1] != nullptr && constants[1]->GetU32BitValue() == 0) {
+        *result = false;
+        return true;
+      }
+      break;
+    case SpvOp::SpvOpSLessThan:
+      if (constants[0] != nullptr &&
+          constants[0]->GetS32BitValue() == INT32_MAX) {
+        *result = false;
+        return true;
+      }
+      if (constants[1] != nullptr &&
+          constants[1]->GetS32BitValue() == INT32_MIN) {
+        *result = false;
+        return true;
+      }
+      break;
+    case SpvOp::SpvOpUGreaterThan:
+      if (constants[0] != nullptr && constants[0]->IsZero()) {
+        *result = false;
+        return true;
+      }
+      if (constants[1] != nullptr &&
+          constants[1]->GetU32BitValue() == UINT32_MAX) {
+        *result = false;
+        return true;
+      }
+      break;
+    case SpvOp::SpvOpSGreaterThan:
+      if (constants[0] != nullptr &&
+          constants[0]->GetS32BitValue() == INT32_MIN) {
+        *result = false;
+        return true;
+      }
+      if (constants[1] != nullptr &&
+          constants[1]->GetS32BitValue() == INT32_MAX) {
+        *result = false;
+        return true;
+      }
+      break;
+    case SpvOp::SpvOpULessThanEqual:
+      if (constants[0] != nullptr && constants[0]->IsZero()) {
+        *result = true;
+        return true;
+      }
+      if (constants[1] != nullptr &&
+          constants[1]->GetU32BitValue() == UINT32_MAX) {
+        *result = true;
+        return true;
+      }
+      break;
+    case SpvOp::SpvOpSLessThanEqual:
+      if (constants[0] != nullptr &&
+          constants[0]->GetS32BitValue() == INT32_MIN) {
+        *result = true;
+        return true;
+      }
+      if (constants[1] != nullptr &&
+          constants[1]->GetS32BitValue() == INT32_MAX) {
+        *result = true;
+        return true;
+      }
+      break;
+    case SpvOp::SpvOpUGreaterThanEqual:
+      if (constants[0] != nullptr &&
+          constants[0]->GetU32BitValue() == UINT32_MAX) {
+        *result = true;
+        return true;
+      }
+      if (constants[1] != nullptr && constants[1]->GetU32BitValue() == 0) {
+        *result = true;
+        return true;
+      }
+      break;
+    case SpvOp::SpvOpSGreaterThanEqual:
+      if (constants[0] != nullptr &&
+          constants[0]->GetS32BitValue() == INT32_MAX) {
+        *result = true;
+        return true;
+      }
+      if (constants[1] != nullptr &&
+          constants[1]->GetS32BitValue() == INT32_MIN) {
+        *result = true;
+        return true;
+      }
+      break;
+    default:
+      break;
+  }
+  return false;
+}
+
+// Returns true if |inst| is a binary operation on two boolean values, and folds
+// to a constant boolean value when the ids have been replaced using |id_map|.
+// If |inst| can be folded, the result value is returned in |*result|.
+bool FoldBinaryBooleanOpToConstant(ir::Instruction* inst,
+                                   std::function<uint32_t(uint32_t)> id_map,
+                                   uint32_t* result) {
+  SpvOp opcode = inst->opcode();
+  ir::IRContext* context = inst->context();
+  analysis::ConstantManager* const_manger = context->get_constant_mgr();
+
+  uint32_t ids[2];
+  const analysis::BoolConstant* constants[2];
+  for (uint32_t i = 0; i < 2; i++) {
+    const ir::Operand* operand = &inst->GetInOperand(i);
+    if (operand->type != SPV_OPERAND_TYPE_ID) {
+      return false;
+    }
+    ids[i] = id_map(operand->words[0]);
+    const analysis::Constant* constant =
+        const_manger->FindDeclaredConstant(ids[i]);
+    constants[i] = (constant != nullptr ? constant->AsBoolConstant() : nullptr);
+  }
+
+  switch (opcode) {
+      // Logical
+    case SpvOp::SpvOpLogicalOr:
+      for (uint32_t i = 0; i < 2; i++) {
+        if (constants[i] != nullptr) {
+          if (constants[i]->value()) {
+            *result = true;
+            return true;
+          }
+        }
+      }
+      break;
+    case SpvOp::SpvOpLogicalAnd:
+      for (uint32_t i = 0; i < 2; i++) {
+        if (constants[i] != nullptr) {
+          if (!constants[i]->value()) {
+            *result = false;
+            return true;
+          }
+        }
+      }
+      break;
+
+    default:
+      break;
+  }
+  return false;
+}
+
+// Returns true if |inst| can be folded to an constant when the ids have been
+// substituted using id_map.  If it can, the value is returned in |result|.  If
+// not, |result| is unchanged.  It is assumed that not all operands are
+// constant.  Those cases are handled by |FoldScalar|.
+bool FoldIntegerOpToConstant(ir::Instruction* inst,
+                             std::function<uint32_t(uint32_t)> id_map,
+                             uint32_t* result) {
+  assert(IsFoldableOpcode(inst->opcode()) &&
+         "Unhandled instruction opcode in FoldScalars");
+  switch (inst->NumInOperands()) {
+    case 2:
+      return FoldBinaryIntegerOpToConstant(inst, id_map, result) ||
+             FoldBinaryBooleanOpToConstant(inst, id_map, result);
+    default:
+      return false;
+  }
+}
+
 std::vector<uint32_t> FoldVectors(
     SpvOp opcode, uint32_t num_dims,
     const std::vector<const analysis::Constant*>& operands) {
@@ -287,6 +562,76 @@ bool IsFoldableConstant(const analysis::Constant* cst) {
     return scalar->words().size() == 1;
   else
     return cst->AsNullConstant() != nullptr;
+}
+
+ir::Instruction* FoldInstructionToConstant(
+    ir::Instruction* inst, std::function<uint32_t(uint32_t)> id_map) {
+  if (!inst->IsFoldable()) {
+    return nullptr;
+  }
+
+  ir::IRContext* context = inst->context();
+  analysis::ConstantManager* const_mgr = context->get_constant_mgr();
+
+  // Collect the values of the constant parameters.
+  std::vector<const analysis::Constant*> constants;
+  bool missing_constants = false;
+  inst->ForEachInId([&constants, &missing_constants, const_mgr,
+                     &id_map](uint32_t* op_id) {
+    uint32_t id = id_map(*op_id);
+    const analysis::Constant* const_op = const_mgr->FindDeclaredConstant(id);
+    if (!const_op || !IsFoldableConstant(const_op)) {
+      constants.push_back(nullptr);
+      missing_constants = true;
+      return;
+    }
+    constants.push_back(const_op);
+  });
+
+  uint32_t result_val = 0;
+  bool successful = false;
+  // If all parameters are constant, fold the instruction to a constant.
+  if (!missing_constants) {
+    result_val = FoldScalars(inst->opcode(), constants);
+    successful = true;
+  }
+
+  if (!successful) {
+    successful = FoldIntegerOpToConstant(inst, id_map, &result_val);
+  }
+
+  if (successful) {
+    const analysis::Constant* result_const =
+        const_mgr->GetConstant(const_mgr->GetType(inst), {result_val});
+    return const_mgr->GetDefiningInstruction(result_const);
+  }
+
+  return nullptr;
+}
+
+bool IsFoldableType(ir::Instruction* type_inst) {
+  // Support 32-bit integers.
+  if (type_inst->opcode() == SpvOpTypeInt) {
+    return type_inst->GetSingleWordInOperand(0) == 32;
+  }
+  // Support booleans.
+  if (type_inst->opcode() == SpvOpTypeBool) {
+    return true;
+  }
+  // Nothing else yet.
+  return false;
+}
+
+ir::Instruction* FoldInstruction(ir::Instruction* inst,
+                                 std::function<uint32_t(uint32_t)> id_map) {
+  ir::Instruction* folded_inst = FoldInstructionToConstant(inst, id_map);
+  if (folded_inst != nullptr) {
+    return folded_inst;
+  }
+
+  // TODO: Add other folding opportunities that do not necessarily fold to a
+  // constant.
+  return nullptr;
 }
 
 }  // namespace opt

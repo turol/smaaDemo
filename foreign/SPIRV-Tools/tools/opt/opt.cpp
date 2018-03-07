@@ -118,6 +118,10 @@ Options (in lexicographical order):
   --eliminate-dead-functions
                Deletes functions that cannot be reached from entry points or
                exported functions.
+  --eliminate-dead-insert
+               Deletes unreferenced inserts into composites, most notably
+               unused stores to vector components, that are not removed by
+               aggressive dead code elimination.
   --eliminate-dead-variables
                Deletes module scope variables that are not referenced.
   --eliminate-insert-extract
@@ -148,6 +152,8 @@ Options (in lexicographical order):
   --freeze-spec-const
                Freeze the values of specialization constants to their default
                values.
+  --if-conversion
+               Convert if-then-else like assignments into OpSelect.
   --inline-entry-points-exhaustive
                Exhaustively inline all function calls in entry point call tree
                functions. Currently does not inline calls to functions with
@@ -253,6 +259,10 @@ Options (in lexicographical order):
                Replaces instructions with equivalent and less expensive ones.
   --strip-debug
                Remove all debug instructions.
+  --workaround-1209
+               Rewrites instructions for which there are known driver bugs to
+               avoid triggering those bugs.
+               Current workarounds: Avoid OpUnreachable in loops.
   --unify-const
                Remove the duplicated constants.
   -h, --help
@@ -387,6 +397,8 @@ OptStatus ParseFlags(int argc, const char** argv, Optimizer* optimizer,
               "error: Expected a string of <spec id>:<default value> pairs.");
           return {OPT_STOP, 1};
         }
+      } else if (0 == strcmp(cur_arg, "--if-conversion")) {
+        optimizer->RegisterPass(CreateIfConversionPass());
       } else if (0 == strcmp(cur_arg, "--freeze-spec-const")) {
         optimizer->RegisterPass(CreateFreezeSpecConstantValuePass());
       } else if (0 == strcmp(cur_arg, "--inline-entry-points-exhaustive")) {
@@ -417,6 +429,8 @@ OptStatus ParseFlags(int argc, const char** argv, Optimizer* optimizer,
         optimizer->RegisterPass(CreateCommonUniformElimPass());
       } else if (0 == strcmp(cur_arg, "--eliminate-dead-const")) {
         optimizer->RegisterPass(CreateEliminateDeadConstantPass());
+      } else if (0 == strcmp(cur_arg, "--eliminate-dead-inserts")) {
+        optimizer->RegisterPass(CreateDeadInsertElimPass());
       } else if (0 == strcmp(cur_arg, "--eliminate-dead-variables")) {
         optimizer->RegisterPass(CreateDeadVariableEliminationPass());
       } else if (0 == strcmp(cur_arg, "--fold-spec-const-op-composite")) {
@@ -441,6 +455,8 @@ OptStatus ParseFlags(int argc, const char** argv, Optimizer* optimizer,
         optimizer->RegisterPass(CreatePrivateToLocalPass());
       } else if (0 == strcmp(cur_arg, "--remove-duplicates")) {
         optimizer->RegisterPass(CreateRemoveDuplicatesPass());
+      } else if (0 == strcmp(cur_arg, "--workaround-1209")) {
+        optimizer->RegisterPass(CreateWorkaround1209Pass());
       } else if (0 == strcmp(cur_arg, "--relax-struct-store")) {
         options->relax_struct_store = true;
       } else if (0 == strcmp(cur_arg, "--skip-validation")) {

@@ -40,6 +40,9 @@ void IRContext::BuildInvalidAnalyses(IRContext::Analysis set) {
   if (set & kAnalysisDominatorAnalysis) {
     ResetDominatorAnalysis();
   }
+  if (set & kAnalysisLoopAnalysis) {
+    ResetLoopAnalysis();
+  }
 }
 
 void IRContext::InvalidateAnalysesExceptFor(
@@ -179,6 +182,17 @@ bool IRContext::IsConsistent() {
     opt::analysis::DefUseManager new_def_use(module());
     if (*get_def_use_mgr() != new_def_use) {
       return false;
+    }
+  }
+  if (AreAnalysesValid(kAnalysisInstrToBlockMapping)) {
+    for (auto& func : *module()) {
+      for (auto& block : func) {
+        if (!block.WhileEachInst([this, &block](ir::Instruction* inst) {
+              if (get_instr_block(inst) != &block) return false;
+              return true;
+            }))
+          return false;
+      }
     }
   }
   return true;
@@ -470,6 +484,21 @@ void IRContext::InitializeCombinators() {
   }
 
   valid_analyses_ |= kAnalysisCombinators;
+}
+
+ir::LoopDescriptor* IRContext::GetLoopDescriptor(const ir::Function* f) {
+  if (!AreAnalysesValid(kAnalysisLoopAnalysis)) {
+    ResetLoopAnalysis();
+  }
+
+  std::unordered_map<const ir::Function*, ir::LoopDescriptor>::iterator it =
+      loop_descriptors_.find(f);
+  if (it == loop_descriptors_.end()) {
+    return &loop_descriptors_.emplace(std::make_pair(f, ir::LoopDescriptor(f)))
+                .first->second;
+  }
+
+  return &it->second;
 }
 
 // Gets the dominator analysis for function |f|.

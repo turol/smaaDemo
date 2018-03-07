@@ -30,10 +30,11 @@ import sys
 AUTHORS = ['The Khronos Group Inc.',
            'LunarG Inc.',
            'Google Inc.',
+           'Google LLC',
            'Pierre Moreau']
-CURRENT_YEAR='2017'
+CURRENT_YEAR='2018'
 
-YEARS = '(2014-2016|2015-2016|2016|2016-2017|2017)'
+YEARS = '(2014-2016|2015-2016|2016|2016-2017|2017|2018)'
 COPYRIGHT_RE = re.compile(
         'Copyright \(c\) {} ({})'.format(YEARS, '|'.join(AUTHORS)))
 

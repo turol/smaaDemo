@@ -38,6 +38,7 @@ FILES:= \
 	table.cpp \
 	text.cpp \
 	text_handler.cpp \
+	validate_adjacency.cpp \
 	validate_arithmetics.cpp \
 	validate_atomics.cpp \
 	validate_bitwise.cpp \

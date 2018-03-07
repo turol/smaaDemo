@@ -22,6 +22,8 @@ std::string ExtensionToString(Extension extension) {
       return "SPV_EXT_shader_stencil_export";
     case Extension::kSPV_EXT_shader_viewport_index_layer:
       return "SPV_EXT_shader_viewport_index_layer";
+    case Extension::kSPV_GOOGLE_hlsl_functionality1:
+      return "SPV_GOOGLE_hlsl_functionality1";
     case Extension::kSPV_INTEL_subgroups:
       return "SPV_INTEL_subgroups";
     case Extension::kSPV_KHR_16bit_storage:
@@ -86,6 +88,8 @@ bool GetExtensionFromString(const std::string& str, Extension* extension) {
    Extension::kSPV_EXT_shader_stencil_export},
   {"SPV_EXT_shader_viewport_index_layer",
    Extension::kSPV_EXT_shader_viewport_index_layer},
+  {"SPV_GOOGLE_hlsl_functionality1",
+   Extension::kSPV_GOOGLE_hlsl_functionality1},
   {"SPV_INTEL_subgroups",
    Extension::kSPV_INTEL_subgroups},
   {"SPV_KHR_16bit_storage",

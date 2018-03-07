@@ -353,5 +353,7 @@ static const spv_opcode_desc_t kOpcodeTableEntries_1_2[] = {
   {"SubgroupBlockReadINTEL", SpvOpSubgroupBlockReadINTEL, 1, pygen_variable_caps_SubgroupBufferBlockIOINTEL_1_2, 3, {SPV_OPERAND_TYPE_TYPE_ID, SPV_OPERAND_TYPE_RESULT_ID, SPV_OPERAND_TYPE_ID}, 1, 1},
   {"SubgroupBlockWriteINTEL", SpvOpSubgroupBlockWriteINTEL, 1, pygen_variable_caps_SubgroupBufferBlockIOINTEL_1_2, 2, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID}, 0, 0},
   {"SubgroupImageBlockReadINTEL", SpvOpSubgroupImageBlockReadINTEL, 1, pygen_variable_caps_SubgroupImageBlockIOINTEL_1_2, 4, {SPV_OPERAND_TYPE_TYPE_ID, SPV_OPERAND_TYPE_RESULT_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID}, 1, 1},
-  {"SubgroupImageBlockWriteINTEL", SpvOpSubgroupImageBlockWriteINTEL, 1, pygen_variable_caps_SubgroupImageBlockIOINTEL_1_2, 3, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID}, 0, 0}
+  {"SubgroupImageBlockWriteINTEL", SpvOpSubgroupImageBlockWriteINTEL, 1, pygen_variable_caps_SubgroupImageBlockIOINTEL_1_2, 3, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID}, 0, 0},
+  {"DecorateStringGOOGLE", SpvOpDecorateStringGOOGLE, 0, nullptr, 2, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_DECORATION}, 0, 0},
+  {"MemberDecorateStringGOOGLE", SpvOpMemberDecorateStringGOOGLE, 0, nullptr, 3, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_LITERAL_INTEGER, SPV_OPERAND_TYPE_DECORATION}, 0, 0}
 };

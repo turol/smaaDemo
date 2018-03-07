@@ -25,6 +25,7 @@
 #include "util/ilist_node.h"
 
 #include "latest_version_spirv_header.h"
+#include "reflect.h"
 #include "spirv-tools/libspirv.h"
 
 namespace spvtools {
@@ -234,20 +235,41 @@ class Instruction : public utils::IntrusiveNodeBase<Instruction> {
   inline void ForEachInst(const std::function<void(const Instruction*)>& f,
                           bool run_on_debug_line_insts = false) const;
 
+  // Runs the given function |f| on this instruction and optionally on the
+  // preceding debug line instructions.  The function will always be run
+  // if this is itself a debug line instruction. If |f| returns false,
+  // iteration is terminated and this function returns false.
+  inline bool WhileEachInst(const std::function<bool(Instruction*)>& f,
+                            bool run_on_debug_line_insts = false);
+  inline bool WhileEachInst(const std::function<bool(const Instruction*)>& f,
+                            bool run_on_debug_line_insts = false) const;
+
   // Runs the given function |f| on all operand ids.
   //
   // |f| should not transform an ID into 0, as 0 is an invalid ID.
   inline void ForEachId(const std::function<void(uint32_t*)>& f);
   inline void ForEachId(const std::function<void(const uint32_t*)>& f) const;
 
-  // Runs the given function |f| on all "in" operand ids
+  // Runs the given function |f| on all "in" operand ids.
   inline void ForEachInId(const std::function<void(uint32_t*)>& f);
   inline void ForEachInId(const std::function<void(const uint32_t*)>& f) const;
 
-  // Runs the given function |f| on all "in" operands
+  // Runs the given function |f| on all "in" operand ids. If |f| returns false,
+  // iteration is terminated and this function returns false.
+  inline bool WhileEachInId(const std::function<bool(uint32_t*)>& f);
+  inline bool WhileEachInId(
+      const std::function<bool(const uint32_t*)>& f) const;
+
+  // Runs the given function |f| on all "in" operands.
   inline void ForEachInOperand(const std::function<void(uint32_t*)>& f);
   inline void ForEachInOperand(
       const std::function<void(const uint32_t*)>& f) const;
+
+  // Runs the given function |f| on all "in" operands. If |f| returns false,
+  // iteration is terminated and this function return false.
+  inline bool WhileEachInOperand(const std::function<bool(uint32_t*)>& f);
+  inline bool WhileEachInOperand(
+      const std::function<bool(const uint32_t*)>& f) const;
 
   // Returns true if any operands can be labels
   inline bool HasLabels() const;
@@ -347,6 +369,19 @@ class Instruction : public utils::IntrusiveNodeBase<Instruction> {
   Instruction* InsertBefore(std::unique_ptr<Instruction>&& i);
   using utils::IntrusiveNodeBase<Instruction>::InsertBefore;
 
+  // Returns true if |this| is an instruction defining a constant, but not a
+  // Spec constant.
+  inline bool IsConstant() const;
+
+  // Pretty-prints |inst|.
+  //
+  // Provides the disassembly of a specific instruction. Utilizes |inst|'s
+  // context to provide the correct interpretation of types, constants, etc.
+  //
+  // |options| are the disassembly options. SPV_BINARY_TO_TEXT_OPTION_NO_HEADER
+  // is always added to |options|.
+  std::string PrettyPrint(uint32_t options = 0u) const;
+
  private:
   // Returns the total count of result type id and result id.
   uint32_t TypeResultIdCount() const {
@@ -383,6 +418,14 @@ class Instruction : public utils::IntrusiveNodeBase<Instruction> {
 
   friend InstructionList;
 };
+
+// Pretty-prints |inst| to |str| and returns |str|.
+//
+// Provides the disassembly of a specific instruction. Utilizes |inst|'s context
+// to provide the correct interpretation of types, constants, etc.
+//
+// Disassembly uses raw ids (not pretty printed names).
+std::ostream& operator<<(std::ostream& str, const ir::Instruction& inst);
 
 inline bool Instruction::operator==(const Instruction& other) const {
   return unique_id() == other.unique_id();
@@ -438,19 +481,46 @@ inline void Instruction::ToNop() {
   operands_.clear();
 }
 
+inline bool Instruction::WhileEachInst(
+    const std::function<bool(Instruction*)>& f, bool run_on_debug_line_insts) {
+  if (run_on_debug_line_insts) {
+    for (auto& dbg_line : dbg_line_insts_) {
+      if (!f(&dbg_line)) return false;
+    }
+  }
+  return f(this);
+}
+
+inline bool Instruction::WhileEachInst(
+    const std::function<bool(const Instruction*)>& f,
+    bool run_on_debug_line_insts) const {
+  if (run_on_debug_line_insts) {
+    for (auto& dbg_line : dbg_line_insts_) {
+      if (!f(&dbg_line)) return false;
+    }
+  }
+  return f(this);
+}
+
 inline void Instruction::ForEachInst(const std::function<void(Instruction*)>& f,
                                      bool run_on_debug_line_insts) {
-  if (run_on_debug_line_insts)
-    for (auto& dbg_line : dbg_line_insts_) f(&dbg_line);
-  f(this);
+  WhileEachInst(
+      [&f](Instruction* inst) {
+        f(inst);
+        return true;
+      },
+      run_on_debug_line_insts);
 }
 
 inline void Instruction::ForEachInst(
     const std::function<void(const Instruction*)>& f,
     bool run_on_debug_line_insts) const {
-  if (run_on_debug_line_insts)
-    for (auto& dbg_line : dbg_line_insts_) f(&dbg_line);
-  f(this);
+  WhileEachInst(
+      [&f](const Instruction* inst) {
+        f(inst);
+        return true;
+      },
+      run_on_debug_line_insts);
 }
 
 inline void Instruction::ForEachId(const std::function<void(uint32_t*)>& f) {
@@ -467,59 +537,99 @@ inline void Instruction::ForEachId(
     if (spvIsIdType(opnd.type)) f(&opnd.words[0]);
 }
 
-inline void Instruction::ForEachInId(const std::function<void(uint32_t*)>& f) {
+inline bool Instruction::WhileEachInId(
+    const std::function<bool(uint32_t*)>& f) {
   for (auto& opnd : operands_) {
     switch (opnd.type) {
       case SPV_OPERAND_TYPE_RESULT_ID:
       case SPV_OPERAND_TYPE_TYPE_ID:
         break;
       default:
-        if (spvIsIdType(opnd.type)) f(&opnd.words[0]);
+        if (spvIsIdType(opnd.type)) {
+          if (!f(&opnd.words[0])) return false;
+        }
         break;
     }
   }
+  return true;
+}
+
+inline bool Instruction::WhileEachInId(
+    const std::function<bool(const uint32_t*)>& f) const {
+  for (const auto& opnd : operands_) {
+    switch (opnd.type) {
+      case SPV_OPERAND_TYPE_RESULT_ID:
+      case SPV_OPERAND_TYPE_TYPE_ID:
+        break;
+      default:
+        if (spvIsIdType(opnd.type)) {
+          if (!f(&opnd.words[0])) return false;
+        }
+        break;
+    }
+  }
+  return true;
+}
+
+inline void Instruction::ForEachInId(const std::function<void(uint32_t*)>& f) {
+  WhileEachInId([&f](uint32_t* id) {
+    f(id);
+    return true;
+  });
 }
 
 inline void Instruction::ForEachInId(
     const std::function<void(const uint32_t*)>& f) const {
-  for (const auto& opnd : operands_) {
-    switch (opnd.type) {
-      case SPV_OPERAND_TYPE_RESULT_ID:
-      case SPV_OPERAND_TYPE_TYPE_ID:
-        break;
-      default:
-        if (spvIsIdType(opnd.type)) f(&opnd.words[0]);
-        break;
-    }
-  }
+  WhileEachInId([&f](const uint32_t* id) {
+    f(id);
+    return true;
+  });
 }
 
-inline void Instruction::ForEachInOperand(
-    const std::function<void(uint32_t*)>& f) {
+inline bool Instruction::WhileEachInOperand(
+    const std::function<bool(uint32_t*)>& f) {
   for (auto& opnd : operands_) {
     switch (opnd.type) {
       case SPV_OPERAND_TYPE_RESULT_ID:
       case SPV_OPERAND_TYPE_TYPE_ID:
         break;
       default:
-        f(&opnd.words[0]);
+        if (!f(&opnd.words[0])) return false;
         break;
     }
   }
+  return true;
 }
 
-inline void Instruction::ForEachInOperand(
-    const std::function<void(const uint32_t*)>& f) const {
+inline bool Instruction::WhileEachInOperand(
+    const std::function<bool(const uint32_t*)>& f) const {
   for (const auto& opnd : operands_) {
     switch (opnd.type) {
       case SPV_OPERAND_TYPE_RESULT_ID:
       case SPV_OPERAND_TYPE_TYPE_ID:
         break;
       default:
-        f(&opnd.words[0]);
+        if (!f(&opnd.words[0])) return false;
         break;
     }
   }
+  return true;
+}
+
+inline void Instruction::ForEachInOperand(
+    const std::function<void(uint32_t*)>& f) {
+  WhileEachInOperand([&f](uint32_t* op) {
+    f(op);
+    return true;
+  });
+}
+
+inline void Instruction::ForEachInOperand(
+    const std::function<void(const uint32_t*)>& f) const {
+  WhileEachInOperand([&f](const uint32_t* op) {
+    f(op);
+    return true;
+  });
 }
 
 inline bool Instruction::HasLabels() const {
@@ -545,6 +655,10 @@ bool Instruction::IsDecoration() const {
 bool Instruction::IsLoad() const { return spvOpcodeIsLoad(opcode()); }
 
 bool Instruction::IsAtomicOp() const { return spvOpcodeIsAtomicOp(opcode()); }
+
+bool Instruction::IsConstant() const {
+  return IsCompileTimeConstantInst(opcode());
+}
 }  // namespace ir
 }  // namespace spvtools
 

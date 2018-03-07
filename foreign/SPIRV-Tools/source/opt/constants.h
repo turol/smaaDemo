@@ -43,6 +43,7 @@ class BoolConstant;
 class CompositeConstant;
 class StructConstant;
 class VectorConstant;
+class MatrixConstant;
 class ArrayConstant;
 class NullConstant;
 
@@ -64,6 +65,7 @@ class Constant {
   virtual CompositeConstant* AsCompositeConstant() { return nullptr; }
   virtual StructConstant* AsStructConstant() { return nullptr; }
   virtual VectorConstant* AsVectorConstant() { return nullptr; }
+  virtual MatrixConstant* AsMatrixConstant() { return nullptr; }
   virtual ArrayConstant* AsArrayConstant() { return nullptr; }
   virtual NullConstant* AsNullConstant() { return nullptr; }
 
@@ -76,6 +78,7 @@ class Constant {
   }
   virtual const StructConstant* AsStructConstant() const { return nullptr; }
   virtual const VectorConstant* AsVectorConstant() const { return nullptr; }
+  virtual const MatrixConstant* AsMatrixConstant() const { return nullptr; }
   virtual const ArrayConstant* AsArrayConstant() const { return nullptr; }
   virtual const NullConstant* AsNullConstant() const { return nullptr; }
 
@@ -116,6 +119,31 @@ class IntConstant : public ScalarConstant {
 
   IntConstant* AsIntConstant() override { return this; }
   const IntConstant* AsIntConstant() const override { return this; }
+
+  int32_t GetS32BitValue() const {
+    // Relies on signed values smaller than 32-bit being sign extended.  See
+    // section 2.2.1 of the SPIR-V spec.
+    assert(words().size() == 1);
+    return words()[0];
+  }
+
+  uint32_t GetU32BitValue() const {
+    // Relies on unsigned values smaller than 32-bit being zero extended.  See
+    // section 2.2.1 of the SPIR-V spec.
+    assert(words().size() == 1);
+    return words()[0];
+  }
+
+  bool IsZero() const {
+    bool is_zero = true;
+    for (uint32_t v : words()) {
+      if (v != 0) {
+        is_zero = false;
+        break;
+      }
+    }
+    return is_zero;
+  }
 
   // Make a copy of this IntConstant instance.
   std::unique_ptr<IntConstant> CopyIntConstant() const {
@@ -247,6 +275,39 @@ class VectorConstant : public CompositeConstant {
   const Type* component_type_;
 };
 
+// Matrix type constant.
+class MatrixConstant : public CompositeConstant {
+ public:
+  MatrixConstant(const Matrix* ty)
+      : CompositeConstant(ty), component_type_(ty->element_type()) {}
+  MatrixConstant(const Matrix* ty,
+                 const std::vector<const Constant*>& components)
+      : CompositeConstant(ty, components),
+        component_type_(ty->element_type()) {}
+  MatrixConstant(const Vector* ty, std::vector<const Constant*>&& components)
+      : CompositeConstant(ty, std::move(components)),
+        component_type_(ty->element_type()) {}
+
+  MatrixConstant* AsMatrixConstant() override { return this; }
+  const MatrixConstant* AsMatrixConstant() const override { return this; }
+
+  // Make a copy of this MatrixConstant instance.
+  std::unique_ptr<MatrixConstant> CopyMatrixConstant() const {
+    auto another = MakeUnique<MatrixConstant>(type_->AsMatrix());
+    another->components_.insert(another->components_.end(), components_.begin(),
+                                components_.end());
+    return another;
+  }
+  std::unique_ptr<Constant> Copy() const override {
+    return std::unique_ptr<Constant>(CopyMatrixConstant().release());
+  }
+
+  const Type* component_type() { return component_type_; }
+
+ private:
+  const Type* component_type_;
+};
+
 // Array type constant.
 class ArrayConstant : public CompositeConstant {
  public:
@@ -343,7 +404,7 @@ struct ConstantEqual {
 // This class represents a pool of constants.
 class ConstantManager {
  public:
-  ConstantManager(ir::IRContext* ctx) : ctx_(ctx) {}
+  ConstantManager(ir::IRContext* ctx);
 
   ir::IRContext* context() const { return ctx_; }
 
