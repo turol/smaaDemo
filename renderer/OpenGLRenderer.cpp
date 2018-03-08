@@ -107,8 +107,10 @@ static std::vector<char> spirv2glsl(const std::string &name, const ShaderMacros 
 }
 
 
-static GLuint createShader(GLenum type, const std::string &name, const std::vector<char> &src) {
+static GLuint createShader(GLenum type, const std::string &name, const ShaderMacros &macros, spirv_cross::CompilerGLSL &glsl) {
 	assert(type == GL_VERTEX_SHADER || type == GL_FRAGMENT_SHADER);
+
+	std::vector<char> src = spirv2glsl(name, macros, glsl);
 
 	const char *sourcePointer = &src[0];
 	GLint sourceLen = src.size();
@@ -1011,8 +1013,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 
 		resources = processShaderResources(glsl);
 
-		std::vector<char> vertexSrc = spirv2glsl(v.name, v.macros, glsl);
-		vertexShader = createShader(GL_VERTEX_SHADER, v.name, vertexSrc);
+		vertexShader = createShader(GL_VERTEX_SHADER, v.name, v.macros, glsl);
 	}
 
 	{
@@ -1022,8 +1023,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		glsl.set_options(glslOptions);
 
 		auto fragResources = processShaderResources(glsl);
-		std::vector<char> fragmentSrc = spirv2glsl(f.name, f.macros, glsl);
-		fragmentShader = createShader(GL_FRAGMENT_SHADER, f.name, fragmentSrc);
+		fragmentShader = createShader(GL_FRAGMENT_SHADER, f.name, f.macros, glsl);
 
 		mergeShaderResources(resources, fragResources);
 	}
