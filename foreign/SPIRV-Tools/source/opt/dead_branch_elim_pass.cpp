@@ -159,7 +159,8 @@ bool DeadBranchElimPass::MarkLiveBlocks(
       stack.push_back(GetParentBlock(live_lab_id));
     } else {
       // All successors are live.
-      block->ForEachSuccessorLabel([&stack, this](const uint32_t label) {
+      const auto* const_block = block;
+      const_block->ForEachSuccessorLabel([&stack, this](const uint32_t label) {
         stack.push_back(GetParentBlock(label));
       });
     }
@@ -210,22 +211,36 @@ bool DeadBranchElimPass::FixPhiNodesInLiveBlocks(
         operands.push_back(inst->GetOperand(0u));
         operands.push_back(inst->GetOperand(1u));
         // Iterate through the incoming labels and determine which to keep
-        // and/or modify.
+        // and/or modify.  If there in an unreachable continue block, there will
+        // be an edge from that block to the header.  We need to keep it to
+        // maintain the structured control flow.  If the header has more that 2
+        // incoming edges, then the OpPhi must have an entry for that edge.
+        // However, if there is only one other incoming edge, the OpPhi can be
+        // eliminated.
         for (uint32_t i = 1; i < inst->NumInOperands(); i += 2) {
           ir::BasicBlock* inc = GetParentBlock(inst->GetSingleWordInOperand(i));
           auto cont_iter = unreachable_continues.find(inc);
           if (cont_iter != unreachable_continues.end() &&
-              cont_iter->second == &block) {
-            // Replace incoming value with undef if this phi exists in the loop
-            // header. Otherwise, this edge is not live since the unreachable
-            // continue block will be replaced with an unconditional branch to
-            // the header only.
-            operands.emplace_back(
-                SPV_OPERAND_TYPE_ID,
-                std::initializer_list<uint32_t>{Type2Undef(inst->type_id())});
-            operands.push_back(inst->GetInOperand(i));
-            changed = true;
-            backedge_added = true;
+              cont_iter->second == &block && inst->NumInOperands() > 4) {
+            if (get_def_use_mgr()
+                    ->GetDef(inst->GetSingleWordInOperand(i - 1))
+                    ->opcode() == SpvOpUndef) {
+              // Already undef incoming value, no change necessary.
+              operands.push_back(inst->GetInOperand(i - 1));
+              operands.push_back(inst->GetInOperand(i));
+              backedge_added = true;
+            } else {
+              // Replace incoming value with undef if this phi exists in the
+              // loop header. Otherwise, this edge is not live since the
+              // unreachable continue block will be replaced with an
+              // unconditional branch to the header only.
+              operands.emplace_back(
+                  SPV_OPERAND_TYPE_ID,
+                  std::initializer_list<uint32_t>{Type2Undef(inst->type_id())});
+              operands.push_back(inst->GetInOperand(i));
+              changed = true;
+              backedge_added = true;
+            }
           } else if (live_blocks.count(inc) && inc->IsSuccessor(&block)) {
             // Keep live incoming edge.
             operands.push_back(inst->GetInOperand(i - 1));
@@ -237,9 +252,11 @@ bool DeadBranchElimPass::FixPhiNodesInLiveBlocks(
         }
 
         if (changed) {
+          modified = true;
           uint32_t continue_id = block.ContinueBlockIdIfAny();
           if (!backedge_added && continue_id != 0 &&
-              unreachable_continues.count(GetParentBlock(continue_id))) {
+              unreachable_continues.count(GetParentBlock(continue_id)) &&
+              operands.size() > 4) {
             // Changed the backedge to branch from the continue block instead
             // of a successor of the continue block. Add an entry to the phi to
             // provide an undef for the continue block. Since the successor of
@@ -291,27 +308,34 @@ bool DeadBranchElimPass::EraseDeadBlocks(
   bool modified = false;
   for (auto ebi = func->begin(); ebi != func->end();) {
     if (unreachable_merges.count(&*ebi)) {
-      // Make unreachable, but leave the label.
-      KillAllInsts(&*ebi, false);
-      // Add unreachable terminator.
-      ebi->AddInstruction(
-          MakeUnique<ir::Instruction>(context(), SpvOpUnreachable, 0, 0,
-                                      std::initializer_list<ir::Operand>{}));
+      if (ebi->begin() != ebi->tail() ||
+          ebi->terminator()->opcode() != SpvOpUnreachable) {
+        // Make unreachable, but leave the label.
+        KillAllInsts(&*ebi, false);
+        // Add unreachable terminator.
+        ebi->AddInstruction(
+            MakeUnique<ir::Instruction>(context(), SpvOpUnreachable, 0, 0,
+                                        std::initializer_list<ir::Operand>{}));
+        modified = true;
+      }
       ++ebi;
-      modified = true;
     } else if (unreachable_continues.count(&*ebi)) {
-      // Make unreachable, but leave the label.
-      KillAllInsts(&*ebi, false);
-      // Add unconditional branch to header.
-      assert(unreachable_continues.count(&*ebi));
       uint32_t cont_id = unreachable_continues.find(&*ebi)->second->id();
-      ebi->AddInstruction(
-          MakeUnique<ir::Instruction>(context(), SpvOpBranch, 0, 0,
-                                      std::initializer_list<ir::Operand>{
-                                          {SPV_OPERAND_TYPE_ID, {cont_id}}}));
-      get_def_use_mgr()->AnalyzeInstUse(&*ebi->tail());
+      if (ebi->begin() != ebi->tail() ||
+          ebi->terminator()->opcode() != SpvOpBranch ||
+          ebi->terminator()->GetSingleWordInOperand(0u) != cont_id) {
+        // Make unreachable, but leave the label.
+        KillAllInsts(&*ebi, false);
+        // Add unconditional branch to header.
+        assert(unreachable_continues.count(&*ebi));
+        ebi->AddInstruction(
+            MakeUnique<ir::Instruction>(context(), SpvOpBranch, 0, 0,
+                                        std::initializer_list<ir::Operand>{
+                                            {SPV_OPERAND_TYPE_ID, {cont_id}}}));
+        get_def_use_mgr()->AnalyzeInstUse(&*ebi->tail());
+        modified = true;
+      }
       ++ebi;
-      modified = true;
     } else if (!live_blocks.count(&*ebi)) {
       // Kill this block.
       KillAllInsts(&*ebi);

@@ -15,14 +15,18 @@
 #ifndef LIBSPIRV_UTIL_FOLD_H_
 #define LIBSPIRV_UTIL_FOLD_H_
 
-#include "constants.h"
-#include "def_use_manager.h"
-
 #include <cstdint>
 #include <vector>
 
+#include "const_folding_rules.h"
+#include "constants.h"
+#include "def_use_manager.h"
+
 namespace spvtools {
 namespace opt {
+
+// Returns a reference to the ConstnatFoldingRules instance.
+const ConstantFoldingRules& GetConstantFoldingRules();
 
 // Returns the result of folding a scalar instruction with the given |opcode|
 // and |operands|. Each entry in |operands| is a pointer to an
@@ -75,26 +79,18 @@ bool IsFoldableType(ir::Instruction* type_inst);
 ir::Instruction* FoldInstructionToConstant(
     ir::Instruction* inst, std::function<uint32_t(uint32_t)> id_map);
 
-// Tries to fold |inst| to a simpler instruction that computes the same value,
-// when the input ids to |inst| have been substituted using |id_map|.  Returns a
-// pointer to the simplified instruction if successful.  If necessary, a new
-// instruction is created and placed in the global values section, for
-// constants, or after |inst| for other instructions.
+// Returns true if |inst| can be folded into a simpler instruction.
+// If |inst| can be simplified, |inst| is overwritten with the simplified
+// instruction reusing the same result id.
 //
-// |inst| must be an instruction that exists in the body of a function.
+// If |inst| is simplified, it is possible that the resulting code in invalid
+// because the instruction is in a bad location.  Callers of this function have
+// to handle the following cases:
 //
-// |id_map| is a function that takes one result id and returns another.  It can
-// be used for things like CCP where it is known that some ids contain a
-// constant, but the instruction itself has not been updated yet.  This can map
-// those ids to the appropriate constants.
-ir::Instruction* FoldInstruction(ir::Instruction* inst,
-                                 std::function<uint32_t(uint32_t)> id_map);
-
-// The same as above when |id_map| is the identity function.
-inline ir::Instruction* FoldInstruction(ir::Instruction* inst) {
-  auto identity_map = [](uint32_t id) { return id; };
-  return FoldInstruction(inst, identity_map);
-}
+// 1) An OpPhi becomes and OpCopyObject - If there are OpPhi instruction after
+//    |inst| in a basic block then this is invalid.  The caller must fix this
+//    up.
+bool FoldInstruction(ir::Instruction* inst);
 
 }  // namespace opt
 }  // namespace spvtools

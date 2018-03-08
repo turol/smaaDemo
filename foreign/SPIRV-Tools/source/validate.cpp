@@ -127,7 +127,7 @@ void RegisterExtension(ValidationState_t& _,
                        const spv_parsed_instruction_t* inst) {
   const std::string extension_str = libspirv::GetExtensionString(inst);
   Extension extension;
-  if (!GetExtensionFromString(extension_str, &extension)) {
+  if (!GetExtensionFromString(extension_str.c_str(), &extension)) {
     // The error will be logged in the ProcessInstruction pass.
     return;
   }
@@ -189,6 +189,7 @@ spv_result_t ProcessInstruction(void* user_data,
   if (auto error = ExtInstPass(_, inst)) return error;
   if (auto error = ImagePass(_, inst)) return error;
   if (auto error = AtomicsPass(_, inst)) return error;
+  if (auto error = BarriersPass(_, inst)) return error;
   if (auto error = PrimitivesPass(_, inst)) return error;
   if (auto error = LiteralsPass(_, inst)) return error;
 
@@ -289,6 +290,10 @@ spv_result_t ValidateBinaryUsingContextAndValidationState(
            << "The following forward referenced IDs have not been defined:\n"
            << id_str.substr(0, id_str.size() - 1);
   }
+
+  // Validate the preconditions involving adjacent instructions. e.g. SpvOpPhi
+  // must only be preceeded by SpvOpLabel, SpvOpPhi, or SpvOpLine.
+  if (auto error = ValidateAdjacency(*vstate)) return error;
 
   // CFG checks are performed after the binary has been parsed
   // and the CFGPass has collected information about the control flow

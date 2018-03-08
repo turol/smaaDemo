@@ -22,7 +22,7 @@ SPIR-V is defined by the Khronos Group Inc.
 See the [SPIR-V Registry][spirv-registry] for the SPIR-V specification,
 headers, and XML registry.
 
-## Verisoning SPIRV-Tools
+## Versioning SPIRV-Tools
 
 See [`CHANGES`](CHANGES) for a high level summary of recent changes, by version.
 
@@ -43,7 +43,7 @@ version.  An API call reports the software version as a C-style string.
 
 ### Assembler, binary parser, and disassembler
 
-* Support for SPIR-V 1.0, 1.1, 1.2
+* Support for SPIR-V 1.0, 1.1, 1.2, and 1.3
   * Based on SPIR-V syntax described by JSON grammar files in the
     [SPIRV-Headers](spirv-headers) repository.
 * Support for extended instruction sets:

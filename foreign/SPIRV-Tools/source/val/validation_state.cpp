@@ -73,6 +73,9 @@ bool IsInstructionInLayoutSection(ModuleLayoutSection layout, SpvOp op) {
         case SpvOpGroupDecorate:
         case SpvOpGroupMemberDecorate:
         case SpvOpDecorationGroup:
+        case SpvOpDecorateId:
+        case SpvOpDecorateStringGOOGLE:
+        case SpvOpMemberDecorateStringGOOGLE:
           out = true;
           break;
         default: break;
@@ -328,6 +331,11 @@ void ValidationState_t::RegisterExtension(Extension ext) {
   module_extensions_.Add(ext);
 
   switch (ext) {
+    case kSPV_AMD_gpu_shader_half_float:
+      // SPV_AMD_gpu_shader_half_float enables float16 type.
+      // https://github.com/KhronosGroup/SPIRV-Tools/issues/1375
+      features_.declare_float16_type = true;
+      break;
     case kSPV_AMD_shader_ballot:
       // The grammar doesn't encode the fact that SPV_AMD_shader_ballot
       // enables the use of group operations Reduce, InclusiveScan,
@@ -764,6 +772,24 @@ bool ValidationState_t::GetConstantValUint64(uint32_t id, uint64_t* val) const {
     *val |= uint64_t(inst->word(4)) << 32;
   }
   return true;
+}
+
+std::tuple<bool, bool, uint32_t> ValidationState_t::EvalInt32IfConst(
+    uint32_t id) {
+  const Instruction* const inst = FindDef(id);
+  assert(inst);
+  const uint32_t type = inst->type_id();
+
+  if (!IsIntScalarType(type) || GetBitWidth(type) != 32) {
+    return std::make_tuple(false, false, 0);
+  }
+
+  if (inst->opcode() != SpvOpConstant && inst->opcode() != SpvOpSpecConstant) {
+    return std::make_tuple(true, false, 0);
+  }
+
+  assert(inst->words().size() == 4);
+  return std::make_tuple(true, true, inst->word(3));
 }
 
 }  // namespace libspirv

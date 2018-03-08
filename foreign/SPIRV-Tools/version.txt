@@ -1,10 +1,5 @@
-commit 6704233d399be6b9547fd5635348589d1a20ff8d
-Author: Alan Baker <alanbaker@google.com>
-Date:   Tue Jan 30 10:15:43 2018 -0500
+commit 8d8a71278bf9e83dd0fb30d5474386d30870b74d
+Author: David Neto <dneto@google.com>
+Date:   Wed Mar 7 17:11:50 2018 -0500
 
-    Fix dereference of possibly nullptr
-    
-    * If the dead branch elim is performed on a module without structured
-    control flow, the OpSelectionMerge may not be present
-     * Add a check for pointer validity before dereferencing
-    * Added a test to catch the bug
+    Finalize v2018.2

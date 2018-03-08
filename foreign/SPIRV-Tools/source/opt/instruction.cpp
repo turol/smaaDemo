@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "instruction.h"
+
 #include <initializer_list>
 
 #include "disassemble.h"
 #include "fold.h"
-#include "instruction.h"
 #include "ir_context.h"
 #include "reflect.h"
 
@@ -470,11 +471,32 @@ bool Instruction::IsOpaqueType() const {
 }
 
 bool Instruction::IsFoldable() const {
+  return IsFoldableByFoldScalar() ||
+         opt::GetConstantFoldingRules().HasFoldingRule(opcode());
+}
+
+bool Instruction::IsFoldableByFoldScalar() const {
   if (!opt::IsFoldableOpcode(opcode())) {
     return false;
   }
   Instruction* type = context()->get_def_use_mgr()->GetDef(type_id());
   return opt::IsFoldableType(type);
+}
+
+bool Instruction::IsFloatingPointFoldingAllowed() const {
+  // TODO: Add the rules for kernels.  For now it will be pessimistic.
+  if (!context_->get_feature_mgr()->HasCapability(SpvCapabilityShader)) {
+    return false;
+  }
+
+  bool is_nocontract = false;
+  context_->get_decoration_mgr()->WhileEachDecoration(
+      opcode_, SpvDecorationNoContraction,
+      [&is_nocontract](const ir::Instruction&) {
+        is_nocontract = true;
+        return false;
+      });
+  return !is_nocontract;
 }
 
 std::string Instruction::PrettyPrint(uint32_t options) const {
@@ -497,6 +519,81 @@ std::string Instruction::PrettyPrint(uint32_t options) const {
 std::ostream& operator<<(std::ostream& str, const ir::Instruction& inst) {
   str << inst.PrettyPrint();
   return str;
+}
+
+bool Instruction::IsOpcodeCodeMotionSafe() const {
+  switch (opcode_) {
+    case SpvOpVectorExtractDynamic:
+    case SpvOpVectorInsertDynamic:
+    case SpvOpVectorShuffle:
+    case SpvOpConvertFToU:
+    case SpvOpConvertFToS:
+    case SpvOpConvertSToF:
+    case SpvOpConvertUToF:
+    case SpvOpUConvert:
+    case SpvOpSConvert:
+    case SpvOpFConvert:
+    case SpvOpQuantizeToF16:
+    case SpvOpBitcast:
+    case SpvOpSNegate:
+    case SpvOpFNegate:
+    case SpvOpIAdd:
+    case SpvOpFAdd:
+    case SpvOpISub:
+    case SpvOpFSub:
+    case SpvOpIMul:
+    case SpvOpFMul:
+    case SpvOpUDiv:
+    case SpvOpSDiv:
+    case SpvOpFDiv:
+    case SpvOpUMod:
+    case SpvOpSRem:
+    case SpvOpSMod:
+    case SpvOpFRem:
+    case SpvOpFMod:
+    case SpvOpVectorTimesScalar:
+    case SpvOpMatrixTimesScalar:
+    case SpvOpVectorTimesMatrix:
+    case SpvOpMatrixTimesVector:
+    case SpvOpMatrixTimesMatrix:
+    case SpvOpLogicalEqual:
+    case SpvOpLogicalNotEqual:
+    case SpvOpLogicalOr:
+    case SpvOpLogicalAnd:
+    case SpvOpLogicalNot:
+    case SpvOpIEqual:
+    case SpvOpINotEqual:
+    case SpvOpUGreaterThan:
+    case SpvOpSGreaterThan:
+    case SpvOpUGreaterThanEqual:
+    case SpvOpSGreaterThanEqual:
+    case SpvOpULessThan:
+    case SpvOpSLessThan:
+    case SpvOpULessThanEqual:
+    case SpvOpSLessThanEqual:
+    case SpvOpFOrdEqual:
+    case SpvOpFUnordEqual:
+    case SpvOpFOrdNotEqual:
+    case SpvOpFUnordNotEqual:
+    case SpvOpFOrdLessThan:
+    case SpvOpFUnordLessThan:
+    case SpvOpFOrdGreaterThan:
+    case SpvOpFUnordGreaterThan:
+    case SpvOpFOrdLessThanEqual:
+    case SpvOpFUnordLessThanEqual:
+    case SpvOpFOrdGreaterThanEqual:
+    case SpvOpFUnordGreaterThanEqual:
+    case SpvOpShiftRightLogical:
+    case SpvOpShiftRightArithmetic:
+    case SpvOpShiftLeftLogical:
+    case SpvOpBitwiseOr:
+    case SpvOpBitwiseXor:
+    case SpvOpBitwiseAnd:
+    case SpvOpNot:
+      return true;
+    default:
+      return false;
+  }
 }
 
 }  // namespace ir

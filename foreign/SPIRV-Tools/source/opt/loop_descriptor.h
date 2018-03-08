@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "opt/basic_block.h"
+#include "opt/module.h"
 #include "opt/tree_iterator.h"
 
 namespace spvtools {
@@ -46,15 +47,19 @@ class Loop {
   using const_iterator = ChildrenList::const_iterator;
   using BasicBlockListTy = std::unordered_set<uint32_t>;
 
-  Loop()
-      : loop_header_(nullptr),
+  explicit Loop(IRContext* context)
+      : context_(context),
+        loop_header_(nullptr),
         loop_continue_(nullptr),
         loop_merge_(nullptr),
         loop_preheader_(nullptr),
-        parent_(nullptr) {}
+        parent_(nullptr),
+        loop_is_marked_for_removal_(false) {}
 
   Loop(IRContext* context, opt::DominatorAnalysis* analysis, BasicBlock* header,
        BasicBlock* continue_target, BasicBlock* merge_target);
+
+  ~Loop() {}
 
   // Iterators over the immediate sub-loops.
   inline iterator begin() { return nested_loops_.begin(); }
@@ -68,14 +73,40 @@ class Loop {
   // OpLoopMerge instruction.
   inline BasicBlock* GetHeaderBlock() { return loop_header_; }
   inline const BasicBlock* GetHeaderBlock() const { return loop_header_; }
+  inline void SetHeaderBlock(BasicBlock* header) { loop_header_ = header; }
+
+  // Updates the OpLoopMerge instruction to reflect the current state of the
+  // loop.
+  inline void UpdateLoopMergeInst() {
+    assert(GetHeaderBlock()->GetLoopMergeInst() &&
+           "The loop is not structured");
+    ir::Instruction* merge_inst = GetHeaderBlock()->GetLoopMergeInst();
+    merge_inst->SetInOperand(0, {GetMergeBlock()->id()});
+  }
 
   // Returns the latch basic block (basic block that holds the back-edge).
+  // These functions return nullptr if the loop is not structured (i.e. if it
+  // has more than one backedge).
   inline BasicBlock* GetLatchBlock() { return loop_continue_; }
   inline const BasicBlock* GetLatchBlock() const { return loop_continue_; }
+  // Sets |latch| as the loop unique block branching back to the header.
+  // A latch block must have the following properties:
+  //  - |latch| must be in the loop;
+  //  - must be the only block branching back to the header block.
+  void SetLatchBlock(BasicBlock* latch);
 
-  // Returns the BasicBlock which marks the end of the loop.
+  // Returns the basic block which marks the end of the loop.
+  // These functions return nullptr if the loop is not structured.
   inline BasicBlock* GetMergeBlock() { return loop_merge_; }
   inline const BasicBlock* GetMergeBlock() const { return loop_merge_; }
+  // Sets |merge| as the loop merge block. A merge block must have the following
+  // properties:
+  //  - |merge| must not be in the loop;
+  //  - all its predecessors must be in the loop.
+  //  - it must not be already used as merge block.
+  // If the loop has an OpLoopMerge in its header, this instruction is also
+  // updated.
+  void SetMergeBlock(BasicBlock* merge);
 
   // Returns the loop pre-header, nullptr means that the loop predecessor does
   // not qualify as a preheader.
@@ -86,9 +117,33 @@ class Loop {
 
   // Returns the loop pre-header.
   inline const BasicBlock* GetPreHeaderBlock() const { return loop_preheader_; }
+  // Sets |preheader| as the loop preheader block. A preheader block must have
+  // the following properties:
+  //  - |merge| must not be in the loop;
+  //  - have an unconditional branch to the loop header.
+  void SetPreHeaderBlock(BasicBlock* preheader);
+
+  // Returns the loop pre-header, if there is no suitable preheader it will be
+  // created.
+  BasicBlock* GetOrCreatePreHeaderBlock();
 
   // Returns true if this loop contains any nested loops.
   inline bool HasNestedLoops() const { return nested_loops_.size() != 0; }
+
+  // Clears and fills |exit_blocks| with all basic blocks that are not in the
+  // loop and has at least one predecessor in the loop.
+  void GetExitBlocks(std::unordered_set<uint32_t>* exit_blocks) const;
+
+  // Clears and fills |merging_blocks| with all basic blocks that are
+  // post-dominated by the merge block. The merge block must exist.
+  // The set |merging_blocks| will only contain the merge block if it is
+  // unreachable.
+  void GetMergingBlocks(std::unordered_set<uint32_t>* merging_blocks) const;
+
+  // Returns true if the loop is in a Loop Closed SSA form.
+  // In LCSSA form, all in-loop definitions are used in the loop or in phi
+  // instructions in the loop exit blocks.
+  bool IsLCSSA() const;
 
   // Returns the depth of this loop in the loop nest.
   // The outer-most loop has a depth of 1.
@@ -97,6 +152,8 @@ class Loop {
     for (const Loop* loop = GetParent(); loop; loop = loop->GetParent()) lvl++;
     return lvl;
   }
+
+  inline size_t NumImmediateChildren() const { return nested_loops_.size(); }
 
   // Adds |nested| as a nested loop of this loop. Automatically register |this|
   // as the parent of |nested|.
@@ -134,17 +191,151 @@ class Loop {
   // Returns true if the instruction |inst| is inside this loop.
   bool IsInsideLoop(Instruction* inst) const;
 
+  // Adds the Basic Block |bb| to this loop and its parents.
+  void AddBasicBlock(const BasicBlock* bb) { AddBasicBlock(bb->id()); }
+
+  // Adds the Basic Block with |id| to this loop and its parents.
+  void AddBasicBlock(uint32_t id) {
+    for (Loop* loop = this; loop != nullptr; loop = loop->parent_) {
+      loop->loop_basic_blocks_.insert(id);
+    }
+  }
+
+  // Removes the Basic Block id |bb_id| from this loop and its parents.
+  // It the user responsibility to make sure the removed block is not a merge,
+  // header or continue block.
+  void RemoveBasicBlock(uint32_t bb_id) {
+    for (Loop* loop = this; loop != nullptr; loop = loop->parent_) {
+      loop->loop_basic_blocks_.erase(bb_id);
+    }
+  }
+
+  // Removes all the basic blocks from the set of basic blocks within the loop.
+  // This does not affect any of the stored pointers to the header, preheader,
+  // merge, or continue blocks.
+  void ClearBlocks() { loop_basic_blocks_.clear(); }
+
   // Adds the Basic Block |bb| this loop and its parents.
   void AddBasicBlockToLoop(const BasicBlock* bb) {
     assert(IsBasicBlockInLoopSlow(bb) &&
            "Basic block does not belong to the loop");
 
-    for (Loop* loop = this; loop != nullptr; loop = loop->parent_) {
-      loop_basic_blocks_.insert(bb->id());
-    }
+    AddBasicBlock(bb);
   }
 
+  // Returns the list of induction variables within the loop.
+  void GetInductionVariables(std::vector<ir::Instruction*>& inductions) const;
+
+  // This function uses the |condition| to find the induction variable which is
+  // used by the loop condition within the loop. This only works if the loop is
+  // bound by a single condition and single induction variable.
+  ir::Instruction* FindConditionVariable(const ir::BasicBlock* condition) const;
+
+  // Returns the number of iterations within a loop when given the |induction|
+  // variable and the loop |condition| check. It stores the found number of
+  // iterations in the output parameter |iterations| and optionally, the step
+  // value in |step_value| and the initial value of the induction variable in
+  // |init_value|.
+  bool FindNumberOfIterations(const ir::Instruction* induction,
+                              const ir::Instruction* condition,
+                              size_t* iterations,
+                              int64_t* step_amount = nullptr,
+                              int64_t* init_value = nullptr) const;
+
+  // Returns the value of the OpLoopMerge control operand as a bool. Loop
+  // control can be None(0), Unroll(1), or DontUnroll(2). This function returns
+  // true if it is set to Unroll.
+  inline bool HasUnrollLoopControl() const {
+    assert(loop_header_);
+    if (!loop_header_->GetLoopMergeInst()) return false;
+
+    return loop_header_->GetLoopMergeInst()->GetSingleWordOperand(2) == 1;
+  }
+
+  // Finds the conditional block with a branch to the merge and continue blocks
+  // within the loop body.
+  ir::BasicBlock* FindConditionBlock() const;
+
+  // Remove the child loop form this loop.
+  inline void RemoveChildLoop(Loop* loop) {
+    nested_loops_.erase(
+        std::find(nested_loops_.begin(), nested_loops_.end(), loop));
+    loop->SetParent(nullptr);
+  }
+
+  // Mark this loop to be removed later by a call to
+  // LoopDescriptor::PostModificationCleanup.
+  inline void MarkLoopForRemoval() { loop_is_marked_for_removal_ = true; }
+
+  // Returns whether or not this loop has been marked for removal.
+  inline bool IsMarkedForRemoval() const { return loop_is_marked_for_removal_; }
+
+  // Returns true if all nested loops have been marked for removal.
+  inline bool AreAllChildrenMarkedForRemoval() const {
+    for (const Loop* child : nested_loops_) {
+      if (!child->IsMarkedForRemoval()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Checks if the loop contains any instruction that will prevent it from being
+  // cloned. If the loop is structured, the merge construct is also considered.
+  bool IsSafeToClone() const;
+
+  // Sets the parent loop of this loop, that is, a loop which contains this loop
+  // as a nested child loop.
+  inline void SetParent(Loop* parent) { parent_ = parent; }
+
+  // Returns true is the instruction is invariant and safe to move wrt loop
+  bool ShouldHoistInstruction(IRContext* context, Instruction* inst);
+
+  // Returns true if all operands of inst are in basic blocks not contained in
+  // loop
+  bool AreAllOperandsOutsideLoop(IRContext* context, Instruction* inst);
+
+  // Extract the initial value from the |induction| variable and store it in
+  // |value|. If the function couldn't find the initial value of |induction|
+  // return false.
+  bool GetInductionInitValue(const ir::Instruction* induction,
+                             int64_t* value) const;
+
+  // Takes in a phi instruction |induction| and the loop |header| and returns
+  // the step operation of the loop.
+  ir::Instruction* GetInductionStepOperation(
+      const ir::Instruction* induction) const;
+
+  // Returns true if we can deduce the number of loop iterations in the step
+  // operation |step|. IsSupportedCondition must also be true for the condition
+  // instruction.
+  bool IsSupportedStepOp(SpvOp step) const;
+
+  // Returns true if we can deduce the number of loop iterations in the
+  // condition operation |condition|. IsSupportedStepOp must also be true for
+  // the step instruction.
+  bool IsSupportedCondition(SpvOp condition) const;
+
+  // Creates the list of the loop's basic block in structured order and store
+  // the result in |ordered_loop_blocks|. If |include_pre_header| is true, the
+  // pre-header block will also be included at the beginning of the list if it
+  // exist. If |include_merge| is true, the merge block will also be included at
+  // the end of the list if it exist.
+  void ComputeLoopStructuredOrder(
+      std::vector<ir::BasicBlock*>* ordered_loop_blocks,
+      bool include_pre_header = false, bool include_merge = false) const;
+
+  // Given the loop |condition|, |initial_value|, |step_value|, the trip count
+  // |number_of_iterations|, and the |unroll_factor| requested, get the new
+  // condition value for the residual loop.
+  static int64_t GetResidualConditionValue(SpvOp condition,
+                                           int64_t initial_value,
+                                           int64_t step_value,
+                                           size_t number_of_iterations,
+                                           size_t unroll_factor);
+
  private:
+  IRContext* context_;
   // The block which marks the start of the loop.
   BasicBlock* loop_header_;
 
@@ -167,22 +358,35 @@ class Loop {
   // computed only when needed on demand.
   BasicBlockListTy loop_basic_blocks_;
 
-  // Check that |bb| is inside the loop using domination properties.
+  // Check that |bb| is inside the loop using domination property.
   // Note: this is for assertion purposes only, IsInsideLoop should be used
   // instead.
   bool IsBasicBlockInLoopSlow(const BasicBlock* bb);
 
-  // Sets the parent loop of this loop, that is, a loop which contains this loop
-  // as a nested child loop.
-  inline void SetParent(Loop* parent) { parent_ = parent; }
-
   // Returns the loop preheader if it exists, returns nullptr otherwise.
-  BasicBlock* FindLoopPreheader(IRContext* context,
-                                opt::DominatorAnalysis* dom_analysis);
+  BasicBlock* FindLoopPreheader(opt::DominatorAnalysis* dom_analysis);
+
+  // Sets |latch| as the loop unique continue block. No checks are performed
+  // here.
+  inline void SetLatchBlockImpl(BasicBlock* latch) { loop_continue_ = latch; }
+  // Sets |merge| as the loop merge block. No checks are performed here.
+  inline void SetMergeBlockImpl(BasicBlock* merge) { loop_merge_ = merge; }
+
+  // Each differnt loop |condition| affects how we calculate the number of
+  // iterations using the |condition_value|, |init_value|, and |step_values| of
+  // the induction variable. This method will return the number of iterations in
+  // a loop with those values for a given |condition|.
+  int64_t GetIterations(SpvOp condition, int64_t condition_value,
+                        int64_t init_value, int64_t step_value) const;
+
+  // This is to allow for loops to be removed mid iteration without invalidating
+  // the iterators.
+  bool loop_is_marked_for_removal_;
 
   // This is only to allow LoopDescriptor::dummy_top_loop_ to add top level
   // loops as child.
   friend class LoopDescriptor;
+  friend class LoopUtils;
 };
 
 // Loop descriptions class for a given function.
@@ -197,6 +401,22 @@ class LoopDescriptor {
   // Creates a loop object for all loops found in |f|.
   explicit LoopDescriptor(const Function* f);
 
+  // Disable copy constructor, to avoid double-free on destruction.
+  LoopDescriptor(const LoopDescriptor&) = delete;
+  // Move constructor.
+  LoopDescriptor(LoopDescriptor&& other) : dummy_top_loop_(nullptr) {
+    // We need to take ownership of the Loop objects in the other
+    // LoopDescriptor, to avoid double-free.
+    loops_ = std::move(other.loops_);
+    other.loops_.clear();
+    basic_block_to_loop_ = std::move(other.basic_block_to_loop_);
+    other.basic_block_to_loop_.clear();
+    dummy_top_loop_ = std::move(other.dummy_top_loop_);
+  }
+
+  // Destructor
+  ~LoopDescriptor();
+
   // Returns the number of loops found in the function.
   inline size_t NumLoops() const { return loops_.size(); }
 
@@ -205,7 +425,7 @@ class LoopDescriptor {
   inline Loop& GetLoopByIndex(size_t index) const {
     assert(loops_.size() > index &&
            "Index out of range (larger than loop count)");
-    return *loops_[index].get();
+    return *loops_[index];
   }
 
   // Returns the inner most loop that contains the basic block id |block_id|.
@@ -231,8 +451,48 @@ class LoopDescriptor {
     return const_iterator::end(&dummy_top_loop_);
   }
 
+  // Returns the inner most loop that contains the basic block |bb|.
+  inline void SetBasicBlockToLoop(uint32_t bb_id, Loop* loop) {
+    basic_block_to_loop_[bb_id] = loop;
+  }
+
+  // Mark the loop |loop_to_add| as needing to be added when the user calls
+  // PostModificationCleanup. |parent| may be null.
+  inline void AddLoop(ir::Loop* loop_to_add, ir::Loop* parent) {
+    loops_to_add_.emplace_back(std::make_pair(parent, loop_to_add));
+  }
+
+  // Should be called to preserve the LoopAnalysis after loops have been marked
+  // for addition with AddLoop or MarkLoopForRemoval.
+  void PostModificationCleanup();
+
+  // Removes the basic block id |bb_id| from the block to loop mapping.
+  inline void ForgetBasicBlock(uint32_t bb_id) {
+    basic_block_to_loop_.erase(bb_id);
+  }
+
+  // Adds the loop |new_loop| and all its nested loops to the descriptor set.
+  // The object takes ownership of all the loops.
+  ir::Loop* AddLoopNest(std::unique_ptr<ir::Loop> new_loop);
+
+  // Remove the loop |loop|.
+  void RemoveLoop(ir::Loop* loop);
+
+  void SetAsTopLoop(ir::Loop* loop) {
+    assert(std::find(dummy_top_loop_.begin(), dummy_top_loop_.end(), loop) ==
+               dummy_top_loop_.end() &&
+           "already registered");
+    dummy_top_loop_.nested_loops_.push_back(loop);
+  }
+
+  Loop* GetDummyRootLoop() { return &dummy_top_loop_; }
+  const Loop* GetDummyRootLoop() const { return &dummy_top_loop_; }
+
  private:
-  using LoopContainerType = std::vector<std::unique_ptr<Loop>>;
+  // TODO(dneto): This should be a vector of unique_ptr.  But VisualStudio 2013
+  // is unable to compile it.
+  using LoopContainerType = std::vector<Loop*>;
+  using LoopsToAddContainerType = std::vector<std::pair<Loop*, Loop*>>;
 
   // Creates loop descriptors for the function |f|.
   void PopulateList(const Function* f);
@@ -244,11 +504,21 @@ class LoopDescriptor {
     return it != basic_block_to_loop_.end() ? it->second : nullptr;
   }
 
-  // A list of all the loops in the function.
+  // Erase all the loop information.
+  void ClearLoops();
+
+  // A list of all the loops in the function.  This variable owns the Loop
+  // objects.
   LoopContainerType loops_;
+
   // Dummy root: this "loop" is only there to help iterators creation.
   Loop dummy_top_loop_;
+
   std::unordered_map<uint32_t, Loop*> basic_block_to_loop_;
+
+  // List of the loops marked for addition when PostModificationCleanup is
+  // called.
+  LoopsToAddContainerType loops_to_add_;
 };
 
 }  // namespace ir

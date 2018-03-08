@@ -133,6 +133,11 @@ class BasicBlock {
   void ForEachSuccessorLabel(
       const std::function<void(const uint32_t)>& f) const;
 
+  // Runs the given function |f| on each label id of each successor block.
+  // Modifying the pointed value will change the branch taken by the basic
+  // block. It is the caller responsibility to update or invalidate the CFG.
+  void ForEachSuccessorLabel(const std::function<void(uint32_t*)>& f);
+
   // Returns true if |block| is a direct successor of |this|.
   bool IsSuccessor(const ir::BasicBlock* block) const;
 
@@ -165,6 +170,10 @@ class BasicBlock {
 
   // Returns true if this basic block exits this function or aborts execution.
   bool IsReturnOrAbort() const { return ctail()->IsReturnOrAbort(); }
+
+  // Kill all instructions in this block. Whether or not to kill the label is
+  // indicated by |killLabel|.
+  void KillAllInsts(bool killLabel);
 
  private:
   // The enclosing function.

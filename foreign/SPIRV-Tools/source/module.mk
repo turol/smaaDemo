@@ -41,6 +41,7 @@ FILES:= \
 	validate_adjacency.cpp \
 	validate_arithmetics.cpp \
 	validate_atomics.cpp \
+	validate_barriers.cpp \
 	validate_bitwise.cpp \
 	validate_capability.cpp \
 	validate_cfg.cpp \

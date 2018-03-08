@@ -14,6 +14,7 @@
 
 #include "basic_block.h"
 #include "function.h"
+#include "ir_context.h"
 #include "module.h"
 #include "reflect.h"
 
@@ -89,6 +90,14 @@ Instruction* BasicBlock::GetLoopMergeInst() {
   return nullptr;
 }
 
+void BasicBlock::KillAllInsts(bool killLabel) {
+  ForEachInst([killLabel](ir::Instruction* ip) {
+    if (killLabel || ip->opcode() != SpvOpLabel) {
+      ip->context()->KillInst(ip);
+    }
+  });
+}
+
 void BasicBlock::ForEachSuccessorLabel(
     const std::function<void(const uint32_t)>& f) const {
   const auto br = &insts_.back();
@@ -101,6 +110,28 @@ void BasicBlock::ForEachSuccessorLabel(
       bool is_first = true;
       br->ForEachInId([&is_first, &f](const uint32_t* idp) {
         if (!is_first) f(*idp);
+        is_first = false;
+      });
+    } break;
+    default:
+      break;
+  }
+}
+
+void BasicBlock::ForEachSuccessorLabel(
+    const std::function<void(uint32_t*)>& f) {
+  auto br = &insts_.back();
+  switch (br->opcode()) {
+    case SpvOpBranch: {
+      uint32_t tmp_id = br->GetOperand(0).words[0];
+      f(&tmp_id);
+      if (tmp_id != br->GetOperand(0).words[0]) br->SetOperand(0, {tmp_id});
+    } break;
+    case SpvOpBranchConditional:
+    case SpvOpSwitch: {
+      bool is_first = true;
+      br->ForEachInId([&is_first, &f](uint32_t* idp) {
+        if (!is_first) f(idp);
         is_first = false;
       });
     } break;

@@ -180,7 +180,8 @@ void BasicBlockSuccessorHelper<BBType>::CreateSuccessorMap(
     for (BasicBlock& bb : f) {
       if (bb.hasSuccessor()) {
         BasicBlockListTy& pred_list = predecessors_[&bb];
-        bb.ForEachSuccessorLabel(
+        const auto& const_bb = bb;
+        const_bb.ForEachSuccessorLabel(
             [this, &pred_list, &bb,
              &GetSuccessorBasicBlock](const uint32_t successor_id) {
               BasicBlock* succ = GetSuccessorBasicBlock(successor_id);
@@ -203,7 +204,8 @@ void BasicBlockSuccessorHelper<BBType>::CreateSuccessorMap(
     for (BasicBlock& bb : f) {
       BasicBlockListTy& succ_list = successors_[&bb];
 
-      bb.ForEachSuccessorLabel([&](const uint32_t successor_id) {
+      const auto& const_bb = bb;
+      const_bb.ForEachSuccessorLabel([&](const uint32_t successor_id) {
         BasicBlock* succ = GetSuccessorBasicBlock(successor_id);
         succ_list.push_back(succ);
         predecessors_[succ].push_back(&bb);
@@ -356,6 +358,10 @@ void DominatorTree::InitializeTree(const ir::Function* f, const ir::CFG& cfg) {
     second->children_.push_back(first);
   }
 
+  ResetDFNumbering();
+}
+
+void DominatorTree::ResetDFNumbering() {
   int index = 0;
   auto preFunc = [&index](const DominatorTreeNode* node) {
     const_cast<DominatorTreeNode*>(node)->dfs_num_pre_ = ++index;

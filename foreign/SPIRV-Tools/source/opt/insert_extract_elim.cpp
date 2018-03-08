@@ -19,7 +19,7 @@
 #include "composite.h"
 #include "ir_context.h"
 #include "iterator.h"
-#include "spirv/1.2/GLSL.std.450.h"
+#include "latest_version_glsl_std_450_header.h"
 
 #include <vector>
 
@@ -96,7 +96,7 @@ uint32_t InsertExtractElimPass::DoExtract(ir::Instruction* compInst,
       }
     } else if (cinst->opcode() == SpvOpExtInst &&
                cinst->GetSingleWordInOperand(kExtInstSetIdInIdx) ==
-                   get_module()->GetExtInstImportId("GLSL.std.450") &&
+                   get_feature_mgr()->GetExtInstImportId_GLSLstd450() &&
                cinst->GetSingleWordInOperand(kExtInstInstructionInIdx) ==
                    GLSLstd450FMix) {
       // If mixing value component is 0 or 1 we just match with x or y.

@@ -81,9 +81,10 @@ SSAPropagator::PropStatus CCPPass::VisitPhi(ir::Instruction* phi) {
         return MarkInstructionVarying(phi);
       }
     } else {
-      // If any argument is not a constant, the Phi produces nothing
-      // interesting for now. The propagator will callback again, if needed.
-      return SSAPropagator::kNotInteresting;
+      // The incoming value has no recorded value and is therefore not
+      // interesting. A not interesting value joined with any other value is the
+      // other value.
+      continue;
     }
   }
 
@@ -142,6 +143,15 @@ SSAPropagator::PropStatus CCPPass::VisitAssignment(ir::Instruction* instr) {
     return SSAPropagator::kInteresting;
   }
 
+  // Conservatively mark this instruction as varying if any input id is varying.
+  if (!instr->WhileEachInId([this](uint32_t* op_id) {
+        auto iter = values_.find(*op_id);
+        if (iter != values_.end() && IsVaryingValue(iter->second)) return false;
+        return true;
+      })) {
+    return MarkInstructionVarying(instr);
+  }
+
   // If not, see if there is a least one unknown operand to the instruction.  If
   // so, we might be able to fold it later.
   if (!instr->WhileEachInId([this](uint32_t* op_id) {
@@ -182,9 +192,15 @@ SSAPropagator::PropStatus CCPPass::VisitBranch(ir::Instruction* instr,
     uint32_t pred_val_id = it->second;
     const analysis::Constant* c = const_mgr_->FindDeclaredConstant(pred_val_id);
     assert(c && "Expected to find a constant declaration for a known value.");
-    const analysis::BoolConstant* val = c->AsBoolConstant();
-    dest_label = val->value() ? instr->GetSingleWordOperand(1)
-                              : instr->GetSingleWordOperand(2);
+    // Undef values should have returned as varying above.
+    assert(c->AsBoolConstant() || c->AsNullConstant());
+    if (c->AsNullConstant()) {
+      dest_label = instr->GetSingleWordOperand(2u);
+    } else {
+      const analysis::BoolConstant* val = c->AsBoolConstant();
+      dest_label = val->value() ? instr->GetSingleWordOperand(1)
+                                : instr->GetSingleWordOperand(2);
+    }
   } else {
     // For an OpSwitch, extract the value taken by the switch selector and check
     // which of the target literals it matches.  The branch associated with that
@@ -208,12 +224,20 @@ SSAPropagator::PropStatus CCPPass::VisitBranch(ir::Instruction* instr,
     const analysis::Constant* c =
         const_mgr_->FindDeclaredConstant(select_val_id);
     assert(c && "Expected to find a constant declaration for a known value.");
-    const analysis::IntConstant* val = c->AsIntConstant();
+    // TODO: support 64-bit integer switches.
+    uint32_t constant_cond = 0;
+    if (const analysis::IntConstant* val = c->AsIntConstant()) {
+      constant_cond = val->words()[0];
+    } else {
+      // Undef values should have returned varying above.
+      assert(c->AsNullConstant());
+      constant_cond = 0;
+    }
 
     // Start assuming that the selector will take the default value;
     dest_label = instr->GetSingleWordOperand(1);
     for (uint32_t i = 2; i < instr->NumOperands(); i += 2) {
-      if (val->words()[0] == instr->GetSingleWordOperand(i)) {
+      if (constant_cond == instr->GetSingleWordOperand(i)) {
         dest_label = instr->GetSingleWordOperand(i + 1);
         break;
       }
@@ -251,6 +275,11 @@ bool CCPPass::ReplaceValues() {
 }
 
 bool CCPPass::PropagateConstants(ir::Function* fp) {
+  // Mark function parameters as varying.
+  fp->ForEachParam([this](const ir::Instruction* inst) {
+    values_[inst->result_id()] = kVaryingSSAId;
+  });
+
   const auto visit_fn = [this](ir::Instruction* instr,
                                ir::BasicBlock** dest_bb) {
     return VisitInstruction(instr, dest_bb);
@@ -258,6 +287,7 @@ bool CCPPass::PropagateConstants(ir::Function* fp) {
 
   propagator_ =
       std::unique_ptr<SSAPropagator>(new SSAPropagator(context(), visit_fn));
+
   if (propagator_->Run(fp)) {
     return ReplaceValues();
   }
@@ -273,10 +303,13 @@ void CCPPass::Initialize(ir::IRContext* c) {
   // Populate the constant table with values from constant declarations in the
   // module.  The values of each OpConstant declaration is the identity
   // assignment (i.e., each constant is its own value).
-  for (const auto& inst : context()->module()->GetConstants()) {
-    // Skip specialization constants.
-    if (inst->IsConstant()) {
-      values_[inst->result_id()] = inst->result_id();
+  for (const auto& inst : get_module()->types_values()) {
+    // Record compile time constant ids. Treat all other global values as
+    // varying.
+    if (inst.IsConstant()) {
+      values_[inst.result_id()] = inst.result_id();
+    } else {
+      values_[inst.result_id()] = kVaryingSSAId;
     }
   }
 }

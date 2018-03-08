@@ -1,13 +1,101 @@
 Revision history for SPIRV-Tools
 
-v2018.0-dev 2018-01-12
- - Start v2018.0-dev
+v2018.2 2018-03-07
+ - General:
+   - Support SPIR-V 1.3 and Vulkan 1.1.
+     - Default target environment is now SPIR-V 1.3.  For command-line tools,
+       use the --target-env option to override the default.  Examples:
+	  # Generate a SPIR-V 1.0 binary instead of SPIR-V 1.3
+	  spirv-as --target-env spv1.0 a.spvasm -o a.spv
+	  spirv-as --target-env vulkan1.0 a.spvasm -o a.spv
+	  # Validate as Vulkan 1.0
+	  spirv-val --target-env vulkan1.0 a.spv
+   - Support SPV_GOOGLE_decorate_string and SPV_GOOGLE_hlsl_functionality1
+ - Fixes:
+   - Fix Android.mk build. Compilation was failing due to missing definitions of
+     SpvCapabilityFloat16ImageAMD and other enumerated values.
+   - Optimizer: Avoid generating duplicate names when merging types.
+   - #1375: Validator: SPV_AMD_gpu_shaer_half_float implicitly allows declaration
+     of the 16-bit floating point type.
+   - #1376: Optimizer: Avoid folding half-precision float.
+
+v2018.1 2018-03-02
+ - General:
+   - Support Visual Studio 2013 again. (Continue support for VS 2015 and VS 2017.)
+   - Support building SPIRV-Tools as a shared library.
+   - Improve the HLSL legalization optimization recipe. #1311
  - Optimizer:
-   - Aggressive dead code elimination now removes OpSwitch constructs
+   - General speedups.
+   - Remove generic dead code elimination functionality from transforms:
+       --eliminate-local-single-block
+       --eliminate-local-single-store
+       --eliminate-local-multi-store
+     To recover the previous behaviour, a recipe using those transforms should now
+     also invoke the --eliminate-dead-code-aggressive transform.
+   - Improve folding, including coverage for floating point, OpSelect, and arithmetic
+     with non-trivial constant operands.
+   - Add loop-invariant code motion pass.
+   - Add loop-unrolling pass, for honouring unroll hits.
+   - Add loop-unswitch pass.
+   - Add instruction simplification pass.
+   - Aggressive dead code elimination: Understands capability hierarchy when finding
+     instructions it can eliminate (combinators). (PR #1268)
+   - CCP can now fold floating point arithmetic. #1311
+ - Validator:
+   - Validate barrier instructions.
+   - Check Vulkan-specific rules for atomics.
+   - Check Vulkan prohibition of Location or Component decorations on BuiltIn variables.
+ - Linker:
+   - Add --verify-ids option
+   - Add option to allow a resulting module to be partially linked.
+   - Handle OpModuleProcessed (instructions in SPIR-V layout section 7c)
+ - Fixes:
+   - #1265: Optimizer: Fix use-after free bug in if-conversion. (Fix object lifecycle bug
+     in type manager.)
+   - #1282: Fix new warnings found by GCC 8.0.1.
+   - #1285: Optimizer: Fix random failures during inlining.  (Dangling references in DefUseManager)
+   - #1295: Optimizer: Fix incorrect handling of Phi nodes in CCP.
+   - #1300: Fix CCP: avoid bad CCP transitions and unsettled values.
+   - #1304: Avoid static-duration variables of class type (with constructors).
+   - #1323: Fix folding of an insert composite feeding a composite extract.
+   - #1339: Fix CCP: Handle OpConstantNull boolean values as conditions.
+   - #1341: DCEInst: Keep atomic instructions (and some others with side effects).
+   - #1354: Don't fold integer division.
+   - #1357: Support OpConstantNull in folding.
+   - #1361: CCP: Fix handling of non-constant module-scope values
+
+v2018.0 2018-02-02
+ - General
+   - VisualStudio 2013 is no longer supported.  VisualStudio 2015 is supported.
+   - Use "include/unified1" directory from SPIRV-Headers.  Requires recent SPIRV-Headers source.
+ - Disassembler: spirv-dis adds --color option to force color disassembly.
+ - Optimizer:
+   - Add pass to eliminate dead insertions.
+   - Aggressive dead code elimination now removes OpSwitch constructs.
+   - Block merging occurs in more cases.
+   - Add driver workaround transform: replace OpUnreachable with harmless branch to merge.
+   - Improve instruction folding framework.
+   - Add loop analysis.
+   - Add scalar replacement of aggregates to size-optimization recipe.
+   - Add pass to replace instructions invalid for a shader stage, with a harmless value.
+     This changes the semantics of the program!  Not for general use!
+   - Rearragne and add passes to performance-optimization recipe, to produce better results.
+ - Validator:
+   - Validate OpenCL extended instructions.
+   - Shaders can't perform atomics on floats.
+   - Validate memory semantics values in atomics.
+   - Validate instruction-adjacency constraints, e.g. OpPhi predecessors, merge instructions
+     immediately precede branches.
  - Fixes:
    - PR 1198: Optimizer: Fix CCP in presence of matrix constants.
    - #1199: Optimizer: Fix CCP: don't propagate spec constants.
    - #1203: Optimizer: Fix common uniform elim bug introduced by refactoring.
+   - #1210: Optimizer: Aggressive dead code elimination: Fix 'break' identification.
+   - #1212: Optimizer: Aggressive dead code elimination: Was skipping too many instructions.
+   - #1214: Optimizer: Aggressive dead code elimination: Fix infinite loop.
+   - #1228: Optimizer: Fix CCP: Handling of varying Phi nodes; was resulting in infinite loop.
+   - #1245: Optimizer: Dead branch elimination: Avoid a null pointer dereference.
+   - #1250: Optimizer: Dead branch elimination: Avoid spuriously reporting a change.
 
 v2017.3 2018-01-12
  - General:

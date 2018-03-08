@@ -33,7 +33,7 @@ class IfConversion : public Pass {
     return ir::IRContext::kAnalysisDefUse |
            ir::IRContext::kAnalysisDominatorAnalysis |
            ir::IRContext::kAnalysisInstrToBlockMapping |
-           ir::IRContext::kAnalysisCFG;
+           ir::IRContext::kAnalysisCFG | ir::IRContext::kAnalysisNameMap;
   }
 
  private:
@@ -56,10 +56,8 @@ class IfConversion : public Pass {
   // |where| indicates the location in |block| to insert the composite
   // construct. If necessary, this function will also construct the necessary
   // type instructions for the boolean vector.
-  uint32_t SplatCondition(
-      analysis::Vector* vec_data_ty, uint32_t cond,
-      InstructionBuilder<ir::IRContext::kAnalysisDefUse |
-                         ir::IRContext::kAnalysisInstrToBlockMapping>* builder);
+  uint32_t SplatCondition(analysis::Vector* vec_data_ty, uint32_t cond,
+                          InstructionBuilder* builder);
 
   // Returns true if none of |phi|'s users are in |block|.
   bool CheckPhiUsers(ir::Instruction* phi, ir::BasicBlock* block);

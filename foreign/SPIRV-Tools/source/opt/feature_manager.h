@@ -41,6 +41,15 @@ class FeatureManager {
   // Analyzes |module| and records enabled extensions and capabilities.
   void Analyze(ir::Module* module);
 
+  libspirv::CapabilitySet* GetCapabilities() { return &capabilities_; }
+  const libspirv::CapabilitySet* GetCapabilities() const {
+    return &capabilities_;
+  }
+
+  uint32_t GetExtInstImportId_GLSLstd450() const {
+    return extinst_importid_GLSLstd450_;
+  }
+
  private:
   // Analyzes |module| and records enabled extensions.
   void AddExtensions(ir::Module* module);
@@ -52,6 +61,9 @@ class FeatureManager {
   // Analyzes |module| and records enabled capabilities.
   void AddCapabilities(ir::Module* module);
 
+  // Analyzes |module| and records imported external instruction sets.
+  void AddExtInstImportIds(ir::Module* module);
+
   // Auxiliary object for querying SPIR-V grammar facts.
   const libspirv::AssemblyGrammar& grammar_;
 
@@ -60,6 +72,9 @@ class FeatureManager {
 
   // The enabled capabilities.
   libspirv::CapabilitySet capabilities_;
+
+  // Common external instruction import ids, cached for performance.
+  uint32_t extinst_importid_GLSLstd450_ = 0;
 };
 
 }  // namespace opt

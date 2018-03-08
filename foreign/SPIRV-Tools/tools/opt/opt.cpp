@@ -48,20 +48,22 @@ std::string GetListOfPassesAsString(const spvtools::Optimizer& optimizer) {
   return ss.str();
 }
 
+const auto kDefaultEnvironment = SPV_ENV_UNIVERSAL_1_3;
+
 std::string GetLegalizationPasses() {
-  spvtools::Optimizer optimizer(SPV_ENV_UNIVERSAL_1_2);
+  spvtools::Optimizer optimizer(kDefaultEnvironment);
   optimizer.RegisterLegalizationPasses();
   return GetListOfPassesAsString(optimizer);
 }
 
 std::string GetOptimizationPasses() {
-  spvtools::Optimizer optimizer(SPV_ENV_UNIVERSAL_1_2);
+  spvtools::Optimizer optimizer(kDefaultEnvironment);
   optimizer.RegisterPerformancePasses();
   return GetListOfPassesAsString(optimizer);
 }
 
 std::string GetSizePasses() {
-  spvtools::Optimizer optimizer(SPV_ENV_UNIVERSAL_1_2);
+  spvtools::Optimizer optimizer(kDefaultEnvironment);
   optimizer.RegisterSizePasses();
   return GetListOfPassesAsString(optimizer);
 }
@@ -169,6 +171,12 @@ Options (in lexicographical order):
   --local-redundancy-elimination
                Looks for instructions in the same basic block that compute the
                same value, and deletes the redundant ones.
+  --loop-unroll
+               Fully unrolls loops marked with the Unroll flag
+  --loop-unroll-partial
+               Partially unrolls loops marked with the Unroll flag. Takes an
+               additional non-0 integer argument to set the unroll factor, or
+               how many times a loop body should be duplicated
   --merge-blocks
                Join two blocks into a single block if the second has the
                first as its only predecessor. Performed only on entry point
@@ -181,6 +189,10 @@ Options (in lexicographical order):
   --local-redundancy-elimination
                Looks for instructions in the same basic block that compute the
                same value, and deletes the redundant ones.
+  --loop-unswitch
+               Hoists loop-invariant conditionals out of loops by duplicating
+               the loop on each branch of the conditional and adjusting each
+               copy of the loop.
   -O
                Optimize for performance. Apply a sequence of transformations
                in an attempt to improve the performance of the generated
@@ -240,6 +252,10 @@ Options (in lexicographical order):
                Allow store from one struct type to a different type with
                compatible layout and members. This option is forwarded to the
                validator.
+  --replace-invalid-opcode
+               Replaces instructions whose opcode is valid for shader modules,
+               but not for the current shader stage.  To have an effect, all
+               entry points must have the same execution model.
   --scalar-replacement
                Replace aggregate function scope variables that are only accessed
                via their elements with new function variables representing each
@@ -251,6 +267,9 @@ Options (in lexicographical order):
                blank spaces, and in each pair, spec id and default value must
                be separated with colon ':' without any blank spaces in between.
                e.g.: --set-spec-const-default-value "1:100 2:400"
+  --simplify-instructions
+               Will simplfy all instructions in the function as much as
+               possible.
   --skip-validation
                Will not validate the SPIR-V before optimizing.  If the SPIR-V
                is invalid, the optimizer may fail or generate incorrect code.
@@ -348,6 +367,21 @@ OptStatus ParseOconfigFlag(const char* prog_name, const char* opt_flag,
                     in_file, out_file, nullptr, &skip_validator);
 }
 
+OptStatus ParseLoopUnrollPartialArg(int argc, const char** argv, int argi,
+                                    Optimizer* optimizer) {
+  if (argi < argc) {
+    int factor = atoi(argv[argi]);
+    if (factor != 0) {
+      optimizer->RegisterPass(CreateLoopUnrollPass(false, factor));
+      return {OPT_CONTINUE, 0};
+    }
+  }
+  fprintf(stderr,
+          "error: --loop-unroll-partial must be followed by a non-0 "
+          "integer\n");
+  return {OPT_STOP, 1};
+}
+
 // Parses command-line flags. |argc| contains the number of command-line flags.
 // |argv| points to an array of strings holding the flags. |optimizer| is the
 // Optimizer instance used to optimize the program.
@@ -435,6 +469,8 @@ OptStatus ParseFlags(int argc, const char** argv, Optimizer* optimizer,
         optimizer->RegisterPass(CreateDeadVariableEliminationPass());
       } else if (0 == strcmp(cur_arg, "--fold-spec-const-op-composite")) {
         optimizer->RegisterPass(CreateFoldSpecConstantOpAndCompositePass());
+      } else if (0 == strcmp(cur_arg, "--loop-unswitch")) {
+        optimizer->RegisterPass(CreateLoopUnswitchPass());
       } else if (0 == strcmp(cur_arg, "--scalar-replacement")) {
         optimizer->RegisterPass(CreateScalarReplacementPass());
       } else if (0 == strcmp(cur_arg, "--strength-reduction")) {
@@ -449,6 +485,8 @@ OptStatus ParseFlags(int argc, const char** argv, Optimizer* optimizer,
         optimizer->RegisterPass(CreateCFGCleanupPass());
       } else if (0 == strcmp(cur_arg, "--local-redundancy-elimination")) {
         optimizer->RegisterPass(CreateLocalRedundancyEliminationPass());
+      } else if (0 == strcmp(cur_arg, "--loop-invariant-code-motion")) {
+        optimizer->RegisterPass(CreateLoopInvariantCodeMotionPass());
       } else if (0 == strcmp(cur_arg, "--redundancy-elimination")) {
         optimizer->RegisterPass(CreateRedundancyEliminationPass());
       } else if (0 == strcmp(cur_arg, "--private-to-local")) {
@@ -459,6 +497,18 @@ OptStatus ParseFlags(int argc, const char** argv, Optimizer* optimizer,
         optimizer->RegisterPass(CreateWorkaround1209Pass());
       } else if (0 == strcmp(cur_arg, "--relax-struct-store")) {
         options->relax_struct_store = true;
+      } else if (0 == strcmp(cur_arg, "--replace-invalid-opcode")) {
+        optimizer->RegisterPass(CreateReplaceInvalidOpcodePass());
+      } else if (0 == strcmp(cur_arg, "--simplify-instructions")) {
+        optimizer->RegisterPass(CreateSimplificationPass());
+      } else if (0 == strcmp(cur_arg, "--loop-unroll")) {
+        optimizer->RegisterPass(CreateLoopUnrollPass(true));
+      } else if (0 == strcmp(cur_arg, "--loop-unroll-partial")) {
+        OptStatus status =
+            ParseLoopUnrollPartialArg(argc, argv, ++argi, optimizer);
+        if (status.action != OPT_CONTINUE) {
+          return status;
+        }
       } else if (0 == strcmp(cur_arg, "--skip-validation")) {
         *skip_validator = true;
       } else if (0 == strcmp(cur_arg, "-O")) {
@@ -513,7 +563,7 @@ int main(int argc, const char** argv) {
   const char* out_file = nullptr;
   bool skip_validator = false;
 
-  spv_target_env target_env = SPV_ENV_UNIVERSAL_1_2;
+  spv_target_env target_env = kDefaultEnvironment;
   spv_validator_options options = spvValidatorOptionsCreate();
 
   spvtools::Optimizer optimizer(target_env);
