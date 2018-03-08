@@ -867,7 +867,7 @@ void SMAADemo::initRender() {
 
 	{
 		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::sRGBA8)
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear)
 		      .clearColors(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f))
 		      .colorFinalLayout(Layout::TransferSrc);
 		finalRenderPass       = renderer.createRenderPass(rpDesc.name("final"));
@@ -875,7 +875,7 @@ void SMAADemo::initRender() {
 
 	{
 		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::RGBA8)
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear)
 		      .clearColors(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f))
 		      .colorFinalLayout(Layout::ShaderRead);
 
@@ -885,9 +885,9 @@ void SMAADemo::initRender() {
 
 	{
 		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::sRGBA8)
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear)
 		      .clearColors(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f))
-		      .depthStencil(depthFormat)
+		      .depthStencil(depthFormat, PassBegin::Clear)
 		      .clearDepth(1.0f)
 		      .colorFinalLayout(Layout::ShaderRead);
 

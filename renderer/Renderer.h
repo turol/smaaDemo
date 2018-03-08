@@ -180,6 +180,14 @@ enum class Layout : uint8_t {
 };
 
 
+// rendertarget behavior when RenderPass begins
+enum class PassBegin : uint8_t {
+	  DontCare
+	, Keep
+	, Clear
+};
+
+
 enum class VSync : uint8_t {
 	  Off
 	, On
@@ -462,12 +470,12 @@ struct RenderPassDesc {
 	RenderPassDesc &operator=(const RenderPassDesc &) = default;
 	RenderPassDesc &operator=(RenderPassDesc &&)      = default;
 
-	RenderPassDesc &depthStencil(Format ds) {
+	RenderPassDesc &depthStencil(Format ds, PassBegin) {
 		depthStencilFormat_ = ds;
 		return *this;
 	}
 
-	RenderPassDesc &color(unsigned int index, Format c) {
+	RenderPassDesc &color(unsigned int index, Format c, PassBegin) {
 		assert(index < MAX_COLOR_RENDERTARGETS);
 		colorFormats_[index] = c;
 		return *this;
