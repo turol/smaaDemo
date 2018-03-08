@@ -243,7 +243,7 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 
 // increase this when the shader compiler options change
 // so that the same source generates a different SPV
-const unsigned int shaderVersion = 7;
+const unsigned int shaderVersion = 8;
 
 
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, shaderc_shader_kind kind) {
@@ -342,7 +342,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	// SPIR-V optimization
 	if (optimizeShaders) {
 		// TODO: better target environment selection?
-		spvtools::Optimizer opt(SPV_ENV_UNIVERSAL_1_1);
+		spvtools::Optimizer opt(SPV_ENV_UNIVERSAL_1_2);
 
 		opt.SetMessageConsumer([] (spv_message_level_t level, const char *source, const spv_position_t &position, const char *message) {
 			logWrite("%u: %s %u:%u:%u %s\n", level, source, uint32_t(position.line), uint32_t(position.column), uint32_t(position.index), message);
