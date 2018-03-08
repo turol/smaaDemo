@@ -1,8 +1,5 @@
-commit bd4c092be34081d88ec8342b1a4d9f77bcce4cac
-Merge: 5dac992 5ab1378
-Author: John Kessenich <johnkslang@users.noreply.github.com>
-Date:   Fri Mar 2 14:19:16 2018 -0700
+commit 02ffc719aa9f9c1dce5ce05743fb1afe6cbf17ea
+Author: John Kessenich <cepheus@frii.com>
+Date:   Tue Mar 6 20:49:00 2018 -0700
 
-    Merge pull request #61 from antiagainst/backport-google-ext
-    
-    Fix Google extension grammar error and backport
+    Create version 1.3 of SPIR-V.
