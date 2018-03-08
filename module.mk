@@ -166,22 +166,28 @@ distclean: clean
 
 # rules here
 
+# -MD generates dependencie for system headers
+# -MMD does not
+# we use -MD because we ship some headers which are included with -isystem
+# to avoid generating warnings from them
+# but we want them to be dependencies
+
 %$(OBJSUFFIX): %.cpp | bindirs
-	$(CXX) -c -MF $*.d -MP -MMD $(CXXFLAGS) -o $@ $<
+	$(CXX) -c -MF $*.d -MP -MD $(CXXFLAGS) -o $@ $<
 
 %$(OBJSUFFIX): %.c | bindirs
-	$(CC) -c -MF $*.d -MP -MMD $(CFLAGS) -o $@ $<
+	$(CC) -c -MF $*.d -MP -MD $(CFLAGS) -o $@ $<
 
 
 # no warnings in foreign code
 foreign/%$(OBJSUFFIX): foreign/%.cpp | bindirs
-	$(CXX) -c -MF foreign/$*.d -MP -MMD $(CXXFLAGS) -w -o $@ $<
+	$(CXX) -c -MF foreign/$*.d -MP -MD $(CXXFLAGS) -w -o $@ $<
 
 foreign/%$(OBJSUFFIX): foreign/%.cc | bindirs
-	$(CXX) -c -MF foreign/$*.d -MP -MMD $(CXXFLAGS) -w -o $@ $<
+	$(CXX) -c -MF foreign/$*.d -MP -MD $(CXXFLAGS) -w -o $@ $<
 
 foreign/%$(OBJSUFFIX): foreign/%.c | bindirs
-	$(CC) -c -MF foreign/$*.d -MP -MMD $(CFLAGS) -w -o $@ $<
+	$(CC) -c -MF foreign/$*.d -MP -MD $(CFLAGS) -w -o $@ $<
 
 
 # $(call resolve-modules, progname)
