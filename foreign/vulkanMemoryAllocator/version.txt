@@ -1,5 +1,8 @@
-commit 594a56260f0af9f1d32f0e7217d90c98b109911a
+commit ff1cf54330ccc998e2723d13ec7f4e18b875d130
+Merge: b31aac8 e5b7332
 Author: Adam Sawicki <adam.sawicki@amd.com>
-Date:   Tue Nov 21 15:01:29 2017 +0100
+Date:   Thu Mar 8 10:17:46 2018 +0100
 
-    Added VmaAllocationCreateInfo::memoryTypeBits. Wrote more documentation, including new page "Choosing memory type".
+    Merge pull request #22 from ItsBits/android_support
+    
+    Add android support.
