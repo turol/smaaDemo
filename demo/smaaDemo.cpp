@@ -380,6 +380,7 @@ class SMAADemo {
 	std::unordered_map<uint32_t, RenderPassHandle>  sceneRenderPasses;
 	FramebufferHandle  sceneFramebuffer;
 	RenderPassHandle   finalRenderPass;
+	RenderPassHandle   guiOnlyRenderPass;
 	FramebufferHandle  finalFramebuffer;
 
 	BufferHandle       cubeVBO;
@@ -563,6 +564,8 @@ SMAADemo::~SMAADemo() {
 
 		assert(finalRenderPass);
 		renderer.deleteRenderPass(finalRenderPass);
+		assert(guiOnlyRenderPass);
+		renderer.deleteRenderPass(guiOnlyRenderPass);
 		assert(smaaEdgesRenderPass);
 		renderer.deleteRenderPass(smaaEdgesRenderPass);
 		assert(smaaWeightsRenderPass);
@@ -869,6 +872,12 @@ void SMAADemo::initRender() {
 		RenderPassDesc rpDesc;
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::TransferSrc);
 		finalRenderPass       = renderer.createRenderPass(rpDesc.name("final"));
+	}
+
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::TransferSrc);
+		guiOnlyRenderPass     = renderer.createRenderPass(rpDesc.name("GUI only"));
 	}
 
 	{
