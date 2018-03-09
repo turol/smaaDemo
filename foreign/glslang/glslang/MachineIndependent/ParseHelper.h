@@ -44,13 +44,15 @@
 #ifndef _PARSER_HELPER_INCLUDED_
 #define _PARSER_HELPER_INCLUDED_
 
+#include <cstdarg>
+#include <functional>
+
 #include "parseVersions.h"
 #include "../Include/ShHandle.h"
 #include "SymbolTable.h"
 #include "localintermediate.h"
 #include "Scan.h"
-#include <cstdarg>
-#include <functional>
+#include "attribute.h"
 
 namespace glslang {
 
@@ -74,16 +76,23 @@ class TParseContextBase : public TParseVersions {
 public:
     TParseContextBase(TSymbolTable& symbolTable, TIntermediate& interm, bool parsingBuiltins, int version,
                       EProfile profile, const SpvVersion& spvVersion, EShLanguage language,
-                      TInfoSink& infoSink, bool forwardCompatible, EShMessages messages)
+                      TInfoSink& infoSink, bool forwardCompatible, EShMessages messages,
+                      const TString* entryPoint = nullptr)
           : TParseVersions(interm, version, profile, spvVersion, language, infoSink, forwardCompatible, messages),
+            scopeMangler("::"),
             symbolTable(symbolTable),
             statementNestingLevel(0), loopNestingLevel(0), structNestingLevel(0), controlFlowNestingLevel(0),
             postEntryPointReturn(false),
             contextPragma(true, false),
             parsingBuiltins(parsingBuiltins), scanContext(nullptr), ppContext(nullptr),
             limits(resources.limits),
-            globalUniformBlock(nullptr)
-    { }
+            globalUniformBlock(nullptr),
+            globalUniformBinding(TQualifier::layoutBindingEnd),
+            globalUniformSet(TQualifier::layoutSetEnd)
+    {
+        if (entryPoint != nullptr)
+            sourceEntryPointName = *entryPoint;
+    }
     virtual ~TParseContextBase() { }
 
     virtual void C_DECL   error(const TSourceLoc&, const char* szReason, const char* szToken,
@@ -96,6 +105,8 @@ public:
                                 const char* szExtraInfoFormat, ...);
 
     virtual void setLimits(const TBuiltInResource&) = 0;
+
+    void checkIndex(const TSourceLoc&, const TType&, int& index);
 
     EShLanguage getLanguage() const { return language; }
     void setScanContext(TScanContext* c) { scanContext = c; }
@@ -140,10 +151,19 @@ public:
     // Manage the global uniform block (default uniforms in GLSL, $Global in HLSL)
     virtual void growGlobalUniformBlock(const TSourceLoc&, TType&, const TString& memberName, TTypeList* typeList = nullptr);
 
+    // Potentially rename shader entry point function
+    void renameShaderFunction(TString*& name) const
+    {
+        // Replace the entry point name given in the shader with the real entry point name,
+        // if there is a substitution.
+        if (name != nullptr && *name == sourceEntryPointName && intermediate.getEntryPointName().size() > 0)
+            name = NewPoolTString(intermediate.getEntryPointName().c_str());
+    }
+
     virtual bool lValueErrorCheck(const TSourceLoc&, const char* op, TIntermTyped*);
     virtual void rValueErrorCheck(const TSourceLoc&, const char* op, TIntermTyped*);
 
-    const char* const scopeMangler = "::";
+    const char* const scopeMangler;
 
     // Basic parsing state, easily accessible to the grammar
 
@@ -172,6 +192,7 @@ protected:
     TPpContext* ppContext;
     TBuiltInResource resources;
     TLimits& limits;
+    TString sourceEntryPointName;
 
     // These, if set, will be called when a line, pragma ... is preprocessed.
     // They will be called with any parameters to the original directive.
@@ -191,8 +212,10 @@ protected:
                                       TSwizzleSelectors<TVectorSelector>&);
 
     // Manage the global uniform block (default uniforms in GLSL, $Global in HLSL)
-    TVariable* globalUniformBlock;   // the actual block, inserted into the symbol table
-    int firstNewMember;              // the index of the first member not yet inserted into the symbol table
+    TVariable* globalUniformBlock;     // the actual block, inserted into the symbol table
+    unsigned int globalUniformBinding; // the block's binding number
+    unsigned int globalUniformSet;     // the block's set number
+    int firstNewMember;                // the index of the first member not yet inserted into the symbol table
     // override this to set the language-specific name
     virtual const char* getGlobalUniformBlockName() const { return ""; }
     virtual void setUniformBlockDefaults(TType&) const { }
@@ -248,7 +271,8 @@ protected:
 class TParseContext : public TParseContextBase {
 public:
     TParseContext(TSymbolTable&, TIntermediate&, bool parsingBuiltins, int version, EProfile, const SpvVersion& spvVersion, EShLanguage, TInfoSink&,
-                  bool forwardCompatible = false, EShMessages messages = EShMsgDefault);
+                  bool forwardCompatible = false, EShMessages messages = EShMsgDefault,
+                  const TString* entryPoint = nullptr);
     virtual ~TParseContext();
 
     bool obeyPrecisionQualifiers() const { return precisionManager.respectingPrecisionQualifiers(); };
@@ -267,7 +291,6 @@ public:
     void handlePragma(const TSourceLoc&, const TVector<TString>&) override;
     TIntermTyped* handleVariable(const TSourceLoc&, TSymbol* symbol, const TString* string);
     TIntermTyped* handleBracketDereference(const TSourceLoc&, TIntermTyped* base, TIntermTyped* index);
-    void checkIndex(const TSourceLoc&, const TType&, int& index);
     void handleIndexLimits(const TSourceLoc&, TIntermTyped* base, TIntermTyped* index);
 
     void makeEditable(TSymbol*&) override;
@@ -286,7 +309,7 @@ public:
     TFunction* handleFunctionDeclarator(const TSourceLoc&, TFunction& function, bool prototype);
     TIntermAggregate* handleFunctionDefinition(const TSourceLoc&, TFunction&);
     TIntermTyped* handleFunctionCall(const TSourceLoc&, TFunction*, TIntermNode*);
-    TIntermTyped* handleBuiltInFunctionCall(TSourceLoc, TIntermNode& arguments, const TFunction& function);
+    TIntermTyped* handleBuiltInFunctionCall(TSourceLoc, TIntermNode* arguments, const TFunction& function);
     void computeBuiltinPrecisions(TIntermTyped&, const TFunction&);
     TIntermNode* handleReturnValue(const TSourceLoc&, TIntermTyped*);
     void checkLocation(const TSourceLoc&, TOperator);
@@ -317,7 +340,7 @@ public:
     bool arrayError(const TSourceLoc&, const TType&);
     void arraySizeRequiredCheck(const TSourceLoc&, const TArraySizes&);
     void structArrayCheck(const TSourceLoc&, const TType& structure);
-    void arraySizesCheck(const TSourceLoc&, const TQualifier&, const TArraySizes*, bool initializer, bool lastMember);
+    void arraySizesCheck(const TSourceLoc&, const TQualifier&, TArraySizes*, bool initializer, bool lastMember);
     void arrayOfArrayVersionCheck(const TSourceLoc&);
     void arrayDimCheck(const TSourceLoc&, const TArraySizes* sizes1, const TArraySizes* sizes2);
     void arrayDimCheck(const TSourceLoc&, const TType*, const TArraySizes*);
@@ -369,6 +392,7 @@ public:
     const TFunction* findFunctionExact(const TSourceLoc& loc, const TFunction& call, bool& builtIn);
     const TFunction* findFunction120(const TSourceLoc& loc, const TFunction& call, bool& builtIn);
     const TFunction* findFunction400(const TSourceLoc& loc, const TFunction& call, bool& builtIn);
+    const TFunction* findFunctionExplicitTypes(const TSourceLoc& loc, const TFunction& call, bool& builtIn);
     void declareTypeDefaults(const TSourceLoc&, const TPublicType&);
     TIntermNode* declareVariable(const TSourceLoc&, TString& identifier, const TPublicType&, TArraySizes* typeArray = 0, TIntermTyped* initializer = 0);
     TIntermTyped* addConstructor(const TSourceLoc&, TIntermNode*, const TType&);
@@ -388,6 +412,17 @@ public:
     TIntermNode* addSwitch(const TSourceLoc&, TIntermTyped* expression, TIntermAggregate* body);
 
     void updateImplicitArraySize(const TSourceLoc&, TIntermNode*, int index);
+    TAttributeType attributeFromName(const TString& name) const;
+    TAttributes* makeAttributes(const TString& identifier) const;
+    TAttributes* makeAttributes(const TString& identifier, TIntermNode* node) const;
+    TAttributes* mergeAttributes(TAttributes*, TAttributes*) const;
+
+    // Determine selection control from attributes
+    void handleSelectionAttributes(const TAttributes& attributes, TIntermNode*);
+    void handleSwitchAttributes(const TAttributes& attributes, TIntermNode*);
+
+    // Determine loop control from attributes
+    void handleLoopAttributes(const TAttributes& attributes, TIntermNode*);
 
 protected:
     void nonInitConstCheck(const TSourceLoc&, TString& identifier, TType& type);

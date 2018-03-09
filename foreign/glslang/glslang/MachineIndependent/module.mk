@@ -13,6 +13,7 @@ $(eval $(foreach directory, $(DIRS), $(call directory-module,$(directory)) ))
 
 
 FILES:= \
+	attribute.cpp \
 	Constant.cpp \
 	glslang_tab.cpp \
 	InfoSink.cpp \

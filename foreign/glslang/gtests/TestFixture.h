@@ -70,7 +70,7 @@ enum class Source {
 // Enum for shader compilation semantics.
 enum class Semantics {
     OpenGL,
-    Vulkan,
+    Vulkan
 };
 
 // Enum for compilation target.
@@ -197,15 +197,39 @@ public:
     GlslangResult compileAndLink(
             const std::string shaderName, const std::string& code,
             const std::string& entryPointName, EShMessages controls,
+            glslang::EshTargetClientVersion clientTargetVersion,
             bool flattenUniformArrays = false,
-            EShTextureSamplerTransformMode texSampTransMode = EShTexSampTransKeep)
+            EShTextureSamplerTransformMode texSampTransMode = EShTexSampTransKeep,
+            bool disableOptimizer = true,
+            bool automap = true)
     {
-        const EShLanguage kind = GetShaderStage(GetSuffix(shaderName));
+        const EShLanguage stage = GetShaderStage(GetSuffix(shaderName));
 
-        glslang::TShader shader(kind);
-        shader.setAutoMapLocations(true);
+        glslang::TShader shader(stage);
+        if (automap) {
+            shader.setAutoMapLocations(true);
+            shader.setAutoMapBindings(true);
+        }
         shader.setTextureSamplerTransformMode(texSampTransMode);
         shader.setFlattenUniformArrays(flattenUniformArrays);
+
+        if (controls & EShMsgSpvRules) {
+            if (controls & EShMsgVulkanRules) {
+                shader.setEnvInput((controls & EShMsgReadHlsl) ? glslang::EShSourceHlsl
+                                                               : glslang::EShSourceGlsl,
+                                    stage, glslang::EShClientVulkan, 100);
+                shader.setEnvClient(glslang::EShClientVulkan, clientTargetVersion);
+                shader.setEnvTarget(glslang::EShTargetSpv,
+                        clientTargetVersion == glslang::EShTargetVulkan_1_1 ? glslang::EShTargetSpv_1_3
+                                                                            : glslang::EShTargetSpv_1_0);
+            } else {
+                shader.setEnvInput((controls & EShMsgReadHlsl) ? glslang::EShSourceHlsl
+                                                               : glslang::EShSourceGlsl,
+                                    stage, glslang::EShClientOpenGL, 100);
+                shader.setEnvClient(glslang::EShClientOpenGL, clientTargetVersion);
+                shader.setEnvTarget(glslang::EshTargetSpv, glslang::EShTargetSpv_1_0);
+            }
+        }
 
         bool success = compile(&shader, code, entryPointName, controls);
 
@@ -217,8 +241,10 @@ public:
 
         if (success && (controls & EShMsgSpvRules)) {
             std::vector<uint32_t> spirv_binary;
-            glslang::GlslangToSpv(*program.getIntermediate(kind),
-                                  spirv_binary, &logger);
+            glslang::SpvOptions options;
+            options.disableOptimizer = disableOptimizer;
+            glslang::GlslangToSpv(*program.getIntermediate(stage),
+                                  spirv_binary, &logger, &options);
 
             std::ostringstream disassembly_stream;
             spv::Parameterize();
@@ -248,9 +274,9 @@ public:
             bool autoMapBindings,
             bool flattenUniformArrays)
     {
-        const EShLanguage kind = GetShaderStage(GetSuffix(shaderName));
+        const EShLanguage stage = GetShaderStage(GetSuffix(shaderName));
 
-        glslang::TShader shader(kind);
+        glslang::TShader shader(stage);
         shader.setShiftSamplerBinding(baseSamplerBinding);
         shader.setShiftTextureBinding(baseTextureBinding);
         shader.setShiftImageBinding(baseImageBinding);
@@ -272,7 +298,7 @@ public:
 
         if (success && (controls & EShMsgSpvRules)) {
             std::vector<uint32_t> spirv_binary;
-            glslang::GlslangToSpv(*program.getIntermediate(kind),
+            glslang::GlslangToSpv(*program.getIntermediate(stage),
                                   spirv_binary, &logger);
 
             std::ostringstream disassembly_stream;
@@ -296,9 +322,10 @@ public:
             const std::string& entryPointName, EShMessages controls,
             const unsigned int remapOptions = spv::spirvbin_t::NONE)
     {
-        const EShLanguage kind = GetShaderStage(GetSuffix(shaderName));
+        const EShLanguage stage = GetShaderStage(GetSuffix(shaderName));
 
-        glslang::TShader shader(kind);
+        glslang::TShader shader(stage);
+        shader.setAutoMapBindings(true);
         shader.setAutoMapLocations(true);
 
         bool success = compile(&shader, code, entryPointName, controls);
@@ -311,7 +338,7 @@ public:
 
         if (success && (controls & EShMsgSpvRules)) {
             std::vector<uint32_t> spirv_binary;
-            glslang::GlslangToSpv(*program.getIntermediate(kind),
+            glslang::GlslangToSpv(*program.getIntermediate(stage),
                                   spirv_binary, &logger);
 
             spv::spirvbin_t(0 /*verbosity*/).remap(spirv_binary, remapOptions);
@@ -380,19 +407,24 @@ public:
                                  const std::string& testName,
                                  Source source,
                                  Semantics semantics,
+                                 glslang::EshTargetClientVersion clientTargetVersion,
                                  Target target,
-                                 const std::string& entryPointName="")
+                                 bool automap = true,
+                                 const std::string& entryPointName="",
+                                 const std::string& baseDir="/baseResults/",
+                                 const bool disableOptimizer = true)
     {
         const std::string inputFname = testDir + "/" + testName;
         const std::string expectedOutputFname =
-            testDir + "/baseResults/" + testName + ".out";
+            testDir + baseDir + testName + ".out";
         std::string input, expectedOutput;
 
         tryLoadFile(inputFname, "input", &input);
         tryLoadFile(expectedOutputFname, "expected output", &expectedOutput);
 
         const EShMessages controls = DeriveOptions(source, semantics, target);
-        GlslangResult result = compileAndLink(testName, input, entryPointName, controls);
+        GlslangResult result = compileAndLink(testName, input, entryPointName, controls, clientTargetVersion, false,
+                                              EShTexSampTransKeep, disableOptimizer, automap);
 
         // Generate the hybrid output in the way of glslangValidator.
         std::ostringstream stream;
@@ -418,7 +450,8 @@ public:
         tryLoadFile(expectedOutputFname, "expected output", &expectedOutput);
 
         const EShMessages controls = DeriveOptions(source, semantics, target);
-        GlslangResult result = compileAndLink(testName, input, entryPointName, controls, true);
+        GlslangResult result = compileAndLink(testName, input, entryPointName, controls,
+                                              glslang::EShTargetVulkan_1_0, true);
 
         // Generate the hybrid output in the way of glslangValidator.
         std::ostringstream stream;
@@ -587,7 +620,9 @@ public:
         tryLoadFile(expectedOutputFname, "expected output", &expectedOutput);
 
         const EShMessages controls = DeriveOptions(source, semantics, target);
-        GlslangResult result = compileAndLink(testName, input, entryPointName, controls, false, EShTexSampTransUpgradeTextureRemoveSampler);
+        GlslangResult result = compileAndLink(testName, input, entryPointName, controls,
+                                              glslang::EShTargetVulkan_1_0, false,
+                                              EShTexSampTransUpgradeTextureRemoveSampler);
 
         // Generate the hybrid output in the way of glslangValidator.
         std::ostringstream stream;

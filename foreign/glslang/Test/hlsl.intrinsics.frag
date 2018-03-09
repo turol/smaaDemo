@@ -13,7 +13,7 @@ groupshared uint4 gs_ua4;
 groupshared uint4 gs_ub4;
 groupshared uint4 gs_uc4;
 
-float PixelShaderFunctionS(float inF0, float inF1, float inF2, uint inU0, uint inU1)
+float PixelShaderFunctionS(float inF0, float inF1, float inF2, uint inU0, int inU1)
 {
     uint out_u1;
 
@@ -23,7 +23,7 @@ float PixelShaderFunctionS(float inF0, float inF1, float inF2, uint inU0, uint i
     bool r003 = any(inF0);
     float r004 = asin(inF0);
     int r005 = asint(inF0);
-    uint r006 = asuint(inF0);
+    uint r006 = asuint(inU1);
     float r007 = asfloat(inU0);
     // asdouble(inU0, inU1);  // TODO: enable when HLSL parser used for intrinsics
     float r009 = atan(inF0);
@@ -31,6 +31,7 @@ float PixelShaderFunctionS(float inF0, float inF1, float inF2, uint inU0, uint i
     float r011 = ceil(inF0);
     float r012 = clamp(inF0, inF1, inF2);
     clip(inF0);
+    clip(r005);
     float r014 = cos(inF0);
     float r015 = cosh(inF0);
     int r016 = countbits(7);
@@ -108,6 +109,7 @@ float2 PixelShaderFunction2(float2 inF0, float2 inF1, float2 inF2, uint2 inU0, u
     float2 r011 = ceil(inF0);
     float2 r012 = clamp(inF0, inF1, inF2);
     clip(inF0);
+    clip(inU0);
     float2 r013 = cos(inF0);
     float2 r015 = cosh(inF0);
     int2 r016 = countbits(int2(7,3));
@@ -190,6 +192,7 @@ float3 PixelShaderFunction3(float3 inF0, float3 inF1, float3 inF2, uint3 inU0, u
     float3 r011 = ceil(inF0);
     float3 r012 = clamp(inF0, inF1, inF2);
     clip(inF0);
+    clip(inU0);
     float3 r013 = cos(inF0);
     float3 r014 = cosh(inF0);
     uint3 r015 = countbits(uint3(7,3,5));
@@ -271,6 +274,7 @@ float4 PixelShaderFunction(float4 inF0, float4 inF1, float4 inF2, uint4 inU0, ui
     float4 r011 = ceil(inF0);
     float4 r012 = clamp(inF0, inF1, inF2);
     clip(inF0);
+    clip(inU0);
     float4 r013 = cos(inF0);
     float4 r014 = cosh(inF0);
     uint4 r015 = countbits(uint4(7,3,5,2));

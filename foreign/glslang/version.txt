@@ -1,5 +1,8 @@
-commit d2d3a14237d464ad69f2e3d4b6b43be2c51eb1de
-Author: John Kessenich <cepheus@frii.com>
-Date:   Tue Jul 25 21:03:29 2017 -0600
+commit 845860d56513d95e15fe4820df7272f9687d076e
+Merge: ca279340 b502a802
+Author: John Kessenich <johnkslang@users.noreply.github.com>
+Date:   Thu Mar 8 10:55:02 2018 -0700
 
-    SPV: Update to latest 1.0 headers, removing redundancies in GLSL.ext.AMD.h.
+    Merge pull request #1283 from siavashserver/fix-memory-leak
+    
+    Fix memory leak upon ProcessDeferred failure.

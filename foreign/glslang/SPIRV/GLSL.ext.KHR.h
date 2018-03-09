@@ -27,10 +27,6 @@
 #ifndef GLSLextKHR_H
 #define GLSLextKHR_H
 
-enum BuiltIn;
-enum Op;
-enum Capability;
-
 static const int GLSLextKHRVersion = 100;
 static const int GLSLextKHRRevision = 2;
 
