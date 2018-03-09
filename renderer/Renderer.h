@@ -454,9 +454,7 @@ struct RenderPassDesc {
 	: depthStencilFormat_(Format::Invalid)
 	, colorFinalLayout_(Layout::ShaderRead)
 	, numSamples_(1)
-	, clearColorAttachments(false)
 	, clearDepthAttachment(false)
-	, colorClearValue(0.0f, 0.0f, 0.0f, 0.0f)
 	, depthClearValue(1.0f)
 	{
 		for (auto &rt : colorRTs_) {
@@ -479,21 +477,18 @@ struct RenderPassDesc {
 		return *this;
 	}
 
-	RenderPassDesc &color(unsigned int index, Format c, PassBegin pb) {
+	RenderPassDesc &color(unsigned int index, Format c, PassBegin pb, glm::vec4 clear = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {
 		assert(index < MAX_COLOR_RENDERTARGETS);
 		colorRTs_[index].format    = c;
 		colorRTs_[index].passBegin = pb;
+		if (pb == PassBegin::Clear) {
+			colorRTs_[index].clearValue = clear;
+		}
 		return *this;
 	}
 
 	RenderPassDesc &colorFinalLayout(Layout l) {
 		colorFinalLayout_ = l;
-		return *this;
-	}
-
-	RenderPassDesc &clearColors(glm::vec4 v) {
-		clearColorAttachments = true;
-		colorClearValue       = v;
 		return *this;
 	}
 
@@ -526,9 +521,7 @@ private:
 	Layout                                       colorFinalLayout_;
 	unsigned int                                 numSamples_;
 	std::string                                  name_;
-	bool                                         clearColorAttachments;
 	bool                                         clearDepthAttachment;
-	glm::vec4                                    colorClearValue;
 	float                                        depthClearValue;
 
 

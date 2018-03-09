@@ -1145,10 +1145,12 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	assert(!desc.name_.empty());
 
 	GLbitfield clearMask = 0;
-	if (desc.clearColorAttachments) {
+	if (desc.colorRTs_[0].passBegin == PassBegin::Clear) {
 		clearMask |= GL_COLOR_BUFFER_BIT;
 	}
-	
+
+	assert(desc.colorRTs_[1].passBegin == PassBegin::DontCare);
+
 	if (desc.clearDepthAttachment) {
 		clearMask |= GL_DEPTH_BUFFER_BIT;
 	}
@@ -1156,7 +1158,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	auto result = renderPasses.add();
 	RenderPass &pass = result.first;
 	pass.desc = desc;
-	pass.colorClearValue = desc.colorClearValue;
+	pass.colorClearValue = desc.colorRTs_[0].clearValue;
 	pass.depthClearValue = desc.depthClearValue;
 	pass.clearMask       = clearMask;
 	pass.numSamples      = desc.numSamples_;

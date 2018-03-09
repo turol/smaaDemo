@@ -889,16 +889,26 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		vk::AttachmentDescription attach;
 		attach.format         = vulkanFormat(desc.colorRTs_[0].format);
 		attach.samples        = samples;
-		// TODO: these should be customizable via RenderPassDesc
+		switch (desc.colorRTs_[0].passBegin) {
+		case PassBegin::DontCare:
 		attach.loadOp         = vk::AttachmentLoadOp::eDontCare;
-		if (desc.clearColorAttachments) {
+			break;
+
+		case PassBegin::Keep:
+			attach.loadOp     = vk::AttachmentLoadOp::eLoad;
+			break;
+
+		case PassBegin::Clear:
 			attach.loadOp     = vk::AttachmentLoadOp::eClear;
-			std::array<float, 4> color = { { desc.colorClearValue.x, desc.colorClearValue.y, desc.colorClearValue.z, desc.colorClearValue.a } };
+			std::array<float, 4> color = { { desc.colorRTs_[0].clearValue.x, desc.colorRTs_[0].clearValue.y, desc.colorRTs_[0].clearValue.z, desc.colorRTs_[0].clearValue.a } };
 			r.clearValueCount = attachNum + 1;
 			assert(r.clearValueCount <= 2);
 			r.clearValues[attachNum].color = vk::ClearColorValue(color);
-
+			break;
 		}
+
+		assert(desc.colorRTs_[1].passBegin == PassBegin::DontCare);
+
 		attach.storeOp        = vk::AttachmentStoreOp::eStore;
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
 		attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
