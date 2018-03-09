@@ -9,7 +9,10 @@ endfunction(shaderc_use_gmock)
 
 function(shaderc_default_c_compile_options TARGET)
   if (NOT "${MSVC}")
-    target_compile_options(${TARGET} PRIVATE -Wall -Werror)
+    target_compile_options(${TARGET} PRIVATE -Wall -Werror -fvisibility=hidden)
+    if (NOT "${MINGW}")
+      target_compile_options(${TARGET} PRIVATE -fPIC)
+    endif()
     if (ENABLE_CODE_COVERAGE)
       # The --coverage option is a synonym for -fprofile-arcs -ftest-coverage
       # when compiling.
@@ -59,7 +62,10 @@ function(shaderc_add_asciidoc TARGET FILE)
         ${CMAKE_CURRENT_SOURCE_DIR}/${FILE}.asciidoc
       DEPENDS ${FILE}.asciidoc ${ARGN}
       OUTPUT ${DEST})
-    add_custom_target(${TARGET} ALL DEPENDS ${DEST})
+    # Create the target, but the default build target does not depend on it.
+    # Some Asciidoctor installations are mysteriously broken, and it's hard
+    # to detect those cases.  Generating HTML is not critical by default.
+    add_custom_target(${TARGET} DEPENDS ${DEST})
   endif(ASCIIDOCTOR_EXE)
 endfunction()
 

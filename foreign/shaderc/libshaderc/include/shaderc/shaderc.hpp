@@ -180,6 +180,8 @@ class CompileOptions {
 
     // Handles shaderc_include_result_release_fn callbacks.
     virtual void ReleaseInclude(shaderc_include_result* data) = 0;
+
+    virtual ~IncluderInterface() = default;
   };
 
   // Sets the includer instance for libshaderc to call during compilation, as
@@ -282,6 +284,12 @@ class CompileOptions {
                               shaderc_uniform_kind kind, uint32_t base) {
     shaderc_compile_options_set_binding_base_for_stage(options_, shader_kind,
                                                        kind, base);
+  }
+
+  // Sets whether the compiler automatically assigns locations to
+  // uniform variables that don't have explicit locations.
+  void SetAutoMapLocations(bool auto_map) {
+    shaderc_compile_options_set_auto_map_locations(options_, auto_map);
   }
 
   // Sets a descriptor set and binding for an HLSL register in the given stage.

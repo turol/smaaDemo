@@ -7,6 +7,8 @@ set(SHADERC_GOOGLE_TEST_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/googletest" CACHE S
   "Location of googletest source")
 set(SHADERC_SPIRV_TOOLS_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/spirv-tools" CACHE STRING
   "Location of spirv-tools source")
+set(SHADERC_SPIRV_HEADERS_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/spirv-headers" CACHE STRING
+  "Location of spirv-headers source")
 set(SHADERC_GLSLANG_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/glslang" CACHE STRING
   "Location of glslang source")
 
@@ -26,6 +28,22 @@ endif()
 
 set(OLD_PLATFORM_TOOLSET ${CMAKE_GENERATOR_TOOLSET})
 
+if (IS_DIRECTORY ${SHADERC_SPIRV_HEADERS_DIR})
+  add_subdirectory(${SHADERC_SPIRV_HEADERS_DIR} spirv-headers)
+endif()
+
+# Check SPIRV-Tools before glslang since it is a dependency of glslang.
+if (IS_DIRECTORY ${SHADERC_SPIRV_TOOLS_DIR})
+  if ("${SHADERC_SKIP_TESTS}")
+    # Also skip building tests in SPIRV-Tools.
+    set(SPIRV_SKIP_TESTS ON CACHE BOOL "Skip building SPIRV-Tools tests")
+  endif()
+  add_subdirectory(${SHADERC_SPIRV_TOOLS_DIR} spirv-tools)
+endif()
+if (NOT TARGET SPIRV-Tools)
+  message(FATAL_ERROR "SPIRV-Tools was not found - required for compilation")
+endif()
+
 if (IS_DIRECTORY ${SHADERC_GLSLANG_DIR})
   add_subdirectory(${SHADERC_GLSLANG_DIR} glslang)
 endif()
@@ -38,17 +56,6 @@ if(WIN32)
     # installed, undo anything glslang has done to it.
     set(CMAKE_GENERATOR_TOOLSET "${OLD_PLATFORM_TOOLSET}" CACHE STRING
       "Platform Toolset" FORCE)
-endif()
-
-if (IS_DIRECTORY ${SHADERC_SPIRV_TOOLS_DIR})
-  if ("${SHADERC_SKIP_TESTS}")
-    # Also skip building tests in SPIRV-Tools.
-    set(SPIRV_SKIP_TESTS ON CACHE BOOL "Skip building SPIRV-Tools tests")
-  endif()
-  add_subdirectory(${SHADERC_SPIRV_TOOLS_DIR} spirv-tools)
-endif()
-if (NOT TARGET SPIRV-Tools)
-  message(FATAL_ERROR "SPIRV-Tools was not found - required for compilation")
 endif()
 
 if(${SHADERC_ENABLE_TESTS})

@@ -569,10 +569,15 @@ TEST_F(CompileStringWithOptionsTest, ForcedVersionProfileUnknownVersionStd) {
       options_.get(), 4242 /*unknown version*/, shaderc_profile_core);
   ASSERT_NE(nullptr, compiler_.get_compiler_handle());
   // Warning message should complain about the unknown version.
-  EXPECT_THAT(CompilationWarnings(kMinimalShader, shaderc_glsl_vertex_shader,
-                                  options_.get()),
-              HasSubstr("warning: (version, profile) forced to be (4242, core),"
-                        " while in source code it is (140, none)\n"));
+  //
+  // Also, Glslang errors out on unkown versions, due to commit:
+  // https://github.com/KhronosGroup/glslang/commit/9353f1afab8d1c2b1811c6acd807675128eaabc5
+  const auto errs = CompilationErrors(
+      kMinimalShader, shaderc_glsl_vertex_shader, options_.get());
+  EXPECT_THAT(
+      errs, HasSubstr("warning: (version, profile) forced to be (4242, core), "
+                      "while in source code it is (140, none)\n"));
+  EXPECT_THAT(errs, HasSubstr("error: version not supported\n"));
 }
 
 TEST_F(CompileStringWithOptionsTest, ForcedVersionProfileVersionsBefore150) {
@@ -1388,8 +1393,8 @@ TEST(EntryPointTest, LangHlslOnHlslVertexSucceedsWithGivenEntryPointName) {
 std::string ShaderWithTexOffset(int offset) {
   std::ostringstream oss;
   oss <<
-    "#version 150\n"
-    "uniform sampler1D tex;\n"
+    "#version 450\n"
+    "layout (binding=0) uniform sampler1D tex;\n"
     "void main() { vec4 x = textureOffset(tex, 1.0, " << offset << "); }\n";
   return oss.str();
 }
@@ -1435,29 +1440,12 @@ TEST_F(CompileStringTest, LimitsTexelOffsetHigherMaximum) {
                                   options_.get()));
 }
 
-TEST_F(CompileStringWithOptionsTest,
-       UniformsWithoutBindingsHaveNoBindingsByDefault) {
-  const std::string disassembly_text = CompilationOutput(
-      kShaderWithUniformsWithoutBindings, shaderc_glsl_vertex_shader,
-      options_.get(), OutputType::SpirvAssemblyText);
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_tex Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_sam Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_img Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_imbuf Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_ubo Binding")));
-}
-
-TEST_F(CompileStringWithOptionsTest,
-       UniformsWithoutBindingsOptionSetNoBindingsHaveNoBindings) {
-  shaderc_compile_options_set_auto_bind_uniforms(options_.get(), false);
-  const std::string disassembly_text = CompilationOutput(
-      kShaderWithUniformsWithoutBindings, shaderc_glsl_vertex_shader,
-      options_.get(), OutputType::SpirvAssemblyText);
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_tex Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_sam Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_img Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_imbuf Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_ubo Binding")));
+TEST_F(CompileStringWithOptionsTest, UniformsWithoutBindingsFailCompilation) {
+  const std::string errors =
+      CompilationErrors(kShaderWithUniformsWithoutBindings,
+                        shaderc_glsl_vertex_shader, options_.get());
+  EXPECT_THAT(errors,
+              HasSubstr("sampler/texture/image requires layout(binding=X)"));
 }
 
 TEST_F(CompileStringWithOptionsTest,
@@ -1567,26 +1555,6 @@ TEST_F(CompileStringWithOptionsTest, SetBindingBaseSurvivesCloning) {
   EXPECT_THAT(disassembly_text, HasSubstr("OpDecorate %my_img Binding 60"));
   EXPECT_THAT(disassembly_text, HasSubstr("OpDecorate %my_imbuf Binding 61"));
   EXPECT_THAT(disassembly_text, HasSubstr("OpDecorate %my_ubo Binding 70"));
-}
-
-TEST_F(CompileStringWithOptionsTest, SetBindingBaseIgnoredWhenNotAutoBinding) {
-  shaderc_compile_options_set_auto_bind_uniforms(options_.get(), false);
-  shaderc_compile_options_set_binding_base(options_.get(),
-                                           shaderc_uniform_kind_texture, 40);
-  shaderc_compile_options_set_binding_base(options_.get(),
-                                           shaderc_uniform_kind_sampler, 50);
-  shaderc_compile_options_set_binding_base(options_.get(),
-                                           shaderc_uniform_kind_image, 60);
-  shaderc_compile_options_set_binding_base(options_.get(),
-                                           shaderc_uniform_kind_buffer, 70);
-  const std::string disassembly_text = CompilationOutput(
-      kShaderWithUniformsWithoutBindings, shaderc_glsl_vertex_shader,
-      options_.get(), OutputType::SpirvAssemblyText);
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_tex Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_sam Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_img Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_imbuf Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_ubo Binding")));
 }
 
 TEST(Compiler, IncludeWithoutOptionsReturnsValidError) {

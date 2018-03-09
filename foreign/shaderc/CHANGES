@@ -1,13 +1,26 @@
 Revision history for Shaderc
 
-v2017.2-dev 2017-03-10
- - Add options for automatically set bindings for (uniform) resources that
+v2018.0-dev 2018-02-27
+ - Start v2018.0-dev
+
+v2017.2 2018-02-27
+ - Add a shared library version of libshaderc
+ - Support GLSL 4.6 and ESSL 3.2
+ - Fail compilation if a resource does not have a binding.
+ - Add options for automatically setting bindings for (uniform) resources that
    don't have bindings set in shader source.
+ - Add options for automatically setting locations for pipline inputs and outputs.
  - Add option for using HLSL IO mappings as expressed in source.
  - Add options for setting resource binding base numbers.
  - Add option to use HLSL resource register numbers for bindings.
  - HLSL compilation now defaults to HLSL packing rules.
    (This change is inherited from Glslang commit 7cca140.)
+ - HLSL compilation runs SPIR-V "legalization" transforms to reduce
+   manipulation of opaque handles (e.g. images), to satisfy Vulkan rules.
+ - Adapt to Glslang generator version numbers:
+   - To 2: a fix for code generation for atomicCounterDecrement.
+   - To 3: change memory barrier semantics masks
+   - To 4: generate more access chains for swizzles
  - CMake install rules uses GNUInstallDirs.  For example, install to lib64
    when that is the norm for the target system.
 

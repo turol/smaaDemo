@@ -104,11 +104,52 @@ const char kGlslFragShaderNoExplicitBinding[] =
          float x = my_ubo.x;
        })";
 
+// A GLSL vertex shader with the location defined for its non-opaque uniform
+// variable.
+const char kGlslVertShaderExplicitLocation[] =
+    R"(#version 450
+       layout(location = 10) uniform mat4 my_mat;
+       layout(location = 0) in vec4 my_vec;
+       void main(void) {
+         gl_Position = my_mat * my_vec;
+       })";
+
+// A GLSL vertex shader without the location defined for its non-opaque uniform
+// variable.
+const char kGlslVertShaderNoExplicitLocation[] =
+    R"(#version 450
+       uniform mat4 my_mat;
+       layout(location = 0) in vec4 my_vec;
+       void main(void) {
+         gl_Position = my_mat * my_vec;
+       })";
+
 // A GLSL vertex shader with a weirdly packed block.
 const char kGlslShaderWeirdPacking[] =
     R"(#version 450
        buffer B { float x; vec3 foo; } my_ssbo;
        void main() { my_ssbo.x = 1.0; })";
+
+const char kHlslShaderForLegalizationTest[] = R"(
+struct CombinedTextureSampler {
+ Texture2D tex;
+ SamplerState sampl;
+};
+
+float4 sampleTexture(CombinedTextureSampler c, float2 loc) {
+ return c.tex.Sample(c.sampl, loc);
+};
+
+Texture2D gTex;
+SamplerState gSampler;
+
+float4 main(float2 loc: A) : SV_Target {
+ CombinedTextureSampler cts;
+ cts.tex = gTex;
+ cts.sampl = gSampler;
+
+ return sampleTexture(cts, loc);
+})";
 
 // Returns the disassembly of the given SPIR-V binary, as a string.
 // Assumes the disassembly will be successful when targeting Vulkan.
@@ -451,8 +492,8 @@ INSTANTIATE_TEST_CASE_P(
 // offset.
 std::string ShaderWithTexOffset(int offset) {
   std::ostringstream oss;
-  oss << "#version 150\n"
-         "uniform sampler1D tex;\n"
+  oss << "#version 450\n"
+         "layout (binding=0) uniform sampler1D tex;\n"
          "void main() { vec4 x = textureOffset(tex, 1.0, "
       << offset << "); }\n";
   return oss.str();
@@ -490,28 +531,12 @@ TEST_F(CompilerTest, GeneratorWordIsShadercOverGlslang) {
   EXPECT_EQ(shaderc_over_glslang, words[generator_word_index] >> 16u);
 }
 
-TEST_F(CompilerTest, DefaultsDoNotSetBindings) {
-  const auto words = SimpleCompilationBinary(kGlslFragShaderNoExplicitBinding,
-                                             EShLangFragment);
-  const auto disassembly = Disassemble(words);
-  EXPECT_THAT(disassembly, Not(HasSubstr("OpDecorate %my_tex Binding")));
-  EXPECT_THAT(disassembly, Not(HasSubstr("OpDecorate %my_sam Binding")));
-  EXPECT_THAT(disassembly, Not(HasSubstr("OpDecorate %my_img Binding")));
-  EXPECT_THAT(disassembly, Not(HasSubstr("OpDecorate %my_imbuf Binding")));
-  EXPECT_THAT(disassembly, Not(HasSubstr("OpDecorate %my_ubo Binding")));
-}
-
-TEST_F(CompilerTest, NoAutoMapBindingsDoesNotSetBindings) {
+TEST_F(CompilerTest, NoBindingsAndNoAutoMapBindingsFailsCompile) {
   compiler_.SetAutoBindUniforms(false);
-  const auto words = SimpleCompilationBinary(kGlslFragShaderNoExplicitBinding,
-                                             EShLangFragment);
-  const auto disassembly = Disassemble(words);
-  EXPECT_THAT(disassembly, Not(HasSubstr("OpDecorate %my_tex Binding")))
-      << disassembly;
-  EXPECT_THAT(disassembly, Not(HasSubstr("OpDecorate %my_sam Binding")));
-  EXPECT_THAT(disassembly, Not(HasSubstr("OpDecorate %my_img Binding")));
-  EXPECT_THAT(disassembly, Not(HasSubstr("OpDecorate %my_imbuf Binding")));
-  EXPECT_THAT(disassembly, Not(HasSubstr("OpDecorate %my_ubo Binding")));
+  EXPECT_FALSE(SimpleCompilationSucceeds(kGlslFragShaderNoExplicitBinding,
+                                         EShLangFragment));
+  EXPECT_THAT(errors_,
+              HasSubstr("sampler/texture/image requires layout(binding=X)"));
 }
 
 TEST_F(CompilerTest, AutoMapBindingsSetsBindings) {
@@ -615,6 +640,37 @@ TEST_F(CompilerTest, AutoMapBindingsSetsBindingsSetFragImageBindingBaseCompiledA
   EXPECT_THAT(disassembly, HasSubstr("OpDecorate %my_ubo Binding 4"));
 }
 
+TEST_F(CompilerTest, NoAutoMapLocationsFailsCompilationOnOpenGLShader) {
+  compiler_.SetTargetEnv(Compiler::TargetEnv::OpenGL);
+  compiler_.SetAutoMapLocations(false);
+
+  const auto words = SimpleCompilationBinary(kGlslVertShaderExplicitLocation,
+                                             EShLangVertex);
+  const auto disassembly = Disassemble(words);
+  EXPECT_THAT(disassembly, HasSubstr("OpDecorate %my_mat Location 10"))
+      << disassembly;
+
+  EXPECT_FALSE(
+      SimpleCompilationSucceeds(kGlslVertShaderNoExplicitLocation, EShLangVertex));
+}
+
+TEST_F(CompilerTest, AutoMapLocationsSetsLocationsOnOpenGLShader) {
+  compiler_.SetTargetEnv(Compiler::TargetEnv::OpenGL);
+  compiler_.SetAutoMapLocations(true);
+
+  const auto words_no_auto =
+      SimpleCompilationBinary(kGlslVertShaderExplicitLocation, EShLangVertex);
+  const auto disassembly_no_auto = Disassemble(words_no_auto);
+  EXPECT_THAT(disassembly_no_auto, HasSubstr("OpDecorate %my_mat Location 10"))
+      << disassembly_no_auto;
+
+  const auto words_auto =
+      SimpleCompilationBinary(kGlslVertShaderNoExplicitLocation, EShLangVertex);
+  const auto disassembly_auto = Disassemble(words_auto);
+  EXPECT_THAT(disassembly_auto, HasSubstr("OpDecorate %my_mat Location 0"))
+      << disassembly_auto;
+}
+
 TEST_F(CompilerTest, EmitMessageTextOnlyOnce) {
   // Emit a warning by compiling a shader without a default entry point name.
   // The warning should only be emitted once even though we do parsing, linking,
@@ -660,6 +716,34 @@ TEST_F(CompilerTest, HlslOffsetsOptionEnableRespected) {
   const auto disassembly = Disassemble(words);
   EXPECT_THAT(disassembly, HasSubstr("OpMemberDecorate %B 1 Offset 4"))
       << disassembly;
+}
+
+TEST_F(CompilerTest, HlslLegalizationEnabledNoSizeOpt) {
+  compiler_.SetSourceLanguage(Compiler::SourceLanguage::HLSL);
+  const auto words =
+      SimpleCompilationBinary(kHlslShaderForLegalizationTest, EShLangFragment);
+  const auto disassembly = Disassemble(words);
+  EXPECT_THAT(disassembly, Not(HasSubstr("OpFunctionCall"))) << disassembly;
+  EXPECT_THAT(disassembly, HasSubstr("OpName")) << disassembly;
+}
+
+TEST_F(CompilerTest, HlslLegalizationEnabledWithSizeOpt) {
+  compiler_.SetSourceLanguage(Compiler::SourceLanguage::HLSL);
+  compiler_.SetOptimizationLevel(Compiler::OptimizationLevel::Size);
+  const auto words =
+      SimpleCompilationBinary(kHlslShaderForLegalizationTest, EShLangFragment);
+  const auto disassembly = Disassemble(words);
+  EXPECT_THAT(disassembly, Not(HasSubstr("OpFunctionCall"))) << disassembly;
+  EXPECT_THAT(disassembly, Not(HasSubstr("OpName"))) << disassembly;
+}
+
+TEST_F(CompilerTest, HlslLegalizationDisabled) {
+  compiler_.SetSourceLanguage(Compiler::SourceLanguage::HLSL);
+  compiler_.EnableHlslLegalization(false);
+  const auto words =
+      SimpleCompilationBinary(kHlslShaderForLegalizationTest, EShLangFragment);
+  const auto disassembly = Disassemble(words);
+  EXPECT_THAT(disassembly, HasSubstr("OpFunctionCall")) << disassembly;
 }
 
 }  // anonymous namespace

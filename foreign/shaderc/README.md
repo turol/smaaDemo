@@ -71,6 +71,10 @@ Shaderc into.
 
 ## Getting and building Shaderc
 
+**Experimental:** On Windows, instead of building from source, you can get the
+artifacts built by [Appveyor][appveyor] for the top of the tree of the master
+branch under the "Artifacts" tab of a certain job.
+
 1) Check out the source code:
 
 ```sh
@@ -79,7 +83,7 @@ cd $SOURCE_DIR/third_party
 git clone https://github.com/google/googletest.git
 git clone https://github.com/google/glslang.git
 git clone https://github.com/KhronosGroup/SPIRV-Tools.git spirv-tools
-git clone https://github.com/KhronosGroup/SPIRV-Headers.git spirv-tools/external/spirv-headers
+git clone https://github.com/KhronosGroup/SPIRV-Headers.git spirv-headers
 cd $SOURCE_DIR/
 ```
 
@@ -171,7 +175,7 @@ On Windows, the following tools should be installed and available on your path:
 
 Optionally, the following tools may be installed on any OS:
 
- - [`asciidoctor`](http://asciidoctor.org/): for generating documenation.
+ - [`asciidoctor`](http://asciidoctor.org/): for generating documentation.
    - [`pygments.rb`](https://rubygems.org/gems/pygments.rb) required by
      `asciidoctor` for syntax highlighting.
  - [`nosetests`](https://nose.readthedocs.io): for testing the Python code.
@@ -184,7 +188,7 @@ Please make sure you have the Docker engine
 To create a Docker image containing Shaderc command line tools, issue the
 following command in `${SOURCE_DIR}`: `docker build -t <IMAGE-NAME> .`.
 The created image will have all the command line tools installed at
-`/usr/local` interally, and a data volume mounted at `/code`.
+`/usr/local` internally, and a data volume mounted at `/code`.
 
 Assume `<IMAGE-NAME>` is `shaderc/shaderc` from now on.
 
@@ -238,3 +242,4 @@ older versions of Shaderc and its dependencies.
 [spirv-tools]: https://github.com/KhronosGroup/SPIRV-Tools
 [pyshaderc]: https://github.com/realitix/pyshaderc
 [shaderc-rs]: https://github.com/google/shaderc-rs
+[appveyor]: https://ci.appveyor.com/project/dneto0/shaderc

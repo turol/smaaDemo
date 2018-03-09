@@ -184,8 +184,10 @@ class Compiler {
         limits_(kDefaultTBuiltInResource),
         auto_bind_uniforms_(false),
         auto_binding_base_(),
+        auto_map_locations_(false),
         hlsl_iomap_(false),
         hlsl_offsets_(false),
+        hlsl_legalization_enabled_(true),
         hlsl_explicit_bindings_() {}
 
   // Requests that the compiler place debug information into the object code,
@@ -195,6 +197,9 @@ class Compiler {
   // Sets the optimization level to the given level. Only the last one takes
   // effect if multiple calls of this method exist.
   void SetOptimizationLevel(OptimizationLevel level);
+
+  // Enables or disables HLSL legalization passes.
+  void EnableHlslLegalization(bool hlsl_legalization_enabled);
 
   // When a warning is encountered it treat it as an error.
   void SetWarningsAsErrors();
@@ -245,6 +250,10 @@ class Compiler {
                                   uint32_t base) {
     auto_binding_base_[static_cast<int>(stage)][static_cast<int>(kind)] = base;
   }
+
+  // Sets whether the compiler automatically assigns locations to
+  // uniform variables that don't have explicit locations.
+  void SetAutoMapLocations(bool auto_map) { auto_map_locations_ = auto_map; }
 
   // Use HLSL IO mapping rules for bindings.  Default is false.
   void SetHlslIoMapping(bool hlsl_iomap) { hlsl_iomap_ = hlsl_iomap; }
@@ -435,12 +444,20 @@ class Compiler {
   // The default is zero.
   uint32_t auto_binding_base_[kNumStages][kNumUniformKinds];
 
+  // True if the compiler should automatically map uniforms that don't
+  // have explicit locations.
+  bool auto_map_locations_;
+
   // True if the compiler should use HLSL IO mapping rules when compiling HLSL.
   bool hlsl_iomap_;
 
   // True if the compiler should determine block member offsets using HLSL
   // packing rules instead of standard GLSL rules.
   bool hlsl_offsets_;
+
+  // True if the compiler should perform legalization optimization passes if
+  // source language is HLSL.
+  bool hlsl_legalization_enabled_;
 
   // A sequence of triples, each triple representing a specific HLSL register
   // name, and the set and binding numbers it should be mapped to, but in

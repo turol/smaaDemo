@@ -430,10 +430,12 @@ TEST_F(CppInterface, ForcedVersionProfileUnknownVersionStd) {
   // Forces the version and profile to 4242core, which is an unknown version.
   options_.SetForcedVersionProfile(4242 /*unknown version*/,
                                    shaderc_profile_core);
-  EXPECT_THAT(
-      CompilationWarnings(kMinimalShader, shaderc_glsl_vertex_shader, options_),
-      HasSubstr("warning: (version, profile) forced to be (4242, core),"
-                " while in source code it is (140, none)\n"));
+  auto const errs =
+      CompilationErrors(kMinimalShader, shaderc_glsl_vertex_shader, options_);
+  EXPECT_THAT(errs,
+              HasSubstr("warning: (version, profile) forced to be (4242, core),"
+                        " while in source code it is (140, none)\n"));
+  EXPECT_THAT(errs, HasSubstr("error: version not supported\n"));
 }
 
 TEST_F(CppInterface, ForcedVersionProfileVersionsBefore150) {
@@ -904,8 +906,9 @@ TEST_F(CppInterface, SuppressGlobalWarnings) {
   // won't be emitted.
   options_.SetSuppressWarnings();
   options_.SetForcedVersionProfile(400, shaderc_profile_core);
-  EXPECT_EQ("", CompilationWarnings(kMinimalUnknownVersionShader,
-                                    shaderc_glsl_vertex_shader, options_));
+  EXPECT_THAT(CompilationWarnings(kMinimalUnknownVersionShader,
+                                  shaderc_glsl_vertex_shader, options_),
+              Eq(""));
 }
 
 TEST_F(CppInterface, SuppressGlobalWarningsClonedOptions) {
@@ -913,10 +916,11 @@ TEST_F(CppInterface, SuppressGlobalWarningsClonedOptions) {
   // won't be emitted, and the mode should be carried into any clone of the
   // original option object.
   options_.SetSuppressWarnings();
+  options_.SetForcedVersionProfile(400, shaderc_profile_core);
   CompileOptions cloned_options(options_);
-  EXPECT_EQ("",
-            CompilationWarnings(kMinimalUnknownVersionShader,
-                                shaderc_glsl_vertex_shader, cloned_options));
+  EXPECT_THAT(CompilationWarnings(kMinimalUnknownVersionShader,
+                                  shaderc_glsl_vertex_shader, cloned_options),
+              Eq(""));
 }
 
 TEST_F(CppInterface, GlobalWarningsAsErrors) {
@@ -953,8 +957,10 @@ TEST_F(CppInterface, SuppressWarningsModeFirstOverridesWarningsAsErrorsMode) {
                                     shaderc_glsl_vertex_shader, options_));
 
   // Global warnings should be inhibited.
-  EXPECT_EQ("", CompilationWarnings(kMinimalUnknownVersionShader,
-                                    shaderc_glsl_vertex_shader, options_));
+  // However, the unknown version will cause an error.
+  EXPECT_THAT(CompilationErrors(kMinimalUnknownVersionShader,
+                                shaderc_glsl_vertex_shader, options_),
+              Eq("shader: error: version not supported\n"));
 }
 
 TEST_F(CppInterface, SuppressWarningsModeSecondOverridesWarningsAsErrorsMode) {
@@ -968,8 +974,10 @@ TEST_F(CppInterface, SuppressWarningsModeSecondOverridesWarningsAsErrorsMode) {
                                     shaderc_glsl_vertex_shader, options_));
 
   // Global warnings should be inhibited.
-  EXPECT_EQ("", CompilationWarnings(kMinimalUnknownVersionShader,
-                                    shaderc_glsl_vertex_shader, options_));
+  // However, the unknown version will cause an error.
+  EXPECT_THAT(CompilationErrors(kMinimalUnknownVersionShader,
+                                shaderc_glsl_vertex_shader, options_),
+              Eq("shader: error: version not supported\n"));
 }
 
 TEST_F(CppInterface, TargetEnvCompileOptions) {
@@ -1114,8 +1122,8 @@ TEST(
 std::string ShaderWithTexOffset(int offset) {
   std::ostringstream oss;
   oss <<
-    "#version 150\n"
-    "uniform sampler1D tex;\n"
+    "#version 450\n"
+    "layout (binding=0) uniform sampler1D tex;\n"
     "void main() { vec4 x = textureOffset(tex, 1.0, " << offset << "); }\n";
   return oss.str();
 }
@@ -1157,24 +1165,12 @@ TEST_F(CppInterface, LimitsTexelOffsetHigherMaximum) {
                                   options_));
 }
 
-TEST_F(CppInterface, UniformsWithoutBindingsHaveNoBindingsByDefault) {
+TEST_F(CppInterface, UniformsWithoutBindingsFailCompilation) {
   CompileOptions options;
-  const std::string disassembly_text = AssemblyOutput(
+  const std::string errors = CompilationErrors(
       kShaderWithUniformsWithoutBindings, shaderc_glsl_vertex_shader, options);
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_tex Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_sam Binding")));
-}
-
-TEST_F(CppInterface, UniformsWithoutBindingsOptionSetNoBindingsHaveNoBindings) {
-  CompileOptions options;
-  options.SetAutoBindUniforms(false);
-  const std::string disassembly_text = AssemblyOutput(
-      kShaderWithUniformsWithoutBindings, shaderc_glsl_vertex_shader, options);
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_tex Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_sam Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_img Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_imbuf Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_ubo Binding")));
+  EXPECT_THAT(errors,
+              HasSubstr("sampler/texture/image requires layout(binding=X)"));
 }
 
 TEST_F(CppInterface,
@@ -1258,22 +1254,6 @@ TEST_F(CppInterface, SetBindingBaseSurvivesCloning) {
   EXPECT_THAT(disassembly_text, HasSubstr("OpDecorate %my_img Binding 60"));
   EXPECT_THAT(disassembly_text, HasSubstr("OpDecorate %my_imbuf Binding 61"));
   EXPECT_THAT(disassembly_text, HasSubstr("OpDecorate %my_ubo Binding 70"));
-}
-
-TEST_F(CppInterface, SetBindingBaseIgnoredWhenNotAutoBinding) {
-  CompileOptions options;
-  options.SetAutoBindUniforms(false);
-  options.SetBindingBase(shaderc_uniform_kind_texture, 40);
-  options.SetBindingBase(shaderc_uniform_kind_sampler, 50);
-  options.SetBindingBase(shaderc_uniform_kind_image, 60);
-  options.SetBindingBase(shaderc_uniform_kind_buffer, 70);
-  const std::string disassembly_text = AssemblyOutput(
-      kShaderWithUniformsWithoutBindings, shaderc_glsl_vertex_shader, options);
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_tex Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_sam Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_img Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_imbuf Binding")));
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorate %my_ubo Binding")));
 }
 
 TEST_F(CppInterface, GlslDefaultPackingUsed) {

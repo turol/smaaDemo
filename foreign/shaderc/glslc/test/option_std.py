@@ -77,6 +77,30 @@ class TestMissingVersionButHavingStd(expect.ValidObjectFile):
 
 
 @inside_glslc_testsuite('OptionStd')
+class TestGLSL460(expect.ValidObjectFile):
+    """Tests that GLSL version 4.6 is supported."""
+
+    shader = FileShader(core_frag_shader_without_version(), '.frag')
+    glslc_args = ['-c', '-std=460', shader]
+
+
+@inside_glslc_testsuite('OptionStd')
+class TestGLSL460Core(expect.ValidObjectFile):
+    """Tests that GLSL version 4.6 core profile is supported."""
+
+    shader = FileShader(core_frag_shader_without_version(), '.frag')
+    glslc_args = ['-c', '-std=460core', shader]
+
+
+@inside_glslc_testsuite('OptionStd')
+class TestESSL320(expect.ValidObjectFile):
+    """Tests that ESSL version 3.2 is supported."""
+
+    shader = FileShader(core_frag_shader_without_version(), '.frag')
+    glslc_args = ['-c', '-std=320es', shader]
+
+
+@inside_glslc_testsuite('OptionStd')
 class TestStdIgnoredInHlsl(expect.ValidObjectFile):
     """Tests HLSL compilation ignores -std."""
 
@@ -272,7 +296,7 @@ class TestVersionMissingProfile(expect.ErrorMessage):
     glslc_args = ['-c', '-std=310', shader]
 
     expected_error = [
-        shader, ': error: #version: versions 300 and 310 require ',
+        shader, ': error: #version: versions 300, 310, and 320 require ',
         "specifying the 'es' profile\n1 error generated.\n"]
 
 

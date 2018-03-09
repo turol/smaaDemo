@@ -40,8 +40,8 @@ HLSL_SHADER_WITHOUT_BINDINGS = """
 SamplerState s1 : register(s1);
 SamplerComparisonState s2 : register(s2);
 
-Texture1D <float2> t1 : register(t11);
-Texture2D <float2> t2 : register(t12);
+Texture1D t1 : register(t11);
+Texture2D <float4> t2 : register(t12);
 Texture3D <float2> t3 : register(t13);
 StructuredBuffer<float4> t4 : register(t14);
 ByteAddressBuffer t5 : register(t15);
@@ -75,18 +75,18 @@ float4 main() : SV_Target0 {
    u6[2];
    u7;
    u8;
-   return float4(1.0);
+   return float4(u8.Consume() + t2.SampleCmp(s2, 1.0, 2.0)) + t1.Sample(s1, 1.0)
+    + t6.Load(1);
 }
 """
 
 @inside_glslc_testsuite('OptionFAutoBindUniforms')
-class UniformBindingsNotCreatedByDefault(expect.ValidAssemblyFileWithoutSubstr):
-    """Tests that the compiler does not generate bindings for uniforms by default."""
+class UniformBindingsNotCreatedByDefault(expect.ErrorMessageSubstr):
+    """Tests that compilation fails when uniforms have no binding."""
 
     shader = FileShader(GLSL_SHADER_WITH_UNIFORMS_WITHOUT_BINDINGS, '.vert')
     glslc_args = ['-S', shader]
-    # Sufficient to just check one of the uniforms.
-    unexpected_assembly_substr = "OpDecorate %my_sam Binding"
+    expected_error_substr = "sampler/texture/image requires layout(binding=X)"
 
 
 @inside_glslc_testsuite('OptionFAutoBindUniforms')

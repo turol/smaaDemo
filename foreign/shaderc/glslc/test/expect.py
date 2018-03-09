@@ -163,11 +163,14 @@ class CorrectObjectFilePreamble(GlslCTest):
                 return False, 'Incorrect SPV binary: wrong magic number'
 
             # SPIR-V version number
-            if read_word(preamble, 1, little_endian) != 0x00010000:
+            version = read_word(preamble, 1, little_endian)
+            # TODO(dneto): Recent Glslang uses version word 0 for opengl_compat
+            # profile
+            if version != 0x00010000 and version != 0:
                 return False, 'Incorrect SPV binary: wrong version number'
             # Shaderc-over-Glslang (0x000d....) or
             # SPIRV-Tools (0x0007....) generator number
-            if read_word(preamble, 2, little_endian) != 0x000d0001 and \
+            if read_word(preamble, 2, little_endian) != 0x000d0006 and \
                     read_word(preamble, 2, little_endian) != 0x00070000:
                 return False, ('Incorrect SPV binary: wrong generator magic '
                                'number')
@@ -193,7 +196,7 @@ class CorrectAssemblyFilePreamble(GlslCTest):
 
         if (line1 != '; SPIR-V\n' or
             line2 != '; Version: 1.0\n' or
-            line3 != '; Generator: Google Shaderc over Glslang; 1\n'):
+            (not line3.startswith('; Generator: Google Shaderc over Glslang;'))):
             return False, 'Incorrect SPV assembly'
 
         return True, ''
