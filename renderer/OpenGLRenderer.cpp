@@ -1099,7 +1099,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	assert(colorRT.numSamples <= static_cast<unsigned int>(glValues[GL_MAX_COLOR_TEXTURE_SAMPLES]));
 	assert(colorRT.numSamples == renderPass.numSamples);
 	assert(colorRT.texture);
-	assert(colorRT.format == renderPass.desc.colorFormats_[0]);
+	assert(colorRT.format == renderPass.desc.colorRTs_[0].format);
 	fb.renderPass = desc.renderPass_;
 	fb.numSamples = colorRT.numSamples;
 	fb.colors[0]  = desc.colors_[0];

@@ -459,7 +459,11 @@ struct RenderPassDesc {
 	, colorClearValue(0.0f, 0.0f, 0.0f, 0.0f)
 	, depthClearValue(1.0f)
 	{
-		std::fill(colorFormats_.begin(), colorFormats_.end(), Format::Invalid);
+		for (auto &rt : colorRTs_) {
+			rt.format     = Format::Invalid;
+			rt.passBegin  = PassBegin::DontCare;
+			rt.clearValue = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+		}
 	}
 
 	~RenderPassDesc() { }
@@ -475,9 +479,10 @@ struct RenderPassDesc {
 		return *this;
 	}
 
-	RenderPassDesc &color(unsigned int index, Format c, PassBegin) {
+	RenderPassDesc &color(unsigned int index, Format c, PassBegin pb) {
 		assert(index < MAX_COLOR_RENDERTARGETS);
-		colorFormats_[index] = c;
+		colorRTs_[index].format    = c;
+		colorRTs_[index].passBegin = pb;
 		return *this;
 	}
 
@@ -510,8 +515,14 @@ struct RenderPassDesc {
 
 private:
 
+	struct RTInfo {
+		Format     format;
+		PassBegin  passBegin;
+		glm::vec4  clearValue;
+	};
+
 	Format                                       depthStencilFormat_;
-	std::array<Format, MAX_COLOR_RENDERTARGETS>  colorFormats_;
+	std::array<RTInfo, MAX_COLOR_RENDERTARGETS>  colorRTs_;
 	Layout                                       colorFinalLayout_;
 	unsigned int                                 numSamples_;
 	std::string                                  name_;

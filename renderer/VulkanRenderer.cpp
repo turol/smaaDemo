@@ -880,14 +880,14 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	vk::SampleCountFlagBits samples = sampleCountFlagsFromNum(desc.numSamples_);
 
 	// TODO: multiple render targets
-	assert(desc.colorFormats_[0] != Format::Invalid);
-	assert(desc.colorFormats_[1] == Format::Invalid);
+	assert(desc.colorRTs_[0].format != Format::Invalid);
+	assert(desc.colorRTs_[1].format == Format::Invalid);
 	{
 		uint32_t attachNum    = static_cast<uint32_t>(attachments.size());
 		vk::ImageLayout layout = vk::ImageLayout::eColorAttachmentOptimal;
 
 		vk::AttachmentDescription attach;
-		attach.format         = vulkanFormat(desc.colorFormats_[0]);
+		attach.format         = vulkanFormat(desc.colorRTs_[0].format);
 		attach.samples        = samples;
 		// TODO: these should be customizable via RenderPassDesc
 		attach.loadOp         = vk::AttachmentLoadOp::eDontCare;
