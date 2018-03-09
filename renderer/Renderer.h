@@ -452,7 +452,6 @@ public:
 struct RenderPassDesc {
 	RenderPassDesc()
 	: depthStencilFormat_(Format::Invalid)
-	, colorFinalLayout_(Layout::ShaderRead)
 	, numSamples_(1)
 	, clearDepthAttachment(false)
 	, depthClearValue(1.0f)
@@ -460,6 +459,7 @@ struct RenderPassDesc {
 		for (auto &rt : colorRTs_) {
 			rt.format     = Format::Invalid;
 			rt.passBegin  = PassBegin::DontCare;
+			rt.finalLayout = Layout::Invalid;
 			rt.clearValue = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
 		}
 	}
@@ -477,18 +477,14 @@ struct RenderPassDesc {
 		return *this;
 	}
 
-	RenderPassDesc &color(unsigned int index, Format c, PassBegin pb, glm::vec4 clear = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {
+	RenderPassDesc &color(unsigned int index, Format c, PassBegin pb, Layout l, glm::vec4 clear = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {
 		assert(index < MAX_COLOR_RENDERTARGETS);
 		colorRTs_[index].format    = c;
 		colorRTs_[index].passBegin = pb;
+		colorRTs_[index].finalLayout = l;
 		if (pb == PassBegin::Clear) {
 			colorRTs_[index].clearValue = clear;
 		}
-		return *this;
-	}
-
-	RenderPassDesc &colorFinalLayout(Layout l) {
-		colorFinalLayout_ = l;
 		return *this;
 	}
 
@@ -513,12 +509,12 @@ private:
 	struct RTInfo {
 		Format     format;
 		PassBegin  passBegin;
+		Layout     finalLayout;
 		glm::vec4  clearValue;
 	};
 
 	Format                                       depthStencilFormat_;
 	std::array<RTInfo, MAX_COLOR_RENDERTARGETS>  colorRTs_;
-	Layout                                       colorFinalLayout_;
 	unsigned int                                 numSamples_;
 	std::string                                  name_;
 	bool                                         clearDepthAttachment;

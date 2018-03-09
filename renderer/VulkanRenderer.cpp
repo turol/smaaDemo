@@ -908,12 +908,13 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		}
 
 		assert(desc.colorRTs_[1].passBegin == PassBegin::DontCare);
+		assert(desc.colorRTs_[1].finalLayout == Layout::Invalid);
 
 		attach.storeOp        = vk::AttachmentStoreOp::eStore;
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
 		attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
 		attach.initialLayout  = vk::ImageLayout::eUndefined;
-		attach.finalLayout    = vulkanLayout(desc.colorFinalLayout_);
+		attach.finalLayout    = vulkanLayout(desc.colorRTs_[0].finalLayout);
 		attachments.push_back(attach);
 
 		vk::AttachmentReference ref;

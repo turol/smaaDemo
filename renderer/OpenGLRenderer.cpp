@@ -1723,7 +1723,7 @@ void RendererImpl::endRenderPass() {
 
 	// TODO: track depthstencil layout too
 	auto &rt = renderTargets.get(fb.colors[0]);
-	rt.currentLayout = pass.desc.colorFinalLayout_;
+	rt.currentLayout = pass.desc.colorRTs_[0].finalLayout;
 
 	currentRenderPass = RenderPassHandle();
 	currentFramebuffer = FramebufferHandle();

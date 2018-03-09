@@ -867,15 +867,13 @@ void SMAADemo::initRender() {
 
 	{
 		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear)
-		      .colorFinalLayout(Layout::TransferSrc);
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::TransferSrc);
 		finalRenderPass       = renderer.createRenderPass(rpDesc.name("final"));
 	}
 
 	{
 		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::RGBA8, PassBegin::Clear)
-		      .colorFinalLayout(Layout::ShaderRead);
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::ShaderRead);
 
 		smaaEdgesRenderPass   = renderer.createRenderPass(rpDesc.name("SMAA edges"));
 		smaaWeightsRenderPass = renderer.createRenderPass(rpDesc.name("SMAA weights"));
@@ -883,10 +881,9 @@ void SMAADemo::initRender() {
 
 	{
 		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear)
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::ShaderRead)
 		      .depthStencil(depthFormat, PassBegin::Clear)
-		      .clearDepth(1.0f)
-		      .colorFinalLayout(Layout::ShaderRead);
+		      .clearDepth(1.0f);
 
 		// TODO: should we create this lazily?
 		uint32_t msaa = 1;
