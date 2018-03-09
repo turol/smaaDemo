@@ -1,8 +1,8 @@
-commit 01fbb3a3428f996952c8257c5e8eb44478f98f9d
-Merge: 8c8a93f 28cccc3
+commit 236b2fa47c9267643ee083476748f90546e8bd6b
+Merge: 01fbb3a e3b8e94
 Author: Hans-Kristian Arntzen <hans-kristian.arntzen@arm.com>
-Date:   Fri Mar 9 09:04:16 2018 +0100
+Date:   Fri Mar 9 15:00:22 2018 +0100
 
-    Merge pull request #495 from KhronosGroup/fix-493
+    Merge pull request #496 from KhronosGroup/fix-494
     
-    Fix cases where loops and branches merge into continue blocks.
+    Handle Phi expressions being invalidated at end of a block.
