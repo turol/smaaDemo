@@ -319,6 +319,9 @@ void CompilerGLSL::find_static_extensions()
 				if (!options.es)
 					require_extension("GL_ARB_gpu_shader_int64");
 			}
+
+			if (type.basetype == SPIRType::Half)
+				require_extension("GL_AMD_gpu_shader_half_float");
 		}
 	}
 
@@ -612,7 +615,8 @@ void CompilerGLSL::emit_struct(SPIRType &type)
 	// with just different offsets, matrix layouts, etc ...
 	// Type-punning with these types is legal, which complicates things
 	// when we are storing struct and array types in an SSBO for example.
-	if (type.type_alias != 0)
+	// If the type master is packed however, we can no longer assume that the struct declaration will be redundant.
+	if (type.type_alias != 0 && !has_decoration(type.type_alias, DecorationCPacked))
 		return;
 
 	// Don't declare empty structs in GLSL, this is not allowed.
@@ -865,15 +869,20 @@ uint32_t CompilerGLSL::type_to_packed_base_size(const SPIRType &type, BufferPack
 	case SPIRType::Int64:
 	case SPIRType::UInt64:
 		return 8;
-	default:
+	case SPIRType::Float:
+	case SPIRType::Int:
+	case SPIRType::UInt:
 		return 4;
+	case SPIRType::Half:
+		return 2;
+
+	default:
+		SPIRV_CROSS_THROW("Unrecognized type in type_to_packed_base_size.");
 	}
 }
 
 uint32_t CompilerGLSL::type_to_packed_alignment(const SPIRType &type, uint64_t flags, BufferPackingStandard packing)
 {
-	const uint32_t base_alignment = type_to_packed_base_size(type, packing);
-
 	if (!type.array.empty())
 	{
 		uint32_t minimum_alignment = 1;
@@ -907,6 +916,8 @@ uint32_t CompilerGLSL::type_to_packed_alignment(const SPIRType &type, uint64_t f
 	}
 	else
 	{
+		const uint32_t base_alignment = type_to_packed_base_size(type, packing);
+
 		// Vectors are *not* aligned in HLSL, but there's an extra rule where vectors cannot straddle
 		// a vec4, this is handled outside since that part knows our current offset.
 		if (type.columns == 1 && packing_is_hlsl(packing))
@@ -988,7 +999,6 @@ uint32_t CompilerGLSL::type_to_packed_size(const SPIRType &type, uint64_t flags,
 		       type_to_packed_array_stride(type, flags, packing);
 	}
 
-	const uint32_t base_alignment = type_to_packed_base_size(type, packing);
 	uint32_t size = 0;
 
 	if (type.basetype == SPIRType::Struct)
@@ -1016,6 +1026,8 @@ uint32_t CompilerGLSL::type_to_packed_size(const SPIRType &type, uint64_t flags,
 	}
 	else
 	{
+		const uint32_t base_alignment = type_to_packed_base_size(type, packing);
+
 		if (type.columns == 1)
 			size = type.vecsize * base_alignment;
 
@@ -1637,6 +1649,29 @@ void CompilerGLSL::replace_illegal_names()
 {
 	// clang-format off
 	static const unordered_set<string> keywords = {
+		"abs", "acos", "acosh", "all", "any", "asin", "asinh", "atan", "atanh",
+		"atomicAdd", "atomicCompSwap", "atomicCounter", "atomicCounterDecrement", "atomicCounterIncrement",
+		"atomicExchange", "atomicMax", "atomicMin", "atomicOr", "atomicXor",
+		"bitCount", "bitfieldExtract", "bitfieldInsert", "bitfieldReverse",
+		"ceil", "cos", "cosh", "cross", "degrees",
+		"dFdx", "dFdxCoarse", "dFdxFine",
+		"dFdy", "dFdyCoarse", "dFdyFine",
+		"distance", "dot", "EmitStreamVertex", "EmitVertex", "EndPrimitive", "EndStreamPrimitive", "equal", "exp", "exp2",
+		"faceforward", "findLSB", "findMSB", "floatBitsToInt", "floatBitsToUint", "floor", "fma", "fract", "frexp", "fwidth", "fwidthCoarse", "fwidthFine",
+		"greaterThan", "greaterThanEqual", "groupMemoryBarrier",
+		"imageAtomicAdd", "imageAtomicAnd", "imageAtomicCompSwap", "imageAtomicExchange", "imageAtomicMax", "imageAtomicMin", "imageAtomicOr", "imageAtomicXor",
+		"imageLoad", "imageSamples", "imageSize", "imageStore", "imulExtended", "intBitsToFloat", "interpolateAtOffset", "interpolateAtCentroid", "interpolateAtSample",
+		"inverse", "inversesqrt", "isinf", "isnan", "ldexp", "length", "lessThan", "lessThanEqual", "log", "log2",
+		"matrixCompMult", "max", "memoryBarrier", "memoryBarrierAtomicCounter", "memoryBarrierBuffer", "memoryBarrierImage", "memoryBarrierShared",
+		"min", "mix", "mod", "modf", "noise", "noise1", "noise2", "noise3", "noise4", "normalize", "not", "notEqual",
+		"outerProduct", "packDouble2x32", "packHalf2x16", "packSnorm2x16", "packSnorm4x8", "packUnorm2x16", "packUnorm4x8", "pow",
+		"radians", "reflect", "refract", "round", "roundEven", "sign", "sin", "sinh", "smoothstep", "sqrt", "step",
+		"tan", "tanh", "texelFetch", "texelFetchOffset", "textureGather", "textureGatherOffset", "textureGatherOffsets",
+		"textureGrad", "textureGradOffset", "textureLod", "textureLodOffset", "textureOffset", "textureProj", "textureProjGrad",
+		"textureProjGradOffset", "textureProjLod", "textureProjLodOffset", "textureProjOffset", "textureQueryLevels", "textureQueryLod", "textureSamples", "textureSize",
+		"transpose", "trunc", "uaddCarry", "uintBitsToFloat", "umulExtended", "unpackDouble2x32", "unpackHalf2x16", "unpackSnorm2x16", "unpackSnorm4x8",
+		"unpackUnorm2x16", "unpackUnorm4x8", "usubBorrow",
+
 		"active", "asm", "atomic_uint", "attribute", "bool", "break",
 		"bvec2", "bvec3", "bvec4", "case", "cast", "centroid", "class", "coherent", "common", "const", "continue", "default", "discard",
 		"dmat2", "dmat2x2", "dmat2x3", "dmat2x4", "dmat3", "dmat3x2", "dmat3x3", "dmat3x4", "dmat4", "dmat4x2", "dmat4x3", "dmat4x4",
@@ -2566,6 +2601,61 @@ string CompilerGLSL::constant_expression(const SPIRConstant &c)
 #pragma warning(disable : 4996)
 #endif
 
+string CompilerGLSL::convert_half_to_string(const SPIRConstant &c, uint32_t col, uint32_t row)
+{
+	string res;
+	float float_value = c.scalar_f16(col, row);
+
+	if (std::isnan(float_value) || std::isinf(float_value))
+	{
+		if (backend.half_literal_suffix)
+		{
+			// There is no uintBitsToFloat for 16-bit, so have to rely on legacy fallback here.
+			if (float_value == numeric_limits<float>::infinity())
+				res = join("(1.0", backend.half_literal_suffix, " / 0.0", backend.half_literal_suffix, ")");
+			else if (float_value == -numeric_limits<float>::infinity())
+				res = join("(-1.0", backend.half_literal_suffix, " / 0.0", backend.half_literal_suffix, ")");
+			else if (std::isnan(float_value))
+				res = join("(0.0", backend.half_literal_suffix, " / 0.0", backend.half_literal_suffix, ")");
+			else
+				SPIRV_CROSS_THROW("Cannot represent non-finite floating point constant.");
+		}
+		else
+		{
+			SPIRType type;
+			type.basetype = SPIRType::Half;
+			type.vecsize = 1;
+			type.columns = 1;
+
+			if (float_value == numeric_limits<float>::infinity())
+				res = join(type_to_glsl(type), "(1.0 / 0.0)");
+			else if (float_value == -numeric_limits<float>::infinity())
+				res = join(type_to_glsl(type), "(-1.0 / 0.0)");
+			else if (std::isnan(float_value))
+				res = join(type_to_glsl(type), "(0.0 / 0.0)");
+			else
+				SPIRV_CROSS_THROW("Cannot represent non-finite floating point constant.");
+		}
+	}
+	else
+	{
+		if (backend.half_literal_suffix)
+			res = convert_to_string(float_value) + backend.half_literal_suffix;
+		else
+		{
+			// In HLSL (FXC), it's important to cast the literals to half precision right away.
+			// There is no literal for it.
+			SPIRType type;
+			type.basetype = SPIRType::Half;
+			type.vecsize = 1;
+			type.columns = 1;
+			res = join(type_to_glsl(type), "(", convert_to_string(float_value), ")");
+		}
+	}
+
+	return res;
+}
+
 string CompilerGLSL::convert_float_to_string(const SPIRConstant &c, uint32_t col, uint32_t row)
 {
 	string res;
@@ -2711,7 +2801,7 @@ string CompilerGLSL::constant_expression_vector(const SPIRConstant &c, uint32_t 
 	bool splat = backend.use_constructor_splatting && c.vector_size() > 1;
 	bool swizzle_splat = backend.can_swizzle_scalar && c.vector_size() > 1;
 
-	if (type.basetype != SPIRType::Float && type.basetype != SPIRType::Double)
+	if (!type_is_floating_point(type))
 	{
 		// Cannot swizzle literal integers as a special case.
 		swizzle_splat = false;
@@ -2765,6 +2855,28 @@ string CompilerGLSL::constant_expression_vector(const SPIRConstant &c, uint32_t 
 
 	switch (type.basetype)
 	{
+	case SPIRType::Half:
+		if (splat || swizzle_splat)
+		{
+			res += convert_half_to_string(c, vector, 0);
+			if (swizzle_splat)
+				res = remap_swizzle(get<SPIRType>(c.constant_type), 1, res);
+		}
+		else
+		{
+			for (uint32_t i = 0; i < c.vector_size(); i++)
+			{
+				if (options.vulkan_semantics && c.vector_size() > 1 && c.specialization_constant_id(vector, i) != 0)
+					res += to_name(c.specialization_constant_id(vector, i));
+				else
+					res += convert_half_to_string(c, vector, i);
+
+				if (i + 1 < c.vector_size())
+					res += ", ";
+			}
+		}
+		break;
+
 	case SPIRType::Float:
 		if (splat || swizzle_splat)
 		{
@@ -3307,6 +3419,10 @@ bool CompilerGLSL::to_trivial_mix_op(const SPIRType &type, string &op, uint32_t 
 	case SPIRType::Int:
 	case SPIRType::UInt:
 		ret = cleft->scalar() == 0 && cright->scalar() == 1;
+		break;
+
+	case SPIRType::Half:
+		ret = cleft->scalar_f16() == 0.0f && cright->scalar_f16() == 1.0f;
 		break;
 
 	case SPIRType::Float:
@@ -4316,6 +4432,10 @@ string CompilerGLSL::bitcast_glsl_op(const SPIRType &out_type, const SPIRType &i
 		return "uint64BitsToDouble";
 	else if (out_type.basetype == SPIRType::UInt64 && in_type.basetype == SPIRType::UInt && in_type.vecsize == 2)
 		return "packUint2x32";
+	else if (out_type.basetype == SPIRType::Half && in_type.basetype == SPIRType::UInt && in_type.vecsize == 1)
+		return "unpackFloat2x16";
+	else if (out_type.basetype == SPIRType::UInt && in_type.basetype == SPIRType::Half && in_type.vecsize == 2)
+		return "packFloat2x16";
 	else
 		return "";
 }
@@ -5714,8 +5834,7 @@ void CompilerGLSL::emit_instruction(const Instruction &instruction)
 		bool splat = in_type.vecsize == 1 && in_type.columns == 1 && !composite && backend.use_constructor_splatting;
 		bool swizzle_splat = in_type.vecsize == 1 && in_type.columns == 1 && backend.can_swizzle_scalar;
 
-		if (ids[elems[0]].get_type() == TypeConstant &&
-		    (in_type.basetype != SPIRType::Float && in_type.basetype != SPIRType::Double))
+		if (ids[elems[0]].get_type() == TypeConstant && !type_is_floating_point(in_type))
 		{
 			// Cannot swizzle literal integers as a special case.
 			swizzle_splat = false;
@@ -6424,6 +6543,26 @@ void CompilerGLSL::emit_instruction(const Instruction &instruction)
 		UFOP(fwidth);
 		if (is_legacy_es())
 			require_extension("GL_OES_standard_derivatives");
+		break;
+
+	case OpFwidthCoarse:
+		UFOP(fwidthCoarse);
+		if (options.es)
+		{
+			SPIRV_CROSS_THROW("GL_ARB_derivative_control is unavailable in OpenGL ES.");
+		}
+		if (options.version < 450)
+			require_extension("GL_ARB_derivative_control");
+		break;
+
+	case OpFwidthFine:
+		UFOP(fwidthFine);
+		if (options.es)
+		{
+			SPIRV_CROSS_THROW("GL_ARB_derivative_control is unavailable in OpenGL ES.");
+		}
+		if (options.version < 450)
+			require_extension("GL_ARB_derivative_control");
 		break;
 
 	// Bitfield
@@ -7723,6 +7862,8 @@ string CompilerGLSL::type_to_glsl(const SPIRType &type, uint32_t id)
 			return backend.basic_uint_type;
 		case SPIRType::AtomicCounter:
 			return "atomic_uint";
+		case SPIRType::Half:
+			return "float16_t";
 		case SPIRType::Float:
 			return "float";
 		case SPIRType::Double:
@@ -7745,6 +7886,8 @@ string CompilerGLSL::type_to_glsl(const SPIRType &type, uint32_t id)
 			return join("ivec", type.vecsize);
 		case SPIRType::UInt:
 			return join("uvec", type.vecsize);
+		case SPIRType::Half:
+			return join("f16vec", type.vecsize);
 		case SPIRType::Float:
 			return join("vec", type.vecsize);
 		case SPIRType::Double:
@@ -7767,6 +7910,8 @@ string CompilerGLSL::type_to_glsl(const SPIRType &type, uint32_t id)
 			return join("imat", type.vecsize);
 		case SPIRType::UInt:
 			return join("umat", type.vecsize);
+		case SPIRType::Half:
+			return join("f16mat", type.vecsize);
 		case SPIRType::Float:
 			return join("mat", type.vecsize);
 		case SPIRType::Double:
@@ -7786,6 +7931,8 @@ string CompilerGLSL::type_to_glsl(const SPIRType &type, uint32_t id)
 			return join("imat", type.columns, "x", type.vecsize);
 		case SPIRType::UInt:
 			return join("umat", type.columns, "x", type.vecsize);
+		case SPIRType::Half:
+			return join("f16mat", type.columns, "x", type.vecsize);
 		case SPIRType::Float:
 			return join("mat", type.columns, "x", type.vecsize);
 		case SPIRType::Double:
@@ -8169,6 +8316,63 @@ void CompilerGLSL::flush_phi(uint32_t from, uint32_t to)
 	}
 }
 
+void CompilerGLSL::branch_to_continue(uint32_t from, uint32_t to)
+{
+	assert(is_continue(to));
+
+	auto &to_block = get<SPIRBlock>(to);
+	if (to_block.complex_continue)
+	{
+		// Just emit the whole block chain as is.
+		auto usage_counts = expression_usage_counts;
+		auto invalid = invalid_expressions;
+
+		emit_block_chain(to_block);
+
+		// Expression usage counts and invalid expressions
+		// are moot after returning from the continue block.
+		// Since we emit the same block multiple times,
+		// we don't want to invalidate ourselves.
+		expression_usage_counts = usage_counts;
+		invalid_expressions = invalid;
+	}
+	else
+	{
+		auto &from_block = get<SPIRBlock>(from);
+		bool outside_control_flow = false;
+		uint32_t loop_dominator = 0;
+
+		// FIXME: Refactor this to not use the old loop_dominator tracking.
+		if (from_block.merge_block)
+		{
+			// If we are a loop header, we don't set the loop dominator,
+			// so just use "self" here.
+			loop_dominator = from;
+		}
+		else if (from_block.loop_dominator != SPIRBlock::NoDominator)
+		{
+			loop_dominator = from_block.loop_dominator;
+		}
+
+		if (loop_dominator != 0)
+		{
+			auto &dominator = get<SPIRBlock>(loop_dominator);
+
+			// For non-complex continue blocks, we implicitly branch to the continue block
+			// by having the continue block be part of the loop header in for (; ; continue-block).
+			outside_control_flow = block_is_outside_flow_control_from_block(dominator, from_block);
+		}
+
+		// Some simplification for for-loops. We always end up with a useless continue;
+		// statement since we branch to a loop block.
+		// Walk the CFG, if we uncoditionally execute the block calling continue assuming we're in the loop block,
+		// we can avoid writing out an explicit continue statement.
+		// Similar optimization to return statements if we know we're outside flow control.
+		if (!outside_control_flow)
+			statement("continue;");
+	}
+}
+
 void CompilerGLSL::branch(uint32_t from, uint32_t to)
 {
 	flush_phi(from, to);
@@ -8182,64 +8386,17 @@ void CompilerGLSL::branch(uint32_t from, uint32_t to)
 		// and end the chain here.
 		statement("continue;");
 	}
-	else if (is_continue(to))
-	{
-		auto &to_block = get<SPIRBlock>(to);
-		if (to_block.complex_continue)
-		{
-			// Just emit the whole block chain as is.
-			auto usage_counts = expression_usage_counts;
-			auto invalid = invalid_expressions;
-
-			emit_block_chain(to_block);
-
-			// Expression usage counts and invalid expressions
-			// are moot after returning from the continue block.
-			// Since we emit the same block multiple times,
-			// we don't want to invalidate ourselves.
-			expression_usage_counts = usage_counts;
-			invalid_expressions = invalid;
-		}
-		else
-		{
-			auto &from_block = get<SPIRBlock>(from);
-			bool outside_control_flow = false;
-			uint32_t loop_dominator = 0;
-
-			// FIXME: Refactor this to not use the old loop_dominator tracking.
-			if (from_block.merge_block)
-			{
-				// If we are a loop header, we don't set the loop dominator,
-				// so just use "self" here.
-				loop_dominator = from;
-			}
-			else if (from_block.loop_dominator != SPIRBlock::NoDominator)
-			{
-				loop_dominator = from_block.loop_dominator;
-			}
-
-			if (loop_dominator != 0)
-			{
-				auto &dominator = get<SPIRBlock>(loop_dominator);
-
-				// For non-complex continue blocks, we implicitly branch to the continue block
-				// by having the continue block be part of the loop header in for (; ; continue-block).
-				outside_control_flow = block_is_outside_flow_control_from_block(dominator, from_block);
-			}
-
-			// Some simplification for for-loops. We always end up with a useless continue;
-			// statement since we branch to a loop block.
-			// Walk the CFG, if we uncoditionally execute the block calling continue assuming we're in the loop block,
-			// we can avoid writing out an explicit continue statement.
-			// Similar optimization to return statements if we know we're outside flow control.
-			if (!outside_control_flow)
-				statement("continue;");
-		}
-	}
 	else if (is_break(to))
 		statement("break;");
+	else if (is_continue(to))
+		branch_to_continue(from, to);
 	else if (!is_conditional(to))
 		emit_block_chain(get<SPIRBlock>(to));
+
+	// It is important that we check for break before continue.
+	// A block might serve two purposes, a break block for the inner scope, and
+	// a continue block in the outer scope.
+	// Inner scope always takes precedence.
 }
 
 void CompilerGLSL::branch(uint32_t from, uint32_t cond, uint32_t true_block, uint32_t false_block)
@@ -8247,6 +8404,9 @@ void CompilerGLSL::branch(uint32_t from, uint32_t cond, uint32_t true_block, uin
 	// If we branch directly to a selection merge target, we don't really need a code path.
 	bool true_sub = !is_conditional(true_block);
 	bool false_sub = !is_conditional(false_block);
+
+	// It is possible that a selection merge target also serves as a break/continue block.
+	// We will not emit break or continue here, but defer that to the outer scope.
 
 	if (true_sub)
 	{
@@ -8273,7 +8433,7 @@ void CompilerGLSL::branch(uint32_t from, uint32_t cond, uint32_t true_block, uin
 	else if (false_sub && !true_sub)
 	{
 		// Only need false path, use negative conditional.
-		statement("if (!", to_expression(cond), ")");
+		statement("if (!", to_enclosed_expression(cond), ")");
 		begin_scope();
 		branch(from, false_block);
 		end_scope();
@@ -8426,7 +8586,7 @@ string CompilerGLSL::emit_for_loop_initializers(const SPIRBlock &block)
 				if (expr.empty())
 				{
 					// For loop initializers are of the form <type id = value, id = value, id = value, etc ...
-					auto &var = get<SPIRVariable>(block.loop_variables.front());
+					auto &var = get<SPIRVariable>(loop_var);
 					auto &type = get<SPIRType>(var.basetype);
 					expr = join(to_qualifiers_glsl(var.self), type_to_glsl(type), " ");
 				}
@@ -8475,7 +8635,7 @@ bool CompilerGLSL::attempt_emit_loop_header(SPIRBlock &block, SPIRBlock::Method 
 {
 	SPIRBlock::ContinueBlockType continue_type = continue_block_type(get<SPIRBlock>(block.continue_block));
 
-	if (method == SPIRBlock::MergeToSelectForLoop)
+	if (method == SPIRBlock::MergeToSelectForLoop || method == SPIRBlock::MergeToSelectContinueForLoop)
 	{
 		uint32_t current_count = statement_count;
 		// If we're trying to create a true for loop,
@@ -8499,8 +8659,13 @@ bool CompilerGLSL::attempt_emit_loop_header(SPIRBlock &block, SPIRBlock::Method 
 				// emitting the continue block can invalidate the condition expression.
 				auto initializer = emit_for_loop_initializers(block);
 				auto condition = to_expression(block.condition);
-				auto continue_block = emit_continue_block(block.continue_block);
-				statement("for (", initializer, "; ", condition, "; ", continue_block, ")");
+				if (method != SPIRBlock::MergeToSelectContinueForLoop)
+				{
+					auto continue_block = emit_continue_block(block.continue_block);
+					statement("for (", initializer, "; ", condition, "; ", continue_block, ")");
+				}
+				else
+					statement("for (", initializer, "; ", condition, "; )");
 				break;
 			}
 
@@ -8603,6 +8768,7 @@ void CompilerGLSL::emit_block_chain(SPIRBlock &block)
 	bool select_branch_to_true_block = false;
 	bool skip_direct_branch = false;
 	bool emitted_for_loop_header = false;
+	bool force_complex_continue_block = false;
 
 	// If we need to force temporaries for certain IDs due to continue blocks, do it before starting loop header.
 	// Need to sort these to ensure that reference output is stable.
@@ -8627,8 +8793,22 @@ void CompilerGLSL::emit_block_chain(SPIRBlock &block)
 	for (auto var : block.loop_variables)
 		get<SPIRVariable>(var).loop_variable_enable = true;
 
+	// This is the method often used by spirv-opt to implement loops.
+	// The loop header goes straight into the continue block.
+	// However, don't attempt this on ESSL 1.0, because if a loop variable is used in a continue block,
+	// it *MUST* be used in the continue block. This loop method will not work.
+	if (!is_legacy_es() && block_is_loop_candidate(block, SPIRBlock::MergeToSelectContinueForLoop))
+	{
+		flush_undeclared_variables(block);
+		if (attempt_emit_loop_header(block, SPIRBlock::MergeToSelectContinueForLoop))
+		{
+			select_branch_to_true_block = true;
+			emitted_for_loop_header = true;
+			force_complex_continue_block = true;
+		}
+	}
 	// This is the older loop behavior in glslang which branches to loop body directly from the loop header.
-	if (block_is_loop_candidate(block, SPIRBlock::MergeToSelectForLoop))
+	else if (block_is_loop_candidate(block, SPIRBlock::MergeToSelectForLoop))
 	{
 		flush_undeclared_variables(block);
 		if (attempt_emit_loop_header(block, SPIRBlock::MergeToSelectForLoop))
@@ -8709,9 +8889,23 @@ void CompilerGLSL::emit_block_chain(SPIRBlock &block)
 		break;
 
 	case SPIRBlock::Select:
-		// True if MergeToSelectForLoop succeeded.
+		// True if MergeToSelectForLoop or MergeToSelectContinueForLoop succeeded.
 		if (select_branch_to_true_block)
-			branch(block.self, block.true_block);
+		{
+			if (force_complex_continue_block)
+			{
+				assert(block.true_block == block.continue_block);
+
+				// We're going to emit a continue block directly here, so make sure it's marked as complex.
+				auto &complex_continue = get<SPIRBlock>(block.continue_block).complex_continue;
+				bool old_complex = complex_continue;
+				complex_continue = true;
+				branch(block.self, block.true_block);
+				complex_continue = old_complex;
+			}
+			else
+				branch(block.self, block.true_block);
+		}
 		else
 			branch(block.self, block.condition, block.true_block, block.false_block);
 		break;
@@ -8812,7 +9006,23 @@ void CompilerGLSL::emit_block_chain(SPIRBlock &block)
 		// that block after this. If we had selection merge, we already flushed phi variables.
 		if (block.merge != SPIRBlock::MergeSelection)
 			flush_phi(block.self, block.next_block);
-		emit_block_chain(get<SPIRBlock>(block.next_block));
+
+		// For merge selects we might have ignored the fact that a merge target
+		// could have been a break; or continue;
+		// We will need to deal with it here.
+		if (is_loop_break(block.next_block))
+		{
+			// Cannot check for just break, because switch statements will also use break.
+			assert(block.merge == SPIRBlock::MergeSelection);
+			statement("break;");
+		}
+		else if (is_continue(block.next_block))
+		{
+			assert(block.merge == SPIRBlock::MergeSelection);
+			branch_to_continue(block.self, block.next_block);
+		}
+		else
+			emit_block_chain(get<SPIRBlock>(block.next_block));
 	}
 
 	if (block.merge == SPIRBlock::MergeLoop)
@@ -8835,8 +9045,13 @@ void CompilerGLSL::emit_block_chain(SPIRBlock &block)
 		else
 			end_scope();
 
-		flush_phi(block.self, block.merge_block);
-		emit_block_chain(get<SPIRBlock>(block.merge_block));
+		// We cannot break out of two loops at once, so don't check for break; here.
+		// Using block.self as the "from" block isn't quite right, but it has the same scope
+		// and dominance structure, so it's fine.
+		if (is_continue(block.merge_block))
+			branch_to_continue(block.self, block.merge_block);
+		else
+			emit_block_chain(get<SPIRBlock>(block.merge_block));
 	}
 }
 

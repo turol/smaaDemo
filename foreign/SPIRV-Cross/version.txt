@@ -1,5 +1,8 @@
-commit c9516fa91709b68ac20fa614625e85e0ced3f23f
+commit 01fbb3a3428f996952c8257c5e8eb44478f98f9d
+Merge: 8c8a93f 28cccc3
 Author: Hans-Kristian Arntzen <hans-kristian.arntzen@arm.com>
-Date:   Fri Mar 2 09:29:37 2018 +0100
+Date:   Fri Mar 9 09:04:16 2018 +0100
 
-    Fix OSX Travis.
+    Merge pull request #495 from KhronosGroup/fix-493
+    
+    Fix cases where loops and branches merge into continue blocks.

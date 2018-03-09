@@ -188,7 +188,12 @@ string Compiler::to_name(uint32_t id, bool allow_alias) const
 		// as that can be overridden by the reflection APIs after parse.
 		auto &type = get<SPIRType>(id);
 		if (type.type_alias)
-			return to_name(type.type_alias);
+		{
+			// If the alias master has been specially packed, we will have emitted a clean variant as well,
+			// so skip the name aliasing here.
+			if (!has_decoration(type.type_alias, DecorationCPacked))
+				return to_name(type.type_alias);
+		}
 	}
 
 	if (meta[id].decoration.alias.empty())
@@ -802,6 +807,70 @@ static bool is_valid_spirv_version(uint32_t version)
 	}
 }
 
+bool Compiler::type_is_block_like(const SPIRType &type) const
+{
+	if (type.basetype != SPIRType::Struct)
+		return false;
+
+	if (has_decoration(type.self, DecorationBlock) || has_decoration(type.self, DecorationBufferBlock))
+	{
+		return true;
+	}
+
+	// Block-like types may have Offset decorations.
+	for (uint32_t i = 0; i < uint32_t(type.member_types.size()); i++)
+		if (has_member_decoration(type.self, i, DecorationOffset))
+			return true;
+
+	return false;
+}
+
+void Compiler::fixup_type_alias()
+{
+	// Due to how some backends work, the "master" type of type_alias must be a block-like type if it exists.
+	// FIXME: Multiple alias types which are both block-like will be awkward, for now, it's best to just drop the type
+	// alias if the slave type is a block type.
+	for (auto &id : ids)
+	{
+		if (id.get_type() != TypeType)
+			continue;
+
+		auto &type = id.get<SPIRType>();
+
+		if (type.type_alias && type_is_block_like(type))
+		{
+			// Become the master.
+			for (auto &other_id : ids)
+			{
+				if (other_id.get_type() != TypeType)
+					continue;
+				if (other_id.get_id() == type.self)
+					continue;
+
+				auto &other_type = other_id.get<SPIRType>();
+				if (other_type.type_alias == type.type_alias)
+					other_type.type_alias = type.self;
+			}
+
+			get<SPIRType>(type.type_alias).type_alias = id.get_id();
+			type.type_alias = 0;
+		}
+	}
+
+	for (auto &id : ids)
+	{
+		if (id.get_type() != TypeType)
+			continue;
+
+		auto &type = id.get<SPIRType>();
+		if (type.type_alias && type_is_block_like(type))
+		{
+			// This is not allowed, drop the type_alias.
+			type.type_alias = 0;
+		}
+	}
+}
+
 void Compiler::parse()
 {
 	auto len = spirv.size();
@@ -853,6 +922,8 @@ void Compiler::parse()
 			}
 		}
 	}
+
+	fixup_type_alias();
 }
 
 void Compiler::flatten_interface_block(uint32_t id)
@@ -1493,7 +1564,14 @@ void Compiler::parse(const Instruction &instruction)
 		uint32_t id = ops[0];
 		uint32_t width = ops[1];
 		auto &type = set<SPIRType>(id);
-		type.basetype = width > 32 ? SPIRType::Double : SPIRType::Float;
+		if (width == 64)
+			type.basetype = SPIRType::Double;
+		else if (width == 32)
+			type.basetype = SPIRType::Float;
+		else if (width == 16)
+			type.basetype = SPIRType::Half;
+		else
+			SPIRV_CROSS_THROW("Unrecognized bit-width of floating point type.");
 		type.width = width;
 		break;
 	}
@@ -2030,7 +2108,7 @@ bool Compiler::block_is_loop_candidate(const SPIRBlock &block, SPIRBlock::Method
 	if (block.disable_block_optimization || block.complex_continue)
 		return false;
 
-	if (method == SPIRBlock::MergeToSelectForLoop)
+	if (method == SPIRBlock::MergeToSelectForLoop || method == SPIRBlock::MergeToSelectContinueForLoop)
 	{
 		// Try to detect common for loop pattern
 		// which the code backend can use to create cleaner code.
@@ -2039,6 +2117,9 @@ bool Compiler::block_is_loop_candidate(const SPIRBlock &block, SPIRBlock::Method
 		bool ret = block.terminator == SPIRBlock::Select && block.merge == SPIRBlock::MergeLoop &&
 		           block.true_block != block.merge_block && block.true_block != block.self &&
 		           block.false_block == block.merge_block;
+
+		if (ret && method == SPIRBlock::MergeToSelectContinueForLoop)
+			ret = block.true_block == block.continue_block;
 
 		// If we have OpPhi which depends on branches which came from our own block,
 		// we need to flush phi variables in else block instead of a trivial break,
@@ -3601,7 +3682,8 @@ void Compiler::analyze_variable_scope(SPIRFunction &entry)
 				// so we will have to lift the dominator up to the relevant loop header instead.
 				builder.add_block(this->continue_block_to_loop_header[block]);
 
-				if (type.vecsize == 1 && type.columns == 1)
+				// Arrays or structs cannot be loop variables.
+				if (type.vecsize == 1 && type.columns == 1 && type.basetype != SPIRType::Struct && type.array.empty())
 				{
 					// The variable is used in multiple continue blocks, this is not a loop
 					// candidate, signal that by setting block to -1u.

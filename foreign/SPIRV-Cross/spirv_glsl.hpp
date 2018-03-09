@@ -319,6 +319,7 @@ protected:
 		bool long_long_literal_suffix = false;
 		const char *basic_int_type = "int";
 		const char *basic_uint_type = "uint";
+		const char *half_literal_suffix = "hf";
 		bool swizzle_is_function = false;
 		bool shared_is_implied = false;
 		bool flexible_member_array_supported = true;
@@ -355,6 +356,7 @@ protected:
 	void propagate_loop_dominators(const SPIRBlock &block);
 
 	void branch(uint32_t from, uint32_t to);
+	void branch_to_continue(uint32_t from, uint32_t to);
 	void branch(uint32_t from, uint32_t cond, uint32_t true_block, uint32_t false_block);
 	void flush_phi(uint32_t from, uint32_t to);
 	bool flush_phi_required(uint32_t from, uint32_t to);
@@ -528,6 +530,7 @@ protected:
 	const Instruction *get_next_instruction_in_block(const Instruction &instr);
 	static uint32_t mask_relevant_memory_semantics(uint32_t semantics);
 
+	std::string convert_half_to_string(const SPIRConstant &value, uint32_t col, uint32_t row);
 	std::string convert_float_to_string(const SPIRConstant &value, uint32_t col, uint32_t row);
 	std::string convert_double_to_string(const SPIRConstant &value, uint32_t col, uint32_t row);
 

@@ -585,6 +585,11 @@ protected:
 		       multiselect_merge_targets.find(next) != end(multiselect_merge_targets);
 	}
 
+	inline bool is_loop_break(uint32_t next) const
+	{
+		return loop_merge_targets.find(next) != end(loop_merge_targets);
+	}
+
 	inline bool is_conditional(uint32_t next) const
 	{
 		return selection_merge_targets.find(next) != end(selection_merge_targets) &&
@@ -824,6 +829,9 @@ private:
 	// Used only to implement the old deprecated get_entry_point() interface.
 	const SPIREntryPoint &get_first_entry_point(const std::string &name) const;
 	SPIREntryPoint &get_first_entry_point(const std::string &name);
+
+	void fixup_type_alias();
+	bool type_is_block_like(const SPIRType &type) const;
 };
 }
 
