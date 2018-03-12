@@ -888,23 +888,6 @@ void SMAADemo::initRender() {
 		smaaWeightsRenderPass = renderer.createRenderPass(rpDesc.name("SMAA weights"));
 	}
 
-	{
-		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::ShaderRead)
-		      .depthStencil(depthFormat, PassBegin::Clear)
-		      .clearDepth(1.0f);
-
-		// TODO: should we create this lazily?
-		uint32_t msaa = 1;
-		do {
-			rpDesc.numSamples(msaa);
-			RenderPassHandle rp = renderer.createRenderPass(rpDesc.name("scene"));
-			sceneRenderPasses.emplace(msaa, rp);
-			msaa *= 2;
-		} while (msaa <= maxMSAAQuality);
-
-	}
-
 	createFramebuffers();
 
 	// TODO: the following is a mess, clean it up
@@ -1068,7 +1051,22 @@ void SMAADemo::initRender() {
 
 
 RenderPassHandle SMAADemo::getSceneRenderPass(unsigned int n) {
-	return sceneRenderPasses[n];
+	auto it = sceneRenderPasses.find(n);
+
+	if (it == sceneRenderPasses.end()) {
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::ShaderRead)
+		      .depthStencil(depthFormat, PassBegin::Clear)
+		      .clearDepth(1.0f)
+		      .numSamples(n);
+
+		RenderPassHandle rp = renderer.createRenderPass(rpDesc.name("scene"));
+		bool inserted = false;
+		std::tie(it, inserted) = sceneRenderPasses.emplace(n, rp);
+		assert(inserted);
+	}
+
+	return it->second;
 }
 
 
