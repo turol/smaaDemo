@@ -1133,6 +1133,8 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 		assert(renderPass.desc.depthStencilFormat_ == Format::Invalid);
 	}
 
+	assert(isRenderPassCompatible(renderPass, fb));
+
 	if (tracing) {
 		glObjectLabel(GL_FRAMEBUFFER, fb.fbo, desc.name_.size(), desc.name_.c_str());
 	}
@@ -2013,6 +2015,41 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 
 		descIndex++;
 	}
+}
+
+
+bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuffer &fb) {
+	if (pass.numSamples != fb.numSamples) {
+		return false;
+	}
+
+	if (fb.depthStencil) {
+		const auto &depthRT = renderTargets.get(fb.depthStencil);
+
+		if (pass.desc.depthStencilFormat_ != depthRT.format) {
+			return false;
+		}
+	} else {
+		if (pass.desc.depthStencilFormat_ != Format::Invalid) {
+			return false;
+		}
+	}
+
+	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+		if (fb.colors[i]) {
+			const auto &colorRT = renderTargets.get(fb.colors[i]);
+
+			if (pass.desc.colorRTs_[i].format != colorRT.format) {
+				return false;
+			}
+		} else {
+			if (pass.desc.colorRTs_[i].format != Format::Invalid) {
+				return false;
+			}
+		}
+	}
+
+	return true;
 }
 
 

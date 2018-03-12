@@ -689,6 +689,8 @@ struct RendererImpl : public RendererBase {
 	unsigned int                             indexBufByteOffset;
 
 
+	bool isRenderPassCompatible(const RenderPass &pass, const Framebuffer &fb);
+
 	void rebindDescriptorSets();
 
 	void recreateSwapchain();
