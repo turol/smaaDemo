@@ -1684,8 +1684,7 @@ void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle 
 
 	// make sure renderpass and framebuffer match
 	// OpenGL doesn't care but Vulkan does
-	// TODO: should check compatibility instead of identity
-	assert(fb.renderPass == rpHandle);
+	assert(fb.renderPass == rpHandle || isRenderPassCompatible(rp, fb));
 
 	assert(fb.fbo != 0);
 	assert(fb.width > 0);
