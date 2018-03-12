@@ -1761,7 +1761,6 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	decriptorSetsDirty = true;
 
 	const auto &p = pipelines.get(pipeline);
-	assert(p.desc.renderPass_ == currentRenderPass);
 
 	// TODO: shadow state, set only necessary
 	glUseProgram(p.shader);
@@ -2208,7 +2207,6 @@ void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int firs
 	assert(vertexCount > 0);
 	const auto &p = pipelines.get(currentPipeline);
 	assert(!p.desc.scissorTest_ || scissorSet);
-	assert(p.desc.renderPass_ == currentRenderPass);
 	pipelineDrawn = true;
 
 	if (decriptorSetsDirty) {
