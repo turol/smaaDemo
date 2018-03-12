@@ -210,6 +210,9 @@
     <ClCompile Include="..\renderer\VulkanRenderer.cpp">
       <Filter>Source Files\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\attribute.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\fxaa.frag">

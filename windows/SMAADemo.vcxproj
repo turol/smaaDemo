@@ -395,6 +395,7 @@
     </ClCompile>
     <ClCompile Include="..\foreign\glslang\glslang\GenericCodeGen\CodeGen.cpp" />
     <ClCompile Include="..\foreign\glslang\glslang\GenericCodeGen\Link.cpp" />
+    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\attribute.cpp" />
     <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\Constant.cpp" />
     <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\glslang_tab.cpp" />
     <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\InfoSink.cpp" />
