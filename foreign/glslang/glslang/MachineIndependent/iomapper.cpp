@@ -41,6 +41,7 @@
 
 #include "gl_types.h"
 
+#include <cstdlib>
 #include <unordered_set>
 #include <unordered_map>
 
