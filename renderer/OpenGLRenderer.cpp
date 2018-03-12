@@ -2149,6 +2149,11 @@ void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle targe
 	assert(srcFb.width       == destFb.width);
 	assert(srcFb.height      == destFb.height);
 
+	const auto &srcColorRT = renderTargets.get(srcFb.colors[0]);
+	assert(srcColorRT.currentLayout == Layout::TransferSrc);
+	const auto &dstColorRT = renderTargets.get(destFb.colors[0]);
+	assert(dstColorRT.currentLayout == Layout::TransferSrc);
+
 	glBlitNamedFramebuffer(srcFb.fbo, destFb.fbo
 	                     , 0, 0, srcFb.width, srcFb.height
 	                     , 0, 0, destFb.width, destFb.height
