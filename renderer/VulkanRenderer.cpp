@@ -763,7 +763,6 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 static vk::ImageLayout vulkanLayout(Layout l) {
 	switch (l) {
 	case Layout::Undefined:
-		UNREACHABLE();
 		return vk::ImageLayout::eUndefined;
 
 	case Layout::ShaderRead:
