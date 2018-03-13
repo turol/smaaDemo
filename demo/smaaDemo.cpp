@@ -461,7 +461,7 @@ class SMAADemo {
 	const SMAAPipelines &getSMAAPipelines(const SMAAKey &key);
 	const PipelineHandle &getFXAAPipeline(unsigned int q);
 
-	RenderPassHandle getSceneRenderPass(unsigned int n);
+	RenderPassHandle getSceneRenderPass(unsigned int n, Layout l);
 	PipelineHandle getCubePipeline(unsigned int n);
 
 
@@ -951,7 +951,7 @@ void SMAADemo::initRender() {
 	// image is always rendered with 1 sample so we ask for that renderpass
 	// instead of numSamples
 	plDesc.name("image")
-	      .renderPass(getSceneRenderPass(1))
+	      .renderPass(getSceneRenderPass(1, Layout::ShaderRead))
 	      .vertexShader(vertexShader)
 	      .fragmentShader(fragmentShader)
 	      .depthWrite(false)
@@ -1095,14 +1095,15 @@ void SMAADemo::initRender() {
 }
 
 
-RenderPassHandle SMAADemo::getSceneRenderPass(unsigned int n) {
+RenderPassHandle SMAADemo::getSceneRenderPass(unsigned int n, Layout l) {
 	SceneRPKey k;
 	k.numSamples = n;
+	k.layout     = l;
 	auto it = sceneRenderPasses.find(k);
 
 	if (it == sceneRenderPasses.end()) {
 		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::ShaderRead)
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, l)
 		      .depthStencil(depthFormat, PassBegin::Clear)
 		      .clearDepth(1.0f)
 		      .numSamples(n);
@@ -1123,11 +1124,22 @@ PipelineHandle SMAADemo::getCubePipeline(unsigned int n) {
 	if (it == cubePipelines.end()) {
 		ShaderMacros macros;
 
+		/*
+		 Vulkan spec says:
+		 Two render passes are compatible if their corresponding color, input,
+		 resolve, and depth/stencil attachment references are compatible and
+		 if they are otherwise identical except for:
+		 * Initial and final image layout in attachment descriptions
+		 * Load and store operations in attachment descriptions
+		 * Image layout in attachment references
+
+		 so we can just use Layout::ShaderRead when creating
+		 no matter which one is used when rendering */
 		PipelineDesc plDesc;
 		plDesc.name("cubes")
 		      .vertexShader(cubeVertexShader)
 		      .fragmentShader(cubeFragmentShader)
-		      .renderPass(getSceneRenderPass(n))
+		      .renderPass(getSceneRenderPass(n, Layout::ShaderRead))
 		      .numSamples(n)
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<CubeSceneDS>(1)
@@ -1341,7 +1353,7 @@ void SMAADemo::createFramebuffers() {
 	{
 		FramebufferDesc fbDesc;
 		fbDesc.name("scene")
-		      .renderPass(getSceneRenderPass(numSamples))
+		      .renderPass(getSceneRenderPass(numSamples, Layout::ShaderRead))
 		      .depthStencil(rendertargets[RenderTargets::MainDepth])
 		      .color(0, rendertargets[RenderTargets::MainColor]);
 		sceneFramebuffer = renderer.createFramebuffer(fbDesc);
@@ -1760,7 +1772,7 @@ void SMAADemo::render() {
 	globals.predicationStrength  = predicationStrength;
 	globals.pad0 = 0;
 
-	renderer.beginRenderPass(getSceneRenderPass(numSamples), sceneFramebuffer);
+	renderer.beginRenderPass(getSceneRenderPass(numSamples, Layout::ShaderRead), sceneFramebuffer);
 
 	if (activeScene == 0) {
 		renderer.bindPipeline(getCubePipeline(numSamples));
