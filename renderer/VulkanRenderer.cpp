@@ -2286,7 +2286,19 @@ void RendererImpl::layoutTransition(RenderTargetHandle image, Layout src, Layout
 	assert(src == Layout::Undefined || rt.currentLayout == src);
 	rt.currentLayout = dest;
 
-	STUBBED("");
+	vk::ImageMemoryBarrier b;
+	// TODO: should allow user to specify access flags
+	b.srcAccessMask               = vk::AccessFlagBits::eColorAttachmentWrite;
+	b.dstAccessMask               = vk::AccessFlagBits::eMemoryRead;
+	b.oldLayout                   = vulkanLayout(src);
+	b.newLayout                   = vulkanLayout(dest);
+	b.image                       = rt.image;
+	b.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+	b.subresourceRange.levelCount = 1;
+	b.subresourceRange.layerCount = 1;
+
+	// TODO: should allow user to specify stage masks
+	currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), {}, {}, { b });
 }
 
 
