@@ -177,6 +177,7 @@ enum class Layout : uint8_t {
 	  Invalid
 	, ShaderRead
 	, TransferSrc
+	, TransferDst
 };
 
 

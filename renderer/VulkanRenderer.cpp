@@ -771,6 +771,9 @@ static vk::ImageLayout vulkanLayout(Layout l) {
 
 	case Layout::TransferSrc:
 		return vk::ImageLayout::eTransferSrcOptimal;
+
+	case Layout::TransferDst:
+		return vk::ImageLayout::eTransferDstOptimal;
 	}
 
 	UNREACHABLE();
