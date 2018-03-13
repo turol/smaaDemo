@@ -2152,7 +2152,7 @@ void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle targe
 	const auto &srcColorRT = renderTargets.get(srcFb.colors[0]);
 	assert(srcColorRT.currentLayout == Layout::TransferSrc);
 	const auto &dstColorRT = renderTargets.get(destFb.colors[0]);
-	assert(dstColorRT.currentLayout == Layout::TransferSrc);
+	assert(dstColorRT.currentLayout == Layout::TransferDst);
 
 	glBlitNamedFramebuffer(srcFb.fbo, destFb.fbo
 	                     , 0, 0, srcFb.width, srcFb.height
@@ -2187,7 +2187,6 @@ void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int i
 	assert(vertexCount > 0);
 	const auto &p = pipelines.get(currentPipeline);
 	assert(!p.desc.scissorTest_ || scissorSet);
-	assert(p.desc.renderPass_ == currentRenderPass);
 	pipelineDrawn = true;
 
 	if (decriptorSetsDirty) {
