@@ -174,7 +174,7 @@ enum class Format : uint8_t {
 
 
 enum class Layout : uint8_t {
-	  Invalid
+	  Undefined
 	, ShaderRead
 	, TransferSrc
 	, TransferDst
@@ -460,7 +460,7 @@ struct RenderPassDesc {
 		for (auto &rt : colorRTs_) {
 			rt.format     = Format::Invalid;
 			rt.passBegin  = PassBegin::DontCare;
-			rt.finalLayout = Layout::Invalid;
+			rt.finalLayout = Layout::Undefined;
 			rt.clearValue = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
 		}
 	}

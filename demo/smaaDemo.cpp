@@ -286,7 +286,7 @@ struct SceneRPKey {
 
 	SceneRPKey()
 	: numSamples(1)
-	, layout(Layout::Invalid)
+	, layout(Layout::Undefined)
 	{
 	}
 

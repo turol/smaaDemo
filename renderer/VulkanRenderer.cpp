@@ -762,7 +762,7 @@ BufferHandle RendererImpl::createEphemeralBuffer(uint32_t size, const void *cont
 
 static vk::ImageLayout vulkanLayout(Layout l) {
 	switch (l) {
-	case Layout::Invalid:
+	case Layout::Undefined:
 		UNREACHABLE();
 		return vk::ImageLayout::eUndefined;
 
@@ -911,7 +911,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		}
 
 		assert(desc.colorRTs_[1].passBegin == PassBegin::DontCare);
-		assert(desc.colorRTs_[1].finalLayout == Layout::Invalid);
+		assert(desc.colorRTs_[1].finalLayout == Layout::Undefined);
 
 		attach.storeOp        = vk::AttachmentStoreOp::eStore;
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;

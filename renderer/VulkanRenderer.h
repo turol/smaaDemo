@@ -417,7 +417,7 @@ struct RenderTarget{
 	RenderTarget()
 	: width(0)
 	, height(0)
-	, currentLayout(Layout::Invalid)
+	, currentLayout(Layout::Undefined)
 	, format(vk::Format::eUndefined)
 	{}
 
@@ -436,7 +436,7 @@ struct RenderTarget{
 	{
 		other.width         = 0;
 		other.height        = 0;
-		other.currentLayout = Layout::Invalid;
+		other.currentLayout = Layout::Undefined;
 		other.texture       = TextureHandle();
 		other.additionalView = TextureHandle();
 		other.image         = vk::Image();
@@ -463,7 +463,7 @@ struct RenderTarget{
 
 		other.width         = 0;
 		other.height        = 0;
-		other.currentLayout = Layout::Invalid;
+		other.currentLayout = Layout::Undefined;
 		other.texture       = TextureHandle();
 		other.additionalView = TextureHandle();
 		other.image         = vk::Image();

@@ -379,7 +379,7 @@ struct RenderTarget {
 	: width(0)
 	, height(0)
 	, numSamples(0)
-	, currentLayout(Layout::Invalid)
+	, currentLayout(Layout::Undefined)
 	, readFBO(0)
 	, format(Format::Invalid)
 	{
@@ -401,7 +401,7 @@ struct RenderTarget {
 		other.width         = 0;
 		other.height        = 0;
 		other.numSamples    = 0;
-		other.currentLayout = Layout::Invalid;
+		other.currentLayout = Layout::Undefined;
 		other.texture       = TextureHandle();
 		other.additionalView = TextureHandle();
 		other.readFBO       = 0;
@@ -428,7 +428,7 @@ struct RenderTarget {
 		other.width         = 0;
 		other.height        = 0;
 		other.numSamples     = 0;
-		other.currentLayout = Layout::Invalid;
+		other.currentLayout = Layout::Undefined;
 		other.texture       = TextureHandle();
 		other.additionalView = TextureHandle();
 		other.readFBO       = 0;
