@@ -2278,6 +2278,19 @@ void RendererImpl::endRenderPass() {
 }
 
 
+void RendererImpl::layoutTransition(RenderTargetHandle image, Layout src, Layout dest) {
+	assert(image);
+	assert(dest != Layout::Undefined);
+	assert(src != dest);
+
+	auto &rt = renderTargets.get(image);
+	assert(src == Layout::Undefined || rt.currentLayout == src);
+	rt.currentLayout = dest;
+
+	STUBBED("");
+}
+
+
 void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	assert(inFrame);
 	assert(inRenderPass);

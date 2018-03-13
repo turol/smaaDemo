@@ -1731,6 +1731,17 @@ void RendererImpl::endRenderPass() {
 }
 
 
+void RendererImpl::layoutTransition(RenderTargetHandle image, Layout src, Layout dest) {
+	assert(image);
+	assert(dest != Layout::Undefined);
+	assert(src != dest);
+
+	auto &rt = renderTargets.get(image);
+	assert(src == Layout::Undefined || rt.currentLayout == src);
+	rt.currentLayout = dest;
+}
+
+
 void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 	assert(inFrame);
 	glViewport(x, y, width, height);

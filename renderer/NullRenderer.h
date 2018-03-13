@@ -481,6 +481,8 @@ struct RendererImpl : public RendererBase {
 	void beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle);
 	void endRenderPass();
 
+	void layoutTransition(RenderTargetHandle image, Layout src, Layout dest);
+
 	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 	void setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 
