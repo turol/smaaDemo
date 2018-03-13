@@ -281,10 +281,12 @@ struct SMAAKey {
 
 struct SceneRPKey {
 	uint8_t numSamples;
+	Layout  layout;
 
 
 	SceneRPKey()
 	: numSamples(1)
+	, layout(Layout::Invalid)
 	{
 	}
 
@@ -299,6 +301,10 @@ struct SceneRPKey {
 
 	bool operator==(const SceneRPKey &other) const {
 		if (this->numSamples != other.numSamples) {
+			return false;
+		}
+
+		if (this->layout     != other.layout) {
 			return false;
 		}
 
@@ -329,7 +335,11 @@ namespace std {
 
 	template <> struct hash<SceneRPKey> {
 		size_t operator()(const SceneRPKey &k) const {
-			return hash<uint32_t>()(k.numSamples);
+			uint32_t temp = 0;
+			temp |= (static_cast<uint32_t>(k.numSamples) << 0);
+			temp |= (static_cast<uint32_t>(k.layout)     << 8);
+
+			return hash<uint32_t>()(temp);
 		}
 	};
 
