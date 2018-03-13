@@ -279,6 +279,34 @@ struct SMAAKey {
 };
 
 
+struct SceneRPKey {
+	uint8_t numSamples;
+
+
+	SceneRPKey()
+	: numSamples(1)
+	{
+	}
+
+	SceneRPKey(const SceneRPKey &)            = default;
+	SceneRPKey(SceneRPKey &&)                 = default;
+
+	SceneRPKey &operator=(const SceneRPKey &) = default;
+	SceneRPKey &operator=(SceneRPKey &&)      = default;
+
+	~SceneRPKey() {}
+
+
+	bool operator==(const SceneRPKey &other) const {
+		if (this->numSamples != other.numSamples) {
+			return false;
+		}
+
+		return true;
+	}
+};
+
+
 namespace std {
 
 	template <> struct hash<SMAAKey> {
@@ -295,6 +323,13 @@ namespace std {
 	template <> struct hash<FXAAKey> {
 		size_t operator()(const FXAAKey &k) const {
 			return hash<uint32_t>()(k.quality);
+		}
+	};
+
+
+	template <> struct hash<SceneRPKey> {
+		size_t operator()(const SceneRPKey &k) const {
+			return hash<uint32_t>()(k.numSamples);
 		}
 	};
 
@@ -377,7 +412,7 @@ class SMAADemo {
 	PipelineHandle     blitPipeline;
 	PipelineHandle     guiPipeline;
 
-	std::unordered_map<uint32_t, RenderPassHandle>  sceneRenderPasses;
+	std::unordered_map<SceneRPKey, RenderPassHandle>  sceneRenderPasses;
 	FramebufferHandle  sceneFramebuffer;
 	RenderPassHandle   finalRenderPass;
 	RenderPassHandle   guiOnlyRenderPass;
@@ -1051,7 +1086,9 @@ void SMAADemo::initRender() {
 
 
 RenderPassHandle SMAADemo::getSceneRenderPass(unsigned int n) {
-	auto it = sceneRenderPasses.find(n);
+	SceneRPKey k;
+	k.numSamples = n;
+	auto it = sceneRenderPasses.find(k);
 
 	if (it == sceneRenderPasses.end()) {
 		RenderPassDesc rpDesc;
@@ -1062,7 +1099,7 @@ RenderPassHandle SMAADemo::getSceneRenderPass(unsigned int n) {
 
 		RenderPassHandle rp = renderer.createRenderPass(rpDesc.name("scene"));
 		bool inserted = false;
-		std::tie(it, inserted) = sceneRenderPasses.emplace(n, rp);
+		std::tie(it, inserted) = sceneRenderPasses.emplace(k, rp);
 		assert(inserted);
 	}
 
