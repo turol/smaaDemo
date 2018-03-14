@@ -163,6 +163,33 @@ public:
 };
 
 
+static const char *const msaaQualityLevels[] =
+{ "2x", "4x", "8x", "16x", "32x", "64x" };
+
+
+static unsigned int msaaSamplesToQuality(unsigned int q) {
+	assert(q > 1);
+	assert(isPow2(q));
+
+#ifdef __GNUC__
+
+	return __builtin_ctz(q) - 1;
+
+#else  // __GNUC__
+
+	unsigned long bit = 0;
+	_BitScanForward(&bit, q);
+	return bit - 1;
+
+#endif  // __GNUC__
+}
+
+
+static unsigned int msaaQualityToSamples(unsigned int n) {
+	return (1 << (n + 1));
+}
+
+
 static const char *fxaaQualityLevels[] =
 { "10", "15", "20", "29", "39" };
 
@@ -386,6 +413,7 @@ class SMAADemo {
 	unsigned int  debugMode;
 	unsigned int  colorMode;
 	unsigned int  fxaaQuality;
+	unsigned int  msaaQuality;
 	unsigned int  maxMSAAQuality;
 	SMAAKey       smaaKey;
 	ShaderDefines::SMAAParameters  smaaParameters;
@@ -527,6 +555,7 @@ SMAADemo::SMAADemo()
 , debugMode(0)
 , colorMode(0)
 , fxaaQuality(maxFXAAQuality - 1)
+, msaaQuality(0)
 , maxMSAAQuality(1)
 , predicationThreshold(0.01f)
 , predicationScale(2.0f)
@@ -883,7 +912,7 @@ void SMAADemo::initRender() {
 	LOG("Max MSAA quality: %u\n",  features.maxMSAAQuality);
 	LOG("sRGB frame buffer: %s\n", features.sRGBFramebuffer ? "yes" : "no");
 	LOG("SSBO support: %s\n",      features.SSBOSupported ? "yes" : "no");
-	maxMSAAQuality = features.maxMSAAQuality;
+	maxMSAAQuality = msaaSamplesToQuality(features.maxMSAAQuality) + 1;
 
 	unsigned int refreshRate = renderer.getCurrentRefreshRate();
 
@@ -1326,7 +1355,8 @@ void SMAADemo::createFramebuffers() {
 	}
 
 	if (antialiasing && aaMethod == AAMethod::MSAA) {
-		numSamples = 2;
+		numSamples = msaaQualityToSamples(msaaQuality);
+		assert(numSamples > 1);
 	} else {
 		numSamples = 1;
 	}
@@ -1589,7 +1619,12 @@ void SMAADemo::mainLoopIteration() {
 			case SDL_SCANCODE_Q:
 				switch (aaMethod) {
 				case AAMethod::MSAA:
-					// TODO: implement
+					if (leftShift || rightShift) {
+						msaaQuality = msaaQuality + maxSMAAQuality - 1;
+					} else {
+						msaaQuality = msaaQuality + 1;
+					}
+					msaaQuality = msaaQuality % maxMSAAQuality;
 					recreateFramebuffers = true;
 					break;
 
@@ -2007,6 +2042,10 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			ImGui::RadioButton("MSAA", &aa, static_cast<int>(AAMethod::MSAA)); ImGui::SameLine();
 			ImGui::RadioButton("FXAA", &aa, static_cast<int>(AAMethod::FXAA)); ImGui::SameLine();
 			ImGui::RadioButton("SMAA", &aa, static_cast<int>(AAMethod::SMAA));
+
+			ImGui::Separator();
+			int msaaq = msaaQuality;
+			bool msaaChanged = ImGui::Combo("MSAA quality", &msaaq, msaaQualityLevels, maxMSAAQuality);
 			if (aaChanged || aa != static_cast<int>(aaMethod)) {
 				// if moving either to or from MSAA need to recreate framebuffers
 				if (aaMethod == AAMethod::MSAA) {
@@ -2018,8 +2057,14 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 				}
 			}
 
-			int sq = smaaKey.quality;
+			if (msaaChanged && aaMethod == AAMethod::MSAA) {
+				assert(msaaq >= 0);
+				msaaQuality = static_cast<unsigned int>(msaaq);
+				recreateFramebuffers = true;
+			}
+
 			ImGui::Separator();
+			int sq = smaaKey.quality;
 			ImGui::Combo("SMAA quality", &sq, smaaQualityLevels, maxSMAAQuality);
 			assert(sq >= 0);
 			assert(sq < int(maxSMAAQuality));
@@ -2086,7 +2131,6 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			smaaKey.edgeMethod = static_cast<SMAAEdgeMethod>(em);
 
 			int d = debugMode;
-			ImGui::Separator();
 			ImGui::Combo("SMAA debug", &d, smaaDebugModes, 3);
 			assert(d >= 0);
 			assert(d < 3);
