@@ -6,7 +6,7 @@ This is a small program demonstrating the use of the Subpixel Morphological Anti
 Building
 ========
 
-Linux: Go to /binaries and type make. To change build settings copy example.mk to local.mk in the same directory. You only need to include changed lines in local.mk. The build defaults to OpenGL renderer, to use Vulkan set "RENDERER:=vulkan" in local.mk.
+Linux: Go to /binaries and type make. To change build settings copy example.mk to local.mk in the same directory. You only need to include changed lines in local.mk. The build defaults to Vulkan renderer, to use OpenGL set "RENDERER:=opengl" in local.mk.
 
 Windows: There is a Visual Studio 2015 solution in /windows/SMAADemo.sln. You will need boost, cmake, Python3, SDL2 and Vulkan SDK. You also need to build the following libraries from the included sources under /foreign:
 SPIRV-Tools.lib
