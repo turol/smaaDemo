@@ -82,7 +82,8 @@ class SMAADemo;
 
 
 enum class AAMethod : uint8_t {
-	  FXAA
+	  MSAA
+	, FXAA
 	, SMAA
 	, LAST = SMAA
 };
@@ -90,6 +91,10 @@ enum class AAMethod : uint8_t {
 
 const char *name(AAMethod m) {
 	switch (m) {
+	case AAMethod::MSAA:
+		return "MSAA";
+		break;
+
 	case AAMethod::FXAA:
 		return "FXAA";
 		break;
@@ -1320,6 +1325,12 @@ void SMAADemo::createFramebuffers() {
 		}
 	}
 
+	if (antialiasing && aaMethod == AAMethod::MSAA) {
+		numSamples = 2;
+	} else {
+		numSamples = 1;
+	}
+
 	{
 		RenderTargetDesc rtDesc;
 		rtDesc.name("main color")
@@ -1538,6 +1549,9 @@ void SMAADemo::mainLoopIteration() {
 
 			case SDL_SCANCODE_A:
 				antialiasing = !antialiasing;
+				if (aaMethod == AAMethod::MSAA) {
+					recreateFramebuffers = true;
+				}
 				break;
 
 			case SDL_SCANCODE_C:
@@ -1562,11 +1576,23 @@ void SMAADemo::mainLoopIteration() {
 				break;
 
 			case SDL_SCANCODE_M:
+				// if moving either to or from MSAA need to recreate framebuffers
+				if (aaMethod == AAMethod::MSAA) {
+					recreateFramebuffers = true;
+				}
 				aaMethod = AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
+				if (aaMethod == AAMethod::MSAA) {
+					recreateFramebuffers = true;
+				}
 				break;
 
 			case SDL_SCANCODE_Q:
 				switch (aaMethod) {
+				case AAMethod::MSAA:
+					// TODO: implement
+					recreateFramebuffers = true;
+					break;
+
 				case AAMethod::FXAA:
 					if (leftShift || rightShift) {
 						fxaaQuality = fxaaQuality + maxFXAAQuality - 1;
@@ -1772,7 +1798,11 @@ void SMAADemo::render() {
 	globals.predicationStrength  = predicationStrength;
 	globals.pad0 = 0;
 
-	renderer.beginRenderPass(getSceneRenderPass(numSamples, Layout::ShaderRead), sceneFramebuffer);
+	Layout l = Layout::ShaderRead;
+	if (antialiasing && aaMethod == AAMethod::MSAA) {
+		l = Layout::TransferSrc;
+	}
+	renderer.beginRenderPass(getSceneRenderPass(numSamples, l), sceneFramebuffer);
 
 	if (activeScene == 0) {
 		renderer.bindPipeline(getCubePipeline(numSamples));
@@ -1836,6 +1866,14 @@ void SMAADemo::render() {
 
 	if (antialiasing) {
 		switch (aaMethod) {
+		case AAMethod::MSAA: {
+			renderer.layoutTransition(rendertargets[RenderTargets::FinalRender], Layout::Undefined, Layout::TransferDst);
+			renderer.resolveMSAA(sceneFramebuffer, finalFramebuffer);
+			renderer.beginRenderPass(guiOnlyRenderPass, finalFramebuffer);
+			drawGUI(elapsed);
+			renderer.endRenderPass();
+		} break;
+
 		case AAMethod::FXAA: {
 			renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
 			renderer.bindPipeline(getFXAAPipeline(fxaaQuality));
@@ -1963,11 +2001,22 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 	if (ImGui::Begin("SMAA", &windowVisible, flags)) {
 		if (ImGui::CollapsingHeader("Antialiasing properties", ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::Checkbox("Antialiasing", &antialiasing);
+			bool aaChanged = ImGui::Checkbox("Antialiasing", &antialiasing);
+
 			int aa = static_cast<int>(aaMethod);
+			ImGui::RadioButton("MSAA", &aa, static_cast<int>(AAMethod::MSAA)); ImGui::SameLine();
 			ImGui::RadioButton("FXAA", &aa, static_cast<int>(AAMethod::FXAA)); ImGui::SameLine();
 			ImGui::RadioButton("SMAA", &aa, static_cast<int>(AAMethod::SMAA));
-			aaMethod = static_cast<AAMethod>(aa);
+			if (aaChanged || aa != static_cast<int>(aaMethod)) {
+				// if moving either to or from MSAA need to recreate framebuffers
+				if (aaMethod == AAMethod::MSAA) {
+					recreateFramebuffers = true;
+				}
+				aaMethod = static_cast<AAMethod>(aa);
+				if (aaMethod == AAMethod::MSAA) {
+					recreateFramebuffers = true;
+				}
+			}
 
 			int sq = smaaKey.quality;
 			ImGui::Separator();
