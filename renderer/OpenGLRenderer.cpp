@@ -1697,6 +1697,12 @@ void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle 
 		glDisable(GL_FRAMEBUFFER_SRGB);
 	}
 
+	if (fb.numSamples > 1) {
+		glEnable(GL_MULTISAMPLE);
+	} else {
+		glDisable(GL_MULTISAMPLE);
+	}
+
 	if (rp.clearMask) {
 		if ((rp.clearMask & GL_COLOR_BUFFER_BIT) != 0) {
 			glClearColor(rp.colorClearValue.x, rp.colorClearValue.y, rp.colorClearValue.z, rp.colorClearValue.w);
