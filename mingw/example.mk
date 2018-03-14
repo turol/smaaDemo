@@ -11,7 +11,7 @@ ASAN:=n
 TSAN:=n
 UBSAN:=n
 
-RENDERER:=opengl
+RENDERER:=vulkan
 
 
 INTERNAL_glslang:=y
