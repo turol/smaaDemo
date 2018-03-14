@@ -743,6 +743,8 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::ValueArg<unsigned int>          windowWidthSwitch("",  "width",      "Window width",  false, windowWidth,  "width",  cmd);
 		TCLAP::ValueArg<unsigned int>          windowHeightSwitch("", "height",     "Window height", false, windowHeight, "height", cmd);
 
+		TCLAP::ValueArg<std::string>           aaMethodSwitch("m",    "method",     "AA Method",     false, "SMAA",        "SMAA/FXAA/MSAA", cmd);
+
 		TCLAP::UnlabeledMultiArg<std::string>  imagesArg("images",    "image files", false, "image file", cmd, true, nullptr);
 
 		cmd.parse(argc, argv);
@@ -755,6 +757,19 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		windowWidth   = windowWidthSwitch.getValue();
 		windowHeight  = windowHeightSwitch.getValue();
 		vsync         = noVsyncSwitch.getValue() ? VSync::Off : VSync::On;
+
+		std::string aaMethodStr = aaMethodSwitch.getValue();
+		if (aaMethodStr == "SMAA") {
+			aaMethod = AAMethod::SMAA;
+		} else if (aaMethodStr == "FXAA") {
+			aaMethod = AAMethod::FXAA;
+		} else if (aaMethodStr == "MSAA") {
+			aaMethod = AAMethod::MSAA;
+		} else {
+			LOG("Bad AA method \"%s\"\n", aaMethodStr.c_str());
+			fprintf(stderr, "Bad AA method \"%s\"\n", aaMethodStr.c_str());
+			exit(1);
+		}
 
 		imageFiles    = imagesArg.getValue();
 
