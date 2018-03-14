@@ -909,10 +909,10 @@ void SMAADemo::initRender() {
 
 	renderer = Renderer::createRenderer(desc);
 	const auto &features = renderer.getFeatures();
-	LOG("Max MSAA quality: %u\n",  features.maxMSAAQuality);
+	LOG("Max MSAA samples: %u\n",  features.maxMSAASamples);
 	LOG("sRGB frame buffer: %s\n", features.sRGBFramebuffer ? "yes" : "no");
 	LOG("SSBO support: %s\n",      features.SSBOSupported ? "yes" : "no");
-	maxMSAAQuality = msaaSamplesToQuality(features.maxMSAAQuality) + 1;
+	maxMSAAQuality = msaaSamplesToQuality(features.maxMSAASamples) + 1;
 
 	unsigned int refreshRate = renderer.getCurrentRefreshRate();
 

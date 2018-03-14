@@ -458,7 +458,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	for (unsigned int i = 0; i < 7; i++) {
 		uint32_t bit = 1 << i;
 		if (uint32_t(maxSamples) & bit) {
-			features.maxMSAAQuality = bit;
+			features.maxMSAASamples = bit;
 		} else {
 			break;
 		}

@@ -742,13 +742,13 @@ struct RendererDesc {
 
 
 struct RendererFeatures {
-	uint32_t  maxMSAAQuality;
+	uint32_t  maxMSAASamples;
 	bool      sRGBFramebuffer;
 	bool      SSBOSupported;
 
 
 	RendererFeatures()
-	: maxMSAAQuality(1)
+	: maxMSAASamples(1)
 	, sRGBFramebuffer(false)
 	, SSBOSupported(false)
 	{

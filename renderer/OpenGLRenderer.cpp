@@ -583,7 +583,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	uboAlign   = glValues[GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT];
 	ssboAlign  = glValues[GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT];
 
-	features.maxMSAAQuality = std::min(glValues[GL_MAX_COLOR_TEXTURE_SAMPLES], glValues[GL_MAX_DEPTH_TEXTURE_SAMPLES]);
+	features.maxMSAASamples = std::min(glValues[GL_MAX_COLOR_TEXTURE_SAMPLES], glValues[GL_MAX_DEPTH_TEXTURE_SAMPLES]);
 
 	// TODO: use GL_UPPER_LEFT to match Vulkan
 	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
