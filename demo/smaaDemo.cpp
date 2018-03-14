@@ -744,6 +744,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::ValueArg<unsigned int>          windowHeightSwitch("", "height",     "Window height", false, windowHeight, "height", cmd);
 
 		TCLAP::ValueArg<std::string>           aaMethodSwitch("m",    "method",     "AA Method",     false, "SMAA",        "SMAA/FXAA/MSAA", cmd);
+		TCLAP::ValueArg<std::string>           aaQualitySwitch("q",   "quality",    "AA Quality",    false, "",            "", cmd);
 
 		TCLAP::UnlabeledMultiArg<std::string>  imagesArg("images",    "image files", false, "image file", cmd, true, nullptr);
 
@@ -759,12 +760,44 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		vsync         = noVsyncSwitch.getValue() ? VSync::Off : VSync::On;
 
 		std::string aaMethodStr = aaMethodSwitch.getValue();
+		std::transform(aaMethodStr.begin(), aaMethodStr.end(), aaMethodStr.begin(), ::toupper);
+		std::string aaQualityStr = aaQualitySwitch.getValue();
 		if (aaMethodStr == "SMAA") {
 			aaMethod = AAMethod::SMAA;
+
+			if (!aaQualityStr.empty()) {
+				std::transform(aaQualityStr.begin(), aaQualityStr.end(), aaQualityStr.begin(), ::toupper);
+				for (unsigned int i = 0; i < maxSMAAQuality; i++) {
+					if (aaQualityStr == smaaQualityLevels[i]) {
+						smaaKey.quality = i;
+						break;
+					}
+				}
+			}
 		} else if (aaMethodStr == "FXAA") {
 			aaMethod = AAMethod::FXAA;
+
+			if (!aaQualityStr.empty()) {
+				std::transform(aaQualityStr.begin(), aaQualityStr.end(), aaQualityStr.begin(), ::toupper);
+				for (unsigned int i = 0; i < maxFXAAQuality; i++) {
+					if (aaQualityStr == fxaaQualityLevels[i]) {
+						fxaaQuality = i;
+						break;
+					}
+				}
+			}
 		} else if (aaMethodStr == "MSAA") {
 			aaMethod = AAMethod::MSAA;
+
+			int n = atoi(aaQualityStr.c_str());
+			if (n > 0) {
+				if (!isPow2(n)) {
+					n = nextPow2(n);
+				}
+
+				msaaQuality = msaaSamplesToQuality(n);
+			}
+
 		} else {
 			LOG("Bad AA method \"%s\"\n", aaMethodStr.c_str());
 			fprintf(stderr, "Bad AA method \"%s\"\n", aaMethodStr.c_str());
@@ -928,6 +961,9 @@ void SMAADemo::initRender() {
 	LOG("sRGB frame buffer: %s\n", features.sRGBFramebuffer ? "yes" : "no");
 	LOG("SSBO support: %s\n",      features.SSBOSupported ? "yes" : "no");
 	maxMSAAQuality = msaaSamplesToQuality(features.maxMSAASamples) + 1;
+	if (msaaQuality >= maxMSAAQuality) {
+		msaaQuality = maxMSAAQuality - 1;
+	}
 
 	unsigned int refreshRate = renderer.getCurrentRefreshRate();
 
