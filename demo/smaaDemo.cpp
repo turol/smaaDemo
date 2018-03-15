@@ -1193,7 +1193,13 @@ RenderPassHandle SMAADemo::getSceneRenderPass(unsigned int n, Layout l) {
 		      .clearDepth(1.0f)
 		      .numSamples(n);
 
-		RenderPassHandle rp = renderer.createRenderPass(rpDesc.name("scene"));
+		std::string name = "scene ";
+		if (n > 1) {
+			name += " MSAA x" + std::to_string(n) + " ";
+		}
+		name += layoutName(l);
+
+		RenderPassHandle rp = renderer.createRenderPass(rpDesc.name(name));
 		bool inserted = false;
 		std::tie(it, inserted) = sceneRenderPasses.emplace(k, rp);
 		assert(inserted);
