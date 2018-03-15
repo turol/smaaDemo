@@ -137,6 +137,27 @@ bool issRGBFormat(Format format) {
 }
 
 
+const char *layoutName(Layout layout) {
+	switch (layout) {
+	case Layout::Undefined:
+		return "Undefined";
+
+	case Layout::ShaderRead:
+		return "ShaderRead";
+
+	case Layout::TransferSrc:
+		return "TransferSrc";
+
+	case Layout::TransferDst:
+		return "TransferDst";
+
+	}
+
+	UNREACHABLE();
+	return "";
+}
+
+
 const char *formatName(Format format) {
    switch (format) {
 	case Format::Invalid:
