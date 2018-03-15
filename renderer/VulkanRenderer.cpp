@@ -894,14 +894,18 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		switch (desc.colorRTs_[0].passBegin) {
 		case PassBegin::DontCare:
 		attach.loadOp         = vk::AttachmentLoadOp::eDontCare;
+			attach.initialLayout  = vk::ImageLayout::eUndefined;
 			break;
 
 		case PassBegin::Keep:
 			attach.loadOp     = vk::AttachmentLoadOp::eLoad;
+			// TODO: should come from desc
+			attach.initialLayout  = vk::ImageLayout::eTransferDstOptimal;
 			break;
 
 		case PassBegin::Clear:
 			attach.loadOp     = vk::AttachmentLoadOp::eClear;
+			attach.initialLayout  = vk::ImageLayout::eUndefined;
 			std::array<float, 4> color = { { desc.colorRTs_[0].clearValue.x, desc.colorRTs_[0].clearValue.y, desc.colorRTs_[0].clearValue.z, desc.colorRTs_[0].clearValue.a } };
 			r.clearValueCount = attachNum + 1;
 			assert(r.clearValueCount <= 2);
@@ -915,7 +919,6 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		attach.storeOp        = vk::AttachmentStoreOp::eStore;
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
 		attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-		attach.initialLayout  = vk::ImageLayout::eUndefined;
 		attach.finalLayout    = vulkanLayout(desc.colorRTs_[0].finalLayout);
 		attachments.push_back(attach);
 
