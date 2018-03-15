@@ -1010,6 +1010,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 
 	r.renderPass  = device.createRenderPass(info);
 	r.numSamples  = desc.numSamples_;
+	r.desc        = desc;
 
 	if (debugMarkers) {
 		vk::DebugMarkerObjectNameInfoEXT markerName;
@@ -2265,6 +2266,8 @@ void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle 
 	currentCommandBuffer.beginRenderPass(info, vk::SubpassContents::eInline);
 
 	currentPipelineLayout = vk::PipelineLayout();
+	currentRenderPass  = rpHandle;
+	currentFramebuffer = fbHandle;
 }
 
 
@@ -2274,6 +2277,16 @@ void RendererImpl::endRenderPass() {
 	inRenderPass = false;
 
 	currentCommandBuffer.endRenderPass();
+
+	const auto &pass = renderPasses.get(currentRenderPass);
+	const auto &fb = framebuffers.get(currentFramebuffer);
+
+	// TODO: track depthstencil layout too
+	auto &rt = renderTargets.get(fb.desc.colors_[0]);
+	rt.currentLayout = pass.desc.colorRTs_[0].finalLayout;
+
+	currentRenderPass = RenderPassHandle();
+	currentFramebuffer = FramebufferHandle();
 }
 
 

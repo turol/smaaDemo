@@ -341,6 +341,7 @@ struct RenderPass {
 	unsigned int                   clearValueCount;
 	std::array<vk::ClearValue, 2>  clearValues;
 	unsigned int                   numSamples;
+	RenderPassDesc                 desc;
 
 
 	RenderPass()
@@ -356,6 +357,7 @@ struct RenderPass {
 	: renderPass(other.renderPass)
 	, clearValueCount(other.clearValueCount)
 	, numSamples(other.numSamples)
+	, desc(other.desc)
 	{
 		for (unsigned int i = 0; i < other.clearValueCount; i++) {
 			clearValues[i] = other.clearValues[i];
@@ -376,6 +378,7 @@ struct RenderPass {
 		renderPass       = other.renderPass;
 		clearValueCount  = other.clearValueCount;
 		numSamples       = other.numSamples;
+		desc             = other.desc;
 
 		for (unsigned int i = 0; i < other.clearValueCount; i++) {
 			clearValues[i] = other.clearValues[i];
@@ -825,6 +828,8 @@ struct RendererImpl : public RendererBase {
 	vk::CommandBuffer                       currentCommandBuffer;
 	vk::PipelineLayout                      currentPipelineLayout;
 	vk::Viewport                            currentViewport;
+	RenderPassHandle                        currentRenderPass;
+	FramebufferHandle                       currentFramebuffer;
 
 	VmaAllocator                            allocator;
 
