@@ -893,18 +893,18 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		attach.samples        = samples;
 		switch (desc.colorRTs_[0].passBegin) {
 		case PassBegin::DontCare:
-		attach.loadOp         = vk::AttachmentLoadOp::eDontCare;
+			attach.loadOp         = vk::AttachmentLoadOp::eDontCare;
 			attach.initialLayout  = vk::ImageLayout::eUndefined;
 			break;
 
 		case PassBegin::Keep:
-			attach.loadOp     = vk::AttachmentLoadOp::eLoad;
+			attach.loadOp         = vk::AttachmentLoadOp::eLoad;
 			// TODO: should come from desc
 			attach.initialLayout  = vk::ImageLayout::eTransferDstOptimal;
 			break;
 
 		case PassBegin::Clear:
-			attach.loadOp     = vk::AttachmentLoadOp::eClear;
+			attach.loadOp         = vk::AttachmentLoadOp::eClear;
 			attach.initialLayout  = vk::ImageLayout::eUndefined;
 			std::array<float, 4> color = { { desc.colorRTs_[0].clearValue.x, desc.colorRTs_[0].clearValue.y, desc.colorRTs_[0].clearValue.z, desc.colorRTs_[0].clearValue.a } };
 			r.clearValueCount = attachNum + 1;
