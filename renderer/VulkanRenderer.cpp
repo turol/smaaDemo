@@ -2559,7 +2559,9 @@ void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle targe
 	assert(!destFb.desc.colors_[1]);
 
 	auto &srcColor  = renderTargets.get(srcFb.desc.colors_[0]);
+	assert(srcColor.currentLayout == Layout::TransferSrc);
 	auto &destColor = renderTargets.get(destFb.desc.colors_[0]);
+	assert(destColor.currentLayout == Layout::TransferDst);
 
 	vk::ImageResolve r;
 	r.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
@@ -2569,7 +2571,7 @@ void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle targe
 	r.extent.width              = srcFb.width;
 	r.extent.height             = srcFb.height;
 	r.extent.depth              = 1;
-	currentCommandBuffer.resolveImage(srcColor.image, vulkanLayout(srcColor.currentLayout), destColor.image, vulkanLayout(destColor.currentLayout), { r } );
+	currentCommandBuffer.resolveImage(srcColor.image, vk::ImageLayout::eTransferSrcOptimal, destColor.image, vk::ImageLayout::eTransferDstOptimal, { r } );
 }
 
 
