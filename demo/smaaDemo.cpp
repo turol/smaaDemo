@@ -1213,7 +1213,10 @@ PipelineHandle SMAADemo::getCubePipeline(unsigned int n) {
 	auto it = cubePipelines.find(n);
 
 	if (it == cubePipelines.end()) {
-		ShaderMacros macros;
+		std::string name = "cubes";
+		if (n > 1) {
+			name += " MSAA x" + std::to_string(n);
+		}
 
 		/*
 		 Vulkan spec says:
@@ -1227,7 +1230,7 @@ PipelineHandle SMAADemo::getCubePipeline(unsigned int n) {
 		 so we can just use Layout::ShaderRead when creating
 		 no matter which one is used when rendering */
 		PipelineDesc plDesc;
-		plDesc.name("cubes")
+		plDesc.name(name)
 		      .vertexShader(cubeVertexShader)
 		      .fragmentShader(cubeFragmentShader)
 		      .renderPass(getSceneRenderPass(n, Layout::ShaderRead))
