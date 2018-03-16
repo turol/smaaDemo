@@ -977,11 +977,10 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	info.pSubpasses      = &subpass;
 
 	// subpass dependencies (external)
-	std::vector<vk::SubpassDependency> dependencies;
-	dependencies.reserve(2);
+	std::array<vk::SubpassDependency, 2> dependencies;
 	{
 		// access from before the pass
-		vk::SubpassDependency d;
+		vk::SubpassDependency &d = dependencies[0];
 		d.srcSubpass       = VK_SUBPASS_EXTERNAL;
 		d.dstSubpass       = 0;
 
@@ -1005,11 +1004,10 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 			d.dstStageMask    |= vk::PipelineStageFlagBits::eEarlyFragmentTests;
 			d.dstAccessMask   |= vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
 		}
-		dependencies.push_back(d);
 	}
 	{
 		// access after the pass
-		vk::SubpassDependency d;
+		vk::SubpassDependency &d = dependencies[1];
 		d.srcSubpass       = 0;
 		d.dstSubpass       = VK_SUBPASS_EXTERNAL;
 
@@ -1036,9 +1034,8 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 			d.dstStageMask   |= vk::PipelineStageFlagBits::eFragmentShader;
 			d.dstAccessMask  |= vk::AccessFlagBits::eShaderRead;
 		}
-		dependencies.push_back(d);
 	}
-	info.dependencyCount = static_cast<uint32_t>(dependencies.size());
+	info.dependencyCount = 2;
 	info.pDependencies   = &dependencies[0];
 
 	r.renderPass  = device.createRenderPass(info);
