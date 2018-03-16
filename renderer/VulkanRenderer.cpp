@@ -979,16 +979,24 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		d.srcSubpass       = VK_SUBPASS_EXTERNAL;
 		d.dstSubpass       = 0;
 
-		d.srcStageMask     = vk::PipelineStageFlagBits::eBottomOfPipe;
-		d.srcAccessMask    = vk::AccessFlagBits::eMemoryRead;
+		// TODO: should come from desc
+		// depends on whether previous thing was rendering or msaa resolve
+		d.srcStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eTransfer;
+		d.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eTransferWrite;
 
 		d.dstStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+		// TODO: shouldn't need read unless we load the attachment and use blending
 		d.dstAccessMask    = vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
 
 		d.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
 		dependencies.push_back(d);
 
 		if (hasDepthStencil) {
+			// TODO: should come from desc
+			// depends on whether previous thing was rendering or msaa resolve
+			d.srcStageMask     = vk::PipelineStageFlagBits::eLateFragmentTests | vk::PipelineStageFlagBits::eTransfer;
+			d.srcAccessMask    = vk::AccessFlagBits::eDepthStencilAttachmentWrite | vk::AccessFlagBits::eTransferWrite;
+
 			d.dstStageMask     = vk::PipelineStageFlagBits::eEarlyFragmentTests;
 			d.dstAccessMask    = vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
 			dependencies.push_back(d);
@@ -1001,17 +1009,28 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		d.dstSubpass       = VK_SUBPASS_EXTERNAL;
 
 		d.srcStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-		d.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
+		d.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentWrite;
 
-		d.dstStageMask     = vk::PipelineStageFlagBits::eTopOfPipe;
-		d.dstAccessMask    = vk::AccessFlagBits::eMemoryRead;
+		assert(desc.colorRTs_[0].finalLayout != Layout::Undefined);
+		assert(desc.colorRTs_[0].finalLayout != Layout::TransferDst);
+		if (desc.colorRTs_[0].finalLayout == Layout::TransferSrc) {
+			d.dstStageMask   = vk::PipelineStageFlagBits::eTransfer;
+			d.dstAccessMask  = vk::AccessFlagBits::eTransferRead;
+		} else {
+			assert(desc.colorRTs_[0].finalLayout == Layout::ShaderRead);
+			d.dstStageMask   = vk::PipelineStageFlagBits::eFragmentShader;
+			d.dstAccessMask  = vk::AccessFlagBits::eShaderRead;
+		}
 
 		d.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
 		dependencies.push_back(d);
 
 		if (hasDepthStencil) {
-			d.srcStageMask     = vk::PipelineStageFlagBits::eEarlyFragmentTests;
-			d.srcAccessMask    = vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+			d.srcStageMask   = vk::PipelineStageFlagBits::eLateFragmentTests;
+			d.srcAccessMask  = vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+
+			d.dstStageMask   = vk::PipelineStageFlagBits::eFragmentShader;
+			d.dstAccessMask  = vk::AccessFlagBits::eShaderRead;
 			dependencies.push_back(d);
 		}
 	}
