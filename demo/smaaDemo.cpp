@@ -530,6 +530,8 @@ public:
 
 	void createCubes();
 
+	void shuffleCubeRendering();
+
 	void colorCubes();
 
 	void mainLoopIteration();
@@ -1570,6 +1572,15 @@ void SMAADemo::createCubes() {
 }
 
 
+void SMAADemo::shuffleCubeRendering() {
+	const unsigned int numCubes = cubes.size();
+	for (unsigned int i = 0; i < numCubes - 1; i++) {
+		unsigned int victim = random.range(i, numCubes);
+		std::swap(cubes[i], cubes[victim]);
+	}
+}
+
+
 static float sRGB2linear(float v) {
     if (v <= 0.04045f) {
         return v / 12.92f;
@@ -2300,6 +2311,10 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 			if (ImGui::Button("Re-color cubes")) {
 				colorCubes();
+			}
+
+			if (ImGui::Button("Shuffle cube rendering order")) {
+				shuffleCubeRendering();
 			}
 		}
 
