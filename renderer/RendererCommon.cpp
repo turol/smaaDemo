@@ -86,6 +86,12 @@ bool isDepthFormat(Format format) {
 	case Format::sRGBA8:
 		return false;
 
+	case Format::RGBA16Float:
+		return false;
+
+	case Format::RGBA32Float:
+		return false;
+
 	case Format::Depth16:
 		return true;
 
@@ -118,6 +124,8 @@ bool issRGBFormat(Format format) {
 	case Format::RG8:
 	case Format::RGB8:
 	case Format::RGBA8:
+	case Format::RGBA16Float:
+	case Format::RGBA32Float:
 		return false;
 
 	case Format::sRGBA8:
@@ -177,6 +185,12 @@ const char *formatName(Format format) {
 
 	case Format::sRGBA8:
 		return "sRGBA8";
+
+	case Format::RGBA16Float:
+		return "RGBA16Float";
+
+	case Format::RGBA32Float:
+		return "RGBA32Float";
 
 	case Format::Depth16:
 		return "Depth16";

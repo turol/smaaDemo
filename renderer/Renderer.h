@@ -165,6 +165,8 @@ enum class Format : uint8_t {
 	, RGB8
 	, RGBA8
 	, sRGBA8
+	, RGBA16Float
+	, RGBA32Float
 	, Depth16
 	, Depth16S8
 	, Depth24S8

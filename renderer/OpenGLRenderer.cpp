@@ -165,6 +165,12 @@ static GLenum glTexFormat(Format format) {
 	case Format::sRGBA8:
 		return GL_SRGB8_ALPHA8;
 
+	case Format::RGBA16Float:
+		return GL_RGBA16F;
+
+	case Format::RGBA32Float:
+		return GL_RGBA32F;
+
 	case Format::Depth16:
 		return GL_DEPTH_COMPONENT16;
 
@@ -201,6 +207,8 @@ static GLenum glTexBaseFormat(Format format) {
 		return GL_RGB;
 
 	case Format::RGBA8:
+	case Format::RGBA16Float:
+	case Format::RGBA32Float:
 		return GL_RGBA;
 
 	case Format::sRGBA8:
