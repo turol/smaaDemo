@@ -971,10 +971,10 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	info.pSubpasses      = &subpass;
 
 	// subpass dependencies (external)
-	// TODO: are these really necessary?
 	std::vector<vk::SubpassDependency> dependencies;
 	dependencies.reserve(hasDepthStencil ? 4 : 2);
 	{
+		// access from before the pass
 		vk::SubpassDependency d;
 		d.srcSubpass       = VK_SUBPASS_EXTERNAL;
 		d.dstSubpass       = 0;
@@ -995,6 +995,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		}
 	}
 	{
+		// access after the pass
 		vk::SubpassDependency d;
 		d.srcSubpass       = 0;
 		d.dstSubpass       = VK_SUBPASS_EXTERNAL;
