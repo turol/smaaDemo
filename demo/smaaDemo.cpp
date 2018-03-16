@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <chrono>
 
 #include <algorithm>
+#include <limits>
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -159,6 +160,22 @@ public:
 
 	uint32_t randU32() {
 		return rng();
+	}
+
+
+	// min inclusive
+	// max exclusive
+	uint32_t range(uint32_t min, uint32_t max) {
+		uint32_t range = max - min;
+		uint32_t size = std::numeric_limits<uint32_t>::max() / range;
+		uint32_t discard = size * range;
+
+		uint32_t r;
+		do {
+			r = rng();
+		} while (r >= discard);
+
+		return min + r / size;
 	}
 };
 
