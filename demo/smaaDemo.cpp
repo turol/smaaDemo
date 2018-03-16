@@ -440,6 +440,7 @@ class SMAADemo {
 	float         cameraRotation;
 	float         cameraDistance;
 	uint64_t      rotationTime;
+	unsigned int  rotationPeriodSeconds;
 	RandomGen     random;
 	std::vector<Image> images;
 	std::vector<ShaderDefines::Cube> cubes;
@@ -575,6 +576,7 @@ SMAADemo::SMAADemo()
 , cameraRotation(0.0f)
 , cameraDistance(25.0f)
 , rotationTime(0)
+, rotationPeriodSeconds(30)
 , random(1)
 
 , depthFormat(Format::Invalid)
@@ -743,6 +745,8 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::ValueArg<unsigned int>          windowWidthSwitch("",  "width",      "Window width",  false, windowWidth,  "width",  cmd);
 		TCLAP::ValueArg<unsigned int>          windowHeightSwitch("", "height",     "Window height", false, windowHeight, "height", cmd);
 
+		TCLAP::ValueArg<unsigned int>          rotateSwitch("",       "rotate",     "Rotation period", false, 0,          "seconds", cmd);
+
 		TCLAP::ValueArg<std::string>           aaMethodSwitch("m",    "method",     "AA Method",     false, "SMAA",        "SMAA/FXAA/MSAA", cmd);
 		TCLAP::ValueArg<std::string>           aaQualitySwitch("q",   "quality",    "AA Quality",    false, "",            "", cmd);
 
@@ -758,6 +762,12 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		windowWidth   = windowWidthSwitch.getValue();
 		windowHeight  = windowHeightSwitch.getValue();
 		vsync         = noVsyncSwitch.getValue() ? VSync::Off : VSync::On;
+
+		unsigned int r = rotateSwitch.getValue();
+		if (r != 0) {
+			rotateCubes           = true;
+			rotationPeriodSeconds = std::max(1U, std::min(r, 60U));
+		}
 
 		std::string aaMethodStr = aaMethodSwitch.getValue();
 		std::transform(aaMethodStr.begin(), aaMethodStr.end(), aaMethodStr.begin(), ::toupper);
@@ -1905,7 +1915,8 @@ void SMAADemo::render() {
 		if (rotateCubes) {
 			rotationTime += elapsed;
 
-			const uint64_t rotationPeriod = 30 * 1000000000ULL;
+			// TODO: increasing rotation period can make cubes spin backwards
+			const uint64_t rotationPeriod = rotationPeriodSeconds * 1000000000ULL;
 			rotationTime   = rotationTime % rotationPeriod;
 			cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
 		}
@@ -2253,6 +2264,11 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			}
 
 			ImGui::Checkbox("Rotate cubes", &rotateCubes);
+			int p = rotationPeriodSeconds;
+			ImGui::SliderInt("Rotation period (sec)", &p, 1, 60);
+			assert(p >= 1);
+			assert(p <= 60);
+			rotationPeriodSeconds = p;
 
 			ImGui::Separator();
 			ImGui::Text("Cube coloring mode");
