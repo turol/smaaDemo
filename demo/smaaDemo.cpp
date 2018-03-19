@@ -534,6 +534,8 @@ public:
 
 	void shuffleCubeRendering();
 
+	void reorderCubeRendering();
+
 	void colorCubes();
 
 	void mainLoopIteration();
@@ -1547,6 +1549,7 @@ void SMAADemo::createCubes() {
 	cubes.clear();
 	cubes.reserve(numCubes);
 
+	unsigned int order = 0;
 	for (unsigned int x = 0; x < cubesPerSide; x++) {
 		for (unsigned int y = 0; y < cubesPerSide; y++) {
 			for (unsigned int z = 0; z < cubesPerSide; z++) {
@@ -1565,6 +1568,9 @@ void SMAADemo::createCubes() {
 				                        , (y * cubeDistance) - (bigCubeSide / 2.0f)
 				                        , (z * cubeDistance) - (bigCubeSide / 2.0f));
 
+				cube.order    = order;
+				order++;
+
 				cube.rotation = glm::vec4(qx, qy, qz, qw);
 				cube.color    = glm::vec3(1.0f, 1.0f, 1.0f);
 				cubes.emplace_back(cube);
@@ -1582,6 +1588,14 @@ void SMAADemo::shuffleCubeRendering() {
 		unsigned int victim = random.range(i, numCubes);
 		std::swap(cubes[i], cubes[victim]);
 	}
+}
+
+
+void SMAADemo::reorderCubeRendering() {
+	auto cubeCompare = [] (const ShaderDefines::Cube &a, const ShaderDefines::Cube &b) {
+		return a.order < b.order;
+	};
+	std::sort(cubes.begin(), cubes.end(), cubeCompare);
 }
 
 
@@ -2326,6 +2340,11 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 			if (ImGui::Button("Shuffle cube rendering order")) {
 				shuffleCubeRendering();
+				cubeOrderNum = 1;
+			}
+
+			if (ImGui::Button("Reorder cube rendering order")) {
+				reorderCubeRendering();
 				cubeOrderNum = 1;
 			}
 
