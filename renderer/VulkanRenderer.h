@@ -833,6 +833,7 @@ struct RendererImpl : public RendererBase {
 
 	VmaAllocator                            allocator;
 
+	bool                                    amdShaderInfo;
 	bool                                    debugMarkers;
 
 	vk::Buffer                              ringBuffer;

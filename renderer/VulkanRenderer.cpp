@@ -31,10 +31,12 @@ THE SOFTWARE.
 
 
 // this part of the C++ bindings sucks...
+// TODO: replace with DispatchLoaderDynamic
 
 static PFN_vkCreateDebugReportCallbackEXT   pfn_vkCreateDebugReportCallbackEXT   = nullptr;
 static PFN_vkDestroyDebugReportCallbackEXT  pfn_vkDestroyDebugReportCallbackEXT  = nullptr;
 static PFN_vkDebugMarkerSetObjectNameEXT    pfn_vkDebugMarkerSetObjectNameEXT    = nullptr;
+static PFN_vkGetShaderInfoAMD               pfn_vkGetShaderInfoAMD               = nullptr;
 
 
 VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugReportCallbackEXT(
@@ -66,6 +68,17 @@ VKAPI_ATTR VkResult VKAPI_CALL vkDebugMarkerSetObjectNameEXT(
 	return pfn_vkDebugMarkerSetObjectNameEXT(device, pNameInfo);
 }
 
+
+VKAPI_ATTR VkResult VKAPI_CALL vkGetShaderInfoAMD(
+    VkDevice                                    device,
+    VkPipeline                                  pipeline,
+    VkShaderStageFlagBits                       shaderStage,
+    VkShaderInfoTypeAMD                         infoType,
+    size_t*                                     pInfoSize,
+    void*                                       pInfo)
+{
+	return pfn_vkGetShaderInfoAMD(device, pipeline, shaderStage, infoType, pInfoSize, pInfo);
+}
 
 namespace renderer {
 
@@ -170,6 +183,7 @@ static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebug
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
 , graphicsQueueIndex(0)
+, amdShaderInfo(false)
 , debugMarkers(false)
 , ringBufferMem(nullptr)
 , persistentMapping(nullptr)
@@ -406,6 +420,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	checkExt(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME);
 	if (enableMarkers) {
 		debugMarkers = checkExt(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
+	}
+
+	amdShaderInfo = checkExt(VK_AMD_SHADER_INFO_EXTENSION_NAME);
+	if (amdShaderInfo) {
+		LOG("VK_AMD_shader_info found\n");
+		pfn_vkGetShaderInfoAMD = reinterpret_cast<PFN_vkGetShaderInfoAMD>(instance.getProcAddr("vkGetShaderInfoAMD"));
 	}
 
 	vk::DeviceCreateInfo deviceCreateInfo;
@@ -1210,6 +1230,18 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		markerName.pObjectName = desc.name_.c_str();
 
 		device.debugMarkerSetObjectNameEXT(&markerName);
+	}
+
+	if (amdShaderInfo) {
+		vk::ShaderStatisticsInfoAMD stats;
+		size_t dataSize = sizeof(stats);
+		// TODO: other stages
+
+		device.getShaderInfoAMD(result, vk::ShaderStageFlagBits::eVertex, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats);
+		LOG("pipeline \"%s\" vertex SGPR %u VGPR %u\n", desc.name_.c_str(), stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
+
+		device.getShaderInfoAMD(result, vk::ShaderStageFlagBits::eFragment, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats);
+		LOG("pipeline \"%s\" fragment SGPR %u VGPR %u\n", desc.name_.c_str(), stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
 	}
 
 	auto id = pipelines.add();
