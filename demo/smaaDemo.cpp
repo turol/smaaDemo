@@ -454,6 +454,8 @@ class SMAADemo {
 	unsigned int  activeScene;
 	unsigned int cubesPerSide;
 	bool          rotateCubes;
+	bool          visualizeCubeOrder;
+	unsigned int  cubeOrderNum;
 	float         cameraRotation;
 	float         cameraDistance;
 	uint64_t      rotationTime;
@@ -592,6 +594,8 @@ SMAADemo::SMAADemo()
 , activeScene(0)
 , cubesPerSide(8)
 , rotateCubes(false)
+, visualizeCubeOrder(false)
+, cubeOrderNum(1)
 , cameraRotation(0.0f)
 , cameraDistance(25.0f)
 , rotationTime(0)
@@ -1976,7 +1980,14 @@ void SMAADemo::render() {
 		cubeDS.instances = renderer.createEphemeralBuffer(static_cast<uint32_t>(sizeof(ShaderDefines::Cube) * cubes.size()), &cubes[0]);
 		renderer.bindDescriptorSet(1, cubeDS);
 
-		renderer.drawIndexedInstanced(3 * 2 * 6, static_cast<unsigned int>(cubes.size()));
+		unsigned int numCubes = static_cast<unsigned int>(cubes.size());
+		if (visualizeCubeOrder) {
+			cubeOrderNum = cubeOrderNum % numCubes;
+			cubeOrderNum++;
+			numCubes     = cubeOrderNum;
+		}
+
+		renderer.drawIndexedInstanced(3 * 2 * 6, numCubes);
 	} else {
 		renderer.bindPipeline(imagePipeline);
 
@@ -2315,7 +2326,10 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 			if (ImGui::Button("Shuffle cube rendering order")) {
 				shuffleCubeRendering();
+				cubeOrderNum = 1;
 			}
+
+			ImGui::Checkbox("Visualize cube order", &visualizeCubeOrder);
 		}
 
 		if (ImGui::CollapsingHeader("Swapchain properties", ImGuiTreeNodeFlags_DefaultOpen)) {
