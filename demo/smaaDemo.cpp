@@ -1210,7 +1210,6 @@ void SMAADemo::initRender() {
 		       .mipLevelData(0, pixels, width * height * 4);
 		imguiFontsTex = renderer.createTexture(texDesc);
 		io.Fonts->TexID = nullptr;
-		ImGui::SetNextWindowPosCenter();
 	}
 }
 
