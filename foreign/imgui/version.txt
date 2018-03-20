@@ -1,7 +1,5 @@
-https://github.com/ocornut/imgui
-
-commit 9f200d10d569270995a8bb5893557196258fd997
+commit e916310b2e1f9cacbb2b9ce192a3dfb359e4b509
 Author: omar <omarcornut@gmail.com>
-Date:   Fri Oct 27 17:10:41 2017 +0200
+Date:   Mon Dec 25 17:41:41 2017 +0100
 
-    Version 1.52
+    Version 1.53
