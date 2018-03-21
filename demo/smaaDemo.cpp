@@ -2412,7 +2412,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 #if 0
 	bool demoVisible = true;
-	ImGui::ShowTestWindow(&demoVisible);
+	ImGui::ShowDemoWindow(&demoVisible);
 #endif  // 0
 
 	ImGui::Render();
