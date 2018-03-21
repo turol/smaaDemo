@@ -1,8 +1,5 @@
-commit ff1cf54330ccc998e2723d13ec7f4e18b875d130
-Merge: b31aac8 e5b7332
-Author: Adam Sawicki <adam.sawicki@amd.com>
-Date:   Thu Mar 8 10:17:46 2018 +0100
+commit 0c3901d2ec5847e8f2d1880e3d8f2d19d236fd0a
+Author: Adam Sawicki <Adam.Sawicki@amd.com>
+Date:   Sun Mar 18 22:35:39 2018 -0700
 
-    Merge pull request #22 from ItsBits/android_support
-    
-    Add android support.
+    Recompiled binary.

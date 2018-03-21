@@ -20,62 +20,38 @@
 // THE SOFTWARE.
 //
 
-#ifdef WIN32
+#ifdef _WIN32
 
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-
-#define VK_USE_PLATFORM_WIN32_KHR
-#include <vulkan/vulkan.h>
-
-#pragma warning(push, 4)
-#pragma warning(disable: 4127) // warning C4127: conditional expression is constant
-#pragma warning(disable: 4100) // warning C4100: '...': unreferenced formal parameter
-#pragma warning(disable: 4189) // warning C4189: '...': local variable is initialized but not referenced
-#define VMA_IMPLEMENTATION
-#include "vk_mem_alloc.h"
-#pragma warning(pop)
-
-#define MATHFU_COMPILE_WITHOUT_SIMD_SUPPORT
-#include <mathfu/glsl_mappings.h>
-#include <mathfu/constants.h>
-
-#include <fstream>
-#include <vector>
-#include <string>
-#include <memory>
-#include <algorithm>
-#include <numeric>
-#include <array>
-#include <type_traits>
-#include <utility>
-
-#include <cmath>
-#include <cassert>
-#include <cstdlib>
-#include <cstdio>
-
-#define ERR_GUARD_VULKAN(Expr) do { VkResult res__ = (Expr); if (res__ < 0) assert(0); } while(0)
+#include "Tests.h"
+#include "VmaUsage.h"
+#include "Common.h"
 
 static const char* const SHADER_PATH1 = "./";
 static const char* const SHADER_PATH2 = "../bin/";
 static const wchar_t* const WINDOW_CLASS_NAME = L"VULKAN_MEMORY_ALLOCATOR_SAMPLE";
 static const char* const VALIDATION_LAYER_NAME = "VK_LAYER_LUNARG_standard_validation";
-static const char* const APP_TITLE_A =     "Vulkan Memory Allocator Sample 1.0";
-static const wchar_t* const APP_TITLE_W = L"Vulkan Memory Allocator Sample 1.0";
+static const char* const APP_TITLE_A =     "Vulkan Memory Allocator Sample 2.0";
+static const wchar_t* const APP_TITLE_W = L"Vulkan Memory Allocator Sample 2.0";
 
 static const bool VSYNC = true;
 static const uint32_t COMMAND_BUFFER_COUNT = 2;
+static void* const CUSTOM_CPU_ALLOCATION_CALLBACK_USER_DATA = (void*)(intptr_t)43564544;
+static const bool USE_CUSTOM_CPU_ALLOCATION_CALLBACKS = false;
+
+VkPhysicalDevice g_hPhysicalDevice;
+VkDevice g_hDevice;
+VmaAllocator g_hAllocator;
+bool g_MemoryAliasingWarningEnabled = true;
 
 static bool g_EnableValidationLayer = true;
+static bool VK_KHR_get_memory_requirements2_enabled = false;
+static bool VK_KHR_dedicated_allocation_enabled = false;
 
 static HINSTANCE g_hAppInstance;
 static HWND g_hWnd;
 static LONG g_SizeX = 1280, g_SizeY = 720;
 static VkInstance g_hVulkanInstance;
 static VkSurfaceKHR g_hSurface;
-static VkPhysicalDevice g_hPhysicalDevice;
 static VkQueue g_hPresentQueue;
 static VkSurfaceFormatKHR g_SurfaceFormat;
 static VkExtent2D g_Extent;
@@ -109,8 +85,6 @@ static PFN_vkDebugReportMessageEXT g_pvkDebugReportMessageEXT;
 static PFN_vkDestroyDebugReportCallbackEXT g_pvkDestroyDebugReportCallbackEXT;
 static VkDebugReportCallbackEXT g_hCallback;
 
-static VkDevice g_hDevice;
-static VmaAllocator g_hAllocator;
 static VkQueue g_hGraphicsQueue;
 static VkCommandBuffer g_hTemporaryCommandBuffer;
 
@@ -128,6 +102,28 @@ static uint32_t g_IndexCount;
 static VkImage g_hTextureImage;
 static VmaAllocation g_hTextureImageAlloc;
 static VkImageView g_hTextureImageView;
+
+static void* CustomCpuAllocation(
+    void* pUserData, size_t size, size_t alignment,
+    VkSystemAllocationScope allocationScope)
+{
+    assert(pUserData == CUSTOM_CPU_ALLOCATION_CALLBACK_USER_DATA);
+    return _aligned_malloc(size, alignment);
+}
+
+static void* CustomCpuReallocation(
+    void* pUserData, void* pOriginal, size_t size, size_t alignment,
+    VkSystemAllocationScope allocationScope)
+{
+    assert(pUserData == CUSTOM_CPU_ALLOCATION_CALLBACK_USER_DATA);
+    return _aligned_realloc(pOriginal, size, alignment);
+}
+
+static void CustomCpuFree(void* pUserData, void* pMemory)
+{
+    assert(pUserData == CUSTOM_CPU_ALLOCATION_CALLBACK_USER_DATA);
+    _aligned_free(pMemory);
+}
 
 static void BeginSingleTimeCommands()
 {
@@ -176,10 +172,43 @@ VKAPI_ATTR VkBool32 VKAPI_CALL MyDebugReportCallback(
     const char* pMessage,
     void* pUserData)
 {
+    // "Non-linear image 0xebc91 is aliased with linear buffer 0xeb8e4 which may indicate a bug."
+    if(!g_MemoryAliasingWarningEnabled && flags == VK_DEBUG_REPORT_WARNING_BIT_EXT &&
+        (strstr(pMessage, " is aliased with non-linear ") || strstr(pMessage, " is aliased with linear ")))
+    {
+        return VK_FALSE;
+    }
+
+    // Ignoring because when VK_KHR_dedicated_allocation extension is enabled,
+    // vkGetBufferMemoryRequirements2KHR function is used instead, while Validation
+    // Layer seems to be unaware of it.
+    if (strstr(pMessage, "but vkGetBufferMemoryRequirements() has not been called on that buffer") != nullptr)
+    {
+        return VK_FALSE;
+    }
+    if (strstr(pMessage, "but vkGetImageMemoryRequirements() has not been called on that image") != nullptr)
+    {
+        return VK_FALSE;
+    }
+    
+    switch(flags)
+    {
+    case VK_DEBUG_REPORT_WARNING_BIT_EXT:
+        SetConsoleColor(CONSOLE_COLOR::WARNING);
+        break;
+    case VK_DEBUG_REPORT_ERROR_BIT_EXT:
+        SetConsoleColor(CONSOLE_COLOR::ERROR_);
+        break;
+    default:
+        SetConsoleColor(CONSOLE_COLOR::INFO);
+    }
+
     printf("%s \xBA %s\n", pLayerPrefix, pMessage);
 
-    if((flags == VK_DEBUG_REPORT_WARNING_BIT_EXT) ||
-        (flags == VK_DEBUG_REPORT_ERROR_BIT_EXT))
+    SetConsoleColor(CONSOLE_COLOR::NORMAL);
+
+    if(flags == VK_DEBUG_REPORT_WARNING_BIT_EXT ||
+        flags == VK_DEBUG_REPORT_ERROR_BIT_EXT)
     {
         OutputDebugStringA(pMessage);
         OutputDebugStringA("\n");
@@ -1205,14 +1234,39 @@ static void InitializeApplication()
     deviceFeatures.fillModeNonSolid = VK_TRUE;
     deviceFeatures.samplerAnisotropy = VK_TRUE;
 
+    // Determine list of device extensions to enable.
     std::vector<const char*> enabledDeviceExtensions;
     enabledDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+    {
+        uint32_t propertyCount = 0;
+        ERR_GUARD_VULKAN( vkEnumerateDeviceExtensionProperties(g_hPhysicalDevice, nullptr, &propertyCount, nullptr) );
+
+        if(propertyCount)
+        {
+            std::vector<VkExtensionProperties> properties{propertyCount};
+            ERR_GUARD_VULKAN( vkEnumerateDeviceExtensionProperties(g_hPhysicalDevice, nullptr, &propertyCount, properties.data()) );
+
+            for(uint32_t i = 0; i < propertyCount; ++i)
+            {
+                if(strcmp(properties[i].extensionName, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME) == 0)
+                {
+                    enabledDeviceExtensions.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
+                    VK_KHR_get_memory_requirements2_enabled = true;
+                }
+                else if(strcmp(properties[i].extensionName, VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME) == 0)
+                {
+                    enabledDeviceExtensions.push_back(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME);
+                    VK_KHR_dedicated_allocation_enabled = true;
+                }
+            }
+        }
+    }
 
     VkDeviceCreateInfo deviceCreateInfo = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
     deviceCreateInfo.enabledLayerCount = 0;
     deviceCreateInfo.ppEnabledLayerNames = nullptr;
     deviceCreateInfo.enabledExtensionCount = (uint32_t)enabledDeviceExtensions.size();
-    deviceCreateInfo.ppEnabledExtensionNames = enabledDeviceExtensions.data();
+    deviceCreateInfo.ppEnabledExtensionNames = !enabledDeviceExtensions.empty() ? enabledDeviceExtensions.data() : nullptr;
     deviceCreateInfo.queueCreateInfoCount = g_PresentQueueFamilyIndex != g_GraphicsQueueFamilyIndex ? 2 : 1;
     deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfo;
     deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
@@ -1224,6 +1278,22 @@ static void InitializeApplication()
     VmaAllocatorCreateInfo allocatorInfo = {};
     allocatorInfo.physicalDevice = g_hPhysicalDevice;
     allocatorInfo.device = g_hDevice;
+
+    if(VK_KHR_dedicated_allocation_enabled)
+    {
+        allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
+    }
+
+    VkAllocationCallbacks cpuAllocationCallbacks = {};
+    if(USE_CUSTOM_CPU_ALLOCATION_CALLBACKS)
+    {
+        cpuAllocationCallbacks.pUserData = CUSTOM_CPU_ALLOCATION_CALLBACK_USER_DATA;
+        cpuAllocationCallbacks.pfnAllocation = &CustomCpuAllocation;
+        cpuAllocationCallbacks.pfnReallocation = &CustomCpuReallocation;
+        cpuAllocationCallbacks.pfnFree = &CustomCpuFree;
+        allocatorInfo.pAllocationCallbacks = &cpuAllocationCallbacks;
+    }
+
     ERR_GUARD_VULKAN( vmaCreateAllocator(&allocatorInfo, &g_hAllocator) );
 
     // Retrieve queue (doesn't need to be destroyed)
@@ -1634,8 +1704,15 @@ static LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         return 0;
 
     case WM_KEYDOWN:
-        if(wParam == VK_ESCAPE)
+        switch(wParam)
+        {
+        case VK_ESCAPE:
             PostMessage(hWnd, WM_CLOSE, 0, 0);
+            break;
+        case 'T':
+            Test();
+            break;
+        }
         return 0;
 
     default:
@@ -1689,14 +1766,12 @@ int main()
     return 0;
 }
 
-#else // #ifdef WIN32
+#else // #ifdef _WIN32
 
-#define VMA_IMPLEMENTATION
-#include "vk_mem_alloc.h"
+#include "VmaUsage.h"
 
 int main()
 {
 }
 
-#endif // #ifdef WIN32
-
+#endif // #ifdef _WIN32
