@@ -446,6 +446,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	allocatorInfo.physicalDevice = physicalDevice;
 	allocatorInfo.device         = device;
 	if (dedicatedAllocation) {
+		LOG("Dedicated allocations enabled\n");
 		allocatorInfo.flags      = VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
 	}
 
