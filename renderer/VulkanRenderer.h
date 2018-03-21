@@ -692,18 +692,18 @@ namespace renderer {
 
 
 struct Frame {
-	bool                      outstanding;
-	uint32_t                  lastFrameNum;
-	unsigned int              usedRingBufPtr;
-	std::vector<BufferHandle> ephemeralBuffers;
-	vk::Fence          fence;
-	vk::Image          image;
-	vk::DescriptorPool dsPool;
-	vk::CommandPool    commandPool;
-	vk::CommandBuffer  commandBuffer;
+	bool                          outstanding;
+	uint32_t                      lastFrameNum;
+	unsigned int                  usedRingBufPtr;
+	std::vector<BufferHandle>     ephemeralBuffers;
+	vk::Fence                     fence;
+	vk::Image                     image;
+	vk::DescriptorPool            dsPool;
+	vk::CommandPool               commandPool;
+	vk::CommandBuffer             commandBuffer;
 
 	// std::vector has some kind of issue with variant with non-copyable types, so use unordered_set
-	std::unordered_set<Resource>     deleteResources;
+	std::unordered_set<Resource>  deleteResources;
 
 
 	Frame()
