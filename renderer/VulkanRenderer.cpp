@@ -2076,7 +2076,9 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	barrier.subresourceRange    = range;
 
 	// TODO: add eComputeShader when implementing cs
-	currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
+	// TODO: reduce wait mask
+	vk::PipelineStageFlags acquireWaitStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+	currentCommandBuffer.pipelineBarrier(acquireWaitStage, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
 
 	vk::ImageBlit blit;
 	blit.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
@@ -2097,8 +2099,6 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
 
 	// submit command buffer
-	// TODO: reduce wait mask
-	vk::PipelineStageFlags acquireWaitStage = vk::PipelineStageFlagBits::eAllCommands;
 
 	currentCommandBuffer.end();
 	vk::SubmitInfo submit;
