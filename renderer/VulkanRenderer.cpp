@@ -415,9 +415,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	};
 
 	deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-	checkExt(VK_NV_DEDICATED_ALLOCATION_EXTENSION_NAME);
-	checkExt(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
-	checkExt(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME);
+	bool dedicatedAllocation = true;
+	dedicatedAllocation = checkExt(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME) && dedicatedAllocation;
+	dedicatedAllocation = checkExt(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME)      && dedicatedAllocation;
 	if (enableMarkers) {
 		debugMarkers = checkExt(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
 	}
@@ -445,6 +445,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	VmaAllocatorCreateInfo allocatorInfo = {};
 	allocatorInfo.physicalDevice = physicalDevice;
 	allocatorInfo.device         = device;
+	if (dedicatedAllocation) {
+		allocatorInfo.flags      = VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
+	}
 
 	vmaCreateAllocator(&allocatorInfo, &allocator);
 
