@@ -549,9 +549,9 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 	assert(ringBufferMem == nullptr);
 
 	VmaAllocationCreateInfo req = {};
-	req.flags          = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+	req.flags          = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT | VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
 	req.usage          = VMA_MEMORY_USAGE_CPU_TO_GPU;
-	req.requiredFlags  = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+	req.pUserData      = const_cast<char *>("Ringbuffer");
 
 	VmaAllocationInfo  allocationInfo = {};
 	auto result = vmaAllocateMemoryForBuffer(allocator, ringBuffer, &req, &ringBufferMem, &allocationInfo);
@@ -1310,6 +1310,8 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 
 	VmaAllocationCreateInfo req = {};
 	req.usage          = VMA_MEMORY_USAGE_GPU_ONLY;
+	req.flags          = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+	req.pUserData      = const_cast<char *>(desc.name_.c_str());
 	VmaAllocationInfo  allocationInfo = {};
 
 	vmaAllocateMemoryForImage(allocator, rt.image, &req, &tex.memory, &allocationInfo);
@@ -1480,6 +1482,8 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 
 	VmaAllocationCreateInfo  req = {};
 	req.usage          = VMA_MEMORY_USAGE_GPU_ONLY;
+	req.flags          = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+	req.pUserData      = const_cast<char *>(desc.name_.c_str());
 	VmaAllocationInfo  allocationInfo = {};
 
 	vmaAllocateMemoryForImage(allocator, tex.image, &req, &tex.memory, &allocationInfo);
