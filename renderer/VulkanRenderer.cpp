@@ -1310,7 +1310,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 
 	VmaAllocationCreateInfo req = {};
 	req.usage          = VMA_MEMORY_USAGE_GPU_ONLY;
-	req.flags          = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+	req.flags          = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
 	req.pUserData      = const_cast<char *>(desc.name_.c_str());
 	VmaAllocationInfo  allocationInfo = {};
 
