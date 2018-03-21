@@ -2075,7 +2075,8 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	range.layerCount            = VK_REMAINING_ARRAY_LAYERS;
 	barrier.subresourceRange    = range;
 
-	currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
+	// TODO: add eComputeShader when implementing cs
+	currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
 
 	vk::ImageBlit blit;
 	blit.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
@@ -2089,11 +2090,11 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 
 	// transition to present
 	barrier.srcAccessMask       = vk::AccessFlagBits::eTransferWrite;
-	barrier.dstAccessMask       = vk::AccessFlagBits::eMemoryRead;
+	barrier.dstAccessMask       = vk::AccessFlags();
 	barrier.oldLayout           = layout;
 	barrier.newLayout           = vk::ImageLayout::ePresentSrcKHR;
 	barrier.image               = image;
-	currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
+	currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
 
 	// submit command buffer
 	// TODO: reduce wait mask
