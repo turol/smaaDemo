@@ -1879,11 +1879,13 @@ void RendererImpl::recreateSwapchain() {
 				f.commandPool = device.createCommandPool(cp);
 
 				assert(!f.commandBuffer);
+				assert(!f.presentCmdBuf);
 				// create command buffer
-				vk::CommandBufferAllocateInfo info(f.commandPool, vk::CommandBufferLevel::ePrimary, 1);
+				vk::CommandBufferAllocateInfo info(f.commandPool, vk::CommandBufferLevel::ePrimary, 2);
 				auto bufs = device.allocateCommandBuffers(info);
-				assert(bufs.size() == 1);
+				assert(bufs.size() == 2);
 				f.commandBuffer = bufs.at(0);
+				f.presentCmdBuf = bufs.at(1);
 			}
 		}
 	}
@@ -1909,6 +1911,8 @@ void RendererImpl::recreateSwapchain() {
 	vk::PresentModeKHR swapchainPresentMode = vk::PresentModeKHR::eFifo;
 	// pick from the supported modes based on a prioritized
 	// list depending on whether we want vsync or not
+	// TODO: check against
+	// https://timothylottes.github.io/20180202.html
 	for (const auto presentMode : vsyncMode(swapchainDesc.vsync)) {
 		if (surfacePresentModes.find(presentMode) != surfacePresentModes.end()) {
 			swapchainPresentMode = presentMode;
@@ -2047,13 +2051,14 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	assert(inFrame);
 	inFrame = false;
 
-	// TODO: use multiple command buffers
-	// https://timothylottes.github.io/20180202.html
-
 	const auto &rt = renderTargets.get(rtHandle);
 
 	auto &frame = frames.at(currentFrameIdx);
 	device.resetFences( { frame.fence } );
+
+	currentCommandBuffer.end();
+	// TODO: this could be a baked buffer
+	frame.presentCmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 
 	vk::Image image        = frame.image;
 	vk::ImageLayout layout = vk::ImageLayout::eTransferDstOptimal;
@@ -2079,7 +2084,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	// TODO: add eComputeShader when implementing cs
 	// TODO: reduce wait mask
 	vk::PipelineStageFlags acquireWaitStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-	currentCommandBuffer.pipelineBarrier(acquireWaitStage, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
+	frame.presentCmdBuf.pipelineBarrier(acquireWaitStage, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
 
 	vk::ImageBlit blit;
 	blit.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
@@ -2089,7 +2094,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	blit.dstOffsets[1]             = blit.srcOffsets[1];
 
 	// blit draw image to presentation image
-	currentCommandBuffer.blitImage(rt.image, vk::ImageLayout::eTransferSrcOptimal, image, layout, { blit }, vk::Filter::eNearest);
+	frame.presentCmdBuf.blitImage(rt.image, vk::ImageLayout::eTransferSrcOptimal, image, layout, { blit }, vk::Filter::eNearest);
 
 	// transition to present
 	barrier.srcAccessMask       = vk::AccessFlagBits::eTransferWrite;
@@ -2097,21 +2102,25 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	barrier.oldLayout           = layout;
 	barrier.newLayout           = vk::ImageLayout::ePresentSrcKHR;
 	barrier.image               = image;
-	currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
+	frame.presentCmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
+	frame.presentCmdBuf.end();
 
-	// submit command buffer
+	// submit command buffers
 
-	currentCommandBuffer.end();
 	vk::SubmitInfo submit;
-	submit.waitSemaphoreCount   = 1;
-	submit.pWaitSemaphores      = &acquireSem;
-	submit.pWaitDstStageMask    = &acquireWaitStage;
 	submit.commandBufferCount   = 1;
 	submit.pCommandBuffers      = &currentCommandBuffer;
-	submit.signalSemaphoreCount = 1;
-	submit.pSignalSemaphores    = &renderDoneSem;
 
-	queue.submit({ submit }, frame.fence);
+	vk::SubmitInfo submit2;
+	submit2.waitSemaphoreCount   = 1;
+	submit2.pWaitSemaphores      = &acquireSem;
+	submit2.pWaitDstStageMask    = &acquireWaitStage;
+	submit2.commandBufferCount   = 1;
+	submit2.pCommandBuffers      = &frame.presentCmdBuf;
+	submit2.signalSemaphoreCount = 1;
+	submit2.pSignalSemaphores    = &renderDoneSem;
+
+	queue.submit({ submit, submit2 }, frame.fence);
 
 	// present
 	vk::PresentInfoKHR presentInfo;
@@ -2301,8 +2310,10 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 	f.dsPool = vk::DescriptorPool();
 
 	assert(f.commandBuffer);
-	device.freeCommandBuffers(f.commandPool, { f.commandBuffer });
+	assert(f.presentCmdBuf);
+	device.freeCommandBuffers(f.commandPool, { f.commandBuffer, f.presentCmdBuf });
 	f.commandBuffer = vk::CommandBuffer();
+	f.presentCmdBuf = vk::CommandBuffer();
 
 	assert(f.commandPool);
 	device.destroyCommandPool(f.commandPool);
