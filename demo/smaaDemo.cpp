@@ -2206,20 +2206,20 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			}
 
 			if (ImGui::CollapsingHeader("SMAA custom properties")) {
-			ImGui::SliderFloat("SMAA color/luma edge threshold", &smaaParameters.threshold,      0.0f, 0.5f);
-			ImGui::SliderFloat("SMAA depth edge threshold",      &smaaParameters.depthThreshold, 0.0f, 1.0f);
+				ImGui::SliderFloat("SMAA color/luma edge threshold", &smaaParameters.threshold,      0.0f, 0.5f);
+				ImGui::SliderFloat("SMAA depth edge threshold",      &smaaParameters.depthThreshold, 0.0f, 1.0f);
 
-			int s = smaaParameters.maxSearchSteps;
-			ImGui::SliderInt("Max search steps",  &s, 0, 112);
-			smaaParameters.maxSearchSteps = s;
+				int s = smaaParameters.maxSearchSteps;
+				ImGui::SliderInt("Max search steps",  &s, 0, 112);
+				smaaParameters.maxSearchSteps = s;
 
-			s = smaaParameters.maxSearchStepsDiag;
-			ImGui::SliderInt("Max diagonal search steps", &s, 0, 20);
-			smaaParameters.maxSearchStepsDiag = s;
+				s = smaaParameters.maxSearchStepsDiag;
+				ImGui::SliderInt("Max diagonal search steps", &s, 0, 20);
+				smaaParameters.maxSearchStepsDiag = s;
 
-			s = smaaParameters.cornerRounding;
-			ImGui::SliderInt("Corner rounding",   &s, 0, 100);
-			smaaParameters.cornerRounding = s;
+				s = smaaParameters.cornerRounding;
+				ImGui::SliderInt("Corner rounding",   &s, 0, 100);
+				smaaParameters.cornerRounding = s;
 			}
 
 			if (smaaKey.quality != 0) {
