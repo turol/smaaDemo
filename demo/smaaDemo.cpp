@@ -2208,6 +2208,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 				}
 			}
 
+			if (ImGui::CollapsingHeader("SMAA custom properties")) {
 			// parameters can only be changed in custom mode
 			// https://github.com/ocornut/imgui/issues/211
 			if (smaaKey.quality != 0) {
@@ -2215,7 +2216,6 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
 			}
 
-			if (ImGui::CollapsingHeader("SMAA custom properties")) {
 				ImGui::SliderFloat("SMAA color/luma edge threshold", &smaaParameters.threshold,      0.0f, 0.5f);
 				ImGui::SliderFloat("SMAA depth edge threshold",      &smaaParameters.depthThreshold, 0.0f, 1.0f);
 
@@ -2230,11 +2230,11 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 				s = smaaParameters.cornerRounding;
 				ImGui::SliderInt("Corner rounding",   &s, 0, 100);
 				smaaParameters.cornerRounding = s;
-			}
 
 			if (smaaKey.quality != 0) {
 				ImGui::PopItemFlag();
 				ImGui::PopStyleVar();
+			}
 			}
 
 			ImGui::Checkbox("Predicated thresholding", &smaaKey.predication);
