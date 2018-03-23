@@ -171,6 +171,39 @@ static vk::Format vulkanFormat(Format format) {
 }
 
 
+vk::BufferUsageFlags bufferTypeUsage(BufferType type) {
+	vk::BufferUsageFlags flags;
+	switch (type) {
+	case BufferType::Invalid:
+		UNREACHABLE();
+		break;
+
+	case BufferType::Index:
+		flags |= vk::BufferUsageFlagBits::eIndexBuffer;
+		break;
+
+	case BufferType::Uniform:
+		flags |= vk::BufferUsageFlagBits::eUniformBuffer;
+		break;
+
+	case BufferType::Storage:
+		flags |= vk::BufferUsageFlagBits::eStorageBuffer;
+		break;
+
+	case BufferType::Vertex:
+		flags |= vk::BufferUsageFlagBits::eVertexBuffer;
+		break;
+
+	case BufferType::Everything:
+		// not supposed to be called
+		assert(false);
+		break;
+
+	}
+
+	return flags;
+}
+
 static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t /* messageCode */, const char * pLayerPrefix, const char * pMessage, void * /* pUserData*/) {
 	LOG("layer %s %s object %lu type %s location %lu: %s\n", pLayerPrefix, vk::to_string(vk::DebugReportFlagBitsEXT(flags)).c_str(), static_cast<unsigned long>(object), vk::to_string(vk::DebugReportObjectTypeEXT(objectType)).c_str(), static_cast<unsigned long>(location), pMessage);
 	// make errors fatal
@@ -711,8 +744,7 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 
 	vk::BufferCreateInfo info;
 	info.size  = size;
-	// TODO: usage flags should be based on type
-	info.usage = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst;
+	info.usage = bufferTypeUsage(type) | vk::BufferUsageFlagBits::eTransferDst;
 
 	auto result    = buffers.add();
 	Buffer &buffer = result.first;
