@@ -794,10 +794,18 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	submit.pCommandBuffers      = &cmdBuf;
 	submit.signalSemaphoreCount = 0;
 
-	queue.submit({ submit }, vk::Fence());
+	// TODO: have a free list of fences instead of creating new ones all the time
+	vk::FenceCreateInfo fci;
+	vk::Fence fence = device.createFence(fci);
+	queue.submit({ submit }, fence);
 
-	// TODO: don't wait for idle here, use fence to make frame submit wait for it
-	queue.waitIdle();
+	// TODO: don't wait here, use fence to make frame submit wait for it
+	vk::Result r;
+	do {
+		r = device.waitForFences({ fence }, true, 1000000000);
+	} while (r == vk::Result::eTimeout);
+
+	device.destroyFence(fence);
 	device.freeCommandBuffers(frames.at(currentFrameIdx).commandPool, { cmdBuf } );
 
 	return result.second;
