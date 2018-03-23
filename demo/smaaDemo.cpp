@@ -1769,6 +1769,7 @@ void SMAADemo::mainLoopIteration() {
 						smaaKey.quality = smaaKey.quality + 1;
 					}
 					smaaKey.quality = smaaKey.quality % maxSMAAQuality;
+					smaaParameters  = defaultSMAAParameters[smaaKey.quality];
 					break;
 
 				}
