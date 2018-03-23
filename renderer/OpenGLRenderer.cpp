@@ -631,6 +631,8 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 		buffer.ringBufferAlloc = false;
 		buffer.offset          = 0;
 
+		buffer.type            = BufferType::Everything;
+
 		buffer.size            = ringBufSize;
 		ringBufSize            = 0;
 

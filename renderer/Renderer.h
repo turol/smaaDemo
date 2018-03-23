@@ -147,6 +147,7 @@ enum class BufferType : uint8_t {
 	, Uniform
 	, Storage
 	, Vertex
+	, Everything
 };
 
 
