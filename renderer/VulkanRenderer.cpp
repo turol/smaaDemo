@@ -1563,6 +1563,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 			unsigned int size = desc.mipData_[i].size;
 
 			// copy contents to GPU memory
+			// TODO: use optimalBufferCopyOffsetAlignment from physicaldevicelimits
 			unsigned int beginPtr = ringBufferAllocate(size, 256);
 			memcpy(persistentMapping + beginPtr, desc.mipData_[i].data, size);
 
