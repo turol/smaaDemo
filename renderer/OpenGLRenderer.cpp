@@ -811,6 +811,7 @@ bool RendererImpl::isRenderTargetFormatSupported(Format format) const {
 BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const void *contents) {
 	assert(type != BufferType::Invalid);
 	assert(size != 0);
+	assert(contents != nullptr);
 
 	unsigned int bufferFlags = 0;
 	if (tracing) {
