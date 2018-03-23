@@ -80,7 +80,7 @@ struct Buffer {
 	vk::Buffer     buffer;
 	VmaAllocation  memory;
 	uint32_t       lastUsedFrame;
-	// TODO: access type bits (for debugging)
+	BufferType     type;
 
 
 	Buffer()
@@ -89,6 +89,7 @@ struct Buffer {
 	, offset(0)
 	, memory(nullptr)
 	, lastUsedFrame(0)
+	, type(BufferType::Invalid)
 	{}
 
 	Buffer(const Buffer &)            = delete;
@@ -101,6 +102,7 @@ struct Buffer {
 	, buffer(other.buffer)
 	, memory(other.memory)
 	, lastUsedFrame(other.lastUsedFrame)
+	, type(other.type)
 	{
 
 		other.ringBufferAlloc = false;
@@ -109,6 +111,7 @@ struct Buffer {
 		other.buffer          = vk::Buffer();
 		other.memory          = 0;
 		other.lastUsedFrame   = 0;
+		other.type            = BufferType::Invalid;
 	}
 
 	Buffer &operator=(Buffer &&other) {
@@ -125,6 +128,7 @@ struct Buffer {
 		buffer                = other.buffer;
 		memory                = other.memory;
 		lastUsedFrame         = other.lastUsedFrame;
+		type                  = other.type;
 
 		other.ringBufferAlloc = false;
 		other.size            = 0;
@@ -132,6 +136,8 @@ struct Buffer {
 		other.buffer          = vk::Buffer();
 		other.memory          = 0;
 		other.lastUsedFrame   = 0;
+		other.type            = BufferType::Invalid;
+		assert(type == BufferType::Invalid);
 
 		return *this;
 	}

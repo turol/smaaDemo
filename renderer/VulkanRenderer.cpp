@@ -527,6 +527,8 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 		buffer.size            = ringBufSize;
 		ringBufSize            = 0;
 
+		buffer.type            = BufferType::Everything;
+
 		buffer.offset          = ringBufPtr;
 		ringBufPtr             = 0;
 
@@ -702,13 +704,14 @@ bool RendererImpl::isRenderTargetFormatSupported(Format format) const {
 }
 
 
-BufferHandle RendererImpl::createBuffer(BufferType /* type */, uint32_t size, const void *contents) {
+BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const void *contents) {
+	assert(type != BufferType::Invalid);
 	assert(size != 0);
 	assert(contents != nullptr);
 
 	vk::BufferCreateInfo info;
 	info.size  = size;
-	// TODO: usage flags should be parameters
+	// TODO: usage flags should be based on type
 	info.usage = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst;
 
 	auto result    = buffers.add();
@@ -728,6 +731,7 @@ BufferHandle RendererImpl::createBuffer(BufferType /* type */, uint32_t size, co
 	device.bindBufferMemory(buffer.buffer, allocationInfo.deviceMemory, allocationInfo.offset);
 	buffer.offset = static_cast<uint32_t>(allocationInfo.offset);
 	buffer.size   = static_cast<uint32_t>(allocationInfo.size);
+	buffer.type   = type;
 
 	// copy contents to GPU memory
 	// TODO: pick proper alignment based on usage flags
@@ -768,11 +772,13 @@ BufferHandle RendererImpl::createBuffer(BufferType /* type */, uint32_t size, co
 }
 
 
-BufferHandle RendererImpl::createEphemeralBuffer(BufferType /* type */, uint32_t size, const void *contents) {
+BufferHandle RendererImpl::createEphemeralBuffer(BufferType type, uint32_t size, const void *contents) {
+	assert(type != BufferType::Invalid);
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	// TODO: pick proper alignment based on usage flags
+	// TODO: pick proper alignment based on type
+	// TODO: better yet, separate ringbuffers based on type
 	unsigned int beginPtr = ringBufferAllocate(size, std::max(uboAlign, ssboAlign));
 
 	memcpy(persistentMapping + beginPtr, contents, size);
@@ -783,6 +789,7 @@ BufferHandle RendererImpl::createEphemeralBuffer(BufferType /* type */, uint32_t
 	buffer.ringBufferAlloc = true;
 	buffer.offset          = beginPtr;
 	buffer.size            = size;
+	buffer.type            = type;
 
 	frames.at(currentFrameIdx).ephemeralBuffers.push_back(result.second);
 
@@ -2206,6 +2213,7 @@ void RendererImpl::deleteBufferInternal(Buffer &b) {
 	this->device.destroyBuffer(b.buffer);
 	assert(b.memory != nullptr);
 	vmaFreeMemory(this->allocator, b.memory);
+	assert(b.type   != BufferType::Invalid);
 
 	b.buffer          = vk::Buffer();
 	b.ringBufferAlloc = false;
@@ -2213,6 +2221,7 @@ void RendererImpl::deleteBufferInternal(Buffer &b) {
 	b.size            = 0;
 	b.offset          = 0;
 	b.lastUsedFrame   = 0;
+	b.type            = BufferType::Invalid;
 }
 
 
@@ -2435,6 +2444,7 @@ void RendererImpl::bindIndexBuffer(BufferHandle buffer, bool bit16) {
 
 	auto &b = buffers.get(buffer);
 	b.lastUsedFrame = frameNum;
+	assert(b.type == BufferType::Index);
 	// "normal" buffers begin from beginning of buffer
 	vk::DeviceSize offset = 0;
 	if (b.ringBufferAlloc) {
@@ -2451,6 +2461,7 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 
 	auto &b = buffers.get(buffer);
 	b.lastUsedFrame = frameNum;
+	assert(b.type == BufferType::Vertex);
 	// "normal" buffers begin from beginning of buffer
 	vk::DeviceSize offset = 0;
 	if (b.ringBufferAlloc) {
@@ -2506,6 +2517,8 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layout
 			Buffer &buffer = buffers.get(handle);
 			assert(buffer.size > 0);
 			buffer.lastUsedFrame = frameNum;
+			assert((buffer.type == BufferType::Uniform && l.type == DescriptorType::UniformBuffer)
+			    || (buffer.type == BufferType::Storage && l.type == DescriptorType::StorageBuffer));
 
 			vk::DescriptorBufferInfo  bufWrite;
 			bufWrite.buffer = buffer.buffer;
