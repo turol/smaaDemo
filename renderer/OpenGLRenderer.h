@@ -93,7 +93,7 @@ struct Buffer {
 	uint32_t       size;
 	uint32_t       offset;
 	GLuint         buffer;
-	// TODO: access type bits (for debugging)
+	BufferType     type;
 
 
 	Buffer()
@@ -101,6 +101,7 @@ struct Buffer {
 	, size(0)
 	, offset(0)
 	, buffer(0)
+	, type(BufferType::Invalid)
 	{}
 
 	Buffer(const Buffer &)            = delete;
@@ -111,11 +112,13 @@ struct Buffer {
 	, size(other.size)
 	, offset(other.offset)
 	, buffer(other.buffer)
+	, type(other.type)
 	{
 		other.ringBufferAlloc = false;
 		other.size            = 0;
 		other.offset          = 0;
 		other.buffer          = 0;
+		other.type            = BufferType::Invalid;
 	}
 
 	Buffer &operator=(Buffer &&other) {
@@ -129,11 +132,13 @@ struct Buffer {
 		size                  = other.size;
 		offset                = other.offset;
 		buffer                = other.buffer;
+		type                  = other.type;
 
 		other.ringBufferAlloc = false;
 		other.size            = 0;
 		other.offset          = 0;
 		other.buffer          = 0;
+		other.type            = BufferType::Invalid;
 
 		return *this;
 	}
@@ -143,6 +148,7 @@ struct Buffer {
 		assert(size   == 0);
 		assert(offset == 0);
 		assert(!buffer);
+		assert(type == BufferType::Invalid);
 	}
 };
 

@@ -806,7 +806,8 @@ bool RendererImpl::isRenderTargetFormatSupported(Format format) const {
 }
 
 
-BufferHandle RendererImpl::createBuffer(BufferType /* type */, uint32_t size, const void *contents) {
+BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const void *contents) {
+	assert(type != BufferType::Invalid);
 	assert(size != 0);
 
 	unsigned int bufferFlags = 0;
@@ -821,12 +822,14 @@ BufferHandle RendererImpl::createBuffer(BufferType /* type */, uint32_t size, co
 	buffer.ringBufferAlloc = false;
 	buffer.offset          = 0;
 	buffer.size            = size;
+	buffer.type            = type;
 
 	return result.second;
 }
 
 
-BufferHandle RendererImpl::createEphemeralBuffer(BufferType /* type */, uint32_t size, const void *contents) {
+BufferHandle RendererImpl::createEphemeralBuffer(BufferType type, uint32_t size, const void *contents) {
+	assert(type != BufferType::Invalid);
 	assert(size != 0);
 	assert(contents != nullptr);
 
@@ -846,6 +849,7 @@ BufferHandle RendererImpl::createEphemeralBuffer(BufferType /* type */, uint32_t
 	buffer.ringBufferAlloc = true;
 	buffer.offset          = beginPtr;
 	buffer.size            = size;
+	buffer.type            = type;
 
 	frames.at(currentFrameIdx).ephemeralBuffers.push_back(result.second);
 
@@ -1335,6 +1339,8 @@ void RendererImpl::deleteBuffer(BufferHandle handle) {
 		b.size   = 0;
 
 		assert(!b.ringBufferAlloc);
+		assert(b.type != BufferType::Invalid);
+		b.type   = BufferType::Invalid;
 	} );
 }
 
@@ -1662,6 +1668,8 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 		assert(buffer.size   >  0);
 		buffer.size = 0;
 		buffer.offset = 0;
+		assert(buffer.type != BufferType::Invalid);
+		buffer.type   = BufferType::Invalid;
 
 		buffers.remove(handle);
 	}
@@ -1922,6 +1930,7 @@ void RendererImpl::bindIndexBuffer(BufferHandle handle, bool bit16) {
 
 	const Buffer &buffer = buffers.get(handle);
 	assert(buffer.size > 0);
+	assert(buffer.type == BufferType::Index);
 	if (buffer.ringBufferAlloc) {
 		assert(buffer.buffer == ringBuffer);
 		assert(buffer.offset + buffer.size < ringBufSize);
@@ -1941,6 +1950,7 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 
 	const Buffer &buffer = buffers.get(handle);
 	assert(buffer.size >  0);
+	assert(buffer.type == BufferType::Vertex);
 	if (buffer.ringBufferAlloc) {
 		// this is not strictly correct since we might have reallocated the ringbuf bigger
 		// but it should never fail, at worst it will not spot some errors immediately after realloc
@@ -1982,6 +1992,7 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			const Buffer &buffer = buffers.get(handle);
 			assert(buffer.size > 0);
+			assert(buffer.type == BufferType::Uniform);
 			if (buffer.ringBufferAlloc) {
 				assert(buffer.buffer == ringBuffer);
 				assert(buffer.offset + buffer.size < ringBufSize);
@@ -1996,6 +2007,7 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			const Buffer &buffer = buffers.get(handle);
 			assert(buffer.size  > 0);
+			assert(buffer.type == BufferType::Storage);
 			if (buffer.ringBufferAlloc) {
 				assert(buffer.buffer == ringBuffer);
 				assert(buffer.offset + buffer.size < ringBufSize);
