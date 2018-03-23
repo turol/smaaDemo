@@ -858,6 +858,8 @@ struct RendererImpl : public RendererBase {
 	std::unordered_set<Resource>            deleteResources;
 
 
+	unsigned int bufferAlignment(BufferType type);
+
 	void recreateSwapchain();
 	void recreateRingBuffer(unsigned int newSize);
 	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);

@@ -809,9 +809,8 @@ BufferHandle RendererImpl::createEphemeralBuffer(BufferType type, uint32_t size,
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	// TODO: pick proper alignment based on type
-	// TODO: better yet, separate ringbuffers based on type
-	unsigned int beginPtr = ringBufferAllocate(size, std::max(uboAlign, ssboAlign));
+	// TODO: separate ringbuffers based on type
+	unsigned int beginPtr = ringBufferAllocate(size, bufferAlignment(type));
 
 	memcpy(persistentMapping + beginPtr, contents, size);
 
@@ -1825,6 +1824,43 @@ static const std::array<vk::PresentModeKHR, numPresentModes> &vsyncMode(VSync mo
 	}
 
 	UNREACHABLE();
+}
+
+
+unsigned int RendererImpl::bufferAlignment(BufferType type) {
+	switch (type) {
+	case BufferType::Invalid:
+		UNREACHABLE();
+		break;
+
+	case BufferType::Index:
+		// TODO: can we find something more accurate?
+		return 4;
+		break;
+
+	case BufferType::Uniform:
+		return uboAlign;
+		break;
+
+	case BufferType::Storage:
+		return ssboAlign;
+		break;
+
+	case BufferType::Vertex:
+		// TODO: can we find something more accurate?
+		return 16;
+		break;
+
+	case BufferType::Everything:
+		// not supposed to be called
+		assert(false);
+		break;
+
+	}
+
+	UNREACHABLE();
+
+	return 64;
 }
 
 
