@@ -141,6 +141,15 @@ typedef Handle<Texture>              TextureHandle;
 typedef Handle<VertexShader>         VertexShaderHandle;
 
 
+enum class BufferType : uint8_t {
+	  Invalid
+	, Index
+	, Uniform
+	, Storage
+	, Vertex
+};
+
+
 enum class DescriptorType : uint8_t {
 	  End
 	, UniformBuffer
@@ -814,8 +823,8 @@ public:
 	const RendererFeatures &getFeatures() const;
 
 	// TODO: add buffer usage flags
-	BufferHandle          createBuffer(uint32_t size, const void *contents);
-	BufferHandle          createEphemeralBuffer(uint32_t size, const void *contents);
+	BufferHandle          createBuffer(BufferType type, uint32_t size, const void *contents);
+	BufferHandle          createEphemeralBuffer(BufferType type, uint32_t size, const void *contents);
 	FragmentShaderHandle  createFragmentShader(const std::string &name, const ShaderMacros &macros);
 	FramebufferHandle     createFramebuffer(const FramebufferDesc &desc);
 	PipelineHandle        createPipeline(const PipelineDesc &desc);

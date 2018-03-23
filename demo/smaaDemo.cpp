@@ -1113,8 +1113,8 @@ void SMAADemo::initRender() {
 	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear) .name("linear"));
 	nearestSampler = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Nearest).magFilter(FilterMode::Nearest).name("nearest"));
 
-	cubeVBO = renderer.createBuffer(sizeof(vertices), &vertices[0]);
-	cubeIBO = renderer.createBuffer(sizeof(indices), &indices[0]);
+	cubeVBO = renderer.createBuffer(BufferType::Vertex, sizeof(vertices), &vertices[0]);
+	cubeIBO = renderer.createBuffer(BufferType::Index, sizeof(indices), &indices[0]);
 
 #ifdef RENDERER_OPENGL
 
@@ -1991,7 +1991,7 @@ void SMAADemo::render() {
 		renderer.setViewport(0, 0, windowWidth, windowHeight);
 
 		GlobalDS globalDS;
-		globalDS.globalUniforms = renderer.createEphemeralBuffer(sizeof(ShaderDefines::Globals), &globals);
+		globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 		globalDS.linearSampler  = linearSampler;
 		globalDS.nearestSampler = nearestSampler;
 		renderer.bindDescriptorSet(0, globalDS);
@@ -2000,7 +2000,7 @@ void SMAADemo::render() {
 		renderer.bindIndexBuffer(cubeIBO, false);
 
 		CubeSceneDS cubeDS;
-		cubeDS.instances = renderer.createEphemeralBuffer(static_cast<uint32_t>(sizeof(ShaderDefines::Cube) * cubes.size()), &cubes[0]);
+		cubeDS.instances = renderer.createEphemeralBuffer(BufferType::Storage, static_cast<uint32_t>(sizeof(ShaderDefines::Cube) * cubes.size()), &cubes[0]);
 		renderer.bindDescriptorSet(1, cubeDS);
 
 		unsigned int numCubes = static_cast<unsigned int>(cubes.size());
@@ -2019,7 +2019,7 @@ void SMAADemo::render() {
 		renderer.setViewport(0, 0, windowWidth, windowHeight);
 
 		GlobalDS globalDS;
-		globalDS.globalUniforms = renderer.createEphemeralBuffer(sizeof(ShaderDefines::Globals), &globals);
+		globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 		globalDS.linearSampler = linearSampler;
 		globalDS.nearestSampler = nearestSampler;
 		renderer.bindDescriptorSet(0, globalDS);
@@ -2446,8 +2446,8 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		for (int n = 0; n < drawData->CmdListsCount; n++) {
 			const ImDrawList* cmd_list = drawData->CmdLists[n];
 
-			BufferHandle vtxBuf = renderer.createEphemeralBuffer(cmd_list->VtxBuffer.Size * sizeof(ImDrawVert), cmd_list->VtxBuffer.Data);
-			BufferHandle idxBuf = renderer.createEphemeralBuffer(cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx), cmd_list->IdxBuffer.Data);
+			BufferHandle vtxBuf = renderer.createEphemeralBuffer(BufferType::Vertex, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert), cmd_list->VtxBuffer.Data);
+			BufferHandle idxBuf = renderer.createEphemeralBuffer(BufferType::Index, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx), cmd_list->IdxBuffer.Data);
 			renderer.bindIndexBuffer(idxBuf, true);
 			renderer.bindVertexBuffer(0, vtxBuf);
 

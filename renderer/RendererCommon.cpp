@@ -449,13 +449,13 @@ const RendererFeatures &Renderer::getFeatures() const {
 }
 
 
-BufferHandle Renderer::createBuffer(uint32_t size, const void *contents) {
-	return impl->createBuffer(size, contents);
+BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *contents) {
+	return impl->createBuffer(type, size, contents);
 }
 
 
-BufferHandle Renderer::createEphemeralBuffer(uint32_t size, const void *contents) {
-	return impl->createEphemeralBuffer(size, contents);
+BufferHandle Renderer::createEphemeralBuffer(BufferType type, uint32_t size, const void *contents) {
+	return impl->createEphemeralBuffer(type, size, contents);
 }
 
 
