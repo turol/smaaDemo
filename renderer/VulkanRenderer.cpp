@@ -2196,10 +2196,13 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	frame.presentCmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
 	frame.presentCmdBuf.end();
 
+	std::vector<vk::Semaphore>          uploadSemaphores;
+	std::vector<vk::PipelineStageFlags> semWaitMasks;
 	if (!uploads.empty()) {
 		// TODO: don't wait here, just check
 		// use semaphores to make sure draw doesn't proceed until uploads are ready
 
+		LOG("checking %u uploads\n", static_cast<unsigned int>(uploads.size()));
 		std::vector<vk::Fence> fences;
 		fences.reserve(uploads.size());
 
@@ -2207,11 +2210,19 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 			fences.push_back(op.fence);
 		}
 
-		vk::Result r;
-		do {
-			r = device.waitForFences(fences, true, 1000000000);
-		} while (r == vk::Result::eTimeout);
-
+		// TODO: should clean up the completed ones
+		// now we can wait a long time and only clean up all at once
+		vk::Result r = device.waitForFences(fences, true, 0);
+		if (r == vk::Result::eTimeout) {
+			// uploads pending, make draw wait on them
+			uploadSemaphores.reserve(uploads.size());
+			for (auto &op : uploads) {
+				uploadSemaphores.push_back(op.semaphore);
+				semWaitMasks.push_back(vk::PipelineStageFlagBits::eTopOfPipe);
+			}
+			LOG("%u uploads pending\n", static_cast<unsigned int>(uploads.size()));
+		} else {
+			// not pending, clean up all upload ops
 		for (auto &op : uploads) {
 			device.destroyFence(op.fence);
 			device.freeCommandBuffers(transferCmdPool, { op.cmdBuf } );
@@ -2225,6 +2236,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 		device.resetCommandPool(transferCmdPool, vk::CommandPoolResetFlags());
 
 		uploads.clear();
+		}
 	}
 
 	// submit command buffers
@@ -2232,6 +2244,11 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	vk::SubmitInfo submit;
 	submit.commandBufferCount   = 1;
 	submit.pCommandBuffers      = &currentCommandBuffer;
+	if (!uploadSemaphores.empty()) {
+		submit.waitSemaphoreCount   = uploadSemaphores.size();
+		submit.pWaitSemaphores      = uploadSemaphores.data();
+		submit.pWaitDstStageMask    = semWaitMasks.data();
+	}
 
 	vk::SubmitInfo submit2;
 	submit2.waitSemaphoreCount   = 1;

@@ -809,6 +809,8 @@ struct UploadOp {
 	vk::Fence          fence;
 	vk::CommandBuffer  cmdBuf;
 	vk::Semaphore      semaphore;
+	// TODO: could have semaphore wait stage here too
+	//       depends on what kind of thing was uploaded
 	// TODO: memory allocation
 
 
