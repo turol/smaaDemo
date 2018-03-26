@@ -807,18 +807,7 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	op.fence = device.createFence(fci);
 	queue.submit({ submit }, op.fence);
 
-	// TODO: don't wait here, use fence to make frame submit wait for it
-	vk::Result r;
-	do {
-		r = device.waitForFences({ op.fence }, true, 1000000000);
-	} while (r == vk::Result::eTimeout);
-
-	device.destroyFence(op.fence);
-	device.freeCommandBuffers(transferCmdPool, { op.cmdBuf } );
-	device.resetCommandPool(transferCmdPool, vk::CommandPoolResetFlags());
-
-	op.fence  = vk::Fence();
-	op.cmdBuf = vk::CommandBuffer();
+	uploads.emplace_back(std::move(op));
 
 	return result.second;
 }
@@ -1660,18 +1649,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	op.fence = device.createFence(fci);
 	queue.submit({ submit }, op.fence);
 
-	// TODO: don't wait here, use fence to make frame submit wait for it
-	vk::Result r;
-	do {
-		r = device.waitForFences({ op.fence }, true, 1000000000);
-	} while (r == vk::Result::eTimeout);
-
-	device.destroyFence(op.fence);
-	device.freeCommandBuffers(transferCmdPool, { op.cmdBuf } );
-	device.resetCommandPool(transferCmdPool, vk::CommandPoolResetFlags());
-
-	op.fence  = vk::Fence();
-	op.cmdBuf = vk::CommandBuffer();
+	uploads.emplace_back(std::move(op));
 
 	return result.second;
 }
@@ -2211,6 +2189,29 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	barrier.image               = image;
 	frame.presentCmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
 	frame.presentCmdBuf.end();
+
+	if (!uploads.empty()) {
+		// TODO: don't wait here, just check
+		// use semaphores to make sure draw doesn't proceed until uploads are ready
+
+		for (auto &op : uploads) {
+			vk::Result r;
+
+			do {
+				r = device.waitForFences({ op.fence }, true, 1000000000);
+			} while (r == vk::Result::eTimeout);
+
+			device.destroyFence(op.fence);
+			device.freeCommandBuffers(transferCmdPool, { op.cmdBuf } );
+
+			op.fence  = vk::Fence();
+			op.cmdBuf = vk::CommandBuffer();
+		}
+
+		device.resetCommandPool(transferCmdPool, vk::CommandPoolResetFlags());
+
+		uploads.clear();
+	}
 
 	// submit command buffers
 
