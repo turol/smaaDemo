@@ -2194,13 +2194,19 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 		// TODO: don't wait here, just check
 		// use semaphores to make sure draw doesn't proceed until uploads are ready
 
+		std::vector<vk::Fence> fences;
+		fences.reserve(uploads.size());
+
 		for (auto &op : uploads) {
-			vk::Result r;
+			fences.push_back(op.fence);
+		}
 
-			do {
-				r = device.waitForFences({ op.fence }, true, 1000000000);
-			} while (r == vk::Result::eTimeout);
+		vk::Result r;
+		do {
+			r = device.waitForFences(fences, true, 1000000000);
+		} while (r == vk::Result::eTimeout);
 
+		for (auto &op : uploads) {
 			device.destroyFence(op.fence);
 			device.freeCommandBuffers(transferCmdPool, { op.cmdBuf } );
 
