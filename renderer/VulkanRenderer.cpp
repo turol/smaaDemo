@@ -796,11 +796,14 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	op.cmdBuf.copyBuffer(ringBuffer, buffer.buffer, 1, &copyRegion);
 	op.cmdBuf.end();
 
+	op.semaphore = device.createSemaphore(vk::SemaphoreCreateInfo());
+
 	vk::SubmitInfo submit;
 	submit.waitSemaphoreCount   = 0;
 	submit.commandBufferCount   = 1;
 	submit.pCommandBuffers      = &op.cmdBuf;
-	submit.signalSemaphoreCount = 0;
+	submit.signalSemaphoreCount = 1;
+	submit.pSignalSemaphores    = &op.semaphore;
 
 	// TODO: have a free list of fences instead of creating new ones all the time
 	vk::FenceCreateInfo fci;
@@ -1638,11 +1641,14 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 
 	op.cmdBuf.end();
 
+	op.semaphore = device.createSemaphore(vk::SemaphoreCreateInfo());
+
 	vk::SubmitInfo submit;
 	submit.waitSemaphoreCount   = 0;
 	submit.commandBufferCount   = 1;
 	submit.pCommandBuffers      = &op.cmdBuf;
-	submit.signalSemaphoreCount = 0;
+	submit.signalSemaphoreCount = 1;
+	submit.pSignalSemaphores    = &op.semaphore;
 
 	// TODO: have a free list of fences instead of creating new ones all the time
 	vk::FenceCreateInfo fci;
@@ -2209,9 +2215,11 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 		for (auto &op : uploads) {
 			device.destroyFence(op.fence);
 			device.freeCommandBuffers(transferCmdPool, { op.cmdBuf } );
+			device.destroySemaphore(op.semaphore);
 
 			op.fence  = vk::Fence();
 			op.cmdBuf = vk::CommandBuffer();
+			op.semaphore = vk::Semaphore();
 		}
 
 		device.resetCommandPool(transferCmdPool, vk::CommandPoolResetFlags());

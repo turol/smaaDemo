@@ -808,6 +808,7 @@ struct Frame {
 struct UploadOp {
 	vk::Fence          fence;
 	vk::CommandBuffer  cmdBuf;
+	vk::Semaphore      semaphore;
 	// TODO: memory allocation
 
 
@@ -816,6 +817,7 @@ struct UploadOp {
 	~UploadOp() noexcept {
 		assert(!fence);
 		assert(!cmdBuf);
+		assert(!semaphore);
 	}
 
 
@@ -826,9 +828,11 @@ struct UploadOp {
 	UploadOp(UploadOp &&other) noexcept
 	: fence(other.fence)
 	, cmdBuf(other.cmdBuf)
+	, semaphore(other.semaphore)
 	{
 		other.fence  = vk::Fence();
 		other.cmdBuf = vk::CommandBuffer();
+		other.semaphore = vk::Semaphore();
 	}
 
 
@@ -839,12 +843,16 @@ struct UploadOp {
 
 		assert(!fence);
 		assert(!cmdBuf);
+		assert(!semaphore);
 
 		fence        = other.fence;
 		other.fence  = vk::Fence();
 
 		cmdBuf       = other.cmdBuf;
 		other.cmdBuf = vk::CommandBuffer();
+
+		semaphore       = other.semaphore;
+		other.semaphore = vk::Semaphore();
 
 		return *this;
 	}
