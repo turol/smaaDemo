@@ -1573,10 +1573,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
 	// TODO: share some of this stuff with createBuffer
-	// FIXME: this uses the wrong command bool if we're not in a frame
-	//        for example during startup
-	//        add separate command pool(s) for transfers
-	vk::CommandBufferAllocateInfo cmdInfo(frames.at(currentFrameIdx).commandPool, vk::CommandBufferLevel::ePrimary, 1);
+	vk::CommandBufferAllocateInfo cmdInfo(transferCmdPool, vk::CommandBufferLevel::ePrimary, 1);
 	auto cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
 
 	cmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
@@ -1604,6 +1601,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { barrier });
 
 		// copy contents via ring buffer
+		// TODO: allocate a separate memory area instead of using the ringbuffer
 		std::vector<vk::BufferImageCopy> regions;
 
 		vk::ImageSubresourceLayers layers;
@@ -1656,7 +1654,8 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 
 	// TODO: don't wait for idle here, use fence to make frame submit wait for it
 	queue.waitIdle();
-	device.freeCommandBuffers(frames.at(currentFrameIdx).commandPool, { cmdBuf } );
+	device.freeCommandBuffers(transferCmdPool, { cmdBuf } );
+	device.resetCommandPool(transferCmdPool, vk::CommandPoolResetFlags());
 
 	return result.second;
 }
