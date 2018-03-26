@@ -805,6 +805,52 @@ struct Frame {
 };
 
 
+struct UploadOp {
+	vk::Fence          fence;
+	vk::CommandBuffer  cmdBuf;
+	// TODO: memory allocation
+
+
+	UploadOp() noexcept {}
+
+	~UploadOp() noexcept {
+		assert(!fence);
+		assert(!cmdBuf);
+	}
+
+
+	UploadOp(const UploadOp &)            = delete;
+	UploadOp &operator=(const UploadOp &) = delete;
+
+
+	UploadOp(UploadOp &&other) noexcept
+	: fence(other.fence)
+	, cmdBuf(other.cmdBuf)
+	{
+		other.fence  = vk::Fence();
+		other.cmdBuf = vk::CommandBuffer();
+	}
+
+
+	UploadOp &operator=(UploadOp &&other) noexcept {
+		if (this == &other) {
+			return *this;
+		}
+
+		assert(!fence);
+		assert(!cmdBuf);
+
+		fence        = other.fence;
+		other.fence  = vk::Fence();
+
+		cmdBuf       = other.cmdBuf;
+		other.cmdBuf = vk::CommandBuffer();
+
+		return *this;
+	}
+};
+
+
 struct RendererImpl : public RendererBase {
 	SDL_Window                              *window;
 

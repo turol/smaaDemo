@@ -783,38 +783,42 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
 	// TODO: share some of this stuff with createTexture
+	UploadOp op;
 	vk::CommandBufferAllocateInfo cmdInfo(transferCmdPool, vk::CommandBufferLevel::ePrimary, 1);
-	auto cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
+	op.cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
 
 	vk::BufferCopy copyRegion;
 	copyRegion.srcOffset = beginPtr;
 	copyRegion.dstOffset = 0;
 	copyRegion.size      = size;
 
-	cmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
-	cmdBuf.copyBuffer(ringBuffer, buffer.buffer, 1, &copyRegion);
-	cmdBuf.end();
+	op.cmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+	op.cmdBuf.copyBuffer(ringBuffer, buffer.buffer, 1, &copyRegion);
+	op.cmdBuf.end();
 
 	vk::SubmitInfo submit;
 	submit.waitSemaphoreCount   = 0;
 	submit.commandBufferCount   = 1;
-	submit.pCommandBuffers      = &cmdBuf;
+	submit.pCommandBuffers      = &op.cmdBuf;
 	submit.signalSemaphoreCount = 0;
 
 	// TODO: have a free list of fences instead of creating new ones all the time
 	vk::FenceCreateInfo fci;
-	vk::Fence fence = device.createFence(fci);
-	queue.submit({ submit }, fence);
+	op.fence = device.createFence(fci);
+	queue.submit({ submit }, op.fence);
 
 	// TODO: don't wait here, use fence to make frame submit wait for it
 	vk::Result r;
 	do {
-		r = device.waitForFences({ fence }, true, 1000000000);
+		r = device.waitForFences({ op.fence }, true, 1000000000);
 	} while (r == vk::Result::eTimeout);
 
-	device.destroyFence(fence);
-	device.freeCommandBuffers(transferCmdPool, { cmdBuf } );
+	device.destroyFence(op.fence);
+	device.freeCommandBuffers(transferCmdPool, { op.cmdBuf } );
 	device.resetCommandPool(transferCmdPool, vk::CommandPoolResetFlags());
+
+	op.fence  = vk::Fence();
+	op.cmdBuf = vk::CommandBuffer();
 
 	return result.second;
 }
@@ -1573,10 +1577,11 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
 	// TODO: share some of this stuff with createBuffer
+	UploadOp op;
 	vk::CommandBufferAllocateInfo cmdInfo(transferCmdPool, vk::CommandBufferLevel::ePrimary, 1);
-	auto cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
+	op.cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
 
-	cmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+	op.cmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 
 	// transition to transfer destination
 	{
@@ -1598,7 +1603,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		barrier.subresourceRange     = range;
 
 		// TODO: relax stage flag bits
-		cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { barrier });
+		op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { barrier });
 
 		// copy contents via ring buffer
 		// TODO: allocate a separate memory area instead of using the ringbuffer
@@ -1631,7 +1636,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 			w = std::max(w / 2, 1u);
 			h = std::max(h / 2, 1u);
 		}
-		cmdBuf.copyBufferToImage(ringBuffer, tex.image, vk::ImageLayout::eTransferDstOptimal, regions);
+		op.cmdBuf.copyBufferToImage(ringBuffer, tex.image, vk::ImageLayout::eTransferDstOptimal, regions);
 
 		// transition to shader use
 		barrier.srcAccessMask       = vk::AccessFlagBits::eTransferWrite;
@@ -1639,31 +1644,34 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		barrier.oldLayout           = vk::ImageLayout::eTransferDstOptimal;
 		barrier.newLayout           = vk::ImageLayout::eShaderReadOnlyOptimal;
 		// TODO: relax stage flag bits
-		cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { barrier });
+		op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { barrier });
 	}
 
-	cmdBuf.end();
+	op.cmdBuf.end();
 
 	vk::SubmitInfo submit;
 	submit.waitSemaphoreCount   = 0;
 	submit.commandBufferCount   = 1;
-	submit.pCommandBuffers      = &cmdBuf;
+	submit.pCommandBuffers      = &op.cmdBuf;
 	submit.signalSemaphoreCount = 0;
 
 	// TODO: have a free list of fences instead of creating new ones all the time
 	vk::FenceCreateInfo fci;
-	vk::Fence fence = device.createFence(fci);
-	queue.submit({ submit }, fence);
+	op.fence = device.createFence(fci);
+	queue.submit({ submit }, op.fence);
 
 	// TODO: don't wait here, use fence to make frame submit wait for it
 	vk::Result r;
 	do {
-		r = device.waitForFences({ fence }, true, 1000000000);
+		r = device.waitForFences({ op.fence }, true, 1000000000);
 	} while (r == vk::Result::eTimeout);
 
-	device.destroyFence(fence);
-	device.freeCommandBuffers(transferCmdPool, { cmdBuf } );
+	device.destroyFence(op.fence);
+	device.freeCommandBuffers(transferCmdPool, { op.cmdBuf } );
 	device.resetCommandPool(transferCmdPool, vk::CommandPoolResetFlags());
+
+	op.fence  = vk::Fence();
+	op.cmdBuf = vk::CommandBuffer();
 
 	return result.second;
 }
