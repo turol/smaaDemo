@@ -847,6 +847,8 @@ struct RendererImpl : public RendererBase {
 
 	VmaAllocator                            allocator;
 
+	vk::CommandPool                         transferCmdPool;
+
 	bool                                    amdShaderInfo;
 	bool                                    debugMarkers;
 

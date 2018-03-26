@@ -534,6 +534,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	acquireSem    = device.createSemaphore(vk::SemaphoreCreateInfo());
 	renderDoneSem = device.createSemaphore(vk::SemaphoreCreateInfo());
 
+	vk::CommandPoolCreateInfo cp;
+	// TODO: transferQueueIndex
+	cp.queueFamilyIndex = graphicsQueueIndex;
+	transferCmdPool = device.createCommandPool(cp);
+
 	// TODO: load pipeline cache
 }
 
@@ -618,6 +623,7 @@ RendererImpl::~RendererImpl() {
 	assert(swapchain);
 	assert(ringBuffer);
 	assert(persistentMapping);
+	assert(transferCmdPool);
 
 	// TODO: save pipeline cache
 
@@ -705,6 +711,9 @@ RendererImpl::~RendererImpl() {
 	vmaDestroyAllocator(allocator);
 	allocator = VK_NULL_HANDLE;
 
+	device.destroyCommandPool(transferCmdPool);
+	transferCmdPool = vk::CommandPool();
+
 	device.destroy();
 	device = vk::Device();
 
@@ -767,16 +776,14 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 
 	// copy contents to GPU memory
 	// TODO: pick proper alignment based on usage flags
+	// TODO: allocate a separate memory area instead of using the ringbuffer
 	unsigned int beginPtr = ringBufferAllocate(size, std::max(uboAlign, ssboAlign));
 	memcpy(persistentMapping + beginPtr, contents, size);
 
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
 	// TODO: share some of this stuff with createTexture
-	// TODO:  this uses the wrong command pool if we're not in a frame
-	//        for example during startup
-	//        add separate command pool(s) for transfers
-	vk::CommandBufferAllocateInfo cmdInfo(frames.at(currentFrameIdx).commandPool, vk::CommandBufferLevel::ePrimary, 1);
+	vk::CommandBufferAllocateInfo cmdInfo(transferCmdPool, vk::CommandBufferLevel::ePrimary, 1);
 	auto cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
 
 	vk::BufferCopy copyRegion;
@@ -806,7 +813,8 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	} while (r == vk::Result::eTimeout);
 
 	device.destroyFence(fence);
-	device.freeCommandBuffers(frames.at(currentFrameIdx).commandPool, { cmdBuf } );
+	device.freeCommandBuffers(transferCmdPool, { cmdBuf } );
+	device.resetCommandPool(transferCmdPool, vk::CommandPoolResetFlags());
 
 	return result.second;
 }
