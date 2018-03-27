@@ -216,6 +216,7 @@ static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebug
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
 , graphicsQueueIndex(0)
+, numUploads(0)
 , amdShaderInfo(false)
 , debugMarkers(false)
 , ringBufferMem(nullptr)
@@ -2249,31 +2250,8 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	}
 
 	if (!uploads.empty()) {
-		// TODO: put these uploads in frame and wait for their fences in waitForFrame
-		std::vector<vk::Fence> fences;
-		fences.reserve(uploads.size() + 1);
-		fences.push_back(frame.fence);
-		for (auto &op : uploads) {
-			fences.push_back(op.fence);
-		}
-
-		vk::Result r;
-		do {
-			r = device.waitForFences(fences, true, 1000000000);
-		} while (r == vk::Result::eTimeout);
-
-		for (auto &op : uploads) {
-			device.destroyFence(op.fence);
-			device.freeCommandBuffers(transferCmdPool, { op.cmdBuf } );
-			device.destroySemaphore(op.semaphore);
-
-			op.fence  = vk::Fence();
-			op.cmdBuf = vk::CommandBuffer();
-			op.semaphore = vk::Semaphore();
-		}
-
-		device.resetCommandPool(transferCmdPool, vk::CommandPoolResetFlags());
-		uploads.clear();
+		assert(frame.uploads.empty());
+		frame.uploads = std::move(uploads);
 	}
 	frameNum++;
 }
@@ -2285,11 +2263,45 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 	Frame &frame = frames.at(frameIdx);
 	assert(frame.outstanding);
 
+	if (frame.uploads.empty()) {
 	auto waitResult = device.waitForFences({ frame.fence }, true, 1000000000ull);
 	if (waitResult != vk::Result::eSuccess) {
 		// TODO: handle these somehow
 		LOG("wait result is not success: %s\n", vk::to_string(waitResult).c_str());
 		throw std::runtime_error("wait result is not success");
+	}
+	} else {
+		std::vector<vk::Fence> fences;
+		fences.reserve(frame.uploads.size() + 1);
+		fences.push_back(frame.fence);
+		for (auto &op : frame.uploads) {
+			fences.push_back(op.fence);
+		}
+
+		vk::Result result;
+		do {
+			result = device.waitForFences(fences, true, 1000000000);
+		} while (result == vk::Result::eTimeout);
+
+		for (auto &op : frame.uploads) {
+			device.destroyFence(op.fence);
+			device.freeCommandBuffers(transferCmdPool, { op.cmdBuf } );
+			device.destroySemaphore(op.semaphore);
+
+			op.fence     = vk::Fence();
+			op.cmdBuf    = vk::CommandBuffer();
+			op.semaphore = vk::Semaphore();
+		}
+
+		assert(numUploads >= frame.uploads.size());
+		numUploads -= frame.uploads.size();
+		frame.uploads.clear();
+
+		// if all pending uploads are complete, reset the command pool
+		// TODO: should use multiple command pools
+		if (numUploads == 0) {
+			device.resetCommandPool(transferCmdPool, vk::CommandPoolResetFlags());
+		}
 	}
 
 	frame.outstanding    = false;
@@ -2330,6 +2342,8 @@ UploadOp RendererImpl::allocateUploadOp() {
 
 	vk::FenceCreateInfo fci;
 	op.fence = device.createFence(fci);
+
+	numUploads++;
 
 	return op;
 }

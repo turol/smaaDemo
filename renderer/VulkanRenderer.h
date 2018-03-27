@@ -698,6 +698,7 @@ namespace renderer {
 
 
 struct UploadOp {
+	// TODO: fence is not strictly necessary, frame end fence should suffice
 	vk::Fence          fence;
 	vk::CommandBuffer  cmdBuf;
 	vk::Semaphore      semaphore;
@@ -767,6 +768,7 @@ struct Frame {
 
 	// std::vector has some kind of issue with variant with non-copyable types, so use unordered_set
 	std::unordered_set<Resource>  deleteResources;
+	std::vector<UploadOp>         uploads;
 
 
 	Frame()
@@ -785,6 +787,7 @@ struct Frame {
 		assert(!presentCmdBuf);
 		assert(!outstanding);
 		assert(deleteResources.empty());
+		assert(uploads.empty());
 	}
 
 	Frame(const Frame &)            = delete;
@@ -802,6 +805,7 @@ struct Frame {
 	, commandBuffer(other.commandBuffer)
 	, presentCmdBuf(other.presentCmdBuf)
 	, deleteResources(std::move(other.deleteResources))
+	, uploads(std::move(other.uploads))
 	{
 		other.image = vk::Image();
 		other.fence = vk::Fence();
@@ -813,6 +817,7 @@ struct Frame {
 		other.lastFrameNum     = 0;
 		other.usedRingBufPtr   = 0;
 		assert(other.deleteResources.empty());
+		assert(other.uploads.empty());
 	}
 
 	Frame &operator=(Frame &&other) {
@@ -855,6 +860,10 @@ struct Frame {
 
 		deleteResources = std::move(other.deleteResources);
 		assert(other.deleteResources.empty());
+
+		assert(uploads.empty());
+		uploads = std::move(other.uploads);
+		assert(other.uploads.empty());
 
 		return *this;
 	}
@@ -905,6 +914,7 @@ struct RendererImpl : public RendererBase {
 
 	vk::CommandPool                         transferCmdPool;
 	std::vector<UploadOp>                   uploads;
+	unsigned int                            numUploads;
 
 	bool                                    amdShaderInfo;
 	bool                                    debugMarkers;
