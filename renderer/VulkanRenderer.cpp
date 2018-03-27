@@ -782,8 +782,8 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
-	// TODO: share some of this stuff with createTexture
-	UploadOp op;
+	// TODO: share more of this stuff with createTexture
+	UploadOp op = allocateUploadOp();
 	vk::CommandBufferAllocateInfo cmdInfo(transferCmdPool, vk::CommandBufferLevel::ePrimary, 1);
 	op.cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
 
@@ -796,8 +796,6 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	op.cmdBuf.copyBuffer(ringBuffer, buffer.buffer, 1, &copyRegion);
 	op.cmdBuf.end();
 
-	op.semaphore = device.createSemaphore(vk::SemaphoreCreateInfo());
-
 	vk::SubmitInfo submit;
 	submit.waitSemaphoreCount   = 0;
 	submit.commandBufferCount   = 1;
@@ -805,9 +803,6 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	submit.signalSemaphoreCount = 1;
 	submit.pSignalSemaphores    = &op.semaphore;
 
-	// TODO: have a free list of fences instead of creating new ones all the time
-	vk::FenceCreateInfo fci;
-	op.fence = device.createFence(fci);
 	queue.submit({ submit }, op.fence);
 
 	uploads.emplace_back(std::move(op));
@@ -1568,8 +1563,8 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
-	// TODO: share some of this stuff with createBuffer
-	UploadOp op;
+	// TODO: share more of this stuff with createBuffer
+	UploadOp op = allocateUploadOp();
 	vk::CommandBufferAllocateInfo cmdInfo(transferCmdPool, vk::CommandBufferLevel::ePrimary, 1);
 	op.cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
 
@@ -1641,8 +1636,6 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 
 	op.cmdBuf.end();
 
-	op.semaphore = device.createSemaphore(vk::SemaphoreCreateInfo());
-
 	vk::SubmitInfo submit;
 	submit.waitSemaphoreCount   = 0;
 	submit.commandBufferCount   = 1;
@@ -1650,9 +1643,6 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	submit.signalSemaphoreCount = 1;
 	submit.pSignalSemaphores    = &op.semaphore;
 
-	// TODO: have a free list of fences instead of creating new ones all the time
-	vk::FenceCreateInfo fci;
-	op.fence = device.createFence(fci);
 	queue.submit({ submit }, op.fence);
 
 	uploads.emplace_back(std::move(op));
@@ -2329,6 +2319,19 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 		buffers.remove(handle);
 	}
 	frame.ephemeralBuffers.clear();
+}
+
+
+UploadOp RendererImpl::allocateUploadOp() {
+	UploadOp op;
+
+	// TODO: have a free list of fences and semaphores instead of creating new ones all the time
+	op.semaphore = device.createSemaphore(vk::SemaphoreCreateInfo());
+
+	vk::FenceCreateInfo fci;
+	op.fence = device.createFence(fci);
+
+	return op;
 }
 
 
