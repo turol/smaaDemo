@@ -697,6 +697,62 @@ namespace std {
 namespace renderer {
 
 
+struct UploadOp {
+	vk::Fence          fence;
+	vk::CommandBuffer  cmdBuf;
+	vk::Semaphore      semaphore;
+	// TODO: could have semaphore wait stage here too
+	//       depends on what kind of thing was uploaded
+	// TODO: memory allocation
+
+
+	UploadOp() noexcept {}
+
+	~UploadOp() noexcept {
+		assert(!fence);
+		assert(!cmdBuf);
+		assert(!semaphore);
+	}
+
+
+	UploadOp(const UploadOp &)            = delete;
+	UploadOp &operator=(const UploadOp &) = delete;
+
+
+	UploadOp(UploadOp &&other) noexcept
+	: fence(other.fence)
+	, cmdBuf(other.cmdBuf)
+	, semaphore(other.semaphore)
+	{
+		other.fence  = vk::Fence();
+		other.cmdBuf = vk::CommandBuffer();
+		other.semaphore = vk::Semaphore();
+	}
+
+
+	UploadOp &operator=(UploadOp &&other) noexcept {
+		if (this == &other) {
+			return *this;
+		}
+
+		assert(!fence);
+		assert(!cmdBuf);
+		assert(!semaphore);
+
+		fence        = other.fence;
+		other.fence  = vk::Fence();
+
+		cmdBuf       = other.cmdBuf;
+		other.cmdBuf = vk::CommandBuffer();
+
+		semaphore       = other.semaphore;
+		other.semaphore = vk::Semaphore();
+
+		return *this;
+	}
+};
+
+
 struct Frame {
 	bool                          outstanding;
 	uint32_t                      lastFrameNum;
@@ -799,62 +855,6 @@ struct Frame {
 
 		deleteResources = std::move(other.deleteResources);
 		assert(other.deleteResources.empty());
-
-		return *this;
-	}
-};
-
-
-struct UploadOp {
-	vk::Fence          fence;
-	vk::CommandBuffer  cmdBuf;
-	vk::Semaphore      semaphore;
-	// TODO: could have semaphore wait stage here too
-	//       depends on what kind of thing was uploaded
-	// TODO: memory allocation
-
-
-	UploadOp() noexcept {}
-
-	~UploadOp() noexcept {
-		assert(!fence);
-		assert(!cmdBuf);
-		assert(!semaphore);
-	}
-
-
-	UploadOp(const UploadOp &)            = delete;
-	UploadOp &operator=(const UploadOp &) = delete;
-
-
-	UploadOp(UploadOp &&other) noexcept
-	: fence(other.fence)
-	, cmdBuf(other.cmdBuf)
-	, semaphore(other.semaphore)
-	{
-		other.fence  = vk::Fence();
-		other.cmdBuf = vk::CommandBuffer();
-		other.semaphore = vk::Semaphore();
-	}
-
-
-	UploadOp &operator=(UploadOp &&other) noexcept {
-		if (this == &other) {
-			return *this;
-		}
-
-		assert(!fence);
-		assert(!cmdBuf);
-		assert(!semaphore);
-
-		fence        = other.fence;
-		other.fence  = vk::Fence();
-
-		cmdBuf       = other.cmdBuf;
-		other.cmdBuf = vk::CommandBuffer();
-
-		semaphore       = other.semaphore;
-		other.semaphore = vk::Semaphore();
 
 		return *this;
 	}
