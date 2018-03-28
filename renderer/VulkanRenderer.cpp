@@ -2291,6 +2291,18 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 			op.fence     = vk::Fence();
 			op.cmdBuf    = vk::CommandBuffer();
 			op.semaphore = vk::Semaphore();
+
+			if (op.stagingBuffer) {
+				assert(op.memory);
+
+				device.destroyBuffer(op.stagingBuffer);
+				vmaFreeMemory(allocator, op.memory);
+
+				op.stagingBuffer = vk::Buffer();
+				op.memory        = VK_NULL_HANDLE;
+			} else {
+				assert(!op.memory);
+			}
 		}
 
 		assert(numUploads >= frame.uploads.size());

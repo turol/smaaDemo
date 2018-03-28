@@ -704,15 +704,20 @@ struct UploadOp {
 	vk::Semaphore      semaphore;
 	// TODO: could have semaphore wait stage here too
 	//       depends on what kind of thing was uploaded
-	// TODO: memory allocation
+	vk::Buffer         stagingBuffer;
+	VmaAllocation      memory;
 
 
-	UploadOp() noexcept {}
+	UploadOp() noexcept
+	: memory(VK_NULL_HANDLE)
+	{}
 
 	~UploadOp() noexcept {
 		assert(!fence);
 		assert(!cmdBuf);
 		assert(!semaphore);
+		assert(!stagingBuffer);
+		assert(!memory);
 	}
 
 
@@ -724,10 +729,14 @@ struct UploadOp {
 	: fence(other.fence)
 	, cmdBuf(other.cmdBuf)
 	, semaphore(other.semaphore)
+	, stagingBuffer(other.stagingBuffer)
+	, memory(other.memory)
 	{
 		other.fence  = vk::Fence();
 		other.cmdBuf = vk::CommandBuffer();
 		other.semaphore = vk::Semaphore();
+		other.stagingBuffer = vk::Buffer();
+		other.memory        = VK_NULL_HANDLE;
 	}
 
 
@@ -739,6 +748,8 @@ struct UploadOp {
 		assert(!fence);
 		assert(!cmdBuf);
 		assert(!semaphore);
+		assert(!stagingBuffer);
+		assert(!memory);
 
 		fence        = other.fence;
 		other.fence  = vk::Fence();
@@ -748,6 +759,12 @@ struct UploadOp {
 
 		semaphore       = other.semaphore;
 		other.semaphore = vk::Semaphore();
+
+		stagingBuffer       = other.stagingBuffer;
+		other.stagingBuffer = vk::Buffer();
+
+		memory              = other.memory;
+		other.memory        = VK_NULL_HANDLE;
 
 		return *this;
 	}
