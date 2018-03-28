@@ -777,10 +777,16 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 
 	// copy contents to GPU memory
 	UploadOp op = allocateUploadOp();
-	// TODO: pick proper alignment based on usage flags
-	// TODO: allocate a separate memory area instead of using the ringbuffer
-	unsigned int beginPtr = ringBufferAllocate(size, std::max(uboAlign, ssboAlign));
-	memcpy(persistentMapping + beginPtr, contents, size);
+	info.usage        = vk::BufferUsageFlagBits::eTransferSrc;
+	op.stagingBuffer  = device.createBuffer(info);
+
+	req.usage         = VMA_MEMORY_USAGE_CPU_ONLY;
+	req.flags         = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+	vmaAllocateMemoryForBuffer(allocator, op.stagingBuffer, &req, &op.memory, &allocationInfo);
+	assert(allocationInfo.pMappedData);
+	memcpy(static_cast<char *>(allocationInfo.pMappedData), contents, size);
+	device.flushMappedMemoryRanges(vk::MappedMemoryRange(allocationInfo.deviceMemory, allocationInfo.offset, size));
+	device.bindBufferMemory(op.stagingBuffer, allocationInfo.deviceMemory, allocationInfo.offset);
 
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
@@ -789,12 +795,12 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	op.cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
 
 	vk::BufferCopy copyRegion;
-	copyRegion.srcOffset = beginPtr;
+	copyRegion.srcOffset = 0;
 	copyRegion.dstOffset = 0;
 	copyRegion.size      = size;
 
 	op.cmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
-	op.cmdBuf.copyBuffer(ringBuffer, buffer.buffer, 1, &copyRegion);
+	op.cmdBuf.copyBuffer(op.stagingBuffer, buffer.buffer, 1, &copyRegion);
 	op.cmdBuf.end();
 
 	vk::SubmitInfo submit;
