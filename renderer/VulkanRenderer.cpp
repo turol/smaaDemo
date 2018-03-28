@@ -1602,6 +1602,18 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		h = std::max(h / 2, 1u);
 	}
 	UploadOp op = allocateUploadOp();
+	// TODO: move staging buffer, memory and command buffer allocation to allocateUploadOp
+	vk::BufferCreateInfo bufInfo;
+	bufInfo.size      = bufferSize;
+	bufInfo.usage     = vk::BufferUsageFlagBits::eTransferSrc;
+	op.stagingBuffer  = device.createBuffer(bufInfo);
+	req.usage         = VMA_MEMORY_USAGE_CPU_ONLY;
+	req.flags         = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+	req.pUserData     = nullptr;
+	vmaAllocateMemoryForBuffer(allocator, op.stagingBuffer, &req, &op.memory, &allocationInfo);
+	assert(allocationInfo.pMappedData);
+	device.bindBufferMemory(op.stagingBuffer, allocationInfo.deviceMemory, allocationInfo.offset);
+
 	vk::CommandBufferAllocateInfo cmdInfo(transferCmdPool, vk::CommandBufferLevel::ePrimary, 1);
 	op.cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
 
@@ -1626,25 +1638,19 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		barrier.image                = tex.image;
 		barrier.subresourceRange     = range;
 
+		// TODO: do we need a barrier for the staging buffer?
 		// TODO: relax stage flag bits
 		op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { barrier });
 
-		// copy contents via ring buffer
-		// TODO: allocate a separate memory area instead of using the ringbuffer
-
 		w = desc.width_;
 		h = desc.height_;
-		unsigned int beginPtr = ringBufferAllocate(bufferSize, align);
+		char *mappedPtr = static_cast<char *>(allocationInfo.pMappedData);
 		for (unsigned int i = 0; i < desc.numMips_; i++) {
-			unsigned int size = desc.mipData_[i].size;
-
-			auto &region = regions[i];
-			region.bufferOffset += beginPtr;
-
 			// copy contents to GPU memory
-			memcpy(persistentMapping + region.bufferOffset, desc.mipData_[i].data, size);
+			memcpy(mappedPtr + regions[i].bufferOffset, desc.mipData_[i].data, desc.mipData_[i].size);
 		}
-		op.cmdBuf.copyBufferToImage(ringBuffer, tex.image, vk::ImageLayout::eTransferDstOptimal, regions);
+		device.flushMappedMemoryRanges(vk::MappedMemoryRange(allocationInfo.deviceMemory, allocationInfo.offset, bufferSize));
+		op.cmdBuf.copyBufferToImage(op.stagingBuffer, tex.image, vk::ImageLayout::eTransferDstOptimal, regions);
 
 		// transition to shader use
 		barrier.srcAccessMask       = vk::AccessFlagBits::eTransferWrite;
@@ -1655,6 +1661,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { barrier });
 	}
 
+	// TODO: move this to helper method, shared with uploadBuffer
 	op.cmdBuf.end();
 
 	vk::SubmitInfo submit;
