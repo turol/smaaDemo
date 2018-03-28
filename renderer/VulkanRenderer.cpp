@@ -1609,6 +1609,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		layers.layerCount = 1;
 
 		unsigned int w = desc.width_, h = desc.height_;
+		uint32_t align = std::max(formatSize(desc.format_), static_cast<uint32_t>(deviceProperties.limits.optimalBufferCopyOffsetAlignment));
 		for (unsigned int i = 0; i < desc.numMips_; i++) {
 			assert(desc.mipData_[i].data != nullptr);
 			assert(desc.mipData_[i].size != 0);
@@ -1616,7 +1617,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 
 			// copy contents to GPU memory
 			// TODO: use optimalBufferCopyOffsetAlignment from physicaldevicelimits
-			unsigned int beginPtr = ringBufferAllocate(size, 256);
+			unsigned int beginPtr = ringBufferAllocate(size, align);
 			memcpy(persistentMapping + beginPtr, desc.mipData_[i].data, size);
 
 			layers.mipLevel = i;
