@@ -1602,6 +1602,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		// copy contents via ring buffer
 		// TODO: allocate a separate memory area instead of using the ringbuffer
 		std::vector<vk::BufferImageCopy> regions;
+		regions.reserve(desc.numMips_);
 
 		vk::ImageSubresourceLayers layers;
 		layers.aspectMask = vk::ImageAspectFlagBits::eColor;
