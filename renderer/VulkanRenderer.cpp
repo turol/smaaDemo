@@ -776,6 +776,7 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	buffer.type   = type;
 
 	// copy contents to GPU memory
+	UploadOp op = allocateUploadOp();
 	// TODO: pick proper alignment based on usage flags
 	// TODO: allocate a separate memory area instead of using the ringbuffer
 	unsigned int beginPtr = ringBufferAllocate(size, std::max(uboAlign, ssboAlign));
@@ -784,7 +785,6 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
 	// TODO: share more of this stuff with createTexture
-	UploadOp op = allocateUploadOp();
 	vk::CommandBufferAllocateInfo cmdInfo(transferCmdPool, vk::CommandBufferLevel::ePrimary, 1);
 	op.cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
 
