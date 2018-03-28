@@ -1574,10 +1574,23 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	unsigned int w = desc.width_, h = desc.height_;
 	unsigned int bufferSize = 0;
 	uint32_t align = std::max(formatSize(desc.format_), static_cast<uint32_t>(deviceProperties.limits.optimalBufferCopyOffsetAlignment));
+	std::vector<vk::BufferImageCopy> regions;
+	regions.reserve(desc.numMips_);
 	for (unsigned int i = 0; i < desc.numMips_; i++) {
 		assert(desc.mipData_[i].data != nullptr);
 		assert(desc.mipData_[i].size != 0);
 		unsigned int size = desc.mipData_[i].size;
+
+		vk::ImageSubresourceLayers layers;
+		layers.aspectMask = vk::ImageAspectFlagBits::eColor;
+		layers.layerCount = 1;
+
+		vk::BufferImageCopy region;
+		region.bufferOffset     = bufferSize;
+		// leave row length and image height 0 for tight packing
+		region.imageSubresource = layers;
+		region.imageExtent      = vk::Extent3D(w, h, 1);
+		regions.push_back(region);
 
 		// round size up for proper alignment
 		size = size + align - 1;
@@ -1618,34 +1631,18 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 
 		// copy contents via ring buffer
 		// TODO: allocate a separate memory area instead of using the ringbuffer
-		std::vector<vk::BufferImageCopy> regions;
-		regions.reserve(desc.numMips_);
-
-		vk::ImageSubresourceLayers layers;
-		layers.aspectMask = vk::ImageAspectFlagBits::eColor;
-		layers.layerCount = 1;
 
 		w = desc.width_;
 		h = desc.height_;
+		unsigned int beginPtr = ringBufferAllocate(bufferSize, align);
 		for (unsigned int i = 0; i < desc.numMips_; i++) {
 			unsigned int size = desc.mipData_[i].size;
 
+			auto &region = regions[i];
+			region.bufferOffset += beginPtr;
+
 			// copy contents to GPU memory
-			// TODO: use optimalBufferCopyOffsetAlignment from physicaldevicelimits
-			unsigned int beginPtr = ringBufferAllocate(size, align);
-			memcpy(persistentMapping + beginPtr, desc.mipData_[i].data, size);
-
-			layers.mipLevel = i;
-
-			vk::BufferImageCopy region;
-			region.bufferOffset     = beginPtr;
-			// leave row length and image height 0 for tight packing
-			region.imageSubresource = layers;
-			region.imageExtent      = vk::Extent3D(w, h, 1);
-			regions.push_back(region);
-
-			w = std::max(w / 2, 1u);
-			h = std::max(h / 2, 1u);
+			memcpy(persistentMapping + region.bufferOffset, desc.mipData_[i].data, size);
 		}
 		op.cmdBuf.copyBufferToImage(ringBuffer, tex.image, vk::ImageLayout::eTransferDstOptimal, regions);
 
