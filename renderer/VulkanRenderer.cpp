@@ -1524,7 +1524,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	info.arrayLayers = 1;
 
 	vk::ImageUsageFlags flags(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
-	assert(desc.format_ != Format::Depth16);
+	assert(!isDepthFormat(desc.format_));
 	info.usage       = flags;
 
 	auto result = textures.add();
