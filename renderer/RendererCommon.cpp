@@ -214,6 +214,55 @@ const char *formatName(Format format) {
 }
 
 
+uint32_t formatSize(Format format) {
+	switch (format) {
+	case Format::Invalid:
+		UNREACHABLE();
+		return 4;
+
+	case Format::R8:
+		return 1;
+
+	case Format::RG8:
+		return 2;
+
+	case Format::RGB8:
+		return 3;
+
+	case Format::RGBA8:
+		return 4;
+
+	case Format::sRGBA8:
+		return 4;
+
+	case Format::RGBA16Float:
+		return 4 * 2;
+
+	case Format::RGBA32Float:
+		return 4 * 4;
+
+	case Format::Depth16:
+		return 2;
+
+	case Format::Depth16S8:
+		return 4;  // ?
+
+	case Format::Depth24S8:
+		return 4;
+
+	case Format::Depth24X8:
+		return 4;
+
+	case Format::Depth32Float:
+		return 4;
+
+	}
+
+	UNREACHABLE();
+	return 4;
+}
+
+
 class Includer final : public shaderc::CompileOptions::IncluderInterface {
 	std::unordered_map<std::string, std::vector<char> > &cache;
 
