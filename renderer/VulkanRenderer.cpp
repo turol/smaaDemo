@@ -1571,6 +1571,23 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
 	// TODO: share more of this stuff with createBuffer
+	unsigned int w = desc.width_, h = desc.height_;
+	unsigned int bufferSize = 0;
+	uint32_t align = std::max(formatSize(desc.format_), static_cast<uint32_t>(deviceProperties.limits.optimalBufferCopyOffsetAlignment));
+	for (unsigned int i = 0; i < desc.numMips_; i++) {
+		assert(desc.mipData_[i].data != nullptr);
+		assert(desc.mipData_[i].size != 0);
+		unsigned int size = desc.mipData_[i].size;
+
+		// round size up for proper alignment
+		size = size + align - 1;
+		size = size / align;
+		size = size * align;
+		bufferSize += size;
+
+		w = std::max(w / 2, 1u);
+		h = std::max(h / 2, 1u);
+	}
 	UploadOp op = allocateUploadOp();
 	vk::CommandBufferAllocateInfo cmdInfo(transferCmdPool, vk::CommandBufferLevel::ePrimary, 1);
 	op.cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
@@ -1608,11 +1625,9 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		layers.aspectMask = vk::ImageAspectFlagBits::eColor;
 		layers.layerCount = 1;
 
-		unsigned int w = desc.width_, h = desc.height_;
-		uint32_t align = std::max(formatSize(desc.format_), static_cast<uint32_t>(deviceProperties.limits.optimalBufferCopyOffsetAlignment));
+		w = desc.width_;
+		h = desc.height_;
 		for (unsigned int i = 0; i < desc.numMips_; i++) {
-			assert(desc.mipData_[i].data != nullptr);
-			assert(desc.mipData_[i].size != 0);
 			unsigned int size = desc.mipData_[i].size;
 
 			// copy contents to GPU memory
