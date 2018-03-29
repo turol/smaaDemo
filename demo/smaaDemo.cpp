@@ -2318,7 +2318,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 			int m = cubesPerSide;
 			bool changed = ImGui::InputInt("Cubes per side", &m);
-			if (changed && m > 0 && m < 64) {
+			if (changed && m > 0 && m < 55) {
 				cubesPerSide = m;
 				createCubes();
 			}
