@@ -577,7 +577,16 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	cp.queueFamilyIndex = transferQueueIndex;
 	transferCmdPool = device.createCommandPool(cp);
 
-	// TODO: load pipeline cache
+	vk::PipelineCacheCreateInfo cacheInfo;
+	std::vector<char> cacheData;
+	std::string plCacheFile =  spirvCacheDir + "pipeline.cache";
+	if (!desc.skipShaderCache && fileExists(plCacheFile)) {
+		cacheData                 = readFile(plCacheFile);
+		cacheInfo.initialDataSize = cacheData.size();
+		cacheInfo.pInitialData    = cacheData.data();
+	}
+
+	pipelineCache = device.createPipelineCache(cacheInfo);
 }
 
 
@@ -662,8 +671,13 @@ RendererImpl::~RendererImpl() {
 	assert(ringBuffer);
 	assert(persistentMapping);
 	assert(transferCmdPool);
+	assert(pipelineCache);
 
-	// TODO: save pipeline cache
+	// save pipeline cache
+	auto cacheData = device.getPipelineCacheData(pipelineCache);
+	writeFile(spirvCacheDir + "pipeline.cache", cacheData.data(), cacheData.size());
+	device.destroyPipelineCache(pipelineCache);
+	pipelineCache = vk::PipelineCache();
 
 	// TODO: if last frame is still pending we could add deleted resources to its list
 
@@ -1301,7 +1315,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	const auto &renderPass = renderPasses.get(desc.renderPass_);
 	info.renderPass = renderPass.renderPass;
 
-	auto result = device.createGraphicsPipeline(vk::PipelineCache(), info);
+	auto result = device.createGraphicsPipeline(pipelineCache, info);
 
 	if (debugMarkers) {
 		vk::DebugMarkerObjectNameInfoEXT markerName;

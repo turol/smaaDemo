@@ -914,6 +914,7 @@ struct RendererImpl : public RendererBase {
 	vk::SurfaceCapabilitiesKHR              surfaceCapabilities;
 	std::unordered_set<vk::PresentModeKHR>  surfacePresentModes;
 	vk::SwapchainKHR                        swapchain;
+	vk::PipelineCache                       pipelineCache;
 	vk::Queue                               queue;
 	vk::Queue                               transferQueue;
 
