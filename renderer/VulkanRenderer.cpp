@@ -574,8 +574,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	renderDoneSem = device.createSemaphore(vk::SemaphoreCreateInfo());
 
 	vk::CommandPoolCreateInfo cp;
-	// TODO: transferQueueIndex
-	cp.queueFamilyIndex = graphicsQueueIndex;
+	cp.queueFamilyIndex = transferQueueIndex;
 	transferCmdPool = device.createCommandPool(cp);
 
 	// TODO: load pipeline cache
@@ -819,7 +818,6 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	device.flushMappedMemoryRanges(vk::MappedMemoryRange(op.allocationInfo.deviceMemory, op.allocationInfo.offset, size));
 
 	// TODO: reuse command buffer for multiple copies
-	// TODO: use transfer queue instead of main queue
 	vk::BufferCopy copyRegion;
 	copyRegion.srcOffset = 0;
 	copyRegion.dstOffset = 0;
@@ -1583,8 +1581,6 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	}
 
 	// TODO: reuse command buffer for multiple copies
-	// TODO: use transfer queue instead of main queue
-	// TODO: share more of this stuff with createBuffer
 	unsigned int w = desc.width_, h = desc.height_;
 	unsigned int bufferSize = 0;
 	uint32_t align = std::max(formatSize(desc.format_), static_cast<uint32_t>(deviceProperties.limits.optimalBufferCopyOffsetAlignment));
@@ -1655,6 +1651,8 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		barrier.dstAccessMask       = vk::AccessFlagBits::eShaderRead;
 		barrier.oldLayout           = vk::ImageLayout::eTransferDstOptimal;
 		barrier.newLayout           = vk::ImageLayout::eShaderReadOnlyOptimal;
+		barrier.srcQueueFamilyIndex = transferQueueIndex;
+		barrier.dstQueueFamilyIndex = graphicsQueueIndex;
 		// TODO: relax stage flag bits
 		op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { barrier });
 	}
@@ -2402,7 +2400,7 @@ void RendererImpl::submitUploadOp(UploadOp &&op) {
 	submit.signalSemaphoreCount = 1;
 	submit.pSignalSemaphores    = &op.semaphore;
 
-	queue.submit({ submit }, op.fence);
+	transferQueue.submit({ submit }, op.fence);
 
 	uploads.emplace_back(std::move(op));
 }
