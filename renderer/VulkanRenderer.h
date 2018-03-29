@@ -698,12 +698,12 @@ namespace renderer {
 
 
 struct UploadOp {
-	vk::CommandBuffer  cmdBuf;
-	vk::Semaphore      semaphore;
+	vk::CommandBuffer       cmdBuf;
+	vk::Semaphore           semaphore;
 	vk::PipelineStageFlags  semWaitMask;
-	vk::Buffer         stagingBuffer;
-	VmaAllocation      memory;
-	VmaAllocationInfo  allocationInfo;
+	vk::Buffer              stagingBuffer;
+	VmaAllocation           memory;
+	VmaAllocationInfo       allocationInfo;
 
 
 	UploadOp() noexcept
@@ -733,8 +733,8 @@ struct UploadOp {
 	, memory(other.memory)
 	, allocationInfo(other.allocationInfo)
 	{
-		other.cmdBuf = vk::CommandBuffer();
-		other.semaphore = vk::Semaphore();
+		other.cmdBuf        = vk::CommandBuffer();
+		other.semaphore     = vk::Semaphore();
 		other.semWaitMask   = vk::PipelineStageFlags();
 		other.stagingBuffer = vk::Buffer();
 		other.memory        = VK_NULL_HANDLE;
@@ -752,11 +752,11 @@ struct UploadOp {
 		assert(!stagingBuffer);
 		assert(!memory);
 
-		cmdBuf       = other.cmdBuf;
-		other.cmdBuf = vk::CommandBuffer();
+		cmdBuf              = other.cmdBuf;
+		other.cmdBuf        = vk::CommandBuffer();
 
-		semaphore       = other.semaphore;
-		other.semaphore = vk::Semaphore();
+		semaphore           = other.semaphore;
+		other.semaphore     = vk::Semaphore();
 
 		semWaitMask         = other.semWaitMask;
 		other.semWaitMask   = vk::PipelineStageFlags();
