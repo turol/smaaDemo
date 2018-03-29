@@ -824,6 +824,20 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	copyRegion.size      = size;
 
 	op.cmdBuf.copyBuffer(op.stagingBuffer, buffer.buffer, 1, &copyRegion);
+
+	vk::BufferMemoryBarrier barrier;
+	barrier.srcAccessMask       = vk::AccessFlagBits::eTransferWrite;
+	// TODO: could be more specific based on type
+	barrier.dstAccessMask       = vk::AccessFlagBits::eShaderRead;
+	barrier.srcQueueFamilyIndex = transferQueueIndex;
+	barrier.dstQueueFamilyIndex = graphicsQueueIndex;
+	barrier.buffer              = buffer.buffer;
+	barrier.offset              = 0;
+	barrier.size                = size;
+
+	// TODO: relax stage flag bits
+	op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, { barrier }, {});
+
 	submitUploadOp(std::move(op));
 
 	return result.second;
@@ -1632,7 +1646,6 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		barrier.image                = tex.image;
 		barrier.subresourceRange     = range;
 
-		// TODO: do we need a barrier for the staging buffer?
 		// TODO: relax stage flag bits
 		op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { barrier });
 
