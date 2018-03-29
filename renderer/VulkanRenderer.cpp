@@ -216,6 +216,7 @@ static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebug
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
 , graphicsQueueIndex(0)
+, transferQueueIndex(0)
 , numUploads(0)
 , amdShaderInfo(false)
 , debugMarkers(false)
@@ -430,7 +431,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	numQueues++;
 
 	// get a transfer queue if there is one
-	uint32_t transferQueueIndex = graphicsQueueIndex;
+	transferQueueIndex          = graphicsQueueIndex;
 	uint32_t currentFlags       = static_cast<uint32_t>(queueProps[graphicsQueueIndex].queueFlags);
 	for (uint32_t i = 0; i < queueProps.size(); i++) {
 		// never the same as graphics queue
@@ -523,6 +524,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	vmaCreateAllocator(&allocatorInfo, &allocator);
 
 	queue = device.getQueue(graphicsQueueIndex, 0);
+	transferQueue = device.getQueue(transferQueueIndex, 0);
 
 	{
 		auto surfacePresentModes_ = physicalDevice.getSurfacePresentModesKHR(surface);
