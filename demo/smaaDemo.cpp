@@ -390,7 +390,7 @@ struct SMAAPipelines {
 
 class SMAADemo {
 	// command line things
-	bool            glDebug;
+	bool            renderDebug;
 	bool            tracing;
 	bool            noShaderCache;
 	bool            noShaderOpt;
@@ -548,7 +548,7 @@ public:
 
 
 SMAADemo::SMAADemo()
-: glDebug(false)
+: renderDebug(false)
 , tracing(false)
 , noShaderCache(false)
 , noShaderOpt(false)
@@ -779,7 +779,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 
 		cmd.parse(argc, argv);
 
-		glDebug       = debugSwitch.getValue();
+		renderDebug   = debugSwitch.getValue();
 		tracing       = tracingSwitch.getValue();
 		noShaderCache = noCacheSwitch.getValue();
 		noShaderOpt   = noOptSwitch.getValue();
@@ -981,7 +981,7 @@ static const std::array<Format, numDepths> depths
 
 void SMAADemo::initRender() {
 	RendererDesc desc;
-	desc.debug                = glDebug;
+	desc.debug                = renderDebug;
 	desc.tracing              = tracing;
 	desc.skipShaderCache      = noShaderCache;
 	desc.optimizeShaders      = !noShaderOpt;
