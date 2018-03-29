@@ -706,11 +706,14 @@ struct UploadOp {
 	//       depends on what kind of thing was uploaded
 	vk::Buffer         stagingBuffer;
 	VmaAllocation      memory;
+	VmaAllocationInfo  allocationInfo;
 
 
 	UploadOp() noexcept
 	: memory(VK_NULL_HANDLE)
-	{}
+	{
+		allocationInfo = {};
+	}
 
 	~UploadOp() noexcept {
 		assert(!fence);
@@ -731,6 +734,7 @@ struct UploadOp {
 	, semaphore(other.semaphore)
 	, stagingBuffer(other.stagingBuffer)
 	, memory(other.memory)
+	, allocationInfo(other.allocationInfo)
 	{
 		other.fence  = vk::Fence();
 		other.cmdBuf = vk::CommandBuffer();
@@ -765,6 +769,8 @@ struct UploadOp {
 
 		memory              = other.memory;
 		other.memory        = VK_NULL_HANDLE;
+
+		allocationInfo      = other.allocationInfo;
 
 		return *this;
 	}
