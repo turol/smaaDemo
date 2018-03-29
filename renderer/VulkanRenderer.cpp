@@ -777,26 +777,18 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 
 	// copy contents to GPU memory
 	UploadOp op = allocateUploadOp(size);
-	info.usage        = vk::BufferUsageFlagBits::eTransferSrc;
-	op.stagingBuffer  = device.createBuffer(info);
-
-	req.usage         = VMA_MEMORY_USAGE_CPU_ONLY;
-	req.flags         = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-	vmaAllocateMemoryForBuffer(allocator, op.stagingBuffer, &req, &op.memory, &op.allocationInfo);
-	assert(op.allocationInfo.pMappedData);
 	memcpy(static_cast<char *>(op.allocationInfo.pMappedData), contents, size);
 	device.flushMappedMemoryRanges(vk::MappedMemoryRange(op.allocationInfo.deviceMemory, op.allocationInfo.offset, size));
-	device.bindBufferMemory(op.stagingBuffer, op.allocationInfo.deviceMemory, op.allocationInfo.offset);
 
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
-	// TODO: share more of this stuff with createTexture
 	vk::BufferCopy copyRegion;
 	copyRegion.srcOffset = 0;
 	copyRegion.dstOffset = 0;
 	copyRegion.size      = size;
 
 	op.cmdBuf.copyBuffer(op.stagingBuffer, buffer.buffer, 1, &copyRegion);
+	// TODO: share more of this stuff with createTexture
 	op.cmdBuf.end();
 
 	vk::SubmitInfo submit;
@@ -1598,17 +1590,6 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		h = std::max(h / 2, 1u);
 	}
 	UploadOp op = allocateUploadOp(bufferSize);
-	// TODO: move staging buffer, memory and command buffer allocation to allocateUploadOp
-	vk::BufferCreateInfo bufInfo;
-	bufInfo.size      = bufferSize;
-	bufInfo.usage     = vk::BufferUsageFlagBits::eTransferSrc;
-	op.stagingBuffer  = device.createBuffer(bufInfo);
-	req.usage         = VMA_MEMORY_USAGE_CPU_ONLY;
-	req.flags         = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-	req.pUserData     = nullptr;
-	vmaAllocateMemoryForBuffer(allocator, op.stagingBuffer, &req, &op.memory, &op.allocationInfo);
-	assert(op.allocationInfo.pMappedData);
-	device.bindBufferMemory(op.stagingBuffer, op.allocationInfo.deviceMemory, op.allocationInfo.offset);
 
 	// transition to transfer destination
 	{
@@ -2364,7 +2345,7 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 }
 
 
-UploadOp RendererImpl::allocateUploadOp(uint32_t /* size */) {
+UploadOp RendererImpl::allocateUploadOp(uint32_t size) {
 	UploadOp op;
 
 	// TODO: have a free list of fences and semaphores instead of creating new ones all the time
@@ -2376,6 +2357,20 @@ UploadOp RendererImpl::allocateUploadOp(uint32_t /* size */) {
 	vk::CommandBufferAllocateInfo cmdInfo(transferCmdPool, vk::CommandBufferLevel::ePrimary, 1);
 	op.cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
 	op.cmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+
+	// TODO: move staging buffer, memory and command buffer allocation to allocateUploadOp
+	vk::BufferCreateInfo bufInfo;
+	bufInfo.size      = size;
+	bufInfo.usage     = vk::BufferUsageFlagBits::eTransferSrc;
+	op.stagingBuffer  = device.createBuffer(bufInfo);
+
+	VmaAllocationCreateInfo req = {};
+	req.usage         = VMA_MEMORY_USAGE_CPU_ONLY;
+	req.flags         = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+	req.pUserData     = nullptr;
+	vmaAllocateMemoryForBuffer(allocator, op.stagingBuffer, &req, &op.memory, &op.allocationInfo);
+	assert(op.allocationInfo.pMappedData);
+	device.bindBufferMemory(op.stagingBuffer, op.allocationInfo.deviceMemory, op.allocationInfo.offset);
 
 	numUploads++;
 
