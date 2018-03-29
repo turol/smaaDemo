@@ -776,7 +776,7 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	buffer.type   = type;
 
 	// copy contents to GPU memory
-	UploadOp op = allocateUploadOp();
+	UploadOp op = allocateUploadOp(size);
 	info.usage        = vk::BufferUsageFlagBits::eTransferSrc;
 	op.stagingBuffer  = device.createBuffer(info);
 
@@ -1597,7 +1597,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		w = std::max(w / 2, 1u);
 		h = std::max(h / 2, 1u);
 	}
-	UploadOp op = allocateUploadOp();
+	UploadOp op = allocateUploadOp(bufferSize);
 	// TODO: move staging buffer, memory and command buffer allocation to allocateUploadOp
 	vk::BufferCreateInfo bufInfo;
 	bufInfo.size      = bufferSize;
@@ -2364,7 +2364,7 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 }
 
 
-UploadOp RendererImpl::allocateUploadOp() {
+UploadOp RendererImpl::allocateUploadOp(uint32_t /* size */) {
 	UploadOp op;
 
 	// TODO: have a free list of fences and semaphores instead of creating new ones all the time
