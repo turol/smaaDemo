@@ -698,8 +698,6 @@ namespace renderer {
 
 
 struct UploadOp {
-	// TODO: fence is not strictly necessary, frame end fence should suffice
-	vk::Fence          fence;
 	vk::CommandBuffer  cmdBuf;
 	vk::Semaphore      semaphore;
 	// TODO: could have semaphore wait stage here too
@@ -716,7 +714,6 @@ struct UploadOp {
 	}
 
 	~UploadOp() noexcept {
-		assert(!fence);
 		assert(!cmdBuf);
 		assert(!semaphore);
 		assert(!stagingBuffer);
@@ -729,14 +726,12 @@ struct UploadOp {
 
 
 	UploadOp(UploadOp &&other) noexcept
-	: fence(other.fence)
-	, cmdBuf(other.cmdBuf)
+	: cmdBuf(other.cmdBuf)
 	, semaphore(other.semaphore)
 	, stagingBuffer(other.stagingBuffer)
 	, memory(other.memory)
 	, allocationInfo(other.allocationInfo)
 	{
-		other.fence  = vk::Fence();
 		other.cmdBuf = vk::CommandBuffer();
 		other.semaphore = vk::Semaphore();
 		other.stagingBuffer = vk::Buffer();
@@ -749,14 +744,10 @@ struct UploadOp {
 			return *this;
 		}
 
-		assert(!fence);
 		assert(!cmdBuf);
 		assert(!semaphore);
 		assert(!stagingBuffer);
 		assert(!memory);
-
-		fence        = other.fence;
-		other.fence  = vk::Fence();
 
 		cmdBuf       = other.cmdBuf;
 		other.cmdBuf = vk::CommandBuffer();

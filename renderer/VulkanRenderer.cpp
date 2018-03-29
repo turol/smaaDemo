@@ -2274,32 +2274,18 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 	Frame &frame = frames.at(frameIdx);
 	assert(frame.outstanding);
 
-	if (frame.uploads.empty()) {
 	auto waitResult = device.waitForFences({ frame.fence }, true, 1000000000ull);
 	if (waitResult != vk::Result::eSuccess) {
 		// TODO: handle these somehow
 		LOG("wait result is not success: %s\n", vk::to_string(waitResult).c_str());
 		throw std::runtime_error("wait result is not success");
 	}
-	} else {
-		std::vector<vk::Fence> fences;
-		fences.reserve(frame.uploads.size() + 1);
-		fences.push_back(frame.fence);
-		for (auto &op : frame.uploads) {
-			fences.push_back(op.fence);
-		}
 
-		vk::Result result;
-		do {
-			result = device.waitForFences(fences, true, 1000000000);
-		} while (result == vk::Result::eTimeout);
-
+	if (!frame.uploads.empty()) {
 		for (auto &op : frame.uploads) {
-			device.destroyFence(op.fence);
 			device.freeCommandBuffers(transferCmdPool, { op.cmdBuf } );
 			device.destroySemaphore(op.semaphore);
 
-			op.fence     = vk::Fence();
 			op.cmdBuf    = vk::CommandBuffer();
 			op.semaphore = vk::Semaphore();
 
@@ -2360,11 +2346,8 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 UploadOp RendererImpl::allocateUploadOp(uint32_t size) {
 	UploadOp op;
 
-	// TODO: have a free list of fences and semaphores instead of creating new ones all the time
+	// TODO: have a free list of semaphores instead of creating new ones all the time
 	op.semaphore = device.createSemaphore(vk::SemaphoreCreateInfo());
-
-	vk::FenceCreateInfo fci;
-	op.fence = device.createFence(fci);
 
 	vk::CommandBufferAllocateInfo cmdInfo(transferCmdPool, vk::CommandBufferLevel::ePrimary, 1);
 	op.cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
@@ -2400,7 +2383,7 @@ void RendererImpl::submitUploadOp(UploadOp &&op) {
 	submit.signalSemaphoreCount = 1;
 	submit.pSignalSemaphores    = &op.semaphore;
 
-	transferQueue.submit({ submit }, op.fence);
+	transferQueue.submit({ submit }, vk::Fence());
 
 	uploads.emplace_back(std::move(op));
 }
