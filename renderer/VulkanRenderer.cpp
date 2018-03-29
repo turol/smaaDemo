@@ -422,11 +422,45 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	std::array<float, 1> queuePriorities = { { 0.0f } };
 
-	std::array<vk::DeviceQueueCreateInfo, 1> queueCreateInfos;
-	queueCreateInfos[0].queueFamilyIndex  = graphicsQueueIndex;
-	queueCreateInfos[0].queueCount        = 1;
-	queueCreateInfos[0].pQueuePriorities  = &queuePriorities[0];
-	unsigned int numQueues = 1;
+	std::array<vk::DeviceQueueCreateInfo, 2> queueCreateInfos;
+	unsigned int numQueues = 0;
+	queueCreateInfos[numQueues].queueFamilyIndex  = graphicsQueueIndex;
+	queueCreateInfos[numQueues].queueCount        = 1;
+	queueCreateInfos[numQueues].pQueuePriorities  = &queuePriorities[0];
+	numQueues++;
+
+	// get a transfer queue if there is one
+	uint32_t transferQueueIndex = graphicsQueueIndex;
+	uint32_t currentFlags       = static_cast<uint32_t>(queueProps[graphicsQueueIndex].queueFlags);
+	for (uint32_t i = 0; i < queueProps.size(); i++) {
+		// never the same as graphics queue
+		if (i == graphicsQueueIndex) {
+			continue;
+		}
+
+		const auto &q = queueProps.at(i);
+		if (!(q.queueFlags & vk::QueueFlagBits::eTransfer)) {
+			// no transfer in this queue
+			continue;
+		}
+
+		// is it a smaller set of flags than the currently chosen queue?
+		// TODO: slight abuse of comparison here, should compare count of set bits
+		if (static_cast<uint32_t>(q.queueFlags) < currentFlags) {
+			transferQueueIndex = i;
+			currentFlags       = static_cast<uint32_t>(q.queueFlags);
+		}
+	}
+
+	if (transferQueueIndex != graphicsQueueIndex) {
+		LOG("Using queue %u for transfer\n", transferQueueIndex);
+		queueCreateInfos[numQueues].queueFamilyIndex  = transferQueueIndex;
+		queueCreateInfos[numQueues].queueCount        = 1;
+		queueCreateInfos[numQueues].pQueuePriorities  = &queuePriorities[0];
+		numQueues++;
+	} else {
+		LOG("No separate transfer queue\n");
+	}
 
 	std::unordered_set<std::string> availableExtensions;
 	{
