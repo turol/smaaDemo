@@ -959,6 +959,7 @@ struct RendererImpl : public RendererBase {
 	void waitForFrame(unsigned int frameIdx);
 
 	UploadOp allocateUploadOp(uint32_t size);
+	void submitUploadOp(UploadOp &&op);
 
 	void deleteBufferInternal(Buffer &b);
 	void deleteFramebufferInternal(Framebuffer &fb);

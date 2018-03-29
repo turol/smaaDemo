@@ -788,19 +788,7 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	copyRegion.size      = size;
 
 	op.cmdBuf.copyBuffer(op.stagingBuffer, buffer.buffer, 1, &copyRegion);
-	// TODO: share more of this stuff with createTexture
-	op.cmdBuf.end();
-
-	vk::SubmitInfo submit;
-	submit.waitSemaphoreCount   = 0;
-	submit.commandBufferCount   = 1;
-	submit.pCommandBuffers      = &op.cmdBuf;
-	submit.signalSemaphoreCount = 1;
-	submit.pSignalSemaphores    = &op.semaphore;
-
-	queue.submit({ submit }, op.fence);
-
-	uploads.emplace_back(std::move(op));
+	submitUploadOp(std::move(op));
 
 	return result.second;
 }
@@ -1633,19 +1621,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { barrier });
 	}
 
-	// TODO: move this to helper method, shared with uploadBuffer
-	op.cmdBuf.end();
-
-	vk::SubmitInfo submit;
-	submit.waitSemaphoreCount   = 0;
-	submit.commandBufferCount   = 1;
-	submit.pCommandBuffers      = &op.cmdBuf;
-	submit.signalSemaphoreCount = 1;
-	submit.pSignalSemaphores    = &op.semaphore;
-
-	queue.submit({ submit }, op.fence);
-
-	uploads.emplace_back(std::move(op));
+	submitUploadOp(std::move(op));
 
 	return result.second;
 }
@@ -2375,6 +2351,22 @@ UploadOp RendererImpl::allocateUploadOp(uint32_t size) {
 	numUploads++;
 
 	return op;
+}
+
+
+void RendererImpl::submitUploadOp(UploadOp &&op) {
+	op.cmdBuf.end();
+
+	vk::SubmitInfo submit;
+	submit.waitSemaphoreCount   = 0;
+	submit.commandBufferCount   = 1;
+	submit.pCommandBuffers      = &op.cmdBuf;
+	submit.signalSemaphoreCount = 1;
+	submit.pSignalSemaphores    = &op.semaphore;
+
+	queue.submit({ submit }, op.fence);
+
+	uploads.emplace_back(std::move(op));
 }
 
 
