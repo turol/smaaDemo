@@ -700,8 +700,7 @@ namespace renderer {
 struct UploadOp {
 	vk::CommandBuffer  cmdBuf;
 	vk::Semaphore      semaphore;
-	// TODO: could have semaphore wait stage here too
-	//       depends on what kind of thing was uploaded
+	vk::PipelineStageFlags  semWaitMask;
 	vk::Buffer         stagingBuffer;
 	VmaAllocation      memory;
 	VmaAllocationInfo  allocationInfo;
@@ -716,6 +715,7 @@ struct UploadOp {
 	~UploadOp() noexcept {
 		assert(!cmdBuf);
 		assert(!semaphore);
+		assert(!semWaitMask);
 		assert(!stagingBuffer);
 		assert(!memory);
 	}
@@ -728,12 +728,14 @@ struct UploadOp {
 	UploadOp(UploadOp &&other) noexcept
 	: cmdBuf(other.cmdBuf)
 	, semaphore(other.semaphore)
+	, semWaitMask(other.semWaitMask)
 	, stagingBuffer(other.stagingBuffer)
 	, memory(other.memory)
 	, allocationInfo(other.allocationInfo)
 	{
 		other.cmdBuf = vk::CommandBuffer();
 		other.semaphore = vk::Semaphore();
+		other.semWaitMask   = vk::PipelineStageFlags();
 		other.stagingBuffer = vk::Buffer();
 		other.memory        = VK_NULL_HANDLE;
 	}
@@ -746,6 +748,7 @@ struct UploadOp {
 
 		assert(!cmdBuf);
 		assert(!semaphore);
+		assert(!semWaitMask);
 		assert(!stagingBuffer);
 		assert(!memory);
 
@@ -754,6 +757,9 @@ struct UploadOp {
 
 		semaphore       = other.semaphore;
 		other.semaphore = vk::Semaphore();
+
+		semWaitMask         = other.semWaitMask;
+		other.semWaitMask   = vk::PipelineStageFlags();
 
 		stagingBuffer       = other.stagingBuffer;
 		other.stagingBuffer = vk::Buffer();

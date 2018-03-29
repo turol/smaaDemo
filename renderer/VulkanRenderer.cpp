@@ -828,6 +828,24 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 
 	// copy contents to GPU memory
 	UploadOp op = allocateUploadOp(size);
+	switch (type) {
+	case BufferType::Invalid:
+		UNREACHABLE();
+		break;
+
+	case BufferType::Index:
+	case BufferType::Vertex:
+	case BufferType::Everything:
+		op.semWaitMask = vk::PipelineStageFlagBits::eVertexInput;
+		break;
+
+	case BufferType::Uniform:
+	case BufferType::Storage:
+		op.semWaitMask = vk::PipelineStageFlagBits::eVertexShader;
+		break;
+
+	}
+
 	memcpy(static_cast<char *>(op.allocationInfo.pMappedData), contents, size);
 	device.flushMappedMemoryRanges(vk::MappedMemoryRange(op.allocationInfo.deviceMemory, op.allocationInfo.offset, size));
 
@@ -1637,7 +1655,9 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		w = std::max(w / 2, 1u);
 		h = std::max(h / 2, 1u);
 	}
+
 	UploadOp op = allocateUploadOp(bufferSize);
+	op.semWaitMask = vk::PipelineStageFlagBits::eFragmentShader;
 
 	// transition to transfer destination
 	{
@@ -2238,7 +2258,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 		semWaitMasks.reserve(uploads.size());
 		for (auto &op : uploads) {
 			uploadSemaphores.push_back(op.semaphore);
-			semWaitMasks.push_back(vk::PipelineStageFlagBits::eTopOfPipe);
+			semWaitMasks.push_back(op.semWaitMask);
 		}
 		submit.waitSemaphoreCount   = uploadSemaphores.size();
 		submit.pWaitSemaphores      = uploadSemaphores.data();
@@ -2314,6 +2334,7 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 
 			op.cmdBuf    = vk::CommandBuffer();
 			op.semaphore = vk::Semaphore();
+			op.semWaitMask = vk::PipelineStageFlags();
 
 			if (op.stagingBuffer) {
 				assert(op.memory);
