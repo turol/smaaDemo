@@ -1680,7 +1680,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		barrier.subresourceRange     = range;
 
 		// TODO: relax stage flag bits
-		op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { barrier });
+		op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eHost, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), {}, {}, { barrier });
 
 		w = desc.width_;
 		h = desc.height_;
