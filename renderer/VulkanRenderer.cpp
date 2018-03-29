@@ -791,15 +791,11 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
 	// TODO: share more of this stuff with createTexture
-	vk::CommandBufferAllocateInfo cmdInfo(transferCmdPool, vk::CommandBufferLevel::ePrimary, 1);
-	op.cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
-
 	vk::BufferCopy copyRegion;
 	copyRegion.srcOffset = 0;
 	copyRegion.dstOffset = 0;
 	copyRegion.size      = size;
 
-	op.cmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 	op.cmdBuf.copyBuffer(op.stagingBuffer, buffer.buffer, 1, &copyRegion);
 	op.cmdBuf.end();
 
@@ -1614,11 +1610,6 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	assert(allocationInfo.pMappedData);
 	device.bindBufferMemory(op.stagingBuffer, allocationInfo.deviceMemory, allocationInfo.offset);
 
-	vk::CommandBufferAllocateInfo cmdInfo(transferCmdPool, vk::CommandBufferLevel::ePrimary, 1);
-	op.cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
-
-	op.cmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
-
 	// transition to transfer destination
 	{
 		vk::ImageSubresourceRange range;
@@ -2381,6 +2372,10 @@ UploadOp RendererImpl::allocateUploadOp() {
 
 	vk::FenceCreateInfo fci;
 	op.fence = device.createFence(fci);
+
+	vk::CommandBufferAllocateInfo cmdInfo(transferCmdPool, vk::CommandBufferLevel::ePrimary, 1);
+	op.cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
+	op.cmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 
 	numUploads++;
 
