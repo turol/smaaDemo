@@ -422,10 +422,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	std::array<float, 1> queuePriorities = { { 0.0f } };
 
-	vk::DeviceQueueCreateInfo queueCreateInfo;
-	queueCreateInfo.queueFamilyIndex  = graphicsQueueIndex;
-	queueCreateInfo.queueCount        = 1;
-	queueCreateInfo.pQueuePriorities  = &queuePriorities[0];
+	std::array<vk::DeviceQueueCreateInfo, 1> queueCreateInfos;
+	queueCreateInfos[0].queueFamilyIndex  = graphicsQueueIndex;
+	queueCreateInfos[0].queueCount        = 1;
+	queueCreateInfos[0].pQueuePriorities  = &queuePriorities[0];
+	unsigned int numQueues = 1;
 
 	std::unordered_set<std::string> availableExtensions;
 	{
@@ -463,8 +464,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	vk::DeviceCreateInfo deviceCreateInfo;
-	deviceCreateInfo.queueCreateInfoCount     = 1;
-	deviceCreateInfo.pQueueCreateInfos        = &queueCreateInfo;
+	assert(numQueues <= queueCreateInfos.size());
+	deviceCreateInfo.queueCreateInfoCount     = numQueues;
+	deviceCreateInfo.pQueueCreateInfos        = queueCreateInfos.data();
 	// TODO: enable only features we need
 	deviceCreateInfo.pEnabledFeatures         = &deviceFeatures;
 	deviceCreateInfo.enabledExtensionCount    = static_cast<uint32_t>(deviceExtensions.size());
