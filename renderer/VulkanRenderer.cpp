@@ -827,16 +827,14 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 
 	vk::BufferMemoryBarrier barrier;
 	barrier.srcAccessMask       = vk::AccessFlagBits::eTransferWrite;
-	// TODO: could be more specific based on type
-	barrier.dstAccessMask       = vk::AccessFlagBits::eShaderRead;
+	barrier.dstAccessMask       = vk::AccessFlagBits::eMemoryRead;
 	barrier.srcQueueFamilyIndex = transferQueueIndex;
 	barrier.dstQueueFamilyIndex = graphicsQueueIndex;
 	barrier.buffer              = buffer.buffer;
 	barrier.offset              = 0;
 	barrier.size                = size;
 
-	// TODO: relax stage flag bits
-	op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, { barrier }, {});
+	op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTopOfPipe, vk::DependencyFlags(), {}, { barrier }, {});
 
 	submitUploadOp(std::move(op));
 
@@ -1637,6 +1635,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		range.layerCount            = VK_REMAINING_ARRAY_LAYERS;
 
 		vk::ImageMemoryBarrier barrier;
+		// TODO: should this be eHostWrite?
 		barrier.srcAccessMask        = vk::AccessFlagBits();
 		barrier.dstAccessMask        = vk::AccessFlagBits::eTransferWrite;
 		barrier.oldLayout            = vk::ImageLayout::eUndefined;
@@ -1661,13 +1660,13 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 
 		// transition to shader use
 		barrier.srcAccessMask       = vk::AccessFlagBits::eTransferWrite;
-		barrier.dstAccessMask       = vk::AccessFlagBits::eShaderRead;
+		barrier.dstAccessMask       = vk::AccessFlagBits::eMemoryRead;
 		barrier.oldLayout           = vk::ImageLayout::eTransferDstOptimal;
 		barrier.newLayout           = vk::ImageLayout::eShaderReadOnlyOptimal;
 		barrier.srcQueueFamilyIndex = transferQueueIndex;
 		barrier.dstQueueFamilyIndex = graphicsQueueIndex;
-		// TODO: relax stage flag bits
-		op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { barrier });
+
+		op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTopOfPipe, vk::DependencyFlags(), {}, {}, { barrier });
 	}
 
 	submitUploadOp(std::move(op));
