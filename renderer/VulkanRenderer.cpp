@@ -772,7 +772,7 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	assert(allocationInfo.pMappedData == nullptr);
 	device.bindBufferMemory(buffer.buffer, allocationInfo.deviceMemory, allocationInfo.offset);
 	buffer.offset = static_cast<uint32_t>(allocationInfo.offset);
-	buffer.size   = static_cast<uint32_t>(allocationInfo.size);
+	buffer.size   = size;
 	buffer.type   = type;
 
 	// copy contents to GPU memory
