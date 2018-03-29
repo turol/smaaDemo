@@ -425,7 +425,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	vk::DeviceQueueCreateInfo queueCreateInfo;
 	queueCreateInfo.queueFamilyIndex  = graphicsQueueIndex;
 	queueCreateInfo.queueCount        = 1;
-	queueCreateInfo.pQueuePriorities  = &queuePriorities[0];;
+	queueCreateInfo.pQueuePriorities  = &queuePriorities[0];
 
 	std::unordered_set<std::string> availableExtensions;
 	{
