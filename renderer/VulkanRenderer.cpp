@@ -782,11 +782,11 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 
 	req.usage         = VMA_MEMORY_USAGE_CPU_ONLY;
 	req.flags         = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-	vmaAllocateMemoryForBuffer(allocator, op.stagingBuffer, &req, &op.memory, &allocationInfo);
-	assert(allocationInfo.pMappedData);
-	memcpy(static_cast<char *>(allocationInfo.pMappedData), contents, size);
-	device.flushMappedMemoryRanges(vk::MappedMemoryRange(allocationInfo.deviceMemory, allocationInfo.offset, size));
-	device.bindBufferMemory(op.stagingBuffer, allocationInfo.deviceMemory, allocationInfo.offset);
+	vmaAllocateMemoryForBuffer(allocator, op.stagingBuffer, &req, &op.memory, &op.allocationInfo);
+	assert(op.allocationInfo.pMappedData);
+	memcpy(static_cast<char *>(op.allocationInfo.pMappedData), contents, size);
+	device.flushMappedMemoryRanges(vk::MappedMemoryRange(op.allocationInfo.deviceMemory, op.allocationInfo.offset, size));
+	device.bindBufferMemory(op.stagingBuffer, op.allocationInfo.deviceMemory, op.allocationInfo.offset);
 
 	// TODO: reuse command buffer for multiple copies
 	// TODO: use transfer queue instead of main queue
@@ -1606,9 +1606,9 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	req.usage         = VMA_MEMORY_USAGE_CPU_ONLY;
 	req.flags         = VMA_ALLOCATION_CREATE_MAPPED_BIT;
 	req.pUserData     = nullptr;
-	vmaAllocateMemoryForBuffer(allocator, op.stagingBuffer, &req, &op.memory, &allocationInfo);
-	assert(allocationInfo.pMappedData);
-	device.bindBufferMemory(op.stagingBuffer, allocationInfo.deviceMemory, allocationInfo.offset);
+	vmaAllocateMemoryForBuffer(allocator, op.stagingBuffer, &req, &op.memory, &op.allocationInfo);
+	assert(op.allocationInfo.pMappedData);
+	device.bindBufferMemory(op.stagingBuffer, op.allocationInfo.deviceMemory, op.allocationInfo.offset);
 
 	// transition to transfer destination
 	{
@@ -1635,12 +1635,12 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 
 		w = desc.width_;
 		h = desc.height_;
-		char *mappedPtr = static_cast<char *>(allocationInfo.pMappedData);
+		char *mappedPtr = static_cast<char *>(op.allocationInfo.pMappedData);
 		for (unsigned int i = 0; i < desc.numMips_; i++) {
 			// copy contents to GPU memory
 			memcpy(mappedPtr + regions[i].bufferOffset, desc.mipData_[i].data, desc.mipData_[i].size);
 		}
-		device.flushMappedMemoryRanges(vk::MappedMemoryRange(allocationInfo.deviceMemory, allocationInfo.offset, bufferSize));
+		device.flushMappedMemoryRanges(vk::MappedMemoryRange(op.allocationInfo.deviceMemory, op.allocationInfo.offset, bufferSize));
 		op.cmdBuf.copyBufferToImage(op.stagingBuffer, tex.image, vk::ImageLayout::eTransferDstOptimal, regions);
 
 		// transition to shader use
