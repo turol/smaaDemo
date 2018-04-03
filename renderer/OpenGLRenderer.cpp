@@ -479,6 +479,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	window = SDL_CreateWindow("SMAA Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, desc.swapchain.width, desc.swapchain.height, flags);
 
+	if (!window) {
+		LOG("SDL_CreateWindow failed: %s\n", SDL_GetError());
+		throw std::runtime_error("SDL_CreateWindow failed");
+	}
+
 	context = SDL_GL_CreateContext(window);
 
 	{
