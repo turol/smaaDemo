@@ -1690,8 +1690,6 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		// TODO: relax stage flag bits
 		op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eHost, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), {}, {}, { barrier });
 
-		w = desc.width_;
-		h = desc.height_;
 		char *mappedPtr = static_cast<char *>(op.allocationInfo.pMappedData);
 		for (unsigned int i = 0; i < desc.numMips_; i++) {
 			// copy contents to GPU memory
