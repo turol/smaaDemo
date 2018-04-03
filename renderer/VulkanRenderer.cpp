@@ -492,10 +492,13 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		debugMarkers = checkExt(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
 	}
 
+	if (desc.tracing) {
+        // this disables pipeline caching on radv so only enable when tracing
 	amdShaderInfo = checkExt(VK_AMD_SHADER_INFO_EXTENSION_NAME);
 	if (amdShaderInfo) {
 		LOG("VK_AMD_shader_info found\n");
 		pfn_vkGetShaderInfoAMD = reinterpret_cast<PFN_vkGetShaderInfoAMD>(instance.getProcAddr("vkGetShaderInfoAMD"));
+	}
 	}
 
 	vk::DeviceCreateInfo deviceCreateInfo;
