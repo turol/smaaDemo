@@ -937,18 +937,17 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	assert(desc.renderPass_);
 
 	auto &renderPass = renderPasses.get(desc.renderPass_);
-
-	// TODO: multiple render targets
-	assert(desc.colors_[0]);
-	assert(!desc.colors_[1]);
+	assert(renderPass.renderPass);
 
 	std::vector<vk::ImageView> attachmentViews;
 	unsigned int width = 0, height = 0;
 
-	// TODO: make sure renderPass formats match actual framebuffer attachments
-	assert(renderPass.renderPass);
-	{
-		const auto &colorRT = renderTargets.get(desc.colors_[0]);
+	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+		if (!desc.colors_[i]) {
+			continue;
+		}
+
+		const auto &colorRT = renderTargets.get(desc.colors_[i]);
 
 		if (width == 0) {
 			assert(height == 0);
@@ -962,6 +961,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 		assert(colorRT.width  > 0);
 		assert(colorRT.height > 0);
 		assert(colorRT.imageView);
+		// TODO: make sure renderPass formats match actual framebuffer attachments
 		attachmentViews.push_back(colorRT.imageView);
 	}
 
@@ -981,7 +981,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	fbInfo.pAttachments     = &attachmentViews[0];
 	fbInfo.width            = width;
 	fbInfo.height           = height;
-	fbInfo.layers           = 1;  // TODO: multiple render targets?
+	fbInfo.layers           = 1;
 
 	auto result     = framebuffers.add();
 	Framebuffer &fb = result.first;
