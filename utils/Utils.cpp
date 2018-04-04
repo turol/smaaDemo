@@ -68,6 +68,13 @@ void logShutdown() {
 }
 
 
+void logFlush() {
+	assert(logFile);
+
+	fflush(logFile);
+}
+
+
 std::vector<char> readTextFile(std::string filename) {
 	std::unique_ptr<FILE, FILEDeleter> file(fopen(filename.c_str(), "rb"));
 

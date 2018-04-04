@@ -108,6 +108,7 @@ struct FILEDeleter {
 void logInit();
 void logWrite(const char* message, ...) PRINTF(1, 2);
 void logShutdown();
+void logFlush();
 
 std::vector<char> readTextFile(std::string filename);
 std::vector<char> readFile(std::string filename);
