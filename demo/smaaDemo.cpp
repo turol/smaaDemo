@@ -1463,8 +1463,8 @@ void SMAADemo::createFramebuffers() {
 		FramebufferDesc fbDesc;
 		fbDesc.name("scene")
 		      .renderPass(getSceneRenderPass(numSamples, Layout::ShaderRead))
-		      .depthStencil(mainDepthRT)
-		      .color(0, mainColorRT);
+		      .color(0, mainColorRT)
+		      .depthStencil(mainDepthRT);
 		sceneFramebuffer = renderer.createFramebuffer(fbDesc);
 	}
 
