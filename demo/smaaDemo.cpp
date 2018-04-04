@@ -463,6 +463,7 @@ class SMAADemo {
 
 	RenderTargetHandle mainColorRT;
 	RenderTargetHandle mainDepthRT;
+	RenderTargetHandle velocityRT;
 	RenderTargetHandle edgesRT;
 	RenderTargetHandle blendWeightsRT;
 	RenderTargetHandle finalRenderRT;
@@ -650,6 +651,9 @@ SMAADemo::~SMAADemo() {
 
 		assert(mainColorRT);
 		renderer.deleteRenderTarget(mainColorRT);
+
+		assert(velocityRT);
+		renderer.deleteRenderTarget(velocityRT);
 
 		assert(mainDepthRT);
 		renderer.deleteRenderTarget(mainDepthRT);
@@ -1445,6 +1449,9 @@ void SMAADemo::createFramebuffers() {
 		assert(mainColorRT);
 		renderer.deleteRenderTarget(mainColorRT);
 
+		assert(velocityRT);
+		renderer.deleteRenderTarget(velocityRT);
+
 		assert(mainDepthRT);
 		renderer.deleteRenderTarget(mainDepthRT);
 
@@ -1474,6 +1481,16 @@ void SMAADemo::createFramebuffers() {
 		      .width(windowWidth)
 		      .height(windowHeight);
 		mainColorRT = renderer.createRenderTarget(rtDesc);
+	}
+
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("velocity")
+		      .numSamples(numSamples)
+		      .format(Format::RG16Float)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		velocityRT = renderer.createRenderTarget(rtDesc);
 	}
 
 	{
