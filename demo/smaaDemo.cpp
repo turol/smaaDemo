@@ -476,6 +476,7 @@ class SMAADemo {
 	RenderPassHandle   finalRenderPass;
 	RenderPassHandle   guiOnlyRenderPass;
 	FramebufferHandle  finalFramebuffer;
+	std::array<FramebufferHandle, 2>  resolveFBs;
 
 	BufferHandle       cubeVBO;
 	BufferHandle       cubeIBO;
@@ -1521,8 +1522,17 @@ void SMAADemo::createFramebuffers() {
 		      .height(windowHeight);
 		resolveRTs[0] = renderer.createRenderTarget(rtDesc);
 
+		FramebufferDesc fbDesc;
+		fbDesc.name("Temporal resolve 0")
+		      .renderPass(finalRenderPass) // TODO: is it?
+		      .color(0, blendWeightsRT);
+		resolveFBs[0] = renderer.createFramebuffer(fbDesc);
+
 		rtDesc.name("Temporal resolve 1");
 		resolveRTs[1] = renderer.createRenderTarget(rtDesc);
+
+		fbDesc.name("Temporal resolve 1");
+		resolveFBs[1] = renderer.createFramebuffer(fbDesc);
 	}
 }
 
