@@ -468,6 +468,7 @@ class SMAADemo {
 	RenderTargetHandle edgesRT;
 	RenderTargetHandle blendWeightsRT;
 	RenderTargetHandle finalRenderRT;
+	std::array<RenderTargetHandle, 2>  resolveRTs;
 
 	std::unordered_map<SceneRPKey, RenderPassHandle>  sceneRenderPasses;
 	FramebufferHandle  sceneFramebuffer;
@@ -1509,6 +1510,18 @@ void SMAADemo::createFramebuffers() {
 		      .color(0, blendWeightsRT);
 		smaaWeightsFramebuffer = renderer.createFramebuffer(fbDesc);
 	}
+
+	if (temporalAA) {
+		RenderTargetDesc rtDesc;
+		rtDesc.name("Temporal resolve 0")
+		      .format(Format::RGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		resolveRTs[0] = renderer.createRenderTarget(rtDesc);
+
+		rtDesc.name("Temporal resolve 1");
+		resolveRTs[1] = renderer.createRenderTarget(rtDesc);
+	}
 }
 
 
@@ -1542,6 +1555,14 @@ void SMAADemo::deleteFramebuffers() {
 
 	assert(finalRenderRT);
 	renderer.deleteRenderTarget(finalRenderRT);
+
+	if (resolveRTs[0]) {
+		assert(resolveRTs[1]);
+		renderer.deleteRenderTarget(resolveRTs[0]);
+		renderer.deleteRenderTarget(resolveRTs[1]);
+	} else {
+		assert(!resolveRTs[1]);
+	}
 }
 
 
