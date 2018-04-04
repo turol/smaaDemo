@@ -143,6 +143,9 @@ static vk::Format vulkanFormat(Format format) {
 	case Format::sRGBA8:
 		return vk::Format::eR8G8B8A8Srgb;
 
+	case Format::RG16Float:
+		return vk::Format::eR16G16Sfloat;
+
 	case Format::RGBA16Float:
 		return vk::Format::eR16G16Sfloat;
 
