@@ -940,17 +940,25 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	assert(!desc.colors_[1]);
 
 	std::vector<vk::ImageView> attachmentViews;
-	unsigned int width, height;
+	unsigned int width = 0, height = 0;
 
 	// TODO: make sure renderPass formats match actual framebuffer attachments
 	assert(renderPass.renderPass);
 	{
 		const auto &colorRT = renderTargets.get(desc.colors_[0]);
+
+		if (width == 0) {
+			assert(height == 0);
+			width  = colorRT.width;
+			height = colorRT.height;
+		} else {
+			assert(width  == colorRT.width);
+			assert(height == colorRT.height);
+		}
+
 		assert(colorRT.width  > 0);
 		assert(colorRT.height > 0);
 		assert(colorRT.imageView);
-		width  = colorRT.width;
-		height = colorRT.height;
 		attachmentViews.push_back(colorRT.imageView);
 	}
 
