@@ -1108,8 +1108,6 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	assert(!desc.name_.empty());
 	assert(desc.renderPass_);
-	assert(desc.colors_[0]);
-	assert(!desc.colors_[1]);
 
 	auto &renderPass = renderPasses.get(desc.renderPass_);
 
