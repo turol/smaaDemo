@@ -521,6 +521,8 @@ public:
 
 	void createFramebuffers();
 
+	void deleteFramebuffers();
+
 	void createCubes();
 
 	void shuffleCubeRendering();
@@ -638,34 +640,7 @@ SMAADemo::~SMAADemo() {
 	ImGui::Shutdown();
 
 	if (sceneFramebuffer) {
-		renderer.deleteFramebuffer(sceneFramebuffer);
-
-		assert(finalFramebuffer);
-		renderer.deleteFramebuffer(finalFramebuffer);
-
-		assert(smaaEdgesFramebuffer);
-		renderer.deleteFramebuffer(smaaEdgesFramebuffer);
-
-		assert(smaaWeightsFramebuffer);
-		renderer.deleteFramebuffer(smaaWeightsFramebuffer);
-
-		assert(mainColorRT);
-		renderer.deleteRenderTarget(mainColorRT);
-
-		assert(velocityRT);
-		renderer.deleteRenderTarget(velocityRT);
-
-		assert(mainDepthRT);
-		renderer.deleteRenderTarget(mainDepthRT);
-
-		assert(edgesRT);
-		renderer.deleteRenderTarget(edgesRT);
-
-		assert(blendWeightsRT);
-		renderer.deleteRenderTarget(blendWeightsRT);
-
-		assert(finalRenderRT);
-		renderer.deleteRenderTarget(finalRenderRT);
+		deleteFramebuffers();
 
 		for (auto rp : sceneRenderPasses) {
 			renderer.deleteRenderPass(rp.second);
@@ -1434,35 +1409,7 @@ void SMAADemo::loadImage(const std::string &filename) {
 
 void SMAADemo::createFramebuffers() {
 	if (sceneFramebuffer) {
-		assert(sceneFramebuffer);
-		renderer.deleteFramebuffer(sceneFramebuffer);
-
-		assert(finalFramebuffer);
-		renderer.deleteFramebuffer(finalFramebuffer);
-
-		assert(smaaEdgesFramebuffer);
-		renderer.deleteFramebuffer(smaaEdgesFramebuffer);
-
-		assert(smaaWeightsFramebuffer);
-		renderer.deleteFramebuffer(smaaWeightsFramebuffer);
-
-		assert(mainColorRT);
-		renderer.deleteRenderTarget(mainColorRT);
-
-		assert(velocityRT);
-		renderer.deleteRenderTarget(velocityRT);
-
-		assert(mainDepthRT);
-		renderer.deleteRenderTarget(mainDepthRT);
-
-		assert(edgesRT);
-		renderer.deleteRenderTarget(edgesRT);
-
-		assert(blendWeightsRT);
-		renderer.deleteRenderTarget(blendWeightsRT);
-
-		assert(finalRenderRT);
-		renderer.deleteRenderTarget(finalRenderRT);
+		deleteFramebuffers();
 	}
 
 	if (antialiasing && aaMethod == AAMethod::MSAA) {
@@ -1560,6 +1507,39 @@ void SMAADemo::createFramebuffers() {
 		      .color(0, blendWeightsRT);
 		smaaWeightsFramebuffer = renderer.createFramebuffer(fbDesc);
 	}
+}
+
+
+void SMAADemo::deleteFramebuffers() {
+	assert(sceneFramebuffer);
+	renderer.deleteFramebuffer(sceneFramebuffer);
+
+	assert(finalFramebuffer);
+	renderer.deleteFramebuffer(finalFramebuffer);
+
+	assert(smaaEdgesFramebuffer);
+	renderer.deleteFramebuffer(smaaEdgesFramebuffer);
+
+	assert(smaaWeightsFramebuffer);
+	renderer.deleteFramebuffer(smaaWeightsFramebuffer);
+
+	assert(mainColorRT);
+	renderer.deleteRenderTarget(mainColorRT);
+
+	assert(velocityRT);
+	renderer.deleteRenderTarget(velocityRT);
+
+	assert(mainDepthRT);
+	renderer.deleteRenderTarget(mainDepthRT);
+
+	assert(edgesRT);
+	renderer.deleteRenderTarget(edgesRT);
+
+	assert(blendWeightsRT);
+	renderer.deleteRenderTarget(blendWeightsRT);
+
+	assert(finalRenderRT);
+	renderer.deleteRenderTarget(finalRenderRT);
 }
 
 
