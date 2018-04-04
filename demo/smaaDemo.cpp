@@ -410,6 +410,7 @@ class SMAADemo {
 	bool antialiasing;
 	AAMethod aaMethod;
 	bool          temporalAA;
+	unsigned int  temporalFrame;
 	// number of samples in current scene fb
 	// 1 or 2 if SMAA
 	// 2.. if MSAA
@@ -571,6 +572,7 @@ SMAADemo::SMAADemo()
 , antialiasing(true)
 , aaMethod(AAMethod::SMAA)
 , temporalAA(false)
+, temporalFrame(0)
 , numSamples(1)
 , debugMode(0)
 , colorMode(0)
@@ -1979,6 +1981,10 @@ void SMAADemo::render() {
 	globals.predicationStrength  = predicationStrength;
 	globals.pad0 = 0;
 
+	if (temporalAA) {
+		temporalFrame = (temporalFrame + 1) % 2;
+	}
+
 	Layout l = Layout::ShaderRead;
 	if (antialiasing && aaMethod == AAMethod::MSAA) {
 		l = Layout::TransferSrc;
@@ -2008,6 +2014,8 @@ void SMAADemo::render() {
 		glm::mat4 view   = glm::lookAt(glm::vec3(cameraDistance, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 proj   = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, nearPlane, farPlane);
 		globals.viewProj = proj * view * model;
+
+		// TODO: temporal jitter
 
 		renderer.setViewport(0, 0, windowWidth, windowHeight);
 
