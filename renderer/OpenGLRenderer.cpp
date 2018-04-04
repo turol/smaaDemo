@@ -1117,7 +1117,13 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	Framebuffer &fb = result.first;
 	glCreateFramebuffers(1, &fb.fbo);
 
+	unsigned int width = 0, height = 0;
+
+	{
 	const auto &colorRT = renderTargets.get(desc.colors_[0]);
+
+	width  = colorRT.width;
+	height = colorRT.height;
 
 	assert(colorRT.width  > 0);
 	assert(colorRT.height > 0);
@@ -1138,16 +1144,17 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	assert(colorRTtex.tex != 0);
 
 	glNamedFramebufferTexture(fb.fbo, GL_COLOR_ATTACHMENT0, colorRTtex.tex, 0);
+	}
 
 	if (desc.depthStencil_) {
 		const auto &depthRT = renderTargets.get(desc.depthStencil_);
 		assert(depthRT.format == renderPass.desc.depthStencilFormat_);
-		assert(depthRT.width  == colorRT.width);
-		assert(depthRT.height == colorRT.height);
+		assert(depthRT.width  == width);
+		assert(depthRT.height == height);
 		assert(depthRT.texture);
 		assert(depthRT.numSamples > 0);
 		assert(depthRT.numSamples <= static_cast<unsigned int>(glValues[GL_MAX_DEPTH_TEXTURE_SAMPLES]));
-		assert(depthRT.numSamples == colorRT.numSamples);
+		assert(depthRT.numSamples == renderPass.numSamples);
 
 		const auto &depthRTtex = textures.get(depthRT.texture);
 		assert(depthRTtex.renderTarget);
