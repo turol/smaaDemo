@@ -37,6 +37,7 @@ struct Buffer {
 
 	Buffer()
 	: ringBufferAlloc(false)
+	, beginOffs(0)
 	, size(0)
 	{
 	}
