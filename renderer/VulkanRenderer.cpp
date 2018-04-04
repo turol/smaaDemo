@@ -1050,13 +1050,15 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	assert(desc.colorRTs_[0].format != Format::Invalid);
 	assert(desc.colorRTs_[1].format == Format::Invalid);
 	{
+		const auto &colorRT = desc.colorRTs_[0];
+
 		uint32_t attachNum    = static_cast<uint32_t>(attachments.size());
 		vk::ImageLayout layout = vk::ImageLayout::eColorAttachmentOptimal;
 
 		vk::AttachmentDescription attach;
-		attach.format         = vulkanFormat(desc.colorRTs_[0].format);
+		attach.format         = vulkanFormat(colorRT.format);
 		attach.samples        = samples;
-		switch (desc.colorRTs_[0].passBegin) {
+		switch (colorRT.passBegin) {
 		case PassBegin::DontCare:
 			attach.loadOp         = vk::AttachmentLoadOp::eDontCare;
 			attach.initialLayout  = vk::ImageLayout::eUndefined;
@@ -1071,7 +1073,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		case PassBegin::Clear:
 			attach.loadOp         = vk::AttachmentLoadOp::eClear;
 			attach.initialLayout  = vk::ImageLayout::eUndefined;
-			std::array<float, 4> color = { { desc.colorRTs_[0].clearValue.x, desc.colorRTs_[0].clearValue.y, desc.colorRTs_[0].clearValue.z, desc.colorRTs_[0].clearValue.a } };
+			std::array<float, 4> color = { { colorRT.clearValue.x, colorRT.clearValue.y, colorRT.clearValue.z, colorRT.clearValue.a } };
 			r.clearValueCount = attachNum + 1;
 			assert(r.clearValueCount <= 2);
 			r.clearValues[attachNum].color = vk::ClearColorValue(color);
@@ -1084,7 +1086,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		attach.storeOp        = vk::AttachmentStoreOp::eStore;
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
 		attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-		attach.finalLayout    = vulkanLayout(desc.colorRTs_[0].finalLayout);
+		attach.finalLayout    = vulkanLayout(colorRT.finalLayout);
 		attachments.push_back(attach);
 
 		vk::AttachmentReference ref;
