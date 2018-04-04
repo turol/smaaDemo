@@ -1046,11 +1046,12 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 
 	vk::SampleCountFlagBits samples = sampleCountFlagsFromNum(desc.numSamples_);
 
-	// TODO: multiple render targets
-	assert(desc.colorRTs_[0].format != Format::Invalid);
-	assert(desc.colorRTs_[1].format == Format::Invalid);
-	{
-		const auto &colorRT = desc.colorRTs_[0];
+	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+		if (desc.colorRTs_[i].format == Format::Invalid) {
+			continue;
+		}
+
+		const auto &colorRT = desc.colorRTs_[i];
 
 		uint32_t attachNum    = static_cast<uint32_t>(attachments.size());
 		vk::ImageLayout layout = vk::ImageLayout::eColorAttachmentOptimal;
@@ -1080,9 +1081,6 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 			break;
 		}
 
-		assert(desc.colorRTs_[1].passBegin == PassBegin::DontCare);
-		assert(desc.colorRTs_[1].finalLayout == Layout::Undefined);
-
 		attach.storeOp        = vk::AttachmentStoreOp::eStore;
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
 		attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
@@ -1111,7 +1109,6 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		if (desc.clearDepthAttachment) {
 			attach.loadOp     = vk::AttachmentLoadOp::eClear;
 			r.clearValueCount = attachNum + 1;
-			assert(r.clearValueCount <= 2);
 			r.clearValues[attachNum].depthStencil = vk::ClearDepthStencilValue(1.0f, 0);
 		}
 		attach.storeOp        = vk::AttachmentStoreOp::eStore;
