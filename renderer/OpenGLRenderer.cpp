@@ -1119,8 +1119,12 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 
 	unsigned int width = 0, height = 0;
 
-	{
-		const auto &colorRT = renderTargets.get(desc.colors_[0]);
+	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+		if (!desc.colors_[i]) {
+			continue;
+		}
+
+		const auto &colorRT = renderTargets.get(desc.colors_[i]);
 
 		width  = colorRT.width;
 		height = colorRT.height;
@@ -1131,10 +1135,10 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 		assert(colorRT.numSamples <= static_cast<unsigned int>(glValues[GL_MAX_COLOR_TEXTURE_SAMPLES]));
 		assert(colorRT.numSamples == renderPass.numSamples);
 		assert(colorRT.texture);
-		assert(colorRT.format == renderPass.desc.colorRTs_[0].format);
+		assert(colorRT.format == renderPass.desc.colorRTs_[i].format);
 		fb.renderPass = desc.renderPass_;
 		fb.numSamples = colorRT.numSamples;
-		fb.colors[0]  = desc.colors_[0];
+		fb.colors[i]  = desc.colors_[i];
 		fb.sRGB       = issRGBFormat(colorRT.format);
 		fb.width      = colorRT.width;
 		fb.height     = colorRT.height;
@@ -1143,7 +1147,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 		assert(colorRTtex.renderTarget);
 		assert(colorRTtex.tex != 0);
 
-		glNamedFramebufferTexture(fb.fbo, GL_COLOR_ATTACHMENT0, colorRTtex.tex, 0);
+		glNamedFramebufferTexture(fb.fbo, GL_COLOR_ATTACHMENT0 + i, colorRTtex.tex, 0);
 	}
 
 	if (desc.depthStencil_) {
