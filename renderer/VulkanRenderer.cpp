@@ -932,6 +932,9 @@ static vk::ImageLayout vulkanLayout(Layout l) {
 FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	assert(!desc.name_.empty());
 	assert(desc.renderPass_);
+
+	auto &renderPass = renderPasses.get(desc.renderPass_);
+
 	// TODO: multiple render targets
 	assert(desc.colors_[0]);
 	assert(!desc.colors_[1]);
@@ -940,8 +943,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	unsigned int width, height;
 
 	// TODO: make sure renderPass formats match actual framebuffer attachments
-	const auto &pass = renderPasses.get(desc.renderPass_);
-	assert(pass.renderPass);
+	assert(renderPass.renderPass);
 	{
 		const auto &colorRT = renderTargets.get(desc.colors_[0]);
 		assert(colorRT.width  > 0);
@@ -962,7 +964,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 
 	vk::FramebufferCreateInfo fbInfo;
 
-	fbInfo.renderPass       = pass.renderPass;
+	fbInfo.renderPass       = renderPass.renderPass;
 	assert(!attachmentViews.empty());
 	fbInfo.attachmentCount  = static_cast<uint32_t>(attachmentViews.size());
 	fbInfo.pAttachments     = &attachmentViews[0];
