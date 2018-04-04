@@ -1128,8 +1128,8 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 
 		if (width == 0) {
 			assert(height == 0);
-		width  = colorRT.width;
-		height = colorRT.height;
+			width  = colorRT.width;
+			height = colorRT.height;
 		} else {
 			assert(width  == colorRT.width);
 			assert(height == colorRT.height);
