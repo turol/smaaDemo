@@ -409,6 +409,7 @@ class SMAADemo {
 	// aa things
 	bool antialiasing;
 	AAMethod aaMethod;
+	bool          temporalAA;
 	// number of samples in current scene fb
 	// 1 or 2 if SMAA
 	// 2.. if MSAA
@@ -568,6 +569,7 @@ SMAADemo::SMAADemo()
 
 , antialiasing(true)
 , aaMethod(AAMethod::SMAA)
+, temporalAA(false)
 , numSamples(1)
 , debugMode(0)
 , colorMode(0)
@@ -2173,6 +2175,8 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			ImGui::RadioButton("MSAA", &aa, static_cast<int>(AAMethod::MSAA)); ImGui::SameLine();
 			ImGui::RadioButton("FXAA", &aa, static_cast<int>(AAMethod::FXAA)); ImGui::SameLine();
 			ImGui::RadioButton("SMAA", &aa, static_cast<int>(AAMethod::SMAA));
+
+			aaChanged = ImGui::Checkbox("Temporal AA", &temporalAA) || aaChanged;
 
 			ImGui::Separator();
 			int msaaq = msaaQuality;
