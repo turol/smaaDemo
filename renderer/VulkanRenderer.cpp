@@ -930,12 +930,15 @@ static vk::ImageLayout vulkanLayout(Layout l) {
 
 
 FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
-	std::vector<vk::ImageView> attachmentViews;
-	unsigned int width, height;
-
+	assert(!desc.name_.empty());
+	assert(desc.renderPass_);
 	// TODO: multiple render targets
 	assert(desc.colors_[0]);
 	assert(!desc.colors_[1]);
+
+	std::vector<vk::ImageView> attachmentViews;
+	unsigned int width, height;
+
 	// TODO: make sure renderPass formats match actual framebuffer attachments
 	const auto &pass = renderPasses.get(desc.renderPass_);
 	assert(pass.renderPass);

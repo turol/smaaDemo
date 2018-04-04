@@ -1108,6 +1108,8 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	assert(!desc.name_.empty());
 	assert(desc.renderPass_);
+	assert(desc.colors_[0]);
+	assert(!desc.colors_[1]);
 
 	auto &renderPass = renderPasses.get(desc.renderPass_);
 
@@ -1136,7 +1138,6 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	assert(colorRTtex.tex != 0);
 
 	glNamedFramebufferTexture(fb.fbo, GL_COLOR_ATTACHMENT0, colorRTtex.tex, 0);
-	assert(!desc.colors_[1]);
 
 	if (desc.depthStencil_) {
 		const auto &depthRT = renderTargets.get(desc.depthStencil_);
