@@ -2277,7 +2277,9 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			ImGui::RadioButton("FXAA", &aa, static_cast<int>(AAMethod::FXAA)); ImGui::SameLine();
 			ImGui::RadioButton("SMAA", &aa, static_cast<int>(AAMethod::SMAA));
 
-			aaChanged = ImGui::Checkbox("Temporal AA", &temporalAA) || aaChanged;
+			if (ImGui::Checkbox("Temporal AA", &temporalAA)) {
+				recreateFramebuffers = true;
+			}
 
 			ImGui::Separator();
 			int msaaq = msaaQuality;
