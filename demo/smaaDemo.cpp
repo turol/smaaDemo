@@ -1073,36 +1073,36 @@ void SMAADemo::initRender() {
 	createFramebuffers();
 
 	{
-	PipelineDesc plDesc;
-	plDesc.depthWrite(false)
-	      .depthTest(false)
-	      .cullFaces(true);
-	plDesc.descriptorSetLayout<GlobalDS>(0);
+		PipelineDesc plDesc;
+		plDesc.depthWrite(false)
+			  .depthTest(false)
+			  .cullFaces(true);
+		plDesc.descriptorSetLayout<GlobalDS>(0);
 
-	ShaderMacros macros;
+		ShaderMacros macros;
 
-	auto vertexShader   = renderer.createVertexShader("image", macros);
-	auto fragmentShader = renderer.createFragmentShader("image", macros);
+		auto vertexShader   = renderer.createVertexShader("image", macros);
+		auto fragmentShader = renderer.createFragmentShader("image", macros);
 
-	// image is always rendered with 1 sample so we ask for that renderpass
-	// instead of numSamples
-	plDesc.name("image")
-	      .renderPass(getSceneRenderPass(1, Layout::ShaderRead))
-	      .vertexShader(vertexShader)
-	      .fragmentShader(fragmentShader)
-	      .depthWrite(false)
-	      .depthTest(false)
-	      .cullFaces(true)
-	      .descriptorSetLayout<ColorTexDS>(1);
+		// image is always rendered with 1 sample so we ask for that renderpass
+		// instead of numSamples
+		plDesc.name("image")
+			  .renderPass(getSceneRenderPass(1, Layout::ShaderRead))
+			  .vertexShader(vertexShader)
+			  .fragmentShader(fragmentShader)
+			  .depthWrite(false)
+			  .depthTest(false)
+			  .cullFaces(true)
+			  .descriptorSetLayout<ColorTexDS>(1);
 
-	imagePipeline = renderer.createPipeline(plDesc);
+		imagePipeline = renderer.createPipeline(plDesc);
 	}
 
 	{
 		ShaderMacros macros;
 
-	cubeVertexShader   = renderer.createVertexShader("cube", macros);
-	cubeFragmentShader = renderer.createFragmentShader("cube", macros);
+		cubeVertexShader   = renderer.createVertexShader("cube", macros);
+		cubeFragmentShader = renderer.createFragmentShader("cube", macros);
 	}
 
 	{
@@ -1114,11 +1114,11 @@ void SMAADemo::initRender() {
 
 		plDesc.descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ColorTexDS>(1);
-	plDesc.renderPass(finalRenderPass);
-	plDesc.vertexShader(vertexShader)
-	      .fragmentShader(fragmentShader);
-	plDesc.name("blit");
-	blitPipeline = renderer.createPipeline(plDesc);
+		plDesc.renderPass(finalRenderPass);
+		plDesc.vertexShader(vertexShader)
+			  .fragmentShader(fragmentShader);
+		plDesc.name("blit");
+		blitPipeline = renderer.createPipeline(plDesc);
 	}
 
 	{
@@ -1130,18 +1130,18 @@ void SMAADemo::initRender() {
 
 		plDesc.descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ColorTexDS>(1);
-	plDesc.renderPass(finalRenderPass);
-	plDesc.vertexShader(vertexShader)
-	      .fragmentShader(fragmentShader)
-	      .cullFaces(false)
-	      .blending(true)
-	      .scissorTest(true);
-	plDesc.vertexAttrib(ATTR_POS,   0, 2, VtxFormat::Float,  offsetof(ImDrawVert, pos))
-	      .vertexAttrib(ATTR_UV,    0, 2, VtxFormat::Float,  offsetof(ImDrawVert, uv))
-	      .vertexAttrib(ATTR_COLOR, 0, 4, VtxFormat::UNorm8, offsetof(ImDrawVert, col))
-	      .vertexBufferStride(ATTR_POS, sizeof(ImDrawVert));
-	plDesc.name("gui");
-	guiPipeline = renderer.createPipeline(plDesc);
+		plDesc.renderPass(finalRenderPass);
+		plDesc.vertexShader(vertexShader)
+			  .fragmentShader(fragmentShader)
+			  .cullFaces(false)
+			  .blending(true)
+			  .scissorTest(true);
+		plDesc.vertexAttrib(ATTR_POS,   0, 2, VtxFormat::Float,  offsetof(ImDrawVert, pos))
+			  .vertexAttrib(ATTR_UV,    0, 2, VtxFormat::Float,  offsetof(ImDrawVert, uv))
+			  .vertexAttrib(ATTR_COLOR, 0, 4, VtxFormat::UNorm8, offsetof(ImDrawVert, col))
+			  .vertexBufferStride(ATTR_POS, sizeof(ImDrawVert));
+		plDesc.name("gui");
+		guiPipeline = renderer.createPipeline(plDesc);
 	}
 
 	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear) .name("linear"));
