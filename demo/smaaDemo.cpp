@@ -474,6 +474,7 @@ class SMAADemo {
 	std::unordered_map<SceneRPKey, RenderPassHandle>  sceneRenderPasses;
 	FramebufferHandle  sceneFramebuffer;
 	RenderPassHandle   finalRenderPass;
+	RenderPassHandle   temporalAAPass;
 	RenderPassHandle   guiOnlyRenderPass;
 	FramebufferHandle  finalFramebuffer;
 	std::array<FramebufferHandle, 2>  resolveFBs;
@@ -655,6 +656,8 @@ SMAADemo::~SMAADemo() {
 
 		assert(finalRenderPass);
 		renderer.deleteRenderPass(finalRenderPass);
+		assert(temporalAAPass);
+		renderer.deleteRenderPass(temporalAAPass);
 		assert(guiOnlyRenderPass);
 		renderer.deleteRenderPass(guiOnlyRenderPass);
 		assert(smaaEdgesRenderPass);
@@ -1020,8 +1023,16 @@ void SMAADemo::initRender() {
 
 	{
 		RenderPassDesc rpDesc;
+		// TODO: check this
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::TransferSrc);
 		finalRenderPass       = renderer.createRenderPass(rpDesc.name("final"));
+	}
+
+	{
+		RenderPassDesc rpDesc;
+		// FIXME: should be RGBA since SMAA wants gamma space?
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::TransferSrc);
+		temporalAAPass        = renderer.createRenderPass(rpDesc.name("Temporal AA"));
 	}
 
 	{
@@ -1524,7 +1535,7 @@ void SMAADemo::createFramebuffers() {
 
 		FramebufferDesc fbDesc;
 		fbDesc.name("Temporal resolve 0")
-		      .renderPass(finalRenderPass) // TODO: is it?
+		      .renderPass(temporalAAPass)
 		      .color(0, blendWeightsRT);
 		resolveFBs[0] = renderer.createFramebuffer(fbDesc);
 
