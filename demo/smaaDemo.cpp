@@ -1099,18 +1099,19 @@ void SMAADemo::initRender() {
 	}
 
 	{
-		PipelineDesc plDesc;
 		ShaderMacros macros;
 
 		auto vertexShader   = renderer.createVertexShader("blit", macros);
 		auto fragmentShader = renderer.createFragmentShader("blit", macros);
 
-		plDesc.descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<ColorTexDS>(1);
-		plDesc.renderPass(finalRenderPass);
-		plDesc.vertexShader(vertexShader)
-			  .fragmentShader(fragmentShader);
-		plDesc.name("blit");
+		PipelineDesc plDesc;
+		plDesc.renderPass(finalRenderPass)
+		      .descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<ColorTexDS>(1)
+		      .vertexShader(vertexShader)
+		      .fragmentShader(fragmentShader)
+		      .name("blit");
+
 		blitPipeline = renderer.createPipeline(plDesc);
 	}
 
