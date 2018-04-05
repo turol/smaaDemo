@@ -462,6 +462,7 @@ class SMAADemo {
 	PipelineHandle     imagePipeline;
 	PipelineHandle     blitPipeline;
 	PipelineHandle     guiPipeline;
+	PipelineHandle     temporalAAPipeline;
 
 	RenderTargetHandle mainColorRT;
 	RenderTargetHandle mainDepthRT;
@@ -1136,6 +1137,23 @@ void SMAADemo::initRender() {
 		      .name("gui");
 
 		guiPipeline = renderer.createPipeline(plDesc);
+	}
+
+	{
+		ShaderMacros macros;
+
+		auto vertexShader   = renderer.createVertexShader("temporal", macros);
+		auto fragmentShader = renderer.createFragmentShader("temporal", macros);
+
+		PipelineDesc plDesc;
+		plDesc.renderPass(temporalAAPass)
+		      .descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<TemporalAADS>(1)
+		      .vertexShader(vertexShader)
+		      .fragmentShader(fragmentShader)
+		      .name("temporal AA");
+
+		temporalAAPipeline = renderer.createPipeline(plDesc);
 	}
 
 	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear) .name("linear"));
