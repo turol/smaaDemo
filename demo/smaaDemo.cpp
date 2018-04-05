@@ -1073,12 +1073,6 @@ void SMAADemo::initRender() {
 	createFramebuffers();
 
 	{
-		PipelineDesc plDesc;
-		plDesc.depthWrite(false)
-			  .depthTest(false)
-			  .cullFaces(true);
-		plDesc.descriptorSetLayout<GlobalDS>(0);
-
 		ShaderMacros macros;
 
 		auto vertexShader   = renderer.createVertexShader("image", macros);
@@ -1086,14 +1080,13 @@ void SMAADemo::initRender() {
 
 		// image is always rendered with 1 sample so we ask for that renderpass
 		// instead of numSamples
-		plDesc.name("image")
-			  .renderPass(getSceneRenderPass(1, Layout::ShaderRead))
-			  .vertexShader(vertexShader)
-			  .fragmentShader(fragmentShader)
-			  .depthWrite(false)
-			  .depthTest(false)
-			  .cullFaces(true)
-			  .descriptorSetLayout<ColorTexDS>(1);
+		PipelineDesc plDesc;
+		plDesc.renderPass(getSceneRenderPass(1, Layout::ShaderRead))
+		      .descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<ColorTexDS>(1)
+		      .vertexShader(vertexShader)
+		      .fragmentShader(fragmentShader)
+		      .name("image");
 
 		imagePipeline = renderer.createPipeline(plDesc);
 	}
