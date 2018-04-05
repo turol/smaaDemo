@@ -1072,8 +1072,7 @@ void SMAADemo::initRender() {
 
 	createFramebuffers();
 
-	// TODO: the following is a mess, clean it up
-
+	{
 	PipelineDesc plDesc;
 	plDesc.depthWrite(false)
 	      .depthTest(false)
@@ -1097,23 +1096,40 @@ void SMAADemo::initRender() {
 	      .descriptorSetLayout<ColorTexDS>(1);
 
 	imagePipeline = renderer.createPipeline(plDesc);
+	}
 
-	vertexShader   = renderer.createVertexShader("blit", macros);
-	fragmentShader = renderer.createFragmentShader("blit", macros);
+	{
+		ShaderMacros macros;
 
 	cubeVertexShader   = renderer.createVertexShader("cube", macros);
 	cubeFragmentShader = renderer.createFragmentShader("cube", macros);
+	}
 
+	{
+		PipelineDesc plDesc;
+		ShaderMacros macros;
+
+		auto vertexShader   = renderer.createVertexShader("blit", macros);
+		auto fragmentShader = renderer.createFragmentShader("blit", macros);
+
+		plDesc.descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<ColorTexDS>(1);
 	plDesc.renderPass(finalRenderPass);
 	plDesc.vertexShader(vertexShader)
 	      .fragmentShader(fragmentShader);
 	plDesc.name("blit");
 	blitPipeline = renderer.createPipeline(plDesc);
+	}
 
-	macros.clear();
+	{
+		PipelineDesc plDesc;
+		ShaderMacros macros;
 
-	vertexShader   = renderer.createVertexShader("gui", macros);
-	fragmentShader = renderer.createFragmentShader("gui", macros);
+		auto vertexShader   = renderer.createVertexShader("gui", macros);
+		auto fragmentShader = renderer.createFragmentShader("gui", macros);
+
+		plDesc.descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<ColorTexDS>(1);
 	plDesc.renderPass(finalRenderPass);
 	plDesc.vertexShader(vertexShader)
 	      .fragmentShader(fragmentShader)
@@ -1126,6 +1142,7 @@ void SMAADemo::initRender() {
 	      .vertexBufferStride(ATTR_POS, sizeof(ImDrawVert));
 	plDesc.name("gui");
 	guiPipeline = renderer.createPipeline(plDesc);
+	}
 
 	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear) .name("linear"));
 	nearestSampler = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Nearest).magFilter(FilterMode::Nearest).name("nearest"));
