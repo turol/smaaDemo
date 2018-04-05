@@ -1053,7 +1053,7 @@ void SMAADemo::initRender() {
 	{
 		RenderPassDesc rpDesc;
 		// FIXME: should be RGBA since SMAA wants gamma space?
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::TransferSrc);
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::ShaderRead);
 		smaaBlendRenderPass   = renderer.createRenderPass(rpDesc.name("SMAA blend"));
 	}
 
