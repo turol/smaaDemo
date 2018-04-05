@@ -1578,7 +1578,7 @@ void SMAADemo::createFramebuffers() {
 	if (temporalAA) {
 		RenderTargetDesc rtDesc;
 		rtDesc.name("Temporal resolve 0")
-		      .format(Format::RGBA8)
+		      .format(Format::sRGBA8)  // TODO: not right?
 		      .width(windowWidth)
 		      .height(windowHeight);
 		resolveRTs[0] = renderer.createRenderTarget(rtDesc);
