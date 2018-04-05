@@ -1116,25 +1116,25 @@ void SMAADemo::initRender() {
 	}
 
 	{
-		PipelineDesc plDesc;
 		ShaderMacros macros;
 
 		auto vertexShader   = renderer.createVertexShader("gui", macros);
 		auto fragmentShader = renderer.createFragmentShader("gui", macros);
 
-		plDesc.descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<ColorTexDS>(1);
-		plDesc.renderPass(finalRenderPass);
-		plDesc.vertexShader(vertexShader)
-			  .fragmentShader(fragmentShader)
-			  .cullFaces(false)
-			  .blending(true)
-			  .scissorTest(true);
-		plDesc.vertexAttrib(ATTR_POS,   0, 2, VtxFormat::Float,  offsetof(ImDrawVert, pos))
-			  .vertexAttrib(ATTR_UV,    0, 2, VtxFormat::Float,  offsetof(ImDrawVert, uv))
-			  .vertexAttrib(ATTR_COLOR, 0, 4, VtxFormat::UNorm8, offsetof(ImDrawVert, col))
-			  .vertexBufferStride(ATTR_POS, sizeof(ImDrawVert));
-		plDesc.name("gui");
+		PipelineDesc plDesc;
+		plDesc.renderPass(finalRenderPass)
+		      .descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<ColorTexDS>(1)
+		      .vertexShader(vertexShader)
+		      .fragmentShader(fragmentShader)
+		      .blending(true)
+		      .scissorTest(true)
+		      .vertexAttrib(ATTR_POS,   0, 2, VtxFormat::Float,  offsetof(ImDrawVert, pos))
+		      .vertexAttrib(ATTR_UV,    0, 2, VtxFormat::Float,  offsetof(ImDrawVert, uv))
+		      .vertexAttrib(ATTR_COLOR, 0, 4, VtxFormat::UNorm8, offsetof(ImDrawVert, col))
+		      .vertexBufferStride(ATTR_POS, sizeof(ImDrawVert))
+		      .name("gui");
+
 		guiPipeline = renderer.createPipeline(plDesc);
 	}
 
