@@ -1586,13 +1586,14 @@ void SMAADemo::createFramebuffers() {
 		FramebufferDesc fbDesc;
 		fbDesc.name("Temporal resolve 0")
 		      .renderPass(temporalAAPass)
-		      .color(0, blendWeightsRT);
+		      .color(0, resolveRTs[0]);
 		resolveFBs[0] = renderer.createFramebuffer(fbDesc);
 
 		rtDesc.name("Temporal resolve 1");
 		resolveRTs[1] = renderer.createRenderTarget(rtDesc);
 
-		fbDesc.name("Temporal resolve 1");
+		fbDesc.color(0, resolveRTs[1])
+		      .name("Temporal resolve 1");
 		resolveFBs[1] = renderer.createFramebuffer(fbDesc);
 	}
 }
