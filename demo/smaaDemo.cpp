@@ -475,7 +475,7 @@ class SMAADemo {
 	std::unordered_map<SceneRPKey, RenderPassHandle>  sceneRenderPasses;
 	FramebufferHandle  sceneFramebuffer;
 	RenderPassHandle   finalRenderPass;
-	RenderPassHandle   temporalAAPass;
+	RenderPassHandle   smaaBlendRenderPass;  // for temporal aa, otherwise it's part of final render pass
 	RenderPassHandle   guiOnlyRenderPass;
 	FramebufferHandle  finalFramebuffer;
 	std::array<FramebufferHandle, 2>  resolveFBs;
@@ -657,8 +657,8 @@ SMAADemo::~SMAADemo() {
 
 		assert(finalRenderPass);
 		renderer.deleteRenderPass(finalRenderPass);
-		assert(temporalAAPass);
-		renderer.deleteRenderPass(temporalAAPass);
+		assert(smaaBlendRenderPass);
+		renderer.deleteRenderPass(smaaBlendRenderPass);
 		assert(guiOnlyRenderPass);
 		renderer.deleteRenderPass(guiOnlyRenderPass);
 		assert(smaaEdgesRenderPass);
@@ -1054,7 +1054,7 @@ void SMAADemo::initRender() {
 		RenderPassDesc rpDesc;
 		// FIXME: should be RGBA since SMAA wants gamma space?
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::TransferSrc);
-		temporalAAPass        = renderer.createRenderPass(rpDesc.name("Temporal AA"));
+		smaaBlendRenderPass   = renderer.createRenderPass(rpDesc.name("SMAA blend"));
 	}
 
 	{
@@ -1146,7 +1146,7 @@ void SMAADemo::initRender() {
 		auto fragmentShader = renderer.createFragmentShader("temporal", macros);
 
 		PipelineDesc plDesc;
-		plDesc.renderPass(temporalAAPass)
+		plDesc.renderPass(smaaBlendRenderPass)
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<TemporalAADS>(1)
 		      .vertexShader(vertexShader)
@@ -1585,7 +1585,7 @@ void SMAADemo::createFramebuffers() {
 
 		FramebufferDesc fbDesc;
 		fbDesc.name("Temporal resolve 0")
-		      .renderPass(temporalAAPass)
+		      .renderPass(smaaBlendRenderPass)
 		      .color(0, resolveRTs[0]);
 		resolveFBs[0] = renderer.createFramebuffer(fbDesc);
 
