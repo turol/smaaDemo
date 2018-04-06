@@ -2100,7 +2100,18 @@ void SMAADemo::render() {
 		glm::mat4 proj   = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, nearPlane, farPlane);
 		glm::mat4 viewProj = proj * view * model;
 
-		// TODO: temporal jitter
+		// temporal jitter
+		if (temporalAA) {
+			// TODO: need y-flip for opengl?
+			const glm::vec2 jitters[2] = {
+			      { -0.25f,  0.25f }
+			    , { 0.25f,  -0.25f }
+			};
+
+			glm::vec2 jitter = jitters[temporalFrame] * 2.0f * glm::vec2(globals.screenSize.x, globals.screenSize.y);
+			glm::mat4 jitterMatrix = glm::translate(glm::mat4(), glm::vec3(jitter, 0.0f));
+			viewProj = jitterMatrix * viewProj;
+		}
 
 		globals.viewProj = viewProj;
 
