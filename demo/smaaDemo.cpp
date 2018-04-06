@@ -2200,7 +2200,11 @@ void SMAADemo::render() {
 			renderer.endRenderPass();
 
 			// final blending pass/debug pass
+			if (temporalAA) {
+				renderer.beginRenderPass(smaaBlendRenderPass, resolveFBs[temporalFrame]);
+			} else {
 			renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
+			}
 
 			switch (debugMode) {
 			case 0: {
@@ -2233,6 +2237,20 @@ void SMAADemo::render() {
 
 			}
 			renderer.draw(0, 3);
+
+			if (temporalAA) {
+				renderer.endRenderPass();
+
+				renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
+				renderer.bindPipeline(temporalAAPipeline);
+				TemporalAADS temporalDS;
+				temporalDS.currentTex.tex      = renderer.getRenderTargetTexture(resolveRTs[temporalFrame]);
+				temporalDS.currentTex.sampler  = nearestSampler;
+				temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(resolveRTs[1 - temporalFrame]);
+				temporalDS.previousTex.sampler = nearestSampler;
+				renderer.bindDescriptorSet(1, temporalDS);
+				renderer.draw(0, 3);
+			}
 			drawGUI(elapsed);
 
 			renderer.endRenderPass();
