@@ -1633,9 +1633,19 @@ void SMAADemo::deleteFramebuffers() {
 	if (resolveRTs[0]) {
 		assert(resolveRTs[1]);
 		renderer.deleteRenderTarget(resolveRTs[0]);
+		resolveRTs[0] = RenderTargetHandle();
 		renderer.deleteRenderTarget(resolveRTs[1]);
+		resolveRTs[1] = RenderTargetHandle();
+
+		assert(resolveFBs[0]);
+		resolveFBs[0] = FramebufferHandle();
+		assert(resolveFBs[1]);
+		resolveFBs[1] = FramebufferHandle();
 	} else {
 		assert(!resolveRTs[1]);
+
+		assert(!resolveFBs[0]);
+		assert(!resolveFBs[1]);
 	}
 }
 
