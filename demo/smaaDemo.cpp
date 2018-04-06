@@ -2098,9 +2098,11 @@ void SMAADemo::render() {
 		glm::mat4 model  = glm::rotate(glm::mat4(1.0f), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 view   = glm::lookAt(glm::vec3(cameraDistance, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 proj   = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, nearPlane, farPlane);
-		globals.viewProj = proj * view * model;
+		glm::mat4 viewProj = proj * view * model;
 
 		// TODO: temporal jitter
+
+		globals.viewProj = viewProj;
 
 		renderer.setViewport(0, 0, windowWidth, windowHeight);
 
