@@ -2203,7 +2203,7 @@ void SMAADemo::render() {
 			if (temporalAA) {
 				renderer.beginRenderPass(smaaBlendRenderPass, resolveFBs[temporalFrame]);
 			} else {
-			renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
+				renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
 			}
 
 			switch (debugMode) {
