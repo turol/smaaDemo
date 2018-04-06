@@ -2255,8 +2255,8 @@ void SMAADemo::render() {
 					temporalDS.previousTex.sampler = nearestSampler;
 					temporalAAFirstFrame = false;
 				} else {
-				temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(resolveRTs[1 - temporalFrame]);
-				temporalDS.previousTex.sampler = nearestSampler;
+					temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(resolveRTs[1 - temporalFrame]);
+					temporalDS.previousTex.sampler = nearestSampler;
 				}
 				renderer.bindDescriptorSet(1, temporalDS);
 				renderer.draw(0, 3);
