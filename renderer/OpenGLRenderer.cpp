@@ -2232,7 +2232,6 @@ void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	assert(vertexCount > 0);
 	const auto &p = pipelines.get(currentPipeline);
 	assert(!p.desc.scissorTest_ || scissorSet);
-	assert(p.desc.renderPass_ == currentRenderPass);
 	pipelineDrawn = true;
 
 	if (decriptorSetsDirty) {
