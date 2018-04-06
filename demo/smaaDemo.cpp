@@ -410,6 +410,7 @@ class SMAADemo {
 	bool antialiasing;
 	AAMethod aaMethod;
 	bool          temporalAA;
+	bool          temporalAAFirstFrame;
 	unsigned int  temporalFrame;
 	// number of samples in current scene fb
 	// 1 or 2 if SMAA
@@ -575,6 +576,7 @@ SMAADemo::SMAADemo()
 , antialiasing(true)
 , aaMethod(AAMethod::SMAA)
 , temporalAA(false)
+, temporalAAFirstFrame(false)
 , temporalFrame(0)
 , numSamples(1)
 , debugMode(0)
@@ -1576,6 +1578,7 @@ void SMAADemo::createFramebuffers() {
 	}
 
 	if (temporalAA) {
+		temporalAAFirstFrame = true;
 		RenderTargetDesc rtDesc;
 		rtDesc.name("Temporal resolve 0")
 		      .format(Format::sRGBA8)  // TODO: not right?
@@ -2246,8 +2249,15 @@ void SMAADemo::render() {
 				TemporalAADS temporalDS;
 				temporalDS.currentTex.tex      = renderer.getRenderTargetTexture(resolveRTs[temporalFrame]);
 				temporalDS.currentTex.sampler  = nearestSampler;
+				if (temporalAAFirstFrame) {
+					// to prevent flicker on first frame after enabling
+					temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(resolveRTs[temporalFrame]);
+					temporalDS.previousTex.sampler = nearestSampler;
+					temporalAAFirstFrame = false;
+				} else {
 				temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(resolveRTs[1 - temporalFrame]);
 				temporalDS.previousTex.sampler = nearestSampler;
+				}
 				renderer.bindDescriptorSet(1, temporalDS);
 				renderer.draw(0, 3);
 			}
