@@ -972,7 +972,7 @@ DSLayoutHandle NeighborBlendDS::layoutHandle;
 struct TemporalAADS {
 	CSampler currentTex;
 	CSampler previousTex;
-	// TODO: velocity tex when reproject
+	CSampler velocityTex;
 
 	static const DescriptorLayout layout[];
 	static DSLayoutHandle layoutHandle;
@@ -982,6 +982,7 @@ struct TemporalAADS {
 const DescriptorLayout TemporalAADS::layout[] = {
 	  { DescriptorType::CombinedSampler,  offsetof(TemporalAADS, currentTex)  }
 	, { DescriptorType::CombinedSampler,  offsetof(TemporalAADS, previousTex) }
+	, { DescriptorType::CombinedSampler,  offsetof(TemporalAADS, velocityTex) }
 	, { DescriptorType::End        ,      0                                   }
 };
 
@@ -2321,6 +2322,9 @@ void SMAADemo::doTemporalAA() {
 		temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(resolveRTs[1 - temporalFrame]);
 		temporalDS.previousTex.sampler = nearestSampler;
 	}
+    temporalDS.velocityTex.tex         = renderer.getRenderTargetTexture(velocityRT);
+    temporalDS.velocityTex.sampler     = nearestSampler;
+
 	renderer.bindDescriptorSet(1, temporalDS);
 	renderer.draw(0, 3);
 }
