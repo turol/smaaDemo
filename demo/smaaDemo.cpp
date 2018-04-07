@@ -2191,13 +2191,13 @@ void SMAADemo::render() {
 
 				doTemporalAA();
 			} else {
-			renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
-			renderer.bindPipeline(getFXAAPipeline(fxaaQuality));
-			ColorCombinedDS colorDS;
-			colorDS.color.tex     = renderer.getRenderTargetTexture(mainColorRT);
-			colorDS.color.sampler = linearSampler;
-			renderer.bindDescriptorSet(1, colorDS);
-			renderer.draw(0, 3);
+				renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
+				renderer.bindPipeline(getFXAAPipeline(fxaaQuality));
+				ColorCombinedDS colorDS;
+				colorDS.color.tex     = renderer.getRenderTargetTexture(mainColorRT);
+				colorDS.color.sampler = linearSampler;
+				renderer.bindDescriptorSet(1, colorDS);
+				renderer.draw(0, 3);
 			}
 
 			drawGUI(elapsed);
