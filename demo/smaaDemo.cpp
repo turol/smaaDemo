@@ -2291,22 +2291,22 @@ void SMAADemo::render() {
 
 
 void SMAADemo::doTemporalAA() {
-				renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
-				renderer.bindPipeline(temporalAAPipeline);
-				TemporalAADS temporalDS;
-				temporalDS.currentTex.tex      = renderer.getRenderTargetTexture(resolveRTs[temporalFrame]);
-				temporalDS.currentTex.sampler  = nearestSampler;
-				if (temporalAAFirstFrame) {
-					// to prevent flicker on first frame after enabling
-					temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(resolveRTs[temporalFrame]);
-					temporalDS.previousTex.sampler = nearestSampler;
-					temporalAAFirstFrame = false;
-				} else {
-					temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(resolveRTs[1 - temporalFrame]);
-					temporalDS.previousTex.sampler = nearestSampler;
-				}
-				renderer.bindDescriptorSet(1, temporalDS);
-				renderer.draw(0, 3);
+	renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
+	renderer.bindPipeline(temporalAAPipeline);
+	TemporalAADS temporalDS;
+	temporalDS.currentTex.tex      = renderer.getRenderTargetTexture(resolveRTs[temporalFrame]);
+	temporalDS.currentTex.sampler  = nearestSampler;
+	if (temporalAAFirstFrame) {
+		// to prevent flicker on first frame after enabling
+		temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(resolveRTs[temporalFrame]);
+		temporalDS.previousTex.sampler = nearestSampler;
+		temporalAAFirstFrame = false;
+	} else {
+		temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(resolveRTs[1 - temporalFrame]);
+		temporalDS.previousTex.sampler = nearestSampler;
+	}
+	renderer.bindDescriptorSet(1, temporalDS);
+	renderer.draw(0, 3);
 }
 
 
