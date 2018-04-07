@@ -412,6 +412,7 @@ class SMAADemo {
 	bool          temporalAA;
 	bool          temporalAAFirstFrame;
 	unsigned int  temporalFrame;
+	bool          temporalReproject;
 	// number of samples in current scene fb
 	// 1 or 2 if SMAA
 	// 2.. if MSAA
@@ -580,6 +581,7 @@ SMAADemo::SMAADemo()
 , temporalAA(false)
 , temporalAAFirstFrame(false)
 , temporalFrame(0)
+, temporalReproject(false)
 , numSamples(1)
 , debugMode(0)
 , colorMode(0)
@@ -2358,6 +2360,17 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 			if (ImGui::Checkbox("Temporal AA", &temporalAA)) {
 				recreateFramebuffers = true;
+			}
+
+			// temporal reprojection only enabled when temporal AA is
+			if (!temporalAA) {
+				ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+			}
+			ImGui::Checkbox("Temporal reprojection", &temporalReproject);
+			if (!temporalAA) {
+				ImGui::PopItemFlag();
+				ImGui::PopStyleVar();
 			}
 
 			ImGui::Separator();
