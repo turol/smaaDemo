@@ -2183,9 +2183,9 @@ void SMAADemo::render() {
 				renderer.bindDescriptorSet(1, temporalDS);
 				renderer.draw(0, 3);
 			} else {
-			renderer.layoutTransition(finalRenderRT, Layout::Undefined, Layout::TransferDst);
-			renderer.resolveMSAA(sceneFramebuffer, finalFramebuffer);
-			renderer.beginRenderPass(guiOnlyRenderPass, finalFramebuffer);
+				renderer.layoutTransition(finalRenderRT, Layout::Undefined, Layout::TransferDst);
+				renderer.resolveMSAA(sceneFramebuffer, finalFramebuffer);
+				renderer.beginRenderPass(guiOnlyRenderPass, finalFramebuffer);
 			}
 			drawGUI(elapsed);
 			renderer.endRenderPass();
