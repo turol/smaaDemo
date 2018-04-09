@@ -1200,7 +1200,9 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	auto result = renderPasses.add();
 	RenderPass &pass = result.first;
 	pass.desc = desc;
-	pass.colorClearValue = desc.colorRTs_[0].clearValue;
+	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+		pass.colorClearValues[i] = desc.colorRTs_[i].clearValue;
+	}
 	pass.depthClearValue = desc.depthClearValue;
 	pass.clearMask       = clearMask;
 	pass.numSamples      = desc.numSamples_;
@@ -1749,7 +1751,8 @@ void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle 
 
 	if (rp.clearMask) {
 		if ((rp.clearMask & GL_COLOR_BUFFER_BIT) != 0) {
-			glClearColor(rp.colorClearValue.x, rp.colorClearValue.y, rp.colorClearValue.z, rp.colorClearValue.w);
+			const auto &v = rp.colorClearValues[0];
+			glClearColor(v.x, v.y, v.z, v.w);
 		}
 
 		if ((rp.clearMask & GL_DEPTH_BUFFER_BIT) != 0) {

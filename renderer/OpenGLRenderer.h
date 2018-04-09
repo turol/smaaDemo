@@ -328,7 +328,7 @@ struct Pipeline {
 
 struct RenderPass {
 	RenderPassDesc  desc;
-	glm::vec4       colorClearValue;
+	std::array<glm::vec4, MAX_COLOR_RENDERTARGETS>  colorClearValues;
 	float           depthClearValue;
 	GLbitfield      clearMask;
 	unsigned int    numSamples;
@@ -345,11 +345,13 @@ struct RenderPass {
 
 	RenderPass(RenderPass &&other)
 	: desc(other.desc)
-	, colorClearValue(other.colorClearValue)
 	, depthClearValue(other.depthClearValue)
 	, clearMask(other.clearMask)
 	, numSamples(other.numSamples)
 	{
+		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+			colorClearValues[i] = other.colorClearValues[i];
+		}
 	}
 
 	RenderPass &operator=(RenderPass &&other) {
@@ -358,7 +360,9 @@ struct RenderPass {
 		}
 
 		desc            = other.desc;
-		colorClearValue = other.colorClearValue;
+		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+			colorClearValues[i] = other.colorClearValues[i];
+		}
 		depthClearValue = other.depthClearValue;
 		clearMask       = other.clearMask;
 		numSamples      = other.numSamples;
