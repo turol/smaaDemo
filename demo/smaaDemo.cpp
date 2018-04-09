@@ -2170,6 +2170,8 @@ void SMAADemo::render() {
 			if (temporalAA) {
 				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::Undefined, Layout::TransferDst);
 				renderer.resolveMSAA(sceneFramebuffer, resolveFBs[temporalFrame]);
+				// TODO: do this transition as part of renderpass?
+				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::TransferDst, Layout::ShaderRead);
 
 				doTemporalAA();
 			} else {
