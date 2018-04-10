@@ -37,6 +37,8 @@ THE SOFTWARE.
 #include "utils/Utils.h"
 #include "RendererInternal.h"
 
+#include <glm/gtc/type_ptr.hpp> // glm::value_ptr
+
 
 namespace renderer {
 
@@ -1187,12 +1189,6 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	assert(!desc.name_.empty());
 
 	GLbitfield clearMask = 0;
-	if (desc.colorRTs_[0].passBegin == PassBegin::Clear) {
-		clearMask |= GL_COLOR_BUFFER_BIT;
-	}
-
-	assert(desc.colorRTs_[1].passBegin == PassBegin::DontCare);
-
 	if (desc.clearDepthAttachment) {
 		clearMask |= GL_DEPTH_BUFFER_BIT;
 	}
@@ -1749,17 +1745,18 @@ void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle 
 		glDisable(GL_MULTISAMPLE);
 	}
 
+	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+		if (rp.desc.colorRTs_[i].passBegin == PassBegin::Clear) {
+			glClearBufferfv(GL_COLOR, i, glm::value_ptr(rp.desc.colorRTs_[i].clearValue));
+		}
+
+	}
+
 	if (rp.clearMask) {
-		if ((rp.clearMask & GL_COLOR_BUFFER_BIT) != 0) {
-			const auto &v = rp.colorClearValues[0];
-			glClearColor(v.x, v.y, v.z, v.w);
-		}
-
+		// TODO: stencil
 		if ((rp.clearMask & GL_DEPTH_BUFFER_BIT) != 0) {
-			glClearDepth(rp.depthClearValue);
+			glClearBufferfv(GL_DEPTH, 0, &rp.depthClearValue);
 		}
-
-		glClear(rp.clearMask);
 	}
 
 	currentRenderPass  = rpHandle;
