@@ -467,7 +467,7 @@ class SMAADemo {
 	PipelineHandle     imagePipeline;
 	PipelineHandle     blitPipeline;
 	PipelineHandle     guiPipeline;
-	PipelineHandle     temporalAAPipeline;
+	std::array<PipelineHandle, 2>                 temporalAAPipelines;
 
 	RenderTargetHandle mainColorRT;
 	RenderTargetHandle mainDepthRT;
@@ -1149,8 +1149,9 @@ void SMAADemo::initRender() {
 		guiPipeline = renderer.createPipeline(plDesc);
 	}
 
-	{
+	for (unsigned int i = 0; i < 2; i++) {
 		ShaderMacros macros;
+		macros.emplace("SMAA_REPROJECTION", std::to_string(i));
 
 		auto vertexShader   = renderer.createVertexShader("temporal", macros);
 		auto fragmentShader = renderer.createFragmentShader("temporal", macros);
@@ -1163,7 +1164,7 @@ void SMAADemo::initRender() {
 		      .fragmentShader(fragmentShader)
 		      .name("temporal AA");
 
-		temporalAAPipeline = renderer.createPipeline(plDesc);
+		temporalAAPipelines[i] = renderer.createPipeline(plDesc);
 	}
 
 	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear) .name("linear"));
@@ -2319,7 +2320,7 @@ void SMAADemo::render() {
 
 void SMAADemo::doTemporalAA() {
 	renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
-	renderer.bindPipeline(temporalAAPipeline);
+	renderer.bindPipeline(temporalAAPipelines[0]);
 	TemporalAADS temporalDS;
 	temporalDS.currentTex.tex      = renderer.getRenderTargetTexture(resolveRTs[temporalFrame]);
 	temporalDS.currentTex.sampler  = nearestSampler;
