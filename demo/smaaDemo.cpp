@@ -2333,8 +2333,8 @@ void SMAADemo::doTemporalAA() {
 		temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(resolveRTs[1 - temporalFrame]);
 		temporalDS.previousTex.sampler = nearestSampler;
 	}
-    temporalDS.velocityTex.tex         = renderer.getRenderTargetTexture(velocityRT);
-    temporalDS.velocityTex.sampler     = nearestSampler;
+	temporalDS.velocityTex.tex         = renderer.getRenderTargetTexture(velocityRT);
+	temporalDS.velocityTex.sampler     = nearestSampler;
 
 	renderer.bindDescriptorSet(1, temporalDS);
 	renderer.draw(0, 3);
