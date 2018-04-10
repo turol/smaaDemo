@@ -454,6 +454,9 @@ class SMAADemo {
 	std::vector<Image> images;
 	std::vector<ShaderDefines::Cube> cubes;
 
+	glm::mat4 currViewProj;
+	glm::mat4 prevViewProj;
+
 	Renderer        renderer;
 	Format          depthFormat;
 
@@ -2120,7 +2123,10 @@ void SMAADemo::render() {
 			viewProj = jitterMatrix * viewProj;
 		}
 
-		globals.viewProj = viewProj;
+		prevViewProj         = currViewProj;
+		currViewProj         = viewProj;
+		globals.viewProj     = currViewProj;
+		globals.prevViewProj = prevViewProj;
 
 		renderer.setViewport(0, 0, windowWidth, windowHeight);
 

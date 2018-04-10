@@ -31,6 +31,7 @@ layout(set = 0, binding = 0, std140) uniform Globals
 {
 	vec4 screenSize;
 	mat4 viewProj;
+	mat4 prevViewProj;
 	mat4 guiOrtho;
 
 	SMAAParameters  smaaParameters;
