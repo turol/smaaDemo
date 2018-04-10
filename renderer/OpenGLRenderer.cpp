@@ -1145,7 +1145,9 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 		fb.renderPass = desc.renderPass_;
 		fb.numSamples = colorRT.numSamples;
 		fb.colors[i]  = desc.colors_[i];
-		fb.sRGB       = issRGBFormat(colorRT.format);
+		if (issRGBFormat(colorRT.format)) {
+			fb.sRGB   = true;
+		}
 		fb.width      = colorRT.width;
 		fb.height     = colorRT.height;
 
