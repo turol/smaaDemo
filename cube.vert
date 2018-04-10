@@ -51,8 +51,9 @@ void main(void)
     uv *= (2.0 * qw);
     uuv *= 2.0;
     vec3 rotatedPos = v + uv + uuv;
+    vec4 worldPos = vec4(rotatedPos + cube.position, 1.0);
 
-    gl_Position = viewProj * vec4(rotatedPos + cube.position, 1.0);
+    gl_Position = viewProj * worldPos;
     instance = gl_InstanceIndex;
 
 #ifdef VULKAN_FLIP
