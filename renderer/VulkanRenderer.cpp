@@ -1308,6 +1308,9 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	raster.lineWidth = 1.0;
 	info.pRasterizationState        = &raster;
 
+	const auto &renderPass = renderPasses.get(desc.renderPass_);
+	info.renderPass = renderPass.renderPass;
+
 	vk::PipelineMultisampleStateCreateInfo multisample;
 	multisample.rasterizationSamples = sampleCountFlagsFromNum(desc.numSamples_);
 	info.pMultisampleState = &multisample;
@@ -1360,9 +1363,6 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 
 	auto layout = device.createPipelineLayout(layoutInfo);
 	info.layout = layout;
-
-	const auto &renderPass = renderPasses.get(desc.renderPass_);
-	info.renderPass = renderPass.renderPass;
 
 	auto result = device.createGraphicsPipeline(pipelineCache, info);
 
