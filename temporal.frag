@@ -40,7 +40,9 @@ THE SOFTWARE.
 
 layout(set = 1, binding = 0) uniform sampler2D currentTex;
 layout(set = 1, binding = 1) uniform sampler2D previousTex;
-// TODO: velocity tex if SMAA_REPROJECTION
+#if SMAA_REPROJECTION
+layout(set = 1, binding = 2) uniform sampler2D velocityTex;
+#endif  // SMAA_REPROJECTION
 
 
 layout (location = 0) in vec2 texcoord;
@@ -49,5 +51,9 @@ layout (location = 0) out vec4 outColor;
 
 void main(void)
 {
+#if SMAA_REPROJECTION
+	outColor = SMAAResolvePS(texcoord, currentTex, previousTex, velocityTex);
+#else  // SMAA_REPROJECTION
 	outColor = SMAAResolvePS(texcoord, currentTex, previousTex);
+#endif  // SMAA_REPROJECTION
 }
