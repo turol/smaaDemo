@@ -1322,8 +1322,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	info.pDepthStencilState = &ds;
 
 	std::vector<vk::PipelineColorBlendAttachmentState> colorBlendStates;
-	{
-		// TODO: for all color render targets
+	for (unsigned int i = 0; i < renderPass.numColorAttachments; i++) {
 		vk::PipelineColorBlendAttachmentState cb;
 		if (desc.blending_) {
 			cb.blendEnable          = true;
