@@ -1107,6 +1107,12 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 }
 
 
+static const GLenum drawBuffers[MAX_COLOR_RENDERTARGETS] = {
+	  GL_COLOR_ATTACHMENT0
+	, GL_COLOR_ATTACHMENT1
+};
+
+
 FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	assert(!desc.name_.empty());
 	assert(desc.renderPass_);
@@ -1119,10 +1125,12 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 
 	unsigned int width = 0, height = 0;
 
+	unsigned int numColorAttachments = 0;
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 		if (!desc.colors_[i]) {
 			continue;
 		}
+		numColorAttachments++;
 
 		const auto &colorRT = renderTargets.get(desc.colors_[i]);
 
@@ -1157,6 +1165,8 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 
 		glNamedFramebufferTexture(fb.fbo, GL_COLOR_ATTACHMENT0 + i, colorRTtex.tex, 0);
 	}
+
+	glNamedFramebufferDrawBuffers(fb.fbo, numColorAttachments, drawBuffers);
 
 	if (desc.depthStencil_) {
 		const auto &depthRT = renderTargets.get(desc.depthStencil_);
