@@ -1276,6 +1276,7 @@ RenderPassHandle SMAADemo::getSceneRenderPass(unsigned int n, Layout l) {
 	if (it == sceneRenderPasses.end()) {
 		RenderPassDesc rpDesc;
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, l)
+		      .color(1, Format::RG16Float, PassBegin::Clear, Layout::ShaderRead)
 		      .depthStencil(depthFormat, PassBegin::Clear)
 		      .clearDepth(1.0f)
 		      .numSamples(n);
@@ -1538,6 +1539,7 @@ void SMAADemo::createFramebuffers() {
 		fbDesc.name("scene")
 		      .renderPass(getSceneRenderPass(numSamples, Layout::ShaderRead))
 		      .color(0, mainColorRT)
+		      .color(1, velocityRT)
 		      .depthStencil(mainDepthRT);
 		sceneFramebuffer = renderer.createFramebuffer(fbDesc);
 	}
