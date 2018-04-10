@@ -2320,7 +2320,7 @@ void SMAADemo::render() {
 
 void SMAADemo::doTemporalAA() {
 	renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
-	renderer.bindPipeline(temporalAAPipelines[0]);
+	renderer.bindPipeline(temporalAAPipelines[temporalReproject]);
 	TemporalAADS temporalDS;
 	temporalDS.currentTex.tex      = renderer.getRenderTargetTexture(resolveRTs[temporalFrame]);
 	temporalDS.currentTex.sampler  = nearestSampler;
