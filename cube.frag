@@ -31,6 +31,8 @@ readonly restrict layout(std430, set = 1, binding = 0) buffer cubeData {
 
 
 layout(location = 0) flat in int instance;
+layout(location = 1) in vec3 currPos;
+layout(location = 2) in vec3 prevPos;
 
 
 layout (location = 0) out vec4 outColor;
@@ -46,4 +48,9 @@ void main(void)
     color.w = dot(color.xyz, vec3(0.299, 0.587, 0.114));
     outColor = color;
     outVelocity = vec2(0.0, 0.0);
+
+    // w stored in z
+    vec2 curr   = currPos.xy / currPos.z;
+    vec2 prev   = prevPos.xy / prevPos.z;
+    outVelocity = curr - prev;
 }

@@ -35,6 +35,8 @@ readonly restrict layout(std430, set = 1, binding = 0) buffer cubeData {
 
 
 layout(location = 0) flat out int instance;
+layout(location = 1) out vec3 currPos;
+layout(location = 2) out vec3 prevPos;
 
 
 void main(void)
@@ -54,6 +56,14 @@ void main(void)
     vec4 worldPos = vec4(rotatedPos + cube.position, 1.0);
 
     gl_Position = viewProj * worldPos;
+    currPos     = gl_Position.xyw;
+    prevPos     = (prevViewProj * worldPos).xyw;
+    // Positions in projection space are in [-1, 1] range, while texture
+    // coordinates are in [0, 1] range. So, we divide by 2 to get velocities in
+    // the scale (and flip the y axis):
+    currPos.xy *= vec2(0.5, -0.5);
+    prevPos.xy *= vec2(0.5, -0.5);
+
     instance = gl_InstanceIndex;
 
 #ifdef VULKAN_FLIP
