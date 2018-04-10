@@ -34,6 +34,7 @@ layout(location = 0) flat in int instance;
 
 
 layout (location = 0) out vec4 outColor;
+layout (location = 1) out vec2 outVelocity;
 
 
 void main(void)
@@ -44,4 +45,5 @@ void main(void)
 
     color.w = dot(color.xyz, vec3(0.299, 0.587, 0.114));
     outColor = color;
+    outVelocity = vec2(0.0, 0.0);
 }
