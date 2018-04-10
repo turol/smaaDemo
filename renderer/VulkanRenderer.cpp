@@ -1046,10 +1046,14 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 
 	vk::SampleCountFlagBits samples = sampleCountFlagsFromNum(desc.numSamples_);
 
+	unsigned int numColorAttachments = 0;
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 		if (desc.colorRTs_[i].format == Format::Invalid) {
+			// TODO: could be break, it's invalid to have holes in attachment list
+			// but should check that
 			continue;
 		}
+		numColorAttachments++;
 
 		const auto &colorRT = desc.colorRTs_[i];
 
@@ -1198,6 +1202,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 
 	r.renderPass  = device.createRenderPass(info);
 	r.numSamples  = desc.numSamples_;
+	r.numColorAttachments = numColorAttachments;
 	r.desc        = desc;
 
 	if (debugMarkers) {
@@ -2532,6 +2537,7 @@ void RendererImpl::deleteRenderPassInternal(RenderPass &rp) {
 	rp.renderPass = vk::RenderPass();
 	rp.clearValueCount = 0;
 	rp.numSamples      = 0;
+	rp.numColorAttachments = 0;
 }
 
 

@@ -347,12 +347,14 @@ struct RenderPass {
 	unsigned int                   clearValueCount;
 	std::array<vk::ClearValue, 2>  clearValues;
 	unsigned int                   numSamples;
+	unsigned int                   numColorAttachments;
 	RenderPassDesc                 desc;
 
 
 	RenderPass()
 	: clearValueCount(0)
 	, numSamples(0)
+	, numColorAttachments(0)
 	{
 	}
 
@@ -363,6 +365,7 @@ struct RenderPass {
 	: renderPass(other.renderPass)
 	, clearValueCount(other.clearValueCount)
 	, numSamples(other.numSamples)
+	, numColorAttachments(other.numColorAttachments)
 	, desc(other.desc)
 	{
 		for (unsigned int i = 0; i < other.clearValueCount; i++) {
@@ -372,6 +375,7 @@ struct RenderPass {
 		other.renderPass = vk::RenderPass();
 		other.clearValueCount = 0;
 		other.numSamples      = 0;
+		other.numColorAttachments = 0;
 	}
 
 	RenderPass &operator=(RenderPass &&other) {
@@ -385,6 +389,7 @@ struct RenderPass {
 		clearValueCount  = other.clearValueCount;
 		numSamples       = other.numSamples;
 		desc             = other.desc;
+		numColorAttachments = other.numColorAttachments;
 
 		for (unsigned int i = 0; i < other.clearValueCount; i++) {
 			clearValues[i] = other.clearValues[i];
@@ -393,6 +398,7 @@ struct RenderPass {
 		other.renderPass = vk::RenderPass();
 		other.clearValueCount = 0;
 		other.numSamples      = 0;
+		other.numColorAttachments = 0;
 
 		return *this;
 	}
@@ -401,6 +407,7 @@ struct RenderPass {
 		assert(!renderPass);
 		assert(clearValueCount == 0);
 		assert(numSamples == 0);
+		assert(numColorAttachments == 0);
 	}
 
 	bool operator==(const RenderPass &other) const {
