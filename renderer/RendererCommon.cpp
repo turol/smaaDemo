@@ -666,8 +666,8 @@ void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, u
 }
 
 
-void Renderer::resolveMSAA(FramebufferHandle source, FramebufferHandle target) {
-	impl->resolveMSAA(source, target);
+void Renderer::resolveMSAA(FramebufferHandle source, FramebufferHandle target, unsigned int n) {
+	impl->resolveMSAA(source, target, n);
 }
 
 

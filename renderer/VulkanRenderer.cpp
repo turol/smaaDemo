@@ -2887,7 +2887,7 @@ void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int w
 }
 
 
-void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle target) {
+void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle target, unsigned int n) {
 	assert(source);
 	assert(target);
 
@@ -2904,15 +2904,11 @@ void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle targe
 	assert(srcFb.width       == destFb.width);
 	assert(srcFb.height      == destFb.height);
 
-	// must have exactly 1 color target
-	// TODO: more targets
-	// or allow picking which one
-	assert(srcFb.desc.colors_[0]);
-	assert(!srcFb.desc.colors_[1]);
+	assert(srcFb.desc.colors_[n]);
 	assert(destFb.desc.colors_[0]);
 	assert(!destFb.desc.colors_[1]);
 
-	auto &srcColor  = renderTargets.get(srcFb.desc.colors_[0]);
+	auto &srcColor  = renderTargets.get(srcFb.desc.colors_[n]);
 	assert(srcColor.currentLayout == Layout::TransferSrc);
 	auto &destColor = renderTargets.get(destFb.desc.colors_[0]);
 	assert(destColor.currentLayout == Layout::TransferDst);

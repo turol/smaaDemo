@@ -2202,9 +2202,10 @@ void RendererImpl::rebindDescriptorSets() {
 }
 
 
-void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle target) {
+void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle target, unsigned int n) {
 	assert(source);
 	assert(target);
+	assert(n == 0);  // TODO: need this?
 
 	assert(!inRenderPass);
 
