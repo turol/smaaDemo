@@ -1825,6 +1825,9 @@ void SMAADemo::mainLoopIteration() {
 				if (aaMethod == AAMethod::MSAA) {
 					recreateFramebuffers = true;
 				}
+				if (temporalAA) {
+					temporalAAFirstFrame = true;
+				}
 				break;
 
 			case SDL_SCANCODE_C:
@@ -2371,6 +2374,9 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 	if (ImGui::Begin("SMAA", &windowVisible, flags)) {
 		if (ImGui::CollapsingHeader("Antialiasing properties", ImGuiTreeNodeFlags_DefaultOpen)) {
 			bool aaChanged = ImGui::Checkbox("Antialiasing", &antialiasing);
+			if (aaChanged && temporalAA) {
+				temporalAAFirstFrame = true;
+			}
 
 			int aa = static_cast<int>(aaMethod);
 			ImGui::RadioButton("MSAA", &aa, static_cast<int>(AAMethod::MSAA)); ImGui::SameLine();
