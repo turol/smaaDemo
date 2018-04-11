@@ -345,7 +345,7 @@ struct Pipeline {
 struct RenderPass {
 	vk::RenderPass renderPass;
 	unsigned int                   clearValueCount;
-	std::array<vk::ClearValue, 2>  clearValues;
+	std::array<vk::ClearValue, MAX_COLOR_RENDERTARGETS + 1>  clearValues;
 	unsigned int                   numSamples;
 	unsigned int                   numColorAttachments;
 	RenderPassDesc                 desc;
