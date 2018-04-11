@@ -36,6 +36,8 @@ layout(set = 0, binding = 0, std140) uniform Globals
 
 	SMAAParameters  smaaParameters;
 
+	vec4 subsampleIndices;
+
 	float predicationThreshold;
 	float predicationScale;
 	float predicationStrength;

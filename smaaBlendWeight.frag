@@ -57,5 +57,5 @@ void main(void)
     offsets[0] = offset0;
     offsets[1] = offset1;
     offsets[2] = offset2;
-    outColor = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offsets, edgesTex, areaTex, searchTex, vec4(0.0, 0.0, 0.0, 0.0));
+    outColor = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offsets, edgesTex, areaTex, searchTex, subsampleIndices);
 }

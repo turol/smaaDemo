@@ -2079,6 +2079,10 @@ void SMAADemo::render() {
 
 	if (temporalAA) {
 		temporalFrame = (temporalFrame + 1) % 2;
+		float v       = float(temporalFrame + 1);
+		globals.subsampleIndices = glm::vec4(v, v, v, 0.0f);
+	} else {
+		globals.subsampleIndices = glm::vec4(0.0f);
 	}
 
 	Layout l = Layout::ShaderRead;
