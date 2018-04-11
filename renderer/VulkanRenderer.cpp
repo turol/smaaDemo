@@ -1113,6 +1113,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		if (desc.clearDepthAttachment) {
 			attach.loadOp     = vk::AttachmentLoadOp::eClear;
 			r.clearValueCount = attachNum + 1;
+            assert(attachNum < r.clearValues.size());
 			r.clearValues[attachNum].depthStencil = vk::ClearDepthStencilValue(1.0f, 0);
 		}
 		attach.storeOp        = vk::AttachmentStoreOp::eStore;
