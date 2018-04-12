@@ -35,6 +35,8 @@ THE SOFTWARE.
 #define SMAA_FLIP_Y 0
 #endif
 
+#define SMAA_REPROJECTION_WEIGHT_SCALE reprojWeigthScale
+
 #include "smaa.h"
 
 

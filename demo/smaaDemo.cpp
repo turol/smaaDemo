@@ -413,6 +413,7 @@ class SMAADemo {
 	bool          temporalAAFirstFrame;
 	unsigned int  temporalFrame;
 	bool          temporalReproject;
+	float         reprojectionWeightScale;
 	// number of samples in current scene fb
 	// 1 or 2 if SMAA
 	// 2.. if MSAA
@@ -585,6 +586,7 @@ SMAADemo::SMAADemo()
 , temporalAAFirstFrame(false)
 , temporalFrame(0)
 , temporalReproject(true)
+, reprojectionWeightScale(30.0f)
 , numSamples(1)
 , debugMode(0)
 , colorMode(0)
@@ -2081,7 +2083,7 @@ void SMAADemo::render() {
 	globals.predicationThreshold = predicationThreshold;
 	globals.predicationScale     = predicationScale;
 	globals.predicationStrength  = predicationStrength;
-	globals.pad0 = 0;
+	globals.reprojWeigthScale    = reprojectionWeightScale;
 
 	if (temporalAA) {
 		temporalFrame = (temporalFrame + 1) % 2;
@@ -2400,6 +2402,10 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 				ImGui::PopItemFlag();
 				ImGui::PopStyleVar();
 			}
+
+			float w = reprojectionWeightScale;
+			ImGui::SliderFloat("Reprojection weight scale", &w, 0.0f, 80.0f);
+			reprojectionWeightScale = w;
 
 			ImGui::Separator();
 			int msaaq = msaaQuality;
