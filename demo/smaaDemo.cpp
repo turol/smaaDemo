@@ -1150,10 +1150,10 @@ void SMAADemo::initRender() {
 	}
 
 	{
-	for (unsigned int i = 0; i < 2; i++) {
 		ShaderMacros macros;
 		auto vertexShader   = renderer.createVertexShader("temporal", macros);
 
+	for (unsigned int i = 0; i < 2; i++) {
 		macros.emplace("SMAA_REPROJECTION", std::to_string(i));
 
 		auto fragmentShader = renderer.createFragmentShader("temporal", macros);
