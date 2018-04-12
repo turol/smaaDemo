@@ -1149,6 +1149,7 @@ void SMAADemo::initRender() {
 		guiPipeline = renderer.createPipeline(plDesc);
 	}
 
+	{
 	for (unsigned int i = 0; i < 2; i++) {
 		ShaderMacros macros;
 		auto vertexShader   = renderer.createVertexShader("temporal", macros);
@@ -1166,6 +1167,7 @@ void SMAADemo::initRender() {
 		      .name("temporal AA");
 
 		temporalAAPipelines[i] = renderer.createPipeline(plDesc);
+	}
 	}
 
 	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear) .name("linear"));
