@@ -2085,7 +2085,7 @@ void SMAADemo::render() {
 	globals.predicationStrength  = predicationStrength;
 	globals.reprojWeigthScale    = reprojectionWeightScale;
 
-	if (temporalAA) {
+	if (temporalAA && aaMethod != AAMethod::MSAA) {
 		temporalFrame = (temporalFrame + 1) % 2;
 		float v       = float(temporalFrame + 1);
 		globals.subsampleIndices = glm::vec4(v, v, v, 0.0f);
@@ -2124,8 +2124,7 @@ void SMAADemo::render() {
 		glm::mat4 viewProj = proj * view * model;
 
 		// temporal jitter
-		if (temporalAA) {
-			// TODO: need y-flip for opengl?
+		if (temporalAA && aaMethod != AAMethod::MSAA) {
 			const glm::vec2 jitters[2] = {
 			      { -0.25f,  0.25f }
 			    , { 0.25f,  -0.25f }
@@ -2188,7 +2187,7 @@ void SMAADemo::render() {
 	if (antialiasing) {
 		switch (aaMethod) {
 		case AAMethod::MSAA: {
-			if (temporalAA) {
+			if (false) {
 				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::Undefined, Layout::TransferDst);
 				renderer.resolveMSAA(sceneFramebuffer, resolveFBs[temporalFrame]);
 				// TODO: do this transition as part of renderpass?
@@ -2388,6 +2387,12 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			ImGui::RadioButton("FXAA", &aa, static_cast<int>(AAMethod::FXAA)); ImGui::SameLine();
 			ImGui::RadioButton("SMAA", &aa, static_cast<int>(AAMethod::SMAA));
 
+			{
+				if (aaMethod == AAMethod::MSAA) {
+					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+					ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+				}
+
 			if (ImGui::Checkbox("Temporal AA", &temporalAA)) {
 				recreateFramebuffers = true;
 			}
@@ -2401,6 +2406,12 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			if (!temporalAA) {
 				ImGui::PopItemFlag();
 				ImGui::PopStyleVar();
+			}
+
+				if (aaMethod == AAMethod::MSAA) {
+					ImGui::PopItemFlag();
+					ImGui::PopStyleVar();
+				}
 			}
 
 			float w = reprojectionWeightScale;
