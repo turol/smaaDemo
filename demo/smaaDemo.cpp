@@ -1153,21 +1153,21 @@ void SMAADemo::initRender() {
 		ShaderMacros macros;
 		auto vertexShader   = renderer.createVertexShader("temporal", macros);
 
-	for (unsigned int i = 0; i < 2; i++) {
-		macros.emplace("SMAA_REPROJECTION", std::to_string(i));
+		for (unsigned int i = 0; i < 2; i++) {
+			macros.emplace("SMAA_REPROJECTION", std::to_string(i));
 
-		auto fragmentShader = renderer.createFragmentShader("temporal", macros);
+			auto fragmentShader = renderer.createFragmentShader("temporal", macros);
 
-		PipelineDesc plDesc;
-		plDesc.renderPass(smaaBlendRenderPass)
-		      .descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<TemporalAADS>(1)
-		      .vertexShader(vertexShader)
-		      .fragmentShader(fragmentShader)
-		      .name("temporal AA");
+			PipelineDesc plDesc;
+			plDesc.renderPass(smaaBlendRenderPass)
+				  .descriptorSetLayout<GlobalDS>(0)
+				  .descriptorSetLayout<TemporalAADS>(1)
+				  .vertexShader(vertexShader)
+				  .fragmentShader(fragmentShader)
+				  .name("temporal AA");
 
-		temporalAAPipelines[i] = renderer.createPipeline(plDesc);
-	}
+			temporalAAPipelines[i] = renderer.createPipeline(plDesc);
+		}
 	}
 
 	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear) .name("linear"));
