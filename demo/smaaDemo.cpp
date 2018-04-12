@@ -2393,20 +2393,20 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 					ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
 				}
 
-			if (ImGui::Checkbox("Temporal AA", &temporalAA)) {
-				recreateFramebuffers = true;
-			}
+				if (ImGui::Checkbox("Temporal AA", &temporalAA)) {
+					recreateFramebuffers = true;
+				}
 
-			// temporal reprojection only enabled when temporal AA is
-			if (!temporalAA) {
-				ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-			}
-			ImGui::Checkbox("Temporal reprojection", &temporalReproject);
-			if (!temporalAA) {
-				ImGui::PopItemFlag();
-				ImGui::PopStyleVar();
-			}
+				// temporal reprojection only enabled when temporal AA is
+				if (!temporalAA) {
+					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+					ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+				}
+				ImGui::Checkbox("Temporal reprojection", &temporalReproject);
+				if (!temporalAA) {
+					ImGui::PopItemFlag();
+					ImGui::PopStyleVar();
+				}
 
 				if (aaMethod == AAMethod::MSAA) {
 					ImGui::PopItemFlag();
