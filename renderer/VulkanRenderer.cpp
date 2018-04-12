@@ -1570,6 +1570,15 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	info.pCode    = &spirv[0];
 	v.shaderModule = device.createShaderModule(info);
 
+	if (debugMarkers) {
+		vk::DebugMarkerObjectNameInfoEXT markerName;
+		markerName.objectType  = vk::DebugReportObjectTypeEXT::eShaderModule;
+		markerName.object      = uint64_t(VkShaderModule(v.shaderModule));
+		// TODO: add macros to name
+		markerName.pObjectName = vertexShaderName.c_str();
+		device.debugMarkerSetObjectNameEXT(&markerName);
+	}
+
 	return result_.second;
 }
 
@@ -1589,6 +1598,15 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	info.codeSize = spirv.size() * 4;
 	info.pCode    = &spirv[0];
 	f.shaderModule = device.createShaderModule(info);
+
+	if (debugMarkers) {
+		vk::DebugMarkerObjectNameInfoEXT markerName;
+		markerName.objectType  = vk::DebugReportObjectTypeEXT::eShaderModule;
+		markerName.object      = uint64_t(VkShaderModule(f.shaderModule));
+		// TODO: add macros to name
+		markerName.pObjectName = fragmentShaderName.c_str();
+		device.debugMarkerSetObjectNameEXT(&markerName);
+	}
 
 	return result_.second;
 }
