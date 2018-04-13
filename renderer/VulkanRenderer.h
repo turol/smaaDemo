@@ -1025,6 +1025,7 @@ struct RendererImpl : public RendererBase {
 
 	};
 
+	template <typename T> void debugNameObject(T h, const std::string &name);
 
 	bool isRenderTargetFormatSupported(Format format) const;
 

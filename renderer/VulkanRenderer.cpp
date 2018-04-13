@@ -83,6 +83,84 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetShaderInfoAMD(
 namespace renderer {
 
 
+template <> void RendererImpl::debugNameObject<VkFramebuffer>(VkFramebuffer handle, const std::string &name) {
+	if (debugMarkers) {
+		vk::DebugMarkerObjectNameInfoEXT markerName;
+		markerName.objectType  = vk::DebugReportObjectTypeEXT::eFramebuffer;
+		markerName.object      = uint64_t(handle);
+		markerName.pObjectName = name.c_str();
+		device.debugMarkerSetObjectNameEXT(&markerName);
+	}
+}
+
+
+template <> void RendererImpl::debugNameObject<VkImage>(VkImage handle, const std::string &name) {
+	if (debugMarkers) {
+		vk::DebugMarkerObjectNameInfoEXT markerNameImage;
+		markerNameImage.objectType  = vk::DebugReportObjectTypeEXT::eImage;
+		markerNameImage.object      = uint64_t(handle);
+		markerNameImage.pObjectName = name.c_str();
+		device.debugMarkerSetObjectNameEXT(&markerNameImage);
+	}
+}
+
+
+template <> void RendererImpl::debugNameObject<VkImageView>(VkImageView handle, const std::string &name) {
+	if (debugMarkers) {
+		vk::DebugMarkerObjectNameInfoEXT markerNameImageView;
+		markerNameImageView.objectType  = vk::DebugReportObjectTypeEXT::eImageView;
+		markerNameImageView.object      = uint64_t(handle);
+		markerNameImageView.pObjectName = name.c_str();
+		device.debugMarkerSetObjectNameEXT(&markerNameImageView);
+	}
+}
+
+
+template <> void RendererImpl::debugNameObject<VkPipeline>(VkPipeline handle, const std::string &name) {
+	if (debugMarkers) {
+		vk::DebugMarkerObjectNameInfoEXT markerName;
+		markerName.objectType  = vk::DebugReportObjectTypeEXT::ePipeline;
+		markerName.object      = uint64_t(handle);
+		markerName.pObjectName = name.c_str();
+
+		device.debugMarkerSetObjectNameEXT(&markerName);
+	}
+}
+
+
+template <> void RendererImpl::debugNameObject<VkRenderPass>(VkRenderPass handle, const std::string &name) {
+	if (debugMarkers) {
+		vk::DebugMarkerObjectNameInfoEXT markerName;
+		markerName.objectType  = vk::DebugReportObjectTypeEXT::eRenderPass;
+		markerName.object      = uint64_t(handle);
+		markerName.pObjectName = name.c_str();
+		device.debugMarkerSetObjectNameEXT(&markerName);
+	}
+}
+
+
+template <> void RendererImpl::debugNameObject<VkSampler>(VkSampler handle, const std::string &name) {
+	if (debugMarkers) {
+		vk::DebugMarkerObjectNameInfoEXT markerName;
+		markerName.objectType  = vk::DebugReportObjectTypeEXT::eSampler;
+		markerName.object      = uint64_t(handle);
+		markerName.pObjectName = name.c_str();
+		device.debugMarkerSetObjectNameEXT(&markerName);
+	}
+}
+
+
+template <> void RendererImpl::debugNameObject<VkShaderModule>(VkShaderModule handle, const std::string &name) {
+	if (debugMarkers) {
+		vk::DebugMarkerObjectNameInfoEXT markerName;
+		markerName.objectType  = vk::DebugReportObjectTypeEXT::eShaderModule;
+		markerName.object      = uint64_t(handle);
+		markerName.pObjectName = name.c_str();
+		device.debugMarkerSetObjectNameEXT(&markerName);
+	}
+}
+
+
 static const std::array<vk::DescriptorType, uint8_t(DescriptorType::Count) - 1> descriptorTypes =
 { {
 	  vk::DescriptorType::eUniformBuffer
@@ -990,13 +1068,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	fb.height       = height;
 	fb.framebuffer  = device.createFramebuffer(fbInfo);
 
-	if (debugMarkers) {
-		vk::DebugMarkerObjectNameInfoEXT markerName;
-		markerName.objectType  = vk::DebugReportObjectTypeEXT::eFramebuffer;
-		markerName.object      = uint64_t(VkFramebuffer(fb.framebuffer));
-		markerName.pObjectName = desc.name_.c_str();
-		device.debugMarkerSetObjectNameEXT(&markerName);
-	}
+	debugNameObject<VkFramebuffer>(fb.framebuffer, desc.name_);
 
 	return result.second;
 }
@@ -1206,13 +1278,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	r.numColorAttachments = numColorAttachments;
 	r.desc        = desc;
 
-	if (debugMarkers) {
-		vk::DebugMarkerObjectNameInfoEXT markerName;
-		markerName.objectType  = vk::DebugReportObjectTypeEXT::eRenderPass;
-		markerName.object      = uint64_t(VkRenderPass(r.renderPass));
-		markerName.pObjectName = desc.name_.c_str();
-		device.debugMarkerSetObjectNameEXT(&markerName);
-	}
+	debugNameObject<VkRenderPass>(r.renderPass, desc.name_);
 
 	return result.second;
 }
@@ -1366,14 +1432,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 
 	auto result = device.createGraphicsPipeline(pipelineCache, info);
 
-	if (debugMarkers) {
-		vk::DebugMarkerObjectNameInfoEXT markerName;
-		markerName.objectType  = vk::DebugReportObjectTypeEXT::ePipeline;
-		markerName.object      = uint64_t(VkPipeline(result));
-		markerName.pObjectName = desc.name_.c_str();
-
-		device.debugMarkerSetObjectNameEXT(&markerName);
-	}
+	debugNameObject<VkPipeline>(result, desc.name_);
 
 	if (amdShaderInfo) {
 		vk::ShaderStatisticsInfoAMD stats;
@@ -1440,13 +1499,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	tex.image        = rt.image;
 	tex.renderTarget = true;
 
-	if (debugMarkers) {
-		vk::DebugMarkerObjectNameInfoEXT markerNameImage;
-		markerNameImage.objectType  = vk::DebugReportObjectTypeEXT::eImage;
-		markerNameImage.object      = uint64_t(VkImage(tex.image));
-		markerNameImage.pObjectName = desc.name_.c_str();
-		device.debugMarkerSetObjectNameEXT(&markerNameImage);
-	}
+	debugNameObject<VkImage>(tex.image, desc.name_);
 
 	VmaAllocationCreateInfo req = {};
 	req.usage          = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -1471,13 +1524,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	rt.imageView = device.createImageView(viewInfo);
 	tex.imageView    = rt.imageView;
 
-	if (debugMarkers) {
-		vk::DebugMarkerObjectNameInfoEXT markerNameImageView;
-		markerNameImageView.objectType  = vk::DebugReportObjectTypeEXT::eImageView;
-		markerNameImageView.object      = uint64_t(VkImageView(tex.imageView));
-		markerNameImageView.pObjectName = desc.name_.c_str();
-		device.debugMarkerSetObjectNameEXT(&markerNameImageView);
-	}
+	debugNameObject<VkImageView>(tex.imageView, desc.name_);
 
 	// TODO: std::move ?
 	rt.texture = texResult.second;
@@ -1495,14 +1542,8 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 		viewInfo.format   = vulkanFormat(desc.additionalViewFormat_);
 		view.imageView    = device.createImageView(viewInfo);
 
-		if (debugMarkers) {
 			std::string viewName = desc.name_ + " " + formatName(desc.additionalViewFormat_) + " view";
-			vk::DebugMarkerObjectNameInfoEXT markerNameImageView;
-			markerNameImageView.objectType  = vk::DebugReportObjectTypeEXT::eImageView;
-			markerNameImageView.object      = uint64_t(VkImageView(view.imageView));
-			markerNameImageView.pObjectName = viewName.c_str();
-			device.debugMarkerSetObjectNameEXT(&markerNameImageView);
-		}
+		debugNameObject<VkImageView>(view.imageView, viewName);
 	}
 
 	return result.second;
@@ -1542,13 +1583,7 @@ SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
 	struct Sampler &sampler = result.first;
 	sampler.sampler    = device.createSampler(info);
 
-	if (debugMarkers) {
-		vk::DebugMarkerObjectNameInfoEXT markerName;
-		markerName.objectType  = vk::DebugReportObjectTypeEXT::eSampler;
-		markerName.object      = uint64_t(VkSampler(sampler.sampler));
-		markerName.pObjectName = desc.name_.c_str();
-		device.debugMarkerSetObjectNameEXT(&markerName);
-	}
+	debugNameObject<VkSampler>(sampler.sampler, desc.name_);
 
 	return result.second;
 }
@@ -1570,14 +1605,8 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	info.pCode    = &spirv[0];
 	v.shaderModule = device.createShaderModule(info);
 
-	if (debugMarkers) {
-		vk::DebugMarkerObjectNameInfoEXT markerName;
-		markerName.objectType  = vk::DebugReportObjectTypeEXT::eShaderModule;
-		markerName.object      = uint64_t(VkShaderModule(v.shaderModule));
 		// TODO: add macros to name
-		markerName.pObjectName = vertexShaderName.c_str();
-		device.debugMarkerSetObjectNameEXT(&markerName);
-	}
+	debugNameObject<VkShaderModule>(v.shaderModule, vertexShaderName);
 
 	return result_.second;
 }
@@ -1599,14 +1628,8 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	info.pCode    = &spirv[0];
 	f.shaderModule = device.createShaderModule(info);
 
-	if (debugMarkers) {
-		vk::DebugMarkerObjectNameInfoEXT markerName;
-		markerName.objectType  = vk::DebugReportObjectTypeEXT::eShaderModule;
-		markerName.object      = uint64_t(VkShaderModule(f.shaderModule));
 		// TODO: add macros to name
-		markerName.pObjectName = fragmentShaderName.c_str();
-		device.debugMarkerSetObjectNameEXT(&markerName);
-	}
+	debugNameObject<VkShaderModule>(f.shaderModule, fragmentShaderName);
 
 	return result_.second;
 }
@@ -1659,19 +1682,8 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	viewInfo.subresourceRange.layerCount = 1;
 	tex.imageView = device.createImageView(viewInfo);
 
-	if (debugMarkers) {
-		vk::DebugMarkerObjectNameInfoEXT markerNameImage;
-		markerNameImage.objectType  = vk::DebugReportObjectTypeEXT::eImage;
-		markerNameImage.object      = uint64_t(VkImage(tex.image));
-		markerNameImage.pObjectName = desc.name_.c_str();
-		device.debugMarkerSetObjectNameEXT(&markerNameImage);
-
-		vk::DebugMarkerObjectNameInfoEXT markerNameImageView;
-		markerNameImageView.objectType  = vk::DebugReportObjectTypeEXT::eImageView;
-		markerNameImageView.object      = uint64_t(VkImageView(tex.imageView));
-		markerNameImageView.pObjectName = desc.name_.c_str();
-		device.debugMarkerSetObjectNameEXT(&markerNameImageView);
-	}
+	debugNameObject<VkImage>(tex.image, desc.name_);
+	debugNameObject<VkImageView>(tex.imageView, desc.name_);
 
 	// TODO: reuse command buffer for multiple copies
 	unsigned int w = desc.width_, h = desc.height_;
