@@ -83,77 +83,40 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetShaderInfoAMD(
 namespace renderer {
 
 
-template <> void RendererImpl::debugNameObject<VkFramebuffer>(VkFramebuffer handle, const std::string &name) {
+template <typename T> struct DebugType {};
+
+template <> struct DebugType<VkFramebuffer> {
+	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::eFramebuffer;
+};
+
+template <> struct DebugType<VkImage> {
+	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::eImage;
+};
+
+template <> struct DebugType<VkImageView> {
+	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::eImageView;
+};
+
+template <> struct DebugType<VkPipeline> {
+	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::ePipeline;
+};
+
+template <> struct DebugType<VkRenderPass> {
+	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::eRenderPass;
+};
+
+template <> struct DebugType<VkSampler> {
+	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::eSampler;
+};
+
+template <> struct DebugType<VkShaderModule> {
+	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::eShaderModule;
+};
+
+template <typename T> void RendererImpl::debugNameObject(T handle, const std::string &name) {
 	if (debugMarkers) {
 		vk::DebugMarkerObjectNameInfoEXT markerName;
-		markerName.objectType  = vk::DebugReportObjectTypeEXT::eFramebuffer;
-		markerName.object      = uint64_t(handle);
-		markerName.pObjectName = name.c_str();
-		device.debugMarkerSetObjectNameEXT(&markerName);
-	}
-}
-
-
-template <> void RendererImpl::debugNameObject<VkImage>(VkImage handle, const std::string &name) {
-	if (debugMarkers) {
-		vk::DebugMarkerObjectNameInfoEXT markerName;
-		markerName.objectType  = vk::DebugReportObjectTypeEXT::eImage;
-		markerName.object      = uint64_t(handle);
-		markerName.pObjectName = name.c_str();
-		device.debugMarkerSetObjectNameEXT(&markerName);
-	}
-}
-
-
-template <> void RendererImpl::debugNameObject<VkImageView>(VkImageView handle, const std::string &name) {
-	if (debugMarkers) {
-		vk::DebugMarkerObjectNameInfoEXT markerName;
-		markerName.objectType  = vk::DebugReportObjectTypeEXT::eImageView;
-		markerName.object      = uint64_t(handle);
-		markerName.pObjectName = name.c_str();
-		device.debugMarkerSetObjectNameEXT(&markerName);
-	}
-}
-
-
-template <> void RendererImpl::debugNameObject<VkPipeline>(VkPipeline handle, const std::string &name) {
-	if (debugMarkers) {
-		vk::DebugMarkerObjectNameInfoEXT markerName;
-		markerName.objectType  = vk::DebugReportObjectTypeEXT::ePipeline;
-		markerName.object      = uint64_t(handle);
-		markerName.pObjectName = name.c_str();
-
-		device.debugMarkerSetObjectNameEXT(&markerName);
-	}
-}
-
-
-template <> void RendererImpl::debugNameObject<VkRenderPass>(VkRenderPass handle, const std::string &name) {
-	if (debugMarkers) {
-		vk::DebugMarkerObjectNameInfoEXT markerName;
-		markerName.objectType  = vk::DebugReportObjectTypeEXT::eRenderPass;
-		markerName.object      = uint64_t(handle);
-		markerName.pObjectName = name.c_str();
-		device.debugMarkerSetObjectNameEXT(&markerName);
-	}
-}
-
-
-template <> void RendererImpl::debugNameObject<VkSampler>(VkSampler handle, const std::string &name) {
-	if (debugMarkers) {
-		vk::DebugMarkerObjectNameInfoEXT markerName;
-		markerName.objectType  = vk::DebugReportObjectTypeEXT::eSampler;
-		markerName.object      = uint64_t(handle);
-		markerName.pObjectName = name.c_str();
-		device.debugMarkerSetObjectNameEXT(&markerName);
-	}
-}
-
-
-template <> void RendererImpl::debugNameObject<VkShaderModule>(VkShaderModule handle, const std::string &name) {
-	if (debugMarkers) {
-		vk::DebugMarkerObjectNameInfoEXT markerName;
-		markerName.objectType  = vk::DebugReportObjectTypeEXT::eShaderModule;
+		markerName.objectType  = DebugType<T>::type;
 		markerName.object      = uint64_t(handle);
 		markerName.pObjectName = name.c_str();
 		device.debugMarkerSetObjectNameEXT(&markerName);
