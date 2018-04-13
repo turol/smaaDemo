@@ -96,22 +96,22 @@ template <> void RendererImpl::debugNameObject<VkFramebuffer>(VkFramebuffer hand
 
 template <> void RendererImpl::debugNameObject<VkImage>(VkImage handle, const std::string &name) {
 	if (debugMarkers) {
-		vk::DebugMarkerObjectNameInfoEXT markerNameImage;
-		markerNameImage.objectType  = vk::DebugReportObjectTypeEXT::eImage;
-		markerNameImage.object      = uint64_t(handle);
-		markerNameImage.pObjectName = name.c_str();
-		device.debugMarkerSetObjectNameEXT(&markerNameImage);
+		vk::DebugMarkerObjectNameInfoEXT markerName;
+		markerName.objectType  = vk::DebugReportObjectTypeEXT::eImage;
+		markerName.object      = uint64_t(handle);
+		markerName.pObjectName = name.c_str();
+		device.debugMarkerSetObjectNameEXT(&markerName);
 	}
 }
 
 
 template <> void RendererImpl::debugNameObject<VkImageView>(VkImageView handle, const std::string &name) {
 	if (debugMarkers) {
-		vk::DebugMarkerObjectNameInfoEXT markerNameImageView;
-		markerNameImageView.objectType  = vk::DebugReportObjectTypeEXT::eImageView;
-		markerNameImageView.object      = uint64_t(handle);
-		markerNameImageView.pObjectName = name.c_str();
-		device.debugMarkerSetObjectNameEXT(&markerNameImageView);
+		vk::DebugMarkerObjectNameInfoEXT markerName;
+		markerName.objectType  = vk::DebugReportObjectTypeEXT::eImageView;
+		markerName.object      = uint64_t(handle);
+		markerName.pObjectName = name.c_str();
+		device.debugMarkerSetObjectNameEXT(&markerName);
 	}
 }
 
