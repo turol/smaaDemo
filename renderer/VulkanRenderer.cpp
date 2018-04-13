@@ -85,39 +85,53 @@ namespace renderer {
 
 template <typename T> struct DebugType {};
 
-template <> struct DebugType<VkFramebuffer> {
+template <> struct DebugType<vk::Framebuffer> {
 	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::eFramebuffer;
+
+	typedef VkFramebuffer Base;
 };
 
-template <> struct DebugType<VkImage> {
+template <> struct DebugType<vk::Image> {
 	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::eImage;
+
+	typedef VkImage Base;
 };
 
-template <> struct DebugType<VkImageView> {
+template <> struct DebugType<vk::ImageView> {
 	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::eImageView;
+
+	typedef VkImageView Base;
 };
 
-template <> struct DebugType<VkPipeline> {
+template <> struct DebugType<vk::Pipeline> {
 	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::ePipeline;
+
+	typedef VkPipeline Base;
 };
 
-template <> struct DebugType<VkRenderPass> {
+template <> struct DebugType<vk::RenderPass> {
 	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::eRenderPass;
+
+	typedef VkRenderPass Base;
 };
 
-template <> struct DebugType<VkSampler> {
+template <> struct DebugType<vk::Sampler> {
 	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::eSampler;
+
+	typedef VkSampler Base;
 };
 
-template <> struct DebugType<VkShaderModule> {
+template <> struct DebugType<vk::ShaderModule> {
 	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::eShaderModule;
+
+	typedef VkShaderModule Base;
 };
 
 template <typename T> void RendererImpl::debugNameObject(T handle, const std::string &name) {
 	if (debugMarkers) {
 		vk::DebugMarkerObjectNameInfoEXT markerName;
 		markerName.objectType  = DebugType<T>::type;
-		markerName.object      = uint64_t(handle);
+		markerName.object      = uint64_t(typename DebugType<T>::Base(handle));
 		markerName.pObjectName = name.c_str();
 		device.debugMarkerSetObjectNameEXT(&markerName);
 	}
@@ -1031,7 +1045,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	fb.height       = height;
 	fb.framebuffer  = device.createFramebuffer(fbInfo);
 
-	debugNameObject<VkFramebuffer>(fb.framebuffer, desc.name_);
+	debugNameObject<vk::Framebuffer>(fb.framebuffer, desc.name_);
 
 	return result.second;
 }
@@ -1241,7 +1255,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	r.numColorAttachments = numColorAttachments;
 	r.desc        = desc;
 
-	debugNameObject<VkRenderPass>(r.renderPass, desc.name_);
+	debugNameObject<vk::RenderPass>(r.renderPass, desc.name_);
 
 	return result.second;
 }
@@ -1395,7 +1409,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 
 	auto result = device.createGraphicsPipeline(pipelineCache, info);
 
-	debugNameObject<VkPipeline>(result, desc.name_);
+	debugNameObject<vk::Pipeline>(result, desc.name_);
 
 	if (amdShaderInfo) {
 		vk::ShaderStatisticsInfoAMD stats;
@@ -1462,7 +1476,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	tex.image        = rt.image;
 	tex.renderTarget = true;
 
-	debugNameObject<VkImage>(tex.image, desc.name_);
+	debugNameObject<vk::Image>(tex.image, desc.name_);
 
 	VmaAllocationCreateInfo req = {};
 	req.usage          = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -1487,7 +1501,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	rt.imageView = device.createImageView(viewInfo);
 	tex.imageView    = rt.imageView;
 
-	debugNameObject<VkImageView>(tex.imageView, desc.name_);
+	debugNameObject<vk::ImageView>(tex.imageView, desc.name_);
 
 	// TODO: std::move ?
 	rt.texture = texResult.second;
@@ -1506,7 +1520,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 		view.imageView    = device.createImageView(viewInfo);
 
 			std::string viewName = desc.name_ + " " + formatName(desc.additionalViewFormat_) + " view";
-		debugNameObject<VkImageView>(view.imageView, viewName);
+		debugNameObject<vk::ImageView>(view.imageView, viewName);
 	}
 
 	return result.second;
@@ -1546,7 +1560,7 @@ SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
 	struct Sampler &sampler = result.first;
 	sampler.sampler    = device.createSampler(info);
 
-	debugNameObject<VkSampler>(sampler.sampler, desc.name_);
+	debugNameObject<vk::Sampler>(sampler.sampler, desc.name_);
 
 	return result.second;
 }
@@ -1569,7 +1583,7 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	v.shaderModule = device.createShaderModule(info);
 
 		// TODO: add macros to name
-	debugNameObject<VkShaderModule>(v.shaderModule, vertexShaderName);
+	debugNameObject<vk::ShaderModule>(v.shaderModule, vertexShaderName);
 
 	return result_.second;
 }
@@ -1592,7 +1606,7 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	f.shaderModule = device.createShaderModule(info);
 
 		// TODO: add macros to name
-	debugNameObject<VkShaderModule>(f.shaderModule, fragmentShaderName);
+	debugNameObject<vk::ShaderModule>(f.shaderModule, fragmentShaderName);
 
 	return result_.second;
 }
@@ -1645,8 +1659,8 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	viewInfo.subresourceRange.layerCount = 1;
 	tex.imageView = device.createImageView(viewInfo);
 
-	debugNameObject<VkImage>(tex.image, desc.name_);
-	debugNameObject<VkImageView>(tex.imageView, desc.name_);
+	debugNameObject<vk::Image>(tex.image, desc.name_);
+	debugNameObject<vk::ImageView>(tex.imageView, desc.name_);
 
 	// TODO: reuse command buffer for multiple copies
 	unsigned int w = desc.width_, h = desc.height_;
