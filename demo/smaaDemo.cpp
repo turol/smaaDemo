@@ -478,6 +478,9 @@ class SMAADemo {
 	RenderTargetHandle finalRenderRT;
 	std::array<RenderTargetHandle, 2>  resolveRTs;
 
+	std::array<RenderTargetHandle, 2>  subsampleRTs;
+	FramebufferHandle                  separateFB;
+
 	std::unordered_map<SceneRPKey, RenderPassHandle>  sceneRenderPasses;
 	FramebufferHandle  sceneFramebuffer;
 	RenderPassHandle   finalRenderPass;
@@ -1626,6 +1629,26 @@ void SMAADemo::createFramebuffers() {
 		      .name("Temporal resolve 1");
 		resolveFBs[1] = renderer.createFramebuffer(fbDesc);
 	}
+
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.format(Format::sRGBA8)
+		      .additionalViewFormat(Format::RGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
+
+		for (unsigned int i = 0; i < 2; i++) {
+			rtDesc.name("Temporal resolve" + std::to_string(i));
+			subsampleRTs[i] = renderer.createRenderTarget(rtDesc);
+		}
+
+		FramebufferDesc fbDesc;
+		fbDesc.name("Separate")
+		      .renderPass(separateRenderPass)
+		      .color(0, subsampleRTs[0])
+		      .color(1, subsampleRTs[1]);
+		separateFB = renderer.createFramebuffer(fbDesc);
+	}
 }
 
 
@@ -1676,6 +1699,14 @@ void SMAADemo::deleteFramebuffers() {
 
 		assert(!resolveFBs[0]);
 		assert(!resolveFBs[1]);
+	}
+
+	assert(separateFB);
+	renderer.deleteFramebuffer(separateFB);
+
+	for (unsigned int i = 0; i < 2; i++) {
+		assert(subsampleRTs[i]);
+		renderer.deleteRenderTarget(subsampleRTs[i]);
 	}
 }
 
