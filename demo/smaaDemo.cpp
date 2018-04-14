@@ -481,6 +481,7 @@ class SMAADemo {
 	std::unordered_map<SceneRPKey, RenderPassHandle>  sceneRenderPasses;
 	FramebufferHandle  sceneFramebuffer;
 	RenderPassHandle   finalRenderPass;
+	RenderPassHandle   separateRenderPass;
 	RenderPassHandle   smaaBlendRenderPass;  // for temporal aa, otherwise it's part of final render pass
 	RenderPassHandle   guiOnlyRenderPass;
 	FramebufferHandle  finalFramebuffer;
@@ -676,6 +677,8 @@ SMAADemo::~SMAADemo() {
 		renderer.deleteRenderPass(smaaEdgesRenderPass);
 		assert(smaaWeightsRenderPass);
 		renderer.deleteRenderPass(smaaWeightsRenderPass);
+		assert(separateRenderPass);
+		renderer.deleteRenderPass(separateRenderPass);
 	}
 
 	if (cubeVBO) {
@@ -1081,6 +1084,14 @@ void SMAADemo::initRender() {
 
 		smaaEdgesRenderPass   = renderer.createRenderPass(rpDesc.name("SMAA edges"));
 		smaaWeightsRenderPass = renderer.createRenderPass(rpDesc.name("SMAA weights"));
+	}
+
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.name("Separate")
+		      .color(0, Format::sRGBA8, PassBegin::DontCare, Layout::ShaderRead)
+		      .color(1, Format::sRGBA8, PassBegin::DontCare, Layout::ShaderRead);
+		separateRenderPass       = renderer.createRenderPass(rpDesc);
 	}
 
 	createFramebuffers();
