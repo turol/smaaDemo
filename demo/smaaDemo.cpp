@@ -555,6 +555,8 @@ public:
 
 	void render();
 
+	void doSMAA();
+
 	void doTemporalAA();
 
 	void drawGUI(uint64_t elapsed);
@@ -2272,77 +2274,7 @@ void SMAADemo::render() {
 		} break;
 
 		case AAMethod::SMAA: {
-			// edges pass
-			const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
-			renderer.beginRenderPass(smaaEdgesRenderPass, smaaEdgesFramebuffer);
-			renderer.bindPipeline(pipelines.edgePipeline);
-
-			EdgeDetectionDS edgeDS;
-			if (smaaKey.edgeMethod == SMAAEdgeMethod::Depth) {
-				edgeDS.color.tex     = renderer.getRenderTargetTexture(mainDepthRT);
-			} else {
-				edgeDS.color.tex     = renderer.getRenderTargetView(mainColorRT, Format::RGBA8);
-			}
-			edgeDS.color.sampler = nearestSampler;
-			edgeDS.predicationTex.tex     = renderer.getRenderTargetTexture(mainDepthRT);
-			edgeDS.predicationTex.sampler = nearestSampler;
-			renderer.bindDescriptorSet(1, edgeDS);
-			renderer.draw(0, 3);
-			renderer.endRenderPass();
-
-			// blendweights pass
-			renderer.beginRenderPass(smaaWeightsRenderPass, smaaWeightsFramebuffer);
-			renderer.bindPipeline(pipelines.blendWeightPipeline);
-			BlendWeightDS blendWeightDS;
-			blendWeightDS.edgesTex.tex      = renderer.getRenderTargetTexture(edgesRT);
-			blendWeightDS.edgesTex.sampler  = linearSampler;
-			blendWeightDS.areaTex.tex       = areaTex;
-			blendWeightDS.areaTex.sampler   = linearSampler;
-			blendWeightDS.searchTex.tex     = searchTex;
-			blendWeightDS.searchTex.sampler = linearSampler;
-			renderer.bindDescriptorSet(1, blendWeightDS);
-
-			renderer.draw(0, 3);
-			renderer.endRenderPass();
-
-			// final blending pass/debug pass
-			if (temporalAA) {
-				renderer.beginRenderPass(smaaBlendRenderPass, resolveFBs[temporalFrame]);
-			} else {
-				renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
-			}
-
-			switch (debugMode) {
-			case 0: {
-				// full effect
-				renderer.bindPipeline(pipelines.neighborPipeline);
-
-				NeighborBlendDS neighborBlendDS;
-				neighborBlendDS.color.tex            = renderer.getRenderTargetTexture(mainColorRT);
-				neighborBlendDS.color.sampler        = linearSampler;
-				neighborBlendDS.blendweights.tex     = renderer.getRenderTargetTexture(blendWeightsRT);
-				neighborBlendDS.blendweights.sampler = linearSampler;
-				renderer.bindDescriptorSet(1, neighborBlendDS);
-			} break;
-
-			case 1: {
-				// visualize edges
-				ColorTexDS blitDS;
-				renderer.bindPipeline(blitPipeline);
-				blitDS.color   = renderer.getRenderTargetTexture(edgesRT);
-				renderer.bindDescriptorSet(1, blitDS);
-			} break;
-
-			case 2: {
-				// visualize blend weights
-				ColorTexDS blitDS;
-				renderer.bindPipeline(blitPipeline);
-				blitDS.color   = renderer.getRenderTargetTexture(blendWeightsRT);
-				renderer.bindDescriptorSet(1, blitDS);
-			} break;
-
-			}
-			renderer.draw(0, 3);
+			doSMAA();
 
 			if (temporalAA) {
 				renderer.endRenderPass();
@@ -2368,6 +2300,81 @@ void SMAADemo::render() {
 
 	renderer.presentFrame(finalRenderRT);
 
+}
+
+
+void SMAADemo::doSMAA() {
+	// edges pass
+	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
+	renderer.beginRenderPass(smaaEdgesRenderPass, smaaEdgesFramebuffer);
+	renderer.bindPipeline(pipelines.edgePipeline);
+
+	EdgeDetectionDS edgeDS;
+	if (smaaKey.edgeMethod == SMAAEdgeMethod::Depth) {
+		edgeDS.color.tex     = renderer.getRenderTargetTexture(mainDepthRT);
+	} else {
+		edgeDS.color.tex     = renderer.getRenderTargetView(mainColorRT, Format::RGBA8);
+	}
+	edgeDS.color.sampler = nearestSampler;
+	edgeDS.predicationTex.tex     = renderer.getRenderTargetTexture(mainDepthRT);
+	edgeDS.predicationTex.sampler = nearestSampler;
+	renderer.bindDescriptorSet(1, edgeDS);
+	renderer.draw(0, 3);
+	renderer.endRenderPass();
+
+	// blendweights pass
+	renderer.beginRenderPass(smaaWeightsRenderPass, smaaWeightsFramebuffer);
+	renderer.bindPipeline(pipelines.blendWeightPipeline);
+	BlendWeightDS blendWeightDS;
+	blendWeightDS.edgesTex.tex      = renderer.getRenderTargetTexture(edgesRT);
+	blendWeightDS.edgesTex.sampler  = linearSampler;
+	blendWeightDS.areaTex.tex       = areaTex;
+	blendWeightDS.areaTex.sampler   = linearSampler;
+	blendWeightDS.searchTex.tex     = searchTex;
+	blendWeightDS.searchTex.sampler = linearSampler;
+	renderer.bindDescriptorSet(1, blendWeightDS);
+
+	renderer.draw(0, 3);
+	renderer.endRenderPass();
+
+	// final blending pass/debug pass
+	if (temporalAA) {
+		renderer.beginRenderPass(smaaBlendRenderPass, resolveFBs[temporalFrame]);
+	} else {
+		renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
+	}
+
+	switch (debugMode) {
+	case 0: {
+		// full effect
+		renderer.bindPipeline(pipelines.neighborPipeline);
+
+		NeighborBlendDS neighborBlendDS;
+		neighborBlendDS.color.tex            = renderer.getRenderTargetTexture(mainColorRT);
+		neighborBlendDS.color.sampler        = linearSampler;
+		neighborBlendDS.blendweights.tex     = renderer.getRenderTargetTexture(blendWeightsRT);
+		neighborBlendDS.blendweights.sampler = linearSampler;
+		renderer.bindDescriptorSet(1, neighborBlendDS);
+	} break;
+
+	case 1: {
+		// visualize edges
+		ColorTexDS blitDS;
+		renderer.bindPipeline(blitPipeline);
+		blitDS.color   = renderer.getRenderTargetTexture(edgesRT);
+		renderer.bindDescriptorSet(1, blitDS);
+	} break;
+
+	case 2: {
+		// visualize blend weights
+		ColorTexDS blitDS;
+		renderer.bindPipeline(blitPipeline);
+		blitDS.color   = renderer.getRenderTargetTexture(blendWeightsRT);
+		renderer.bindDescriptorSet(1, blitDS);
+	} break;
+
+	}
+	renderer.draw(0, 3);
 }
 
 
