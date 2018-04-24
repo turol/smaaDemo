@@ -2242,10 +2242,6 @@ void SMAADemo::render() {
 				renderer.layoutTransition(finalRenderRT, Layout::Undefined, Layout::TransferDst);
 				renderer.resolveMSAA(sceneFramebuffer, finalFramebuffer);
 			}
-
-			renderer.beginRenderPass(guiOnlyRenderPass, finalFramebuffer);
-			drawGUI(elapsed);
-			renderer.endRenderPass();
 		} break;
 
 		case AAMethod::FXAA: {
@@ -2270,10 +2266,6 @@ void SMAADemo::render() {
 				renderer.draw(0, 3);
 				renderer.endRenderPass();
 			}
-
-			renderer.beginRenderPass(guiOnlyRenderPass, finalFramebuffer);
-			drawGUI(elapsed);
-			renderer.endRenderPass();
 		} break;
 
 		case AAMethod::SMAA: {
@@ -2283,10 +2275,6 @@ void SMAADemo::render() {
 			if (temporalAA) {
 				doTemporalAA();
 			}
-
-			renderer.beginRenderPass(guiOnlyRenderPass, finalFramebuffer);
-			drawGUI(elapsed);
-			renderer.endRenderPass();
 		} break;
 		}
 
@@ -2298,11 +2286,11 @@ void SMAADemo::render() {
 		renderer.bindDescriptorSet(1, colorDS);
 		renderer.draw(0, 3);
 		renderer.endRenderPass();
-
-		renderer.beginRenderPass(guiOnlyRenderPass, finalFramebuffer);
-		drawGUI(elapsed);
-		renderer.endRenderPass();
 	}
+
+	renderer.beginRenderPass(guiOnlyRenderPass, finalFramebuffer);
+	drawGUI(elapsed);
+	renderer.endRenderPass();
 
 	renderer.presentFrame(finalRenderRT);
 
