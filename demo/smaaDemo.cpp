@@ -1066,26 +1066,26 @@ void SMAADemo::initRender() {
 	{
 		RenderPassDesc rpDesc;
 		// TODO: check this
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::TransferSrc);
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::TransferSrc);
 		finalRenderPass       = renderer.createRenderPass(rpDesc.name("final"));
 	}
 
 	{
 		RenderPassDesc rpDesc;
 		// FIXME: should be RGBA since SMAA wants gamma space?
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::ShaderRead);
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
 		smaaBlendRenderPass   = renderer.createRenderPass(rpDesc.name("SMAA blend"));
 	}
 
 	{
 		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::TransferSrc);
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::TransferSrc, Layout::TransferSrc);
 		guiOnlyRenderPass     = renderer.createRenderPass(rpDesc.name("GUI only"));
 	}
 
 	{
 		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::ShaderRead);
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
 
 		smaaEdgesRenderPass   = renderer.createRenderPass(rpDesc.name("SMAA edges"));
 		smaaWeightsRenderPass = renderer.createRenderPass(rpDesc.name("SMAA weights"));
@@ -1094,8 +1094,8 @@ void SMAADemo::initRender() {
 	{
 		RenderPassDesc rpDesc;
 		rpDesc.name("Separate")
-		      .color(0, Format::sRGBA8, PassBegin::DontCare, Layout::ShaderRead)
-		      .color(1, Format::sRGBA8, PassBegin::DontCare, Layout::ShaderRead);
+		      .color(0, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead)
+		      .color(1, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead);
 		separateRenderPass       = renderer.createRenderPass(rpDesc);
 	}
 
@@ -1300,8 +1300,8 @@ RenderPassHandle SMAADemo::getSceneRenderPass(unsigned int n, Layout l) {
 
 	if (it == sceneRenderPasses.end()) {
 		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, l)
-		      .color(1, Format::RG16Float, PassBegin::Clear, Layout::ShaderRead)
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, l)
+		      .color(1, Format::RG16Float, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 		      .depthStencil(depthFormat, PassBegin::Clear)
 		      .clearDepth(1.0f)
 		      .numSamples(n);

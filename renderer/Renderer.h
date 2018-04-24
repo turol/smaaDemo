@@ -476,6 +476,7 @@ struct RenderPassDesc {
 		for (auto &rt : colorRTs_) {
 			rt.format     = Format::Invalid;
 			rt.passBegin  = PassBegin::DontCare;
+			rt.initialLayout = Layout::Undefined;
 			rt.finalLayout = Layout::Undefined;
 			rt.clearValue = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
 		}
@@ -494,11 +495,12 @@ struct RenderPassDesc {
 		return *this;
 	}
 
-	RenderPassDesc &color(unsigned int index, Format c, PassBegin pb, Layout l, glm::vec4 clear = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {
+	RenderPassDesc &color(unsigned int index, Format c, PassBegin pb, Layout initial, Layout final, glm::vec4 clear = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {
 		assert(index < MAX_COLOR_RENDERTARGETS);
 		colorRTs_[index].format    = c;
 		colorRTs_[index].passBegin = pb;
-		colorRTs_[index].finalLayout = l;
+		colorRTs_[index].initialLayout = initial;
+		colorRTs_[index].finalLayout = final;
 		if (pb == PassBegin::Clear) {
 			colorRTs_[index].clearValue = clear;
 		}
@@ -526,6 +528,7 @@ private:
 	struct RTInfo {
 		Format     format;
 		PassBegin  passBegin;
+		Layout     initialLayout;
 		Layout     finalLayout;
 		glm::vec4  clearValue;
 	};
