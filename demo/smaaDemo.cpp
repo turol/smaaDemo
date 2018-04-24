@@ -1825,6 +1825,7 @@ static void printHelp() {
 	printf(" h                - print help\n");
 	printf(" m                - change antialiasing method\n");
 	printf(" q                - cycle through AA quality levels\n");
+	printf(" t                - toggle temporal antialiasing on/off\n");
 	printf(" v                - toggle vsync\n");
 	printf(" LEFT/RIGHT ARROW - cycle through scenes\n");
 	printf(" SPACE            - toggle cube rotation\n");
@@ -1942,6 +1943,16 @@ void SMAADemo::mainLoopIteration() {
 					smaaParameters  = defaultSMAAParameters[smaaKey.quality];
 					break;
 
+				}
+				break;
+
+			case SDL_SCANCODE_T:
+				if (aaMethod != AAMethod::MSAA) {
+					temporalAA = !temporalAA;
+					if (temporalAA) {
+						recreateFramebuffers = true;
+						temporalAAFirstFrame = true;
+					}
 				}
 				break;
 
