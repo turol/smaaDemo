@@ -2241,8 +2241,9 @@ void SMAADemo::render() {
 			} else {
 				renderer.layoutTransition(finalRenderRT, Layout::Undefined, Layout::TransferDst);
 				renderer.resolveMSAA(sceneFramebuffer, finalFramebuffer);
-				renderer.beginRenderPass(guiOnlyRenderPass, finalFramebuffer);
 			}
+
+			renderer.beginRenderPass(guiOnlyRenderPass, finalFramebuffer);
 			drawGUI(elapsed);
 			renderer.endRenderPass();
 		} break;
@@ -2267,22 +2268,24 @@ void SMAADemo::render() {
 				colorDS.color.sampler = linearSampler;
 				renderer.bindDescriptorSet(1, colorDS);
 				renderer.draw(0, 3);
+				renderer.endRenderPass();
 			}
 
+			renderer.beginRenderPass(guiOnlyRenderPass, finalFramebuffer);
 			drawGUI(elapsed);
 			renderer.endRenderPass();
 		} break;
 
 		case AAMethod::SMAA: {
 			doSMAA(mainColorRT);
+			renderer.endRenderPass();
 
 			if (temporalAA) {
-				renderer.endRenderPass();
-
 				doTemporalAA();
 			}
-			drawGUI(elapsed);
 
+			renderer.beginRenderPass(guiOnlyRenderPass, finalFramebuffer);
+			drawGUI(elapsed);
 			renderer.endRenderPass();
 		} break;
 		}
@@ -2294,6 +2297,9 @@ void SMAADemo::render() {
 		colorDS.color     = renderer.getRenderTargetTexture(mainColorRT);
 		renderer.bindDescriptorSet(1, colorDS);
 		renderer.draw(0, 3);
+		renderer.endRenderPass();
+
+		renderer.beginRenderPass(guiOnlyRenderPass, finalFramebuffer);
 		drawGUI(elapsed);
 		renderer.endRenderPass();
 	}
@@ -2398,6 +2404,7 @@ void SMAADemo::doTemporalAA() {
 
 	renderer.bindDescriptorSet(1, temporalDS);
 	renderer.draw(0, 3);
+	renderer.endRenderPass();
 }
 
 
