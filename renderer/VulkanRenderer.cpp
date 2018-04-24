@@ -1108,8 +1108,6 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		}
 		numColorAttachments++;
 
-		assert(desc.colorRTs_[i].initialLayout != Layout::Undefined);
-
 		const auto &colorRT = desc.colorRTs_[i];
 
 		uint32_t attachNum    = static_cast<uint32_t>(attachments.size());
@@ -1120,17 +1118,23 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		attach.samples        = samples;
 		switch (colorRT.passBegin) {
 		case PassBegin::DontCare:
+			assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
+
 			attach.loadOp         = vk::AttachmentLoadOp::eDontCare;
 			attach.initialLayout  = vk::ImageLayout::eUndefined;
 			break;
 
 		case PassBegin::Keep:
+			assert(desc.colorRTs_[i].initialLayout != Layout::Undefined);
+
 			attach.loadOp         = vk::AttachmentLoadOp::eLoad;
 			// TODO: should come from desc
 			attach.initialLayout  = vk::ImageLayout::eTransferDstOptimal;
 			break;
 
 		case PassBegin::Clear:
+			assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
+
 			attach.loadOp         = vk::AttachmentLoadOp::eClear;
 			attach.initialLayout  = vk::ImageLayout::eUndefined;
 			std::array<float, 4> color = { { colorRT.clearValue.x, colorRT.clearValue.y, colorRT.clearValue.z, colorRT.clearValue.a } };
