@@ -1220,7 +1220,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 
 		case PassBegin::Clear:
 			assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
-		pass.colorClearValues[i] = desc.colorRTs_[i].clearValue;
+			pass.colorClearValues[i] = desc.colorRTs_[i].clearValue;
 			break;
 
 		}
