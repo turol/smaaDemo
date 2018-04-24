@@ -1128,8 +1128,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 			assert(desc.colorRTs_[i].initialLayout != Layout::Undefined);
 
 			attach.loadOp         = vk::AttachmentLoadOp::eLoad;
-			// TODO: should come from desc
-			attach.initialLayout  = vk::ImageLayout::eTransferDstOptimal;
+			attach.initialLayout  = vulkanLayout(desc.colorRTs_[i].initialLayout);
 			break;
 
 		case PassBegin::Clear:
