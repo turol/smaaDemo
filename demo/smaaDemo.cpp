@@ -555,7 +555,7 @@ public:
 
 	void render();
 
-	void doSMAA();
+	void doSMAA(RenderTargetHandle input);
 
 	void doTemporalAA();
 
@@ -2274,7 +2274,7 @@ void SMAADemo::render() {
 		} break;
 
 		case AAMethod::SMAA: {
-			doSMAA();
+			doSMAA(mainColorRT);
 
 			if (temporalAA) {
 				renderer.endRenderPass();
@@ -2303,7 +2303,7 @@ void SMAADemo::render() {
 }
 
 
-void SMAADemo::doSMAA() {
+void SMAADemo::doSMAA(RenderTargetHandle input) {
 	// edges pass
 	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
 	renderer.beginRenderPass(smaaEdgesRenderPass, smaaEdgesFramebuffer);
@@ -2313,7 +2313,7 @@ void SMAADemo::doSMAA() {
 	if (smaaKey.edgeMethod == SMAAEdgeMethod::Depth) {
 		edgeDS.color.tex     = renderer.getRenderTargetTexture(mainDepthRT);
 	} else {
-		edgeDS.color.tex     = renderer.getRenderTargetView(mainColorRT, Format::RGBA8);
+		edgeDS.color.tex     = renderer.getRenderTargetView(input, Format::RGBA8);
 	}
 	edgeDS.color.sampler = nearestSampler;
 	edgeDS.predicationTex.tex     = renderer.getRenderTargetTexture(mainDepthRT);
@@ -2350,7 +2350,7 @@ void SMAADemo::doSMAA() {
 		renderer.bindPipeline(pipelines.neighborPipeline);
 
 		NeighborBlendDS neighborBlendDS;
-		neighborBlendDS.color.tex            = renderer.getRenderTargetTexture(mainColorRT);
+		neighborBlendDS.color.tex            = renderer.getRenderTargetTexture(input);
 		neighborBlendDS.color.sampler        = linearSampler;
 		neighborBlendDS.blendweights.tex     = renderer.getRenderTargetTexture(blendWeightsRT);
 		neighborBlendDS.blendweights.sampler = linearSampler;
