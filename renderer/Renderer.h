@@ -191,6 +191,7 @@ enum class Layout : uint8_t {
 	, ShaderRead
 	, TransferSrc
 	, TransferDst
+	, ColorAttachment
 };
 
 

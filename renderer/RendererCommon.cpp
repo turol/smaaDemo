@@ -161,6 +161,9 @@ const char *layoutName(Layout layout) {
 	case Layout::TransferDst:
 		return "TransferDst";
 
+	case Layout::ColorAttachment:
+		return "ColorAttachment";
+
 	}
 
 	UNREACHABLE();

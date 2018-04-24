@@ -980,6 +980,9 @@ static vk::ImageLayout vulkanLayout(Layout l) {
 
 	case Layout::TransferDst:
 		return vk::ImageLayout::eTransferDstOptimal;
+
+	case Layout::ColorAttachment:
+		return vk::ImageLayout::eColorAttachmentOptimal;
 	}
 
 	UNREACHABLE();
