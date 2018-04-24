@@ -1209,7 +1209,21 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	RenderPass &pass = result.first;
 	pass.desc = desc;
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+		switch (desc.colorRTs_[i].passBegin) {
+		case PassBegin::DontCare:
+			assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
+			break;
+
+		case PassBegin::Keep:
+			assert(desc.colorRTs_[i].initialLayout != Layout::Undefined);
+			break;
+
+		case PassBegin::Clear:
+			assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
 		pass.colorClearValues[i] = desc.colorRTs_[i].clearValue;
+			break;
+
+		}
 	}
 	pass.depthClearValue = desc.depthClearValue;
 	pass.clearMask       = clearMask;

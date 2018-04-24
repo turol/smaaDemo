@@ -1101,11 +1101,14 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	unsigned int numColorAttachments = 0;
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 		if (desc.colorRTs_[i].format == Format::Invalid) {
+			assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
 			// TODO: could be break, it's invalid to have holes in attachment list
 			// but should check that
 			continue;
 		}
 		numColorAttachments++;
+
+		assert(desc.colorRTs_[i].initialLayout != Layout::Undefined);
 
 		const auto &colorRT = desc.colorRTs_[i];
 
