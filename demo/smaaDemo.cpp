@@ -2286,7 +2286,6 @@ void SMAADemo::render() {
 			} else {
 				doSMAA(mainColorRT, finalFramebuffer);
 			}
-			renderer.endRenderPass();
 
 			if (temporalAA) {
 				doTemporalAA();
@@ -2383,6 +2382,7 @@ void SMAADemo::doSMAA(RenderTargetHandle input, FramebufferHandle outputFB) {
 
 	}
 	renderer.draw(0, 3);
+	renderer.endRenderPass();
 }
 
 
