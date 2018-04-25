@@ -1235,15 +1235,36 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		d.srcStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 		d.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentWrite;
 
-		assert(desc.colorRTs_[0].finalLayout != Layout::Undefined);
-		assert(desc.colorRTs_[0].finalLayout != Layout::TransferDst);
-		if (desc.colorRTs_[0].finalLayout == Layout::TransferSrc) {
-			d.dstStageMask   = vk::PipelineStageFlagBits::eTransfer;
-			d.dstAccessMask  = vk::AccessFlagBits::eTransferRead;
-		} else {
-			assert(desc.colorRTs_[0].finalLayout == Layout::ShaderRead);
-			d.dstStageMask   = vk::PipelineStageFlagBits::eFragmentShader;
-			d.dstAccessMask  = vk::AccessFlagBits::eShaderRead;
+		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+			if (desc.colorRTs_[i].format == Format::Invalid) {
+				assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
+				// TODO: could be break, it's invalid to have holes in attachment list
+				// but should check that
+				continue;
+			}
+
+			switch (desc.colorRTs_[i].finalLayout) {
+			case Layout::Undefined:
+			case Layout::TransferDst:
+				assert(false);
+				break;
+
+			case Layout::ShaderRead:
+				d.dstStageMask   |= vk::PipelineStageFlagBits::eFragmentShader;
+				d.dstAccessMask  |= vk::AccessFlagBits::eShaderRead;
+				break;
+
+			case Layout::TransferSrc:
+				d.dstStageMask   |= vk::PipelineStageFlagBits::eTransfer;
+				d.dstAccessMask  |= vk::AccessFlagBits::eTransferRead;
+				break;
+
+			case Layout::ColorAttachment:
+				d.dstStageMask   |= vk::PipelineStageFlagBits::eColorAttachmentOutput;
+				d.dstAccessMask  |= vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
+				break;
+
+			}
 		}
 
 		d.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
