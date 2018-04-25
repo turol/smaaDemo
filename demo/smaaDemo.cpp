@@ -1066,7 +1066,7 @@ void SMAADemo::initRender() {
 	{
 		RenderPassDesc rpDesc;
 		// TODO: check this
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::TransferSrc);
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
 		finalRenderPass       = renderer.createRenderPass(rpDesc.name("final"));
 	}
 
@@ -1079,7 +1079,7 @@ void SMAADemo::initRender() {
 
 	{
 		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::TransferSrc, Layout::TransferSrc);
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::TransferSrc);
 		guiOnlyRenderPass     = renderer.createRenderPass(rpDesc.name("GUI only"));
 	}
 
@@ -2246,12 +2246,13 @@ void SMAADemo::render() {
 				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::Undefined, Layout::TransferDst);
 				renderer.resolveMSAA(sceneFramebuffer, resolveFBs[temporalFrame]);
 				// TODO: do this transition as part of renderpass?
-				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::TransferDst, Layout::ShaderRead);
+				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::TransferDst, Layout::ColorAttachment);
 
 				doTemporalAA();
 			} else {
 				renderer.layoutTransition(finalRenderRT, Layout::Undefined, Layout::TransferDst);
 				renderer.resolveMSAA(sceneFramebuffer, finalFramebuffer);
+				renderer.layoutTransition(finalRenderRT, Layout::TransferDst, Layout::ColorAttachment);
 			}
 		} break;
 
