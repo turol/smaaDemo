@@ -555,7 +555,7 @@ public:
 
 	void render();
 
-	void doSMAA(RenderTargetHandle input);
+	void doSMAA(RenderTargetHandle input, FramebufferHandle outputFB);
 
 	void doTemporalAA();
 
@@ -2281,7 +2281,11 @@ void SMAADemo::render() {
 		} break;
 
 		case AAMethod::SMAA: {
-			doSMAA(mainColorRT);
+			if (temporalAA) {
+				doSMAA(mainColorRT, resolveFBs[temporalFrame]);
+			} else {
+				doSMAA(mainColorRT, finalFramebuffer);
+			}
 			renderer.endRenderPass();
 
 			if (temporalAA) {
@@ -2307,7 +2311,7 @@ void SMAADemo::render() {
 }
 
 
-void SMAADemo::doSMAA(RenderTargetHandle input) {
+void SMAADemo::doSMAA(RenderTargetHandle input, FramebufferHandle outputFB) {
 	// edges pass
 	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
 	renderer.beginRenderPass(smaaEdgesRenderPass, smaaEdgesFramebuffer);
@@ -2343,9 +2347,9 @@ void SMAADemo::doSMAA(RenderTargetHandle input) {
 
 	// final blending pass/debug pass
 	if (temporalAA) {
-		renderer.beginRenderPass(smaaBlendRenderPass, resolveFBs[temporalFrame]);
+		renderer.beginRenderPass(smaaBlendRenderPass, outputFB);
 	} else {
-		renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
+		renderer.beginRenderPass(finalRenderPass, outputFB);
 	}
 
 	switch (debugMode) {
