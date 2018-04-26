@@ -468,6 +468,7 @@ class SMAADemo {
 	PipelineHandle     imagePipeline;
 	PipelineHandle     blitPipeline;
 	PipelineHandle     guiPipeline;
+	PipelineHandle                                separatePipeline;
 	std::array<PipelineHandle, 2>                 temporalAAPipelines;
 
 	RenderTargetHandle mainColorRT;
@@ -1169,7 +1170,7 @@ void SMAADemo::initRender() {
 
 	{
 		ShaderMacros macros;
-		auto vertexShader   = renderer.createVertexShader("temporal", macros);
+		auto vertexShader   = renderer.createVertexShader("temporal", macros);  // TODO: better naming, should be 2D
 
 		for (unsigned int i = 0; i < 2; i++) {
 			macros.emplace("SMAA_REPROJECTION", std::to_string(i));
@@ -1186,6 +1187,22 @@ void SMAADemo::initRender() {
 
 			temporalAAPipelines[i] = renderer.createPipeline(plDesc);
 		}
+	}
+
+	{
+		ShaderMacros macros;
+		auto vertexShader   = renderer.createVertexShader("temporal", macros);  // TODO: better naming, should be 2D
+		auto fragmentShader = renderer.createFragmentShader("separate", macros);
+
+		PipelineDesc plDesc;
+		plDesc.renderPass(separateRenderPass)
+			  .descriptorSetLayout<GlobalDS>(0)
+			  .descriptorSetLayout<ColorCombinedDS>(1)  // TODO: does this need its own DS?
+			  .vertexShader(vertexShader)
+			  .fragmentShader(fragmentShader)
+			  .name("subsample separate");
+
+		separatePipeline = renderer.createPipeline(plDesc);
 	}
 
 	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear) .name("linear"));
