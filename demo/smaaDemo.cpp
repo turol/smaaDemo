@@ -561,7 +561,7 @@ public:
 
 	void render();
 
-	void doSMAA(RenderTargetHandle input, FramebufferHandle outputFB);
+	void doSMAA(RenderTargetHandle input, FramebufferHandle outputFB, int pass);
 
 	void doTemporalAA();
 
@@ -2319,9 +2319,9 @@ void SMAADemo::render() {
 
 		case AAMethod::SMAA: {
 			if (temporalAA) {
-				doSMAA(mainColorRT, resolveFBs[temporalFrame]);
+				doSMAA(mainColorRT, resolveFBs[temporalFrame], 0);
 			} else {
-				doSMAA(mainColorRT, finalFramebuffer);
+				doSMAA(mainColorRT, finalFramebuffer, 0);
 			}
 
 			if (temporalAA) {
@@ -2341,13 +2341,13 @@ void SMAADemo::render() {
 			renderer.endRenderPass();
 
 			// TODO: need to pass correct layouts
-			// FIXME: second pass needs to blend
+			// TODO: need to use correct subsample indices
 			if (temporalAA) {
-				doSMAA(subsampleRTs[0], resolveFBs[temporalFrame]);
-				doSMAA(subsampleRTs[1], resolveFBs[temporalFrame]);
+				doSMAA(subsampleRTs[0], resolveFBs[temporalFrame], 0);
+				doSMAA(subsampleRTs[1], resolveFBs[temporalFrame], 1);
 			} else {
-				doSMAA(subsampleRTs[0], finalFramebuffer);
-				doSMAA(subsampleRTs[1], finalFramebuffer);
+				doSMAA(subsampleRTs[0], finalFramebuffer, 0);
+				doSMAA(subsampleRTs[1], finalFramebuffer, 1);
 			}
 
 			if (temporalAA) {
@@ -2373,7 +2373,7 @@ void SMAADemo::render() {
 }
 
 
-void SMAADemo::doSMAA(RenderTargetHandle input, FramebufferHandle outputFB) {
+void SMAADemo::doSMAA(RenderTargetHandle input, FramebufferHandle outputFB, int /* pass */) {
 	// edges pass
 	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
 	renderer.beginRenderPass(smaaEdgesRenderPass, smaaEdgesFramebuffer);
@@ -2408,6 +2408,7 @@ void SMAADemo::doSMAA(RenderTargetHandle input, FramebufferHandle outputFB) {
 	renderer.endRenderPass();
 
 	// final blending pass/debug pass
+	// FIXME: second pass needs to blend
 	if (temporalAA) {
 		renderer.beginRenderPass(smaaBlendRenderPass, outputFB);
 	} else {
