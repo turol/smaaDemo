@@ -1175,6 +1175,8 @@ void SMAADemo::initRender() {
 		      .vertexShader(vertexShader)
 		      .fragmentShader(fragmentShader)
 		      .blending(true)
+		      .sourceBlend(BlendFunc::SrcAlpha)
+		      .destinationBlend(BlendFunc::OneMinusSrcAlpha)
 		      .scissorTest(true)
 		      .vertexAttrib(ATTR_POS,   0, 2, VtxFormat::Float,  offsetof(ImDrawVert, pos))
 		      .vertexAttrib(ATTR_UV,    0, 2, VtxFormat::Float,  offsetof(ImDrawVert, uv))
