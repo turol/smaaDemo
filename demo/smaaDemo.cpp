@@ -86,7 +86,8 @@ enum class AAMethod : uint8_t {
 	  MSAA
 	, FXAA
 	, SMAA
-	, LAST = SMAA
+	, SMAA2X
+	, LAST = SMAA2X
 };
 
 
@@ -102,6 +103,10 @@ const char *name(AAMethod m) {
 
 	case AAMethod::SMAA:
 		return "SMAA";
+		break;
+
+	case AAMethod::SMAA2X:
+		return "SMAA2X";
 		break;
 	}
 
@@ -808,6 +813,18 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		std::string aaQualityStr = aaQualitySwitch.getValue();
 		if (aaMethodStr == "SMAA") {
 			aaMethod = AAMethod::SMAA;
+
+			if (!aaQualityStr.empty()) {
+				std::transform(aaQualityStr.begin(), aaQualityStr.end(), aaQualityStr.begin(), ::toupper);
+				for (unsigned int i = 0; i < maxSMAAQuality; i++) {
+					if (aaQualityStr == smaaQualityLevels[i]) {
+						smaaKey.quality = i;
+						break;
+					}
+				}
+			}
+		} else if (aaMethodStr == "SMAA2X") {
+			aaMethod = AAMethod::SMAA2X;
 
 			if (!aaQualityStr.empty()) {
 				std::transform(aaQualityStr.begin(), aaQualityStr.end(), aaQualityStr.begin(), ::toupper);
@@ -1532,6 +1549,8 @@ void SMAADemo::createFramebuffers() {
 	if (antialiasing && aaMethod == AAMethod::MSAA) {
 		numSamples = msaaQualityToSamples(msaaQuality);
 		assert(numSamples > 1);
+	} else if (antialiasing && aaMethod == AAMethod::SMAA2X) {
+		numSamples = 2;
 	} else {
 		numSamples = 1;
 	}
@@ -1889,7 +1908,7 @@ void SMAADemo::mainLoopIteration() {
 
 			case SDL_SCANCODE_A:
 				antialiasing = !antialiasing;
-				if (aaMethod == AAMethod::MSAA) {
+				if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
 					recreateFramebuffers = true;
 				}
 				if (temporalAA) {
@@ -1905,7 +1924,7 @@ void SMAADemo::mainLoopIteration() {
 				break;
 
 			case SDL_SCANCODE_D:
-				if (antialiasing && aaMethod == AAMethod::SMAA) {
+				if (antialiasing && (aaMethod == AAMethod::SMAA || aaMethod == AAMethod::SMAA2X)) {
 					if (leftShift || rightShift) {
 						debugMode = (debugMode + 3 - 1) % 3;
 					} else {
@@ -1919,12 +1938,12 @@ void SMAADemo::mainLoopIteration() {
 				break;
 
 			case SDL_SCANCODE_M:
-				// if moving either to or from MSAA need to recreate framebuffers
-				if (aaMethod == AAMethod::MSAA) {
+				// if moving either to or from MSAA or SMAA2X need to recreate framebuffers
+				if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
 					recreateFramebuffers = true;
 				}
 				aaMethod = AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
-				if (aaMethod == AAMethod::MSAA) {
+				if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
 					recreateFramebuffers = true;
 				}
 				break;
@@ -1951,6 +1970,7 @@ void SMAADemo::mainLoopIteration() {
 					break;
 
 				case AAMethod::SMAA:
+				case AAMethod::SMAA2X:
 					if (leftShift || rightShift) {
 						smaaKey.quality = smaaKey.quality + maxSMAAQuality - 1;
 					} else {
@@ -2308,6 +2328,32 @@ void SMAADemo::render() {
 				doTemporalAA();
 			}
 		} break;
+
+		case AAMethod::SMAA2X: {
+			// separate
+			renderer.beginRenderPass(separateRenderPass, separateFB);
+			renderer.bindPipeline(separatePipeline);
+			ColorCombinedDS separateDS;
+			separateDS.color.tex     = renderer.getRenderTargetTexture(mainColorRT);
+			separateDS.color.sampler = nearestSampler;
+			renderer.bindDescriptorSet(1, separateDS);
+			renderer.draw(0, 3);
+			renderer.endRenderPass();
+
+			// TODO: need to pass correct layouts
+			// FIXME: second pass needs to blend
+			if (temporalAA) {
+				doSMAA(subsampleRTs[0], resolveFBs[temporalFrame]);
+				doSMAA(subsampleRTs[1], resolveFBs[temporalFrame]);
+			} else {
+				doSMAA(subsampleRTs[0], finalFramebuffer);
+				doSMAA(subsampleRTs[1], finalFramebuffer);
+			}
+
+			if (temporalAA) {
+				doTemporalAA();
+			}
+		} break;
 		}
 
 	} else {
@@ -2460,7 +2506,8 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			int aa = static_cast<int>(aaMethod);
 			ImGui::RadioButton("MSAA", &aa, static_cast<int>(AAMethod::MSAA)); ImGui::SameLine();
 			ImGui::RadioButton("FXAA", &aa, static_cast<int>(AAMethod::FXAA)); ImGui::SameLine();
-			ImGui::RadioButton("SMAA", &aa, static_cast<int>(AAMethod::SMAA));
+			ImGui::RadioButton("SMAA", &aa, static_cast<int>(AAMethod::SMAA)); ImGui::SameLine();
+			ImGui::RadioButton("SMAA2X", &aa, static_cast<int>(AAMethod::SMAA2X));
 
 			{
 				if (aaMethod == AAMethod::MSAA) {
@@ -2497,12 +2544,12 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 			int msaaq = msaaQuality;
 			bool msaaChanged = ImGui::Combo("MSAA quality", &msaaq, msaaQualityLevels, maxMSAAQuality);
 			if (aaChanged || aa != static_cast<int>(aaMethod)) {
-				// if moving either to or from MSAA need to recreate framebuffers
-				if (aaMethod == AAMethod::MSAA) {
+				// if moving either to or from MSAA or SMAA2X need to recreate framebuffers
+				if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
 					recreateFramebuffers = true;
 				}
 				aaMethod = static_cast<AAMethod>(aa);
-				if (aaMethod == AAMethod::MSAA) {
+				if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
 					recreateFramebuffers = true;
 				}
 			}
