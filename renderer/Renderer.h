@@ -141,6 +141,15 @@ typedef Handle<Texture>              TextureHandle;
 typedef Handle<VertexShader>         VertexShaderHandle;
 
 
+enum class BlendFunc : uint8_t {
+	  Zero
+	, One
+	, Constant
+	, SrcAlpha
+	, OneMinusSrcAlpha
+};
+
+
 enum class BufferType : uint8_t {
 	  Invalid
 	, Index
