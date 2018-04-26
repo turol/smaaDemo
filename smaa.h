@@ -585,6 +585,8 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #else
 #define mad(a, b, c) (a * b + c)
 #endif
+#define SMAATexture2DMS2(tex) sampler2DMS tex
+#define SMAALoad(tex, pos, sample) texelFetch(tex, pos, sample)
 #define float2 vec2
 #define float3 vec3
 #define float4 vec4
