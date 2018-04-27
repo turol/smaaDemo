@@ -1016,6 +1016,30 @@ static void checkShaderResources(const std::string &name, const ShaderResources 
 }
 
 
+static GLenum blendFunc(BlendFunc b) {
+	switch (b) {
+	case BlendFunc::Zero:
+		return GL_ZERO;
+
+	case BlendFunc::One:
+		return GL_ONE;
+
+	case BlendFunc::Constant:
+		return GL_CONSTANT_ALPHA;
+
+	case BlendFunc::SrcAlpha:
+		return GL_SRC_ALPHA;
+
+	case BlendFunc::OneMinusSrcAlpha:
+		return GL_ONE_MINUS_SRC_ALPHA;
+
+	}
+
+	UNREACHABLE();
+	return GL_NONE;
+}
+
+
 PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	assert(desc.vertexShader_);
 	assert(desc.fragmentShader_);
@@ -1097,6 +1121,8 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	Pipeline &pipeline = result.first;
 	pipeline.desc      = desc;
 	pipeline.shader    = program;
+	pipeline.srcBlend  = blendFunc(desc.sourceBlend_);
+	pipeline.destBlend = blendFunc(desc.destinationBlend_);
 	pipeline.resources = std::move(resources);
 
 	if (tracing) {
@@ -1879,7 +1905,7 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 		glEnable(GL_BLEND);
 		// TODO: get from Pipeline
 		glBlendEquation(GL_FUNC_ADD);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFunc(p.srcBlend, p.destBlend);
 	} else {
 		glDisable(GL_BLEND);
 	}

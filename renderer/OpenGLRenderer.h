@@ -282,6 +282,8 @@ struct Framebuffer {
 struct Pipeline {
 	PipelineDesc    desc;
 	GLuint          shader;
+	GLenum           srcBlend;
+	GLenum           destBlend;
 	ShaderResources  resources;
 
 
@@ -291,10 +293,14 @@ struct Pipeline {
 	Pipeline(Pipeline &&other)
 	: desc(other.desc)
 	, shader(other.shader)
+	, srcBlend(other.srcBlend)
+	, destBlend(other.destBlend)
 	, resources(other.resources)
 	{
 		other.desc      = PipelineDesc();
 		other.shader    = 0;
+		other.srcBlend  = GL_NONE;
+		other.destBlend = GL_NONE;
 		other.resources = ShaderResources();
 	}
 
@@ -305,10 +311,14 @@ struct Pipeline {
 
 		desc            = other.desc;
 		shader          = other.shader;
+		srcBlend        = other.srcBlend;
+		destBlend       = other.destBlend;
 		resources       = other.resources;
 
 		other.desc      = PipelineDesc();
 		other.shader    = 0;
+		other.srcBlend  = GL_NONE;
+		other.destBlend = GL_NONE;
 		other.resources = ShaderResources();
 
 		return *this;
@@ -316,6 +326,8 @@ struct Pipeline {
 
 	Pipeline()
 	: shader(0)
+	, srcBlend(GL_ONE)
+	, destBlend(GL_ZERO)
 	{
 	}
 
