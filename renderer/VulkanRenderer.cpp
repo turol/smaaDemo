@@ -1291,6 +1291,30 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 }
 
 
+static vk::BlendFactor vulkanBlendFactor(BlendFunc b) {
+	switch (b) {
+	case BlendFunc::Zero:
+		return vk::BlendFactor::eZero;
+
+	case BlendFunc::One:
+		return vk::BlendFactor::eOne;
+
+	case BlendFunc::Constant:
+		return vk::BlendFactor::eConstantAlpha;
+
+	case BlendFunc::SrcAlpha:
+		return vk::BlendFactor::eSrcAlpha;
+
+	case BlendFunc::OneMinusSrcAlpha:
+		return vk::BlendFactor::eOneMinusSrcAlpha;
+
+	}
+
+	UNREACHABLE();
+	return vk::BlendFactor::eZero;
+}
+
+
 PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	vk::GraphicsPipelineCreateInfo info;
 
@@ -1400,9 +1424,8 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		vk::PipelineColorBlendAttachmentState cb;
 		if (desc.blending_) {
 			cb.blendEnable          = true;
-			// TODO: get from Pipeline
-			cb.srcColorBlendFactor  = vk::BlendFactor::eSrcAlpha;
-			cb.dstColorBlendFactor  = vk::BlendFactor::eOneMinusSrcAlpha;
+			cb.srcColorBlendFactor  = vulkanBlendFactor(desc.sourceBlend_);
+			cb.dstColorBlendFactor  = vulkanBlendFactor(desc.destinationBlend_);
 			cb.colorBlendOp         = vk::BlendOp::eAdd;
 			cb.srcAlphaBlendFactor  = vk::BlendFactor::eOne;
 			cb.dstAlphaBlendFactor  = vk::BlendFactor::eOne;
