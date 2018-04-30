@@ -2306,13 +2306,13 @@ void SMAADemo::render() {
 
 		case AAMethod::FXAA: {
 			renderer.beginRenderPass(fxaaRenderPass, temporalAA ? resolveFBs[temporalFrame] : finalFramebuffer);
-				renderer.bindPipeline(getFXAAPipeline(fxaaQuality));
-				ColorCombinedDS colorDS;
-				colorDS.color.tex     = renderer.getRenderTargetTexture(mainColorRT);
-				colorDS.color.sampler = linearSampler;
-				renderer.bindDescriptorSet(1, colorDS);
-				renderer.draw(0, 3);
-				renderer.endRenderPass();
+			renderer.bindPipeline(getFXAAPipeline(fxaaQuality));
+			ColorCombinedDS colorDS;
+			colorDS.color.tex     = renderer.getRenderTargetTexture(mainColorRT);
+			colorDS.color.sampler = linearSampler;
+			renderer.bindDescriptorSet(1, colorDS);
+			renderer.draw(0, 3);
+			renderer.endRenderPass();
 
 			if (temporalAA) {
 				doTemporalAA();
