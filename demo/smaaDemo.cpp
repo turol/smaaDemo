@@ -489,6 +489,7 @@ class SMAADemo {
 
 	std::unordered_map<SceneRPKey, RenderPassHandle>  sceneRenderPasses;
 	FramebufferHandle  sceneFramebuffer;
+	RenderPassHandle   fxaaRenderPass;
 	RenderPassHandle   finalRenderPass;
 	RenderPassHandle   separateRenderPass;
 	RenderPassHandle   smaaBlendRenderPass;  // for temporal aa, otherwise it's part of final render pass
@@ -680,6 +681,8 @@ SMAADemo::~SMAADemo() {
 
 		assert(finalRenderPass);
 		renderer.deleteRenderPass(finalRenderPass);
+		assert(fxaaRenderPass);
+		renderer.deleteRenderPass(fxaaRenderPass);
 		assert(smaaBlendRenderPass);
 		renderer.deleteRenderPass(smaaBlendRenderPass);
 		assert(guiOnlyRenderPass);
@@ -1086,6 +1089,12 @@ void SMAADemo::initRender() {
 		// TODO: check this
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
 		finalRenderPass       = renderer.createRenderPass(rpDesc.name("final"));
+	}
+
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+		fxaaRenderPass        = renderer.createRenderPass(rpDesc.name("FXAA"));
 	}
 
 	{
@@ -2297,7 +2306,7 @@ void SMAADemo::render() {
 
 		case AAMethod::FXAA: {
 			if (temporalAA) {
-				renderer.beginRenderPass(smaaBlendRenderPass, resolveFBs[temporalFrame]);
+				renderer.beginRenderPass(fxaaRenderPass, resolveFBs[temporalFrame]);
 				renderer.bindPipeline(getFXAAPipeline(fxaaQuality));
 				ColorCombinedDS colorDS;
 				colorDS.color.tex     = renderer.getRenderTargetTexture(mainColorRT);
@@ -2308,7 +2317,7 @@ void SMAADemo::render() {
 
 				doTemporalAA();
 			} else {
-				renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
+				renderer.beginRenderPass(fxaaRenderPass, finalFramebuffer);
 				renderer.bindPipeline(getFXAAPipeline(fxaaQuality));
 				ColorCombinedDS colorDS;
 				colorDS.color.tex     = renderer.getRenderTargetTexture(mainColorRT);
