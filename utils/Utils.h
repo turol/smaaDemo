@@ -29,8 +29,6 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 
-#include <cstdio>
-
 
 #ifdef _MSC_VER
 
