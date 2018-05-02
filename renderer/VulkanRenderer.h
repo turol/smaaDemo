@@ -693,9 +693,7 @@ struct ResourceHasher final : public boost::static_visitor<size_t> {
 namespace std {
 
 	template <> struct hash<renderer::Resource> {
-		size_t operator()(const renderer::Resource &r) const {
-			return boost::apply_visitor(renderer::ResourceHasher(), r);
-		}
+		size_t operator()(const renderer::Resource &r) const;
 	};
 
 }  // namespace std

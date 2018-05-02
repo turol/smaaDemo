@@ -3042,4 +3042,13 @@ void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int firs
 } // namespace renderer
 
 
+namespace std {
+
+	size_t hash<renderer::Resource>::operator()(const renderer::Resource &r) const {
+		return boost::apply_visitor(renderer::ResourceHasher(), r);
+	}
+
+}  // namespace std
+
+
 #endif  // RENDERER_VULKAN
