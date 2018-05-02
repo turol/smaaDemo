@@ -31,6 +31,11 @@ THE SOFTWARE.
 #include <SDL.h>
 
 
+struct FILEDeleter {
+	void operator()(FILE *f) { fclose(f); }
+};
+
+
 static FILE *logFile;
 
 void logInit() {

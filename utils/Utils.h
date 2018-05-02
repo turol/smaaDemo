@@ -99,10 +99,6 @@ namespace std {
 #endif
 
 
-struct FILEDeleter {
-	void operator()(FILE *f) { fclose(f); }
-};
-
 #define LOG(msg, ...) logWrite(msg, ##__VA_ARGS__)
 
 void logInit();
