@@ -35,11 +35,13 @@ THE SOFTWARE.
 #define fileno _fileno
 #define UNREACHABLE() abort()
 #define PRINTF(x, y)
+#define UNUSED
 
 #else   // _MSC_VER
 
 #define UNREACHABLE() __builtin_unreachable()
 #define PRINTF(x, y) __attribute__((format(printf, x, y)))
+#define UNUSED        __attribute__((unused))
 
 #endif  // _MSC_VER
 
