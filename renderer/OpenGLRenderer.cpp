@@ -1046,8 +1046,10 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	assert(desc.renderPass_);
 	assert(!desc.name_.empty());
 
+#ifndef NDEBUG
 	const auto &rp = renderPasses.get(desc.renderPass_);
 	assert(desc.numSamples_ == rp.numSamples);
+#endif //  NDEBUG
 
 	const auto &v = vertexShaders.get(desc.vertexShader_);
     const auto &f = fragmentShaders.get(desc.fragmentShader_);
@@ -1143,13 +1145,15 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	assert(!desc.name_.empty());
 	assert(desc.renderPass_);
 
+#ifndef NDEBUG
 	auto &renderPass = renderPasses.get(desc.renderPass_);
+#endif  // NDEBUG
 
 	auto result = framebuffers.add();
 	Framebuffer &fb = result.first;
 	glCreateFramebuffers(1, &fb.fbo);
 
-	unsigned int width = 0, height = 0;
+	unsigned int width UNUSED = 0, height UNUSED = 0;
 
 	unsigned int numColorAttachments = 0;
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
@@ -1390,8 +1394,10 @@ DSLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout *l
 TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
 	const auto &rt = renderTargets.get(handle);
 
+#ifndef NDEBUG
 	const auto &tex = textures.get(rt.texture);
 	assert(tex.renderTarget);
+#endif  // NDEBUG
 
 	return rt.texture;
 }
@@ -1400,8 +1406,10 @@ TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
 TextureHandle RendererImpl::getRenderTargetView(RenderTargetHandle handle, Format /* f */) {
 	const auto &rt = renderTargets.get(handle);
 
+#ifndef NDEBUG
 	const auto &tex = textures.get(rt.additionalView);
 	assert(tex.renderTarget);
+#endif //  NDEBUG
 
 	return rt.additionalView;
 }
@@ -1624,6 +1632,7 @@ MemoryStats RendererImpl::getMemStats() const {
 
 
 void RendererImpl::beginFrame() {
+#ifndef NDEBUG
 	assert(!inFrame);
 	inFrame       = true;
 	inRenderPass  = false;
@@ -1634,6 +1643,7 @@ void RendererImpl::beginFrame() {
 		recreateSwapchain();
 		assert(!swapchainDirty);
 	}
+#endif //  NDEBUG
 
 	currentFrameIdx        = frameNum % frames.size();
 	assert(currentFrameIdx < frames.size());
@@ -1665,8 +1675,10 @@ void RendererImpl::beginFrame() {
 
 
 void RendererImpl::presentFrame(RenderTargetHandle image) {
+#ifndef NDEBUG
 	assert(inFrame);
 	inFrame = false;
+#endif //  NDEBUG
 
 	auto &frame = frames.at(currentFrameIdx);
 
@@ -1758,16 +1770,18 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 }
 
 
-void RendererImpl::deleteFrameInternal(Frame &f) {
+void RendererImpl::deleteFrameInternal(Frame &f UNUSED) {
 	assert(!f.outstanding);
 }
 
 
 void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle) {
+#ifndef NDEBUG
 	assert(inFrame);
 	assert(!inRenderPass);
 	inRenderPass  = true;
 	validPipeline = false;
+#endif //  NDEBUG
 
 	assert(fbHandle);
 	const auto &fb = framebuffers.get(fbHandle);
@@ -1817,9 +1831,11 @@ void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle 
 
 
 void RendererImpl::endRenderPass() {
+#ifndef NDEBUG
 	assert(inFrame);
 	assert(inRenderPass);
 	inRenderPass = false;
+#endif  // NDEBUG
 
 	const auto &pass = renderPasses.get(currentRenderPass);
 	const auto &fb = framebuffers.get(currentFramebuffer);
@@ -1833,7 +1849,7 @@ void RendererImpl::endRenderPass() {
 }
 
 
-void RendererImpl::layoutTransition(RenderTargetHandle image, Layout src, Layout dest) {
+void RendererImpl::layoutTransition(RenderTargetHandle image, Layout src UNUSED, Layout dest) {
 	assert(image);
 	assert(dest != Layout::Undefined);
 	assert(src != dest);
@@ -1851,11 +1867,13 @@ void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int widt
 
 
 void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+#ifndef NDEBUG
 	assert(validPipeline);
 
 	const auto &p = pipelines.get(currentPipeline);
 	assert(p.desc.scissorTest_);
 	scissorSet = true;
+#endif  // NDEBUG
 
 	// flip y from Vulkan convention to OpenGL convention
 	// TODO: should use current FB height
@@ -1864,6 +1882,7 @@ void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int w
 
 
 void RendererImpl::bindPipeline(PipelineHandle pipeline) {
+#ifndef NDEBUG
 	assert(inFrame);
 	assert(pipeline);
 	assert(inRenderPass);
@@ -1871,6 +1890,8 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 	pipelineDrawn = false;
 	validPipeline = true;
 	scissorSet = false;
+#endif  // NDEBUG
+
 	decriptorSetsDirty = true;
 
 	const auto &p = pipelines.get(pipeline);
@@ -2046,9 +2067,12 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 
 
 void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHandle, const void *data_) {
+#ifndef NDEBUG
 	assert(validPipeline);
 	const auto &p = pipelines.get(currentPipeline);
 	assert(p.desc.descriptorSetLayouts[index] == layoutHandle);
+#endif  // NDEBUG
+
 	decriptorSetsDirty = true;
 
 	// TODO: get shader bindings from current pipeline, use index
@@ -2100,8 +2124,12 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 
 		case DescriptorType::Sampler: {
 			SamplerHandle handle = *reinterpret_cast<const SamplerHandle *>(data + l.offset);
+
+#ifndef NDEBUG
 			const auto &sampler = samplers.get(handle);
 			assert(sampler.sampler);
+#endif  // NDEBUG
+
 			descriptors[idx] = handle;
 		} break;
 
@@ -2113,11 +2141,13 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 		case DescriptorType::CombinedSampler: {
 			const CSampler &combined = *reinterpret_cast<const CSampler *>(data + l.offset);
 
+#ifndef NDEBUG
 			const Texture &tex = textures.get(combined.tex);
 			assert(tex.tex);
 
 			const auto &sampler = samplers.get(combined.sampler);
 			assert(sampler.sampler);
+#endif  // NDEBUG
 
 			descriptors[idx] = combined;
 		} break;
@@ -2242,7 +2272,7 @@ void RendererImpl::rebindDescriptorSets() {
 }
 
 
-void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle target, unsigned int n) {
+void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle target, unsigned int n UNUSED) {
 	assert(source);
 	assert(target);
 	assert(n == 0);  // TODO: need this?
@@ -2263,6 +2293,7 @@ void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle targe
 	assert(destFb.width      >  0);
 	assert(destFb.height     >  0);
 
+#ifndef NDEBUG
 	assert(srcFb.fbo         != destFb.fbo);
 	assert(srcFb.width       == destFb.width);
 	assert(srcFb.height      == destFb.height);
@@ -2271,6 +2302,7 @@ void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle targe
 	assert(srcColorRT.currentLayout == Layout::TransferSrc);
 	const auto &dstColorRT = renderTargets.get(destFb.colors[0]);
 	assert(dstColorRT.currentLayout == Layout::TransferDst);
+#endif //  NDEBUG
 
 	glBlitNamedFramebuffer(srcFb.fbo, destFb.fbo
 	                     , 0, 0, srcFb.width, srcFb.height
@@ -2280,12 +2312,14 @@ void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle targe
 
 
 void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
+#ifndef NDEBUG
 	assert(inRenderPass);
 	assert(validPipeline);
 	assert(vertexCount > 0);
 	const auto &p = pipelines.get(currentPipeline);
 	assert(!p.desc.scissorTest_ || scissorSet);
 	pipelineDrawn = true;
+#endif //  NDEBUG
 
 	if (decriptorSetsDirty) {
 		rebindDescriptorSets();
@@ -2298,6 +2332,7 @@ void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
 
 
 void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
+#ifndef NDEBUG
 	assert(inRenderPass);
 	assert(validPipeline);
 	assert(instanceCount > 0);
@@ -2305,6 +2340,7 @@ void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int i
 	const auto &p = pipelines.get(currentPipeline);
 	assert(!p.desc.scissorTest_ || scissorSet);
 	pipelineDrawn = true;
+#endif //  NDEBUG
 
 	if (decriptorSetsDirty) {
 		rebindDescriptorSets();
@@ -2323,12 +2359,14 @@ void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int i
 
 
 void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex) {
+#ifndef NDEBUG
 	assert(inRenderPass);
 	assert(validPipeline);
 	assert(vertexCount > 0);
 	const auto &p = pipelines.get(currentPipeline);
 	assert(!p.desc.scissorTest_ || scissorSet);
 	pipelineDrawn = true;
+#endif //  NDEBUG
 
 	if (decriptorSetsDirty) {
 		rebindDescriptorSets();

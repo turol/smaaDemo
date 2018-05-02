@@ -449,7 +449,9 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		std::vector<uint32_t> optimized;
 		optimized.reserve(spirv.size());
 		bool success = opt.Run(&spirv[0], spirv.size(), &optimized);
-		assert(success);
+		if (!success) {
+			throw std::runtime_error("Shader optimization failed");
+		}
 
 		// glslang SPV remapper
 		{

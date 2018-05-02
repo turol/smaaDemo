@@ -1844,9 +1844,11 @@ TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
 TextureHandle RendererImpl::getRenderTargetView(RenderTargetHandle handle, Format /* f */) {
 	const auto &rt = renderTargets.get(handle);
 
+#ifndef NDEBUG
 	const auto &tex = textures.get(rt.additionalView);
 	assert(tex.renderTarget);
 	//assert(tex.format == f);
+#endif  // NDEBUG
 
 	return rt.additionalView;
 }
@@ -2212,11 +2214,13 @@ MemoryStats RendererImpl::getMemStats() const {
 
 
 void RendererImpl::beginFrame() {
+#ifndef NDEBUG
 	assert(!inFrame);
 	inFrame       = true;
 	inRenderPass  = false;
 	validPipeline = false;
 	pipelineDrawn = true;
+#endif  // NDEBUG
 
 	if (swapchainDirty) {
 		recreateSwapchain();
@@ -2276,8 +2280,10 @@ void RendererImpl::beginFrame() {
 
 
 void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
+#ifndef NDEBUG
 	assert(inFrame);
 	inFrame = false;
+#endif  // NDEBUG
 
 	const auto &rt = renderTargets.get(rtHandle);
 
@@ -2653,10 +2659,12 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 
 
 void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle) {
+#ifndef NDEBUG
 	assert(inFrame);
 	assert(!inRenderPass);
 	inRenderPass  = true;
 	validPipeline = false;
+#endif  // NDEBUG
 
 	const auto &pass = renderPasses.get(rpHandle);
 	assert(pass.renderPass);
@@ -2683,9 +2691,11 @@ void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle 
 
 
 void RendererImpl::endRenderPass() {
+#ifndef NDEBUG
 	assert(inFrame);
 	assert(inRenderPass);
 	inRenderPass = false;
+#endif  // NDEBUG
 
 	currentCommandBuffer.endRenderPass();
 
@@ -2727,12 +2737,14 @@ void RendererImpl::layoutTransition(RenderTargetHandle image, Layout src, Layout
 
 
 void RendererImpl::bindPipeline(PipelineHandle pipeline) {
+#ifndef NDEBUG
 	assert(inFrame);
 	assert(inRenderPass);
 	assert(pipelineDrawn);
 	pipelineDrawn = false;
 	validPipeline = true;
 	scissorSet = false;
+#endif  // NDEBUG
 
 	// TODO: make sure current renderpass matches the one in pipeline
 
@@ -2752,7 +2764,9 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 		rect.extent.height = static_cast<uint32_t>(currentViewport.height);
 
 		currentCommandBuffer.setScissor(0, 1, &rect);
+#ifndef NDEBUG
 		scissorSet = true;
+#endif  // NDEBUG
 	}
 }
 
@@ -2935,8 +2949,10 @@ void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int widt
 
 
 void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+#ifndef NDEBUG
 	assert(validPipeline);
 	scissorSet = true;
+#endif  // NDEBUG
 
 	vk::Rect2D rect;
 	rect.offset.x      = x;
@@ -2987,31 +3003,37 @@ void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle targe
 
 
 void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
+#ifndef NDEBUG
 	assert(inRenderPass);
 	assert(validPipeline);
 	assert(vertexCount > 0);
 	pipelineDrawn = true;
+#endif  // NDEBUG
 
 	currentCommandBuffer.draw(vertexCount, 1, firstVertex, 0);
 }
 
 
 void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
+#ifndef NDEBUG
 	assert(inRenderPass);
 	assert(validPipeline);
 	assert(vertexCount > 0);
 	assert(instanceCount > 0);
 	pipelineDrawn = true;
+#endif //  NDEBUG
 
 	currentCommandBuffer.drawIndexed(vertexCount, instanceCount, 0, 0, 0);
 }
 
 
 void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex) {
+#ifndef NDEBUG
 	assert(inRenderPass);
 	assert(validPipeline);
 	assert(vertexCount > 0);
 	pipelineDrawn = true;
+#endif //  NDEBUG
 
 	currentCommandBuffer.drawIndexed(vertexCount, 1, firstIndex, 0, 0);
 }

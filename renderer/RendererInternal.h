@@ -146,13 +146,14 @@ struct RendererBase {
 
 	std::unordered_map<std::string, std::vector<char> > shaderSources;
 
+#ifndef NDEBUG
 	// debugging
-	// TODO: remove when NDEBUG?
 	bool inFrame;
 	bool inRenderPass;
 	bool validPipeline;
 	bool pipelineDrawn;
 	bool scissorSet;
+#endif //  NDEBUG
 
 	std::string spirvCacheDir;
 
@@ -177,11 +178,13 @@ struct RendererBase {
 	, ringBufSize(0)
 	, ringBufPtr(0)
 	, lastSyncedRingBufPtr(0)
+#ifndef NDEBUG
 	, inFrame(false)
 	, inRenderPass(false)
 	, validPipeline(false)
 	, pipelineDrawn(false)
 	, scissorSet(false)
+#endif //  NDEBUG
 	{
 		char *prefPath = SDL_GetPrefPath("", "SMAADemo");
 		spirvCacheDir = prefPath;
