@@ -83,7 +83,7 @@ struct Buffer {
 	BufferType     type;
 
 
-	Buffer()
+	Buffer() noexcept
 	: ringBufferAlloc(false)
 	, size(0)
 	, offset(0)
@@ -95,7 +95,7 @@ struct Buffer {
 	Buffer(const Buffer &)            = delete;
 	Buffer &operator=(const Buffer &) = delete;
 
-	Buffer(Buffer &&other)
+	Buffer(Buffer &&other) noexcept
 	: ringBufferAlloc(other.ringBufferAlloc)
 	, size(other.size)
 	, offset(other.offset)
@@ -114,7 +114,7 @@ struct Buffer {
 		other.type            = BufferType::Invalid;
 	}
 
-	Buffer &operator=(Buffer &&other) {
+	Buffer &operator=(Buffer &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -165,12 +165,12 @@ struct DescriptorSetLayout {
 	vk::DescriptorSetLayout        layout;
 
 
-	DescriptorSetLayout() {}
+	DescriptorSetLayout() noexcept {}
 
 	DescriptorSetLayout(const DescriptorSetLayout &)            = delete;
 	DescriptorSetLayout &operator=(const DescriptorSetLayout &) = delete;
 
-	DescriptorSetLayout(DescriptorSetLayout &&other)
+	DescriptorSetLayout(DescriptorSetLayout &&other) noexcept
 	: descriptors(std::move(other.descriptors))
 	, layout(other.layout)
 	{
@@ -178,7 +178,7 @@ struct DescriptorSetLayout {
 		assert(descriptors.empty());
 	}
 
-	DescriptorSetLayout &operator=(DescriptorSetLayout &&other) {
+	DescriptorSetLayout &operator=(DescriptorSetLayout &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -204,18 +204,18 @@ struct FragmentShader {
 	vk::ShaderModule shaderModule;
 
 
-	FragmentShader() {}
+	FragmentShader() noexcept {}
 
 	FragmentShader(const FragmentShader &)            = delete;
 	FragmentShader &operator=(const FragmentShader &) = delete;
 
-	FragmentShader(FragmentShader &&other)
+	FragmentShader(FragmentShader &&other) noexcept
 	: shaderModule(other.shaderModule)
 	{
 		other.shaderModule = vk::ShaderModule();
 	}
 
-	FragmentShader &operator=(FragmentShader &&other) {
+	FragmentShader &operator=(FragmentShader &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -240,7 +240,7 @@ struct Framebuffer {
 	// TODO: store info about attachments to allow tracking layout
 
 
-	Framebuffer()
+	Framebuffer() noexcept
 	: width(0)
 	, height(0)
 	{}
@@ -248,7 +248,7 @@ struct Framebuffer {
 	Framebuffer(const Framebuffer &)            = delete;
 	Framebuffer &operator=(const Framebuffer &) = delete;
 
-	Framebuffer(Framebuffer &&other)
+	Framebuffer(Framebuffer &&other) noexcept
 	: width(other.width)
 	, height(other.height)
 	, framebuffer(other.framebuffer)
@@ -259,7 +259,7 @@ struct Framebuffer {
 		other.framebuffer = vk::Framebuffer();
 	}
 
-	Framebuffer &operator=(Framebuffer &&other) {
+	Framebuffer &operator=(Framebuffer &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -299,14 +299,14 @@ struct Pipeline {
 	bool               scissor;
 
 
-	Pipeline()
+	Pipeline() noexcept
 	: scissor(false)
 	{}
 
 	Pipeline(const Pipeline &)            = delete;
 	Pipeline &operator=(const Pipeline &) = delete;
 
-	Pipeline(Pipeline &&other)
+	Pipeline(Pipeline &&other) noexcept
 	: pipeline(other.pipeline)
 	, layout(other.layout)
 	, scissor(other.scissor)
@@ -316,7 +316,7 @@ struct Pipeline {
 		other.scissor  = false;
 	}
 
-	Pipeline &operator=(Pipeline &&other) {
+	Pipeline &operator=(Pipeline &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -351,7 +351,7 @@ struct RenderPass {
 	RenderPassDesc                 desc;
 
 
-	RenderPass()
+	RenderPass() noexcept
 	: clearValueCount(0)
 	, numSamples(0)
 	, numColorAttachments(0)
@@ -361,7 +361,7 @@ struct RenderPass {
 	RenderPass(const RenderPass &)            = delete;
 	RenderPass &operator=(const RenderPass &) = delete;
 
-	RenderPass(RenderPass &&other)
+	RenderPass(RenderPass &&other) noexcept
 	: renderPass(other.renderPass)
 	, clearValueCount(other.clearValueCount)
 	, numSamples(other.numSamples)
@@ -378,7 +378,7 @@ struct RenderPass {
 		other.numColorAttachments = 0;
 	}
 
-	RenderPass &operator=(RenderPass &&other) {
+	RenderPass &operator=(RenderPass &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -430,7 +430,7 @@ struct RenderTarget{
 	vk::ImageView imageView;
 
 
-	RenderTarget()
+	RenderTarget() noexcept
 	: width(0)
 	, height(0)
 	, currentLayout(Layout::Undefined)
@@ -440,7 +440,7 @@ struct RenderTarget{
 	RenderTarget(const RenderTarget &)            = delete;
 	RenderTarget &operator=(const RenderTarget &) = delete;
 
-	RenderTarget(RenderTarget &&other)
+	RenderTarget(RenderTarget &&other) noexcept
 	: width(other.width)
 	, height(other.height)
 	, currentLayout(other.currentLayout)
@@ -460,7 +460,7 @@ struct RenderTarget{
 		other.imageView     = vk::ImageView();
 	}
 
-	RenderTarget &operator=(RenderTarget &&other) {
+	RenderTarget &operator=(RenderTarget &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -509,20 +509,20 @@ struct Sampler {
 	vk::Sampler sampler;
 
 
-	Sampler()
+	Sampler() noexcept
 	{
 	}
 
 	Sampler(const Sampler &)            = delete;
 	Sampler &operator=(const Sampler &) = delete;
 
-	Sampler(Sampler &&other)
+	Sampler(Sampler &&other) noexcept
 	: sampler(other.sampler)
 	{
 		other.sampler = vk::Sampler();
 	}
 
-	Sampler &operator=(Sampler &&other) {
+	Sampler &operator=(Sampler &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -556,7 +556,7 @@ struct Texture {
 	VmaAllocation        memory;
 
 
-	Texture()
+	Texture() noexcept
 	: width(0)
 	, height(0)
 	, renderTarget(false)
@@ -568,7 +568,7 @@ struct Texture {
 	Texture(const Texture &)            = delete;
 	Texture &operator=(const Texture &) = delete;
 
-	Texture(Texture &&other)
+	Texture(Texture &&other) noexcept
 	: width(other.width)
 	, height(other.height)
 	, renderTarget(other.renderTarget)
@@ -584,7 +584,7 @@ struct Texture {
 		other.renderTarget = false;
 	}
 
-	Texture &operator=(Texture &&other) {
+	Texture &operator=(Texture &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -625,20 +625,20 @@ struct VertexShader {
 	vk::ShaderModule shaderModule;
 
 
-	VertexShader()
+	VertexShader() noexcept
 	{
 	}
 
 	VertexShader(const VertexShader &)            = delete;
 	VertexShader &operator=(const VertexShader &) = delete;
 
-	VertexShader(VertexShader &&other)
+	VertexShader(VertexShader &&other) noexcept
 	: shaderModule(other.shaderModule)
 	{
 		other.shaderModule = vk::ShaderModule();
 	}
 
-	VertexShader &operator=(VertexShader &&other) {
+	VertexShader &operator=(VertexShader &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
