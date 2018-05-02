@@ -660,33 +660,6 @@ struct VertexShader {
 typedef boost::variant<Buffer, Framebuffer, RenderPass, RenderTarget, Sampler, Texture> Resource;
 
 
-struct ResourceHasher final : public boost::static_visitor<size_t> {
-	size_t operator()(const Buffer &b) const {
-		return b.getHash();
-	}
-
-	size_t operator()(const Framebuffer &fb) const {
-		return fb.getHash();
-	}
-
-	size_t operator()(const RenderPass &rp) const {
-		return rp.getHash();
-	}
-
-	size_t operator()(const RenderTarget &rt) const {
-		return rt.getHash();
-	}
-
-	size_t operator()(const Sampler &s) const {
-		return s.getHash();
-	}
-
-	size_t operator()(const Texture &t) const {
-		return t.getHash();
-	}
-};
-
-
 }	// namespace renderer
 
 
