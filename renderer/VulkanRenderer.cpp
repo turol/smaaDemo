@@ -29,6 +29,9 @@ THE SOFTWARE.
 #include "RendererInternal.h"
 #include "utils/Utils.h"
 
+#include <boost/variant/apply_visitor.hpp>
+#include <boost/variant/static_visitor.hpp>
+
 
 // this part of the C++ bindings sucks...
 // TODO: replace with DispatchLoaderDynamic

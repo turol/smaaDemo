@@ -31,8 +31,6 @@ THE SOFTWARE.
 
 // TODO: use std::variant if the compiler has C++17
 #include <boost/variant/variant.hpp>
-#include <boost/variant/apply_visitor.hpp>
-#include <boost/variant/static_visitor.hpp>
 
 
 #include <vulkan/vulkan.hpp>
