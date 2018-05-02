@@ -34,6 +34,12 @@ THE SOFTWARE.
 namespace renderer {
 
 
+enum class ShaderKind : uint8_t {
+	  Vertex
+	, Fragment
+};
+
+
 template <class T>
 class ResourceContainer {
 	std::unordered_map<unsigned int, T> resources;
@@ -160,7 +166,7 @@ struct RendererBase {
 
 	std::vector<char> loadSource(const std::string &name);
 
-	std::vector<uint32_t> compileSpirv(const std::string &name, const ShaderMacros &macros, shaderc_shader_kind kind);
+	std::vector<uint32_t> compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderKind kind);
 
 	explicit RendererBase(const RendererDesc &desc)
 	: swapchainDesc(desc.swapchain)

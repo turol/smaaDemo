@@ -955,7 +955,7 @@ ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl) {
 VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros) {
 	std::string vertexShaderName   = name + ".vert";
 
-    std::vector<uint32_t> spirv = compileSpirv(vertexShaderName, macros, shaderc_glsl_vertex_shader);
+    std::vector<uint32_t> spirv = compileSpirv(vertexShaderName, macros, ShaderKind::Vertex);
 
 	auto result_ = vertexShaders.add();
 	auto &v = result_.first;
@@ -970,7 +970,7 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros &macros) {
 	std::string fragmentShaderName = name + ".frag";
 
-	std::vector<uint32_t> spirv = compileSpirv(fragmentShaderName, macros, shaderc_glsl_fragment_shader);
+	std::vector<uint32_t> spirv = compileSpirv(fragmentShaderName, macros, ShaderKind::Fragment);
 
 	auto result_ = fragmentShaders.add();
 	auto &f = result_.first;

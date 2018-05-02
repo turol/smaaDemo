@@ -341,8 +341,19 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 const unsigned int shaderVersion = 11;
 
 
-std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, shaderc_shader_kind kind) {
+std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderKind kind_) {
 	// check spir-v cache first
+
+	shaderc_shader_kind kind;
+	switch (kind_) {
+	case ShaderKind::Vertex:
+		kind = shaderc_glsl_vertex_shader;
+		break;
+
+	case ShaderKind::Fragment:
+		kind = shaderc_glsl_fragment_shader;
+		break;
+	}
 
 	std::string spvName = spirvCacheDir + name;
 	{
