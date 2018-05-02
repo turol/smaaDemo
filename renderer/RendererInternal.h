@@ -28,8 +28,6 @@ THE SOFTWARE.
 #include "Renderer.h"
 #include "utils/Utils.h"
 
-#include <shaderc/shaderc.h>
-
 
 namespace renderer {
 
