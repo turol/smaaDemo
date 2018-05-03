@@ -389,7 +389,7 @@ namespace std {
 struct SMAAPipelines {
 	PipelineHandle  edgePipeline;
 	PipelineHandle  blendWeightPipeline;
-	PipelineHandle  neighborPipeline;
+	std::array<PipelineHandle, 2>  neighborPipelines;
 };
 
 
@@ -1471,7 +1471,9 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		plDesc.descriptorSetLayout<NeighborBlendDS>(1);
 		passName = std::string("SMAA blend ") + std::to_string(key.quality);
 		plDesc.name(passName.c_str());
-		pipelines.neighborPipeline = renderer.createPipeline(plDesc);
+		pipelines.neighborPipelines[0] = renderer.createPipeline(plDesc);
+		// TODO: second pass should have blending on
+		pipelines.neighborPipelines[1] = renderer.createPipeline(plDesc);
 
 		bool inserted = false;
 		std::tie(it, inserted) = smaaPipelines.emplace(std::move(key), std::move(pipelines));
@@ -2379,7 +2381,7 @@ void SMAADemo::render() {
 }
 
 
-void SMAADemo::doSMAA(RenderTargetHandle input, FramebufferHandle outputFB, int /* pass */) {
+void SMAADemo::doSMAA(RenderTargetHandle input, FramebufferHandle outputFB, int pass) {
 	// edges pass
 	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
 	renderer.beginRenderPass(smaaEdgesRenderPass, smaaEdgesFramebuffer);
@@ -2424,7 +2426,7 @@ void SMAADemo::doSMAA(RenderTargetHandle input, FramebufferHandle outputFB, int 
 	switch (debugMode) {
 	case 0: {
 		// full effect
-		renderer.bindPipeline(pipelines.neighborPipeline);
+		renderer.bindPipeline(pipelines.neighborPipelines[pass]);
 
 		NeighborBlendDS neighborBlendDS;
 		neighborBlendDS.color.tex            = renderer.getRenderTargetTexture(input);
