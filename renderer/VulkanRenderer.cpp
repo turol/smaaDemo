@@ -1467,6 +1467,13 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	vk::PipelineColorBlendStateCreateInfo blendInfo;
 	blendInfo.attachmentCount = static_cast<uint32_t>(colorBlendStates.size());
 	blendInfo.pAttachments    = &colorBlendStates[0];
+	if (desc.blending_ && (desc.sourceBlend_ == BlendFunc::Constant || desc.destinationBlend_ == BlendFunc::Constant)) {
+		// TODO: get from desc
+		for (unsigned int i = 0; i < 4; i++) {
+			blendInfo.blendConstants[i] = 0.5f;
+		}
+	}
+
 	info.pColorBlendState     = &blendInfo;
 
 	vk::PipelineDynamicStateCreateInfo dyn;

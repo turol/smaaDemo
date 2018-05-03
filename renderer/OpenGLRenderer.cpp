@@ -1927,6 +1927,10 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 		// TODO: get from Pipeline
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(p.srcBlend, p.destBlend);
+		if (p.srcBlend == GL_CONSTANT_ALPHA || p.destBlend == GL_CONSTANT_ALPHA) {
+			// TODO: get from Pipeline
+			glBlendColor(0.5f, 0.5f, 0.5f, 0.5f);
+		}
 	} else {
 		glDisable(GL_BLEND);
 	}
