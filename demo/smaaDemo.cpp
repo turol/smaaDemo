@@ -562,7 +562,7 @@ public:
 
 	void render();
 
-	void doSMAA(RenderTargetHandle input, FramebufferHandle outputFB, int pass);
+	void doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass);
 
 	void doTemporalAA();
 
@@ -2327,9 +2327,9 @@ void SMAADemo::render() {
 
 		case AAMethod::SMAA: {
 			if (temporalAA) {
-				doSMAA(mainColorRT, resolveFBs[temporalFrame], 0);
+				doSMAA(mainColorRT, smaaBlendRenderPass, resolveFBs[temporalFrame], 0);
 			} else {
-				doSMAA(mainColorRT, finalFramebuffer, 0);
+				doSMAA(mainColorRT, finalRenderPass, finalFramebuffer, 0);
 			}
 
 			if (temporalAA) {
@@ -2350,12 +2350,13 @@ void SMAADemo::render() {
 
 			// TODO: need to pass correct layouts
 			// TODO: need to use correct subsample indices
+			// FIXME: second pass needs to blend
 			if (temporalAA) {
-				doSMAA(subsampleRTs[0], resolveFBs[temporalFrame], 0);
-				doSMAA(subsampleRTs[1], resolveFBs[temporalFrame], 1);
+				doSMAA(subsampleRTs[0], smaaBlendRenderPass, resolveFBs[temporalFrame], 0);
+				doSMAA(subsampleRTs[1], smaaBlendRenderPass, resolveFBs[temporalFrame], 1);
 			} else {
-				doSMAA(subsampleRTs[0], finalFramebuffer, 0);
-				doSMAA(subsampleRTs[1], finalFramebuffer, 1);
+				doSMAA(subsampleRTs[0], finalRenderPass, finalFramebuffer, 0);
+				doSMAA(subsampleRTs[1], finalRenderPass, finalFramebuffer, 1);
 			}
 
 			if (temporalAA) {
@@ -2381,7 +2382,7 @@ void SMAADemo::render() {
 }
 
 
-void SMAADemo::doSMAA(RenderTargetHandle input, FramebufferHandle outputFB, int pass) {
+void SMAADemo::doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass) {
 	// edges pass
 	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
 	renderer.beginRenderPass(smaaEdgesRenderPass, smaaEdgesFramebuffer);
@@ -2416,11 +2417,10 @@ void SMAADemo::doSMAA(RenderTargetHandle input, FramebufferHandle outputFB, int 
 	renderer.endRenderPass();
 
 	// final blending pass/debug pass
-	// FIXME: second pass needs to blend
 	if (temporalAA) {
-		renderer.beginRenderPass(smaaBlendRenderPass, outputFB);
+		renderer.beginRenderPass(renderPass, outputFB);
 	} else {
-		renderer.beginRenderPass(finalRenderPass, outputFB);
+		renderer.beginRenderPass(renderPass, outputFB);
 	}
 
 	switch (debugMode) {
