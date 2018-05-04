@@ -773,6 +773,7 @@ struct RendererImpl : public RendererBase {
 
 	void bindDescriptorSet(unsigned int index, DSLayoutHandle layout, const void *data);
 
+	void blit(FramebufferHandle source, FramebufferHandle target, unsigned int n);
 	void resolveMSAA(FramebufferHandle source, FramebufferHandle target, unsigned int n);
 
 	void draw(unsigned int firstVertex, unsigned int vertexCount);

@@ -682,6 +682,11 @@ void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, u
 }
 
 
+void Renderer::blit(FramebufferHandle source, FramebufferHandle target, unsigned int n) {
+	impl->blit(source, target, n);
+}
+
+
 void Renderer::resolveMSAA(FramebufferHandle source, FramebufferHandle target, unsigned int n) {
 	impl->resolveMSAA(source, target, n);
 }

@@ -910,6 +910,7 @@ public:
 	void bindIndexBuffer(BufferHandle buffer, bool bit16);
 	void bindVertexBuffer(unsigned int binding, BufferHandle buffer);
 
+	void blit(FramebufferHandle source, FramebufferHandle target, unsigned int n = 0);
 	void resolveMSAA(FramebufferHandle source, FramebufferHandle target, unsigned int n = 0);
 
 	void draw(unsigned int firstVertex, unsigned int vertexCount);

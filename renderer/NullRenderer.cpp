@@ -397,6 +397,15 @@ void RendererImpl::setScissorRect(unsigned int /* x */, unsigned int /* y */, un
 }
 
 
+void RendererImpl::blit(FramebufferHandle source, FramebufferHandle target, unsigned int n) {
+	assert(source);
+	assert(target);
+	assert(n == 0);
+
+	assert(!inRenderPass);
+}
+
+
 void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle target, unsigned int n) {
 	assert(source);
 	assert(target);
