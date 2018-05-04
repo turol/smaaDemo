@@ -2413,7 +2413,7 @@ void SMAADemo::doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, Fra
 	renderer.endRenderPass();
 
 	// final blending pass/debug pass
-		renderer.beginRenderPass(renderPass, outputFB);
+	renderer.beginRenderPass(renderPass, outputFB);
 
 	switch (debugMode) {
 	case 0: {
