@@ -2203,7 +2203,7 @@ void SMAADemo::render() {
 	}
 
 	Layout l = Layout::ShaderRead;
-	if (antialiasing && aaMethod == AAMethod::MSAA) {
+	if (!antialiasing || aaMethod == AAMethod::MSAA) {
 		l = Layout::TransferSrc;
 	}
 	renderer.beginRenderPass(getSceneRenderPass(numSamples, l), sceneFramebuffer);
@@ -2366,13 +2366,9 @@ void SMAADemo::render() {
 		}
 
 	} else {
-		renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
-		renderer.bindPipeline(blitPipeline);
-		ColorTexDS colorDS;
-		colorDS.color     = renderer.getRenderTargetTexture(mainColorRT);
-		renderer.bindDescriptorSet(1, colorDS);
-		renderer.draw(0, 3);
-		renderer.endRenderPass();
+		renderer.layoutTransition(finalRenderRT, Layout::Undefined, Layout::TransferDst);
+		renderer.blit(sceneFramebuffer, finalFramebuffer);
+		renderer.layoutTransition(finalRenderRT, Layout::TransferDst, Layout::ColorAttachment);
 	}
 
 	drawGUI(elapsed);
