@@ -1182,7 +1182,7 @@ void SMAADemo::initRender() {
 		auto fragmentShader = renderer.createFragmentShader("gui", macros);
 
 		PipelineDesc plDesc;
-		plDesc.renderPass(finalRenderPass)
+		plDesc.renderPass(guiOnlyRenderPass)
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ColorTexDS>(1)
 		      .vertexShader(vertexShader)
