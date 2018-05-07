@@ -1790,6 +1790,10 @@ void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle 
 	assert(rpHandle);
 	const auto &rp = renderPasses.get(rpHandle);
 
+	if (tracing) {
+		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, -1, rp.desc.name_.c_str());
+	}
+
 	// make sure renderpass and framebuffer match
 	// OpenGL doesn't care but Vulkan does
 	assert(fb.renderPass == rpHandle || isRenderPassCompatible(rp, fb));
@@ -1836,6 +1840,10 @@ void RendererImpl::endRenderPass() {
 	assert(inRenderPass);
 	inRenderPass = false;
 #endif  // NDEBUG
+
+	if (tracing) {
+		glPopDebugGroup();
+	}
 
 	const auto &pass = renderPasses.get(currentRenderPass);
 	const auto &fb = framebuffers.get(currentFramebuffer);
