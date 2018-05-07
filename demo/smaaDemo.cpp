@@ -493,6 +493,7 @@ class SMAADemo {
 	RenderPassHandle   finalRenderPass;
 	RenderPassHandle   separateRenderPass;
 	RenderPassHandle   smaaBlendRenderPass;  // for temporal aa, otherwise it's part of final render pass
+	std::array<RenderPassHandle, 2>   smaa2XBlendRenderPasses;
 	RenderPassHandle   guiOnlyRenderPass;
 	FramebufferHandle  finalFramebuffer;
 	std::array<FramebufferHandle, 2>  resolveFBs;
@@ -685,8 +686,14 @@ SMAADemo::~SMAADemo() {
 			assert(fxaaRenderPass[i]);
 			renderer.deleteRenderPass(fxaaRenderPass[i]);
 		}
+
 		assert(smaaBlendRenderPass);
 		renderer.deleteRenderPass(smaaBlendRenderPass);
+		for (unsigned int i = 0; i < 2; i++) {
+			assert(smaa2XBlendRenderPasses[i]);
+			renderer.deleteRenderPass(smaa2XBlendRenderPasses[i]);
+		}
+
 		assert(guiOnlyRenderPass);
 		renderer.deleteRenderPass(guiOnlyRenderPass);
 		assert(smaaEdgesRenderPass);
@@ -1106,6 +1113,17 @@ void SMAADemo::initRender() {
 		// FIXME: should be RGBA since SMAA wants gamma space?
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
 		smaaBlendRenderPass   = renderer.createRenderPass(rpDesc.name("SMAA blend"));
+	}
+
+	for (unsigned int i = 0; i < 2; i++) {
+		RenderPassDesc rpDesc;
+		if (i == 0) {
+			rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+		} else {
+			assert(i == 1);
+			rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::ShaderRead);
+		}
+		smaa2XBlendRenderPasses[i] = renderer.createRenderPass(rpDesc.name("SMAA2x blend " + std::to_string(i)));
 	}
 
 	{
@@ -2357,11 +2375,11 @@ void SMAADemo::render() {
 			// TODO: need to use correct subsample indices
 			// FIXME: second pass needs to blend
 			if (temporalAA) {
-				doSMAA(subsampleRTs[0], smaaBlendRenderPass, resolveFBs[temporalFrame], 0);
-				doSMAA(subsampleRTs[1], smaaBlendRenderPass, resolveFBs[temporalFrame], 1);
+				doSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], resolveFBs[temporalFrame], 0);
+				doSMAA(subsampleRTs[1], smaa2XBlendRenderPasses[1], resolveFBs[temporalFrame], 1);
 			} else {
-				doSMAA(subsampleRTs[0], finalRenderPass, finalFramebuffer, 0);
-				doSMAA(subsampleRTs[1], finalRenderPass, finalFramebuffer, 1);
+				doSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], finalFramebuffer, 0);
+				doSMAA(subsampleRTs[1], smaa2XBlendRenderPasses[1], finalFramebuffer, 1);
 			}
 
 			if (temporalAA) {
