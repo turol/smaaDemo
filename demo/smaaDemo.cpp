@@ -1959,7 +1959,12 @@ void SMAADemo::mainLoopIteration() {
 				if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
 					recreateFramebuffers = true;
 				}
+
+				if (leftShift || rightShift) {
+					aaMethod = AAMethod((int(aaMethod) + int(AAMethod::LAST)) % (int(AAMethod::LAST) + 1));
+				} else {
 				aaMethod = AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
+				}
 				if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
 					recreateFramebuffers = true;
 				}
