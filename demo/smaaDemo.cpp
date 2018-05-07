@@ -1490,7 +1490,9 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		passName = std::string("SMAA blend ") + std::to_string(key.quality);
 		plDesc.name(passName.c_str());
 		pipelines.neighborPipelines[0] = renderer.createPipeline(plDesc);
-		// TODO: second pass should have blending on
+		plDesc.blending(true)
+		      .sourceBlend(BlendFunc::Constant)
+		      .destinationBlend(BlendFunc::Constant);
 		pipelines.neighborPipelines[1] = renderer.createPipeline(plDesc);
 
 		bool inserted = false;
