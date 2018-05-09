@@ -1121,7 +1121,7 @@ void SMAADemo::initRender() {
 			rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
 		} else {
 			assert(i == 1);
-			rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::ShaderRead);
+			rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::ColorAttachment);
 		}
 		smaa2XBlendRenderPasses[i] = renderer.createRenderPass(rpDesc.name("SMAA2x blend " + std::to_string(i)));
 	}
@@ -2385,6 +2385,8 @@ void SMAADemo::render() {
 			}
 
 			if (temporalAA) {
+				// FIXME: move to renderpass
+				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::ColorAttachment, Layout::ShaderRead);
 				doTemporalAA();
 			}
 		} break;
