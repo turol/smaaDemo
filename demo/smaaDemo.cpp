@@ -2391,14 +2391,34 @@ void SMAADemo::render() {
 			renderer.draw(0, 3);
 			renderer.endRenderPass();
 
-			// TODO: need to pass correct layouts
-			// TODO: need to use correct subsample indices
-			// FIXME: second pass needs to blend
+			// TODO: this is ugly, subsample indices should be in their own UBO
+			// or push constants
+			glm::vec4 subsampleIndices;
+			if (temporalFrame == 0) {
+				subsampleIndices = glm::vec4(4.0f, 6.0f, 2.0f, 3.0f);
+			} else {
+				assert(temporalFrame == 1);
+				subsampleIndices = glm::vec4(6.0f, 4.0f, 2.0f, 4.0f);
+			}
+
+			// TODO: clean up the renderpass mess
 			if (temporalAA) {
 				doSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], resolveFBs[temporalFrame], 0);
+				globals.subsampleIndices = subsampleIndices;
+				GlobalDS globalDS;
+				globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+				globalDS.linearSampler  = linearSampler;
+				globalDS.nearestSampler = nearestSampler;
+				renderer.bindDescriptorSet(0, globalDS);
 				doSMAA(subsampleRTs[1], smaa2XBlendRenderPasses[1], resolveFBs[temporalFrame], 1);
 			} else {
 				doSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], finalFramebuffer, 0);
+				globals.subsampleIndices = subsampleIndices;
+				GlobalDS globalDS;
+				globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+				globalDS.linearSampler  = linearSampler;
+				globalDS.nearestSampler = nearestSampler;
+				renderer.bindDescriptorSet(0, globalDS);
 				doSMAA(subsampleRTs[1], smaa2XBlendRenderPasses[1], finalFramebuffer, 1);
 			}
 
