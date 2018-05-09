@@ -2236,7 +2236,7 @@ void SMAADemo::render() {
 		if (aaMethod == AAMethod::SMAA2X) {
 			globals.subsampleIndices = glm::vec4(1.0, 1.0, 1.0, 0.0f);
 		} else {
-		globals.subsampleIndices = glm::vec4(0.0f);
+			globals.subsampleIndices = glm::vec4(0.0f);
 		}
 	}
 
@@ -2399,12 +2399,12 @@ void SMAADemo::render() {
 			// or push constants
 			glm::vec4 subsampleIndices;
 			if (temporalAA) {
-			if (temporalFrame == 0) {
-				subsampleIndices = glm::vec4(4.0f, 6.0f, 2.0f, 3.0f);
-			} else {
-				assert(temporalFrame == 1);
-				subsampleIndices = glm::vec4(6.0f, 4.0f, 2.0f, 4.0f);
-			}
+				if (temporalFrame == 0) {
+					subsampleIndices = glm::vec4(4.0f, 6.0f, 2.0f, 3.0f);
+				} else {
+					assert(temporalFrame == 1);
+					subsampleIndices = glm::vec4(6.0f, 4.0f, 2.0f, 4.0f);
+				}
 			} else {
 				subsampleIndices = glm::vec4(2.0f, 2.0f, 2.0f, 0.0f);
 			}
