@@ -2219,10 +2219,19 @@ void SMAADemo::render() {
 	globals.predicationStrength  = predicationStrength;
 	globals.reprojWeigthScale    = reprojectionWeightScale;
 
-	if (temporalAA && aaMethod != AAMethod::MSAA) {
+	if (temporalAA) {
 		temporalFrame = (temporalFrame + 1) % 2;
+		if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
+			if (temporalFrame == 0) {
+				globals.subsampleIndices = glm::vec4(5.0f, 3.0f, 1.0f, 3.0f);
+			} else {
+				assert(temporalFrame == 1);
+				globals.subsampleIndices = glm::vec4(3.0f, 5.0f, 1.0f, 4.0f);
+			}
+		} else {
 		float v       = float(temporalFrame + 1);
 		globals.subsampleIndices = glm::vec4(v, v, v, 0.0f);
+		}
 	} else {
 		globals.subsampleIndices = glm::vec4(0.0f);
 	}
