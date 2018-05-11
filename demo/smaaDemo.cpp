@@ -2278,15 +2278,16 @@ void SMAADemo::render() {
 					  {  0.125f,  0.125f }
 					, { -0.125f, -0.125f }
 				};
-				jitter = jitters[temporalFrame] * 2.0f * glm::vec2(globals.screenSize.x, globals.screenSize.y);
+				jitter = jitters[temporalFrame];
 			} else {
 			const glm::vec2 jitters[2] = {
 			      { -0.25f,  0.25f }
 			    , { 0.25f,  -0.25f }
 			};
-				jitter = jitters[temporalFrame] * 2.0f * glm::vec2(globals.screenSize.x, globals.screenSize.y);
+				jitter = jitters[temporalFrame];
 			}
 
+			jitter = jitter * 2.0f * glm::vec2(globals.screenSize.x, globals.screenSize.y);
 			glm::mat4 jitterMatrix = glm::translate(glm::mat4(), glm::vec3(jitter, 0.0f));
 			viewProj = jitterMatrix * viewProj;
 		}
