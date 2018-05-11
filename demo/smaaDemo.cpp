@@ -2241,16 +2241,16 @@ void SMAADemo::render() {
 			subsampleIndices[0] = glm::vec4(0.0f);
 		}
 	}
-			if (temporalAA) {
-				if (temporalFrame == 0) {
-					subsampleIndices[1] = glm::vec4(4.0f, 6.0f, 2.0f, 3.0f);
-				} else {
-					assert(temporalFrame == 1);
-					subsampleIndices[1] = glm::vec4(6.0f, 4.0f, 2.0f, 4.0f);
-				}
-			} else {
-				subsampleIndices[1] = glm::vec4(2.0f, 2.0f, 2.0f, 0.0f);
-			}
+	if (temporalAA) {
+		if (temporalFrame == 0) {
+			subsampleIndices[1] = glm::vec4(4.0f, 6.0f, 2.0f, 3.0f);
+		} else {
+			assert(temporalFrame == 1);
+			subsampleIndices[1] = glm::vec4(6.0f, 4.0f, 2.0f, 4.0f);
+		}
+	} else {
+		subsampleIndices[1] = glm::vec4(2.0f, 2.0f, 2.0f, 0.0f);
+	}
 
 	globals.subsampleIndices = subsampleIndices[0];
 
