@@ -2280,10 +2280,10 @@ void SMAADemo::render() {
 				};
 				jitter = jitters[temporalFrame];
 			} else {
-			const glm::vec2 jitters[2] = {
-			      { -0.25f,  0.25f }
-			    , { 0.25f,  -0.25f }
-			};
+				const glm::vec2 jitters[2] = {
+					  { -0.25f,  0.25f }
+					, { 0.25f,  -0.25f }
+				};
 				jitter = jitters[temporalFrame];
 			}
 
