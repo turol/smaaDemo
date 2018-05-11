@@ -2241,6 +2241,17 @@ void SMAADemo::render() {
 			subsampleIndices[0] = glm::vec4(0.0f);
 		}
 	}
+			if (temporalAA) {
+				if (temporalFrame == 0) {
+					subsampleIndices[1] = glm::vec4(4.0f, 6.0f, 2.0f, 3.0f);
+				} else {
+					assert(temporalFrame == 1);
+					subsampleIndices[1] = glm::vec4(6.0f, 4.0f, 2.0f, 4.0f);
+				}
+			} else {
+				subsampleIndices[1] = glm::vec4(2.0f, 2.0f, 2.0f, 0.0f);
+			}
+
 	globals.subsampleIndices = subsampleIndices[0];
 
 	Layout l = Layout::ShaderRead;
@@ -2399,22 +2410,11 @@ void SMAADemo::render() {
 			renderer.draw(0, 3);
 			renderer.endRenderPass();
 
-			// TODO: this is ugly, subsample indices should be in their own UBO
-			// or push constants
-			if (temporalAA) {
-				if (temporalFrame == 0) {
-					subsampleIndices[1] = glm::vec4(4.0f, 6.0f, 2.0f, 3.0f);
-				} else {
-					assert(temporalFrame == 1);
-					subsampleIndices[1] = glm::vec4(6.0f, 4.0f, 2.0f, 4.0f);
-				}
-			} else {
-				subsampleIndices[1] = glm::vec4(2.0f, 2.0f, 2.0f, 0.0f);
-			}
-
 			// TODO: clean up the renderpass mess
 			if (temporalAA) {
 				doSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], resolveFBs[temporalFrame], 0);
+				// TODO: this is ugly, subsample indices should be in their own UBO
+				// or push constants
 				globals.subsampleIndices = subsampleIndices[1];
 				GlobalDS globalDS;
 				globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
