@@ -25,6 +25,7 @@ THE SOFTWARE.
 #define VULKANRENDERER_H
 
 #define VULKAN_HPP_TYPESAFE_CONVERSION 1
+#define VULKAN_HPP_NO_SMART_HANDLE     1
 
 
 #include <unordered_set>
