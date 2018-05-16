@@ -2241,11 +2241,11 @@ void SMAADemo::render() {
 		case AAMethod::SMAA2X:
 			if (temporalFrame == 0) {
 				subsampleIndices[0] = glm::vec4(5.0f, 3.0f, 1.0f, 3.0f);
-			subsampleIndices[1] = glm::vec4(4.0f, 6.0f, 2.0f, 3.0f);
+				subsampleIndices[1] = glm::vec4(4.0f, 6.0f, 2.0f, 3.0f);
 			} else {
 				assert(temporalFrame == 1);
 				subsampleIndices[0] = glm::vec4(3.0f, 5.0f, 1.0f, 4.0f);
-			subsampleIndices[1] = glm::vec4(6.0f, 4.0f, 2.0f, 4.0f);
+				subsampleIndices[1] = glm::vec4(6.0f, 4.0f, 2.0f, 4.0f);
 			}
 			break;
 
