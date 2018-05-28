@@ -45,6 +45,15 @@ void IRContext::BuildInvalidAnalyses(IRContext::Analysis set) {
   if (set & kAnalysisNameMap) {
     BuildIdToNameMap();
   }
+  if (set & kAnalysisScalarEvolution) {
+    BuildScalarEvolutionAnalysis();
+  }
+  if (set & kAnalysisRegisterPressure) {
+    BuildRegPressureAnalysis();
+  }
+  if (set & kAnalysisValueNumberTable) {
+    BuildValueNumberTable();
+  }
 }
 
 void IRContext::InvalidateAnalysesExceptFor(
@@ -75,6 +84,9 @@ void IRContext::InvalidateAnalyses(IRContext::Analysis analyses_to_invalidate) {
   }
   if (analyses_to_invalidate & kAnalysisNameMap) {
     id_to_name_.reset(nullptr);
+  }
+  if (analyses_to_invalidate & kAnalysisValueNumberTable) {
+    vn_table_.reset(nullptr);
   }
 
   valid_analyses_ = Analysis(valid_analyses_ & ~analyses_to_invalidate);
@@ -195,17 +207,25 @@ bool IRContext::IsConsistent() {
       return false;
     }
   }
+
   if (AreAnalysesValid(kAnalysisInstrToBlockMapping)) {
     for (auto& func : *module()) {
       for (auto& block : func) {
         if (!block.WhileEachInst([this, &block](ir::Instruction* inst) {
-              if (get_instr_block(inst) != &block) return false;
+              if (get_instr_block(inst) != &block) {
+                return false;
+              }
               return true;
             }))
           return false;
       }
     }
   }
+
+  if (!CheckCFG()) {
+    return false;
+  }
+
   return true;
 }
 
@@ -261,161 +281,164 @@ void IRContext::KillNamesAndDecorates(Instruction* inst) {
 
 void IRContext::AddCombinatorsForCapability(uint32_t capability) {
   if (capability == SpvCapabilityShader) {
-    combinator_ops_[0].insert({
-        SpvOpNop,
-        SpvOpUndef,
-        SpvOpConstant,
-        SpvOpConstantTrue,
-        SpvOpConstantFalse,
-        SpvOpConstantComposite,
-        SpvOpConstantSampler,
-        SpvOpConstantNull,
-        SpvOpTypeVoid,
-        SpvOpTypeBool,
-        SpvOpTypeInt,
-        SpvOpTypeFloat,
-        SpvOpTypeVector,
-        SpvOpTypeMatrix,
-        SpvOpTypeImage,
-        SpvOpTypeSampler,
-        SpvOpTypeSampledImage,
-        SpvOpTypeArray,
-        SpvOpTypeRuntimeArray,
-        SpvOpTypeStruct,
-        SpvOpTypeOpaque,
-        SpvOpTypePointer,
-        SpvOpTypeFunction,
-        SpvOpTypeEvent,
-        SpvOpTypeDeviceEvent,
-        SpvOpTypeReserveId,
-        SpvOpTypeQueue,
-        SpvOpTypePipe,
-        SpvOpTypeForwardPointer,
-        SpvOpVariable,
-        SpvOpImageTexelPointer,
-        SpvOpLoad,
-        SpvOpAccessChain,
-        SpvOpInBoundsAccessChain,
-        SpvOpArrayLength,
-        SpvOpVectorExtractDynamic,
-        SpvOpVectorInsertDynamic,
-        SpvOpVectorShuffle,
-        SpvOpCompositeConstruct,
-        SpvOpCompositeExtract,
-        SpvOpCompositeInsert,
-        SpvOpCopyObject,
-        SpvOpTranspose,
-        SpvOpSampledImage,
-        SpvOpImageSampleImplicitLod,
-        SpvOpImageSampleExplicitLod,
-        SpvOpImageSampleDrefImplicitLod,
-        SpvOpImageSampleDrefExplicitLod,
-        SpvOpImageSampleProjImplicitLod,
-        SpvOpImageSampleProjExplicitLod,
-        SpvOpImageSampleProjDrefImplicitLod,
-        SpvOpImageSampleProjDrefExplicitLod,
-        SpvOpImageFetch,
-        SpvOpImageGather,
-        SpvOpImageDrefGather,
-        SpvOpImageRead,
-        SpvOpImage,
-        SpvOpConvertFToU,
-        SpvOpConvertFToS,
-        SpvOpConvertSToF,
-        SpvOpConvertUToF,
-        SpvOpUConvert,
-        SpvOpSConvert,
-        SpvOpFConvert,
-        SpvOpQuantizeToF16,
-        SpvOpBitcast,
-        SpvOpSNegate,
-        SpvOpFNegate,
-        SpvOpIAdd,
-        SpvOpFAdd,
-        SpvOpISub,
-        SpvOpFSub,
-        SpvOpIMul,
-        SpvOpFMul,
-        SpvOpUDiv,
-        SpvOpSDiv,
-        SpvOpFDiv,
-        SpvOpUMod,
-        SpvOpSRem,
-        SpvOpSMod,
-        SpvOpFRem,
-        SpvOpFMod,
-        SpvOpVectorTimesScalar,
-        SpvOpMatrixTimesScalar,
-        SpvOpVectorTimesMatrix,
-        SpvOpMatrixTimesVector,
-        SpvOpMatrixTimesMatrix,
-        SpvOpOuterProduct,
-        SpvOpDot,
-        SpvOpIAddCarry,
-        SpvOpISubBorrow,
-        SpvOpUMulExtended,
-        SpvOpSMulExtended,
-        SpvOpAny,
-        SpvOpAll,
-        SpvOpIsNan,
-        SpvOpIsInf,
-        SpvOpLogicalEqual,
-        SpvOpLogicalNotEqual,
-        SpvOpLogicalOr,
-        SpvOpLogicalAnd,
-        SpvOpLogicalNot,
-        SpvOpSelect,
-        SpvOpIEqual,
-        SpvOpINotEqual,
-        SpvOpUGreaterThan,
-        SpvOpSGreaterThan,
-        SpvOpUGreaterThanEqual,
-        SpvOpSGreaterThanEqual,
-        SpvOpULessThan,
-        SpvOpSLessThan,
-        SpvOpULessThanEqual,
-        SpvOpSLessThanEqual,
-        SpvOpFOrdEqual,
-        SpvOpFUnordEqual,
-        SpvOpFOrdNotEqual,
-        SpvOpFUnordNotEqual,
-        SpvOpFOrdLessThan,
-        SpvOpFUnordLessThan,
-        SpvOpFOrdGreaterThan,
-        SpvOpFUnordGreaterThan,
-        SpvOpFOrdLessThanEqual,
-        SpvOpFUnordLessThanEqual,
-        SpvOpFOrdGreaterThanEqual,
-        SpvOpFUnordGreaterThanEqual,
-        SpvOpShiftRightLogical,
-        SpvOpShiftRightArithmetic,
-        SpvOpShiftLeftLogical,
-        SpvOpBitwiseOr,
-        SpvOpBitwiseXor,
-        SpvOpBitwiseAnd,
-        SpvOpNot,
-        SpvOpBitFieldInsert,
-        SpvOpBitFieldSExtract,
-        SpvOpBitFieldUExtract,
-        SpvOpBitReverse,
-        SpvOpBitCount,
-        SpvOpPhi,
-        SpvOpImageSparseSampleImplicitLod,
-        SpvOpImageSparseSampleExplicitLod,
-        SpvOpImageSparseSampleDrefImplicitLod,
-        SpvOpImageSparseSampleDrefExplicitLod,
-        SpvOpImageSparseSampleProjImplicitLod,
-        SpvOpImageSparseSampleProjExplicitLod,
-        SpvOpImageSparseSampleProjDrefImplicitLod,
-        SpvOpImageSparseSampleProjDrefExplicitLod,
-        SpvOpImageSparseFetch,
-        SpvOpImageSparseGather,
-        SpvOpImageSparseDrefGather,
-        SpvOpImageSparseTexelsResident,
-        SpvOpImageSparseRead,
-        SpvOpSizeOf
-        // TODO(dneto): Add instructions enabled by ImageQuery
-    });
+    combinator_ops_[0].insert({SpvOpNop,
+                               SpvOpUndef,
+                               SpvOpConstant,
+                               SpvOpConstantTrue,
+                               SpvOpConstantFalse,
+                               SpvOpConstantComposite,
+                               SpvOpConstantSampler,
+                               SpvOpConstantNull,
+                               SpvOpTypeVoid,
+                               SpvOpTypeBool,
+                               SpvOpTypeInt,
+                               SpvOpTypeFloat,
+                               SpvOpTypeVector,
+                               SpvOpTypeMatrix,
+                               SpvOpTypeImage,
+                               SpvOpTypeSampler,
+                               SpvOpTypeSampledImage,
+                               SpvOpTypeArray,
+                               SpvOpTypeRuntimeArray,
+                               SpvOpTypeStruct,
+                               SpvOpTypeOpaque,
+                               SpvOpTypePointer,
+                               SpvOpTypeFunction,
+                               SpvOpTypeEvent,
+                               SpvOpTypeDeviceEvent,
+                               SpvOpTypeReserveId,
+                               SpvOpTypeQueue,
+                               SpvOpTypePipe,
+                               SpvOpTypeForwardPointer,
+                               SpvOpVariable,
+                               SpvOpImageTexelPointer,
+                               SpvOpLoad,
+                               SpvOpAccessChain,
+                               SpvOpInBoundsAccessChain,
+                               SpvOpArrayLength,
+                               SpvOpVectorExtractDynamic,
+                               SpvOpVectorInsertDynamic,
+                               SpvOpVectorShuffle,
+                               SpvOpCompositeConstruct,
+                               SpvOpCompositeExtract,
+                               SpvOpCompositeInsert,
+                               SpvOpCopyObject,
+                               SpvOpTranspose,
+                               SpvOpSampledImage,
+                               SpvOpImageSampleImplicitLod,
+                               SpvOpImageSampleExplicitLod,
+                               SpvOpImageSampleDrefImplicitLod,
+                               SpvOpImageSampleDrefExplicitLod,
+                               SpvOpImageSampleProjImplicitLod,
+                               SpvOpImageSampleProjExplicitLod,
+                               SpvOpImageSampleProjDrefImplicitLod,
+                               SpvOpImageSampleProjDrefExplicitLod,
+                               SpvOpImageFetch,
+                               SpvOpImageGather,
+                               SpvOpImageDrefGather,
+                               SpvOpImageRead,
+                               SpvOpImage,
+                               SpvOpImageQueryFormat,
+                               SpvOpImageQueryOrder,
+                               SpvOpImageQuerySizeLod,
+                               SpvOpImageQuerySize,
+                               SpvOpImageQueryLevels,
+                               SpvOpImageQuerySamples,
+                               SpvOpConvertFToU,
+                               SpvOpConvertFToS,
+                               SpvOpConvertSToF,
+                               SpvOpConvertUToF,
+                               SpvOpUConvert,
+                               SpvOpSConvert,
+                               SpvOpFConvert,
+                               SpvOpQuantizeToF16,
+                               SpvOpBitcast,
+                               SpvOpSNegate,
+                               SpvOpFNegate,
+                               SpvOpIAdd,
+                               SpvOpFAdd,
+                               SpvOpISub,
+                               SpvOpFSub,
+                               SpvOpIMul,
+                               SpvOpFMul,
+                               SpvOpUDiv,
+                               SpvOpSDiv,
+                               SpvOpFDiv,
+                               SpvOpUMod,
+                               SpvOpSRem,
+                               SpvOpSMod,
+                               SpvOpFRem,
+                               SpvOpFMod,
+                               SpvOpVectorTimesScalar,
+                               SpvOpMatrixTimesScalar,
+                               SpvOpVectorTimesMatrix,
+                               SpvOpMatrixTimesVector,
+                               SpvOpMatrixTimesMatrix,
+                               SpvOpOuterProduct,
+                               SpvOpDot,
+                               SpvOpIAddCarry,
+                               SpvOpISubBorrow,
+                               SpvOpUMulExtended,
+                               SpvOpSMulExtended,
+                               SpvOpAny,
+                               SpvOpAll,
+                               SpvOpIsNan,
+                               SpvOpIsInf,
+                               SpvOpLogicalEqual,
+                               SpvOpLogicalNotEqual,
+                               SpvOpLogicalOr,
+                               SpvOpLogicalAnd,
+                               SpvOpLogicalNot,
+                               SpvOpSelect,
+                               SpvOpIEqual,
+                               SpvOpINotEqual,
+                               SpvOpUGreaterThan,
+                               SpvOpSGreaterThan,
+                               SpvOpUGreaterThanEqual,
+                               SpvOpSGreaterThanEqual,
+                               SpvOpULessThan,
+                               SpvOpSLessThan,
+                               SpvOpULessThanEqual,
+                               SpvOpSLessThanEqual,
+                               SpvOpFOrdEqual,
+                               SpvOpFUnordEqual,
+                               SpvOpFOrdNotEqual,
+                               SpvOpFUnordNotEqual,
+                               SpvOpFOrdLessThan,
+                               SpvOpFUnordLessThan,
+                               SpvOpFOrdGreaterThan,
+                               SpvOpFUnordGreaterThan,
+                               SpvOpFOrdLessThanEqual,
+                               SpvOpFUnordLessThanEqual,
+                               SpvOpFOrdGreaterThanEqual,
+                               SpvOpFUnordGreaterThanEqual,
+                               SpvOpShiftRightLogical,
+                               SpvOpShiftRightArithmetic,
+                               SpvOpShiftLeftLogical,
+                               SpvOpBitwiseOr,
+                               SpvOpBitwiseXor,
+                               SpvOpBitwiseAnd,
+                               SpvOpNot,
+                               SpvOpBitFieldInsert,
+                               SpvOpBitFieldSExtract,
+                               SpvOpBitFieldUExtract,
+                               SpvOpBitReverse,
+                               SpvOpBitCount,
+                               SpvOpPhi,
+                               SpvOpImageSparseSampleImplicitLod,
+                               SpvOpImageSparseSampleExplicitLod,
+                               SpvOpImageSparseSampleDrefImplicitLod,
+                               SpvOpImageSparseSampleDrefExplicitLod,
+                               SpvOpImageSparseSampleProjImplicitLod,
+                               SpvOpImageSparseSampleProjExplicitLod,
+                               SpvOpImageSparseSampleProjDrefImplicitLod,
+                               SpvOpImageSparseSampleProjDrefExplicitLod,
+                               SpvOpImageSparseFetch,
+                               SpvOpImageSparseGather,
+                               SpvOpImageSparseDrefGather,
+                               SpvOpImageSparseTexelsResident,
+                               SpvOpImageSparseRead,
+                               SpvOpSizeOf});
   }
 }
 
@@ -550,14 +573,13 @@ ir::LoopDescriptor* IRContext::GetLoopDescriptor(const ir::Function* f) {
 }
 
 // Gets the dominator analysis for function |f|.
-opt::DominatorAnalysis* IRContext::GetDominatorAnalysis(const ir::Function* f,
-                                                        const ir::CFG& in_cfg) {
+opt::DominatorAnalysis* IRContext::GetDominatorAnalysis(const ir::Function* f) {
   if (!AreAnalysesValid(kAnalysisDominatorAnalysis)) {
     ResetDominatorAnalysis();
   }
 
   if (dominator_trees_.find(f) == dominator_trees_.end()) {
-    dominator_trees_[f].InitializeTree(f, in_cfg);
+    dominator_trees_[f].InitializeTree(f);
   }
 
   return &dominator_trees_[f];
@@ -565,17 +587,68 @@ opt::DominatorAnalysis* IRContext::GetDominatorAnalysis(const ir::Function* f,
 
 // Gets the postdominator analysis for function |f|.
 opt::PostDominatorAnalysis* IRContext::GetPostDominatorAnalysis(
-    const ir::Function* f, const ir::CFG& in_cfg) {
+    const ir::Function* f) {
   if (!AreAnalysesValid(kAnalysisDominatorAnalysis)) {
     ResetDominatorAnalysis();
   }
 
   if (post_dominator_trees_.find(f) == post_dominator_trees_.end()) {
-    post_dominator_trees_[f].InitializeTree(f, in_cfg);
+    post_dominator_trees_[f].InitializeTree(f);
   }
 
   return &post_dominator_trees_[f];
 }
 
+bool ir::IRContext::CheckCFG() {
+  std::unordered_map<uint32_t, std::vector<uint32_t>> real_preds;
+  if (!AreAnalysesValid(kAnalysisCFG)) {
+    return true;
+  }
+
+  for (ir::Function& function : *module()) {
+    for (const auto& bb : function) {
+      bb.ForEachSuccessorLabel([&bb, &real_preds](const uint32_t lab_id) {
+        real_preds[lab_id].push_back(bb.id());
+      });
+    }
+
+    for (auto& bb : function) {
+      std::vector<uint32_t> preds = cfg()->preds(bb.id());
+      std::vector<uint32_t> real = real_preds[bb.id()];
+      std::sort(preds.begin(), preds.end());
+      std::sort(real.begin(), real.end());
+
+      bool same = true;
+      if (preds.size() != real.size()) {
+        same = false;
+      }
+
+      for (size_t i = 0; i < real.size() && same; i++) {
+        if (preds[i] != real[i]) {
+          same = false;
+        }
+      }
+
+      if (!same) {
+        std::cerr << "Predecessors for " << bb.id() << " are different:\n";
+
+        std::cerr << "Real:";
+        for (uint32_t i : real) {
+          std::cerr << ' ' << i;
+        }
+        std::cerr << std::endl;
+
+        std::cerr << "Recorded:";
+        for (uint32_t i : preds) {
+          std::cerr << ' ' << i;
+        }
+        std::cerr << std::endl;
+      }
+      if (!same) return false;
+    }
+  }
+
+  return true;
+}
 }  // namespace ir
 }  // namespace spvtools

@@ -130,15 +130,6 @@ macro(spvtools_extinst_lang_headers NAME GRAMMAR_FILE)
   set_property(TARGET spirv-tools-header-${NAME} PROPERTY FOLDER "SPIRV-Tools build")
 endmacro(spvtools_extinst_lang_headers)
 
-
-# SPIR-V 1.3 support is in SPIRV-Headers include/spirv/unified1
-# Temporarily assume that's the last SPIR-V version in 'unified1'.
-# TODO(dneto): Build a single set of tables that embeds versioning
-# differences on a per-item basis.  That must happen before SPIR-V 1.4, etc.
-# https://github.com/KhronosGroup/SPIRV-Tools/issues/1195
-spvtools_core_tables("1.0")
-spvtools_core_tables("1.1")
-spvtools_core_tables("1.2")
 spvtools_core_tables("unified1")
 spvtools_enum_string_mapping("unified1")
 spvtools_opencl_tables("unified1")
@@ -227,9 +218,11 @@ set(SPIRV_SOURCES
 
   ${CMAKE_CURRENT_SOURCE_DIR}/util/bitutils.h
   ${CMAKE_CURRENT_SOURCE_DIR}/util/bit_stream.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/util/bit_vector.h
   ${CMAKE_CURRENT_SOURCE_DIR}/util/hex_float.h
   ${CMAKE_CURRENT_SOURCE_DIR}/util/parse_number.h
   ${CMAKE_CURRENT_SOURCE_DIR}/util/string_utils.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/util/timer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/assembly_grammar.h
   ${CMAKE_CURRENT_SOURCE_DIR}/binary.h
   ${CMAKE_CURRENT_SOURCE_DIR}/cfa.h
@@ -261,6 +254,7 @@ set(SPIRV_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/validate.h
 
   ${CMAKE_CURRENT_SOURCE_DIR}/util/bit_stream.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/util/bit_vector.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/util/parse_number.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/util/string_utils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/assembly_grammar.cpp
@@ -292,6 +286,7 @@ set(SPIRV_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/validate_atomics.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/validate_barriers.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/validate_bitwise.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/validate_builtins.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/validate_capability.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/validate_cfg.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/validate_composites.cpp
@@ -306,6 +301,7 @@ set(SPIRV_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/validate_layout.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/validate_literals.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/validate_logicals.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/validate_non_uniform.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/validate_primitives.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/validate_type_unique.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/val/decoration.h
@@ -314,6 +310,12 @@ set(SPIRV_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/val/function.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/val/instruction.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/val/validation_state.cpp)
+
+if (${SPIRV_TIMER_ENABLED})
+  set(SPIRV_SOURCES
+    ${SPIRV_SOURCES}
+    ${CMAKE_CURRENT_SOURCE_DIR}/util/timer.cpp)
+endif()
 
 # The software_version.cpp file includes build-version.inc.
 # Rebuild the software_version.cpp object file if it is older than

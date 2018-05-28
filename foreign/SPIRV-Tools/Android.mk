@@ -25,8 +25,10 @@ SPVTOOLS_SRC_FILES := \
 		source/text.cpp \
 		source/text_handler.cpp \
 		source/util/bit_stream.cpp \
+		source/util/bit_vector.cpp \
 		source/util/parse_number.cpp \
 		source/util/string_utils.cpp \
+		source/util/timer.cpp \
 		source/val/basic_block.cpp \
 		source/val/construct.cpp \
 		source/val/function.cpp \
@@ -38,6 +40,7 @@ SPVTOOLS_SRC_FILES := \
 		source/validate_atomics.cpp \
 		source/validate_barriers.cpp \
 		source/validate_bitwise.cpp \
+		source/validate_builtins.cpp \
 		source/validate_capability.cpp \
 		source/validate_cfg.cpp \
 		source/validate_composites.cpp \
@@ -52,6 +55,7 @@ SPVTOOLS_SRC_FILES := \
 		source/validate_layout.cpp \
 		source/validate_literals.cpp \
 		source/validate_logicals.cpp \
+		source/validate_non_uniform.cpp \
 		source/validate_primitives.cpp \
 		source/validate_type_unique.cpp
 
@@ -68,6 +72,7 @@ SPVTOOLS_OPT_SRC_FILES := \
 		source/opt/composite.cpp \
 		source/opt/const_folding_rules.cpp \
 		source/opt/constants.cpp \
+		source/opt/copy_prop_arrays.cpp \
 		source/opt/dead_branch_elim_pass.cpp \
 		source/opt/dead_insert_elim_pass.cpp \
 		source/opt/dead_variable_elimination.cpp \
@@ -99,7 +104,13 @@ SPVTOOLS_OPT_SRC_FILES := \
 		source/opt/local_single_block_elim_pass.cpp \
 		source/opt/local_single_store_elim_pass.cpp \
 		source/opt/local_ssa_elim_pass.cpp \
+		source/opt/loop_dependence.cpp \
+		source/opt/loop_dependence_helpers.cpp \
 		source/opt/loop_descriptor.cpp \
+		source/opt/loop_fission.cpp \
+		source/opt/loop_fusion.cpp \
+		source/opt/loop_fusion_pass.cpp \
+		source/opt/loop_peeling.cpp \
 		source/opt/loop_unroller.cpp \
 		source/opt/loop_unswitch_pass.cpp \
 		source/opt/loop_utils.cpp \
@@ -111,18 +122,25 @@ SPVTOOLS_OPT_SRC_FILES := \
 		source/opt/pass_manager.cpp \
 		source/opt/private_to_local_pass.cpp \
 		source/opt/propagator.cpp \
+		source/opt/reduce_load_size.cpp \
 		source/opt/redundancy_elimination.cpp \
+		source/opt/register_pressure.cpp \
 		source/opt/remove_duplicates_pass.cpp \
 		source/opt/replace_invalid_opc.cpp \
+		source/opt/scalar_analysis.cpp \
+		source/opt/scalar_analysis_simplification.cpp \
 		source/opt/scalar_replacement_pass.cpp \
 		source/opt/set_spec_constant_default_value_pass.cpp \
 		source/opt/simplification_pass.cpp \
+		source/opt/ssa_rewrite_pass.cpp \
 		source/opt/strength_reduction_pass.cpp \
 		source/opt/strip_debug_info_pass.cpp \
+		source/opt/strip_reflect_info_pass.cpp \
 		source/opt/type_manager.cpp \
 		source/opt/types.cpp \
 		source/opt/unify_const_pass.cpp \
 		source/opt/value_number_table.cpp \
+		source/opt/vector_dce.cpp \
 		source/opt/workaround1209.cpp
 
 # Locations of grammar files.

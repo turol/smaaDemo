@@ -158,8 +158,8 @@ bool Instruction::IsReadOnlyLoad() const {
 
 Instruction* Instruction::GetBaseAddress() const {
   assert((IsLoad() || opcode() == SpvOpStore || opcode() == SpvOpAccessChain ||
-          opcode() == SpvOpInBoundsAccessChain ||
-          opcode() == SpvOpCopyObject) &&
+          opcode() == SpvOpInBoundsAccessChain || opcode() == SpvOpCopyObject ||
+          opcode() == SpvOpImageTexelPointer) &&
          "GetBaseAddress should only be called on instructions that take a "
          "pointer or image.");
   uint32_t base = GetSingleWordInOperand(kLoadBaseIndex);
@@ -523,9 +523,20 @@ std::ostream& operator<<(std::ostream& str, const ir::Instruction& inst) {
 
 bool Instruction::IsOpcodeCodeMotionSafe() const {
   switch (opcode_) {
+    case SpvOpNop:
+    case SpvOpUndef:
+    case SpvOpLoad:
+    case SpvOpAccessChain:
+    case SpvOpInBoundsAccessChain:
+    case SpvOpArrayLength:
     case SpvOpVectorExtractDynamic:
     case SpvOpVectorInsertDynamic:
     case SpvOpVectorShuffle:
+    case SpvOpCompositeConstruct:
+    case SpvOpCompositeExtract:
+    case SpvOpCompositeInsert:
+    case SpvOpCopyObject:
+    case SpvOpTranspose:
     case SpvOpConvertFToU:
     case SpvOpConvertFToS:
     case SpvOpConvertSToF:
@@ -556,11 +567,22 @@ bool Instruction::IsOpcodeCodeMotionSafe() const {
     case SpvOpVectorTimesMatrix:
     case SpvOpMatrixTimesVector:
     case SpvOpMatrixTimesMatrix:
+    case SpvOpOuterProduct:
+    case SpvOpDot:
+    case SpvOpIAddCarry:
+    case SpvOpISubBorrow:
+    case SpvOpUMulExtended:
+    case SpvOpSMulExtended:
+    case SpvOpAny:
+    case SpvOpAll:
+    case SpvOpIsNan:
+    case SpvOpIsInf:
     case SpvOpLogicalEqual:
     case SpvOpLogicalNotEqual:
     case SpvOpLogicalOr:
     case SpvOpLogicalAnd:
     case SpvOpLogicalNot:
+    case SpvOpSelect:
     case SpvOpIEqual:
     case SpvOpINotEqual:
     case SpvOpUGreaterThan:
@@ -590,6 +612,111 @@ bool Instruction::IsOpcodeCodeMotionSafe() const {
     case SpvOpBitwiseXor:
     case SpvOpBitwiseAnd:
     case SpvOpNot:
+    case SpvOpBitFieldInsert:
+    case SpvOpBitFieldSExtract:
+    case SpvOpBitFieldUExtract:
+    case SpvOpBitReverse:
+    case SpvOpBitCount:
+    case SpvOpSizeOf:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool Instruction::IsScalarizable() const {
+  if (spvOpcodeIsScalarizable(opcode())) {
+    return true;
+  }
+
+  const uint32_t kExtInstSetIdInIdx = 0;
+  const uint32_t kExtInstInstructionInIdx = 1;
+
+  if (opcode() == SpvOpExtInst) {
+    uint32_t instSetId =
+        context()->get_feature_mgr()->GetExtInstImportId_GLSLstd450();
+
+    if (GetSingleWordInOperand(kExtInstSetIdInIdx) == instSetId) {
+      switch (GetSingleWordInOperand(kExtInstInstructionInIdx)) {
+        case GLSLstd450Round:
+        case GLSLstd450RoundEven:
+        case GLSLstd450Trunc:
+        case GLSLstd450FAbs:
+        case GLSLstd450SAbs:
+        case GLSLstd450FSign:
+        case GLSLstd450SSign:
+        case GLSLstd450Floor:
+        case GLSLstd450Ceil:
+        case GLSLstd450Fract:
+        case GLSLstd450Radians:
+        case GLSLstd450Degrees:
+        case GLSLstd450Sin:
+        case GLSLstd450Cos:
+        case GLSLstd450Tan:
+        case GLSLstd450Asin:
+        case GLSLstd450Acos:
+        case GLSLstd450Atan:
+        case GLSLstd450Sinh:
+        case GLSLstd450Cosh:
+        case GLSLstd450Tanh:
+        case GLSLstd450Asinh:
+        case GLSLstd450Acosh:
+        case GLSLstd450Atanh:
+        case GLSLstd450Atan2:
+        case GLSLstd450Pow:
+        case GLSLstd450Exp:
+        case GLSLstd450Log:
+        case GLSLstd450Exp2:
+        case GLSLstd450Log2:
+        case GLSLstd450Sqrt:
+        case GLSLstd450InverseSqrt:
+        case GLSLstd450Modf:
+        case GLSLstd450FMin:
+        case GLSLstd450UMin:
+        case GLSLstd450SMin:
+        case GLSLstd450FMax:
+        case GLSLstd450UMax:
+        case GLSLstd450SMax:
+        case GLSLstd450FClamp:
+        case GLSLstd450UClamp:
+        case GLSLstd450SClamp:
+        case GLSLstd450FMix:
+        case GLSLstd450Step:
+        case GLSLstd450SmoothStep:
+        case GLSLstd450Fma:
+        case GLSLstd450Frexp:
+        case GLSLstd450Ldexp:
+        case GLSLstd450FindILsb:
+        case GLSLstd450FindSMsb:
+        case GLSLstd450FindUMsb:
+        case GLSLstd450NMin:
+        case GLSLstd450NMax:
+        case GLSLstd450NClamp:
+          return true;
+        default:
+          return false;
+      }
+    }
+  }
+  return false;
+}
+
+bool Instruction::IsOpcodeSafeToDelete() const {
+  if (context()->IsCombinatorInstruction(this)) {
+    return true;
+  }
+
+  switch (opcode()) {
+    case SpvOpDPdx:
+    case SpvOpDPdy:
+    case SpvOpFwidth:
+    case SpvOpDPdxFine:
+    case SpvOpDPdyFine:
+    case SpvOpFwidthFine:
+    case SpvOpDPdxCoarse:
+    case SpvOpDPdyCoarse:
+    case SpvOpFwidthCoarse:
+    case SpvOpImageQueryLod:
       return true;
     default:
       return false;

@@ -43,6 +43,7 @@ FILES:= \
 	validate_atomics.cpp \
 	validate_barriers.cpp \
 	validate_bitwise.cpp \
+	validate_builtins.cpp \
 	validate_capability.cpp \
 	validate_cfg.cpp \
 	validate_composites.cpp \
@@ -58,6 +59,7 @@ FILES:= \
 	validate_layout.cpp \
 	validate_literals.cpp \
 	validate_logicals.cpp \
+	validate_non_uniform.cpp \
 	validate_primitives.cpp \
 	validate_type_unique.cpp \
 	# empty line

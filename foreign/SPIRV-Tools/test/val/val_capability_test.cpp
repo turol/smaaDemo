@@ -409,7 +409,6 @@ const vector<string>& KernelDependencies() {
   "Pipes",
   "DeviceEnqueue",
   "LiteralSampler",
-  "Int8",
   "SubgroupDispatch",
   "NamedBarrier",
   "PipeStorage"};
@@ -1035,11 +1034,6 @@ make_pair(string(kGLSL450MemoryModel) +
           KernelDependencies()),
 make_pair(string(kGLSL450MemoryModel) +
           "OpEntryPoint Vertex %func \"shader\" \n"
-          "OpDecorate %intt FPRoundingMode RTE\n"
-          "%intt = OpTypeInt 32 0\n" + string(kVoidFVoid),
-          KernelDependencies()),
-make_pair(string(kGLSL450MemoryModel) +
-          "OpEntryPoint Vertex %func \"shader\" \n"
           "OpDecorate %intt FPFastMathMode Fast\n"
           "%intt = OpTypeInt 32 0\n" + string(kVoidFVoid),
           KernelDependencies()),
@@ -1341,20 +1335,30 @@ INSTANTIATE_TEST_CASE_P(BuiltIn, ValidateCapabilityVulkan10,
                             ValuesIn(AllSpirV10Capabilities()),
                             Values(
 make_pair(string(kGLSL450MemoryModel) +
-          "OpEntryPoint Vertex %func \"shader\" \n" +
-          "OpDecorate %intt BuiltIn PointSize\n"
+          "OpEntryPoint Vertex %func \"shader\" \n"
+          "OpMemberDecorate %block 0 BuiltIn PointSize\n"
+          "%f32 = OpTypeFloat 32\n"
+          "%block = OpTypeStruct %f32\n"
           "%intt = OpTypeInt 32 0\n" + string(kVoidFVoid),
           // Capabilities which should succeed.
           AllVulkan10Capabilities()),
 make_pair(string(kGLSL450MemoryModel) +
-          "OpEntryPoint Vertex %func \"shader\" \n" +
-          "OpDecorate %intt BuiltIn ClipDistance\n"
-          "%intt = OpTypeInt 32 0\n" + string(kVoidFVoid),
+          "OpEntryPoint Vertex %func \"shader\" \n"
+          "OpMemberDecorate %block 0 BuiltIn ClipDistance\n"
+          "%f32 = OpTypeFloat 32\n"
+          "%intt = OpTypeInt 32 0\n"
+          "%intt_4 = OpConstant %intt 4\n"
+          "%f32arr4 = OpTypeArray %f32 %intt_4\n"
+          "%block = OpTypeStruct %f32arr4\n" + string(kVoidFVoid),
           AllVulkan10Capabilities()),
 make_pair(string(kGLSL450MemoryModel) +
-          "OpEntryPoint Vertex %func \"shader\" \n" +
-          "OpDecorate %intt BuiltIn CullDistance\n"
-          "%intt = OpTypeInt 32 0\n" + string(kVoidFVoid),
+          "OpEntryPoint Vertex %func \"shader\" \n"
+          "OpMemberDecorate %block 0 BuiltIn CullDistance\n"
+          "%f32 = OpTypeFloat 32\n"
+          "%intt = OpTypeInt 32 0\n"
+          "%intt_4 = OpConstant %intt 4\n"
+          "%f32arr4 = OpTypeArray %f32 %intt_4\n"
+          "%block = OpTypeStruct %f32arr4\n" + string(kVoidFVoid),
           AllVulkan10Capabilities())
 )),);
 
@@ -1473,7 +1477,9 @@ TEST_P(ValidateCapability, Capability) {
           : SPV_ENV_UNIVERSAL_1_1;
   const string test_code = MakeAssembly(GetParam());
   CompileSuccessfully(test_code, env);
-  ASSERT_EQ(ExpectedResult(GetParam()), ValidateInstructions(env)) << test_code;
+  ASSERT_EQ(ExpectedResult(GetParam()), ValidateInstructions(env))
+      << "target env: " << spvTargetEnvDescription(env) << "\ntest code:\n"
+      << test_code;
 }
 
 TEST_P(ValidateCapabilityV11, Capability) {
@@ -1601,8 +1607,9 @@ OpCapability DrawParameters
 OpExtension "SPV_KHR_shader_draw_parameters"
 OpMemoryModel Logical GLSL450
 OpEntryPoint Vertex %func "shader"
-OpDecorate %intt BuiltIn PointSize
-%intt = OpTypeInt 32 0
+OpMemberDecorate %block 0 BuiltIn PointSize
+%f32 = OpTypeFloat 32
+%block = OpTypeStruct %f32
 )" + string(kVoidFVoid);
 
   CompileSuccessfully(spirv, SPV_ENV_VULKAN_1_0);

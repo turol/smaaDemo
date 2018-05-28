@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <iterator>
 #include <stack>
 #include <unordered_set>
 #include <utility>
@@ -47,17 +48,15 @@ namespace {
 
 class idUsage {
  public:
-  idUsage(const spv_opcode_table opcodeTableArg,
-          const spv_operand_table operandTableArg,
-          const spv_ext_inst_table extInstTableArg,
-          const spv_instruction_t* pInsts, const uint64_t instCountArg,
-          const SpvMemoryModel memoryModelArg,
+  idUsage(spv_const_context context, const spv_instruction_t* pInsts,
+          const uint64_t instCountArg, const SpvMemoryModel memoryModelArg,
           const SpvAddressingModel addressingModelArg,
           const ValidationState_t& module, const vector<uint32_t>& entry_points,
           spv_position positionArg, const spvtools::MessageConsumer& consumer)
-      : opcodeTable(opcodeTableArg),
-        operandTable(operandTableArg),
-        extInstTable(extInstTableArg),
+      : targetEnv(context->target_env),
+        opcodeTable(context->opcode_table),
+        operandTable(context->operand_table),
+        extInstTable(context->ext_inst_table),
         firstInst(pInsts),
         instCount(instCountArg),
         memoryModel(memoryModelArg),
@@ -73,6 +72,7 @@ class idUsage {
   bool isValid(const spv_instruction_t* inst, const spv_opcode_desc);
 
  private:
+  const spv_target_env targetEnv;
   const spv_opcode_table opcodeTable;
   const spv_operand_table operandTable;
   const spv_ext_inst_table extInstTable;
@@ -300,32 +300,6 @@ bool idUsage::isValid<SpvOpEntryPoint>(const spv_instruction_t* inst,
           << "OpEntryPoint Entry Point <id> '" << inst->words[entryPointIndex]
           << "'s function parameter count is not zero.";
       return false;
-    }
-  }
-
-  std::stack<uint32_t> call_stack;
-  std::set<uint32_t> visited;
-  call_stack.push(entryPoint->id());
-  while (!call_stack.empty()) {
-    const uint32_t called_func_id = call_stack.top();
-    call_stack.pop();
-    if (!visited.insert(called_func_id).second) continue;
-
-    const Function* called_func = module_.function(called_func_id);
-    assert(called_func);
-
-    std::string reason;
-    if (!called_func->IsCompatibleWithExecutionModel(executionModel, &reason)) {
-      DIAG(entryPointIndex)
-          << "OpEntryPoint Entry Point <id> '" << inst->words[entryPointIndex]
-          << "'s callgraph contains function <id> " << called_func_id
-          << ", which cannot be used with the current execution model:\n"
-          << reason;
-      return false;
-    }
-
-    for (uint32_t new_call : called_func->function_call_targets()) {
-      call_stack.push(new_call);
     }
   }
 
@@ -1594,6 +1568,29 @@ bool idUsage::isValid<SpvOpGenericPtrMemSemantics>(
 template <>
 bool idUsage::isValid<SpvOpFunction>(const spv_instruction_t* inst,
                                      const spv_opcode_desc) {
+  const auto* thisInst = module_.FindDef(inst->words[2u]);
+  if (!thisInst) return false;
+
+  for (uint32_t entryId : module_.FunctionEntryPoints(thisInst->id())) {
+    const Function* thisFunc = module_.function(thisInst->id());
+    assert(thisFunc);
+    const auto* models = module_.GetExecutionModels(entryId);
+    if (models) {
+      assert(models->size());
+      for (auto model : *models) {
+        std::string reason;
+        if (!thisFunc->IsCompatibleWithExecutionModel(model, &reason)) {
+          DIAG(2)
+              << "OpEntryPoint Entry Point <id> '" << entryId
+              << "'s callgraph contains function <id> " << thisInst->id()
+              << ", which cannot be used with the current execution model:\n"
+              << reason;
+          return false;
+        }
+      }
+    }
+  }
+
   auto resultTypeIndex = 1;
   auto resultType = module_.FindDef(inst->words[resultTypeIndex]);
   if (!resultType) return false;
@@ -1787,11 +1784,76 @@ bool idUsage::isValid<SpvOpVectorShuffle>(const spv_instruction_t* inst,
   return true;
 }
 
-#if 0
 template <>
-bool idUsage::isValid<OpPhi>(const spv_instruction_t *inst,
-                             const spv_opcode_desc opcodeEntry) {}
-#endif
+bool idUsage::isValid<SpvOpPhi>(const spv_instruction_t* inst,
+                                const spv_opcode_desc /*opcodeEntry*/) {
+  auto thisInst = module_.FindDef(inst->words[2]);
+  SpvOp typeOp = module_.GetIdOpcode(thisInst->type_id());
+  if (!spvOpcodeGeneratesType(typeOp)) {
+    DIAG(0) << "OpPhi's type <id> " << module_.getIdName(thisInst->type_id())
+            << " is not a type instruction.";
+    return false;
+  }
+
+  auto block = thisInst->block();
+  size_t numInOps = inst->words.size() - 3;
+  if (numInOps % 2 != 0) {
+    DIAG(0) << "OpPhi does not have an equal number of incoming values and "
+               "basic blocks.";
+    return false;
+  }
+
+  // Create a uniqued vector of predecessor ids for comparison against
+  // incoming values. OpBranchConditional %cond %label %label produces two
+  // predecessors in the CFG.
+  std::vector<uint32_t> predIds;
+  std::transform(block->predecessors()->begin(), block->predecessors()->end(),
+                 std::back_inserter(predIds),
+                 [](const libspirv::BasicBlock* b) { return b->id(); });
+  std::sort(predIds.begin(), predIds.end());
+  predIds.erase(std::unique(predIds.begin(), predIds.end()), predIds.end());
+
+  size_t numEdges = numInOps / 2;
+  if (numEdges != predIds.size()) {
+    DIAG(0) << "OpPhi's number of incoming blocks (" << numEdges
+            << ") does not match block's predecessor count ("
+            << block->predecessors()->size() << ").";
+    return false;
+  }
+
+  for (size_t i = 3; i < inst->words.size(); ++i) {
+    auto incId = inst->words[i];
+    if (i % 2 == 1) {
+      // Incoming value type must match the phi result type.
+      auto incTypeId = module_.GetTypeId(incId);
+      if (thisInst->type_id() != incTypeId) {
+        DIAG(i) << "OpPhi's result type <id> "
+                << module_.getIdName(thisInst->type_id())
+                << " does not match incoming value <id> "
+                << module_.getIdName(incId) << " type <id> "
+                << module_.getIdName(incTypeId) << ".";
+        return false;
+      }
+    } else {
+      if (module_.GetIdOpcode(incId) != SpvOpLabel) {
+        DIAG(i) << "OpPhi's incoming basic block <id> "
+                << module_.getIdName(incId) << " is not an OpLabel.";
+        return false;
+      }
+
+      // Incoming basic block must be an immediate predecessor of the phi's
+      // block.
+      if (!std::binary_search(predIds.begin(), predIds.end(), incId)) {
+        DIAG(i) << "OpPhi's incoming basic block <id> "
+                << module_.getIdName(incId) << " is not a predecessor of <id> "
+                << module_.getIdName(block->id()) << ".";
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
 
 #if 0
 template <>
@@ -1803,12 +1865,6 @@ bool idUsage::isValid<OpLoopMerge>(const spv_instruction_t *inst,
 template <>
 bool idUsage::isValid<OpSelectionMerge>(
     const spv_instruction_t *inst, const spv_opcode_desc opcodeEntry) {}
-#endif
-
-#if 0
-template <>
-bool idUsage::isValid<OpBranch>(const spv_instruction_t *inst,
-                                const spv_opcode_desc opcodeEntry) {}
 #endif
 
 template <>
@@ -2297,7 +2353,8 @@ bool idUsage::isValid<OpGroupCommitWritePipe>(
 
 bool idUsage::isValid(const spv_instruction_t* inst) {
   spv_opcode_desc opcodeEntry = nullptr;
-  if (spvOpcodeTableValueLookup(opcodeTable, inst->opcode, &opcodeEntry))
+  if (spvOpcodeTableValueLookup(targetEnv, opcodeTable, inst->opcode,
+                                &opcodeEntry))
     return false;
 #define CASE(OpCode) \
   case Spv##OpCode:  \
@@ -2357,10 +2414,11 @@ bool idUsage::isValid(const spv_instruction_t* inst) {
     // Bitwise opcodes are validated in validate_bitwise.cpp.
     // Logical opcodes are validated in validate_logicals.cpp.
     // Derivative opcodes are validated in validate_derivatives.cpp.
-    TODO(OpPhi)
+    CASE(OpPhi)
     TODO(OpLoopMerge)
     TODO(OpSelectionMerge)
-    TODO(OpBranch)
+    // OpBranch is validated in validate_cfg.cpp.
+    // See tests in test/val/val_cfg_test.cpp.
     CASE(OpBranchConditional)
     TODO(OpSwitch)
     CASE(OpReturnValue)
@@ -2606,7 +2664,8 @@ spv_result_t CheckIdDefinitionDominateUse(const ValidationState_t& _) {
       const Instruction* variable = _.FindDef(phi->word(i));
       const BasicBlock* parent =
           phi->function()->GetBlock(phi->word(i + 1)).first;
-      if (variable->block() && !variable->block()->dominates(*parent)) {
+      if (variable->block() && parent->reachable() &&
+          !variable->block()->dominates(*parent)) {
         return _.diag(SPV_ERROR_INVALID_ID)
                << "In OpPhi instruction " << _.getIdName(phi->id()) << ", ID "
                << _.getIdName(variable->id())
@@ -2687,14 +2746,11 @@ spv_result_t IdPass(ValidationState_t& _,
 
 spv_result_t spvValidateInstructionIDs(const spv_instruction_t* pInsts,
                                        const uint64_t instCount,
-                                       const spv_opcode_table opcodeTable,
-                                       const spv_operand_table operandTable,
-                                       const spv_ext_inst_table extInstTable,
                                        const libspirv::ValidationState_t& state,
                                        spv_position position) {
-  idUsage idUsage(opcodeTable, operandTable, extInstTable, pInsts, instCount,
-                  state.memory_model(), state.addressing_model(), state,
-                  state.entry_points(), position, state.context()->consumer);
+  idUsage idUsage(state.context(), pInsts, instCount, state.memory_model(),
+                  state.addressing_model(), state, state.entry_points(),
+                  position, state.context()->consumer);
   for (uint64_t instIndex = 0; instIndex < instCount; ++instIndex) {
     if (!idUsage.isValid(&pInsts[instIndex])) return SPV_ERROR_INVALID_ID;
     position->index += pInsts[instIndex].words.size();

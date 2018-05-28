@@ -15,6 +15,8 @@
 #ifndef LIBSPIRV_OPT_SCALAR_REPLACEMENT_PASS_H_
 #define LIBSPIRV_OPT_SCALAR_REPLACEMENT_PASS_H_
 
+#include <cstdio>
+
 #include "function.h"
 #include "pass.h"
 #include "type_manager.h"
@@ -26,10 +28,18 @@ namespace opt {
 
 // Documented in optimizer.hpp
 class ScalarReplacementPass : public Pass {
- public:
-  ScalarReplacementPass() = default;
+ private:
+  static const uint32_t kDefaultLimit = 100;
 
-  const char* name() const override { return "scalar-replacement"; }
+ public:
+  ScalarReplacementPass(uint32_t limit = kDefaultLimit)
+      : max_num_elements_(limit) {
+    name_[0] = '\0';
+    strcat(name_, "scalar-replacement=");
+    sprintf(&name_[strlen(name_)], "%d", max_num_elements_);
+  }
+
+  const char* name() const override { return name_; }
 
   // Attempts to scalarize all appropriate function scope variables. Returns
   // SuccessWithChange if any change is made.
@@ -192,11 +202,27 @@ class ScalarReplacementPass : public Pass {
   bool ReplaceAccessChain(ir::Instruction* chain,
                           const std::vector<ir::Instruction*>& replacements);
 
+  // Returns a set containing the which components of the result of |inst| are
+  // potentially used.  If the return value is |nullptr|, then every components
+  // is possibly used.
+  std::unique_ptr<std::unordered_set<uint64_t>> GetUsedComponents(
+      ir::Instruction* inst);
+
+  // Returns an instruction defining a null constant with type |type_id|.  If
+  // one already exists, it is returned.  Otherwise a new one is created.
+  ir::Instruction* CreateNullConstant(uint32_t type_id);
+
   // Maps storage type to a pointer type enclosing that type.
   std::unordered_map<uint32_t, uint32_t> pointee_to_pointer_;
 
   // Maps type id to OpConstantNull for that type.
   std::unordered_map<uint32_t, uint32_t> type_to_null_;
+
+  // Limit on the number of members in an object that will be replaced.
+  // 0 means there is no limit.
+  uint32_t max_num_elements_;
+  bool IsLargerThanSizeLimit(size_t length) const;
+  char name_[55];
 };
 
 }  // namespace opt

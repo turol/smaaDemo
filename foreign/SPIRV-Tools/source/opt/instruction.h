@@ -24,6 +24,7 @@
 #include "operand.h"
 #include "util/ilist_node.h"
 
+#include "latest_version_glsl_std_450_header.h"
 #include "latest_version_spirv_header.h"
 #include "reflect.h"
 #include "spirv-tools/libspirv.h"
@@ -186,6 +187,7 @@ class Instruction : public utils::IntrusiveNodeBase<Instruction> {
     return NumInOperandWords() + TypeResultIdCount();
   }
   // Gets the |index|-th logical operand.
+  inline Operand& GetOperand(uint32_t index);
   inline const Operand& GetOperand(uint32_t index) const;
   // Adds |operand| to the list of operands of this instruction.
   // It is the responsibility of the caller to make sure
@@ -218,6 +220,9 @@ class Instruction : public utils::IntrusiveNodeBase<Instruction> {
     return static_cast<uint32_t>(operands_.size() - TypeResultIdCount());
   }
   uint32_t NumInOperandWords() const;
+  Operand& GetInOperand(uint32_t index) {
+    return GetOperand(index + TypeResultIdCount());
+  }
   const Operand& GetInOperand(uint32_t index) const {
     return GetOperand(index + TypeResultIdCount());
   }
@@ -401,6 +406,13 @@ class Instruction : public utils::IntrusiveNodeBase<Instruction> {
   // is always added to |options|.
   std::string PrettyPrint(uint32_t options = 0u) const;
 
+  // Returns true if the result can be a vector and the result of each component
+  // depends on the corresponding component of any vector inputs.
+  bool IsScalarizable() const;
+
+  // Return true if the only effect of this instructions is the result.
+  bool IsOpcodeSafeToDelete() const;
+
  private:
   // Returns the total count of result type id and result id.
   uint32_t TypeResultIdCount() const {
@@ -458,10 +470,15 @@ inline bool Instruction::operator<(const Instruction& other) const {
   return unique_id() < other.unique_id();
 }
 
+inline Operand& Instruction::GetOperand(uint32_t index) {
+  assert(index < operands_.size() && "operand index out of bound");
+  return operands_[index];
+}
+
 inline const Operand& Instruction::GetOperand(uint32_t index) const {
   assert(index < operands_.size() && "operand index out of bound");
   return operands_[index];
-};
+}
 
 inline void Instruction::AddOperand(Operand&& operand) {
   operands_.push_back(std::move(operand));

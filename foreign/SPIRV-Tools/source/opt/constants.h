@@ -47,6 +47,7 @@ class VectorConstant;
 class MatrixConstant;
 class ArrayConstant;
 class NullConstant;
+class ConstantManager;
 
 // Abstract class for a SPIR-V constant. It has a bunch of As<subclass> methods,
 // which is used as a way to probe the actual <subclass>
@@ -91,6 +92,10 @@ class Constant {
   // Float type.
   double GetDouble() const;
 
+  // Returns the double representation of the constant. Must be a 32-bit or
+  // 64-bit Float type.
+  double GetValueAsDouble() const;
+
   // Returns uint32_t representation of the constant. Must be a 32 bit
   // Integer type.
   uint32_t GetU32() const;
@@ -107,7 +112,15 @@ class Constant {
   // Integer type.
   int64_t GetS64() const;
 
+  // Returns true if the constant is a zero or a composite containing 0s.
+  virtual bool IsZero() const { return false; };
+
   const Type* type() const { return type_; }
+
+  // Returns an std::vector containing the elements of |constant|.  The type of
+  // |constant| must be |Vector|.
+  std::vector<const Constant*> GetVectorComponents(
+      ConstantManager* const_mgr) const;
 
  protected:
   Constant(const Type* ty) : type_(ty) {}
@@ -127,7 +140,7 @@ class ScalarConstant : public Constant {
   virtual const std::vector<uint32_t>& words() const { return words_; }
 
   // Returns true if the value is zero.
-  bool IsZero() const {
+  bool IsZero() const override {
     bool is_zero = true;
     for (uint32_t v : words()) {
       if (v != 0) {
@@ -273,6 +286,15 @@ class CompositeConstant : public Constant {
     return components_;
   }
 
+  bool IsZero() const override {
+    for (const Constant* c : GetComponents()) {
+      if (!c->IsZero()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
  protected:
   CompositeConstant(const Type* ty) : Constant(ty), components_() {}
   CompositeConstant(const Type* ty,
@@ -406,6 +428,7 @@ class NullConstant : public Constant {
   std::unique_ptr<Constant> Copy() const override {
     return std::unique_ptr<Constant>(CopyNullConstant().release());
   }
+  bool IsZero() const override { return true; };
 };
 
 class IRContext;

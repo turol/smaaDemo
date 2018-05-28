@@ -15,6 +15,7 @@
 #include "val/validation_state.h"
 
 #include <cassert>
+#include <stack>
 
 #include "opcode.h"
 #include "val/basic_block.h"
@@ -41,7 +42,9 @@ bool IsInstructionInLayoutSection(ModuleLayoutSection layout, SpvOp op) {
     case kLayoutExtInstImport: out = op == SpvOpExtInstImport; break;
     case kLayoutMemoryModel:   out = op == SpvOpMemoryModel;   break;
     case kLayoutEntryPoint:    out = op == SpvOpEntryPoint;    break;
-    case kLayoutExecutionMode: out = op == SpvOpExecutionMode; break;
+    case kLayoutExecutionMode:
+      out = op == SpvOpExecutionMode || op == SpvOpExecutionModeId;
+      break;
     case kLayoutDebug1:
       switch (op) {
         case SpvOpSourceContinued:
@@ -111,6 +114,7 @@ bool IsInstructionInLayoutSection(ModuleLayoutSection layout, SpvOp op) {
         case SpvOpMemoryModel:
         case SpvOpEntryPoint:
         case SpvOpExecutionMode:
+        case SpvOpExecutionModeId:
         case SpvOpSourceContinued:
         case SpvOpSource:
         case SpvOpSourceExtension:
@@ -154,8 +158,8 @@ ValidationState_t::ValidationState_t(const spv_const_context ctx,
       local_vars_(),
       struct_nesting_depth_(),
       grammar_(ctx),
-      addressing_model_(SpvAddressingModelLogical),
-      memory_model_(SpvMemoryModelSimple),
+      addressing_model_(SpvAddressingModelMax),
+      memory_model_(SpvMemoryModelMax),
       in_function_(false) {
   assert(opt && "Validator options may not be Null.");
 }
@@ -790,6 +794,39 @@ std::tuple<bool, bool, uint32_t> ValidationState_t::EvalInt32IfConst(
 
   assert(inst->words().size() == 4);
   return std::make_tuple(true, true, inst->word(3));
+}
+
+void ValidationState_t::ComputeFunctionToEntryPointMapping() {
+  for (const uint32_t entry_point : entry_points()) {
+    std::stack<uint32_t> call_stack;
+    std::set<uint32_t> visited;
+    call_stack.push(entry_point);
+    while (!call_stack.empty()) {
+      const uint32_t called_func_id = call_stack.top();
+      call_stack.pop();
+      if (!visited.insert(called_func_id).second) continue;
+
+      function_to_entry_points_[called_func_id].push_back(entry_point);
+
+      const Function* called_func = function(called_func_id);
+      if (called_func) {
+        // Other checks should error out on this invalid SPIR-V.
+        for (const uint32_t new_call : called_func->function_call_targets()) {
+          call_stack.push(new_call);
+        }
+      }
+    }
+  }
+}
+
+const std::vector<uint32_t>& ValidationState_t::FunctionEntryPoints(
+    uint32_t func) const {
+  auto iter = function_to_entry_points_.find(func);
+  if (iter == function_to_entry_points_.end()) {
+    return empty_ids_;
+  } else {
+    return iter->second;
+  }
 }
 
 }  // namespace libspirv

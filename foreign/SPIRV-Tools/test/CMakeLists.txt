@@ -136,6 +136,7 @@ set(TEST_SOURCES
   text_to_binary.pipe_storage_test.cpp
   text_to_binary.type_declaration_test.cpp
   text_to_binary.subgroup_dispatch_test.cpp
+  text_to_binary.reserved_sampling_test.cpp
   text_word_get_test.cpp
 
   unit_spirv.cpp
@@ -176,6 +177,13 @@ add_spvtools_unittest(
   TARGET string_utils
   SRCS string_utils_test.cpp
   LIBS ${SPIRV_TOOLS})
+
+if (${SPIRV_TIMER_ENABLED})
+add_spvtools_unittest(
+  TARGET timer
+  SRCS timer_test.cpp
+  LIBS ${SPIRV_TOOLS})
+endif()
 
 add_spvtools_unittest(
   TARGET log

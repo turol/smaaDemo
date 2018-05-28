@@ -50,7 +50,8 @@ class DeadInsertElimPass : public MemPass {
   // index at |extOffset|. Chains are composed solely of Inserts and Phis.
   // Mark all inserts in chain if |extIndices| is nullptr.
   void MarkInsertChain(ir::Instruction* insertChain,
-                       std::vector<uint32_t>* extIndices, uint32_t extOffset);
+                       std::vector<uint32_t>* extIndices, uint32_t extOffset,
+                       std::unordered_set<uint32_t>* visited_phis);
 
   // Perform EliminateDeadInsertsOnePass(|func|) until no modification is
   // made. Return true if modified.
@@ -63,9 +64,6 @@ class DeadInsertElimPass : public MemPass {
   // arrays are not currently eliminated.
   bool EliminateDeadInsertsOnePass(ir::Function* func);
 
-  // Initialize extensions whitelist
-  void InitExtensions();
-
   // Return true if all extensions in this module are allowed by this pass.
   bool AllExtensionsSupported() const;
 
@@ -76,10 +74,7 @@ class DeadInsertElimPass : public MemPass {
   std::unordered_set<uint32_t> liveInserts_;
 
   // Visited phis as insert chain is traversed; used to avoid infinite loop
-  std::unordered_set<uint32_t> visitedPhis_;
-
-  // Extensions supported by this pass.
-  std::unordered_set<std::string> extensions_whitelist_;
+  std::unordered_map<uint32_t, bool> visitedPhis_;
 };
 
 }  // namespace opt

@@ -1,6 +1,7 @@
 // Copyright (c) 2017 The Khronos Group Inc.
 // Copyright (c) 2017 Valve Corporation
 // Copyright (c) 2017 LunarG Inc.
+// Copyright (c) 2018 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,6 +34,8 @@ const uint32_t kEntryPointFunctionIdInIdx = 1;
 const uint32_t kSelectionMergeMergeBlockIdInIdx = 0;
 const uint32_t kLoopMergeMergeBlockIdInIdx = 0;
 const uint32_t kLoopMergeContinueBlockIdInIdx = 1;
+const uint32_t kCopyMemoryTargetAddrInIdx = 0;
+const uint32_t kCopyMemorySourceAddrInIdx = 1;
 
 // Sorting functor to present annotation instructions in an easy-to-process
 // order. The functor orders by opcode first and falls back on unique id
@@ -44,6 +47,7 @@ const uint32_t kLoopMergeContinueBlockIdInIdx = 1;
 // SpvOpDecorate
 // SpvOpMemberDecorate
 // SpvOpDecorateId
+// SpvOpDecorateStringGOOGLE
 // SpvOpDecorationGroup
 struct DecorationLess {
   bool operator()(const ir::Instruction* lhs,
@@ -52,32 +56,21 @@ struct DecorationLess {
     SpvOp lhsOp = lhs->opcode();
     SpvOp rhsOp = rhs->opcode();
     if (lhsOp != rhsOp) {
+#define PRIORITY_CASE(opcode)                          \
+  if (lhsOp == opcode && rhsOp != opcode) return true; \
+  if (rhsOp == opcode && lhsOp != opcode) return false;
       // OpGroupDecorate and OpGroupMember decorate are highest priority to
       // eliminate dead targets early and simplify subsequent checks.
-      if (lhsOp == SpvOpGroupDecorate && rhsOp != SpvOpGroupDecorate)
-        return true;
-      if (rhsOp == SpvOpGroupDecorate && lhsOp != SpvOpGroupDecorate)
-        return false;
-      if (lhsOp == SpvOpGroupMemberDecorate &&
-          rhsOp != SpvOpGroupMemberDecorate)
-        return true;
-      if (rhsOp == SpvOpGroupMemberDecorate &&
-          lhsOp != SpvOpGroupMemberDecorate)
-        return false;
-      if (lhsOp == SpvOpDecorate && rhsOp != SpvOpDecorate) return true;
-      if (rhsOp == SpvOpDecorate && lhsOp != SpvOpDecorate) return false;
-      if (lhsOp == SpvOpMemberDecorate && rhsOp != SpvOpMemberDecorate)
-        return true;
-      if (rhsOp == SpvOpMemberDecorate && lhsOp != SpvOpMemberDecorate)
-        return false;
-      if (lhsOp == SpvOpDecorateId && rhsOp != SpvOpDecorateId) return true;
-      if (rhsOp == SpvOpDecorateId && lhsOp != SpvOpDecorateId) return false;
+      PRIORITY_CASE(SpvOpGroupDecorate)
+      PRIORITY_CASE(SpvOpGroupMemberDecorate)
+      PRIORITY_CASE(SpvOpDecorate)
+      PRIORITY_CASE(SpvOpMemberDecorate)
+      PRIORITY_CASE(SpvOpDecorateId)
+      PRIORITY_CASE(SpvOpDecorateStringGOOGLE)
       // OpDecorationGroup is lowest priority to ensure use/def chains remain
       // usable for instructions that target this group.
-      if (lhsOp == SpvOpDecorationGroup && rhsOp != SpvOpDecorationGroup)
-        return true;
-      if (rhsOp == SpvOpDecorationGroup && lhsOp != SpvOpDecorationGroup)
-        return false;
+      PRIORITY_CASE(SpvOpDecorationGroup)
+#undef PRIORITY_CASE
     }
 
     // Fall back to maintain total ordering (compare unique ids).
@@ -100,12 +93,19 @@ bool AggressiveDCEPass::IsVarOfStorage(uint32_t varId, uint32_t storageClass) {
 }
 
 bool AggressiveDCEPass::IsLocalVar(uint32_t varId) {
-  return IsVarOfStorage(varId, SpvStorageClassFunction) ||
-         (IsVarOfStorage(varId, SpvStorageClassPrivate) && private_like_local_);
+  if (IsVarOfStorage(varId, SpvStorageClassFunction)) {
+    return true;
+  }
+  if (!private_like_local_) {
+    return false;
+  }
+
+  return IsVarOfStorage(varId, SpvStorageClassPrivate) ||
+         IsVarOfStorage(varId, SpvStorageClassWorkgroup);
 }
 
 void AggressiveDCEPass::AddStores(uint32_t ptrId) {
-  get_def_use_mgr()->ForEachUser(ptrId, [this](ir::Instruction* user) {
+  get_def_use_mgr()->ForEachUser(ptrId, [this, ptrId](ir::Instruction* user) {
     switch (user->opcode()) {
       case SpvOpAccessChain:
       case SpvOpInBoundsAccessChain:
@@ -113,6 +113,12 @@ void AggressiveDCEPass::AddStores(uint32_t ptrId) {
         this->AddStores(user->result_id());
         break;
       case SpvOpLoad:
+        break;
+      case SpvOpCopyMemory:
+      case SpvOpCopyMemorySized:
+        if (user->GetSingleWordInOperand(kCopyMemoryTargetAddrInIdx) == ptrId) {
+          AddToWorklist(user);
+        }
         break;
       // If default, assume it stores e.g. frexp, modf, function call
       case SpvOpStore:
@@ -335,8 +341,21 @@ bool AggressiveDCEPass::AggressiveDCE(ir::Function* func) {
           (void)GetPtr(&*ii, &varId);
           // Mark stores as live if their variable is not function scope
           // and is not private scope. Remember private stores for possible
-          // later inclusion
-          if (IsVarOfStorage(varId, SpvStorageClassPrivate))
+          // later inclusion.  We cannot call IsLocalVar at this point because
+          // private_like_local_ has not been set yet.
+          if (IsVarOfStorage(varId, SpvStorageClassPrivate) ||
+              IsVarOfStorage(varId, SpvStorageClassWorkgroup))
+            private_stores_.push_back(&*ii);
+          else if (!IsVarOfStorage(varId, SpvStorageClassFunction))
+            AddToWorklist(&*ii);
+        } break;
+        case SpvOpCopyMemory:
+        case SpvOpCopyMemorySized: {
+          uint32_t varId;
+          (void)GetPtr(ii->GetSingleWordInOperand(kCopyMemoryTargetAddrInIdx),
+                       &varId);
+          if (IsVarOfStorage(varId, SpvStorageClassPrivate) ||
+              IsVarOfStorage(varId, SpvStorageClassWorkgroup))
             private_stores_.push_back(&*ii);
           else if (!IsVarOfStorage(varId, SpvStorageClassFunction))
             AddToWorklist(&*ii);
@@ -359,7 +378,7 @@ bool AggressiveDCEPass::AggressiveDCE(ir::Function* func) {
         default: {
           // Function calls, atomics, function params, function returns, etc.
           // TODO(greg-lunarg): function calls live only if write to non-local
-          if (!context()->IsCombinatorInstruction(&*ii)) {
+          if (!ii->IsOpcodeSafeToDelete()) {
             AddToWorklist(&*ii);
           }
           // Remember function calls
@@ -418,6 +437,14 @@ bool AggressiveDCEPass::AggressiveDCE(ir::Function* func) {
       if (varId != 0) {
         ProcessLoad(varId);
       }
+    } else if (liveInst->opcode() == SpvOpCopyMemory ||
+               liveInst->opcode() == SpvOpCopyMemorySized) {
+      uint32_t varId;
+      (void)GetPtr(liveInst->GetSingleWordInOperand(kCopyMemorySourceAddrInIdx),
+                   &varId);
+      if (varId != 0) {
+        ProcessLoad(varId);
+      }
     }
     // If function call, treat as if it loads from all pointer arguments
     else if (liveInst->opcode() == SpvOpFunctionCall) {
@@ -432,6 +459,15 @@ bool AggressiveDCEPass::AggressiveDCE(ir::Function* func) {
     // If function parameter, treat as if it's result id is loaded from
     else if (liveInst->opcode() == SpvOpFunctionParameter) {
       ProcessLoad(liveInst->result_id());
+    }
+    // We treat an OpImageTexelPointer as a load of the pointer, and
+    // that value is manipulated to get the result.
+    else if (liveInst->opcode() == SpvOpImageTexelPointer) {
+      uint32_t varId;
+      (void)GetPtr(liveInst, &varId);
+      if (varId != 0) {
+        ProcessLoad(varId);
+      }
     }
     worklist_.pop();
   }
@@ -468,21 +504,27 @@ bool AggressiveDCEPass::AggressiveDCE(ir::Function* func) {
 void AggressiveDCEPass::Initialize(ir::IRContext* c) {
   InitializeProcessing(c);
 
-  // Clear collections
-  worklist_ = std::queue<ir::Instruction*>{};
-  live_insts_.clear();
-  live_local_vars_.clear();
-
   // Initialize extensions whitelist
   InitExtensions();
 }
 
 void AggressiveDCEPass::InitializeModuleScopeLiveInstructions() {
+  // Keep all execution modes.
   for (auto& exec : get_module()->execution_modes()) {
     AddToWorklist(&exec);
   }
+  // Keep all entry points.
   for (auto& entry : get_module()->entry_points()) {
     AddToWorklist(&entry);
+  }
+  // Keep workgroup size.
+  for (auto& anno : get_module()->annotations()) {
+    if (anno.opcode() == SpvOpDecorate) {
+      if (anno.GetSingleWordInOperand(1u) == SpvDecorationBuiltIn &&
+          anno.GetSingleWordInOperand(2u) == SpvBuiltInWorkgroupSize) {
+        AddToWorklist(&anno);
+      }
+    }
   }
 }
 
@@ -588,7 +630,11 @@ bool AggressiveDCEPass::ProcessGlobalValues() {
       case SpvOpDecorate:
       case SpvOpMemberDecorate:
       case SpvOpDecorateId:
-        if (IsTargetDead(annotation)) context()->KillInst(annotation);
+      case SpvOpDecorateStringGOOGLE:
+        if (IsTargetDead(annotation)) {
+          context()->KillInst(annotation);
+          modified = true;
+        }
         break;
       case SpvOpGroupDecorate: {
         // Go through the targets of this group decorate. Remove each dead
@@ -600,12 +646,16 @@ bool AggressiveDCEPass::ProcessGlobalValues() {
           if (IsDead(opInst)) {
             // Don't increment |i|.
             annotation->RemoveOperand(i);
+            modified = true;
           } else {
             i++;
             dead = false;
           }
         }
-        if (dead) context()->KillInst(annotation);
+        if (dead) {
+          context()->KillInst(annotation);
+          modified = true;
+        }
         break;
       }
       case SpvOpGroupMemberDecorate: {
@@ -620,19 +670,25 @@ bool AggressiveDCEPass::ProcessGlobalValues() {
             // Don't increment |i|.
             annotation->RemoveOperand(i + 1);
             annotation->RemoveOperand(i);
+            modified = true;
           } else {
             i += 2;
             dead = false;
           }
         }
-        if (dead) context()->KillInst(annotation);
+        if (dead) {
+          context()->KillInst(annotation);
+          modified = true;
+        }
         break;
       }
       case SpvOpDecorationGroup:
         // By the time we hit decoration groups we've checked everything that
         // can target them. So if they have no uses they must be dead.
-        if (get_def_use_mgr()->NumUsers(annotation) == 0)
+        if (get_def_use_mgr()->NumUsers(annotation) == 0) {
           context()->KillInst(annotation);
+          modified = true;
+        }
         break;
       default:
         assert(false);
@@ -684,6 +740,16 @@ void AggressiveDCEPass::InitExtensions() {
       "SPV_AMD_gpu_shader_int16",
       "SPV_KHR_post_depth_coverage",
       "SPV_KHR_shader_atomic_counter_ops",
+      "SPV_EXT_shader_stencil_export",
+      "SPV_EXT_shader_viewport_index_layer",
+      "SPV_AMD_shader_image_load_store_lod",
+      "SPV_AMD_shader_fragment_mask",
+      "SPV_EXT_fragment_fully_covered",
+      "SPV_AMD_gpu_shader_half_float_fetch",
+      "SPV_GOOGLE_decorate_string",
+      "SPV_GOOGLE_hlsl_functionality1",
+      "SPV_NV_shader_subgroup_partitioned",
+      "SPV_EXT_descriptor_indexing",
   });
 }
 

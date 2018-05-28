@@ -53,13 +53,12 @@ class Loop {
         loop_continue_(nullptr),
         loop_merge_(nullptr),
         loop_preheader_(nullptr),
+        loop_latch_(nullptr),
         parent_(nullptr),
         loop_is_marked_for_removal_(false) {}
 
   Loop(IRContext* context, opt::DominatorAnalysis* analysis, BasicBlock* header,
        BasicBlock* continue_target, BasicBlock* merge_target);
-
-  ~Loop() {}
 
   // Iterators over the immediate sub-loops.
   inline iterator begin() { return nested_loops_.begin(); }
@@ -84,16 +83,26 @@ class Loop {
     merge_inst->SetInOperand(0, {GetMergeBlock()->id()});
   }
 
+  // Returns the continue target basic block. This is the block designated as
+  // the continue target by the OpLoopMerge instruction.
+  inline BasicBlock* GetContinueBlock() { return loop_continue_; }
+  inline const BasicBlock* GetContinueBlock() const { return loop_continue_; }
+
   // Returns the latch basic block (basic block that holds the back-edge).
   // These functions return nullptr if the loop is not structured (i.e. if it
   // has more than one backedge).
-  inline BasicBlock* GetLatchBlock() { return loop_continue_; }
-  inline const BasicBlock* GetLatchBlock() const { return loop_continue_; }
+  inline BasicBlock* GetLatchBlock() { return loop_latch_; }
+  inline const BasicBlock* GetLatchBlock() const { return loop_latch_; }
+
   // Sets |latch| as the loop unique block branching back to the header.
   // A latch block must have the following properties:
   //  - |latch| must be in the loop;
   //  - must be the only block branching back to the header block.
   void SetLatchBlock(BasicBlock* latch);
+
+  // Sets |continue_block| as the continue block of the loop. This should be the
+  // continue target of the OpLoopMerge and should dominate the latch block.
+  void SetContinueBlock(BasicBlock* continue_block);
 
   // Returns the basic block which marks the end of the loop.
   // These functions return nullptr if the loop is not structured.
@@ -155,6 +164,7 @@ class Loop {
 
   inline size_t NumImmediateChildren() const { return nested_loops_.size(); }
 
+  inline bool HasChildren() const { return !nested_loops_.empty(); }
   // Adds |nested| as a nested loop of this loop. Automatically register |this|
   // as the parent of |nested|.
   inline void AddNestedLoop(Loop* nested) {
@@ -334,6 +344,19 @@ class Loop {
                                            size_t number_of_iterations,
                                            size_t unroll_factor);
 
+  // Returns the condition instruction for entry into the loop
+  // Returns nullptr if it can't be found.
+  ir::Instruction* GetConditionInst() const;
+
+  // Returns the context associated this loop.
+  IRContext* GetContext() const { return context_; }
+
+  // Looks at all the blocks with a branch to the header block to find one
+  // which is also dominated by the loop continue block. This block is the latch
+  // block. The specification mandates that this block should exist, therefore
+  // this function will assert if it is not found.
+  ir::BasicBlock* FindLatchBlock();
+
  private:
   IRContext* context_;
   // The block which marks the start of the loop.
@@ -347,6 +370,9 @@ class Loop {
 
   // The block immediately before the loop header.
   BasicBlock* loop_preheader_;
+
+  // The block containing the backedge to the loop header.
+  BasicBlock* loop_latch_;
 
   // A parent of a loop is the loop which contains it as a nested child loop.
   Loop* parent_;
@@ -366,9 +392,9 @@ class Loop {
   // Returns the loop preheader if it exists, returns nullptr otherwise.
   BasicBlock* FindLoopPreheader(opt::DominatorAnalysis* dom_analysis);
 
-  // Sets |latch| as the loop unique continue block. No checks are performed
+  // Sets |latch| as the loop unique latch block. No checks are performed
   // here.
-  inline void SetLatchBlockImpl(BasicBlock* latch) { loop_continue_ = latch; }
+  inline void SetLatchBlockImpl(BasicBlock* latch) { loop_latch_ = latch; }
   // Sets |merge| as the loop merge block. No checks are performed here.
   inline void SetMergeBlockImpl(BasicBlock* merge) { loop_merge_ = merge; }
 
@@ -397,6 +423,9 @@ class LoopDescriptor {
   // Iterator interface (depth first postorder traversal).
   using iterator = opt::PostOrderTreeDFIterator<Loop>;
   using const_iterator = opt::PostOrderTreeDFIterator<const Loop>;
+
+  using pre_iterator = opt::TreeDFIterator<Loop>;
+  using const_pre_iterator = opt::TreeDFIterator<const Loop>;
 
   // Creates a loop object for all loops found in |f|.
   explicit LoopDescriptor(const Function* f);
@@ -428,6 +457,10 @@ class LoopDescriptor {
     return *loops_[index];
   }
 
+  // Returns the loops in |this| in the order their headers appear in the
+  // binary.
+  std::vector<ir::Loop*> GetLoopsInBinaryLayoutOrder();
+
   // Returns the inner most loop that contains the basic block id |block_id|.
   inline Loop* operator[](uint32_t block_id) const {
     return FindLoopForBasicBlock(block_id);
@@ -451,6 +484,17 @@ class LoopDescriptor {
     return const_iterator::end(&dummy_top_loop_);
   }
 
+  // Iterators for pre-order depth first traversal of the loops.
+  // Inner most loops will be visited first.
+  inline pre_iterator pre_begin() { return ++pre_iterator(&dummy_top_loop_); }
+  inline pre_iterator pre_end() { return pre_iterator(); }
+  inline const_pre_iterator pre_begin() const { return pre_cbegin(); }
+  inline const_pre_iterator pre_end() const { return pre_cend(); }
+  inline const_pre_iterator pre_cbegin() const {
+    return ++const_pre_iterator(&dummy_top_loop_);
+  }
+  inline const_pre_iterator pre_cend() const { return const_pre_iterator(); }
+
   // Returns the inner most loop that contains the basic block |bb|.
   inline void SetBasicBlockToLoop(uint32_t bb_id, Loop* loop) {
     basic_block_to_loop_[bb_id] = loop;
@@ -461,6 +505,10 @@ class LoopDescriptor {
   inline void AddLoop(ir::Loop* loop_to_add, ir::Loop* parent) {
     loops_to_add_.emplace_back(std::make_pair(parent, loop_to_add));
   }
+
+  // Checks all loops in |this| and will create pre-headers for all loops
+  // that don't have one. Returns |true| if any blocks were created.
+  bool CreatePreHeaderBlocksIfMissing();
 
   // Should be called to preserve the LoopAnalysis after loops have been marked
   // for addition with AddLoop or MarkLoopForRemoval.

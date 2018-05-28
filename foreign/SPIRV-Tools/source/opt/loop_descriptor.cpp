@@ -142,6 +142,25 @@ int64_t Loop::GetResidualConditionValue(SpvOp condition, int64_t initial_value,
   return remainder;
 }
 
+ir::Instruction* Loop::GetConditionInst() const {
+  ir::BasicBlock* condition_block = FindConditionBlock();
+  if (!condition_block) {
+    return nullptr;
+  }
+  ir::Instruction* branch_conditional = &*condition_block->tail();
+  if (!branch_conditional ||
+      branch_conditional->opcode() != SpvOpBranchConditional) {
+    return nullptr;
+  }
+  ir::Instruction* condition_inst = context_->get_def_use_mgr()->GetDef(
+      branch_conditional->GetSingleWordInOperand(0));
+  if (IsSupportedCondition(condition_inst->opcode())) {
+    return condition_inst;
+  }
+
+  return nullptr;
+}
+
 // Extract the initial value from the |induction| OpPhi instruction and store it
 // in |value|. If the function couldn't find the initial value of |induction|
 // return false.
@@ -195,6 +214,7 @@ Loop::Loop(IRContext* context, opt::DominatorAnalysis* dom_analysis,
   assert(context);
   assert(dom_analysis);
   loop_preheader_ = FindLoopPreheader(dom_analysis);
+  loop_latch_ = FindLatchBlock();
 }
 
 BasicBlock* Loop::FindLoopPreheader(opt::DominatorAnalysis* dom_analysis) {
@@ -245,7 +265,7 @@ bool Loop::IsInsideLoop(Instruction* inst) const {
 bool Loop::IsBasicBlockInLoopSlow(const BasicBlock* bb) {
   assert(bb->GetParent() && "The basic block does not belong to a function");
   opt::DominatorAnalysis* dom_analysis =
-      context_->GetDominatorAnalysis(bb->GetParent(), *context_->cfg());
+      context_->GetDominatorAnalysis(bb->GetParent());
   if (dom_analysis->IsReachable(bb) &&
       !dom_analysis->Dominates(GetHeaderBlock(), bb))
     return false;
@@ -256,99 +276,14 @@ bool Loop::IsBasicBlockInLoopSlow(const BasicBlock* bb) {
 BasicBlock* Loop::GetOrCreatePreHeaderBlock() {
   if (loop_preheader_) return loop_preheader_;
 
-  Function* fn = loop_header_->GetParent();
-  // Find the insertion point for the preheader.
-  Function::iterator header_it =
-      std::find_if(fn->begin(), fn->end(),
-                   [this](BasicBlock& bb) { return &bb == loop_header_; });
-  assert(header_it != fn->end());
-
-  // Create the preheader basic block.
-  loop_preheader_ = &*header_it.InsertBefore(std::unique_ptr<ir::BasicBlock>(
-      new ir::BasicBlock(std::unique_ptr<ir::Instruction>(new ir::Instruction(
-          context_, SpvOpLabel, 0, context_->TakeNextId(), {})))));
-  loop_preheader_->SetParent(fn);
-  uint32_t loop_preheader_id = loop_preheader_->id();
-
-  // Redirect the branches and patch the phi:
-  //  - For each phi instruction in the header:
-  //    - If the header has only 1 out-of-loop incoming branch:
-  //      - Change the incomning branch to be the preheader.
-  //    - If the header has more than 1 out-of-loop incoming branch:
-  //      - Create a new phi in the preheader, gathering all out-of-loops
-  //      incoming values;
-  //      - Patch the header phi instruction to use the preheader phi
-  //      instruction;
-  //  - Redirect all edges coming from outside the loop to the preheader.
-  opt::InstructionBuilder builder(
-      context_, loop_preheader_,
-      ir::IRContext::kAnalysisDefUse |
-          ir::IRContext::kAnalysisInstrToBlockMapping);
-  // Patch all the phi instructions.
-  loop_header_->ForEachPhiInst([&builder, this](Instruction* phi) {
-    std::vector<uint32_t> preheader_phi_ops;
-    std::vector<uint32_t> header_phi_ops;
-    for (uint32_t i = 0; i < phi->NumInOperands(); i += 2) {
-      uint32_t def_id = phi->GetSingleWordInOperand(i);
-      uint32_t branch_id = phi->GetSingleWordInOperand(i + 1);
-      if (IsInsideLoop(branch_id)) {
-        header_phi_ops.push_back(def_id);
-        header_phi_ops.push_back(branch_id);
-      } else {
-        preheader_phi_ops.push_back(def_id);
-        preheader_phi_ops.push_back(branch_id);
-      }
-    }
-
-    Instruction* preheader_insn_def = nullptr;
-    // Create a phi instruction if and only if the preheader_phi_ops has more
-    // than one pair.
-    if (preheader_phi_ops.size() > 2)
-      preheader_insn_def = builder.AddPhi(phi->type_id(), preheader_phi_ops);
-    else
-      preheader_insn_def =
-          context_->get_def_use_mgr()->GetDef(preheader_phi_ops[0]);
-    // Build the new incoming edge.
-    header_phi_ops.push_back(preheader_insn_def->result_id());
-    header_phi_ops.push_back(loop_preheader_->id());
-    // Rewrite operands of the header's phi instruction.
-    uint32_t idx = 0;
-    for (; idx < header_phi_ops.size(); idx++)
-      phi->SetInOperand(idx, {header_phi_ops[idx]});
-    // Remove extra operands, from last to first (more efficient).
-    for (uint32_t j = phi->NumInOperands() - 1; j >= idx; j--)
-      phi->RemoveInOperand(j);
-  });
-  // Branch from the preheader to the header.
-  builder.AddBranch(loop_header_->id());
-
-  // Redirect all out of loop branches to the header to the preheader.
   CFG* cfg = context_->cfg();
-  cfg->RegisterBlock(loop_preheader_);
-  for (uint32_t pred_id : cfg->preds(loop_header_->id())) {
-    if (pred_id == loop_preheader_->id()) continue;
-    if (IsInsideLoop(pred_id)) continue;
-    BasicBlock* pred = cfg->block(pred_id);
-    pred->ForEachSuccessorLabel([this, loop_preheader_id](uint32_t* id) {
-      if (*id == loop_header_->id()) *id = loop_preheader_id;
-    });
-    cfg->AddEdge(pred_id, loop_preheader_id);
-  }
-  // Delete predecessors that are no longer predecessors of the loop header.
-  cfg->RemoveNonExistingEdges(loop_header_->id());
-  // Update the loop descriptors.
-  if (HasParent()) {
-    GetParent()->AddBasicBlock(loop_preheader_);
-    context_->GetLoopDescriptor(fn)->SetBasicBlockToLoop(loop_preheader_->id(),
-                                                         GetParent());
-  }
-
-  context_->InvalidateAnalysesExceptFor(
-      builder.GetPreservedAnalysis() |
-      ir::IRContext::Analysis::kAnalysisLoopAnalysis |
-      ir::IRContext::kAnalysisCFG);
-
+  loop_header_ = cfg->SplitLoopHeader(loop_header_);
   return loop_preheader_;
+}
+
+void Loop::SetContinueBlock(BasicBlock* continue_block) {
+  assert(IsInsideLoop(continue_block));
+  loop_continue_ = continue_block;
 }
 
 void Loop::SetLatchBlock(BasicBlock* latch) {
@@ -379,14 +314,39 @@ void Loop::SetMergeBlock(BasicBlock* merge) {
 }
 
 void Loop::SetPreHeaderBlock(BasicBlock* preheader) {
-  assert(!IsInsideLoop(preheader) && "The preheader block is in the loop");
-  assert(preheader->tail()->opcode() == SpvOpBranch &&
-         "The preheader block does not unconditionally branch to the header "
-         "block");
-  assert(preheader->tail()->GetSingleWordOperand(0) == GetHeaderBlock()->id() &&
-         "The preheader block does not unconditionally branch to the header "
-         "block");
+  if (preheader) {
+    assert(!IsInsideLoop(preheader) && "The preheader block is in the loop");
+    assert(preheader->tail()->opcode() == SpvOpBranch &&
+           "The preheader block does not unconditionally branch to the header "
+           "block");
+    assert(preheader->tail()->GetSingleWordOperand(0) ==
+               GetHeaderBlock()->id() &&
+           "The preheader block does not unconditionally branch to the header "
+           "block");
+  }
   loop_preheader_ = preheader;
+}
+
+ir::BasicBlock* Loop::FindLatchBlock() {
+  ir::CFG* cfg = context_->cfg();
+
+  opt::DominatorAnalysis* dominator_analysis =
+      context_->GetDominatorAnalysis(loop_header_->GetParent());
+
+  // Look at the predecessors of the loop header to find a predecessor block
+  // which is dominated by the loop continue target. There should only be one
+  // block which meets this criteria and this is the latch block, as per the
+  // SPIR-V spec.
+  for (uint32_t block_id : cfg->preds(loop_header_->id())) {
+    if (dominator_analysis->Dominates(loop_continue_->id(), block_id)) {
+      return cfg->block(block_id);
+    }
+  }
+
+  assert(
+      false &&
+      "Every loop should have a latch block dominated by the continue target");
+  return nullptr;
 }
 
 void Loop::GetExitBlocks(std::unordered_set<uint32_t>* exit_blocks) const {
@@ -540,8 +500,7 @@ LoopDescriptor::~LoopDescriptor() { ClearLoops(); }
 void LoopDescriptor::PopulateList(const Function* f) {
   IRContext* context = f->GetParent()->context();
 
-  opt::DominatorAnalysis* dom_analysis =
-      context->GetDominatorAnalysis(f, *context->cfg());
+  opt::DominatorAnalysis* dom_analysis = context->GetDominatorAnalysis(f);
 
   ClearLoops();
 
@@ -619,13 +578,51 @@ void LoopDescriptor::PopulateList(const Function* f) {
   }
 }
 
+std::vector<ir::Loop*> LoopDescriptor::GetLoopsInBinaryLayoutOrder() {
+  std::vector<uint32_t> ids{};
+
+  for (size_t i = 0; i < NumLoops(); ++i) {
+    ids.push_back(GetLoopByIndex(i).GetHeaderBlock()->id());
+  }
+
+  std::vector<ir::Loop*> loops{};
+  if (!ids.empty()) {
+    auto function = GetLoopByIndex(0).GetHeaderBlock()->GetParent();
+    for (const auto& block : *function) {
+      auto block_id = block.id();
+
+      auto element = std::find(std::begin(ids), std::end(ids), block_id);
+      if (element != std::end(ids)) {
+        loops.push_back(&GetLoopByIndex(element - std::begin(ids)));
+      }
+    }
+  }
+
+  return loops;
+}
+
 ir::BasicBlock* Loop::FindConditionBlock() const {
-  const ir::Function& function = *loop_merge_->GetParent();
+  if (!loop_merge_) {
+    return nullptr;
+  }
   ir::BasicBlock* condition_block = nullptr;
 
-  const opt::DominatorAnalysis* dom_analysis =
-      context_->GetDominatorAnalysis(&function, *context_->cfg());
-  ir::BasicBlock* bb = dom_analysis->ImmediateDominator(loop_merge_);
+  uint32_t in_loop_pred = 0;
+  for (uint32_t p : context_->cfg()->preds(loop_merge_->id())) {
+    if (IsInsideLoop(p)) {
+      if (in_loop_pred) {
+        // 2 in-loop predecessors.
+        return nullptr;
+      }
+      in_loop_pred = p;
+    }
+  }
+  if (!in_loop_pred) {
+    // Merge block is unreachable.
+    return nullptr;
+  }
+
+  ir::BasicBlock* bb = context_->cfg()->block(in_loop_pred);
 
   if (!bb) return nullptr;
 
@@ -671,6 +668,10 @@ bool Loop::FindNumberOfIterations(const ir::Instruction* induction,
 
   const opt::analysis::Integer* type =
       upper_bound->AsIntConstant()->type()->AsInteger();
+
+  if (type->width() > 32) {
+    return false;
+  }
 
   if (type->IsSigned()) {
     condition_value = upper_bound->AsIntConstant()->GetS32BitValue();
@@ -879,18 +880,18 @@ ir::Instruction* Loop::FindConditionVariable(
         uint32_t operand_label_2 = 3;
 
         // Make sure one of them is the preheader.
-        if (variable_inst->GetSingleWordInOperand(operand_label_1) !=
-                loop_preheader_->id() &&
-            variable_inst->GetSingleWordInOperand(operand_label_2) !=
-                loop_preheader_->id()) {
+        if (!IsInsideLoop(
+                variable_inst->GetSingleWordInOperand(operand_label_1)) &&
+            !IsInsideLoop(
+                variable_inst->GetSingleWordInOperand(operand_label_2))) {
           return nullptr;
         }
 
         // And make sure that the other is the latch block.
         if (variable_inst->GetSingleWordInOperand(operand_label_1) !=
-                loop_continue_->id() &&
+                loop_latch_->id() &&
             variable_inst->GetSingleWordInOperand(operand_label_2) !=
-                loop_continue_->id()) {
+                loop_latch_->id()) {
           return nullptr;
         }
       } else {
@@ -904,6 +905,19 @@ ir::Instruction* Loop::FindConditionVariable(
   }
 
   return induction;
+}
+
+bool LoopDescriptor::CreatePreHeaderBlocksIfMissing() {
+  auto modified = false;
+
+  for (auto& loop : *this) {
+    if (!loop.GetPreHeaderBlock()) {
+      modified = true;
+      loop.GetOrCreatePreHeaderBlock();
+    }
+  }
+
+  return modified;
 }
 
 // Add and remove loops which have been marked for addition and removal to

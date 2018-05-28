@@ -1,5 +1,5 @@
-static const SpvCapability pygen_variable_caps_Float64_1_0[] = {SpvCapabilityFloat64};
-static const SpvCapability pygen_variable_caps_InterpolationFunction_1_0[] = {SpvCapabilityInterpolationFunction};
+static const SpvCapability pygen_variable_caps_Float64[] = {SpvCapabilityFloat64};
+static const SpvCapability pygen_variable_caps_InterpolationFunction[] = {SpvCapabilityInterpolationFunction};
 
 static const spv_ext_inst_desc_t glsl_entries[] = {
   {"Round", 1, 0, nullptr, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
@@ -60,13 +60,13 @@ static const spv_ext_inst_desc_t glsl_entries[] = {
   {"PackSnorm2x16", 56, 0, nullptr, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
   {"PackUnorm2x16", 57, 0, nullptr, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
   {"PackHalf2x16", 58, 0, nullptr, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
-  {"PackDouble2x32", 59, 1, pygen_variable_caps_Float64_1_0, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
+  {"PackDouble2x32", 59, 1, pygen_variable_caps_Float64, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
   {"UnpackSnorm2x16", 60, 0, nullptr, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
   {"UnpackUnorm2x16", 61, 0, nullptr, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
   {"UnpackHalf2x16", 62, 0, nullptr, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
   {"UnpackSnorm4x8", 63, 0, nullptr, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
   {"UnpackUnorm4x8", 64, 0, nullptr, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
-  {"UnpackDouble2x32", 65, 1, pygen_variable_caps_Float64_1_0, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
+  {"UnpackDouble2x32", 65, 1, pygen_variable_caps_Float64, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
   {"Length", 66, 0, nullptr, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
   {"Distance", 67, 0, nullptr, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
   {"Cross", 68, 0, nullptr, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
@@ -77,9 +77,9 @@ static const spv_ext_inst_desc_t glsl_entries[] = {
   {"FindILsb", 73, 0, nullptr, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
   {"FindSMsb", 74, 0, nullptr, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
   {"FindUMsb", 75, 0, nullptr, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
-  {"InterpolateAtCentroid", 76, 1, pygen_variable_caps_InterpolationFunction_1_0, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
-  {"InterpolateAtSample", 77, 1, pygen_variable_caps_InterpolationFunction_1_0, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
-  {"InterpolateAtOffset", 78, 1, pygen_variable_caps_InterpolationFunction_1_0, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
+  {"InterpolateAtCentroid", 76, 1, pygen_variable_caps_InterpolationFunction, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
+  {"InterpolateAtSample", 77, 1, pygen_variable_caps_InterpolationFunction, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
+  {"InterpolateAtOffset", 78, 1, pygen_variable_caps_InterpolationFunction, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
   {"NMin", 79, 0, nullptr, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
   {"NMax", 80, 0, nullptr, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}},
   {"NClamp", 81, 0, nullptr, {SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE}}

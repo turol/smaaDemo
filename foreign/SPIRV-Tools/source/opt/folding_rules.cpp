@@ -13,6 +13,9 @@
 // limitations under the License.
 
 #include "folding_rules.h"
+
+#include <limits>
+
 #include "latest_version_glsl_std_450_header.h"
 
 namespace spvtools {
@@ -26,6 +29,7 @@ const uint32_t kExtInstSetIdInIdx = 0;
 const uint32_t kExtInstInstructionInIdx = 1;
 const uint32_t kFMixXIdInIdx = 2;
 const uint32_t kFMixYIdInIdx = 3;
+const uint32_t kFMixAIdInIdx = 4;
 
 // Returns the element width of |type|.
 uint32_t ElementWidth(const analysis::Type* type) {
@@ -234,7 +238,7 @@ FoldingRule ReciprocalFDiv() {
 
     return false;
   };
-};
+}
 
 // Elides consecutive negate instructions.
 FoldingRule MergeNegateArithmetic() {
@@ -616,18 +620,36 @@ FoldingRule MergeMulMulArithmetic() {
 // 2 * (2 / x) = 4 / x
 // (x / 2) * 2 = x * 1
 // (2 / x) * 2 = 4 / x
+// (y / x) * x = y
+// x * (y / x) = y
 FoldingRule MergeMulDivArithmetic() {
   return [](ir::Instruction* inst,
             const std::vector<const analysis::Constant*>& constants) {
     assert(inst->opcode() == SpvOpFMul);
     ir::IRContext* context = inst->context();
     analysis::ConstantManager* const_mgr = context->get_constant_mgr();
+    analysis::DefUseManager* def_use_mgr = context->get_def_use_mgr();
+
     const analysis::Type* type =
         context->get_type_mgr()->GetType(inst->type_id());
     if (!inst->IsFloatingPointFoldingAllowed()) return false;
 
     uint32_t width = ElementWidth(type);
     if (width != 32 && width != 64) return false;
+
+    for (uint32_t i = 0; i < 2; i++) {
+      uint32_t op_id = inst->GetSingleWordInOperand(i);
+      ir::Instruction* op_inst = def_use_mgr->GetDef(op_id);
+      if (op_inst->opcode() == SpvOpFDiv) {
+        if (op_inst->GetSingleWordInOperand(1) ==
+            inst->GetSingleWordInOperand(1 - i)) {
+          inst->SetOpcode(SpvOpCopyObject);
+          inst->SetInOperands(
+              {{SPV_OPERAND_TYPE_ID, {op_inst->GetSingleWordInOperand(0)}}});
+          return true;
+        }
+      }
+    }
 
     const analysis::Constant* const_input1 = ConstInput(constants);
     if (!const_input1) return false;
@@ -786,18 +808,37 @@ FoldingRule MergeDivDivArithmetic() {
 // 4 / (2 * x) = 2 / x
 // (x * 4) / 2 = x * 2
 // (4 * x) / 2 = x * 2
+// (x * y) / x = y
+// (y * x) / x = y
 FoldingRule MergeDivMulArithmetic() {
   return [](ir::Instruction* inst,
             const std::vector<const analysis::Constant*>& constants) {
     assert(inst->opcode() == SpvOpFDiv);
     ir::IRContext* context = inst->context();
+    analysis::DefUseManager* def_use_mgr = context->get_def_use_mgr();
     analysis::ConstantManager* const_mgr = context->get_constant_mgr();
+
     const analysis::Type* type =
         context->get_type_mgr()->GetType(inst->type_id());
     if (!inst->IsFloatingPointFoldingAllowed()) return false;
 
     uint32_t width = ElementWidth(type);
     if (width != 32 && width != 64) return false;
+
+    uint32_t op_id = inst->GetSingleWordInOperand(0);
+    ir::Instruction* op_inst = def_use_mgr->GetDef(op_id);
+
+    if (op_inst->opcode() == SpvOpFMul) {
+      for (uint32_t i = 0; i < 2; i++) {
+        if (op_inst->GetSingleWordInOperand(i) ==
+            inst->GetSingleWordInOperand(1)) {
+          inst->SetOpcode(SpvOpCopyObject);
+          inst->SetInOperands({{SPV_OPERAND_TYPE_ID,
+                                {op_inst->GetSingleWordInOperand(1 - i)}}});
+          return true;
+        }
+      }
+    }
 
     const analysis::Constant* const_input1 = ConstInput(constants);
     if (!const_input1 || HasZero(const_input1)) return false;
@@ -1425,7 +1466,7 @@ FoldingRule InsertFeedingExtract() {
            {cinst->GetSingleWordInOperand(kInsertObjectIdInIdx)}});
       for (; i < inst->NumInOperands(); ++i) {
         operands.push_back({SPV_OPERAND_TYPE_LITERAL_INTEGER,
-                            {cinst->GetSingleWordInOperand(i)}});
+                            {inst->GetSingleWordInOperand(i)}});
       }
       inst->SetInOperands(std::move(operands));
       return true;
@@ -1494,6 +1535,79 @@ FoldingRule VectorShuffleFeedingExtract() {
   };
 }
 
+// When an FMix with is feeding an Extract that extracts an element whose
+// corresponding |a| in the FMix is 0 or 1, we can extract from one of the
+// operands of the FMix.
+FoldingRule FMixFeedingExtract() {
+  return [](ir::Instruction* inst,
+            const std::vector<const analysis::Constant*>&) {
+    assert(inst->opcode() == SpvOpCompositeExtract &&
+           "Wrong opcode.  Should be OpCompositeExtract.");
+    analysis::DefUseManager* def_use_mgr = inst->context()->get_def_use_mgr();
+    analysis::ConstantManager* const_mgr = inst->context()->get_constant_mgr();
+
+    uint32_t composite_id =
+        inst->GetSingleWordInOperand(kExtractCompositeIdInIdx);
+    ir::Instruction* composite_inst = def_use_mgr->GetDef(composite_id);
+
+    if (composite_inst->opcode() != SpvOpExtInst) {
+      return false;
+    }
+
+    uint32_t inst_set_id =
+        inst->context()->get_feature_mgr()->GetExtInstImportId_GLSLstd450();
+
+    if (composite_inst->GetSingleWordInOperand(kExtInstSetIdInIdx) !=
+            inst_set_id ||
+        composite_inst->GetSingleWordInOperand(kExtInstInstructionInIdx) !=
+            GLSLstd450FMix) {
+      return false;
+    }
+
+    // Get the |a| for the FMix instruction.
+    uint32_t a_id = composite_inst->GetSingleWordInOperand(kFMixAIdInIdx);
+    const analysis::Constant* a_const = const_mgr->FindDeclaredConstant(a_id);
+
+    if (!a_const) {
+      return false;
+    }
+
+    uint32_t componenet_idx = inst->GetSingleWordInOperand(1);
+    bool use_x = false;
+
+    if (a_const->AsNullConstant()) {
+      use_x = true;
+    } else {
+      const analysis::VectorConstant* a_vec_const = a_const->AsVectorConstant();
+      assert(a_vec_const);
+
+      const analysis::Constant* element_const =
+          a_vec_const->GetComponents()[componenet_idx];
+
+      double element_value = element_const->GetValueAsDouble();
+      if (element_value == 0.0) {
+        use_x = true;
+      } else if (element_value == 1.0) {
+        use_x = false;
+      } else {
+        return false;
+      }
+    }
+
+    // Get the id of the of the vector the element comes from.
+    uint32_t new_vector = 0;
+    if (use_x) {
+      new_vector = composite_inst->GetSingleWordInOperand(kFMixXIdInIdx);
+    } else {
+      new_vector = composite_inst->GetSingleWordInOperand(kFMixYIdInIdx);
+    }
+
+    // Update the extract instruction.
+    inst->SetInOperand(kExtractCompositeIdInIdx, {new_vector});
+    return true;
+  };
+}
+
 FoldingRule RedundantPhi() {
   // An OpPhi instruction where all values are the same or the result of the phi
   // itself, can be replaced by the value itself.
@@ -1501,22 +1615,12 @@ FoldingRule RedundantPhi() {
       [](ir::Instruction* inst, const std::vector<const analysis::Constant*>&) {
         assert(inst->opcode() == SpvOpPhi && "Wrong opcode.  Should be OpPhi.");
 
-        ir::IRContext* context = inst->context();
-        analysis::DefUseManager* def_use_mgr = context->get_def_use_mgr();
-
         uint32_t incoming_value = 0;
 
         for (uint32_t i = 0; i < inst->NumInOperands(); i += 2) {
           uint32_t op_id = inst->GetSingleWordInOperand(i);
           if (op_id == inst->result_id()) {
             continue;
-          }
-
-          ir::Instruction* op_inst = def_use_mgr->GetDef(op_id);
-          if (op_inst->opcode() == SpvOpUndef) {
-            // TODO: We should be able to still use op_id if we know that
-            // the definition of op_id dominates |inst|.
-            return false;
           }
 
           if (incoming_value == 0) {
@@ -1812,6 +1916,79 @@ FoldingRule RedundantFMix() {
   };
 }
 
+// This rule look for a dot with a constant vector containing a single 1 and
+// the rest 0s.  This is the same as doing an extract.
+FoldingRule DotProductDoingExtract() {
+  return [](ir::Instruction* inst,
+            const std::vector<const analysis::Constant*>& constants) {
+    assert(inst->opcode() == SpvOpDot && "Wrong opcode.  Should be OpDot.");
+
+    ir::IRContext* context = inst->context();
+    analysis::ConstantManager* const_mgr = context->get_constant_mgr();
+
+    if (!inst->IsFloatingPointFoldingAllowed()) {
+      return false;
+    }
+
+    for (int i = 0; i < 2; ++i) {
+      if (!constants[i]) {
+        continue;
+      }
+
+      const analysis::Vector* vector_type = constants[i]->type()->AsVector();
+      assert(vector_type && "Inputs to OpDot must be vectors.");
+      const analysis::Float* element_type =
+          vector_type->element_type()->AsFloat();
+      assert(element_type && "Inputs to OpDot must be vectors of floats.");
+      uint32_t element_width = element_type->width();
+      if (element_width != 32 && element_width != 64) {
+        return false;
+      }
+
+      std::vector<const analysis::Constant*> components;
+      components = constants[i]->GetVectorComponents(const_mgr);
+
+      const uint32_t kNotFound = std::numeric_limits<uint32_t>::max();
+
+      uint32_t component_with_one = kNotFound;
+      bool all_others_zero = true;
+      for (uint32_t j = 0; j < components.size(); ++j) {
+        const analysis::Constant* element = components[j];
+        double value =
+            (element_width == 32 ? element->GetFloat() : element->GetDouble());
+        if (value == 0.0) {
+          continue;
+        } else if (value == 1.0) {
+          if (component_with_one == kNotFound) {
+            component_with_one = j;
+          } else {
+            component_with_one = kNotFound;
+            break;
+          }
+        } else {
+          all_others_zero = false;
+          break;
+        }
+      }
+
+      if (!all_others_zero || component_with_one == kNotFound) {
+        continue;
+      }
+
+      std::vector<ir::Operand> operands;
+      operands.push_back(
+          {SPV_OPERAND_TYPE_ID, {inst->GetSingleWordInOperand(1u - i)}});
+      operands.push_back(
+          {SPV_OPERAND_TYPE_LITERAL_INTEGER, {component_with_one}});
+
+      inst->SetOpcode(SpvOpCompositeExtract);
+      inst->SetInOperands(std::move(operands));
+      return true;
+    }
+    return false;
+  };
+}
+
 }  // namespace
 
 spvtools::opt::FoldingRules::FoldingRules() {
@@ -1825,6 +2002,9 @@ spvtools::opt::FoldingRules::FoldingRules() {
   rules_[SpvOpCompositeExtract].push_back(InsertFeedingExtract());
   rules_[SpvOpCompositeExtract].push_back(CompositeConstructFeedingExtract());
   rules_[SpvOpCompositeExtract].push_back(VectorShuffleFeedingExtract());
+  rules_[SpvOpCompositeExtract].push_back(FMixFeedingExtract());
+
+  rules_[SpvOpDot].push_back(DotProductDoingExtract());
 
   rules_[SpvOpExtInst].push_back(RedundantFMix());
 

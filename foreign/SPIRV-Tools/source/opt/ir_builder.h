@@ -159,6 +159,61 @@ class InstructionBuilder {
     return AddInstruction(std::move(phi_inst));
   }
 
+  // Creates an addition instruction.
+  // The id |type| must be the id of the instruction's type, must be the same as
+  // |op1| and |op2| types.
+  // The id |op1| is the left hand side of the operation.
+  // The id |op2| is the right hand side of the operation.
+  ir::Instruction* AddIAdd(uint32_t type, uint32_t op1, uint32_t op2) {
+    std::unique_ptr<ir::Instruction> inst(new ir::Instruction(
+        GetContext(), SpvOpIAdd, type, GetContext()->TakeNextId(),
+        {{SPV_OPERAND_TYPE_ID, {op1}}, {SPV_OPERAND_TYPE_ID, {op2}}}));
+    return AddInstruction(std::move(inst));
+  }
+
+  // Creates a less than instruction for unsigned integer.
+  // The id |op1| is the left hand side of the operation.
+  // The id |op2| is the right hand side of the operation.
+  // It is assumed that |op1| and |op2| have the same underlying type.
+  ir::Instruction* AddULessThan(uint32_t op1, uint32_t op2) {
+    analysis::Bool bool_type;
+    uint32_t type = GetContext()->get_type_mgr()->GetId(&bool_type);
+    std::unique_ptr<ir::Instruction> inst(new ir::Instruction(
+        GetContext(), SpvOpULessThan, type, GetContext()->TakeNextId(),
+        {{SPV_OPERAND_TYPE_ID, {op1}}, {SPV_OPERAND_TYPE_ID, {op2}}}));
+    return AddInstruction(std::move(inst));
+  }
+
+  // Creates a less than instruction for signed integer.
+  // The id |op1| is the left hand side of the operation.
+  // The id |op2| is the right hand side of the operation.
+  // It is assumed that |op1| and |op2| have the same underlying type.
+  ir::Instruction* AddSLessThan(uint32_t op1, uint32_t op2) {
+    analysis::Bool bool_type;
+    uint32_t type = GetContext()->get_type_mgr()->GetId(&bool_type);
+    std::unique_ptr<ir::Instruction> inst(new ir::Instruction(
+        GetContext(), SpvOpSLessThan, type, GetContext()->TakeNextId(),
+        {{SPV_OPERAND_TYPE_ID, {op1}}, {SPV_OPERAND_TYPE_ID, {op2}}}));
+    return AddInstruction(std::move(inst));
+  }
+
+  // Creates an OpILessThan or OpULessThen instruction depending on the sign of
+  // |op1|. The id |op1| is the left hand side of the operation. The id |op2| is
+  // the right hand side of the operation. It is assumed that |op1| and |op2|
+  // have the same underlying type.
+  ir::Instruction* AddLessThan(uint32_t op1, uint32_t op2) {
+    ir::Instruction* op1_insn = context_->get_def_use_mgr()->GetDef(op1);
+    analysis::Type* type =
+        GetContext()->get_type_mgr()->GetType(op1_insn->type_id());
+    analysis::Integer* int_type = type->AsInteger();
+    assert(int_type && "Operand is not of int type");
+
+    if (int_type->IsSigned())
+      return AddSLessThan(op1, op2);
+    else
+      return AddULessThan(op1, op2);
+  }
+
   // Creates a select instruction.
   // |type| must match the types of |true_value| and |false_value|. It is up to
   // the caller to ensure that |cond| is a correct type (bool or vector of
@@ -259,6 +314,31 @@ class InstructionBuilder {
         new ir::Instruction(GetContext(), SpvOpUnreachable, 0, 0,
                             std::initializer_list<ir::Operand>{}));
     return AddInstruction(std::move(select));
+  }
+
+  ir::Instruction* AddAccessChain(uint32_t type_id, uint32_t base_ptr_id,
+                                  std::vector<uint32_t> ids) {
+    std::vector<ir::Operand> operands;
+    operands.push_back({SPV_OPERAND_TYPE_ID, {base_ptr_id}});
+
+    for (uint32_t index_id : ids) {
+      operands.push_back({SPV_OPERAND_TYPE_ID, {index_id}});
+    }
+
+    std::unique_ptr<ir::Instruction> new_inst(
+        new ir::Instruction(GetContext(), SpvOpAccessChain, type_id,
+                            GetContext()->TakeNextId(), operands));
+    return AddInstruction(std::move(new_inst));
+  }
+
+  ir::Instruction* AddLoad(uint32_t type_id, uint32_t base_ptr_id) {
+    std::vector<ir::Operand> operands;
+    operands.push_back({SPV_OPERAND_TYPE_ID, {base_ptr_id}});
+
+    std::unique_ptr<ir::Instruction> new_inst(
+        new ir::Instruction(GetContext(), SpvOpLoad, type_id,
+                            GetContext()->TakeNextId(), operands));
+    return AddInstruction(std::move(new_inst));
   }
 
   // Inserts the new instruction before the insertion point.

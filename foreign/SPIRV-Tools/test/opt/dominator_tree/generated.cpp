@@ -122,8 +122,8 @@ TEST_F(PassClassTest, DominatorSimpleCFG) {
   // Test normal dominator tree
   {
     opt::DominatorAnalysis dom_tree;
-    ir::CFG cfg(module);
-    dom_tree.InitializeTree(fn, cfg);
+    dom_tree.InitializeTree(fn);
+    const ir::CFG& cfg = *context->cfg();
 
     // Inspect the actual tree
     opt::DominatorTree& tree = dom_tree.GetDomTree();
@@ -155,7 +155,8 @@ TEST_F(PassClassTest, DominatorSimpleCFG) {
     // check with some invalid inputs
     EXPECT_FALSE(dom_tree.Dominates(nullptr, entry));
     EXPECT_FALSE(dom_tree.Dominates(entry, nullptr));
-    EXPECT_FALSE(dom_tree.Dominates(nullptr, nullptr));
+    EXPECT_FALSE(dom_tree.Dominates(static_cast<ir::BasicBlock*>(nullptr),
+                                    static_cast<ir::BasicBlock*>(nullptr)));
     EXPECT_FALSE(dom_tree.Dominates(10, 1));
     EXPECT_FALSE(dom_tree.Dominates(1, 10));
     EXPECT_FALSE(dom_tree.Dominates(1, 1));
@@ -186,8 +187,8 @@ TEST_F(PassClassTest, DominatorSimpleCFG) {
   // Test post dominator tree
   {
     opt::PostDominatorAnalysis dom_tree;
-    ir::CFG cfg(module);
-    dom_tree.InitializeTree(fn, cfg);
+    dom_tree.InitializeTree(fn);
+    const ir::CFG& cfg = *context->cfg();
 
     // Inspect the actual tree
     opt::DominatorTree& tree = dom_tree.GetDomTree();
@@ -216,7 +217,8 @@ TEST_F(PassClassTest, DominatorSimpleCFG) {
     // check with some invalid inputs
     EXPECT_FALSE(dom_tree.Dominates(nullptr, entry));
     EXPECT_FALSE(dom_tree.Dominates(entry, nullptr));
-    EXPECT_FALSE(dom_tree.Dominates(nullptr, nullptr));
+    EXPECT_FALSE(dom_tree.Dominates(static_cast<ir::BasicBlock*>(nullptr),
+                                    static_cast<ir::BasicBlock*>(nullptr)));
     EXPECT_FALSE(dom_tree.Dominates(10, 1));
     EXPECT_FALSE(dom_tree.Dominates(1, 10));
     EXPECT_FALSE(dom_tree.Dominates(1, 1));
@@ -287,8 +289,8 @@ TEST_F(PassClassTest, DominatorIrreducibleCFG) {
   // Check normal dominator tree
   {
     opt::DominatorAnalysis dom_tree;
-    ir::CFG cfg(module);
-    dom_tree.InitializeTree(fn, cfg);
+    dom_tree.InitializeTree(fn);
+    const ir::CFG& cfg = *context->cfg();
 
     // Inspect the actual tree
     opt::DominatorTree& tree = dom_tree.GetDomTree();
@@ -329,8 +331,8 @@ TEST_F(PassClassTest, DominatorIrreducibleCFG) {
   // Check post dominator tree
   {
     opt::PostDominatorAnalysis dom_tree;
-    ir::CFG cfg(module);
-    dom_tree.InitializeTree(fn, cfg);
+    dom_tree.InitializeTree(fn);
+    const ir::CFG& cfg = *context->cfg();
 
     // Inspect the actual tree
     opt::DominatorTree& tree = dom_tree.GetDomTree();
@@ -408,8 +410,8 @@ TEST_F(PassClassTest, DominatorLoopToSelf) {
   // Check normal dominator tree
   {
     opt::DominatorAnalysis dom_tree;
-    ir::CFG cfg(module);
-    dom_tree.InitializeTree(fn, cfg);
+    dom_tree.InitializeTree(fn);
+    const ir::CFG& cfg = *context->cfg();
 
     // Inspect the actual tree
     opt::DominatorTree& tree = dom_tree.GetDomTree();
@@ -490,8 +492,8 @@ TEST_F(PassClassTest, DominatorLoopToSelf) {
   // Check post dominator tree
   {
     opt::PostDominatorAnalysis dom_tree;
-    ir::CFG cfg(module);
-    dom_tree.InitializeTree(fn, cfg);
+    dom_tree.InitializeTree(fn);
+    const ir::CFG& cfg = *context->cfg();
 
     // Inspect the actual tree
     opt::DominatorTree& tree = dom_tree.GetDomTree();
@@ -615,8 +617,8 @@ TEST_F(PassClassTest, DominatorUnreachableInLoop) {
   // Check normal dominator tree
   {
     opt::DominatorAnalysis dom_tree;
-    ir::CFG cfg(module);
-    dom_tree.InitializeTree(fn, cfg);
+    dom_tree.InitializeTree(fn);
+    const ir::CFG& cfg = *context->cfg();
 
     // Inspect the actual tree
     opt::DominatorTree& tree = dom_tree.GetDomTree();
@@ -666,8 +668,8 @@ TEST_F(PassClassTest, DominatorUnreachableInLoop) {
   // Check post dominator tree.
   {
     opt::PostDominatorAnalysis dom_tree;
-    ir::CFG cfg(module);
-    dom_tree.InitializeTree(fn, cfg);
+    dom_tree.InitializeTree(fn);
+    const ir::CFG& cfg = *context->cfg();
 
     // (strict) dominance checks.
     for (uint32_t id : {10, 11, 12, 13, 14, 15})
@@ -745,8 +747,8 @@ TEST_F(PassClassTest, DominatorInfinitLoop) {
   // Check normal dominator tree
   {
     opt::DominatorAnalysis dom_tree;
-    ir::CFG cfg(module);
-    dom_tree.InitializeTree(fn, cfg);
+    dom_tree.InitializeTree(fn);
+    const ir::CFG& cfg = *context->cfg();
 
     // Inspect the actual tree
     opt::DominatorTree& tree = dom_tree.GetDomTree();
@@ -780,8 +782,8 @@ TEST_F(PassClassTest, DominatorInfinitLoop) {
   // Check post dominator tree
   {
     opt::PostDominatorAnalysis dom_tree;
-    ir::CFG cfg(module);
-    dom_tree.InitializeTree(fn, cfg);
+    dom_tree.InitializeTree(fn);
+    const ir::CFG& cfg = *context->cfg();
 
     // Inspect the actual tree
     opt::DominatorTree& tree = dom_tree.GetDomTree();
@@ -850,8 +852,8 @@ TEST_F(PassClassTest, DominatorUnreachableFromEntry) {
   // Check dominator tree
   {
     opt::DominatorAnalysis dom_tree;
-    ir::CFG cfg(module);
-    dom_tree.InitializeTree(fn, cfg);
+    dom_tree.InitializeTree(fn);
+    const ir::CFG& cfg = *context->cfg();
     // Inspect the actual tree
     opt::DominatorTree& tree = dom_tree.GetDomTree();
     EXPECT_EQ(tree.GetRoot()->bb_, cfg.pseudo_entry_block());
@@ -878,8 +880,8 @@ TEST_F(PassClassTest, DominatorUnreachableFromEntry) {
   // Check post dominator tree
   {
     opt::PostDominatorAnalysis dom_tree;
-    ir::CFG cfg(module);
-    dom_tree.InitializeTree(fn, cfg);
+    dom_tree.InitializeTree(fn);
+    const ir::CFG& cfg = *context->cfg();
 
     // Inspect the actual tree
     opt::DominatorTree& tree = dom_tree.GetDomTree();

@@ -190,13 +190,38 @@ uint32_t BasicBlock::ContinueBlockIdIfAny() const {
 }
 
 std::ostream& operator<<(std::ostream& str, const BasicBlock& block) {
-  block.ForEachInst([&str](const ir::Instruction* inst) {
-    str << *inst;
+  str << block.PrettyPrint();
+  return str;
+}
+
+std::string BasicBlock::PrettyPrint(uint32_t options) const {
+  std::ostringstream str;
+  ForEachInst([&str, options](const ir::Instruction* inst) {
+    str << inst->PrettyPrint(options);
     if (!IsTerminatorInst(inst->opcode())) {
       str << std::endl;
     }
   });
-  return str;
+  return str.str();
+}
+
+BasicBlock* BasicBlock::SplitBasicBlock(IRContext* context, uint32_t label_id,
+                                        iterator iter) {
+  assert(!insts_.empty());
+
+  BasicBlock* new_block = new BasicBlock(MakeUnique<Instruction>(
+      context, SpvOpLabel, 0, label_id, std::initializer_list<ir::Operand>{}));
+
+  new_block->insts_.Splice(new_block->end(), &insts_, iter, end());
+  new_block->SetParent(GetParent());
+
+  if (context->AreAnalysesValid(ir::IRContext::kAnalysisInstrToBlockMapping)) {
+    new_block->ForEachInst([new_block, context](ir::Instruction* inst) {
+      context->set_instr_block(inst, new_block);
+    });
+  }
+
+  return new_block;
 }
 
 }  // namespace ir

@@ -88,9 +88,7 @@ class LoopUnswitch {
 
   // Return the iterator to the basic block |bb|.
   ir::Function::iterator FindBasicBlockPosition(ir::BasicBlock* bb_to_find) {
-    ir::Function::iterator it = std::find_if(
-        function_->begin(), function_->end(),
-        [bb_to_find](const ir::BasicBlock& bb) { return bb_to_find == &bb; });
+    ir::Function::iterator it = function_->FindBlock(bb_to_find->id());
     assert(it != function_->end() && "Basic Block not found");
     return it;
   }
@@ -120,8 +118,7 @@ class LoopUnswitch {
 
     ir::CFG& cfg = *context_->cfg();
     DominatorTree* dom_tree =
-        &context_->GetDominatorAnalysis(function_, *context_->cfg())
-             ->GetDomTree();
+        &context_->GetDominatorAnalysis(function_)->GetDomTree();
     analysis::DefUseManager* def_use_mgr = context_->get_def_use_mgr();
     LoopUtils loop_utils(context_, loop_);
 
@@ -851,8 +848,7 @@ class LoopUnswitch {
     return !loop_->IsInsideLoop(condition) &&
            IsDynamicallyUniform(
                condition, function_->entry().get(),
-               context_->GetPostDominatorAnalysis(function_, *context_->cfg())
-                   ->GetDomTree());
+               context_->GetPostDominatorAnalysis(function_)->GetDomTree());
   }
 };
 

@@ -44,6 +44,16 @@ double Constant::GetDouble() const {
   }
 }
 
+double Constant::GetValueAsDouble() const {
+  assert(type()->AsFloat() != nullptr);
+  if (type()->AsFloat()->width() == 32) {
+    return GetFloat();
+  } else {
+    assert(type()->AsFloat()->width() == 64);
+    return GetDouble();
+  }
+}
+
 uint32_t Constant::GetU32() const {
   assert(type()->AsInteger() != nullptr);
   assert(type()->AsInteger()->width() == 32);
@@ -304,6 +314,27 @@ const Constant* ConstantManager::GetConstant(
     const Type* type, const std::vector<uint32_t>& literal_words_or_ids) {
   auto cst = CreateConstant(type, literal_words_or_ids);
   return cst ? RegisterConstant(cst) : nullptr;
+}
+
+std::vector<const analysis::Constant*> Constant::GetVectorComponents(
+    analysis::ConstantManager* const_mgr) const {
+  std::vector<const analysis::Constant*> components;
+  const analysis::VectorConstant* a = this->AsVectorConstant();
+  const analysis::Vector* vector_type = this->type()->AsVector();
+  assert(vector_type != nullptr);
+  if (a != nullptr) {
+    for (uint32_t i = 0; i < vector_type->element_count(); ++i) {
+      components.push_back(a->GetComponents()[i]);
+    }
+  } else {
+    const analysis::Type* element_type = vector_type->element_type();
+    const analysis::Constant* element_null_const =
+        const_mgr->GetConstant(element_type, {});
+    for (uint32_t i = 0; i < vector_type->element_count(); ++i) {
+      components.push_back(element_null_const);
+    }
+  }
+  return components;
 }
 
 }  // namespace analysis

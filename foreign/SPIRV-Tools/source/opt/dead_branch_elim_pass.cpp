@@ -367,20 +367,6 @@ bool DeadBranchElimPass::EliminateDeadBranches(ir::Function* func) {
 
 void DeadBranchElimPass::Initialize(ir::IRContext* c) {
   InitializeProcessing(c);
-
-  // Initialize extension whitelist
-  InitExtensions();
-};
-
-bool DeadBranchElimPass::AllExtensionsSupported() const {
-  // If any extension not in whitelist, return false
-  for (auto& ei : get_module()->extensions()) {
-    const char* extName =
-        reinterpret_cast<const char*>(&ei.GetInOperand(0).words[0]);
-    if (extensions_whitelist_.find(extName) == extensions_whitelist_.end())
-      return false;
-  }
-  return true;
 }
 
 Pass::Status DeadBranchElimPass::ProcessImpl() {
@@ -389,8 +375,6 @@ Pass::Status DeadBranchElimPass::ProcessImpl() {
   // TODO(greg-lunarg): Add support for OpGroupDecorate
   for (auto& ai : get_module()->annotations())
     if (ai.opcode() == SpvOpGroupDecorate) return Status::SuccessWithoutChange;
-  // Do not process if any disallowed extensions are enabled
-  if (!AllExtensionsSupported()) return Status::SuccessWithoutChange;
   // Process all entry point functions
   ProcessFunction pfn = [this](ir::Function* fp) {
     return EliminateDeadBranches(fp);
@@ -404,34 +388,6 @@ DeadBranchElimPass::DeadBranchElimPass() {}
 Pass::Status DeadBranchElimPass::Process(ir::IRContext* module) {
   Initialize(module);
   return ProcessImpl();
-}
-
-void DeadBranchElimPass::InitExtensions() {
-  extensions_whitelist_.clear();
-  extensions_whitelist_.insert({
-      "SPV_AMD_shader_explicit_vertex_parameter",
-      "SPV_AMD_shader_trinary_minmax",
-      "SPV_AMD_gcn_shader",
-      "SPV_KHR_shader_ballot",
-      "SPV_AMD_shader_ballot",
-      "SPV_AMD_gpu_shader_half_float",
-      "SPV_KHR_shader_draw_parameters",
-      "SPV_KHR_subgroup_vote",
-      "SPV_KHR_16bit_storage",
-      "SPV_KHR_device_group",
-      "SPV_KHR_multiview",
-      "SPV_NVX_multiview_per_view_attributes",
-      "SPV_NV_viewport_array2",
-      "SPV_NV_stereo_view_rendering",
-      "SPV_NV_sample_mask_override_coverage",
-      "SPV_NV_geometry_shader_passthrough",
-      "SPV_AMD_texture_gather_bias_lod",
-      "SPV_KHR_storage_buffer_storage_class",
-      "SPV_KHR_variable_pointers",
-      "SPV_AMD_gpu_shader_int16",
-      "SPV_KHR_post_depth_coverage",
-      "SPV_KHR_shader_atomic_counter_ops",
-  });
 }
 
 }  // namespace opt

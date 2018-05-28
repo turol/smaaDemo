@@ -84,3 +84,57 @@ add_spvtools_unittest(TARGET unswitch_test
         unswitch.cpp
     LIBS SPIRV-Tools-opt
 )
+
+add_spvtools_unittest(TARGET peeling_test
+    SRCS ../function_utils.h
+        peeling.cpp
+    LIBS SPIRV-Tools-opt
+)
+
+add_spvtools_unittest(TARGET peeling_pass_test
+    SRCS ../function_utils.h
+        peeling_pass.cpp
+    LIBS SPIRV-Tools-opt
+)
+
+add_spvtools_unittest(TARGET loop_dependence_analysis
+    SRCS ../function_utils.h
+        dependence_analysis.cpp
+    LIBS SPIRV-Tools-opt
+)
+
+add_spvtools_unittest(TARGET loop_dependence_analysis_helpers
+    SRCS ../function_utils.h
+        dependence_analysis_helpers.cpp
+    LIBS SPIRV-Tools-opt
+)
+
+add_spvtools_unittest(TARGET loop_fission
+  SRCS ../function_utils.h
+      loop_fission.cpp
+  LIBS SPIRV-Tools-opt
+)
+
+add_spvtools_unittest(TARGET fusion_compatibility
+    SRCS ../function_utils.h
+        fusion_compatibility.cpp
+    LIBS SPIRV-Tools-opt
+)
+
+add_spvtools_unittest(TARGET fusion_illegal
+    SRCS ../function_utils.h
+        fusion_illegal.cpp
+    LIBS SPIRV-Tools-opt
+)
+
+add_spvtools_unittest(TARGET fusion_legal
+    SRCS ../function_utils.h
+        fusion_legal.cpp
+    LIBS SPIRV-Tools-opt
+)
+
+add_spvtools_unittest(TARGET fusion_pass
+    SRCS ../function_utils.h
+        fusion_pass.cpp
+    LIBS SPIRV-Tools-opt
+)

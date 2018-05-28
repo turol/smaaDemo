@@ -18,6 +18,7 @@
 
 #include "cfa.h"
 #include "dominator_tree.h"
+#include "ir_context.h"
 
 using namespace spvtools;
 using namespace spvtools::opt;
@@ -196,8 +197,6 @@ void BasicBlockSuccessorHelper<BBType>::CreateSuccessorMap(
       }
     }
   } else {
-    // Technically, this is not needed, but it unifies
-    // the handling of dominator and postdom tree later on.
     successors_[dummy_start_node].push_back(f.entry().get());
     predecessors_[f.entry().get()].push_back(
         const_cast<BasicBlock*>(dummy_start_node));
@@ -326,13 +325,14 @@ void DominatorTree::GetDominatorEdges(
       CFA<ir::BasicBlock>::CalculateDominators(postorder, predecessor_functor);
 }
 
-void DominatorTree::InitializeTree(const ir::Function* f, const ir::CFG& cfg) {
+void DominatorTree::InitializeTree(const ir::Function* f) {
   ClearTree();
 
   // Skip over empty functions.
   if (f->cbegin() == f->cend()) {
     return;
   }
+  const ir::CFG& cfg = *f->context()->cfg();
 
   const ir::BasicBlock* dummy_start_node =
       postdominator_ ? cfg.pseudo_exit_block() : cfg.pseudo_entry_block();
@@ -357,7 +357,6 @@ void DominatorTree::InitializeTree(const ir::Function* f, const ir::CFG& cfg) {
     first->parent_ = second;
     second->children_.push_back(first);
   }
-
   ResetDFNumbering();
 }
 

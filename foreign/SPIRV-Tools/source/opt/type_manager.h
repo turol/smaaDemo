@@ -122,6 +122,8 @@ class TypeManager {
   // unchanged.
   void RegisterType(uint32_t id, const Type& type);
 
+  Type* GetRegisteredType(const Type* type);
+
   // Removes knowledge of |id| from the manager.
   //
   // If |id| is an ambiguous type the multiple ids may be registered to |id|'s
@@ -129,6 +131,14 @@ class TypeManager {
   // case, calling GetId() with |id|'s type will return another suitable id
   // defining that type.
   void RemoveId(uint32_t id);
+
+  // Returns the type of the member of |parent_type| that is identified by
+  // |access_chain|.  The vector |access_chain| is a series of integers that are
+  // used to pick members as in the |OpCompositeExtract| instructions.  If you
+  // want a member of an array, vector, or matrix that does not have a constant
+  // index, you can use 0 in that position.  All elements have the same type.
+  const Type* GetMemberType(const Type* parent_type,
+                            const std::vector<uint32_t>& access_chain);
 
  private:
   using TypeToIdMap = std::unordered_map<const Type*, uint32_t, HashTypePointer,

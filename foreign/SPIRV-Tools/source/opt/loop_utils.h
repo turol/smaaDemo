@@ -24,6 +24,19 @@ namespace spvtools {
 
 namespace opt {
 
+// Class to gather some metrics about a Region Of Interest (ROI).
+// So far it counts the number of instructions in a ROI (excluding debug
+// and label instructions) per basic block and in total.
+struct CodeMetrics {
+  void Analyze(const ir::Loop& loop);
+
+  // The number of instructions per basic block in the ROI.
+  std::unordered_map<uint32_t, size_t> block_sizes_;
+
+  // Number of instruction in the ROI.
+  size_t roi_size_;
+};
+
 // LoopUtils is used to encapsulte loop optimizations and from the passes which
 // use them. Any pass which needs a loop optimization should do it through this
 // or through a pass which is using this.
@@ -33,6 +46,9 @@ class LoopUtils {
   struct LoopCloningResult {
     using ValueMapTy = std::unordered_map<uint32_t, uint32_t>;
     using BlockMapTy = std::unordered_map<uint32_t, ir::BasicBlock*>;
+    using PtrMap = std::unordered_map<ir::Instruction*, ir::Instruction*>;
+
+    PtrMap ptr_map_;
 
     // Mapping between the original loop ids and the new one.
     ValueMapTy value_map_;
@@ -87,14 +103,23 @@ class LoopUtils {
 
   // Clone |loop_| and remap its instructions. Newly created blocks
   // will be added to the |cloning_result.cloned_bb_| list, correctly ordered to
-  // be inserted into a function. If the loop is structured, the merge construct
-  // will also be cloned. The function preserves the def/use, cfg and instr to
-  // block analyses.
+  // be inserted into a function.
+  // It is assumed that |ordered_loop_blocks| is compatible with the result of
+  // |Loop::ComputeLoopStructuredOrder|. If the preheader and merge block are in
+  // the list they will also be cloned. If not, the resulting loop will share
+  // them with the original loop.
+  // The function preserves the def/use, cfg and instr to block analyses.
   // The cloned loop nest will be added to the loop descriptor and will have
-  // owner ship.
+  // ownership.
   ir::Loop* CloneLoop(
       LoopCloningResult* cloning_result,
       const std::vector<ir::BasicBlock*>& ordered_loop_blocks) const;
+  // Clone |loop_| and remap its instructions, as above. Overload to compute
+  // loop block ordering within method rather than taking in as parameter.
+  ir::Loop* CloneLoop(LoopCloningResult* cloning_result) const;
+
+  // Clone the |loop_| and make the new loop branch to the second loop on exit.
+  ir::Loop* CloneAndAttachLoopToHeader(LoopCloningResult* cloning_result);
 
   // Perfom a partial unroll of |loop| by given |factor|. This will copy the
   // body of the loop |factor| times. So a |factor| of one would give a new loop
@@ -124,6 +149,15 @@ class LoopUtils {
   // Maintains the loop descriptor object after the unroll functions have been
   // called, otherwise the analysis should be invalidated.
   void Finalize();
+
+  // Returns the context associate to |loop_|.
+  ir::IRContext* GetContext() { return context_; }
+  // Returns the loop descriptor owning |loop_|.
+  ir::LoopDescriptor* GetLoopDescriptor() { return loop_desc_; }
+  // Returns the loop on which the object operates on.
+  ir::Loop* GetLoop() const { return loop_; }
+  // Returns the function that |loop_| belong to.
+  ir::Function* GetFunction() const { return &function_; }
 
  private:
   ir::IRContext* context_;

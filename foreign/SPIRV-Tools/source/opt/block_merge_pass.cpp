@@ -69,8 +69,24 @@ bool BlockMergePass::MergeBlocks(ir::Function* func) {
       continue;
     }
 
-    // Merge blocks.
     ir::Instruction* merge_inst = bi->GetMergeInst();
+    if (pred_is_header && lab_id != merge_inst->GetSingleWordInOperand(0u)) {
+      // If this is a header block and the successor is not its merge, we must
+      // be careful about which blocks we are willing to merge together.
+      // OpLoopMerge must be followed by a conditional or unconditional branch.
+      // The merge must be a loop merge because a selection merge cannot be
+      // followed by an unconditional branch.
+      ir::BasicBlock* succ_block = context()->get_instr_block(lab_id);
+      SpvOp succ_term_op = succ_block->terminator()->opcode();
+      assert(merge_inst->opcode() == SpvOpLoopMerge);
+      if (succ_term_op != SpvOpBranch &&
+          succ_term_op != SpvOpBranchConditional) {
+        ++bi;
+        continue;
+      }
+    }
+
+    // Merge blocks.
     context()->KillInst(br);
     auto sbi = bi;
     for (; sbi != func->end(); ++sbi)
@@ -121,27 +137,9 @@ bool BlockMergePass::IsMerge(ir::BasicBlock* block) {
   return IsMerge(block->id());
 }
 
-void BlockMergePass::Initialize(ir::IRContext* c) {
-  InitializeProcessing(c);
-
-  // Initialize extension whitelist
-  InitExtensions();
-};
-
-bool BlockMergePass::AllExtensionsSupported() const {
-  // If any extension not in whitelist, return false
-  for (auto& ei : get_module()->extensions()) {
-    const char* extName =
-        reinterpret_cast<const char*>(&ei.GetInOperand(0).words[0]);
-    if (extensions_whitelist_.find(extName) == extensions_whitelist_.end())
-      return false;
-  }
-  return true;
-}
+void BlockMergePass::Initialize(ir::IRContext* c) { InitializeProcessing(c); }
 
 Pass::Status BlockMergePass::ProcessImpl() {
-  // Do not process if any disallowed extensions are enabled
-  if (!AllExtensionsSupported()) return Status::SuccessWithoutChange;
   // Process all entry point functions.
   ProcessFunction pfn = [this](ir::Function* fp) { return MergeBlocks(fp); };
   bool modified = ProcessEntryPointCallTree(pfn, get_module());
@@ -153,34 +151,6 @@ BlockMergePass::BlockMergePass() {}
 Pass::Status BlockMergePass::Process(ir::IRContext* c) {
   Initialize(c);
   return ProcessImpl();
-}
-
-void BlockMergePass::InitExtensions() {
-  extensions_whitelist_.clear();
-  extensions_whitelist_.insert({
-      "SPV_AMD_shader_explicit_vertex_parameter",
-      "SPV_AMD_shader_trinary_minmax",
-      "SPV_AMD_gcn_shader",
-      "SPV_KHR_shader_ballot",
-      "SPV_AMD_shader_ballot",
-      "SPV_AMD_gpu_shader_half_float",
-      "SPV_KHR_shader_draw_parameters",
-      "SPV_KHR_subgroup_vote",
-      "SPV_KHR_16bit_storage",
-      "SPV_KHR_device_group",
-      "SPV_KHR_multiview",
-      "SPV_NVX_multiview_per_view_attributes",
-      "SPV_NV_viewport_array2",
-      "SPV_NV_stereo_view_rendering",
-      "SPV_NV_sample_mask_override_coverage",
-      "SPV_NV_geometry_shader_passthrough",
-      "SPV_AMD_texture_gather_bias_lod",
-      "SPV_KHR_storage_buffer_storage_class",
-      "SPV_KHR_variable_pointers",
-      "SPV_AMD_gpu_shader_int16",
-      "SPV_KHR_post_depth_coverage",
-      "SPV_KHR_shader_atomic_counter_ops",
-  });
 }
 
 }  // namespace opt

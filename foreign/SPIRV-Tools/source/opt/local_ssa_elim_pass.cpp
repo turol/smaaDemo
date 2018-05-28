@@ -18,6 +18,7 @@
 
 #include "cfa.h"
 #include "iterator.h"
+#include "ssa_rewrite_pass.h"
 
 namespace spvtools {
 namespace opt {
@@ -27,7 +28,7 @@ void LocalMultiStoreElimPass::Initialize(ir::IRContext* c) {
 
   // Initialize extension whitelist
   InitExtensions();
-};
+}
 
 bool LocalMultiStoreElimPass::AllExtensionsSupported() const {
   // If any extension not in whitelist, return false
@@ -41,10 +42,6 @@ bool LocalMultiStoreElimPass::AllExtensionsSupported() const {
 }
 
 Pass::Status LocalMultiStoreElimPass::ProcessImpl() {
-  // Assumes all control flow structured.
-  // TODO(greg-lunarg): Do SSA rewrite for non-structured control flow
-  if (!context()->get_feature_mgr()->HasCapability(SpvCapabilityShader))
-    return Status::SuccessWithoutChange;
   // Assumes relaxed logical addressing only (see instruction.h)
   // TODO(greg-lunarg): Add support for physical addressing
   if (context()->get_feature_mgr()->HasCapability(SpvCapabilityAddresses))
@@ -58,7 +55,7 @@ Pass::Status LocalMultiStoreElimPass::ProcessImpl() {
   if (!AllExtensionsSupported()) return Status::SuccessWithoutChange;
   // Process functions
   ProcessFunction pfn = [this](ir::Function* fp) {
-    return InsertPhiInstructions(fp);
+    return SSARewriter(this).RewriteFunctionIntoSSA(fp);
   };
   bool modified = ProcessEntryPointCallTree(pfn, get_module());
   return modified ? Status::SuccessWithChange : Status::SuccessWithoutChange;
@@ -97,6 +94,16 @@ void LocalMultiStoreElimPass::InitExtensions() {
       "SPV_AMD_gpu_shader_int16",
       "SPV_KHR_post_depth_coverage",
       "SPV_KHR_shader_atomic_counter_ops",
+      "SPV_EXT_shader_stencil_export",
+      "SPV_EXT_shader_viewport_index_layer",
+      "SPV_AMD_shader_image_load_store_lod",
+      "SPV_AMD_shader_fragment_mask",
+      "SPV_EXT_fragment_fully_covered",
+      "SPV_AMD_gpu_shader_half_float_fetch",
+      "SPV_GOOGLE_decorate_string",
+      "SPV_GOOGLE_hlsl_functionality1",
+      "SPV_NV_shader_subgroup_partitioned",
+      "SPV_EXT_descriptor_indexing",
   });
 }
 

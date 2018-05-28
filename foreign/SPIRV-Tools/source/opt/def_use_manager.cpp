@@ -14,6 +14,8 @@
 
 #include "def_use_manager.h"
 
+#include <iostream>
+
 #include "log.h"
 #include "reflect.h"
 
@@ -267,6 +269,16 @@ bool operator==(const DefUseManager& lhs, const DefUseManager& rhs) {
   }
 
   if (lhs.id_to_users_ != rhs.id_to_users_) {
+    for (auto p : lhs.id_to_users_) {
+      if (rhs.id_to_users_.count(p) == 0) {
+        return false;
+      }
+    }
+    for (auto p : rhs.id_to_users_) {
+      if (lhs.id_to_users_.count(p) == 0) {
+        return false;
+      }
+    }
     return false;
   }
 

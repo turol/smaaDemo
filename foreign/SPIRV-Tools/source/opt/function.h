@@ -15,6 +15,7 @@
 #ifndef LIBSPIRV_OPT_CONSTRUCTS_H_
 #define LIBSPIRV_OPT_CONSTRUCTS_H_
 
+#include <algorithm>
 #include <functional>
 #include <memory>
 #include <utility>
@@ -27,6 +28,7 @@
 namespace spvtools {
 namespace ir {
 
+class CFG;
 class IRContext;
 class Module;
 
@@ -64,6 +66,13 @@ class Function {
   template <typename T>
   inline void AddBasicBlocks(T begin, T end, iterator ip);
 
+  // Move basic block with |id| to the position after |ip|. Both have to be
+  // contained in this function.
+  inline void MoveBasicBlockToAfter(uint32_t id, BasicBlock* ip);
+
+  // Delete all basic blocks that contain no instructions.
+  inline void RemoveEmptyBlocks();
+
   // Saves the given function end instruction.
   inline void SetFunctionEnd(std::unique_ptr<Instruction> end_inst);
 
@@ -91,6 +100,13 @@ class Function {
     return const_iterator(&blocks_, blocks_.cend());
   }
 
+  // Returns an iterator to the basic block |id|.
+  iterator FindBlock(uint32_t bb_id) {
+    return std::find_if(begin(), end(), [bb_id](const ir::BasicBlock& it_bb) {
+      return bb_id == it_bb.id();
+    });
+  }
+
   // Runs the given function |f| on each instruction in this function, and
   // optionally on debug line instructions that might precede them.
   void ForEachInst(const std::function<void(Instruction*)>& f,
@@ -102,6 +118,18 @@ class Function {
   // and optionally on debug line instructions that might precede them.
   void ForEachParam(const std::function<void(const Instruction*)>& f,
                     bool run_on_debug_line_insts = false) const;
+
+  // Returns the context of the current function.
+  IRContext* context() const { return def_inst_->context(); }
+
+  BasicBlock* InsertBasicBlockAfter(std::unique_ptr<ir::BasicBlock>&& new_block,
+                                    BasicBlock* position);
+
+  // Pretty-prints all the basic blocks in this function into a std::string.
+  //
+  // |options| are the disassembly options. SPV_BINARY_TO_TEXT_OPTION_NO_HEADER
+  // is always added to |options|.
+  std::string PrettyPrint(uint32_t options = 0u) const;
 
  private:
   // The enclosing module.
@@ -139,6 +167,25 @@ template <typename T>
 inline void Function::AddBasicBlocks(T src_begin, T src_end, iterator ip) {
   blocks_.insert(ip.Get(), std::make_move_iterator(src_begin),
                  std::make_move_iterator(src_end));
+}
+
+inline void Function::MoveBasicBlockToAfter(uint32_t id, BasicBlock* ip) {
+  auto block_to_move = std::move(*FindBlock(id).Get());
+
+  assert(block_to_move->GetParent() == ip->GetParent() &&
+         "Both blocks have to be in the same function.");
+
+  InsertBasicBlockAfter(std::move(block_to_move), ip);
+  blocks_.erase(std::find(std::begin(blocks_), std::end(blocks_), nullptr));
+}
+
+inline void Function::RemoveEmptyBlocks() {
+  auto first_empty =
+      std::remove_if(std::begin(blocks_), std::end(blocks_),
+                     [](const std::unique_ptr<BasicBlock>& bb) -> bool {
+                       return bb->GetLabelInst()->opcode() == SpvOpNop;
+                     });
+  blocks_.erase(first_empty, std::end(blocks_));
 }
 
 inline void Function::SetFunctionEnd(std::unique_ptr<Instruction> end_inst) {

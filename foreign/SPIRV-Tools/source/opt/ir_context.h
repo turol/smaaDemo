@@ -24,7 +24,10 @@
 #include "feature_manager.h"
 #include "loop_descriptor.h"
 #include "module.h"
+#include "register_pressure.h"
+#include "scalar_analysis.h"
 #include "type_manager.h"
+#include "value_number_table.h"
 
 #include <algorithm>
 #include <iostream>
@@ -58,7 +61,10 @@ class IRContext {
     kAnalysisDominatorAnalysis = 1 << 5,
     kAnalysisLoopAnalysis = 1 << 6,
     kAnalysisNameMap = 1 << 7,
-    kAnalysisEnd = 1 << 8
+    kAnalysisScalarEvolution = 1 << 8,
+    kAnalysisRegisterPressure = 1 << 9,
+    kAnalysisValueNumberTable = 1 << 10,
+    kAnalysisEnd = 1 << 11
   };
 
   friend inline Analysis operator|(Analysis lhs, Analysis rhs);
@@ -204,6 +210,24 @@ class IRContext {
     return def_use_mgr_.get();
   }
 
+  // Returns a pointer to a value number table.  If the liveness analysis is
+  // invalid, it is rebuilt first.
+  opt::ValueNumberTable* GetValueNumberTable() {
+    if (!AreAnalysesValid(kAnalysisValueNumberTable)) {
+      BuildValueNumberTable();
+    }
+    return vn_table_.get();
+  }
+
+  // Returns a pointer to a liveness analysis.  If the liveness analysis is
+  // invalid, it is rebuilt first.
+  opt::LivenessAnalysis* GetLivenessAnalysis() {
+    if (!AreAnalysesValid(kAnalysisRegisterPressure)) {
+      BuildRegPressureAnalysis();
+    }
+    return reg_pressure_.get();
+  }
+
   // Returns the basic block for instruction |instr|. Re-builds the instruction
   // block map, if needed.
   ir::BasicBlock* get_instr_block(ir::Instruction* instr) {
@@ -256,6 +280,15 @@ class IRContext {
     if (!type_mgr_)
       type_mgr_.reset(new opt::analysis::TypeManager(consumer(), this));
     return type_mgr_.get();
+  }
+
+  // Returns a pointer to the scalar evolution analysis. If it is invalid it
+  // will be rebuilt first.
+  opt::ScalarEvolutionAnalysis* GetScalarEvolutionAnalysis() {
+    if (!AreAnalysesValid(kAnalysisScalarEvolution)) {
+      BuildScalarEvolutionAnalysis();
+    }
+    return scalar_evolution_analysis_.get();
   }
 
   // Build the map from the ids to the OpName and OpMemberName instruction
@@ -352,7 +385,7 @@ class IRContext {
 
   // Returns true if |inst| is a combinator in the current context.
   // |combinator_ops_| is built if it has not been already.
-  inline bool IsCombinatorInstruction(ir::Instruction* inst) {
+  inline bool IsCombinatorInstruction(const Instruction* inst) {
     if (!AreAnalysesValid(kAnalysisCombinators)) {
       InitializeCombinators();
     }
@@ -380,12 +413,10 @@ class IRContext {
   ir::LoopDescriptor* GetLoopDescriptor(const ir::Function* f);
 
   // Gets the dominator analysis for function |f|.
-  opt::DominatorAnalysis* GetDominatorAnalysis(const ir::Function* f,
-                                               const ir::CFG&);
+  opt::DominatorAnalysis* GetDominatorAnalysis(const ir::Function* f);
 
   // Gets the postdominator analysis for function |f|.
-  opt::PostDominatorAnalysis* GetPostDominatorAnalysis(const ir::Function* f,
-                                                       const ir::CFG&);
+  opt::PostDominatorAnalysis* GetPostDominatorAnalysis(const ir::Function* f);
 
   // Remove the dominator tree of |f| from the cache.
   inline void RemoveDominatorAnalysis(const ir::Function* f) {
@@ -444,6 +475,24 @@ class IRContext {
     valid_analyses_ = valid_analyses_ | kAnalysisCFG;
   }
 
+  void BuildScalarEvolutionAnalysis() {
+    scalar_evolution_analysis_.reset(new opt::ScalarEvolutionAnalysis(this));
+    valid_analyses_ = valid_analyses_ | kAnalysisScalarEvolution;
+  }
+
+  // Builds the liveness analysis from scratch, even if it was already valid.
+  void BuildRegPressureAnalysis() {
+    reg_pressure_.reset(new opt::LivenessAnalysis(this));
+    valid_analyses_ = valid_analyses_ | kAnalysisRegisterPressure;
+  }
+
+  // Builds the value number table analysis from scratch, even if it was already
+  // valid.
+  void BuildValueNumberTable() {
+    vn_table_.reset(new opt::ValueNumberTable(this));
+    valid_analyses_ = valid_analyses_ | kAnalysisValueNumberTable;
+  }
+
   // Removes all computed dominator and post-dominator trees. This will force
   // the context to rebuild the trees on demand.
   void ResetDominatorAnalysis() {
@@ -478,6 +527,10 @@ class IRContext {
 
   // Remove |inst| from |id_to_name_| if it is in map.
   void RemoveFromIdToName(const Instruction* inst);
+
+  // Returns true if it is suppose to be valid but it is incorrect.  Returns
+  // true if the cfg is invalidated.
+  bool CheckCFG();
 
   // The SPIR-V syntax context containing grammar tables for opcodes and
   // operands.
@@ -540,6 +593,14 @@ class IRContext {
 
   // A map from an id to its corresponding OpName and OpMemberName instructions.
   std::unique_ptr<std::multimap<uint32_t, Instruction*>> id_to_name_;
+
+  // The cache scalar evolution analysis node.
+  std::unique_ptr<opt::ScalarEvolutionAnalysis> scalar_evolution_analysis_;
+
+  // The liveness analysis |module_|.
+  std::unique_ptr<opt::LivenessAnalysis> reg_pressure_;
+
+  std::unique_ptr<opt::ValueNumberTable> vn_table_;
 };
 
 inline ir::IRContext::Analysis operator|(ir::IRContext::Analysis lhs,
@@ -733,10 +794,16 @@ void IRContext::AddAnnotationInst(std::unique_ptr<Instruction>&& a) {
 
 void IRContext::AddType(std::unique_ptr<Instruction>&& t) {
   module()->AddType(std::move(t));
+  if (AreAnalysesValid(kAnalysisDefUse)) {
+    get_def_use_mgr()->AnalyzeInstDef(&*(--types_values_end()));
+  }
 }
 
 void IRContext::AddGlobalValue(std::unique_ptr<Instruction>&& v) {
   module()->AddGlobalValue(std::move(v));
+  if (AreAnalysesValid(kAnalysisDefUse)) {
+    get_def_use_mgr()->AnalyzeInstDef(&*(--types_values_end()));
+  }
 }
 
 void IRContext::AddFunction(std::unique_ptr<Function>&& f) {

@@ -16,6 +16,8 @@
 
 #include <unordered_set>
 
+#include "ir_context.h"
+
 namespace spvtools {
 namespace opt {
 
@@ -35,6 +37,32 @@ ir::BasicBlock* DominatorAnalysisBase::CommonDominator(
   }
 
   return block;
+}
+
+bool DominatorAnalysisBase::Dominates(ir::Instruction* a,
+                                      ir::Instruction* b) const {
+  if (!a || !b) {
+    return false;
+  }
+
+  if (a == b) {
+    return true;
+  }
+
+  ir::BasicBlock* bb_a = a->context()->get_instr_block(a);
+  ir::BasicBlock* bb_b = b->context()->get_instr_block(b);
+
+  if (bb_a != bb_b) {
+    return tree_.Dominates(bb_a, bb_b);
+  }
+
+  ir::Instruction* current_inst = a;
+  while ((current_inst = current_inst->NextNode())) {
+    if (current_inst == b) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace opt

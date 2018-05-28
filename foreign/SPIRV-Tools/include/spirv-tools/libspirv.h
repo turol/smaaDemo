@@ -73,6 +73,7 @@ typedef enum spv_result_t {
   SPV_ERROR_INVALID_CAPABILITY = -13,
   SPV_ERROR_INVALID_DATA = -14,  // Indicates data rules validation failure.
   SPV_ERROR_MISSING_EXTENSION = -15,
+  SPV_ERROR_WRONG_VERSION = -16,  // Indicates wrong SPIR-V version
   SPV_FORCE_32_BIT_ENUM(spv_result_t)
 } spv_result_t;
 
@@ -376,12 +377,12 @@ typedef const spv_validator_options_t* spv_const_validator_options;
 // Returns the SPIRV-Tools software version as a null-terminated string.
 // The contents of the underlying storage is valid for the remainder of
 // the process.
-SPIRV_TOOLS_EXPORT const char* spvSoftwareVersionString();
+SPIRV_TOOLS_EXPORT const char* spvSoftwareVersionString(void);
 // Returns a null-terminated string containing the name of the project,
 // the software version string, and commit details.
 // The contents of the underlying storage is valid for the remainder of
 // the process.
-SPIRV_TOOLS_EXPORT const char* spvSoftwareVersionDetailsString();
+SPIRV_TOOLS_EXPORT const char* spvSoftwareVersionDetailsString(void);
 
 // Certain target environments impose additional restrictions on SPIR-V, so it's
 // often necessary to specify which one applies.  SPV_ENV_UNIVERSAL means
@@ -410,7 +411,7 @@ typedef enum {
   SPV_ENV_OPENCL_EMBEDDED_2_1,  // OpenCL Embedded Profile 2.1 latest revision.
   SPV_ENV_OPENCL_EMBEDDED_2_2,  // OpenCL Embedded Profile 2.2 latest revision.
   SPV_ENV_UNIVERSAL_1_3,  // SPIR-V 1.3 latest revision, no other restrictions.
-  SPV_ENV_VULKAN_1_1,     // Vulkan 1.0 latest revision.
+  SPV_ENV_VULKAN_1_1,     // Vulkan 1.1 latest revision.
 } spv_target_env;
 
 // SPIR-V Validator can be parameterized with the following Universal Limits.
@@ -437,7 +438,7 @@ SPIRV_TOOLS_EXPORT void spvContextDestroy(spv_context context);
 // Creates a Validator options object with default options. Returns a valid
 // options object. The object remains valid until it is passed into
 // spvValidatorOptionsDestroy.
-SPIRV_TOOLS_EXPORT spv_validator_options spvValidatorOptionsCreate();
+SPIRV_TOOLS_EXPORT spv_validator_options spvValidatorOptionsCreate(void);
 
 // Destroys the given Validator options object.
 SPIRV_TOOLS_EXPORT void spvValidatorOptionsDestroy(

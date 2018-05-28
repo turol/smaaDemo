@@ -24,6 +24,7 @@ FILES:= \
 	composite.cpp \
 	constants.cpp \
 	const_folding_rules.cpp \
+	copy_prop_arrays.cpp \
 	dead_branch_elim_pass.cpp \
 	dead_insert_elim_pass.cpp \
 	dead_variable_elimination.cpp \
@@ -55,7 +56,13 @@ FILES:= \
 	local_single_block_elim_pass.cpp \
 	local_single_store_elim_pass.cpp \
 	local_ssa_elim_pass.cpp \
+	loop_dependence.cpp \
+	loop_dependence_helpers.cpp \
 	loop_descriptor.cpp \
+	loop_fission.cpp \
+	loop_fusion.cpp \
+	loop_fusion_pass.cpp \
+	loop_peeling.cpp \
 	loop_unroller.cpp \
 	loop_unswitch_pass.cpp \
 	loop_utils.cpp \
@@ -67,18 +74,25 @@ FILES:= \
 	pass_manager.cpp \
 	private_to_local_pass.cpp \
 	propagator.cpp \
+	reduce_load_size.cpp \
 	redundancy_elimination.cpp \
+	register_pressure.cpp \
 	remove_duplicates_pass.cpp \
 	replace_invalid_opc.cpp \
+	scalar_analysis.cpp \
+	scalar_analysis_simplification.cpp \
 	scalar_replacement_pass.cpp \
 	set_spec_constant_default_value_pass.cpp \
 	simplification_pass.cpp \
+	ssa_rewrite_pass.cpp \
 	strength_reduction_pass.cpp \
 	strip_debug_info_pass.cpp \
+	strip_reflect_info_pass.cpp \
 	type_manager.cpp \
 	types.cpp \
 	unify_const_pass.cpp \
 	value_number_table.cpp \
+	vector_dce.cpp \
 	workaround1209.cpp \
 	# empty line
 
