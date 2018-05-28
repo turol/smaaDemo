@@ -433,6 +433,7 @@
                     "PassthroughNV": 5250,
                     "ViewportRelativeNV": 5252,
                     "SecondaryViewportRelativeNV": 5256,
+                    "NonUniformEXT": 5300,
                     "HlslCounterBufferGOOGLE": 5634,
                     "HlslSemanticGOOGLE": 5635
                 }
@@ -592,7 +593,10 @@
                     "Reduce": 0,
                     "InclusiveScan": 1,
                     "ExclusiveScan": 2,
-                    "ClusteredReduce": 3
+                    "ClusteredReduce": 3,
+                    "PartitionedReduceNV": 6,
+                    "PartitionedInclusiveScanNV": 7,
+                    "PartitionedExclusiveScanNV": 8
                 }
             },
             {
@@ -713,6 +717,19 @@
                     "ShaderStereoViewNV": 5259,
                     "PerViewAttributesNV": 5260,
                     "FragmentFullyCoveredEXT": 5265,
+                    "GroupNonUniformPartitionedNV": 5297,
+                    "ShaderNonUniformEXT": 5301,
+                    "RuntimeDescriptorArrayEXT": 5302,
+                    "InputAttachmentArrayDynamicIndexingEXT": 5303,
+                    "UniformTexelBufferArrayDynamicIndexingEXT": 5304,
+                    "StorageTexelBufferArrayDynamicIndexingEXT": 5305,
+                    "UniformBufferArrayNonUniformIndexingEXT": 5306,
+                    "SampledImageArrayNonUniformIndexingEXT": 5307,
+                    "StorageBufferArrayNonUniformIndexingEXT": 5308,
+                    "StorageImageArrayNonUniformIndexingEXT": 5309,
+                    "InputAttachmentArrayNonUniformIndexingEXT": 5310,
+                    "UniformTexelBufferArrayNonUniformIndexingEXT": 5311,
+                    "StorageTexelBufferArrayNonUniformIndexingEXT": 5312,
                     "SubgroupShuffleINTEL": 5568,
                     "SubgroupBufferBlockIOINTEL": 5569,
                     "SubgroupImageBlockIOINTEL": 5570
@@ -1079,6 +1096,7 @@
                     "OpGroupSMaxNonUniformAMD": 5007,
                     "OpFragmentMaskFetchAMD": 5011,
                     "OpFragmentFetchAMD": 5012,
+                    "OpGroupNonUniformPartitionNV": 5296,
                     "OpSubgroupShuffleINTEL": 5571,
                     "OpSubgroupShuffleDownINTEL": 5572,
                     "OpSubgroupShuffleUpINTEL": 5573,
