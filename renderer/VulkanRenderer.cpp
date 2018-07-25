@@ -946,7 +946,7 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	}
 
 	memcpy(static_cast<char *>(op.allocationInfo.pMappedData), contents, size);
-	{
+	if (!op.coherent) {
 		vk::DeviceSize offset = op.allocationInfo.offset;
 		vk::DeviceSize end    = op.allocationInfo.offset + size;
 		// round offset down to nonCoherentAtomSize
@@ -1833,7 +1833,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 			memcpy(mappedPtr + regions[i].bufferOffset, desc.mipData_[i].data, desc.mipData_[i].size);
 		}
 
-		{
+		if (!op.coherent) {
 			vk::DeviceSize offset = op.allocationInfo.offset;
 			vk::DeviceSize end    = op.allocationInfo.offset + bufferSize;
 			// round offset down to nonCoherentAtomSize
@@ -2512,6 +2512,7 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 
 				op.stagingBuffer = vk::Buffer();
 				op.memory        = VK_NULL_HANDLE;
+				op.coherent      = false;
 			} else {
 				assert(!op.memory);
 			}
@@ -2583,6 +2584,9 @@ UploadOp RendererImpl::allocateUploadOp(uint32_t size) {
 	device.bindBufferMemory(op.stagingBuffer, op.allocationInfo.deviceMemory, op.allocationInfo.offset);
 
 	numUploads++;
+
+	assert(op.allocationInfo.memoryType < memoryProperties.memoryTypeCount);
+	op.coherent = !!(memoryProperties.memoryTypes[op.allocationInfo.memoryType].propertyFlags & vk::MemoryPropertyFlagBits::eHostCoherent);
 
 	return op;
 }
