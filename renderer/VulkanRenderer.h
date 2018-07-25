@@ -681,10 +681,12 @@ struct UploadOp {
 	vk::Buffer              stagingBuffer;
 	VmaAllocation           memory;
 	VmaAllocationInfo       allocationInfo;
+	bool                    coherent;
 
 
 	UploadOp() noexcept
 	: memory(VK_NULL_HANDLE)
+	, coherent(false)
 	{
 		allocationInfo = {};
 	}
@@ -695,6 +697,7 @@ struct UploadOp {
 		assert(!semWaitMask);
 		assert(!stagingBuffer);
 		assert(!memory);
+		assert(!coherent);
 	}
 
 
@@ -709,12 +712,14 @@ struct UploadOp {
 	, stagingBuffer(other.stagingBuffer)
 	, memory(other.memory)
 	, allocationInfo(other.allocationInfo)
+	, coherent(other.coherent)
 	{
 		other.cmdBuf        = vk::CommandBuffer();
 		other.semaphore     = vk::Semaphore();
 		other.semWaitMask   = vk::PipelineStageFlags();
 		other.stagingBuffer = vk::Buffer();
 		other.memory        = VK_NULL_HANDLE;
+		other.coherent      = false;
 	}
 
 
@@ -728,6 +733,7 @@ struct UploadOp {
 		assert(!semWaitMask);
 		assert(!stagingBuffer);
 		assert(!memory);
+		assert(!coherent);
 
 		cmdBuf              = other.cmdBuf;
 		other.cmdBuf        = vk::CommandBuffer();
@@ -743,6 +749,9 @@ struct UploadOp {
 
 		memory              = other.memory;
 		other.memory        = VK_NULL_HANDLE;
+
+		coherent            = other.coherent;
+		other.coherent      = false;
 
 		allocationInfo      = other.allocationInfo;
 
