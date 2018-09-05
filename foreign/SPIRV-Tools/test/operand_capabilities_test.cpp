@@ -21,9 +21,9 @@
 #include "enum_set.h"
 #include "unit_spirv.h"
 
+namespace spvtools {
 namespace {
 
-using libspirv::CapabilitySet;
 using spvtest::ElementsIn;
 using std::get;
 using std::tuple;
@@ -47,7 +47,7 @@ using EnumCapabilityTest =
 TEST_P(EnumCapabilityTest, Sample) {
   const auto env = get<0>(GetParam());
   const auto context = spvContextCreate(env);
-  const libspirv::AssemblyGrammar grammar(context);
+  const AssemblyGrammar grammar(context);
   spv_operand_desc entry;
 
   ASSERT_EQ(SPV_SUCCESS,
@@ -59,6 +59,7 @@ TEST_P(EnumCapabilityTest, Sample) {
   EXPECT_THAT(ElementsIn(cap_set),
               Eq(ElementsIn(get<1>(GetParam()).expected_capabilities)))
       << " capability value " << get<1>(GetParam()).value;
+  spvContextDestroy(context);
 }
 
 #define CASE0(TYPE, VALUE)                            \
@@ -76,6 +77,12 @@ TEST_P(EnumCapabilityTest, Sample) {
     SPV_OPERAND_TYPE_##TYPE, uint32_t(Spv##VALUE), CapabilitySet { \
       SpvCapability##CAP1, SpvCapability##CAP2                     \
     }                                                              \
+  }
+#define CASE3(TYPE, VALUE, CAP1, CAP2, CAP3)                        \
+  {                                                                 \
+    SPV_OPERAND_TYPE_##TYPE, uint32_t(Spv##VALUE), CapabilitySet {  \
+      SpvCapability##CAP1, SpvCapability##CAP2, SpvCapability##CAP3 \
+    }                                                               \
   }
 #define CASE5(TYPE, VALUE, CAP1, CAP2, CAP3, CAP4, CAP5)             \
   {                                                                  \
@@ -615,9 +622,12 @@ INSTANTIATE_TEST_CASE_P(
     GroupOperation, EnumCapabilityTest,
     Combine(Values(SPV_ENV_UNIVERSAL_1_0, SPV_ENV_UNIVERSAL_1_1),
             ValuesIn(std::vector<EnumCapabilityCase>{
-                CASE1(GROUP_OPERATION, GroupOperationReduce, Kernel),
-                CASE1(GROUP_OPERATION, GroupOperationInclusiveScan, Kernel),
-                CASE1(GROUP_OPERATION, GroupOperationExclusiveScan, Kernel),
+                CASE3(GROUP_OPERATION, GroupOperationReduce, Kernel,
+                      GroupNonUniformArithmetic, GroupNonUniformBallot),
+                CASE3(GROUP_OPERATION, GroupOperationInclusiveScan, Kernel,
+                      GroupNonUniformArithmetic, GroupNonUniformBallot),
+                CASE3(GROUP_OPERATION, GroupOperationExclusiveScan, Kernel,
+                      GroupNonUniformArithmetic, GroupNonUniformBallot),
             })), );
 
 // See SPIR-V Section 3.29 Kernel Enqueue Flags
@@ -720,4 +730,5 @@ INSTANTIATE_TEST_CASE_P(
 #undef CASE1
 #undef CASE2
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace spvtools

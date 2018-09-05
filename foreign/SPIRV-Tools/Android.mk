@@ -51,6 +51,7 @@ SPVTOOLS_SRC_FILES := \
 		source/validate_ext_inst.cpp \
 		source/validate_id.cpp \
 		source/validate_image.cpp \
+		source/validate_interfaces.cpp \
 		source/validate_instruction.cpp \
 		source/validate_layout.cpp \
 		source/validate_literals.cpp \
@@ -93,7 +94,6 @@ SPVTOOLS_OPT_SRC_FILES := \
 		source/opt/inline_pass.cpp \
 		source/opt/inline_exhaustive_pass.cpp \
 		source/opt/inline_opaque_pass.cpp \
-		source/opt/insert_extract_elim.cpp \
 		source/opt/instruction.cpp \
 		source/opt/instruction_list.cpp \
 		source/opt/ir_context.cpp \

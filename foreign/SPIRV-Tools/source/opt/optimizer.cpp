@@ -137,10 +137,10 @@ Optimizer& Optimizer::RegisterLegalizationPasses() {
 }
 
 Optimizer& Optimizer::RegisterPerformancePasses() {
-  return RegisterPass(CreateRemoveDuplicatesPass())
-      .RegisterPass(CreateMergeReturnPass())
+  return RegisterPass(CreateMergeReturnPass())
       .RegisterPass(CreateInlineExhaustivePass())
       .RegisterPass(CreateAggressiveDCEPass())
+      .RegisterPass(CreatePrivateToLocalPass())
       .RegisterPass(CreateLocalSingleBlockLoadStoreElimPass())
       .RegisterPass(CreateLocalSingleStoreElimPass())
       .RegisterPass(CreateAggressiveDCEPass())
@@ -173,10 +173,10 @@ Optimizer& Optimizer::RegisterPerformancePasses() {
 }
 
 Optimizer& Optimizer::RegisterSizePasses() {
-  return RegisterPass(CreateRemoveDuplicatesPass())
-      .RegisterPass(CreateMergeReturnPass())
+  return RegisterPass(CreateMergeReturnPass())
       .RegisterPass(CreateInlineExhaustivePass())
       .RegisterPass(CreateAggressiveDCEPass())
+      .RegisterPass(CreatePrivateToLocalPass())
       .RegisterPass(CreateScalarReplacementPass())
       .RegisterPass(CreateLocalAccessChainConvertPass())
       .RegisterPass(CreateLocalSingleBlockLoadStoreElimPass())
@@ -329,7 +329,7 @@ Optimizer::PassToken CreateLocalSingleStoreElimPass() {
 
 Optimizer::PassToken CreateInsertExtractElimPass() {
   return MakeUnique<Optimizer::PassToken::Impl>(
-      MakeUnique<opt::InsertExtractElimPass>());
+      MakeUnique<opt::SimplificationPass>());
 }
 
 Optimizer::PassToken CreateDeadInsertElimPass() {

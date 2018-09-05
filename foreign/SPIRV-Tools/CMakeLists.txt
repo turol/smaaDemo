@@ -71,7 +71,7 @@ if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MAT
   set(COMPILER_IS_LIKE_GNU TRUE)
 endif()
 if(${COMPILER_IS_LIKE_GNU})
-  set(SPIRV_WARNINGS -Wall -Wextra -Wnon-virtual-dtor -Wno-missing-field-initializers)
+  set(SPIRV_WARNINGS -Wall -Wextra -Wnon-virtual-dtor -Wno-missing-field-initializers -Wno-self-assign)
 
   option(SPIRV_WARN_EVERYTHING "Enable -Weverything" ${SPIRV_WARN_EVERYTHING})
   if(${SPIRV_WARN_EVERYTHING})
@@ -168,15 +168,19 @@ endif()
 
 find_host_package(PythonInterp)
 
-if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
   macro(spvtools_check_symbol_exports TARGET)
-    add_test(NAME spirv-tools-symbol-exports-${TARGET}
-             COMMAND ${PYTHON_EXECUTABLE}
-             ${spirv-tools_SOURCE_DIR}/utils/check_symbol_exports.py "$<TARGET_FILE:${TARGET}>")
+    if (NOT "${SPIRV_SKIP_TESTS}")
+      add_test(NAME spirv-tools-symbol-exports-${TARGET}
+               COMMAND ${PYTHON_EXECUTABLE}
+               ${spirv-tools_SOURCE_DIR}/utils/check_symbol_exports.py "$<TARGET_FILE:${TARGET}>")
+    endif()
   endmacro()
 else()
   macro(spvtools_check_symbol_exports TARGET)
-    message("Skipping symbol exports test for ${TARGET}")
+    if (NOT "${SPIRV_SKIP_TESTS}")
+      message("Skipping symbol exports test for ${TARGET}")
+    endif()
   endmacro()
 endif()
 

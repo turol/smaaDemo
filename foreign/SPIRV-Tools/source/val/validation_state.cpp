@@ -29,7 +29,7 @@ using std::string;
 using std::unordered_map;
 using std::vector;
 
-namespace libspirv {
+namespace spvtools {
 
 namespace {
 bool IsInstructionInLayoutSection(ModuleLayoutSection layout, SpvOp op) {
@@ -142,9 +142,13 @@ bool IsInstructionInLayoutSection(ModuleLayoutSection layout, SpvOp op) {
 }  // anonymous namespace
 
 ValidationState_t::ValidationState_t(const spv_const_context ctx,
-                                     const spv_const_validator_options opt)
+                                     const spv_const_validator_options opt,
+                                     const uint32_t* words,
+                                     const size_t num_words)
     : context_(ctx),
       options_(opt),
+      words_(words),
+      num_words_(num_words),
       instruction_counter_(0),
       unresolved_forward_ids_{},
       operand_names_{},
@@ -162,6 +166,14 @@ ValidationState_t::ValidationState_t(const spv_const_context ctx,
       memory_model_(SpvMemoryModelMax),
       in_function_(false) {
   assert(opt && "Validator options may not be Null.");
+
+  switch (context_->target_env) {
+    case SPV_ENV_WEBGPU_0:
+      features_.bans_op_undef = true;
+      break;
+    default:
+      break;
+  }
 }
 
 spv_result_t ValidationState_t::ForwardDeclareId(uint32_t id) {
@@ -254,9 +266,19 @@ bool ValidationState_t::IsOpcodeInCurrentLayoutSection(SpvOp op) {
 }
 
 DiagnosticStream ValidationState_t::diag(spv_result_t error_code) const {
-  return libspirv::DiagnosticStream(
-      {0, 0, static_cast<size_t>(instruction_counter_)}, context_->consumer,
-      error_code);
+  return diag(error_code, instruction_counter_);
+}
+
+DiagnosticStream ValidationState_t::diag(spv_result_t error_code,
+                                         int instruction_counter) const {
+  std::string disassembly;
+  if (instruction_counter >= 0 && static_cast<size_t>(instruction_counter) <=
+                                      ordered_instructions_.size()) {
+    disassembly = Disassemble(ordered_instructions_[instruction_counter - 1]);
+  }
+  size_t pos = instruction_counter >= 0 ? instruction_counter : 0;
+  return DiagnosticStream({0, 0, pos}, context_->consumer, disassembly,
+                          error_code);
 }
 
 deque<Function>& ValidationState_t::functions() { return module_functions_; }
@@ -301,6 +323,12 @@ void ValidationState_t::RegisterCapability(SpvCapability cap) {
   switch (cap) {
     case SpvCapabilityKernel:
       features_.group_ops_reduce_and_scans = true;
+      break;
+    case SpvCapabilityInt8:
+    case SpvCapabilityStorageBuffer8BitAccess:
+    case SpvCapabilityUniformAndStorageBuffer8BitAccess:
+    case SpvCapabilityStoragePushConstant8:
+      features_.declare_int8_type = true;
       break;
     case SpvCapabilityInt16:
       features_.declare_int16_type = true;
@@ -409,9 +437,16 @@ void ValidationState_t::RegisterInstruction(
   if (in_function_body()) {
     ordered_instructions_.emplace_back(&inst, &current_function(),
                                        current_function().current_block());
+    if (in_block() &&
+        spvOpcodeIsBlockTerminator(static_cast<SpvOp>(inst.opcode))) {
+      current_function().current_block()->set_terminator(
+          &ordered_instructions_.back());
+    }
   } else {
     ordered_instructions_.emplace_back(&inst, nullptr, nullptr);
   }
+  ordered_instructions_.back().SetInstructionPosition(instruction_counter_);
+
   uint32_t id = ordered_instructions_.back().id();
   if (id) {
     all_definitions_.insert(make_pair(id, &ordered_instructions_.back()));
@@ -829,4 +864,18 @@ const std::vector<uint32_t>& ValidationState_t::FunctionEntryPoints(
   }
 }
 
-}  // namespace libspirv
+std::string ValidationState_t::Disassemble(const Instruction& inst) const {
+  const spv_parsed_instruction_t& c_inst(inst.c_inst());
+  return Disassemble(c_inst.words, c_inst.num_words);
+}
+
+std::string ValidationState_t::Disassemble(const uint32_t* words,
+                                           uint16_t num_words) const {
+  uint32_t disassembly_options = SPV_BINARY_TO_TEXT_OPTION_NO_HEADER |
+                                 SPV_BINARY_TO_TEXT_OPTION_FRIENDLY_NAMES;
+
+  return spvInstructionBinaryToText(context()->target_env, words, num_words,
+                                    words_, num_words_, disassembly_options);
+}
+
+}  // namespace spvtools

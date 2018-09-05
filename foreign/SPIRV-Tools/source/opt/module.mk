@@ -45,7 +45,6 @@ FILES:= \
 	inline_exhaustive_pass.cpp \
 	inline_opaque_pass.cpp \
 	inline_pass.cpp \
-	insert_extract_elim.cpp \
 	instruction.cpp \
 	instruction_list.cpp \
 	ir_context.cpp \

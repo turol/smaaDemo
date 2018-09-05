@@ -21,7 +21,7 @@
 #include "val/instruction.h"
 #include "val/validation_state.h"
 
-namespace libspirv {
+namespace spvtools {
 
 // Validates that type declarations are unique, unless multiple declarations
 // of the same data type are allowed by the specification.
@@ -37,14 +37,8 @@ spv_result_t TypeUniquePass(ValidationState_t& _,
 
   if (spvOpcodeGeneratesType(opcode)) {
     if (opcode == SpvOpTypeArray || opcode == SpvOpTypeRuntimeArray ||
-        opcode == SpvOpTypeStruct) {
+        opcode == SpvOpTypeStruct || opcode == SpvOpTypePointer) {
       // Duplicate declarations of aggregates are allowed.
-      return SPV_SUCCESS;
-    }
-
-    if (inst->opcode == SpvOpTypePointer &&
-        _.HasExtension(Extension::kSPV_KHR_variable_pointers)) {
-      // Duplicate pointer types are allowed with this extension.
       return SPV_SUCCESS;
     }
 
@@ -59,4 +53,4 @@ spv_result_t TypeUniquePass(ValidationState_t& _,
   return SPV_SUCCESS;
 }
 
-}  // namespace libspirv
+}  // namespace spvtools

@@ -28,12 +28,13 @@
 #include "val/validation_state.h"
 #include "validate.h"
 
+namespace spvtools {
 namespace {
-using libspirv::CapabilitySet;
-using libspirv::Extension;
-using libspirv::ExtensionSet;
-using libspirv::ValidationState_t;
+
 using std::vector;
+
+// This is all we need for these tests.
+static uint32_t kFakeBinary[] = {0};
 
 // A test with a ValidationState_t member transparently.
 class ValidationStateTest : public testing::Test {
@@ -41,7 +42,7 @@ class ValidationStateTest : public testing::Test {
   ValidationStateTest()
       : context_(spvContextCreate(SPV_ENV_UNIVERSAL_1_0)),
         options_(spvValidatorOptionsCreate()),
-        state_(context_, options_) {}
+        state_(context_, options_, kFakeBinary, 0) {}
 
   ~ValidationStateTest() {
     spvContextDestroy(context_);
@@ -133,4 +134,6 @@ TEST_F(ValidationState_HasAnyOfExtensions, MultiCapMask) {
   EXPECT_TRUE(state_.HasAnyOfExtensions(set1));
   EXPECT_FALSE(state_.HasAnyOfExtensions(set2));
 }
+
 }  // namespace
+}  // namespace spvtools

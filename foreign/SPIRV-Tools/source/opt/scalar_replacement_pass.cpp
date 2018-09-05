@@ -377,11 +377,8 @@ uint32_t ScalarReplacementPass::GetOrCreatePointerType(uint32_t id) {
     if (global.opcode() == SpvOpTypePointer &&
         global.GetSingleWordInOperand(0u) == SpvStorageClassFunction &&
         global.GetSingleWordInOperand(1u) == id) {
-      if (!context()->get_feature_mgr()->HasExtension(
-              libspirv::Extension::kSPV_KHR_variable_pointers) ||
-          get_decoration_mgr()->GetDecorationsFor(id, false).empty()) {
-        // If variable pointers is enabled, only reuse a decoration-less
-        // pointer of the correct type.
+      if (get_decoration_mgr()->GetDecorationsFor(id, false).empty()) {
+        // Only reuse a decoration-less pointer of the correct type.
         ptrId = global.result_id();
         break;
       }
@@ -803,7 +800,8 @@ ir::Instruction* ScalarReplacementPass::CreateNullConstant(uint32_t type_id) {
 
   const analysis::Type* type = type_mgr->GetType(type_id);
   const analysis::Constant* null_const = const_mgr->GetConstant(type, {});
-  ir::Instruction* null_inst = const_mgr->GetDefiningInstruction(null_const);
+  ir::Instruction* null_inst =
+      const_mgr->GetDefiningInstruction(null_const, type_id);
   context()->UpdateDefUse(null_inst);
   return null_inst;
 }

@@ -24,10 +24,11 @@
 #include "spirv-tools/libspirv.h"
 #include "table.h"
 
-namespace libspirv {
+namespace spvtools {
 
 class ValidationState_t;
 class BasicBlock;
+class Instruction;
 
 /// A function that returns a vector of BasicBlocks given a BasicBlock. Used to
 /// get the successor and predecessor nodes of a CFG block
@@ -75,6 +76,16 @@ spv_result_t CheckIdDefinitionDominateUse(const ValidationState_t& _);
 /// @return SPV_SUCCESS if no errors are found. SPV_ERROR_INVALID_DATA otherwise
 spv_result_t ValidateAdjacency(ValidationState_t& _);
 
+/// @brief Validates static uses of input and output variables
+///
+/// Checks that any entry point that uses a input or output variable lists that
+/// variable in its interface.
+///
+/// @param[in] _ the validation state of the module
+///
+/// @return SPV_SUCCESS if no errors are found.
+spv_result_t ValidateInterfaces(ValidationState_t& _);
+
 /// @brief Updates the immediate dominator for each of the block edges
 ///
 /// Updates the immediate dominator of the blocks for each of the edges
@@ -98,8 +109,7 @@ spv_result_t ModuleLayoutPass(ValidationState_t& _,
                               const spv_parsed_instruction_t* inst);
 
 /// Performs Control Flow Graph validation of a module
-spv_result_t CfgPass(ValidationState_t& _,
-                     const spv_parsed_instruction_t* inst);
+spv_result_t CfgPass(ValidationState_t& _, const Instruction* inst);
 
 /// Performs Id and SSA validation of a module
 spv_result_t IdPass(ValidationState_t& _, const spv_parsed_instruction_t* inst);
@@ -183,7 +193,7 @@ spv_result_t CapabilityPass(ValidationState_t& _,
 spv_result_t PrimitivesPass(ValidationState_t& _,
                             const spv_parsed_instruction_t* inst);
 
-}  // namespace libspirv
+}  // namespace spvtools
 
 /// @brief Validate the ID usage of the instruction stream
 ///
@@ -195,7 +205,7 @@ spv_result_t PrimitivesPass(ValidationState_t& _,
 /// @return result code
 spv_result_t spvValidateInstructionIDs(const spv_instruction_t* pInsts,
                                        const uint64_t instCount,
-                                       const libspirv::ValidationState_t& state,
+                                       const spvtools::ValidationState_t& state,
                                        spv_position position);
 
 /// @brief Validate the ID's within a SPIR-V binary
@@ -220,12 +230,12 @@ namespace spvtools {
 spv_result_t ValidateBinaryAndKeepValidationState(
     const spv_const_context context, spv_const_validator_options options,
     const uint32_t* words, const size_t num_words, spv_diagnostic* pDiagnostic,
-    std::unique_ptr<libspirv::ValidationState_t>* vstate);
+    std::unique_ptr<spvtools::ValidationState_t>* vstate);
 
 // Performs validation for a single instruction and updates given validation
 // state.
 spv_result_t ValidateInstructionAndUpdateValidationState(
-    libspirv::ValidationState_t* vstate, const spv_parsed_instruction_t* inst);
+    spvtools::ValidationState_t* vstate, const spv_parsed_instruction_t* inst);
 
 }  // namespace spvtools
 

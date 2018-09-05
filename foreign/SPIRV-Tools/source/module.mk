@@ -55,6 +55,7 @@ FILES:= \
 	validate_ext_inst.cpp \
 	validate_id.cpp \
 	validate_image.cpp \
+	validate_interfaces.cpp \
 	validate_instruction.cpp \
 	validate_layout.cpp \
 	validate_literals.cpp \

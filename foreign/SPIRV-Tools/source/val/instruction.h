@@ -24,7 +24,7 @@
 #include "spirv-tools/libspirv.h"
 #include "table.h"
 
-namespace libspirv {
+namespace spvtools {
 
 class BasicBlock;
 class Function;
@@ -83,10 +83,14 @@ class Instruction {
     return *reinterpret_cast<const T*>(&words_[operand.offset]);
   }
 
+  int InstructionPosition() const { return instruction_position_; }
+  void SetInstructionPosition(int pos) { instruction_position_ = pos; }
+
  private:
   const std::vector<uint32_t> words_;
   const std::vector<spv_parsed_operand_t> operands_;
   spv_parsed_instruction_t inst_;
+  int instruction_position_;
 
   /// The function in which this instruction was declared
   Function* function_;
@@ -109,13 +113,13 @@ OPERATOR(<);
 OPERATOR(==);
 #undef OPERATOR
 
-}  // namespace libspirv
+}  // namespace spvtools
 
 // custom specialization of std::hash for Instruction
 namespace std {
 template <>
-struct hash<libspirv::Instruction> {
-  typedef libspirv::Instruction argument_type;
+struct hash<spvtools::Instruction> {
+  typedef spvtools::Instruction argument_type;
   typedef std::size_t result_type;
   result_type operator()(const argument_type& inst) const {
     return hash<uint32_t>()(inst.id());

@@ -412,6 +412,7 @@ typedef enum {
   SPV_ENV_OPENCL_EMBEDDED_2_2,  // OpenCL Embedded Profile 2.2 latest revision.
   SPV_ENV_UNIVERSAL_1_3,  // SPIR-V 1.3 latest revision, no other restrictions.
   SPV_ENV_VULKAN_1_1,     // Vulkan 1.1 latest revision.
+  SPV_ENV_WEBGPU_0,       // Work in progress WebGPU 1.0.
 } spv_target_env;
 
 // SPIR-V Validator can be parameterized with the following Universal Limits.
@@ -470,6 +471,12 @@ SPIRV_TOOLS_EXPORT void spvValidatorOptionsSetRelaxStoreStruct(
 // 1) OpVariable allocating an object whose type is a pointer type
 // 2) OpReturnValue returning a pointer value
 SPIRV_TOOLS_EXPORT void spvValidatorOptionsSetRelaxLogicalPointer(
+    spv_validator_options options, bool val);
+
+// Records whether or not the validator should relax the rules on block layout.
+//
+// When relaxed, it will skip checking standard uniform/storage buffer layout.
+SPIRV_TOOLS_EXPORT void spvValidatorOptionsSetRelaxBlockLayout(
     spv_validator_options options, bool val);
 
 // Encodes the given SPIR-V assembly text to its binary representation. The

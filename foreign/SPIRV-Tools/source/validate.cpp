@@ -39,6 +39,7 @@
 #include "spirv_validator_options.h"
 #include "val/construct.h"
 #include "val/function.h"
+#include "val/instruction.h"
 #include "val/validation_state.h"
 
 using std::function;
@@ -49,14 +50,15 @@ using std::transform;
 using std::vector;
 using std::placeholders::_1;
 
-using libspirv::CfgPass;
-using libspirv::DataRulesPass;
-using libspirv::Extension;
-using libspirv::IdPass;
-using libspirv::InstructionPass;
-using libspirv::LiteralsPass;
-using libspirv::ModuleLayoutPass;
-using libspirv::ValidationState_t;
+using spvtools::CfgPass;
+using spvtools::DataRulesPass;
+using spvtools::Extension;
+using spvtools::IdPass;
+using spvtools::Instruction;
+using spvtools::InstructionPass;
+using spvtools::LiteralsPass;
+using spvtools::ModuleLayoutPass;
+using spvtools::ValidationState_t;
 
 spv_result_t spvValidateIDs(const spv_instruction_t* pInsts,
                             const uint64_t count,
@@ -121,7 +123,7 @@ void DebugInstructionPass(ValidationState_t& _,
 // Parses OpExtension instruction and registers extension.
 void RegisterExtension(ValidationState_t& _,
                        const spv_parsed_instruction_t* inst) {
-  const std::string extension_str = libspirv::GetExtensionString(inst);
+  const std::string extension_str = spvtools::GetExtensionString(inst);
   Extension extension;
   if (!GetExtensionFromString(extension_str.c_str(), &extension)) {
     // The error will be logged in the ProcessInstruction pass.
@@ -158,12 +160,15 @@ spv_result_t ProcessInstruction(void* user_data,
   if (static_cast<SpvOp>(inst->opcode) == SpvOpEntryPoint) {
     const auto entry_point = inst->words[2];
     const SpvExecutionModel execution_model = SpvExecutionModel(inst->words[1]);
-    _.RegisterEntryPointId(entry_point, execution_model);
-    // Operand 3 and later are the <id> of interfaces for the entry point.
+    const char* str =
+        reinterpret_cast<const char*>(inst->words + inst->operands[2].offset);
+    ValidationState_t::EntryPointDescription desc;
+    desc.name = str;
+    std::vector<uint32_t> interfaces;
     for (int i = 3; i < inst->num_operands; ++i) {
-      _.RegisterInterfaceForEntryPoint(entry_point,
-                                       inst->words[inst->operands[i].offset]);
+      desc.interfaces.push_back(inst->words[inst->operands[i].offset]);
     }
+    _.RegisterEntryPoint(entry_point, execution_model, std::move(desc));
   }
   if (static_cast<SpvOp>(inst->opcode) == SpvOpFunctionCall) {
     _.AddFunctionCallTarget(inst->words[3]);
@@ -171,10 +176,15 @@ spv_result_t ProcessInstruction(void* user_data,
 
   DebugInstructionPass(_, inst);
   if (auto error = CapabilityPass(_, inst)) return error;
-  if (auto error = DataRulesPass(_, inst)) return error;
+  // The IdPass check registers instructions and, therefore, must be called
+  // before any instruction lookups are performed.
   if (auto error = IdPass(_, inst)) return error;
+
+  const Instruction* instruction = &(_.ordered_instructions().back());
+
+  if (auto error = DataRulesPass(_, inst)) return error;
   if (auto error = ModuleLayoutPass(_, inst)) return error;
-  if (auto error = CfgPass(_, inst)) return error;
+  if (auto error = CfgPass(_, instruction)) return error;
   if (auto error = InstructionPass(_, inst)) return error;
   if (auto error = TypeUniquePass(_, inst)) return error;
   if (auto error = ArithmeticsPass(_, inst)) return error;
@@ -194,7 +204,7 @@ spv_result_t ProcessInstruction(void* user_data,
   return SPV_SUCCESS;
 }
 
-void printDot(const ValidationState_t& _, const libspirv::BasicBlock& other) {
+void printDot(const ValidationState_t& _, const spvtools::BasicBlock& other) {
   string block_string;
   if (other.successors()->empty()) {
     block_string += "end ";
@@ -207,7 +217,7 @@ void printDot(const ValidationState_t& _, const libspirv::BasicBlock& other) {
          block_string.c_str());
 }
 
-void PrintBlocks(ValidationState_t& _, libspirv::Function func) {
+void PrintBlocks(ValidationState_t& _, spvtools::Function func) {
   assert(func.first_block());
 
   printf("%10s -> %s\n", _.getIdOrName(func.id()).c_str(),
@@ -227,7 +237,7 @@ void PrintBlocks(ValidationState_t& _, libspirv::Function func) {
 #define UNUSED(func) func
 #endif
 
-UNUSED(void PrintDotGraph(ValidationState_t& _, libspirv::Function func)) {
+UNUSED(void PrintDotGraph(ValidationState_t& _, spvtools::Function func)) {
   if (func.first_block()) {
     string func_name(_.getIdOrName(func.id()));
     printf("digraph %s {\n", func_name.c_str());
@@ -245,20 +255,20 @@ spv_result_t ValidateBinaryUsingContextAndValidationState(
   spv_endianness_t endian;
   spv_position_t position = {};
   if (spvBinaryEndianness(binary.get(), &endian)) {
-    return libspirv::DiagnosticStream(position, context.consumer,
+    return spvtools::DiagnosticStream(position, context.consumer, "",
                                       SPV_ERROR_INVALID_BINARY)
            << "Invalid SPIR-V magic number.";
   }
 
   spv_header_t header;
   if (spvBinaryHeaderGet(binary.get(), endian, &header)) {
-    return libspirv::DiagnosticStream(position, context.consumer,
+    return spvtools::DiagnosticStream(position, context.consumer, "",
                                       SPV_ERROR_INVALID_BINARY)
            << "Invalid SPIR-V header.";
   }
 
   if (header.version > spvVersionForTargetEnv(context.target_env)) {
-    return libspirv::DiagnosticStream(position, context.consumer,
+    return spvtools::DiagnosticStream(position, context.consumer, "",
                                       SPV_ERROR_WRONG_VERSION)
            << "Invalid SPIR-V binary version "
            << SPV_SPIRV_VERSION_MAJOR_PART(header.version) << "."
@@ -315,6 +325,7 @@ spv_result_t ValidateBinaryUsingContextAndValidationState(
   if (auto error = UpdateIdUse(*vstate)) return error;
   if (auto error = CheckIdDefinitionDominateUse(*vstate)) return error;
   if (auto error = ValidateDecorations(*vstate)) return error;
+  if (auto error = ValidateInterfaces(*vstate)) return error;
 
   // Entry point validation. Based on 2.16.1 (Universal Validation Rules) of the
   // SPIRV spec:
@@ -378,14 +389,14 @@ spv_result_t spvValidateBinary(const spv_const_context context,
   spv_context_t hijack_context = *context;
   if (pDiagnostic) {
     *pDiagnostic = nullptr;
-    libspirv::UseDiagnosticAsMessageConsumer(&hijack_context, pDiagnostic);
+    spvtools::UseDiagnosticAsMessageConsumer(&hijack_context, pDiagnostic);
   }
 
   // This interface is used for default command line options.
   spv_validator_options default_options = spvValidatorOptionsCreate();
 
   // Create the ValidationState using the context and default options.
-  ValidationState_t vstate(&hijack_context, default_options);
+  ValidationState_t vstate(&hijack_context, default_options, words, num_words);
 
   spv_result_t result = ValidateBinaryUsingContextAndValidationState(
       hijack_context, words, num_words, pDiagnostic, &vstate);
@@ -401,11 +412,12 @@ spv_result_t spvValidateWithOptions(const spv_const_context context,
   spv_context_t hijack_context = *context;
   if (pDiagnostic) {
     *pDiagnostic = nullptr;
-    libspirv::UseDiagnosticAsMessageConsumer(&hijack_context, pDiagnostic);
+    spvtools::UseDiagnosticAsMessageConsumer(&hijack_context, pDiagnostic);
   }
 
   // Create the ValidationState using the context.
-  ValidationState_t vstate(&hijack_context, options);
+  ValidationState_t vstate(&hijack_context, options, binary->code,
+                           binary->wordCount);
 
   return ValidateBinaryUsingContextAndValidationState(
       hijack_context, binary->code, binary->wordCount, pDiagnostic, &vstate);
@@ -420,10 +432,11 @@ spv_result_t ValidateBinaryAndKeepValidationState(
   spv_context_t hijack_context = *context;
   if (pDiagnostic) {
     *pDiagnostic = nullptr;
-    libspirv::UseDiagnosticAsMessageConsumer(&hijack_context, pDiagnostic);
+    spvtools::UseDiagnosticAsMessageConsumer(&hijack_context, pDiagnostic);
   }
 
-  vstate->reset(new ValidationState_t(&hijack_context, options));
+  vstate->reset(
+      new ValidationState_t(&hijack_context, options, words, num_words));
 
   return ValidateBinaryUsingContextAndValidationState(
       hijack_context, words, num_words, pDiagnostic, vstate->get());

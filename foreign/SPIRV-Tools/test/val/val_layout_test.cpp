@@ -34,7 +34,6 @@ using std::tie;
 using std::tuple;
 using std::vector;
 
-using libspirv::spvResultToString;
 using ::testing::Eq;
 using ::testing::HasSubstr;
 using ::testing::StrEq;
@@ -43,6 +42,7 @@ using pred_type = function<spv_result_t(int)>;
 using ValidateLayout =
     spvtest::ValidateBase<tuple<int, tuple<string, pred_type, pred_type>>>;
 
+namespace spvtools {
 namespace {
 
 // returns true if order is equal to VAL
@@ -397,7 +397,8 @@ OpReturn
   CompileSuccessfully(s);
   ASSERT_EQ(SPV_ERROR_INVALID_LAYOUT, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
-              StrEq("Missing OpFunctionEnd at end of module."));
+              StrEq("Missing OpFunctionEnd at end of module.\n"
+                    "  OpReturn\n"));
 }
 
 TEST_F(ValidateLayout, MissingFunctionEndForFunctionPrototype) {
@@ -413,7 +414,8 @@ OpMemoryModel Logical GLSL450
   CompileSuccessfully(s);
   ASSERT_EQ(SPV_ERROR_INVALID_LAYOUT, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
-              StrEq("Missing OpFunctionEnd at end of module."));
+              StrEq("Missing OpFunctionEnd at end of module.\n"
+                    "  %3 = OpFunction %void None %2\n"));
 }
 
 using ValidateOpFunctionParameter = spvtest::ValidateBase<int>;
@@ -638,3 +640,4 @@ TEST_F(ValidateLayout, ModuleProcessedInvalidInBasicBlock) {
 
 // TODO(umar): Test optional instructions
 }  // namespace
+}  // namespace spvtools

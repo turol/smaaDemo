@@ -24,8 +24,7 @@
 #include "val/instruction.h"
 #include "val/validation_state.h"
 
-namespace libspirv {
-
+namespace spvtools {
 namespace {
 
 bool IsSupportGuaranteedVulkan_1_0(uint32_t capability) {
@@ -39,6 +38,16 @@ bool IsSupportGuaranteedVulkan_1_0(uint32_t capability) {
     case SpvCapabilityImageBuffer:
     case SpvCapabilityImageQuery:
     case SpvCapabilityDerivativeControl:
+      return true;
+  }
+  return false;
+}
+
+bool IsSupportGuaranteedVulkan_1_1(uint32_t capability) {
+  if (IsSupportGuaranteedVulkan_1_0(capability)) return true;
+  switch (capability) {
+    case SpvCapabilityDeviceGroup:
+    case SpvCapabilityMultiView:
       return true;
   }
   return false;
@@ -72,6 +81,34 @@ bool IsSupportOptionalVulkan_1_0(uint32_t capability) {
     case SpvCapabilityStorageImageReadWithoutFormat:
     case SpvCapabilityStorageImageWriteWithoutFormat:
     case SpvCapabilityMultiViewport:
+      return true;
+  }
+  return false;
+}
+
+bool IsSupportOptionalVulkan_1_1(uint32_t capability) {
+  if (IsSupportOptionalVulkan_1_0(capability)) return true;
+
+  switch (capability) {
+    case SpvCapabilityGroupNonUniform:
+    case SpvCapabilityGroupNonUniformVote:
+    case SpvCapabilityGroupNonUniformArithmetic:
+    case SpvCapabilityGroupNonUniformBallot:
+    case SpvCapabilityGroupNonUniformShuffle:
+    case SpvCapabilityGroupNonUniformShuffleRelative:
+    case SpvCapabilityGroupNonUniformClustered:
+    case SpvCapabilityGroupNonUniformQuad:
+    case SpvCapabilityDrawParameters:
+    // Alias SpvCapabilityStorageBuffer16BitAccess.
+    case SpvCapabilityStorageUniformBufferBlock16:
+    // Alias SpvCapabilityUniformAndStorageBuffer16BitAccess.
+    case SpvCapabilityStorageUniform16:
+    case SpvCapabilityStoragePushConstant16:
+    case SpvCapabilityStorageInputOutput16:
+    case SpvCapabilityDeviceGroup:
+    case SpvCapabilityMultiView:
+    case SpvCapabilityVariablePointersStorageBuffer:
+    case SpvCapabilityVariablePointers:
       return true;
   }
   return false;
@@ -220,6 +257,15 @@ spv_result_t CapabilityPass(ValidationState_t& _,
              << " is not allowed by Vulkan 1.0 specification"
              << " (or requires extension)";
     }
+  } else if (env == SPV_ENV_VULKAN_1_1) {
+    if (!IsSupportGuaranteedVulkan_1_1(capability) &&
+        !IsSupportOptionalVulkan_1_1(capability) &&
+        !IsEnabledByExtension(_, capability)) {
+      return _.diag(SPV_ERROR_INVALID_CAPABILITY)
+             << "Capability " << capability_str()
+             << " is not allowed by Vulkan 1.1 specification"
+             << " (or requires extension)";
+    }
   } else if (env == SPV_ENV_OPENCL_1_2 || env == SPV_ENV_OPENCL_EMBEDDED_1_2) {
     if (!IsSupportGuaranteedOpenCL_1_2(capability, opencl_embedded) &&
         !IsSupportOptionalOpenCL_1_2(capability) &&
@@ -259,4 +305,4 @@ spv_result_t CapabilityPass(ValidationState_t& _,
   return SPV_SUCCESS;
 }
 
-}  // namespace libspirv
+}  // namespace spvtools
