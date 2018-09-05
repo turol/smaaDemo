@@ -197,10 +197,10 @@ public:
     GlslangResult compileAndLink(
             const std::string shaderName, const std::string& code,
             const std::string& entryPointName, EShMessages controls,
-            glslang::EshTargetClientVersion clientTargetVersion,
+            glslang::EShTargetClientVersion clientTargetVersion,
             bool flattenUniformArrays = false,
             EShTextureSamplerTransformMode texSampTransMode = EShTexSampTransKeep,
-            bool disableOptimizer = true,
+            bool enableOptimizer = false,
             bool automap = true)
     {
         const EShLanguage stage = GetShaderStage(GetSuffix(shaderName));
@@ -242,7 +242,8 @@ public:
         if (success && (controls & EShMsgSpvRules)) {
             std::vector<uint32_t> spirv_binary;
             glslang::SpvOptions options;
-            options.disableOptimizer = disableOptimizer;
+            options.disableOptimizer = !enableOptimizer;
+            options.validate = true;
             glslang::GlslangToSpv(*program.getIntermediate(stage),
                                   spirv_binary, &logger, &options);
 
@@ -298,8 +299,10 @@ public:
 
         if (success && (controls & EShMsgSpvRules)) {
             std::vector<uint32_t> spirv_binary;
+            glslang::SpvOptions options;
+            options.validate = true;
             glslang::GlslangToSpv(*program.getIntermediate(stage),
-                                  spirv_binary, &logger);
+                                  spirv_binary, &logger, &options);
 
             std::ostringstream disassembly_stream;
             spv::Parameterize();
@@ -338,8 +341,10 @@ public:
 
         if (success && (controls & EShMsgSpvRules)) {
             std::vector<uint32_t> spirv_binary;
+            glslang::SpvOptions options;
+            options.validate = true;
             glslang::GlslangToSpv(*program.getIntermediate(stage),
-                                  spirv_binary, &logger);
+                                  spirv_binary, &logger, &options);
 
             spv::spirvbin_t(0 /*verbosity*/).remap(spirv_binary, remapOptions);
 
@@ -407,12 +412,12 @@ public:
                                  const std::string& testName,
                                  Source source,
                                  Semantics semantics,
-                                 glslang::EshTargetClientVersion clientTargetVersion,
+                                 glslang::EShTargetClientVersion clientTargetVersion,
                                  Target target,
                                  bool automap = true,
                                  const std::string& entryPointName="",
                                  const std::string& baseDir="/baseResults/",
-                                 const bool disableOptimizer = true)
+                                 const bool enableOptimizer = false)
     {
         const std::string inputFname = testDir + "/" + testName;
         const std::string expectedOutputFname =
@@ -422,9 +427,11 @@ public:
         tryLoadFile(inputFname, "input", &input);
         tryLoadFile(expectedOutputFname, "expected output", &expectedOutput);
 
-        const EShMessages controls = DeriveOptions(source, semantics, target);
+        EShMessages controls = DeriveOptions(source, semantics, target);
+        if (enableOptimizer)
+            controls = static_cast<EShMessages>(controls & ~EShMsgHlslLegalization);
         GlslangResult result = compileAndLink(testName, input, entryPointName, controls, clientTargetVersion, false,
-                                              EShTexSampTransKeep, disableOptimizer, automap);
+                                              EShTexSampTransKeep, enableOptimizer, automap);
 
         // Generate the hybrid output in the way of glslangValidator.
         std::ostringstream stream;

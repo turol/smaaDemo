@@ -766,15 +766,23 @@ void TReflection::buildAttributeReflection(EShLanguage stage, const TIntermediat
 }
 
 // build counter block index associations for buffers
-void TReflection::buildCounterIndices()
+void TReflection::buildCounterIndices(const TIntermediate& intermediate)
 {
     // search for ones that have counters
     for (int i = 0; i < int(indexToUniformBlock.size()); ++i) {
-        const TString counterName(indexToUniformBlock[i].name + "@count");
+        const TString counterName(intermediate.addCounterBufferName(indexToUniformBlock[i].name));
         const int index = getIndex(counterName);
 
         if (index >= 0)
             indexToUniformBlock[i].counterIndex = index;
+    }
+}
+
+// build Shader Stages mask for all uniforms
+void TReflection::buildUniformStageMask(const TIntermediate& intermediate)
+{
+    for (int i = 0; i < int(indexToUniform.size()); ++i) {
+        indexToUniform[i].stages = static_cast<EShLanguageMask>(indexToUniform[i].stages | 1 << intermediate.getStage());
     }
 }
 
@@ -802,7 +810,8 @@ bool TReflection::addStage(EShLanguage stage, const TIntermediate& intermediate)
         function->traverse(&it);
     }
 
-    buildCounterIndices();
+    buildCounterIndices(intermediate);
+    buildUniformStageMask(intermediate);
 
     return true;
 }

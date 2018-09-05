@@ -41,6 +41,8 @@
 #include "../Public/ShaderLang.h"
 #include "Versions.h"
 
+#include <string>
+#include <vector>
 #include <algorithm>
 #include <set>
 #include <array>
@@ -210,7 +212,7 @@ class TVariable;
 class TIntermediate {
 public:
     explicit TIntermediate(EShLanguage l, int v = 0, EProfile p = ENoProfile) :
-        implicitThisName("@this"),
+        implicitThisName("@this"), implicitCounterName("@count"),
         language(l), source(EShSourceNone), profile(p), version(v), treeRoot(0),
         numEntryPoints(0), numErrors(0), numPushConstants(0), recursive(false),
         invocations(TQualifier::layoutNotSet), vertices(TQualifier::layoutNotSet),
@@ -218,6 +220,7 @@ public:
         pixelCenterInteger(false), originUpperLeft(false),
         vertexSpacing(EvsNone), vertexOrder(EvoNone), pointMode(false), earlyFragmentTests(false),
         postDepthCoverage(false), depthLayout(EldNone), depthReplacing(false),
+        hlslFunctionality1(false),
         blendEquations(0), xfbMode(false), multiStream(false),
 #ifdef NV_EXTENSIONS
         layoutOverrideCoverage(false),
@@ -232,7 +235,8 @@ public:
         useStorageBuffer(false),
         hlslIoMapping(false),
         textureSamplerTransformMode(EShTexSampTransKeep),
-        needToLegalize(false)
+        needToLegalize(false),
+        binaryDoubleOutput(false)
     {
         localSize[0] = 1;
         localSize[1] = 1;
@@ -347,7 +351,7 @@ public:
         if (hlslOffsets)
             processes.addProcess("hlsl-offsets");
     }
-    bool usingHlslOFfsets() const { return hlslOffsets; }
+    bool usingHlslOffsets() const { return hlslOffsets; }
     void setUseStorageBuffer()
     {
         useStorageBuffer = true;
@@ -361,6 +365,13 @@ public:
             processes.addProcess("hlsl-iomap");
     }
     bool usingHlslIoMapping() { return hlslIoMapping; }
+
+    template<class T> T addCounterBufferName(const T& name) const { return name + implicitCounterName; }
+    bool hasCounterBufferName(const TString& name) const {
+        size_t len = strlen(implicitCounterName);
+        return name.size() > len &&
+               name.compare(name.size() - len, len, implicitCounterName) == 0;
+    }
 
     void setTextureSamplerTransformMode(EShTextureSamplerTransformMode mode) { textureSamplerTransformMode = mode; }
 
@@ -458,9 +469,6 @@ public:
     TIntermBinary* addBinaryNode(TOperator op, TIntermTyped* left, TIntermTyped* right, TSourceLoc, const TType&) const;
     TIntermUnary* addUnaryNode(TOperator op, TIntermTyped* child, TSourceLoc) const;
     TIntermUnary* addUnaryNode(TOperator op, TIntermTyped* child, TSourceLoc, const TType&) const;
-
-    // Add conversion from node's type to given basic type.
-    TIntermTyped* convertToBasicType(TOperator op, TBasicType basicType, TIntermTyped* node) const;
 
     // Constant folding (in Constant.cpp)
     TIntermTyped* fold(TIntermAggregate* aggrNode);
@@ -567,6 +575,9 @@ public:
     void setDepthReplacing() { depthReplacing = true; }
     bool isDepthReplacing() const { return depthReplacing; }
 
+    void setHlslFunctionality1() { hlslFunctionality1 = true; }
+    bool getHlslFunctionality1() const { return hlslFunctionality1; }
+
     void addBlendEquation(TBlendEquationShift b) { blendEquations |= (1 << b); }
     unsigned int getBlendEquations() const { return blendEquations; }
 
@@ -582,6 +593,7 @@ public:
     int addUsedOffsets(int binding, int offset, int numOffsets);
     bool addUsedConstantId(int id);
     static int computeTypeLocationSize(const TType&, EShLanguage);
+    static int computeTypeUniformLocationSize(const TType&);
 
     bool setXfbBufferStride(int buffer, unsigned stride)
     {
@@ -610,7 +622,7 @@ public:
         return semanticNameSet.insert(name).first->c_str();
     }
 
-    void setSourceFile(const char* file) { sourceFile = file; }
+    void setSourceFile(const char* file) { if (file != nullptr) sourceFile = file; }
     const std::string& getSourceFile() const { return sourceFile; }
     void addSourceText(const char* text) { sourceText = sourceText + text; }
     const std::string& getSourceText() const { return sourceText; }
@@ -625,12 +637,21 @@ public:
     void setNeedsLegalization() { needToLegalize = true; }
     bool needsLegalization() const { return needToLegalize; }
 
+    void setBinaryDoubleOutput() { binaryDoubleOutput = true; }
+    bool getBinaryDoubleOutput() { return binaryDoubleOutput; }
+
     const char* const implicitThisName;
+    const char* const implicitCounterName;
 
 protected:
     TIntermSymbol* addSymbol(int Id, const TString&, const TType&, const TConstUnionArray&, TIntermTyped* subtree, const TSourceLoc&);
     void error(TInfoSink& infoSink, const char*);
     void warn(TInfoSink& infoSink, const char*);
+    void mergeCallGraphs(TInfoSink&, TIntermediate&);
+    void mergeModes(TInfoSink&, TIntermediate&);
+    void mergeTrees(TInfoSink&, TIntermediate&);
+    void seedIdMap(TMap<TString, int>& idMap, int& maxId);
+    void remapIds(const TMap<TString, int>& idMap, int idShift, TIntermediate&);
     void mergeBodies(TInfoSink&, TIntermSequence& globals, const TIntermSequence& unitGlobals);
     void mergeLinkerObjects(TInfoSink&, TIntermSequence& linkerObjects, const TIntermSequence& unitLinkerObjects);
     void mergeImplicitArraySizes(TType&, const TType&);
@@ -638,9 +659,10 @@ protected:
     void checkCallGraphCycles(TInfoSink&);
     void checkCallGraphBodies(TInfoSink&, bool keepUncalled);
     void inOutLocationCheck(TInfoSink&);
-    TIntermSequence& findLinkerObjects() const;
+    TIntermAggregate* findLinkerObjects() const;
     bool userOutputUsed() const;
     bool isSpecializationOperation(const TIntermOperator&) const;
+    bool isNonuniformPropagating(TOperator) const;
     bool promoteUnary(TIntermUnary&);
     bool promoteBinary(TIntermBinary&);
     void addSymbolLinkageNode(TIntermAggregate*& linkage, TSymbolTable&, const TString&);
@@ -659,6 +681,8 @@ protected:
     EShSource source;            // source language, known a bit later
     std::string entryPointName;
     std::string entryPointMangledName;
+    typedef std::list<TCall> TGraph;
+    TGraph callGraph;
 
     EProfile profile;                           // source profile
     int version;                                // source version
@@ -685,8 +709,10 @@ protected:
     bool postDepthCoverage;
     TLayoutDepth depthLayout;
     bool depthReplacing;
+    bool hlslFunctionality1;
     int blendEquations;        // an 'or'ing of masks of shifts of TBlendEquationShift
     bool xfbMode;
+    std::vector<TXfbBuffer> xfbBuffers;     // all the data we need to track per xfb buffer
     bool multiStream;
 
 #ifdef NV_EXTENSIONS
@@ -698,7 +724,7 @@ protected:
     std::array<unsigned int, EResCount> shiftBinding;
 
     // Per-descriptor-set shift values
-    std::array<std::map<int, int>, EResCount>  shiftBindingForSet;
+    std::array<std::map<int, int>, EResCount> shiftBindingForSet;
 
     std::vector<std::string> resourceSetBinding;
     bool autoMapBindings;
@@ -710,13 +736,9 @@ protected:
     bool useStorageBuffer;
     bool hlslIoMapping;
 
-    typedef std::list<TCall> TGraph;
-    TGraph callGraph;
-
     std::set<TString> ioAccessed;           // set of names of statically read/written I/O that might need extra checking
     std::vector<TIoRange> usedIo[4];        // sets of used locations, one for each of in, out, uniform, and buffers
     std::vector<TOffsetRange> usedAtomics;  // sets of bindings used by atomic counters
-    std::vector<TXfbBuffer> xfbBuffers;     // all the data we need to track per xfb buffer
     std::unordered_set<int> usedConstantId; // specialization constant ids used
     std::set<TString> semanticNameSet;
 
@@ -730,6 +752,7 @@ protected:
     TProcesses processes;
 
     bool needToLegalize;
+    bool binaryDoubleOutput;
 
 private:
     void operator=(TIntermediate&); // prevent assignments

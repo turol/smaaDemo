@@ -1,8 +1,8 @@
-commit 845860d56513d95e15fe4820df7272f9687d076e
-Merge: ca279340 b502a802
+commit 97068d8b306b446fdcff44a3dfd0650c2c579c5b
+Merge: 1d12970a dae0b0a5
 Author: John Kessenich <johnkslang@users.noreply.github.com>
-Date:   Thu Mar 8 10:55:02 2018 -0700
+Date:   Fri Aug 31 08:14:47 2018 -0700
 
-    Merge pull request #1283 from siavashserver/fix-memory-leak
+    Merge pull request #1465 from otakuto/remove-execute-permissions
     
-    Fix memory leak upon ProcessDeferred failure.
+    Remove execute permissions

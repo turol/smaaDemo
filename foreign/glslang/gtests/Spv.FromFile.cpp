@@ -171,7 +171,7 @@ TEST_P(CompileVulkanToSpirvTestAMD, FromFile)
 #endif
 
 #ifdef NV_EXTENSIONS
-// Compiling GLSL to SPIR-V under Vulkan semantics (AMD extensions enabled).
+// Compiling GLSL to SPIR-V under Vulkan semantics (NV extensions enabled).
 // Expected to successfully generate SPIR-V.
 TEST_P(CompileVulkanToSpirvTestNV, FromFile)
 {
@@ -215,6 +215,12 @@ INSTANTIATE_TEST_CASE_P(
         "spv.140.frag",
         "spv.150.geom",
         "spv.150.vert",
+        "spv.16bitstorage.frag",
+        "spv.16bitstorage_Error.frag",
+        "spv.16bitstorage-int.frag",
+        "spv.16bitstorage_Error-int.frag",
+        "spv.16bitstorage-uint.frag",
+        "spv.16bitstorage_Error-uint.frag",
         "spv.300BuiltIns.vert",
         "spv.300layout.frag",
         "spv.300layout.vert",
@@ -231,6 +237,10 @@ INSTANTIATE_TEST_CASE_P(
         "spv.450.tesc",
         "spv.450.geom",
         "spv.450.noRedecl.tesc",
+        "spv.8bitstorage-int.frag",
+        "spv.8bitstorage_Error-int.frag",
+        "spv.8bitstorage-uint.frag",
+        "spv.8bitstorage_Error-uint.frag",
         "spv.accessChain.frag",
         "spv.aggOps.frag",
         "spv.always-discard.frag",
@@ -282,6 +292,7 @@ INSTANTIATE_TEST_CASE_P(
         "spv.newTexture.frag",
         "spv.noDeadDecorations.vert",
         "spv.nonSquare.vert",
+        "spv.nonuniform.frag",
         "spv.noWorkgroup.comp",
         "spv.offsets.frag",
         "spv.Operations.frag",
@@ -321,6 +332,7 @@ INSTANTIATE_TEST_CASE_P(
         "spv.variableArrayIndex.frag",
         "spv.varyingArray.frag",
         "spv.varyingArrayIndirect.frag",
+        "spv.vecMatConstruct.frag",
         "spv.voidFunction.frag",
         "spv.whileLoop.frag",
         "spv.AofA.frag",
@@ -338,9 +350,11 @@ INSTANTIATE_TEST_CASE_P(
         "spv.precise.tese",
         "spv.precise.tesc",
         "spv.vulkan100.subgroupArithmetic.comp",
+        "spv.vulkan100.subgroupPartitioned.comp",
         "spv.xfb.vert",
         "spv.xfb2.vert",
         "spv.xfb3.vert",
+        "spv.samplerlessTextureFunctions.frag",
     })),
     FileNameAsCustomTestSuffix
 );
@@ -368,6 +382,7 @@ INSTANTIATE_TEST_CASE_P(
         "spv.subgroupBallot.comp",
         "spv.subgroupClustered.comp",
         "spv.subgroupClusteredNeg.comp",
+        "spv.subgroupPartitioned.comp",
         "spv.subgroupShuffle.comp",
         "spv.subgroupShuffleRelative.comp",
         "spv.subgroupQuad.comp",
@@ -416,6 +431,7 @@ INSTANTIATE_TEST_CASE_P(
         "spv.460.comp",
         "spv.atomic.comp",
         "spv.glFragColor.frag",
+        "spv.rankShift.comp",
         "spv.specConst.vert",
         "spv.OVR_multiview.vert",
     })),
@@ -428,6 +444,7 @@ INSTANTIATE_TEST_CASE_P(
         "vulkan.frag",
         "vulkan.vert",
         "vulkan.comp",
+        "samplerlessTextureFunctions.frag",
     })),
     FileNameAsCustomTestSuffix
 );

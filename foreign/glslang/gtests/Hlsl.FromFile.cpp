@@ -92,7 +92,7 @@ TEST_P(HlslLegalizeTest, FromFile)
     loadFileCompileAndCheck(GlobalTestSettings.testRoot, GetParam().fileName,
                             Source::HLSL, Semantics::Vulkan, glslang::EShTargetVulkan_1_0,
                             Target::Spv, true, GetParam().entryPoint,
-                            "/baseLegalResults/", false);
+                            "/baseLegalResults/", true);
 }
 
 // clang-format off
@@ -148,6 +148,7 @@ INSTANTIATE_TEST_CASE_P(
         {"hlsl.constructArray.vert", "main"},
         {"hlsl.constructexpr.frag", "main"},
         {"hlsl.constructimat.frag", "main"},
+        {"hlsl.coverage.frag", "main"},
         {"hlsl.depthGreater.frag", "PixelShaderFunction"},
         {"hlsl.depthLess.frag", "PixelShaderFunction"},
         {"hlsl.discard.frag", "PixelShaderFunction"},
@@ -195,6 +196,7 @@ INSTANTIATE_TEST_CASE_P(
         {"hlsl.hull.void.tesc", "main"},
         {"hlsl.hull.ctrlpt-1.tesc", "main"},
         {"hlsl.hull.ctrlpt-2.tesc", "main"},
+        {"hlsl.groupid.comp", "main"},
         {"hlsl.identifier.sample.frag", "main"},
         {"hlsl.if.frag", "PixelShaderFunction"},
         {"hlsl.imagefetch-subvec4.comp", "main"},
@@ -313,8 +315,10 @@ INSTANTIATE_TEST_CASE_P(
         {"hlsl.semicolons.frag", "main"},
         {"hlsl.shapeConv.frag", "main"},
         {"hlsl.shapeConvRet.frag", "main"},
+        {"hlsl.self_cast.frag", "main"},
         {"hlsl.snorm.uav.comp", "main"},
         {"hlsl.staticMemberFunction.frag", "main"},
+        {"hlsl.staticFuncInit.frag", "main"},
         {"hlsl.store.rwbyteaddressbuffer.type.comp", "main"},
         {"hlsl.stringtoken.frag", "main"},
         {"hlsl.string.frag", "main"},
@@ -370,6 +374,7 @@ INSTANTIATE_TEST_CASE_P(
         {"hlsl.targetStruct1.frag", "main"},
         {"hlsl.targetStruct2.frag", "main"},
         {"hlsl.templatetypes.frag", "PixelShaderFunction"},
+        {"hlsl.tristream-append.geom", "main"},
         {"hlsl.tx.bracket.frag", "main"},
         {"hlsl.tx.overload.frag", "main"},
         {"hlsl.type.half.frag", "main"},
@@ -410,7 +415,7 @@ INSTANTIATE_TEST_CASE_P(
 );
 // clang-format on
 
-#ifdef ENABLE_OPT
+#if ENABLE_OPT
 // clang-format off
 INSTANTIATE_TEST_CASE_P(
     ToSpirv, HlslLegalizeTest,

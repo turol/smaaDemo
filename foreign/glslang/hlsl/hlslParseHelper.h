@@ -122,11 +122,9 @@ public:
     void integerCheck(const TIntermTyped* node, const char* token);
     void globalCheck(const TSourceLoc&, const char* token);
     bool constructorError(const TSourceLoc&, TIntermNode*, TFunction&, TOperator, TType&);
-    bool constructorTextureSamplerError(const TSourceLoc&, const TFunction&);
     void arraySizeCheck(const TSourceLoc&, TIntermTyped* expr, TArraySize&);
     void arraySizeRequiredCheck(const TSourceLoc&, const TArraySizes&);
     void structArrayCheck(const TSourceLoc&, const TType& structure);
-    void arrayDimMerge(TType& type, const TArraySizes* sizes);
     bool voidErrorCheck(const TSourceLoc&, const TString&, TBasicType);
     void globalQualifierFix(const TSourceLoc&, TQualifier&);
     bool structQualifierErrorCheck(const TSourceLoc&, const TPublicType& pType);
@@ -154,7 +152,7 @@ public:
     TIntermTyped* convertArray(TIntermTyped*, const TType&);
     TIntermTyped* constructAggregate(TIntermNode*, const TType&, int, const TSourceLoc&);
     TIntermTyped* constructBuiltIn(const TType&, TOperator, TIntermTyped*, const TSourceLoc&, bool subset);
-    void declareBlock(const TSourceLoc&, TType&, const TString* instanceName = 0, TArraySizes* arraySizes = 0);
+    void declareBlock(const TSourceLoc&, TType&, const TString* instanceName = 0);
     void declareStructBufferCounter(const TSourceLoc& loc, const TType& bufferType, const TString& name);
     void fixBlockLocations(const TSourceLoc&, TQualifier&, TTypeList&, bool memberWithLocation, bool memberWithoutLocation);
     void fixBlockXfbOffsets(TQualifier&, TTypeList&);
@@ -164,8 +162,6 @@ public:
     void updateStandaloneQualifierDefaults(const TSourceLoc&, const TPublicType&);
     void wrapupSwitchSubsequence(TIntermAggregate* statements, TIntermNode* branchNode);
     TIntermNode* addSwitch(const TSourceLoc&, TIntermTyped* expression, TIntermAggregate* body, const TAttributes&);
-
-    void updateImplicitArraySize(const TSourceLoc&, TIntermNode*, int index);
 
     void nestLooping()       { ++loopNestingLevel; }
     void unnestLooping()     { --loopNestingLevel; }
@@ -269,6 +265,7 @@ protected:
     TVariable* getSplitNonIoVar(int id) const;
     void addPatchConstantInvocation();
     void fixTextureShadowModes();
+    void finalizeAppendMethods();
     TIntermTyped* makeIntegerIndex(TIntermTyped*);
 
     void fixBuiltInIoType(TType&);
@@ -405,7 +402,7 @@ protected:
     // may fit in TSampler::structReturnIndex.
     TVector<TTypeList*> textureReturnStruct;
     
-    TMap<TString, bool> structBufferCounter;
+    TMap<TString, bool> structBufferCounter;  // true if counter buffer is in use
 
     // The built-in interstage IO map considers e.g, EvqPosition on input and output separately, so that we
     // can build the linkage correctly if position appears on both sides.  Otherwise, multiple positions
@@ -462,6 +459,17 @@ protected:
     };
 
     TVector<tMipsOperatorData> mipsOperatorMipArg;
+
+    // The geometry output stream is not copied out from the entry point as a typical output variable
+    // is.  It's written via EmitVertex (hlsl=Append), which may happen in arbitrary control flow.
+    // For this we need the real output symbol.  Since it may not be known at the time and Append()
+    // method is parsed, the sequence will be patched during finalization.
+    struct tGsAppendData {
+        TIntermAggregate* node;
+        TSourceLoc loc;
+    };
+
+    TVector<tGsAppendData> gsAppends;
 
     // A texture object may be used with shadow and non-shadow samplers, but both may not be
     // alive post-DCE in the same shader.  We do not know at compilation time which are alive: that's

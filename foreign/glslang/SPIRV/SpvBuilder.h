@@ -167,6 +167,7 @@ public:
     bool isImageType(Id typeId)        const { return getTypeClass(typeId) == OpTypeImage; }
     bool isSamplerType(Id typeId)      const { return getTypeClass(typeId) == OpTypeSampler; }
     bool isSampledImageType(Id typeId) const { return getTypeClass(typeId) == OpTypeSampledImage; }
+    bool containsType(Id typeId, Op typeOp, int width) const;
 
     bool isConstantOpCode(Op opcode) const;
     bool isSpecConstantOpCode(Op opcode) const;
@@ -226,6 +227,7 @@ public:
     Id makeFloatConstant(float f, bool specConstant = false);
     Id makeDoubleConstant(double d, bool specConstant = false);
     Id makeFloat16Constant(float f16, bool specConstant = false);
+    Id makeFpConstant(Id type, double d, bool specConstant = false);
 
     // Turn the array of constants into a proper spv constant of the requested type.
     Id makeCompositeConstant(Id type, const std::vector<Id>& comps, bool specConst = false);
@@ -236,7 +238,10 @@ public:
     void addName(Id, const char* name);
     void addMemberName(Id, int member, const char* name);
     void addDecoration(Id, Decoration, int num = -1);
+    void addDecoration(Id, Decoration, const char*);
+    void addDecorationId(Id id, Decoration, Id idDecoration);
     void addMemberDecoration(Id, unsigned int member, Decoration, int num = -1);
+    void addMemberDecoration(Id, unsigned int member, Decoration, const char*);
 
     // At the end of what block do the next create*() instructions go?
     void setBuildPoint(Block* bp) { buildPoint = bp; }
@@ -291,13 +296,14 @@ public:
 
     void createNoResultOp(Op);
     void createNoResultOp(Op, Id operand);
-    void createNoResultOp(Op, const std::vector<Id>& operands);
+    void createNoResultOp(Op, const std::vector<IdImmediate>& operands);
     void createControlBarrier(Scope execution, Scope memory, MemorySemanticsMask);
     void createMemoryBarrier(unsigned executionScope, unsigned memorySemantics);
     Id createUnaryOp(Op, Id typeId, Id operand);
     Id createBinOp(Op, Id typeId, Id operand1, Id operand2);
     Id createTriOp(Op, Id typeId, Id operand1, Id operand2, Id operand3);
     Id createOp(Op, Id typeId, const std::vector<Id>& operands);
+    Id createOp(Op, Id typeId, const std::vector<IdImmediate>& operands);
     Id createFunctionCall(spv::Function*, const std::vector<spv::Id>&);
     Id createSpecConstantOp(Op, Id typeId, const std::vector<spv::Id>& operands, const std::vector<unsigned>& literals);
 
@@ -550,7 +556,7 @@ public:
     void accessChainStore(Id rvalue);
 
     // use accessChain and swizzle to load an r-value
-    Id accessChainLoad(Decoration precision, Id ResultType);
+    Id accessChainLoad(Decoration precision, Decoration nonUniform, Id ResultType);
 
     // get the direct pointer for an l-value
     Id accessChainGetLValue();
@@ -559,9 +565,17 @@ public:
     // based on the type of the base and the chain of dereferences.
     Id accessChainGetInferredType();
 
-    // Remove OpDecorate instructions whose operands are defined in unreachable
-    // blocks.
-    void eliminateDeadDecorations();
+    // Add capabilities, extensions, remove unneeded decorations, etc., 
+    // based on the resulting SPIR-V.
+    void postProcess();
+
+    // Hook to visit each instruction in a block in a function
+    void postProcess(const Instruction&);
+    // Hook to visit each instruction in a reachable block in a function.
+    void postProcessReachable(const Instruction&);
+    // Hook to visit each non-32-bit sized float/int operation in a block.
+    void postProcessType(const Instruction&, spv::Id typeId);
+
     void dump(std::vector<unsigned int>&) const;
 
     void createBranch(Block* block);

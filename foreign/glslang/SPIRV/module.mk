@@ -18,6 +18,7 @@ FILES:= \
 	InReadableOrder.cpp \
 	Logger.cpp \
 	SpvBuilder.cpp \
+	SpvPostProcess.cpp \
 	SPVRemapper.cpp \
 	# empty line
 
