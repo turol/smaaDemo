@@ -1061,7 +1061,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		spirv_cross::CompilerGLSL glsl(v.spirv);
 		spirv_cross::CompilerGLSL::Options glslOptions;
 		glslOptions.vertex.fixup_clipspace = false;
-		glsl.set_options(glslOptions);
+		glsl.set_common_options(glslOptions);
 
 		resources = processShaderResources(glsl);
 
@@ -1072,7 +1072,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		spirv_cross::CompilerGLSL glsl(f.spirv);
 		spirv_cross::CompilerGLSL::Options glslOptions;
 		glslOptions.vertex.fixup_clipspace = false;
-		glsl.set_options(glslOptions);
+		glsl.set_common_options(glslOptions);
 
 		auto fragResources = processShaderResources(glsl);
 		fragmentShader = createShader(GL_FRAGMENT_SHADER, f.name, f.macros, glsl);
