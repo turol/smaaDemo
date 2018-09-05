@@ -1,8 +1,7 @@
-commit 3ce3e49d73b8abbf2ffe33f829f941fb2a40f552
-Merge: 3a9bf0b b7a5f51
-Author: John Kessenich <johnkslang@users.noreply.github.com>
-Date:   Thu May 10 10:34:53 2018 -0600
+commit 2c512180ca03b5d4f56283efc85745775b45fdc4
+Author: John Kessenich <cepheus@frii.com>
+Date:   Thu Aug 9 10:22:41 2018 -0600
 
-    Merge pull request #73 from antiagainst/add-missing-extension
+    Revert "Update grammar for latest release of SPIR-V (revision 4 of 1.3 unified)"
     
-    Add missing 'extensions' field for some NVIDIA symbols
+    This reverts commit da767eb63f86e710541296834a25fcd522ba5249.
