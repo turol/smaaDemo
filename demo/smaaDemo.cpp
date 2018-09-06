@@ -670,7 +670,7 @@ SMAADemo::SMAADemo()
 
 
 SMAADemo::~SMAADemo() {
-	ImGui::Shutdown();
+	ImGui::DestroyContext();
 
 	if (sceneFramebuffer) {
 		deleteFramebuffers();
@@ -1316,6 +1316,7 @@ void SMAADemo::initRender() {
 
 	// imgui setup
 	{
+		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO();
 		io.IniFilename                 = nullptr;
 		io.KeyMap[ImGuiKey_Tab]        = SDL_SCANCODE_TAB;                     // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
