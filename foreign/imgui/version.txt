@@ -1,5 +1,5 @@
-commit 1c4008aa9735c085f2349e8284e745a686d3896b
+commit 767649afb162dd1dba3b68a132d7401b9a4316f7
 Author: omar <omarcornut@gmail.com>
-Date:   Wed Aug 29 17:07:53 2018 +0200
+Date:   Fri Aug 31 18:07:47 2018 +0200
 
-    Changelog tweaks/typos
+    Fix missing include on some systems to use intptr_t. (#2036, #2054)
