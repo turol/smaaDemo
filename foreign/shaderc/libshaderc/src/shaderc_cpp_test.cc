@@ -27,9 +27,9 @@
 namespace {
 
 using shaderc::AssemblyCompilationResult;
+using shaderc::CompileOptions;
 using shaderc::PreprocessedSourceCompilationResult;
 using shaderc::SpvCompilationResult;
-using shaderc::CompileOptions;
 using testing::Each;
 using testing::Eq;
 using testing::HasSubstr;
@@ -506,6 +506,14 @@ TEST_F(CppInterface, CompileAndOptimizeWithLevelZero) {
   EXPECT_THAT(disassembly_text, HasSubstr("OpSource"));
 }
 
+TEST_F(CppInterface, CompileAndOptimizeWithLevelPerformance) {
+  options_.SetOptimizationLevel(shaderc_optimization_level_performance);
+  const std::string disassembly_text = AssemblyOutput(
+      kGlslMultipleFnShader, shaderc_glsl_fragment_shader, options_);
+  // Check that we do not have function calls anymore.
+  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpFunctionCall")));
+}
+
 TEST_F(CppInterface, CompileAndOptimizeWithLevelSize) {
   options_.SetOptimizationLevel(shaderc_optimization_level_size);
   const std::string disassembly_text =
@@ -980,19 +988,76 @@ TEST_F(CppInterface, SuppressWarningsModeSecondOverridesWarningsAsErrorsMode) {
               Eq("shader: error: version not supported\n"));
 }
 
-TEST_F(CppInterface, TargetEnvCompileOptions) {
-  // Test shader compilation which requires opengl compatibility environment
+TEST_F(CppInterface, TargetEnvCompileOptionsOpenGLCompatibilityShadersFail) {
+  // Glslang does not support SPIR-V code generation for OpenGL compatibility
+  // profile.
   options_.SetTargetEnvironment(shaderc_target_env_opengl_compat, 0);
   const std::string kGlslShader =
-      R"(#version 100
+      R"(#version 150 compatibility
        uniform highp sampler2D tex;
        void main() {
          gl_FragColor = texture2D(tex, vec2(0.0,0.0));
        }
   )";
 
-  EXPECT_TRUE(
-      CompilationSuccess(kGlslShader, shaderc_glsl_fragment_shader, options_));
+  EXPECT_THAT(
+      CompilationErrors(kGlslShader, shaderc_glsl_fragment_shader, options_),
+      HasSubstr(
+          "compilation for SPIR-V does not support the compatibility profile"));
+}
+
+std::string BarrierComputeShader() {
+  return R"(#version 450
+    void main() { barrier(); })";
+};
+
+std::string SubgroupBarrierComputeShader() {
+  return R"(#version 450
+    #extension GL_KHR_shader_subgroup_basic : enable
+    void main() { subgroupBarrier(); })";
+};
+
+TEST_F(CppInterface, TargetEnvCompileOptionsVulkanEnvVulkan1_0ShaderSucceeds) {
+  options_.SetTargetEnvironment(shaderc_target_env_vulkan, 0);
+  EXPECT_TRUE(CompilationSuccess(BarrierComputeShader(),
+                                 shaderc_glsl_compute_shader, options_));
+}
+
+TEST_F(CppInterface, TargetEnvCompileOptionsVulkanEnvVulkan1_0ShaderFails) {
+  options_.SetTargetEnvironment(shaderc_target_env_vulkan, 0);
+  EXPECT_FALSE(CompilationSuccess(SubgroupBarrierComputeShader(),
+                                  shaderc_glsl_compute_shader, options_));
+}
+
+TEST_F(CppInterface,
+       TargetEnvCompileOptionsVulkan1_0EnvVulkan1_0ShaderSucceeds) {
+  options_.SetTargetEnvironment(shaderc_target_env_vulkan,
+                                shaderc_env_version_vulkan_1_0);
+  EXPECT_TRUE(CompilationSuccess(BarrierComputeShader(),
+                                 shaderc_glsl_compute_shader, options_));
+}
+
+TEST_F(CppInterface, TargetEnvCompileOptionsVulkan1_0EnvVulkan1_1ShaderFails) {
+  options_.SetTargetEnvironment(shaderc_target_env_vulkan,
+                                shaderc_env_version_vulkan_1_0);
+  EXPECT_FALSE(CompilationSuccess(SubgroupBarrierComputeShader(),
+                                  shaderc_glsl_compute_shader, options_));
+}
+
+TEST_F(CppInterface,
+       TargetEnvCompileOptionsVulkan1_1EnvVulkan1_0ShaderSucceeds) {
+  options_.SetTargetEnvironment(shaderc_target_env_vulkan,
+                                shaderc_env_version_vulkan_1_1);
+  EXPECT_TRUE(CompilationSuccess(BarrierComputeShader(),
+                                 shaderc_glsl_compute_shader, options_));
+}
+
+TEST_F(CppInterface,
+       TargetEnvCompileOptionsVulkan1_1EnvVulkan1_1ShaderSucceeds) {
+  options_.SetTargetEnvironment(shaderc_target_env_vulkan,
+                                shaderc_env_version_vulkan_1_1);
+  EXPECT_TRUE(CompilationSuccess(SubgroupBarrierComputeShader(),
+                                 shaderc_glsl_compute_shader, options_));
 }
 
 TEST_F(CppInterface, BeginAndEndOnSpvCompilationResult) {
@@ -1121,10 +1186,10 @@ TEST(
 // offset.
 std::string ShaderWithTexOffset(int offset) {
   std::ostringstream oss;
-  oss <<
-    "#version 450\n"
-    "layout (binding=0) uniform sampler1D tex;\n"
-    "void main() { vec4 x = textureOffset(tex, 1.0, " << offset << "); }\n";
+  oss << "#version 450\n"
+         "layout (binding=0) uniform sampler1D tex;\n"
+         "void main() { vec4 x = textureOffset(tex, 1.0, "
+      << offset << "); }\n";
   return oss.str();
 }
 
@@ -1260,8 +1325,7 @@ TEST_F(CppInterface, GlslDefaultPackingUsed) {
   CompileOptions options;
   const std::string disassembly_text = AssemblyOutput(
       kGlslShaderWeirdPacking, shaderc_glsl_vertex_shader, options);
-  EXPECT_THAT(disassembly_text,
-              HasSubstr("OpMemberDecorate %B 1 Offset 16"));
+  EXPECT_THAT(disassembly_text, HasSubstr("OpMemberDecorate %B 1 Offset 16"));
 }
 
 TEST_F(CppInterface, HlslOffsetsOptionDisableRespected) {
@@ -1269,8 +1333,7 @@ TEST_F(CppInterface, HlslOffsetsOptionDisableRespected) {
   options.SetHlslOffsets(false);
   const std::string disassembly_text = AssemblyOutput(
       kGlslShaderWeirdPacking, shaderc_glsl_vertex_shader, options);
-  EXPECT_THAT(disassembly_text,
-              HasSubstr("OpMemberDecorate %B 1 Offset 16"));
+  EXPECT_THAT(disassembly_text, HasSubstr("OpMemberDecorate %B 1 Offset 16"));
 }
 
 TEST_F(CppInterface, HlslOffsetsOptionEnableRespected) {
@@ -1278,8 +1341,7 @@ TEST_F(CppInterface, HlslOffsetsOptionEnableRespected) {
   options.SetHlslOffsets(true);
   const std::string disassembly_text = AssemblyOutput(
       kGlslShaderWeirdPacking, shaderc_glsl_vertex_shader, options);
-  EXPECT_THAT(disassembly_text,
-              HasSubstr("OpMemberDecorate %B 1 Offset 4"));
+  EXPECT_THAT(disassembly_text, HasSubstr("OpMemberDecorate %B 1 Offset 4"));
 }
 
 TEST_F(CppInterface, HlslRegSetBindingForFragmentRespected) {
@@ -1312,6 +1374,33 @@ TEST_F(CppInterface, HlslRegSetBindingForAllStagesRespected) {
       kHlslFragShaderWithRegisters, shaderc_glsl_fragment_shader, options);
   EXPECT_THAT(disassembly_text, HasSubstr("OpDecorate %t4 DescriptorSet 9"));
   EXPECT_THAT(disassembly_text, HasSubstr("OpDecorate %t4 Binding 16"));
+}
+
+TEST_F(CppInterface, HlslFunctionality1OffByDefault) {
+  CompileOptions options;
+  options.SetSourceLanguage(shaderc_source_language_hlsl);
+  const std::string disassembly_text = AssemblyOutput(
+      kHlslShaderWithCounterBuffer, shaderc_glsl_fragment_shader, options);
+  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorateStringGOOGLE")));
+}
+
+TEST_F(CppInterface, HlslFunctionality1Respected) {
+  CompileOptions options;
+  options.SetSourceLanguage(shaderc_source_language_hlsl);
+  options.SetHlslFunctionality1(true);
+  const std::string disassembly_text = AssemblyOutput(
+      kHlslShaderWithCounterBuffer, shaderc_glsl_fragment_shader, options);
+  EXPECT_THAT(disassembly_text, HasSubstr("OpDecorateStringGOOGLE"));
+}
+
+TEST_F(CppInterface, HlslFunctionality1SurvivesCloning) {
+  CompileOptions options;
+  options.SetSourceLanguage(shaderc_source_language_hlsl);
+  options.SetHlslFunctionality1(true);
+  CompileOptions cloned_options(options);
+  const std::string disassembly_text = AssemblyOutput(
+      kHlslShaderWithCounterBuffer, shaderc_glsl_fragment_shader, cloned_options);
+  EXPECT_THAT(disassembly_text, HasSubstr("OpDecorateStringGOOGLE"));
 }
 
 }  // anonymous namespace

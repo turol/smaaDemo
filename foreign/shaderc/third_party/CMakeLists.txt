@@ -32,7 +32,8 @@ if (IS_DIRECTORY ${SHADERC_SPIRV_HEADERS_DIR})
   add_subdirectory(${SHADERC_SPIRV_HEADERS_DIR} spirv-headers)
 endif()
 
-# Check SPIRV-Tools before glslang since it is a dependency of glslang.
+# Check SPIRV-Tools before glslang so that it is linked into glslang.
+# we control optimizations via glslang API calls directly.
 if (IS_DIRECTORY ${SHADERC_SPIRV_TOOLS_DIR})
   if ("${SHADERC_SKIP_TESTS}")
     # Also skip building tests in SPIRV-Tools.
@@ -82,16 +83,23 @@ if(${SHADERC_ENABLE_TESTS})
       ${GLSLANG_TEST_SRC_DIR} ${GLSLANG_TEST_BIN_DIR} ${GLSLANG_CONFIGURATION_DIR}
     COMMENT "Copying and patching glslang tests if needed")
 
+  # glslang-testsuite runs a bash script on Windows.
+  # Make sure to use '-o igncr' flag to ignore carriage returns (\r).
+  set(IGNORE_CR_FLAG "")
+  if(WIN32)
+    set(IGNORE_CR_FLAG -o igncr)
+  endif()
+
   if (CMAKE_CONFIGURATION_TYPES)
     # If we are running a multi-configuration project,
     # the tests will be in ${Configuration}/Test
     add_test(NAME glslang-testsuite
-      COMMAND bash runtests
+      COMMAND bash ${IGNORE_CR_FLAG} runtests
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/Test
     )
   else()
     add_test(NAME glslang-testsuite
-      COMMAND bash runtests
+      COMMAND bash ${IGNORE_CR_FLAG} runtests
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Test/
     )
   endif()

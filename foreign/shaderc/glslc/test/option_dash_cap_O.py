@@ -23,7 +23,7 @@ EMPTY_SHADER_IN_CWD = Directory('.', [File('shader.vert', MINIMAL_SHADER)])
 ASSEMBLY_WITH_DEBUG = [
     '; SPIR-V\n',
     '; Version: 1.0\n',
-    '; Generator: Google Shaderc over Glslang; 6\n',
+    '; Generator: Google Shaderc over Glslang; 7\n',
     '; Bound: 6\n',
     '; Schema: 0\n',
     '               OpCapability Shader\n',
@@ -44,7 +44,7 @@ ASSEMBLY_WITH_DEBUG = [
 ASSEMBLY_WITHOUT_DEBUG = [
     '; SPIR-V\n',
     '; Version: 1.0\n',
-    '; Generator: Google Shaderc over Glslang; 6\n',
+    '; Generator: Google Shaderc over Glslang; 7\n',
     '; Bound: 6\n',
     '; Schema: 0\n',
     '               OpCapability Shader\n',
@@ -68,6 +68,14 @@ class TestDashCapO0(expect.ValidFileContents):
     target_filename = 'shader.vert.spvasm'
     expected_file_contents = ASSEMBLY_WITH_DEBUG
 
+@inside_glslc_testsuite('OptionDashCapO')
+class TestDashCapOPerformance(expect.ValidFileContents):
+    """Tests -O works."""
+
+    environment = EMPTY_SHADER_IN_CWD
+    glslc_args = ['-S', '-O', 'shader.vert']
+    target_filename = 'shader.vert.spvasm'
+    expected_file_contents = ASSEMBLY_WITHOUT_DEBUG
 
 @inside_glslc_testsuite('OptionDashCapO')
 class TestDashCapOs(expect.ValidFileContents):

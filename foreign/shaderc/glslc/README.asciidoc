@@ -20,6 +20,7 @@ glslc [-c|-S|-E]
       [-x ...] [-std=standard]
       [ ... options for resource bindings ... ]
       [-fhlsl-offsets]
+      [-fhlsl-functionality1]
       [-fentry-point=<name>]
       [-fauto-map-locations]
       [-flimit=...]
@@ -217,16 +218,20 @@ follow the version specified by `-std=`.
 ==== `--target-env=`
 
 `--target-env=<value>` lets you specify a target environment on the command line.
-This affects the generation of warnings and errors. ``<value>`` can be one of
+This affects the generation of warnings and errors. The ``<value>`` can be one of
 the following:
 
-* `vulkan`: create SPIR-V under Vulkan semantics.
-* `opengl`: create SPIR-V under OpenGL semantics.
+* `vulkan`: create SPIR-V under Vulkan 1.0 semantics.
+* `vulkan1.0`: create SPIR-V under Vulkan 1.0 semantics.
+* `vulkan1.1`: create SPIR-V under Vulkan 1.1 semantics.
+* `opengl`: create SPIR-V under OpenGL 4.5 semantics.
+* `opengl4.5`: create SPIR-V under OpenGL 4.5 semantics.
 * `opengl_compat`: create SPIR-V under OpenGL semantics, including compatibility
   profile functions.
 
-By default, the ``<value>`` is set to `vulkan` and the compiler creates SPIR-V
-under Vulkan semantics.
+Generated code uses SPIR-V 1.0, except that code compiled for Vulkan 1.1 uses SPIR-V 1.3.
+
+If this option is not specified, a default of `vulkan1.0` is used.
 
 ==== `-x`
 
@@ -308,6 +313,7 @@ glslang support for generating debug info.
 `-O` specifies which optimization level to use:
 
 * `-O0` means "no optimization". This level generates the most debuggable code.
+* `-O` means the default optimization level for better performance.
 * `-Os` enables optimizations to reduce code size.
 
 ==== `-mfmt=<format>`
@@ -348,6 +354,17 @@ specified) will trigger an error.
 
 Use HLSL packing rules instead of GLSL rules when determining offsets of
 members of blocks.  This option is always on when compiling for HLSL.
+
+[[option-fhlsl-functionality1]]
+==== `-fhlsl-functionality1`
+
+Enable extension `SPV_GOOGLE_hlsl_functionality1`, and instructs the compiler
+to:
+
+- Annotate HLSL semantic string decorations on interface objects
+- Explicitly record the association of a UAV resource with its companion counter buffer.
+
+This option can also be spelled with an underscore: `-fhlsl_functionality1`.
 
 [[option-fentry-point]]
 ==== `-fentry-point=<name>`

@@ -649,6 +649,16 @@ TEST_F(CompileStringWithOptionsTest, CompileAndOptimizeWithLevelZero) {
   EXPECT_THAT(disassembly_text, HasSubstr("OpSource"));
 }
 
+TEST_F(CompileStringWithOptionsTest, CompileAndOptimizeWithLevelPerformance) {
+  shaderc_compile_options_set_optimization_level(
+      options_.get(), shaderc_optimization_level_performance);
+  const std::string disassembly_text =
+      CompilationOutput(kGlslMultipleFnShader, shaderc_glsl_fragment_shader,
+                        options_.get(), OutputType::SpirvAssemblyText);
+  // Check that we do not have function calls anymore.
+  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpFunctionCall")));
+}
+
 TEST_F(CompileStringWithOptionsTest, CompileAndOptimizeWithLevelSize) {
   shaderc_compile_options_set_optimization_level(
       options_.get(), shaderc_optimization_level_size);
@@ -1076,11 +1086,11 @@ TEST_F(CompileStringWithOptionsTest, IfDefCompileOption) {
                                  shaderc_glsl_vertex_shader, options_.get()));
 }
 
-TEST_F(CompileStringWithOptionsTest,
-       TargetEnvRespectedWhenCompilingOpenGLCompatibilityShaderToBinary) {
-  // Confirm that kOpenGLCompatibilityFragmentShader compiles with
-  // shaderc_target_env_opengl_compat.  When targeting OpenGL core profile
-  // or Vulkan, it should fail to compile.
+TEST_F(
+    CompileStringWithOptionsTest,
+    TargetEnvRespectedWhenCompilingOpenGLCompatibilityShaderToBinaryAndAlwaysFails) {
+  // Glslang does not support generating SPIR-V for compatibility profile
+  // shaders.
 
   EXPECT_FALSE(CompilesToValidSpv(compiler_, kOpenGLCompatibilityFragmentShader,
                                   shaderc_glsl_fragment_shader,
@@ -1088,8 +1098,9 @@ TEST_F(CompileStringWithOptionsTest,
 
   shaderc_compile_options_set_target_env(options_.get(),
                                          shaderc_target_env_opengl_compat, 0);
-  EXPECT_TRUE(CompilesToValidSpv(compiler_, kOpenGLCompatibilityFragmentShader,
-                                 shaderc_glsl_fragment_shader, options_.get()));
+  EXPECT_FALSE(CompilesToValidSpv(compiler_, kOpenGLCompatibilityFragmentShader,
+                                  shaderc_glsl_fragment_shader,
+                                  options_.get()));
 
   shaderc_compile_options_set_target_env(options_.get(),
                                          shaderc_target_env_opengl, 0);
@@ -1118,8 +1129,42 @@ TEST_F(CompileStringWithOptionsTest,
                                          shaderc_target_env_opengl, 0);
   EXPECT_TRUE(CompilesToValidSpv(compiler_, kOpenGLVertexShader,
                                  shaderc_glsl_vertex_shader, options_.get()));
+}
 
-  // TODO(dneto): Check what happens when targeting Vulkan.
+TEST_F(CompileStringWithOptionsTest,
+       TargetEnvRespectedWhenCompilingVulkan1_0ShaderToVulkan1_0Succeeds) {
+  shaderc_compile_options_set_target_env(options_.get(),
+                                         shaderc_target_env_vulkan,
+                                         shaderc_env_version_vulkan_1_0);
+  EXPECT_TRUE(CompilesToValidSpv(compiler_, kGlslShaderComputeBarrier,
+                                 shaderc_glsl_compute_shader, options_.get()));
+}
+
+TEST_F(CompileStringWithOptionsTest,
+       TargetEnvRespectedWhenCompilingVulkan1_0ShaderToVulkan1_1Succeeds) {
+  shaderc_compile_options_set_target_env(options_.get(),
+                                         shaderc_target_env_vulkan,
+                                         shaderc_env_version_vulkan_1_1);
+  EXPECT_TRUE(CompilesToValidSpv(compiler_, kGlslShaderComputeBarrier,
+                                 shaderc_glsl_compute_shader, options_.get()));
+}
+
+TEST_F(CompileStringWithOptionsTest,
+       TargetEnvRespectedWhenCompilingVulkan1_1ShaderToVulkan1_0Fails) {
+  shaderc_compile_options_set_target_env(options_.get(),
+                                         shaderc_target_env_vulkan,
+                                         shaderc_env_version_vulkan_1_0);
+  EXPECT_FALSE(CompilesToValidSpv(compiler_, kGlslShaderComputeSubgroupBarrier,
+                                  shaderc_glsl_compute_shader, options_.get()));
+}
+
+TEST_F(CompileStringWithOptionsTest,
+       TargetEnvRespectedWhenCompilingVulkan1_1ShaderToVulkan1_1Succeeds) {
+  shaderc_compile_options_set_target_env(options_.get(),
+                                         shaderc_target_env_vulkan,
+                                         shaderc_env_version_vulkan_1_1);
+  EXPECT_TRUE(CompilesToValidSpv(compiler_, kGlslShaderComputeSubgroupBarrier,
+                                 shaderc_glsl_compute_shader, options_.get()));
 }
 
 TEST_F(CompileStringWithOptionsTest,
@@ -1392,10 +1437,10 @@ TEST(EntryPointTest, LangHlslOnHlslVertexSucceedsWithGivenEntryPointName) {
 // offset.
 std::string ShaderWithTexOffset(int offset) {
   std::ostringstream oss;
-  oss <<
-    "#version 450\n"
-    "layout (binding=0) uniform sampler1D tex;\n"
-    "void main() { vec4 x = textureOffset(tex, 1.0, " << offset << "); }\n";
+  oss << "#version 450\n"
+         "layout (binding=0) uniform sampler1D tex;\n"
+         "void main() { vec4 x = textureOffset(tex, 1.0, "
+      << offset << "); }\n";
   return oss.str();
 }
 
@@ -1582,18 +1627,18 @@ TEST_F(
   const std::string disassembly_text = CompilationOutput(
       kShaderWithUniformsWithoutBindings, shaderc_vertex_shader, options_.get(),
       OutputType::SpirvAssemblyText);
-  EXPECT_THAT(disassembly_text, HasSubstr("OpDecorate %my_tex Binding 100")) << disassembly_text;
+  EXPECT_THAT(disassembly_text, HasSubstr("OpDecorate %my_tex Binding 100"))
+      << disassembly_text;
   EXPECT_THAT(disassembly_text, HasSubstr("OpDecorate %my_sam Binding 0"));
   EXPECT_THAT(disassembly_text, HasSubstr("OpDecorate %my_img Binding 1"));
   EXPECT_THAT(disassembly_text, HasSubstr("OpDecorate %my_imbuf Binding 2"));
   EXPECT_THAT(disassembly_text, HasSubstr("OpDecorate %my_ubo Binding 3"));
 }
 
-TEST_F(
-    CompileStringWithOptionsTest,
-    SetBindingBaseForTextureForVertexIgnoredWhenCompilingAsFragment) {
+TEST_F(CompileStringWithOptionsTest,
+       SetBindingBaseForTextureForVertexIgnoredWhenCompilingAsFragment) {
   shaderc_compile_options_set_auto_bind_uniforms(options_.get(), true);
-// This is ignored since we're compiling as a different stage.
+  // This is ignored since we're compiling as a different stage.
   shaderc_compile_options_set_binding_base_for_stage(
       options_.get(), shaderc_vertex_shader, shaderc_uniform_kind_texture, 100);
   const std::string disassembly_text = CompilationOutput(
@@ -1610,8 +1655,7 @@ TEST_F(CompileStringWithOptionsTest, GlslDefaultPackingUsed) {
   const std::string disassembly_text =
       CompilationOutput(kGlslShaderWeirdPacking, shaderc_vertex_shader,
                         options_.get(), OutputType::SpirvAssemblyText);
-  EXPECT_THAT(disassembly_text,
-              HasSubstr("OpMemberDecorate %B 1 Offset 16"));
+  EXPECT_THAT(disassembly_text, HasSubstr("OpMemberDecorate %B 1 Offset 16"));
 }
 
 TEST_F(CompileStringWithOptionsTest, HlslOffsetsOptionDisableRespected) {
@@ -1619,8 +1663,7 @@ TEST_F(CompileStringWithOptionsTest, HlslOffsetsOptionDisableRespected) {
   const std::string disassembly_text =
       CompilationOutput(kGlslShaderWeirdPacking, shaderc_vertex_shader,
                         options_.get(), OutputType::SpirvAssemblyText);
-  EXPECT_THAT(disassembly_text,
-              HasSubstr("OpMemberDecorate %B 1 Offset 16"));
+  EXPECT_THAT(disassembly_text, HasSubstr("OpMemberDecorate %B 1 Offset 16"));
 }
 
 TEST_F(CompileStringWithOptionsTest, HlslOffsetsOptionEnableRespected) {
@@ -1628,8 +1671,38 @@ TEST_F(CompileStringWithOptionsTest, HlslOffsetsOptionEnableRespected) {
   const std::string disassembly_text =
       CompilationOutput(kGlslShaderWeirdPacking, shaderc_vertex_shader,
                         options_.get(), OutputType::SpirvAssemblyText);
-  EXPECT_THAT(disassembly_text,
-              HasSubstr("OpMemberDecorate %B 1 Offset 4"));
+  EXPECT_THAT(disassembly_text, HasSubstr("OpMemberDecorate %B 1 Offset 4"));
+}
+
+TEST_F(CompileStringWithOptionsTest, HlslFunctionality1OffByDefault) {
+  shaderc_compile_options_set_source_language(options_.get(),
+                                              shaderc_source_language_hlsl);
+  const std::string disassembly_text =
+      CompilationOutput(kHlslShaderWithCounterBuffer, shaderc_fragment_shader,
+                        options_.get(), OutputType::SpirvAssemblyText);
+  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorateStringGOOGLE"))) << disassembly_text;
+}
+
+TEST_F(CompileStringWithOptionsTest, HlslFunctionality1Respected) {
+  shaderc_compile_options_set_source_language(options_.get(),
+                                              shaderc_source_language_hlsl);
+  shaderc_compile_options_set_hlsl_functionality1(options_.get(), true);
+  const std::string disassembly_text =
+      CompilationOutput(kHlslShaderWithCounterBuffer, shaderc_fragment_shader,
+                        options_.get(), OutputType::SpirvAssemblyText);
+  EXPECT_THAT(disassembly_text, HasSubstr("OpDecorateStringGOOGLE"));
+}
+
+TEST_F(CompileStringWithOptionsTest, HlslFunctionality1SurvivesCloning) {
+  shaderc_compile_options_set_source_language(options_.get(),
+                                              shaderc_source_language_hlsl);
+  shaderc_compile_options_set_hlsl_functionality1(options_.get(), true);
+  compile_options_ptr cloned_options(
+      shaderc_compile_options_clone(options_.get()));
+  const std::string disassembly_text =
+      CompilationOutput(kHlslShaderWithCounterBuffer, shaderc_fragment_shader,
+                        cloned_options.get(), OutputType::SpirvAssemblyText);
+  EXPECT_THAT(disassembly_text, HasSubstr("OpDecorateStringGOOGLE"));
 }
 
 }  // anonymous namespace

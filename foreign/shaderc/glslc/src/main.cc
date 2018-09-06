@@ -61,6 +61,9 @@ Options:
                     don't have an explicit 'location' layout in the shader
                     source.
   -fhlsl-iomap      Use HLSL IO mappings for bindings.
+  -fhlsl_functionality1, -fhlsl-functionality1
+                    Enable extension SPV_GOOGLE_hlsl_functionality1 for HLSL
+                    compilation.
   -fimage-binding-base [stage] <value>
                     Sets the lowest automatically assigned binding number for
                     images.  Optionally only set it for a single shader stage.
@@ -135,9 +138,14 @@ Options:
                     generation.
   -S                Only run preprocess and compilation steps.
   --target-env=<environment>
-                    Set the target shader environment, and the semantics
-                    of warnings and errors. Valid values are 'opengl',
-                    'opengl_compat' and 'vulkan'. The default value is 'vulkan'.
+                    Set the target client environment, and the semantics
+                    of warnings and errors.  An optional suffix can specify
+                    the client version.  Values are:
+                        vulkan1.0       # The default
+                        vulkan1.1
+                        vulkan          # Same as vulkan1.0
+                        opengl4.5
+                        opengl          # Same as opengl4.5
   -w                Suppresses all warning messages.
   -Werror           Treat all warnings as errors.
   -x <language>     Treat subsequent input files as having type <language>.
@@ -331,6 +339,8 @@ int main(int argc, char** argv) {
       compiler.options().SetHlslIoMapping(true);
     } else if (arg == "-fhlsl-offsets") {
       compiler.options().SetHlslOffsets(true);
+    } else if (arg == "-fhlsl_functionality1" || arg == "-fhlsl-functionality1") {
+      compiler.options().SetHlslFunctionality1(true);
     } else if (((u_kind = shaderc_uniform_kind_image),
                 (arg == "-fimage-binding-base")) ||
                ((u_kind = shaderc_uniform_kind_texture),
@@ -432,10 +442,20 @@ int main(int argc, char** argv) {
       shaderc_target_env target_env = shaderc_target_env_default;
       const string_piece target_env_str =
           arg.substr(std::strlen("--target-env="));
+      uint32_t version = 0;  // Will default appropriately.
       if (target_env_str == "vulkan") {
         target_env = shaderc_target_env_vulkan;
+      } else if (target_env_str == "vulkan1.0") {
+        target_env = shaderc_target_env_vulkan;
+        version = shaderc_env_version_vulkan_1_0;
+      } else if (target_env_str == "vulkan1.1") {
+        target_env = shaderc_target_env_vulkan;
+        version = shaderc_env_version_vulkan_1_1;
       } else if (target_env_str == "opengl") {
         target_env = shaderc_target_env_opengl;
+      } else if (target_env_str == "opengl4.5") {
+        target_env = shaderc_target_env_opengl;
+        version = shaderc_env_version_opengl_4_5;
       } else if (target_env_str == "opengl_compat") {
         target_env = shaderc_target_env_opengl_compat;
       } else {
@@ -444,7 +464,7 @@ int main(int argc, char** argv) {
                   << std::endl;
         return 1;
       }
-      compiler.options().SetTargetEnvironment(target_env, 0);
+      compiler.options().SetTargetEnvironment(target_env, version);
     } else if (arg.starts_with("-mfmt=")) {
       const string_piece binary_output_format =
           arg.substr(std::strlen("-mfmt="));
@@ -577,7 +597,10 @@ int main(int argc, char** argv) {
     } else if (arg == "-g") {
       compiler.options().SetGenerateDebugInfo();
     } else if (arg.starts_with("-O")) {
-      if (arg == "-Os") {
+      if (arg == "-O") {
+        compiler.options().SetOptimizationLevel(
+            shaderc_optimization_level_performance);
+      } else if (arg == "-Os") {
         compiler.options().SetOptimizationLevel(
             shaderc_optimization_level_size);
       } else if (arg == "-O0") {

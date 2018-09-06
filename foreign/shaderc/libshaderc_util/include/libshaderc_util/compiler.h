@@ -31,6 +31,9 @@
 #include "resources.h"
 #include "string_piece.h"
 
+// Fix a typo in glslang/Public/ShaderLang.h
+#define EShTargetClientVersion EshTargetClientVersion
+
 namespace shaderc_util {
 
 // To break recursive including. This header is already included in
@@ -103,9 +106,18 @@ class Compiler {
 
   // Target environment.
   enum class TargetEnv {
-    Vulkan,
-    OpenGL,
-    OpenGLCompat,
+    Vulkan,  // Default to Vulkan 1.0
+    OpenGL,  // Default to OpenGL 4.5
+    OpenGLCompat, // Deprecated.
+  };
+
+  // Target environment versions.  These numbers match those used by Glslang.
+  enum class TargetEnvVersion : uint32_t {
+    // For Vulkan, use numbering scheme from vulkan.h
+    Vulkan_1_0 = ((1 << 22)),              // Default to Vulkan 1.0
+    Vulkan_1_1 = ((1 << 22) | (1 << 12)),  // Default to Vulkan 1.0
+    // For OpenGL, use the numbering from #version in shaders.
+    OpenGL_4_5 = 450,
   };
 
   enum class OutputType {
@@ -116,8 +128,9 @@ class Compiler {
 
   // Supported optimization levels.
   enum class OptimizationLevel {
-    Zero,  // No optimization.
-    Size,  // Optimization towards reducing code size.
+    Zero,         // No optimization.
+    Size,         // Optimization towards reducing code size.
+    Performance,  // Optimization towards better performance.
   };
 
   // Resource limits.  These map to the "max*" fields in glslang::TBuiltInResource.
@@ -180,6 +193,7 @@ class Compiler {
         generate_debug_info_(false),
         enabled_opt_passes_(),
         target_env_(TargetEnv::Vulkan),
+        target_env_version_(0),  // Resolve default later.
         source_language_(SourceLanguage::GLSL),
         limits_(kDefaultTBuiltInResource),
         auto_bind_uniforms_(false),
@@ -188,6 +202,7 @@ class Compiler {
         hlsl_iomap_(false),
         hlsl_offsets_(false),
         hlsl_legalization_enabled_(true),
+        hlsl_functionality1_enabled_(false),
         hlsl_explicit_bindings_() {}
 
   // Requests that the compiler place debug information into the object code,
@@ -200,6 +215,9 @@ class Compiler {
 
   // Enables or disables HLSL legalization passes.
   void EnableHlslLegalization(bool hlsl_legalization_enabled);
+
+  // Enables or disables extension SPV_GOOGLE_hlsl_functionality1
+  void EnableHlslFunctionality1(bool enable);
 
   // When a warning is encountered it treat it as an error.
   void SetWarningsAsErrors();
@@ -214,8 +232,11 @@ class Compiler {
   void AddMacroDefinition(const char* macro, size_t macro_length,
                           const char* definition, size_t definition_length);
 
-  // Sets the target environment.
-  void SetTargetEnv(TargetEnv env);
+  // Sets the target environment, including version.  The version value should
+  // be 0 or one of the values from TargetEnvVersion.  The 0 version value maps
+  // to Vulkan 1.0 if the target environment is Vulkan, and it maps to OpenGL
+  // 4.5 if the target environment is OpenGL.
+  void SetTargetEnv(TargetEnv env, uint32_t version = 0);
 
   // Sets the souce language.
   void SetSourceLanguage(SourceLanguage lang);
@@ -429,6 +450,12 @@ class Compiler {
   // implementation of glslang.
   TargetEnv target_env_;
 
+  // The version number of the target environment.  The numbering scheme is
+  // particular to each target environment.  If this is 0, then use a default
+  // for that particular target environment. See libshaders/shaderc/shaderc.h
+  // for those defaults.
+  uint32_t target_env_version_;
+
   // The source language.  Defaults to GLSL.
   SourceLanguage source_language_;
 
@@ -458,6 +485,9 @@ class Compiler {
   // True if the compiler should perform legalization optimization passes if
   // source language is HLSL.
   bool hlsl_legalization_enabled_;
+
+  // True if the compiler should support extension SPV_GOOGLE_hlsl_functionality1.
+  bool hlsl_functionality1_enabled_;
 
   // A sequence of triples, each triple representing a specific HLSL register
   // name, and the set and binding numbers it should be mapped to, but in
