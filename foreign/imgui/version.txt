@@ -1,5 +1,5 @@
-commit 78b28d545f79c5c5ed3e0ebae4099e44bdc6c5a6
+commit 00418d13e369bf53cc4b8f817eb10b8ce65f0904
 Author: omar <omarcornut@gmail.com>
-Date:   Mon May 14 11:58:11 2018 +0200
+Date:   Fri Jun 22 17:45:03 2018 +0200
 
-    Version 1.61 + todo additions
+    Demo: Fixed mismatched TreePush/TreePop in Property Editor, due to incorrect revert in 826d77185e5967b5d572304945e37102efb58181 (#1895)
