@@ -2879,9 +2879,9 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 
 	auto drawData = ImGui::GetDrawData();
 	assert(drawData->Valid);
-	if (drawData->CmdListsCount > 0) {
 		renderer.beginRenderPass(guiOnlyRenderPass, finalFramebuffer);
 
+	if (drawData->CmdListsCount > 0) {
 		assert(drawData->CmdLists      != nullptr);
 		assert(drawData->TotalVtxCount >  0);
 		assert(drawData->TotalIdxCount >  0);
@@ -2923,13 +2923,13 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		LOG("TotalVtxCount: %d\n", drawData->TotalVtxCount);
 		LOG("TotalIdxCount: %d\n", drawData->TotalIdxCount);
 #endif // 0
-
-		renderer.endRenderPass();
 	} else {
 		assert(drawData->CmdLists      == nullptr);
 		assert(drawData->TotalVtxCount == 0);
 		assert(drawData->TotalIdxCount == 0);
 	}
+
+		renderer.endRenderPass();
 }
 
 
