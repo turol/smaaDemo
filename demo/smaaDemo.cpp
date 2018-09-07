@@ -515,6 +515,7 @@ class SMAADemo {
 
 	// gui / input things
 	TextureHandle imguiFontsTex;
+	ImGuiContext *imGuiContext;
 	bool          textInputActive;
 	bool          rightShift, leftShift;
 	char          imageFileName[inputTextBufferSize];
@@ -632,6 +633,7 @@ SMAADemo::SMAADemo()
 
 , depthFormat(Format::Invalid)
 
+, imGuiContext(nullptr)
 , textInputActive(false)
 , rightShift(false)
 , leftShift(false)
@@ -670,7 +672,10 @@ SMAADemo::SMAADemo()
 
 
 SMAADemo::~SMAADemo() {
-	ImGui::DestroyContext();
+	if (imGuiContext) {
+		ImGui::DestroyContext(imGuiContext);
+		imGuiContext = nullptr;
+	}
 
 	if (sceneFramebuffer) {
 		deleteFramebuffers();
@@ -1316,7 +1321,7 @@ void SMAADemo::initRender() {
 
 	// imgui setup
 	{
-		ImGui::CreateContext();
+		imGuiContext = ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO();
 		io.IniFilename                 = nullptr;
 		io.KeyMap[ImGuiKey_Tab]        = SDL_SCANCODE_TAB;                     // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
