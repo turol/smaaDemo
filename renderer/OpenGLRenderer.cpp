@@ -1061,6 +1061,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		spirv_cross::CompilerGLSL glsl(v.spirv);
 		spirv_cross::CompilerGLSL::Options glslOptions;
 		glslOptions.vertex.fixup_clipspace = false;
+		glslOptions.vertex.support_nonzero_base_instance = false;
 		glsl.set_common_options(glslOptions);
 
 		resources = processShaderResources(glsl);
