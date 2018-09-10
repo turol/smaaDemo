@@ -1,5 +1,5 @@
-commit 0c3901d2ec5847e8f2d1880e3d8f2d19d236fd0a
+commit c77a123a8996b1dc71ca13b16202e41ecd54efdf
 Author: Adam Sawicki <Adam.Sawicki@amd.com>
-Date:   Sun Mar 18 22:35:39 2018 -0700
+Date:   Mon Sep 10 14:43:04 2018 +0200
 
-    Recompiled binary.
+    Fixed #include <windows.h> for compilation under Windows mingw64. Issue #41 thanks @turol !
