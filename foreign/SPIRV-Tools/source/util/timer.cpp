@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "util/timer.h"
+#if defined(SPIRV_TIMER_ENABLED)
+
+#include "source/util/timer.h"
 
 #include <sys/resource.h>
 #include <sys/time.h>
@@ -22,8 +24,6 @@
 
 namespace spvtools {
 namespace utils {
-
-#if defined(SPIRV_TIMER_ENABLED)
 
 void PrintTimerDescription(std::ostream* out, bool measure_mem_usage) {
   if (out) {
@@ -96,7 +96,7 @@ void Timer::Report(const char* tag) {
   *report_stream_ << std::endl;
 }
 
-#endif  // defined(SPIRV_TIMER_ENABLED)
-
 }  // namespace utils
 }  // namespace spvtools
+
+#endif  // defined(SPIRV_TIMER_ENABLED)

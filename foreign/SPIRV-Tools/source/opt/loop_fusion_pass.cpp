@@ -12,31 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "opt/loop_fusion_pass.h"
+#include "source/opt/loop_fusion_pass.h"
 
-#include "opt/ir_context.h"
-#include "opt/loop_descriptor.h"
-#include "opt/loop_fusion.h"
-#include "opt/register_pressure.h"
+#include "source/opt/ir_context.h"
+#include "source/opt/loop_descriptor.h"
+#include "source/opt/loop_fusion.h"
+#include "source/opt/register_pressure.h"
 
 namespace spvtools {
 namespace opt {
 
-Pass::Status LoopFusionPass::Process(ir::IRContext* c) {
+Pass::Status LoopFusionPass::Process() {
   bool modified = false;
-  ir::Module* module = c->module();
+  Module* module = context()->module();
 
   // Process each function in the module
-  for (ir::Function& f : *module) {
+  for (Function& f : *module) {
     modified |= ProcessFunction(&f);
   }
 
   return modified ? Status::SuccessWithChange : Status::SuccessWithoutChange;
 }
 
-bool LoopFusionPass::ProcessFunction(ir::Function* function) {
-  auto c = function->context();
-  ir::LoopDescriptor& ld = *c->GetLoopDescriptor(function);
+bool LoopFusionPass::ProcessFunction(Function* function) {
+  LoopDescriptor& ld = *context()->GetLoopDescriptor(function);
 
   // If a loop doesn't have a preheader needs then it needs to be created. Make
   // sure to return Status::SuccessWithChange in that case.
@@ -46,10 +45,10 @@ bool LoopFusionPass::ProcessFunction(ir::Function* function) {
   // picked out so don't have to check every loop
   for (auto& loop_0 : ld) {
     for (auto& loop_1 : ld) {
-      LoopFusion fusion(c, &loop_0, &loop_1);
+      LoopFusion fusion(context(), &loop_0, &loop_1);
 
       if (fusion.AreCompatible() && fusion.IsLegal()) {
-        RegisterLiveness liveness(c, function);
+        RegisterLiveness liveness(context(), function);
         RegisterLiveness::RegionRegisterLiveness reg_pressure{};
         liveness.SimulateFusion(loop_0, loop_1, &reg_pressure);
 

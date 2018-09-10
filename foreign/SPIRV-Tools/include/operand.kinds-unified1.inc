@@ -36,12 +36,17 @@ static const SpvCapability pygen_variable_caps_SampleMaskOverrideCoverageNV[] = 
 static const SpvCapability pygen_variable_caps_SampleMaskPostDepthCoverage[] = {SpvCapabilitySampleMaskPostDepthCoverage};
 static const SpvCapability pygen_variable_caps_SampleRateShading[] = {SpvCapabilitySampleRateShading};
 static const SpvCapability pygen_variable_caps_Sampled1D[] = {SpvCapabilitySampled1D};
+static const SpvCapability pygen_variable_caps_Sampled1DImage1D[] = {SpvCapabilitySampled1D, SpvCapabilityImage1D};
 static const SpvCapability pygen_variable_caps_SampledBuffer[] = {SpvCapabilitySampledBuffer};
+static const SpvCapability pygen_variable_caps_SampledBufferImageBuffer[] = {SpvCapabilitySampledBuffer, SpvCapabilityImageBuffer};
 static const SpvCapability pygen_variable_caps_SampledBufferShaderNonUniformEXT[] = {SpvCapabilitySampledBuffer, SpvCapabilityShaderNonUniformEXT};
 static const SpvCapability pygen_variable_caps_SampledCubeArray[] = {SpvCapabilitySampledCubeArray};
 static const SpvCapability pygen_variable_caps_SampledRect[] = {SpvCapabilitySampledRect};
+static const SpvCapability pygen_variable_caps_SampledRectImageRect[] = {SpvCapabilitySampledRect, SpvCapabilityImageRect};
 static const SpvCapability pygen_variable_caps_Shader[] = {SpvCapabilityShader};
+static const SpvCapability pygen_variable_caps_ShaderImageCubeArray[] = {SpvCapabilityShader, SpvCapabilityImageCubeArray};
 static const SpvCapability pygen_variable_caps_ShaderKernel[] = {SpvCapabilityShader, SpvCapabilityKernel};
+static const SpvCapability pygen_variable_caps_ShaderKernelImageMSArray[] = {SpvCapabilityShader, SpvCapabilityKernel, SpvCapabilityImageMSArray};
 static const SpvCapability pygen_variable_caps_ShaderNonUniformEXT[] = {SpvCapabilityShaderNonUniformEXT};
 static const SpvCapability pygen_variable_caps_ShaderStereoViewNV[] = {SpvCapabilityShaderStereoViewNV};
 static const SpvCapability pygen_variable_caps_ShaderViewportIndexLayerNV[] = {SpvCapabilityShaderViewportIndexLayerNV};
@@ -55,6 +60,7 @@ static const SpvCapability pygen_variable_caps_SubgroupDispatch[] = {SpvCapabili
 static const SpvCapability pygen_variable_caps_Tessellation[] = {SpvCapabilityTessellation};
 static const SpvCapability pygen_variable_caps_TransformFeedback[] = {SpvCapabilityTransformFeedback};
 static const SpvCapability pygen_variable_caps_VariablePointersStorageBuffer[] = {SpvCapabilityVariablePointersStorageBuffer};
+static const SpvCapability pygen_variable_caps_VulkanMemoryModelKHR[] = {SpvCapabilityVulkanMemoryModelKHR};
 
 static const spvtools::Extension pygen_variable_exts_SPV_AMD_gpu_shader_half_float_fetch[] = {spvtools::Extension::kSPV_AMD_gpu_shader_half_float_fetch};
 static const spvtools::Extension pygen_variable_exts_SPV_AMD_shader_explicit_vertex_parameter[] = {spvtools::Extension::kSPV_AMD_shader_explicit_vertex_parameter};
@@ -78,6 +84,7 @@ static const spvtools::Extension pygen_variable_exts_SPV_KHR_shader_draw_paramet
 static const spvtools::Extension pygen_variable_exts_SPV_KHR_storage_buffer_storage_classSPV_KHR_variable_pointers[] = {spvtools::Extension::kSPV_KHR_storage_buffer_storage_class, spvtools::Extension::kSPV_KHR_variable_pointers};
 static const spvtools::Extension pygen_variable_exts_SPV_KHR_subgroup_vote[] = {spvtools::Extension::kSPV_KHR_subgroup_vote};
 static const spvtools::Extension pygen_variable_exts_SPV_KHR_variable_pointers[] = {spvtools::Extension::kSPV_KHR_variable_pointers};
+static const spvtools::Extension pygen_variable_exts_SPV_KHR_vulkan_memory_model[] = {spvtools::Extension::kSPV_KHR_vulkan_memory_model};
 static const spvtools::Extension pygen_variable_exts_SPV_NVX_multiview_per_view_attributes[] = {spvtools::Extension::kSPV_NVX_multiview_per_view_attributes};
 static const spvtools::Extension pygen_variable_exts_SPV_NV_geometry_shader_passthrough[] = {spvtools::Extension::kSPV_NV_geometry_shader_passthrough};
 static const spvtools::Extension pygen_variable_exts_SPV_NV_sample_mask_override_coverage[] = {spvtools::Extension::kSPV_NV_sample_mask_override_coverage};
@@ -94,7 +101,11 @@ static const spv_operand_desc_t pygen_variable_ImageOperandsEntries[] = {
   {"Offset", 0x0010, 1, pygen_variable_caps_ImageGatherExtended, 0, nullptr, {SPV_OPERAND_TYPE_ID}, SPV_SPIRV_VERSION_WORD(1, 0)},
   {"ConstOffsets", 0x0020, 1, pygen_variable_caps_ImageGatherExtended, 0, nullptr, {SPV_OPERAND_TYPE_ID}, SPV_SPIRV_VERSION_WORD(1, 0)},
   {"Sample", 0x0040, 0, nullptr, 0, nullptr, {SPV_OPERAND_TYPE_ID}, SPV_SPIRV_VERSION_WORD(1, 0)},
-  {"MinLod", 0x0080, 1, pygen_variable_caps_MinLod, 0, nullptr, {SPV_OPERAND_TYPE_ID}, SPV_SPIRV_VERSION_WORD(1, 0)}
+  {"MinLod", 0x0080, 1, pygen_variable_caps_MinLod, 0, nullptr, {SPV_OPERAND_TYPE_ID}, SPV_SPIRV_VERSION_WORD(1, 0)},
+  {"MakeTexelAvailableKHR", 0x0100, 1, pygen_variable_caps_VulkanMemoryModelKHR, 0, nullptr, {SPV_OPERAND_TYPE_SCOPE_ID}, SPV_SPIRV_VERSION_WORD(1, 0)},
+  {"MakeTexelVisibleKHR", 0x0200, 1, pygen_variable_caps_VulkanMemoryModelKHR, 0, nullptr, {SPV_OPERAND_TYPE_SCOPE_ID}, SPV_SPIRV_VERSION_WORD(1, 0)},
+  {"NonPrivateTexelKHR", 0x0400, 1, pygen_variable_caps_VulkanMemoryModelKHR, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
+  {"VolatileTexelKHR", 0x0800, 1, pygen_variable_caps_VulkanMemoryModelKHR, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)}
 };
 
 static const spv_operand_desc_t pygen_variable_FPFastMathModeEntries[] = {
@@ -140,14 +151,20 @@ static const spv_operand_desc_t pygen_variable_MemorySemanticsEntries[] = {
   {"WorkgroupMemory", 0x0100, 0, nullptr, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
   {"CrossWorkgroupMemory", 0x0200, 0, nullptr, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
   {"AtomicCounterMemory", 0x0400, 1, pygen_variable_caps_AtomicStorage, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
-  {"ImageMemory", 0x0800, 0, nullptr, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)}
+  {"ImageMemory", 0x0800, 0, nullptr, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
+  {"OutputMemoryKHR", 0x1000, 1, pygen_variable_caps_VulkanMemoryModelKHR, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
+  {"MakeAvailableKHR", 0x2000, 1, pygen_variable_caps_VulkanMemoryModelKHR, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
+  {"MakeVisibleKHR", 0x4000, 1, pygen_variable_caps_VulkanMemoryModelKHR, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)}
 };
 
 static const spv_operand_desc_t pygen_variable_MemoryAccessEntries[] = {
   {"None", 0x0000, 0, nullptr, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
   {"Volatile", 0x0001, 0, nullptr, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
   {"Aligned", 0x0002, 0, nullptr, 0, nullptr, {SPV_OPERAND_TYPE_LITERAL_INTEGER}, SPV_SPIRV_VERSION_WORD(1, 0)},
-  {"Nontemporal", 0x0004, 0, nullptr, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)}
+  {"Nontemporal", 0x0004, 0, nullptr, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
+  {"MakePointerAvailableKHR", 0x0008, 1, pygen_variable_caps_VulkanMemoryModelKHR, 0, nullptr, {SPV_OPERAND_TYPE_SCOPE_ID}, SPV_SPIRV_VERSION_WORD(1, 0)},
+  {"MakePointerVisibleKHR", 0x0010, 1, pygen_variable_caps_VulkanMemoryModelKHR, 0, nullptr, {SPV_OPERAND_TYPE_SCOPE_ID}, SPV_SPIRV_VERSION_WORD(1, 0)},
+  {"NonPrivatePointerKHR", 0x0020, 1, pygen_variable_caps_VulkanMemoryModelKHR, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)}
 };
 
 static const spv_operand_desc_t pygen_variable_KernelProfilingInfoEntries[] = {
@@ -183,7 +200,8 @@ static const spv_operand_desc_t pygen_variable_AddressingModelEntries[] = {
 static const spv_operand_desc_t pygen_variable_MemoryModelEntries[] = {
   {"Simple", 0, 1, pygen_variable_caps_Shader, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
   {"GLSL450", 1, 1, pygen_variable_caps_Shader, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
-  {"OpenCL", 2, 1, pygen_variable_caps_Kernel, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)}
+  {"OpenCL", 2, 1, pygen_variable_caps_Kernel, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
+  {"VulkanKHR", 3, 1, pygen_variable_caps_VulkanMemoryModelKHR, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)}
 };
 
 static const spv_operand_desc_t pygen_variable_ExecutionModeEntries[] = {
@@ -246,12 +264,12 @@ static const spv_operand_desc_t pygen_variable_StorageClassEntries[] = {
 };
 
 static const spv_operand_desc_t pygen_variable_DimEntries[] = {
-  {"1D", 0, 1, pygen_variable_caps_Sampled1D, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
-  {"2D", 1, 0, nullptr, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
+  {"1D", 0, 2, pygen_variable_caps_Sampled1DImage1D, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
+  {"2D", 1, 3, pygen_variable_caps_ShaderKernelImageMSArray, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
   {"3D", 2, 0, nullptr, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
-  {"Cube", 3, 1, pygen_variable_caps_Shader, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
-  {"Rect", 4, 1, pygen_variable_caps_SampledRect, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
-  {"Buffer", 5, 1, pygen_variable_caps_SampledBuffer, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
+  {"Cube", 3, 2, pygen_variable_caps_ShaderImageCubeArray, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
+  {"Rect", 4, 2, pygen_variable_caps_SampledRectImageRect, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
+  {"Buffer", 5, 2, pygen_variable_caps_SampledBufferImageBuffer, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
   {"SubpassData", 6, 1, pygen_variable_caps_InputAttachment, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)}
 };
 
@@ -518,7 +536,8 @@ static const spv_operand_desc_t pygen_variable_ScopeEntries[] = {
   {"Device", 1, 0, nullptr, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
   {"Workgroup", 2, 0, nullptr, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
   {"Subgroup", 3, 0, nullptr, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
-  {"Invocation", 4, 0, nullptr, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)}
+  {"Invocation", 4, 0, nullptr, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)},
+  {"QueueFamilyKHR", 5, 1, pygen_variable_caps_VulkanMemoryModelKHR, 0, nullptr, {}, SPV_SPIRV_VERSION_WORD(1, 0)}
 };
 
 static const spv_operand_desc_t pygen_variable_GroupOperationEntries[] = {
@@ -649,6 +668,8 @@ static const spv_operand_desc_t pygen_variable_CapabilityEntries[] = {
   {"InputAttachmentArrayNonUniformIndexingEXT", 5310, 2, pygen_variable_caps_InputAttachmentShaderNonUniformEXT, 1, pygen_variable_exts_SPV_EXT_descriptor_indexing, {}, 0xffffffffu},
   {"UniformTexelBufferArrayNonUniformIndexingEXT", 5311, 2, pygen_variable_caps_SampledBufferShaderNonUniformEXT, 1, pygen_variable_exts_SPV_EXT_descriptor_indexing, {}, 0xffffffffu},
   {"StorageTexelBufferArrayNonUniformIndexingEXT", 5312, 2, pygen_variable_caps_ImageBufferShaderNonUniformEXT, 1, pygen_variable_exts_SPV_EXT_descriptor_indexing, {}, 0xffffffffu},
+  {"VulkanMemoryModelKHR", 5345, 0, nullptr, 1, pygen_variable_exts_SPV_KHR_vulkan_memory_model, {}, 0xffffffffu},
+  {"VulkanMemoryModelDeviceScopeKHR", 5346, 0, nullptr, 1, pygen_variable_exts_SPV_KHR_vulkan_memory_model, {}, 0xffffffffu},
   {"SubgroupShuffleINTEL", 5568, 0, nullptr, 1, pygen_variable_exts_SPV_INTEL_subgroups, {}, 0xffffffffu},
   {"SubgroupBufferBlockIOINTEL", 5569, 0, nullptr, 1, pygen_variable_exts_SPV_INTEL_subgroups, {}, 0xffffffffu},
   {"SubgroupImageBlockIOINTEL", 5570, 0, nullptr, 1, pygen_variable_exts_SPV_INTEL_subgroups, {}, 0xffffffffu}

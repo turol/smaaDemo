@@ -19,24 +19,15 @@ for more details about the presubmit API built into depot_tools.
 """
 
 LINT_FILTERS = [
-  "-build/include",
-  "-build/include_order",
-  "-build/include_what_you_use",
-  "-build/namespaces",
-  "-readability/braces",
+  "-build/storage_class",
   "-readability/casting",
   "-readability/fn_size",
   "-readability/todo",
   "-runtime/explicit",
+  "-runtime/int",
+  "-runtime/printf",
   "-runtime/references",
-  "-whitespace/blank_line",
-  "-whitespace/ending_newline",
-  "-whitespace/line_length",
-  "-whitespace/newline",
-  "-whitespace/operators",
-  "-whitespace/parens",
-  "-whitespace/semicolon",
-  "-whitespace/todo"
+  "-runtime/string",
 ]
 
 

@@ -13,28 +13,29 @@
 // limitations under the License.
 
 #include <memory>
+#include <utility>
 #include <vector>
 
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
+#include "source/opt/types.h"
+#include "source/util/make_unique.h"
 
-#include "opt/make_unique.h"
-#include "opt/types.h"
-
+namespace spvtools {
+namespace opt {
+namespace analysis {
 namespace {
-
-using namespace spvtools::opt::analysis;
-using spvtools::MakeUnique;
 
 // Fixture class providing some element types.
 class SameTypeTest : public ::testing::Test {
  protected:
-  virtual void SetUp() override {
-    void_t_.reset(new Void());
-    u32_t_.reset(new Integer(32, false));
-    f64_t_.reset(new Float(64));
-    v3u32_t_.reset(new Vector(u32_t_.get(), 3));
-    image_t_.reset(new Image(f64_t_.get(), SpvDim2D, 1, 1, 0, 0,
-                             SpvImageFormatR16, SpvAccessQualifierReadWrite));
+  void SetUp() override {
+    void_t_ = MakeUnique<Void>();
+    u32_t_ = MakeUnique<Integer>(32, false);
+    f64_t_ = MakeUnique<Float>(64);
+    v3u32_t_ = MakeUnique<Vector>(u32_t_.get(), 3);
+    image_t_ =
+        MakeUnique<Image>(f64_t_.get(), SpvDim2D, 1, 1, 0, 0, SpvImageFormatR16,
+                          SpvAccessQualifierReadWrite);
   }
 
   // Element types to be used for constructing other types for testing.
@@ -337,4 +338,7 @@ TEST(Types, RemoveDecorations) {
   }
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace analysis
+}  // namespace opt
+}  // namespace spvtools

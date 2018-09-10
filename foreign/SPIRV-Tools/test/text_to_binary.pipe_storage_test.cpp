@@ -13,8 +13,9 @@
 // limitations under the License.
 
 #include "gmock/gmock.h"
-#include "test_fixture.h"
+#include "test/test_fixture.h"
 
+namespace spvtools {
 namespace {
 
 using ::spvtest::MakeInstruction;
@@ -121,4 +122,5 @@ TEST_F(OpCreatePipeFromPipeStorageTest, ArgumentTypes) {
               Eq("Expected id to start with %."));
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace spvtools

@@ -14,12 +14,15 @@
 
 // Common validation fixtures for unit tests
 
-#ifndef LIBSPIRV_TEST_VALIDATE_FIXTURES_H_
-#define LIBSPIRV_TEST_VALIDATE_FIXTURES_H_
+#ifndef TEST_VAL_VAL_FIXTURES_H_
+#define TEST_VAL_VAL_FIXTURES_H_
+
+#include <memory>
+#include <string>
 
 #include "source/val/validation_state.h"
-#include "test_fixture.h"
-#include "unit_spirv.h"
+#include "test/test_fixture.h"
+#include "test/unit_spirv.h"
 
 namespace spvtest {
 
@@ -60,7 +63,7 @@ class ValidateBase : public ::testing::Test,
   spv_binary binary_;
   spv_diagnostic diagnostic_;
   spv_validator_options options_;
-  std::unique_ptr<spvtools::ValidationState_t> vstate_;
+  std::unique_ptr<spvtools::val::ValidationState_t> vstate_;
 };
 
 template <typename T>
@@ -114,7 +117,7 @@ spv_result_t ValidateBase<T>::ValidateInstructions(spv_target_env env) {
 template <typename T>
 spv_result_t ValidateBase<T>::ValidateAndRetrieveValidationState(
     spv_target_env env) {
-  return spvtools::ValidateBinaryAndKeepValidationState(
+  return spvtools::val::ValidateBinaryAndKeepValidationState(
       ScopedContext(env).context, options_, get_const_binary()->code,
       get_const_binary()->wordCount, &diagnostic_, &vstate_);
 }
@@ -136,4 +139,5 @@ spv_position_t ValidateBase<T>::getErrorPosition() {
 }
 
 }  // namespace spvtest
-#endif
+
+#endif  // TEST_VAL_VAL_FIXTURES_H_

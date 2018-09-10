@@ -12,24 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gmock/gmock.h>
-
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "../assembly_builder.h"
-#include "../function_utils.h"
-#include "../pass_fixture.h"
-#include "../pass_utils.h"
-#include "opt/loop_descriptor.h"
-#include "opt/pass.h"
+#include "gmock/gmock.h"
+#include "source/opt/loop_descriptor.h"
+#include "source/opt/pass.h"
+#include "test/opt/assembly_builder.h"
+#include "test/opt/function_utils.h"
+#include "test/opt/pass_fixture.h"
+#include "test/opt/pass_utils.h"
 
+namespace spvtools {
+namespace opt {
 namespace {
 
-using namespace spvtools;
 using ::testing::UnorderedElementsAre;
-
 using PassClassTest = PassTest<::testing::Test>;
 
 /*
@@ -90,18 +89,18 @@ TEST_F(PassClassTest, BasicVisitFromEntryPoint) {
                OpFunctionEnd
   )";
   // clang-format on
-  std::unique_ptr<ir::IRContext> context =
+  std::unique_ptr<IRContext> context =
       BuildModule(SPV_ENV_UNIVERSAL_1_1, nullptr, text,
                   SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  ir::Module* module = context->module();
+  Module* module = context->module();
   EXPECT_NE(nullptr, module) << "Assembling failed for shader:\n"
                              << text << std::endl;
-  const ir::Function* f = spvtest::GetFunction(module, 2);
-  ir::LoopDescriptor& ld = *context->GetLoopDescriptor(f);
+  const Function* f = spvtest::GetFunction(module, 2);
+  LoopDescriptor& ld = *context->GetLoopDescriptor(f);
 
   EXPECT_EQ(ld.NumLoops(), 1u);
 
-  ir::Loop& loop = ld.GetLoopByIndex(0);
+  Loop& loop = ld.GetLoopByIndex(0);
   EXPECT_EQ(loop.GetHeaderBlock(), spvtest::GetBasicBlock(f, 18));
   EXPECT_EQ(loop.GetLatchBlock(), spvtest::GetBasicBlock(f, 20));
   EXPECT_EQ(loop.GetMergeBlock(), spvtest::GetBasicBlock(f, 19));
@@ -187,18 +186,18 @@ TEST_F(PassClassTest, LoopWithNoPreHeader) {
                OpFunctionEnd
   )";
   // clang-format on
-  std::unique_ptr<ir::IRContext> context =
+  std::unique_ptr<IRContext> context =
       BuildModule(SPV_ENV_UNIVERSAL_1_1, nullptr, text,
                   SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  ir::Module* module = context->module();
+  Module* module = context->module();
   EXPECT_NE(nullptr, module) << "Assembling failed for shader:\n"
                              << text << std::endl;
-  const ir::Function* f = spvtest::GetFunction(module, 2);
-  ir::LoopDescriptor& ld = *context->GetLoopDescriptor(f);
+  const Function* f = spvtest::GetFunction(module, 2);
+  LoopDescriptor& ld = *context->GetLoopDescriptor(f);
 
   EXPECT_EQ(ld.NumLoops(), 2u);
 
-  ir::Loop* loop = ld[27];
+  Loop* loop = ld[27];
   EXPECT_EQ(loop->GetPreHeaderBlock(), nullptr);
   EXPECT_NE(loop->GetOrCreatePreHeaderBlock(), nullptr);
 }
@@ -285,14 +284,14 @@ TEST_F(PassClassTest, NoLoop) {
                OpFunctionEnd
   )";
 
-  std::unique_ptr<ir::IRContext> context =
+  std::unique_ptr<IRContext> context =
       BuildModule(SPV_ENV_UNIVERSAL_1_1, nullptr, text,
                   SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  ir::Module* module = context->module();
+  Module* module = context->module();
   EXPECT_NE(nullptr, module) << "Assembling failed for shader:\n"
                              << text << std::endl;
-  const ir::Function* f = spvtest::GetFunction(module, 4);
-  ir::LoopDescriptor ld{f};
+  const Function* f = spvtest::GetFunction(module, 4);
+  LoopDescriptor ld{context.get(), f};
 
   EXPECT_EQ(ld.NumLoops(), 0u);
 }
@@ -361,18 +360,18 @@ TEST_F(PassClassTest, LoopLatchNotContinue) {
                OpFunctionEnd
   )";
 
-  std::unique_ptr<ir::IRContext> context =
+  std::unique_ptr<IRContext> context =
       BuildModule(SPV_ENV_UNIVERSAL_1_1, nullptr, text,
                   SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  ir::Module* module = context->module();
+  Module* module = context->module();
   EXPECT_NE(nullptr, module) << "Assembling failed for shader:\n"
                              << text << std::endl;
-  const ir::Function* f = spvtest::GetFunction(module, 2);
-  ir::LoopDescriptor ld{f};
+  const Function* f = spvtest::GetFunction(module, 2);
+  LoopDescriptor ld{context.get(), f};
 
   EXPECT_EQ(ld.NumLoops(), 1u);
 
-  ir::Loop& loop = ld.GetLoopByIndex(0u);
+  Loop& loop = ld.GetLoopByIndex(0u);
 
   EXPECT_NE(loop.GetLatchBlock(), loop.GetContinueBlock());
 
@@ -381,3 +380,5 @@ TEST_F(PassClassTest, LoopLatchNotContinue) {
 }
 
 }  // namespace
+}  // namespace opt
+}  // namespace spvtools

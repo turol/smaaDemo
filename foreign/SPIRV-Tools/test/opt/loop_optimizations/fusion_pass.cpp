@@ -12,17 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gmock/gmock.h>
+#include <string>
+
+#include "gmock/gmock.h"
+#include "test/opt/pass_fixture.h"
 
 #ifdef SPIRV_EFFCEE
 #include "effcee/effcee.h"
 #endif
 
-#include "../pass_fixture.h"
-
+namespace spvtools {
+namespace opt {
 namespace {
-
-using namespace spvtools;
 
 using FusionPassTest = PassTest<::testing::Test>;
 
@@ -129,7 +130,7 @@ TEST_F(FusionPassTest, SimpleFusion) {
                OpFunctionEnd
   )";
 
-  SinglePassRunAndMatch<opt::LoopFusionPass>(text, true, 20);
+  SinglePassRunAndMatch<LoopFusionPass>(text, true, 20);
 }
 
 /*
@@ -266,7 +267,7 @@ TEST_F(FusionPassTest, ThreeLoopsFused) {
 
   )";
 
-  SinglePassRunAndMatch<opt::LoopFusionPass>(text, true, 20);
+  SinglePassRunAndMatch<LoopFusionPass>(text, true, 20);
 }
 
 /*
@@ -416,7 +417,7 @@ TEST_F(FusionPassTest, NestedLoopsFused) {
                OpFunctionEnd
   )";
 
-  SinglePassRunAndMatch<opt::LoopFusionPass>(text, true, 20);
+  SinglePassRunAndMatch<LoopFusionPass>(text, true, 20);
 }
 
 /*
@@ -495,7 +496,7 @@ TEST_F(FusionPassTest, Incompatible) {
                OpFunctionEnd
   )";
 
-  SinglePassRunAndMatch<opt::LoopFusionPass>(text, true, 20);
+  SinglePassRunAndMatch<LoopFusionPass>(text, true, 20);
 }
 
 /*
@@ -607,7 +608,7 @@ TEST_F(FusionPassTest, Illegal) {
                OpFunctionEnd
     )";
 
-  SinglePassRunAndMatch<opt::LoopFusionPass>(text, true, 20);
+  SinglePassRunAndMatch<LoopFusionPass>(text, true, 20);
 }
 
 /*
@@ -713,9 +714,11 @@ TEST_F(FusionPassTest, TooManyRegisters) {
                OpFunctionEnd
   )";
 
-  SinglePassRunAndMatch<opt::LoopFusionPass>(text, true, 5);
+  SinglePassRunAndMatch<LoopFusionPass>(text, true, 5);
 }
 
 #endif
 
 }  // namespace
+}  // namespace opt
+}  // namespace spvtools

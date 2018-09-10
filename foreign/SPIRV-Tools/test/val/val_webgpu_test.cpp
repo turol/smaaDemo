@@ -14,19 +14,21 @@
 
 // Validation tests for WebGPU env specific checks
 
-#include <gmock/gmock.h>
+#include <string>
 
-#include "val_fixtures.h"
+#include "gmock/gmock.h"
+#include "test/val/val_fixtures.h"
 
+namespace spvtools {
+namespace val {
 namespace {
 
-using std::string;
 using testing::HasSubstr;
 
 using ValidateWebGPU = spvtest::ValidateBase<bool>;
 
 TEST_F(ValidateWebGPU, OpUndefIsDisallowed) {
-  string spirv = R"(
+  std::string spirv = R"(
     OpCapability Shader
     OpCapability Linkage
     OpMemoryModel Logical GLSL450
@@ -44,4 +46,6 @@ TEST_F(ValidateWebGPU, OpUndefIsDisallowed) {
   EXPECT_THAT(getDiagnosticString(), HasSubstr("OpUndef is disallowed"));
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace val
+}  // namespace spvtools

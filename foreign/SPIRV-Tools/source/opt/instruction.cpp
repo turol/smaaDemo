@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "instruction.h"
+#include "source/opt/instruction.h"
 
 #include <initializer_list>
 
-#include "disassemble.h"
-#include "fold.h"
-#include "ir_context.h"
-#include "reflect.h"
+#include "source/disassemble.h"
+#include "source/opt/fold.h"
+#include "source/opt/ir_context.h"
+#include "source/opt/reflect.h"
 
 namespace spvtools {
-namespace ir {
+namespace opt {
 
 namespace {
 // Indices used to get particular operands out of instructions using InOperand.
@@ -36,24 +36,24 @@ Instruction::Instruction(IRContext* c)
     : utils::IntrusiveNodeBase<Instruction>(),
       context_(c),
       opcode_(SpvOpNop),
-      type_id_(0),
-      result_id_(0),
+      has_type_id_(false),
+      has_result_id_(false),
       unique_id_(c->TakeNextUniqueId()) {}
 
 Instruction::Instruction(IRContext* c, SpvOp op)
     : utils::IntrusiveNodeBase<Instruction>(),
       context_(c),
       opcode_(op),
-      type_id_(0),
-      result_id_(0),
+      has_type_id_(false),
+      has_result_id_(false),
       unique_id_(c->TakeNextUniqueId()) {}
 
 Instruction::Instruction(IRContext* c, const spv_parsed_instruction_t& inst,
                          std::vector<Instruction>&& dbg_line)
     : context_(c),
       opcode_(static_cast<SpvOp>(inst.opcode)),
-      type_id_(inst.type_id),
-      result_id_(inst.result_id),
+      has_type_id_(inst.type_id != 0),
+      has_result_id_(inst.result_id != 0),
       unique_id_(c->TakeNextUniqueId()),
       dbg_line_insts_(std::move(dbg_line)) {
   assert((!IsDebugLineInst(opcode_) || dbg_line.empty()) &&
@@ -72,17 +72,17 @@ Instruction::Instruction(IRContext* c, SpvOp op, uint32_t ty_id,
     : utils::IntrusiveNodeBase<Instruction>(),
       context_(c),
       opcode_(op),
-      type_id_(ty_id),
-      result_id_(res_id),
+      has_type_id_(ty_id != 0),
+      has_result_id_(res_id != 0),
       unique_id_(c->TakeNextUniqueId()),
       operands_() {
-  if (type_id_ != 0) {
+  if (has_type_id_) {
     operands_.emplace_back(spv_operand_type_t::SPV_OPERAND_TYPE_TYPE_ID,
-                           std::initializer_list<uint32_t>{type_id_});
+                           std::initializer_list<uint32_t>{ty_id});
   }
-  if (result_id_ != 0) {
+  if (has_result_id_) {
     operands_.emplace_back(spv_operand_type_t::SPV_OPERAND_TYPE_RESULT_ID,
-                           std::initializer_list<uint32_t>{result_id_});
+                           std::initializer_list<uint32_t>{res_id});
   }
   operands_.insert(operands_.end(), in_operands.begin(), in_operands.end());
 }
@@ -90,16 +90,16 @@ Instruction::Instruction(IRContext* c, SpvOp op, uint32_t ty_id,
 Instruction::Instruction(Instruction&& that)
     : utils::IntrusiveNodeBase<Instruction>(),
       opcode_(that.opcode_),
-      type_id_(that.type_id_),
-      result_id_(that.result_id_),
+      has_type_id_(that.has_type_id_),
+      has_result_id_(that.has_result_id_),
       unique_id_(that.unique_id_),
       operands_(std::move(that.operands_)),
       dbg_line_insts_(std::move(that.dbg_line_insts_)) {}
 
 Instruction& Instruction::operator=(Instruction&& that) {
   opcode_ = that.opcode_;
-  type_id_ = that.type_id_;
-  result_id_ = that.result_id_;
+  has_type_id_ = that.has_type_id_;
+  has_result_id_ = that.has_result_id_;
   unique_id_ = that.unique_id_;
   operands_ = std::move(that.operands_);
   dbg_line_insts_ = std::move(that.dbg_line_insts_);
@@ -109,8 +109,8 @@ Instruction& Instruction::operator=(Instruction&& that) {
 Instruction* Instruction::Clone(IRContext* c) const {
   Instruction* clone = new Instruction(c);
   clone->opcode_ = opcode_;
-  clone->type_id_ = type_id_;
-  clone->result_id_ = result_id_;
+  clone->has_type_id_ = has_type_id_;
+  clone->has_result_id_ = has_result_id_;
   clone->unique_id_ = c->TakeNextUniqueId();
   clone->operands_ = operands_;
   clone->dbg_line_insts_ = dbg_line_insts_;
@@ -145,7 +145,7 @@ void Instruction::ReplaceOperands(const OperandList& new_operands) {
 
 bool Instruction::IsReadOnlyLoad() const {
   if (IsLoad()) {
-    ir::Instruction* address_def = GetBaseAddress();
+    Instruction* address_def = GetBaseAddress();
     if (!address_def || address_def->opcode() != SpvOpVariable) {
       return false;
     }
@@ -161,7 +161,7 @@ Instruction* Instruction::GetBaseAddress() const {
          "GetBaseAddress should only be called on instructions that take a "
          "pointer or image.");
   uint32_t base = GetSingleWordInOperand(kLoadBaseIndex);
-  ir::Instruction* base_inst = context()->get_def_use_mgr()->GetDef(base);
+  Instruction* base_inst = context()->get_def_use_mgr()->GetDef(base);
   bool done = false;
   while (!done) {
     switch (base_inst->opcode()) {
@@ -217,7 +217,7 @@ bool Instruction::IsVulkanStorageImage() const {
     return false;
   }
 
-  ir::Instruction* base_type =
+  Instruction* base_type =
       context()->get_def_use_mgr()->GetDef(GetSingleWordInOperand(1));
   if (base_type->opcode() != SpvOpTypeImage) {
     return false;
@@ -243,7 +243,7 @@ bool Instruction::IsVulkanSampledImage() const {
     return false;
   }
 
-  ir::Instruction* base_type =
+  Instruction* base_type =
       context()->get_def_use_mgr()->GetDef(GetSingleWordInOperand(1));
   if (base_type->opcode() != SpvOpTypeImage) {
     return false;
@@ -269,7 +269,7 @@ bool Instruction::IsVulkanStorageTexelBuffer() const {
     return false;
   }
 
-  ir::Instruction* base_type =
+  Instruction* base_type =
       context()->get_def_use_mgr()->GetDef(GetSingleWordInOperand(1));
   if (base_type->opcode() != SpvOpTypeImage) {
     return false;
@@ -291,7 +291,7 @@ bool Instruction::IsVulkanStorageBuffer() const {
     return false;
   }
 
-  ir::Instruction* base_type =
+  Instruction* base_type =
       context()->get_def_use_mgr()->GetDef(GetSingleWordInOperand(1));
 
   if (base_type->opcode() != SpvOpTypeStruct) {
@@ -303,13 +303,13 @@ bool Instruction::IsVulkanStorageBuffer() const {
     bool is_buffer_block = false;
     context()->get_decoration_mgr()->ForEachDecoration(
         base_type->result_id(), SpvDecorationBufferBlock,
-        [&is_buffer_block](const ir::Instruction&) { is_buffer_block = true; });
+        [&is_buffer_block](const Instruction&) { is_buffer_block = true; });
     return is_buffer_block;
   } else if (storage_class == SpvStorageClassStorageBuffer) {
     bool is_block = false;
     context()->get_decoration_mgr()->ForEachDecoration(
         base_type->result_id(), SpvDecorationBlock,
-        [&is_block](const ir::Instruction&) { is_block = true; });
+        [&is_block](const Instruction&) { is_block = true; });
     return is_block;
   }
   return false;
@@ -325,7 +325,7 @@ bool Instruction::IsVulkanUniformBuffer() const {
     return false;
   }
 
-  ir::Instruction* base_type =
+  Instruction* base_type =
       context()->get_def_use_mgr()->GetDef(GetSingleWordInOperand(1));
   if (base_type->opcode() != SpvOpTypeStruct) {
     return false;
@@ -334,7 +334,7 @@ bool Instruction::IsVulkanUniformBuffer() const {
   bool is_block = false;
   context()->get_decoration_mgr()->ForEachDecoration(
       base_type->result_id(), SpvDecorationBlock,
-      [&is_block](const ir::Instruction&) { is_block = true; });
+      [&is_block](const Instruction&) { is_block = true; });
   return is_block;
 }
 
@@ -414,12 +414,13 @@ bool Instruction::IsValidBasePointer() const {
     return false;
   }
 
-  ir::Instruction* type = context()->get_def_use_mgr()->GetDef(tid);
+  Instruction* type = context()->get_def_use_mgr()->GetDef(tid);
   if (type->opcode() != SpvOpTypePointer) {
     return false;
   }
 
-  if (context()->get_feature_mgr()->HasCapability(SpvCapabilityAddresses)) {
+  auto feature_mgr = context()->get_feature_mgr();
+  if (feature_mgr->HasCapability(SpvCapabilityAddresses)) {
     // TODO: The rules here could be more restrictive.
     return true;
   }
@@ -428,8 +429,27 @@ bool Instruction::IsValidBasePointer() const {
     return true;
   }
 
+  // With variable pointers, there are more valid base pointer objects.
+  // Variable pointers implicitly declares Variable pointers storage buffer.
+  SpvStorageClass storage_class =
+      static_cast<SpvStorageClass>(type->GetSingleWordInOperand(0));
+  if ((feature_mgr->HasCapability(SpvCapabilityVariablePointersStorageBuffer) &&
+       storage_class == SpvStorageClassStorageBuffer) ||
+      (feature_mgr->HasCapability(SpvCapabilityVariablePointers) &&
+       storage_class == SpvStorageClassWorkgroup)) {
+    switch (opcode()) {
+      case SpvOpPhi:
+      case SpvOpSelect:
+      case SpvOpFunctionCall:
+      case SpvOpConstantNull:
+        return true;
+      default:
+        break;
+    }
+  }
+
   uint32_t pointee_type_id = type->GetSingleWordInOperand(1);
-  ir::Instruction* pointee_type_inst =
+  Instruction* pointee_type_inst =
       context()->get_def_use_mgr()->GetDef(pointee_type_id);
 
   if (pointee_type_inst->IsOpaqueType()) {
@@ -444,7 +464,7 @@ bool Instruction::IsValidBaseImage() const {
     return false;
   }
 
-  ir::Instruction* type = context()->get_def_use_mgr()->GetDef(tid);
+  Instruction* type = context()->get_def_use_mgr()->GetDef(tid);
   return (type->opcode() == SpvOpTypeImage ||
           type->opcode() == SpvOpTypeSampledImage);
 }
@@ -453,13 +473,13 @@ bool Instruction::IsOpaqueType() const {
   if (opcode() == SpvOpTypeStruct) {
     bool is_opaque = false;
     ForEachInOperand([&is_opaque, this](const uint32_t* op_id) {
-      ir::Instruction* type_inst = context()->get_def_use_mgr()->GetDef(*op_id);
+      Instruction* type_inst = context()->get_def_use_mgr()->GetDef(*op_id);
       is_opaque |= type_inst->IsOpaqueType();
     });
     return is_opaque;
   } else if (opcode() == SpvOpTypeArray) {
     uint32_t sub_type_id = GetSingleWordInOperand(0);
-    ir::Instruction* sub_type_inst =
+    Instruction* sub_type_inst =
         context()->get_def_use_mgr()->GetDef(sub_type_id);
     return sub_type_inst->IsOpaqueType();
   } else {
@@ -474,7 +494,7 @@ bool Instruction::IsFoldable() const {
 }
 
 bool Instruction::IsFoldableByFoldScalar() const {
-  const opt::InstructionFolder& folder = context()->get_instruction_folder();
+  const InstructionFolder& folder = context()->get_instruction_folder();
   if (!folder.IsFoldableOpcode(opcode())) {
     return false;
   }
@@ -491,7 +511,7 @@ bool Instruction::IsFloatingPointFoldingAllowed() const {
   bool is_nocontract = false;
   context_->get_decoration_mgr()->WhileEachDecoration(
       opcode_, SpvDecorationNoContraction,
-      [&is_nocontract](const ir::Instruction&) {
+      [&is_nocontract](const Instruction&) {
         is_nocontract = true;
         return false;
       });
@@ -515,7 +535,7 @@ std::string Instruction::PrettyPrint(uint32_t options) const {
       options | SPV_BINARY_TO_TEXT_OPTION_NO_HEADER);
 }
 
-std::ostream& operator<<(std::ostream& str, const ir::Instruction& inst) {
+std::ostream& operator<<(std::ostream& str, const Instruction& inst) {
   str << inst.PrettyPrint();
   return str;
 }
@@ -722,5 +742,5 @@ bool Instruction::IsOpcodeSafeToDelete() const {
   }
 }
 
-}  // namespace ir
+}  // namespace opt
 }  // namespace spvtools

@@ -12,24 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LIBSPIRV_OPT_CONSTANTS_H_
-#define LIBSPIRV_OPT_CONSTANTS_H_
+#ifndef SOURCE_OPT_CONSTANTS_H_
+#define SOURCE_OPT_CONSTANTS_H_
 
 #include <cinttypes>
+#include <map>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
-#include "make_unique.h"
-#include "module.h"
-#include "type_manager.h"
-#include "types.h"
-#include "util/hex_float.h"
+#include "source/opt/module.h"
+#include "source/opt/type_manager.h"
+#include "source/opt/types.h"
+#include "source/util/hex_float.h"
+#include "source/util/make_unique.h"
 
 namespace spvtools {
 namespace opt {
+
+class IRContext;
+
 namespace analysis {
 
 // Class hierarchy to represent the normal constants defined through
@@ -113,7 +117,7 @@ class Constant {
   int64_t GetS64() const;
 
   // Returns true if the constant is a zero or a composite containing 0s.
-  virtual bool IsZero() const { return false; };
+  virtual bool IsZero() const { return false; }
 
   const Type* type() const { return type_; }
 
@@ -431,8 +435,6 @@ class NullConstant : public Constant {
   bool IsZero() const override { return true; };
 };
 
-class IRContext;
-
 // Hash function for Constant instances. Use the structure of the constant as
 // the key.
 struct ConstantHash {
@@ -479,10 +481,11 @@ struct ConstantEqual {
       const auto& composite2 = c2->AsCompositeConstant();
       return composite2 &&
              composite1->GetComponents() == composite2->GetComponents();
-    } else if (c1->AsNullConstant())
+    } else if (c1->AsNullConstant()) {
       return c2->AsNullConstant() != nullptr;
-    else
+    } else {
       assert(false && "Tried to compare two invalid Constant instances.");
+    }
     return false;
   }
 };
@@ -490,9 +493,9 @@ struct ConstantEqual {
 // This class represents a pool of constants.
 class ConstantManager {
  public:
-  ConstantManager(ir::IRContext* ctx);
+  ConstantManager(IRContext* ctx);
 
-  ir::IRContext* context() const { return ctx_; }
+  IRContext* context() const { return ctx_; }
 
   // Gets or creates a unique Constant instance of type |type| and a vector of
   // constant defining words |words|. If a Constant instance existed already in
@@ -511,7 +514,7 @@ class ConstantManager {
   // Gets or creates a Constant instance to hold the constant value of the given
   // instruction. It returns a pointer to a Constant instance or nullptr if it
   // could not create the constant.
-  const Constant* GetConstantFromInst(ir::Instruction* inst);
+  const Constant* GetConstantFromInst(Instruction* inst);
 
   // Gets or creates a constant defining instruction for the given Constant |c|.
   // If |c| had already been defined, it returns a pointer to the existing
@@ -527,9 +530,8 @@ class ConstantManager {
   //
   // When |type_id| is not zero, the type of |c| must be the type returned by
   // type manager when given |type_id|.
-  ir::Instruction* GetDefiningInstruction(
-      const Constant* c, uint32_t type_id = 0,
-      ir::Module::inst_iterator* pos = nullptr);
+  Instruction* GetDefiningInstruction(const Constant* c, uint32_t type_id = 0,
+                                      Module::inst_iterator* pos = nullptr);
 
   // Creates a constant defining instruction for the given Constant instance
   // and inserts the instruction at the position specified by the given
@@ -543,12 +545,13 @@ class ConstantManager {
   // |type_id| is specified, it is used as the type of the constant. Otherwise
   // the type of the constant is derived by getting an id from the type manager
   // for |c|.
-  ir::Instruction* BuildInstructionAndAddToModule(
-      const Constant* c, ir::Module::inst_iterator* pos, uint32_t type_id = 0);
+  Instruction* BuildInstructionAndAddToModule(const Constant* c,
+                                              Module::inst_iterator* pos,
+                                              uint32_t type_id = 0);
 
   // A helper function to get the result type of the given instruction. Returns
   // nullptr if the instruction does not have a type id (type id is 0).
-  Type* GetType(const ir::Instruction* inst) const;
+  Type* GetType(const Instruction* inst) const;
 
   // A helper function to get the collected normal constant with the given id.
   // Returns the pointer to the Constant instance in case it is found.
@@ -560,10 +563,7 @@ class ConstantManager {
 
   // A helper function to get the id of a collected constant with the pointer
   // to the Constant instance. Returns 0 in case the constant is not found.
-  uint32_t FindDeclaredConstant(const Constant* c) const {
-    auto iter = const_val_to_id_.find(c);
-    return (iter != const_val_to_id_.end()) ? iter->second : 0;
-  }
+  uint32_t FindDeclaredConstant(const Constant* c, uint32_t type_id) const;
 
   // Returns the canonical constant that has the same structure and value as the
   // given Constant |cst|. If none is found, it returns nullptr.
@@ -578,8 +578,11 @@ class ConstantManager {
   // Registers a new constant |cst| in the constant pool. If the constant
   // existed already, it returns a pointer to the previously existing Constant
   // in the pool. Otherwise, it returns |cst|.
-  const Constant* RegisterConstant(const Constant* cst) {
-    auto ret = const_pool_.insert(cst);
+  const Constant* RegisterConstant(std::unique_ptr<Constant> cst) {
+    auto ret = const_pool_.insert(cst.get());
+    if (ret.second) {
+      owned_constants_.emplace_back(std::move(cst));
+    }
     return *ret.first;
   }
 
@@ -591,12 +594,12 @@ class ConstantManager {
 
   // Returns a vector of constants representing each in operand. If an operand
   // is not constant its entry is nullptr.
-  std::vector<const Constant*> GetOperandConstants(ir::Instruction* inst) const;
+  std::vector<const Constant*> GetOperandConstants(Instruction* inst) const;
 
   // Records a mapping between |inst| and the constant value generated by it.
   // It returns true if a new Constant was successfully mapped, false if |inst|
   // generates no constant values.
-  bool MapInst(ir::Instruction* inst) {
+  bool MapInst(Instruction* inst) {
     if (auto cst = GetConstantFromInst(inst)) {
       MapConstantToInst(cst, inst);
       return true;
@@ -614,9 +617,10 @@ class ConstantManager {
 
   // Records a new mapping between |inst| and |const_value|. This updates the
   // two mappings |id_to_const_val_| and |const_val_to_id_|.
-  void MapConstantToInst(const Constant* const_value, ir::Instruction* inst) {
-    const_val_to_id_[const_value] = inst->result_id();
-    id_to_const_val_[inst->result_id()] = const_value;
+  void MapConstantToInst(const Constant* const_value, Instruction* inst) {
+    if (id_to_const_val_.insert({inst->result_id(), const_value}).second) {
+      const_val_to_id_.insert({const_value, inst->result_id()});
+    }
   }
 
  private:
@@ -632,7 +636,7 @@ class ConstantManager {
   // type, either Bool, Integer or Float. If any of the rules above failed, the
   // creation will fail and nullptr will be returned. If the vector is empty,
   // a NullConstant instance will be created with the given type.
-  const Constant* CreateConstant(
+  std::unique_ptr<Constant> CreateConstant(
       const Type* type,
       const std::vector<uint32_t>& literal_words_or_ids) const;
 
@@ -645,8 +649,9 @@ class ConstantManager {
   // |type_id| is specified, it is used as the type of the constant. Otherwise
   // the type of the constant is derived by getting an id from the type manager
   // for |c|.
-  std::unique_ptr<ir::Instruction> CreateInstruction(
-      uint32_t result_id, const Constant* c, uint32_t type_id = 0) const;
+  std::unique_ptr<Instruction> CreateInstruction(uint32_t result_id,
+                                                 const Constant* c,
+                                                 uint32_t type_id = 0) const;
 
   // Creates an OpConstantComposite instruction with the given result id and
   // the CompositeConst instance which represents a composite constant. Returns
@@ -657,12 +662,12 @@ class ConstantManager {
   // |type_id| is specified, it is used as the type of the constant. Otherwise
   // the type of the constant is derived by getting an id from the type manager
   // for |c|.
-  std::unique_ptr<ir::Instruction> CreateCompositeInstruction(
+  std::unique_ptr<Instruction> CreateCompositeInstruction(
       uint32_t result_id, const CompositeConstant* cc,
       uint32_t type_id = 0) const;
 
   // IR context that owns this constant manager.
-  ir::IRContext* ctx_;
+  IRContext* ctx_;
 
   // A mapping from the result ids of Normal Constants to their
   // Constant instances. All Normal Constants in the module, either
@@ -674,14 +679,18 @@ class ConstantManager {
   // result id in the module. This is a mirror map of |id_to_const_val_|. All
   // Normal Constants that defining instructions in the module should have
   // their Constant and their result id registered here.
-  std::unordered_map<const Constant*, uint32_t> const_val_to_id_;
+  std::multimap<const Constant*, uint32_t> const_val_to_id_;
 
   // The constant pool.  All created constants are registered here.
   std::unordered_set<const Constant*, ConstantHash, ConstantEqual> const_pool_;
+
+  // The constant that are owned by the constant manager.  Every constant in
+  // |const_pool_| should be in |owned_constants_| as well.
+  std::vector<std::unique_ptr<Constant>> owned_constants_;
 };
 
 }  // namespace analysis
 }  // namespace opt
 }  // namespace spvtools
 
-#endif  // LIBSPIRV_OPT_CONSTANTS_H_
+#endif  // SOURCE_OPT_CONSTANTS_H_

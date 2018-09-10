@@ -13,13 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "assembly_builder.h"
-#include "pass_fixture.h"
-#include "pass_utils.h"
+#include <string>
+#include <vector>
 
+#include "test/opt/assembly_builder.h"
+#include "test/opt/pass_fixture.h"
+#include "test/opt/pass_utils.h"
+
+namespace spvtools {
+namespace opt {
 namespace {
-
-using namespace spvtools;
 
 using AggressiveDCETest = PassTest<::testing::Test>;
 
@@ -103,7 +106,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
+  SinglePassRunAndCheck<AggressiveDCEPass>(
       predefs1 + names_before + predefs2 + func_before,
       predefs1 + names_after + predefs2 + func_after, true, true);
 }
@@ -219,7 +222,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
+  SinglePassRunAndCheck<AggressiveDCEPass>(
       predefs1 + names_before + predefs2_before + func_before,
       predefs1 + names_after + predefs2_after + func_after, true, true);
 }
@@ -321,7 +324,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
+  SinglePassRunAndCheck<AggressiveDCEPass>(
       predefs1 + names_before + predefs2_before + func_before,
       predefs1 + names_after + predefs2_after + func_after, true, true);
 }
@@ -405,7 +408,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
+  SinglePassRunAndCheck<AggressiveDCEPass>(
       predefs1 + names_before + predefs2 + func_before,
       predefs1 + names_after + predefs2 + func_after, true, true);
 }
@@ -490,7 +493,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
+  SinglePassRunAndCheck<AggressiveDCEPass>(
       predefs1 + names_before + predefs2 + func_before,
       predefs1 + names_after + predefs2 + func_after, true, true);
 }
@@ -546,7 +549,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(assembly, assembly, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(assembly, assembly, true, true);
 }
 
 TEST_F(AggressiveDCETest, ElimWithCall) {
@@ -672,8 +675,8 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
-      defs_before + func_before, defs_after + func_after, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(defs_before + func_before,
+                                           defs_after + func_after, true, true);
 }
 
 TEST_F(AggressiveDCETest, NoParamElim) {
@@ -802,8 +805,8 @@ OpReturnValue %27
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
-      defs_before + func_before, defs_after + func_after, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(defs_before + func_before,
+                                           defs_after + func_after, true, true);
 }
 
 TEST_F(AggressiveDCETest, ElimOpaque) {
@@ -904,8 +907,8 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
-      defs_before + func_before, defs_after + func_after, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(defs_before + func_before,
+                                           defs_after + func_after, true, true);
 }
 
 TEST_F(AggressiveDCETest, NoParamStoreElim) {
@@ -975,7 +978,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(assembly, assembly, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(assembly, assembly, true, true);
 }
 
 TEST_F(AggressiveDCETest, PrivateStoreElimInEntryNoCalls) {
@@ -1080,7 +1083,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
+  SinglePassRunAndCheck<AggressiveDCEPass>(
       predefs_before + main_before, predefs_after + main_after, true, true);
 }
 
@@ -1135,7 +1138,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(assembly, assembly, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(assembly, assembly, true, true);
 }
 
 TEST_F(AggressiveDCETest, NoPrivateStoreElimWithCall) {
@@ -1200,7 +1203,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(assembly, assembly, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(assembly, assembly, true, true);
 }
 
 TEST_F(AggressiveDCETest, NoPrivateStoreElimInNonEntry) {
@@ -1265,7 +1268,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(assembly, assembly, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(assembly, assembly, true, true);
 }
 
 TEST_F(AggressiveDCETest, WorkgroupStoreElimInEntryNoCalls) {
@@ -1370,7 +1373,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
+  SinglePassRunAndCheck<AggressiveDCEPass>(
       predefs_before + main_before, predefs_after + main_after, true, true);
 }
 
@@ -1482,7 +1485,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
+  SinglePassRunAndCheck<AggressiveDCEPass>(
       predefs_before + func_before, predefs_after + func_after, true, true);
 }
 
@@ -1586,7 +1589,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
+  SinglePassRunAndCheck<AggressiveDCEPass>(
       predefs_before + func_before, predefs_after + func_after, true, true);
 }
 
@@ -1693,7 +1696,7 @@ OpFunctionEnd
 )";
 
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(before, after, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(before, after, true, true);
 }
 
 TEST_F(AggressiveDCETest, EliminateDeadIfThenElseNested) {
@@ -1830,7 +1833,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
+  SinglePassRunAndCheck<AggressiveDCEPass>(
       predefs_before + func_before, predefs_after + func_after, true, true);
 }
 
@@ -1905,7 +1908,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(assembly, assembly, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(assembly, assembly, true, true);
 }
 
 TEST_F(AggressiveDCETest, NoEliminateLiveIfThenElseNested) {
@@ -2005,7 +2008,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(assembly, assembly, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(assembly, assembly, true, true);
 }
 
 TEST_F(AggressiveDCETest, NoEliminateIfWithPhi) {
@@ -2071,7 +2074,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(assembly, assembly, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(assembly, assembly, true, true);
 }
 
 TEST_F(AggressiveDCETest, NoEliminateIfBreak) {
@@ -2152,7 +2155,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(assembly, assembly, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(assembly, assembly, true, true);
 }
 
 TEST_F(AggressiveDCETest, NoEliminateIfBreak2) {
@@ -2250,7 +2253,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(assembly, assembly, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(assembly, assembly, true, true);
 }
 
 TEST_F(AggressiveDCETest, EliminateEntireUselessLoop) {
@@ -2394,7 +2397,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
+  SinglePassRunAndCheck<AggressiveDCEPass>(
       predefs1 + names_before + predefs2_before + func_before,
       predefs1 + names_after + predefs2_after + func_after, true, true);
 }
@@ -2474,7 +2477,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(assembly, assembly, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(assembly, assembly, true, true);
 }
 
 TEST_F(AggressiveDCETest, NoEliminateLiveLoop) {
@@ -2557,7 +2560,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(assembly, assembly, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(assembly, assembly, true, true);
 }
 
 TEST_F(AggressiveDCETest, EliminateEntireFunctionBody) {
@@ -2661,7 +2664,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
+  SinglePassRunAndCheck<AggressiveDCEPass>(
       predefs_before + func_before, predefs_after + func_after, true, true);
 }
 
@@ -2861,7 +2864,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
+  SinglePassRunAndCheck<AggressiveDCEPass>(
       predefs_before + func_before, predefs_after + func_after, true, true);
 }
 
@@ -3021,7 +3024,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
+  SinglePassRunAndCheck<AggressiveDCEPass>(
       predefs_before + func_before, predefs_after + func_after, true, true);
 }
 
@@ -3144,7 +3147,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
+  SinglePassRunAndCheck<AggressiveDCEPass>(
       predefs_before + func_before, predefs_after + func_after, true, true);
 }
 
@@ -3274,7 +3277,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(assembly, assembly, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(assembly, assembly, true, true);
 }
 
 TEST_F(AggressiveDCETest, NoEliminateIfContinue) {
@@ -3381,7 +3384,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(assembly, assembly, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(assembly, assembly, true, true);
 }
 
 TEST_F(AggressiveDCETest, NoEliminateIfContinue2) {
@@ -3485,7 +3488,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(assembly, assembly, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(assembly, assembly, true, true);
 }
 
 TEST_F(AggressiveDCETest, NoEliminateIfContinue3) {
@@ -3591,7 +3594,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(assembly, assembly, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(assembly, assembly, true, true);
 }
 
 TEST_F(AggressiveDCETest, PointerVariable) {
@@ -3690,7 +3693,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(before, after, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(before, after, true, true);
 }
 
 // %dead is unused.  Make sure we remove it along with its name.
@@ -3734,7 +3737,7 @@ OpFunctionEnd
 )";
 
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(before, after, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(before, after, true, true);
 }
 
 // Delete %dead because it is unreferenced.  Then %initializer becomes
@@ -3781,7 +3784,7 @@ OpFunctionEnd
 )";
 
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(before, after, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(before, after, true, true);
 }
 
 // Keep %live because it is used, and its initializer.
@@ -3815,7 +3818,7 @@ OpFunctionEnd
 )";
 
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(before, before, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(before, before, true, true);
 }
 
 // This test that the decoration associated with a variable are removed when the
@@ -3867,7 +3870,7 @@ OpFunctionEnd
 )";
 
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(before, after, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(before, after, true, true);
 }
 
 #ifdef SPIRV_EFFCEE
@@ -3914,7 +3917,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndMatch<opt::AggressiveDCEPass>(text, true);
+  SinglePassRunAndMatch<AggressiveDCEPass>(text, true);
 }
 #endif  //  SPIRV_EFFCEE
 
@@ -3954,7 +3957,7 @@ OpFunctionEnd
 )";
 
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(text, text, false, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(text, text, false, true);
 }
 
 TEST_F(AggressiveDCETest, BasicDeleteDeadFunction) {
@@ -3991,7 +3994,7 @@ TEST_F(AggressiveDCETest, BasicDeleteDeadFunction) {
   };
 
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
+  SinglePassRunAndCheck<AggressiveDCEPass>(
       JoinAllInsts(Concat(common_code, dead_function)),
       JoinAllInsts(common_code), /* skip_nop = */ true);
 }
@@ -4028,9 +4031,9 @@ TEST_F(AggressiveDCETest, BasicKeepLiveFunction) {
 
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
   std::string assembly = JoinAllInsts(text);
-  auto result = SinglePassRunAndDisassemble<opt::AggressiveDCEPass>(
+  auto result = SinglePassRunAndDisassemble<AggressiveDCEPass>(
       assembly, /* skip_nop = */ true, /* do_validation = */ false);
-  EXPECT_EQ(opt::Pass::Status::SuccessWithoutChange, std::get<1>(result));
+  EXPECT_EQ(Pass::Status::SuccessWithoutChange, std::get<1>(result));
   EXPECT_EQ(assembly, std::get<0>(result));
 }
 
@@ -4088,8 +4091,8 @@ OpFunctionEnd
 )";
 
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(text, expected_output,
-                                                /* skip_nop = */ true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(text, expected_output,
+                                           /* skip_nop = */ true);
 }
 
 #ifdef SPIRV_EFFCEE
@@ -4121,7 +4124,7 @@ TEST_F(AggressiveDCETest, BasicAllDeadConstants) {
                OpFunctionEnd
   )";
 
-  SinglePassRunAndMatch<opt::AggressiveDCEPass>(text, true);
+  SinglePassRunAndMatch<AggressiveDCEPass>(text, true);
 }
 #endif  // SPIRV_EFFCEE
 
@@ -4177,7 +4180,7 @@ TEST_F(AggressiveDCETest, BasicNoneDeadConstants) {
       // clang-format on
   };
   // All constants are used, so none of them should be eliminated.
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
+  SinglePassRunAndCheck<AggressiveDCEPass>(
       JoinAllInsts(text), JoinAllInsts(text), /* skip_nop = */ true);
 }
 
@@ -4246,8 +4249,7 @@ TEST_P(EliminateDeadConstantTest, Custom) {
 
   // Do not enable validation. As the input code is invalid from the base
   // tests (ported from other passes).
-  SinglePassRunAndMatch<opt::AggressiveDCEPass>(assembly_with_dead_const,
-                                                false);
+  SinglePassRunAndMatch<AggressiveDCEPass>(assembly_with_dead_const, false);
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -5104,7 +5106,7 @@ OpReturn
 OpFunctionEnd
   )";
 
-  SinglePassRunAndMatch<opt::AggressiveDCEPass>(text, true);
+  SinglePassRunAndMatch<AggressiveDCEPass>(text, true);
 }
 
 TEST_F(AggressiveDCETest, ParitallyDeadDecorationGroup) {
@@ -5138,7 +5140,7 @@ OpReturn
 OpFunctionEnd
   )";
 
-  SinglePassRunAndMatch<opt::AggressiveDCEPass>(text, true);
+  SinglePassRunAndMatch<AggressiveDCEPass>(text, true);
 }
 
 TEST_F(AggressiveDCETest, ParitallyDeadDecorationGroupDifferentGroupDecorate) {
@@ -5174,7 +5176,7 @@ OpReturn
 OpFunctionEnd
   )";
 
-  SinglePassRunAndMatch<opt::AggressiveDCEPass>(text, true);
+  SinglePassRunAndMatch<AggressiveDCEPass>(text, true);
 }
 
 TEST_F(AggressiveDCETest, DeadGroupMemberDecorate) {
@@ -5201,7 +5203,7 @@ OpReturn
 OpFunctionEnd
   )";
 
-  SinglePassRunAndMatch<opt::AggressiveDCEPass>(text, true);
+  SinglePassRunAndMatch<AggressiveDCEPass>(text, true);
 }
 
 TEST_F(AggressiveDCETest, PartiallyDeadGroupMemberDecorate) {
@@ -5239,7 +5241,7 @@ OpReturn
 OpFunctionEnd
   )";
 
-  SinglePassRunAndMatch<opt::AggressiveDCEPass>(text, true);
+  SinglePassRunAndMatch<AggressiveDCEPass>(text, true);
 }
 
 TEST_F(AggressiveDCETest,
@@ -5280,7 +5282,7 @@ OpReturn
 OpFunctionEnd
   )";
 
-  SinglePassRunAndMatch<opt::AggressiveDCEPass>(text, true);
+  SinglePassRunAndMatch<AggressiveDCEPass>(text, true);
 }
 
 // Test for #1404
@@ -5305,7 +5307,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndMatch<opt::AggressiveDCEPass>(text, true);
+  SinglePassRunAndMatch<AggressiveDCEPass>(text, true);
 }
 #endif  // SPIRV_EFFCEE
 
@@ -5351,7 +5353,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(text, text, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(text, text, true, true);
 }
 
 TEST_F(AggressiveDCETest, BreaksDontVisitPhis) {
@@ -5392,8 +5394,8 @@ OpReturn
 OpFunctionEnd
 )";
 
-  EXPECT_EQ(opt::Pass::Status::SuccessWithoutChange,
-            std::get<1>(SinglePassRunAndDisassemble<opt::AggressiveDCEPass>(
+  EXPECT_EQ(Pass::Status::SuccessWithoutChange,
+            std::get<1>(SinglePassRunAndDisassemble<AggressiveDCEPass>(
                 text, false, true)));
 }
 
@@ -5432,7 +5434,7 @@ OpFunctionEnd
 )";
 
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(text, text, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(text, text, true, true);
 }
 
 // Test for #1212
@@ -5472,7 +5474,7 @@ OpFunctionEnd
 )";
 
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(text, text, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(text, text, true, true);
 }
 
 TEST_F(AggressiveDCETest, AtomicAdd) {
@@ -5513,7 +5515,7 @@ OpFunctionEnd
 )";
 
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(text, text, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(text, text, true, true);
 }
 
 TEST_F(AggressiveDCETest, SafelyRemoveDecorateString) {
@@ -5545,8 +5547,8 @@ OpFunctionEnd
 )";
 
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(
-      preamble + body_before, preamble + body_after, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(preamble + body_before,
+                                           preamble + body_after, true, true);
 }
 
 TEST_F(AggressiveDCETest, CopyMemoryToGlobal) {
@@ -5584,7 +5586,7 @@ OpFunctionEnd
 )";
 
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(test, test, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(test, test, true, true);
 }
 
 TEST_F(AggressiveDCETest, CopyMemoryToLocal) {
@@ -5625,7 +5627,7 @@ OpFunctionEnd
 )";
 
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(test, test, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(test, test, true, true);
 }
 
 TEST_F(AggressiveDCETest, RemoveCopyMemoryToLocal) {
@@ -5691,7 +5693,7 @@ OpFunctionEnd
 )";
 
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(test, result, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(test, result, true, true);
 }
 
 TEST_F(AggressiveDCETest, RemoveCopyMemoryToLocal2) {
@@ -5763,7 +5765,52 @@ OpFunctionEnd
 )";
 
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  SinglePassRunAndCheck<opt::AggressiveDCEPass>(test, result, true, true);
+  SinglePassRunAndCheck<AggressiveDCEPass>(test, result, true, true);
+}
+
+TEST_F(AggressiveDCETest, StructuredIfWithConditionalExit) {
+  // We are able to remove "local2" because it is not loaded, but have to keep
+  // the stores to "local1".
+  const std::string test =
+      R"(OpCapability Shader
+%1 = OpExtInstImport "GLSL.std.450"
+OpMemoryModel Logical GLSL450
+OpEntryPoint Fragment %main "main"
+OpExecutionMode %main OriginUpperLeft
+OpSource GLSL 140
+OpSourceExtension "GL_GOOGLE_cpp_style_line_directive"
+OpSourceExtension "GL_GOOGLE_include_directive"
+OpName %main "main"
+OpName %a "a"
+%void = OpTypeVoid
+%5 = OpTypeFunction %void
+%int = OpTypeInt 32 1
+%_ptr_Uniform_int = OpTypePointer Uniform %int
+%int_0 = OpConstant %int 0
+%bool = OpTypeBool
+%int_100 = OpConstant %int 100
+%int_1 = OpConstant %int 1
+%a = OpVariable %_ptr_Uniform_int Uniform
+%main = OpFunction %void None %5
+%12 = OpLabel
+%13 = OpLoad %int %a
+%14 = OpSGreaterThan %bool %13 %int_0
+OpSelectionMerge %15 None
+OpBranchConditional %14 %16 %15
+%16 = OpLabel
+%17 = OpLoad %int %a
+%18 = OpSLessThan %bool %17 %int_100
+OpBranchConditional %18 %19 %15
+%19 = OpLabel
+OpStore %a %int_1
+OpBranch %15
+%15 = OpLabel
+OpReturn
+OpFunctionEnd
+)";
+
+  SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
+  SinglePassRunAndCheck<AggressiveDCEPass>(test, test, true, true);
 }
 // TODO(greg-lunarg): Add tests to verify handling of these cases:
 //
@@ -5771,4 +5818,6 @@ OpFunctionEnd
 //    Check that function calls inhibit optimization
 //    Others?
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace opt
+}  // namespace spvtools

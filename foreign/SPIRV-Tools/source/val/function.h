@@ -12,23 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LIBSPIRV_VAL_FUNCTION_H_
-#define LIBSPIRV_VAL_FUNCTION_H_
+#ifndef SOURCE_VAL_FUNCTION_H_
+#define SOURCE_VAL_FUNCTION_H_
 
 #include <functional>
 #include <list>
 #include <map>
 #include <set>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
-#include "latest_version_spirv_header.h"
+#include "source/latest_version_spirv_header.h"
+#include "source/val/basic_block.h"
+#include "source/val/construct.h"
 #include "spirv-tools/libspirv.h"
-#include "val/basic_block.h"
-#include "val/construct.h"
 
 namespace spvtools {
+namespace val {
 
 struct bb_constr_type_pair_hash {
   std::size_t operator()(
@@ -351,6 +354,7 @@ class Function {
   std::set<uint32_t> function_call_targets_;
 };
 
+}  // namespace val
 }  // namespace spvtools
 
-#endif  /// LIBSPIRV_VAL_FUNCTION_H_
+#endif  // SOURCE_VAL_FUNCTION_H_

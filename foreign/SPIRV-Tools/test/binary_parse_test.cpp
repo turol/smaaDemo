@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "gmock/gmock.h"
-#include "latest_version_opencl_std_header.h"
-#include "source/message.h"
+#include "source/latest_version_opencl_std_header.h"
 #include "source/table.h"
-#include "test_fixture.h"
-#include "unit_spirv.h"
+#include "test/test_fixture.h"
+#include "test/unit_spirv.h"
 
 // Returns true if two spv_parsed_operand_t values are equal.
 // To use this operator, this definition must appear in the same namespace
@@ -889,8 +890,8 @@ INSTANTIATE_TEST_CASE_P(
          "Invalid function control operand: 31 has invalid mask component 16"},
         {"OpLoopMerge %1 %2 !1027",
          "Invalid loop control operand: 1027 has invalid mask component 1024"},
-        {"%2 = OpImageFetch %1 %image %coord !511",
-         "Invalid image operand: 511 has invalid mask component 256"},
+        {"%2 = OpImageFetch %1 %image %coord !32770",
+         "Invalid image operand: 32770 has invalid mask component 32768"},
         {"OpSelectionMerge %1 !7",
          "Invalid selection control operand: 7 has invalid mask component 4"},
     }), );

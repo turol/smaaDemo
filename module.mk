@@ -95,6 +95,7 @@ endif  # INTERNAL_spirv-headers
 
 ifeq ($(INTERNAL_spirv-tools),y)
 
+CFLAGS+=-isystem$(TOPDIR)/foreign/SPIRV-Tools
 CFLAGS+=-isystem$(TOPDIR)/foreign/SPIRV-Tools/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/SPIRV-Tools/source
 

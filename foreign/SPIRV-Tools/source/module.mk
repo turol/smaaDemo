@@ -24,7 +24,6 @@ FILES:= \
 	ext_inst.cpp \
 	id_descriptor.cpp \
 	libspirv.cpp \
-	message.cpp \
 	name_mapper.cpp \
 	opcode.cpp \
 	operand.cpp \
@@ -32,37 +31,11 @@ FILES:= \
 	print.cpp \
 	software_version.cpp \
 	spirv_endian.cpp \
-	spirv_stats.cpp \
 	spirv_target_env.cpp \
 	spirv_validator_options.cpp \
 	table.cpp \
 	text.cpp \
 	text_handler.cpp \
-	validate_adjacency.cpp \
-	validate_arithmetics.cpp \
-	validate_atomics.cpp \
-	validate_barriers.cpp \
-	validate_bitwise.cpp \
-	validate_builtins.cpp \
-	validate_capability.cpp \
-	validate_cfg.cpp \
-	validate_composites.cpp \
-	validate_conversion.cpp \
-	validate.cpp \
-	validate_datarules.cpp \
-	validate_decorations.cpp \
-	validate_derivatives.cpp \
-	validate_ext_inst.cpp \
-	validate_id.cpp \
-	validate_image.cpp \
-	validate_interfaces.cpp \
-	validate_instruction.cpp \
-	validate_layout.cpp \
-	validate_literals.cpp \
-	validate_logicals.cpp \
-	validate_non_uniform.cpp \
-	validate_primitives.cpp \
-	validate_type_unique.cpp \
 	# empty line
 
 

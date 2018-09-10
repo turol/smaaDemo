@@ -15,14 +15,16 @@
 #include <cfloat>
 #include <cmath>
 #include <cstdio>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <tuple>
+#include <utility>
+#include <vector>
 
-#include <gmock/gmock.h>
-
+#include "gmock/gmock.h"
 #include "source/util/hex_float.h"
-#include "unit_spirv.h"
+#include "test/unit_spirv.h"
 
 namespace spvtools {
 namespace utils {
@@ -48,7 +50,7 @@ using RoundTripDoubleTest = ::testing::TestWithParam<double>;
 template <typename T>
 std::string EncodeViaHexFloat(const T& value) {
   std::stringstream ss;
-  ss << spvtools::utils::HexFloat<T>(value);
+  ss << HexFloat<T>(value);
   return ss.str();
 }
 
@@ -227,8 +229,8 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::ValuesIn(std::vector<
                         std::pair<FloatProxy<double>, std::string>>({
         // Various NAN and INF cases
-        {uint64_t(0xFFF0000000000000LL), "-0x1p+1024"},                //-inf
-        {uint64_t(0x7FF0000000000000LL), "0x1p+1024"},                 //+inf
+        {uint64_t(0xFFF0000000000000LL), "-0x1p+1024"},                // -inf
+        {uint64_t(0x7FF0000000000000LL), "0x1p+1024"},                 // +inf
         {uint64_t(0xFFF8000000000000LL), "-0x1.8p+1024"},              // -nan
         {uint64_t(0xFFF0F00000000000LL), "-0x1.0fp+1024"},             // -nan
         {uint64_t(0xFFF0000000000001LL), "-0x1.0000000000001p+1024"},  // -nan
@@ -671,11 +673,16 @@ TEST(HexFloatOperationTest, NormalizedSignificand) {
   // For denormalized numbers we expect the normalized significand to
   // shift as if it were normalized. This means, in practice that the
   // top_most set bit will be cut off. Looks very similar to above (on purpose)
-  EXPECT_EQ(bits_set({}), normalized_significand({0}, -127));
-  EXPECT_EQ(bits_set({3}), normalized_significand({0, 4}, -128));
-  EXPECT_EQ(bits_set({3}), normalized_significand({0, 4}, -127));
-  EXPECT_EQ(bits_set({}), normalized_significand({22}, -127));
-  EXPECT_EQ(bits_set({0}), normalized_significand({21, 22}, -127));
+  EXPECT_EQ(bits_set({}),
+            normalized_significand({0}, static_cast<uint32_t>(-127)));
+  EXPECT_EQ(bits_set({3}),
+            normalized_significand({0, 4}, static_cast<uint32_t>(-128)));
+  EXPECT_EQ(bits_set({3}),
+            normalized_significand({0, 4}, static_cast<uint32_t>(-127)));
+  EXPECT_EQ(bits_set({}),
+            normalized_significand({22}, static_cast<uint32_t>(-127)));
+  EXPECT_EQ(bits_set({0}),
+            normalized_significand({21, 22}, static_cast<uint32_t>(-127)));
 }
 
 // Returns the 32-bit floating point value created by

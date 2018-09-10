@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "operand.h"
+#include "source/operand.h"
 
 #include <assert.h>
 #include <string.h>
 #include <algorithm>
 
-#include "macro.h"
-#include "spirv_constant.h"
-#include "spirv_target_env.h"
+#include "source/macro.h"
+#include "source/spirv_constant.h"
+#include "source/spirv_target_env.h"
 
 // For now, assume unified1 contains up to SPIR-V 1.3 and no later
 // SPIR-V version.
@@ -246,8 +246,9 @@ const char* spvOperandTypeStr(spv_operand_type_t type) {
 void spvPushOperandTypes(const spv_operand_type_t* types,
                          spv_operand_pattern_t* pattern) {
   const spv_operand_type_t* endTypes;
-  for (endTypes = types; *endTypes != SPV_OPERAND_TYPE_NONE; ++endTypes)
-    ;
+  for (endTypes = types; *endTypes != SPV_OPERAND_TYPE_NONE; ++endTypes) {
+  }
+
   while (endTypes-- != types) {
     pattern->push_back(*endTypes);
   }

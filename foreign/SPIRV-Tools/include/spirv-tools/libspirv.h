@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SPIRV_TOOLS_LIBSPIRV_H_
-#define SPIRV_TOOLS_LIBSPIRV_H_
+#ifndef INCLUDE_SPIRV_TOOLS_LIBSPIRV_H_
+#define INCLUDE_SPIRV_TOOLS_LIBSPIRV_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -475,8 +475,14 @@ SPIRV_TOOLS_EXPORT void spvValidatorOptionsSetRelaxLogicalPointer(
 
 // Records whether or not the validator should relax the rules on block layout.
 //
-// When relaxed, it will skip checking standard uniform/storage buffer layout.
+// When relaxed, it will enable VK_KHR_relaxed_block_layout when validating
+// standard uniform/storage block layout.
 SPIRV_TOOLS_EXPORT void spvValidatorOptionsSetRelaxBlockLayout(
+    spv_validator_options options, bool val);
+
+// Records whether or not the validator should skip validating standard
+// uniform/storage block layout.
+SPIRV_TOOLS_EXPORT void spvValidatorOptionsSetSkipBlockLayout(
     spv_validator_options options, bool val);
 
 // Encodes the given SPIR-V assembly text to its binary representation. The
@@ -590,4 +596,4 @@ SPIRV_TOOLS_EXPORT spv_result_t spvBinaryParse(
 }
 #endif
 
-#endif  // SPIRV_TOOLS_LIBSPIRV_H_
+#endif  // INCLUDE_SPIRV_TOOLS_LIBSPIRV_H_

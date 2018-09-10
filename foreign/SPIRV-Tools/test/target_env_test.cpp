@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gmock/gmock.h>
+#include <vector>
 
-#include "unit_spirv.h"
-
+#include "gmock/gmock.h"
 #include "source/spirv_target_env.h"
+#include "test/unit_spirv.h"
 
+namespace spvtools {
 namespace {
 
 using ::testing::AnyOf;
@@ -101,4 +102,5 @@ INSTANTIATE_TEST_CASE_P(
         {"abc", false, SPV_ENV_UNIVERSAL_1_0},
     }));
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace spvtools

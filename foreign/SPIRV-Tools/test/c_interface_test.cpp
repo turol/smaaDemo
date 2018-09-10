@@ -12,11 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gtest/gtest.h>
-
-#include "message.h"
+#include "gtest/gtest.h"
+#include "source/table.h"
 #include "spirv-tools/libspirv.h"
-#include "table.h"
 
 namespace spvtools {
 namespace {
@@ -27,7 +25,7 @@ void SetContextMessageConsumer(spv_context context, MessageConsumer consumer) {
   spvtools::SetContextMessageConsumer(context, consumer);
 }
 #else
-void SetContextMessageConsumer(spv_context, spvtools::MessageConsumer) {}
+void SetContextMessageConsumer(spv_context, MessageConsumer) {}
 #endif
 
 // The default consumer is a null std::function.

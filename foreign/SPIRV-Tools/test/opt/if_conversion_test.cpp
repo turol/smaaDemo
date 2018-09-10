@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "assembly_builder.h"
+#include <string>
+
 #include "gmock/gmock.h"
-#include "pass_fixture.h"
-#include "pass_utils.h"
+#include "test/opt/assembly_builder.h"
+#include "test/opt/pass_fixture.h"
+#include "test/opt/pass_utils.h"
 
+namespace spvtools {
+namespace opt {
 namespace {
-
-using namespace spvtools;
 
 using IfConversionTest = PassTest<::testing::Test>;
 
@@ -58,7 +60,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndMatch<opt::IfConversion>(text, true);
+  SinglePassRunAndMatch<IfConversion>(text, true);
 }
 
 TEST_F(IfConversionTest, TestSimpleHalfIfTrue) {
@@ -93,7 +95,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndMatch<opt::IfConversion>(text, true);
+  SinglePassRunAndMatch<IfConversion>(text, true);
 }
 
 TEST_F(IfConversionTest, TestSimpleHalfIfExtraBlock) {
@@ -130,7 +132,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndMatch<opt::IfConversion>(text, true);
+  SinglePassRunAndMatch<IfConversion>(text, true);
 }
 
 TEST_F(IfConversionTest, TestSimpleHalfIfFalse) {
@@ -165,7 +167,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndMatch<opt::IfConversion>(text, true);
+  SinglePassRunAndMatch<IfConversion>(text, true);
 }
 
 TEST_F(IfConversionTest, TestVectorSplat) {
@@ -207,7 +209,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndMatch<opt::IfConversion>(text, true);
+  SinglePassRunAndMatch<IfConversion>(text, true);
 }
 
 TEST_F(IfConversionTest, CodeMotionSameValue) {
@@ -251,7 +253,7 @@ TEST_F(IfConversionTest, CodeMotionSameValue) {
                     OpFunctionEnd
 )";
 
-  SinglePassRunAndMatch<opt::IfConversion>(text, true);
+  SinglePassRunAndMatch<IfConversion>(text, true);
 }
 
 TEST_F(IfConversionTest, CodeMotionMultipleInstructions) {
@@ -298,7 +300,7 @@ TEST_F(IfConversionTest, CodeMotionMultipleInstructions) {
                     OpFunctionEnd
 )";
 
-  SinglePassRunAndMatch<opt::IfConversion>(text, true);
+  SinglePassRunAndMatch<IfConversion>(text, true);
 }
 #endif  // SPIRV_EFFCEE
 
@@ -325,7 +327,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::IfConversion>(text, text, true, true);
+  SinglePassRunAndCheck<IfConversion>(text, text, true, true);
 }
 
 TEST_F(IfConversionTest, LoopUntouched) {
@@ -354,7 +356,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::IfConversion>(text, text, true, true);
+  SinglePassRunAndCheck<IfConversion>(text, text, true, true);
 }
 
 TEST_F(IfConversionTest, TooManyPredecessors) {
@@ -387,7 +389,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::IfConversion>(text, text, true, true);
+  SinglePassRunAndCheck<IfConversion>(text, text, true, true);
 }
 
 TEST_F(IfConversionTest, NoCodeMotion) {
@@ -417,7 +419,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::IfConversion>(text, text, true, true);
+  SinglePassRunAndCheck<IfConversion>(text, text, true, true);
 }
 
 TEST_F(IfConversionTest, NoCodeMotionImmovableInst) {
@@ -464,7 +466,9 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::IfConversion>(text, text, true, true);
+  SinglePassRunAndCheck<IfConversion>(text, text, true, true);
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace opt
+}  // namespace spvtools

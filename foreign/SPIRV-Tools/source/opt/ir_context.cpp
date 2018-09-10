@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ir_context.h"
-#include "latest_version_glsl_std_450_header.h"
-#include "log.h"
-#include "mem_pass.h"
-#include "reflect.h"
+#include "source/opt/ir_context.h"
 
 #include <cstring>
 
+#include "source/latest_version_glsl_std_450_header.h"
+#include "source/opt/log.h"
+#include "source/opt/mem_pass.h"
+#include "source/opt/reflect.h"
+
 namespace spvtools {
-namespace ir {
+namespace opt {
 
 void IRContext::BuildInvalidAnalyses(IRContext::Analysis set) {
   if (set & kAnalysisDefUse) {
@@ -92,7 +93,7 @@ void IRContext::InvalidateAnalyses(IRContext::Analysis analyses_to_invalidate) {
   valid_analyses_ = Analysis(valid_analyses_ & ~analyses_to_invalidate);
 }
 
-Instruction* IRContext::KillInst(ir::Instruction* inst) {
+Instruction* IRContext::KillInst(Instruction* inst) {
   if (!inst) {
     return nullptr;
   }
@@ -114,11 +115,11 @@ Instruction* IRContext::KillInst(ir::Instruction* inst) {
     }
   }
 
-  if (type_mgr_ && ir::IsTypeInst(inst->opcode())) {
+  if (type_mgr_ && IsTypeInst(inst->opcode())) {
     type_mgr_->RemoveId(inst->result_id());
   }
 
-  if (constant_mgr_ && ir::IsConstantInst(inst->opcode())) {
+  if (constant_mgr_ && IsConstantInst(inst->opcode())) {
     constant_mgr_->RemoveId(inst->result_id());
   }
 
@@ -138,7 +139,7 @@ Instruction* IRContext::KillInst(ir::Instruction* inst) {
 }
 
 bool IRContext::KillDef(uint32_t id) {
-  ir::Instruction* def = get_def_use_mgr()->GetDef(id);
+  Instruction* def = get_def_use_mgr()->GetDef(id);
   if (def != nullptr) {
     KillInst(def);
     return true;
@@ -153,15 +154,15 @@ bool IRContext::ReplaceAllUsesWith(uint32_t before, uint32_t after) {
   assert(get_def_use_mgr()->GetDef(after) &&
          "'after' is not a registered def.");
 
-  std::vector<std::pair<ir::Instruction*, uint32_t>> uses_to_update;
+  std::vector<std::pair<Instruction*, uint32_t>> uses_to_update;
   get_def_use_mgr()->ForEachUse(
-      before, [&uses_to_update](ir::Instruction* user, uint32_t index) {
+      before, [&uses_to_update](Instruction* user, uint32_t index) {
         uses_to_update.emplace_back(user, index);
       });
 
-  ir::Instruction* prev = nullptr;
+  Instruction* prev = nullptr;
   for (auto p : uses_to_update) {
-    ir::Instruction* user = p.first;
+    Instruction* user = p.first;
     uint32_t index = p.second;
     if (prev == nullptr || prev != user) {
       ForgetUses(user);
@@ -191,7 +192,7 @@ bool IRContext::ReplaceAllUsesWith(uint32_t before, uint32_t after) {
       user->SetInOperand(in_operand_pos, {after});
     }
     AnalyzeUses(user);
-  };
+  }
 
   return true;
 }
@@ -202,7 +203,7 @@ bool IRContext::IsConsistent() {
 #endif
 
   if (AreAnalysesValid(kAnalysisDefUse)) {
-    opt::analysis::DefUseManager new_def_use(module());
+    analysis::DefUseManager new_def_use(module());
     if (*get_def_use_mgr() != new_def_use) {
       return false;
     }
@@ -211,7 +212,7 @@ bool IRContext::IsConsistent() {
   if (AreAnalysesValid(kAnalysisInstrToBlockMapping)) {
     for (auto& func : *module()) {
       for (auto& block : func) {
-        if (!block.WhileEachInst([this, &block](ir::Instruction* inst) {
+        if (!block.WhileEachInst([this, &block](Instruction* inst) {
               if (get_instr_block(inst) != &block) {
                 return false;
               }
@@ -257,18 +258,18 @@ void IRContext::AnalyzeUses(Instruction* inst) {
 }
 
 void IRContext::KillNamesAndDecorates(uint32_t id) {
-  std::vector<ir::Instruction*> decorations =
+  std::vector<Instruction*> decorations =
       get_decoration_mgr()->GetDecorationsFor(id, true);
 
   for (Instruction* inst : decorations) {
     KillInst(inst);
   }
 
-  std::vector<ir::Instruction*> name_to_kill;
+  std::vector<Instruction*> name_to_kill;
   for (auto name : GetNames(id)) {
     name_to_kill.push_back(name.second);
   }
-  for (ir::Instruction* name_inst : name_to_kill) {
+  for (Instruction* name_inst : name_to_kill) {
     KillInst(name_inst);
   }
 }
@@ -442,7 +443,7 @@ void IRContext::AddCombinatorsForCapability(uint32_t capability) {
   }
 }
 
-void IRContext::AddCombinatorsForExtension(ir::Instruction* extension) {
+void IRContext::AddCombinatorsForExtension(Instruction* extension) {
   assert(extension->opcode() == SpvOpExtInstImport &&
          "Expecting an import of an extension's instruction set.");
   const char* extension_name =
@@ -557,15 +558,16 @@ void IRContext::RemoveFromIdToName(const Instruction* inst) {
   }
 }
 
-ir::LoopDescriptor* IRContext::GetLoopDescriptor(const ir::Function* f) {
+LoopDescriptor* IRContext::GetLoopDescriptor(const Function* f) {
   if (!AreAnalysesValid(kAnalysisLoopAnalysis)) {
     ResetLoopAnalysis();
   }
 
-  std::unordered_map<const ir::Function*, ir::LoopDescriptor>::iterator it =
+  std::unordered_map<const Function*, LoopDescriptor>::iterator it =
       loop_descriptors_.find(f);
   if (it == loop_descriptors_.end()) {
-    return &loop_descriptors_.emplace(std::make_pair(f, ir::LoopDescriptor(f)))
+    return &loop_descriptors_
+                .emplace(std::make_pair(f, LoopDescriptor(this, f)))
                 .first->second;
   }
 
@@ -573,39 +575,38 @@ ir::LoopDescriptor* IRContext::GetLoopDescriptor(const ir::Function* f) {
 }
 
 // Gets the dominator analysis for function |f|.
-opt::DominatorAnalysis* IRContext::GetDominatorAnalysis(const ir::Function* f) {
+DominatorAnalysis* IRContext::GetDominatorAnalysis(const Function* f) {
   if (!AreAnalysesValid(kAnalysisDominatorAnalysis)) {
     ResetDominatorAnalysis();
   }
 
   if (dominator_trees_.find(f) == dominator_trees_.end()) {
-    dominator_trees_[f].InitializeTree(f);
+    dominator_trees_[f].InitializeTree(*cfg(), f);
   }
 
   return &dominator_trees_[f];
 }
 
 // Gets the postdominator analysis for function |f|.
-opt::PostDominatorAnalysis* IRContext::GetPostDominatorAnalysis(
-    const ir::Function* f) {
+PostDominatorAnalysis* IRContext::GetPostDominatorAnalysis(const Function* f) {
   if (!AreAnalysesValid(kAnalysisDominatorAnalysis)) {
     ResetDominatorAnalysis();
   }
 
   if (post_dominator_trees_.find(f) == post_dominator_trees_.end()) {
-    post_dominator_trees_[f].InitializeTree(f);
+    post_dominator_trees_[f].InitializeTree(*cfg(), f);
   }
 
   return &post_dominator_trees_[f];
 }
 
-bool ir::IRContext::CheckCFG() {
+bool IRContext::CheckCFG() {
   std::unordered_map<uint32_t, std::vector<uint32_t>> real_preds;
   if (!AreAnalysesValid(kAnalysisCFG)) {
     return true;
   }
 
-  for (ir::Function& function : *module()) {
+  for (Function& function : *module()) {
     for (const auto& bb : function) {
       bb.ForEachSuccessorLabel([&bb, &real_preds](const uint32_t lab_id) {
         real_preds[lab_id].push_back(bb.id());
@@ -650,5 +651,5 @@ bool ir::IRContext::CheckCFG() {
 
   return true;
 }
-}  // namespace ir
+}  // namespace opt
 }  // namespace spvtools

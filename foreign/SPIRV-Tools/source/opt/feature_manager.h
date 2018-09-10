@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LIBSPIRV_OPT_FEATURE_MANAGER_H_
-#define LIBSPIRV_OPT_FEATURE_MANAGER_H_
+#ifndef SOURCE_OPT_FEATURE_MANAGER_H_
+#define SOURCE_OPT_FEATURE_MANAGER_H_
 
-#include "assembly_grammar.h"
-#include "extensions.h"
-#include "module.h"
+#include "source/assembly_grammar.h"
+#include "source/extensions.h"
+#include "source/opt/module.h"
 
 namespace spvtools {
 namespace opt {
@@ -36,7 +36,7 @@ class FeatureManager {
   }
 
   // Analyzes |module| and records enabled extensions and capabilities.
-  void Analyze(ir::Module* module);
+  void Analyze(Module* module);
 
   CapabilitySet* GetCapabilities() { return &capabilities_; }
   const CapabilitySet* GetCapabilities() const { return &capabilities_; }
@@ -47,17 +47,17 @@ class FeatureManager {
 
  private:
   // Analyzes |module| and records enabled extensions.
-  void AddExtensions(ir::Module* module);
+  void AddExtensions(Module* module);
 
   // Adds the given |capability| and all implied capabilities into the current
   // FeatureManager.
   void AddCapability(SpvCapability capability);
 
   // Analyzes |module| and records enabled capabilities.
-  void AddCapabilities(ir::Module* module);
+  void AddCapabilities(Module* module);
 
   // Analyzes |module| and records imported external instruction sets.
-  void AddExtInstImportIds(ir::Module* module);
+  void AddExtInstImportIds(Module* module);
 
   // Auxiliary object for querying SPIR-V grammar facts.
   const AssemblyGrammar& grammar_;
@@ -75,4 +75,4 @@ class FeatureManager {
 }  // namespace opt
 }  // namespace spvtools
 
-#endif  // LIBSPIRV_OPT_FEATURE_MANAGER_H_
+#endif  // SOURCE_OPT_FEATURE_MANAGER_H_

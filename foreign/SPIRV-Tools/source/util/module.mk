@@ -12,7 +12,6 @@ $(eval $(foreach directory, $(DIRS), $(call directory-module,$(directory)) ))
 
 
 FILES:= \
-	bit_stream.cpp \
 	bit_vector.cpp \
 	parse_number.cpp \
 	string_utils.cpp \

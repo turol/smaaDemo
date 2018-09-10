@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LIBSPIRV_VAL_CONSTRUCT_H_
-#define LIBSPIRV_VAL_CONSTRUCT_H_
-
-#include "val/basic_block.h"
+#ifndef SOURCE_VAL_CONSTRUCT_H_
+#define SOURCE_VAL_CONSTRUCT_H_
 
 #include <cstdint>
 #include <set>
 #include <vector>
 
+#include "source/val/basic_block.h"
+
 namespace spvtools {
+namespace val {
 
 /// Functor for ordering BasicBlocks. BasicBlock pointers must not be null.
 struct less_than_id {
@@ -144,6 +145,7 @@ class Construct {
   BasicBlock* exit_block_;
 };
 
+}  // namespace val
 }  // namespace spvtools
 
-#endif  /// LIBSPIRV_VAL_CONSTRUCT_H_
+#endif  // SOURCE_VAL_CONSTRUCT_H_

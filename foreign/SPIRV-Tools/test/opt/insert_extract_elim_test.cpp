@@ -13,13 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <opt/simplification_pass.h>
-#include "pass_fixture.h"
-#include "pass_utils.h"
+#include <string>
 
+#include "source/opt/simplification_pass.h"
+#include "test/opt/pass_fixture.h"
+#include "test/opt/pass_utils.h"
+
+namespace spvtools {
+namespace opt {
 namespace {
-
-using namespace spvtools;
 
 using InsertExtractElimTest = PassTest<::testing::Test>;
 
@@ -100,8 +102,8 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::SimplificationPass>(predefs + before,
-                                                 predefs + after, true, true);
+  SinglePassRunAndCheck<SimplificationPass>(predefs + before, predefs + after,
+                                            true, true);
 }
 
 TEST_F(InsertExtractElimTest, OptimizeAcrossNonConflictingInsert) {
@@ -185,8 +187,8 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::SimplificationPass>(predefs + before,
-                                                 predefs + after, true, true);
+  SinglePassRunAndCheck<SimplificationPass>(predefs + before, predefs + after,
+                                            true, true);
 }
 
 TEST_F(InsertExtractElimTest, OptimizeOpaque) {
@@ -236,9 +238,9 @@ OpDecorate %sampler15 DescriptorSet 0
   const std::string before =
       R"(%main = OpFunction %void None %9
 %25 = OpLabel
-%s0 = OpVariable %_ptr_Function_S_t Function 
+%s0 = OpVariable %_ptr_Function_S_t Function
 %26 = OpLoad %v2float %texCoords
-%27 = OpLoad %S_t %s0 
+%27 = OpLoad %S_t %s0
 %28 = OpCompositeInsert %S_t %26 %27 0
 %29 = OpLoad %15 %sampler15
 %30 = OpCompositeInsert %S_t %29 %28 2
@@ -267,8 +269,8 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::SimplificationPass>(predefs + before,
-                                                 predefs + after, true, true);
+  SinglePassRunAndCheck<SimplificationPass>(predefs + before, predefs + after,
+                                            true, true);
 }
 
 TEST_F(InsertExtractElimTest, OptimizeNestedStruct) {
@@ -396,8 +398,8 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::SimplificationPass>(predefs + before,
-                                                 predefs + after, true, true);
+  SinglePassRunAndCheck<SimplificationPass>(predefs + before, predefs + after,
+                                            true, true);
 }
 
 TEST_F(InsertExtractElimTest, ConflictingInsertPreventsOptimization) {
@@ -464,8 +466,7 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::SimplificationPass>(assembly, assembly, true,
-                                                 true);
+  SinglePassRunAndCheck<SimplificationPass>(assembly, assembly, true, true);
 }
 
 TEST_F(InsertExtractElimTest, ConflictingInsertPreventsOptimization2) {
@@ -588,8 +589,8 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::SimplificationPass>(
-      before_predefs + before, after_predefs + after, true, true);
+  SinglePassRunAndCheck<SimplificationPass>(before_predefs + before,
+                                            after_predefs + after, true, true);
 }
 
 TEST_F(InsertExtractElimTest, MixWithConstants) {
@@ -690,8 +691,8 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::SimplificationPass>(predefs + before,
-                                                 predefs + after, true, true);
+  SinglePassRunAndCheck<SimplificationPass>(predefs + before, predefs + after,
+                                            true, true);
 }
 
 TEST_F(InsertExtractElimTest, VectorShuffle1) {
@@ -774,8 +775,8 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::SimplificationPass>(
-      predefs_before + before, predefs_after + after, true, true);
+  SinglePassRunAndCheck<SimplificationPass>(predefs_before + before,
+                                            predefs_after + after, true, true);
 }
 
 TEST_F(InsertExtractElimTest, VectorShuffle2) {
@@ -887,11 +888,13 @@ OpReturn
 OpFunctionEnd
 )";
 
-  SinglePassRunAndCheck<opt::SimplificationPass>(
-      predefs_before + before, predefs_after + after, true, true);
+  SinglePassRunAndCheck<SimplificationPass>(predefs_before + before,
+                                            predefs_after + after, true, true);
 }
 
 // TODO(greg-lunarg): Add tests to verify handling of these cases:
 //
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace opt
+}  // namespace spvtools

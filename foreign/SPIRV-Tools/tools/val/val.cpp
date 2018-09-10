@@ -22,6 +22,7 @@
 #include "source/spirv_validator_options.h"
 #include "spirv-tools/libspirv.hpp"
 #include "tools/io.h"
+#include "tools/util/cli_consumer.h"
 
 void print_usage(char* argv0) {
   printf(
@@ -46,7 +47,9 @@ Options:
   --max-access-chain-indexes       <maximum number of indexes allowed to use for Access Chain instructions>
   --relax-logical-pointer          Allow allocating an object of a pointer type and returning
                                    a pointer value from a function in logical addressing mode
-  --relax-block-layout             Skips checking of standard uniform/storage buffer layout
+  --relax-block-layout             Enable VK_HR_relaxed_block_layout when checking standard
+                                   uniform/storage buffer layout
+  --skip-block-layout              Skip checking standard uniform/storage buffer layout
   --relax-struct-store             Allow store from one struct type to a
                                    different type with compatible layout and
                                    members.
@@ -124,6 +127,8 @@ int main(int argc, char** argv) {
         options.SetRelaxLogicalPointer(true);
       } else if (0 == strcmp(cur_arg, "--relax-block-layout")) {
         options.SetRelaxBlockLayout(true);
+      } else if (0 == strcmp(cur_arg, "--skip-block-layout")) {
+        options.SetSkipBlockLayout(true);
       } else if (0 == strcmp(cur_arg, "--relax-struct-store")) {
         options.SetRelaxStructStore(true);
       } else if (0 == cur_arg[1]) {
@@ -160,28 +165,7 @@ int main(int argc, char** argv) {
   if (!ReadFile<uint32_t>(inFile, "rb", &contents)) return 1;
 
   spvtools::SpirvTools tools(target_env);
-  tools.SetMessageConsumer([](spv_message_level_t level, const char*,
-                              const spv_position_t& position,
-                              const char* message) {
-    switch (level) {
-      case SPV_MSG_FATAL:
-      case SPV_MSG_INTERNAL_ERROR:
-      case SPV_MSG_ERROR:
-        std::cerr << "error: line " << position.index << ": " << message
-                  << std::endl;
-        break;
-      case SPV_MSG_WARNING:
-        std::cout << "warning: line " << position.index << ": " << message
-                  << std::endl;
-        break;
-      case SPV_MSG_INFO:
-        std::cout << "info: line " << position.index << ": " << message
-                  << std::endl;
-        break;
-      default:
-        break;
-    }
-  });
+  tools.SetMessageConsumer(spvtools::utils::CLIMessageConsumer);
 
   bool succeed = tools.Validate(contents.data(), contents.size(), options);
 

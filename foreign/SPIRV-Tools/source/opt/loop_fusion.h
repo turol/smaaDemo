@@ -17,19 +17,20 @@
 
 #include <map>
 #include <set>
+#include <utility>
 #include <vector>
 
-#include "opt/ir_context.h"
-#include "opt/loop_descriptor.h"
-#include "opt/loop_utils.h"
-#include "opt/scalar_analysis.h"
+#include "source/opt/ir_context.h"
+#include "source/opt/loop_descriptor.h"
+#include "source/opt/loop_utils.h"
+#include "source/opt/scalar_analysis.h"
 
 namespace spvtools {
 namespace opt {
 
 class LoopFusion {
  public:
-  LoopFusion(ir::IRContext* context, ir::Loop* loop_0, ir::Loop* loop_1)
+  LoopFusion(IRContext* context, Loop* loop_0, Loop* loop_1)
       : context_(context),
         loop_0_(loop_0),
         loop_1_(loop_1),
@@ -70,42 +71,41 @@ class LoopFusion {
 
   // Returns |true| if |instruction| is used in the continue or condition block
   // of |loop|.
-  bool UsedInContinueOrConditionBlock(ir::Instruction* instruction,
-                                      ir::Loop* loop);
+  bool UsedInContinueOrConditionBlock(Instruction* instruction, Loop* loop);
 
   // Remove entries in |instructions| that are not used in the continue or
   // condition block of |loop|.
   void RemoveIfNotUsedContinueOrConditionBlock(
-      std::vector<ir::Instruction*>* instructions, ir::Loop* loop);
+      std::vector<Instruction*>* instructions, Loop* loop);
 
   // Returns |true| if |instruction| is used in |loop|.
-  bool IsUsedInLoop(ir::Instruction* instruction, ir::Loop* loop);
+  bool IsUsedInLoop(Instruction* instruction, Loop* loop);
 
   // Returns |true| if |loop| has at least one barrier or function call.
-  bool ContainsBarriersOrFunctionCalls(ir::Loop* loop);
+  bool ContainsBarriersOrFunctionCalls(Loop* loop);
 
   // Get all instructions in the |loop| (except in the latch block) that have
   // the opcode |opcode|.
-  std::pair<std::vector<ir::Instruction*>, std::vector<ir::Instruction*>>
-  GetLoadsAndStoresInLoop(ir::Loop* loop);
+  std::pair<std::vector<Instruction*>, std::vector<Instruction*>>
+  GetLoadsAndStoresInLoop(Loop* loop);
 
   // Given a vector of memory operations (OpLoad/OpStore), constructs a map from
   // variables to the loads/stores that those variables.
-  std::map<ir::Instruction*, std::vector<ir::Instruction*>> LocationToMemOps(
-      const std::vector<ir::Instruction*>& mem_ops);
+  std::map<Instruction*, std::vector<Instruction*>> LocationToMemOps(
+      const std::vector<Instruction*>& mem_ops);
 
-  ir::IRContext* context_;
+  IRContext* context_;
 
   // The original loops to be fused.
-  ir::Loop* loop_0_;
-  ir::Loop* loop_1_;
+  Loop* loop_0_;
+  Loop* loop_1_;
 
   // The function that contains |loop_0_| and |loop_1_|.
-  ir::Function* containing_function_ = nullptr;
+  Function* containing_function_ = nullptr;
 
   // The induction variables for |loop_0_| and |loop_1_|.
-  ir::Instruction* induction_0_ = nullptr;
-  ir::Instruction* induction_1_ = nullptr;
+  Instruction* induction_0_ = nullptr;
+  Instruction* induction_1_ = nullptr;
 };
 
 }  // namespace opt

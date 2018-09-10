@@ -12,28 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gmock/gmock.h>
-
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
-#include "assembly_builder.h"
-#include "function_utils.h"
-#include "opt/register_pressure.h"
-#include "pass_fixture.h"
-#include "pass_utils.h"
+#include "gmock/gmock.h"
+#include "source/opt/register_pressure.h"
+#include "test/opt/assembly_builder.h"
+#include "test/opt/function_utils.h"
+#include "test/opt/pass_fixture.h"
+#include "test/opt/pass_utils.h"
 
+namespace spvtools {
+namespace opt {
 namespace {
 
-using namespace spvtools;
 using ::testing::UnorderedElementsAre;
-
 using PassClassTest = PassTest<::testing::Test>;
 
-static void CompareSets(const std::unordered_set<ir::Instruction*>& computed,
-                        const std::unordered_set<uint32_t>& expected) {
-  for (ir::Instruction* insn : computed) {
+void CompareSets(const std::unordered_set<Instruction*>& computed,
+                 const std::unordered_set<uint32_t>& expected) {
+  for (Instruction* insn : computed) {
     EXPECT_TRUE(expected.count(insn->result_id()))
         << "Unexpected instruction in live set: " << *insn;
   }
@@ -111,15 +111,15 @@ TEST_F(PassClassTest, LivenessWithIf) {
                OpReturn
                OpFunctionEnd
   )";
-  std::unique_ptr<ir::IRContext> context =
+  std::unique_ptr<IRContext> context =
       BuildModule(SPV_ENV_UNIVERSAL_1_1, nullptr, text,
                   SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  ir::Module* module = context->module();
+  Module* module = context->module();
   EXPECT_NE(nullptr, module) << "Assembling failed for shader:\n"
                              << text << std::endl;
-  ir::Function* f = &*module->begin();
-  opt::LivenessAnalysis* liveness_analysis = context->GetLivenessAnalysis();
-  const opt::RegisterLiveness* register_liveness = liveness_analysis->Get(f);
+  Function* f = &*module->begin();
+  LivenessAnalysis* liveness_analysis = context->GetLivenessAnalysis();
+  const RegisterLiveness* register_liveness = liveness_analysis->Get(f);
   {
     SCOPED_TRACE("Block 5");
     auto live_sets = register_liveness->Get(5);
@@ -411,16 +411,16 @@ TEST_F(PassClassTest, RegisterLiveness) {
                OpReturn
                OpFunctionEnd
   )";
-  std::unique_ptr<ir::IRContext> context =
+  std::unique_ptr<IRContext> context =
       BuildModule(SPV_ENV_UNIVERSAL_1_1, nullptr, text,
                   SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  ir::Module* module = context->module();
+  Module* module = context->module();
   EXPECT_NE(nullptr, module) << "Assembling failed for shader:\n"
                              << text << std::endl;
-  ir::Function* f = &*module->begin();
-  opt::LivenessAnalysis* liveness_analysis = context->GetLivenessAnalysis();
-  const opt::RegisterLiveness* register_liveness = liveness_analysis->Get(f);
-  ir::LoopDescriptor& ld = *context->GetLoopDescriptor(f);
+  Function* f = &*module->begin();
+  LivenessAnalysis* liveness_analysis = context->GetLivenessAnalysis();
+  const RegisterLiveness* register_liveness = liveness_analysis->Get(f);
+  LoopDescriptor& ld = *context->GetLoopDescriptor(f);
 
   {
     SCOPED_TRACE("Block 5");
@@ -1084,7 +1084,7 @@ TEST_F(PassClassTest, RegisterLiveness) {
 
   {
     SCOPED_TRACE("Compute loop pressure");
-    opt::RegisterLiveness::RegionRegisterLiveness loop_reg_pressure;
+    RegisterLiveness::RegionRegisterLiveness loop_reg_pressure;
     register_liveness->ComputeLoopRegisterPressure(*ld[39], &loop_reg_pressure);
     // Generate(*context->cfg()->block(39), &loop_reg_pressure);
     std::unordered_set<uint32_t> live_in{
@@ -1118,7 +1118,7 @@ TEST_F(PassClassTest, RegisterLiveness) {
 
   {
     SCOPED_TRACE("Loop Fusion simulation");
-    opt::RegisterLiveness::RegionRegisterLiveness simulation_resut;
+    RegisterLiveness::RegionRegisterLiveness simulation_resut;
     register_liveness->SimulateFusion(*ld[17], *ld[39], &simulation_resut);
 
     std::unordered_set<uint32_t> live_in{
@@ -1211,25 +1211,25 @@ TEST_F(PassClassTest, FissionSimulation) {
                OpReturn
                OpFunctionEnd
     )";
-  std::unique_ptr<ir::IRContext> context =
+  std::unique_ptr<IRContext> context =
       BuildModule(SPV_ENV_UNIVERSAL_1_1, nullptr, source,
                   SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
-  ir::Module* module = context->module();
+  Module* module = context->module();
   EXPECT_NE(nullptr, module) << "Assembling failed for shader:\n"
                              << source << std::endl;
-  ir::Function* f = &*module->begin();
-  opt::LivenessAnalysis* liveness_analysis = context->GetLivenessAnalysis();
-  const opt::RegisterLiveness* register_liveness = liveness_analysis->Get(f);
-  ir::LoopDescriptor& ld = *context->GetLoopDescriptor(f);
-  opt::analysis::DefUseManager& def_use_mgr = *context->get_def_use_mgr();
+  Function* f = &*module->begin();
+  LivenessAnalysis* liveness_analysis = context->GetLivenessAnalysis();
+  const RegisterLiveness* register_liveness = liveness_analysis->Get(f);
+  LoopDescriptor& ld = *context->GetLoopDescriptor(f);
+  analysis::DefUseManager& def_use_mgr = *context->get_def_use_mgr();
 
   {
-    opt::RegisterLiveness::RegionRegisterLiveness l1_sim_resut;
-    opt::RegisterLiveness::RegionRegisterLiveness l2_sim_resut;
-    std::unordered_set<ir::Instruction*> moved_instructions{
+    RegisterLiveness::RegionRegisterLiveness l1_sim_resut;
+    RegisterLiveness::RegionRegisterLiveness l2_sim_resut;
+    std::unordered_set<Instruction*> moved_instructions{
         def_use_mgr.GetDef(29), def_use_mgr.GetDef(30), def_use_mgr.GetDef(31),
         def_use_mgr.GetDef(31)->NextNode()};
-    std::unordered_set<ir::Instruction*> copied_instructions{
+    std::unordered_set<Instruction*> copied_instructions{
         def_use_mgr.GetDef(22), def_use_mgr.GetDef(27),
         def_use_mgr.GetDef(27)->NextNode(), def_use_mgr.GetDef(23)};
 
@@ -1276,4 +1276,7 @@ TEST_F(PassClassTest, FissionSimulation) {
     }
   }
 }
+
 }  // namespace
+}  // namespace opt
+}  // namespace spvtools

@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "val/construct.h"
-#include "val/function.h"
+#include "source/val/construct.h"
 
 #include <cassert>
 #include <cstddef>
 #include <unordered_set>
 
+#include "source/val/function.h"
+
 namespace spvtools {
+namespace val {
 
 Construct::Construct(ConstructType construct_type, BasicBlock* entry,
                      BasicBlock* exit, std::vector<Construct*> constructs)
@@ -122,4 +124,5 @@ Construct::ConstructBlockSet Construct::blocks(Function* function) const {
   return construct_blocks;
 }
 
+}  // namespace val
 }  // namespace spvtools

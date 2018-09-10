@@ -12,21 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "opt/value_number_table.h"
+#include <string>
 
-#include "assembly_builder.h"
 #include "gmock/gmock.h"
-#include "opt/build_module.h"
-#include "pass_fixture.h"
-#include "pass_utils.h"
+#include "source/opt/build_module.h"
+#include "source/opt/value_number_table.h"
+#include "test/opt/assembly_builder.h"
+#include "test/opt/pass_fixture.h"
+#include "test/opt/pass_utils.h"
 
+namespace spvtools {
+namespace opt {
 namespace {
-
-using namespace spvtools;
 
 using ::testing::HasSubstr;
 using ::testing::MatchesRegex;
-
 using PrivateToLocalTest = PassTest<::testing::Test>;
 
 #ifdef SPIRV_EFFCEE
@@ -57,7 +57,7 @@ TEST_F(PrivateToLocalTest, ChangeToLocal) {
                OpReturn
                OpFunctionEnd
   )";
-  SinglePassRunAndMatch<opt::PrivateToLocalPass>(text, false);
+  SinglePassRunAndMatch<PrivateToLocalPass>(text, false);
 }
 
 TEST_F(PrivateToLocalTest, ReuseExistingType) {
@@ -89,7 +89,7 @@ TEST_F(PrivateToLocalTest, ReuseExistingType) {
                OpReturn
                OpFunctionEnd
   )";
-  SinglePassRunAndMatch<opt::PrivateToLocalPass>(text, false);
+  SinglePassRunAndMatch<PrivateToLocalPass>(text, false);
 }
 
 TEST_F(PrivateToLocalTest, UpdateAccessChain) {
@@ -127,7 +127,7 @@ TEST_F(PrivateToLocalTest, UpdateAccessChain) {
                OpReturn
                OpFunctionEnd
   )";
-  SinglePassRunAndMatch<opt::PrivateToLocalPass>(text, false);
+  SinglePassRunAndMatch<PrivateToLocalPass>(text, false);
 }
 
 TEST_F(PrivateToLocalTest, UseTexelPointer) {
@@ -172,7 +172,7 @@ OpCapability SampledBuffer
                OpReturn
                OpFunctionEnd
   )";
-  SinglePassRunAndMatch<opt::PrivateToLocalPass>(text, false);
+  SinglePassRunAndMatch<PrivateToLocalPass>(text, false);
 }
 
 TEST_F(PrivateToLocalTest, UsedInTwoFunctions) {
@@ -200,9 +200,9 @@ TEST_F(PrivateToLocalTest, UsedInTwoFunctions) {
                OpReturn
                OpFunctionEnd
   )";
-  auto result = SinglePassRunAndDisassemble<opt::StrengthReductionPass>(
+  auto result = SinglePassRunAndDisassemble<StrengthReductionPass>(
       text, /* skip_nop = */ true, /* do_validation = */ false);
-  EXPECT_EQ(opt::Pass::Status::SuccessWithoutChange, std::get<1>(result));
+  EXPECT_EQ(Pass::Status::SuccessWithoutChange, std::get<1>(result));
 }
 
 TEST_F(PrivateToLocalTest, UsedInFunctionCall) {
@@ -234,9 +234,9 @@ TEST_F(PrivateToLocalTest, UsedInFunctionCall) {
                OpReturn
                OpFunctionEnd
   )";
-  auto result = SinglePassRunAndDisassemble<opt::StrengthReductionPass>(
+  auto result = SinglePassRunAndDisassemble<StrengthReductionPass>(
       text, /* skip_nop = */ true, /* do_validation = */ false);
-  EXPECT_EQ(opt::Pass::Status::SuccessWithoutChange, std::get<1>(result));
+  EXPECT_EQ(Pass::Status::SuccessWithoutChange, std::get<1>(result));
 }
 
 TEST_F(PrivateToLocalTest, CreatePointerToAmbiguousStruct1) {
@@ -271,7 +271,7 @@ TEST_F(PrivateToLocalTest, CreatePointerToAmbiguousStruct1) {
                OpReturn
                OpFunctionEnd
   )";
-  SinglePassRunAndMatch<opt::PrivateToLocalPass>(text, false);
+  SinglePassRunAndMatch<PrivateToLocalPass>(text, false);
 }
 
 TEST_F(PrivateToLocalTest, CreatePointerToAmbiguousStruct2) {
@@ -306,7 +306,11 @@ TEST_F(PrivateToLocalTest, CreatePointerToAmbiguousStruct2) {
                OpReturn
                OpFunctionEnd
   )";
-  SinglePassRunAndMatch<opt::PrivateToLocalPass>(text, false);
+  SinglePassRunAndMatch<PrivateToLocalPass>(text, false);
 }
+
 #endif
-}  // anonymous namespace
+
+}  // namespace
+}  // namespace opt
+}  // namespace spvtools

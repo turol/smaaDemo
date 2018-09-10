@@ -12,10 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gmock/gmock.h"
-#include "unit_spirv.h"
-#include "val_fixtures.h"
+#include <string>
 
+#include "gmock/gmock.h"
+#include "test/unit_spirv.h"
+#include "test/val/val_fixtures.h"
+
+namespace spvtools {
+namespace val {
 namespace {
 
 using ::testing::HasSubstr;
@@ -156,3 +160,5 @@ OpFunctionEnd
 }
 
 }  // namespace
+}  // namespace val
+}  // namespace spvtools

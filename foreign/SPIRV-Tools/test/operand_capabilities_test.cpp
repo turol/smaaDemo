@@ -15,18 +15,16 @@
 // Test capability dependencies for enums.
 
 #include <tuple>
+#include <vector>
 
 #include "gmock/gmock.h"
-
-#include "enum_set.h"
-#include "unit_spirv.h"
+#include "source/enum_set.h"
+#include "test/unit_spirv.h"
 
 namespace spvtools {
 namespace {
 
 using spvtest::ElementsIn;
-using std::get;
-using std::tuple;
 using ::testing::Combine;
 using ::testing::Eq;
 using ::testing::TestWithParam;
@@ -42,23 +40,23 @@ struct EnumCapabilityCase {
 
 // Test fixture for testing EnumCapabilityCases.
 using EnumCapabilityTest =
-    TestWithParam<tuple<spv_target_env, EnumCapabilityCase>>;
+    TestWithParam<std::tuple<spv_target_env, EnumCapabilityCase>>;
 
 TEST_P(EnumCapabilityTest, Sample) {
-  const auto env = get<0>(GetParam());
+  const auto env = std::get<0>(GetParam());
   const auto context = spvContextCreate(env);
   const AssemblyGrammar grammar(context);
   spv_operand_desc entry;
 
   ASSERT_EQ(SPV_SUCCESS,
-            grammar.lookupOperand(get<1>(GetParam()).type,
-                                  get<1>(GetParam()).value, &entry));
+            grammar.lookupOperand(std::get<1>(GetParam()).type,
+                                  std::get<1>(GetParam()).value, &entry));
   const auto cap_set = grammar.filterCapsAgainstTargetEnv(
       entry->capabilities, entry->numCapabilities);
 
   EXPECT_THAT(ElementsIn(cap_set),
-              Eq(ElementsIn(get<1>(GetParam()).expected_capabilities)))
-      << " capability value " << get<1>(GetParam()).value;
+              Eq(ElementsIn(std::get<1>(GetParam()).expected_capabilities)))
+      << " capability value " << std::get<1>(GetParam()).value;
   spvContextDestroy(context);
 }
 
@@ -207,12 +205,12 @@ INSTANTIATE_TEST_CASE_P(
     Dim, EnumCapabilityTest,
     Combine(Values(SPV_ENV_UNIVERSAL_1_0, SPV_ENV_UNIVERSAL_1_1),
             ValuesIn(std::vector<EnumCapabilityCase>{
-                CASE1(DIMENSIONALITY, Dim1D, Sampled1D),
-                CASE0(DIMENSIONALITY, Dim2D),
+                CASE2(DIMENSIONALITY, Dim1D, Sampled1D, Image1D),
+                CASE3(DIMENSIONALITY, Dim2D, Kernel, Shader, ImageMSArray),
                 CASE0(DIMENSIONALITY, Dim3D),
-                CASE1(DIMENSIONALITY, DimCube, Shader),
-                CASE1(DIMENSIONALITY, DimRect, SampledRect),
-                CASE1(DIMENSIONALITY, DimBuffer, SampledBuffer),
+                CASE2(DIMENSIONALITY, DimCube, Shader, ImageCubeArray),
+                CASE2(DIMENSIONALITY, DimRect, SampledRect, ImageRect),
+                CASE2(DIMENSIONALITY, DimBuffer, SampledBuffer, ImageBuffer),
                 CASE1(DIMENSIONALITY, DimSubpassData, InputAttachment),
             })), );
 
@@ -606,16 +604,18 @@ INSTANTIATE_TEST_CASE_P(
             })), );
 
 // See SPIR-V Section 3.27 Scope <id>
-INSTANTIATE_TEST_CASE_P(Scope, EnumCapabilityTest,
-                        Combine(Values(SPV_ENV_UNIVERSAL_1_0,
-                                       SPV_ENV_UNIVERSAL_1_1),
-                                ValuesIn(std::vector<EnumCapabilityCase>{
-                                    CASE0(SCOPE_ID, ScopeCrossDevice),
-                                    CASE0(SCOPE_ID, ScopeDevice),
-                                    CASE0(SCOPE_ID, ScopeWorkgroup),
-                                    CASE0(SCOPE_ID, ScopeSubgroup),
-                                    CASE0(SCOPE_ID, ScopeInvocation),
-                                })), );
+INSTANTIATE_TEST_CASE_P(
+    Scope, EnumCapabilityTest,
+    Combine(Values(SPV_ENV_UNIVERSAL_1_0, SPV_ENV_UNIVERSAL_1_1,
+                   SPV_ENV_UNIVERSAL_1_2, SPV_ENV_UNIVERSAL_1_3),
+            ValuesIn(std::vector<EnumCapabilityCase>{
+                CASE0(SCOPE_ID, ScopeCrossDevice),
+                CASE0(SCOPE_ID, ScopeDevice),
+                CASE0(SCOPE_ID, ScopeWorkgroup),
+                CASE0(SCOPE_ID, ScopeSubgroup),
+                CASE0(SCOPE_ID, ScopeInvocation),
+                CASE1(SCOPE_ID, ScopeQueueFamilyKHR, VulkanMemoryModelKHR),
+            })), );
 
 // See SPIR-V Section 3.28 Group Operation
 INSTANTIATE_TEST_CASE_P(

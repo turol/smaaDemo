@@ -16,9 +16,11 @@
 #include <string>
 
 #include "gmock/gmock.h"
-#include "unit_spirv.h"
-#include "val_fixtures.h"
+#include "test/unit_spirv.h"
+#include "test/val/val_fixtures.h"
 
+namespace spvtools {
+namespace val {
 namespace {
 
 using ::testing::HasSubstr;
@@ -802,4 +804,18 @@ OpMemoryNamedBarrier %barrier %workgroup %acquire_and_release_uniform
                         "AcquireRelease or SequentiallyConsistent"));
 }
 
-}  // anonymous namespace
+TEST_F(ValidateBarriers, TypeAsMemoryScope) {
+  const std::string body = R"(
+OpMemoryBarrier %u32 %u32_0
+)";
+
+  CompileSuccessfully(GenerateKernelCode(body));
+  EXPECT_EQ(SPV_ERROR_INVALID_DATA, ValidateInstructions());
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("MemoryBarrier: expected Memory Scope to be a 32-bit int"));
+}
+
+}  // namespace
+}  // namespace val
+}  // namespace spvtools

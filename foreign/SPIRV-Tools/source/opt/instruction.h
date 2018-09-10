@@ -12,26 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LIBSPIRV_OPT_INSTRUCTION_H_
-#define LIBSPIRV_OPT_INSTRUCTION_H_
+#ifndef SOURCE_OPT_INSTRUCTION_H_
+#define SOURCE_OPT_INSTRUCTION_H_
 
 #include <cassert>
 #include <functional>
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
-#include "opcode.h"
-#include "operand.h"
-#include "util/ilist_node.h"
-#include "util/small_vector.h"
+#include "source/opcode.h"
+#include "source/operand.h"
+#include "source/util/ilist_node.h"
+#include "source/util/small_vector.h"
 
-#include "latest_version_glsl_std_450_header.h"
-#include "latest_version_spirv_header.h"
-#include "reflect.h"
+#include "source/latest_version_glsl_std_450_header.h"
+#include "source/latest_version_spirv_header.h"
+#include "source/opt/reflect.h"
 #include "spirv-tools/libspirv.h"
 
 namespace spvtools {
-namespace ir {
+namespace opt {
 
 class Function;
 class IRContext;
@@ -107,8 +109,8 @@ class Instruction : public utils::IntrusiveNodeBase<Instruction> {
       : utils::IntrusiveNodeBase<Instruction>(),
         context_(nullptr),
         opcode_(SpvOpNop),
-        type_id_(0),
-        result_id_(0),
+        has_type_id_(false),
+        has_result_id_(false),
         unique_id_(0) {}
 
   // Creates a default OpNop instruction.
@@ -153,8 +155,12 @@ class Instruction : public utils::IntrusiveNodeBase<Instruction> {
   // TODO(qining): Remove this function when instruction building and insertion
   // is well implemented.
   void SetOpcode(SpvOp op) { opcode_ = op; }
-  uint32_t type_id() const { return type_id_; }
-  uint32_t result_id() const { return result_id_; }
+  uint32_t type_id() const {
+    return has_type_id_ ? GetSingleWordOperand(0) : 0;
+  }
+  uint32_t result_id() const {
+    return has_result_id_ ? GetSingleWordOperand(has_type_id_ ? 1 : 0) : 0;
+  }
   uint32_t unique_id() const {
     assert(unique_id_ != 0);
     return unique_id_;
@@ -211,7 +217,7 @@ class Instruction : public utils::IntrusiveNodeBase<Instruction> {
   inline void SetResultType(uint32_t ty_id);
   // Sets the result id
   inline void SetResultId(uint32_t res_id);
-  inline bool HasResultId() const { return result_id_ != 0; }
+  inline bool HasResultId() const { return has_result_id_; }
   // Remove the |index|-th operand
   void RemoveOperand(uint32_t index) {
     operands_.erase(operands_.begin() + index);
@@ -415,10 +421,18 @@ class Instruction : public utils::IntrusiveNodeBase<Instruction> {
   // Return true if the only effect of this instructions is the result.
   bool IsOpcodeSafeToDelete() const;
 
+  // Returns true if it is valid to use the result of |inst| as the base
+  // pointer for a load or store.  In this case, valid is defined by the relaxed
+  // logical addressing rules when using logical addressing.  Normal validation
+  // rules for physical addressing.
+  bool IsValidBasePointer() const;
+
  private:
   // Returns the total count of result type id and result id.
   uint32_t TypeResultIdCount() const {
-    return (type_id_ != 0) + (result_id_ != 0);
+    if (has_type_id_ && has_result_id_) return 2;
+    if (has_type_id_ || has_result_id_) return 1;
+    return 0;
   }
 
   // Returns true if the instruction declares a variable that is read-only.  The
@@ -427,20 +441,14 @@ class Instruction : public utils::IntrusiveNodeBase<Instruction> {
   bool IsReadOnlyVariableShaders() const;
   bool IsReadOnlyVariableKernel() const;
 
-  // Returns true if it is valid to use the result of |inst| as the base
-  // pointer for a load or store.  In this case, valid is defined by the relaxed
-  // logical addressing rules when using logical addressing.  Normal validation
-  // rules for physical addressing.
-  bool IsValidBasePointer() const;
-
   // Returns true if the result of |inst| can be used as the base image for an
   // instruction that samples a image, reads an image, or writes to an image.
   bool IsValidBaseImage() const;
 
   IRContext* context_;  // IR Context
   SpvOp opcode_;        // Opcode
-  uint32_t type_id_;    // Result type id. A value of 0 means no result type id.
-  uint32_t result_id_;  // Result id. A value of 0 means no result id.
+  bool has_type_id_;    // True if the instruction has a type id
+  bool has_result_id_;  // True if the instruction has a result id
   uint32_t unique_id_;  // Unique instruction id
   // All logical operands, including result type id and result id.
   OperandList operands_;
@@ -458,7 +466,7 @@ class Instruction : public utils::IntrusiveNodeBase<Instruction> {
 // to provide the correct interpretation of types, constants, etc.
 //
 // Disassembly uses raw ids (not pretty printed names).
-std::ostream& operator<<(std::ostream& str, const ir::Instruction& inst);
+std::ostream& operator<<(std::ostream& str, const Instruction& inst);
 
 inline bool Instruction::operator==(const Instruction& other) const {
   return unique_id() == other.unique_id();
@@ -506,28 +514,43 @@ inline void Instruction::SetInOperands(OperandList&& new_operands) {
 }
 
 inline void Instruction::SetResultId(uint32_t res_id) {
-  result_id_ = res_id;
-  auto ridx = (type_id_ != 0) ? 1 : 0;
-  assert(operands_[ridx].type == SPV_OPERAND_TYPE_RESULT_ID);
+  // TODO(dsinclair): Allow setting a result id if there wasn't one
+  // previously. Need to make room in the operands_ array to place the result,
+  // and update the has_result_id_ flag.
+  assert(has_result_id_);
+
+  // TODO(dsinclair): Allow removing the result id. This needs to make sure,
+  // if there was a result id previously to remove it from the operands_ array
+  // and reset the has_result_id_ flag.
+  assert(res_id != 0);
+
+  auto ridx = has_type_id_ ? 1 : 0;
   operands_[ridx].words = {res_id};
 }
 
 inline void Instruction::SetResultType(uint32_t ty_id) {
-  if (type_id_ != 0) {
-    type_id_ = ty_id;
-    assert(operands_.front().type == SPV_OPERAND_TYPE_TYPE_ID);
-    operands_.front().words = {ty_id};
-  }
+  // TODO(dsinclair): Allow setting a type id if there wasn't one
+  // previously. Need to make room in the operands_ array to place the result,
+  // and update the has_type_id_ flag.
+  assert(has_type_id_);
+
+  // TODO(dsinclair): Allow removing the type id. This needs to make sure,
+  // if there was a type id previously to remove it from the operands_ array
+  // and reset the has_type_id_ flag.
+  assert(ty_id != 0);
+
+  operands_.front().words = {ty_id};
 }
 
 inline bool Instruction::IsNop() const {
-  return opcode_ == SpvOpNop && type_id_ == 0 && result_id_ == 0 &&
+  return opcode_ == SpvOpNop && !has_type_id_ && !has_result_id_ &&
          operands_.empty();
 }
 
 inline void Instruction::ToNop() {
   opcode_ = SpvOpNop;
-  type_id_ = result_id_ = 0;
+  has_type_id_ = false;
+  has_result_id_ = false;
   operands_.clear();
 }
 
@@ -576,9 +599,6 @@ inline void Instruction::ForEachInst(
 inline void Instruction::ForEachId(const std::function<void(uint32_t*)>& f) {
   for (auto& opnd : operands_)
     if (spvIsIdType(opnd.type)) f(&opnd.words[0]);
-  if (type_id_ != 0u) type_id_ = GetSingleWordOperand(0u);
-  if (result_id_ != 0u)
-    result_id_ = GetSingleWordOperand(type_id_ == 0u ? 0u : 1u);
 }
 
 inline void Instruction::ForEachId(
@@ -709,7 +729,7 @@ bool Instruction::IsAtomicOp() const { return spvOpcodeIsAtomicOp(opcode()); }
 bool Instruction::IsConstant() const {
   return IsCompileTimeConstantInst(opcode());
 }
-}  // namespace ir
+}  // namespace opt
 }  // namespace spvtools
 
-#endif  // LIBSPIRV_OPT_INSTRUCTION_H_
+#endif  // SOURCE_OPT_INSTRUCTION_H_

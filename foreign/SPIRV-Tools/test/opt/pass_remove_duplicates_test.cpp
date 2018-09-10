@@ -13,22 +13,21 @@
 // limitations under the License.
 
 #include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
 
-#include <gmock/gmock.h>
-
+#include "gmock/gmock.h"
 #include "source/opt/build_module.h"
 #include "source/opt/ir_context.h"
 #include "source/opt/pass_manager.h"
 #include "source/opt/remove_duplicates_pass.h"
 #include "source/spirv_constant.h"
-#include "unit_spirv.h"
+#include "test/unit_spirv.h"
 
+namespace spvtools {
+namespace opt {
 namespace {
-
-using spvtools::ir::Instruction;
-using spvtools::ir::IRContext;
-using spvtools::opt::PassManager;
-using spvtools::opt::RemoveDuplicatesPass;
 
 class RemoveDuplicatesTest : public ::testing::Test {
  public:
@@ -62,7 +61,7 @@ class RemoveDuplicatesTest : public ::testing::Test {
     tools_.SetMessageConsumer(consumer_);
   }
 
-  virtual void TearDown() override { error_message_.clear(); }
+  void TearDown() override { error_message_.clear(); }
 
   std::string RunPass(const std::string& text) {
     context_ = spvtools::BuildModule(SPV_ENV_UNIVERSAL_1_2, consumer_, text);
@@ -72,8 +71,8 @@ class RemoveDuplicatesTest : public ::testing::Test {
     manager.SetMessageConsumer(consumer_);
     manager.AddPass<RemoveDuplicatesPass>();
 
-    spvtools::opt::Pass::Status pass_res = manager.Run(context_.get());
-    if (pass_res == spvtools::opt::Pass::Status::Failure) return std::string();
+    Pass::Status pass_res = manager.Run(context_.get());
+    if (pass_res == Pass::Status::Failure) return std::string();
 
     return ModuleToText();
   }
@@ -641,4 +640,7 @@ OpFunctionEnd
   EXPECT_EQ(RunPass(spirv), result);
   EXPECT_EQ(GetErrorMessage(), "");
 }
+
 }  // namespace
+}  // namespace opt
+}  // namespace spvtools
