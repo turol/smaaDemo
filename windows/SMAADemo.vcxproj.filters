@@ -213,6 +213,12 @@
     <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\attribute.cpp">
       <Filter>Source Files\glslang</Filter>
     </ClCompile>
+    <ClCompile Include="..\foreign\imgui\imgui_widgets.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\SPIRV\SpvPostProcess.cpp">
+      <Filter>Source Files\glslang</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\fxaa.frag">

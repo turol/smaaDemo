@@ -430,11 +430,13 @@
     <ClCompile Include="..\foreign\glslang\SPIRV\InReadableOrder.cpp" />
     <ClCompile Include="..\foreign\glslang\SPIRV\Logger.cpp" />
     <ClCompile Include="..\foreign\glslang\SPIRV\SpvBuilder.cpp" />
+    <ClCompile Include="..\foreign\glslang\SPIRV\SpvPostProcess.cpp" />
     <ClCompile Include="..\foreign\glslang\SPIRV\SPVRemapper.cpp" />
     <ClCompile Include="..\foreign\glslang\StandAlone\ResourceLimits.cpp" />
     <ClCompile Include="..\foreign\imgui\imgui.cpp" />
     <ClCompile Include="..\foreign\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\foreign\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\foreign\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\foreign\shaderc\libshaderc\src\shaderc.cc" />
     <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\compiler.cc" />
     <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\file_finder.cc" />
