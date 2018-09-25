@@ -1,3 +1,2 @@
-0.9.8.5
+0.9.9.2
 No doc-directory
-Fix for compiling on newer GCCs
