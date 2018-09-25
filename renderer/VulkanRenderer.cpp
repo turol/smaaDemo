@@ -892,24 +892,7 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	}
 
 	memcpy(static_cast<char *>(op.allocationInfo.pMappedData), contents, size);
-	if (!op.coherent) {
-		vk::DeviceSize offset = op.allocationInfo.offset;
-		vk::DeviceSize end    = op.allocationInfo.offset + size;
-		// round offset down to nonCoherentAtomSize
-		assert(isPow2(deviceProperties.limits.nonCoherentAtomSize));
-		offset &= ~(deviceProperties.limits.nonCoherentAtomSize - 1);
-
-		// round flush size up to nonCoherentAtomSize
-		vk::DeviceSize flushSize = end - offset;
-		flushSize += deviceProperties.limits.nonCoherentAtomSize - 1;
-		flushSize &= ~(deviceProperties.limits.nonCoherentAtomSize - 1);
-
-		// don't got past end of the allocation
-		if (offset + flushSize > op.allocationInfo.size) {
-			flushSize = op.allocationInfo.size - offset;
-		}
-		device.flushMappedMemoryRanges(vk::MappedMemoryRange(op.allocationInfo.deviceMemory, offset, flushSize));
-	}
+    vmaFlushAllocation(allocator, buffer.memory, 0, size);
 
 	// TODO: reuse command buffer for multiple copies
 	vk::BufferCopy copyRegion;
@@ -1779,24 +1762,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 			memcpy(mappedPtr + regions[i].bufferOffset, desc.mipData_[i].data, desc.mipData_[i].size);
 		}
 
-		if (!op.coherent) {
-			vk::DeviceSize offset = op.allocationInfo.offset;
-			vk::DeviceSize end    = op.allocationInfo.offset + bufferSize;
-			// round offset down to nonCoherentAtomSize
-			assert(isPow2(deviceProperties.limits.nonCoherentAtomSize));
-			offset &= ~(deviceProperties.limits.nonCoherentAtomSize - 1);
-
-			// round flush size up to nonCoherentAtomSize
-			vk::DeviceSize flushSize = end - offset;
-			flushSize += deviceProperties.limits.nonCoherentAtomSize - 1;
-			flushSize &= ~(deviceProperties.limits.nonCoherentAtomSize - 1);
-
-			// don't got past end of the allocation
-			if (offset + flushSize > op.allocationInfo.size) {
-				flushSize = op.allocationInfo.size - offset;
-			}
-			device.flushMappedMemoryRanges(vk::MappedMemoryRange(op.allocationInfo.deviceMemory, offset, flushSize));
-		}
+		vmaFlushAllocation(allocator, op.memory, 0, bufferSize);
 
 		op.cmdBuf.copyBufferToImage(op.stagingBuffer, tex.image, vk::ImageLayout::eTransferDstOptimal, regions);
 
