@@ -33,56 +33,6 @@ THE SOFTWARE.
 #include <boost/variant/static_visitor.hpp>
 
 
-// this part of the C++ bindings sucks...
-// TODO: replace with DispatchLoaderDynamic
-
-static PFN_vkCreateDebugReportCallbackEXT   pfn_vkCreateDebugReportCallbackEXT   = nullptr;
-static PFN_vkDestroyDebugReportCallbackEXT  pfn_vkDestroyDebugReportCallbackEXT  = nullptr;
-static PFN_vkDebugMarkerSetObjectNameEXT    pfn_vkDebugMarkerSetObjectNameEXT    = nullptr;
-static PFN_vkGetShaderInfoAMD               pfn_vkGetShaderInfoAMD               = nullptr;
-
-
-VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugReportCallbackEXT(
-    VkInstance                                  instance,
-    const VkDebugReportCallbackCreateInfoEXT*   pCreateInfo,
-    const VkAllocationCallbacks*                pAllocator,
-    VkDebugReportCallbackEXT*                   pCallback)
-{
-	assert(pfn_vkCreateDebugReportCallbackEXT);
-	return pfn_vkCreateDebugReportCallbackEXT(instance, pCreateInfo, pAllocator, pCallback);
-}
-
-
-VKAPI_ATTR void VKAPI_CALL vkDestroyDebugReportCallbackEXT(
-    VkInstance                                  instance,
-    VkDebugReportCallbackEXT                    callback,
-    const VkAllocationCallbacks*                pAllocator)
-{
-	assert(pfn_vkDestroyDebugReportCallbackEXT);
-	return pfn_vkDestroyDebugReportCallbackEXT(instance, callback, pAllocator);
-}
-
-
-VKAPI_ATTR VkResult VKAPI_CALL vkDebugMarkerSetObjectNameEXT(
-    VkDevice                                    device,
-    const VkDebugMarkerObjectNameInfoEXT*       pNameInfo)
-{
-	assert(pfn_vkDebugMarkerSetObjectNameEXT);
-	return pfn_vkDebugMarkerSetObjectNameEXT(device, pNameInfo);
-}
-
-
-VKAPI_ATTR VkResult VKAPI_CALL vkGetShaderInfoAMD(
-    VkDevice                                    device,
-    VkPipeline                                  pipeline,
-    VkShaderStageFlagBits                       shaderStage,
-    VkShaderInfoTypeAMD                         infoType,
-    size_t*                                     pInfoSize,
-    void*                                       pInfo)
-{
-	return pfn_vkGetShaderInfoAMD(device, pipeline, shaderStage, infoType, pInfoSize, pInfo);
-}
-
 namespace renderer {
 
 
@@ -163,7 +113,7 @@ template <typename T> void RendererImpl::debugNameObject(T handle, const std::st
 		markerName.objectType  = DebugType<T>::type;
 		markerName.object      = uint64_t(typename DebugType<T>::Base(handle));
 		markerName.pObjectName = name.c_str();
-		device.debugMarkerSetObjectNameEXT(&markerName);
+		device.debugMarkerSetObjectNameEXT(&markerName, dispatcher);
 	}
 }
 
@@ -424,18 +374,13 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	instance = vk::createInstance(instanceCreateInfo);
 
-	if (enableValidation) {
-		pfn_vkCreateDebugReportCallbackEXT   = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(instance.getProcAddr("vkCreateDebugReportCallbackEXT"));
-		pfn_vkDestroyDebugReportCallbackEXT  = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(instance.getProcAddr("vkDestroyDebugReportCallbackEXT"));
+	dispatcher.init(instance);
 
+	if (enableValidation) {
 		vk::DebugReportCallbackCreateInfoEXT callbackInfo;
 		callbackInfo.flags       = vk::DebugReportFlagBitsEXT::eError;
 		callbackInfo.pfnCallback = debugCallbackFunc;
-		debugCallback = instance.createDebugReportCallbackEXT(callbackInfo);
-	}
-
-	if (enableMarkers) {
-		pfn_vkDebugMarkerSetObjectNameEXT = reinterpret_cast<PFN_vkDebugMarkerSetObjectNameEXT>(instance.getProcAddr("vkDebugMarkerSetObjectNameEXT"));
+		debugCallback = instance.createDebugReportCallbackEXT(callbackInfo, nullptr, dispatcher);
 	}
 
 	std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
@@ -593,7 +538,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		amdShaderInfo = checkExt(VK_AMD_SHADER_INFO_EXTENSION_NAME);
 		if (amdShaderInfo) {
 			LOG("VK_AMD_shader_info found\n");
-			pfn_vkGetShaderInfoAMD = reinterpret_cast<PFN_vkGetShaderInfoAMD>(instance.getProcAddr("vkGetShaderInfoAMD"));
 		}
 	}
 
@@ -611,6 +555,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	device = physicalDevice.createDevice(deviceCreateInfo);
+
+	dispatcher.init(instance, device);
 
 	VmaAllocatorCreateInfo allocatorInfo = {};
 	allocatorInfo.physicalDevice = physicalDevice;
@@ -869,7 +815,7 @@ RendererImpl::~RendererImpl() {
 	device = vk::Device();
 
 	if (debugCallback) {
-		instance.destroyDebugReportCallbackEXT(debugCallback);
+		instance.destroyDebugReportCallbackEXT(debugCallback, nullptr, dispatcher);
 		debugCallback = vk::DebugReportCallbackEXT();
 	}
 
@@ -1523,10 +1469,10 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		size_t dataSize = sizeof(stats);
 		// TODO: other stages
 
-		device.getShaderInfoAMD(result, vk::ShaderStageFlagBits::eVertex, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats);
+		device.getShaderInfoAMD(result, vk::ShaderStageFlagBits::eVertex, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, dispatcher);
 		LOG("pipeline \"%s\" vertex SGPR %u VGPR %u\n", desc.name_.c_str(), stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
 
-		device.getShaderInfoAMD(result, vk::ShaderStageFlagBits::eFragment, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats);
+		device.getShaderInfoAMD(result, vk::ShaderStageFlagBits::eFragment, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, dispatcher);
 		LOG("pipeline \"%s\" fragment SGPR %u VGPR %u\n", desc.name_.c_str(), stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
 	}
 

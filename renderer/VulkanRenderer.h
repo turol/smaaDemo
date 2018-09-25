@@ -892,6 +892,8 @@ struct RendererImpl : public RendererBase {
 	ResourceContainer<Texture>              textures;
 	ResourceContainer<VertexShader>         vertexShaders;
 
+	vk::DispatchLoaderDynamic               dispatcher;
+
 	vk::Instance                            instance;
 	vk::DebugReportCallbackEXT              debugCallback;
 	vk::PhysicalDevice                      physicalDevice;
