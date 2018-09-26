@@ -1,5 +1,5 @@
-commit 767649afb162dd1dba3b68a132d7401b9a4316f7
+commit e0cab5664adf02c030f9cf2a05d2c334638a85f8
 Author: omar <omarcornut@gmail.com>
-Date:   Fri Aug 31 18:07:47 2018 +0200
+Date:   Thu Sep 6 15:58:58 2018 +0200
 
-    Fix missing include on some systems to use intptr_t. (#2036, #2054)
+    Version 1.65
