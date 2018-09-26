@@ -40,8 +40,4 @@ void main(void)
 #endif  // VULKAN_FLIP
 
     gl_Position = vec4(pos, 1.0, 1.0);
-
-#ifdef VULKAN_FLIP
-    gl_Position.y = -gl_Position.y;
-#endif
 }

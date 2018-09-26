@@ -65,8 +65,4 @@ void main(void)
     prevPos.xy *= vec2(0.5, -0.5);
 
     instance = gl_InstanceIndex;
-
-#ifdef VULKAN_FLIP
-    gl_Position.y = -gl_Position.y;
-#endif
 }

@@ -2212,11 +2212,7 @@ void SMAADemo::render() {
 	ShaderDefines::Globals globals;
 	globals.screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 
-#ifdef RENDERER_VULKAN
-	globals.guiOrtho   = glm::ortho(0.0f, float(windowWidth), 0.0f, float(windowHeight));
-#else
 	globals.guiOrtho   = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
-#endif
 
 	globals.smaaParameters       = smaaParameters;
 

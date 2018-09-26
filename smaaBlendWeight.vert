@@ -64,8 +64,4 @@ void main(void)
     offset1 = offsets[1];
     offset2 = offsets[2];
     gl_Position = vec4(pos, 1.0, 1.0);
-
-#ifdef VULKAN_FLIP
-    gl_Position.y = -gl_Position.y;
-#endif  // VULKAN_FLIP
 }

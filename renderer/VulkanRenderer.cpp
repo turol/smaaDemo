@@ -2937,7 +2937,14 @@ void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int widt
 	currentViewport.width    = static_cast<float>(width);
 	currentViewport.height   = static_cast<float>(height);
 	currentViewport.maxDepth = 1.0f;
-	currentCommandBuffer.setViewport(0, 1, &currentViewport);
+
+	// use VK_KHR_maintenance1 negative viewport to flip it
+	// so we don't need flip in shader
+	vk::Viewport realViewport =  currentViewport;
+	realViewport.y            += realViewport.height;
+	realViewport.height       =  -realViewport.height;
+
+	currentCommandBuffer.setViewport(0, 1, &realViewport);
 }
 
 
