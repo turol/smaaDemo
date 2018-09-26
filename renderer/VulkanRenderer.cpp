@@ -541,6 +541,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 	}
 
+	if (!checkExt(VK_KHR_MAINTENANCE1_EXTENSION_NAME)) {
+		throw std::runtime_error("Missing required extension VK_KHR_maintenance1");
+	}
+
 	vk::DeviceCreateInfo deviceCreateInfo;
 	assert(numQueues <= queueCreateInfos.size());
 	deviceCreateInfo.queueCreateInfoCount     = numQueues;
