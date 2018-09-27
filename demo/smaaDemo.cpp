@@ -1526,9 +1526,9 @@ const PipelineHandle &SMAADemo::getFXAAPipeline(unsigned int q) {
 		// TODO: vertex shader not affected by quality, share it
 		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
-			  .depthTest(false)
-			  .cullFaces(true);
-		plDesc.descriptorSetLayout<GlobalDS>(0);
+		      .depthTest(false)
+		      .cullFaces(true)
+		      .descriptorSetLayout<GlobalDS>(0);
 
 		std::string qualityString(fxaaQualityLevels[q]);
 
@@ -1536,12 +1536,12 @@ const PipelineHandle &SMAADemo::getFXAAPipeline(unsigned int q) {
 		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
 		auto vertexShader   = renderer.createVertexShader("fxaa", macros);
 		auto fragmentShader = renderer.createFragmentShader("fxaa", macros);
-		plDesc.renderPass(finalRenderPass);
-		plDesc.shaderMacros(macros);
-		plDesc.vertexShader(vertexShader, "fxaa")
-		      .fragmentShader(fragmentShader, "fxaa");
-		plDesc.descriptorSetLayout<ColorCombinedDS>(1);
-		plDesc.name(std::string("FXAA ") + std::to_string(q));
+		plDesc.renderPass(finalRenderPass)
+		      .shaderMacros(macros)
+		      .vertexShader(vertexShader, "fxaa")
+		      .fragmentShader(fragmentShader, "fxaa")
+		      .descriptorSetLayout<ColorCombinedDS>(1)
+		      .name(std::string("FXAA ") + std::to_string(q));
 
 		bool inserted = false;
 		std::tie(it, inserted) = fxaaPipelines.emplace(std::move(key), renderer.createPipeline(plDesc));
