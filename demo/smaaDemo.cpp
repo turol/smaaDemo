@@ -1169,6 +1169,7 @@ void SMAADemo::initRender() {
 		      .descriptorSetLayout<ColorTexDS>(1)
 		      .vertexShader(vertexShader, "image")
 		      .fragmentShader(fragmentShader, "image")
+		      .shaderMacros(macros)
 		      .name("image");
 
 		imagePipeline = renderer.createPipeline(plDesc);
@@ -1193,6 +1194,7 @@ void SMAADemo::initRender() {
 		      .descriptorSetLayout<ColorTexDS>(1)
 		      .vertexShader(vertexShader, "blit")
 		      .fragmentShader(fragmentShader, "blit")
+		      .shaderMacros(macros)
 		      .name("blit");
 
 		blitPipeline = renderer.createPipeline(plDesc);
@@ -1210,6 +1212,7 @@ void SMAADemo::initRender() {
 		      .descriptorSetLayout<ColorTexDS>(1)
 		      .vertexShader(vertexShader, "gui")
 		      .fragmentShader(fragmentShader, "gui")
+		      .shaderMacros(macros)
 		      .blending(true)
 		      .sourceBlend(BlendFunc::SrcAlpha)
 		      .destinationBlend(BlendFunc::OneMinusSrcAlpha)
@@ -1238,6 +1241,7 @@ void SMAADemo::initRender() {
 				  .descriptorSetLayout<TemporalAADS>(1)
 				  .vertexShader(vertexShader, "temporal")
 				  .fragmentShader(fragmentShader, "temporal")
+				  .shaderMacros(macros)
 				  .name("temporal AA");
 
 			temporalAAPipelines[i] = renderer.createPipeline(plDesc);
@@ -1255,6 +1259,7 @@ void SMAADemo::initRender() {
 			  .descriptorSetLayout<ColorCombinedDS>(1)  // TODO: does this need its own DS?
 			  .vertexShader(vertexShader, "temporal")
 			  .fragmentShader(fragmentShader, "separate")
+			  .shaderMacros(macros)
 			  .name("subsample separate");
 
 		separatePipeline = renderer.createPipeline(plDesc);
@@ -1467,6 +1472,7 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		auto vertexShader   = renderer.createVertexShader("smaaEdge", macros);
 		auto fragmentShader = renderer.createFragmentShader("smaaEdge", macros);
 
+		plDesc.shaderMacros(macros);
 		plDesc.renderPass(smaaEdgesRenderPass);
 		plDesc.vertexShader(vertexShader, "smaaEdge")
 		      .fragmentShader(fragmentShader, "smaaEdge");
@@ -1531,6 +1537,7 @@ const PipelineHandle &SMAADemo::getFXAAPipeline(unsigned int q) {
 		auto vertexShader   = renderer.createVertexShader("fxaa", macros);
 		auto fragmentShader = renderer.createFragmentShader("fxaa", macros);
 		plDesc.renderPass(finalRenderPass);
+		plDesc.shaderMacros(macros);
 		plDesc.vertexShader(vertexShader, "fxaa")
 		      .fragmentShader(fragmentShader, "fxaa");
 		plDesc.descriptorSetLayout<ColorCombinedDS>(1);

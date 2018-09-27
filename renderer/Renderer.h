@@ -331,6 +331,7 @@ class PipelineDesc {
 	FragmentShaderHandle  fragmentShader_;
 	std::string           fragmentShaderName;
 	RenderPassHandle      renderPass_;
+	ShaderMacros          shaderMacros_;
 	uint32_t              vertexAttribMask;
 	unsigned int          numSamples_;
 	bool                  depthWrite_;
@@ -374,6 +375,11 @@ public:
 		assert(!name.empty());
 		fragmentShader_ = h;
 		fragmentShaderName = name;
+		return *this;
+	}
+
+	PipelineDesc &shaderMacros(const ShaderMacros &m) {
+		shaderMacros_ = m;
 		return *this;
 	}
 
