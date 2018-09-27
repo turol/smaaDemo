@@ -327,6 +327,7 @@ private:
 
 class PipelineDesc {
 	VertexShaderHandle    vertexShader_;
+	std::string           vertexShaderName;
 	FragmentShaderHandle  fragmentShader_;
 	RenderPassHandle      renderPass_;
 	uint32_t              vertexAttribMask;
@@ -361,8 +362,10 @@ class PipelineDesc {
 
 public:
 
-	PipelineDesc &vertexShader(VertexShaderHandle h) {
+	PipelineDesc &vertexShader(VertexShaderHandle h, const std::string &name) {
+		assert(!name.empty());
 		vertexShader_ = h;
+		vertexShaderName = name;
 		return *this;
 	}
 
