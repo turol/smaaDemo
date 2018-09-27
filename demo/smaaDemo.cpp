@@ -1541,8 +1541,7 @@ const PipelineHandle &SMAADemo::getFXAAPipeline(unsigned int q) {
 		plDesc.vertexShader(vertexShader, "fxaa")
 		      .fragmentShader(fragmentShader, "fxaa");
 		plDesc.descriptorSetLayout<ColorCombinedDS>(1);
-		std::string passName = std::string("FXAA ") + std::to_string(q);
-		plDesc.name(passName.c_str());
+		plDesc.name(std::string("FXAA ") + std::to_string(q));
 
 		bool inserted = false;
 		std::tie(it, inserted) = fxaaPipelines.emplace(std::move(key), renderer.createPipeline(plDesc));
