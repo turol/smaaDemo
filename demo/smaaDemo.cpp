@@ -1158,9 +1158,6 @@ void SMAADemo::initRender() {
 	{
 		ShaderMacros macros;
 
-		auto vertexShader   = renderer.createVertexShader("image", macros);
-		auto fragmentShader = renderer.createFragmentShader("image", macros);
-
 		// image is always rendered with 1 sample so we ask for that renderpass
 		// instead of numSamples
 		PipelineDesc plDesc;
@@ -1177,17 +1174,6 @@ void SMAADemo::initRender() {
 
 	{
 		ShaderMacros macros;
-
-		cubeVertexShader   = renderer.createVertexShader("cube", macros);
-		cubeFragmentShader = renderer.createFragmentShader("cube", macros);
-	}
-
-	{
-		ShaderMacros macros;
-
-		auto vertexShader   = renderer.createVertexShader("blit", macros);
-		auto fragmentShader = renderer.createFragmentShader("blit", macros);
-
 		PipelineDesc plDesc;
 		plDesc.renderPass(finalRenderPass)
 		      .descriptorSetLayout<GlobalDS>(0)
@@ -1202,10 +1188,6 @@ void SMAADemo::initRender() {
 
 	{
 		ShaderMacros macros;
-
-		auto vertexShader   = renderer.createVertexShader("gui", macros);
-		auto fragmentShader = renderer.createFragmentShader("gui", macros);
-
 		PipelineDesc plDesc;
 		plDesc.renderPass(guiOnlyRenderPass)
 		      .descriptorSetLayout<GlobalDS>(0)
@@ -1228,12 +1210,9 @@ void SMAADemo::initRender() {
 
 	{
 		ShaderMacros macros;
-		auto vertexShader   = renderer.createVertexShader("temporal", macros);  // TODO: better naming, should be 2D
 
 		for (unsigned int i = 0; i < 2; i++) {
 			macros.emplace("SMAA_REPROJECTION", std::to_string(i));
-
-			auto fragmentShader = renderer.createFragmentShader("temporal", macros);
 
 			PipelineDesc plDesc;
 			plDesc.renderPass(smaaBlendRenderPass)
@@ -1250,8 +1229,6 @@ void SMAADemo::initRender() {
 
 	{
 		ShaderMacros macros;
-		auto vertexShader   = renderer.createVertexShader("temporal", macros);  // TODO: better naming, should be 2D
-		auto fragmentShader = renderer.createFragmentShader("separate", macros);
 
 		PipelineDesc plDesc;
 		plDesc.renderPass(separateRenderPass)
@@ -1469,9 +1446,6 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 			macros.emplace("SMAA_PREDICATION", "1");
 		}
 
-		auto vertexShader   = renderer.createVertexShader("smaaEdge", macros);
-		auto fragmentShader = renderer.createFragmentShader("smaaEdge", macros);
-
 		plDesc.shaderMacros(macros);
 		plDesc.renderPass(smaaEdgesRenderPass);
 		plDesc.vertexShader("smaaEdge")
@@ -1483,8 +1457,6 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		SMAAPipelines pipelines;
 		pipelines.edgePipeline      = renderer.createPipeline(plDesc);
 
-		vertexShader                = renderer.createVertexShader("smaaBlendWeight", macros);
-		fragmentShader              = renderer.createFragmentShader("smaaBlendWeight", macros);
 		plDesc.renderPass(smaaWeightsRenderPass);
 		plDesc.vertexShader("smaaBlendWeight")
 		      .fragmentShader("smaaBlendWeight");
@@ -1493,8 +1465,6 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		plDesc.name(passName.c_str());
 		pipelines.blendWeightPipeline = renderer.createPipeline(plDesc);
 
-		vertexShader                = renderer.createVertexShader("smaaNeighbor", macros);
-		fragmentShader              = renderer.createFragmentShader("smaaNeighbor", macros);
 		plDesc.renderPass(finalRenderPass);
 		plDesc.vertexShader("smaaNeighbor")
 		      .fragmentShader("smaaNeighbor");
@@ -1534,8 +1504,6 @@ const PipelineHandle &SMAADemo::getFXAAPipeline(unsigned int q) {
 
 		ShaderMacros macros;
 		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
-		auto vertexShader   = renderer.createVertexShader("fxaa", macros);
-		auto fragmentShader = renderer.createFragmentShader("fxaa", macros);
 		plDesc.renderPass(finalRenderPass)
 		      .shaderMacros(macros)
 		      .vertexShader("fxaa")
