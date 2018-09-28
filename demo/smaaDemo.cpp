@@ -466,9 +466,6 @@ class SMAADemo {
 	Renderer        renderer;
 	Format          depthFormat;
 
-	VertexShaderHandle    cubeVertexShader;
-	FragmentShaderHandle  cubeFragmentShader;
-
 	std::unordered_map<uint32_t, PipelineHandle>  cubePipelines;
 	PipelineHandle     imagePipeline;
 	PipelineHandle     blitPipeline;

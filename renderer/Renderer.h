@@ -52,14 +52,12 @@ namespace renderer {
 struct Buffer;
 struct RendererImpl;
 struct DescriptorSetLayout;
-struct FragmentShader;
 struct Framebuffer;
 struct Pipeline;
 struct RenderPass;
 struct RenderTarget;
 struct Sampler;
 struct Texture;
-struct VertexShader;
 
 
 template <class T> class ResourceContainer;
@@ -131,14 +129,12 @@ public:
 
 typedef Handle<Buffer>               BufferHandle;
 typedef Handle<DescriptorSetLayout>  DSLayoutHandle;
-typedef Handle<FragmentShader>       FragmentShaderHandle;
 typedef Handle<Framebuffer>          FramebufferHandle;
 typedef Handle<Pipeline>             PipelineHandle;
 typedef Handle<RenderPass>           RenderPassHandle;
 typedef Handle<RenderTarget>         RenderTargetHandle;
 typedef Handle<Sampler>              SamplerHandle;
 typedef Handle<Texture>              TextureHandle;
-typedef Handle<VertexShader>         VertexShaderHandle;
 
 
 enum class BlendFunc : uint8_t {

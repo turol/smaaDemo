@@ -116,6 +116,14 @@ public:
 };
 
 
+struct FragmentShader;
+struct VertexShader;
+
+
+typedef Handle<FragmentShader>       FragmentShaderHandle;
+typedef Handle<VertexShader>         VertexShaderHandle;
+
+
 const char *descriptorTypeName(DescriptorType t);
 
 
