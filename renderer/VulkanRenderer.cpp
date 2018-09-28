@@ -1298,8 +1298,10 @@ static vk::BlendFactor vulkanBlendFactor(BlendFunc b) {
 PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	vk::GraphicsPipelineCreateInfo info;
 
-	const auto &v = vertexShaders.get(desc.vertexShader_);
-	const auto &f = fragmentShaders.get(desc.fragmentShader_);
+	auto vshaderHandle = createVertexShader(desc.vertexShaderName, desc.shaderMacros_);
+	const auto &v = vertexShaders.get(vshaderHandle);
+	auto fshaderHandle = createFragmentShader(desc.fragmentShaderName, desc.shaderMacros_);
+	const auto &f = fragmentShaders.get(fshaderHandle);
 
 	std::array<vk::PipelineShaderStageCreateInfo, 2> stages;
 	stages[0].stage  = vk::ShaderStageFlagBits::eVertex;

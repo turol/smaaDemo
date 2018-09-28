@@ -1041,8 +1041,8 @@ static GLenum blendFunc(BlendFunc b) {
 
 
 PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
-	assert(desc.vertexShader_);
-	assert(desc.fragmentShader_);
+	assert(!desc.vertexShaderName.empty());
+	assert(!desc.fragmentShaderName.empty());
 	assert(desc.renderPass_);
 	assert(!desc.name_.empty());
 
@@ -1051,8 +1051,10 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	assert(desc.numSamples_ == rp.numSamples);
 #endif //  NDEBUG
 
-	const auto &v = vertexShaders.get(desc.vertexShader_);
-    const auto &f = fragmentShaders.get(desc.fragmentShader_);
+	auto vshaderHandle = createVertexShader(desc.vertexShaderName, desc.shaderMacros_);
+	const auto &v = vertexShaders.get(vshaderHandle);
+	auto fshaderHandle = createFragmentShader(desc.fragmentShaderName, desc.shaderMacros_);
+	const auto &f = fragmentShaders.get(fshaderHandle);
 
 	GLuint vertexShader = 0;
 	GLuint fragmentShader = 0;
