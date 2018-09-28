@@ -816,7 +816,10 @@ class Renderer {
 	{
 		assert(impl != nullptr);
 	}
-	
+
+
+	FragmentShaderHandle  createFragmentShader(const std::string &name, const ShaderMacros &macros);
+	VertexShaderHandle    createVertexShader(const std::string &name, const ShaderMacros &macros);
 
 
 public:
@@ -865,14 +868,12 @@ public:
 	// TODO: add buffer usage flags
 	BufferHandle          createBuffer(BufferType type, uint32_t size, const void *contents);
 	BufferHandle          createEphemeralBuffer(BufferType type, uint32_t size, const void *contents);
-	FragmentShaderHandle  createFragmentShader(const std::string &name, const ShaderMacros &macros);
 	FramebufferHandle     createFramebuffer(const FramebufferDesc &desc);
 	PipelineHandle        createPipeline(const PipelineDesc &desc);
 	RenderPassHandle      createRenderPass(const RenderPassDesc &desc);
 	RenderTargetHandle    createRenderTarget(const RenderTargetDesc &desc);
 	SamplerHandle         createSampler(const SamplerDesc &desc);
 	TextureHandle         createTexture(const TextureDesc &desc);
-	VertexShaderHandle    createVertexShader(const std::string &name, const ShaderMacros &macros);
 	// TODO: non-ephemeral descriptor set
 
 	DSLayoutHandle createDescriptorSetLayout(const DescriptorLayout *layout);
