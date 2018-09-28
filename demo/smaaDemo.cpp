@@ -1167,8 +1167,8 @@ void SMAADemo::initRender() {
 		plDesc.renderPass(getSceneRenderPass(1, Layout::ShaderRead))
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ColorTexDS>(1)
-		      .vertexShader(vertexShader, "image")
-		      .fragmentShader(fragmentShader, "image")
+		      .vertexShader("image")
+		      .fragmentShader("image")
 		      .shaderMacros(macros)
 		      .name("image");
 
@@ -1192,8 +1192,8 @@ void SMAADemo::initRender() {
 		plDesc.renderPass(finalRenderPass)
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ColorTexDS>(1)
-		      .vertexShader(vertexShader, "blit")
-		      .fragmentShader(fragmentShader, "blit")
+		      .vertexShader("blit")
+		      .fragmentShader("blit")
 		      .shaderMacros(macros)
 		      .name("blit");
 
@@ -1210,8 +1210,8 @@ void SMAADemo::initRender() {
 		plDesc.renderPass(guiOnlyRenderPass)
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ColorTexDS>(1)
-		      .vertexShader(vertexShader, "gui")
-		      .fragmentShader(fragmentShader, "gui")
+		      .vertexShader("gui")
+		      .fragmentShader("gui")
 		      .shaderMacros(macros)
 		      .blending(true)
 		      .sourceBlend(BlendFunc::SrcAlpha)
@@ -1239,8 +1239,8 @@ void SMAADemo::initRender() {
 			plDesc.renderPass(smaaBlendRenderPass)
 				  .descriptorSetLayout<GlobalDS>(0)
 				  .descriptorSetLayout<TemporalAADS>(1)
-				  .vertexShader(vertexShader, "temporal")
-				  .fragmentShader(fragmentShader, "temporal")
+				  .vertexShader("temporal")
+				  .fragmentShader("temporal")
 				  .shaderMacros(macros)
 				  .name("temporal AA");
 
@@ -1257,8 +1257,8 @@ void SMAADemo::initRender() {
 		plDesc.renderPass(separateRenderPass)
 			  .descriptorSetLayout<GlobalDS>(0)
 			  .descriptorSetLayout<ColorCombinedDS>(1)  // TODO: does this need its own DS?
-			  .vertexShader(vertexShader, "temporal")
-			  .fragmentShader(fragmentShader, "separate")
+			  .vertexShader("temporal")
+			  .fragmentShader("separate")
 			  .shaderMacros(macros)
 			  .name("subsample separate");
 
@@ -1422,8 +1422,8 @@ PipelineHandle SMAADemo::getCubePipeline(unsigned int n) {
 		 no matter which one is used when rendering */
 		PipelineDesc plDesc;
 		plDesc.name(name)
-		      .vertexShader(cubeVertexShader, "cube")
-		      .fragmentShader(cubeFragmentShader, "cube")
+		      .vertexShader("cube")
+		      .fragmentShader("cube")
 		      .renderPass(getSceneRenderPass(n, Layout::ShaderRead))
 		      .numSamples(n)
 		      .descriptorSetLayout<GlobalDS>(0)
@@ -1474,8 +1474,8 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 
 		plDesc.shaderMacros(macros);
 		plDesc.renderPass(smaaEdgesRenderPass);
-		plDesc.vertexShader(vertexShader, "smaaEdge")
-		      .fragmentShader(fragmentShader, "smaaEdge");
+		plDesc.vertexShader("smaaEdge")
+		      .fragmentShader("smaaEdge");
 		plDesc.descriptorSetLayout<EdgeDetectionDS>(1);
 		std::string passName = std::string("SMAA edges ") + std::to_string(key.quality);
 		plDesc.name(passName.c_str());
@@ -1486,8 +1486,8 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		vertexShader                = renderer.createVertexShader("smaaBlendWeight", macros);
 		fragmentShader              = renderer.createFragmentShader("smaaBlendWeight", macros);
 		plDesc.renderPass(smaaWeightsRenderPass);
-		plDesc.vertexShader(vertexShader, "smaaBlendWeight")
-		      .fragmentShader(fragmentShader, "smaaBlendWeight");
+		plDesc.vertexShader("smaaBlendWeight")
+		      .fragmentShader("smaaBlendWeight");
 		plDesc.descriptorSetLayout<BlendWeightDS>(1);
 		passName = std::string("SMAA weights ") + std::to_string(key.quality);
 		plDesc.name(passName.c_str());
@@ -1496,8 +1496,8 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		vertexShader                = renderer.createVertexShader("smaaNeighbor", macros);
 		fragmentShader              = renderer.createFragmentShader("smaaNeighbor", macros);
 		plDesc.renderPass(finalRenderPass);
-		plDesc.vertexShader(vertexShader, "smaaNeighbor")
-		      .fragmentShader(fragmentShader, "smaaNeighbor");
+		plDesc.vertexShader("smaaNeighbor")
+		      .fragmentShader("smaaNeighbor");
 		plDesc.descriptorSetLayout<NeighborBlendDS>(1);
 		passName = std::string("SMAA blend ") + std::to_string(key.quality);
 		plDesc.name(passName.c_str());
@@ -1538,8 +1538,8 @@ const PipelineHandle &SMAADemo::getFXAAPipeline(unsigned int q) {
 		auto fragmentShader = renderer.createFragmentShader("fxaa", macros);
 		plDesc.renderPass(finalRenderPass)
 		      .shaderMacros(macros)
-		      .vertexShader(vertexShader, "fxaa")
-		      .fragmentShader(fragmentShader, "fxaa")
+		      .vertexShader("fxaa")
+		      .fragmentShader("fxaa")
 		      .descriptorSetLayout<ColorCombinedDS>(1)
 		      .name(std::string("FXAA ") + std::to_string(q));
 
