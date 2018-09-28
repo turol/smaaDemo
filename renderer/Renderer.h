@@ -818,10 +818,6 @@ class Renderer {
 	}
 
 
-	FragmentShaderHandle  createFragmentShader(const std::string &name, const ShaderMacros &macros);
-	VertexShaderHandle    createVertexShader(const std::string &name, const ShaderMacros &macros);
-
-
 public:
 
 	static Renderer createRenderer(const RendererDesc &desc);

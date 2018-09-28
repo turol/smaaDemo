@@ -532,11 +532,6 @@ BufferHandle Renderer::createEphemeralBuffer(BufferType type, uint32_t size, con
 }
 
 
-FragmentShaderHandle Renderer::createFragmentShader(const std::string &name, const ShaderMacros &macros) {
-	return impl->createFragmentShader(name, macros);
-}
-
-
 FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	return impl->createFramebuffer(desc);
 }
@@ -559,11 +554,6 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 
 SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
 	return impl->createSampler(desc);
-}
-
-
-VertexShaderHandle Renderer::createVertexShader(const std::string &name, const ShaderMacros &macros) {
-	return impl->createVertexShader(name, macros);
 }
 
 
