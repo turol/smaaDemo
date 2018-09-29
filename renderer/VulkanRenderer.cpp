@@ -1298,9 +1298,12 @@ static vk::BlendFactor vulkanBlendFactor(BlendFunc b) {
 PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	vk::GraphicsPipelineCreateInfo info;
 
-	auto vshaderHandle = createVertexShader(desc.vertexShaderName, desc.shaderMacros_);
+	ShaderMacros macros_(desc.shaderMacros_);
+	macros_.emplace("VULKAN_FLIP", "1");
+
+	auto vshaderHandle = createVertexShader(desc.vertexShaderName, macros_);
 	const auto &v = vertexShaders.get(vshaderHandle);
-	auto fshaderHandle = createFragmentShader(desc.fragmentShaderName, desc.shaderMacros_);
+	auto fshaderHandle = createFragmentShader(desc.fragmentShaderName, macros_);
 	const auto &f = fragmentShaders.get(fshaderHandle);
 
 	std::array<vk::PipelineShaderStageCreateInfo, 2> stages;
@@ -1611,10 +1614,7 @@ SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
 VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros) {
 	std::string vertexShaderName   = name + ".vert";
 
-	ShaderMacros macros_(macros);
-	macros_.emplace("VULKAN_FLIP", "1");
-
-	std::vector<uint32_t> spirv = compileSpirv(vertexShaderName, macros_, ShaderKind::Vertex);
+	std::vector<uint32_t> spirv = compileSpirv(vertexShaderName, macros, ShaderKind::Vertex);
 
 	auto result_ = vertexShaders.add();
 
@@ -1634,10 +1634,7 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros &macros) {
 	std::string fragmentShaderName   = name + ".frag";
 
-	ShaderMacros macros_(macros);
-	macros_.emplace("VULKAN_FLIP", "1");
-
-	std::vector<uint32_t> spirv = compileSpirv(fragmentShaderName, macros_, ShaderKind::Fragment);
+	std::vector<uint32_t> spirv = compileSpirv(fragmentShaderName, macros, ShaderKind::Fragment);
 
 	auto result_ = fragmentShaders.add();
 
