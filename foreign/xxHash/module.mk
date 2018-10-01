@@ -4,13 +4,6 @@ d              := $(dir)
 
 
 SUBDIRS:= \
-	glew \
-	glslang \
-	imgui \
-	shaderc \
-	SPIRV-Cross \
-	SPIRV-Tools \
-	xxHash \
 	# empty line
 
 DIRS:=$(addprefix $(d)/,$(SUBDIRS))
@@ -19,10 +12,11 @@ $(eval $(foreach directory, $(DIRS), $(call directory-module,$(directory)) ))
 
 
 FILES:= \
+	xxhash.c \
 	# empty line
 
 
-SRC_$(d):=$(addprefix $(d)/,$(FILES))
+SRC_xxHash:=$(addprefix $(d)/,$(FILES))
 
 
 d  := $(dirstack_$(sp))

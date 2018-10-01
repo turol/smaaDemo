@@ -62,6 +62,7 @@ CFLAGS+=-isystem$(TOPDIR)/foreign/pcg-cpp/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/stb
 CFLAGS+=-isystem$(TOPDIR)/foreign/tclap/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/vulkanMemoryAllocator/src
+CFLAGS+=-isystem$(TOPDIR)/foreign/xxHash
 
 
 ifeq ($(INTERNAL_glslang),y)

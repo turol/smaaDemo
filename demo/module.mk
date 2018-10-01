@@ -7,7 +7,7 @@ FILES:= \
 	# empty line
 
 
-smaaDemo_MODULES:=imgui renderer sdl2 shaderc spirv-cross utils
+smaaDemo_MODULES:=imgui renderer sdl2 shaderc spirv-cross utils xxHash
 smaaDemo_SRC:=$(foreach f, smaaDemo.cpp, $(dir)/$(f))
 
 
