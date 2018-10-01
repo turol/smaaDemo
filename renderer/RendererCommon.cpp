@@ -30,6 +30,8 @@ THE SOFTWARE.
 #include <spirv-tools/optimizer.hpp>
 #include <SPIRV/SPVRemapper.h>
 
+#include <xxhash.h>
+
 
 namespace renderer {
 
@@ -472,6 +474,9 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 		std::swap(spirv, optimized);
 	}
+
+	uint64_t hash = XXH64(spirv.data(), spirv.size() * 4, 0);
+	LOG("Shader \"%s\" hash %08lx\n", spvName.c_str(), hash);
 
 	if (!skipShaderCache) {
 		std::string cacheStr = std::to_string(shaderVersion);
