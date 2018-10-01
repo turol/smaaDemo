@@ -1,0 +1,8 @@
+commit ae5a8c8bb6b71fdfb6ba585463f7bf5a66dc98d4
+Merge: 00cc5e5 79b52d9
+Author: Yann Collet <Cyan4973@users.noreply.github.com>
+Date:   Mon Sep 17 16:31:50 2018 -0700
+
+    Merge pull request #149 from Cyan4973/cppcheck
+    
+    Added Cppcheck static analyzer tests
