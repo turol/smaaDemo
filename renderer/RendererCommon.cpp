@@ -384,9 +384,9 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		if (version != int(shaderVersion)) {
 			LOG("version mismatch, found %d when expected %u\n", version, shaderVersion);
 		} else {
-		// check timestamp against source and header files
-		int64_t sourceTime = getFileTimestamp(name);
-		int64_t cacheTime = getFileTimestamp(spvName);
+			// check timestamp against source and header files
+			int64_t sourceTime = getFileTimestamp(name);
+			int64_t cacheTime = getFileTimestamp(spvName);
 
 			auto comma = cacheStr.find(',');
 			if (comma != std::string::npos) {
@@ -407,20 +407,20 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 				}
 			}
 
-		if (sourceTime <= cacheTime) {
-			auto temp = readFile(spvName);
-			if (temp.size() % 4 == 0) {
-				std::vector<uint32_t> spirv;
-				spirv.resize(temp.size() / 4);
-				memcpy(&spirv[0], &temp[0], temp.size());
-				LOG("Loaded shader \"%s\" from cache\n", spvName.c_str());
+			if (sourceTime <= cacheTime) {
+				auto temp = readFile(spvName);
+				if (temp.size() % 4 == 0) {
+					std::vector<uint32_t> spirv;
+					spirv.resize(temp.size() / 4);
+					memcpy(&spirv[0], &temp[0], temp.size());
+					LOG("Loaded shader \"%s\" from cache\n", spvName.c_str());
 
-				return spirv;
+					return spirv;
+				}
+				LOG("Shader \"%s\" has incorrect size\n", spvName.c_str());
+			} else {
+				LOG("Shader \"%s\" in cache is older than source, recompiling\n", spvName.c_str());
 			}
-			LOG("Shader \"%s\" has incorrect size\n", spvName.c_str());
-		} else {
-			LOG("Shader \"%s\" in cache is older than source, recompiling\n", spvName.c_str());
-		}
 		}
 	}
 
