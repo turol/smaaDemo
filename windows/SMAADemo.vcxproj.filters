@@ -34,6 +34,9 @@
     <Filter Include="Source Files\renderer">
       <UniqueIdentifier>{915a8b3c-f11b-499a-9e6d-7a4f69697dd3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\xxHash">
+      <UniqueIdentifier>{9da21d25-19ed-4bbf-b9c2-6f95750765c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\demo\smaaDemo.cpp">
@@ -218,6 +221,9 @@
     </ClCompile>
     <ClCompile Include="..\foreign\glslang\SPIRV\SpvPostProcess.cpp">
       <Filter>Source Files\glslang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\xxHash\xxhash.c">
+      <Filter>Source Files\xxHash</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -376,7 +376,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>RENDERER_VULKAN;WIN32;USE_GLEW;GLEW_STATIC;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;__x86_64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc/include;../foreign/shaderc/libshaderc_util/include;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign/glm;../foreign/stb;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc/include;../foreign/shaderc/libshaderc_util/include;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/src;../foreign/xxHash;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -446,6 +446,7 @@
     <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\shader_stage.cc" />
     <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\spirv_tools_wrapper.cc" />
     <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\version_profile.cc" />
+    <ClCompile Include="..\foreign\xxHash\xxhash.c" />
     <ClCompile Include="..\renderer\NullRenderer.cpp" />
     <ClCompile Include="..\renderer\OpenGLRenderer.cpp" />
     <ClCompile Include="..\renderer\RendererCommon.cpp" />
