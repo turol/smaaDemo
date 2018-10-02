@@ -460,7 +460,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		} else {
 			// check timestamp against source and header files
 			int64_t sourceTime = getFileTimestamp(name);
-			int64_t cacheTime = getFileTimestamp(spvName);
+			int64_t cacheTime  = getFileTimestamp(cacheName);
 
 			for (const auto &filename : cacheData.dependencies) {
 				int64_t includeTime = getFileTimestamp(filename);
