@@ -431,7 +431,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		break;
 	}
 
-	std::string spvName = spirvCacheDir + name;
+	std::string shaderName = spirvCacheDir + name;
 	{
 		std::vector<std::string> sorted;
 		sorted.reserve(macros.size());
@@ -446,12 +446,12 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 		std::sort(sorted.begin(), sorted.end());
 		for (const auto &s : sorted) {
-			spvName += "_" + s;
+			shaderName += "_" + s;
 		}
 	}
-	LOG("Looking for \"%s\" in cache...\n", spvName.c_str());
-	std::string cacheName = spvName + ".cache";
-	spvName = spvName + ".spv";
+	LOG("Looking for \"%s\" in cache...\n", shaderName.c_str());
+	std::string cacheName = shaderName + ".cache";
+	std::string spvName   = shaderName + ".spv";
 
 	if (!skipShaderCache && fileExists(cacheName) && fileExists(spvName)) {
 		CacheData cacheData = CacheData::parse(readFile(cacheName));
