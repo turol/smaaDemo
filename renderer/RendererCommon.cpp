@@ -342,16 +342,18 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 
 // increase this when the shader compiler options change
 // so that the same source generates a different SPV
-const unsigned int shaderVersion = 19;
+const unsigned int shaderVersion = 20;
 
 
 struct CacheData {
 	unsigned int              version;
+	uint64_t                  hash;
 	std::vector<std::string>  dependencies;
 
 
 	CacheData()
 	: version(0)
+	, hash(0)
 	{
 	}
 
@@ -366,14 +368,14 @@ struct CacheData {
 
 	static CacheData parse(const std::vector<char> &cacheStr_) {
 		std::vector<std::string> split;
-		split.reserve(2);
+		split.reserve(3);
 		{
 		std::string cacheStr(cacheStr_.begin(), cacheStr_.end());
 			boost::algorithm::split(split, cacheStr, [] (char c) -> bool { return c == ','; });
 		}
 
 		CacheData cacheData;
-		if (split.size() < 1) {
+		if (split.size() < 2) {
 			// not enough components, parse fails
             return cacheData;
 		}
@@ -384,8 +386,16 @@ struct CacheData {
 			return cacheData;
 		}
 
-		if (split.size() >= 2) {
-			cacheData.dependencies.insert(cacheData.dependencies.end(), split.begin() + 1, split.end());
+		try {
+			cacheData.hash = std::stoull(split[1].c_str(), nullptr, 16);
+		} catch (...) {
+			// parsing fails
+			cacheData.version = 0;
+			return cacheData;
+		}
+
+		if (split.size() >= 3) {
+			cacheData.dependencies.insert(cacheData.dependencies.end(), split.begin() + 2, split.end());
 		}
 
 		return cacheData;
@@ -395,6 +405,8 @@ struct CacheData {
 	std::string serialize() const {
 		std::stringstream cacheStr;
         cacheStr << version;
+
+		cacheStr << "," << std::hex << hash;
 
 		for (const auto &f : dependencies) {
 			cacheStr << "," << f;
@@ -527,6 +539,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	if (!skipShaderCache) {
 		CacheData cacheData;
 		cacheData.version = shaderVersion;
+		cacheData.hash    = hash;
 		cacheData.dependencies.reserve(cache.size());
 		for (const auto &p : cache) {
 			cacheData.dependencies.push_back(p.first);
