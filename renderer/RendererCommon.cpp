@@ -463,8 +463,8 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			int64_t cacheTime = getFileTimestamp(spvName);
 
 			for (const auto &filename : cacheData.dependencies) {
-					int64_t includeTime = getFileTimestamp(filename);
-					sourceTime = std::max(sourceTime, includeTime);
+				int64_t includeTime = getFileTimestamp(filename);
+				sourceTime = std::max(sourceTime, includeTime);
 			}
 
 			if (sourceTime <= cacheTime) {
