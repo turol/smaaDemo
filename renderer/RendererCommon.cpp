@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "utils/Utils.h"
 
 #include <algorithm>
+#include <sstream>
 #include <boost/algorithm/string/split.hpp>
 
 #include <shaderc/shaderc.hpp>
@@ -392,14 +393,14 @@ struct CacheData {
 
 
 	std::string serialize() const {
-		std::string cacheStr = std::to_string(version);
+		std::stringstream cacheStr;
+        cacheStr << version;
 
 		for (const auto &f : dependencies) {
-			cacheStr += ",";
-			cacheStr += f;
+			cacheStr << "," << f;
 		}
 
-		return cacheStr;
+		return cacheStr.str();
 	}
 };
 
