@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "utils/Utils.h"
 
 #include <algorithm>
+#include <boost/algorithm/string/split.hpp>
 
 #include <shaderc/shaderc.hpp>
 #include <spirv-tools/optimizer.hpp>
@@ -363,28 +364,27 @@ struct CacheData {
 
 
 	static CacheData parse(const std::vector<char> &cacheStr_) {
+		std::vector<std::string> split;
+		split.reserve(2);
+		{
 		std::string cacheStr(cacheStr_.begin(), cacheStr_.end());
+			boost::algorithm::split(split, cacheStr, [] (char c) -> bool { return c == ','; });
+		}
 
 		CacheData cacheData;
-		cacheData.version = atoi(cacheStr.c_str());
+		if (split.size() < 1) {
+			// not enough components, parse fails
+            return cacheData;
+		}
+
+		cacheData.version = atoi(split[0].c_str());
 		if (cacheData.version != shaderVersion) {
 			// version mismatch, don't try to continue parsing
 			return cacheData;
 		}
 
-		auto comma = cacheStr.find(',');
-		if (comma != std::string::npos) {
-			std::string str = cacheStr.substr(comma + 1);
-			while (!str.empty()) {
-				comma = str.find(',');
-				if (comma == std::string::npos) {
-					cacheData.dependencies.emplace_back(str);
-					break;
-				} else {
-					cacheData.dependencies.emplace_back(str.substr(0, comma));
-					str = str.substr(comma + 1);
-				}
-			}
+		if (split.size() >= 2) {
+			cacheData.dependencies.insert(cacheData.dependencies.end(), split.begin() + 1, split.end());
 		}
 
 		return cacheData;
