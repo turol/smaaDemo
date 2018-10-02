@@ -343,6 +343,67 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 const unsigned int shaderVersion = 19;
 
 
+struct CacheData {
+	unsigned int              version;
+	std::vector<std::string>  dependencies;
+
+
+	CacheData()
+	: version(0)
+	{
+	}
+
+	CacheData(const CacheData &)            = default;
+	CacheData &operator=(const CacheData &) = default;
+
+	CacheData(CacheData &&)                 = default;
+	CacheData &operator=(CacheData &&)      = default;
+
+	~CacheData() {}
+
+
+	static CacheData parse(const std::vector<char> &cacheStr_) {
+		std::string cacheStr(cacheStr_.begin(), cacheStr_.end());
+
+		CacheData cacheData;
+		cacheData.version = atoi(cacheStr.c_str());
+		if (cacheData.version != shaderVersion) {
+			// version mismatch, don't try to continue parsing
+			return cacheData;
+		}
+
+		auto comma = cacheStr.find(',');
+		if (comma != std::string::npos) {
+			std::string str = cacheStr.substr(comma + 1);
+			while (!str.empty()) {
+				comma = str.find(',');
+				if (comma == std::string::npos) {
+					cacheData.dependencies.emplace_back(str);
+					break;
+				} else {
+					cacheData.dependencies.emplace_back(str.substr(0, comma));
+					str = str.substr(comma + 1);
+				}
+			}
+		}
+
+		return cacheData;
+	}
+
+
+	std::string serialize() const {
+		std::string cacheStr = std::to_string(version);
+
+		for (const auto &f : dependencies) {
+			cacheStr += ",";
+			cacheStr += f;
+		}
+
+		return cacheStr;
+	}
+};
+
+
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderKind kind_) {
 	// check spir-v cache first
 
@@ -380,33 +441,17 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	spvName = spvName + ".spv";
 
 	if (!skipShaderCache && fileExists(cacheName) && fileExists(spvName)) {
-		auto cacheStr_ = readFile(cacheName);
-		std::string cacheStr(cacheStr_.begin(), cacheStr_.end());
-		int version = atoi(cacheStr.c_str());
-		if (version != int(shaderVersion)) {
-			LOG("version mismatch, found %d when expected %u\n", version, shaderVersion);
+		CacheData cacheData = CacheData::parse(readFile(cacheName));
+		if (cacheData.version != int(shaderVersion)) {
+			LOG("version mismatch, found %d when expected %u\n", cacheData.version, shaderVersion);
 		} else {
 			// check timestamp against source and header files
 			int64_t sourceTime = getFileTimestamp(name);
 			int64_t cacheTime = getFileTimestamp(spvName);
 
-			auto comma = cacheStr.find(',');
-			if (comma != std::string::npos) {
-				std::string str = cacheStr.substr(comma + 1);
-				while (!str.empty()) {
-					comma = str.find(',');
-					std::string filename;
-					if (comma == std::string::npos) {
-						filename = str;
-						str.clear();
-					} else {
-						filename = str.substr(0, comma);
-					}
+			for (const auto &filename : cacheData.dependencies) {
 					int64_t includeTime = getFileTimestamp(filename);
 					sourceTime = std::max(sourceTime, includeTime);
-
-					str = str.substr(comma + 1);
-				}
 			}
 
 			if (sourceTime <= cacheTime) {
@@ -479,12 +524,13 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	LOG("Shader \"%s\" hash %" PRIx64 "\n", spvName.c_str(), hash);
 
 	if (!skipShaderCache) {
-		std::string cacheStr = std::to_string(shaderVersion);
-
+		CacheData cacheData;
+		cacheData.version = shaderVersion;
+		cacheData.dependencies.reserve(cache.size());
 		for (const auto &p : cache) {
-			cacheStr += ",";
-			cacheStr += p.first;
+			cacheData.dependencies.push_back(p.first);
 		}
+		std::string cacheStr = cacheData.serialize();
 
 		writeFile(cacheName, cacheStr.c_str(), cacheStr.size());
 		writeFile(spvName, &spirv[0], spirv.size() * 4);
