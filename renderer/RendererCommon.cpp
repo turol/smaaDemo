@@ -288,10 +288,10 @@ public:
 	}
 
 	Includer(const Includer &)            = delete;
-	Includer(Includer &&)                 = default;
+	Includer(Includer &&)                 = delete;
 
 	Includer &operator=(const Includer &) = delete;
-	Includer &operator=(Includer &&)      = default;
+	Includer &operator=(Includer &&)      = delete;
 
 	~Includer() {}
 
