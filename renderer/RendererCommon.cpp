@@ -476,7 +476,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	}
 
 	uint64_t hash = XXH64(spirv.data(), spirv.size() * 4, 0);
-	LOG("Shader \"%s\" hash %08lx\n", spvName.c_str(), hash);
+	LOG("Shader \"%s\" hash %" PRIx64 "\n", spvName.c_str(), hash);
 
 	if (!skipShaderCache) {
 		std::string cacheStr = std::to_string(shaderVersion);
