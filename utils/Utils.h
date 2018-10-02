@@ -25,6 +25,8 @@ THE SOFTWARE.
 #define UTILS_H
 
 
+#include <cinttypes>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -44,6 +46,18 @@ THE SOFTWARE.
 #define UNUSED        __attribute__((unused))
 
 #endif  // _MSC_VER
+
+
+#if defined(__GNUC__) && defined(_WIN32)
+
+#undef  PRIu64
+#define PRIu64 "I64u"
+
+#ifndef PRIx64
+#define PRIx64 "I64x"
+#endif  // PRIx64
+
+#endif  // defined(__GNUC__) && defined(_WIN32)
 
 
 #ifdef _MSC_VER
