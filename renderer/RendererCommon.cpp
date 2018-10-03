@@ -546,14 +546,12 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		std::swap(spirv, optimized);
 	}
 
-	uint64_t hash = XXH64(spirv.data(), spirv.size() * 4, 0);
-	std::string spvName   = shaderName + ".spv";
-	LOG("Shader \"%s\" hash %" PRIx64 "\n", spvName.c_str(), hash);
-
 	if (!skipShaderCache) {
 		CacheData cacheData;
 		cacheData.version = shaderVersion;
-		cacheData.hash    = hash;
+		cacheData.hash    = XXH64(spirv.data(), spirv.size() * 4, 0);;
+		std::string spvName   = shaderName + ".spv";
+		LOG("Shader \"%s\" hash %" PRIx64 "\n", spvName.c_str(), cacheData.hash);
 		cacheData.dependencies.reserve(cache.size());
 		for (const auto &p : cache) {
 			cacheData.dependencies.push_back(p.first);
