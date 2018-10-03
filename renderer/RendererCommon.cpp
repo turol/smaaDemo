@@ -449,6 +449,9 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			shaderName += "_" + s;
 		}
 	}
+
+	std::vector<uint32_t> spirv;
+
 	LOG("Looking for \"%s\" in cache...\n", shaderName.c_str());
 	std::string cacheName = shaderName + ".cache";
 	std::string spvName   = shaderName + ".spv";
@@ -470,7 +473,6 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			if (sourceTime <= cacheTime) {
 				auto temp = readFile(spvName);
 				if (temp.size() % 4 == 0) {
-					std::vector<uint32_t> spirv;
 					spirv.resize(temp.size() / 4);
 					memcpy(&spirv[0], &temp[0], temp.size());
 					LOG("Loaded shader \"%s\" from cache\n", spvName.c_str());
@@ -503,7 +505,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		throw std::runtime_error("Shader compile failed");
 	}
 
-	std::vector<uint32_t> spirv(result.cbegin(), result.cend());
+	spirv.insert(spirv.end(), result.cbegin(), result.cend());
 
 	// SPIR-V optimization
 	if (optimizeShaders) {
