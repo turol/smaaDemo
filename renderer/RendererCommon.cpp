@@ -499,24 +499,24 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	std::unordered_map<std::string, std::vector<char> > cache;
 
 	{
-	auto src = loadSource(name);
+		auto src = loadSource(name);
 
-	shaderc::CompileOptions options;
-	// TODO: optimization level?
-	options.SetIncluder(std::make_unique<Includer>(cache));
+		shaderc::CompileOptions options;
+		// TODO: optimization level?
+		options.SetIncluder(std::make_unique<Includer>(cache));
 
-	for (const auto &p : macros) {
-		options.AddMacroDefinition(p.first, p.second);
-	}
+		for (const auto &p : macros) {
+			options.AddMacroDefinition(p.first, p.second);
+		}
 
-	shaderc::Compiler compiler;
-	auto result = compiler.CompileGlslToSpv(&src[0], src.size(), kind, name.c_str(), options);
-	if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-		LOG("Shader %s compile failed: %s\n", name.c_str(), result.GetErrorMessage().c_str());
-		throw std::runtime_error("Shader compile failed");
-	}
+		shaderc::Compiler compiler;
+		auto result = compiler.CompileGlslToSpv(&src[0], src.size(), kind, name.c_str(), options);
+		if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
+			LOG("Shader %s compile failed: %s\n", name.c_str(), result.GetErrorMessage().c_str());
+			throw std::runtime_error("Shader compile failed");
+		}
 
-	spirv.insert(spirv.end(), result.cbegin(), result.cend());
+		spirv.insert(spirv.end(), result.cbegin(), result.cend());
 	}
 
 	// SPIR-V optimization
