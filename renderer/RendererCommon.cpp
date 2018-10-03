@@ -498,6 +498,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	// TODO: cache includes globally
 	std::unordered_map<std::string, std::vector<char> > cache;
 
+	{
 	auto src = loadSource(name);
 
 	shaderc::CompileOptions options;
@@ -516,6 +517,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	}
 
 	spirv.insert(spirv.end(), result.cbegin(), result.cend());
+	}
 
 	// SPIR-V optimization
 	if (optimizeShaders) {
