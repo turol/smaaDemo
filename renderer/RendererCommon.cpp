@@ -495,10 +495,11 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		return spirv;
 	}
 
-	auto src = loadSource(name);
-
 	// TODO: cache includes globally
 	std::unordered_map<std::string, std::vector<char> > cache;
+
+	auto src = loadSource(name);
+
 	shaderc::CompileOptions options;
 	// TODO: optimization level?
 	options.SetIncluder(std::make_unique<Includer>(cache));
