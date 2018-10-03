@@ -417,6 +417,45 @@ struct CacheData {
 };
 
 
+static bool loadCachedSPV(const std::string &name, const std::string &shaderName, std::vector<uint32_t> &spirv) {
+	LOG("Looking for \"%s\" in cache...\n", shaderName.c_str());
+	std::string cacheName = shaderName + ".cache";
+	std::string spvName   = shaderName + ".spv";
+
+	if (fileExists(cacheName) && fileExists(spvName)) {
+		CacheData cacheData = CacheData::parse(readFile(cacheName));
+		if (cacheData.version != int(shaderVersion)) {
+			LOG("version mismatch, found %d when expected %u\n", cacheData.version, shaderVersion);
+		} else {
+			// check timestamp against source and header files
+			int64_t sourceTime = getFileTimestamp(name);
+			int64_t cacheTime  = getFileTimestamp(cacheName);
+
+			for (const auto &filename : cacheData.dependencies) {
+				int64_t includeTime = getFileTimestamp(filename);
+				sourceTime = std::max(sourceTime, includeTime);
+			}
+
+			if (sourceTime <= cacheTime) {
+				auto temp = readFile(spvName);
+				if (temp.size() % 4 == 0) {
+					spirv.resize(temp.size() / 4);
+					memcpy(&spirv[0], &temp[0], temp.size());
+					LOG("Loaded shader \"%s\" from cache\n", spvName.c_str());
+
+					return true;
+				}
+				LOG("Shader \"%s\" has incorrect size\n", spvName.c_str());
+			} else {
+				LOG("Shader \"%s\" in cache is older than source, recompiling\n", spvName.c_str());
+			}
+		}
+	}
+
+	return false;
+}
+
+
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderKind kind_) {
 	// check spir-v cache first
 
@@ -451,39 +490,9 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	}
 
 	std::vector<uint32_t> spirv;
-
-	LOG("Looking for \"%s\" in cache...\n", shaderName.c_str());
-	std::string cacheName = shaderName + ".cache";
-	std::string spvName   = shaderName + ".spv";
-
-	if (!skipShaderCache && fileExists(cacheName) && fileExists(spvName)) {
-		CacheData cacheData = CacheData::parse(readFile(cacheName));
-		if (cacheData.version != int(shaderVersion)) {
-			LOG("version mismatch, found %d when expected %u\n", cacheData.version, shaderVersion);
-		} else {
-			// check timestamp against source and header files
-			int64_t sourceTime = getFileTimestamp(name);
-			int64_t cacheTime  = getFileTimestamp(cacheName);
-
-			for (const auto &filename : cacheData.dependencies) {
-				int64_t includeTime = getFileTimestamp(filename);
-				sourceTime = std::max(sourceTime, includeTime);
-			}
-
-			if (sourceTime <= cacheTime) {
-				auto temp = readFile(spvName);
-				if (temp.size() % 4 == 0) {
-					spirv.resize(temp.size() / 4);
-					memcpy(&spirv[0], &temp[0], temp.size());
-					LOG("Loaded shader \"%s\" from cache\n", spvName.c_str());
-
-					return spirv;
-				}
-				LOG("Shader \"%s\" has incorrect size\n", spvName.c_str());
-			} else {
-				LOG("Shader \"%s\" in cache is older than source, recompiling\n", spvName.c_str());
-			}
-		}
+	bool found = !skipShaderCache && loadCachedSPV(name, shaderName, spirv);
+	if (found) {
+		return spirv;
 	}
 
 	auto src = loadSource(name);
@@ -536,6 +545,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	}
 
 	uint64_t hash = XXH64(spirv.data(), spirv.size() * 4, 0);
+	std::string spvName   = shaderName + ".spv";
 	LOG("Shader \"%s\" hash %" PRIx64 "\n", spvName.c_str(), hash);
 
 	if (!skipShaderCache) {
@@ -548,6 +558,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		}
 		std::string cacheStr = cacheData.serialize();
 
+		std::string cacheName = shaderName + ".cache";
 		writeFile(cacheName, cacheStr.c_str(), cacheStr.size());
 		writeFile(spvName, &spirv[0], spirv.size() * 4);
 	}
