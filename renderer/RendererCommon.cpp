@@ -432,7 +432,10 @@ bool RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 		CacheData cacheData = CacheData::parse(readFile(cacheName));
 		if (cacheData.version != int(shaderVersion)) {
 			LOG("version mismatch, found %d when expected %u\n", cacheData.version, shaderVersion);
-		} else {
+			return false;
+		}
+
+		{
 			// check timestamp against source and header files
 			int64_t sourceTime = getFileTimestamp(name);
 			int64_t cacheTime  = getFileTimestamp(cacheName);
