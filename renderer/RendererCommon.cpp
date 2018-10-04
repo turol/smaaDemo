@@ -420,9 +420,16 @@ struct CacheData {
 static bool loadCachedSPV(const std::string &name, const std::string &shaderName, std::vector<uint32_t> &spirv) {
 	LOG("Looking for \"%s\" in cache...\n", shaderName.c_str());
 	std::string cacheName = shaderName + ".cache";
-	std::string spvName   = shaderName + ".spv";
+	if (!fileExists(cacheName)) {
+		return false;
+	}
 
-	if (fileExists(cacheName) && fileExists(spvName)) {
+	std::string spvName   = shaderName + ".spv";
+	if (!fileExists(spvName)) {
+		return false;
+	}
+
+	{
 		CacheData cacheData = CacheData::parse(readFile(cacheName));
 		if (cacheData.version != int(shaderVersion)) {
 			LOG("version mismatch, found %d when expected %u\n", cacheData.version, shaderVersion);
