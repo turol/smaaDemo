@@ -454,18 +454,18 @@ bool RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 			}
 
 				auto temp = readFile(spvName);
-				if (temp.size() % 4 == 0) {
+				if (temp.size() % 4 != 0) {
+				LOG("Shader \"%s\" has incorrect size\n", spvName.c_str());
+					return false;
+				}
+
 					spirv.resize(temp.size() / 4);
 					memcpy(&spirv[0], &temp[0], temp.size());
 					LOG("Loaded shader \"%s\" from cache\n", spvName.c_str());
-
-					return true;
-				}
-				LOG("Shader \"%s\" has incorrect size\n", spvName.c_str());
 		}
 	}
 
-	return false;
+	return true;
 }
 
 
