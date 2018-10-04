@@ -423,15 +423,14 @@ bool RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 		return false;
 	}
 
-	std::string spvName   = spirvCacheDir + shaderName + ".spv";
-	if (!fileExists(spvName)) {
-		return false;
-	}
-
-
 	CacheData cacheData = CacheData::parse(readFile(cacheName));
 	if (cacheData.version != int(shaderVersion)) {
 		LOG("version mismatch, found %d when expected %u\n", cacheData.version, shaderVersion);
+		return false;
+	}
+
+	std::string spvName   = spirvCacheDir + shaderName + ".spv";
+	if (!fileExists(spvName)) {
 		return false;
 	}
 
