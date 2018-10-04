@@ -1416,8 +1416,6 @@ PipelineHandle SMAADemo::getCubePipeline(unsigned int n) {
 const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 	auto it = smaaPipelines.find(key);
 	// create lazily if missing
-	// TODO: final blend pass appears to not be affected by quality
-	// verify that and if so, share it
 	if (it == smaaPipelines.end()) {
 		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
@@ -1429,14 +1427,10 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[key.quality]);
 		macros.emplace(qualityString, "1");
 		if (key.edgeMethod != SMAAEdgeMethod::Color) {
-			// TODO: edge detection method only affects the first pass, share others
-			// TODO: also doesn't affect vertex shader
 			macros.emplace("EDGEMETHOD", std::to_string(static_cast<uint8_t>(key.edgeMethod)));
 		}
 
 		if (key.predication && key.edgeMethod != SMAAEdgeMethod::Depth) {
-			// TODO: predication only affects the first pass, share others
-			// TODO: also doesn't affect vertex shader
 			macros.emplace("SMAA_PREDICATION", "1");
 		}
 
@@ -1487,7 +1481,6 @@ const PipelineHandle &SMAADemo::getFXAAPipeline(unsigned int q) {
 	auto it = fxaaPipelines.find(key);
 	// create lazily if missing
 	if (it == fxaaPipelines.end()) {
-		// TODO: vertex shader not affected by quality, share it
 		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
 		      .depthTest(false)
