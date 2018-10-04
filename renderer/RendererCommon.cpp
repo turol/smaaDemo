@@ -418,7 +418,6 @@ struct CacheData {
 
 
 static bool loadCachedSPV(const std::string &name, const std::string &shaderName, std::vector<uint32_t> &spirv) {
-	LOG("Looking for \"%s\" in cache...\n", shaderName.c_str());
 	std::string cacheName = shaderName + ".cache";
 	if (!fileExists(cacheName)) {
 		return false;
@@ -485,9 +484,15 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	}
 
 	std::vector<uint32_t> spirv;
-	bool found = !skipShaderCache && loadCachedSPV(name, shaderName, spirv);
-	if (found) {
-		return spirv;
+	if (!skipShaderCache) {
+		LOG("Looking for \"%s\" in cache...\n", shaderName.c_str());
+		bool found = loadCachedSPV(name, shaderName, spirv);
+		if (found) {
+			LOG("\"%s\" found in cache\n", shaderName.c_str());
+			return spirv;
+		} else {
+			LOG("\"%s\" not found in cache\n", shaderName.c_str());
+		}
 	}
 
 	// TODO: cache includes globally
