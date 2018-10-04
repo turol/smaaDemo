@@ -417,7 +417,7 @@ struct CacheData {
 };
 
 
-static bool loadCachedSPV(const std::string &name, const std::string &shaderName, std::vector<uint32_t> &spirv) {
+bool RendererBase::loadCachedSPV(const std::string &name, const std::string &shaderName, std::vector<uint32_t> &spirv) {
 	std::string cacheName = shaderName + ".cache";
 	if (!fileExists(cacheName)) {
 		return false;

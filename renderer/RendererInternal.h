@@ -172,6 +172,8 @@ struct RendererBase {
 
 	std::vector<char> loadSource(const std::string &name);
 
+	bool loadCachedSPV(const std::string &name, const std::string &shaderName, std::vector<uint32_t> &spirv);
+
 	std::vector<uint32_t> compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderKind kind);
 
 	explicit RendererBase(const RendererDesc &desc)
