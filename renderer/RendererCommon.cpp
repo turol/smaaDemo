@@ -428,14 +428,13 @@ bool RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 		return false;
 	}
 
-	{
+
 		CacheData cacheData = CacheData::parse(readFile(cacheName));
 		if (cacheData.version != int(shaderVersion)) {
 			LOG("version mismatch, found %d when expected %u\n", cacheData.version, shaderVersion);
 			return false;
 		}
 
-		{
 			// check timestamp against source and header files
 			int64_t sourceTime = getFileTimestamp(name);
 			int64_t cacheTime  = getFileTimestamp(cacheName);
@@ -462,8 +461,8 @@ bool RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 					spirv.resize(temp.size() / 4);
 					memcpy(&spirv[0], &temp[0], temp.size());
 					LOG("Loaded shader \"%s\" from cache\n", spvName.c_str());
-		}
-	}
+
+
 
 	return true;
 }
