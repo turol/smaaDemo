@@ -54,7 +54,7 @@ THE SOFTWARE.
 #define PRIu64 "I64u"
 
 #ifndef PRIx64
-#define PRIx64 "I64x"
+#define PRIx64 "llx"
 #endif  // PRIx64
 
 #endif  // defined(__GNUC__) && defined(_WIN32)
