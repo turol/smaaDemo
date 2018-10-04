@@ -440,12 +440,19 @@ bool RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 			int64_t sourceTime = getFileTimestamp(name);
 			int64_t cacheTime  = getFileTimestamp(cacheName);
 
-			for (const auto &filename : cacheData.dependencies) {
-				int64_t includeTime = getFileTimestamp(filename);
-				sourceTime = std::max(sourceTime, includeTime);
+			if (sourceTime > cacheTime) {
+				LOG("Shader \"%s\" source is newer than cache, recompiling\n", spvName.c_str());
+				return false;
 			}
 
-			if (sourceTime <= cacheTime) {
+			for (const auto &filename : cacheData.dependencies) {
+				int64_t includeTime = getFileTimestamp(filename);
+				if (includeTime > cacheTime) {
+					LOG("Include \"%s\" is newer than cache, recompiling\n", filename.c_str());
+					return false;
+				}
+			}
+
 				auto temp = readFile(spvName);
 				if (temp.size() % 4 == 0) {
 					spirv.resize(temp.size() / 4);
@@ -455,9 +462,6 @@ bool RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 					return true;
 				}
 				LOG("Shader \"%s\" has incorrect size\n", spvName.c_str());
-			} else {
-				LOG("Shader \"%s\" in cache is older than source, recompiling\n", spvName.c_str());
-			}
 		}
 	}
 
