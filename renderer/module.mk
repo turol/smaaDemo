@@ -12,13 +12,13 @@ FILES:= \
 	# empty line
 
 
-renderer_MODULES:=shaderc spirv-cross utils
+DEPENDS_renderer:=sdl2 shaderc spirv-cross utils xxHash
 renderer_SRC:=$(foreach f, $(FILES), $(dir)/$(f))
 
 
 ifeq ($(RENDERER),opengl)
 
-smaaDemo_MODULES+=glew
+DEPENDS_renderer+=glew
 CFLAGS+=-DRENDERER_OPENGL -DGLEW_STATIC -DGLEW_NO_GLU
 
 else ifeq ($(RENDERER),null)
@@ -27,7 +27,7 @@ CFLAGS+=-DRENDERER_NULL
 
 else ifeq ($(RENDERER),vulkan)
 
-smaaDemo_MODULES+=vulkan
+DEPENDS_renderer+=vulkan
 CFLAGS+=-DRENDERER_VULKAN
 
 else
