@@ -2272,7 +2272,7 @@ void SMAADemo::render() {
 			}
 
 			jitter = jitter * 2.0f * glm::vec2(globals.screenSize.x, globals.screenSize.y);
-			glm::mat4 jitterMatrix = glm::translate(glm::mat4(), glm::vec3(jitter, 0.0f));
+			glm::mat4 jitterMatrix = glm::translate(glm::identity<glm::mat4>(), glm::vec3(jitter, 0.0f));
 			viewProj = jitterMatrix * viewProj;
 		}
 
