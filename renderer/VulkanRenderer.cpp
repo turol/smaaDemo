@@ -1512,6 +1512,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	rt.width  = desc.width_;
 	rt.height = desc.height_;
 	rt.image = device.createImage(info);
+	LOG("rendertarget %s image is %p\n", desc.name_.c_str(), static_cast<VkImage>(rt.image));
 	rt.format = format;
 
 	auto texResult   = textures.add();
@@ -1676,6 +1677,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	tex.width  = desc.width_;
 	tex.height = desc.height_;
 	tex.image  = device.createImage(info);
+	LOG("texture %s image is %p\n", desc.name_.c_str(), static_cast<VkImage>(tex.image));
 
 	VmaAllocationCreateInfo  req = {};
 	req.usage          = VMA_MEMORY_USAGE_GPU_ONLY;
