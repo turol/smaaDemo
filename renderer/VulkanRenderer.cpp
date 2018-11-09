@@ -2377,8 +2377,8 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 			submitBuffers[1] = currentCommandBuffer;
 			submit.commandBufferCount = 2;
 		} else {
-		submitBuffers[0]            = currentCommandBuffer;
-		submit.commandBufferCount   = 1;
+			submitBuffers[0]            = currentCommandBuffer;
+			submit.commandBufferCount   = 1;
 		}
 
 		submit.pCommandBuffers      = submitBuffers.data();

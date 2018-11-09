@@ -823,12 +823,12 @@ struct Frame {
 	, deleteResources(std::move(other.deleteResources))
 	, uploads(std::move(other.uploads))
 	{
-		other.image = vk::Image();
-		other.fence = vk::Fence();
-		other.dsPool = vk::DescriptorPool();
-		other.commandPool = vk::CommandPool();
-		other.commandBuffer = vk::CommandBuffer();
-		other.presentCmdBuf = vk::CommandBuffer();
+		other.image            = vk::Image();
+		other.fence            = vk::Fence();
+		other.dsPool           = vk::DescriptorPool();
+		other.commandPool      = vk::CommandPool();
+		other.commandBuffer    = vk::CommandBuffer();
+		other.presentCmdBuf    = vk::CommandBuffer();
 		other.barrierCmdBuf    = vk::CommandBuffer();
 		other.outstanding      = false;
 		other.lastFrameNum     = 0;
@@ -839,42 +839,42 @@ struct Frame {
 
 	Frame &operator=(Frame &&other) {
 		assert(!image);
-		image = other.image;
-		other.image = vk::Image();
+		image                = other.image;
+		other.image          = vk::Image();
 
 		assert(!fence);
-		fence = other.fence;
-		other.fence = vk::Fence();
+		fence                = other.fence;
+		other.fence          = vk::Fence();
 
 		assert(!dsPool);
-		dsPool = other.dsPool;
-		other.dsPool = vk::DescriptorPool();
+		dsPool               = other.dsPool;
+		other.dsPool         = vk::DescriptorPool();
 
 		assert(!commandPool);
-		commandPool = other.commandPool;
-		other.commandPool = vk::CommandPool();
+		commandPool          = other.commandPool;
+		other.commandPool    = vk::CommandPool();
 
 		assert(!commandBuffer);
-		commandBuffer = other.commandBuffer;
-		other.commandBuffer = vk::CommandBuffer();
+		commandBuffer        = other.commandBuffer;
+		other.commandBuffer  = vk::CommandBuffer();
 
 		assert(!presentCmdBuf);
-		presentCmdBuf       = other.presentCmdBuf;
-		other.presentCmdBuf = vk::CommandBuffer();
+		presentCmdBuf        = other.presentCmdBuf;
+		other.presentCmdBuf  = vk::CommandBuffer();
 
 		assert(!barrierCmdBuf);
-		barrierCmdBuf       = other.barrierCmdBuf;
-		other.barrierCmdBuf = vk::CommandBuffer();
+		barrierCmdBuf        = other.barrierCmdBuf;
+		other.barrierCmdBuf  = vk::CommandBuffer();
 
 		assert(ephemeralBuffers.empty());
 		ephemeralBuffers = std::move(other.ephemeralBuffers);
 		assert(other.ephemeralBuffers.empty());
 
-		outstanding = other.outstanding;
-		other.outstanding = false;
+		outstanding          = other.outstanding;
+		other.outstanding    = false;
 
-		lastFrameNum = other.lastFrameNum;
-		other.lastFrameNum = 0;
+		lastFrameNum         = other.lastFrameNum;
+		other.lastFrameNum   = 0;
 
 		usedRingBufPtr       = other.usedRingBufPtr;
 		other.usedRingBufPtr = 0;
