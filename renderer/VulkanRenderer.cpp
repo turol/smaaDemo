@@ -445,14 +445,14 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		LOG("  Timestamp valid bits: %u\n", q.timestampValidBits);
 		LOG("  Image transfer granularity: (%u, %u, %u)\n", q.minImageTransferGranularity.width, q.minImageTransferGranularity.height, q.minImageTransferGranularity.depth);
 
-			if (physicalDevice.getSurfaceSupportKHR(i, surface)) {
-				LOG("  Can present to our surface\n");
-				if (q.queueFlags & vk::QueueFlagBits::eGraphics) {
+		if (physicalDevice.getSurfaceSupportKHR(i, surface)) {
+			LOG("  Can present to our surface\n");
+			if (q.queueFlags & vk::QueueFlagBits::eGraphics) {
 				graphicsQueueIndex = i;
-				}
-			} else {
-				LOG("  Can't present to our surface\n");
 			}
+		} else {
+			LOG("  Can't present to our surface\n");
+		}
 	}
 
 	if (graphicsQueueIndex == queueProps.size()) {
