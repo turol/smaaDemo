@@ -2340,9 +2340,6 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	vk::SubmitInfo submit;
 
 	std::array<vk::CommandBuffer, 2> submitBuffers;
-	submit.commandBufferCount   = 1;
-	submit.pCommandBuffers      = submitBuffers.data();
-	submitBuffers[0]            = currentCommandBuffer;
 
 	std::vector<vk::Semaphore>          uploadSemaphores;
 	std::vector<vk::PipelineStageFlags> semWaitMasks;
@@ -2368,6 +2365,14 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 		submit.waitSemaphoreCount   = uploadSemaphores.size();
 		submit.pWaitSemaphores      = uploadSemaphores.data();
 		submit.pWaitDstStageMask    = semWaitMasks.data();
+
+		submitBuffers[0]            = currentCommandBuffer;
+		submit.pCommandBuffers      = submitBuffers.data();
+		submit.commandBufferCount   = 1;
+	} else {
+		submitBuffers[0]            = currentCommandBuffer;
+		submit.pCommandBuffers      = submitBuffers.data();
+		submit.commandBufferCount   = 1;
 	}
 
 	vk::SubmitInfo submit2;
