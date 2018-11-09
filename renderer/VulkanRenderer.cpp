@@ -2223,30 +2223,32 @@ void RendererImpl::beginFrame() {
 	}
 
 	// acquire next image
-	auto imageIdx_         = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence());
-	if (imageIdx_.result == vk::Result::eSuccess) {
+	uint32_t imageIdx = 0xFFFFFFFFU;
+	vk::Result result = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence(), &imageIdx);
+	if (result == vk::Result::eSuccess) {
 		// nothing to do
-	} else if (imageIdx_.result == vk::Result::eErrorOutOfDateKHR) {
+	} else if (result == vk::Result::eErrorOutOfDateKHR) {
 		// swapchain went out of date during acquire, recreate and try again
 		LOG("swapchain out of date during acquireNextImageKHR, recreating...\n");
 		swapchainDirty = true;
 		recreateSwapchain();
 		assert(!swapchainDirty);
 
-		imageIdx_ = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence());
-		if (imageIdx_.result != vk::Result::eSuccess) {
+		imageIdx = 0xFFFFFFFFU;
+		result = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence(), &imageIdx);
+		if (result != vk::Result::eSuccess) {
 			// nope, still wrong
-			LOG("acquireNextImageKHR failed: %s\n", vk::to_string(imageIdx_.result).c_str());
+			LOG("acquireNextImageKHR failed: %s\n", vk::to_string(result).c_str());
 			throw std::runtime_error("acquireNextImageKHR failed");
 		}
 		LOG("swapchain recreated\n");
 	} else {
-		LOG("acquireNextImageKHR failed: %s\n", vk::to_string(imageIdx_.result).c_str());
+		LOG("acquireNextImageKHR failed: %s\n", vk::to_string(result).c_str());
 		throw std::runtime_error("acquireNextImageKHR failed");
 	}
 
-	currentFrameIdx        = imageIdx_.value;
-	assert(currentFrameIdx < frames.size());
+	assert(imageIdx < frames.size());
+	currentFrameIdx        = imageIdx;
 	auto &frame            = frames.at(currentFrameIdx);
 
 	// frames are a ringbuffer
