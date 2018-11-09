@@ -2334,8 +2334,12 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 
 	// submit command buffers
 	vk::SubmitInfo submit;
+
+	std::array<vk::CommandBuffer, 2> submitBuffers;
 	submit.commandBufferCount   = 1;
-	submit.pCommandBuffers      = &currentCommandBuffer;
+	submit.pCommandBuffers      = submitBuffers.data();
+	submitBuffers[0]            = currentCommandBuffer;
+
 	std::vector<vk::Semaphore>          uploadSemaphores;
 	std::vector<vk::PipelineStageFlags> semWaitMasks;
 	std::vector<vk::ImageMemoryBarrier> acquireBarriers;
