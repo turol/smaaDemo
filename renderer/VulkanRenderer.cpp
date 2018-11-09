@@ -473,6 +473,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	// get a transfer queue if there is one
 	transferQueueIndex          = graphicsQueueIndex;
+	if (desc.transferQueue) {
 	uint32_t currentFlags       = static_cast<uint32_t>(queueProps[graphicsQueueIndex].queueFlags);
 	for (uint32_t i = 0; i < queueProps.size(); i++) {
 		// never the same as graphics queue
@@ -492,6 +493,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			transferQueueIndex = i;
 			currentFlags       = static_cast<uint32_t>(q.queueFlags);
 		}
+	}
 	}
 
 	if (transferQueueIndex != graphicsQueueIndex) {
