@@ -2366,9 +2366,22 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 		submit.pWaitSemaphores      = uploadSemaphores.data();
 		submit.pWaitDstStageMask    = semWaitMasks.data();
 
+		if (!acquireBarriers.empty()) {
+			LOG("submitting acquire barriers\n");
+			auto barrierCmdBuf = frame.barrierCmdBuf;
+			barrierCmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+			barrierCmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTopOfPipe, vk::DependencyFlags(), {}, {}, acquireBarriers);
+			barrierCmdBuf.end();
+
+			submitBuffers[0] = barrierCmdBuf;
+			submitBuffers[1] = currentCommandBuffer;
+			submit.commandBufferCount = 2;
+		} else {
 		submitBuffers[0]            = currentCommandBuffer;
-		submit.pCommandBuffers      = submitBuffers.data();
 		submit.commandBufferCount   = 1;
+		}
+
+		submit.pCommandBuffers      = submitBuffers.data();
 	} else {
 		submitBuffers[0]            = currentCommandBuffer;
 		submit.pCommandBuffers      = submitBuffers.data();
