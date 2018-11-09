@@ -2103,12 +2103,14 @@ void RendererImpl::recreateSwapchain() {
 
 				assert(!f.commandBuffer);
 				assert(!f.presentCmdBuf);
+				assert(!f.barrierCmdBuf);
 				// create command buffer
-				vk::CommandBufferAllocateInfo info(f.commandPool, vk::CommandBufferLevel::ePrimary, 2);
+				vk::CommandBufferAllocateInfo info(f.commandPool, vk::CommandBufferLevel::ePrimary, 3);
 				auto bufs = device.allocateCommandBuffers(info);
-				assert(bufs.size() == 2);
+				assert(bufs.size() == 3);
 				f.commandBuffer = bufs.at(0);
 				f.presentCmdBuf = bufs.at(1);
+				f.barrierCmdBuf = bufs.at(2);
 			}
 		}
 	}
@@ -2656,9 +2658,11 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 
 	assert(f.commandBuffer);
 	assert(f.presentCmdBuf);
-	device.freeCommandBuffers(f.commandPool, { f.commandBuffer, f.presentCmdBuf });
+	assert(f.barrierCmdBuf);
+	device.freeCommandBuffers(f.commandPool, { f.commandBuffer, f.presentCmdBuf, f.barrierCmdBuf });
 	f.commandBuffer = vk::CommandBuffer();
 	f.presentCmdBuf = vk::CommandBuffer();
+	f.barrierCmdBuf = vk::CommandBuffer();
 
 	assert(f.commandPool);
 	device.destroyCommandPool(f.commandPool);

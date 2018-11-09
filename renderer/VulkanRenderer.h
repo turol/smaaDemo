@@ -778,6 +778,7 @@ struct Frame {
 	vk::CommandPool               commandPool;
 	vk::CommandBuffer             commandBuffer;
 	vk::CommandBuffer             presentCmdBuf;
+	vk::CommandBuffer             barrierCmdBuf;
 
 	// std::vector has some kind of issue with variant with non-copyable types, so use unordered_set
 	std::unordered_set<Resource>  deleteResources;
@@ -798,6 +799,7 @@ struct Frame {
 		assert(!commandPool);
 		assert(!commandBuffer);
 		assert(!presentCmdBuf);
+		assert(!barrierCmdBuf);
 		assert(!outstanding);
 		assert(deleteResources.empty());
 		assert(uploads.empty());
@@ -817,6 +819,7 @@ struct Frame {
 	, commandPool(other.commandPool)
 	, commandBuffer(other.commandBuffer)
 	, presentCmdBuf(other.presentCmdBuf)
+	, barrierCmdBuf(other.barrierCmdBuf)
 	, deleteResources(std::move(other.deleteResources))
 	, uploads(std::move(other.uploads))
 	{
@@ -826,6 +829,7 @@ struct Frame {
 		other.commandPool = vk::CommandPool();
 		other.commandBuffer = vk::CommandBuffer();
 		other.presentCmdBuf = vk::CommandBuffer();
+		other.barrierCmdBuf    = vk::CommandBuffer();
 		other.outstanding      = false;
 		other.lastFrameNum     = 0;
 		other.usedRingBufPtr   = 0;
@@ -857,6 +861,10 @@ struct Frame {
 		assert(!presentCmdBuf);
 		presentCmdBuf       = other.presentCmdBuf;
 		other.presentCmdBuf = vk::CommandBuffer();
+
+		assert(!barrierCmdBuf);
+		barrierCmdBuf       = other.barrierCmdBuf;
+		other.barrierCmdBuf = vk::CommandBuffer();
 
 		assert(ephemeralBuffers.empty());
 		ephemeralBuffers = std::move(other.ephemeralBuffers);
