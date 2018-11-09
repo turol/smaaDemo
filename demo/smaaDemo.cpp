@@ -1047,6 +1047,7 @@ void SMAADemo::initRender() {
 	desc.tracing              = tracing;
 	desc.skipShaderCache      = noShaderCache;
 	desc.optimizeShaders      = !noShaderOpt;
+	desc.transferQueue        = !noTransferQueue;
 	desc.swapchain.fullscreen = fullscreen;
 	desc.swapchain.width      = windowWidth;
 	desc.swapchain.height     = windowHeight;
