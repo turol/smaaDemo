@@ -909,16 +909,22 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	vk::BufferMemoryBarrier barrier;
 	barrier.srcAccessMask       = vk::AccessFlagBits::eTransferWrite;
 	barrier.dstAccessMask       = vk::AccessFlagBits::eMemoryRead;
+	if (transferQueueIndex != graphicsQueueIndex) {
 	barrier.srcQueueFamilyIndex = transferQueueIndex;
 	barrier.dstQueueFamilyIndex = graphicsQueueIndex;
+	} else {
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	}
 	barrier.buffer              = buffer.buffer;
 	barrier.offset              = 0;
 	barrier.size                = size;
 
 	op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTopOfPipe, vk::DependencyFlags(), {}, { barrier }, {});
 
-	// TODO: should only do this when transferQueueIndex != graphicsQueueIndex
+	if (transferQueueIndex != graphicsQueueIndex) {
 	op.bufferAcquireBarriers.push_back(barrier);
+	}
 
 	submitUploadOp(std::move(op));
 
@@ -1779,13 +1785,19 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		barrier.dstAccessMask       = vk::AccessFlagBits::eMemoryRead;
 		barrier.oldLayout           = vk::ImageLayout::eTransferDstOptimal;
 		barrier.newLayout           = vk::ImageLayout::eShaderReadOnlyOptimal;
+		if (transferQueueIndex != graphicsQueueIndex) {
 		barrier.srcQueueFamilyIndex = transferQueueIndex;
 		barrier.dstQueueFamilyIndex = graphicsQueueIndex;
+		} else {
+			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		}
 
 		op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTopOfPipe, vk::DependencyFlags(), {}, {}, { barrier });
 
-		// TODO: should only do this when transferQueueIndex != graphicsQueueIndex
+	if (transferQueueIndex != graphicsQueueIndex) {
 		op.imageAcquireBarriers.push_back(barrier);
+	}
 	}
 
 	submitUploadOp(std::move(op));
