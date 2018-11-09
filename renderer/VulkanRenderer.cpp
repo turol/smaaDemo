@@ -1780,6 +1780,9 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		barrier.dstQueueFamilyIndex = graphicsQueueIndex;
 
 		op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTopOfPipe, vk::DependencyFlags(), {}, {}, { barrier });
+
+		// TODO: should only do this when transferQueueIndex != graphicsQueueIndex
+		op.acquireBarriers.push_back(barrier);
 	}
 
 	submitUploadOp(std::move(op));
