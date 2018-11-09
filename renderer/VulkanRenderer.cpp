@@ -474,26 +474,26 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	// get a transfer queue if there is one
 	transferQueueIndex          = graphicsQueueIndex;
 	if (desc.transferQueue) {
-	uint32_t currentFlags       = static_cast<uint32_t>(queueProps[graphicsQueueIndex].queueFlags);
-	for (uint32_t i = 0; i < queueProps.size(); i++) {
-		// never the same as graphics queue
-		if (i == graphicsQueueIndex) {
-			continue;
-		}
+		uint32_t currentFlags       = static_cast<uint32_t>(queueProps[graphicsQueueIndex].queueFlags);
+		for (uint32_t i = 0; i < queueProps.size(); i++) {
+			// never the same as graphics queue
+			if (i == graphicsQueueIndex) {
+				continue;
+			}
 
-		const auto &q = queueProps.at(i);
-		if (!(q.queueFlags & vk::QueueFlagBits::eTransfer)) {
-			// no transfer in this queue
-			continue;
-		}
+			const auto &q = queueProps.at(i);
+			if (!(q.queueFlags & vk::QueueFlagBits::eTransfer)) {
+				// no transfer in this queue
+				continue;
+			}
 
-		// is it a smaller set of flags than the currently chosen queue?
-		// TODO: slight abuse of comparison here, should compare count of set bits
-		if (static_cast<uint32_t>(q.queueFlags) < currentFlags) {
-			transferQueueIndex = i;
-			currentFlags       = static_cast<uint32_t>(q.queueFlags);
+			// is it a smaller set of flags than the currently chosen queue?
+			// TODO: slight abuse of comparison here, should compare count of set bits
+			if (static_cast<uint32_t>(q.queueFlags) < currentFlags) {
+				transferQueueIndex = i;
+				currentFlags       = static_cast<uint32_t>(q.queueFlags);
+			}
 		}
-	}
 	}
 
 	if (transferQueueIndex != graphicsQueueIndex) {
@@ -912,8 +912,8 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	barrier.srcAccessMask       = vk::AccessFlagBits::eTransferWrite;
 	barrier.dstAccessMask       = vk::AccessFlagBits::eMemoryRead;
 	if (transferQueueIndex != graphicsQueueIndex) {
-	barrier.srcQueueFamilyIndex = transferQueueIndex;
-	barrier.dstQueueFamilyIndex = graphicsQueueIndex;
+		barrier.srcQueueFamilyIndex = transferQueueIndex;
+		barrier.dstQueueFamilyIndex = graphicsQueueIndex;
 	} else {
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -925,7 +925,7 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTopOfPipe, vk::DependencyFlags(), {}, { barrier }, {});
 
 	if (transferQueueIndex != graphicsQueueIndex) {
-	op.bufferAcquireBarriers.push_back(barrier);
+		op.bufferAcquireBarriers.push_back(barrier);
 	}
 
 	submitUploadOp(std::move(op));
@@ -1788,8 +1788,8 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		barrier.oldLayout           = vk::ImageLayout::eTransferDstOptimal;
 		barrier.newLayout           = vk::ImageLayout::eShaderReadOnlyOptimal;
 		if (transferQueueIndex != graphicsQueueIndex) {
-		barrier.srcQueueFamilyIndex = transferQueueIndex;
-		barrier.dstQueueFamilyIndex = graphicsQueueIndex;
+			barrier.srcQueueFamilyIndex = transferQueueIndex;
+			barrier.dstQueueFamilyIndex = graphicsQueueIndex;
 		} else {
 			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -1797,9 +1797,9 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 
 		op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTopOfPipe, vk::DependencyFlags(), {}, {}, { barrier });
 
-	if (transferQueueIndex != graphicsQueueIndex) {
-		op.imageAcquireBarriers.push_back(barrier);
-	}
+		if (transferQueueIndex != graphicsQueueIndex) {
+			op.imageAcquireBarriers.push_back(barrier);
+		}
 	}
 
 	submitUploadOp(std::move(op));
