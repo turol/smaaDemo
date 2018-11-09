@@ -2338,6 +2338,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	submit.pCommandBuffers      = &currentCommandBuffer;
 	std::vector<vk::Semaphore>          uploadSemaphores;
 	std::vector<vk::PipelineStageFlags> semWaitMasks;
+	std::vector<vk::ImageMemoryBarrier> acquireBarriers;
 	if (!uploads.empty()) {
 		LOG("%u uploads pending\n", static_cast<unsigned int>(uploads.size()));
 
@@ -2347,7 +2348,15 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 		for (auto &op : uploads) {
 			uploadSemaphores.push_back(op.semaphore);
 			semWaitMasks.push_back(op.semWaitMask);
+
+			acquireBarriers.insert(acquireBarriers.end()
+			                     , op.acquireBarriers.begin()
+			                     , op.acquireBarriers.end());
 		}
+		LOG("Gathered %u acquire barriers from %u upload ops\n"
+		   , static_cast<unsigned int >(acquireBarriers.size())
+		   , static_cast<unsigned int >(uploads.size()));
+
 		submit.waitSemaphoreCount   = uploadSemaphores.size();
 		submit.pWaitSemaphores      = uploadSemaphores.data();
 		submit.pWaitDstStageMask    = semWaitMasks.data();
