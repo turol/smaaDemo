@@ -681,7 +681,7 @@ struct UploadOp {
 	vk::Buffer              stagingBuffer;
 	VmaAllocation           memory;
 	VmaAllocationInfo       allocationInfo;
-	std::vector<vk::ImageMemoryBarrier> acquireBarriers;
+	std::vector<vk::ImageMemoryBarrier> imageAcquireBarriers;
 	bool                    coherent;
 
 
@@ -713,7 +713,7 @@ struct UploadOp {
 	, stagingBuffer(other.stagingBuffer)
 	, memory(other.memory)
 	, allocationInfo(other.allocationInfo)
-		, acquireBarriers(std::move(other.acquireBarriers))
+	, imageAcquireBarriers(std::move(other.imageAcquireBarriers))
 	, coherent(other.coherent)
 	{
 		other.cmdBuf        = vk::CommandBuffer();
@@ -721,7 +721,7 @@ struct UploadOp {
 		other.semWaitMask   = vk::PipelineStageFlags();
 		other.stagingBuffer = vk::Buffer();
 		other.memory        = VK_NULL_HANDLE;
-		assert(other.acquireBarriers.empty());
+		assert(other.imageAcquireBarriers.empty());
 		other.coherent      = false;
 	}
 
@@ -736,7 +736,7 @@ struct UploadOp {
 		assert(!semWaitMask);
 		assert(!stagingBuffer);
 		assert(!memory);
-		assert(acquireBarriers.empty());
+		assert(imageAcquireBarriers.empty());
 		assert(!coherent);
 
 		cmdBuf              = other.cmdBuf;
@@ -754,8 +754,8 @@ struct UploadOp {
 		memory              = other.memory;
 		other.memory        = VK_NULL_HANDLE;
 
-		acquireBarriers     = std::move(other.acquireBarriers);
-		assert(other.acquireBarriers.empty());
+		imageAcquireBarriers     = std::move(other.imageAcquireBarriers);
+		assert(other.imageAcquireBarriers.empty());
 
 		coherent            = other.coherent;
 		other.coherent      = false;

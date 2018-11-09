@@ -1782,7 +1782,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTopOfPipe, vk::DependencyFlags(), {}, {}, { barrier });
 
 		// TODO: should only do this when transferQueueIndex != graphicsQueueIndex
-		op.acquireBarriers.push_back(barrier);
+		op.imageAcquireBarriers.push_back(barrier);
 	}
 
 	submitUploadOp(std::move(op));
@@ -2343,7 +2343,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 
 	std::vector<vk::Semaphore>          uploadSemaphores;
 	std::vector<vk::PipelineStageFlags> semWaitMasks;
-	std::vector<vk::ImageMemoryBarrier> acquireBarriers;
+	std::vector<vk::ImageMemoryBarrier> imageAcquireBarriers;
 	if (!uploads.empty()) {
 		LOG("%u uploads pending\n", static_cast<unsigned int>(uploads.size()));
 
@@ -2354,23 +2354,23 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 			uploadSemaphores.push_back(op.semaphore);
 			semWaitMasks.push_back(op.semWaitMask);
 
-			acquireBarriers.insert(acquireBarriers.end()
-			                     , op.acquireBarriers.begin()
-			                     , op.acquireBarriers.end());
+			imageAcquireBarriers.insert(imageAcquireBarriers.end()
+			                          , op.imageAcquireBarriers.begin()
+			                          , op.imageAcquireBarriers.end());
 		}
-		LOG("Gathered %u acquire barriers from %u upload ops\n"
-		   , static_cast<unsigned int >(acquireBarriers.size())
+		LOG("Gathered %u image acquire barriers from %u upload ops\n"
+		   , static_cast<unsigned int >(imageAcquireBarriers.size())
 		   , static_cast<unsigned int >(uploads.size()));
 
 		submit.waitSemaphoreCount   = uploadSemaphores.size();
 		submit.pWaitSemaphores      = uploadSemaphores.data();
 		submit.pWaitDstStageMask    = semWaitMasks.data();
 
-		if (!acquireBarriers.empty()) {
+		if (!imageAcquireBarriers.empty()) {
 			LOG("submitting acquire barriers\n");
 			auto barrierCmdBuf = frame.barrierCmdBuf;
 			barrierCmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
-			barrierCmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTopOfPipe, vk::DependencyFlags(), {}, {}, acquireBarriers);
+			barrierCmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTopOfPipe, vk::DependencyFlags(), {}, {}, imageAcquireBarriers);
 			barrierCmdBuf.end();
 
 			submitBuffers[0] = barrierCmdBuf;
