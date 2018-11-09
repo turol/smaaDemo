@@ -396,6 +396,7 @@ class SMAADemo {
 	bool            tracing;
 	bool            noShaderCache;
 	bool            noShaderOpt;
+	bool            noTransferQueue;
 	std::vector<std::string> imageFiles;
 
 	// global window things
@@ -578,6 +579,7 @@ SMAADemo::SMAADemo()
 , tracing(false)
 , noShaderCache(false)
 , noShaderOpt(false)
+, noTransferQueue(false)
 
 , windowWidth(1280)
 , windowHeight(720)
@@ -791,6 +793,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::SwitchArg                       noOptSwitch("",        "noopt",      "Don't optimize shaders",        cmd, false);
 		TCLAP::SwitchArg                       fullscreenSwitch("f",  "fullscreen", "Start in fullscreen mode",      cmd, false);
 		TCLAP::SwitchArg                       noVsyncSwitch("",      "novsync",    "Disable vsync",                 cmd, false);
+		TCLAP::SwitchArg                       noTransferQSwitch("",  "no-transfer-queue", "Disable transfer queue", cmd, false);
 
 		TCLAP::ValueArg<unsigned int>          windowWidthSwitch("",  "width",      "Window width",  false, windowWidth,  "width",  cmd);
 		TCLAP::ValueArg<unsigned int>          windowHeightSwitch("", "height",     "Window height", false, windowHeight, "height", cmd);
@@ -808,6 +811,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		tracing       = tracingSwitch.getValue();
 		noShaderCache = noCacheSwitch.getValue();
 		noShaderOpt   = noOptSwitch.getValue();
+		noTransferQueue = noTransferQSwitch.getValue();
 		fullscreen    = fullscreenSwitch.getValue();
 		windowWidth   = windowWidthSwitch.getValue();
 		windowHeight  = windowHeightSwitch.getValue();
