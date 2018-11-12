@@ -391,121 +391,121 @@ struct SMAAPipelines {
 
 
 class SMAADemo {
-	RendererDesc rendererDesc;
+	RendererDesc                                      rendererDesc;
 
 	// command line things
-	std::vector<std::string> imageFiles;
+	std::vector<std::string>                          imageFiles;
 
-	bool            recreateSwapchain;
-	bool            recreateFramebuffers;
-	bool keepGoing;
+	bool                                              recreateSwapchain;
+	bool                                              recreateFramebuffers;
+	bool                                              keepGoing;
 
 	// aa things
-	bool antialiasing;
-	AAMethod aaMethod;
-	bool          temporalAA;
-	bool          temporalAAFirstFrame;
-	unsigned int  temporalFrame;
-	bool          temporalReproject;
-	float         reprojectionWeightScale;
+	bool                                              antialiasing;
+	AAMethod                                          aaMethod;
+	bool                                              temporalAA;
+	bool                                              temporalAAFirstFrame;
+	unsigned int                                      temporalFrame;
+	bool                                              temporalReproject;
+	float                                             reprojectionWeightScale;
 	// number of samples in current scene fb
 	// 1 or 2 if SMAA
 	// 2.. if MSAA
-	unsigned int  numSamples;
-	unsigned int  debugMode;
-	unsigned int  colorMode;
-	unsigned int  fxaaQuality;
-	unsigned int  msaaQuality;
-	unsigned int  maxMSAAQuality;
-	SMAAKey       smaaKey;
-	ShaderDefines::SMAAParameters  smaaParameters;
+	unsigned int                                      numSamples;
+	unsigned int                                      debugMode;
+	unsigned int                                      colorMode;
+	unsigned int                                      fxaaQuality;
+	unsigned int                                      msaaQuality;
+	unsigned int                                      maxMSAAQuality;
+	SMAAKey                                           smaaKey;
+	ShaderDefines::SMAAParameters                     smaaParameters;
 
-	float         predicationThreshold;
-	float         predicationScale;
-	float         predicationStrength;
+	float                                             predicationThreshold;
+	float                                             predicationScale;
+	float                                             predicationStrength;
 
 	// timing things
-	bool            fpsLimitActive;
-	uint32_t        fpsLimit;
-	uint64_t        sleepFudge;
-	uint64_t      tickBase;
-	uint64_t      lastTime;
-	uint64_t      freqMult;
-	uint64_t      freqDiv;
+	bool                                              fpsLimitActive;
+	uint32_t                                          fpsLimit;
+	uint64_t                                          sleepFudge;
+	uint64_t                                          tickBase;
+	uint64_t                                          lastTime;
+	uint64_t                                          freqMult;
+	uint64_t                                          freqDiv;
 
 	// scene things
 	// 0 for cubes
 	// 1.. for images
-	unsigned int  activeScene;
-	unsigned int cubesPerSide;
-	bool          rotateCubes;
-	bool          visualizeCubeOrder;
-	unsigned int  cubeOrderNum;
-	float         cameraRotation;
-	float         cameraDistance;
-	uint64_t      rotationTime;
-	unsigned int  rotationPeriodSeconds;
-	RandomGen     random;
-	std::vector<Image> images;
-	std::vector<ShaderDefines::Cube> cubes;
+	unsigned int                                      activeScene;
+	unsigned int                                      cubesPerSide;
+	bool                                              rotateCubes;
+	bool                                              visualizeCubeOrder;
+	unsigned int                                      cubeOrderNum;
+	float                                             cameraRotation;
+	float                                             cameraDistance;
+	uint64_t                                          rotationTime;
+	unsigned int                                      rotationPeriodSeconds;
+	RandomGen                                         random;
+	std::vector<Image>                                images;
+	std::vector<ShaderDefines::Cube>                  cubes;
 
-	glm::mat4 currViewProj;
-	glm::mat4 prevViewProj;
+	glm::mat4                                         currViewProj;
+	glm::mat4                                         prevViewProj;
 
-	Renderer        renderer;
-	Format          depthFormat;
+	Renderer                                          renderer;
+	Format                                            depthFormat;
 
-	std::unordered_map<uint32_t, PipelineHandle>  cubePipelines;
-	PipelineHandle     imagePipeline;
-	PipelineHandle     blitPipeline;
-	PipelineHandle     guiPipeline;
-	PipelineHandle                                separatePipeline;
-	std::array<PipelineHandle, 2>                 temporalAAPipelines;
+	std::unordered_map<uint32_t, PipelineHandle>      cubePipelines;
+	PipelineHandle                                    imagePipeline;
+	PipelineHandle                                    blitPipeline;
+	PipelineHandle                                    guiPipeline;
+	PipelineHandle                                    separatePipeline;
+	std::array<PipelineHandle, 2>                     temporalAAPipelines;
 
-	RenderTargetHandle mainColorRT;
-	RenderTargetHandle mainDepthRT;
-	RenderTargetHandle velocityRT;
-	RenderTargetHandle edgesRT;
-	RenderTargetHandle blendWeightsRT;
-	RenderTargetHandle finalRenderRT;
-	std::array<RenderTargetHandle, 2>  resolveRTs;
+	RenderTargetHandle                                mainColorRT;
+	RenderTargetHandle                                mainDepthRT;
+	RenderTargetHandle                                velocityRT;
+	RenderTargetHandle                                edgesRT;
+	RenderTargetHandle                                blendWeightsRT;
+	RenderTargetHandle                                finalRenderRT;
+	std::array<RenderTargetHandle, 2>                 resolveRTs;
 
-	std::array<RenderTargetHandle, 2>  subsampleRTs;
-	FramebufferHandle                  separateFB;
+	std::array<RenderTargetHandle, 2>                 subsampleRTs;
+	FramebufferHandle                                 separateFB;
 
 	std::unordered_map<SceneRPKey, RenderPassHandle>  sceneRenderPasses;
-	FramebufferHandle  sceneFramebuffer;
-	std::array<RenderPassHandle, 2>  fxaaRenderPass;
-	RenderPassHandle   finalRenderPass;
-	RenderPassHandle   separateRenderPass;
-	RenderPassHandle   smaaBlendRenderPass;  // for temporal aa, otherwise it's part of final render pass
-	std::array<RenderPassHandle, 2>   smaa2XBlendRenderPasses;
-	RenderPassHandle   guiOnlyRenderPass;
-	FramebufferHandle  finalFramebuffer;
-	std::array<FramebufferHandle, 2>  resolveFBs;
+	FramebufferHandle                                 sceneFramebuffer;
+	std::array<RenderPassHandle, 2>                   fxaaRenderPass;
+	RenderPassHandle                                  finalRenderPass;
+	RenderPassHandle                                  separateRenderPass;
+	RenderPassHandle                                  smaaBlendRenderPass;  // for temporal aa, otherwise it's part of final render pass
+	std::array<RenderPassHandle, 2>                   smaa2XBlendRenderPasses;
+	RenderPassHandle                                  guiOnlyRenderPass;
+	FramebufferHandle                                 finalFramebuffer;
+	std::array<FramebufferHandle, 2>                  resolveFBs;
 
-	BufferHandle       cubeVBO;
-	BufferHandle       cubeIBO;
+	BufferHandle                                      cubeVBO;
+	BufferHandle                                      cubeIBO;
 
-	SamplerHandle      linearSampler;
-	SamplerHandle      nearestSampler;
+	SamplerHandle                                     linearSampler;
+	SamplerHandle                                     nearestSampler;
 
-	std::unordered_map<FXAAKey, PipelineHandle> fxaaPipelines;
-	std::unordered_map<SMAAKey, SMAAPipelines>  smaaPipelines;
-	FramebufferHandle                           smaaEdgesFramebuffer;
-	FramebufferHandle                           smaaWeightsFramebuffer;
-	RenderPassHandle                            smaaEdgesRenderPass;
-	RenderPassHandle                            smaaWeightsRenderPass;
-	TextureHandle                               areaTex;
-	TextureHandle                               searchTex;
+	std::unordered_map<FXAAKey, PipelineHandle>       fxaaPipelines;
+	std::unordered_map<SMAAKey, SMAAPipelines>        smaaPipelines;
+	FramebufferHandle                                 smaaEdgesFramebuffer;
+	FramebufferHandle                                 smaaWeightsFramebuffer;
+	RenderPassHandle                                  smaaEdgesRenderPass;
+	RenderPassHandle                                  smaaWeightsRenderPass;
+	TextureHandle                                     areaTex;
+	TextureHandle                                     searchTex;
 
 	// gui / input things
-	TextureHandle imguiFontsTex;
-	ImGuiContext *imGuiContext;
-	bool          textInputActive;
-	bool          rightShift, leftShift;
-	char          imageFileName[inputTextBufferSize];
-	char          clipboardText[inputTextBufferSize];
+	TextureHandle                                     imguiFontsTex;
+	ImGuiContext                                      *imGuiContext;
+	bool                                              textInputActive;
+	bool                                              rightShift, leftShift;
+	char                                              imageFileName[inputTextBufferSize];
+	char                                              clipboardText[inputTextBufferSize];
 
 
 	SMAADemo(const SMAADemo &) = delete;
@@ -789,15 +789,15 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 
 		cmd.parse(argc, argv);
 
-		rendererDesc.debug   = debugSwitch.getValue();
-		rendererDesc.tracing         = tracingSwitch.getValue();
-		rendererDesc.skipShaderCache = noCacheSwitch.getValue();
-		rendererDesc.optimizeShaders = !noOptSwitch.getValue();
-		rendererDesc.transferQueue = !noTransferQSwitch.getValue();
-		rendererDesc.swapchain.fullscreen    = fullscreenSwitch.getValue();
-		rendererDesc.swapchain.width   = windowWidthSwitch.getValue();
-		rendererDesc.swapchain.height  = windowHeightSwitch.getValue();
-		rendererDesc.swapchain.vsync         = noVsyncSwitch.getValue() ? VSync::Off : VSync::On;
+		rendererDesc.debug                 = debugSwitch.getValue();
+		rendererDesc.tracing               = tracingSwitch.getValue();
+		rendererDesc.skipShaderCache       = noCacheSwitch.getValue();
+		rendererDesc.optimizeShaders       = !noOptSwitch.getValue();
+		rendererDesc.transferQueue         = !noTransferQSwitch.getValue();
+		rendererDesc.swapchain.fullscreen  = fullscreenSwitch.getValue();
+		rendererDesc.swapchain.width       = windowWidthSwitch.getValue();
+		rendererDesc.swapchain.height      = windowHeightSwitch.getValue();
+		rendererDesc.swapchain.vsync       = noVsyncSwitch.getValue() ? VSync::Off : VSync::On;
 
 		unsigned int r = rotateSwitch.getValue();
 		if (r != 0) {
