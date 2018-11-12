@@ -396,7 +396,6 @@ class SMAADemo {
 	// command line things
 	bool            tracing;
 	bool            noShaderCache;
-	bool            noShaderOpt;
 	std::vector<std::string> imageFiles;
 
 	// global window things
@@ -577,7 +576,6 @@ public:
 SMAADemo::SMAADemo()
 : tracing(false)
 , noShaderCache(false)
-, noShaderOpt(false)
 
 , windowWidth(1280)
 , windowHeight(720)
@@ -808,7 +806,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		rendererDesc.debug   = debugSwitch.getValue();
 		tracing       = tracingSwitch.getValue();
 		noShaderCache = noCacheSwitch.getValue();
-		noShaderOpt   = noOptSwitch.getValue();
+		rendererDesc.optimizeShaders = !noOptSwitch.getValue();
 		rendererDesc.transferQueue = !noTransferQSwitch.getValue();
 		fullscreen    = fullscreenSwitch.getValue();
 		windowWidth   = windowWidthSwitch.getValue();
@@ -1042,7 +1040,6 @@ static const std::array<Format, numDepths> depths
 void SMAADemo::initRender() {
 	rendererDesc.tracing              = tracing;
 	rendererDesc.skipShaderCache      = noShaderCache;
-	rendererDesc.optimizeShaders      = !noShaderOpt;
 	rendererDesc.swapchain.fullscreen = fullscreen;
 	rendererDesc.swapchain.width      = windowWidth;
 	rendererDesc.swapchain.height     = windowHeight;
