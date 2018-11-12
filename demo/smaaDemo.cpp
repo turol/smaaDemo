@@ -391,6 +391,8 @@ struct SMAAPipelines {
 
 
 class SMAADemo {
+	RendererDesc rendererDesc;
+
 	// command line things
 	bool            renderDebug;
 	bool            tracing;
@@ -1042,7 +1044,6 @@ static const std::array<Format, numDepths> depths
 
 
 void SMAADemo::initRender() {
-	RendererDesc rendererDesc;
 	rendererDesc.debug                = renderDebug;
 	rendererDesc.tracing              = tracing;
 	rendererDesc.skipShaderCache      = noShaderCache;
