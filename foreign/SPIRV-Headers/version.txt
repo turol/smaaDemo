@@ -1,5 +1,8 @@
-commit dcf23bdabacc3c54b83b1f9367e7a8adb27f8d87
-Author: John Kessenich <cepheus@frii.com>
-Date:   Thu Sep 6 11:10:32 2018 -0600
+commit a2c529b5dda18838ab4b52f816acfebd774eaab3
+Merge: 801cca8 5bf501a
+Author: John Kessenich <johnkslang@users.noreply.github.com>
+Date:   Wed Oct 24 17:21:57 2018 -0600
 
-    Headers for revision 4 of SPIR-V 1.3, including SPV_KHR_vulkan_memory_model.
+    Merge pull request #80 from alelenv/nv-raytracing-final
+    
+    Add support for nv-raytracing-final
