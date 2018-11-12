@@ -396,7 +396,6 @@ class SMAADemo {
 	// command line things
 	std::vector<std::string> imageFiles;
 
-	unsigned int    numFrames;
 	bool            recreateSwapchain;
 	bool            recreateFramebuffers;
 	bool keepGoing;
@@ -567,8 +566,7 @@ public:
 
 
 SMAADemo::SMAADemo()
-: numFrames(3)
-, recreateSwapchain(false)
+: recreateSwapchain(false)
 , recreateFramebuffers(false)
 , keepGoing(true)
 
@@ -2112,8 +2110,6 @@ void SMAADemo::mainLoopIteration() {
 
 void SMAADemo::render() {
 	if (recreateSwapchain) {
-		rendererDesc.swapchain.numFrames  = numFrames;
-
 		renderer.setSwapchainDesc(rendererDesc.swapchain);
 	}
 
@@ -2769,10 +2765,10 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 				rendererDesc.swapchain.vsync = static_cast<VSync>(vsyncTemp);
 			}
 
-			int n = numFrames;
+			int n = rendererDesc.swapchain.numFrames;
 			// TODO: ask Renderer for the limits
 			if (ImGui::SliderInt("frames ahead", &n, 1, 16)) {
-				numFrames = n;
+				rendererDesc.swapchain.numFrames = n;
 				recreateSwapchain = true;
 			}
 
