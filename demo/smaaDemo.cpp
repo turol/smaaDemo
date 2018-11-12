@@ -396,9 +396,6 @@ class SMAADemo {
 	// command line things
 	std::vector<std::string> imageFiles;
 
-	// global window things
-	unsigned int    windowWidth, windowHeight;
-
 	unsigned int    numFrames;
 	bool            recreateSwapchain;
 	bool            recreateFramebuffers;
@@ -570,10 +567,7 @@ public:
 
 
 SMAADemo::SMAADemo()
-: windowWidth(1280)
-, windowHeight(720)
-
-, numFrames(3)
+: numFrames(3)
 , recreateSwapchain(false)
 , recreateFramebuffers(false)
 , keepGoing(true)
@@ -621,6 +615,9 @@ SMAADemo::SMAADemo()
 , rightShift(false)
 , leftShift(false)
 {
+	rendererDesc.swapchain.width  = 1280;
+	rendererDesc.swapchain.height = 720;
+
 	smaaKey.quality = maxSMAAQuality - 1;
 	smaaParameters  = defaultSMAAParameters[smaaKey.quality];
 
@@ -782,8 +779,8 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::SwitchArg                       noVsyncSwitch("",      "novsync",    "Disable vsync",                 cmd, false);
 		TCLAP::SwitchArg                       noTransferQSwitch("",  "no-transfer-queue", "Disable transfer queue", cmd, false);
 
-		TCLAP::ValueArg<unsigned int>          windowWidthSwitch("",  "width",      "Window width",  false, windowWidth,  "width",  cmd);
-		TCLAP::ValueArg<unsigned int>          windowHeightSwitch("", "height",     "Window height", false, windowHeight, "height", cmd);
+		TCLAP::ValueArg<unsigned int>          windowWidthSwitch("",  "width",      "Window width",  false, rendererDesc.swapchain.width,  "width",  cmd);
+		TCLAP::ValueArg<unsigned int>          windowHeightSwitch("", "height",     "Window height", false, rendererDesc.swapchain.height, "height", cmd);
 
 		TCLAP::ValueArg<unsigned int>          rotateSwitch("",       "rotate",     "Rotation period", false, 0,          "seconds", cmd);
 
@@ -800,8 +797,8 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		rendererDesc.optimizeShaders = !noOptSwitch.getValue();
 		rendererDesc.transferQueue = !noTransferQSwitch.getValue();
 		rendererDesc.swapchain.fullscreen    = fullscreenSwitch.getValue();
-		windowWidth   = windowWidthSwitch.getValue();
-		windowHeight  = windowHeightSwitch.getValue();
+		rendererDesc.swapchain.width   = windowWidthSwitch.getValue();
+		rendererDesc.swapchain.height  = windowHeightSwitch.getValue();
 		rendererDesc.swapchain.vsync         = noVsyncSwitch.getValue() ? VSync::Off : VSync::On;
 
 		unsigned int r = rotateSwitch.getValue();
@@ -1029,9 +1026,6 @@ static const std::array<Format, numDepths> depths
 
 
 void SMAADemo::initRender() {
-	rendererDesc.swapchain.width      = windowWidth;
-	rendererDesc.swapchain.height     = windowHeight;
-
 	renderer = Renderer::createRenderer(rendererDesc);
 	const auto &features = renderer.getFeatures();
 	LOG("Max MSAA samples: %u\n",  features.maxMSAASamples);
@@ -1543,6 +1537,9 @@ void SMAADemo::createFramebuffers() {
 		numSamples = 1;
 	}
 
+	const unsigned int windowWidth  = rendererDesc.swapchain.width;
+	const unsigned int windowHeight = rendererDesc.swapchain.height;
+
 	{
 		RenderTargetDesc rtDesc;
 		rtDesc.name("main color")
@@ -2051,8 +2048,8 @@ void SMAADemo::mainLoopIteration() {
 			switch (event.window.event) {
 			case SDL_WINDOWEVENT_SIZE_CHANGED:
 			case SDL_WINDOWEVENT_RESIZED:
-				windowWidth  = event.window.data1;
-				windowHeight = event.window.data2;
+				rendererDesc.swapchain.width  = event.window.data1;
+				rendererDesc.swapchain.height = event.window.data2;
 				recreateSwapchain = true;
 				break;
 			default:
@@ -2116,8 +2113,6 @@ void SMAADemo::mainLoopIteration() {
 void SMAADemo::render() {
 	if (recreateSwapchain) {
 		rendererDesc.swapchain.numFrames  = numFrames;
-		rendererDesc.swapchain.width      = windowWidth;
-		rendererDesc.swapchain.height     = windowHeight;
 
 		renderer.setSwapchainDesc(rendererDesc.swapchain);
 	}
@@ -2145,11 +2140,14 @@ void SMAADemo::render() {
 
 		glm::uvec2 size = renderer.getDrawableSize();
 		LOG("drawable size: %ux%u\n", size.x, size.y);
-		windowWidth  = size.x;
-		windowHeight = size.y;
+		rendererDesc.swapchain.width  = size.x;
+		rendererDesc.swapchain.height = size.y;
 
 		createFramebuffers();
 	}
+
+	const unsigned int windowWidth  = rendererDesc.swapchain.width;
+	const unsigned int windowHeight = rendererDesc.swapchain.height;
 
 	ShaderDefines::Globals globals;
 	globals.screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
@@ -2502,6 +2500,9 @@ void SMAADemo::doTemporalAA() {
 
 
 void SMAADemo::drawGUI(uint64_t elapsed) {
+	const unsigned int windowWidth  = rendererDesc.swapchain.width;
+	const unsigned int windowHeight = rendererDesc.swapchain.height;
+
 	ImGuiIO& io    = ImGui::GetIO();
 	io.DeltaTime   = float(double(elapsed) / double(1000000000ULL));
 	io.DisplaySize = ImVec2(static_cast<float>(windowWidth), static_cast<float>(windowHeight));
