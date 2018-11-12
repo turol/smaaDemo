@@ -1042,18 +1042,18 @@ static const std::array<Format, numDepths> depths
 
 
 void SMAADemo::initRender() {
-	RendererDesc desc;
-	desc.debug                = renderDebug;
-	desc.tracing              = tracing;
-	desc.skipShaderCache      = noShaderCache;
-	desc.optimizeShaders      = !noShaderOpt;
-	desc.transferQueue        = !noTransferQueue;
-	desc.swapchain.fullscreen = fullscreen;
-	desc.swapchain.width      = windowWidth;
-	desc.swapchain.height     = windowHeight;
-	desc.swapchain.vsync      = vsync;
+	RendererDesc rendererDesc;
+	rendererDesc.debug                = renderDebug;
+	rendererDesc.tracing              = tracing;
+	rendererDesc.skipShaderCache      = noShaderCache;
+	rendererDesc.optimizeShaders      = !noShaderOpt;
+	rendererDesc.transferQueue        = !noTransferQueue;
+	rendererDesc.swapchain.fullscreen = fullscreen;
+	rendererDesc.swapchain.width      = windowWidth;
+	rendererDesc.swapchain.height     = windowHeight;
+	rendererDesc.swapchain.vsync      = vsync;
 
-	renderer = Renderer::createRenderer(desc);
+	renderer = Renderer::createRenderer(rendererDesc);
 	const auto &features = renderer.getFeatures();
 	LOG("Max MSAA samples: %u\n",  features.maxMSAASamples);
 	LOG("sRGB frame buffer: %s\n", features.sRGBFramebuffer ? "yes" : "no");
@@ -2136,14 +2136,14 @@ void SMAADemo::mainLoopIteration() {
 
 void SMAADemo::render() {
 	if (recreateSwapchain) {
-		SwapchainDesc desc;
-		desc.fullscreen = fullscreen;
-		desc.numFrames  = numFrames;
-		desc.width      = windowWidth;
-		desc.height     = windowHeight;
-		desc.vsync      = vsync;
+		SwapchainDesc swapchainDesc;
+		swapchainDesc.fullscreen = fullscreen;
+		swapchainDesc.numFrames  = numFrames;
+		swapchainDesc.width      = windowWidth;
+		swapchainDesc.height     = windowHeight;
+		swapchainDesc.vsync      = vsync;
 
-		renderer.setSwapchainDesc(desc);
+		renderer.setSwapchainDesc(swapchainDesc);
 	}
 
 	uint64_t ticks   = getNanoseconds();
