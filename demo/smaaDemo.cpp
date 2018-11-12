@@ -394,7 +394,6 @@ class SMAADemo {
 	RendererDesc rendererDesc;
 
 	// command line things
-	bool            renderDebug;
 	bool            tracing;
 	bool            noShaderCache;
 	bool            noShaderOpt;
@@ -577,8 +576,7 @@ public:
 
 
 SMAADemo::SMAADemo()
-: renderDebug(false)
-, tracing(false)
+: tracing(false)
 , noShaderCache(false)
 , noShaderOpt(false)
 , noTransferQueue(false)
@@ -809,7 +807,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 
 		cmd.parse(argc, argv);
 
-		renderDebug   = debugSwitch.getValue();
+		rendererDesc.debug   = debugSwitch.getValue();
 		tracing       = tracingSwitch.getValue();
 		noShaderCache = noCacheSwitch.getValue();
 		noShaderOpt   = noOptSwitch.getValue();
@@ -1044,7 +1042,6 @@ static const std::array<Format, numDepths> depths
 
 
 void SMAADemo::initRender() {
-	rendererDesc.debug                = renderDebug;
 	rendererDesc.tracing              = tracing;
 	rendererDesc.skipShaderCache      = noShaderCache;
 	rendererDesc.optimizeShaders      = !noShaderOpt;
