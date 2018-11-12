@@ -399,7 +399,6 @@ class SMAADemo {
 	// global window things
 	unsigned int    windowWidth, windowHeight;
 	bool            fullscreen;
-	VSync           vsync;
 
 	unsigned int    numFrames;
 	bool            recreateSwapchain;
@@ -575,7 +574,6 @@ SMAADemo::SMAADemo()
 : windowWidth(1280)
 , windowHeight(720)
 , fullscreen(false)
-, vsync(VSync::On)
 
 , numFrames(3)
 , recreateSwapchain(false)
@@ -806,7 +804,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		fullscreen    = fullscreenSwitch.getValue();
 		windowWidth   = windowWidthSwitch.getValue();
 		windowHeight  = windowHeightSwitch.getValue();
-		vsync         = noVsyncSwitch.getValue() ? VSync::Off : VSync::On;
+		rendererDesc.swapchain.vsync         = noVsyncSwitch.getValue() ? VSync::Off : VSync::On;
 
 		unsigned int r = rotateSwitch.getValue();
 		if (r != 0) {
@@ -1036,7 +1034,6 @@ void SMAADemo::initRender() {
 	rendererDesc.swapchain.fullscreen = fullscreen;
 	rendererDesc.swapchain.width      = windowWidth;
 	rendererDesc.swapchain.height     = windowHeight;
-	rendererDesc.swapchain.vsync      = vsync;
 
 	renderer = Renderer::createRenderer(rendererDesc);
 	const auto &features = renderer.getFeatures();
@@ -1993,17 +1990,17 @@ void SMAADemo::mainLoopIteration() {
 				break;
 
 			case SDL_SCANCODE_V:
-				switch (vsync) {
+				switch (rendererDesc.swapchain.vsync) {
 				case VSync::On:
-					vsync = VSync::LateSwapTear;
+					rendererDesc.swapchain.vsync = VSync::LateSwapTear;
 					break;
 
 				case VSync::LateSwapTear:
-					vsync = VSync::Off;
+					rendererDesc.swapchain.vsync = VSync::Off;
 					break;
 
 				case VSync::Off:
-					vsync = VSync::On;
+					rendererDesc.swapchain.vsync = VSync::On;
 					break;
 				}
 				recreateSwapchain = true;
@@ -2125,7 +2122,6 @@ void SMAADemo::render() {
 		rendererDesc.swapchain.numFrames  = numFrames;
 		rendererDesc.swapchain.width      = windowWidth;
 		rendererDesc.swapchain.height     = windowHeight;
-		rendererDesc.swapchain.vsync      = vsync;
 
 		renderer.setSwapchainDesc(rendererDesc.swapchain);
 	}
@@ -2765,15 +2761,15 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		if (ImGui::CollapsingHeader("Swapchain properties", ImGuiTreeNodeFlags_DefaultOpen)) {
 			recreateSwapchain = ImGui::Checkbox("Fullscreen", &fullscreen);
 
-			int vsyncTemp = static_cast<int>(vsync);
+			int vsyncTemp = static_cast<int>(rendererDesc.swapchain.vsync);
 			ImGui::Text("V-Sync");
 			ImGui::RadioButton("Off",            &vsyncTemp, 0);
 			ImGui::RadioButton("On",             &vsyncTemp, 1);
 			ImGui::RadioButton("Late swap tear", &vsyncTemp, 2);
 
-			if (vsyncTemp != static_cast<int>(vsync)) {
+			if (vsyncTemp != static_cast<int>(rendererDesc.swapchain.vsync)) {
 				recreateSwapchain = true;
-				vsync             = static_cast<VSync>(vsyncTemp);
+				rendererDesc.swapchain.vsync = static_cast<VSync>(vsyncTemp);
 			}
 
 			int n = numFrames;
