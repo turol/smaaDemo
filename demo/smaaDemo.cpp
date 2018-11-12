@@ -413,7 +413,6 @@ class SMAADemo {
 	// 2.. if MSAA
 	unsigned int                                      numSamples;
 	unsigned int                                      debugMode;
-	unsigned int                                      colorMode;
 	unsigned int                                      fxaaQuality;
 	unsigned int                                      msaaQuality;
 	unsigned int                                      maxMSAAQuality;
@@ -438,6 +437,7 @@ class SMAADemo {
 	// 1.. for images
 	unsigned int                                      activeScene;
 	unsigned int                                      cubesPerSide;
+	unsigned int                                      colorMode;
 	bool                                              rotateCubes;
 	bool                                              visualizeCubeOrder;
 	unsigned int                                      cubeOrderNum;
@@ -579,7 +579,6 @@ SMAADemo::SMAADemo()
 , reprojectionWeightScale(30.0f)
 , numSamples(1)
 , debugMode(0)
-, colorMode(0)
 , fxaaQuality(maxFXAAQuality - 1)
 , msaaQuality(0)
 , maxMSAAQuality(1)
@@ -597,6 +596,7 @@ SMAADemo::SMAADemo()
 
 , activeScene(0)
 , cubesPerSide(8)
+, colorMode(0)
 , rotateCubes(false)
 , visualizeCubeOrder(false)
 , cubeOrderNum(1)
