@@ -397,7 +397,6 @@ class SMAADemo {
 	bool            tracing;
 	bool            noShaderCache;
 	bool            noShaderOpt;
-	bool            noTransferQueue;
 	std::vector<std::string> imageFiles;
 
 	// global window things
@@ -579,7 +578,6 @@ SMAADemo::SMAADemo()
 : tracing(false)
 , noShaderCache(false)
 , noShaderOpt(false)
-, noTransferQueue(false)
 
 , windowWidth(1280)
 , windowHeight(720)
@@ -811,7 +809,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		tracing       = tracingSwitch.getValue();
 		noShaderCache = noCacheSwitch.getValue();
 		noShaderOpt   = noOptSwitch.getValue();
-		noTransferQueue = noTransferQSwitch.getValue();
+		rendererDesc.transferQueue = !noTransferQSwitch.getValue();
 		fullscreen    = fullscreenSwitch.getValue();
 		windowWidth   = windowWidthSwitch.getValue();
 		windowHeight  = windowHeightSwitch.getValue();
@@ -1045,7 +1043,6 @@ void SMAADemo::initRender() {
 	rendererDesc.tracing              = tracing;
 	rendererDesc.skipShaderCache      = noShaderCache;
 	rendererDesc.optimizeShaders      = !noShaderOpt;
-	rendererDesc.transferQueue        = !noTransferQueue;
 	rendererDesc.swapchain.fullscreen = fullscreen;
 	rendererDesc.swapchain.width      = windowWidth;
 	rendererDesc.swapchain.height     = windowHeight;
