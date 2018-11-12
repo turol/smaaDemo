@@ -2121,14 +2121,13 @@ void SMAADemo::mainLoopIteration() {
 
 void SMAADemo::render() {
 	if (recreateSwapchain) {
-		SwapchainDesc swapchainDesc;
-		swapchainDesc.fullscreen = fullscreen;
-		swapchainDesc.numFrames  = numFrames;
-		swapchainDesc.width      = windowWidth;
-		swapchainDesc.height     = windowHeight;
-		swapchainDesc.vsync      = vsync;
+		rendererDesc.swapchain.fullscreen = fullscreen;
+		rendererDesc.swapchain.numFrames  = numFrames;
+		rendererDesc.swapchain.width      = windowWidth;
+		rendererDesc.swapchain.height     = windowHeight;
+		rendererDesc.swapchain.vsync      = vsync;
 
-		renderer.setSwapchainDesc(swapchainDesc);
+		renderer.setSwapchainDesc(rendererDesc.swapchain);
 	}
 
 	uint64_t ticks   = getNanoseconds();
