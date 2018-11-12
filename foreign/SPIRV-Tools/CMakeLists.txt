@@ -32,6 +32,7 @@ include(GNUInstallDirs)
 include(cmake/setup_build.cmake)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_CXX_STANDARD 11)
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
   add_definitions(-DSPIRV_LINUX)
@@ -138,6 +139,8 @@ function(spvtools_default_compile_options TARGET)
         target_compile_options(${TARGET} PRIVATE
           -fsanitize=${SPIRV_USE_SANITIZER})
       endif()
+      target_compile_options(${TARGET} PRIVATE
+         -ftemplate-depth=1024)
     else()
       target_compile_options(${TARGET} PRIVATE
          -Wno-missing-field-initializers)
@@ -209,11 +212,19 @@ if (${SPIRV_CHECK_CONTEXT})
   add_definitions(-DSPIRV_CHECK_CONTEXT)
 endif()
 
-add_subdirectory(external)
+# Precompiled header macro. Parameters are source file list and filename for pch cpp file.
+macro(spvtools_pch SRCS PCHPREFIX)
+  if(MSVC AND CMAKE_GENERATOR MATCHES "^Visual Studio")
+    set(PCH_NAME "$(IntDir)\\${PCHPREFIX}.pch")
+    # make source files use/depend on PCH_NAME
+    set_source_files_properties(${${SRCS}} PROPERTIES COMPILE_FLAGS "/Yu${PCHPREFIX}.h /FI${PCHPREFIX}.h /Fp${PCH_NAME} /Zm300" OBJECT_DEPENDS "${PCH_NAME}")
+    # make PCHPREFIX.cpp file compile and generate PCH_NAME
+    set_source_files_properties("${PCHPREFIX}.cpp" PROPERTIES COMPILE_FLAGS "/Yc${PCHPREFIX}.h /Fp${PCH_NAME} /Zm300" OBJECT_OUTPUTS "${PCH_NAME}")
+    list(APPEND ${SRCS} "${PCHPREFIX}.cpp")
+  endif()
+endmacro(spvtools_pch)
 
-if (TARGET effcee)
-  add_definitions(-DSPIRV_EFFCEE)
-endif()
+add_subdirectory(external)
 
 add_subdirectory(source)
 add_subdirectory(tools)

@@ -88,6 +88,7 @@ FILES:= \
 	strength_reduction_pass.cpp \
 	strip_debug_info_pass.cpp \
 	strip_reflect_info_pass.cpp \
+	struct_cfg_analysis.cpp \
 	type_manager.cpp \
 	types.cpp \
 	unify_const_pass.cpp \

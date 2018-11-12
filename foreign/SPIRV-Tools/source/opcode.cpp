@@ -324,6 +324,7 @@ int32_t spvOpcodeGeneratesType(SpvOp op) {
     case SpvOpTypePipe:
     case SpvOpTypePipeStorage:
     case SpvOpTypeNamedBarrier:
+    case SpvOpTypeAccelerationStructureNV:
       return true;
     default:
       // In particular, OpTypeForwardPointer does not generate a type,
@@ -390,10 +391,9 @@ bool spvOpcodeIsBranch(SpvOp opcode) {
   }
 }
 
-bool spvOpcodeIsAtomicOp(const SpvOp opcode) {
+bool spvOpcodeIsAtomicWithLoad(const SpvOp opcode) {
   switch (opcode) {
     case SpvOpAtomicLoad:
-    case SpvOpAtomicStore:
     case SpvOpAtomicExchange:
     case SpvOpAtomicCompareExchange:
     case SpvOpAtomicCompareExchangeWeak:
@@ -409,11 +409,15 @@ bool spvOpcodeIsAtomicOp(const SpvOp opcode) {
     case SpvOpAtomicOr:
     case SpvOpAtomicXor:
     case SpvOpAtomicFlagTestAndSet:
-    case SpvOpAtomicFlagClear:
       return true;
     default:
       return false;
   }
+}
+
+bool spvOpcodeIsAtomicOp(const SpvOp opcode) {
+  return (spvOpcodeIsAtomicWithLoad(opcode) || opcode == SpvOpAtomicStore ||
+          opcode == SpvOpAtomicFlagClear);
 }
 
 bool spvOpcodeIsReturn(SpvOp opcode) {

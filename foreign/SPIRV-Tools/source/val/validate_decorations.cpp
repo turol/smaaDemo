@@ -443,8 +443,8 @@ spv_result_t checkLayout(uint32_t struct_id, const char* storage_class_str,
                  << " not satisfying alignment to " << alignment;
       }
     }
-    // Check arrays.
-    if (SpvOpTypeArray == opcode) {
+    // Check arrays and runtime arrays.
+    if (SpvOpTypeArray == opcode || SpvOpTypeRuntimeArray == opcode) {
       const auto typeId = inst->word(2);
       const auto arrayInst = vstate.FindDef(typeId);
       if (SpvOpTypeStruct == arrayInst->opcode() &&
@@ -840,6 +840,109 @@ spv_result_t CheckDecorationsOfBuffers(ValidationState_t& vstate) {
   return SPV_SUCCESS;
 }
 
+spv_result_t CheckVulkanMemoryModelDeprecatedDecorations(
+    ValidationState_t& vstate) {
+  if (vstate.memory_model() != SpvMemoryModelVulkanKHR) return SPV_SUCCESS;
+
+  std::string msg;
+  std::ostringstream str(msg);
+  for (const auto& def : vstate.all_definitions()) {
+    const auto inst = def.second;
+    const auto id = inst->id();
+    for (const auto& dec : vstate.id_decorations(id)) {
+      const auto member = dec.struct_member_index();
+      if (dec.dec_type() == SpvDecorationCoherent ||
+          dec.dec_type() == SpvDecorationVolatile) {
+        str << (dec.dec_type() == SpvDecorationCoherent ? "Coherent"
+                                                        : "Volatile");
+        str << " decoration targeting " << vstate.getIdName(id);
+        if (member != Decoration::kInvalidMember) {
+          str << " (member index " << member << ")";
+        }
+        str << " is banned when using the Vulkan memory model.";
+        return vstate.diag(SPV_ERROR_INVALID_ID, inst) << str.str();
+      }
+    }
+  }
+  return SPV_SUCCESS;
+}
+
+spv_result_t CheckDecorationsOfConversions(ValidationState_t& vstate) {
+  // Validates FPRoundingMode decoration for Shader Capabilities
+  if (!vstate.HasCapability(SpvCapabilityShader)) return SPV_SUCCESS;
+
+  for (const auto& kv : vstate.id_decorations()) {
+    const uint32_t id = kv.first;
+    const auto& decorations = kv.second;
+    if (decorations.empty()) {
+      continue;
+    }
+
+    const Instruction* inst = vstate.FindDef(id);
+    assert(inst);
+
+    // Validates FPRoundingMode decoration
+    for (const auto& decoration : decorations) {
+      if (decoration.dec_type() != SpvDecorationFPRoundingMode) {
+        continue;
+      }
+
+      // Validates width-only conversion instruction for floating-point object
+      // i.e., OpFConvert
+      if (inst->opcode() != SpvOpFConvert) {
+        return vstate.diag(SPV_ERROR_INVALID_ID, inst)
+               << "FPRoundingMode decoration can be applied only to a "
+                  "width-only conversion instruction for floating-point "
+                  "object.";
+      }
+
+      // Validates Object operand of an OpStore
+      for (const auto& use : inst->uses()) {
+        const auto store = use.first;
+        if (store->opcode() != SpvOpStore) {
+          return vstate.diag(SPV_ERROR_INVALID_ID, inst)
+                 << "FPRoundingMode decoration can be applied only to the "
+                    "Object operand of an OpStore.";
+        }
+
+        if (use.second != 2) {
+          return vstate.diag(SPV_ERROR_INVALID_ID, inst)
+                 << "FPRoundingMode decoration can be applied only to the "
+                    "Object operand of an OpStore.";
+        }
+
+        const auto ptr_inst = vstate.FindDef(store->GetOperandAs<uint32_t>(0));
+        const auto ptr_type =
+            vstate.FindDef(ptr_inst->GetOperandAs<uint32_t>(0));
+
+        const auto half_float_id = ptr_type->GetOperandAs<uint32_t>(2);
+        if (!vstate.IsFloatScalarOrVectorType(half_float_id) ||
+            vstate.GetBitWidth(half_float_id) != 16) {
+          return vstate.diag(SPV_ERROR_INVALID_ID, inst)
+                 << "FPRoundingMode decoration can be applied only to the "
+                    "Object operand of an OpStore storing through a pointer to "
+                    "a 16-bit floating-point scalar or vector object.";
+        }
+
+        // Validates storage class of the pointer to the OpStore
+        const auto storage = ptr_type->GetOperandAs<uint32_t>(1);
+        if (storage != SpvStorageClassStorageBuffer &&
+            storage != SpvStorageClassUniform &&
+            storage != SpvStorageClassPushConstant &&
+            storage != SpvStorageClassInput &&
+            storage != SpvStorageClassOutput) {
+          return vstate.diag(SPV_ERROR_INVALID_ID, inst)
+                 << "FPRoundingMode decoration can be applied only to the "
+                    "Object operand of an OpStore in the StorageBuffer, "
+                    "Uniform, PushConstant, Input, or Output Storage "
+                    "Classes.";
+        }
+      }
+    }
+  }
+  return SPV_SUCCESS;
+}
+
 }  // namespace
 
 // Validates that decorations have been applied properly.
@@ -849,6 +952,9 @@ spv_result_t ValidateDecorations(ValidationState_t& vstate) {
   if (auto error = CheckDecorationsOfBuffers(vstate)) return error;
   if (auto error = CheckLinkageAttrOfFunctions(vstate)) return error;
   if (auto error = CheckDescriptorSetArrayOfArrays(vstate)) return error;
+  if (auto error = CheckVulkanMemoryModelDeprecatedDecorations(vstate))
+    return error;
+  if (auto error = CheckDecorationsOfConversions(vstate)) return error;
   return SPV_SUCCESS;
 }
 

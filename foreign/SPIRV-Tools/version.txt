@@ -1,5 +1,5 @@
-commit b4cb01c7c451dd90e26174f6b94ba6a37c53d917
-Author: David Neto <dneto@google.com>
-Date:   Fri Sep 7 11:40:56 2018 -0400
+commit 9d699f6d4038f432c55310d5d0b4a6d507c1b686
+Author: Steven Perron <stevenperron@google.com>
+Date:   Wed Nov 7 09:39:51 2018 -0500
 
-    Finalize SPIRV-Tools v2018.5
+    Finalize SPIRV-Tools v2018.6

@@ -342,7 +342,7 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 
 // increase this when the shader compiler options change
 // so that the same source generates a different SPV
-const unsigned int shaderVersion = 21;
+const unsigned int shaderVersion = 22;
 
 
 struct CacheData {

@@ -187,6 +187,7 @@ Instruction* Instruction::GetBaseAddress() const {
     case SpvOpStore:
     case SpvOpAccessChain:
     case SpvOpInBoundsAccessChain:
+    case SpvOpImageTexelPointer:
     case SpvOpCopyObject:
       // A load or store through a pointer.
       assert(base_inst->IsValidBasePointer() &&
@@ -538,6 +539,10 @@ std::string Instruction::PrettyPrint(uint32_t options) const {
 std::ostream& operator<<(std::ostream& str, const Instruction& inst) {
   str << inst.PrettyPrint();
   return str;
+}
+
+void Instruction::Dump() const {
+  std::cerr << "Instruction #" << unique_id() << "\n" << *this << "\n";
 }
 
 bool Instruction::IsOpcodeCodeMotionSafe() const {

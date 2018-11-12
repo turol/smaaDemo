@@ -31,6 +31,7 @@ FILES:= \
 	print.cpp \
 	software_version.cpp \
 	spirv_endian.cpp \
+	spirv_optimizer_options.cpp \
 	spirv_target_env.cpp \
 	spirv_validator_options.cpp \
 	table.cpp \
