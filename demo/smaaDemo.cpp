@@ -398,7 +398,6 @@ class SMAADemo {
 
 	// global window things
 	unsigned int    windowWidth, windowHeight;
-	bool            fullscreen;
 
 	unsigned int    numFrames;
 	bool            recreateSwapchain;
@@ -573,7 +572,6 @@ public:
 SMAADemo::SMAADemo()
 : windowWidth(1280)
 , windowHeight(720)
-, fullscreen(false)
 
 , numFrames(3)
 , recreateSwapchain(false)
@@ -801,7 +799,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		rendererDesc.skipShaderCache = noCacheSwitch.getValue();
 		rendererDesc.optimizeShaders = !noOptSwitch.getValue();
 		rendererDesc.transferQueue = !noTransferQSwitch.getValue();
-		fullscreen    = fullscreenSwitch.getValue();
+		rendererDesc.swapchain.fullscreen    = fullscreenSwitch.getValue();
 		windowWidth   = windowWidthSwitch.getValue();
 		windowHeight  = windowHeightSwitch.getValue();
 		rendererDesc.swapchain.vsync         = noVsyncSwitch.getValue() ? VSync::Off : VSync::On;
@@ -1031,7 +1029,6 @@ static const std::array<Format, numDepths> depths
 
 
 void SMAADemo::initRender() {
-	rendererDesc.swapchain.fullscreen = fullscreen;
 	rendererDesc.swapchain.width      = windowWidth;
 	rendererDesc.swapchain.height     = windowHeight;
 
@@ -2007,7 +2004,7 @@ void SMAADemo::mainLoopIteration() {
 				break;
 
 			case SDL_SCANCODE_F:
-				fullscreen = !fullscreen;
+				rendererDesc.swapchain.fullscreen = !rendererDesc.swapchain.fullscreen;
 				recreateSwapchain = true;
 				break;
 
@@ -2118,7 +2115,6 @@ void SMAADemo::mainLoopIteration() {
 
 void SMAADemo::render() {
 	if (recreateSwapchain) {
-		rendererDesc.swapchain.fullscreen = fullscreen;
 		rendererDesc.swapchain.numFrames  = numFrames;
 		rendererDesc.swapchain.width      = windowWidth;
 		rendererDesc.swapchain.height     = windowHeight;
@@ -2759,7 +2755,7 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 		}
 
 		if (ImGui::CollapsingHeader("Swapchain properties", ImGuiTreeNodeFlags_DefaultOpen)) {
-			recreateSwapchain = ImGui::Checkbox("Fullscreen", &fullscreen);
+			recreateSwapchain = ImGui::Checkbox("Fullscreen", &rendererDesc.swapchain.fullscreen);
 
 			int vsyncTemp = static_cast<int>(rendererDesc.swapchain.vsync);
 			ImGui::Text("V-Sync");
