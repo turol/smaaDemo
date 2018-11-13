@@ -1420,33 +1420,33 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		plDesc.depthWrite(false)
 		      .depthTest(false)
 		      .cullFaces(true)
-		      .descriptorSetLayout<GlobalDS>(0);
-		plDesc.shaderMacros(macros)
+		      .descriptorSetLayout<GlobalDS>(0)
+		      .shaderMacros(macros)
 		      .renderPass(smaaEdgesRenderPass)
 		      .vertexShader("smaaEdge")
 		      .fragmentShader("smaaEdge")
-		      .descriptorSetLayout<EdgeDetectionDS>(1);
-		plDesc.name(std::string("SMAA edges ") + std::to_string(key.quality));
+		      .descriptorSetLayout<EdgeDetectionDS>(1)
+		      .name(std::string("SMAA edges ") + std::to_string(key.quality));
 		pipelines.edgePipeline      = renderer.createPipeline(plDesc);
 
 		plDesc.renderPass(smaaWeightsRenderPass)
 		      .vertexShader("smaaBlendWeight")
 		      .fragmentShader("smaaBlendWeight")
-		      .descriptorSetLayout<BlendWeightDS>(1);
-		plDesc.name(std::string("SMAA weights ") + std::to_string(key.quality));
+		      .descriptorSetLayout<BlendWeightDS>(1)
+		      .name(std::string("SMAA weights ") + std::to_string(key.quality));
 		pipelines.blendWeightPipeline = renderer.createPipeline(plDesc);
 
 		plDesc.renderPass(finalRenderPass)
 		      .vertexShader("smaaNeighbor")
 		      .fragmentShader("smaaNeighbor")
-		      .descriptorSetLayout<NeighborBlendDS>(1);
-		plDesc.name(std::string("SMAA blend ") + std::to_string(key.quality));
+		      .descriptorSetLayout<NeighborBlendDS>(1)
+		      .name(std::string("SMAA blend ") + std::to_string(key.quality));
 		pipelines.neighborPipelines[0] = renderer.createPipeline(plDesc);
 
 		plDesc.blending(true)
 		      .sourceBlend(BlendFunc::Constant)
-		      .destinationBlend(BlendFunc::Constant);
-		plDesc.name(std::string("SMAA blend (S2X) ") + std::to_string(key.quality));
+		      .destinationBlend(BlendFunc::Constant)
+		      .name(std::string("SMAA blend (S2X) ") + std::to_string(key.quality));
 		pipelines.neighborPipelines[1] = renderer.createPipeline(plDesc);
 
 		bool inserted = false;
