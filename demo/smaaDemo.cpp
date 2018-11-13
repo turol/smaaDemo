@@ -2189,14 +2189,14 @@ void SMAADemo::render() {
 	}
 
 	ShaderDefines::Globals globals;
-	globals.screenSize = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
-	globals.guiOrtho   = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
-	globals.smaaParameters       = smaaParameters;
-	globals.predicationThreshold = predicationThreshold;
-	globals.predicationScale     = predicationScale;
-	globals.predicationStrength  = predicationStrength;
-	globals.reprojWeigthScale    = reprojectionWeightScale;
-	globals.subsampleIndices = subsampleIndices[0];
+	globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
+	globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
+	globals.smaaParameters        = smaaParameters;
+	globals.predicationThreshold  = predicationThreshold;
+	globals.predicationScale      = predicationScale;
+	globals.predicationStrength   = predicationStrength;
+	globals.reprojWeigthScale     = reprojectionWeightScale;
+	globals.subsampleIndices      = subsampleIndices[0];
 
 	Layout l = Layout::ShaderRead;
 	if (!antialiasing || aaMethod == AAMethod::MSAA) {
