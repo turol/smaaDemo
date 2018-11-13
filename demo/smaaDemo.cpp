@@ -1405,7 +1405,7 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 	if (it == smaaPipelines.end()) {
 		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
-			  .depthTest(false)
+		      .depthTest(false)
 		      .cullFaces(true)
 		      .descriptorSetLayout<GlobalDS>(0);
 
@@ -1443,6 +1443,7 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .descriptorSetLayout<NeighborBlendDS>(1);
 		plDesc.name(std::string("SMAA blend ") + std::to_string(key.quality));
 		pipelines.neighborPipelines[0] = renderer.createPipeline(plDesc);
+
 		plDesc.blending(true)
 		      .sourceBlend(BlendFunc::Constant)
 		      .destinationBlend(BlendFunc::Constant);
