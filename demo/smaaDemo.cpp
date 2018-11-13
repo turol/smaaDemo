@@ -1872,10 +1872,6 @@ void SMAADemo::mainLoopIteration() {
 		case SDL_KEYDOWN:
 			io.KeysDown[event.key.keysym.scancode] = true;
 
-			if (textInputActive) {
-				break;
-			}
-
 			switch (event.key.keysym.scancode) {
 			case SDL_SCANCODE_LSHIFT:
 				leftShift = true;
@@ -1886,6 +1882,10 @@ void SMAADemo::mainLoopIteration() {
 				break;
 
 			default:
+				break;
+			}
+
+			if (textInputActive) {
 				break;
 			}
 
