@@ -554,7 +554,9 @@ public:
 
 	void doTemporalAA();
 
-	void drawGUI(uint64_t elapsed);
+	void updateGUI(uint64_t elapsed);
+
+	void renderGUI();
 
 	void loadImage(const std::string &filename);
 
@@ -2394,7 +2396,8 @@ void SMAADemo::render() {
 		renderer.layoutTransition(finalRenderRT, Layout::TransferDst, Layout::ColorAttachment);
 	}
 
-	drawGUI(elapsed);
+	updateGUI(elapsed);
+	renderGUI();
 
 	renderer.presentFrame(finalRenderRT);
 
@@ -2497,7 +2500,7 @@ void SMAADemo::doTemporalAA() {
 }
 
 
-void SMAADemo::drawGUI(uint64_t elapsed) {
+void SMAADemo::updateGUI(uint64_t elapsed) {
 	const unsigned int windowWidth  = rendererDesc.swapchain.width;
 	const unsigned int windowHeight = rendererDesc.swapchain.height;
 
@@ -2819,7 +2822,10 @@ void SMAADemo::drawGUI(uint64_t elapsed) {
 #endif  // 0
 
 	ImGui::Render();
+}
 
+
+void SMAADemo::renderGUI() {
 	auto drawData = ImGui::GetDrawData();
 	assert(drawData->Valid);
 	renderer.beginRenderPass(guiOnlyRenderPass, finalFramebuffer);
