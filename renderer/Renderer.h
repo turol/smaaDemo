@@ -50,7 +50,6 @@ namespace renderer {
 
 
 struct Buffer;
-struct RendererImpl;
 struct DescriptorSetLayout;
 struct Framebuffer;
 struct Pipeline;
@@ -806,6 +805,9 @@ struct RendererFeatures {
 	{
 	}
 };
+
+
+struct RendererImpl;
 
 
 class Renderer {
