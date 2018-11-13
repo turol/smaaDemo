@@ -504,6 +504,8 @@ class SMAADemo {
 	ImGuiContext                                      *imGuiContext;
 	bool                                              textInputActive;
 	bool                                              rightShift, leftShift;
+	bool                                              rightAlt,   leftAlt;
+	bool                                              rightCtrl,  leftCtrl;
 	char                                              imageFileName[inputTextBufferSize];
 	char                                              clipboardText[inputTextBufferSize];
 
@@ -614,6 +616,10 @@ SMAADemo::SMAADemo()
 , textInputActive(false)
 , rightShift(false)
 , leftShift(false)
+, rightAlt(false)
+, leftAlt(false)
+, rightCtrl(false)
+, leftCtrl(false)
 {
 	rendererDesc.swapchain.width  = 1280;
 	rendererDesc.swapchain.height = 720;
@@ -1881,6 +1887,22 @@ void SMAADemo::mainLoopIteration() {
 				rightShift = true;
 				break;
 
+			case SDL_SCANCODE_LALT:
+				leftAlt = true;
+				break;
+
+			case SDL_SCANCODE_RALT:
+				rightAlt = true;
+				break;
+
+			case SDL_SCANCODE_LCTRL:
+				leftCtrl = true;
+				break;
+
+			case SDL_SCANCODE_RCTRL:
+				rightCtrl = true;
+				break;
+
 			default:
 				break;
 			}
@@ -2041,6 +2063,22 @@ void SMAADemo::mainLoopIteration() {
 				rightShift = false;
 				break;
 
+			case SDL_SCANCODE_LALT:
+				leftAlt = false;
+				break;
+
+			case SDL_SCANCODE_RALT:
+				rightAlt = false;
+				break;
+
+			case SDL_SCANCODE_LCTRL:
+				leftCtrl = false;
+				break;
+
+			case SDL_SCANCODE_RCTRL:
+				rightCtrl = false;
+				break;
+
 			default:
 				break;
 			}
@@ -2091,27 +2129,9 @@ void SMAADemo::mainLoopIteration() {
 		}
 	}
 
-	SDL_Keymod modstate = SDL_GetModState();
-	if (modstate & KMOD_CTRL) {
-		io.KeyCtrl = true;
-	} else {
-		io.KeyCtrl = false;
-	}
-	if (modstate & KMOD_SHIFT) {
-		io.KeyShift = true;
-	} else {
-		io.KeyShift = false;
-	}
-	if (modstate & KMOD_ALT) {
-		io.KeyAlt = true;
-	} else {
-		io.KeyAlt = false;
-	}
-	if (modstate & KMOD_GUI) {
-		io.KeySuper = true;
-	} else {
-		io.KeySuper = false;
-	}
+	io.KeyShift = leftShift || rightShift;
+	io.KeyAlt   = leftAlt   || rightAlt;
+	io.KeyCtrl  = leftCtrl  || rightCtrl;
 
 	render();
 }
