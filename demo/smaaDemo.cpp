@@ -1403,12 +1403,6 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 	auto it = smaaPipelines.find(key);
 	// create lazily if missing
 	if (it == smaaPipelines.end()) {
-		PipelineDesc plDesc;
-		plDesc.depthWrite(false)
-		      .depthTest(false)
-		      .cullFaces(true)
-		      .descriptorSetLayout<GlobalDS>(0);
-
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[key.quality]);
 		macros.emplace(qualityString, "1");
@@ -1420,14 +1414,19 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 			macros.emplace("SMAA_PREDICATION", "1");
 		}
 
+		SMAAPipelines pipelines;
+
+		PipelineDesc plDesc;
+		plDesc.depthWrite(false)
+		      .depthTest(false)
+		      .cullFaces(true)
+		      .descriptorSetLayout<GlobalDS>(0);
 		plDesc.shaderMacros(macros)
 		      .renderPass(smaaEdgesRenderPass)
 		      .vertexShader("smaaEdge")
 		      .fragmentShader("smaaEdge")
 		      .descriptorSetLayout<EdgeDetectionDS>(1);
 		plDesc.name(std::string("SMAA edges ") + std::to_string(key.quality));
-
-		SMAAPipelines pipelines;
 		pipelines.edgePipeline      = renderer.createPipeline(plDesc);
 
 		plDesc.renderPass(smaaWeightsRenderPass)
