@@ -1446,6 +1446,7 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		plDesc.blending(true)
 		      .sourceBlend(BlendFunc::Constant)
 		      .destinationBlend(BlendFunc::Constant);
+		plDesc.name(std::string("SMAA blend (S2X) ") + std::to_string(key.quality));
 		pipelines.neighborPipelines[1] = renderer.createPipeline(plDesc);
 
 		bool inserted = false;
