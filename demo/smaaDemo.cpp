@@ -1426,7 +1426,7 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .fragmentShader("smaaEdge");
 		plDesc.descriptorSetLayout<EdgeDetectionDS>(1);
 		std::string passName = std::string("SMAA edges ") + std::to_string(key.quality);
-		plDesc.name(passName.c_str());
+		plDesc.name(passName);
 
 		SMAAPipelines pipelines;
 		pipelines.edgePipeline      = renderer.createPipeline(plDesc);
@@ -1436,7 +1436,7 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .fragmentShader("smaaBlendWeight");
 		plDesc.descriptorSetLayout<BlendWeightDS>(1);
 		passName = std::string("SMAA weights ") + std::to_string(key.quality);
-		plDesc.name(passName.c_str());
+		plDesc.name(passName);
 		pipelines.blendWeightPipeline = renderer.createPipeline(plDesc);
 
 		plDesc.renderPass(finalRenderPass);
@@ -1444,7 +1444,7 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .fragmentShader("smaaNeighbor");
 		plDesc.descriptorSetLayout<NeighborBlendDS>(1);
 		passName = std::string("SMAA blend ") + std::to_string(key.quality);
-		plDesc.name(passName.c_str());
+		plDesc.name(passName);
 		pipelines.neighborPipelines[0] = renderer.createPipeline(plDesc);
 		plDesc.blending(true)
 		      .sourceBlend(BlendFunc::Constant)
