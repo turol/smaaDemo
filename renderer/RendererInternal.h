@@ -146,6 +146,7 @@ struct RendererBase {
 
 	bool skipShaderCache;
 	bool         optimizeShaders;
+	bool         validateShaders;
 	unsigned int frameNum;
 
 	unsigned int   uboAlign;
@@ -186,6 +187,7 @@ struct RendererBase {
 	, maxRefreshRate(0)
 	, skipShaderCache(desc.skipShaderCache || !desc.optimizeShaders)
 	, optimizeShaders(desc.optimizeShaders)
+	, validateShaders(desc.validateShaders)
 	, frameNum(0)
 	, uboAlign(0)
 	, ssboAlign(0)

@@ -467,6 +467,42 @@ bool RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 }
 
 
+static void logSpvMessage(spv_message_level_t level_, const char *source, const spv_position_t &position, const char *message) {
+	const char *level;
+	switch (level_) {
+	case SPV_MSG_FATAL:
+		level = "FATAL";
+		break;
+
+	case SPV_MSG_INTERNAL_ERROR:
+		level = "INTERNAL ERROR";
+		break;
+
+	case SPV_MSG_ERROR:
+		level = "ERROR";
+		break;
+
+	case SPV_MSG_WARNING:
+		level = "WARNING";
+		break;
+
+	case SPV_MSG_INFO:
+		level = "INFO";
+		break;
+
+	case SPV_MSG_DEBUG:
+		level = "DEBUG";
+		break;
+
+	default:
+		level = "UNKNOWN";
+		break;
+	}
+
+	LOG("%s: %s from %s at %lu:%lu\n", level, message, source, position.line, position.column);
+}
+
+
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderKind kind_) {
 	// check spir-v cache first
 	std::string shaderName = name;
@@ -498,6 +534,19 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		} else {
 			LOG("\"%s\" not found in cache\n", shaderName.c_str());
 		}
+	}
+
+	std::function<bool(const std::vector<uint32_t> &)> validate;
+	if (validateShaders) {
+		validate =
+			[] (const std::vector<uint32_t> &s) {
+				spvtools::SpirvTools tools(SPV_ENV_UNIVERSAL_1_2);
+				tools.SetMessageConsumer(logSpvMessage);
+				return tools.Validate(s);
+			}
+		;
+	} else {
+		validate = [] (const std::vector<uint32_t> &) { return true; };
 	}
 
 	// TODO: cache includes globally
@@ -533,6 +582,11 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		}
 
 		spirv.insert(spirv.end(), result.cbegin(), result.cend());
+
+		if (!validate(spirv)) {
+			LOG("SPIR-V for shader \"%s\" is not valid after compilation\n", shaderName.c_str());
+			throw std::runtime_error("Shader validation failed");
+		}
 	}
 
 	// SPIR-V optimization
@@ -554,10 +608,20 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			throw std::runtime_error("Shader optimization failed");
 		}
 
+		if (!validate(optimized)) {
+			LOG("SPIR-V for shader \"%s\" is not valid after optimization\n", shaderName.c_str());
+			throw std::runtime_error("Shader validation failed");
+		}
+
 		// glslang SPV remapper
 		{
 			spv::spirvbin_t remapper;
 			remapper.remap(optimized);
+
+			if (!validate(optimized)) {
+				LOG("SPIR-V for shader \"%s\" is not valid after remapping\n", shaderName.c_str());
+				throw std::runtime_error("Shader validation failed");
+			}
 		}
 
 		std::swap(spirv, optimized);

@@ -773,6 +773,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::SwitchArg                       tracingSwitch("",      "trace",      "Enable renderer tracing",       cmd, false);
 		TCLAP::SwitchArg                       noCacheSwitch("",      "nocache",    "Don't load shaders from cache", cmd, false);
 		TCLAP::SwitchArg                       noOptSwitch("",        "noopt",      "Don't optimize shaders",        cmd, false);
+		TCLAP::SwitchArg                       validateSwitch("",     "validate",   "Validate shader SPIR-V",        cmd, false);
 		TCLAP::SwitchArg                       fullscreenSwitch("f",  "fullscreen", "Start in fullscreen mode",      cmd, false);
 		TCLAP::SwitchArg                       noVsyncSwitch("",      "novsync",    "Disable vsync",                 cmd, false);
 		TCLAP::SwitchArg                       noTransferQSwitch("",  "no-transfer-queue", "Disable transfer queue", cmd, false);
@@ -793,6 +794,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		rendererDesc.tracing               = tracingSwitch.getValue();
 		rendererDesc.skipShaderCache       = noCacheSwitch.getValue();
 		rendererDesc.optimizeShaders       = !noOptSwitch.getValue();
+		rendererDesc.validateShaders       = validateSwitch.getValue();
 		rendererDesc.transferQueue         = !noTransferQSwitch.getValue();
 		rendererDesc.swapchain.fullscreen  = fullscreenSwitch.getValue();
 		rendererDesc.swapchain.width       = windowWidthSwitch.getValue();

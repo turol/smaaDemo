@@ -774,6 +774,7 @@ struct RendererDesc {
 	bool           tracing;
 	bool           skipShaderCache;
 	bool           optimizeShaders;
+	bool           validateShaders;
 	bool           transferQueue;
 	unsigned int   ephemeralRingBufSize;
 	SwapchainDesc  swapchain;
@@ -784,6 +785,7 @@ struct RendererDesc {
 	, tracing(false)
 	, skipShaderCache(false)
 	, optimizeShaders(true)
+	, validateShaders(false)
 	, transferQueue(true)
 	, ephemeralRingBufSize(1 * 1048576)
 	{
