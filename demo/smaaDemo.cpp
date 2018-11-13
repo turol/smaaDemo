@@ -1406,8 +1406,8 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
 			  .depthTest(false)
-			  .cullFaces(true);
-		plDesc.descriptorSetLayout<GlobalDS>(0);
+		      .cullFaces(true)
+		      .descriptorSetLayout<GlobalDS>(0);
 
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[key.quality]);
@@ -1420,29 +1420,29 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 			macros.emplace("SMAA_PREDICATION", "1");
 		}
 
-		plDesc.shaderMacros(macros);
-		plDesc.renderPass(smaaEdgesRenderPass);
-		plDesc.vertexShader("smaaEdge")
-		      .fragmentShader("smaaEdge");
-		plDesc.descriptorSetLayout<EdgeDetectionDS>(1);
+		plDesc.shaderMacros(macros)
+		      .renderPass(smaaEdgesRenderPass)
+		      .vertexShader("smaaEdge")
+		      .fragmentShader("smaaEdge")
+		      .descriptorSetLayout<EdgeDetectionDS>(1);
 		std::string passName = std::string("SMAA edges ") + std::to_string(key.quality);
 		plDesc.name(passName);
 
 		SMAAPipelines pipelines;
 		pipelines.edgePipeline      = renderer.createPipeline(plDesc);
 
-		plDesc.renderPass(smaaWeightsRenderPass);
-		plDesc.vertexShader("smaaBlendWeight")
-		      .fragmentShader("smaaBlendWeight");
-		plDesc.descriptorSetLayout<BlendWeightDS>(1);
+		plDesc.renderPass(smaaWeightsRenderPass)
+		      .vertexShader("smaaBlendWeight")
+		      .fragmentShader("smaaBlendWeight")
+		      .descriptorSetLayout<BlendWeightDS>(1);
 		passName = std::string("SMAA weights ") + std::to_string(key.quality);
 		plDesc.name(passName);
 		pipelines.blendWeightPipeline = renderer.createPipeline(plDesc);
 
-		plDesc.renderPass(finalRenderPass);
-		plDesc.vertexShader("smaaNeighbor")
-		      .fragmentShader("smaaNeighbor");
-		plDesc.descriptorSetLayout<NeighborBlendDS>(1);
+		plDesc.renderPass(finalRenderPass)
+		      .vertexShader("smaaNeighbor")
+		      .fragmentShader("smaaNeighbor")
+		      .descriptorSetLayout<NeighborBlendDS>(1);
 		passName = std::string("SMAA blend ") + std::to_string(key.quality);
 		plDesc.name(passName);
 		pipelines.neighborPipelines[0] = renderer.createPipeline(plDesc);
