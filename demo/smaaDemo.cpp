@@ -1885,6 +1885,11 @@ void SMAADemo::mainLoopIteration() {
 				rightShift = true;
 				break;
 
+			default:
+				break;
+			}
+
+			switch (event.key.keysym.scancode) {
 			case SDL_SCANCODE_ESCAPE:
 				keepGoing = false;
 				break;
