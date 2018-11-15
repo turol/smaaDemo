@@ -2170,9 +2170,6 @@ void SMAADemo::render() {
 		createFramebuffers();
 	}
 
-	const unsigned int windowWidth  = rendererDesc.swapchain.width;
-	const unsigned int windowHeight = rendererDesc.swapchain.height;
-
 	if (temporalAA) {
 		temporalFrame = (temporalFrame + 1) % 2;
 
@@ -2210,6 +2207,9 @@ void SMAADemo::render() {
 		}
 		subsampleIndices[1] = glm::vec4(2.0f, 2.0f, 2.0f, 0.0f);
 	}
+
+	const unsigned int windowWidth  = rendererDesc.swapchain.width;
+	const unsigned int windowHeight = rendererDesc.swapchain.height;
 
 	ShaderDefines::Globals globals;
 	globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
