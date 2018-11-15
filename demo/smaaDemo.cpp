@@ -451,6 +451,7 @@ class SMAADemo {
 
 	glm::mat4                                         currViewProj;
 	glm::mat4                                         prevViewProj;
+	std::array<glm::vec4, 2>                          subsampleIndices;
 
 	Renderer                                          renderer;
 	Format                                            depthFormat;
@@ -2172,7 +2173,6 @@ void SMAADemo::render() {
 	const unsigned int windowWidth  = rendererDesc.swapchain.width;
 	const unsigned int windowHeight = rendererDesc.swapchain.height;
 
-	glm::vec4 subsampleIndices[2];
 	if (temporalAA) {
 		temporalFrame = (temporalFrame + 1) % 2;
 
