@@ -499,7 +499,7 @@ static void logSpvMessage(spv_message_level_t level_, const char *source, const 
 		break;
 	}
 
-	LOG("%s: %s from %s at %lu:%lu\n", level, message, source, position.line, position.column);
+	LOG("%s: %s from %s at %u:%u\n", level, message, source, static_cast<unsigned int>(position.line), static_cast<unsigned int>(position.column));
 }
 
 
