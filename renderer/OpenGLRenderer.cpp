@@ -1069,12 +1069,8 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		resources = processShaderResources(glslVert);
 
 		vertexShader = createShader(GL_VERTEX_SHADER, v.name, v.macros, glslVert);
-	}
 
-	{
 		spirv_cross::CompilerGLSL glslFrag(f.spirv);
-		spirv_cross::CompilerGLSL::Options glslOptions;
-		glslOptions.vertex.fixup_clipspace = false;
 		glslFrag.set_common_options(glslOptions);
 
 		auto fragResources = processShaderResources(glslFrag);
