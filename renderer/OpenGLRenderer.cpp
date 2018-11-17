@@ -1060,25 +1060,25 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	GLuint fragmentShader = 0;
 	ShaderResources resources;
 	{
-		spirv_cross::CompilerGLSL glsl(v.spirv);
+		spirv_cross::CompilerGLSL glslVert(v.spirv);
 		spirv_cross::CompilerGLSL::Options glslOptions;
 		glslOptions.vertex.fixup_clipspace = false;
 		glslOptions.vertex.support_nonzero_base_instance = false;
-		glsl.set_common_options(glslOptions);
+		glslVert.set_common_options(glslOptions);
 
-		resources = processShaderResources(glsl);
+		resources = processShaderResources(glslVert);
 
-		vertexShader = createShader(GL_VERTEX_SHADER, v.name, v.macros, glsl);
+		vertexShader = createShader(GL_VERTEX_SHADER, v.name, v.macros, glslVert);
 	}
 
 	{
-		spirv_cross::CompilerGLSL glsl(f.spirv);
+		spirv_cross::CompilerGLSL glslFrag(f.spirv);
 		spirv_cross::CompilerGLSL::Options glslOptions;
 		glslOptions.vertex.fixup_clipspace = false;
-		glsl.set_common_options(glslOptions);
+		glslFrag.set_common_options(glslOptions);
 
-		auto fragResources = processShaderResources(glsl);
-		fragmentShader = createShader(GL_FRAGMENT_SHADER, f.name, f.macros, glsl);
+		auto fragResources = processShaderResources(glslFrag);
+		fragmentShader = createShader(GL_FRAGMENT_SHADER, f.name, f.macros, glslFrag);
 
 		mergeShaderResources(resources, fragResources);
 	}
