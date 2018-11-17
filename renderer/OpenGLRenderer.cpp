@@ -147,6 +147,30 @@ static GLuint createShader(GLenum type, const std::string &name, const ShaderMac
 }
 
 
+static GLenum blendFunc(BlendFunc b) {
+	switch (b) {
+	case BlendFunc::Zero:
+		return GL_ZERO;
+
+	case BlendFunc::One:
+		return GL_ONE;
+
+	case BlendFunc::Constant:
+		return GL_CONSTANT_ALPHA;
+
+	case BlendFunc::SrcAlpha:
+		return GL_SRC_ALPHA;
+
+	case BlendFunc::OneMinusSrcAlpha:
+		return GL_ONE_MINUS_SRC_ALPHA;
+
+	}
+
+	UNREACHABLE();
+	return GL_NONE;
+}
+
+
 static GLenum glTexFormat(Format format) {
 	switch (format) {
 	case Format::Invalid:
@@ -1013,30 +1037,6 @@ static void checkShaderResources(const std::string &name, const ShaderResources 
 			throw std::runtime_error("descriptor set layout mismatch");
 		}
 	}
-}
-
-
-static GLenum blendFunc(BlendFunc b) {
-	switch (b) {
-	case BlendFunc::Zero:
-		return GL_ZERO;
-
-	case BlendFunc::One:
-		return GL_ONE;
-
-	case BlendFunc::Constant:
-		return GL_CONSTANT_ALPHA;
-
-	case BlendFunc::SrcAlpha:
-		return GL_SRC_ALPHA;
-
-	case BlendFunc::OneMinusSrcAlpha:
-		return GL_ONE_MINUS_SRC_ALPHA;
-
-	}
-
-	UNREACHABLE();
-	return GL_NONE;
 }
 
 
