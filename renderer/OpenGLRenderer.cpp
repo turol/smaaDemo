@@ -895,7 +895,7 @@ BufferHandle RendererImpl::createEphemeralBuffer(BufferType type, uint32_t size,
 }
 
 
-ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl) {
+static ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl) {
 	auto spvResources = glsl.get_shader_resources();
 
 	// TODO: map descriptor sets to opengl indices for textures/samplers
