@@ -895,6 +895,35 @@ BufferHandle RendererImpl::createEphemeralBuffer(BufferType type, uint32_t size,
 }
 
 
+VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros) {
+	std::string vertexShaderName   = name + ".vert";
+
+    std::vector<uint32_t> spirv = compileSpirv(vertexShaderName, macros, ShaderKind::Vertex);
+
+	auto result_ = vertexShaders.add();
+	auto &v = result_.first;
+	v.name      = vertexShaderName;
+	v.spirv     = std::move(spirv);
+	v.macros    = macros;
+
+	return result_.second;
+}
+
+
+FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros &macros) {
+	std::string fragmentShaderName = name + ".frag";
+
+	std::vector<uint32_t> spirv = compileSpirv(fragmentShaderName, macros, ShaderKind::Fragment);
+
+	auto result_ = fragmentShaders.add();
+	auto &f = result_.first;
+	f.name      = fragmentShaderName;
+	f.spirv     = std::move(spirv);
+
+	return result_.second;
+}
+
+
 static ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl) {
 	auto spvResources = glsl.get_shader_resources();
 
@@ -973,35 +1002,6 @@ static ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl) {
 	}
 
 	return resources;
-}
-
-
-VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros) {
-	std::string vertexShaderName   = name + ".vert";
-
-    std::vector<uint32_t> spirv = compileSpirv(vertexShaderName, macros, ShaderKind::Vertex);
-
-	auto result_ = vertexShaders.add();
-	auto &v = result_.first;
-	v.name      = vertexShaderName;
-	v.spirv     = std::move(spirv);
-	v.macros    = macros;
-
-	return result_.second;
-}
-
-
-FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros &macros) {
-	std::string fragmentShaderName = name + ".frag";
-
-	std::vector<uint32_t> spirv = compileSpirv(fragmentShaderName, macros, ShaderKind::Fragment);
-
-	auto result_ = fragmentShaders.add();
-	auto &f = result_.first;
-	f.name      = fragmentShaderName;
-	f.spirv     = std::move(spirv);
-
-	return result_.second;
 }
 
 
