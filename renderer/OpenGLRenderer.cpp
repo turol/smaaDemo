@@ -924,7 +924,7 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 }
 
 
-static ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl) {
+static ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl, const std::unordered_map<DSIndex, uint32_t> &glIndices) {
 	auto spvResources = glsl.get_shader_resources();
 
 	// TODO: map descriptor sets to opengl indices for textures/samplers
@@ -943,6 +943,10 @@ static ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl) {
 		unsigned int openglIDX = resources.ubos.size();
 		resources.ubos.push_back(idx);
 
+		auto it = glIndices.find(idx);
+		assert(it != glIndices.end());
+		assert(it->second == openglIDX);
+
 		// opengl doesn't like set decorations, strip them
 		glsl.unset_decoration(ubo.id, spv::DecorationDescriptorSet);
 		glsl.set_decoration(ubo.id, spv::DecorationBinding, openglIDX);
@@ -955,6 +959,10 @@ static ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl) {
 
 		unsigned int openglIDX = resources.ssbos.size();
 		resources.ssbos.push_back(idx);
+
+		auto it = glIndices.find(idx);
+		assert(it != glIndices.end());
+		assert(it->second == openglIDX);
 
 		// opengl doesn't like set decorations, strip them
 		glsl.unset_decoration(ssbo.id, spv::DecorationDescriptorSet);
@@ -1103,11 +1111,11 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 
 		spirv_cross::CompilerGLSL glslVert(v.spirv);
 		glslVert.set_common_options(glslOptions);
-		resources = processShaderResources(glslVert);
+		resources = processShaderResources(glslVert, glIndices);
 
 		spirv_cross::CompilerGLSL glslFrag(f.spirv);
 		glslFrag.set_common_options(glslOptions);
-		auto fragResources = processShaderResources(glslFrag);
+		auto fragResources = processShaderResources(glslFrag, glIndices);
 		mergeShaderResources(resources, fragResources);
 
 		vertexShader = createShader(GL_VERTEX_SHADER, v.name, v.macros, glslVert);
