@@ -1058,6 +1058,9 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 
 	// construct layout map
 	std::unordered_map<DSIndex, DescriptorType> layoutMap;
+	std::unordered_map<DSIndex, uint32_t> glIndices;
+	uint32_t uboIndex  = 0;
+	uint32_t ssboIndex = 0;
 	for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
 		if (desc.descriptorSetLayouts[i]) {
 			const auto &layoutDesc = dsLayouts.get(desc.descriptorSetLayouts[i]).descriptors;
@@ -1065,7 +1068,27 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 				DSIndex idx;
 				idx.set     = i;
 				idx.binding = binding;
-				layoutMap.emplace(idx, layoutDesc.at(binding).type);
+				auto type = layoutDesc.at(binding).type;
+				layoutMap.emplace(idx, type);
+
+				switch (type) {
+				case DescriptorType::UniformBuffer:
+					glIndices.emplace(idx, uboIndex);
+					uboIndex++;
+					break;
+
+				case DescriptorType::StorageBuffer:
+					glIndices.emplace(idx, ssboIndex);
+					ssboIndex++;
+					break;
+
+				case DescriptorType::End:
+				case DescriptorType::Sampler:
+				case DescriptorType::Texture:
+				case DescriptorType::CombinedSampler:
+				case DescriptorType::Count:
+					break;
+				}
 			}
 		}
 	}
