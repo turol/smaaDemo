@@ -1056,6 +1056,20 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	auto fshaderHandle = createFragmentShader(desc.fragmentShaderName, desc.shaderMacros_);
 	const auto &f = fragmentShaders.get(fshaderHandle);
 
+		// construct layout map
+		std::unordered_map<DSIndex, DescriptorType> layoutMap;
+		for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
+			if (desc.descriptorSetLayouts[i]) {
+				const auto &layoutDesc = dsLayouts.get(desc.descriptorSetLayouts[i]).descriptors;
+				for (unsigned int binding = 0; binding < layoutDesc.size(); binding++) {
+					DSIndex idx;
+					idx.set     = i;
+					idx.binding = binding;
+					layoutMap.emplace(idx, layoutDesc.at(binding).type);
+				}
+			}
+		}
+
 	GLuint vertexShader = 0;
 	GLuint fragmentShader = 0;
 	ShaderResources resources;
@@ -1078,22 +1092,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	}
 
 	// match shader resources against pipeline layouts
-	{
-		// construct layout map
-		std::unordered_map<DSIndex, DescriptorType> layoutMap;
-		for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
-			if (desc.descriptorSetLayouts[i]) {
-				const auto &layoutDesc = dsLayouts.get(desc.descriptorSetLayouts[i]).descriptors;
-				for (unsigned int binding = 0; binding < layoutDesc.size(); binding++) {
-					DSIndex idx;
-					idx.set     = i;
-					idx.binding = binding;
-					layoutMap.emplace(idx, layoutDesc.at(binding).type);
-				}
-			}
-		}
 		checkShaderResources(v.name, resources, layoutMap);
-	}
 
 	// TODO: cache shaders
 	GLuint program = glCreateProgram();
