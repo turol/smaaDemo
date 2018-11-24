@@ -940,11 +940,12 @@ static ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl, c
 		idx.set     = glsl.get_decoration(ubo.id, spv::DecorationDescriptorSet);
 		idx.binding = glsl.get_decoration(ubo.id, spv::DecorationBinding);
 
+		auto it = glIndices.find(idx);
+		assert(it != glIndices.end());
+
 		unsigned int openglIDX = resources.ubos.size();
 		resources.ubos.push_back(idx);
 
-		auto it = glIndices.find(idx);
-		assert(it != glIndices.end());
 		assert(it->second == openglIDX);
 
 		// opengl doesn't like set decorations, strip them
@@ -957,11 +958,12 @@ static ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl, c
 		idx.set     = glsl.get_decoration(ssbo.id, spv::DecorationDescriptorSet);
 		idx.binding = glsl.get_decoration(ssbo.id, spv::DecorationBinding);
 
+		auto it = glIndices.find(idx);
+		assert(it != glIndices.end());
+
 		unsigned int openglIDX = resources.ssbos.size();
 		resources.ssbos.push_back(idx);
 
-		auto it = glIndices.find(idx);
-		assert(it != glIndices.end());
 		assert(it->second == openglIDX);
 
 		// opengl doesn't like set decorations, strip them
