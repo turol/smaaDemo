@@ -1,5 +1,5 @@
-// ImGui - standalone example application for Glfw + Vulkan
-// If you are new to ImGui, see examples/README.txt and documentation at the top of imgui.cpp.
+// dear imgui: standalone example application for Glfw + Vulkan
+// If you are new to dear imgui, see examples/README.txt and documentation at the top of imgui.cpp.
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -10,6 +10,13 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
+
+// [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
+// To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma. 
+// Your own project should not be affected, as you are likely to link with a newer binary of GLFW that is adequate for your version of Visual Studio.
+#if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
+#pragma comment(lib, "legacy_stdio_definitions")
+#endif
 
 //#define IMGUI_UNLIMITED_FRAME_RATE
 #ifdef _DEBUG
@@ -189,12 +196,12 @@ static void SetupVulkanWindowData(ImGui_ImplVulkanH_WindowData* wd, VkSurfaceKHR
         exit(-1);
     }
 
-    // Get Surface Format
+    // Select Surface Format
     const VkFormat requestSurfaceImageFormat[] = { VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_B8G8R8_UNORM, VK_FORMAT_R8G8B8_UNORM };
     const VkColorSpaceKHR requestSurfaceColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
     wd->SurfaceFormat = ImGui_ImplVulkanH_SelectSurfaceFormat(g_PhysicalDevice, wd->Surface, requestSurfaceImageFormat, (size_t)IM_ARRAYSIZE(requestSurfaceImageFormat), requestSurfaceColorSpace);
 
-    // Get Present Mode
+    // Select Present Mode
 #ifdef IMGUI_UNLIMITED_FRAME_RATE
     VkPresentModeKHR present_modes[] = { VK_PRESENT_MODE_MAILBOX_KHR, VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_FIFO_KHR };
 #else
@@ -343,17 +350,15 @@ int main(int, char**)
     ImGui_ImplVulkanH_WindowData* wd = &g_WindowData;
     SetupVulkanWindowData(wd, surface, w, h);
 
-    // Setup Dear ImGui binding
+    // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
 
-    // Setup GLFW binding
+    // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForVulkan(window, true);
-
-    // Setup Vulkan binding
     ImGui_ImplVulkan_InitInfo init_info = {};
     init_info.Instance = g_Instance;
     init_info.PhysicalDevice = g_PhysicalDevice;
@@ -366,7 +371,7 @@ int main(int, char**)
     init_info.CheckVkResultFn = check_vk_result;
     ImGui_ImplVulkan_Init(&init_info, wd->RenderPass);
 
-    // Setup style
+    // Setup Style
     ImGui::StyleColorsDark();
     //ImGui::StyleColorsClassic();
 

@@ -1,4 +1,4 @@
-// ImGui Renderer for: DirectX12
+// dear imgui: Renderer for DirectX12
 // This needs to be used along with a Platform Binding (e.g. Win32)
 
 // Implemented features:
@@ -9,6 +9,8 @@
 // You can copy and use unmodified imgui_impl_* files in your project. See main.cpp for an example of using this.
 // If you are new to dear imgui, read examples/README.txt and read the documentation at the top of imgui.cpp.
 // https://github.com/ocornut/imgui
+
+#pragma once
 
 enum DXGI_FORMAT;
 struct ID3D12Device;

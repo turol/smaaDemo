@@ -1,5 +1,5 @@
-// ImGui - standalone example application for DirectX 10
-// If you are new to ImGui, see examples/README.txt and documentation at the top of imgui.cpp.
+// dear imgui: standalone example application for DirectX 10
+// If you are new to dear imgui, see examples/README.txt and documentation at the top of imgui.cpp.
 
 #include "imgui.h"
 #include "imgui_impl_win32.h"
@@ -75,11 +75,9 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_SIZE:
         if (g_pd3dDevice != NULL && wParam != SIZE_MINIMIZED)
         {
-            ImGui_ImplDX10_InvalidateDeviceObjects();
             CleanupRenderTarget();
             g_pSwapChain->ResizeBuffers(0, (UINT)LOWORD(lParam), (UINT)HIWORD(lParam), DXGI_FORMAT_UNKNOWN, 0);
             CreateRenderTarget();
-            ImGui_ImplDX10_CreateDeviceObjects();
         }
         return 0;
     case WM_SYSCOMMAND:
@@ -112,16 +110,17 @@ int main(int, char**)
     ShowWindow(hwnd, SW_SHOWDEFAULT);
     UpdateWindow(hwnd);
 
-    // Setup Dear ImGui binding
+    // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
 
+    // Setup Platform/Renderer bindings
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX10_Init(g_pd3dDevice);
 
-    // Setup style
+    // Setup Style
     ImGui::StyleColorsDark();
     //ImGui::StyleColorsClassic();
 

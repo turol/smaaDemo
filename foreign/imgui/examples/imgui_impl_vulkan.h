@@ -1,4 +1,4 @@
-// ImGui Renderer for: Vulkan
+// dear imgui: Renderer for Vulkan
 // This needs to be used along with a Platform Binding (e.g. GLFW, SDL, Win32, custom..)
 
 // Missing features:
@@ -10,6 +10,8 @@
 
 // The aim of imgui_impl_vulkan.h/.cpp is to be usable in your engine without any modification. 
 // IF YOU FEEL YOU NEED TO MAKE ANY CHANGE TO THIS CODE, please share them and your feedback at https://github.com/ocornut/imgui/
+
+#pragma once
 
 #include <vulkan/vulkan.h>
 

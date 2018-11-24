@@ -1,5 +1,5 @@
-// ImGui - standalone example application for OSX + OpenGL2, using legacy fixed pipeline
-// If you are new to ImGui, see examples/README.txt and documentation at the top of imgui.cpp.
+// dear imgui: standalone example application for OSX + OpenGL2, using legacy fixed pipeline
+// If you are new to dear imgui, see examples/README.txt and documentation at the top of imgui.cpp.
 
 #include "imgui.h"
 #include "../imgui_impl_osx.h"
@@ -237,16 +237,17 @@
     if ([view openGLContext] == nil)
         NSLog(@"No OpenGL Context!");
 
-    // Setup Dear ImGui binding
+    // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
 
+    // Setup Platform/Renderer bindings
     ImGui_ImplOSX_Init();
     ImGui_ImplOpenGL2_Init();
 
-    // Setup style
+    // Setup Style
     ImGui::StyleColorsDark();
     //ImGui::StyleColorsClassic();
 
