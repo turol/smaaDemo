@@ -929,10 +929,6 @@ static ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl, c
 
 	// TODO: map descriptor sets to opengl indices for textures/samplers
 
-	// build combined image samplers
-	// TODO: need to store this info
-	glsl.build_combined_image_samplers();
-
 	ShaderResources resources;
 
 	for (const auto &ubo : spvResources.uniform_buffers) {
@@ -987,6 +983,10 @@ static ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl, c
 		glsl.unset_decoration(s.id, spv::DecorationDescriptorSet);
 		glsl.set_decoration(s.id, spv::DecorationBinding, openglIDX);
 	}
+
+	// build combined image samplers
+	// TODO: need to store this info
+	glsl.build_combined_image_samplers();
 
 	for (const spirv_cross::CombinedImageSampler &c : glsl.get_combined_image_samplers()) {
 		assert(resources.textures.size() == resources.samplers.size());
