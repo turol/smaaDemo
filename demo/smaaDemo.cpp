@@ -2164,6 +2164,7 @@ void SMAADemo::render() {
 
 		glm::uvec2 size = renderer.getDrawableSize();
 		LOG("drawable size: %ux%u\n", size.x, size.y);
+		logFlush();
 		rendererDesc.swapchain.width  = size.x;
 		rendererDesc.swapchain.height = size.y;
 
