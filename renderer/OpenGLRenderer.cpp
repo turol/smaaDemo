@@ -943,13 +943,11 @@ static ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl, c
 		auto it = glIndices.find(idx);
 		assert(it != glIndices.end());
 
-		unsigned int openglIDX = resources.ubos.size();
+		unsigned int openglIDX = it->second;
 		if (resources.ubos.size() <= openglIDX) {
 			resources.ubos.resize(openglIDX + 1);
 		}
 		resources.ubos[openglIDX] = idx;
-
-		assert(it->second == openglIDX);
 
 		// opengl doesn't like set decorations, strip them
 		glsl.unset_decoration(ubo.id, spv::DecorationDescriptorSet);
@@ -964,13 +962,11 @@ static ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl, c
 		auto it = glIndices.find(idx);
 		assert(it != glIndices.end());
 
-		unsigned int openglIDX = resources.ssbos.size();
+		unsigned int openglIDX = it->second;
 		if (resources.ssbos.size() <= openglIDX) {
 			resources.ssbos.resize(openglIDX + 1);
 		}
 		resources.ssbos[openglIDX] = idx;
-
-		assert(it->second == openglIDX);
 
 		// opengl doesn't like set decorations, strip them
 		glsl.unset_decoration(ssbo.id, spv::DecorationDescriptorSet);
