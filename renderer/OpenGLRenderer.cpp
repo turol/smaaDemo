@@ -944,7 +944,10 @@ static ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl, c
 		assert(it != glIndices.end());
 
 		unsigned int openglIDX = resources.ubos.size();
-		resources.ubos.push_back(idx);
+		if (resources.ubos.size() <= openglIDX) {
+			resources.ubos.resize(openglIDX + 1);
+		}
+		resources.ubos[openglIDX] = idx;
 
 		assert(it->second == openglIDX);
 
@@ -962,7 +965,10 @@ static ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl, c
 		assert(it != glIndices.end());
 
 		unsigned int openglIDX = resources.ssbos.size();
-		resources.ssbos.push_back(idx);
+		if (resources.ssbos.size() <= openglIDX) {
+			resources.ssbos.resize(openglIDX + 1);
+		}
+		resources.ssbos[openglIDX] = idx;
 
 		assert(it->second == openglIDX);
 
