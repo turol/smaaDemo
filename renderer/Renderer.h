@@ -770,6 +770,7 @@ private:
 
 struct RendererDesc {
 	bool           debug;
+	bool           robustness;
 	bool           tracing;
 	bool           skipShaderCache;
 	bool           optimizeShaders;
@@ -781,6 +782,7 @@ struct RendererDesc {
 
 	RendererDesc()
 	: debug(false)
+	, robustness(false)
 	, tracing(false)
 	, skipShaderCache(false)
 	, optimizeShaders(true)
