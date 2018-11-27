@@ -476,6 +476,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	if (wantKHRDebug) {
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 	}
+	if (desc.robustness) {
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG);
+	}
 
 	SDL_DisplayMode mode;
 	memset(&mode, 0, sizeof(mode));
