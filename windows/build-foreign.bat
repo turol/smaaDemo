@@ -1,8 +1,6 @@
 @echo off
-SET GENERATOR="Visual Studio 14 2015"
-SET GENERATOR64="Visual Studio 14 2015 Win64"
-rem SET GENERATOR"Visual Studio 15 2017"
-rem SET GENERATOR64="Visual Studio 15 2017 Win64"
+SET GENERATOR="Visual Studio 15 2017"
+SET GENERATOR64="Visual Studio 15 2017 Win64"
 
 cd ../foreign/
 
