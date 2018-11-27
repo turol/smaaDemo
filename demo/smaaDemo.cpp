@@ -779,6 +779,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::CmdLine cmd("SMAA demo", ' ', "1.0");
 
 		TCLAP::SwitchArg                       debugSwitch("",        "debug",      "Enable renderer debugging",     cmd, false);
+		TCLAP::SwitchArg                       robustSwitch("",       "robust",     "Enable renderer robustness",    cmd, false);
 		TCLAP::SwitchArg                       tracingSwitch("",      "trace",      "Enable renderer tracing",       cmd, false);
 		TCLAP::SwitchArg                       noCacheSwitch("",      "nocache",    "Don't load shaders from cache", cmd, false);
 		TCLAP::SwitchArg                       noOptSwitch("",        "noopt",      "Don't optimize shaders",        cmd, false);
@@ -800,6 +801,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		cmd.parse(argc, argv);
 
 		rendererDesc.debug                 = debugSwitch.getValue();
+		rendererDesc.robustness            = robustSwitch.getValue();
 		rendererDesc.tracing               = tracingSwitch.getValue();
 		rendererDesc.skipShaderCache       = noCacheSwitch.getValue();
 		rendererDesc.optimizeShaders       = !noOptSwitch.getValue();
