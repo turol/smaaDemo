@@ -948,6 +948,11 @@ static ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl, c
 		}
 		resources.ubos[openglIDX] = idx;
 
+		LOG("UBO %u index %u ranges:\n", ubo.id, openglIDX);
+		for (auto r : glsl.get_active_buffer_ranges(ubo.id)) {
+			LOG("  %u:  %u  %u\n", r.index, static_cast<uint32_t>(r.offset), static_cast<uint32_t>(r.range));
+		}
+
 		// opengl doesn't like set decorations, strip them
 		glsl.unset_decoration(ubo.id, spv::DecorationDescriptorSet);
 		glsl.set_decoration(ubo.id, spv::DecorationBinding, openglIDX);
