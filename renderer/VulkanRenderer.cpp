@@ -553,6 +553,15 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	deviceCreateInfo.pQueueCreateInfos        = queueCreateInfos.data();
 
 	vk::PhysicalDeviceFeatures enabledFeatures;
+	if (desc.robustness) {
+		LOG("Robust buffer access requested\n");
+		if (deviceFeatures.robustBufferAccess) {
+			enabledFeatures.robustBufferAccess = true;
+			LOG(" enabled\n");
+		} else {
+			LOG(" not supported\n");
+		}
+	}
 	deviceCreateInfo.pEnabledFeatures         = &enabledFeatures;
 
 	deviceCreateInfo.enabledExtensionCount    = static_cast<uint32_t>(deviceExtensions.size());
