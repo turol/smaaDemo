@@ -381,6 +381,10 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 		LOG("GL debug from %s type %s: (%d) %s\n", errorSource(source), errorType(type), id, message);
 		break;
 
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		LOG("GL notice from %s type %s: (%d) %s\n", errorSource(source), errorType(type), id, message);
+		break;
+
 	default:
 		LOG("GL error of unknown severity %x from %s type %s: (%d) %s\n", severity, errorSource(source), errorType(type), id, message);
 		break;
