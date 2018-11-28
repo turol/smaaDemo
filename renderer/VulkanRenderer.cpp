@@ -551,8 +551,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	assert(numQueues <= queueCreateInfos.size());
 	deviceCreateInfo.queueCreateInfoCount     = numQueues;
 	deviceCreateInfo.pQueueCreateInfos        = queueCreateInfos.data();
-	// TODO: enable only features we need
-	deviceCreateInfo.pEnabledFeatures         = &deviceFeatures;
+
+	vk::PhysicalDeviceFeatures enabledFeatures;
+	deviceCreateInfo.pEnabledFeatures         = &enabledFeatures;
+
 	deviceCreateInfo.enabledExtensionCount    = static_cast<uint32_t>(deviceExtensions.size());
 	deviceCreateInfo.ppEnabledExtensionNames  = &deviceExtensions[0];
 	if (enableValidation) {
