@@ -2171,6 +2171,10 @@ void SMAADemo::render() {
 
 	lastTime = ticks;
 
+	if (recreateSwapchain || recreateFramebuffers) {
+		deleteFramebuffers();
+	}
+
 	renderer.beginFrame();
 	if (recreateSwapchain || recreateFramebuffers) {
 		recreateSwapchain = false;
