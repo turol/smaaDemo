@@ -1687,33 +1687,43 @@ void SMAADemo::createFramebuffers() {
 void SMAADemo::deleteFramebuffers() {
 	assert(sceneFramebuffer);
 	renderer.deleteFramebuffer(sceneFramebuffer);
+	sceneFramebuffer = FramebufferHandle();
 
 	assert(finalFramebuffer);
 	renderer.deleteFramebuffer(finalFramebuffer);
+	finalFramebuffer = FramebufferHandle();
 
 	assert(smaaEdgesFramebuffer);
 	renderer.deleteFramebuffer(smaaEdgesFramebuffer);
+	smaaEdgesFramebuffer = FramebufferHandle();
 
 	assert(smaaWeightsFramebuffer);
 	renderer.deleteFramebuffer(smaaWeightsFramebuffer);
+	smaaWeightsFramebuffer = FramebufferHandle();
 
 	assert(mainColorRT);
 	renderer.deleteRenderTarget(mainColorRT);
+	mainColorRT = RenderTargetHandle();
 
 	assert(velocityRT);
 	renderer.deleteRenderTarget(velocityRT);
+	velocityRT = RenderTargetHandle();
 
 	assert(mainDepthRT);
 	renderer.deleteRenderTarget(mainDepthRT);
+	mainDepthRT = RenderTargetHandle();
 
 	assert(edgesRT);
 	renderer.deleteRenderTarget(edgesRT);
+	edgesRT = RenderTargetHandle();
 
 	assert(blendWeightsRT);
 	renderer.deleteRenderTarget(blendWeightsRT);
+	blendWeightsRT = RenderTargetHandle();
 
 	assert(finalRenderRT);
 	renderer.deleteRenderTarget(finalRenderRT);
+	finalRenderRT = RenderTargetHandle();
 
 	if (resolveRTs[0]) {
 		assert(resolveRTs[1]);
@@ -1735,10 +1745,12 @@ void SMAADemo::deleteFramebuffers() {
 
 	assert(separateFB);
 	renderer.deleteFramebuffer(separateFB);
+	separateFB = FramebufferHandle();
 
 	for (unsigned int i = 0; i < 2; i++) {
 		assert(subsampleRTs[i]);
 		renderer.deleteRenderTarget(subsampleRTs[i]);
+		subsampleRTs[i] = RenderTargetHandle();
 	}
 }
 
