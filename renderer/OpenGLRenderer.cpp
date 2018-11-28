@@ -382,7 +382,9 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 		break;
 
 	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		if (type != GL_DEBUG_TYPE_PUSH_GROUP && type != GL_DEBUG_TYPE_POP_GROUP) {
 		LOG("GL notice from %s type %s: (%d) %s\n", errorSource(source), errorType(type), id, message);
+		}
 		break;
 
 	default:
