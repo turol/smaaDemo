@@ -1142,6 +1142,8 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 
 	// match shader resources against pipeline layouts
 	checkShaderResources(v.name, resources, layoutMap);
+	assert(resources.ubos.size()  == uboIndex);
+	assert(resources.ssbos.size() == ssboIndex);
 
 	// TODO: cache shaders
 	GLuint program = glCreateProgram();
