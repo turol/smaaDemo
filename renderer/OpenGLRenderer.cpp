@@ -2266,6 +2266,7 @@ void RendererImpl::rebindDescriptorSets() {
 		const auto &r = resources.ubos.at(i);
 		const auto &d = descriptors.at(r);
 		const Buffer &buffer = buffers.get(boost::get<BufferHandle>(d));
+		assert(resources.uboSizes[i] <= buffer.size);
 		glBindBufferRange(GL_UNIFORM_BUFFER, i, buffer.buffer, buffer.offset, buffer.size);
 	}
 
