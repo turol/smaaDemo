@@ -75,6 +75,9 @@ struct ShaderResources {
 	std::vector<DSIndex>        textures;
 	std::vector<DSIndex>        samplers;
 
+	// TODO: debug only, hide when NDEBUG
+	std::vector<uint32_t>       uboSizes;
+
 
 	ShaderResources() {}
 	~ShaderResources() {}

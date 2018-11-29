@@ -960,6 +960,8 @@ typedef std::unordered_map<DSIndex, ResourceInfo> ResourceMap;
 
 
 static void processShaderResources(ShaderResources &shaderResources, const ResourceMap& dsResources, spirv_cross::CompilerGLSL &glsl) {
+	shaderResources.uboSizes.resize(shaderResources.ubos.size(), 0);
+
 	auto spvResources = glsl.get_shader_resources();
 
 	for (const auto &ubo : spvResources.uniform_buffers) {
@@ -975,10 +977,14 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		assert(openglIDX < shaderResources.ubos.size());
 		assert(shaderResources.ubos[openglIDX] == idx);
 
+		uint32_t maxOffset = 0;
 		LOG("UBO %u index %u ranges:\n", ubo.id, openglIDX);
 		for (auto r : glsl.get_active_buffer_ranges(ubo.id)) {
 			LOG("  %u:  %u  %u\n", r.index, static_cast<uint32_t>(r.offset), static_cast<uint32_t>(r.range));
+			maxOffset = std::max(maxOffset, static_cast<uint32_t>(r.offset + r.range));
 		}
+		LOG(" max offset: %u\n", maxOffset);
+		shaderResources.uboSizes[openglIDX] = maxOffset;
 
 		// opengl doesn't like set decorations, strip them
 		glsl.unset_decoration(ubo.id, spv::DecorationDescriptorSet);
