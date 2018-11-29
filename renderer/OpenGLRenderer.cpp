@@ -933,12 +933,10 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 }
 
 
-static ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl, const std::unordered_map<DSIndex, uint32_t> &glIndices) {
+static void processShaderResources(ShaderResources &resources, spirv_cross::CompilerGLSL &glsl, const std::unordered_map<DSIndex, uint32_t> &glIndices) {
 	auto spvResources = glsl.get_shader_resources();
 
 	// TODO: map descriptor sets to opengl indices for textures/samplers
-
-	ShaderResources resources;
 
 	for (const auto &ubo : spvResources.uniform_buffers) {
 		DSIndex idx;
@@ -1026,8 +1024,6 @@ static ShaderResources processShaderResources(spirv_cross::CompilerGLSL &glsl, c
 		glsl.unset_decoration(c.sampler_id, spv::DecorationDescriptorSet);
 		glsl.unset_decoration(c.sampler_id, spv::DecorationBinding);
 	}
-
-	return resources;
 }
 
 
@@ -1129,11 +1125,12 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 
 		spirv_cross::CompilerGLSL glslVert(v.spirv);
 		glslVert.set_common_options(glslOptions);
-		resources = processShaderResources(glslVert, glIndices);
+		processShaderResources(resources, glslVert, glIndices);
 
 		spirv_cross::CompilerGLSL glslFrag(f.spirv);
 		glslFrag.set_common_options(glslOptions);
-		auto fragResources = processShaderResources(glslFrag, glIndices);
+		ShaderResources fragResources;
+		processShaderResources(fragResources, glslFrag, glIndices);
 		mergeShaderResources(resources, fragResources);
 
 		vertexShader = createShader(GL_VERTEX_SHADER, v.name, v.macros, glslVert);
