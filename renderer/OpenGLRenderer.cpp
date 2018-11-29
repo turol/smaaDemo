@@ -933,6 +933,32 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 }
 
 
+struct ResourceInfo {
+	DescriptorType  type;
+	uint32_t        glIndex;
+
+
+	ResourceInfo(DescriptorType type_, uint32_t glIndex_)
+	: type(type_)
+	, glIndex(glIndex_)
+	{
+	}
+
+
+	ResourceInfo(const ResourceInfo &)            = default;
+	ResourceInfo(ResourceInfo &&)                 = default;
+
+
+	ResourceInfo &operator=(const ResourceInfo &) = default;
+	ResourceInfo &operator=(ResourceInfo &&)      = default;
+
+	~ResourceInfo() {}
+};
+
+
+typedef std::unordered_map<DSIndex, ResourceInfo> ResourceMap;
+
+
 static void processShaderResources(ShaderResources &resources, spirv_cross::CompilerGLSL &glsl, const std::unordered_map<DSIndex, uint32_t> &glIndices) {
 	auto spvResources = glsl.get_shader_resources();
 
