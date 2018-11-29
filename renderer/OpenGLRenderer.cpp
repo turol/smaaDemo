@@ -959,24 +959,21 @@ struct ResourceInfo {
 typedef std::unordered_map<DSIndex, ResourceInfo> ResourceMap;
 
 
-static void processShaderResources(ShaderResources &resources, spirv_cross::CompilerGLSL &glsl, const std::unordered_map<DSIndex, uint32_t> &glIndices) {
+static void processShaderResources(ShaderResources &shaderResources, const ResourceMap& dsResources, spirv_cross::CompilerGLSL &glsl) {
 	auto spvResources = glsl.get_shader_resources();
-
-	// TODO: map descriptor sets to opengl indices for textures/samplers
 
 	for (const auto &ubo : spvResources.uniform_buffers) {
 		DSIndex idx;
 		idx.set     = glsl.get_decoration(ubo.id, spv::DecorationDescriptorSet);
 		idx.binding = glsl.get_decoration(ubo.id, spv::DecorationBinding);
 
-		auto it = glIndices.find(idx);
-		assert(it != glIndices.end());
+		auto it = dsResources.find(idx);
+		assert(it != dsResources.end());
 
-		unsigned int openglIDX = it->second;
-		if (resources.ubos.size() <= openglIDX) {
-			resources.ubos.resize(openglIDX + 1);
-		}
-		resources.ubos[openglIDX] = idx;
+		assert(it->second.type == DescriptorType::UniformBuffer);
+		unsigned int openglIDX = it->second.glIndex;
+		assert(openglIDX < shaderResources.ubos.size());
+		assert(shaderResources.ubos[openglIDX] == idx);
 
 		LOG("UBO %u index %u ranges:\n", ubo.id, openglIDX);
 		for (auto r : glsl.get_active_buffer_ranges(ubo.id)) {
@@ -993,14 +990,13 @@ static void processShaderResources(ShaderResources &resources, spirv_cross::Comp
 		idx.set     = glsl.get_decoration(ssbo.id, spv::DecorationDescriptorSet);
 		idx.binding = glsl.get_decoration(ssbo.id, spv::DecorationBinding);
 
-		auto it = glIndices.find(idx);
-		assert(it != glIndices.end());
+		auto it = dsResources.find(idx);
+		assert(it != dsResources.end());
 
-		unsigned int openglIDX = it->second;
-		if (resources.ssbos.size() <= openglIDX) {
-			resources.ssbos.resize(openglIDX + 1);
-		}
-		resources.ssbos[openglIDX] = idx;
+		assert(it->second.type == DescriptorType::StorageBuffer);
+		unsigned int openglIDX = it->second.glIndex;
+		assert(openglIDX < shaderResources.ssbos.size());
+		assert(shaderResources.ssbos[openglIDX] == idx);
 
 		// opengl doesn't like set decorations, strip them
 		glsl.unset_decoration(ssbo.id, spv::DecorationDescriptorSet);
@@ -1012,10 +1008,15 @@ static void processShaderResources(ShaderResources &resources, spirv_cross::Comp
 		idx.set     = glsl.get_decoration(s.id, spv::DecorationDescriptorSet);
 		idx.binding = glsl.get_decoration(s.id, spv::DecorationBinding);
 
-		unsigned int openglIDX = resources.textures.size();
-		assert(openglIDX == resources.samplers.size());
-		resources.textures.push_back(idx);
-		resources.samplers.push_back(idx);
+		auto it = dsResources.find(idx);
+		assert(it != dsResources.end());
+
+		assert(it->second.type == DescriptorType::CombinedSampler);
+		unsigned int openglIDX = it->second.glIndex;
+		assert(openglIDX < shaderResources.textures.size());
+		assert(openglIDX < shaderResources.samplers.size());
+		assert(shaderResources.textures[openglIDX] == idx);
+		assert(shaderResources.samplers[openglIDX] == idx);
 
 		// opengl doesn't like set decorations, strip them
 		glsl.unset_decoration(s.id, spv::DecorationDescriptorSet);
@@ -1027,17 +1028,17 @@ static void processShaderResources(ShaderResources &resources, spirv_cross::Comp
 	glsl.build_combined_image_samplers();
 
 	for (const spirv_cross::CombinedImageSampler &c : glsl.get_combined_image_samplers()) {
-		assert(resources.textures.size() == resources.samplers.size());
-		unsigned int openglIDX = resources.textures.size();
+		assert(shaderResources.textures.size() == shaderResources.samplers.size());
+		unsigned int openglIDX = shaderResources.textures.size();
 
 		DSIndex idx;
 		idx.set     = glsl.get_decoration(c.image_id, spv::DecorationDescriptorSet);
 		idx.binding = glsl.get_decoration(c.image_id, spv::DecorationBinding);
-		resources.textures.push_back(idx);
+		shaderResources.textures.push_back(idx);
 
 		idx.set     = glsl.get_decoration(c.sampler_id, spv::DecorationDescriptorSet);
 		idx.binding = glsl.get_decoration(c.sampler_id, spv::DecorationBinding);
-		resources.samplers.push_back(idx);
+		shaderResources.samplers.push_back(idx);
 
 		// don't clear the set decoration because other combined samplers might need it
 		glsl.set_decoration(c.combined_id, spv::DecorationBinding, openglIDX);
@@ -1049,41 +1050,6 @@ static void processShaderResources(ShaderResources &resources, spirv_cross::Comp
 		glsl.unset_decoration(c.image_id,    spv::DecorationBinding);
 		glsl.unset_decoration(c.sampler_id, spv::DecorationDescriptorSet);
 		glsl.unset_decoration(c.sampler_id, spv::DecorationBinding);
-	}
-}
-
-
-static void checkShaderResources(const std::string &name, const ShaderResources &resources, const std::unordered_map<DSIndex, DescriptorType> &layoutMap) {
-	for (const auto &r : resources.ubos) {
-		auto type = layoutMap.at(r);
-		if (type != DescriptorType::UniformBuffer) {
-			LOG("ERROR: set %u binding %u type %s in shader \"%s\" doesn't match ds layout (%s)\n", r.set, r.binding, descriptorTypeName(DescriptorType::UniformBuffer), name.c_str(), descriptorTypeName(type));
-			throw std::runtime_error("descriptor set layout mismatch");
-		}
-	}
-
-	for (const auto &r : resources.ssbos) {
-		auto type = layoutMap.at(r);
-		if (type != DescriptorType::StorageBuffer) {
-			LOG("ERROR: set %u binding %u type %s in shader \"%s\" doesn't match ds layout (%s)\n", r.set, r.binding, descriptorTypeName(DescriptorType::StorageBuffer), name.c_str(), descriptorTypeName(type));
-			throw std::runtime_error("descriptor set layout mismatch");
-		}
-	}
-
-	for (const auto &r : resources.textures) {
-		auto type = layoutMap.at(r);
-		if (type != DescriptorType::Texture && type != DescriptorType::CombinedSampler) {
-			LOG("ERROR: set %u binding %u type texture in shader \"%s\" doesn't match ds layout (%s)\n", r.set, r.binding, name.c_str(), descriptorTypeName(type));
-			throw std::runtime_error("descriptor set layout mismatch");
-		}
-	}
-
-	for (const auto &r : resources.samplers) {
-		auto type = layoutMap.at(r);
-		if (type != DescriptorType::Sampler && type != DescriptorType::CombinedSampler) {
-			LOG("ERROR: set %u binding %u type sampler in shader \"%s\" doesn't match ds layout (%s)\n", r.set, r.binding, name.c_str(), descriptorTypeName(type));
-			throw std::runtime_error("descriptor set layout mismatch");
-		}
 	}
 }
 
@@ -1104,11 +1070,9 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	auto fshaderHandle = createFragmentShader(desc.fragmentShaderName, desc.shaderMacros_);
 	const auto &f = fragmentShaders.get(fshaderHandle);
 
-	// construct layout map
-	std::unordered_map<DSIndex, DescriptorType> layoutMap;
-	std::unordered_map<DSIndex, uint32_t> glIndices;
-	uint32_t uboIndex  = 0;
-	uint32_t ssboIndex = 0;
+	// construct map of descriptor set resources
+	ResourceMap      dsResources;
+	ShaderResources  shaderResources;
 	for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
 		if (desc.descriptorSetLayouts[i]) {
 			const auto &layoutDesc = dsLayouts.get(desc.descriptorSetLayouts[i]).descriptors;
@@ -1116,34 +1080,46 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 				DSIndex idx;
 				idx.set     = i;
 				idx.binding = binding;
-				auto type = layoutDesc.at(binding).type;
-				layoutMap.emplace(idx, type);
+				uint32_t glIndex = 0xFFFFFFFFU;
 
+				auto type = layoutDesc.at(binding).type;
 				switch (type) {
 				case DescriptorType::UniformBuffer:
-					glIndices.emplace(idx, uboIndex);
-					uboIndex++;
+					glIndex = shaderResources.ubos.size();
+					shaderResources.ubos.push_back(idx);
 					break;
 
 				case DescriptorType::StorageBuffer:
-					glIndices.emplace(idx, ssboIndex);
-					ssboIndex++;
+					glIndex = shaderResources.ssbos.size();
+					shaderResources.ssbos.push_back(idx);
+					break;
+
+				case DescriptorType::Sampler:
+				case DescriptorType::Texture:
+                    // gets assigned later after spirv-cross has built combined samplers
+					break;
+
+				case DescriptorType::CombinedSampler:
+					glIndex         = shaderResources.textures.size();
+					assert(glIndex == shaderResources.samplers.size());
+
+					shaderResources.textures.push_back(idx);
+					shaderResources.samplers.push_back(idx);
 					break;
 
 				case DescriptorType::End:
-				case DescriptorType::Sampler:
-				case DescriptorType::Texture:
-				case DescriptorType::CombinedSampler:
 				case DescriptorType::Count:
+					assert(false);
 					break;
 				}
+
+				dsResources.emplace(idx, ResourceInfo(type, glIndex));
 			}
 		}
 	}
 
 	GLuint vertexShader = 0;
 	GLuint fragmentShader = 0;
-	ShaderResources resources;
 	{
 		spirv_cross::CompilerGLSL::Options glslOptions;
 		glslOptions.vertex.fixup_clipspace = false;
@@ -1151,22 +1127,15 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 
 		spirv_cross::CompilerGLSL glslVert(v.spirv);
 		glslVert.set_common_options(glslOptions);
-		processShaderResources(resources, glslVert, glIndices);
+		processShaderResources(shaderResources, dsResources, glslVert);
 
 		spirv_cross::CompilerGLSL glslFrag(f.spirv);
 		glslFrag.set_common_options(glslOptions);
-		ShaderResources fragResources;
-		processShaderResources(fragResources, glslFrag, glIndices);
-		mergeShaderResources(resources, fragResources);
+		processShaderResources(shaderResources, dsResources, glslFrag);
 
 		vertexShader = createShader(GL_VERTEX_SHADER, v.name, v.macros, glslVert);
 		fragmentShader = createShader(GL_FRAGMENT_SHADER, f.name, f.macros, glslFrag);
 	}
-
-	// match shader resources against pipeline layouts
-	checkShaderResources(v.name, resources, layoutMap);
-	assert(resources.ubos.size()  == uboIndex);
-	assert(resources.ssbos.size() == ssboIndex);
 
 	// TODO: cache shaders
 	GLuint program = glCreateProgram();
@@ -1195,7 +1164,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	pipeline.shader    = program;
 	pipeline.srcBlend  = blendFunc(desc.sourceBlend_);
 	pipeline.destBlend = blendFunc(desc.destinationBlend_);
-	pipeline.resources = std::move(resources);
+	pipeline.resources = std::move(shaderResources);
 
 	if (tracing) {
 		glObjectLabel(GL_PROGRAM, program, desc.name_.size(), desc.name_.c_str());
