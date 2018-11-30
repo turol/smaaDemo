@@ -2936,9 +2936,11 @@ int main(int argc, char *argv[]) {
 				demo->mainLoopIteration();
 			} catch (std::exception &e) {
 				LOG("caught std::exception: \"%s\"\n", e.what());
+				logFlush();
 				break;
 			} catch (...) {
 				LOG("caught unknown exception\n");
+				logFlush();
 				break;
 			}
 		}
