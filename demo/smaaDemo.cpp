@@ -2899,7 +2899,7 @@ void SMAADemo::renderGUI() {
 					assert(pcmd->TextureId == 0);
 					renderer.setScissorRect(static_cast<unsigned int>(pcmd->ClipRect.x), static_cast<unsigned int>(pcmd->ClipRect.y),
 						static_cast<unsigned int>(pcmd->ClipRect.z - pcmd->ClipRect.x), static_cast<unsigned int>(pcmd->ClipRect.w - pcmd->ClipRect.y));
-					renderer.drawIndexedOffset(pcmd->ElemCount, idx_buffer_offset);
+					renderer.drawIndexedOffset(pcmd->ElemCount, idx_buffer_offset, 0, cmd_list->VtxBuffer.Size);
 				}
 				idx_buffer_offset += pcmd->ElemCount;
 			}

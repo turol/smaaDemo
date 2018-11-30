@@ -853,8 +853,8 @@ void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int insta
 }
 
 
-void Renderer::drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex) {
-	impl->drawIndexedOffset(vertexCount, firstIndex);
+void Renderer::drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int minIndex, unsigned int maxIndex) {
+	impl->drawIndexedOffset(vertexCount, firstIndex, minIndex, maxIndex);
 }
 
 

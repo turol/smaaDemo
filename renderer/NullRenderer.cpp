@@ -434,7 +434,7 @@ void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int i
 }
 
 
-void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int /* firstIndex */) {
+void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int /* firstIndex */, unsigned int /* minIndex */, unsigned int /* maxIndex */) {
 	assert(inRenderPass);
 	assert(validPipeline);
 	assert(vertexCount > 0);
