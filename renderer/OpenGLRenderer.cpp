@@ -2482,7 +2482,7 @@ void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int i
 }
 
 
-void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int /* minIndex */, unsigned int /* maxIndex */) {
+void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int minIndex, unsigned int maxIndex) {
 #ifndef NDEBUG
 	assert(inRenderPass);
 	assert(validPipeline);
@@ -2501,7 +2501,7 @@ void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int firs
 	unsigned int idxSize = idxBuf16Bit ? 2                 : 4 ;
 	auto ptr = reinterpret_cast<const char *>(firstIndex * idxSize + indexBufByteOffset);
 	// TODO: get primitive from current pipeline
-	glDrawElements(GL_TRIANGLES, vertexCount, format, ptr);
+	glDrawRangeElements(GL_TRIANGLES, minIndex, maxIndex, vertexCount, format, ptr);
 }
 
 
