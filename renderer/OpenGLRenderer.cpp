@@ -975,7 +975,10 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		// must be the first time we find this (set, binding) combination
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
-		assert(b.second);
+		if (!b.second) {
+			LOG("Duplicate UBO binding (%u, %u)\n", idx.set, idx.binding);
+			throw std::runtime_error("Duplicate UBO binding");
+		}
 
 		auto it = dsResources.find(idx);
 		assert(it != dsResources.end());
@@ -1007,7 +1010,10 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		// must be the first time we find this (set, binding) combination
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
-		assert(b.second);
+		if (!b.second) {
+			LOG("Duplicate SSBO binding (%u, %u)\n", idx.set, idx.binding);
+			throw std::runtime_error("Duplicate SSBO binding");
+		}
 
 		auto it = dsResources.find(idx);
 		assert(it != dsResources.end());
@@ -1030,7 +1036,10 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		// must be the first time we find this (set, binding) combination
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
-		assert(b.second);
+		if (!b.second) {
+			LOG("Duplicate image binding (%u, %u)\n", idx.set, idx.binding);
+			throw std::runtime_error("Duplicate image binding");
+		}
 
 		auto it = dsResources.find(idx);
 		assert(it != dsResources.end());
