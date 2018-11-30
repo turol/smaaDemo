@@ -962,12 +962,20 @@ typedef std::unordered_map<DSIndex, ResourceInfo> ResourceMap;
 static void processShaderResources(ShaderResources &shaderResources, const ResourceMap& dsResources, spirv_cross::CompilerGLSL &glsl) {
 	shaderResources.uboSizes.resize(shaderResources.ubos.size(), 0);
 
+	// TODO: only in debug mode
+	std::unordered_set<DSIndex> bindings;
+
 	auto spvResources = glsl.get_shader_resources();
 
 	for (const auto &ubo : spvResources.uniform_buffers) {
 		DSIndex idx;
 		idx.set     = glsl.get_decoration(ubo.id, spv::DecorationDescriptorSet);
 		idx.binding = glsl.get_decoration(ubo.id, spv::DecorationBinding);
+
+		// must be the first time we find this (set, binding) combination
+		// if not, there's a bug in the shader
+		auto b = bindings.insert(idx);
+		assert(b.second);
 
 		auto it = dsResources.find(idx);
 		assert(it != dsResources.end());
@@ -996,6 +1004,11 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		idx.set     = glsl.get_decoration(ssbo.id, spv::DecorationDescriptorSet);
 		idx.binding = glsl.get_decoration(ssbo.id, spv::DecorationBinding);
 
+		// must be the first time we find this (set, binding) combination
+		// if not, there's a bug in the shader
+		auto b = bindings.insert(idx);
+		assert(b.second);
+
 		auto it = dsResources.find(idx);
 		assert(it != dsResources.end());
 
@@ -1013,6 +1026,11 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		DSIndex idx;
 		idx.set     = glsl.get_decoration(s.id, spv::DecorationDescriptorSet);
 		idx.binding = glsl.get_decoration(s.id, spv::DecorationBinding);
+
+		// must be the first time we find this (set, binding) combination
+		// if not, there's a bug in the shader
+		auto b = bindings.insert(idx);
+		assert(b.second);
 
 		auto it = dsResources.find(idx);
 		assert(it != dsResources.end());
