@@ -2180,13 +2180,13 @@ void SMAADemo::render() {
 	lastTime = ticks;
 
 	if (activeScene == 0 && rotateCubes) {
-			rotationTime += elapsed;
+		rotationTime += elapsed;
 
-			// TODO: increasing rotation period can make cubes spin backwards
-			const uint64_t rotationPeriod = rotationPeriodSeconds * 1000000000ULL;
-			rotationTime   = rotationTime % rotationPeriod;
-			cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
-		}
+		// TODO: increasing rotation period can make cubes spin backwards
+		const uint64_t rotationPeriod = rotationPeriodSeconds * 1000000000ULL;
+		rotationTime   = rotationTime % rotationPeriod;
+		cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
+	}
 
 	if (recreateSwapchain || recreateFramebuffers) {
 		deleteFramebuffers();
