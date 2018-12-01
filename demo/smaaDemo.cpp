@@ -2238,10 +2238,6 @@ void SMAADemo::render() {
 	const unsigned int windowWidth  = rendererDesc.swapchain.width;
 	const unsigned int windowHeight = rendererDesc.swapchain.height;
 
-	ShaderDefines::Globals globals;
-	globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
-	globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
-
 	Layout l = Layout::ShaderRead;
 	if (!antialiasing || aaMethod == AAMethod::MSAA) {
 		l = Layout::TransferSrc;
@@ -2259,6 +2255,10 @@ void SMAADemo::render() {
 			rotationTime   = rotationTime % rotationPeriod;
 			cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
 		}
+
+	ShaderDefines::Globals globals;
+	globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
+	globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
 
 		// TODO: better calculation, and check cube size (side is sqrt(3) currently)
 		const float cubeDiameter = sqrtf(3.0f);
@@ -2328,6 +2328,10 @@ void SMAADemo::render() {
 		const auto &image = images.at(activeScene - 1);
 
 		renderer.setViewport(0, 0, windowWidth, windowHeight);
+
+	ShaderDefines::Globals globals;
+	globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
+	globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
 
 		GlobalDS globalDS;
 		globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
