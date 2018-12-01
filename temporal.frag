@@ -40,10 +40,10 @@ THE SOFTWARE.
 #include "smaa.h"
 
 
-layout(set = 1, binding = 0) uniform sampler2D currentTex;
-layout(set = 1, binding = 1) uniform sampler2D previousTex;
+layout(set = 1, binding = 1) uniform sampler2D currentTex;
+layout(set = 1, binding = 2) uniform sampler2D previousTex;
 #if SMAA_REPROJECTION
-layout(set = 1, binding = 2) uniform sampler2D velocityTex;
+layout(set = 1, binding = 3) uniform sampler2D velocityTex;
 #endif  // SMAA_REPROJECTION
 
 

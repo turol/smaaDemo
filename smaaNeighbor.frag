@@ -41,8 +41,8 @@ THE SOFTWARE.
 
 layout (location = 0) out vec4 outColor;
 
-layout(set = 1, binding = 0) uniform sampler2D colorTex;
-layout(set = 1, binding = 1) uniform sampler2D blendTex;
+layout(set = 1, binding = 1) uniform sampler2D colorTex;
+layout(set = 1, binding = 2) uniform sampler2D blendTex;
 
 layout (location = 0) in vec2 texcoord;
 layout (location = 1) in vec4 offset;

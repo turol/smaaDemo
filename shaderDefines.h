@@ -34,6 +34,19 @@ layout(set = 0, binding = 0, std140) uniform Globals
 	mat4 prevViewProj;
 	mat4 guiOrtho;
 
+};
+
+
+#ifdef __cplusplus
+
+struct SMAAUBO
+
+#else  // __cplusplus
+
+layout(set = 1, binding = 0, std140) uniform SMAAUBO
+
+#endif  // __cplusplus
+{
 	SMAAParameters  smaaParameters;
 
 	vec4 subsampleIndices;

@@ -553,9 +553,9 @@ public:
 
 	void render();
 
-	void doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass);
+	void doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass, BufferHandle smaaUBOBuf);
 
-	void doTemporalAA();
+	void doTemporalAA(BufferHandle smaaUBOBuf);
 
 	void updateGUI(uint64_t elapsed);
 
@@ -955,6 +955,7 @@ DSLayoutHandle ColorTexDS::layoutHandle;
 
 
 struct EdgeDetectionDS {
+	BufferHandle  smaaUBO;
 	CSampler color;
 	CSampler predicationTex;
 
@@ -964,7 +965,8 @@ struct EdgeDetectionDS {
 
 
 const DescriptorLayout EdgeDetectionDS::layout[] = {
-	  { DescriptorType::CombinedSampler,  offsetof(EdgeDetectionDS, color) }
+	  { DescriptorType::UniformBuffer,    offsetof(EdgeDetectionDS, smaaUBO)        }
+	, { DescriptorType::CombinedSampler,  offsetof(EdgeDetectionDS, color)          }
 	, { DescriptorType::CombinedSampler,  offsetof(EdgeDetectionDS, predicationTex) }
 	, { DescriptorType::End,              0,                               }
 };
@@ -973,6 +975,7 @@ DSLayoutHandle EdgeDetectionDS::layoutHandle;
 
 
 struct BlendWeightDS {
+	BufferHandle  smaaUBO;
 	CSampler edgesTex;
 	CSampler areaTex;
 	CSampler searchTex;
@@ -983,7 +986,8 @@ struct BlendWeightDS {
 
 
 const DescriptorLayout BlendWeightDS::layout[] = {
-	  { DescriptorType::CombinedSampler,  offsetof(BlendWeightDS, edgesTex)       }
+	  { DescriptorType::UniformBuffer,    offsetof(BlendWeightDS, smaaUBO)        }
+	, { DescriptorType::CombinedSampler,  offsetof(BlendWeightDS, edgesTex)       }
 	, { DescriptorType::CombinedSampler,  offsetof(BlendWeightDS, areaTex)        }
 	, { DescriptorType::CombinedSampler,  offsetof(BlendWeightDS, searchTex)      }
 	, { DescriptorType::End,              0,                                      }
@@ -993,6 +997,7 @@ DSLayoutHandle BlendWeightDS::layoutHandle;
 
 
 struct NeighborBlendDS {
+	BufferHandle  smaaUBO;
 	CSampler color;
 	CSampler blendweights;
 
@@ -1002,7 +1007,8 @@ struct NeighborBlendDS {
 
 
 const DescriptorLayout NeighborBlendDS::layout[] = {
-	  { DescriptorType::CombinedSampler,  offsetof(NeighborBlendDS, color)              }
+	  { DescriptorType::UniformBuffer,    offsetof(NeighborBlendDS, smaaUBO)            }
+	, { DescriptorType::CombinedSampler,  offsetof(NeighborBlendDS, color)              }
 	, { DescriptorType::CombinedSampler,  offsetof(NeighborBlendDS, blendweights)       }
 	, { DescriptorType::End        ,      0                                             }
 };
@@ -1011,6 +1017,7 @@ DSLayoutHandle NeighborBlendDS::layoutHandle;
 
 
 struct TemporalAADS {
+	BufferHandle  smaaUBO;
 	CSampler currentTex;
 	CSampler previousTex;
 	CSampler velocityTex;
@@ -1021,7 +1028,8 @@ struct TemporalAADS {
 
 
 const DescriptorLayout TemporalAADS::layout[] = {
-	  { DescriptorType::CombinedSampler,  offsetof(TemporalAADS, currentTex)  }
+	  { DescriptorType::UniformBuffer,    offsetof(TemporalAADS, smaaUBO)     }
+	, { DescriptorType::CombinedSampler,  offsetof(TemporalAADS, currentTex)  }
 	, { DescriptorType::CombinedSampler,  offsetof(TemporalAADS, previousTex) }
 	, { DescriptorType::CombinedSampler,  offsetof(TemporalAADS, velocityTex) }
 	, { DescriptorType::End        ,      0                                   }
@@ -2233,12 +2241,16 @@ void SMAADemo::render() {
 	ShaderDefines::Globals globals;
 	globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 	globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
-	globals.smaaParameters        = smaaParameters;
-	globals.predicationThreshold  = predicationThreshold;
-	globals.predicationScale      = predicationScale;
-	globals.predicationStrength   = predicationStrength;
-	globals.reprojWeigthScale     = reprojectionWeightScale;
-	globals.subsampleIndices      = subsampleIndices[0];
+
+	ShaderDefines::SMAAUBO smaaUBO;
+	smaaUBO.smaaParameters        = smaaParameters;
+	smaaUBO.predicationThreshold  = predicationThreshold;
+	smaaUBO.predicationScale      = predicationScale;
+	smaaUBO.predicationStrength   = predicationStrength;
+	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
+	smaaUBO.subsampleIndices      = subsampleIndices[0];
+
+	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
 
 	Layout l = Layout::ShaderRead;
 	if (!antialiasing || aaMethod == AAMethod::MSAA) {
@@ -2350,7 +2362,7 @@ void SMAADemo::render() {
 				// TODO: do this transition as part of renderpass?
 				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::TransferDst, Layout::ColorAttachment);
 
-				doTemporalAA();
+				doTemporalAA(smaaUBOBuf);
 			} else {
 				renderer.layoutTransition(finalRenderRT, Layout::Undefined, Layout::TransferDst);
 				renderer.resolveMSAA(sceneFramebuffer, finalFramebuffer);
@@ -2369,19 +2381,19 @@ void SMAADemo::render() {
 			renderer.endRenderPass();
 
 			if (temporalAA) {
-				doTemporalAA();
+				doTemporalAA(smaaUBOBuf);
 			}
 		} break;
 
 		case AAMethod::SMAA: {
 			if (temporalAA) {
-				doSMAA(mainColorRT, smaaBlendRenderPass, resolveFBs[temporalFrame], 0);
+				doSMAA(mainColorRT, smaaBlendRenderPass, resolveFBs[temporalFrame], 0, smaaUBOBuf);
 			} else {
-				doSMAA(mainColorRT, finalRenderPass, finalFramebuffer, 0);
+				doSMAA(mainColorRT, finalRenderPass, finalFramebuffer, 0, smaaUBOBuf);
 			}
 
 			if (temporalAA) {
-				doTemporalAA();
+				doTemporalAA(smaaUBOBuf);
 			}
 		} break;
 
@@ -2398,31 +2410,21 @@ void SMAADemo::render() {
 
 			// TODO: clean up the renderpass mess
 			if (temporalAA) {
-				doSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], resolveFBs[temporalFrame], 0);
-				// TODO: this is ugly, subsample indices should be in their own UBO
-				// or push constants
-				globals.subsampleIndices = subsampleIndices[1];
-				GlobalDS globalDS;
-				globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-				globalDS.linearSampler  = linearSampler;
-				globalDS.nearestSampler = nearestSampler;
-				renderer.bindDescriptorSet(0, globalDS);
-				doSMAA(subsampleRTs[1], smaa2XBlendRenderPasses[1], resolveFBs[temporalFrame], 1);
+				doSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], resolveFBs[temporalFrame], 0, smaaUBOBuf);
+				smaaUBO.subsampleIndices = subsampleIndices[1];
+				smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
+				doSMAA(subsampleRTs[1], smaa2XBlendRenderPasses[1], resolveFBs[temporalFrame], 1, smaaUBOBuf);
 			} else {
-				doSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], finalFramebuffer, 0);
-				globals.subsampleIndices = subsampleIndices[1];
-				GlobalDS globalDS;
-				globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-				globalDS.linearSampler  = linearSampler;
-				globalDS.nearestSampler = nearestSampler;
-				renderer.bindDescriptorSet(0, globalDS);
-				doSMAA(subsampleRTs[1], smaa2XBlendRenderPasses[1], finalFramebuffer, 1);
+				doSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], finalFramebuffer, 0, smaaUBOBuf);
+				smaaUBO.subsampleIndices = subsampleIndices[1];
+				smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
+				doSMAA(subsampleRTs[1], smaa2XBlendRenderPasses[1], finalFramebuffer, 1, smaaUBOBuf);
 			}
 
 			if (temporalAA) {
 				// FIXME: move to renderpass
 				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::ColorAttachment, Layout::ShaderRead);
-				doTemporalAA();
+				doTemporalAA(smaaUBOBuf);
 			}
 		} break;
 		}
@@ -2441,13 +2443,14 @@ void SMAADemo::render() {
 }
 
 
-void SMAADemo::doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass) {
+void SMAADemo::doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass, BufferHandle smaaUBOBuf) {
 	// edges pass
 	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
 	renderer.beginRenderPass(smaaEdgesRenderPass, smaaEdgesFramebuffer);
 	renderer.bindPipeline(pipelines.edgePipeline);
 
 	EdgeDetectionDS edgeDS;
+	edgeDS.smaaUBO = smaaUBOBuf;
 	if (smaaKey.edgeMethod == SMAAEdgeMethod::Depth) {
 		edgeDS.color.tex     = renderer.getRenderTargetTexture(mainDepthRT);
 	} else {
@@ -2464,6 +2467,7 @@ void SMAADemo::doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, Fra
 	renderer.beginRenderPass(smaaWeightsRenderPass, smaaWeightsFramebuffer);
 	renderer.bindPipeline(pipelines.blendWeightPipeline);
 	BlendWeightDS blendWeightDS;
+	blendWeightDS.smaaUBO           = smaaUBOBuf;
 	blendWeightDS.edgesTex.tex      = renderer.getRenderTargetTexture(edgesRT);
 	blendWeightDS.edgesTex.sampler  = linearSampler;
 	blendWeightDS.areaTex.tex       = areaTex;
@@ -2484,6 +2488,7 @@ void SMAADemo::doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, Fra
 		renderer.bindPipeline(pipelines.neighborPipelines[pass]);
 
 		NeighborBlendDS neighborBlendDS;
+		neighborBlendDS.smaaUBO              = smaaUBOBuf;
 		neighborBlendDS.color.tex            = renderer.getRenderTargetTexture(input);
 		neighborBlendDS.color.sampler        = linearSampler;
 		neighborBlendDS.blendweights.tex     = renderer.getRenderTargetTexture(blendWeightsRT);
@@ -2513,10 +2518,11 @@ void SMAADemo::doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, Fra
 }
 
 
-void SMAADemo::doTemporalAA() {
+void SMAADemo::doTemporalAA(BufferHandle smaaUBOBuf) {
 	renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
 	renderer.bindPipeline(temporalAAPipelines[temporalReproject]);
 	TemporalAADS temporalDS;
+	temporalDS.smaaUBO             = smaaUBOBuf;
 	temporalDS.currentTex.tex      = renderer.getRenderTargetTexture(resolveRTs[temporalFrame]);
 	temporalDS.currentTex.sampler  = nearestSampler;
 	if (temporalAAFirstFrame) {
