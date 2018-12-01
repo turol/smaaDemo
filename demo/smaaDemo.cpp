@@ -2179,6 +2179,15 @@ void SMAADemo::render() {
 
 	lastTime = ticks;
 
+	if (activeScene == 0 && rotateCubes) {
+			rotationTime += elapsed;
+
+			// TODO: increasing rotation period can make cubes spin backwards
+			const uint64_t rotationPeriod = rotationPeriodSeconds * 1000000000ULL;
+			rotationTime   = rotationTime % rotationPeriod;
+			cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
+		}
+
 	if (recreateSwapchain || recreateFramebuffers) {
 		deleteFramebuffers();
 	}
@@ -2246,15 +2255,6 @@ void SMAADemo::render() {
 
 	if (activeScene == 0) {
 		renderer.bindPipeline(getCubePipeline(numSamples));
-
-		if (rotateCubes) {
-			rotationTime += elapsed;
-
-			// TODO: increasing rotation period can make cubes spin backwards
-			const uint64_t rotationPeriod = rotationPeriodSeconds * 1000000000ULL;
-			rotationTime   = rotationTime % rotationPeriod;
-			cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
-		}
 
 		ShaderDefines::Globals globals;
 		globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
