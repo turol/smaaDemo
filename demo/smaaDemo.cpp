@@ -2242,16 +2242,6 @@ void SMAADemo::render() {
 	globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 	globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
 
-	ShaderDefines::SMAAUBO smaaUBO;
-	smaaUBO.smaaParameters        = smaaParameters;
-	smaaUBO.predicationThreshold  = predicationThreshold;
-	smaaUBO.predicationScale      = predicationScale;
-	smaaUBO.predicationStrength   = predicationStrength;
-	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
-	smaaUBO.subsampleIndices      = subsampleIndices[0];
-
-	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
-
 	Layout l = Layout::ShaderRead;
 	if (!antialiasing || aaMethod == AAMethod::MSAA) {
 		l = Layout::TransferSrc;
@@ -2352,6 +2342,16 @@ void SMAADemo::render() {
 		renderer.draw(0, 3);
 	}
 	renderer.endRenderPass();
+
+	ShaderDefines::SMAAUBO smaaUBO;
+	smaaUBO.smaaParameters        = smaaParameters;
+	smaaUBO.predicationThreshold  = predicationThreshold;
+	smaaUBO.predicationScale      = predicationScale;
+	smaaUBO.predicationStrength   = predicationStrength;
+	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
+	smaaUBO.subsampleIndices      = subsampleIndices[0];
+
+	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
 
 	if (antialiasing) {
 		switch (aaMethod) {
