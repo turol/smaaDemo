@@ -2244,9 +2244,6 @@ void SMAADemo::render() {
 		subsampleIndices[1] = glm::vec4(2.0f, 2.0f, 2.0f, 0.0f);
 	}
 
-	const unsigned int windowWidth  = rendererDesc.swapchain.width;
-	const unsigned int windowHeight = rendererDesc.swapchain.height;
-
 	Layout l = Layout::ShaderRead;
 	if (!antialiasing || aaMethod == AAMethod::MSAA) {
 		l = Layout::TransferSrc;
@@ -2255,6 +2252,9 @@ void SMAADemo::render() {
 
 	if (activeScene == 0) {
 		renderer.bindPipeline(getCubePipeline(numSamples));
+
+	const unsigned int windowWidth  = rendererDesc.swapchain.width;
+	const unsigned int windowHeight = rendererDesc.swapchain.height;
 
 		ShaderDefines::Globals globals;
 		globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
@@ -2326,6 +2326,9 @@ void SMAADemo::render() {
 		renderer.bindPipeline(imagePipeline);
 
 		const auto &image = images.at(activeScene - 1);
+
+	const unsigned int windowWidth  = rendererDesc.swapchain.width;
+	const unsigned int windowHeight = rendererDesc.swapchain.height;
 
 		renderer.setViewport(0, 0, windowWidth, windowHeight);
 
