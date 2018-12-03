@@ -522,6 +522,26 @@ class SMAADemo {
 	RenderPassHandle getSceneRenderPass(unsigned int n, Layout l);
 	PipelineHandle getCubePipeline(unsigned int n);
 
+	void doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass, BufferHandle smaaUBOBuf);
+
+	void doTemporalAA(BufferHandle smaaUBOBuf);
+
+	void updateGUI(uint64_t elapsed);
+
+	void renderGUI();
+
+	void loadImage(const std::string &filename);
+
+	uint64_t getNanoseconds() {
+		return (SDL_GetPerformanceCounter() - tickBase) * freqMult / freqDiv;
+	}
+
+	void shuffleCubeRendering();
+
+	void reorderCubeRendering();
+
+	void colorCubes();
+
 
 public:
 
@@ -539,12 +559,6 @@ public:
 
 	void createCubes();
 
-	void shuffleCubeRendering();
-
-	void reorderCubeRendering();
-
-	void colorCubes();
-
 	void mainLoopIteration();
 
 	bool shouldKeepGoing() const {
@@ -552,21 +566,6 @@ public:
 	}
 
 	void render();
-
-	void doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass, BufferHandle smaaUBOBuf);
-
-	void doTemporalAA(BufferHandle smaaUBOBuf);
-
-	void updateGUI(uint64_t elapsed);
-
-	void renderGUI();
-
-	void loadImage(const std::string &filename);
-
-	uint64_t getNanoseconds() {
-		return (SDL_GetPerformanceCounter() - tickBase) * freqMult / freqDiv;
-	}
-
 };
 
 
