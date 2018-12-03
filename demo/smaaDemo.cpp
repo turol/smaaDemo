@@ -530,6 +530,8 @@ class SMAADemo {
 
 	void renderGUI();
 
+	void renderCubeScene();
+
 	void renderImageScene();
 
 	void loadImage(const std::string &filename);
@@ -2252,77 +2254,7 @@ void SMAADemo::render() {
 	renderer.beginRenderPass(getSceneRenderPass(numSamples, l), sceneFramebuffer);
 
 	if (activeScene == 0) {
-		renderer.bindPipeline(getCubePipeline(numSamples));
-
-		const unsigned int windowWidth  = rendererDesc.swapchain.width;
-		const unsigned int windowHeight = rendererDesc.swapchain.height;
-
-		ShaderDefines::Globals globals;
-		globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
-		globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
-
-		// TODO: better calculation, and check cube size (side is sqrt(3) currently)
-		const float cubeDiameter = sqrtf(3.0f);
-		const float cubeDistance = cubeDiameter + 1.0f;
-
-		float farPlane  = cameraDistance + cubeDistance * float(cubesPerSide + 1);
-		float nearPlane = std::max(0.1f, cameraDistance - cubeDistance * float(cubesPerSide + 1));
-
-		glm::mat4 model  = glm::rotate(glm::mat4(1.0f), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
-		glm::mat4 view   = glm::lookAt(glm::vec3(cameraDistance, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		glm::mat4 proj   = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, nearPlane, farPlane);
-		glm::mat4 viewProj = proj * view * model;
-
-		// temporal jitter
-		if (temporalAA) {
-			glm::vec2 jitter;
-			if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
-				const glm::vec2 jitters[2] = {
-					  {  0.125f,  0.125f }
-					, { -0.125f, -0.125f }
-				};
-				jitter = jitters[temporalFrame];
-			} else {
-				const glm::vec2 jitters[2] = {
-					  { -0.25f,  0.25f }
-					, { 0.25f,  -0.25f }
-				};
-				jitter = jitters[temporalFrame];
-			}
-
-			jitter = jitter * 2.0f * glm::vec2(globals.screenSize.x, globals.screenSize.y);
-			glm::mat4 jitterMatrix = glm::translate(glm::identity<glm::mat4>(), glm::vec3(jitter, 0.0f));
-			viewProj = jitterMatrix * viewProj;
-		}
-
-		prevViewProj         = currViewProj;
-		currViewProj         = viewProj;
-		globals.viewProj     = currViewProj;
-		globals.prevViewProj = prevViewProj;
-
-		renderer.setViewport(0, 0, windowWidth, windowHeight);
-
-		GlobalDS globalDS;
-		globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-		globalDS.linearSampler  = linearSampler;
-		globalDS.nearestSampler = nearestSampler;
-		renderer.bindDescriptorSet(0, globalDS);
-
-		renderer.bindVertexBuffer(0, cubeVBO);
-		renderer.bindIndexBuffer(cubeIBO, false);
-
-		CubeSceneDS cubeDS;
-		cubeDS.instances = renderer.createEphemeralBuffer(BufferType::Storage, static_cast<uint32_t>(sizeof(ShaderDefines::Cube) * cubes.size()), &cubes[0]);
-		renderer.bindDescriptorSet(1, cubeDS);
-
-		unsigned int numCubes = static_cast<unsigned int>(cubes.size());
-		if (visualizeCubeOrder) {
-			cubeOrderNum = cubeOrderNum % numCubes;
-			cubeOrderNum++;
-			numCubes     = cubeOrderNum;
-		}
-
-		renderer.drawIndexedInstanced(3 * 2 * 6, numCubes);
+		renderCubeScene();
 	} else {
 		renderImageScene();
 	}
@@ -2425,6 +2357,81 @@ void SMAADemo::render() {
 
 	renderer.presentFrame(finalRenderRT);
 
+}
+
+
+void SMAADemo::renderCubeScene() {
+		renderer.bindPipeline(getCubePipeline(numSamples));
+
+		const unsigned int windowWidth  = rendererDesc.swapchain.width;
+		const unsigned int windowHeight = rendererDesc.swapchain.height;
+
+		ShaderDefines::Globals globals;
+		globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
+		globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
+
+		// TODO: better calculation, and check cube size (side is sqrt(3) currently)
+		const float cubeDiameter = sqrtf(3.0f);
+		const float cubeDistance = cubeDiameter + 1.0f;
+
+		float farPlane  = cameraDistance + cubeDistance * float(cubesPerSide + 1);
+		float nearPlane = std::max(0.1f, cameraDistance - cubeDistance * float(cubesPerSide + 1));
+
+		glm::mat4 model  = glm::rotate(glm::mat4(1.0f), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 view   = glm::lookAt(glm::vec3(cameraDistance, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 proj   = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, nearPlane, farPlane);
+		glm::mat4 viewProj = proj * view * model;
+
+		// temporal jitter
+		if (temporalAA) {
+			glm::vec2 jitter;
+			if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
+				const glm::vec2 jitters[2] = {
+					  {  0.125f,  0.125f }
+					, { -0.125f, -0.125f }
+				};
+				jitter = jitters[temporalFrame];
+			} else {
+				const glm::vec2 jitters[2] = {
+					  { -0.25f,  0.25f }
+					, { 0.25f,  -0.25f }
+				};
+				jitter = jitters[temporalFrame];
+			}
+
+			jitter = jitter * 2.0f * glm::vec2(globals.screenSize.x, globals.screenSize.y);
+			glm::mat4 jitterMatrix = glm::translate(glm::identity<glm::mat4>(), glm::vec3(jitter, 0.0f));
+			viewProj = jitterMatrix * viewProj;
+		}
+
+		prevViewProj         = currViewProj;
+		currViewProj         = viewProj;
+		globals.viewProj     = currViewProj;
+		globals.prevViewProj = prevViewProj;
+
+		renderer.setViewport(0, 0, windowWidth, windowHeight);
+
+		GlobalDS globalDS;
+		globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+		globalDS.linearSampler  = linearSampler;
+		globalDS.nearestSampler = nearestSampler;
+		renderer.bindDescriptorSet(0, globalDS);
+
+		renderer.bindVertexBuffer(0, cubeVBO);
+		renderer.bindIndexBuffer(cubeIBO, false);
+
+		CubeSceneDS cubeDS;
+		cubeDS.instances = renderer.createEphemeralBuffer(BufferType::Storage, static_cast<uint32_t>(sizeof(ShaderDefines::Cube) * cubes.size()), &cubes[0]);
+		renderer.bindDescriptorSet(1, cubeDS);
+
+		unsigned int numCubes = static_cast<unsigned int>(cubes.size());
+		if (visualizeCubeOrder) {
+			cubeOrderNum = cubeOrderNum % numCubes;
+			cubeOrderNum++;
+			numCubes     = cubeOrderNum;
+		}
+
+		renderer.drawIndexedInstanced(3 * 2 * 6, numCubes);
 }
 
 
