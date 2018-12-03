@@ -530,6 +530,8 @@ class SMAADemo {
 
 	void renderGUI();
 
+	void renderImageScene();
+
 	void loadImage(const std::string &filename);
 
 	uint64_t getNanoseconds() {
@@ -2322,30 +2324,7 @@ void SMAADemo::render() {
 
 		renderer.drawIndexedInstanced(3 * 2 * 6, numCubes);
 	} else {
-		renderer.bindPipeline(imagePipeline);
-
-		const auto &image = images.at(activeScene - 1);
-
-		const unsigned int windowWidth  = rendererDesc.swapchain.width;
-		const unsigned int windowHeight = rendererDesc.swapchain.height;
-
-		renderer.setViewport(0, 0, windowWidth, windowHeight);
-
-		ShaderDefines::Globals globals;
-		globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
-		globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
-
-		GlobalDS globalDS;
-		globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-		globalDS.linearSampler = linearSampler;
-		globalDS.nearestSampler = nearestSampler;
-		renderer.bindDescriptorSet(0, globalDS);
-
-		assert(activeScene - 1 < images.size());
-		ColorTexDS colorDS;
-		colorDS.color = image.tex;
-		renderer.bindDescriptorSet(1, colorDS);
-		renderer.draw(0, 3);
+		renderImageScene();
 	}
 	renderer.endRenderPass();
 
@@ -2446,6 +2425,34 @@ void SMAADemo::render() {
 
 	renderer.presentFrame(finalRenderRT);
 
+}
+
+
+void SMAADemo::renderImageScene() {
+		renderer.bindPipeline(imagePipeline);
+
+		const auto &image = images.at(activeScene - 1);
+
+		const unsigned int windowWidth  = rendererDesc.swapchain.width;
+		const unsigned int windowHeight = rendererDesc.swapchain.height;
+
+		renderer.setViewport(0, 0, windowWidth, windowHeight);
+
+		ShaderDefines::Globals globals;
+		globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
+		globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
+
+		GlobalDS globalDS;
+		globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+		globalDS.linearSampler = linearSampler;
+		globalDS.nearestSampler = nearestSampler;
+		renderer.bindDescriptorSet(0, globalDS);
+
+		assert(activeScene - 1 < images.size());
+		ColorTexDS colorDS;
+		colorDS.color = image.tex;
+		renderer.bindDescriptorSet(1, colorDS);
+		renderer.draw(0, 3);
 }
 
 
