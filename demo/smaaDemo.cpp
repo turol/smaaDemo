@@ -522,9 +522,9 @@ class SMAADemo {
 	RenderPassHandle getSceneRenderPass(unsigned int n, Layout l);
 	PipelineHandle getCubePipeline(unsigned int n);
 
-	void doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass, BufferHandle smaaUBOBuf);
+	void doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass);
 
-	void doTemporalAA(BufferHandle smaaUBOBuf);
+	void doTemporalAA();
 
 	void updateGUI(uint64_t elapsed);
 
@@ -2260,16 +2260,6 @@ void SMAADemo::render() {
 	}
 	renderer.endRenderPass();
 
-	ShaderDefines::SMAAUBO smaaUBO;
-	smaaUBO.smaaParameters        = smaaParameters;
-	smaaUBO.predicationThreshold  = predicationThreshold;
-	smaaUBO.predicationScale      = predicationScale;
-	smaaUBO.predicationStrength   = predicationStrength;
-	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
-	smaaUBO.subsampleIndices      = subsampleIndices[0];
-
-	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
-
 	if (antialiasing) {
 		switch (aaMethod) {
 		case AAMethod::MSAA: {
@@ -2279,7 +2269,7 @@ void SMAADemo::render() {
 				// TODO: do this transition as part of renderpass?
 				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::TransferDst, Layout::ColorAttachment);
 
-				doTemporalAA(smaaUBOBuf);
+				doTemporalAA();
 			} else {
 				renderer.layoutTransition(finalRenderRT, Layout::Undefined, Layout::TransferDst);
 				renderer.resolveMSAA(sceneFramebuffer, finalFramebuffer);
@@ -2298,19 +2288,19 @@ void SMAADemo::render() {
 			renderer.endRenderPass();
 
 			if (temporalAA) {
-				doTemporalAA(smaaUBOBuf);
+				doTemporalAA();
 			}
 		} break;
 
 		case AAMethod::SMAA: {
 			if (temporalAA) {
-				doSMAA(mainColorRT, smaaBlendRenderPass, resolveFBs[temporalFrame], 0, smaaUBOBuf);
+				doSMAA(mainColorRT, smaaBlendRenderPass, resolveFBs[temporalFrame], 0);
 			} else {
-				doSMAA(mainColorRT, finalRenderPass, finalFramebuffer, 0, smaaUBOBuf);
+				doSMAA(mainColorRT, finalRenderPass, finalFramebuffer, 0);
 			}
 
 			if (temporalAA) {
-				doTemporalAA(smaaUBOBuf);
+				doTemporalAA();
 			}
 		} break;
 
@@ -2327,21 +2317,17 @@ void SMAADemo::render() {
 
 			// TODO: clean up the renderpass mess
 			if (temporalAA) {
-				doSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], resolveFBs[temporalFrame], 0, smaaUBOBuf);
-				smaaUBO.subsampleIndices = subsampleIndices[1];
-				smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
-				doSMAA(subsampleRTs[1], smaa2XBlendRenderPasses[1], resolveFBs[temporalFrame], 1, smaaUBOBuf);
+				doSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], resolveFBs[temporalFrame], 0);
+				doSMAA(subsampleRTs[1], smaa2XBlendRenderPasses[1], resolveFBs[temporalFrame], 1);
 			} else {
-				doSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], finalFramebuffer, 0, smaaUBOBuf);
-				smaaUBO.subsampleIndices = subsampleIndices[1];
-				smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
-				doSMAA(subsampleRTs[1], smaa2XBlendRenderPasses[1], finalFramebuffer, 1, smaaUBOBuf);
+				doSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], finalFramebuffer, 0);
+				doSMAA(subsampleRTs[1], smaa2XBlendRenderPasses[1], finalFramebuffer, 1);
 			}
 
 			if (temporalAA) {
 				// FIXME: move to renderpass
 				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::ColorAttachment, Layout::ShaderRead);
-				doTemporalAA(smaaUBOBuf);
+				doTemporalAA();
 			}
 		} break;
 		}
@@ -2463,7 +2449,17 @@ void SMAADemo::renderImageScene() {
 }
 
 
-void SMAADemo::doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass, BufferHandle smaaUBOBuf) {
+void SMAADemo::doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass) {
+	ShaderDefines::SMAAUBO smaaUBO;
+	smaaUBO.smaaParameters        = smaaParameters;
+	smaaUBO.predicationThreshold  = predicationThreshold;
+	smaaUBO.predicationScale      = predicationScale;
+	smaaUBO.predicationStrength   = predicationStrength;
+	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
+	smaaUBO.subsampleIndices      = subsampleIndices[pass];
+
+	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
+
 	// edges pass
 	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
 	renderer.beginRenderPass(smaaEdgesRenderPass, smaaEdgesFramebuffer);
@@ -2538,9 +2534,20 @@ void SMAADemo::doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, Fra
 }
 
 
-void SMAADemo::doTemporalAA(BufferHandle smaaUBOBuf) {
+void SMAADemo::doTemporalAA() {
 	renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
 	renderer.bindPipeline(temporalAAPipelines[temporalReproject]);
+
+	ShaderDefines::SMAAUBO smaaUBO;
+	smaaUBO.smaaParameters        = smaaParameters;
+	smaaUBO.predicationThreshold  = predicationThreshold;
+	smaaUBO.predicationScale      = predicationScale;
+	smaaUBO.predicationStrength   = predicationStrength;
+	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
+	smaaUBO.subsampleIndices      = subsampleIndices[0];
+
+	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
+
 	TemporalAADS temporalDS;
 	temporalDS.smaaUBO             = smaaUBOBuf;
 	temporalDS.currentTex.tex      = renderer.getRenderTargetTexture(resolveRTs[temporalFrame]);
