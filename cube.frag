@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 #include "shaderDefines.h"
 
-readonly restrict layout(std430, set = 1, binding = 0) buffer cubeData {
+readonly restrict layout(std430, set = 1, binding = 1) buffer cubeData {
     Cube cubes[];
 };
 

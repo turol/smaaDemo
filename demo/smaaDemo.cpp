@@ -910,6 +910,7 @@ DSLayoutHandle GlobalDS::layoutHandle;
 
 
 struct CubeSceneDS {
+	BufferHandle unused;
     BufferHandle instances;
 
 	static const DescriptorLayout layout[];
@@ -918,7 +919,8 @@ struct CubeSceneDS {
 
 
 const DescriptorLayout CubeSceneDS::layout[] = {
-	  { DescriptorType::StorageBuffer,  offsetof(CubeSceneDS, instances) }
+	  { DescriptorType::UniformBuffer,  offsetof(CubeSceneDS, unused)    }
+	, { DescriptorType::StorageBuffer,  offsetof(CubeSceneDS, instances) }
 	, { DescriptorType::End,            0                                }
 };
 
@@ -926,6 +928,7 @@ DSLayoutHandle CubeSceneDS::layoutHandle;
 
 
 struct ColorCombinedDS {
+	BufferHandle unused;
 	CSampler color;
 
 	static const DescriptorLayout layout[];
@@ -934,7 +937,8 @@ struct ColorCombinedDS {
 
 
 const DescriptorLayout ColorCombinedDS::layout[] = {
-	  { DescriptorType::CombinedSampler,  offsetof(ColorCombinedDS, color) }
+	  { DescriptorType::UniformBuffer,    offsetof(ColorCombinedDS, unused) }
+	, { DescriptorType::CombinedSampler,  offsetof(ColorCombinedDS, color)  }
 	, { DescriptorType::End,              0,                          }
 };
 
@@ -942,6 +946,7 @@ DSLayoutHandle ColorCombinedDS::layoutHandle;
 
 
 struct ColorTexDS {
+	BufferHandle unused;
 	TextureHandle color;
 
 	static const DescriptorLayout layout[];
@@ -950,7 +955,8 @@ struct ColorTexDS {
 
 
 const DescriptorLayout ColorTexDS::layout[] = {
-	  { DescriptorType::Texture,  offsetof(ColorTexDS, color) }
+	  { DescriptorType::UniformBuffer,  offsetof(ColorTexDS, unused) }
+	, { DescriptorType::Texture,        offsetof(ColorTexDS, color)  }
 	, { DescriptorType::End,      0,                        }
 };
 
@@ -2281,6 +2287,9 @@ void SMAADemo::render() {
 			renderer.beginRenderPass(fxaaRenderPass[temporalAA], temporalAA ? resolveFBs[temporalFrame] : finalFramebuffer);
 			renderer.bindPipeline(getFXAAPipeline(fxaaQuality));
 			ColorCombinedDS colorDS;
+			// FIXME: remove unused UBO hack
+			uint32_t temp         = 0;
+			colorDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
 			colorDS.color.tex     = renderer.getRenderTargetTexture(mainColorRT);
 			colorDS.color.sampler = linearSampler;
 			renderer.bindDescriptorSet(1, colorDS);
@@ -2309,6 +2318,9 @@ void SMAADemo::render() {
 			renderer.beginRenderPass(separateRenderPass, separateFB);
 			renderer.bindPipeline(separatePipeline);
 			ColorCombinedDS separateDS;
+			// FIXME: remove unused UBO hack
+			uint32_t temp            = 0;
+			separateDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
 			separateDS.color.tex     = renderer.getRenderTargetTexture(mainColorRT);
 			separateDS.color.sampler = nearestSampler;
 			renderer.bindDescriptorSet(1, separateDS);
@@ -2407,6 +2419,9 @@ void SMAADemo::renderCubeScene() {
 		renderer.bindIndexBuffer(cubeIBO, false);
 
 		CubeSceneDS cubeDS;
+		// FIXME: remove unused UBO hack
+		uint32_t temp    = 0;
+		cubeDS.unused    = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
 		cubeDS.instances = renderer.createEphemeralBuffer(BufferType::Storage, static_cast<uint32_t>(sizeof(ShaderDefines::Cube) * cubes.size()), &cubes[0]);
 		renderer.bindDescriptorSet(1, cubeDS);
 
@@ -2443,6 +2458,9 @@ void SMAADemo::renderImageScene() {
 
 		assert(activeScene - 1 < images.size());
 		ColorTexDS colorDS;
+		// FIXME: remove unused UBO hack
+		uint32_t temp  = 0;
+		colorDS.unused = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
 		colorDS.color = image.tex;
 		renderer.bindDescriptorSet(1, colorDS);
 		renderer.draw(0, 3);
@@ -2516,6 +2534,9 @@ void SMAADemo::doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, Fra
 		// visualize edges
 		ColorTexDS blitDS;
 		renderer.bindPipeline(blitPipeline);
+		// FIXME: remove unused UBO hack
+		uint32_t temp  = 0;
+		blitDS.unused  = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
 		blitDS.color   = renderer.getRenderTargetTexture(edgesRT);
 		renderer.bindDescriptorSet(1, blitDS);
 	} break;
@@ -2524,6 +2545,9 @@ void SMAADemo::doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, Fra
 		// visualize blend weights
 		ColorTexDS blitDS;
 		renderer.bindPipeline(blitPipeline);
+		// FIXME: remove unused UBO hack
+		uint32_t temp  = 0;
+		blitDS.unused  = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
 		blitDS.color   = renderer.getRenderTargetTexture(blendWeightsRT);
 		renderer.bindDescriptorSet(1, blitDS);
 	} break;
@@ -2907,6 +2931,9 @@ void SMAADemo::renderGUI() {
 
 		renderer.bindPipeline(guiPipeline);
 		ColorTexDS colorDS;
+		// FIXME: remove unused UBO hack
+		uint32_t temp = 0;
+		colorDS.unused = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
 		colorDS.color = imguiFontsTex;
 		renderer.bindDescriptorSet(1, colorDS);
 		// TODO: upload all buffers first, render after
