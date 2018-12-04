@@ -36,39 +36,6 @@ THE SOFTWARE.
 namespace renderer {
 
 
-struct DSIndex {
-	uint8_t set;
-	uint8_t binding;
-
-
-	bool operator==(const DSIndex &other) const {
-		return (set == other.set) && (binding == other.binding);
-	}
-
-	bool operator!=(const DSIndex &other) const {
-		return (set != other.set) || (binding != other.binding);
-	}
-};
-
-
-}  // namespace renderer
-
-
-namespace std {
-
-	template <> struct hash<renderer::DSIndex> {
-		size_t operator()(const renderer::DSIndex &ds) const {
-			uint16_t val = (uint16_t(ds.set) << 8) | ds.binding;
-			return hash<uint16_t>()(val);
-		}
-	};
-
-}  // namespace std
-
-
-namespace renderer {
-
-
 struct ShaderResources {
 	std::vector<DSIndex>        ubos;
 	std::vector<DSIndex>        ssbos;
