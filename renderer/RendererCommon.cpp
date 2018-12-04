@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <shaderc/shaderc.hpp>
 #include <spirv-tools/optimizer.hpp>
 #include <SPIRV/SPVRemapper.h>
+#include <spirv_cross.hpp>
 
 #include <xxhash.h>
 
@@ -503,6 +504,94 @@ static void logSpvMessage(spv_message_level_t level_, const char *source, const 
 }
 
 
+static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
+	spirv_cross::Compiler compiler(spirv);
+	std::unordered_set<DSIndex> bindings;
+	std::unordered_map<DSIndex, uint32_t> uboSizes;
+
+	auto spvResources = compiler.get_shader_resources();
+
+	for (const auto &ubo : spvResources.uniform_buffers) {
+		DSIndex idx;
+		idx.set     = compiler.get_decoration(ubo.id, spv::DecorationDescriptorSet);
+		idx.binding = compiler.get_decoration(ubo.id, spv::DecorationBinding);
+
+		// must be the first time we find this (set, binding) combination
+		// if not, there's a bug in the shader
+		auto b = bindings.insert(idx);
+		if (!b.second) {
+			LOG("Duplicate UBO binding (%u, %u)\n", idx.set, idx.binding);
+			throw std::runtime_error("Duplicate UBO binding");
+		}
+
+		uint32_t maxOffset = 0;
+		LOG("UBO %u (%u, %u) ranges:\n", ubo.id, idx.set, idx.binding);
+		for (auto r : compiler.get_active_buffer_ranges(ubo.id)) {
+			LOG("  %u:  %u  %u\n", r.index, static_cast<uint32_t>(r.offset), static_cast<uint32_t>(r.range));
+			maxOffset = std::max(maxOffset, static_cast<uint32_t>(r.offset + r.range));
+		}
+		LOG(" max offset: %u\n", maxOffset);
+		uboSizes.emplace(idx, maxOffset);
+	}
+
+	for (const auto &ssbo : spvResources.storage_buffers) {
+		DSIndex idx;
+		idx.set     = compiler.get_decoration(ssbo.id, spv::DecorationDescriptorSet);
+		idx.binding = compiler.get_decoration(ssbo.id, spv::DecorationBinding);
+
+		// must be the first time we find this (set, binding) combination
+		// if not, there's a bug in the shader
+		auto b = bindings.insert(idx);
+		if (!b.second) {
+			LOG("Duplicate SSBO binding (%u, %u)\n", idx.set, idx.binding);
+			throw std::runtime_error("Duplicate SSBO binding");
+		}
+	}
+
+	for (const auto &s : spvResources.sampled_images) {
+		DSIndex idx;
+		idx.set     = compiler.get_decoration(s.id, spv::DecorationDescriptorSet);
+		idx.binding = compiler.get_decoration(s.id, spv::DecorationBinding);
+
+		// must be the first time we find this (set, binding) combination
+		// if not, there's a bug in the shader
+		auto b = bindings.insert(idx);
+		if (!b.second) {
+			LOG("Duplicate combined image/sampler binding (%u, %u)\n", idx.set, idx.binding);
+			throw std::runtime_error("Duplicate combined image/sampler binding");
+		}
+	}
+
+	for (const auto &s : spvResources.separate_images) {
+		DSIndex idx;
+		idx.set     = compiler.get_decoration(s.id, spv::DecorationDescriptorSet);
+		idx.binding = compiler.get_decoration(s.id, spv::DecorationBinding);
+
+		// must be the first time we find this (set, binding) combination
+		// if not, there's a bug in the shader
+		auto b = bindings.insert(idx);
+		if (!b.second) {
+			LOG("Duplicate image binding (%u, %u)\n", idx.set, idx.binding);
+			throw std::runtime_error("Duplicate image binding");
+		}
+	}
+
+	for (const auto &s : spvResources.separate_samplers) {
+		DSIndex idx;
+		idx.set     = compiler.get_decoration(s.id, spv::DecorationDescriptorSet);
+		idx.binding = compiler.get_decoration(s.id, spv::DecorationBinding);
+
+		// must be the first time we find this (set, binding) combination
+		// if not, there's a bug in the shader
+		auto b = bindings.insert(idx);
+		if (!b.second) {
+			LOG("Duplicate image sampler binding (%u, %u)\n", idx.set, idx.binding);
+			throw std::runtime_error("Duplicate sampler binding");
+		}
+	}
+}
+
+
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderKind kind_) {
 	// check spir-v cache first
 	std::string shaderName = name;
@@ -530,6 +619,13 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		bool found = loadCachedSPV(name, shaderName, spirv);
 		if (found) {
 			LOG("\"%s\" found in cache\n", shaderName.c_str());
+
+			// TODO: only in debug
+			// need to move debug flag to base class
+			if (true) {
+				checkSPVBindings(spirv);
+			}
+
 			return spirv;
 		} else {
 			LOG("\"%s\" not found in cache\n", shaderName.c_str());
@@ -587,6 +683,12 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			LOG("SPIR-V for shader \"%s\" is not valid after compilation\n", shaderName.c_str());
 			throw std::runtime_error("Shader validation failed");
 		}
+	}
+
+	// TODO: only in debug
+	// need to move debug flag to base class
+	if (true) {
+		checkSPVBindings(spirv);
 	}
 
 	// SPIR-V optimization
