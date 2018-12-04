@@ -911,7 +911,7 @@ DSLayoutHandle GlobalDS::layoutHandle;
 
 struct CubeSceneDS {
 	BufferHandle unused;
-    BufferHandle instances;
+	BufferHandle instances;
 
 	static const DescriptorLayout layout[];
 	static DSLayoutHandle layoutHandle;
@@ -939,7 +939,7 @@ struct ColorCombinedDS {
 const DescriptorLayout ColorCombinedDS::layout[] = {
 	  { DescriptorType::UniformBuffer,    offsetof(ColorCombinedDS, unused) }
 	, { DescriptorType::CombinedSampler,  offsetof(ColorCombinedDS, color)  }
-	, { DescriptorType::End,              0,                          }
+	, { DescriptorType::End,              0,                                }
 };
 
 DSLayoutHandle ColorCombinedDS::layoutHandle;
@@ -957,7 +957,7 @@ struct ColorTexDS {
 const DescriptorLayout ColorTexDS::layout[] = {
 	  { DescriptorType::UniformBuffer,  offsetof(ColorTexDS, unused) }
 	, { DescriptorType::Texture,        offsetof(ColorTexDS, color)  }
-	, { DescriptorType::End,      0,                        }
+	, { DescriptorType::End,            0,                           }
 };
 
 DSLayoutHandle ColorTexDS::layoutHandle;
@@ -977,7 +977,7 @@ const DescriptorLayout EdgeDetectionDS::layout[] = {
 	  { DescriptorType::UniformBuffer,    offsetof(EdgeDetectionDS, smaaUBO)        }
 	, { DescriptorType::CombinedSampler,  offsetof(EdgeDetectionDS, color)          }
 	, { DescriptorType::CombinedSampler,  offsetof(EdgeDetectionDS, predicationTex) }
-	, { DescriptorType::End,              0,                               }
+	, { DescriptorType::End,              0,                                        }
 };
 
 DSLayoutHandle EdgeDetectionDS::layoutHandle;
@@ -995,11 +995,11 @@ struct BlendWeightDS {
 
 
 const DescriptorLayout BlendWeightDS::layout[] = {
-	  { DescriptorType::UniformBuffer,    offsetof(BlendWeightDS, smaaUBO)        }
-	, { DescriptorType::CombinedSampler,  offsetof(BlendWeightDS, edgesTex)       }
-	, { DescriptorType::CombinedSampler,  offsetof(BlendWeightDS, areaTex)        }
-	, { DescriptorType::CombinedSampler,  offsetof(BlendWeightDS, searchTex)      }
-	, { DescriptorType::End,              0,                                      }
+	  { DescriptorType::UniformBuffer,    offsetof(BlendWeightDS, smaaUBO)   }
+	, { DescriptorType::CombinedSampler,  offsetof(BlendWeightDS, edgesTex)  }
+	, { DescriptorType::CombinedSampler,  offsetof(BlendWeightDS, areaTex)   }
+	, { DescriptorType::CombinedSampler,  offsetof(BlendWeightDS, searchTex) }
+	, { DescriptorType::End,              0,                                 }
 };
 
 DSLayoutHandle BlendWeightDS::layoutHandle;
@@ -1016,10 +1016,10 @@ struct NeighborBlendDS {
 
 
 const DescriptorLayout NeighborBlendDS::layout[] = {
-	  { DescriptorType::UniformBuffer,    offsetof(NeighborBlendDS, smaaUBO)            }
-	, { DescriptorType::CombinedSampler,  offsetof(NeighborBlendDS, color)              }
-	, { DescriptorType::CombinedSampler,  offsetof(NeighborBlendDS, blendweights)       }
-	, { DescriptorType::End        ,      0                                             }
+	  { DescriptorType::UniformBuffer,    offsetof(NeighborBlendDS, smaaUBO)      }
+	, { DescriptorType::CombinedSampler,  offsetof(NeighborBlendDS, color)        }
+	, { DescriptorType::CombinedSampler,  offsetof(NeighborBlendDS, blendweights) }
+	, { DescriptorType::End,              0                                       }
 };
 
 DSLayoutHandle NeighborBlendDS::layoutHandle;
@@ -1041,7 +1041,7 @@ const DescriptorLayout TemporalAADS::layout[] = {
 	, { DescriptorType::CombinedSampler,  offsetof(TemporalAADS, currentTex)  }
 	, { DescriptorType::CombinedSampler,  offsetof(TemporalAADS, previousTex) }
 	, { DescriptorType::CombinedSampler,  offsetof(TemporalAADS, velocityTex) }
-	, { DescriptorType::End        ,      0                                   }
+	, { DescriptorType::End,              0                                   }
 };
 
 DSLayoutHandle TemporalAADS::layoutHandle;
