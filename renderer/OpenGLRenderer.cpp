@@ -981,7 +981,10 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		}
 
 		auto it = dsResources.find(idx);
-		assert(it != dsResources.end());
+		if (it == dsResources.end()) {
+            LOG("UBO (%u, %u) not in descriptor sets\n", idx.set, idx.binding);
+			throw std::runtime_error("UBO not in descriptor sets");
+		}
 
 		assert(it->second.type == DescriptorType::UniformBuffer);
 		unsigned int openglIDX = it->second.glIndex;
@@ -1016,7 +1019,10 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		}
 
 		auto it = dsResources.find(idx);
-		assert(it != dsResources.end());
+		if (it == dsResources.end()) {
+            LOG("SSBO (%u, %u) not in descriptor sets\n", idx.set, idx.binding);
+			throw std::runtime_error("SSBO not in descriptor sets");
+		}
 
 		assert(it->second.type == DescriptorType::StorageBuffer);
 		unsigned int openglIDX = it->second.glIndex;
@@ -1042,7 +1048,10 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		}
 
 		auto it = dsResources.find(idx);
-		assert(it != dsResources.end());
+		if (it == dsResources.end()) {
+            LOG("Sampled image (%u, %u) not in descriptor sets\n", idx.set, idx.binding);
+			throw std::runtime_error("Sampled image not in descriptor sets");
+		}
 
 		assert(it->second.type == DescriptorType::CombinedSampler);
 		unsigned int openglIDX = it->second.glIndex;
