@@ -234,6 +234,20 @@ enum class WrapMode : uint8_t {
 struct CSampler {
 	TextureHandle tex;
 	SamplerHandle sampler;
+
+
+	CSampler()
+	{
+	}
+
+	CSampler(const CSampler &other)                = default;
+	CSampler(CSampler &&other) noexcept            = default;
+
+	CSampler &operator=(const CSampler &other)     = default;
+	CSampler &operator=(CSampler &&other) noexcept = default;
+
+	~CSampler() {
+	}
 };
 
 
