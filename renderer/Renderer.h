@@ -108,6 +108,10 @@ public:
 
 
 	Handle<T> &operator=(Handle<T> &&other) noexcept {
+		if (this == &other) {
+			return *this;
+		}
+
 		handle       = other.handle;
 		other.handle = 0;
 
