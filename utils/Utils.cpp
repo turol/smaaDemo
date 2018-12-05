@@ -26,6 +26,8 @@ THE SOFTWARE.
 
 #include <sys/stat.h>
 
+#include <stdexcept>
+
 #include "Utils.h"
 
 #include <SDL.h>
