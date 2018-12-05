@@ -87,36 +87,11 @@ public:
 	};
 
 
-	Handle(const Handle<T> &other) noexcept
-	: handle(other.handle)
-	{
-	}
+	Handle(const Handle<T> &other)                     = default;
+	Handle &operator=(const Handle<T> &other) noexcept = default;
 
-
-	Handle &operator=(const Handle<T> &other) {
-		handle = other.handle;
-
-		return *this;
-	}
-
-
-	Handle(Handle<T> &&other) noexcept
-	: handle(other.handle)
-	{
-		other.handle = 0;
-	}
-
-
-	Handle<T> &operator=(Handle<T> &&other) noexcept {
-		if (this == &other) {
-			return *this;
-		}
-
-		handle       = other.handle;
-		other.handle = 0;
-
-		return *this;
-	}
+	Handle(Handle<T> &&other) noexcept                 = default;
+	Handle<T> &operator=(Handle<T> &&other) noexcept   = default;
 
 
 	bool operator==(const Handle<T> &other) const {
