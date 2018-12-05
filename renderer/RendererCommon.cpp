@@ -668,6 +668,11 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		case ShaderKind::Fragment:
 			kind = shaderc_glsl_fragment_shader;
 			break;
+
+		default:
+			UNREACHABLE();  // shouldn't happen
+			break;
+
 		}
 
 		shaderc::Compiler compiler;
