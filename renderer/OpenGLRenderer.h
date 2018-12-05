@@ -77,7 +77,7 @@ struct Buffer {
 	Buffer(const Buffer &)            = delete;
 	Buffer &operator=(const Buffer &) = delete;
 
-	Buffer(Buffer &&other)
+	Buffer(Buffer &&other) noexcept
 	: ringBufferAlloc(other.ringBufferAlloc)
 	, size(other.size)
 	, offset(other.offset)
@@ -91,7 +91,7 @@ struct Buffer {
 		other.type            = BufferType::Invalid;
 	}
 
-	Buffer &operator=(Buffer &&other) {
+	Buffer &operator=(Buffer &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -132,13 +132,13 @@ struct DescriptorSetLayout {
 	DescriptorSetLayout(const DescriptorSetLayout &)            = delete;
 	DescriptorSetLayout &operator=(const DescriptorSetLayout &) = delete;
 
-	DescriptorSetLayout(DescriptorSetLayout &&other)
+	DescriptorSetLayout(DescriptorSetLayout &&other) noexcept
 	: descriptors(std::move(other.descriptors))
 	{
 		assert(descriptors.empty());
 	}
 
-	DescriptorSetLayout &operator=(DescriptorSetLayout &&other) {
+	DescriptorSetLayout &operator=(DescriptorSetLayout &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -167,7 +167,7 @@ struct FragmentShader {
 	FragmentShader(const FragmentShader &)            = delete;
 	FragmentShader &operator=(const FragmentShader &) = delete;
 
-	FragmentShader(FragmentShader &&other)
+	FragmentShader(FragmentShader &&other) noexcept
 	: name(std::move(other.name))
 	, spirv(std::move(other.spirv))
 	, macros(std::move(other.macros))
@@ -176,7 +176,7 @@ struct FragmentShader {
 		assert(other.spirv.empty());
 	}
 
-	FragmentShader &operator=(FragmentShader &&other) {
+	FragmentShader &operator=(FragmentShader &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -209,7 +209,7 @@ struct Framebuffer {
 	Framebuffer(const Framebuffer &)            = delete;
 	Framebuffer &operator=(const Framebuffer &) = delete;
 
-	Framebuffer(Framebuffer &&other)
+	Framebuffer(Framebuffer &&other) noexcept
 	: width(other.width)
 	, height(other.height)
 	, numSamples(other.numSamples)
@@ -260,7 +260,7 @@ struct Pipeline {
 	Pipeline(const Pipeline &)            = delete;
 	Pipeline &operator=(const Pipeline &) = delete;
 
-	Pipeline(Pipeline &&other)
+	Pipeline(Pipeline &&other) noexcept
 	: desc(other.desc)
 	, shader(other.shader)
 	, srcBlend(other.srcBlend)
@@ -274,7 +274,7 @@ struct Pipeline {
 		other.resources = ShaderResources();
 	}
 
-	Pipeline &operator=(Pipeline &&other) {
+	Pipeline &operator=(Pipeline &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -325,7 +325,7 @@ struct RenderPass {
 	RenderPass(const RenderPass &) = delete;
 	RenderPass &operator=(const RenderPass &) = delete;
 
-	RenderPass(RenderPass &&other)
+	RenderPass(RenderPass &&other) noexcept
 	: desc(other.desc)
 	, depthClearValue(other.depthClearValue)
 	, clearMask(other.clearMask)
@@ -336,7 +336,7 @@ struct RenderPass {
 		}
 	}
 
-	RenderPass &operator=(RenderPass &&other) {
+	RenderPass &operator=(RenderPass &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -380,7 +380,7 @@ struct RenderTarget {
 	RenderTarget(const RenderTarget &)            = delete;
 	RenderTarget &operator=(const RenderTarget &) = delete;
 
-	RenderTarget(RenderTarget &&other)
+	RenderTarget(RenderTarget &&other) noexcept
 	: width(other.width)
 	, height(other.height)
 	, numSamples(other.numSamples)
@@ -400,7 +400,7 @@ struct RenderTarget {
 		other.format        = Format::Invalid;
 	}
 
-	RenderTarget &operator=(RenderTarget &&other) {
+	RenderTarget &operator=(RenderTarget &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -450,13 +450,13 @@ struct Sampler {
 	Sampler(const Sampler &)            = delete;
 	Sampler &operator=(const Sampler &) = delete;
 
-	Sampler(Sampler &&other)
+	Sampler(Sampler &&other) noexcept
 	: sampler(other.sampler)
 	{
 		other.sampler = 0;
 	}
 
-	Sampler &operator=(Sampler &&other) {
+	Sampler &operator=(Sampler &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -495,7 +495,7 @@ struct Texture {
 	Texture(const Texture &)            = delete;
 	Texture &operator=(const Texture &) = delete;
 
-	Texture(Texture &&other)
+	Texture(Texture &&other) noexcept
 	: width(other.width)
 	, height(other.height)
 	, renderTarget(other.renderTarget)
@@ -509,7 +509,7 @@ struct Texture {
 		other.target       = GL_NONE;
 	}
 
-	Texture &operator=(Texture &&other) {
+	Texture &operator=(Texture &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -552,7 +552,7 @@ struct VertexShader {
 	VertexShader(const VertexShader &)            = delete;
 	VertexShader &operator=(const VertexShader &) = delete;
 
-	VertexShader(VertexShader &&other)
+	VertexShader(VertexShader &&other) noexcept
 	: name(std::move(other.name))
 	, spirv(std::move(other.spirv))
 	, macros(other.macros)
@@ -561,7 +561,7 @@ struct VertexShader {
 		assert(other.spirv.empty());
 	}
 
-	VertexShader &operator=(VertexShader &&other) {
+	VertexShader &operator=(VertexShader &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -608,7 +608,7 @@ struct Frame {
 	Frame(const Frame &)            = delete;
 	Frame &operator=(const Frame &) = delete;
 
-	Frame(Frame &&other)
+	Frame(Frame &&other) noexcept
 	: outstanding(other.outstanding)
 	, lastFrameNum(other.lastFrameNum)
 	, usedRingBufPtr(other.usedRingBufPtr)
@@ -621,7 +621,7 @@ struct Frame {
 		assert(other.ephemeralBuffers.empty());
 	}
 
-	Frame &operator=(Frame &&other) {
+	Frame &operator=(Frame &&other) noexcept {
 		assert(!outstanding);
 		outstanding            = other.outstanding;
 		other.outstanding      = false;

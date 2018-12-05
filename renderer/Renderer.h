@@ -87,7 +87,7 @@ public:
 	};
 
 
-	Handle(const Handle<T> &other)
+	Handle(const Handle<T> &other) noexcept
 	: handle(other.handle)
 	{
 	}
@@ -100,14 +100,14 @@ public:
 	}
 
 
-	Handle(Handle<T> &&other)
+	Handle(Handle<T> &&other) noexcept
 	: handle(other.handle)
 	{
 		other.handle = 0;
 	}
 
 
-	Handle<T> &operator=(Handle<T> &&other) {
+	Handle<T> &operator=(Handle<T> &&other) noexcept {
 		handle       = other.handle;
 		other.handle = 0;
 
@@ -829,7 +829,7 @@ public:
 	Renderer(const Renderer &)            = delete;
 	Renderer &operator=(const Renderer &) = delete;
 
-	Renderer &operator=(Renderer &&other)
+	Renderer &operator=(Renderer &&other)  noexcept
 	{
 		if (this == &other) {
 			return *this;
@@ -843,7 +843,7 @@ public:
 		return *this;
 	}
 
-	Renderer(Renderer &&other)
+	Renderer(Renderer &&other) noexcept
 	: impl(other.impl)
 	{
 		other.impl = nullptr;
