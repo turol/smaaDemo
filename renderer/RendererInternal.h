@@ -208,11 +208,11 @@ struct RendererBase {
 	}
 
 
-	RendererBase(const RendererBase &)            = default;
-	RendererBase(RendererBase &&)                 = default;
+	RendererBase(const RendererBase &)            = delete;
+	RendererBase(RendererBase &&)                 = delete;
 
-	RendererBase &operator=(const RendererBase &) = default;
-	RendererBase &operator=(RendererBase &&)      = default;
+	RendererBase &operator=(const RendererBase &) = delete;
+	RendererBase &operator=(RendererBase &&)      = delete;
 
 	~RendererBase() {}
 };
