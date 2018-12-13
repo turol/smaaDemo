@@ -681,7 +681,7 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 
 		buffer.lastUsedFrame   = frameNum;
 
-		deleteResources.emplace(std::move(buffer));
+		deleteResources.emplace_back(std::move(buffer));
 	}
 
 	assert(!ringBuffer);
@@ -1876,7 +1876,7 @@ TextureHandle RendererImpl::getRenderTargetView(RenderTargetHandle handle, Forma
 void RendererImpl::deleteBuffer(BufferHandle handle) {
 	buffers.removeWith(handle, [this](struct Buffer &b) {
 		// TODO: if b.lastUsedFrame has already been synced we could delete immediately
-		this->deleteResources.emplace(std::move(b));
+		this->deleteResources.emplace_back(std::move(b));
 	} );
 }
 
@@ -1884,7 +1884,7 @@ void RendererImpl::deleteBuffer(BufferHandle handle) {
 void RendererImpl::deleteFramebuffer(FramebufferHandle handle) {
 	framebuffers.removeWith(handle, [this](Framebuffer &fb) {
 		// TODO: if lastUsedFrame has already been synced we could delete immediately
-		this->deleteResources.emplace(std::move(fb));
+		this->deleteResources.emplace_back(std::move(fb));
 	} );
 }
 
@@ -1892,7 +1892,7 @@ void RendererImpl::deleteFramebuffer(FramebufferHandle handle) {
 void RendererImpl::deleteRenderPass(RenderPassHandle handle) {
 	renderPasses.removeWith(handle, [this](RenderPass &rp) {
 		// TODO: if lastUsedFrame has already been synced we could delete immediately
-		this->deleteResources.emplace(std::move(rp));
+		this->deleteResources.emplace_back(std::move(rp));
 	} );
 }
 
@@ -1900,7 +1900,7 @@ void RendererImpl::deleteRenderPass(RenderPassHandle handle) {
 void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
 	renderTargets.removeWith(handle, [this](struct RenderTarget &rt) {
 		// TODO: if lastUsedFrame has already been synced we could delete immediately
-		this->deleteResources.emplace(std::move(rt));
+		this->deleteResources.emplace_back(std::move(rt));
 	} );
 }
 
@@ -1908,7 +1908,7 @@ void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
 void RendererImpl::deleteSampler(SamplerHandle handle) {
 	samplers.removeWith(handle, [this](struct Sampler &s) {
 		// TODO: if lastUsedFrame has already been synced we could delete immediately
-		this->deleteResources.emplace(std::move(s));
+		this->deleteResources.emplace_back(std::move(s));
 	} );
 }
 
@@ -1916,7 +1916,7 @@ void RendererImpl::deleteSampler(SamplerHandle handle) {
 void RendererImpl::deleteTexture(TextureHandle handle) {
 	textures.removeWith(handle, [this](Texture &tex) {
 		// TODO: if lastUsedFrame has already been synced we could delete immediately
-		this->deleteResources.emplace(std::move(tex));
+		this->deleteResources.emplace_back(std::move(tex));
 	} );
 }
 

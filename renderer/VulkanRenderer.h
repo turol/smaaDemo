@@ -787,8 +787,7 @@ struct Frame {
 	vk::CommandBuffer             presentCmdBuf;
 	vk::CommandBuffer             barrierCmdBuf;
 
-	// std::vector has some kind of issue with variant with non-copyable types, so use unordered_set
-	std::unordered_set<Resource>  deleteResources;
+	std::vector<Resource>         deleteResources;
 	std::vector<UploadOp>         uploads;
 
 
@@ -956,8 +955,7 @@ struct RendererImpl : public RendererBase {
 	VmaAllocation                           ringBufferMem;
 	char                                    *persistentMapping;
 
-	// std::vector has some kind of issue with variant with non-copyable types, so use unordered_set
-	std::unordered_set<Resource>            deleteResources;
+	std::vector<Resource>                   deleteResources;
 
 
 	unsigned int bufferAlignment(BufferType type);
