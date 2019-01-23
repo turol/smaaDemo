@@ -52,6 +52,7 @@ LDFLAGS+=$(foreach f, $(PRELOAD_FILES), --preload-file $(TOPDIR)/$(f)@$(f))
 
 
 CFLAGS+=$(OPTFLAGS)
+CFLAGS+=-DNV_EXTENSIONS=1
 
 CFLAGS+=-I$(TOPDIR)
 CFLAGS+=-isystem$(TOPDIR)/foreign/glew/include
