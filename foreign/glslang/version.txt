@@ -1,8 +1,5 @@
-commit 97068d8b306b446fdcff44a3dfd0650c2c579c5b
-Merge: 1d12970a dae0b0a5
-Author: John Kessenich <johnkslang@users.noreply.github.com>
-Date:   Fri Aug 31 08:14:47 2018 -0700
+commit 3a1379667dd7d998be1d7d64806443295e8cf5f9
+Author: Chao Chen <chaoc@nvidia.com>
+Date:   Wed Sep 19 11:41:27 2018 -0700
 
-    Merge pull request #1465 from otakuto/remove-execute-permissions
-    
-    Remove execute permissions
+    0003-Add-support-for-SPV_NV_shader_image_footprint

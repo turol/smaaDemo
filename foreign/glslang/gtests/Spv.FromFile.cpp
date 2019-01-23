@@ -286,6 +286,8 @@ INSTANTIATE_TEST_CASE_P(
         "spv.matrix.frag",
         "spv.matrix2.frag",
         "spv.memoryQualifier.frag",
+        "spv.memoryScopeSemantics.comp",
+        "spv.memoryScopeSemantics_Error.comp",
         "spv.merge-unreachable.frag",
         "spv.multiStruct.comp",
         "spv.multiStructFuncall.frag",
@@ -499,6 +501,11 @@ INSTANTIATE_TEST_CASE_P(
     "spv.multiviewPerViewAttributes.vert",
     "spv.multiviewPerViewAttributes.tesc",
     "spv.atomicInt64.comp",
+    "spv.fragmentShaderBarycentric.frag",
+    "spv.fragmentShaderBarycentric2.frag",
+    "spv.computeShaderDerivatives.comp",
+    "spv.computeShaderDerivatives2.comp",
+    "spv.shaderImageFootprint.frag",
 })),
 FileNameAsCustomTestSuffix
 );

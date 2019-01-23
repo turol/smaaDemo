@@ -124,6 +124,158 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
 {
     //============================================================================
     //
+    // Prototypes for built-in functions used repeatly by different shaders
+    //
+    //============================================================================
+
+    //
+    // Derivatives Functions.
+    //
+    TString derivatives (
+        "float dFdx(float p);"
+        "vec2  dFdx(vec2  p);"
+        "vec3  dFdx(vec3  p);"
+        "vec4  dFdx(vec4  p);"
+
+        "float dFdy(float p);"
+        "vec2  dFdy(vec2  p);"
+        "vec3  dFdy(vec3  p);"
+        "vec4  dFdy(vec4  p);"
+
+        "float fwidth(float p);"
+        "vec2  fwidth(vec2  p);"
+        "vec3  fwidth(vec3  p);"
+        "vec4  fwidth(vec4  p);"
+    );
+
+    TString derivativeControls (
+        "float dFdxFine(float p);"
+        "vec2  dFdxFine(vec2  p);"
+        "vec3  dFdxFine(vec3  p);"
+        "vec4  dFdxFine(vec4  p);"
+
+        "float dFdyFine(float p);"
+        "vec2  dFdyFine(vec2  p);"
+        "vec3  dFdyFine(vec3  p);"
+        "vec4  dFdyFine(vec4  p);"
+
+        "float fwidthFine(float p);"
+        "vec2  fwidthFine(vec2  p);"
+        "vec3  fwidthFine(vec3  p);"
+        "vec4  fwidthFine(vec4  p);"
+
+        "float dFdxCoarse(float p);"
+        "vec2  dFdxCoarse(vec2  p);"
+        "vec3  dFdxCoarse(vec3  p);"
+        "vec4  dFdxCoarse(vec4  p);"
+
+        "float dFdyCoarse(float p);"
+        "vec2  dFdyCoarse(vec2  p);"
+        "vec3  dFdyCoarse(vec3  p);"
+        "vec4  dFdyCoarse(vec4  p);"
+
+        "float fwidthCoarse(float p);"
+        "vec2  fwidthCoarse(vec2  p);"
+        "vec3  fwidthCoarse(vec3  p);"
+        "vec4  fwidthCoarse(vec4  p);"
+    );
+
+    TString derivativesAndControl16bits (
+        "float16_t dFdx(float16_t);"
+        "f16vec2   dFdx(f16vec2);"
+        "f16vec3   dFdx(f16vec3);"
+        "f16vec4   dFdx(f16vec4);"
+
+        "float16_t dFdy(float16_t);"
+        "f16vec2   dFdy(f16vec2);"
+        "f16vec3   dFdy(f16vec3);"
+        "f16vec4   dFdy(f16vec4);"
+
+        "float16_t dFdxFine(float16_t);"
+        "f16vec2   dFdxFine(f16vec2);"
+        "f16vec3   dFdxFine(f16vec3);"
+        "f16vec4   dFdxFine(f16vec4);"
+
+        "float16_t dFdyFine(float16_t);"
+        "f16vec2   dFdyFine(f16vec2);"
+        "f16vec3   dFdyFine(f16vec3);"
+        "f16vec4   dFdyFine(f16vec4);"
+
+        "float16_t dFdxCoarse(float16_t);"
+        "f16vec2   dFdxCoarse(f16vec2);"
+        "f16vec3   dFdxCoarse(f16vec3);"
+        "f16vec4   dFdxCoarse(f16vec4);"
+
+        "float16_t dFdyCoarse(float16_t);"
+        "f16vec2   dFdyCoarse(f16vec2);"
+        "f16vec3   dFdyCoarse(f16vec3);"
+        "f16vec4   dFdyCoarse(f16vec4);"
+
+        "float16_t fwidth(float16_t);"
+        "f16vec2   fwidth(f16vec2);"
+        "f16vec3   fwidth(f16vec3);"
+        "f16vec4   fwidth(f16vec4);"
+
+        "float16_t fwidthFine(float16_t);"
+        "f16vec2   fwidthFine(f16vec2);"
+        "f16vec3   fwidthFine(f16vec3);"
+        "f16vec4   fwidthFine(f16vec4);"
+
+        "float16_t fwidthCoarse(float16_t);"
+        "f16vec2   fwidthCoarse(f16vec2);"
+        "f16vec3   fwidthCoarse(f16vec3);"
+        "f16vec4   fwidthCoarse(f16vec4);"
+    );
+
+    TString derivativesAndControl64bits (
+        "float64_t dFdx(float64_t);"
+        "f64vec2   dFdx(f64vec2);"
+        "f64vec3   dFdx(f64vec3);"
+        "f64vec4   dFdx(f64vec4);"
+
+        "float64_t dFdy(float64_t);"
+        "f64vec2   dFdy(f64vec2);"
+        "f64vec3   dFdy(f64vec3);"
+        "f64vec4   dFdy(f64vec4);"
+
+        "float64_t dFdxFine(float64_t);"
+        "f64vec2   dFdxFine(f64vec2);"
+        "f64vec3   dFdxFine(f64vec3);"
+        "f64vec4   dFdxFine(f64vec4);"
+
+        "float64_t dFdyFine(float64_t);"
+        "f64vec2   dFdyFine(f64vec2);"
+        "f64vec3   dFdyFine(f64vec3);"
+        "f64vec4   dFdyFine(f64vec4);"
+
+        "float64_t dFdxCoarse(float64_t);"
+        "f64vec2   dFdxCoarse(f64vec2);"
+        "f64vec3   dFdxCoarse(f64vec3);"
+        "f64vec4   dFdxCoarse(f64vec4);"
+
+        "float64_t dFdyCoarse(float64_t);"
+        "f64vec2   dFdyCoarse(f64vec2);"
+        "f64vec3   dFdyCoarse(f64vec3);"
+        "f64vec4   dFdyCoarse(f64vec4);"
+
+        "float64_t fwidth(float64_t);"
+        "f64vec2   fwidth(f64vec2);"
+        "f64vec3   fwidth(f64vec3);"
+        "f64vec4   fwidth(f64vec4);"
+
+        "float64_t fwidthFine(float64_t);"
+        "f64vec2   fwidthFine(f64vec2);"
+        "f64vec3   fwidthFine(f64vec3);"
+        "f64vec4   fwidthFine(f64vec4);"
+
+        "float64_t fwidthCoarse(float64_t);"
+        "f64vec2   fwidthCoarse(f64vec2);"
+        "f64vec3   fwidthCoarse(f64vec3);"
+        "f64vec4   fwidthCoarse(f64vec4);"
+    );
+
+    //============================================================================
+    //
     // Prototypes for built-in functions seen by both vertex and fragment shaders.
     //
     //============================================================================
@@ -935,56 +1087,102 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
         commonBuiltins.append(
             "uint atomicAdd(coherent volatile inout uint, uint);"
             " int atomicAdd(coherent volatile inout  int,  int);"
+            "uint atomicAdd(coherent volatile inout uint, uint, int, int, int);"
+            " int atomicAdd(coherent volatile inout  int,  int, int, int, int);"
 
             "uint atomicMin(coherent volatile inout uint, uint);"
             " int atomicMin(coherent volatile inout  int,  int);"
+            "uint atomicMin(coherent volatile inout uint, uint, int, int, int);"
+            " int atomicMin(coherent volatile inout  int,  int, int, int, int);"
 
             "uint atomicMax(coherent volatile inout uint, uint);"
             " int atomicMax(coherent volatile inout  int,  int);"
+            "uint atomicMax(coherent volatile inout uint, uint, int, int, int);"
+            " int atomicMax(coherent volatile inout  int,  int, int, int, int);"
 
             "uint atomicAnd(coherent volatile inout uint, uint);"
             " int atomicAnd(coherent volatile inout  int,  int);"
+            "uint atomicAnd(coherent volatile inout uint, uint, int, int, int);"
+            " int atomicAnd(coherent volatile inout  int,  int, int, int, int);"
 
             "uint atomicOr (coherent volatile inout uint, uint);"
             " int atomicOr (coherent volatile inout  int,  int);"
+            "uint atomicOr (coherent volatile inout uint, uint, int, int, int);"
+            " int atomicOr (coherent volatile inout  int,  int, int, int, int);"
 
             "uint atomicXor(coherent volatile inout uint, uint);"
             " int atomicXor(coherent volatile inout  int,  int);"
+            "uint atomicXor(coherent volatile inout uint, uint, int, int, int);"
+            " int atomicXor(coherent volatile inout  int,  int, int, int, int);"
 
             "uint atomicExchange(coherent volatile inout uint, uint);"
             " int atomicExchange(coherent volatile inout  int,  int);"
+            "uint atomicExchange(coherent volatile inout uint, uint, int, int, int);"
+            " int atomicExchange(coherent volatile inout  int,  int, int, int, int);"
 
             "uint atomicCompSwap(coherent volatile inout uint, uint, uint);"
             " int atomicCompSwap(coherent volatile inout  int,  int,  int);"
+            "uint atomicCompSwap(coherent volatile inout uint, uint, uint, int, int, int, int, int);"
+            " int atomicCompSwap(coherent volatile inout  int,  int,  int, int, int, int, int, int);"
+
+            "uint atomicLoad(coherent volatile in uint, int, int, int);"
+            " int atomicLoad(coherent volatile in  int, int, int, int);"
+
+            "void atomicStore(coherent volatile out uint, uint, int, int, int);"
+            "void atomicStore(coherent volatile out  int,  int, int, int, int);"
 
             "\n");
     }
 
-#ifdef NV_EXTENSIONS
     if (profile != EEsProfile && version >= 440) {
         commonBuiltins.append(
             "uint64_t atomicMin(coherent volatile inout uint64_t, uint64_t);"
             " int64_t atomicMin(coherent volatile inout  int64_t,  int64_t);"
+            "uint64_t atomicMin(coherent volatile inout uint64_t, uint64_t, int, int, int);"
+            " int64_t atomicMin(coherent volatile inout  int64_t,  int64_t, int, int, int);"
 
             "uint64_t atomicMax(coherent volatile inout uint64_t, uint64_t);"
             " int64_t atomicMax(coherent volatile inout  int64_t,  int64_t);"
+            "uint64_t atomicMax(coherent volatile inout uint64_t, uint64_t, int, int, int);"
+            " int64_t atomicMax(coherent volatile inout  int64_t,  int64_t, int, int, int);"
 
             "uint64_t atomicAnd(coherent volatile inout uint64_t, uint64_t);"
             " int64_t atomicAnd(coherent volatile inout  int64_t,  int64_t);"
+            "uint64_t atomicAnd(coherent volatile inout uint64_t, uint64_t, int, int, int);"
+            " int64_t atomicAnd(coherent volatile inout  int64_t,  int64_t, int, int, int);"
 
             "uint64_t atomicOr (coherent volatile inout uint64_t, uint64_t);"
             " int64_t atomicOr (coherent volatile inout  int64_t,  int64_t);"
+            "uint64_t atomicOr (coherent volatile inout uint64_t, uint64_t, int, int, int);"
+            " int64_t atomicOr (coherent volatile inout  int64_t,  int64_t, int, int, int);"
 
             "uint64_t atomicXor(coherent volatile inout uint64_t, uint64_t);"
             " int64_t atomicXor(coherent volatile inout  int64_t,  int64_t);"
+            "uint64_t atomicXor(coherent volatile inout uint64_t, uint64_t, int, int, int);"
+            " int64_t atomicXor(coherent volatile inout  int64_t,  int64_t, int, int, int);"
 
-            " int64_t atomicAdd(coherent volatile inout int64_t, int64_t);"
-            " int64_t atomicExchange(coherent volatile inout int64_t, int64_t);"
-            " int64_t atomicCompSwap(coherent volatile inout int64_t, int64_t, int64_t);"
+            "uint64_t atomicAdd(coherent volatile inout uint64_t, uint64_t);"
+            " int64_t atomicAdd(coherent volatile inout  int64_t,  int64_t);"
+            "uint64_t atomicAdd(coherent volatile inout uint64_t, uint64_t, int, int, int);"
+            " int64_t atomicAdd(coherent volatile inout  int64_t,  int64_t, int, int, int);"
 
+            "uint64_t atomicExchange(coherent volatile inout uint64_t, uint64_t);"
+            " int64_t atomicExchange(coherent volatile inout  int64_t,  int64_t);"
+            "uint64_t atomicExchange(coherent volatile inout uint64_t, uint64_t, int, int, int);"
+            " int64_t atomicExchange(coherent volatile inout  int64_t,  int64_t, int, int, int);"
+
+            "uint64_t atomicCompSwap(coherent volatile inout uint64_t, uint64_t, uint64_t);"
+            " int64_t atomicCompSwap(coherent volatile inout  int64_t,  int64_t,  int64_t);"
+            "uint64_t atomicCompSwap(coherent volatile inout uint64_t, uint64_t, uint64_t, int, int, int, int, int);"
+            " int64_t atomicCompSwap(coherent volatile inout  int64_t,  int64_t,  int64_t, int, int, int, int, int);"
+
+            "uint64_t atomicLoad(coherent volatile in uint64_t, int, int, int);"
+            " int64_t atomicLoad(coherent volatile in  int64_t, int, int, int);"
+
+            "void atomicStore(coherent volatile out uint64_t, uint64_t, int, int, int);"
+            "void atomicStore(coherent volatile out  int64_t,  int64_t, int, int, int);"
             "\n");
     }
-#endif
 
     if ((profile == EEsProfile && version >= 310) ||
         (profile != EEsProfile && version >= 450)) {
@@ -3652,6 +3850,42 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
 
 #endif  // AMD_EXTENSIONS
 
+
+#ifdef NV_EXTENSIONS
+    if ((profile != EEsProfile && version >= 450) || 
+        (profile == EEsProfile && version >= 320)) {
+        commonBuiltins.append(
+            "struct gl_TextureFootprint2DNV {"
+                "uvec2 anchor;"
+                "uvec2 offset;"
+                "uvec2 mask;"
+                "uint lod;"
+                "uint granularity;"
+            "};"
+
+            "struct gl_TextureFootprint3DNV {"
+                "uvec3 anchor;"
+                "uvec3 offset;"
+                "uvec2 mask;"
+                "uint lod;"
+                "uint granularity;"
+            "};"
+            "bool textureFootprintNV(sampler2D, vec2, int, bool, out gl_TextureFootprint2DNV);"
+            "bool textureFootprintNV(sampler3D, vec3, int, bool, out gl_TextureFootprint3DNV);"
+            "bool textureFootprintNV(sampler2D, vec2, int, bool, out gl_TextureFootprint2DNV, float);"
+            "bool textureFootprintNV(sampler3D, vec3, int, bool, out gl_TextureFootprint3DNV, float);"
+            "bool textureFootprintClampNV(sampler2D, vec2, float, int, bool, out gl_TextureFootprint2DNV);"
+            "bool textureFootprintClampNV(sampler3D, vec3, float, int, bool, out gl_TextureFootprint3DNV);"
+            "bool textureFootprintClampNV(sampler2D, vec2, float, int, bool, out gl_TextureFootprint2DNV, float);"
+            "bool textureFootprintClampNV(sampler3D, vec3, float, int, bool, out gl_TextureFootprint3DNV, float);"
+            "bool textureFootprintLodNV(sampler2D, vec2, float, int, bool, out gl_TextureFootprint2DNV);"
+            "bool textureFootprintLodNV(sampler3D, vec3, float, int, bool, out gl_TextureFootprint3DNV);"
+            "bool textureFootprintGradNV(sampler2D, vec2, vec2, vec2, int, bool, out gl_TextureFootprint2DNV);"
+            "bool textureFootprintGradClampNV(sampler2D, vec2, vec2, vec2, float, int, bool, out gl_TextureFootprint2DNV);"
+            "\n");
+    }
+
+#endif // NV_EXTENSIONS
     // GL_AMD_gpu_shader_half_float/Explicit types
     if (profile != EEsProfile && version >= 450) {
         commonBuiltins.append(
@@ -4504,52 +4738,8 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "\n");
         }
         if (profile != EEsProfile && version >= 450) {
+            stageBuiltins[EShLangFragment].append(derivativesAndControl64bits);
             stageBuiltins[EShLangFragment].append(
-                "float64_t dFdx(float64_t);"
-                "f64vec2   dFdx(f64vec2);"
-                "f64vec3   dFdx(f64vec3);"
-                "f64vec4   dFdx(f64vec4);"
-
-                "float64_t dFdy(float64_t);"
-                "f64vec2   dFdy(f64vec2);"
-                "f64vec3   dFdy(f64vec3);"
-                "f64vec4   dFdy(f64vec4);"
-
-                "float64_t dFdxFine(float64_t);"
-                "f64vec2   dFdxFine(f64vec2);"
-                "f64vec3   dFdxFine(f64vec3);"
-                "f64vec4   dFdxFine(f64vec4);"
-
-                "float64_t dFdyFine(float64_t);"
-                "f64vec2   dFdyFine(f64vec2);"
-                "f64vec3   dFdyFine(f64vec3);"
-                "f64vec4   dFdyFine(f64vec4);"
-
-                "float64_t dFdxCoarse(float64_t);"
-                "f64vec2   dFdxCoarse(f64vec2);"
-                "f64vec3   dFdxCoarse(f64vec3);"
-                "f64vec4   dFdxCoarse(f64vec4);"
-
-                "float64_t dFdyCoarse(float64_t);"
-                "f64vec2   dFdyCoarse(f64vec2);"
-                "f64vec3   dFdyCoarse(f64vec3);"
-                "f64vec4   dFdyCoarse(f64vec4);"
-
-                "float64_t fwidth(float64_t);"
-                "f64vec2   fwidth(f64vec2);"
-                "f64vec3   fwidth(f64vec3);"
-                "f64vec4   fwidth(f64vec4);"
-
-                "float64_t fwidthFine(float64_t);"
-                "f64vec2   fwidthFine(f64vec2);"
-                "f64vec3   fwidthFine(f64vec3);"
-                "f64vec4   fwidthFine(f64vec4);"
-
-                "float64_t fwidthCoarse(float64_t);"
-                "f64vec2   fwidthCoarse(f64vec2);"
-                "f64vec3   fwidthCoarse(f64vec3);"
-                "f64vec4   fwidthCoarse(f64vec4);"
-
                 "float64_t interpolateAtCentroid(float64_t);"
                 "f64vec2   interpolateAtCentroid(f64vec2);"
                 "f64vec3   interpolateAtCentroid(f64vec3);"
@@ -4693,6 +4883,9 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             );
     }
 
+    commonBuiltins.append("void controlBarrier(int, int, int, int);\n"
+                          "void memoryBarrier(int, int, int);\n");
+
     //============================================================================
     //
     // Prototypes for built-in functions seen by fragment shaders only.
@@ -4735,61 +4928,13 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "\n");
     }
 
-    stageBuiltins[EShLangFragment].append(
-        "float dFdx(float p);"
-        "vec2  dFdx(vec2  p);"
-        "vec3  dFdx(vec3  p);"
-        "vec4  dFdx(vec4  p);"
-
-        "float dFdy(float p);"
-        "vec2  dFdy(vec2  p);"
-        "vec3  dFdy(vec3  p);"
-        "vec4  dFdy(vec4  p);"
-
-        "float fwidth(float p);"
-        "vec2  fwidth(vec2  p);"
-        "vec3  fwidth(vec3  p);"
-        "vec4  fwidth(vec4  p);"
-
-        "\n");
+    stageBuiltins[EShLangFragment].append(derivatives);
+    stageBuiltins[EShLangFragment].append("\n");
 
     // GL_ARB_derivative_control
     if (profile != EEsProfile && version >= 400) {
-        stageBuiltins[EShLangFragment].append(
-            "float dFdxFine(float p);"
-            "vec2  dFdxFine(vec2  p);"
-            "vec3  dFdxFine(vec3  p);"
-            "vec4  dFdxFine(vec4  p);"
-
-            "float dFdyFine(float p);"
-            "vec2  dFdyFine(vec2  p);"
-            "vec3  dFdyFine(vec3  p);"
-            "vec4  dFdyFine(vec4  p);"
-
-            "float fwidthFine(float p);"
-            "vec2  fwidthFine(vec2  p);"
-            "vec3  fwidthFine(vec3  p);"
-            "vec4  fwidthFine(vec4  p);"
-
-            "\n");
-
-        stageBuiltins[EShLangFragment].append(
-            "float dFdxCoarse(float p);"
-            "vec2  dFdxCoarse(vec2  p);"
-            "vec3  dFdxCoarse(vec3  p);"
-            "vec4  dFdxCoarse(vec4  p);"
-
-            "float dFdyCoarse(float p);"
-            "vec2  dFdyCoarse(vec2  p);"
-            "vec3  dFdyCoarse(vec3  p);"
-            "vec4  dFdyCoarse(vec4  p);"
-
-            "float fwidthCoarse(float p);"
-            "vec2  fwidthCoarse(vec2  p);"
-            "vec3  fwidthCoarse(vec3  p);"
-            "vec4  fwidthCoarse(vec4  p);"
-
-            "\n");
+        stageBuiltins[EShLangFragment].append(derivativeControls);
+        stageBuiltins[EShLangFragment].append("\n");
     }
 
     // GL_OES_shader_multisample_interpolation
@@ -4843,52 +4988,10 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
 
     // GL_AMD_gpu_shader_half_float
     if (profile != EEsProfile && version >= 450) {
+        stageBuiltins[EShLangFragment].append(derivativesAndControl16bits);
+        stageBuiltins[EShLangFragment].append("\n");
+
         stageBuiltins[EShLangFragment].append(
-            "float16_t dFdx(float16_t);"
-            "f16vec2   dFdx(f16vec2);"
-            "f16vec3   dFdx(f16vec3);"
-            "f16vec4   dFdx(f16vec4);"
-
-            "float16_t dFdy(float16_t);"
-            "f16vec2   dFdy(f16vec2);"
-            "f16vec3   dFdy(f16vec3);"
-            "f16vec4   dFdy(f16vec4);"
-
-            "float16_t dFdxFine(float16_t);"
-            "f16vec2   dFdxFine(f16vec2);"
-            "f16vec3   dFdxFine(f16vec3);"
-            "f16vec4   dFdxFine(f16vec4);"
-
-            "float16_t dFdyFine(float16_t);"
-            "f16vec2   dFdyFine(f16vec2);"
-            "f16vec3   dFdyFine(f16vec3);"
-            "f16vec4   dFdyFine(f16vec4);"
-
-            "float16_t dFdxCoarse(float16_t);"
-            "f16vec2   dFdxCoarse(f16vec2);"
-            "f16vec3   dFdxCoarse(f16vec3);"
-            "f16vec4   dFdxCoarse(f16vec4);"
-
-            "float16_t dFdyCoarse(float16_t);"
-            "f16vec2   dFdyCoarse(f16vec2);"
-            "f16vec3   dFdyCoarse(f16vec3);"
-            "f16vec4   dFdyCoarse(f16vec4);"
-
-            "float16_t fwidth(float16_t);"
-            "f16vec2   fwidth(f16vec2);"
-            "f16vec3   fwidth(f16vec3);"
-            "f16vec4   fwidth(f16vec4);"
-
-            "float16_t fwidthFine(float16_t);"
-            "f16vec2   fwidthFine(f16vec2);"
-            "f16vec3   fwidthFine(f16vec3);"
-            "f16vec4   fwidthFine(f16vec4);"
-
-            "float16_t fwidthCoarse(float16_t);"
-            "f16vec2   fwidthCoarse(f16vec2);"
-            "f16vec3   fwidthCoarse(f16vec3);"
-            "f16vec4   fwidthCoarse(f16vec4);"
-
             "float16_t interpolateAtCentroid(float16_t);"
             "f16vec2   interpolateAtCentroid(f16vec2);"
             "f16vec3   interpolateAtCentroid(f16vec3);"
@@ -4920,6 +5023,22 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
 
             "\n");
         }
+#endif
+
+#ifdef NV_EXTENSIONS
+    //E_SPV_NV_compute_shader_derivatives
+    
+    stageBuiltins[EShLangCompute].append(derivatives);
+    stageBuiltins[EShLangCompute].append(derivativeControls);
+    stageBuiltins[EShLangCompute].append("\n");
+    
+
+    if (profile != EEsProfile && version >= 450) {
+
+        stageBuiltins[EShLangCompute].append(derivativesAndControl16bits);
+        stageBuiltins[EShLangCompute].append(derivativesAndControl64bits);
+        stageBuiltins[EShLangCompute].append("\n");
+    }
 #endif
 
     //============================================================================
@@ -5685,6 +5804,11 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             stageBuiltins[EShLangFragment].append(
                 "in bool gl_FragFullyCoveredNV;"
                 );
+        if (version >= 450)
+            stageBuiltins[EShLangFragment].append(
+                "in vec3 gl_BaryCoordNV;"
+                "in vec3 gl_BaryCoordNoPerspNV;"
+            );
 #endif
     } else {
         // ES profile
@@ -5726,6 +5850,13 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
         stageBuiltins[EShLangFragment].append(
             "highp float gl_FragDepthEXT;"       // GL_EXT_frag_depth
             );
+#ifdef NV_EXTENSIONS
+        if (version >= 320)
+            stageBuiltins[EShLangFragment].append(
+                "in vec3 gl_BaryCoordNV;"
+                "in vec3 gl_BaryCoordNoPerspNV;"
+            );
+#endif
     }
     stageBuiltins[EShLangFragment].append("\n");
 
@@ -5805,6 +5936,28 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
         stageBuiltins[EShLangFragment].append(
             "flat in highp uint gl_ViewID_OVR;"     // GL_OVR_multiview, GL_OVR_multiview2
             "\n");
+    }
+
+    if ((profile != EEsProfile && version >= 420) ||
+        (profile == EEsProfile && version >= 310)) {
+        commonBuiltins.append("const int gl_ScopeDevice      = 1;\n");
+        commonBuiltins.append("const int gl_ScopeWorkgroup   = 2;\n");
+        commonBuiltins.append("const int gl_ScopeSubgroup    = 3;\n");
+        commonBuiltins.append("const int gl_ScopeInvocation  = 4;\n");
+        commonBuiltins.append("const int gl_ScopeQueueFamily = 5;\n");
+
+        commonBuiltins.append("const int gl_SemanticsRelaxed         = 0x0;\n");
+        commonBuiltins.append("const int gl_SemanticsAcquire         = 0x2;\n");
+        commonBuiltins.append("const int gl_SemanticsRelease         = 0x4;\n");
+        commonBuiltins.append("const int gl_SemanticsAcquireRelease  = 0x8;\n");
+        commonBuiltins.append("const int gl_SemanticsMakeAvailable   = 0x2000;\n");
+        commonBuiltins.append("const int gl_SemanticsMakeVisible     = 0x4000;\n");
+
+        commonBuiltins.append("const int gl_StorageSemanticsNone     = 0x0;\n");
+        commonBuiltins.append("const int gl_StorageSemanticsBuffer   = 0x40;\n");
+        commonBuiltins.append("const int gl_StorageSemanticsShared   = 0x100;\n");
+        commonBuiltins.append("const int gl_StorageSemanticsImage    = 0x800;\n");
+        commonBuiltins.append("const int gl_StorageSemanticsOutput   = 0x1000;\n");
     }
 
     // printf("%s\n", commonBuiltins.c_str());
@@ -6031,6 +6184,18 @@ void TBuiltIns::addQueryFunctions(TSampler sampler, const TString& typeName, int
 #ifdef AMD_EXTENSIONS
         }
 #endif
+
+#ifdef NV_EXTENSIONS
+        stageBuiltins[EShLangCompute].append("vec2 textureQueryLod(");
+        stageBuiltins[EShLangCompute].append(typeName);
+        if (dimMap[sampler.dim] == 1)
+            stageBuiltins[EShLangCompute].append(", float");
+        else {
+            stageBuiltins[EShLangCompute].append(", vec");
+            stageBuiltins[EShLangCompute].append(postfixes[dimMap[sampler.dim]]);
+        }
+        stageBuiltins[EShLangCompute].append(");\n");
+#endif
     }
 
     //
@@ -6106,23 +6271,44 @@ void TBuiltIns::addImageFunctions(TSampler sampler, const TString& typeName, int
                 " imageAtomicExchange(volatile coherent "
             };
 
-            for (size_t i = 0; i < numBuiltins; ++i) {
+            // Loop twice to add prototypes with/without scope/semantics
+            for (int j = 0; j < 2; ++j) {
+                for (size_t i = 0; i < numBuiltins; ++i) {
+                    commonBuiltins.append(dataType);
+                    commonBuiltins.append(atomicFunc[i]);
+                    commonBuiltins.append(imageParams);
+                    commonBuiltins.append(", ");
+                    commonBuiltins.append(dataType);
+                    if (j == 1) {
+                        commonBuiltins.append(", int, int, int");
+                    }
+                    commonBuiltins.append(");\n");
+                }
+
                 commonBuiltins.append(dataType);
-                commonBuiltins.append(atomicFunc[i]);
+                commonBuiltins.append(" imageAtomicCompSwap(volatile coherent ");
                 commonBuiltins.append(imageParams);
                 commonBuiltins.append(", ");
                 commonBuiltins.append(dataType);
+                commonBuiltins.append(", ");
+                commonBuiltins.append(dataType);
+                if (j == 1) {
+                    commonBuiltins.append(", int, int, int, int, int");
+                }
                 commonBuiltins.append(");\n");
             }
 
             commonBuiltins.append(dataType);
-            commonBuiltins.append(" imageAtomicCompSwap(volatile coherent ");
+            commonBuiltins.append(" imageAtomicLoad(volatile coherent ");
+            commonBuiltins.append(imageParams);
+            commonBuiltins.append(", int, int, int);\n");
+
+            commonBuiltins.append("void imageAtomicStore(volatile coherent ");
             commonBuiltins.append(imageParams);
             commonBuiltins.append(", ");
             commonBuiltins.append(dataType);
-            commonBuiltins.append(", ");
-            commonBuiltins.append(dataType);
-            commonBuiltins.append(");\n");
+            commonBuiltins.append(", int, int, int);\n");
+
         } else {
             // not int or uint
             // GL_ARB_ES3_1_compatibility
@@ -6490,9 +6676,12 @@ void TBuiltIns::addSamplingFunctions(TSampler sampler, const TString& typeName, 
                                             s.append(");\n");
 
                                             // Add to the per-language set of built-ins
-                                            if (bias || lodClamp)
+                                            if (bias || lodClamp) {
                                                 stageBuiltins[EShLangFragment].append(s);
-                                            else
+#ifdef NV_EXTENSIONS
+                                                stageBuiltins[EShLangCompute].append(s);
+#endif
+                                            } else
                                                 commonBuiltins.append(s);
 
                                         }
@@ -7392,6 +7581,13 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         }
 #endif
 
+#ifdef NV_EXTENSIONS
+        symbolTable.setFunctionExtensions("textureFootprintNV",          1, &E_GL_NV_shader_texture_footprint);
+        symbolTable.setFunctionExtensions("textureFootprintClampNV",     1, &E_GL_NV_shader_texture_footprint);
+        symbolTable.setFunctionExtensions("textureFootprintLodNV",       1, &E_GL_NV_shader_texture_footprint);
+        symbolTable.setFunctionExtensions("textureFootprintGradNV",      1, &E_GL_NV_shader_texture_footprint);
+        symbolTable.setFunctionExtensions("textureFootprintGradClampNV", 1, &E_GL_NV_shader_texture_footprint);
+#endif
         // Compatibility variables, vertex only
         if (spvVersion.spv == 0) {
             BuiltInVariable("gl_Color",          EbvColor,          symbolTable);
@@ -7812,6 +8008,26 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setVariableExtensions("gl_FragFullyCoveredNV", 1, &E_GL_NV_conservative_raster_underestimation);
             BuiltInVariable("gl_FragFullyCoveredNV", EbvFragFullyCoveredNV, symbolTable);
         }
+        if ((profile != EEsProfile && version >= 450) ||
+            (profile == EEsProfile && version >= 320)) {
+            symbolTable.setVariableExtensions("gl_BaryCoordNV",        1, &E_GL_NV_fragment_shader_barycentric);
+            symbolTable.setVariableExtensions("gl_BaryCoordNoPerspNV", 1, &E_GL_NV_fragment_shader_barycentric);
+            BuiltInVariable("gl_BaryCoordNV",        EbvBaryCoordNV,        symbolTable);
+            BuiltInVariable("gl_BaryCoordNoPerspNV", EbvBaryCoordNoPerspNV, symbolTable);
+        }
+        if (((profile != EEsProfile && version >= 450) ||
+            (profile == EEsProfile && version >= 320)) &&
+            language == EShLangCompute) {
+            symbolTable.setFunctionExtensions("dFdx",                   1, &E_GL_NV_compute_shader_derivatives);
+            symbolTable.setFunctionExtensions("dFdy",                   1, &E_GL_NV_compute_shader_derivatives);
+            symbolTable.setFunctionExtensions("fwidth",                 1, &E_GL_NV_compute_shader_derivatives);
+            symbolTable.setFunctionExtensions("dFdxFine",               1, &E_GL_NV_compute_shader_derivatives);
+            symbolTable.setFunctionExtensions("dFdyFine",               1, &E_GL_NV_compute_shader_derivatives);
+            symbolTable.setFunctionExtensions("fwidthFine",             1, &E_GL_NV_compute_shader_derivatives);
+            symbolTable.setFunctionExtensions("dFdxCoarse",             1, &E_GL_NV_compute_shader_derivatives);
+            symbolTable.setFunctionExtensions("dFdyCoarse",             1, &E_GL_NV_compute_shader_derivatives);
+            symbolTable.setFunctionExtensions("fwidthCoarse",           1, &E_GL_NV_compute_shader_derivatives);
+        }
 #endif
 
         symbolTable.setVariableExtensions("gl_FragDepthEXT", 1, &E_GL_EXT_frag_depth);
@@ -7969,6 +8185,26 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setFunctionExtensions("shadow2DEXT",        1, &E_GL_EXT_shadow_samplers);
             symbolTable.setFunctionExtensions("shadow2DProjEXT",    1, &E_GL_EXT_shadow_samplers);
         }
+
+        if (spvVersion.vulkan > 0) {
+            symbolTable.setVariableExtensions("gl_ScopeDevice",             1, &E_GL_KHR_memory_scope_semantics);
+            symbolTable.setVariableExtensions("gl_ScopeWorkgroup",          1, &E_GL_KHR_memory_scope_semantics);
+            symbolTable.setVariableExtensions("gl_ScopeSubgroup",           1, &E_GL_KHR_memory_scope_semantics);
+            symbolTable.setVariableExtensions("gl_ScopeInvocation",         1, &E_GL_KHR_memory_scope_semantics);
+
+            symbolTable.setVariableExtensions("gl_SemanticsRelaxed",        1, &E_GL_KHR_memory_scope_semantics);
+            symbolTable.setVariableExtensions("gl_SemanticsAcquire",        1, &E_GL_KHR_memory_scope_semantics);
+            symbolTable.setVariableExtensions("gl_SemanticsRelease",        1, &E_GL_KHR_memory_scope_semantics);
+            symbolTable.setVariableExtensions("gl_SemanticsAcquireRelease", 1, &E_GL_KHR_memory_scope_semantics);
+            symbolTable.setVariableExtensions("gl_SemanticsMakeAvailable",  1, &E_GL_KHR_memory_scope_semantics);
+            symbolTable.setVariableExtensions("gl_SemanticsMakeVisible",    1, &E_GL_KHR_memory_scope_semantics);
+
+            symbolTable.setVariableExtensions("gl_StorageSemanticsNone",    1, &E_GL_KHR_memory_scope_semantics);
+            symbolTable.setVariableExtensions("gl_StorageSemanticsBuffer",  1, &E_GL_KHR_memory_scope_semantics);
+            symbolTable.setVariableExtensions("gl_StorageSemanticsShared",  1, &E_GL_KHR_memory_scope_semantics);
+            symbolTable.setVariableExtensions("gl_StorageSemanticsImage",   1, &E_GL_KHR_memory_scope_semantics);
+            symbolTable.setVariableExtensions("gl_StorageSemanticsOutput",  1, &E_GL_KHR_memory_scope_semantics);
+        }
         break;
 
     case EShLangCompute:
@@ -8002,6 +8238,8 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setFunctionExtensions("memoryBarrierShared",        1, &E_GL_ARB_compute_shader);
             symbolTable.setFunctionExtensions("groupMemoryBarrier",         1, &E_GL_ARB_compute_shader);
         }
+
+        symbolTable.setFunctionExtensions("controlBarrier",                 1, &E_GL_KHR_memory_scope_semantics);
 
         // GL_ARB_shader_ballot
         if (profile != EEsProfile) {
@@ -8213,6 +8451,7 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
     symbolTable.relateToOperator("all",          EOpAll);
 
     symbolTable.relateToOperator("barrier",                    EOpBarrier);
+    symbolTable.relateToOperator("controlBarrier",             EOpBarrier);
     symbolTable.relateToOperator("memoryBarrier",              EOpMemoryBarrier);
     symbolTable.relateToOperator("memoryBarrierAtomicCounter", EOpMemoryBarrierAtomicCounter);
     symbolTable.relateToOperator("memoryBarrierBuffer",        EOpMemoryBarrierBuffer);
@@ -8226,6 +8465,8 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
     symbolTable.relateToOperator("atomicXor",      EOpAtomicXor);
     symbolTable.relateToOperator("atomicExchange", EOpAtomicExchange);
     symbolTable.relateToOperator("atomicCompSwap", EOpAtomicCompSwap);
+    symbolTable.relateToOperator("atomicLoad",     EOpAtomicLoad);
+    symbolTable.relateToOperator("atomicStore",    EOpAtomicStore);
 
     symbolTable.relateToOperator("atomicCounterIncrement", EOpAtomicCounterIncrement);
     symbolTable.relateToOperator("atomicCounterDecrement", EOpAtomicCounterDecrement);
@@ -8270,6 +8511,8 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         symbolTable.relateToOperator("imageAtomicXor",          EOpImageAtomicXor);
         symbolTable.relateToOperator("imageAtomicExchange",     EOpImageAtomicExchange);
         symbolTable.relateToOperator("imageAtomicCompSwap",     EOpImageAtomicCompSwap);
+        symbolTable.relateToOperator("imageAtomicLoad",         EOpImageAtomicLoad);
+        symbolTable.relateToOperator("imageAtomicStore",        EOpImageAtomicStore);
 
         symbolTable.relateToOperator("subpassLoad",             EOpSubpassLoad);
         symbolTable.relateToOperator("subpassLoadMS",           EOpSubpassLoadMS);
@@ -8300,6 +8543,14 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         symbolTable.relateToOperator("noise2", EOpNoise);
         symbolTable.relateToOperator("noise3", EOpNoise);
         symbolTable.relateToOperator("noise4", EOpNoise);
+
+#ifdef NV_EXTENSIONS
+        symbolTable.relateToOperator("textureFootprintNV",          EOpImageSampleFootprintNV);
+        symbolTable.relateToOperator("textureFootprintClampNV",     EOpImageSampleFootprintClampNV);
+        symbolTable.relateToOperator("textureFootprintLodNV",       EOpImageSampleFootprintLodNV);
+        symbolTable.relateToOperator("textureFootprintGradNV",      EOpImageSampleFootprintGradNV);
+        symbolTable.relateToOperator("textureFootprintGradClampNV", EOpImageSampleFootprintGradClampNV);
+#endif
 
         if (spvVersion.spv == 0 && (IncludeLegacy(version, profile, spvVersion) ||
             (profile == EEsProfile && version == 100))) {
@@ -8573,6 +8824,20 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         symbolTable.relateToOperator("memoryBarrierShared",         EOpMemoryBarrierShared);
         symbolTable.relateToOperator("groupMemoryBarrier",          EOpGroupMemoryBarrier);
         symbolTable.relateToOperator("subgroupMemoryBarrierShared", EOpSubgroupMemoryBarrierShared);
+#ifdef NV_EXTENSIONS
+        if ((profile != EEsProfile && version >= 450) ||
+            (profile == EEsProfile && version >= 320)) {
+            symbolTable.relateToOperator("dFdx",        EOpDPdx);
+            symbolTable.relateToOperator("dFdy",        EOpDPdy);
+            symbolTable.relateToOperator("fwidth",      EOpFwidth);
+            symbolTable.relateToOperator("dFdxFine",    EOpDPdxFine);
+            symbolTable.relateToOperator("dFdyFine",    EOpDPdyFine);
+            symbolTable.relateToOperator("fwidthFine",  EOpFwidthFine);
+            symbolTable.relateToOperator("dFdxCoarse",  EOpDPdxCoarse);
+            symbolTable.relateToOperator("dFdyCoarse",  EOpDPdyCoarse);
+            symbolTable.relateToOperator("fwidthCoarse",EOpFwidthCoarse);
+        }
+#endif
         break;
 
     default:

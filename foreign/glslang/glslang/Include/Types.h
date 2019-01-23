@@ -457,11 +457,19 @@ public:
 #ifdef AMD_EXTENSIONS
         explicitInterp = false;
 #endif
+#ifdef NV_EXTENSIONS
+        pervertexNV = false;
+#endif
     }
 
     void clearMemory()
     {
         coherent     = false;
+        devicecoherent = false;
+        queuefamilycoherent = false;
+        workgroupcoherent = false;
+        subgroupcoherent  = false;
+        nonprivate = false;
         volatil      = false;
         restrict     = false;
         readonly     = false;
@@ -496,9 +504,17 @@ public:
 #ifdef AMD_EXTENSIONS
     bool explicitInterp : 1;
 #endif
+#ifdef NV_EXTENSIONS
+    bool pervertexNV  : 1;
+#endif
     bool patch        : 1;
     bool sample       : 1;
     bool coherent     : 1;
+    bool devicecoherent : 1;
+    bool queuefamilycoherent : 1;
+    bool workgroupcoherent : 1;
+    bool subgroupcoherent  : 1;
+    bool nonprivate   : 1;
     bool volatil      : 1;
     bool restrict     : 1;
     bool readonly     : 1;
@@ -508,8 +524,13 @@ public:
 
     bool isMemory() const
     {
-        return coherent || volatil || restrict || readonly || writeonly;
+        return subgroupcoherent || workgroupcoherent || queuefamilycoherent || devicecoherent || coherent || volatil || restrict || readonly || writeonly || nonprivate;
     }
+    bool isMemoryQualifierImageAndSSBOOnly() const
+    {
+        return subgroupcoherent || workgroupcoherent || queuefamilycoherent || devicecoherent || coherent || volatil || restrict || readonly || writeonly;
+    }
+
     bool isInterpolation() const
     {
 #ifdef AMD_EXTENSIONS
@@ -518,15 +539,21 @@ public:
         return flat || smooth || nopersp;
 #endif
     }
+
 #ifdef AMD_EXTENSIONS
     bool isExplicitInterpolation() const
     {
         return explicitInterp;
     }
 #endif
+
     bool isAuxiliary() const
     {
+#ifdef NV_EXTENSIONS
+        return centroid || patch || sample || pervertexNV;
+#else
         return centroid || patch || sample;
+#endif
     }
 
     bool isPipeInput() const
@@ -642,6 +669,11 @@ public:
             return ! patch && (isPipeInput() || isPipeOutput());
         case EShLangTessEvaluation:
             return ! patch && isPipeInput();
+#ifdef NV_EXTENSIONS
+        case EShLangFragment:
+            return pervertexNV && isPipeInput();
+#endif
+
         default:
             return false;
         }
@@ -1034,7 +1066,9 @@ struct TShaderQualifiers {
     int numViews;             // multiview extenstions
 
 #ifdef NV_EXTENSIONS
-    bool layoutOverrideCoverage;    // true if layout override_coverage set
+    bool layoutOverrideCoverage;        // true if layout override_coverage set
+    bool layoutDerivativeGroupQuads;    // true if layout derivative_group_quadsNV set
+    bool layoutDerivativeGroupLinear;   // true if layout derivative_group_linearNV set
 #endif
 
     void init()
@@ -1060,6 +1094,9 @@ struct TShaderQualifiers {
         numViews = TQualifier::layoutNotSet;
 #ifdef NV_EXTENSIONS
         layoutOverrideCoverage = false;
+        layoutDerivativeGroupQuads = false;
+        layoutDerivativeGroupLinear = false;
+
 #endif
     }
 
@@ -1104,6 +1141,10 @@ struct TShaderQualifiers {
 #ifdef NV_EXTENSIONS
         if (src.layoutOverrideCoverage)
             layoutOverrideCoverage = src.layoutOverrideCoverage;
+        if (src.layoutDerivativeGroupQuads)
+            layoutDerivativeGroupQuads = src.layoutDerivativeGroupQuads;
+        if (src.layoutDerivativeGroupLinear)
+            layoutDerivativeGroupLinear = src.layoutDerivativeGroupLinear;
 #endif
     }
 };
@@ -1707,12 +1748,26 @@ public:
         if (qualifier.explicitInterp)
             appendStr(" __explicitInterpAMD");
 #endif
+#ifdef NV_EXTENSIONS
+        if (qualifier.pervertexNV)
+            appendStr(" pervertexNV");
+#endif
         if (qualifier.patch)
             appendStr(" patch");
         if (qualifier.sample)
             appendStr(" sample");
         if (qualifier.coherent)
             appendStr(" coherent");
+        if (qualifier.devicecoherent)
+            appendStr(" devicecoherent");
+        if (qualifier.queuefamilycoherent)
+            appendStr(" queuefamilycoherent");
+        if (qualifier.workgroupcoherent)
+            appendStr(" workgroupcoherent");
+        if (qualifier.subgroupcoherent)
+            appendStr(" subgroupcoherent");
+        if (qualifier.nonprivate)
+            appendStr(" nonprivate");
         if (qualifier.volatil)
             appendStr(" volatile");
         if (qualifier.restrict)

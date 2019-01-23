@@ -871,6 +871,8 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpAtomicXor:                  out.debug << "AtomicXor";             break;
     case EOpAtomicExchange:             out.debug << "AtomicExchange";        break;
     case EOpAtomicCompSwap:             out.debug << "AtomicCompSwap";        break;
+    case EOpAtomicLoad:                 out.debug << "AtomicLoad";            break;
+    case EOpAtomicStore:                out.debug << "AtomicStore";           break;
 
     case EOpAtomicCounterAdd:           out.debug << "AtomicCounterAdd";      break;
     case EOpAtomicCounterSubtract:      out.debug << "AtomicCounterSubtract"; break;
@@ -894,6 +896,8 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpImageAtomicXor:             out.debug << "imageAtomicXor";        break;
     case EOpImageAtomicExchange:        out.debug << "imageAtomicExchange";   break;
     case EOpImageAtomicCompSwap:        out.debug << "imageAtomicCompSwap";   break;
+    case EOpImageAtomicLoad:            out.debug << "imageAtomicLoad";       break;
+    case EOpImageAtomicStore:           out.debug << "imageAtomicStore";      break;
 #ifdef AMD_EXTENSIONS
     case EOpImageLoadLod:               out.debug << "imageLoadLod";          break;
     case EOpImageStoreLod:              out.debug << "imageStoreLod";         break;
@@ -952,7 +956,13 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpSparseTextureGatherLodOffsets:  out.debug << "sparseTextureGatherLodOffsets";   break;
     case EOpSparseImageLoadLod:             out.debug << "sparseImageLoadLod";              break;
 #endif
-
+#ifdef NV_EXTENSIONS
+    case EOpImageSampleFootprintNV:             out.debug << "imageSampleFootprintNV";          break;
+    case EOpImageSampleFootprintClampNV:        out.debug << "imageSampleFootprintClampNV";     break;
+    case EOpImageSampleFootprintLodNV:          out.debug << "imageSampleFootprintLodNV";       break;
+    case EOpImageSampleFootprintGradNV:         out.debug << "imageSampleFootprintGradNV";      break;
+    case EOpImageSampleFootprintGradClampNV:    out.debug << "mageSampleFootprintGradClampNV";  break;
+#endif
     case EOpAddCarry:                   out.debug << "addCarry";              break;
     case EOpSubBorrow:                  out.debug << "subBorrow";             break;
     case EOpUMulExtended:               out.debug << "uMulExtended";          break;
