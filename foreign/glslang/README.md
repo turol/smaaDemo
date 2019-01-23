@@ -84,6 +84,15 @@ cd <the directory glslang was cloned to, "External" will be a subdirectory>
 git clone https://github.com/google/googletest.git External/googletest
 ```
 
+If you want to use googletest with Visual Studio 2013, you also need to check out an older version:
+
+```bash
+# to use googletest with Visual Studio 2013
+cd External/googletest
+git checkout 440527a61e1c91188195f7de212c63c77e8f0a45
+cd ../..
+```
+
 If you wish to assure that SPIR-V generated from HLSL is legal for Vulkan,
 or wish to invoke -Os to reduce SPIR-V size from HLSL or GLSL, install
 spirv-tools with this:
@@ -117,6 +126,9 @@ cmake $SOURCE_DIR -DCMAKE_INSTALL_PREFIX="$(pwd)/install"
 ```
 
 The CMake GUI also works for Windows (version 3.4.1 tested).
+
+Also, consider using `git config --global core.fileMode false` (or with `--local`) on Windows
+to prevent the addition of execution permission on files.
 
 #### 4) Build and Install
 

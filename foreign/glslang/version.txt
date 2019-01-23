@@ -1,5 +1,8 @@
-commit 3c3669904c4e6816974293ae9301f24de22ea336
-Author: Chao Chen <chaoc@nvidia.com>
-Date:   Wed Sep 19 11:41:59 2018 -0700
+commit 6a9df5f48f0495b0aa05bad2f32f00f4d6fa5e59
+Merge: 0bb89f58 0ceaebcf
+Author: John Kessenich <johnkslang@users.noreply.github.com>
+Date:   Mon Jan 21 18:22:49 2019 -0800
 
-    Add-support-for-SPV_NV_mesh_shader
+    Merge pull request #1664 from null77/support-angle
+    
+    Fix a few GN build issues.

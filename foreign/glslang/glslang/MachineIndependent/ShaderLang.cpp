@@ -1,7 +1,7 @@
 //
 // Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
 // Copyright (C) 2013-2016 LunarG, Inc.
-// Copyright (C) 2015-2017 Google, Inc.
+// Copyright (C) 2015-2018 Google, Inc.
 //
 // All rights reserved.
 //
@@ -348,13 +348,31 @@ bool InitializeSymbolTables(TInfoSink& infoSink, TSymbolTable** commonTable,  TS
                                    infoSink, commonTable, symbolTables);
 
 #ifdef NV_EXTENSIONS
+    // check for ray tracing stages
+    if (profile != EEsProfile && version >= 450) {
+        InitializeStageSymbolTable(*builtInParseables, version, profile, spvVersion, EShLangRayGenNV, source,
+            infoSink, commonTable, symbolTables);
+        InitializeStageSymbolTable(*builtInParseables, version, profile, spvVersion, EShLangIntersectNV, source,
+            infoSink, commonTable, symbolTables);
+        InitializeStageSymbolTable(*builtInParseables, version, profile, spvVersion, EShLangAnyHitNV, source,
+            infoSink, commonTable, symbolTables);
+        InitializeStageSymbolTable(*builtInParseables, version, profile, spvVersion, EShLangClosestHitNV, source,
+            infoSink, commonTable, symbolTables);
+        InitializeStageSymbolTable(*builtInParseables, version, profile, spvVersion, EShLangMissNV, source,
+            infoSink, commonTable, symbolTables);
+        InitializeStageSymbolTable(*builtInParseables, version, profile, spvVersion, EShLangCallableNV, source,
+            infoSink, commonTable, symbolTables);
+    }
+
     // check for mesh
-    if (profile != EEsProfile && version >= 450)
+    if ((profile != EEsProfile && version >= 450) ||
+        (profile == EEsProfile && version >= 320))
         InitializeStageSymbolTable(*builtInParseables, version, profile, spvVersion, EShLangMeshNV, source,
                                    infoSink, commonTable, symbolTables);
 
     // check for task
-    if (profile != EEsProfile && version >= 450)
+    if ((profile != EEsProfile && version >= 450) ||
+        (profile == EEsProfile && version >= 320))
         InitializeStageSymbolTable(*builtInParseables, version, profile, spvVersion, EShLangTaskNV, source,
                                    infoSink, commonTable, symbolTables);
 #endif
@@ -583,13 +601,25 @@ bool DeduceVersionProfile(TInfoSink& infoSink, EShLanguage stage, bool versionNo
         }
         break;
 #ifdef NV_EXTENSIONS
+    case EShLangRayGenNV:
+    case EShLangIntersectNV:
+    case EShLangAnyHitNV:
+    case EShLangClosestHitNV:
+    case EShLangMissNV:
+    case EShLangCallableNV:
+        if (profile == EEsProfile || version < 460) {
+            correct = false;
+            infoSink.info.message(EPrefixError, "#version: ray tracing shaders require non-es profile with version 460 or above");
+            version = 460;
+        }
+        break;
     case EShLangMeshNV:
     case EShLangTaskNV:
-        if ((profile == EEsProfile) ||
+        if ((profile == EEsProfile && version < 320) ||
             (profile != EEsProfile && version < 450)) {
             correct = false;
-            infoSink.info.message(EPrefixError, "#version: mesh/task shaders require non-es profile with version 450 or above");
-            version = 450;
+            infoSink.info.message(EPrefixError, "#version: mesh/task shaders require es profile with version 320 or above, or non-es profile with version 450 or above");
+            version = profile == EEsProfile ? 320 : 450;
         }
 #endif
     default:
@@ -849,8 +879,11 @@ bool ProcessDeferred(
         intermediate.setHlslOffsets();
     if (messages & EShMsgDebugInfo) {
         intermediate.setSourceFile(names[numPre]);
-        for (int s = 0; s < numStrings; ++s)
-            intermediate.addSourceText(strings[numPre + s]);
+        for (int s = 0; s < numStrings; ++s) {
+            // The string may not be null-terminated, so make sure we provide
+            // the length along with the string.
+            intermediate.addSourceText(strings[numPre + s], lengths[numPre + s]);
+        }
     }
     SetupBuiltinSymbolTable(version, profile, spvVersion, source);
 
@@ -1731,6 +1764,14 @@ void TShader::setAutoMapBindings(bool map)              { intermediate->setAutoM
 void TShader::setInvertY(bool invert)                   { intermediate->setInvertY(invert); }
 // Fragile: currently within one stage: simple auto-assignment of location
 void TShader::setAutoMapLocations(bool map)             { intermediate->setAutoMapLocations(map); }
+void TShader::addUniformLocationOverride(const char* name, int loc)
+{
+    intermediate->addUniformLocationOverride(name, loc);
+}
+void TShader::setUniformLocationBase(int base)
+{
+    intermediate->setUniformLocationBase(base);
+}
 // See comment above TDefaultHlslIoMapper in iomapper.cpp:
 void TShader::setHlslIoMapping(bool hlslIoMap)          { intermediate->setHlslIoMapping(hlslIoMap); }
 void TShader::setFlattenUniformArrays(bool flatten)     { intermediate->setFlattenUniformArrays(flatten); }

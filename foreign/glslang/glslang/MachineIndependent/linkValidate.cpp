@@ -1,6 +1,7 @@
 //
 // Copyright (C) 2013 LunarG, Inc.
 // Copyright (C) 2017 ARM Limited.
+// Copyright (C) 2015-2018 Google, Inc.
 //
 // All rights reserved.
 //
@@ -221,8 +222,8 @@ void TIntermediate::mergeModes(TInfoSink& infoSink, TIntermediate& unit)
         else if (xfbBuffers[b].stride != unit.xfbBuffers[b].stride)
             error(infoSink, "Contradictory xfb_stride");
         xfbBuffers[b].implicitStride = std::max(xfbBuffers[b].implicitStride, unit.xfbBuffers[b].implicitStride);
-        if (unit.xfbBuffers[b].containsDouble)
-            xfbBuffers[b].containsDouble = true;
+        if (unit.xfbBuffers[b].contains64BitType)
+            xfbBuffers[b].contains64BitType = true;
         // TODO: 4.4 link: enhanced layouts: compare ranges
     }
 
@@ -260,6 +261,7 @@ void TIntermediate::mergeModes(TInfoSink& infoSink, TIntermediate& unit)
 
     MERGE_TRUE(needToLegalize);
     MERGE_TRUE(binaryDoubleOutput);
+    MERGE_TRUE(usePhysicalStorageBuffer);
 }
 
 //
@@ -279,6 +281,9 @@ void TIntermediate::mergeTrees(TInfoSink& infoSink, TIntermediate& unit)
     }
 
     // Getting this far means we have two existing trees to merge...
+#ifdef NV_EXTENSIONS
+    numShaderRecordNVBlocks += unit.numShaderRecordNVBlocks;
+#endif
 
 #ifdef NV_EXTENSIONS
     numTaskNVBlocks += unit.numTaskNVBlocks;
@@ -629,7 +634,7 @@ void TIntermediate::finalCheck(TInfoSink& infoSink, bool keepUncalled)
         error(infoSink, "Cannot use both gl_FragColor and gl_FragData");
 
     for (size_t b = 0; b < xfbBuffers.size(); ++b) {
-        if (xfbBuffers[b].containsDouble)
+        if (xfbBuffers[b].contains64BitType)
             RoundToPow2(xfbBuffers[b].implicitStride, 8);
 
         // "It is a compile-time or link-time error to have
@@ -645,10 +650,10 @@ void TIntermediate::finalCheck(TInfoSink& infoSink, bool keepUncalled)
             xfbBuffers[b].stride = xfbBuffers[b].implicitStride;
 
         // "If the buffer is capturing any
-        // outputs with double-precision components, the stride must be a multiple of 8, otherwise it must be a
+        // outputs with double-precision or 64-bit integer components, the stride must be a multiple of 8, otherwise it must be a
         // multiple of 4, or a compile-time or link-time error results."
-        if (xfbBuffers[b].containsDouble && ! IsMultipleOfPow2(xfbBuffers[b].stride, 8)) {
-            error(infoSink, "xfb_stride must be multiple of 8 for buffer holding a double:");
+        if (xfbBuffers[b].contains64BitType && ! IsMultipleOfPow2(xfbBuffers[b].stride, 8)) {
+            error(infoSink, "xfb_stride must be multiple of 8 for buffer holding a double or 64-bit integer:");
             infoSink.info.prefix(EPrefixError);
             infoSink.info << "    xfb_buffer " << (unsigned int)b << ", xfb_stride " << xfbBuffers[b].stride << "\n";
         } else if (! IsMultipleOfPow2(xfbBuffers[b].stride, 4)) {
@@ -686,17 +691,9 @@ void TIntermediate::finalCheck(TInfoSink& infoSink, bool keepUncalled)
     case EShLangGeometry:
         if (inputPrimitive == ElgNone)
             error(infoSink, "At least one shader must specify an input layout primitive");
-        if (outputPrimitive == ElgNone
-#ifdef NV_EXTENSIONS
-            && !getGeoPassthroughEXT()
-#endif
-            )
+        if (outputPrimitive == ElgNone)
             error(infoSink, "At least one shader must specify an output layout primitive");
-        if (vertices == TQualifier::layoutNotSet
-#ifdef NV_EXTENSIONS
-            && !getGeoPassthroughEXT()
-#endif
-           )
+        if (vertices == TQualifier::layoutNotSet)
             error(infoSink, "At least one shader must specify a layout(max_vertices = value)");
         break;
     case EShLangFragment:
@@ -710,7 +707,27 @@ void TIntermediate::finalCheck(TInfoSink& infoSink, bool keepUncalled)
         break;
 
 #ifdef NV_EXTENSIONS
+    case EShLangRayGenNV:
+    case EShLangIntersectNV:
+    case EShLangAnyHitNV:
+    case EShLangClosestHitNV:
+    case EShLangMissNV:
+    case EShLangCallableNV:
+        if (numShaderRecordNVBlocks > 1)
+            error(infoSink, "Only one shaderRecordNV buffer block is allowed per stage");
+        break;
     case EShLangMeshNV:
+        // NV_mesh_shader doesn't allow use of both single-view and per-view builtins.
+        if (inIoAccessed("gl_Position") && inIoAccessed("gl_PositionPerViewNV"))
+            error(infoSink, "Can only use one of gl_Position or gl_PositionPerViewNV");
+        if (inIoAccessed("gl_ClipDistance") && inIoAccessed("gl_ClipDistancePerViewNV"))
+            error(infoSink, "Can only use one of gl_ClipDistance or gl_ClipDistancePerViewNV");
+        if (inIoAccessed("gl_CullDistance") && inIoAccessed("gl_CullDistancePerViewNV"))
+            error(infoSink, "Can only use one of gl_CullDistance or gl_CullDistancePerViewNV");
+        if (inIoAccessed("gl_Layer") && inIoAccessed("gl_LayerPerViewNV"))
+            error(infoSink, "Can only use one of gl_Layer or gl_LayerPerViewNV");
+        if (inIoAccessed("gl_ViewportMask") && inIoAccessed("gl_ViewportMaskPerViewNV"))
+            error(infoSink, "Can only use one of gl_ViewportMask or gl_ViewportMaskPerViewNV");
         if (outputPrimitive == ElgNone)
             error(infoSink, "At least one shader must specify an output layout primitive");
         if (vertices == TQualifier::layoutNotSet)
@@ -1243,7 +1260,7 @@ int TIntermediate::addXfbBufferOffset(const TType& type)
     TXfbBuffer& buffer = xfbBuffers[qualifier.layoutXfbBuffer];
 
     // compute the range
-    unsigned int size = computeTypeXfbSize(type, buffer.containsDouble);
+    unsigned int size = computeTypeXfbSize(type, buffer.contains64BitType);
     buffer.implicitStride = std::max(buffer.implicitStride, qualifier.layoutXfbOffset + size);
     TRange range(qualifier.layoutXfbOffset, qualifier.layoutXfbOffset + size - 1);
 
@@ -1262,11 +1279,11 @@ int TIntermediate::addXfbBufferOffset(const TType& type)
 
 // Recursively figure out how many bytes of xfb buffer are used by the given type.
 // Return the size of type, in bytes.
-// Sets containsDouble to true if the type contains a double.
-// N.B. Caller must set containsDouble to false before calling.
-unsigned int TIntermediate::computeTypeXfbSize(const TType& type, bool& containsDouble) const
+// Sets contains64BitType to true if the type contains a double.
+// N.B. Caller must set contains64BitType to false before calling.
+unsigned int TIntermediate::computeTypeXfbSize(const TType& type, bool& contains64BitType) const
 {
-    // "...if applied to an aggregate containing a double, the offset must also be a multiple of 8,
+    // "...if applied to an aggregate containing a double or 64-bit integer, the offset must also be a multiple of 8,
     // and the space taken in the buffer will be a multiple of 8.
     // ...within the qualified entity, subsequent components are each
     // assigned, in order, to the next available offset aligned to a multiple of
@@ -1277,28 +1294,28 @@ unsigned int TIntermediate::computeTypeXfbSize(const TType& type, bool& contains
         // TODO: perf: this can be flattened by using getCumulativeArraySize(), and a deref that discards all arrayness
         assert(type.isSizedArray());
         TType elementType(type, 0);
-        return type.getOuterArraySize() * computeTypeXfbSize(elementType, containsDouble);
+        return type.getOuterArraySize() * computeTypeXfbSize(elementType, contains64BitType);
     }
 
     if (type.isStruct()) {
         unsigned int size = 0;
-        bool structContainsDouble = false;
+        bool structContains64BitType = false;
         for (int member = 0; member < (int)type.getStruct()->size(); ++member) {
             TType memberType(type, member);
             // "... if applied to
-            // an aggregate containing a double, the offset must also be a multiple of 8,
+            // an aggregate containing a double or 64-bit integer, the offset must also be a multiple of 8,
             // and the space taken in the buffer will be a multiple of 8."
-            bool memberContainsDouble = false;
-            int memberSize = computeTypeXfbSize(memberType, memberContainsDouble);
-            if (memberContainsDouble) {
-                structContainsDouble = true;
+            bool memberContains64BitType = false;
+            int memberSize = computeTypeXfbSize(memberType, memberContains64BitType);
+            if (memberContains64BitType) {
+                structContains64BitType = true;
                 RoundToPow2(size, 8);
             }
             size += memberSize;
         }
 
-        if (structContainsDouble) {
-            containsDouble = true;
+        if (structContains64BitType) {
+            contains64BitType = true;
             RoundToPow2(size, 8);
         }
         return size;
@@ -1316,8 +1333,8 @@ unsigned int TIntermediate::computeTypeXfbSize(const TType& type, bool& contains
         numComponents = 1;
     }
 
-    if (type.getBasicType() == EbtDouble) {
-        containsDouble = true;
+    if (type.getBasicType() == EbtDouble || type.getBasicType() == EbtInt64 || type.getBasicType() == EbtUint64) {
+        contains64BitType = true;
         return 8 * numComponents;
     } else
         return 4 * numComponents;
@@ -1339,6 +1356,7 @@ int TIntermediate::getBaseAlignmentScalar(const TType& type, int& size)
     case EbtUint8:   size = 1; return 1;
     case EbtInt16:
     case EbtUint16:  size = 2; return 2;
+    case EbtReference: size = 8; return 8;
     default:         size = 4; return 4;
     }
 }
@@ -1357,10 +1375,11 @@ int TIntermediate::getBaseAlignmentScalar(const TType& type, int& size)
 // stride comes from the flattening down to vectors.
 //
 // Return value is the alignment of the type.
-int TIntermediate::getBaseAlignment(const TType& type, int& size, int& stride, bool std140, bool rowMajor)
+int TIntermediate::getBaseAlignment(const TType& type, int& size, int& stride, TLayoutPacking layoutPacking, bool rowMajor)
 {
     int alignment;
 
+    bool std140 = layoutPacking == glslang::ElpStd140;
     // When using the std140 storage layout, structures will be laid out in buffer
     // storage with its members stored in monotonically increasing order based on their
     // location in the declaration. A structure and each structure member have a base
@@ -1424,7 +1443,7 @@ int TIntermediate::getBaseAlignment(const TType& type, int& size, int& stride, b
     if (type.isArray()) {
         // TODO: perf: this might be flattened by using getCumulativeArraySize(), and a deref that discards all arrayness
         TType derefType(type, 0);
-        alignment = getBaseAlignment(derefType, size, dummyStride, std140, rowMajor);
+        alignment = getBaseAlignment(derefType, size, dummyStride, layoutPacking, rowMajor);
         if (std140)
             alignment = std::max(baseAlignmentVec4Std140, alignment);
         RoundToPow2(size, alignment);
@@ -1444,7 +1463,7 @@ int TIntermediate::getBaseAlignment(const TType& type, int& size, int& stride, b
             int memberSize;
             // modify just the children's view of matrix layout, if there is one for this member
             TLayoutMatrix subMatrixLayout = memberList[m].type->getQualifier().layoutMatrix;
-            int memberAlignment = getBaseAlignment(*memberList[m].type, memberSize, dummyStride, std140,
+            int memberAlignment = getBaseAlignment(*memberList[m].type, memberSize, dummyStride, layoutPacking,
                                                    (subMatrixLayout != ElmNone) ? (subMatrixLayout == ElmRowMajor) : rowMajor);
             maxAlignment = std::max(maxAlignment, memberAlignment);
             RoundToPow2(size, memberAlignment);
@@ -1483,7 +1502,7 @@ int TIntermediate::getBaseAlignment(const TType& type, int& size, int& stride, b
         // rule 5: deref to row, not to column, meaning the size of vector is num columns instead of num rows
         TType derefType(type, 0, rowMajor);
 
-        alignment = getBaseAlignment(derefType, size, dummyStride, std140, rowMajor);
+        alignment = getBaseAlignment(derefType, size, dummyStride, layoutPacking, rowMajor);
         if (std140)
             alignment = std::max(baseAlignmentVec4Std140, alignment);
         RoundToPow2(size, alignment);
@@ -1509,6 +1528,81 @@ bool TIntermediate::improperStraddle(const TType& type, int size, int offset)
 
     return size <= 16 ? offset / 16 != (offset + size - 1) / 16
                       : offset % 16 != 0;
+}
+
+int TIntermediate::getScalarAlignment(const TType& type, int& size, int& stride, bool rowMajor)
+{
+    int alignment;
+
+    stride = 0;
+    int dummyStride;
+
+    if (type.isArray()) {
+        TType derefType(type, 0);
+        alignment = getScalarAlignment(derefType, size, dummyStride, rowMajor);
+
+        stride = size;
+        RoundToPow2(stride, alignment);
+
+        size = stride * (type.getOuterArraySize() - 1) + size;
+        return alignment;
+    }
+
+    if (type.getBasicType() == EbtStruct) {
+        const TTypeList& memberList = *type.getStruct();
+
+        size = 0;
+        int maxAlignment = 0;
+        for (size_t m = 0; m < memberList.size(); ++m) {
+            int memberSize;
+            // modify just the children's view of matrix layout, if there is one for this member
+            TLayoutMatrix subMatrixLayout = memberList[m].type->getQualifier().layoutMatrix;
+            int memberAlignment = getScalarAlignment(*memberList[m].type, memberSize, dummyStride,
+                                                     (subMatrixLayout != ElmNone) ? (subMatrixLayout == ElmRowMajor) : rowMajor);
+            maxAlignment = std::max(maxAlignment, memberAlignment);
+            RoundToPow2(size, memberAlignment);
+            size += memberSize;
+        }
+
+        return maxAlignment;
+    }
+
+    if (type.isScalar())
+        return getBaseAlignmentScalar(type, size);
+
+    if (type.isVector()) {
+        int scalarAlign = getBaseAlignmentScalar(type, size);
+        
+        size *= type.getVectorSize();
+        return scalarAlign;
+    }
+
+    if (type.isMatrix()) {
+        TType derefType(type, 0, rowMajor);
+
+        alignment = getScalarAlignment(derefType, size, dummyStride, rowMajor);
+
+        stride = size;  // use intra-matrix stride for stride of a just a matrix
+        if (rowMajor)
+            size = stride * type.getMatrixRows();
+        else
+            size = stride * type.getMatrixCols();
+
+        return alignment;
+    }
+
+    assert(0);  // all cases should be covered above
+    size = 1;
+    return 1;    
+}
+
+int TIntermediate::getMemberAlignment(const TType& type, int& size, int& stride, TLayoutPacking layoutPacking, bool rowMajor)
+{
+    if (layoutPacking == glslang::ElpScalar) {
+        return getScalarAlignment(type, size, stride, rowMajor);
+    } else {
+        return getBaseAlignment(type, size, stride, layoutPacking, rowMajor);
+    }
 }
 
 } // end namespace glslang

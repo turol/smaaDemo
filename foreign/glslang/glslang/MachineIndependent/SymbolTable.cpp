@@ -2,6 +2,7 @@
 // Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
 // Copyright (C) 2012-2013 LunarG, Inc.
 // Copyright (C) 2017 ARM Limited.
+// Copyright (C) 2015-2018 Google, Inc.
 //
 // All rights reserved.
 //
@@ -72,6 +73,9 @@ void TType::buildMangledName(TString& mangledName) const
     case EbtUint64:             mangledName += "u64";    break;
     case EbtBool:               mangledName += 'b';      break;
     case EbtAtomicUint:         mangledName += "au";     break;
+#ifdef NV_EXTENSIONS
+    case EbtAccStructNV:        mangledName += "asnv";   break;
+#endif
     case EbtSampler:
         switch (sampler.type) {
 #ifdef AMD_EXTENSIONS

@@ -2,6 +2,7 @@
 // Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
 // Copyright (C) 2012-2013 LunarG, Inc.
 // Copyright (C) 2017 ARM Limited.
+// Copyright (C) 2015-2018 Google, Inc.
 //
 // All rights reserved.
 //
@@ -140,7 +141,7 @@ extern int yylex(YYSTYPE*, TParseContext&);
 %token <lex> U8VEC2  U8VEC3  U8VEC4
 %token <lex> VEC2 VEC3 VEC4
 %token <lex> MAT2 MAT3 MAT4 CENTROID IN OUT INOUT
-%token <lex> UNIFORM PATCH SAMPLE BUFFER SHARED NONUNIFORM
+%token <lex> UNIFORM PATCH SAMPLE BUFFER SHARED NONUNIFORM PAYLOADNV PAYLOADINNV HITATTRNV CALLDATANV CALLDATAINNV
 %token <lex> COHERENT VOLATILE RESTRICT READONLY WRITEONLY DEVICECOHERENT QUEUEFAMILYCOHERENT WORKGROUPCOHERENT SUBGROUPCOHERENT NONPRIVATE
 %token <lex> DVEC2 DVEC3 DVEC4 DMAT2 DMAT3 DMAT4
 %token <lex> F16VEC2 F16VEC3 F16VEC4 F16MAT2 F16MAT3 F16MAT4
@@ -164,6 +165,7 @@ extern int yylex(YYSTYPE*, TParseContext&);
 %token <lex> F64MAT3X2 F64MAT3X3 F64MAT3X4
 %token <lex> F64MAT4X2 F64MAT4X3 F64MAT4X4
 %token <lex> ATOMIC_UINT
+%token <lex> ACCSTRUCTNV
 
 // combined image/sampler
 %token <lex> SAMPLER1D SAMPLER2D SAMPLER3D SAMPLERCUBE SAMPLER1DSHADOW SAMPLER2DSHADOW
@@ -1156,24 +1158,30 @@ interpolation_qualifier
     }
     | PERPRIMITIVENV {
 #ifdef NV_EXTENSIONS
+        // No need for profile version or extension check. Shader stage already checks both.
         parseContext.globalCheck($1.loc, "perprimitiveNV");
-        parseContext.profileRequires($1.loc, ECoreProfile, 450, E_GL_NV_mesh_shader, "perprimitiveNV");
+        parseContext.requireStage($1.loc, (EShLanguageMask)(EShLangFragmentMask | EShLangMeshNVMask), "perprimitiveNV");
+        // Fragment shader stage doesn't check for extension. So we explicitly add below extension check.
+        if (parseContext.language == EShLangFragment)
+            parseContext.requireExtensions($1.loc, 1, &E_GL_NV_mesh_shader, "perprimitiveNV");
         $$.init($1.loc);
         $$.qualifier.perPrimitiveNV = true;
 #endif
     }
     | PERVIEWNV {
 #ifdef NV_EXTENSIONS
+        // No need for profile version or extension check. Shader stage already checks both.
         parseContext.globalCheck($1.loc, "perviewNV");
-        parseContext.profileRequires($1.loc, ECoreProfile, 450, E_GL_NV_mesh_shader, "perviewNV");
+        parseContext.requireStage($1.loc, EShLangMeshNV, "perviewNV");
         $$.init($1.loc);
         $$.qualifier.perViewNV = true;
 #endif
     }
     | PERTASKNV {
 #ifdef NV_EXTENSIONS
+        // No need for profile version or extension check. Shader stage already checks both.
         parseContext.globalCheck($1.loc, "taskNV");
-        parseContext.profileRequires($1.loc, ECoreProfile, 450, E_GL_NV_mesh_shader, "taskNV");
+        parseContext.requireStage($1.loc, (EShLanguageMask)(EShLangTaskNVMask | EShLangMeshNVMask), "taskNV");
         $$.init($1.loc);
         $$.qualifier.perTaskNV = true;
 #endif
@@ -1338,6 +1346,55 @@ storage_qualifier
         parseContext.globalCheck($1.loc, "buffer");
         $$.init($1.loc);
         $$.qualifier.storage = EvqBuffer;
+    }
+    | HITATTRNV {
+#ifdef NV_EXTENSIONS
+        parseContext.globalCheck($1.loc, "hitAttributeNV");
+        parseContext.requireStage($1.loc, (EShLanguageMask)(EShLangIntersectNVMask | EShLangClosestHitNVMask
+            | EShLangAnyHitNVMask), "hitAttributeNV");
+        parseContext.profileRequires($1.loc, ECoreProfile, 460, E_GL_NV_ray_tracing, "hitAttributeNV");
+        $$.init($1.loc);
+        $$.qualifier.storage = EvqHitAttrNV;
+#endif
+    }
+    | PAYLOADNV {
+#ifdef NV_EXTENSIONS
+        parseContext.globalCheck($1.loc, "rayPayloadNV");
+        parseContext.requireStage($1.loc, (EShLanguageMask)(EShLangRayGenNVMask | EShLangClosestHitNVMask |
+            EShLangAnyHitNVMask | EShLangMissNVMask), "rayPayloadNV");
+        parseContext.profileRequires($1.loc, ECoreProfile, 460, E_GL_NV_ray_tracing, "rayPayloadNV");
+        $$.init($1.loc);
+        $$.qualifier.storage = EvqPayloadNV;
+#endif
+    }
+    | PAYLOADINNV {
+#ifdef NV_EXTENSIONS
+        parseContext.globalCheck($1.loc, "rayPayloadInNV");
+        parseContext.requireStage($1.loc, (EShLanguageMask)(EShLangClosestHitNVMask |
+            EShLangAnyHitNVMask | EShLangMissNVMask), "rayPayloadInNV");
+        parseContext.profileRequires($1.loc, ECoreProfile, 460, E_GL_NV_ray_tracing, "rayPayloadInNV");
+        $$.init($1.loc);
+        $$.qualifier.storage = EvqPayloadInNV;
+#endif
+    }
+    | CALLDATANV {
+#ifdef NV_EXTENSIONS
+        parseContext.globalCheck($1.loc, "callableDataNV");
+        parseContext.requireStage($1.loc, (EShLanguageMask)(EShLangRayGenNVMask |
+            EShLangClosestHitNVMask | EShLangMissNVMask | EShLangCallableNVMask), "callableDataNV");
+        parseContext.profileRequires($1.loc, ECoreProfile, 460, E_GL_NV_ray_tracing, "callableDataNV");
+        $$.init($1.loc);
+        $$.qualifier.storage = EvqCallableDataNV;
+#endif
+    }
+    | CALLDATAINNV {
+#ifdef NV_EXTENSIONS
+        parseContext.globalCheck($1.loc, "callableDataInNV");
+        parseContext.requireStage($1.loc, (EShLanguageMask)(EShLangCallableNVMask), "callableDataInNV");
+        parseContext.profileRequires($1.loc, ECoreProfile, 460, E_GL_NV_ray_tracing, "callableDataInNV");
+        $$.init($1.loc);
+        $$.qualifier.storage = EvqCallableDataInNV;
+#endif
     }
     | SHARED {
         parseContext.globalCheck($1.loc, "shared");
@@ -2176,6 +2233,12 @@ type_specifier_nonarray
         $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
         $$.basicType = EbtDouble;
         $$.setMatrix(4, 4);
+    }
+    | ACCSTRUCTNV {
+#ifdef NV_EXTENSIONS
+       $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+       $$.basicType = EbtAccStructNV;
+#endif
     }
     | ATOMIC_UINT {
         parseContext.vulkanRemoved($1.loc, "atomic counter types");

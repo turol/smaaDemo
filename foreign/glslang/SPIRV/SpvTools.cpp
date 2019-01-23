@@ -114,8 +114,8 @@ void SpirvToolsValidate(const glslang::TIntermediate& intermediate, std::vector<
 
 // Apply the SPIRV-Tools optimizer to generated SPIR-V, for the purpose of
 // legalizing HLSL SPIR-V.
-void SpirvToolsLegalize(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv,
-                        spv::SpvBuildLogger* logger, const SpvOptions* options)
+void SpirvToolsLegalize(const glslang::TIntermediate&, std::vector<unsigned int>& spirv,
+                        spv::SpvBuildLogger*, const SpvOptions* options)
 {
     spv_target_env target_env = SPV_ENV_UNIVERSAL_1_2;
 
@@ -152,6 +152,14 @@ void SpirvToolsLegalize(const glslang::TIntermediate& intermediate, std::vector<
             out << std::endl;
         });
 
+    // If debug (specifically source line info) is being generated, propagate
+    // line information into all SPIR-V instructions. This avoids loss of
+    // information when instructions are deleted or moved. Later, remove
+    // redundant information to minimize final SPRIR-V size.
+    if (options->generateDebugInfo) {
+        optimizer.RegisterPass(spvtools::CreatePropagateLineInfoPass());
+    }
+    optimizer.RegisterPass(spvtools::CreateDeadBranchElimPass());
     optimizer.RegisterPass(spvtools::CreateMergeReturnPass());
     optimizer.RegisterPass(spvtools::CreateInlineExhaustivePass());
     optimizer.RegisterPass(spvtools::CreateEliminateDeadFunctionsPass());
@@ -179,8 +187,11 @@ void SpirvToolsLegalize(const glslang::TIntermediate& intermediate, std::vector<
     }
     optimizer.RegisterPass(spvtools::CreateAggressiveDCEPass());
     optimizer.RegisterPass(spvtools::CreateCFGCleanupPass());
+    if (options->generateDebugInfo) {
+        optimizer.RegisterPass(spvtools::CreateRedundantLineInfoElimPass());
+    }
 
-    optimizer.Run(spirv.data(), spirv.size(), &spirv, spvtools::ValidatorOptions(), true);
+    optimizer.Run(spirv.data(), spirv.size(), &spirv);
 }
 
 }; // end namespace glslang

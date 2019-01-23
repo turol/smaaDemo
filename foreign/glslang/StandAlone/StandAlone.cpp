@@ -160,18 +160,26 @@ const char* sourceEntryPointName = nullptr;
 const char* shaderStageName = nullptr;
 const char* variableName = nullptr;
 bool HlslEnable16BitTypes = false;
+bool HlslDX9compatible = false;
 std::vector<std::string> IncludeDirectoryList;
-int ClientInputSemanticsVersion = 100;                  // maps to, say, #define VULKAN 100
-glslang::EShTargetClientVersion VulkanClientVersion =
-                          glslang::EShTargetVulkan_1_0; // would map to, say, Vulkan 1.0
-glslang::EShTargetClientVersion OpenGLClientVersion =
-                          glslang::EShTargetOpenGL_450; // doesn't influence anything yet, but maps to OpenGL 4.50
-glslang::EShTargetLanguageVersion TargetVersion =
-                          glslang::EShTargetSpv_1_0;    // maps to, say, SPIR-V 1.0
+
+// Source environment
+// (source 'Client' is currently the same as target 'Client')
+int ClientInputSemanticsVersion = 100;
+
+// Target environment
+glslang::EShClient Client = glslang::EShClientNone;  // will stay EShClientNone if only validating
+glslang::EShTargetClientVersion ClientVersion;       // not valid until Client is set
+glslang::EShTargetLanguage TargetLanguage = glslang::EShTargetNone;
+glslang::EShTargetLanguageVersion TargetVersion;     // not valid until TargetLanguage is set
+
 std::vector<std::string> Processes;                     // what should be recorded by OpModuleProcessed, or equivalent
 
 // Per descriptor-set binding base data
 typedef std::map<unsigned int, unsigned int> TPerSetBaseBinding;
+
+std::vector<std::pair<std::string, int>> uniformLocationOverrides;
+int uniformBase = 0;
 
 std::array<std::array<unsigned int, EShLangCount>, glslang::EResCount> baseBinding;
 std::array<std::array<TPerSetBaseBinding, EShLangCount>, glslang::EResCount> baseBindingForSet;
@@ -245,6 +253,12 @@ const char* GetBinaryName(EShLanguage stage)
         case EShLangFragment:        name = "frag.spv";    break;
         case EShLangCompute:         name = "comp.spv";    break;
 #ifdef NV_EXTENSIONS
+        case EShLangRayGenNV:        name = "rgen.spv";    break;
+        case EShLangIntersectNV:     name = "rint.spv";    break;
+        case EShLangAnyHitNV:        name = "rahit.spv";   break;
+        case EShLangClosestHitNV:    name = "rchit.spv";   break;
+        case EShLangMissNV:          name = "rmiss.spv";   break;
+        case EShLangCallableNV:      name = "rcall.spv";   break;
         case EShLangMeshNV:          name = "mesh.spv";    break;
         case EShLangTaskNV:          name = "task.spv";    break;
 #endif
@@ -412,6 +426,9 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
 
     // minimum needed (without overriding something else) to target Vulkan SPIR-V
     const auto setVulkanSpv = []() {
+        if (Client == glslang::EShClientNone)
+            ClientVersion = glslang::EShTargetVulkan_1_0;
+        Client = glslang::EShClientVulkan;
         Options |= EOptionSpv;
         Options |= EOptionVulkanRules;
         Options |= EOptionLinkProgram;
@@ -419,10 +436,29 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
 
     // minimum needed (without overriding something else) to target OpenGL SPIR-V
     const auto setOpenGlSpv = []() {
+        if (Client == glslang::EShClientNone)
+            ClientVersion = glslang::EShTargetOpenGL_450;
+        Client = glslang::EShClientOpenGL;
         Options |= EOptionSpv;
         Options |= EOptionLinkProgram;
         // undo a -H default to Vulkan
         Options &= ~EOptionVulkanRules;
+    };
+
+    const auto getUniformOverride = [getStringOperand]() {
+        const char *arg = getStringOperand("-u<name>:<location>");
+        const char *split = strchr(arg, ':');
+        if (split == NULL) {
+            printf("%s: missing location\n", arg);
+            exit(EFailUsage);
+        }
+        errno = 0;
+        int location = ::strtol(split + 1, NULL, 10);
+        if (errno) {
+            printf("%s: invalid location\n", arg);
+            exit(EFailUsage);
+        }
+        return std::make_pair(std::string(arg, split - arg), location);
     };
 
     for (bumpArg(); argc >= 1; bumpArg()) {
@@ -441,6 +477,12 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
                     } else if (lowerword == "auto-map-locations" || // synonyms
                                lowerword == "aml") {
                         Options |= EOptionAutoMapLocations;
+                    } else if (lowerword == "uniform-base") {
+                        if (argc <= 1)
+                            Error("no <base> provided for --uniform-base");
+                        uniformBase = ::strtol(argv[1], NULL, 10);
+                        bumpArg();
+                        break;
                     } else if (lowerword == "client") {
                         if (argc > 1) {
                             if (strcmp(argv[1], "vulkan100") == 0)
@@ -468,6 +510,8 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
                         Options |= EOptionHlslIoMapping;
                     } else if (lowerword == "hlsl-enable-16bit-types") {
                         HlslEnable16BitTypes = true;
+                    } else if (lowerword == "hlsl-dx9-compatible") {
+                        HlslDX9compatible = true;
                     } else if (lowerword == "invert-y" ||  // synonyms
                                lowerword == "iy") {
                         Options |= EOptionInvertY;
@@ -530,16 +574,30 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
                         if (argc > 1) {
                             if (strcmp(argv[1], "vulkan1.0") == 0) {
                                 setVulkanSpv();
-                                VulkanClientVersion = glslang::EShTargetVulkan_1_0;
+                                ClientVersion = glslang::EShTargetVulkan_1_0;
                             } else if (strcmp(argv[1], "vulkan1.1") == 0) {
                                 setVulkanSpv();
-                                TargetVersion = glslang::EShTargetSpv_1_3;
-                                VulkanClientVersion = glslang::EShTargetVulkan_1_1;
+                                ClientVersion = glslang::EShTargetVulkan_1_1;
                             } else if (strcmp(argv[1], "opengl") == 0) {
                                 setOpenGlSpv();
-                                OpenGLClientVersion = glslang::EShTargetOpenGL_450;
+                                ClientVersion = glslang::EShTargetOpenGL_450;
+                            } else if (strcmp(argv[1], "spirv1.0") == 0) {
+                                TargetLanguage = glslang::EShTargetSpv;
+                                TargetVersion = glslang::EShTargetSpv_1_0;
+                            } else if (strcmp(argv[1], "spirv1.1") == 0) {
+                                TargetLanguage = glslang::EShTargetSpv;
+                                TargetVersion = glslang::EShTargetSpv_1_1;
+                            } else if (strcmp(argv[1], "spirv1.2") == 0) {
+                                TargetLanguage = glslang::EShTargetSpv;
+                                TargetVersion = glslang::EShTargetSpv_1_2;
+                            } else if (strcmp(argv[1], "spirv1.3") == 0) {
+                                TargetLanguage = glslang::EShTargetSpv;
+                                TargetVersion = glslang::EShTargetSpv_1_3;
+                            } else if (strcmp(argv[1], "spirv1.4") == 0) {
+                                TargetLanguage = glslang::EShTargetSpv;
+                                TargetVersion = glslang::EShTargetSpv_1_4;
                             } else
-                                Error("--target-env expected vulkan1.0, vulkan1.1, or opengl");
+                                Error("--target-env expected one of: vulkan1.0, vulkan1.1, opengl, spirv1.0, spirv1.1, spirv1.2, or spirv1.3");
                         }
                         bumpArg();
                     } else if (lowerword == "variable-name" || // synonyms
@@ -566,11 +624,14 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
                 else
                     UserPreamble.addDef(getStringOperand("-D<macro> macro name"));
                 break;
+            case 'u':
+                uniformLocationOverrides.push_back(getUniformOverride());
+                break;
             case 'E':
                 Options |= EOptionOutputPreprocessed;
                 break;
             case 'G':
-                // OpenGL Client
+                // OpenGL client
                 setOpenGlSpv();
                 if (argv[0][2] != 0)
                     ClientInputSemanticsVersion = getAttachedNumber("-G<num> client input semantics");
@@ -702,6 +763,28 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
     if ((Options & EOptionFlattenUniformArrays) != 0 &&
         (Options & EOptionReadHlsl) == 0)
         Error("uniform array flattening only valid when compiling HLSL source.");
+
+    // rationalize client and target language
+    if (TargetLanguage == glslang::EShTargetNone) {
+        switch (ClientVersion) {
+        case glslang::EShTargetVulkan_1_0:
+            TargetLanguage = glslang::EShTargetSpv;
+            TargetVersion = glslang::EShTargetSpv_1_0;
+            break;
+        case glslang::EShTargetVulkan_1_1:
+            TargetLanguage = glslang::EShTargetSpv;
+            TargetVersion = glslang::EShTargetSpv_1_3;
+            break;
+        case glslang::EShTargetOpenGL_450:
+            TargetLanguage = glslang::EShTargetSpv;
+            TargetVersion = glslang::EShTargetSpv_1_0;
+            break;
+        default:
+            break;
+        }
+    }
+    if (TargetLanguage != glslang::EShTargetNone && Client == glslang::EShClientNone)
+        Error("To generate SPIR-V, also specify client semantics. See -G and -V.");
 }
 
 //
@@ -735,6 +818,8 @@ void SetMessageOptions(EShMessages& messages)
         messages = (EShMessages)(messages | EShMsgHlslEnable16BitTypes);
     if ((Options & EOptionOptimizeDisable) || !ENABLE_OPT)
         messages = (EShMessages)(messages | EShMsgHlslLegalization);
+    if (HlslDX9compatible)
+        messages = (EShMessages)(messages | EShMsgHlslDX9Compatible);
 }
 
 //
@@ -892,21 +977,21 @@ void CompileAndLinkShaderUnits(std::vector<ShaderCompUnit> compUnits)
         if (Options & EOptionInvertY)
             shader->setInvertY(true);
 
+        for (auto& uniOverride : uniformLocationOverrides) {
+            shader->addUniformLocationOverride(uniOverride.first.c_str(),
+                                               uniOverride.second);
+        }
+
+        shader->setUniformLocationBase(uniformBase);
+
         // Set up the environment, some subsettings take precedence over earlier
         // ways of setting things.
         if (Options & EOptionSpv) {
-            if (Options & EOptionVulkanRules) {
-                shader->setEnvInput((Options & EOptionReadHlsl) ? glslang::EShSourceHlsl
-                                                                : glslang::EShSourceGlsl,
-                                        compUnit.stage, glslang::EShClientVulkan, ClientInputSemanticsVersion);
-                shader->setEnvClient(glslang::EShClientVulkan, VulkanClientVersion);
-            } else {
-                shader->setEnvInput((Options & EOptionReadHlsl) ? glslang::EShSourceHlsl
-                                                                : glslang::EShSourceGlsl,
-                                        compUnit.stage, glslang::EShClientOpenGL, ClientInputSemanticsVersion);
-                shader->setEnvClient(glslang::EShClientOpenGL, OpenGLClientVersion);
-            }
-            shader->setEnvTarget(glslang::EShTargetSpv, TargetVersion);
+            shader->setEnvInput((Options & EOptionReadHlsl) ? glslang::EShSourceHlsl
+                                                            : glslang::EShSourceGlsl,
+                                compUnit.stage, Client, ClientInputSemanticsVersion);
+            shader->setEnvClient(Client, ClientVersion);
+            shader->setEnvTarget(TargetLanguage, TargetVersion);
             if (targetHlslFunctionality1)
                 shader->setEnvTargetHlslFunctionality1();
         }
@@ -920,8 +1005,7 @@ void CompileAndLinkShaderUnits(std::vector<ShaderCompUnit> compUnits)
             includer.pushExternalLocalDirectory(dir); });
         if (Options & EOptionOutputPreprocessed) {
             std::string str;
-            if (shader->preprocess(&Resources, defaultVersion, ENoProfile, false, false,
-                                   messages, &str, includer)) {
+            if (shader->preprocess(&Resources, defaultVersion, ENoProfile, false, false, messages, &str, includer)) {
                 PutsIfNonEmpty(str.c_str());
             } else {
                 CompileFailed = true;
@@ -930,6 +1014,7 @@ void CompileAndLinkShaderUnits(std::vector<ShaderCompUnit> compUnits)
             StderrIfNonEmpty(shader->getInfoDebugLog());
             continue;
         }
+
         if (! shader->parse(&Resources, defaultVersion, false, messages, includer))
             CompileFailed = true;
 
@@ -1126,13 +1211,15 @@ int singleMain()
 
     ProcessConfigFile();
 
+    if ((Options & EOptionReadHlsl) && !((Options & EOptionOutputPreprocessed) || (Options & EOptionSpv)))
+        Error("ERROR: HLSL requires SPIR-V code generation (or preprocessing only)");
+
     //
     // Two modes:
     // 1) linking all arguments together, single-threaded, new C++ interface
     // 2) independent arguments, can be tackled by multiple asynchronous threads, for testing thread safety, using the old handle interface
     //
-    if (Options & EOptionLinkProgram ||
-        Options & EOptionOutputPreprocessed) {
+    if (Options & (EOptionLinkProgram | EOptionOutputPreprocessed)) {
         glslang::InitializeProcess();
         glslang::InitializeProcess();  // also test reference counting of users
         glslang::InitializeProcess();  // also test reference counting of users
@@ -1210,7 +1297,14 @@ int C_DECL main(int argc, char* argv[])
 //   .geom = geometry
 //   .frag = fragment
 //   .comp = compute
-//
+//   .rgen = ray generation
+//   .rint = ray intersection
+//   .rahit = ray any hit
+//   .rchit = ray closest hit
+//   .rmiss = ray miss
+//   .rcall = ray callable
+//   .mesh  = mesh
+//   .task  = task
 //   Additionally, the file names may end in .<stage>.glsl and .<stage>.hlsl
 //   where <stage> is one of the stages listed above.
 //
@@ -1255,6 +1349,18 @@ EShLanguage FindLanguage(const std::string& name, bool parseStageName)
     else if (stageName == "comp")
         return EShLangCompute;
 #ifdef NV_EXTENSIONS
+    else if (stageName == "rgen")
+        return EShLangRayGenNV;
+    else if (stageName == "rint")
+        return EShLangIntersectNV;
+    else if (stageName == "rahit")
+        return EShLangAnyHitNV;
+    else if (stageName == "rchit")
+        return EShLangClosestHitNV;
+    else if (stageName == "rmiss")
+        return EShLangMissNV;
+    else if (stageName == "rcall")
+        return EShLangCallableNV;
     else if (stageName == "mesh")
         return EShLangMeshNV;
     else if (stageName == "task")
@@ -1332,6 +1438,12 @@ void usage()
 #ifdef NV_EXTENSIONS
            "    .mesh   for a mesh shader\n"
            "    .task   for a task shader\n"
+           "    .rgen    for a ray generation shader\n"
+           "    .rint    for a ray intersection shader\n"
+           "    .rahit   for a ray any hit shader\n"
+           "    .rchit   for a ray closest hit shader\n"
+           "    .rmiss   for a ray miss shader\n"
+           "    .rcall   for a ray callable shader\n"
 #endif
            "    .glsl   for .vert.glsl, .tesc.glsl, ..., .comp.glsl compound suffixes\n"
            "    .hlsl   for .vert.hlsl, .tesc.hlsl, ..., .comp.hlsl compound suffixes\n"
@@ -1388,6 +1500,8 @@ void usage()
            "  -w | --suppress-warnings\n"
            "              suppress GLSL warnings, except as required by \"#extension : warn\"\n"
            "  -x          save binary output as text-based 32-bit hexadecimal numbers\n"
+           "  -u<name>:<loc> specify a uniform location override for --aml\n"
+           "  --uniform-base <base> set a base to use for generated uniform locations\n"
            "  --auto-map-bindings | --amb       automatically bind uniform variables\n"
            "                                    without explicit bindings\n"
            "  --auto-map-locations | --aml      automatically locate input/output lacking\n"
@@ -1400,6 +1514,7 @@ void usage()
            "                                    works independently of source language\n"
            "  --hlsl-iomap                      perform IO mapping in HLSL register space\n"
            "  --hlsl-enable-16bit-types         allow 16-bit types in SPIR-V for HLSL\n"
+           "  --hlsl-dx9-compatible             interprets sampler declarations as a texture/sampler combo like DirectX9 would."
            "  --invert-y | --iy                 invert position.Y output in vertex shader\n"
            "  --keep-uncalled | --ku            don't eliminate uncalled functions\n"
            "  --no-storage-format | --nsf       use Unknown image format\n"
@@ -1445,12 +1560,16 @@ void usage()
            "  --sep                             synonym for --source-entrypoint\n"
            "  --stdin                           read from stdin instead of from a file;\n"
            "                                    requires providing the shader stage using -S\n"
-           "  --target-env {vulkan1.0 | vulkan1.1 | opengl} \n"
+           "  --target-env {vulkan1.0 | vulkan1.1 | opengl | \n"
+           "                spirv1.0 | spirv1.1 | spirv1.2 | spirv1.3}\n"
            "                                    set execution environment that emitted code\n"
-           "                                    will execute in (as opposed to the language\n"
+           "                                    will execute in (versus source language\n"
            "                                    semantics selected by --client) defaults:\n"
            "                                     * 'vulkan1.0' under '--client vulkan<ver>'\n"
            "                                     * 'opengl' under '--client opengl<ver>'\n"
+           "                                     * 'spirv1.0' under --target-env vulkan1.0\n"
+           "                                     * 'spirv1.3' under --target-env vulkan1.1\n"
+           "                                    multiple --targen-env can be specified.\n"
            "  --variable-name <name>\n"
            "  --vn <name>                       creates a C header file that contains a\n"
            "                                    uint32_t array named <name>\n"
