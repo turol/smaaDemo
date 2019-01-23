@@ -15,9 +15,11 @@ FILES:= \
 	spirv_cfg.cpp \
 	spirv_cpp.cpp \
 	spirv_cross.cpp \
+	spirv_cross_parsed_ir.cpp \
 	spirv_glsl.cpp \
 	spirv_hlsl.cpp \
 	spirv_msl.cpp \
+	spirv_parser.cpp \
 	# empty line
 
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 ARM Limited
+ * Copyright 2015-2019 Arm Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,23 @@ namespace spirv_cross
 class CompilerCPP : public CompilerGLSL
 {
 public:
-	CompilerCPP(std::vector<uint32_t> spirv_)
+	explicit CompilerCPP(std::vector<uint32_t> spirv_)
 	    : CompilerGLSL(move(spirv_))
 	{
 	}
 
-	CompilerCPP(const uint32_t *ir, size_t word_count)
-	    : CompilerGLSL(ir, word_count)
+	CompilerCPP(const uint32_t *ir_, size_t word_count)
+	    : CompilerGLSL(ir_, word_count)
+	{
+	}
+
+	explicit CompilerCPP(const ParsedIR &ir_)
+	    : CompilerGLSL(ir_)
+	{
+	}
+
+	explicit CompilerCPP(ParsedIR &&ir_)
+	    : CompilerGLSL(std::move(ir_))
 	{
 	}
 

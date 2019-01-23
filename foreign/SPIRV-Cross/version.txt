@@ -1,8 +1,8 @@
-commit b34d4114664fa78373fabe770e0eb5481bb301a5
-Merge: 917ca81 9fbe39c
-Author: Hans-Kristian Arntzen <hans-kristian.arntzen@arm.com>
-Date:   Wed Sep 5 09:17:15 2018 +0200
+commit 7430e78a8cdde2e7e44824cebd1aa18601dd9230
+Merge: 1040cf6 437fc87
+Author: Hans-Kristian Arntzen <post@arntzen-software.no>
+Date:   Fri Jan 18 17:18:59 2019 +0100
 
-    Merge pull request #675 from cdavis5e/buffer-write-coord
+    Merge pull request #836 from KhronosGroup/fix-834
     
-    MSL: Emit spvTexelBufferCoord() on ImageWrite to a Buffer as well.
+    MSL: Deal with resource name aliasing.
