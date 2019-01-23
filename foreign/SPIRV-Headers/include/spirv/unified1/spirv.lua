@@ -1,4 +1,4 @@
--- Copyright (c) 2014-2018 The Khronos Group Inc.
+-- Copyright (c) 2014-2019 The Khronos Group Inc.
 -- 
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
 -- of this software and/or associated documentation files (the "Materials"),
@@ -26,14 +26,16 @@
 -- the Binary Section of the SPIR-V specification.
 
 -- Enumeration tokens for SPIR-V, in various styles:
---   C, C++, C++11, JSON, Lua, Python, C#
+--   C, C++, C++11, JSON, Lua, Python, C#, D
 -- 
 -- - C will have tokens with a "Spv" prefix, e.g.: SpvSourceLanguageGLSL
 -- - C++ will have tokens in the "spv" name space, e.g.: spv::SourceLanguageGLSL
 -- - C++11 will use enum classes in the spv namespace, e.g.: spv::SourceLanguage::GLSL
 -- - Lua will use tables, e.g.: spv.SourceLanguage.GLSL
 -- - Python will use dictionaries, e.g.: spv['SourceLanguage']['GLSL']
--- - C# will use enum classes in the Specification class located in the "Spv" namespace, e.g.: Spv.Specification.SourceLanguage.GLSL
+-- - C# will use enum classes in the Specification class located in the "Spv" namespace,
+--     e.g.: Spv.Specification.SourceLanguage.GLSL
+-- - D will have tokens under the "spv" module, e.g: spv.SourceLanguage.GLSL
 -- 
 -- Some tokens act like mask values, which can be OR'd together,
 -- while others are mutually exclusive.  The mask-like ones have
@@ -43,7 +45,7 @@
 spv = {
     MagicNumber = 0x07230203,
     Version = 0x00010300,
-    Revision = 1,
+    Revision = 6,
     OpCodeMask = 0xffff,
     WordCountShift = 16,
 
@@ -78,6 +80,7 @@ spv = {
         Logical = 0,
         Physical32 = 1,
         Physical64 = 2,
+        PhysicalStorageBuffer64EXT = 5348,
     },
 
     MemoryModel = {
@@ -127,6 +130,11 @@ spv = {
         LocalSizeId = 38,
         LocalSizeHintId = 39,
         PostDepthCoverage = 4446,
+        DenormPreserve = 4459,
+        DenormFlushToZero = 4460,
+        SignedZeroInfNanPreserve = 4461,
+        RoundingModeRTE = 4462,
+        RoundingModeRTZ = 4463,
         StencilRefReplacingEXT = 5027,
         OutputLinesNV = 5269,
         OutputPrimitivesNV = 5270,
@@ -155,6 +163,7 @@ spv = {
         HitAttributeNV = 5339,
         IncomingRayPayloadNV = 5342,
         ShaderRecordBufferNV = 5343,
+        PhysicalStorageBufferEXT = 5349,
     },
 
     Dim = {
@@ -390,6 +399,8 @@ spv = {
         MaxByteOffset = 45,
         AlignmentId = 46,
         MaxByteOffsetId = 47,
+        NoSignedWrap = 4469,
+        NoUnsignedWrap = 4470,
         ExplicitInterpAMD = 4999,
         OverrideCoverageNV = 5248,
         PassthroughNV = 5250,
@@ -400,6 +411,8 @@ spv = {
         PerTaskNV = 5273,
         PerVertexNV = 5285,
         NonUniformEXT = 5300,
+        RestrictPointerEXT = 5355,
+        AliasedPointerEXT = 5356,
         HlslCounterBufferGOOGLE = 5634,
         HlslSemanticGOOGLE = 5635,
     },
@@ -485,7 +498,9 @@ spv = {
         MeshViewIndicesNV = 5281,
         BaryCoordNV = 5286,
         BaryCoordNoPerspNV = 5287,
+        FragSizeEXT = 5292,
         FragmentSizeNV = 5292,
+        FragInvocationCountEXT = 5293,
         InvocationsPerPixelNV = 5293,
         LaunchIdNV = 5319,
         LaunchSizeNV = 5320,
@@ -716,6 +731,11 @@ spv = {
         StorageBuffer8BitAccess = 4448,
         UniformAndStorageBuffer8BitAccess = 4449,
         StoragePushConstant8 = 4450,
+        DenormPreserve = 4464,
+        DenormFlushToZero = 4465,
+        SignedZeroInfNanPreserve = 4466,
+        RoundingModeRTE = 4467,
+        RoundingModeRTZ = 4468,
         Float16ImageAMD = 5008,
         ImageGatherBiasLodAMD = 5009,
         FragmentMaskAMD = 5010,
@@ -733,6 +753,7 @@ spv = {
         ImageFootprintNV = 5282,
         FragmentBarycentricNV = 5284,
         ComputeDerivativeGroupQuadsNV = 5288,
+        FragmentDensityEXT = 5291,
         ShadingRateNV = 5291,
         GroupNonUniformPartitionedNV = 5297,
         ShaderNonUniformEXT = 5301,
@@ -750,6 +771,7 @@ spv = {
         RayTracingNV = 5340,
         VulkanMemoryModelKHR = 5345,
         VulkanMemoryModelDeviceScopeKHR = 5346,
+        PhysicalStorageBufferAddressesEXT = 5347,
         ComputeDerivativeGroupLinearNV = 5350,
         SubgroupShuffleINTEL = 5568,
         SubgroupBufferBlockIOINTEL = 5569,
