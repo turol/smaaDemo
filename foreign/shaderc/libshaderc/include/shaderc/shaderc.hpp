@@ -47,11 +47,20 @@ class CompilationResult {
   // CompilationResult, the shaderc_compilation_result will be released.
   explicit CompilationResult(shaderc_compilation_result_t compilation_result)
       : compilation_result_(compilation_result) {}
+  CompilationResult() : compilation_result_(nullptr) {}
   ~CompilationResult() { shaderc_result_release(compilation_result_); }
 
-  CompilationResult(CompilationResult&& other) {
+  CompilationResult(CompilationResult&& other) : compilation_result_(nullptr) {
+    *this = std::move(other);
+  }
+
+  CompilationResult& operator=(CompilationResult&& other) {
+    if (compilation_result_) {
+      shaderc_result_release(compilation_result_);
+    }
     compilation_result_ = other.compilation_result_;
     other.compilation_result_ = nullptr;
+    return *this;
   }
 
   // Returns any error message found during compilation.
@@ -193,14 +202,14 @@ class CompileOptions {
         options_,
         [](void* user_data, const char* requested_source, int type,
            const char* requesting_source, size_t include_depth) {
-          auto* includer = static_cast<IncluderInterface*>(user_data);
-          return includer->GetInclude(requested_source,
+          auto* sub_includer = static_cast<IncluderInterface*>(user_data);
+          return sub_includer->GetInclude(requested_source,
                                       (shaderc_include_type)type,
                                       requesting_source, include_depth);
         },
         [](void* user_data, shaderc_include_result* include_result) {
-          auto* includer = static_cast<IncluderInterface*>(user_data);
-          return includer->ReleaseInclude(include_result);
+          auto* sub_includer = static_cast<IncluderInterface*>(user_data);
+          return sub_includer->ReleaseInclude(include_result);
         },
         includer_.get());
   }

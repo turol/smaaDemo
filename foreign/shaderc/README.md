@@ -1,11 +1,5 @@
 # Shaderc
 
-[![Linux and Mac Build Status](https://travis-ci.org/google/shaderc.svg)](https://travis-ci.org/google/shaderc "Linux and Mac Build Status")
-[![Windows Build status](https://ci.appveyor.com/api/projects/status/g6c372blna7vnk1l?svg=true)](https://ci.appveyor.com/project/dneto0/shaderc "Windows Build Status")
-[![Coverage Status](https://coveralls.io/repos/google/shaderc/badge.svg?branch=master&service=github)](https://coveralls.io/github/google/shaderc?branch=master)
-
-Latest Build Status by Google:
-
 <img alt="Linux" src="kokoro/img/linux.png" width="20px" height="20px" hspace="2px"/>![Linux Build Status](https://storage.googleapis.com/shaderc/badges/build_status_linux_release.svg)
 <img alt="MacOS" src="kokoro/img/macos.png" width="20px" height="20px" hspace="2px"/>![MacOS Build Status](https://storage.googleapis.com/shaderc/badges/build_status_macos_release.svg)
 <img alt="Windows" src="kokoro/img/windows.png" width="20px" height="20px" hspace="2px"/>![Windows Build Status](https://storage.googleapis.com/shaderc/badges/build_status_windows_release.svg)
@@ -36,6 +30,7 @@ Shaderc has been shipping in the
 [Android NDK](https://developer.android.com/ndk/index.html) since version r12b.
 (The NDK build uses sources from https://android.googlesource.com/platform/external/shaderc/.
 Those repos are downstream from GitHub.)
+We currently require r18b.
 
 For licensing terms, please see the [`LICENSE`](LICENSE) file.  If interested in
 contributing to this project, please see [`CONTRIBUTING.md`](CONTRIBUTING.md).
@@ -58,13 +53,6 @@ for more information. See also the [`AUTHORS`](AUTHORS) and
 - `utils/`: utility scripts for Shaderc
 
 Shaderc depends on glslang, the Khronos reference compiler for GLSL.
-Sometimes a change updates both Shaderc and glslang.  In that case the
-glslang change will appear in [google/glslang][google-glslang]
-before it appears upstream in [KhronosGroup/glslang][khr-glslang]
-We intend to upstream all changes to glslang. We maintain the separate
-copy only to stage those changes for review, and to provide something for
-Shaderc to build against in the meantime.  Please see
-[DEVELOPMENT.howto.md](DEVELOPMENT.howto.md) for more details.
 
 Shaderc depends on [SPIRV-Tools][spirv-tools] for assembling, disassembling,
 and transforming SPIR-V binaries.
@@ -85,11 +73,8 @@ branch under the "Artifacts" tab of a certain job.
 
 ```sh
 git clone https://github.com/google/shaderc $SOURCE_DIR
-cd $SOURCE_DIR/third_party
-git clone https://github.com/google/googletest.git
-git clone https://github.com/google/glslang.git
-git clone https://github.com/KhronosGroup/SPIRV-Tools.git spirv-tools
-git clone https://github.com/KhronosGroup/SPIRV-Headers.git spirv-headers
+cd $SOURCE_DIR
+./utils/git-sync-deps
 cd $SOURCE_DIR/
 ```
 
@@ -244,7 +229,6 @@ older versions of Shaderc and its dependencies.
 * **Rust:** [shaderc-rs][shaderc-rs]
 
 [khr-glslang]: https://github.com/KhronosGroup/glslang
-[google-glslang]: https://github.com/google/glslang
 [spirv-tools]: https://github.com/KhronosGroup/SPIRV-Tools
 [pyshaderc]: https://github.com/realitix/pyshaderc
 [shaderc-rs]: https://github.com/google/shaderc-rs

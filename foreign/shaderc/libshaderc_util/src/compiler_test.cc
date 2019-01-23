@@ -25,8 +25,8 @@
 namespace {
 
 using shaderc_util::Compiler;
-using ::testing::HasSubstr;
 using ::testing::Eq;
+using ::testing::HasSubstr;
 using ::testing::Not;
 
 // A trivial vertex shader
@@ -131,7 +131,9 @@ float4 sampleTexture(CombinedTextureSampler c, float2 loc) {
  return c.tex.Sample(c.sampl, loc);
 };
 
+[[vk::binding(0,0)]]
 Texture2D gTex;
+[[vk::binding(0,1)]]
 SamplerState gSampler;
 
 float4 main(float2 loc: A) : SV_Target {
@@ -143,19 +145,20 @@ float4 main(float2 loc: A) : SV_Target {
 })";
 
 const char kHlslShaderWithCounterBuffer[] = R"(
+[[vk::binding(0,0)]]
 RWStructuredBuffer<float4> Ainc;
 float4 main() : SV_Target0 {
   return float4(Ainc.IncrementCounter(), 0, 0, 0);
 }
 )";
 
-
 // Returns the disassembly of the given SPIR-V binary, as a string.
 // Assumes the disassembly will be successful when targeting Vulkan.
 std::string Disassemble(const std::vector<uint32_t> binary) {
   std::string result;
-  shaderc_util::SpirvToolsDisassemble(Compiler::TargetEnv::Vulkan, binary,
-                                      &result);
+  shaderc_util::SpirvToolsDisassemble(Compiler::TargetEnv::Vulkan,
+                                      Compiler::TargetEnvVersion::Vulkan_1_1,
+                                      binary, &result);
   return result;
 }
 
@@ -217,7 +220,7 @@ class CompilerTest : public testing::Test {
         Compiler::OutputType::SpirvBinary, &errors, &total_warnings,
         &total_errors, &initializer);
     errors_ = errors.str();
-    EXPECT_TRUE(result);
+    EXPECT_TRUE(result) << errors_;
     return words;
   }
 
@@ -319,7 +322,8 @@ TEST_F(CompilerTest, BadTargetEnvFails) {
 }
 
 TEST_F(CompilerTest, BadTargetEnvVersionFails) {
-  compiler_.SetTargetEnv(Compiler::TargetEnv::Vulkan, 123);
+  compiler_.SetTargetEnv(Compiler::TargetEnv::Vulkan,
+                         static_cast<Compiler::TargetEnvVersion>(123));
   EXPECT_FALSE(SimpleCompilationSucceeds(kVulkanVertexShader, EShLangVertex));
   EXPECT_THAT(errors_,
               HasSubstr("Invalid target client version 123 for environment 0"));
@@ -499,8 +503,8 @@ TEST_F(CompilerTest, TexelOffsetRaiseTheMaximum) {
 
 TEST_F(CompilerTest, GeneratorWordIsShadercOverGlslang) {
   const auto words = SimpleCompilationBinary(kVertexShader, EShLangVertex);
-  const uint32_t shaderc_over_glslang = 13; // From SPIR-V XML Registry
-  const uint32_t generator_word_index = 2; // From SPIR-V binary layout
+  const uint32_t shaderc_over_glslang = 13;  // From SPIR-V XML Registry
+  const uint32_t generator_word_index = 2;   // From SPIR-V binary layout
   EXPECT_EQ(shaderc_over_glslang, words[generator_word_index] >> 16u);
 }
 
@@ -581,7 +585,8 @@ TEST_F(CompilerTest, SetBindingBaseForBufferAdjustsBufferBindingsOnly) {
   EXPECT_THAT(disassembly, HasSubstr("OpDecorate %my_ubo Binding 42"));
 }
 
-TEST_F(CompilerTest, AutoMapBindingsSetsBindingsSetFragTextureBindingBaseCompiledAsFrag) {
+TEST_F(CompilerTest,
+       AutoMapBindingsSetsBindingsSetFragTextureBindingBaseCompiledAsFrag) {
   compiler_.SetAutoBindUniforms(true);
   compiler_.SetAutoBindingBaseForStage(Compiler::Stage::Fragment,
                                        Compiler::UniformKind::Texture, 100);
@@ -596,14 +601,15 @@ TEST_F(CompilerTest, AutoMapBindingsSetsBindingsSetFragTextureBindingBaseCompile
   EXPECT_THAT(disassembly, HasSubstr("OpDecorate %my_ubo Binding 3"));
 }
 
-TEST_F(CompilerTest, AutoMapBindingsSetsBindingsSetFragImageBindingBaseCompiledAsVert) {
+TEST_F(CompilerTest,
+       AutoMapBindingsSetsBindingsSetFragImageBindingBaseCompiledAsVert) {
   compiler_.SetAutoBindUniforms(true);
   // This is ignored because we're compiling the shader as a vertex shader, not
   // as a fragment shader.
   compiler_.SetAutoBindingBaseForStage(Compiler::Stage::Fragment,
                                        Compiler::UniformKind::Image, 100);
-  const auto words = SimpleCompilationBinary(kGlslFragShaderNoExplicitBinding,
-                                             EShLangVertex);
+  const auto words =
+      SimpleCompilationBinary(kGlslFragShaderNoExplicitBinding, EShLangVertex);
   const auto disassembly = Disassemble(words);
   EXPECT_THAT(disassembly, HasSubstr("OpDecorate %my_tex Binding 0"))
       << disassembly;
@@ -617,14 +623,14 @@ TEST_F(CompilerTest, NoAutoMapLocationsFailsCompilationOnOpenGLShader) {
   compiler_.SetTargetEnv(Compiler::TargetEnv::OpenGL);
   compiler_.SetAutoMapLocations(false);
 
-  const auto words = SimpleCompilationBinary(kGlslVertShaderExplicitLocation,
-                                             EShLangVertex);
+  const auto words =
+      SimpleCompilationBinary(kGlslVertShaderExplicitLocation, EShLangVertex);
   const auto disassembly = Disassemble(words);
   EXPECT_THAT(disassembly, HasSubstr("OpDecorate %my_mat Location 10"))
       << disassembly;
 
-  EXPECT_FALSE(
-      SimpleCompilationSucceeds(kGlslVertShaderNoExplicitLocation, EShLangVertex));
+  EXPECT_FALSE(SimpleCompilationSucceeds(kGlslVertShaderNoExplicitLocation,
+                                         EShLangVertex));
 }
 
 TEST_F(CompilerTest, AutoMapLocationsSetsLocationsOnOpenGLShader) {
@@ -722,6 +728,7 @@ TEST_F(CompilerTest, HlslLegalizationDisabled) {
 TEST_F(CompilerTest, HlslFunctionality1Enabled) {
   compiler_.SetSourceLanguage(Compiler::SourceLanguage::HLSL);
   compiler_.EnableHlslFunctionality1(true);
+  compiler_.SetAutoBindUniforms(true);  // Counter variable needs a binding.
   const auto words =
       SimpleCompilationBinary(kHlslShaderWithCounterBuffer, EShLangFragment);
   const auto disassembly = Disassemble(words);

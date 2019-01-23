@@ -1,5 +1,9 @@
-commit e8ffa069fa40f79824cb1499eaa78cb56af84d0a
-Author: Chao Chen <chaoc@nvidia.com>
-Date:   Wed Sep 19 12:06:05 2018 -0700
+commit ce7d92182b8cc9c72e99efb5fab1eae3c2084887
+Author: fjhenigman <fjhenigman@users.noreply.github.com>
+Date:   Tue Jan 22 15:58:13 2019 -0500
 
-    Add-support-for-SPV_NV_mesh_shader
+    Use the full spirv-cross dependency. (#550)
+    
+    We need the dependency "spirv_cross_full_for_fuzzers" which represents
+    all of spirv-cross.  The dependency "spirv_cross" can omit parts of
+    spirv-cross.  This should fix the chrome build.

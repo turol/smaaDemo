@@ -458,21 +458,29 @@ TEST_F(CppInterface, ForcedVersionProfileRedundantProfileStd) {
 
 TEST_F(CppInterface, GenerateDebugInfoBinary) {
   options_.SetGenerateDebugInfo();
-  // The output binary should contain the name of the vector: debug_info_sample
-  // as char array.
-  EXPECT_THAT(CompilationOutput(kMinimalDebugInfoShader,
-                                shaderc_glsl_vertex_shader, options_),
-              HasSubstr("debug_info_sample"));
+  const std::string binary_output =
+      CompilationOutput(kMinimalDebugInfoShader,
+                        shaderc_glsl_vertex_shader, options_);
+  // The binary output should contain the name of the vector (debug_info_sample)
+  // null-terminated, as well as the whole original source.
+  std::string vector_name("debug_info_sample");
+  vector_name.resize(vector_name.size() + 1);
+  EXPECT_THAT(binary_output, HasSubstr(vector_name));
+  EXPECT_THAT(binary_output, HasSubstr(kMinimalDebugInfoShader));
 }
 
 TEST_F(CppInterface, GenerateDebugInfoBinaryClonedOptions) {
   options_.SetGenerateDebugInfo();
   CompileOptions cloned_options(options_);
-  // The output binary should contain the name of the vector: debug_info_sample
-  // as char array.
-  EXPECT_THAT(CompilationOutput(kMinimalDebugInfoShader,
-                                shaderc_glsl_vertex_shader, cloned_options),
-              HasSubstr("debug_info_sample"));
+  const std::string binary_output =
+      CompilationOutput(kMinimalDebugInfoShader,
+                        shaderc_glsl_vertex_shader, cloned_options);
+  // The binary output should contain the name of the vector (debug_info_sample)
+  // null-terminated, as well as the whole original source.
+  std::string vector_name("debug_info_sample");
+  vector_name.resize(vector_name.size() + 1);
+  EXPECT_THAT(binary_output, HasSubstr(vector_name));
+  EXPECT_THAT(binary_output, HasSubstr(kMinimalDebugInfoShader));
 }
 
 TEST_F(CppInterface, GenerateDebugInfoDisassembly) {
@@ -526,6 +534,31 @@ TEST_F(CppInterface, CompileAndOptimizeWithLevelSize) {
   EXPECT_THAT(disassembly_text, Not(HasSubstr("OpSource")));
 }
 
+TEST_F(CppInterface, CompileAndOptimizeForVulkan10Failure) {
+  options_.SetSourceLanguage(shaderc_source_language_hlsl);
+  options_.SetTargetEnvironment(shaderc_target_env_vulkan,
+                                shaderc_env_version_vulkan_1_0);
+  options_.SetOptimizationLevel(shaderc_optimization_level_performance);
+
+  EXPECT_THAT(CompilationErrors(kHlslWaveActiveSumeComputeShader,
+                                shaderc_compute_shader, options_),
+              // TODO(antiagainst): the error message can be improved to be more
+              // explicit regarding Vulkan 1.1
+              HasSubstr("compilation succeeded but failed to optimize: "
+                        "Invalid capability operand"));
+}
+
+TEST_F(CppInterface, CompileAndOptimizeForVulkan11Success) {
+  options_.SetSourceLanguage(shaderc_source_language_hlsl);
+  options_.SetTargetEnvironment(shaderc_target_env_vulkan,
+                                shaderc_env_version_vulkan_1_1);
+  options_.SetOptimizationLevel(shaderc_optimization_level_performance);
+
+  const std::string disassembly_text = AssemblyOutput(
+      kHlslWaveActiveSumeComputeShader, shaderc_compute_shader, options_);
+  EXPECT_THAT(disassembly_text, HasSubstr("OpGroupNonUniformIAdd"));
+}
+
 TEST_F(CppInterface, FollowingOptLevelOverridesPreviousOne) {
   options_.SetOptimizationLevel(shaderc_optimization_level_size);
   // Optimization level settings overridden by
@@ -546,7 +579,7 @@ TEST_F(CppInterface, GenerateDebugInfoOverridesOptimizationLevel) {
   options_.SetGenerateDebugInfo();
   const std::string disassembly_text =
       AssemblyOutput(kMinimalShader, shaderc_glsl_vertex_shader, options_);
-  for (const auto& substring : kMinimalShaderDisassemblySubstrings) {
+  for (const auto& substring : kMinimalShaderDebugInfoDisassemblySubstrings) {
     EXPECT_THAT(disassembly_text, HasSubstr(substring));
   }
   // Check that we still have debug instructions.
@@ -560,7 +593,7 @@ TEST_F(CppInterface, GenerateDebugInfoProhibitsOptimizationLevel) {
   options_.SetOptimizationLevel(shaderc_optimization_level_size);
   const std::string disassembly_text =
       AssemblyOutput(kMinimalShader, shaderc_glsl_vertex_shader, options_);
-  for (const auto& substring : kMinimalShaderDisassemblySubstrings) {
+  for (const auto& substring : kMinimalShaderDebugInfoDisassemblySubstrings) {
     EXPECT_THAT(disassembly_text, HasSubstr(substring));
   }
   // Check that we still have debug instructions.
@@ -1197,37 +1230,29 @@ std::string ShaderWithTexOffset(int offset) {
 // two particular limits.
 TEST_F(CppInterface, LimitsTexelOffsetDefault) {
   EXPECT_FALSE(CompilationSuccess(ShaderWithTexOffset(-9).c_str(),
-                                  shaderc_glsl_fragment_shader,
-                                  options_));
+                                  shaderc_glsl_fragment_shader, options_));
   EXPECT_TRUE(CompilationSuccess(ShaderWithTexOffset(-8).c_str(),
-                                 shaderc_glsl_fragment_shader,
-                                 options_));
+                                 shaderc_glsl_fragment_shader, options_));
   EXPECT_TRUE(CompilationSuccess(ShaderWithTexOffset(7).c_str(),
-                                 shaderc_glsl_fragment_shader,
-                                 options_));
+                                 shaderc_glsl_fragment_shader, options_));
   EXPECT_FALSE(CompilationSuccess(ShaderWithTexOffset(8).c_str(),
-                                  shaderc_glsl_fragment_shader,
-                                  options_));
+                                  shaderc_glsl_fragment_shader, options_));
 }
 
 TEST_F(CppInterface, LimitsTexelOffsetLowerMinimum) {
   options_.SetLimit(shaderc_limit_min_program_texel_offset, -99);
   EXPECT_FALSE(CompilationSuccess(ShaderWithTexOffset(-100).c_str(),
-                                  shaderc_glsl_fragment_shader,
-                                  options_));
+                                  shaderc_glsl_fragment_shader, options_));
   EXPECT_TRUE(CompilationSuccess(ShaderWithTexOffset(-99).c_str(),
-                                 shaderc_glsl_fragment_shader,
-                                 options_));
+                                 shaderc_glsl_fragment_shader, options_));
 }
 
 TEST_F(CppInterface, LimitsTexelOffsetHigherMaximum) {
   options_.SetLimit(shaderc_limit_max_program_texel_offset, 10);
   EXPECT_TRUE(CompilationSuccess(ShaderWithTexOffset(10).c_str(),
-                                 shaderc_glsl_fragment_shader,
-                                 options_));
+                                 shaderc_glsl_fragment_shader, options_));
   EXPECT_FALSE(CompilationSuccess(ShaderWithTexOffset(11).c_str(),
-                                  shaderc_glsl_fragment_shader,
-                                  options_));
+                                  shaderc_glsl_fragment_shader, options_));
 }
 
 TEST_F(CppInterface, UniformsWithoutBindingsFailCompilation) {
@@ -1379,6 +1404,9 @@ TEST_F(CppInterface, HlslRegSetBindingForAllStagesRespected) {
 TEST_F(CppInterface, HlslFunctionality1OffByDefault) {
   CompileOptions options;
   options.SetSourceLanguage(shaderc_source_language_hlsl);
+  // The counter needs a binding, and there is no way to set it in the shader
+  // source.
+  options.SetAutoBindUniforms(true);
   const std::string disassembly_text = AssemblyOutput(
       kHlslShaderWithCounterBuffer, shaderc_glsl_fragment_shader, options);
   EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorateStringGOOGLE")));
@@ -1387,6 +1415,9 @@ TEST_F(CppInterface, HlslFunctionality1OffByDefault) {
 TEST_F(CppInterface, HlslFunctionality1Respected) {
   CompileOptions options;
   options.SetSourceLanguage(shaderc_source_language_hlsl);
+  // The counter needs a binding, and there is no way to set it in the shader
+  // source.  https://github.com/KhronosGroup/glslang/issues/1616
+  options.SetAutoBindUniforms(true);
   options.SetHlslFunctionality1(true);
   const std::string disassembly_text = AssemblyOutput(
       kHlslShaderWithCounterBuffer, shaderc_glsl_fragment_shader, options);
@@ -1397,6 +1428,9 @@ TEST_F(CppInterface, HlslFunctionality1SurvivesCloning) {
   CompileOptions options;
   options.SetSourceLanguage(shaderc_source_language_hlsl);
   options.SetHlslFunctionality1(true);
+  // The counter needs a binding, and there is no way to set it in the shader
+  // source. https://github.com/KhronosGroup/glslang/issues/1616
+  options.SetAutoBindUniforms(true);
   CompileOptions cloned_options(options);
   const std::string disassembly_text = AssemblyOutput(
       kHlslShaderWithCounterBuffer, shaderc_glsl_fragment_shader, cloned_options);
