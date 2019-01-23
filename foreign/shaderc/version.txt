@@ -1,29 +1,5 @@
-commit 30af9f9899aefd018669e81a5b8e605d14d40431
-Author: Chris Blume <cblume@google.com>
-Date:   Wed Jun 13 16:20:42 2018 -0700
+commit e8ffa069fa40f79824cb1499eaa78cb56af84d0a
+Author: Chao Chen <chaoc@nvidia.com>
+Date:   Wed Sep 19 12:06:05 2018 -0700
 
-    Add virtual dtor to classes with virtual functions
-    
-    IncluderInterface has virtual functions but does not have a virtual
-    destructor. This class is derived from by FileIncluder w hich overrides
-    those functions.
-    
-    Because there is an interface in use here, it is safe to assume some
-    container is storing IncluderInterface*. If the container instead held
-    FileIncluder* then the virtual functions wouldn't be needed.
-    
-    This causes a problem since FileIncluder has member variables. The
-    destructor of FileIncluder knows to also destruct those member variables
-    (including deallocating their dynamically allocated memory).
-    
-    But when IncluderInterface's destructor is called, it is not virtual and
-    will not call FileIncluder's destructor. So these member variables are
-    never destroyed and their dynamically allocated memory will be leaked.
-    
-    In this case, FileIncluder stores a std::unordered_set<std::string>
-    which will be leaked.
-    
-    This patch adds a virtual destructor to IncluderInterface to make sure
-    FileIncluder's destructor is called and this memory isn't leaked.
-    
-    Use =default and don't redeclare IncluderInterface's dtor
+    Add-support-for-SPV_NV_mesh_shader

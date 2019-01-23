@@ -1,5 +1,5 @@
-commit 3a1379667dd7d998be1d7d64806443295e8cf5f9
+commit 3c3669904c4e6816974293ae9301f24de22ea336
 Author: Chao Chen <chaoc@nvidia.com>
-Date:   Wed Sep 19 11:41:27 2018 -0700
+Date:   Wed Sep 19 11:41:59 2018 -0700
 
-    0003-Add-support-for-SPV_NV_shader_image_footprint
+    Add-support-for-SPV_NV_mesh_shader
