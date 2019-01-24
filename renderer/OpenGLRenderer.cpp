@@ -610,10 +610,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		} else {
 			LOG("KHR_debug found\n");
 			if (debug) {
-			glDebugMessageCallback(glDebugCallback, NULL);
-			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+				glDebugMessageCallback(glDebugCallback, NULL);
+				glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
 
-			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+				glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 			}
 		}
 	}
