@@ -41,6 +41,8 @@ enum CMD_LINE_OPT
     CMD_LINE_OPT_VK_LAYER_LUNARG_STANDARD_VALIDATION,
     CMD_LINE_OPT_MEM_STATS,
     CMD_LINE_OPT_DUMP_STATS_AFTER_LINE,
+    CMD_LINE_OPT_DEFRAGMENT_AFTER_LINE,
+    CMD_LINE_OPT_DEFRAGMENTATION_FLAGS,
     CMD_LINE_OPT_DUMP_DETAILED_STATS_AFTER_LINE,
 };
 
@@ -71,8 +73,10 @@ enum class VMA_FUNCTION
     CreateImage,
     DestroyImage,
     FreeMemory,
+    FreeMemoryPages,
     CreateLostAllocation,
     AllocateMemory,
+    AllocateMemoryPages,
     AllocateMemoryForBuffer,
     AllocateMemoryForImage,
     MapMemory,
@@ -82,6 +86,9 @@ enum class VMA_FUNCTION
     TouchAllocation,
     GetAllocationInfo,
     MakePoolAllocationsLost,
+    ResizeAllocation,
+    DefragmentationBegin,
+    DefragmentationEnd,
     Count
 };
 static const char* VMA_FUNCTION_NAMES[] = {
@@ -93,8 +100,10 @@ static const char* VMA_FUNCTION_NAMES[] = {
     "vmaCreateImage",
     "vmaDestroyImage",
     "vmaFreeMemory",
+    "vmaFreeMemoryPages",
     "vmaCreateLostAllocation",
     "vmaAllocateMemory",
+    "vmaAllocateMemoryPages",
     "vmaAllocateMemoryForBuffer",
     "vmaAllocateMemoryForImage",
     "vmaMapMemory",
@@ -104,6 +113,9 @@ static const char* VMA_FUNCTION_NAMES[] = {
     "vmaTouchAllocation",
     "vmaGetAllocationInfo",
     "vmaMakePoolAllocationsLost",
+    "vmaResizeAllocation",
+    "vmaDefragmentationBegin",
+    "vmaDefragmentationEnd",
 };
 static_assert(
     _countof(VMA_FUNCTION_NAMES) == (size_t)VMA_FUNCTION::Count,
@@ -138,12 +150,15 @@ struct StatsAfterLineEntry
     bool operator==(const StatsAfterLineEntry& rhs) const { return line == rhs.line; }
 };
 static std::vector<StatsAfterLineEntry> g_DumpStatsAfterLine;
+static std::vector<size_t> g_DefragmentAfterLine;
+static uint32_t g_DefragmentationFlags = 0;
 static size_t g_DumpStatsAfterLineNextIndex = 0;
+static size_t g_DefragmentAfterLineNextIndex = 0;
 
 static bool ValidateFileVersion()
 {
     if(GetVersionMajor(g_FileVersion) == 1 &&
-        GetVersionMinor(g_FileVersion) <= 3)
+        GetVersionMinor(g_FileVersion) <= 5)
     {
         return true;
     }
@@ -193,7 +208,7 @@ public:
     void RegisterCreateImage(uint32_t usage, uint32_t tiling);
     void RegisterCreateBuffer(uint32_t usage);
     void RegisterCreatePool();
-    void RegisterCreateAllocation();
+    void RegisterCreateAllocation(size_t allocCount = 1);
 
     void UpdateMemStats(const VmaStats& currStats);
 
@@ -362,9 +377,9 @@ void Statistics::RegisterCreatePool()
     ++m_PoolCreationCount;
 }
 
-void Statistics::RegisterCreateAllocation()
+void Statistics::RegisterCreateAllocation(size_t allocCount)
 {
-    ++m_AllocationCreationCount;
+    m_AllocationCreationCount += allocCount;
 }
 
 void Statistics::UpdateMemStats(const VmaStats& currStats)
@@ -832,7 +847,7 @@ void ConfigurationParser::CompareMemProps(
 
 static const char* const VALIDATION_LAYER_NAME = "VK_LAYER_LUNARG_standard_validation";
 
-static bool g_MemoryAliasingWarningEnabled = true;
+static const bool g_MemoryAliasingWarningEnabled = false;
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL MyDebugReportCallback(
     VkDebugReportFlagsEXT flags,
@@ -921,6 +936,7 @@ public:
     void ApplyConfig(ConfigurationParser& configParser);
     void ExecuteLine(size_t lineNumber, const StrRange& line);
     void DumpStats(const char* fileNameFormat, size_t lineNumber, bool detailed);
+    void Defragment();
 
     void PrintStats();
 
@@ -932,9 +948,14 @@ private:
 
     VkInstance m_VulkanInstance = VK_NULL_HANDLE;
     VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
-    uint32_t m_GraphicsQueueFamilyIndex = UINT_MAX;
+    uint32_t m_GraphicsQueueFamilyIndex = UINT32_MAX;
+    uint32_t m_TransferQueueFamilyIndex = UINT32_MAX;
     VkDevice m_Device = VK_NULL_HANDLE;
+    VkQueue m_GraphicsQueue = VK_NULL_HANDLE;
+    VkQueue m_TransferQueue = VK_NULL_HANDLE;
     VmaAllocator m_Allocator = VK_NULL_HANDLE;
+    VkCommandPool m_CommandPool = VK_NULL_HANDLE;
+    VkCommandBuffer m_CommandBuffer = VK_NULL_HANDLE;
     bool m_DedicatedAllocationEnabled = false;
     const VkPhysicalDeviceProperties* m_DevProps = nullptr;
     const VkPhysicalDeviceMemoryProperties* m_MemProps = nullptr;
@@ -953,13 +974,14 @@ private:
     };
     struct Allocation
     {
-        uint32_t allocationFlags;
-        VmaAllocation allocation;
-        VkBuffer buffer;
-        VkImage image;
+        uint32_t allocationFlags = 0;
+        VmaAllocation allocation = VK_NULL_HANDLE;
+        VkBuffer buffer = VK_NULL_HANDLE;
+        VkImage image = VK_NULL_HANDLE;
     };
     std::unordered_map<uint64_t, Pool> m_Pools;
     std::unordered_map<uint64_t, Allocation> m_Allocations;
+    std::unordered_map<uint64_t, VmaDefragmentationContext> m_DefragmentationContexts;
 
     struct Thread
     {
@@ -1001,12 +1023,14 @@ private:
     void ExecuteDestroyPool(size_t lineNumber, const CsvSplit& csvSplit);
     void ExecuteSetAllocationUserData(size_t lineNumber, const CsvSplit& csvSplit);
     void ExecuteCreateBuffer(size_t lineNumber, const CsvSplit& csvSplit);
-    void ExecuteDestroyBuffer(size_t lineNumber, const CsvSplit& csvSplit) { m_Stats.RegisterFunctionCall(VMA_FUNCTION::DestroyBuffer); DestroyAllocation(lineNumber, csvSplit); }
+    void ExecuteDestroyBuffer(size_t lineNumber, const CsvSplit& csvSplit) { m_Stats.RegisterFunctionCall(VMA_FUNCTION::DestroyBuffer); DestroyAllocation(lineNumber, csvSplit, "vmaDestroyBuffer"); }
     void ExecuteCreateImage(size_t lineNumber, const CsvSplit& csvSplit);
-    void ExecuteDestroyImage(size_t lineNumber, const CsvSplit& csvSplit) { m_Stats.RegisterFunctionCall(VMA_FUNCTION::DestroyImage); DestroyAllocation(lineNumber, csvSplit); }
-    void ExecuteFreeMemory(size_t lineNumber, const CsvSplit& csvSplit) { m_Stats.RegisterFunctionCall(VMA_FUNCTION::FreeMemory); DestroyAllocation(lineNumber, csvSplit); }
+    void ExecuteDestroyImage(size_t lineNumber, const CsvSplit& csvSplit) { m_Stats.RegisterFunctionCall(VMA_FUNCTION::DestroyImage); DestroyAllocation(lineNumber, csvSplit, "vmaDestroyImage"); }
+    void ExecuteFreeMemory(size_t lineNumber, const CsvSplit& csvSplit) { m_Stats.RegisterFunctionCall(VMA_FUNCTION::FreeMemory); DestroyAllocation(lineNumber, csvSplit, "vmaFreeMemory"); }
+    void ExecuteFreeMemoryPages(size_t lineNumber, const CsvSplit& csvSplit);
     void ExecuteCreateLostAllocation(size_t lineNumber, const CsvSplit& csvSplit);
     void ExecuteAllocateMemory(size_t lineNumber, const CsvSplit& csvSplit);
+    void ExecuteAllocateMemoryPages(size_t lineNumber, const CsvSplit& csvSplit);
     void ExecuteAllocateMemoryForBufferOrImage(size_t lineNumber, const CsvSplit& csvSplit, OBJECT_TYPE objType);
     void ExecuteMapMemory(size_t lineNumber, const CsvSplit& csvSplit);
     void ExecuteUnmapMemory(size_t lineNumber, const CsvSplit& csvSplit);
@@ -1015,8 +1039,14 @@ private:
     void ExecuteTouchAllocation(size_t lineNumber, const CsvSplit& csvSplit);
     void ExecuteGetAllocationInfo(size_t lineNumber, const CsvSplit& csvSplit);
     void ExecuteMakePoolAllocationsLost(size_t lineNumber, const CsvSplit& csvSplit);
+    void ExecuteResizeAllocation(size_t lineNumber, const CsvSplit& csvSplit);
+    void ExecuteDefragmentationBegin(size_t lineNumber, const CsvSplit& csvSplit);
+    void ExecuteDefragmentationEnd(size_t lineNumber, const CsvSplit& csvSplit);
 
-    void DestroyAllocation(size_t lineNumber, const CsvSplit& csvSplit);
+    void DestroyAllocation(size_t lineNumber, const CsvSplit& csvSplit, const char* functionName);
+
+    void PrintStats(const VmaStats& stats, const char* suffix);
+    void PrintStatInfo(const VmaStatInfo& info);
 };
 
 Player::Player()
@@ -1118,44 +1148,54 @@ void Player::ExecuteLine(size_t lineNumber, const StrRange& line)
                 // Nothing.
             }
         }
-        else if(StrRangeEq(functionName, "vmaCreatePool"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::CreatePool]))
             ExecuteCreatePool(lineNumber, csvSplit);
-        else if(StrRangeEq(functionName, "vmaDestroyPool"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::DestroyPool]))
             ExecuteDestroyPool(lineNumber, csvSplit);
-        else if(StrRangeEq(functionName, "vmaSetAllocationUserData"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::SetAllocationUserData]))
             ExecuteSetAllocationUserData(lineNumber, csvSplit);
-        else if(StrRangeEq(functionName, "vmaCreateBuffer"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::CreateBuffer]))
             ExecuteCreateBuffer(lineNumber, csvSplit);
-        else if(StrRangeEq(functionName, "vmaDestroyBuffer"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::DestroyBuffer]))
             ExecuteDestroyBuffer(lineNumber, csvSplit);
-        else if(StrRangeEq(functionName, "vmaCreateImage"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::CreateImage]))
             ExecuteCreateImage(lineNumber, csvSplit);
-        else if(StrRangeEq(functionName, "vmaDestroyImage"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::DestroyImage]))
             ExecuteDestroyImage(lineNumber, csvSplit);
-        else if(StrRangeEq(functionName, "vmaFreeMemory"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::FreeMemory]))
             ExecuteFreeMemory(lineNumber, csvSplit);
-        else if(StrRangeEq(functionName, "vmaCreateLostAllocation"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::FreeMemoryPages]))
+            ExecuteFreeMemoryPages(lineNumber, csvSplit);
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::CreateLostAllocation]))
             ExecuteCreateLostAllocation(lineNumber, csvSplit);
-        else if(StrRangeEq(functionName, "vmaAllocateMemory"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::AllocateMemory]))
             ExecuteAllocateMemory(lineNumber, csvSplit);
-        else if(StrRangeEq(functionName, "vmaAllocateMemoryForBuffer"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::AllocateMemoryPages]))
+            ExecuteAllocateMemoryPages(lineNumber, csvSplit);
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::AllocateMemoryForBuffer]))
             ExecuteAllocateMemoryForBufferOrImage(lineNumber, csvSplit, OBJECT_TYPE::BUFFER);
-        else if(StrRangeEq(functionName, "vmaAllocateMemoryForImage"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::AllocateMemoryForImage]))
             ExecuteAllocateMemoryForBufferOrImage(lineNumber, csvSplit, OBJECT_TYPE::IMAGE);
-        else if(StrRangeEq(functionName, "vmaMapMemory"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::MapMemory]))
             ExecuteMapMemory(lineNumber, csvSplit);
-        else if(StrRangeEq(functionName, "vmaUnmapMemory"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::UnmapMemory]))
             ExecuteUnmapMemory(lineNumber, csvSplit);
-        else if(StrRangeEq(functionName, "vmaFlushAllocation"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::FlushAllocation]))
             ExecuteFlushAllocation(lineNumber, csvSplit);
-        else if(StrRangeEq(functionName, "vmaInvalidateAllocation"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::InvalidateAllocation]))
             ExecuteInvalidateAllocation(lineNumber, csvSplit);
-        else if(StrRangeEq(functionName, "vmaTouchAllocation"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::TouchAllocation]))
             ExecuteTouchAllocation(lineNumber, csvSplit);
-        else if(StrRangeEq(functionName, "vmaGetAllocationInfo"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::GetAllocationInfo]))
             ExecuteGetAllocationInfo(lineNumber, csvSplit);
-        else if(StrRangeEq(functionName, "vmaMakePoolAllocationsLost"))
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::MakePoolAllocationsLost]))
             ExecuteMakePoolAllocationsLost(lineNumber, csvSplit);
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::ResizeAllocation]))
+            ExecuteResizeAllocation(lineNumber, csvSplit);
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::DefragmentationBegin]))
+            ExecuteDefragmentationBegin(lineNumber, csvSplit);
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::DefragmentationEnd]))
+            ExecuteDefragmentationEnd(lineNumber, csvSplit);
         else
         {
             if(IssueWarning())
@@ -1354,9 +1394,9 @@ int Player::InitVulkan()
 
     VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
     appInfo.pApplicationName = "VmaReplay";
-    appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+    appInfo.applicationVersion = VK_MAKE_VERSION(2, 2, 0);
     appInfo.pEngineName = "Vulkan Memory Allocator";
-    appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+    appInfo.engineVersion = VK_MAKE_VERSION(2, 2, 0);
     appInfo.apiVersion = VK_API_VERSION_1_0;
 
     VkInstanceCreateInfo instInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
@@ -1413,17 +1453,29 @@ int Player::InitVulkan()
         vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queueFamilyCount, queueFamilies.data());
         for(uint32_t i = 0; i < queueFamilyCount; ++i)
         {
-            if(queueFamilies[i].queueCount > 0 &&
-                (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)
+            if(queueFamilies[i].queueCount > 0)
             {
-                m_GraphicsQueueFamilyIndex = i;
-                break;
+                if(m_GraphicsQueueFamilyIndex == UINT32_MAX &&
+                    (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)
+                {
+                    m_GraphicsQueueFamilyIndex = i;
+                }
+                if(m_TransferQueueFamilyIndex == UINT32_MAX &&
+                    (queueFamilies[i].queueFlags & VK_QUEUE_TRANSFER_BIT) != 0)
+                {
+                    m_TransferQueueFamilyIndex = i;
+                }
             }
         }
     }
     if(m_GraphicsQueueFamilyIndex == UINT_MAX)
     {
         printf("ERROR: Couldn't find graphics queue.\n");
+        return RESULT_ERROR_VULKAN;
+    }
+    if(m_TransferQueueFamilyIndex == UINT_MAX)
+    {
+        printf("ERROR: Couldn't find transfer queue.\n");
         return RESULT_ERROR_VULKAN;
     }
 
@@ -1434,10 +1486,19 @@ int Player::InitVulkan()
 
     const float queuePriority = 1.f;
 
-    VkDeviceQueueCreateInfo deviceQueueCreateInfo = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
-    deviceQueueCreateInfo.queueFamilyIndex = m_GraphicsQueueFamilyIndex;
-    deviceQueueCreateInfo.queueCount = 1;
-    deviceQueueCreateInfo.pQueuePriorities = &queuePriority;
+    VkDeviceQueueCreateInfo deviceQueueCreateInfo[2] = {};
+    deviceQueueCreateInfo[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    deviceQueueCreateInfo[0].queueFamilyIndex = m_GraphicsQueueFamilyIndex;
+    deviceQueueCreateInfo[0].queueCount = 1;
+    deviceQueueCreateInfo[0].pQueuePriorities = &queuePriority;
+
+    if(m_TransferQueueFamilyIndex != m_GraphicsQueueFamilyIndex)
+    {
+        deviceQueueCreateInfo[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        deviceQueueCreateInfo[1].queueFamilyIndex = m_TransferQueueFamilyIndex;
+        deviceQueueCreateInfo[1].queueCount = 1;
+        deviceQueueCreateInfo[1].pQueuePriorities = &queuePriority;
+    }
 
     // Enable something what may interact with memory/buffer/image support.
     VkPhysicalDeviceFeatures enabledFeatures;
@@ -1503,8 +1564,8 @@ int Player::InitVulkan()
     VkDeviceCreateInfo deviceCreateInfo = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
     deviceCreateInfo.enabledExtensionCount = (uint32_t)enabledDeviceExtensions.size();
     deviceCreateInfo.ppEnabledExtensionNames = !enabledDeviceExtensions.empty() ? enabledDeviceExtensions.data() : nullptr;
-    deviceCreateInfo.queueCreateInfoCount = 1;
-    deviceCreateInfo.pQueueCreateInfos = &deviceQueueCreateInfo;
+    deviceCreateInfo.queueCreateInfoCount = m_TransferQueueFamilyIndex != m_GraphicsQueueFamilyIndex ? 2 : 1;
+    deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfo;
     deviceCreateInfo.pEnabledFeatures = &enabledFeatures;
 
     res = vkCreateDevice(m_PhysicalDevice, &deviceCreateInfo, nullptr, &m_Device);
@@ -1513,6 +1574,10 @@ int Player::InitVulkan()
         printf("ERROR: vkCreateDevice failed (%d)\n", res);
         return RESULT_ERROR_VULKAN;
     }
+
+    // Fetch queues
+    vkGetDeviceQueue(m_Device, m_GraphicsQueueFamilyIndex, 0, &m_GraphicsQueue);
+    vkGetDeviceQueue(m_Device, m_TransferQueueFamilyIndex, 0, &m_TransferQueue);
 
     // Create memory allocator
 
@@ -1536,11 +1601,52 @@ int Player::InitVulkan()
     vmaGetPhysicalDeviceProperties(m_Allocator, &m_DevProps);
     vmaGetMemoryProperties(m_Allocator, &m_MemProps);
 
+    // Create command pool
+
+    VkCommandPoolCreateInfo cmdPoolCreateInfo = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
+    cmdPoolCreateInfo.queueFamilyIndex = m_TransferQueueFamilyIndex;
+    cmdPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+
+    res = vkCreateCommandPool(m_Device, &cmdPoolCreateInfo, nullptr, &m_CommandPool);
+    if(res != VK_SUCCESS)
+    {
+        printf("ERROR: vkCreateCommandPool failed (%d)\n", res);
+        return RESULT_ERROR_VULKAN;
+    }
+
+    // Create command buffer
+
+    VkCommandBufferAllocateInfo cmdBufAllocInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
+    cmdBufAllocInfo.commandBufferCount = 1;
+    cmdBufAllocInfo.commandPool = m_CommandPool;
+    cmdBufAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    res = vkAllocateCommandBuffers(m_Device, &cmdBufAllocInfo, &m_CommandBuffer);
+    if(res != VK_SUCCESS)
+    {
+        printf("ERROR: vkAllocateCommandBuffers failed (%d)\n", res);
+        return RESULT_ERROR_VULKAN;
+    }
+
     return 0;
 }
 
 void Player::FinalizeVulkan()
 {
+    if(!m_DefragmentationContexts.empty())
+    {
+        printf("WARNING: Defragmentation contexts not destroyed: %zu.\n", m_DefragmentationContexts.size());
+
+        if(CLEANUP_LEAKED_OBJECTS)
+        {
+            for(const auto& it : m_DefragmentationContexts)
+            {
+                vmaDefragmentationEnd(m_Allocator, it.second);
+            }
+        }
+
+        m_DefragmentationContexts.clear();
+    }
+
     if(!m_Allocations.empty())
     {
         printf("WARNING: Allocations not destroyed: %zu.\n", m_Allocations.size());
@@ -1572,6 +1678,18 @@ void Player::FinalizeVulkan()
     }
 
     vkDeviceWaitIdle(m_Device);
+
+    if(m_CommandBuffer != VK_NULL_HANDLE)
+    {
+        vkFreeCommandBuffers(m_Device, m_CommandPool, 1, &m_CommandBuffer);
+        m_CommandBuffer = VK_NULL_HANDLE;
+    }
+
+    if(m_CommandPool != VK_NULL_HANDLE)
+    {
+        vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
+        m_CommandPool = VK_NULL_HANDLE;
+    }
 
     if(m_Allocator != VK_NULL_HANDLE)
     {
@@ -1623,6 +1741,134 @@ void Player::RegisterDebugCallbacks()
 
     VkResult res = m_pvkCreateDebugReportCallbackEXT(m_VulkanInstance, &callbackCreateInfo, nullptr, &m_hCallback);
     assert(res == VK_SUCCESS);
+}
+
+void Player::Defragment()
+{
+    VmaStats stats;
+    vmaCalculateStats(m_Allocator, &stats);
+    PrintStats(stats, "before defragmentation");
+
+    const size_t allocCount = m_Allocations.size();
+    std::vector<VmaAllocation> allocations(allocCount);
+    size_t notNullAllocCount = 0;
+    for(const auto& it : m_Allocations)
+    {
+        if(it.second.allocation != VK_NULL_HANDLE)
+        {
+            allocations[notNullAllocCount] = it.second.allocation;
+            ++notNullAllocCount;
+        }
+    }
+    if(notNullAllocCount == 0)
+    {
+        printf("    Nothing to defragment.\n");
+        return;
+    }
+
+    allocations.resize(notNullAllocCount);
+    std::vector<VkBool32> allocationsChanged(notNullAllocCount);
+
+    VmaDefragmentationStats defragStats = {};
+
+    VkCommandBufferBeginInfo cmdBufBeginInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+    cmdBufBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    VkResult res = vkBeginCommandBuffer(m_CommandBuffer, &cmdBufBeginInfo);
+    if(res != VK_SUCCESS)
+    {
+        printf("ERROR: vkBeginCommandBuffer failed (%d)\n", res);
+        return;
+    }
+
+    const time_point timeBeg = std::chrono::high_resolution_clock::now();
+
+    VmaDefragmentationInfo2 defragInfo = {};
+    defragInfo.allocationCount = (uint32_t)notNullAllocCount;
+    defragInfo.pAllocations = allocations.data();
+    defragInfo.pAllocationsChanged = allocationsChanged.data();
+    defragInfo.maxCpuAllocationsToMove = UINT32_MAX;
+    defragInfo.maxCpuBytesToMove = VK_WHOLE_SIZE;
+    defragInfo.maxGpuAllocationsToMove = UINT32_MAX;
+    defragInfo.maxGpuBytesToMove = VK_WHOLE_SIZE;
+    defragInfo.flags = g_DefragmentationFlags;
+    defragInfo.commandBuffer = m_CommandBuffer;
+
+    VmaDefragmentationContext defragCtx = VK_NULL_HANDLE;
+    res = vmaDefragmentationBegin(m_Allocator, &defragInfo, &defragStats, &defragCtx);
+    
+    const time_point timeAfterDefragBegin = std::chrono::high_resolution_clock::now();
+
+    vkEndCommandBuffer(m_CommandBuffer);
+
+    if(res >= VK_SUCCESS)
+    {
+        VkSubmitInfo submitInfo = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &m_CommandBuffer;
+        vkQueueSubmit(m_TransferQueue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(m_TransferQueue);
+
+        const time_point timeAfterGpu = std::chrono::high_resolution_clock::now();
+
+        vmaDefragmentationEnd(m_Allocator, defragCtx);
+
+        const time_point timeAfterDefragEnd = std::chrono::high_resolution_clock::now();
+
+        const duration defragDurationBegin = timeAfterDefragBegin - timeBeg;
+        const duration defragDurationGpu   = timeAfterGpu - timeAfterDefragBegin;
+        const duration defragDurationEnd   = timeAfterDefragEnd - timeAfterGpu;
+
+        // If anything changed.
+        if(defragStats.allocationsMoved > 0)
+        {
+            // Go over allocation that changed and destroy their buffers and images.
+            size_t i = 0;
+            for(auto& it : m_Allocations)
+            {
+                if(allocationsChanged[i] != VK_FALSE)
+                {
+                    if(it.second.buffer != VK_NULL_HANDLE)
+                    {
+                        vkDestroyBuffer(m_Device, it.second.buffer, nullptr);
+                        it.second.buffer = VK_NULL_HANDLE;
+                    }
+                    if(it.second.image != VK_NULL_HANDLE)
+                    {
+                        vkDestroyImage(m_Device, it.second.image, nullptr);
+                        it.second.image = VK_NULL_HANDLE;
+                    }
+                }
+                ++i;
+            }
+        }
+
+        // Print statistics
+        std::string defragDurationBeginStr;
+        std::string defragDurationGpuStr;
+        std::string defragDurationEndStr;
+        SecondsToFriendlyStr(ToFloatSeconds(defragDurationBegin), defragDurationBeginStr);
+        SecondsToFriendlyStr(ToFloatSeconds(defragDurationGpu), defragDurationGpuStr);
+        SecondsToFriendlyStr(ToFloatSeconds(defragDurationEnd), defragDurationEndStr);
+
+        printf("    Defragmentation took:\n");
+        printf("        vmaDefragmentationBegin: %s\n", defragDurationBeginStr.c_str());
+        printf("        GPU: %s\n", defragDurationGpuStr.c_str());
+        printf("        vmaDefragmentationEnd: %s\n", defragDurationEndStr.c_str());
+        printf("    VmaDefragmentationStats:\n");
+        printf("        bytesMoved: %llu\n", defragStats.bytesMoved);
+        printf("        bytesFreed: %llu\n", defragStats.bytesFreed);
+        printf("        allocationsMoved: %u\n", defragStats.allocationsMoved);
+        printf("        deviceMemoryBlocksFreed: %u\n", defragStats.deviceMemoryBlocksFreed);
+
+        vmaCalculateStats(m_Allocator, &stats);
+        PrintStats(stats, "after defragmentation");
+    }
+    else
+    {
+        printf("vmaDefragmentationBegin failed (%d).\n", res);
+    }
+
+    vkResetCommandPool(m_Device, m_CommandPool, 0);
 }
 
 void Player::PrintStats()
@@ -1996,6 +2242,9 @@ void Player::ExecuteCreateBuffer(size_t lineNumber, const CsvSplit& csvSplit)
         {
             FindPool(lineNumber, origPool, allocCreateInfo.pool);
 
+            // Forcing VK_SHARING_MODE_EXCLUSIVE because we use only one queue anyway.
+            bufCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
             if(csvSplit.GetCount() > FIRST_PARAM_INDEX + 11)
             {
                 PrepareUserData(
@@ -2024,7 +2273,7 @@ void Player::ExecuteCreateBuffer(size_t lineNumber, const CsvSplit& csvSplit)
     }
 }
 
-void Player::DestroyAllocation(size_t lineNumber, const CsvSplit& csvSplit)
+void Player::DestroyAllocation(size_t lineNumber, const CsvSplit& csvSplit, const char* functionName)
 {
     if(ValidateFunctionParameterCount(lineNumber, csvSplit, 1, false))
     {
@@ -2054,10 +2303,46 @@ void Player::DestroyAllocation(size_t lineNumber, const CsvSplit& csvSplit)
         {
             if(IssueWarning())
             {
-                printf("Line %zu: Invalid parameters for vmaDestroyBuffer.\n", lineNumber);
+                printf("Line %zu: Invalid parameters for %s.\n", lineNumber, functionName);
             }
         }
     }
+}
+
+void Player::PrintStats(const VmaStats& stats, const char* suffix)
+{
+    printf("    VmaStats %s:\n", suffix);
+    printf("        total:\n");
+    PrintStatInfo(stats.total);
+
+    if(g_Verbosity == VERBOSITY::MAXIMUM)
+    {
+        for(uint32_t i = 0; i < m_MemProps->memoryHeapCount; ++i)
+        {
+            printf("        memoryHeap[%u]:\n", i);
+            PrintStatInfo(stats.memoryHeap[i]);
+        }
+        for(uint32_t i = 0; i < m_MemProps->memoryTypeCount; ++i)
+        {
+            printf("        memoryType[%u]:\n", i);
+            PrintStatInfo(stats.memoryType[i]);
+        }
+    }
+}
+
+void Player::PrintStatInfo(const VmaStatInfo& info)
+{
+    printf("            blockCount: %u\n", info.blockCount);
+    printf("            allocationCount: %u\n", info.allocationCount);
+    printf("            unusedRangeCount: %u\n", info.unusedRangeCount);
+    printf("            usedBytes: %llu\n", info.usedBytes);
+    printf("            unusedBytes: %llu\n", info.unusedBytes);
+    printf("            allocationSizeMin: %llu\n", info.allocationSizeMin);
+    printf("            allocationSizeAvg: %llu\n", info.allocationSizeAvg);
+    printf("            allocationSizeMax: %llu\n", info.allocationSizeMax);
+    printf("            unusedRangeSizeMin: %llu\n", info.unusedRangeSizeMin);
+    printf("            unusedRangeSizeAvg: %llu\n", info.unusedRangeSizeAvg);
+    printf("            unusedRangeSizeMax: %llu\n", info.unusedRangeSizeMax);
 }
 
 void Player::ExecuteCreateImage(size_t lineNumber, const CsvSplit& csvSplit)
@@ -2094,6 +2379,9 @@ void Player::ExecuteCreateImage(size_t lineNumber, const CsvSplit& csvSplit)
         {
             FindPool(lineNumber, origPool, allocCreateInfo.pool);
 
+            // Forcing VK_SHARING_MODE_EXCLUSIVE because we use only one queue anyway.
+            imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
             if(csvSplit.GetCount() > FIRST_PARAM_INDEX + 20)
             {
                 PrepareUserData(
@@ -2117,6 +2405,53 @@ void Player::ExecuteCreateImage(size_t lineNumber, const CsvSplit& csvSplit)
             if(IssueWarning())
             {
                 printf("Line %zu: Invalid parameters for vmaCreateImage.\n", lineNumber);
+            }
+        }
+    }
+}
+
+void Player::ExecuteFreeMemoryPages(size_t lineNumber, const CsvSplit& csvSplit)
+{
+    m_Stats.RegisterFunctionCall(VMA_FUNCTION::FreeMemoryPages);
+    
+    if(ValidateFunctionParameterCount(lineNumber, csvSplit, 1, false))
+    {
+        std::vector<uint64_t> origAllocPtrs;
+        if(StrRangeToPtrList(csvSplit.GetRange(FIRST_PARAM_INDEX), origAllocPtrs))
+        {
+            const size_t allocCount = origAllocPtrs.size();
+            size_t notNullCount = 0;
+            for(size_t i = 0; i < allocCount; ++i)
+            {
+                const uint64_t origAllocPtr = origAllocPtrs[i];
+                if(origAllocPtr != 0)
+                {
+                    const auto it = m_Allocations.find(origAllocPtr);
+                    if(it != m_Allocations.end())
+                    {
+                        Destroy(it->second);
+                        m_Allocations.erase(it);
+                        ++notNullCount;
+                    }
+                    else
+                    {
+                        if(IssueWarning())
+                        {
+                            printf("Line %zu: Allocation %llX not found.\n", lineNumber, origAllocPtr);
+                        }
+                    }
+                }
+            }
+            if(notNullCount)
+            {
+                UpdateMemStats();
+            }
+        }
+        else
+        {
+            if(IssueWarning())
+            {
+                printf("Line %zu: Invalid parameters for vmaFreeMemoryPages.\n", lineNumber);
             }
         }
     }
@@ -2196,6 +2531,68 @@ void Player::ExecuteAllocateMemory(size_t lineNumber, const CsvSplit& csvSplit)
             if(IssueWarning())
             {
                 printf("Line %zu: Invalid parameters for vmaAllocateMemory.\n", lineNumber);
+            }
+        }
+    }
+}
+
+void Player::ExecuteAllocateMemoryPages(size_t lineNumber, const CsvSplit& csvSplit)
+{
+    m_Stats.RegisterFunctionCall(VMA_FUNCTION::AllocateMemoryPages);
+
+    if(ValidateFunctionParameterCount(lineNumber, csvSplit, 11, true))
+    {
+        VkMemoryRequirements memReq = {};
+        VmaAllocationCreateInfo allocCreateInfo = {};
+        uint64_t origPool = 0;
+        std::vector<uint64_t> origPtrs;
+
+        if(StrRangeToUint(csvSplit.GetRange(FIRST_PARAM_INDEX), memReq.size) &&
+            StrRangeToUint(csvSplit.GetRange(FIRST_PARAM_INDEX + 1), memReq.alignment) &&
+            StrRangeToUint(csvSplit.GetRange(FIRST_PARAM_INDEX + 2), memReq.memoryTypeBits) &&
+            StrRangeToUint(csvSplit.GetRange(FIRST_PARAM_INDEX + 3), allocCreateInfo.flags) &&
+            StrRangeToUint(csvSplit.GetRange(FIRST_PARAM_INDEX + 4), (uint32_t&)allocCreateInfo.usage) &&
+            StrRangeToUint(csvSplit.GetRange(FIRST_PARAM_INDEX + 5), allocCreateInfo.requiredFlags) &&
+            StrRangeToUint(csvSplit.GetRange(FIRST_PARAM_INDEX + 6), allocCreateInfo.preferredFlags) &&
+            StrRangeToUint(csvSplit.GetRange(FIRST_PARAM_INDEX + 7), allocCreateInfo.memoryTypeBits) &&
+            StrRangeToPtr(csvSplit.GetRange(FIRST_PARAM_INDEX + 8), origPool) &&
+            StrRangeToPtrList(csvSplit.GetRange(FIRST_PARAM_INDEX + 9), origPtrs))
+        {
+            const size_t allocCount = origPtrs.size();
+            if(allocCount > 0)
+            {
+                FindPool(lineNumber, origPool, allocCreateInfo.pool);
+
+                if(csvSplit.GetCount() > FIRST_PARAM_INDEX + 10)
+                {
+                    PrepareUserData(
+                        lineNumber,
+                        allocCreateInfo.flags,
+                        csvSplit.GetRange(FIRST_PARAM_INDEX + 10),
+                        csvSplit.GetLine(),
+                        allocCreateInfo.pUserData);
+                }
+
+                UpdateMemStats();
+                m_Stats.RegisterCreateAllocation(allocCount);
+
+                std::vector<VmaAllocation> allocations(allocCount);
+
+                VkResult res = vmaAllocateMemoryPages(m_Allocator, &memReq, &allocCreateInfo, allocCount, allocations.data(), nullptr);
+                for(size_t i = 0; i < allocCount; ++i)
+                {
+                    Allocation allocDesc = {};
+                    allocDesc.allocationFlags = allocCreateInfo.flags;
+                    allocDesc.allocation = allocations[i];
+                    AddAllocation(lineNumber, origPtrs[i], res, "vmaAllocateMemoryPages", std::move(allocDesc));
+                }
+            }
+        }
+        else
+        {
+            if(IssueWarning())
+            {
+                printf("Line %zu: Invalid parameters for vmaAllocateMemoryPages.\n", lineNumber);
             }
         }
     }
@@ -2599,6 +2996,237 @@ void Player::ExecuteMakePoolAllocationsLost(size_t lineNumber, const CsvSplit& c
     }
 }
 
+void Player::ExecuteResizeAllocation(size_t lineNumber, const CsvSplit& csvSplit)
+{
+    m_Stats.RegisterFunctionCall(VMA_FUNCTION::ResizeAllocation);
+
+    if(ValidateFunctionParameterCount(lineNumber, csvSplit, 2, false))
+    {
+        uint64_t origPtr = 0;
+        uint64_t newSize = 0;
+
+        if(StrRangeToPtr(csvSplit.GetRange(FIRST_PARAM_INDEX), origPtr) &&
+            StrRangeToUint(csvSplit.GetRange(FIRST_PARAM_INDEX + 1), newSize))
+        {
+            if(origPtr != 0)
+            {
+                const auto it = m_Allocations.find(origPtr);
+                if(it != m_Allocations.end())
+                {
+                    vmaResizeAllocation(m_Allocator, it->second.allocation, newSize);
+                    UpdateMemStats();
+                }
+                else
+                {
+                    if(IssueWarning())
+                    {
+                        printf("Line %zu: Allocation %llX not found.\n", lineNumber, origPtr);
+                    }
+                }
+            }
+        }
+        else
+        {
+            if(IssueWarning())
+            {
+                printf("Line %zu: Invalid parameters for vmaResizeAllocation.\n", lineNumber);
+            }
+        }
+    }
+}
+
+void Player::ExecuteDefragmentationBegin(size_t lineNumber, const CsvSplit& csvSplit)
+{
+    m_Stats.RegisterFunctionCall(VMA_FUNCTION::DefragmentationBegin);
+
+    if(ValidateFunctionParameterCount(lineNumber, csvSplit, 9, false))
+    {
+        VmaDefragmentationInfo2 defragInfo = {};
+        std::vector<uint64_t> allocationOrigPtrs;
+        std::vector<uint64_t> poolOrigPtrs;
+        uint64_t cmdBufOrigPtr = 0;
+        uint64_t defragCtxOrigPtr = 0;
+
+        if(StrRangeToUint(csvSplit.GetRange(FIRST_PARAM_INDEX), defragInfo.flags) &&
+            StrRangeToPtrList(csvSplit.GetRange(FIRST_PARAM_INDEX + 1), allocationOrigPtrs) &&
+            StrRangeToPtrList(csvSplit.GetRange(FIRST_PARAM_INDEX + 2), poolOrigPtrs) &&
+            StrRangeToUint(csvSplit.GetRange(FIRST_PARAM_INDEX + 3), defragInfo.maxCpuBytesToMove) &&
+            StrRangeToUint(csvSplit.GetRange(FIRST_PARAM_INDEX + 4), defragInfo.maxCpuAllocationsToMove) &&
+            StrRangeToUint(csvSplit.GetRange(FIRST_PARAM_INDEX + 5), defragInfo.maxGpuBytesToMove) &&
+            StrRangeToUint(csvSplit.GetRange(FIRST_PARAM_INDEX + 6), defragInfo.maxGpuAllocationsToMove) &&
+            StrRangeToPtr(csvSplit.GetRange(FIRST_PARAM_INDEX + 7), cmdBufOrigPtr) &&
+            StrRangeToPtr(csvSplit.GetRange(FIRST_PARAM_INDEX + 8), defragCtxOrigPtr))
+        {
+            const size_t allocationOrigPtrCount = allocationOrigPtrs.size();
+            std::vector<VmaAllocation> allocations;
+            allocations.reserve(allocationOrigPtrCount);
+            for(size_t i = 0; i < allocationOrigPtrCount; ++i)
+            {
+                const auto it = m_Allocations.find(allocationOrigPtrs[i]);
+                if(it != m_Allocations.end() && it->second.allocation)
+                {
+                    allocations.push_back(it->second.allocation);
+                }
+            }
+            if(!allocations.empty())
+            {
+                defragInfo.allocationCount = (uint32_t)allocations.size();
+                defragInfo.pAllocations = allocations.data();
+            }
+
+            const size_t poolOrigPtrCount = poolOrigPtrs.size();
+            std::vector<VmaPool> pools;
+            pools.reserve(poolOrigPtrCount);
+            for(size_t i = 0; i < poolOrigPtrCount; ++i)
+            {
+                const auto it = m_Pools.find(poolOrigPtrs[i]);
+                if(it != m_Pools.end() && it->second.pool)
+                {
+                    pools.push_back(it->second.pool);
+                }
+            }
+            if(!pools.empty())
+            {
+                defragInfo.poolCount = (uint32_t)pools.size();
+                defragInfo.pPools = pools.data();
+            }
+
+            if(allocations.size() != allocationOrigPtrCount ||
+                pools.size() != poolOrigPtrCount)
+            {
+                if(IssueWarning())
+                {
+                    printf("Line %zu: Passing %zu allocations and %zu pools to vmaDefragmentationBegin, while originally %zu allocations and %zu pools were passed.\n",
+                        lineNumber,
+                        allocations.size(), pools.size(),
+                        allocationOrigPtrCount, poolOrigPtrCount);
+                }
+            }
+
+            if(cmdBufOrigPtr)
+            {
+                VkCommandBufferBeginInfo cmdBufBeginInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+                cmdBufBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+                VkResult res = vkBeginCommandBuffer(m_CommandBuffer, &cmdBufBeginInfo);
+                if(res == VK_SUCCESS)
+                {
+                    defragInfo.commandBuffer = m_CommandBuffer;
+                }
+                else
+                {
+                    printf("Line %zu: vkBeginCommandBuffer failed (%d)\n", lineNumber, res);
+                }
+            }
+
+            VmaDefragmentationContext defragCtx = nullptr;
+            VkResult res = vmaDefragmentationBegin(m_Allocator, &defragInfo, nullptr, &defragCtx);
+
+            if(defragInfo.commandBuffer)
+            {
+                vkEndCommandBuffer(m_CommandBuffer);
+
+                VkSubmitInfo submitInfo = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+                submitInfo.commandBufferCount = 1;
+                submitInfo.pCommandBuffers = &m_CommandBuffer;
+                vkQueueSubmit(m_TransferQueue, 1, &submitInfo, VK_NULL_HANDLE);
+                vkQueueWaitIdle(m_TransferQueue);
+            }
+
+            if(res >= VK_SUCCESS)
+            {
+                if(defragCtx)
+                {
+                    if(defragCtxOrigPtr)
+                    {
+                        // We have defragmentation context, originally had defragmentation context: Store it.
+                        m_DefragmentationContexts[defragCtxOrigPtr] = defragCtx;
+                    }
+                    else
+                    {
+                        // We have defragmentation context, originally it was null: End immediately.
+                        vmaDefragmentationEnd(m_Allocator, defragCtx);
+                    }
+                }
+                else
+                {
+                    if(defragCtxOrigPtr)
+                    {
+                        // We have no defragmentation context, originally there was one: Store null.
+                        m_DefragmentationContexts[defragCtxOrigPtr] = nullptr;
+                    }
+                    else
+                    {
+                        // We have no defragmentation context, originally there wasn't as well - nothing to do.
+                    }
+                }
+            }
+            else
+            {
+                if(defragCtxOrigPtr)
+                {
+                    // Currently failed, originally succeeded.
+                    if(IssueWarning())
+                    {
+                        printf("Line %zu: vmaDefragmentationBegin failed (%d), while originally succeeded.\n", lineNumber, res);
+                    }
+                }
+                else
+                {
+                    // Currently failed, originally don't know.
+                    if(IssueWarning())
+                    {
+                        printf("Line %zu: vmaDefragmentationBegin failed (%d).\n", lineNumber, res);
+                    }
+                }
+            }
+        }
+        else
+        {
+            if(IssueWarning())
+            {
+                printf("Line %zu: Invalid parameters for vmaDefragmentationBegin.\n", lineNumber);
+            }
+        }
+    }
+}
+
+void Player::ExecuteDefragmentationEnd(size_t lineNumber, const CsvSplit& csvSplit)
+{
+    m_Stats.RegisterFunctionCall(VMA_FUNCTION::DefragmentationEnd);
+
+    if(ValidateFunctionParameterCount(lineNumber, csvSplit, 1, false))
+    {
+        uint64_t origPtr = 0;
+
+        if(StrRangeToPtr(csvSplit.GetRange(FIRST_PARAM_INDEX), origPtr))
+        {
+            if(origPtr != 0)
+            {
+                const auto it = m_DefragmentationContexts.find(origPtr);
+                if(it != m_DefragmentationContexts.end())
+                {
+                    vmaDefragmentationEnd(m_Allocator, it->second);
+                    m_DefragmentationContexts.erase(it);
+                }
+                else
+                {
+                    if(IssueWarning())
+                    {
+                        printf("Line %zu: Defragmentation context %llX not found.\n", lineNumber, origPtr);
+                    }
+                }
+            }
+        }
+        else
+        {
+            if(IssueWarning())
+            {
+                printf("Line %zu: Invalid parameters for vmaDefragmentationEnd.\n", lineNumber);
+            }
+        }
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Main functions
 
@@ -2620,6 +3248,10 @@ static void PrintCommandLineSyntax()
         "        File is written to current directory with name: VmaReplay_Line####.json.\n"
         "        This parameter can be repeated.\n"
         "    --DumpDetailedStatsAfterLine <Line> - Like command above, but includes detailed map.\n"
+        "    --DefragmentAfterLine <Line> - Defragment memory after specified source file line and print statistics.\n"
+        "        It also prints detailed statistics to files VmaReplay_Line####_Defragment*.json\n"
+        "    --DefragmentationFlags <Flags> - Flags to be applied when using DefragmentAfterLine.\n"
+        "        E.g. 1 for FAST algorithm, 2 for OPTIMAL algorithm.\n"
         "    --Lines <Ranges> - Replay only limited set of lines from file\n"
         "        Ranges is comma-separated list of ranges, e.g. \"-10,15,18-25,31-\".\n"
         "    --PhysicalDevice <Index> - Choice of Vulkan physical device. Default: 0.\n"
@@ -2638,6 +3270,7 @@ static int ProcessFile(size_t iterationIndex, const char* data, size_t numBytes,
 
     const bool useLineRanges = !g_LineRanges.IsEmpty();
     const bool useDumpStatsAfterLine = !g_DumpStatsAfterLine.empty();
+    const bool useDefragmentAfterLine = !g_DefragmentAfterLine.empty();
 
     LineSplit lineSplit(data, numBytes);
     StrRange line;
@@ -2732,6 +3365,25 @@ static int ProcessFile(size_t iterationIndex, const char* data, size_t numBytes,
                 player.DumpStats("VmaReplay_Line%04zu.json", requestedLine, detailed);
                 
                 ++g_DumpStatsAfterLineNextIndex;
+            }
+
+            while(useDefragmentAfterLine &&
+                g_DefragmentAfterLineNextIndex < g_DefragmentAfterLine.size() &&
+                currLineNumber >= g_DefragmentAfterLine[g_DefragmentAfterLineNextIndex])
+            {
+                const size_t requestedLine = g_DefragmentAfterLine[g_DefragmentAfterLineNextIndex];
+                if(g_Verbosity >= VERBOSITY::DEFAULT)
+                {
+                    printf("Defragmenting after line %zu actual line %zu...\n",
+                        requestedLine,
+                        currLineNumber);
+                }
+
+                player.DumpStats("VmaReplay_Line%04zu_Defragment_1Before.json", requestedLine, true);
+                player.Defragment();
+                player.DumpStats("VmaReplay_Line%04zu_Defragment_2After.json", requestedLine, true);
+                
+                ++g_DefragmentAfterLineNextIndex;
             }
         }
 
@@ -2831,6 +3483,8 @@ static int main2(int argc, char** argv)
     cmdLineParser.RegisterOpt(CMD_LINE_OPT_VK_LAYER_LUNARG_STANDARD_VALIDATION, VALIDATION_LAYER_NAME, true);
     cmdLineParser.RegisterOpt(CMD_LINE_OPT_MEM_STATS, "MemStats", true);
     cmdLineParser.RegisterOpt(CMD_LINE_OPT_DUMP_STATS_AFTER_LINE, "DumpStatsAfterLine", true);
+    cmdLineParser.RegisterOpt(CMD_LINE_OPT_DEFRAGMENT_AFTER_LINE, "DefragmentAfterLine", true);
+    cmdLineParser.RegisterOpt(CMD_LINE_OPT_DEFRAGMENTATION_FLAGS, "DefragmentationFlags", true);
     cmdLineParser.RegisterOpt(CMD_LINE_OPT_DUMP_DETAILED_STATS_AFTER_LINE, "DumpDetailedStatsAfterLine", true);
 
     CmdLineParser::RESULT res;
@@ -2940,6 +3594,29 @@ static int main2(int argc, char** argv)
                     }
                 }
                 break;
+            case CMD_LINE_OPT_DEFRAGMENT_AFTER_LINE:
+                {
+                    size_t line;
+                    if(StrRangeToUint(StrRange(cmdLineParser.GetParameter()), line))
+                    {
+                        g_DefragmentAfterLine.push_back(line);
+                    }
+                    else
+                    {
+                        PrintCommandLineSyntax();
+                        return RESULT_ERROR_COMMAND_LINE;
+                    }
+                }
+                break;
+            case CMD_LINE_OPT_DEFRAGMENTATION_FLAGS:
+                {
+                    if(!StrRangeToUint(StrRange(cmdLineParser.GetParameter()), g_DefragmentationFlags))
+                    {
+                        PrintCommandLineSyntax();
+                        return RESULT_ERROR_COMMAND_LINE;
+                    }
+                }
+                break;
             default:
                 assert(0);
             }
@@ -2977,6 +3654,12 @@ static int main2(int argc, char** argv)
     g_DumpStatsAfterLine.erase(
         std::unique(g_DumpStatsAfterLine.begin(), g_DumpStatsAfterLine.end()),
         g_DumpStatsAfterLine.end());
+
+    // Sort g_DefragmentAfterLine and make unique.
+    std::sort(g_DefragmentAfterLine.begin(), g_DefragmentAfterLine.end());
+    g_DefragmentAfterLine.erase(
+        std::unique(g_DefragmentAfterLine.begin(), g_DefragmentAfterLine.end()),
+        g_DefragmentAfterLine.end());
 
     return ProcessFile();
 }

@@ -8,7 +8,8 @@
 #include <Windows.h>
 #define VK_USE_PLATFORM_WIN32_KHR
 
-#include <vulkan/vulkan.h>
+// Uncomment to test including `vulkan.h` on your own before including VMA.
+//#include <vulkan/vulkan.h>
 
 /*
 In every place where you want to use Vulkan Memory Allocator, define appropriate
@@ -24,6 +25,8 @@ include all public interface declarations. Example:
 //#define VMA_DEBUG_INITIALIZE_ALLOCATIONS 1
 //#define VMA_RECORDING_ENABLED 0
 //#define VMA_DEBUG_MIN_BUFFER_IMAGE_GRANULARITY 256
+//#define VMA_USE_STL_SHARED_MUTEX 0
+//#define VMA_DEBUG_GLOBAL_MUTEX 1
 
 #pragma warning(push, 4)
 #pragma warning(disable: 4127) // conditional expression is constant
