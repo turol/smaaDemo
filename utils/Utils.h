@@ -157,15 +157,15 @@ static inline uint64_t gcd(uint64_t a, uint64_t b) {
 }
 
 
-#ifdef __GNUC__
 #define OPTIMIZED_FOREACHBIT 1
-#endif  // __GNUC__
 
 
 #if OPTIMIZED_FOREACHBIT
 
 
-// TODO: msvc version with _BitScanForward
+#ifdef __GNUC__
+
+
 template <typename F>
 void forEachSetBit(uint32_t v_, F &&f) {
 	uint32_t value = v_;
@@ -182,6 +182,30 @@ void forEachSetBit(uint32_t v_, F &&f) {
 		assert(value < oldValue);
 	}
 }
+
+
+#else // __GNUC__
+
+
+template <typename F>
+void forEachSetBit(uint32_t v_, F &&f) {
+	unsigned long value = v_;
+
+	unsigned long bit = 0;
+	while (_BitScanForward(&bit, value)) {
+		uint32_t mask = 1U << bit;
+
+		assert((value & mask) != 0);
+		f(bit, mask);
+
+		uint32_t oldValue = value;
+		value ^= mask;
+		assert(value < oldValue);
+	}
+}
+
+
+#endif // __GNUC__
 
 
 #else  // OPTIMIZED_FOREACHBIT
