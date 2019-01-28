@@ -1344,7 +1344,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	std::vector<vk::VertexInputBindingDescription> bindings;
 	if (desc.vertexAttribMask) {
 		uint32_t bufmask = 0;
-		forEachSetBit(desc.vertexAttribMask, [&attrs, &bufmask, &desc] (uint32_t bit, uint32_t mask) {
+		forEachSetBit(desc.vertexAttribMask, [&attrs, &bufmask, &desc] (uint32_t bit, uint32_t /* mask */) {
 			vk::VertexInputAttributeDescription attr;
 			const auto &attrDesc = desc.vertexAttribs.at(bit);
 			attr.location = bit;
