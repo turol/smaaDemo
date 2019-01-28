@@ -190,17 +190,16 @@ static unsigned int msaaSamplesToQuality(unsigned int q) {
 	assert(q > 1);
 	assert(isPow2(q));
 
-#ifdef __GNUC__
+	// TODO: have a more specific function for this
+	unsigned int retval = 0;
+	unsigned int count = 0;
+	forEachSetBit(q, [&] (uint32_t bit, uint32_t /* mask */) {
+		retval = bit;
+		count++;
+	});
 
-	return __builtin_ctz(q) - 1;
-
-#else  // __GNUC__
-
-	unsigned long bit = 0;
-	_BitScanForward(&bit, q);
-	return bit - 1;
-
-#endif  // __GNUC__
+	assert(count == 1);
+	return retval;
 }
 
 
