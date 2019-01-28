@@ -2029,45 +2029,17 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 
 	// enable/disable changed attributes
 	uint32_t vattrChanged = oldMask ^ newMask;
-#ifdef __GNUC__
-	while (vattrChanged != 0) {
-		int bit = __builtin_ctz(vattrChanged);
-		uint32_t mask = 1 << bit;
-
+	forEachSetBit(vattrChanged, [newMask] (uint32_t bit, uint32_t mask) {
 		if (newMask & mask) {
 			glEnableVertexAttribArray(bit);
 		} else {
 			glDisableVertexAttribArray(bit);
 		}
-
-		vattrChanged &= ~mask;
-	}
-#else
-  while (true) {
-    unsigned long bit = 0;
-    if (!_BitScanForward(&bit, vattrChanged)) {
-      break;
-    }
-    uint32_t mask = 1 << bit;
-
-    if (newMask & mask) {
-      glEnableVertexAttribArray(bit);
-    }
-    else {
-      glDisableVertexAttribArray(bit);
-    }
-
-    vattrChanged &= ~mask;
-  }
-#endif
+	});
 
 	// set format on new attributes
 	const auto &attribs = p.desc.vertexAttribs;
-#ifdef __GNUC__
-	while (newMask) {
-		int bit = __builtin_ctz(newMask);
-		uint32_t mask = 1 << bit;
-
+	forEachSetBit(newMask, [attribs] (uint32_t bit, uint32_t /* mask */ ) {
 		const auto &attr = attribs[bit];
 		bool normalized = false;
 		GLenum format = GL_NONE;
@@ -2084,35 +2056,7 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 
 		glVertexAttribFormat(bit, attr.count, format, normalized ? GL_TRUE : GL_FALSE, attr.offset);
 		glVertexAttribBinding(bit, attr.bufBinding);
-		newMask &= ~mask;
-	}
-#else
-  while (true) {
-    unsigned long bit = 0;
-    if (!_BitScanForward(&bit, vattrChanged)) {
-      break;
-    }
-    uint32_t mask = 1 << bit;
-
-    const auto &attr = attribs[bit];
-    bool normalized = false;
-    GLenum format = GL_NONE;
-    switch (attr.format) {
-    case VtxFormat::Float:
-      format = GL_FLOAT;
-      break;
-
-    case VtxFormat::UNorm8:
-      format = GL_UNSIGNED_BYTE;
-      normalized = true;
-      break;
-    }
-
-    glVertexAttribFormat(bit, attr.count, format, normalized ? GL_TRUE : GL_FALSE, attr.offset);
-    glVertexAttribBinding(bit, attr.bufBinding);
-    newMask &= ~mask;
-  }
-#endif
+	});
 
 	currentPipeline = pipeline;
 }
