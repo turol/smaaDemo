@@ -157,4 +157,25 @@ static inline uint64_t gcd(uint64_t a, uint64_t b) {
 }
 
 
+// TODO: optimize with __builtin_ctz / _BitScanForward
+template <typename F>
+void forEachSetBit(uint32_t v_, F &&f) {
+	uint32_t value = v_;
+
+	uint32_t bit = 0;
+	while (value != 0) {
+		uint32_t mask = 1 << bit;
+		if ((value & mask) != 0) {
+			f(bit, mask);
+
+			uint32_t oldValue = value;
+			value ^= mask;
+			assert(value < oldValue);
+		}
+
+		bit++;
+	}
+}
+
+
 #endif  // UTILS_H
