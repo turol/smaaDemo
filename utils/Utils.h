@@ -157,7 +157,36 @@ static inline uint64_t gcd(uint64_t a, uint64_t b) {
 }
 
 
-// TODO: optimize with __builtin_ctz / _BitScanForward
+#ifdef __GNUC__
+#define OPTIMIZED_FOREACHBIT 1
+#endif  // __GNUC__
+
+
+#if OPTIMIZED_FOREACHBIT
+
+
+// TODO: msvc version with _BitScanForward
+template <typename F>
+void forEachSetBit(uint32_t v_, F &&f) {
+	uint32_t value = v_;
+
+	while (value != 0) {
+		int bit = __builtin_ctz(value);
+		uint32_t mask = 1U << bit;
+
+		assert((value & mask) != 0);
+		f(bit, mask);
+
+		uint32_t oldValue = value;
+		value ^= mask;
+		assert(value < oldValue);
+	}
+}
+
+
+#else  // OPTIMIZED_FOREACHBIT
+
+
 template <typename F>
 void forEachSetBit(uint32_t v_, F &&f) {
 	uint32_t value = v_;
@@ -176,6 +205,9 @@ void forEachSetBit(uint32_t v_, F &&f) {
 		bit++;
 	}
 }
+
+
+#endif  // OPTIMIZED_FOREACHBIT
 
 
 #endif  // UTILS_H
