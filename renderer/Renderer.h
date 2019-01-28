@@ -477,10 +477,10 @@ public:
 
 	~PipelineDesc() {}
 
-	PipelineDesc(const PipelineDesc &desc)            = default;
-	PipelineDesc(PipelineDesc &&desc)             = default;
+	PipelineDesc(const PipelineDesc &desc)                = default;
+	PipelineDesc(PipelineDesc &&desc)                     = default;
 
-	PipelineDesc &operator=(const PipelineDesc &desc) = default;
+	PipelineDesc &operator=(const PipelineDesc &desc)     = default;
 	PipelineDesc &operator=(PipelineDesc &&desc) noexcept = default;
 
 	friend struct RendererImpl;
