@@ -1496,6 +1496,9 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	info.extent      = vk::Extent3D(desc.width_, desc.height_, 1);
 	info.mipLevels   = 1;
 	info.arrayLayers = 1;
+	// FIXME: validate samples against format-specific limits
+	// validation layer says: vkCreateImage(): samples VK_SAMPLE_COUNT_16_BIT is not supported by format 0x0000000F. The Vulkan spec states: samples must be a bit value that is set in imageCreateSampleCounts (as defined in Image Creation Limits).
+	// (https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/vkspec.html#VUID-VkImageCreateInfo-samples-02258)
 	info.samples     = sampleCountFlagsFromNum(desc.numSamples_);
 	// TODO: usage should come from desc
 	vk::ImageUsageFlags flags(vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
