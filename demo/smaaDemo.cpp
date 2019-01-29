@@ -194,7 +194,8 @@ static unsigned int msaaSamplesToQuality(unsigned int q) {
 	unsigned int retval = 0;
 	unsigned int count = 0;
 	forEachSetBit(q, [&] (uint32_t bit, uint32_t /* mask */) {
-		retval = bit;
+		assert(bit > 0);
+		retval = bit - 1;
 		count++;
 	});
 
