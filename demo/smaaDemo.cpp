@@ -2214,6 +2214,8 @@ void SMAADemo::render() {
 		createFramebuffers();
 	}
 
+	updateGUI(elapsed);
+
 	if (temporalAA) {
 		temporalFrame = (temporalFrame + 1) % 2;
 
@@ -2349,7 +2351,6 @@ void SMAADemo::render() {
 		renderer.layoutTransition(finalRenderRT, Layout::TransferDst, Layout::ColorAttachment);
 	}
 
-	updateGUI(elapsed);
 	renderGUI();
 
 	renderer.presentFrame(finalRenderRT);
