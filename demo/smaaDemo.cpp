@@ -2182,6 +2182,8 @@ void SMAADemo::mainLoopIteration() {
 	io.KeyAlt   = leftAlt   || rightAlt;
 	io.KeyCtrl  = leftCtrl  || rightCtrl;
 
+	updateGUI(elapsed);
+
 	if (activeScene == 0 && rotateCubes) {
 		rotationTime += elapsed;
 
@@ -2195,7 +2197,7 @@ void SMAADemo::mainLoopIteration() {
 }
 
 
-void SMAADemo::render(uint64_t elapsed) {
+void SMAADemo::render(uint64_t /* elapsed */) {
 	if (recreateSwapchain) {
 		renderer.setSwapchainDesc(rendererDesc.swapchain);
 	}
@@ -2217,8 +2219,6 @@ void SMAADemo::render(uint64_t elapsed) {
 
 		createFramebuffers();
 	}
-
-	updateGUI(elapsed);
 
 	if (temporalAA) {
 		temporalFrame = (temporalFrame + 1) % 2;
