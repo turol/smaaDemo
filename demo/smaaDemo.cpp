@@ -1566,6 +1566,8 @@ void SMAADemo::createFramebuffers() {
 	const unsigned int windowWidth  = rendererDesc.swapchain.width;
 	const unsigned int windowHeight = rendererDesc.swapchain.height;
 
+	LOG("create framebuffers at size %ux%u\n", windowWidth, windowHeight);
+
 	{
 		RenderTargetDesc rtDesc;
 		rtDesc.name("main color")
@@ -2142,6 +2144,7 @@ void SMAADemo::mainLoopIteration() {
 				rendererDesc.swapchain.width  = event.window.data1;
 				rendererDesc.swapchain.height = event.window.data2;
 				recreateSwapchain = true;
+				LOG("window resize to %ux%u\n", rendererDesc.swapchain.width, rendererDesc.swapchain.height);
 				break;
 			default:
 				break;
