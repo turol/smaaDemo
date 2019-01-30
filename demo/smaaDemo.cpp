@@ -569,7 +569,7 @@ public:
 		return keepGoing;
 	}
 
-	void render();
+	void render(uint64_t elapsed);
 };
 
 
@@ -1893,6 +1893,22 @@ static void printHelp() {
 
 
 void SMAADemo::mainLoopIteration() {
+	uint64_t ticks   = getNanoseconds();
+	uint64_t elapsed = ticks - lastTime;
+
+	if (fpsLimitActive) {
+		uint64_t nsLimit = 1000000000ULL / fpsLimit;
+		while (elapsed + sleepFudge < nsLimit) {
+			// limit reached, throttle
+			uint64_t nsWait = nsLimit - (elapsed + sleepFudge);
+			std::this_thread::sleep_for(std::chrono::nanoseconds(nsWait));
+			ticks   = getNanoseconds();
+			elapsed = ticks - lastTime;
+		}
+	}
+
+	lastTime = ticks;
+
 	ImGuiIO& io = ImGui::GetIO();
 
 	// TODO: timing
@@ -2163,31 +2179,6 @@ void SMAADemo::mainLoopIteration() {
 	io.KeyAlt   = leftAlt   || rightAlt;
 	io.KeyCtrl  = leftCtrl  || rightCtrl;
 
-	render();
-}
-
-
-void SMAADemo::render() {
-	if (recreateSwapchain) {
-		renderer.setSwapchainDesc(rendererDesc.swapchain);
-	}
-
-	uint64_t ticks   = getNanoseconds();
-	uint64_t elapsed = ticks - lastTime;
-
-	if (fpsLimitActive) {
-		uint64_t nsLimit = 1000000000ULL / fpsLimit;
-		while (elapsed + sleepFudge < nsLimit) {
-			// limit reached, throttle
-			uint64_t nsWait = nsLimit - (elapsed + sleepFudge);
-			std::this_thread::sleep_for(std::chrono::nanoseconds(nsWait));
-			ticks   = getNanoseconds();
-			elapsed = ticks - lastTime;
-		}
-	}
-
-	lastTime = ticks;
-
 	if (activeScene == 0 && rotateCubes) {
 		rotationTime += elapsed;
 
@@ -2195,6 +2186,15 @@ void SMAADemo::render() {
 		const uint64_t rotationPeriod = rotationPeriodSeconds * 1000000000ULL;
 		rotationTime   = rotationTime % rotationPeriod;
 		cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
+	}
+
+	render(elapsed);
+}
+
+
+void SMAADemo::render(uint64_t elapsed) {
+	if (recreateSwapchain) {
+		renderer.setSwapchainDesc(rendererDesc.swapchain);
 	}
 
 	if (recreateSwapchain || recreateFramebuffers) {
