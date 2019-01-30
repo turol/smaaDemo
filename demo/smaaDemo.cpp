@@ -569,7 +569,7 @@ public:
 		return keepGoing;
 	}
 
-	void render(uint64_t elapsed);
+	void render();
 };
 
 
@@ -2193,11 +2193,11 @@ void SMAADemo::mainLoopIteration() {
 		cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
 	}
 
-	render(elapsed);
+	render();
 }
 
 
-void SMAADemo::render(uint64_t /* elapsed */) {
+void SMAADemo::render() {
 	if (recreateSwapchain) {
 		renderer.setSwapchainDesc(rendererDesc.swapchain);
 	}
