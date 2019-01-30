@@ -2855,7 +2855,11 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 		}
 
 		if (ImGui::CollapsingHeader("Swapchain properties", ImGuiTreeNodeFlags_DefaultOpen)) {
-			recreateSwapchain = ImGui::Checkbox("Fullscreen", &rendererDesc.swapchain.fullscreen);
+			bool temp = ImGui::Checkbox("Fullscreen", &rendererDesc.swapchain.fullscreen);
+            // don't nuke recreateSwapchain in case it was already true
+			if (temp) {
+				recreateSwapchain = true;
+			}
 
 			int vsyncTemp = static_cast<int>(rendererDesc.swapchain.vsync);
 			ImGui::Text("V-Sync");
