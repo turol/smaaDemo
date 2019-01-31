@@ -530,7 +530,7 @@ class SMAADemo {
 
 	void renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass);
 
-	void doTemporalAA();
+	void renderTemporalAA();
 
 	void updateGUI(uint64_t elapsed);
 
@@ -2282,7 +2282,7 @@ void SMAADemo::render() {
 			renderFXAA();
 
 			if (temporalAA) {
-				doTemporalAA();
+				renderTemporalAA();
 			}
 		} break;
 
@@ -2294,7 +2294,7 @@ void SMAADemo::render() {
 			}
 
 			if (temporalAA) {
-				doTemporalAA();
+				renderTemporalAA();
 			}
 		} break;
 
@@ -2324,7 +2324,7 @@ void SMAADemo::render() {
 			if (temporalAA) {
 				// FIXME: move to renderpass
 				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::ColorAttachment, Layout::ShaderRead);
-				doTemporalAA();
+				renderTemporalAA();
 			}
 		} break;
 		}
@@ -2480,7 +2480,7 @@ void SMAADemo::resolveMSAATemporal() {
 				// TODO: do this transition as part of renderpass?
 				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::TransferDst, Layout::ColorAttachment);
 
-				doTemporalAA();
+				renderTemporalAA();
 }
 
 
@@ -2590,7 +2590,7 @@ void SMAADemo::renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass,
 }
 
 
-void SMAADemo::doTemporalAA() {
+void SMAADemo::renderTemporalAA() {
 	renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
 	renderer.bindPipeline(temporalAAPipelines[temporalReproject]);
 
