@@ -528,7 +528,7 @@ class SMAADemo {
 
 	void renderFXAA();
 
-	void doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass);
+	void renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass);
 
 	void doTemporalAA();
 
@@ -2288,9 +2288,9 @@ void SMAADemo::render() {
 
 		case AAMethod::SMAA: {
 			if (temporalAA) {
-				doSMAA(mainColorRT, smaaBlendRenderPass, resolveFBs[temporalFrame], 0);
+				renderSMAA(mainColorRT, smaaBlendRenderPass, resolveFBs[temporalFrame], 0);
 			} else {
-				doSMAA(mainColorRT, finalRenderPass, finalFramebuffer, 0);
+				renderSMAA(mainColorRT, finalRenderPass, finalFramebuffer, 0);
 			}
 
 			if (temporalAA) {
@@ -2314,11 +2314,11 @@ void SMAADemo::render() {
 
 			// TODO: clean up the renderpass mess
 			if (temporalAA) {
-				doSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], resolveFBs[temporalFrame], 0);
-				doSMAA(subsampleRTs[1], smaa2XBlendRenderPasses[1], resolveFBs[temporalFrame], 1);
+				renderSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], resolveFBs[temporalFrame], 0);
+				renderSMAA(subsampleRTs[1], smaa2XBlendRenderPasses[1], resolveFBs[temporalFrame], 1);
 			} else {
-				doSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], finalFramebuffer, 0);
-				doSMAA(subsampleRTs[1], smaa2XBlendRenderPasses[1], finalFramebuffer, 1);
+				renderSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], finalFramebuffer, 0);
+				renderSMAA(subsampleRTs[1], smaa2XBlendRenderPasses[1], finalFramebuffer, 1);
 			}
 
 			if (temporalAA) {
@@ -2499,7 +2499,7 @@ void SMAADemo::renderFXAA() {
 }
 
 
-void SMAADemo::doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass) {
+void SMAADemo::renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass) {
 	ShaderDefines::SMAAUBO smaaUBO;
 	smaaUBO.smaaParameters        = smaaParameters;
 	smaaUBO.predicationThreshold  = predicationThreshold;
