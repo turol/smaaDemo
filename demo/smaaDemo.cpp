@@ -526,6 +526,8 @@ class SMAADemo {
 
 	void resolveMSAATemporal();
 
+	void renderFXAA();
+
 	void doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass);
 
 	void doTemporalAA();
@@ -2277,17 +2279,7 @@ void SMAADemo::render() {
 		} break;
 
 		case AAMethod::FXAA: {
-			renderer.beginRenderPass(fxaaRenderPass[temporalAA], temporalAA ? resolveFBs[temporalFrame] : finalFramebuffer);
-			renderer.bindPipeline(getFXAAPipeline(fxaaQuality));
-			ColorCombinedDS colorDS;
-			// FIXME: remove unused UBO hack
-			uint32_t temp         = 0;
-			colorDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-			colorDS.color.tex     = renderer.getRenderTargetTexture(mainColorRT);
-			colorDS.color.sampler = linearSampler;
-			renderer.bindDescriptorSet(1, colorDS);
-			renderer.draw(0, 3);
-			renderer.endRenderPass();
+			renderFXAA();
 
 			if (temporalAA) {
 				doTemporalAA();
@@ -2489,6 +2481,21 @@ void SMAADemo::resolveMSAATemporal() {
 				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::TransferDst, Layout::ColorAttachment);
 
 				doTemporalAA();
+}
+
+
+void SMAADemo::renderFXAA() {
+			renderer.beginRenderPass(fxaaRenderPass[temporalAA], temporalAA ? resolveFBs[temporalFrame] : finalFramebuffer);
+			renderer.bindPipeline(getFXAAPipeline(fxaaQuality));
+			ColorCombinedDS colorDS;
+			// FIXME: remove unused UBO hack
+			uint32_t temp         = 0;
+			colorDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
+			colorDS.color.tex     = renderer.getRenderTargetTexture(mainColorRT);
+			colorDS.color.sampler = linearSampler;
+			renderer.bindDescriptorSet(1, colorDS);
+			renderer.draw(0, 3);
+			renderer.endRenderPass();
 }
 
 
