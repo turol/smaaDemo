@@ -522,6 +522,10 @@ class SMAADemo {
 	RenderPassHandle getSceneRenderPass(unsigned int n, Layout l);
 	PipelineHandle getCubePipeline(unsigned int n);
 
+	void resolveMSAA();
+
+	void resolveMSAATemporal();
+
 	void doSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass);
 
 	void doTemporalAA();
@@ -2266,16 +2270,9 @@ void SMAADemo::render() {
 		switch (aaMethod) {
 		case AAMethod::MSAA: {
 			if (false) {
-				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::Undefined, Layout::TransferDst);
-				renderer.resolveMSAA(sceneFramebuffer, resolveFBs[temporalFrame]);
-				// TODO: do this transition as part of renderpass?
-				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::TransferDst, Layout::ColorAttachment);
-
-				doTemporalAA();
+				resolveMSAATemporal();
 			} else {
-				renderer.layoutTransition(finalRenderRT, Layout::Undefined, Layout::TransferDst);
-				renderer.resolveMSAA(sceneFramebuffer, finalFramebuffer);
-				renderer.layoutTransition(finalRenderRT, Layout::TransferDst, Layout::ColorAttachment);
+				resolveMSAA();
 			}
 		} break;
 
@@ -2475,6 +2472,23 @@ void SMAADemo::renderImageScene() {
 		colorDS.color = image.tex;
 		renderer.bindDescriptorSet(1, colorDS);
 		renderer.draw(0, 3);
+}
+
+
+void SMAADemo::resolveMSAA() {
+				renderer.layoutTransition(finalRenderRT, Layout::Undefined, Layout::TransferDst);
+				renderer.resolveMSAA(sceneFramebuffer, finalFramebuffer);
+				renderer.layoutTransition(finalRenderRT, Layout::TransferDst, Layout::ColorAttachment);
+}
+
+
+void SMAADemo::resolveMSAATemporal() {
+				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::Undefined, Layout::TransferDst);
+				renderer.resolveMSAA(sceneFramebuffer, resolveFBs[temporalFrame]);
+				// TODO: do this transition as part of renderpass?
+				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::TransferDst, Layout::ColorAttachment);
+
+				doTemporalAA();
 }
 
 
