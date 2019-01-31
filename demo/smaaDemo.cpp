@@ -2275,6 +2275,8 @@ void SMAADemo::render() {
 		case AAMethod::MSAA: {
 			if (false) {
 				resolveMSAATemporal();
+
+				renderTemporalAA();
 			} else {
 				resolveMSAA();
 			}
@@ -2470,8 +2472,6 @@ void SMAADemo::resolveMSAATemporal() {
 				renderer.resolveMSAA(sceneFramebuffer, resolveFBs[temporalFrame]);
 				// TODO: do this transition as part of renderpass?
 				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::TransferDst, Layout::ColorAttachment);
-
-				renderTemporalAA();
 }
 
 
