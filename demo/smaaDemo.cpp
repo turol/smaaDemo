@@ -530,6 +530,8 @@ class SMAADemo {
 
 	void renderGUI();
 
+	void renderScene();
+
 	void renderCubeScene();
 
 	void renderImageScene();
@@ -2258,18 +2260,7 @@ void SMAADemo::render() {
 		subsampleIndices[1] = glm::vec4(2.0f, 2.0f, 2.0f, 0.0f);
 	}
 
-	Layout l = Layout::ShaderRead;
-	if (!antialiasing || aaMethod == AAMethod::MSAA) {
-		l = Layout::TransferSrc;
-	}
-	renderer.beginRenderPass(getSceneRenderPass(numSamples, l), sceneFramebuffer);
-
-	if (activeScene == 0) {
-		renderCubeScene();
-	} else {
-		renderImageScene();
-	}
-	renderer.endRenderPass();
+	renderScene();
 
 	if (antialiasing) {
 		switch (aaMethod) {
@@ -2359,6 +2350,22 @@ void SMAADemo::render() {
 
 	renderer.presentFrame(finalRenderRT);
 
+}
+
+
+void SMAADemo::renderScene() {
+	Layout l = Layout::ShaderRead;
+	if (!antialiasing || aaMethod == AAMethod::MSAA) {
+		l = Layout::TransferSrc;
+	}
+	renderer.beginRenderPass(getSceneRenderPass(numSamples, l), sceneFramebuffer);
+
+	if (activeScene == 0) {
+		renderCubeScene();
+	} else {
+		renderImageScene();
+	}
+	renderer.endRenderPass();
 }
 
 
