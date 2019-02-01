@@ -350,6 +350,21 @@ struct SceneRPKey {
 };
 
 
+enum Rendertargets {
+	  MainColor
+	, MainDepth
+	, Velocity
+	, Edges
+	, BlendWeights
+	, Resolve1
+	, Resolve2
+	, Subsample1
+	, Subsample2
+	, FinalRender
+	, Count
+};
+
+
 namespace std {
 
 	template <> struct hash<SMAAKey> {
