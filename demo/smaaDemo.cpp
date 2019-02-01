@@ -478,15 +478,8 @@ class SMAADemo {
 	PipelineHandle                                    separatePipeline;
 	std::array<PipelineHandle, 2>                     temporalAAPipelines;
 
-	RenderTargetHandle                                mainColorRT;
-	RenderTargetHandle                                mainDepthRT;
-	RenderTargetHandle                                velocityRT;
-	RenderTargetHandle                                edgesRT;
-	RenderTargetHandle                                blendWeightsRT;
-	RenderTargetHandle                                finalRenderRT;
-	std::array<RenderTargetHandle, 2>                 resolveRTs;
+	RenderTargetHandle                                renderTargets[Rendertargets::Count];
 
-	std::array<RenderTargetHandle, 2>                 subsampleRTs;
 	FramebufferHandle                                 separateFB;
 
 	std::unordered_map<SceneRPKey, RenderPassHandle>  sceneRenderPasses;
@@ -1601,7 +1594,7 @@ void SMAADemo::createFramebuffers() {
 		      .additionalViewFormat(Format::RGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		mainColorRT = renderer.createRenderTarget(rtDesc);
+		renderTargets[Rendertargets::MainColor] = renderer.createRenderTarget(rtDesc);
 	}
 
 	{
@@ -1611,7 +1604,7 @@ void SMAADemo::createFramebuffers() {
 		      .format(Format::RG16Float)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		velocityRT = renderer.createRenderTarget(rtDesc);
+		renderTargets[Rendertargets::Velocity] = renderer.createRenderTarget(rtDesc);
 	}
 
 	{
@@ -1620,7 +1613,7 @@ void SMAADemo::createFramebuffers() {
 		      .format(Format::sRGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		finalRenderRT = renderer.createRenderTarget(rtDesc);
+		renderTargets[Rendertargets::FinalRender] = renderer.createRenderTarget(rtDesc);
 	}
 
 	{
@@ -1630,16 +1623,16 @@ void SMAADemo::createFramebuffers() {
 		      .format(depthFormat)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		mainDepthRT = renderer.createRenderTarget(rtDesc);
+		renderTargets[Rendertargets::MainDepth] = renderer.createRenderTarget(rtDesc);
 	}
 
 	{
 		FramebufferDesc fbDesc;
 		fbDesc.name("scene")
 		      .renderPass(getSceneRenderPass(numSamples, Layout::ShaderRead))
-		      .color(0, mainColorRT)
-		      .color(1, velocityRT)
-		      .depthStencil(mainDepthRT);
+		      .color(0, renderTargets[Rendertargets::MainColor])
+		      .color(1, renderTargets[Rendertargets::Velocity])
+		      .depthStencil(renderTargets[Rendertargets::MainDepth]);
 		sceneFramebuffer = renderer.createFramebuffer(fbDesc);
 	}
 
@@ -1647,7 +1640,7 @@ void SMAADemo::createFramebuffers() {
 		FramebufferDesc fbDesc;
 		fbDesc.name("final")
 		      .renderPass(finalRenderPass)
-		      .color(0, finalRenderRT);
+		      .color(0, renderTargets[Rendertargets::FinalRender]);
 		finalFramebuffer = renderer.createFramebuffer(fbDesc);
 	}
 
@@ -1658,12 +1651,12 @@ void SMAADemo::createFramebuffers() {
 		      .format(Format::RGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		edgesRT = renderer.createRenderTarget(rtDesc);
+		renderTargets[Rendertargets::Edges] = renderer.createRenderTarget(rtDesc);
 
 		FramebufferDesc fbDesc;
 		fbDesc.name("SMAA edges")
 		      .renderPass(smaaEdgesRenderPass)
-		      .color(0, edgesRT);
+		      .color(0, renderTargets[Rendertargets::Edges]);
 		smaaEdgesFramebuffer = renderer.createFramebuffer(fbDesc);
 	}
 
@@ -1674,12 +1667,12 @@ void SMAADemo::createFramebuffers() {
 		      .format(Format::RGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		blendWeightsRT = renderer.createRenderTarget(rtDesc);
+		renderTargets[Rendertargets::BlendWeights] = renderer.createRenderTarget(rtDesc);
 
 		FramebufferDesc fbDesc;
 		fbDesc.name("SMAA weights")
 		      .renderPass(smaaWeightsRenderPass)
-		      .color(0, blendWeightsRT);
+		      .color(0, renderTargets[Rendertargets::BlendWeights]);
 		smaaWeightsFramebuffer = renderer.createFramebuffer(fbDesc);
 	}
 
@@ -1690,18 +1683,18 @@ void SMAADemo::createFramebuffers() {
 		      .format(Format::sRGBA8)  // TODO: not right?
 		      .width(windowWidth)
 		      .height(windowHeight);
-		resolveRTs[0] = renderer.createRenderTarget(rtDesc);
+		renderTargets[Rendertargets::Resolve1] = renderer.createRenderTarget(rtDesc);
 
 		FramebufferDesc fbDesc;
 		fbDesc.name("Temporal resolve 0")
 		      .renderPass(smaaBlendRenderPass)
-		      .color(0, resolveRTs[0]);
+		      .color(0, renderTargets[Rendertargets::Resolve1]);
 		resolveFBs[0] = renderer.createFramebuffer(fbDesc);
 
 		rtDesc.name("Temporal resolve 1");
-		resolveRTs[1] = renderer.createRenderTarget(rtDesc);
+		renderTargets[Rendertargets::Resolve2] = renderer.createRenderTarget(rtDesc);
 
-		fbDesc.color(0, resolveRTs[1])
+		fbDesc.color(0, renderTargets[Rendertargets::Resolve2])
 		      .name("Temporal resolve 1");
 		resolveFBs[1] = renderer.createFramebuffer(fbDesc);
 	}
@@ -1715,14 +1708,14 @@ void SMAADemo::createFramebuffers() {
 
 		for (unsigned int i = 0; i < 2; i++) {
 			rtDesc.name("Temporal resolve" + std::to_string(i));
-			subsampleRTs[i] = renderer.createRenderTarget(rtDesc);
+			renderTargets[Rendertargets::Subsample1 + i] = renderer.createRenderTarget(rtDesc);
 		}
 
 		FramebufferDesc fbDesc;
 		fbDesc.name("Separate")
 		      .renderPass(separateRenderPass)
-		      .color(0, subsampleRTs[0])
-		      .color(1, subsampleRTs[1]);
+		      .color(0, renderTargets[Rendertargets::Subsample1])
+		      .color(1, renderTargets[Rendertargets::Subsample2]);
 		separateFB = renderer.createFramebuffer(fbDesc);
 	}
 }
@@ -1745,43 +1738,43 @@ void SMAADemo::deleteFramebuffers() {
 	renderer.deleteFramebuffer(smaaWeightsFramebuffer);
 	smaaWeightsFramebuffer = FramebufferHandle();
 
-	assert(mainColorRT);
-	renderer.deleteRenderTarget(mainColorRT);
-	mainColorRT = RenderTargetHandle();
+	assert(renderTargets[Rendertargets::MainColor]);
+	renderer.deleteRenderTarget(renderTargets[Rendertargets::MainColor]);
+	renderTargets[Rendertargets::MainColor] = RenderTargetHandle();
 
-	assert(velocityRT);
-	renderer.deleteRenderTarget(velocityRT);
-	velocityRT = RenderTargetHandle();
+	assert(renderTargets[Rendertargets::Velocity]);
+	renderer.deleteRenderTarget(renderTargets[Rendertargets::Velocity]);
+	renderTargets[Rendertargets::Velocity] = RenderTargetHandle();
 
-	assert(mainDepthRT);
-	renderer.deleteRenderTarget(mainDepthRT);
-	mainDepthRT = RenderTargetHandle();
+	assert(renderTargets[Rendertargets::MainDepth]);
+	renderer.deleteRenderTarget(renderTargets[Rendertargets::MainDepth]);
+	renderTargets[Rendertargets::MainDepth] = RenderTargetHandle();
 
-	assert(edgesRT);
-	renderer.deleteRenderTarget(edgesRT);
-	edgesRT = RenderTargetHandle();
+	assert(renderTargets[Rendertargets::Edges]);
+	renderer.deleteRenderTarget(renderTargets[Rendertargets::Edges]);
+	renderTargets[Rendertargets::Edges] = RenderTargetHandle();
 
-	assert(blendWeightsRT);
-	renderer.deleteRenderTarget(blendWeightsRT);
-	blendWeightsRT = RenderTargetHandle();
+	assert(renderTargets[Rendertargets::BlendWeights]);
+	renderer.deleteRenderTarget(renderTargets[Rendertargets::BlendWeights]);
+	renderTargets[Rendertargets::BlendWeights] = RenderTargetHandle();
 
-	assert(finalRenderRT);
-	renderer.deleteRenderTarget(finalRenderRT);
-	finalRenderRT = RenderTargetHandle();
+	assert(renderTargets[Rendertargets::FinalRender]);
+	renderer.deleteRenderTarget(renderTargets[Rendertargets::FinalRender]);
+	renderTargets[Rendertargets::FinalRender] = RenderTargetHandle();
 
-	if (resolveRTs[0]) {
-		assert(resolveRTs[1]);
-		renderer.deleteRenderTarget(resolveRTs[0]);
-		resolveRTs[0] = RenderTargetHandle();
-		renderer.deleteRenderTarget(resolveRTs[1]);
-		resolveRTs[1] = RenderTargetHandle();
+	if (renderTargets[Rendertargets::Resolve1]) {
+		assert(renderTargets[Rendertargets::Resolve2]);
+		renderer.deleteRenderTarget(renderTargets[Rendertargets::Resolve1]);
+		renderTargets[Rendertargets::Resolve1] = RenderTargetHandle();
+		renderer.deleteRenderTarget(renderTargets[Rendertargets::Resolve2]);
+		renderTargets[Rendertargets::Resolve2] = RenderTargetHandle();
 
 		assert(resolveFBs[0]);
 		resolveFBs[0] = FramebufferHandle();
 		assert(resolveFBs[1]);
 		resolveFBs[1] = FramebufferHandle();
 	} else {
-		assert(!resolveRTs[1]);
+		assert(!renderTargets[Rendertargets::Resolve2]);
 
 		assert(!resolveFBs[0]);
 		assert(!resolveFBs[1]);
@@ -1792,9 +1785,9 @@ void SMAADemo::deleteFramebuffers() {
 	separateFB = FramebufferHandle();
 
 	for (unsigned int i = 0; i < 2; i++) {
-		assert(subsampleRTs[i]);
-		renderer.deleteRenderTarget(subsampleRTs[i]);
-		subsampleRTs[i] = RenderTargetHandle();
+		assert(renderTargets[Rendertargets::Subsample1 + i]);
+		renderer.deleteRenderTarget(renderTargets[Rendertargets::Subsample1 + i]);
+		renderTargets[Rendertargets::Subsample1 + i] = RenderTargetHandle();
 	}
 }
 
@@ -2289,11 +2282,11 @@ void SMAADemo::render() {
 		switch (aaMethod) {
 		case AAMethod::MSAA: {
 			if (false) {
-				resolveMSAATemporal(resolveRTs[temporalFrame]);
+				resolveMSAATemporal(renderTargets[Rendertargets::Resolve1 + temporalFrame]);
 
 				renderTemporalAA();
 			} else {
-				resolveMSAA(finalRenderRT);
+				resolveMSAA(renderTargets[FinalRender]);
 			}
 		} break;
 
@@ -2307,9 +2300,9 @@ void SMAADemo::render() {
 
 		case AAMethod::SMAA: {
 			if (temporalAA) {
-				renderSMAA(mainColorRT, smaaBlendRenderPass, resolveFBs[temporalFrame], 0);
+				renderSMAA(renderTargets[MainColor], smaaBlendRenderPass, resolveFBs[temporalFrame], 0);
 			} else {
-				renderSMAA(mainColorRT, finalRenderPass, finalFramebuffer, 0);
+				renderSMAA(renderTargets[MainColor], finalRenderPass, finalFramebuffer, 0);
 			}
 
 			if (temporalAA) {
@@ -2322,30 +2315,30 @@ void SMAADemo::render() {
 
 			// TODO: clean up the renderpass mess
 			if (temporalAA) {
-				renderSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], resolveFBs[temporalFrame], 0);
-				renderSMAA(subsampleRTs[1], smaa2XBlendRenderPasses[1], resolveFBs[temporalFrame], 1);
+				renderSMAA(renderTargets[Subsample1], smaa2XBlendRenderPasses[0], resolveFBs[temporalFrame], 0);
+				renderSMAA(renderTargets[Subsample2], smaa2XBlendRenderPasses[1], resolveFBs[temporalFrame], 1);
 			} else {
-				renderSMAA(subsampleRTs[0], smaa2XBlendRenderPasses[0], finalFramebuffer, 0);
-				renderSMAA(subsampleRTs[1], smaa2XBlendRenderPasses[1], finalFramebuffer, 1);
+				renderSMAA(renderTargets[Subsample1], smaa2XBlendRenderPasses[0], finalFramebuffer, 0);
+				renderSMAA(renderTargets[Subsample2], smaa2XBlendRenderPasses[1], finalFramebuffer, 1);
 			}
 
 			if (temporalAA) {
 				// FIXME: move to renderpass
-				renderer.layoutTransition(resolveRTs[temporalFrame], Layout::ColorAttachment, Layout::ShaderRead);
+				renderer.layoutTransition(renderTargets[Rendertargets::Resolve1 + temporalFrame], Layout::ColorAttachment, Layout::ShaderRead);
 				renderTemporalAA();
 			}
 		} break;
 		}
 
 	} else {
-		renderer.layoutTransition(finalRenderRT, Layout::Undefined, Layout::TransferDst);
+		renderer.layoutTransition(renderTargets[Rendertargets::FinalRender], Layout::Undefined, Layout::TransferDst);
 		renderer.blit(sceneFramebuffer, finalFramebuffer);
-		renderer.layoutTransition(finalRenderRT, Layout::TransferDst, Layout::ColorAttachment);
+		renderer.layoutTransition(renderTargets[Rendertargets::FinalRender], Layout::TransferDst, Layout::ColorAttachment);
 	}
 
 	renderGUI();
 
-	renderer.presentFrame(finalRenderRT);
+	renderer.presentFrame(renderTargets[Rendertargets::FinalRender]);
 
 }
 
@@ -2497,7 +2490,7 @@ void SMAADemo::renderFXAA() {
 			// FIXME: remove unused UBO hack
 			uint32_t temp         = 0;
 			colorDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-			colorDS.color.tex     = renderer.getRenderTargetTexture(mainColorRT);
+			colorDS.color.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::MainColor]);
 			colorDS.color.sampler = linearSampler;
 			renderer.bindDescriptorSet(1, colorDS);
 			renderer.draw(0, 3);
@@ -2512,7 +2505,7 @@ void SMAADemo::renderSeparate() {
 			// FIXME: remove unused UBO hack
 			uint32_t temp            = 0;
 			separateDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-			separateDS.color.tex     = renderer.getRenderTargetTexture(mainColorRT);
+			separateDS.color.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::MainColor]);
 			separateDS.color.sampler = nearestSampler;
 			renderer.bindDescriptorSet(1, separateDS);
 			renderer.draw(0, 3);
@@ -2539,12 +2532,12 @@ void SMAADemo::renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass,
 	EdgeDetectionDS edgeDS;
 	edgeDS.smaaUBO = smaaUBOBuf;
 	if (smaaKey.edgeMethod == SMAAEdgeMethod::Depth) {
-		edgeDS.color.tex     = renderer.getRenderTargetTexture(mainDepthRT);
+		edgeDS.color.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::MainDepth]);
 	} else {
 		edgeDS.color.tex     = renderer.getRenderTargetView(input, Format::RGBA8);
 	}
 	edgeDS.color.sampler = nearestSampler;
-	edgeDS.predicationTex.tex     = renderer.getRenderTargetTexture(mainDepthRT);
+	edgeDS.predicationTex.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::MainDepth]);
 	edgeDS.predicationTex.sampler = nearestSampler;
 	renderer.bindDescriptorSet(1, edgeDS);
 	renderer.draw(0, 3);
@@ -2555,7 +2548,7 @@ void SMAADemo::renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass,
 	renderer.bindPipeline(pipelines.blendWeightPipeline);
 	BlendWeightDS blendWeightDS;
 	blendWeightDS.smaaUBO           = smaaUBOBuf;
-	blendWeightDS.edgesTex.tex      = renderer.getRenderTargetTexture(edgesRT);
+	blendWeightDS.edgesTex.tex      = renderer.getRenderTargetTexture(renderTargets[Rendertargets::Edges]);
 	blendWeightDS.edgesTex.sampler  = linearSampler;
 	blendWeightDS.areaTex.tex       = areaTex;
 	blendWeightDS.areaTex.sampler   = linearSampler;
@@ -2578,7 +2571,7 @@ void SMAADemo::renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass,
 		neighborBlendDS.smaaUBO              = smaaUBOBuf;
 		neighborBlendDS.color.tex            = renderer.getRenderTargetTexture(input);
 		neighborBlendDS.color.sampler        = linearSampler;
-		neighborBlendDS.blendweights.tex     = renderer.getRenderTargetTexture(blendWeightsRT);
+		neighborBlendDS.blendweights.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::BlendWeights]);
 		neighborBlendDS.blendweights.sampler = linearSampler;
 		renderer.bindDescriptorSet(1, neighborBlendDS);
 	} break;
@@ -2590,7 +2583,7 @@ void SMAADemo::renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass,
 		// FIXME: remove unused UBO hack
 		uint32_t temp  = 0;
 		blitDS.unused  = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-		blitDS.color   = renderer.getRenderTargetTexture(edgesRT);
+		blitDS.color   = renderer.getRenderTargetTexture(renderTargets[Rendertargets::Edges] );
 		renderer.bindDescriptorSet(1, blitDS);
 	} break;
 
@@ -2601,7 +2594,7 @@ void SMAADemo::renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass,
 		// FIXME: remove unused UBO hack
 		uint32_t temp  = 0;
 		blitDS.unused  = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-		blitDS.color   = renderer.getRenderTargetTexture(blendWeightsRT);
+		blitDS.color   = renderer.getRenderTargetTexture(renderTargets[Rendertargets::BlendWeights]);
 		renderer.bindDescriptorSet(1, blitDS);
 	} break;
 
@@ -2627,18 +2620,18 @@ void SMAADemo::renderTemporalAA() {
 
 	TemporalAADS temporalDS;
 	temporalDS.smaaUBO             = smaaUBOBuf;
-	temporalDS.currentTex.tex      = renderer.getRenderTargetTexture(resolveRTs[temporalFrame]);
+	temporalDS.currentTex.tex      = renderer.getRenderTargetTexture(renderTargets[Rendertargets::Resolve1 + temporalFrame]);
 	temporalDS.currentTex.sampler  = nearestSampler;
 	if (temporalAAFirstFrame) {
 		// to prevent flicker on first frame after enabling
-		temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(resolveRTs[temporalFrame]);
+		temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::Resolve1 + temporalFrame]);
 		temporalDS.previousTex.sampler = nearestSampler;
 		temporalAAFirstFrame = false;
 	} else {
-		temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(resolveRTs[1 - temporalFrame]);
+		temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::Resolve1 + 1 - temporalFrame]);
 		temporalDS.previousTex.sampler = nearestSampler;
 	}
-	temporalDS.velocityTex.tex         = renderer.getRenderTargetTexture(velocityRT);
+	temporalDS.velocityTex.tex         = renderer.getRenderTargetTexture(renderTargets[Rendertargets::Velocity]);
 	temporalDS.velocityTex.sampler     = nearestSampler;
 
 	renderer.bindDescriptorSet(1, temporalDS);
