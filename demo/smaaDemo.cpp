@@ -1116,6 +1116,109 @@ void SMAADemo::initRender() {
 	renderer.registerDescriptorSetLayout<NeighborBlendDS>();
 	renderer.registerDescriptorSetLayout<TemporalAADS>();
 
+	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear) .name("linear"));
+	nearestSampler = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Nearest).magFilter(FilterMode::Nearest).name("nearest"));
+
+	cubeVBO = renderer.createBuffer(BufferType::Vertex, sizeof(vertices), &vertices[0]);
+	cubeIBO = renderer.createBuffer(BufferType::Index, sizeof(indices), &indices[0]);
+
+#ifdef RENDERER_OPENGL
+
+	const bool flipSMAATextures = true;
+
+#else  // RENDERER_OPENGL
+
+	const bool flipSMAATextures = false;
+
+#endif  // RENDERER_OPENGL
+
+	TextureDesc texDesc;
+	texDesc.width(AREATEX_WIDTH)
+	       .height(AREATEX_HEIGHT)
+	       .format(Format::RG8);
+	texDesc.name("SMAA area texture");
+
+	if (flipSMAATextures) {
+		std::vector<unsigned char> tempBuffer(AREATEX_SIZE);
+		for (unsigned int y = 0; y < AREATEX_HEIGHT; y++) {
+			unsigned int srcY = AREATEX_HEIGHT - 1 - y;
+			//unsigned int srcY = y;
+			memcpy(&tempBuffer[y * AREATEX_PITCH], areaTexBytes + srcY * AREATEX_PITCH, AREATEX_PITCH);
+		}
+		texDesc.mipLevelData(0, &tempBuffer[0], AREATEX_SIZE);
+		areaTex = renderer.createTexture(texDesc);
+	} else {
+		texDesc.mipLevelData(0, areaTexBytes, AREATEX_SIZE);
+		areaTex = renderer.createTexture(texDesc);
+	}
+
+	texDesc.width(SEARCHTEX_WIDTH)
+	       .height(SEARCHTEX_HEIGHT)
+	       .format(Format::R8);
+	texDesc.name("SMAA search texture");
+	if (flipSMAATextures) {
+		std::vector<unsigned char> tempBuffer(SEARCHTEX_SIZE);
+		for (unsigned int y = 0; y < SEARCHTEX_HEIGHT; y++) {
+			unsigned int srcY = SEARCHTEX_HEIGHT - 1 - y;
+			//unsigned int srcY = y;
+			memcpy(&tempBuffer[y * SEARCHTEX_PITCH], searchTexBytes + srcY * SEARCHTEX_PITCH, SEARCHTEX_PITCH);
+		}
+		texDesc.mipLevelData(0, &tempBuffer[0], SEARCHTEX_SIZE);
+		searchTex = renderer.createTexture(texDesc);
+	} else {
+		texDesc.mipLevelData(0, searchTexBytes, SEARCHTEX_SIZE);
+		searchTex = renderer.createTexture(texDesc);
+	}
+
+	images.reserve(imageFiles.size());
+	for (const auto &filename : imageFiles) {
+		loadImage(filename);
+	}
+
+	// imgui setup
+	{
+		imGuiContext = ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO();
+		io.IniFilename                 = nullptr;
+		io.KeyMap[ImGuiKey_Tab]        = SDL_SCANCODE_TAB;                     // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
+		io.KeyMap[ImGuiKey_LeftArrow]  = SDL_SCANCODE_LEFT;
+		io.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
+		io.KeyMap[ImGuiKey_UpArrow]    = SDL_SCANCODE_UP;
+		io.KeyMap[ImGuiKey_DownArrow]  = SDL_SCANCODE_DOWN;
+		io.KeyMap[ImGuiKey_PageUp]     = SDL_SCANCODE_PAGEUP;
+		io.KeyMap[ImGuiKey_PageDown]   = SDL_SCANCODE_PAGEDOWN;
+		io.KeyMap[ImGuiKey_Home]       = SDL_SCANCODE_HOME;
+		io.KeyMap[ImGuiKey_End]        = SDL_SCANCODE_END;
+		io.KeyMap[ImGuiKey_Delete]     = SDL_SCANCODE_DELETE;
+		io.KeyMap[ImGuiKey_Backspace]  = SDL_SCANCODE_BACKSPACE;
+		io.KeyMap[ImGuiKey_Enter]      = SDL_SCANCODE_RETURN;
+		io.KeyMap[ImGuiKey_Escape]     = SDL_SCANCODE_ESCAPE;
+		io.KeyMap[ImGuiKey_A]          = SDL_SCANCODE_A;
+		io.KeyMap[ImGuiKey_C]          = SDL_SCANCODE_C;
+		io.KeyMap[ImGuiKey_V]          = SDL_SCANCODE_V;
+		io.KeyMap[ImGuiKey_X]          = SDL_SCANCODE_X;
+		io.KeyMap[ImGuiKey_Y]          = SDL_SCANCODE_Y;
+		io.KeyMap[ImGuiKey_Z]          = SDL_SCANCODE_Z;
+
+		// TODO: clipboard
+		io.SetClipboardTextFn = SetClipboardText;
+		io.GetClipboardTextFn = GetClipboardText;
+		io.ClipboardUserData  = clipboardText;
+
+		// Build texture atlas
+		unsigned char *pixels = nullptr;
+		int width = 0, height = 0;
+		io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+
+		texDesc.width(width)
+		       .height(height)
+		       .format(Format::sRGBA8)
+		       .name("GUI")
+		       .mipLevelData(0, pixels, width * height * 4);
+		imguiFontsTex = renderer.createTexture(texDesc);
+		io.Fonts->TexID = nullptr;
+	}
+
 	{
 		RenderPassDesc rpDesc;
 		// TODO: check this
@@ -1260,108 +1363,6 @@ void SMAADemo::initRender() {
 		separatePipeline = renderer.createPipeline(plDesc);
 	}
 
-	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear) .name("linear"));
-	nearestSampler = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Nearest).magFilter(FilterMode::Nearest).name("nearest"));
-
-	cubeVBO = renderer.createBuffer(BufferType::Vertex, sizeof(vertices), &vertices[0]);
-	cubeIBO = renderer.createBuffer(BufferType::Index, sizeof(indices), &indices[0]);
-
-#ifdef RENDERER_OPENGL
-
-	const bool flipSMAATextures = true;
-
-#else  // RENDERER_OPENGL
-
-	const bool flipSMAATextures = false;
-
-#endif  // RENDERER_OPENGL
-
-	TextureDesc texDesc;
-	texDesc.width(AREATEX_WIDTH)
-	       .height(AREATEX_HEIGHT)
-	       .format(Format::RG8);
-	texDesc.name("SMAA area texture");
-
-	if (flipSMAATextures) {
-		std::vector<unsigned char> tempBuffer(AREATEX_SIZE);
-		for (unsigned int y = 0; y < AREATEX_HEIGHT; y++) {
-			unsigned int srcY = AREATEX_HEIGHT - 1 - y;
-			//unsigned int srcY = y;
-			memcpy(&tempBuffer[y * AREATEX_PITCH], areaTexBytes + srcY * AREATEX_PITCH, AREATEX_PITCH);
-		}
-		texDesc.mipLevelData(0, &tempBuffer[0], AREATEX_SIZE);
-		areaTex = renderer.createTexture(texDesc);
-	} else {
-		texDesc.mipLevelData(0, areaTexBytes, AREATEX_SIZE);
-		areaTex = renderer.createTexture(texDesc);
-	}
-
-	texDesc.width(SEARCHTEX_WIDTH)
-	       .height(SEARCHTEX_HEIGHT)
-	       .format(Format::R8);
-	texDesc.name("SMAA search texture");
-	if (flipSMAATextures) {
-		std::vector<unsigned char> tempBuffer(SEARCHTEX_SIZE);
-		for (unsigned int y = 0; y < SEARCHTEX_HEIGHT; y++) {
-			unsigned int srcY = SEARCHTEX_HEIGHT - 1 - y;
-			//unsigned int srcY = y;
-			memcpy(&tempBuffer[y * SEARCHTEX_PITCH], searchTexBytes + srcY * SEARCHTEX_PITCH, SEARCHTEX_PITCH);
-		}
-		texDesc.mipLevelData(0, &tempBuffer[0], SEARCHTEX_SIZE);
-		searchTex = renderer.createTexture(texDesc);
-	} else {
-		texDesc.mipLevelData(0, searchTexBytes, SEARCHTEX_SIZE);
-		searchTex = renderer.createTexture(texDesc);
-	}
-
-	images.reserve(imageFiles.size());
-	for (const auto &filename : imageFiles) {
-		loadImage(filename);
-	}
-
-	// imgui setup
-	{
-		imGuiContext = ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO();
-		io.IniFilename                 = nullptr;
-		io.KeyMap[ImGuiKey_Tab]        = SDL_SCANCODE_TAB;                     // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
-		io.KeyMap[ImGuiKey_LeftArrow]  = SDL_SCANCODE_LEFT;
-		io.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
-		io.KeyMap[ImGuiKey_UpArrow]    = SDL_SCANCODE_UP;
-		io.KeyMap[ImGuiKey_DownArrow]  = SDL_SCANCODE_DOWN;
-		io.KeyMap[ImGuiKey_PageUp]     = SDL_SCANCODE_PAGEUP;
-		io.KeyMap[ImGuiKey_PageDown]   = SDL_SCANCODE_PAGEDOWN;
-		io.KeyMap[ImGuiKey_Home]       = SDL_SCANCODE_HOME;
-		io.KeyMap[ImGuiKey_End]        = SDL_SCANCODE_END;
-		io.KeyMap[ImGuiKey_Delete]     = SDL_SCANCODE_DELETE;
-		io.KeyMap[ImGuiKey_Backspace]  = SDL_SCANCODE_BACKSPACE;
-		io.KeyMap[ImGuiKey_Enter]      = SDL_SCANCODE_RETURN;
-		io.KeyMap[ImGuiKey_Escape]     = SDL_SCANCODE_ESCAPE;
-		io.KeyMap[ImGuiKey_A]          = SDL_SCANCODE_A;
-		io.KeyMap[ImGuiKey_C]          = SDL_SCANCODE_C;
-		io.KeyMap[ImGuiKey_V]          = SDL_SCANCODE_V;
-		io.KeyMap[ImGuiKey_X]          = SDL_SCANCODE_X;
-		io.KeyMap[ImGuiKey_Y]          = SDL_SCANCODE_Y;
-		io.KeyMap[ImGuiKey_Z]          = SDL_SCANCODE_Z;
-
-		// TODO: clipboard
-		io.SetClipboardTextFn = SetClipboardText;
-		io.GetClipboardTextFn = GetClipboardText;
-		io.ClipboardUserData  = clipboardText;
-
-		// Build texture atlas
-		unsigned char *pixels = nullptr;
-		int width = 0, height = 0;
-		io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-
-		texDesc.width(width)
-		       .height(height)
-		       .format(Format::sRGBA8)
-		       .name("GUI")
-		       .mipLevelData(0, pixels, width * height * 4);
-		imguiFontsTex = renderer.createTexture(texDesc);
-		io.Fonts->TexID = nullptr;
-	}
 }
 
 
