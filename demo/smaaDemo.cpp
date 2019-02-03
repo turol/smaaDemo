@@ -413,6 +413,7 @@ class SMAADemo {
 
 	bool                                              recreateSwapchain;
 	bool                                              recreateFramebuffers;
+	bool                                              rebuildRG;
 	bool                                              keepGoing;
 
 	// aa things
@@ -594,6 +595,7 @@ public:
 SMAADemo::SMAADemo()
 : recreateSwapchain(false)
 , recreateFramebuffers(false)
+, rebuildRG(true)
 , keepGoing(true)
 
 , antialiasing(true)
@@ -1995,6 +1997,7 @@ void SMAADemo::mainLoopIteration() {
 				if (temporalAA) {
 					temporalAAFirstFrame = true;
 				}
+				rebuildRG = true;
 				break;
 
 			case SDL_SCANCODE_C:
@@ -2031,6 +2034,7 @@ void SMAADemo::mainLoopIteration() {
 				}
 				if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
 					recreateFramebuffers = true;
+					rebuildRG = true;
 				}
 				break;
 
@@ -2075,6 +2079,7 @@ void SMAADemo::mainLoopIteration() {
 					if (temporalAA) {
 						recreateFramebuffers = true;
 						temporalAAFirstFrame = true;
+						rebuildRG = true;
 					}
 				}
 				break;
@@ -2223,6 +2228,11 @@ void SMAADemo::render() {
 
 	if (recreateSwapchain || recreateFramebuffers) {
 		deleteFramebuffers();
+	}
+
+	if (rebuildRG) {
+		// TODO: rebuild rendergraph
+		rebuildRG = false;
 	}
 
 	renderer.beginFrame();
@@ -2688,6 +2698,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 
 				if (ImGui::Checkbox("Temporal AA", &temporalAA)) {
 					recreateFramebuffers = true;
+					rebuildRG            = true;
 				}
 
 				// temporal reprojection only enabled when temporal AA is
@@ -2723,12 +2734,14 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
 					recreateFramebuffers = true;
 				}
+				rebuildRG = true;
 			}
 
 			if (msaaChanged && aaMethod == AAMethod::MSAA) {
 				assert(msaaq >= 0);
 				msaaQuality = static_cast<unsigned int>(msaaq);
 				recreateFramebuffers = true;
+				rebuildRG            = true;
 			}
 
 			ImGui::Separator();
