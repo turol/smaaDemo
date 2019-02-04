@@ -2014,6 +2014,7 @@ void SMAADemo::mainLoopIteration() {
 					} else {
 						debugMode = (debugMode + 1) % 3;
 					}
+					rebuildRG = true;
 				}
 				break;
 
@@ -2817,7 +2818,10 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			ImGui::Combo("SMAA debug", &d, smaaDebugModes, 3);
 			assert(d >= 0);
 			assert(d < 3);
+			if (int(debugMode) != d) {
 			debugMode = d;
+				rebuildRG = true;
+			}
 
 			int fq = fxaaQuality;
 			ImGui::Separator();
