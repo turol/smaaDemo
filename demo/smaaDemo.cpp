@@ -553,6 +553,14 @@ class SMAADemo {
 
 	void renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass);
 
+	void renderSMAAEdges(RenderTargetHandle input, BufferHandle smaaUBOBuf);
+
+	void renderSMAAWeights(BufferHandle smaaUBOBuf);
+
+	void renderSMAABlend(RenderPassHandle renderpass, FramebufferHandle outputFB, RenderTargetHandle input, BufferHandle smaaUBOBuf, int pass);
+
+	void renderSMAADebug(RenderPassHandle renderpass, FramebufferHandle outputFB, Rendertargets rt);
+
 	void renderTemporalAA();
 
 	void updateGUI(uint64_t elapsed);
@@ -2570,6 +2578,35 @@ void SMAADemo::renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass,
 	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
 
 	// edges pass
+	renderSMAAEdges(input, smaaUBOBuf);
+
+	// blendweights pass
+	renderSMAAWeights(smaaUBOBuf);
+
+	// final blending pass/debug pass
+	switch (debugMode) {
+	case 0: {
+		// full effect
+		renderSMAABlend(renderPass, outputFB, input, smaaUBOBuf, pass);
+
+	} break;
+
+	case 1: {
+		// visualize edges
+		renderSMAADebug(renderPass, outputFB, Rendertargets::Edges);
+
+	} break;
+
+	case 2: {
+		// visualize blend weights
+		renderSMAADebug(renderPass, outputFB, Rendertargets::BlendWeights);
+	} break;
+
+	}
+}
+
+
+void SMAADemo::renderSMAAEdges(RenderTargetHandle input, BufferHandle smaaUBOBuf) {
 	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
 	renderer.beginRenderPass(smaaEdgesRenderPass, smaaEdgesFramebuffer);
 	renderer.bindPipeline(pipelines.edgePipeline);
@@ -2587,8 +2624,11 @@ void SMAADemo::renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass,
 	renderer.bindDescriptorSet(1, edgeDS);
 	renderer.draw(0, 3);
 	renderer.endRenderPass();
+}
 
-	// blendweights pass
+
+void SMAADemo::renderSMAAWeights(BufferHandle smaaUBOBuf) {
+	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
 	renderer.beginRenderPass(smaaWeightsRenderPass, smaaWeightsFramebuffer);
 	renderer.bindPipeline(pipelines.blendWeightPipeline);
 	BlendWeightDS blendWeightDS;
@@ -2604,11 +2644,13 @@ void SMAADemo::renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass,
 	renderer.draw(0, 3);
 	renderer.endRenderPass();
 
-	// final blending pass/debug pass
-	renderer.beginRenderPass(renderPass, outputFB);
+}
 
-	switch (debugMode) {
-	case 0: {
+
+void SMAADemo::renderSMAABlend(RenderPassHandle renderpass, FramebufferHandle outputFB, RenderTargetHandle input, BufferHandle smaaUBOBuf, int pass) {
+	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
+	renderer.beginRenderPass(renderpass, outputFB);
+
 		// full effect
 		renderer.bindPipeline(pipelines.neighborPipelines[pass]);
 
@@ -2619,31 +2661,23 @@ void SMAADemo::renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass,
 		neighborBlendDS.blendweights.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::BlendWeights]);
 		neighborBlendDS.blendweights.sampler = linearSampler;
 		renderer.bindDescriptorSet(1, neighborBlendDS);
-	} break;
 
-	case 1: {
-		// visualize edges
+	renderer.draw(0, 3);
+	renderer.endRenderPass();
+}
+
+
+void SMAADemo::renderSMAADebug(RenderPassHandle renderPass, FramebufferHandle outputFB, Rendertargets rt) {
+	renderer.beginRenderPass(renderPass, outputFB);
+
 		ColorTexDS blitDS;
 		renderer.bindPipeline(blitPipeline);
 		// FIXME: remove unused UBO hack
 		uint32_t temp  = 0;
 		blitDS.unused  = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-		blitDS.color   = renderer.getRenderTargetTexture(renderTargets[Rendertargets::Edges] );
+		blitDS.color   = renderer.getRenderTargetTexture(renderTargets[rt] );
 		renderer.bindDescriptorSet(1, blitDS);
-	} break;
 
-	case 2: {
-		// visualize blend weights
-		ColorTexDS blitDS;
-		renderer.bindPipeline(blitPipeline);
-		// FIXME: remove unused UBO hack
-		uint32_t temp  = 0;
-		blitDS.unused  = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-		blitDS.color   = renderer.getRenderTargetTexture(renderTargets[Rendertargets::BlendWeights]);
-		renderer.bindDescriptorSet(1, blitDS);
-	} break;
-
-	}
 	renderer.draw(0, 3);
 	renderer.endRenderPass();
 }
