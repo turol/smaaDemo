@@ -405,6 +405,11 @@ struct SMAAPipelines {
 };
 
 
+class RenderGraph {
+public:
+};
+
+
 class SMAADemo {
 	RendererDesc                                      rendererDesc;
 
