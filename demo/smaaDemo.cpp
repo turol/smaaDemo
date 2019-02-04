@@ -2819,7 +2819,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			assert(d >= 0);
 			assert(d < 3);
 			if (int(debugMode) != d) {
-			debugMode = d;
+				debugMode = d;
 				rebuildRG = true;
 			}
 
