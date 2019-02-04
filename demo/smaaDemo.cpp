@@ -407,11 +407,18 @@ struct SMAAPipelines {
 
 class RenderGraph {
 public:
+
+	void clear();
+
+	void build();
+
+	void render(Renderer &renderer);
 };
 
 
 class SMAADemo {
 	RendererDesc                                      rendererDesc;
+	RenderGraph                                       renderGraph;
 
 	// command line things
 	std::vector<std::string>                          imageFiles;
@@ -2237,9 +2244,15 @@ void SMAADemo::render() {
 	}
 
 	if (rebuildRG) {
+		renderGraph.clear();
 		// TODO: rebuild rendergraph
+
+		renderGraph.build();
+
 		rebuildRG = false;
 	}
+
+	renderGraph.render(renderer);
 
 	renderer.beginFrame();
 	if (recreateSwapchain || recreateFramebuffers) {
@@ -2357,6 +2370,21 @@ void SMAADemo::render() {
 
 	renderer.presentFrame(renderTargets[Rendertargets::FinalRender]);
 
+}
+
+
+void RenderGraph::clear() {
+	// TODO
+}
+
+
+void RenderGraph::build() {
+	// TODO
+}
+
+
+void RenderGraph::render(Renderer & /* renderer */) {
+	// TODO
 }
 
 
