@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <chrono>
 
 #include <algorithm>
+#include <functional>
 #include <limits>
 #include <memory>
 #include <stdexcept>
@@ -430,6 +431,8 @@ public:
 
 
 	void clear();
+
+	void renderPass(std::function<void()> f);
 
 	void build();
 
@@ -2414,6 +2417,12 @@ void SMAADemo::render() {
 
 void RenderGraph::clear() {
 	valid = false;
+
+	// TODO
+}
+
+
+void RenderGraph::renderPass(std::function<void()> /* f */) {
 
 	// TODO
 }
