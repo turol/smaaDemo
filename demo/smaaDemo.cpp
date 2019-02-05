@@ -407,6 +407,9 @@ struct SMAAPipelines {
 
 class RenderGraph {
 
+	bool  valid;
+
+
 	RenderGraph(const RenderGraph &)                = delete;
 	RenderGraph(RenderGraph &&) noexcept            = delete;
 
@@ -417,6 +420,7 @@ class RenderGraph {
 public:
 
 	RenderGraph()
+	: valid(false)
 	{
 	}
 
@@ -2409,16 +2413,24 @@ void SMAADemo::render() {
 
 
 void RenderGraph::clear() {
+	valid = false;
+
 	// TODO
 }
 
 
 void RenderGraph::build() {
+	assert(!valid);
+
 	// TODO
+
+	valid = true;
 }
 
 
 void RenderGraph::render(Renderer & /* renderer */) {
+	assert(valid);
+
 	// TODO
 }
 
