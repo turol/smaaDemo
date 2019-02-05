@@ -596,6 +596,8 @@ public:
 
 	void initRender();
 
+	void rebuildRenderGraph();
+
 	void createFramebuffers();
 
 	void deleteFramebuffers();
@@ -1385,6 +1387,18 @@ void SMAADemo::initRender() {
 		separatePipeline = renderer.createPipeline(plDesc);
 	}
 
+}
+
+
+void SMAADemo::rebuildRenderGraph() {
+	assert(rebuildRG);
+
+	renderGraph.clear();
+	// TODO: rebuild rendergraph
+
+	renderGraph.build();
+
+	rebuildRG = false;
 }
 
 
@@ -2252,12 +2266,8 @@ void SMAADemo::render() {
 	}
 
 	if (rebuildRG) {
-		renderGraph.clear();
-		// TODO: rebuild rendergraph
-
-		renderGraph.build();
-
-		rebuildRG = false;
+		rebuildRenderGraph();
+		assert(!rebuildRG);
 	}
 
 	renderGraph.render(renderer);
