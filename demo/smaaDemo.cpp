@@ -406,7 +406,24 @@ struct SMAAPipelines {
 
 
 class RenderGraph {
+
+	RenderGraph(const RenderGraph &)                = delete;
+	RenderGraph(RenderGraph &&) noexcept            = delete;
+
+	RenderGraph &operator=(const RenderGraph &)     = delete;
+	RenderGraph &operator=(RenderGraph &&) noexcept = delete;
+
+
 public:
+
+	RenderGraph()
+	{
+	}
+
+
+	~RenderGraph() {
+	}
+
 
 	void clear();
 
