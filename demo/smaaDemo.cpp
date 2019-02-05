@@ -434,6 +434,8 @@ public:
 
 	void renderPass(std::function<void()> f);
 
+	void presentRenderTarget(RenderTargetHandle rt);
+
 	void build();
 
 	void render(Renderer &renderer);
@@ -2426,6 +2428,13 @@ void RenderGraph::renderPass(std::function<void()> /* f */) {
 
 	// TODO
 }
+
+
+void RenderGraph::presentRenderTarget(RenderTargetHandle /* rt */) {
+
+	// TODO
+}
+
 
 
 void RenderGraph::build() {
