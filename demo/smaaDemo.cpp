@@ -1424,7 +1424,70 @@ void SMAADemo::rebuildRenderGraph() {
 	assert(rebuildRG);
 
 	renderGraph.clear();
-	// TODO: rebuild rendergraph
+
+	renderGraph.renderPass(std::bind(&SMAADemo::renderScene, this));
+
+	if (antialiasing) {
+		switch (aaMethod) {
+		case AAMethod::MSAA: {
+			if (false) {
+				renderGraph.renderPass(std::bind(&SMAADemo::resolveMSAATemporal, this, renderTargets[Rendertargets::Resolve1 + temporalFrame]));
+
+				renderGraph.renderPass(std::bind(&SMAADemo::renderTemporalAA, this));
+			} else {
+				renderGraph.renderPass(std::bind(&SMAADemo::resolveMSAA, this, renderTargets[FinalRender]));
+			}
+		} break;
+
+		case AAMethod::FXAA: {
+			renderGraph.renderPass(std::bind(&SMAADemo::renderFXAA, this));
+
+			if (temporalAA) {
+				renderGraph.renderPass(std::bind(&SMAADemo::renderTemporalAA, this));
+			}
+		} break;
+
+		case AAMethod::SMAA: {
+			if (temporalAA) {
+				renderGraph.renderPass(std::bind(&SMAADemo::renderSMAA, this, renderTargets[MainColor], smaaBlendRenderPass, resolveFBs[temporalFrame], 0));
+			} else {
+				renderGraph.renderPass(std::bind(&SMAADemo::renderSMAA, this, renderTargets[MainColor], finalRenderPass, finalFramebuffer, 0));
+			}
+
+			if (temporalAA) {
+				renderGraph.renderPass(std::bind(&SMAADemo::renderTemporalAA, this));
+			}
+		} break;
+
+		case AAMethod::SMAA2X: {
+			renderGraph.renderPass(std::bind(&SMAADemo::renderSeparate, this));
+
+			// TODO: clean up the renderpass mess
+			if (temporalAA) {
+				renderGraph.renderPass(std::bind(&SMAADemo::renderSMAA, this, renderTargets[Subsample1], smaa2XBlendRenderPasses[0], resolveFBs[temporalFrame], 0));
+				renderGraph.renderPass(std::bind(&SMAADemo::renderSMAA, this, renderTargets[Subsample2], smaa2XBlendRenderPasses[1], resolveFBs[temporalFrame], 1));
+			} else {
+				renderGraph.renderPass(std::bind(&SMAADemo::renderSMAA, this, renderTargets[Subsample1], smaa2XBlendRenderPasses[0], finalFramebuffer, 0));
+				renderGraph.renderPass(std::bind(&SMAADemo::renderSMAA, this, renderTargets[Subsample2], smaa2XBlendRenderPasses[1], finalFramebuffer, 1));
+			}
+
+			if (temporalAA) {
+				// FIXME: move to renderpass
+				renderGraph.layoutTransition(renderTargets[Rendertargets::Resolve1 + temporalFrame], Layout::ColorAttachment, Layout::ShaderRead);
+				renderGraph.renderPass(std::bind(&SMAADemo::renderTemporalAA, this));
+			}
+		} break;
+		}
+
+	} else {
+		renderGraph.layoutTransition(renderTargets[Rendertargets::FinalRender], Layout::Undefined, Layout::TransferDst);
+		renderGraph.blit(sceneFramebuffer, finalFramebuffer);
+		renderGraph.layoutTransition(renderTargets[Rendertargets::FinalRender], Layout::TransferDst, Layout::ColorAttachment);
+	}
+
+	renderGraph.renderPass(std::bind(&SMAADemo::renderGUI, this));
+
+	renderGraph.presentRenderTarget(renderTargets[Rendertargets::FinalRender]);
 
 	renderGraph.build();
 
