@@ -638,6 +638,8 @@ public:
 
 	void mainLoopIteration();
 
+	void processInput();
+
 	bool shouldKeepGoing() const {
 		return keepGoing;
 	}
@@ -2044,26 +2046,9 @@ static void printHelp() {
 }
 
 
-void SMAADemo::mainLoopIteration() {
-	uint64_t ticks   = getNanoseconds();
-	uint64_t elapsed = ticks - lastTime;
-
-	if (fpsLimitActive) {
-		uint64_t nsLimit = 1000000000ULL / fpsLimit;
-		while (elapsed + sleepFudge < nsLimit) {
-			// limit reached, throttle
-			uint64_t nsWait = nsLimit - (elapsed + sleepFudge);
-			std::this_thread::sleep_for(std::chrono::nanoseconds(nsWait));
-			ticks   = getNanoseconds();
-			elapsed = ticks - lastTime;
-		}
-	}
-
-	lastTime = ticks;
-
+void SMAADemo::processInput() {
 	ImGuiIO& io = ImGui::GetIO();
 
-	// TODO: timing
 	SDL_Event event;
 	memset(&event, 0, sizeof(SDL_Event));
 	while (SDL_PollEvent(&event)) {
@@ -2335,6 +2320,27 @@ void SMAADemo::mainLoopIteration() {
 	io.KeyShift = leftShift || rightShift;
 	io.KeyAlt   = leftAlt   || rightAlt;
 	io.KeyCtrl  = leftCtrl  || rightCtrl;
+}
+
+
+void SMAADemo::mainLoopIteration() {
+	uint64_t ticks   = getNanoseconds();
+	uint64_t elapsed = ticks - lastTime;
+
+	if (fpsLimitActive) {
+		uint64_t nsLimit = 1000000000ULL / fpsLimit;
+		while (elapsed + sleepFudge < nsLimit) {
+			// limit reached, throttle
+			uint64_t nsWait = nsLimit - (elapsed + sleepFudge);
+			std::this_thread::sleep_for(std::chrono::nanoseconds(nsWait));
+			ticks   = getNanoseconds();
+			elapsed = ticks - lastTime;
+		}
+	}
+
+	lastTime = ticks;
+
+	processInput();
 
 	updateGUI(elapsed);
 
