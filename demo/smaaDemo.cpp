@@ -2347,40 +2347,6 @@ void SMAADemo::mainLoopIteration() {
 		cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
 	}
 
-	render();
-}
-
-
-void SMAADemo::render() {
-	if (recreateSwapchain) {
-		renderer.setSwapchainDesc(rendererDesc.swapchain);
-	}
-
-	if (recreateSwapchain || recreateFramebuffers) {
-		deleteFramebuffers();
-	}
-
-	if (rebuildRG) {
-		rebuildRenderGraph();
-		assert(!rebuildRG);
-	}
-
-	renderGraph.render(renderer);
-
-	renderer.beginFrame();
-	if (recreateSwapchain || recreateFramebuffers) {
-		recreateSwapchain = false;
-		recreateFramebuffers = false;
-
-		glm::uvec2 size = renderer.getDrawableSize();
-		LOG("drawable size: %ux%u\n", size.x, size.y);
-		logFlush();
-		rendererDesc.swapchain.width  = size.x;
-		rendererDesc.swapchain.height = size.y;
-
-		createFramebuffers();
-	}
-
 	if (temporalAA) {
 		temporalFrame = (temporalFrame + 1) % 2;
 
@@ -2417,6 +2383,40 @@ void SMAADemo::render() {
 			subsampleIndices[0] = glm::vec4(0.0f);
 		}
 		subsampleIndices[1] = glm::vec4(2.0f, 2.0f, 2.0f, 0.0f);
+	}
+
+	render();
+}
+
+
+void SMAADemo::render() {
+	if (recreateSwapchain) {
+		renderer.setSwapchainDesc(rendererDesc.swapchain);
+	}
+
+	if (recreateSwapchain || recreateFramebuffers) {
+		deleteFramebuffers();
+	}
+
+	if (rebuildRG) {
+		rebuildRenderGraph();
+		assert(!rebuildRG);
+	}
+
+	renderGraph.render(renderer);
+
+	renderer.beginFrame();
+	if (recreateSwapchain || recreateFramebuffers) {
+		recreateSwapchain = false;
+		recreateFramebuffers = false;
+
+		glm::uvec2 size = renderer.getDrawableSize();
+		LOG("drawable size: %ux%u\n", size.x, size.y);
+		logFlush();
+		rendererDesc.swapchain.width  = size.x;
+		rendererDesc.swapchain.height = size.y;
+
+		createFramebuffers();
 	}
 
 	renderScene();
