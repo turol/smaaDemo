@@ -628,6 +628,8 @@ public:
 
 	void initRender();
 
+	void createPipelines();
+
 	void rebuildRenderGraph();
 
 	void createFramebuffers();
@@ -1344,6 +1346,11 @@ void SMAADemo::initRender() {
 
 	createFramebuffers();
 
+	createPipelines();
+}
+
+
+void SMAADemo::createPipelines() {
 	{
 		ShaderMacros macros;
 
