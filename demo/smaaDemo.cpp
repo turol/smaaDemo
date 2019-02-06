@@ -2553,10 +2553,14 @@ void RenderGraph::build() {
 }
 
 
-void RenderGraph::render(Renderer & /* renderer */) {
+void RenderGraph::render(Renderer &renderer) {
 	assert(valid);
 
-	// TODO
+	for (const auto &f : functions) {
+		f(renderer);
+	}
+
+	renderer.presentFrame(finalTarget);
 }
 
 
