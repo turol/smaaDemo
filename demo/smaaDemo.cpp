@@ -2409,8 +2409,7 @@ void SMAADemo::render() {
 		assert(!rebuildRG);
 	}
 
-	renderGraph.render(renderer);
-
+	// TODO: this should be in RenderGraph
 	renderer.beginFrame();
 	if (recreateSwapchain || recreateFramebuffers) {
 		recreateSwapchain = false;
@@ -2424,6 +2423,12 @@ void SMAADemo::render() {
 
 		createFramebuffers();
 	}
+
+#if 0
+
+	renderGraph.render(renderer);
+
+#else // 0
 
 	renderScene();
 
@@ -2489,6 +2494,7 @@ void SMAADemo::render() {
 
 	renderer.presentFrame(renderTargets[Rendertargets::FinalRender]);
 
+#endif // 0
 }
 
 
