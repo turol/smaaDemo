@@ -2396,12 +2396,21 @@ void SMAADemo::mainLoopIteration() {
 
 
 void SMAADemo::render() {
+	// this is necessary because we bake rt and fb handles into the graph
+	// FIXME: stop doing that
+	if (temporalAA) {
+		rebuildRG = true;
+	}
+
 	if (recreateSwapchain) {
 		renderer.setSwapchainDesc(rendererDesc.swapchain);
 	}
 
 	if (recreateSwapchain || recreateFramebuffers) {
 		deleteFramebuffers();
+
+		// TODO: shouldn't need this
+		rebuildRG = true;
 	}
 
 	if (rebuildRG) {
@@ -2422,6 +2431,10 @@ void SMAADemo::render() {
 		rendererDesc.swapchain.height = size.y;
 
 		createFramebuffers();
+
+		// TODO: shouldn't need this
+		rebuildRG = true;
+		rebuildRenderGraph();
 	}
 
 #if 0
