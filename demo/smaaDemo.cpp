@@ -632,6 +632,8 @@ public:
 
 	void rebuildRenderGraph();
 
+	void createRenderPasses();
+
 	void createFramebuffers();
 
 	void deleteFramebuffers();
@@ -1279,6 +1281,15 @@ void SMAADemo::initRender() {
 		io.Fonts->TexID = nullptr;
 	}
 
+	createRenderPasses();
+
+	createFramebuffers();
+
+	createPipelines();
+}
+
+
+void SMAADemo::createRenderPasses() {
 	{
 		RenderPassDesc rpDesc;
 		// TODO: check this
@@ -1343,10 +1354,6 @@ void SMAADemo::initRender() {
 		      .color(1, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead);
 		separateRenderPass       = renderer.createRenderPass(rpDesc);
 	}
-
-	createFramebuffers();
-
-	createPipelines();
 }
 
 
