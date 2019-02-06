@@ -536,6 +536,8 @@ class SMAADemo {
 	std::array<RenderPassHandle, 2>                   fxaaRenderPass;
 	RenderPassHandle                                  finalRenderPass;
 	RenderPassHandle                                  separateRenderPass;
+	RenderPassHandle                                  smaaEdgesRenderPass;
+	RenderPassHandle                                  smaaWeightsRenderPass;
 	RenderPassHandle                                  smaaBlendRenderPass;  // for temporal aa, otherwise it's part of final render pass
 	std::array<RenderPassHandle, 2>                   smaa2XBlendRenderPasses;
 	RenderPassHandle                                  guiOnlyRenderPass;
@@ -548,8 +550,6 @@ class SMAADemo {
 
 	std::unordered_map<FXAAKey, PipelineHandle>       fxaaPipelines;
 	std::unordered_map<SMAAKey, SMAAPipelines>        smaaPipelines;
-	RenderPassHandle                                  smaaEdgesRenderPass;
-	RenderPassHandle                                  smaaWeightsRenderPass;
 	TextureHandle                                     areaTex;
 	TextureHandle                                     searchTex;
 
