@@ -409,6 +409,8 @@ struct SMAAPipelines {
 class RenderGraph {
 
 	bool  valid;
+	std::vector<std::function<void(Renderer &)> >  functions;
+	RenderTargetHandle                             finalTarget;
 
 
 	RenderGraph(const RenderGraph &)                = delete;
@@ -2487,30 +2489,43 @@ void SMAADemo::render() {
 void RenderGraph::clear() {
 	valid = false;
 
+	functions.clear();
+}
+
+
+void RenderGraph::renderPass(std::function<void()> f) {
+	assert(!valid);
+
+	functions.push_back([f] (Renderer & /* r */) { f(); } );
+}
+
+
+void RenderGraph::blit(FramebufferHandle source, FramebufferHandle target) {
+	assert(!valid);
+
+	functions.push_back([source, target] (Renderer &r) {
+		r.blit(source, target);
+	} );
+
 	// TODO
 }
 
 
-void RenderGraph::renderPass(std::function<void()> /* f */) {
+void RenderGraph::layoutTransition(RenderTargetHandle image, Layout src, Layout dest) {
+	assert(!valid);
+
+	functions.push_back([image, src, dest] (Renderer &r) {
+		r.layoutTransition(image, src, dest);
+	} );
 
 	// TODO
 }
 
 
-void RenderGraph::blit(FramebufferHandle /* source */, FramebufferHandle /* target */) {
-	// TODO
+void RenderGraph::presentRenderTarget(RenderTargetHandle rt) {
+	assert(!valid);
 
-}
-
-
-void RenderGraph::layoutTransition(RenderTargetHandle /* image */, Layout /* src */, Layout /* dest */) {
-	// TODO
-
-
-}
-
-
-void RenderGraph::presentRenderTarget(RenderTargetHandle /* rt */) {
+	finalTarget = rt;
 
 	// TODO
 }
