@@ -2437,7 +2437,7 @@ void SMAADemo::render() {
 		rebuildRenderGraph();
 	}
 
-#if 0
+#if 1
 
 	renderGraph.render(renderer);
 
