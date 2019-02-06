@@ -1281,22 +1281,27 @@ void SMAADemo::initRender() {
 		RenderPassDesc rpDesc;
 		// TODO: check this
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
-		finalRenderPass       = renderer.createRenderPass(rpDesc.name("final"));
+		rpDesc.name("final");
+		finalRenderPass       = renderer.createRenderPass(rpDesc);
 	}
 
 	{
 		RenderPassDesc rpDesc;
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
-		fxaaRenderPass[0]     = renderer.createRenderPass(rpDesc.name("FXAA no temporal"));
+		rpDesc.name("FXAA no temporal");
+		fxaaRenderPass[0]     = renderer.createRenderPass(rpDesc);
+
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
-		fxaaRenderPass[1]     = renderer.createRenderPass(rpDesc.name("FXAA temporal"));
+		rpDesc.name("FXAA temporal");
+		fxaaRenderPass[1]     = renderer.createRenderPass(rpDesc);
 	}
 
 	{
 		RenderPassDesc rpDesc;
 		// FIXME: should be RGBA since SMAA wants gamma space?
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
-		smaaBlendRenderPass   = renderer.createRenderPass(rpDesc.name("SMAA blend"));
+		rpDesc.name("SMAA blend");
+		smaaBlendRenderPass   = renderer.createRenderPass(rpDesc);
 	}
 
 	for (unsigned int i = 0; i < 2; i++) {
@@ -1307,21 +1312,26 @@ void SMAADemo::initRender() {
 			assert(i == 1);
 			rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::ColorAttachment);
 		}
-		smaa2XBlendRenderPasses[i] = renderer.createRenderPass(rpDesc.name("SMAA2x blend " + std::to_string(i)));
+		rpDesc.name("SMAA2x blend " + std::to_string(i));
+		smaa2XBlendRenderPasses[i] = renderer.createRenderPass(rpDesc);
 	}
 
 	{
 		RenderPassDesc rpDesc;
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::TransferSrc);
-		guiOnlyRenderPass     = renderer.createRenderPass(rpDesc.name("GUI only"));
+		rpDesc.name("GUI only");
+		guiOnlyRenderPass     = renderer.createRenderPass(rpDesc);
 	}
 
 	{
 		RenderPassDesc rpDesc;
 		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
 
-		smaaEdgesRenderPass   = renderer.createRenderPass(rpDesc.name("SMAA edges"));
-		smaaWeightsRenderPass = renderer.createRenderPass(rpDesc.name("SMAA weights"));
+		rpDesc.name("SMAA edges");
+		smaaEdgesRenderPass   = renderer.createRenderPass(rpDesc);
+
+		rpDesc.name("SMAA weights");
+		smaaWeightsRenderPass = renderer.createRenderPass(rpDesc);
 	}
 
 	{
