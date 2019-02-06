@@ -525,18 +525,20 @@ class SMAADemo {
 
 	RenderTargetHandle                                renderTargets[Rendertargets::Count];
 
+	FramebufferHandle                                 sceneFramebuffer;
 	FramebufferHandle                                 separateFB;
+	FramebufferHandle                                 finalFramebuffer;
+	std::array<FramebufferHandle, 2>                  resolveFBs;
+	FramebufferHandle                                 smaaEdgesFramebuffer;
+	FramebufferHandle                                 smaaWeightsFramebuffer;
 
 	std::unordered_map<SceneRPKey, RenderPassHandle>  sceneRenderPasses;
-	FramebufferHandle                                 sceneFramebuffer;
 	std::array<RenderPassHandle, 2>                   fxaaRenderPass;
 	RenderPassHandle                                  finalRenderPass;
 	RenderPassHandle                                  separateRenderPass;
 	RenderPassHandle                                  smaaBlendRenderPass;  // for temporal aa, otherwise it's part of final render pass
 	std::array<RenderPassHandle, 2>                   smaa2XBlendRenderPasses;
 	RenderPassHandle                                  guiOnlyRenderPass;
-	FramebufferHandle                                 finalFramebuffer;
-	std::array<FramebufferHandle, 2>                  resolveFBs;
 
 	BufferHandle                                      cubeVBO;
 	BufferHandle                                      cubeIBO;
@@ -546,8 +548,6 @@ class SMAADemo {
 
 	std::unordered_map<FXAAKey, PipelineHandle>       fxaaPipelines;
 	std::unordered_map<SMAAKey, SMAAPipelines>        smaaPipelines;
-	FramebufferHandle                                 smaaEdgesFramebuffer;
-	FramebufferHandle                                 smaaWeightsFramebuffer;
 	RenderPassHandle                                  smaaEdgesRenderPass;
 	RenderPassHandle                                  smaaWeightsRenderPass;
 	TextureHandle                                     areaTex;
