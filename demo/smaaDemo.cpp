@@ -2437,77 +2437,7 @@ void SMAADemo::render() {
 		rebuildRenderGraph();
 	}
 
-#if 1
-
 	renderGraph.render(renderer);
-
-#else // 0
-
-	renderScene();
-
-	if (antialiasing) {
-		switch (aaMethod) {
-		case AAMethod::MSAA: {
-			if (false) {
-				resolveMSAATemporal(renderTargets[Rendertargets::Resolve1 + temporalFrame]);
-
-				renderTemporalAA();
-			} else {
-				resolveMSAA(renderTargets[FinalRender]);
-			}
-		} break;
-
-		case AAMethod::FXAA: {
-			renderFXAA();
-
-			if (temporalAA) {
-				renderTemporalAA();
-			}
-		} break;
-
-		case AAMethod::SMAA: {
-			if (temporalAA) {
-				renderSMAA(renderTargets[MainColor], smaaBlendRenderPass, resolveFBs[temporalFrame], 0);
-			} else {
-				renderSMAA(renderTargets[MainColor], finalRenderPass, finalFramebuffer, 0);
-			}
-
-			if (temporalAA) {
-				renderTemporalAA();
-			}
-		} break;
-
-		case AAMethod::SMAA2X: {
-			renderSeparate();
-
-			// TODO: clean up the renderpass mess
-			if (temporalAA) {
-				renderSMAA(renderTargets[Subsample1], smaa2XBlendRenderPasses[0], resolveFBs[temporalFrame], 0);
-				renderSMAA(renderTargets[Subsample2], smaa2XBlendRenderPasses[1], resolveFBs[temporalFrame], 1);
-			} else {
-				renderSMAA(renderTargets[Subsample1], smaa2XBlendRenderPasses[0], finalFramebuffer, 0);
-				renderSMAA(renderTargets[Subsample2], smaa2XBlendRenderPasses[1], finalFramebuffer, 1);
-			}
-
-			if (temporalAA) {
-				// FIXME: move to renderpass
-				renderer.layoutTransition(renderTargets[Rendertargets::Resolve1 + temporalFrame], Layout::ColorAttachment, Layout::ShaderRead);
-				renderTemporalAA();
-			}
-		} break;
-		}
-
-	} else {
-		renderer.layoutTransition(renderTargets[Rendertargets::FinalRender], Layout::Undefined, Layout::TransferDst);
-		renderer.blit(sceneFramebuffer, finalFramebuffer);
-		renderer.layoutTransition(renderTargets[Rendertargets::FinalRender], Layout::TransferDst, Layout::ColorAttachment);
-	}
-
-	renderGUI();
-
-	renderer.presentFrame(renderTargets[Rendertargets::FinalRender]);
-
-#endif // 0
 }
 
 
