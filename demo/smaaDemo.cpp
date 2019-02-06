@@ -434,6 +434,10 @@ public:
 
 	void renderPass(std::function<void()> f);
 
+	void blit(FramebufferHandle source, FramebufferHandle target);
+
+	void layoutTransition(RenderTargetHandle image, Layout src, Layout dest);
+
 	void presentRenderTarget(RenderTargetHandle rt);
 
 	void build();
@@ -2427,6 +2431,19 @@ void RenderGraph::clear() {
 void RenderGraph::renderPass(std::function<void()> /* f */) {
 
 	// TODO
+}
+
+
+void RenderGraph::blit(FramebufferHandle /* source */, FramebufferHandle /* target */) {
+	// TODO
+
+}
+
+
+void RenderGraph::layoutTransition(RenderTargetHandle /* image */, Layout /* src */, Layout /* dest */) {
+	// TODO
+
+
 }
 
 
