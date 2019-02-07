@@ -1282,8 +1282,6 @@ void SMAADemo::initRender() {
 	}
 
 	createRenderPasses();
-
-	createFramebuffers();
 }
 
 
@@ -1519,6 +1517,8 @@ void SMAADemo::rebuildRenderGraph() {
 	assert(rebuildRG);
 
 	renderGraph.clear();
+
+	createFramebuffers();
 
 	Layout l = Layout::ShaderRead;
 	if (!antialiasing || aaMethod == AAMethod::MSAA) {
