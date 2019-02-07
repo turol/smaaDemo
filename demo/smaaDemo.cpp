@@ -1284,8 +1284,6 @@ void SMAADemo::initRender() {
 	createRenderPasses();
 
 	createFramebuffers();
-
-	createPipelines();
 }
 
 
@@ -1596,6 +1594,8 @@ void SMAADemo::rebuildRenderGraph() {
 	renderGraph.presentRenderTarget(renderTargets[Rendertargets::FinalRender]);
 
 	renderGraph.build();
+
+	createPipelines();
 
 	rebuildRG = false;
 }
