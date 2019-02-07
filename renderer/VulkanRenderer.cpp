@@ -779,10 +779,7 @@ RendererImpl::~RendererImpl() {
 	} );
 
 	pipelines.clearWith([this](Pipeline &p) {
-		this->device.destroyPipelineLayout(p.layout);
-		p.layout = vk::PipelineLayout();
-		this->device.destroyPipeline(p.pipeline);
-		p.pipeline = vk::Pipeline();
+		deletePipelineInternal(p);
 	} );
 
 	framebuffers.clearWith([this](Framebuffer &fb) {
@@ -2601,6 +2598,14 @@ void RendererImpl::deleteFramebufferInternal(Framebuffer &fb) {
 	fb.framebuffer = vk::Framebuffer();
 	fb.width       = 0;
 	fb.height      = 0;
+}
+
+
+void RendererImpl::deletePipelineInternal(Pipeline &p) {
+	device.destroyPipelineLayout(p.layout);
+	p.layout = vk::PipelineLayout();
+	device.destroyPipeline(p.pipeline);
+	p.pipeline = vk::Pipeline();
 }
 
 

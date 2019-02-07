@@ -981,6 +981,7 @@ struct RendererImpl : public RendererBase {
 
 	void deleteBufferInternal(Buffer &b);
 	void deleteFramebufferInternal(Framebuffer &fb);
+	void deletePipelineInternal(Pipeline &p);
 	void deleteRenderPassInternal(RenderPass &rp);
 	void deleteRenderTargetInternal(RenderTarget &rt);
 	void deleteResourceInternal(Resource &r);
