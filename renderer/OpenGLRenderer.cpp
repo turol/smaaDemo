@@ -1735,6 +1735,7 @@ void RendererImpl::beginFrame() {
 	}
 #endif //  NDEBUG
 
+	currentPipeline        = PipelineHandle();
 	currentFrameIdx        = frameNum % frames.size();
 	assert(currentFrameIdx < frames.size());
 	auto &frame            = frames.at(currentFrameIdx);
