@@ -1280,8 +1280,6 @@ void SMAADemo::initRender() {
 		imguiFontsTex = renderer.createTexture(texDesc);
 		io.Fonts->TexID = nullptr;
 	}
-
-	createRenderPasses();
 }
 
 
@@ -1517,6 +1515,8 @@ void SMAADemo::rebuildRenderGraph() {
 	assert(rebuildRG);
 
 	renderGraph.clear();
+
+	createRenderPasses();
 
 	createFramebuffers();
 
