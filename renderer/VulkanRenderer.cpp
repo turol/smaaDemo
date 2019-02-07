@@ -45,6 +45,10 @@ struct ResourceHasher final : public boost::static_visitor<size_t> {
 		return fb.getHash();
 	}
 
+	size_t operator()(const Pipeline &p) const {
+		return p.getHash();
+	}
+
 	size_t operator()(const RenderPass &rp) const {
 		return rp.getHash();
 	}

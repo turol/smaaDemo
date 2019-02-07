@@ -666,7 +666,7 @@ struct VertexShader {
 };
 
 
-typedef boost::variant<Buffer, Framebuffer, RenderPass, RenderTarget, Sampler, Texture> Resource;
+typedef boost::variant<Buffer, Framebuffer, Pipeline, RenderPass, RenderTarget, Sampler, Texture> Resource;
 
 
 }	// namespace renderer
@@ -1017,6 +1017,10 @@ struct RendererImpl : public RendererBase {
 
 		void operator()(Framebuffer &fb) const {
 			r->deleteFramebufferInternal(fb);
+		}
+
+		void operator()(Pipeline &p) const {
+			r->deletePipelineInternal(p);
 		}
 
 		void operator()(RenderPass &rp) const {
