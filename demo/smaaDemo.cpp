@@ -1516,6 +1516,15 @@ void SMAADemo::rebuildRenderGraph() {
 
 	renderGraph.clear();
 
+	if (antialiasing && aaMethod == AAMethod::MSAA) {
+		numSamples = msaaQualityToSamples(msaaQuality);
+		assert(numSamples > 1);
+	} else if (antialiasing && aaMethod == AAMethod::SMAA2X) {
+		numSamples = 2;
+	} else {
+		numSamples = 1;
+	}
+
 	createRenderPasses();
 
 	createFramebuffers();
@@ -1806,15 +1815,6 @@ void SMAADemo::loadImage(const std::string &filename) {
 void SMAADemo::createFramebuffers() {
 	if (sceneFramebuffer) {
 		deleteFramebuffers();
-	}
-
-	if (antialiasing && aaMethod == AAMethod::MSAA) {
-		numSamples = msaaQualityToSamples(msaaQuality);
-		assert(numSamples > 1);
-	} else if (antialiasing && aaMethod == AAMethod::SMAA2X) {
-		numSamples = 2;
-	} else {
-		numSamples = 1;
 	}
 
 	const unsigned int windowWidth  = rendererDesc.swapchain.width;
