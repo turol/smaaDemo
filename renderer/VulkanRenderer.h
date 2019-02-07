@@ -338,6 +338,16 @@ struct Pipeline {
 		assert(!pipeline);
 		assert(!layout);
 	}
+
+
+	bool operator==(const Pipeline &other) const {
+		return this->pipeline == other.pipeline;
+	}
+
+
+	size_t getHash() const {
+		return VK_HASH(VkPipeline(pipeline));
+	}
 };
 
 
