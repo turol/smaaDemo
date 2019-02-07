@@ -1290,6 +1290,48 @@ void SMAADemo::initRender() {
 
 
 void SMAADemo::createRenderPasses() {
+	if (finalRenderPass) {
+		renderer.deleteRenderPass(finalRenderPass);
+		finalRenderPass = RenderPassHandle();
+	}
+
+	for (unsigned int i = 0; i < 2; i++) {
+		if (fxaaRenderPass[i]) {
+			renderer.deleteRenderPass(fxaaRenderPass[i]);
+			fxaaRenderPass[i] = RenderPassHandle();
+		}
+
+		if (smaa2XBlendRenderPasses[i]) {
+			renderer.deleteRenderPass(smaa2XBlendRenderPasses[i]);
+			smaa2XBlendRenderPasses[i] = RenderPassHandle();
+		}
+	}
+
+	if (smaaBlendRenderPass) {
+		renderer.deleteRenderPass(smaaBlendRenderPass);
+		smaaBlendRenderPass = RenderPassHandle();
+	}
+
+	if (guiOnlyRenderPass) {
+		renderer.deleteRenderPass(guiOnlyRenderPass);
+		guiOnlyRenderPass = RenderPassHandle();
+	}
+
+	if (smaaEdgesRenderPass) {
+		renderer.deleteRenderPass(smaaEdgesRenderPass);
+		smaaEdgesRenderPass = RenderPassHandle();
+	}
+
+	if (smaaWeightsRenderPass) {
+		renderer.deleteRenderPass(smaaWeightsRenderPass);
+		smaaWeightsRenderPass = RenderPassHandle();
+	}
+
+	if (separateRenderPass) {
+		renderer.deleteRenderPass(separateRenderPass);
+		separateRenderPass = RenderPassHandle();
+	}
+
 	{
 		RenderPassDesc rpDesc;
 		// TODO: check this
