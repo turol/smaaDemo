@@ -1400,6 +1400,33 @@ void SMAADemo::createRenderPasses() {
 
 
 void SMAADemo::createPipelines() {
+	if (imagePipeline) {
+		renderer.deletePipeline(imagePipeline);
+		imagePipeline = PipelineHandle();
+	}
+
+	if (blitPipeline) {
+		renderer.deletePipeline(blitPipeline);
+		blitPipeline = PipelineHandle();
+	}
+
+	if (guiPipeline) {
+		renderer.deletePipeline(guiPipeline);
+		guiPipeline = PipelineHandle();
+	}
+
+	for (unsigned int i = 0; i < 2; i++) {
+		if (temporalAAPipelines[i]) {
+			renderer.deletePipeline(temporalAAPipelines[i]);
+			temporalAAPipelines[i] = PipelineHandle();
+		}
+	}
+
+	if (separatePipeline) {
+		renderer.deletePipeline(separatePipeline);
+		separatePipeline = PipelineHandle();
+	}
+
 	{
 		ShaderMacros macros;
 
