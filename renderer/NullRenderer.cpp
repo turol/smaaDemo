@@ -235,6 +235,10 @@ void RendererImpl::deleteFramebuffer(FramebufferHandle /*  */) {
 }
 
 
+void RendererImpl::deletePipeline(PipelineHandle /* handle */) {
+}
+
+
 void RendererImpl::deleteRenderPass(RenderPassHandle /* fbo */) {
 }
 

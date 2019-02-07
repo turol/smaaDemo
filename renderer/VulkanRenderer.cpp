@@ -1870,6 +1870,14 @@ void RendererImpl::deleteFramebuffer(FramebufferHandle handle) {
 }
 
 
+void RendererImpl::deletePipeline(PipelineHandle handle) {
+	pipelines.removeWith(handle, [this](Pipeline &p) {
+		// TODO: if lastUsedFrame has already been synced we could delete immediately
+		this->deleteResources.emplace_back(std::move(p));
+	} );
+}
+
+
 void RendererImpl::deleteRenderPass(RenderPassHandle handle) {
 	renderPasses.removeWith(handle, [this](RenderPass &rp) {
 		// TODO: if lastUsedFrame has already been synced we could delete immediately

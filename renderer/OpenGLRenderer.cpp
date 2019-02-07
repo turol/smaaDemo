@@ -1523,6 +1523,15 @@ void RendererImpl::deleteFramebuffer(FramebufferHandle handle) {
 }
 
 
+void RendererImpl::deletePipeline(PipelineHandle handle) {
+	pipelines.removeWith(handle, [](Pipeline &p) {
+		assert(p.shader != 0);
+		glDeleteProgram(p.shader);
+		p.shader = 0;
+	} );
+}
+
+
 void RendererImpl::deleteRenderPass(RenderPassHandle handle) {
 	renderPasses.removeWith(handle, [](RenderPass &) {
 	} );

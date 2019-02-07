@@ -717,6 +717,7 @@ struct RendererImpl : public RendererBase {
 
 	void deleteBuffer(BufferHandle handle);
 	void deleteFramebuffer(FramebufferHandle fbo);
+	void deletePipeline(PipelineHandle handle);
 	void deleteRenderPass(RenderPassHandle fbo);
 	void deleteSampler(SamplerHandle handle);
 	void deleteTexture(TextureHandle handle);

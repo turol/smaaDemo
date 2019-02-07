@@ -881,6 +881,7 @@ public:
 
 	void deleteBuffer(BufferHandle handle);
 	void deleteFramebuffer(FramebufferHandle fbo);
+	void deletePipeline(PipelineHandle handle);
 	void deleteRenderPass(RenderPassHandle fbo);
 	void deleteRenderTarget(RenderTargetHandle &fbo);
 	void deleteSampler(SamplerHandle handle);

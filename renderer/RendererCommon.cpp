@@ -855,6 +855,11 @@ void Renderer::deleteFramebuffer(FramebufferHandle handle) {
 }
 
 
+void Renderer::deletePipeline(PipelineHandle handle) {
+	impl->deletePipeline(handle);
+}
+
+
 void Renderer::deleteRenderPass(RenderPassHandle handle) {
 	impl->deleteRenderPass(handle);
 }
