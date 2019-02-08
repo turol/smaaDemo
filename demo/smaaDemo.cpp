@@ -1563,10 +1563,10 @@ void SMAADemo::rebuildRenderGraph() {
 			// TODO: inline SMAA render here
 			if (temporalAA) {
 				int pass = 0;
-				renderGraph.renderPass(smaaEdgesRenderPass, std::bind(&SMAADemo::renderSMAA, this, renderTargets[MainColor], smaaBlendRenderPass, resolveFBs[temporalFrame], pass));
+				addSMAARenderGraph(renderTargets[MainColor], smaaBlendRenderPass, resolveFBs[temporalFrame], pass);
 			} else {
 				int pass = 0;
-				renderGraph.renderPass(smaaEdgesRenderPass, std::bind(&SMAADemo::renderSMAA, this, renderTargets[MainColor], finalRenderPass, finalFramebuffer, pass));
+				addSMAARenderGraph(renderTargets[MainColor], finalRenderPass, finalFramebuffer, pass);
 			}
 
 			if (temporalAA) {
@@ -1582,14 +1582,14 @@ void SMAADemo::rebuildRenderGraph() {
 			if (temporalAA) {
 				// FIXME: wrong render pass, SMAA render is multiple passes
 				int pass = 0;
-				renderGraph.renderPass(smaaEdgesRenderPass, std::bind(&SMAADemo::renderSMAA, this, renderTargets[Subsample1], smaa2XBlendRenderPasses[0], resolveFBs[temporalFrame], pass));
+				addSMAARenderGraph(renderTargets[Subsample1], smaa2XBlendRenderPasses[0], resolveFBs[temporalFrame], pass);
 				pass = 1;
-				renderGraph.renderPass(smaaEdgesRenderPass, std::bind(&SMAADemo::renderSMAA, this, renderTargets[Subsample2], smaa2XBlendRenderPasses[1], resolveFBs[temporalFrame], pass));
+				addSMAARenderGraph(renderTargets[Subsample2], smaa2XBlendRenderPasses[1], resolveFBs[temporalFrame], pass);
 			} else {
 				int pass = 0;
-				renderGraph.renderPass(smaaEdgesRenderPass, std::bind(&SMAADemo::renderSMAA, this, renderTargets[Subsample1], smaa2XBlendRenderPasses[0], finalFramebuffer, pass));
+				addSMAARenderGraph(renderTargets[Subsample1], smaa2XBlendRenderPasses[0], finalFramebuffer, pass);
 				pass = 1;
-				renderGraph.renderPass(smaaEdgesRenderPass, std::bind(&SMAADemo::renderSMAA, this, renderTargets[Subsample2], smaa2XBlendRenderPasses[1], finalFramebuffer, pass));
+				addSMAARenderGraph(renderTargets[Subsample2], smaa2XBlendRenderPasses[1], finalFramebuffer, pass);
 			}
 
 			if (temporalAA) {
