@@ -585,11 +585,11 @@ class SMAADemo {
 
 	void renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass);
 
-	void renderSMAAEdges(RenderTargetHandle input, BufferHandle smaaUBOBuf);
+	void renderSMAAEdges(RenderTargetHandle input, int pass);
 
-	void renderSMAAWeights(BufferHandle smaaUBOBuf);
+	void renderSMAAWeights(int pass);
 
-	void renderSMAABlend(RenderPassHandle renderpass, FramebufferHandle outputFB, RenderTargetHandle input, BufferHandle smaaUBOBuf, int pass);
+	void renderSMAABlend(RenderPassHandle renderpass, FramebufferHandle outputFB, RenderTargetHandle input, int pass);
 
 	void renderSMAADebug(RenderPassHandle renderpass, FramebufferHandle outputFB, Rendertargets rt);
 
@@ -2781,27 +2781,17 @@ void SMAADemo::renderSeparate() {
 
 
 void SMAADemo::renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass) {
-	ShaderDefines::SMAAUBO smaaUBO;
-	smaaUBO.smaaParameters        = smaaParameters;
-	smaaUBO.predicationThreshold  = predicationThreshold;
-	smaaUBO.predicationScale      = predicationScale;
-	smaaUBO.predicationStrength   = predicationStrength;
-	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
-	smaaUBO.subsampleIndices      = subsampleIndices[pass];
-
-	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
-
 	// edges pass
-	renderSMAAEdges(input, smaaUBOBuf);
+	renderSMAAEdges(input, pass);
 
 	// blendweights pass
-	renderSMAAWeights(smaaUBOBuf);
+	renderSMAAWeights(pass);
 
 	// final blending pass/debug pass
 	switch (debugMode) {
 	case 0: {
 		// full effect
-		renderSMAABlend(renderPass, outputFB, input, smaaUBOBuf, pass);
+		renderSMAABlend(renderPass, outputFB, input, pass);
 
 	} break;
 
@@ -2820,10 +2810,21 @@ void SMAADemo::renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass,
 }
 
 
-void SMAADemo::renderSMAAEdges(RenderTargetHandle input, BufferHandle smaaUBOBuf) {
+void SMAADemo::renderSMAAEdges(RenderTargetHandle input, int pass) {
 	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
 	renderer.beginRenderPass(smaaEdgesRenderPass, smaaEdgesFramebuffer);
 	renderer.bindPipeline(pipelines.edgePipeline);
+
+	// TODO: this is redundant, clean it up
+	ShaderDefines::SMAAUBO smaaUBO;
+	smaaUBO.smaaParameters        = smaaParameters;
+	smaaUBO.predicationThreshold  = predicationThreshold;
+	smaaUBO.predicationScale      = predicationScale;
+	smaaUBO.predicationStrength   = predicationStrength;
+	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
+	smaaUBO.subsampleIndices      = subsampleIndices[pass];
+
+	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
 
 	EdgeDetectionDS edgeDS;
 	edgeDS.smaaUBO = smaaUBOBuf;
@@ -2841,9 +2842,21 @@ void SMAADemo::renderSMAAEdges(RenderTargetHandle input, BufferHandle smaaUBOBuf
 }
 
 
-void SMAADemo::renderSMAAWeights(BufferHandle smaaUBOBuf) {
+void SMAADemo::renderSMAAWeights(int pass) {
 	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
 	renderer.beginRenderPass(smaaWeightsRenderPass, smaaWeightsFramebuffer);
+
+	// TODO: this is redundant, clean it up
+	ShaderDefines::SMAAUBO smaaUBO;
+	smaaUBO.smaaParameters        = smaaParameters;
+	smaaUBO.predicationThreshold  = predicationThreshold;
+	smaaUBO.predicationScale      = predicationScale;
+	smaaUBO.predicationStrength   = predicationStrength;
+	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
+	smaaUBO.subsampleIndices      = subsampleIndices[pass];
+
+	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
+
 	renderer.bindPipeline(pipelines.blendWeightPipeline);
 	BlendWeightDS blendWeightDS;
 	blendWeightDS.smaaUBO           = smaaUBOBuf;
@@ -2861,9 +2874,20 @@ void SMAADemo::renderSMAAWeights(BufferHandle smaaUBOBuf) {
 }
 
 
-void SMAADemo::renderSMAABlend(RenderPassHandle renderpass, FramebufferHandle outputFB, RenderTargetHandle input, BufferHandle smaaUBOBuf, int pass) {
+void SMAADemo::renderSMAABlend(RenderPassHandle renderpass, FramebufferHandle outputFB, RenderTargetHandle input, int pass) {
 	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
 	renderer.beginRenderPass(renderpass, outputFB);
+
+	// TODO: this is redundant, clean it up
+	ShaderDefines::SMAAUBO smaaUBO;
+	smaaUBO.smaaParameters        = smaaParameters;
+	smaaUBO.predicationThreshold  = predicationThreshold;
+	smaaUBO.predicationScale      = predicationScale;
+	smaaUBO.predicationStrength   = predicationStrength;
+	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
+	smaaUBO.subsampleIndices      = subsampleIndices[pass];
+
+	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
 
 		// full effect
 		renderer.bindPipeline(pipelines.neighborPipelines[pass]);
