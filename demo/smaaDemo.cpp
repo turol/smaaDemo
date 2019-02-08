@@ -2781,27 +2781,36 @@ void SMAADemo::renderSeparate() {
 
 
 void SMAADemo::renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass) {
-	// edges pass
-	renderSMAAEdges(input, pass);
-
-	// blendweights pass
-	renderSMAAWeights(pass);
-
 	// final blending pass/debug pass
 	switch (debugMode) {
 	case 0: {
+		// edges pass
+		renderSMAAEdges(input, pass);
+
+		// blendweights pass
+		renderSMAAWeights(pass);
+
 		// full effect
 		renderSMAABlend(renderPass, outputFB, input, pass);
 
 	} break;
 
 	case 1: {
+		// edges pass
+		renderSMAAEdges(input, pass);
+
 		// visualize edges
 		renderSMAADebug(renderPass, outputFB, Rendertargets::Edges);
 
 	} break;
 
 	case 2: {
+		// edges pass
+		renderSMAAEdges(input, pass);
+
+		// blendweights pass
+		renderSMAAWeights(pass);
+
 		// visualize blend weights
 		renderSMAADebug(renderPass, outputFB, Rendertargets::BlendWeights);
 	} break;
