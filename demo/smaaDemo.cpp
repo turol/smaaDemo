@@ -2265,6 +2265,7 @@ void SMAADemo::processInput() {
 					}
 					msaaQuality = msaaQuality % maxMSAAQuality;
 					recreateFramebuffers = true;
+					rebuildRG            = true;
 					break;
 
 				case AAMethod::FXAA:
