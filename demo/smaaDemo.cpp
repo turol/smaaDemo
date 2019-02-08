@@ -583,6 +583,8 @@ class SMAADemo {
 
 	void renderSeparate();
 
+	void addSMAARenderGraph(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass);
+
 	void renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass);
 
 	void renderSMAAEdges(RenderTargetHandle input, int pass);
@@ -2783,6 +2785,45 @@ void SMAADemo::renderSeparate() {
 			renderer.bindDescriptorSet(1, separateDS);
 			renderer.draw(0, 3);
 			renderer.endRenderPass();
+}
+
+
+void SMAADemo::addSMAARenderGraph(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass) {
+	// final blending pass/debug pass
+	switch (debugMode) {
+	case 0: {
+		// edges pass
+		renderGraph.renderPass(smaaEdgesRenderPass, std::bind(&SMAADemo::renderSMAAEdges, this, input, pass));
+
+		// blendweights pass
+		renderGraph.renderPass(smaaWeightsRenderPass, std::bind(&SMAADemo::renderSMAAWeights, this, pass));
+
+		// full effect
+		renderGraph.renderPass(renderPass, std::bind(&SMAADemo::renderSMAABlend, this, renderPass, outputFB, input, pass));
+
+	} break;
+
+	case 1: {
+		// edges pass
+		renderGraph.renderPass(smaaEdgesRenderPass, std::bind(&SMAADemo::renderSMAAEdges, this, input, pass));
+
+		// visualize edges
+		renderGraph.renderPass(renderPass, std::bind(&SMAADemo::renderSMAADebug, this, renderPass, outputFB, Rendertargets::Edges));
+
+	} break;
+
+	case 2: {
+		// edges pass
+		renderGraph.renderPass(smaaEdgesRenderPass, std::bind(&SMAADemo::renderSMAAEdges, this, input, pass));
+
+		// blendweights pass
+		renderGraph.renderPass(smaaWeightsRenderPass, std::bind(&SMAADemo::renderSMAAWeights, this, pass));
+
+		// visualize blend weights
+		renderGraph.renderPass(renderPass, std::bind(&SMAADemo::renderSMAADebug, this, renderPass, outputFB, Rendertargets::BlendWeights));
+	} break;
+
+	}
 }
 
 
