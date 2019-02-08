@@ -585,8 +585,6 @@ class SMAADemo {
 
 	void addSMAARenderGraph(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass);
 
-	void renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass);
-
 	void renderSMAAEdges(RenderTargetHandle input, int pass);
 
 	void renderSMAAWeights(int pass);
@@ -2821,45 +2819,6 @@ void SMAADemo::addSMAARenderGraph(RenderTargetHandle input, RenderPassHandle ren
 
 		// visualize blend weights
 		renderGraph.renderPass(renderPass, std::bind(&SMAADemo::renderSMAADebug, this, renderPass, outputFB, Rendertargets::BlendWeights));
-	} break;
-
-	}
-}
-
-
-void SMAADemo::renderSMAA(RenderTargetHandle input, RenderPassHandle renderPass, FramebufferHandle outputFB, int pass) {
-	// final blending pass/debug pass
-	switch (debugMode) {
-	case 0: {
-		// edges pass
-		renderSMAAEdges(input, pass);
-
-		// blendweights pass
-		renderSMAAWeights(pass);
-
-		// full effect
-		renderSMAABlend(renderPass, outputFB, input, pass);
-
-	} break;
-
-	case 1: {
-		// edges pass
-		renderSMAAEdges(input, pass);
-
-		// visualize edges
-		renderSMAADebug(renderPass, outputFB, Rendertargets::Edges);
-
-	} break;
-
-	case 2: {
-		// edges pass
-		renderSMAAEdges(input, pass);
-
-		// blendweights pass
-		renderSMAAWeights(pass);
-
-		// visualize blend weights
-		renderSMAADebug(renderPass, outputFB, Rendertargets::BlendWeights);
 	} break;
 
 	}
