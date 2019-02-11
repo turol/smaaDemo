@@ -1592,9 +1592,7 @@ void SMAADemo::rebuildRenderGraph() {
 		}
 
 	} else {
-		renderGraph.layoutTransition(renderTargets[Rendertargets::FinalRender], Layout::Undefined, Layout::TransferDst);
 		renderGraph.blit(renderTargets[Rendertargets::FinalRender], sceneFramebuffer, finalFramebuffer);
-		renderGraph.layoutTransition(renderTargets[Rendertargets::FinalRender], Layout::TransferDst, Layout::ColorAttachment);
 	}
 
 	renderGraph.renderPass(guiOnlyRenderPass, std::bind(&SMAADemo::renderGUI, this));
@@ -2570,11 +2568,13 @@ void RenderGraph::resolveMSAA(RenderTargetHandle /* source */, FramebufferHandle
 }
 
 
-void RenderGraph::blit(RenderTargetHandle /* targetRT */, FramebufferHandle source, FramebufferHandle target) {
+void RenderGraph::blit(RenderTargetHandle targetRT, FramebufferHandle source, FramebufferHandle target) {
 	assert(!valid);
 
-	functions.push_back([source, target] (Renderer &r) {
+	functions.push_back([targetRT, source, target] (Renderer &r) {
+		r.layoutTransition(targetRT, Layout::Undefined, Layout::TransferDst);
 		r.blit(source, target);
+		r.layoutTransition(targetRT, Layout::TransferDst, Layout::ColorAttachment);
 	} );
 
 	// TODO
