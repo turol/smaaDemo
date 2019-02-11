@@ -577,8 +577,6 @@ class SMAADemo {
 
 	void resolveMSAA(RenderTargetHandle targetRT);
 
-	void resolveMSAATemporal(RenderTargetHandle targetRT);
-
 	void renderFXAA();
 
 	void renderSeparate();
@@ -1538,15 +1536,9 @@ void SMAADemo::rebuildRenderGraph() {
 	if (antialiasing) {
 		switch (aaMethod) {
 		case AAMethod::MSAA: {
-			if (false) {
-				renderGraph.renderPass(finalRenderPass, std::bind(&SMAADemo::resolveMSAATemporal, this, renderTargets[Rendertargets::Resolve1 + temporalFrame]));
-
-				renderGraph.renderPass(finalRenderPass, std::bind(&SMAADemo::renderTemporalAA, this));
-			} else {
 				// FIXME: should not be a renderpass
 				// should be a resolve operation
 				renderGraph.renderPass(finalRenderPass, std::bind(&SMAADemo::resolveMSAA, this, renderTargets[FinalRender]));
-			}
 		} break;
 
 		case AAMethod::FXAA: {
@@ -1918,7 +1910,7 @@ void SMAADemo::createFramebuffers() {
 		smaaWeightsFramebuffer = renderer.createFramebuffer(fbDesc);
 	}
 
-	if (temporalAA) {
+	if (temporalAA && aaMethod != AAMethod::MSAA) {
 		temporalAAFirstFrame = true;
 		RenderTargetDesc rtDesc;
 		rtDesc.name("Temporal resolve 0")
@@ -2216,7 +2208,7 @@ void SMAADemo::processInput() {
 				if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
 					recreateFramebuffers = true;
 				}
-				if (temporalAA) {
+				if (temporalAA && aaMethod != AAMethod::MSAA) {
 					temporalAAFirstFrame = true;
 				}
 				rebuildRG = true;
@@ -2462,7 +2454,7 @@ void SMAADemo::mainLoopIteration() {
 		cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
 	}
 
-	if (temporalAA) {
+	if (temporalAA && aaMethod != AAMethod::MSAA) {
 		temporalFrame = (temporalFrame + 1) % 2;
 
 		switch (aaMethod) {
@@ -2507,7 +2499,7 @@ void SMAADemo::mainLoopIteration() {
 void SMAADemo::render() {
 	// this is necessary because we bake rt and fb handles into the graph
 	// FIXME: stop doing that
-	if (temporalAA) {
+	if (temporalAA && aaMethod != AAMethod::MSAA) {
 		rebuildRG = true;
 	}
 
@@ -2655,7 +2647,7 @@ void SMAADemo::renderCubeScene() {
 		glm::mat4 viewProj = proj * view * model;
 
 		// temporal jitter
-		if (temporalAA) {
+		if (temporalAA && aaMethod != AAMethod::MSAA) {
 			glm::vec2 jitter;
 			if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
 				const glm::vec2 jitters[2] = {
@@ -2744,14 +2736,6 @@ void SMAADemo::renderImageScene() {
 void SMAADemo::resolveMSAA(RenderTargetHandle targetRT) {
 				renderer.layoutTransition(targetRT, Layout::Undefined, Layout::TransferDst);
 				renderer.resolveMSAA(sceneFramebuffer, finalFramebuffer);
-				renderer.layoutTransition(targetRT, Layout::TransferDst, Layout::ColorAttachment);
-}
-
-
-void SMAADemo::resolveMSAATemporal(RenderTargetHandle targetRT) {
-				renderer.layoutTransition(targetRT, Layout::Undefined, Layout::TransferDst);
-				renderer.resolveMSAA(sceneFramebuffer, resolveFBs[temporalFrame]);
-				// TODO: do this transition as part of renderpass?
 				renderer.layoutTransition(targetRT, Layout::TransferDst, Layout::ColorAttachment);
 }
 
@@ -3001,7 +2985,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 	if (ImGui::Begin("SMAA", &windowVisible, flags)) {
 		if (ImGui::CollapsingHeader("Antialiasing properties", ImGuiTreeNodeFlags_DefaultOpen)) {
 			bool aaChanged = ImGui::Checkbox("Antialiasing", &antialiasing);
-			if (aaChanged && temporalAA) {
+			if (aaChanged && temporalAA && aaMethod != AAMethod::MSAA) {
 				temporalAAFirstFrame = true;
 			}
 
@@ -3017,9 +3001,16 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 					ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
 				}
 
-				if (ImGui::Checkbox("Temporal AA", &temporalAA)) {
+				bool tempTAA = temporalAA;
+				if (aaMethod == AAMethod::MSAA) {
+					tempTAA = false;
+				}
+				if (ImGui::Checkbox("Temporal AA", &tempTAA)) {
 					recreateFramebuffers = true;
 					rebuildRG            = true;
+				}
+				if (aaMethod != AAMethod::MSAA) {
+					temporalAA = tempTAA;
 				}
 
 				// temporal reprojection only enabled when temporal AA is
