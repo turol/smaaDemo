@@ -1539,8 +1539,8 @@ void SMAADemo::rebuildRenderGraph() {
 	if (antialiasing) {
 		switch (aaMethod) {
 		case AAMethod::MSAA: {
-				// FIXME: should not be a renderpass
-				// should be a resolve operation
+			// FIXME: should not be a renderpass
+			// should be a resolve operation
 			renderGraph.resolveMSAA(renderTargets[MainColor], sceneFramebuffer, renderTargets[FinalRender], finalFramebuffer);
 		} break;
 
