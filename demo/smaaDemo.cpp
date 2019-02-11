@@ -578,8 +578,6 @@ class SMAADemo {
 	RenderPassHandle getSceneRenderPass(unsigned int n, Layout l);
 	PipelineHandle getCubePipeline(unsigned int n);
 
-	void resolveMSAA(RenderTargetHandle targetRT);
-
 	void renderFXAA();
 
 	void renderSeparate();
@@ -2746,13 +2744,6 @@ void SMAADemo::renderImageScene() {
 		colorDS.color = image.tex;
 		renderer.bindDescriptorSet(1, colorDS);
 		renderer.draw(0, 3);
-}
-
-
-void SMAADemo::resolveMSAA(RenderTargetHandle targetRT) {
-				renderer.layoutTransition(targetRT, Layout::Undefined, Layout::TransferDst);
-				renderer.resolveMSAA(sceneFramebuffer, finalFramebuffer);
-				renderer.layoutTransition(targetRT, Layout::TransferDst, Layout::ColorAttachment);
 }
 
 
