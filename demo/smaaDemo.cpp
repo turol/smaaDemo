@@ -1541,7 +1541,7 @@ void SMAADemo::rebuildRenderGraph() {
 		case AAMethod::MSAA: {
 				// FIXME: should not be a renderpass
 				// should be a resolve operation
-				renderGraph.renderPass(finalRenderPass, std::bind(&SMAADemo::resolveMSAA, this, renderTargets[FinalRender]));
+			renderGraph.resolveMSAA(renderTargets[MainColor], sceneFramebuffer, renderTargets[FinalRender], finalFramebuffer);
 		} break;
 
 		case AAMethod::FXAA: {
