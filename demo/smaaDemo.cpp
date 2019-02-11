@@ -439,7 +439,7 @@ public:
 	// TOD: should only take Rendertargets
 	void resolveMSAA(RenderTargetHandle source, FramebufferHandle sourceFB, RenderTargetHandle target, FramebufferHandle targetFB);
 
-	void blit(RenderTargetHandle sourceRT, FramebufferHandle source, FramebufferHandle target);
+	void blit(RenderTargetHandle targetRT, FramebufferHandle source, FramebufferHandle target);
 
 	void layoutTransition(RenderTargetHandle image, Layout src, Layout dest);
 
@@ -2570,7 +2570,7 @@ void RenderGraph::resolveMSAA(RenderTargetHandle /* source */, FramebufferHandle
 }
 
 
-void RenderGraph::blit(RenderTargetHandle /* sourceRT */, FramebufferHandle source, FramebufferHandle target) {
+void RenderGraph::blit(RenderTargetHandle /* targetRT */, FramebufferHandle source, FramebufferHandle target) {
 	assert(!valid);
 
 	functions.push_back([source, target] (Renderer &r) {
