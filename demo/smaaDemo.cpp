@@ -436,6 +436,9 @@ public:
 
 	void renderPass(RenderPassHandle rp, std::function<void()> f);
 
+	// TOD: should only take Rendertargets
+	void resolveMSAA(RenderTargetHandle source, FramebufferHandle sourceFB, RenderTargetHandle target, FramebufferHandle targetFB);
+
 	void blit(FramebufferHandle source, FramebufferHandle target);
 
 	void layoutTransition(RenderTargetHandle image, Layout src, Layout dest);
@@ -2553,6 +2556,19 @@ void RenderGraph::renderPass(RenderPassHandle /* rp */, std::function<void()> f)
 	assert(!valid);
 
 	functions.push_back([f] (Renderer & /* r */) { f(); } );
+}
+
+
+void RenderGraph::resolveMSAA(RenderTargetHandle /* source */, FramebufferHandle sourceFB, RenderTargetHandle target, FramebufferHandle targetFB) {
+	assert(!valid);
+
+	functions.push_back([=] (Renderer &r) {
+		r.layoutTransition(target, Layout::Undefined, Layout::TransferDst);
+		r.resolveMSAA(sourceFB, targetFB);
+		r.layoutTransition(target, Layout::TransferDst, Layout::ColorAttachment);
+	} );
+
+	// TODO
 }
 
 
