@@ -1288,7 +1288,10 @@ void SMAADemo::createRenderPasses() {
 		finalRenderPass = RenderPassHandle();
 	}
 
+	if (sceneRenderPass) {
+		renderer.deleteRenderPass(sceneRenderPass);
 	sceneRenderPass = RenderPassHandle();
+	}
 
 	for (unsigned int i = 0; i < 2; i++) {
 		if (fxaaRenderPass[i]) {
@@ -1332,7 +1335,21 @@ void SMAADemo::createRenderPasses() {
 		if (!antialiasing || aaMethod == AAMethod::MSAA) {
 			l = Layout::TransferSrc;
 		}
-		sceneRenderPass = getSceneRenderPass(numSamples, l);
+
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, l)
+			  .color(1, Format::RG16Float, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
+			  .depthStencil(depthFormat, PassBegin::Clear)
+			  .clearDepth(1.0f)
+			  .numSamples(numSamples);
+
+		std::string name = "scene ";
+		if (numSamples > 1) {
+			name += " MSAA x" + std::to_string(numSamples) + " ";
+		}
+		name += layoutName(l);
+
+		sceneRenderPass = renderer.createRenderPass(rpDesc.name(name));
 	}
 
 	{
