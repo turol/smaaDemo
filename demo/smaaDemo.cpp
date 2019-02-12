@@ -1532,7 +1532,11 @@ void SMAADemo::rebuildRenderGraph() {
 	if (!antialiasing || aaMethod == AAMethod::MSAA) {
 		l = Layout::TransferSrc;
 	}
-	renderGraph.renderPass(getSceneRenderPass(numSamples, l), sceneFramebuffer, std::bind(&SMAADemo::renderScene, this));
+	if (activeScene == 0) {
+		renderGraph.renderPass(getSceneRenderPass(numSamples, l), sceneFramebuffer, std::bind(&SMAADemo::renderCubeScene, this));
+	} else {
+		renderGraph.renderPass(getSceneRenderPass(numSamples, l), sceneFramebuffer, std::bind(&SMAADemo::renderImageScene, this));
+	}
 
 	if (antialiasing) {
 		switch (aaMethod) {
