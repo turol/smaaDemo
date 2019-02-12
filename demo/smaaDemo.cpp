@@ -598,8 +598,6 @@ class SMAADemo {
 
 	void renderGUI();
 
-	void renderScene();
-
 	void renderCubeScene();
 
 	void renderImageScene();
@@ -2627,15 +2625,6 @@ void RenderGraph::render(Renderer &renderer) {
 	}
 
 	renderer.presentFrame(finalTarget);
-}
-
-
-void SMAADemo::renderScene() {
-	if (activeScene == 0) {
-		renderCubeScene();
-	} else {
-		renderImageScene();
-	}
 }
 
 
