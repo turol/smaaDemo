@@ -2328,9 +2328,18 @@ void SMAADemo::processInput() {
 				// fallthrough
 			case SDL_SCANCODE_RIGHT:
 				{
+					// if old or new scene is cubes we must rebuild RG
+					if (activeScene == 0) {
+						rebuildRG = true;
+					}
+
 					// all images + cubes scene
 					unsigned int numScenes = static_cast<unsigned int>(images.size()) + 1;
 					activeScene = (activeScene + sceneIncrement + numScenes) % numScenes;
+
+					if (activeScene == 0) {
+						rebuildRG = true;
+					}
 				}
 				break;
 
@@ -3136,7 +3145,13 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			ImGui::Combo("Scene", &s, &scenes[0], static_cast<int>(scenes.size()));
 			assert(s >= 0);
 			assert(s < int(scenes.size()));
+			if (s != int(activeScene)) {
+				// if old or new scene is cubes we must rebuild RG
+				if (activeScene == 0 || s == 0) {
+					rebuildRG = true;
+				}
 			activeScene = s;
+			}
 
 			ImGui::InputText("Load image", imageFileName, inputTextBufferSize);
 
