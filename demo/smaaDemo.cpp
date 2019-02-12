@@ -602,7 +602,7 @@ class SMAADemo {
 
 	void addSMAARenderGraph(Rendertargets::Rendertargets input, RenderPassHandle renderPass, Framebuffers::Framebuffers outputFB, int pass);
 
-	void renderSMAAEdges(RenderTargetHandle input, int pass);
+	void renderSMAAEdges(Rendertargets::Rendertargets input, int pass);
 
 	void renderSMAAWeights(int pass);
 
@@ -2733,7 +2733,7 @@ void SMAADemo::addSMAARenderGraph(Rendertargets::Rendertargets input, RenderPass
 	switch (debugMode) {
 	case 0: {
 		// edges pass
-		renderGraph.renderPass(smaaEdgesRenderPass, framebuffers[Framebuffers::SMAAEdges], std::bind(&SMAADemo::renderSMAAEdges, this, renderTargets[input], pass));
+		renderGraph.renderPass(smaaEdgesRenderPass, framebuffers[Framebuffers::SMAAEdges], std::bind(&SMAADemo::renderSMAAEdges, this, input, pass));
 
 		// blendweights pass
 		renderGraph.renderPass(smaaWeightsRenderPass, framebuffers[Framebuffers::SMAAWeights], std::bind(&SMAADemo::renderSMAAWeights, this, pass));
@@ -2745,7 +2745,7 @@ void SMAADemo::addSMAARenderGraph(Rendertargets::Rendertargets input, RenderPass
 
 	case 1: {
 		// edges pass
-		renderGraph.renderPass(smaaEdgesRenderPass, framebuffers[Framebuffers::SMAAEdges], std::bind(&SMAADemo::renderSMAAEdges, this, renderTargets[input], pass));
+		renderGraph.renderPass(smaaEdgesRenderPass, framebuffers[Framebuffers::SMAAEdges], std::bind(&SMAADemo::renderSMAAEdges, this, input, pass));
 
 		// visualize edges
 		renderGraph.renderPass(renderPass, framebuffers[outputFB], std::bind(&SMAADemo::renderSMAADebug, this, Rendertargets::Edges));
@@ -2754,7 +2754,7 @@ void SMAADemo::addSMAARenderGraph(Rendertargets::Rendertargets input, RenderPass
 
 	case 2: {
 		// edges pass
-		renderGraph.renderPass(smaaEdgesRenderPass, framebuffers[Framebuffers::SMAAEdges], std::bind(&SMAADemo::renderSMAAEdges, this, renderTargets[input], pass));
+		renderGraph.renderPass(smaaEdgesRenderPass, framebuffers[Framebuffers::SMAAEdges], std::bind(&SMAADemo::renderSMAAEdges, this, input, pass));
 
 		// blendweights pass
 		renderGraph.renderPass(smaaWeightsRenderPass, framebuffers[Framebuffers::SMAAWeights], std::bind(&SMAADemo::renderSMAAWeights, this, pass));
@@ -2767,7 +2767,7 @@ void SMAADemo::addSMAARenderGraph(Rendertargets::Rendertargets input, RenderPass
 }
 
 
-void SMAADemo::renderSMAAEdges(RenderTargetHandle input, int pass) {
+void SMAADemo::renderSMAAEdges(Rendertargets::Rendertargets input, int pass) {
 	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
 	renderer.bindPipeline(pipelines.edgePipeline);
 
@@ -2787,7 +2787,7 @@ void SMAADemo::renderSMAAEdges(RenderTargetHandle input, int pass) {
 	if (smaaKey.edgeMethod == SMAAEdgeMethod::Depth) {
 		edgeDS.color.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::MainDepth]);
 	} else {
-		edgeDS.color.tex     = renderer.getRenderTargetView(input, Format::RGBA8);
+		edgeDS.color.tex     = renderer.getRenderTargetView(renderTargets[input], Format::RGBA8);
 	}
 	edgeDS.color.sampler = nearestSampler;
 	edgeDS.predicationTex.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::MainDepth]);
