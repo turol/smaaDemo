@@ -2551,7 +2551,9 @@ void RenderGraph::clear() {
 void RenderGraph::renderPass(RenderPassHandle /* rp */, FramebufferHandle /* fb */, std::function<void()> f) {
 	assert(!valid);
 
-	functions.push_back([f] (Renderer & /* r */) { f(); } );
+	functions.push_back([f] (Renderer & /* r */) {
+		f();
+	} );
 }
 
 
