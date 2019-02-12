@@ -2548,11 +2548,13 @@ void RenderGraph::clear() {
 }
 
 
-void RenderGraph::renderPass(RenderPassHandle /* rp */, FramebufferHandle /* fb */, std::function<void()> f) {
+void RenderGraph::renderPass(RenderPassHandle rp, FramebufferHandle fb, std::function<void()> f) {
 	assert(!valid);
 
-	functions.push_back([f] (Renderer & /* r */) {
+	functions.push_back([rp, fb, f] (Renderer &r) {
+		r.beginRenderPass(rp, fb);
 		f();
+		r.endRenderPass();
 	} );
 }
 
@@ -2625,18 +2627,11 @@ void RenderGraph::render(Renderer &renderer) {
 
 
 void SMAADemo::renderScene() {
-	Layout l = Layout::ShaderRead;
-	if (!antialiasing || aaMethod == AAMethod::MSAA) {
-		l = Layout::TransferSrc;
-	}
-	renderer.beginRenderPass(getSceneRenderPass(numSamples, l), sceneFramebuffer);
-
 	if (activeScene == 0) {
 		renderCubeScene();
 	} else {
 		renderImageScene();
 	}
-	renderer.endRenderPass();
 }
 
 
@@ -2750,7 +2745,6 @@ void SMAADemo::renderImageScene() {
 
 
 void SMAADemo::renderFXAA() {
-			renderer.beginRenderPass(fxaaRenderPass[temporalAA], temporalAA ? resolveFBs[temporalFrame] : finalFramebuffer);
 			renderer.bindPipeline(getFXAAPipeline(fxaaQuality));
 			ColorCombinedDS colorDS;
 			// FIXME: remove unused UBO hack
@@ -2760,12 +2754,10 @@ void SMAADemo::renderFXAA() {
 			colorDS.color.sampler = linearSampler;
 			renderer.bindDescriptorSet(1, colorDS);
 			renderer.draw(0, 3);
-			renderer.endRenderPass();
 }
 
 
 void SMAADemo::renderSeparate() {
-			renderer.beginRenderPass(separateRenderPass, separateFB);
 			renderer.bindPipeline(separatePipeline);
 			ColorCombinedDS separateDS;
 			// FIXME: remove unused UBO hack
@@ -2775,7 +2767,6 @@ void SMAADemo::renderSeparate() {
 			separateDS.color.sampler = nearestSampler;
 			renderer.bindDescriptorSet(1, separateDS);
 			renderer.draw(0, 3);
-			renderer.endRenderPass();
 }
 
 
@@ -2820,7 +2811,6 @@ void SMAADemo::addSMAARenderGraph(RenderTargetHandle input, RenderPassHandle ren
 
 void SMAADemo::renderSMAAEdges(RenderTargetHandle input, int pass) {
 	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
-	renderer.beginRenderPass(smaaEdgesRenderPass, smaaEdgesFramebuffer);
 	renderer.bindPipeline(pipelines.edgePipeline);
 
 	// TODO: this is redundant, clean it up
@@ -2846,13 +2836,11 @@ void SMAADemo::renderSMAAEdges(RenderTargetHandle input, int pass) {
 	edgeDS.predicationTex.sampler = nearestSampler;
 	renderer.bindDescriptorSet(1, edgeDS);
 	renderer.draw(0, 3);
-	renderer.endRenderPass();
 }
 
 
 void SMAADemo::renderSMAAWeights(int pass) {
 	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
-	renderer.beginRenderPass(smaaWeightsRenderPass, smaaWeightsFramebuffer);
 
 	// TODO: this is redundant, clean it up
 	ShaderDefines::SMAAUBO smaaUBO;
@@ -2877,14 +2865,11 @@ void SMAADemo::renderSMAAWeights(int pass) {
 	renderer.bindDescriptorSet(1, blendWeightDS);
 
 	renderer.draw(0, 3);
-	renderer.endRenderPass();
-
 }
 
 
-void SMAADemo::renderSMAABlend(RenderPassHandle renderpass, FramebufferHandle outputFB, RenderTargetHandle input, int pass) {
+void SMAADemo::renderSMAABlend(RenderPassHandle /* renderpass */, FramebufferHandle /* outputFB */, RenderTargetHandle input, int pass) {
 	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
-	renderer.beginRenderPass(renderpass, outputFB);
 
 	// TODO: this is redundant, clean it up
 	ShaderDefines::SMAAUBO smaaUBO;
@@ -2909,13 +2894,10 @@ void SMAADemo::renderSMAABlend(RenderPassHandle renderpass, FramebufferHandle ou
 		renderer.bindDescriptorSet(1, neighborBlendDS);
 
 	renderer.draw(0, 3);
-	renderer.endRenderPass();
 }
 
 
-void SMAADemo::renderSMAADebug(RenderPassHandle renderPass, FramebufferHandle outputFB, Rendertargets rt) {
-	renderer.beginRenderPass(renderPass, outputFB);
-
+void SMAADemo::renderSMAADebug(RenderPassHandle /* renderPass */, FramebufferHandle /* outputFB */, Rendertargets rt) {
 		ColorTexDS blitDS;
 		renderer.bindPipeline(blitPipeline);
 		// FIXME: remove unused UBO hack
@@ -2925,12 +2907,10 @@ void SMAADemo::renderSMAADebug(RenderPassHandle renderPass, FramebufferHandle ou
 		renderer.bindDescriptorSet(1, blitDS);
 
 	renderer.draw(0, 3);
-	renderer.endRenderPass();
 }
 
 
 void SMAADemo::renderTemporalAA() {
-	renderer.beginRenderPass(finalRenderPass, finalFramebuffer);
 	renderer.bindPipeline(temporalAAPipelines[temporalReproject]);
 
 	ShaderDefines::SMAAUBO smaaUBO;
@@ -2961,7 +2941,6 @@ void SMAADemo::renderTemporalAA() {
 
 	renderer.bindDescriptorSet(1, temporalDS);
 	renderer.draw(0, 3);
-	renderer.endRenderPass();
 }
 
 
@@ -3310,7 +3289,6 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 void SMAADemo::renderGUI() {
 	auto drawData = ImGui::GetDrawData();
 	assert(drawData->Valid);
-	renderer.beginRenderPass(guiOnlyRenderPass, finalFramebuffer);
 
 	if (drawData->CmdListsCount > 0) {
 		assert(drawData->CmdLists      != nullptr);
@@ -3362,8 +3340,6 @@ void SMAADemo::renderGUI() {
 		assert(drawData->TotalVtxCount == 0);
 		assert(drawData->TotalIdxCount == 0);
 	}
-
-	renderer.endRenderPass();
 }
 
 
