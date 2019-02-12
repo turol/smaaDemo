@@ -535,7 +535,6 @@ class SMAADemo {
 	FramebufferHandle                                 smaaEdgesFramebuffer;
 	FramebufferHandle                                 smaaWeightsFramebuffer;
 
-	std::unordered_map<SceneRPKey, RenderPassHandle>  sceneRenderPasses;
 	RenderPassHandle                                  sceneRenderPass;
 	std::array<RenderPassHandle, 2>                   fxaaRenderPass;
 	RenderPassHandle                                  finalRenderPass;
@@ -750,11 +749,6 @@ SMAADemo::~SMAADemo() {
 		assert(sceneRenderPass);
 		renderer.deleteRenderPass(sceneRenderPass);
 		sceneRenderPass = RenderPassHandle();
-
-		for (auto rp : sceneRenderPasses) {
-			renderer.deleteRenderPass(rp.second);
-		}
-		sceneRenderPasses.clear();
 
 		assert(finalRenderPass);
 		renderer.deleteRenderPass(finalRenderPass);
