@@ -588,9 +588,9 @@ class SMAADemo {
 
 	void renderSMAAWeights(int pass);
 
-	void renderSMAABlend(RenderPassHandle renderpass, FramebufferHandle outputFB, RenderTargetHandle input, int pass);
+	void renderSMAABlend(RenderTargetHandle input, int pass);
 
-	void renderSMAADebug(RenderPassHandle renderpass, FramebufferHandle outputFB, Rendertargets rt);
+	void renderSMAADebug(Rendertargets rt);
 
 	void renderTemporalAA();
 
@@ -2781,7 +2781,7 @@ void SMAADemo::addSMAARenderGraph(RenderTargetHandle input, RenderPassHandle ren
 		renderGraph.renderPass(smaaWeightsRenderPass, smaaWeightsFramebuffer, std::bind(&SMAADemo::renderSMAAWeights, this, pass));
 
 		// full effect
-		renderGraph.renderPass(renderPass, outputFB, std::bind(&SMAADemo::renderSMAABlend, this, renderPass, outputFB, input, pass));
+		renderGraph.renderPass(renderPass, outputFB, std::bind(&SMAADemo::renderSMAABlend, this, input, pass));
 
 	} break;
 
@@ -2790,7 +2790,7 @@ void SMAADemo::addSMAARenderGraph(RenderTargetHandle input, RenderPassHandle ren
 		renderGraph.renderPass(smaaEdgesRenderPass, smaaEdgesFramebuffer, std::bind(&SMAADemo::renderSMAAEdges, this, input, pass));
 
 		// visualize edges
-		renderGraph.renderPass(renderPass, outputFB, std::bind(&SMAADemo::renderSMAADebug, this, renderPass, outputFB, Rendertargets::Edges));
+		renderGraph.renderPass(renderPass, outputFB, std::bind(&SMAADemo::renderSMAADebug, this, Rendertargets::Edges));
 
 	} break;
 
@@ -2802,7 +2802,7 @@ void SMAADemo::addSMAARenderGraph(RenderTargetHandle input, RenderPassHandle ren
 		renderGraph.renderPass(smaaWeightsRenderPass, smaaWeightsFramebuffer, std::bind(&SMAADemo::renderSMAAWeights, this, pass));
 
 		// visualize blend weights
-		renderGraph.renderPass(renderPass, outputFB, std::bind(&SMAADemo::renderSMAADebug, this, renderPass, outputFB, Rendertargets::BlendWeights));
+		renderGraph.renderPass(renderPass, outputFB, std::bind(&SMAADemo::renderSMAADebug, this, Rendertargets::BlendWeights));
 	} break;
 
 	}
@@ -2868,7 +2868,7 @@ void SMAADemo::renderSMAAWeights(int pass) {
 }
 
 
-void SMAADemo::renderSMAABlend(RenderPassHandle /* renderpass */, FramebufferHandle /* outputFB */, RenderTargetHandle input, int pass) {
+void SMAADemo::renderSMAABlend(RenderTargetHandle input, int pass) {
 	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
 
 	// TODO: this is redundant, clean it up
@@ -2897,7 +2897,7 @@ void SMAADemo::renderSMAABlend(RenderPassHandle /* renderpass */, FramebufferHan
 }
 
 
-void SMAADemo::renderSMAADebug(RenderPassHandle /* renderPass */, FramebufferHandle /* outputFB */, Rendertargets rt) {
+void SMAADemo::renderSMAADebug(Rendertargets rt) {
 		ColorTexDS blitDS;
 		renderer.bindPipeline(blitPipeline);
 		// FIXME: remove unused UBO hack
