@@ -1418,7 +1418,7 @@ void SMAADemo::createPipelines() {
 		separatePipeline = PipelineHandle();
 	}
 
-	{
+	if (activeScene != 0) {
 		ShaderMacros macros;
 
 		// image is always rendered with 1 sample so we ask for that renderpass
