@@ -576,7 +576,6 @@ class SMAADemo {
 	const SMAAPipelines &getSMAAPipelines(const SMAAKey &key);
 	const PipelineHandle &getFXAAPipeline(unsigned int q);
 
-	RenderPassHandle getSceneRenderPass(unsigned int n, Layout l);
 	PipelineHandle getCubePipeline(unsigned int n);
 
 	void renderFXAA();
@@ -1631,36 +1630,6 @@ void SMAADemo::rebuildRenderGraph() {
 	createPipelines();
 
 	rebuildRG = false;
-}
-
-
-RenderPassHandle SMAADemo::getSceneRenderPass(unsigned int n, Layout l) {
-	SceneRPKey k;
-	k.numSamples = n;
-	k.layout     = l;
-	auto it = sceneRenderPasses.find(k);
-
-	if (it == sceneRenderPasses.end()) {
-		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, l)
-		      .color(1, Format::RG16Float, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
-		      .depthStencil(depthFormat, PassBegin::Clear)
-		      .clearDepth(1.0f)
-		      .numSamples(n);
-
-		std::string name = "scene ";
-		if (n > 1) {
-			name += " MSAA x" + std::to_string(n) + " ";
-		}
-		name += layoutName(l);
-
-		RenderPassHandle rp = renderer.createRenderPass(rpDesc.name(name));
-		bool inserted = false;
-		std::tie(it, inserted) = sceneRenderPasses.emplace(k, rp);
-		assert(inserted);
-	}
-
-	return it->second;
 }
 
 
