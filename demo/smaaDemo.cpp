@@ -1585,7 +1585,7 @@ void SMAADemo::rebuildRenderGraph() {
 		} break;
 
 		case AAMethod::FXAA: {
-			renderGraph.renderPass(fxaaRenderPass[temporalAA], temporalAA ? framebuffers[Framebuffers::Resolve1 + temporalFrame] : framebuffers[Framebuffers::Final], std::bind(&SMAADemo::renderFXAA, this));
+			renderGraph.renderPass(fxaaRenderPass[temporalAA], temporalAA ? framebuffers[(temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2] : framebuffers[Framebuffers::Final], std::bind(&SMAADemo::renderFXAA, this));
 
 			if (temporalAA) {
 				renderGraph.renderPass(finalRenderPass, framebuffers[Framebuffers::Final], std::bind(&SMAADemo::renderTemporalAA, this));
@@ -1596,7 +1596,7 @@ void SMAADemo::rebuildRenderGraph() {
 			// TODO: inline SMAA render here
 			if (temporalAA) {
 				int pass = 0;
-				addSMAARenderGraph(Rendertargets::MainColor, smaaBlendRenderPass, framebuffers[Framebuffers::Resolve1 + temporalFrame], pass);
+				addSMAARenderGraph(Rendertargets::MainColor, smaaBlendRenderPass, framebuffers[(temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2], pass);
 			} else {
 				int pass = 0;
 				addSMAARenderGraph(Rendertargets::MainColor, finalRenderPass, framebuffers[Framebuffers::Final], pass);
@@ -1615,9 +1615,9 @@ void SMAADemo::rebuildRenderGraph() {
 			if (temporalAA) {
 				// FIXME: wrong render pass, SMAA render is multiple passes
 				int pass = 0;
-				addSMAARenderGraph(Rendertargets::Subsample1, smaa2XBlendRenderPasses[0], framebuffers[Framebuffers::Resolve1 + temporalFrame], pass);
+				addSMAARenderGraph(Rendertargets::Subsample1, smaa2XBlendRenderPasses[0], framebuffers[(temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2], pass);
 				pass = 1;
-				addSMAARenderGraph(Rendertargets::Subsample2, smaa2XBlendRenderPasses[1], framebuffers[Framebuffers::Resolve1 + temporalFrame], pass);
+				addSMAARenderGraph(Rendertargets::Subsample2, smaa2XBlendRenderPasses[1], framebuffers[(temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2], pass);
 			} else {
 				int pass = 0;
 				addSMAARenderGraph(Rendertargets::Subsample1, smaa2XBlendRenderPasses[0], framebuffers[Framebuffers::Final], pass);
