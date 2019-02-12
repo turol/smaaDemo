@@ -1290,7 +1290,7 @@ void SMAADemo::createRenderPasses() {
 
 	if (sceneRenderPass) {
 		renderer.deleteRenderPass(sceneRenderPass);
-	sceneRenderPass = RenderPassHandle();
+		sceneRenderPass = RenderPassHandle();
 	}
 
 	for (unsigned int i = 0; i < 2; i++) {
