@@ -351,6 +351,9 @@ struct SceneRPKey {
 };
 
 
+namespace Rendertargets {
+
+
 enum Rendertargets {
 	  MainColor
 	, MainDepth
@@ -364,6 +367,9 @@ enum Rendertargets {
 	, FinalRender
 	, Count
 };
+
+
+} // namespace Rendertargets
 
 
 namespace std {
@@ -589,7 +595,7 @@ class SMAADemo {
 
 	void renderSMAABlend(RenderTargetHandle input, int pass);
 
-	void renderSMAADebug(Rendertargets rt);
+	void renderSMAADebug(Rendertargets::Rendertargets rt);
 
 	void renderTemporalAA();
 
@@ -1562,7 +1568,7 @@ void SMAADemo::rebuildRenderGraph() {
 		case AAMethod::MSAA: {
 			// FIXME: should not be a renderpass
 			// should be a resolve operation
-			renderGraph.resolveMSAA(renderTargets[MainColor], sceneFramebuffer, renderTargets[FinalRender], finalFramebuffer);
+			renderGraph.resolveMSAA(renderTargets[Rendertargets::MainColor], sceneFramebuffer, renderTargets[Rendertargets::FinalRender], finalFramebuffer);
 		} break;
 
 		case AAMethod::FXAA: {
@@ -1577,10 +1583,10 @@ void SMAADemo::rebuildRenderGraph() {
 			// TODO: inline SMAA render here
 			if (temporalAA) {
 				int pass = 0;
-				addSMAARenderGraph(renderTargets[MainColor], smaaBlendRenderPass, resolveFBs[temporalFrame], pass);
+				addSMAARenderGraph(renderTargets[Rendertargets::MainColor], smaaBlendRenderPass, resolveFBs[temporalFrame], pass);
 			} else {
 				int pass = 0;
-				addSMAARenderGraph(renderTargets[MainColor], finalRenderPass, finalFramebuffer, pass);
+				addSMAARenderGraph(renderTargets[Rendertargets::MainColor], finalRenderPass, finalFramebuffer, pass);
 			}
 
 			if (temporalAA) {
@@ -1596,14 +1602,14 @@ void SMAADemo::rebuildRenderGraph() {
 			if (temporalAA) {
 				// FIXME: wrong render pass, SMAA render is multiple passes
 				int pass = 0;
-				addSMAARenderGraph(renderTargets[Subsample1], smaa2XBlendRenderPasses[0], resolveFBs[temporalFrame], pass);
+				addSMAARenderGraph(renderTargets[Rendertargets::Subsample1], smaa2XBlendRenderPasses[0], resolveFBs[temporalFrame], pass);
 				pass = 1;
-				addSMAARenderGraph(renderTargets[Subsample2], smaa2XBlendRenderPasses[1], resolveFBs[temporalFrame], pass);
+				addSMAARenderGraph(renderTargets[Rendertargets::Subsample2], smaa2XBlendRenderPasses[1], resolveFBs[temporalFrame], pass);
 			} else {
 				int pass = 0;
-				addSMAARenderGraph(renderTargets[Subsample1], smaa2XBlendRenderPasses[0], finalFramebuffer, pass);
+				addSMAARenderGraph(renderTargets[Rendertargets::Subsample1], smaa2XBlendRenderPasses[0], finalFramebuffer, pass);
 				pass = 1;
-				addSMAARenderGraph(renderTargets[Subsample2], smaa2XBlendRenderPasses[1], finalFramebuffer, pass);
+				addSMAARenderGraph(renderTargets[Rendertargets::Subsample2], smaa2XBlendRenderPasses[1], finalFramebuffer, pass);
 			}
 
 			if (temporalAA) {
@@ -2890,7 +2896,7 @@ void SMAADemo::renderSMAABlend(RenderTargetHandle input, int pass) {
 }
 
 
-void SMAADemo::renderSMAADebug(Rendertargets rt) {
+void SMAADemo::renderSMAADebug(Rendertargets::Rendertargets rt) {
 		ColorTexDS blitDS;
 		renderer.bindPipeline(blitPipeline);
 		// FIXME: remove unused UBO hack
