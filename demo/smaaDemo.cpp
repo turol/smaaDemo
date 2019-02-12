@@ -2497,8 +2497,6 @@ void SMAADemo::render() {
 		rendererDesc.swapchain.width  = size.x;
 		rendererDesc.swapchain.height = size.y;
 
-		createFramebuffers();
-
 		// TODO: shouldn't need this
 		rebuildRG = true;
 		rebuildRenderGraph();
