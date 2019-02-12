@@ -1974,44 +1974,11 @@ void SMAADemo::deleteFramebuffers() {
 		}
 	}
 
-	assert(renderTargets[Rendertargets::MainColor]);
-	renderer.deleteRenderTarget(renderTargets[Rendertargets::MainColor]);
-	renderTargets[Rendertargets::MainColor] = RenderTargetHandle();
-
-	assert(renderTargets[Rendertargets::Velocity]);
-	renderer.deleteRenderTarget(renderTargets[Rendertargets::Velocity]);
-	renderTargets[Rendertargets::Velocity] = RenderTargetHandle();
-
-	assert(renderTargets[Rendertargets::MainDepth]);
-	renderer.deleteRenderTarget(renderTargets[Rendertargets::MainDepth]);
-	renderTargets[Rendertargets::MainDepth] = RenderTargetHandle();
-
-	assert(renderTargets[Rendertargets::Edges]);
-	renderer.deleteRenderTarget(renderTargets[Rendertargets::Edges]);
-	renderTargets[Rendertargets::Edges] = RenderTargetHandle();
-
-	assert(renderTargets[Rendertargets::BlendWeights]);
-	renderer.deleteRenderTarget(renderTargets[Rendertargets::BlendWeights]);
-	renderTargets[Rendertargets::BlendWeights] = RenderTargetHandle();
-
-	assert(renderTargets[Rendertargets::FinalRender]);
-	renderer.deleteRenderTarget(renderTargets[Rendertargets::FinalRender]);
-	renderTargets[Rendertargets::FinalRender] = RenderTargetHandle();
-
-	if (renderTargets[Rendertargets::Resolve1]) {
-		assert(renderTargets[Rendertargets::Resolve2]);
-		renderer.deleteRenderTarget(renderTargets[Rendertargets::Resolve1]);
-		renderTargets[Rendertargets::Resolve1] = RenderTargetHandle();
-		renderer.deleteRenderTarget(renderTargets[Rendertargets::Resolve2]);
-		renderTargets[Rendertargets::Resolve2] = RenderTargetHandle();
-	} else {
-		assert(!renderTargets[Rendertargets::Resolve2]);
-	}
-
-	for (unsigned int i = 0; i < 2; i++) {
-		assert(renderTargets[Rendertargets::Subsample1 + i]);
-		renderer.deleteRenderTarget(renderTargets[Rendertargets::Subsample1 + i]);
-		renderTargets[Rendertargets::Subsample1 + i] = RenderTargetHandle();
+	for (unsigned int i = 0; i < Rendertargets::Count; i++) {
+		if (renderTargets[i]) {
+			renderer.deleteRenderTarget(renderTargets[i]);
+			renderTargets[i] = RenderTargetHandle();
+		}
 	}
 }
 
