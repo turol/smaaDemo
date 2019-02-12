@@ -536,6 +536,7 @@ class SMAADemo {
 	FramebufferHandle                                 smaaWeightsFramebuffer;
 
 	std::unordered_map<SceneRPKey, RenderPassHandle>  sceneRenderPasses;
+	RenderPassHandle                                  sceneRenderPass;
 	std::array<RenderPassHandle, 2>                   fxaaRenderPass;
 	RenderPassHandle                                  finalRenderPass;
 	RenderPassHandle                                  separateRenderPass;
@@ -747,6 +748,7 @@ SMAADemo::~SMAADemo() {
 	if (sceneFramebuffer) {
 		deleteFramebuffers();
 
+		sceneRenderPass = RenderPassHandle();
 		for (auto rp : sceneRenderPasses) {
 			renderer.deleteRenderPass(rp.second);
 		}
@@ -1286,6 +1288,8 @@ void SMAADemo::createRenderPasses() {
 		finalRenderPass = RenderPassHandle();
 	}
 
+	sceneRenderPass = RenderPassHandle();
+
 	for (unsigned int i = 0; i < 2; i++) {
 		if (fxaaRenderPass[i]) {
 			renderer.deleteRenderPass(fxaaRenderPass[i]);
@@ -1321,6 +1325,14 @@ void SMAADemo::createRenderPasses() {
 	if (separateRenderPass) {
 		renderer.deleteRenderPass(separateRenderPass);
 		separateRenderPass = RenderPassHandle();
+	}
+
+	{
+		Layout l = Layout::ShaderRead;
+		if (!antialiasing || aaMethod == AAMethod::MSAA) {
+			l = Layout::TransferSrc;
+		}
+		sceneRenderPass = getSceneRenderPass(numSamples, l);
 	}
 
 	{
@@ -1424,7 +1436,7 @@ void SMAADemo::createPipelines() {
 		// image is always rendered with 1 sample so we ask for that renderpass
 		// instead of numSamples
 		PipelineDesc plDesc;
-		plDesc.renderPass(getSceneRenderPass(1, Layout::ShaderRead))
+		plDesc.renderPass(sceneRenderPass)
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ColorTexDS>(1)
 		      .vertexShader("image")
@@ -1526,14 +1538,10 @@ void SMAADemo::rebuildRenderGraph() {
 
 	createFramebuffers();
 
-	Layout l = Layout::ShaderRead;
-	if (!antialiasing || aaMethod == AAMethod::MSAA) {
-		l = Layout::TransferSrc;
-	}
 	if (activeScene == 0) {
-		renderGraph.renderPass(getSceneRenderPass(numSamples, l), sceneFramebuffer, std::bind(&SMAADemo::renderCubeScene, this));
+		renderGraph.renderPass(sceneRenderPass, sceneFramebuffer, std::bind(&SMAADemo::renderCubeScene, this));
 	} else {
-		renderGraph.renderPass(getSceneRenderPass(numSamples, l), sceneFramebuffer, std::bind(&SMAADemo::renderImageScene, this));
+		renderGraph.renderPass(sceneRenderPass, sceneFramebuffer, std::bind(&SMAADemo::renderImageScene, this));
 	}
 
 	if (antialiasing) {
@@ -1663,7 +1671,7 @@ PipelineHandle SMAADemo::getCubePipeline(unsigned int n) {
 		plDesc.name(name)
 		      .vertexShader("cube")
 		      .fragmentShader("cube")
-		      .renderPass(getSceneRenderPass(n, Layout::ShaderRead))
+		      .renderPass(sceneRenderPass)
 		      .numSamples(n)
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<CubeSceneDS>(1)
@@ -1864,7 +1872,7 @@ void SMAADemo::createFramebuffers() {
 	{
 		FramebufferDesc fbDesc;
 		fbDesc.name("scene")
-		      .renderPass(getSceneRenderPass(numSamples, Layout::ShaderRead))
+		      .renderPass(sceneRenderPass)
 		      .color(0, renderTargets[Rendertargets::MainColor])
 		      .color(1, renderTargets[Rendertargets::Velocity])
 		      .depthStencil(renderTargets[Rendertargets::MainDepth]);
