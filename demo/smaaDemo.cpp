@@ -747,7 +747,10 @@ SMAADemo::~SMAADemo() {
 	if (sceneFramebuffer) {
 		deleteFramebuffers();
 
+		assert(sceneRenderPass);
+		renderer.deleteRenderPass(sceneRenderPass);
 		sceneRenderPass = RenderPassHandle();
+
 		for (auto rp : sceneRenderPasses) {
 			renderer.deleteRenderPass(rp.second);
 		}
