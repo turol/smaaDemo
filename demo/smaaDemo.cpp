@@ -3150,7 +3150,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				if (activeScene == 0 || s == 0) {
 					rebuildRG = true;
 				}
-			activeScene = s;
+				activeScene = s;
 			}
 
 			ImGui::InputText("Load image", imageFileName, inputTextBufferSize);
