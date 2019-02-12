@@ -372,6 +372,25 @@ enum Rendertargets {
 } // namespace Rendertargets
 
 
+
+namespace Framebuffers {
+
+
+enum Framebuffers {
+	  Scene
+	, Separate
+	, Final
+	, Resolve1
+	, Resolve2
+	, SMAAEdges
+	, SMAAWeights
+	, Count
+};
+
+
+} // namespace Framebuffers
+
+
 namespace std {
 
 	template <> struct hash<SMAAKey> {
