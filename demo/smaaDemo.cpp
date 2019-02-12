@@ -606,7 +606,7 @@ class SMAADemo {
 
 	void renderSMAAWeights(int pass);
 
-	void renderSMAABlend(RenderTargetHandle input, int pass);
+	void renderSMAABlend(Rendertargets::Rendertargets input, int pass);
 
 	void renderSMAADebug(Rendertargets::Rendertargets rt);
 
@@ -2739,7 +2739,7 @@ void SMAADemo::addSMAARenderGraph(Rendertargets::Rendertargets input, RenderPass
 		renderGraph.renderPass(smaaWeightsRenderPass, framebuffers[Framebuffers::SMAAWeights], std::bind(&SMAADemo::renderSMAAWeights, this, pass));
 
 		// full effect
-		renderGraph.renderPass(renderPass, framebuffers[outputFB], std::bind(&SMAADemo::renderSMAABlend, this, renderTargets[input], pass));
+		renderGraph.renderPass(renderPass, framebuffers[outputFB], std::bind(&SMAADemo::renderSMAABlend, this, input, pass));
 
 	} break;
 
@@ -2826,7 +2826,7 @@ void SMAADemo::renderSMAAWeights(int pass) {
 }
 
 
-void SMAADemo::renderSMAABlend(RenderTargetHandle input, int pass) {
+void SMAADemo::renderSMAABlend(Rendertargets::Rendertargets input, int pass) {
 	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
 
 	// TODO: this is redundant, clean it up
@@ -2845,7 +2845,7 @@ void SMAADemo::renderSMAABlend(RenderTargetHandle input, int pass) {
 
 		NeighborBlendDS neighborBlendDS;
 		neighborBlendDS.smaaUBO              = smaaUBOBuf;
-		neighborBlendDS.color.tex            = renderer.getRenderTargetTexture(input);
+		neighborBlendDS.color.tex            = renderer.getRenderTargetTexture(renderTargets[input]);
 		neighborBlendDS.color.sampler        = linearSampler;
 		neighborBlendDS.blendweights.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::BlendWeights]);
 		neighborBlendDS.blendweights.sampler = linearSampler;
