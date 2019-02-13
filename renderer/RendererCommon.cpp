@@ -950,6 +950,11 @@ void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 }
 
 
+void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target) {
+	impl->resolveMSAA(source, target);
+}
+
+
 void Renderer::resolveMSAA(FramebufferHandle source, FramebufferHandle target, unsigned int n) {
 	impl->resolveMSAA(source, target, n);
 }

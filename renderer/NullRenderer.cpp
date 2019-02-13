@@ -409,6 +409,14 @@ void RendererImpl::blit(RenderTargetHandle source, RenderTargetHandle target) {
 }
 
 
+void RendererImpl::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target) {
+	assert(source);
+	assert(target);
+
+	assert(!inRenderPass);
+}
+
+
 void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle target, unsigned int n) {
 	assert(source);
 	assert(target);

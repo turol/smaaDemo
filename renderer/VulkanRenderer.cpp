@@ -3076,6 +3076,40 @@ void RendererImpl::blit(RenderTargetHandle source, RenderTargetHandle target) {
 }
 
 
+void RendererImpl::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target) {
+	assert(source);
+	assert(target);
+
+	assert(!inRenderPass);
+
+	// TODO: check numSamples make sense
+	// TODO: check they're both color targets
+
+	const auto &srcRT = renderTargets.get(source);
+	assert(srcRT.width       >  0);
+	assert(srcRT.height      >  0);
+	assert(srcRT.currentLayout == Layout::TransferSrc);
+
+	const auto &destRT = renderTargets.get(target);
+	assert(destRT.width      >  0);
+	assert(destRT.height     >  0);
+	assert(destRT.currentLayout == Layout::TransferDst);
+
+	assert(srcRT.width       == destRT.width);
+	assert(srcRT.height      == destRT.height);
+
+	vk::ImageResolve r;
+	r.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+	r.srcSubresource.layerCount = 1;
+	r.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+	r.dstSubresource.layerCount = 1;
+	r.extent.width              = srcRT.width;
+	r.extent.height             = srcRT.height;
+	r.extent.depth              = 1;
+	currentCommandBuffer.resolveImage(srcRT.image, vk::ImageLayout::eTransferSrcOptimal, destRT.image, vk::ImageLayout::eTransferDstOptimal, { r } );
+}
+
+
 void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle target, unsigned int n) {
 	assert(source);
 	assert(target);
