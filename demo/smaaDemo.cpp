@@ -1425,10 +1425,29 @@ void SMAADemo::rebuildRenderGraph() {
 		numSamples = 1;
 	}
 
+	const unsigned int windowWidth  = rendererDesc.swapchain.width;
+	const unsigned int windowHeight = rendererDesc.swapchain.height;
+
+	LOG("create framebuffers at size %ux%u\n", windowWidth, windowHeight);
+
 	for (unsigned int i = 0; i < RenderPasses::Count; i++) {
 		if (renderPasses[i]) {
 			renderer.deleteRenderPass(renderPasses[i]);
 			renderPasses[i] = RenderPassHandle();
+		}
+	}
+
+	for (unsigned int i = 0; i < Framebuffers::Count; i++) {
+		if (framebuffers[i]) {
+			renderer.deleteFramebuffer(framebuffers[i]);
+			framebuffers[i] = FramebufferHandle();
+		}
+	}
+
+	for (unsigned int i = 0; i < Rendertargets::Count; i++) {
+		if (renderTargets[i]) {
+			renderer.deleteRenderTarget(renderTargets[i]);
+			renderTargets[i] = RenderTargetHandle();
 		}
 	}
 
@@ -1520,25 +1539,6 @@ void SMAADemo::rebuildRenderGraph() {
 		      .color(1, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead);
 		renderPasses[RenderPasses::Separate]       = renderer.createRenderPass(rpDesc);
 	}
-
-	for (unsigned int i = 0; i < Framebuffers::Count; i++) {
-		if (framebuffers[i]) {
-			renderer.deleteFramebuffer(framebuffers[i]);
-			framebuffers[i] = FramebufferHandle();
-		}
-	}
-
-	for (unsigned int i = 0; i < Rendertargets::Count; i++) {
-		if (renderTargets[i]) {
-			renderer.deleteRenderTarget(renderTargets[i]);
-			renderTargets[i] = RenderTargetHandle();
-		}
-	}
-
-	const unsigned int windowWidth  = rendererDesc.swapchain.width;
-	const unsigned int windowHeight = rendererDesc.swapchain.height;
-
-	LOG("create framebuffers at size %ux%u\n", windowWidth, windowHeight);
 
 	{
 		RenderTargetDesc rtDesc;
