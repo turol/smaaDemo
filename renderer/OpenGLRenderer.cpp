@@ -1300,6 +1300,13 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 
 	assert(isRenderPassCompatible(renderPass, fb));
 
+	GLenum status = glCheckNamedFramebufferStatus(fb.fbo, GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		LOG("Framebuffer \"%s\" is not complete: %04x\n", desc.name_.c_str(), status);
+		logFlush();
+		throw std::runtime_error("Framebuffer is not complete");
+	}
+
 	if (tracing) {
 		glObjectLabel(GL_FRAMEBUFFER, fb.fbo, desc.name_.size(), desc.name_.c_str());
 	}
@@ -1417,6 +1424,12 @@ void RendererImpl::createRTHelperFBO(RenderTarget &rt) {
 	assert(rt.helperFBO   != 0);
 	glNamedFramebufferTexture(rt.helperFBO, GL_COLOR_ATTACHMENT0, texture.tex, 0);
 	glNamedFramebufferDrawBuffers(rt.helperFBO, 1, drawBuffers);
+	GLenum status = glCheckNamedFramebufferStatus(rt.helperFBO, GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		LOG("helper FBO for RT is not complete: %04x\n", status);
+		logFlush();
+		throw std::runtime_error("helper FBO for RT is not complete");
+	}
 }
 
 
