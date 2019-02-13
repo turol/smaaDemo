@@ -2476,12 +2476,12 @@ void RenderGraph::resolveMSAA(RenderTargetHandle /* source */, FramebufferHandle
 }
 
 
-void RenderGraph::blit(RenderTargetHandle /* source */, RenderTargetHandle target, FramebufferHandle sourceFB, FramebufferHandle targetFB) {
+void RenderGraph::blit(RenderTargetHandle source, RenderTargetHandle target, FramebufferHandle /* sourceFB */, FramebufferHandle /* targetFB */) {
 	assert(!valid);
 
-	functions.push_back([target, sourceFB, targetFB] (Renderer &r) {
+	functions.push_back([source, target] (Renderer &r) {
 		r.layoutTransition(target, Layout::Undefined, Layout::TransferDst);
-		r.blit(sourceFB, targetFB);
+		r.blit(source, target);
 		r.layoutTransition(target, Layout::TransferDst, Layout::ColorAttachment);
 	} );
 
