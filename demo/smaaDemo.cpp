@@ -659,8 +659,6 @@ public:
 
 	void rebuildRenderGraph();
 
-	void createRenderPasses();
-
 	void createFramebuffers();
 
 	void deleteFramebuffers();
@@ -1287,105 +1285,6 @@ void SMAADemo::initRender() {
 }
 
 
-void SMAADemo::createRenderPasses() {
-	for (unsigned int i = 0; i < RenderPasses::Count; i++) {
-		if (renderPasses[i]) {
-			renderer.deleteRenderPass(renderPasses[i]);
-			renderPasses[i] = RenderPassHandle();
-		}
-	}
-
-	{
-		Layout l = Layout::ShaderRead;
-		if (!antialiasing || aaMethod == AAMethod::MSAA) {
-			l = Layout::TransferSrc;
-		}
-
-		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, l)
-			  .color(1, Format::RG16Float, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
-			  .depthStencil(depthFormat, PassBegin::Clear)
-			  .clearDepth(1.0f)
-			  .numSamples(numSamples);
-
-		std::string name = "scene ";
-		if (numSamples > 1) {
-			name += " MSAA x" + std::to_string(numSamples) + " ";
-		}
-		name += layoutName(l);
-
-		renderPasses[RenderPasses::Scene] = renderer.createRenderPass(rpDesc.name(name));
-	}
-
-	{
-		RenderPassDesc rpDesc;
-		// TODO: check this
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
-		rpDesc.name("final");
-		renderPasses[RenderPasses::Final]       = renderer.createRenderPass(rpDesc);
-	}
-
-	{
-		RenderPassDesc rpDesc;
-		if (!temporalAA) {
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
-		rpDesc.name("FXAA no temporal");
-		} else {
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
-		rpDesc.name("FXAA temporal");
-		}
-
-		renderPasses[RenderPasses::FXAA]     = renderer.createRenderPass(rpDesc);
-	}
-
-	{
-		RenderPassDesc rpDesc;
-		// FIXME: should be RGBA since SMAA wants gamma space?
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
-		rpDesc.name("SMAA blend");
-		renderPasses[RenderPasses::SMAABlend]   = renderer.createRenderPass(rpDesc);
-	}
-
-	for (unsigned int i = 0; i < 2; i++) {
-		RenderPassDesc rpDesc;
-		if (i == 0) {
-			rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
-		} else {
-			assert(i == 1);
-			rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::ColorAttachment);
-		}
-		rpDesc.name("SMAA2x blend " + std::to_string(i));
-		renderPasses[RenderPasses::SMAA2XBlend1 + i] = renderer.createRenderPass(rpDesc);
-	}
-
-	{
-		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::TransferSrc);
-		rpDesc.name("GUI only");
-		renderPasses[RenderPasses::GUI]     = renderer.createRenderPass(rpDesc);
-	}
-
-	{
-		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
-
-		rpDesc.name("SMAA edges");
-		renderPasses[RenderPasses::SMAAEdges]   = renderer.createRenderPass(rpDesc);
-
-		rpDesc.name("SMAA weights");
-		renderPasses[RenderPasses::SMAAWeights] = renderer.createRenderPass(rpDesc);
-	}
-
-	{
-		RenderPassDesc rpDesc;
-		rpDesc.name("Separate")
-		      .color(0, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead)
-		      .color(1, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead);
-		renderPasses[RenderPasses::Separate]       = renderer.createRenderPass(rpDesc);
-	}
-}
-
-
 void SMAADemo::createPipelines() {
 	if (imagePipeline) {
 		renderer.deletePipeline(imagePipeline);
@@ -1518,7 +1417,101 @@ void SMAADemo::rebuildRenderGraph() {
 		numSamples = 1;
 	}
 
-	createRenderPasses();
+	for (unsigned int i = 0; i < RenderPasses::Count; i++) {
+		if (renderPasses[i]) {
+			renderer.deleteRenderPass(renderPasses[i]);
+			renderPasses[i] = RenderPassHandle();
+		}
+	}
+
+	{
+		Layout l = Layout::ShaderRead;
+		if (!antialiasing || aaMethod == AAMethod::MSAA) {
+			l = Layout::TransferSrc;
+		}
+
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, l)
+			  .color(1, Format::RG16Float, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
+			  .depthStencil(depthFormat, PassBegin::Clear)
+			  .clearDepth(1.0f)
+			  .numSamples(numSamples);
+
+		std::string name = "scene ";
+		if (numSamples > 1) {
+			name += " MSAA x" + std::to_string(numSamples) + " ";
+		}
+		name += layoutName(l);
+
+		renderPasses[RenderPasses::Scene] = renderer.createRenderPass(rpDesc.name(name));
+	}
+
+	{
+		RenderPassDesc rpDesc;
+		// TODO: check this
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+		rpDesc.name("final");
+		renderPasses[RenderPasses::Final]       = renderer.createRenderPass(rpDesc);
+	}
+
+	{
+		RenderPassDesc rpDesc;
+		if (!temporalAA) {
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+		rpDesc.name("FXAA no temporal");
+		} else {
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+		rpDesc.name("FXAA temporal");
+		}
+
+		renderPasses[RenderPasses::FXAA]     = renderer.createRenderPass(rpDesc);
+	}
+
+	{
+		RenderPassDesc rpDesc;
+		// FIXME: should be RGBA since SMAA wants gamma space?
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+		rpDesc.name("SMAA blend");
+		renderPasses[RenderPasses::SMAABlend]   = renderer.createRenderPass(rpDesc);
+	}
+
+	for (unsigned int i = 0; i < 2; i++) {
+		RenderPassDesc rpDesc;
+		if (i == 0) {
+			rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+		} else {
+			assert(i == 1);
+			rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::ColorAttachment);
+		}
+		rpDesc.name("SMAA2x blend " + std::to_string(i));
+		renderPasses[RenderPasses::SMAA2XBlend1 + i] = renderer.createRenderPass(rpDesc);
+	}
+
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::TransferSrc);
+		rpDesc.name("GUI only");
+		renderPasses[RenderPasses::GUI]     = renderer.createRenderPass(rpDesc);
+	}
+
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA edges");
+		renderPasses[RenderPasses::SMAAEdges]   = renderer.createRenderPass(rpDesc);
+
+		rpDesc.name("SMAA weights");
+		renderPasses[RenderPasses::SMAAWeights] = renderer.createRenderPass(rpDesc);
+	}
+
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.name("Separate")
+		      .color(0, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead)
+		      .color(1, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead);
+		renderPasses[RenderPasses::Separate]       = renderer.createRenderPass(rpDesc);
+	}
 
 	createFramebuffers();
 
