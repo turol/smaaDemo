@@ -3076,47 +3076,6 @@ void RendererImpl::blit(RenderTargetHandle source, RenderTargetHandle target) {
 }
 
 
-void RendererImpl::blit(FramebufferHandle source, FramebufferHandle target, unsigned int n) {
-	assert(source);
-	assert(target);
-
-	assert(!inRenderPass);
-
-	const auto &srcFb  = framebuffers.get(source);
-	assert(srcFb.width       >  0);
-	assert(srcFb.height      >  0);
-
-	const auto &destFb = framebuffers.get(target);
-	assert(destFb.width      >  0);
-	assert(destFb.height     >  0);
-
-	assert(srcFb.width       == destFb.width);
-	assert(srcFb.height      == destFb.height);
-
-	assert(srcFb.desc.colors_[n]);
-	assert(destFb.desc.colors_[0]);
-	assert(!destFb.desc.colors_[1]);
-
-	auto &srcColor  = renderTargets.get(srcFb.desc.colors_[n]);
-	assert(srcColor.currentLayout == Layout::TransferSrc);
-	auto &destColor = renderTargets.get(destFb.desc.colors_[0]);
-	assert(destColor.currentLayout == Layout::TransferDst);
-
-	vk::ImageBlit b;
-	b.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-	b.srcSubresource.layerCount = 1;
-	b.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-	b.dstSubresource.layerCount = 1;
-	b.srcOffsets[1].x           = srcFb.width;
-	b.srcOffsets[1].y           = srcFb.height;
-	b.srcOffsets[1].z           = 1;
-	b.dstOffsets[1].x           = srcFb.width;
-	b.dstOffsets[1].y           = srcFb.height;
-	b.dstOffsets[1].z           = 1;
-	currentCommandBuffer.blitImage(srcColor.image, vk::ImageLayout::eTransferSrcOptimal, destColor.image, vk::ImageLayout::eTransferDstOptimal, { b }, vk::Filter::eNearest );
-}
-
-
 void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle target, unsigned int n) {
 	assert(source);
 	assert(target);

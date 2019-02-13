@@ -2380,45 +2380,6 @@ void RendererImpl::blit(RenderTargetHandle source, RenderTargetHandle target) {
 }
 
 
-void RendererImpl::blit(FramebufferHandle source, FramebufferHandle target, unsigned int n UNUSED) {
-	assert(source);
-	assert(target);
-	assert(n == 0);  // TODO: need this?
-
-	assert(!inRenderPass);
-
-	const auto &srcFb = framebuffers.get(source);
-	assert(srcFb.fbo         != 0);
-	assert(srcFb.numSamples  == 1);
-	assert(srcFb.fbo         != 0);
-	assert(srcFb.width       >  0);
-	assert(srcFb.height      >  0);
-
-	const auto &destFb = framebuffers.get(target);
-	assert(destFb.fbo        != 0);
-	assert(destFb.numSamples == 1);
-	assert(destFb.fbo        != 0);
-	assert(destFb.width      >  0);
-	assert(destFb.height     >  0);
-
-#ifndef NDEBUG
-	assert(srcFb.fbo         != destFb.fbo);
-	assert(srcFb.width       == destFb.width);
-	assert(srcFb.height      == destFb.height);
-
-	const auto &srcColorRT = renderTargets.get(srcFb.colors[0]);
-	assert(srcColorRT.currentLayout == Layout::TransferSrc);
-	const auto &dstColorRT = renderTargets.get(destFb.colors[0]);
-	assert(dstColorRT.currentLayout == Layout::TransferDst);
-#endif //  NDEBUG
-
-	glBlitNamedFramebuffer(srcFb.fbo, destFb.fbo
-	                     , 0, 0, srcFb.width, srcFb.height
-	                     , 0, 0, destFb.width, destFb.height
-	                     , GL_COLOR_BUFFER_BIT, GL_NEAREST);
-}
-
-
 void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle target, unsigned int n UNUSED) {
 	assert(source);
 	assert(target);
