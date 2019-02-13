@@ -390,14 +390,14 @@ struct RenderTarget {
 	, helperFBO(other.helperFBO)
 	, format(other.format)
 	{
-		other.width         = 0;
-		other.height        = 0;
-		other.numSamples    = 0;
-		other.currentLayout = Layout::Undefined;
-		other.texture       = TextureHandle();
-		other.additionalView = TextureHandle();
+		other.width           = 0;
+		other.height          = 0;
+		other.numSamples      = 0;
+		other.currentLayout   = Layout::Undefined;
+		other.texture         = TextureHandle();
+		other.additionalView  = TextureHandle();
 		other.helperFBO       = 0;
-		other.format        = Format::Invalid;
+		other.format          = Format::Invalid;
 	}
 
 	RenderTarget &operator=(RenderTarget &&other) noexcept {
@@ -408,23 +408,23 @@ struct RenderTarget {
 		assert(!helperFBO);
 		assert(!texture);
 
-		width         = other.width;
-		height        = other.height;
-		numSamples     = other.numSamples;
-		currentLayout = other.currentLayout;
-		texture       = other.texture;
-		additionalView = other.additionalView;
-		helperFBO       = other.helperFBO;
-		format        = other.format;
+		width                 = other.width;
+		height                = other.height;
+		numSamples            = other.numSamples;
+		currentLayout         = other.currentLayout;
+		texture               = other.texture;
+		additionalView        = other.additionalView;
+		helperFBO             = other.helperFBO;
+		format                = other.format;
 
-		other.width         = 0;
-		other.height        = 0;
-		other.numSamples     = 0;
-		other.currentLayout = Layout::Undefined;
-		other.texture       = TextureHandle();
-		other.additionalView = TextureHandle();
+		other.width           = 0;
+		other.height          = 0;
+		other.numSamples      = 0;
+		other.currentLayout   = Layout::Undefined;
+		other.texture         = TextureHandle();
+		other.additionalView  = TextureHandle();
 		other.helperFBO       = 0;
-		other.format        = Format::Invalid;
+		other.format          = Format::Invalid;
 
 		return *this;
 	};
