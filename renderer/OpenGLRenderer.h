@@ -692,6 +692,8 @@ struct RendererImpl : public RendererBase {
 	void waitForFrame(unsigned int frameIdx);
 	void deleteFrameInternal(Frame &f);
 
+	void createRTHelperFBO(RenderTarget &rt);
+
 	explicit RendererImpl(const RendererDesc &desc);
 
 	~RendererImpl();

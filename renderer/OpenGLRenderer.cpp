@@ -1403,6 +1403,21 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 }
 
 
+void RendererImpl::createRTHelperFBO(RenderTarget &rt) {
+	const auto &texture = textures.get(rt.texture);
+	assert(texture.renderTarget);
+	assert(texture.width       == rt.width);
+	assert(texture.height      == rt.height);
+	assert(texture.tex         != 0);
+	assert(texture.target      == GL_TEXTURE_2D);
+
+	glCreateFramebuffers(1, &rt.helperFBO);
+	assert(rt.helperFBO   != 0);
+	glNamedFramebufferTexture(rt.helperFBO, GL_COLOR_ATTACHMENT0, texture.tex, 0);
+	glNamedFramebufferDrawBuffers(rt.helperFBO, 1, drawBuffers);
+}
+
+
 SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
 	auto result = samplers.add();
 	Sampler &sampler = result.first;
@@ -2336,18 +2351,9 @@ void RendererImpl::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(srcRT.currentLayout == Layout::TransferSrc);
 	assert(srcRT.texture);
 	if (srcRT.helperFBO == 0) {
-		const auto &texture = textures.get(srcRT.texture);
-		assert(texture.renderTarget);
-		assert(texture.width       == srcRT.width);
-		assert(texture.height      == srcRT.height);
-		assert(texture.tex         != 0);
-		assert(texture.target      == GL_TEXTURE_2D);
-
-		glCreateFramebuffers(1, &srcRT.helperFBO);
-		assert(srcRT.helperFBO   != 0);
-		glNamedFramebufferTexture(srcRT.helperFBO, GL_COLOR_ATTACHMENT0, texture.tex, 0);
-		glNamedFramebufferDrawBuffers(srcRT.helperFBO, 1, drawBuffers);
+		createRTHelperFBO(srcRT);
 	}
+	assert(srcRT.helperFBO != 0);
 
 	auto &destRT = renderTargets.get(target);
 	assert(destRT.numSamples == 1);
@@ -2356,18 +2362,9 @@ void RendererImpl::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(destRT.currentLayout == Layout::TransferDst);
 	assert(destRT.texture);
 	if (destRT.helperFBO == 0) {
-		const auto &texture = textures.get(destRT.texture);
-		assert(texture.renderTarget);
-		assert(texture.width       == destRT.width);
-		assert(texture.height      == destRT.height);
-		assert(texture.tex         != 0);
-		assert(texture.target      == GL_TEXTURE_2D);
-
-		glCreateFramebuffers(1, &destRT.helperFBO);
-		assert(destRT.helperFBO   != 0);
-		glNamedFramebufferTexture(destRT.helperFBO, GL_COLOR_ATTACHMENT0, texture.tex, 0);
-		glNamedFramebufferDrawBuffers(destRT.helperFBO, 1, drawBuffers);
+		createRTHelperFBO(destRT);
 	}
+	assert(destRT.helperFBO != 0);
 
 	assert(srcRT.helperFBO   != destRT.helperFBO);
 	assert(srcRT.width       == destRT.width);
