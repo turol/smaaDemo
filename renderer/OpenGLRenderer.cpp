@@ -1418,7 +1418,8 @@ void RendererImpl::createRTHelperFBO(RenderTarget &rt) {
 	assert(texture.width       == rt.width);
 	assert(texture.height      == rt.height);
 	assert(texture.tex         != 0);
-	assert(texture.target      == GL_TEXTURE_2D);
+	assert(texture.target      == GL_TEXTURE_2D
+	    || texture.target      == GL_TEXTURE_2D_MULTISAMPLE);
 
 	glCreateFramebuffers(1, &rt.helperFBO);
 	assert(rt.helperFBO   != 0);
