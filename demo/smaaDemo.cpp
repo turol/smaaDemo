@@ -485,7 +485,7 @@ public:
 	// TOD: should only take Rendertargets
 	void resolveMSAA(RenderTargetHandle source, FramebufferHandle sourceFB, RenderTargetHandle target, FramebufferHandle targetFB);
 
-	void blit(RenderTargetHandle source, RenderTargetHandle target, FramebufferHandle sourceFB, FramebufferHandle targetFB);
+	void blit(RenderTargetHandle source, RenderTargetHandle target);
 
 	void layoutTransition(RenderTargetHandle image, Layout src, Layout dest);
 
@@ -1737,7 +1737,7 @@ void SMAADemo::rebuildRenderGraph() {
 		}
 
 	} else {
-		renderGraph.blit(renderTargets[Rendertargets::MainColor], renderTargets[Rendertargets::FinalRender], framebuffers[Framebuffers::Scene], framebuffers[Framebuffers::Final]);
+		renderGraph.blit(renderTargets[Rendertargets::MainColor], renderTargets[Rendertargets::FinalRender]);
 	}
 
 	renderGraph.renderPass(renderPasses[RenderPasses::GUI], framebuffers[Framebuffers::Final], std::bind(&SMAADemo::renderGUI, this));
@@ -2476,7 +2476,7 @@ void RenderGraph::resolveMSAA(RenderTargetHandle source, FramebufferHandle /* so
 }
 
 
-void RenderGraph::blit(RenderTargetHandle source, RenderTargetHandle target, FramebufferHandle /* sourceFB */, FramebufferHandle /* targetFB */) {
+void RenderGraph::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(!valid);
 
 	functions.push_back([source, target] (Renderer &r) {
