@@ -485,7 +485,7 @@ public:
 	// TOD: should only take Rendertargets
 	void resolveMSAA(RenderTargetHandle source, FramebufferHandle sourceFB, RenderTargetHandle target, FramebufferHandle targetFB);
 
-	void blit(RenderTargetHandle sourceRT, RenderTargetHandle targetRT, FramebufferHandle source, FramebufferHandle target);
+	void blit(RenderTargetHandle source, RenderTargetHandle target, FramebufferHandle sourceFB, FramebufferHandle targetFB);
 
 	void layoutTransition(RenderTargetHandle image, Layout src, Layout dest);
 
@@ -2476,13 +2476,13 @@ void RenderGraph::resolveMSAA(RenderTargetHandle /* source */, FramebufferHandle
 }
 
 
-void RenderGraph::blit(RenderTargetHandle /* sourceRT */, RenderTargetHandle targetRT, FramebufferHandle source, FramebufferHandle target) {
+void RenderGraph::blit(RenderTargetHandle /* source */, RenderTargetHandle target, FramebufferHandle sourceFB, FramebufferHandle targetFB) {
 	assert(!valid);
 
-	functions.push_back([targetRT, source, target] (Renderer &r) {
-		r.layoutTransition(targetRT, Layout::Undefined, Layout::TransferDst);
-		r.blit(source, target);
-		r.layoutTransition(targetRT, Layout::TransferDst, Layout::ColorAttachment);
+	functions.push_back([target, sourceFB, targetFB] (Renderer &r) {
+		r.layoutTransition(target, Layout::Undefined, Layout::TransferDst);
+		r.blit(sourceFB, targetFB);
+		r.layoutTransition(target, Layout::TransferDst, Layout::ColorAttachment);
 	} );
 
 	// TODO
