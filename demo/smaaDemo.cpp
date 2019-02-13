@@ -555,7 +555,7 @@ class SMAADemo {
 	FramebufferHandle                                 framebuffers[Framebuffers::Count];
 
 	RenderPassHandle                                  sceneRenderPass;
-	std::array<RenderPassHandle, 2>                   fxaaRenderPass;
+	RenderPassHandle                                  fxaaRenderPass;
 	RenderPassHandle                                  finalRenderPass;
 	RenderPassHandle                                  separateRenderPass;
 	RenderPassHandle                                  smaaEdgesRenderPass;
@@ -771,10 +771,9 @@ SMAADemo::~SMAADemo() {
 
 		assert(finalRenderPass);
 		renderer.deleteRenderPass(finalRenderPass);
-		for (unsigned int i = 0; i < 2; i++) {
-			assert(fxaaRenderPass[i]);
-			renderer.deleteRenderPass(fxaaRenderPass[i]);
-		}
+
+		assert(fxaaRenderPass);
+		renderer.deleteRenderPass(fxaaRenderPass);
 
 		assert(smaaBlendRenderPass);
 		renderer.deleteRenderPass(smaaBlendRenderPass);
@@ -1308,11 +1307,12 @@ void SMAADemo::createRenderPasses() {
 		sceneRenderPass = RenderPassHandle();
 	}
 
+	if (fxaaRenderPass) {
+		renderer.deleteRenderPass(fxaaRenderPass);
+		fxaaRenderPass = RenderPassHandle();
+	}
+
 	for (unsigned int i = 0; i < 2; i++) {
-		if (fxaaRenderPass[i]) {
-			renderer.deleteRenderPass(fxaaRenderPass[i]);
-			fxaaRenderPass[i] = RenderPassHandle();
-		}
 
 		if (smaa2XBlendRenderPasses[i]) {
 			renderer.deleteRenderPass(smaa2XBlendRenderPasses[i]);
@@ -1377,13 +1377,15 @@ void SMAADemo::createRenderPasses() {
 
 	{
 		RenderPassDesc rpDesc;
+		if (!temporalAA) {
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
 		rpDesc.name("FXAA no temporal");
-		fxaaRenderPass[0]     = renderer.createRenderPass(rpDesc);
-
+		} else {
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
 		rpDesc.name("FXAA temporal");
-		fxaaRenderPass[1]     = renderer.createRenderPass(rpDesc);
+		}
+
+		fxaaRenderPass     = renderer.createRenderPass(rpDesc);
 	}
 
 	{
@@ -1585,7 +1587,7 @@ void SMAADemo::rebuildRenderGraph() {
 		} break;
 
 		case AAMethod::FXAA: {
-			renderGraph.renderPass(fxaaRenderPass[temporalAA], temporalAA ? framebuffers[(temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2] : framebuffers[Framebuffers::Final], std::bind(&SMAADemo::renderFXAA, this));
+			renderGraph.renderPass(fxaaRenderPass, temporalAA ? framebuffers[(temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2] : framebuffers[Framebuffers::Final], std::bind(&SMAADemo::renderFXAA, this));
 
 			if (temporalAA) {
 				renderGraph.renderPass(finalRenderPass, framebuffers[Framebuffers::Final], std::bind(&SMAADemo::renderTemporalAA, this));
