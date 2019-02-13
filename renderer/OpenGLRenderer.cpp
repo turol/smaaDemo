@@ -756,9 +756,9 @@ RendererImpl::~RendererImpl() {
 	renderTargets.clearWith([this](RenderTarget &rt) {
 		assert(rt.texture);
 
-		if (rt.readFBO != 0) {
-			glDeleteFramebuffers(1, &rt.readFBO);
-			rt.readFBO = 0;
+		if (rt.helperFBO != 0) {
+			glDeleteFramebuffers(1, &rt.helperFBO);
+			rt.helperFBO = 0;
 		}
 
 		{
@@ -1544,9 +1544,9 @@ void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
 		assert(rt.numSamples > 0);
 
 		rt.numSamples = 0;
-		if (rt.readFBO != 0) {
-			glDeleteFramebuffers(1, &rt.readFBO);
-			rt.readFBO = 0;
+		if (rt.helperFBO != 0) {
+			glDeleteFramebuffers(1, &rt.helperFBO);
+			rt.helperFBO = 0;
 		}
 
 		{
@@ -1795,14 +1795,14 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 	assert(width > 0);
 	assert(height > 0);
 
-	if (rt.readFBO == 0) {
-		glCreateFramebuffers(1, &rt.readFBO);
+	if (rt.helperFBO == 0) {
+		glCreateFramebuffers(1, &rt.helperFBO);
 		const auto &colorTex = textures.get(rt.texture);
 		assert(colorTex.renderTarget);
 		assert(colorTex.tex != 0);
-		glNamedFramebufferTexture(rt.readFBO, GL_COLOR_ATTACHMENT0, colorTex.tex, 0);
+		glNamedFramebufferTexture(rt.helperFBO, GL_COLOR_ATTACHMENT0, colorTex.tex, 0);
 	}
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, rt.readFBO);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, rt.helperFBO);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
 	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);

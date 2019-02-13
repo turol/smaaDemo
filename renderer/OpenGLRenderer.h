@@ -363,7 +363,7 @@ struct RenderTarget {
 	Layout         currentLayout;
 	TextureHandle  texture;
 	TextureHandle  additionalView;
-	GLuint         readFBO;
+	GLuint         helperFBO;
 	Format         format;
 
 
@@ -372,7 +372,7 @@ struct RenderTarget {
 	, height(0)
 	, numSamples(0)
 	, currentLayout(Layout::Undefined)
-	, readFBO(0)
+	, helperFBO(0)
 	, format(Format::Invalid)
 	{
 	}
@@ -387,7 +387,7 @@ struct RenderTarget {
 	, currentLayout(other.currentLayout)
 	, texture(other.texture)   // TODO: use std::move
 	, additionalView(other.additionalView)
-	, readFBO(other.readFBO)
+	, helperFBO(other.helperFBO)
 	, format(other.format)
 	{
 		other.width         = 0;
@@ -396,7 +396,7 @@ struct RenderTarget {
 		other.currentLayout = Layout::Undefined;
 		other.texture       = TextureHandle();
 		other.additionalView = TextureHandle();
-		other.readFBO       = 0;
+		other.helperFBO       = 0;
 		other.format        = Format::Invalid;
 	}
 
@@ -405,7 +405,7 @@ struct RenderTarget {
 			return *this;
 		}
 
-		assert(!readFBO);
+		assert(!helperFBO);
 		assert(!texture);
 
 		width         = other.width;
@@ -414,7 +414,7 @@ struct RenderTarget {
 		currentLayout = other.currentLayout;
 		texture       = other.texture;
 		additionalView = other.additionalView;
-		readFBO       = other.readFBO;
+		helperFBO       = other.helperFBO;
 		format        = other.format;
 
 		other.width         = 0;
@@ -423,7 +423,7 @@ struct RenderTarget {
 		other.currentLayout = Layout::Undefined;
 		other.texture       = TextureHandle();
 		other.additionalView = TextureHandle();
-		other.readFBO       = 0;
+		other.helperFBO       = 0;
 		other.format        = Format::Invalid;
 
 		return *this;
@@ -431,7 +431,7 @@ struct RenderTarget {
 
 	~RenderTarget() {
 		assert(numSamples == 0);
-		assert(readFBO  == 0);
+		assert(helperFBO  == 0);
 		assert(!texture);
 	}
 
