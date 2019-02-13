@@ -401,6 +401,14 @@ void RendererImpl::setScissorRect(unsigned int /* x */, unsigned int /* y */, un
 }
 
 
+void RendererImpl::blit(RenderTargetHandle source, RenderTargetHandle target) {
+	assert(source);
+	assert(target);
+
+	assert(!inRenderPass);
+}
+
+
 void RendererImpl::blit(FramebufferHandle source, FramebufferHandle target, unsigned int n) {
 	assert(source);
 	assert(target);

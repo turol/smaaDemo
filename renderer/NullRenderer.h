@@ -494,6 +494,7 @@ struct RendererImpl : public RendererBase {
 
 	void bindDescriptorSet(unsigned int index, DSLayoutHandle layout, const void *data);
 
+	void blit(RenderTargetHandle source, RenderTargetHandle target);
 	void blit(FramebufferHandle source, FramebufferHandle target, unsigned int n);
 	void resolveMSAA(FramebufferHandle source, FramebufferHandle target, unsigned int n);
 

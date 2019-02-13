@@ -945,6 +945,11 @@ void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, u
 }
 
 
+void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
+	impl->blit(source, target);
+}
+
+
 void Renderer::blit(FramebufferHandle source, FramebufferHandle target, unsigned int n) {
 	impl->blit(source, target, n);
 }

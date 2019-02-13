@@ -3037,6 +3037,45 @@ void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int w
 }
 
 
+void RendererImpl::blit(RenderTargetHandle source, RenderTargetHandle target) {
+	assert(source);
+	assert(target);
+
+	assert(!inRenderPass);
+
+	// TODO: check numSamples is 1 for both
+
+	const auto &srcRT = renderTargets.get(source);
+	assert(srcRT.width       >  0);
+	assert(srcRT.height      >  0);
+	assert(srcRT.currentLayout == Layout::TransferSrc);
+
+	const auto &destRT = renderTargets.get(target);
+	assert(destRT.width      >  0);
+	assert(destRT.height     >  0);
+	assert(destRT.currentLayout == Layout::TransferDst);
+
+	assert(srcRT.width       == destRT.width);
+	assert(srcRT.height      == destRT.height);
+
+	// TODO: check they're both color targets
+	// or implement depth blit
+
+	vk::ImageBlit b;
+	b.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+	b.srcSubresource.layerCount = 1;
+	b.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+	b.dstSubresource.layerCount = 1;
+	b.srcOffsets[1].x           = srcRT.width;
+	b.srcOffsets[1].y           = srcRT.height;
+	b.srcOffsets[1].z           = 1;
+	b.dstOffsets[1].x           = srcRT.width;
+	b.dstOffsets[1].y           = srcRT.height;
+	b.dstOffsets[1].z           = 1;
+	currentCommandBuffer.blitImage(srcRT.image, vk::ImageLayout::eTransferSrcOptimal, destRT.image, vk::ImageLayout::eTransferDstOptimal, { b }, vk::Filter::eNearest );
+}
+
+
 void RendererImpl::blit(FramebufferHandle source, FramebufferHandle target, unsigned int n) {
 	assert(source);
 	assert(target);

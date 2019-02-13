@@ -2320,6 +2320,66 @@ void RendererImpl::rebindDescriptorSets() {
 }
 
 
+void RendererImpl::blit(RenderTargetHandle source, RenderTargetHandle target) {
+	assert(source);
+	assert(target);
+
+	assert(!inRenderPass);
+
+	// TODO: check they're both color targets
+	// or implement depth blit
+
+	auto &srcRT = renderTargets.get(source);
+	assert(srcRT.numSamples  == 1);
+	assert(srcRT.width       >  0);
+	assert(srcRT.height      >  0);
+	assert(srcRT.currentLayout == Layout::TransferSrc);
+	assert(srcRT.texture);
+	if (srcRT.helperFBO == 0) {
+		const auto &texture = textures.get(srcRT.texture);
+		assert(texture.renderTarget);
+		assert(texture.width       == srcRT.width);
+		assert(texture.height      == srcRT.height);
+		assert(texture.tex         != 0);
+		assert(texture.target      == GL_TEXTURE_2D);
+
+		glCreateFramebuffers(1, &srcRT.helperFBO);
+		assert(srcRT.helperFBO   != 0);
+		glNamedFramebufferTexture(srcRT.helperFBO, GL_COLOR_ATTACHMENT0, texture.tex, 0);
+		glNamedFramebufferDrawBuffers(srcRT.helperFBO, 1, drawBuffers);
+	}
+
+	auto &destRT = renderTargets.get(target);
+	assert(destRT.numSamples == 1);
+	assert(destRT.width      >  0);
+	assert(destRT.height     >  0);
+	assert(destRT.currentLayout == Layout::TransferDst);
+	assert(destRT.texture);
+	if (destRT.helperFBO == 0) {
+		const auto &texture = textures.get(destRT.texture);
+		assert(texture.renderTarget);
+		assert(texture.width       == destRT.width);
+		assert(texture.height      == destRT.height);
+		assert(texture.tex         != 0);
+		assert(texture.target      == GL_TEXTURE_2D);
+
+		glCreateFramebuffers(1, &destRT.helperFBO);
+		assert(destRT.helperFBO   != 0);
+		glNamedFramebufferTexture(destRT.helperFBO, GL_COLOR_ATTACHMENT0, texture.tex, 0);
+		glNamedFramebufferDrawBuffers(destRT.helperFBO, 1, drawBuffers);
+	}
+
+	assert(srcRT.helperFBO   != destRT.helperFBO);
+	assert(srcRT.width       == destRT.width);
+	assert(srcRT.height      == destRT.height);
+
+	glBlitNamedFramebuffer(srcRT.helperFBO, destRT.helperFBO
+	                     , 0, 0, srcRT.width, srcRT.height
+	                     , 0, 0, destRT.width, destRT.height
+	                     , GL_COLOR_BUFFER_BIT, GL_NEAREST);
+}
+
+
 void RendererImpl::blit(FramebufferHandle source, FramebufferHandle target, unsigned int n UNUSED) {
 	assert(source);
 	assert(target);
