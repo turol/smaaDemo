@@ -2410,8 +2410,6 @@ void SMAADemo::render() {
 	}
 
 	if (recreateSwapchain || recreateFramebuffers) {
-		deleteFramebuffers();
-
 		// TODO: shouldn't need this
 		rebuildRG = true;
 	}
