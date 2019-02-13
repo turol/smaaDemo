@@ -955,11 +955,6 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 }
 
 
-void Renderer::resolveMSAA(FramebufferHandle source, FramebufferHandle target, unsigned int n) {
-	impl->resolveMSAA(source, target, n);
-}
-
-
 void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	impl->draw(firstVertex, vertexCount);
 }

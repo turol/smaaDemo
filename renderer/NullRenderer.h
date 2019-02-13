@@ -496,7 +496,6 @@ struct RendererImpl : public RendererBase {
 
 	void blit(RenderTargetHandle source, RenderTargetHandle target);
 	void resolveMSAA(RenderTargetHandle source, RenderTargetHandle target);
-	void resolveMSAA(FramebufferHandle source, FramebufferHandle target, unsigned int n);
 
 	void draw(unsigned int firstVertex, unsigned int vertexCount);
 	void drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount);

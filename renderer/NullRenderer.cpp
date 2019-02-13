@@ -417,15 +417,6 @@ void RendererImpl::resolveMSAA(RenderTargetHandle source, RenderTargetHandle tar
 }
 
 
-void RendererImpl::resolveMSAA(FramebufferHandle source, FramebufferHandle target, unsigned int n) {
-	assert(source);
-	assert(target);
-	assert(n == 0);
-
-	assert(!inRenderPass);
-}
-
-
 void RendererImpl::draw(unsigned int /* firstVertex */, unsigned int vertexCount) {
 	assert(inRenderPass);
 	assert(validPipeline);
