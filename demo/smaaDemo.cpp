@@ -1511,9 +1511,7 @@ void SMAADemo::rebuildRenderGraph() {
 		renderPasses[RenderPasses::Separate]       = renderer.createRenderPass(rpDesc);
 	}
 
-	if (framebuffers[Framebuffers::Scene]) {
 		deleteFramebuffers();
-	}
 
 	const unsigned int windowWidth  = rendererDesc.swapchain.width;
 	const unsigned int windowHeight = rendererDesc.swapchain.height;
