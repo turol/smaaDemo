@@ -1817,10 +1817,10 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 	}
 	assert(rt.helperFBO != 0);
 
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, rt.helperFBO);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
-	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	glBlitNamedFramebuffer(rt.helperFBO, 0
+	                     , 0, 0, width, height
+	                     , 0, 0, width, height
+	                     , GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 	SDL_GL_SwapWindow(window);
 
