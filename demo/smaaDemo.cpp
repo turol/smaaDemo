@@ -482,8 +482,7 @@ public:
 
 	void renderPass(RenderPassHandle rp, FramebufferHandle fb, std::function<void()> f);
 
-	// TOD: should only take Rendertargets
-	void resolveMSAA(RenderTargetHandle source, FramebufferHandle sourceFB, RenderTargetHandle target, FramebufferHandle targetFB);
+	void resolveMSAA(RenderTargetHandle source, RenderTargetHandle target);
 
 	void blit(RenderTargetHandle source, RenderTargetHandle target);
 
@@ -1684,7 +1683,7 @@ void SMAADemo::rebuildRenderGraph() {
 		case AAMethod::MSAA: {
 			// FIXME: should not be a renderpass
 			// should be a resolve operation
-			renderGraph.resolveMSAA(renderTargets[Rendertargets::MainColor], framebuffers[Framebuffers::Scene], renderTargets[Rendertargets::FinalRender], framebuffers[Framebuffers::Final]);
+			renderGraph.resolveMSAA(renderTargets[Rendertargets::MainColor], renderTargets[Rendertargets::FinalRender]);
 		} break;
 
 		case AAMethod::FXAA: {
@@ -2463,7 +2462,7 @@ void RenderGraph::renderPass(RenderPassHandle rp, FramebufferHandle fb, std::fun
 }
 
 
-void RenderGraph::resolveMSAA(RenderTargetHandle source, FramebufferHandle /* sourceFB */, RenderTargetHandle target, FramebufferHandle /* targetFB */) {
+void RenderGraph::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(!valid);
 
 	functions.push_back([=] (Renderer &r) {
