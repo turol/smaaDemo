@@ -391,6 +391,27 @@ enum Framebuffers {
 } // namespace Framebuffers
 
 
+namespace RenderPasses {
+
+
+enum RenderPasses {
+	  Scene
+	, Final
+	, GUI
+	, FXAA
+	, Separate
+	, SMAAEdges
+	, SMAAWeights
+	, SMAABlend
+	, SMAA2XBlend1
+	, SMAA2XBlend2
+	, Count
+};
+
+
+}  // namespace RenderPasses
+
+
 namespace std {
 
 	template <> struct hash<SMAAKey> {
