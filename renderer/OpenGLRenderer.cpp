@@ -1404,6 +1404,8 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 
 
 void RendererImpl::createRTHelperFBO(RenderTarget &rt) {
+	assert(!rt.helperFBO);
+
 	const auto &texture = textures.get(rt.texture);
 	assert(texture.renderTarget);
 	assert(texture.width       == rt.width);
@@ -1811,12 +1813,10 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 	assert(height > 0);
 
 	if (rt.helperFBO == 0) {
-		glCreateFramebuffers(1, &rt.helperFBO);
-		const auto &colorTex = textures.get(rt.texture);
-		assert(colorTex.renderTarget);
-		assert(colorTex.tex != 0);
-		glNamedFramebufferTexture(rt.helperFBO, GL_COLOR_ATTACHMENT0, colorTex.tex, 0);
+		createRTHelperFBO(rt);
 	}
+	assert(rt.helperFBO != 0);
+
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, rt.helperFBO);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
