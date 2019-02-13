@@ -2463,12 +2463,12 @@ void RenderGraph::renderPass(RenderPassHandle rp, FramebufferHandle fb, std::fun
 }
 
 
-void RenderGraph::resolveMSAA(RenderTargetHandle /* source */, FramebufferHandle sourceFB, RenderTargetHandle target, FramebufferHandle targetFB) {
+void RenderGraph::resolveMSAA(RenderTargetHandle source, FramebufferHandle /* sourceFB */, RenderTargetHandle target, FramebufferHandle /* targetFB */) {
 	assert(!valid);
 
 	functions.push_back([=] (Renderer &r) {
 		r.layoutTransition(target, Layout::Undefined, Layout::TransferDst);
-		r.resolveMSAA(sourceFB, targetFB);
+		r.resolveMSAA(source, target);
 		r.layoutTransition(target, Layout::TransferDst, Layout::ColorAttachment);
 	} );
 
