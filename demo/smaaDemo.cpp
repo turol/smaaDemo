@@ -2665,7 +2665,6 @@ void SMAADemo::renderSeparate() {
 
 
 void SMAADemo::addSMAARenderGraph(Rendertargets::Rendertargets input, RenderPassHandle renderPass, Framebuffers::Framebuffers outputFB, int pass) {
-	// final blending pass/debug pass
 	switch (debugMode) {
 	case 0: {
 		// edges pass
