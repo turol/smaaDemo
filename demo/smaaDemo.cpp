@@ -659,8 +659,6 @@ public:
 
 	void rebuildRenderGraph();
 
-	void deleteFramebuffers();
-
 	void createCubes();
 
 	void mainLoopIteration();
@@ -770,7 +768,19 @@ SMAADemo::~SMAADemo() {
 		imGuiContext = nullptr;
 	}
 
-		deleteFramebuffers();
+	for (unsigned int i = 0; i < Framebuffers::Count; i++) {
+		if (framebuffers[i]) {
+			renderer.deleteFramebuffer(framebuffers[i]);
+			framebuffers[i] = FramebufferHandle();
+		}
+	}
+
+	for (unsigned int i = 0; i < Rendertargets::Count; i++) {
+		if (renderTargets[i]) {
+			renderer.deleteRenderTarget(renderTargets[i]);
+			renderTargets[i] = RenderTargetHandle();
+		}
+	}
 
 	for (unsigned int i = 0; i < RenderPasses::Count; i++) {
 		if (renderPasses[i]) {
@@ -1511,7 +1521,19 @@ void SMAADemo::rebuildRenderGraph() {
 		renderPasses[RenderPasses::Separate]       = renderer.createRenderPass(rpDesc);
 	}
 
-		deleteFramebuffers();
+	for (unsigned int i = 0; i < Framebuffers::Count; i++) {
+		if (framebuffers[i]) {
+			renderer.deleteFramebuffer(framebuffers[i]);
+			framebuffers[i] = FramebufferHandle();
+		}
+	}
+
+	for (unsigned int i = 0; i < Rendertargets::Count; i++) {
+		if (renderTargets[i]) {
+			renderer.deleteRenderTarget(renderTargets[i]);
+			renderTargets[i] = RenderTargetHandle();
+		}
+	}
 
 	const unsigned int windowWidth  = rendererDesc.swapchain.width;
 	const unsigned int windowHeight = rendererDesc.swapchain.height;
@@ -1899,23 +1921,6 @@ void SMAADemo::loadImage(const std::string &filename) {
 	stbi_image_free(imageData);
 
 	activeScene = static_cast<unsigned int>(images.size());
-}
-
-
-void SMAADemo::deleteFramebuffers() {
-	for (unsigned int i = 0; i < Framebuffers::Count; i++) {
-		if (framebuffers[i]) {
-			renderer.deleteFramebuffer(framebuffers[i]);
-			framebuffers[i] = FramebufferHandle();
-		}
-	}
-
-	for (unsigned int i = 0; i < Rendertargets::Count; i++) {
-		if (renderTargets[i]) {
-			renderer.deleteRenderTarget(renderTargets[i]);
-			renderTargets[i] = RenderTargetHandle();
-		}
-	}
 }
 
 
