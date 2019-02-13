@@ -659,8 +659,6 @@ public:
 
 	void rebuildRenderGraph();
 
-	void createFramebuffers();
-
 	void deleteFramebuffers();
 
 	void createCubes();
@@ -1513,7 +1511,147 @@ void SMAADemo::rebuildRenderGraph() {
 		renderPasses[RenderPasses::Separate]       = renderer.createRenderPass(rpDesc);
 	}
 
-	createFramebuffers();
+	if (framebuffers[Framebuffers::Scene]) {
+		deleteFramebuffers();
+	}
+
+	const unsigned int windowWidth  = rendererDesc.swapchain.width;
+	const unsigned int windowHeight = rendererDesc.swapchain.height;
+
+	LOG("create framebuffers at size %ux%u\n", windowWidth, windowHeight);
+
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("main color")
+		      .numSamples(numSamples)
+		      .format(Format::sRGBA8)
+		      .additionalViewFormat(Format::RGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		renderTargets[Rendertargets::MainColor] = renderer.createRenderTarget(rtDesc);
+	}
+
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("velocity")
+		      .numSamples(numSamples)
+		      .format(Format::RG16Float)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		renderTargets[Rendertargets::Velocity] = renderer.createRenderTarget(rtDesc);
+	}
+
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("final")
+		      .format(Format::sRGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		renderTargets[Rendertargets::FinalRender] = renderer.createRenderTarget(rtDesc);
+	}
+
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("main depth")
+		      .numSamples(numSamples)
+		      .format(depthFormat)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		renderTargets[Rendertargets::MainDepth] = renderer.createRenderTarget(rtDesc);
+	}
+
+	{
+		FramebufferDesc fbDesc;
+		fbDesc.name("scene")
+		      .renderPass(renderPasses[RenderPasses::Scene])
+		      .color(0, renderTargets[Rendertargets::MainColor])
+		      .color(1, renderTargets[Rendertargets::Velocity])
+		      .depthStencil(renderTargets[Rendertargets::MainDepth]);
+		framebuffers[Framebuffers::Scene] = renderer.createFramebuffer(fbDesc);
+	}
+
+	{
+		FramebufferDesc fbDesc;
+		fbDesc.name("final")
+		      .renderPass(renderPasses[RenderPasses::Final])
+		      .color(0, renderTargets[Rendertargets::FinalRender]);
+		framebuffers[Framebuffers::Final] = renderer.createFramebuffer(fbDesc);
+	}
+
+	// SMAA edges texture and FBO
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("SMAA edges")
+		      .format(Format::RGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		renderTargets[Rendertargets::Edges] = renderer.createRenderTarget(rtDesc);
+
+		FramebufferDesc fbDesc;
+		fbDesc.name("SMAA edges")
+		      .renderPass(renderPasses[RenderPasses::SMAAEdges])
+		      .color(0, renderTargets[Rendertargets::Edges]);
+		framebuffers[Framebuffers::SMAAEdges] = renderer.createFramebuffer(fbDesc);
+	}
+
+	// SMAA blending weights texture and FBO
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("SMAA weights")
+		      .format(Format::RGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		renderTargets[Rendertargets::BlendWeights] = renderer.createRenderTarget(rtDesc);
+
+		FramebufferDesc fbDesc;
+		fbDesc.name("SMAA weights")
+		      .renderPass(renderPasses[RenderPasses::SMAAWeights])
+		      .color(0, renderTargets[Rendertargets::BlendWeights]);
+		framebuffers[Framebuffers::SMAAWeights] = renderer.createFramebuffer(fbDesc);
+	}
+
+	if (temporalAA && aaMethod != AAMethod::MSAA) {
+		temporalAAFirstFrame = true;
+		RenderTargetDesc rtDesc;
+		rtDesc.name("Temporal resolve 0")
+		      .format(Format::sRGBA8)  // TODO: not right?
+		      .width(windowWidth)
+		      .height(windowHeight);
+		renderTargets[Rendertargets::Resolve1] = renderer.createRenderTarget(rtDesc);
+
+		FramebufferDesc fbDesc;
+		fbDesc.name("Temporal resolve 0")
+		      .renderPass(renderPasses[RenderPasses::SMAABlend])
+		      .color(0, renderTargets[Rendertargets::Resolve1]);
+		framebuffers[Framebuffers::Resolve1] = renderer.createFramebuffer(fbDesc);
+
+		rtDesc.name("Temporal resolve 1");
+		renderTargets[Rendertargets::Resolve2] = renderer.createRenderTarget(rtDesc);
+
+		fbDesc.color(0, renderTargets[Rendertargets::Resolve2])
+		      .name("Temporal resolve 1");
+		framebuffers[Framebuffers::Resolve2] = renderer.createFramebuffer(fbDesc);
+	}
+
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.format(Format::sRGBA8)
+		      .additionalViewFormat(Format::RGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
+
+		for (unsigned int i = 0; i < 2; i++) {
+			rtDesc.name("Temporal resolve" + std::to_string(i));
+			renderTargets[Rendertargets::Subsample1 + i] = renderer.createRenderTarget(rtDesc);
+		}
+
+		FramebufferDesc fbDesc;
+		fbDesc.name("Separate")
+		      .renderPass(renderPasses[RenderPasses::Separate])
+		      .color(0, renderTargets[Rendertargets::Subsample1])
+		      .color(1, renderTargets[Rendertargets::Subsample2]);
+		framebuffers[Framebuffers::Separate] = renderer.createFramebuffer(fbDesc);
+	}
 
 	if (activeScene == 0) {
 		renderGraph.renderPass(renderPasses[RenderPasses::Scene], framebuffers[Framebuffers::Scene], std::bind(&SMAADemo::renderCubeScene, this));
@@ -1763,151 +1901,6 @@ void SMAADemo::loadImage(const std::string &filename) {
 	stbi_image_free(imageData);
 
 	activeScene = static_cast<unsigned int>(images.size());
-}
-
-
-void SMAADemo::createFramebuffers() {
-	if (framebuffers[Framebuffers::Scene]) {
-		deleteFramebuffers();
-	}
-
-	const unsigned int windowWidth  = rendererDesc.swapchain.width;
-	const unsigned int windowHeight = rendererDesc.swapchain.height;
-
-	LOG("create framebuffers at size %ux%u\n", windowWidth, windowHeight);
-
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("main color")
-		      .numSamples(numSamples)
-		      .format(Format::sRGBA8)
-		      .additionalViewFormat(Format::RGBA8)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderTargets[Rendertargets::MainColor] = renderer.createRenderTarget(rtDesc);
-	}
-
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("velocity")
-		      .numSamples(numSamples)
-		      .format(Format::RG16Float)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderTargets[Rendertargets::Velocity] = renderer.createRenderTarget(rtDesc);
-	}
-
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("final")
-		      .format(Format::sRGBA8)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderTargets[Rendertargets::FinalRender] = renderer.createRenderTarget(rtDesc);
-	}
-
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("main depth")
-		      .numSamples(numSamples)
-		      .format(depthFormat)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderTargets[Rendertargets::MainDepth] = renderer.createRenderTarget(rtDesc);
-	}
-
-	{
-		FramebufferDesc fbDesc;
-		fbDesc.name("scene")
-		      .renderPass(renderPasses[RenderPasses::Scene])
-		      .color(0, renderTargets[Rendertargets::MainColor])
-		      .color(1, renderTargets[Rendertargets::Velocity])
-		      .depthStencil(renderTargets[Rendertargets::MainDepth]);
-		framebuffers[Framebuffers::Scene] = renderer.createFramebuffer(fbDesc);
-	}
-
-	{
-		FramebufferDesc fbDesc;
-		fbDesc.name("final")
-		      .renderPass(renderPasses[RenderPasses::Final])
-		      .color(0, renderTargets[Rendertargets::FinalRender]);
-		framebuffers[Framebuffers::Final] = renderer.createFramebuffer(fbDesc);
-	}
-
-	// SMAA edges texture and FBO
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("SMAA edges")
-		      .format(Format::RGBA8)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderTargets[Rendertargets::Edges] = renderer.createRenderTarget(rtDesc);
-
-		FramebufferDesc fbDesc;
-		fbDesc.name("SMAA edges")
-		      .renderPass(renderPasses[RenderPasses::SMAAEdges])
-		      .color(0, renderTargets[Rendertargets::Edges]);
-		framebuffers[Framebuffers::SMAAEdges] = renderer.createFramebuffer(fbDesc);
-	}
-
-	// SMAA blending weights texture and FBO
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("SMAA weights")
-		      .format(Format::RGBA8)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderTargets[Rendertargets::BlendWeights] = renderer.createRenderTarget(rtDesc);
-
-		FramebufferDesc fbDesc;
-		fbDesc.name("SMAA weights")
-		      .renderPass(renderPasses[RenderPasses::SMAAWeights])
-		      .color(0, renderTargets[Rendertargets::BlendWeights]);
-		framebuffers[Framebuffers::SMAAWeights] = renderer.createFramebuffer(fbDesc);
-	}
-
-	if (temporalAA && aaMethod != AAMethod::MSAA) {
-		temporalAAFirstFrame = true;
-		RenderTargetDesc rtDesc;
-		rtDesc.name("Temporal resolve 0")
-		      .format(Format::sRGBA8)  // TODO: not right?
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderTargets[Rendertargets::Resolve1] = renderer.createRenderTarget(rtDesc);
-
-		FramebufferDesc fbDesc;
-		fbDesc.name("Temporal resolve 0")
-		      .renderPass(renderPasses[RenderPasses::SMAABlend])
-		      .color(0, renderTargets[Rendertargets::Resolve1]);
-		framebuffers[Framebuffers::Resolve1] = renderer.createFramebuffer(fbDesc);
-
-		rtDesc.name("Temporal resolve 1");
-		renderTargets[Rendertargets::Resolve2] = renderer.createRenderTarget(rtDesc);
-
-		fbDesc.color(0, renderTargets[Rendertargets::Resolve2])
-		      .name("Temporal resolve 1");
-		framebuffers[Framebuffers::Resolve2] = renderer.createFramebuffer(fbDesc);
-	}
-
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.format(Format::sRGBA8)
-		      .additionalViewFormat(Format::RGBA8)
-		      .width(windowWidth)
-		      .height(windowHeight);
-
-		for (unsigned int i = 0; i < 2; i++) {
-			rtDesc.name("Temporal resolve" + std::to_string(i));
-			renderTargets[Rendertargets::Subsample1 + i] = renderer.createRenderTarget(rtDesc);
-		}
-
-		FramebufferDesc fbDesc;
-		fbDesc.name("Separate")
-		      .renderPass(renderPasses[RenderPasses::Separate])
-		      .color(0, renderTargets[Rendertargets::Subsample1])
-		      .color(1, renderTargets[Rendertargets::Subsample2]);
-		framebuffers[Framebuffers::Separate] = renderer.createFramebuffer(fbDesc);
-	}
 }
 
 
