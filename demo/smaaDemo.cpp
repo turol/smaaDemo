@@ -1733,12 +1733,16 @@ void SMAADemo::rebuildRenderGraph() {
 				addSMAARenderGraph(input, renderPass, outputFB, pass);
 			} else {
 				Rendertargets::Rendertargets input = Rendertargets::Subsample1;
+				RenderPassHandle renderPass = renderPasses[RenderPasses::SMAA2XBlend1];
+				Framebuffers::Framebuffers outputFB = Framebuffers::Final;
 				int pass = 0;
-				addSMAARenderGraph(input, renderPasses[RenderPasses::SMAA2XBlend1], Framebuffers::Final, pass);
+				addSMAARenderGraph(input, renderPass, outputFB, pass);
 
 				input = Rendertargets::Subsample2;
+				renderPass = renderPasses[RenderPasses::SMAA2XBlend2];
+				outputFB = Framebuffers::Final;
 				pass = 1;
-				addSMAARenderGraph(input, renderPasses[RenderPasses::SMAA2XBlend2], Framebuffers::Final, pass);
+				addSMAARenderGraph(input, renderPass, outputFB, pass);
 			}
 
 			if (temporalAA) {
