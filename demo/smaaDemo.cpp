@@ -2711,7 +2711,7 @@ void SMAADemo::renderCubeScene() {
 	glm::mat4 viewProj = proj * view * model;
 
 	// temporal jitter
-	if (temporalAA && aaMethod != AAMethod::MSAA) {
+	if (antialiasing && temporalAA && aaMethod != AAMethod::MSAA) {
 		glm::vec2 jitter;
 		if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
 			const glm::vec2 jitters[2] = {
