@@ -1725,6 +1725,7 @@ void SMAADemo::rebuildRenderGraph() {
 				RenderPassHandle renderPass = renderPasses[RenderPasses::SMAA2XBlend1];
 				Framebuffers::Framebuffers outputFB = (temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2;
 				addSMAARenderGraph(input, renderPass, outputFB, pass);
+
 				pass = 1;
 				input = Rendertargets::Subsample2;
 				renderPass = renderPasses[RenderPasses::SMAA2XBlend2];
@@ -1734,6 +1735,7 @@ void SMAADemo::rebuildRenderGraph() {
 				int pass = 0;
 				Rendertargets::Rendertargets input = Rendertargets::Subsample1;
 				addSMAARenderGraph(input, renderPasses[RenderPasses::SMAA2XBlend1], Framebuffers::Final, pass);
+
 				pass = 1;
 				input = Rendertargets::Subsample2;
 				addSMAARenderGraph(input, renderPasses[RenderPasses::SMAA2XBlend2], Framebuffers::Final, pass);
