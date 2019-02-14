@@ -1321,10 +1321,9 @@ void SMAADemo::createPipelines() {
 	if (activeScene != 0) {
 		ShaderMacros macros;
 
-		// image is always rendered with 1 sample so we ask for that renderpass
-		// instead of numSamples
 		PipelineDesc plDesc;
 		plDesc.renderPass(renderPasses[RenderPasses::Scene])
+		      .numSamples(numSamples)
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ColorTexDS>(1)
 		      .vertexShader("image")
