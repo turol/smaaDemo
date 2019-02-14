@@ -1657,7 +1657,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .height(windowHeight);
 
 		for (unsigned int i = 0; i < 2; i++) {
-			rtDesc.name("Temporal resolve" + std::to_string(i));
+			rtDesc.name("Subsample separate " + std::to_string(i));
 			renderTargets[Rendertargets::Subsample1 + i] = renderer.createRenderTarget(rtDesc);
 		}
 
