@@ -1700,12 +1700,14 @@ void SMAADemo::rebuildRenderGraph() {
 				int pass = 0;
 				Rendertargets::Rendertargets input = Rendertargets::MainColor;
 				RenderPassHandle renderPass = renderPasses[RenderPasses::SMAABlend];
-				addSMAARenderGraph(input, renderPass, (temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2, pass);
+				Framebuffers::Framebuffers outputFB = (temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2;
+				addSMAARenderGraph(input, renderPass, outputFB, pass);
 			} else {
 				int pass = 0;
 				Rendertargets::Rendertargets input = Rendertargets::MainColor;
 				RenderPassHandle renderPass = renderPasses[RenderPasses::Final];
-				addSMAARenderGraph(input, renderPass, Framebuffers::Final, pass);
+				Framebuffers::Framebuffers outputFB = Framebuffers::Final;
+				addSMAARenderGraph(input, renderPass, outputFB, pass);
 			}
 
 			if (temporalAA) {
@@ -1723,11 +1725,13 @@ void SMAADemo::rebuildRenderGraph() {
 				int pass = 0;
 				Rendertargets::Rendertargets input = Rendertargets::Subsample1;
 				RenderPassHandle renderPass = renderPasses[RenderPasses::SMAA2XBlend1];
-				addSMAARenderGraph(input, renderPass, (temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2, pass);
+				Framebuffers::Framebuffers outputFB = (temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2;
+				addSMAARenderGraph(input, renderPass, outputFB, pass);
 				pass = 1;
 				input = Rendertargets::Subsample2;
 				renderPass = renderPasses[RenderPasses::SMAA2XBlend2];
-				addSMAARenderGraph(input, renderPass, (temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2, pass);
+				outputFB = (temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2;
+				addSMAARenderGraph(input, renderPass, outputFB, pass);
 			} else {
 				int pass = 0;
 				Rendertargets::Rendertargets input = Rendertargets::Subsample1;
