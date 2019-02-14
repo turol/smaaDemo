@@ -2544,137 +2544,137 @@ void RenderGraph::render(Renderer &renderer) {
 
 
 void SMAADemo::renderCubeScene() {
-		renderer.bindPipeline(getCubePipeline(numSamples));
+	renderer.bindPipeline(getCubePipeline(numSamples));
 
-		const unsigned int windowWidth  = rendererDesc.swapchain.width;
-		const unsigned int windowHeight = rendererDesc.swapchain.height;
+	const unsigned int windowWidth  = rendererDesc.swapchain.width;
+	const unsigned int windowHeight = rendererDesc.swapchain.height;
 
-		ShaderDefines::Globals globals;
-		globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
-		globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
+	ShaderDefines::Globals globals;
+	globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
+	globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
 
-		// TODO: better calculation, and check cube size (side is sqrt(3) currently)
-		const float cubeDiameter = sqrtf(3.0f);
-		const float cubeDistance = cubeDiameter + 1.0f;
+	// TODO: better calculation, and check cube size (side is sqrt(3) currently)
+	const float cubeDiameter = sqrtf(3.0f);
+	const float cubeDistance = cubeDiameter + 1.0f;
 
-		float farPlane  = cameraDistance + cubeDistance * float(cubesPerSide + 1);
-		float nearPlane = std::max(0.1f, cameraDistance - cubeDistance * float(cubesPerSide + 1));
+	float farPlane  = cameraDistance + cubeDistance * float(cubesPerSide + 1);
+	float nearPlane = std::max(0.1f, cameraDistance - cubeDistance * float(cubesPerSide + 1));
 
-		glm::mat4 model  = glm::rotate(glm::mat4(1.0f), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
-		glm::mat4 view   = glm::lookAt(glm::vec3(cameraDistance, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		glm::mat4 proj   = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, nearPlane, farPlane);
-		glm::mat4 viewProj = proj * view * model;
+	glm::mat4 model  = glm::rotate(glm::mat4(1.0f), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 view   = glm::lookAt(glm::vec3(cameraDistance, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 proj   = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, nearPlane, farPlane);
+	glm::mat4 viewProj = proj * view * model;
 
-		// temporal jitter
-		if (temporalAA && aaMethod != AAMethod::MSAA) {
-			glm::vec2 jitter;
-			if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
-				const glm::vec2 jitters[2] = {
-					  {  0.125f,  0.125f }
-					, { -0.125f, -0.125f }
-				};
-				jitter = jitters[temporalFrame];
-			} else {
-				const glm::vec2 jitters[2] = {
-					  { -0.25f,  0.25f }
-					, { 0.25f,  -0.25f }
-				};
-				jitter = jitters[temporalFrame];
-			}
-
-			jitter = jitter * 2.0f * glm::vec2(globals.screenSize.x, globals.screenSize.y);
-			glm::mat4 jitterMatrix = glm::translate(glm::identity<glm::mat4>(), glm::vec3(jitter, 0.0f));
-			viewProj = jitterMatrix * viewProj;
+	// temporal jitter
+	if (temporalAA && aaMethod != AAMethod::MSAA) {
+		glm::vec2 jitter;
+		if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
+			const glm::vec2 jitters[2] = {
+				  {  0.125f,  0.125f }
+				, { -0.125f, -0.125f }
+			};
+			jitter = jitters[temporalFrame];
+		} else {
+			const glm::vec2 jitters[2] = {
+				  { -0.25f,  0.25f }
+				, { 0.25f,  -0.25f }
+			};
+			jitter = jitters[temporalFrame];
 		}
 
-		prevViewProj         = currViewProj;
-		currViewProj         = viewProj;
-		globals.viewProj     = currViewProj;
-		globals.prevViewProj = prevViewProj;
+		jitter = jitter * 2.0f * glm::vec2(globals.screenSize.x, globals.screenSize.y);
+		glm::mat4 jitterMatrix = glm::translate(glm::identity<glm::mat4>(), glm::vec3(jitter, 0.0f));
+		viewProj = jitterMatrix * viewProj;
+	}
 
-		renderer.setViewport(0, 0, windowWidth, windowHeight);
+	prevViewProj         = currViewProj;
+	currViewProj         = viewProj;
+	globals.viewProj     = currViewProj;
+	globals.prevViewProj = prevViewProj;
 
-		GlobalDS globalDS;
-		globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-		globalDS.linearSampler  = linearSampler;
-		globalDS.nearestSampler = nearestSampler;
-		renderer.bindDescriptorSet(0, globalDS);
+	renderer.setViewport(0, 0, windowWidth, windowHeight);
 
-		renderer.bindVertexBuffer(0, cubeVBO);
-		renderer.bindIndexBuffer(cubeIBO, false);
+	GlobalDS globalDS;
+	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	globalDS.linearSampler  = linearSampler;
+	globalDS.nearestSampler = nearestSampler;
+	renderer.bindDescriptorSet(0, globalDS);
 
-		CubeSceneDS cubeDS;
-		// FIXME: remove unused UBO hack
-		uint32_t temp    = 0;
-		cubeDS.unused    = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-		cubeDS.instances = renderer.createEphemeralBuffer(BufferType::Storage, static_cast<uint32_t>(sizeof(ShaderDefines::Cube) * cubes.size()), &cubes[0]);
-		renderer.bindDescriptorSet(1, cubeDS);
+	renderer.bindVertexBuffer(0, cubeVBO);
+	renderer.bindIndexBuffer(cubeIBO, false);
 
-		unsigned int numCubes = static_cast<unsigned int>(cubes.size());
-		if (visualizeCubeOrder) {
-			cubeOrderNum = cubeOrderNum % numCubes;
-			cubeOrderNum++;
-			numCubes     = cubeOrderNum;
-		}
+	CubeSceneDS cubeDS;
+	// FIXME: remove unused UBO hack
+	uint32_t temp    = 0;
+	cubeDS.unused    = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
+	cubeDS.instances = renderer.createEphemeralBuffer(BufferType::Storage, static_cast<uint32_t>(sizeof(ShaderDefines::Cube) * cubes.size()), &cubes[0]);
+	renderer.bindDescriptorSet(1, cubeDS);
 
-		renderer.drawIndexedInstanced(3 * 2 * 6, numCubes);
+	unsigned int numCubes = static_cast<unsigned int>(cubes.size());
+	if (visualizeCubeOrder) {
+		cubeOrderNum = cubeOrderNum % numCubes;
+		cubeOrderNum++;
+		numCubes     = cubeOrderNum;
+	}
+
+	renderer.drawIndexedInstanced(3 * 2 * 6, numCubes);
 }
 
 
 void SMAADemo::renderImageScene() {
-		renderer.bindPipeline(imagePipeline);
+	renderer.bindPipeline(imagePipeline);
 
-		const auto &image = images.at(activeScene - 1);
+	const auto &image = images.at(activeScene - 1);
 
-		const unsigned int windowWidth  = rendererDesc.swapchain.width;
-		const unsigned int windowHeight = rendererDesc.swapchain.height;
+	const unsigned int windowWidth  = rendererDesc.swapchain.width;
+	const unsigned int windowHeight = rendererDesc.swapchain.height;
 
-		renderer.setViewport(0, 0, windowWidth, windowHeight);
+	renderer.setViewport(0, 0, windowWidth, windowHeight);
 
-		ShaderDefines::Globals globals;
-		globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
-		globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
+	ShaderDefines::Globals globals;
+	globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
+	globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
 
-		GlobalDS globalDS;
-		globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-		globalDS.linearSampler = linearSampler;
-		globalDS.nearestSampler = nearestSampler;
-		renderer.bindDescriptorSet(0, globalDS);
+	GlobalDS globalDS;
+	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	globalDS.linearSampler = linearSampler;
+	globalDS.nearestSampler = nearestSampler;
+	renderer.bindDescriptorSet(0, globalDS);
 
-		assert(activeScene - 1 < images.size());
-		ColorTexDS colorDS;
-		// FIXME: remove unused UBO hack
-		uint32_t temp  = 0;
-		colorDS.unused = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-		colorDS.color = image.tex;
-		renderer.bindDescriptorSet(1, colorDS);
-		renderer.draw(0, 3);
+	assert(activeScene - 1 < images.size());
+	ColorTexDS colorDS;
+	// FIXME: remove unused UBO hack
+	uint32_t temp  = 0;
+	colorDS.unused = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
+	colorDS.color = image.tex;
+	renderer.bindDescriptorSet(1, colorDS);
+	renderer.draw(0, 3);
 }
 
 
 void SMAADemo::renderFXAA() {
-			renderer.bindPipeline(getFXAAPipeline(fxaaQuality));
-			ColorCombinedDS colorDS;
-			// FIXME: remove unused UBO hack
-			uint32_t temp         = 0;
-			colorDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-			colorDS.color.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::MainColor]);
-			colorDS.color.sampler = linearSampler;
-			renderer.bindDescriptorSet(1, colorDS);
-			renderer.draw(0, 3);
+	renderer.bindPipeline(getFXAAPipeline(fxaaQuality));
+	ColorCombinedDS colorDS;
+	// FIXME: remove unused UBO hack
+	uint32_t temp         = 0;
+	colorDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
+	colorDS.color.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::MainColor]);
+	colorDS.color.sampler = linearSampler;
+	renderer.bindDescriptorSet(1, colorDS);
+	renderer.draw(0, 3);
 }
 
 
 void SMAADemo::renderSeparate() {
-			renderer.bindPipeline(separatePipeline);
-			ColorCombinedDS separateDS;
-			// FIXME: remove unused UBO hack
-			uint32_t temp            = 0;
-			separateDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-			separateDS.color.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::MainColor]);
-			separateDS.color.sampler = nearestSampler;
-			renderer.bindDescriptorSet(1, separateDS);
-			renderer.draw(0, 3);
+	renderer.bindPipeline(separatePipeline);
+	ColorCombinedDS separateDS;
+	// FIXME: remove unused UBO hack
+	uint32_t temp            = 0;
+	separateDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
+	separateDS.color.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::MainColor]);
+	separateDS.color.sampler = nearestSampler;
+	renderer.bindDescriptorSet(1, separateDS);
+	renderer.draw(0, 3);
 }
 
 
@@ -2780,29 +2780,29 @@ void SMAADemo::renderSMAABlend(Rendertargets::Rendertargets input, int pass) {
 
 	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
 
-		// full effect
-		renderer.bindPipeline(pipelines.neighborPipelines[pass]);
+	// full effect
+	renderer.bindPipeline(pipelines.neighborPipelines[pass]);
 
-		NeighborBlendDS neighborBlendDS;
-		neighborBlendDS.smaaUBO              = smaaUBOBuf;
-		neighborBlendDS.color.tex            = renderer.getRenderTargetTexture(renderTargets[input]);
-		neighborBlendDS.color.sampler        = linearSampler;
-		neighborBlendDS.blendweights.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::BlendWeights]);
-		neighborBlendDS.blendweights.sampler = linearSampler;
-		renderer.bindDescriptorSet(1, neighborBlendDS);
+	NeighborBlendDS neighborBlendDS;
+	neighborBlendDS.smaaUBO              = smaaUBOBuf;
+	neighborBlendDS.color.tex            = renderer.getRenderTargetTexture(renderTargets[input]);
+	neighborBlendDS.color.sampler        = linearSampler;
+	neighborBlendDS.blendweights.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::BlendWeights]);
+	neighborBlendDS.blendweights.sampler = linearSampler;
+	renderer.bindDescriptorSet(1, neighborBlendDS);
 
 	renderer.draw(0, 3);
 }
 
 
 void SMAADemo::renderSMAADebug(Rendertargets::Rendertargets rt) {
-		ColorTexDS blitDS;
-		renderer.bindPipeline(blitPipeline);
-		// FIXME: remove unused UBO hack
-		uint32_t temp  = 0;
-		blitDS.unused  = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-		blitDS.color   = renderer.getRenderTargetTexture(renderTargets[rt] );
-		renderer.bindDescriptorSet(1, blitDS);
+	ColorTexDS blitDS;
+	renderer.bindPipeline(blitPipeline);
+	// FIXME: remove unused UBO hack
+	uint32_t temp  = 0;
+	blitDS.unused  = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
+	blitDS.color   = renderer.getRenderTargetTexture(renderTargets[rt] );
+	renderer.bindDescriptorSet(1, blitDS);
 
 	renderer.draw(0, 3);
 }
