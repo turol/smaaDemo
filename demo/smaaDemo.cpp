@@ -2768,6 +2768,7 @@ void SMAADemo::renderCubeScene() {
 void SMAADemo::renderImageScene() {
 	renderer.bindPipeline(imagePipeline);
 
+	assert(activeScene > 0);
 	const auto &image = images.at(activeScene - 1);
 
 	const unsigned int windowWidth  = rendererDesc.swapchain.width;
