@@ -1695,16 +1695,16 @@ void SMAADemo::rebuildRenderGraph() {
 		case AAMethod::SMAA: {
 			// TODO: inline SMAA render here
 			if (temporalAA) {
-				int pass = 0;
 				Rendertargets::Rendertargets input = Rendertargets::MainColor;
 				RenderPassHandle renderPass = renderPasses[RenderPasses::SMAABlend];
 				Framebuffers::Framebuffers outputFB = (temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2;
+				int pass = 0;
 				addSMAARenderGraph(input, renderPass, outputFB, pass);
 			} else {
-				int pass = 0;
 				Rendertargets::Rendertargets input = Rendertargets::MainColor;
 				RenderPassHandle renderPass = renderPasses[RenderPasses::Final];
 				Framebuffers::Framebuffers outputFB = Framebuffers::Final;
+				int pass = 0;
 				addSMAARenderGraph(input, renderPass, outputFB, pass);
 			}
 
@@ -1720,24 +1720,24 @@ void SMAADemo::rebuildRenderGraph() {
 			// TODO: inline SMAA render here
 			if (temporalAA) {
 				// FIXME: wrong render pass, SMAA render is multiple passes
-				int pass = 0;
 				Rendertargets::Rendertargets input = Rendertargets::Subsample1;
 				RenderPassHandle renderPass = renderPasses[RenderPasses::SMAA2XBlend1];
 				Framebuffers::Framebuffers outputFB = (temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2;
+				int pass = 0;
 				addSMAARenderGraph(input, renderPass, outputFB, pass);
 
-				pass = 1;
 				input = Rendertargets::Subsample2;
 				renderPass = renderPasses[RenderPasses::SMAA2XBlend2];
 				outputFB = (temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2;
+				pass = 1;
 				addSMAARenderGraph(input, renderPass, outputFB, pass);
 			} else {
-				int pass = 0;
 				Rendertargets::Rendertargets input = Rendertargets::Subsample1;
+				int pass = 0;
 				addSMAARenderGraph(input, renderPasses[RenderPasses::SMAA2XBlend1], Framebuffers::Final, pass);
 
-				pass = 1;
 				input = Rendertargets::Subsample2;
+				pass = 1;
 				addSMAARenderGraph(input, renderPasses[RenderPasses::SMAA2XBlend2], Framebuffers::Final, pass);
 			}
 
