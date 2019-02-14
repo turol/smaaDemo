@@ -1480,11 +1480,11 @@ void SMAADemo::rebuildRenderGraph() {
 	{
 		RenderPassDesc rpDesc;
 		if (!temporalAA) {
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
-		rpDesc.name("FXAA no temporal");
+			rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+			rpDesc.name("FXAA no temporal");
 		} else {
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
-		rpDesc.name("FXAA temporal");
+			rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+			rpDesc.name("FXAA temporal");
 		}
 
 		renderPasses[RenderPasses::FXAA]     = renderer.createRenderPass(rpDesc);
@@ -2781,9 +2781,9 @@ void SMAADemo::renderImageScene() {
 	globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
 
 	GlobalDS globalDS;
-	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	globalDS.linearSampler = linearSampler;
-	globalDS.nearestSampler = nearestSampler;
+	globalDS.globalUniforms  = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	globalDS.linearSampler   = linearSampler;
+	globalDS.nearestSampler  = nearestSampler;
 	renderer.bindDescriptorSet(0, globalDS);
 
 	assert(activeScene - 1 < images.size());
