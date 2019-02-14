@@ -1762,7 +1762,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 			// TODO: clean up the renderpass mess
 			if (temporalAA) {
-				// FIXME: wrong render pass, SMAA render is multiple passes
 				Rendertargets::Rendertargets input = Rendertargets::Subsample1;
 				RenderPassHandle renderPass = renderPasses[RenderPasses::SMAA2XBlend1];
 				Framebuffers::Framebuffers outputFB = (temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2;
