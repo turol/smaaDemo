@@ -1700,16 +1700,14 @@ void SMAADemo::rebuildRenderGraph() {
 				Framebuffers::Framebuffers outputFB = (temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2;
 				int pass = 0;
 				addSMAARenderGraph(input, renderPass, outputFB, pass);
+
+				renderGraph.renderPass(renderPasses[RenderPasses::Final], framebuffers[Framebuffers::Final], std::bind(&SMAADemo::renderTemporalAA, this));
 			} else {
 				Rendertargets::Rendertargets input = Rendertargets::MainColor;
 				RenderPassHandle renderPass = renderPasses[RenderPasses::Final];
 				Framebuffers::Framebuffers outputFB = Framebuffers::Final;
 				int pass = 0;
 				addSMAARenderGraph(input, renderPass, outputFB, pass);
-			}
-
-			if (temporalAA) {
-				renderGraph.renderPass(renderPasses[RenderPasses::Final], framebuffers[Framebuffers::Final], std::bind(&SMAADemo::renderTemporalAA, this));
 			}
 		} break;
 
@@ -1731,6 +1729,10 @@ void SMAADemo::rebuildRenderGraph() {
 				outputFB = (temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2;
 				pass = 1;
 				addSMAARenderGraph(input, renderPass, outputFB, pass);
+
+				// FIXME: move to renderpass
+				renderGraph.layoutTransition(renderTargets[Rendertargets::Resolve1 + temporalFrame], Layout::ColorAttachment, Layout::ShaderRead);
+				renderGraph.renderPass(renderPasses[RenderPasses::Final], framebuffers[Framebuffers::Final], std::bind(&SMAADemo::renderTemporalAA, this));
 			} else {
 				Rendertargets::Rendertargets input = Rendertargets::Subsample1;
 				RenderPassHandle renderPass = renderPasses[RenderPasses::SMAA2XBlend1];
@@ -1743,12 +1745,6 @@ void SMAADemo::rebuildRenderGraph() {
 				outputFB = Framebuffers::Final;
 				pass = 1;
 				addSMAARenderGraph(input, renderPass, outputFB, pass);
-			}
-
-			if (temporalAA) {
-				// FIXME: move to renderpass
-				renderGraph.layoutTransition(renderTargets[Rendertargets::Resolve1 + temporalFrame], Layout::ColorAttachment, Layout::ShaderRead);
-				renderGraph.renderPass(renderPasses[RenderPasses::Final], framebuffers[Framebuffers::Final], std::bind(&SMAADemo::renderTemporalAA, this));
 			}
 		} break;
 		}
