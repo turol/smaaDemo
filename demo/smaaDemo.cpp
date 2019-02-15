@@ -769,27 +769,6 @@ SMAADemo::~SMAADemo() {
 
 	renderGraph.clear(renderer);
 
-	for (unsigned int i = 0; i < Framebuffers::Count; i++) {
-		if (renderGraph.framebuffers[i]) {
-			renderer.deleteFramebuffer(renderGraph.framebuffers[i]);
-			renderGraph.framebuffers[i] = FramebufferHandle();
-		}
-	}
-
-	for (unsigned int i = 0; i < Rendertargets::Count; i++) {
-		if (renderGraph.renderTargets[i]) {
-			renderer.deleteRenderTarget(renderGraph.renderTargets[i]);
-			renderGraph.renderTargets[i] = RenderTargetHandle();
-		}
-	}
-
-	for (unsigned int i = 0; i < RenderPasses::Count; i++) {
-		if (renderGraph.renderPasses[i]) {
-			renderer.deleteRenderPass(renderGraph.renderPasses[i]);
-			renderGraph.renderPasses[i] = RenderPassHandle();
-		}
-	}
-
 	if (cubeVBO) {
 		renderer.deleteBuffer(cubeVBO);
 		cubeVBO = BufferHandle();
@@ -1429,27 +1408,6 @@ void SMAADemo::rebuildRenderGraph() {
 	const unsigned int windowHeight = rendererDesc.swapchain.height;
 
 	LOG("create framebuffers at size %ux%u\n", windowWidth, windowHeight);
-
-	for (unsigned int i = 0; i < RenderPasses::Count; i++) {
-		if (renderGraph.renderPasses[i]) {
-			renderer.deleteRenderPass(renderGraph.renderPasses[i]);
-			renderGraph.renderPasses[i] = RenderPassHandle();
-		}
-	}
-
-	for (unsigned int i = 0; i < Framebuffers::Count; i++) {
-		if (renderGraph.framebuffers[i]) {
-			renderer.deleteFramebuffer(renderGraph.framebuffers[i]);
-			renderGraph.framebuffers[i] = FramebufferHandle();
-		}
-	}
-
-	for (unsigned int i = 0; i < Rendertargets::Count; i++) {
-		if (renderGraph.renderTargets[i]) {
-			renderer.deleteRenderTarget(renderGraph.renderTargets[i]);
-			renderGraph.renderTargets[i] = RenderTargetHandle();
-		}
-	}
 
 	{
 		Layout l = Layout::ShaderRead;
@@ -2606,8 +2564,29 @@ void SMAADemo::render() {
 }
 
 
-void RenderGraph::clear(Renderer & /* renderer */) {
+void RenderGraph::clear(Renderer &renderer) {
 	valid = false;
+
+	for (unsigned int i = 0; i < Framebuffers::Count; i++) {
+		if (framebuffers[i]) {
+			renderer.deleteFramebuffer(framebuffers[i]);
+			framebuffers[i] = FramebufferHandle();
+		}
+	}
+
+	for (unsigned int i = 0; i < Rendertargets::Count; i++) {
+		if (renderTargets[i]) {
+			renderer.deleteRenderTarget(renderTargets[i]);
+			renderTargets[i] = RenderTargetHandle();
+		}
+	}
+
+	for (unsigned int i = 0; i < RenderPasses::Count; i++) {
+		if (renderPasses[i]) {
+			renderer.deleteRenderPass(renderPasses[i]);
+			renderPasses[i] = RenderPassHandle();
+		}
+	}
 
 	functions.clear();
 }
