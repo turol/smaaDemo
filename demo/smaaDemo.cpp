@@ -469,6 +469,7 @@ class RenderGraph {
 public:
 
 	// TODO: hide these
+	RenderTargetHandle                                renderTargets[Rendertargets::Count];
 	RenderPassHandle                                  renderPasses[RenderPasses::Count];
 	FramebufferHandle                                 framebuffers[Framebuffers::Count];
 
@@ -575,8 +576,6 @@ class SMAADemo {
 	PipelineHandle                                    guiPipeline;
 	PipelineHandle                                    separatePipeline;
 	std::array<PipelineHandle, 2>                     temporalAAPipelines;
-
-	RenderTargetHandle                                renderTargets[Rendertargets::Count];
 
 	BufferHandle                                      cubeVBO;
 	BufferHandle                                      cubeIBO;
@@ -776,9 +775,9 @@ SMAADemo::~SMAADemo() {
 	}
 
 	for (unsigned int i = 0; i < Rendertargets::Count; i++) {
-		if (renderTargets[i]) {
-			renderer.deleteRenderTarget(renderTargets[i]);
-			renderTargets[i] = RenderTargetHandle();
+		if (renderGraph.renderTargets[i]) {
+			renderer.deleteRenderTarget(renderGraph.renderTargets[i]);
+			renderGraph.renderTargets[i] = RenderTargetHandle();
 		}
 	}
 
@@ -1444,9 +1443,9 @@ void SMAADemo::rebuildRenderGraph() {
 	}
 
 	for (unsigned int i = 0; i < Rendertargets::Count; i++) {
-		if (renderTargets[i]) {
-			renderer.deleteRenderTarget(renderTargets[i]);
-			renderTargets[i] = RenderTargetHandle();
+		if (renderGraph.renderTargets[i]) {
+			renderer.deleteRenderTarget(renderGraph.renderTargets[i]);
+			renderGraph.renderTargets[i] = RenderTargetHandle();
 		}
 	}
 
@@ -1547,7 +1546,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .additionalViewFormat(Format::RGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		renderTargets[Rendertargets::MainColor] = renderer.createRenderTarget(rtDesc);
+		renderGraph.renderTargets[Rendertargets::MainColor] = renderer.createRenderTarget(rtDesc);
 	}
 
 	{
@@ -1557,7 +1556,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .format(Format::RG16Float)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		renderTargets[Rendertargets::Velocity] = renderer.createRenderTarget(rtDesc);
+		renderGraph.renderTargets[Rendertargets::Velocity] = renderer.createRenderTarget(rtDesc);
 	}
 
 	{
@@ -1566,7 +1565,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .format(Format::sRGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		renderTargets[Rendertargets::FinalRender] = renderer.createRenderTarget(rtDesc);
+		renderGraph.renderTargets[Rendertargets::FinalRender] = renderer.createRenderTarget(rtDesc);
 	}
 
 	{
@@ -1576,16 +1575,16 @@ void SMAADemo::rebuildRenderGraph() {
 		      .format(depthFormat)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		renderTargets[Rendertargets::MainDepth] = renderer.createRenderTarget(rtDesc);
+		renderGraph.renderTargets[Rendertargets::MainDepth] = renderer.createRenderTarget(rtDesc);
 	}
 
 	{
 		FramebufferDesc fbDesc;
 		fbDesc.name("scene")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::Scene])
-		      .color(0, renderTargets[Rendertargets::MainColor])
-		      .color(1, renderTargets[Rendertargets::Velocity])
-		      .depthStencil(renderTargets[Rendertargets::MainDepth]);
+		      .color(0, renderGraph.renderTargets[Rendertargets::MainColor])
+		      .color(1, renderGraph.renderTargets[Rendertargets::Velocity])
+		      .depthStencil(renderGraph.renderTargets[Rendertargets::MainDepth]);
 		renderGraph.framebuffers[Framebuffers::Scene] = renderer.createFramebuffer(fbDesc);
 	}
 
@@ -1593,7 +1592,7 @@ void SMAADemo::rebuildRenderGraph() {
 		FramebufferDesc fbDesc;
 		fbDesc.name("final")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::Final])
-		      .color(0, renderTargets[Rendertargets::FinalRender]);
+		      .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
 		renderGraph.framebuffers[Framebuffers::Final] = renderer.createFramebuffer(fbDesc);
 	}
 
@@ -1604,12 +1603,12 @@ void SMAADemo::rebuildRenderGraph() {
 		      .format(Format::RGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		renderTargets[Rendertargets::Edges] = renderer.createRenderTarget(rtDesc);
+		renderGraph.renderTargets[Rendertargets::Edges] = renderer.createRenderTarget(rtDesc);
 
 		FramebufferDesc fbDesc;
 		fbDesc.name("SMAA edges")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::SMAAEdges])
-		      .color(0, renderTargets[Rendertargets::Edges]);
+		      .color(0, renderGraph.renderTargets[Rendertargets::Edges]);
 		renderGraph.framebuffers[Framebuffers::SMAAEdges] = renderer.createFramebuffer(fbDesc);
 	}
 
@@ -1620,12 +1619,12 @@ void SMAADemo::rebuildRenderGraph() {
 		      .format(Format::RGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		renderTargets[Rendertargets::BlendWeights] = renderer.createRenderTarget(rtDesc);
+		renderGraph.renderTargets[Rendertargets::BlendWeights] = renderer.createRenderTarget(rtDesc);
 
 		FramebufferDesc fbDesc;
 		fbDesc.name("SMAA weights")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::SMAAWeights])
-		      .color(0, renderTargets[Rendertargets::BlendWeights]);
+		      .color(0, renderGraph.renderTargets[Rendertargets::BlendWeights]);
 		renderGraph.framebuffers[Framebuffers::SMAAWeights] = renderer.createFramebuffer(fbDesc);
 	}
 
@@ -1636,18 +1635,18 @@ void SMAADemo::rebuildRenderGraph() {
 		      .format(Format::sRGBA8)  // TODO: not right?
 		      .width(windowWidth)
 		      .height(windowHeight);
-		renderTargets[Rendertargets::Resolve1] = renderer.createRenderTarget(rtDesc);
+		renderGraph.renderTargets[Rendertargets::Resolve1] = renderer.createRenderTarget(rtDesc);
 
 		FramebufferDesc fbDesc;
 		fbDesc.name("Temporal resolve 0")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::SMAABlend])
-		      .color(0, renderTargets[Rendertargets::Resolve1]);
+		      .color(0, renderGraph.renderTargets[Rendertargets::Resolve1]);
 		renderGraph.framebuffers[Framebuffers::Resolve1] = renderer.createFramebuffer(fbDesc);
 
 		rtDesc.name("Temporal resolve 1");
-		renderTargets[Rendertargets::Resolve2] = renderer.createRenderTarget(rtDesc);
+		renderGraph.renderTargets[Rendertargets::Resolve2] = renderer.createRenderTarget(rtDesc);
 
-		fbDesc.color(0, renderTargets[Rendertargets::Resolve2])
+		fbDesc.color(0, renderGraph.renderTargets[Rendertargets::Resolve2])
 		      .name("Temporal resolve 1");
 		renderGraph.framebuffers[Framebuffers::Resolve2] = renderer.createFramebuffer(fbDesc);
 	}
@@ -1661,14 +1660,14 @@ void SMAADemo::rebuildRenderGraph() {
 
 		for (unsigned int i = 0; i < 2; i++) {
 			rtDesc.name("Subsample separate " + std::to_string(i));
-			renderTargets[Rendertargets::Subsample1 + i] = renderer.createRenderTarget(rtDesc);
+			renderGraph.renderTargets[Rendertargets::Subsample1 + i] = renderer.createRenderTarget(rtDesc);
 		}
 
 		FramebufferDesc fbDesc;
 		fbDesc.name("Separate")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::Separate])
-		      .color(0, renderTargets[Rendertargets::Subsample1])
-		      .color(1, renderTargets[Rendertargets::Subsample2]);
+		      .color(0, renderGraph.renderTargets[Rendertargets::Subsample1])
+		      .color(1, renderGraph.renderTargets[Rendertargets::Subsample2]);
 		renderGraph.framebuffers[Framebuffers::Separate] = renderer.createFramebuffer(fbDesc);
 	}
 
@@ -1681,7 +1680,7 @@ void SMAADemo::rebuildRenderGraph() {
 	if (antialiasing) {
 		switch (aaMethod) {
 		case AAMethod::MSAA: {
-			renderGraph.resolveMSAA(renderTargets[Rendertargets::MainColor], renderTargets[Rendertargets::FinalRender]);
+			renderGraph.resolveMSAA(renderGraph.renderTargets[Rendertargets::MainColor], renderGraph.renderTargets[Rendertargets::FinalRender]);
 		} break;
 
 		case AAMethod::FXAA: {
@@ -1828,7 +1827,7 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 
 				// FIXME: move to renderpass
-				renderGraph.layoutTransition(renderTargets[Rendertargets::Resolve1 + temporalFrame], Layout::ColorAttachment, Layout::ShaderRead);
+				renderGraph.layoutTransition(renderGraph.renderTargets[Rendertargets::Resolve1 + temporalFrame], Layout::ColorAttachment, Layout::ShaderRead);
 				renderGraph.renderPass(renderGraph.renderPasses[RenderPasses::Final], renderGraph.framebuffers[Framebuffers::Final], std::bind(&SMAADemo::renderTemporalAA, this));
 			} else {
 				Rendertargets::Rendertargets input = Rendertargets::Subsample1;
@@ -1897,12 +1896,12 @@ void SMAADemo::rebuildRenderGraph() {
 		}
 
 	} else {
-		renderGraph.blit(renderTargets[Rendertargets::MainColor], renderTargets[Rendertargets::FinalRender]);
+		renderGraph.blit(renderGraph.renderTargets[Rendertargets::MainColor], renderGraph.renderTargets[Rendertargets::FinalRender]);
 	}
 
 	renderGraph.renderPass(renderGraph.renderPasses[RenderPasses::GUI], renderGraph.framebuffers[Framebuffers::Final], std::bind(&SMAADemo::renderGUI, this));
 
-	renderGraph.presentRenderTarget(renderTargets[Rendertargets::FinalRender]);
+	renderGraph.presentRenderTarget(renderGraph.renderTargets[Rendertargets::FinalRender]);
 
 	renderGraph.build();
 
@@ -2806,7 +2805,7 @@ void SMAADemo::renderFXAA() {
 	// FIXME: remove unused UBO hack
 	uint32_t temp         = 0;
 	colorDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-	colorDS.color.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::MainColor]);
+	colorDS.color.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::MainColor]);
 	colorDS.color.sampler = linearSampler;
 	renderer.bindDescriptorSet(1, colorDS);
 	renderer.draw(0, 3);
@@ -2819,7 +2818,7 @@ void SMAADemo::renderSeparate() {
 	// FIXME: remove unused UBO hack
 	uint32_t temp            = 0;
 	separateDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-	separateDS.color.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::MainColor]);
+	separateDS.color.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::MainColor]);
 	separateDS.color.sampler = nearestSampler;
 	renderer.bindDescriptorSet(1, separateDS);
 	renderer.draw(0, 3);
@@ -2844,12 +2843,12 @@ void SMAADemo::renderSMAAEdges(Rendertargets::Rendertargets input, int pass) {
 	EdgeDetectionDS edgeDS;
 	edgeDS.smaaUBO = smaaUBOBuf;
 	if (smaaKey.edgeMethod == SMAAEdgeMethod::Depth) {
-		edgeDS.color.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::MainDepth]);
+		edgeDS.color.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::MainDepth]);
 	} else {
-		edgeDS.color.tex     = renderer.getRenderTargetView(renderTargets[input], Format::RGBA8);
+		edgeDS.color.tex     = renderer.getRenderTargetView(renderGraph.renderTargets[input], Format::RGBA8);
 	}
 	edgeDS.color.sampler = nearestSampler;
-	edgeDS.predicationTex.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::MainDepth]);
+	edgeDS.predicationTex.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::MainDepth]);
 	edgeDS.predicationTex.sampler = nearestSampler;
 	renderer.bindDescriptorSet(1, edgeDS);
 	renderer.draw(0, 3);
@@ -2873,7 +2872,7 @@ void SMAADemo::renderSMAAWeights(int pass) {
 	renderer.bindPipeline(pipelines.blendWeightPipeline);
 	BlendWeightDS blendWeightDS;
 	blendWeightDS.smaaUBO           = smaaUBOBuf;
-	blendWeightDS.edgesTex.tex      = renderer.getRenderTargetTexture(renderTargets[Rendertargets::Edges]);
+	blendWeightDS.edgesTex.tex      = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::Edges]);
 	blendWeightDS.edgesTex.sampler  = linearSampler;
 	blendWeightDS.areaTex.tex       = areaTex;
 	blendWeightDS.areaTex.sampler   = linearSampler;
@@ -2904,9 +2903,9 @@ void SMAADemo::renderSMAABlend(Rendertargets::Rendertargets input, int pass) {
 
 	NeighborBlendDS neighborBlendDS;
 	neighborBlendDS.smaaUBO              = smaaUBOBuf;
-	neighborBlendDS.color.tex            = renderer.getRenderTargetTexture(renderTargets[input]);
+	neighborBlendDS.color.tex            = renderer.getRenderTargetTexture(renderGraph.renderTargets[input]);
 	neighborBlendDS.color.sampler        = linearSampler;
-	neighborBlendDS.blendweights.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::BlendWeights]);
+	neighborBlendDS.blendweights.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::BlendWeights]);
 	neighborBlendDS.blendweights.sampler = linearSampler;
 	renderer.bindDescriptorSet(1, neighborBlendDS);
 
@@ -2920,7 +2919,7 @@ void SMAADemo::renderSMAADebug(Rendertargets::Rendertargets rt) {
 	// FIXME: remove unused UBO hack
 	uint32_t temp  = 0;
 	blitDS.unused  = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-	blitDS.color   = renderer.getRenderTargetTexture(renderTargets[rt] );
+	blitDS.color   = renderer.getRenderTargetTexture(renderGraph.renderTargets[rt] );
 	renderer.bindDescriptorSet(1, blitDS);
 
 	renderer.draw(0, 3);
@@ -2942,18 +2941,18 @@ void SMAADemo::renderTemporalAA() {
 
 	TemporalAADS temporalDS;
 	temporalDS.smaaUBO             = smaaUBOBuf;
-	temporalDS.currentTex.tex      = renderer.getRenderTargetTexture(renderTargets[Rendertargets::Resolve1 + temporalFrame]);
+	temporalDS.currentTex.tex      = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::Resolve1 + temporalFrame]);
 	temporalDS.currentTex.sampler  = nearestSampler;
 	if (temporalAAFirstFrame) {
 		// to prevent flicker on first frame after enabling
-		temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::Resolve1 + temporalFrame]);
+		temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::Resolve1 + temporalFrame]);
 		temporalDS.previousTex.sampler = nearestSampler;
 		temporalAAFirstFrame = false;
 	} else {
-		temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(renderTargets[Rendertargets::Resolve1 + 1 - temporalFrame]);
+		temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::Resolve1 + 1 - temporalFrame]);
 		temporalDS.previousTex.sampler = nearestSampler;
 	}
-	temporalDS.velocityTex.tex         = renderer.getRenderTargetTexture(renderTargets[Rendertargets::Velocity]);
+	temporalDS.velocityTex.tex         = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::Velocity]);
 	temporalDS.velocityTex.sampler     = nearestSampler;
 
 	renderer.bindDescriptorSet(1, temporalDS);
