@@ -767,6 +767,8 @@ SMAADemo::~SMAADemo() {
 		imGuiContext = nullptr;
 	}
 
+	renderGraph.clear();
+
 	for (unsigned int i = 0; i < Framebuffers::Count; i++) {
 		if (renderGraph.framebuffers[i]) {
 			renderer.deleteFramebuffer(renderGraph.framebuffers[i]);
