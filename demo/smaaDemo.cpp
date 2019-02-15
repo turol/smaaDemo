@@ -494,6 +494,8 @@ public:
 
 	void clear(Renderer &renderer);
 
+	void createRenderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &desc);
+
 	void renderPass(RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, std::function<void()> f);
 
 	void resolveMSAA(RenderTargetHandle source, RenderTargetHandle target);
@@ -2574,6 +2576,14 @@ void RenderGraph::clear(Renderer &renderer) {
 	}
 
 	functions.clear();
+}
+
+
+void RenderGraph::createRenderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &desc) {
+	assert(state == State::Building);
+	assert(!renderPasses[rp]);
+
+	renderPasses[rp] = renderer.createRenderPass(desc);
 }
 
 
