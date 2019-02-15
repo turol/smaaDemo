@@ -484,7 +484,7 @@ public:
 	}
 
 
-	void clear();
+	void clear(Renderer &renderer);
 
 	void renderPass(RenderPassHandle rp, FramebufferHandle fb, std::function<void()> f);
 
@@ -767,7 +767,7 @@ SMAADemo::~SMAADemo() {
 		imGuiContext = nullptr;
 	}
 
-	renderGraph.clear();
+	renderGraph.clear(renderer);
 
 	for (unsigned int i = 0; i < Framebuffers::Count; i++) {
 		if (renderGraph.framebuffers[i]) {
@@ -1414,7 +1414,7 @@ void SMAADemo::createPipelines() {
 void SMAADemo::rebuildRenderGraph() {
 	assert(rebuildRG);
 
-	renderGraph.clear();
+	renderGraph.clear(renderer);
 
 	if (antialiasing && aaMethod == AAMethod::MSAA) {
 		numSamples = msaaQualityToSamples(msaaQuality);
@@ -2606,7 +2606,7 @@ void SMAADemo::render() {
 }
 
 
-void RenderGraph::clear() {
+void RenderGraph::clear(Renderer & /* renderer */) {
 	valid = false;
 
 	functions.clear();
