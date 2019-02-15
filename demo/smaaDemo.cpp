@@ -454,7 +454,15 @@ struct SMAAPipelines {
 
 class RenderGraph {
 
-	bool  valid;
+	enum class State : uint8_t {
+		  Invalid
+		, Building
+		, Ready
+		, Rendering
+	};
+
+
+	State                                          state;
 	std::vector<std::function<void(Renderer &)> >  functions;
 	RenderTargetHandle                             finalTarget;
 
@@ -475,7 +483,7 @@ public:
 
 
 	RenderGraph()
-	: valid(false)
+	: state(State::Invalid)
 	{
 	}
 
@@ -2565,7 +2573,8 @@ void SMAADemo::render() {
 
 
 void RenderGraph::clear(Renderer &renderer) {
-	valid = false;
+	assert(state == State::Invalid || state == State::Ready);
+	state = State::Building;
 
 	for (unsigned int i = 0; i < Framebuffers::Count; i++) {
 		if (framebuffers[i]) {
@@ -2593,7 +2602,7 @@ void RenderGraph::clear(Renderer &renderer) {
 
 
 void RenderGraph::renderPass(RenderPassHandle rp, FramebufferHandle fb, std::function<void()> f) {
-	assert(!valid);
+	assert(state == State::Building);
 
 	functions.push_back([rp, fb, f] (Renderer &r) {
 		r.beginRenderPass(rp, fb);
@@ -2604,7 +2613,7 @@ void RenderGraph::renderPass(RenderPassHandle rp, FramebufferHandle fb, std::fun
 
 
 void RenderGraph::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target) {
-	assert(!valid);
+	assert(state == State::Building);
 
 	functions.push_back([=] (Renderer &r) {
 		r.layoutTransition(target, Layout::Undefined, Layout::TransferDst);
@@ -2617,7 +2626,7 @@ void RenderGraph::resolveMSAA(RenderTargetHandle source, RenderTargetHandle targ
 
 
 void RenderGraph::blit(RenderTargetHandle source, RenderTargetHandle target) {
-	assert(!valid);
+	assert(state == State::Building);
 
 	functions.push_back([source, target] (Renderer &r) {
 		r.layoutTransition(target, Layout::Undefined, Layout::TransferDst);
@@ -2630,7 +2639,7 @@ void RenderGraph::blit(RenderTargetHandle source, RenderTargetHandle target) {
 
 
 void RenderGraph::layoutTransition(RenderTargetHandle image, Layout src, Layout dest) {
-	assert(!valid);
+	assert(state == State::Building);
 
 	functions.push_back([image, src, dest] (Renderer &r) {
 		r.layoutTransition(image, src, dest);
@@ -2641,7 +2650,7 @@ void RenderGraph::layoutTransition(RenderTargetHandle image, Layout src, Layout 
 
 
 void RenderGraph::presentRenderTarget(RenderTargetHandle rt) {
-	assert(!valid);
+	assert(state == State::Building);
 
 	finalTarget = rt;
 
@@ -2651,22 +2660,25 @@ void RenderGraph::presentRenderTarget(RenderTargetHandle rt) {
 
 
 void RenderGraph::build() {
-	assert(!valid);
+	assert(state == State::Building);
+	state = State::Ready;
 
 	// TODO
-
-	valid = true;
 }
 
 
 void RenderGraph::render(Renderer &renderer) {
-	assert(valid);
+	assert(state == State::Ready);
+	state = State::Rendering;
 
 	for (const auto &f : functions) {
 		f(renderer);
 	}
 
 	renderer.presentFrame(finalTarget);
+
+	assert(state == State::Rendering);
+	state = State::Ready;
 }
 
 
