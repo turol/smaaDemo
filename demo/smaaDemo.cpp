@@ -1775,7 +1775,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .fragmentShader("image")
 		      .name("image");
 
-		imagePipeline = renderer.createPipeline(plDesc);
+		imagePipeline = renderGraph.createPipeline(renderer, plDesc);
 	}
 
 	{
@@ -1787,7 +1787,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .fragmentShader("blit")
 		      .name("blit");
 
-		blitPipeline = renderer.createPipeline(plDesc);
+		blitPipeline = renderGraph.createPipeline(renderer, plDesc);
 	}
 
 	{
@@ -1807,7 +1807,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .vertexBufferStride(ATTR_POS, sizeof(ImDrawVert))
 		      .name("gui");
 
-		guiPipeline = renderer.createPipeline(plDesc);
+		guiPipeline = renderGraph.createPipeline(renderer, plDesc);
 	}
 
 	{
@@ -1824,7 +1824,7 @@ void SMAADemo::rebuildRenderGraph() {
 				  .shaderMacros(macros)
 				  .name("temporal AA");
 
-			temporalAAPipelines[i] = renderer.createPipeline(plDesc);
+			temporalAAPipelines[i] = renderGraph.createPipeline(renderer, plDesc);
 		}
 	}
 
@@ -1837,7 +1837,7 @@ void SMAADemo::rebuildRenderGraph() {
 			  .fragmentShader("separate")
 			  .name("subsample separate");
 
-		separatePipeline = renderer.createPipeline(plDesc);
+		separatePipeline = renderGraph.createPipeline(renderer, plDesc);
 	}
 
 
@@ -1879,7 +1879,7 @@ PipelineHandle SMAADemo::getCubePipeline(unsigned int n) {
 		      .depthTest(true)
 		      .cullFaces(true);
 		bool inserted = false;
-		std::tie(it, inserted) = cubePipelines.emplace(n, renderer.createPipeline(plDesc));
+		std::tie(it, inserted) = cubePipelines.emplace(n, renderGraph.createPipeline(renderer, plDesc));
 		assert(inserted);
 	}
 
@@ -1915,27 +1915,27 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .fragmentShader("smaaEdge")
 		      .descriptorSetLayout<EdgeDetectionDS>(1)
 		      .name(std::string("SMAA edges ") + std::to_string(key.quality));
-		pipelines.edgePipeline      = renderer.createPipeline(plDesc);
+		pipelines.edgePipeline      = renderGraph.createPipeline(renderer, plDesc);
 
 		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::SMAAWeights])
 		      .vertexShader("smaaBlendWeight")
 		      .fragmentShader("smaaBlendWeight")
 		      .descriptorSetLayout<BlendWeightDS>(1)
 		      .name(std::string("SMAA weights ") + std::to_string(key.quality));
-		pipelines.blendWeightPipeline = renderer.createPipeline(plDesc);
+		pipelines.blendWeightPipeline = renderGraph.createPipeline(renderer, plDesc);
 
 		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::Final])
 		      .vertexShader("smaaNeighbor")
 		      .fragmentShader("smaaNeighbor")
 		      .descriptorSetLayout<NeighborBlendDS>(1)
 		      .name(std::string("SMAA blend ") + std::to_string(key.quality));
-		pipelines.neighborPipelines[0] = renderer.createPipeline(plDesc);
+		pipelines.neighborPipelines[0] = renderGraph.createPipeline(renderer, plDesc);
 
 		plDesc.blending(true)
 		      .sourceBlend(BlendFunc::Constant)
 		      .destinationBlend(BlendFunc::Constant)
 		      .name(std::string("SMAA blend (S2X) ") + std::to_string(key.quality));
-		pipelines.neighborPipelines[1] = renderer.createPipeline(plDesc);
+		pipelines.neighborPipelines[1] = renderGraph.createPipeline(renderer, plDesc);
 
 		bool inserted = false;
 		std::tie(it, inserted) = smaaPipelines.emplace(std::move(key), std::move(pipelines));
@@ -1971,7 +1971,7 @@ const PipelineHandle &SMAADemo::getFXAAPipeline(unsigned int q) {
 		      .name(std::string("FXAA ") + std::to_string(q));
 
 		bool inserted = false;
-		std::tie(it, inserted) = fxaaPipelines.emplace(std::move(key), renderer.createPipeline(plDesc));
+		std::tie(it, inserted) = fxaaPipelines.emplace(std::move(key), renderGraph.createPipeline(renderer, plDesc));
 		assert(inserted);
 	}
 
