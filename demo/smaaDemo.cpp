@@ -515,6 +515,8 @@ public:
 	void render(Renderer &renderer);
 
 	PipelineHandle createPipeline(Renderer &renderer, const PipelineDesc &desc);
+
+	void deletePipeline(Renderer &renderer, PipelineHandle &handle);
 };
 
 
@@ -2571,6 +2573,14 @@ PipelineHandle RenderGraph::createPipeline(Renderer &renderer, const PipelineDes
 	assert(state == State::Ready || state == State::Rendering);
 
 	return renderer.createPipeline(desc);
+}
+
+
+void RenderGraph::deletePipeline(Renderer &renderer, PipelineHandle &handle) {
+	assert(handle);
+
+	renderer.deletePipeline(handle);
+	handle = PipelineHandle();
 }
 
 
