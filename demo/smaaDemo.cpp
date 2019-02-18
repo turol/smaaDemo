@@ -1741,29 +1741,29 @@ void SMAADemo::rebuildRenderGraph() {
 	renderGraph.build();
 
 	if (imagePipeline) {
-		renderer.deletePipeline(imagePipeline);
+		renderGraph.deletePipeline(renderer, imagePipeline);
 		imagePipeline = PipelineHandle();
 	}
 
 	if (blitPipeline) {
-		renderer.deletePipeline(blitPipeline);
+		renderGraph.deletePipeline(renderer, blitPipeline);
 		blitPipeline = PipelineHandle();
 	}
 
 	if (guiPipeline) {
-		renderer.deletePipeline(guiPipeline);
+		renderGraph.deletePipeline(renderer, guiPipeline);
 		guiPipeline = PipelineHandle();
 	}
 
 	for (unsigned int i = 0; i < 2; i++) {
 		if (temporalAAPipelines[i]) {
-			renderer.deletePipeline(temporalAAPipelines[i]);
+			renderGraph.deletePipeline(renderer, temporalAAPipelines[i]);
 			temporalAAPipelines[i] = PipelineHandle();
 		}
 	}
 
 	if (separatePipeline) {
-		renderer.deletePipeline(separatePipeline);
+		renderGraph.deletePipeline(renderer, separatePipeline);
 		separatePipeline = PipelineHandle();
 	}
 
