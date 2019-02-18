@@ -668,8 +668,6 @@ public:
 
 	void initRender();
 
-	void createPipelines();
-
 	void rebuildRenderGraph();
 
 	void createCubes();
@@ -1287,123 +1285,6 @@ void SMAADemo::initRender() {
 }
 
 
-void SMAADemo::createPipelines() {
-	if (imagePipeline) {
-		renderer.deletePipeline(imagePipeline);
-		imagePipeline = PipelineHandle();
-	}
-
-	if (blitPipeline) {
-		renderer.deletePipeline(blitPipeline);
-		blitPipeline = PipelineHandle();
-	}
-
-	if (guiPipeline) {
-		renderer.deletePipeline(guiPipeline);
-		guiPipeline = PipelineHandle();
-	}
-
-	for (unsigned int i = 0; i < 2; i++) {
-		if (temporalAAPipelines[i]) {
-			renderer.deletePipeline(temporalAAPipelines[i]);
-			temporalAAPipelines[i] = PipelineHandle();
-		}
-	}
-
-	if (separatePipeline) {
-		renderer.deletePipeline(separatePipeline);
-		separatePipeline = PipelineHandle();
-	}
-
-	if (activeScene != 0) {
-		ShaderMacros macros;
-
-		PipelineDesc plDesc;
-		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::Scene])
-		      .numSamples(numSamples)
-		      .descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<ColorTexDS>(1)
-		      .vertexShader("image")
-		      .fragmentShader("image")
-		      .shaderMacros(macros)
-		      .name("image");
-
-		imagePipeline = renderer.createPipeline(plDesc);
-	}
-
-	{
-		ShaderMacros macros;
-		PipelineDesc plDesc;
-		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::Final])
-		      .descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<ColorTexDS>(1)
-		      .vertexShader("blit")
-		      .fragmentShader("blit")
-		      .shaderMacros(macros)
-		      .name("blit");
-
-		blitPipeline = renderer.createPipeline(plDesc);
-	}
-
-	{
-		ShaderMacros macros;
-		PipelineDesc plDesc;
-		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::GUI])
-		      .descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<ColorTexDS>(1)
-		      .vertexShader("gui")
-		      .fragmentShader("gui")
-		      .shaderMacros(macros)
-		      .blending(true)
-		      .sourceBlend(BlendFunc::SrcAlpha)
-		      .destinationBlend(BlendFunc::OneMinusSrcAlpha)
-		      .scissorTest(true)
-		      .vertexAttrib(ATTR_POS,   0, 2, VtxFormat::Float,  offsetof(ImDrawVert, pos))
-		      .vertexAttrib(ATTR_UV,    0, 2, VtxFormat::Float,  offsetof(ImDrawVert, uv))
-		      .vertexAttrib(ATTR_COLOR, 0, 4, VtxFormat::UNorm8, offsetof(ImDrawVert, col))
-		      .vertexBufferStride(ATTR_POS, sizeof(ImDrawVert))
-		      .name("gui");
-
-		guiPipeline = renderer.createPipeline(plDesc);
-	}
-
-	{
-		ShaderMacros macros;
-
-		for (unsigned int i = 0; i < 2; i++) {
-			macros.emplace("SMAA_REPROJECTION", std::to_string(i));
-
-			PipelineDesc plDesc;
-			plDesc.renderPass(renderGraph.renderPasses[RenderPasses::SMAABlend])
-				  .descriptorSetLayout<GlobalDS>(0)
-				  .descriptorSetLayout<TemporalAADS>(1)
-				  .vertexShader("temporal")
-				  .fragmentShader("temporal")
-				  .shaderMacros(macros)
-				  .name("temporal AA");
-
-			temporalAAPipelines[i] = renderer.createPipeline(plDesc);
-		}
-	}
-
-	{
-		ShaderMacros macros;
-
-		PipelineDesc plDesc;
-		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::Separate])
-			  .descriptorSetLayout<GlobalDS>(0)
-			  .descriptorSetLayout<ColorCombinedDS>(1)  // TODO: does this need its own DS?
-			  .vertexShader("temporal")
-			  .fragmentShader("separate")
-			  .shaderMacros(macros)
-			  .name("subsample separate");
-
-		separatePipeline = renderer.createPipeline(plDesc);
-	}
-
-}
-
-
 void SMAADemo::rebuildRenderGraph() {
 	assert(rebuildRG);
 
@@ -1855,7 +1736,119 @@ void SMAADemo::rebuildRenderGraph() {
 
 	renderGraph.build();
 
-	createPipelines();
+	if (imagePipeline) {
+		renderer.deletePipeline(imagePipeline);
+		imagePipeline = PipelineHandle();
+	}
+
+	if (blitPipeline) {
+		renderer.deletePipeline(blitPipeline);
+		blitPipeline = PipelineHandle();
+	}
+
+	if (guiPipeline) {
+		renderer.deletePipeline(guiPipeline);
+		guiPipeline = PipelineHandle();
+	}
+
+	for (unsigned int i = 0; i < 2; i++) {
+		if (temporalAAPipelines[i]) {
+			renderer.deletePipeline(temporalAAPipelines[i]);
+			temporalAAPipelines[i] = PipelineHandle();
+		}
+	}
+
+	if (separatePipeline) {
+		renderer.deletePipeline(separatePipeline);
+		separatePipeline = PipelineHandle();
+	}
+
+	if (activeScene != 0) {
+		ShaderMacros macros;
+
+		PipelineDesc plDesc;
+		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::Scene])
+		      .numSamples(numSamples)
+		      .descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<ColorTexDS>(1)
+		      .vertexShader("image")
+		      .fragmentShader("image")
+		      .shaderMacros(macros)
+		      .name("image");
+
+		imagePipeline = renderer.createPipeline(plDesc);
+	}
+
+	{
+		ShaderMacros macros;
+		PipelineDesc plDesc;
+		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::Final])
+		      .descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<ColorTexDS>(1)
+		      .vertexShader("blit")
+		      .fragmentShader("blit")
+		      .shaderMacros(macros)
+		      .name("blit");
+
+		blitPipeline = renderer.createPipeline(plDesc);
+	}
+
+	{
+		ShaderMacros macros;
+		PipelineDesc plDesc;
+		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::GUI])
+		      .descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<ColorTexDS>(1)
+		      .vertexShader("gui")
+		      .fragmentShader("gui")
+		      .shaderMacros(macros)
+		      .blending(true)
+		      .sourceBlend(BlendFunc::SrcAlpha)
+		      .destinationBlend(BlendFunc::OneMinusSrcAlpha)
+		      .scissorTest(true)
+		      .vertexAttrib(ATTR_POS,   0, 2, VtxFormat::Float,  offsetof(ImDrawVert, pos))
+		      .vertexAttrib(ATTR_UV,    0, 2, VtxFormat::Float,  offsetof(ImDrawVert, uv))
+		      .vertexAttrib(ATTR_COLOR, 0, 4, VtxFormat::UNorm8, offsetof(ImDrawVert, col))
+		      .vertexBufferStride(ATTR_POS, sizeof(ImDrawVert))
+		      .name("gui");
+
+		guiPipeline = renderer.createPipeline(plDesc);
+	}
+
+	{
+		ShaderMacros macros;
+
+		for (unsigned int i = 0; i < 2; i++) {
+			macros.emplace("SMAA_REPROJECTION", std::to_string(i));
+
+			PipelineDesc plDesc;
+			plDesc.renderPass(renderGraph.renderPasses[RenderPasses::SMAABlend])
+				  .descriptorSetLayout<GlobalDS>(0)
+				  .descriptorSetLayout<TemporalAADS>(1)
+				  .vertexShader("temporal")
+				  .fragmentShader("temporal")
+				  .shaderMacros(macros)
+				  .name("temporal AA");
+
+			temporalAAPipelines[i] = renderer.createPipeline(plDesc);
+		}
+	}
+
+	{
+		ShaderMacros macros;
+
+		PipelineDesc plDesc;
+		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::Separate])
+			  .descriptorSetLayout<GlobalDS>(0)
+			  .descriptorSetLayout<ColorCombinedDS>(1)  // TODO: does this need its own DS?
+			  .vertexShader("temporal")
+			  .fragmentShader("separate")
+			  .shaderMacros(macros)
+			  .name("subsample separate");
+
+		separatePipeline = renderer.createPipeline(plDesc);
+	}
+
 
 	rebuildRG = false;
 }
