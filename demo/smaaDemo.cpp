@@ -504,7 +504,7 @@ public:
 
 	void resolveMSAA(Rendertargets::Rendertargets source, Rendertargets::Rendertargets target);
 
-	void blit(RenderTargetHandle source, RenderTargetHandle target);
+	void blit(Rendertargets::Rendertargets source, Rendertargets::Rendertargets target);
 
 	void layoutTransition(RenderTargetHandle image, Layout src, Layout dest);
 
@@ -1731,7 +1731,7 @@ void SMAADemo::rebuildRenderGraph() {
 		}
 
 	} else {
-		renderGraph.blit(renderGraph.renderTargets[Rendertargets::MainColor], renderGraph.renderTargets[Rendertargets::FinalRender]);
+		renderGraph.blit(Rendertargets::MainColor, Rendertargets::FinalRender);
 	}
 
 	renderGraph.renderPass(RenderPasses::GUI, Framebuffers::Final, std::bind(&SMAADemo::renderGUI, this));
@@ -2629,13 +2629,15 @@ void RenderGraph::resolveMSAA(Rendertargets::Rendertargets source, Rendertargets
 }
 
 
-void RenderGraph::blit(RenderTargetHandle source, RenderTargetHandle target) {
+void RenderGraph::blit(Rendertargets::Rendertargets source, Rendertargets::Rendertargets target) {
 	assert(state == State::Building);
 
-	functions.push_back([source, target] (Renderer &r) {
-		r.layoutTransition(target, Layout::Undefined, Layout::TransferDst);
-		r.blit(source, target);
-		r.layoutTransition(target, Layout::TransferDst, Layout::ColorAttachment);
+	RenderTargetHandle sourceHandle = renderTargets[source];
+	RenderTargetHandle targetHandle = renderTargets[target];
+	functions.push_back([=] (Renderer &r) {
+		r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
+		r.blit(sourceHandle, targetHandle);
+		r.layoutTransition(targetHandle, Layout::TransferDst, Layout::ColorAttachment);
 	} );
 
 	// TODO
