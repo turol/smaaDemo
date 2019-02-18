@@ -513,6 +513,8 @@ public:
 	void build();
 
 	void render(Renderer &renderer);
+
+	PipelineHandle createPipeline(Renderer &renderer, const PipelineDesc &desc);
 };
 
 
@@ -2562,6 +2564,13 @@ void RenderGraph::clear(Renderer &renderer) {
 	}
 
 	functions.clear();
+}
+
+
+PipelineHandle RenderGraph::createPipeline(Renderer &renderer, const PipelineDesc &desc) {
+	assert(state == State::Ready || state == State::Rendering);
+
+	return renderer.createPipeline(desc);
 }
 
 
