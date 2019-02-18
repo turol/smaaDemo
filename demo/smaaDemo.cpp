@@ -1769,8 +1769,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 	if (activeScene != 0) {
 		PipelineDesc plDesc;
-		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::Scene])
-		      .numSamples(numSamples)
+		plDesc.numSamples(numSamples)
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ColorTexDS>(1)
 		      .vertexShader("image")
@@ -1782,8 +1781,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 	{
 		PipelineDesc plDesc;
-		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::Final])
-		      .descriptorSetLayout<GlobalDS>(0)
+		plDesc.descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ColorTexDS>(1)
 		      .vertexShader("blit")
 		      .fragmentShader("blit")
@@ -1794,8 +1792,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 	{
 		PipelineDesc plDesc;
-		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::GUI])
-		      .descriptorSetLayout<GlobalDS>(0)
+		plDesc.descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ColorTexDS>(1)
 		      .vertexShader("gui")
 		      .fragmentShader("gui")
@@ -1818,8 +1815,7 @@ void SMAADemo::rebuildRenderGraph() {
 			macros.emplace("SMAA_REPROJECTION", std::to_string(i));
 
 			PipelineDesc plDesc;
-			plDesc.renderPass(renderGraph.renderPasses[RenderPasses::SMAABlend])
-				  .descriptorSetLayout<GlobalDS>(0)
+			plDesc.descriptorSetLayout<GlobalDS>(0)
 				  .descriptorSetLayout<TemporalAADS>(1)
 				  .vertexShader("temporal")
 				  .fragmentShader("temporal")
@@ -1832,8 +1828,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 	{
 		PipelineDesc plDesc;
-		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::Separate])
-			  .descriptorSetLayout<GlobalDS>(0)
+		plDesc.descriptorSetLayout<GlobalDS>(0)
 			  .descriptorSetLayout<ColorCombinedDS>(1)  // TODO: does this need its own DS?
 			  .vertexShader("temporal")
 			  .fragmentShader("separate")
@@ -1871,7 +1866,6 @@ PipelineHandle SMAADemo::getCubePipeline(unsigned int n) {
 		plDesc.name(name)
 		      .vertexShader("cube")
 		      .fragmentShader("cube")
-		      .renderPass(renderGraph.renderPasses[RenderPasses::Scene])
 		      .numSamples(n)
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<CubeSceneDS>(1)
@@ -1912,22 +1906,19 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .cullFaces(true)
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .shaderMacros(macros)
-		      .renderPass(renderGraph.renderPasses[RenderPasses::SMAAEdges])
 		      .vertexShader("smaaEdge")
 		      .fragmentShader("smaaEdge")
 		      .descriptorSetLayout<EdgeDetectionDS>(1)
 		      .name(std::string("SMAA edges ") + std::to_string(key.quality));
 		pipelines.edgePipeline      = renderGraph.createPipeline(renderer, RenderPasses::SMAAEdges, plDesc);
 
-		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::SMAAWeights])
-		      .vertexShader("smaaBlendWeight")
+		plDesc.vertexShader("smaaBlendWeight")
 		      .fragmentShader("smaaBlendWeight")
 		      .descriptorSetLayout<BlendWeightDS>(1)
 		      .name(std::string("SMAA weights ") + std::to_string(key.quality));
 		pipelines.blendWeightPipeline = renderGraph.createPipeline(renderer, RenderPasses::SMAAWeights, plDesc);
 
-		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::Final])
-		      .vertexShader("smaaNeighbor")
+		plDesc.vertexShader("smaaNeighbor")
 		      .fragmentShader("smaaNeighbor")
 		      .descriptorSetLayout<NeighborBlendDS>(1)
 		      .name(std::string("SMAA blend ") + std::to_string(key.quality));
@@ -1965,8 +1956,7 @@ const PipelineHandle &SMAADemo::getFXAAPipeline(unsigned int q) {
 
 		ShaderMacros macros;
 		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
-		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::Final])
-		      .shaderMacros(macros)
+		plDesc.shaderMacros(macros)
 		      .vertexShader("fxaa")
 		      .fragmentShader("fxaa")
 		      .descriptorSetLayout<ColorCombinedDS>(1)
@@ -2569,8 +2559,11 @@ void RenderGraph::clear(Renderer &renderer) {
 }
 
 
-PipelineHandle RenderGraph::createPipeline(Renderer &renderer, RenderPasses::RenderPasses /* rp */, PipelineDesc &desc) {
+PipelineHandle RenderGraph::createPipeline(Renderer &renderer, RenderPasses::RenderPasses rp, PipelineDesc &desc) {
 	assert(state == State::Ready || state == State::Rendering);
+
+	assert(renderPasses[rp]);
+	desc.renderPass(renderPasses[rp]);
 
 	return renderer.createPipeline(desc);
 }
