@@ -502,7 +502,7 @@ public:
 
 	void createFramebuffer(Renderer &renderer, Framebuffers::Framebuffers fb, const FramebufferDesc &desc);
 
-	void resolveMSAA(RenderTargetHandle source, RenderTargetHandle target);
+	void resolveMSAA(Rendertargets::Rendertargets source, Rendertargets::Rendertargets target);
 
 	void blit(RenderTargetHandle source, RenderTargetHandle target);
 
@@ -1539,7 +1539,7 @@ void SMAADemo::rebuildRenderGraph() {
 	if (antialiasing) {
 		switch (aaMethod) {
 		case AAMethod::MSAA: {
-			renderGraph.resolveMSAA(renderGraph.renderTargets[Rendertargets::MainColor], renderGraph.renderTargets[Rendertargets::FinalRender]);
+			renderGraph.resolveMSAA(Rendertargets::MainColor, Rendertargets::FinalRender);
 		} break;
 
 		case AAMethod::FXAA: {
@@ -2614,13 +2614,15 @@ void RenderGraph::renderPass(RenderPasses::RenderPasses rp, Framebuffers::Frameb
 }
 
 
-void RenderGraph::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target) {
+void RenderGraph::resolveMSAA(Rendertargets::Rendertargets source, Rendertargets::Rendertargets target) {
 	assert(state == State::Building);
 
+	RenderTargetHandle sourceHandle = renderTargets[source];
+	RenderTargetHandle targetHandle = renderTargets[target];
 	functions.push_back([=] (Renderer &r) {
-		r.layoutTransition(target, Layout::Undefined, Layout::TransferDst);
-		r.resolveMSAA(source, target);
-		r.layoutTransition(target, Layout::TransferDst, Layout::ColorAttachment);
+		r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
+		r.resolveMSAA(sourceHandle, targetHandle);
+		r.layoutTransition(targetHandle, Layout::TransferDst, Layout::ColorAttachment);
 	} );
 
 	// TODO
