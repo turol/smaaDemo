@@ -514,7 +514,7 @@ public:
 
 	void render(Renderer &renderer);
 
-	PipelineHandle createPipeline(Renderer &renderer, RenderPasses::RenderPasses rp, const PipelineDesc &desc);
+	PipelineHandle createPipeline(Renderer &renderer, RenderPasses::RenderPasses rp, PipelineDesc &desc);
 
 	void deletePipeline(Renderer &renderer, PipelineHandle &handle);
 };
@@ -2569,7 +2569,7 @@ void RenderGraph::clear(Renderer &renderer) {
 }
 
 
-PipelineHandle RenderGraph::createPipeline(Renderer &renderer, RenderPasses::RenderPasses /* rp */, const PipelineDesc &desc) {
+PipelineHandle RenderGraph::createPipeline(Renderer &renderer, RenderPasses::RenderPasses /* rp */, PipelineDesc &desc) {
 	assert(state == State::Ready || state == State::Rendering);
 
 	return renderer.createPipeline(desc);
