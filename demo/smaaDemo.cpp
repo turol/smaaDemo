@@ -1764,8 +1764,6 @@ void SMAADemo::rebuildRenderGraph() {
 	}
 
 	if (activeScene != 0) {
-		ShaderMacros macros;
-
 		PipelineDesc plDesc;
 		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::Scene])
 		      .numSamples(numSamples)
@@ -1773,35 +1771,30 @@ void SMAADemo::rebuildRenderGraph() {
 		      .descriptorSetLayout<ColorTexDS>(1)
 		      .vertexShader("image")
 		      .fragmentShader("image")
-		      .shaderMacros(macros)
 		      .name("image");
 
 		imagePipeline = renderer.createPipeline(plDesc);
 	}
 
 	{
-		ShaderMacros macros;
 		PipelineDesc plDesc;
 		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::Final])
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ColorTexDS>(1)
 		      .vertexShader("blit")
 		      .fragmentShader("blit")
-		      .shaderMacros(macros)
 		      .name("blit");
 
 		blitPipeline = renderer.createPipeline(plDesc);
 	}
 
 	{
-		ShaderMacros macros;
 		PipelineDesc plDesc;
 		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::GUI])
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ColorTexDS>(1)
 		      .vertexShader("gui")
 		      .fragmentShader("gui")
-		      .shaderMacros(macros)
 		      .blending(true)
 		      .sourceBlend(BlendFunc::SrcAlpha)
 		      .destinationBlend(BlendFunc::OneMinusSrcAlpha)
@@ -1816,9 +1809,8 @@ void SMAADemo::rebuildRenderGraph() {
 	}
 
 	{
-		ShaderMacros macros;
-
 		for (unsigned int i = 0; i < 2; i++) {
+			ShaderMacros macros;
 			macros.emplace("SMAA_REPROJECTION", std::to_string(i));
 
 			PipelineDesc plDesc;
@@ -1835,15 +1827,12 @@ void SMAADemo::rebuildRenderGraph() {
 	}
 
 	{
-		ShaderMacros macros;
-
 		PipelineDesc plDesc;
 		plDesc.renderPass(renderGraph.renderPasses[RenderPasses::Separate])
 			  .descriptorSetLayout<GlobalDS>(0)
 			  .descriptorSetLayout<ColorCombinedDS>(1)  // TODO: does this need its own DS?
 			  .vertexShader("temporal")
 			  .fragmentShader("separate")
-			  .shaderMacros(macros)
 			  .name("subsample separate");
 
 		separatePipeline = renderer.createPipeline(plDesc);
