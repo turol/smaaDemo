@@ -494,6 +494,8 @@ public:
 
 	void clear(Renderer &renderer);
 
+	void createRenderTarget(Renderer &renderer, Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
+
 	void createRenderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &desc);
 
 	void renderPass(RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, std::function<void()> f);
@@ -2578,6 +2580,14 @@ void RenderGraph::clear(Renderer &renderer) {
 	}
 
 	functions.clear();
+}
+
+
+void RenderGraph::createRenderTarget(Renderer &renderer, Rendertargets::Rendertargets rt, const RenderTargetDesc &desc) {
+	assert(state == State::Building);
+	assert(!renderTargets[rt]);
+
+	renderTargets[rt] = renderer.createRenderTarget(desc);
 }
 
 
