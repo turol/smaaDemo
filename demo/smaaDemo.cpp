@@ -464,7 +464,7 @@ class RenderGraph {
 
 	State                                          state;
 	std::vector<std::function<void(Renderer &)> >  functions;
-	RenderTargetHandle                             finalTarget;
+	Rendertargets::Rendertargets                   finalTarget;
 
 
 	RenderGraph(const RenderGraph &)                = delete;
@@ -508,7 +508,7 @@ public:
 
 	void layoutTransition(RenderTargetHandle image, Layout src, Layout dest);
 
-	void presentRenderTarget(RenderTargetHandle rt);
+	void presentRenderTarget(Rendertargets::Rendertargets rt);
 
 	void build();
 
@@ -1736,7 +1736,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 	renderGraph.renderPass(RenderPasses::GUI, Framebuffers::Final, std::bind(&SMAADemo::renderGUI, this));
 
-	renderGraph.presentRenderTarget(renderGraph.renderTargets[Rendertargets::FinalRender]);
+	renderGraph.presentRenderTarget(Rendertargets::FinalRender);
 
 	renderGraph.build();
 
@@ -2655,7 +2655,7 @@ void RenderGraph::layoutTransition(RenderTargetHandle image, Layout src, Layout 
 }
 
 
-void RenderGraph::presentRenderTarget(RenderTargetHandle rt) {
+void RenderGraph::presentRenderTarget(Rendertargets::Rendertargets rt) {
 	assert(state == State::Building);
 
 	finalTarget = rt;
@@ -2681,7 +2681,7 @@ void RenderGraph::render(Renderer &renderer) {
 		f(renderer);
 	}
 
-	renderer.presentFrame(finalTarget);
+	renderer.presentFrame(renderTargets[finalTarget]);
 
 	assert(state == State::Rendering);
 	state = State::Ready;
