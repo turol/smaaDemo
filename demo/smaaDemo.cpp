@@ -1520,7 +1520,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .additionalViewFormat(Format::RGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		renderGraph.renderTargets[Rendertargets::MainColor] = renderer.createRenderTarget(rtDesc);
+		renderGraph.createRenderTarget(renderer, Rendertargets::MainColor, rtDesc);
 	}
 
 	{
@@ -1530,7 +1530,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .format(Format::RG16Float)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		renderGraph.renderTargets[Rendertargets::Velocity] = renderer.createRenderTarget(rtDesc);
+		renderGraph.createRenderTarget(renderer, Rendertargets::Velocity, rtDesc);
 	}
 
 	{
@@ -1539,7 +1539,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .format(Format::sRGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		renderGraph.renderTargets[Rendertargets::FinalRender] = renderer.createRenderTarget(rtDesc);
+		renderGraph.createRenderTarget(renderer, Rendertargets::FinalRender, rtDesc);
 	}
 
 	{
@@ -1549,7 +1549,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .format(depthFormat)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		renderGraph.renderTargets[Rendertargets::MainDepth] = renderer.createRenderTarget(rtDesc);
+		renderGraph.createRenderTarget(renderer, Rendertargets::MainDepth, rtDesc);
 	}
 
 	{
@@ -1577,7 +1577,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .format(Format::RGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		renderGraph.renderTargets[Rendertargets::Edges] = renderer.createRenderTarget(rtDesc);
+		renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
 
 		FramebufferDesc fbDesc;
 		fbDesc.name("SMAA edges")
@@ -1593,7 +1593,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .format(Format::RGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		renderGraph.renderTargets[Rendertargets::BlendWeights] = renderer.createRenderTarget(rtDesc);
+		renderGraph.createRenderTarget(renderer, Rendertargets::BlendWeights, rtDesc);
 
 		FramebufferDesc fbDesc;
 		fbDesc.name("SMAA weights")
@@ -1609,7 +1609,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .format(Format::sRGBA8)  // TODO: not right?
 		      .width(windowWidth)
 		      .height(windowHeight);
-		renderGraph.renderTargets[Rendertargets::Resolve1] = renderer.createRenderTarget(rtDesc);
+		renderGraph.createRenderTarget(renderer, Rendertargets::Resolve1, rtDesc);
 
 		FramebufferDesc fbDesc;
 		fbDesc.name("Temporal resolve 0")
@@ -1618,7 +1618,7 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.createFramebuffer(renderer, Framebuffers::Resolve1, fbDesc);
 
 		rtDesc.name("Temporal resolve 1");
-		renderGraph.renderTargets[Rendertargets::Resolve2] = renderer.createRenderTarget(rtDesc);
+		renderGraph.createRenderTarget(renderer, Rendertargets::Resolve2, rtDesc);
 
 		fbDesc.color(0, renderGraph.renderTargets[Rendertargets::Resolve2])
 		      .name("Temporal resolve 1");
@@ -1634,7 +1634,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 		for (unsigned int i = 0; i < 2; i++) {
 			rtDesc.name("Subsample separate " + std::to_string(i));
-			renderGraph.renderTargets[Rendertargets::Subsample1 + i] = renderer.createRenderTarget(rtDesc);
+			renderGraph.createRenderTarget(renderer, static_cast<Rendertargets::Rendertargets>(Rendertargets::Subsample1 + i), rtDesc);
 		}
 
 		FramebufferDesc fbDesc;
