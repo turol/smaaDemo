@@ -1557,7 +1557,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .color(0, renderGraph.renderTargets[Rendertargets::MainColor])
 		      .color(1, renderGraph.renderTargets[Rendertargets::Velocity])
 		      .depthStencil(renderGraph.renderTargets[Rendertargets::MainDepth]);
-		renderGraph.framebuffers[Framebuffers::Scene] = renderer.createFramebuffer(fbDesc);
+		renderGraph.createFramebuffer(renderer, Framebuffers::Scene, fbDesc);
 	}
 
 	{
@@ -1565,7 +1565,7 @@ void SMAADemo::rebuildRenderGraph() {
 		fbDesc.name("final")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::Final])
 		      .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
-		renderGraph.framebuffers[Framebuffers::Final] = renderer.createFramebuffer(fbDesc);
+		renderGraph.createFramebuffer(renderer, Framebuffers::Final, fbDesc);
 	}
 
 	// SMAA edges texture and FBO
@@ -1581,7 +1581,7 @@ void SMAADemo::rebuildRenderGraph() {
 		fbDesc.name("SMAA edges")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::SMAAEdges])
 		      .color(0, renderGraph.renderTargets[Rendertargets::Edges]);
-		renderGraph.framebuffers[Framebuffers::SMAAEdges] = renderer.createFramebuffer(fbDesc);
+		renderGraph.createFramebuffer(renderer, Framebuffers::SMAAEdges, fbDesc);
 	}
 
 	// SMAA blending weights texture and FBO
@@ -1597,7 +1597,7 @@ void SMAADemo::rebuildRenderGraph() {
 		fbDesc.name("SMAA weights")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::SMAAWeights])
 		      .color(0, renderGraph.renderTargets[Rendertargets::BlendWeights]);
-		renderGraph.framebuffers[Framebuffers::SMAAWeights] = renderer.createFramebuffer(fbDesc);
+		renderGraph.createFramebuffer(renderer, Framebuffers::SMAAWeights, fbDesc);
 	}
 
 	if (temporalAA && aaMethod != AAMethod::MSAA) {
@@ -1613,14 +1613,14 @@ void SMAADemo::rebuildRenderGraph() {
 		fbDesc.name("Temporal resolve 0")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::SMAABlend])
 		      .color(0, renderGraph.renderTargets[Rendertargets::Resolve1]);
-		renderGraph.framebuffers[Framebuffers::Resolve1] = renderer.createFramebuffer(fbDesc);
+		renderGraph.createFramebuffer(renderer, Framebuffers::Resolve1, fbDesc);
 
 		rtDesc.name("Temporal resolve 1");
 		renderGraph.renderTargets[Rendertargets::Resolve2] = renderer.createRenderTarget(rtDesc);
 
 		fbDesc.color(0, renderGraph.renderTargets[Rendertargets::Resolve2])
 		      .name("Temporal resolve 1");
-		renderGraph.framebuffers[Framebuffers::Resolve2] = renderer.createFramebuffer(fbDesc);
+		renderGraph.createFramebuffer(renderer, Framebuffers::Resolve2, fbDesc);
 	}
 
 	{
@@ -1640,7 +1640,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .renderPass(renderGraph.renderPasses[RenderPasses::Separate])
 		      .color(0, renderGraph.renderTargets[Rendertargets::Subsample1])
 		      .color(1, renderGraph.renderTargets[Rendertargets::Subsample2]);
-		renderGraph.framebuffers[Framebuffers::Separate] = renderer.createFramebuffer(fbDesc);
+		renderGraph.createFramebuffer(renderer, Framebuffers::Separate, fbDesc);
 	}
 
 	if (activeScene == 0) {
