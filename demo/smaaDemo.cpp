@@ -506,7 +506,7 @@ public:
 
 	void blit(Rendertargets::Rendertargets source, Rendertargets::Rendertargets target);
 
-	void layoutTransition(RenderTargetHandle image, Layout src, Layout dest);
+	void layoutTransition(Rendertargets::Rendertargets image, Layout src, Layout dest);
 
 	void presentRenderTarget(Rendertargets::Rendertargets rt);
 
@@ -1672,7 +1672,7 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 
 				// FIXME: move to renderpass
-				renderGraph.layoutTransition(renderGraph.renderTargets[Rendertargets::Resolve1 + temporalFrame], Layout::ColorAttachment, Layout::ShaderRead);
+				renderGraph.layoutTransition(static_cast<Rendertargets::Rendertargets>(Rendertargets::Resolve1 + temporalFrame), Layout::ColorAttachment, Layout::ShaderRead);
 				renderGraph.renderPass(RenderPasses::Final, Framebuffers::Final, std::bind(&SMAADemo::renderTemporalAA, this));
 			} else {
 				// edges pass
@@ -2644,11 +2644,12 @@ void RenderGraph::blit(Rendertargets::Rendertargets source, Rendertargets::Rende
 }
 
 
-void RenderGraph::layoutTransition(RenderTargetHandle image, Layout src, Layout dest) {
+void RenderGraph::layoutTransition(Rendertargets::Rendertargets image, Layout src, Layout dest) {
 	assert(state == State::Building);
 
-	functions.push_back([image, src, dest] (Renderer &r) {
-		r.layoutTransition(image, src, dest);
+	RenderTargetHandle imageHandle = renderTargets[image];
+	functions.push_back([=] (Renderer &r) {
+		r.layoutTransition(imageHandle, src, dest);
 	} );
 
 	// TODO
