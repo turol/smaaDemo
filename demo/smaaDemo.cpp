@@ -492,7 +492,7 @@ public:
 	}
 
 
-	void clear(Renderer &renderer);
+	void reset(Renderer &renderer);
 
 	void createRenderTarget(Renderer &renderer, Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
 
@@ -783,7 +783,7 @@ SMAADemo::~SMAADemo() {
 		imGuiContext = nullptr;
 	}
 
-	renderGraph.clear(renderer);
+	renderGraph.reset(renderer);
 
 	if (cubeVBO) {
 		renderer.deleteBuffer(cubeVBO);
@@ -1292,7 +1292,7 @@ void SMAADemo::initRender() {
 void SMAADemo::rebuildRenderGraph() {
 	assert(rebuildRG);
 
-	renderGraph.clear(renderer);
+	renderGraph.reset(renderer);
 
 	if (antialiasing && aaMethod == AAMethod::MSAA) {
 		numSamples = msaaQualityToSamples(msaaQuality);
@@ -2530,7 +2530,7 @@ void SMAADemo::render() {
 }
 
 
-void RenderGraph::clear(Renderer &renderer) {
+void RenderGraph::reset(Renderer &renderer) {
 	assert(state == State::Invalid || state == State::Ready);
 	state = State::Building;
 
