@@ -2467,7 +2467,7 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 	Frame &frame = frames.at(frameIdx);
 	assert(frame.outstanding);
 
-	auto waitResult = device.waitForFences({ frame.fence }, true, 1000000000ull);
+	auto waitResult = device.waitForFences({ frame.fence }, true, 100000000ull);
 	if (waitResult != vk::Result::eSuccess) {
 		// TODO: handle these somehow
 		LOG("wait result is not success: %s\n", vk::to_string(waitResult).c_str());
