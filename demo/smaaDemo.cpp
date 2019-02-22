@@ -494,6 +494,15 @@ public:
 
 	void reset(Renderer &renderer);
 
+	void renderTarget(Renderer &renderer, Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
+
+	// TODO: need layouts?
+	void externalRenderTarget(Rendertargets::Rendertargets rt, Format format);
+
+	// TODO: should be our own description instead
+	// need rendertarget names too
+	void renderPass(RenderPasses::RenderPasses rp, RenderPassDesc desc, std::function<void()> f);
+
 	void resolveMSAA(Rendertargets::Rendertargets source, Rendertargets::Rendertargets target);
 
 	void blit(Rendertargets::Rendertargets source, Rendertargets::Rendertargets target);
@@ -502,6 +511,8 @@ public:
 
 	void build();
 
+	void bindExternalRT(Rendertargets::Rendertargets rt, RenderTargetHandle handle);
+
 	void render(Renderer &renderer);
 
 	PipelineHandle createPipeline(Renderer &renderer, RenderPasses::RenderPasses rp, PipelineDesc &desc);
@@ -509,6 +520,7 @@ public:
 	void deletePipeline(Renderer &renderer, PipelineHandle &handle);
 
 
+	// TODO: remove these
 	void createRenderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &desc);
 
 	void renderPass(RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, std::function<void()> f);
