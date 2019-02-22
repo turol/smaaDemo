@@ -494,19 +494,9 @@ public:
 
 	void reset(Renderer &renderer);
 
-	void createRenderTarget(Renderer &renderer, Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
-
-	void createRenderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &desc);
-
-	void renderPass(RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, std::function<void()> f);
-
-	void createFramebuffer(Renderer &renderer, Framebuffers::Framebuffers fb, const FramebufferDesc &desc);
-
 	void resolveMSAA(Rendertargets::Rendertargets source, Rendertargets::Rendertargets target);
 
 	void blit(Rendertargets::Rendertargets source, Rendertargets::Rendertargets target);
-
-	void layoutTransition(Rendertargets::Rendertargets image, Layout src, Layout dest);
 
 	void presentRenderTarget(Rendertargets::Rendertargets rt);
 
@@ -517,6 +507,17 @@ public:
 	PipelineHandle createPipeline(Renderer &renderer, RenderPasses::RenderPasses rp, PipelineDesc &desc);
 
 	void deletePipeline(Renderer &renderer, PipelineHandle &handle);
+
+
+	void createRenderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &desc);
+
+	void renderPass(RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, std::function<void()> f);
+
+	void createRenderTarget(Renderer &renderer, Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
+
+	void createFramebuffer(Renderer &renderer, Framebuffers::Framebuffers fb, const FramebufferDesc &desc);
+
+	void layoutTransition(Rendertargets::Rendertargets image, Layout src, Layout dest);
 };
 
 
