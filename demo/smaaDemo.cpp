@@ -509,7 +509,7 @@ public:
 
 	void presentRenderTarget(Rendertargets::Rendertargets rt);
 
-	void build();
+	void build(Renderer &renderer);
 
 	void bindExternalRT(Rendertargets::Rendertargets rt, RenderTargetHandle handle);
 
@@ -1751,7 +1751,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 	renderGraph.presentRenderTarget(Rendertargets::FinalRender);
 
-	renderGraph.build();
+	renderGraph.build(renderer);
 
 	if (imagePipeline) {
 		renderGraph.deletePipeline(renderer, imagePipeline);
@@ -2679,7 +2679,7 @@ void RenderGraph::presentRenderTarget(Rendertargets::Rendertargets rt) {
 
 
 
-void RenderGraph::build() {
+void RenderGraph::build(Renderer & /* renderer */) {
 	assert(state == State::Building);
 	state = State::Ready;
 
