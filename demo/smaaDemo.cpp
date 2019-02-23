@@ -679,6 +679,7 @@ class SMAADemo {
 	PipelineHandle                                    guiPipeline;
 	PipelineHandle                                    separatePipeline;
 	std::array<PipelineHandle, 2>                     temporalAAPipelines;
+	PipelineHandle                                    fxaaPipeline;
 
 	BufferHandle                                      cubeVBO;
 	BufferHandle                                      cubeIBO;
@@ -686,7 +687,6 @@ class SMAADemo {
 	SamplerHandle                                     linearSampler;
 	SamplerHandle                                     nearestSampler;
 
-	std::unordered_map<FXAAKey, PipelineHandle>       fxaaPipelines;
 	std::unordered_map<SMAAKey, SMAAPipelines>        smaaPipelines;
 	TextureHandle                                     areaTex;
 	TextureHandle                                     searchTex;
@@ -2028,12 +2028,7 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 
 
 const PipelineHandle &SMAADemo::getFXAAPipeline(unsigned int q) {
-	FXAAKey key;
-	key.quality = q;
-
-	auto it = fxaaPipelines.find(key);
-	// create lazily if missing
-	if (it == fxaaPipelines.end()) {
+	if (!fxaaPipeline) {
 		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
 		      .depthTest(false)
@@ -2050,13 +2045,11 @@ const PipelineHandle &SMAADemo::getFXAAPipeline(unsigned int q) {
 		      .descriptorSetLayout<ColorCombinedDS>(1)
 		      .name(std::string("FXAA ") + std::to_string(q));
 
-		bool inserted = false;
-		std::tie(it, inserted) = fxaaPipelines.emplace(std::move(key), renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc));
-		assert(inserted);
+		fxaaPipeline = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
 	}
+	assert(fxaaPipeline);
 
-
-	return it->second;
+	return fxaaPipeline;
 }
 
 
@@ -2344,6 +2337,7 @@ void SMAADemo::processInput() {
 						fxaaQuality = fxaaQuality + 1;
 					}
 					fxaaQuality = fxaaQuality % maxFXAAQuality;
+					fxaaPipeline = PipelineHandle();
 					break;
 
 				case AAMethod::SMAA:
@@ -3238,7 +3232,10 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			ImGui::Combo("FXAA quality", &fq, fxaaQualityLevels, maxFXAAQuality);
 			assert(fq >= 0);
 			assert(fq < int(maxFXAAQuality));
+			if (fq != int(fxaaQuality)) {
+				fxaaPipeline = PipelineHandle();
 			fxaaQuality = fq;
+			}
 		}
 
 		if (ImGui::CollapsingHeader("Scene properties", ImGuiTreeNodeFlags_DefaultOpen)) {
