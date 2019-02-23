@@ -589,8 +589,6 @@ public:
 
 	PipelineHandle createPipeline(Renderer &renderer, RenderPasses::RenderPasses rp, PipelineDesc &desc);
 
-	void deletePipeline(Renderer &renderer, PipelineHandle &handle);
-
 
 	// TODO: remove these
 	void createRenderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &desc);
@@ -1830,30 +1828,26 @@ void SMAADemo::rebuildRenderGraph() {
 
 	renderGraph.build(renderer);
 
-	if (imagePipeline) {
-		renderGraph.deletePipeline(renderer, imagePipeline);
+	cubePipeline           = PipelineHandle();
 		imagePipeline = PipelineHandle();
-	}
 
-	if (blitPipeline) {
-		renderGraph.deletePipeline(renderer, blitPipeline);
 		blitPipeline = PipelineHandle();
-	}
 
-	if (guiPipeline) {
-		renderGraph.deletePipeline(renderer, guiPipeline);
 		guiPipeline = PipelineHandle();
-	}
+	separatePipeline       = PipelineHandle();
+	temporalAAPipelines[0] = PipelineHandle();
+	temporalAAPipelines[1] = PipelineHandle();
+	fxaaPipeline           = PipelineHandle();
+
+	smaaPipelines.clear();
 
 	for (unsigned int i = 0; i < 2; i++) {
 		if (temporalAAPipelines[i]) {
-			renderGraph.deletePipeline(renderer, temporalAAPipelines[i]);
 			temporalAAPipelines[i] = PipelineHandle();
 		}
 	}
 
 	if (separatePipeline) {
-		renderGraph.deletePipeline(renderer, separatePipeline);
 		separatePipeline = PipelineHandle();
 	}
 
@@ -2617,6 +2611,12 @@ void RenderGraph::reset(Renderer &renderer) {
 	assert(state == State::Invalid || state == State::Ready);
 	state = State::Building;
 
+	for (auto &p : pipelines) {
+		renderer.deletePipeline(p);
+		p = PipelineHandle();
+	}
+	pipelines.clear();
+
 	for (unsigned int i = 0; i < Framebuffers::Count; i++) {
 		if (framebuffers[i]) {
 			renderer.deleteFramebuffer(framebuffers[i]);
@@ -2651,19 +2651,6 @@ PipelineHandle RenderGraph::createPipeline(Renderer &renderer, RenderPasses::Ren
 	auto handle = renderer.createPipeline(desc);
 	pipelines.push_back(handle);
 	return handle;
-}
-
-
-void RenderGraph::deletePipeline(Renderer &renderer, PipelineHandle &handle) {
-	assert(handle);
-
-	auto it = std::find(pipelines.begin(), pipelines.end(), handle);
-	if (it != pipelines.end()) {
-		pipelines.erase(it);
-	}
-
-	renderer.deletePipeline(handle);
-	handle = PipelineHandle();
 }
 
 
