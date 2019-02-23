@@ -466,6 +466,9 @@ class RenderGraph {
 	std::vector<std::function<void(Renderer &)> >  functions;
 	Rendertargets::Rendertargets                   finalTarget;
 
+	// TODO: keep Desc too and cache them
+	std::vector<PipelineHandle>                    pipelines;
+
 
 	RenderGraph(const RenderGraph &)                = delete;
 	RenderGraph(RenderGraph &&) noexcept            = delete;
@@ -2647,12 +2650,19 @@ PipelineHandle RenderGraph::createPipeline(Renderer &renderer, RenderPasses::Ren
 	assert(renderPasses[rp]);
 	desc.renderPass(renderPasses[rp]);
 
-	return renderer.createPipeline(desc);
+	auto handle = renderer.createPipeline(desc);
+	pipelines.push_back(handle);
+	return handle;
 }
 
 
 void RenderGraph::deletePipeline(Renderer &renderer, PipelineHandle &handle) {
 	assert(handle);
+
+	auto it = std::find(pipelines.begin(), pipelines.end(), handle);
+	if (it != pipelines.end()) {
+		pipelines.erase(it);
+	}
 
 	renderer.deletePipeline(handle);
 	handle = PipelineHandle();
