@@ -2349,6 +2349,7 @@ void SMAADemo::processInput() {
 					}
 					smaaKey.quality = smaaKey.quality % maxSMAAQuality;
 					smaaParameters  = defaultSMAAParameters[smaaKey.quality];
+					smaaPipelines.clear();
 					break;
 
 				}
@@ -3159,6 +3160,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				if (sq != 0) {
 					smaaParameters  = defaultSMAAParameters[sq];
 				}
+				smaaPipelines.clear();
 			}
 
 			if (ImGui::CollapsingHeader("SMAA custom properties")) {
