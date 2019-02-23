@@ -673,7 +673,7 @@ class SMAADemo {
 	Renderer                                          renderer;
 	Format                                            depthFormat;
 
-	std::unordered_map<uint32_t, PipelineHandle>      cubePipelines;
+	PipelineHandle                                    cubePipeline;
 	PipelineHandle                                    imagePipeline;
 	PipelineHandle                                    blitPipeline;
 	PipelineHandle                                    guiPipeline;
@@ -1379,6 +1379,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 	renderGraph.reset(renderer);
 
+	auto oldNumSamples = numSamples;
 	if (antialiasing && aaMethod == AAMethod::MSAA) {
 		numSamples = msaaQualityToSamples(msaaQuality);
 		assert(numSamples > 1);
@@ -1386,6 +1387,10 @@ void SMAADemo::rebuildRenderGraph() {
 		numSamples = 2;
 	} else {
 		numSamples = 1;
+	}
+
+	if (oldNumSamples != numSamples) {
+		cubePipeline = PipelineHandle();
 	}
 
 	const unsigned int windowWidth  = rendererDesc.swapchain.width;
@@ -1928,9 +1933,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 
 PipelineHandle SMAADemo::getCubePipeline(unsigned int n) {
-	auto it = cubePipelines.find(n);
-
-	if (it == cubePipelines.end()) {
+	if (!cubePipeline) {
 		std::string name = "cubes";
 		if (n > 1) {
 			name += " MSAA x" + std::to_string(n);
@@ -1959,12 +1962,12 @@ PipelineHandle SMAADemo::getCubePipeline(unsigned int n) {
 		      .depthWrite(true)
 		      .depthTest(true)
 		      .cullFaces(true);
-		bool inserted = false;
-		std::tie(it, inserted) = cubePipelines.emplace(n, renderGraph.createPipeline(renderer, RenderPasses::Scene, plDesc));
-		assert(inserted);
-	}
 
-	return it->second;
+		cubePipeline = renderGraph.createPipeline(renderer, RenderPasses::Scene, plDesc);
+	}
+    assert(cubePipeline);
+
+	return cubePipeline;
 }
 
 
