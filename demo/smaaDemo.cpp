@@ -3234,7 +3234,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			assert(fq < int(maxFXAAQuality));
 			if (fq != int(fxaaQuality)) {
 				fxaaPipeline = PipelineHandle();
-			fxaaQuality = fq;
+				fxaaQuality = fq;
 			}
 		}
 
