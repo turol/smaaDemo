@@ -707,7 +707,7 @@ class SMAADemo {
 
 	const SMAAPipelines &getSMAAPipelines(const SMAAKey &key);
 
-	PipelineHandle getCubePipeline(unsigned int n);
+	PipelineHandle getCubePipeline();
 
 	void renderFXAA();
 
@@ -1923,11 +1923,11 @@ void SMAADemo::rebuildRenderGraph() {
 }
 
 
-PipelineHandle SMAADemo::getCubePipeline(unsigned int n) {
+PipelineHandle SMAADemo::getCubePipeline() {
 	if (!cubePipeline) {
 		std::string name = "cubes";
-		if (n > 1) {
-			name += " MSAA x" + std::to_string(n);
+		if (numSamples > 1) {
+			name += " MSAA x" + std::to_string(numSamples);
 		}
 
 		/*
@@ -1945,7 +1945,7 @@ PipelineHandle SMAADemo::getCubePipeline(unsigned int n) {
 		plDesc.name(name)
 		      .vertexShader("cube")
 		      .fragmentShader("cube")
-		      .numSamples(n)
+		      .numSamples(numSamples)
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<CubeSceneDS>(1)
 		      .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
@@ -2738,7 +2738,7 @@ void RenderGraph::render(Renderer &renderer) {
 
 
 void SMAADemo::renderCubeScene() {
-	renderer.bindPipeline(getCubePipeline(numSamples));
+	renderer.bindPipeline(getCubePipeline());
 
 	const unsigned int windowWidth  = rendererDesc.swapchain.width;
 	const unsigned int windowHeight = rendererDesc.swapchain.height;
