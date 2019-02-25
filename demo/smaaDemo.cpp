@@ -705,7 +705,7 @@ class SMAADemo {
 	SMAADemo(SMAADemo &&) = delete;
 	SMAADemo &operator=(SMAADemo &&) = delete;
 
-	void getSMAAPipelines(const SMAAKey &key);
+	void getSMAAPipelines();
 
 	void renderFXAA();
 
@@ -1924,18 +1924,18 @@ void SMAADemo::rebuildRenderGraph() {
 }
 
 
-void SMAADemo::getSMAAPipelines(const SMAAKey &key) {
+void SMAADemo::getSMAAPipelines() {
 	// create lazily if missing
 	if (!smaaPipelines.edgePipeline) {
 		ShaderMacros macros;
-		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[key.quality]);
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaKey.quality]);
 		macros.emplace(qualityString, "1");
 
-		if (key.edgeMethod != SMAAEdgeMethod::Color) {
-			macros.emplace("EDGEMETHOD", std::to_string(static_cast<uint8_t>(key.edgeMethod)));
+		if (smaaKey.edgeMethod != SMAAEdgeMethod::Color) {
+			macros.emplace("EDGEMETHOD", std::to_string(static_cast<uint8_t>(smaaKey.edgeMethod)));
 		}
 
-		if (key.predication && key.edgeMethod != SMAAEdgeMethod::Depth) {
+		if (smaaKey.predication && smaaKey.edgeMethod != SMAAEdgeMethod::Depth) {
 			macros.emplace("SMAA_PREDICATION", "1");
 		}
 
@@ -1948,13 +1948,13 @@ void SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .descriptorSetLayout<EdgeDetectionDS>(1)
 		      .vertexShader("smaaEdge")
 		      .fragmentShader("smaaEdge")
-		      .name(std::string("SMAA edges ") + std::to_string(key.quality));
+		      .name(std::string("SMAA edges ") + std::to_string(smaaKey.quality));
 		smaaPipelines.edgePipeline      = renderGraph.createPipeline(renderer, RenderPasses::SMAAEdges, plDesc);
 	}
 
 	if (!smaaPipelines.blendWeightPipeline) {
 		ShaderMacros macros;
-		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[key.quality]);
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaKey.quality]);
 		macros.emplace(qualityString, "1");
 
 		PipelineDesc plDesc;
@@ -1966,13 +1966,13 @@ void SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .shaderMacros(macros)
 		      .vertexShader("smaaBlendWeight")
 		      .fragmentShader("smaaBlendWeight")
-		      .name(std::string("SMAA weights ") + std::to_string(key.quality));
+		      .name(std::string("SMAA weights ") + std::to_string(smaaKey.quality));
 		smaaPipelines.blendWeightPipeline = renderGraph.createPipeline(renderer, RenderPasses::SMAAWeights, plDesc);
 	}
 
 	if (!smaaPipelines.neighborPipelines[0]) {
 		ShaderMacros macros;
-		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[key.quality]);
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaKey.quality]);
 		macros.emplace(qualityString, "1");
 
 		PipelineDesc plDesc;
@@ -1984,13 +1984,13 @@ void SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .shaderMacros(macros)
 		      .vertexShader("smaaNeighbor")
 		      .fragmentShader("smaaNeighbor")
-		      .name(std::string("SMAA blend ") + std::to_string(key.quality));
+		      .name(std::string("SMAA blend ") + std::to_string(smaaKey.quality));
 		smaaPipelines.neighborPipelines[0] = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
 	}
 
 	if (!smaaPipelines.neighborPipelines[1]) {
 		ShaderMacros macros;
-		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[key.quality]);
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaKey.quality]);
 		macros.emplace(qualityString, "1");
 
 		PipelineDesc plDesc;
@@ -2005,7 +2005,7 @@ void SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .blending(true)
 		      .sourceBlend(BlendFunc::Constant)
 		      .destinationBlend(BlendFunc::Constant)
-		      .name(std::string("SMAA blend (S2X) ") + std::to_string(key.quality));
+		      .name(std::string("SMAA blend (S2X) ") + std::to_string(smaaKey.quality));
 		smaaPipelines.neighborPipelines[1] = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
 	}
 }
@@ -2916,7 +2916,7 @@ void SMAADemo::renderSeparate() {
 
 
 void SMAADemo::renderSMAAEdges(Rendertargets::Rendertargets input, int pass) {
-	getSMAAPipelines(smaaKey);
+	getSMAAPipelines();
 	renderer.bindPipeline(smaaPipelines.edgePipeline);
 
 	// TODO: this is redundant, clean it up
@@ -2946,7 +2946,7 @@ void SMAADemo::renderSMAAEdges(Rendertargets::Rendertargets input, int pass) {
 
 
 void SMAADemo::renderSMAAWeights(int pass) {
-	getSMAAPipelines(smaaKey);
+	getSMAAPipelines();
 
 	// TODO: this is redundant, clean it up
 	ShaderDefines::SMAAUBO smaaUBO;
@@ -2975,7 +2975,7 @@ void SMAADemo::renderSMAAWeights(int pass) {
 
 
 void SMAADemo::renderSMAABlend(Rendertargets::Rendertargets input, int pass) {
-	getSMAAPipelines(smaaKey);
+	getSMAAPipelines();
 
 	// TODO: this is redundant, clean it up
 	ShaderDefines::SMAAUBO smaaUBO;
