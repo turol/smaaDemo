@@ -2863,7 +2863,7 @@ void SMAADemo::renderFXAA() {
 		      .shaderMacros(macros)
 		      .vertexShader("fxaa")
 		      .fragmentShader("fxaa")
-		      .name(std::string("FXAA ") + std::to_string(fxaaQuality));
+		      .name(std::string("FXAA ") + qualityString);
 
 		fxaaPipeline = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
 	}
