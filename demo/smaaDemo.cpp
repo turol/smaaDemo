@@ -707,8 +707,6 @@ class SMAADemo {
 
 	const SMAAPipelines &getSMAAPipelines(const SMAAKey &key);
 
-	PipelineHandle getCubePipeline();
-
 	void renderFXAA();
 
 	void renderSeparate();
@@ -1923,45 +1921,6 @@ void SMAADemo::rebuildRenderGraph() {
 }
 
 
-PipelineHandle SMAADemo::getCubePipeline() {
-	if (!cubePipeline) {
-		std::string name = "cubes";
-		if (numSamples > 1) {
-			name += " MSAA x" + std::to_string(numSamples);
-		}
-
-		/*
-		 Vulkan spec says:
-		 Two render passes are compatible if their corresponding color, input,
-		 resolve, and depth/stencil attachment references are compatible and
-		 if they are otherwise identical except for:
-		 * Initial and final image layout in attachment descriptions
-		 * Load and store operations in attachment descriptions
-		 * Image layout in attachment references
-
-		 so we can just use Layout::ShaderRead when creating
-		 no matter which one is used when rendering */
-		PipelineDesc plDesc;
-		plDesc.name(name)
-		      .vertexShader("cube")
-		      .fragmentShader("cube")
-		      .numSamples(numSamples)
-		      .descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<CubeSceneDS>(1)
-		      .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
-		      .vertexBufferStride(ATTR_POS, sizeof(Vertex))
-		      .depthWrite(true)
-		      .depthTest(true)
-		      .cullFaces(true);
-
-		cubePipeline = renderGraph.createPipeline(renderer, RenderPasses::Scene, plDesc);
-	}
-    assert(cubePipeline);
-
-	return cubePipeline;
-}
-
-
 const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 	auto it = smaaPipelines.find(key);
 	// create lazily if missing
@@ -2738,7 +2697,41 @@ void RenderGraph::render(Renderer &renderer) {
 
 
 void SMAADemo::renderCubeScene() {
-	renderer.bindPipeline(getCubePipeline());
+	if (!cubePipeline) {
+		std::string name = "cubes";
+		if (numSamples > 1) {
+			name += " MSAA x" + std::to_string(numSamples);
+		}
+
+		/*
+		 Vulkan spec says:
+		 Two render passes are compatible if their corresponding color, input,
+		 resolve, and depth/stencil attachment references are compatible and
+		 if they are otherwise identical except for:
+		 * Initial and final image layout in attachment descriptions
+		 * Load and store operations in attachment descriptions
+		 * Image layout in attachment references
+
+		 so we can just use Layout::ShaderRead when creating
+		 no matter which one is used when rendering */
+		PipelineDesc plDesc;
+		plDesc.name(name)
+		      .vertexShader("cube")
+		      .fragmentShader("cube")
+		      .numSamples(numSamples)
+		      .descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<CubeSceneDS>(1)
+		      .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
+		      .vertexBufferStride(ATTR_POS, sizeof(Vertex))
+		      .depthWrite(true)
+		      .depthTest(true)
+		      .cullFaces(true);
+
+		cubePipeline = renderGraph.createPipeline(renderer, RenderPasses::Scene, plDesc);
+	}
+    assert(cubePipeline);
+
+	renderer.bindPipeline(cubePipeline);
 
 	const unsigned int windowWidth  = rendererDesc.swapchain.width;
 	const unsigned int windowHeight = rendererDesc.swapchain.height;
