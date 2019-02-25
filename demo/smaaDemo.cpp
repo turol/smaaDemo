@@ -1829,11 +1829,9 @@ void SMAADemo::rebuildRenderGraph() {
 	renderGraph.build(renderer);
 
 	cubePipeline           = PipelineHandle();
-		imagePipeline = PipelineHandle();
-
-		blitPipeline = PipelineHandle();
-
-		guiPipeline = PipelineHandle();
+	imagePipeline          = PipelineHandle();
+	blitPipeline           = PipelineHandle();
+	guiPipeline            = PipelineHandle();
 	separatePipeline       = PipelineHandle();
 	temporalAAPipelines[0] = PipelineHandle();
 	temporalAAPipelines[1] = PipelineHandle();
