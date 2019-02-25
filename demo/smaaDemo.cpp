@@ -706,7 +706,6 @@ class SMAADemo {
 	SMAADemo &operator=(SMAADemo &&) = delete;
 
 	const SMAAPipelines &getSMAAPipelines(const SMAAKey &key);
-	const PipelineHandle &getFXAAPipeline();
 
 	PipelineHandle getCubePipeline(unsigned int n);
 
@@ -2019,32 +2018,6 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 }
 
 
-const PipelineHandle &SMAADemo::getFXAAPipeline() {
-	if (!fxaaPipeline) {
-		PipelineDesc plDesc;
-		plDesc.depthWrite(false)
-		      .depthTest(false)
-		      .cullFaces(true)
-		      .descriptorSetLayout<GlobalDS>(0);
-
-		std::string qualityString(fxaaQualityLevels[fxaaQuality]);
-
-		ShaderMacros macros;
-		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
-		plDesc.shaderMacros(macros)
-		      .vertexShader("fxaa")
-		      .fragmentShader("fxaa")
-		      .descriptorSetLayout<ColorCombinedDS>(1)
-		      .name(std::string("FXAA ") + std::to_string(fxaaQuality));
-
-		fxaaPipeline = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
-	}
-	assert(fxaaPipeline);
-
-	return fxaaPipeline;
-}
-
-
 void SMAADemo::loadImage(const std::string &filename) {
 	int width = 0, height = 0;
 	unsigned char *imageData = stbi_load(filename.c_str(), &width, &height, NULL, 4);
@@ -2875,7 +2848,28 @@ void SMAADemo::renderImageScene() {
 
 
 void SMAADemo::renderFXAA() {
-	renderer.bindPipeline(getFXAAPipeline());
+	if (!fxaaPipeline) {
+		PipelineDesc plDesc;
+		plDesc.depthWrite(false)
+		      .depthTest(false)
+		      .cullFaces(true)
+		      .descriptorSetLayout<GlobalDS>(0);
+
+		std::string qualityString(fxaaQualityLevels[fxaaQuality]);
+
+		ShaderMacros macros;
+		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
+		plDesc.shaderMacros(macros)
+		      .vertexShader("fxaa")
+		      .fragmentShader("fxaa")
+		      .descriptorSetLayout<ColorCombinedDS>(1)
+		      .name(std::string("FXAA ") + std::to_string(fxaaQuality));
+
+		fxaaPipeline = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
+	}
+	assert(fxaaPipeline);
+
+	renderer.bindPipeline(fxaaPipeline);
 	ColorCombinedDS colorDS;
 	// FIXME: remove unused UBO hack
 	uint32_t temp         = 0;
