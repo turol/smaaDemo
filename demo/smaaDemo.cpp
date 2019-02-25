@@ -1928,34 +1928,6 @@ void SMAADemo::getSMAAPipelines() {
 	int pass = 0;
 
 	// create lazily if missing
-	if (!smaaPipelines.neighborPipelines[pass]) {
-		ShaderMacros macros;
-		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaKey.quality]);
-		macros.emplace(qualityString, "1");
-
-		PipelineDesc plDesc;
-		plDesc.depthWrite(false)
-		      .depthTest(false)
-		      .cullFaces(true)
-		      .descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<NeighborBlendDS>(1)
-		      .shaderMacros(macros)
-		      .vertexShader("smaaNeighbor")
-		      .fragmentShader("smaaNeighbor");
-
-		if (pass == 0) {
-			plDesc.name(std::string("SMAA blend ") + std::to_string(smaaKey.quality));
-		} else {
-			assert(pass == 1);
-			plDesc.blending(true)
-			      .sourceBlend(BlendFunc::Constant)
-			      .destinationBlend(BlendFunc::Constant)
-			      .name(std::string("SMAA blend (S2X) ") + std::to_string(smaaKey.quality));
-		}
-
-		smaaPipelines.neighborPipelines[pass] = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
-	}
-
 	pass = 1;
 
 	if (!smaaPipelines.neighborPipelines[pass]) {
@@ -2993,7 +2965,33 @@ void SMAADemo::renderSMAAWeights(int pass) {
 
 
 void SMAADemo::renderSMAABlend(Rendertargets::Rendertargets input, int pass) {
-	getSMAAPipelines();
+	if (!smaaPipelines.neighborPipelines[pass]) {
+		ShaderMacros macros;
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaKey.quality]);
+		macros.emplace(qualityString, "1");
+
+		PipelineDesc plDesc;
+		plDesc.depthWrite(false)
+		      .depthTest(false)
+		      .cullFaces(true)
+		      .descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<NeighborBlendDS>(1)
+		      .shaderMacros(macros)
+		      .vertexShader("smaaNeighbor")
+		      .fragmentShader("smaaNeighbor");
+
+		if (pass == 0) {
+			plDesc.name(std::string("SMAA blend ") + std::to_string(smaaKey.quality));
+		} else {
+			assert(pass == 1);
+			plDesc.blending(true)
+			      .sourceBlend(BlendFunc::Constant)
+			      .destinationBlend(BlendFunc::Constant)
+			      .name(std::string("SMAA blend (S2X) ") + std::to_string(smaaKey.quality));
+		}
+
+		smaaPipelines.neighborPipelines[pass] = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
+	}
 
 	// TODO: this is redundant, clean it up
 	ShaderDefines::SMAAUBO smaaUBO;
