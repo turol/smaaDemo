@@ -706,7 +706,7 @@ class SMAADemo {
 	SMAADemo &operator=(SMAADemo &&) = delete;
 
 	const SMAAPipelines &getSMAAPipelines(const SMAAKey &key);
-	const PipelineHandle &getFXAAPipeline(unsigned int q);
+	const PipelineHandle &getFXAAPipeline();
 
 	PipelineHandle getCubePipeline(unsigned int n);
 
@@ -2019,7 +2019,7 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 }
 
 
-const PipelineHandle &SMAADemo::getFXAAPipeline(unsigned int q) {
+const PipelineHandle &SMAADemo::getFXAAPipeline() {
 	if (!fxaaPipeline) {
 		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
@@ -2027,7 +2027,7 @@ const PipelineHandle &SMAADemo::getFXAAPipeline(unsigned int q) {
 		      .cullFaces(true)
 		      .descriptorSetLayout<GlobalDS>(0);
 
-		std::string qualityString(fxaaQualityLevels[q]);
+		std::string qualityString(fxaaQualityLevels[fxaaQuality]);
 
 		ShaderMacros macros;
 		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
@@ -2035,7 +2035,7 @@ const PipelineHandle &SMAADemo::getFXAAPipeline(unsigned int q) {
 		      .vertexShader("fxaa")
 		      .fragmentShader("fxaa")
 		      .descriptorSetLayout<ColorCombinedDS>(1)
-		      .name(std::string("FXAA ") + std::to_string(q));
+		      .name(std::string("FXAA ") + std::to_string(fxaaQuality));
 
 		fxaaPipeline = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
 	}
@@ -2875,7 +2875,7 @@ void SMAADemo::renderImageScene() {
 
 
 void SMAADemo::renderFXAA() {
-	renderer.bindPipeline(getFXAAPipeline(fxaaQuality));
+	renderer.bindPipeline(getFXAAPipeline());
 	ColorCombinedDS colorDS;
 	// FIXME: remove unused UBO hack
 	uint32_t temp         = 0;
