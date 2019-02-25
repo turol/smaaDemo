@@ -2703,17 +2703,6 @@ void SMAADemo::renderCubeScene() {
 			name += " MSAA x" + std::to_string(numSamples);
 		}
 
-		/*
-		 Vulkan spec says:
-		 Two render passes are compatible if their corresponding color, input,
-		 resolve, and depth/stencil attachment references are compatible and
-		 if they are otherwise identical except for:
-		 * Initial and final image layout in attachment descriptions
-		 * Load and store operations in attachment descriptions
-		 * Image layout in attachment references
-
-		 so we can just use Layout::ShaderRead when creating
-		 no matter which one is used when rendering */
 		PipelineDesc plDesc;
 		plDesc.name(name)
 		      .vertexShader("cube")
