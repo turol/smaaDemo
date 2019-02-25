@@ -705,7 +705,7 @@ class SMAADemo {
 	SMAADemo(SMAADemo &&) = delete;
 	SMAADemo &operator=(SMAADemo &&) = delete;
 
-	const SMAAPipelines &getSMAAPipelines(const SMAAKey &key);
+	void getSMAAPipelines(const SMAAKey &key);
 
 	void renderFXAA();
 
@@ -1924,7 +1924,7 @@ void SMAADemo::rebuildRenderGraph() {
 }
 
 
-const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
+void SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 	// create lazily if missing
 	if (!smaaPipelines.edgePipeline) {
 		ShaderMacros macros;
@@ -2008,8 +2008,6 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .name(std::string("SMAA blend (S2X) ") + std::to_string(key.quality));
 		smaaPipelines.neighborPipelines[1] = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
 	}
-
-	return smaaPipelines;
 }
 
 
@@ -2918,8 +2916,8 @@ void SMAADemo::renderSeparate() {
 
 
 void SMAADemo::renderSMAAEdges(Rendertargets::Rendertargets input, int pass) {
-	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
-	renderer.bindPipeline(pipelines.edgePipeline);
+	getSMAAPipelines(smaaKey);
+	renderer.bindPipeline(smaaPipelines.edgePipeline);
 
 	// TODO: this is redundant, clean it up
 	ShaderDefines::SMAAUBO smaaUBO;
@@ -2948,7 +2946,7 @@ void SMAADemo::renderSMAAEdges(Rendertargets::Rendertargets input, int pass) {
 
 
 void SMAADemo::renderSMAAWeights(int pass) {
-	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
+	getSMAAPipelines(smaaKey);
 
 	// TODO: this is redundant, clean it up
 	ShaderDefines::SMAAUBO smaaUBO;
@@ -2961,7 +2959,7 @@ void SMAADemo::renderSMAAWeights(int pass) {
 
 	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
 
-	renderer.bindPipeline(pipelines.blendWeightPipeline);
+	renderer.bindPipeline(smaaPipelines.blendWeightPipeline);
 	BlendWeightDS blendWeightDS;
 	blendWeightDS.smaaUBO           = smaaUBOBuf;
 	blendWeightDS.edgesTex.tex      = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::Edges]);
@@ -2977,7 +2975,7 @@ void SMAADemo::renderSMAAWeights(int pass) {
 
 
 void SMAADemo::renderSMAABlend(Rendertargets::Rendertargets input, int pass) {
-	const SMAAPipelines &pipelines = getSMAAPipelines(smaaKey);
+	getSMAAPipelines(smaaKey);
 
 	// TODO: this is redundant, clean it up
 	ShaderDefines::SMAAUBO smaaUBO;
@@ -2991,7 +2989,7 @@ void SMAADemo::renderSMAABlend(Rendertargets::Rendertargets input, int pass) {
 	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
 
 	// full effect
-	renderer.bindPipeline(pipelines.neighborPipelines[pass]);
+	renderer.bindPipeline(smaaPipelines.neighborPipelines[pass]);
 
 	NeighborBlendDS neighborBlendDS;
 	neighborBlendDS.smaaUBO              = smaaUBOBuf;
