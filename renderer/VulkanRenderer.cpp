@@ -2450,7 +2450,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	if (!deleteResources.empty()) {
 		if (frame.deleteResources.empty()) {
 			// frame.deleteResources is empty, easy case
-		frame.deleteResources = std::move(deleteResources);
+			frame.deleteResources = std::move(deleteResources);
 		} else {
 			// there's stuff already in frame.deleteResources
 			// from deleting things "between" frames
