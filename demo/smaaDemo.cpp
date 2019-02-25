@@ -1930,6 +1930,7 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[key.quality]);
 		macros.emplace(qualityString, "1");
+
 		if (key.edgeMethod != SMAAEdgeMethod::Color) {
 			macros.emplace("EDGEMETHOD", std::to_string(static_cast<uint8_t>(key.edgeMethod)));
 		}
@@ -1955,13 +1956,6 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[key.quality]);
 		macros.emplace(qualityString, "1");
-		if (key.edgeMethod != SMAAEdgeMethod::Color) {
-			macros.emplace("EDGEMETHOD", std::to_string(static_cast<uint8_t>(key.edgeMethod)));
-		}
-
-		if (key.predication && key.edgeMethod != SMAAEdgeMethod::Depth) {
-			macros.emplace("SMAA_PREDICATION", "1");
-		}
 
 		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
@@ -1980,13 +1974,6 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[key.quality]);
 		macros.emplace(qualityString, "1");
-		if (key.edgeMethod != SMAAEdgeMethod::Color) {
-			macros.emplace("EDGEMETHOD", std::to_string(static_cast<uint8_t>(key.edgeMethod)));
-		}
-
-		if (key.predication && key.edgeMethod != SMAAEdgeMethod::Depth) {
-			macros.emplace("SMAA_PREDICATION", "1");
-		}
 
 		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
@@ -2005,13 +1992,6 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[key.quality]);
 		macros.emplace(qualityString, "1");
-		if (key.edgeMethod != SMAAEdgeMethod::Color) {
-			macros.emplace("EDGEMETHOD", std::to_string(static_cast<uint8_t>(key.edgeMethod)));
-		}
-
-		if (key.predication && key.edgeMethod != SMAAEdgeMethod::Depth) {
-			macros.emplace("SMAA_PREDICATION", "1");
-		}
 
 		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
