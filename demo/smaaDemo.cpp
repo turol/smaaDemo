@@ -1926,24 +1926,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 void SMAADemo::getSMAAPipelines() {
 	// create lazily if missing
-	if (!smaaPipelines.blendWeightPipeline) {
-		ShaderMacros macros;
-		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaKey.quality]);
-		macros.emplace(qualityString, "1");
-
-		PipelineDesc plDesc;
-		plDesc.depthWrite(false)
-		      .depthTest(false)
-		      .cullFaces(true)
-		      .descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<BlendWeightDS>(1)
-		      .shaderMacros(macros)
-		      .vertexShader("smaaBlendWeight")
-		      .fragmentShader("smaaBlendWeight")
-		      .name(std::string("SMAA weights ") + std::to_string(smaaKey.quality));
-		smaaPipelines.blendWeightPipeline = renderGraph.createPipeline(renderer, RenderPasses::SMAAWeights, plDesc);
-	}
-
 	if (!smaaPipelines.neighborPipelines[0]) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaKey.quality]);
@@ -2945,7 +2927,23 @@ void SMAADemo::renderSMAAEdges(Rendertargets::Rendertargets input, int pass) {
 
 
 void SMAADemo::renderSMAAWeights(int pass) {
-	getSMAAPipelines();
+	if (!smaaPipelines.blendWeightPipeline) {
+		ShaderMacros macros;
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaKey.quality]);
+		macros.emplace(qualityString, "1");
+
+		PipelineDesc plDesc;
+		plDesc.depthWrite(false)
+		      .depthTest(false)
+		      .cullFaces(true)
+		      .descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<BlendWeightDS>(1)
+		      .shaderMacros(macros)
+		      .vertexShader("smaaBlendWeight")
+		      .fragmentShader("smaaBlendWeight")
+		      .name(std::string("SMAA weights ") + std::to_string(smaaKey.quality));
+		smaaPipelines.blendWeightPipeline = renderGraph.createPipeline(renderer, RenderPasses::SMAAWeights, plDesc);
+	}
 
 	// TODO: this is redundant, clean it up
 	ShaderDefines::SMAAUBO smaaUBO;
