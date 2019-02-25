@@ -685,7 +685,7 @@ class SMAADemo {
 	SamplerHandle                                     linearSampler;
 	SamplerHandle                                     nearestSampler;
 
-	std::unordered_map<SMAAKey, SMAAPipelines>        smaaPipelines;
+	SMAAPipelines                                     smaaPipelines;
 	TextureHandle                                     areaTex;
 	TextureHandle                                     searchTex;
 
@@ -1834,7 +1834,10 @@ void SMAADemo::rebuildRenderGraph() {
 	temporalAAPipelines[1] = PipelineHandle();
 	fxaaPipeline           = PipelineHandle();
 
-	smaaPipelines.clear();
+	smaaPipelines.edgePipeline         = PipelineHandle();
+	smaaPipelines.blendWeightPipeline  = PipelineHandle();
+	smaaPipelines.neighborPipelines[0] = PipelineHandle();
+	smaaPipelines.neighborPipelines[1] = PipelineHandle();
 
 	for (unsigned int i = 0; i < 2; i++) {
 		if (temporalAAPipelines[i]) {
@@ -1922,9 +1925,8 @@ void SMAADemo::rebuildRenderGraph() {
 
 
 const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
-	auto it = smaaPipelines.find(key);
 	// create lazily if missing
-	if (it == smaaPipelines.end()) {
+	if (!smaaPipelines.edgePipeline) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[key.quality]);
 		macros.emplace(qualityString, "1");
@@ -1936,8 +1938,6 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 			macros.emplace("SMAA_PREDICATION", "1");
 		}
 
-		SMAAPipelines pipelines;
-
 		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
 		      .depthTest(false)
@@ -1948,32 +1948,28 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .fragmentShader("smaaEdge")
 		      .descriptorSetLayout<EdgeDetectionDS>(1)
 		      .name(std::string("SMAA edges ") + std::to_string(key.quality));
-		pipelines.edgePipeline      = renderGraph.createPipeline(renderer, RenderPasses::SMAAEdges, plDesc);
+		smaaPipelines.edgePipeline      = renderGraph.createPipeline(renderer, RenderPasses::SMAAEdges, plDesc);
 
 		plDesc.vertexShader("smaaBlendWeight")
 		      .fragmentShader("smaaBlendWeight")
 		      .descriptorSetLayout<BlendWeightDS>(1)
 		      .name(std::string("SMAA weights ") + std::to_string(key.quality));
-		pipelines.blendWeightPipeline = renderGraph.createPipeline(renderer, RenderPasses::SMAAWeights, plDesc);
+		smaaPipelines.blendWeightPipeline = renderGraph.createPipeline(renderer, RenderPasses::SMAAWeights, plDesc);
 
 		plDesc.vertexShader("smaaNeighbor")
 		      .fragmentShader("smaaNeighbor")
 		      .descriptorSetLayout<NeighborBlendDS>(1)
 		      .name(std::string("SMAA blend ") + std::to_string(key.quality));
-		pipelines.neighborPipelines[0] = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
+		smaaPipelines.neighborPipelines[0] = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
 
 		plDesc.blending(true)
 		      .sourceBlend(BlendFunc::Constant)
 		      .destinationBlend(BlendFunc::Constant)
 		      .name(std::string("SMAA blend (S2X) ") + std::to_string(key.quality));
-		pipelines.neighborPipelines[1] = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
-
-		bool inserted = false;
-		std::tie(it, inserted) = smaaPipelines.emplace(std::move(key), std::move(pipelines));
-		assert(inserted);
+		smaaPipelines.neighborPipelines[1] = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
 	}
 
-	return it->second;
+	return smaaPipelines;
 }
 
 
@@ -2273,7 +2269,12 @@ void SMAADemo::processInput() {
 					}
 					smaaKey.quality = smaaKey.quality % maxSMAAQuality;
 					smaaParameters  = defaultSMAAParameters[smaaKey.quality];
-					smaaPipelines.clear();
+
+					smaaPipelines.edgePipeline         = PipelineHandle();
+					smaaPipelines.blendWeightPipeline  = PipelineHandle();
+					smaaPipelines.neighborPipelines[0] = PipelineHandle();
+					smaaPipelines.neighborPipelines[1] = PipelineHandle();
+
 					break;
 
 				}
@@ -3121,7 +3122,10 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				if (sq != 0) {
 					smaaParameters  = defaultSMAAParameters[sq];
 				}
-				smaaPipelines.clear();
+				smaaPipelines.edgePipeline         = PipelineHandle();
+				smaaPipelines.blendWeightPipeline  = PipelineHandle();
+				smaaPipelines.neighborPipelines[0] = PipelineHandle();
+				smaaPipelines.neighborPipelines[1] = PipelineHandle();
 			}
 
 			if (ImGui::CollapsingHeader("SMAA custom properties")) {
