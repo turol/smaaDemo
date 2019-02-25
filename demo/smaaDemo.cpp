@@ -1949,7 +1949,21 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .descriptorSetLayout<EdgeDetectionDS>(1)
 		      .name(std::string("SMAA edges ") + std::to_string(key.quality));
 		smaaPipelines.edgePipeline      = renderGraph.createPipeline(renderer, RenderPasses::SMAAEdges, plDesc);
+	}
 
+	if (!smaaPipelines.blendWeightPipeline) {
+		ShaderMacros macros;
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[key.quality]);
+		macros.emplace(qualityString, "1");
+		if (key.edgeMethod != SMAAEdgeMethod::Color) {
+			macros.emplace("EDGEMETHOD", std::to_string(static_cast<uint8_t>(key.edgeMethod)));
+		}
+
+		if (key.predication && key.edgeMethod != SMAAEdgeMethod::Depth) {
+			macros.emplace("SMAA_PREDICATION", "1");
+		}
+
+		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
 		      .depthTest(false)
 		      .cullFaces(true)
@@ -1960,7 +1974,21 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .descriptorSetLayout<BlendWeightDS>(1)
 		      .name(std::string("SMAA weights ") + std::to_string(key.quality));
 		smaaPipelines.blendWeightPipeline = renderGraph.createPipeline(renderer, RenderPasses::SMAAWeights, plDesc);
+	}
 
+	if (!smaaPipelines.neighborPipelines[0]) {
+		ShaderMacros macros;
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[key.quality]);
+		macros.emplace(qualityString, "1");
+		if (key.edgeMethod != SMAAEdgeMethod::Color) {
+			macros.emplace("EDGEMETHOD", std::to_string(static_cast<uint8_t>(key.edgeMethod)));
+		}
+
+		if (key.predication && key.edgeMethod != SMAAEdgeMethod::Depth) {
+			macros.emplace("SMAA_PREDICATION", "1");
+		}
+
+		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
 		      .depthTest(false)
 		      .cullFaces(true)
@@ -1971,7 +1999,21 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .descriptorSetLayout<NeighborBlendDS>(1)
 		      .name(std::string("SMAA blend ") + std::to_string(key.quality));
 		smaaPipelines.neighborPipelines[0] = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
+	}
 
+	if (!smaaPipelines.neighborPipelines[1]) {
+		ShaderMacros macros;
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[key.quality]);
+		macros.emplace(qualityString, "1");
+		if (key.edgeMethod != SMAAEdgeMethod::Color) {
+			macros.emplace("EDGEMETHOD", std::to_string(static_cast<uint8_t>(key.edgeMethod)));
+		}
+
+		if (key.predication && key.edgeMethod != SMAAEdgeMethod::Depth) {
+			macros.emplace("SMAA_PREDICATION", "1");
+		}
+
+		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
 		      .depthTest(false)
 		      .cullFaces(true)
