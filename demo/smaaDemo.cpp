@@ -1944,9 +1944,9 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .cullFaces(true)
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .shaderMacros(macros)
+		      .descriptorSetLayout<EdgeDetectionDS>(1)
 		      .vertexShader("smaaEdge")
 		      .fragmentShader("smaaEdge")
-		      .descriptorSetLayout<EdgeDetectionDS>(1)
 		      .name(std::string("SMAA edges ") + std::to_string(key.quality));
 		smaaPipelines.edgePipeline      = renderGraph.createPipeline(renderer, RenderPasses::SMAAEdges, plDesc);
 	}
@@ -1968,10 +1968,10 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .depthTest(false)
 		      .cullFaces(true)
 		      .descriptorSetLayout<GlobalDS>(0)
-		      .shaderMacros(macros);
-		plDesc.vertexShader("smaaBlendWeight")
-		      .fragmentShader("smaaBlendWeight")
 		      .descriptorSetLayout<BlendWeightDS>(1)
+		      .shaderMacros(macros)
+		      .vertexShader("smaaBlendWeight")
+		      .fragmentShader("smaaBlendWeight")
 		      .name(std::string("SMAA weights ") + std::to_string(key.quality));
 		smaaPipelines.blendWeightPipeline = renderGraph.createPipeline(renderer, RenderPasses::SMAAWeights, plDesc);
 	}
@@ -1993,10 +1993,10 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .depthTest(false)
 		      .cullFaces(true)
 		      .descriptorSetLayout<GlobalDS>(0)
-		      .shaderMacros(macros);
-		plDesc.vertexShader("smaaNeighbor")
-		      .fragmentShader("smaaNeighbor")
 		      .descriptorSetLayout<NeighborBlendDS>(1)
+		      .shaderMacros(macros)
+		      .vertexShader("smaaNeighbor")
+		      .fragmentShader("smaaNeighbor")
 		      .name(std::string("SMAA blend ") + std::to_string(key.quality));
 		smaaPipelines.neighborPipelines[0] = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
 	}
@@ -2018,11 +2018,11 @@ const SMAAPipelines &SMAADemo::getSMAAPipelines(const SMAAKey &key) {
 		      .depthTest(false)
 		      .cullFaces(true)
 		      .descriptorSetLayout<GlobalDS>(0)
-		      .shaderMacros(macros);
-		plDesc.vertexShader("smaaNeighbor")
+		      .descriptorSetLayout<NeighborBlendDS>(1)
+		      .shaderMacros(macros)
+		      .vertexShader("smaaNeighbor")
 		      .fragmentShader("smaaNeighbor")
-		      .descriptorSetLayout<NeighborBlendDS>(1);
-		plDesc.blending(true)
+		      .blending(true)
 		      .sourceBlend(BlendFunc::Constant)
 		      .destinationBlend(BlendFunc::Constant)
 		      .name(std::string("SMAA blend (S2X) ") + std::to_string(key.quality));
