@@ -1926,32 +1926,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 void SMAADemo::getSMAAPipelines() {
 	// create lazily if missing
-	if (!smaaPipelines.edgePipeline) {
-		ShaderMacros macros;
-		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaKey.quality]);
-		macros.emplace(qualityString, "1");
-
-		if (smaaKey.edgeMethod != SMAAEdgeMethod::Color) {
-			macros.emplace("EDGEMETHOD", std::to_string(static_cast<uint8_t>(smaaKey.edgeMethod)));
-		}
-
-		if (smaaKey.predication && smaaKey.edgeMethod != SMAAEdgeMethod::Depth) {
-			macros.emplace("SMAA_PREDICATION", "1");
-		}
-
-		PipelineDesc plDesc;
-		plDesc.depthWrite(false)
-		      .depthTest(false)
-		      .cullFaces(true)
-		      .descriptorSetLayout<GlobalDS>(0)
-		      .shaderMacros(macros)
-		      .descriptorSetLayout<EdgeDetectionDS>(1)
-		      .vertexShader("smaaEdge")
-		      .fragmentShader("smaaEdge")
-		      .name(std::string("SMAA edges ") + std::to_string(smaaKey.quality));
-		smaaPipelines.edgePipeline      = renderGraph.createPipeline(renderer, RenderPasses::SMAAEdges, plDesc);
-	}
-
 	if (!smaaPipelines.blendWeightPipeline) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaKey.quality]);
@@ -2916,7 +2890,32 @@ void SMAADemo::renderSeparate() {
 
 
 void SMAADemo::renderSMAAEdges(Rendertargets::Rendertargets input, int pass) {
-	getSMAAPipelines();
+	if (!smaaPipelines.edgePipeline) {
+		ShaderMacros macros;
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaKey.quality]);
+		macros.emplace(qualityString, "1");
+
+		if (smaaKey.edgeMethod != SMAAEdgeMethod::Color) {
+			macros.emplace("EDGEMETHOD", std::to_string(static_cast<uint8_t>(smaaKey.edgeMethod)));
+		}
+
+		if (smaaKey.predication && smaaKey.edgeMethod != SMAAEdgeMethod::Depth) {
+			macros.emplace("SMAA_PREDICATION", "1");
+		}
+
+		PipelineDesc plDesc;
+		plDesc.depthWrite(false)
+		      .depthTest(false)
+		      .cullFaces(true)
+		      .descriptorSetLayout<GlobalDS>(0)
+		      .shaderMacros(macros)
+		      .descriptorSetLayout<EdgeDetectionDS>(1)
+		      .vertexShader("smaaEdge")
+		      .fragmentShader("smaaEdge")
+		      .name(std::string("SMAA edges ") + std::to_string(smaaKey.quality));
+		smaaPipelines.edgePipeline      = renderGraph.createPipeline(renderer, RenderPasses::SMAAEdges, plDesc);
+	}
+
 	renderer.bindPipeline(smaaPipelines.edgePipeline);
 
 	// TODO: this is redundant, clean it up
