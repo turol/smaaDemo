@@ -2849,20 +2849,20 @@ void SMAADemo::renderImageScene() {
 
 void SMAADemo::renderFXAA() {
 	if (!fxaaPipeline) {
-		PipelineDesc plDesc;
-		plDesc.depthWrite(false)
-		      .depthTest(false)
-		      .cullFaces(true)
-		      .descriptorSetLayout<GlobalDS>(0);
-
 		std::string qualityString(fxaaQualityLevels[fxaaQuality]);
 
 		ShaderMacros macros;
 		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
-		plDesc.shaderMacros(macros)
+
+		PipelineDesc plDesc;
+		plDesc.depthWrite(false)
+		      .depthTest(false)
+		      .cullFaces(true)
+		      .descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<ColorCombinedDS>(1)
+		      .shaderMacros(macros)
 		      .vertexShader("fxaa")
 		      .fragmentShader("fxaa")
-		      .descriptorSetLayout<ColorCombinedDS>(1)
 		      .name(std::string("FXAA ") + std::to_string(fxaaQuality));
 
 		fxaaPipeline = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
