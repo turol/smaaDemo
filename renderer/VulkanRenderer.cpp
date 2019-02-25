@@ -2448,8 +2448,18 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 
 	// mark buffers deleted during frame to be deleted when the frame has synced
 	if (!deleteResources.empty()) {
-		assert(frame.deleteResources.empty());
+		if (frame.deleteResources.empty()) {
+			// frame.deleteResources is empty, easy case
 		frame.deleteResources = std::move(deleteResources);
+		} else {
+			// there's stuff already in frame.deleteResources
+			// from deleting things "between" frames
+			do {
+				frame.deleteResources.emplace_back(std::move(deleteResources.back()));
+				deleteResources.pop_back();
+			} while (!deleteResources.empty());
+		}
+
 		assert(deleteResources.empty());
 	}
 
