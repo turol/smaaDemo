@@ -99,6 +99,11 @@ public:
 	}
 
 
+	bool operator!=(const Handle<T> &other) const {
+		return handle != other.handle;
+	}
+
+
 	explicit operator bool() const {
 		return handle != 0;
 	}
