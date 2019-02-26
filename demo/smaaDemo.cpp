@@ -1482,19 +1482,6 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.createFramebuffer(renderer, Framebuffers::Resolve2, fbDesc);
 	}
 
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.format(Format::sRGBA8)
-		      .additionalViewFormat(Format::RGBA8)
-		      .width(windowWidth)
-		      .height(windowHeight);
-
-		for (unsigned int i = 0; i < 2; i++) {
-			rtDesc.name("Subsample separate " + std::to_string(i));
-			renderGraph.createRenderTarget(renderer, static_cast<Rendertargets::Rendertargets>(Rendertargets::Subsample1 + i), rtDesc);
-		}
-	}
-
 	if (activeScene == 0) {
 		renderGraph.renderPass(RenderPasses::Scene, Framebuffers::Scene, std::bind(&SMAADemo::renderCubeScene, this));
 	} else {
@@ -1576,6 +1563,17 @@ void SMAADemo::rebuildRenderGraph() {
 		} break;
 
 		case AAMethod::SMAA2X: {
+			RenderTargetDesc rtDesc;
+			rtDesc.format(Format::sRGBA8)
+				  .additionalViewFormat(Format::RGBA8)
+				  .width(windowWidth)
+				  .height(windowHeight);
+
+			for (unsigned int i = 0; i < 2; i++) {
+				rtDesc.name("Subsample separate " + std::to_string(i));
+				renderGraph.createRenderTarget(renderer, static_cast<Rendertargets::Rendertargets>(Rendertargets::Subsample1 + i), rtDesc);
+			}
+
 			FramebufferDesc fbDesc;
 			fbDesc.name("Separate")
 				  .renderPass(renderGraph.renderPasses[RenderPasses::Separate])
