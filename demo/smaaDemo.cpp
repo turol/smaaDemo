@@ -1281,28 +1281,6 @@ void SMAADemo::rebuildRenderGraph() {
 	LOG("create framebuffers at size %ux%u\n", windowWidth, windowHeight);
 
 	{
-		Layout l = Layout::ShaderRead;
-		if (!antialiasing || aaMethod == AAMethod::MSAA) {
-			l = Layout::TransferSrc;
-		}
-
-		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, l)
-			  .color(1, Format::RG16Float, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
-			  .depthStencil(depthFormat, PassBegin::Clear)
-			  .clearDepth(1.0f)
-			  .numSamples(numSamples);
-
-		std::string name = "scene ";
-		if (numSamples > 1) {
-			name += " MSAA x" + std::to_string(numSamples) + " ";
-		}
-		name += layoutName(l);
-
-		renderGraph.createRenderPass(renderer, RenderPasses::Scene, rpDesc.name(name));
-	}
-
-	{
 		RenderPassDesc rpDesc;
 		// TODO: check this
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
@@ -1475,6 +1453,26 @@ void SMAADemo::rebuildRenderGraph() {
 	if (activeScene == 0) {
 		// cube scene
 		// TODO: only create velocity buffer when doing temporal AA
+		Layout l = Layout::ShaderRead;
+		if (!antialiasing || aaMethod == AAMethod::MSAA) {
+			l = Layout::TransferSrc;
+		}
+
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, l)
+			  .color(1, Format::RG16Float, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
+			  .depthStencil(depthFormat, PassBegin::Clear)
+			  .clearDepth(1.0f)
+			  .numSamples(numSamples);
+
+		std::string name = "scene ";
+		if (numSamples > 1) {
+			name += " MSAA x" + std::to_string(numSamples) + " ";
+		}
+		name += layoutName(l);
+
+		renderGraph.createRenderPass(renderer, RenderPasses::Scene, rpDesc.name(name));
+
 		FramebufferDesc fbDesc;
 		fbDesc.name("scene")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::Scene])
@@ -1487,6 +1485,26 @@ void SMAADemo::rebuildRenderGraph() {
 	} else {
 		// image scene
 		// TODO: don't use velocity buffer
+		Layout l = Layout::ShaderRead;
+		if (!antialiasing || aaMethod == AAMethod::MSAA) {
+			l = Layout::TransferSrc;
+		}
+
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, l)
+			  .color(1, Format::RG16Float, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
+			  .depthStencil(depthFormat, PassBegin::Clear)
+			  .clearDepth(1.0f)
+			  .numSamples(numSamples);
+
+		std::string name = "scene ";
+		if (numSamples > 1) {
+			name += " MSAA x" + std::to_string(numSamples) + " ";
+		}
+		name += layoutName(l);
+
+		renderGraph.createRenderPass(renderer, RenderPasses::Scene, rpDesc.name(name));
+
 		FramebufferDesc fbDesc;
 		fbDesc.name("scene")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::Scene])
