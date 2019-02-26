@@ -1411,16 +1411,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 	{
 		FramebufferDesc fbDesc;
-		fbDesc.name("scene")
-		      .renderPass(renderGraph.renderPasses[RenderPasses::Scene])
-		      .color(0, renderGraph.renderTargets[Rendertargets::MainColor])
-		      .color(1, renderGraph.renderTargets[Rendertargets::Velocity])
-		      .depthStencil(renderGraph.renderTargets[Rendertargets::MainDepth]);
-		renderGraph.createFramebuffer(renderer, Framebuffers::Scene, fbDesc);
-	}
-
-	{
-		FramebufferDesc fbDesc;
 		fbDesc.name("final")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::Final])
 		      .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
@@ -1483,8 +1473,28 @@ void SMAADemo::rebuildRenderGraph() {
 	}
 
 	if (activeScene == 0) {
+		// cube scene
+		// TODO: only create velocity buffer when doing temporal AA
+		FramebufferDesc fbDesc;
+		fbDesc.name("scene")
+		      .renderPass(renderGraph.renderPasses[RenderPasses::Scene])
+		      .color(0, renderGraph.renderTargets[Rendertargets::MainColor])
+		      .color(1, renderGraph.renderTargets[Rendertargets::Velocity])
+		      .depthStencil(renderGraph.renderTargets[Rendertargets::MainDepth]);
+		renderGraph.createFramebuffer(renderer, Framebuffers::Scene, fbDesc);
+
 		renderGraph.renderPass(RenderPasses::Scene, Framebuffers::Scene, std::bind(&SMAADemo::renderCubeScene, this));
 	} else {
+		// image scene
+		// TODO: don't use velocity buffer
+		FramebufferDesc fbDesc;
+		fbDesc.name("scene")
+		      .renderPass(renderGraph.renderPasses[RenderPasses::Scene])
+		      .color(0, renderGraph.renderTargets[Rendertargets::MainColor])
+		      .color(1, renderGraph.renderTargets[Rendertargets::Velocity])
+		      .depthStencil(renderGraph.renderTargets[Rendertargets::MainDepth]);
+		renderGraph.createFramebuffer(renderer, Framebuffers::Scene, fbDesc);
+
 		renderGraph.renderPass(RenderPasses::Scene, Framebuffers::Scene, std::bind(&SMAADemo::renderImageScene, this));
 	}
 
