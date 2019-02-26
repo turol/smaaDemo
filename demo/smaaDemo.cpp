@@ -1736,17 +1736,6 @@ void SMAADemo::rebuildRenderGraph() {
 		PipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ColorTexDS>(1)
-		      .vertexShader("blit")
-		      .fragmentShader("blit")
-		      .name("blit");
-
-		blitPipeline = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
-	}
-
-	{
-		PipelineDesc plDesc;
-		plDesc.descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<ColorTexDS>(1)
 		      .vertexShader("gui")
 		      .fragmentShader("gui")
 		      .blending(true)
@@ -2879,6 +2868,17 @@ void SMAADemo::renderSMAABlend(Rendertargets::Rendertargets input, int pass) {
 
 
 void SMAADemo::renderSMAADebug(Rendertargets::Rendertargets rt) {
+	if (!blitPipeline) {
+		PipelineDesc plDesc;
+		plDesc.descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<ColorTexDS>(1)
+		      .vertexShader("blit")
+		      .fragmentShader("blit")
+		      .name("blit");
+
+		blitPipeline = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
+	}
+
 	ColorTexDS blitDS;
 	renderer.bindPipeline(blitPipeline);
 	// FIXME: remove unused UBO hack
