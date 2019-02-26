@@ -1733,25 +1733,6 @@ void SMAADemo::rebuildRenderGraph() {
 	separatePipeline = PipelineHandle();
 
 	{
-		PipelineDesc plDesc;
-		plDesc.descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<ColorTexDS>(1)
-		      .vertexShader("gui")
-		      .fragmentShader("gui")
-		      .blending(true)
-		      .sourceBlend(BlendFunc::SrcAlpha)
-		      .destinationBlend(BlendFunc::OneMinusSrcAlpha)
-		      .scissorTest(true)
-		      .vertexAttrib(ATTR_POS,   0, 2, VtxFormat::Float,  offsetof(ImDrawVert, pos))
-		      .vertexAttrib(ATTR_UV,    0, 2, VtxFormat::Float,  offsetof(ImDrawVert, uv))
-		      .vertexAttrib(ATTR_COLOR, 0, 4, VtxFormat::UNorm8, offsetof(ImDrawVert, col))
-		      .vertexBufferStride(ATTR_POS, sizeof(ImDrawVert))
-		      .name("gui");
-
-		guiPipeline = renderGraph.createPipeline(renderer, RenderPasses::GUI, plDesc);
-	}
-
-	{
 		for (unsigned int i = 0; i < 2; i++) {
 			ShaderMacros macros;
 			macros.emplace("SMAA_REPROJECTION", std::to_string(i));
@@ -3288,6 +3269,25 @@ void SMAADemo::renderGUI() {
 		assert(drawData->CmdLists      != nullptr);
 		assert(drawData->TotalVtxCount >  0);
 		assert(drawData->TotalIdxCount >  0);
+
+        if (!guiPipeline) {
+			PipelineDesc plDesc;
+			plDesc.descriptorSetLayout<GlobalDS>(0)
+				  .descriptorSetLayout<ColorTexDS>(1)
+				  .vertexShader("gui")
+				  .fragmentShader("gui")
+				  .blending(true)
+				  .sourceBlend(BlendFunc::SrcAlpha)
+				  .destinationBlend(BlendFunc::OneMinusSrcAlpha)
+				  .scissorTest(true)
+				  .vertexAttrib(ATTR_POS,   0, 2, VtxFormat::Float,  offsetof(ImDrawVert, pos))
+				  .vertexAttrib(ATTR_UV,    0, 2, VtxFormat::Float,  offsetof(ImDrawVert, uv))
+				  .vertexAttrib(ATTR_COLOR, 0, 4, VtxFormat::UNorm8, offsetof(ImDrawVert, col))
+				  .vertexBufferStride(ATTR_POS, sizeof(ImDrawVert))
+				  .name("gui");
+
+			guiPipeline = renderGraph.createPipeline(renderer, RenderPasses::GUI, plDesc);
+		}
 
 		renderer.bindPipeline(guiPipeline);
 		ColorTexDS colorDS;
