@@ -276,47 +276,6 @@ struct FXAAKey {
 };
 
 
-struct SMAAKey {
-	unsigned int quality;
-	SMAAEdgeMethod  edgeMethod;
-	bool            predication;
-	// TODO: more options
-
-
-	SMAAKey()
-	: quality(0)
-	, edgeMethod(SMAAEdgeMethod::Color)
-    , predication(false)
-	{
-	}
-
-	SMAAKey(const SMAAKey &)            = default;
-	SMAAKey(SMAAKey &&)                 = default;
-
-	SMAAKey &operator=(const SMAAKey &) = default;
-	SMAAKey &operator=(SMAAKey &&)      = default;
-
-	~SMAAKey() {}
-
-
-	bool operator==(const SMAAKey &other) const {
-		if (this->quality    != other.quality) {
-			return false;
-		}
-
-		if (this->edgeMethod != other.edgeMethod) {
-			return false;
-		}
-
-		if (this->predication != other.predication) {
-			return false;
-		}
-
-		return true;
-	}
-};
-
-
 struct SceneRPKey {
 	uint8_t numSamples;
 	Layout  layout;
@@ -413,17 +372,6 @@ enum RenderPasses {
 
 
 namespace std {
-
-	template <> struct hash<SMAAKey> {
-		size_t operator()(const SMAAKey &k) const {
-			uint64_t temp = 0;
-			temp |= (static_cast<uint64_t>(k.quality)    <<  0);
-			temp |= (static_cast<uint64_t>(k.edgeMethod) <<  8);
-			temp |= (static_cast<uint64_t>(k.predication) <<  9);
-
-			return hash<uint64_t>()(temp);
-		}
-	};
 
 	template <> struct hash<FXAAKey> {
 		size_t operator()(const FXAAKey &k) const {
@@ -636,7 +584,10 @@ class SMAADemo {
 	unsigned int                                      fxaaQuality;
 	unsigned int                                      msaaQuality;
 	unsigned int                                      maxMSAAQuality;
-	SMAAKey                                           smaaKey;
+
+	unsigned int                                      smaaQuality;
+	SMAAEdgeMethod                                    smaaEdgeMethod;
+	bool                                              smaaPredication;
 	ShaderDefines::SMAAParameters                     smaaParameters;
 
 	float                                             predicationThreshold;
@@ -827,8 +778,8 @@ SMAADemo::SMAADemo()
 	rendererDesc.swapchain.width  = 1280;
 	rendererDesc.swapchain.height = 720;
 
-	smaaKey.quality = maxSMAAQuality - 1;
-	smaaParameters  = defaultSMAAParameters[smaaKey.quality];
+	smaaQuality = maxSMAAQuality - 1;
+	smaaParameters  = defaultSMAAParameters[smaaQuality];
 
 	uint64_t freq = SDL_GetPerformanceFrequency();
 	tickBase      = SDL_GetPerformanceCounter();
@@ -1000,7 +951,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 				std::transform(aaQualityStr.begin(), aaQualityStr.end(), aaQualityStr.begin(), ::toupper);
 				for (unsigned int i = 0; i < maxSMAAQuality; i++) {
 					if (aaQualityStr == smaaQualityLevels[i]) {
-						smaaKey.quality = i;
+						smaaQuality = i;
 						break;
 					}
 				}
@@ -1012,7 +963,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 				std::transform(aaQualityStr.begin(), aaQualityStr.end(), aaQualityStr.begin(), ::toupper);
 				for (unsigned int i = 0; i < maxSMAAQuality; i++) {
 					if (aaQualityStr == smaaQualityLevels[i]) {
-						smaaKey.quality = i;
+						smaaQuality = i;
 						break;
 					}
 				}
@@ -2213,12 +2164,12 @@ void SMAADemo::processInput() {
 				case AAMethod::SMAA:
 				case AAMethod::SMAA2X:
 					if (leftShift || rightShift) {
-						smaaKey.quality = smaaKey.quality + maxSMAAQuality - 1;
+						smaaQuality = smaaQuality + maxSMAAQuality - 1;
 					} else {
-						smaaKey.quality = smaaKey.quality + 1;
+						smaaQuality = smaaQuality + 1;
 					}
-					smaaKey.quality = smaaKey.quality % maxSMAAQuality;
-					smaaParameters  = defaultSMAAParameters[smaaKey.quality];
+					smaaQuality = smaaQuality % maxSMAAQuality;
+					smaaParameters  = defaultSMAAParameters[smaaQuality];
 
 					smaaPipelines.edgePipeline         = PipelineHandle();
 					smaaPipelines.blendWeightPipeline  = PipelineHandle();
@@ -2842,14 +2793,14 @@ void SMAADemo::renderSeparate() {
 void SMAADemo::renderSMAAEdges(Rendertargets::Rendertargets input, int pass) {
 	if (!smaaPipelines.edgePipeline) {
 		ShaderMacros macros;
-		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaKey.quality]);
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 		macros.emplace(qualityString, "1");
 
-		if (smaaKey.edgeMethod != SMAAEdgeMethod::Color) {
-			macros.emplace("EDGEMETHOD", std::to_string(static_cast<uint8_t>(smaaKey.edgeMethod)));
+		if (smaaEdgeMethod != SMAAEdgeMethod::Color) {
+			macros.emplace("EDGEMETHOD", std::to_string(static_cast<uint8_t>(smaaEdgeMethod)));
 		}
 
-		if (smaaKey.predication && smaaKey.edgeMethod != SMAAEdgeMethod::Depth) {
+		if (smaaPredication && smaaEdgeMethod != SMAAEdgeMethod::Depth) {
 			macros.emplace("SMAA_PREDICATION", "1");
 		}
 
@@ -2862,7 +2813,7 @@ void SMAADemo::renderSMAAEdges(Rendertargets::Rendertargets input, int pass) {
 		      .descriptorSetLayout<EdgeDetectionDS>(1)
 		      .vertexShader("smaaEdge")
 		      .fragmentShader("smaaEdge")
-		      .name(std::string("SMAA edges ") + std::to_string(smaaKey.quality));
+		      .name(std::string("SMAA edges ") + std::to_string(smaaQuality));
 		smaaPipelines.edgePipeline      = renderGraph.createPipeline(renderer, RenderPasses::SMAAEdges, plDesc);
 	}
 
@@ -2881,7 +2832,7 @@ void SMAADemo::renderSMAAEdges(Rendertargets::Rendertargets input, int pass) {
 
 	EdgeDetectionDS edgeDS;
 	edgeDS.smaaUBO = smaaUBOBuf;
-	if (smaaKey.edgeMethod == SMAAEdgeMethod::Depth) {
+	if (smaaEdgeMethod == SMAAEdgeMethod::Depth) {
 		edgeDS.color.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::MainDepth]);
 	} else {
 		edgeDS.color.tex     = renderer.getRenderTargetView(renderGraph.renderTargets[input], Format::RGBA8);
@@ -2897,7 +2848,7 @@ void SMAADemo::renderSMAAEdges(Rendertargets::Rendertargets input, int pass) {
 void SMAADemo::renderSMAAWeights(int pass) {
 	if (!smaaPipelines.blendWeightPipeline) {
 		ShaderMacros macros;
-		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaKey.quality]);
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 		macros.emplace(qualityString, "1");
 
 		PipelineDesc plDesc;
@@ -2909,7 +2860,7 @@ void SMAADemo::renderSMAAWeights(int pass) {
 		      .shaderMacros(macros)
 		      .vertexShader("smaaBlendWeight")
 		      .fragmentShader("smaaBlendWeight")
-		      .name(std::string("SMAA weights ") + std::to_string(smaaKey.quality));
+		      .name(std::string("SMAA weights ") + std::to_string(smaaQuality));
 		smaaPipelines.blendWeightPipeline = renderGraph.createPipeline(renderer, RenderPasses::SMAAWeights, plDesc);
 	}
 
@@ -2942,7 +2893,7 @@ void SMAADemo::renderSMAAWeights(int pass) {
 void SMAADemo::renderSMAABlend(Rendertargets::Rendertargets input, int pass) {
 	if (!smaaPipelines.neighborPipelines[pass]) {
 		ShaderMacros macros;
-		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaKey.quality]);
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 		macros.emplace(qualityString, "1");
 
 		PipelineDesc plDesc;
@@ -2956,13 +2907,13 @@ void SMAADemo::renderSMAABlend(Rendertargets::Rendertargets input, int pass) {
 		      .fragmentShader("smaaNeighbor");
 
 		if (pass == 0) {
-			plDesc.name(std::string("SMAA blend ") + std::to_string(smaaKey.quality));
+			plDesc.name(std::string("SMAA blend ") + std::to_string(smaaQuality));
 		} else {
 			assert(pass == 1);
 			plDesc.blending(true)
 			      .sourceBlend(BlendFunc::Constant)
 			      .destinationBlend(BlendFunc::Constant)
-			      .name(std::string("SMAA blend (S2X) ") + std::to_string(smaaKey.quality));
+			      .name(std::string("SMAA blend (S2X) ") + std::to_string(smaaQuality));
 		}
 
 		smaaPipelines.neighborPipelines[pass] = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
@@ -3142,12 +3093,12 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			}
 
 			ImGui::Separator();
-			int sq = smaaKey.quality;
+			int sq = smaaQuality;
 			ImGui::Combo("SMAA quality", &sq, smaaQualityLevels, maxSMAAQuality);
 			assert(sq >= 0);
 			assert(sq < int(maxSMAAQuality));
-			if (int(smaaKey.quality) != sq) {
-				smaaKey.quality = sq;
+			if (int(smaaQuality) != sq) {
+				smaaQuality = sq;
 				if (sq != 0) {
 					smaaParameters  = defaultSMAAParameters[sq];
 				}
@@ -3160,7 +3111,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			if (ImGui::CollapsingHeader("SMAA custom properties")) {
 				// parameters can only be changed in custom mode
 				// https://github.com/ocornut/imgui/issues/211
-				if (smaaKey.quality != 0) {
+				if (smaaQuality != 0) {
 					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
 					ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
 				}
@@ -3180,15 +3131,15 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				ImGui::SliderInt("Corner rounding",   &s, 0, 100);
 				smaaParameters.cornerRounding = s;
 
-				if (smaaKey.quality != 0) {
+				if (smaaQuality != 0) {
 					ImGui::PopItemFlag();
 					ImGui::PopStyleVar();
 				}
 			}
 
-			ImGui::Checkbox("Predicated thresholding", &smaaKey.predication);
+			ImGui::Checkbox("Predicated thresholding", &smaaPredication);
 
-			if (!smaaKey.predication) {
+			if (!smaaPredication) {
 				ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
 				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
 			}
@@ -3202,17 +3153,17 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				predicationStrength  = 0.4f;
 			}
 
-			if (!smaaKey.predication) {
+			if (!smaaPredication) {
 				ImGui::PopItemFlag();
 				ImGui::PopStyleVar();
 			}
 
-			int em = static_cast<int>(smaaKey.edgeMethod);
+			int em = static_cast<int>(smaaEdgeMethod);
 			ImGui::Text("SMAA edge detection");
 			ImGui::RadioButton("Color", &em, static_cast<int>(SMAAEdgeMethod::Color));
 			ImGui::RadioButton("Luma",  &em, static_cast<int>(SMAAEdgeMethod::Luma));
 			ImGui::RadioButton("Depth", &em, static_cast<int>(SMAAEdgeMethod::Depth));
-			smaaKey.edgeMethod = static_cast<SMAAEdgeMethod>(em);
+			smaaEdgeMethod = static_cast<SMAAEdgeMethod>(em);
 
 			int d = debugMode;
 			ImGui::Combo("SMAA debug", &d, smaaDebugModes, 3);
