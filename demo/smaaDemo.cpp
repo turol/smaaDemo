@@ -265,40 +265,6 @@ struct Image {
 };
 
 
-struct SceneRPKey {
-	uint8_t numSamples;
-	Layout  layout;
-
-
-	SceneRPKey()
-	: numSamples(1)
-	, layout(Layout::Undefined)
-	{
-	}
-
-	SceneRPKey(const SceneRPKey &)            = default;
-	SceneRPKey(SceneRPKey &&)                 = default;
-
-	SceneRPKey &operator=(const SceneRPKey &) = default;
-	SceneRPKey &operator=(SceneRPKey &&)      = default;
-
-	~SceneRPKey() {}
-
-
-	bool operator==(const SceneRPKey &other) const {
-		if (this->numSamples != other.numSamples) {
-			return false;
-		}
-
-		if (this->layout     != other.layout) {
-			return false;
-		}
-
-		return true;
-	}
-};
-
-
 namespace Rendertargets {
 
 
@@ -358,21 +324,6 @@ enum RenderPasses {
 
 
 }  // namespace RenderPasses
-
-
-namespace std {
-
-	template <> struct hash<SceneRPKey> {
-		size_t operator()(const SceneRPKey &k) const {
-			uint32_t temp = 0;
-			temp |= (static_cast<uint32_t>(k.numSamples) << 0);
-			temp |= (static_cast<uint32_t>(k.layout)     << 8);
-
-			return hash<uint32_t>()(temp);
-		}
-	};
-
-}  // namespace std
 
 
 struct SMAAPipelines {
