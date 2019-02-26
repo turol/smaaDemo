@@ -265,17 +265,6 @@ struct Image {
 };
 
 
-struct FXAAKey {
-	unsigned int quality;
-	// TODO: more options
-
-
-	bool operator==(const FXAAKey &other) const {
-		return this->quality == other.quality;
-	}
-};
-
-
 struct SceneRPKey {
 	uint8_t numSamples;
 	Layout  layout;
@@ -372,13 +361,6 @@ enum RenderPasses {
 
 
 namespace std {
-
-	template <> struct hash<FXAAKey> {
-		size_t operator()(const FXAAKey &k) const {
-			return hash<uint32_t>()(k.quality);
-		}
-	};
-
 
 	template <> struct hash<SceneRPKey> {
 		size_t operator()(const SceneRPKey &k) const {
