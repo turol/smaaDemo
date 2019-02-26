@@ -471,7 +471,7 @@ class RenderGraph {
 		PipelineHandle  handle;
 	};
 
-	// TODO: cache them
+	// TODO: use hash map
 	std::vector<Pipeline>                          pipelines;
 
 
@@ -2533,7 +2533,13 @@ PipelineHandle RenderGraph::createPipeline(Renderer &renderer, RenderPasses::Ren
 	assert(renderPasses[rp]);
 	desc.renderPass(renderPasses[rp]);
 
-	// TODO: check cache first
+	// TODO: use hash map
+	for (const auto &pipeline : pipelines) {
+		if (pipeline.desc == desc) {
+			return pipeline.handle;
+		}
+	}
+
 	auto handle = renderer.createPipeline(desc);
 
 	Pipeline pipeline;
