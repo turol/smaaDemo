@@ -1318,13 +1318,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 	{
 		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::TransferSrc);
-		rpDesc.name("GUI only");
-		renderGraph.createRenderPass(renderer, RenderPasses::GUI, rpDesc);
-	}
-
-	{
-		RenderPassDesc rpDesc;
 		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
 
 		rpDesc.name("SMAA edges");
@@ -1727,7 +1720,14 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.blit(Rendertargets::MainColor, Rendertargets::FinalRender);
 	}
 
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::TransferSrc);
+		rpDesc.name("GUI only");
+		renderGraph.createRenderPass(renderer, RenderPasses::GUI, rpDesc);
+
 	renderGraph.renderPass(RenderPasses::GUI, Framebuffers::Final, std::bind(&SMAADemo::renderGUI, this));
+	}
 
 	renderGraph.presentRenderTarget(Rendertargets::FinalRender);
 
