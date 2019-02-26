@@ -1732,18 +1732,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 	separatePipeline = PipelineHandle();
 
-	{
-		PipelineDesc plDesc;
-		plDesc.descriptorSetLayout<GlobalDS>(0)
-			  .descriptorSetLayout<ColorCombinedDS>(1)  // TODO: does this need its own DS?
-			  .vertexShader("temporal")
-			  .fragmentShader("separate")
-			  .name("subsample separate");
-
-		separatePipeline = renderGraph.createPipeline(renderer, RenderPasses::Separate, plDesc);
-	}
-
-
 	rebuildRG = false;
 }
 
@@ -2664,6 +2652,17 @@ void SMAADemo::renderFXAA() {
 
 
 void SMAADemo::renderSeparate() {
+	if (!separatePipeline) {
+		PipelineDesc plDesc;
+		plDesc.descriptorSetLayout<GlobalDS>(0)
+			  .descriptorSetLayout<ColorCombinedDS>(1)  // TODO: does this need its own DS?
+			  .vertexShader("temporal")
+			  .fragmentShader("separate")
+			  .name("subsample separate");
+
+		separatePipeline = renderGraph.createPipeline(renderer, RenderPasses::Separate, plDesc);
+	}
+
 	renderer.bindPipeline(separatePipeline);
 	ColorCombinedDS separateDS;
 	// FIXME: remove unused UBO hack
