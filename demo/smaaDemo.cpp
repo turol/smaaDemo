@@ -1843,14 +1843,10 @@ void SMAADemo::rebuildRenderGraph() {
 	smaaPipelines.neighborPipelines[1] = PipelineHandle();
 
 	for (unsigned int i = 0; i < 2; i++) {
-		if (temporalAAPipelines[i]) {
 			temporalAAPipelines[i] = PipelineHandle();
-		}
 	}
 
-	if (separatePipeline) {
 		separatePipeline = PipelineHandle();
-	}
 
 	if (activeScene != 0) {
 		PipelineDesc plDesc;
