@@ -1493,13 +1493,6 @@ void SMAADemo::rebuildRenderGraph() {
 			rtDesc.name("Subsample separate " + std::to_string(i));
 			renderGraph.createRenderTarget(renderer, static_cast<Rendertargets::Rendertargets>(Rendertargets::Subsample1 + i), rtDesc);
 		}
-
-		FramebufferDesc fbDesc;
-		fbDesc.name("Separate")
-		      .renderPass(renderGraph.renderPasses[RenderPasses::Separate])
-		      .color(0, renderGraph.renderTargets[Rendertargets::Subsample1])
-		      .color(1, renderGraph.renderTargets[Rendertargets::Subsample2]);
-		renderGraph.createFramebuffer(renderer, Framebuffers::Separate, fbDesc);
 	}
 
 	if (activeScene == 0) {
@@ -1583,6 +1576,13 @@ void SMAADemo::rebuildRenderGraph() {
 		} break;
 
 		case AAMethod::SMAA2X: {
+			FramebufferDesc fbDesc;
+			fbDesc.name("Separate")
+				  .renderPass(renderGraph.renderPasses[RenderPasses::Separate])
+				  .color(0, renderGraph.renderTargets[Rendertargets::Subsample1])
+				  .color(1, renderGraph.renderTargets[Rendertargets::Subsample2]);
+			renderGraph.createFramebuffer(renderer, Framebuffers::Separate, fbDesc);
+
 			renderGraph.renderPass(RenderPasses::Separate, Framebuffers::Separate, std::bind(&SMAADemo::renderSeparate, this));
 
 			// TODO: clean up the renderpass mess
