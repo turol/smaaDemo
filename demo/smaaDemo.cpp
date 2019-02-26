@@ -1261,7 +1261,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 	renderGraph.reset(renderer);
 
-	auto oldNumSamples = numSamples;
 	if (antialiasing && aaMethod == AAMethod::MSAA) {
 		numSamples = msaaQualityToSamples(msaaQuality);
 		assert(numSamples > 1);
@@ -1269,10 +1268,6 @@ void SMAADemo::rebuildRenderGraph() {
 		numSamples = 2;
 	} else {
 		numSamples = 1;
-	}
-
-	if (oldNumSamples != numSamples) {
-		cubePipeline = PipelineHandle();
 	}
 
 	const unsigned int windowWidth  = rendererDesc.swapchain.width;
