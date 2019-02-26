@@ -1285,19 +1285,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 	{
 		RenderPassDesc rpDesc;
-		if (!temporalAA) {
-			rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
-			rpDesc.name("FXAA no temporal");
-		} else {
-			rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
-			rpDesc.name("FXAA temporal");
-		}
-
-		renderGraph.createRenderPass(renderer, RenderPasses::FXAA, rpDesc);
-	}
-
-	{
-		RenderPassDesc rpDesc;
 		// FIXME: should be RGBA since SMAA wants gamma space?
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
 		rpDesc.name("SMAA blend");
@@ -1511,6 +1498,16 @@ void SMAADemo::rebuildRenderGraph() {
 		} break;
 
 		case AAMethod::FXAA: {
+			RenderPassDesc rpDesc;
+			if (!temporalAA) {
+				rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+				rpDesc.name("FXAA no temporal");
+			} else {
+				rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+				rpDesc.name("FXAA temporal");
+			}
+			renderGraph.createRenderPass(renderer, RenderPasses::FXAA, rpDesc);
+
 			renderGraph.renderPass(RenderPasses::FXAA, temporalAA ? ((temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2) : Framebuffers::Final, std::bind(&SMAADemo::renderFXAA, this));
 
 			if (temporalAA) {
