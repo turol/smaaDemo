@@ -1733,23 +1733,6 @@ void SMAADemo::rebuildRenderGraph() {
 	separatePipeline = PipelineHandle();
 
 	{
-		for (unsigned int i = 0; i < 2; i++) {
-			ShaderMacros macros;
-			macros.emplace("SMAA_REPROJECTION", std::to_string(i));
-
-			PipelineDesc plDesc;
-			plDesc.descriptorSetLayout<GlobalDS>(0)
-				  .descriptorSetLayout<TemporalAADS>(1)
-				  .vertexShader("temporal")
-				  .fragmentShader("temporal")
-				  .shaderMacros(macros)
-				  .name("temporal AA");
-
-			temporalAAPipelines[i] = renderGraph.createPipeline(renderer, RenderPasses::SMAABlend, plDesc);
-		}
-	}
-
-	{
 		PipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
 			  .descriptorSetLayout<ColorCombinedDS>(1)  // TODO: does this need its own DS?
@@ -2873,6 +2856,21 @@ void SMAADemo::renderSMAADebug(Rendertargets::Rendertargets rt) {
 
 
 void SMAADemo::renderTemporalAA() {
+	if (!temporalAAPipelines[temporalReproject]) {
+		ShaderMacros macros;
+		macros.emplace("SMAA_REPROJECTION", std::to_string(temporalReproject));
+
+		PipelineDesc plDesc;
+		plDesc.descriptorSetLayout<GlobalDS>(0)
+			  .descriptorSetLayout<TemporalAADS>(1)
+			  .vertexShader("temporal")
+			  .fragmentShader("temporal")
+			  .shaderMacros(macros)
+			  .name("temporal AA");
+
+		temporalAAPipelines[temporalReproject] = renderGraph.createPipeline(renderer, RenderPasses::SMAABlend, plDesc);
+	}
+
 	renderer.bindPipeline(temporalAAPipelines[temporalReproject]);
 
 	ShaderDefines::SMAAUBO smaaUBO;
