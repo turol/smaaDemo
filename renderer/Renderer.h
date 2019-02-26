@@ -340,10 +340,16 @@ class PipelineDesc {
 		uint8_t count;
 		VtxFormat format;
 		uint8_t offset;
+
+		bool operator==(const VertexAttr &other) const;
+		bool operator!=(const VertexAttr &other) const;
 	};
 
 	struct VertexBuf {
 		uint32_t stride;
+
+		bool operator==(const VertexBuf &other) const;
+		bool operator!=(const VertexBuf &other) const;
 	};
 
 	std::array<VertexAttr,     MAX_VERTEX_ATTRIBS>   vertexAttribs;
@@ -487,6 +493,9 @@ public:
 
 	PipelineDesc &operator=(const PipelineDesc &desc)     = default;
 	PipelineDesc &operator=(PipelineDesc &&desc) noexcept = default;
+
+	bool operator==(const PipelineDesc &other) const;
+
 
 	friend struct RendererImpl;
 };

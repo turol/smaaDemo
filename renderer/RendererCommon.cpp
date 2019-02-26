@@ -279,6 +279,128 @@ uint32_t formatSize(Format format) {
 }
 
 
+bool PipelineDesc::VertexAttr::operator==(const VertexAttr &other) const {
+	if (this->bufBinding != other.bufBinding) {
+		return false;
+	}
+
+	if (this->count      != other.count) {
+		return false;
+	}
+
+	if (this->format     != other.format) {
+		return false;
+	}
+
+	if (this->offset     != other.offset) {
+		return false;
+	}
+
+	return true;
+}
+
+
+bool PipelineDesc::VertexAttr::operator!=(const VertexAttr &other) const {
+	return !(*this == other);
+}
+
+
+bool PipelineDesc::VertexBuf::operator==(const VertexBuf &other) const {
+	if (this->stride != other.stride) {
+		return false;
+	}
+
+	return true;
+}
+
+
+bool PipelineDesc::VertexBuf::operator!=(const VertexBuf &other) const {
+	return !(*this == other);
+}
+
+
+bool PipelineDesc::operator==(const PipelineDesc &other) const {
+	if (this->vertexShaderName   != other.vertexShaderName) {
+		return false;
+	}
+
+	if (this->fragmentShaderName != other.fragmentShaderName) {
+		return false;
+	}
+
+	if (this->renderPass_        != other.renderPass_) {
+		return false;
+	}
+
+	if (this->shaderMacros_      != other.shaderMacros_) {
+		return false;
+	}
+
+	if (this->vertexAttribMask   != other.vertexAttribMask) {
+		return false;
+	}
+
+	if (this->numSamples_        != other.numSamples_) {
+		return false;
+	}
+
+	if (this->depthWrite_        != other.depthWrite_) {
+		return false;
+	}
+
+	if (this->depthTest_         != other.depthTest_) {
+		return false;
+	}
+
+	if (this->cullFaces_         != other.cullFaces_) {
+		return false;
+	}
+
+	if (this->scissorTest_       != other.scissorTest_) {
+		return false;
+	}
+
+	if (this->blending_          != other.blending_) {
+		return false;
+	}
+
+	if (this->blending_) {
+		if (this->sourceBlend_      != other.sourceBlend_) {
+			return false;
+		}
+
+		if (this->destinationBlend_ != other.destinationBlend_) {
+			return false;
+		}
+	}
+
+	// TODO: only check enabled attributes
+	for (unsigned int i = 0; i < MAX_VERTEX_ATTRIBS; i++) {
+		if (this->vertexAttribs[i] != other.vertexAttribs[i]) {
+			return false;
+		}
+	}
+
+	for (unsigned int i = 0; i < MAX_VERTEX_BUFFERS; i++) {
+		if (this->vertexBuffers[i] != other.vertexBuffers[i]) {
+			return false;
+		}
+	}
+
+	for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
+		if (this->descriptorSetLayouts[i] != other.descriptorSetLayouts[i]) {
+			return false;
+		}
+	}
+
+	if (this->name_ != other.name_) {
+		return false;
+	}
+
+	return true;
+}
+
+
 class Includer final : public shaderc::CompileOptions::IncluderInterface {
 	std::unordered_map<std::string, std::vector<char> > &cache;
 
