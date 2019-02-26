@@ -1732,18 +1732,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 	separatePipeline = PipelineHandle();
 
-	if (activeScene != 0) {
-		PipelineDesc plDesc;
-		plDesc.numSamples(numSamples)
-		      .descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<ColorTexDS>(1)
-		      .vertexShader("image")
-		      .fragmentShader("image")
-		      .name("image");
-
-		imagePipeline = renderGraph.createPipeline(renderer, RenderPasses::Scene, plDesc);
-	}
-
 	{
 		PipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
@@ -2645,6 +2633,18 @@ void SMAADemo::renderCubeScene() {
 
 
 void SMAADemo::renderImageScene() {
+	if (!imagePipeline) {
+		PipelineDesc plDesc;
+		plDesc.numSamples(numSamples)
+		      .descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<ColorTexDS>(1)
+		      .vertexShader("image")
+		      .fragmentShader("image")
+		      .name("image");
+
+		imagePipeline = renderGraph.createPipeline(renderer, RenderPasses::Scene, plDesc);
+	}
+
 	renderer.bindPipeline(imagePipeline);
 
 	assert(activeScene > 0);
