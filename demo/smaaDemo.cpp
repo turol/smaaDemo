@@ -1747,7 +1747,7 @@ void SMAADemo::rebuildRenderGraph() {
 		rpDesc.name("GUI only");
 		renderGraph.createRenderPass(renderer, RenderPasses::GUI, rpDesc);
 
-	renderGraph.renderPass(RenderPasses::GUI, Framebuffers::Final, std::bind(&SMAADemo::renderGUI, this));
+		renderGraph.renderPass(RenderPasses::GUI, Framebuffers::Final, std::bind(&SMAADemo::renderGUI, this));
 	}
 
 	renderGraph.presentRenderTarget(Rendertargets::FinalRender);
