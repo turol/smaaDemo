@@ -730,6 +730,8 @@ SMAADemo::SMAADemo()
 	rendererDesc.swapchain.height = 720;
 
 	smaaQuality = maxSMAAQuality - 1;
+	smaaEdgeMethod  = SMAAEdgeMethod::Color;
+	smaaPredication = false;
 	smaaParameters  = defaultSMAAParameters[smaaQuality];
 
 	uint64_t freq = SDL_GetPerformanceFrequency();
