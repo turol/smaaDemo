@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include <memory>
 #include <stdexcept>
 #include <vector>
+#include <unordered_set>
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -328,6 +329,20 @@ enum RenderPasses {
 }  // namespace RenderPasses
 
 
+namespace std {
+
+
+template <> struct hash<RenderPasses::RenderPasses> {
+	size_t operator()(const RenderPasses::RenderPasses &k) const {
+		return hash<size_t>()(static_cast<size_t>(k));
+	}
+
+};
+
+
+} // namespace std
+
+
 struct SMAAPipelines {
 	PipelineHandle  edgePipeline;
 	PipelineHandle  blendWeightPipeline;
@@ -435,6 +450,7 @@ public:
 		float                                        depthClearValue;
 	};
 
+	std::unordered_set<RenderPasses::RenderPasses> usedRenderPasses;
 
 	// TODO: hide these
 	RenderTargetHandle                                renderTargets[Rendertargets::Count];
@@ -2331,6 +2347,8 @@ void RenderGraph::reset(Renderer &renderer) {
 	assert(state == State::Invalid || state == State::Ready);
 	state = State::Building;
 
+	usedRenderPasses.clear();
+
 	for (auto &p : pipelines) {
 		renderer.deletePipeline(p.handle);
 		p.handle = PipelineHandle();
@@ -2412,6 +2430,9 @@ void RenderGraph::createFramebuffer(Renderer &renderer, Framebuffers::Framebuffe
 
 void RenderGraph::renderPass(RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, std::function<void()> f) {
 	assert(state == State::Building);
+
+	auto temp = usedRenderPasses.insert(rp);
+	assert(temp.second);
 
 	auto rpHandle = renderPasses[rp];
 	assert(rpHandle);
