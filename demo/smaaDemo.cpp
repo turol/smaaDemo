@@ -1506,6 +1506,7 @@ void SMAADemo::rebuildRenderGraph() {
 				renderGraph.createRenderPass(renderer, RenderPasses::FXAA, rpDesc);
 
 		temporalAAFirstFrame = true;
+		{
 		RenderTargetDesc rtDesc;
 		rtDesc.name("Temporal resolve 0")
 		      .format(Format::sRGBA8)  // TODO: not right?
@@ -1525,6 +1526,7 @@ void SMAADemo::rebuildRenderGraph() {
 		fbDesc.color(0, renderGraph.renderTargets[Rendertargets::Resolve2])
 		      .name("Temporal resolve 1");
 		renderGraph.createFramebuffer(renderer, Framebuffers::Resolve2, fbDesc);
+		}
 
 				renderGraph.renderPass(RenderPasses::FXAA, ((temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2), std::bind(&SMAADemo::renderFXAA, this));
 
@@ -1533,6 +1535,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 			case AAMethod::SMAA: {
 		temporalAAFirstFrame = true;
+		{
 		RenderTargetDesc rtDesc;
 		rtDesc.name("Temporal resolve 0")
 		      .format(Format::sRGBA8)  // TODO: not right?
@@ -1552,6 +1555,7 @@ void SMAADemo::rebuildRenderGraph() {
 		fbDesc.color(0, renderGraph.renderTargets[Rendertargets::Resolve2])
 		      .name("Temporal resolve 1");
 		renderGraph.createFramebuffer(renderer, Framebuffers::Resolve2, fbDesc);
+		}
 
 				Framebuffers::Framebuffers outputFB = (temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2;
 
@@ -1610,6 +1614,7 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 
 		temporalAAFirstFrame = true;
+		{
 		RenderTargetDesc rtDesc;
 		rtDesc.name("Temporal resolve 0")
 		      .format(Format::sRGBA8)  // TODO: not right?
@@ -1629,6 +1634,7 @@ void SMAADemo::rebuildRenderGraph() {
 		fbDesc.color(0, renderGraph.renderTargets[Rendertargets::Resolve2])
 		      .name("Temporal resolve 1");
 		renderGraph.createFramebuffer(renderer, Framebuffers::Resolve2, fbDesc);
+		}
 
 				// TODO: clean up the renderpass mess
 				Framebuffers::Framebuffers outputFB = (temporalFrame == 0) ? Framebuffers::Resolve1 : Framebuffers::Resolve2;
@@ -1738,6 +1744,7 @@ void SMAADemo::rebuildRenderGraph() {
 			} break;
 
 			case AAMethod::SMAA2X: {
+				{
 				RenderTargetDesc rtDesc;
 				rtDesc.format(Format::sRGBA8)
 					  .additionalViewFormat(Format::RGBA8)
@@ -1755,6 +1762,7 @@ void SMAADemo::rebuildRenderGraph() {
 					  .color(0, renderGraph.renderTargets[Rendertargets::Subsample1])
 					  .color(1, renderGraph.renderTargets[Rendertargets::Subsample2]);
 				renderGraph.createFramebuffer(renderer, Framebuffers::Separate, fbDesc);
+				}
 
 				renderGraph.renderPass(RenderPasses::Separate, Framebuffers::Separate, std::bind(&SMAADemo::renderSeparate, this));
 
