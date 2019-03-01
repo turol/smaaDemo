@@ -2406,7 +2406,11 @@ void RenderGraph::renderPass(RenderPasses::RenderPasses rp, Framebuffers::Frameb
 	assert(state == State::Building);
 
 	auto rpHandle = renderPasses[rp];
+	assert(rpHandle);
+
 	auto fbHandle = framebuffers[fb];
+	assert(fbHandle);
+
 	functions.push_back([rpHandle, fbHandle, f] (Renderer &r) {
 		r.beginRenderPass(rpHandle, fbHandle);
 		f();
