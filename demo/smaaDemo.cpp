@@ -2034,13 +2034,11 @@ void SMAADemo::rebuildRenderGraph() {
 		rpDesc.name("GUI only");
 		renderGraph.createRenderPass(renderer, RenderPasses::GUI, rpDesc);
 
-	{
 		FramebufferDesc fbDesc;
 		fbDesc.name("final")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::Final])
 		      .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
 		renderGraph.createFramebuffer(renderer, Framebuffers::Final, fbDesc);
-	}
 
 		renderGraph.renderPass(renderer, RenderPasses::GUI, Framebuffers::Final, std::bind(&SMAADemo::renderGUI, this));
 	}
