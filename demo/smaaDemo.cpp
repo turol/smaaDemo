@@ -499,6 +499,8 @@ public:
 
 	void renderPass(RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, std::function<void()> f);
 
+	void renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc, std::function<void()> f);
+
 	void createRenderTarget(Renderer &renderer, Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
 
 	void createFramebuffer(Renderer &renderer, Framebuffers::Framebuffers fb, const FramebufferDesc &desc);
@@ -2627,6 +2629,16 @@ void RenderGraph::createFramebuffer(Renderer &renderer, Framebuffers::Framebuffe
 	assert(!framebuffers[fb]);
 
 	framebuffers[fb] = renderer.createFramebuffer(desc);
+}
+
+
+void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc, std::function<void()> f) {
+	assert(state == State::Building);
+	assert(!framebuffers[fb]);
+
+	createFramebuffer(renderer, fb, fbDesc);
+
+	renderPass(rp, fb, f);
 }
 
 
