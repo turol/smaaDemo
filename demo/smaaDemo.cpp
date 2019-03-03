@@ -1341,14 +1341,6 @@ void SMAADemo::rebuildRenderGraph() {
 	}
 
 	{
-		RenderPassDesc rpDesc;
-		rpDesc.name("Separate")
-		      .color(0, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead)
-		      .color(1, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead);
-		renderGraph.createRenderPass(renderer, RenderPasses::Separate, rpDesc);
-	}
-
-	{
 		RenderTargetDesc rtDesc;
 		rtDesc.name("main color")
 		      .numSamples(numSamples)
@@ -1616,6 +1608,14 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 				}
 
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.name("Separate")
+		      .color(0, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead)
+		      .color(1, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead);
+		renderGraph.createRenderPass(renderer, RenderPasses::Separate, rpDesc);
+	}
+
 				{
 				FramebufferDesc fbDesc;
 				fbDesc.name("Separate")
@@ -1825,6 +1825,14 @@ void SMAADemo::rebuildRenderGraph() {
 					rtDesc.name("Subsample separate " + std::to_string(i));
 					renderGraph.createRenderTarget(renderer, static_cast<Rendertargets::Rendertargets>(Rendertargets::Subsample1 + i), rtDesc);
 				}
+
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.name("Separate")
+		      .color(0, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead)
+		      .color(1, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead);
+		renderGraph.createRenderPass(renderer, RenderPasses::Separate, rpDesc);
+	}
 
 				FramebufferDesc fbDesc;
 				fbDesc.name("Separate")
