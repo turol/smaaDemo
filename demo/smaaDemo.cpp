@@ -1423,9 +1423,10 @@ void SMAADemo::rebuildRenderGraph() {
 			  .color(1, Format::RG16Float, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 			  .depthStencil(depthFormat, PassBegin::Clear)
 			  .clearDepth(1.0f)
+			  .name(name)
 			  .numSamples(numSamples);
 
-		renderGraph.createRenderPass(renderer, RenderPasses::Scene, rpDesc.name(name));
+		renderGraph.createRenderPass(renderer, RenderPasses::Scene, rpDesc);
 
 		FramebufferDesc fbDesc;
 		fbDesc.name("scene")
@@ -1465,9 +1466,10 @@ void SMAADemo::rebuildRenderGraph() {
 			  .color(1, Format::RG16Float, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 			  .depthStencil(depthFormat, PassBegin::Clear)
 			  .clearDepth(1.0f)
+			  .name(name)
 			  .numSamples(numSamples);
 
-		renderGraph.createRenderPass(renderer, RenderPasses::Scene, rpDesc.name(name));
+		renderGraph.createRenderPass(renderer, RenderPasses::Scene, rpDesc);
 
 		FramebufferDesc fbDesc;
 		fbDesc.name("scene")
