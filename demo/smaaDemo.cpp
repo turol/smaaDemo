@@ -2613,9 +2613,10 @@ void RenderGraph::createRenderPass(Renderer &renderer, RenderPasses::RenderPasse
 
 void RenderGraph::createFramebuffer(Renderer &renderer, Framebuffers::Framebuffers fb, const FramebufferDesc &desc) {
 	assert(state == State::Building);
-	assert(!framebuffers[fb]);
 
+	if (!framebuffers[fb]) {
 	framebuffers[fb] = renderer.createFramebuffer(desc);
+	}
 }
 
 
