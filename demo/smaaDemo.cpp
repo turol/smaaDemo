@@ -1402,15 +1402,15 @@ void SMAADemo::rebuildRenderGraph() {
 			l = Layout::TransferSrc;
 		}
 
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("main depth")
-		      .numSamples(numSamples)
-		      .format(depthFormat)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderGraph.createRenderTarget(renderer, Rendertargets::MainDepth, rtDesc);
-	}
+		{
+			RenderTargetDesc rtDesc;
+			rtDesc.name("main depth")
+				  .numSamples(numSamples)
+				  .format(depthFormat)
+				  .width(windowWidth)
+				  .height(windowHeight);
+			renderGraph.createRenderTarget(renderer, Rendertargets::MainDepth, rtDesc);
+		}
 
 		RenderPassDesc rpDesc;
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, l)
@@ -1444,15 +1444,15 @@ void SMAADemo::rebuildRenderGraph() {
 			l = Layout::TransferSrc;
 		}
 
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("main depth")
-		      .numSamples(numSamples)
-		      .format(depthFormat)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderGraph.createRenderTarget(renderer, Rendertargets::MainDepth, rtDesc);
-	}
+		{
+			RenderTargetDesc rtDesc;
+			rtDesc.name("main depth")
+				  .numSamples(numSamples)
+				  .format(depthFormat)
+				  .width(windowWidth)
+				  .height(windowHeight);
+			renderGraph.createRenderTarget(renderer, Rendertargets::MainDepth, rtDesc);
+		}
 
 		RenderPassDesc rpDesc;
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, l)
