@@ -1380,7 +1380,9 @@ void SMAADemo::rebuildRenderGraph() {
 		      .width(windowWidth)
 		      .height(windowHeight);
 		renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
+	}
 
+	{
 		FramebufferDesc fbDesc;
 		fbDesc.name("SMAA edges")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::SMAAEdges])
