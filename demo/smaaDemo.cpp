@@ -1371,16 +1371,6 @@ void SMAADemo::rebuildRenderGraph() {
 	}
 
 	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("main depth")
-		      .numSamples(numSamples)
-		      .format(depthFormat)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderGraph.createRenderTarget(renderer, Rendertargets::MainDepth, rtDesc);
-	}
-
-	{
 		FramebufferDesc fbDesc;
 		fbDesc.name("final")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::Final])
@@ -1411,6 +1401,16 @@ void SMAADemo::rebuildRenderGraph() {
 		if (!antialiasing || aaMethod == AAMethod::MSAA) {
 			l = Layout::TransferSrc;
 		}
+
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("main depth")
+		      .numSamples(numSamples)
+		      .format(depthFormat)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		renderGraph.createRenderTarget(renderer, Rendertargets::MainDepth, rtDesc);
+	}
 
 		RenderPassDesc rpDesc;
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, l)
@@ -1443,6 +1443,16 @@ void SMAADemo::rebuildRenderGraph() {
 		if (!antialiasing || aaMethod == AAMethod::MSAA) {
 			l = Layout::TransferSrc;
 		}
+
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("main depth")
+		      .numSamples(numSamples)
+		      .format(depthFormat)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		renderGraph.createRenderTarget(renderer, Rendertargets::MainDepth, rtDesc);
+	}
 
 		RenderPassDesc rpDesc;
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, l)
