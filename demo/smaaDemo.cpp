@@ -2724,7 +2724,6 @@ void RenderGraph::createFramebuffer(Renderer &renderer, Framebuffers::Framebuffe
 
 void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc, std::function<void()> f) {
 	assert(state == State::Building);
-	assert(!framebuffers[fb]);
 
 	createFramebuffer(renderer, fb, fbDesc);
 
