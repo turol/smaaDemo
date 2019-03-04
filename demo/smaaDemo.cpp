@@ -1548,10 +1548,8 @@ void SMAADemo::rebuildRenderGraph() {
 					fbDesc.name("SMAA edges")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAAEdges])
 						  .color(0, renderGraph.renderTargets[Rendertargets::Edges]);
-					renderGraph.createFramebuffer(renderer, Framebuffers::SMAAEdges, fbDesc);
+					renderGraph.renderPass(renderer, RenderPasses::SMAAEdges, Framebuffers::SMAAEdges, fbDesc, std::bind(&SMAADemo::renderSMAAEdges, this, Rendertargets::MainColor, 0));
 				}
-
-				renderGraph.renderPass(renderer, RenderPasses::SMAAEdges, Framebuffers::SMAAEdges, std::bind(&SMAADemo::renderSMAAEdges, this, Rendertargets::MainColor, 0));
 
 				switch (debugMode) {
 				case 0:
@@ -1675,10 +1673,8 @@ void SMAADemo::rebuildRenderGraph() {
 					fbDesc.name("SMAA edges")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAAEdges])
 						  .color(0, renderGraph.renderTargets[Rendertargets::Edges]);
-					renderGraph.createFramebuffer(renderer, Framebuffers::SMAAEdges, fbDesc);
+					renderGraph.renderPass(renderer, RenderPasses::SMAAEdges, Framebuffers::SMAAEdges, fbDesc, std::bind(&SMAADemo::renderSMAAEdges, this, Rendertargets::Subsample1, 0));
 				}
-
-				renderGraph.renderPass(renderer, RenderPasses::SMAAEdges, Framebuffers::SMAAEdges, std::bind(&SMAADemo::renderSMAAEdges, this, Rendertargets::Subsample1, 0));
 
 				switch (debugMode) {
 				case 0:
@@ -1737,10 +1733,8 @@ void SMAADemo::rebuildRenderGraph() {
 					fbDesc.name("SMAA edges")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAAEdges])
 						  .color(0, renderGraph.renderTargets[Rendertargets::Edges]);
-					renderGraph.createFramebuffer(renderer, Framebuffers::SMAAEdges, fbDesc);
+					renderGraph.renderPass(renderer, RenderPasses::SMAAEdges2, Framebuffers::SMAAEdges, fbDesc, std::bind(&SMAADemo::renderSMAAEdges, this, Rendertargets::Subsample2, 1));
 				}
-
-				renderGraph.renderPass(renderer, RenderPasses::SMAAEdges2, Framebuffers::SMAAEdges, std::bind(&SMAADemo::renderSMAAEdges, this, Rendertargets::Subsample2, 1));
 
 				switch (debugMode) {
 				case 0:
@@ -1806,10 +1800,8 @@ void SMAADemo::rebuildRenderGraph() {
 					fbDesc.name("SMAA edges")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAAEdges])
 						  .color(0, renderGraph.renderTargets[Rendertargets::Edges]);
-					renderGraph.createFramebuffer(renderer, Framebuffers::SMAAEdges, fbDesc);
+					renderGraph.renderPass(renderer, RenderPasses::SMAAEdges, Framebuffers::SMAAEdges, fbDesc, std::bind(&SMAADemo::renderSMAAEdges, this, Rendertargets::MainColor, 0));
 				}
-
-				renderGraph.renderPass(renderer, RenderPasses::SMAAEdges, Framebuffers::SMAAEdges, std::bind(&SMAADemo::renderSMAAEdges, this, Rendertargets::MainColor, 0));
 
 				switch (debugMode) {
 				case 0:
@@ -1918,10 +1910,8 @@ void SMAADemo::rebuildRenderGraph() {
 					fbDesc.name("SMAA edges")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAAEdges])
 						  .color(0, renderGraph.renderTargets[Rendertargets::Edges]);
-					renderGraph.createFramebuffer(renderer, Framebuffers::SMAAEdges, fbDesc);
+					renderGraph.renderPass(renderer, RenderPasses::SMAAEdges, Framebuffers::SMAAEdges, fbDesc, std::bind(&SMAADemo::renderSMAAEdges, this, Rendertargets::Subsample1, 0));
 				}
-
-				renderGraph.renderPass(renderer, RenderPasses::SMAAEdges, Framebuffers::SMAAEdges, std::bind(&SMAADemo::renderSMAAEdges, this, Rendertargets::Subsample1, 0));
 
 				switch (debugMode) {
 				case 0:
@@ -1999,10 +1989,8 @@ void SMAADemo::rebuildRenderGraph() {
 					fbDesc.name("SMAA edges")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAAEdges])
 						  .color(0, renderGraph.renderTargets[Rendertargets::Edges]);
-					renderGraph.createFramebuffer(renderer, Framebuffers::SMAAEdges, fbDesc);
+					renderGraph.renderPass(renderer, RenderPasses::SMAAEdges2, Framebuffers::SMAAEdges, fbDesc, std::bind(&SMAADemo::renderSMAAEdges, this, Rendertargets::Subsample2, 1));
 				}
-
-				renderGraph.renderPass(renderer, RenderPasses::SMAAEdges2, Framebuffers::SMAAEdges, std::bind(&SMAADemo::renderSMAAEdges, this, Rendertargets::Subsample2, 1));
 
 				switch (debugMode) {
 				case 0:
