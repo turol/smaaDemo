@@ -475,8 +475,6 @@ public:
 	// TODO: need layouts?
 	void externalRenderTarget(Rendertargets::Rendertargets rt, Format format);
 
-	// TODO: should be our own description instead
-	// need rendertarget names too
 	void renderPass(RenderPasses::RenderPasses rp, PassDesc desc, std::function<void()> f);
 
 	void resolveMSAA(Rendertargets::Rendertargets source, Rendertargets::Rendertargets target);
@@ -500,6 +498,8 @@ public:
 	void renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, std::function<void()> f);
 
 	void renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc, std::function<void()> f);
+
+	void renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &rpDesc, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc, std::function<void()> f);
 
 	void createRenderTarget(Renderer &renderer, Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
 
@@ -2711,6 +2711,20 @@ void RenderGraph::createFramebuffer(Renderer &renderer, Framebuffers::Framebuffe
 	if (!framebuffers[fb]) {
 		framebuffers[fb] = renderer.createFramebuffer(desc);
 	}
+}
+
+
+void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &rpDesc, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc_, std::function<void()> f) {
+	assert(state == State::Building);
+
+	assert(!renderPasses[rp]);
+	createRenderPass(renderer, rp, rpDesc);
+	assert(renderPasses[rp]);
+
+	FramebufferDesc fbDesc(fbDesc_);
+	fbDesc.renderPass(renderPasses[rp]);
+
+	renderPass(renderer, rp, fb, fbDesc, f);
 }
 
 
