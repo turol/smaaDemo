@@ -1414,8 +1414,6 @@ void SMAADemo::rebuildRenderGraph() {
 			  .name(name)
 			  .numSamples(numSamples);
 
-		renderGraph.createRenderPass(renderer, RenderPasses::Scene, rpDesc);
-
 		FramebufferDesc fbDesc;
 		fbDesc.name("scene")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::Scene])
@@ -1423,7 +1421,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .color(1, renderGraph.renderTargets[Rendertargets::Velocity])
 		      .depthStencil(renderGraph.renderTargets[Rendertargets::MainDepth]);
 
-		renderGraph.renderPass(renderer, RenderPasses::Scene, Framebuffers::Scene, fbDesc, std::bind(&SMAADemo::renderCubeScene, this));
+		renderGraph.renderPass(renderer, RenderPasses::Scene, rpDesc, Framebuffers::Scene, fbDesc, std::bind(&SMAADemo::renderCubeScene, this));
 	} else {
 		// image scene
 		// TODO: don't use velocity buffer
@@ -1456,8 +1454,6 @@ void SMAADemo::rebuildRenderGraph() {
 			  .name(name)
 			  .numSamples(numSamples);
 
-		renderGraph.createRenderPass(renderer, RenderPasses::Scene, rpDesc);
-
 		FramebufferDesc fbDesc;
 		fbDesc.name("scene")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::Scene])
@@ -1465,7 +1461,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .color(1, renderGraph.renderTargets[Rendertargets::Velocity])
 		      .depthStencil(renderGraph.renderTargets[Rendertargets::MainDepth]);
 
-		renderGraph.renderPass(renderer, RenderPasses::Scene, Framebuffers::Scene, fbDesc, std::bind(&SMAADemo::renderImageScene, this));
+		renderGraph.renderPass(renderer, RenderPasses::Scene, rpDesc, Framebuffers::Scene, fbDesc, std::bind(&SMAADemo::renderImageScene, this));
 	}
 
 	if (antialiasing) {
@@ -1619,17 +1615,14 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.name("Separate")
 						  .color(0, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead)
 						  .color(1, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead);
-					renderGraph.createRenderPass(renderer, RenderPasses::Separate, rpDesc);
-				}
 
-				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("Separate")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::Separate])
 						  .color(0, renderGraph.renderTargets[Rendertargets::Subsample1])
 						  .color(1, renderGraph.renderTargets[Rendertargets::Subsample2]);
 
-					renderGraph.renderPass(renderer, RenderPasses::Separate, Framebuffers::Separate, fbDesc, std::bind(&SMAADemo::renderSeparate, this));
+					renderGraph.renderPass(renderer, RenderPasses::Separate, rpDesc, Framebuffers::Separate, fbDesc, std::bind(&SMAADemo::renderSeparate, this));
 				}
 
 				{
@@ -1762,14 +1755,13 @@ void SMAADemo::rebuildRenderGraph() {
 				RenderPassDesc rpDesc;
 				rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
 				rpDesc.name("FXAA no temporal");
-				renderGraph.createRenderPass(renderer, RenderPasses::FXAA, rpDesc);
 
 				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("final")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::Final])
 						  .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
-					renderGraph.renderPass(renderer, RenderPasses::FXAA, Framebuffers::Final, fbDesc, std::bind(&SMAADemo::renderFXAA, this));
+					renderGraph.renderPass(renderer, RenderPasses::FXAA, rpDesc, Framebuffers::Final, fbDesc, std::bind(&SMAADemo::renderFXAA, this));
 				}
 			} break;
 
@@ -1867,20 +1859,17 @@ void SMAADemo::rebuildRenderGraph() {
 						renderGraph.createRenderTarget(renderer, static_cast<Rendertargets::Rendertargets>(Rendertargets::Subsample1 + i), rtDesc);
 					}
 
-					{
 						RenderPassDesc rpDesc;
 						rpDesc.name("Separate")
 							  .color(0, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead)
 							  .color(1, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead);
-						renderGraph.createRenderPass(renderer, RenderPasses::Separate, rpDesc);
-					}
 
 					FramebufferDesc fbDesc;
 					fbDesc.name("Separate")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::Separate])
 						  .color(0, renderGraph.renderTargets[Rendertargets::Subsample1])
 						  .color(1, renderGraph.renderTargets[Rendertargets::Subsample2]);
-					renderGraph.renderPass(renderer, RenderPasses::Separate, Framebuffers::Separate, fbDesc, std::bind(&SMAADemo::renderSeparate, this));
+					renderGraph.renderPass(renderer, RenderPasses::Separate, rpDesc, Framebuffers::Separate, fbDesc, std::bind(&SMAADemo::renderSeparate, this));
 				}
 
 				// TODO: clean up the renderpass mess
@@ -2026,13 +2015,12 @@ void SMAADemo::rebuildRenderGraph() {
 		RenderPassDesc rpDesc;
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::TransferSrc);
 		rpDesc.name("GUI only");
-		renderGraph.createRenderPass(renderer, RenderPasses::GUI, rpDesc);
 
 		FramebufferDesc fbDesc;
 		fbDesc.name("final")
 		      .renderPass(renderGraph.renderPasses[RenderPasses::Final])
 		      .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
-		renderGraph.renderPass(renderer, RenderPasses::GUI, Framebuffers::Final, fbDesc, std::bind(&SMAADemo::renderGUI, this));
+		renderGraph.renderPass(renderer, RenderPasses::GUI, rpDesc, Framebuffers::Final, fbDesc, std::bind(&SMAADemo::renderGUI, this));
 	}
 
 	renderGraph.presentRenderTarget(Rendertargets::FinalRender);
