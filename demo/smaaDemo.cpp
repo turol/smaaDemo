@@ -1995,7 +1995,6 @@ void SMAADemo::rebuildRenderGraph() {
 						fbDesc.name("final")
 							  .renderPass(renderGraph.renderPasses[RenderPasses::Final])
 							  .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
-						renderGraph.createFramebuffer(renderer, Framebuffers::Final, fbDesc);
 						renderGraph.renderPass(renderer, RenderPasses::SMAA2XBlend2, Framebuffers::Final, fbDesc, std::bind(&SMAADemo::renderSMAADebug, this, Rendertargets::Edges));
 					}
 
