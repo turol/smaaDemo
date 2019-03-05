@@ -1472,15 +1472,15 @@ void SMAADemo::rebuildRenderGraph() {
 		if (temporalAA) {
 			// TODO: implement MSAA temporal AA
 			if (aaMethod != AAMethod::MSAA) {
-					RenderTargetDesc rtDesc;
-					rtDesc.name("Temporal resolve 0")
-						  .format(Format::sRGBA8)  // TODO: not right?
-						  .width(windowWidth)
-						  .height(windowHeight);
-					renderGraph.createRenderTarget(renderer, Rendertargets::TemporalPrevious, rtDesc);
+				RenderTargetDesc rtDesc;
+				rtDesc.name("Temporal resolve 0")
+				      .format(Format::sRGBA8)  // TODO: not right?
+				      .width(windowWidth)
+				      .height(windowHeight);
+				renderGraph.createRenderTarget(renderer, Rendertargets::TemporalPrevious, rtDesc);
 
-					rtDesc.name("Temporal resolve 1");
-					renderGraph.createRenderTarget(renderer, Rendertargets::TemporalCurrent, rtDesc);
+				rtDesc.name("Temporal resolve 1");
+				renderGraph.createRenderTarget(renderer, Rendertargets::TemporalCurrent, rtDesc);
 			}
 
 			switch (aaMethod) {
@@ -1760,8 +1760,8 @@ void SMAADemo::rebuildRenderGraph() {
 
 			case AAMethod::FXAA: {
 				RenderPassDesc rpDesc;
-					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
-					rpDesc.name("FXAA no temporal");
+				rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+				rpDesc.name("FXAA no temporal");
 				renderGraph.createRenderPass(renderer, RenderPasses::FXAA, rpDesc);
 
 				{
