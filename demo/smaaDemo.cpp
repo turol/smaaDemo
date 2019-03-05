@@ -1481,7 +1481,6 @@ void SMAADemo::rebuildRenderGraph() {
 				rpDesc.name("FXAA temporal");
 				renderGraph.createRenderPass(renderer, RenderPasses::FXAA, rpDesc);
 
-				temporalAAFirstFrame = true;
 				{
 					RenderTargetDesc rtDesc;
 					rtDesc.name("Temporal resolve 0")
@@ -1517,7 +1516,6 @@ void SMAADemo::rebuildRenderGraph() {
 			} break;
 
 			case AAMethod::SMAA: {
-				temporalAAFirstFrame = true;
 				{
 					RenderTargetDesc rtDesc;
 					rtDesc.name("Temporal resolve 0")
@@ -1641,7 +1639,6 @@ void SMAADemo::rebuildRenderGraph() {
 					renderGraph.renderPass(renderer, RenderPasses::Separate, Framebuffers::Separate, fbDesc, std::bind(&SMAADemo::renderSeparate, this));
 				}
 
-				temporalAAFirstFrame = true;
 				{
 					RenderTargetDesc rtDesc;
 					rtDesc.name("Temporal resolve 0")
