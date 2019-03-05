@@ -2747,7 +2747,7 @@ void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, 
 void RenderGraph::renderPass(Renderer & /* renderer */, RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, std::function<void()> f) {
 	assert(state == State::Building);
 
-	auto temp = usedRenderPasses.insert(rp);
+	auto temp UNUSED = usedRenderPasses.insert(rp);
 	assert(temp.second);
 
 	auto rpHandle = renderPasses[rp];
