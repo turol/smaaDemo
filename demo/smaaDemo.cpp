@@ -1470,6 +1470,19 @@ void SMAADemo::rebuildRenderGraph() {
 
 	if (antialiasing) {
 		if (temporalAA) {
+			// TODO: implement MSAA temporal AA
+			if (aaMethod != AAMethod::MSAA) {
+					RenderTargetDesc rtDesc;
+					rtDesc.name("Temporal resolve 0")
+						  .format(Format::sRGBA8)  // TODO: not right?
+						  .width(windowWidth)
+						  .height(windowHeight);
+					renderGraph.createRenderTarget(renderer, Rendertargets::TemporalPrevious, rtDesc);
+
+					rtDesc.name("Temporal resolve 1");
+					renderGraph.createRenderTarget(renderer, Rendertargets::TemporalCurrent, rtDesc);
+			}
+
 			switch (aaMethod) {
 			case AAMethod::MSAA: {
 				renderGraph.resolveMSAA(Rendertargets::MainColor, Rendertargets::FinalRender);
@@ -1482,21 +1495,11 @@ void SMAADemo::rebuildRenderGraph() {
 				renderGraph.createRenderPass(renderer, RenderPasses::FXAA, rpDesc);
 
 				{
-					RenderTargetDesc rtDesc;
-					rtDesc.name("Temporal resolve 0")
-						  .format(Format::sRGBA8)  // TODO: not right?
-						  .width(windowWidth)
-						  .height(windowHeight);
-					renderGraph.createRenderTarget(renderer, Rendertargets::TemporalPrevious, rtDesc);
-
 					FramebufferDesc fbDesc;
 					fbDesc.name("Temporal resolve 0")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAABlend])
 						  .color(0, renderGraph.renderTargets[Rendertargets::TemporalPrevious]);
 					renderGraph.createFramebuffer(renderer, Framebuffers::TemporalPrevious, fbDesc);
-
-					rtDesc.name("Temporal resolve 1");
-					renderGraph.createRenderTarget(renderer, Rendertargets::TemporalCurrent, rtDesc);
 
 					fbDesc.color(0, renderGraph.renderTargets[Rendertargets::TemporalCurrent])
 						  .name("Temporal resolve 1");
@@ -1517,21 +1520,11 @@ void SMAADemo::rebuildRenderGraph() {
 
 			case AAMethod::SMAA: {
 				{
-					RenderTargetDesc rtDesc;
-					rtDesc.name("Temporal resolve 0")
-						  .format(Format::sRGBA8)  // TODO: not right?
-						  .width(windowWidth)
-						  .height(windowHeight);
-					renderGraph.createRenderTarget(renderer, Rendertargets::TemporalPrevious, rtDesc);
-
 					FramebufferDesc fbDesc;
 					fbDesc.name("Temporal resolve 0")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAABlend])
 						  .color(0, renderGraph.renderTargets[Rendertargets::TemporalPrevious]);
 					renderGraph.createFramebuffer(renderer, Framebuffers::TemporalPrevious, fbDesc);
-
-					rtDesc.name("Temporal resolve 1");
-					renderGraph.createRenderTarget(renderer, Rendertargets::TemporalCurrent, rtDesc);
 
 					fbDesc.color(0, renderGraph.renderTargets[Rendertargets::TemporalCurrent])
 						  .name("Temporal resolve 1");
@@ -1640,21 +1633,11 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 
 				{
-					RenderTargetDesc rtDesc;
-					rtDesc.name("Temporal resolve 0")
-						  .format(Format::sRGBA8)  // TODO: not right?
-						  .width(windowWidth)
-						  .height(windowHeight);
-					renderGraph.createRenderTarget(renderer, Rendertargets::TemporalPrevious, rtDesc);
-
 					FramebufferDesc fbDesc;
 					fbDesc.name("Temporal resolve 0")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAABlend])
 						  .color(0, renderGraph.renderTargets[Rendertargets::TemporalPrevious]);
 					renderGraph.createFramebuffer(renderer, Framebuffers::TemporalPrevious, fbDesc);
-
-					rtDesc.name("Temporal resolve 1");
-					renderGraph.createRenderTarget(renderer, Rendertargets::TemporalCurrent, rtDesc);
 
 					fbDesc.color(0, renderGraph.renderTargets[Rendertargets::TemporalCurrent])
 						  .name("Temporal resolve 1");
