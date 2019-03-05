@@ -1372,16 +1372,6 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.createRenderTarget(renderer, Rendertargets::FinalRender, rtDesc);
 	}
 
-	// SMAA edges texture and FBO
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("SMAA edges")
-		      .format(Format::RGBA8)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
-	}
-
 	if (activeScene == 0) {
 		// cube scene
 		// TODO: only create velocity buffer when doing temporal AA
@@ -1530,6 +1520,15 @@ void SMAADemo::rebuildRenderGraph() {
 				Framebuffers::Framebuffers outputFB = (temporalFrame == 0) ? Framebuffers::TemporalPrevious : Framebuffers::TemporalCurrent;
 
 				// edges pass
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("SMAA edges")
+		      .format(Format::RGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
+	}
+
 				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("SMAA edges")
@@ -1641,6 +1640,15 @@ void SMAADemo::rebuildRenderGraph() {
 				Framebuffers::Framebuffers outputFB = (temporalFrame == 0) ? Framebuffers::TemporalPrevious : Framebuffers::TemporalCurrent;
 
 				// edges pass
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("SMAA edges")
+		      .format(Format::RGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
+	}
+
 				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("SMAA edges")
@@ -1701,6 +1709,15 @@ void SMAADemo::rebuildRenderGraph() {
 				outputFB = (temporalFrame == 0) ? Framebuffers::TemporalPrevious : Framebuffers::TemporalCurrent;
 
 				// edges pass
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("SMAA edges")
+		      .format(Format::RGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
+	}
+
 				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("SMAA edges")
@@ -1767,6 +1784,15 @@ void SMAADemo::rebuildRenderGraph() {
 
 			case AAMethod::SMAA: {
 				// edges pass
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("SMAA edges")
+		      .format(Format::RGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
+	}
+
 				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("SMAA edges")
@@ -1874,6 +1900,15 @@ void SMAADemo::rebuildRenderGraph() {
 
 				// TODO: clean up the renderpass mess
 				// edges pass
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("SMAA edges")
+		      .format(Format::RGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
+	}
+
 				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("SMAA edges")
