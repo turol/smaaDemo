@@ -1353,6 +1353,10 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.createRenderTarget(renderer, Rendertargets::MainColor, rtDesc);
 	}
 
+	if (activeScene == 0) {
+		// cube scene
+
+		// TODO: only create velocity buffer when doing temporal AA
 	{
 		RenderTargetDesc rtDesc;
 		rtDesc.name("velocity")
@@ -1363,9 +1367,6 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.createRenderTarget(renderer, Rendertargets::Velocity, rtDesc);
 	}
 
-	if (activeScene == 0) {
-		// cube scene
-		// TODO: only create velocity buffer when doing temporal AA
 		Layout l = Layout::ShaderRead;
 		if (!antialiasing || aaMethod == AAMethod::MSAA) {
 			l = Layout::TransferSrc;
@@ -1405,7 +1406,18 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.renderPass(renderer, RenderPasses::Scene, rpDesc, Framebuffers::Scene, fbDesc, std::bind(&SMAADemo::renderCubeScene, this));
 	} else {
 		// image scene
+
 		// TODO: don't use velocity buffer
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("velocity")
+		      .numSamples(numSamples)
+		      .format(Format::RG16Float)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		renderGraph.createRenderTarget(renderer, Rendertargets::Velocity, rtDesc);
+	}
+
 		Layout l = Layout::ShaderRead;
 		if (!antialiasing || aaMethod == AAMethod::MSAA) {
 			l = Layout::TransferSrc;
