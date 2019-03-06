@@ -1345,27 +1345,27 @@ void SMAADemo::rebuildRenderGraph() {
 	if (activeScene == 0) {
 		// cube scene
 
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("main color")
-		      .numSamples(numSamples)
-		      .format(Format::sRGBA8)
-		      .additionalViewFormat(Format::RGBA8)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderGraph.createRenderTarget(renderer, Rendertargets::MainColor, rtDesc);
-	}
+		{
+			RenderTargetDesc rtDesc;
+			rtDesc.name("main color")
+				  .numSamples(numSamples)
+				  .format(Format::sRGBA8)
+				  .additionalViewFormat(Format::RGBA8)
+				  .width(windowWidth)
+				  .height(windowHeight);
+			renderGraph.createRenderTarget(renderer, Rendertargets::MainColor, rtDesc);
+		}
 
 		// TODO: only create velocity buffer when doing temporal AA
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("velocity")
-		      .numSamples(numSamples)
-		      .format(Format::RG16Float)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderGraph.createRenderTarget(renderer, Rendertargets::Velocity, rtDesc);
-	}
+		{
+			RenderTargetDesc rtDesc;
+			rtDesc.name("velocity")
+				  .numSamples(numSamples)
+				  .format(Format::RG16Float)
+				  .width(windowWidth)
+				  .height(windowHeight);
+			renderGraph.createRenderTarget(renderer, Rendertargets::Velocity, rtDesc);
+		}
 
 		Layout l = Layout::ShaderRead;
 		if (!antialiasing || aaMethod == AAMethod::MSAA) {
@@ -1407,27 +1407,27 @@ void SMAADemo::rebuildRenderGraph() {
 	} else {
 		// image scene
 
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("main color")
-		      .numSamples(numSamples)
-		      .format(Format::sRGBA8)
-		      .additionalViewFormat(Format::RGBA8)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderGraph.createRenderTarget(renderer, Rendertargets::MainColor, rtDesc);
-	}
+		{
+			RenderTargetDesc rtDesc;
+			rtDesc.name("main color")
+				  .numSamples(numSamples)
+				  .format(Format::sRGBA8)
+				  .additionalViewFormat(Format::RGBA8)
+				  .width(windowWidth)
+				  .height(windowHeight);
+			renderGraph.createRenderTarget(renderer, Rendertargets::MainColor, rtDesc);
+		}
 
 		// TODO: don't use velocity buffer
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("velocity")
-		      .numSamples(numSamples)
-		      .format(Format::RG16Float)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderGraph.createRenderTarget(renderer, Rendertargets::Velocity, rtDesc);
-	}
+		{
+			RenderTargetDesc rtDesc;
+			rtDesc.name("velocity")
+				  .numSamples(numSamples)
+				  .format(Format::RG16Float)
+				  .width(windowWidth)
+				  .height(windowHeight);
+			renderGraph.createRenderTarget(renderer, Rendertargets::Velocity, rtDesc);
+		}
 
 		Layout l = Layout::ShaderRead;
 		if (!antialiasing || aaMethod == AAMethod::MSAA) {
@@ -1543,14 +1543,14 @@ void SMAADemo::rebuildRenderGraph() {
 				Framebuffers::Framebuffers outputFB = (temporalFrame == 0) ? Framebuffers::TemporalPrevious : Framebuffers::TemporalCurrent;
 
 				// edges pass
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("SMAA edges")
-		      .format(Format::RGBA8)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
-	}
+				{
+					RenderTargetDesc rtDesc;
+					rtDesc.name("SMAA edges")
+						  .format(Format::RGBA8)
+						  .width(windowWidth)
+						  .height(windowHeight);
+					renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
+				}
 
 				{
 					FramebufferDesc fbDesc;
@@ -1663,14 +1663,14 @@ void SMAADemo::rebuildRenderGraph() {
 				Framebuffers::Framebuffers outputFB = (temporalFrame == 0) ? Framebuffers::TemporalPrevious : Framebuffers::TemporalCurrent;
 
 				// edges pass
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("SMAA edges")
-		      .format(Format::RGBA8)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
-	}
+				{
+					RenderTargetDesc rtDesc;
+					rtDesc.name("SMAA edges")
+						  .format(Format::RGBA8)
+						  .width(windowWidth)
+						  .height(windowHeight);
+					renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
+				}
 
 				{
 					FramebufferDesc fbDesc;
@@ -1732,14 +1732,14 @@ void SMAADemo::rebuildRenderGraph() {
 				outputFB = (temporalFrame == 0) ? Framebuffers::TemporalPrevious : Framebuffers::TemporalCurrent;
 
 				// edges pass
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("SMAA edges")
-		      .format(Format::RGBA8)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
-	}
+				{
+					RenderTargetDesc rtDesc;
+					rtDesc.name("SMAA edges")
+						  .format(Format::RGBA8)
+						  .width(windowWidth)
+						  .height(windowHeight);
+					renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
+				}
 
 				{
 					FramebufferDesc fbDesc;
