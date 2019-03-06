@@ -1363,15 +1363,6 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.createRenderTarget(renderer, Rendertargets::Velocity, rtDesc);
 	}
 
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("final")
-		      .format(Format::sRGBA8)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderGraph.createRenderTarget(renderer, Rendertargets::FinalRender, rtDesc);
-	}
-
 	if (activeScene == 0) {
 		// cube scene
 		// TODO: only create velocity buffer when doing temporal AA
@@ -1452,6 +1443,15 @@ void SMAADemo::rebuildRenderGraph() {
 		      .depthStencil(renderGraph.renderTargets[Rendertargets::MainDepth]);
 
 		renderGraph.renderPass(renderer, RenderPasses::Scene, rpDesc, Framebuffers::Scene, fbDesc, std::bind(&SMAADemo::renderImageScene, this));
+	}
+
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("final")
+		      .format(Format::sRGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		renderGraph.createRenderTarget(renderer, Rendertargets::FinalRender, rtDesc);
 	}
 
 	if (antialiasing) {
