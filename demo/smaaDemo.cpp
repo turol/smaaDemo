@@ -1733,15 +1733,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 				// edges pass
 				{
-					RenderTargetDesc rtDesc;
-					rtDesc.name("SMAA edges")
-						  .format(Format::RGBA8)
-						  .width(windowWidth)
-						  .height(windowHeight);
-					renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
-				}
-
-				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("SMAA edges")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAAEdges])
