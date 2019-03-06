@@ -1342,6 +1342,9 @@ void SMAADemo::rebuildRenderGraph() {
 		}
 	}
 
+	if (activeScene == 0) {
+		// cube scene
+
 	{
 		RenderTargetDesc rtDesc;
 		rtDesc.name("main color")
@@ -1352,9 +1355,6 @@ void SMAADemo::rebuildRenderGraph() {
 		      .height(windowHeight);
 		renderGraph.createRenderTarget(renderer, Rendertargets::MainColor, rtDesc);
 	}
-
-	if (activeScene == 0) {
-		// cube scene
 
 		// TODO: only create velocity buffer when doing temporal AA
 	{
@@ -1406,6 +1406,17 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.renderPass(renderer, RenderPasses::Scene, rpDesc, Framebuffers::Scene, fbDesc, std::bind(&SMAADemo::renderCubeScene, this));
 	} else {
 		// image scene
+
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("main color")
+		      .numSamples(numSamples)
+		      .format(Format::sRGBA8)
+		      .additionalViewFormat(Format::RGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		renderGraph.createRenderTarget(renderer, Rendertargets::MainColor, rtDesc);
+	}
 
 		// TODO: don't use velocity buffer
 	{
