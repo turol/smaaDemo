@@ -1333,14 +1333,6 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.createRenderPass(renderer, RenderPasses::SMAAEdges, rpDesc);
 	}
 
-	{
-		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
-
-		rpDesc.name("SMAA weights");
-		renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights, rpDesc);
-	}
-
 	if (activeScene == 0) {
 		// cube scene
 
@@ -1570,6 +1562,14 @@ void SMAADemo::rebuildRenderGraph() {
 							  .height(windowHeight);
 						renderGraph.createRenderTarget(renderer, Rendertargets::BlendWeights, rtDesc);
 
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA weights");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights, rpDesc);
+	}
+
 						FramebufferDesc fbDesc;
 						fbDesc.name("SMAA weights")
 							  .renderPass(renderGraph.renderPasses[RenderPasses::SMAAWeights])
@@ -1595,6 +1595,14 @@ void SMAADemo::rebuildRenderGraph() {
 							  .width(windowWidth)
 							  .height(windowHeight);
 						renderGraph.createRenderTarget(renderer, Rendertargets::BlendWeights, rtDesc);
+
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA weights");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights, rpDesc);
+	}
 
 						FramebufferDesc fbDesc;
 						fbDesc.name("SMAA weights")
@@ -1690,6 +1698,14 @@ void SMAADemo::rebuildRenderGraph() {
 							  .height(windowHeight);
 						renderGraph.createRenderTarget(renderer, Rendertargets::BlendWeights, rtDesc);
 
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA weights");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights, rpDesc);
+	}
+
 						FramebufferDesc fbDesc;
 						fbDesc.name("SMAA weights")
 							  .renderPass(renderGraph.renderPasses[RenderPasses::SMAAWeights])
@@ -1715,6 +1731,14 @@ void SMAADemo::rebuildRenderGraph() {
 							  .width(windowWidth)
 							  .height(windowHeight);
 						renderGraph.createRenderTarget(renderer, Rendertargets::BlendWeights, rtDesc);
+
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA weights");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights, rpDesc);
+	}
 
 						FramebufferDesc fbDesc;
 						fbDesc.name("SMAA weights")
@@ -1848,6 +1872,14 @@ void SMAADemo::rebuildRenderGraph() {
 							  .height(windowHeight);
 						renderGraph.createRenderTarget(renderer, Rendertargets::BlendWeights, rtDesc);
 
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA weights");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights, rpDesc);
+	}
+
 						FramebufferDesc fbDesc;
 						fbDesc.name("SMAA weights")
 							  .renderPass(renderGraph.renderPasses[RenderPasses::SMAAWeights])
@@ -1887,6 +1919,14 @@ void SMAADemo::rebuildRenderGraph() {
 							  .width(windowWidth)
 							  .height(windowHeight);
 						renderGraph.createRenderTarget(renderer, Rendertargets::BlendWeights, rtDesc);
+
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA weights");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights, rpDesc);
+	}
 
 						FramebufferDesc fbDesc;
 						fbDesc.name("SMAA weights")
@@ -1964,6 +2004,14 @@ void SMAADemo::rebuildRenderGraph() {
 							  .height(windowHeight);
 						renderGraph.createRenderTarget(renderer, Rendertargets::BlendWeights, rtDesc);
 
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA weights");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights, rpDesc);
+	}
+
 						FramebufferDesc fbDesc;
 						fbDesc.name("SMAA weights")
 							  .renderPass(renderGraph.renderPasses[RenderPasses::SMAAWeights])
@@ -2003,6 +2051,14 @@ void SMAADemo::rebuildRenderGraph() {
 							  .width(windowWidth)
 							  .height(windowHeight);
 						renderGraph.createRenderTarget(renderer, Rendertargets::BlendWeights, rtDesc);
+
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA weights");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights, rpDesc);
+	}
 
 						FramebufferDesc fbDesc;
 						fbDesc.name("SMAA weights")
