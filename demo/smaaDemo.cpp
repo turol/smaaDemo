@@ -1325,14 +1325,6 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.createRenderPass(renderer, static_cast<RenderPasses::RenderPasses>(RenderPasses::SMAA2XBlend1 + i), rpDesc);
 	}
 
-	{
-		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
-
-		rpDesc.name("SMAA edges");
-		renderGraph.createRenderPass(renderer, RenderPasses::SMAAEdges, rpDesc);
-	}
-
 	if (activeScene == 0) {
 		// cube scene
 
@@ -1543,6 +1535,14 @@ void SMAADemo::rebuildRenderGraph() {
 					renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
 				}
 
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA edges");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAAEdges, rpDesc);
+	}
+
 				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("SMAA edges")
@@ -1678,6 +1678,14 @@ void SMAADemo::rebuildRenderGraph() {
 						  .height(windowHeight);
 					renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
 				}
+
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA edges");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAAEdges, rpDesc);
+	}
 
 				{
 					FramebufferDesc fbDesc;
@@ -1853,6 +1861,14 @@ void SMAADemo::rebuildRenderGraph() {
 					renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
 				}
 
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA edges");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAAEdges, rpDesc);
+	}
+
 				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("SMAA edges")
@@ -1984,6 +2000,14 @@ void SMAADemo::rebuildRenderGraph() {
 						  .height(windowHeight);
 					renderGraph.createRenderTarget(renderer, Rendertargets::Edges, rtDesc);
 				}
+
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA edges");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAAEdges, rpDesc);
+	}
 
 				{
 					FramebufferDesc fbDesc;
