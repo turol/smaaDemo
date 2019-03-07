@@ -1334,6 +1334,11 @@ void SMAADemo::rebuildRenderGraph() {
 		if (antialiasing && aaMethod == AAMethod::SMAA2X) {
 			renderGraph.createRenderPass(renderer, RenderPasses::SMAAEdges2, rpDesc);
 		}
+	}
+
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
 
 		rpDesc.name("SMAA weights");
 		renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights, rpDesc);
