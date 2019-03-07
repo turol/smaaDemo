@@ -1333,14 +1333,6 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.createRenderPass(renderer, RenderPasses::SMAAEdges, rpDesc);
 	}
 
-	if (antialiasing && aaMethod == AAMethod::SMAA2X) {
-		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
-
-		rpDesc.name("SMAA edges");
-		renderGraph.createRenderPass(renderer, RenderPasses::SMAAEdges2, rpDesc);
-	}
-
 	{
 		RenderPassDesc rpDesc;
 		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
@@ -1739,6 +1731,13 @@ void SMAADemo::rebuildRenderGraph() {
 				outputFB = (temporalFrame == 0) ? Framebuffers::TemporalPrevious : Framebuffers::TemporalCurrent;
 
 				// edges pass
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA edges");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAAEdges2, rpDesc);
+	}
 				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("SMAA edges")
@@ -2025,6 +2024,13 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 
 				// edges pass
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA edges");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAAEdges2, rpDesc);
+	}
 				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("SMAA edges")
