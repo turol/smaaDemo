@@ -1349,14 +1349,6 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights, rpDesc);
 	}
 
-	if (antialiasing && aaMethod == AAMethod::SMAA2X) {
-		RenderPassDesc rpDesc;
-		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
-
-		rpDesc.name("SMAA weights");
-		renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights2, rpDesc);
-	}
-
 	if (activeScene == 0) {
 		// cube scene
 
@@ -1758,6 +1750,14 @@ void SMAADemo::rebuildRenderGraph() {
 				switch (debugMode) {
 				case 0:
 					// blendweights pass
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA weights");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights2, rpDesc);
+	}
+
 					renderGraph.renderPass(renderer, RenderPasses::SMAAWeights2, Framebuffers::SMAAWeights, std::bind(&SMAADemo::renderSMAAWeights, this, 1));
 
 					// full effect
@@ -1771,6 +1771,14 @@ void SMAADemo::rebuildRenderGraph() {
 
 				case 2:
 					// blendweights pass
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA weights");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights2, rpDesc);
+	}
+
 					renderGraph.renderPass(renderer, RenderPasses::SMAAWeights2, Framebuffers::SMAAWeights, std::bind(&SMAADemo::renderSMAAWeights, this, 1));
 
 					// visualize blend weights
@@ -2028,6 +2036,13 @@ void SMAADemo::rebuildRenderGraph() {
 				switch (debugMode) {
 				case 0:
 					// blendweights pass
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA weights");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights2, rpDesc);
+	}
 					renderGraph.renderPass(renderer, RenderPasses::SMAAWeights2, Framebuffers::SMAAWeights, std::bind(&SMAADemo::renderSMAAWeights, this, 1));
 
 					// full effect
@@ -2055,6 +2070,13 @@ void SMAADemo::rebuildRenderGraph() {
 
 				case 2:
 					// blendweights pass
+	{
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA weights");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights2, rpDesc);
+	}
 					renderGraph.renderPass(renderer, RenderPasses::SMAAWeights2, Framebuffers::SMAAWeights, std::bind(&SMAADemo::renderSMAAWeights, this, 1));
 
 					// visualize blend weights
