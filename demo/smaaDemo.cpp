@@ -1331,9 +1331,14 @@ void SMAADemo::rebuildRenderGraph() {
 
 		rpDesc.name("SMAA edges");
 		renderGraph.createRenderPass(renderer, RenderPasses::SMAAEdges, rpDesc);
+	}
+
 		if (antialiasing && aaMethod == AAMethod::SMAA2X) {
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA edges");
 			renderGraph.createRenderPass(renderer, RenderPasses::SMAAEdges2, rpDesc);
-		}
 	}
 
 	{
@@ -1342,10 +1347,15 @@ void SMAADemo::rebuildRenderGraph() {
 
 		rpDesc.name("SMAA weights");
 		renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights, rpDesc);
+	}
+
 		if (antialiasing && aaMethod == AAMethod::SMAA2X) {
+		RenderPassDesc rpDesc;
+		rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+
+		rpDesc.name("SMAA weights");
 			renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights2, rpDesc);
 		}
-	}
 
 	if (activeScene == 0) {
 		// cube scene
