@@ -1313,14 +1313,18 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.createRenderPass(renderer, RenderPasses::SMAABlend, rpDesc);
 	}
 
-	for (unsigned int i = 0; i < 2; i++) {
+	{
+		unsigned int i = 0;
 		RenderPassDesc rpDesc;
-		if (i == 0) {
 			rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
-		} else {
-			assert(i == 1);
+		rpDesc.name("SMAA2x blend " + std::to_string(i));
+		renderGraph.createRenderPass(renderer, static_cast<RenderPasses::RenderPasses>(RenderPasses::SMAA2XBlend1 + i), rpDesc);
+	}
+
+	{
+		unsigned int i = 1;
+		RenderPassDesc rpDesc;
 			rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::ColorAttachment);
-		}
 		rpDesc.name("SMAA2x blend " + std::to_string(i));
 		renderGraph.createRenderPass(renderer, static_cast<RenderPasses::RenderPasses>(RenderPasses::SMAA2XBlend1 + i), rpDesc);
 	}
