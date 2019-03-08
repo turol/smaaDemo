@@ -3185,7 +3185,7 @@ void SMAADemo::renderTemporalAA() {
 			  .shaderMacros(macros)
 			  .name("temporal AA");
 
-		temporalAAPipelines[temporalReproject] = renderGraph.createPipeline(renderer, RenderPasses::SMAABlend, plDesc);
+		temporalAAPipelines[temporalReproject] = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
 	}
 
 	renderer.bindPipeline(temporalAAPipelines[temporalReproject]);
