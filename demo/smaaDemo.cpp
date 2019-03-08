@@ -1305,14 +1305,6 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
 	}
 
-	{
-		RenderPassDesc rpDesc;
-		// FIXME: should be RGBA since SMAA wants gamma space?
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
-		rpDesc.name("SMAA blend");
-		renderGraph.createRenderPass(renderer, RenderPasses::SMAABlend, rpDesc);
-	}
-
 	if (activeScene == 0) {
 		// cube scene
 
@@ -1499,6 +1491,14 @@ void SMAADemo::rebuildRenderGraph() {
 			} break;
 
 			case AAMethod::SMAA: {
+	{
+		RenderPassDesc rpDesc;
+		// FIXME: should be RGBA since SMAA wants gamma space?
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+		rpDesc.name("SMAA blend");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAABlend, rpDesc);
+	}
+
 				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("Temporal resolve 0")
@@ -1599,6 +1599,14 @@ void SMAADemo::rebuildRenderGraph() {
 
 					renderGraph.renderPass(renderer, RenderPasses::Separate, rpDesc, Framebuffers::Separate, fbDesc, std::bind(&SMAADemo::renderSeparate, this));
 				}
+
+	{
+		RenderPassDesc rpDesc;
+		// FIXME: should be RGBA since SMAA wants gamma space?
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+		rpDesc.name("SMAA blend");
+		renderGraph.createRenderPass(renderer, RenderPasses::SMAABlend, rpDesc);
+	}
 
 				{
 					FramebufferDesc fbDesc;
