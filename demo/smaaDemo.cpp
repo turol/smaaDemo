@@ -1477,7 +1477,7 @@ void SMAADemo::rebuildRenderGraph() {
 				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("Temporal resolve 0")
-						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAABlend])
+						  .renderPass(renderGraph.renderPasses[RenderPasses::FXAA])
 						  .color(0, renderGraph.renderTargets[Rendertargets::TemporalPrevious]);
 					renderGraph.createFramebuffer(renderer, Framebuffers::TemporalPrevious, fbDesc);
 
