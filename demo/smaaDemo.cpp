@@ -1936,7 +1936,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 					FramebufferDesc fbDesc;
 					fbDesc.name("final")
-						  .renderPass(renderGraph.renderPasses[RenderPasses::Final])
+						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAA2XBlend1])
 						  .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
 					renderGraph.renderPass(renderer, RenderPasses::SMAA2XBlend1, Framebuffers::Final, fbDesc, std::bind(&SMAADemo::renderSMAABlend, this, Rendertargets::Subsample1, 0));
 				}
