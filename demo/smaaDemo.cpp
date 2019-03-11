@@ -360,6 +360,9 @@ class RenderGraph {
 	};
 
 
+	typedef  std::function<void()>  RenderPassFunc;
+
+
 	State                                          state;
 	std::vector<std::function<void(Renderer &)> >  functions;
 	Rendertargets::Rendertargets                   finalTarget;
@@ -475,7 +478,7 @@ public:
 	// TODO: need layouts?
 	void externalRenderTarget(Rendertargets::Rendertargets rt, Format format);
 
-	void renderPass(RenderPasses::RenderPasses rp, PassDesc desc, std::function<void()> f);
+	void renderPass(RenderPasses::RenderPasses rp, PassDesc desc, RenderPassFunc f);
 
 	void resolveMSAA(Rendertargets::Rendertargets source, Rendertargets::Rendertargets target);
 
@@ -495,11 +498,11 @@ public:
 	// TODO: remove these
 	void createRenderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &desc);
 
-	void renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, std::function<void()> f);
+	void renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, RenderPassFunc f);
 
-	void renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc, std::function<void()> f);
+	void renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc, RenderPassFunc f);
 
-	void renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &rpDesc, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc, std::function<void()> f);
+	void renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &rpDesc, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc, RenderPassFunc f);
 
 	void createRenderTarget(Renderer &renderer, Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
 
@@ -2680,7 +2683,7 @@ void RenderGraph::createFramebuffer(Renderer &renderer, Framebuffers::Framebuffe
 }
 
 
-void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &rpDesc, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc_, std::function<void()> f) {
+void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &rpDesc, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc_, RenderPassFunc f) {
 	assert(state == State::Building);
 
 	assert(!renderPasses[rp]);
@@ -2694,7 +2697,7 @@ void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, 
 }
 
 
-void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc, std::function<void()> f) {
+void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc, RenderPassFunc f) {
 	assert(state == State::Building);
 
 	createFramebuffer(renderer, fb, fbDesc);
@@ -2703,7 +2706,7 @@ void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, 
 }
 
 
-void RenderGraph::renderPass(Renderer & /* renderer */, RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, std::function<void()> f) {
+void RenderGraph::renderPass(Renderer & /* renderer */, RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, RenderPassFunc f) {
 	assert(state == State::Building);
 
 	auto temp UNUSED = usedRenderPasses.insert(rp);
