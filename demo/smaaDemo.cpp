@@ -2801,7 +2801,7 @@ void RenderGraph::render(Renderer &renderer) {
 }
 
 
-void SMAADemo::renderCubeScene(RenderPasses::RenderPasses /* rp */) {
+void SMAADemo::renderCubeScene(RenderPasses::RenderPasses rp) {
 	if (!cubePipeline) {
 		std::string name = "cubes";
 		if (numSamples > 1) {
@@ -2821,7 +2821,7 @@ void SMAADemo::renderCubeScene(RenderPasses::RenderPasses /* rp */) {
 		      .depthTest(true)
 		      .cullFaces(true);
 
-		cubePipeline = renderGraph.createPipeline(renderer, RenderPasses::Scene, plDesc);
+		cubePipeline = renderGraph.createPipeline(renderer, rp, plDesc);
 	}
     assert(cubePipeline);
 
@@ -2902,7 +2902,7 @@ void SMAADemo::renderCubeScene(RenderPasses::RenderPasses /* rp */) {
 }
 
 
-void SMAADemo::renderImageScene(RenderPasses::RenderPasses /* rp */) {
+void SMAADemo::renderImageScene(RenderPasses::RenderPasses rp) {
 	if (!imagePipeline) {
 		PipelineDesc plDesc;
 		plDesc.numSamples(numSamples)
@@ -2912,7 +2912,7 @@ void SMAADemo::renderImageScene(RenderPasses::RenderPasses /* rp */) {
 		      .fragmentShader("image")
 		      .name("image");
 
-		imagePipeline = renderGraph.createPipeline(renderer, RenderPasses::Scene, plDesc);
+		imagePipeline = renderGraph.createPipeline(renderer, rp, plDesc);
 	}
 
 	renderer.bindPipeline(imagePipeline);
@@ -2946,7 +2946,7 @@ void SMAADemo::renderImageScene(RenderPasses::RenderPasses /* rp */) {
 }
 
 
-void SMAADemo::renderFXAA(RenderPasses::RenderPasses /* rp */) {
+void SMAADemo::renderFXAA(RenderPasses::RenderPasses rp) {
 	if (!fxaaPipeline) {
 		std::string qualityString(fxaaQualityLevels[fxaaQuality]);
 
@@ -2964,7 +2964,7 @@ void SMAADemo::renderFXAA(RenderPasses::RenderPasses /* rp */) {
 		      .fragmentShader("fxaa")
 		      .name(std::string("FXAA ") + qualityString);
 
-		fxaaPipeline = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
+		fxaaPipeline = renderGraph.createPipeline(renderer, rp, plDesc);
 	}
 	assert(fxaaPipeline);
 
@@ -2980,7 +2980,7 @@ void SMAADemo::renderFXAA(RenderPasses::RenderPasses /* rp */) {
 }
 
 
-void SMAADemo::renderSeparate(RenderPasses::RenderPasses /* rp */) {
+void SMAADemo::renderSeparate(RenderPasses::RenderPasses rp) {
 	if (!separatePipeline) {
 		PipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
@@ -2989,7 +2989,7 @@ void SMAADemo::renderSeparate(RenderPasses::RenderPasses /* rp */) {
 			  .fragmentShader("separate")
 			  .name("subsample separate");
 
-		separatePipeline = renderGraph.createPipeline(renderer, RenderPasses::Separate, plDesc);
+		separatePipeline = renderGraph.createPipeline(renderer, rp, plDesc);
 	}
 
 	renderer.bindPipeline(separatePipeline);
@@ -3004,7 +3004,7 @@ void SMAADemo::renderSeparate(RenderPasses::RenderPasses /* rp */) {
 }
 
 
-void SMAADemo::renderSMAAEdges(RenderPasses::RenderPasses /* rp */, Rendertargets::Rendertargets input, int pass) {
+void SMAADemo::renderSMAAEdges(RenderPasses::RenderPasses rp, Rendertargets::Rendertargets input, int pass) {
 	if (!smaaPipelines.edgePipeline) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
@@ -3028,7 +3028,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses::RenderPasses /* rp */, Rendertarget
 		      .vertexShader("smaaEdge")
 		      .fragmentShader("smaaEdge")
 		      .name(std::string("SMAA edges ") + std::to_string(smaaQuality));
-		smaaPipelines.edgePipeline      = renderGraph.createPipeline(renderer, RenderPasses::SMAAEdges, plDesc);
+		smaaPipelines.edgePipeline      = renderGraph.createPipeline(renderer, rp, plDesc);
 	}
 
 	renderer.bindPipeline(smaaPipelines.edgePipeline);
@@ -3059,7 +3059,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses::RenderPasses /* rp */, Rendertarget
 }
 
 
-void SMAADemo::renderSMAAWeights(RenderPasses::RenderPasses /* rp */, int pass) {
+void SMAADemo::renderSMAAWeights(RenderPasses::RenderPasses rp, int pass) {
 	if (!smaaPipelines.blendWeightPipeline) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
@@ -3075,7 +3075,7 @@ void SMAADemo::renderSMAAWeights(RenderPasses::RenderPasses /* rp */, int pass) 
 		      .vertexShader("smaaBlendWeight")
 		      .fragmentShader("smaaBlendWeight")
 		      .name(std::string("SMAA weights ") + std::to_string(smaaQuality));
-		smaaPipelines.blendWeightPipeline = renderGraph.createPipeline(renderer, RenderPasses::SMAAWeights, plDesc);
+		smaaPipelines.blendWeightPipeline = renderGraph.createPipeline(renderer, rp, plDesc);
 	}
 
 	// TODO: this is redundant, clean it up
@@ -3104,7 +3104,7 @@ void SMAADemo::renderSMAAWeights(RenderPasses::RenderPasses /* rp */, int pass) 
 }
 
 
-void SMAADemo::renderSMAABlend(RenderPasses::RenderPasses /* rp */, Rendertargets::Rendertargets input, int pass) {
+void SMAADemo::renderSMAABlend(RenderPasses::RenderPasses rp, Rendertargets::Rendertargets input, int pass) {
 	if (!smaaPipelines.neighborPipelines[pass]) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
@@ -3130,7 +3130,7 @@ void SMAADemo::renderSMAABlend(RenderPasses::RenderPasses /* rp */, Rendertarget
 			      .name(std::string("SMAA blend (S2X) ") + std::to_string(smaaQuality));
 		}
 
-		smaaPipelines.neighborPipelines[pass] = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
+		smaaPipelines.neighborPipelines[pass] = renderGraph.createPipeline(renderer, rp, plDesc);
 	}
 
 	// TODO: this is redundant, clean it up
@@ -3159,7 +3159,7 @@ void SMAADemo::renderSMAABlend(RenderPasses::RenderPasses /* rp */, Rendertarget
 }
 
 
-void SMAADemo::renderSMAADebug(RenderPasses::RenderPasses /* rp */, Rendertargets::Rendertargets rt) {
+void SMAADemo::renderSMAADebug(RenderPasses::RenderPasses rp, Rendertargets::Rendertargets rt) {
 	if (!blitPipeline) {
 		PipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
@@ -3168,7 +3168,7 @@ void SMAADemo::renderSMAADebug(RenderPasses::RenderPasses /* rp */, Rendertarget
 		      .fragmentShader("blit")
 		      .name("blit");
 
-		blitPipeline = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
+		blitPipeline = renderGraph.createPipeline(renderer, rp, plDesc);
 	}
 
 	ColorTexDS blitDS;
@@ -3183,7 +3183,7 @@ void SMAADemo::renderSMAADebug(RenderPasses::RenderPasses /* rp */, Rendertarget
 }
 
 
-void SMAADemo::renderTemporalAA(RenderPasses::RenderPasses /* rp */) {
+void SMAADemo::renderTemporalAA(RenderPasses::RenderPasses rp) {
 	if (!temporalAAPipelines[temporalReproject]) {
 		ShaderMacros macros;
 		macros.emplace("SMAA_REPROJECTION", std::to_string(temporalReproject));
@@ -3196,7 +3196,7 @@ void SMAADemo::renderTemporalAA(RenderPasses::RenderPasses /* rp */) {
 			  .shaderMacros(macros)
 			  .name("temporal AA");
 
-		temporalAAPipelines[temporalReproject] = renderGraph.createPipeline(renderer, RenderPasses::Final, plDesc);
+		temporalAAPipelines[temporalReproject] = renderGraph.createPipeline(renderer, rp, plDesc);
 	}
 
 	renderer.bindPipeline(temporalAAPipelines[temporalReproject]);
@@ -3587,7 +3587,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 }
 
 
-void SMAADemo::renderGUI(RenderPasses::RenderPasses /* rp */) {
+void SMAADemo::renderGUI(RenderPasses::RenderPasses rp) {
 	auto drawData = ImGui::GetDrawData();
 	assert(drawData->Valid);
 
@@ -3612,7 +3612,7 @@ void SMAADemo::renderGUI(RenderPasses::RenderPasses /* rp */) {
 				  .vertexBufferStride(ATTR_POS, sizeof(ImDrawVert))
 				  .name("gui");
 
-			guiPipeline = renderGraph.createPipeline(renderer, RenderPasses::GUI, plDesc);
+			guiPipeline = renderGraph.createPipeline(renderer, rp, plDesc);
 		}
 
 		renderer.bindPipeline(guiPipeline);
