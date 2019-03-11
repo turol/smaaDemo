@@ -1465,15 +1465,11 @@ void SMAADemo::rebuildRenderGraph() {
 					FramebufferDesc fbDesc;
 					fbDesc.name("Temporal resolve 0")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::FXAA])
-						  .color(0, renderGraph.renderTargets[Rendertargets::TemporalPrevious]);
-					renderGraph.createFramebuffer(renderer, Framebuffers::TemporalPrevious, fbDesc);
-
-					fbDesc.color(0, renderGraph.renderTargets[Rendertargets::TemporalCurrent])
-						  .name("Temporal resolve 1");
+						  .color(0, renderGraph.renderTargets[Rendertargets::TemporalCurrent]);
 					renderGraph.createFramebuffer(renderer, Framebuffers::TemporalCurrent, fbDesc);
 				}
 
-				renderGraph.renderPass(renderer, RenderPasses::FXAA, ((temporalFrame == 0) ? Framebuffers::TemporalPrevious : Framebuffers::TemporalCurrent), [this] (RenderPasses::RenderPasses rp) { this->renderFXAA(rp); } );
+				renderGraph.renderPass(renderer, RenderPasses::FXAA, Framebuffers::TemporalCurrent, [this] (RenderPasses::RenderPasses rp) { this->renderFXAA(rp); } );
 
 				{
 					RenderPassDesc rpDesc;
@@ -1506,15 +1502,11 @@ void SMAADemo::rebuildRenderGraph() {
 					FramebufferDesc fbDesc;
 					fbDesc.name("Temporal resolve 0")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAABlend])
-						  .color(0, renderGraph.renderTargets[Rendertargets::TemporalPrevious]);
-					renderGraph.createFramebuffer(renderer, Framebuffers::TemporalPrevious, fbDesc);
-
-					fbDesc.color(0, renderGraph.renderTargets[Rendertargets::TemporalCurrent])
-						  .name("Temporal resolve 1");
+						  .color(0, renderGraph.renderTargets[Rendertargets::TemporalCurrent]);
 					renderGraph.createFramebuffer(renderer, Framebuffers::TemporalCurrent, fbDesc);
 				}
 
-				Framebuffers::Framebuffers outputFB = (temporalFrame == 0) ? Framebuffers::TemporalPrevious : Framebuffers::TemporalCurrent;
+				Framebuffers::Framebuffers outputFB = Framebuffers::TemporalCurrent;
 
 				// edges pass
 				{
@@ -1623,16 +1615,12 @@ void SMAADemo::rebuildRenderGraph() {
 					FramebufferDesc fbDesc;
 					fbDesc.name("Temporal resolve 0")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAABlend])
-						  .color(0, renderGraph.renderTargets[Rendertargets::TemporalPrevious]);
-					renderGraph.createFramebuffer(renderer, Framebuffers::TemporalPrevious, fbDesc);
-
-					fbDesc.color(0, renderGraph.renderTargets[Rendertargets::TemporalCurrent])
-						  .name("Temporal resolve 1");
+						  .color(0, renderGraph.renderTargets[Rendertargets::TemporalCurrent]);
 					renderGraph.createFramebuffer(renderer, Framebuffers::TemporalCurrent, fbDesc);
 				}
 
 				// TODO: clean up the renderpass mess
-				Framebuffers::Framebuffers outputFB = (temporalFrame == 0) ? Framebuffers::TemporalPrevious : Framebuffers::TemporalCurrent;
+				Framebuffers::Framebuffers outputFB = Framebuffers::TemporalCurrent;
 
 				// edges pass
 				{
@@ -1690,8 +1678,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 				renderGraph.renderPass(renderer, RenderPasses::SMAA2XBlend1, outputFB, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::Subsample1, 0); } );
 
-				outputFB = (temporalFrame == 0) ? Framebuffers::TemporalPrevious : Framebuffers::TemporalCurrent;
-
 				// edges pass
 				{
 					RenderPassDesc rpDesc;
@@ -1729,7 +1715,7 @@ void SMAADemo::rebuildRenderGraph() {
 				renderGraph.renderPass(renderer, RenderPasses::SMAA2XBlend2, outputFB, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::Subsample2, 1); } );
 
 				// FIXME: move to renderpass
-				renderGraph.layoutTransition(static_cast<Rendertargets::Rendertargets>(Rendertargets::TemporalPrevious + temporalFrame), Layout::ColorAttachment, Layout::ShaderRead);
+				renderGraph.layoutTransition(Rendertargets::TemporalCurrent, Layout::ColorAttachment, Layout::ShaderRead);
 				{
 					RenderPassDesc rpDesc;
 					// TODO: check this
@@ -3253,15 +3239,16 @@ void SMAADemo::renderTemporalAA(RenderPasses::RenderPasses rp) {
 
 	TemporalAADS temporalDS;
 	temporalDS.smaaUBO             = smaaUBOBuf;
-	temporalDS.currentTex.tex      = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::TemporalPrevious + temporalFrame]);
+	temporalDS.currentTex.tex      = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::TemporalCurrent]);
 	temporalDS.currentTex.sampler  = nearestSampler;
 	if (temporalAAFirstFrame) {
 		// to prevent flicker on first frame after enabling
-		temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::TemporalPrevious + temporalFrame]);
+		// TODO: should just do blit
+		temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::TemporalCurrent]);
 		temporalDS.previousTex.sampler = nearestSampler;
 		temporalAAFirstFrame = false;
 	} else {
-		temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::TemporalPrevious + 1 - temporalFrame]);
+		temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::TemporalPrevious]);
 		temporalDS.previousTex.sampler = nearestSampler;
 	}
 	temporalDS.velocityTex.tex         = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::Velocity]);
