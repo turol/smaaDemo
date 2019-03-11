@@ -1439,6 +1439,7 @@ void SMAADemo::rebuildRenderGraph() {
 		if (temporalAA) {
 			// TODO: implement MSAA temporal AA
 			if (aaMethod != AAMethod::MSAA) {
+				// TODO: keep these in SMAADemo
 				RenderTargetDesc rtDesc;
 				rtDesc.name("Temporal resolve 0")
 				      .format(Format::sRGBA8)  // TODO: not right?
@@ -1448,6 +1449,9 @@ void SMAADemo::rebuildRenderGraph() {
 
 				rtDesc.name("Temporal resolve 1");
 				renderGraph.createRenderTarget(renderer, Rendertargets::TemporalCurrent, rtDesc);
+
+				renderGraph.externalRenderTarget(Rendertargets::TemporalPrevious, Format::sRGBA8);
+				renderGraph.externalRenderTarget(Rendertargets::TemporalCurrent,  Format::sRGBA8);
 			}
 
 			switch (aaMethod) {
@@ -2706,6 +2710,11 @@ void RenderGraph::createFramebuffer(Renderer &renderer, Framebuffers::Framebuffe
 	if (!framebuffers[fb]) {
 		framebuffers[fb] = renderer.createFramebuffer(desc);
 	}
+}
+
+
+void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets /* rt */, Format /* format */) {
+	// TODO
 }
 
 
