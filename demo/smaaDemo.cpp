@@ -2718,6 +2718,11 @@ void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets /* rt */, Fo
 }
 
 
+void RenderGraph::bindExternalRT(Rendertargets::Rendertargets /* rt */, RenderTargetHandle /* handle */) {
+	// TODO
+}
+
+
 void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &rpDesc, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc_, RenderPassFunc f) {
 	assert(state == State::Building);
 
