@@ -1300,14 +1300,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 	LOG("create framebuffers at size %ux%u\n", windowWidth, windowHeight);
 
-	{
-		RenderPassDesc rpDesc;
-		// TODO: check this
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
-		rpDesc.name("final");
-		renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
-	}
-
 	if (activeScene == 0) {
 		// cube scene
 
@@ -1483,6 +1475,14 @@ void SMAADemo::rebuildRenderGraph() {
 
 				renderGraph.renderPass(renderer, RenderPasses::FXAA, ((temporalFrame == 0) ? Framebuffers::TemporalPrevious : Framebuffers::TemporalCurrent), [this] (RenderPasses::RenderPasses rp) { this->renderFXAA(rp); } );
 
+	{
+		RenderPassDesc rpDesc;
+		// TODO: check this
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+		rpDesc.name("final");
+		renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
+	}
+
 				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("final")
@@ -1564,6 +1564,14 @@ void SMAADemo::rebuildRenderGraph() {
 
 				// full effect
 				renderGraph.renderPass(renderer, RenderPasses::SMAABlend, outputFB, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::MainColor, 0); } );
+
+	{
+		RenderPassDesc rpDesc;
+		// TODO: check this
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+		rpDesc.name("final");
+		renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
+	}
 
 				{
 					FramebufferDesc fbDesc;
@@ -1722,6 +1730,14 @@ void SMAADemo::rebuildRenderGraph() {
 
 				// FIXME: move to renderpass
 				renderGraph.layoutTransition(static_cast<Rendertargets::Rendertargets>(Rendertargets::TemporalPrevious + temporalFrame), Layout::ColorAttachment, Layout::ShaderRead);
+	{
+		RenderPassDesc rpDesc;
+		// TODO: check this
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+		rpDesc.name("final");
+		renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
+	}
+
 				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("final")
@@ -1801,6 +1817,14 @@ void SMAADemo::rebuildRenderGraph() {
 					}
 
 					// full effect
+	{
+		RenderPassDesc rpDesc;
+		// TODO: check this
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+		rpDesc.name("final");
+		renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
+	}
+
 					{
 						FramebufferDesc fbDesc;
 						fbDesc.name("final")
@@ -1813,6 +1837,14 @@ void SMAADemo::rebuildRenderGraph() {
 
 				case 1:
 					// visualize edges
+	{
+		RenderPassDesc rpDesc;
+		// TODO: check this
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+		rpDesc.name("final");
+		renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
+	}
+
 					{
 						FramebufferDesc fbDesc;
 						fbDesc.name("final")
@@ -1847,6 +1879,14 @@ void SMAADemo::rebuildRenderGraph() {
 					}
 
 					// visualize blend weights
+	{
+		RenderPassDesc rpDesc;
+		// TODO: check this
+		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+		rpDesc.name("final");
+		renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
+	}
+
 					{
 						FramebufferDesc fbDesc;
 						fbDesc.name("final")
