@@ -1475,13 +1475,13 @@ void SMAADemo::rebuildRenderGraph() {
 
 				renderGraph.renderPass(renderer, RenderPasses::FXAA, ((temporalFrame == 0) ? Framebuffers::TemporalPrevious : Framebuffers::TemporalCurrent), [this] (RenderPasses::RenderPasses rp) { this->renderFXAA(rp); } );
 
-	{
-		RenderPassDesc rpDesc;
-		// TODO: check this
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
-		rpDesc.name("final");
-		renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
-	}
+				{
+					RenderPassDesc rpDesc;
+					// TODO: check this
+					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+					rpDesc.name("final");
+					renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
+				}
 
 				{
 					FramebufferDesc fbDesc;
@@ -1494,13 +1494,13 @@ void SMAADemo::rebuildRenderGraph() {
 			} break;
 
 			case AAMethod::SMAA: {
-	{
-		RenderPassDesc rpDesc;
-		// FIXME: should be RGBA since SMAA wants gamma space?
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
-		rpDesc.name("SMAA blend");
-		renderGraph.createRenderPass(renderer, RenderPasses::SMAABlend, rpDesc);
-	}
+				{
+					RenderPassDesc rpDesc;
+					// FIXME: should be RGBA since SMAA wants gamma space?
+					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+					rpDesc.name("SMAA blend");
+					renderGraph.createRenderPass(renderer, RenderPasses::SMAABlend, rpDesc);
+				}
 
 				{
 					FramebufferDesc fbDesc;
@@ -1565,13 +1565,13 @@ void SMAADemo::rebuildRenderGraph() {
 				// full effect
 				renderGraph.renderPass(renderer, RenderPasses::SMAABlend, outputFB, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::MainColor, 0); } );
 
-	{
-		RenderPassDesc rpDesc;
-		// TODO: check this
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
-		rpDesc.name("final");
-		renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
-	}
+				{
+					RenderPassDesc rpDesc;
+					// TODO: check this
+					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+					rpDesc.name("final");
+					renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
+				}
 
 				{
 					FramebufferDesc fbDesc;
@@ -1611,13 +1611,13 @@ void SMAADemo::rebuildRenderGraph() {
 					renderGraph.renderPass(renderer, RenderPasses::Separate, rpDesc, Framebuffers::Separate, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSeparate(rp); } );
 				}
 
-	{
-		RenderPassDesc rpDesc;
-		// FIXME: should be RGBA since SMAA wants gamma space?
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
-		rpDesc.name("SMAA blend");
-		renderGraph.createRenderPass(renderer, RenderPasses::SMAABlend, rpDesc);
-	}
+				{
+					RenderPassDesc rpDesc;
+					// FIXME: should be RGBA since SMAA wants gamma space?
+					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+					rpDesc.name("SMAA blend");
+					renderGraph.createRenderPass(renderer, RenderPasses::SMAABlend, rpDesc);
+				}
 
 				{
 					FramebufferDesc fbDesc;
@@ -1730,13 +1730,13 @@ void SMAADemo::rebuildRenderGraph() {
 
 				// FIXME: move to renderpass
 				renderGraph.layoutTransition(static_cast<Rendertargets::Rendertargets>(Rendertargets::TemporalPrevious + temporalFrame), Layout::ColorAttachment, Layout::ShaderRead);
-	{
-		RenderPassDesc rpDesc;
-		// TODO: check this
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
-		rpDesc.name("final");
-		renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
-	}
+				{
+					RenderPassDesc rpDesc;
+					// TODO: check this
+					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+					rpDesc.name("final");
+					renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
+				}
 
 				{
 					FramebufferDesc fbDesc;
@@ -1817,13 +1817,13 @@ void SMAADemo::rebuildRenderGraph() {
 					}
 
 					// full effect
-	{
-		RenderPassDesc rpDesc;
-		// TODO: check this
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
-		rpDesc.name("final");
-		renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
-	}
+					{
+						RenderPassDesc rpDesc;
+						// TODO: check this
+						rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+						rpDesc.name("final");
+						renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
+					}
 
 					{
 						FramebufferDesc fbDesc;
@@ -1837,13 +1837,13 @@ void SMAADemo::rebuildRenderGraph() {
 
 				case 1:
 					// visualize edges
-	{
-		RenderPassDesc rpDesc;
-		// TODO: check this
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
-		rpDesc.name("final");
-		renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
-	}
+					{
+						RenderPassDesc rpDesc;
+						// TODO: check this
+						rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+						rpDesc.name("final");
+						renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
+					}
 
 					{
 						FramebufferDesc fbDesc;
@@ -1879,13 +1879,13 @@ void SMAADemo::rebuildRenderGraph() {
 					}
 
 					// visualize blend weights
-	{
-		RenderPassDesc rpDesc;
-		// TODO: check this
-		rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
-		rpDesc.name("final");
-		renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
-	}
+					{
+						RenderPassDesc rpDesc;
+						// TODO: check this
+						rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+						rpDesc.name("final");
+						renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
+					}
 
 					{
 						FramebufferDesc fbDesc;
@@ -1973,7 +1973,7 @@ void SMAADemo::rebuildRenderGraph() {
 				// final blend pass
 				{
 					RenderPassDesc rpDesc;
-						rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
+					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
 					rpDesc.name("SMAA2x blend 0");
 					renderGraph.createRenderPass(renderer, RenderPasses::SMAA2XBlend1, rpDesc);
 
