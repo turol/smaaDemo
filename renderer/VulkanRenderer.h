@@ -798,6 +798,7 @@ struct Frame {
 	vk::CommandBuffer             presentCmdBuf;
 	vk::CommandBuffer             barrierCmdBuf;
 	vk::Semaphore                 acquireSem;
+	vk::Semaphore                 renderDoneSem;
 
 	std::vector<Resource>         deleteResources;
 	std::vector<UploadOp>         uploads;
@@ -819,6 +820,7 @@ struct Frame {
 		assert(!presentCmdBuf);
 		assert(!barrierCmdBuf);
 		assert(!acquireSem);
+		assert(!renderDoneSem);
 		assert(!outstanding);
 		assert(deleteResources.empty());
 		assert(uploads.empty());
@@ -840,6 +842,7 @@ struct Frame {
 	, presentCmdBuf(other.presentCmdBuf)
 	, barrierCmdBuf(other.barrierCmdBuf)
 	, acquireSem(other.acquireSem)
+	, renderDoneSem(other.renderDoneSem)
 	, deleteResources(std::move(other.deleteResources))
 	, uploads(std::move(other.uploads))
 	{
@@ -851,6 +854,7 @@ struct Frame {
 		other.presentCmdBuf    = vk::CommandBuffer();
 		other.barrierCmdBuf    = vk::CommandBuffer();
 		other.acquireSem       = vk::Semaphore();
+		other.renderDoneSem    = vk::Semaphore();
 		other.outstanding      = false;
 		other.lastFrameNum     = 0;
 		other.usedRingBufPtr   = 0;
@@ -890,6 +894,10 @@ struct Frame {
 		assert(!acquireSem);
 		acquireSem           = other.acquireSem;
 		other.acquireSem     = vk::Semaphore();
+
+		assert(!renderDoneSem);
+		renderDoneSem        = other.renderDoneSem;
+		other.renderDoneSem  = vk::Semaphore();
 
 		assert(ephemeralBuffers.empty());
 		ephemeralBuffers = std::move(other.ephemeralBuffers);
@@ -951,8 +959,6 @@ struct RendererImpl : public RendererBase {
 	vk::PipelineCache                       pipelineCache;
 	vk::Queue                               queue;
 	vk::Queue                               transferQueue;
-
-	vk::Semaphore                           renderDoneSem;
 
 	vk::CommandBuffer                       currentCommandBuffer;
 	vk::PipelineLayout                      currentPipelineLayout;

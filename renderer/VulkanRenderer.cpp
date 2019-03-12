@@ -636,8 +636,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	recreateSwapchain();
 	recreateRingBuffer(desc.ephemeralRingBufSize);
 
-	renderDoneSem = allocateSemaphore();
-
 	vk::CommandPoolCreateInfo cp;
 	cp.queueFamilyIndex = transferQueueIndex;
 	transferCmdPool = device.createCommandPool(cp);
@@ -760,9 +758,6 @@ RendererImpl::~RendererImpl() {
 		this->deleteResourceInternal(const_cast<Resource &>(r));
 	}
 	deleteResources.clear();
-
-	freeSemaphore(renderDoneSem);
-	renderDoneSem = vk::Semaphore();
 
 	vmaFreeMemory(allocator, ringBufferMem);
 	ringBufferMem = nullptr;
@@ -2281,6 +2276,9 @@ void RendererImpl::beginFrame() {
 	assert(!frame.acquireSem);
 	frame.acquireSem       = acquireSem;
 
+	assert(!frame.renderDoneSem);
+	frame.renderDoneSem    = allocateSemaphore();
+
 	// set command buffer to recording
 	currentCommandBuffer = frame.commandBuffer;
 	currentCommandBuffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
@@ -2421,14 +2419,14 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	submit2.commandBufferCount   = 1;
 	submit2.pCommandBuffers      = &frame.presentCmdBuf;
 	submit2.signalSemaphoreCount = 1;
-	submit2.pSignalSemaphores    = &renderDoneSem;
+	submit2.pSignalSemaphores    = &frame.renderDoneSem;
 
 	queue.submit({ submit, submit2 }, frame.fence);
 
 	// present
 	vk::PresentInfoKHR presentInfo;
 	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores    = &renderDoneSem;
+	presentInfo.pWaitSemaphores    = &frame.renderDoneSem;
 	presentInfo.swapchainCount     = 1;
 	presentInfo.pSwapchains        = &swapchain;
 	presentInfo.pImageIndices      = &currentFrameIdx;
@@ -2523,6 +2521,10 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 	assert(frame.acquireSem);
 	freeSemaphore(frame.acquireSem);
 	frame.acquireSem = vk::Semaphore();
+
+	assert(frame.renderDoneSem);
+	freeSemaphore(frame.renderDoneSem);
+	frame.renderDoneSem = vk::Semaphore();
 
 	frame.outstanding    = false;
 	lastSyncedFrame      = std::max(lastSyncedFrame, frame.lastFrameNum);
