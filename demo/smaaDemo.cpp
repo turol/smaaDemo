@@ -1553,16 +1553,14 @@ void SMAADemo::rebuildRenderGraph() {
 					// FIXME: should be RGBA since SMAA wants gamma space?
 					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 					      .name("SMAA blend");
-					renderGraph.createRenderPass(renderer, RenderPasses::SMAABlend, rpDesc);
 
 					FramebufferDesc fbDesc;
 					fbDesc.name("Temporal resolve 0")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAABlend])
 						  .color(0, renderGraph.renderTargets[Rendertargets::TemporalCurrent]);
-					renderGraph.createFramebuffer(renderer, Framebuffers::TemporalCurrent, fbDesc);
-				}
 
-				renderGraph.renderPass(renderer, RenderPasses::SMAABlend, Framebuffers::TemporalCurrent, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::MainColor, 0); } );
+					renderGraph.renderPass(renderer, RenderPasses::SMAABlend, rpDesc, Framebuffers::TemporalCurrent, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::MainColor, 0); } );
+				}
 
 				{
 					RenderPassDesc rpDesc;
