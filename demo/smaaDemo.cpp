@@ -583,6 +583,8 @@ class SMAADemo {
 	Renderer                                          renderer;
 	Format                                            depthFormat;
 
+	std::array<RenderTargetHandle, 2>                 temporalRTs;
+
 	PipelineHandle                                    cubePipeline;
 	PipelineHandle                                    imagePipeline;
 	PipelineHandle                                    blitPipeline;
@@ -773,6 +775,12 @@ SMAADemo::~SMAADemo() {
 	if (imGuiContext) {
 		ImGui::DestroyContext(imGuiContext);
 		imGuiContext = nullptr;
+	}
+
+	if (temporalRTs[0]) {
+		assert(temporalRTs[1]);
+		renderer.deleteRenderTarget(temporalRTs[0]);
+		renderer.deleteRenderTarget(temporalRTs[1]);
 	}
 
 	renderGraph.reset(renderer);
@@ -1284,6 +1292,12 @@ void SMAADemo::initRender() {
 void SMAADemo::rebuildRenderGraph() {
 	assert(rebuildRG);
 
+	if (temporalRTs[0]) {
+		assert(temporalRTs[1]);
+		renderer.deleteRenderTarget(temporalRTs[0]);
+		renderer.deleteRenderTarget(temporalRTs[1]);
+	}
+
 	renderGraph.reset(renderer);
 
 	if (antialiasing && aaMethod == AAMethod::MSAA) {
@@ -1439,16 +1453,15 @@ void SMAADemo::rebuildRenderGraph() {
 		if (temporalAA) {
 			// TODO: implement MSAA temporal AA
 			if (aaMethod != AAMethod::MSAA) {
-				// TODO: keep these in SMAADemo
 				RenderTargetDesc rtDesc;
 				rtDesc.name("Temporal resolve 0")
 				      .format(Format::sRGBA8)  // TODO: not right?
 				      .width(windowWidth)
 				      .height(windowHeight);
-				renderGraph.createRenderTarget(renderer, Rendertargets::TemporalPrevious, rtDesc);
+				temporalRTs[0] = renderer.createRenderTarget(rtDesc);
 
 				rtDesc.name("Temporal resolve 1");
-				renderGraph.createRenderTarget(renderer, Rendertargets::TemporalCurrent, rtDesc);
+				temporalRTs[1] = renderer.createRenderTarget(rtDesc);
 
 				renderGraph.externalRenderTarget(Rendertargets::TemporalPrevious, Format::sRGBA8);
 				renderGraph.externalRenderTarget(Rendertargets::TemporalCurrent,  Format::sRGBA8);
@@ -2623,6 +2636,12 @@ void SMAADemo::render() {
 		rebuildRenderGraph();
 	}
 
+	if (temporalAA && aaMethod != AAMethod::MSAA) {
+		// TODO: implement MSAA temporal AA
+		renderGraph.bindExternalRT(Rendertargets::TemporalPrevious, temporalRTs[1 - temporalFrame]);
+		renderGraph.bindExternalRT(Rendertargets::TemporalCurrent,  temporalRTs[    temporalFrame]);
+	}
+
 	renderGraph.render(renderer);
 }
 
@@ -2713,7 +2732,8 @@ void RenderGraph::createFramebuffer(Renderer &renderer, Framebuffers::Framebuffe
 }
 
 
-void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets /* rt */, Format /* format */) {
+void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets rt UNUSED, Format /* format */) {
+	assert(!renderTargets[rt]);
 	// TODO
 }
 
