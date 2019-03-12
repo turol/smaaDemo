@@ -1477,16 +1477,14 @@ void SMAADemo::rebuildRenderGraph() {
 					RenderPassDesc rpDesc;
 					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
 					rpDesc.name("FXAA temporal");
-					renderGraph.createRenderPass(renderer, RenderPasses::FXAA, rpDesc);
 
 					FramebufferDesc fbDesc;
 					fbDesc.name("Temporal resolve 0")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::FXAA])
 						  .color(0, renderGraph.renderTargets[Rendertargets::TemporalCurrent]);
-					renderGraph.createFramebuffer(renderer, Framebuffers::TemporalCurrent, fbDesc);
-				}
 
-				renderGraph.renderPass(renderer, RenderPasses::FXAA, Framebuffers::TemporalCurrent, [this] (RenderPasses::RenderPasses rp) { this->renderFXAA(rp); } );
+					renderGraph.renderPass(renderer, RenderPasses::FXAA, rpDesc, Framebuffers::TemporalCurrent, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderFXAA(rp); } );
+				}
 
 				{
 					RenderPassDesc rpDesc;
