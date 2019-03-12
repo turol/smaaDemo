@@ -1474,10 +1474,10 @@ void SMAADemo::rebuildRenderGraph() {
 
 			case AAMethod::FXAA: {
 				{
-				RenderPassDesc rpDesc;
-				rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
-				rpDesc.name("FXAA temporal");
-				renderGraph.createRenderPass(renderer, RenderPasses::FXAA, rpDesc);
+					RenderPassDesc rpDesc;
+					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
+					rpDesc.name("FXAA temporal");
+					renderGraph.createRenderPass(renderer, RenderPasses::FXAA, rpDesc);
 
 					FramebufferDesc fbDesc;
 					fbDesc.name("Temporal resolve 0")
