@@ -1517,8 +1517,6 @@ void SMAADemo::rebuildRenderGraph() {
 					renderGraph.createFramebuffer(renderer, Framebuffers::TemporalCurrent, fbDesc);
 				}
 
-				Framebuffers::Framebuffers outputFB = Framebuffers::TemporalCurrent;
-
 				// edges pass
 				{
 					RenderTargetDesc rtDesc;
@@ -1564,7 +1562,7 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 
 				// full effect
-				renderGraph.renderPass(renderer, RenderPasses::SMAABlend, outputFB, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::MainColor, 0); } );
+				renderGraph.renderPass(renderer, RenderPasses::SMAABlend, Framebuffers::TemporalCurrent, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::MainColor, 0); } );
 
 				{
 					RenderPassDesc rpDesc;
@@ -1625,7 +1623,6 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 
 				// TODO: clean up the renderpass mess
-				Framebuffers::Framebuffers outputFB = Framebuffers::TemporalCurrent;
 
 				// edges pass
 				{
@@ -1679,7 +1676,7 @@ void SMAADemo::rebuildRenderGraph() {
 					renderGraph.createRenderPass(renderer, RenderPasses::SMAA2XBlend1, rpDesc);
 				}
 
-				renderGraph.renderPass(renderer, RenderPasses::SMAA2XBlend1, outputFB, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::Subsample1, 0); } );
+				renderGraph.renderPass(renderer, RenderPasses::SMAA2XBlend1, Framebuffers::TemporalCurrent, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::Subsample1, 0); } );
 
 				// edges pass
 				{
@@ -1713,7 +1710,7 @@ void SMAADemo::rebuildRenderGraph() {
 					renderGraph.createRenderPass(renderer, RenderPasses::SMAA2XBlend2, rpDesc);
 				}
 
-				renderGraph.renderPass(renderer, RenderPasses::SMAA2XBlend2, outputFB, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::Subsample2, 1); } );
+				renderGraph.renderPass(renderer, RenderPasses::SMAA2XBlend2, Framebuffers::TemporalCurrent, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::Subsample2, 1); } );
 
 				// FIXME: move to renderpass
 				renderGraph.layoutTransition(Rendertargets::TemporalCurrent, Layout::ColorAttachment, Layout::ShaderRead);
