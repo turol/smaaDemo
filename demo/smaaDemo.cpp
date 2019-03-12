@@ -2602,12 +2602,6 @@ void SMAADemo::mainLoopIteration() {
 
 
 void SMAADemo::render() {
-	// this is necessary because we bake rt and fb handles into the graph
-	// FIXME: stop doing that
-	if (temporalAA && aaMethod != AAMethod::MSAA) {
-		rebuildRG = true;
-	}
-
 	if (recreateSwapchain) {
 		renderer.setSwapchainDesc(rendererDesc.swapchain);
 	}
