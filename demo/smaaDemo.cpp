@@ -2295,6 +2295,7 @@ void SMAADemo::processInput() {
 					recreateFramebuffers = true;
 				}
 				if (temporalAA && aaMethod != AAMethod::MSAA) {
+					// TODO: implement MSAA temporal AA
 					temporalAAFirstFrame = true;
 				}
 				rebuildRG = true;
@@ -2383,6 +2384,7 @@ void SMAADemo::processInput() {
 				break;
 
 			case SDL_SCANCODE_T:
+				// TODO: implement MSAA temporal AA
 				if (aaMethod != AAMethod::MSAA) {
 					temporalAA = !temporalAA;
 					if (temporalAA) {
@@ -2557,6 +2559,7 @@ void SMAADemo::mainLoopIteration() {
 	}
 
 	if (temporalAA && aaMethod != AAMethod::MSAA) {
+		// TODO: implement MSAA temporal AA
 		temporalFrame = (temporalFrame + 1) % 2;
 
 		switch (aaMethod) {
@@ -2908,6 +2911,7 @@ void SMAADemo::renderCubeScene(RenderPasses::RenderPasses rp) {
 
 	// temporal jitter
 	if (antialiasing && temporalAA && aaMethod != AAMethod::MSAA) {
+		// TODO: implement MSAA temporal AA
 		glm::vec2 jitter;
 		if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
 			const glm::vec2 jitters[2] = {
@@ -3323,6 +3327,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 		if (ImGui::CollapsingHeader("Antialiasing properties", ImGuiTreeNodeFlags_DefaultOpen)) {
 			bool aaChanged = ImGui::Checkbox("Antialiasing", &antialiasing);
 			if (aaChanged && temporalAA && aaMethod != AAMethod::MSAA) {
+				// TODO: implement MSAA temporal AA
 				temporalAAFirstFrame = true;
 			}
 
@@ -3340,6 +3345,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 
 				bool tempTAA = temporalAA;
 				if (aaMethod == AAMethod::MSAA) {
+					// TODO: implement MSAA temporal AA
 					tempTAA = false;
 				}
 				if (ImGui::Checkbox("Temporal AA", &tempTAA)) {
