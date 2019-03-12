@@ -636,8 +636,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	recreateSwapchain();
 	recreateRingBuffer(desc.ephemeralRingBufSize);
 
-	acquireSem    = device.createSemaphore(vk::SemaphoreCreateInfo());
-	renderDoneSem = device.createSemaphore(vk::SemaphoreCreateInfo());
+	acquireSem    = allocateSemaphore();
+	renderDoneSem = allocateSemaphore();
 
 	vk::CommandPoolCreateInfo cp;
 	cp.queueFamilyIndex = transferQueueIndex;
@@ -762,10 +762,10 @@ RendererImpl::~RendererImpl() {
 	}
 	deleteResources.clear();
 
-	device.destroySemaphore(renderDoneSem);
+	freeSemaphore(renderDoneSem);
 	renderDoneSem = vk::Semaphore();
 
-	device.destroySemaphore(acquireSem);
+	freeSemaphore(acquireSem);
 	acquireSem = vk::Semaphore();
 
 	vmaFreeMemory(allocator, ringBufferMem);
@@ -2487,7 +2487,7 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 	if (!frame.uploads.empty()) {
 		for (auto &op : frame.uploads) {
 			device.freeCommandBuffers(transferCmdPool, { op.cmdBuf } );
-			device.destroySemaphore(op.semaphore);
+			freeSemaphore(op.semaphore);
 
 			op.cmdBuf    = vk::CommandBuffer();
 			op.semaphore = vk::Semaphore();
@@ -2552,7 +2552,7 @@ UploadOp RendererImpl::allocateUploadOp(uint32_t size) {
 	UploadOp op;
 
 	// TODO: have a free list of semaphores instead of creating new ones all the time
-	op.semaphore = device.createSemaphore(vk::SemaphoreCreateInfo());
+	op.semaphore = allocateSemaphore();
 
 	vk::CommandBufferAllocateInfo cmdInfo(transferCmdPool, vk::CommandBufferLevel::ePrimary, 1);
 	op.cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
@@ -2594,6 +2594,21 @@ void RendererImpl::submitUploadOp(UploadOp &&op) {
 	transferQueue.submit({ submit }, vk::Fence());
 
 	uploads.emplace_back(std::move(op));
+}
+
+
+vk::Semaphore RendererImpl::allocateSemaphore() {
+	// TODO: have a free list of semaphores
+
+	return device.createSemaphore(vk::SemaphoreCreateInfo());
+}
+
+
+void RendererImpl::freeSemaphore(vk::Semaphore sem) {
+	assert(sem);
+	// TODO: have a free list of semaphores
+
+	device.destroySemaphore(sem);
 }
 
 

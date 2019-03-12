@@ -980,6 +980,9 @@ struct RendererImpl : public RendererBase {
 	UploadOp allocateUploadOp(uint32_t size);
 	void submitUploadOp(UploadOp &&op);
 
+	vk::Semaphore allocateSemaphore();
+	void freeSemaphore(vk::Semaphore sem);
+
 	void deleteBufferInternal(Buffer &b);
 	void deleteFramebufferInternal(Framebuffer &fb);
 	void deletePipelineInternal(Pipeline &p);
