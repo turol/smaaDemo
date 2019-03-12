@@ -636,7 +636,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	recreateSwapchain();
 	recreateRingBuffer(desc.ephemeralRingBufSize);
 
-	acquireSem    = allocateSemaphore();
 	renderDoneSem = allocateSemaphore();
 
 	vk::CommandPoolCreateInfo cp;
@@ -764,9 +763,6 @@ RendererImpl::~RendererImpl() {
 
 	freeSemaphore(renderDoneSem);
 	renderDoneSem = vk::Semaphore();
-
-	freeSemaphore(acquireSem);
-	acquireSem = vk::Semaphore();
 
 	vmaFreeMemory(allocator, ringBufferMem);
 	ringBufferMem = nullptr;
@@ -2239,6 +2235,9 @@ void RendererImpl::beginFrame() {
 
 	// acquire next image
 	uint32_t imageIdx = 0xFFFFFFFFU;
+
+	auto acquireSem = allocateSemaphore();
+
 	vk::Result result = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence(), &imageIdx);
 	if (result == vk::Result::eSuccess) {
 		// nothing to do
@@ -2278,6 +2277,9 @@ void RendererImpl::beginFrame() {
 	assert(!frame.outstanding);
 
 	device.resetFences( { frame.fence } );
+
+	assert(!frame.acquireSem);
+	frame.acquireSem       = acquireSem;
 
 	// set command buffer to recording
 	currentCommandBuffer = frame.commandBuffer;
@@ -2414,7 +2416,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 
 	vk::SubmitInfo submit2;
 	submit2.waitSemaphoreCount   = 1;
-	submit2.pWaitSemaphores      = &acquireSem;
+	submit2.pWaitSemaphores      = &frame.acquireSem;
 	submit2.pWaitDstStageMask    = &acquireWaitStage;
 	submit2.commandBufferCount   = 1;
 	submit2.pCommandBuffers      = &frame.presentCmdBuf;
@@ -2517,6 +2519,10 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 			device.resetCommandPool(transferCmdPool, vk::CommandPoolResetFlags());
 		}
 	}
+
+	assert(frame.acquireSem);
+	freeSemaphore(frame.acquireSem);
+	frame.acquireSem = vk::Semaphore();
 
 	frame.outstanding    = false;
 	lastSyncedFrame      = std::max(lastSyncedFrame, frame.lastFrameNum);
