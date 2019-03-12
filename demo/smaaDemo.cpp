@@ -1492,9 +1492,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
 					rpDesc.name("final");
 					renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
-				}
 
-				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("final")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::Final])
@@ -1511,9 +1509,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
 					rpDesc.name("SMAA blend");
 					renderGraph.createRenderPass(renderer, RenderPasses::SMAABlend, rpDesc);
-				}
 
-				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("Temporal resolve 0")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAABlend])
@@ -1578,9 +1574,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
 					rpDesc.name("final");
 					renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
-				}
 
-				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("final")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::Final])
@@ -1624,9 +1618,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead);
 					rpDesc.name("SMAA blend");
 					renderGraph.createRenderPass(renderer, RenderPasses::SMAABlend, rpDesc);
-				}
 
-				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("Temporal resolve 0")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAABlend])
@@ -1737,9 +1729,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
 					rpDesc.name("final");
 					renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
-				}
 
-				{
 					FramebufferDesc fbDesc;
 					fbDesc.name("final")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::Final])
@@ -1824,9 +1814,7 @@ void SMAADemo::rebuildRenderGraph() {
 						rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
 						rpDesc.name("final");
 						renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
-					}
 
-					{
 						FramebufferDesc fbDesc;
 						fbDesc.name("final")
 							  .renderPass(renderGraph.renderPasses[RenderPasses::Final])
@@ -1844,9 +1832,7 @@ void SMAADemo::rebuildRenderGraph() {
 						rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
 						rpDesc.name("final");
 						renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
-					}
 
-					{
 						FramebufferDesc fbDesc;
 						fbDesc.name("final")
 							  .renderPass(renderGraph.renderPasses[RenderPasses::Final])
@@ -1886,9 +1872,7 @@ void SMAADemo::rebuildRenderGraph() {
 						rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment);
 						rpDesc.name("final");
 						renderGraph.createRenderPass(renderer, RenderPasses::Final, rpDesc);
-					}
 
-					{
 						FramebufferDesc fbDesc;
 						fbDesc.name("final")
 							  .renderPass(renderGraph.renderPasses[RenderPasses::Final])
