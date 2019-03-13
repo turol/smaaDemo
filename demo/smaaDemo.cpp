@@ -288,24 +288,6 @@ enum Rendertargets {
 
 
 
-namespace Framebuffers {
-
-
-enum Framebuffers {
-	  Scene
-	, Separate
-	, Final
-	, TemporalPrevious
-	, TemporalCurrent
-	, SMAAEdges
-	, SMAAWeights
-	, Count
-};
-
-
-} // namespace Framebuffers
-
-
 namespace RenderPasses {
 
 
