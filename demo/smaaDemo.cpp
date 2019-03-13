@@ -1362,6 +1362,14 @@ void SMAADemo::rebuildRenderGraph() {
 			l = Layout::TransferSrc;
 		}
 
+		RenderGraph::PassDesc desc;
+		desc.color(0, Rendertargets::MainColor, PassBegin::Clear)
+		    .color(1, Rendertargets::Velocity,  PassBegin::Clear)
+		    .depthStencil(Rendertargets::MainDepth,  PassBegin::Clear)
+		    .clearDepth(1.0f)
+		    .name("Scene")
+		    .numSamples(numSamples);
+
 		std::string name = "scene ";
 		if (numSamples > 1) {
 			name += " MSAA x" + std::to_string(numSamples) + " ";
@@ -1382,7 +1390,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .color(1, renderGraph.renderTargets[Rendertargets::Velocity])
 		      .depthStencil(renderGraph.renderTargets[Rendertargets::MainDepth]);
 
-		renderGraph.renderPass(renderer, RenderPasses::Scene, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderCubeScene(rp); } );
+		renderGraph.renderPass(renderer, RenderPasses::Scene, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderCubeScene(rp); } );
 	} else {
 		// image scene
 
@@ -1418,6 +1426,14 @@ void SMAADemo::rebuildRenderGraph() {
 			renderGraph.createRenderTarget(renderer, Rendertargets::MainDepth, rtDesc);
 		}
 
+		RenderGraph::PassDesc desc;
+		desc.color(0, Rendertargets::MainColor, PassBegin::Clear)
+		    .color(1, Rendertargets::Velocity,  PassBegin::Clear)
+		    .depthStencil(Rendertargets::MainDepth,  PassBegin::Clear)
+		    .clearDepth(1.0f)
+		    .name("Scene")
+		    .numSamples(numSamples);
+
 		Layout l = Layout::ShaderRead;
 		if (!antialiasing || aaMethod == AAMethod::MSAA) {
 			l = Layout::TransferSrc;
@@ -1443,7 +1459,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .color(1, renderGraph.renderTargets[Rendertargets::Velocity])
 		      .depthStencil(renderGraph.renderTargets[Rendertargets::MainDepth]);
 
-		renderGraph.renderPass(renderer, RenderPasses::Scene, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderImageScene(rp); } );
+		renderGraph.renderPass(renderer, RenderPasses::Scene, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderImageScene(rp); } );
 	}
 
 	{
