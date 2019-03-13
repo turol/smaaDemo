@@ -512,6 +512,8 @@ public:
 	// TODO: remove these
 	void renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &rpDesc, const FramebufferDesc &fbDesc, RenderPassFunc f);
 
+	void renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const PassDesc &desc, const RenderPassDesc &rpDesc, const FramebufferDesc &fbDesc, RenderPassFunc f);
+
 	void createRenderTarget(Renderer &renderer, Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
 
 	void layoutTransition(Rendertargets::Rendertargets image, Layout src, Layout dest);
@@ -2639,6 +2641,15 @@ void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets rt UNUSED, F
 
 void RenderGraph::bindExternalRT(Rendertargets::Rendertargets /* rt */, RenderTargetHandle /* handle */) {
 	// TODO
+}
+
+
+void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const PassDesc & /* desc */, const RenderPassDesc &rpDesc, const FramebufferDesc &fbDesc, RenderPassFunc f) {
+	assert(state == State::Building);
+
+	// TODO: do something with desc
+
+	renderPass(renderer, rp, rpDesc, fbDesc, f);
 }
 
 
