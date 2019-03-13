@@ -2689,19 +2689,16 @@ void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, 
 	assert(!renderPasses[rp]);
 	createRenderPass(renderer, rp, rpDesc);
 	assert(renderPasses[rp]);
+	auto rpHandle = renderPasses[rp];
 
 	FramebufferDesc fbDesc(fbDesc_);
 	fbDesc.renderPass(renderPasses[rp]);
 	createFramebuffer(renderer, fb, fbDesc);
+	auto fbHandle = framebuffers[fb];
+	assert(fbHandle);
 
 	auto temp UNUSED = usedRenderPasses.insert(rp);
 	assert(temp.second);
-
-	auto rpHandle = renderPasses[rp];
-	assert(rpHandle);
-
-	auto fbHandle = framebuffers[fb];
-	assert(fbHandle);
 
 	functions.push_back([rpHandle, fbHandle, rp, f] (Renderer &r) {
 		r.beginRenderPass(rpHandle, fbHandle);
