@@ -1966,14 +1966,13 @@ void SMAADemo::rebuildRenderGraph() {
 					RenderPassDesc rpDesc;
 					rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::ColorAttachment)
 					      .name("SMAA2x blend 1");
-					renderGraph.createRenderPass(renderer, RenderPasses::SMAA2XBlend2, rpDesc);
 
 					FramebufferDesc fbDesc;
 					fbDesc.name("final")
 						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAA2XBlend2])
 						  .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
 
-					renderGraph.renderPass(renderer, RenderPasses::SMAA2XBlend2, Framebuffers::Final, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::Subsample2, 1); } );
+					renderGraph.renderPass(renderer, RenderPasses::SMAA2XBlend2, rpDesc, Framebuffers::Final, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::Subsample2, 1); } );
 				}
 
 			} break;
