@@ -1678,6 +1678,11 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 					      .name("SMAA weights");
 					renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights2, rpDesc);
+
+					FramebufferDesc fbDesc;
+					fbDesc.name("SMAA weights")
+						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAAWeights2])
+						  .color(0, renderGraph.renderTargets[Rendertargets::BlendWeights]);
 				}
 
 				renderGraph.renderPass(renderer, RenderPasses::SMAAWeights2, Framebuffers::SMAAWeights, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAWeights(rp, 1); } );
@@ -1688,6 +1693,11 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::ColorAttachment)
 					      .name("SMAA2x blend 1");
 					renderGraph.createRenderPass(renderer, RenderPasses::SMAA2XBlend2, rpDesc);
+
+					FramebufferDesc fbDesc;
+					fbDesc.name("Temporal resolve 0")
+						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAA2XBlend2])
+						  .color(0, renderGraph.renderTargets[Rendertargets::TemporalCurrent]);
 				}
 
 				renderGraph.renderPass(renderer, RenderPasses::SMAA2XBlend2, Framebuffers::TemporalCurrent, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::Subsample2, 1); } );
@@ -1945,6 +1955,11 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 					      .name("SMAA weights");
 					renderGraph.createRenderPass(renderer, RenderPasses::SMAAWeights2, rpDesc);
+
+					FramebufferDesc fbDesc;
+					fbDesc.name("SMAA weights")
+						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAAWeights2])
+						  .color(0, renderGraph.renderTargets[Rendertargets::BlendWeights]);
 				}
 				renderGraph.renderPass(renderer, RenderPasses::SMAAWeights2, Framebuffers::SMAAWeights, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAWeights(rp, 1); } );
 
