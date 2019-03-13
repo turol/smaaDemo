@@ -377,7 +377,7 @@ class RenderGraph {
 
 	std::unordered_set<RenderPasses::RenderPasses> usedRenderPasses;
 
-	FramebufferHandle                                 framebuffers[Framebuffers::Count];
+	FramebufferHandle                                 framebuffers[RenderPasses::Count];
 
 
 	RenderGraph(const RenderGraph &)                = delete;
@@ -2565,13 +2565,6 @@ void RenderGraph::reset(Renderer &renderer) {
 	}
 	pipelines.clear();
 
-	for (unsigned int i = 0; i < Framebuffers::Count; i++) {
-		if (framebuffers[i]) {
-			renderer.deleteFramebuffer(framebuffers[i]);
-			framebuffers[i] = FramebufferHandle();
-		}
-	}
-
 	for (unsigned int i = 0; i < Rendertargets::Count; i++) {
 		if (renderTargets[i]) {
 			renderer.deleteRenderTarget(renderTargets[i]);
@@ -2581,8 +2574,12 @@ void RenderGraph::reset(Renderer &renderer) {
 
 	for (unsigned int i = 0; i < RenderPasses::Count; i++) {
 		if (renderPasses[i]) {
+			assert(framebuffers[i]);
 			renderer.deleteRenderPass(renderPasses[i]);
 			renderPasses[i] = RenderPassHandle();
+
+			renderer.deleteFramebuffer(framebuffers[i]);
+			framebuffers[i] = FramebufferHandle();
 		}
 	}
 
@@ -2633,7 +2630,7 @@ void RenderGraph::bindExternalRT(Rendertargets::Rendertargets /* rt */, RenderTa
 }
 
 
-void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &rpDesc, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc_, RenderPassFunc f) {
+void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &rpDesc, Framebuffers::Framebuffers /* fb */, const FramebufferDesc &fbDesc_, RenderPassFunc f) {
 	assert(state == State::Building);
 
 	assert(!renderPasses[rp]);
@@ -2646,11 +2643,11 @@ void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, 
 	FramebufferDesc fbDesc(fbDesc_);
 	fbDesc.renderPass(renderPasses[rp]);
 
-	if (!framebuffers[fb]) {
-		framebuffers[fb] = renderer.createFramebuffer(fbDesc);
+	if (!framebuffers[rp]) {
+		framebuffers[rp] = renderer.createFramebuffer(fbDesc);
 	}
 
-	auto fbHandle = framebuffers[fb];
+	auto fbHandle = framebuffers[rp];
 	assert(fbHandle);
 
 	auto temp UNUSED = usedRenderPasses.insert(rp);
