@@ -473,7 +473,7 @@ public:
 
 	void reset(Renderer &renderer);
 
-	void renderTarget(Renderer &renderer, Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
+	void renderTarget(Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
 
 	// TODO: need layouts?
 	void externalRenderTarget(Rendertargets::Rendertargets rt, Format format);
