@@ -39,6 +39,8 @@ THE SOFTWARE.
 
 // TODO: use std::variant if the compiler has C++17
 #include <boost/variant/variant.hpp>
+#include <boost/variant/apply_visitor.hpp>
+#include <boost/variant/static_visitor.hpp>
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -374,7 +376,7 @@ class RenderGraph {
 
 
 	State                                          state;
-	std::vector<std::function<void(Renderer &)> >  functions;
+	std::vector<Operation>                         operations;
 	Rendertargets::Rendertargets                   finalTarget;
 
 	struct Pipeline {
@@ -2593,7 +2595,7 @@ void RenderGraph::reset(Renderer &renderer) {
 		}
 	}
 
-	functions.clear();
+	operations.clear();
 }
 
 
@@ -2659,53 +2661,41 @@ void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, 
 	auto temp UNUSED = usedRenderPasses.insert(rp);
 	assert(temp.second);
 
-	functions.push_back([rpHandle, fbHandle, rp, f] (Renderer &r) {
-		r.beginRenderPass(rpHandle, fbHandle);
-		f(rp);
-		r.endRenderPass();
-	} );
+	RenderPass op;
+	op.name = rp;
+	op.func = f;
+	operations.push_back(op);
 }
 
 
 void RenderGraph::resolveMSAA(Rendertargets::Rendertargets source, Rendertargets::Rendertargets target) {
 	assert(state == State::Building);
 
-	RenderTargetHandle sourceHandle = renderTargets[source];
-	RenderTargetHandle targetHandle = renderTargets[target];
-	functions.push_back([=] (Renderer &r) {
-		r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
-		r.resolveMSAA(sourceHandle, targetHandle);
-		r.layoutTransition(targetHandle, Layout::TransferDst, Layout::ColorAttachment);
-	} );
-
-	// TODO
+	ResolveMSAA op;
+	op.source = source;
+	op.target = target;
+	operations.push_back(op);
 }
 
 
 void RenderGraph::blit(Rendertargets::Rendertargets source, Rendertargets::Rendertargets target) {
 	assert(state == State::Building);
 
-	RenderTargetHandle sourceHandle = renderTargets[source];
-	RenderTargetHandle targetHandle = renderTargets[target];
-	functions.push_back([=] (Renderer &r) {
-		r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
-		r.blit(sourceHandle, targetHandle);
-		r.layoutTransition(targetHandle, Layout::TransferDst, Layout::ColorAttachment);
-	} );
-
-	// TODO
+	Blit op;
+	op.source = source;
+	op.target = target;
+	operations.push_back(op);
 }
 
 
 void RenderGraph::layoutTransition(Rendertargets::Rendertargets image, Layout src, Layout dest) {
 	assert(state == State::Building);
 
-	RenderTargetHandle imageHandle = renderTargets[image];
-	functions.push_back([=] (Renderer &r) {
-		r.layoutTransition(imageHandle, src, dest);
-	} );
-
-	// TODO
+	LayoutTransition op;
+	op.rt                = image;
+	op.sourceLayout      = src;
+	op.destinationLayout = dest;
+	operations.push_back(op);
 }
 
 
@@ -2731,8 +2721,47 @@ void RenderGraph::render(Renderer &renderer) {
 	assert(state == State::Ready);
 	state = State::Rendering;
 
-	for (const auto &f : functions) {
-		f(renderer);
+	struct OpVisitor final : public boost::static_visitor<void> {
+		Renderer    &r;
+		RenderGraph &rg;
+
+
+		OpVisitor(Renderer &r_, RenderGraph &rg_)
+		: r(r_)
+		, rg(rg_)
+		{
+		}
+
+
+		void operator()(const Blit &b) const {
+			RenderTargetHandle sourceHandle = rg.renderTargets[b.source];
+			RenderTargetHandle targetHandle = rg.renderTargets[b.target];
+			r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
+			r.blit(sourceHandle, targetHandle);
+			r.layoutTransition(targetHandle, Layout::TransferDst, Layout::ColorAttachment);
+		}
+
+		void operator()(const LayoutTransition &lt) const {
+			r.layoutTransition(rg.renderTargets[lt.rt], lt.sourceLayout, lt.destinationLayout);
+		}
+
+		void operator()(const RenderPass &rp) const {
+			r.beginRenderPass(rg.renderPasses[rp.name], rg.framebuffers[rp.name]);
+			rp.func(rp.name);
+			r.endRenderPass();
+		}
+
+		void operator()(const ResolveMSAA &resolve) const {
+			RenderTargetHandle sourceHandle = rg.renderTargets[resolve.source];
+			RenderTargetHandle targetHandle = rg.renderTargets[resolve.target];
+			r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
+			r.resolveMSAA(sourceHandle, targetHandle);
+			r.layoutTransition(targetHandle, Layout::TransferDst, Layout::ColorAttachment);
+		}
+	};
+
+	for (const auto &op : operations) {
+		boost::apply_visitor(OpVisitor(renderer, *this), op);
 	}
 
 	renderer.presentFrame(renderTargets[finalTarget]);
