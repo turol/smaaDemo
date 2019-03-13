@@ -496,8 +496,6 @@ public:
 
 
 	// TODO: remove these
-	void createRenderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &desc);
-
 	void renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &rpDesc, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc, RenderPassFunc f);
 
 	void createRenderTarget(Renderer &renderer, Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
@@ -2622,14 +2620,6 @@ void RenderGraph::createRenderTarget(Renderer &renderer, Rendertargets::Renderta
 }
 
 
-void RenderGraph::createRenderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &desc) {
-	assert(state == State::Building);
-	assert(!renderPasses[rp]);
-
-	renderPasses[rp] = renderer.createRenderPass(desc);
-}
-
-
 void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets rt UNUSED, Format /* format */) {
 	assert(!renderTargets[rt]);
 	// TODO
@@ -2645,7 +2635,9 @@ void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, 
 	assert(state == State::Building);
 
 	assert(!renderPasses[rp]);
-	createRenderPass(renderer, rp, rpDesc);
+
+	renderPasses[rp] = renderer.createRenderPass(rpDesc);
+
 	assert(renderPasses[rp]);
 	auto rpHandle = renderPasses[rp];
 
