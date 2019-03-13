@@ -2616,21 +2616,17 @@ void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, 
 	assert(state == State::Building);
 
 	assert(!renderPasses[rp]);
+	auto rpHandle = renderer.createRenderPass(rpDesc);
+	assert(rpHandle);
+	renderPasses[rp] = rpHandle;
 
-	renderPasses[rp] = renderer.createRenderPass(rpDesc);
-
-	assert(renderPasses[rp]);
-	auto rpHandle = renderPasses[rp];
-
+	assert(!framebuffers[rp]);
 	FramebufferDesc fbDesc(fbDesc_);
 	fbDesc.renderPass(renderPasses[rp]);
 
-	if (!framebuffers[rp]) {
-		framebuffers[rp] = renderer.createFramebuffer(fbDesc);
-	}
-
-	auto fbHandle = framebuffers[rp];
+	auto fbHandle = renderer.createFramebuffer(fbDesc);
 	assert(fbHandle);
+	framebuffers[rp] = fbHandle;
 
 	auto temp UNUSED = usedRenderPasses.insert(rp);
 	assert(temp.second);
