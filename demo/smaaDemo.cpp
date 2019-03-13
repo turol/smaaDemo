@@ -1970,7 +1970,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 					FramebufferDesc fbDesc;
 					fbDesc.name("final")
-						  .renderPass(renderGraph.renderPasses[RenderPasses::Final])
+						  .renderPass(renderGraph.renderPasses[RenderPasses::SMAA2XBlend2])
 						  .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
 
 					renderGraph.renderPass(renderer, RenderPasses::SMAA2XBlend2, Framebuffers::Final, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::Subsample2, 1); } );
