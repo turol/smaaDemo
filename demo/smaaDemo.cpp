@@ -502,8 +502,6 @@ public:
 
 	void createRenderTarget(Renderer &renderer, Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
 
-	void createFramebuffer(Renderer &renderer, Framebuffers::Framebuffers fb, const FramebufferDesc &desc);
-
 	void layoutTransition(Rendertargets::Rendertargets image, Layout src, Layout dest);
 };
 
@@ -2632,15 +2630,6 @@ void RenderGraph::createRenderPass(Renderer &renderer, RenderPasses::RenderPasse
 }
 
 
-void RenderGraph::createFramebuffer(Renderer &renderer, Framebuffers::Framebuffers fb, const FramebufferDesc &desc) {
-	assert(state == State::Building);
-
-	if (!framebuffers[fb]) {
-		framebuffers[fb] = renderer.createFramebuffer(desc);
-	}
-}
-
-
 void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets rt UNUSED, Format /* format */) {
 	assert(!renderTargets[rt]);
 	// TODO
@@ -2662,7 +2651,11 @@ void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, 
 
 	FramebufferDesc fbDesc(fbDesc_);
 	fbDesc.renderPass(renderPasses[rp]);
-	createFramebuffer(renderer, fb, fbDesc);
+
+	if (!framebuffers[fb]) {
+		framebuffers[fb] = renderer.createFramebuffer(fbDesc);
+	}
+
 	auto fbHandle = framebuffers[fb];
 	assert(fbHandle);
 
