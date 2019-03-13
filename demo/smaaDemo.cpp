@@ -1345,11 +1345,6 @@ void SMAADemo::rebuildRenderGraph() {
 			renderGraph.createRenderTarget(renderer, Rendertargets::Velocity, rtDesc);
 		}
 
-		Layout l = Layout::ShaderRead;
-		if (!antialiasing || aaMethod == AAMethod::MSAA) {
-			l = Layout::TransferSrc;
-		}
-
 		{
 			RenderTargetDesc rtDesc;
 			rtDesc.name("main depth")
@@ -1358,6 +1353,11 @@ void SMAADemo::rebuildRenderGraph() {
 				  .width(windowWidth)
 				  .height(windowHeight);
 			renderGraph.createRenderTarget(renderer, Rendertargets::MainDepth, rtDesc);
+		}
+
+		Layout l = Layout::ShaderRead;
+		if (!antialiasing || aaMethod == AAMethod::MSAA) {
+			l = Layout::TransferSrc;
 		}
 
 		std::string name = "scene ";
@@ -1406,11 +1406,6 @@ void SMAADemo::rebuildRenderGraph() {
 			renderGraph.createRenderTarget(renderer, Rendertargets::Velocity, rtDesc);
 		}
 
-		Layout l = Layout::ShaderRead;
-		if (!antialiasing || aaMethod == AAMethod::MSAA) {
-			l = Layout::TransferSrc;
-		}
-
 		{
 			RenderTargetDesc rtDesc;
 			rtDesc.name("main depth")
@@ -1419,6 +1414,11 @@ void SMAADemo::rebuildRenderGraph() {
 				  .width(windowWidth)
 				  .height(windowHeight);
 			renderGraph.createRenderTarget(renderer, Rendertargets::MainDepth, rtDesc);
+		}
+
+		Layout l = Layout::ShaderRead;
+		if (!antialiasing || aaMethod == AAMethod::MSAA) {
+			l = Layout::TransferSrc;
 		}
 
 		std::string name = "scene ";
