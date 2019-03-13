@@ -37,6 +37,9 @@ THE SOFTWARE.
 #include <vector>
 #include <unordered_set>
 
+// TODO: use std::variant if the compiler has C++17
+#include <boost/variant/variant.hpp>
+
 #include <imgui.h>
 #include <imgui_internal.h>
 
@@ -343,6 +346,31 @@ class RenderGraph {
 
 
 	typedef  std::function<void(RenderPasses::RenderPasses)>  RenderPassFunc;
+
+
+	struct Blit {
+		Rendertargets::Rendertargets  source;
+		Rendertargets::Rendertargets  target;
+	};
+
+	// TODO: remove
+	struct LayoutTransition {
+		Rendertargets::Rendertargets  rt;
+		Layout                        sourceLayout;
+		Layout                        destinationLayout;
+	};
+
+	struct RenderPass {
+		RenderPasses::RenderPasses    name;
+		RenderPassFunc                func;
+	};
+
+	struct ResolveMSAA {
+		Rendertargets::Rendertargets  source;
+		Rendertargets::Rendertargets  target;
+	};
+
+	typedef boost::variant<Blit, LayoutTransition, RenderPass, ResolveMSAA> Operation;
 
 
 	State                                          state;
