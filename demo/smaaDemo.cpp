@@ -500,8 +500,6 @@ public:
 
 	void renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, RenderPassFunc f);
 
-	void renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc, RenderPassFunc f);
-
 	void renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &rpDesc, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc, RenderPassFunc f);
 
 	void createRenderTarget(Renderer &renderer, Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
@@ -2696,14 +2694,6 @@ void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, 
 
 	FramebufferDesc fbDesc(fbDesc_);
 	fbDesc.renderPass(renderPasses[rp]);
-
-	renderPass(renderer, rp, fb, fbDesc, f);
-}
-
-
-void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, Framebuffers::Framebuffers fb, const FramebufferDesc &fbDesc, RenderPassFunc f) {
-	assert(state == State::Building);
-
 	createFramebuffer(renderer, fb, fbDesc);
 
 	renderPass(renderer, rp, fb, f);
