@@ -375,6 +375,10 @@ class RenderGraph {
 	// TODO: use hash map
 	std::vector<Pipeline>                          pipelines;
 
+	std::unordered_set<RenderPasses::RenderPasses> usedRenderPasses;
+
+	FramebufferHandle                                 framebuffers[Framebuffers::Count];
+
 
 	RenderGraph(const RenderGraph &)                = delete;
 	RenderGraph(RenderGraph &&) noexcept            = delete;
@@ -453,12 +457,10 @@ public:
 		float                                        depthClearValue;
 	};
 
-	std::unordered_set<RenderPasses::RenderPasses> usedRenderPasses;
 
 	// TODO: hide these
 	RenderTargetHandle                                renderTargets[Rendertargets::Count];
 	RenderPassHandle                                  renderPasses[RenderPasses::Count];
-	FramebufferHandle                                 framebuffers[Framebuffers::Count];
 
 
 	RenderGraph()
