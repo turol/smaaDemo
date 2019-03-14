@@ -426,6 +426,12 @@ private:
 	};
 
 
+	struct RT {
+		RenderTargetHandle  handle;
+		RenderTargetDesc    desc;
+	};
+
+
 	typedef  std::function<void(RenderPasses::RenderPasses)>  RenderPassFunc;
 
 
@@ -457,6 +463,8 @@ private:
 	State                                          state;
 	std::vector<Operation>                         operations;
 	Rendertargets::Rendertargets                   finalTarget;
+
+	std::unordered_map<Rendertargets::Rendertargets, RT>  rts;
 
 	struct Pipeline {
 		PipelineDesc    desc;
@@ -2727,6 +2735,7 @@ void RenderGraph::reset(Renderer &renderer) {
 			renderTargets[i] = RenderTargetHandle();
 		}
 	}
+	rts.clear();
 
 	for (unsigned int i = 0; i < RenderPasses::Count; i++) {
 		if (renderPasses[i]) {
@@ -2771,7 +2780,14 @@ void RenderGraph::createRenderTarget(Renderer &renderer, Rendertargets::Renderta
 	assert(state == State::Building);
 	assert(!renderTargets[rt]);
 
-	renderTargets[rt] = renderer.createRenderTarget(desc);
+	auto handle = renderer.createRenderTarget(desc);
+	renderTargets[rt] = handle;
+
+	RT temp1;
+	temp1.handle = handle;
+	temp1.desc   = desc;
+	auto UNUSED temp2 = rts.emplace(rt, temp1);
+	assert(temp2.second);
 }
 
 
