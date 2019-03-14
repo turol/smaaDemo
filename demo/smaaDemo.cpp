@@ -512,8 +512,6 @@ public:
 
 
 	// TODO: remove these
-	void renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &rpDesc, const FramebufferDesc &fbDesc, RenderPassFunc f);
-
 	void renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const PassDesc &desc, const RenderPassDesc &rpDesc, const FramebufferDesc &fbDesc, RenderPassFunc f);
 
 	void createRenderTarget(Renderer &renderer, Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
@@ -2780,19 +2778,12 @@ void RenderGraph::bindExternalRT(Rendertargets::Rendertargets /* rt */, RenderTa
 }
 
 
-void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const PassDesc &desc, const RenderPassDesc &rpDesc, const FramebufferDesc &fbDesc, RenderPassFunc f) {
+void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const PassDesc &desc, const RenderPassDesc &rpDesc, const FramebufferDesc &fbDesc_, RenderPassFunc f) {
 	assert(state == State::Building);
 
 	// TODO: do something with desc
 	auto temp UNUSED = usedRenderPasses.emplace(rp, desc);
 	assert(temp.second);
-
-	renderPass(renderer, rp, rpDesc, fbDesc, f);
-}
-
-
-void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const RenderPassDesc &rpDesc, const FramebufferDesc &fbDesc_, RenderPassFunc f) {
-	assert(state == State::Building);
 
 	assert(!renderPasses[rp]);
 	auto rpHandle = renderer.createRenderPass(rpDesc);
