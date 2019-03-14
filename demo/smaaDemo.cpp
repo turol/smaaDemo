@@ -2664,6 +2664,8 @@ void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, 
 	assert(state == State::Building);
 
 	// TODO: do something with desc
+	auto temp UNUSED = usedRenderPasses.insert(rp);
+	assert(temp.second);
 
 	renderPass(renderer, rp, rpDesc, fbDesc, f);
 }
@@ -2684,9 +2686,6 @@ void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, 
 	auto fbHandle = renderer.createFramebuffer(fbDesc);
 	assert(fbHandle);
 	framebuffers[rp] = fbHandle;
-
-	auto temp UNUSED = usedRenderPasses.insert(rp);
-	assert(temp.second);
 
 	RenderPass op;
 	op.name = rp;
