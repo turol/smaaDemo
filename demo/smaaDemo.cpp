@@ -327,6 +327,14 @@ template <> struct hash<RenderPasses::RenderPasses> {
 };
 
 
+template <> struct hash<Rendertargets::Rendertargets> {
+	size_t operator()(const Rendertargets::Rendertargets &k) const {
+		return hash<size_t>()(static_cast<size_t>(k));
+	}
+
+};
+
+
 } // namespace std
 
 
