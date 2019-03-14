@@ -339,6 +339,77 @@ struct SMAAPipelines {
 
 class RenderGraph {
 
+public:
+
+	struct PassDesc {
+		PassDesc()
+		: depthStencil_(Rendertargets::Count)
+		, numSamples_(1)
+		, clearDepthAttachment(false)
+		, depthClearValue(1.0f)
+		{
+			for (auto &rt : colorRTs_) {
+				rt.id            = Rendertargets::Count;
+				rt.passBegin     = PassBegin::DontCare;
+				rt.clearValue    = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+			}
+		}
+
+		~PassDesc() { }
+
+		PassDesc(const PassDesc &)                = default;
+		PassDesc(PassDesc &&) noexcept            = default;
+
+		PassDesc &operator=(const PassDesc &)     = default;
+		PassDesc &operator=(PassDesc &&) noexcept = default;
+
+		PassDesc &depthStencil(Rendertargets::Rendertargets ds, PassBegin) {
+			depthStencil_ = ds;
+			return *this;
+		}
+
+		PassDesc &color(unsigned int index, Rendertargets::Rendertargets, PassBegin pb, glm::vec4 clear = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {
+			assert(index < MAX_COLOR_RENDERTARGETS);
+			colorRTs_[index].passBegin      = pb;
+			if (pb == PassBegin::Clear) {
+				colorRTs_[index].clearValue = clear;
+			}
+			return *this;
+		}
+
+		PassDesc &clearDepth(float v) {
+			clearDepthAttachment  = true;
+			depthClearValue       = v;
+			return *this;
+		}
+
+		PassDesc &name(const std::string &str) {
+			name_ = str;
+			return *this;
+		}
+
+		PassDesc &numSamples(unsigned int n) {
+			numSamples_ = n;
+			return *this;
+		}
+
+		struct RTInfo {
+			Rendertargets::Rendertargets  id;
+			PassBegin                     passBegin;
+			glm::vec4                     clearValue;
+		};
+
+		Rendertargets::Rendertargets                 depthStencil_;
+		std::array<RTInfo, MAX_COLOR_RENDERTARGETS>  colorRTs_;
+		unsigned int                                 numSamples_;
+		std::string                                  name_;
+		bool                                         clearDepthAttachment;
+		float                                        depthClearValue;
+	};
+
+
+private:
+
 	enum class State : uint8_t {
 		  Invalid
 		, Building
@@ -400,75 +471,6 @@ class RenderGraph {
 
 
 public:
-
-	struct PassDesc {
-		PassDesc()
-		: depthStencil_(Rendertargets::Count)
-		, numSamples_(1)
-		, clearDepthAttachment(false)
-		, depthClearValue(1.0f)
-		{
-			for (auto &rt : colorRTs_) {
-				rt.id            = Rendertargets::Count;
-				rt.passBegin     = PassBegin::DontCare;
-				rt.clearValue    = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
-			}
-		}
-
-		~PassDesc() { }
-
-		PassDesc(const PassDesc &)                = default;
-		PassDesc(PassDesc &&) noexcept            = default;
-
-		PassDesc &operator=(const PassDesc &)     = default;
-		PassDesc &operator=(PassDesc &&) noexcept = default;
-
-		PassDesc &depthStencil(Rendertargets::Rendertargets ds, PassBegin) {
-			depthStencil_ = ds;
-			return *this;
-		}
-
-		PassDesc &color(unsigned int index, Rendertargets::Rendertargets, PassBegin pb, glm::vec4 clear = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {
-			assert(index < MAX_COLOR_RENDERTARGETS);
-			colorRTs_[index].passBegin      = pb;
-			if (pb == PassBegin::Clear) {
-				colorRTs_[index].clearValue = clear;
-			}
-			return *this;
-		}
-
-		PassDesc &clearDepth(float v) {
-			clearDepthAttachment  = true;
-			depthClearValue       = v;
-			return *this;
-		}
-
-		PassDesc &name(const std::string &str) {
-			name_ = str;
-			return *this;
-		}
-
-		PassDesc &numSamples(unsigned int n) {
-			numSamples_ = n;
-			return *this;
-		}
-
-	private:
-
-		struct RTInfo {
-			Rendertargets::Rendertargets  id;
-			PassBegin                     passBegin;
-			glm::vec4                     clearValue;
-		};
-
-		Rendertargets::Rendertargets                 depthStencil_;
-		std::array<RTInfo, MAX_COLOR_RENDERTARGETS>  colorRTs_;
-		unsigned int                                 numSamples_;
-		std::string                                  name_;
-		bool                                         clearDepthAttachment;
-		float                                        depthClearValue;
-	};
-
 
 	// TODO: hide these
 	RenderTargetHandle                                renderTargets[Rendertargets::Count];
