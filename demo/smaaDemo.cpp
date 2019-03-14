@@ -458,7 +458,7 @@ private:
 	// TODO: use hash map
 	std::vector<Pipeline>                          pipelines;
 
-	std::unordered_set<RenderPasses::RenderPasses> usedRenderPasses;
+	std::unordered_map<RenderPasses::RenderPasses, PassDesc> usedRenderPasses;
 
 	FramebufferHandle                                 framebuffers[RenderPasses::Count];
 
@@ -2662,11 +2662,11 @@ void RenderGraph::bindExternalRT(Rendertargets::Rendertargets /* rt */, RenderTa
 }
 
 
-void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const PassDesc & /* desc */, const RenderPassDesc &rpDesc, const FramebufferDesc &fbDesc, RenderPassFunc f) {
+void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const PassDesc &desc, const RenderPassDesc &rpDesc, const FramebufferDesc &fbDesc, RenderPassFunc f) {
 	assert(state == State::Building);
 
 	// TODO: do something with desc
-	auto temp UNUSED = usedRenderPasses.insert(rp);
+	auto temp UNUSED = usedRenderPasses.emplace(rp, desc);
 	assert(temp.second);
 
 	renderPass(renderer, rp, rpDesc, fbDesc, f);
