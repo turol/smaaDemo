@@ -632,6 +632,11 @@ struct RenderTargetDesc {
 		return *this;
 	}
 
+	unsigned int width()      const  { return width_; }
+	unsigned int height()     const  { return height_; }
+	unsigned int numSamples() const  { return numSamples_; }
+	Format       format()     const  { return format_; }
+
 private:
 
 	unsigned int   width_, height_;
