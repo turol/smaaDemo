@@ -2909,6 +2909,21 @@ void RenderGraph::build(Renderer &renderer) {
 		temp.handle = rpHandle;
 
 		assert(!framebuffers[rp]);
+
+		// if this renderpass has external RTs we defer its creation
+		bool hasExternalRTs = false;
+		if (!externalRTs.empty()) {
+			for (const auto &rt : temp.desc.colorRTs_) {
+				auto it = externalRTs.find(rt.id);
+				if (it != externalRTs.end()) {
+					hasExternalRTs = true;
+					break;
+				}
+			}
+			// TODO: check depthStencil too
+		}
+
+		if (!hasExternalRTs) {
 		FramebufferDesc fbDesc(temp.fbDesc);
 		fbDesc.renderPass(renderPasses[rp]);
 
@@ -2916,6 +2931,7 @@ void RenderGraph::build(Renderer &renderer) {
 		assert(fbHandle);
 		framebuffers[rp] = fbHandle;
 		temp.fb = fbHandle;
+		}
 	}
 
 	// TODO
