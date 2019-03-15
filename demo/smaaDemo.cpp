@@ -443,6 +443,14 @@ private:
 	};
 
 
+	struct ExternalRT {
+		Format              format;
+		// not owned by us
+		// only valid during frame
+		RenderTargetHandle  handle;
+	};
+
+
 	struct Blit {
 		Rendertargets::Rendertargets  source;
 		Rendertargets::Rendertargets  target;
@@ -478,6 +486,7 @@ private:
 	Rendertargets::Rendertargets                   finalTarget;
 
 	std::unordered_map<Rendertargets::Rendertargets, RT>  rts;
+	std::unordered_map<Rendertargets::Rendertargets, ExternalRT>  externalRTs;
 
 	// TODO: use hash map
 	std::vector<Pipeline>                          pipelines;
@@ -2745,6 +2754,8 @@ void RenderGraph::reset(Renderer &renderer) {
 	}
 	rts.clear();
 
+	externalRTs.clear();
+
 	for (unsigned int i = 0; i < RenderPasses::Count; i++) {
 		if (renderPasses[i]) {
 			assert(framebuffers[i]);
@@ -2799,9 +2810,15 @@ void RenderGraph::createRenderTarget(Renderer &renderer, Rendertargets::Renderta
 }
 
 
-void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets rt UNUSED, Format /* format */) {
+void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets rt, Format format) {
+	assert(state == State::Building);
 	assert(!renderTargets[rt]);
-	// TODO
+
+	ExternalRT e;
+	e.format = format;
+	// leave handle undefined, it's set later by bindExternalRT
+	auto temp UNUSED = externalRTs.emplace(rt, e);
+	assert(temp.second);
 }
 
 
