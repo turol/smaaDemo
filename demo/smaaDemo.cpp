@@ -403,6 +403,12 @@ public:
 			return *this;
 		}
 
+		PassDesc &inputRendertarget(Rendertargets::Rendertargets id) {
+			auto success = inputRendertargets.emplace(id);
+			assert(success.second);
+			return *this;
+		}
+
 		struct RTInfo {
 			Rendertargets::Rendertargets  id;
 			PassBegin                     passBegin;
@@ -411,6 +417,7 @@ public:
 
 		Rendertargets::Rendertargets                 depthStencil_;
 		std::array<RTInfo, MAX_COLOR_RENDERTARGETS>  colorRTs_;
+		std::unordered_set<Rendertargets::Rendertargets>  inputRendertargets;
 		unsigned int                                 numSamples_;
 		std::string                                  name_;
 		bool                                         clearDepthAttachment;
