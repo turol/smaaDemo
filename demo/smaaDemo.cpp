@@ -548,7 +548,7 @@ public:
 
 
 	// TODO: remove these
-	void renderPass(RenderPasses::RenderPasses rp, const PassDesc &desc, const RenderPassDesc &rpDesc, const FramebufferDesc &fbDesc, RenderPassFunc f);
+	void renderPass(RenderPasses::RenderPasses rp, const PassDesc &desc, const RenderPassDesc &rpDesc, RenderPassFunc f);
 
 	void createRenderTarget(Renderer &renderer, Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
 
@@ -1420,13 +1420,7 @@ void SMAADemo::rebuildRenderGraph() {
 			  .name(name)
 			  .numSamples(numSamples);
 
-		FramebufferDesc fbDesc;
-		fbDesc.name("scene")
-		      .color(0, renderGraph.renderTargets[Rendertargets::MainColor])
-		      .color(1, renderGraph.renderTargets[Rendertargets::Velocity])
-		      .depthStencil(renderGraph.renderTargets[Rendertargets::MainDepth]);
-
-		renderGraph.renderPass(RenderPasses::Scene, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderCubeScene(rp); } );
+		renderGraph.renderPass(RenderPasses::Scene, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderCubeScene(rp); } );
 	} else {
 		// image scene
 
@@ -1489,13 +1483,7 @@ void SMAADemo::rebuildRenderGraph() {
 			  .name(name)
 			  .numSamples(numSamples);
 
-		FramebufferDesc fbDesc;
-		fbDesc.name("scene")
-		      .color(0, renderGraph.renderTargets[Rendertargets::MainColor])
-		      .color(1, renderGraph.renderTargets[Rendertargets::Velocity])
-		      .depthStencil(renderGraph.renderTargets[Rendertargets::MainDepth]);
-
-		renderGraph.renderPass(RenderPasses::Scene, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderImageScene(rp); } );
+		renderGraph.renderPass(RenderPasses::Scene, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderImageScene(rp); } );
 	}
 
 	{
@@ -1540,11 +1528,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 					      .name("FXAA temporal");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("Temporal resolve 0")
-						  .color(0, renderGraph.renderTargets[Rendertargets::TemporalCurrent]);
-
-					renderGraph.renderPass(RenderPasses::FXAA, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderFXAA(rp); } );
+					renderGraph.renderPass(RenderPasses::FXAA, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderFXAA(rp); } );
 				}
 
 				{
@@ -1557,10 +1541,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment)
 					      .name("final");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("final")
-						  .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
-					renderGraph.renderPass(RenderPasses::Final, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderTemporalAA(rp); } );
+					renderGraph.renderPass(RenderPasses::Final, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderTemporalAA(rp); } );
 				}
 
 			} break;
@@ -1585,10 +1566,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 					      .name("SMAA edges");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("SMAA edges")
-						  .color(0, renderGraph.renderTargets[Rendertargets::Edges]);
-					renderGraph.renderPass(RenderPasses::SMAAEdges, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAEdges(rp, Rendertargets::MainColor, 0); } );
+					renderGraph.renderPass(RenderPasses::SMAAEdges, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAEdges(rp, Rendertargets::MainColor, 0); } );
 				}
 
 				// blendweights pass
@@ -1608,10 +1586,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 					      .name("SMAA weights");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("SMAA weights")
-						  .color(0, renderGraph.renderTargets[Rendertargets::BlendWeights]);
-					renderGraph.renderPass(RenderPasses::SMAAWeights, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAWeights(rp, 0); } );
+					renderGraph.renderPass(RenderPasses::SMAAWeights, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAWeights(rp, 0); } );
 				}
 
 				// full effect
@@ -1625,11 +1600,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 					      .name("SMAA blend");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("Temporal resolve 0")
-						  .color(0, renderGraph.renderTargets[Rendertargets::TemporalCurrent]);
-
-					renderGraph.renderPass(RenderPasses::SMAABlend, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::MainColor, 0); } );
+					renderGraph.renderPass(RenderPasses::SMAABlend, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::MainColor, 0); } );
 				}
 
 				{
@@ -1642,10 +1613,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment)
 					      .name("final");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("final")
-						  .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
-					renderGraph.renderPass(RenderPasses::Final, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderTemporalAA(rp); } );
+					renderGraph.renderPass(RenderPasses::Final, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderTemporalAA(rp); } );
 				}
 			} break;
 
@@ -1674,12 +1642,7 @@ void SMAADemo::rebuildRenderGraph() {
 						  .color(0, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead)
 						  .color(1, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead);
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("Separate")
-						  .color(0, renderGraph.renderTargets[Rendertargets::Subsample1])
-						  .color(1, renderGraph.renderTargets[Rendertargets::Subsample2]);
-
-					renderGraph.renderPass(RenderPasses::Separate, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSeparate(rp); } );
+					renderGraph.renderPass(RenderPasses::Separate, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSeparate(rp); } );
 				}
 
 				// TODO: clean up the renderpass mess
@@ -1703,10 +1666,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 					      .name("SMAA edges");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("SMAA edges")
-						  .color(0, renderGraph.renderTargets[Rendertargets::Edges]);
-					renderGraph.renderPass(RenderPasses::SMAAEdges, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAEdges(rp, Rendertargets::Subsample1, 0); } );
+					renderGraph.renderPass(RenderPasses::SMAAEdges, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAEdges(rp, Rendertargets::Subsample1, 0); } );
 				}
 
 				// blendweights pass
@@ -1726,10 +1686,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 					      .name("SMAA weights");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("SMAA weights")
-						  .color(0, renderGraph.renderTargets[Rendertargets::BlendWeights]);
-					renderGraph.renderPass(RenderPasses::SMAAWeights, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAWeights(rp, 0); } );
+					renderGraph.renderPass(RenderPasses::SMAAWeights, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAWeights(rp, 0); } );
 				}
 
 				// full effect
@@ -1742,10 +1699,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment)
 					      .name("SMAA2x blend 0");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("Temporal resolve 0")
-						  .color(0, renderGraph.renderTargets[Rendertargets::TemporalCurrent]);
-					renderGraph.renderPass(RenderPasses::SMAA2XBlend1, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::Subsample1, 0); } );
+					renderGraph.renderPass(RenderPasses::SMAA2XBlend1, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::Subsample1, 0); } );
 				}
 
 				// edges pass
@@ -1758,10 +1712,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 					      .name("SMAA edges");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("SMAA edges")
-						  .color(0, renderGraph.renderTargets[Rendertargets::Edges]);
-					renderGraph.renderPass(RenderPasses::SMAAEdges2, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAEdges(rp, Rendertargets::Subsample2, 1); } );
+					renderGraph.renderPass(RenderPasses::SMAAEdges2, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAEdges(rp, Rendertargets::Subsample2, 1); } );
 				}
 
 				// blendweights pass
@@ -1774,11 +1725,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 					      .name("SMAA weights");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("SMAA weights")
-						  .color(0, renderGraph.renderTargets[Rendertargets::BlendWeights]);
-
-					renderGraph.renderPass(RenderPasses::SMAAWeights2, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAWeights(rp, 1); } );
+					renderGraph.renderPass(RenderPasses::SMAAWeights2, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAWeights(rp, 1); } );
 				}
 
 				// full effect
@@ -1791,11 +1738,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::ColorAttachment)
 					      .name("SMAA2x blend 1");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("Temporal resolve 0")
-						  .color(0, renderGraph.renderTargets[Rendertargets::TemporalCurrent]);
-
-					renderGraph.renderPass(RenderPasses::SMAA2XBlend2, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::Subsample2, 1); } );
+					renderGraph.renderPass(RenderPasses::SMAA2XBlend2, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::Subsample2, 1); } );
 				}
 
 				// FIXME: move to renderpass
@@ -1810,10 +1753,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment)
 					      .name("final");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("final")
-						  .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
-					renderGraph.renderPass(RenderPasses::Final, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderTemporalAA(rp); } );
+					renderGraph.renderPass(RenderPasses::Final, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderTemporalAA(rp); } );
 				}
 			} break;
 			}
@@ -1834,10 +1774,7 @@ void SMAADemo::rebuildRenderGraph() {
 				rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment)
 				      .name("FXAA no temporal");
 
-				FramebufferDesc fbDesc;
-				fbDesc.name("final")
-					  .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
-				renderGraph.renderPass(RenderPasses::FXAA, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderFXAA(rp); } );
+				renderGraph.renderPass(RenderPasses::FXAA, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderFXAA(rp); } );
 			} break;
 
 			case AAMethod::SMAA: {
@@ -1860,10 +1797,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 					      .name("SMAA edges");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("SMAA edges")
-						  .color(0, renderGraph.renderTargets[Rendertargets::Edges]);
-					renderGraph.renderPass(RenderPasses::SMAAEdges, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAEdges(rp, Rendertargets::MainColor, 0); } );
+					renderGraph.renderPass(RenderPasses::SMAAEdges, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAEdges(rp, Rendertargets::MainColor, 0); } );
 				}
 
 				switch (debugMode) {
@@ -1885,10 +1819,7 @@ void SMAADemo::rebuildRenderGraph() {
 						rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 						      .name("SMAA weights");
 
-						FramebufferDesc fbDesc;
-						fbDesc.name("SMAA weights")
-							  .color(0, renderGraph.renderTargets[Rendertargets::BlendWeights]);
-						renderGraph.renderPass(RenderPasses::SMAAWeights, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAWeights(rp, 0); } );
+						renderGraph.renderPass(RenderPasses::SMAAWeights, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAWeights(rp, 0); } );
 					}
 
 					// full effect
@@ -1902,10 +1833,7 @@ void SMAADemo::rebuildRenderGraph() {
 						rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment)
 						      .name("final");
 
-						FramebufferDesc fbDesc;
-						fbDesc.name("final")
-							  .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
-						renderGraph.renderPass(RenderPasses::Final, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::MainColor, 0); } );
+						renderGraph.renderPass(RenderPasses::Final, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::MainColor, 0); } );
 					}
 
 					break;
@@ -1922,10 +1850,7 @@ void SMAADemo::rebuildRenderGraph() {
 						rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment)
 						      .name("final");
 
-						FramebufferDesc fbDesc;
-						fbDesc.name("final")
-							  .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
-						renderGraph.renderPass(RenderPasses::Final, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAADebug(rp, Rendertargets::Edges); } );
+						renderGraph.renderPass(RenderPasses::Final, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAADebug(rp, Rendertargets::Edges); } );
 					}
 
 					break;
@@ -1948,10 +1873,7 @@ void SMAADemo::rebuildRenderGraph() {
 						rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 						      .name("SMAA weights");
 
-						FramebufferDesc fbDesc;
-						fbDesc.name("SMAA weights")
-							  .color(0, renderGraph.renderTargets[Rendertargets::BlendWeights]);
-						renderGraph.renderPass(RenderPasses::SMAAWeights, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAWeights(rp, 0); } );
+						renderGraph.renderPass(RenderPasses::SMAAWeights, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAWeights(rp, 0); } );
 					}
 
 					// visualize blend weights
@@ -1965,10 +1887,7 @@ void SMAADemo::rebuildRenderGraph() {
 						rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment)
 						      .name("final");
 
-						FramebufferDesc fbDesc;
-						fbDesc.name("final")
-							  .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
-						renderGraph.renderPass(RenderPasses::Final, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAADebug(rp, Rendertargets::BlendWeights); } );
+						renderGraph.renderPass(RenderPasses::Final, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAADebug(rp, Rendertargets::BlendWeights); } );
 					}
 
 					break;
@@ -1998,11 +1917,7 @@ void SMAADemo::rebuildRenderGraph() {
 						  .color(0, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead)
 						  .color(1, Format::sRGBA8, PassBegin::DontCare, Layout::Undefined, Layout::ShaderRead);
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("Separate")
-						  .color(0, renderGraph.renderTargets[Rendertargets::Subsample1])
-						  .color(1, renderGraph.renderTargets[Rendertargets::Subsample2]);
-					renderGraph.renderPass(RenderPasses::Separate, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSeparate(rp); } );
+					renderGraph.renderPass(RenderPasses::Separate, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSeparate(rp); } );
 				}
 
 				// TODO: clean up the renderpass mess
@@ -2023,10 +1938,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 					      .name("SMAA edges");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("SMAA edges")
-						  .color(0, renderGraph.renderTargets[Rendertargets::Edges]);
-					renderGraph.renderPass(RenderPasses::SMAAEdges, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAEdges(rp, Rendertargets::Subsample1, 0); } );
+					renderGraph.renderPass(RenderPasses::SMAAEdges, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAEdges(rp, Rendertargets::Subsample1, 0); } );
 				}
 
 				// blendweights pass
@@ -2046,10 +1958,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 					      .name("SMAA weights");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("SMAA weights")
-						  .color(0, renderGraph.renderTargets[Rendertargets::BlendWeights]);
-					renderGraph.renderPass(RenderPasses::SMAAWeights, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAWeights(rp, 0); } );
+					renderGraph.renderPass(RenderPasses::SMAAWeights, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAWeights(rp, 0); } );
 				}
 
 				// final blend pass
@@ -2062,10 +1971,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::sRGBA8, PassBegin::Clear, Layout::Undefined, Layout::ColorAttachment)
 					       .name("SMAA2x blend 0");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("final")
-						  .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
-					renderGraph.renderPass(RenderPasses::SMAA2XBlend1, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::Subsample1, 0); } );
+					renderGraph.renderPass(RenderPasses::SMAA2XBlend1, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::Subsample1, 0); } );
 				}
 
 				// second pass
@@ -2079,10 +1985,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 					      .name("SMAA edges");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("SMAA edges")
-						  .color(0, renderGraph.renderTargets[Rendertargets::Edges]);
-					renderGraph.renderPass(RenderPasses::SMAAEdges2, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAEdges(rp, Rendertargets::Subsample2, 1); } );
+					renderGraph.renderPass(RenderPasses::SMAAEdges2, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAEdges(rp, Rendertargets::Subsample2, 1); } );
 				}
 
 				// blendweights pass
@@ -2095,11 +1998,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::RGBA8, PassBegin::Clear, Layout::Undefined, Layout::ShaderRead)
 					      .name("SMAA weights");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("SMAA weights")
-						  .color(0, renderGraph.renderTargets[Rendertargets::BlendWeights]);
-
-					renderGraph.renderPass(RenderPasses::SMAAWeights2, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAWeights(rp, 1); } );
+					renderGraph.renderPass(RenderPasses::SMAAWeights2, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAAWeights(rp, 1); } );
 				}
 
 				// final blend pass
@@ -2112,11 +2011,7 @@ void SMAADemo::rebuildRenderGraph() {
 					rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::ColorAttachment)
 					      .name("SMAA2x blend 1");
 
-					FramebufferDesc fbDesc;
-					fbDesc.name("final")
-						  .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
-
-					renderGraph.renderPass(RenderPasses::SMAA2XBlend2, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::Subsample2, 1); } );
+					renderGraph.renderPass(RenderPasses::SMAA2XBlend2, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderSMAABlend(rp, Rendertargets::Subsample2, 1); } );
 				}
 
 			} break;
@@ -2135,10 +2030,7 @@ void SMAADemo::rebuildRenderGraph() {
 		rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::TransferSrc);
 		rpDesc.name("GUI only");
 
-		FramebufferDesc fbDesc;
-		fbDesc.name("final")
-		      .color(0, renderGraph.renderTargets[Rendertargets::FinalRender]);
-		renderGraph.renderPass(RenderPasses::GUI, desc, rpDesc, fbDesc, [this] (RenderPasses::RenderPasses rp) { this->renderGUI(rp); } );
+		renderGraph.renderPass(RenderPasses::GUI, desc, rpDesc, [this] (RenderPasses::RenderPasses rp) { this->renderGUI(rp); } );
 	}
 
 	renderGraph.presentRenderTarget(Rendertargets::FinalRender);
@@ -2838,7 +2730,7 @@ void RenderGraph::bindExternalRT(Rendertargets::Rendertargets rt, RenderTargetHa
 }
 
 
-void RenderGraph::renderPass(RenderPasses::RenderPasses rp, const PassDesc &desc, const RenderPassDesc &rpDesc, const FramebufferDesc & /* fbDesc */, RenderPassFunc f) {
+void RenderGraph::renderPass(RenderPasses::RenderPasses rp, const PassDesc &desc, const RenderPassDesc &rpDesc, RenderPassFunc f) {
 	assert(state == State::Building);
 
 	RP temp1;
