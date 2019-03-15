@@ -2760,10 +2760,11 @@ void RenderGraph::reset(Renderer &renderer) {
 
 	for (unsigned int i = 0; i < RenderPasses::Count; i++) {
 		if (renderPasses[i]) {
-			assert(framebuffers[i]);
 			renderer.deleteRenderPass(renderPasses[i]);
 			renderPasses[i] = RenderPassHandle();
+		}
 
+		if (framebuffers[i]) {
 			renderer.deleteFramebuffer(framebuffers[i]);
 			framebuffers[i] = FramebufferHandle();
 		}
