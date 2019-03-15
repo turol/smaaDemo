@@ -2927,13 +2927,13 @@ void RenderGraph::build(Renderer &renderer) {
 		}
 
 		if (!hasExternalRTs) {
-		FramebufferDesc fbDesc(temp.fbDesc);
-		fbDesc.renderPass(renderPasses[rp]);
+			FramebufferDesc fbDesc(temp.fbDesc);
+			fbDesc.renderPass(renderPasses[rp]);
 
-		auto fbHandle = renderer.createFramebuffer(fbDesc);
-		assert(fbHandle);
-		framebuffers[rp] = fbHandle;
-		temp.fb = fbHandle;
+			auto fbHandle = renderer.createFramebuffer(fbDesc);
+			assert(fbHandle);
+			framebuffers[rp] = fbHandle;
+			temp.fb = fbHandle;
 		}
 	}
 
