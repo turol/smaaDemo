@@ -2822,8 +2822,15 @@ void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets rt, Format f
 }
 
 
-void RenderGraph::bindExternalRT(Rendertargets::Rendertargets /* rt */, RenderTargetHandle /* handle */) {
-	// TODO
+void RenderGraph::bindExternalRT(Rendertargets::Rendertargets rt, RenderTargetHandle handle) {
+	assert(state == State::Building);
+	assert(handle);
+
+	auto it = externalRTs.find(rt);
+	auto &externalRT = it->second;
+
+	assert(!externalRT.handle);
+	externalRT.handle = handle;
 }
 
 
@@ -2917,6 +2924,12 @@ void RenderGraph::render(Renderer &renderer) {
 	assert(state == State::Ready);
 	state = State::Rendering;
 
+	for (const auto &p : externalRTs) {
+		// if we have external RTs they must be bound by now
+		const auto &externalRT = p.second;
+		assert(externalRT.handle);
+	}
+
 	struct OpVisitor final : public boost::static_visitor<void> {
 		Renderer    &r;
 		RenderGraph &rg;
@@ -2964,6 +2977,14 @@ void RenderGraph::render(Renderer &renderer) {
 
 	assert(state == State::Rendering);
 	state = State::Ready;
+
+	for (auto &p : externalRTs) {
+		// clear the bindings
+		auto &externalRT = p.second;
+		assert(externalRT.handle);
+		externalRT.handle = RenderTargetHandle();
+	}
+
 }
 
 
