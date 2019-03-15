@@ -495,6 +495,7 @@ private:
 	std::vector<Pipeline>                          pipelines;
 
 	std::unordered_map<RenderPasses::RenderPasses, RP> usedRenderPasses;
+	RenderPassHandle                                  renderPasses[RenderPasses::Count];
 
 	FramebufferHandle                                 framebuffers[RenderPasses::Count];
 
@@ -510,7 +511,6 @@ public:
 
 	// TODO: hide these
 	RenderTargetHandle                                renderTargets[Rendertargets::Count];
-	RenderPassHandle                                  renderPasses[RenderPasses::Count];
 
 
 	RenderGraph()
