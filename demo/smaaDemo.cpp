@@ -485,6 +485,7 @@ private:
 
 
 	State                                          state;
+	RenderPasses::RenderPasses                     currentRP;
 	std::vector<Operation>                         operations;
 	Rendertargets::Rendertargets                   finalTarget;
 
@@ -512,6 +513,7 @@ public:
 
 	RenderGraph()
 	: state(State::Invalid)
+	, currentRP(RenderPasses::Count)
 	{
 	}
 
@@ -2887,12 +2889,18 @@ void RenderGraph::render(Renderer &renderer) {
 		}
 
 		void operator()(const RenderPass &rp) const {
+			assert(rg.currentRP == RenderPasses::Count);
+			rg.currentRP = rp.name;
+
 			// TODO: should not have a lookup here, make pass and fb handles part of RenderPass
 			auto it = rg.renderPasses.find(rp.name);
 			assert(it != rg.renderPasses.end());
 			r.beginRenderPass(it->second.handle, it->second.fb);
 			rp.func(rp.name);
 			r.endRenderPass();
+
+			assert(rg.currentRP == rp.name);
+			rg.currentRP = RenderPasses::Count;
 		}
 
 		void operator()(const ResolveMSAA &resolve) const {
@@ -2913,6 +2921,8 @@ void RenderGraph::render(Renderer &renderer) {
 	assert(state == State::Rendering);
 	state = State::Ready;
 
+	assert(currentRP == RenderPasses::Count);
+
 	for (auto &p : externalRTs) {
 		// clear the bindings
 		auto &externalRT = p.second;
@@ -2920,6 +2930,7 @@ void RenderGraph::render(Renderer &renderer) {
 		externalRT.handle = RenderTargetHandle();
 	}
 
+	assert(currentRP == RenderPasses::Count);
 }
 
 
