@@ -2826,7 +2826,7 @@ void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets rt, Format f
 
 
 void RenderGraph::bindExternalRT(Rendertargets::Rendertargets rt, RenderTargetHandle handle) {
-	assert(state == State::Building);
+	assert(state == State::Ready);
 	assert(handle);
 
 	auto it = externalRTs.find(rt);
