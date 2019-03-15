@@ -2691,15 +2691,12 @@ PipelineHandle RenderGraph::createPipeline(Renderer &renderer, RenderPasses::Ren
 }
 
 
-void RenderGraph::createRenderTarget(Renderer &renderer, Rendertargets::Rendertargets rt, const RenderTargetDesc &desc) {
+void RenderGraph::createRenderTarget(Renderer & /* renderer */, Rendertargets::Rendertargets rt, const RenderTargetDesc &desc) {
 	assert(state == State::Building);
+	assert(rt != Rendertargets::Count);
 	assert(!renderTargets[rt]);
 
-	auto handle = renderer.createRenderTarget(desc);
-	renderTargets[rt] = handle;
-
 	RT temp1;
-	temp1.handle = handle;
 	temp1.desc   = desc;
 	auto UNUSED temp2 = rts.emplace(rt, temp1);
 	assert(temp2.second);
@@ -2792,6 +2789,20 @@ void RenderGraph::build(Renderer &renderer) {
 	assert(state == State::Building);
 	state = State::Ready;
 
+	for (auto &p : rts) {
+		auto id  = p.first;
+		auto &rt = p.second;
+
+		assert(id != Rendertargets::Count);
+		assert(!rt.handle);
+
+		auto handle       = renderer.createRenderTarget(rt.desc);
+		rt.handle         = handle;
+		renderTargets[id] = handle;
+	}
+
+	// TODO: automatically decide layouts here
+
 	for (auto &p : usedRenderPasses) {
 		auto rp = p.first;
 		auto &temp = p.second;
@@ -2841,8 +2852,6 @@ void RenderGraph::build(Renderer &renderer) {
 			temp.fb = fbHandle;
 		}
 	}
-
-	// TODO
 }
 
 
