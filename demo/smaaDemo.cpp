@@ -376,8 +376,10 @@ public:
 			return *this;
 		}
 
-		PassDesc &color(unsigned int index, Rendertargets::Rendertargets, PassBegin pb, glm::vec4 clear = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {
+		PassDesc &color(unsigned int index, Rendertargets::Rendertargets id, PassBegin pb, glm::vec4 clear = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {
 			assert(index < MAX_COLOR_RENDERTARGETS);
+			assert(id != Rendertargets::Count);
+			colorRTs_[index].id             = id;
 			colorRTs_[index].passBegin      = pb;
 			if (pb == PassBegin::Clear) {
 				colorRTs_[index].clearValue = clear;
