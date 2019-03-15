@@ -494,7 +494,7 @@ private:
 	// TODO: use hash map
 	std::vector<Pipeline>                          pipelines;
 
-	std::unordered_map<RenderPasses::RenderPasses, RP> usedRenderPasses;
+	std::unordered_map<RenderPasses::RenderPasses, RP> renderPasses;
 
 
 	RenderGraph(const RenderGraph &)                = delete;
@@ -2628,7 +2628,7 @@ void RenderGraph::reset(Renderer &renderer) {
 	assert(state == State::Invalid || state == State::Ready);
 	state = State::Building;
 
-	usedRenderPasses.clear();
+	renderPasses.clear();
 
 	for (auto &p : pipelines) {
 		renderer.deletePipeline(p.handle);
@@ -2646,7 +2646,7 @@ void RenderGraph::reset(Renderer &renderer) {
 
 	externalRTs.clear();
 
-	for (auto &p : usedRenderPasses) {
+	for (auto &p : renderPasses) {
 		auto &rp = p.second;
 		if (rp.handle) {
 			renderer.deleteRenderPass(rp.handle);
@@ -2658,7 +2658,7 @@ void RenderGraph::reset(Renderer &renderer) {
 			rp.fb = FramebufferHandle();
 		}
 	}
-	usedRenderPasses.clear();
+	renderPasses.clear();
 
 	operations.clear();
 }
@@ -2667,8 +2667,8 @@ void RenderGraph::reset(Renderer &renderer) {
 PipelineHandle RenderGraph::createPipeline(Renderer &renderer, RenderPasses::RenderPasses rp, PipelineDesc &desc) {
 	assert(state == State::Ready || state == State::Rendering);
 
-	auto it = usedRenderPasses.find(rp);
-	assert(it != usedRenderPasses.end());
+	auto it = renderPasses.find(rp);
+	assert(it != renderPasses.end());
 	desc.renderPass(it->second.handle);
 
 	// TODO: use hash map
@@ -2732,7 +2732,7 @@ void RenderGraph::renderPass(RenderPasses::RenderPasses rp, const PassDesc &desc
 	temp1.desc   = desc;
 	temp1.rpDesc = rpDesc;
 
-	auto temp2 UNUSED = usedRenderPasses.emplace(rp, temp1);
+	auto temp2 UNUSED = renderPasses.emplace(rp, temp1);
 	assert(temp2.second);
 
 	RenderPass op;
@@ -2801,7 +2801,7 @@ void RenderGraph::build(Renderer &renderer) {
 
 	// TODO: automatically decide layouts here
 
-	for (auto &p : usedRenderPasses) {
+	for (auto &p : renderPasses) {
 		auto &temp = p.second;
 		const auto &desc = temp.desc;
 
@@ -2888,8 +2888,8 @@ void RenderGraph::render(Renderer &renderer) {
 
 		void operator()(const RenderPass &rp) const {
 			// TODO: should not have a lookup here, make pass and fb handles part of RenderPass
-			auto it = rg.usedRenderPasses.find(rp.name);
-			assert(it != rg.usedRenderPasses.end());
+			auto it = rg.renderPasses.find(rp.name);
+			assert(it != rg.renderPasses.end());
 			r.beginRenderPass(it->second.handle, it->second.fb);
 			rp.func(rp.name);
 			r.endRenderPass();
