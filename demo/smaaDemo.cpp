@@ -428,6 +428,15 @@ private:
 	};
 
 
+	struct RP {
+		RenderPassHandle   handle;
+		FramebufferHandle  fb;
+		PassDesc           desc;
+		RenderPassDesc     rpDesc;
+		FramebufferDesc    fbDesc;
+	};
+
+
 	struct RT {
 		RenderTargetHandle  handle;
 		RenderTargetDesc    desc;
@@ -473,7 +482,7 @@ private:
 	// TODO: use hash map
 	std::vector<Pipeline>                          pipelines;
 
-	std::unordered_map<RenderPasses::RenderPasses, PassDesc> usedRenderPasses;
+	std::unordered_map<RenderPasses::RenderPasses, RP> usedRenderPasses;
 
 	FramebufferHandle                                 framebuffers[RenderPasses::Count];
 
@@ -2804,10 +2813,6 @@ void RenderGraph::bindExternalRT(Rendertargets::Rendertargets /* rt */, RenderTa
 void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const PassDesc &desc, const RenderPassDesc &rpDesc, const FramebufferDesc &fbDesc_, RenderPassFunc f) {
 	assert(state == State::Building);
 
-	// TODO: do something with desc
-	auto temp UNUSED = usedRenderPasses.emplace(rp, desc);
-	assert(temp.second);
-
 	assert(!renderPasses[rp]);
 	auto rpHandle = renderer.createRenderPass(rpDesc);
 	assert(rpHandle);
@@ -2820,6 +2825,16 @@ void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, 
 	auto fbHandle = renderer.createFramebuffer(fbDesc);
 	assert(fbHandle);
 	framebuffers[rp] = fbHandle;
+
+	RP temp1;
+	temp1.handle = rpHandle;
+	temp1.fb     = fbHandle;
+	temp1.desc   = desc;
+	temp1.rpDesc = rpDesc;
+	temp1.fbDesc = fbDesc;
+
+	auto temp2 UNUSED = usedRenderPasses.emplace(rp, temp1);
+	assert(temp2.second);
 
 	RenderPass op;
 	op.name = rp;
