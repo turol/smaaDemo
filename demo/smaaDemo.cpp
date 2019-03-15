@@ -415,6 +415,8 @@ public:
 		float                                        depthClearValue;
 	};
 
+	typedef  std::function<void(RenderPasses::RenderPasses)>  RenderPassFunc;
+
 
 private:
 
@@ -430,9 +432,6 @@ private:
 		RenderTargetHandle  handle;
 		RenderTargetDesc    desc;
 	};
-
-
-	typedef  std::function<void(RenderPasses::RenderPasses)>  RenderPassFunc;
 
 
 	struct Blit {
@@ -457,6 +456,11 @@ private:
 		Rendertargets::Rendertargets  target;
 	};
 
+	struct Pipeline {
+		PipelineDesc    desc;
+		PipelineHandle  handle;
+	};
+
 	typedef boost::variant<Blit, LayoutTransition, RenderPass, ResolveMSAA> Operation;
 
 
@@ -465,11 +469,6 @@ private:
 	Rendertargets::Rendertargets                   finalTarget;
 
 	std::unordered_map<Rendertargets::Rendertargets, RT>  rts;
-
-	struct Pipeline {
-		PipelineDesc    desc;
-		PipelineHandle  handle;
-	};
 
 	// TODO: use hash map
 	std::vector<Pipeline>                          pipelines;
