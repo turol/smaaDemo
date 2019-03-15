@@ -435,7 +435,6 @@ private:
 		FramebufferHandle  fb;
 		PassDesc           desc;
 		RenderPassDesc     rpDesc;
-		FramebufferDesc    fbDesc;
 	};
 
 
@@ -2839,13 +2838,12 @@ void RenderGraph::bindExternalRT(Rendertargets::Rendertargets rt, RenderTargetHa
 }
 
 
-void RenderGraph::renderPass(RenderPasses::RenderPasses rp, const PassDesc &desc, const RenderPassDesc &rpDesc, const FramebufferDesc &fbDesc, RenderPassFunc f) {
+void RenderGraph::renderPass(RenderPasses::RenderPasses rp, const PassDesc &desc, const RenderPassDesc &rpDesc, const FramebufferDesc & /* fbDesc */, RenderPassFunc f) {
 	assert(state == State::Building);
 
 	RP temp1;
 	temp1.desc   = desc;
 	temp1.rpDesc = rpDesc;
-	temp1.fbDesc = fbDesc;
 
 	auto temp2 UNUSED = usedRenderPasses.emplace(rp, temp1);
 	assert(temp2.second);
@@ -2905,6 +2903,8 @@ void RenderGraph::build(Renderer &renderer) {
 	for (auto &p : usedRenderPasses) {
 		auto rp = p.first;
 		auto &temp = p.second;
+		const auto &desc = temp.desc;
+
 		assert(!renderPasses[rp]);
 		auto rpHandle = renderer.createRenderPass(temp.rpDesc);
 		assert(rpHandle);
@@ -2916,7 +2916,7 @@ void RenderGraph::build(Renderer &renderer) {
 		// if this renderpass has external RTs we defer its creation
 		bool hasExternalRTs = false;
 		if (!externalRTs.empty()) {
-			for (const auto &rt : temp.desc.colorRTs_) {
+			for (const auto &rt : desc.colorRTs_) {
 				auto it = externalRTs.find(rt.id);
 				if (it != externalRTs.end()) {
 					hasExternalRTs = true;
@@ -2927,8 +2927,21 @@ void RenderGraph::build(Renderer &renderer) {
 		}
 
 		if (!hasExternalRTs) {
-			FramebufferDesc fbDesc(temp.fbDesc);
-			fbDesc.renderPass(renderPasses[rp]);
+			FramebufferDesc fbDesc;
+			fbDesc.renderPass(renderPasses[rp])
+			      .name(desc.name_);
+
+			if (desc.depthStencil_ != Rendertargets::Count) {
+				fbDesc.depthStencil(renderTargets[desc.depthStencil_]);
+			}
+
+			for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+				const auto &rt = desc.colorRTs_[i];
+				if (rt.id != Rendertargets::Count) {
+					assert(renderTargets[rt.id]);
+					fbDesc.color(i, renderTargets[rt.id]);
+				}
+			}
 
 			auto fbHandle = renderer.createFramebuffer(fbDesc);
 			assert(fbHandle);
