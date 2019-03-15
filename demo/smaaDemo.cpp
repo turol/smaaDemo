@@ -450,6 +450,8 @@ private:
 		// not owned by us
 		// only valid during frame
 		RenderTargetHandle  handle;
+
+		// TODO: map of renderpasses which use this
 	};
 
 
@@ -2947,6 +2949,8 @@ void RenderGraph::render(Renderer &renderer) {
 		// if we have external RTs they must be bound by now
 		const auto &externalRT = p.second;
 		assert(externalRT.handle);
+
+		// TODO: build framebuffers at this point
 	}
 
 	struct OpVisitor final : public boost::static_visitor<void> {
