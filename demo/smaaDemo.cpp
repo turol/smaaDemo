@@ -2810,25 +2810,10 @@ void RenderGraph::bindExternalRT(Rendertargets::Rendertargets /* rt */, RenderTa
 }
 
 
-void RenderGraph::renderPass(Renderer &renderer, RenderPasses::RenderPasses rp, const PassDesc &desc, const RenderPassDesc &rpDesc, const FramebufferDesc &fbDesc_, RenderPassFunc f) {
+void RenderGraph::renderPass(Renderer & /* renderer */, RenderPasses::RenderPasses rp, const PassDesc &desc, const RenderPassDesc &rpDesc, const FramebufferDesc &fbDesc, RenderPassFunc f) {
 	assert(state == State::Building);
 
-	assert(!renderPasses[rp]);
-	auto rpHandle = renderer.createRenderPass(rpDesc);
-	assert(rpHandle);
-	renderPasses[rp] = rpHandle;
-
-	assert(!framebuffers[rp]);
-	FramebufferDesc fbDesc(fbDesc_);
-	fbDesc.renderPass(renderPasses[rp]);
-
-	auto fbHandle = renderer.createFramebuffer(fbDesc);
-	assert(fbHandle);
-	framebuffers[rp] = fbHandle;
-
 	RP temp1;
-	temp1.handle = rpHandle;
-	temp1.fb     = fbHandle;
 	temp1.desc   = desc;
 	temp1.rpDesc = rpDesc;
 	temp1.fbDesc = fbDesc;
@@ -2884,9 +2869,28 @@ void RenderGraph::presentRenderTarget(Rendertargets::Rendertargets rt) {
 
 
 
-void RenderGraph::build(Renderer & /* renderer */) {
+void RenderGraph::build(Renderer &renderer) {
 	assert(state == State::Building);
 	state = State::Ready;
+
+	for (auto &p : usedRenderPasses) {
+		auto rp = p.first;
+		auto &temp = p.second;
+		assert(!renderPasses[rp]);
+		auto rpHandle = renderer.createRenderPass(temp.rpDesc);
+		assert(rpHandle);
+		renderPasses[rp] = rpHandle;
+		temp.handle = rpHandle;
+
+		assert(!framebuffers[rp]);
+		FramebufferDesc fbDesc(temp.fbDesc);
+		fbDesc.renderPass(renderPasses[rp]);
+
+		auto fbHandle = renderer.createFramebuffer(fbDesc);
+		assert(fbHandle);
+		framebuffers[rp] = fbHandle;
+		temp.fb = fbHandle;
+	}
 
 	// TODO
 }
