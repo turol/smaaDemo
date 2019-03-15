@@ -495,9 +495,6 @@ private:
 	std::vector<Pipeline>                          pipelines;
 
 	std::unordered_map<RenderPasses::RenderPasses, RP> usedRenderPasses;
-	RenderPassHandle                                  renderPasses[RenderPasses::Count];
-
-	FramebufferHandle                                 framebuffers[RenderPasses::Count];
 
 
 	RenderGraph(const RenderGraph &)                = delete;
@@ -2649,17 +2646,19 @@ void RenderGraph::reset(Renderer &renderer) {
 
 	externalRTs.clear();
 
-	for (unsigned int i = 0; i < RenderPasses::Count; i++) {
-		if (renderPasses[i]) {
-			renderer.deleteRenderPass(renderPasses[i]);
-			renderPasses[i] = RenderPassHandle();
+	for (auto &p : usedRenderPasses) {
+		auto &rp = p.second;
+		if (rp.handle) {
+			renderer.deleteRenderPass(rp.handle);
+			rp.handle = RenderPassHandle();
 		}
 
-		if (framebuffers[i]) {
-			renderer.deleteFramebuffer(framebuffers[i]);
-			framebuffers[i] = FramebufferHandle();
+		if (rp.fb) {
+			renderer.deleteFramebuffer(rp.fb);
+			rp.fb = FramebufferHandle();
 		}
 	}
+	usedRenderPasses.clear();
 
 	operations.clear();
 }
@@ -2668,8 +2667,9 @@ void RenderGraph::reset(Renderer &renderer) {
 PipelineHandle RenderGraph::createPipeline(Renderer &renderer, RenderPasses::RenderPasses rp, PipelineDesc &desc) {
 	assert(state == State::Ready || state == State::Rendering);
 
-	assert(renderPasses[rp]);
-	desc.renderPass(renderPasses[rp]);
+	auto it = usedRenderPasses.find(rp);
+	assert(it != usedRenderPasses.end());
+	desc.renderPass(it->second.handle);
 
 	// TODO: use hash map
 	for (const auto &pipeline : pipelines) {
@@ -2802,17 +2802,15 @@ void RenderGraph::build(Renderer &renderer) {
 	// TODO: automatically decide layouts here
 
 	for (auto &p : usedRenderPasses) {
-		auto rp = p.first;
 		auto &temp = p.second;
 		const auto &desc = temp.desc;
 
-		assert(!renderPasses[rp]);
+		assert(!temp.handle);
 		auto rpHandle = renderer.createRenderPass(temp.rpDesc);
 		assert(rpHandle);
-		renderPasses[rp] = rpHandle;
 		temp.handle = rpHandle;
 
-		assert(!framebuffers[rp]);
+		assert(!temp.fb);
 
 		// if this renderpass has external RTs we defer its creation
 		bool hasExternalRTs = false;
@@ -2829,7 +2827,7 @@ void RenderGraph::build(Renderer &renderer) {
 
 		if (!hasExternalRTs) {
 			FramebufferDesc fbDesc;
-			fbDesc.renderPass(renderPasses[rp])
+			fbDesc.renderPass(rpHandle)
 			      .name(desc.name_);
 
 			if (desc.depthStencil_ != Rendertargets::Count) {
@@ -2846,7 +2844,6 @@ void RenderGraph::build(Renderer &renderer) {
 
 			auto fbHandle = renderer.createFramebuffer(fbDesc);
 			assert(fbHandle);
-			framebuffers[rp] = fbHandle;
 			temp.fb = fbHandle;
 		}
 	}
@@ -2890,7 +2887,10 @@ void RenderGraph::render(Renderer &renderer) {
 		}
 
 		void operator()(const RenderPass &rp) const {
-			r.beginRenderPass(rg.renderPasses[rp.name], rg.framebuffers[rp.name]);
+			// TODO: should not have a lookup here, make pass and fb handles part of RenderPass
+			auto it = rg.usedRenderPasses.find(rp.name);
+			assert(it != rg.usedRenderPasses.end());
+			r.beginRenderPass(it->second.handle, it->second.fb);
 			rp.func(rp.name);
 			r.endRenderPass();
 		}
