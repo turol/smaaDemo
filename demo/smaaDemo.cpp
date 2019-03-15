@@ -550,8 +550,6 @@ public:
 	// TODO: remove these
 	void renderPass(RenderPasses::RenderPasses rp, const PassDesc &desc, const RenderPassDesc &rpDesc, RenderPassFunc f);
 
-	void createRenderTarget(Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
-
 	void layoutTransition(Rendertargets::Rendertargets image, Layout src, Layout dest);
 };
 
@@ -1369,7 +1367,7 @@ void SMAADemo::rebuildRenderGraph() {
 				  .additionalViewFormat(Format::RGBA8)
 				  .width(windowWidth)
 				  .height(windowHeight);
-			renderGraph.createRenderTarget(Rendertargets::MainColor, rtDesc);
+			renderGraph.renderTarget(Rendertargets::MainColor, rtDesc);
 		}
 
 		// TODO: only create velocity buffer when doing temporal AA
@@ -1380,7 +1378,7 @@ void SMAADemo::rebuildRenderGraph() {
 				  .format(Format::RG16Float)
 				  .width(windowWidth)
 				  .height(windowHeight);
-			renderGraph.createRenderTarget(Rendertargets::Velocity, rtDesc);
+			renderGraph.renderTarget(Rendertargets::Velocity, rtDesc);
 		}
 
 		{
@@ -1390,7 +1388,7 @@ void SMAADemo::rebuildRenderGraph() {
 				  .format(depthFormat)
 				  .width(windowWidth)
 				  .height(windowHeight);
-			renderGraph.createRenderTarget(Rendertargets::MainDepth, rtDesc);
+			renderGraph.renderTarget(Rendertargets::MainDepth, rtDesc);
 		}
 
 		Layout l = Layout::ShaderRead;
@@ -1432,7 +1430,7 @@ void SMAADemo::rebuildRenderGraph() {
 				  .additionalViewFormat(Format::RGBA8)
 				  .width(windowWidth)
 				  .height(windowHeight);
-			renderGraph.createRenderTarget(Rendertargets::MainColor, rtDesc);
+			renderGraph.renderTarget(Rendertargets::MainColor, rtDesc);
 		}
 
 		// TODO: don't use velocity buffer
@@ -1443,7 +1441,7 @@ void SMAADemo::rebuildRenderGraph() {
 				  .format(Format::RG16Float)
 				  .width(windowWidth)
 				  .height(windowHeight);
-			renderGraph.createRenderTarget(Rendertargets::Velocity, rtDesc);
+			renderGraph.renderTarget(Rendertargets::Velocity, rtDesc);
 		}
 
 		{
@@ -1453,7 +1451,7 @@ void SMAADemo::rebuildRenderGraph() {
 				  .format(depthFormat)
 				  .width(windowWidth)
 				  .height(windowHeight);
-			renderGraph.createRenderTarget(Rendertargets::MainDepth, rtDesc);
+			renderGraph.renderTarget(Rendertargets::MainDepth, rtDesc);
 		}
 
 		RenderGraph::PassDesc desc;
@@ -1492,7 +1490,7 @@ void SMAADemo::rebuildRenderGraph() {
 		      .format(Format::sRGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
-		renderGraph.createRenderTarget(Rendertargets::FinalRender, rtDesc);
+		renderGraph.renderTarget(Rendertargets::FinalRender, rtDesc);
 	}
 
 	if (antialiasing) {
@@ -1554,7 +1552,7 @@ void SMAADemo::rebuildRenderGraph() {
 						  .format(Format::RGBA8)
 						  .width(windowWidth)
 						  .height(windowHeight);
-					renderGraph.createRenderTarget(Rendertargets::Edges, rtDesc);
+					renderGraph.renderTarget(Rendertargets::Edges, rtDesc);
 				}
 
 				{
@@ -1576,7 +1574,7 @@ void SMAADemo::rebuildRenderGraph() {
 						  .format(Format::RGBA8)
 						  .width(windowWidth)
 						  .height(windowHeight);
-					renderGraph.createRenderTarget(Rendertargets::BlendWeights, rtDesc);
+					renderGraph.renderTarget(Rendertargets::BlendWeights, rtDesc);
 
 					RenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::BlendWeights, PassBegin::Clear)
@@ -1627,7 +1625,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 					for (unsigned int i = 0; i < 2; i++) {
 						rtDesc.name("Subsample separate " + std::to_string(i));
-						renderGraph.createRenderTarget(static_cast<Rendertargets::Rendertargets>(Rendertargets::Subsample1 + i), rtDesc);
+						renderGraph.renderTarget(static_cast<Rendertargets::Rendertargets>(Rendertargets::Subsample1 + i), rtDesc);
 					}
 				}
 
@@ -1654,7 +1652,7 @@ void SMAADemo::rebuildRenderGraph() {
 						  .format(Format::RGBA8)
 						  .width(windowWidth)
 						  .height(windowHeight);
-					renderGraph.createRenderTarget(Rendertargets::Edges, rtDesc);
+					renderGraph.renderTarget(Rendertargets::Edges, rtDesc);
 				}
 
 				{
@@ -1676,7 +1674,7 @@ void SMAADemo::rebuildRenderGraph() {
 						  .format(Format::RGBA8)
 						  .width(windowWidth)
 						  .height(windowHeight);
-					renderGraph.createRenderTarget(Rendertargets::BlendWeights, rtDesc);
+					renderGraph.renderTarget(Rendertargets::BlendWeights, rtDesc);
 
 					RenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::BlendWeights, PassBegin::Clear)
@@ -1785,7 +1783,7 @@ void SMAADemo::rebuildRenderGraph() {
 						  .format(Format::RGBA8)
 						  .width(windowWidth)
 						  .height(windowHeight);
-					renderGraph.createRenderTarget(Rendertargets::Edges, rtDesc);
+					renderGraph.renderTarget(Rendertargets::Edges, rtDesc);
 				}
 
 				{
@@ -1809,7 +1807,7 @@ void SMAADemo::rebuildRenderGraph() {
 							  .format(Format::RGBA8)
 							  .width(windowWidth)
 							  .height(windowHeight);
-						renderGraph.createRenderTarget(Rendertargets::BlendWeights, rtDesc);
+						renderGraph.renderTarget(Rendertargets::BlendWeights, rtDesc);
 
 						RenderGraph::PassDesc desc;
 						desc.color(0, Rendertargets::BlendWeights, PassBegin::Clear)
@@ -1863,7 +1861,7 @@ void SMAADemo::rebuildRenderGraph() {
 							  .format(Format::RGBA8)
 							  .width(windowWidth)
 							  .height(windowHeight);
-						renderGraph.createRenderTarget(Rendertargets::BlendWeights, rtDesc);
+						renderGraph.renderTarget(Rendertargets::BlendWeights, rtDesc);
 
 						RenderGraph::PassDesc desc;
 						desc.color(0, Rendertargets::BlendWeights, PassBegin::Clear)
@@ -1904,7 +1902,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 					for (unsigned int i = 0; i < 2; i++) {
 						rtDesc.name("Subsample separate " + std::to_string(i));
-						renderGraph.createRenderTarget(static_cast<Rendertargets::Rendertargets>(Rendertargets::Subsample1 + i), rtDesc);
+						renderGraph.renderTarget(static_cast<Rendertargets::Rendertargets>(Rendertargets::Subsample1 + i), rtDesc);
 					}
 
 					RenderGraph::PassDesc desc;
@@ -1928,7 +1926,7 @@ void SMAADemo::rebuildRenderGraph() {
 						  .format(Format::RGBA8)
 						  .width(windowWidth)
 						  .height(windowHeight);
-					renderGraph.createRenderTarget(Rendertargets::Edges, rtDesc);
+					renderGraph.renderTarget(Rendertargets::Edges, rtDesc);
 
 					RenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
@@ -1948,7 +1946,7 @@ void SMAADemo::rebuildRenderGraph() {
 						  .format(Format::RGBA8)
 						  .width(windowWidth)
 						  .height(windowHeight);
-					renderGraph.createRenderTarget(Rendertargets::BlendWeights, rtDesc);
+					renderGraph.renderTarget(Rendertargets::BlendWeights, rtDesc);
 
 					RenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::BlendWeights, PassBegin::Clear)
@@ -2691,7 +2689,7 @@ PipelineHandle RenderGraph::createPipeline(Renderer &renderer, RenderPasses::Ren
 }
 
 
-void RenderGraph::createRenderTarget(Rendertargets::Rendertargets rt, const RenderTargetDesc &desc) {
+void RenderGraph::renderTarget(Rendertargets::Rendertargets rt, const RenderTargetDesc &desc) {
 	assert(state == State::Building);
 	assert(rt != Rendertargets::Count);
 	assert(!renderTargets[rt]);
