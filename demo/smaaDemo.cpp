@@ -404,7 +404,7 @@ public:
 		}
 
 		PassDesc &inputRendertarget(Rendertargets::Rendertargets id) {
-			auto success = inputRendertargets.emplace(id);
+			auto success UNUSED = inputRendertargets.emplace(id);
 			assert(success.second);
 			return *this;
 		}
@@ -2865,7 +2865,7 @@ void RenderGraph::render(Renderer &renderer) {
 
 	for (const auto &p : externalRTs) {
 		// if we have external RTs they must be bound by now
-		const auto &externalRT = p.second;
+		const auto &externalRT UNUSED = p.second;
 		assert(externalRT.handle);
 
 		// TODO: build framebuffers at this point
