@@ -335,6 +335,26 @@ template <> struct hash<Rendertargets::Rendertargets> {
 };
 
 
+template <> struct hash<Format> {
+	size_t operator()(const Format &k) const {
+		return hash<size_t>()(static_cast<size_t>(k));
+	}
+};
+
+
+template <> struct hash<std::pair<Rendertargets::Rendertargets, Format> > {
+	size_t operator()(const std::pair<Rendertargets::Rendertargets, Format> &k) const {
+		size_t a = hash<Rendertargets::Rendertargets>()(k.first);
+		size_t b = hash<Format>()(k.second);
+
+		// TODO: put this in a helper function
+		a ^= b + 0x9e3779b9 + (a << 6) + (a >> 2);
+
+		return a;
+	}
+};
+
+
 } // namespace std
 
 
@@ -348,6 +368,29 @@ struct SMAAPipelines {
 class RenderGraph {
 
 public:
+
+	class PassResources {
+
+		std::unordered_map<std::pair<Rendertargets::Rendertargets, Format>, TextureHandle>  rendertargets;
+
+		// TODO: buffers
+
+	public:
+
+		TextureHandle get(Rendertargets::Rendertargets rt, Format fmt = Format::Invalid) const {
+			std::pair<Rendertargets::Rendertargets, Format> p;
+			p.first  = rt;
+			p.second = fmt;
+
+			auto it = rendertargets.find(p);
+			assert(it != rendertargets.end());
+
+			return it->second;
+		}
+
+		friend class RenderGraph;
+	};
+
 
 	struct PassDesc {
 		PassDesc()
