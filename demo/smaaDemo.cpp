@@ -2986,7 +2986,33 @@ void RenderGraph::render(Renderer &renderer) {
 			r.beginRenderPass(it->second.handle, it->second.fb);
 
 			PassResources res;
-			// TODO: fill resources
+			// TODO: build ahead of time, fill here?
+			for (Rendertargets::Rendertargets inputRT : it->second.desc.inputRendertargets) {
+				// get rendertarget desc
+				auto rtIt = rg.rts.find(inputRT);
+				assert(rtIt != rg.rts.end());
+				const auto &desc = rtIt->second.desc;
+
+				// get format
+				Format fmt = desc.format();
+				assert(fmt != Format::Invalid);
+
+				{
+					// get view from renderer, add to res
+					TextureHandle view = r.getRenderTargetTexture(rtIt->second.handle);
+					res.rendertargets.emplace(std::make_pair(inputRT, fmt), view);
+					// also add it with Format::Invalid so default works easier
+					res.rendertargets.emplace(std::make_pair(inputRT, Format::Invalid), view);
+				}
+
+				// do the same for additional view format if there is one
+				Format additionalFmt = desc.additionalViewFormat();
+				if (additionalFmt != Format::Invalid) {
+					assert(additionalFmt != fmt);
+					TextureHandle view = r.getRenderTargetView(rtIt->second.handle, additionalFmt);
+					res.rendertargets.emplace(std::make_pair(inputRT, additionalFmt), view);
+				}
+			}
 
 			rp.func(rp.name, res);
 			r.endRenderPass();
