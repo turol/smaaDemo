@@ -2933,14 +2933,17 @@ void RenderGraph::build(Renderer &renderer) {
 			      .name(desc.name_);
 
 			if (desc.depthStencil_ != Rendertargets::Count) {
-				fbDesc.depthStencil(renderTargets[desc.depthStencil_]);
+				auto it = rts.find(desc.depthStencil_);
+				assert(it != rts.end());
+				fbDesc.depthStencil(it->second.handle);
 			}
 
 			for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 				const auto &rt = desc.colorRTs_[i];
 				if (rt.id != Rendertargets::Count) {
-					assert(renderTargets[rt.id]);
-					fbDesc.color(i, renderTargets[rt.id]);
+					auto it = rts.find(rt.id);
+					assert(it != rts.end());
+					fbDesc.color(i, it->second.handle);
 				}
 			}
 
@@ -2977,15 +2980,24 @@ void RenderGraph::render(Renderer &renderer) {
 
 
 		void operator()(const Blit &b) const {
-			RenderTargetHandle sourceHandle = rg.renderTargets[b.source];
-			RenderTargetHandle targetHandle = rg.renderTargets[b.target];
+			auto srcIt = rg.rts.find(b.source);
+			assert(srcIt != rg.rts.end());
+			RenderTargetHandle sourceHandle = srcIt->second.handle;
+
+			auto destIt = rg.rts.find(b.target);
+			assert(destIt != rg.rts.end());
+			RenderTargetHandle targetHandle = destIt->second.handle;
+
 			r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
 			r.blit(sourceHandle, targetHandle);
 			r.layoutTransition(targetHandle, Layout::TransferDst, Layout::ColorAttachment);
 		}
 
 		void operator()(const LayoutTransition &lt) const {
-			r.layoutTransition(rg.renderTargets[lt.rt], lt.sourceLayout, lt.destinationLayout);
+			auto it = rg.rts.find(lt.rt);
+			assert(it != rg.rts.end());
+
+			r.layoutTransition(it->second.handle, lt.sourceLayout, lt.destinationLayout);
 		}
 
 		void operator()(const RenderPass &rp) const {
@@ -3035,8 +3047,14 @@ void RenderGraph::render(Renderer &renderer) {
 		}
 
 		void operator()(const ResolveMSAA &resolve) const {
-			RenderTargetHandle sourceHandle = rg.renderTargets[resolve.source];
-			RenderTargetHandle targetHandle = rg.renderTargets[resolve.target];
+			auto srcIt = rg.rts.find(resolve.source);
+			assert(srcIt != rg.rts.end());
+			RenderTargetHandle sourceHandle = srcIt->second.handle;
+
+			auto destIt = rg.rts.find(resolve.target);
+			assert(destIt != rg.rts.end());
+			RenderTargetHandle targetHandle = destIt->second.handle;
+
 			r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
 			r.resolveMSAA(sourceHandle, targetHandle);
 			r.layoutTransition(targetHandle, Layout::TransferDst, Layout::ColorAttachment);
@@ -3047,7 +3065,11 @@ void RenderGraph::render(Renderer &renderer) {
 		boost::apply_visitor(OpVisitor(renderer, *this), op);
 	}
 
-	renderer.presentFrame(renderTargets[finalTarget]);
+	{
+		auto it = rts.find(finalTarget);
+		assert(it != rts.end());
+		renderer.presentFrame(it->second.handle);
+	}
 
 	assert(state == State::Rendering);
 	state = State::Ready;
