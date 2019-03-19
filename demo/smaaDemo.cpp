@@ -540,7 +540,7 @@ private:
 	std::vector<Operation>                         operations;
 	Rendertargets::Rendertargets                   finalTarget;
 
-	std::unordered_map<Rendertargets::Rendertargets, RT>  rts;
+	std::unordered_map<Rendertargets::Rendertargets, RT>  rendertargets;
 	std::unordered_map<Rendertargets::Rendertargets, ExternalRT>  externalRTs;
 
 	// TODO: use hash map
@@ -2735,13 +2735,13 @@ void RenderGraph::reset(Renderer &renderer) {
 	}
 	pipelines.clear();
 
-	for (auto &rt : rts) {
+	for (auto &rt : rendertargets) {
 		assert(rt.first != Rendertargets::Count);
 		assert(rt.second.handle);
 		renderer.deleteRenderTarget(rt.second.handle);
         rt.second.handle = RenderTargetHandle();
 	}
-	rts.clear();
+	rendertargets.clear();
 
 	externalRTs.clear();
 
@@ -2794,7 +2794,7 @@ void RenderGraph::renderTarget(Rendertargets::Rendertargets rt, const RenderTarg
 
 	RT temp1;
 	temp1.desc   = desc;
-	auto UNUSED temp2 = rts.emplace(rt, temp1);
+	auto UNUSED temp2 = rendertargets.emplace(rt, temp1);
 	assert(temp2.second);
 }
 
@@ -2802,7 +2802,7 @@ void RenderGraph::renderTarget(Rendertargets::Rendertargets rt, const RenderTarg
 void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets rt, Format format) {
 	assert(state == State::Building);
 	assert(rt != Rendertargets::Count);
-	assert(rts.find(rt) == rts.end());
+	assert(rendertargets.find(rt) == rendertargets.end());
 
 	ExternalRT e;
 	e.format = format;
@@ -2886,7 +2886,7 @@ void RenderGraph::build(Renderer &renderer) {
 	assert(state == State::Building);
 	state = State::Ready;
 
-	for (auto &p : rts) {
+	for (auto &p : rendertargets) {
 		auto id  = p.first;
 		auto &rt = p.second;
 
@@ -2929,16 +2929,16 @@ void RenderGraph::build(Renderer &renderer) {
 			      .name(desc.name_);
 
 			if (desc.depthStencil_ != Rendertargets::Count) {
-				auto it = rts.find(desc.depthStencil_);
-				assert(it != rts.end());
+				auto it = rendertargets.find(desc.depthStencil_);
+				assert(it != rendertargets.end());
 				fbDesc.depthStencil(it->second.handle);
 			}
 
 			for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 				const auto &rt = desc.colorRTs_[i];
 				if (rt.id != Rendertargets::Count) {
-					auto it = rts.find(rt.id);
-					assert(it != rts.end());
+					auto it = rendertargets.find(rt.id);
+					assert(it != rendertargets.end());
 					fbDesc.color(i, it->second.handle);
 				}
 			}
@@ -2976,12 +2976,12 @@ void RenderGraph::render(Renderer &renderer) {
 
 
 		void operator()(const Blit &b) const {
-			auto srcIt = rg.rts.find(b.source);
-			assert(srcIt != rg.rts.end());
+			auto srcIt = rg.rendertargets.find(b.source);
+			assert(srcIt != rg.rendertargets.end());
 			RenderTargetHandle sourceHandle = srcIt->second.handle;
 
-			auto destIt = rg.rts.find(b.target);
-			assert(destIt != rg.rts.end());
+			auto destIt = rg.rendertargets.find(b.target);
+			assert(destIt != rg.rendertargets.end());
 			RenderTargetHandle targetHandle = destIt->second.handle;
 
 			r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
@@ -2990,8 +2990,8 @@ void RenderGraph::render(Renderer &renderer) {
 		}
 
 		void operator()(const LayoutTransition &lt) const {
-			auto it = rg.rts.find(lt.rt);
-			assert(it != rg.rts.end());
+			auto it = rg.rendertargets.find(lt.rt);
+			assert(it != rg.rendertargets.end());
 
 			r.layoutTransition(it->second.handle, lt.sourceLayout, lt.destinationLayout);
 		}
@@ -3010,8 +3010,8 @@ void RenderGraph::render(Renderer &renderer) {
 			// TODO: build ahead of time, fill here?
 			for (Rendertargets::Rendertargets inputRT : it->second.desc.inputRendertargets) {
 				// get rendertarget desc
-				auto rtIt = rg.rts.find(inputRT);
-				assert(rtIt != rg.rts.end());
+				auto rtIt = rg.rendertargets.find(inputRT);
+				assert(rtIt != rg.rendertargets.end());
 				const auto &desc = rtIt->second.desc;
 
 				// get format
@@ -3043,12 +3043,12 @@ void RenderGraph::render(Renderer &renderer) {
 		}
 
 		void operator()(const ResolveMSAA &resolve) const {
-			auto srcIt = rg.rts.find(resolve.source);
-			assert(srcIt != rg.rts.end());
+			auto srcIt = rg.rendertargets.find(resolve.source);
+			assert(srcIt != rg.rendertargets.end());
 			RenderTargetHandle sourceHandle = srcIt->second.handle;
 
-			auto destIt = rg.rts.find(resolve.target);
-			assert(destIt != rg.rts.end());
+			auto destIt = rg.rendertargets.find(resolve.target);
+			assert(destIt != rg.rendertargets.end());
 			RenderTargetHandle targetHandle = destIt->second.handle;
 
 			r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
@@ -3062,8 +3062,8 @@ void RenderGraph::render(Renderer &renderer) {
 	}
 
 	{
-		auto it = rts.find(finalTarget);
-		assert(it != rts.end());
+		auto it = rendertargets.find(finalTarget);
+		assert(it != rendertargets.end());
 		renderer.presentFrame(it->second.handle);
 	}
 
