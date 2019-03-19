@@ -383,6 +383,7 @@ public:
 			p.second = fmt;
 
 			auto it = rendertargets.find(p);
+			// failing this means the rendertarget was not correctly declared as input
 			assert(it != rendertargets.end());
 
 			return it->second;
