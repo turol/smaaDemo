@@ -1804,14 +1804,12 @@ void SMAADemo::rebuildRenderGraph() {
 						.name("SMAA2x blend 1");
 
 					RenderPassDesc rpDesc;
-					rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::ColorAttachment)
+					rpDesc.color(0, Format::sRGBA8, PassBegin::Keep, Layout::ColorAttachment, Layout::ShaderRead)
 					      .name("SMAA2x blend 1");
 
 					renderGraph.renderPass(RenderPasses::SMAA2XBlend2, desc, rpDesc, [this] (RenderPasses::RenderPasses rp, RenderGraph::PassResources &r) { this->renderSMAABlend(rp, r, Rendertargets::Subsample2, 1); } );
 				}
 
-				// FIXME: move to renderpass
-				renderGraph.layoutTransition(Rendertargets::TemporalCurrent, Layout::ColorAttachment, Layout::ShaderRead);
 				{
 					RenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
@@ -2002,7 +2000,6 @@ void SMAADemo::rebuildRenderGraph() {
 					renderGraph.renderPass(RenderPasses::Separate, desc, rpDesc, [this] (RenderPasses::RenderPasses rp, RenderGraph::PassResources &r) { this->renderSeparate(rp, r); } );
 				}
 
-				// TODO: clean up the renderpass mess
 				// edges pass
 				{
 					RenderTargetDesc rtDesc;
