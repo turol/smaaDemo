@@ -1609,9 +1609,11 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 
 				{
+					// TODO: only add MainDepth when using predication
 					RenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::MainColor)
+					    .inputRendertarget(Rendertargets::MainDepth)
 						.name("SMAA edges");
 
 					RenderPassDesc rpDesc;
@@ -1716,9 +1718,11 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 
 				{
+					// TODO: only add MainDepth when using predication
 					RenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample1)
+					    .inputRendertarget(Rendertargets::MainDepth)
 						.name("SMAA edges");
 
 					RenderPassDesc rpDesc;
@@ -1766,9 +1770,11 @@ void SMAADemo::rebuildRenderGraph() {
 
 				// edges pass
 				{
+					// TODO: only add MainDepth when using predication
 					RenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample2)
+					    .inputRendertarget(Rendertargets::MainDepth)
 						.name("SMAA edges");
 
 					RenderPassDesc rpDesc;
@@ -1858,9 +1864,11 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 
 				{
+					// TODO: only add MainDepth when using predication
 					RenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::MainColor)
+					    .inputRendertarget(Rendertargets::MainDepth)
 						.name("SMAA edges");
 
 					RenderPassDesc rpDesc;
@@ -2007,9 +2015,11 @@ void SMAADemo::rebuildRenderGraph() {
 						  .height(windowHeight);
 					renderGraph.renderTarget(Rendertargets::Edges, rtDesc);
 
+					// TODO: only add MainDepth when using predication
 					RenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample1)
+					    .inputRendertarget(Rendertargets::MainDepth)
 						.name("SMAA edges");
 
 					RenderPassDesc rpDesc;
@@ -2058,9 +2068,11 @@ void SMAADemo::rebuildRenderGraph() {
 				// second pass
 				// edges pass
 				{
+					// TODO: only add MainDepth when using predication
 					RenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample2)
+					    .inputRendertarget(Rendertargets::MainDepth)
 						.name("SMAA edges");
 
 					RenderPassDesc rpDesc;
