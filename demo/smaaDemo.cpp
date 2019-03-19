@@ -3211,7 +3211,7 @@ void SMAADemo::renderImageScene(RenderPasses::RenderPasses rp, RenderGraph::Pass
 }
 
 
-void SMAADemo::renderFXAA(RenderPasses::RenderPasses rp, RenderGraph::PassResources & /* r */) {
+void SMAADemo::renderFXAA(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r) {
 	if (!fxaaPipeline) {
 		std::string qualityString(fxaaQualityLevels[fxaaQuality]);
 
@@ -3238,14 +3238,14 @@ void SMAADemo::renderFXAA(RenderPasses::RenderPasses rp, RenderGraph::PassResour
 	// FIXME: remove unused UBO hack
 	uint32_t temp         = 0;
 	colorDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-	colorDS.color.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::MainColor]);
+	colorDS.color.tex     = r.get(Rendertargets::MainColor);
 	colorDS.color.sampler = linearSampler;
 	renderer.bindDescriptorSet(1, colorDS);
 	renderer.draw(0, 3);
 }
 
 
-void SMAADemo::renderSeparate(RenderPasses::RenderPasses rp, RenderGraph::PassResources & /* r */) {
+void SMAADemo::renderSeparate(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r) {
 	if (!separatePipeline) {
 		PipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
@@ -3262,14 +3262,14 @@ void SMAADemo::renderSeparate(RenderPasses::RenderPasses rp, RenderGraph::PassRe
 	// FIXME: remove unused UBO hack
 	uint32_t temp            = 0;
 	separateDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-	separateDS.color.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::MainColor]);
+	separateDS.color.tex     = r.get(Rendertargets::MainColor);
 	separateDS.color.sampler = nearestSampler;
 	renderer.bindDescriptorSet(1, separateDS);
 	renderer.draw(0, 3);
 }
 
 
-void SMAADemo::renderSMAAEdges(RenderPasses::RenderPasses rp, RenderGraph::PassResources & /* r */, Rendertargets::Rendertargets input, int pass) {
+void SMAADemo::renderSMAAEdges(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r, Rendertargets::Rendertargets input, int pass) {
 	if (!smaaPipelines.edgePipeline) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
@@ -3312,20 +3312,20 @@ void SMAADemo::renderSMAAEdges(RenderPasses::RenderPasses rp, RenderGraph::PassR
 	EdgeDetectionDS edgeDS;
 	edgeDS.smaaUBO = smaaUBOBuf;
 	if (smaaEdgeMethod == SMAAEdgeMethod::Depth) {
-		edgeDS.color.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::MainDepth]);
+		edgeDS.color.tex     = r.get(Rendertargets::MainDepth);
 	} else {
-		edgeDS.color.tex     = renderer.getRenderTargetView(renderGraph.renderTargets[input], Format::RGBA8);
+		edgeDS.color.tex     = r.get(input, Format::RGBA8);
 	}
 	edgeDS.color.sampler = nearestSampler;
 	// TODO: only set when using predication
-	edgeDS.predicationTex.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::MainDepth]);
+	edgeDS.predicationTex.tex     = r.get(Rendertargets::MainDepth);
 	edgeDS.predicationTex.sampler = nearestSampler;
 	renderer.bindDescriptorSet(1, edgeDS);
 	renderer.draw(0, 3);
 }
 
 
-void SMAADemo::renderSMAAWeights(RenderPasses::RenderPasses rp, RenderGraph::PassResources & /* r */, int pass) {
+void SMAADemo::renderSMAAWeights(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r, int pass) {
 	if (!smaaPipelines.blendWeightPipeline) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
@@ -3358,7 +3358,7 @@ void SMAADemo::renderSMAAWeights(RenderPasses::RenderPasses rp, RenderGraph::Pas
 	renderer.bindPipeline(smaaPipelines.blendWeightPipeline);
 	BlendWeightDS blendWeightDS;
 	blendWeightDS.smaaUBO           = smaaUBOBuf;
-	blendWeightDS.edgesTex.tex      = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::Edges]);
+	blendWeightDS.edgesTex.tex      = r.get(Rendertargets::Edges);
 	blendWeightDS.edgesTex.sampler  = linearSampler;
 	blendWeightDS.areaTex.tex       = areaTex;
 	blendWeightDS.areaTex.sampler   = linearSampler;
@@ -3370,7 +3370,7 @@ void SMAADemo::renderSMAAWeights(RenderPasses::RenderPasses rp, RenderGraph::Pas
 }
 
 
-void SMAADemo::renderSMAABlend(RenderPasses::RenderPasses rp, RenderGraph::PassResources & /* r */, Rendertargets::Rendertargets input, int pass) {
+void SMAADemo::renderSMAABlend(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r, Rendertargets::Rendertargets input, int pass) {
 	if (!smaaPipelines.neighborPipelines[pass]) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
@@ -3415,9 +3415,9 @@ void SMAADemo::renderSMAABlend(RenderPasses::RenderPasses rp, RenderGraph::PassR
 
 	NeighborBlendDS neighborBlendDS;
 	neighborBlendDS.smaaUBO              = smaaUBOBuf;
-	neighborBlendDS.color.tex            = renderer.getRenderTargetTexture(renderGraph.renderTargets[input]);
+	neighborBlendDS.color.tex            = r.get(input);
 	neighborBlendDS.color.sampler        = linearSampler;
-	neighborBlendDS.blendweights.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::BlendWeights]);
+	neighborBlendDS.blendweights.tex     = r.get(Rendertargets::BlendWeights);
 	neighborBlendDS.blendweights.sampler = linearSampler;
 	renderer.bindDescriptorSet(1, neighborBlendDS);
 
@@ -3425,7 +3425,7 @@ void SMAADemo::renderSMAABlend(RenderPasses::RenderPasses rp, RenderGraph::PassR
 }
 
 
-void SMAADemo::renderSMAADebug(RenderPasses::RenderPasses rp, RenderGraph::PassResources & /* r */, Rendertargets::Rendertargets rt) {
+void SMAADemo::renderSMAADebug(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r, Rendertargets::Rendertargets rt) {
 	if (!blitPipeline) {
 		PipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
@@ -3442,14 +3442,14 @@ void SMAADemo::renderSMAADebug(RenderPasses::RenderPasses rp, RenderGraph::PassR
 	// FIXME: remove unused UBO hack
 	uint32_t temp  = 0;
 	blitDS.unused  = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-	blitDS.color   = renderer.getRenderTargetTexture(renderGraph.renderTargets[rt] );
+	blitDS.color   = r.get(rt);
 	renderer.bindDescriptorSet(1, blitDS);
 
 	renderer.draw(0, 3);
 }
 
 
-void SMAADemo::renderTemporalAA(RenderPasses::RenderPasses rp, RenderGraph::PassResources & /* r */) {
+void SMAADemo::renderTemporalAA(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r) {
 	if (!temporalAAPipelines[temporalReproject]) {
 		ShaderMacros macros;
 		macros.emplace("SMAA_REPROJECTION", std::to_string(temporalReproject));
@@ -3479,19 +3479,19 @@ void SMAADemo::renderTemporalAA(RenderPasses::RenderPasses rp, RenderGraph::Pass
 
 	TemporalAADS temporalDS;
 	temporalDS.smaaUBO             = smaaUBOBuf;
-	temporalDS.currentTex.tex      = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::TemporalCurrent]);
+	temporalDS.currentTex.tex      = r.get(Rendertargets::TemporalCurrent);
 	temporalDS.currentTex.sampler  = nearestSampler;
 	if (temporalAAFirstFrame) {
 		// to prevent flicker on first frame after enabling
 		// TODO: should just do blit
-		temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::TemporalCurrent]);
+		temporalDS.previousTex.tex     = r.get(Rendertargets::TemporalCurrent);
 		temporalDS.previousTex.sampler = nearestSampler;
 		temporalAAFirstFrame = false;
 	} else {
-		temporalDS.previousTex.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::TemporalPrevious]);
+		temporalDS.previousTex.tex     = r.get(Rendertargets::TemporalPrevious);
 		temporalDS.previousTex.sampler = nearestSampler;
 	}
-	temporalDS.velocityTex.tex         = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::Velocity]);
+	temporalDS.velocityTex.tex         = r.get(Rendertargets::Velocity);
 	temporalDS.velocityTex.sampler     = nearestSampler;
 
 	renderer.bindDescriptorSet(1, temporalDS);
