@@ -497,6 +497,9 @@ private:
 
 	struct ExternalRT {
 		Format              format;
+		Layout              initialLayout;
+		Layout              finalLayout;
+
 		// not owned by us
 		// only valid during frame
 		RenderTargetHandle  handle;
@@ -567,8 +570,7 @@ public:
 
 	void renderTarget(Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
 
-	// TODO: need layouts?
-	void externalRenderTarget(Rendertargets::Rendertargets rt, Format format);
+	void externalRenderTarget(Rendertargets::Rendertargets rt, Format format, Layout initialLayout, Layout finalLayout);
 
 	void renderPass(RenderPasses::RenderPasses rp, PassDesc desc, RenderPassFunc f);
 
@@ -1545,8 +1547,8 @@ void SMAADemo::rebuildRenderGraph() {
 				rtDesc.name("Temporal resolve 1");
 				temporalRTs[1] = renderer.createRenderTarget(rtDesc);
 
-				renderGraph.externalRenderTarget(Rendertargets::TemporalPrevious, Format::sRGBA8);
-				renderGraph.externalRenderTarget(Rendertargets::TemporalCurrent,  Format::sRGBA8);
+				renderGraph.externalRenderTarget(Rendertargets::TemporalPrevious, Format::sRGBA8, Layout::ShaderRead, Layout::ShaderRead);
+				renderGraph.externalRenderTarget(Rendertargets::TemporalCurrent,  Format::sRGBA8, Layout::Undefined,  Layout::ShaderRead);
 			}
 
 			switch (aaMethod) {
@@ -2787,13 +2789,15 @@ void RenderGraph::renderTarget(Rendertargets::Rendertargets rt, const RenderTarg
 }
 
 
-void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets rt, Format format) {
+void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets rt, Format format, Layout initialLayout, Layout finalLayout) {
 	assert(state == State::Building);
 	assert(rt != Rendertargets::Count);
 	assert(rendertargets.find(rt) == rendertargets.end());
 
 	ExternalRT e;
 	e.format = format;
+	e.initialLayout = initialLayout;
+	e.finalLayout   = finalLayout;
 	// leave handle undefined, it's set later by bindExternalRT
 	auto temp UNUSED = externalRTs.emplace(rt, e);
 	assert(temp.second);
