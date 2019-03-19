@@ -3317,6 +3317,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses::RenderPasses rp, RenderGraph::PassR
 		edgeDS.color.tex     = renderer.getRenderTargetView(renderGraph.renderTargets[input], Format::RGBA8);
 	}
 	edgeDS.color.sampler = nearestSampler;
+	// TODO: only set when using predication
 	edgeDS.predicationTex.tex     = renderer.getRenderTargetTexture(renderGraph.renderTargets[Rendertargets::MainDepth]);
 	edgeDS.predicationTex.sampler = nearestSampler;
 	renderer.bindDescriptorSet(1, edgeDS);
