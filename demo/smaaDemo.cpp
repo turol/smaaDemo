@@ -558,9 +558,6 @@ private:
 
 public:
 
-	// TODO: hide these
-	RenderTargetHandle                                renderTargets[Rendertargets::Count];
-
 
 	RenderGraph()
 	: state(State::Invalid)
@@ -2738,11 +2735,11 @@ void RenderGraph::reset(Renderer &renderer) {
 	}
 	pipelines.clear();
 
-	for (unsigned int i = 0; i < Rendertargets::Count; i++) {
-		if (renderTargets[i]) {
-			renderer.deleteRenderTarget(renderTargets[i]);
-			renderTargets[i] = RenderTargetHandle();
-		}
+	for (auto &rt : rts) {
+		assert(rt.first != Rendertargets::Count);
+		assert(rt.second.handle);
+		renderer.deleteRenderTarget(rt.second.handle);
+        rt.second.handle = RenderTargetHandle();
 	}
 	rts.clear();
 
@@ -2794,7 +2791,6 @@ PipelineHandle RenderGraph::createPipeline(Renderer &renderer, RenderPasses::Ren
 void RenderGraph::renderTarget(Rendertargets::Rendertargets rt, const RenderTargetDesc &desc) {
 	assert(state == State::Building);
 	assert(rt != Rendertargets::Count);
-	assert(!renderTargets[rt]);
 
 	RT temp1;
 	temp1.desc   = desc;
@@ -2805,7 +2801,8 @@ void RenderGraph::renderTarget(Rendertargets::Rendertargets rt, const RenderTarg
 
 void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets rt, Format format) {
 	assert(state == State::Building);
-	assert(!renderTargets[rt]);
+	assert(rt != Rendertargets::Count);
+	assert(rts.find(rt) == rts.end());
 
 	ExternalRT e;
 	e.format = format;
@@ -2898,7 +2895,6 @@ void RenderGraph::build(Renderer &renderer) {
 
 		auto handle       = renderer.createRenderTarget(rt.desc);
 		rt.handle         = handle;
-		renderTargets[id] = handle;
 	}
 
 	// TODO: automatically decide layouts here
