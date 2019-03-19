@@ -636,6 +636,7 @@ struct RenderTargetDesc {
 	unsigned int height()     const  { return height_; }
 	unsigned int numSamples() const  { return numSamples_; }
 	Format       format()     const  { return format_; }
+	Format       additionalViewFormat() const  { return additionalViewFormat_; }
 
 private:
 
