@@ -510,13 +510,6 @@ private:
 		Rendertargets::Rendertargets  target;
 	};
 
-	// TODO: remove
-	struct LayoutTransition {
-		Rendertargets::Rendertargets  rt;
-		Layout                        sourceLayout;
-		Layout                        destinationLayout;
-	};
-
 	struct RenderPass {
 		RenderPasses::RenderPasses    name;
 		RenderPassFunc                func;
@@ -532,7 +525,7 @@ private:
 		PipelineHandle  handle;
 	};
 
-	typedef boost::variant<Blit, LayoutTransition, RenderPass, ResolveMSAA> Operation;
+	typedef boost::variant<Blit, RenderPass, ResolveMSAA> Operation;
 
 
 	State                                          state;
@@ -596,8 +589,6 @@ public:
 
 	// TODO: remove these
 	void renderPass(RenderPasses::RenderPasses rp, const PassDesc &desc, const RenderPassDesc &rpDesc, RenderPassFunc f);
-
-	void layoutTransition(Rendertargets::Rendertargets image, Layout src, Layout dest);
 };
 
 
@@ -2858,17 +2849,6 @@ void RenderGraph::blit(Rendertargets::Rendertargets source, Rendertargets::Rende
 }
 
 
-void RenderGraph::layoutTransition(Rendertargets::Rendertargets image, Layout src, Layout dest) {
-	assert(state == State::Building);
-
-	LayoutTransition op;
-	op.rt                = image;
-	op.sourceLayout      = src;
-	op.destinationLayout = dest;
-	operations.push_back(op);
-}
-
-
 void RenderGraph::presentRenderTarget(Rendertargets::Rendertargets rt) {
 	assert(state == State::Building);
 
@@ -2984,13 +2964,6 @@ void RenderGraph::render(Renderer &renderer) {
 			r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
 			r.blit(sourceHandle, targetHandle);
 			r.layoutTransition(targetHandle, Layout::TransferDst, Layout::ColorAttachment);
-		}
-
-		void operator()(const LayoutTransition &lt) const {
-			auto it = rg.rendertargets.find(lt.rt);
-			assert(it != rg.rendertargets.end());
-
-			r.layoutTransition(it->second.handle, lt.sourceLayout, lt.destinationLayout);
 		}
 
 		void operator()(const RenderPass &rp) const {
