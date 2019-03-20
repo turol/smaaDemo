@@ -2855,10 +2855,9 @@ void RenderGraph::blit(Rendertargets::Rendertargets source, Rendertargets::Rende
 
 void RenderGraph::presentRenderTarget(Rendertargets::Rendertargets rt) {
 	assert(state == State::Building);
+	assert(rt != Rendertargets::Count);
 
 	finalTarget = rt;
-
-	// TODO
 }
 
 
@@ -2866,6 +2865,8 @@ void RenderGraph::presentRenderTarget(Rendertargets::Rendertargets rt) {
 void RenderGraph::build(Renderer &renderer) {
 	assert(state == State::Building);
 	state = State::Ready;
+
+	assert(finalTarget != Rendertargets::Count);
 
 	for (auto &p : rendertargets) {
 		auto id  = p.first;
