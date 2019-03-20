@@ -2816,12 +2816,11 @@ void RenderGraph::bindExternalRT(Rendertargets::Rendertargets rt, RenderTargetHa
 }
 
 
-void RenderGraph::renderPass(RenderPasses::RenderPasses rp, const PassDesc &desc, const RenderPassDesc &rpDesc, RenderPassFunc f) {
+void RenderGraph::renderPass(RenderPasses::RenderPasses rp, const PassDesc &desc, const RenderPassDesc & /* rpDesc */, RenderPassFunc f) {
 	assert(state == State::Building);
 
 	RP temp1;
 	temp1.desc   = desc;
-	temp1.rpDesc = rpDesc;
 
 	auto temp2 UNUSED = renderPasses.emplace(rp, temp1);
 	assert(temp2.second);
@@ -2880,7 +2879,7 @@ void RenderGraph::build(Renderer &renderer) {
 	}
 
 	// automatically decide layouts
-	if (false) {
+	{
 		std::unordered_map<Rendertargets::Rendertargets, Layout> currentLayouts;
 
 		// initialize final render target to transfer src
