@@ -2869,7 +2869,7 @@ void RenderGraph::build(Renderer &renderer) {
 	assert(finalTarget != Rendertargets::Count);
 
 	for (auto &p : rendertargets) {
-		auto id  = p.first;
+		auto id UNUSED = p.first;
 		auto &rt = p.second;
 
 		assert(id != Rendertargets::Count);
