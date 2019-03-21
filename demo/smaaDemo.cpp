@@ -513,6 +513,11 @@ private:
 	}
 
 
+	static RenderTargetHandle getHandle(const RT &rt) {
+		return rt.handle;
+	}
+
+
 	struct Blit {
 		Rendertargets::Rendertargets  source;
 		Rendertargets::Rendertargets  target;
@@ -2850,7 +2855,7 @@ void RenderGraph::build(Renderer &renderer) {
 			if (desc.depthStencil_ != Rendertargets::Count) {
 				auto it = rendertargets.find(desc.depthStencil_);
 				assert(it != rendertargets.end());
-				fbDesc.depthStencil(it->second.handle);
+				fbDesc.depthStencil(getHandle(it->second));
 			}
 
 			for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
@@ -2858,7 +2863,7 @@ void RenderGraph::build(Renderer &renderer) {
 				if (rt.id != Rendertargets::Count) {
 					auto it = rendertargets.find(rt.id);
 					assert(it != rendertargets.end());
-					fbDesc.color(i, it->second.handle);
+					fbDesc.color(i, getHandle(it->second));
 				}
 			}
 
@@ -2897,11 +2902,11 @@ void RenderGraph::render(Renderer &renderer) {
 		void operator()(const Blit &b) const {
 			auto srcIt = rg.rendertargets.find(b.source);
 			assert(srcIt != rg.rendertargets.end());
-			RenderTargetHandle sourceHandle = srcIt->second.handle;
+			RenderTargetHandle sourceHandle = getHandle(srcIt->second);
 
 			auto destIt = rg.rendertargets.find(b.target);
 			assert(destIt != rg.rendertargets.end());
-			RenderTargetHandle targetHandle = destIt->second.handle;
+			RenderTargetHandle targetHandle = getHandle(destIt->second);
 
 			r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
 			r.blit(sourceHandle, targetHandle);
@@ -2932,7 +2937,7 @@ void RenderGraph::render(Renderer &renderer) {
 
 				{
 					// get view from renderer, add to res
-					TextureHandle view = r.getRenderTargetTexture(rtIt->second.handle);
+					TextureHandle view = r.getRenderTargetTexture(getHandle(rtIt->second));
 					res.rendertargets.emplace(std::make_pair(inputRT, fmt), view);
 					// also add it with Format::Invalid so default works easier
 					res.rendertargets.emplace(std::make_pair(inputRT, Format::Invalid), view);
@@ -2942,7 +2947,7 @@ void RenderGraph::render(Renderer &renderer) {
 				Format additionalFmt = desc.additionalViewFormat();
 				if (additionalFmt != Format::Invalid) {
 					assert(additionalFmt != fmt);
-					TextureHandle view = r.getRenderTargetView(rtIt->second.handle, additionalFmt);
+					TextureHandle view = r.getRenderTargetView(getHandle(rtIt->second), additionalFmt);
 					res.rendertargets.emplace(std::make_pair(inputRT, additionalFmt), view);
 				}
 			}
@@ -2957,11 +2962,11 @@ void RenderGraph::render(Renderer &renderer) {
 		void operator()(const ResolveMSAA &resolve) const {
 			auto srcIt = rg.rendertargets.find(resolve.source);
 			assert(srcIt != rg.rendertargets.end());
-			RenderTargetHandle sourceHandle = srcIt->second.handle;
+			RenderTargetHandle sourceHandle = getHandle(srcIt->second);
 
 			auto destIt = rg.rendertargets.find(resolve.target);
 			assert(destIt != rg.rendertargets.end());
-			RenderTargetHandle targetHandle = destIt->second.handle;
+			RenderTargetHandle targetHandle = getHandle(destIt->second);
 
 			r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
 			r.resolveMSAA(sourceHandle, targetHandle);
@@ -2976,7 +2981,7 @@ void RenderGraph::render(Renderer &renderer) {
 	{
 		auto it = rendertargets.find(finalTarget);
 		assert(it != rendertargets.end());
-		renderer.presentFrame(it->second.handle);
+		renderer.presentFrame(getHandle(it->second));
 	}
 
 	assert(state == State::Rendering);
