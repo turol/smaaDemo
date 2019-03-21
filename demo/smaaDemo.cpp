@@ -508,6 +508,11 @@ private:
 	};
 
 
+	static Format getFormat(const RT &rt) {
+		return rt.desc.format();
+	}
+
+
 	struct Blit {
 		Rendertargets::Rendertargets  source;
 		Rendertargets::Rendertargets  target;
@@ -2752,9 +2757,8 @@ void RenderGraph::build(Renderer &renderer) {
 				if (desc.depthStencil_ != Rendertargets::Count) {
 					auto rtIt = rg.rendertargets.find(desc.depthStencil_);
 					assert(rtIt != rg.rendertargets.end());
-					const auto &rtDesc = rtIt->second.desc;
 
-					Format fmt = rtDesc.format();
+					Format fmt = getFormat(rtIt->second);
 					assert(fmt != Format::Invalid);
 
 					rpDesc.depthStencil(fmt, PassBegin::DontCare);
@@ -2768,10 +2772,9 @@ void RenderGraph::build(Renderer &renderer) {
 					if (rtId != Rendertargets::Count) {
 						auto rtIt = rg.rendertargets.find(rtId);
 						assert(rtIt != rg.rendertargets.end());
-						const auto &rtDesc = rtIt->second.desc;
 
 						// get format
-						Format fmt = rtDesc.format();
+						Format fmt = getFormat(rtIt->second);
 						assert(fmt != Format::Invalid);
 
 						auto pb = desc.colorRTs_[i].passBegin;
@@ -2924,7 +2927,7 @@ void RenderGraph::render(Renderer &renderer) {
 				const auto &desc = rtIt->second.desc;
 
 				// get format
-				Format fmt = desc.format();
+				Format fmt = getFormat(rtIt->second);
 				assert(fmt != Format::Invalid);
 
 				{
