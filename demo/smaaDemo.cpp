@@ -513,6 +513,10 @@ private:
 	}
 
 
+	static Format getAdditionalViewFormat(const RT &rt) {
+		return rt.desc.additionalViewFormat();
+	}
+
 	static RenderTargetHandle getHandle(const RT &rt) {
 		return rt.handle;
 	}
@@ -2929,7 +2933,6 @@ void RenderGraph::render(Renderer &renderer) {
 				// get rendertarget desc
 				auto rtIt = rg.rendertargets.find(inputRT);
 				assert(rtIt != rg.rendertargets.end());
-				const auto &desc = rtIt->second.desc;
 
 				// get format
 				Format fmt = getFormat(rtIt->second);
@@ -2944,7 +2947,7 @@ void RenderGraph::render(Renderer &renderer) {
 				}
 
 				// do the same for additional view format if there is one
-				Format additionalFmt = desc.additionalViewFormat();
+				Format additionalFmt = getAdditionalViewFormat(rtIt->second);
 				if (additionalFmt != Format::Invalid) {
 					assert(additionalFmt != fmt);
 					TextureHandle view = r.getRenderTargetView(getHandle(rtIt->second), additionalFmt);
