@@ -2700,13 +2700,13 @@ void RenderGraph::reset(Renderer &renderer) {
 		assert(rt.first != Rendertargets::Count);
 
 		visitRendertarget(rt.second
-								, nopExternal
-								, [&] (InternalRT &i) {
-									assert(i.handle);
-									renderer.deleteRenderTarget(i.handle);
-									i.handle = RenderTargetHandle();
-								}
-							   );
+						  , nopExternal
+						  , [&] (InternalRT &i) {
+							  assert(i.handle);
+							  renderer.deleteRenderTarget(i.handle);
+							  i.handle = RenderTargetHandle();
+						  }
+						 );
 	}
 	rendertargets.clear();
 
@@ -2977,7 +2977,7 @@ void RenderGraph::build(Renderer &renderer) {
 
 		// if this renderpass has external RTs we defer its creation
 		bool hasExternalRTs = false;
-			for (const auto &rt : desc.colorRTs_) {
+		for (const auto &rt : desc.colorRTs_) {
 			if (rt.id != Rendertargets::Count) {
 				auto it = rendertargets.find(rt.id);
 				assert(it != rendertargets.end());
