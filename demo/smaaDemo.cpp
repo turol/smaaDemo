@@ -489,7 +489,7 @@ private:
 	};
 
 
-	struct RT {
+	struct InternalRT {
 		RenderTargetHandle  handle;
 		RenderTargetDesc    desc;
 	};
@@ -508,17 +508,142 @@ private:
 	};
 
 
-	static Format getFormat(const RT &rt) {
-		return rt.desc.format();
+	typedef boost::variant<ExternalRT, InternalRT> Rendertarget;
+
+
+	template <typename FE, typename FI>
+	static void visitRendertarget(Rendertarget &rt, FE &&fe, FI &&fi) {
+		struct FuncVisitor final : public boost::static_visitor<void> {
+			FE fe;
+			FI fi;
+
+			explicit FuncVisitor(FE &&fe_, FI &&fi_)
+			: fe(std::move(fe_))
+			, fi(std::move(fi_))
+			{
+			}
+
+			void operator()(ExternalRT &e) const {
+				fe(e);
+			}
+
+			void operator()(InternalRT &i) const {
+				fi(i);
+			}
+		};
+
+		return boost::apply_visitor(FuncVisitor(std::move(fe), std::move(fi)), rt);
 	}
 
 
-	static Format getAdditionalViewFormat(const RT &rt) {
-		return rt.desc.additionalViewFormat();
+	template <typename FE, typename FI>
+	static void visitRendertarget(const Rendertarget &rt, FE &&fe, FI &&fi) {
+		struct FuncVisitor final : public boost::static_visitor<void> {
+			FE fe;
+			FI fi;
+
+			explicit FuncVisitor(FE &&fe_, FI &&fi_)
+			: fe(std::move(fe_))
+			, fi(std::move(fi_))
+			{
+			}
+
+			void operator()(const ExternalRT &e) const {
+				fe(e);
+			}
+
+			void operator()(const InternalRT &i) const {
+				fi(i);
+			}
+		};
+
+		return boost::apply_visitor(FuncVisitor(std::move(fe), std::move(fi)), rt);
 	}
 
-	static RenderTargetHandle getHandle(const RT &rt) {
-		return rt.handle;
+
+	template <typename T, typename FE, typename FI>
+	static T visitRendertargetValue(Rendertarget &rt, FE &&fe, FI &&fi) {
+		struct FuncVisitor final : public boost::static_visitor<T> {
+			FE fe;
+			FI fi;
+
+			explicit FuncVisitor(FE &&fe_, FI &&fi_)
+			: fe(std::move(fe_))
+			, fi(std::move(fi_))
+			{
+			}
+
+			T operator()(ExternalRT &e) const {
+				return fe(e);
+			}
+
+			T operator()(InternalRT &i) const {
+				return fi(i);
+			}
+		};
+
+		return boost::apply_visitor(FuncVisitor(std::move(fe), std::move(fi)), rt);
+	}
+
+
+	template <typename T, typename FE, typename FI>
+	static T visitRendertargetValue(const Rendertarget &rt, FE &&fe, FI &&fi) {
+		struct FuncVisitor final : public boost::static_visitor<T> {
+			FE fe;
+			FI fi;
+
+			explicit FuncVisitor(FE &&fe_, FI &&fi_)
+			: fe(std::move(fe_))
+			, fi(std::move(fi_))
+			{
+			}
+
+			T operator()(const ExternalRT &e) const {
+				return fe(e);
+			}
+
+			T operator()(const InternalRT &i) const {
+				return fi(i);
+			}
+		};
+
+		return boost::apply_visitor(FuncVisitor(std::move(fe), std::move(fi)), rt);
+	}
+
+
+	static void nopExternal(const ExternalRT & /* e */) { }
+	static void nopInternal(const InternalRT & /* i */) { }
+
+
+	static Format getFormat(const Rendertarget &rt) {
+		return visitRendertargetValue<Format>(rt
+		                       , [] (const ExternalRT &e) { return e.format;        }
+		                       , [] (const InternalRT &i) { return i.desc.format(); }
+		                        );
+	}
+
+
+	static Format getAdditionalViewFormat(const Rendertarget &rt) {
+		return visitRendertargetValue<Format>(rt
+		                       , [] (const ExternalRT & /* e */) { return Format::Invalid;               }
+		                       , [] (const InternalRT &i)        { return i.desc.additionalViewFormat(); }
+		                        );
+	}
+
+
+	static RenderTargetHandle getHandle(const Rendertarget &rt) {
+		return visitRendertargetValue<RenderTargetHandle>(rt
+		                       , [] (const ExternalRT &e) { return e.handle; }
+		                       , [] (const InternalRT &i) { return i.handle; }
+		                        );
+	}
+
+
+	static bool isExternal(const Rendertarget &rt) {
+		return visitRendertargetValue<bool>(rt
+		                       , [] (const ExternalRT & /* e */) { return true;  }
+		                       , [] (const InternalRT & /* i */) { return false; }
+		                        );
 	}
 
 
@@ -550,8 +675,7 @@ private:
 	std::vector<Operation>                         operations;
 	Rendertargets::Rendertargets                   finalTarget;
 
-	std::unordered_map<Rendertargets::Rendertargets, RT>  rendertargets;
-	std::unordered_map<Rendertargets::Rendertargets, ExternalRT>  externalRTs;
+	std::unordered_map<Rendertargets::Rendertargets, Rendertarget>  rendertargets;
 
 	// TODO: use hash map
 	std::vector<Pipeline>                          pipelines;
@@ -2574,13 +2698,17 @@ void RenderGraph::reset(Renderer &renderer) {
 
 	for (auto &rt : rendertargets) {
 		assert(rt.first != Rendertargets::Count);
-		assert(rt.second.handle);
-		renderer.deleteRenderTarget(rt.second.handle);
-        rt.second.handle = RenderTargetHandle();
+
+		visitRendertarget(rt.second
+								, nopExternal
+								, [&] (InternalRT &i) {
+									assert(i.handle);
+									renderer.deleteRenderTarget(i.handle);
+									i.handle = RenderTargetHandle();
+								}
+							   );
 	}
 	rendertargets.clear();
-
-	externalRTs.clear();
 
 	for (auto &p : renderPasses) {
 		auto &rp = p.second;
@@ -2629,7 +2757,7 @@ void RenderGraph::renderTarget(Rendertargets::Rendertargets rt, const RenderTarg
 	assert(state == State::Building);
 	assert(rt != Rendertargets::Count);
 
-	RT temp1;
+	InternalRT temp1;
 	temp1.desc   = desc;
 	auto UNUSED temp2 = rendertargets.emplace(rt, temp1);
 	assert(temp2.second);
@@ -2646,7 +2774,7 @@ void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets rt, Format f
 	e.initialLayout = initialLayout;
 	e.finalLayout   = finalLayout;
 	// leave handle undefined, it's set later by bindExternalRT
-	auto temp UNUSED = externalRTs.emplace(rt, e);
+	auto temp UNUSED = rendertargets.emplace(rt, e);
 	assert(temp.second);
 }
 
@@ -2655,11 +2783,15 @@ void RenderGraph::bindExternalRT(Rendertargets::Rendertargets rt, RenderTargetHa
 	assert(state == State::Ready);
 	assert(handle);
 
-	auto it = externalRTs.find(rt);
-	auto &externalRT = it->second;
-
-	assert(!externalRT.handle);
-	externalRT.handle = handle;
+	auto it = rendertargets.find(rt);
+	assert(it != rendertargets.end());
+	visitRendertarget(it->second
+					  , [&] (ExternalRT &e) {
+						  assert(!e.handle);
+						  e.handle = handle;
+					  }
+					  , nopInternal
+					 );
 }
 
 
@@ -2715,14 +2847,14 @@ void RenderGraph::build(Renderer &renderer) {
 	assert(finalTarget != Rendertargets::Count);
 
 	for (auto &p : rendertargets) {
-		auto id UNUSED = p.first;
-		auto &rt = p.second;
+		assert(p.first != Rendertargets::Count);
 
-		assert(id != Rendertargets::Count);
-		assert(!rt.handle);
-
-		auto handle       = renderer.createRenderTarget(rt.desc);
-		rt.handle         = handle;
+		visitRendertarget(p.second
+						  , nopExternal
+						  , [&] (InternalRT &i) {
+							  i.handle = renderer.createRenderTarget(i.desc);
+						  }
+						 );
 	}
 
 	// automatically decide layouts
@@ -2733,8 +2865,13 @@ void RenderGraph::build(Renderer &renderer) {
 		currentLayouts[finalTarget] = Layout::TransferSrc;
 
 		// initialize external rendertargets final layouts
-		for (const auto &rt : externalRTs) {
-			currentLayouts[rt.first] = rt.second.finalLayout;
+		for (const auto &rt : rendertargets) {
+			visitRendertarget(rt.second
+							  , [&rt, &currentLayouts] (const ExternalRT &e) {
+								  currentLayouts[rt.first] = e.finalLayout;
+							  }
+							  , nopInternal
+							 );
 		}
 
 		struct LayoutVisitor final : public boost::static_visitor<void> {
@@ -2840,16 +2977,17 @@ void RenderGraph::build(Renderer &renderer) {
 
 		// if this renderpass has external RTs we defer its creation
 		bool hasExternalRTs = false;
-		if (!externalRTs.empty()) {
 			for (const auto &rt : desc.colorRTs_) {
-				auto it = externalRTs.find(rt.id);
-				if (it != externalRTs.end()) {
+			if (rt.id != Rendertargets::Count) {
+				auto it = rendertargets.find(rt.id);
+				assert(it != rendertargets.end());
+				if (isExternal(it->second)) {
 					hasExternalRTs = true;
 					break;
 				}
 			}
-			// TODO: check depthStencil too
 		}
+		// TODO: check depthStencil too
 
 		if (!hasExternalRTs) {
 			FramebufferDesc fbDesc;
@@ -2883,12 +3021,16 @@ void RenderGraph::render(Renderer &renderer) {
 	assert(state == State::Ready);
 	state = State::Rendering;
 
-	for (const auto &p : externalRTs) {
+	for (const auto &p : rendertargets) {
 		// if we have external RTs they must be bound by now
-		const auto &externalRT UNUSED = p.second;
-		assert(externalRT.handle);
+		bool hasExternal = false;
+		visitRendertarget(p.second
+						  , [&] (const ExternalRT &e) { assert(e.handle); hasExternal = true; }
+						  , nopInternal
+						 );
 
 		// TODO: build framebuffers at this point
+		assert(!hasExternal);
 	}
 
 	struct OpVisitor final : public boost::static_visitor<void> {
@@ -2992,11 +3134,12 @@ void RenderGraph::render(Renderer &renderer) {
 
 	assert(currentRP == RenderPasses::Count);
 
-	for (auto &p : externalRTs) {
+	for (auto &p : rendertargets) {
 		// clear the bindings
-		auto &externalRT = p.second;
-		assert(externalRT.handle);
-		externalRT.handle = RenderTargetHandle();
+		visitRendertarget(p.second
+						  , [&] (ExternalRT &e) { assert(e.handle); e.handle = RenderTargetHandle(); }
+						  , nopInternal
+						 );
 	}
 
 	assert(currentRP == RenderPasses::Count);
