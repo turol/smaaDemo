@@ -681,6 +681,7 @@ private:
 	std::vector<Pipeline>                          pipelines;
 
 	std::unordered_map<RenderPasses::RenderPasses, RP> renderPasses;
+	std::unordered_set<RenderPasses::RenderPasses>     renderpassesWithExternalRTs;
 
 
 	RenderGraph(const RenderGraph &)                = delete;
@@ -2689,6 +2690,7 @@ void RenderGraph::reset(Renderer &renderer) {
 	state = State::Building;
 
 	renderPasses.clear();
+	renderpassesWithExternalRTs.clear();
 
 	for (auto &p : pipelines) {
 		renderer.deletePipeline(p.handle);
@@ -3012,6 +3014,9 @@ void RenderGraph::build(Renderer &renderer) {
 			auto fbHandle = renderer.createFramebuffer(fbDesc);
 			assert(fbHandle);
 			temp.fb = fbHandle;
+		} else {
+			auto result UNUSED = renderpassesWithExternalRTs.insert(p.first);
+			assert(result.second);
 		}
 	}
 }
