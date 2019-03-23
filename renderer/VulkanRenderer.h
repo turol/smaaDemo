@@ -431,13 +431,13 @@ struct RenderPass {
 
 struct RenderTarget{
 	// TODO: add numSamples
-	unsigned int  width, height;
+	unsigned int         width, height;
 	Layout               currentLayout;
 	TextureHandle        texture;
 	TextureHandle        additionalView;
-	vk::Image     image;
-	vk::Format    format;
-	vk::ImageView imageView;
+	vk::Image            image;
+	vk::Format           format;
+	vk::ImageView        imageView;
 
 
 	RenderTarget() noexcept
