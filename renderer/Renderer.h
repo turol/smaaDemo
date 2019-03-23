@@ -896,7 +896,6 @@ public:
 
 	// gets the textures of a rendertarget to be used for sampling
 	// might be ephemeral, don't store
-	TextureHandle        getRenderTargetTexture(RenderTargetHandle handle);
 	TextureHandle        getRenderTargetView(RenderTargetHandle handle, Format f);
 
 	void deleteBuffer(BufferHandle handle);

@@ -3087,7 +3087,7 @@ void RenderGraph::render(Renderer &renderer) {
 
 				{
 					// get view from renderer, add to res
-					TextureHandle view = r.getRenderTargetTexture(getHandle(rtIt->second));
+					TextureHandle view = r.getRenderTargetView(getHandle(rtIt->second), fmt);
 					res.rendertargets.emplace(std::make_pair(inputRT, fmt), view);
 					// also add it with Format::Invalid so default works easier
 					res.rendertargets.emplace(std::make_pair(inputRT, Format::Invalid), view);

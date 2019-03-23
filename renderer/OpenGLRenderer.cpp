@@ -1507,27 +1507,28 @@ DSLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout *l
 }
 
 
-TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle handle) {
+TextureHandle RendererImpl::getRenderTargetView(RenderTargetHandle handle, Format f) {
 	const auto &rt = renderTargets.get(handle);
 
-#ifndef NDEBUG
-	const auto &tex = textures.get(rt.texture);
-	assert(tex.renderTarget);
-#endif  // NDEBUG
-
-	return rt.texture;
-}
-
-
-TextureHandle RendererImpl::getRenderTargetView(RenderTargetHandle handle, Format /* f */) {
-	const auto &rt = renderTargets.get(handle);
+	TextureHandle result;
+	if (f == rt.format) {
+		result = rt.texture;
 
 #ifndef NDEBUG
-	const auto &tex = textures.get(rt.additionalView);
-	assert(tex.renderTarget);
+		const auto &tex = textures.get(result);
+		assert(tex.renderTarget);
 #endif //  NDEBUG
+	} else {
+		result = rt.additionalView;
 
-	return rt.additionalView;
+#ifndef NDEBUG
+		const auto &tex = textures.get(result);
+		assert(tex.renderTarget);
+		assert(tex.format == f);
+#endif //  NDEBUG
+	}
+
+	return result;
 }
 
 

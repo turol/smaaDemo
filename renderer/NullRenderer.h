@@ -462,7 +462,6 @@ struct RendererImpl : public RendererBase {
 
 	DSLayoutHandle       createDescriptorSetLayout(const DescriptorLayout *layout);
 
-	TextureHandle        getRenderTargetTexture(RenderTargetHandle handle);
 	TextureHandle        getRenderTargetView(RenderTargetHandle handle, Format f);
 
 	void deleteBuffer(BufferHandle handle);

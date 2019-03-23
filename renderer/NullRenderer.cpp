@@ -213,13 +213,6 @@ DSLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout *l
 }
 
 
-TextureHandle RendererImpl::getRenderTargetTexture(RenderTargetHandle /* handle */) {
-	TextureHandle handle;
-
-	return handle;
-}
-
-
 TextureHandle RendererImpl::getRenderTargetView(RenderTargetHandle /* handle */, Format /* f */) {
 	TextureHandle handle;
 
