@@ -3030,7 +3030,7 @@ void RenderGraph::render(Renderer &renderer) {
 		// if we have external RTs they must be bound by now
 		bool hasExternal = false;
 		visitRendertarget(p.second
-						  , [&] (const ExternalRT &e) { assert(e.handle); hasExternal = true; }
+						  , [&] (const ExternalRT &e UNUSED) { assert(e.handle); hasExternal = true; }
 						  , nopInternal
 						 );
 
