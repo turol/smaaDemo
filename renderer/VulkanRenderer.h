@@ -436,7 +436,7 @@ struct RenderTarget{
 	TextureHandle        texture;
 	TextureHandle        additionalView;
 	vk::Image            image;
-	vk::Format           format;
+	Format               format;
 	vk::ImageView        imageView;
 
 
@@ -444,7 +444,7 @@ struct RenderTarget{
 	: width(0)
 	, height(0)
 	, currentLayout(Layout::Undefined)
-	, format(vk::Format::eUndefined)
+	, format(Format::Invalid)
 	{}
 
 	RenderTarget(const RenderTarget &)            = delete;
@@ -466,7 +466,7 @@ struct RenderTarget{
 		other.texture       = TextureHandle();
 		other.additionalView = TextureHandle();
 		other.image         = vk::Image();
-		other.format        = vk::Format::eUndefined;
+		other.format        = Format::Invalid;
 		other.imageView     = vk::ImageView();
 	}
 
@@ -493,7 +493,7 @@ struct RenderTarget{
 		other.texture       = TextureHandle();
 		other.additionalView = TextureHandle();
 		other.image         = vk::Image();
-		other.format        = vk::Format::eUndefined;
+		other.format        = Format::Invalid;
 		other.imageView     = vk::ImageView();
 
 		return *this;

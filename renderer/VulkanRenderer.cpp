@@ -1506,7 +1506,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	rt.width  = desc.width_;
 	rt.height = desc.height_;
 	rt.image = device.createImage(info);
-	rt.format = format;
+	rt.format = desc.format_;
 
 	auto texResult   = textures.add();
 	Texture &tex     = texResult.first;
