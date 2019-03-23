@@ -805,6 +805,7 @@ RendererImpl::~RendererImpl() {
 		glDeleteTextures(1, &tex.tex);
 		tex.tex = 0;
 		tex.target = GL_NONE;
+		tex.format = Format::Invalid;
 	} );
 
 	samplers.clearWith([](Sampler &sampler) {
@@ -1381,6 +1382,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	tex.height        = desc.height_;
 	tex.renderTarget  = true;
 	tex.target        = target;
+	tex.format        = desc.format_;
 
 	auto result = renderTargets.add();
 	RenderTarget &rt = result.first;
@@ -1403,6 +1405,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 		view.height       = desc.height_;
 		view.renderTarget = true;
 		view.target       = target;
+		view.format       = desc.additionalViewFormat_;
 		rt.additionalView = viewResult.second;
 	}
 
@@ -1479,6 +1482,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	tex.width  = desc.width_;
 	tex.height = desc.height_;
 	tex.target = target;
+	tex.format = desc.format_;
 	assert(!tex.renderTarget);
 
 	if (tracing) {
@@ -1589,6 +1593,7 @@ void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
 			glDeleteTextures(1, &tex.tex);
 			tex.tex = 0;
 			tex.target = GL_NONE;
+			tex.format = Format::Invalid;
 		}
 		this->textures.remove(rt.texture);
 		rt.texture = TextureHandle();
@@ -1602,6 +1607,7 @@ void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
 			glDeleteTextures(1, &view.tex);
 			view.tex = 0;
 			view.target = GL_NONE;
+			view.format = Format::Invalid;
 			this->textures.remove(rt.additionalView);
 			rt.additionalView = TextureHandle();
 		}
@@ -1628,6 +1634,7 @@ void RendererImpl::deleteTexture(TextureHandle handle) {
 		glDeleteTextures(1, &tex.tex);
 		tex.tex = 0;
 		tex.target = GL_NONE;
+		tex.format = Format::Invalid;
 	} );
 }
 
