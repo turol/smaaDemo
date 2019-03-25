@@ -647,6 +647,35 @@ private:
 	}
 
 
+	void buildRenderPassFramebuffer(Renderer &renderer, RP &rp) {
+		const auto &desc = rp.desc;
+
+		FramebufferDesc fbDesc;
+		fbDesc.renderPass(rp.handle)
+			  .name(desc.name_);
+
+		if (desc.depthStencil_ != Rendertargets::Count) {
+			auto it = rendertargets.find(desc.depthStencil_);
+			assert(it != rendertargets.end());
+			fbDesc.depthStencil(getHandle(it->second));
+		}
+
+		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+			const auto &rt = desc.colorRTs_[i];
+			if (rt.id != Rendertargets::Count) {
+				auto it = rendertargets.find(rt.id);
+				assert(it != rendertargets.end());
+				fbDesc.color(i, getHandle(it->second));
+			}
+		}
+
+		// TODO: cache framebuffers
+		auto fbHandle = renderer.createFramebuffer(fbDesc);
+		assert(fbHandle);
+		rp.fb = fbHandle;
+	}
+
+
 	struct Blit {
 		Rendertargets::Rendertargets  source;
 		Rendertargets::Rendertargets  target;
@@ -2992,28 +3021,7 @@ void RenderGraph::build(Renderer &renderer) {
 		// TODO: check depthStencil too
 
 		if (!hasExternalRTs) {
-			FramebufferDesc fbDesc;
-			fbDesc.renderPass(rpHandle)
-			      .name(desc.name_);
-
-			if (desc.depthStencil_ != Rendertargets::Count) {
-				auto it = rendertargets.find(desc.depthStencil_);
-				assert(it != rendertargets.end());
-				fbDesc.depthStencil(getHandle(it->second));
-			}
-
-			for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-				const auto &rt = desc.colorRTs_[i];
-				if (rt.id != Rendertargets::Count) {
-					auto it = rendertargets.find(rt.id);
-					assert(it != rendertargets.end());
-					fbDesc.color(i, getHandle(it->second));
-				}
-			}
-
-			auto fbHandle = renderer.createFramebuffer(fbDesc);
-			assert(fbHandle);
-			temp.fb = fbHandle;
+			buildRenderPassFramebuffer(renderer, temp);
 		} else {
 			auto result UNUSED = renderpassesWithExternalRTs.insert(p.first);
 			assert(result.second);
