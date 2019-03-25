@@ -901,6 +901,8 @@ class SMAADemo {
 
 	void setAntialiasing(bool enabled);
 
+	void setTemporalAA(bool enabled);
+
 
 public:
 
@@ -2308,6 +2310,20 @@ void SMAADemo::setAntialiasing(bool enabled) {
 }
 
 
+void SMAADemo::setTemporalAA(bool enabled) {
+	temporalAA = enabled;
+
+	if (enabled) {
+		temporalAAFirstFrame = true;
+	}
+
+	// TODO: is this still necessary?
+	recreateFramebuffers = true;
+
+	rebuildRG = true;
+}
+
+
 static void printHelp() {
 	printf(" a                - toggle antialiasing on/off\n");
 	printf(" c                - re-color cubes\n");
@@ -2470,12 +2486,7 @@ void SMAADemo::processInput() {
 			case SDL_SCANCODE_T:
 				// TODO: implement MSAA temporal AA
 				if (aaMethod != AAMethod::MSAA) {
-					temporalAA = !temporalAA;
-					if (temporalAA) {
-						recreateFramebuffers = true;
-						temporalAAFirstFrame = true;
-						rebuildRG = true;
-					}
+					setTemporalAA(!temporalAA);
 				}
 				break;
 
@@ -3687,8 +3698,9 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 					recreateFramebuffers = true;
 					rebuildRG            = true;
 				}
-				if (aaMethod != AAMethod::MSAA) {
-					temporalAA = tempTAA;
+				if (aaMethod != AAMethod::MSAA && temporalAA != tempTAA) {
+					setTemporalAA(tempTAA);
+					assert(temporalAA == tempTAA);
 				}
 
 				// temporal reprojection only enabled when temporal AA is
