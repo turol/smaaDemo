@@ -3035,16 +3035,25 @@ void RenderGraph::render(Renderer &renderer) {
 	state = State::Rendering;
 
 	if (!renderpassesWithExternalRTs.empty()) {
+		bool hasExternal = false;
 		for (const auto &p : rendertargets) {
 			// if we have external RTs they must be bound by now
-			bool hasExternal = false;
 			visitRendertarget(p.second
 							  , [&] (const ExternalRT &e UNUSED) { assert(e.handle); hasExternal = true; }
 							  , nopInternal
 							 );
+		}
+		assert(hasExternal);
 
-			// TODO: build framebuffers at this point
-			assert(!hasExternal);
+		// build framebuffers
+		for (auto rpName : renderpassesWithExternalRTs) {
+			auto it = renderPasses.find(rpName);
+			assert(it != renderPasses.end());
+			auto &rp = it->second;
+
+			assert(!rp.fb);
+			buildRenderPassFramebuffer(renderer, rp);
+			assert(rp.fb);
 		}
 	}
 
@@ -3149,6 +3158,7 @@ void RenderGraph::render(Renderer &renderer) {
 
 	assert(currentRP == RenderPasses::Count);
 
+	if (!renderpassesWithExternalRTs.empty()) {
 	for (auto &p : rendertargets) {
 		// clear the bindings
 		visitRendertarget(p.second
@@ -3157,6 +3167,19 @@ void RenderGraph::render(Renderer &renderer) {
 						 );
 	}
 
+		// clear framebuffers
+		for (auto rpName : renderpassesWithExternalRTs) {
+			// clear framebuffers
+			auto it = renderPasses.find(rpName);
+			assert(it != renderPasses.end());
+			auto &rp = it->second;
+
+			assert(rp.fb);
+			// TODO: cache them
+			renderer.deleteFramebuffer(rp.fb);
+			rp.fb = FramebufferHandle();
+		}
+	}
 	assert(currentRP == RenderPasses::Count);
 }
 
