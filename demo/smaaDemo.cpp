@@ -899,6 +899,8 @@ class SMAADemo {
 
 	void colorCubes();
 
+	void setAntialiasing(bool enabled);
+
 
 public:
 
@@ -2290,6 +2292,22 @@ void SMAADemo::colorCubes() {
 }
 
 
+void SMAADemo::setAntialiasing(bool enabled) {
+	antialiasing = enabled;
+	rebuildRG    = true;
+
+	// TODO: is this necessary?
+	if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
+		recreateFramebuffers = true;
+	}
+
+	if (temporalAA && aaMethod != AAMethod::MSAA) {
+		// TODO: implement MSAA temporal AA
+		temporalAAFirstFrame = true;
+	}
+}
+
+
 static void printHelp() {
 	printf(" a                - toggle antialiasing on/off\n");
 	printf(" c                - re-color cubes\n");
@@ -2364,15 +2382,7 @@ void SMAADemo::processInput() {
 				break;
 
 			case SDL_SCANCODE_A:
-				antialiasing = !antialiasing;
-				if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
-					recreateFramebuffers = true;
-				}
-				if (temporalAA && aaMethod != AAMethod::MSAA) {
-					// TODO: implement MSAA temporal AA
-					temporalAAFirstFrame = true;
-				}
-				rebuildRG = true;
+				setAntialiasing(!antialiasing);
 				break;
 
 			case SDL_SCANCODE_C:
@@ -3649,10 +3659,11 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 
 	if (ImGui::Begin("SMAA", &windowVisible, flags)) {
 		if (ImGui::CollapsingHeader("Antialiasing properties", ImGuiTreeNodeFlags_DefaultOpen)) {
-			bool aaChanged = ImGui::Checkbox("Antialiasing", &antialiasing);
-			if (aaChanged && temporalAA && aaMethod != AAMethod::MSAA) {
-				// TODO: implement MSAA temporal AA
-				temporalAAFirstFrame = true;
+			bool temp = antialiasing;
+			bool aaChanged = ImGui::Checkbox("Antialiasing", &temp);
+			if (aaChanged) {
+				setAntialiasing(temp);
+				assert(temp == antialiasing);
 			}
 
 			int aa = static_cast<int>(aaMethod);
