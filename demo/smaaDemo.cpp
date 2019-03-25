@@ -3159,13 +3159,13 @@ void RenderGraph::render(Renderer &renderer) {
 	assert(currentRP == RenderPasses::Count);
 
 	if (!renderpassesWithExternalRTs.empty()) {
-	for (auto &p : rendertargets) {
-		// clear the bindings
-		visitRendertarget(p.second
-						  , [&] (ExternalRT &e) { assert(e.handle); e.handle = RenderTargetHandle(); }
-						  , nopInternal
-						 );
-	}
+		for (auto &p : rendertargets) {
+			// clear the bindings
+			visitRendertarget(p.second
+							  , [&] (ExternalRT &e) { assert(e.handle); e.handle = RenderTargetHandle(); }
+							  , nopInternal
+							 );
+		}
 
 		// clear framebuffers
 		for (auto rpName : renderpassesWithExternalRTs) {
