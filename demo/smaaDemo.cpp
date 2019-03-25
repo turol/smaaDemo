@@ -3027,17 +3027,17 @@ void RenderGraph::render(Renderer &renderer) {
 	state = State::Rendering;
 
 	if (!renderpassesWithExternalRTs.empty()) {
-	for (const auto &p : rendertargets) {
-		// if we have external RTs they must be bound by now
-		bool hasExternal = false;
-		visitRendertarget(p.second
-						  , [&] (const ExternalRT &e UNUSED) { assert(e.handle); hasExternal = true; }
-						  , nopInternal
-						 );
+		for (const auto &p : rendertargets) {
+			// if we have external RTs they must be bound by now
+			bool hasExternal = false;
+			visitRendertarget(p.second
+							  , [&] (const ExternalRT &e UNUSED) { assert(e.handle); hasExternal = true; }
+							  , nopInternal
+							 );
 
-		// TODO: build framebuffers at this point
-		assert(!hasExternal);
-	}
+			// TODO: build framebuffers at this point
+			assert(!hasExternal);
+		}
 	}
 
 	struct OpVisitor final : public boost::static_visitor<void> {
