@@ -1667,8 +1667,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 	if (antialiasing) {
 		if (temporalAA) {
-			// TODO: implement MSAA temporal AA
-			if (aaMethod != AAMethod::MSAA) {
+			{
 				RenderTargetDesc rtDesc;
 				rtDesc.name("Temporal resolve 0")
 				      .format(Format::sRGBA8)  // TODO: not right?
@@ -1860,8 +1859,7 @@ void SMAADemo::rebuildRenderGraph() {
 			} break;
 			}
 
-			// TODO: implement MSAA temporal AA
-			if (aaMethod != AAMethod::MSAA) {
+			{
 				RenderGraph::PassDesc desc;
 				desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
 					.inputRendertarget(Rendertargets::TemporalPrevious)
@@ -2282,8 +2280,7 @@ void SMAADemo::setAntialiasing(bool enabled) {
 		recreateFramebuffers = true;
 	}
 
-	if (temporalAA && aaMethod != AAMethod::MSAA) {
-		// TODO: implement MSAA temporal AA
+	if (temporalAA) {
 		temporalAAFirstFrame = true;
 	}
 }
@@ -2463,10 +2460,7 @@ void SMAADemo::processInput() {
 				break;
 
 			case SDL_SCANCODE_T:
-				// TODO: implement MSAA temporal AA
-				if (aaMethod != AAMethod::MSAA) {
 					setTemporalAA(!temporalAA);
-				}
 				break;
 
 			case SDL_SCANCODE_V:
@@ -2632,8 +2626,7 @@ void SMAADemo::mainLoopIteration() {
 		cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
 	}
 
-	if (temporalAA && aaMethod != AAMethod::MSAA) {
-		// TODO: implement MSAA temporal AA
+	if (temporalAA) {
 		temporalFrame = (temporalFrame + 1) % 2;
 
 		switch (aaMethod) {
@@ -2707,8 +2700,7 @@ void SMAADemo::render() {
 		rebuildRenderGraph();
 	}
 
-	if (antialiasing && temporalAA && aaMethod != AAMethod::MSAA) {
-		// TODO: implement MSAA temporal AA
+	if (antialiasing && temporalAA) {
 		assert(temporalRTs[0]);
 		assert(temporalRTs[1]);
 		renderGraph.bindExternalRT(Rendertargets::TemporalPrevious, temporalRTs[1 - temporalFrame]);
@@ -3235,8 +3227,7 @@ void SMAADemo::renderCubeScene(RenderPasses::RenderPasses rp, RenderGraph::PassR
 	glm::mat4 viewProj = proj * view * model;
 
 	// temporal jitter
-	if (antialiasing && temporalAA && aaMethod != AAMethod::MSAA) {
-		// TODO: implement MSAA temporal AA
+	if (antialiasing && temporalAA) {
 		glm::vec2 jitter;
 		if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
 			const glm::vec2 jitters[2] = {
@@ -3665,21 +3656,12 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			ImGui::RadioButton("SMAA2X", &aa, static_cast<int>(AAMethod::SMAA2X));
 
 			{
-				if (aaMethod == AAMethod::MSAA) {
-					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-					ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-				}
-
 				bool tempTAA = temporalAA;
-				if (aaMethod == AAMethod::MSAA) {
-					// TODO: implement MSAA temporal AA
-					tempTAA = false;
-				}
 				if (ImGui::Checkbox("Temporal AA", &tempTAA)) {
 					recreateFramebuffers = true;
 					rebuildRG            = true;
 				}
-				if (aaMethod != AAMethod::MSAA && temporalAA != tempTAA) {
+				if (temporalAA != tempTAA) {
 					setTemporalAA(tempTAA);
 					assert(temporalAA == tempTAA);
 				}
@@ -3691,11 +3673,6 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				}
 				ImGui::Checkbox("Temporal reprojection", &temporalReproject);
 				if (!temporalAA) {
-					ImGui::PopItemFlag();
-					ImGui::PopStyleVar();
-				}
-
-				if (aaMethod == AAMethod::MSAA) {
 					ImGui::PopItemFlag();
 					ImGui::PopStyleVar();
 				}
