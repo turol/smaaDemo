@@ -2626,7 +2626,7 @@ void SMAADemo::mainLoopIteration() {
 		cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
 	}
 
-	if (temporalAA) {
+	if (antialiasing && temporalAA) {
 		temporalFrame = (temporalFrame + 1) % 2;
 
 		switch (aaMethod) {
