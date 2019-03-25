@@ -1868,7 +1868,7 @@ void SMAADemo::rebuildRenderGraph() {
 				{
 					RenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::TemporalCurrent, PassBegin::Keep)
-					    .inputRendertarget(Rendertargets::Subsample1)
+					    .inputRendertarget(Rendertargets::Subsample2)
 					    .inputRendertarget(Rendertargets::BlendWeights)
 						.name("SMAA2x blend 1");
 
