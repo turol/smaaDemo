@@ -3026,6 +3026,7 @@ void RenderGraph::render(Renderer &renderer) {
 	assert(state == State::Ready);
 	state = State::Rendering;
 
+	if (!renderpassesWithExternalRTs.empty()) {
 	for (const auto &p : rendertargets) {
 		// if we have external RTs they must be bound by now
 		bool hasExternal = false;
@@ -3036,6 +3037,7 @@ void RenderGraph::render(Renderer &renderer) {
 
 		// TODO: build framebuffers at this point
 		assert(!hasExternal);
+	}
 	}
 
 	struct OpVisitor final : public boost::static_visitor<void> {
