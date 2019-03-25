@@ -2730,8 +2730,10 @@ void SMAADemo::render() {
 		rebuildRenderGraph();
 	}
 
-	if (temporalAA && aaMethod != AAMethod::MSAA) {
+	if (antialiasing && temporalAA && aaMethod != AAMethod::MSAA) {
 		// TODO: implement MSAA temporal AA
+		assert(temporalRTs[0]);
+		assert(temporalRTs[1]);
 		renderGraph.bindExternalRT(Rendertargets::TemporalPrevious, temporalRTs[1 - temporalFrame]);
 		renderGraph.bindExternalRT(Rendertargets::TemporalCurrent,  temporalRTs[    temporalFrame]);
 	}
