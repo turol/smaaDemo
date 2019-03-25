@@ -1697,18 +1697,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 					renderGraph.renderPass(RenderPasses::FXAA, desc, [this] (RenderPasses::RenderPasses rp, RenderGraph::PassResources &r) { this->renderFXAA(rp, r); } );
 				}
-
-				{
-					RenderGraph::PassDesc desc;
-					desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
-					    .inputRendertarget(Rendertargets::TemporalPrevious)
-					    .inputRendertarget(Rendertargets::TemporalCurrent)
-					    .inputRendertarget(Rendertargets::Velocity)
-                        .name("Temporal AA");
-
-					renderGraph.renderPass(RenderPasses::Final, desc, [this] (RenderPasses::RenderPasses rp, RenderGraph::PassResources &r) { this->renderTemporalAA(rp, r); } );
-				}
-
 			} break;
 
 			case AAMethod::SMAA: {
@@ -1759,17 +1747,6 @@ void SMAADemo::rebuildRenderGraph() {
 						.name("SMAA blend");
 
 					renderGraph.renderPass(RenderPasses::SMAABlend, desc, [this] (RenderPasses::RenderPasses rp, RenderGraph::PassResources &r) { this->renderSMAABlend(rp, r, Rendertargets::MainColor, 0); } );
-				}
-
-				{
-					RenderGraph::PassDesc desc;
-					desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
-					    .inputRendertarget(Rendertargets::TemporalPrevious)
-					    .inputRendertarget(Rendertargets::TemporalCurrent)
-					    .inputRendertarget(Rendertargets::Velocity)
-						.name("Temporal AA");
-
-					renderGraph.renderPass(RenderPasses::Final, desc, [this] (RenderPasses::RenderPasses rp, RenderGraph::PassResources &r) { this->renderTemporalAA(rp, r); } );
 				}
 			} break;
 
@@ -1880,20 +1857,20 @@ void SMAADemo::rebuildRenderGraph() {
 
 					renderGraph.renderPass(RenderPasses::SMAA2XBlend2, desc, [this] (RenderPasses::RenderPasses rp, RenderGraph::PassResources &r) { this->renderSMAABlend(rp, r, Rendertargets::Subsample2, 1); } );
 				}
-
-				{
-					RenderGraph::PassDesc desc;
-					desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
-					    .inputRendertarget(Rendertargets::TemporalPrevious)
-					    .inputRendertarget(Rendertargets::TemporalCurrent)
-					    .inputRendertarget(Rendertargets::Velocity)
-						.name("Temporal AA");
-
-					renderGraph.renderPass(RenderPasses::Final, desc, [this] (RenderPasses::RenderPasses rp, RenderGraph::PassResources &r) { this->renderTemporalAA(rp, r); } );
-				}
 			} break;
 			}
 
+			// TODO: implement MSAA temporal AA
+			if (aaMethod != AAMethod::MSAA) {
+				RenderGraph::PassDesc desc;
+				desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
+					.inputRendertarget(Rendertargets::TemporalPrevious)
+					.inputRendertarget(Rendertargets::TemporalCurrent)
+					.inputRendertarget(Rendertargets::Velocity)
+					.name("Temporal AA");
+
+				renderGraph.renderPass(RenderPasses::Final, desc, [this] (RenderPasses::RenderPasses rp, RenderGraph::PassResources &r) { this->renderTemporalAA(rp, r); } );
+			}
 		} else {
 			// no temporal AA
 			switch (aaMethod) {
