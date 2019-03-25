@@ -1697,6 +1697,7 @@ void SMAADemo::rebuildRenderGraph() {
 					desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::TemporalPrevious)
 					    .inputRendertarget(Rendertargets::TemporalCurrent)
+					    .inputRendertarget(Rendertargets::Velocity)
                         .name("Temporal AA");
 
 					renderGraph.renderPass(RenderPasses::Final, desc, [this] (RenderPasses::RenderPasses rp, RenderGraph::PassResources &r) { this->renderTemporalAA(rp, r); } );
@@ -1759,6 +1760,7 @@ void SMAADemo::rebuildRenderGraph() {
 					desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::TemporalPrevious)
 					    .inputRendertarget(Rendertargets::TemporalCurrent)
+					    .inputRendertarget(Rendertargets::Velocity)
 						.name("Temporal AA");
 
 					renderGraph.renderPass(RenderPasses::Final, desc, [this] (RenderPasses::RenderPasses rp, RenderGraph::PassResources &r) { this->renderTemporalAA(rp, r); } );
@@ -1878,6 +1880,7 @@ void SMAADemo::rebuildRenderGraph() {
 					desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::TemporalPrevious)
 					    .inputRendertarget(Rendertargets::TemporalCurrent)
+					    .inputRendertarget(Rendertargets::Velocity)
 						.name("Temporal AA");
 
 					renderGraph.renderPass(RenderPasses::Final, desc, [this] (RenderPasses::RenderPasses rp, RenderGraph::PassResources &r) { this->renderTemporalAA(rp, r); } );
