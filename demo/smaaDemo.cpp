@@ -278,6 +278,7 @@ enum Rendertargets {
 	  MainColor
 	, MainDepth
 	, Velocity
+	, VelocityMS
 	, Edges
 	, BlendWeights
 	, TemporalPrevious
@@ -1588,11 +1589,24 @@ void SMAADemo::rebuildRenderGraph() {
 		{
 			RenderTargetDesc rtDesc;
 			rtDesc.name("velocity")
-				  .numSamples(numSamples)
+				  .numSamples(1)
 				  .format(Format::RG16Float)
 				  .width(windowWidth)
 				  .height(windowHeight);
 			renderGraph.renderTarget(Rendertargets::Velocity, rtDesc);
+		}
+
+		auto velocityRT = Rendertargets::Velocity;
+		if (numSamples > 1) {
+			RenderTargetDesc rtDesc;
+			rtDesc.name("velocity multisample")
+				  .numSamples(numSamples)
+				  .format(Format::RG16Float)
+				  .width(windowWidth)
+				  .height(windowHeight);
+			renderGraph.renderTarget(Rendertargets::VelocityMS, rtDesc);
+
+			velocityRT = Rendertargets::VelocityMS;
 		}
 
 		{
@@ -1607,7 +1621,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 		RenderGraph::PassDesc desc;
 		desc.color(0, Rendertargets::MainColor, PassBegin::Clear)
-		    .color(1, Rendertargets::Velocity,  PassBegin::Clear)
+		    .color(1, velocityRT,               PassBegin::Clear)
 		    .depthStencil(Rendertargets::MainDepth,  PassBegin::Clear)
 		    .clearDepth(1.0f)
 		    .name("Scene")
@@ -1632,11 +1646,23 @@ void SMAADemo::rebuildRenderGraph() {
 		{
 			RenderTargetDesc rtDesc;
 			rtDesc.name("velocity")
-				  .numSamples(numSamples)
+				  .numSamples(1)
 				  .format(Format::RG16Float)
 				  .width(windowWidth)
 				  .height(windowHeight);
 			renderGraph.renderTarget(Rendertargets::Velocity, rtDesc);
+		}
+
+		auto velocityRT = Rendertargets::Velocity;
+		if (numSamples > 1) {
+			RenderTargetDesc rtDesc;
+			rtDesc.name("velocity multisample")
+				  .numSamples(numSamples)
+				  .format(Format::RG16Float)
+				  .width(windowWidth)
+				  .height(windowHeight);
+			renderGraph.renderTarget(Rendertargets::VelocityMS, rtDesc);
+			velocityRT = Rendertargets::VelocityMS;
 		}
 
 		{
@@ -1651,7 +1677,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 		RenderGraph::PassDesc desc;
 		desc.color(0, Rendertargets::MainColor, PassBegin::Clear)
-		    .color(1, Rendertargets::Velocity,  PassBegin::Clear)
+		    .color(1, velocityRT,               PassBegin::Clear)
 		    .depthStencil(Rendertargets::MainDepth,  PassBegin::Clear)
 		    .clearDepth(1.0f)
 		    .name("Scene")
@@ -1684,6 +1710,10 @@ void SMAADemo::rebuildRenderGraph() {
 
 				renderGraph.externalRenderTarget(Rendertargets::TemporalPrevious, Format::sRGBA8, Layout::ShaderRead, Layout::ShaderRead);
 				renderGraph.externalRenderTarget(Rendertargets::TemporalCurrent,  Format::sRGBA8, Layout::Undefined,  Layout::ShaderRead);
+			}
+
+			if (numSamples > 1) {
+				renderGraph.resolveMSAA(Rendertargets::VelocityMS, Rendertargets::Velocity);
 			}
 
 			switch (aaMethod) {
