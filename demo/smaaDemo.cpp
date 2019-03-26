@@ -2911,6 +2911,8 @@ void RenderGraph::build(Renderer &renderer) {
 
 	assert(finalTarget != Rendertargets::Count);
 
+	LOG("RenderGraph::build start\n");
+
 	for (auto &p : rendertargets) {
 		assert(p.first != Rendertargets::Count);
 
@@ -3061,6 +3063,28 @@ void RenderGraph::build(Renderer &renderer) {
 			assert(result.second);
 		}
 	}
+
+	{
+		struct DebugVisitor final : public boost::static_visitor<void> {
+			void operator()(const Blit &b) const {
+				LOG("Blit %u -> %u\n", b.source, b.target);
+			}
+
+			void operator()(const RenderPass &rpId) const {
+				LOG("RenderPass %u\n", rpId.name);
+			}
+
+			void operator()(const ResolveMSAA &r) const {
+				LOG("ResolveMSAA %u -> %u\n", r.source, r.target);
+			}
+		};
+
+		for (const auto &op : operations) {
+			boost::apply_visitor(DebugVisitor(), op);
+		}
+	}
+	LOG("RenderGraph::build end\n");
+	logFlush();
 }
 
 
