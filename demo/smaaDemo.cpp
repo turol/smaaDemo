@@ -700,6 +700,7 @@ private:
 
 
 	State                                          state;
+	bool                                           hasExternalRTs;
 	RenderPasses::RenderPasses                     currentRP;
 	std::vector<Operation>                         operations;
 	Rendertargets::Rendertargets                   finalTarget;
@@ -2720,6 +2721,7 @@ void RenderGraph::reset(Renderer &renderer) {
 
 	renderPasses.clear();
 	renderpassesWithExternalRTs.clear();
+	hasExternalRTs = false;
 
 	for (auto &p : pipelines) {
 		renderer.deletePipeline(p.handle);
@@ -2799,6 +2801,8 @@ void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets rt, Format f
 	assert(state == State::Building);
 	assert(rt != Rendertargets::Count);
 	assert(rendertargets.find(rt) == rendertargets.end());
+
+	hasExternalRTs = true;
 
 	ExternalRT e;
 	e.format = format;
@@ -3007,20 +3011,20 @@ void RenderGraph::build(Renderer &renderer) {
 		assert(!temp.fb);
 
 		// if this renderpass has external RTs we defer its creation
-		bool hasExternalRTs = false;
+		bool hasExternal = false;
 		for (const auto &rt : desc.colorRTs_) {
 			if (rt.id != Rendertargets::Count) {
 				auto it = rendertargets.find(rt.id);
 				assert(it != rendertargets.end());
 				if (isExternal(it->second)) {
-					hasExternalRTs = true;
+					hasExternal = true;
 					break;
 				}
 			}
 		}
 		// TODO: check depthStencil too
 
-		if (!hasExternalRTs) {
+		if (!hasExternal) {
 			buildRenderPassFramebuffer(renderer, temp);
 		} else {
 			auto result UNUSED = renderpassesWithExternalRTs.insert(p.first);
@@ -3034,7 +3038,7 @@ void RenderGraph::render(Renderer &renderer) {
 	assert(state == State::Ready);
 	state = State::Rendering;
 
-	if (!renderpassesWithExternalRTs.empty()) {
+	if (hasExternalRTs) {
 		bool hasExternal = false;
 		for (const auto &p : rendertargets) {
 			// if we have external RTs they must be bound by now
@@ -3158,7 +3162,7 @@ void RenderGraph::render(Renderer &renderer) {
 
 	assert(currentRP == RenderPasses::Count);
 
-	if (!renderpassesWithExternalRTs.empty()) {
+	if (hasExternalRTs) {
 		for (auto &p : rendertargets) {
 			// clear the bindings
 			visitRendertarget(p.second
