@@ -1134,6 +1134,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 
 		TCLAP::ValueArg<std::string>           aaMethodSwitch("m",    "method",     "AA Method",     false, "SMAA",        "SMAA/FXAA/MSAA", cmd);
 		TCLAP::ValueArg<std::string>           aaQualitySwitch("q",   "quality",    "AA Quality",    false, "",            "", cmd);
+		TCLAP::SwitchArg                       temporalAASwitch("t",  "temporal",   "Temporal AA", cmd, false);
 
 		TCLAP::UnlabeledMultiArg<std::string>  imagesArg("images",    "image files", false, "image file", cmd, true, nullptr);
 
@@ -1213,6 +1214,8 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 			fprintf(stderr, "Bad AA method \"%s\"\n", aaMethodStr.c_str());
 			exit(1);
 		}
+
+		temporalAA = temporalAASwitch.getValue();
 
 		imageFiles    = imagesArg.getValue();
 
