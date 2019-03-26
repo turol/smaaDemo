@@ -1687,7 +1687,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 			switch (aaMethod) {
 			case AAMethod::MSAA: {
-				renderGraph.resolveMSAA(Rendertargets::MainColor, Rendertargets::FinalRender);
+				renderGraph.resolveMSAA(Rendertargets::MainColor, Rendertargets::TemporalCurrent);
 			} break;
 
 			case AAMethod::FXAA: {
