@@ -558,7 +558,6 @@ struct RenderPassDesc {
 		return *this;
 	}
 
-private:
 
 	struct RTInfo {
 		Format     format;
@@ -567,6 +566,9 @@ private:
 		Layout     finalLayout;
 		glm::vec4  clearValue;
 	};
+
+
+private:
 
 	Format                                       depthStencilFormat_;
 	std::array<RTInfo, MAX_COLOR_RENDERTARGETS>  colorRTs_;
