@@ -3148,12 +3148,36 @@ void RenderGraph::build(Renderer &renderer) {
 
 	{
 		struct DebugVisitor final : public boost::static_visitor<void> {
+			RenderGraph &rg;
+
+
+			DebugVisitor(RenderGraph &rg_)
+			: rg(rg_)
+			{
+			}
+
+
 			void operator()(const Blit &b) const {
 				LOG("Blit %s -> %s\n", to_string(b.source), to_string(b.target));
 			}
 
 			void operator()(const RenderPass &rpId) const {
 				LOG("RenderPass %s\n", to_string(rpId.name));
+				auto it = rg.renderPasses.find(rpId.name);
+				assert(it != rg.renderPasses.end());
+				const auto &desc   = it->second.desc;
+				const auto &rpDesc = it->second.rpDesc;
+
+				if (desc.depthStencil_ != Rendertargets::Invalid) {
+					LOG(" depthStencil %s\n", to_string(desc.depthStencil_));
+				}
+
+				for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+					if (desc.colorRTs_[i].id != Rendertargets::Invalid) {
+						const auto &rt = rpDesc.color(i);
+						LOG(" color %u: %s\t%s\t%s\t%s\n", i, to_string(desc.colorRTs_[i].id), passBeginName(rt.passBegin), layoutName(rt.initialLayout), layoutName(rt.finalLayout));
+					}
+				}
 			}
 
 			void operator()(const ResolveMSAA &r) const {
@@ -3161,8 +3185,9 @@ void RenderGraph::build(Renderer &renderer) {
 			}
 		};
 
+		DebugVisitor d(*this);
 		for (const auto &op : operations) {
-			boost::apply_visitor(DebugVisitor(), op);
+			boost::apply_visitor(d, op);
 		}
 	}
 	LOG("RenderGraph::build end\n");
