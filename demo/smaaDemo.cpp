@@ -3069,7 +3069,7 @@ void RenderGraph::build(Renderer &renderer) {
 	{
 		struct DebugVisitor final : public boost::static_visitor<void> {
 			void operator()(const Blit &b) const {
-				LOG("Blit %u -> %u\n", b.source, b.target);
+				LOG("Blit %s -> %s\n", std::to_string(b.source).c_str(), std::to_string(b.target).c_str());
 			}
 
 			void operator()(const RenderPass &rpId) const {
@@ -3077,7 +3077,7 @@ void RenderGraph::build(Renderer &renderer) {
 			}
 
 			void operator()(const ResolveMSAA &r) const {
-				LOG("ResolveMSAA %u -> %u\n", r.source, r.target);
+				LOG("ResolveMSAA %s -> %s\n", std::to_string(r.source).c_str(), std::to_string(r.target).c_str());
 			}
 		};
 
