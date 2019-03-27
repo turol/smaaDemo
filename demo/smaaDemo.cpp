@@ -3040,11 +3040,11 @@ void RenderGraph::build(Renderer &renderer) {
 			{
 			}
 
-			void operator()(const Blit &b) const {
+			void operator()(Blit &b) const {
 				currentLayouts[b.source] = Layout::TransferSrc;
 			}
 
-			void operator()(const RenderPass &rpId) const {
+			void operator()(RenderPass &rpId) const {
 				auto it = rg.renderPasses.find(rpId.name);
 				assert(it != rg.renderPasses.end());
 
@@ -3107,7 +3107,7 @@ void RenderGraph::build(Renderer &renderer) {
 				}
 			}
 
-			void operator()(const ResolveMSAA &resolve) const {
+			void operator()(ResolveMSAA &resolve) const {
 				currentLayouts[resolve.source] = Layout::TransferSrc;
 			}
 		};
