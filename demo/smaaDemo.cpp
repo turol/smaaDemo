@@ -271,10 +271,7 @@ struct Image {
 };
 
 
-namespace Rendertargets {
-
-
-enum Rendertargets {
+enum class Rendertargets : uint32_t {
 	  MainColor
 	, MainDepth
 	, Velocity
@@ -290,8 +287,50 @@ enum Rendertargets {
 };
 
 
-} // namespace Rendertargets
+static const char *to_string(Rendertargets r) {
 
+	switch (r) {
+	case Rendertargets::MainColor:
+		return "MainColor";
+
+	case Rendertargets::MainDepth:
+		return "MainDepth";
+
+	case Rendertargets::Velocity:
+		return "Velocity";
+
+	case Rendertargets::VelocityMS:
+		return "VelocityMS";
+
+	case Rendertargets::Edges:
+		return "Edges";
+
+	case Rendertargets::BlendWeights:
+		return "BlendWeights";
+
+	case Rendertargets::TemporalPrevious:
+		return "TemporalPrevious";
+
+	case Rendertargets::TemporalCurrent:
+		return "TemporalCurrent";
+
+	case Rendertargets::Subsample1:
+		return "Subsample1";
+
+	case Rendertargets::Subsample2:
+		return "Subsample2";
+
+	case Rendertargets::FinalRender:
+		return "FinalRender";
+
+	case Rendertargets::Count:
+		return "Count";
+
+	}
+
+	UNREACHABLE();
+	return "";
+}
 
 
 namespace RenderPasses {
@@ -328,8 +367,8 @@ template <> struct hash<RenderPasses::RenderPasses> {
 };
 
 
-template <> struct hash<Rendertargets::Rendertargets> {
-	size_t operator()(const Rendertargets::Rendertargets &k) const {
+template <> struct hash<Rendertargets> {
+	size_t operator()(const Rendertargets &k) const {
 		return hash<size_t>()(static_cast<size_t>(k));
 	}
 
@@ -343,9 +382,9 @@ template <> struct hash<Format> {
 };
 
 
-template <> struct hash<std::pair<Rendertargets::Rendertargets, Format> > {
-	size_t operator()(const std::pair<Rendertargets::Rendertargets, Format> &k) const {
-		size_t a = hash<Rendertargets::Rendertargets>()(k.first);
+template <> struct hash<std::pair<Rendertargets, Format> > {
+	size_t operator()(const std::pair<Rendertargets, Format> &k) const {
+		size_t a = hash<Rendertargets>()(k.first);
 		size_t b = hash<Format>()(k.second);
 
 		// TODO: put this in a helper function
@@ -372,14 +411,14 @@ public:
 
 	class PassResources {
 
-		std::unordered_map<std::pair<Rendertargets::Rendertargets, Format>, TextureHandle>  rendertargets;
+		std::unordered_map<std::pair<Rendertargets, Format>, TextureHandle>  rendertargets;
 
 		// TODO: buffers
 
 	public:
 
-		TextureHandle get(Rendertargets::Rendertargets rt, Format fmt = Format::Invalid) const {
-			std::pair<Rendertargets::Rendertargets, Format> p;
+		TextureHandle get(Rendertargets rt, Format fmt = Format::Invalid) const {
+			std::pair<Rendertargets, Format> p;
 			p.first  = rt;
 			p.second = fmt;
 
@@ -416,12 +455,12 @@ public:
 		PassDesc &operator=(const PassDesc &)     = default;
 		PassDesc &operator=(PassDesc &&) noexcept = default;
 
-		PassDesc &depthStencil(Rendertargets::Rendertargets ds, PassBegin) {
+		PassDesc &depthStencil(Rendertargets ds, PassBegin) {
 			depthStencil_ = ds;
 			return *this;
 		}
 
-		PassDesc &color(unsigned int index, Rendertargets::Rendertargets id, PassBegin pb, glm::vec4 clear = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {
+		PassDesc &color(unsigned int index, Rendertargets id, PassBegin pb, glm::vec4 clear = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {
 			assert(index < MAX_COLOR_RENDERTARGETS);
 			assert(id != Rendertargets::Count);
 			colorRTs_[index].id             = id;
@@ -448,21 +487,21 @@ public:
 			return *this;
 		}
 
-		PassDesc &inputRendertarget(Rendertargets::Rendertargets id) {
+		PassDesc &inputRendertarget(Rendertargets id) {
 			auto success UNUSED = inputRendertargets.emplace(id);
 			assert(success.second);
 			return *this;
 		}
 
 		struct RTInfo {
-			Rendertargets::Rendertargets  id;
+			Rendertargets  id;
 			PassBegin                     passBegin;
 			glm::vec4                     clearValue;
 		};
 
-		Rendertargets::Rendertargets                 depthStencil_;
+		Rendertargets                 depthStencil_;
 		std::array<RTInfo, MAX_COLOR_RENDERTARGETS>  colorRTs_;
-		std::unordered_set<Rendertargets::Rendertargets>  inputRendertargets;
+		std::unordered_set<Rendertargets>  inputRendertargets;
 		unsigned int                                 numSamples_;
 		std::string                                  name_;
 		bool                                         clearDepthAttachment;
@@ -678,8 +717,8 @@ private:
 
 
 	struct Blit {
-		Rendertargets::Rendertargets  source;
-		Rendertargets::Rendertargets  target;
+		Rendertargets  source;
+		Rendertargets  target;
 	};
 
 	struct RenderPass {
@@ -688,8 +727,8 @@ private:
 	};
 
 	struct ResolveMSAA {
-		Rendertargets::Rendertargets  source;
-		Rendertargets::Rendertargets  target;
+		Rendertargets  source;
+		Rendertargets  target;
 	};
 
 	struct Pipeline {
@@ -704,9 +743,9 @@ private:
 	bool                                           hasExternalRTs;
 	RenderPasses::RenderPasses                     currentRP;
 	std::vector<Operation>                         operations;
-	Rendertargets::Rendertargets                   finalTarget;
+	Rendertargets                   finalTarget;
 
-	std::unordered_map<Rendertargets::Rendertargets, Rendertarget>  rendertargets;
+	std::unordered_map<Rendertargets, Rendertarget>  rendertargets;
 
 	// TODO: use hash map
 	std::vector<Pipeline>                          pipelines;
@@ -738,21 +777,21 @@ public:
 
 	void reset(Renderer &renderer);
 
-	void renderTarget(Rendertargets::Rendertargets rt, const RenderTargetDesc &desc);
+	void renderTarget(Rendertargets rt, const RenderTargetDesc &desc);
 
-	void externalRenderTarget(Rendertargets::Rendertargets rt, Format format, Layout initialLayout, Layout finalLayout);
+	void externalRenderTarget(Rendertargets rt, Format format, Layout initialLayout, Layout finalLayout);
 
 	void renderPass(RenderPasses::RenderPasses rp, const PassDesc &desc, RenderPassFunc f);
 
-	void resolveMSAA(Rendertargets::Rendertargets source, Rendertargets::Rendertargets target);
+	void resolveMSAA(Rendertargets source, Rendertargets target);
 
-	void blit(Rendertargets::Rendertargets source, Rendertargets::Rendertargets target);
+	void blit(Rendertargets source, Rendertargets target);
 
-	void presentRenderTarget(Rendertargets::Rendertargets rt);
+	void presentRenderTarget(Rendertargets rt);
 
 	void build(Renderer &renderer);
 
-	void bindExternalRT(Rendertargets::Rendertargets rt, RenderTargetHandle handle);
+	void bindExternalRT(Rendertargets rt, RenderTargetHandle handle);
 
 	void render(Renderer &renderer);
 
@@ -871,13 +910,13 @@ class SMAADemo {
 
 	void renderSeparate(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r);
 
-	void renderSMAAEdges(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r, Rendertargets::Rendertargets input, int pass);
+	void renderSMAAEdges(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r, Rendertargets input, int pass);
 
 	void renderSMAAWeights(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r, int pass);
 
-	void renderSMAABlend(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r, Rendertargets::Rendertargets input, int pass);
+	void renderSMAABlend(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r, Rendertargets input, int pass);
 
-	void renderSMAADebug(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r, Rendertargets::Rendertargets rt);
+	void renderSMAADebug(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r, Rendertargets rt);
 
 	void renderTemporalAA(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r);
 
@@ -1800,8 +1839,8 @@ void SMAADemo::rebuildRenderGraph() {
 
 				{
 					RenderGraph::PassDesc desc;
-					desc.color(0, Rendertargets::Rendertargets::Subsample1, PassBegin::DontCare)
-					    .color(1, Rendertargets::Rendertargets::Subsample2, PassBegin::DontCare)
+					desc.color(0, Rendertargets::Subsample1, PassBegin::DontCare)
+					    .color(1, Rendertargets::Subsample2, PassBegin::DontCare)
 					    .inputRendertarget(Rendertargets::MainColor)
 					    .name("Subsample separate");
 
@@ -2008,7 +2047,7 @@ void SMAADemo::rebuildRenderGraph() {
 					// visualize blend weights
 					{
 						RenderGraph::PassDesc desc;
-						desc.color(0, Rendertargets::Rendertargets::FinalRender, PassBegin::Clear)
+						desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
 						    .inputRendertarget(Rendertargets::BlendWeights)
 							.name("Visualize blend weights");
 
@@ -2034,8 +2073,8 @@ void SMAADemo::rebuildRenderGraph() {
 					renderGraph.renderTarget(Rendertargets::Subsample2, rtDesc);
 
 					RenderGraph::PassDesc desc;
-					desc.color(0, Rendertargets::Rendertargets::Subsample1, PassBegin::DontCare)
-					    .color(1, Rendertargets::Rendertargets::Subsample2, PassBegin::DontCare)
+					desc.color(0, Rendertargets::Subsample1, PassBegin::DontCare)
+					    .color(1, Rendertargets::Subsample2, PassBegin::DontCare)
 					    .inputRendertarget(Rendertargets::MainColor)
 					    .name("Subsample separate");
 
@@ -2818,7 +2857,7 @@ PipelineHandle RenderGraph::createPipeline(Renderer &renderer, RenderPasses::Ren
 }
 
 
-void RenderGraph::renderTarget(Rendertargets::Rendertargets rt, const RenderTargetDesc &desc) {
+void RenderGraph::renderTarget(Rendertargets rt, const RenderTargetDesc &desc) {
 	assert(state == State::Building);
 	assert(rt != Rendertargets::Count);
 
@@ -2829,7 +2868,7 @@ void RenderGraph::renderTarget(Rendertargets::Rendertargets rt, const RenderTarg
 }
 
 
-void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets rt, Format format, Layout initialLayout, Layout finalLayout) {
+void RenderGraph::externalRenderTarget(Rendertargets rt, Format format, Layout initialLayout, Layout finalLayout) {
 	assert(state == State::Building);
 	assert(rt != Rendertargets::Count);
 	assert(rendertargets.find(rt) == rendertargets.end());
@@ -2846,7 +2885,7 @@ void RenderGraph::externalRenderTarget(Rendertargets::Rendertargets rt, Format f
 }
 
 
-void RenderGraph::bindExternalRT(Rendertargets::Rendertargets rt, RenderTargetHandle handle) {
+void RenderGraph::bindExternalRT(Rendertargets rt, RenderTargetHandle handle) {
 	assert(state == State::Ready);
 	assert(handle);
 
@@ -2878,7 +2917,7 @@ void RenderGraph::renderPass(RenderPasses::RenderPasses rp, const PassDesc &desc
 }
 
 
-void RenderGraph::resolveMSAA(Rendertargets::Rendertargets source, Rendertargets::Rendertargets target) {
+void RenderGraph::resolveMSAA(Rendertargets source, Rendertargets target) {
 	assert(state == State::Building);
 
 	ResolveMSAA op;
@@ -2888,7 +2927,7 @@ void RenderGraph::resolveMSAA(Rendertargets::Rendertargets source, Rendertargets
 }
 
 
-void RenderGraph::blit(Rendertargets::Rendertargets source, Rendertargets::Rendertargets target) {
+void RenderGraph::blit(Rendertargets source, Rendertargets target) {
 	assert(state == State::Building);
 
 	Blit op;
@@ -2898,7 +2937,7 @@ void RenderGraph::blit(Rendertargets::Rendertargets source, Rendertargets::Rende
 }
 
 
-void RenderGraph::presentRenderTarget(Rendertargets::Rendertargets rt) {
+void RenderGraph::presentRenderTarget(Rendertargets rt) {
 	assert(state == State::Building);
 	assert(rt != Rendertargets::Count);
 
@@ -2928,7 +2967,7 @@ void RenderGraph::build(Renderer &renderer) {
 
 	// automatically decide layouts
 	{
-		std::unordered_map<Rendertargets::Rendertargets, Layout> currentLayouts;
+		std::unordered_map<Rendertargets, Layout> currentLayouts;
 
 		// initialize final render target to transfer src
 		currentLayouts[finalTarget] = Layout::TransferSrc;
@@ -2944,11 +2983,11 @@ void RenderGraph::build(Renderer &renderer) {
 		}
 
 		struct LayoutVisitor final : public boost::static_visitor<void> {
-			std::unordered_map<Rendertargets::Rendertargets, Layout> &currentLayouts;
+			std::unordered_map<Rendertargets, Layout> &currentLayouts;
 			RenderGraph &rg;
 
 
-			LayoutVisitor(std::unordered_map<Rendertargets::Rendertargets, Layout> &currentLayouts_, RenderGraph &rg_)
+			LayoutVisitor(std::unordered_map<Rendertargets, Layout> &currentLayouts_, RenderGraph &rg_)
 			: currentLayouts(currentLayouts_)
 			, rg(rg_)
 			{
@@ -3016,7 +3055,7 @@ void RenderGraph::build(Renderer &renderer) {
 				}
 
 				// mark input rt current layout as shader read
-				for (Rendertargets::Rendertargets inputRT : desc.inputRendertargets) {
+				for (Rendertargets inputRT : desc.inputRendertargets) {
 					currentLayouts[inputRT] = Layout::ShaderRead;
 				}
 			}
@@ -3069,7 +3108,7 @@ void RenderGraph::build(Renderer &renderer) {
 	{
 		struct DebugVisitor final : public boost::static_visitor<void> {
 			void operator()(const Blit &b) const {
-				LOG("Blit %s -> %s\n", std::to_string(b.source).c_str(), std::to_string(b.target).c_str());
+				LOG("Blit %s -> %s\n", to_string(b.source), to_string(b.target));
 			}
 
 			void operator()(const RenderPass &rpId) const {
@@ -3077,7 +3116,7 @@ void RenderGraph::build(Renderer &renderer) {
 			}
 
 			void operator()(const ResolveMSAA &r) const {
-				LOG("ResolveMSAA %s -> %s\n", std::to_string(r.source).c_str(), std::to_string(r.target).c_str());
+				LOG("ResolveMSAA %s -> %s\n", to_string(r.source), to_string(r.target));
 			}
 		};
 
@@ -3155,7 +3194,7 @@ void RenderGraph::render(Renderer &renderer) {
 
 			PassResources res;
 			// TODO: build ahead of time, fill here?
-			for (Rendertargets::Rendertargets inputRT : it->second.desc.inputRendertargets) {
+			for (Rendertargets inputRT : it->second.desc.inputRendertargets) {
 				// get rendertarget desc
 				auto rtIt = rg.rendertargets.find(inputRT);
 				assert(rtIt != rg.rendertargets.end());
@@ -3447,7 +3486,7 @@ void SMAADemo::renderSeparate(RenderPasses::RenderPasses rp, RenderGraph::PassRe
 }
 
 
-void SMAADemo::renderSMAAEdges(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r, Rendertargets::Rendertargets input, int pass) {
+void SMAADemo::renderSMAAEdges(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r, Rendertargets input, int pass) {
 	if (!smaaPipelines.edgePipeline) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
@@ -3548,7 +3587,7 @@ void SMAADemo::renderSMAAWeights(RenderPasses::RenderPasses rp, RenderGraph::Pas
 }
 
 
-void SMAADemo::renderSMAABlend(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r, Rendertargets::Rendertargets input, int pass) {
+void SMAADemo::renderSMAABlend(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r, Rendertargets input, int pass) {
 	if (!smaaPipelines.neighborPipelines[pass]) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
@@ -3603,7 +3642,7 @@ void SMAADemo::renderSMAABlend(RenderPasses::RenderPasses rp, RenderGraph::PassR
 }
 
 
-void SMAADemo::renderSMAADebug(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r, Rendertargets::Rendertargets rt) {
+void SMAADemo::renderSMAADebug(RenderPasses::RenderPasses rp, RenderGraph::PassResources &r, Rendertargets rt) {
 	if (!blitPipeline) {
 		PipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
