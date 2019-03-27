@@ -272,7 +272,8 @@ struct Image {
 
 
 enum class Rendertargets : uint32_t {
-	  MainColor
+	  Invalid
+	, MainColor
 	, MainDepth
 	, Velocity
 	, VelocityMS
@@ -283,7 +284,6 @@ enum class Rendertargets : uint32_t {
 	, Subsample1
 	, Subsample2
 	, FinalRender
-	, Invalid
 };
 
 
