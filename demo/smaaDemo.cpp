@@ -3178,6 +3178,20 @@ void RenderGraph::build(Renderer &renderer) {
 						LOG(" color %u: %s\t%s\t%s\t%s\n", i, to_string(desc.colorRTs_[i].id), passBeginName(rt.passBegin), layoutName(rt.initialLayout), layoutName(rt.finalLayout));
 					}
 				}
+
+				if (!desc.inputRendertargets.empty()) {
+					LOG(" inputs:\n");
+					std::vector<Rendertargets> inputs;
+					inputs.reserve(desc.inputRendertargets.size());
+					for (auto i : desc.inputRendertargets) {
+						inputs.push_back(i);
+					}
+
+					std::sort(inputs.begin(), inputs.end());
+					for (auto i : inputs) {
+						LOG("  %s\n", to_string(i));
+					}
+				}
 			}
 
 			void operator()(const ResolveMSAA &r) const {
