@@ -268,6 +268,7 @@ typedef std::unordered_map<std::string, std::string> ShaderMacros;
 
 const char *layoutName(Layout layout);
 const char *formatName(Format format);
+const char *passBeginName(PassBegin pb);
 uint32_t formatSize(Format format);
 
 
