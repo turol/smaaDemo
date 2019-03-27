@@ -2966,8 +2966,6 @@ void RenderGraph::resolveMSAA(Rendertargets source, Rendertargets target) {
 	ResolveMSAA op;
 	op.source = source;
 	op.target = target;
-	// TODO: doesn't belong here
-	op.finalLayout = Layout::ColorAttachment;
 	operations.push_back(op);
 }
 
@@ -2978,8 +2976,6 @@ void RenderGraph::blit(Rendertargets source, Rendertargets target) {
 	Blit op;
 	op.source = source;
 	op.target = target;
-	// TODO: doesn't belong here
-	op.finalLayout = Layout::ColorAttachment;
 	operations.push_back(op);
 }
 
@@ -3041,6 +3037,7 @@ void RenderGraph::build(Renderer &renderer) {
 			}
 
 			void operator()(Blit &b) const {
+				b.finalLayout            = currentLayouts[b.target];
 				currentLayouts[b.source] = Layout::TransferSrc;
 			}
 
@@ -3108,6 +3105,7 @@ void RenderGraph::build(Renderer &renderer) {
 			}
 
 			void operator()(ResolveMSAA &resolve) const {
+				resolve.finalLayout            = currentLayouts[resolve.target];
 				currentLayouts[resolve.source] = Layout::TransferSrc;
 			}
 		};
