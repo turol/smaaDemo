@@ -760,6 +760,7 @@ private:
 	struct Blit {
 		Rendertargets  source;
 		Rendertargets  target;
+		Layout         finalLayout;
 	};
 
 	struct RenderPass {
@@ -770,6 +771,7 @@ private:
 	struct ResolveMSAA {
 		Rendertargets  source;
 		Rendertargets  target;
+		Layout         finalLayout;
 	};
 
 	struct Pipeline {
@@ -2964,6 +2966,8 @@ void RenderGraph::resolveMSAA(Rendertargets source, Rendertargets target) {
 	ResolveMSAA op;
 	op.source = source;
 	op.target = target;
+	// TODO: doesn't belong here
+	op.finalLayout = Layout::ColorAttachment;
 	operations.push_back(op);
 }
 
@@ -2974,6 +2978,8 @@ void RenderGraph::blit(Rendertargets source, Rendertargets target) {
 	Blit op;
 	op.source = source;
 	op.target = target;
+	// TODO: doesn't belong here
+	op.finalLayout = Layout::ColorAttachment;
 	operations.push_back(op);
 }
 
@@ -3158,7 +3164,7 @@ void RenderGraph::build(Renderer &renderer) {
 
 
 			void operator()(const Blit &b) const {
-				LOG("Blit %s -> %s\n", to_string(b.source), to_string(b.target));
+				LOG("Blit %s -> %s\t%s\n", to_string(b.source), to_string(b.target), layoutName(b.finalLayout));
 			}
 
 			void operator()(const RenderPass &rpId) const {
@@ -3195,7 +3201,7 @@ void RenderGraph::build(Renderer &renderer) {
 			}
 
 			void operator()(const ResolveMSAA &r) const {
-				LOG("ResolveMSAA %s -> %s\n", to_string(r.source), to_string(r.target));
+				LOG("ResolveMSAA %s -> %s\t%s\n", to_string(r.source), to_string(r.target), layoutName(r.finalLayout));
 			}
 		};
 
@@ -3259,7 +3265,7 @@ void RenderGraph::render(Renderer &renderer) {
 
 			r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
 			r.blit(sourceHandle, targetHandle);
-			r.layoutTransition(targetHandle, Layout::TransferDst, Layout::ColorAttachment);
+			r.layoutTransition(targetHandle, Layout::TransferDst, b.finalLayout);
 		}
 
 		void operator()(const RenderPass &rp) const {
@@ -3318,7 +3324,7 @@ void RenderGraph::render(Renderer &renderer) {
 
 			r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
 			r.resolveMSAA(sourceHandle, targetHandle);
-			r.layoutTransition(targetHandle, Layout::TransferDst, Layout::ColorAttachment);
+			r.layoutTransition(targetHandle, Layout::TransferDst, resolve.finalLayout);
 		}
 	};
 
