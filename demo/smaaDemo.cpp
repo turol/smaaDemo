@@ -356,6 +356,53 @@ enum RenderPasses {
 }  // namespace RenderPasses
 
 
+static const char *to_string(RenderPasses::RenderPasses r) {
+	switch (r) {
+	case RenderPasses::Scene:
+		return "Scene";
+
+	case RenderPasses::Final:
+		return "Final";
+
+	case RenderPasses::GUI:
+		return "GUI";
+
+	case RenderPasses::FXAA:
+		return "FXAA";
+
+	case RenderPasses::Separate:
+		return "Separate";
+
+	case RenderPasses::SMAAEdges:
+		return "SMAAEdges";
+
+	case RenderPasses::SMAAWeights:
+		return "SMAAweights";
+
+	case RenderPasses::SMAABlend:
+		return "SMAABlend";
+
+	case RenderPasses::SMAAEdges2:
+		return "SMAAEdges2";
+
+	case RenderPasses::SMAAWeights2:
+		return "SMAAWeights2";
+
+	case RenderPasses::SMAA2XBlend1:
+		return "SMAA2XBlend1";
+
+	case RenderPasses::SMAA2XBlend2:
+		return "SMAA2XBlend2";
+
+	case RenderPasses::Count:
+		return "Count";
+	}
+
+	UNREACHABLE();
+	return "";
+}
+
+
 namespace std {
 
 
@@ -3112,7 +3159,7 @@ void RenderGraph::build(Renderer &renderer) {
 			}
 
 			void operator()(const RenderPass &rpId) const {
-				LOG("RenderPass %u\n", rpId.name);
+				LOG("RenderPass %s\n", to_string(rpId.name));
 			}
 
 			void operator()(const ResolveMSAA &r) const {
