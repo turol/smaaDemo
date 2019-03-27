@@ -1791,10 +1791,11 @@ void SMAADemo::rebuildRenderGraph() {
 						  .width(windowWidth)
 						  .height(windowHeight);
 
-					for (unsigned int i = 0; i < 2; i++) {
-						rtDesc.name("Subsample separate " + std::to_string(i));
-						renderGraph.renderTarget(static_cast<Rendertargets::Rendertargets>(Rendertargets::Subsample1 + i), rtDesc);
-					}
+					rtDesc.name("Subsample separate 1");
+					renderGraph.renderTarget(Rendertargets::Subsample1, rtDesc);
+
+					rtDesc.name("Subsample separate 2");
+					renderGraph.renderTarget(Rendertargets::Subsample2, rtDesc);
 				}
 
 				{
@@ -2026,10 +2027,11 @@ void SMAADemo::rebuildRenderGraph() {
 						  .width(windowWidth)
 						  .height(windowHeight);
 
-					for (unsigned int i = 0; i < 2; i++) {
-						rtDesc.name("Subsample separate " + std::to_string(i));
-						renderGraph.renderTarget(static_cast<Rendertargets::Rendertargets>(Rendertargets::Subsample1 + i), rtDesc);
-					}
+					rtDesc.name("Subsample separate 1");
+					renderGraph.renderTarget(Rendertargets::Subsample1, rtDesc);
+
+					rtDesc.name("Subsample separate 2");
+					renderGraph.renderTarget(Rendertargets::Subsample2, rtDesc);
 
 					RenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::Rendertargets::Subsample1, PassBegin::DontCare)
