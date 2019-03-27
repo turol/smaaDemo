@@ -2807,8 +2807,12 @@ void RendererImpl::endRenderPass() {
 	const auto &fb = framebuffers.get(currentFramebuffer);
 
 	// TODO: track depthstencil layout too
-	auto &rt = renderTargets.get(fb.desc.colors_[0]);
-	rt.currentLayout = pass.desc.colorRTs_[0].finalLayout;
+	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+		if (fb.desc.colors_[i]) {
+			auto &rt = renderTargets.get(fb.desc.colors_[i]);
+			rt.currentLayout = pass.desc.colorRTs_[i].finalLayout;
+		}
+	}
 
 	currentRenderPass = RenderPassHandle();
 	currentFramebuffer = FramebufferHandle();
