@@ -568,6 +568,12 @@ struct RenderPassDesc {
 	};
 
 
+	const RTInfo &color(unsigned int index) const {
+		assert(index < MAX_COLOR_RENDERTARGETS);
+		return colorRTs_[index];
+	}
+
+
 private:
 
 	Format                                       depthStencilFormat_;
