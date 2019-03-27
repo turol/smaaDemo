@@ -346,7 +346,7 @@ enum class RenderPasses : uint32_t {
 	, SMAAWeights2
 	, SMAA2XBlend1
 	, SMAA2XBlend2
-	, Count
+	, Invalid
 };
 
 
@@ -388,8 +388,8 @@ static const char *to_string(RenderPasses r) {
 	case RenderPasses::SMAA2XBlend2:
 		return "SMAA2XBlend2";
 
-	case RenderPasses::Count:
-		return "Count";
+	case RenderPasses::Invalid:
+		return "Invalid";
 	}
 
 	UNREACHABLE();
@@ -807,7 +807,7 @@ public:
 
 	RenderGraph()
 	: state(State::Invalid)
-	, currentRP(RenderPasses::Count)
+	, currentRP(RenderPasses::Invalid)
 	{
 	}
 
@@ -3224,7 +3224,7 @@ void RenderGraph::render(Renderer &renderer) {
 		}
 
 		void operator()(const RenderPass &rp) const {
-			assert(rg.currentRP == RenderPasses::Count);
+			assert(rg.currentRP == RenderPasses::Invalid);
 			rg.currentRP = rp.name;
 
 			// TODO: should not have a lookup here, make pass and fb handles part of RenderPass
@@ -3265,7 +3265,7 @@ void RenderGraph::render(Renderer &renderer) {
 			r.endRenderPass();
 
 			assert(rg.currentRP == rp.name);
-			rg.currentRP = RenderPasses::Count;
+			rg.currentRP = RenderPasses::Invalid;
 		}
 
 		void operator()(const ResolveMSAA &resolve) const {
@@ -3296,7 +3296,7 @@ void RenderGraph::render(Renderer &renderer) {
 	assert(state == State::Rendering);
 	state = State::Ready;
 
-	assert(currentRP == RenderPasses::Count);
+	assert(currentRP == RenderPasses::Invalid);
 
 	if (hasExternalRTs) {
 		for (auto &p : rendertargets) {
@@ -3320,7 +3320,7 @@ void RenderGraph::render(Renderer &renderer) {
 			rp.fb = FramebufferHandle();
 		}
 	}
-	assert(currentRP == RenderPasses::Count);
+	assert(currentRP == RenderPasses::Invalid);
 }
 
 
