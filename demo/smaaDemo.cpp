@@ -2049,7 +2049,7 @@ void SMAADemo::rebuildRenderGraph() {
 						    .inputRendertarget(Rendertargets::BlendWeights)
 							.name("SMAA blend");
 
-						renderGraph.renderPass(RenderPasses::Final, desc, [this] (RenderPasses rp, RenderGraph::PassResources &r) { this->renderSMAABlend(rp, r, Rendertargets::MainColor, 0); } );
+						renderGraph.renderPass(RenderPasses::SMAABlend, desc, [this] (RenderPasses rp, RenderGraph::PassResources &r) { this->renderSMAABlend(rp, r, Rendertargets::MainColor, 0); } );
 					}
 
 					break;
