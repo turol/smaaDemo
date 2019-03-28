@@ -562,7 +562,7 @@ private:
 	};
 
 
-	struct RP {
+	struct RenderPass {
 		RenderPassHandle   handle;
 		FramebufferHandle  fb;
 		RenderPassFunc     func;
@@ -729,7 +729,7 @@ private:
 	}
 
 
-	void buildRenderPassFramebuffer(Renderer &renderer, RP &rp) {
+	void buildRenderPassFramebuffer(Renderer &renderer, RenderPass &rp) {
 		const auto &desc = rp.desc;
 
 		FramebufferDesc fbDesc;
@@ -789,7 +789,7 @@ private:
 	// TODO: use hash map
 	std::vector<Pipeline>                          pipelines;
 
-	std::unordered_map<RenderPasses, RP> renderPasses;
+	std::unordered_map<RenderPasses, RenderPass> renderPasses;
 	std::unordered_set<RenderPasses>     renderpassesWithExternalRTs;
 
 
@@ -2923,7 +2923,7 @@ void RenderGraph::bindExternalRT(Rendertargets rt, RenderTargetHandle handle) {
 void RenderGraph::renderPass(RenderPasses rp, const PassDesc &desc, RenderPassFunc f) {
 	assert(state == State::Building);
 
-	RP temp1;
+	RenderPass temp1;
 	temp1.desc   = desc;
 	temp1.func   = f;
 
