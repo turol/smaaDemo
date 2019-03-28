@@ -764,10 +764,6 @@ private:
 		Layout         finalLayout;
 	};
 
-	struct RenderPass {
-		RenderPasses    name;
-	};
-
 	struct ResolveMSAA {
 		Rendertargets  source;
 		Rendertargets  dest;
@@ -779,7 +775,7 @@ private:
 		PipelineHandle  handle;
 	};
 
-	typedef boost::variant<Blit, RenderPass, ResolveMSAA> Operation;
+	typedef boost::variant<Blit, RenderPasses, ResolveMSAA> Operation;
 
 
 	State                                          state;
@@ -2934,9 +2930,7 @@ void RenderGraph::renderPass(RenderPasses rp, const PassDesc &desc, RenderPassFu
 	auto temp2 UNUSED = renderPasses.emplace(rp, temp1);
 	assert(temp2.second);
 
-	RenderPass op;
-	op.name = rp;
-	operations.push_back(op);
+	operations.push_back(rp);
 }
 
 
@@ -3021,8 +3015,8 @@ void RenderGraph::build(Renderer &renderer) {
 				currentLayouts[b.source] = Layout::TransferSrc;
 			}
 
-			void operator()(RenderPass &rpId) const {
-				auto it = rg.renderPasses.find(rpId.name);
+			void operator()(RenderPasses &rpId) const {
+				auto it = rg.renderPasses.find(rpId);
 				assert(it != rg.renderPasses.end());
 
 				auto &rp     = it->second;
@@ -3145,9 +3139,9 @@ void RenderGraph::build(Renderer &renderer) {
 				LOG("Blit %s -> %s\t%s\n", to_string(b.source), to_string(b.dest), layoutName(b.finalLayout));
 			}
 
-			void operator()(const RenderPass &rpId) const {
-				LOG("RenderPass %s\n", to_string(rpId.name));
-				auto it = rg.renderPasses.find(rpId.name);
+			void operator()(const RenderPasses &rpId) const {
+				LOG("RenderPass %s\n", to_string(rpId));
+				auto it = rg.renderPasses.find(rpId);
 				assert(it != rg.renderPasses.end());
 				const auto &desc   = it->second.desc;
 				const auto &rpDesc = it->second.rpDesc;
@@ -3246,12 +3240,11 @@ void RenderGraph::render(Renderer &renderer) {
 			r.layoutTransition(targetHandle, Layout::TransferDst, b.finalLayout);
 		}
 
-		void operator()(const RenderPass &rp) const {
+		void operator()(const RenderPasses &rp) const {
 			assert(rg.currentRP == RenderPasses::Invalid);
-			rg.currentRP = rp.name;
+			rg.currentRP = rp;
 
-			// TODO: should not have a lookup here, make pass and fb handles part of RenderPass
-			auto it = rg.renderPasses.find(rp.name);
+			auto it = rg.renderPasses.find(rp);
 			assert(it != rg.renderPasses.end());
 
 			r.beginRenderPass(it->second.handle, it->second.fb);
@@ -3284,10 +3277,10 @@ void RenderGraph::render(Renderer &renderer) {
 				}
 			}
 
-			it->second.func(rp.name, res);
+			it->second.func(rp, res);
 			r.endRenderPass();
 
-			assert(rg.currentRP == rp.name);
+			assert(rg.currentRP == rp);
 			rg.currentRP = RenderPasses::Invalid;
 		}
 
