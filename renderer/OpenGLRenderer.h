@@ -696,7 +696,7 @@ struct RendererImpl : public RendererBase {
 	void recreateRingBuffer(unsigned int newSize);
 	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);
 
-	bool waitForFrame(unsigned int frameIdx);
+	bool waitForFrame(unsigned int frameIdx) WARN_UNUSED_RESULT;
 	void deleteFrameInternal(Frame &f);
 
 	void createRTHelperFBO(RenderTarget &rt);
