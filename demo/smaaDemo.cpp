@@ -2530,8 +2530,8 @@ void SMAADemo::processInput() {
 				}
 				if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
 					recreateFramebuffers = true;
-					rebuildRG = true;
 				}
+				rebuildRG = true;
 				break;
 
 			case SDL_SCANCODE_Q:
