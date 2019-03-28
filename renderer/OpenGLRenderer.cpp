@@ -725,7 +725,7 @@ RendererImpl::~RendererImpl() {
 		auto &f = frames.at(i);
 		if (f.outstanding) {
 			// wait until complete
-			waitForFrame(i);
+			while (! waitForFrame(i)) {}
 		}
 		deleteFrameInternal(f);
 	}
@@ -1736,7 +1736,7 @@ void RendererImpl::recreateSwapchain() {
 				auto &f = frames.at(i);
 				if (f.outstanding) {
 					// wait until complete
-					waitForFrame(i);
+					while (! waitForFrame(i)) {}
 				}
 				// delete contents of Frame
 				deleteFrameInternal(f);
@@ -1782,7 +1782,7 @@ void RendererImpl::beginFrame() {
 	// frames are a ringbuffer
 	// if the frame we want to reuse is still pending on the GPU, wait for it
 	if (frame.outstanding) {
-		waitForFrame(currentFrameIdx);
+		while (! waitForFrame(currentFrameIdx)) {}
 	}
 	assert(!frame.outstanding);
 
