@@ -2534,7 +2534,7 @@ void SMAADemo::processInput() {
 					} else {
 						fxaaQuality = fxaaQuality + 1;
 					}
-					fxaaQuality = fxaaQuality % maxFXAAQuality;
+					fxaaQuality  = fxaaQuality % maxFXAAQuality;
 					fxaaPipeline = PipelineHandle();
 					break;
 
@@ -2545,7 +2545,7 @@ void SMAADemo::processInput() {
 					} else {
 						smaaQuality = smaaQuality + 1;
 					}
-					smaaQuality = smaaQuality % maxSMAAQuality;
+					smaaQuality     = smaaQuality % maxSMAAQuality;
 					smaaParameters  = defaultSMAAParameters[smaaQuality];
 
 					smaaPipelines.edgePipeline         = PipelineHandle();
@@ -2559,7 +2559,7 @@ void SMAADemo::processInput() {
 				break;
 
 			case SDL_SCANCODE_T:
-					setTemporalAA(!temporalAA);
+				setTemporalAA(!temporalAA);
 				break;
 
 			case SDL_SCANCODE_V:
