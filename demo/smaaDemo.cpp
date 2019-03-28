@@ -759,7 +759,7 @@ private:
 
 	struct Blit {
 		Rendertargets  source;
-		Rendertargets  target;
+		Rendertargets  dest;
 		Layout         finalLayout;
 	};
 
@@ -770,7 +770,7 @@ private:
 
 	struct ResolveMSAA {
 		Rendertargets  source;
-		Rendertargets  target;
+		Rendertargets  dest;
 		Layout         finalLayout;
 	};
 
@@ -826,9 +826,9 @@ public:
 
 	void renderPass(RenderPasses rp, const PassDesc &desc, RenderPassFunc f);
 
-	void resolveMSAA(Rendertargets source, Rendertargets target);
+	void resolveMSAA(Rendertargets source, Rendertargets dest);
 
-	void blit(Rendertargets source, Rendertargets target);
+	void blit(Rendertargets source, Rendertargets dest);
 
 	void presentRenderTarget(Rendertargets rt);
 
@@ -2940,22 +2940,22 @@ void RenderGraph::renderPass(RenderPasses rp, const PassDesc &desc, RenderPassFu
 }
 
 
-void RenderGraph::resolveMSAA(Rendertargets source, Rendertargets target) {
+void RenderGraph::resolveMSAA(Rendertargets source, Rendertargets dest) {
 	assert(state == State::Building);
 
 	ResolveMSAA op;
 	op.source = source;
-	op.target = target;
+	op.dest   = dest;
 	operations.push_back(op);
 }
 
 
-void RenderGraph::blit(Rendertargets source, Rendertargets target) {
+void RenderGraph::blit(Rendertargets source, Rendertargets dest) {
 	assert(state == State::Building);
 
 	Blit op;
 	op.source = source;
-	op.target = target;
+	op.dest   = dest;
 	operations.push_back(op);
 }
 
@@ -3017,7 +3017,7 @@ void RenderGraph::build(Renderer &renderer) {
 			}
 
 			void operator()(Blit &b) const {
-				b.finalLayout            = currentLayouts[b.target];
+				b.finalLayout            = currentLayouts[b.dest];
 				currentLayouts[b.source] = Layout::TransferSrc;
 			}
 
@@ -3085,7 +3085,7 @@ void RenderGraph::build(Renderer &renderer) {
 			}
 
 			void operator()(ResolveMSAA &resolve) const {
-				resolve.finalLayout            = currentLayouts[resolve.target];
+				resolve.finalLayout            = currentLayouts[resolve.dest];
 				currentLayouts[resolve.source] = Layout::TransferSrc;
 			}
 		};
@@ -3142,7 +3142,7 @@ void RenderGraph::build(Renderer &renderer) {
 
 
 			void operator()(const Blit &b) const {
-				LOG("Blit %s -> %s\t%s\n", to_string(b.source), to_string(b.target), layoutName(b.finalLayout));
+				LOG("Blit %s -> %s\t%s\n", to_string(b.source), to_string(b.dest), layoutName(b.finalLayout));
 			}
 
 			void operator()(const RenderPass &rpId) const {
@@ -3179,7 +3179,7 @@ void RenderGraph::build(Renderer &renderer) {
 			}
 
 			void operator()(const ResolveMSAA &r) const {
-				LOG("ResolveMSAA %s -> %s\t%s\n", to_string(r.source), to_string(r.target), layoutName(r.finalLayout));
+				LOG("ResolveMSAA %s -> %s\t%s\n", to_string(r.source), to_string(r.dest), layoutName(r.finalLayout));
 			}
 		};
 
@@ -3237,7 +3237,7 @@ void RenderGraph::render(Renderer &renderer) {
 			assert(srcIt != rg.rendertargets.end());
 			RenderTargetHandle sourceHandle = getHandle(srcIt->second);
 
-			auto destIt = rg.rendertargets.find(b.target);
+			auto destIt = rg.rendertargets.find(b.dest);
 			assert(destIt != rg.rendertargets.end());
 			RenderTargetHandle targetHandle = getHandle(destIt->second);
 
@@ -3296,7 +3296,7 @@ void RenderGraph::render(Renderer &renderer) {
 			assert(srcIt != rg.rendertargets.end());
 			RenderTargetHandle sourceHandle = getHandle(srcIt->second);
 
-			auto destIt = rg.rendertargets.find(resolve.target);
+			auto destIt = rg.rendertargets.find(resolve.dest);
 			assert(destIt != rg.rendertargets.end());
 			RenderTargetHandle targetHandle = getHandle(destIt->second);
 
