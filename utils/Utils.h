@@ -38,12 +38,14 @@ THE SOFTWARE.
 #define UNREACHABLE() abort()
 #define PRINTF(x, y)
 #define UNUSED
+#define WARN_UNUSED_RESULT
 
 #else   // _MSC_VER
 
 #define UNREACHABLE() __builtin_unreachable()
 #define PRINTF(x, y) __attribute__((format(printf, x, y)))
 #define UNUSED        __attribute__((unused))
+#define WARN_UNUSED_RESULT  __attribute__((warn_unused_result))
 
 #endif  // _MSC_VER
 
