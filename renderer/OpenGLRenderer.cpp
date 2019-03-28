@@ -1856,7 +1856,7 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 }
 
 
-void RendererImpl::waitForFrame(unsigned int frameIdx) {
+bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 	assert(frameIdx < frames.size());
 
 	Frame &frame = frames.at(frameIdx);
@@ -1896,6 +1896,8 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 	frame.outstanding = false;
 	lastSyncedFrame = std::max(lastSyncedFrame, frame.lastFrameNum);
 	lastSyncedRingBufPtr = std::max(lastSyncedRingBufPtr, frame.usedRingBufPtr);
+
+	return true;
 }
 
 

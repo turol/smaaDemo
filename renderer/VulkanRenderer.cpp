@@ -2476,7 +2476,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 }
 
 
-void RendererImpl::waitForFrame(unsigned int frameIdx) {
+bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 	assert(frameIdx < frames.size());
 
 	Frame &frame = frames.at(frameIdx);
@@ -2558,6 +2558,8 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 		buffers.remove(handle);
 	}
 	frame.ephemeralBuffers.clear();
+
+	return true;
 }
 
 
