@@ -1779,13 +1779,13 @@ void SMAADemo::rebuildRenderGraph() {
 		if (temporalAA) {
 			{
 				RenderTargetDesc rtDesc;
-				rtDesc.name("Temporal resolve 0")
+				rtDesc.name("Temporal resolve 1")
 				      .format(Format::sRGBA8)  // TODO: not right?
 				      .width(windowWidth)
 				      .height(windowHeight);
 				temporalRTs[0] = renderer.createRenderTarget(rtDesc);
 
-				rtDesc.name("Temporal resolve 1");
+				rtDesc.name("Temporal resolve 2");
 				temporalRTs[1] = renderer.createRenderTarget(rtDesc);
 
 				renderGraph.externalRenderTarget(Rendertargets::TemporalPrevious, Format::sRGBA8, Layout::ShaderRead, Layout::ShaderRead);
@@ -1934,7 +1934,7 @@ void SMAADemo::rebuildRenderGraph() {
 					desc.color(0, Rendertargets::TemporalCurrent, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample1)
 					    .inputRendertarget(Rendertargets::BlendWeights)
-						.name("SMAA2x blend 0");
+						.name("SMAA2x blend 1");
 
 					renderGraph.renderPass(RenderPasses::SMAA2XBlend1, desc, [this] (RenderPasses rp, RenderGraph::PassResources &r) { this->renderSMAABlend(rp, r, Rendertargets::Subsample1, 0); } );
 				}
@@ -1967,7 +1967,7 @@ void SMAADemo::rebuildRenderGraph() {
 					desc.color(0, Rendertargets::TemporalCurrent, PassBegin::Keep)
 					    .inputRendertarget(Rendertargets::Subsample2)
 					    .inputRendertarget(Rendertargets::BlendWeights)
-						.name("SMAA2x blend 1");
+						.name("SMAA2x blend 2");
 
 					renderGraph.renderPass(RenderPasses::SMAA2XBlend2, desc, [this] (RenderPasses rp, RenderGraph::PassResources &r) { this->renderSMAABlend(rp, r, Rendertargets::Subsample2, 1); } );
 				}
@@ -2164,7 +2164,7 @@ void SMAADemo::rebuildRenderGraph() {
 					desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample1)
 					    .inputRendertarget(Rendertargets::BlendWeights)
-						.name("SMAA2x blend 0");
+						.name("SMAA2x blend 1");
 
 					renderGraph.renderPass(RenderPasses::SMAA2XBlend1, desc, [this] (RenderPasses rp, RenderGraph::PassResources &r) { this->renderSMAABlend(rp, r, Rendertargets::Subsample1, 0); } );
 				}
@@ -2198,7 +2198,7 @@ void SMAADemo::rebuildRenderGraph() {
 					desc.color(0, Rendertargets::FinalRender, PassBegin::Keep)
 					    .inputRendertarget(Rendertargets::Subsample2)
 					    .inputRendertarget(Rendertargets::BlendWeights)
-						.name("SMAA2x blend 1");
+						.name("SMAA2x blend 2");
 
 					renderGraph.renderPass(RenderPasses::SMAA2XBlend2, desc, [this] (RenderPasses rp, RenderGraph::PassResources &r) { this->renderSMAABlend(rp, r, Rendertargets::Subsample2, 1); } );
 				}
