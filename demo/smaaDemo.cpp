@@ -850,7 +850,6 @@ class SMAADemo {
 	std::vector<std::string>                          imageFiles;
 
 	bool                                              recreateSwapchain;
-	bool                                              recreateFramebuffers;
 	bool                                              rebuildRG;
 	bool                                              keepGoing;
 
@@ -1016,7 +1015,6 @@ public:
 
 SMAADemo::SMAADemo()
 : recreateSwapchain(false)
-, recreateFramebuffers(false)
 , rebuildRG(true)
 , keepGoing(true)
 
@@ -2393,11 +2391,6 @@ void SMAADemo::setAntialiasing(bool enabled) {
 	antialiasing = enabled;
 	rebuildRG    = true;
 
-	// TODO: is this necessary?
-	if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
-		recreateFramebuffers = true;
-	}
-
 	if (temporalAA) {
 		temporalAAFirstFrame = true;
 	}
@@ -2410,9 +2403,6 @@ void SMAADemo::setTemporalAA(bool enabled) {
 	if (enabled) {
 		temporalAAFirstFrame = true;
 	}
-
-	// TODO: is this still necessary?
-	recreateFramebuffers = true;
 
 	rebuildRG = true;
 }
@@ -2518,18 +2508,10 @@ void SMAADemo::processInput() {
 				break;
 
 			case SDL_SCANCODE_M:
-				// if moving either to or from MSAA or SMAA2X need to recreate framebuffers
-				if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
-					recreateFramebuffers = true;
-				}
-
 				if (leftShift || rightShift) {
 					aaMethod = AAMethod((int(aaMethod) + int(AAMethod::LAST)) % (int(AAMethod::LAST) + 1));
 				} else {
 					aaMethod = AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
-				}
-				if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
-					recreateFramebuffers = true;
 				}
 				rebuildRG = true;
 				break;
@@ -2543,7 +2525,6 @@ void SMAADemo::processInput() {
 						msaaQuality = msaaQuality + 1;
 					}
 					msaaQuality = msaaQuality % maxMSAAQuality;
-					recreateFramebuffers = true;
 					rebuildRG            = true;
 					break;
 
@@ -2791,7 +2772,7 @@ void SMAADemo::render() {
 		renderer.setSwapchainDesc(rendererDesc.swapchain);
 	}
 
-	if (recreateSwapchain || recreateFramebuffers) {
+	if (recreateSwapchain) {
 		// TODO: shouldn't need this
 		rebuildRG = true;
 	}
@@ -2803,9 +2784,8 @@ void SMAADemo::render() {
 
 	// TODO: this should be in RenderGraph
 	renderer.beginFrame();
-	if (recreateSwapchain || recreateFramebuffers) {
+	if (recreateSwapchain) {
 		recreateSwapchain = false;
-		recreateFramebuffers = false;
 
 		glm::uvec2 size = renderer.getDrawableSize();
 		LOG("drawable size: %ux%u\n", size.x, size.y);
@@ -3844,7 +3824,6 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			{
 				bool tempTAA = temporalAA;
 				if (ImGui::Checkbox("Temporal AA", &tempTAA)) {
-					recreateFramebuffers = true;
 					rebuildRG            = true;
 				}
 				if (temporalAA != tempTAA) {
@@ -3872,21 +3851,13 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			int msaaq = msaaQuality;
 			bool msaaChanged = ImGui::Combo("MSAA quality", &msaaq, msaaQualityLevels, maxMSAAQuality);
 			if (aaChanged || aa != static_cast<int>(aaMethod)) {
-				// if moving either to or from MSAA or SMAA2X need to recreate framebuffers
-				if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
-					recreateFramebuffers = true;
-				}
 				aaMethod = static_cast<AAMethod>(aa);
-				if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
-					recreateFramebuffers = true;
-				}
 				rebuildRG = true;
 			}
 
 			if (msaaChanged && aaMethod == AAMethod::MSAA) {
 				assert(msaaq >= 0);
 				msaaQuality = static_cast<unsigned int>(msaaq);
-				recreateFramebuffers = true;
 				rebuildRG            = true;
 			}
 
