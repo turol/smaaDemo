@@ -565,6 +565,7 @@ private:
 	struct RP {
 		RenderPassHandle   handle;
 		FramebufferHandle  fb;
+		RenderPassFunc     func;
 		PassDesc           desc;
 		RenderPassDesc     rpDesc;
 	};
@@ -765,7 +766,6 @@ private:
 
 	struct RenderPass {
 		RenderPasses    name;
-		RenderPassFunc                func;
 	};
 
 	struct ResolveMSAA {
@@ -2929,13 +2929,13 @@ void RenderGraph::renderPass(RenderPasses rp, const PassDesc &desc, RenderPassFu
 
 	RP temp1;
 	temp1.desc   = desc;
+	temp1.func   = f;
 
 	auto temp2 UNUSED = renderPasses.emplace(rp, temp1);
 	assert(temp2.second);
 
 	RenderPass op;
 	op.name = rp;
-	op.func = f;
 	operations.push_back(op);
 }
 
@@ -3284,7 +3284,7 @@ void RenderGraph::render(Renderer &renderer) {
 				}
 			}
 
-			rp.func(rp.name, res);
+			it->second.func(rp.name, res);
 			r.endRenderPass();
 
 			assert(rg.currentRP == rp.name);
