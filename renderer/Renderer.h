@@ -920,7 +920,7 @@ public:
 	glm::uvec2 getDrawableSize() const;
 	MemoryStats getMemStats() const;
 
-	bool waitForDeviceIdle();
+	bool waitForDeviceIdle() WARN_UNUSED_RESULT;
 
 	// rendering
 	void beginFrame();
