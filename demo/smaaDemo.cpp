@@ -2387,19 +2387,18 @@ void SMAADemo::setAntialiasing(bool enabled) {
 	antialiasing = enabled;
 	rebuildRG    = true;
 
-	if (temporalAA) {
+	if (enabled && temporalAA) {
 		temporalAAFirstFrame = true;
 	}
 }
 
 
 void SMAADemo::setTemporalAA(bool enabled) {
-	temporalAA = enabled;
-
-	if (enabled) {
+	if (!temporalAA && enabled) {
 		temporalAAFirstFrame = true;
 	}
 
+	temporalAA = enabled;
 	rebuildRG = true;
 }
 
