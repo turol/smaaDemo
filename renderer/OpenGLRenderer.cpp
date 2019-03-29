@@ -722,7 +722,9 @@ RendererImpl::~RendererImpl() {
 	assert(ringBuffer != 0);
 
 	// wait for all pending frames to finish
-	waitForDeviceIdle();
+	while (!waitForDeviceIdle()) {
+		// FIXME: run event loop to avoid hangs
+	}
 
 	for (unsigned int i = 0; i < frames.size(); i++) {
 		auto &f = frames.at(i);
@@ -1731,7 +1733,9 @@ void RendererImpl::recreateSwapchain() {
 
 	if (frames.size() != numImages) {
 		if (numImages < frames.size()) {
-			waitForDeviceIdle();
+			// FIXME: return false if waitForDeviceIdle fails
+			while (!waitForDeviceIdle()) {
+			}
 
 			// decreasing, delete old and resize
 			for (unsigned int i = numImages; i < frames.size(); i++) {

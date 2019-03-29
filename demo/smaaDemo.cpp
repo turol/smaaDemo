@@ -2848,7 +2848,9 @@ void RenderGraph::reset(Renderer &renderer) {
 
 	operations.clear();
 
-	renderer.waitForDeviceIdle();
+	while (!renderer.waitForDeviceIdle()) {
+		// FIXME: run event loop to avoid hangs
+	}
 }
 
 
