@@ -1708,7 +1708,7 @@ void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 }
 
 
-void RendererImpl::recreateSwapchain() {
+bool RendererImpl::recreateSwapchain() {
 	assert(swapchainDirty);
 
 	int w = -1, h = -1;
@@ -1755,6 +1755,8 @@ void RendererImpl::recreateSwapchain() {
 	}
 
 	swapchainDirty = false;
+
+	return true;
 }
 
 

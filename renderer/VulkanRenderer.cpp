@@ -2019,7 +2019,7 @@ unsigned int RendererImpl::bufferAlignment(BufferType type) {
 }
 
 
-void RendererImpl::recreateSwapchain() {
+bool RendererImpl::recreateSwapchain() {
 	assert(swapchainDirty);
 
 	surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
@@ -2201,6 +2201,8 @@ void RendererImpl::recreateSwapchain() {
 	}
 
 	swapchainDirty = false;
+
+	return true;
 }
 
 
