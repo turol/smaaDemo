@@ -260,6 +260,17 @@ MemoryStats RendererImpl::getMemStats() const {
 }
 
 
+void RendererImpl::waitForDeviceIdle() {
+	for (unsigned int i = 0; i < frames.size(); i++) {
+		auto &f = frames.at(i);
+		if (f.outstanding) {
+			// wait until complete
+			while (! waitForFrame(i)) {}
+		}
+	}
+}
+
+
 void RendererImpl::beginFrame() {
 	assert(!inFrame);
 	inFrame       = true;

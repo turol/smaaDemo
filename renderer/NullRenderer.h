@@ -476,6 +476,8 @@ struct RendererImpl : public RendererBase {
 	void setSwapchainDesc(const SwapchainDesc &desc);
 	MemoryStats getMemStats() const;
 
+	void waitForDeviceIdle();
+
 	void beginFrame();
 	void presentFrame(RenderTargetHandle image);
 

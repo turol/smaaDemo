@@ -920,6 +920,8 @@ public:
 	glm::uvec2 getDrawableSize() const;
 	MemoryStats getMemStats() const;
 
+	void waitForDeviceIdle();
+
 	// rendering
 	void beginFrame();
 	void presentFrame(RenderTargetHandle image);
