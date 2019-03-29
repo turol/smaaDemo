@@ -2848,6 +2848,8 @@ void RenderGraph::reset(Renderer &renderer) {
 	renderPasses.clear();
 
 	operations.clear();
+
+	renderer.waitForDeviceIdle();
 }
 
 
