@@ -2213,7 +2213,7 @@ MemoryStats RendererImpl::getMemStats() const {
 }
 
 
-void RendererImpl::waitForDeviceIdle() {
+bool RendererImpl::waitForDeviceIdle() {
 	for (unsigned int i = 0; i < frames.size(); i++) {
 		auto &f = frames.at(i);
 		if (f.outstanding) {
@@ -2228,6 +2228,8 @@ void RendererImpl::waitForDeviceIdle() {
 		this->deleteResourceInternal(const_cast<Resource &>(r));
 	}
 	deleteResources.clear();
+
+	return true;
 }
 
 

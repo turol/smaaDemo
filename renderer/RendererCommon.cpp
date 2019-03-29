@@ -1025,8 +1025,8 @@ MemoryStats Renderer::getMemStats() const {
 }
 
 
-void Renderer::waitForDeviceIdle() {
-	impl->waitForDeviceIdle();
+bool Renderer::waitForDeviceIdle() {
+	return impl->waitForDeviceIdle();
 }
 
 
