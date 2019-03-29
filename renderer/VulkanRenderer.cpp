@@ -2227,6 +2227,11 @@ void RendererImpl::waitForDeviceIdle() {
 	}
 
 	device.waitIdle();
+
+	for (auto &r : deleteResources) {
+		this->deleteResourceInternal(const_cast<Resource &>(r));
+	}
+	deleteResources.clear();
 }
 
 
