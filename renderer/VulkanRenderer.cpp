@@ -742,8 +742,6 @@ RendererImpl::~RendererImpl() {
 	device.destroyPipelineCache(pipelineCache);
 	pipelineCache = vk::PipelineCache();
 
-	// TODO: if last frame is still pending we could add deleted resources to its list
-
 	waitForDeviceIdle();
 
 	for (unsigned int i = 0; i < frames.size(); i++) {
@@ -753,10 +751,8 @@ RendererImpl::~RendererImpl() {
 	}
 	frames.clear();
 
-	for (auto &r : deleteResources) {
-		this->deleteResourceInternal(const_cast<Resource &>(r));
-	}
-	deleteResources.clear();
+	// must have been deleted by waitForDeviceIdle
+	assert(deleteResources.empty());
 
 	vmaFreeMemory(allocator, ringBufferMem);
 	ringBufferMem = nullptr;
