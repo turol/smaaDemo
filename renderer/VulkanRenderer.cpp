@@ -2225,6 +2225,8 @@ void RendererImpl::waitForDeviceIdle() {
 			while (! waitForFrame(i)) {}
 		}
 	}
+
+	device.waitIdle();
 }
 
 
