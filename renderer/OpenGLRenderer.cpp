@@ -721,12 +721,12 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 RendererImpl::~RendererImpl() {
 	assert(ringBuffer != 0);
 
+	// wait for all pending frames to finish
+	waitForDeviceIdle();
+
 	for (unsigned int i = 0; i < frames.size(); i++) {
 		auto &f = frames.at(i);
-		if (f.outstanding) {
-			// wait until complete
-			while (! waitForFrame(i)) {}
-		}
+		assert(!f.outstanding);
 		deleteFrameInternal(f);
 	}
 	frames.clear();
@@ -1731,13 +1731,13 @@ void RendererImpl::recreateSwapchain() {
 
 	if (frames.size() != numImages) {
 		if (numImages < frames.size()) {
+			waitForDeviceIdle();
+
 			// decreasing, delete old and resize
 			for (unsigned int i = numImages; i < frames.size(); i++) {
 				auto &f = frames.at(i);
-				if (f.outstanding) {
-					// wait until complete
-					while (! waitForFrame(i)) {}
-				}
+				assert(!f.outstanding);
+
 				// delete contents of Frame
 				deleteFrameInternal(f);
 			}

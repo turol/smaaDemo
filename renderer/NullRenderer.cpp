@@ -56,12 +56,11 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 
 
 RendererImpl::~RendererImpl() {
+	waitForDeviceIdle();
+
 	for (unsigned int i = 0; i < frames.size(); i++) {
 		auto &f = frames.at(i);
-		if (f.outstanding) {
-			// wait until complete
-			while (! waitForFrame(i)) {}
-		}
+		assert(!f.outstanding);
 		deleteFrameInternal(f);
 	}
 	frames.clear();
