@@ -984,7 +984,7 @@ struct RendererImpl : public RendererBase {
 
 	unsigned int bufferAlignment(BufferType type);
 
-	bool recreateSwapchain();
+	bool recreateSwapchain() WARN_UNUSED_RESULT;
 	void recreateRingBuffer(unsigned int newSize);
 	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);
 

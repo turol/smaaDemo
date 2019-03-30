@@ -692,7 +692,7 @@ struct RendererImpl : public RendererBase {
 
 	void rebindDescriptorSets();
 
-	bool recreateSwapchain();
+	bool recreateSwapchain() WARN_UNUSED_RESULT;
 	void recreateRingBuffer(unsigned int newSize);
 	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);
 
