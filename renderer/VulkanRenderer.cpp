@@ -633,7 +633,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 	features.SSBOSupported  = true;
 
-	recreateSwapchain();
+	if (!recreateSwapchain()) {
+		LOG("initial swapchain create failed\n");
+		throw std::runtime_error("initial swapchain create failed");
+	}
 	recreateRingBuffer(desc.ephemeralRingBufSize);
 
 	vk::CommandPoolCreateInfo cp;
@@ -2249,7 +2252,9 @@ void RendererImpl::beginFrame() {
 #endif  // NDEBUG
 
 	if (swapchainDirty) {
-		recreateSwapchain();
+		// FIXME: return false when recreateSwapchain fails and let caller deal with it
+		while (!recreateSwapchain()) {
+		}
 		assert(!swapchainDirty);
 	}
 
@@ -2266,7 +2271,9 @@ void RendererImpl::beginFrame() {
 		LOG("swapchain out of date during acquireNextImageKHR, recreating...\n");
 		logFlush();
 		swapchainDirty = true;
-		recreateSwapchain();
+		// FIXME: return false when recreateSwapchain fails and let caller deal with it
+		while (!recreateSwapchain()) {
+		}
 		assert(!swapchainDirty);
 
 		imageIdx = 0xFFFFFFFFU;

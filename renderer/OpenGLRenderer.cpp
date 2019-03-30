@@ -643,7 +643,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	glCreateVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	recreateSwapchain();
+	if (!recreateSwapchain()) {
+		LOG("initial swapchain create failed\n");
+		throw std::runtime_error("initial swapchain create failed");
+	}
+
 	recreateRingBuffer(desc.ephemeralRingBufSize);
 
 	// swap once to get better traces
@@ -1788,7 +1792,9 @@ void RendererImpl::beginFrame() {
 	pipelineDrawn = true;
 
 	if (swapchainDirty) {
-		recreateSwapchain();
+		// FIXME: return false when recreateSwapchain fails and let caller deal with it
+		while (!recreateSwapchain()) {
+		}
 		assert(!swapchainDirty);
 	}
 #endif //  NDEBUG
