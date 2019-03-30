@@ -274,7 +274,7 @@ bool RendererImpl::waitForDeviceIdle() {
 }
 
 
-void RendererImpl::beginFrame() {
+bool RendererImpl::beginFrame() {
 	assert(!inFrame);
 	inFrame       = true;
 	inRenderPass  = false;
@@ -291,6 +291,8 @@ void RendererImpl::beginFrame() {
 		while (! waitForFrame(currentFrameIdx)) {}
 	}
 	assert(!frame.outstanding);
+
+	return true;
 }
 
 

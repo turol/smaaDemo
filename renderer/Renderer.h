@@ -923,7 +923,7 @@ public:
 	bool waitForDeviceIdle() WARN_UNUSED_RESULT;
 
 	// rendering
-	void beginFrame();
+	bool beginFrame();
 	void presentFrame(RenderTargetHandle image);
 
 	void beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle);

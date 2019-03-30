@@ -2242,7 +2242,7 @@ bool RendererImpl::waitForDeviceIdle() {
 }
 
 
-void RendererImpl::beginFrame() {
+bool RendererImpl::beginFrame() {
 #ifndef NDEBUG
 	assert(!inFrame);
 	inFrame       = true;
@@ -2324,6 +2324,8 @@ void RendererImpl::beginFrame() {
 		frame.deleteResources = std::move(deleteResources);
 		assert(deleteResources.empty());
 	}
+
+	return true;
 }
 
 

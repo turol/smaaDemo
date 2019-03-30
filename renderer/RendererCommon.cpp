@@ -1030,8 +1030,8 @@ bool Renderer::waitForDeviceIdle() {
 }
 
 
-void Renderer::beginFrame() {
-	impl->beginFrame();
+bool Renderer::beginFrame() {
+	return  impl->beginFrame();
 }
 
 

@@ -737,7 +737,7 @@ struct RendererImpl : public RendererBase {
 
 	bool waitForDeviceIdle() WARN_UNUSED_RESULT;
 
-	void beginFrame();
+	bool beginFrame();
 	void presentFrame(RenderTargetHandle image);
 
 	void beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle);
