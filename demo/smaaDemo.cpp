@@ -840,6 +840,7 @@ public:
 
 class SMAADemo {
 	RendererDesc                                      rendererDesc;
+	glm::uvec2                                        renderSize;
 	RenderGraph                                       renderGraph;
 
 	// command line things
@@ -1472,6 +1473,7 @@ static const std::array<Format, numDepths> depths
 
 void SMAADemo::initRender() {
 	renderer = Renderer::createRenderer(rendererDesc);
+	renderSize = renderer.getDrawableSize();
 	const auto &features = renderer.getFeatures();
 	LOG("Max MSAA samples: %u\n",  features.maxMSAASamples);
 	LOG("sRGB frame buffer: %s\n", features.sRGBFramebuffer ? "yes" : "no");
@@ -1642,10 +1644,11 @@ void SMAADemo::rebuildRenderGraph() {
 		numSamples = 1;
 	}
 
-	const unsigned int windowWidth  = rendererDesc.swapchain.width;
-	const unsigned int windowHeight = rendererDesc.swapchain.height;
+	const unsigned int windowWidth  = renderSize.x;
+	const unsigned int windowHeight = renderSize.y;
 
 	LOG("create framebuffers at size %ux%u\n", windowWidth, windowHeight);
+	logFlush();
 
 	if (activeScene == 0) {
 		// cube scene
@@ -2651,6 +2654,7 @@ void SMAADemo::processInput() {
 				rendererDesc.swapchain.height = event.window.data2;
 				recreateSwapchain = true;
 				LOG("window resize to %ux%u\n", rendererDesc.swapchain.width, rendererDesc.swapchain.height);
+				logFlush();
 				break;
 			default:
 				break;
@@ -2766,11 +2770,9 @@ void SMAADemo::render() {
 	if (recreateSwapchain) {
 		renderer.setSwapchainDesc(rendererDesc.swapchain);
 
-		glm::uvec2 size = renderer.getDrawableSize();
-		LOG("drawable size: %ux%u\n", size.x, size.y);
+		renderSize = renderer.getDrawableSize();
+		LOG("drawable size: %ux%u\n", renderSize.x, renderSize.y);
 		logFlush();
-		rendererDesc.swapchain.width  = size.x;
-		rendererDesc.swapchain.height = size.y;
 
 		// pump events
 		processInput();
