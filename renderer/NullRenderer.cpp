@@ -57,7 +57,9 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 
 RendererImpl::~RendererImpl() {
 	while (!waitForDeviceIdle()) {
-		// FIXME: run event loop to avoid hangs
+		// run event loop to avoid hangs
+		SDL_PumpEvents();
+		// TODO: wait?
 	}
 
 	for (unsigned int i = 0; i < frames.size(); i++) {

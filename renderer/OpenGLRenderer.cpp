@@ -727,7 +727,9 @@ RendererImpl::~RendererImpl() {
 
 	// wait for all pending frames to finish
 	while (!waitForDeviceIdle()) {
-		// FIXME: run event loop to avoid hangs
+		// run event loop to avoid hangs
+		SDL_PumpEvents();
+		// TODO: wait?
 	}
 
 	for (unsigned int i = 0; i < frames.size(); i++) {
