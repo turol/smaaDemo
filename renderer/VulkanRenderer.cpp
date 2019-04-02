@@ -2038,8 +2038,9 @@ glm::uvec2 RendererImpl::getDrawableSize() const {
 bool RendererImpl::recreateSwapchain() {
 	assert(swapchainDirty);
 
-	// FIXME: return false if waitForDeviceIdle fails
-	while (!waitForDeviceIdle()) {
+	// check for idle, make caller deal if not
+	if (!waitForDeviceIdle()) {
+		return false;
 	}
 
 	surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
