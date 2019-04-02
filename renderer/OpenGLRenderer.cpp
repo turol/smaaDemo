@@ -1821,7 +1821,9 @@ bool RendererImpl::beginFrame() {
 	// frames are a ringbuffer
 	// if the frame we want to reuse is still pending on the GPU, wait for it
 	if (frame.outstanding) {
-		while (! waitForFrame(currentFrameIdx)) {}
+		if (!waitForFrame(currentFrameIdx)) {
+			return false;
+		}
 	}
 	assert(!frame.outstanding);
 
