@@ -2038,6 +2038,10 @@ glm::uvec2 RendererImpl::getDrawableSize() const {
 bool RendererImpl::recreateSwapchain() {
 	assert(swapchainDirty);
 
+	// FIXME: return false if waitForDeviceIdle fails
+	while (!waitForDeviceIdle()) {
+	}
+
 	surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
 	LOG("image count min-max %u - %u\n", surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
 	LOG("image extent min-max %ux%u - %ux%u\n", surfaceCapabilities.minImageExtent.width, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.width, surfaceCapabilities.maxImageExtent.height);
@@ -2076,10 +2080,6 @@ bool RendererImpl::recreateSwapchain() {
 
 	if (frames.size() != numImages) {
 		if (numImages < frames.size()) {
-			// FIXME: return false if waitForDeviceIdle fails
-			while (!waitForDeviceIdle()) {
-			}
-
 			// decreasing, delete old and resize
 			for (unsigned int i = numImages; i < frames.size(); i++) {
 				auto &f = frames.at(i);
