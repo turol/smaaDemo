@@ -2778,7 +2778,10 @@ void SMAADemo::render() {
 	}
 
 	// TODO: this should be in RenderGraph
-	renderer.beginFrame();
+	while (!renderer.beginFrame()) {
+		// TODO: check if caused by swapchain out of date, recreate if so
+		// TODO: pump events
+	}
 	if (recreateSwapchain) {
 		recreateSwapchain = false;
 
