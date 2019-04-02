@@ -1713,7 +1713,13 @@ void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 
 
 glm::uvec2 RendererImpl::getDrawableSize() const {
-	return drawableSize;
+	int w = -1, h = -1;
+	SDL_GL_GetDrawableSize(window, &w, &h);
+	if (w <= 0 || h <= 0) {
+		throw std::runtime_error("drawable size is negative");
+	}
+
+	return glm::uvec2(w, h);
 }
 
 
