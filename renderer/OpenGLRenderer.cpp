@@ -1812,7 +1812,6 @@ bool RendererImpl::beginFrame() {
 		assert(!swapchainDirty);
 	}
 
-	currentPipeline        = PipelineHandle();
 	currentFrameIdx        = frameNum % frames.size();
 	assert(currentFrameIdx < frames.size());
 	auto &frame            = frames.at(currentFrameIdx);
@@ -1823,6 +1822,8 @@ bool RendererImpl::beginFrame() {
 		while (! waitForFrame(currentFrameIdx)) {}
 	}
 	assert(!frame.outstanding);
+
+	currentPipeline        = PipelineHandle();
 
 #ifndef NDEBUG
 
