@@ -2265,8 +2265,10 @@ bool RendererImpl::beginFrame() {
 #endif  // NDEBUG
 
 	if (swapchainDirty) {
-		// FIXME: return false when recreateSwapchain fails and let caller deal with it
-		while (!recreateSwapchain()) {
+		// return false when recreateSwapchain fails and let caller deal with it
+		if (!recreateSwapchain()) {
+			assert(swapchainDirty);
+			return false;
 		}
 		assert(!swapchainDirty);
 	}
