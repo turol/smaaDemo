@@ -924,7 +924,7 @@ public:
 	bool waitForDeviceIdle() WARN_UNUSED_RESULT;
 
 	// rendering
-	bool beginFrame();
+	bool beginFrame() WARN_UNUSED_RESULT;
 	void presentFrame(RenderTargetHandle image);
 
 	void beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle);
