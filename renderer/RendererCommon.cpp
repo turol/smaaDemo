@@ -1160,6 +1160,12 @@ unsigned int RendererImpl::ringBufferAllocate(unsigned int size, unsigned int al
 }
 
 
+
+bool Renderer::isSwapchainDirty() const {
+	return impl->swapchainDirty;
+}
+
+
 glm::uvec2 Renderer::getDrawableSize() const {
 	return impl->drawableSize;
 }

@@ -917,6 +917,7 @@ public:
 
 
 	void setSwapchainDesc(const SwapchainDesc &desc);
+	bool isSwapchainDirty() const;
 	glm::uvec2 getDrawableSize() const;
 	MemoryStats getMemStats() const;
 
