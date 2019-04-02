@@ -2347,6 +2347,8 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 #endif  // NDEBUG
 
 	const auto &rt = renderTargets.get(rtHandle);
+	assert(rt.width  == swapchainDesc.width);
+	assert(rt.height == swapchainDesc.height);
 
 	auto &frame = frames.at(currentFrameIdx);
 	device.resetFences( { frame.fence } );
