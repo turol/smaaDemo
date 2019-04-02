@@ -2256,10 +2256,6 @@ bool RendererImpl::waitForDeviceIdle() {
 bool RendererImpl::beginFrame() {
 #ifndef NDEBUG
 	assert(!inFrame);
-	inFrame       = true;
-	inRenderPass  = false;
-	validPipeline = false;
-	pipelineDrawn = true;
 #endif  // NDEBUG
 
 	if (swapchainDirty) {
@@ -2314,6 +2310,12 @@ bool RendererImpl::beginFrame() {
 	}
 	assert(!frame.outstanding);
 
+#ifndef NDEBUG
+	inFrame       = true;
+	inRenderPass  = false;
+	validPipeline = false;
+	pipelineDrawn = true;
+#endif  // NDEBUG
 	device.resetFences( { frame.fence } );
 
 	assert(!frame.acquireSem);

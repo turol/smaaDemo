@@ -1797,10 +1797,7 @@ bool RendererImpl::waitForDeviceIdle() {
 bool RendererImpl::beginFrame() {
 #ifndef NDEBUG
 	assert(!inFrame);
-	inFrame       = true;
-	inRenderPass  = false;
-	validPipeline = false;
-	pipelineDrawn = true;
+#endif //  NDEBUG
 
 	if (swapchainDirty) {
 		// FIXME: return false when recreateSwapchain fails and let caller deal with it
@@ -1808,7 +1805,6 @@ bool RendererImpl::beginFrame() {
 		}
 		assert(!swapchainDirty);
 	}
-#endif //  NDEBUG
 
 	currentPipeline        = PipelineHandle();
 	currentFrameIdx        = frameNum % frames.size();
@@ -1822,6 +1818,16 @@ bool RendererImpl::beginFrame() {
 	}
 	assert(!frame.outstanding);
 
+#ifndef NDEBUG
+
+	inFrame       = true;
+	inRenderPass  = false;
+	validPipeline = false;
+	pipelineDrawn = true;
+
+#endif //  NDEBUG
+
+	currentPipeline        = PipelineHandle();
 	descriptors.clear();
 
 	// TODO: reset all relevant state in case some 3rd-party program fucked them up
