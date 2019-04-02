@@ -2765,11 +2765,18 @@ void SMAADemo::mainLoopIteration() {
 void SMAADemo::render() {
 	if (recreateSwapchain) {
 		renderer.setSwapchainDesc(rendererDesc.swapchain);
-	}
 
-	if (recreateSwapchain) {
-		// TODO: shouldn't need this
+		glm::uvec2 size = renderer.getDrawableSize();
+		LOG("drawable size: %ux%u\n", size.x, size.y);
+		logFlush();
+		rendererDesc.swapchain.width  = size.x;
+		rendererDesc.swapchain.height = size.y;
+
+		// pump events
+		processInput();
+
 		rebuildRG = true;
+		recreateSwapchain = false;
 	}
 
 	if (rebuildRG) {
@@ -2779,21 +2786,14 @@ void SMAADemo::render() {
 
 	// TODO: this should be in RenderGraph
 	while (!renderer.beginFrame()) {
-		// TODO: check if caused by swapchain out of date, recreate if so
-		// TODO: pump events
-	}
-	if (recreateSwapchain) {
-		recreateSwapchain = false;
+		// check if caused by swapchain out of date, recreate if so
+		if (renderer.isSwapchainDirty() ) {
+			recreateSwapchain = true;
+			return;
+		}
 
-		glm::uvec2 size = renderer.getDrawableSize();
-		LOG("drawable size: %ux%u\n", size.x, size.y);
-		logFlush();
-		rendererDesc.swapchain.width  = size.x;
-		rendererDesc.swapchain.height = size.y;
-
-		// TODO: shouldn't need this
-		rebuildRG = true;
-		rebuildRenderGraph();
+		// pump events
+		processInput();
 	}
 
 	if (antialiasing && temporalAA) {
