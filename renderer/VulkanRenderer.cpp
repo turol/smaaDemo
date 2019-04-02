@@ -2237,8 +2237,12 @@ bool RendererImpl::waitForDeviceIdle() {
 	for (unsigned int i = 0; i < frames.size(); i++) {
 		auto &f = frames.at(i);
 		if (f.outstanding) {
-			// wait until complete
-			while (! waitForFrame(i)) {}
+			// try to wait
+			if (!waitForFrame(i)) {
+				assert(f.outstanding);
+				return false;
+			}
+			assert(!f.outstanding);
 		}
 	}
 
