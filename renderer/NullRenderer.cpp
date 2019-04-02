@@ -255,6 +255,11 @@ void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 }
 
 
+glm::uvec2 RendererImpl::getDrawableSize() const {
+	return drawableSize;
+}
+
+
 MemoryStats RendererImpl::getMemStats() const {
 	MemoryStats stats;
 	return stats;

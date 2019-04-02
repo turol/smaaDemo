@@ -2022,6 +2022,11 @@ unsigned int RendererImpl::bufferAlignment(BufferType type) {
 }
 
 
+glm::uvec2 RendererImpl::getDrawableSize() const {
+	return drawableSize;
+}
+
+
 bool RendererImpl::recreateSwapchain() {
 	assert(swapchainDirty);
 

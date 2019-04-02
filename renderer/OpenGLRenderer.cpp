@@ -1712,6 +1712,11 @@ void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 }
 
 
+glm::uvec2 RendererImpl::getDrawableSize() const {
+	return drawableSize;
+}
+
+
 bool RendererImpl::recreateSwapchain() {
 	assert(swapchainDirty);
 

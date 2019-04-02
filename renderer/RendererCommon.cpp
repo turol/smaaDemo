@@ -1167,7 +1167,7 @@ bool Renderer::isSwapchainDirty() const {
 
 
 glm::uvec2 Renderer::getDrawableSize() const {
-	return impl->drawableSize;
+	return impl->getDrawableSize();
 }
 
 

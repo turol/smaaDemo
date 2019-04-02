@@ -1087,6 +1087,7 @@ struct RendererImpl : public RendererBase {
 
 
 	void setSwapchainDesc(const SwapchainDesc &desc);
+	glm::uvec2 getDrawableSize() const;
 	MemoryStats getMemStats() const;
 
 	bool waitForDeviceIdle() WARN_UNUSED_RESULT;
