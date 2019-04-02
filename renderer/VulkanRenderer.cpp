@@ -2278,21 +2278,10 @@ bool RendererImpl::beginFrame() {
 		LOG("swapchain out of date during acquireNextImageKHR, recreating...\n");
 		logFlush();
 		swapchainDirty = true;
-		// FIXME: return false when recreateSwapchain fails and let caller deal with it
-		while (!recreateSwapchain()) {
-		}
-		assert(!swapchainDirty);
 
-		imageIdx = 0xFFFFFFFFU;
-		result = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence(), &imageIdx);
-		if (result != vk::Result::eSuccess) {
-			// nope, still wrong
-			LOG("acquireNextImageKHR failed: %s\n", vk::to_string(result).c_str());
-			logFlush();
-			throw std::runtime_error("acquireNextImageKHR failed");
-		}
-		LOG("swapchain recreated\n");
-		logFlush();
+		freeSemaphore(acquireSem);
+
+		return false;
 	} else {
 		LOG("acquireNextImageKHR failed: %s\n", vk::to_string(result).c_str());
 		logFlush();
