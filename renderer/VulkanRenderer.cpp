@@ -2304,7 +2304,12 @@ bool RendererImpl::beginFrame() {
 	// frames are a ringbuffer
 	// if the frame we want to reuse is still pending on the GPU, wait for it
 	if (frame.outstanding) {
-		while (! waitForFrame(currentFrameIdx)) {}
+		while (! waitForFrame(currentFrameIdx)) {
+			// run event loop to avoid hangs
+			// FIXME: should return false instead of looping here
+			// tricky because we already acquired a frame
+			SDL_PumpEvents();
+		}
 	}
 	assert(!frame.outstanding);
 
