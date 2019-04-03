@@ -135,7 +135,6 @@ struct RendererBase {
 	SwapchainDesc swapchainDesc;
 	SwapchainDesc wantedSwapchain;
 	bool          swapchainDirty;
-	glm::uvec2    drawableSize;
 
 	uint32_t                                 currentFrameIdx;
 	uint32_t                                 lastSyncedFrame;
@@ -181,7 +180,6 @@ struct RendererBase {
 	: swapchainDesc(desc.swapchain)
 	, wantedSwapchain(desc.swapchain)
 	, swapchainDirty(true)
-	, drawableSize(0, 0)
 	, currentFrameIdx(0)
 	, lastSyncedFrame(0)
 	, currentRefreshRate(0)

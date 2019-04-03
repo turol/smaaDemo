@@ -1695,21 +1695,17 @@ void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 		changed = true;
 	}
 
-	int w = -1, h = -1;
-	SDL_GL_GetDrawableSize(window, &w, &h);
-	if (w <= 0 || h <= 0) {
-		throw std::runtime_error("drawable size is negative");
+	if (swapchainDesc.width     != desc.width) {
+		changed = true;
 	}
 
-	if (static_cast<unsigned int>(w) != drawableSize.x
-	 || static_cast<unsigned int>(h) != drawableSize.y) {
+	if (swapchainDesc.height    != desc.height) {
 		changed = true;
 	}
 
 	if (changed) {
 		wantedSwapchain = desc;
 		swapchainDirty  = true;
-		drawableSize    = glm::uvec2(w, h);
 	}
 }
 
@@ -1733,8 +1729,6 @@ bool RendererImpl::recreateSwapchain() {
 	if (w <= 0 || h <= 0) {
 		throw std::runtime_error("drawable size is negative");
 	}
-
-	drawableSize = glm::uvec2(w, h);
 
 	swapchainDesc.width  = w;
 	swapchainDesc.height = h;

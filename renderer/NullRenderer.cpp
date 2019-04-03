@@ -39,7 +39,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	maxRefreshRate     = 60;
 
 	recreateRingBuffer(desc.ephemeralRingBufSize);
-	drawableSize   = glm::uvec2(desc.swapchain.width, desc.swapchain.height);
 
 	frames.resize(desc.swapchain.numFrames);
 }
@@ -253,12 +252,11 @@ void RendererImpl::deleteTexture(TextureHandle /* handle */) {
 
 void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 	swapchainDesc  = desc;
-	drawableSize   = glm::uvec2(desc.width, desc.height);
 }
 
 
 glm::uvec2 RendererImpl::getDrawableSize() const {
-	return drawableSize;
+	return glm::uvec2(swapchainDesc.width, swapchainDesc.height);
 }
 
 

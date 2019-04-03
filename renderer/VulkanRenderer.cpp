@@ -1936,21 +1936,17 @@ void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 		changed = true;
 	}
 
-	int w = -1, h = -1;
-	SDL_Vulkan_GetDrawableSize(window, &w, &h);
-	if (w <= 0 || h <= 0) {
-		throw std::runtime_error("drawable size is negative");
+	if (swapchainDesc.width     != desc.width) {
+		changed = true;
 	}
 
-	if (static_cast<unsigned int>(w) != drawableSize.x
-	 || static_cast<unsigned int>(h) != drawableSize.y) {
+	if (swapchainDesc.height    != desc.height) {
 		changed = true;
 	}
 
 	if (changed) {
 		wantedSwapchain = desc;
 		swapchainDirty  = true;
-		drawableSize    = glm::uvec2(w, h);
 	}
 }
 
@@ -2066,8 +2062,6 @@ bool RendererImpl::recreateSwapchain() {
 	// FIXME: find a better way
 	unsigned int w = std::max(surfaceCapabilities.minImageExtent.width,  std::min(static_cast<unsigned int>(tempW), surfaceCapabilities.maxImageExtent.width));
 	unsigned int h = std::max(surfaceCapabilities.minImageExtent.height, std::min(static_cast<unsigned int>(tempH), surfaceCapabilities.maxImageExtent.height));
-
-	drawableSize = glm::uvec2(w, h);
 
 	swapchainDesc.width  = w;
 	swapchainDesc.height = h;
