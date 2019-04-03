@@ -2279,9 +2279,12 @@ bool RendererImpl::beginFrame() {
 	auto acquireSem = allocateSemaphore();
 
 	vk::Result result = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence(), &imageIdx);
-	if (result == vk::Result::eSuccess) {
+	switch (result) {
+	case vk::Result::eSuccess:
 		// nothing to do
-	} else if (result == vk::Result::eErrorOutOfDateKHR) {
+		break;
+
+	case vk::Result::eErrorOutOfDateKHR:
 		// swapchain went out of date during acquire, recreate and try again
 		LOG("swapchain out of date during acquireNextImageKHR, recreating...\n");
 		logFlush();
@@ -2290,7 +2293,8 @@ bool RendererImpl::beginFrame() {
 		freeSemaphore(acquireSem);
 
 		return false;
-	} else {
+
+	default:
 		LOG("acquireNextImageKHR failed: %s\n", vk::to_string(result).c_str());
 		logFlush();
 		throw std::runtime_error("acquireNextImageKHR failed");
