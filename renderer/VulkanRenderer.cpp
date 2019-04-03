@@ -2524,7 +2524,7 @@ bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 	Frame &frame = frames.at(frameIdx);
 	assert(frame.outstanding);
 
-	auto waitResult = device.waitForFences({ frame.fence }, true, 100000000ull);
+	auto waitResult = device.waitForFences({ frame.fence }, true, 0);
 	switch (waitResult) {
 	case vk::Result::eSuccess:
 		// nothing

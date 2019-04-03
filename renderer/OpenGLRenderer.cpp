@@ -1919,7 +1919,7 @@ bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 
 	// wait for the fence
 	assert(frame.fence);
-	GLenum result = glClientWaitSync(frame.fence, GL_SYNC_FLUSH_COMMANDS_BIT, 10ULL * 1000000000ULL);
+	GLenum result = glClientWaitSync(frame.fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
 	switch (result) {
 	case GL_ALREADY_SIGNALED:
 	case GL_CONDITION_SATISFIED:
