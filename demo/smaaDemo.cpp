@@ -814,7 +814,7 @@ public:
 	}
 
 
-	void reset(Renderer &renderer);
+	void reset(Renderer &renderer, std::function<void(void)> processEvents);
 
 	void renderTarget(Rendertargets rt, const RenderTargetDesc &desc);
 
@@ -1112,7 +1112,7 @@ SMAADemo::~SMAADemo() {
 		renderer.deleteRenderTarget(temporalRTs[1]);
 	}
 
-	renderGraph.reset(renderer);
+	renderGraph.reset(renderer, SDL_PumpEvents);
 
 	if (cubeVBO) {
 		renderer.deleteBuffer(cubeVBO);
@@ -1633,7 +1633,7 @@ void SMAADemo::rebuildRenderGraph() {
 		temporalRTs[1] = RenderTargetHandle();
 	}
 
-	renderGraph.reset(renderer);
+	renderGraph.reset(renderer, std::bind(std::mem_fn(&SMAADemo::processInput), this));
 
 	if (antialiasing && aaMethod == AAMethod::MSAA) {
 		numSamples = msaaQualityToSamples(msaaQuality);
@@ -2809,7 +2809,7 @@ void SMAADemo::render() {
 }
 
 
-void RenderGraph::reset(Renderer &renderer) {
+void RenderGraph::reset(Renderer &renderer, std::function<void(void)> processEvents) {
 	assert(state == State::Invalid || state == State::Ready);
 	state = State::Building;
 
@@ -2854,7 +2854,7 @@ void RenderGraph::reset(Renderer &renderer) {
 	operations.clear();
 
 	while (!renderer.waitForDeviceIdle()) {
-		// FIXME: run event loop to avoid hangs
+		processEvents();
 	}
 }
 
