@@ -1644,6 +1644,9 @@ void SMAADemo::rebuildRenderGraph() {
 		numSamples = 1;
 	}
 
+	renderSize = renderer.getDrawableSize();
+	LOG("drawable size: %ux%u\n", renderSize.x, renderSize.y);
+
 	const unsigned int windowWidth  = renderSize.x;
 	const unsigned int windowHeight = renderSize.y;
 
