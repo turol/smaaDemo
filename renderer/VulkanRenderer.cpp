@@ -2278,7 +2278,7 @@ bool RendererImpl::beginFrame() {
 
 	auto acquireSem = allocateSemaphore();
 
-	vk::Result result = device.acquireNextImageKHR(swapchain, UINT64_MAX, acquireSem, vk::Fence(), &imageIdx);
+	vk::Result result = device.acquireNextImageKHR(swapchain, 0, acquireSem, vk::Fence(), &imageIdx);
 	switch (result) {
 	case vk::Result::eSuccess:
 		// nothing to do
