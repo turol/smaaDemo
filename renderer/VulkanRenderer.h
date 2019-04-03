@@ -972,6 +972,8 @@ struct RendererImpl : public RendererBase {
 	std::vector<UploadOp>                   uploads;
 	unsigned int                            numUploads;
 
+	std::vector<vk::Semaphore>              freeSemaphores;
+
 	bool                                    amdShaderInfo;
 	bool                                    debugMarkers;
 

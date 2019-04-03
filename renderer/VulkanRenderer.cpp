@@ -819,6 +819,11 @@ RendererImpl::~RendererImpl() {
 	vmaDestroyAllocator(allocator);
 	allocator = VK_NULL_HANDLE;
 
+	for (auto &sem : freeSemaphores) {
+		device.destroySemaphore(sem);
+		sem = vk::Semaphore();
+	}
+
 	device.destroyCommandPool(transferCmdPool);
 	transferCmdPool = vk::CommandPool();
 
@@ -2670,7 +2675,11 @@ void RendererImpl::submitUploadOp(UploadOp &&op) {
 
 
 vk::Semaphore RendererImpl::allocateSemaphore() {
-	// TODO: have a free list of semaphores
+	if (!freeSemaphores.empty()) {
+		auto ret = freeSemaphores.back();
+		freeSemaphores.pop_back();
+		return ret;
+	}
 
 	return device.createSemaphore(vk::SemaphoreCreateInfo());
 }
@@ -2678,9 +2687,8 @@ vk::Semaphore RendererImpl::allocateSemaphore() {
 
 void RendererImpl::freeSemaphore(vk::Semaphore sem) {
 	assert(sem);
-	// TODO: have a free list of semaphores
 
-	device.destroySemaphore(sem);
+	freeSemaphores.push_back(sem);
 }
 
 
