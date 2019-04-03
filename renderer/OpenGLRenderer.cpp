@@ -1920,12 +1920,21 @@ bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 	// wait for the fence
 	assert(frame.fence);
 	GLenum result = glClientWaitSync(frame.fence, GL_SYNC_FLUSH_COMMANDS_BIT, 10ULL * 1000000000ULL);
-	// TODO: collect statistics if it was already signaled or not
-	if (result == GL_TIMEOUT_EXPIRED || result == GL_WAIT_FAILED) {
+	switch (result) {
+	case GL_ALREADY_SIGNALED:
+	case GL_CONDITION_SATISFIED:
+		// nothing
+		break;
+
+	case GL_TIMEOUT_EXPIRED:
+		return false;
+
+	default:
 		// TODO: do something better
 		LOG("glClientWaitSync failed: 0x%04x\n", result);
 		throw std::runtime_error("glClientWaitSync failed");
 	}
+
 	glDeleteSync(frame.fence);
 	frame.fence = nullptr;
 

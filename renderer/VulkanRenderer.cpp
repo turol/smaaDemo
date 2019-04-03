@@ -2525,10 +2525,20 @@ bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 	assert(frame.outstanding);
 
 	auto waitResult = device.waitForFences({ frame.fence }, true, 100000000ull);
-	if (waitResult != vk::Result::eSuccess) {
-		// TODO: handle these somehow
-		LOG("wait result is not success: %s\n", vk::to_string(waitResult).c_str());
-		throw std::runtime_error("wait result is not success");
+	switch (waitResult) {
+	case vk::Result::eSuccess:
+		// nothing
+		break;
+
+	case vk::Result::eTimeout:
+		return false;
+
+	default: {
+		// TODO: better exception types
+		std::string s = vk::to_string(waitResult);
+		LOG("wait result is not success: %s\n", s.c_str());
+		throw std::runtime_error("wait result is not success " + s);
+	}
 	}
 
 	if (!frame.uploads.empty()) {
