@@ -829,7 +829,7 @@ struct Frame {
 	Frame(const Frame &)            = delete;
 	Frame &operator=(const Frame &) = delete;
 
-	Frame(Frame &&other)
+	Frame(Frame &&other) noexcept
 	: outstanding(other.outstanding)
 	, lastFrameNum(other.lastFrameNum)
 	, usedRingBufPtr(other.usedRingBufPtr)
@@ -862,7 +862,8 @@ struct Frame {
 		assert(other.uploads.empty());
 	}
 
-	Frame &operator=(Frame &&other) {
+	Frame &operator=(Frame &&other) noexcept
+	{
 		assert(!image);
 		image                = other.image;
 		other.image          = vk::Image();

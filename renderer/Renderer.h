@@ -490,7 +490,7 @@ public:
 	~PipelineDesc() {}
 
 	PipelineDesc(const PipelineDesc &desc)                = default;
-	PipelineDesc(PipelineDesc &&desc)                     = default;
+	PipelineDesc(PipelineDesc &&desc) noexcept            = default;
 
 	PipelineDesc &operator=(const PipelineDesc &desc)     = default;
 	PipelineDesc &operator=(PipelineDesc &&desc) noexcept = default;
