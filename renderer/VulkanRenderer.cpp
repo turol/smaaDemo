@@ -2833,6 +2833,9 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 	f.presentCmdBuf = vk::CommandBuffer();
 	f.barrierCmdBuf = vk::CommandBuffer();
 
+	assert(!f.acquireSem);
+	assert(!f.renderDoneSem);
+
 	assert(f.commandPool);
 	device.destroyCommandPool(f.commandPool);
 	f.commandPool = vk::CommandPool();
