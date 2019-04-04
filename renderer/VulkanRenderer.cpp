@@ -2284,6 +2284,16 @@ bool RendererImpl::beginFrame() {
 		// nothing to do
 		break;
 
+	case vk::Result::eErrorOutOfDateKHR:
+		// swapchain went out of date during acquire, recreate and try again
+		LOG("swapchain out of date during acquireNextImageKHR, recreating...\n");
+		logFlush();
+		swapchainDirty = true;
+
+		freeSemaphore(acquireSem);
+
+		return false;
+
 	case vk::Result::eTimeout:
 		freeSemaphore(acquireSem);
 
@@ -2301,16 +2311,6 @@ bool RendererImpl::beginFrame() {
 		// suboptimal is considered success so proceed
 
 		break;
-
-	case vk::Result::eErrorOutOfDateKHR:
-		// swapchain went out of date during acquire, recreate and try again
-		LOG("swapchain out of date during acquireNextImageKHR, recreating...\n");
-		logFlush();
-		swapchainDirty = true;
-
-		freeSemaphore(acquireSem);
-
-		return false;
 
 	default:
 		LOG("acquireNextImageKHR failed: %s\n", vk::to_string(result).c_str());
