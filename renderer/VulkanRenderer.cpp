@@ -2290,15 +2290,8 @@ bool RendererImpl::beginFrame() {
 		logFlush();
 		swapchainDirty = true;
 
-		freeSemaphore(acquireSem);
-
-		return false;
-
+        // fallthrough
 	case vk::Result::eTimeout:
-		freeSemaphore(acquireSem);
-
-		return false;
-
 	case vk::Result::eNotReady:
 		freeSemaphore(acquireSem);
 
