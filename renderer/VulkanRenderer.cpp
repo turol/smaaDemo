@@ -2285,9 +2285,13 @@ bool RendererImpl::beginFrame() {
 		break;
 
 	case vk::Result::eTimeout:
+		freeSemaphore(acquireSem);
+
 		return false;
 
 	case vk::Result::eNotReady:
+		freeSemaphore(acquireSem);
+
 		return false;
 
 	case vk::Result::eSuboptimalKHR:
