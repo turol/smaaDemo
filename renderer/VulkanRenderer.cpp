@@ -2271,60 +2271,60 @@ bool RendererImpl::beginFrame() {
 		assert(frameAcquireSem);
 		// nothing, continue to wait
 	} else {
-	assert(!frameAcquireSem);
+		assert(!frameAcquireSem);
 
-	if (swapchainDirty) {
-		// return false when recreateSwapchain fails and let caller deal with it
-		if (!recreateSwapchain()) {
-			assert(swapchainDirty);
-			return false;
+		if (swapchainDirty) {
+			// return false when recreateSwapchain fails and let caller deal with it
+			if (!recreateSwapchain()) {
+				assert(swapchainDirty);
+				return false;
+			}
+			assert(!swapchainDirty);
 		}
-		assert(!swapchainDirty);
-	}
 
-	// acquire next image
-	uint32_t imageIdx = 0xFFFFFFFFU;
+		// acquire next image
+		uint32_t imageIdx = 0xFFFFFFFFU;
 
-	frameAcquireSem = allocateSemaphore();
+		frameAcquireSem = allocateSemaphore();
 
-	vk::Result result = device.acquireNextImageKHR(swapchain, 0, frameAcquireSem, vk::Fence(), &imageIdx);
-	switch (result) {
-	case vk::Result::eSuccess:
-		// nothing to do
-		break;
+		vk::Result result = device.acquireNextImageKHR(swapchain, 0, frameAcquireSem, vk::Fence(), &imageIdx);
+		switch (result) {
+		case vk::Result::eSuccess:
+			// nothing to do
+			break;
 
-	case vk::Result::eErrorOutOfDateKHR:
-		// swapchain went out of date during acquire, recreate and try again
-		LOG("swapchain out of date during acquireNextImageKHR, recreating...\n");
-		logFlush();
-		swapchainDirty = true;
+		case vk::Result::eErrorOutOfDateKHR:
+			// swapchain went out of date during acquire, recreate and try again
+			LOG("swapchain out of date during acquireNextImageKHR, recreating...\n");
+			logFlush();
+			swapchainDirty = true;
 
-        // fallthrough
-	case vk::Result::eTimeout:
-	case vk::Result::eNotReady:
-		freeSemaphore(frameAcquireSem);
-		frameAcquireSem = vk::Semaphore();
+			// fallthrough
+		case vk::Result::eTimeout:
+		case vk::Result::eNotReady:
+			freeSemaphore(frameAcquireSem);
+			frameAcquireSem = vk::Semaphore();
 
-		return false;
+			return false;
 
-	case vk::Result::eSuboptimalKHR:
-		LOG("swapchain suboptimal during acquireNextImageKHR, recreating...\n");
-		logFlush();
-		swapchainDirty = true;
-		// suboptimal is considered success so proceed
+		case vk::Result::eSuboptimalKHR:
+			LOG("swapchain suboptimal during acquireNextImageKHR, recreating...\n");
+			logFlush();
+			swapchainDirty = true;
+			// suboptimal is considered success so proceed
 
-		break;
+			break;
 
-	default:
-		LOG("acquireNextImageKHR failed: %s\n", vk::to_string(result).c_str());
-		logFlush();
-		throw std::runtime_error("acquireNextImageKHR failed");
-	}
+		default:
+			LOG("acquireNextImageKHR failed: %s\n", vk::to_string(result).c_str());
+			logFlush();
+			throw std::runtime_error("acquireNextImageKHR failed");
+		}
 
-	frameAcquired = true;
+		frameAcquired = true;
 
-	assert(imageIdx < frames.size());
-	currentFrameIdx        = imageIdx;
+		assert(imageIdx < frames.size());
+		currentFrameIdx        = imageIdx;
 	}
 
 	auto &frame            = frames.at(currentFrameIdx);
