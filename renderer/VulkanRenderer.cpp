@@ -740,6 +740,7 @@ RendererImpl::~RendererImpl() {
 	assert(transferCmdPool);
 	assert(pipelineCache);
 	assert(!frameAcquired);
+	assert(!frameAcquireSem);
 
 	// save pipeline cache
 	auto cacheData = device.getPipelineCacheData(pipelineCache);
@@ -2267,6 +2268,7 @@ bool RendererImpl::beginFrame() {
 #endif  // NDEBUG
 
 	assert(!frameAcquired);
+	assert(!frameAcquireSem);
 
 	if (swapchainDirty) {
 		// return false when recreateSwapchain fails and let caller deal with it

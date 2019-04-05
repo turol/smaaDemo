@@ -929,6 +929,7 @@ struct RendererImpl : public RendererBase {
 	SDL_Window                              *window;
 
 	bool                                    frameAcquired;
+	vk::Semaphore                           frameAcquireSem;
 
 	std::vector<Frame>                      frames;
 
