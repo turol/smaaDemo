@@ -260,6 +260,7 @@ static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebug
 
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
+, frameAcquired(false)
 , graphicsQueueIndex(0)
 , transferQueueIndex(0)
 , numUploads(0)
@@ -738,6 +739,7 @@ RendererImpl::~RendererImpl() {
 	assert(persistentMapping);
 	assert(transferCmdPool);
 	assert(pipelineCache);
+	assert(!frameAcquired);
 
 	// save pipeline cache
 	auto cacheData = device.getPipelineCacheData(pipelineCache);
@@ -2264,6 +2266,8 @@ bool RendererImpl::beginFrame() {
 	assert(!inFrame);
 #endif  // NDEBUG
 
+	assert(!frameAcquired);
+
 	if (swapchainDirty) {
 		// return false when recreateSwapchain fails and let caller deal with it
 		if (!recreateSwapchain()) {
@@ -2311,6 +2315,8 @@ bool RendererImpl::beginFrame() {
 		throw std::runtime_error("acquireNextImageKHR failed");
 	}
 
+	frameAcquired = true;
+
 	assert(imageIdx < frames.size());
 	currentFrameIdx        = imageIdx;
 	auto &frame            = frames.at(currentFrameIdx);
@@ -2326,6 +2332,8 @@ bool RendererImpl::beginFrame() {
 		}
 	}
 	assert(!frame.outstanding);
+
+	frameAcquired = false;
 
 #ifndef NDEBUG
 	inFrame       = true;

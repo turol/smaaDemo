@@ -928,6 +928,8 @@ struct Frame {
 struct RendererImpl : public RendererBase {
 	SDL_Window                              *window;
 
+	bool                                    frameAcquired;
+
 	std::vector<Frame>                      frames;
 
 	ResourceContainer<Buffer>               buffers;
