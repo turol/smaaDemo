@@ -2267,7 +2267,10 @@ bool RendererImpl::beginFrame() {
 	assert(!inFrame);
 #endif  // NDEBUG
 
-	assert(!frameAcquired);
+	if (frameAcquired) {
+		assert(frameAcquireSem);
+		// nothing, continue to wait
+	} else {
 	assert(!frameAcquireSem);
 
 	if (swapchainDirty) {
@@ -2322,6 +2325,8 @@ bool RendererImpl::beginFrame() {
 
 	assert(imageIdx < frames.size());
 	currentFrameIdx        = imageIdx;
+	}
+
 	auto &frame            = frames.at(currentFrameIdx);
 
 	// frames are a ringbuffer
