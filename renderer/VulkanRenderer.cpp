@@ -2282,9 +2282,9 @@ bool RendererImpl::beginFrame() {
 	// acquire next image
 	uint32_t imageIdx = 0xFFFFFFFFU;
 
-	auto acquireSem = allocateSemaphore();
+	frameAcquireSem = allocateSemaphore();
 
-	vk::Result result = device.acquireNextImageKHR(swapchain, 0, acquireSem, vk::Fence(), &imageIdx);
+	vk::Result result = device.acquireNextImageKHR(swapchain, 0, frameAcquireSem, vk::Fence(), &imageIdx);
 	switch (result) {
 	case vk::Result::eSuccess:
 		// nothing to do
@@ -2299,7 +2299,8 @@ bool RendererImpl::beginFrame() {
         // fallthrough
 	case vk::Result::eTimeout:
 	case vk::Result::eNotReady:
-		freeSemaphore(acquireSem);
+		freeSemaphore(frameAcquireSem);
+		frameAcquireSem = vk::Semaphore();
 
 		return false;
 
@@ -2346,7 +2347,8 @@ bool RendererImpl::beginFrame() {
 	device.resetFences( { frame.fence } );
 
 	assert(!frame.acquireSem);
-	frame.acquireSem       = acquireSem;
+	frame.acquireSem       = frameAcquireSem;
+	frameAcquireSem        = vk::Semaphore();
 
 	assert(!frame.renderDoneSem);
 	frame.renderDoneSem    = allocateSemaphore();
