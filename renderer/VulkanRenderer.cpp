@@ -2389,8 +2389,11 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 #endif  // NDEBUG
 
 	const auto &rt = renderTargets.get(rtHandle);
-	assert(rt.width  == swapchainDesc.width);
-	assert(rt.height == swapchainDesc.height);
+	unsigned int width  = rt.width;
+	unsigned int height = rt.height;
+
+	assert(width  == swapchainDesc.width);
+	assert(height == swapchainDesc.height);
 
 	auto &frame = frames.at(currentFrameIdx);
 	device.resetFences( { frame.fence } );
@@ -2428,7 +2431,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	vk::ImageBlit blit;
 	blit.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
 	blit.srcSubresource.layerCount = 1;
-	blit.srcOffsets[1]             = vk::Offset3D(rt.width, rt.height, 1);
+	blit.srcOffsets[1]             = vk::Offset3D(width, height, 1);
 	blit.dstSubresource            = blit.srcSubresource;
 	blit.dstOffsets[1]             = blit.srcOffsets[1];
 
