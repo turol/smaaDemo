@@ -739,8 +739,15 @@ RendererImpl::~RendererImpl() {
 	assert(persistentMapping);
 	assert(transferCmdPool);
 	assert(pipelineCache);
-	assert(!frameAcquired);
+
+	if (frameAcquired) {
+		LOG("warning: acquired but not presented frame while shutting down\n");
+		assert(frameAcquireSem);
+		freeSemaphore(frameAcquireSem);
+		frameAcquireSem = vk::Semaphore();
+	} else {
 	assert(!frameAcquireSem);
+	}
 
 	// save pipeline cache
 	auto cacheData = device.getPipelineCacheData(pipelineCache);
