@@ -2392,8 +2392,12 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	unsigned int width  = rt.width;
 	unsigned int height = rt.height;
 
-	assert(width  == swapchainDesc.width);
-	assert(height == swapchainDesc.height);
+	if (width != swapchainDesc.width || height != swapchainDesc.height) {
+		LOG("warning: rendertarget size mismatch at presentFrame, is (%ux%u) should be (%ux%u)\n", width, height, swapchainDesc.width, swapchainDesc.height);
+		width  = std::min(width,  swapchainDesc.width);
+		height = std::min(height, swapchainDesc.height);
+		swapchainDirty  = true;
+	}
 
 	auto &frame = frames.at(currentFrameIdx);
 	device.resetFences( { frame.fence } );
