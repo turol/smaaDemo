@@ -2790,15 +2790,15 @@ void SMAADemo::render() {
 	}
 
 	// TODO: this should be in RenderGraph
-	while (!renderer.beginFrame()) {
+	if (!renderer.beginFrame()) {
 		// check if caused by swapchain out of date, recreate if so
 		if (renderer.isSwapchainDirty() ) {
 			recreateSwapchain = true;
-			return;
 		}
 
-		// pump events
-		processInput();
+		// TODO: yield or sleep to avoid high cpu usage
+
+		return;
 	}
 
 	if (antialiasing && temporalAA) {
