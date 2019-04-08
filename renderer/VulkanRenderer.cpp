@@ -746,7 +746,7 @@ RendererImpl::~RendererImpl() {
 		freeSemaphore(frameAcquireSem);
 		frameAcquireSem = vk::Semaphore();
 	} else {
-	assert(!frameAcquireSem);
+		assert(!frameAcquireSem);
 	}
 
 	// save pipeline cache
