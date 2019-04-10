@@ -2606,6 +2606,9 @@ bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 	}
 	}
 
+	frame.status = Frame::Status::Done;
+	assert(frame.status == Frame::Status::Done);
+
 	if (!frame.uploads.empty()) {
 		for (auto &op : frame.uploads) {
 			device.freeCommandBuffers(transferCmdPool, { op.cmdBuf } );
