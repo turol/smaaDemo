@@ -2263,40 +2263,40 @@ bool RendererImpl::waitForDeviceIdle() {
 	}
 
 	if (!fences.empty()) {
-	auto waitResult = device.waitForFences( fences, true, 0);
-	switch (waitResult) {
-	case vk::Result::eSuccess:
-		// nothing
-		break;
-
-	case vk::Result::eTimeout:
-		return false;
-
-	default: {
-		// TODO: better exception types
-		std::string s = vk::to_string(waitResult);
-		LOG("wait result is not success: %s\n", s.c_str());
-		throw std::runtime_error("wait result is not success " + s);
-	}
-	}
-
-	unsigned int UNUSED count = 0;
-	for (unsigned int i = 0; i < frames.size(); i++) {
-		auto &f = frames.at(i);
-		switch (f.status) {
-		case Frame::Status::Ready:
-            break;
-
-		case Frame::Status::Pending:
-			f.status = Frame::Status::Done;
-			count++;
-			// fallthrough
-		case Frame::Status::Done:
-			cleanupFrame(i);
+		auto waitResult = device.waitForFences( fences, true, 0);
+		switch (waitResult) {
+		case vk::Result::eSuccess:
+			// nothing
 			break;
+
+		case vk::Result::eTimeout:
+			return false;
+
+		default: {
+			// TODO: better exception types
+			std::string s = vk::to_string(waitResult);
+			LOG("wait result is not success: %s\n", s.c_str());
+			throw std::runtime_error("wait result is not success " + s);
 		}
-	}
-	assert(count == fences.size());
+		}
+
+		unsigned int UNUSED count = 0;
+		for (unsigned int i = 0; i < frames.size(); i++) {
+			auto &f = frames.at(i);
+			switch (f.status) {
+			case Frame::Status::Ready:
+				break;
+
+			case Frame::Status::Pending:
+				f.status = Frame::Status::Done;
+				count++;
+				// fallthrough
+			case Frame::Status::Done:
+				cleanupFrame(i);
+				break;
+			}
+		}
+		assert(count == fences.size());
 	}
 
 	device.waitIdle();
