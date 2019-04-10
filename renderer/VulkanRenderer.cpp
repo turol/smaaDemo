@@ -2607,6 +2607,17 @@ bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 	}
 
 	frame.status = Frame::Status::Done;
+
+	cleanupFrame(frameIdx);
+
+	return true;
+}
+
+
+void RendererImpl::cleanupFrame(unsigned int frameIdx) {
+	assert(frameIdx < frames.size());
+
+	Frame &frame = frames.at(frameIdx);
 	assert(frame.status == Frame::Status::Done);
 
 	if (!frame.uploads.empty()) {
@@ -2678,8 +2689,6 @@ bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 		buffers.remove(handle);
 	}
 	frame.ephemeralBuffers.clear();
-
-	return true;
 }
 
 
