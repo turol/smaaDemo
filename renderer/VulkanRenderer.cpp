@@ -2258,10 +2258,27 @@ bool RendererImpl::waitForDeviceIdle() {
 				assert(f.status == Frame::Status::Pending);
 				return false;
 			}
-			assert(f.status == Frame::Status::Ready);
+			assert(f.status == Frame::Status::Done);
 			break;
 
 		case Frame::Status::Done:
+			break;
+		}
+	}
+
+	for (unsigned int i = 0; i < frames.size(); i++) {
+		auto &f = frames.at(i);
+		switch (f.status) {
+		case Frame::Status::Ready:
+            break;
+
+		case Frame::Status::Pending:
+			// can't get here, after above loop every frame should be Ready or Done
+			assert(false);
+			break;
+
+		case Frame::Status::Done:
+			cleanupFrame(i);
 			break;
 		}
 	}
@@ -2356,11 +2373,16 @@ bool RendererImpl::beginFrame() {
 		if(!waitForFrame(currentFrameIdx)) {
 			return false;
 		}
+
+		assert(frame.status == Frame::Status::Done);
+		cleanupFrame(currentFrameIdx);
+
 		break;
 
 	case Frame::Status::Done:
 		break;
 	}
+
 	assert(frame.status == Frame::Status::Ready);
 
 	frameAcquired = false;
@@ -2607,8 +2629,6 @@ bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 	}
 
 	frame.status = Frame::Status::Done;
-
-	cleanupFrame(frameIdx);
 
 	return true;
 }
