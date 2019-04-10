@@ -2246,6 +2246,8 @@ MemoryStats RendererImpl::getMemStats() const {
 
 
 bool RendererImpl::waitForDeviceIdle() {
+	std::vector<vk::Fence> fences;
+
 	for (unsigned int i = 0; i < frames.size(); i++) {
 		auto &f = frames.at(i);
 		switch (f.status) {
@@ -2253,19 +2255,32 @@ bool RendererImpl::waitForDeviceIdle() {
             break;
 
 		case Frame::Status::Pending:
-			// try to wait
-			if (!waitForFrame(i)) {
-				assert(f.status == Frame::Status::Pending);
-				return false;
-			}
-			assert(f.status == Frame::Status::Done);
-			break;
+			fences.push_back(f.fence);
 
 		case Frame::Status::Done:
 			break;
 		}
 	}
 
+	if (!fences.empty()) {
+	auto waitResult = device.waitForFences( fences, true, 0);
+	switch (waitResult) {
+	case vk::Result::eSuccess:
+		// nothing
+		break;
+
+	case vk::Result::eTimeout:
+		return false;
+
+	default: {
+		// TODO: better exception types
+		std::string s = vk::to_string(waitResult);
+		LOG("wait result is not success: %s\n", s.c_str());
+		throw std::runtime_error("wait result is not success " + s);
+	}
+	}
+
+	unsigned int UNUSED count = 0;
 	for (unsigned int i = 0; i < frames.size(); i++) {
 		auto &f = frames.at(i);
 		switch (f.status) {
@@ -2273,14 +2288,15 @@ bool RendererImpl::waitForDeviceIdle() {
             break;
 
 		case Frame::Status::Pending:
-			// can't get here, after above loop every frame should be Ready or Done
-			assert(false);
-			break;
-
+			f.status = Frame::Status::Done;
+			count++;
+			// fallthrough
 		case Frame::Status::Done:
 			cleanupFrame(i);
 			break;
 		}
+	}
+	assert(count == fences.size());
 	}
 
 	device.waitIdle();
