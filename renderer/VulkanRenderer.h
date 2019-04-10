@@ -786,7 +786,13 @@ struct UploadOp {
 
 
 struct Frame {
-	bool                          outstanding;
+	enum class Status : uint8_t {
+		  Ready
+		, Pending
+		, Done
+	};
+
+	Status                        status;
 	uint32_t                      lastFrameNum;
 	unsigned int                  usedRingBufPtr;
 	std::vector<BufferHandle>     ephemeralBuffers;
@@ -805,7 +811,7 @@ struct Frame {
 
 
 	Frame()
-	: outstanding(false)
+	: status(Status::Ready)
 	, lastFrameNum(0)
 	, usedRingBufPtr(0)
 	{}
@@ -821,7 +827,7 @@ struct Frame {
 		assert(!barrierCmdBuf);
 		assert(!acquireSem);
 		assert(!renderDoneSem);
-		assert(!outstanding);
+		assert(status == Status::Ready);
 		assert(deleteResources.empty());
 		assert(uploads.empty());
 	}
@@ -830,7 +836,7 @@ struct Frame {
 	Frame &operator=(const Frame &) = delete;
 
 	Frame(Frame &&other) noexcept
-	: outstanding(other.outstanding)
+	: status(other.status)
 	, lastFrameNum(other.lastFrameNum)
 	, usedRingBufPtr(other.usedRingBufPtr)
 	, ephemeralBuffers(std::move(other.ephemeralBuffers))
@@ -855,7 +861,7 @@ struct Frame {
 		other.barrierCmdBuf    = vk::CommandBuffer();
 		other.acquireSem       = vk::Semaphore();
 		other.renderDoneSem    = vk::Semaphore();
-		other.outstanding      = false;
+		other.status           = Status::Ready;
 		other.lastFrameNum     = 0;
 		other.usedRingBufPtr   = 0;
 		assert(other.deleteResources.empty());
@@ -904,8 +910,8 @@ struct Frame {
 		ephemeralBuffers = std::move(other.ephemeralBuffers);
 		assert(other.ephemeralBuffers.empty());
 
-		outstanding          = other.outstanding;
-		other.outstanding    = false;
+		status               = other.status;
+		other.status         = Status::Ready;
 
 		lastFrameNum         = other.lastFrameNum;
 		other.lastFrameNum   = 0;

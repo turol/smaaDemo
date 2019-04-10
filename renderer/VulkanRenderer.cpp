@@ -763,7 +763,7 @@ RendererImpl::~RendererImpl() {
 
 	for (unsigned int i = 0; i < frames.size(); i++) {
 		auto &f = frames.at(i);
-		assert(!f.outstanding);
+		assert(f.status == Frame::Status::Ready);
 		deleteFrameInternal(f);
 	}
 	frames.clear();
@@ -2093,7 +2093,7 @@ bool RendererImpl::recreateSwapchain() {
 			// decreasing, delete old and resize
 			for (unsigned int i = numImages; i < frames.size(); i++) {
 				auto &f = frames.at(i);
-				assert(!f.outstanding);
+				assert(f.status == Frame::Status::Ready);
 
 				// delete contents of Frame
 				deleteFrameInternal(f);
@@ -2248,13 +2248,21 @@ MemoryStats RendererImpl::getMemStats() const {
 bool RendererImpl::waitForDeviceIdle() {
 	for (unsigned int i = 0; i < frames.size(); i++) {
 		auto &f = frames.at(i);
-		if (f.outstanding) {
+		switch (f.status) {
+		case Frame::Status::Ready:
+            break;
+
+		case Frame::Status::Pending:
 			// try to wait
 			if (!waitForFrame(i)) {
-				assert(f.outstanding);
+				assert(f.status == Frame::Status::Pending);
 				return false;
 			}
-			assert(!f.outstanding);
+			assert(f.status == Frame::Status::Ready);
+			break;
+
+		case Frame::Status::Done:
+			break;
 		}
 	}
 
@@ -2340,12 +2348,20 @@ bool RendererImpl::beginFrame() {
 	// if the frame we want to reuse is still pending on the GPU, wait for it
 	// if not done, return false and let caller deal with calling us again
 	// frameAcquired should make sure we don't acquire again
-	if (frame.outstanding) {
+	switch (frame.status) {
+	case Frame::Status::Ready:
+		break;
+
+	case Frame::Status::Pending:
 		if(!waitForFrame(currentFrameIdx)) {
 			return false;
 		}
+		break;
+
+	case Frame::Status::Done:
+		break;
 	}
-	assert(!frame.outstanding);
+	assert(frame.status == Frame::Status::Ready);
 
 	frameAcquired = false;
 
@@ -2539,7 +2555,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 		throw std::runtime_error("presentKHR failed");
 	}
 	frame.usedRingBufPtr = ringBufPtr;
-	frame.outstanding = true;
+	frame.status         = Frame::Status::Pending;
 	frame.lastFrameNum = frameNum;
 
 	// mark buffers deleted during frame to be deleted when the frame has synced
@@ -2571,7 +2587,7 @@ bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 	assert(frameIdx < frames.size());
 
 	Frame &frame = frames.at(frameIdx);
-	assert(frame.outstanding);
+	assert(frame.status == Frame::Status::Pending);
 
 	auto waitResult = device.waitForFences({ frame.fence }, true, 0);
 	switch (waitResult) {
@@ -2632,7 +2648,7 @@ bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 	freeSemaphore(frame.renderDoneSem);
 	frame.renderDoneSem = vk::Semaphore();
 
-	frame.outstanding    = false;
+	frame.status         = Frame::Status::Ready;
 	lastSyncedFrame      = std::max(lastSyncedFrame, frame.lastFrameNum);
 	lastSyncedRingBufPtr = std::max(lastSyncedRingBufPtr, frame.usedRingBufPtr);
 
@@ -2840,7 +2856,7 @@ void RendererImpl::deleteResourceInternal(Resource &r) {
 
 
 void RendererImpl::deleteFrameInternal(Frame &f) {
-	assert(!f.outstanding);
+	assert(f.status == Frame::Status::Ready);
 	assert(f.fence);
 	device.destroyFence(f.fence);
 	f.fence = vk::Fence();
