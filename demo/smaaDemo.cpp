@@ -2392,18 +2392,10 @@ void SMAADemo::colorCubes() {
 void SMAADemo::setAntialiasing(bool enabled) {
 	antialiasing = enabled;
 	rebuildRG    = true;
-
-	if (enabled && temporalAA) {
-		temporalAAFirstFrame = true;
-	}
 }
 
 
 void SMAADemo::setTemporalAA(bool enabled) {
-	if (!temporalAA && enabled) {
-		temporalAAFirstFrame = true;
-	}
-
 	temporalAA = enabled;
 	rebuildRG = true;
 }
@@ -2787,6 +2779,10 @@ void SMAADemo::render() {
 	if (rebuildRG) {
 		rebuildRenderGraph();
 		assert(!rebuildRG);
+
+		if (antialiasing && temporalAA) {
+			temporalAAFirstFrame = true;
+		}
 	}
 
 	// TODO: this should be in RenderGraph
