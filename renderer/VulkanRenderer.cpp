@@ -379,7 +379,16 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	instance = vk::createInstance(instanceCreateInfo);
 
+#if VK_HEADER_VERSION < 99
+
 	dispatcher.init(instance);
+
+#else  // VK_HEADER_VERSION
+
+	auto getInstanceProc = reinterpret_cast<PFN_vkGetInstanceProcAddr>(SDL_Vulkan_GetVkGetInstanceProcAddr());
+	dispatcher.init(instance, getInstanceProc);
+
+#endif  // VK_HEADER_VERSION
 
 	if (enableValidation) {
 		vk::DebugReportCallbackCreateInfoEXT callbackInfo;
@@ -578,7 +587,15 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	device = physicalDevice.createDevice(deviceCreateInfo);
 
+#if VK_HEADER_VERSION < 99
+
 	dispatcher.init(instance, device);
+
+#else  // VK_HEADER_VERSION
+
+	dispatcher.init(instance, getInstanceProc, device, vkGetDeviceProcAddr);
+
+#endif  // VK_HEADER_VERSION
 
 	VmaAllocatorCreateInfo allocatorInfo = {};
 	allocatorInfo.physicalDevice = physicalDevice;
