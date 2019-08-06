@@ -1,5 +1,5 @@
-commit ebe79bbed00a13fd4455f04131b63d49c28ebd5d
+commit d1d5075b66f93686954154ceaba7fe30abc41f4b
 Author: omar <omarcornut@gmail.com>
-Date:   Wed Mar 13 15:44:23 2019 +0100
+Date:   Mon May 6 14:17:39 2019 +0200
 
-    Demo: Custom rendering: Minor sizing issue fix.
+    Version 1.70
