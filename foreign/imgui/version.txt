@@ -1,5 +1,5 @@
-commit ecb9b1e2eba5becc38019b5c9f75fba711cd881b
+commit 6a0d0dab5a9f0b9518a2bc9bb456a69895ae0962
 Author: omar <omarcornut@gmail.com>
-Date:   Sat Jul 27 17:06:17 2019 -0700
+Date:   Wed Jul 31 10:42:32 2019 -0700
 
-    Version 1.72
+    Version 1.72b (patch for nav)
