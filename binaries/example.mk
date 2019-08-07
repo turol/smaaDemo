@@ -43,7 +43,7 @@ OPTFLAGS+=-fdata-sections -ffunction-sections
 
 # lazy assignment because CFLAGS is changed later
 CXXFLAGS=$(CFLAGS)
-CXXFLAGS+=-std=c++11
+CXXFLAGS+=-std=c++14
 
 
 LDFLAGS:=-g -Wl,-rpath,. -Wl,-rpath,/usr/local/lib:./lib32
