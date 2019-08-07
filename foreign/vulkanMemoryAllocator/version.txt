@@ -1,5 +1,7 @@
-commit 663b0c956763cb7390a68002bc7a1c2c6f2e30d7
+commit 188a365ed48e03e0a09b636464d4c16a00e14899
 Author: Adam Sawicki <Adam.Sawicki@amd.com>
-Date:   Thu Dec 13 12:15:01 2018 +0100
+Date:   Fri Jul 26 15:22:51 2019 +0200
 
-    Minor fixes in documentation.
+    Fix ignore warning C4324 also in VmaReplay project
+    
+    See #71

@@ -23,7 +23,7 @@ Formats with only minor version incremented are backward compatible.
 VmaReplay application supports all older versions.
 Current version is:
 
-    1,5
+    1,6
 
 # Configuration
 
@@ -222,7 +222,7 @@ No parameters.
 
 - pool : pointer
 
-**vmaResizeAllocation** (min format version: 1.4)
+**vmaResizeAllocation** (min format version: 1.4, max format version: 1.5)
 
 - allocation : pointer
 - newSize : uint64
@@ -271,7 +271,7 @@ An ordered sequence of values of some type, separated by single space.
 # Example file
 
     Vulkan Memory Allocator,Calls recording
-    1,5
+    1,6
     Config,Begin
     PhysicalDevice,apiVersion,4198477
     PhysicalDevice,driverVersion,8388653
@@ -299,6 +299,7 @@ An ordered sequence of values of some type, separated by single space.
     PhysicalDeviceMemory,Type,3,heapIndex,1
     PhysicalDeviceMemory,Type,3,propertyFlags,14
     Extension,VK_KHR_dedicated_allocation,1
+    Extension,VK_KHR_bind_memory2,1
     Macro,VMA_DEBUG_ALWAYS_DEDICATED_MEMORY,0
     Macro,VMA_DEBUG_ALIGNMENT,1
     Macro,VMA_DEBUG_MARGIN,0
