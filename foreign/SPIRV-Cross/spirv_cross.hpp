@@ -21,7 +21,7 @@
 #include "spirv_cfg.hpp"
 #include "spirv_cross_parsed_ir.hpp"
 
-namespace spirv_cross
+namespace SPIRV_CROSS_NAMESPACE
 {
 struct Resource
 {
@@ -54,23 +54,24 @@ struct Resource
 
 struct ShaderResources
 {
-	std::vector<Resource> uniform_buffers;
-	std::vector<Resource> storage_buffers;
-	std::vector<Resource> stage_inputs;
-	std::vector<Resource> stage_outputs;
-	std::vector<Resource> subpass_inputs;
-	std::vector<Resource> storage_images;
-	std::vector<Resource> sampled_images;
-	std::vector<Resource> atomic_counters;
+	SmallVector<Resource> uniform_buffers;
+	SmallVector<Resource> storage_buffers;
+	SmallVector<Resource> stage_inputs;
+	SmallVector<Resource> stage_outputs;
+	SmallVector<Resource> subpass_inputs;
+	SmallVector<Resource> storage_images;
+	SmallVector<Resource> sampled_images;
+	SmallVector<Resource> atomic_counters;
+	SmallVector<Resource> acceleration_structures;
 
 	// There can only be one push constant block,
 	// but keep the vector in case this restriction is lifted in the future.
-	std::vector<Resource> push_constant_buffers;
+	SmallVector<Resource> push_constant_buffers;
 
 	// For Vulkan GLSL and HLSL source,
 	// these correspond to separate texture2D and samplers respectively.
-	std::vector<Resource> separate_images;
-	std::vector<Resource> separate_samplers;
+	SmallVector<Resource> separate_images;
+	SmallVector<Resource> separate_samplers;
 };
 
 struct CombinedImageSampler
@@ -105,19 +106,15 @@ enum BufferPackingStandard
 	BufferPackingStd140EnhancedLayout,
 	BufferPackingStd430EnhancedLayout,
 	BufferPackingHLSLCbuffer,
-	BufferPackingHLSLCbufferPackOffset
+	BufferPackingHLSLCbufferPackOffset,
+	BufferPackingScalar,
+	BufferPackingScalarEnhancedLayout
 };
 
 struct EntryPoint
 {
 	std::string name;
 	spv::ExecutionModel execution_model;
-};
-
-enum ExtendedDecorations
-{
-	SPIRVCrossDecorationPacked,
-	SPIRVCrossDecorationPackedType
 };
 
 class Compiler
@@ -158,8 +155,6 @@ public:
 
 	// Gets a bitmask for the decorations which are applied to ID.
 	// I.e. (1ull << spv::DecorationFoo) | (1ull << spv::DecorationBar)
-	SPIRV_CROSS_DEPRECATED("Please use get_decoration_bitset instead.")
-	uint64_t get_decoration_mask(uint32_t id) const;
 	const Bitset &get_decoration_bitset(uint32_t id) const;
 
 	// Returns whether the decoration has been applied to the ID.
@@ -182,27 +177,6 @@ public:
 
 	// Gets the SPIR-V type of a variable.
 	const SPIRType &get_type_from_variable(uint32_t id) const;
-
-	// Gets the id of SPIR-V type underlying the given type_id, which might be a pointer.
-	uint32_t get_pointee_type_id(uint32_t type_id) const;
-
-	// Gets the SPIR-V type underlying the given type, which might be a pointer.
-	const SPIRType &get_pointee_type(const SPIRType &type) const;
-
-	// Gets the SPIR-V type underlying the given type_id, which might be a pointer.
-	const SPIRType &get_pointee_type(uint32_t type_id) const;
-
-	// Gets the ID of the SPIR-V type underlying a variable.
-	uint32_t get_variable_data_type_id(const SPIRVariable &var) const;
-
-	// Gets the SPIR-V type underlying a variable.
-	SPIRType &get_variable_data_type(const SPIRVariable &var);
-
-	// Gets the SPIR-V type underlying a variable.
-	const SPIRType &get_variable_data_type(const SPIRVariable &var) const;
-
-	// Returns if the given type refers to a sampled image.
-	bool is_sampled_image_type(const SPIRType &type);
 
 	// Gets the underlying storage class for an OpVariable.
 	spv::StorageClass get_storage_class(uint32_t id) const;
@@ -230,12 +204,7 @@ public:
 	// or an empty string if no qualified alias exists
 	const std::string &get_member_qualified_name(uint32_t type_id, uint32_t index) const;
 
-	// Sets the qualified member identifier for OpTypeStruct ID, member number "index".
-	void set_member_qualified_name(uint32_t type_id, uint32_t index, const std::string &name);
-
 	// Gets the decoration mask for a member of a struct, similar to get_decoration_mask.
-	SPIRV_CROSS_DEPRECATED("Please use get_member_decoration_bitset instead.")
-	uint64_t get_member_decoration_mask(uint32_t id, uint32_t index) const;
 	const Bitset &get_member_decoration_bitset(uint32_t id, uint32_t index) const;
 
 	// Returns whether the decoration has been applied to a member of a struct.
@@ -259,7 +228,7 @@ public:
 	// SPIR-V shader. The granularity of this analysis is per-member of a struct.
 	// This can be used for Buffer (UBO), BufferBlock/StorageBuffer (SSBO) and PushConstant blocks.
 	// ID is the Resource::id obtained from get_shader_resources().
-	std::vector<BufferRange> get_active_buffer_ranges(uint32_t id) const;
+	SmallVector<BufferRange> get_active_buffer_ranges(uint32_t id) const;
 
 	// Returns the effective size of a buffer block.
 	size_t get_declared_struct_size(const SPIRType &struct_type) const;
@@ -277,10 +246,7 @@ public:
 	size_t get_declared_struct_size_runtime_array(const SPIRType &struct_type, size_t array_size) const;
 
 	// Returns the effective size of a buffer block struct member.
-	virtual size_t get_declared_struct_member_size(const SPIRType &struct_type, uint32_t index) const;
-
-	// Legacy GLSL compatibility method. Deprecated in favor of CompilerGLSL::flatten_buffer_block
-	SPIRV_CROSS_DEPRECATED("Please use flatten_buffer_block instead.") void flatten_interface_block(uint32_t id);
+	size_t get_declared_struct_member_size(const SPIRType &struct_type, uint32_t index) const;
 
 	// Returns a set of all global variables which are statically accessed
 	// by the control flow graph from the current entry point.
@@ -322,24 +288,6 @@ public:
 	// Entry points should be set right after the constructor completes as some reflection functions traverse the graph from the entry point.
 	// Resource reflection also depends on the entry point.
 	// By default, the current entry point is set to the first OpEntryPoint which appears in the SPIR-V module.
-	SPIRV_CROSS_DEPRECATED("Please use get_entry_points_and_stages instead.")
-	std::vector<std::string> get_entry_points() const;
-	SPIRV_CROSS_DEPRECATED("Please use set_entry_point(const std::string &, spv::ExecutionModel) instead.")
-	void set_entry_point(const std::string &name);
-
-	// Renames an entry point from old_name to new_name.
-	// If old_name is currently selected as the current entry point, it will continue to be the current entry point,
-	// albeit with a new name.
-	// get_entry_points() is essentially invalidated at this point.
-	SPIRV_CROSS_DEPRECATED(
-	    "Please use rename_entry_point(const std::string&, const std::string&, spv::ExecutionModel) instead.")
-	void rename_entry_point(const std::string &old_name, const std::string &new_name);
-
-	// Returns the internal data structure for entry points to allow poking around.
-	SPIRV_CROSS_DEPRECATED("Please use get_entry_point(const std::string &, spv::ExecutionModel instead.")
-	const SPIREntryPoint &get_entry_point(const std::string &name) const;
-	SPIRV_CROSS_DEPRECATED("Please use get_entry_point(const std::string &, spv::ExecutionModel instead.")
-	SPIREntryPoint &get_entry_point(const std::string &name);
 
 	// Some shader languages restrict the names that can be given to entry points, and the
 	// corresponding backend will automatically rename an entry point name, during the call
@@ -349,15 +297,17 @@ public:
 	// the name, as updated by the backend during the call to compile(). If the name is not
 	// illegal, and has not been renamed, or if this function is called before compile(),
 	// this function will simply return the same name.
-	SPIRV_CROSS_DEPRECATED(
-	    "Please use get_cleansed_entry_point_name(const std::string &, spv::ExecutionModel) instead.")
-	const std::string &get_cleansed_entry_point_name(const std::string &name) const;
 
 	// New variants of entry point query and reflection.
 	// Names for entry points in the SPIR-V module may alias if they belong to different execution models.
 	// To disambiguate, we must pass along with the entry point names the execution model.
-	std::vector<EntryPoint> get_entry_points_and_stages() const;
+	SmallVector<EntryPoint> get_entry_points_and_stages() const;
 	void set_entry_point(const std::string &entry, spv::ExecutionModel execution_model);
+
+	// Renames an entry point from old_name to new_name.
+	// If old_name is currently selected as the current entry point, it will continue to be the current entry point,
+	// albeit with a new name.
+	// get_entry_points() is essentially invalidated at this point.
 	void rename_entry_point(const std::string &old_name, const std::string &new_name,
 	                        spv::ExecutionModel execution_model);
 	const SPIREntryPoint &get_entry_point(const std::string &name, spv::ExecutionModel execution_model) const;
@@ -366,8 +316,6 @@ public:
 	                                                 spv::ExecutionModel execution_model) const;
 
 	// Query and modify OpExecutionMode.
-	SPIRV_CROSS_DEPRECATED("Please use get_execution_mode_bitset instead.")
-	uint64_t get_execution_mode_mask() const;
 	const Bitset &get_execution_mode_bitset() const;
 
 	void unset_execution_mode(spv::ExecutionMode mode);
@@ -378,6 +326,8 @@ public:
 	// For execution modes which do not have arguments, 0 is returned.
 	uint32_t get_execution_mode_argument(spv::ExecutionMode mode, uint32_t index = 0) const;
 	spv::ExecutionModel get_execution_model() const;
+
+	bool is_tessellation_shader() const;
 
 	// In SPIR-V, the compute work group size can be represented by a constant vector, in which case
 	// the LocalSize execution mode is ignored.
@@ -435,7 +385,7 @@ public:
 	void build_combined_image_samplers();
 
 	// Gets a remapping for the combined image samplers.
-	const std::vector<CombinedImageSampler> &get_combined_image_samplers() const
+	const SmallVector<CombinedImageSampler> &get_combined_image_samplers() const
 	{
 		return combined_image_samplers;
 	}
@@ -460,7 +410,7 @@ public:
 	// For composite types, the subconstants can be iterated over and modified.
 	// constant_type is the SPIRType for the specialization constant,
 	// which can be queried to determine which fields in the unions should be poked at.
-	std::vector<SpecializationConstant> get_specialization_constants() const;
+	SmallVector<SpecializationConstant> get_specialization_constants() const;
 	SPIRConstant &get_constant(uint32_t id);
 	const SPIRConstant &get_constant(uint32_t id) const;
 
@@ -511,10 +461,10 @@ public:
 	bool buffer_get_hlsl_counter_buffer(uint32_t id, uint32_t &counter_id) const;
 
 	// Gets the list of all SPIR-V Capabilities which were declared in the SPIR-V module.
-	const std::vector<spv::Capability> &get_declared_capabilities() const;
+	const SmallVector<spv::Capability> &get_declared_capabilities() const;
 
 	// Gets the list of all SPIR-V extensions which were declared in the SPIR-V module.
-	const std::vector<std::string> &get_declared_extensions() const;
+	const SmallVector<std::string> &get_declared_extensions() const;
 
 	// When declaring buffer blocks in GLSL, the name declared in the GLSL source
 	// might not be the same as the name declared in the SPIR-V module due to naming conflicts.
@@ -554,8 +504,8 @@ protected:
 	ParsedIR ir;
 	// Marks variables which have global scope and variables which can alias with other variables
 	// (SSBO, image load store, etc)
-	std::vector<uint32_t> global_variables;
-	std::vector<uint32_t> aliased_variables;
+	SmallVector<uint32_t> global_variables;
+	SmallVector<uint32_t> aliased_variables;
 
 	SPIRFunction *current_function = nullptr;
 	SPIRBlock *current_block = nullptr;
@@ -582,7 +532,9 @@ protected:
 	template <typename T>
 	T *maybe_get(uint32_t id)
 	{
-		if (ir.ids[id].get_type() == static_cast<Types>(T::type))
+		if (id >= ir.ids.size())
+			return nullptr;
+		else if (ir.ids[id].get_type() == static_cast<Types>(T::type))
 			return &get<T>(id);
 		else
 			return nullptr;
@@ -603,8 +555,40 @@ protected:
 			return nullptr;
 	}
 
+	// Gets the id of SPIR-V type underlying the given type_id, which might be a pointer.
+	uint32_t get_pointee_type_id(uint32_t type_id) const;
+
+	// Gets the SPIR-V type underlying the given type, which might be a pointer.
+	const SPIRType &get_pointee_type(const SPIRType &type) const;
+
+	// Gets the SPIR-V type underlying the given type_id, which might be a pointer.
+	const SPIRType &get_pointee_type(uint32_t type_id) const;
+
+	// Gets the ID of the SPIR-V type underlying a variable.
+	uint32_t get_variable_data_type_id(const SPIRVariable &var) const;
+
+	// Gets the SPIR-V type underlying a variable.
+	SPIRType &get_variable_data_type(const SPIRVariable &var);
+
+	// Gets the SPIR-V type underlying a variable.
+	const SPIRType &get_variable_data_type(const SPIRVariable &var) const;
+
+	// Gets the SPIR-V element type underlying an array variable.
+	SPIRType &get_variable_element_type(const SPIRVariable &var);
+
+	// Gets the SPIR-V element type underlying an array variable.
+	const SPIRType &get_variable_element_type(const SPIRVariable &var) const;
+
+	// Sets the qualified member identifier for OpTypeStruct ID, member number "index".
+	void set_member_qualified_name(uint32_t type_id, uint32_t index, const std::string &name);
+	void set_qualified_name(uint32_t id, const std::string &name);
+
+	// Returns if the given type refers to a sampled image.
+	bool is_sampled_image_type(const SPIRType &type);
+
 	const SPIREntryPoint &get_entry_point() const;
 	SPIREntryPoint &get_entry_point();
+	static bool is_tessellation_shader(spv::ExecutionModel model);
 
 	virtual std::string to_name(uint32_t id, bool allow_alias = true) const;
 	bool is_builtin_variable(const SPIRVariable &var) const;
@@ -676,10 +660,14 @@ protected:
 	bool block_is_outside_flow_control_from_block(const SPIRBlock &from, const SPIRBlock &to);
 
 	bool execution_is_branchless(const SPIRBlock &from, const SPIRBlock &to) const;
+	bool execution_is_direct_branch(const SPIRBlock &from, const SPIRBlock &to) const;
 	bool execution_is_noop(const SPIRBlock &from, const SPIRBlock &to) const;
 	SPIRBlock::ContinueBlockType continue_block_type(const SPIRBlock &continue_block) const;
 
-	bool force_recompile = false;
+	void force_recompile();
+	void clear_force_recompile();
+	bool is_forcing_recompilation() const;
+	bool is_force_recompile = false;
 
 	bool block_is_loop_candidate(const SPIRBlock &block, SPIRBlock::Method method) const;
 
@@ -692,7 +680,7 @@ protected:
 	// variable is part of that entry points interface.
 	bool interface_variable_exists_in_entry_point(uint32_t id) const;
 
-	std::vector<CombinedImageSampler> combined_image_samplers;
+	SmallVector<CombinedImageSampler> combined_image_samplers;
 
 	void remap_variable_type_name(const SPIRType &type, const std::string &var_name, std::string &type_name) const
 	{
@@ -735,7 +723,7 @@ protected:
 
 	struct BufferAccessHandler : OpcodeHandler
 	{
-		BufferAccessHandler(const Compiler &compiler_, std::vector<BufferRange> &ranges_, uint32_t id_)
+		BufferAccessHandler(const Compiler &compiler_, SmallVector<BufferRange> &ranges_, uint32_t id_)
 		    : compiler(compiler_)
 		    , ranges(ranges_)
 		    , id(id_)
@@ -745,7 +733,7 @@ protected:
 		bool handle(spv::Op opcode, const uint32_t *args, uint32_t length) override;
 
 		const Compiler &compiler;
-		std::vector<BufferRange> &ranges;
+		SmallVector<BufferRange> &ranges;
 		uint32_t id;
 
 		std::unordered_set<uint32_t> seen;
@@ -816,7 +804,7 @@ protected:
 	bool traverse_all_reachable_opcodes(const SPIRBlock &block, OpcodeHandler &handler) const;
 	bool traverse_all_reachable_opcodes(const SPIRFunction &block, OpcodeHandler &handler) const;
 	// This must be an ordered data structure so we always pick the same type aliases.
-	std::vector<uint32_t> global_struct_cache;
+	SmallVector<uint32_t> global_struct_cache;
 
 	ShaderResources get_shader_resources(const std::unordered_set<uint32_t> *active_variables) const;
 
@@ -826,7 +814,9 @@ protected:
 
 	std::unordered_set<uint32_t> forced_temporaries;
 	std::unordered_set<uint32_t> forwarded_temporaries;
+	std::unordered_set<uint32_t> suppressed_usage_tracking;
 	std::unordered_set<uint32_t> hoisted_temporaries;
+	std::unordered_set<uint32_t> forced_invariant_temporaries;
 
 	Bitset active_input_builtins;
 	Bitset active_output_builtins;
@@ -922,6 +912,7 @@ protected:
 		std::unordered_map<uint32_t, uint32_t> result_id_to_type;
 		std::unordered_map<uint32_t, std::unordered_set<uint32_t>> complete_write_variables_to_block;
 		std::unordered_map<uint32_t, std::unordered_set<uint32_t>> partial_write_variables_to_block;
+		std::unordered_set<uint32_t> access_chain_expressions;
 		const SPIRBlock *current_block = nullptr;
 	};
 
@@ -937,8 +928,20 @@ protected:
 		uint32_t write_count = 0;
 	};
 
+	struct PhysicalStorageBufferPointerHandler : OpcodeHandler
+	{
+		PhysicalStorageBufferPointerHandler(Compiler &compiler_);
+		bool handle(spv::Op op, const uint32_t *args, uint32_t length) override;
+		Compiler &compiler;
+		std::unordered_set<uint32_t> types;
+	};
+	void analyze_non_block_pointer_types();
+	SmallVector<uint32_t> physical_storage_non_block_pointer_types;
+
 	void analyze_variable_scope(SPIRFunction &function, AnalyzeVariableScopeAccessHandler &handler);
-	void find_function_local_luts(SPIRFunction &function, const AnalyzeVariableScopeAccessHandler &handler);
+	void find_function_local_luts(SPIRFunction &function, const AnalyzeVariableScopeAccessHandler &handler,
+	                              bool single_function);
+	bool may_read_undefined_variable_in_block(const SPIRBlock &block, uint32_t var);
 
 	void make_constant_null(uint32_t id, uint32_t type);
 
@@ -963,14 +966,20 @@ protected:
 	bool has_extended_member_decoration(uint32_t type, uint32_t index, ExtendedDecorations decoration) const;
 	void unset_extended_member_decoration(uint32_t type, uint32_t index, ExtendedDecorations decoration);
 
+	bool type_is_array_of_pointers(const SPIRType &type) const;
+	bool type_is_block_like(const SPIRType &type) const;
+	bool type_is_opaque_value(const SPIRType &type) const;
+
+	bool reflection_ssbo_instance_name_is_significant() const;
+	std::string get_remapped_declared_block_name(uint32_t id, bool fallback_prefer_instance_name) const;
+
+	bool flush_phi_required(uint32_t from, uint32_t to) const;
+
 private:
 	// Used only to implement the old deprecated get_entry_point() interface.
 	const SPIREntryPoint &get_first_entry_point(const std::string &name) const;
 	SPIREntryPoint &get_first_entry_point(const std::string &name);
-
-	void fixup_type_alias();
-	bool type_is_block_like(const SPIRType &type) const;
 };
-} // namespace spirv_cross
+} // namespace SPIRV_CROSS_NAMESPACE
 
 #endif

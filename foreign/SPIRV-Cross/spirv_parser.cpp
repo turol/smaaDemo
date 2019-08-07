@@ -20,9 +20,9 @@
 using namespace std;
 using namespace spv;
 
-namespace spirv_cross
+namespace SPIRV_CROSS_NAMESPACE
 {
-Parser::Parser(std::vector<uint32_t> spirv)
+Parser::Parser(vector<uint32_t> spirv)
 {
 	ir.spirv = move(spirv);
 }
@@ -59,6 +59,7 @@ static bool is_valid_spirv_version(uint32_t version)
 	case 0x10100: // SPIR-V 1.1
 	case 0x10200: // SPIR-V 1.2
 	case 0x10300: // SPIR-V 1.3
+	case 0x10400: // SPIR-V 1.4
 		return true;
 
 	default:
@@ -88,7 +89,7 @@ void Parser::parse()
 
 	uint32_t offset = 5;
 
-	vector<Instruction> instructions;
+	SmallVector<Instruction> instructions;
 	while (offset < len)
 	{
 		Instruction instr = {};
@@ -158,14 +159,21 @@ void Parser::parse(const Instruction &instruction)
 
 	switch (op)
 	{
-	case OpMemoryModel:
 	case OpSourceContinued:
 	case OpSourceExtension:
 	case OpNop:
-	case OpLine:
-	case OpNoLine:
-	case OpString:
 	case OpModuleProcessed:
+		break;
+
+	case OpString:
+	{
+		set<SPIRString>(ops[0], extract_string(ir.spirv, instruction.offset + 1));
+		break;
+	}
+
+	case OpMemoryModel:
+		ir.addressing_model = static_cast<AddressingModel>(ops[0]);
+		ir.memory_model = static_cast<MemoryModel>(ops[1]);
 		break;
 
 	case OpSource:
@@ -207,6 +215,8 @@ void Parser::parse(const Instruction &instruction)
 		uint32_t result_type = ops[0];
 		uint32_t id = ops[1];
 		set<SPIRUndef>(id, result_type);
+		if (current_block)
+			current_block->ops.push_back(instruction);
 		break;
 	}
 
@@ -233,6 +243,8 @@ void Parser::parse(const Instruction &instruction)
 		auto ext = extract_string(ir.spirv, instruction.offset + 1);
 		if (ext == "GLSL.std.450")
 			set<SPIRExtension>(id, SPIRExtension::GLSL);
+		else if (ext == "DebugInfo")
+			set<SPIRExtension>(id, SPIRExtension::SPV_debug_info);
 		else if (ext == "SPV_AMD_shader_ballot")
 			set<SPIRExtension>(id, SPIRExtension::SPV_AMD_shader_ballot);
 		else if (ext == "SPV_AMD_shader_explicit_vertex_parameter")
@@ -246,6 +258,14 @@ void Parser::parse(const Instruction &instruction)
 
 		// Other SPIR-V extensions which have ExtInstrs are currently not supported.
 
+		break;
+	}
+
+	case OpExtInst:
+	{
+		// The SPIR-V debug information extended instructions might come at global scope.
+		if (current_block)
+			current_block->ops.push_back(instruction);
 		break;
 	}
 
@@ -461,23 +481,7 @@ void Parser::parse(const Instruction &instruction)
 		uint32_t width = ops[1];
 		bool signedness = ops[2] != 0;
 		auto &type = set<SPIRType>(id);
-		switch (width)
-		{
-		case 64:
-			type.basetype = signedness ? SPIRType::Int64 : SPIRType::UInt64;
-			break;
-		case 32:
-			type.basetype = signedness ? SPIRType::Int : SPIRType::UInt;
-			break;
-		case 16:
-			type.basetype = signedness ? SPIRType::Short : SPIRType::UShort;
-			break;
-		case 8:
-			type.basetype = signedness ? SPIRType::SByte : SPIRType::UByte;
-			break;
-		default:
-			SPIRV_CROSS_THROW("Unrecognized bit-width of integral type.");
-		}
+		type.basetype = signedness ? to_signed_basetype(width) : to_unsigned_basetype(width);
 		type.width = width;
 		break;
 	}
@@ -565,10 +569,6 @@ void Parser::parse(const Instruction &instruction)
 		type.image.sampled = ops[6];
 		type.image.format = static_cast<ImageFormat>(ops[7]);
 		type.image.access = (length >= 9) ? static_cast<AccessQualifier>(ops[8]) : AccessQualifierMax;
-
-		if (type.image.sampled == 0)
-			SPIRV_CROSS_THROW("OpTypeImage Sampled parameter must not be zero.");
-
 		break;
 	}
 
@@ -609,6 +609,20 @@ void Parser::parse(const Instruction &instruction)
 		ptrbase.parent_type = ops[2];
 
 		// Do NOT set ptrbase.self!
+		break;
+	}
+
+	case OpTypeForwardPointer:
+	{
+		uint32_t id = ops[0];
+		auto &ptrbase = set<SPIRType>(id);
+		ptrbase.pointer = true;
+		ptrbase.pointer_depth++;
+		ptrbase.storage = static_cast<StorageClass>(ops[1]);
+
+		if (ptrbase.storage == StorageClassAtomicCounter)
+			ptrbase.basetype = SPIRType::AtomicCounter;
+
 		break;
 	}
 
@@ -658,6 +672,14 @@ void Parser::parse(const Instruction &instruction)
 		auto &func = set<SPIRFunctionPrototype>(id, ret);
 		for (uint32_t i = 2; i < length; i++)
 			func.parameter_types.push_back(ops[i]);
+		break;
+	}
+
+	case OpTypeAccelerationStructureNV:
+	{
+		uint32_t id = ops[0];
+		auto &type = set<SPIRType>(id);
+		type.basetype = SPIRType::AccelerationStructureNV;
 		break;
 	}
 
@@ -783,6 +805,7 @@ void Parser::parse(const Instruction &instruction)
 				// We do not know their value, so any attempt to query SPIRConstant later
 				// will fail. We can only propagate the ID of the expression and use to_expression on it.
 				auto *constant_op = maybe_get<SPIRConstantOp>(ops[2 + i]);
+				auto *undef_op = maybe_get<SPIRUndef>(ops[2 + i]);
 				if (constant_op)
 				{
 					if (op == OpConstantComposite)
@@ -792,6 +815,13 @@ void Parser::parse(const Instruction &instruction)
 					remapped_constant_ops[i].self = constant_op->self;
 					remapped_constant_ops[i].constant_type = constant_op->basetype;
 					remapped_constant_ops[i].specialization = true;
+					c[i] = &remapped_constant_ops[i];
+				}
+				else if (undef_op)
+				{
+					// Undefined, just pick 0.
+					remapped_constant_ops[i].make_null(get<SPIRType>(undef_op->basetype));
+					remapped_constant_ops[i].constant_type = undef_op->basetype;
 					c[i] = &remapped_constant_ops[i];
 				}
 				else
@@ -894,9 +924,6 @@ void Parser::parse(const Instruction &instruction)
 	{
 		if (!current_block)
 			SPIRV_CROSS_THROW("Trying to end a non-existing block.");
-
-		if (current_block->merge == SPIRBlock::MergeNone)
-			SPIRV_CROSS_THROW("Switch statement is not structured");
 
 		current_block->terminator = SPIRBlock::MultiSelect;
 
@@ -1012,6 +1039,37 @@ void Parser::parse(const Instruction &instruction)
 		break;
 	}
 
+	case OpLine:
+	{
+		// OpLine might come at global scope, but we don't care about those since they will not be declared in any
+		// meaningful correct order.
+		// Ignore all OpLine directives which live outside a function.
+		if (current_block)
+			current_block->ops.push_back(instruction);
+
+		// Line directives may arrive before first OpLabel.
+		// Treat this as the line of the function declaration,
+		// so warnings for arguments can propagate properly.
+		if (current_function)
+		{
+			// Store the first one we find and emit it before creating the function prototype.
+			if (current_function->entry_line.file_id == 0)
+			{
+				current_function->entry_line.file_id = ops[0];
+				current_function->entry_line.line_literal = ops[1];
+			}
+		}
+		break;
+	}
+
+	case OpNoLine:
+	{
+		// OpNoLine might come at global scope.
+		if (current_block)
+			current_block->ops.push_back(instruction);
+		break;
+	}
+
 	// Actual opcodes.
 	default:
 	{
@@ -1098,7 +1156,7 @@ void Parser::make_constant_null(uint32_t id, uint32_t type)
 		if (!constant_type.array_size_literal.back())
 			SPIRV_CROSS_THROW("Array size of OpConstantNull must be a literal.");
 
-		vector<uint32_t> elements(constant_type.array.back());
+		SmallVector<uint32_t> elements(constant_type.array.back());
 		for (uint32_t i = 0; i < constant_type.array.back(); i++)
 			elements[i] = parent_id;
 		set<SPIRConstant>(id, type, elements.data(), uint32_t(elements.size()), false);
@@ -1106,7 +1164,7 @@ void Parser::make_constant_null(uint32_t id, uint32_t type)
 	else if (!constant_type.member_types.empty())
 	{
 		uint32_t member_ids = ir.increase_bound_by(uint32_t(constant_type.member_types.size()));
-		vector<uint32_t> elements(constant_type.member_types.size());
+		SmallVector<uint32_t> elements(constant_type.member_types.size());
 		for (uint32_t i = 0; i < constant_type.member_types.size(); i++)
 		{
 			make_constant_null(member_ids + i, constant_type.member_types[i]);
@@ -1121,4 +1179,4 @@ void Parser::make_constant_null(uint32_t id, uint32_t type)
 	}
 }
 
-} // namespace spirv_cross
+} // namespace SPIRV_CROSS_NAMESPACE

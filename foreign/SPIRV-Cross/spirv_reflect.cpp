@@ -19,7 +19,7 @@
 #include <iomanip>
 
 using namespace spv;
-using namespace spirv_cross;
+using namespace SPIRV_CROSS_NAMESPACE;
 using namespace std;
 
 namespace simple_json
@@ -36,10 +36,16 @@ using Stack = std::stack<State>;
 class Stream
 {
 	Stack stack;
-	std::ostringstream buffer;
+	StringStream<> buffer;
 	uint32_t indent{ 0 };
+	char current_locale_radix_character = '.';
 
 public:
+	void set_current_locale_radix_character(char c)
+	{
+		current_locale_radix_character = c;
+	}
+
 	void begin_json_object();
 	void end_json_object();
 	void emit_json_key(const std::string &key);
@@ -212,7 +218,7 @@ void Stream::emit_json_key_value(const std::string &key, int32_t value)
 void Stream::emit_json_key_value(const std::string &key, float value)
 {
 	emit_json_key(key);
-	statement_inner(value);
+	statement_inner(convert_to_string(value, current_locale_radix_character));
 }
 
 void Stream::emit_json_key_value(const std::string &key, bool value)
@@ -247,12 +253,11 @@ void CompilerReflection::set_format(const std::string &format)
 
 string CompilerReflection::compile()
 {
-	// Force a classic "C" locale, reverts when function returns
-	ClassicLocale classic_locale;
-
-	// Move constructor for this type is broken on GCC 4.9 ...
 	json_stream = std::make_shared<simple_json::Stream>();
+	json_stream->set_current_locale_radix_character(current_locale_radix_character);
 	json_stream->begin_json_object();
+	fixup_type_alias();
+	reorder_type_alias();
 	emit_entry_points();
 	emit_types();
 	emit_resources();
@@ -368,9 +373,9 @@ string CompilerReflection::execution_model_to_str(spv::ExecutionModel model)
 {
 	switch (model)
 	{
-	case spv::ExecutionModelVertex:
+	case ExecutionModelVertex:
 		return "vert";
-	case spv::ExecutionModelTessellationControl:
+	case ExecutionModelTessellationControl:
 		return "tesc";
 	case ExecutionModelTessellationEvaluation:
 		return "tese";
@@ -380,6 +385,18 @@ string CompilerReflection::execution_model_to_str(spv::ExecutionModel model)
 		return "frag";
 	case ExecutionModelGLCompute:
 		return "comp";
+	case ExecutionModelRayGenerationNV:
+		return "rgen";
+	case ExecutionModelIntersectionNV:
+		return "rint";
+	case ExecutionModelAnyHitNV:
+		return "rahit";
+	case ExecutionModelClosestHitNV:
+		return "rchit";
+	case ExecutionModelMissNV:
+		return "rmiss";
+	case ExecutionModelCallableNV:
+		return "rcall";
 	default:
 		return "???";
 	}
@@ -391,6 +408,16 @@ void CompilerReflection::emit_entry_points()
 	auto entries = get_entry_points_and_stages();
 	if (!entries.empty())
 	{
+		// Needed to make output deterministic.
+		sort(begin(entries), end(entries), [](const EntryPoint &a, const EntryPoint &b) -> bool {
+			if (a.execution_model < b.execution_model)
+				return true;
+			else if (a.execution_model > b.execution_model)
+				return false;
+			else
+				return a.name < b.name;
+		});
+
 		json_stream->emit_json_key_array("entryPoints");
 		for (auto &e : entries)
 		{
@@ -417,9 +444,10 @@ void CompilerReflection::emit_resources()
 	emit_resources("ubos", res.uniform_buffers);
 	emit_resources("push_constants", res.push_constant_buffers);
 	emit_resources("counters", res.atomic_counters);
+	emit_resources("acceleration_structures", res.acceleration_structures);
 }
 
-void CompilerReflection::emit_resources(const char *tag, const vector<Resource> &resources)
+void CompilerReflection::emit_resources(const char *tag, const SmallVector<Resource> &resources)
 {
 	if (resources.empty())
 	{
@@ -475,7 +503,8 @@ void CompilerReflection::emit_resources(const char *tag, const vector<Resource> 
 
 		{
 			bool is_sized_block = is_block && (get_storage_class(res.id) == StorageClassUniform ||
-			                                   get_storage_class(res.id) == StorageClassUniformConstant);
+			                                   get_storage_class(res.id) == StorageClassUniformConstant ||
+			                                   get_storage_class(res.id) == StorageClassStorageBuffer);
 			if (is_sized_block)
 			{
 				uint32_t block_size = uint32_t(get_declared_struct_size(get_type(res.base_type_id)));

@@ -21,11 +21,110 @@
 using namespace std;
 using namespace spv;
 
-namespace spirv_cross
+namespace SPIRV_CROSS_NAMESPACE
 {
+ParsedIR::ParsedIR()
+{
+	// If we move ParsedIR, we need to make sure the pointer stays fixed since the child Variant objects consume a pointer to this group,
+	// so need an extra pointer here.
+	pool_group.reset(new ObjectPoolGroup);
+
+	pool_group->pools[TypeType].reset(new ObjectPool<SPIRType>);
+	pool_group->pools[TypeVariable].reset(new ObjectPool<SPIRVariable>);
+	pool_group->pools[TypeConstant].reset(new ObjectPool<SPIRConstant>);
+	pool_group->pools[TypeFunction].reset(new ObjectPool<SPIRFunction>);
+	pool_group->pools[TypeFunctionPrototype].reset(new ObjectPool<SPIRFunctionPrototype>);
+	pool_group->pools[TypeBlock].reset(new ObjectPool<SPIRBlock>);
+	pool_group->pools[TypeExtension].reset(new ObjectPool<SPIRExtension>);
+	pool_group->pools[TypeExpression].reset(new ObjectPool<SPIRExpression>);
+	pool_group->pools[TypeConstantOp].reset(new ObjectPool<SPIRConstantOp>);
+	pool_group->pools[TypeCombinedImageSampler].reset(new ObjectPool<SPIRCombinedImageSampler>);
+	pool_group->pools[TypeAccessChain].reset(new ObjectPool<SPIRAccessChain>);
+	pool_group->pools[TypeUndef].reset(new ObjectPool<SPIRUndef>);
+	pool_group->pools[TypeString].reset(new ObjectPool<SPIRString>);
+}
+
+// Should have been default-implemented, but need this on MSVC 2013.
+ParsedIR::ParsedIR(ParsedIR &&other) SPIRV_CROSS_NOEXCEPT
+{
+	*this = move(other);
+}
+
+ParsedIR &ParsedIR::operator=(ParsedIR &&other) SPIRV_CROSS_NOEXCEPT
+{
+	if (this != &other)
+	{
+		pool_group = move(other.pool_group);
+		spirv = move(other.spirv);
+		meta = move(other.meta);
+		for (int i = 0; i < TypeCount; i++)
+			ids_for_type[i] = move(other.ids_for_type[i]);
+		ids_for_constant_or_type = move(other.ids_for_constant_or_type);
+		ids_for_constant_or_variable = move(other.ids_for_constant_or_variable);
+		declared_capabilities = move(other.declared_capabilities);
+		declared_extensions = move(other.declared_extensions);
+		block_meta = move(other.block_meta);
+		continue_block_to_loop_header = move(other.continue_block_to_loop_header);
+		entry_points = move(other.entry_points);
+		ids = move(other.ids);
+		addressing_model = other.addressing_model;
+		memory_model = other.memory_model;
+
+		default_entry_point = other.default_entry_point;
+		source = other.source;
+		loop_iteration_depth_hard = other.loop_iteration_depth_hard;
+		loop_iteration_depth_soft = other.loop_iteration_depth_soft;
+	}
+	return *this;
+}
+
+ParsedIR::ParsedIR(const ParsedIR &other)
+    : ParsedIR()
+{
+	*this = other;
+}
+
+ParsedIR &ParsedIR::operator=(const ParsedIR &other)
+{
+	if (this != &other)
+	{
+		spirv = other.spirv;
+		meta = other.meta;
+		for (int i = 0; i < TypeCount; i++)
+			ids_for_type[i] = other.ids_for_type[i];
+		ids_for_constant_or_type = other.ids_for_constant_or_type;
+		ids_for_constant_or_variable = other.ids_for_constant_or_variable;
+		declared_capabilities = other.declared_capabilities;
+		declared_extensions = other.declared_extensions;
+		block_meta = other.block_meta;
+		continue_block_to_loop_header = other.continue_block_to_loop_header;
+		entry_points = other.entry_points;
+		default_entry_point = other.default_entry_point;
+		source = other.source;
+		loop_iteration_depth_hard = other.loop_iteration_depth_hard;
+		loop_iteration_depth_soft = other.loop_iteration_depth_soft;
+		addressing_model = other.addressing_model;
+		memory_model = other.memory_model;
+
+		// Very deliberate copying of IDs. There is no default copy constructor, nor a simple default constructor.
+		// Construct object first so we have the correct allocator set-up, then we can copy object into our new pool group.
+		ids.clear();
+		ids.reserve(other.ids.size());
+		for (size_t i = 0; i < other.ids.size(); i++)
+		{
+			ids.emplace_back(pool_group.get());
+			ids.back() = other.ids[i];
+		}
+	}
+	return *this;
+}
+
 void ParsedIR::set_id_bounds(uint32_t bounds)
 {
-	ids.resize(bounds);
+	ids.reserve(bounds);
+	while (ids.size() < bounds)
+		ids.emplace_back(pool_group.get());
+
 	block_meta.resize(bounds);
 }
 
@@ -571,7 +670,11 @@ uint32_t ParsedIR::increase_bound_by(uint32_t incr_amount)
 {
 	auto curr_bound = ids.size();
 	auto new_bound = curr_bound + incr_amount;
-	ids.resize(new_bound);
+
+	ids.reserve(ids.size() + incr_amount);
+	for (uint32_t i = 0; i < incr_amount; i++)
+		ids.emplace_back(pool_group.get());
+
 	block_meta.resize(new_bound);
 	return uint32_t(curr_bound);
 }
@@ -593,27 +696,37 @@ void ParsedIR::reset_all_of_type(Types type)
 
 void ParsedIR::add_typed_id(Types type, uint32_t id)
 {
-	if (loop_iteration_depth)
+	if (loop_iteration_depth_hard != 0)
 		SPIRV_CROSS_THROW("Cannot add typed ID while looping over it.");
 
-	switch (type)
+	if (loop_iteration_depth_soft != 0)
 	{
-	case TypeConstant:
-		ids_for_constant_or_variable.push_back(id);
-		ids_for_constant_or_type.push_back(id);
-		break;
+		if (!ids[id].empty())
+			SPIRV_CROSS_THROW("Cannot override IDs when loop is soft locked.");
+		return;
+	}
 
-	case TypeVariable:
-		ids_for_constant_or_variable.push_back(id);
-		break;
+	if (ids[id].empty() || ids[id].get_type() != type)
+	{
+		switch (type)
+		{
+		case TypeConstant:
+			ids_for_constant_or_variable.push_back(id);
+			ids_for_constant_or_type.push_back(id);
+			break;
 
-	case TypeType:
-	case TypeConstantOp:
-		ids_for_constant_or_type.push_back(id);
-		break;
+		case TypeVariable:
+			ids_for_constant_or_variable.push_back(id);
+			break;
 
-	default:
-		break;
+		case TypeType:
+		case TypeConstantOp:
+			ids_for_constant_or_type.push_back(id);
+			break;
+
+		default:
+			break;
+		}
 	}
 
 	if (ids[id].empty())
@@ -645,4 +758,41 @@ Meta *ParsedIR::find_meta(uint32_t id)
 		return nullptr;
 }
 
-} // namespace spirv_cross
+ParsedIR::LoopLock ParsedIR::create_loop_hard_lock() const
+{
+	return ParsedIR::LoopLock(&loop_iteration_depth_hard);
+}
+
+ParsedIR::LoopLock ParsedIR::create_loop_soft_lock() const
+{
+	return ParsedIR::LoopLock(&loop_iteration_depth_soft);
+}
+
+ParsedIR::LoopLock::~LoopLock()
+{
+	if (lock)
+		(*lock)--;
+}
+
+ParsedIR::LoopLock::LoopLock(uint32_t *lock_)
+    : lock(lock_)
+{
+	if (lock)
+		(*lock)++;
+}
+
+ParsedIR::LoopLock::LoopLock(LoopLock &&other) SPIRV_CROSS_NOEXCEPT
+{
+	*this = move(other);
+}
+
+ParsedIR::LoopLock &ParsedIR::LoopLock::operator=(LoopLock &&other) SPIRV_CROSS_NOEXCEPT
+{
+	if (lock)
+		(*lock)--;
+	lock = other.lock;
+	other.lock = nullptr;
+	return *this;
+}
+
+} // namespace SPIRV_CROSS_NAMESPACE

@@ -20,9 +20,8 @@
 #include "spirv_common.hpp"
 #include <stdint.h>
 #include <unordered_map>
-#include <vector>
 
-namespace spirv_cross
+namespace SPIRV_CROSS_NAMESPACE
 {
 
 // This data structure holds all information needed to perform cross-compilation and reflection.
@@ -32,7 +31,22 @@ namespace spirv_cross
 
 class ParsedIR
 {
+private:
+	// This must be destroyed after the "ids" vector.
+	std::unique_ptr<ObjectPoolGroup> pool_group;
+
 public:
+	ParsedIR();
+
+	// Due to custom allocations from object pools, we cannot use a default copy constructor.
+	ParsedIR(const ParsedIR &other);
+	ParsedIR &operator=(const ParsedIR &other);
+
+	// Moves are unproblematic, but we need to implement it anyways, since MSVC 2013 does not understand
+	// how to default-implement these.
+	ParsedIR(ParsedIR &&other) SPIRV_CROSS_NOEXCEPT;
+	ParsedIR &operator=(ParsedIR &&other) SPIRV_CROSS_NOEXCEPT;
+
 	// Resizes ids, meta and block_meta.
 	void set_id_bounds(uint32_t bounds);
 
@@ -40,7 +54,7 @@ public:
 	std::vector<uint32_t> spirv;
 
 	// Holds various data structures which inherit from IVariant.
-	std::vector<Variant> ids;
+	SmallVector<Variant> ids;
 
 	// Various meta data for IDs, decorations, names, etc.
 	std::unordered_map<uint32_t, Meta> meta;
@@ -48,19 +62,19 @@ public:
 	// Holds all IDs which have a certain type.
 	// This is needed so we can iterate through a specific kind of resource quickly,
 	// and in-order of module declaration.
-	std::vector<uint32_t> ids_for_type[TypeCount];
+	SmallVector<uint32_t> ids_for_type[TypeCount];
 
 	// Special purpose lists which contain a union of types.
 	// This is needed so we can declare specialization constants and structs in an interleaved fashion,
 	// among other things.
 	// Constants can be of struct type, and struct array sizes can use specialization constants.
-	std::vector<uint32_t> ids_for_constant_or_type;
-	std::vector<uint32_t> ids_for_constant_or_variable;
+	SmallVector<uint32_t> ids_for_constant_or_type;
+	SmallVector<uint32_t> ids_for_constant_or_variable;
 
 	// Declared capabilities and extensions in the SPIR-V module.
 	// Not really used except for reflection at the moment.
-	std::vector<spv::Capability> declared_capabilities;
-	std::vector<std::string> declared_extensions;
+	SmallVector<spv::Capability> declared_capabilities;
+	SmallVector<std::string> declared_extensions;
 
 	// Meta data about blocks. The cross-compiler needs to query if a block is either of these types.
 	// It is a bitset as there can be more than one tag per block.
@@ -73,7 +87,7 @@ public:
 		BLOCK_META_MULTISELECT_MERGE_BIT = 1 << 4
 	};
 	using BlockMetaFlags = uint8_t;
-	std::vector<BlockMetaFlags> block_meta;
+	SmallVector<BlockMetaFlags> block_meta;
 	std::unordered_map<uint32_t, uint32_t> continue_block_to_loop_header;
 
 	// Normally, we'd stick SPIREntryPoint in ids array, but it conflicts with SPIRFunction.
@@ -92,6 +106,9 @@ public:
 	};
 
 	Source source;
+
+	spv::AddressingModel addressing_model = spv::AddressingModelMax;
+	spv::MemoryModel memory_model = spv::MemoryModelMax;
 
 	// Decoration handling methods.
 	// Can be useful for simple "raw" reflection.
@@ -126,21 +143,46 @@ public:
 	void add_typed_id(Types type, uint32_t id);
 	void remove_typed_id(Types type, uint32_t id);
 
+	class LoopLock
+	{
+	public:
+		explicit LoopLock(uint32_t *counter);
+		LoopLock(const LoopLock &) = delete;
+		void operator=(const LoopLock &) = delete;
+		LoopLock(LoopLock &&other) SPIRV_CROSS_NOEXCEPT;
+		LoopLock &operator=(LoopLock &&other) SPIRV_CROSS_NOEXCEPT;
+		~LoopLock();
+
+	private:
+		uint32_t *lock;
+	};
+
+	// This must be held while iterating over a type ID array.
+	// It is undefined if someone calls set<>() while we're iterating over a data structure, so we must
+	// make sure that this case is avoided.
+
+	// If we have a hard lock, it is an error to call set<>(), and an exception is thrown.
+	// If we have a soft lock, we silently ignore any additions to the typed arrays.
+	// This should only be used for physical ID remapping where we need to create an ID, but we will never
+	// care about iterating over them.
+	LoopLock create_loop_hard_lock() const;
+	LoopLock create_loop_soft_lock() const;
+
 	template <typename T, typename Op>
 	void for_each_typed_id(const Op &op)
 	{
-		loop_iteration_depth++;
+		auto loop_lock = create_loop_hard_lock();
 		for (auto &id : ids_for_type[T::type])
 		{
 			if (ids[id].get_type() == static_cast<Types>(T::type))
 				op(id, get<T>(id));
 		}
-		loop_iteration_depth--;
 	}
 
 	template <typename T, typename Op>
 	void for_each_typed_id(const Op &op) const
 	{
+		auto loop_lock = create_loop_hard_lock();
 		for (auto &id : ids_for_type[T::type])
 		{
 			if (ids[id].get_type() == static_cast<Types>(T::type))
@@ -177,10 +219,11 @@ private:
 		return variant_get<T>(ids[id]);
 	}
 
-	uint32_t loop_iteration_depth = 0;
+	mutable uint32_t loop_iteration_depth_hard = 0;
+	mutable uint32_t loop_iteration_depth_soft = 0;
 	std::string empty_string;
 	Bitset cleared_bitset;
 };
-} // namespace spirv_cross
+} // namespace SPIRV_CROSS_NAMESPACE
 
 #endif

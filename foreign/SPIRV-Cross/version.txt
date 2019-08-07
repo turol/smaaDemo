@@ -1,8 +1,8 @@
-commit 7430e78a8cdde2e7e44824cebd1aa18601dd9230
-Merge: 1040cf6 437fc87
+commit 4ce04480ec5469fe7ebbdd66c3016090a704d81b
+Merge: ffca8735 b97e9b04
 Author: Hans-Kristian Arntzen <post@arntzen-software.no>
-Date:   Fri Jan 18 17:18:59 2019 +0100
+Date:   Thu Aug 1 10:01:15 2019 +0200
 
-    Merge pull request #836 from KhronosGroup/fix-834
+    Merge pull request #1111 from KhronosGroup/fix-1108
     
-    MSL: Deal with resource name aliasing.
+    Fix severe performance issue with invariant expression invalidation.

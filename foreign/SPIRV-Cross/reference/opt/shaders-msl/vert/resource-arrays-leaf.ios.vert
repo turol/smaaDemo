@@ -27,7 +27,7 @@ vertex void main0(device storage_block* storage_0 [[buffer(0)]], device storage_
         storage_0,
         storage_1,
     };
-    
+
     constant constant_block* constants[] =
     {
         constants_0,
@@ -35,7 +35,7 @@ vertex void main0(device storage_block* storage_0 [[buffer(0)]], device storage_
         constants_2,
         constants_3,
     };
-    
+
     storage[0]->baz = uint4(constants[3]->foo);
     storage[1]->quux = images[2].read(uint2(int2(constants[1]->bar))).xy;
 }
