@@ -1,5 +1,8 @@
-commit 8bea0a266ac9b718aa0818d9e3a47c0b77c2cb23
-Author: John Kessenich <cepheus@frii.com>
-Date:   Thu Jan 24 09:25:11 2019 -0800
+commit e4322e3be589e1ddd44afb20ea842a977c1319b8
+Merge: 45c2cc3 5bc5041
+Author: John Kessenich <johnkslang@users.noreply.github.com>
+Date:   Mon Jul 22 06:30:18 2019 -0600
 
-    Update headers from previous SPV_INTEL_media_block_io grammar addition.
+    Merge pull request #123 from AaronHaganAMD/master
+    
+    Add SPV_KHR_shader_clock to spirv-headers
