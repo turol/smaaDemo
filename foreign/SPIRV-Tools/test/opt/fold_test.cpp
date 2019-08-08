@@ -142,6 +142,7 @@ OpName %main "main"
 %v4double = OpTypeVector %double 4
 %v2float = OpTypeVector %float 2
 %v2double = OpTypeVector %double 2
+%v2half = OpTypeVector %half 2
 %v2bool = OpTypeVector %bool 2
 %struct_v2int_int_int = OpTypeStruct %v2int %int %int
 %_ptr_int = OpTypePointer Function %int
@@ -231,6 +232,7 @@ OpName %main "main"
 %v2double_null = OpConstantNull %v2double
 %108 = OpConstant %half 0
 %half_1 = OpConstant %half 1
+%half_0_1 = OpConstantComposite %v2half %108 %half_1
 %106 = OpConstantComposite %v4float %float_0 %float_0 %float_0 %float_0
 %v4float_0_0_0_0 = OpConstantComposite %v4float %float_0 %float_0 %float_0 %float_0
 %v4float_0_0_0_1 = OpConstantComposite %v4float %float_0 %float_0 %float_0 %float_1
@@ -3171,7 +3173,7 @@ INSTANTIATE_TEST_SUITE_P(FloatRedundantFoldingTest, GeneralInstructionFoldingTes
             "OpReturn\n" +
             "OpFunctionEnd",
         3, 2),
-    // Test case 15: Fold vector fsub with null
+    // Test case 17: Fold vector fsub with null
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -3181,7 +3183,7 @@ INSTANTIATE_TEST_SUITE_P(FloatRedundantFoldingTest, GeneralInstructionFoldingTes
             "OpReturn\n" +
             "OpFunctionEnd",
         3, 2),
-    // Test case 16: Fold 0.0(half) * n
+    // Test case 18: Fold 0.0(half) * n
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -3191,7 +3193,7 @@ INSTANTIATE_TEST_SUITE_P(FloatRedundantFoldingTest, GeneralInstructionFoldingTes
             "OpReturn\n" +
             "OpFunctionEnd",
         2, HALF_0_ID),
-    // Test case 17: Don't fold 1.0(half) * n
+    // Test case 19: Don't fold 1.0(half) * n
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -3201,11 +3203,27 @@ INSTANTIATE_TEST_SUITE_P(FloatRedundantFoldingTest, GeneralInstructionFoldingTes
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 0),
-    // Test case 18: Don't fold 1.0 * 1.0 (half)
+    // Test case 20: Don't fold 1.0 * 1.0 (half)
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
             "%2 = OpFMul %half %half_1 %half_1\n" +
+            "OpReturn\n" +
+            "OpFunctionEnd",
+        2, 0),
+    // Test case 21: Don't fold (0.0, 1.0) * (0.0, 1.0) (half)
+    InstructionFoldingCase<uint32_t>(
+        Header() + "%main = OpFunction %void None %void_func\n" +
+            "%main_lab = OpLabel\n" +
+            "%2 = OpFMul %v2half %half_0_1 %half_0_1\n" +
+            "OpReturn\n" +
+            "OpFunctionEnd",
+        2, 0),
+    // Test case 22: Don't fold (0.0, 1.0) dotp (0.0, 1.0) (half)
+    InstructionFoldingCase<uint32_t>(
+        Header() + "%main = OpFunction %void None %void_func\n" +
+            "%main_lab = OpLabel\n" +
+            "%2 = OpDot %half %half_0_1 %half_0_1\n" +
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 0)
@@ -6191,6 +6209,281 @@ INSTANTIATE_TEST_SUITE_P(VectorShuffleMatchingTest, MatchingInstructionWithNoRes
             "OpReturn\n" +
             "OpFunctionEnd",
         9, true)
+));
+
+using EntryPointFoldingTest =
+::testing::TestWithParam<InstructionFoldingCase<bool>>;
+
+TEST_P(EntryPointFoldingTest, Case) {
+  const auto& tc = GetParam();
+
+  // Build module.
+  std::unique_ptr<IRContext> context =
+      BuildModule(SPV_ENV_UNIVERSAL_1_1, nullptr, tc.test_body,
+                  SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
+  ASSERT_NE(nullptr, context);
+
+  // Fold the instruction to test.
+  Instruction* inst = nullptr;
+  inst = &*context->module()->entry_points().begin();
+  assert(inst && "Invalid test.  Could not find entry point instruction to fold.");
+  std::unique_ptr<Instruction> original_inst(inst->Clone(context.get()));
+  bool succeeded = context->get_instruction_folder().FoldInstruction(inst);
+  EXPECT_EQ(succeeded, tc.expected_result);
+  if (succeeded) {
+    Match(tc.test_body, context.get());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(OpEntryPointFoldingTest, EntryPointFoldingTest,
+::testing::Values(
+    // Test case 0: Basic test 1
+    InstructionFoldingCase<bool>(std::string() +
+                    "; CHECK: OpEntryPoint Fragment %2 \"main\" %3\n" +
+                             "OpCapability Shader\n" +
+                        "%1 = OpExtInstImport \"GLSL.std.450\"\n" +
+                             "OpMemoryModel Logical GLSL450\n" +
+                             "OpEntryPoint Fragment %2 \"main\" %3 %3 %3\n" +
+                             "OpExecutionMode %2 OriginUpperLeft\n" +
+                             "OpSource GLSL 430\n" +
+                             "OpDecorate %3 Location 0\n" +
+                     "%void = OpTypeVoid\n" +
+                        "%5 = OpTypeFunction %void\n" +
+                    "%float = OpTypeFloat 32\n" +
+                  "%v4float = OpTypeVector %float 4\n" +
+      "%_ptr_Output_v4float = OpTypePointer Output %v4float\n" +
+                        "%3 = OpVariable %_ptr_Output_v4float Output\n" +
+                      "%int = OpTypeInt 32 1\n" +
+                    "%int_0 = OpConstant %int 0\n" +
+"%_ptr_PushConstant_v4float = OpTypePointer PushConstant %v4float\n" +
+                        "%2 = OpFunction %void None %5\n" +
+                       "%12 = OpLabel\n" +
+                             "OpReturn\n" +
+                             "OpFunctionEnd\n",
+        9, true),
+    InstructionFoldingCase<bool>(std::string() +
+                    "; CHECK: OpEntryPoint Fragment %2 \"main\" %3 %4\n" +
+                             "OpCapability Shader\n" +
+                        "%1 = OpExtInstImport \"GLSL.std.450\"\n" +
+                             "OpMemoryModel Logical GLSL450\n" +
+                             "OpEntryPoint Fragment %2 \"main\" %3 %4 %3\n" +
+                             "OpExecutionMode %2 OriginUpperLeft\n" +
+                             "OpSource GLSL 430\n" +
+                             "OpDecorate %3 Location 0\n" +
+                     "%void = OpTypeVoid\n" +
+                        "%5 = OpTypeFunction %void\n" +
+                    "%float = OpTypeFloat 32\n" +
+                  "%v4float = OpTypeVector %float 4\n" +
+      "%_ptr_Output_v4float = OpTypePointer Output %v4float\n" +
+                        "%3 = OpVariable %_ptr_Output_v4float Output\n" +
+                        "%4 = OpVariable %_ptr_Output_v4float Output\n" +
+                      "%int = OpTypeInt 32 1\n" +
+                    "%int_0 = OpConstant %int 0\n" +
+"%_ptr_PushConstant_v4float = OpTypePointer PushConstant %v4float\n" +
+                        "%2 = OpFunction %void None %5\n" +
+                       "%12 = OpLabel\n" +
+                             "OpReturn\n" +
+                             "OpFunctionEnd\n",
+        9, true),
+    InstructionFoldingCase<bool>(std::string() +
+                    "; CHECK: OpEntryPoint Fragment %2 \"main\" %4 %3\n" +
+                             "OpCapability Shader\n" +
+                        "%1 = OpExtInstImport \"GLSL.std.450\"\n" +
+                             "OpMemoryModel Logical GLSL450\n" +
+                             "OpEntryPoint Fragment %2 \"main\" %4 %4 %3\n" +
+                             "OpExecutionMode %2 OriginUpperLeft\n" +
+                             "OpSource GLSL 430\n" +
+                             "OpDecorate %3 Location 0\n" +
+                     "%void = OpTypeVoid\n" +
+                        "%5 = OpTypeFunction %void\n" +
+                    "%float = OpTypeFloat 32\n" +
+                  "%v4float = OpTypeVector %float 4\n" +
+      "%_ptr_Output_v4float = OpTypePointer Output %v4float\n" +
+                        "%3 = OpVariable %_ptr_Output_v4float Output\n" +
+                        "%4 = OpVariable %_ptr_Output_v4float Output\n" +
+                      "%int = OpTypeInt 32 1\n" +
+                    "%int_0 = OpConstant %int 0\n" +
+"%_ptr_PushConstant_v4float = OpTypePointer PushConstant %v4float\n" +
+                        "%2 = OpFunction %void None %5\n" +
+                       "%12 = OpLabel\n" +
+                             "OpReturn\n" +
+                             "OpFunctionEnd\n",
+        9, true)
+));
+
+using SPV14FoldingTest =
+::testing::TestWithParam<InstructionFoldingCase<bool>>;
+
+TEST_P(SPV14FoldingTest, Case) {
+  const auto& tc = GetParam();
+
+  // Build module.
+  std::unique_ptr<IRContext> context =
+      BuildModule(SPV_ENV_UNIVERSAL_1_4, nullptr, tc.test_body,
+                  SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
+  ASSERT_NE(nullptr, context);
+
+  // Fold the instruction to test.
+  analysis::DefUseManager* def_use_mgr = context->get_def_use_mgr();
+  Instruction* inst = def_use_mgr->GetDef(tc.id_to_fold);
+  std::unique_ptr<Instruction> original_inst(inst->Clone(context.get()));
+  bool succeeded = context->get_instruction_folder().FoldInstruction(inst);
+  EXPECT_EQ(succeeded, tc.expected_result);
+  if (succeeded) {
+    Match(tc.test_body, context.get());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(SPV14FoldingTest, SPV14FoldingTest,
+::testing::Values(
+    // Test case 0: select vectors with scalar condition.
+    InstructionFoldingCase<bool>(std::string() +
+"; CHECK-NOT: OpSelect\n" +
+"; CHECK: %3 = OpCopyObject {{%\\w+}} %1\n" +
+"OpCapability Shader\n" +
+"OpCapability Linkage\n" +
+"%void = OpTypeVoid\n" +
+"%bool = OpTypeBool\n" +
+"%true = OpConstantTrue %bool\n" +
+"%int = OpTypeInt 32 0\n" +
+"%int4 = OpTypeVector %int 4\n" +
+"%int_0 = OpConstant %int 0\n" +
+"%int_1 = OpConstant %int 1\n" +
+"%1 = OpUndef %int4\n" +
+"%2 = OpUndef %int4\n" +
+"%void_fn = OpTypeFunction %void\n" +
+"%func = OpFunction %void None %void_fn\n" +
+"%entry = OpLabel\n" +
+"%3 = OpSelect %int4 %true %1 %2\n" +
+"OpReturn\n" +
+"OpFunctionEnd\n"
+,
+                                 3, true),
+    // Test case 1: select struct with scalar condition.
+    InstructionFoldingCase<bool>(std::string() +
+"; CHECK-NOT: OpSelect\n" +
+"; CHECK: %3 = OpCopyObject {{%\\w+}} %2\n" +
+"OpCapability Shader\n" +
+"OpCapability Linkage\n" +
+"%void = OpTypeVoid\n" +
+"%bool = OpTypeBool\n" +
+"%true = OpConstantFalse %bool\n" +
+"%int = OpTypeInt 32 0\n" +
+"%struct = OpTypeStruct %int %int %int %int\n" +
+"%int_0 = OpConstant %int 0\n" +
+"%int_1 = OpConstant %int 1\n" +
+"%1 = OpUndef %struct\n" +
+"%2 = OpUndef %struct\n" +
+"%void_fn = OpTypeFunction %void\n" +
+"%func = OpFunction %void None %void_fn\n" +
+"%entry = OpLabel\n" +
+"%3 = OpSelect %struct %true %1 %2\n" +
+"OpReturn\n" +
+"OpFunctionEnd\n"
+,
+                                 3, true),
+    // Test case 1: select array with scalar condition.
+    InstructionFoldingCase<bool>(std::string() +
+"; CHECK-NOT: OpSelect\n" +
+"; CHECK: %3 = OpCopyObject {{%\\w+}} %2\n" +
+"OpCapability Shader\n" +
+"OpCapability Linkage\n" +
+"%void = OpTypeVoid\n" +
+"%bool = OpTypeBool\n" +
+"%true = OpConstantFalse %bool\n" +
+"%int = OpTypeInt 32 0\n" +
+"%int_0 = OpConstant %int 0\n" +
+"%int_1 = OpConstant %int 1\n" +
+"%int_4 = OpConstant %int 4\n" +
+"%array = OpTypeStruct %int %int %int %int\n" +
+"%1 = OpUndef %array\n" +
+"%2 = OpUndef %array\n" +
+"%void_fn = OpTypeFunction %void\n" +
+"%func = OpFunction %void None %void_fn\n" +
+"%entry = OpLabel\n" +
+"%3 = OpSelect %array %true %1 %2\n" +
+"OpReturn\n" +
+"OpFunctionEnd\n"
+,
+                                 3, true)
+));
+
+std::string FloatControlsHeader(const std::string& capabilities) {
+  std::string header = R"(
+OpCapability Shader
+)" + capabilities + R"(
+%void = OpTypeVoid
+%float = OpTypeFloat 32
+%float_0 = OpConstant %float 0
+%float_1 = OpConstant %float 1
+%void_fn = OpTypeFunction %void
+%func = OpFunction %void None %void_fn
+%entry = OpLabel
+)";
+
+  return header;
+}
+
+using FloatControlsFoldingTest =
+::testing::TestWithParam<InstructionFoldingCase<bool>>;
+
+TEST_P(FloatControlsFoldingTest, Case) {
+  const auto& tc = GetParam();
+
+  // Build module.
+  std::unique_ptr<IRContext> context =
+      BuildModule(SPV_ENV_UNIVERSAL_1_4, nullptr, tc.test_body,
+                  SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
+  ASSERT_NE(nullptr, context);
+
+  // Fold the instruction to test.
+  analysis::DefUseManager* def_use_mgr = context->get_def_use_mgr();
+  Instruction* inst = def_use_mgr->GetDef(tc.id_to_fold);
+  std::unique_ptr<Instruction> original_inst(inst->Clone(context.get()));
+  bool succeeded = context->get_instruction_folder().FoldInstruction(inst);
+  EXPECT_EQ(succeeded, tc.expected_result);
+  if (succeeded) {
+    Match(tc.test_body, context.get());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(FloatControlsFoldingTest, FloatControlsFoldingTest,
+::testing::Values(
+    // Test case 0: no folding with DenormPreserve
+    InstructionFoldingCase<bool>(FloatControlsHeader("OpCapability DenormPreserve") +
+                                 "%1 = OpFAdd %float %float_0 %float_1\n" +
+                                 "OpReturn\n" +
+                                 "OpFunctionEnd\n"
+,
+                                 1, false),
+    // Test case 1: no folding with DenormFlushToZero
+    InstructionFoldingCase<bool>(FloatControlsHeader("OpCapability DenormFlushToZero") +
+                                 "%1 = OpFAdd %float %float_0 %float_1\n" +
+                                 "OpReturn\n" +
+                                 "OpFunctionEnd\n"
+,
+                                 1, false),
+    // Test case 2: no folding with SignedZeroInfNanPreserve
+    InstructionFoldingCase<bool>(FloatControlsHeader("OpCapability SignedZeroInfNanPreserve") +
+                                 "%1 = OpFAdd %float %float_0 %float_1\n" +
+                                 "OpReturn\n" +
+                                 "OpFunctionEnd\n"
+,
+                                 1, false),
+    // Test case 3: no folding with RoundingModeRTE
+    InstructionFoldingCase<bool>(FloatControlsHeader("OpCapability RoundingModeRTE") +
+                                 "%1 = OpFAdd %float %float_0 %float_1\n" +
+                                 "OpReturn\n" +
+                                 "OpFunctionEnd\n"
+,
+                                 1, false),
+    // Test case 4: no folding with RoundingModeRTZ
+    InstructionFoldingCase<bool>(FloatControlsHeader("OpCapability RoundingModeRTZ") +
+                                 "%1 = OpFAdd %float %float_0 %float_1\n" +
+                                 "OpReturn\n" +
+                                 "OpFunctionEnd\n"
+,
+                                 1, false)
 ));
 
 }  // namespace

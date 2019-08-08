@@ -31,6 +31,7 @@ FILES:= \
 	dead_branch_elim_pass.cpp \
 	dead_insert_elim_pass.cpp \
 	dead_variable_elimination.cpp \
+	decompose_initialized_variables_pass.cpp \
 	decoration_manager.cpp \
 	def_use_manager.cpp \
 	dominator_analysis.cpp \
@@ -40,12 +41,14 @@ FILES:= \
 	eliminate_dead_functions_util.cpp \
 	eliminate_dead_members_pass.cpp \
 	feature_manager.cpp \
+	fix_storage_class.cpp \
 	flatten_decoration_pass.cpp \
 	fold.cpp \
 	folding_rules.cpp \
 	fold_spec_constant_op_and_composite_pass.cpp \
 	freeze_spec_constant_value_pass.cpp \
 	function.cpp \
+	generate_webgpu_initializers_pass.cpp \
 	if_conversion.cpp \
 	inline_exhaustive_pass.cpp \
 	inline_opaque_pass.cpp \
@@ -56,6 +59,7 @@ FILES:= \
 	instrument_pass.cpp \
 	ir_context.cpp \
 	ir_loader.cpp \
+	legalize_vector_shuffle_pass.cpp \
 	licm_pass.cpp \
 	local_access_chain_convert_pass.cpp \
 	local_redundancy_elimination.cpp \
@@ -92,8 +96,10 @@ FILES:= \
 	scalar_replacement_pass.cpp \
 	set_spec_constant_default_value_pass.cpp \
 	simplification_pass.cpp \
+	split_invalid_unreachable_pass.cpp \
 	ssa_rewrite_pass.cpp \
 	strength_reduction_pass.cpp \
+	strip_atomic_counter_memory_pass.cpp \
 	strip_debug_info_pass.cpp \
 	strip_reflect_info_pass.cpp \
 	struct_cfg_analysis.cpp \

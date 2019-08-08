@@ -22,6 +22,23 @@
 namespace spvtools {
 namespace val {
 
+bool IsValidScope(uint32_t scope) {
+  // Deliberately avoid a default case so we have to update the list when the
+  // scopes list changes.
+  switch (static_cast<SpvScope>(scope)) {
+    case SpvScopeCrossDevice:
+    case SpvScopeDevice:
+    case SpvScopeWorkgroup:
+    case SpvScopeSubgroup:
+    case SpvScopeInvocation:
+    case SpvScopeQueueFamilyKHR:
+      return true;
+    case SpvScopeMax:
+      break;
+  }
+  return false;
+}
+
 spv_result_t ValidateExecutionScope(ValidationState_t& _,
                                     const Instruction* inst, uint32_t scope) {
   SpvOp opcode = inst->opcode();
@@ -36,12 +53,25 @@ spv_result_t ValidateExecutionScope(ValidationState_t& _,
   }
 
   if (!is_const_int32) {
-    if (_.HasCapability(SpvCapabilityShader)) {
+    if (_.HasCapability(SpvCapabilityShader) &&
+        !_.HasCapability(SpvCapabilityCooperativeMatrixNV)) {
       return _.diag(SPV_ERROR_INVALID_DATA, inst)
              << "Scope ids must be OpConstant when Shader capability is "
              << "present";
     }
+    if (_.HasCapability(SpvCapabilityShader) &&
+        _.HasCapability(SpvCapabilityCooperativeMatrixNV) &&
+        !spvOpcodeIsConstant(_.GetIdOpcode(scope))) {
+      return _.diag(SPV_ERROR_INVALID_DATA, inst)
+             << "Scope ids must be constant or specialization constant when "
+             << "CooperativeMatrixNV capability is present";
+    }
     return SPV_SUCCESS;
+  }
+
+  if (is_const_int32 && !IsValidScope(value)) {
+    return _.diag(SPV_ERROR_INVALID_DATA, inst)
+           << "Invalid scope value:\n " << _.Disassemble(*_.FindDef(scope));
   }
 
   // Vulkan specific rules
@@ -130,12 +160,25 @@ spv_result_t ValidateMemoryScope(ValidationState_t& _, const Instruction* inst,
   }
 
   if (!is_const_int32) {
-    if (_.HasCapability(SpvCapabilityShader)) {
+    if (_.HasCapability(SpvCapabilityShader) &&
+        !_.HasCapability(SpvCapabilityCooperativeMatrixNV)) {
       return _.diag(SPV_ERROR_INVALID_DATA, inst)
              << "Scope ids must be OpConstant when Shader capability is "
              << "present";
     }
+    if (_.HasCapability(SpvCapabilityShader) &&
+        _.HasCapability(SpvCapabilityCooperativeMatrixNV) &&
+        !spvOpcodeIsConstant(_.GetIdOpcode(scope))) {
+      return _.diag(SPV_ERROR_INVALID_DATA, inst)
+             << "Scope ids must be constant or specialization constant when "
+             << "CooperativeMatrixNV capability is present";
+    }
     return SPV_SUCCESS;
+  }
+
+  if (is_const_int32 && !IsValidScope(value)) {
+    return _.diag(SPV_ERROR_INVALID_DATA, inst)
+           << "Invalid scope value:\n " << _.Disassemble(*_.FindDef(scope));
   }
 
   if (value == SpvScopeQueueFamilyKHR) {

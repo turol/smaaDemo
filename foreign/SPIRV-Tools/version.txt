@@ -1,5 +1,5 @@
-commit 61dfd8492b6e324f684863ecbd79c299a06e6517
+commit ce19e217bc82e1dbd631b6a555b1874432f3a05f
 Author: Steven Perron <stevenperron@google.com>
-Date:   Wed Feb 20 11:04:41 2019 -0500
+Date:   Wed May 15 15:08:51 2019 -0400
 
-    Finalize SPIRV-Tools 2019.2
+    Finalize SPIRV-Tools v2019.3
