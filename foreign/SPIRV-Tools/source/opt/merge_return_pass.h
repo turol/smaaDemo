@@ -104,7 +104,7 @@ class MergeReturnPass : public MemPass {
   Status Process() override;
 
   IRContext::Analysis GetPreservedAnalyses() override {
-    return IRContext::kAnalysisNone;
+    return IRContext::kAnalysisConstants | IRContext::kAnalysisTypes;
   }
 
  private:
@@ -212,19 +212,25 @@ class MergeReturnPass : public MemPass {
   //
   // If new blocks that are created will be added to |order|.  This way a call
   // can traverse these new block in structured order.
-  void PredicateBlocks(BasicBlock* return_block,
+  //
+  // Returns true if successful.
+  bool PredicateBlocks(BasicBlock* return_block,
                        std::unordered_set<BasicBlock*>* pSet,
                        std::list<BasicBlock*>* order);
 
   // Add a conditional branch at the start of |block| that either jumps to
-  // |merge_block| or the original code in |block| depending on the value in
-  // |return_flag_|.
+  // the merge block of |loop_merge_inst| or the original code in |block|
+  // depending on the value in |return_flag_|.  The continue target in
+  // |loop_merge_inst| will be updated if needed.
   //
   // If new blocks that are created will be added to |order|.  This way a call
   // can traverse these new block in structured order.
-  void BreakFromConstruct(BasicBlock* block, BasicBlock* merge_block,
+  //
+  // Returns true if successful.
+  bool BreakFromConstruct(BasicBlock* block,
                           std::unordered_set<BasicBlock*>* predicated,
-                          std::list<BasicBlock*>* order);
+                          std::list<BasicBlock*>* order,
+                          Instruction* loop_merge_inst);
 
   // Add an |OpReturn| or |OpReturnValue| to the end of |block|.  If an
   // |OpReturnValue| is needed, the return value is loaded from |return_value_|.
@@ -271,6 +277,8 @@ class MergeReturnPass : public MemPass {
   // new edge from |new_source|.  The value for that edge will be an Undef. If
   // |target| only had a single predecessor, then it is marked as needing new
   // phi nodes.  See |MarkForNewPhiNodes|.
+  //
+  // The CFG must not include the edge from |new_source| to |target| yet.
   void UpdatePhiNodes(BasicBlock* new_source, BasicBlock* target);
 
   StructuredControlState& CurrentState() { return state_.back(); }

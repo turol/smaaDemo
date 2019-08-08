@@ -34,6 +34,7 @@ FILES:= \
 	validate_decorations.cpp \
 	validate_derivatives.cpp \
 	validate_execution_limitations.cpp \
+	validate_extensions.cpp \
 	validate_ext_inst.cpp \
 	validate_function.cpp \
 	validate_id.cpp \
@@ -44,9 +45,11 @@ FILES:= \
 	validate_literals.cpp \
 	validate_logicals.cpp \
 	validate_memory.cpp \
+	validate_memory_semantics.cpp \
 	validate_mode_setting.cpp \
 	validate_non_uniform.cpp \
 	validate_primitives.cpp \
+	validate_scopes.cpp \
 	validate_type.cpp \
 	validation_state.cpp \
 	# empty line

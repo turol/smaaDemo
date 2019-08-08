@@ -3597,6 +3597,8 @@ OpFunctionEnd
   SinglePassRunAndCheck<AggressiveDCEPass>(assembly, assembly, true, true);
 }
 
+// This is not valid input and ADCE does not support variable pointers and only
+// supports shaders.
 TEST_F(AggressiveDCETest, PointerVariable) {
   // ADCE is able to handle code that contains a load whose base address
   // comes from a load and not an OpVariable.  I want to see an instruction
@@ -3693,6 +3695,10 @@ OpReturn
 OpFunctionEnd
 )";
 
+  // The input is not valid and ADCE only supports shaders, but not variable
+  // pointers. Workaround this by enabling relaxed logical pointers in the
+  // validator.
+  ValidatorOptions()->relax_logical_pointer = true;
   SinglePassRunAndCheck<AggressiveDCEPass>(before, after, true, true);
 }
 
@@ -5105,6 +5111,43 @@ OpFunctionEnd
   SinglePassRunAndMatch<AggressiveDCEPass>(text, true);
 }
 
+TEST_F(AggressiveDCETest, DeadDecorationGroupAndValidDecorationMgr) {
+  // The decoration group should be eliminated because the target of group
+  // decorate is dead.
+  const std::string text = R"(
+OpCapability Shader
+OpMemoryModel Logical GLSL450
+OpEntryPoint Fragment %main "main"
+OpExecutionMode %main OriginUpperLeft
+OpDecorate %1 Restrict
+OpDecorate %1 Aliased
+%1 = OpDecorationGroup
+OpGroupDecorate %1 %var
+%void = OpTypeVoid
+%func = OpTypeFunction %void
+%uint = OpTypeInt 32 0
+%uint_ptr = OpTypePointer Function %uint
+%main = OpFunction %void None %func
+%2 = OpLabel
+%var = OpVariable %uint_ptr Function
+OpReturn
+OpFunctionEnd
+  )";
+
+  auto pass = MakeUnique<AggressiveDCEPass>();
+  auto consumer = [](spv_message_level_t, const char*, const spv_position_t&,
+                     const char* message) {
+    std::cerr << message << std::endl;
+  };
+  auto context = BuildModule(SPV_ENV_UNIVERSAL_1_1, consumer, text);
+
+  // Build the decoration manager before the pass.
+  context->get_decoration_mgr();
+
+  const auto status = pass->Run(context.get());
+  EXPECT_EQ(status, Pass::Status::SuccessWithChange);
+}
+
 TEST_F(AggressiveDCETest, ParitallyDeadDecorationGroup) {
   const std::string text = R"(
 ; CHECK: OpDecorate [[grp:%\w+]] Restrict
@@ -5205,7 +5248,7 @@ OpFunctionEnd
 TEST_F(AggressiveDCETest, PartiallyDeadGroupMemberDecorate) {
   const std::string text = R"(
 ; CHECK: OpDecorate [[grp:%\w+]] Offset 0
-; CHECK: OpDecorate [[grp]] Uniform
+; CHECK: OpDecorate [[grp]] RelaxedPrecision
 ; CHECK: [[grp]] = OpDecorationGroup
 ; CHECK: OpGroupMemberDecorate [[grp]] [[output:%\w+]] 1
 ; CHECK: [[output]] = OpTypeStruct
@@ -5215,7 +5258,7 @@ OpMemoryModel Logical GLSL450
 OpEntryPoint Fragment %main "main" %output
 OpExecutionMode %main OriginUpperLeft
 OpDecorate %1 Offset 0
-OpDecorate %1 Uniform
+OpDecorate %1 RelaxedPrecision
 %1 = OpDecorationGroup
 OpGroupMemberDecorate %1 %var_struct 0 %output_struct 1
 %void = OpTypeVoid
@@ -5244,7 +5287,7 @@ TEST_F(AggressiveDCETest,
        PartiallyDeadGroupMemberDecorateDifferentGroupDecorate) {
   const std::string text = R"(
 ; CHECK: OpDecorate [[grp:%\w+]] Offset 0
-; CHECK: OpDecorate [[grp]] Uniform
+; CHECK: OpDecorate [[grp]] RelaxedPrecision
 ; CHECK: [[grp]] = OpDecorationGroup
 ; CHECK: OpGroupMemberDecorate [[grp]] [[output:%\w+]] 1
 ; CHECK-NOT: OpGroupMemberDecorate
@@ -5255,7 +5298,7 @@ OpMemoryModel Logical GLSL450
 OpEntryPoint Fragment %main "main" %output
 OpExecutionMode %main OriginUpperLeft
 OpDecorate %1 Offset 0
-OpDecorate %1 Uniform
+OpDecorate %1 RelaxedPrecision
 %1 = OpDecorationGroup
 OpGroupMemberDecorate %1 %var_struct 0
 OpGroupMemberDecorate %1 %output_struct 1

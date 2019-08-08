@@ -28,6 +28,7 @@
 #include "source/disassemble.h"
 #include "source/enum_set.h"
 #include "source/latest_version_spirv_header.h"
+#include "source/name_mapper.h"
 #include "source/spirv_definition.h"
 #include "source/spirv_validator_options.h"
 #include "source/val/decoration.h"
@@ -90,6 +91,19 @@ class ValidationState_t {
     // Allow an OpTypeInt with 8 bit width to be used in more than just int
     // conversion opcodes
     bool use_int8_type = false;
+
+    // Use scalar block layout. See VK_EXT_scalar_block_layout:
+    // Defines scalar alignment:
+    // - scalar alignment equals the scalar size in bytes
+    // - array alignment is same as its element alignment
+    // - array alignment is max alignment of any of its members
+    // - vector alignment is same as component alignment
+    // - matrix alignment is same as component alignment
+    // For struct in Uniform, StorageBuffer, PushConstant:
+    // - Offset of a member is multiple of scalar alignment of that member
+    // - ArrayStride and MatrixStride are multiples of scalar alignment
+    // Members need not be listed in offset order
+    bool scalar_block_layout = false;
   };
 
   ValidationState_t(const spv_const_context context,
@@ -140,9 +154,6 @@ class ValidationState_t {
 
   /// Mutator function for ID bound.
   void setIdBound(uint32_t bound);
-
-  /// Like getIdName but does not display the id if the \p id has a name
-  std::string getIdOrName(uint32_t id) const;
 
   /// Returns the number of ID which have been forward referenced but not
   /// defined
@@ -211,6 +222,12 @@ class ValidationState_t {
   /// Returns a list of entry point function ids
   const std::vector<uint32_t>& entry_points() const { return entry_points_; }
 
+  /// Returns the set of entry points that root call graphs that contain
+  /// recursion.
+  const std::set<uint32_t>& recursive_entry_points() const {
+    return recursive_entry_points_;
+  }
+
   /// Registers execution mode for the given entry point.
   void RegisterExecutionModeForEntryPoint(uint32_t entry_point,
                                           SpvExecutionMode execution_mode) {
@@ -250,8 +267,18 @@ class ValidationState_t {
   /// Note: called after fully parsing the binary.
   void ComputeFunctionToEntryPointMapping();
 
+  /// Traverse call tree and computes recursive_entry_points_.
+  /// Note: called after fully parsing the binary and calling
+  /// ComputeFunctionToEntryPointMapping.
+  void ComputeRecursiveEntryPoints();
+
   /// Returns all the entry points that can call |func|.
   const std::vector<uint32_t>& FunctionEntryPoints(uint32_t func) const;
+
+  /// Returns all the entry points that statically use |id|.
+  ///
+  /// Note: requires ComputeFunctionToEntryPointMapping to have been called.
+  std::set<uint32_t> EntryPointReferences(uint32_t id) const;
 
   /// Inserts an <id> to the set of functions that are target of OpFunctionCall.
   void AddFunctionCallTarget(const uint32_t id) {
@@ -264,6 +291,9 @@ class ValidationState_t {
     return (function_call_targets_.find(id) != function_call_targets_.end());
   }
 
+  bool IsFunctionCallDefined(const uint32_t id) {
+    return (id_to_function_.find(id) != id_to_function_.end());
+  }
   /// Registers the capability and its dependent capabilities
   void RegisterCapability(SpvCapability cap);
 
@@ -308,6 +338,11 @@ class ValidationState_t {
 
   /// Returns the addressing model of this module, or Logical if uninitialized.
   SpvAddressingModel addressing_model() const;
+
+  /// Returns the addressing model of this module, or Logical if uninitialized.
+  uint32_t pointer_size_and_alignment() const {
+    return pointer_size_and_alignment_;
+  }
 
   /// Sets the memory model of this module.
   void set_memory_model(SpvMemoryModel mm);
@@ -518,6 +553,8 @@ class ValidationState_t {
 
   // Tries to evaluate a 32-bit signed or unsigned scalar integer constant.
   // Returns tuple <is_int32, is_const_int32, value>.
+  // OpSpecConstant* return |is_const_int32| as false since their values cannot
+  // be relied upon during validation.
   std::tuple<bool, bool, uint32_t> EvalInt32IfConst(uint32_t id);
 
   // Returns the disassembly string for the given instruction.
@@ -589,6 +626,10 @@ class ValidationState_t {
   std::unordered_map<uint32_t, std::vector<EntryPointDescription>>
       entry_point_descriptions_;
 
+  /// IDs that are entry points, ie, arguments to OpEntryPoint, and root a call
+  /// graph that recurses.
+  std::set<uint32_t> recursive_entry_points_;
+
   /// Functions IDs that are target of OpFunctionCall.
   std::unordered_set<uint32_t> function_call_targets_;
 
@@ -620,6 +661,9 @@ class ValidationState_t {
 
   SpvAddressingModel addressing_model_;
   SpvMemoryModel memory_model_;
+  // pointer size derived from addressing model. Assumes all storage classes
+  // have the same pointer size (for physical pointer types).
+  uint32_t pointer_size_and_alignment_;
 
   /// NOTE: See correspoding getter functions
   bool in_function_;
@@ -645,6 +689,10 @@ class ValidationState_t {
   /// module which can (indirectly) call the function.
   std::unordered_map<uint32_t, std::vector<uint32_t>> function_to_entry_points_;
   const std::vector<uint32_t> empty_ids_;
+
+  /// Maps ids to friendly names.
+  std::unique_ptr<spvtools::FriendlyNameMapper> friendly_mapper_;
+  spvtools::NameMapper name_mapper_;
 
   /// Variables used to reduce the number of diagnostic messages.
   uint32_t num_of_warnings_;

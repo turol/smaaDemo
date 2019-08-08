@@ -36,6 +36,7 @@
 #include "source/opt/if_conversion.h"
 #include "source/opt/inline_exhaustive_pass.h"
 #include "source/opt/inline_opaque_pass.h"
+#include "source/opt/inst_bindless_check_pass.h"
 #include "source/opt/licm_pass.h"
 #include "source/opt/local_access_chain_convert_pass.h"
 #include "source/opt/local_redundancy_elimination.h"
@@ -50,6 +51,7 @@
 #include "source/opt/merge_return_pass.h"
 #include "source/opt/null_pass.h"
 #include "source/opt/private_to_local_pass.h"
+#include "source/opt/process_lines_pass.h"
 #include "source/opt/reduce_load_size.h"
 #include "source/opt/redundancy_elimination.h"
 #include "source/opt/remove_duplicates_pass.h"
@@ -62,6 +64,7 @@
 #include "source/opt/strip_debug_info_pass.h"
 #include "source/opt/strip_reflect_info_pass.h"
 #include "source/opt/unify_const_pass.h"
+#include "source/opt/upgrade_memory_model.h"
 #include "source/opt/vector_dce.h"
 #include "source/opt/workaround1209.h"
 

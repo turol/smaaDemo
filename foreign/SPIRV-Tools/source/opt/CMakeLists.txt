@@ -46,8 +46,10 @@ set(SPIRV_TOOLS_OPT_SOURCES
   inline_exhaustive_pass.h
   inline_opaque_pass.h
   inline_pass.h
+  inst_bindless_check_pass.h
   instruction.h
   instruction_list.h
+  instrument_pass.h
   ir_builder.h
   ir_context.h
   ir_loader.h
@@ -75,6 +77,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   pass.h
   pass_manager.h
   private_to_local_pass.h
+  process_lines_pass.h
   propagator.h
   reduce_load_size.h
   redundancy_elimination.h
@@ -96,6 +99,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   type_manager.h
   types.h
   unify_const_pass.h
+  upgrade_memory_model.h
   value_number_table.h
   vector_dce.h
   workaround1209.h
@@ -134,8 +138,10 @@ set(SPIRV_TOOLS_OPT_SOURCES
   inline_exhaustive_pass.cpp
   inline_opaque_pass.cpp
   inline_pass.cpp
+  inst_bindless_check_pass.cpp
   instruction.cpp
   instruction_list.cpp
+  instrument_pass.cpp
   ir_context.cpp
   ir_loader.cpp
   licm_pass.cpp
@@ -161,6 +167,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   pass.cpp
   pass_manager.cpp
   private_to_local_pass.cpp
+  process_lines_pass.cpp
   propagator.cpp
   reduce_load_size.cpp
   redundancy_elimination.cpp
@@ -180,6 +187,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   type_manager.cpp
   types.cpp
   unify_const_pass.cpp
+  upgrade_memory_model.cpp
   value_number_table.cpp
   vector_dce.cpp
   workaround1209.cpp

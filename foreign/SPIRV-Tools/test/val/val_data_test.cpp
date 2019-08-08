@@ -386,7 +386,8 @@ TEST_F(ValidateData, ids_should_be_validated_before_data) {
 )";
   CompileSuccessfully(str.c_str());
   ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
-  EXPECT_THAT(getDiagnosticString(), HasSubstr("ID 3 has not been defined"));
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("ID 3[%3] has not been defined"));
 }
 
 TEST_F(ValidateData, matrix_bad_column_type) {
@@ -573,8 +574,8 @@ OpTypeForwardPointer %_ptr_Generic_struct_A Generic
   CompileSuccessfully(str.c_str());
   ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("Found a forward reference to a non-pointer type in "
-                        "OpTypeStruct instruction."));
+              HasSubstr("Pointer type in OpTypeForwardPointer is not a pointer "
+                        "type.\n  OpTypeForwardPointer %float Generic\n"));
 }
 
 TEST_F(ValidateData, forward_ref_points_to_non_struct) {
@@ -684,8 +685,9 @@ TEST_F(ValidateData, void_array) {
 
   CompileSuccessfully(str.c_str());
   ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
-  EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("OpTypeArray Element Type <id> '1' is a void type."));
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("OpTypeArray Element Type <id> '1[%void]' is a void type."));
 }
 
 TEST_F(ValidateData, void_runtime_array) {
@@ -698,7 +700,8 @@ TEST_F(ValidateData, void_runtime_array) {
   ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
   EXPECT_THAT(
       getDiagnosticString(),
-      HasSubstr("OpTypeRuntimeArray Element Type <id> '1' is a void type."));
+      HasSubstr(
+          "OpTypeRuntimeArray Element Type <id> '1[%void]' is a void type."));
 }
 }  // namespace
 }  // namespace val

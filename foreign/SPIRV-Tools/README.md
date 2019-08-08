@@ -241,6 +241,8 @@ out code:
 ```sh
 cd <spirv-dir>
 git clone https://github.com/KhronosGroup/SPIRV-Headers.git external/spirv-headers
+git clone https://github.com/google/effcee.git external/effcee
+git clone https://github.com/google/re2.git external/re2
 git clone https://github.com/google/googletest.git external/googletest # optional
 
 mkdir build && cd build
@@ -271,7 +273,7 @@ The following CMake options are supported:
   See [`CMakeLists.txt`](CMakeLists.txt) for details.
 * `SPIRV_WERROR={ON|OFF}`, default `ON` - Forces a compilation error on any
   warnings encountered by enabling the compiler-specific compiler front-end
-  option.
+  option.  No compiler front-end options are enabled when this option is OFF.
 
 Additionally, you can pass additional C preprocessor definitions to SPIRV-Tools
 via setting `SPIRV_TOOLS_EXTRA_DEFINITIONS`. For example, by setting it to

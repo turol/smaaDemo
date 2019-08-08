@@ -555,6 +555,14 @@ Pass::Status AggressiveDCEPass::ProcessImpl() {
   // return unmodified.
   if (!AllExtensionsSupported()) return Status::SuccessWithoutChange;
 
+  // If the decoration manager is kept live then the context will try to keep it
+  // up to date.  ADCE deals with group decorations by changing the operands in
+  // |OpGroupDecorate| instruction directly without informing the decoration
+  // manager.  This can put it in an invalid state which will cause an error
+  // when the context tries to update it.  To avoid this problem invalidate
+  // the decoration manager upfront.
+  context()->InvalidateAnalyses(IRContext::Analysis::kAnalysisDecorations);
+
   // Eliminate Dead functions.
   bool modified = EliminateDeadFunctions();
 
@@ -562,7 +570,7 @@ Pass::Status AggressiveDCEPass::ProcessImpl() {
 
   // Process all entry point functions.
   ProcessFunction pfn = [this](Function* fp) { return AggressiveDCE(fp); };
-  modified |= ProcessEntryPointCallTree(pfn, get_module());
+  modified |= context()->ProcessEntryPointCallTree(pfn);
 
   // Process module-level instructions. Now that all live instructions have
   // been marked, it is safe to remove dead global values.
@@ -575,7 +583,7 @@ Pass::Status AggressiveDCEPass::ProcessImpl() {
 
   // Cleanup all CFG including all unreachable blocks.
   ProcessFunction cleanup = [this](Function* f) { return CFGCleanup(f); };
-  modified |= ProcessEntryPointCallTree(cleanup, get_module());
+  modified |= context()->ProcessEntryPointCallTree(cleanup);
 
   return modified ? Status::SuccessWithChange : Status::SuccessWithoutChange;
 }
@@ -589,7 +597,7 @@ bool AggressiveDCEPass::EliminateDeadFunctions() {
     live_function_set.insert(fp);
     return false;
   };
-  ProcessEntryPointCallTree(mark_live, get_module());
+  context()->ProcessEntryPointCallTree(mark_live);
 
   bool modified = false;
   for (auto funcIter = get_module()->begin();
@@ -797,6 +805,7 @@ void AggressiveDCEPass::InitExtensions() {
       "SPV_NV_shading_rate",
       "SPV_NV_mesh_shader",
       "SPV_NV_ray_tracing",
+      "SPV_EXT_fragment_invocation_density",
   });
 }
 

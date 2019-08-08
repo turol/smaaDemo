@@ -112,6 +112,8 @@ using ValidateCapabilityVulkan10 = spvtest::ValidateBase<CapTestParameter>;
 using ValidateCapabilityOpenGL40 = spvtest::ValidateBase<CapTestParameter>;
 // Always assembles using Vulkan 1.1.
 using ValidateCapabilityVulkan11 = spvtest::ValidateBase<CapTestParameter>;
+// Always assembles using WebGPU.
+using ValidateCapabilityWebGPU = spvtest::ValidateBase<CapTestParameter>;
 
 TEST_F(ValidateCapability, Default) {
   const char str[] = R"(
@@ -289,6 +291,7 @@ const std::vector<std::string>& AllVulkan10Capabilities() {
     "DerivativeControl",
     "Geometry",
     "Tessellation",
+    "Float16",
     "Float64",
     "Int64",
     "Int64Atomics",
@@ -305,6 +308,7 @@ const std::vector<std::string>& AllVulkan10Capabilities() {
     "CullDistance",
     "ImageCubeArray",
     "SampleRateShading",
+    "Int8",
     "SparseResidency",
     "MinLod",
     "SampledCubeArray",
@@ -313,7 +317,9 @@ const std::vector<std::string>& AllVulkan10Capabilities() {
     "InterpolationFunction",
     "StorageImageReadWithoutFormat",
     "StorageImageWriteWithoutFormat",
-    "MultiViewport"};
+    "MultiViewport",
+    "TransformFeedback",
+    "GeometryStreams"};
   return *r;
 }
 
@@ -331,6 +337,7 @@ const std::vector<std::string>& AllVulkan11Capabilities() {
     "DerivativeControl",
     "Geometry",
     "Tessellation",
+    "Float16",
     "Float64",
     "Int64",
     "Int64Atomics",
@@ -347,6 +354,7 @@ const std::vector<std::string>& AllVulkan11Capabilities() {
     "CullDistance",
     "ImageCubeArray",
     "SampleRateShading",
+    "Int8",
     "SparseResidency",
     "MinLod",
     "SampledCubeArray",
@@ -374,8 +382,22 @@ const std::vector<std::string>& AllVulkan11Capabilities() {
     "DeviceGroup",
     "MultiView",
     "VariablePointersStorageBuffer",
-    "VariablePointers"};
+    "VariablePointers",
+    "TransformFeedback",
+    "GeometryStreams"};
   return *r;
+}
+
+const std::vector<std::string>& AllWebGPUCapabilities() {
+  static const auto r = new std::vector<std::string>{
+    "",
+    "Shader",
+    "Matrix",
+    "Sampled1D",
+    "Image1D",
+    "ImageQuery",
+    "DerivativeControl"};
+    return *r;
 }
 
 const std::vector<std::string>& MatrixDependencies() {
@@ -567,6 +589,12 @@ const char kOpenCLMemoryModel[] = \
 const char kGLSL450MemoryModel[] = \
   " OpCapability Shader"
   " OpMemoryModel Logical GLSL450 ";
+
+const char kVulkanMemoryModel[] = \
+  " OpCapability Shader"
+  " OpCapability VulkanMemoryModelKHR"
+  " OpExtension \"SPV_KHR_vulkan_memory_model\""
+  " OpMemoryModel Logical VulkanKHR ";
 
 const char kVoidFVoid[] = \
   " %void   = OpTypeVoid"
@@ -1111,9 +1139,12 @@ std::make_pair(std::string(kOpenCLMemoryModel) +
           "%intt = OpTypeInt 32 0\n" + std::string(kVoidFVoid),
           AllCapabilities()),
 std::make_pair(std::string(kOpenCLMemoryModel) +
+          // Uniform must target a non-void value.
           "OpEntryPoint Kernel %func \"compute\" \n"
-          "OpDecorate %intt Uniform\n"
-          "%intt = OpTypeInt 32 0\n" + std::string(kVoidFVoid),
+          "OpDecorate %int0 Uniform\n"
+          "%intt = OpTypeInt 32 0\n" +
+          "%int0 = OpConstantNull %intt"
+          + std::string(kVoidFVoid),
           ShaderDependencies()),
 std::make_pair(std::string(kGLSL450MemoryModel) +
           "OpEntryPoint Vertex %func \"shader\" \n"
@@ -1525,6 +1556,16 @@ std::make_pair(std::string(kGLSL450MemoryModel) +
           AllSpirV10Capabilities())
 )),);
 
+INSTANTIATE_TEST_CASE_P(Capabilities, ValidateCapabilityWebGPU,
+                        Combine(
+                            // All capabilities to try.
+                            ValuesIn(AllCapabilities()),
+                            Values(
+std::make_pair(std::string(kVulkanMemoryModel) +
+          "OpEntryPoint Vertex %func \"shader\" \n" + std::string(kVoidFVoid),
+          AllWebGPUCapabilities())
+)),);
+
 INSTANTIATE_TEST_CASE_P(Capabilities, ValidateCapabilityVulkan11,
                         Combine(
                             // All capabilities to try.
@@ -1712,6 +1753,17 @@ TEST_P(ValidateCapabilityOpenGL40, Capability) {
     CompileSuccessfully(test_code, SPV_ENV_OPENGL_4_0);
     ASSERT_EQ(ExpectedResult(GetParam()),
               ValidateInstructions(SPV_ENV_OPENGL_4_0))
+        << test_code;
+  }
+}
+
+TEST_P(ValidateCapabilityWebGPU, Capability) {
+  const std::string capability = Capability(GetParam());
+  if (Exists(capability, SPV_ENV_WEBGPU_0)) {
+    const std::string test_code = MakeAssembly(GetParam());
+    CompileSuccessfully(test_code, SPV_ENV_WEBGPU_0);
+    ASSERT_EQ(ExpectedResult(GetParam()),
+              ValidateInstructions(SPV_ENV_WEBGPU_0))
         << test_code;
   }
 }

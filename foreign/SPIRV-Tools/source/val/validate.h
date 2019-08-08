@@ -131,7 +131,8 @@ spv_result_t DataRulesPass(ValidationState_t& _, const Instruction* inst);
 /// Performs instruction validation.
 spv_result_t InstructionPass(ValidationState_t& _, const Instruction* inst);
 
-/// Performs decoration validation.
+/// Performs decoration validation.  Assumes each decoration on a group
+/// has been propagated down to the group members.
 spv_result_t ValidateDecorations(ValidationState_t& _);
 
 /// Performs validation of built-in variables.
@@ -173,8 +174,8 @@ spv_result_t BarriersPass(ValidationState_t& _, const Instruction* inst);
 /// Validates correctness of literal numbers.
 spv_result_t LiteralsPass(ValidationState_t& _, const Instruction* inst);
 
-/// Validates correctness of ExtInst instructions.
-spv_result_t ExtInstPass(ValidationState_t& _, const Instruction* inst);
+/// Validates correctness of extension instructions.
+spv_result_t ExtensionPass(ValidationState_t& _, const Instruction* inst);
 
 /// Validates correctness of annotation instructions.
 spv_result_t AnnotationPass(ValidationState_t& _, const Instruction* inst);

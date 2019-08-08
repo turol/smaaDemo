@@ -179,6 +179,7 @@ OpName %main "main"
 %uint_3 = OpConstant %uint 3
 %uint_4 = OpConstant %uint 4
 %uint_32 = OpConstant %uint 32
+%uint_42 = OpConstant %uint 42
 %uint_max = OpConstant %uint 4294967295
 %v2int_undef = OpUndef %v2int
 %v2int_0_0 = OpConstantComposite %v2int %int_0 %int_0
@@ -472,6 +473,36 @@ INSTANTIATE_TEST_CASE_P(TestCase, IntegerInstructionFoldingTest,
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
           "%2 = OpUMod %uint %uint_1 %uint_0\n" +
+          "OpReturn\n" +
+          "OpFunctionEnd",
+      2, 0),
+  // Test case 22: fold unsigned n >> 42 (undefined, so set to zero).
+  InstructionFoldingCase<uint32_t>(
+      Header() + "%main = OpFunction %void None %void_func\n" +
+          "%main_lab = OpLabel\n" +
+          "%n = OpVariable %_ptr_uint Function\n" +
+          "%load = OpLoad %uint %n\n" +
+          "%2 = OpShiftRightLogical %uint %load %uint_42\n" +
+          "OpReturn\n" +
+          "OpFunctionEnd",
+      2, 0),
+  // Test case 21: fold signed n >> 42 (undefined, so set to zero).
+  InstructionFoldingCase<uint32_t>(
+      Header() + "%main = OpFunction %void None %void_func\n" +
+          "%main_lab = OpLabel\n" +
+          "%n = OpVariable %_ptr_int Function\n" +
+          "%load = OpLoad %int %n\n" +
+          "%2 = OpShiftRightLogical %int %load %uint_42\n" +
+          "OpReturn\n" +
+          "OpFunctionEnd",
+      2, 0),
+  // Test case 22: fold n << 42 (undefined, so set to zero).
+  InstructionFoldingCase<uint32_t>(
+      Header() + "%main = OpFunction %void None %void_func\n" +
+          "%main_lab = OpLabel\n" +
+          "%n = OpVariable %_ptr_int Function\n" +
+          "%load = OpLoad %int %n\n" +
+          "%2 = OpShiftLeftLogical %int %load %uint_42\n" +
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 0)
@@ -5821,7 +5852,7 @@ TEST_P(MatchingInstructionWithNoResultFoldingTest, Case) {
 
 INSTANTIATE_TEST_CASE_P(StoreMatchingTest, MatchingInstructionWithNoResultFoldingTest,
 ::testing::Values(
-    // Test case 0: Using OpDot to extract last element.
+    // Test case 0: Remove store of undef.
     InstructionFoldingCase<bool>(
         Header() +
             "; CHECK: OpLabel\n" +
@@ -5834,7 +5865,18 @@ INSTANTIATE_TEST_CASE_P(StoreMatchingTest, MatchingInstructionWithNoResultFoldin
             "OpStore %n %undef\n" +
             "OpReturn\n" +
             "OpFunctionEnd",
-        0 /* OpStore */, true)
+        0 /* OpStore */, true),
+    // Test case 1: Keep volatile store.
+    InstructionFoldingCase<bool>(
+        Header() +
+            "%main = OpFunction %void None %void_func\n" +
+            "%main_lab = OpLabel\n" +
+            "%n = OpVariable %_ptr_v4double Function\n" +
+            "%undef = OpUndef %v4double\n" +
+            "OpStore %n %undef Volatile\n" +
+            "OpReturn\n" +
+            "OpFunctionEnd",
+        0 /* OpStore */, false)
 ));
 
 INSTANTIATE_TEST_CASE_P(VectorShuffleMatchingTest, MatchingInstructionWithNoResultFoldingTest,

@@ -46,8 +46,10 @@ FILES:= \
 	inline_exhaustive_pass.cpp \
 	inline_opaque_pass.cpp \
 	inline_pass.cpp \
+	inst_bindless_check_pass.cpp \
 	instruction.cpp \
 	instruction_list.cpp \
+	instrument_pass.cpp \
 	ir_context.cpp \
 	ir_loader.cpp \
 	licm_pass.cpp \
@@ -72,7 +74,9 @@ FILES:= \
 	optimizer.cpp \
 	pass.cpp \
 	pass_manager.cpp \
+	pch_source_opt.cpp \
 	private_to_local_pass.cpp \
+	process_lines_pass.cpp \
 	propagator.cpp \
 	reduce_load_size.cpp \
 	redundancy_elimination.cpp \
@@ -92,6 +96,7 @@ FILES:= \
 	type_manager.cpp \
 	types.cpp \
 	unify_const_pass.cpp \
+	upgrade_memory_model.cpp \
 	value_number_table.cpp \
 	vector_dce.cpp \
 	workaround1209.cpp \

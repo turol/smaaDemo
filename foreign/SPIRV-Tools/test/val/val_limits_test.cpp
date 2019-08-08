@@ -353,7 +353,7 @@ TEST_F(ValidateLimits, OpTypeFunctionBad) {
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("OpTypeFunction may not take more than 255 arguments. "
-                        "OpTypeFunction <id> '2' has 256 arguments."));
+                        "OpTypeFunction <id> '2[%2]' has 256 arguments."));
 }
 
 // Valid: OpTypeFunction with 100 arguments (Custom limit: 100)
@@ -389,7 +389,7 @@ TEST_F(ValidateLimits, CustomizedOpTypeFunctionBad) {
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("OpTypeFunction may not take more than 100 arguments. "
-                        "OpTypeFunction <id> '2' has 101 arguments."));
+                        "OpTypeFunction <id> '2[%2]' has 101 arguments."));
 }
 
 // Valid: module has 65,535 global variables.
@@ -712,14 +712,6 @@ void GenerateSpirvProgramWithCfgNestingDepth(std::string& str, int depth) {
   str = spirv.str();
 }
 // clang-format on
-
-// Valid: Control Flow Nesting depth is 1023.
-TEST_F(ValidateLimits, ControlFlowDepthGood) {
-  std::string spirv;
-  GenerateSpirvProgramWithCfgNestingDepth(spirv, 1023);
-  CompileSuccessfully(spirv);
-  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
-}
 
 // Invalid: Control Flow Nesting depth is 1024. (limit is 1023).
 TEST_F(ValidateLimits, ControlFlowDepthBad) {

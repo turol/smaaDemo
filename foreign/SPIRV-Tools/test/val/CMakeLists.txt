@@ -29,6 +29,7 @@ add_spvtools_unittest(TARGET val_abcde
        val_capability_test.cpp
        val_cfg_test.cpp
        val_composites_test.cpp
+       val_constants_test.cpp
        val_conversion_test.cpp
        val_data_test.cpp
        val_decoration_test.cpp
@@ -55,6 +56,7 @@ add_spvtools_unittest(TARGET val_ijklmnop
        val_layout_test.cpp
        val_literals_test.cpp
        val_logicals_test.cpp
+       val_memory_test.cpp
        val_modes_test.cpp
        val_non_uniform_test.cpp
        val_primitives_test.cpp

@@ -54,7 +54,7 @@ Pass::Status MergeReturnPass::Process() {
     return true;
   };
 
-  bool modified = ProcessReachableCallTree(pfn, context());
+  bool modified = context()->ProcessReachableCallTree(pfn);
 
   if (failed) {
     return Status::Failure;
@@ -121,7 +121,9 @@ bool MergeReturnPass::ProcessStructured(
     // Predicate successors of the original return blocks as necessary.
     if (std::find(return_blocks.begin(), return_blocks.end(), block) !=
         return_blocks.end()) {
-      PredicateBlocks(block, &predicated, &order);
+      if (!PredicateBlocks(block, &predicated, &order)) {
+        return false;
+      }
     }
 
     // Generate state for next block
@@ -204,7 +206,11 @@ void MergeReturnPass::BranchToBlock(BasicBlock* block, uint32_t target) {
     RecordReturned(block);
     RecordReturnValue(block);
   }
+
   BasicBlock* target_block = context()->get_instr_block(target);
+  if (target_block->GetLoopMergeInst()) {
+    cfg()->SplitLoopHeader(target_block);
+  }
   UpdatePhiNodes(block, target_block);
 
   Instruction* return_inst = block->terminator();
@@ -239,8 +245,22 @@ void MergeReturnPass::CreatePhiNodesForInst(BasicBlock* merge_block,
   if (inst.result_id() != 0) {
     std::vector<Instruction*> users_to_update;
     context()->get_def_use_mgr()->ForEachUser(
-        &inst, [&users_to_update, &dom_tree, inst_bb, this](Instruction* user) {
-          BasicBlock* user_bb = context()->get_instr_block(user);
+        &inst,
+        [&users_to_update, &dom_tree, &inst, inst_bb, this](Instruction* user) {
+          BasicBlock* user_bb = nullptr;
+          if (user->opcode() != SpvOpPhi) {
+            user_bb = context()->get_instr_block(user);
+          } else {
+            // For OpPhi, the use should be considered to be in the predecessor.
+            for (uint32_t i = 0; i < user->NumInOperands(); i += 2) {
+              if (user->GetSingleWordInOperand(i) == inst.result_id()) {
+                uint32_t user_bb_id = user->GetSingleWordInOperand(i + 1);
+                user_bb = context()->get_instr_block(user_bb_id);
+                break;
+              }
+            }
+          }
+
           // If |user_bb| is nullptr, then |user| is not in the function.  It is
           // something like an OpName or decoration, which should not be
           // replaced with the result of the OpPhi.
@@ -288,14 +308,14 @@ void MergeReturnPass::CreatePhiNodesForInst(BasicBlock* merge_block,
   }
 }
 
-void MergeReturnPass::PredicateBlocks(
+bool MergeReturnPass::PredicateBlocks(
     BasicBlock* return_block, std::unordered_set<BasicBlock*>* predicated,
     std::list<BasicBlock*>* order) {
   // The CFG is being modified as the function proceeds so avoid caching
   // successors.
 
   if (predicated->count(return_block)) {
-    return;
+    return true;
   }
 
   BasicBlock* block = nullptr;
@@ -322,22 +342,28 @@ void MergeReturnPass::PredicateBlocks(
   while (block != nullptr && block != final_return_block_) {
     if (!predicated->insert(block).second) break;
     // Skip structured subgraphs.
-    BasicBlock* next = nullptr;
     assert(state->InLoop() && "Should be in the dummy loop at the very least.");
-    next = context()->get_instr_block(state->LoopMergeId());
-    while (state->LoopMergeId() == next->id()) {
+    Instruction* current_loop_merge_inst = state->LoopMergeInst();
+    uint32_t merge_block_id =
+        current_loop_merge_inst->GetSingleWordInOperand(0);
+    while (state->LoopMergeId() == merge_block_id) {
       state++;
     }
-    BreakFromConstruct(block, next, predicated, order);
-    block = next;
+    if (!BreakFromConstruct(block, predicated, order,
+                            current_loop_merge_inst)) {
+      return false;
+    }
+    block = context()->get_instr_block(merge_block_id);
   }
+  return true;
 }
 
-void MergeReturnPass::BreakFromConstruct(
-    BasicBlock* block, BasicBlock* merge_block,
-    std::unordered_set<BasicBlock*>* predicated,
-    std::list<BasicBlock*>* order) {
-  // Make sure the cfg is build here.  If we don't then it becomes very hard
+bool MergeReturnPass::BreakFromConstruct(
+    BasicBlock* block, std::unordered_set<BasicBlock*>* predicated,
+    std::list<BasicBlock*>* order, Instruction* loop_merge_inst) {
+  assert(loop_merge_inst->opcode() == SpvOpLoopMerge &&
+         "loop_merge_inst must be a loop merge instruction.");
+  // Make sure the CFG is build here.  If we don't then it becomes very hard
   // to know which new blocks need to be updated.
   context()->BuildInvalidAnalyses(IRContext::kAnalysisCFG);
 
@@ -353,7 +379,15 @@ void MergeReturnPass::BreakFromConstruct(
   // If |block| is a loop header, then the back edge must jump to the original
   // code, not the new header.
   if (block->GetLoopMergeInst()) {
-    cfg()->SplitLoopHeader(block);
+    if (cfg()->SplitLoopHeader(block) == nullptr) {
+      return false;
+    }
+  }
+
+  uint32_t merge_block_id = loop_merge_inst->GetSingleWordInOperand(0);
+  BasicBlock* merge_block = context()->get_instr_block(merge_block_id);
+  if (merge_block->GetLoopMergeInst()) {
+    cfg()->SplitLoopHeader(merge_block);
   }
 
   // Leave the phi instructions behind.
@@ -368,6 +402,13 @@ void MergeReturnPass::BreakFromConstruct(
   BasicBlock* old_body = block->SplitBasicBlock(context(), TakeNextId(), iter);
   predicated->insert(old_body);
 
+  // If |block| was a continue target for a loop |old_body| is now the correct
+  // continue target.
+  if (loop_merge_inst->GetSingleWordInOperand(1) == block->id()) {
+    loop_merge_inst->SetInOperand(1, {old_body->id()});
+    context()->UpdateDefUse(loop_merge_inst);
+  }
+
   // Update |order| so old_block will be traversed.
   InsertAfterElement(block, old_body, order);
 
@@ -375,6 +416,7 @@ void MergeReturnPass::BreakFromConstruct(
   // 1. Load of the return status flag
   // 2. Branch to |merge_block| (true) or old body (false)
   // 3. Update OpPhi instructions in |merge_block|.
+  // 4. Update the CFG.
   //
   // Sine we are branching to the merge block of the current construct, there is
   // no need for an OpSelectionMerge.
@@ -393,10 +435,6 @@ void MergeReturnPass::BreakFromConstruct(
   builder.AddConditionalBranch(load_id, merge_block->id(), old_body->id(),
                                old_body->id());
 
-  // Update the cfg
-  cfg()->AddEdges(block);
-  cfg()->RegisterBlock(old_body);
-
   // 3. Update OpPhi instructions in |merge_block|.
   BasicBlock* merge_original_pred = MarkedSinglePred(merge_block);
   if (merge_original_pred == nullptr) {
@@ -405,8 +443,15 @@ void MergeReturnPass::BreakFromConstruct(
     MarkForNewPhiNodes(merge_block, old_body);
   }
 
+  // 4. Update the CFG.  We do this after updating the OpPhi instructions
+  // because |UpdatePhiNodes| assumes the edge from |block| has not been added
+  // to the CFG yet.
+  cfg()->AddEdges(block);
+  cfg()->RegisterBlock(old_body);
+
   assert(old_body->begin() != old_body->end());
   assert(block->begin() != block->end());
+  return true;
 }
 
 void MergeReturnPass::RecordReturned(BasicBlock* block) {
@@ -743,7 +788,7 @@ bool MergeReturnPass::HasNontrivialUnreachableBlocks(Function* function) {
     }
 
     StructuredCFGAnalysis* struct_cfg_analysis =
-        context()->GetStructuedCFGAnalaysis();
+        context()->GetStructuredCFGAnalysis();
     if (struct_cfg_analysis->IsMergeBlock(bb.id())) {
       // |bb| must be an empty block ending with OpUnreachable.
       if (bb.begin()->opcode() != SpvOpUnreachable) {
