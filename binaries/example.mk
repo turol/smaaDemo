@@ -32,7 +32,11 @@ LDLIBS_spirv-tools:=
 # compiler options etc
 CXX:=g++
 CC:=gcc
+PYTHON:=/usr/bin/python
+
 WIN32:=n
+
+
 CFLAGS:=-g -Wall -Wextra -Werror -Wshadow
 CFLAGS+=-Wno-unused-local-typedefs
 CFLAGS+=$(shell sdl2-config --cflags)
