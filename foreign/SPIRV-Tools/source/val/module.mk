@@ -35,7 +35,6 @@ FILES:= \
 	validate_derivatives.cpp \
 	validate_execution_limitations.cpp \
 	validate_extensions.cpp \
-	validate_ext_inst.cpp \
 	validate_function.cpp \
 	validate_id.cpp \
 	validate_image.cpp \

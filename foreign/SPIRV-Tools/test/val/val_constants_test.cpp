@@ -84,7 +84,7 @@ TEST_P(ValidateConstantOp, Samples) {
   { SPV_ENV_UNIVERSAL_1_0, kShaderPreamble kBasicTypes STR, true, "" }
 #define GOOD_KERNEL_10(STR) \
   { SPV_ENV_UNIVERSAL_1_0, kKernelPreamble kBasicTypes STR, true, "" }
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     UniversalInShader, ValidateConstantOp,
     ValuesIn(std::vector<ConstantOpCase>{
         // TODO(dneto): Conversions must change width.
@@ -141,7 +141,7 @@ INSTANTIATE_TEST_CASE_P(
             "%v = OpSpecConstantOp %bool SGreaterThanEqual %uint_0 %uint_0"),
     }));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     UniversalInKernel, ValidateConstantOp,
     ValuesIn(std::vector<ConstantOpCase>{
         // TODO(dneto): Conversions must change width.
@@ -198,7 +198,7 @@ INSTANTIATE_TEST_CASE_P(
             "%v = OpSpecConstantOp %bool SGreaterThanEqual %uint_0 %uint_0"),
     }));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     KernelInKernel, ValidateConstantOp,
     ValuesIn(std::vector<ConstantOpCase>{
         // TODO(dneto): Conversions must change width.
@@ -235,7 +235,7 @@ INSTANTIATE_TEST_CASE_P(
         "Specialization constant operation " NAME                  \
         " requires Kernel capability"                              \
   }
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     KernelInShader, ValidateConstantOp,
     ValuesIn(std::vector<ConstantOpCase>{
         // TODO(dneto): Conversions must change width.
@@ -278,6 +278,20 @@ INSTANTIATE_TEST_CASE_P(
         BAD_SHADER_10("%v = OpSpecConstantOp %_ptr_uint "
                       "InBoundsPtrAccessChain %null %uint_0",
                       "InBoundsPtrAccessChain"),
+    }));
+
+INSTANTIATE_TEST_SUITE_P(
+    UConvertInAMD_gpu_shader_int16, ValidateConstantOp,
+    ValuesIn(std::vector<ConstantOpCase>{
+        // SPV_AMD_gpu_shader_int16 should enable UConvert for OpSpecConstantOp
+        // https://github.com/KhronosGroup/glslang/issues/848
+        {SPV_ENV_UNIVERSAL_1_0,
+         "OpCapability Shader "
+         "OpCapability Linkage ; So we don't need to define a function\n"
+         "OpExtension \"SPV_AMD_gpu_shader_int16\" "
+         "OpMemoryModel Logical Simple " kBasicTypes
+         "%v = OpSpecConstantOp %uint UConvert %uint_0",
+         true, ""},
     }));
 
 }  // namespace

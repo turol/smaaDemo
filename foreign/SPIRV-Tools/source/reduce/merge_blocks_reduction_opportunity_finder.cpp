@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Google Inc.
+// Copyright (c) 2019 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,32 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "remove_opname_instruction_reduction_pass.h"
-#include "remove_instruction_reduction_opportunity.h"
-#include "source/opcode.h"
-#include "source/opt/instruction.h"
+#include "source/reduce/merge_blocks_reduction_opportunity_finder.h"
+#include "source/opt/block_merge_util.h"
+#include "source/reduce/merge_blocks_reduction_opportunity.h"
 
 namespace spvtools {
 namespace reduce {
 
 using namespace opt;
 
+std::string MergeBlocksReductionOpportunityFinder::GetName() const {
+  return "MergeBlocksReductionOpportunityFinder";
+}
+
 std::vector<std::unique_ptr<ReductionOpportunity>>
-RemoveOpNameInstructionReductionPass::GetAvailableOpportunities(
+MergeBlocksReductionOpportunityFinder::GetAvailableOpportunities(
     opt::IRContext* context) const {
   std::vector<std::unique_ptr<ReductionOpportunity>> result;
 
-  for (auto& inst : context->module()->debugs2()) {
-    if (inst.opcode() == SpvOpName || inst.opcode() == SpvOpMemberName) {
-      result.push_back(
-          MakeUnique<RemoveInstructionReductionOpportunity>(&inst));
+  // Consider every block in every function.
+  for (auto& function : *context->module()) {
+    for (auto& block : function) {
+      // See whether it is possible to merge this block with its successor.
+      if (blockmergeutil::CanMergeWithSuccessor(context, &block)) {
+        // It is, so record an opportunity to do this.
+        result.push_back(spvtools::MakeUnique<MergeBlocksReductionOpportunity>(
+            context, &function, &block));
+      }
     }
   }
   return result;
-}
-
-std::string RemoveOpNameInstructionReductionPass::GetName() const {
-  return "RemoveOpNameInstructionReductionPass";
 }
 
 }  // namespace reduce

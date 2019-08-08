@@ -89,6 +89,11 @@ void IRContext::InvalidateAnalysesExceptFor(
 }
 
 void IRContext::InvalidateAnalyses(IRContext::Analysis analyses_to_invalidate) {
+  // The ConstantManager contains Type pointers. If the TypeManager goes
+  // away, the ConstantManager has to go away.
+  if (analyses_to_invalidate & kAnalysisTypes) {
+    analyses_to_invalidate |= kAnalysisConstants;
+  }
   if (analyses_to_invalidate & kAnalysisDefUse) {
     def_use_mgr_.reset(nullptr);
   }
@@ -669,8 +674,8 @@ uint32_t IRContext::GetBuiltinVarId(uint32_t builtin) {
         reg_type = type_mgr->GetRegisteredType(&v4float_ty);
         break;
       }
-      case SpvBuiltInVertexId:
-      case SpvBuiltInInstanceId:
+      case SpvBuiltInVertexIndex:
+      case SpvBuiltInInstanceIndex:
       case SpvBuiltInPrimitiveId:
       case SpvBuiltInInvocationId:
       case SpvBuiltInGlobalInvocationId: {

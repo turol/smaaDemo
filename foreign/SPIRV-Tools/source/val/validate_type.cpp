@@ -17,6 +17,7 @@
 #include "source/val/validate.h"
 
 #include "source/opcode.h"
+#include "source/spirv_target_env.h"
 #include "source/val/instruction.h"
 #include "source/val/validation_state.h"
 
@@ -106,6 +107,14 @@ spv_result_t ValidateTypeArray(ValidationState_t& _, const Instruction* inst) {
            << "' is a void type.";
   }
 
+  if (spvIsVulkanOrWebGPUEnv(_.context()->target_env) &&
+      element_type->opcode() == SpvOpTypeRuntimeArray) {
+    return _.diag(SPV_ERROR_INVALID_ID, inst)
+           << "OpTypeArray Element Type <id> '" << _.getIdName(element_type_id)
+           << "' is not valid in "
+           << spvLogStringForEnv(_.context()->target_env) << " environments.";
+  }
+
   const auto length_index = 2;
   const auto length_id = inst->GetOperandAs<uint32_t>(length_index);
   const auto length = _.FindDef(length_id);
@@ -161,6 +170,14 @@ spv_result_t ValidateTypeRuntimeArray(ValidationState_t& _,
            << _.getIdName(element_id) << "' is a void type.";
   }
 
+  if (spvIsVulkanOrWebGPUEnv(_.context()->target_env) &&
+      element_type->opcode() == SpvOpTypeRuntimeArray) {
+    return _.diag(SPV_ERROR_INVALID_ID, inst)
+           << "OpTypeRuntimeArray Element Type <id> '"
+           << _.getIdName(element_id) << "' is not valid in "
+           << spvLogStringForEnv(_.context()->target_env) << " environments.";
+  }
+
   return SPV_SUCCESS;
 }
 
@@ -184,11 +201,11 @@ spv_result_t ValidateTypeStruct(ValidationState_t& _, const Instruction* inst) {
       return _.diag(SPV_ERROR_INVALID_ID, inst)
              << "Structure <id> " << _.getIdName(member_type_id)
              << " contains members with BuiltIn decoration. Therefore this "
-                "structure may not be contained as a member of another "
-                "structure "
-                "type. Structure <id> "
-             << _.getIdName(struct_id) << " contains structure <id> "
-             << _.getIdName(member_type_id) << ".";
+             << "structure may not be contained as a member of another "
+             << "structure "
+             << "type. Structure <id> " << _.getIdName(struct_id)
+             << " contains structure <id> " << _.getIdName(member_type_id)
+             << ".";
     }
     if (_.IsForwardPointer(member_type_id)) {
       // If we're dealing with a forward pointer:
@@ -206,7 +223,20 @@ spv_result_t ValidateTypeStruct(ValidationState_t& _, const Instruction* inst) {
                << ".";
       }
     }
+
+    if (spvIsVulkanOrWebGPUEnv(_.context()->target_env) &&
+        member_type->opcode() == SpvOpTypeRuntimeArray) {
+      const bool is_last_member =
+          member_type_index == inst->operands().size() - 1;
+      if (!is_last_member) {
+        return _.diag(SPV_ERROR_INVALID_ID, inst)
+               << "In " << spvLogStringForEnv(_.context()->target_env)
+               << ", OpTypeRuntimeArray must only be used for the last member "
+                  "of an OpTypeStruct";
+      }
+    }
   }
+
   std::unordered_set<uint32_t> built_in_members;
   for (auto decoration : _.id_decorations(struct_id)) {
     if (decoration.dec_type() == SpvDecorationBuiltIn &&
@@ -219,9 +249,9 @@ spv_result_t ValidateTypeStruct(ValidationState_t& _, const Instruction* inst) {
   if (num_builtin_members > 0 && num_builtin_members != num_struct_members) {
     return _.diag(SPV_ERROR_INVALID_ID, inst)
            << "When BuiltIn decoration is applied to a structure-type member, "
-              "all members of that structure type must also be decorated with "
-              "BuiltIn (No allowed mixing of built-in variables and "
-              "non-built-in variables within a single structure). Structure id "
+           << "all members of that structure type must also be decorated with "
+           << "BuiltIn (No allowed mixing of built-in variables and "
+           << "non-built-in variables within a single structure). Structure id "
            << struct_id << " does not meet this requirement.";
   }
   if (num_builtin_members > 0) {
@@ -232,12 +262,28 @@ spv_result_t ValidateTypeStruct(ValidationState_t& _, const Instruction* inst) {
 
 spv_result_t ValidateTypePointer(ValidationState_t& _,
                                  const Instruction* inst) {
-  const auto type_id = inst->GetOperandAs<uint32_t>(2);
-  const auto type = _.FindDef(type_id);
+  auto type_id = inst->GetOperandAs<uint32_t>(2);
+  auto type = _.FindDef(type_id);
   if (!type || !spvOpcodeGeneratesType(type->opcode())) {
     return _.diag(SPV_ERROR_INVALID_ID, inst)
            << "OpTypePointer Type <id> '" << _.getIdName(type_id)
            << "' is not a type.";
+  }
+  // See if this points to a storage image.
+  const auto storage_class = inst->GetOperandAs<SpvStorageClass>(1);
+  if (storage_class == SpvStorageClassUniformConstant) {
+    // Unpack an optional level of arraying.
+    if (type->opcode() == SpvOpTypeArray ||
+        type->opcode() == SpvOpTypeRuntimeArray) {
+      type_id = type->GetOperandAs<uint32_t>(1);
+      type = _.FindDef(type_id);
+    }
+    if (type->opcode() == SpvOpTypeImage) {
+      const auto sampled = type->GetOperandAs<uint32_t>(6);
+      // 2 indicates this image is known to be be used without a sampler, i.e.
+      // a storage image.
+      if (sampled == 2) _.RegisterPointerToStorageImage(inst->id());
+    }
   }
   return SPV_SUCCESS;
 }
@@ -278,10 +324,12 @@ spv_result_t ValidateTypeFunction(ValidationState_t& _,
            << num_args << " arguments.";
   }
 
-  // The only valid uses of OpTypeFunction are in an OpFunction instruction.
+  // The only valid uses of OpTypeFunction are in an OpFunction, debugging, or
+  // decoration instruction.
   for (auto& pair : inst->uses()) {
     const auto* use = pair.first;
-    if (use->opcode() != SpvOpFunction) {
+    if (use->opcode() != SpvOpFunction && !spvOpcodeIsDebug(use->opcode()) &&
+        !spvOpcodeIsDecoration(use->opcode())) {
       return _.diag(SPV_ERROR_INVALID_ID, use)
              << "Invalid use of function type result id "
              << _.getIdName(inst->id()) << ".";
@@ -304,7 +352,7 @@ spv_result_t ValidateTypeForwardPointer(ValidationState_t& _,
       pointer_type_inst->GetOperandAs<uint32_t>(1)) {
     return _.diag(SPV_ERROR_INVALID_ID, inst)
            << "Storage class in OpTypeForwardPointer does not match the "
-              "pointer definition.";
+           << "pointer definition.";
   }
 
   return SPV_SUCCESS;

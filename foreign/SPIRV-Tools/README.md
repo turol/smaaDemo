@@ -128,6 +128,23 @@ See the [CHANGES](CHANGES) file for reports on completed work, and the [General
 sub-project](https://github.com/KhronosGroup/SPIRV-Tools/projects/2) for
 planned and in-progress work.
 
+
+### Reducer
+
+*Note:* The reducer is still under development.
+
+The reducer simplifies and shrinks a SPIR-V module with respect to a
+user-supplied *interestingness function*.  For example, given a large
+SPIR-V module that cause some SPIR-V compiler to fail with a given
+fatal error message, the reducer could be used to look for a smaller
+version of the module that causes the compiler to fail with the same
+fatal error message.
+
+To suggest an additional capability for the reducer, [file an
+issue](https://github.com/KhronosGroup/SPIRV-Tools/issues]) with
+"Reducer:" as the start of its title.
+
+
 ### Extras
 
 * [Utility filters](#utility-filters)
@@ -414,6 +431,18 @@ The validator operates on the binary form.
 
 * `spirv-val` - the standalone validator
   * `<spirv-dir>/tools/val`
+
+### Reducer tool
+
+The reducer shrinks a SPIR-V binary module, guided by a user-supplied
+*interestingness test*.
+
+This is a work in progress, with initially only shrinks a module in a few ways.
+
+* `spirv-reduce` - the standalone reducer
+  * `<spirv-dir>/tools/reduce`
+
+Run `spirv-reduce --help` to see how to specify interestingness.
 
 ### Control flow dumper tool
 

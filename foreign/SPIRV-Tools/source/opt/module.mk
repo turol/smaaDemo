@@ -15,10 +15,12 @@ FILES:= \
 	aggressive_dead_code_elim_pass.cpp \
 	basic_block.cpp \
 	block_merge_pass.cpp \
+	block_merge_util.cpp \
 	build_module.cpp \
 	ccp_pass.cpp \
 	cfg_cleanup_pass.cpp \
 	cfg.cpp \
+	code_sink.cpp \
 	combine_access_chains.cpp \
 	common_uniform_elim_pass.cpp \
 	compact_ids_pass.cpp \
@@ -35,6 +37,8 @@ FILES:= \
 	dominator_tree.cpp \
 	eliminate_dead_constant_pass.cpp \
 	eliminate_dead_functions_pass.cpp \
+	eliminate_dead_functions_util.cpp \
+	eliminate_dead_members_pass.cpp \
 	feature_manager.cpp \
 	flatten_decoration_pass.cpp \
 	fold.cpp \

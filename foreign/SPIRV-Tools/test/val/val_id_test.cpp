@@ -780,6 +780,8 @@ class OpTypeArrayLengthTest
   // Runs spvValidate() on v, printing any errors via spvDiagnosticPrint().
   spv_result_t Val(const SpirvVector& v, const std::string& expected_err = "") {
     spv_const_binary_t cbinary{v.data(), v.size()};
+    spvDiagnosticDestroy(diagnostic_);
+    diagnostic_ = nullptr;
     const auto status =
         spvValidate(ScopedContext().context, &cbinary, &diagnostic_);
     if (status != SPV_SUCCESS) {
@@ -855,8 +857,8 @@ TEST_P(OpTypeArrayLengthTest, LengthNegative) {
 // capability prohibits usage of signed integers, we can skip 8-bit integers
 // here since the purpose of these tests is to check the validity of
 // OpTypeArray, not OpTypeInt.
-INSTANTIATE_TEST_CASE_P(Widths, OpTypeArrayLengthTest,
-                        ValuesIn(std::vector<int>{16, 32, 64}));
+INSTANTIATE_TEST_SUITE_P(Widths, OpTypeArrayLengthTest,
+                         ValuesIn(std::vector<int>{16, 32, 64}));
 
 TEST_F(ValidateIdWithMessage, OpTypeArrayLengthNull) {
   std::string spirv = kGLSL450MemoryModel + R"(
@@ -2272,6 +2274,7 @@ void createVariablePointerSpirvProgram(std::ostringstream* spirv,
     *spirv << "OpCapability VariablePointers ";
     *spirv << "OpExtension \"SPV_KHR_variable_pointers\" ";
   }
+  *spirv << "OpExtension \"SPV_KHR_storage_buffer_storage_class\" ";
   *spirv << R"(
     OpMemoryModel Logical GLSL450
     OpEntryPoint GLCompute %main "main"
@@ -2280,12 +2283,12 @@ void createVariablePointerSpirvProgram(std::ostringstream* spirv,
     %bool      = OpTypeBool
     %i32       = OpTypeInt 32 1
     %f32       = OpTypeFloat 32
-    %f32ptr    = OpTypePointer Uniform %f32
+    %f32ptr    = OpTypePointer StorageBuffer %f32
     %i         = OpConstant %i32 1
     %zero      = OpConstant %i32 0
     %float_1   = OpConstant %f32 1.0
-    %ptr1      = OpVariable %f32ptr Uniform
-    %ptr2      = OpVariable %f32ptr Uniform
+    %ptr1      = OpVariable %f32ptr StorageBuffer
+    %ptr2      = OpVariable %f32ptr StorageBuffer
   )";
   if (add_helper_function) {
     *spirv << R"(
@@ -3916,7 +3919,7 @@ OpFunctionEnd
 }
 
 // Run tests for Access Chain Instructions.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CheckAccessChainInstructions, AccessChainInstructionTest,
     ::testing::Values("OpAccessChain", "OpInBoundsAccessChain",
                       "OpPtrAccessChain", "OpInBoundsPtrAccessChain"));

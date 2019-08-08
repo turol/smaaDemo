@@ -15,10 +15,12 @@ set(SPIRV_TOOLS_OPT_SOURCES
   aggressive_dead_code_elim_pass.h
   basic_block.h
   block_merge_pass.h
+  block_merge_util.h
   build_module.h
   ccp_pass.h
   cfg_cleanup_pass.h
   cfg.h
+  code_sink.h
   combine_access_chains.h
   common_uniform_elim_pass.h
   compact_ids_pass.h
@@ -35,6 +37,8 @@ set(SPIRV_TOOLS_OPT_SOURCES
   dominator_tree.h
   eliminate_dead_constant_pass.h
   eliminate_dead_functions_pass.h
+  eliminate_dead_functions_util.h
+  eliminate_dead_members_pass.h
   feature_manager.h
   flatten_decoration_pass.h
   fold.h
@@ -107,10 +111,12 @@ set(SPIRV_TOOLS_OPT_SOURCES
   aggressive_dead_code_elim_pass.cpp
   basic_block.cpp
   block_merge_pass.cpp
+  block_merge_util.cpp
   build_module.cpp
   ccp_pass.cpp
   cfg_cleanup_pass.cpp
   cfg.cpp
+  code_sink.cpp
   combine_access_chains.cpp
   common_uniform_elim_pass.cpp
   compact_ids_pass.cpp
@@ -127,6 +133,8 @@ set(SPIRV_TOOLS_OPT_SOURCES
   dominator_tree.cpp
   eliminate_dead_constant_pass.cpp
   eliminate_dead_functions_pass.cpp
+  eliminate_dead_functions_util.cpp
+  eliminate_dead_members_pass.cpp
   feature_manager.cpp
   flatten_decoration_pass.cpp
   fold.cpp
