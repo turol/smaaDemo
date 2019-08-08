@@ -119,7 +119,8 @@ ALLSRC+=$$(SRC_$1)
 # restore saved
 DIRS:=$$(DIRS_$1)
 
-endef
+endef  # directory-module
+
 
 DIRS:= \
 	demo \
@@ -204,7 +205,7 @@ ifneq ($$($1_MODULES),$$(OLD_MODULES))
 $$(eval $$(call resolve-modules,$1) )
 endif
 
-endef
+endef  # resolve-modules
 
 
 $(eval $(foreach PROGRAM,$(PROGRAMS), $(call resolve-modules,$(PROGRAM)) ) )
@@ -224,7 +225,7 @@ $1_OBJ:=$$($1_OBJ:.c=$(OBJSUFFIX))
 $(EXEPREFIX)$1$(EXESUFFIX): $$($1_OBJ) | bindirs
 	$(CXX) $(LDFLAGS) -o $$@ $$^ $$(foreach module, $$($1_MODULES), $$(LDLIBS_$$(module))) $$($1_LIBS) $(LDLIBS)
 
-endef
+endef  # program-target
 
 
 $(eval $(foreach PROGRAM,$(PROGRAMS), $(call program-target,$(PROGRAM)) ) )
