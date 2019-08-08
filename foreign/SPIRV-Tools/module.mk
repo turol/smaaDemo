@@ -25,6 +25,7 @@ SPV_GENERATED:= \
 	build-version.inc \
 	core.insts-unified1.inc \
 	debuginfo.insts.inc \
+	DebugInfo.h \
 	enum_string_mapping.inc \
 	extension_enum.inc \
 	generators.inc \
@@ -50,6 +51,10 @@ core.insts-unified1.inc operand.kinds-unified1.inc: $(d)/../SPIRV-Headers/includ
 
 debuginfo.insts.inc: $(d)/source/extinst.debuginfo.grammar.json $(d)/utils/generate_grammar_tables.py
 	$(PYTHON) $(word 2, $^) --extinst-vendor-grammar=$< --vendor-insts-output=$@
+
+
+DebugInfo.h: $(d)/source/extinst.debuginfo.grammar.json $(d)/utils/generate_language_headers.py
+	$(PYTHON) $(word 2, $^) --extinst-name=DebugInfo --extinst-grammar=$< --extinst-output-base=DebugInfo
 
 
 enum_string_mapping.inc extension_enum.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/spirv.core.grammar.json $(d)/source/extinst.debuginfo.grammar.json $(d)/utils/generate_grammar_tables.py
