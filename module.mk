@@ -53,6 +53,7 @@ LDFLAGS+=$(foreach f, $(PRELOAD_FILES), --preload-file $(TOPDIR)/$(f)@$(f))
 
 CFLAGS+=$(OPTFLAGS)
 
+CFLAGS+=-I.
 CFLAGS+=-I$(TOPDIR)
 CFLAGS+=-isystem$(TOPDIR)/foreign/glew/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/glm
