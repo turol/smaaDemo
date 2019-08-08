@@ -161,7 +161,7 @@ endif
 
 
 clean:
-	rm -f $(TARGETS) $(foreach dir,$(ALLDIRS),$(dir)/*$(OBJSUFFIX))
+	rm -f $(TARGETS) $(SPV_GENERATED) $(foreach dir,$(ALLDIRS),$(dir)/*$(OBJSUFFIX))
 
 distclean: clean
 	rm -f $(foreach dir,$(ALLDIRS),$(dir)/*.d)

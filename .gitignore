@@ -10,5 +10,8 @@ local.mk
 *.exe
 *.dll
 
+binaries/*.inc
+
 mingw/*.h
+mingw/*.inc
 mingw/*.lib
