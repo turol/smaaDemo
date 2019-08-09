@@ -22,7 +22,6 @@ set(SPIRV_TOOLS_OPT_SOURCES
   cfg.h
   code_sink.h
   combine_access_chains.h
-  common_uniform_elim_pass.h
   compact_ids_pass.h
   composite.h
   const_folding_rules.h
@@ -34,6 +33,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   decompose_initialized_variables_pass.h
   decoration_manager.h
   def_use_manager.h
+  desc_sroa.h
   dominator_analysis.h
   dominator_tree.h
   eliminate_dead_constant_pass.h
@@ -49,6 +49,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   freeze_spec_constant_value_pass.h
   function.h
   generate_webgpu_initializers_pass.h
+  graphics_robust_access_pass.h
   if_conversion.h
   inline_exhaustive_pass.h
   inline_opaque_pass.h
@@ -123,7 +124,6 @@ set(SPIRV_TOOLS_OPT_SOURCES
   cfg.cpp
   code_sink.cpp
   combine_access_chains.cpp
-  common_uniform_elim_pass.cpp
   compact_ids_pass.cpp
   composite.cpp
   const_folding_rules.cpp
@@ -135,6 +135,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   decompose_initialized_variables_pass.cpp
   decoration_manager.cpp
   def_use_manager.cpp
+  desc_sroa.cpp
   dominator_analysis.cpp
   dominator_tree.cpp
   eliminate_dead_constant_pass.cpp
@@ -149,6 +150,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   fold_spec_constant_op_and_composite_pass.cpp
   freeze_spec_constant_value_pass.cpp
   function.cpp
+  graphics_robust_access_pass.cpp
   generate_webgpu_initializers_pass.cpp
   if_conversion.cpp
   inline_exhaustive_pass.cpp

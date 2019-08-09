@@ -492,20 +492,6 @@ Optimizer::PassToken CreateInsertExtractElimPass();
 // inserts created by that pass.
 Optimizer::PassToken CreateDeadInsertElimPass();
 
-// Creates a pass to consolidate uniform references.
-// For each entry point function in the module, first change all constant index
-// access chain loads into equivalent composite extracts. Then consolidate
-// identical uniform loads into one uniform load. Finally, consolidate
-// identical uniform extracts into one uniform extract. This may require
-// moving a load or extract to a point which dominates all uses.
-//
-// This pass requires a module to have structured control flow ie shader
-// capability. It also requires logical addressing ie Addresses capability
-// is not enabled. It also currently does not support any extensions.
-//
-// This pass currently only optimizes loads with a single index.
-Optimizer::PassToken CreateCommonUniformElimPass();
-
 // Create aggressive dead code elimination pass
 // This pass eliminates unused code from the module. In addition,
 // it detects and eliminates code which may have spurious uses but which do
@@ -738,9 +724,10 @@ Optimizer::PassToken CreateCombineAccessChainsPass();
 // |input_length_enable| controls instrumentation of runtime descriptor array
 // references, and |input_init_enable| controls instrumentation of descriptor
 // initialization checking, both of which require input buffer support.
+// |version| specifies the buffer record format.
 Optimizer::PassToken CreateInstBindlessCheckPass(
     uint32_t desc_set, uint32_t shader_id, bool input_length_enable = false,
-    bool input_init_enable = false);
+    bool input_init_enable = false, uint32_t version = 1);
 
 // Create a pass to upgrade to the VulkanKHR memory model.
 // This pass upgrades the Logical GLSL450 memory model to Logical VulkanKHR.
@@ -775,6 +762,38 @@ Optimizer::PassToken CreateDecomposeInitializedVariablesPass();
 // Create a pass to attempt to split up invalid unreachable merge-blocks and
 // continue-targets to legalize for WebGPU.
 Optimizer::PassToken CreateSplitInvalidUnreachablePass();
+
+// Creates a graphics robust access pass.
+//
+// This pass injects code to clamp indexed accesses to buffers and internal
+// arrays, providing guarantees satisfying Vulkan's robustBufferAccess rules.
+//
+// TODO(dneto): Clamps coordinates and sample index for pointer calculations
+// into storage images (OpImageTexelPointer).  For an cube array image, it
+// assumes the maximum layer count times 6 is at most 0xffffffff.
+//
+// NOTE: This pass will fail with a message if:
+// - The module is not a Shader module.
+// - The module declares VariablePointers, VariablePointersStorageBuffer, or
+//   RuntimeDescriptorArrayEXT capabilities.
+// - The module uses an addressing model other than Logical
+// - Access chain indices are wider than 64 bits.
+// - Access chain index for a struct is not an OpConstant integer or is out
+//   of range. (The module is already invalid if that is the case.)
+// - TODO(dneto): The OpImageTexelPointer coordinate component is not 32-bits
+// wide.
+Optimizer::PassToken CreateGraphicsRobustAccessPass();
+
+// Create descriptor scalar replacement pass.
+// This pass replaces every array variable |desc| that has a DescriptorSet and
+// Binding decorations with a new variable for each element of the array.
+// Suppose |desc| was bound at binding |b|.  Then the variable corresponding to
+// |desc[i]| will have binding |b+i|.  The descriptor set will be the same.  It
+// is assumed that no other variable already has a binding that will used by one
+// of the new variables.  If not, the pass will generate invalid Spir-V.  All
+// accesses to |desc| must be OpAccessChain instructions with a literal index
+// for the first index.
+Optimizer::PassToken CreateDescriptorScalarReplacementPass();
 
 }  // namespace spvtools
 

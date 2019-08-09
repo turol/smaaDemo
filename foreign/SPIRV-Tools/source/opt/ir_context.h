@@ -100,7 +100,9 @@ class IRContext {
         constant_mgr_(nullptr),
         type_mgr_(nullptr),
         id_to_name_(nullptr),
-        max_id_bound_(kDefaultMaxIdBound) {
+        max_id_bound_(kDefaultMaxIdBound),
+        preserve_bindings_(false),
+        preserve_spec_constants_(false) {
     SetContextMessageConsumer(syntax_context_, consumer_);
     module_->SetContext(this);
   }
@@ -115,7 +117,9 @@ class IRContext {
         valid_analyses_(kAnalysisNone),
         type_mgr_(nullptr),
         id_to_name_(nullptr),
-        max_id_bound_(kDefaultMaxIdBound) {
+        max_id_bound_(kDefaultMaxIdBound),
+        preserve_bindings_(false),
+        preserve_spec_constants_(false) {
     SetContextMessageConsumer(syntax_context_, consumer_);
     module_->SetContext(this);
     InitializeCombinators();
@@ -378,6 +382,15 @@ class IRContext {
   // |before| and |after| must be registered definitions in the DefUseManager.
   bool ReplaceAllUsesWith(uint32_t before, uint32_t after);
 
+  // Replace all uses of |before| id with |after| id if those uses
+  // (instruction, operand pair) return true for |predicate|. Returns true if
+  // any replacement happens. This method does not kill the definition of the
+  // |before| id. If |after| is the same as |before|, does nothing and return
+  // false.
+  bool ReplaceAllUsesWithPredicate(
+      uint32_t before, uint32_t after,
+      const std::function<bool(Instruction*, uint32_t)>& predicate);
+
   // Returns true if all of the analyses that are suppose to be valid are
   // actually valid.
   bool IsConsistent();
@@ -491,10 +504,20 @@ class IRContext {
   uint32_t max_id_bound() const { return max_id_bound_; }
   void set_max_id_bound(uint32_t new_bound) { max_id_bound_ = new_bound; }
 
-  // Return id of variable only decorated with |builtin|, if in module.
+  bool preserve_bindings() const { return preserve_bindings_; }
+  void set_preserve_bindings(bool should_preserve_bindings) {
+    preserve_bindings_ = should_preserve_bindings;
+  }
+
+  bool preserve_spec_constants() const { return preserve_spec_constants_; }
+  void set_preserve_spec_constants(bool should_preserve_spec_constants) {
+    preserve_spec_constants_ = should_preserve_spec_constants;
+  }
+
+  // Return id of input variable only decorated with |builtin|, if in module.
   // Create variable and return its id otherwise. If builtin not currently
   // supported, return 0.
-  uint32_t GetBuiltinVarId(uint32_t builtin);
+  uint32_t GetBuiltinInputVarId(uint32_t builtin);
 
   // Returns the function whose id is |id|, if one exists.  Returns |nullptr|
   // otherwise.
@@ -532,6 +555,10 @@ class IRContext {
   // |roots| will be empty.
   bool ProcessCallTreeFromRoots(ProcessFunction& pfn,
                                 std::queue<uint32_t>* roots);
+
+  // Emmits a error message to the message consumer indicating the error
+  // described by |message| occurred in |inst|.
+  void EmitErrorMessage(std::string message, Instruction* inst);
 
  private:
   // Builds the def-use manager from scratch, even if it was already valid.
@@ -657,9 +684,9 @@ class IRContext {
   // true if the cfg is invalidated.
   bool CheckCFG();
 
-  // Return id of variable only decorated with |builtin|, if in module.
+  // Return id of input variable only decorated with |builtin|, if in module.
   // Return 0 otherwise.
-  uint32_t FindBuiltinVar(uint32_t builtin);
+  uint32_t FindBuiltinInputVar(uint32_t builtin);
 
   // Add |var_id| to all entry points in module.
   void AddVarToEntryPoints(uint32_t var_id);
@@ -750,6 +777,13 @@ class IRContext {
 
   // The maximum legal value for the id bound.
   uint32_t max_id_bound_;
+
+  // Whether all bindings within |module_| should be preserved.
+  bool preserve_bindings_;
+
+  // Whether all specialization constants within |module_|
+  // should be preserved.
+  bool preserve_spec_constants_;
 };
 
 inline IRContext::Analysis operator|(IRContext::Analysis lhs,

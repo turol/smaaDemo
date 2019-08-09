@@ -69,6 +69,10 @@ if(NOT ${SKIP_SPIRV_TOOLS_INSTALL})
 endif()
 
 option(SPIRV_BUILD_COMPRESSION "Build SPIR-V compressing codec" OFF)
+if(SPIRV_BUILD_COMPRESSION)
+  message(FATAL_ERROR "SPIR-V compression codec has been removed from SPIR-V tools. "
+          "Please remove SPIRV_BUILD_COMPRESSION from your build options.")
+endif(SPIRV_BUILD_COMPRESSION)
 
 option(SPIRV_WERROR "Enable error on warning" ON)
 if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR (("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang") AND (NOT CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")))
@@ -231,6 +235,21 @@ endmacro(spvtools_pch)
 
 add_subdirectory(external)
 
+# Warning about extra semi-colons.
+#
+# This is not supported on all compilers/versions. so enabling only
+# for clang, since that works for all versions that our bots run.
+#
+# This is intentionally done after adding the external subdirectory,
+# so we don't enforce this flag on our dependencies, some of which do
+# not pass it.
+#
+# If the minimum version of CMake supported is updated to 3.0 or
+# later, then check_cxx_compiler_flag could be used instead.
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    add_compile_options("-Wextra-semi")
+endif()
+
 add_subdirectory(source)
 add_subdirectory(tools)
 
@@ -257,9 +276,6 @@ endif()
 
 set(SPIRV_LIBRARIES "-lSPIRV-Tools -lSPIRV-Tools-link -lSPIRV-Tools-opt")
 set(SPIRV_SHARED_LIBRARIES "-lSPIRV-Tools-shared")
-if(SPIRV_BUILD_COMPRESSION)
-  set(SPIRV_LIBRARIES "${SPIRV_LIBRARIES} -lSPIRV-Tools-comp")
-endif(SPIRV_BUILD_COMPRESSION)
 
 # Build pkg-config file
 # Use a first-class target so it's regenerated when relevant files are updated.

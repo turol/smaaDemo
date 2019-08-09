@@ -548,6 +548,7 @@ class ValidationState_t {
 
   // Returns true iff |id| is a type corresponding to the name of the function.
   // Only works for types not for objects.
+  bool IsVoidType(uint32_t id) const;
   bool IsFloatScalarType(uint32_t id) const;
   bool IsFloatVectorType(uint32_t id) const;
   bool IsFloatScalarOrVectorType(uint32_t id) const;
@@ -567,6 +568,14 @@ class ValidationState_t {
   bool IsFloatCooperativeMatrixType(uint32_t id) const;
   bool IsIntCooperativeMatrixType(uint32_t id) const;
   bool IsUnsignedIntCooperativeMatrixType(uint32_t id) const;
+
+  // Returns true if |id| is a type id that contains |type| (or integer or
+  // floating point type) of |width| bits.
+  bool ContainsSizedIntOrFloatType(uint32_t id, SpvOp type,
+                                   uint32_t width) const;
+  // Returns true if |id| is a type id that contains a 8- or 16-bit int or
+  // 16-bit float that is not generally enabled for use.
+  bool ContainsLimitedUseIntOrFloatType(uint32_t id) const;
 
   // Gets value from OpConstant and OpSpecConstant as uint64.
   // Returns false on failure (no instruction, wrong instruction, not int).
@@ -678,6 +687,15 @@ class ValidationState_t {
   // If |check_decorations| is false, then the decorations are not checked.
   bool LogicallyMatch(const Instruction* lhs, const Instruction* rhs,
                       bool check_decorations);
+
+  // Traces |inst| to find a single base pointer. Returns the base pointer.
+  // Will trace through the following instructions:
+  // * OpAccessChain
+  // * OpInBoundsAccessChain
+  // * OpPtrAccessChain
+  // * OpInBoundsPtrAccessChain
+  // * OpCopyObject
+  const Instruction* TracePointer(const Instruction* inst) const;
 
  private:
   ValidationState_t(const ValidationState_t&);

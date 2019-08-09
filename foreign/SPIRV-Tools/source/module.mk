@@ -22,16 +22,18 @@ FILES:= \
 	enum_string_mapping.cpp \
 	extensions.cpp \
 	ext_inst.cpp \
-	id_descriptor.cpp \
 	libspirv.cpp \
 	name_mapper.cpp \
 	opcode.cpp \
 	operand.cpp \
 	parsed_operand.cpp \
+	pch_source.cpp \
 	print.cpp \
 	software_version.cpp \
 	spirv_endian.cpp \
+	spirv_fuzzer_options.cpp \
 	spirv_optimizer_options.cpp \
+	spirv_reducer_options.cpp \
 	spirv_target_env.cpp \
 	spirv_validator_options.cpp \
 	table.cpp \

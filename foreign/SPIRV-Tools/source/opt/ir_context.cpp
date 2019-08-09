@@ -190,6 +190,13 @@ bool IRContext::KillDef(uint32_t id) {
 }
 
 bool IRContext::ReplaceAllUsesWith(uint32_t before, uint32_t after) {
+  return ReplaceAllUsesWithPredicate(
+      before, after, [](Instruction*, uint32_t) { return true; });
+}
+
+bool IRContext::ReplaceAllUsesWithPredicate(
+    uint32_t before, uint32_t after,
+    const std::function<bool(Instruction*, uint32_t)>& predicate) {
   if (before == after) return false;
 
   // Ensure that |after| has been registered as def.
@@ -198,8 +205,10 @@ bool IRContext::ReplaceAllUsesWith(uint32_t before, uint32_t after) {
 
   std::vector<std::pair<Instruction*, uint32_t>> uses_to_update;
   get_def_use_mgr()->ForEachUse(
-      before, [&uses_to_update](Instruction* user, uint32_t index) {
-        uses_to_update.emplace_back(user, index);
+      before, [&predicate, &uses_to_update](Instruction* user, uint32_t index) {
+        if (predicate(user, index)) {
+          uses_to_update.emplace_back(user, index);
+        }
       });
 
   Instruction* prev = nullptr;
@@ -621,7 +630,7 @@ LoopDescriptor* IRContext::GetLoopDescriptor(const Function* f) {
   return &it->second;
 }
 
-uint32_t IRContext::FindBuiltinVar(uint32_t builtin) {
+uint32_t IRContext::FindBuiltinInputVar(uint32_t builtin) {
   for (auto& a : module_->annotations()) {
     if (a.opcode() != SpvOpDecorate) continue;
     if (a.GetSingleWordInOperand(kSpvDecorateDecorationInIdx) !=
@@ -631,6 +640,7 @@ uint32_t IRContext::FindBuiltinVar(uint32_t builtin) {
     uint32_t target_id = a.GetSingleWordInOperand(kSpvDecorateTargetIdInIdx);
     Instruction* b_var = get_def_use_mgr()->GetDef(target_id);
     if (b_var->opcode() != SpvOpVariable) continue;
+    if (b_var->GetSingleWordInOperand(0) != SpvStorageClassInput) continue;
     return target_id;
   }
   return 0;
@@ -653,14 +663,14 @@ void IRContext::AddVarToEntryPoints(uint32_t var_id) {
   }
 }
 
-uint32_t IRContext::GetBuiltinVarId(uint32_t builtin) {
+uint32_t IRContext::GetBuiltinInputVarId(uint32_t builtin) {
   if (!AreAnalysesValid(kAnalysisBuiltinVarId)) ResetBuiltinAnalysis();
   // If cached, return it.
   std::unordered_map<uint32_t, uint32_t>::iterator it =
       builtin_var_id_map_.find(builtin);
   if (it != builtin_var_id_map_.end()) return it->second;
   // Look for one in shader
-  uint32_t var_id = FindBuiltinVar(builtin);
+  uint32_t var_id = FindBuiltinInputVar(builtin);
   if (var_id == 0) {
     // If not found, create it
     // TODO(greg-lunarg): Add support for all builtins
@@ -677,10 +687,17 @@ uint32_t IRContext::GetBuiltinVarId(uint32_t builtin) {
       case SpvBuiltInVertexIndex:
       case SpvBuiltInInstanceIndex:
       case SpvBuiltInPrimitiveId:
-      case SpvBuiltInInvocationId:
-      case SpvBuiltInGlobalInvocationId: {
+      case SpvBuiltInInvocationId: {
         analysis::Integer uint_ty(32, false);
         reg_type = type_mgr->GetRegisteredType(&uint_ty);
+        break;
+      }
+      case SpvBuiltInGlobalInvocationId:
+      case SpvBuiltInLaunchIdNV: {
+        analysis::Integer uint_ty(32, false);
+        analysis::Type* reg_uint_ty = type_mgr->GetRegisteredType(&uint_ty);
+        analysis::Vector v3uint_ty(reg_uint_ty, 3);
+        reg_type = type_mgr->GetRegisteredType(&v3uint_ty);
         break;
       }
       default: {
@@ -769,6 +786,42 @@ bool IRContext::ProcessCallTreeFromRoots(ProcessFunction& pfn,
     }
   }
   return modified;
+}
+
+void IRContext::EmitErrorMessage(std::string message, Instruction* inst) {
+  if (!consumer()) {
+    return;
+  }
+
+  Instruction* line_inst = inst;
+  while (line_inst != nullptr) {  // Stop at the beginning of the basic block.
+    if (!line_inst->dbg_line_insts().empty()) {
+      line_inst = &line_inst->dbg_line_insts().back();
+      if (line_inst->opcode() == SpvOpNoLine) {
+        line_inst = nullptr;
+      }
+      break;
+    }
+    line_inst = line_inst->PreviousNode();
+  }
+
+  uint32_t line_number = 0;
+  uint32_t col_number = 0;
+  char* source = nullptr;
+  if (line_inst != nullptr) {
+    Instruction* file_name =
+        get_def_use_mgr()->GetDef(line_inst->GetSingleWordInOperand(0));
+    source = reinterpret_cast<char*>(&file_name->GetInOperand(0).words[0]);
+
+    // Get the line number and column number.
+    line_number = line_inst->GetSingleWordInOperand(1);
+    col_number = line_inst->GetSingleWordInOperand(2);
+  }
+
+  message +=
+      "\n  " + inst->PrettyPrint(SPV_BINARY_TO_TEXT_OPTION_FRIENDLY_NAMES);
+  consumer()(SPV_MSG_ERROR, source, {line_number, col_number, 0},
+             message.c_str());
 }
 
 // Gets the dominator analysis for function |f|.

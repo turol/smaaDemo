@@ -22,7 +22,6 @@ FILES:= \
 	cfg.cpp \
 	code_sink.cpp \
 	combine_access_chains.cpp \
-	common_uniform_elim_pass.cpp \
 	compact_ids_pass.cpp \
 	composite.cpp \
 	constants.cpp \
@@ -34,6 +33,7 @@ FILES:= \
 	decompose_initialized_variables_pass.cpp \
 	decoration_manager.cpp \
 	def_use_manager.cpp \
+	desc_sroa.cpp \
 	dominator_analysis.cpp \
 	dominator_tree.cpp \
 	eliminate_dead_constant_pass.cpp \
@@ -49,6 +49,7 @@ FILES:= \
 	freeze_spec_constant_value_pass.cpp \
 	function.cpp \
 	generate_webgpu_initializers_pass.cpp \
+	graphics_robust_access_pass.cpp \
 	if_conversion.cpp \
 	inline_exhaustive_pass.cpp \
 	inline_opaque_pass.cpp \
