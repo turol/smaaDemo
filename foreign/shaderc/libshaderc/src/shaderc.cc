@@ -113,7 +113,7 @@ class StageDeducer {
  public:
   explicit StageDeducer(
       shaderc_shader_kind kind = shaderc_glsl_infer_from_source)
-      : kind_(kind), error_(false){};
+      : kind_(kind), error_(false){}
   // The method that underlying glslang will call to determine the shader stage
   // to be used in current compilation. It is called only when there is neither
   // forced shader kind (or say stage, in the view of glslang), nor #pragma
@@ -133,7 +133,7 @@ class StageDeducer {
       error_ = false;
     }
     return stage;
-  };
+  }
 
   // Returns true if there is error during shader stage deduction.
   bool error() const { return error_; }
@@ -210,9 +210,9 @@ class InternalFileIncluder : public shaderc_util::CountingIncluder {
                        void* user_data)
       : resolver_(resolver),
         result_releaser_(result_releaser),
-        user_data_(user_data){};
+        user_data_(user_data){}
   InternalFileIncluder()
-      : resolver_(nullptr), result_releaser_(nullptr), user_data_(nullptr){};
+      : resolver_(nullptr), result_releaser_(nullptr), user_data_(nullptr){}
 
  private:
   // Check the validity of the callbacks.
@@ -477,6 +477,13 @@ void shaderc_compile_options_set_target_env(shaderc_compile_options_t options,
                                  GetCompilerTargetEnvVersion(version));
 }
 
+void shaderc_compile_options_set_target_spirv(shaderc_compile_options_t options,
+                                              shaderc_spirv_version ver) {
+  // We made the values match, so we can get away with a static cast.
+  options->compiler.SetTargetSpirv(
+      static_cast<shaderc_util::Compiler::SpirvVersion>(ver));
+}
+
 void shaderc_compile_options_set_warnings_as_errors(
     shaderc_compile_options_t options) {
   options->compiler.SetWarningsAsErrors();
@@ -536,6 +543,16 @@ void shaderc_compile_options_set_hlsl_register_set_and_binding(
 void shaderc_compile_options_set_hlsl_functionality1(
     shaderc_compile_options_t options, bool enable) {
   options->compiler.EnableHlslFunctionality1(enable);
+}
+
+void shaderc_compile_options_set_invert_y(
+    shaderc_compile_options_t options, bool enable) {
+  options->compiler.EnableInvertY(enable);
+}
+
+void shaderc_compile_options_set_nan_clamp(shaderc_compile_options_t options,
+                                           bool enable) {
+  options->compiler.SetNanClamp(enable);
 }
 
 shaderc_compiler_t shaderc_compiler_initialize() {

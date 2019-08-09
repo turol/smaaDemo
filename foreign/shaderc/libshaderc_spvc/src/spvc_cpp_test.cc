@@ -23,12 +23,35 @@ using shaderc_spvc::Compiler;
 
 namespace {
 
-TEST(Compile, Test1) {
+TEST(Compile, Glsl) {
   Compiler compiler;
   CompileOptions options;
 
   CompilationResult result = compiler.CompileSpvToGlsl(
-      kShader1, sizeof(kShader1) / sizeof(uint32_t), options);
+      kSmokeShaderBinary, sizeof(kSmokeShaderBinary) / sizeof(uint32_t),
+      options);
+  EXPECT_EQ(shaderc_compilation_status_success, result.GetCompilationStatus());
+  EXPECT_NE(0, result.GetOutput().size());
+}
+
+TEST(Compile, Hlsl) {
+  Compiler compiler;
+  CompileOptions options;
+
+  CompilationResult result = compiler.CompileSpvToHlsl(
+      kSmokeShaderBinary, sizeof(kSmokeShaderBinary) / sizeof(uint32_t),
+      options);
+  EXPECT_EQ(shaderc_compilation_status_success, result.GetCompilationStatus());
+  EXPECT_NE(0, result.GetOutput().size());
+}
+
+TEST(Compile, Msl) {
+  Compiler compiler;
+  CompileOptions options;
+
+  CompilationResult result = compiler.CompileSpvToMsl(
+      kSmokeShaderBinary, sizeof(kSmokeShaderBinary) / sizeof(uint32_t),
+      options);
   EXPECT_EQ(shaderc_compilation_status_success, result.GetCompilationStatus());
   EXPECT_NE(0, result.GetOutput().size());
 }

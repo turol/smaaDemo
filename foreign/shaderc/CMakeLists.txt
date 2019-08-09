@@ -9,14 +9,11 @@ endif()
 
 message(STATUS "Shaderc: build type is \"${CMAKE_BUILD_TYPE}\".")
 
+option(SHADERC_ENABLE_SPVC "Enable libshaderc_spvc" OFF)
+
 option(SHADERC_SKIP_INSTALL "Skip installation" ${SHADERC_SKIP_INSTALL})
 if(NOT ${SHADERC_SKIP_INSTALL})
   set(SHADERC_ENABLE_INSTALL ON)
-endif()
-
-option(SHADERC_SKIP_SPVC "Skip libshaderc_spvc" ${SHADERC_SKIP_SPVC})
-if(NOT ${SHADERC_SKIP_SPVC})
-  set(SHADERC_ENABLE_SPVC OFF)
 endif()
 
 option(SHADERC_SKIP_TESTS "Skip building tests" ${SHADERC_SKIP_TESTS})
@@ -36,20 +33,38 @@ option(SHADERC_ENABLE_NV_EXTENSIONS "Enables support of Nvidia-specific extensio
 include(GNUInstallDirs)
 include(cmake/setup_build.cmake)
 include(cmake/utils.cmake)
+include(CheckCXXCompilerFlag)
 
+# These flags are not supported on Windows and some older version of GCC
+# that our bots use.
+# Warning about implicit fallthrough in switch blocks
+unset(COMPILER_SUPPORTS_FALLTHROUGH_WARNING CACHE)
+check_cxx_compiler_flag(-Wimplicit-fallthrough COMPILER_SUPPORTS_FALLTHROUGH_WARNING)
+if (COMPILER_SUPPORTS_FALLTHROUGH_WARNING)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wimplicit-fallthrough")
+endif()
+
+# Warning about extra semi-colons
+unset(COMPILER_SUPPORTS_EXTRA_SEMI_WARNING CACHE)
+check_cxx_compiler_flag(-Wextra-semi COMPILER_SUPPORTS_EXTRA_SEMI_WARNING)
+if (COMPILER_SUPPORTS_EXTRA_SEMI_WARNING)
+    add_compile_options("-Wextra-semi")
+endif()
 
 if(SHADERC_ENABLE_NV_EXTENSIONS)
     add_definitions(-DNV_EXTENSIONS)
 endif(SHADERC_ENABLE_NV_EXTENSIONS)
 
+find_host_package(PythonInterp 3 REQUIRED)
+
 add_custom_target(check-copyright ALL
-  ${PYTHON_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/utils/add_copyright.py
+  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/utils/add_copyright.py
   --check
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   COMMENT "Check copyright")
 
 add_custom_target(add-copyright
-  ${PYTHON_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/utils/add_copyright.py
+  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/utils/add_copyright.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   COMMENT "Add copyright")
 
@@ -69,12 +84,14 @@ if(MSVC)
   endif(NOT SHADERC_ENABLE_SHARED_CRT)
 endif(MSVC)
 
+
 # Configure subdirectories.
 # We depend on these for later projects, so they should come first.
 add_subdirectory(third_party)
 
 if(SHADERC_ENABLE_SPVC)
 add_subdirectory(libshaderc_spvc)
+add_subdirectory(spvc)
 endif()
 add_subdirectory(libshaderc_util)
 add_subdirectory(libshaderc)
@@ -82,7 +99,36 @@ add_subdirectory(glslc)
 add_subdirectory(examples)
 
 add_custom_target(build-version
-  ${PYTHON_EXE}
+  ${PYTHON_EXECUTABLE}
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/update_build_version.py
   ${shaderc_SOURCE_DIR} ${spirv-tools_SOURCE_DIR} ${glslang_SOURCE_DIR}
   COMMENT "Update build-version.inc in the Shaderc build directory (if necessary).")
+
+function(define_pkg_config_file NAME LIBS)
+  add_custom_target(${NAME}-pkg-config ALL
+    COMMAND ${CMAKE_COMMAND}
+      -DCHANGES_FILE=${CMAKE_CURRENT_SOURCE_DIR}/CHANGES
+      -DTEMPLATE_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/${NAME}.pc.in
+      -DOUT_FILE=${CMAKE_CURRENT_BINARY_DIR}/${NAME}.pc
+      -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+      -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
+      -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
+      -DLIBS=${LIBS}
+      -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/write_pkg_config.cmake
+  DEPENDS "CHANGES" "cmake/${NAME}.pc.in" "cmake/write_pkg_config.cmake")
+
+  if (SHADERC_ENABLE_INSTALL)
+    install(
+      FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/${NAME}.pc
+      DESTINATION
+        ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+  endif()
+endfunction()
+
+if(SHADERC_ENABLE_SPVC)
+  set(EXTRA_STATIC_PKGCONFIG_LIBS -lshaderc_spvc)
+endif()
+define_pkg_config_file(shaderc -lshaderc_shared)
+define_pkg_config_file(shaderc_static "-lshaderc ${EXTRA_STATIC_PKGCONFIG_LIBS} -lshaderc_util")
+define_pkg_config_file(shaderc_combined -lshaderc_combined)

@@ -26,6 +26,9 @@ set_target_properties(shaderc_shared PROPERTIES SOVERSION 1)
 if(SHADERC_ENABLE_INSTALL)
   install(
     FILES
+      include/shaderc/env.h
+      include/shaderc/status.h
+      include/shaderc/visibility.h
       include/shaderc/shaderc.h
       include/shaderc/shaderc.hpp
     DESTINATION
@@ -81,7 +84,7 @@ if(SHADERC_ENABLE_INSTALL)
     # around this problem by manually substitution.
     string(REPLACE "$(Configuration)" "\${CMAKE_INSTALL_CONFIG_NAME}"
       install_location "${generated_location}")
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${install_location} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(FILES ${install_location} DESTINATION ${CMAKE_INSTALL_LIBDIR})
   else()
     install(FILES ${generated_location} DESTINATION ${CMAKE_INSTALL_LIBDIR})
   endif()

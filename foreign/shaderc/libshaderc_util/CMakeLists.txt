@@ -12,6 +12,7 @@ add_library(shaderc_util STATIC
   include/libshaderc_util/string_piece.h
   include/libshaderc_util/universal_unistd.h
   include/libshaderc_util/version_profile.h
+  src/args.cc
   src/compiler.cc
   src/file_finder.cc
   src/io.cc
@@ -25,12 +26,6 @@ add_library(shaderc_util STATIC
 shaderc_default_compile_options(shaderc_util)
 target_include_directories(shaderc_util
   PUBLIC include PRIVATE ${glslang_SOURCE_DIR})
-
-if(SHADERC_ENABLE_INSTALL)
-  install(TARGETS shaderc_util
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif(SHADERC_ENABLE_INSTALL)
 
 find_package(Threads)
 target_link_libraries(shaderc_util PRIVATE

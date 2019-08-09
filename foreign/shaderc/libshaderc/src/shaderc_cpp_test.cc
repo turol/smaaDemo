@@ -706,7 +706,7 @@ TEST_P(ValidShaderKind, ValidSpvCode) {
       CompilesToValidSpv(compiler, test_case.shader_, test_case.shader_kind_));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CompileStringTest, ValidShaderKind,
     testing::ValuesIn(std::vector<ShaderKindTestCase>{
         // Valid default shader kinds.
@@ -743,7 +743,7 @@ TEST_P(InvalidShaderKind, CompilationShouldFail) {
       CompilesToValidSpv(compiler, test_case.shader_, test_case.shader_kind_));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CompileStringTest, InvalidShaderKind,
     testing::ValuesIn(std::vector<ShaderKindTestCase>{
         // Invalid default shader kind.
@@ -844,7 +844,7 @@ TEST_P(IncluderTests, SetIncluderClonedOptions) {
               HasSubstr(test_case.expected_substring()));
 }
 
-INSTANTIATE_TEST_CASE_P(CppInterface, IncluderTests,
+INSTANTIATE_TEST_SUITE_P(CppInterface, IncluderTests,
                         testing::ValuesIn(std::vector<IncluderTestCase>{
                             IncluderTestCase(
                                 // Fake file system.
@@ -1409,7 +1409,7 @@ TEST_F(CppInterface, HlslFunctionality1OffByDefault) {
   options.SetAutoBindUniforms(true);
   const std::string disassembly_text = AssemblyOutput(
       kHlslShaderWithCounterBuffer, shaderc_glsl_fragment_shader, options);
-  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorateStringGOOGLE")));
+  EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorateString")));
 }
 
 TEST_F(CppInterface, HlslFunctionality1Respected) {
@@ -1421,7 +1421,7 @@ TEST_F(CppInterface, HlslFunctionality1Respected) {
   options.SetHlslFunctionality1(true);
   const std::string disassembly_text = AssemblyOutput(
       kHlslShaderWithCounterBuffer, shaderc_glsl_fragment_shader, options);
-  EXPECT_THAT(disassembly_text, HasSubstr("OpDecorateStringGOOGLE"));
+  EXPECT_THAT(disassembly_text, HasSubstr("OpDecorateString"));
 }
 
 TEST_F(CppInterface, HlslFunctionality1SurvivesCloning) {
@@ -1434,7 +1434,31 @@ TEST_F(CppInterface, HlslFunctionality1SurvivesCloning) {
   CompileOptions cloned_options(options);
   const std::string disassembly_text = AssemblyOutput(
       kHlslShaderWithCounterBuffer, shaderc_glsl_fragment_shader, cloned_options);
-  EXPECT_THAT(disassembly_text, HasSubstr("OpDecorateStringGOOGLE"));
+  EXPECT_THAT(disassembly_text, HasSubstr("OpDecorateString"));
+}
+
+TEST_F(CppInterface, NanClampDefaultsOff) {
+  CompileOptions options;
+  const std::string disassembly_text = AssemblyOutput(
+      kGlslShaderWithClamp, shaderc_glsl_fragment_shader, options);
+  EXPECT_THAT(disassembly_text, HasSubstr("OpExtInst %v4float %1 FClamp"));
+}
+
+TEST_F(CppInterface, NanClampMapsClampToNClamp) {
+  CompileOptions options;
+  options.SetNanClamp(true);
+  const std::string disassembly_text = AssemblyOutput(
+      kGlslShaderWithClamp, shaderc_glsl_fragment_shader, options);
+  EXPECT_THAT(disassembly_text, HasSubstr("OpExtInst %v4float %1 NClamp"));
+}
+
+TEST_F(CppInterface, NanClampSurvivesCloning) {
+  CompileOptions options;
+  options.SetNanClamp(true);
+  CompileOptions cloned_options(options);
+  const std::string disassembly_text = AssemblyOutput(
+      kGlslShaderWithClamp, shaderc_glsl_fragment_shader, cloned_options);
+  EXPECT_THAT(disassembly_text, HasSubstr("OpExtInst %v4float %1 NClamp"));
 }
 
 }  // anonymous namespace

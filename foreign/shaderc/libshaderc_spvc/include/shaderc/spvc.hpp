@@ -95,15 +95,151 @@ class CompileOptions {
     other.options_ = nullptr;
   }
 
-  // Which environment should be used to validate the input SPIR-V.  Default is
-  // Vulkan 1.0.
-  void SetTargetEnvironment(shaderc_target_env target, shaderc_env_version version) {
-    shaderc_spvc_compile_options_set_target_env(options_, target, version);
+  // Set the environment for the input SPIR-V.  Default is Vulkan 1.0.
+  void SetSourceEnvironment(shaderc_target_env env,
+                            shaderc_env_version version) {
+    shaderc_spvc_compile_options_set_source_env(options_, env, version);
   }
 
-  // Which GLSL version should be produced.  Default is 450.
-  void SetOutputLanguageVersion(uint32_t version) {
-    shaderc_spvc_compile_options_set_output_language_version(options_, version);
+  // Set the target environment for the SPIR-V to be cross-compiled. If this is
+  // different then the source a transformation will need to be applied.
+  // Currently only Vulkan 1.1 <-> WebGPU transforms are defined. Default is
+  // Vulkan 1.0.
+  void SetTargetEnvironment(shaderc_target_env env,
+                            shaderc_env_version version) {
+    shaderc_spvc_compile_options_set_target_env(options_, env, version);
+  }
+
+  // Set the entry point.
+  void SetEntryPoint(const std::string& entry_point) {
+    shaderc_spvc_compile_options_set_entry_point(options_, entry_point.c_str());
+  }
+
+  // If true, unused variables will not appear in the output.
+  void SetRemoveUnusedVariables(bool b) {
+    shaderc_spvc_compile_options_set_remove_unused_variables(options_, b);
+  }
+
+  // If true, Vulkan GLSL features are used instead of GL-compatible features.
+  void SetVulkanSemantics(bool b) {
+    shaderc_spvc_compile_options_set_vulkan_semantics(options_, b);
+  }
+
+  // If true, gl_PerVertex is explicitly redeclared in vertex, geometry and
+  // tessellation shaders. The members of gl_PerVertex is determined by which
+  // built-ins are declared by the shader.
+  void SetSeparateShaderObjects(bool b) {
+    shaderc_spvc_compile_options_set_separate_shader_objects(options_, b);
+  }
+
+  // Flatten uniform or push constant variable into (i|u)vec4 array.
+  void SetFlattenUbo(bool b) {
+    shaderc_spvc_compile_options_set_flatten_ubo(options_, b);
+  }
+
+  // Which GLSL version should be produced.  Default is 450 (i.e. 4.5).
+  void SetGLSLLanguageVersion(uint32_t version) {
+    shaderc_spvc_compile_options_set_glsl_language_version(options_, version);
+  }
+
+  // If true, flatten multidimensional arrays, e.g. foo[a][b][c] -> foo[a*b*c].
+  // Default is false.
+  void SetFlattenMultidimensionalArrays(bool b) {
+    shaderc_spvc_compile_options_set_flatten_multidimensional_arrays(options_,
+                                                                     b);
+  }
+
+  // Force interpretion as ES, or not.  Default is to detect from source.
+  void SetES(bool b) { shaderc_spvc_compile_options_set_es(options_, b); }
+
+  // If true, emit push constants as uniform buffer objects.  Default is false.
+  void SetGLSLEmitPushConstantAsUBO(bool b) {
+    shaderc_spvc_compile_options_set_glsl_emit_push_constant_as_ubo(options_,
+                                                                    b);
+  }
+
+  // Which MSL version should be produced.  Default is 10200 (i.e. 1.2).
+  void SetMSLLanguageVersion(uint32_t version) {
+    shaderc_spvc_compile_options_set_msl_language_version(options_, version);
+  }
+
+  // If true, swizzle MSL texture samples.  Default is false.
+  void SetMSLSwizzleTextureSamples(bool b) {
+    shaderc_spvc_compile_options_set_msl_swizzle_texture_samples(options_, b);
+  }
+
+  // Choose MSL platform.  Default is MacOS.
+  void SetMSLPlatform(shaderc_spvc_msl_platform platform) {
+    shaderc_spvc_compile_options_set_msl_platform(options_, platform);
+  }
+
+  // If true, pad MSL fragment output.  Default is false.
+  void SetMSLPadFragmentOutput(bool b) {
+    shaderc_spvc_compile_options_set_msl_pad_fragment_output(options_, b);
+  }
+
+  // If true, capture MSL output to buffer.  Default is false.
+  void SetMSLCapture(bool b) {
+    shaderc_spvc_compile_options_set_msl_capture(options_, b);
+  }
+
+  // If true, flip the Y-coord of the built-in "TessCoord."  Default is top
+  // left.
+  void SetMSLDomainLowerLeft(bool b) {
+    shaderc_spvc_compile_options_set_msl_domain_lower_left(options_, b);
+  }
+
+  // Enable use of MSL 2.0 indirect argument buffers.  Default is not to use
+  // them.
+  void SetMSLArgumentBuffers(bool b) {
+    shaderc_spvc_compile_options_set_msl_argument_buffers(options_, b);
+  }
+
+  // When using MSL argument buffers, force "classic" MSL 1.0 binding for the
+  // given descriptor sets. This corresponds to VK_KHR_push_descriptor in
+  // Vulkan.
+  void SetMSLDiscreteDescriptorSets(const std::vector<uint32_t> descriptors) {
+    shaderc_spvc_compile_options_set_msl_discrete_descriptor_sets(
+        options_, descriptors.data(), descriptors.size());
+  }
+
+  // Which HLSL shader model should be used.  Default is 30.
+  void SetHLSLShaderModel(uint32_t model) {
+    shaderc_spvc_compile_options_set_hlsl_shader_model(options_, model);
+  }
+
+  // If true, ignore PointSize.  Default is false.
+  void SetHLSLPointSizeCompat(bool b) {
+    shaderc_spvc_compile_options_set_hlsl_point_size_compat(options_, b);
+  }
+
+  // If true, ignore PointCoord.  Default is false.
+  void SetHLSLPointCoordCompat(bool b) {
+    shaderc_spvc_compile_options_set_hlsl_point_coord_compat(options_, b);
+  }
+
+  // If true (default is false):
+  //   GLSL: map depth from Vulkan/D3D style to GL style, i.e. [ 0,w] -> [-w,w]
+  //   MSL : map depth from GL style to Vulkan/D3D style, i.e. [-w,w] -> [ 0,w]
+  //   HLSL: map depth from GL style to Vulkan/D3D style, i.e. [-w,w] -> [ 0,w]
+  void SetFixupClipspace(bool b) {
+    shaderc_spvc_compile_options_set_fixup_clipspace(options_, b);
+  }
+
+  // If true invert gl_Position.y or equivalent.  Default is false.
+  void SetFlipVertY(bool b) {
+    shaderc_spvc_compile_options_set_flip_vert_y(options_, b);
+  }
+
+  // If true validate input and intermediate source. Default is true.
+  void SetValidate(bool b) {
+    shaderc_spvc_compile_options_set_validate(options_, b);
+  }
+
+  // Fill options with given data.  Return amount of data used, or zero
+  // if not enough data was given.
+  size_t SetForFuzzing(const uint8_t* data, size_t size) {
+    return shaderc_spvc_compile_options_set_for_fuzzing(options_, data, size);
   }
 
  private:
@@ -132,6 +268,24 @@ class Compiler {
     shaderc_spvc_compilation_result_t compilation_result =
         shaderc_spvc_compile_into_glsl(compiler_, source, source_len,
                                        options.options_);
+    return CompilationResult(compilation_result);
+  }
+
+  // Compiles the given source SPIR-V to HLSL.
+  CompilationResult CompileSpvToHlsl(const uint32_t* source, size_t source_len,
+                                     const CompileOptions& options) const {
+    shaderc_spvc_compilation_result_t compilation_result =
+        shaderc_spvc_compile_into_hlsl(compiler_, source, source_len,
+                                       options.options_);
+    return CompilationResult(compilation_result);
+  }
+
+  // Compiles the given source SPIR-V to MSL.
+  CompilationResult CompileSpvToMsl(const uint32_t* source, size_t source_len,
+                                    const CompileOptions& options) const {
+    shaderc_spvc_compilation_result_t compilation_result =
+        shaderc_spvc_compile_into_msl(compiler_, source, source_len,
+                                      options.options_);
     return CompilationResult(compilation_result);
   }
 
