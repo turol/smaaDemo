@@ -1782,7 +1782,7 @@ void SMAADemo::rebuildRenderGraph() {
 	}
 
 	if (antialiasing) {
-		if (temporalAA) {
+		if (temporalAA && !isImageScene()) {
 			{
 				RenderTargetDesc rtDesc;
 				rtDesc.name("Temporal resolve 1")
@@ -2723,7 +2723,7 @@ void SMAADemo::mainLoopIteration() {
 		cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
 	}
 
-	if (antialiasing && temporalAA) {
+	if (antialiasing && temporalAA && !isImageScene()) {
 		temporalFrame = (temporalFrame + 1) % 2;
 
 		switch (aaMethod) {
@@ -2801,7 +2801,7 @@ void SMAADemo::render() {
 		return;
 	}
 
-	if (antialiasing && temporalAA) {
+	if (antialiasing && temporalAA && !isImageScene()) {
 		assert(temporalRTs[0]);
 		assert(temporalRTs[1]);
 		renderGraph.bindExternalRT(Rendertargets::TemporalPrevious, temporalRTs[1 - temporalFrame]);
@@ -3397,7 +3397,7 @@ void SMAADemo::renderCubeScene(RenderPasses rp, RenderGraph::PassResources & /* 
 	glm::mat4 viewProj = proj * view * model;
 
 	// temporal jitter
-	if (antialiasing && temporalAA) {
+	if (antialiasing && temporalAA && !isImageScene()) {
 		glm::vec2 jitter;
 		if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
 			const glm::vec2 jitters[2] = {
