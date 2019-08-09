@@ -1,8 +1,5 @@
-commit 6a9df5f48f0495b0aa05bad2f32f00f4d6fa5e59
-Merge: 0bb89f58 0ceaebcf
-Author: John Kessenich <johnkslang@users.noreply.github.com>
-Date:   Mon Jan 21 18:22:49 2019 -0800
+commit 3cea2e5882e3455731a8b6657fb06db913eb3aa1
+Author: John Kessenich <cepheus@frii.com>
+Date:   Fri Aug 2 06:34:15 2019 -0600
 
-    Merge pull request #1664 from null77/support-angle
-    
-    Fix a few GN build issues.
+    Bump revision and give the bots another chance to work.

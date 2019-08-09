@@ -654,10 +654,6 @@ TIntermTyped* HlslParseContext::handleVariable(const TSourceLoc& loc, const TStr
         return nullptr;
     }
 
-    // Error check for requiring specific extensions present.
-    if (symbol && symbol->getNumExtensions())
-        requireExtensions(loc, symbol->getNumExtensions(), symbol->getExtensions(), symbol->getName().c_str());
-
     const TVariable* variable = nullptr;
     const TAnonMember* anon = symbol ? symbol->getAsAnonMember() : nullptr;
     TIntermTyped* node = nullptr;
@@ -820,7 +816,8 @@ TIntermTyped* HlslParseContext::handleBracketDereference(const TSourceLoc& loc, 
                   base->getAsSymbolNode()->getName().c_str(), "");
         else
             error(loc, " left of '[' is not of type array, matrix, or vector ", "expression", "");
-    } else if (base->getType().getQualifier().storage == EvqConst && index->getQualifier().storage == EvqConst) {
+    } else if (base->getType().getQualifier().isFrontEndConstant() && 
+               index->getQualifier().isFrontEndConstant()) {
         // both base and index are front-end constants
         checkIndex(loc, base->getType(), indexValue);
         return intermediate.foldDereference(base, indexValue, loc);
@@ -1873,6 +1870,9 @@ void HlslParseContext::handleEntryPointAttributes(const TSourceLoc& loc, const T
             }
             break;
         }
+        case EatEarlyDepthStencil:
+            intermediate.setEarlyFragmentTests();
+            break;
         case EatBuiltIn:
         case EatLocation:
             // tolerate these because of dual use of entrypoint and type attributes
@@ -1900,13 +1900,16 @@ void HlslParseContext::transferTypeAttributes(const TSourceLoc& loc, const TAttr
             // location
             if (it->getInt(value))
                 type.getQualifier().layoutLocation = value;
+            else
+                error(loc, "needs a literal integer", "location", "");
             break;
         case EatBinding:
             // binding
             if (it->getInt(value)) {
                 type.getQualifier().layoutBinding = value;
                 type.getQualifier().layoutSet = 0;
-            }
+            } else
+                error(loc, "needs a literal integer", "binding", "");
             // set
             if (it->getInt(value, 1))
                 type.getQualifier().layoutSet = value;
@@ -1915,7 +1918,9 @@ void HlslParseContext::transferTypeAttributes(const TSourceLoc& loc, const TAttr
             // global cbuffer binding
             if (it->getInt(value))
                 globalUniformBinding = value;
-            // global cbuffer binding
+            else
+                error(loc, "needs a literal integer", "global binding", "");
+            // global cbuffer set
             if (it->getInt(value, 1))
                 globalUniformSet = value;
             break;
@@ -1923,6 +1928,8 @@ void HlslParseContext::transferTypeAttributes(const TSourceLoc& loc, const TAttr
             // input attachment
             if (it->getInt(value))
                 type.getQualifier().layoutAttachment = value;
+            else
+                error(loc, "needs a literal integer", "input attachment", "");
             break;
         case EatBuiltIn:
             // PointSize built-in
@@ -3256,8 +3263,8 @@ void HlslParseContext::decomposeStructBufferMethods(const TSourceLoc& loc, TInte
     if (argAggregate) {
         if (argAggregate->getSequence().empty())
             return;
-		if (argAggregate->getSequence()[0])
-	        bufferObj = argAggregate->getSequence()[0]->getAsTyped();
+        if (argAggregate->getSequence()[0])
+            bufferObj = argAggregate->getSequence()[0]->getAsTyped();
     } else {
         bufferObj = arguments->getAsSymbolNode();
     }
@@ -3757,7 +3764,7 @@ void HlslParseContext::decomposeSampleMethods(const TSourceLoc& loc, TIntermType
                 return;
         } else {
             if (argAggregate->getSequence().size() == 0 || 
-				argAggregate->getSequence()[0] == nullptr ||
+                argAggregate->getSequence()[0] == nullptr ||
                 argAggregate->getSequence()[0]->getAsTyped()->getBasicType() != EbtSampler)
                 return;
         }
@@ -4608,7 +4615,7 @@ void HlslParseContext::decomposeIntrinsic(const TSourceLoc& loc, TIntermTyped*& 
         if (nullptr == symbol) {
             type.getQualifier().builtIn = builtin;
 
-            TVariable* variable = new TVariable(new TString(name), type);
+            TVariable* variable = new TVariable(NewPoolTString(name), type);
 
             symbolTable.insert(*variable);
 
@@ -5323,11 +5330,6 @@ TIntermTyped* HlslParseContext::handleFunctionCall(const TSourceLoc& loc, TFunct
             //  - a built-in operator,
             //  - a built-in function not mapped to an operator, or
             //  - a user function.
-
-            // Error check for a function requiring specific extensions present.
-            if (builtIn && fnCandidate->getNumExtensions())
-                requireExtensions(loc, fnCandidate->getNumExtensions(), fnCandidate->getExtensions(),
-                                  fnCandidate->getName().c_str());
 
             // turn an implicit member-function resolution into an explicit call
             TString callerName;
@@ -8701,12 +8703,25 @@ void HlslParseContext::fixXfbOffsets(TQualifier& qualifier, TTypeList& typeList)
     for (unsigned int member = 0; member < typeList.size(); ++member) {
         TQualifier& memberQualifier = typeList[member].type->getQualifier();
         bool contains64BitType = false;
+#ifdef AMD_EXTENSIONS
+        bool contains32BitType = false;
+        bool contains16BitType = false;
+        int memberSize = intermediate.computeTypeXfbSize(*typeList[member].type, contains64BitType, contains32BitType, contains16BitType);
+#else
         int memberSize = intermediate.computeTypeXfbSize(*typeList[member].type, contains64BitType);
+#endif
         // see if we need to auto-assign an offset to this member
         if (! memberQualifier.hasXfbOffset()) {
             // "if applied to an aggregate containing a double or 64-bit integer, the offset must also be a multiple of 8"
             if (contains64BitType)
                 RoundToPow2(nextOffset, 8);
+#ifdef AMD_EXTENSIONS
+            else if (contains32BitType)
+                RoundToPow2(nextOffset, 4);
+            // "if applied to an aggregate containing a half float or 16-bit integer, the offset must also be a multiple of 2"
+            else if (contains16BitType)
+                RoundToPow2(nextOffset, 2);
+#endif
             memberQualifier.layoutXfbOffset = nextOffset;
         } else
             nextOffset = memberQualifier.layoutXfbOffset;

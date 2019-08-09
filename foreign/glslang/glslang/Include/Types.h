@@ -81,6 +81,7 @@ struct TSampler {   // misnomer now; includes images, textures without sampler, 
     bool   combined : 1;  // true means texture is combined with a sampler, false means texture with no sampler
     bool    sampler : 1;  // true means a pure sampler, other fields should be clear()
     bool   external : 1;  // GL_OES_EGL_image_external
+    bool        yuv : 1;  // GL_EXT_YUV_target
     unsigned int vectorSize : 3;  // vector return type size.
 
     // Some languages support structures as sample results.  Storing the whole structure in the
@@ -116,6 +117,7 @@ struct TSampler {   // misnomer now; includes images, textures without sampler, 
         combined = false;
         sampler = false;
         external = false;
+        yuv = false;
         structReturnIndex = noReturnStruct;
 
         // by default, returns a single vec4;
@@ -186,6 +188,7 @@ struct TSampler {   // misnomer now; includes images, textures without sampler, 
                 combined == right.combined &&
                  sampler == right.sampler &&
                 external == right.external &&
+                     yuv == right.yuv &&
               vectorSize == right.vectorSize &&
        structReturnIndex == right.structReturnIndex;            
     }
@@ -232,6 +235,9 @@ struct TSampler {   // misnomer now; includes images, textures without sampler, 
         if (external) {
             s.append("ExternalOES");
             return s;
+        }
+        if (yuv) {
+            return "__" + s + "External2DY2YEXT";
         }
         switch (dim) {
         case Esd1D:      s.append("1D");      break;
@@ -416,6 +422,18 @@ enum TBlendEquationShift {
     EBlendCount
 };
 
+enum TInterlockOrdering {
+    EioNone,
+    EioPixelInterlockOrdered,
+    EioPixelInterlockUnordered,
+    EioSampleInterlockOrdered,
+    EioSampleInterlockUnordered,
+    EioShadingRateInterlockOrdered,
+    EioShadingRateInterlockUnordered,
+
+    EioCount,
+};
+
 class TQualifier {
 public:
     static const int layoutNotSet = -1;
@@ -496,8 +514,9 @@ public:
 
     const char*         semanticName;
     TStorageQualifier   storage   : 6;
-    TBuiltInVariable    builtIn   : 8;
-    TBuiltInVariable    declaredBuiltIn : 8;
+    TBuiltInVariable    builtIn   : 9;
+    TBuiltInVariable    declaredBuiltIn : 9;
+    static_assert(EbvLast < 256, "need to increase size of TBuiltInVariable bitfields!");
     TPrecisionQualifier precision : 3;
     bool invariant    : 1; // require canonical treatment for cross-shader invariance
     bool noContraction: 1; // prevent contraction and reassociation, e.g., for 'precise' keyword, and expressions it affects
@@ -1104,6 +1123,18 @@ public:
         default:                    return 0;
         }
     }
+    static const char* getInterlockOrderingString(TInterlockOrdering order)
+    {
+        switch (order) {
+        case EioPixelInterlockOrdered:          return "pixel_interlock_ordered";
+        case EioPixelInterlockUnordered:        return "pixel_interlock_unordered";
+        case EioSampleInterlockOrdered:         return "sample_interlock_ordered";
+        case EioSampleInterlockUnordered:       return "sample_interlock_unordered";
+        case EioShadingRateInterlockOrdered:    return "shading_rate_interlock_ordered";
+        case EioShadingRateInterlockUnordered:  return "shading_rate_interlock_unordered";
+        default:                                return "none";
+        }
+    }
 };
 
 // Qualifiers that don't need to be keep per object.  They have shader scope, not object scope.
@@ -1124,6 +1155,7 @@ struct TShaderQualifiers {
     TLayoutDepth layoutDepth;
     bool blendEquation;       // true if any blend equation was specified
     int numViews;             // multiview extenstions
+    TInterlockOrdering interlockOrdering;
 
 #ifdef NV_EXTENSIONS
     bool layoutOverrideCoverage;        // true if layout override_coverage set
@@ -1159,6 +1191,7 @@ struct TShaderQualifiers {
         layoutDerivativeGroupLinear = false;
         primitives                  = TQualifier::layoutNotSet;
 #endif
+        interlockOrdering = EioNone;
     }
 
     // Merge in characteristics from the 'src' qualifier.  They can override when
@@ -1209,6 +1242,9 @@ struct TShaderQualifiers {
         if (src.primitives != TQualifier::layoutNotSet)
             primitives = src.primitives;
 #endif
+
+        if (src.interlockOrdering != EioNone)
+            interlockOrdering = src.interlockOrdering;
     }
 };
 
@@ -1229,9 +1265,11 @@ public:
     int vectorSize : 4;
     int matrixCols : 4;
     int matrixRows : 4;
+    bool coopmat   : 1;
     TArraySizes* arraySizes;
     const TType* userDef;
     TSourceLoc loc;
+    TArraySizes* typeParameters;
 
     void initType(const TSourceLoc& l)
     {
@@ -1242,6 +1280,8 @@ public:
         arraySizes = nullptr;
         userDef = nullptr;
         loc = l;
+        typeParameters = nullptr;
+        coopmat = false;
     }
 
     void initQualifiers(bool global = false)
@@ -1293,8 +1333,8 @@ public:
     // for "empty" type (no args) or simple scalar/vector/matrix
     explicit TType(TBasicType t = EbtVoid, TStorageQualifier q = EvqTemporary, int vs = 1, int mc = 0, int mr = 0,
                    bool isVector = false) :
-                            basicType(t), vectorSize(vs), matrixCols(mc), matrixRows(mr), vector1(isVector && vs == 1),
-                            arraySizes(nullptr), structure(nullptr), fieldName(nullptr), typeName(nullptr)
+                            basicType(t), vectorSize(vs), matrixCols(mc), matrixRows(mr), vector1(isVector && vs == 1), coopmat(false),
+                            arraySizes(nullptr), structure(nullptr), fieldName(nullptr), typeName(nullptr), typeParameters(nullptr)
                             {
                                 sampler.clear();
                                 qualifier.clear();
@@ -1304,8 +1344,8 @@ public:
     // for explicit precision qualifier
     TType(TBasicType t, TStorageQualifier q, TPrecisionQualifier p, int vs = 1, int mc = 0, int mr = 0,
           bool isVector = false) :
-                            basicType(t), vectorSize(vs), matrixCols(mc), matrixRows(mr), vector1(isVector && vs == 1),
-                            arraySizes(nullptr), structure(nullptr), fieldName(nullptr), typeName(nullptr)
+                            basicType(t), vectorSize(vs), matrixCols(mc), matrixRows(mr), vector1(isVector && vs == 1), coopmat(false),
+                            arraySizes(nullptr), structure(nullptr), fieldName(nullptr), typeName(nullptr), typeParameters(nullptr)
                             {
                                 sampler.clear();
                                 qualifier.clear();
@@ -1317,8 +1357,8 @@ public:
     // for turning a TPublicType into a TType, using a shallow copy
     explicit TType(const TPublicType& p) :
                             basicType(p.basicType),
-                            vectorSize(p.vectorSize), matrixCols(p.matrixCols), matrixRows(p.matrixRows), vector1(false),
-                            arraySizes(p.arraySizes), structure(nullptr), fieldName(nullptr), typeName(nullptr)
+                            vectorSize(p.vectorSize), matrixCols(p.matrixCols), matrixRows(p.matrixRows), vector1(false), coopmat(p.coopmat),
+                            arraySizes(p.arraySizes), structure(nullptr), fieldName(nullptr), typeName(nullptr), typeParameters(p.typeParameters)
                             {
                                 if (basicType == EbtSampler)
                                     sampler = p.sampler;
@@ -1334,12 +1374,18 @@ public:
                                     }
                                     typeName = NewPoolTString(p.userDef->getTypeName().c_str());
                                 }
+                                if (p.coopmat && p.basicType == EbtFloat &&
+                                    p.typeParameters && p.typeParameters->getNumDims() > 0 &&
+                                    p.typeParameters->getDimSize(0) == 16) {
+                                    basicType = EbtFloat16;
+                                    qualifier.precision = EpqNone;
+                                }
                             }
     // for construction of sampler types
     TType(const TSampler& sampler, TStorageQualifier q = EvqUniform, TArraySizes* as = nullptr) :
-        basicType(EbtSampler), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false),
+        basicType(EbtSampler), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false), coopmat(false),
         arraySizes(as), structure(nullptr), fieldName(nullptr), typeName(nullptr),
-        sampler(sampler)
+        sampler(sampler), typeParameters(nullptr)
     {
         qualifier.clear();
         qualifier.storage = q;
@@ -1380,13 +1426,16 @@ public:
                                         // dereference from vector to scalar
                                         vectorSize = 1;
                                         vector1 = false;
+                                    } else if (isCoopMat()) {
+                                        coopmat = false;
+                                        typeParameters = nullptr;
                                     }
                                 }
                             }
     // for making structures, ...
     TType(TTypeList* userDef, const TString& n) :
-                            basicType(EbtStruct), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false),
-                            arraySizes(nullptr), structure(userDef), fieldName(nullptr)
+                            basicType(EbtStruct), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false), coopmat(false),
+                            arraySizes(nullptr), structure(userDef), fieldName(nullptr), typeParameters(nullptr)
                             {
                                 sampler.clear();
                                 qualifier.clear();
@@ -1394,8 +1443,8 @@ public:
                             }
     // For interface blocks
     TType(TTypeList* userDef, const TString& n, const TQualifier& q) :
-                            basicType(EbtBlock), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false),
-                            qualifier(q), arraySizes(nullptr), structure(userDef), fieldName(nullptr)
+                            basicType(EbtBlock), vectorSize(1), matrixCols(0), matrixRows(0), vector1(false), coopmat(false),
+                            qualifier(q), arraySizes(nullptr), structure(userDef), fieldName(nullptr), typeParameters(nullptr)
                             {
                                 sampler.clear();
                                 typeName = NewPoolTString(n.c_str());
@@ -1433,6 +1482,8 @@ public:
         } else {
             referentType = copyOf.referentType;
         }
+        typeParameters = copyOf.typeParameters;
+        coopmat = copyOf.coopmat;
     }
 
     // Make complete copy of the whole type graph rooted at 'copyOf'.
@@ -1496,6 +1547,8 @@ public:
     virtual const TArraySizes* getArraySizes() const { return arraySizes; }
     virtual       TArraySizes* getArraySizes()       { return arraySizes; }
     virtual TType* getReferentType() const { return referentType; }
+    virtual const TArraySizes* getTypeParameters() const { return typeParameters; }
+    virtual       TArraySizes* getTypeParameters()       { return typeParameters; }
 
     virtual bool isScalar() const { return ! isVector() && ! isMatrix() && ! isStruct() && ! isArray(); }
     virtual bool isScalarOrVec1() const { return isScalar() || vector1; }
@@ -1538,6 +1591,8 @@ public:
     virtual bool isImage()   const { return basicType == EbtSampler && getSampler().isImage(); }
     virtual bool isSubpass() const { return basicType == EbtSampler && getSampler().isSubpass(); }
     virtual bool isTexture() const { return basicType == EbtSampler && getSampler().isTexture(); }
+    virtual bool isParameterized()  const { return typeParameters != nullptr; }
+    virtual bool isCoopMat() const { return coopmat; }
 
     // return true if this type contains any subtype which satisfies the given predicate.
     template <typename P>
@@ -1603,6 +1658,7 @@ public:
             case EbtInt64:
             case EbtUint64:
             case EbtBool:
+            case EbtReference:
                 return true;
             default:
                 return false;
@@ -1625,6 +1681,11 @@ public:
     virtual bool contains8BitInt() const
     {
         return containsBasicType(EbtInt8) || containsBasicType(EbtUint8);
+    }
+
+    virtual bool containsCoopMat() const
+    {
+        return contains([](const TType* t) { return t->coopmat; } );
     }
 
     // Array editing methods.  Array descriptors can be shared across
@@ -1698,6 +1759,46 @@ public:
             (*structure)[lastMember].type->adoptImplicitArraySizes(getQualifier().storage == EvqBuffer);
         }
     }
+
+
+    void updateTypeParameters(const TType& type)
+    {
+        // For when we may already be sharing existing array descriptors,
+        // keeping the pointers the same, just updating the contents.
+        assert(typeParameters != nullptr);
+        assert(type.typeParameters != nullptr);
+        *typeParameters = *type.typeParameters;
+    }
+    void copyTypeParameters(const TArraySizes& s)
+    {
+        // For setting a fresh new set of type parameters, not yet worrying about sharing.
+        typeParameters = new TArraySizes;
+        *typeParameters = s;
+    }
+    void transferTypeParameters(TArraySizes* s)
+    {
+        // For setting an already allocated set of sizes that this type can use
+        // (no copy made).
+        typeParameters = s;
+    }
+    void clearTypeParameters()
+    {
+        typeParameters = nullptr;
+    }
+
+    // Add inner array sizes, to any existing sizes, via copy; the
+    // sizes passed in can still be reused for other purposes.
+    void copyTypeParametersInnerSizes(const TArraySizes* s)
+    {
+        if (s != nullptr) {
+            if (typeParameters == nullptr)
+                copyTypeParameters(*s);
+            else
+                typeParameters->addInnerSizes(*s);
+        }
+    }
+
+
 
     const char* getBasicString() const
     {
@@ -1913,6 +2014,15 @@ public:
                 }
             }
         }
+        if (isParameterized()) {
+            appendStr("<");
+            for(int i = 0; i < (int)typeParameters->getNumDims(); ++i) {
+                appendInt(typeParameters->getDimSize(i));
+                if (i != (int)typeParameters->getNumDims() - 1)
+                    appendStr(", ");
+            }
+            appendStr(">");
+        }
         if (qualifier.precision != EpqNone) {
             appendStr(" ");
             appendStr(getPrecisionQualifierString());
@@ -1938,15 +2048,17 @@ public:
         }
 
         // Add struct/block members
-        if (isStruct()) {
+        if (isStruct() && structure) {
             appendStr("{");
+            bool hasHiddenMember = true;
             for (size_t i = 0; i < structure->size(); ++i) {
                 if (! (*structure)[i].type->hiddenMember()) {
+                    if (!hasHiddenMember) 
+                        appendStr(", ");
                     typeString.append((*structure)[i].type->getCompleteString());
                     typeString.append(" ");
                     typeString.append((*structure)[i].type->getFieldName());
-                    if (i < structure->size() - 1)
-                        appendStr(", ");
+                    hasHiddenMember = false;
                 }
             }
             appendStr("}");
@@ -2069,6 +2181,13 @@ public:
         return arraySizes->sameInnerArrayness(*right.arraySizes);
     }
 
+    // See if two type's parameters match
+    bool sameTypeParameters(const TType& right) const
+    {
+        return ((typeParameters == nullptr && right.typeParameters == nullptr) ||
+                (typeParameters != nullptr && right.typeParameters != nullptr && *typeParameters == *right.typeParameters));
+    }
+
     // See if two type's elements match in all ways except basic type
     bool sameElementShape(const TType& right) const
     {
@@ -2077,19 +2196,38 @@ public:
                matrixCols == right.matrixCols &&
                matrixRows == right.matrixRows &&
                   vector1 == right.vector1    &&
+                  coopmat == right.coopmat    &&
                sameStructType(right)          &&
                sameReferenceType(right);
+    }
+
+    // See if a cooperative matrix type parameter with unspecified parameters is
+    // an OK function parameter
+    bool coopMatParameterOK(const TType& right) const
+    {
+        return coopmat && right.coopmat &&
+               typeParameters == nullptr && right.typeParameters != nullptr;
     }
 
     // See if two types match in all ways (just the actual type, not qualification)
     bool operator==(const TType& right) const
     {
-        return sameElementType(right) && sameArrayness(right);
+        return sameElementType(right) && sameArrayness(right) && sameTypeParameters(right);
     }
 
     bool operator!=(const TType& right) const
     {
         return ! operator==(right);
+    }
+
+    unsigned int getBufferReferenceAlignment() const
+    {
+        if (getBasicType() == glslang::EbtReference) {
+            return getReferentType()->getQualifier().hasBufferReferenceAlign() ?
+                        (1u << getReferentType()->getQualifier().layoutBufferReferenceAlign) : 16u;
+        } else {
+            return 0;
+        }
     }
 
 protected:
@@ -2107,6 +2245,11 @@ protected:
         if (copyOf.arraySizes) {
             arraySizes = new TArraySizes;
             *arraySizes = *copyOf.arraySizes;
+        }
+
+        if (copyOf.typeParameters) {
+            typeParameters = new TArraySizes;
+            *typeParameters = *copyOf.typeParameters;
         }
 
         if (copyOf.isStruct() && copyOf.structure) {
@@ -2144,6 +2287,7 @@ protected:
                                // functionality is added.
                                // HLSL does have a 1-component vectors, so this will be true to disambiguate
                                // from a scalar.
+    bool coopmat         : 1;
     TQualifier qualifier;
 
     TArraySizes* arraySizes;    // nullptr unless an array; can be shared across types
@@ -2156,6 +2300,7 @@ protected:
     TString *fieldName;         // for structure field names
     TString *typeName;          // for structure type name
     TSampler sampler;
+    TArraySizes* typeParameters;// nullptr unless a parameterized type; can be shared across types
 };
 
 } // end namespace glslang

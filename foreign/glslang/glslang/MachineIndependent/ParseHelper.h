@@ -85,6 +85,7 @@ public:
             statementNestingLevel(0), loopNestingLevel(0), structNestingLevel(0), controlFlowNestingLevel(0),
             postEntryPointReturn(false),
             contextPragma(true, false),
+            beginInvocationInterlockCount(0), endInvocationInterlockCount(0),
             parsingBuiltins(parsingBuiltins), scanContext(nullptr), ppContext(nullptr),
             limits(resources.limits),
             globalUniformBlock(nullptr),
@@ -182,6 +183,8 @@ public:
     // the statementNestingLevel the current switch statement is at, which must match the level of its case statements
     TList<int> switchLevel;
     struct TPragma contextPragma;
+    int beginInvocationInterlockCount;
+    int endInvocationInterlockCount;
 
 protected:
     TParseContextBase(TParseContextBase&);
@@ -299,14 +302,14 @@ public:
     void fixIoArraySize(const TSourceLoc&, TType&);
     void ioArrayCheck(const TSourceLoc&, const TType&, const TString& identifier);
     void handleIoResizeArrayAccess(const TSourceLoc&, TIntermTyped* base);
-    void checkIoArraysConsistency(const TSourceLoc&, bool tailOnly = false, bool isPerPrimitive = false);
-    int getIoArrayImplicitSize(bool isPerPrimitive = false) const;
+    void checkIoArraysConsistency(const TSourceLoc&, bool tailOnly = false);
+    int getIoArrayImplicitSize(const TQualifier&, TString* featureString = nullptr) const;
     void checkIoArrayConsistency(const TSourceLoc&, int requiredSize, const char* feature, TType&, const TString&);
 
     TIntermTyped* handleBinaryMath(const TSourceLoc&, const char* str, TOperator op, TIntermTyped* left, TIntermTyped* right);
     TIntermTyped* handleUnaryMath(const TSourceLoc&, const char* str, TOperator op, TIntermTyped* childNode);
     TIntermTyped* handleDotDereference(const TSourceLoc&, TIntermTyped* base, const TString& field);
-    void blockMemberExtensionCheck(const TSourceLoc&, const TIntermTyped* base, const TString& field);
+    void blockMemberExtensionCheck(const TSourceLoc&, const TIntermTyped* base, int member, const TString& memberName);
     TFunction* handleFunctionDeclarator(const TSourceLoc&, TFunction& function, bool prototype);
     TIntermAggregate* handleFunctionDefinition(const TSourceLoc&, TFunction&);
     TIntermTyped* handleFunctionCall(const TSourceLoc&, TFunction*, TIntermNode*);
@@ -337,7 +340,7 @@ public:
     void globalCheck(const TSourceLoc&, const char* token);
     bool constructorError(const TSourceLoc&, TIntermNode*, TFunction&, TOperator, TType&);
     bool constructorTextureSamplerError(const TSourceLoc&, const TFunction&);
-    void arraySizeCheck(const TSourceLoc&, TIntermTyped* expr, TArraySize&);
+    void arraySizeCheck(const TSourceLoc&, TIntermTyped* expr, TArraySize&, const char *sizeType);
     bool arrayQualifierError(const TSourceLoc&, const TQualifier&);
     bool arrayError(const TSourceLoc&, const TType&);
     void arraySizeRequiredCheck(const TSourceLoc&, const TArraySizes&);
@@ -370,6 +373,7 @@ public:
     void nestedStructCheck(const TSourceLoc&);
     void arrayObjectCheck(const TSourceLoc&, const TType&, const char* op);
     void opaqueCheck(const TSourceLoc&, const TType&, const char* op);
+    void referenceCheck(const TSourceLoc&, const TType&, const char* op);
     void storage16BitAssignmentCheck(const TSourceLoc&, const TType&, const char* op);
     void specializationCheck(const TSourceLoc&, const TType&, const char* op);
     void structTypeCheck(const TSourceLoc&, TPublicType&);
@@ -425,7 +429,7 @@ public:
     // Determine loop control from attributes
     void handleLoopAttributes(const TAttributes& attributes, TIntermNode*);
 
-    void resizeMeshViewDimension(const TSourceLoc&, TType&);
+    void checkAndResizeMeshViewDim(const TSourceLoc&, TType&, bool isBlockMember);
 
 protected:
     void nonInitConstCheck(const TSourceLoc&, TString& identifier, TType& type);

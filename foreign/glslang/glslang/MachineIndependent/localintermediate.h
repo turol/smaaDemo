@@ -149,11 +149,20 @@ struct TOffsetRange {
 
 // Things that need to be tracked per xfb buffer.
 struct TXfbBuffer {
+#ifdef AMD_EXTENSIONS
+    TXfbBuffer() : stride(TQualifier::layoutXfbStrideEnd), implicitStride(0), contains64BitType(false),
+                   contains32BitType(false), contains16BitType(false) { }
+#else
     TXfbBuffer() : stride(TQualifier::layoutXfbStrideEnd), implicitStride(0), contains64BitType(false) { }
+#endif
     std::vector<TRange> ranges;  // byte offsets that have already been assigned
     unsigned int stride;
     unsigned int implicitStride;
     bool contains64BitType;
+#ifdef AMD_EXTENSIONS
+    bool contains32BitType;
+    bool contains16BitType;
+#endif
 };
 
 // Track a set of strings describing how the module was processed.
@@ -231,7 +240,7 @@ public:
         invocations(TQualifier::layoutNotSet), vertices(TQualifier::layoutNotSet),
         inputPrimitive(ElgNone), outputPrimitive(ElgNone),
         pixelCenterInteger(false), originUpperLeft(false),
-        vertexSpacing(EvsNone), vertexOrder(EvoNone), pointMode(false), earlyFragmentTests(false),
+        vertexSpacing(EvsNone), vertexOrder(EvoNone), interlockOrdering(EioNone), pointMode(false), earlyFragmentTests(false),
         postDepthCoverage(false), depthLayout(EldNone), depthReplacing(false),
         hlslFunctionality1(false),
         blendEquations(0), xfbMode(false), multiStream(false),
@@ -252,11 +261,13 @@ public:
         useStorageBuffer(false),
         useVulkanMemoryModel(false),
         hlslIoMapping(false),
+        useVariablePointers(false),
         textureSamplerTransformMode(EShTexSampTransKeep),
         needToLegalize(false),
         binaryDoubleOutput(false),
         usePhysicalStorageBuffer(false),
-        uniformLocationBase(0)
+        uniformLocationBase(0),
+        nanMinMaxClamp(false)
     {
         localSize[0] = 1;
         localSize[1] = 1;
@@ -396,6 +407,12 @@ public:
         usePhysicalStorageBuffer = true;
     }
     bool usingPhysicalStorageBuffer() const { return usePhysicalStorageBuffer; }
+    void setUseVariablePointers()
+    {
+        useVariablePointers = true;
+        processes.addProcess("use-variable-pointers");
+    }
+    bool usingVariablePointers() const { return useVariablePointers; }
 
     template<class T> T addCounterBufferName(const T& name) const { return name + implicitCounterName; }
     bool hasCounterBufferName(const TString& name) const {
@@ -420,11 +437,40 @@ public:
         if (spvVersion.openGl > 0)
             processes.addProcess("client opengl100");
 
+        // target SPV
+        switch (spvVersion.spv) {
+        case 0:
+            break;
+        case EShTargetSpv_1_0:
+            break;
+        case EShTargetSpv_1_1:
+            processes.addProcess("target-env spirv1.1");
+            break;
+        case EShTargetSpv_1_2:
+            processes.addProcess("target-env spirv1.2");
+            break;
+        case EShTargetSpv_1_3:
+            processes.addProcess("target-env spirv1.3");
+            break;
+        default:
+            processes.addProcess("target-env spirvUnknown");
+            break;
+        }
+
         // target-environment processes
-        if (spvVersion.vulkan > 0)
+        switch (spvVersion.vulkan) {
+        case 0:
+            break;
+        case EShTargetVulkan_1_0:
             processes.addProcess("target-env vulkan1.0");
-        else if (spvVersion.vulkan > 0)
+            break;
+        case EShTargetVulkan_1_1:
+            processes.addProcess("target-env vulkan1.1");
+            break;
+        default:
             processes.addProcess("target-env vulkanUnknown");
+            break;
+        }
         if (spvVersion.openGl > 0)
             processes.addProcess("target-env opengl");
     }
@@ -450,9 +496,10 @@ public:
     TIntermSymbol* addSymbol(const TVariable&, const TSourceLoc&);
     TIntermSymbol* addSymbol(const TType&, const TSourceLoc&);
     TIntermSymbol* addSymbol(const TIntermSymbol&);
-    TIntermTyped* addConversion(TOperator, const TType&, TIntermTyped*) const;
-    std::tuple<TIntermTyped*, TIntermTyped*> addConversion(TOperator op, TIntermTyped* node0, TIntermTyped* node1) const;
+    TIntermTyped* addConversion(TOperator, const TType&, TIntermTyped*);
+    std::tuple<TIntermTyped*, TIntermTyped*> addConversion(TOperator op, TIntermTyped* node0, TIntermTyped* node1);
     TIntermTyped* addUniShapeConversion(TOperator, const TType&, TIntermTyped*);
+    TIntermTyped* addConversion(TBasicType convertTo, TIntermTyped* node) const;
     void addBiShapeConversion(TOperator, TIntermTyped*& lhsNode, TIntermTyped*& rhsNode);
     TIntermTyped* addShapeConversion(const TType&, TIntermTyped*);
     TIntermTyped* addBinaryMath(TOperator, TIntermTyped* left, TIntermTyped* right, TSourceLoc);
@@ -562,6 +609,15 @@ public:
     void setPointMode() { pointMode = true; }
     bool getPointMode() const { return pointMode; }
 
+    bool setInterlockOrdering(TInterlockOrdering o)
+    {
+        if (interlockOrdering != EioNone)
+            return interlockOrdering == o;
+        interlockOrdering = o;
+        return true;
+    }
+    TInterlockOrdering getInterlockOrdering() const { return interlockOrdering; }
+
     bool setLocalSize(int dim, int size)
     {
         if (localSize[dim] > 1)
@@ -640,12 +696,20 @@ public:
     }
     unsigned getXfbStride(int buffer) const { return xfbBuffers[buffer].stride; }
     int addXfbBufferOffset(const TType&);
+#ifdef AMD_EXTENSIONS
+    unsigned int computeTypeXfbSize(const TType&, bool& contains64BitType, bool& contains32BitType, bool& contains16BitType) const;
+#else
     unsigned int computeTypeXfbSize(const TType&, bool& contains64BitType) const;
+#endif
     static int getBaseAlignmentScalar(const TType&, int& size);
     static int getBaseAlignment(const TType&, int& size, int& stride, TLayoutPacking layoutPacking, bool rowMajor);
     static int getScalarAlignment(const TType&, int& size, int& stride, bool rowMajor);
     static int getMemberAlignment(const TType&, int& size, int& stride, TLayoutPacking layoutPacking, bool rowMajor);
     static bool improperStraddle(const TType& type, int size, int offset);
+    static void updateOffset(const TType& parentType, const TType& memberType, int& offset, int& memberSize);
+    static int getOffset(const TType& type, int index);
+    static int getBlockSize(const TType& blockType);
+    static int computeBufferReferenceTypeSize(const TType&);
     bool promote(TIntermOperator*);
 
 #ifdef NV_EXTENSIONS
@@ -704,6 +768,9 @@ public:
     void setUniformLocationBase(int base) { uniformLocationBase = base; }
     int getUniformLocationBase() const { return uniformLocationBase; }
 
+    void setNanMinMaxClamp(bool setting) { nanMinMaxClamp = setting; }
+    bool getNanMinMaxClamp() const { return nanMinMaxClamp; }
+
     void setNeedsLegalization() { needToLegalize = true; }
     bool needsLegalization() const { return needToLegalize; }
 
@@ -712,6 +779,27 @@ public:
 
     const char* const implicitThisName;
     const char* const implicitCounterName;
+
+    // Certain explicit conversions are allowed conditionally
+    bool getArithemeticInt8Enabled() const {
+        return extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+               extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_int8);
+    }
+    bool getArithemeticInt16Enabled() const {
+        return extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+#ifdef AMD_EXTENSIONS
+               extensionRequested(E_GL_AMD_gpu_shader_int16) ||
+#endif
+               extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_int16);
+    }
+
+    bool getArithemeticFloat16Enabled() const {
+        return extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+#ifdef AMD_EXTENSIONS
+               extensionRequested(E_GL_AMD_gpu_shader_half_float) ||
+#endif
+               extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_float16);
+    }
 
 protected:
     TIntermSymbol* addSymbol(int Id, const TString&, const TType&, const TConstUnionArray&, TIntermTyped* subtree, const TSourceLoc&);
@@ -772,6 +860,7 @@ protected:
     bool originUpperLeft;
     TVertexSpacing vertexSpacing;
     TVertexOrder vertexOrder;
+    TInterlockOrdering interlockOrdering;
     bool pointMode;
     int localSize[3];
     int localSizeSpecId[3];
@@ -810,6 +899,7 @@ protected:
     bool useStorageBuffer;
     bool useVulkanMemoryModel;
     bool hlslIoMapping;
+    bool useVariablePointers;
 
     std::set<TString> ioAccessed;           // set of names of statically read/written I/O that might need extra checking
     std::vector<TIoRange> usedIo[4];        // sets of used locations, one for each of in, out, uniform, and buffers
@@ -835,6 +925,7 @@ protected:
 
     std::unordered_map<std::string, int> uniformLocationOverrides;
     int uniformLocationBase;
+    bool nanMinMaxClamp;            // true if desiring min/max/clamp to favor non-NaN over NaN
 
 private:
     void operator=(TIntermediate&); // prevent assignments

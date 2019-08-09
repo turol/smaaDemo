@@ -73,7 +73,7 @@ if(ENABLE_HLSL)
 endif(ENABLE_HLSL)
 
 if(WIN32)
-    set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "Adds a postfix for debug-built libraries.")
+    set(CMAKE_DEBUG_POSTFIX "d")
     if(MSVC)
         include(ChooseMSVCCRT.cmake)
     endif(MSVC)
@@ -88,10 +88,14 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
     add_compile_options(-Wall -Wmaybe-uninitialized -Wuninitialized -Wunused -Wunused-local-typedefs
                         -Wunused-parameter -Wunused-value  -Wunused-variable -Wunused-but-set-parameter -Wunused-but-set-variable -fno-exceptions)
     add_compile_options(-Wno-reorder)  # disable this from -Wall, since it happens all over.
+    add_compile_options(-fno-rtti)
 elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     add_compile_options(-Wall -Wuninitialized -Wunused -Wunused-local-typedefs
                         -Wunused-parameter -Wunused-value  -Wunused-variable)
     add_compile_options(-Wno-reorder)  # disable this from -Wall, since it happens all over.
+    add_compile_options(-fno-rtti)
+elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "MSVC")
+    add_compile_options(/GR-) # Disable RTTI
 endif()
 
 # Request C++11
@@ -113,6 +117,12 @@ function(glslang_set_link_args TARGET)
                               LINK_FLAGS "-static -static-libgcc -static-libstdc++")
     endif()
 endfunction(glslang_set_link_args)
+
+# CMake needs to find the right version of python, right from the beginning,
+# otherwise, it will find the wrong version and fail later
+if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/External)
+    find_package(PythonInterp 3 REQUIRED)
+endif()
 
 # We depend on these for later projects, so they should come first.
 add_subdirectory(External)

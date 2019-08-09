@@ -74,7 +74,7 @@ inline const char* ProfileName(EProfile profile)
 }
 
 //
-// What source rules, validation rules, target language, etc. are needed
+// What source rules, validation rules, target language, etc. are needed or
 // desired for SPIR-V?
 //
 // 0 means a target or rule set is not enabled (ignore rules from that entity).
@@ -110,6 +110,7 @@ const char* const E_GL_OES_standard_derivatives         = "GL_OES_standard_deriv
 const char* const E_GL_EXT_frag_depth                   = "GL_EXT_frag_depth";
 const char* const E_GL_OES_EGL_image_external           = "GL_OES_EGL_image_external";
 const char* const E_GL_OES_EGL_image_external_essl3     = "GL_OES_EGL_image_external_essl3";
+const char* const E_GL_EXT_YUV_target                   = "GL_EXT_YUV_target";
 const char* const E_GL_EXT_shader_texture_lod           = "GL_EXT_shader_texture_lod";
 const char* const E_GL_EXT_shadow_samplers              = "GL_EXT_shadow_samplers";
 
@@ -140,6 +141,8 @@ const char* const E_GL_ARB_shader_stencil_export        = "GL_ARB_shader_stencil
 // const char* const E_GL_ARB_cull_distance            = "GL_ARB_cull_distance";  // present for 4.5, but need extension control over block members
 const char* const E_GL_ARB_post_depth_coverage          = "GL_ARB_post_depth_coverage";
 const char* const E_GL_ARB_shader_viewport_layer_array  = "GL_ARB_shader_viewport_layer_array";
+const char* const E_GL_ARB_fragment_shader_interlock    = "GL_ARB_fragment_shader_interlock";
+const char* const E_GL_ARB_shader_clock                 = "GL_ARB_shader_clock";
 
 const char* const E_GL_KHR_shader_subgroup_basic            = "GL_KHR_shader_subgroup_basic";
 const char* const E_GL_KHR_shader_subgroup_vote             = "GL_KHR_shader_subgroup_vote";
@@ -170,6 +173,9 @@ const char* const E_GL_EXT_samplerless_texture_functions    = "GL_EXT_samplerles
 const char* const E_GL_EXT_scalar_block_layout              = "GL_EXT_scalar_block_layout";
 const char* const E_GL_EXT_fragment_invocation_density      = "GL_EXT_fragment_invocation_density";
 const char* const E_GL_EXT_buffer_reference                 = "GL_EXT_buffer_reference";
+const char* const E_GL_EXT_buffer_reference2                = "GL_EXT_buffer_reference2";
+const char* const E_GL_EXT_demote_to_helper_invocation      = "GL_EXT_demote_to_helper_invocation";
+const char* const E_GL_EXT_shader_realtime_clock            = "GL_EXT_shader_realtime_clock";
 
 // Arrays of extensions for the above viewportEXTs duplications
 
@@ -223,6 +229,9 @@ const char* const E_GL_NV_mesh_shader                           = "GL_NV_mesh_sh
 const char* const viewportEXTs[] = { E_GL_ARB_shader_viewport_layer_array, E_GL_NV_viewport_array2 };
 const int Num_viewportEXTs = sizeof(viewportEXTs) / sizeof(viewportEXTs[0]);
 #endif
+
+const char* const E_GL_NV_cooperative_matrix                    = "GL_NV_cooperative_matrix";
+const char* const E_GL_NV_shader_sm_builtins                    = "GL_NV_shader_sm_builtins";
 
 // AEP
 const char* const E_GL_ANDROID_extension_pack_es31a             = "GL_ANDROID_extension_pack_es31a";
