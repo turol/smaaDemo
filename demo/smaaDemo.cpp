@@ -945,6 +945,8 @@ class SMAADemo {
 	SMAADemo(SMAADemo &&) = delete;
 	SMAADemo &operator=(SMAADemo &&) = delete;
 
+	void rebuildRenderGraph();
+
 	void renderFXAA(RenderPasses rp, RenderGraph::PassResources &r);
 
 	void renderSeparate(RenderPasses rp, RenderGraph::PassResources &r);
@@ -997,8 +999,6 @@ public:
 	void parseCommandLine(int argc, char *argv[]);
 
 	void initRender();
-
-	void rebuildRenderGraph();
 
 	void createCubes();
 
