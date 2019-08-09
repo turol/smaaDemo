@@ -983,6 +983,10 @@ class SMAADemo {
 
 	void setTemporalAA(bool enabled);
 
+	bool isImageScene() const {
+		return activeScene != 0;
+	}
+
 
 public:
 
@@ -1653,7 +1657,7 @@ void SMAADemo::rebuildRenderGraph() {
 	LOG("create framebuffers at size %ux%u\n", windowWidth, windowHeight);
 	logFlush();
 
-	if (activeScene == 0) {
+	if (!isImageScene()) {
 		// cube scene
 
 		{
@@ -2583,7 +2587,7 @@ void SMAADemo::processInput() {
 			case SDL_SCANCODE_RIGHT:
 				{
 					// if old or new scene is cubes we must rebuild RG
-					if (activeScene == 0) {
+					if (!isImageScene()) {
 						rebuildRG = true;
 					}
 
@@ -2591,7 +2595,7 @@ void SMAADemo::processInput() {
 					unsigned int numScenes = static_cast<unsigned int>(images.size()) + 1;
 					activeScene = (activeScene + sceneIncrement + numScenes) % numScenes;
 
-					if (activeScene == 0) {
+					if (!isImageScene()) {
 						rebuildRG = true;
 					}
 				}
@@ -2710,7 +2714,7 @@ void SMAADemo::mainLoopIteration() {
 
 	updateGUI(elapsed);
 
-	if (activeScene == 0 && rotateCubes) {
+	if (!isImageScene() && rotateCubes) {
 		rotationTime += elapsed;
 
 		// TODO: increasing rotation period can make cubes spin backwards
