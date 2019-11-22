@@ -1,6 +1,5 @@
 @echo off
-SET GENERATOR="Visual Studio 15 2017"
-SET GENERATOR64="Visual Studio 15 2017 Win64"
+SET GENERATOR="Visual Studio 16 2019"
 
 cd ../foreign/
 
@@ -8,14 +7,14 @@ cd SPIRV-Tools
 
 mkdir build
 cd build
-cmake -G%GENERATOR% -DSPIRV-Headers_SOURCE_DIR=%cd%/../../SPIRV-Headers ..
+cmake -G%GENERATOR% -A Win32 -DSPIRV-Headers_SOURCE_DIR=%cd%/../../SPIRV-Headers ..
 cmake --build .
 cmake --build . --config Release
 cd ..
 
 mkdir build64
 cd build64
-cmake -G%GENERATOR64% -DSPIRV-Headers_SOURCE_DIR=%cd%/../../SPIRV-Headers ..
+cmake -G%GENERATOR% -A x64 -DSPIRV-Headers_SOURCE_DIR=%cd%/../../SPIRV-Headers ..
 cmake --build .
 cmake --build . --config Release
 cd ..
@@ -26,14 +25,14 @@ cd SPIRV-Cross
 
 mkdir build
 cd build
-cmake -G%GENERATOR% ..
+cmake -G%GENERATOR%  -A Win32 ..
 cmake --build .
 cmake --build . --config Release
 cd ..
 
 mkdir build64
 cd build64
-cmake -G%GENERATOR64% ..
+cmake -G%GENERATOR% -A x64 ..
 cmake --build .
 cmake --build . --config Release
 cd ..
