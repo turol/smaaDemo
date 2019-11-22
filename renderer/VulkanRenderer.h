@@ -34,7 +34,38 @@ THE SOFTWARE.
 #include <boost/variant/variant.hpp>
 
 
+#ifdef _WIN32
+
+// some versions of vulkan.hpp need HMODULE but don't include windows.h
+
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif  // NOMINMAX
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif  // WIN32_LEAN_AND_MEAN
+
+#include <windows.h>
+
+// this on the other hand is fucking atrocious
+// they fucked up their LoadLibrary call
+#ifdef LoadLibrary
+#undef LoadLibrary
+#endif  //  LoadLibrary
+
+#define LoadLibrary LoadLibraryA
+
+#endif  // _WIN32
+
+
 #include <vulkan/vulkan.hpp>
+
+
+#ifdef _WIN32
+#undef LoadLibrary
+#endif  // _WIN32
+
 
 #if VK_HEADER_VERSION < 64
 #error "Vulkan header too old"
