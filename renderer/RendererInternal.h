@@ -132,42 +132,42 @@ bool issRGBFormat(Format format);
 
 
 struct RendererBase {
-	SwapchainDesc swapchainDesc;
-	SwapchainDesc wantedSwapchain;
-	bool          swapchainDirty;
+	SwapchainDesc                                        swapchainDesc;
+	SwapchainDesc                                        wantedSwapchain;
+	bool                                                 swapchainDirty;
 
-	uint32_t                                 currentFrameIdx;
-	uint32_t                                 lastSyncedFrame;
+	uint32_t                                             currentFrameIdx;
+	uint32_t                                             lastSyncedFrame;
 
-	unsigned int                             currentRefreshRate;
-	unsigned int                             maxRefreshRate;
-	RendererFeatures                         features;
+	unsigned int                                         currentRefreshRate;
+	unsigned int                                         maxRefreshRate;
+	RendererFeatures                                     features;
 
-	bool skipShaderCache;
-	bool         optimizeShaders;
-	bool         validateShaders;
-	unsigned int frameNum;
+	bool                                                 skipShaderCache;
+	bool                                                 optimizeShaders;
+	bool                                                 validateShaders;
+	unsigned int                                         frameNum;
 
-	unsigned int   uboAlign;
-	unsigned int   ssboAlign;
+	unsigned int                                         uboAlign;
+	unsigned int                                         ssboAlign;
 
-	unsigned int  ringBufSize;
-	unsigned int  ringBufPtr;
+	unsigned int                                         ringBufSize;
+	unsigned int                                         ringBufPtr;
 	// we have synced with the GPU up to this ringbuffer index
-	unsigned int              lastSyncedRingBufPtr;
+	unsigned int                                         lastSyncedRingBufPtr;
 
-	std::unordered_map<std::string, std::vector<char> > shaderSources;
+	std::unordered_map<std::string, std::vector<char> >  shaderSources;
 
 #ifndef NDEBUG
 	// debugging
-	bool inFrame;
-	bool inRenderPass;
-	bool validPipeline;
-	bool pipelineDrawn;
-	bool scissorSet;
+	bool                                                 inFrame;
+	bool                                                 inRenderPass;
+	bool                                                 validPipeline;
+	bool                                                 pipelineDrawn;
+	bool                                                 scissorSet;
 #endif //  NDEBUG
 
-	std::string spirvCacheDir;
+	std::string                                          spirvCacheDir;
 
 
 	std::vector<char> loadSource(const std::string &name);
