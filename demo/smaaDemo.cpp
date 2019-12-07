@@ -1495,12 +1495,12 @@ void SMAADemo::initRender() {
 	}
 
 	if (fpsLimit == 0) {
-	if (refreshRate == 0) {
-		LOG("Failed to get refresh rate, defaulting to 60\n");
-		fpsLimit = 2 * 60;
-	} else {
-		fpsLimit = 2 * refreshRate;
-	}
+		if (refreshRate == 0) {
+			LOG("Failed to get refresh rate, defaulting to 60\n");
+			fpsLimit = 2 * 60;
+		} else {
+			fpsLimit = 2 * refreshRate;
+		}
 	}
 
 	for (auto depth : depths) {
