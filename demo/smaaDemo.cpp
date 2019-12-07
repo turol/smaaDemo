@@ -1213,6 +1213,8 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::ValueArg<unsigned int>          windowWidthSwitch("",  "width",      "Window width",  false, rendererDesc.swapchain.width,  "width",  cmd);
 		TCLAP::ValueArg<unsigned int>          windowHeightSwitch("", "height",     "Window height", false, rendererDesc.swapchain.height, "height", cmd);
 
+		TCLAP::ValueArg<unsigned int>          fpsSwitch("",          "fps",        "FPS limit",     false, 0,                             "FPS",    cmd);
+
 		TCLAP::ValueArg<unsigned int>          rotateSwitch("",       "rotate",     "Rotation period", false, 0,          "seconds", cmd);
 
 		TCLAP::ValueArg<std::string>           aaMethodSwitch("m",    "method",     "AA Method",     false, "SMAA",        "SMAA/FXAA/MSAA", cmd);
@@ -1234,6 +1236,8 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		rendererDesc.swapchain.width       = windowWidthSwitch.getValue();
 		rendererDesc.swapchain.height      = windowHeightSwitch.getValue();
 		rendererDesc.swapchain.vsync       = noVsyncSwitch.getValue() ? VSync::Off : VSync::On;
+
+		fpsLimit = fpsSwitch.getValue();
 
 		unsigned int r = rotateSwitch.getValue();
 		if (r != 0) {
