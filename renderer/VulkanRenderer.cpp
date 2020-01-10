@@ -314,6 +314,17 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	{
+		uint32_t instanceVersion = 0;
+		auto result = vk::enumerateInstanceVersion(&instanceVersion);
+		if (result != vk::Result::eSuccess) {
+			LOG("Failed to get Vulkan instance version: %s\n", vk::to_string(result).c_str());
+			throw std::runtime_error("Failed to get Vulkan instance version");
+		}
+
+		LOG("Vulkan instance version %u.%u.%u\n", VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion));
+	}
+
+	{
 		auto extensions = vk::enumerateInstanceExtensionProperties();
 		std::sort(extensions.begin(), extensions.end()
 		  , [] (const vk::ExtensionProperties &a, const vk::ExtensionProperties &b) {
