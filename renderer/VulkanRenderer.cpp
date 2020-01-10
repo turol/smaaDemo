@@ -349,6 +349,31 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 	}
 
+	{
+		auto layers = vk::enumerateInstanceLayerProperties();
+		std::sort(layers.begin(), layers.end()
+		  , [] (const vk::LayerProperties &a, const vk::LayerProperties &b) {
+			  return strcmp(a.layerName, b.layerName) < 0;
+		});
+
+
+		size_t maxLen = 0;
+		for (const auto &l : layers) {
+			maxLen = std::max(strlen(l.layerName), maxLen);
+		}
+
+		LOG("Instance layers:\n");
+		std::vector<char> padding;
+		padding.reserve(maxLen + 1);
+		for (unsigned int i = 0; i < maxLen; i++) {
+			padding.push_back(' ');
+		}
+		padding.push_back('\0');
+		for (const auto &l : layers) {
+			LOG(" %s %s (version %u,\tspec %u.%u.%u)\n", l.layerName, &padding[strnlen(l.layerName, maxLen)], l.implementationVersion, VK_VERSION_MAJOR(l.specVersion), VK_VERSION_MINOR(l.specVersion), VK_VERSION_PATCH(l.specVersion));
+		}
+	}
+
 	unsigned int numExtensions = 0;
 	if (!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, NULL)) {
 		LOG("SDL_Vulkan_GetInstanceExtensions failed: %s\n", SDL_GetError());
