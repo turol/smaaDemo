@@ -446,7 +446,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		vk::DebugReportCallbackCreateInfoEXT callbackInfo;
 		callbackInfo.flags       = vk::DebugReportFlagBitsEXT::eError;
 		callbackInfo.pfnCallback = debugCallbackFunc;
-		debugCallback = instance.createDebugReportCallbackEXT(callbackInfo, nullptr, dispatcher);
+		debugReportCallback = instance.createDebugReportCallbackEXT(callbackInfo, nullptr, dispatcher);
 	}
 
 	std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
@@ -909,9 +909,9 @@ RendererImpl::~RendererImpl() {
 	device.destroy();
 	device = vk::Device();
 
-	if (debugCallback) {
-		instance.destroyDebugReportCallbackEXT(debugCallback, nullptr, dispatcher);
-		debugCallback = vk::DebugReportCallbackEXT();
+	if (debugReportCallback) {
+		instance.destroyDebugReportCallbackEXT(debugReportCallback, nullptr, dispatcher);
+		debugReportCallback = vk::DebugReportCallbackEXT();
 	}
 
 	instance.destroy();

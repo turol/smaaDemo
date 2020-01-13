@@ -984,7 +984,7 @@ struct RendererImpl : public RendererBase {
 	vk::DispatchLoaderDynamic               dispatcher;
 
 	vk::Instance                            instance;
-	vk::DebugReportCallbackEXT              debugCallback;
+	vk::DebugReportCallbackEXT              debugReportCallback;
 	vk::PhysicalDevice                      physicalDevice;
 	vk::PhysicalDeviceProperties            deviceProperties;
 	vk::PhysicalDeviceFeatures              deviceFeatures;
