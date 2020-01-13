@@ -400,9 +400,22 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	vk::InstanceCreateInfo instanceCreateInfo;
 	instanceCreateInfo.pApplicationInfo         = &appInfo;
 
-	std::vector<const char *> validationLayers = { "VK_LAYER_LUNARG_standard_validation" };
+	std::vector<const char *> validationLayers;
 
 	if (enableValidation) {
+		const char *khronosValidation = "VK_LAYER_KHRONOS_validation";
+		const char *lunargValidation  = "VK_LAYER_LUNARG_standard_validation";
+		if (instanceLayers.find(khronosValidation) != instanceLayers.end()) {
+			validationLayers.push_back(khronosValidation);
+			LOG("Using KHRONOS validation layer\n");
+		} else if (instanceLayers.find(lunargValidation) != instanceLayers.end()) {
+			validationLayers.push_back(lunargValidation);
+			LOG("Using LUNARG validation layer\n");
+		} else {
+			LOG("Validation requested but not validation layer available\n");
+			throw std::runtime_error("Validation requested but not validation layer available");
+		}
+
 		extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 		instanceCreateInfo.enabledLayerCount    = static_cast<uint32_t>(validationLayers.size());
 		instanceCreateInfo.ppEnabledLayerNames  = &validationLayers[0];
