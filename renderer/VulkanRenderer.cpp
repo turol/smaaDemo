@@ -349,6 +349,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 	}
 
+	std::unordered_set<std::string>  instanceLayers;
 	{
 		auto layers = vk::enumerateInstanceLayerProperties();
 		std::sort(layers.begin(), layers.end()
@@ -356,10 +357,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			  return strcmp(a.layerName, b.layerName) < 0;
 		});
 
+		instanceLayers.reserve(layers.size());
 
 		size_t maxLen = 0;
 		for (const auto &l : layers) {
 			maxLen = std::max(strlen(l.layerName), maxLen);
+			instanceLayers.insert(l.layerName);
 		}
 
 		LOG("Instance layers:\n");
