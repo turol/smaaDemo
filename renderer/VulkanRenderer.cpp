@@ -246,6 +246,20 @@ vk::BufferUsageFlags bufferTypeUsage(BufferType type) {
 	return flags;
 }
 
+
+static VkBool32 VKAPI_PTR debugMessengerFunc(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT /* messageTypes */, const VkDebugUtilsMessengerCallbackDataEXT *callbackData, void * /* pUserData*/) {
+	LOG("error of severity \"%s\" %d \"%s\" \"%s\"\n", vk::to_string(vk::DebugUtilsMessageSeverityFlagBitsEXT(severity)).c_str() , callbackData->messageIdNumber, callbackData->pMessageIdName, callbackData->pMessage);
+	// TODO: log other parts of VkDebugUtilsMessengerCallbackDataEXT
+	logFlush();
+
+	// make errors fatal
+	// TODO: errors only, not warnings or other info
+	abort();
+
+	return VK_FALSE;
+}
+
+
 static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t /* messageCode */, const char * pLayerPrefix, const char * pMessage, void * /* pUserData*/) {
 	LOG("layer %s %s object %lu type %s location %lu: %s\n", pLayerPrefix, vk::to_string(vk::DebugReportFlagBitsEXT(flags)).c_str(), static_cast<unsigned long>(object), vk::to_string(vk::DebugReportObjectTypeEXT(objectType)).c_str(), static_cast<unsigned long>(location), pMessage);
 	logFlush();
@@ -324,6 +338,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		LOG("Vulkan instance version %u.%u.%u\n", VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion));
 	}
 
+	std::unordered_set<std::string>  instanceExtensions;
 	{
 		auto extensions = vk::enumerateInstanceExtensionProperties();
 		std::sort(extensions.begin(), extensions.end()
@@ -331,10 +346,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			  return strcmp(a.extensionName, b.extensionName) < 0;
 		});
 
+		instanceExtensions.reserve(extensions.size());
 
 		size_t maxLen = 0;
 		for (const auto &ext : extensions) {
 			maxLen = std::max(strlen(ext.extensionName), maxLen);
+			instanceExtensions.insert(ext.extensionName);
 		}
 
 		LOG("Instance extensions:\n");
@@ -402,6 +419,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	std::vector<const char *> validationLayers;
 
+	bool newDebugExtension = false;
 	if (enableValidation) {
 		const char *khronosValidation = "VK_LAYER_KHRONOS_validation";
 		const char *lunargValidation  = "VK_LAYER_LUNARG_standard_validation";
@@ -416,7 +434,15 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			throw std::runtime_error("Validation requested but not validation layer available");
 		}
 
-		extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+		if (instanceExtensions.find(VK_EXT_DEBUG_UTILS_EXTENSION_NAME) != instanceExtensions.end()) {
+			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+			newDebugExtension = true;
+		} else if (instanceExtensions.find(VK_EXT_DEBUG_REPORT_EXTENSION_NAME) != instanceExtensions.end()) {
+			extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+		} else {
+			LOG("Validation requested but no debug reporting extension available\n");
+			throw std::runtime_error("Validation requested but no debug reporting extension available");
+		}
 		instanceCreateInfo.enabledLayerCount    = static_cast<uint32_t>(validationLayers.size());
 		instanceCreateInfo.ppEnabledLayerNames  = &validationLayers[0];
 	}
@@ -443,10 +469,19 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 #endif  // VK_HEADER_VERSION
 
 	if (enableValidation) {
+		if (newDebugExtension) {
+			vk::DebugUtilsMessengerCreateInfoEXT messengerInfo;
+			messengerInfo.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
+			messengerInfo.messageType     = vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
+			messengerInfo.pfnUserCallback = debugMessengerFunc;
+
+			debugUtilsCallback = instance.createDebugUtilsMessengerEXT(messengerInfo, nullptr, dispatcher);
+		} else {
 		vk::DebugReportCallbackCreateInfoEXT callbackInfo;
 		callbackInfo.flags       = vk::DebugReportFlagBitsEXT::eError;
 		callbackInfo.pfnCallback = debugCallbackFunc;
 		debugReportCallback = instance.createDebugReportCallbackEXT(callbackInfo, nullptr, dispatcher);
+		}
 	}
 
 	std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
@@ -912,6 +947,11 @@ RendererImpl::~RendererImpl() {
 	if (debugReportCallback) {
 		instance.destroyDebugReportCallbackEXT(debugReportCallback, nullptr, dispatcher);
 		debugReportCallback = vk::DebugReportCallbackEXT();
+	}
+
+	if (debugUtilsCallback) {
+		instance.destroyDebugUtilsMessengerEXT(debugUtilsCallback, nullptr, dispatcher);
+		debugUtilsCallback = vk::DebugUtilsMessengerEXT();
 	}
 
 	instance.destroy();
