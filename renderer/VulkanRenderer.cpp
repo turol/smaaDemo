@@ -477,10 +477,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 			debugUtilsCallback = instance.createDebugUtilsMessengerEXT(messengerInfo, nullptr, dispatcher);
 		} else {
-		vk::DebugReportCallbackCreateInfoEXT callbackInfo;
-		callbackInfo.flags       = vk::DebugReportFlagBitsEXT::eError;
-		callbackInfo.pfnCallback = debugCallbackFunc;
-		debugReportCallback = instance.createDebugReportCallbackEXT(callbackInfo, nullptr, dispatcher);
+			vk::DebugReportCallbackCreateInfoEXT callbackInfo;
+			callbackInfo.flags       = vk::DebugReportFlagBitsEXT::eError;
+			callbackInfo.pfnCallback = debugCallbackFunc;
+			debugReportCallback      = instance.createDebugReportCallbackEXT(callbackInfo, nullptr, dispatcher);
 		}
 	}
 
