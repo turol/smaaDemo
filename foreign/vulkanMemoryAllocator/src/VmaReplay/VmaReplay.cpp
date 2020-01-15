@@ -29,6 +29,8 @@
 
 static VERBOSITY g_Verbosity = VERBOSITY::DEFAULT;
 
+static const uint32_t VULKAN_API_VERSION = VK_API_VERSION_1_1;
+
 namespace DetailedStats
 {
     
@@ -668,8 +670,8 @@ static uint32_t g_PhysicalDeviceIndex = 0;
 static RangeSequence<size_t> g_LineRanges;
 static bool g_UserDataEnabled = true;
 static bool g_MemStatsEnabled = false;
-VULKAN_EXTENSION_REQUEST g_VK_KHR_dedicated_allocation_request = VULKAN_EXTENSION_REQUEST::DEFAULT;
 VULKAN_EXTENSION_REQUEST g_VK_LAYER_LUNARG_standard_validation = VULKAN_EXTENSION_REQUEST::DEFAULT;
+VULKAN_EXTENSION_REQUEST g_VK_EXT_memory_budget_request        = VULKAN_EXTENSION_REQUEST::DEFAULT;
 
 struct StatsAfterLineEntry
 {
@@ -688,7 +690,7 @@ static size_t g_DefragmentAfterLineNextIndex = 0;
 static bool ValidateFileVersion()
 {
     if(GetVersionMajor(g_FileVersion) == 1 &&
-        GetVersionMinor(g_FileVersion) <= 6)
+        GetVersionMinor(g_FileVersion) <= 8)
     {
         return true;
     }
@@ -1063,11 +1065,13 @@ public:
     void Compare(
         const VkPhysicalDeviceProperties& currDevProps,
         const VkPhysicalDeviceMemoryProperties& currMemProps,
-        bool currDedicatedAllocationExtensionEnabled);
+        uint32_t vulkanApiVersion,
+        bool currMemoryBudgetEnabled);
 
 private:
     enum class OPTION
     {
+        VulkanApiVersion,
         PhysicalDevice_apiVersion,
         PhysicalDevice_driverVersion,
         PhysicalDevice_vendorID,
@@ -1078,6 +1082,8 @@ private:
         PhysicalDeviceLimits_bufferImageGranularity,
         PhysicalDeviceLimits_nonCoherentAtomSize,
         Extension_VK_KHR_dedicated_allocation,
+        Extension_VK_KHR_bind_memory2,
+        Extension_VK_EXT_memory_budget,
         Macro_VMA_DEBUG_ALWAYS_DEDICATED_MEMORY,
         Macro_VMA_DEBUG_ALIGNMENT,
         Macro_VMA_DEBUG_MARGIN,
@@ -1155,7 +1161,11 @@ bool ConfigurationParser::Parse(LineSplit& lineSplit)
         }
 
         const StrRange optionName = csvSplit.GetRange(0);
-        if(StrRangeEq(optionName, "PhysicalDevice"))
+        if(StrRangeEq(optionName, "VulkanApiVersion"))
+        {
+            SetOption(currLineNumber, OPTION::VulkanApiVersion, StrRange{csvSplit.GetRange(1).beg, csvSplit.GetRange(2).end});
+        }
+        else if(StrRangeEq(optionName, "PhysicalDevice"))
         {
             if(csvSplit.GetCount() >= 3)
             {
@@ -1201,7 +1211,13 @@ bool ConfigurationParser::Parse(LineSplit& lineSplit)
             {
                 const StrRange subOptionName = csvSplit.GetRange(1);
                 if(StrRangeEq(subOptionName, "VK_KHR_dedicated_allocation"))
-                    SetOption(currLineNumber, OPTION::Extension_VK_KHR_dedicated_allocation, csvSplit.GetRange(2));
+                {
+                    // Ignore because this extension is promoted to Vulkan 1.1.
+                }
+                else if(StrRangeEq(subOptionName, "VK_KHR_bind_memory2"))
+                    SetOption(currLineNumber, OPTION::Extension_VK_KHR_bind_memory2, csvSplit.GetRange(2));
+                else if(StrRangeEq(subOptionName, "VK_EXT_memory_budget"))
+                    SetOption(currLineNumber, OPTION::Extension_VK_EXT_memory_budget, csvSplit.GetRange(2));
                 else
                     printf("Line %zu: Unrecognized configuration option.\n", currLineNumber);
             }
@@ -1297,8 +1313,14 @@ bool ConfigurationParser::Parse(LineSplit& lineSplit)
 void ConfigurationParser::Compare(
     const VkPhysicalDeviceProperties& currDevProps,
     const VkPhysicalDeviceMemoryProperties& currMemProps,
-    bool currDedicatedAllocationExtensionEnabled)
+    uint32_t vulkanApiVersion,
+    bool currMemoryBudgetEnabled)
 {
+    char vulkanApiVersionStr[32];
+    sprintf_s(vulkanApiVersionStr, "%u,%u", VK_VERSION_MAJOR(vulkanApiVersion), VK_VERSION_MINOR(vulkanApiVersion));
+    CompareOption(VERBOSITY::DEFAULT, "VulkanApiVersion",
+        OPTION::VulkanApiVersion, vulkanApiVersionStr);
+
     CompareOption(VERBOSITY::MAXIMUM, "PhysicalDevice apiVersion",
         OPTION::PhysicalDevice_apiVersion, currDevProps.apiVersion);
     CompareOption(VERBOSITY::MAXIMUM, "PhysicalDevice driverVersion",
@@ -1318,8 +1340,6 @@ void ConfigurationParser::Compare(
         OPTION::PhysicalDeviceLimits_bufferImageGranularity, currDevProps.limits.bufferImageGranularity);
     CompareOption(VERBOSITY::DEFAULT, "PhysicalDeviceLimits nonCoherentAtomSize",
         OPTION::PhysicalDeviceLimits_nonCoherentAtomSize, currDevProps.limits.nonCoherentAtomSize);
-    CompareOption(VERBOSITY::DEFAULT, "Extension VK_KHR_dedicated_allocation",
-        OPTION::Extension_VK_KHR_dedicated_allocation, currDedicatedAllocationExtensionEnabled);
 
     CompareMemProps(currMemProps);
 }
@@ -1579,7 +1599,7 @@ private:
     VmaAllocator m_Allocator = VK_NULL_HANDLE;
     VkCommandPool m_CommandPool = VK_NULL_HANDLE;
     VkCommandBuffer m_CommandBuffer = VK_NULL_HANDLE;
-    bool m_DedicatedAllocationEnabled = false;
+    bool m_MemoryBudgetEnabled = false;
     const VkPhysicalDeviceProperties* m_DevProps = nullptr;
     const VkPhysicalDeviceMemoryProperties* m_MemProps = nullptr;
 
@@ -1665,6 +1685,7 @@ private:
     void ExecuteResizeAllocation(size_t lineNumber, const CsvSplit& csvSplit);
     void ExecuteDefragmentationBegin(size_t lineNumber, const CsvSplit& csvSplit);
     void ExecuteDefragmentationEnd(size_t lineNumber, const CsvSplit& csvSplit);
+    void ExecuteSetPoolName(size_t lineNumber, const CsvSplit& csvSplit);
 
     void DestroyAllocation(size_t lineNumber, const CsvSplit& csvSplit, const char* functionName);
 
@@ -1699,7 +1720,9 @@ Player::~Player()
 
 void Player::ApplyConfig(ConfigurationParser& configParser)
 {
-    configParser.Compare(*m_DevProps, *m_MemProps, m_DedicatedAllocationEnabled);
+    configParser.Compare(*m_DevProps, *m_MemProps,
+        VULKAN_API_VERSION,
+        m_MemoryBudgetEnabled);
 }
 
 void Player::ExecuteLine(size_t lineNumber, const StrRange& line)
@@ -1819,6 +1842,8 @@ void Player::ExecuteLine(size_t lineNumber, const StrRange& line)
             ExecuteDefragmentationBegin(lineNumber, csvSplit);
         else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::DefragmentationEnd]))
             ExecuteDefragmentationEnd(lineNumber, csvSplit);
+        else if(StrRangeEq(functionName, VMA_FUNCTION_NAMES[(uint32_t)VMA_FUNCTION::SetPoolName]))
+            ExecuteSetPoolName(lineNumber, csvSplit);
         else
         {
             if(IssueWarning())
@@ -2004,28 +2029,48 @@ int Player::InitVulkan()
     default: assert(0);
     }
 
-    std::vector<const char*> instanceExtensions;
-    //instanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-    //instanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+    uint32_t availableInstanceExtensionCount = 0;
+    res = vkEnumerateInstanceExtensionProperties(nullptr, &availableInstanceExtensionCount, nullptr);
+    assert(res == VK_SUCCESS);
+    std::vector<VkExtensionProperties> availableInstanceExtensions(availableInstanceExtensionCount);
+    if(availableInstanceExtensionCount > 0)
+    {
+        res = vkEnumerateInstanceExtensionProperties(nullptr, &availableInstanceExtensionCount, availableInstanceExtensions.data());
+        assert(res == VK_SUCCESS);
+    }
+
+    std::vector<const char*> enabledInstanceExtensions;
+    //enabledInstanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+    //enabledInstanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 
     std::vector<const char*> instanceLayers;
     if(validationLayersEnabled)
     {
         instanceLayers.push_back(VALIDATION_LAYER_NAME);
-        instanceExtensions.push_back("VK_EXT_debug_report");
+        enabledInstanceExtensions.push_back("VK_EXT_debug_report");
+    }
+
+    bool VK_KHR_get_physical_device_properties2_enabled = false;
+    for(const auto& extensionProperties : availableInstanceExtensions)
+    {
+        if(strcmp(extensionProperties.extensionName, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) == 0)
+        {
+            enabledInstanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+            VK_KHR_get_physical_device_properties2_enabled = true;
+        }
     }
 
     VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
     appInfo.pApplicationName = "VmaReplay";
-    appInfo.applicationVersion = VK_MAKE_VERSION(2, 2, 0);
+    appInfo.applicationVersion = VK_MAKE_VERSION(2, 3, 0);
     appInfo.pEngineName = "Vulkan Memory Allocator";
-    appInfo.engineVersion = VK_MAKE_VERSION(2, 2, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_0;
+    appInfo.engineVersion = VK_MAKE_VERSION(2, 3, 0);
+    appInfo.apiVersion = VULKAN_API_VERSION;
 
     VkInstanceCreateInfo instInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
     instInfo.pApplicationInfo = &appInfo;
-    instInfo.enabledExtensionCount = (uint32_t)instanceExtensions.size();
-    instInfo.ppEnabledExtensionNames = instanceExtensions.data();
+    instInfo.enabledExtensionCount = (uint32_t)enabledInstanceExtensions.size();
+    instInfo.ppEnabledExtensionNames = enabledInstanceExtensions.data();
     instInfo.enabledLayerCount = (uint32_t)instanceLayers.size();
     instInfo.ppEnabledLayerNames = instanceLayers.data();
 
@@ -2128,11 +2173,11 @@ int Player::InitVulkan()
     InitVulkanFeatures(enabledFeatures, supportedFeatures);
 
     bool VK_KHR_get_memory_requirements2_available = false;
-    bool VK_KHR_dedicated_allocation_available = false;
 
     // Determine list of device extensions to enable.
     std::vector<const char*> enabledDeviceExtensions;
     //enabledDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+    bool memoryBudgetAvailable = false;
     {
         uint32_t propertyCount = 0;
         res = vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &propertyCount, nullptr);
@@ -2150,38 +2195,37 @@ int Player::InitVulkan()
                 {
                     VK_KHR_get_memory_requirements2_available = true;
                 }
-                else if(strcmp(properties[i].extensionName, VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME) == 0)
+                else if(strcmp(properties[i].extensionName, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) == 0)
                 {
-                    VK_KHR_dedicated_allocation_available = true;
+                    if(VK_KHR_get_physical_device_properties2_enabled)
+                    {
+                        memoryBudgetAvailable = true;
+                    }
                 }
             }
         }
     }
 
-    const bool dedicatedAllocationAvailable =
-        VK_KHR_get_memory_requirements2_available && VK_KHR_dedicated_allocation_available;
-
-    switch(g_VK_KHR_dedicated_allocation_request)
+    switch(g_VK_EXT_memory_budget_request)
     {
     case VULKAN_EXTENSION_REQUEST::DISABLED:
         break;
     case VULKAN_EXTENSION_REQUEST::DEFAULT:
-        m_DedicatedAllocationEnabled = dedicatedAllocationAvailable;
+        m_MemoryBudgetEnabled = memoryBudgetAvailable;
         break;
     case VULKAN_EXTENSION_REQUEST::ENABLED:
-        m_DedicatedAllocationEnabled = dedicatedAllocationAvailable;
-        if(!dedicatedAllocationAvailable)
+        m_MemoryBudgetEnabled = memoryBudgetAvailable;
+        if(!memoryBudgetAvailable)
         {
-            printf("WARNING: VK_KHR_dedicated_allocation extension cannot be enabled.\n");
+            printf("WARNING: VK_EXT_memory_budget extension cannot be enabled.\n");
         }
         break;
     default: assert(0);
     }
 
-    if(m_DedicatedAllocationEnabled)
+    if(m_MemoryBudgetEnabled)
     {
-        enabledDeviceExtensions.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
-        enabledDeviceExtensions.push_back(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME);
+        enabledDeviceExtensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
     }
 
     VkDeviceCreateInfo deviceCreateInfo = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
@@ -2209,14 +2253,16 @@ int Player::InitVulkan()
     deviceMemoryCallbacks.pfnFree = FreeDeviceMemoryCallback;
 
     VmaAllocatorCreateInfo allocatorInfo = {};
+    allocatorInfo.instance = m_VulkanInstance;
     allocatorInfo.physicalDevice = m_PhysicalDevice;
     allocatorInfo.device = m_Device;
     allocatorInfo.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
     allocatorInfo.pDeviceMemoryCallbacks = &deviceMemoryCallbacks;
+    allocatorInfo.vulkanApiVersion = VULKAN_API_VERSION;
 
-    if(m_DedicatedAllocationEnabled)
+    if(m_MemoryBudgetEnabled)
     {
-        allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
+        allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
     }
 
     res = vmaCreateAllocator(&allocatorInfo, &m_Allocator);
@@ -3863,6 +3909,48 @@ void Player::ExecuteDefragmentationEnd(size_t lineNumber, const CsvSplit& csvSpl
     }
 }
 
+void Player::ExecuteSetPoolName(size_t lineNumber, const CsvSplit& csvSplit)
+{
+    m_Stats.RegisterFunctionCall(VMA_FUNCTION::SetPoolName);
+
+    if(!g_UserDataEnabled)
+    {
+        return;
+    }
+
+    if(ValidateFunctionParameterCount(lineNumber, csvSplit, 2, true))
+    {
+        uint64_t origPtr = 0;
+        if(StrRangeToPtr(csvSplit.GetRange(FIRST_PARAM_INDEX), origPtr))
+        {
+            if(origPtr != 0)
+            {
+                const auto it = m_Pools.find(origPtr);
+                if(it != m_Pools.end())
+                {
+                    std::string poolName;
+                    csvSplit.GetRange(FIRST_PARAM_INDEX + 1).to_str(poolName);
+                    vmaSetPoolName(m_Allocator, it->second.pool, !poolName.empty() ? poolName.c_str() : nullptr);
+                }
+                else
+                {
+                    if(IssueWarning())
+                    {
+                        printf("Line %zu: Pool %llX not found.\n", lineNumber, origPtr);
+                    }
+                }
+            }
+        }
+        else
+        {
+            if(IssueWarning())
+            {
+                printf("Line %zu: Invalid parameters for vmaSetPoolName.\n", lineNumber);
+            }
+        }
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Main functions
 
@@ -3894,7 +3982,7 @@ static void PrintCommandLineSyntax()
         "        Default is 1. Affects both creation of buffers and images, as well as calls to vmaSetAllocationUserData.\n"
         "    --VK_LAYER_LUNARG_standard_validation <Value> - 0 to disable or 1 to enable validation layers.\n"
         "        By default the layers are silently enabled if available.\n"
-        "    --VK_KHR_dedicated_allocation <Value> - 0 to disable or 1 to enable this extension.\n"
+        "    --VK_EXT_memory_budget <Value> - 0 to disable or 1 to enable this extension.\n"
         "        By default the extension is silently enabled if available.\n"
     );
 }
@@ -4114,7 +4202,7 @@ static int main2(int argc, char** argv)
     cmdLineParser.RegisterOpt(CMD_LINE_OPT_LINES, "Lines", true);
     cmdLineParser.RegisterOpt(CMD_LINE_OPT_PHYSICAL_DEVICE, "PhysicalDevice", true);
     cmdLineParser.RegisterOpt(CMD_LINE_OPT_USER_DATA, "UserData", true);
-    cmdLineParser.RegisterOpt(CMD_LINE_OPT_VK_KHR_DEDICATED_ALLOCATION, "VK_KHR_dedicated_allocation", true);
+    cmdLineParser.RegisterOpt(CMD_LINE_OPT_VK_EXT_MEMORY_BUDGET, "VK_EXT_memory_budget", true);
     cmdLineParser.RegisterOpt(CMD_LINE_OPT_VK_LAYER_LUNARG_STANDARD_VALIDATION, VALIDATION_LAYER_NAME, true);
     cmdLineParser.RegisterOpt(CMD_LINE_OPT_MEM_STATS, "MemStats", true);
     cmdLineParser.RegisterOpt(CMD_LINE_OPT_DUMP_STATS_AFTER_LINE, "DumpStatsAfterLine", true);
@@ -4173,12 +4261,12 @@ static int main2(int argc, char** argv)
                     return RESULT_ERROR_COMMAND_LINE;
                 }
                 break;
-            case CMD_LINE_OPT_VK_KHR_DEDICATED_ALLOCATION:
+            case CMD_LINE_OPT_VK_EXT_MEMORY_BUDGET:
                 {
                     bool newValue;
                     if(StrRangeToBool(StrRange(cmdLineParser.GetParameter()), newValue))
                     {
-                        g_VK_KHR_dedicated_allocation_request = newValue ?
+                        g_VK_EXT_memory_budget_request = newValue ?
                             VULKAN_EXTENSION_REQUEST::ENABLED :
                             VULKAN_EXTENSION_REQUEST::DISABLED;
                     }

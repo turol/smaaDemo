@@ -26,34 +26,37 @@
 #include "Tests.h"
 #include "VmaUsage.h"
 #include "Common.h"
+#include <atomic>
 
 static const char* const SHADER_PATH1 = "./";
 static const char* const SHADER_PATH2 = "../bin/";
 static const wchar_t* const WINDOW_CLASS_NAME = L"VULKAN_MEMORY_ALLOCATOR_SAMPLE";
 static const char* const VALIDATION_LAYER_NAME = "VK_LAYER_LUNARG_standard_validation";
-static const char* const APP_TITLE_A =     "Vulkan Memory Allocator Sample 2.3.0-development";
-static const wchar_t* const APP_TITLE_W = L"Vulkan Memory Allocator Sample 2.3.0-development";
+static const char* const APP_TITLE_A =     "Vulkan Memory Allocator Sample 2.3.0";
+static const wchar_t* const APP_TITLE_W = L"Vulkan Memory Allocator Sample 2.3.0";
 
 static const bool VSYNC = true;
 static const uint32_t COMMAND_BUFFER_COUNT = 2;
 static void* const CUSTOM_CPU_ALLOCATION_CALLBACK_USER_DATA = (void*)(intptr_t)43564544;
-static const bool USE_CUSTOM_CPU_ALLOCATION_CALLBACKS = false;
+static const bool USE_CUSTOM_CPU_ALLOCATION_CALLBACKS = true;
 
 VkPhysicalDevice g_hPhysicalDevice;
 VkDevice g_hDevice;
 VmaAllocator g_hAllocator;
+VkInstance g_hVulkanInstance;
 bool g_MemoryAliasingWarningEnabled = true;
 
 static bool g_EnableValidationLayer = true;
 static bool VK_KHR_get_memory_requirements2_enabled = false;
+static bool VK_KHR_get_physical_device_properties2_enabled = false;
 static bool VK_KHR_dedicated_allocation_enabled = false;
 static bool VK_KHR_bind_memory2_enabled = false;
+static bool VK_EXT_memory_budget_enabled = false;
 bool g_SparseBindingEnabled = false;
 
 static HINSTANCE g_hAppInstance;
 static HWND g_hWnd;
 static LONG g_SizeX = 1280, g_SizeY = 720;
-static VkInstance g_hVulkanInstance;
 static VkSurfaceKHR g_hSurface;
 static VkQueue g_hPresentQueue;
 static VkSurfaceFormatKHR g_SurfaceFormat;
@@ -109,12 +112,19 @@ static VkImage g_hTextureImage;
 static VmaAllocation g_hTextureImageAlloc;
 static VkImageView g_hTextureImageView;
 
+static std::atomic_uint32_t g_CpuAllocCount;
+
 static void* CustomCpuAllocation(
     void* pUserData, size_t size, size_t alignment,
     VkSystemAllocationScope allocationScope)
 {
     assert(pUserData == CUSTOM_CPU_ALLOCATION_CALLBACK_USER_DATA);
-    return _aligned_malloc(size, alignment);
+    void* const result = _aligned_malloc(size, alignment);
+    if(result)
+    {
+        ++g_CpuAllocCount;
+    }
+    return result;
 }
 
 static void* CustomCpuReallocation(
@@ -122,13 +132,27 @@ static void* CustomCpuReallocation(
     VkSystemAllocationScope allocationScope)
 {
     assert(pUserData == CUSTOM_CPU_ALLOCATION_CALLBACK_USER_DATA);
-    return _aligned_realloc(pOriginal, size, alignment);
+    void* const result = _aligned_realloc(pOriginal, size, alignment);
+    if(pOriginal && !result)
+    {
+        --g_CpuAllocCount;
+    }
+    else if(!pOriginal && result)
+    {
+        ++g_CpuAllocCount;
+    }
+    return result;
 }
 
 static void CustomCpuFree(void* pUserData, void* pMemory)
 {
     assert(pUserData == CUSTOM_CPU_ALLOCATION_CALLBACK_USER_DATA);
-    _aligned_free(pMemory);
+    if(pMemory)
+    {
+        const uint32_t oldAllocCount = g_CpuAllocCount.fetch_sub(1);
+        TEST(oldAllocCount > 0);
+        _aligned_free(pMemory);
+    }
 }
 
 static const VkAllocationCallbacks g_CpuAllocationCallbacks = {
@@ -1115,15 +1139,32 @@ static void InitializeApplication()
         }
     }
 
-    std::vector<const char*> instanceExtensions;
-    instanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-    instanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+    uint32_t availableInstanceExtensionCount = 0;
+    ERR_GUARD_VULKAN( vkEnumerateInstanceExtensionProperties(nullptr, &availableInstanceExtensionCount, nullptr) );
+    std::vector<VkExtensionProperties> availableInstanceExtensions(availableInstanceExtensionCount);
+    if(availableInstanceExtensionCount > 0)
+    {
+        ERR_GUARD_VULKAN( vkEnumerateInstanceExtensionProperties(nullptr, &availableInstanceExtensionCount, availableInstanceExtensions.data()) );
+    }
+
+    std::vector<const char*> enabledInstanceExtensions;
+    enabledInstanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+    enabledInstanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 
     std::vector<const char*> instanceLayers;
     if(g_EnableValidationLayer == true)
     {
         instanceLayers.push_back(VALIDATION_LAYER_NAME);
-        instanceExtensions.push_back("VK_EXT_debug_report");
+        enabledInstanceExtensions.push_back("VK_EXT_debug_report");
+    }
+
+    for(const auto& extensionProperties : availableInstanceExtensions)
+    {
+        if(strcmp(extensionProperties.extensionName, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) == 0)
+        {
+            enabledInstanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+            VK_KHR_get_physical_device_properties2_enabled = true;
+        }
     }
 
     VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
@@ -1131,12 +1172,12 @@ static void InitializeApplication()
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "Adam Sawicki Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_0;
+    appInfo.apiVersion = VMA_VULKAN_VERSION == 1001000 ? VK_API_VERSION_1_1 : VK_API_VERSION_1_0;
 
     VkInstanceCreateInfo instInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
     instInfo.pApplicationInfo = &appInfo;
-    instInfo.enabledExtensionCount = static_cast<uint32_t>(instanceExtensions.size());
-    instInfo.ppEnabledExtensionNames = instanceExtensions.data();
+    instInfo.enabledExtensionCount = static_cast<uint32_t>(enabledInstanceExtensions.size());
+    instInfo.ppEnabledExtensionNames = enabledInstanceExtensions.data();
     instInfo.enabledLayerCount = static_cast<uint32_t>(instanceLayers.size());
     instInfo.ppEnabledLayerNames = instanceLayers.data();
 
@@ -1282,6 +1323,11 @@ static void InitializeApplication()
                     enabledDeviceExtensions.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
                     VK_KHR_bind_memory2_enabled = true;
                 }
+                else if(strcmp(properties[i].extensionName, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) == 0)
+                {
+                    enabledDeviceExtensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
+                    VK_EXT_memory_budget_enabled = true;
+                }
             }
         }
     }
@@ -1302,26 +1348,23 @@ static void InitializeApplication()
     VmaAllocatorCreateInfo allocatorInfo = {};
     allocatorInfo.physicalDevice = g_hPhysicalDevice;
     allocatorInfo.device = g_hDevice;
+    allocatorInfo.instance = g_hVulkanInstance;
+    allocatorInfo.vulkanApiVersion = appInfo.apiVersion;
 
     if(VK_KHR_dedicated_allocation_enabled)
     {
-        /*
-        Comment out this line to make the app working with RenderDoc.
-    
-        Currently there is a problem with compatibility of this app with RenderDoc due
-        to a known bug in Vulkan validation layers:
-
-        https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/579
-
-        It occurs because this app uses Vulkan 1.0 and VK_KHR_dedicated_allocation
-        extension instead of equivalent functionality embedded into Vulkan 1.1.
-        */
         allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
     }
     if(VK_KHR_bind_memory2_enabled)
     {
         allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT;
     }
+#if !defined(VMA_MEMORY_BUDGET) || VMA_MEMORY_BUDGET == 1
+    if(VK_EXT_memory_budget_enabled && VK_KHR_get_physical_device_properties2_enabled)
+    {
+        allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
+    }
+#endif
 
     if(USE_CUSTOM_CPU_ALLOCATION_CALLBACKS)
     {
@@ -1335,6 +1378,14 @@ static void InitializeApplication()
         recordSettings.pFilePath = "VulkanSample.csv";
         allocatorInfo.pRecordSettings = &recordSettings;
     }
+    */
+
+    // Uncomment to enable HeapSizeLimit.
+    /*
+    std::array<VkDeviceSize, VK_MAX_MEMORY_HEAPS> heapSizeLimit;
+    std::fill(heapSizeLimit.begin(), heapSizeLimit.end(), VK_WHOLE_SIZE);
+    heapSizeLimit[0] = 512ull * 1024 * 1024;
+    allocatorInfo.pHeapSizeLimit = heapSizeLimit.data();
     */
 
     ERR_GUARD_VULKAN( vmaCreateAllocator(&allocatorInfo, &g_hAllocator) );
@@ -1835,6 +1886,8 @@ int main()
         if(g_hDevice != VK_NULL_HANDLE)
             DrawFrame();
     }
+
+    TEST(g_CpuAllocCount.load() == 0);
 
     return 0;
 }

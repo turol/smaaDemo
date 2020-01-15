@@ -1,7 +1,7 @@
-commit 188a365ed48e03e0a09b636464d4c16a00e14899
+commit e9bfb539d853607172f9a1a272dacab60a86e529
 Author: Adam Sawicki <Adam.Sawicki@amd.com>
-Date:   Fri Jul 26 15:22:51 2019 +0200
+Date:   Wed Dec 4 14:26:59 2019 +0100
 
-    Fix ignore warning C4324 also in VmaReplay project
+    Publish version 2.3.0 final
     
-    See #71
+    Updated version number. Regenerated Release binaries and Doxygen documentation.

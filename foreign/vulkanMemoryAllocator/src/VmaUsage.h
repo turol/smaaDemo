@@ -30,6 +30,14 @@
 #include <Windows.h>
 #define VK_USE_PLATFORM_WIN32_KHR
 
+#else  // #ifdef _WIN32
+
+#include <vulkan/vulkan.h>
+
+#endif  // #ifdef _WIN32
+
+#ifdef _MSVC_LANG
+
 // Uncomment to test including `vulkan.h` on your own before including VMA.
 //#include <vulkan/vulkan.h>
 
@@ -49,6 +57,11 @@ include all public interface declarations. Example:
 //#define VMA_DEBUG_MIN_BUFFER_IMAGE_GRANULARITY 256
 //#define VMA_USE_STL_SHARED_MUTEX 0
 //#define VMA_DEBUG_GLOBAL_MUTEX 1
+//#define VMA_MEMORY_BUDGET 0
+
+#define VMA_VULKAN_VERSION 1001000 // Vulkan 1.1
+//#define VMA_VULKAN_VERSION 1000000 // Vulkan 1.0
+
 /*
 #define VMA_DEBUG_LOG(format, ...) do { \
         printf(format, __VA_ARGS__); \
@@ -62,24 +75,24 @@ include all public interface declarations. Example:
 #pragma warning(disable: 4189) // local variable is initialized but not referenced
 #pragma warning(disable: 4324) // structure was padded due to alignment specifier
 
-#include "vk_mem_alloc.h"
-
-#pragma warning(pop)
-
-#else // #ifdef _WIN32
+#endif  // #ifdef _MSVC_LANG
 
 #ifdef __clang__
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wtautological-compare" // comparison of unsigned expression < 0 is always false
+    #pragma clang diagnostic ignored "-Wunused-private-field"
+    #pragma clang diagnostic ignored "-Wunused-parameter"
+    #pragma clang diagnostic ignored "-Wmissing-field-initializers"
 #endif
 
-#include <vulkan/vulkan.h>
 #include "vk_mem_alloc.h"
 
 #ifdef __clang__
     #pragma clang diagnostic pop
 #endif
 
-#endif // #ifdef _WIN32
+#ifdef _MSVC_LANG
+    #pragma warning(pop)
+#endif
 
 #endif

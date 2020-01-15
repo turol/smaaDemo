@@ -36,6 +36,7 @@ enum CMD_LINE_OPT
     CMD_LINE_OPT_PHYSICAL_DEVICE,
     CMD_LINE_OPT_USER_DATA,
     CMD_LINE_OPT_VK_KHR_DEDICATED_ALLOCATION,
+    CMD_LINE_OPT_VK_EXT_MEMORY_BUDGET,
     CMD_LINE_OPT_VK_LAYER_LUNARG_STANDARD_VALIDATION,
     CMD_LINE_OPT_MEM_STATS,
     CMD_LINE_OPT_DUMP_STATS_AFTER_LINE,
@@ -87,6 +88,7 @@ enum class VMA_FUNCTION
     ResizeAllocation,
     DefragmentationBegin,
     DefragmentationEnd,
+    SetPoolName,
     Count
 };
 extern const char* VMA_FUNCTION_NAMES[];
