@@ -1,5 +1,7 @@
-commit 38cafab379e5d16137cb97a485b9385191039b92
+commit af64a9e826bf5bb5fcd2434dd71be1e41e922563
 Author: John Kessenich <cepheus@frii.com>
-Date:   Fri Aug 30 03:05:58 2019 -0600
+Date:   Tue Oct 15 00:11:57 2019 -0600
 
-    Minor tweak for Rev. 2 of SPIR-V 1.4.
+    Versioning: Complete the versioning change in recent commits.
+    
+    These didn't include a full rebuild of the headers.
