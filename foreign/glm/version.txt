@@ -1,5 +1,5 @@
-commit 4db8f89aace8f04c839b606e15b39fb8383ec732
+commit 13724cfae64a8b5313d1cabc9a963d2c9dbeda12
 Author: Christophe Riccio <christophe.riccio@unity3d.com>
-Date:   Sun Sep 8 15:58:42 2019 +0200
+Date:   Sun Jan 5 21:19:37 2020 +0100
 
-    Fixed quaternion array access #942
+    Tentative fix of GLM_FORCE_QUAT_DATA_WXYZ on Clang with tests
