@@ -1,6 +1,5 @@
-commit 688cf868ea83db6c2958dd6bf7a20d471d00940b
-Merge: d5efe161 293f74e9
+commit bdce8336364595d1a446957a6164c97363349a53
 Author: omar <omarcornut@gmail.com>
-Date:   Tue Sep 24 17:15:48 2019 +0200
+Date:   Mon Nov 25 18:38:53 2019 +0100
 
-    Merge branch 'master' of https://github.com/ocornut/imgui
+    Version 1.74
