@@ -13,6 +13,7 @@
 # limitations under the License.
 set(SPIRV_TOOLS_OPT_SOURCES
   aggressive_dead_code_elim_pass.h
+  amd_ext_to_khr.h
   basic_block.h
   block_merge_pass.h
   block_merge_util.h
@@ -26,6 +27,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   composite.h
   const_folding_rules.h
   constants.h
+  convert_to_half_pass.h
   copy_prop_arrays.h
   dead_branch_elim_pass.h
   dead_insert_elim_pass.h
@@ -55,6 +57,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   inline_opaque_pass.h
   inline_pass.h
   inst_bindless_check_pass.h
+  inst_buff_addr_check_pass.h
   instruction.h
   instruction_list.h
   instrument_pass.h
@@ -66,7 +69,6 @@ set(SPIRV_TOOLS_OPT_SOURCES
   local_redundancy_elimination.h
   local_single_block_elim_pass.h
   local_single_store_elim_pass.h
-  local_ssa_elim_pass.h
   log.h
   loop_dependence.h
   loop_descriptor.h
@@ -91,6 +93,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   redundancy_elimination.h
   reflect.h
   register_pressure.h
+  relax_float_ops_pass.h
   remove_duplicates_pass.h
   replace_invalid_opc.h
   scalar_analysis.h
@@ -113,8 +116,10 @@ set(SPIRV_TOOLS_OPT_SOURCES
   value_number_table.h
   vector_dce.h
   workaround1209.h
+  wrap_opkill.h
 
   aggressive_dead_code_elim_pass.cpp
+  amd_ext_to_khr.cpp
   basic_block.cpp
   block_merge_pass.cpp
   block_merge_util.cpp
@@ -128,6 +133,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   composite.cpp
   const_folding_rules.cpp
   constants.cpp
+  convert_to_half_pass.cpp
   copy_prop_arrays.cpp
   dead_branch_elim_pass.cpp
   dead_insert_elim_pass.cpp
@@ -157,6 +163,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   inline_opaque_pass.cpp
   inline_pass.cpp
   inst_bindless_check_pass.cpp
+  inst_buff_addr_check_pass.cpp
   instruction.cpp
   instruction_list.cpp
   instrument_pass.cpp
@@ -168,7 +175,6 @@ set(SPIRV_TOOLS_OPT_SOURCES
   local_redundancy_elimination.cpp
   local_single_block_elim_pass.cpp
   local_single_store_elim_pass.cpp
-  local_ssa_elim_pass.cpp
   loop_dependence.cpp
   loop_dependence_helpers.cpp
   loop_descriptor.cpp
@@ -191,6 +197,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   reduce_load_size.cpp
   redundancy_elimination.cpp
   register_pressure.cpp
+  relax_float_ops_pass.cpp
   remove_duplicates_pass.cpp
   replace_invalid_opc.cpp
   scalar_analysis.cpp
@@ -212,6 +219,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   value_number_table.cpp
   vector_dce.cpp
   workaround1209.cpp
+  wrap_opkill.cpp
 )
 
 if(MSVC)
@@ -225,8 +233,10 @@ add_library(SPIRV-Tools-opt ${SPIRV_TOOLS_OPT_SOURCES})
 
 spvtools_default_compile_options(SPIRV-Tools-opt)
 target_include_directories(SPIRV-Tools-opt
-  PUBLIC ${spirv-tools_SOURCE_DIR}/include
-  PUBLIC ${SPIRV_HEADER_INCLUDE_DIR}
+  PUBLIC
+	$<BUILD_INTERFACE:${spirv-tools_SOURCE_DIR}/include>
+	$<BUILD_INTERFACE:${SPIRV_HEADER_INCLUDE_DIR}>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   PRIVATE ${spirv-tools_BINARY_DIR}
 )
 # We need the assembling and disassembling functionalities in the main library.
@@ -237,8 +247,16 @@ set_property(TARGET SPIRV-Tools-opt PROPERTY FOLDER "SPIRV-Tools libraries")
 spvtools_check_symbol_exports(SPIRV-Tools-opt)
 
 if(ENABLE_SPIRV_TOOLS_INSTALL)
-  install(TARGETS SPIRV-Tools-opt
+  install(TARGETS SPIRV-Tools-opt EXPORT SPIRV-Tools-optTargets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  export(EXPORT SPIRV-Tools-optTargets FILE SPIRV-Tools-optTargets.cmake)
+
+  spvtools_config_package_dir(SPIRV-Tools-opt PACKAGE_DIR)
+  install(EXPORT SPIRV-Tools-optTargets FILE SPIRV-Tools-optTargets.cmake
+  	DESTINATION ${PACKAGE_DIR})
+
+  spvtools_generate_config_file(SPIRV-Tools-opt)
+  install(FILES ${CMAKE_BINARY_DIR}/SPIRV-Tools-optConfig.cmake DESTINATION ${PACKAGE_DIR})
 endif(ENABLE_SPIRV_TOOLS_INSTALL)

@@ -17,6 +17,7 @@ add_subdirectory(loop_optimizations)
 
 add_spvtools_unittest(TARGET opt
   SRCS aggressive_dead_code_elim_test.cpp
+       amd_ext_to_khr.cpp
        assembly_builder_test.cpp
        block_merge_test.cpp
        ccp_test.cpp
@@ -27,6 +28,7 @@ add_spvtools_unittest(TARGET opt
        compact_ids_test.cpp
        constants_test.cpp
        constant_manager_test.cpp
+       convert_relaxed_to_half_test.cpp
        copy_prop_array_test.cpp
        dead_branch_elim_test.cpp
        dead_insert_elim_test.cpp
@@ -52,6 +54,7 @@ add_spvtools_unittest(TARGET opt
        inline_test.cpp
        insert_extract_elim_test.cpp
        inst_bindless_check_test.cpp
+       inst_buff_addr_check_test.cpp
        instruction_list_test.cpp
        instruction_test.cpp
        ir_builder.cpp
@@ -78,6 +81,7 @@ add_spvtools_unittest(TARGET opt
        reduce_load_size_test.cpp
        redundancy_elimination_test.cpp
        register_liveness.cpp
+       relax_float_ops_test.cpp
        replace_invalid_opc_test.cpp
        scalar_analysis.cpp
        scalar_replacement_test.cpp
@@ -97,6 +101,7 @@ add_spvtools_unittest(TARGET opt
        value_table_test.cpp
        vector_dce_test.cpp
        workaround1209_test.cpp
+       wrap_opkill_test.cpp
   LIBS SPIRV-Tools-opt
   PCH_FILE pch_test_opt
 )

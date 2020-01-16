@@ -29,7 +29,6 @@ FILES:= \
 	validate_constants.cpp \
 	validate_conversion.cpp \
 	validate.cpp \
-	validate_datarules.cpp \
 	validate_debug.cpp \
 	validate_decorations.cpp \
 	validate_derivatives.cpp \

@@ -13,6 +13,7 @@ $(eval $(foreach directory, $(DIRS), $(call directory-module,$(directory)) ))
 
 FILES:= \
 	aggressive_dead_code_elim_pass.cpp \
+	amd_ext_to_khr.cpp \
 	basic_block.cpp \
 	block_merge_pass.cpp \
 	block_merge_util.cpp \
@@ -26,6 +27,7 @@ FILES:= \
 	composite.cpp \
 	constants.cpp \
 	const_folding_rules.cpp \
+	convert_to_half_pass.cpp \
 	copy_prop_arrays.cpp \
 	dead_branch_elim_pass.cpp \
 	dead_insert_elim_pass.cpp \
@@ -55,6 +57,7 @@ FILES:= \
 	inline_opaque_pass.cpp \
 	inline_pass.cpp \
 	inst_bindless_check_pass.cpp \
+	inst_buff_addr_check_pass.cpp \
 	instruction.cpp \
 	instruction_list.cpp \
 	instrument_pass.cpp \
@@ -66,7 +69,6 @@ FILES:= \
 	local_redundancy_elimination.cpp \
 	local_single_block_elim_pass.cpp \
 	local_single_store_elim_pass.cpp \
-	local_ssa_elim_pass.cpp \
 	loop_dependence.cpp \
 	loop_dependence_helpers.cpp \
 	loop_descriptor.cpp \
@@ -90,6 +92,7 @@ FILES:= \
 	reduce_load_size.cpp \
 	redundancy_elimination.cpp \
 	register_pressure.cpp \
+	relax_float_ops_pass.cpp \
 	remove_duplicates_pass.cpp \
 	replace_invalid_opc.cpp \
 	scalar_analysis.cpp \
@@ -111,6 +114,7 @@ FILES:= \
 	value_number_table.cpp \
 	vector_dce.cpp \
 	workaround1209.cpp \
+	wrap_opkill.cpp \
 	# empty line
 
 

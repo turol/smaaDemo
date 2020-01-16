@@ -94,6 +94,14 @@ void IRContext::InvalidateAnalyses(IRContext::Analysis analyses_to_invalidate) {
   if (analyses_to_invalidate & kAnalysisTypes) {
     analyses_to_invalidate |= kAnalysisConstants;
   }
+
+  // The dominator analysis hold the psuedo entry and exit nodes from the CFG.
+  // Also if the CFG change the dominators many changed as well, so the
+  // dominator analysis should be invalidated as well.
+  if (analyses_to_invalidate & kAnalysisCFG) {
+    analyses_to_invalidate |= kAnalysisDominatorAnalysis;
+  }
+
   if (analyses_to_invalidate & kAnalysisDefUse) {
     def_use_mgr_.reset(nullptr);
   }
@@ -156,13 +164,19 @@ Instruction* IRContext::KillInst(Instruction* inst) {
       decoration_mgr_->RemoveDecoration(inst);
     }
   }
-
   if (type_mgr_ && IsTypeInst(inst->opcode())) {
     type_mgr_->RemoveId(inst->result_id());
   }
-
   if (constant_mgr_ && IsConstantInst(inst->opcode())) {
     constant_mgr_->RemoveId(inst->result_id());
+  }
+  if (inst->opcode() == SpvOpCapability || inst->opcode() == SpvOpExtension) {
+    // We reset the feature manager, instead of updating it, because it is just
+    // as much work.  We would have to remove all capabilities implied by this
+    // capability that are not also implied by the remaining OpCapability
+    // instructions. We could update extensions, but we will see if it is
+    // needed.
+    ResetFeatureManager();
   }
 
   RemoveFromIdToName(inst);
@@ -252,11 +266,18 @@ bool IRContext::IsConsistent() {
 #ifndef SPIRV_CHECK_CONTEXT
   return true;
 #endif
-
   if (AreAnalysesValid(kAnalysisDefUse)) {
     analysis::DefUseManager new_def_use(module());
     if (*get_def_use_mgr() != new_def_use) {
       return false;
+    }
+  }
+
+  if (AreAnalysesValid(kAnalysisIdToFuncMapping)) {
+    for (auto& fn : *module_) {
+      if (id_to_func_[fn.result_id()] != &fn) {
+        return false;
+      }
     }
   }
 
@@ -283,6 +304,15 @@ bool IRContext::IsConsistent() {
     analysis::DecorationManager current(module());
 
     if (*dec_mgr != current) {
+      return false;
+    }
+  }
+
+  if (feature_mgr_ != nullptr) {
+    FeatureManager current(grammar_);
+    current.Analyze(module());
+
+    if (current != *feature_mgr_) {
       return false;
     }
   }
@@ -687,7 +717,8 @@ uint32_t IRContext::GetBuiltinInputVarId(uint32_t builtin) {
       case SpvBuiltInVertexIndex:
       case SpvBuiltInInstanceIndex:
       case SpvBuiltInPrimitiveId:
-      case SpvBuiltInInvocationId: {
+      case SpvBuiltInInvocationId:
+      case SpvBuiltInSubgroupLocalInvocationId: {
         analysis::Integer uint_ty(32, false);
         reg_type = type_mgr->GetRegisteredType(&uint_ty);
         break;
@@ -698,6 +729,20 @@ uint32_t IRContext::GetBuiltinInputVarId(uint32_t builtin) {
         analysis::Type* reg_uint_ty = type_mgr->GetRegisteredType(&uint_ty);
         analysis::Vector v3uint_ty(reg_uint_ty, 3);
         reg_type = type_mgr->GetRegisteredType(&v3uint_ty);
+        break;
+      }
+      case SpvBuiltInTessCoord: {
+        analysis::Float float_ty(32);
+        analysis::Type* reg_float_ty = type_mgr->GetRegisteredType(&float_ty);
+        analysis::Vector v3float_ty(reg_float_ty, 3);
+        reg_type = type_mgr->GetRegisteredType(&v3float_ty);
+        break;
+      }
+      case SpvBuiltInSubgroupLtMask: {
+        analysis::Integer uint_ty(32, false);
+        analysis::Type* reg_uint_ty = type_mgr->GetRegisteredType(&uint_ty);
+        analysis::Vector v4uint_ty(reg_uint_ty, 4);
+        reg_type = type_mgr->GetRegisteredType(&v4uint_ty);
         break;
       }
       default: {
@@ -781,6 +826,7 @@ bool IRContext::ProcessCallTreeFromRoots(ProcessFunction& pfn,
     roots->pop();
     if (done.insert(fi).second) {
       Function* fn = GetFunction(fi);
+      assert(fn && "Trying to process a function that does not exist.");
       modified = pfn(fn) || modified;
       AddCalls(fn, roots);
     }
