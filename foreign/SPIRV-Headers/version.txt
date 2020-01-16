@@ -1,8 +1,5 @@
-commit e4322e3be589e1ddd44afb20ea842a977c1319b8
-Merge: 45c2cc3 5bc5041
-Author: John Kessenich <johnkslang@users.noreply.github.com>
-Date:   Mon Jul 22 06:30:18 2019 -0600
+commit 38cafab379e5d16137cb97a485b9385191039b92
+Author: John Kessenich <cepheus@frii.com>
+Date:   Fri Aug 30 03:05:58 2019 -0600
 
-    Merge pull request #123 from AaronHaganAMD/master
-    
-    Add SPV_KHR_shader_clock to spirv-headers
+    Minor tweak for Rev. 2 of SPIR-V 1.4.
