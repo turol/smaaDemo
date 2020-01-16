@@ -1,8 +1,7 @@
-commit ae5a8c8bb6b71fdfb6ba585463f7bf5a66dc98d4
-Merge: 00cc5e5 79b52d9
-Author: Yann Collet <Cyan4973@users.noreply.github.com>
-Date:   Mon Sep 17 16:31:50 2018 -0700
+commit dfd1bf117c816e4774adc1e1cdcb1687c0f7913c
+Author: Yann Collet <cyan@fb.com>
+Date:   Thu Aug 15 15:35:53 2019 +0200
 
-    Merge pull request #149 from Cyan4973/cppcheck
+    added comments on VSX code path
     
-    Added Cppcheck static analyzer tests
+    which is still disabled for now.

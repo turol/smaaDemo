@@ -1,0 +1,34 @@
+# compilation chain
+.clang_complete
+
+# objects
+*.o
+*.s
+
+# libraries
+libxxhash.*
+
+# Executables
+xxh32sum
+xxh64sum
+xxhsum
+xxhsum.exe
+xxhsum32
+xxhsum_privateXXH
+xxhsum_inlinedXXH
+xxhsum_inlinedXXH.exe
+
+# Mac OS-X artefacts
+*.dSYM
+.DS_Store
+
+# Wasm / emcc / emscripten artefacts
+*.html
+*.wasm
+*.js
+
+# CMake build directories
+build*/
+
+# project managers artifacts
+.projectile

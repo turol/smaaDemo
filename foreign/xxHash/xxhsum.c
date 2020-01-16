@@ -44,7 +44,6 @@
 #  define _LARGEFILE64_SOURCE
 #endif
 
-
 /* ************************************
  *  Includes
  **************************************/
@@ -55,6 +54,7 @@
 #include <sys/stat.h>   /* stat, stat64, _stat64 */
 #include <time.h>       /* clock_t, clock, CLOCKS_PER_SEC */
 #include <assert.h>     /* assert */
+#include <errno.h>      /* errno */
 
 #define XXH_STATIC_LINKING_ONLY   /* *_state_t */
 #include "xxhash.h"
@@ -63,15 +63,65 @@
 /* ************************************
  *  OS-Specific Includes
  **************************************/
-#if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
-#  include <fcntl.h>    /* _O_BINARY */
-#  include <io.h>       /* _setmode, _isatty */
-#  define SET_BINARY_MODE(file) _setmode(_fileno(file), _O_BINARY)
+#if !defined(_WIN32) && (defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__)) /* UNIX-like OS */ \
+   || defined(__midipix__) || defined(__VMS))
+#  if (defined(__APPLE__) && defined(__MACH__)) || defined(__SVR4) || defined(_AIX) || defined(__hpux) /* POSIX.1-2001 (SUSv3) conformant */ \
+     || defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)  /* BSD distros */
+#    define PLATFORM_POSIX_VERSION 200112L
+#  else
+#    if defined(__linux__) || defined(__linux)
+#      ifndef _POSIX_C_SOURCE
+#        define _POSIX_C_SOURCE 200112L  /* use feature test macro */
+#      endif
+#    endif
+#    include <unistd.h>  /* declares _POSIX_VERSION */
+#    if defined(_POSIX_VERSION)  /* POSIX compliant */
+#      define PLATFORM_POSIX_VERSION _POSIX_VERSION
+#    else
+#      define PLATFORM_POSIX_VERSION 0
+#    endif
+#  endif
+#endif
+#if !defined(PLATFORM_POSIX_VERSION)
+#  define PLATFORM_POSIX_VERSION -1
+#endif
+
+#if (defined(__linux__) && (PLATFORM_POSIX_VERSION >= 1)) \
+ || (PLATFORM_POSIX_VERSION >= 200112L) \
+ || defined(__DJGPP__) \
+ || defined(__MSYS__)
+#  include <unistd.h>   /* isatty */
+#  define IS_CONSOLE(stdStream) isatty(fileno(stdStream))
+#elif defined(MSDOS) || defined(OS2) || defined(__CYGWIN__)
+#  include <io.h>       /* _isatty */
 #  define IS_CONSOLE(stdStream) _isatty(_fileno(stdStream))
+#elif defined(WIN32) || defined(_WIN32)
+#  include <io.h>      /* _isatty */
+#  include <windows.h> /* DeviceIoControl, HANDLE, FSCTL_SET_SPARSE */
+#  include <stdio.h>   /* FILE */
+static __inline int IS_CONSOLE(FILE* stdStream) {
+    DWORD dummy;
+    return _isatty(_fileno(stdStream)) && GetConsoleMode((HANDLE)_get_osfhandle(_fileno(stdStream)), &dummy);
+}
 #else
-#  include <unistd.h>   /* isatty, STDIN_FILENO */
+#  define IS_CONSOLE(stdStream) 0
+#endif
+
+#if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(_WIN32)
+#  include <fcntl.h>   /* _O_BINARY */
+#  include <io.h>      /* _setmode, _fileno, _get_osfhandle */
+#  if !defined(__DJGPP__)
+#    include <windows.h> /* DeviceIoControl, HANDLE, FSCTL_SET_SPARSE */
+#    include <winioctl.h> /* FSCTL_SET_SPARSE */
+#    define SET_BINARY_MODE(file) { int const unused=_setmode(_fileno(file), _O_BINARY); (void)unused; }
+#    define SET_SPARSE_FILE_MODE(file) { DWORD dw; DeviceIoControl((HANDLE) _get_osfhandle(_fileno(file)), FSCTL_SET_SPARSE, 0, 0, 0, 0, &dw, 0); }
+#  else
+#    define SET_BINARY_MODE(file) setmode(fileno(file), O_BINARY)
+#    define SET_SPARSE_FILE_MODE(file)
+#  endif
+#else
 #  define SET_BINARY_MODE(file)
-#  define IS_CONSOLE(stdStream) isatty(STDIN_FILENO)
+#  define SET_SPARSE_FILE_MODE(file)
 #endif
 
 #if !defined(S_ISREG)
@@ -114,13 +164,90 @@ static unsigned BMK_isLittleEndian(void)
 #define QUOTE(str) #str
 #define EXPAND_AND_QUOTE(str) QUOTE(str)
 #define PROGRAM_VERSION EXPAND_AND_QUOTE(LIB_VERSION)
+
+/* Show compiler versions in WELCOME_MESSAGE. VERSION_FMT will return the printf specifiers,
+ * and VERSION will contain the comma separated list of arguments to the VERSION_FMT string. */
+#if defined(__clang_version__)
+/* Clang does its own thing. */
+#  ifdef __apple_build_version__
+#    define VERSION_FMT ", Apple Clang %s"
+#  else
+#    define VERSION_FMT ", Clang %s"
+#  endif
+#  define VERSION  __clang_version__
+#elif defined(__VERSION__)
+/* GCC and ICC */
+#  define VERSION_FMT ", %s"
+#  ifdef __INTEL_COMPILER /* icc adds its prefix */
+#    define VERSION_STRING __VERSION__
+#  else /* assume GCC */
+#    define VERSION "GCC " __VERSION__
+#  endif
+#elif defined(_MSC_FULL_VER) && defined(_MSC_BUILD)
+/* "For example, if the version number of the Visual C++ compiler is 15.00.20706.01, the _MSC_FULL_VER macro
+ * evaluates to 150020706." https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=vs-2017 */
+#  define VERSION  _MSC_FULL_VER / 10000000 % 100, _MSC_FULL_VER / 100000 % 100, _MSC_FULL_VER % 100000, _MSC_BUILD
+#  define VERSION_FMT ", MSVC %02i.%02i.%05i.%02i"
+#elif defined(__TINYC__)
+/* tcc stores its version in the __TINYC__ macro. */
+#  define VERSION_FMT ", tcc %i.%i.%i"
+#  define VERSION __TINYC__ / 10000 % 100, __TINYC__ / 100 % 100, __TINYC__ % 100
+#else
+#  define VERSION_FMT "%s"
+#  define VERSION ""
+#endif
+
+/* makes the next part easier */
+#if defined(__x86_64__) || defined(_M_AMD64) || defined(_M_X64)
+#   define ARCH_X86 "x86_64"
+#elif defined(__i386__) || defined(_M_X86) || defined(_M_X86_FP)
+#   define ARCH_X86 "i386"
+#endif
+
+/* Try to detect the architecture. */
+#if defined(ARCH_X86)
+#  if defined(__AVX2__)
+#    define ARCH ARCH_X86 " + AVX2"
+#  elif defined(__AVX__)
+#    define ARCH ARCH_X86 " + AVX"
+#  elif defined(__SSE2__)
+#     define ARCH ARCH_X86 " + SSE2"
+#  else
+#      define ARCH ARCH_X86
+#  endif
+#elif defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
+#  define ARCH "aarch64"
+#elif defined(__arm__) || defined(__thumb__) || defined(__thumb2__) || defined(_M_ARM)
+#  if defined(__ARM_NEON) || defined(__ARM_NEON__)
+#    define ARCH "arm + NEON"
+#  else
+#    define ARCH "arm"
+#  endif
+#elif defined(__powerpc64__) || defined(__ppc64__) || defined(__PPC64__)
+#  if defined(__GNUC__) && defined(__VSX__)
+#    define ARCH "ppc64 + VSX"
+#  else
+#    define ARCH "ppc64"
+#  endif
+#elif defined(__powerpc__) || defined(__ppc__) || defined(__PPC__)
+#  define ARCH "ppc"
+#elif defined(__AVR)
+#  define ARCH "AVR"
+#elif defined(__mips64)
+#  define ARCH "mips64"
+#elif defined(__mips)
+#  define ARCH "mips"
+#else
+#  define ARCH "unknown"
+#endif
+
 static const int g_nbBits = (int)(sizeof(void*)*8);
 static const char g_lename[] = "little endian";
 static const char g_bename[] = "big endian";
 #define ENDIAN_NAME (BMK_isLittleEndian() ? g_lename : g_bename)
 static const char author[] = "Yann Collet";
-#define WELCOME_MESSAGE(exename) "%s %s (%i-bits %s), by %s \n", \
-                    exename, PROGRAM_VERSION, g_nbBits, ENDIAN_NAME, author
+#define WELCOME_MESSAGE(exename) "%s %s (%i-bits %s %s)" VERSION_FMT ", by %s \n", \
+                    exename, PROGRAM_VERSION, g_nbBits, ARCH, ENDIAN_NAME, VERSION, author
 
 #define KB *( 1<<10)
 #define MB *( 1<<20)
@@ -215,9 +342,13 @@ static U32 localXXH32(const void* buffer, size_t bufferSize, U32 seed) { return 
 
 static U32 localXXH64(const void* buffer, size_t bufferSize, U32 seed) { return (U32)XXH64(buffer, bufferSize, seed); }
 
+static U32 localXXH3_64b(const void* buffer, size_t bufferSize, U32 seed) { (void)seed; return (U32)XXH3_64bits(buffer, bufferSize); }
+
+static U32 localXXH128(const void* buffer, size_t bufferSize, U32 seed) { return (U32)(XXH128(buffer, bufferSize, seed).low64); }
+
 static void BMK_benchHash(hashFunction h, const char* hName, const void* buffer, size_t bufferSize)
 {
-    U32 nbh_perIteration = ((300 MB) / (bufferSize+1)) + 1;  /* first loop conservatively aims for 300 MB/s */
+    U32 nbh_perIteration = (U32)((300 MB) / (bufferSize+1)) + 1;  /* first loop conservatively aims for 300 MB/s */
     U32 iterationNb;
     double fastestH = 100000000.;
 
@@ -232,20 +363,29 @@ static void BMK_benchHash(hashFunction h, const char* hName, const void* buffer,
         while (clock() == cStart);   /* starts clock() at its exact beginning */
         cStart = clock();
 
-        {   U32 i;
-            for (i=0; i<nbh_perIteration; i++)
-                r += h(buffer, bufferSize, i);
+        {   U32 u;
+            for (u=0; u<nbh_perIteration; u++)
+                r += h(buffer, bufferSize, u);
         }
-        if (r==0) DISPLAYLEVEL(3,".\r");  /* do something with r to avoid compiler "optimizing" away hash function */
-        {   double const timeS = ((double)BMK_clockSpan(cStart) / CLOCKS_PER_SEC) / nbh_perIteration;
+        if (r==0) DISPLAYLEVEL(3,".\r");  /* do something with r to defeat compiler "optimizing" away hash */
+
+        {   clock_t const nbTicks = BMK_clockSpan(cStart);
+            double const timeS = ((double)nbTicks / CLOCKS_PER_SEC) / nbh_perIteration;
+            if (nbTicks == 0) { /* faster than resolution timer */
+                nbh_perIteration *= 100;
+                iterationNb--;   /* try again */
+                continue;
+            }
             if (timeS < fastestH) fastestH = timeS;
             DISPLAYLEVEL(2, "%1u-%-17.17s : %10u -> %8.0f it/s (%7.1f MB/s) \r",
                     iterationNb, hName, (U32)bufferSize,
                     (double)1 / fastestH,
                     ((double)bufferSize / (1<<20)) / fastestH );
         }
-        assert(fastestH > 1./2000000000);  /* avoid U32 overflow */
-        nbh_perIteration = (U32)(1 / fastestH) + 1;  /* adjust nbh_perIteration to last roughtly one second */
+        {   double nbh_perSecond = (1 / fastestH) + 1;
+            if (nbh_perSecond > (double)(4000U<<20)) nbh_perSecond = (double)(4000U<<20);
+            nbh_perIteration = (U32)nbh_perSecond;
+        }
     }
     DISPLAYLEVEL(1, "%-19.19s : %10u -> %8.0f it/s (%7.1f MB/s) \n", hName, (U32)bufferSize,
         (double)1 / fastestH,
@@ -280,8 +420,24 @@ static int BMK_benchMem(const void* buffer, size_t bufferSize, U32 specificTest)
     if ((specificTest==0) | (specificTest==4))
         BMK_benchHash(localXXH64, "XXH64 unaligned", ((const char*)buffer)+3, bufferSize);
 
-    if (specificTest > 4) {
-        DISPLAY("benchmark mode invalid \n");
+    /* Bench XXH3 */
+    if ((specificTest==0) | (specificTest==5))
+        BMK_benchHash(localXXH3_64b, "XXH3_64bits", buffer, bufferSize);
+
+    /* Bench XXH3 on Unaligned input */
+    if ((specificTest==0) | (specificTest==6))
+        BMK_benchHash(localXXH3_64b, "XXH3_64b unaligned", ((const char*)buffer)+3, bufferSize);
+
+    /* Bench XXH3 */
+    if ((specificTest==0) | (specificTest==7))
+        BMK_benchHash(localXXH128, "XXH128", buffer, bufferSize);
+
+    /* Bench XXH3 on Unaligned input */
+    if ((specificTest==0) | (specificTest==8))
+        BMK_benchHash(localXXH128, "XXH128 unaligned", ((const char*)buffer)+3, bufferSize);
+
+    if (specificTest > 8) {
+        DISPLAY("Benchmark mode invalid.\n");
         return 1;
     }
     return 0;
@@ -315,12 +471,12 @@ static int BMK_benchFiles(const char** fileNamesTable, int nbFiles, U32 specific
 
             /* Checks */
             if (inFile==NULL){
-                DISPLAY("Pb opening %s\n", inFileName);
+                DISPLAY("Error: Could not open '%s': %s.\n", inFileName, strerror(errno));
                 free(buffer);
                 return 11;
             }
             if(!buffer) {
-                DISPLAY("\nError: not enough memory!\n");
+                DISPLAY("\nError: Out of memory.\n");
                 fclose(inFile);
                 return 12;
             }
@@ -330,7 +486,7 @@ static int BMK_benchFiles(const char** fileNamesTable, int nbFiles, U32 specific
             {   size_t const readSize = fread(alignedBuffer, 1, benchedSize, inFile);
                 fclose(inFile);
                 if(readSize != benchedSize) {
-                    DISPLAY("\nError: problem reading file '%s' !!    \n", inFileName);
+                    DISPLAY("\nError: Could not read '%s': %s.\n", inFileName, strerror(errno));
                     free(buffer);
                     return 13;
             }   }
@@ -346,16 +502,15 @@ static int BMK_benchFiles(const char** fileNamesTable, int nbFiles, U32 specific
 }
 
 
-
-static int BMK_benchInternal(size_t keySize, int specificTest)
+static int BMK_benchInternal(size_t keySize, U32 specificTest)
 {
     void* const buffer = calloc(keySize+16+3, 1);
-    if(!buffer) {
-        DISPLAY("\nError: not enough memory!\n");
+    if (!buffer) {
+        DISPLAY("\nError: Out of memory.\n");
         return 12;
     }
 
-    {   void* const alignedBuffer = ((char*)buffer+15) - (((size_t)((char*)buffer+15)) & 0xF);  /* align on next 16 bytes */
+    {   const void* const alignedBuffer = ((char*)buffer+15) - (((size_t)((char*)buffer+15)) & 0xF);  /* align on next 16 bytes */
 
         /* bench */
         DISPLAYLEVEL(1, "Sample of ");
@@ -374,105 +529,361 @@ static int BMK_benchInternal(size_t keySize, int specificTest)
 }
 
 
-static void BMK_checkResult(U32 r1, U32 r2)
-{
-    static int nbTests = 1;
-    if (r1==r2) {
-        DISPLAYLEVEL(3, "\rTest%3i : %08X == %08X   ok   ", nbTests, r1, r2);
-    } else {
-        DISPLAY("\rERROR : Test%3i : %08X <> %08X   !!!!!   \n", nbTests, r1, r2);
-        exit(1);
-    }
-    nbTests++;
-}
+/* ************************************************
+ * Self-test :
+ * ensure results consistency accross platforms
+ *********************************************** */
 
-
-static void BMK_checkResult64(U64 r1, U64 r2)
+static void BMK_checkResult32(XXH32_hash_t r1, XXH32_hash_t r2)
 {
     static int nbTests = 1;
     if (r1!=r2) {
-        DISPLAY("\rERROR : Test%3i : 64-bit values non equals   !!!!!   \n", nbTests);
-        DISPLAY("\r %08X%08X != %08X%08X \n", (U32)(r1>>32), (U32)r1, (U32)(r2>>32), (U32)r2);
+        DISPLAY("\rError: 32-bit hash test %i: Internal sanity check failed!\n", nbTests);
+        DISPLAY("\rGot 0x%08X, expected 0x%08X.\n", r1, r2);
+        DISPLAY("\rNote: If you modified the hash functions, make sure to either update the values\n"
+                  "or temporarily comment out the tests in BMK_sanityCheck.\n");
+        exit(1);
+    }
+    nbTests++;
+}
+
+static void BMK_checkResult64(XXH64_hash_t r1, XXH64_hash_t r2)
+{
+    static int nbTests = 1;
+    if (r1!=r2) {
+        DISPLAY("\rError: 64-bit hash test %i: Internal sanity check failed!\n", nbTests);
+        DISPLAY("\rGot 0x%08X%08XULL, expected 0x%08X%08XULL.\n", (U32)(r1>>32), (U32)r1, (U32)(r2>>32), (U32)r2);
+        DISPLAY("\rNote: If you modified the hash functions, make sure to either update the values\n"
+                  "or temporarily comment out the tests in BMK_sanityCheck.\n");
+        exit(1);
+    }
+    nbTests++;
+}
+
+static void BMK_checkResult128(XXH128_hash_t r1, XXH128_hash_t r2)
+{
+    static int nbTests = 1;
+    if ((r1.low64 != r2.low64) || (r1.high64 != r2.high64)) {
+        DISPLAY("\rError: 128-bit hash test %i: Internal sanity check failed.\n", nbTests);
+        DISPLAY("\rGot { 0x%08X%08XULL, 0x%08X%08XULL }, expected { 0x%08X%08XULL, %08X%08XULL } \n",
+                (U32)(r1.low64>>32), (U32)r1.low64, (U32)(r1.high64>>32), (U32)r1.high64,
+                (U32)(r2.low64>>32), (U32)r2.low64, (U32)(r2.high64>>32), (U32)r2.high64 );
+        DISPLAY("\rNote: If you modified the hash functions, make sure to either update the values\n"
+                  "or temporarily comment out the tests in BMK_sanityCheck.\n");
         exit(1);
     }
     nbTests++;
 }
 
 
-static void BMK_testSequence64(void* sentence, size_t len, U64 seed, U64 Nresult)
-{
-    XXH64_state_t state;
-    U64 Dresult;
-    size_t pos;
-
-    Dresult = XXH64(sentence, len, seed);
-    BMK_checkResult64(Dresult, Nresult);
-
-    (void)XXH64_reset(&state, seed);
-    (void)XXH64_update(&state, sentence, len);
-    Dresult = XXH64_digest(&state);
-    BMK_checkResult64(Dresult, Nresult);
-
-    (void)XXH64_reset(&state, seed);
-    for (pos=0; pos<len; pos++)
-        (void)XXH64_update(&state, ((char*)sentence)+pos, 1);
-    Dresult = XXH64_digest(&state);
-    BMK_checkResult64(Dresult, Nresult);
-}
-
-
-static void BMK_testSequence(const void* sequence, size_t len, U32 seed, U32 Nresult)
+static void BMK_testXXH32(const void* sequence, size_t len, U32 seed, U32 Nresult)
 {
     XXH32_state_t state;
-    U32 Dresult;
     size_t pos;
 
-    Dresult = XXH32(sequence, len, seed);
-    BMK_checkResult(Dresult, Nresult);
+    BMK_checkResult32(XXH32(sequence, len, seed), Nresult);
 
     (void)XXH32_reset(&state, seed);
     (void)XXH32_update(&state, sequence, len);
-    Dresult = XXH32_digest(&state);
-    BMK_checkResult(Dresult, Nresult);
+    BMK_checkResult32(XXH32_digest(&state), Nresult);
 
     (void)XXH32_reset(&state, seed);
     for (pos=0; pos<len; pos++)
         (void)XXH32_update(&state, ((const char*)sequence)+pos, 1);
-    Dresult = XXH32_digest(&state);
-    BMK_checkResult(Dresult, Nresult);
+    BMK_checkResult32(XXH32_digest(&state), Nresult);
 }
 
+static void BMK_testXXH64(const void* data, size_t len, U64 seed, U64 Nresult)
+{
+    XXH64_state_t state;
+    size_t pos;
 
-#define SANITY_BUFFER_SIZE 101
+    BMK_checkResult64(XXH64(data, len, seed), Nresult);
+
+    (void)XXH64_reset(&state, seed);
+    (void)XXH64_update(&state, data, len);
+    BMK_checkResult64(XXH64_digest(&state), Nresult);
+
+    (void)XXH64_reset(&state, seed);
+    for (pos=0; pos<len; pos++)
+        (void)XXH64_update(&state, ((const char*)data)+pos, 1);
+    BMK_checkResult64(XXH64_digest(&state), Nresult);
+}
+
+static void BMK_testXXH3(const void* data, size_t len, U64 seed, U64 Nresult)
+{
+    {   U64 const Dresult = XXH3_64bits_withSeed(data, len, seed);
+        BMK_checkResult64(Dresult, Nresult);
+    }
+
+    /* check that the no-seed variant produces same result as seed==0 */
+    if (seed == 0) {
+        U64 const Dresult = XXH3_64bits(data, len);
+        BMK_checkResult64(Dresult, Nresult);
+    }
+
+    /* streaming API test */
+    {   XXH3_state_t state;
+
+        /* single ingestion */
+        (void)XXH3_64bits_reset_withSeed(&state, seed);
+        (void)XXH3_64bits_update(&state, data, len);
+        BMK_checkResult64(XXH3_64bits_digest(&state), Nresult);
+
+        if (len > 3) {
+            /* 2 ingestions */
+            (void)XXH3_64bits_reset_withSeed(&state, seed);
+            (void)XXH3_64bits_update(&state, data, 3);
+            (void)XXH3_64bits_update(&state, (const char*)data+3, len-3);
+            BMK_checkResult64(XXH3_64bits_digest(&state), Nresult);
+        }
+
+        /* byte by byte ingestion */
+        {   size_t pos;
+            (void)XXH3_64bits_reset_withSeed(&state, seed);
+            for (pos=0; pos<len; pos++)
+                (void)XXH3_64bits_update(&state, ((const char*)data)+pos, 1);
+            BMK_checkResult64(XXH3_64bits_digest(&state), Nresult);
+    }   }
+}
+
+static void BMK_testXXH3_withSecret(const void* data, size_t len, const void* secret, size_t secretSize, U64 Nresult)
+{
+    {   U64 const Dresult = XXH3_64bits_withSecret(data, len, secret, secretSize);
+        BMK_checkResult64(Dresult, Nresult);
+    }
+
+    /* streaming API test */
+    {   XXH3_state_t state;
+        (void)XXH3_64bits_reset_withSecret(&state, secret, secretSize);
+        (void)XXH3_64bits_update(&state, data, len);
+        BMK_checkResult64(XXH3_64bits_digest(&state), Nresult);
+
+        /* byte by byte ingestion */
+        {   size_t pos;
+            (void)XXH3_64bits_reset_withSecret(&state, secret, secretSize);
+            for (pos=0; pos<len; pos++)
+                (void)XXH3_64bits_update(&state, ((const char*)data)+pos, 1);
+            BMK_checkResult64(XXH3_64bits_digest(&state), Nresult);
+    }   }
+}
+
+void BMK_testXXH128(const void* data, size_t len, U64 seed, XXH128_hash_t Nresult)
+{
+    {   XXH128_hash_t const Dresult = XXH3_128bits_withSeed(data, len, seed);
+        BMK_checkResult128(Dresult, Nresult);
+    }
+
+    /* check that XXH128() is identical to XXH3_128bits_withSeed() */
+    {   XXH128_hash_t const Dresult2 = XXH128(data, len, seed);
+        BMK_checkResult128(Dresult2, Nresult);
+    }
+
+    /* check that the no-seed variant produces same result as seed==0 */
+    if (seed == 0) {
+        XXH128_hash_t const Dresult = XXH3_128bits(data, len);
+        BMK_checkResult128(Dresult, Nresult);
+    }
+
+    /* streaming API test */
+    {   XXH3_state_t state;
+
+        /* single ingestion */
+        (void)XXH3_128bits_reset_withSeed(&state, seed);
+        (void)XXH3_128bits_update(&state, data, len);
+        BMK_checkResult128(XXH3_128bits_digest(&state), Nresult);
+
+        if (len > 3) {
+            /* 2 ingestions */
+            (void)XXH3_128bits_reset_withSeed(&state, seed);
+            (void)XXH3_128bits_update(&state, data, 3);
+            (void)XXH3_128bits_update(&state, (const char*)data+3, len-3);
+            BMK_checkResult128(XXH3_128bits_digest(&state), Nresult);
+        }
+
+        /* byte by byte ingestion */
+        {   size_t pos;
+            (void)XXH3_128bits_reset_withSeed(&state, seed);
+            for (pos=0; pos<len; pos++)
+                (void)XXH3_128bits_update(&state, ((const char*)data)+pos, 1);
+            BMK_checkResult128(XXH3_128bits_digest(&state), Nresult);
+    }   }
+
+}
+
+#define SANITY_BUFFER_SIZE 2243
 static void BMK_sanityCheck(void)
 {
-    static const U32 prime = 2654435761U;
+    const U32 prime = 2654435761U;
+    const U64 prime64 = 11400714785074694797ULL;
     BYTE sanityBuffer[SANITY_BUFFER_SIZE];
-    U32 byteGen = prime;
+    U64 byteGen = prime;
 
     int i;
     for (i=0; i<SANITY_BUFFER_SIZE; i++) {
-        sanityBuffer[i] = (BYTE)(byteGen>>24);
-        byteGen *= byteGen;
+        sanityBuffer[i] = (BYTE)(byteGen>>56);
+        byteGen *= prime64;
     }
 
-    BMK_testSequence(NULL,          0, 0,     0x02CC5D05);
-    BMK_testSequence(NULL,          0, prime, 0x36B78AE7);
-    BMK_testSequence(sanityBuffer,  1, 0,     0xB85CBEE5);
-    BMK_testSequence(sanityBuffer,  1, prime, 0xD5845D64);
-    BMK_testSequence(sanityBuffer, 14, 0,     0xE5AA0AB4);
-    BMK_testSequence(sanityBuffer, 14, prime, 0x4481951D);
-    BMK_testSequence(sanityBuffer, SANITY_BUFFER_SIZE, 0,     0x1F1AA412);
-    BMK_testSequence(sanityBuffer, SANITY_BUFFER_SIZE, prime, 0x498EC8E2);
 
-    BMK_testSequence64(NULL        ,  0, 0,     0xEF46DB3751D8E999ULL);
-    BMK_testSequence64(NULL        ,  0, prime, 0xAC75FDA2929B17EFULL);
-    BMK_testSequence64(sanityBuffer,  1, 0,     0x4FCE394CC88952D8ULL);
-    BMK_testSequence64(sanityBuffer,  1, prime, 0x739840CB819FA723ULL);
-    BMK_testSequence64(sanityBuffer, 14, 0,     0xCFFA8DB881BC3A3DULL);
-    BMK_testSequence64(sanityBuffer, 14, prime, 0x5B9611585EFCC9CBULL);
-    BMK_testSequence64(sanityBuffer, SANITY_BUFFER_SIZE, 0,     0x0EAB543384F878ADULL);
-    BMK_testSequence64(sanityBuffer, SANITY_BUFFER_SIZE, prime, 0xCAA65939306F1E21ULL);
+    BMK_testXXH32(NULL,          0, 0,     0x02CC5D05);
+    BMK_testXXH32(NULL,          0, prime, 0x36B78AE7);
+    BMK_testXXH32(sanityBuffer,  1, 0,     0xCF65B03E);
+    BMK_testXXH32(sanityBuffer,  1, prime, 0xB4545AA4);
+    BMK_testXXH32(sanityBuffer, 14, 0,     0x1208E7E2);
+    BMK_testXXH32(sanityBuffer, 14, prime, 0x6AF1D1FE);
+    BMK_testXXH32(sanityBuffer,222, 0,     0x5BD11DBD);
+    BMK_testXXH32(sanityBuffer,222, prime, 0x58803C5F);
+
+    BMK_testXXH64(NULL        ,  0, 0,     0xEF46DB3751D8E999ULL);
+    BMK_testXXH64(NULL        ,  0, prime, 0xAC75FDA2929B17EFULL);
+    BMK_testXXH64(sanityBuffer,  1, 0,     0xE934A84ADB052768ULL);
+    BMK_testXXH64(sanityBuffer,  1, prime, 0x5014607643A9B4C3ULL);
+    BMK_testXXH64(sanityBuffer,  4, 0,     0x9136A0DCA57457EEULL);
+    BMK_testXXH64(sanityBuffer, 14, 0,     0x8282DCC4994E35C8ULL);
+    BMK_testXXH64(sanityBuffer, 14, prime, 0xC3BD6BF63DEB6DF0ULL);
+    BMK_testXXH64(sanityBuffer,222, 0,     0xB641AE8CB691C174ULL);
+    BMK_testXXH64(sanityBuffer,222, prime, 0x20CB8AB7AE10C14AULL);
+
+    BMK_testXXH3(NULL,           0, 0,       0);                      /* zero-length hash is always 0 */
+    BMK_testXXH3(NULL,           0, prime64, 0);
+    BMK_testXXH3(sanityBuffer,   1, 0,       0x7198D737CFE7F386ULL);  /*  1 -  3 */
+    BMK_testXXH3(sanityBuffer,   1, prime64, 0xB70252DB7161C2BDULL);  /*  1 -  3 */
+    BMK_testXXH3(sanityBuffer,   6, 0,       0x22CBF5F3E1F6257CULL);  /*  4 -  8 */
+    BMK_testXXH3(sanityBuffer,   6, prime64, 0x6398631C12AB94CEULL);  /*  4 -  8 */
+    BMK_testXXH3(sanityBuffer,  12, 0,       0xD5361CCEEBB5A0CCULL);  /*  9 - 16 */
+    BMK_testXXH3(sanityBuffer,  12, prime64, 0xC4C125E75A808C3DULL);  /*  9 - 16 */
+    BMK_testXXH3(sanityBuffer,  24, 0,       0x46796F3F78B20F6BULL);  /* 17 - 32 */
+    BMK_testXXH3(sanityBuffer,  24, prime64, 0x60171A7CD0A44C10ULL);  /* 17 - 32 */
+    BMK_testXXH3(sanityBuffer,  48, 0,       0xD8D4D3590D136E11ULL);  /* 33 - 64 */
+    BMK_testXXH3(sanityBuffer,  48, prime64, 0x05441F2AEC2A1296ULL);  /* 33 - 64 */
+    BMK_testXXH3(sanityBuffer,  80, 0,       0xA1DC8ADB3145B86AULL);  /* 65 - 96 */
+    BMK_testXXH3(sanityBuffer,  80, prime64, 0xC9D55256965B7093ULL);  /* 65 - 96 */
+    BMK_testXXH3(sanityBuffer, 112, 0,       0xE43E5717A61D3759ULL);  /* 97 -128 */
+    BMK_testXXH3(sanityBuffer, 112, prime64, 0x5A5F89A3FECE44A5ULL);  /* 97 -128 */
+    BMK_testXXH3(sanityBuffer, 195, 0,       0x6F747739CBAC22A5ULL);  /* 129-240 */
+    BMK_testXXH3(sanityBuffer, 195, prime64, 0x33368E23C7F95810ULL);  /* 129-240 */
+
+    BMK_testXXH3(sanityBuffer, 403, 0,       0x4834389B15D981E8ULL);  /* one block, last stripe is overlapping */
+    BMK_testXXH3(sanityBuffer, 403, prime64, 0x85CE5DFFC7B07C87ULL);  /* one block, last stripe is overlapping */
+    BMK_testXXH3(sanityBuffer, 512, 0,       0x6A1B982631F059A8ULL);  /* one block, finishing at stripe boundary */
+    BMK_testXXH3(sanityBuffer, 512, prime64, 0x10086868CF0ADC99ULL);  /* one block, finishing at stripe boundary */
+    BMK_testXXH3(sanityBuffer,2048, 0,       0xEFEFD4449323CDD4ULL);  /* 2 blocks, finishing at block boundary */
+    BMK_testXXH3(sanityBuffer,2048, prime64, 0x01C85E405ECA3F6EULL);  /* 2 blocks, finishing at block boundary */
+    BMK_testXXH3(sanityBuffer,2240, 0,       0x998C0437486672C7ULL);  /* 3 blocks, finishing at stripe boundary */
+    BMK_testXXH3(sanityBuffer,2240, prime64, 0x4ED38056B87ABC7FULL);  /* 3 blocks, finishing at stripe boundary */
+    BMK_testXXH3(sanityBuffer,2243, 0,       0xA559D20581D742D3ULL);  /* 3 blocks, last stripe is overlapping */
+    BMK_testXXH3(sanityBuffer,2243, prime64, 0x96E051AB57F21FC8ULL);  /* 3 blocks, last stripe is overlapping */
+
+    {   const void* const secret = sanityBuffer + 7;
+        const size_t secretSize = XXH3_SECRET_SIZE_MIN + 11;
+        BMK_testXXH3_withSecret(NULL,           0, secret, secretSize, 0);                      /* zero-length hash is always 0 */
+        BMK_testXXH3_withSecret(sanityBuffer,   1, secret, secretSize, 0x7F69735D618DB3F0ULL);  /*  1 -  3 */
+        BMK_testXXH3_withSecret(sanityBuffer,   6, secret, secretSize, 0xBFCC7CB1B3554DCEULL);  /*  6 -  8 */
+        BMK_testXXH3_withSecret(sanityBuffer,  12, secret, secretSize, 0x8C50DC90AC9206FCULL);  /*  9 - 16 */
+        BMK_testXXH3_withSecret(sanityBuffer,  24, secret, secretSize, 0x1CD2C2EE9B9A0928ULL);  /* 17 - 32 */
+        BMK_testXXH3_withSecret(sanityBuffer,  48, secret, secretSize, 0xA785256D9D65D514ULL);  /* 33 - 64 */
+        BMK_testXXH3_withSecret(sanityBuffer,  80, secret, secretSize, 0x6F3053360D21BBB7ULL);  /* 65 - 96 */
+        BMK_testXXH3_withSecret(sanityBuffer, 112, secret, secretSize, 0x560E82D25684154CULL);  /* 97 -128 */
+        BMK_testXXH3_withSecret(sanityBuffer, 195, secret, secretSize, 0xBA5BDDBC5A767B11ULL);  /* 129-240 */
+
+        BMK_testXXH3_withSecret(sanityBuffer, 403, secret, secretSize, 0xFC3911BBA656DB58ULL);  /* one block, last stripe is overlapping */
+        BMK_testXXH3_withSecret(sanityBuffer, 512, secret, secretSize, 0x306137DD875741F1ULL);  /* one block, finishing at stripe boundary */
+        BMK_testXXH3_withSecret(sanityBuffer,2048, secret, secretSize, 0x2836B83880AD3C0CULL);  /* > one block, at least one scrambling */
+        BMK_testXXH3_withSecret(sanityBuffer,2243, secret, secretSize, 0x3446E248A00CB44AULL);  /* > one block, at least one scrambling, last stripe unaligned */
+    }
+
+
+    {   XXH128_hash_t const expected = { 0, 0 };
+        BMK_testXXH128(NULL,           0, 0,     expected);         /* zero-length hash is { seed, -seed } by default */
+    }
+    {   XXH128_hash_t const expected = { 0, 0 };
+        BMK_testXXH128(NULL,           0, prime, expected);
+    }
+    {   XXH128_hash_t const expected = { 0x7198D737CFE7F386ULL, 0x3EE70EA338F3F1E8ULL };
+        BMK_testXXH128(sanityBuffer,   1, 0,     expected);         /* 1-3 */
+    }
+    {   XXH128_hash_t const expected = { 0x8E05996EC27C0F46ULL, 0x90DFC659A8BDCC0CULL };
+        BMK_testXXH128(sanityBuffer,   1, prime, expected);         /* 1-3 */
+    }
+    {   XXH128_hash_t const expected = { 0x22CBF5F3E1F6257CULL, 0xD4E6C2B94FFC3BFAULL };
+        BMK_testXXH128(sanityBuffer,   6, 0,     expected);         /* 4-8 */
+    }
+    {   XXH128_hash_t const expected = { 0x97B28D3079F8541FULL, 0xEFC0B954298E6555ULL };
+        BMK_testXXH128(sanityBuffer,   6, prime, expected);         /* 4-8 */
+    }
+    {   XXH128_hash_t const expected = { 0x0E0CD01F05AC2F0DULL, 0x2B55C95951070D4BULL };
+        BMK_testXXH128(sanityBuffer,  12, 0,     expected);         /* 9-16 */
+    }
+    {   XXH128_hash_t const expected = { 0xA9DE561CA04CDF37ULL, 0x609E31FDC00A43C9ULL };
+        BMK_testXXH128(sanityBuffer,  12, prime, expected);         /* 9-16 */
+    }
+    {   XXH128_hash_t const expected = { 0x46796F3F78B20F6BULL, 0x58FF55C3926C13FAULL };
+        BMK_testXXH128(sanityBuffer,  24, 0,     expected);         /* 17-32 */
+    }
+    {   XXH128_hash_t const expected = { 0x30D5C4E9EB415C55ULL, 0x8868344B3A4645D0ULL };
+        BMK_testXXH128(sanityBuffer,  24, prime, expected);         /* 17-32 */
+    }
+    {   XXH128_hash_t const expected = { 0xD8D4D3590D136E11ULL, 0x5527A42843020A62ULL };
+        BMK_testXXH128(sanityBuffer,  48, 0,     expected);         /* 33-64 */
+    }
+    {   XXH128_hash_t const expected = { 0x1D8834E1A5407A1CULL, 0x44375B9FB060F541ULL };
+        BMK_testXXH128(sanityBuffer,  48, prime, expected);         /* 33-64 */
+    }
+    {   XXH128_hash_t const expected = { 0x4B9B448ED8DFD3DDULL, 0xE805A6D1A43D70E5ULL };
+        BMK_testXXH128(sanityBuffer,  81, 0,     expected);         /* 65-96 */
+    }
+    {   XXH128_hash_t const expected = { 0xD2D6B075945617BAULL, 0xE58BE5736F6E7550ULL };
+        BMK_testXXH128(sanityBuffer,  81, prime, expected);         /* 65-96 */
+    }
+    {   XXH128_hash_t const expected = { 0xC5A9F97B29EFA44EULL, 0x254DB7BE881E125CULL };
+        BMK_testXXH128(sanityBuffer, 103, 0,     expected);         /* 97-128 */
+    }
+    {   XXH128_hash_t const expected = { 0xFA2086367CDB177FULL, 0x0AEDEA68C988B0C0ULL };
+        BMK_testXXH128(sanityBuffer, 103, prime, expected);         /* 97-128 */
+    }
+    {   XXH128_hash_t const expected = { 0xC3142FDDD9102A3FULL, 0x06F1747E77185F97ULL };
+        BMK_testXXH128(sanityBuffer, 192, 0,     expected);         /* 129-240 */
+    }
+    {   XXH128_hash_t const expected = { 0xA89F07B35987540FULL, 0xCF1B35FB2C557F54ULL };
+        BMK_testXXH128(sanityBuffer, 192, prime, expected);         /* 129-240 */
+    }
+    {   XXH128_hash_t const expected = { 0xA61AC4EB3295F86BULL, 0x33FA7B7598C28A07ULL };
+        BMK_testXXH128(sanityBuffer, 222, 0,     expected);         /* 129-240 */
+    }
+    {   XXH128_hash_t const expected = { 0x54135EB88AD8B75EULL, 0xBC45CE6AE50BCF53ULL };
+        BMK_testXXH128(sanityBuffer, 222, prime, expected);         /* 129-240 */
+    }
+    {   XXH128_hash_t const expected = { 0xB0C48E6D18E9D084ULL, 0xB16FC17E992FF45DULL };
+        BMK_testXXH128(sanityBuffer, 403, 0,     expected);         /* one block, last stripe is overlapping */
+    }
+    {   XXH128_hash_t const expected = { 0x0A1D320C9520871DULL, 0xCE11CB376EC93252ULL };
+        BMK_testXXH128(sanityBuffer, 403, prime64, expected);       /* one block, last stripe is overlapping */
+    }
+    {   XXH128_hash_t const expected = { 0xA03428558AC97327ULL, 0x4ECF51281BA406F7ULL };
+        BMK_testXXH128(sanityBuffer, 512, 0,     expected);         /* one block, finishing at stripe boundary */
+    }
+    {   XXH128_hash_t const expected = { 0xAF67A482D6C893F2ULL, 0x1382D92F25B84D90ULL };
+        BMK_testXXH128(sanityBuffer, 512, prime64, expected);       /* one block, finishing at stripe boundary */
+    }
+    {   XXH128_hash_t const expected = { 0x21901B416B3B9863ULL, 0x212AF8E6326F01E0ULL };
+        BMK_testXXH128(sanityBuffer,2048, 0,     expected);         /* two blocks, finishing at block boundary */
+    }
+    {   XXH128_hash_t const expected = { 0xBDBB2282577DADECULL, 0xF78CDDC2C9A9A692ULL };
+        BMK_testXXH128(sanityBuffer,2048, prime, expected);         /* two blocks, finishing at block boundary */
+    }
+    {   XXH128_hash_t const expected = { 0x00AD52FA9385B6FEULL, 0xC705BAD3356CE302ULL };
+        BMK_testXXH128(sanityBuffer,2240, 0,     expected);         /* two blocks, ends at stripe boundary */
+    }
+    {   XXH128_hash_t const expected = { 0x10FD0072EC68BFAAULL, 0xE1312F3458817F15ULL };
+        BMK_testXXH128(sanityBuffer,2240, prime, expected);         /* two blocks, ends at stripe boundary */
+    }
+    {   XXH128_hash_t const expected = { 0x970C91411533862CULL, 0x4BBD06FF7BFF0AB1ULL };
+        BMK_testXXH128(sanityBuffer,2237, 0,     expected);         /* two blocks, ends at stripe boundary */
+    }
+    {   XXH128_hash_t const expected = { 0xD80282846D814431ULL, 0x14EBB157B84D9785ULL };
+        BMK_testXXH128(sanityBuffer,2237, prime, expected);         /* two blocks, ends at stripe boundary */
+    }
 
     DISPLAYLEVEL(3, "\r%70s\r", "");       /* Clean display line */
     DISPLAYLEVEL(3, "Sanity check -- all tests ok\n");
@@ -559,19 +970,20 @@ static int BMK_hash(const char* fileName,
     /* Check file existence */
     if (fileName == stdinName) {
         inFile = stdin;
+        fileName = "stdin";
         SET_BINARY_MODE(stdin);
     }
     else
         inFile = fopen( fileName, "rb" );
     if (inFile==NULL) {
-        DISPLAY( "Pb opening %s\n", fileName);
+        DISPLAY("Error: Could not open '%s': %s.\n", fileName, strerror(errno));
         return 1;
     }
 
     /* Memory allocation & restrictions */
     buffer = malloc(blockSize);
     if(!buffer) {
-        DISPLAY("\nError: not enough memory!\n");
+        DISPLAY("\nError: Out of memory.\n");
         fclose(inFile);
         return 1;
     }
@@ -699,10 +1111,10 @@ typedef struct {
     char*           lineBuf;
     size_t          blockSize;
     char*           blockBuf;
-    int             strictMode;
-    int             statusOnly;
-    int             warn;
-    int             quiet;
+    U32             strictMode;
+    U32             statusOnly;
+    U32             warn;
+    U32             quiet;
     ParseFileReport report;
 } ParseFileArg;
 
@@ -716,7 +1128,7 @@ typedef struct {
 static GetLineResult getLine(char** lineBuf, int* lineMax, FILE* inFile)
 {
     GetLineResult result = GetLine_ok;
-    int len = 0;
+    size_t len = 0;
 
     if ((*lineBuf == NULL) || (*lineMax<1)) {
         free(*lineBuf);  /* in case it's != NULL */
@@ -737,9 +1149,9 @@ static GetLineResult getLine(char** lineBuf, int* lineMax, FILE* inFile)
         }
 
         /* Make enough space for len+1 (for final NUL) bytes. */
-        if (len+1 >= *lineMax) {
+        if (len+1 >= (size_t)*lineMax) {
             char* newLineBuf = NULL;
-            int newBufSize = *lineMax;
+            size_t newBufSize = (size_t)*lineMax;
 
             newBufSize += (newBufSize/2) + 1; /* x 1.5 */
             if (newBufSize > MAX_LINE_LENGTH) newBufSize = MAX_LINE_LENGTH;
@@ -749,7 +1161,7 @@ static GetLineResult getLine(char** lineBuf, int* lineMax, FILE* inFile)
             if (newLineBuf == NULL) return GetLine_outOfMemory;
 
             *lineBuf = newLineBuf;
-            *lineMax = newBufSize;
+            *lineMax = (int)newBufSize;
         }
 
         if (c == '\n') break;
@@ -880,7 +1292,7 @@ static void parseFile1(ParseFileArg* parseFileArg)
         if (lineNumber == 0) {
             /* This is unlikely happen, but md5sum.c has this
              * error check. */
-            DISPLAY("%s : too many checksum lines\n", inFileName);
+            DISPLAY("%s: Error: Too many checksum lines\n", inFileName);
             report->quit = 1;
             break;
         }
@@ -899,15 +1311,15 @@ static void parseFile1(ParseFileArg* parseFileArg)
                 break;
 
             default:
-                DISPLAY("%s : %lu: unknown error\n", inFileName, lineNumber);
+                DISPLAY("%s:%lu: Error: Unknown error.\n", inFileName, lineNumber);
                 break;
 
             case GetLine_exceedMaxLineLength:
-                DISPLAY("%s : %lu: too long line\n", inFileName, lineNumber);
+                DISPLAY("%s:%lu: Error: Line too long.\n", inFileName, lineNumber);
                 break;
 
             case GetLine_outOfMemory:
-                DISPLAY("%s : %lu: out of memory\n", inFileName, lineNumber);
+                DISPLAY("%s:%lu: Error: Out of memory.\n", inFileName, lineNumber);
                 break;
             }
             report->quit = 1;
@@ -917,7 +1329,7 @@ static void parseFile1(ParseFileArg* parseFileArg)
         if (parseLine(&parsedLine, parseFileArg->lineBuf) != ParseLine_ok) {
             report->nImproperlyFormattedLines++;
             if (parseFileArg->warn) {
-                DISPLAY("%s : %lu: improperly formatted XXHASH checksum line\n"
+                DISPLAY("%s:%lu: Error: Improperly formatted checksum line.\n"
                     , inFileName, lineNumber);
             }
             continue;
@@ -928,7 +1340,7 @@ static void parseFile1(ParseFileArg* parseFileArg)
             report->nImproperlyFormattedLines++;
             report->nMixedFormatLines++;
             if (parseFileArg->warn) {
-                DISPLAY("%s : %lu: improperly formatted XXHASH checksum line (XXH32/64)\n"
+                DISPLAY("%s : %lu: Error: Multiple hash types in one file.\n"
                     , inFileName, lineNumber);
             }
             continue;
@@ -971,15 +1383,15 @@ static void parseFile1(ParseFileArg* parseFileArg)
         switch (lineStatus)
         {
         default:
-            DISPLAY("%s : unknown error\n", inFileName);
+            DISPLAY("%s: Error: Unknown error.\n", inFileName);
             report->quit = 1;
             break;
 
         case LineStatus_failedToOpen:
             report->nOpenOrReadFailures++;
             if (!parseFileArg->statusOnly) {
-                DISPLAYRESULT("%s : %lu: FAILED open or read %s\n"
-                    , inFileName, lineNumber, parsedLine.filename);
+                DISPLAYRESULT("%s:%lu: Could not open or read '%s': %s.\n",
+                    inFileName, lineNumber, parsedLine.filename, strerror(errno));
             }
             break;
 
@@ -1042,13 +1454,14 @@ static int checkFile(const char* inFileName,
     if (inFileName == stdinName) {
         /* note : Since we expect text input for xxhash -c mode,
          * Don't set binary mode for stdin */
+        inFileName = "stdin";
         inFile = stdin;
     } else {
         inFile = fopen( inFileName, "rt" );
     }
 
     if (inFile == NULL) {
-        DISPLAY( "Pb opening %s\n", inFileName);
+        DISPLAY("Error: Could not open '%s': %s\n", inFileName, strerror(errno));
         return 0;
     }
 
@@ -1073,19 +1486,22 @@ static int checkFile(const char* inFileName,
     /* Show error/warning messages.  All messages are copied from md5sum.c
      */
     if (report->nProperlyFormattedLines == 0) {
-        DISPLAY("%s: no properly formatted XXHASH checksum lines found\n", inFileName);
+        DISPLAY("%s: no properly formatted xxHash checksum lines found\n", inFileName);
     } else if (!statusOnly) {
         if (report->nImproperlyFormattedLines) {
-            DISPLAYRESULT("%lu lines are improperly formatted\n"
-                , report->nImproperlyFormattedLines);
+            DISPLAYRESULT("%lu %s are improperly formatted\n"
+                , report->nImproperlyFormattedLines
+                , report->nImproperlyFormattedLines == 1 ? "line" : "lines");
         }
         if (report->nOpenOrReadFailures) {
-            DISPLAYRESULT("%lu listed files could not be read\n"
-                , report->nOpenOrReadFailures);
+            DISPLAYRESULT("%lu listed %s could not be read\n"
+                , report->nOpenOrReadFailures
+                , report->nOpenOrReadFailures == 1 ? "file" : "files");
         }
         if (report->nMismatchedChecksums) {
-            DISPLAYRESULT("%lu computed checksums did NOT match\n"
-                , report->nMismatchedChecksums);
+            DISPLAYRESULT("%lu computed %s did NOT match\n"
+                , report->nMismatchedChecksums
+                , report->nMismatchedChecksums == 1 ? "checksum" : "checksums");
     }   }
 
     /* Result (exit) code logic is copied from
@@ -1164,23 +1580,52 @@ static int badusage(const char* exename)
     return 1;
 }
 
-/*! readU32FromChar() :
-   @return : unsigned integer value read from input in `char` format,
-             0 is no figure at *stringPtr position.
-    Interprets K, KB, KiB, M, MB and MiB suffix.
-    Modifies `*stringPtr`, advancing it to position where reading stopped.
-    Note : function result can overflow if digit string > MAX_UINT */
-static unsigned readU32FromChar(const char** stringPtr)
+static void errorOut(const char* msg)
 {
+    DISPLAY("%s \n", msg); exit(1);
+}
+
+/*! readU32FromCharChecked() :
+ * @return 0 if success, and store the result in *value.
+ *  allows and interprets K, KB, KiB, M, MB and MiB suffix.
+ *  Will also modify `*stringPtr`, advancing it to position where it stopped reading.
+ * @return 1 if an overflow error occurs */
+static int readU32FromCharChecked(const char** stringPtr, unsigned* value)
+{
+    static unsigned const max = (((unsigned)(-1)) / 10) - 1;
     unsigned result = 0;
-    while ((**stringPtr >='0') && (**stringPtr <='9'))
-        result *= 10, result += **stringPtr - '0', (*stringPtr)++ ;
-    if ((**stringPtr=='K') || (**stringPtr=='M')) {
-        result <<= 10;
-        if (**stringPtr=='M') result <<= 10;
+    while ((**stringPtr >='0') && (**stringPtr <='9')) {
+        if (result > max) return 1; /* overflow error */
+        result *= 10;
+        result += (unsigned)(**stringPtr - '0');
         (*stringPtr)++ ;
+    }
+    if ((**stringPtr=='K') || (**stringPtr=='M')) {
+        unsigned const maxK = ((unsigned)(-1)) >> 10;
+        if (result > maxK) return 1; /* overflow error */
+        result <<= 10;
+        if (**stringPtr=='M') {
+            if (result > maxK) return 1; /* overflow error */
+            result <<= 10;
+        }
+        (*stringPtr)++;  /* skip `K` or `M` */
         if (**stringPtr=='i') (*stringPtr)++;
         if (**stringPtr=='B') (*stringPtr)++;
+    }
+    *value = result;
+    return 0;
+}
+
+/*! readU32FromChar() :
+ * @return : unsigned integer value read from input in `char` format.
+ *  allows and interprets K, KB, KiB, M, MB and MiB suffix.
+ *  Will also modify `*stringPtr`, advancing it to position where it stopped reading.
+ *  Note : function will exit() program if digit sequence overflows */
+static unsigned readU32FromChar(const char** stringPtr) {
+    unsigned result;
+    if (readU32FromCharChecked(stringPtr, &result)) {
+        static const char errorMsg[] = "Error: numeric value too large";
+        errorOut(errorMsg);
     }
     return result;
 }

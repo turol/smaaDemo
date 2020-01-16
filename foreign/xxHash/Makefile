@@ -33,16 +33,8 @@ LIBVER_MINOR := $(shell echo $(LIBVER_MINOR_SCRIPT))
 LIBVER_PATCH := $(shell echo $(LIBVER_PATCH_SCRIPT))
 LIBVER := $(LIBVER_MAJOR).$(LIBVER_MINOR).$(LIBVER_PATCH)
 
-# SSE4 detection
-HAVE_SSE4 := $(shell $(CC) -dM -E - < /dev/null | grep "SSE4" > /dev/null && echo 1 || echo 0)
-ifeq ($(HAVE_SSE4), 1)
-NOSSE4 := -mno-sse4
-else
-NOSSE4 :=
-endif
-
-CFLAGS ?= -O2 $(NOSSE4) # disables potential auto-vectorization
-DEBUGFLAGS+=-Wall -Wextra -Wcast-qual -Wcast-align -Wshadow \
+CFLAGS ?= -O3
+DEBUGFLAGS+=-Wall -Wextra -Wconversion -Wcast-qual -Wcast-align -Wshadow \
             -Wstrict-aliasing=1 -Wswitch-enum -Wdeclaration-after-statement \
             -Wstrict-prototypes -Wundef -Wpointer-arith -Wformat-security \
             -Wvla -Wformat=2 -Winit-self -Wfloat-equal -Wwrite-strings \
@@ -50,8 +42,6 @@ DEBUGFLAGS+=-Wall -Wextra -Wcast-qual -Wcast-align -Wshadow \
 CFLAGS += $(DEBUGFLAGS)
 FLAGS   = $(CFLAGS) $(CPPFLAGS) $(MOREFLAGS)
 XXHSUM_VERSION = $(LIBVER)
-MD2ROFF = ronn
-MD2ROFF_FLAGS = --roff --warnings --manual="User Commands" --organization="xxhsum $(XXHSUM_VERSION)"
 
 # Define *.exe as extension for Windows systems
 ifneq (,$(filter Windows%,$(OS)))
@@ -78,15 +68,22 @@ LIBXXH = libxxhash.$(SHARED_EXT_VER)
 
 
 .PHONY: default
+default:  ## generate CLI and libraries in release mode (default for `make`)
 default: DEBUGFLAGS=
 default: lib xxhsum_and_links
 
 .PHONY: all
 all: lib xxhsum xxhsum_inlinedXXH
 
-xxhsum32: CFLAGS += -m32
-xxhsum xxhsum32: xxhash.c xxhsum.c
+xxhsum: xxhash.o xxhsum.o  ## generate command line interface (CLI)
+
+xxhsum32: CFLAGS += -m32  ## generate CLI in 32-bits mode
+xxhsum32: xxhash.c xxhsum.c
 	$(CC) $(FLAGS) $^ $(LDFLAGS) -o $@$(EXT)
+
+xxhash.o: xxhash.h xxh3.h
+
+xxhsum.o: xxhash.h
 
 .PHONY: xxhsum_and_links
 xxhsum_and_links: xxhsum xxh32sum xxh64sum
@@ -94,58 +91,90 @@ xxhsum_and_links: xxhsum xxh32sum xxh64sum
 xxh32sum xxh64sum: xxhsum
 	ln -sf $^ $@
 
+xxhsum_inlinedXXH: CPPFLAGS += -DXXH_INLINE_ALL
 xxhsum_inlinedXXH: xxhsum.c
-	$(CC) $(FLAGS) -DXXH_PRIVATE_API $^ -o $@$(EXT)
+	$(CC) $(FLAGS) $^ -o $@$(EXT)
 
 
 # library
 
 libxxhash.a: ARFLAGS = rcs
 libxxhash.a: xxhash.o
-	@echo compiling static library
-	@$(AR) $(ARFLAGS) $@ $^
+	$(AR) $(ARFLAGS) $@ $^
 
 $(LIBXXH): LDFLAGS += -shared
 ifeq (,$(filter Windows%,$(OS)))
 $(LIBXXH): CFLAGS += -fPIC
 endif
 $(LIBXXH): xxhash.c
-	@echo compiling dynamic library $(LIBVER)
 	$(CC) $(FLAGS) $^ $(LDFLAGS) $(SONAME_FLAGS) -o $@
-	@echo creating versioned links
-	@ln -sf $@ libxxhash.$(SHARED_EXT_MAJOR)
-	@ln -sf $@ libxxhash.$(SHARED_EXT)
+	ln -sf $@ libxxhash.$(SHARED_EXT_MAJOR)
+	ln -sf $@ libxxhash.$(SHARED_EXT)
 
-libxxhash : $(LIBXXH)
+.PHONY: libxxhash
+libxxhash:  ## generate dynamic xxhash library
+libxxhash: $(LIBXXH)
 
+.PHONY: lib
+lib:  ## generate static and dynamic xxhash libraries
 lib: libxxhash.a libxxhash
 
 
-# tests
+# helper targets
 
+AWK = awk
+GREP = grep
+SORT = sort
+
+.PHONY: list
+list:  ## list all Makefile targets
+	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | $(AWK) -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | $(SORT) | egrep -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs
+
+.PHONY: help
+help:  ## list documented targets
+	@$(GREP) -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
+	$(SORT) | \
+	$(AWK) 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+.PHONY: clean
+clean:  ## remove all build artifacts
+	@$(RM) -r *.dSYM   # Mac OS-X specific
+	@$(RM) core *.o libxxhash.*
+	@$(RM) xxhsum$(EXT) xxhsum32$(EXT) xxhsum_inlinedXXH$(EXT) xxh32sum xxh64sum
+	@echo cleaning completed
+
+
+# =================================================
+# tests
+# =================================================
+
+# make check can be run with cross-compiled binaries on emulated environments (qemu user mode)
+# by setting $(RUN_ENV) to the target emulation environment
 .PHONY: check
-check: xxhsum
+check: xxhsum   ## basic tests for xxhsum CLI, set RUN_ENV for emulated environments
 	# stdin
-	./xxhsum < xxhash.c
+	$(RUN_ENV) ./xxhsum < xxhash.c
 	# multiple files
-	./xxhsum xxhash.* xxhsum.*
+	$(RUN_ENV) ./xxhsum xxhash.* xxhsum.*
 	# internal bench
-	./xxhsum -bi1
+	$(RUN_ENV) ./xxhsum -bi1
 	# file bench
-	./xxhsum -bi1 xxhash.c
+	$(RUN_ENV) ./xxhsum -bi1 xxhash.c
+
 
 .PHONY: test-mem
-test-mem: xxhsum
-	# memory tests
-	valgrind --leak-check=yes --error-exitcode=1 ./xxhsum -bi1 xxhash.c
-	valgrind --leak-check=yes --error-exitcode=1 ./xxhsum -H0  xxhash.c
-	valgrind --leak-check=yes --error-exitcode=1 ./xxhsum -H1  xxhash.c
+VALGRIND = valgrind --leak-check=yes --error-exitcode=1
+test-mem: xxhsum  ## valgrind tests for xxhsum CLI, looking for memory leaks
+	$(VALGRIND) ./xxhsum -bi1 xxhash.c
+	$(VALGRIND) ./xxhsum -H0  xxhash.c
+	$(VALGRIND) ./xxhsum -H1  xxhash.c
 
 .PHONY: test32
 test32: clean xxhsum32
 	@echo ---- test 32-bit ----
 	./xxhsum32 -bi1 xxhash.c
 
+.PHONY: test-xxhsum-c
 test-xxhsum-c: xxhsum
 	# xxhsum to/from pipe
 	./xxhsum lib* | ./xxhsum -c -
@@ -168,58 +197,78 @@ test-xxhsum-c: xxhsum
 	echo "00000000  test-expects-file-not-found" | ./xxhsum -c -; test $$? -eq 1
 	@$(RM) -f .test.xxh32 .test.xxh64
 
+.PHONY: armtest
 armtest: clean
 	@echo ---- test ARM compilation ----
 	CC=arm-linux-gnueabi-gcc MOREFLAGS="-Werror -static" $(MAKE) xxhsum
 
+.PHONY: clangtest
 clangtest: clean
 	@echo ---- test clang compilation ----
 	CC=clang MOREFLAGS="-Werror -Wconversion -Wno-sign-conversion" $(MAKE) all
 
+.PHONY: cxxtest
 cxxtest: clean
-	@echo ---- test g++ compilation ----
+	@echo ---- test C++ compilation ----
 	CC="$(CXX) -Wno-deprecated" $(MAKE) all CFLAGS="-O3 -Wall -Wextra -Wundef -Wshadow -Wcast-align -Werror -fPIC"
 
-c90test: clean
+.PHONY: c90test
+c90test: CPPFLAGS += -DXXH_NO_LONG_LONG
+c90test: CFLAGS += -std=c90 -Werror -pedantic
+c90test: xxhash.c
 	@echo ---- test strict C90 compilation [xxh32 only] ----
-	$(CC) -std=c90 -Werror -pedantic -DXXH_NO_LONG_LONG -c xxhash.c
+	$(RM) xxhash.o
+	$(CC) $(FLAGS) $^ $(LDFLAGS) -c
 	$(RM) xxhash.o
 
 usan: CC=clang
-usan: clean
+usan:  ## check CLI runtime for undefined behavior, using clang's sanitizer
 	@echo ---- check undefined behavior - sanitize ----
-	$(MAKE) clean test CC=$(CC) MOREFLAGS="-g -fsanitize=undefined -fno-sanitize-recover=all"
+	$(MAKE) clean
+	$(MAKE) test CC=$(CC) MOREFLAGS="-g -fsanitize=undefined -fno-sanitize-recover=all"
 
 .PHONY: staticAnalyze
-staticAnalyze: clean
-	@echo ---- static analyzer - scan-build ----
-	CFLAGS="-g -Werror" scan-build --status-bugs -v $(MAKE) all
+SCANBUILD ?= scan-build
+staticAnalyze: clean  ## check C source files using $(SCANBUILD) static analyzer
+	@echo ---- static analyzer - $(SCANBUILD) ----
+	CFLAGS="-g -Werror" $(SCANBUILD) --status-bugs -v $(MAKE) all
 
+CPPCHECK ?= cppcheck
 .PHONY: cppcheck
-cppcheck:
-	@echo ---- static analyzer - cppcheck ----
-	cppcheck . --force --enable=warning,portability,performance,style --error-exitcode=1 > /dev/null
+cppcheck:  ## check C source files using $(CPPCHECK) static analyzer
+	@echo ---- static analyzer - $(CPPCHECK) ----
+	$(CPPCHECK) . --force --enable=warning,portability,performance,style --error-exitcode=1 > /dev/null
 
-namespaceTest:
+.PHONY: namespaceTest
+namespaceTest:  ## ensure XXH_NAMESPACE redefines all public symbols
 	$(CC) -c xxhash.c
 	$(CC) -DXXH_NAMESPACE=TEST_ -c xxhash.c -o xxhash2.o
 	$(CC) xxhash.o xxhash2.o xxhsum.c -o xxhsum2  # will fail if one namespace missing (symbol collision)
 	$(RM) *.o xxhsum2  # clean
 
+MD2ROFF ?= ronn
+MD2ROFF_FLAGS ?= --roff --warnings --manual="User Commands" --organization="xxhsum $(XXHSUM_VERSION)"
 xxhsum.1: xxhsum.1.md
 	cat $^ | $(MD2ROFF) $(MD2ROFF_FLAGS) | sed -n '/^\.\\\".*/!p' > $@
 
-man: xxhsum.1
+.PHONY: man
+man: xxhsum.1  ## generate man page from markdown source
 
+.PHONY: clean-man
 clean-man:
 	$(RM) xxhsum.1
 
-preview-man: clean-man man
+.PHONY: preview-man
+preview-man: man
 	man ./xxhsum.1
 
+.PHONY: test
+test: DEBUGFLAGS += -DDEBUGLEVEL=1
 test: all namespaceTest check test-xxhsum-c c90test
 
-test-all: test test32 armtest clangtest cxxtest usan listL120 trailingWhitespace staticAnalyze cppcheck
+.PHONY: test-all
+test-all: CFLAGS += -Werror
+test-all: test test32 clangtest cxxtest usan listL120 trailingWhitespace staticAnalyze
 
 .PHONY: listL120
 listL120:  # extract lines >= 120 characters in *.{c,h}, by Takayuki Matsuoka (note : $$, for Makefile compatibility)
@@ -227,24 +276,13 @@ listL120:  # extract lines >= 120 characters in *.{c,h}, by Takayuki Matsuoka (n
 
 .PHONY: trailingWhitespace
 trailingWhitespace:
-	! grep -E "`printf '[ \\t]$$'`" *.1 *.c *.h LICENSE Makefile cmake_unofficial/CMakeLists.txt
-
-.PHONY: clean
-clean:
-	@$(RM) -r *.dSYM   # Mac OS-X specific
-	@$(RM) core *.o libxxhash.*
-	@$(RM) xxhsum$(EXT) xxhsum32$(EXT) xxhsum_inlinedXXH$(EXT) xxh32sum xxh64sum
-	@echo cleaning completed
+	! $(GREP) -E "`printf '[ \\t]$$'`" xxhsum.1 *.c *.h LICENSE Makefile cmake_unofficial/CMakeLists.txt
 
 
-#-----------------------------------------------------------------------------
+# =========================================================
 # make install is validated only for the following targets
-#-----------------------------------------------------------------------------
+# =========================================================
 ifneq (,$(filter $(shell uname),Linux Darwin GNU/kFreeBSD GNU OpenBSD FreeBSD NetBSD DragonFly SunOS))
-
-.PHONY: list
-list:
-	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs
 
 DESTDIR     ?=
 # directory variables : GNU conventions prefer lowercase
@@ -280,7 +318,7 @@ INSTALL_DATA    ?= $(INSTALL) -m 644
 
 
 .PHONY: install
-install: lib xxhsum
+install: lib xxhsum  ## install libraries, CLI, links and man page
 	@echo Installing libxxhash
 	@$(INSTALL) -d -m 755 $(DESTDIR)$(LIBDIR)
 	@$(INSTALL_DATA) libxxhash.a $(DESTDIR)$(LIBDIR)
@@ -301,7 +339,7 @@ install: lib xxhsum
 	@echo xxhash installation completed
 
 .PHONY: uninstall
-uninstall:
+uninstall:  ## uninstall libraries, CLI, links and man page
 	@$(RM) $(DESTDIR)$(LIBDIR)/libxxhash.a
 	@$(RM) $(DESTDIR)$(LIBDIR)/libxxhash.$(SHARED_EXT)
 	@$(RM) $(DESTDIR)$(LIBDIR)/libxxhash.$(SHARED_EXT_MAJOR)
