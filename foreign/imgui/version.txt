@@ -1,5 +1,6 @@
-commit 6a0d0dab5a9f0b9518a2bc9bb456a69895ae0962
+commit 688cf868ea83db6c2958dd6bf7a20d471d00940b
+Merge: d5efe161 293f74e9
 Author: omar <omarcornut@gmail.com>
-Date:   Wed Jul 31 10:42:32 2019 -0700
+Date:   Tue Sep 24 17:15:48 2019 +0200
 
-    Version 1.72b (patch for nav)
+    Merge branch 'master' of https://github.com/ocornut/imgui
