@@ -1,2 +1,5 @@
-0.9.9.5
-No doc-directory
+commit 4db8f89aace8f04c839b606e15b39fb8383ec732
+Author: Christophe Riccio <christophe.riccio@unity3d.com>
+Date:   Sun Sep 8 15:58:42 2019 +0200
+
+    Fixed quaternion array access #942
