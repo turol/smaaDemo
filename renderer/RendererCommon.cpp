@@ -665,7 +665,7 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 		}
 
 		uint32_t maxOffset = 0;
-		LOG("UBO %u (%u, %u) ranges:\n", ubo.id, idx.set, idx.binding);
+		LOG("UBO %u (%u, %u) ranges:\n", static_cast<uint32_t>(ubo.id), idx.set, idx.binding);
 		for (auto r : compiler.get_active_buffer_ranges(ubo.id)) {
 			LOG("  %u:  %u  %u\n", r.index, static_cast<uint32_t>(r.offset), static_cast<uint32_t>(r.range));
 			maxOffset = std::max(maxOffset, static_cast<uint32_t>(r.offset + r.range));

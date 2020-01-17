@@ -1,8 +1,5 @@
-commit 4ce04480ec5469fe7ebbdd66c3016090a704d81b
-Merge: ffca8735 b97e9b04
+commit f9818f0804e6e73ec8afcc523b7e7f8bfc362632
 Author: Hans-Kristian Arntzen <post@arntzen-software.no>
-Date:   Thu Aug 1 10:01:15 2019 +0200
+Date:   Thu Jan 16 15:24:37 2020 +0100
 
-    Merge pull request #1111 from KhronosGroup/fix-1108
-    
-    Fix severe performance issue with invariant expression invalidation.
+    Update license headers to 2020.
