@@ -4,11 +4,6 @@ d              := $(dir)
 
 
 SUBDIRS:= \
-	glslang \
-	hlsl \
-	OGLCompilersDLL \
-	SPIRV \
-	StandAlone \
 	# empty line
 
 DIRS:=$(addprefix $(d)/,$(SUBDIRS))
@@ -17,14 +12,17 @@ $(eval $(foreach directory, $(DIRS), $(call directory-module,$(directory)) ))
 
 
 FILES:= \
+	hlslAttributes.cpp \
+	hlslGrammar.cpp \
+	hlslOpMap.cpp \
+	hlslParseables.cpp \
+	hlslParseHelper.cpp \
+	hlslScanContext.cpp \
+	hlslTokenStream.cpp \
 	# empty line
 
 
-ifeq ($(INTERNAL_glslang),y)
-
-SRC_glslang:=$(addprefix $(d)/,$(FILES)) $(foreach directory, $(DIRS), $(SRC_$(directory)) )
-
-endif  # INTERNAL_glslang
+SRC_$(d):=$(addprefix $(d)/,$(FILES)) $(foreach directory, $(DIRS), $(SRC_$(directory)) )
 
 
 d  := $(dirstack_$(sp))
