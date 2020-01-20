@@ -37,6 +37,9 @@
     <Filter Include="Source Files\xxHash">
       <UniqueIdentifier>{9da21d25-19ed-4bbf-b9c2-6f95750765c4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\glslang\hlsl">
+      <UniqueIdentifier>{fb402e6b-a1f6-4161-afae-3d4153dc164c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\demo\smaaDemo.cpp">
@@ -225,6 +228,30 @@
     <ClCompile Include="..\foreign\xxHash\xxhash.c">
       <Filter>Source Files\xxHash</Filter>
     </ClCompile>
+    <ClCompile Include="..\foreign\glslang\hlsl\hlslAttributes.cpp">
+      <Filter>Source Files\glslang\hlsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\hlsl\hlslGrammar.cpp">
+      <Filter>Source Files\glslang\hlsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\hlsl\hlslOpMap.cpp">
+      <Filter>Source Files\glslang\hlsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\hlsl\hlslParseables.cpp">
+      <Filter>Source Files\glslang\hlsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\hlsl\hlslParseHelper.cpp">
+      <Filter>Source Files\glslang\hlsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\hlsl\hlslScanContext.cpp">
+      <Filter>Source Files\glslang\hlsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\hlsl\hlslTokenStream.cpp">
+      <Filter>Source Files\glslang\hlsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\glslang\hlsl\pch.cpp">
+      <Filter>Source Files\glslang\hlsl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\fxaa.frag">
@@ -306,6 +333,33 @@
     </ClInclude>
     <ClInclude Include="..\utils\Utils.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\foreign\glslang\hlsl\hlslAttributes.h">
+      <Filter>Source Files\glslang\hlsl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\foreign\glslang\hlsl\hlslGrammar.h">
+      <Filter>Source Files\glslang\hlsl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\foreign\glslang\hlsl\hlslOpMap.h">
+      <Filter>Source Files\glslang\hlsl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\foreign\glslang\hlsl\hlslParseables.h">
+      <Filter>Source Files\glslang\hlsl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\foreign\glslang\hlsl\hlslParseHelper.h">
+      <Filter>Source Files\glslang\hlsl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\foreign\glslang\hlsl\hlslScanContext.h">
+      <Filter>Source Files\glslang\hlsl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\foreign\glslang\hlsl\hlslTokens.h">
+      <Filter>Source Files\glslang\hlsl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\foreign\glslang\hlsl\hlslTokenStream.h">
+      <Filter>Source Files\glslang\hlsl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\foreign\glslang\hlsl\pch.h">
+      <Filter>Source Files\glslang\hlsl</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
