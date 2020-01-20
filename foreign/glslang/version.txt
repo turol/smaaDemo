@@ -1,5 +1,5 @@
-commit 3cea2e5882e3455731a8b6657fb06db913eb3aa1
+commit 3aac2d44b20d2fcedfbded41ca3cfa932b90ae6f
 Author: John Kessenich <cepheus@frii.com>
-Date:   Fri Aug 2 06:34:15 2019 -0600
+Date:   Tue Aug 20 22:42:40 2019 -0600
 
-    Bump revision and give the bots another chance to work.
+    Bump revision.
