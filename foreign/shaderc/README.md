@@ -201,7 +201,6 @@ Optionally, the following tools may be installed on any OS:
  - [`asciidoctor`](http://asciidoctor.org/): for generating documentation.
    - [`pygments.rb`](https://rubygems.org/gems/pygments.rb) required by
      `asciidoctor` for syntax highlighting.
- - [`nosetests`](https://nose.readthedocs.io): for testing the Python code.
 
 ### Building and running Shaderc using Docker
 
@@ -267,6 +266,7 @@ older versions of Shaderc and its dependencies.
 
 * **Python:** [pyshaderc][pyshaderc]
 * **Rust:** [shaderc-rs][shaderc-rs]
+* **Go:** [gshaderc][gshaderc]
 
 [khr-glslang]: https://github.com/KhronosGroup/glslang
 [spirv-tools]: https://github.com/KhronosGroup/SPIRV-Tools
@@ -275,3 +275,4 @@ older versions of Shaderc and its dependencies.
 [shaderc-rs]: https://github.com/google/shaderc-rs
 [appveyor]: https://ci.appveyor.com/project/dneto0/shaderc
 [dawn]: https://dawn.googlesource.com/dawn
+[gshaderc]: https://github.com/celer/gshaderc

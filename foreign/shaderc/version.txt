@@ -1,7 +1,7 @@
-commit 614d79248ef2dea617085475f8d64148b37d7296
+commit df0e683b583580fcdf5670d05de76a82f39aedcb
 Author: Ryan Harrison <rharrison@google.com>
-Date:   Thu Oct 3 16:55:15 2019 -0400
+Date:   Wed Jan 15 10:19:05 2020 -0500
 
-    Revert "Add spvc compiler to returned result (#821)" (#827)
+    Fix incorrect casing on flags in docs (#957)
     
-    This reverts commit 11d05cfd749b05337629eabb1a710c49c9bea612.
+    Fixes #956
