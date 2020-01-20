@@ -15,7 +15,7 @@
 #include <gtest/gtest.h>
 
 #include "common_shaders_for_test.h"
-#include "shaderc/spvc.hpp"
+#include "spvc/spvc.hpp"
 
 using shaderc_spvc::CompilationResult;
 using shaderc_spvc::CompileOptions;
@@ -31,7 +31,8 @@ TEST(Compile, Glsl) {
       kSmokeShaderBinary, sizeof(kSmokeShaderBinary) / sizeof(uint32_t),
       options);
   EXPECT_EQ(shaderc_compilation_status_success, result.GetCompilationStatus());
-  EXPECT_NE(0, result.GetOutput().size());
+  EXPECT_NE(0, result.GetStringOutput().size());
+  EXPECT_EQ(0, result.GetBinaryOutput().size());
 }
 
 TEST(Compile, Hlsl) {
@@ -42,7 +43,8 @@ TEST(Compile, Hlsl) {
       kSmokeShaderBinary, sizeof(kSmokeShaderBinary) / sizeof(uint32_t),
       options);
   EXPECT_EQ(shaderc_compilation_status_success, result.GetCompilationStatus());
-  EXPECT_NE(0, result.GetOutput().size());
+  EXPECT_NE(0, result.GetStringOutput().size());
+  EXPECT_EQ(0, result.GetBinaryOutput().size());
 }
 
 TEST(Compile, Msl) {
@@ -53,7 +55,20 @@ TEST(Compile, Msl) {
       kSmokeShaderBinary, sizeof(kSmokeShaderBinary) / sizeof(uint32_t),
       options);
   EXPECT_EQ(shaderc_compilation_status_success, result.GetCompilationStatus());
-  EXPECT_NE(0, result.GetOutput().size());
+  EXPECT_NE(0, result.GetStringOutput().size());
+  EXPECT_EQ(0, result.GetBinaryOutput().size());
+}
+
+TEST(Compile, Vulkan) {
+  Compiler compiler;
+  CompileOptions options;
+
+  CompilationResult result = compiler.CompileSpvToVulkan(
+      kSmokeShaderBinary, sizeof(kSmokeShaderBinary) / sizeof(uint32_t),
+      options);
+  EXPECT_EQ(shaderc_compilation_status_success, result.GetCompilationStatus());
+  EXPECT_EQ(0, result.GetStringOutput().size());
+  EXPECT_NE(0, result.GetBinaryOutput().size());
 }
 
 }  // anonymous namespace

@@ -16,7 +16,7 @@
 #include <thread>
 
 #include "common_shaders_for_test.h"
-#include "shaderc/spvc.h"
+#include "spvc/spvc.h"
 
 namespace {
 
@@ -91,6 +91,23 @@ TEST(Compile, Msl) {
       shaderc_spvc_compile_options_initialize();
 
   shaderc_spvc_compilation_result_t result = shaderc_spvc_compile_into_msl(
+      compiler, kSmokeShaderBinary,
+      sizeof(kSmokeShaderBinary) / sizeof(uint32_t), options);
+  ASSERT_NE(nullptr, result);
+  EXPECT_EQ(shaderc_compilation_status_success,
+            shaderc_spvc_result_get_status(result));
+
+  shaderc_spvc_result_release(result);
+  shaderc_spvc_compile_options_release(options);
+  shaderc_spvc_compiler_release(compiler);
+}
+
+TEST(Compile, Vulkan) {
+  shaderc_spvc_compiler_t compiler = shaderc_spvc_compiler_initialize();
+  shaderc_spvc_compile_options_t options =
+      shaderc_spvc_compile_options_initialize();
+
+  shaderc_spvc_compilation_result_t result = shaderc_spvc_compile_into_vulkan(
       compiler, kSmokeShaderBinary,
       sizeof(kSmokeShaderBinary) / sizeof(uint32_t), options);
   ASSERT_NE(nullptr, result);

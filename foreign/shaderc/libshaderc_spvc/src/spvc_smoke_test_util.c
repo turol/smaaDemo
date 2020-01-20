@@ -17,7 +17,7 @@
 #include <string.h>
 
 #include "shaderc/shaderc.h"
-#include "shaderc/spvc.h"
+#include "spvc/spvc.h"
 
 typedef shaderc_spvc_compilation_result_t (*CompileInto)(
     const shaderc_spvc_compiler_t, const uint32_t*, size_t,
@@ -47,9 +47,10 @@ int test_exec(shaderc_spvc_compiler_t compiler,
   int ret_val;
   if (shaderc_spvc_result_get_status(result) ==
       shaderc_compilation_status_success) {
-    printf("success! %lu characters of %s\n",
-           (unsigned long)(strlen(shaderc_spvc_result_get_output(result))),
-           target_lang);
+    printf(
+        "success! %lu characters of %s\n",
+        (unsigned long)(strlen(shaderc_spvc_result_get_string_output(result))),
+        target_lang);
     ret_val = 1;
   } else {
     printf("failed to produce %s\n", target_lang);
