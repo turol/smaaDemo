@@ -536,13 +536,13 @@ public:
 
 		struct RTInfo {
 			Rendertargets  id;
-			PassBegin                     passBegin;
-			glm::vec4                     clearValue;
+			PassBegin      passBegin;
+			glm::vec4      clearValue;
 		};
 
-		Rendertargets                 depthStencil_;
+		Rendertargets                                depthStencil_;
 		std::array<RTInfo, MAX_COLOR_RENDERTARGETS>  colorRTs_;
-		std::unordered_set<Rendertargets>  inputRendertargets;
+		std::unordered_set<Rendertargets>            inputRendertargets;
 		unsigned int                                 numSamples_;
 		std::string                                  name_;
 		bool                                         clearDepthAttachment;
