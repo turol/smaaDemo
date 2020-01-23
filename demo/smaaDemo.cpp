@@ -816,7 +816,55 @@ public:
 	}
 
 
-	void reset(Renderer &renderer, std::function<void(void)> processEvents);
+	void reset(Renderer &renderer, std::function<void(void)> processEvents) {
+		assert(state == State::Invalid || state == State::Ready);
+		state = State::Building;
+
+		renderPasses.clear();
+		renderpassesWithExternalRTs.clear();
+		hasExternalRTs = false;
+
+		for (auto &p : pipelines) {
+			renderer.deletePipeline(p.handle);
+			p.handle = PipelineHandle();
+		}
+		pipelines.clear();
+
+		for (auto &rt : rendertargets) {
+			assert(rt.first != Rendertargets::Invalid);
+
+			visitRendertarget(rt.second
+							  , nopExternal
+							  , [&] (InternalRT &i) {
+								  assert(i.handle);
+								  renderer.deleteRenderTarget(i.handle);
+								  i.handle = RenderTargetHandle();
+							  }
+							 );
+		}
+		rendertargets.clear();
+
+		for (auto &p : renderPasses) {
+			auto &rp = p.second;
+			if (rp.handle) {
+				renderer.deleteRenderPass(rp.handle);
+				rp.handle = RenderPassHandle();
+			}
+
+			if (rp.fb) {
+				renderer.deleteFramebuffer(rp.fb);
+				rp.fb = FramebufferHandle();
+			}
+		}
+		renderPasses.clear();
+
+		operations.clear();
+
+		while (!renderer.waitForDeviceIdle()) {
+			processEvents();
+		}
+	}
+
 
 	void renderTarget(Rendertargets rt, const RenderTargetDesc &desc);
 
@@ -2817,56 +2865,6 @@ void SMAADemo::render() {
 	}
 
 	renderGraph.render(renderer);
-}
-
-
-void RenderGraph::reset(Renderer &renderer, std::function<void(void)> processEvents) {
-	assert(state == State::Invalid || state == State::Ready);
-	state = State::Building;
-
-	renderPasses.clear();
-	renderpassesWithExternalRTs.clear();
-	hasExternalRTs = false;
-
-	for (auto &p : pipelines) {
-		renderer.deletePipeline(p.handle);
-		p.handle = PipelineHandle();
-	}
-	pipelines.clear();
-
-	for (auto &rt : rendertargets) {
-		assert(rt.first != Rendertargets::Invalid);
-
-		visitRendertarget(rt.second
-						  , nopExternal
-						  , [&] (InternalRT &i) {
-							  assert(i.handle);
-							  renderer.deleteRenderTarget(i.handle);
-							  i.handle = RenderTargetHandle();
-						  }
-						 );
-	}
-	rendertargets.clear();
-
-	for (auto &p : renderPasses) {
-		auto &rp = p.second;
-		if (rp.handle) {
-			renderer.deleteRenderPass(rp.handle);
-			rp.handle = RenderPassHandle();
-		}
-
-		if (rp.fb) {
-			renderer.deleteFramebuffer(rp.fb);
-			rp.fb = FramebufferHandle();
-		}
-	}
-	renderPasses.clear();
-
-	operations.clear();
-
-	while (!renderer.waitForDeviceIdle()) {
-		processEvents();
-	}
 }
 
 
