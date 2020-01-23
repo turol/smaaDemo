@@ -778,19 +778,19 @@ private:
 	typedef boost::variant<Blit, RenderPasses, ResolveMSAA> Operation;
 
 
-	State                                          state;
-	bool                                           hasExternalRTs;
-	RenderPasses                     currentRP;
-	std::vector<Operation>                         operations;
-	Rendertargets                   finalTarget;
+	State                                            state;
+	bool                                             hasExternalRTs;
+	RenderPasses                                     currentRP;
+	std::vector<Operation>                           operations;
+	Rendertargets                                    finalTarget;
 
 	std::unordered_map<Rendertargets, Rendertarget>  rendertargets;
 
 	// TODO: use hash map
-	std::vector<Pipeline>                          pipelines;
+	std::vector<Pipeline>                            pipelines;
 
-	std::unordered_map<RenderPasses, RenderPass> renderPasses;
-	std::unordered_set<RenderPasses>     renderpassesWithExternalRTs;
+	std::unordered_map<RenderPasses, RenderPass>     renderPasses;
+	std::unordered_set<RenderPasses>                 renderpassesWithExternalRTs;
 
 
 	RenderGraph(const RenderGraph &)                = delete;
