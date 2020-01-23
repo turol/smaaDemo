@@ -877,7 +877,22 @@ public:
 	}
 
 
-	void externalRenderTarget(Rendertargets rt, Format format, Layout initialLayout, Layout finalLayout);
+	void externalRenderTarget(Rendertargets rt, Format format, Layout initialLayout, Layout finalLayout) {
+		assert(state == State::Building);
+		assert(rt != Rendertargets::Invalid);
+		assert(rendertargets.find(rt) == rendertargets.end());
+
+		hasExternalRTs = true;
+
+		ExternalRT e;
+		e.format = format;
+		e.initialLayout = initialLayout;
+		e.finalLayout   = finalLayout;
+		// leave handle undefined, it's set later by bindExternalRT
+		auto temp UNUSED = rendertargets.emplace(rt, e);
+		assert(temp.second);
+	}
+
 
 	void renderPass(RenderPasses rp, const PassDesc &desc, RenderPassFunc f);
 
@@ -2899,23 +2914,6 @@ PipelineHandle RenderGraph::createPipeline(Renderer &renderer, RenderPasses rp, 
 	pipelines.emplace_back(std::move(pipeline));
 
 	return handle;
-}
-
-
-void RenderGraph::externalRenderTarget(Rendertargets rt, Format format, Layout initialLayout, Layout finalLayout) {
-	assert(state == State::Building);
-	assert(rt != Rendertargets::Invalid);
-	assert(rendertargets.find(rt) == rendertargets.end());
-
-	hasExternalRTs = true;
-
-	ExternalRT e;
-	e.format = format;
-	e.initialLayout = initialLayout;
-	e.finalLayout   = finalLayout;
-	// leave handle undefined, it's set later by bindExternalRT
-	auto temp UNUSED = rendertargets.emplace(rt, e);
-	assert(temp.second);
 }
 
 
