@@ -48,23 +48,10 @@ THE SOFTWARE.
 
 #include <windows.h>
 
-// this on the other hand is fucking atrocious
-// they fucked up their LoadLibrary call
-#ifdef LoadLibrary
-#undef LoadLibrary
-#endif  //  LoadLibrary
-
-#define LoadLibrary LoadLibraryA
-
 #endif  // _WIN32
 
 
 #include <vulkan/vulkan.hpp>
-
-
-#ifdef _WIN32
-#undef LoadLibrary
-#endif  // _WIN32
 
 
 #if VK_HEADER_VERSION < 64
