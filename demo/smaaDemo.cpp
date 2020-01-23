@@ -894,7 +894,19 @@ public:
 	}
 
 
-	void renderPass(RenderPasses rp, const PassDesc &desc, RenderPassFunc f);
+	void renderPass(RenderPasses rp, const PassDesc &desc, RenderPassFunc f) {
+		assert(state == State::Building);
+
+		RenderPass temp1;
+		temp1.desc   = desc;
+		temp1.func   = f;
+
+		auto temp2 UNUSED = renderPasses.emplace(rp, temp1);
+		assert(temp2.second);
+
+		operations.push_back(rp);
+	}
+
 
 	void resolveMSAA(Rendertargets source, Rendertargets dest);
 
@@ -2930,20 +2942,6 @@ void RenderGraph::bindExternalRT(Rendertargets rt, RenderTargetHandle handle) {
 					  }
 					  , nopInternal
 					 );
-}
-
-
-void RenderGraph::renderPass(RenderPasses rp, const PassDesc &desc, RenderPassFunc f) {
-	assert(state == State::Building);
-
-	RenderPass temp1;
-	temp1.desc   = desc;
-	temp1.func   = f;
-
-	auto temp2 UNUSED = renderPasses.emplace(rp, temp1);
-	assert(temp2.second);
-
-	operations.push_back(rp);
 }
 
 
