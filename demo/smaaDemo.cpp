@@ -2860,7 +2860,7 @@ void SMAADemo::createCubes() {
 
 
 void SMAADemo::shuffleCubeRendering() {
-	const unsigned int numCubes = cubes.size();
+	const unsigned int numCubes = static_cast<unsigned int>(cubes.size());
 	for (unsigned int i = 0; i < numCubes - 1; i++) {
 		unsigned int victim = random.range(i, numCubes);
 		std::swap(cubes[i], cubes[victim]);
