@@ -11,6 +11,7 @@ local.mk
 *.dll
 
 binaries/*.inc
+binaries/DebugInfo.h
 
 mingw/*.h
 mingw/*.inc
