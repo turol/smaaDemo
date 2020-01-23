@@ -805,7 +805,9 @@ public:
 
 	RenderGraph()
 	: state(State::Invalid)
+	, hasExternalRTs(false)
 	, currentRP(RenderPasses::Invalid)
+	, finalTarget(Rendertargets::Invalid)
 	{
 	}
 
