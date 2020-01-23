@@ -936,7 +936,229 @@ public:
 	}
 
 
-	void build(Renderer &renderer);
+	void build(Renderer &renderer) {
+		assert(state == State::Building);
+		state = State::Ready;
+
+		assert(finalTarget != Rendertargets::Invalid);
+
+		LOG("RenderGraph::build start\n");
+
+		for (auto &p : rendertargets) {
+			assert(p.first != Rendertargets::Invalid);
+
+			visitRendertarget(p.second
+							  , nopExternal
+							  , [&] (InternalRT &i) {
+								  i.handle = renderer.createRenderTarget(i.desc);
+							  }
+							 );
+		}
+
+		// automatically decide layouts
+		{
+			std::unordered_map<Rendertargets, Layout> currentLayouts;
+
+			// initialize final render target to transfer src
+			currentLayouts[finalTarget] = Layout::TransferSrc;
+
+			// initialize external rendertargets final layouts
+			for (const auto &rt : rendertargets) {
+				visitRendertarget(rt.second
+								  , [&rt, &currentLayouts] (const ExternalRT &e) {
+									  currentLayouts[rt.first] = e.finalLayout;
+								  }
+								  , nopInternal
+								 );
+			}
+
+			struct LayoutVisitor final : public boost::static_visitor<void> {
+				std::unordered_map<Rendertargets, Layout> &currentLayouts;
+				RenderGraph &rg;
+
+
+				LayoutVisitor(std::unordered_map<Rendertargets, Layout> &currentLayouts_, RenderGraph &rg_)
+				: currentLayouts(currentLayouts_)
+				, rg(rg_)
+				{
+				}
+
+				void operator()(Blit &b) const {
+					b.finalLayout            = currentLayouts[b.dest];
+					currentLayouts[b.source] = Layout::TransferSrc;
+				}
+
+				void operator()(RenderPasses &rpId) const {
+					auto it = rg.renderPasses.find(rpId);
+					assert(it != rg.renderPasses.end());
+
+					auto &rp     = it->second;
+					auto &rpDesc = rp.rpDesc;
+					auto &desc   = rp.desc;
+
+					rpDesc.name(desc.name_);
+					rpDesc.numSamples(desc.numSamples_);
+
+					if (desc.depthStencil_ != Rendertargets::Invalid) {
+						auto rtIt = rg.rendertargets.find(desc.depthStencil_);
+						assert(rtIt != rg.rendertargets.end());
+
+						Format fmt = getFormat(rtIt->second);
+						assert(fmt != Format::Invalid);
+
+						rpDesc.depthStencil(fmt, PassBegin::DontCare);
+						if (desc.clearDepthAttachment) {
+							rpDesc.clearDepth(desc.depthClearValue);
+						}
+					}
+
+					for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+						auto rtId = desc.colorRTs_[i].id;
+						if (rtId != Rendertargets::Invalid) {
+							auto rtIt = rg.rendertargets.find(rtId);
+							assert(rtIt != rg.rendertargets.end());
+
+							// get format
+							Format fmt = getFormat(rtIt->second);
+							assert(fmt != Format::Invalid);
+
+							auto pb = desc.colorRTs_[i].passBegin;
+							// TODO: check this, might need a forward pass over operations
+							Layout initial = Layout::Undefined;
+							if (pb == PassBegin::Keep) {
+								initial = Layout::ColorAttachment;
+							}
+
+							Layout final = Layout::ColorAttachment;
+							auto layoutIt = currentLayouts.find(rtId);
+							if (layoutIt == currentLayouts.end()) {
+								// unused
+								// TODO: remove it entirely
+							} else {
+								final = layoutIt->second;
+							}
+							assert(final != Layout::Undefined);
+							assert(final != Layout::TransferDst);
+
+							rpDesc.color(i, fmt, pb, initial, final, desc.colorRTs_[i].clearValue);
+							currentLayouts[rtId] = initial;
+						}
+					}
+
+					// mark input rt current layout as shader read
+					for (Rendertargets inputRT : desc.inputRendertargets) {
+						currentLayouts[inputRT] = Layout::ShaderRead;
+					}
+				}
+
+				void operator()(ResolveMSAA &resolve) const {
+					resolve.finalLayout            = currentLayouts[resolve.dest];
+					currentLayouts[resolve.source] = Layout::TransferSrc;
+				}
+			};
+
+			LayoutVisitor lv(currentLayouts, *this);
+			for (auto it = operations.rbegin(); it != operations.rend(); it++) {
+				boost::apply_visitor(lv, *it);
+			}
+
+		}
+
+		for (auto &p : renderPasses) {
+			auto &temp = p.second;
+			const auto &desc = temp.desc;
+
+			assert(!temp.handle);
+			auto rpHandle = renderer.createRenderPass(temp.rpDesc);
+			assert(rpHandle);
+			temp.handle = rpHandle;
+
+			assert(!temp.fb);
+
+			// if this renderpass has external RTs we defer its creation
+			bool hasExternal = false;
+			for (const auto &rt : desc.colorRTs_) {
+				if (rt.id != Rendertargets::Invalid) {
+					auto it = rendertargets.find(rt.id);
+					assert(it != rendertargets.end());
+					if (isExternal(it->second)) {
+						hasExternal = true;
+						break;
+					}
+				}
+			}
+			// TODO: check depthStencil too
+
+			if (!hasExternal) {
+				buildRenderPassFramebuffer(renderer, temp);
+			} else {
+				auto result UNUSED = renderpassesWithExternalRTs.insert(p.first);
+				assert(result.second);
+			}
+		}
+
+		{
+			struct DebugVisitor final : public boost::static_visitor<void> {
+				RenderGraph &rg;
+
+	
+				DebugVisitor(RenderGraph &rg_)
+				: rg(rg_)
+				{
+				}
+
+
+				void operator()(const Blit &b) const {
+					LOG("Blit %s -> %s\t%s\n", to_string(b.source), to_string(b.dest), layoutName(b.finalLayout));
+				}
+
+				void operator()(const RenderPasses &rpId) const {
+					LOG("RenderPass %s\n", to_string(rpId));
+					auto it = rg.renderPasses.find(rpId);
+					assert(it != rg.renderPasses.end());
+					const auto &desc   = it->second.desc;
+					const auto &rpDesc = it->second.rpDesc;
+
+					if (desc.depthStencil_ != Rendertargets::Invalid) {
+						LOG(" depthStencil %s\n", to_string(desc.depthStencil_));
+					}
+
+					for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+						if (desc.colorRTs_[i].id != Rendertargets::Invalid) {
+							const auto &rt = rpDesc.color(i);
+							LOG(" color %u: %s\t%s\t%s\t%s\n", i, to_string(desc.colorRTs_[i].id), passBeginName(rt.passBegin), layoutName(rt.initialLayout), layoutName(rt.finalLayout));
+						}
+					}
+
+					if (!desc.inputRendertargets.empty()) {
+						LOG(" inputs:\n");
+						std::vector<Rendertargets> inputs;
+						inputs.reserve(desc.inputRendertargets.size());
+						for (auto i : desc.inputRendertargets) {
+							inputs.push_back(i);
+						}
+
+						std::sort(inputs.begin(), inputs.end());
+						for (auto i : inputs) {
+							LOG("  %s\n", to_string(i));
+						}
+					}
+				}
+
+				void operator()(const ResolveMSAA &r) const {
+					LOG("ResolveMSAA %s -> %s\t%s\n", to_string(r.source), to_string(r.dest), layoutName(r.finalLayout));
+				}
+			};
+
+			DebugVisitor d(*this);
+			for (const auto &op : operations) {
+				boost::apply_visitor(d, op);
+			}
+		}
+		LOG("RenderGraph::build end\n");
+		logFlush();
+	}
+
 
 	void bindExternalRT(Rendertargets rt, RenderTargetHandle handle);
 
@@ -2964,230 +3186,6 @@ void RenderGraph::bindExternalRT(Rendertargets rt, RenderTargetHandle handle) {
 					  }
 					  , nopInternal
 					 );
-}
-
-
-void RenderGraph::build(Renderer &renderer) {
-	assert(state == State::Building);
-	state = State::Ready;
-
-	assert(finalTarget != Rendertargets::Invalid);
-
-	LOG("RenderGraph::build start\n");
-
-	for (auto &p : rendertargets) {
-		assert(p.first != Rendertargets::Invalid);
-
-		visitRendertarget(p.second
-						  , nopExternal
-						  , [&] (InternalRT &i) {
-							  i.handle = renderer.createRenderTarget(i.desc);
-						  }
-						 );
-	}
-
-	// automatically decide layouts
-	{
-		std::unordered_map<Rendertargets, Layout> currentLayouts;
-
-		// initialize final render target to transfer src
-		currentLayouts[finalTarget] = Layout::TransferSrc;
-
-		// initialize external rendertargets final layouts
-		for (const auto &rt : rendertargets) {
-			visitRendertarget(rt.second
-							  , [&rt, &currentLayouts] (const ExternalRT &e) {
-								  currentLayouts[rt.first] = e.finalLayout;
-							  }
-							  , nopInternal
-							 );
-		}
-
-		struct LayoutVisitor final : public boost::static_visitor<void> {
-			std::unordered_map<Rendertargets, Layout> &currentLayouts;
-			RenderGraph &rg;
-
-
-			LayoutVisitor(std::unordered_map<Rendertargets, Layout> &currentLayouts_, RenderGraph &rg_)
-			: currentLayouts(currentLayouts_)
-			, rg(rg_)
-			{
-			}
-
-			void operator()(Blit &b) const {
-				b.finalLayout            = currentLayouts[b.dest];
-				currentLayouts[b.source] = Layout::TransferSrc;
-			}
-
-			void operator()(RenderPasses &rpId) const {
-				auto it = rg.renderPasses.find(rpId);
-				assert(it != rg.renderPasses.end());
-
-				auto &rp     = it->second;
-				auto &rpDesc = rp.rpDesc;
-				auto &desc   = rp.desc;
-
-				rpDesc.name(desc.name_);
-				rpDesc.numSamples(desc.numSamples_);
-
-				if (desc.depthStencil_ != Rendertargets::Invalid) {
-					auto rtIt = rg.rendertargets.find(desc.depthStencil_);
-					assert(rtIt != rg.rendertargets.end());
-
-					Format fmt = getFormat(rtIt->second);
-					assert(fmt != Format::Invalid);
-
-					rpDesc.depthStencil(fmt, PassBegin::DontCare);
-					if (desc.clearDepthAttachment) {
-						rpDesc.clearDepth(desc.depthClearValue);
-					}
-				}
-
-				for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-					auto rtId = desc.colorRTs_[i].id;
-					if (rtId != Rendertargets::Invalid) {
-						auto rtIt = rg.rendertargets.find(rtId);
-						assert(rtIt != rg.rendertargets.end());
-
-						// get format
-						Format fmt = getFormat(rtIt->second);
-						assert(fmt != Format::Invalid);
-
-						auto pb = desc.colorRTs_[i].passBegin;
-						// TODO: check this, might need a forward pass over operations
-						Layout initial = Layout::Undefined;
-						if (pb == PassBegin::Keep) {
-							initial = Layout::ColorAttachment;
-						}
-
-						Layout final = Layout::ColorAttachment;
-						auto layoutIt = currentLayouts.find(rtId);
-						if (layoutIt == currentLayouts.end()) {
-							// unused
-							// TODO: remove it entirely
-						} else {
-							final = layoutIt->second;
-						}
-						assert(final != Layout::Undefined);
-						assert(final != Layout::TransferDst);
-
-						rpDesc.color(i, fmt, pb, initial, final, desc.colorRTs_[i].clearValue);
-						currentLayouts[rtId] = initial;
-					}
-				}
-
-				// mark input rt current layout as shader read
-				for (Rendertargets inputRT : desc.inputRendertargets) {
-					currentLayouts[inputRT] = Layout::ShaderRead;
-				}
-			}
-
-			void operator()(ResolveMSAA &resolve) const {
-				resolve.finalLayout            = currentLayouts[resolve.dest];
-				currentLayouts[resolve.source] = Layout::TransferSrc;
-			}
-		};
-
-		LayoutVisitor lv(currentLayouts, *this);
-		for (auto it = operations.rbegin(); it != operations.rend(); it++) {
-			boost::apply_visitor(lv, *it);
-		}
-
-	}
-
-	for (auto &p : renderPasses) {
-		auto &temp = p.second;
-		const auto &desc = temp.desc;
-
-		assert(!temp.handle);
-		auto rpHandle = renderer.createRenderPass(temp.rpDesc);
-		assert(rpHandle);
-		temp.handle = rpHandle;
-
-		assert(!temp.fb);
-
-		// if this renderpass has external RTs we defer its creation
-		bool hasExternal = false;
-		for (const auto &rt : desc.colorRTs_) {
-			if (rt.id != Rendertargets::Invalid) {
-				auto it = rendertargets.find(rt.id);
-				assert(it != rendertargets.end());
-				if (isExternal(it->second)) {
-					hasExternal = true;
-					break;
-				}
-			}
-		}
-		// TODO: check depthStencil too
-
-		if (!hasExternal) {
-			buildRenderPassFramebuffer(renderer, temp);
-		} else {
-			auto result UNUSED = renderpassesWithExternalRTs.insert(p.first);
-			assert(result.second);
-		}
-	}
-
-	{
-		struct DebugVisitor final : public boost::static_visitor<void> {
-			RenderGraph &rg;
-
-
-			DebugVisitor(RenderGraph &rg_)
-			: rg(rg_)
-			{
-			}
-
-
-			void operator()(const Blit &b) const {
-				LOG("Blit %s -> %s\t%s\n", to_string(b.source), to_string(b.dest), layoutName(b.finalLayout));
-			}
-
-			void operator()(const RenderPasses &rpId) const {
-				LOG("RenderPass %s\n", to_string(rpId));
-				auto it = rg.renderPasses.find(rpId);
-				assert(it != rg.renderPasses.end());
-				const auto &desc   = it->second.desc;
-				const auto &rpDesc = it->second.rpDesc;
-
-				if (desc.depthStencil_ != Rendertargets::Invalid) {
-					LOG(" depthStencil %s\n", to_string(desc.depthStencil_));
-				}
-
-				for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-					if (desc.colorRTs_[i].id != Rendertargets::Invalid) {
-						const auto &rt = rpDesc.color(i);
-						LOG(" color %u: %s\t%s\t%s\t%s\n", i, to_string(desc.colorRTs_[i].id), passBeginName(rt.passBegin), layoutName(rt.initialLayout), layoutName(rt.finalLayout));
-					}
-				}
-
-				if (!desc.inputRendertargets.empty()) {
-					LOG(" inputs:\n");
-					std::vector<Rendertargets> inputs;
-					inputs.reserve(desc.inputRendertargets.size());
-					for (auto i : desc.inputRendertargets) {
-						inputs.push_back(i);
-					}
-
-					std::sort(inputs.begin(), inputs.end());
-					for (auto i : inputs) {
-						LOG("  %s\n", to_string(i));
-					}
-				}
-			}
-
-			void operator()(const ResolveMSAA &r) const {
-				LOG("ResolveMSAA %s -> %s\t%s\n", to_string(r.source), to_string(r.dest), layoutName(r.finalLayout));
-			}
-		};
-
-		DebugVisitor d(*this);
-		for (const auto &op : operations) {
-			boost::apply_visitor(d, op);
-		}
-	}
-	LOG("RenderGraph::build end\n");
-	logFlush();
 }
 
 
