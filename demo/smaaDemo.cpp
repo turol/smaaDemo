@@ -1176,7 +1176,158 @@ public:
 	}
 
 
-	void render(Renderer &renderer);
+	void render(Renderer &renderer) {
+		assert(state == State::Ready);
+		state = State::Rendering;
+
+		if (hasExternalRTs) {
+			bool hasExternal = false;
+			for (const auto &p : rendertargets) {
+				// if we have external RTs they must be bound by now
+				visitRendertarget(p.second
+								  , [&] (const ExternalRT &e UNUSED) { assert(e.handle); hasExternal = true; }
+								  , nopInternal
+								 );
+			}
+			assert(hasExternal);
+
+			// build framebuffers
+			for (auto rpName : renderpassesWithExternalRTs) {
+				auto it = renderPasses.find(rpName);
+				assert(it != renderPasses.end());
+				auto &rp = it->second;
+
+				assert(!rp.fb);
+				buildRenderPassFramebuffer(renderer, rp);
+				assert(rp.fb);
+			}
+		}
+
+		struct OpVisitor final : public boost::static_visitor<void> {
+			Renderer    &r;
+			RenderGraph &rg;
+
+
+			OpVisitor(Renderer &r_, RenderGraph &rg_)
+			: r(r_)
+			, rg(rg_)
+			{
+			}
+
+
+			void operator()(const Blit &b) const {
+				auto srcIt = rg.rendertargets.find(b.source);
+				assert(srcIt != rg.rendertargets.end());
+				RenderTargetHandle sourceHandle = getHandle(srcIt->second);
+
+				auto destIt = rg.rendertargets.find(b.dest);
+				assert(destIt != rg.rendertargets.end());
+				RenderTargetHandle targetHandle = getHandle(destIt->second);
+
+				r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
+				r.blit(sourceHandle, targetHandle);
+				r.layoutTransition(targetHandle, Layout::TransferDst, b.finalLayout);
+			}
+
+			void operator()(const RenderPasses &rp) const {
+				assert(rg.currentRP == RenderPasses::Invalid);
+				rg.currentRP = rp;
+
+				auto it = rg.renderPasses.find(rp);
+				assert(it != rg.renderPasses.end());
+
+				r.beginRenderPass(it->second.handle, it->second.fb);
+
+				PassResources res;
+				// TODO: build ahead of time, fill here?
+				for (Rendertargets inputRT : it->second.desc.inputRendertargets) {
+					// get rendertarget desc
+					auto rtIt = rg.rendertargets.find(inputRT);
+					assert(rtIt != rg.rendertargets.end());
+
+					// get format
+					Format fmt = getFormat(rtIt->second);
+					assert(fmt != Format::Invalid);
+
+					{
+						// get view from renderer, add to res
+						TextureHandle view = r.getRenderTargetView(getHandle(rtIt->second), fmt);
+						res.rendertargets.emplace(std::make_pair(inputRT, fmt), view);
+						// also add it with Format::Invalid so default works easier
+						res.rendertargets.emplace(std::make_pair(inputRT, Format::Invalid), view);
+					}
+
+					// do the same for additional view format if there is one
+					Format additionalFmt = getAdditionalViewFormat(rtIt->second);
+					if (additionalFmt != Format::Invalid) {
+						assert(additionalFmt != fmt);
+						TextureHandle view = r.getRenderTargetView(getHandle(rtIt->second), additionalFmt);
+						res.rendertargets.emplace(std::make_pair(inputRT, additionalFmt), view);
+					}
+				}
+
+				it->second.func(rp, res);
+				r.endRenderPass();
+
+				assert(rg.currentRP == rp);
+				rg.currentRP = RenderPasses::Invalid;
+			}
+
+			void operator()(const ResolveMSAA &resolve) const {
+				auto srcIt = rg.rendertargets.find(resolve.source);
+				assert(srcIt != rg.rendertargets.end());
+				RenderTargetHandle sourceHandle = getHandle(srcIt->second);
+
+				auto destIt = rg.rendertargets.find(resolve.dest);
+				assert(destIt != rg.rendertargets.end());
+				RenderTargetHandle targetHandle = getHandle(destIt->second);
+
+				r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
+				r.resolveMSAA(sourceHandle, targetHandle);
+				r.layoutTransition(targetHandle, Layout::TransferDst, resolve.finalLayout);
+			}
+		};
+
+		for (const auto &op : operations) {
+			boost::apply_visitor(OpVisitor(renderer, *this), op);
+		}
+
+		{
+			auto it = rendertargets.find(finalTarget);
+			assert(it != rendertargets.end());
+			renderer.presentFrame(getHandle(it->second));
+		}
+
+		assert(state == State::Rendering);
+		state = State::Ready;
+
+		assert(currentRP == RenderPasses::Invalid);
+
+		if (hasExternalRTs) {
+			for (auto &p : rendertargets) {
+				// clear the bindings
+				visitRendertarget(p.second
+								  , [&] (ExternalRT &e) { assert(e.handle); e.handle = RenderTargetHandle(); }
+								  , nopInternal
+								 );
+			}
+
+			// clear framebuffers
+			for (auto rpName : renderpassesWithExternalRTs) {
+				// clear framebuffers
+				auto it = renderPasses.find(rpName);
+				assert(it != renderPasses.end());
+				auto &rp = it->second;
+
+				assert(rp.fb);
+				// TODO: cache them
+				renderer.deleteFramebuffer(rp.fb);
+				rp.fb = FramebufferHandle();
+			}
+		}
+		assert(currentRP == RenderPasses::Invalid);
+	}
+
 
 	PipelineHandle createPipeline(Renderer &renderer, RenderPasses rp, PipelineDesc &desc);
 };
@@ -3184,159 +3335,6 @@ PipelineHandle RenderGraph::createPipeline(Renderer &renderer, RenderPasses rp, 
 	pipelines.emplace_back(std::move(pipeline));
 
 	return handle;
-}
-
-
-void RenderGraph::render(Renderer &renderer) {
-	assert(state == State::Ready);
-	state = State::Rendering;
-
-	if (hasExternalRTs) {
-		bool hasExternal = false;
-		for (const auto &p : rendertargets) {
-			// if we have external RTs they must be bound by now
-			visitRendertarget(p.second
-							  , [&] (const ExternalRT &e UNUSED) { assert(e.handle); hasExternal = true; }
-							  , nopInternal
-							 );
-		}
-		assert(hasExternal);
-
-		// build framebuffers
-		for (auto rpName : renderpassesWithExternalRTs) {
-			auto it = renderPasses.find(rpName);
-			assert(it != renderPasses.end());
-			auto &rp = it->second;
-
-			assert(!rp.fb);
-			buildRenderPassFramebuffer(renderer, rp);
-			assert(rp.fb);
-		}
-	}
-
-	struct OpVisitor final : public boost::static_visitor<void> {
-		Renderer    &r;
-		RenderGraph &rg;
-
-
-		OpVisitor(Renderer &r_, RenderGraph &rg_)
-		: r(r_)
-		, rg(rg_)
-		{
-		}
-
-
-		void operator()(const Blit &b) const {
-			auto srcIt = rg.rendertargets.find(b.source);
-			assert(srcIt != rg.rendertargets.end());
-			RenderTargetHandle sourceHandle = getHandle(srcIt->second);
-
-			auto destIt = rg.rendertargets.find(b.dest);
-			assert(destIt != rg.rendertargets.end());
-			RenderTargetHandle targetHandle = getHandle(destIt->second);
-
-			r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
-			r.blit(sourceHandle, targetHandle);
-			r.layoutTransition(targetHandle, Layout::TransferDst, b.finalLayout);
-		}
-
-		void operator()(const RenderPasses &rp) const {
-			assert(rg.currentRP == RenderPasses::Invalid);
-			rg.currentRP = rp;
-
-			auto it = rg.renderPasses.find(rp);
-			assert(it != rg.renderPasses.end());
-
-			r.beginRenderPass(it->second.handle, it->second.fb);
-
-			PassResources res;
-			// TODO: build ahead of time, fill here?
-			for (Rendertargets inputRT : it->second.desc.inputRendertargets) {
-				// get rendertarget desc
-				auto rtIt = rg.rendertargets.find(inputRT);
-				assert(rtIt != rg.rendertargets.end());
-
-				// get format
-				Format fmt = getFormat(rtIt->second);
-				assert(fmt != Format::Invalid);
-
-				{
-					// get view from renderer, add to res
-					TextureHandle view = r.getRenderTargetView(getHandle(rtIt->second), fmt);
-					res.rendertargets.emplace(std::make_pair(inputRT, fmt), view);
-					// also add it with Format::Invalid so default works easier
-					res.rendertargets.emplace(std::make_pair(inputRT, Format::Invalid), view);
-				}
-
-				// do the same for additional view format if there is one
-				Format additionalFmt = getAdditionalViewFormat(rtIt->second);
-				if (additionalFmt != Format::Invalid) {
-					assert(additionalFmt != fmt);
-					TextureHandle view = r.getRenderTargetView(getHandle(rtIt->second), additionalFmt);
-					res.rendertargets.emplace(std::make_pair(inputRT, additionalFmt), view);
-				}
-			}
-
-			it->second.func(rp, res);
-			r.endRenderPass();
-
-			assert(rg.currentRP == rp);
-			rg.currentRP = RenderPasses::Invalid;
-		}
-
-		void operator()(const ResolveMSAA &resolve) const {
-			auto srcIt = rg.rendertargets.find(resolve.source);
-			assert(srcIt != rg.rendertargets.end());
-			RenderTargetHandle sourceHandle = getHandle(srcIt->second);
-
-			auto destIt = rg.rendertargets.find(resolve.dest);
-			assert(destIt != rg.rendertargets.end());
-			RenderTargetHandle targetHandle = getHandle(destIt->second);
-
-			r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
-			r.resolveMSAA(sourceHandle, targetHandle);
-			r.layoutTransition(targetHandle, Layout::TransferDst, resolve.finalLayout);
-		}
-	};
-
-	for (const auto &op : operations) {
-		boost::apply_visitor(OpVisitor(renderer, *this), op);
-	}
-
-	{
-		auto it = rendertargets.find(finalTarget);
-		assert(it != rendertargets.end());
-		renderer.presentFrame(getHandle(it->second));
-	}
-
-	assert(state == State::Rendering);
-	state = State::Ready;
-
-	assert(currentRP == RenderPasses::Invalid);
-
-	if (hasExternalRTs) {
-		for (auto &p : rendertargets) {
-			// clear the bindings
-			visitRendertarget(p.second
-							  , [&] (ExternalRT &e) { assert(e.handle); e.handle = RenderTargetHandle(); }
-							  , nopInternal
-							 );
-		}
-
-		// clear framebuffers
-		for (auto rpName : renderpassesWithExternalRTs) {
-			// clear framebuffers
-			auto it = renderPasses.find(rpName);
-			assert(it != renderPasses.end());
-			auto &rp = it->second;
-
-			assert(rp.fb);
-			// TODO: cache them
-			renderer.deleteFramebuffer(rp.fb);
-			rp.fb = FramebufferHandle();
-		}
-	}
-	assert(currentRP == RenderPasses::Invalid);
 }
 
 
