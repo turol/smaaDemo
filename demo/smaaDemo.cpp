@@ -866,7 +866,16 @@ public:
 	}
 
 
-	void renderTarget(Rendertargets rt, const RenderTargetDesc &desc);
+	void renderTarget(Rendertargets rt, const RenderTargetDesc &desc) {
+		assert(state == State::Building);
+		assert(rt != Rendertargets::Invalid);
+
+		InternalRT temp1;
+		temp1.desc   = desc;
+		auto UNUSED temp2 = rendertargets.emplace(rt, temp1);
+		assert(temp2.second);
+	}
+
 
 	void externalRenderTarget(Rendertargets rt, Format format, Layout initialLayout, Layout finalLayout);
 
@@ -2890,17 +2899,6 @@ PipelineHandle RenderGraph::createPipeline(Renderer &renderer, RenderPasses rp, 
 	pipelines.emplace_back(std::move(pipeline));
 
 	return handle;
-}
-
-
-void RenderGraph::renderTarget(Rendertargets rt, const RenderTargetDesc &desc) {
-	assert(state == State::Building);
-	assert(rt != Rendertargets::Invalid);
-
-	InternalRT temp1;
-	temp1.desc   = desc;
-	auto UNUSED temp2 = rendertargets.emplace(rt, temp1);
-	assert(temp2.second);
 }
 
 
