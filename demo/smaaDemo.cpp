@@ -944,6 +944,10 @@ public:
 
 		LOG("RenderGraph::build start\n");
 
+		// TODO: sort operations so they don't have to be added in order
+
+		// create rendertargets
+		// TODO: remove unused RTs first
 		for (auto &p : rendertargets) {
 			assert(p.first != Rendertargets::Invalid);
 
@@ -1064,11 +1068,13 @@ public:
 
 		}
 
+		// create low-level renderpass objects
 		for (auto &p : renderPasses) {
 			auto &temp = p.second;
 			const auto &desc = temp.desc;
 
 			assert(!temp.handle);
+			// TODO: cache render passes
 			auto rpHandle = renderer.createRenderPass(temp.rpDesc);
 			assert(rpHandle);
 			temp.handle = rpHandle;
@@ -1097,6 +1103,7 @@ public:
 			}
 		}
 
+		// write description to debug log
 		{
 			struct DebugVisitor final : public boost::static_visitor<void> {
 				RenderGraph &rg;
