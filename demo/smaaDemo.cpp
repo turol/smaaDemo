@@ -928,7 +928,13 @@ public:
 	}
 
 
-	void presentRenderTarget(Rendertargets rt);
+	void presentRenderTarget(Rendertargets rt) {
+		assert(state == State::Building);
+		assert(rt != Rendertargets::Invalid);
+
+		finalTarget = rt;
+	}
+
 
 	void build(Renderer &renderer);
 
@@ -2959,15 +2965,6 @@ void RenderGraph::bindExternalRT(Rendertargets rt, RenderTargetHandle handle) {
 					  , nopInternal
 					 );
 }
-
-
-void RenderGraph::presentRenderTarget(Rendertargets rt) {
-	assert(state == State::Building);
-	assert(rt != Rendertargets::Invalid);
-
-	finalTarget = rt;
-}
-
 
 
 void RenderGraph::build(Renderer &renderer) {
