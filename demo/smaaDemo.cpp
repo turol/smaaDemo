@@ -1329,7 +1329,31 @@ public:
 	}
 
 
-	PipelineHandle createPipeline(Renderer &renderer, RenderPasses rp, PipelineDesc &desc);
+	PipelineHandle createPipeline(Renderer &renderer, RenderPasses rp, PipelineDesc &desc) {
+		assert(state == State::Ready || state == State::Rendering);
+
+		auto it = renderPasses.find(rp);
+		assert(it != renderPasses.end());
+		desc.renderPass(it->second.handle);
+
+		// TODO: use hash map
+		for (const auto &pipeline : pipelines) {
+			if (pipeline.desc == desc) {
+				return pipeline.handle;
+			}
+		}
+
+		auto handle = renderer.createPipeline(desc);
+
+		Pipeline pipeline;
+		pipeline.desc   = desc;
+		pipeline.handle = handle;
+		pipelines.emplace_back(std::move(pipeline));
+
+		return handle;
+	}
+
+
 };
 
 
@@ -3310,31 +3334,6 @@ void SMAADemo::render() {
 	}
 
 	renderGraph.render(renderer);
-}
-
-
-PipelineHandle RenderGraph::createPipeline(Renderer &renderer, RenderPasses rp, PipelineDesc &desc) {
-	assert(state == State::Ready || state == State::Rendering);
-
-	auto it = renderPasses.find(rp);
-	assert(it != renderPasses.end());
-	desc.renderPass(it->second.handle);
-
-	// TODO: use hash map
-	for (const auto &pipeline : pipelines) {
-		if (pipeline.desc == desc) {
-			return pipeline.handle;
-		}
-	}
-
-	auto handle = renderer.createPipeline(desc);
-
-	Pipeline pipeline;
-	pipeline.desc   = desc;
-	pipeline.handle = handle;
-	pipelines.emplace_back(std::move(pipeline));
-
-	return handle;
 }
 
 
