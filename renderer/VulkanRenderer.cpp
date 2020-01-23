@@ -2645,7 +2645,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 		   , static_cast<unsigned int >(bufferAcquireBarriers.size())
 		   , static_cast<unsigned int >(uploads.size()));
 
-		submit.waitSemaphoreCount   = uploadSemaphores.size();
+		submit.waitSemaphoreCount   = static_cast<uint32_t>(uploadSemaphores.size());
 		submit.pWaitSemaphores      = uploadSemaphores.data();
 		submit.pWaitDstStageMask    = semWaitMasks.data();
 

@@ -1012,7 +1012,7 @@ struct RendererImpl : public RendererBase {
 
 	vk::CommandPool                         transferCmdPool;
 	std::vector<UploadOp>                   uploads;
-	unsigned int                            numUploads;
+	size_t                                  numUploads;
 
 	std::vector<vk::Semaphore>              freeSemaphores;
 
