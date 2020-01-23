@@ -908,7 +908,15 @@ public:
 	}
 
 
-	void resolveMSAA(Rendertargets source, Rendertargets dest);
+	void resolveMSAA(Rendertargets source, Rendertargets dest) {
+		assert(state == State::Building);
+
+		ResolveMSAA op;
+		op.source = source;
+		op.dest   = dest;
+		operations.push_back(op);
+	}
+
 
 	void blit(Rendertargets source, Rendertargets dest);
 
@@ -2942,16 +2950,6 @@ void RenderGraph::bindExternalRT(Rendertargets rt, RenderTargetHandle handle) {
 					  }
 					  , nopInternal
 					 );
-}
-
-
-void RenderGraph::resolveMSAA(Rendertargets source, Rendertargets dest) {
-	assert(state == State::Building);
-
-	ResolveMSAA op;
-	op.source = source;
-	op.dest   = dest;
-	operations.push_back(op);
 }
 
 
