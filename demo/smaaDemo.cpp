@@ -1160,7 +1160,21 @@ public:
 	}
 
 
-	void bindExternalRT(Rendertargets rt, RenderTargetHandle handle);
+	void bindExternalRT(Rendertargets rt, RenderTargetHandle handle) {
+		assert(state == State::Ready);
+		assert(handle);
+
+		auto it = rendertargets.find(rt);
+		assert(it != rendertargets.end());
+		visitRendertarget(it->second
+						  , [&] (ExternalRT &e) {
+							  assert(!e.handle);
+							  e.handle = handle;
+						  }
+						  , nopInternal
+						 );
+	}
+
 
 	void render(Renderer &renderer);
 
@@ -3170,22 +3184,6 @@ PipelineHandle RenderGraph::createPipeline(Renderer &renderer, RenderPasses rp, 
 	pipelines.emplace_back(std::move(pipeline));
 
 	return handle;
-}
-
-
-void RenderGraph::bindExternalRT(Rendertargets rt, RenderTargetHandle handle) {
-	assert(state == State::Ready);
-	assert(handle);
-
-	auto it = rendertargets.find(rt);
-	assert(it != rendertargets.end());
-	visitRendertarget(it->second
-					  , [&] (ExternalRT &e) {
-						  assert(!e.handle);
-						  e.handle = handle;
-					  }
-					  , nopInternal
-					 );
 }
 
 
