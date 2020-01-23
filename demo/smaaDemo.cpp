@@ -918,7 +918,15 @@ public:
 	}
 
 
-	void blit(Rendertargets source, Rendertargets dest);
+	void blit(Rendertargets source, Rendertargets dest) {
+		assert(state == State::Building);
+
+		Blit op;
+		op.source = source;
+		op.dest   = dest;
+		operations.push_back(op);
+	}
+
 
 	void presentRenderTarget(Rendertargets rt);
 
@@ -2950,16 +2958,6 @@ void RenderGraph::bindExternalRT(Rendertargets rt, RenderTargetHandle handle) {
 					  }
 					  , nopInternal
 					 );
-}
-
-
-void RenderGraph::blit(Rendertargets source, Rendertargets dest) {
-	assert(state == State::Building);
-
-	Blit op;
-	op.source = source;
-	op.dest   = dest;
-	operations.push_back(op);
 }
 
 
