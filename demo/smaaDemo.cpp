@@ -440,8 +440,8 @@ template <> struct hash<std::pair<Rendertargets, Format> > {
 
 
 struct SMAAPipelines {
-	PipelineHandle  edgePipeline;
-	PipelineHandle  blendWeightPipeline;
+	PipelineHandle                 edgePipeline;
+	PipelineHandle                 blendWeightPipeline;
 	std::array<PipelineHandle, 2>  neighborPipelines;
 };
 
