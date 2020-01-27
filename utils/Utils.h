@@ -39,6 +39,7 @@ THE SOFTWARE.
 #define PRINTF(x, y)
 #define UNUSED
 #define WARN_UNUSED_RESULT
+#define DEBUG_ASSERTED
 
 #else   // _MSC_VER
 
@@ -46,6 +47,18 @@ THE SOFTWARE.
 #define PRINTF(x, y) __attribute__((format(printf, x, y)))
 #define UNUSED        __attribute__((unused))
 #define WARN_UNUSED_RESULT  __attribute__((warn_unused_result))
+
+
+#ifdef NDEBUG
+
+#define DEBUG_ASSERTED __attribute__((unused))
+
+#else  // NDEBUG
+
+#define DEBUG_ASSERTED
+
+#endif  // NDEBUG
+
 
 #endif  // _MSC_VER
 
