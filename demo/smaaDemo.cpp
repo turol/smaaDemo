@@ -463,12 +463,10 @@ struct Default<RenderPasses> {
 };
 
 
+template <typename RT, typename RP>
 class RenderGraph {
 
 public:
-
-	using RT = Rendertargets;
-	using RP = RenderPasses;
 
 	class PassResources {
 
@@ -1385,7 +1383,7 @@ public:
 
 
 class SMAADemo {
-	using DemoRenderGraph = RenderGraph;
+	using DemoRenderGraph = RenderGraph<Rendertargets, RenderPasses>;
 
 	RendererDesc                                      rendererDesc;
 	glm::uvec2                                        renderSize;
