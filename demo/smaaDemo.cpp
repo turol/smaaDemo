@@ -472,14 +472,14 @@ public:
 
 	class PassResources {
 
-		std::unordered_map<std::pair<Rendertargets, Format>, TextureHandle>  rendertargets;
+		std::unordered_map<std::pair<RT, Format>, TextureHandle>  rendertargets;
 
 		// TODO: buffers
 
 	public:
 
-		TextureHandle get(Rendertargets rt, Format fmt = Format::Invalid) const {
-			std::pair<Rendertargets, Format> p;
+		TextureHandle get(RT rt, Format fmt = Format::Invalid) const {
+			std::pair<RT, Format> p;
 			p.first  = rt;
 			p.second = fmt;
 
@@ -496,13 +496,13 @@ public:
 
 	struct PassDesc {
 		PassDesc()
-		: depthStencil_(Default<Rendertargets>::value)
+		: depthStencil_(Default<RT>::value)
 		, numSamples_(1)
 		, clearDepthAttachment(false)
 		, depthClearValue(1.0f)
 		{
 			for (auto &rt : colorRTs_) {
-				rt.id            = Default<Rendertargets>::value;
+				rt.id            = Default<RT>::value;
 				rt.passBegin     = PassBegin::DontCare;
 				rt.clearValue    = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
 			}
@@ -516,14 +516,14 @@ public:
 		PassDesc &operator=(const PassDesc &)     = default;
 		PassDesc &operator=(PassDesc &&) noexcept = default;
 
-		PassDesc &depthStencil(Rendertargets ds, PassBegin) {
+		PassDesc &depthStencil(RT ds, PassBegin) {
 			depthStencil_ = ds;
 			return *this;
 		}
 
-		PassDesc &color(unsigned int index, Rendertargets id, PassBegin pb, glm::vec4 clear = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {
+		PassDesc &color(unsigned int index, RT id, PassBegin pb, glm::vec4 clear = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {
 			assert(index < MAX_COLOR_RENDERTARGETS);
-			assert(id != Default<Rendertargets>::value);
+			assert(id != Default<RT>::value);
 			colorRTs_[index].id             = id;
 			colorRTs_[index].passBegin      = pb;
 			if (pb == PassBegin::Clear) {
@@ -548,21 +548,21 @@ public:
 			return *this;
 		}
 
-		PassDesc &inputRendertarget(Rendertargets id) {
+		PassDesc &inputRendertarget(RT id) {
 			auto success UNUSED = inputRendertargets.emplace(id);
 			assert(success.second);
 			return *this;
 		}
 
 		struct RTInfo {
-			Rendertargets  id;
+			RT             id;
 			PassBegin      passBegin;
 			glm::vec4      clearValue;
 		};
 
-		Rendertargets                                depthStencil_;
+		RT                                           depthStencil_;
 		std::array<RTInfo, MAX_COLOR_RENDERTARGETS>  colorRTs_;
-		std::unordered_set<Rendertargets>            inputRendertargets;
+		std::unordered_set<RT>                       inputRendertargets;
 		unsigned int                                 numSamples_;
 		std::string                                  name_;
 		bool                                         clearDepthAttachment;
@@ -756,7 +756,7 @@ private:
 		fbDesc.renderPass(rp.handle)
 			  .name(desc.name_);
 
-		if (desc.depthStencil_ != Default<Rendertargets>::value) {
+		if (desc.depthStencil_ != Default<RT>::value) {
 			auto it = rendertargets.find(desc.depthStencil_);
 			assert(it != rendertargets.end());
 			fbDesc.depthStencil(getHandle(it->second));
@@ -764,7 +764,7 @@ private:
 
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 			const auto &rt = desc.colorRTs_[i];
-			if (rt.id != Default<Rendertargets>::value) {
+			if (rt.id != Default<RT>::value) {
 				auto it = rendertargets.find(rt.id);
 				assert(it != rendertargets.end());
 				fbDesc.color(i, getHandle(it->second));
@@ -779,14 +779,14 @@ private:
 
 
 	struct Blit {
-		Rendertargets  source;
-		Rendertargets  dest;
+		RT             source;
+		RT             dest;
 		Layout         finalLayout;
 	};
 
 	struct ResolveMSAA {
-		Rendertargets  source;
-		Rendertargets  dest;
+		RT             source;
+		RT             dest;
 		Layout         finalLayout;
 	};
 
@@ -802,9 +802,9 @@ private:
 	bool                                             hasExternalRTs;
 	RenderPasses                                     currentRP;
 	std::vector<Operation>                           operations;
-	Rendertargets                                    finalTarget;
+	RT                                               finalTarget;
 
-	std::unordered_map<Rendertargets, Rendertarget>  rendertargets;
+	std::unordered_map<RT, Rendertarget>             rendertargets;
 
 	// TODO: use hash map
 	std::vector<Pipeline>                            pipelines;
@@ -827,7 +827,7 @@ public:
 	: state(State::Invalid)
 	, hasExternalRTs(false)
 	, currentRP(Default<RenderPasses>::value)
-	, finalTarget(Default<Rendertargets>::value)
+	, finalTarget(Default<RT>::value)
 	{
 	}
 
@@ -851,7 +851,7 @@ public:
 		pipelines.clear();
 
 		for (auto &rt : rendertargets) {
-			assert(rt.first != Default<Rendertargets>::value);
+			assert(rt.first != Default<RT>::value);
 
 			visitRendertarget(rt.second
 							  , nopExternal
@@ -886,9 +886,9 @@ public:
 	}
 
 
-	void renderTarget(Rendertargets rt, const RenderTargetDesc &desc) {
+	void renderTarget(RT rt, const RenderTargetDesc &desc) {
 		assert(state == State::Building);
-		assert(rt != Default<Rendertargets>::value);
+		assert(rt != Default<RT>::value);
 
 		InternalRT temp1;
 		temp1.desc   = desc;
@@ -897,9 +897,9 @@ public:
 	}
 
 
-	void externalRenderTarget(Rendertargets rt, Format format, Layout initialLayout, Layout finalLayout) {
+	void externalRenderTarget(RT rt, Format format, Layout initialLayout, Layout finalLayout) {
 		assert(state == State::Building);
-		assert(rt != Default<Rendertargets>::value);
+		assert(rt != Default<RT>::value);
 		assert(rendertargets.find(rt) == rendertargets.end());
 
 		hasExternalRTs = true;
@@ -928,7 +928,7 @@ public:
 	}
 
 
-	void resolveMSAA(Rendertargets source, Rendertargets dest) {
+	void resolveMSAA(RT source, RT dest) {
 		assert(state == State::Building);
 
 		ResolveMSAA op;
@@ -938,7 +938,7 @@ public:
 	}
 
 
-	void blit(Rendertargets source, Rendertargets dest) {
+	void blit(RT source, RT dest) {
 		assert(state == State::Building);
 
 		Blit op;
@@ -948,9 +948,9 @@ public:
 	}
 
 
-	void presentRenderTarget(Rendertargets rt) {
+	void presentRenderTarget(RT rt) {
 		assert(state == State::Building);
-		assert(rt != Default<Rendertargets>::value);
+		assert(rt != Default<RT>::value);
 
 		finalTarget = rt;
 	}
@@ -960,7 +960,7 @@ public:
 		assert(state == State::Building);
 		state = State::Ready;
 
-		assert(finalTarget != Default<Rendertargets>::value);
+		assert(finalTarget != Default<RT>::value);
 
 		LOG("RenderGraph::build start\n");
 
@@ -969,7 +969,7 @@ public:
 		// create rendertargets
 		// TODO: remove unused RTs first
 		for (auto &p : rendertargets) {
-			assert(p.first != Default<Rendertargets>::value);
+			assert(p.first != Default<RT>::value);
 
 			visitRendertarget(p.second
 							  , nopExternal
@@ -981,7 +981,7 @@ public:
 
 		// automatically decide layouts
 		{
-			std::unordered_map<Rendertargets, Layout> currentLayouts;
+			std::unordered_map<RT, Layout> currentLayouts;
 
 			// initialize final render target to transfer src
 			currentLayouts[finalTarget] = Layout::TransferSrc;
@@ -997,11 +997,11 @@ public:
 			}
 
 			struct LayoutVisitor final : public boost::static_visitor<void> {
-				std::unordered_map<Rendertargets, Layout> &currentLayouts;
+				std::unordered_map<RT, Layout> &currentLayouts;
 				RenderGraph &rg;
 
 
-				LayoutVisitor(std::unordered_map<Rendertargets, Layout> &currentLayouts_, RenderGraph &rg_)
+				LayoutVisitor(std::unordered_map<RT, Layout> &currentLayouts_, RenderGraph &rg_)
 				: currentLayouts(currentLayouts_)
 				, rg(rg_)
 				{
@@ -1023,7 +1023,7 @@ public:
 					rpDesc.name(desc.name_);
 					rpDesc.numSamples(desc.numSamples_);
 
-					if (desc.depthStencil_ != Default<Rendertargets>::value) {
+					if (desc.depthStencil_ != Default<RT>::value) {
 						auto rtIt = rg.rendertargets.find(desc.depthStencil_);
 						assert(rtIt != rg.rendertargets.end());
 
@@ -1038,7 +1038,7 @@ public:
 
 					for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 						auto rtId = desc.colorRTs_[i].id;
-						if (rtId != Default<Rendertargets>::value) {
+						if (rtId != Default<RT>::value) {
 							auto rtIt = rg.rendertargets.find(rtId);
 							assert(rtIt != rg.rendertargets.end());
 
@@ -1070,7 +1070,7 @@ public:
 					}
 
 					// mark input rt current layout as shader read
-					for (Rendertargets inputRT : desc.inputRendertargets) {
+					for (RT inputRT : desc.inputRendertargets) {
 						currentLayouts[inputRT] = Layout::ShaderRead;
 					}
 				}
@@ -1104,7 +1104,7 @@ public:
 			// if this renderpass has external RTs we defer its creation
 			bool hasExternal = false;
 			for (const auto &rt : desc.colorRTs_) {
-				if (rt.id != Default<Rendertargets>::value) {
+				if (rt.id != Default<RT>::value) {
 					auto it = rendertargets.find(rt.id);
 					assert(it != rendertargets.end());
 					if (isExternal(it->second)) {
@@ -1146,12 +1146,12 @@ public:
 					const auto &desc   = it->second.desc;
 					const auto &rpDesc = it->second.rpDesc;
 
-					if (desc.depthStencil_ != Default<Rendertargets>::value) {
+					if (desc.depthStencil_ != Default<RT>::value) {
 						LOG(" depthStencil %s\n", to_string(desc.depthStencil_));
 					}
 
 					for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-						if (desc.colorRTs_[i].id != Default<Rendertargets>::value) {
+						if (desc.colorRTs_[i].id != Default<RT>::value) {
 							const auto &rt = rpDesc.color(i);
 							LOG(" color %u: %s\t%s\t%s\t%s\n", i, to_string(desc.colorRTs_[i].id), passBeginName(rt.passBegin), layoutName(rt.initialLayout), layoutName(rt.finalLayout));
 						}
@@ -1159,7 +1159,7 @@ public:
 
 					if (!desc.inputRendertargets.empty()) {
 						LOG(" inputs:\n");
-						std::vector<Rendertargets> inputs;
+						std::vector<RT> inputs;
 						inputs.reserve(desc.inputRendertargets.size());
 						for (auto i : desc.inputRendertargets) {
 							inputs.push_back(i);
@@ -1187,7 +1187,7 @@ public:
 	}
 
 
-	void bindExternalRT(Rendertargets rt, RenderTargetHandle handle) {
+	void bindExternalRT(RT rt, RenderTargetHandle handle) {
 		assert(state == State::Ready);
 		assert(handle);
 
@@ -1267,7 +1267,7 @@ public:
 
 				PassResources res;
 				// TODO: build ahead of time, fill here?
-				for (Rendertargets inputRT : it->second.desc.inputRendertargets) {
+				for (RT inputRT : it->second.desc.inputRendertargets) {
 					// get rendertarget desc
 					auto rtIt = rg.rendertargets.find(inputRT);
 					assert(rtIt != rg.rendertargets.end());
