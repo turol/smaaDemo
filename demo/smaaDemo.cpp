@@ -823,7 +823,7 @@ public:
 	RenderGraph()
 	: state(State::Invalid)
 	, hasExternalRTs(false)
-	, currentRP(RenderPasses::Invalid)
+	, currentRP(Default<RenderPasses>::value)
 	, finalTarget(Rendertargets::Invalid)
 	{
 	}
@@ -1254,7 +1254,7 @@ public:
 			}
 
 			void operator()(const RenderPasses &rp) const {
-				assert(rg.currentRP == RenderPasses::Invalid);
+				assert(rg.currentRP == Default<RenderPasses>::value);
 				rg.currentRP = rp;
 
 				auto it = rg.renderPasses.find(rp);
@@ -1294,7 +1294,7 @@ public:
 				r.endRenderPass();
 
 				assert(rg.currentRP == rp);
-				rg.currentRP = RenderPasses::Invalid;
+				rg.currentRP = Default<RenderPasses>::value;
 			}
 
 			void operator()(const ResolveMSAA &resolve) const {
@@ -1325,7 +1325,7 @@ public:
 		assert(state == State::Rendering);
 		state = State::Ready;
 
-		assert(currentRP == RenderPasses::Invalid);
+		assert(currentRP == Default<RenderPasses>::value);
 
 		if (hasExternalRTs) {
 			for (auto &p : rendertargets) {
@@ -1349,7 +1349,7 @@ public:
 				rp.fb = FramebufferHandle();
 			}
 		}
-		assert(currentRP == RenderPasses::Invalid);
+		assert(currentRP == Default<RenderPasses>::value);
 	}
 
 
