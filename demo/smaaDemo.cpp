@@ -569,7 +569,7 @@ public:
 		float                                        depthClearValue;
 	};
 
-	typedef  std::function<void(RenderPasses, PassResources &)>  RenderPassFunc;
+	typedef  std::function<void(RP, PassResources &)>  RenderPassFunc;
 
 
 private:
@@ -795,12 +795,12 @@ private:
 		PipelineHandle  handle;
 	};
 
-	typedef boost::variant<Blit, RenderPasses, ResolveMSAA> Operation;
+	typedef boost::variant<Blit, RP, ResolveMSAA> Operation;
 
 
 	State                                            state;
 	bool                                             hasExternalRTs;
-	RenderPasses                                     currentRP;
+	RP                                               currentRP;
 	std::vector<Operation>                           operations;
 	RT                                               finalTarget;
 
@@ -809,8 +809,8 @@ private:
 	// TODO: use hash map
 	std::vector<Pipeline>                            pipelines;
 
-	std::unordered_map<RenderPasses, RenderPass>     renderPasses;
-	std::unordered_set<RenderPasses>                 renderpassesWithExternalRTs;
+	std::unordered_map<RP, RenderPass>               renderPasses;
+	std::unordered_set<RP>                           renderpassesWithExternalRTs;
 
 
 	RenderGraph(const RenderGraph &)                = delete;
@@ -826,7 +826,7 @@ public:
 	RenderGraph()
 	: state(State::Invalid)
 	, hasExternalRTs(false)
-	, currentRP(Default<RenderPasses>::value)
+	, currentRP(Default<RP>::value)
 	, finalTarget(Default<RT>::value)
 	{
 	}
@@ -914,7 +914,7 @@ public:
 	}
 
 
-	void renderPass(RenderPasses rp, const PassDesc &desc, RenderPassFunc f) {
+	void renderPass(RP rp, const PassDesc &desc, RenderPassFunc f) {
 		assert(state == State::Building);
 
 		RenderPass temp1;
@@ -1012,7 +1012,7 @@ public:
 					currentLayouts[b.source] = Layout::TransferSrc;
 				}
 
-				void operator()(RenderPasses &rpId) const {
+				void operator()(RP &rpId) const {
 					auto it = rg.renderPasses.find(rpId);
 					assert(it != rg.renderPasses.end());
 
@@ -1139,7 +1139,7 @@ public:
 					LOG("Blit %s -> %s\t%s\n", to_string(b.source), to_string(b.dest), layoutName(b.finalLayout));
 				}
 
-				void operator()(const RenderPasses &rpId) const {
+				void operator()(const RP &rpId) const {
 					LOG("RenderPass %s\n", to_string(rpId));
 					auto it = rg.renderPasses.find(rpId);
 					assert(it != rg.renderPasses.end());
@@ -1256,8 +1256,8 @@ public:
 				r.layoutTransition(targetHandle, Layout::TransferDst, b.finalLayout);
 			}
 
-			void operator()(const RenderPasses &rp) const {
-				assert(rg.currentRP == Default<RenderPasses>::value);
+			void operator()(const RP &rp) const {
+				assert(rg.currentRP == Default<RP>::value);
 				rg.currentRP = rp;
 
 				auto it = rg.renderPasses.find(rp);
@@ -1297,7 +1297,7 @@ public:
 				r.endRenderPass();
 
 				assert(rg.currentRP == rp);
-				rg.currentRP = Default<RenderPasses>::value;
+				rg.currentRP = Default<RP>::value;
 			}
 
 			void operator()(const ResolveMSAA &resolve) const {
@@ -1328,7 +1328,7 @@ public:
 		assert(state == State::Rendering);
 		state = State::Ready;
 
-		assert(currentRP == Default<RenderPasses>::value);
+		assert(currentRP == Default<RP>::value);
 
 		if (hasExternalRTs) {
 			for (auto &p : rendertargets) {
@@ -1352,11 +1352,11 @@ public:
 				rp.fb = FramebufferHandle();
 			}
 		}
-		assert(currentRP == Default<RenderPasses>::value);
+		assert(currentRP == Default<RP>::value);
 	}
 
 
-	PipelineHandle createPipeline(Renderer &renderer, RenderPasses rp, PipelineDesc &desc) {
+	PipelineHandle createPipeline(Renderer &renderer, RP rp, PipelineDesc &desc) {
 		assert(state == State::Ready || state == State::Rendering);
 
 		auto it = renderPasses.find(rp);
