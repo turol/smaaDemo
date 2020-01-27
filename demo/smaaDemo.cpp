@@ -547,7 +547,7 @@ public:
 		}
 
 		PassDesc &inputRendertarget(RT id) {
-			auto success UNUSED = inputRendertargets.emplace(id);
+			auto success DEBUG_ASSERTED = inputRendertargets.emplace(id);
 			assert(success.second);
 			return *this;
 		}
@@ -890,7 +890,7 @@ public:
 
 		InternalRT temp1;
 		temp1.desc   = desc;
-		auto UNUSED temp2 = rendertargets.emplace(rt, temp1);
+		auto DEBUG_ASSERTED temp2 = rendertargets.emplace(rt, temp1);
 		assert(temp2.second);
 	}
 
@@ -907,7 +907,7 @@ public:
 		e.initialLayout = initialLayout;
 		e.finalLayout   = finalLayout;
 		// leave handle undefined, it's set later by bindExternalRT
-		auto temp UNUSED = rendertargets.emplace(rt, e);
+		auto temp DEBUG_ASSERTED = rendertargets.emplace(rt, e);
 		assert(temp.second);
 	}
 
@@ -919,7 +919,7 @@ public:
 		temp1.desc   = desc;
 		temp1.func   = f;
 
-		auto temp2 UNUSED = renderPasses.emplace(rp, temp1);
+		auto temp2 DEBUG_ASSERTED = renderPasses.emplace(rp, temp1);
 		assert(temp2.second);
 
 		operations.push_back(rp);
@@ -1116,7 +1116,7 @@ public:
 			if (!hasExternal) {
 				buildRenderPassFramebuffer(renderer, temp);
 			} else {
-				auto result UNUSED = renderpassesWithExternalRTs.insert(p.first);
+				auto result DEBUG_ASSERTED = renderpassesWithExternalRTs.insert(p.first);
 				assert(result.second);
 			}
 		}
@@ -1210,7 +1210,7 @@ public:
 			for (const auto &p : rendertargets) {
 				// if we have external RTs they must be bound by now
 				visitRendertarget(p.second
-								  , [&] (const ExternalRT &e UNUSED) { assert(e.handle); hasExternal = true; }
+								  , [&] (const ExternalRT &e DEBUG_ASSERTED) { assert(e.handle); hasExternal = true; }
 								  , nopInternal
 								 );
 			}
