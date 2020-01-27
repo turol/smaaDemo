@@ -467,6 +467,9 @@ class RenderGraph {
 
 public:
 
+	using RT = Rendertargets;
+	using RP = RenderPasses;
+
 	class PassResources {
 
 		std::unordered_map<std::pair<Rendertargets, Format>, TextureHandle>  rendertargets;
