@@ -493,13 +493,13 @@ public:
 
 	struct PassDesc {
 		PassDesc()
-		: depthStencil_(Rendertargets::Invalid)
+		: depthStencil_(Default<Rendertargets>::value)
 		, numSamples_(1)
 		, clearDepthAttachment(false)
 		, depthClearValue(1.0f)
 		{
 			for (auto &rt : colorRTs_) {
-				rt.id            = Rendertargets::Invalid;
+				rt.id            = Default<Rendertargets>::value;
 				rt.passBegin     = PassBegin::DontCare;
 				rt.clearValue    = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
 			}
@@ -520,7 +520,7 @@ public:
 
 		PassDesc &color(unsigned int index, Rendertargets id, PassBegin pb, glm::vec4 clear = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {
 			assert(index < MAX_COLOR_RENDERTARGETS);
-			assert(id != Rendertargets::Invalid);
+			assert(id != Default<Rendertargets>::value);
 			colorRTs_[index].id             = id;
 			colorRTs_[index].passBegin      = pb;
 			if (pb == PassBegin::Clear) {
@@ -753,7 +753,7 @@ private:
 		fbDesc.renderPass(rp.handle)
 			  .name(desc.name_);
 
-		if (desc.depthStencil_ != Rendertargets::Invalid) {
+		if (desc.depthStencil_ != Default<Rendertargets>::value) {
 			auto it = rendertargets.find(desc.depthStencil_);
 			assert(it != rendertargets.end());
 			fbDesc.depthStencil(getHandle(it->second));
@@ -761,7 +761,7 @@ private:
 
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 			const auto &rt = desc.colorRTs_[i];
-			if (rt.id != Rendertargets::Invalid) {
+			if (rt.id != Default<Rendertargets>::value) {
 				auto it = rendertargets.find(rt.id);
 				assert(it != rendertargets.end());
 				fbDesc.color(i, getHandle(it->second));
@@ -824,7 +824,7 @@ public:
 	: state(State::Invalid)
 	, hasExternalRTs(false)
 	, currentRP(Default<RenderPasses>::value)
-	, finalTarget(Rendertargets::Invalid)
+	, finalTarget(Default<Rendertargets>::value)
 	{
 	}
 
@@ -848,7 +848,7 @@ public:
 		pipelines.clear();
 
 		for (auto &rt : rendertargets) {
-			assert(rt.first != Rendertargets::Invalid);
+			assert(rt.first != Default<Rendertargets>::value);
 
 			visitRendertarget(rt.second
 							  , nopExternal
@@ -885,7 +885,7 @@ public:
 
 	void renderTarget(Rendertargets rt, const RenderTargetDesc &desc) {
 		assert(state == State::Building);
-		assert(rt != Rendertargets::Invalid);
+		assert(rt != Default<Rendertargets>::value);
 
 		InternalRT temp1;
 		temp1.desc   = desc;
@@ -896,7 +896,7 @@ public:
 
 	void externalRenderTarget(Rendertargets rt, Format format, Layout initialLayout, Layout finalLayout) {
 		assert(state == State::Building);
-		assert(rt != Rendertargets::Invalid);
+		assert(rt != Default<Rendertargets>::value);
 		assert(rendertargets.find(rt) == rendertargets.end());
 
 		hasExternalRTs = true;
@@ -947,7 +947,7 @@ public:
 
 	void presentRenderTarget(Rendertargets rt) {
 		assert(state == State::Building);
-		assert(rt != Rendertargets::Invalid);
+		assert(rt != Default<Rendertargets>::value);
 
 		finalTarget = rt;
 	}
@@ -957,7 +957,7 @@ public:
 		assert(state == State::Building);
 		state = State::Ready;
 
-		assert(finalTarget != Rendertargets::Invalid);
+		assert(finalTarget != Default<Rendertargets>::value);
 
 		LOG("RenderGraph::build start\n");
 
@@ -966,7 +966,7 @@ public:
 		// create rendertargets
 		// TODO: remove unused RTs first
 		for (auto &p : rendertargets) {
-			assert(p.first != Rendertargets::Invalid);
+			assert(p.first != Default<Rendertargets>::value);
 
 			visitRendertarget(p.second
 							  , nopExternal
@@ -1020,7 +1020,7 @@ public:
 					rpDesc.name(desc.name_);
 					rpDesc.numSamples(desc.numSamples_);
 
-					if (desc.depthStencil_ != Rendertargets::Invalid) {
+					if (desc.depthStencil_ != Default<Rendertargets>::value) {
 						auto rtIt = rg.rendertargets.find(desc.depthStencil_);
 						assert(rtIt != rg.rendertargets.end());
 
@@ -1035,7 +1035,7 @@ public:
 
 					for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 						auto rtId = desc.colorRTs_[i].id;
-						if (rtId != Rendertargets::Invalid) {
+						if (rtId != Default<Rendertargets>::value) {
 							auto rtIt = rg.rendertargets.find(rtId);
 							assert(rtIt != rg.rendertargets.end());
 
@@ -1101,7 +1101,7 @@ public:
 			// if this renderpass has external RTs we defer its creation
 			bool hasExternal = false;
 			for (const auto &rt : desc.colorRTs_) {
-				if (rt.id != Rendertargets::Invalid) {
+				if (rt.id != Default<Rendertargets>::value) {
 					auto it = rendertargets.find(rt.id);
 					assert(it != rendertargets.end());
 					if (isExternal(it->second)) {
@@ -1143,12 +1143,12 @@ public:
 					const auto &desc   = it->second.desc;
 					const auto &rpDesc = it->second.rpDesc;
 
-					if (desc.depthStencil_ != Rendertargets::Invalid) {
+					if (desc.depthStencil_ != Default<Rendertargets>::value) {
 						LOG(" depthStencil %s\n", to_string(desc.depthStencil_));
 					}
 
 					for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-						if (desc.colorRTs_[i].id != Rendertargets::Invalid) {
+						if (desc.colorRTs_[i].id != Default<Rendertargets>::value) {
 							const auto &rt = rpDesc.color(i);
 							LOG(" color %u: %s\t%s\t%s\t%s\n", i, to_string(desc.colorRTs_[i].id), passBeginName(rt.passBegin), layoutName(rt.initialLayout), layoutName(rt.finalLayout));
 						}
