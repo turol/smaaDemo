@@ -446,6 +446,23 @@ struct SMAAPipelines {
 };
 
 
+template <typename T>
+struct Default {
+};
+
+
+template<>
+struct Default<Rendertargets> {
+	static constexpr Rendertargets  value = Rendertargets::Invalid;
+};
+
+
+template<>
+struct Default<RenderPasses> {
+	static constexpr RenderPasses  value = RenderPasses::Invalid;
+};
+
+
 class RenderGraph {
 
 public:
