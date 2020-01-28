@@ -655,7 +655,7 @@ struct RendererImpl : public RendererBase {
 	SDL_Window                               *window;
 	SDL_GLContext                            context;
 
-	std::unordered_map<GLenum, int>          glValues;
+	HashMap<GLenum, int>                     glValues;
 
 	std::vector<Frame>                       frames;
 
@@ -679,7 +679,7 @@ struct RendererImpl : public RendererBase {
 	FramebufferHandle                        currentFramebuffer;
 
 	bool                                     decriptorSetsDirty;
-	std::unordered_map<DSIndex, Descriptor>  descriptors;
+	HashMap<DSIndex, Descriptor>             descriptors;
 
 	bool                                     debug;
 	bool                                     tracing;

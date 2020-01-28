@@ -420,12 +420,12 @@ bool PipelineDesc::operator==(const PipelineDesc &other) const {
 
 
 class Includer final : public shaderc::CompileOptions::IncluderInterface {
-	std::unordered_map<std::string, std::vector<char> > &cache;
+	HashMap<std::string, std::vector<char> > &cache;
 
 
 public:
 
-	explicit Includer(std::unordered_map<std::string, std::vector<char> > &cache_)
+	explicit Includer(HashMap<std::string, std::vector<char> > &cache_)
 	: cache(cache_)
 	{
 	}
@@ -442,7 +442,7 @@ public:
 	virtual shaderc_include_result* GetInclude(const char* requested_source, shaderc_include_type /* type */, const char* /* requesting_source */, size_t /* include_depth */) {
 		std::string filename(requested_source);
 
-		// std::unordered_map<std::string, std::vector<char> >::iterator it = cache.find(filename);
+		// HashMap<std::string, std::vector<char> >::iterator it = cache.find(filename);
 		auto it = cache.find(filename);
 		if (it == cache.end()) {
 			auto contents = readFile(requested_source);
@@ -646,8 +646,8 @@ static void logSpvMessage(spv_message_level_t level_, const char *source, const 
 
 static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 	spirv_cross::Compiler compiler(spirv);
-	std::unordered_set<DSIndex> bindings;
-	std::unordered_map<DSIndex, uint32_t> uboSizes;
+	HashSet<DSIndex> bindings;
+	HashMap<DSIndex, uint32_t> uboSizes;
 
 	auto spvResources = compiler.get_shader_resources();
 
@@ -786,7 +786,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	}
 
 	// TODO: cache includes globally
-	std::unordered_map<std::string, std::vector<char> > cache;
+	HashMap<std::string, std::vector<char> > cache;
 
 	{
 		auto src = loadSource(name);

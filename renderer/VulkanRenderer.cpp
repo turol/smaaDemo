@@ -338,7 +338,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		LOG("Vulkan instance version %u.%u.%u\n", VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion));
 	}
 
-	std::unordered_set<std::string>  instanceExtensions;
+	HashSet<std::string>  instanceExtensions;
 	{
 		auto extensions = vk::enumerateInstanceExtensionProperties();
 		std::sort(extensions.begin(), extensions.end()
@@ -366,7 +366,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 	}
 
-	std::unordered_set<std::string>  instanceLayers;
+	HashSet<std::string>  instanceLayers;
 	{
 		auto layers = vk::enumerateInstanceLayerProperties();
 		std::sort(layers.begin(), layers.end()
@@ -607,7 +607,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		LOG("No separate transfer queue\n");
 	}
 
-	std::unordered_set<std::string> availableExtensions;
+	HashSet<std::string> availableExtensions;
 	{
 		auto exts = physicalDevice.enumerateDeviceExtensionProperties();
 		LOG("%u device extensions:\n", static_cast<unsigned int>(exts.size()));

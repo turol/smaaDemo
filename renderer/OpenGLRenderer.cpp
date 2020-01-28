@@ -965,14 +965,14 @@ struct ResourceInfo {
 };
 
 
-typedef std::unordered_map<DSIndex, ResourceInfo> ResourceMap;
+typedef HashMap<DSIndex, ResourceInfo> ResourceMap;
 
 
 static void processShaderResources(ShaderResources &shaderResources, const ResourceMap& dsResources, spirv_cross::CompilerGLSL &glsl) {
 	shaderResources.uboSizes.resize(shaderResources.ubos.size(), 0);
 
 	// TODO: only in debug mode
-	std::unordered_set<DSIndex> bindings;
+	HashSet<DSIndex> bindings;
 
 	auto spvResources = glsl.get_shader_resources();
 

@@ -981,9 +981,9 @@ struct RendererImpl : public RendererBase {
 	vk::PhysicalDeviceMemoryProperties      memoryProperties;
 	uint32_t                                graphicsQueueIndex;
 	uint32_t                                transferQueueIndex;
-	std::unordered_set<vk::Format>          surfaceFormats;
+	HashSet<vk::Format>                     surfaceFormats;
 	vk::SurfaceCapabilitiesKHR              surfaceCapabilities;
-	std::unordered_set<vk::PresentModeKHR>  surfacePresentModes;
+	HashSet<vk::PresentModeKHR>             surfacePresentModes;
 	vk::SwapchainKHR                        swapchain;
 	vk::PipelineCache                       pipelineCache;
 	vk::Queue                               queue;

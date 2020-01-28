@@ -40,7 +40,7 @@ enum class ShaderKind : uint8_t {
 
 template <class T>
 class ResourceContainer {
-	std::unordered_map<unsigned int, T> resources;
+	HashMap<unsigned int, T>            resources;
 	unsigned int                        next;
 
 
@@ -156,7 +156,7 @@ struct RendererBase {
 	// we have synced with the GPU up to this ringbuffer index
 	unsigned int                                         lastSyncedRingBufPtr;
 
-	std::unordered_map<std::string, std::vector<char> >  shaderSources;
+	HashMap<std::string, std::vector<char> >             shaderSources;
 
 #ifndef NDEBUG
 	// debugging

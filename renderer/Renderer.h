@@ -263,7 +263,7 @@ struct MemoryStats {
 };
 
 
-typedef std::unordered_map<std::string, std::string> ShaderMacros;
+typedef HashMap<std::string, std::string> ShaderMacros;
 
 
 const char *layoutName(Layout layout);

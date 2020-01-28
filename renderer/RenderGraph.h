@@ -20,7 +20,7 @@ public:
 
 	class PassResources {
 
-		std::unordered_map<std::pair<RT, Format>, TextureHandle>  rendertargets;
+		HashMap<std::pair<RT, Format>, TextureHandle>  rendertargets;
 
 		// TODO: buffers
 
@@ -110,7 +110,7 @@ public:
 
 		RT                                           depthStencil_;
 		std::array<RTInfo, MAX_COLOR_RENDERTARGETS>  colorRTs_;
-		std::unordered_set<RT>                       inputRendertargets;
+		HashSet<RT>                                  inputRendertargets;
 		unsigned int                                 numSamples_;
 		std::string                                  name_;
 		bool                                         clearDepthAttachment;
@@ -352,13 +352,13 @@ private:
 	std::vector<Operation>                           operations;
 	RT                                               finalTarget;
 
-	std::unordered_map<RT, Rendertarget>             rendertargets;
+	HashMap<RT, Rendertarget>                        rendertargets;
 
 	// TODO: use hash map
 	std::vector<Pipeline>                            pipelines;
 
-	std::unordered_map<RP, RenderPass>               renderPasses;
-	std::unordered_set<RP>                           renderpassesWithExternalRTs;
+	HashMap<RP, RenderPass>                          renderPasses;
+	HashSet<RP>                                      renderpassesWithExternalRTs;
 
 
 	RenderGraph(const RenderGraph &)                = delete;
@@ -529,7 +529,7 @@ public:
 
 		// automatically decide layouts
 		{
-			std::unordered_map<RT, Layout> currentLayouts;
+			HashMap<RT, Layout> currentLayouts;
 
 			// initialize final render target to transfer src
 			currentLayouts[finalTarget] = Layout::TransferSrc;
@@ -545,11 +545,11 @@ public:
 			}
 
 			struct LayoutVisitor final : public boost::static_visitor<void> {
-				std::unordered_map<RT, Layout> &currentLayouts;
+				HashMap<RT, Layout> &currentLayouts;
 				RenderGraph &rg;
 
 
-				LayoutVisitor(std::unordered_map<RT, Layout> &currentLayouts_, RenderGraph &rg_)
+				LayoutVisitor(HashMap<RT, Layout> &currentLayouts_, RenderGraph &rg_)
 				: currentLayouts(currentLayouts_)
 				, rg(rg_)
 				{
