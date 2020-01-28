@@ -26,7 +26,6 @@ THE SOFTWARE.
 
 
 #include <string>
-#include <unordered_map>
 #include <array>
 
 #define GLM_FORCE_RADIANS
@@ -35,6 +34,7 @@ THE SOFTWARE.
 
 #include <SDL.h>
 
+#include "utils/Hash.h"
 #include "utils/Utils.h"  // for isPow2
 
 

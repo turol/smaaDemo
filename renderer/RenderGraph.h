@@ -2,6 +2,9 @@
 #define RENDERGRAPH_H
 
 
+#include "utils/Hash.h"
+
+
 namespace renderer {
 
 

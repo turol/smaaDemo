@@ -35,7 +35,6 @@ THE SOFTWARE.
 #include <memory>
 #include <stdexcept>
 #include <vector>
-#include <unordered_set>
 
 // TODO: use std::variant if the compiler has C++17
 #include <boost/variant/variant.hpp>
@@ -54,6 +53,7 @@ THE SOFTWARE.
 
 #include "renderer/Renderer.h"
 #include "renderer/RenderGraph.h"
+#include "utils/Hash.h"
 #include "utils/Utils.h"
 
 #include "AreaTex.h"

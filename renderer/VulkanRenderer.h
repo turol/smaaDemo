@@ -28,8 +28,6 @@ THE SOFTWARE.
 #define VULKAN_HPP_NO_SMART_HANDLE     1
 
 
-#include <unordered_set>
-
 // TODO: use std::variant if the compiler has C++17
 #include <boost/variant/variant.hpp>
 
@@ -59,6 +57,8 @@ THE SOFTWARE.
 #endif  // VK_HEADER_VERSION < 64
 
 #include <limits.h>  // required but not included by vk_mem_alloc.h
+
+#include "utils/Hash.h"
 
 #include "vk_mem_alloc.h"
 
