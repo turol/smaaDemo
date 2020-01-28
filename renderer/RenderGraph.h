@@ -13,6 +13,13 @@ struct Default {
 };
 
 
+/*
+ Requirements for types RT and RP:
+  - must be equality comparable (implement operators == and !=)
+  - must be hashable (have specialization of std::hash)
+  - must have a default value (specialization of Default)
+ */
+
 template <typename RT, typename RP>
 class RenderGraph {
 
