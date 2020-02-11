@@ -563,12 +563,16 @@ class SMAADemo {
 	bool                                              rightAlt,   leftAlt;
 	bool                                              rightCtrl,  leftCtrl;
 
+#ifndef IMGUI_DISABLE
+
 	// gui things
 	TextureHandle                                     imguiFontsTex;
 	ImGuiContext                                      *imGuiContext;
 	bool                                              textInputActive;
 	char                                              imageFileName[inputTextBufferSize];
 	char                                              clipboardText[inputTextBufferSize];
+
+#endif  // IMGUI_DISABLE
 
 
 	SMAADemo(const SMAADemo &) = delete;
@@ -592,9 +596,13 @@ class SMAADemo {
 
 	void renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources &r);
 
+#ifndef IMGUI_DISABLE
+
 	void updateGUI(uint64_t elapsed);
 
 	void renderGUI(RenderPasses rp, DemoRenderGraph::PassResources &r);
+
+#endif  // IMGUI_DISABLE
 
 	void renderCubeScene(RenderPasses rp, DemoRenderGraph::PassResources &r);
 
@@ -695,8 +703,10 @@ SMAADemo::SMAADemo()
 , rightCtrl(false)
 , leftCtrl(false)
 
+#ifndef IMGUI_DISABLE
 , imGuiContext(nullptr)
 , textInputActive(false)
+#endif  // IMGUI_DISABLE
 {
 	rendererDesc.swapchain.width  = 1280;
 	rendererDesc.swapchain.height = 720;
@@ -731,16 +741,20 @@ SMAADemo::SMAADemo()
 
 	LOG("sleep fudge (nanoseconds): %" PRIu64 "\n", sleepFudge);
 
+#ifndef IMGUI_DISABLE
 	memset(imageFileName, 0, inputTextBufferSize);
 	memset(clipboardText, 0, inputTextBufferSize);
+#endif  // IMGUI_DISABLE
 }
 
 
 SMAADemo::~SMAADemo() {
+#ifndef IMGUI_DISABLE
 	if (imGuiContext) {
 		ImGui::DestroyContext(imGuiContext);
 		imGuiContext = nullptr;
 	}
+#endif  // IMGUI_DISABLE
 
 	if (temporalRTs[0]) {
 		assert(temporalRTs[1]);
@@ -1218,6 +1232,7 @@ void SMAADemo::initRender() {
 		loadImage(filename);
 	}
 
+#ifndef IMGUI_DISABLE
 	// imgui setup
 	{
 		imGuiContext = ImGui::CreateContext();
@@ -1261,6 +1276,7 @@ void SMAADemo::initRender() {
 		imguiFontsTex = renderer.createTexture(texDesc);
 		io.Fonts->TexID = nullptr;
 	}
+#endif  // IMGUI_DISABLE
 }
 
 
@@ -1854,6 +1870,8 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.blit(Rendertargets::MainColor, Rendertargets::FinalRender);
 	}
 
+#ifndef IMGUI_DISABLE
+
 	{
 		DemoRenderGraph::PassDesc desc;
 		desc.color(0, Rendertargets::FinalRender, PassBegin::Keep)
@@ -1861,6 +1879,8 @@ void SMAADemo::rebuildRenderGraph() {
 
 		renderGraph.renderPass(RenderPasses::GUI, desc, [this] (RenderPasses rp, DemoRenderGraph::PassResources &r) { this->renderGUI(rp, r); } );
 	}
+
+#endif  // IMGUI_DISABLE
 
 	renderGraph.presentRenderTarget(Rendertargets::FinalRender);
 
@@ -2060,7 +2080,9 @@ static void printHelp() {
 
 
 void SMAADemo::processInput() {
+#ifndef IMGUI_DISABLE
 	ImGuiIO& io = ImGui::GetIO();
+#endif  // IMGUI_DISABLE
 
 	SDL_Event event;
 	memset(&event, 0, sizeof(SDL_Event));
@@ -2072,7 +2094,9 @@ void SMAADemo::processInput() {
 			break;
 
 		case SDL_KEYDOWN:
+#ifndef IMGUI_DISABLE
 			io.KeysDown[event.key.keysym.scancode] = true;
+#endif  // IMGUI_DISABLE
 
 			switch (event.key.keysym.scancode) {
 			case SDL_SCANCODE_LSHIFT:
@@ -2103,9 +2127,13 @@ void SMAADemo::processInput() {
 				break;
 			}
 
+#ifndef IMGUI_DISABLE
+
 			if (textInputActive) {
 				break;
 			}
+
+#endif  // IMGUI_DISABLE
 
 			switch (event.key.keysym.scancode) {
 			case SDL_SCANCODE_ESCAPE:
@@ -2246,7 +2274,9 @@ void SMAADemo::processInput() {
 			break;
 
 		case SDL_KEYUP:
+#ifndef IMGUI_DISABLE
 			io.KeysDown[event.key.keysym.scancode] = false;
+#endif  // IMGUI_DISABLE
 
 			switch (event.key.keysym.scancode) {
 			case SDL_SCANCODE_LSHIFT:
@@ -2279,9 +2309,13 @@ void SMAADemo::processInput() {
 
 			break;
 
+#ifndef IMGUI_DISABLE
+
 		case SDL_TEXTINPUT:
 			io.AddInputCharactersUTF8(event.text.text);
 			break;
+
+#endif  // IMGUI_DISABLE
 
 		case SDL_WINDOWEVENT:
 			switch (event.window.event) {
@@ -2297,6 +2331,8 @@ void SMAADemo::processInput() {
 				break;
 			}
 			break;
+
+#ifndef IMGUI_DISABLE
 
 		case SDL_MOUSEMOTION:
 			io.MousePos = ImVec2(static_cast<float>(event.motion.x), static_cast<float>(event.motion.y));
@@ -2314,6 +2350,7 @@ void SMAADemo::processInput() {
 		case SDL_MOUSEWHEEL:
 			io.MouseWheel = static_cast<float>(event.wheel.y);
 			break;
+#endif  // IMGUI_DISABLE
 
 		case SDL_DROPFILE: {
 				char* droppedFile = event.drop.file;
@@ -2325,9 +2362,13 @@ void SMAADemo::processInput() {
 		}
 	}
 
+#ifndef IMGUI_DISABLE
+
 	io.KeyShift = leftShift || rightShift;
 	io.KeyAlt   = leftAlt   || rightAlt;
 	io.KeyCtrl  = leftCtrl  || rightCtrl;
+
+#endif  // IMGUI_DISABLE
 }
 
 
@@ -2350,7 +2391,11 @@ void SMAADemo::mainLoopIteration() {
 
 	processInput();
 
+#ifndef IMGUI_DISABLE
+
 	updateGUI(elapsed);
+
+#endif  // IMGUI_DISABLE
 
 	if (!isImageScene() && rotateCubes) {
 		rotationTime += elapsed;
@@ -2883,6 +2928,9 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 }
 
 
+#ifndef IMGUI_DISABLE
+
+
 void SMAADemo::updateGUI(uint64_t elapsed) {
 	const unsigned int windowWidth  = rendererDesc.swapchain.width;
 	const unsigned int windowHeight = rendererDesc.swapchain.height;
@@ -3293,6 +3341,9 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 		assert(drawData->TotalIdxCount == 0);
 	}
 }
+
+
+#endif  // IMGUI_DISABLE
 
 
 int main(int argc, char *argv[]) {
