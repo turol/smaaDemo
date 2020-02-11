@@ -558,13 +558,15 @@ class SMAADemo {
 	TextureHandle                                     areaTex;
 	TextureHandle                                     searchTex;
 
-	// gui / input things
-	TextureHandle                                     imguiFontsTex;
-	ImGuiContext                                      *imGuiContext;
-	bool                                              textInputActive;
+	// input
 	bool                                              rightShift, leftShift;
 	bool                                              rightAlt,   leftAlt;
 	bool                                              rightCtrl,  leftCtrl;
+
+	// gui things
+	TextureHandle                                     imguiFontsTex;
+	ImGuiContext                                      *imGuiContext;
+	bool                                              textInputActive;
 	char                                              imageFileName[inputTextBufferSize];
 	char                                              clipboardText[inputTextBufferSize];
 
@@ -686,14 +688,15 @@ SMAADemo::SMAADemo()
 
 , depthFormat(Format::Invalid)
 
-, imGuiContext(nullptr)
-, textInputActive(false)
 , rightShift(false)
 , leftShift(false)
 , rightAlt(false)
 , leftAlt(false)
 , rightCtrl(false)
 , leftCtrl(false)
+
+, imGuiContext(nullptr)
+, textInputActive(false)
 {
 	rendererDesc.swapchain.width  = 1280;
 	rendererDesc.swapchain.height = 720;
