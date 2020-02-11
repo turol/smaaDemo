@@ -1,5 +1,5 @@
-commit 9d9f75eb682dd98b34de08bb5c489c6c561c9fa6
+commit 0224a44a10564a214595797b4c88323f79a5f934
 Author: Sean Barrett <sean@nothings.org>
-Date:   Mon Jul 24 03:32:32 2017 -0700
+Date:   Sun Feb 2 20:30:25 2020 -0800
 
-    update readme
+    stb_image: fix new warnings
