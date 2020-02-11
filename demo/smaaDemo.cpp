@@ -2309,14 +2309,6 @@ void SMAADemo::processInput() {
 
 			break;
 
-#ifndef IMGUI_DISABLE
-
-		case SDL_TEXTINPUT:
-			io.AddInputCharactersUTF8(event.text.text);
-			break;
-
-#endif  // IMGUI_DISABLE
-
 		case SDL_WINDOWEVENT:
 			switch (event.window.event) {
 			case SDL_WINDOWEVENT_SIZE_CHANGED:
@@ -2332,7 +2324,18 @@ void SMAADemo::processInput() {
 			}
 			break;
 
+		case SDL_DROPFILE: {
+				char* droppedFile = event.drop.file;
+				std::string filestring(droppedFile);
+				SDL_free(droppedFile);
+				loadImage(filestring);
+			} break;
+
 #ifndef IMGUI_DISABLE
+
+		case SDL_TEXTINPUT:
+			io.AddInputCharactersUTF8(event.text.text);
+			break;
 
 		case SDL_MOUSEMOTION:
 			io.MousePos = ImVec2(static_cast<float>(event.motion.x), static_cast<float>(event.motion.y));
@@ -2350,14 +2353,8 @@ void SMAADemo::processInput() {
 		case SDL_MOUSEWHEEL:
 			io.MouseWheel = static_cast<float>(event.wheel.y);
 			break;
-#endif  // IMGUI_DISABLE
 
-		case SDL_DROPFILE: {
-				char* droppedFile = event.drop.file;
-				std::string filestring(droppedFile);
-				SDL_free(droppedFile);
-				loadImage(filestring);
-			} break;
+#endif  // IMGUI_DISABLE
 
 		}
 	}
