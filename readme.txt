@@ -73,6 +73,6 @@ Tuomas Närväinen tuomas.narvainen@alternativegames.net
 Copyright and License
 =====================
 
-Copyright (c) 2015-2019 Alternative Games Ltd / Turo Lamminen
+Copyright (c) 2015-2020 Alternative Games Ltd / Turo Lamminen
 
 This code is licensed under the MIT license (see license.txt).
