@@ -84,7 +84,7 @@ public:
 
 
 	~Handle() {
-	};
+	}
 
 
 	Handle(const Handle<T> &other)                     = default;
