@@ -2599,9 +2599,9 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	vk::ImageBlit blit;
 	blit.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
 	blit.srcSubresource.layerCount = 1;
-	blit.srcOffsets[1]             = vk::Offset3D(width, height, 1);
+	blit.srcOffsets[1u]            = vk::Offset3D(width, height, 1);
 	blit.dstSubresource            = blit.srcSubresource;
-	blit.dstOffsets[1]             = blit.srcOffsets[1];
+	blit.dstOffsets[1u]            = blit.srcOffsets[1u];
 
 	// blit draw image to presentation image
 	frame.presentCmdBuf.blitImage(rt.image, vk::ImageLayout::eTransferSrcOptimal, image, layout, { blit }, vk::Filter::eNearest);
@@ -3391,12 +3391,12 @@ void RendererImpl::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	b.srcSubresource.layerCount = 1;
 	b.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
 	b.dstSubresource.layerCount = 1;
-	b.srcOffsets[1].x           = srcRT.width;
-	b.srcOffsets[1].y           = srcRT.height;
-	b.srcOffsets[1].z           = 1;
-	b.dstOffsets[1].x           = srcRT.width;
-	b.dstOffsets[1].y           = srcRT.height;
-	b.dstOffsets[1].z           = 1;
+	b.srcOffsets[1u].x          = srcRT.width;
+	b.srcOffsets[1u].y          = srcRT.height;
+	b.srcOffsets[1u].z          = 1;
+	b.dstOffsets[1u].x          = srcRT.width;
+	b.dstOffsets[1u].y          = srcRT.height;
+	b.dstOffsets[1u].z          = 1;
 	currentCommandBuffer.blitImage(srcRT.image, vk::ImageLayout::eTransferSrcOptimal, destRT.image, vk::ImageLayout::eTransferDstOptimal, { b }, vk::Filter::eNearest );
 }
 
