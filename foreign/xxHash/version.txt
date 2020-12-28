@@ -1,8 +1,8 @@
-commit 173e50be0509c6fb6c1bb74d95049ef61d7fdced
-Merge: 775d03d 999e5c3
+commit 94e5f23e736f2bb67ebdf90727353e65344f9fc0
+Merge: 3a322e2 b9a0ec2
 Author: Yann Collet <Cyan4973@users.noreply.github.com>
-Date:   Wed Jun 24 23:32:16 2020 -0700
+Date:   Mon Jul 27 11:57:06 2020 -0700
 
-    Merge pull request #408 from Cyan4973/newOutput074
+    Merge pull request #441 from Cyan4973/dev
     
-    Modifies XXH3/XXH128 return values
+    improved inline help
