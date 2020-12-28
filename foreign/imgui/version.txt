@@ -1,7 +1,5 @@
-commit 9418dcb69355558f70de260483424412c5ca2fce
-Author: omar <omarcornut@gmail.com>
-Date:   Mon Jun 29 15:09:55 2020 +0200
+commit 95c99aaa4be611716093edcb6b01146ab9483f30
+Author: ocornut <omarcornut@gmail.com>
+Date:   Tue Aug 18 17:50:45 2020 +0200
 
-    Version 1.77
-    
-    + fix minor clang-tidy warnings which seems reasonable
+    Version 1.78
