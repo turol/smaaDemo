@@ -19,7 +19,7 @@ This library works perfectly with *[OpenGL](https://www.opengl.org)* but it also
 - Any C++11 compiler
 
 For more information about *GLM*, please have a look at the [manual](manual.md) and the [API reference documentation](http://glm.g-truc.net/0.9.8/api/index.html).
-The source code and the documentation are licensed under both the [Happy Bunny License (Modified MIT) or the MIT License](manual.md#section0).
+The source code and the documentation are licensed under either the [Happy Bunny License (Modified MIT) or the MIT License](manual.md#section0).
 
 Thanks for contributing to the project by [submitting issues](https://github.com/g-truc/glm/issues) for bug reports and feature requests. Any feedback is welcome at [glm@g-truc.net](mailto://glm@g-truc.net).
 
@@ -52,6 +52,20 @@ glm::mat4 camera(float Translate, glm::vec2 const& Rotate)
 | [AppVeyor](https://ci.appveyor.com/project/Groovounet/glm)| Windows 32 and 64 | Visual Studio 2013, Visual Studio 2015, Visual Studio 2017 | [![AppVeyor](https://ci.appveyor.com/api/projects/status/32r7s2skrgm9ubva?svg=true)](https://ci.appveyor.com/project/Groovounet/glm)
 
 ## Release notes
+
+### [GLM 0.9.9.8](https://github.com/g-truc/glm/releases/tag/0.9.9.8) - 2020-04-13
+#### Features:
+- Added GLM_EXT_vector_intX* and GLM_EXT_vector_uintX* extensions
+- Added GLM_EXT_matrix_intX* and GLM_EXT_matrix_uintX* extensions
+
+#### Improvements:
+- Added clamp, repeat, mirrorClamp and mirrorRepeat function to GLM_EXT_scalar_commond and GLM_EXT_vector_commond extensions with tests
+
+#### Fixes:
+- Fixed unnecessary warnings from matrix_projection.inl #995
+- Fixed quaternion slerp overload which interpolates with extra spins #996
+- Fixed for glm::length using arch64 #992
+- Fixed singularity check for quatLookAt #770
 
 ### [GLM 0.9.9.7](https://github.com/g-truc/glm/releases/tag/0.9.9.7) - 2020-01-05
 #### Improvements:

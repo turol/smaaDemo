@@ -1,5 +1,5 @@
-commit 13724cfae64a8b5313d1cabc9a963d2c9dbeda12
-Author: Christophe Riccio <christophe.riccio@unity3d.com>
-Date:   Sun Jan 5 21:19:37 2020 +0100
+commit bf71a834948186f4097caa076cd2663c69a10e1e
+Author: christophe <christophe@lunarg.com>
+Date:   Mon Apr 13 19:41:16 2020 +0200
 
-    Tentative fix of GLM_FORCE_QUAT_DATA_WXYZ on Clang with tests
+    Updated release date
