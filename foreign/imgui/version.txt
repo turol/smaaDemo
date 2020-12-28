@@ -1,7 +1,7 @@
-commit 5503c0a12e0c929e84b3f61b2cb4bb9177ea3da1
+commit 9418dcb69355558f70de260483424412c5ca2fce
 Author: omar <omarcornut@gmail.com>
-Date:   Sun Apr 12 19:15:38 2020 +0200
+Date:   Mon Jun 29 15:09:55 2020 +0200
 
-    Version 1.76
+    Version 1.77
     
-    + fixed PVS warning, update demo binaries, update readme image
+    + fix minor clang-tidy warnings which seems reasonable
