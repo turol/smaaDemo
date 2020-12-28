@@ -850,7 +850,7 @@ public:
 				}
 
 				try {
-				it->second.func(rp, res);
+					it->second.func(rp, res);
 				} catch (std::exception &e) {
 					// TODO: log renderpass
 					LOG("Exception \"%s\" during renderpass\n", e.what());
