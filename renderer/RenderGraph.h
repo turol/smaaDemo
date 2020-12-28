@@ -848,6 +848,7 @@ public:
 					}
 				}
 
+				// TODO: need to catch exceptions here and clean up
 				it->second.func(rp, res);
 				r.endRenderPass();
 
