@@ -101,7 +101,8 @@ std::vector<char> readTextFile(std::string filename) {
 	int retval = fstat(fd, &statbuf);
 	if (retval < 0) {
 		// TODO: better exception
-		throw std::runtime_error("fstat failed");
+		std::string msg = "fstat failed for \"" + filename + "\": " + strerror(errno);
+		throw std::runtime_error(msg);
 	}
 
 	unsigned int filesize = static_cast<unsigned int>(statbuf.st_size);
@@ -138,7 +139,8 @@ std::vector<char> readFile(std::string filename) {
 	int retval = fstat(fd, &statbuf);
 	if (retval < 0) {
 		// TODO: better exception
-		throw std::runtime_error("fstat failed");
+		std::string msg = "fstat failed for \"" + filename + "\": " + strerror(errno);
+		throw std::runtime_error(msg);
 	}
 
 	unsigned int filesize = static_cast<unsigned int>(statbuf.st_size);
@@ -179,7 +181,8 @@ int64_t getFileTimestamp(const std::string &filename) {
 	int retval = stat(filename.c_str(), &statbuf);
 	if (retval < 0) {
 		// TODO: better exception
-		throw std::runtime_error("fstat failed");
+		std::string msg = "fstat failed for \"" + filename + "\": " + strerror(errno);
+		throw std::runtime_error(msg);
 	}
 	return statbuf.st_mtime;
 }
