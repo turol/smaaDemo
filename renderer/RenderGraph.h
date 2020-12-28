@@ -354,6 +354,7 @@ private:
 
 
 	State                                            state;
+	std::exception_ptr                               storedException;
 	bool                                             hasExternalRTs;
 	RP                                               currentRP;
 	std::vector<Operation>                           operations;
@@ -848,8 +849,18 @@ public:
 					}
 				}
 
-				// TODO: need to catch exceptions here and clean up
+				try {
 				it->second.func(rp, res);
+				} catch (std::exception &e) {
+					// TODO: log renderpass
+					LOG("Exception \"%s\" during renderpass\n", e.what());
+					if (rg.storedException) {
+						LOG("Already have an exception, not stored\n");
+					} else {
+						rg.storedException = std::current_exception();
+					}
+
+				}
 				r.endRenderPass();
 
 				assert(rg.currentRP == rp);
@@ -909,6 +920,11 @@ public:
 			}
 		}
 		assert(currentRP == Default<RP>::value);
+
+		if (storedException) {
+			LOG("re-throwing exception");
+			std::rethrow_exception(storedException);
+		}
 	}
 
 
