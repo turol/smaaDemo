@@ -1,6 +1,8 @@
-commit d408e9b0606d07b1ddc5452ffc0ec8512211b174
-Merge: 98459bb ff5df55
-Author: Yann Collet <yann.collet.73@gmail.com>
-Date:   Wed Mar 4 18:37:01 2020 -0800
+commit 173e50be0509c6fb6c1bb74d95049ef61d7fdced
+Merge: 775d03d 999e5c3
+Author: Yann Collet <Cyan4973@users.noreply.github.com>
+Date:   Wed Jun 24 23:32:16 2020 -0700
 
-    Merge branch 'dev'
+    Merge pull request #408 from Cyan4973/newOutput074
+    
+    Modifies XXH3/XXH128 return values
