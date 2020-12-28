@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2017-2019 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2017-2020 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -59,6 +59,7 @@ include all public interface declarations. Example:
 //#define VMA_DEBUG_GLOBAL_MUTEX 1
 //#define VMA_MEMORY_BUDGET 0
 
+//#define VMA_VULKAN_VERSION 1002000 // Vulkan 1.2
 #define VMA_VULKAN_VERSION 1001000 // Vulkan 1.1
 //#define VMA_VULKAN_VERSION 1000000 // Vulkan 1.0
 
