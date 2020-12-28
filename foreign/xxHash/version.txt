@@ -1,8 +1,6 @@
-commit e2f4695899e831171ecd2e780078474712ea61d3
-Merge: d7f47bc 1ea98d6
-Author: Yann Collet <Cyan4973@users.noreply.github.com>
-Date:   Tue Oct 8 06:11:56 2019 -0700
+commit d408e9b0606d07b1ddc5452ffc0ec8512211b174
+Merge: 98459bb ff5df55
+Author: Yann Collet <yann.collet.73@gmail.com>
+Date:   Wed Mar 4 18:37:01 2020 -0800
 
-    Merge pull request #273 from Cyan4973/dev
-    
-    v0.7.2
+    Merge branch 'dev'
