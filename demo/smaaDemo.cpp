@@ -195,8 +195,12 @@ static const char *const msaaQualityLevels[] =
 
 
 static unsigned int msaaSamplesToQuality(unsigned int q) {
-	assert(q > 1);
+	assert(q > 0);
 	assert(isPow2(q));
+
+	if (q == 1) {
+		return 0;
+	}
 
 	// TODO: have a more specific function for this
 	unsigned int retval = 0;
