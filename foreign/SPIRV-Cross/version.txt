@@ -1,5 +1,8 @@
-commit f9818f0804e6e73ec8afcc523b7e7f8bfc362632
+commit e50f7d1ce8e162d0c826e84168cfa234e4de4ec9
+Merge: 762c3082 c8765a75
 Author: Hans-Kristian Arntzen <post@arntzen-software.no>
-Date:   Thu Jan 16 15:24:37 2020 +0100
+Date:   Fri Dec 11 14:38:13 2020 +0100
 
-    Update license headers to 2020.
+    Merge pull request #1566 from KhronosGroup/subgroup-table-fix
+    
+    GLSL: Fix KHR subgroup extension table for subgroups.

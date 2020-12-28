@@ -12,10 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cmake_minimum_required(VERSION 2.8)
+#
+# At your option, you may choose to accept this material under either:
+#  1. The Apache License, Version 2.0, found at <http://www.apache.org/licenses/LICENSE-2.0>, or
+#  2. The MIT License, found at <http://opensource.org/licenses/MIT>.
+# SPDX-License-Identifier: Apache-2.0 OR MIT.
+#
+
+cmake_minimum_required(VERSION 3.0)
 set(CMAKE_CXX_STANDARD 11)
+
+# Avoid a warning if parent project sets VERSION in project().
+if (${CMAKE_VERSION} VERSION_GREATER "3.0.1")
+	cmake_policy(SET CMP0048 NEW)
+endif()
+
 project(SPIRV-Cross LANGUAGES CXX C)
 enable_testing()
+
+include(GNUInstallDirs)
 
 option(SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS "Instead of throwing exceptions assert" OFF)
 option(SPIRV_CROSS_SHARED "Build the C API as a single shared library." OFF)
@@ -75,11 +90,14 @@ endif()
 string(TIMESTAMP spirv-cross-timestamp)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/gitversion.in.h ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h @ONLY)
 
-if(SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS)
+if (SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS)
 	set(spirv-compiler-defines ${spirv-compiler-defines} SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS)
+	if (NOT MSVC)
+		set(spirv-compiler-options ${spirv-compiler-options} -fno-exceptions)
+	endif()
 endif()
 
-if(SPIRV_CROSS_FORCE_STL_TYPES)
+if (SPIRV_CROSS_FORCE_STL_TYPES)
 	set(spirv-compiler-defines ${spirv-compiler-defines} SPIRV_CROSS_FORCE_STL_TYPES)
 endif()
 
@@ -87,8 +105,8 @@ if (WIN32)
 	set(CMAKE_DEBUG_POSTFIX "d")
 endif()
 
-if (CMAKE_COMPILER_IS_GNUCXX OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
-	set(spirv-compiler-options ${spirv-compiler-options} -Wall -Wextra -Wshadow)
+if (CMAKE_COMPILER_IS_GNUCXX OR ((${CMAKE_CXX_COMPILER_ID} MATCHES "Clang") AND NOT MSVC))
+	set(spirv-compiler-options ${spirv-compiler-options} -Wall -Wextra -Wshadow -Wno-deprecated-declarations)
 	if (SPIRV_CROSS_MISC_WARNINGS)
 		if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
 			set(spirv-compiler-options ${spirv-compiler-options} -Wshorten-64-to-32)
@@ -149,7 +167,7 @@ macro(spirv_cross_add_library name config_name library_type)
 	extract_headers(hdrs "${ARGN}")
 	target_include_directories(${name} PUBLIC
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-			$<INSTALL_INTERFACE:include/spirv_cross>)
+			$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/spirv_cross>)
 	set_target_properties(${name} PROPERTIES
 			PUBLIC_HEADERS "${hdrs}")
 	if (SPIRV_CROSS_FORCE_PIC)
@@ -168,12 +186,12 @@ macro(spirv_cross_add_library name config_name library_type)
 	if (NOT SPIRV_CROSS_SKIP_INSTALL)
 		install(TARGETS ${name}
 			EXPORT ${config_name}Config
-			RUNTIME DESTINATION bin
-			LIBRARY DESTINATION lib
-			ARCHIVE DESTINATION lib
-			PUBLIC_HEADER DESTINATION include/spirv_cross)
-		install(FILES ${hdrs} DESTINATION include/spirv_cross)
-		install(EXPORT ${config_name}Config DESTINATION share/${config_name}/cmake)
+			RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+			LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+			ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+			PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/spirv_cross)
+		install(FILES ${hdrs} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/spirv_cross)
+		install(EXPORT ${config_name}Config DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${config_name}/cmake)
 		export(TARGETS ${name} FILE ${config_name}Config.cmake)
 	endif()
 endmacro()
@@ -312,19 +330,17 @@ if (SPIRV_CROSS_STATIC)
 endif()
 
 set(spirv-cross-abi-major 0)
-set(spirv-cross-abi-minor 23)
+set(spirv-cross-abi-minor 44)
 set(spirv-cross-abi-patch 0)
 
 if (SPIRV_CROSS_SHARED)
 	set(SPIRV_CROSS_VERSION ${spirv-cross-abi-major}.${spirv-cross-abi-minor}.${spirv-cross-abi-patch})
-	set(SPIRV_CROSS_INSTALL_LIB_DIR ${CMAKE_INSTALL_PREFIX}/lib)
-	set(SPIRV_CROSS_INSTALL_INC_DIR ${CMAKE_INSTALL_PREFIX}/include/spirv_cross)
 
 	if (NOT SPIRV_CROSS_SKIP_INSTALL)
 		configure_file(
 			${CMAKE_CURRENT_SOURCE_DIR}/pkg-config/spirv-cross-c-shared.pc.in
 			${CMAKE_CURRENT_BINARY_DIR}/spirv-cross-c-shared.pc @ONLY)
-		install(FILES ${CMAKE_CURRENT_BINARY_DIR}/spirv-cross-c-shared.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/share/pkgconfig)
+		install(FILES ${CMAKE_CURRENT_BINARY_DIR}/spirv-cross-c-shared.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 	endif()
 
 	spirv_cross_add_library(spirv-cross-c-shared spirv_cross_c_shared SHARED
@@ -424,7 +440,7 @@ if (SPIRV_CROSS_CLI)
 	target_compile_definitions(spirv-cross PRIVATE ${spirv-compiler-defines} HAVE_SPIRV_CROSS_GIT_VERSION)
 	set_target_properties(spirv-cross PROPERTIES LINK_FLAGS "${spirv-cross-link-flags}")
 	if (NOT SPIRV_CROSS_SKIP_INSTALL)
-		install(TARGETS spirv-cross RUNTIME DESTINATION bin)
+		install(TARGETS spirv-cross RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 	endif()
 	target_link_libraries(spirv-cross PRIVATE
 			spirv-cross-glsl
