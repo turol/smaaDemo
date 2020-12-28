@@ -362,7 +362,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 		padding.push_back('\0');
 		for (const auto &ext : extensions) {
-			LOG(" %s %s %u\n", ext.extensionName, &padding[strnlen(ext.extensionName, maxLen)], ext.specVersion);
+			LOG(" %s %s %u\n", ext.extensionName.data(), &padding[strnlen(ext.extensionName, maxLen)], ext.specVersion);
 		}
 	}
 
@@ -390,7 +390,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 		padding.push_back('\0');
 		for (const auto &l : layers) {
-			LOG(" %s %s (version %u,\tspec %u.%u.%u)\n", l.layerName, &padding[strnlen(l.layerName, maxLen)], l.implementationVersion, VK_VERSION_MAJOR(l.specVersion), VK_VERSION_MINOR(l.specVersion), VK_VERSION_PATCH(l.specVersion));
+			LOG(" %s %s (version %u,\tspec %u.%u.%u)\n", l.layerName.data(), &padding[strnlen(l.layerName, maxLen)], l.implementationVersion, VK_VERSION_MAJOR(l.specVersion), VK_VERSION_MINOR(l.specVersion), VK_VERSION_PATCH(l.specVersion));
 		}
 	}
 
@@ -503,7 +503,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	LOG("VendorId 0x%x\n", deviceProperties.vendorID);
 	LOG("DeviceId 0x%x\n", deviceProperties.deviceID);
 	LOG("Type %s\n", vk::to_string(deviceProperties.deviceType).c_str());
-	LOG("Name \"%s\"\n", deviceProperties.deviceName);
+	LOG("Name \"%s\"\n", deviceProperties.deviceName.data());
 	LOG("uniform buffer alignment %u\n", static_cast<unsigned int>(deviceProperties.limits.minUniformBufferOffsetAlignment));
 	LOG("storage buffer alignment %u\n", static_cast<unsigned int>(deviceProperties.limits.minStorageBufferOffsetAlignment));
 	LOG("texel buffer alignment %u\n",   static_cast<unsigned int>(deviceProperties.limits.minTexelBufferOffsetAlignment));
@@ -612,8 +612,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		auto exts = physicalDevice.enumerateDeviceExtensionProperties();
 		LOG("%u device extensions:\n", static_cast<unsigned int>(exts.size()));
 		for (const auto &ext : exts) {
-			LOG("%s\n", ext.extensionName);
-			availableExtensions.insert(std::string(ext.extensionName));
+			LOG("%s\n", ext.extensionName.data());
+			availableExtensions.insert(std::string(ext.extensionName.data()));
 		}
 	}
 
@@ -1570,24 +1570,25 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	info.layout = layout;
 
 	auto result = device.createGraphicsPipeline(pipelineCache, info);
+	// TODO: check success instead of implicitly using result.value
 
-	debugNameObject<vk::Pipeline>(result, desc.name_);
+	debugNameObject<vk::Pipeline>(result.value, desc.name_);
 
 	if (amdShaderInfo) {
 		vk::ShaderStatisticsInfoAMD stats;
 		size_t dataSize = sizeof(stats);
 		// TODO: other stages
 
-		device.getShaderInfoAMD(result, vk::ShaderStageFlagBits::eVertex, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, dispatcher);
+		device.getShaderInfoAMD(result.value, vk::ShaderStageFlagBits::eVertex, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, dispatcher);
 		LOG("pipeline \"%s\" vertex SGPR %u VGPR %u\n", desc.name_.c_str(), stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
 
-		device.getShaderInfoAMD(result, vk::ShaderStageFlagBits::eFragment, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, dispatcher);
+		device.getShaderInfoAMD(result.value, vk::ShaderStageFlagBits::eFragment, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, dispatcher);
 		LOG("pipeline \"%s\" fragment SGPR %u VGPR %u\n", desc.name_.c_str(), stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
 	}
 
 	auto id = pipelines.add();
 	Pipeline &p = id.first;
-	p.pipeline = result;
+	p.pipeline = result.value;
 	p.layout   = layout;
 	p.scissor  = desc.scissorTest_;
 
