@@ -3061,7 +3061,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
 			}
 
-			ImGui::SliderFloat("Predication threshold", &predicationThreshold, 0.0f, 1.0f, "%.4f", 3.0f);
+			ImGui::SliderFloat("Predication threshold", &predicationThreshold, 0.0f, 1.0f, "%.4f");
 			ImGui::SliderFloat("Predication scale",     &predicationScale,     1.0f, 5.0f);
 			ImGui::SliderFloat("Predication strength",  &predicationStrength,  0.0f, 1.0f);
 			if (ImGui::Button("Reset predication values")) {
