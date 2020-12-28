@@ -1,7 +1,5 @@
-commit af64a9e826bf5bb5fcd2434dd71be1e41e922563
-Author: John Kessenich <cepheus@frii.com>
-Date:   Tue Oct 15 00:11:57 2019 -0600
+commit 95b48cedd07d4134ef0005898f8354615ca64282
+Author: alelenv <alele@nvidia.com>
+Date:   Fri Feb 14 12:51:42 2020 -0800
 
-    Versioning: Complete the versioning change in recent commits.
-    
-    These didn't include a full rebuild of the headers.
+    Update headers for SPV_KHR_ray_tracing.
