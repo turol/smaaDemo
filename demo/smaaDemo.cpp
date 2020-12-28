@@ -3361,6 +3361,7 @@ int main(int argc, char *argv[]) {
 			} catch (std::exception &e) {
 				LOG("caught std::exception: \"%s\"\n", e.what());
 				logFlush();
+				printf("caught std::exception: \"%s\"\n", e.what());
 				break;
 			} catch (...) {
 				LOG("caught unknown exception\n");
