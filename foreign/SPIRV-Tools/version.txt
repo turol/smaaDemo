@@ -1,15 +1,37 @@
-commit e01bc6d4e8467ecd92d1b57a4aca700788108275
-Author: Alastair Donaldson <afdx@google.com>
-Date:   Thu Dec 19 21:16:09 2019 +0000
+commit 64f36ea5296ec023f65f75d72196d3ff7ae7c7b2
+Author: David Neto <dneto@google.com>
+Date:   Thu Dec 19 17:16:26 2019 -0500
 
-    spirv-fuzz: Always add new globals to entry point interfaces (#3113)
+    Support OpenCL.DebugInfo.100 extended instruction set (#3080)
     
-    In the context of SPIR-V 1.4 or higher, global variables cannot be
-    used by an instruction unless they are listed in the interface of all
-    entry points that might invoke the instruction.  This change
-    conservatively adds new global variables to the interfaces of all
-    entry points (if the SPIR-V version is 1.4 or higher).
+    * Clone opencl.debuginfo.100 grammar from debuginfo grammar
     
-    Issue #3111 notes that a more rigorous approach to entry point
-    interfaces could be taken in spirv-fuzz, which would allow being less
-    conservative here.
+    Update version number to 200 revision 2
+    
+    * Apply content from OpenCL.DebugInfo.100 extension text
+    
+    * Rename grammar file
+    
+    * Support OpenCL.DebugInfo.100 extended instructions
+    
+    Add support for prefixing operand type names, to disambiguate
+    them between different instruction sets.
+    
+    * Add tests for OpenCL.DebugInfo.100
+    
+    * Support lookup of OpenCL.DebugInfo.100 extinst
+    
+    * Add tests for enum values
+    
+    * Recognize 2017-2019 as copyright date range
+    
+    * Android.mk: support OpenCL.DebugInfo.100 extended instruction set
+    
+    Also, stop generating core instruction tables for non-unified1 versions
+    of the grammar.
+    
+    * Imported entity operand type is concrete
+    
+    * Bazel: Suppoort OpenCL.DebugInfo.100
+    
+    * BUILD.gn: Support OpenCL.DebugInfo.100
