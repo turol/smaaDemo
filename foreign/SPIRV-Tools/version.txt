@@ -1,37 +1,5 @@
-commit 64f36ea5296ec023f65f75d72196d3ff7ae7c7b2
-Author: David Neto <dneto@google.com>
-Date:   Thu Dec 19 17:16:26 2019 -0500
+commit 8dd174809fb86498e5870276be7c84a8bf4c8254
+Author: Steven Perron <stevenperron@google.com>
+Date:   Tue Feb 4 09:35:13 2020 -0500
 
-    Support OpenCL.DebugInfo.100 extended instruction set (#3080)
-    
-    * Clone opencl.debuginfo.100 grammar from debuginfo grammar
-    
-    Update version number to 200 revision 2
-    
-    * Apply content from OpenCL.DebugInfo.100 extension text
-    
-    * Rename grammar file
-    
-    * Support OpenCL.DebugInfo.100 extended instructions
-    
-    Add support for prefixing operand type names, to disambiguate
-    them between different instruction sets.
-    
-    * Add tests for OpenCL.DebugInfo.100
-    
-    * Support lookup of OpenCL.DebugInfo.100 extinst
-    
-    * Add tests for enum values
-    
-    * Recognize 2017-2019 as copyright date range
-    
-    * Android.mk: support OpenCL.DebugInfo.100 extended instruction set
-    
-    Also, stop generating core instruction tables for non-unified1 versions
-    of the grammar.
-    
-    * Imported entity operand type is concrete
-    
-    * Bazel: Suppoort OpenCL.DebugInfo.100
-    
-    * BUILD.gn: Support OpenCL.DebugInfo.100
+    Finalize SPIRV-Tools v2020.1

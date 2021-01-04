@@ -16,9 +16,11 @@
 
 #include <cassert>
 
+#include "source/fuzz/fuzzer_util.h"
 #include "source/fuzz/transformation_add_constant_boolean.h"
 #include "source/fuzz/transformation_add_constant_composite.h"
 #include "source/fuzz/transformation_add_constant_scalar.h"
+#include "source/fuzz/transformation_add_dead_block.h"
 #include "source/fuzz/transformation_add_dead_break.h"
 #include "source/fuzz/transformation_add_dead_continue.h"
 #include "source/fuzz/transformation_add_function.h"
@@ -68,6 +70,8 @@ std::unique_ptr<Transformation> Transformation::FromMessage(
     case protobufs::Transformation::TransformationCase::kAddConstantScalar:
       return MakeUnique<TransformationAddConstantScalar>(
           message.add_constant_scalar());
+    case protobufs::Transformation::TransformationCase::kAddDeadBlock:
+      return MakeUnique<TransformationAddDeadBlock>(message.add_dead_block());
     case protobufs::Transformation::TransformationCase::kAddDeadBreak:
       return MakeUnique<TransformationAddDeadBreak>(message.add_dead_break());
     case protobufs::Transformation::TransformationCase::kAddDeadContinue:
@@ -154,6 +158,19 @@ std::unique_ptr<Transformation> Transformation::FromMessage(
   }
   assert(false && "Should be unreachable as all cases must be handled above.");
   return nullptr;
+}
+
+bool Transformation::CheckIdIsFreshAndNotUsedByThisTransformation(
+    uint32_t id, opt::IRContext* context,
+    std::set<uint32_t>* ids_used_by_this_transformation) {
+  if (!fuzzerutil::IsFreshId(context, id)) {
+    return false;
+  }
+  if (ids_used_by_this_transformation->count(id) != 0) {
+    return false;
+  }
+  ids_used_by_this_transformation->insert(id);
+  return true;
 }
 
 }  // namespace fuzz

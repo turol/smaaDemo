@@ -166,6 +166,9 @@ message Fact {
     // Order the fact options by numeric id (rather than alphabetically).
     FactConstantUniform constant_uniform_fact = 1;
     FactDataSynonym data_synonym_fact = 2;
+    FactBlockIsDead block_is_dead_fact = 3;
+    FactFunctionIsLivesafe function_is_livesafe_fact = 4;
+    FactValueOfVariableIsArbitrary value_of_variable_is_arbitrary = 5;
   }
 }
 
@@ -197,6 +200,99 @@ message FactDataSynonym {
   DataDescriptor data1 = 1;
 
   DataDescriptor data2 = 2;
+
+}
+
+message FactBlockIsDead {
+
+  // Records the fact that a block is guaranteed to be dynamically unreachable.
+  // This is useful because it informs the fuzzer that rather arbitrary changes
+  // can be made to this block.
+
+  uint32 block_id = 1;
+}
+
+message FactFunctionIsLivesafe {
+
+  // Records the fact that a function is guaranteed to be "livesafe", meaning
+  // that it will not make out-of-bounds accesses, does not contain reachable
+  // OpKill or OpUnreachable instructions, does not contain loops that will
+  // execute for large numbers of iterations, and only invokes other livesafe
+  // functions.
+
+  uint32 function_id = 1;
+}
+
+message FactValueOfVariableIsArbitrary {
+
+  // Records the fact that the value stored in the variable or function
+  // parameter with the given id can be arbitrary: the module's observable
+  // behaviour does not depend on it.  This means that arbitrary stores can be
+  // made to the variable, and that nothing can be guaranteed about values
+  // loaded from the variable.
+
+  // The result id of an OpVariable instruction, or an OpFunctionParameter
+  // instruction with pointer type
+  uint32 variable_id = 1;
+}
+
+message AccessChainClampingInfo {
+
+  // When making a function livesafe it is necessary to clamp the indices that
+  // occur as operands to access chain instructions so that they are guaranteed
+  // to be in bounds.  This message type allows an access chain instruction to
+  // have an associated sequence of ids that are reserved for comparing an
+  // access chain index with a bound (e.g. an array size), and selecting
+  // between the access chain index (if it is within bounds) and the bound (if
+  // it is not).
+  //
+  // This allows turning an instruction of the form:
+  //
+  // %result = OpAccessChain %type %object ... %index ...
+  //
+  // into:
+  //
+  // %t1 = OpULessThanEqual %bool %index %bound_minus_one
+  // %t2 = OpSelect %int_type %t1 %index %bound_minus_one
+  // %result = OpAccessChain %type %object ... %t2 ...
+
+  // The result id of an OpAccessChain or OpInBoundsAccessChain instruction.
+  uint32 access_chain_id = 1;
+
+  // A series of pairs of fresh ids, one per access chain index, for the results
+  // of a compare instruction and a select instruction, serving the roles of %t1
+  // and %t2 in the above example.
+  repeated UInt32Pair compare_and_select_ids = 2;
+
+}
+
+message LoopLimiterInfo {
+
+  // Structure capturing the information required to manipulate a loop limiter
+  // at a loop header.
+
+  // The header for the loop.
+  uint32 loop_header_id = 1;
+
+  // A fresh id into which the loop limiter's current value can be loaded.
+  uint32 load_id = 2;
+
+  // A fresh id that can be used to increment the loaded value by 1.
+  uint32 increment_id = 3;
+
+  // A fresh id that can be used to compare the loaded value with the loop
+  // limit.
+  uint32 compare_id = 4;
+
+  // A fresh id that can be used to compute the conjunction or disjunction of
+  // an original loop exit condition with |compare_id|, if the loop's back edge
+  // block can conditionally exit the loop.
+  uint32 logical_op_id = 5;
+
+  // A sequence of ids suitable for extending OpPhi instructions of the loop
+  // merge block if it did not previously have an incoming edge from the loop
+  // back edge block.
+  repeated uint32 phi_id = 6;
 
 }
 
@@ -242,6 +338,7 @@ message Transformation {
     TransformationAddGlobalVariable add_global_variable = 31;
     TransformationAddGlobalUndef add_global_undef = 32;
     TransformationAddFunction add_function = 33;
+    TransformationAddDeadBlock add_dead_block = 34;
     // Add additional option using the next available number.
   }
 }
@@ -275,7 +372,7 @@ message TransformationAddConstantComposite {
 
 message TransformationAddConstantScalar {
 
-  // Adds a constant of the given scalar type
+  // Adds a constant of the given scalar type.
 
   // Id for the constant
   uint32 fresh_id = 1;
@@ -285,6 +382,25 @@ message TransformationAddConstantScalar {
 
   // Value of the constant
   repeated uint32 word = 3;
+
+}
+
+message TransformationAddDeadBlock {
+
+  // Adds a new block to the module that is statically reachable from an
+  // existing block, but dynamically unreachable.
+
+  // Fresh id for the dead block
+  uint32 fresh_id = 1;
+
+  // Id of an existing block terminated with OpBranch, such that this OpBranch
+  // can be replaced with an OpBranchConditional to its exiting successor or
+  // the dead block
+  uint32 existing_block = 2;
+
+  // Determines whether the condition associated with the OpBranchConditional
+  // is true or false
+  bool condition_value = 3;
 
 }
 
@@ -336,6 +452,33 @@ message TransformationAddFunction {
   // The series of instructions that comprise the function.
   repeated Instruction instruction = 1;
 
+  // True if and only if the given function should be made livesafe (see
+  // FactFunctionIsLivesafe for definition).
+  bool is_livesafe = 2;
+
+  // Fresh id for a new variable that will serve as a "loop limiter" for the
+  // function; only relevant if |is_livesafe| holds.
+  uint32 loop_limiter_variable_id = 3;
+
+  // Id of an existing unsigned integer constant providing the maximum value
+  // that the loop limiter can reach before the loop is broken from; only
+  // relevant if |is_livesafe| holds.
+  uint32 loop_limit_constant_id = 4;
+
+  // Fresh ids for each loop in the function that allow the loop limiter to be
+  // manipulated; only relevant if |is_livesafe| holds.
+  repeated LoopLimiterInfo loop_limiter_info = 5;
+
+  // Id of an existing global value with the same return type as the function
+  // that can be used to replace OpKill and OpReachable instructions with
+  // ReturnValue instructions.  Ignored if the function has void return type.
+  uint32 kill_unreachable_return_value_id = 6;
+
+  // A mapping (represented as a sequence) from every access chain result id in
+  // the function to the ids required to clamp its indices to ensure they are in
+  // bounds.
+  repeated AccessChainClampingInfo access_chain_clamping_info = 7;
+
 }
 
 message TransformationAddGlobalUndef {
@@ -363,6 +506,13 @@ message TransformationAddGlobalVariable {
 
   // Optional initializer; 0 if there is no initializer
   uint32 initializer_id = 3;
+
+  // True if and only if the value of the variable should be regarded, in
+  // general, as totally unknown and subject to change (even if, due to an
+  // initializer, the original value is known).  This is the case for variables
+  // added when a module is donated, for example, and means that stores to such
+  // variables can be performed in an arbitrary fashion.
+  bool value_is_arbitrary = 4;
 
 }
 
