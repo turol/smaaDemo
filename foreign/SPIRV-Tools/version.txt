@@ -1,5 +1,15 @@
-commit c413b982c316b14e784f50d941814fc737b55b4a
-Author: Steven Perron <stevenperron@google.com>
-Date:   Wed Dec 11 14:52:28 2019 -0500
+commit e01bc6d4e8467ecd92d1b57a4aca700788108275
+Author: Alastair Donaldson <afdx@google.com>
+Date:   Thu Dec 19 21:16:09 2019 +0000
 
-    Finalize SPIRV-Tools v2019.5
+    spirv-fuzz: Always add new globals to entry point interfaces (#3113)
+    
+    In the context of SPIR-V 1.4 or higher, global variables cannot be
+    used by an instruction unless they are listed in the interface of all
+    entry points that might invoke the instruction.  This change
+    conservatively adds new global variables to the interfaces of all
+    entry points (if the SPIR-V version is 1.4 or higher).
+    
+    Issue #3111 notes that a more rigorous approach to entry point
+    interfaces could be taken in spirv-fuzz, which would allow being less
+    conservative here.
