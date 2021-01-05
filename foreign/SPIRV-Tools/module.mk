@@ -47,23 +47,23 @@ build-version.inc: $(d)/CHANGES $(d)/utils/update_build_version.py
 	touch $@
 
 
-core.insts-unified1.inc operand.kinds-unified1.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/spirv.core.grammar.json $(d)/source/extinst.debuginfo.grammar.json $(d)/utils/generate_grammar_tables.py $(d)/source/extinst.opencl.debuginfo.100.grammar.json
+core.insts-unified1.inc operand.kinds-unified1.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/spirv.core.grammar.json $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.debuginfo.grammar.json $(d)/utils/generate_grammar_tables.py $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.opencl.debuginfo.100.grammar.json
 	$(PYTHON) $(word 3, $^) --spirv-core-grammar=$< --extinst-debuginfo-grammar=$(word 2, $^) --extinst-cldebuginfo100-grammar=$(word 4, $^) --core-insts-output=core.insts-unified1.inc --operand-kinds-output=operand.kinds-unified1.inc
 
 
-debuginfo.insts.inc: $(d)/source/extinst.debuginfo.grammar.json $(d)/utils/generate_grammar_tables.py
+debuginfo.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.debuginfo.grammar.json $(d)/utils/generate_grammar_tables.py
 	$(PYTHON) $(word 2, $^) --extinst-vendor-grammar=$< --vendor-insts-output=$@
 
 
-DebugInfo.h: $(d)/source/extinst.debuginfo.grammar.json $(d)/utils/generate_language_headers.py
+DebugInfo.h: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.debuginfo.grammar.json $(d)/utils/generate_language_headers.py
 	$(PYTHON) $(word 2, $^) --extinst-grammar=$< --extinst-output-path=$@
 
 
-OpenCLDebugInfo100.h: $(d)/source/extinst.opencl.debuginfo.100.grammar.json $(d)/utils/generate_language_headers.py
+OpenCLDebugInfo100.h: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.opencl.debuginfo.100.grammar.json $(d)/utils/generate_language_headers.py
 	$(PYTHON) $(word 2, $^) --extinst-grammar=$< --extinst-output-path=$@
 
 
-enum_string_mapping.inc extension_enum.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/spirv.core.grammar.json $(d)/source/extinst.debuginfo.grammar.json $(d)/utils/generate_grammar_tables.py $(d)/source/extinst.opencl.debuginfo.100.grammar.json
+enum_string_mapping.inc extension_enum.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/spirv.core.grammar.json $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.debuginfo.grammar.json $(d)/utils/generate_grammar_tables.py $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.opencl.debuginfo.100.grammar.json
 	$(PYTHON) $(word 3, $^) --spirv-core-grammar=$< --extinst-debuginfo-grammar=$(word 2, $^) --extinst-cldebuginfo100-grammar=$(word 4, $^) --extension-enum-output=extension_enum.inc --enum-string-mapping-output=enum_string_mapping.inc
 
 
@@ -75,7 +75,7 @@ glsl.std.450.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.gls
 	$(PYTHON) $(word 2, $^) --extinst-glsl-grammar=$< --glsl-insts-output=$@
 
 
-opencl.debuginfo.100.insts.inc: $(d)/source/extinst.opencl.debuginfo.100.grammar.json $(d)/utils/generate_grammar_tables.py
+opencl.debuginfo.100.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.opencl.debuginfo.100.grammar.json $(d)/utils/generate_grammar_tables.py
 	$(PYTHON) $(word 2, $^) --extinst-vendor-grammar=$< --vendor-insts-output=$@ --vendor-operand-kind-prefix=CLDEBUG100_
 
 opencl.std.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.opencl.std.100.grammar.json $(d)/utils/generate_grammar_tables.py
