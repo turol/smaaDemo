@@ -1,16 +1,5 @@
-commit 5a97e3a391677ff9baae8ccdf5c03c4d403d848b
-Author: Daniel Koch <dgkoch@users.noreply.github.com>
-Date:   Tue Mar 17 15:30:19 2020 -0400
+commit fd8e130510a6b002b28eee5885a9505040a9bdc9
+Author: Steven Perron <stevenperron@google.com>
+Date:   Thu Mar 26 02:02:59 2020 -0400
 
-    Add support for KHR_ray_{query,tracing} extensions (#3235)
-    
-    Update validator for SPV_KHR_ray_tracing.
-    
-    * Added handling for new enum types
-    * Add SpvScopeShaderCallKHR as a valid scope
-    * update spirv-headers
-    
-    Co-authored-by: alelenv <alele@nvidia.com>
-    Co-authored-by: Torosdagli <ntorosda@amd.com>
-    Co-authored-by: Tobias Hector <tobias.hector@amd.com>
-    Co-authored-by: Steven Perron <stevenperron@google.com>
+    Finalize SPIRV-Tools v2020.2
