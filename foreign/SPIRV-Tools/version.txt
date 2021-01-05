@@ -1,15 +1,13 @@
-commit fb6e3e48d51d1efdc31f016d7e52f528b93235a8
-Author: Geoff Lang <geofflang@google.com>
-Date:   Tue Feb 25 00:46:52 2020 -0500
+commit 25ede1ced6797f9a3689ae7dac5085ce8236c573
+Author: Jamie Madill <jmadill@chromium.org>
+Date:   Mon Mar 16 11:42:05 2020 -0400
 
-    Combine extinst-name and extinst-output-base into one arg. (#3200)
+    Roll external/spirv-headers/ 30ef660ce..a17e17e36 (1 commit) (#3230)
     
-    * Combine the extinst-name and extinst-output-base into one arg.
+    https://github.com/KhronosGroup/SPIRV-Headers/compare/30ef660ce2e6...a17e17e36da4
     
-    Some build systems such as Android blueprints require that the inputs
-    and outputs of generator scripts are all provided as arguments.  These
-    two arguments to generate_language_headers.py are combined to form the
-    output path in the script.  This change simply lets the user provide the
-    whole output path as an argument.
+    $ git log 30ef660ce..a17e17e36 --date=short --no-merges --format='%ad %ae %s'
+    2020-03-13 jmadill Add missing header to BUILD.gn.
     
-    * Fix typo in build_defs.bzl and update Android.mk
+    Created with:
+      roll-dep external/spirv-headers

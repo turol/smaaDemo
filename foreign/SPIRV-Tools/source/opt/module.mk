@@ -58,6 +58,7 @@ FILES:= \
 	inline_pass.cpp \
 	inst_bindless_check_pass.cpp \
 	inst_buff_addr_check_pass.cpp \
+	inst_debug_printf_pass.cpp \
 	instruction.cpp \
 	instruction_list.cpp \
 	instrument_pass.cpp \
