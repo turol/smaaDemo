@@ -56,11 +56,11 @@ debuginfo.insts.inc: $(d)/source/extinst.debuginfo.grammar.json $(d)/utils/gener
 
 
 DebugInfo.h: $(d)/source/extinst.debuginfo.grammar.json $(d)/utils/generate_language_headers.py
-	$(PYTHON) $(word 2, $^) --extinst-name=DebugInfo --extinst-grammar=$< --extinst-output-base=DebugInfo
+	$(PYTHON) $(word 2, $^) --extinst-grammar=$< --extinst-output-path=$@
 
 
 OpenCLDebugInfo100.h: $(d)/source/extinst.opencl.debuginfo.100.grammar.json $(d)/utils/generate_language_headers.py
-	$(PYTHON) $(word 2, $^) --extinst-name=OpenCLDebugInfo100 --extinst-grammar=$< --extinst-output-base=OpenCLDebugInfo100
+	$(PYTHON) $(word 2, $^) --extinst-grammar=$< --extinst-output-path=$@
 
 
 enum_string_mapping.inc extension_enum.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/spirv.core.grammar.json $(d)/source/extinst.debuginfo.grammar.json $(d)/utils/generate_grammar_tables.py $(d)/source/extinst.opencl.debuginfo.100.grammar.json

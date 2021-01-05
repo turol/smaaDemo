@@ -1,5 +1,15 @@
-commit 8910ea5f1c7bc38f79a8b70b265cd9d1571f4b56
-Author: Nico Weber <nicolasweber@gmx.de>
-Date:   Sun Feb 23 18:50:59 2020 -0500
+commit fb6e3e48d51d1efdc31f016d7e52f528b93235a8
+Author: Geoff Lang <geofflang@google.com>
+Date:   Tue Feb 25 00:46:52 2020 -0500
 
-    Fix Wrange-loop-analysis warnings in SPIRV-Tools. (#3201)
+    Combine extinst-name and extinst-output-base into one arg. (#3200)
+    
+    * Combine the extinst-name and extinst-output-base into one arg.
+    
+    Some build systems such as Android blueprints require that the inputs
+    and outputs of generator scripts are all provided as arguments.  These
+    two arguments to generate_language_headers.py are combined to form the
+    output path in the script.  This change simply lets the user provide the
+    whole output path as an argument.
+    
+    * Fix typo in build_defs.bzl and update Android.mk
