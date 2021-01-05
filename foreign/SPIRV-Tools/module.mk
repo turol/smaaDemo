@@ -30,6 +30,7 @@ SPV_GENERATED:= \
 	extension_enum.inc \
 	generators.inc \
 	glsl.std.450.insts.inc \
+	nonsemantic.clspvreflection.insts.inc \
 	opencl.std.insts.inc \
 	opencl.debuginfo.100.insts.inc \
 	OpenCLDebugInfo100.h \
@@ -74,6 +75,9 @@ generators.inc: $(d)/../SPIRV-Headers/include/spirv/spir-v.xml $(d)/utils/genera
 glsl.std.450.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.glsl.std.450.grammar.json $(d)/utils/generate_grammar_tables.py
 	$(PYTHON) $(word 2, $^) --extinst-glsl-grammar=$< --glsl-insts-output=$@
 
+
+nonsemantic.clspvreflection.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.nonsemantic.clspvreflection.grammar.json $(d)/utils/generate_grammar_tables.py
+	$(PYTHON) $(word 2, $^) --extinst-vendor-grammar=$< --vendor-insts-output=$@ --vendor-operand-kind-prefix=
 
 opencl.debuginfo.100.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.opencl.debuginfo.100.grammar.json $(d)/utils/generate_grammar_tables.py
 	$(PYTHON) $(word 2, $^) --extinst-vendor-grammar=$< --vendor-insts-output=$@ --vendor-operand-kind-prefix=CLDEBUG100_
