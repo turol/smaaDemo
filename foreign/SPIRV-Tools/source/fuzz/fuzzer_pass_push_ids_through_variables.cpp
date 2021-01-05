@@ -91,7 +91,13 @@ void FuzzerPassPushIdsThroughVariables::Apply() {
                     return false;
                   }
 
-                  if (!fuzzerutil::CanMakeSynonymOf(ir_context,
+                  // If the id is irrelevant, we can use it since it will not
+                  // participate in DataSynonym fact. Otherwise, we should be
+                  // able to produce a synonym out of the id.
+                  if (!GetTransformationContext()
+                           ->GetFactManager()
+                           ->IdIsIrrelevant(instruction->result_id()) &&
+                      !fuzzerutil::CanMakeSynonymOf(ir_context,
                                                     *GetTransformationContext(),
                                                     instruction)) {
                     return false;
@@ -132,7 +138,7 @@ void FuzzerPassPushIdsThroughVariables::Apply() {
         // Create a constant to initialize the variable from. This might update
         // module's id bound so it must be done before any fresh ids are
         // computed.
-        auto initializer_id = FindOrCreateZeroConstant(basic_type_id);
+        auto initializer_id = FindOrCreateZeroConstant(basic_type_id, false);
 
         // Applies the push id through variable transformation.
         ApplyTransformation(TransformationPushIdThroughVariable(

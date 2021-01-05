@@ -57,9 +57,12 @@ void FuzzerPassAddEquationInstructions::Apply() {
         std::vector<opt::Instruction*> available_instructions =
             FindAvailableInstructions(
                 function, block, inst_it,
-                [](opt::IRContext*, opt::Instruction* instruction) -> bool {
+                [this](opt::IRContext*, opt::Instruction* instruction) -> bool {
                   return instruction->result_id() && instruction->type_id() &&
-                         instruction->opcode() != SpvOpUndef;
+                         instruction->opcode() != SpvOpUndef &&
+                         !GetTransformationContext()
+                              ->GetFactManager()
+                              ->IdIsIrrelevant(instruction->result_id());
                 });
 
         // Try the opcodes for which we know how to make ids at random until
@@ -90,10 +93,15 @@ void FuzzerPassAddEquationInstructions::Apply() {
 
               // Make sure a result type exists in the module.
               if (const auto* vector = type->AsVector()) {
+                // We store element count in a separate variable since the
+                // call FindOrCreate* functions below might invalidate
+                // |vector| pointer.
+                const auto element_count = vector->element_count();
+
                 FindOrCreateVectorType(
                     FindOrCreateFloatType(
                         vector->element_type()->AsInteger()->width()),
-                    vector->element_count());
+                    element_count);
               } else {
                 FindOrCreateFloatType(type->AsInteger()->width());
               }
@@ -135,6 +143,11 @@ void FuzzerPassAddEquationInstructions::Apply() {
                 //  is that they must have the same number of bits. Consider
                 //  improving the code below to support this in full.
                 if (const auto* vector = operand_type->AsVector()) {
+                  // We store element count in a separate variable since the
+                  // call FindOrCreate* functions below might invalidate
+                  // |vector| pointer.
+                  const auto element_count = vector->element_count();
+
                   uint32_t element_type_id;
                   if (const auto* int_type =
                           vector->element_type()->AsInteger()) {
@@ -147,8 +160,7 @@ void FuzzerPassAddEquationInstructions::Apply() {
                         GetFuzzerContext()->ChooseEven());
                   }
 
-                  FindOrCreateVectorType(element_type_id,
-                                         vector->element_count());
+                  FindOrCreateVectorType(element_type_id, element_count);
                 } else if (const auto* int_type = operand_type->AsInteger()) {
                   FindOrCreateFloatType(int_type->width());
                 } else {

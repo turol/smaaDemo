@@ -66,7 +66,7 @@ bool TransformationReplaceParameterWithGlobal::IsApplicable(
 
   // Check that initializer for the global variable exists in the module.
   if (fuzzerutil::MaybeGetZeroConstant(ir_context, transformation_context,
-                                       param_inst->type_id()) == 0) {
+                                       param_inst->type_id(), false) == 0) {
     return false;
   }
 
@@ -97,7 +97,7 @@ void TransformationReplaceParameterWithGlobal::Apply(
                                       SpvStorageClassPrivate),
       SpvStorageClassPrivate,
       fuzzerutil::MaybeGetZeroConstant(ir_context, *transformation_context,
-                                       param_inst->type_id()));
+                                       param_inst->type_id(), false));
 
   // Mark the global variable's pointee as irrelevant if replaced parameter is
   // irrelevant.
@@ -161,33 +161,28 @@ void TransformationReplaceParameterWithGlobal::Apply(
   }
 
   // Remove the parameter from the function.
-  function->RemoveParameter(message_.parameter_id());
+  fuzzerutil::RemoveParameter(ir_context, message_.parameter_id());
 
   // Update function's type.
-  auto* old_function_type = fuzzerutil::GetFunctionType(ir_context, function);
-  assert(old_function_type && "Function has invalid type");
+  {
+    // We use a separate scope here since |old_function_type| might become a
+    // dangling pointer after the call to the fuzzerutil::UpdateFunctionType.
 
-  // Preemptively add function's return type id.
-  std::vector<uint32_t> type_ids = {
-      old_function_type->GetSingleWordInOperand(0)};
+    auto* old_function_type = fuzzerutil::GetFunctionType(ir_context, function);
+    assert(old_function_type && "Function has invalid type");
 
-  // +1 and -1 since the first operand is the return type id.
-  for (uint32_t i = 1; i < old_function_type->NumInOperands(); ++i) {
-    if (i - 1 != parameter_index) {
-      type_ids.push_back(old_function_type->GetSingleWordInOperand(i));
+    // +1 and -1 since the first operand is the return type id.
+    std::vector<uint32_t> parameter_type_ids;
+    for (uint32_t i = 1; i < old_function_type->NumInOperands(); ++i) {
+      if (i - 1 != parameter_index) {
+        parameter_type_ids.push_back(
+            old_function_type->GetSingleWordInOperand(i));
+      }
     }
-  }
 
-  if (ir_context->get_def_use_mgr()->NumUsers(old_function_type) == 1 &&
-      fuzzerutil::FindFunctionType(ir_context, type_ids) == 0) {
-    // Change the old type in place. +1 since the first operand is the result
-    // type id of the function.
-    old_function_type->RemoveInOperand(parameter_index + 1);
-  } else {
-    // Find an existing or create a new function type.
-    function->DefInst().SetInOperand(
-        1, {fuzzerutil::FindOrCreateFunctionType(
-               ir_context, message_.function_type_fresh_id(), type_ids)});
+    fuzzerutil::UpdateFunctionType(
+        ir_context, function->result_id(), message_.function_type_fresh_id(),
+        old_function_type->GetSingleWordInOperand(0), parameter_type_ids);
   }
 
   // Make sure our changes are analyzed

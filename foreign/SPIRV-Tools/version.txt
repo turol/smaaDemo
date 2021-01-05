@@ -1,5 +1,5 @@
-commit 895927bd3f2d653f40cebab55aa6c7eabde30a86
-Author: Steven Perron <stevenperron@google.com>
-Date:   Wed Jul 22 14:26:04 2020 -0400
+commit ab4fe12a46be66d56734f879a317f888ec0425bf
+Author: Vasyl Teliman <vasniktel@gmail.com>
+Date:   Thu Jul 30 18:51:29 2020 +0300
 
-    Finalize SPIRV-Tools v2020.4
+    spirv-fuzz: Fix memory bugs (#3622)
