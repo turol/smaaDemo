@@ -59,12 +59,9 @@ void FuzzerPassAddDeadContinues::Apply() {
         continue_block->ForEachPhiInst([this, &phi_ids](opt::Instruction* phi) {
           // Add an additional operand for OpPhi instruction.
           //
-          // TODO(https://github.com/KhronosGroup/SPIRV-Tools/issues/3177):
-          // If we have a way to communicate to the fact manager
-          // that a specific id use is irrelevant and could be replaced with
-          // something else, we should add such a fact about the zero
-          // provided as an OpPhi operand
-          phi_ids.push_back(FindOrCreateZeroConstant(phi->type_id()));
+          // We mark the constant as irrelevant so that we can replace it with a
+          // more interesting value later.
+          phi_ids.push_back(FindOrCreateZeroConstant(phi->type_id(), true));
         });
       }
 
@@ -80,14 +77,9 @@ void FuzzerPassAddDeadContinues::Apply() {
           block.id(), condition_value, std::move(phi_ids));
       // Probabilistically decide whether to apply the transformation in the
       // case that it is applicable.
-      if (candidate_transformation.IsApplicable(GetIRContext(),
-                                                *GetTransformationContext()) &&
-          GetFuzzerContext()->ChoosePercentage(
+      if (GetFuzzerContext()->ChoosePercentage(
               GetFuzzerContext()->GetChanceOfAddingDeadContinue())) {
-        candidate_transformation.Apply(GetIRContext(),
-                                       GetTransformationContext());
-        *GetTransformations()->add_transformation() =
-            candidate_transformation.ToMessage();
+        MaybeApplyTransformation(candidate_transformation);
       }
     }
   }

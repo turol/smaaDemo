@@ -27,6 +27,7 @@
 #include "source/fuzz/transformation_add_function.h"
 #include "source/fuzz/transformation_add_global_undef.h"
 #include "source/fuzz/transformation_add_global_variable.h"
+#include "source/fuzz/transformation_add_spec_constant_op.h"
 #include "source/fuzz/transformation_add_type_array.h"
 #include "source/fuzz/transformation_add_type_boolean.h"
 #include "source/fuzz/transformation_add_type_float.h"
@@ -413,14 +414,41 @@ void FuzzerPassDonateModules::HandleTypeOrValue(
             argument_type_ids));
       }
     } break;
+    case SpvOpSpecConstantOp: {
+      new_result_id = GetFuzzerContext()->GetFreshId();
+      auto type_id = original_id_to_donated_id->at(type_or_value.type_id());
+      auto opcode = static_cast<SpvOp>(type_or_value.GetSingleWordInOperand(0));
+
+      // Make sure we take into account |original_id_to_donated_id| when
+      // computing operands for OpSpecConstantOp.
+      opt::Instruction::OperandList operands;
+      for (uint32_t i = 1; i < type_or_value.NumInOperands(); ++i) {
+        const auto& operand = type_or_value.GetInOperand(i);
+        auto data =
+            operand.type == SPV_OPERAND_TYPE_ID
+                ? opt::Operand::OperandData{original_id_to_donated_id->at(
+                      operand.words[0])}
+                : operand.words;
+
+        operands.push_back({operand.type, std::move(data)});
+      }
+
+      ApplyTransformation(TransformationAddSpecConstantOp(
+          new_result_id, type_id, opcode, std::move(operands)));
+    } break;
+    case SpvOpSpecConstantTrue:
+    case SpvOpSpecConstantFalse:
     case SpvOpConstantTrue:
     case SpvOpConstantFalse: {
       // It is OK to have duplicate definitions of True and False, so add
       // these to the module, using a remapped Bool type.
       new_result_id = GetFuzzerContext()->GetFreshId();
-      ApplyTransformation(TransformationAddConstantBoolean(
-          new_result_id, type_or_value.opcode() == SpvOpConstantTrue));
+      auto value = type_or_value.opcode() == SpvOpConstantTrue ||
+                   type_or_value.opcode() == SpvOpSpecConstantTrue;
+      ApplyTransformation(
+          TransformationAddConstantBoolean(new_result_id, value));
     } break;
+    case SpvOpSpecConstant:
     case SpvOpConstant: {
       // It is OK to have duplicate constant definitions, so add this to the
       // module using a remapped result type.
@@ -433,6 +461,7 @@ void FuzzerPassDonateModules::HandleTypeOrValue(
           new_result_id, original_id_to_donated_id->at(type_or_value.type_id()),
           data_words));
     } break;
+    case SpvOpSpecConstantComposite:
     case SpvOpConstantComposite: {
       assert(original_id_to_donated_id->count(type_or_value.type_id()) &&
              "Composite types for which it is possible to create a constant "
@@ -890,11 +919,10 @@ void FuzzerPassDonateModules::HandleDifficultInstruction(
 
   // We find or add a zero constant to the receiving module for the type in
   // question, and add an OpCopyObject instruction that copies this zero.
-  // TODO(https://github.com/KhronosGroup/SPIRV-Tools/issues/3177):
-  //  Using this particular constant is arbitrary, so if we have a
-  //  mechanism for noting that an id use is arbitrary and could be
-  //  fuzzed we should use it here.
-  auto zero_constant = FindOrCreateZeroConstant(remapped_type_id);
+  //
+  // We mark the constant as irrelevant so that we can replace it with a
+  // more interesting value later.
+  auto zero_constant = FindOrCreateZeroConstant(remapped_type_id, true);
   donated_instructions->push_back(MakeInstructionMessage(
       SpvOpCopyObject, remapped_type_id,
       original_id_to_donated_id->at(instruction.result_id()),
