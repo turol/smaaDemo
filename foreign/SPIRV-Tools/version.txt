@@ -1,13 +1,16 @@
-commit 25ede1ced6797f9a3689ae7dac5085ce8236c573
-Author: Jamie Madill <jmadill@chromium.org>
-Date:   Mon Mar 16 11:42:05 2020 -0400
+commit 5a97e3a391677ff9baae8ccdf5c03c4d403d848b
+Author: Daniel Koch <dgkoch@users.noreply.github.com>
+Date:   Tue Mar 17 15:30:19 2020 -0400
 
-    Roll external/spirv-headers/ 30ef660ce..a17e17e36 (1 commit) (#3230)
+    Add support for KHR_ray_{query,tracing} extensions (#3235)
     
-    https://github.com/KhronosGroup/SPIRV-Headers/compare/30ef660ce2e6...a17e17e36da4
+    Update validator for SPV_KHR_ray_tracing.
     
-    $ git log 30ef660ce..a17e17e36 --date=short --no-merges --format='%ad %ae %s'
-    2020-03-13 jmadill Add missing header to BUILD.gn.
+    * Added handling for new enum types
+    * Add SpvScopeShaderCallKHR as a valid scope
+    * update spirv-headers
     
-    Created with:
-      roll-dep external/spirv-headers
+    Co-authored-by: alelenv <alele@nvidia.com>
+    Co-authored-by: Torosdagli <ntorosda@amd.com>
+    Co-authored-by: Tobias Hector <tobias.hector@amd.com>
+    Co-authored-by: Steven Perron <stevenperron@google.com>

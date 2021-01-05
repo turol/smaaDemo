@@ -1,4 +1,4 @@
--- Copyright (c) 2014-2019 The Khronos Group Inc.
+-- Copyright (c) 2014-2020 The Khronos Group Inc.
 -- 
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
 -- of this software and/or associated documentation files (the "Materials"),
@@ -45,7 +45,7 @@
 spv = {
     MagicNumber = 0x07230203,
     Version = 0x00010500,
-    Revision = 1,
+    Revision = 3,
     OpCodeMask = 0xffff,
     WordCountShift = 16,
 
@@ -155,6 +155,10 @@ spv = {
         SampleInterlockUnorderedEXT = 5369,
         ShadingRateInterlockOrderedEXT = 5370,
         ShadingRateInterlockUnorderedEXT = 5371,
+        MaxWorkgroupSizeINTEL = 5893,
+        MaxWorkDimINTEL = 5894,
+        NoGlobalOffsetINTEL = 5895,
+        NumSIMDWorkitemsINTEL = 5896,
     },
 
     StorageClass = {
@@ -185,6 +189,7 @@ spv = {
         ShaderRecordBufferNV = 5343,
         PhysicalStorageBuffer = 5349,
         PhysicalStorageBufferEXT = 5349,
+        CodeSectionINTEL = 5605,
     },
 
     Dim = {
@@ -450,11 +455,24 @@ spv = {
         RestrictPointerEXT = 5355,
         AliasedPointer = 5356,
         AliasedPointerEXT = 5356,
+        ReferencedIndirectlyINTEL = 5602,
         CounterBuffer = 5634,
         HlslCounterBufferGOOGLE = 5634,
         HlslSemanticGOOGLE = 5635,
         UserSemantic = 5635,
         UserTypeGOOGLE = 5636,
+        RegisterINTEL = 5825,
+        MemoryINTEL = 5826,
+        NumbanksINTEL = 5827,
+        BankwidthINTEL = 5828,
+        MaxPrivateCopiesINTEL = 5829,
+        SinglepumpINTEL = 5830,
+        DoublepumpINTEL = 5831,
+        MaxReplicatesINTEL = 5832,
+        SimpleDualPortINTEL = 5833,
+        MergeINTEL = 5834,
+        BankBitsINTEL = 5835,
+        ForcePow2DepthINTEL = 5836,
     },
 
     BuiltIn = {
@@ -598,6 +616,13 @@ spv = {
         IterationMultiple = 6,
         PeelCount = 7,
         PartialCount = 8,
+        InitiationIntervalINTEL = 16,
+        MaxConcurrencyINTEL = 17,
+        DependencyArrayINTEL = 18,
+        PipelineEnableINTEL = 19,
+        LoopCoalesceINTEL = 20,
+        MaxInterleavingINTEL = 21,
+        SpeculatedIterationsINTEL = 22,
     },
 
     LoopControlMask = {
@@ -611,6 +636,13 @@ spv = {
         IterationMultiple = 0x00000040,
         PeelCount = 0x00000080,
         PartialCount = 0x00000100,
+        InitiationIntervalINTEL = 0x00010000,
+        MaxConcurrencyINTEL = 0x00020000,
+        DependencyArrayINTEL = 0x00040000,
+        PipelineEnableINTEL = 0x00080000,
+        LoopCoalesceINTEL = 0x00100000,
+        MaxInterleavingINTEL = 0x00200000,
+        SpeculatedIterationsINTEL = 0x00400000,
     },
 
     FunctionControlShift = {
@@ -702,6 +734,7 @@ spv = {
         Invocation = 4,
         QueueFamily = 5,
         QueueFamilyKHR = 5,
+        ShaderCallKHR = 6,
     },
 
     GroupOperation = {
@@ -822,6 +855,8 @@ spv = {
         SignedZeroInfNanPreserve = 4466,
         RoundingModeRTE = 4467,
         RoundingModeRTZ = 4468,
+        RayQueryProvisionalKHR = 4471,
+        RayTraversalPrimitiveCullingProvisionalKHR = 4478,
         Float16ImageAMD = 5008,
         ImageGatherBiasLodAMD = 5009,
         FragmentMaskAMD = 5010,
@@ -887,9 +922,63 @@ spv = {
         SubgroupImageBlockIOINTEL = 5570,
         SubgroupImageMediaBlockIOINTEL = 5579,
         IntegerFunctions2INTEL = 5584,
+        FunctionPointersINTEL = 5603,
+        IndirectReferencesINTEL = 5604,
         SubgroupAvcMotionEstimationINTEL = 5696,
         SubgroupAvcMotionEstimationIntraINTEL = 5697,
         SubgroupAvcMotionEstimationChromaINTEL = 5698,
+        FPGAMemoryAttributesINTEL = 5824,
+        UnstructuredLoopControlsINTEL = 5886,
+        FPGALoopControlsINTEL = 5888,
+        KernelAttributesINTEL = 5892,
+        FPGAKernelAttributesINTEL = 5897,
+        BlockingPipesINTEL = 5945,
+        FPGARegINTEL = 5948,
+        AtomicFloat32AddEXT = 6033,
+        AtomicFloat64AddEXT = 6034,
+    },
+
+    RayFlagsShift = {
+        OpaqueKHR = 0,
+        NoOpaqueKHR = 1,
+        TerminateOnFirstHitKHR = 2,
+        SkipClosestHitShaderKHR = 3,
+        CullBackFacingTrianglesKHR = 4,
+        CullFrontFacingTrianglesKHR = 5,
+        CullOpaqueKHR = 6,
+        CullNoOpaqueKHR = 7,
+        SkipTrianglesKHR = 8,
+        SkipAABBsKHR = 9,
+    },
+
+    RayFlagsMask = {
+        MaskNone = 0,
+        OpaqueKHR = 0x00000001,
+        NoOpaqueKHR = 0x00000002,
+        TerminateOnFirstHitKHR = 0x00000004,
+        SkipClosestHitShaderKHR = 0x00000008,
+        CullBackFacingTrianglesKHR = 0x00000010,
+        CullFrontFacingTrianglesKHR = 0x00000020,
+        CullOpaqueKHR = 0x00000040,
+        CullNoOpaqueKHR = 0x00000080,
+        SkipTrianglesKHR = 0x00000100,
+        SkipAABBsKHR = 0x00000200,
+    },
+
+    RayQueryIntersection = {
+        RayQueryCandidateIntersectionKHR = 0,
+        RayQueryCommittedIntersectionKHR = 1,
+    },
+
+    RayQueryCommittedIntersectionType = {
+        RayQueryCommittedIntersectionNoneKHR = 0,
+        RayQueryCommittedIntersectionTriangleKHR = 1,
+        RayQueryCommittedIntersectionGeneratedKHR = 2,
+    },
+
+    RayQueryCandidateIntersectionType = {
+        RayQueryCandidateIntersectionTriangleKHR = 0,
+        RayQueryCandidateIntersectionAABBKHR = 1,
     },
 
     Op = {
@@ -1237,12 +1326,20 @@ spv = {
         OpPtrEqual = 401,
         OpPtrNotEqual = 402,
         OpPtrDiff = 403,
+        OpTerminateInvocation = 4416,
         OpSubgroupBallotKHR = 4421,
         OpSubgroupFirstInvocationKHR = 4422,
         OpSubgroupAllKHR = 4428,
         OpSubgroupAnyKHR = 4429,
         OpSubgroupAllEqualKHR = 4430,
         OpSubgroupReadInvocationKHR = 4432,
+        OpTypeRayQueryProvisionalKHR = 4472,
+        OpRayQueryInitializeKHR = 4473,
+        OpRayQueryTerminateKHR = 4474,
+        OpRayQueryGenerateIntersectionKHR = 4475,
+        OpRayQueryConfirmIntersectionKHR = 4476,
+        OpRayQueryProceedKHR = 4477,
+        OpRayQueryGetIntersectionTypeKHR = 4479,
         OpGroupIAddNonUniformAMD = 5000,
         OpGroupFAddNonUniformAMD = 5001,
         OpGroupFMinNonUniformAMD = 5002,
@@ -1302,6 +1399,8 @@ spv = {
         OpUSubSatINTEL = 5596,
         OpIMul32x16INTEL = 5597,
         OpUMul32x16INTEL = 5598,
+        OpFunctionPointerINTEL = 5600,
+        OpFunctionPointerCallINTEL = 5601,
         OpDecorateString = 5632,
         OpDecorateStringGOOGLE = 5632,
         OpMemberDecorateString = 5633,
@@ -1424,6 +1523,28 @@ spv = {
         OpSubgroupAvcSicGetPackedSkcLumaCountThresholdINTEL = 5814,
         OpSubgroupAvcSicGetPackedSkcLumaSumThresholdINTEL = 5815,
         OpSubgroupAvcSicGetInterRawSadsINTEL = 5816,
+        OpLoopControlINTEL = 5887,
+        OpReadPipeBlockingINTEL = 5946,
+        OpWritePipeBlockingINTEL = 5947,
+        OpFPGARegINTEL = 5949,
+        OpRayQueryGetRayTMinKHR = 6016,
+        OpRayQueryGetRayFlagsKHR = 6017,
+        OpRayQueryGetIntersectionTKHR = 6018,
+        OpRayQueryGetIntersectionInstanceCustomIndexKHR = 6019,
+        OpRayQueryGetIntersectionInstanceIdKHR = 6020,
+        OpRayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetKHR = 6021,
+        OpRayQueryGetIntersectionGeometryIndexKHR = 6022,
+        OpRayQueryGetIntersectionPrimitiveIndexKHR = 6023,
+        OpRayQueryGetIntersectionBarycentricsKHR = 6024,
+        OpRayQueryGetIntersectionFrontFaceKHR = 6025,
+        OpRayQueryGetIntersectionCandidateAABBOpaqueKHR = 6026,
+        OpRayQueryGetIntersectionObjectRayDirectionKHR = 6027,
+        OpRayQueryGetIntersectionObjectRayOriginKHR = 6028,
+        OpRayQueryGetWorldRayDirectionKHR = 6029,
+        OpRayQueryGetWorldRayOriginKHR = 6030,
+        OpRayQueryGetIntersectionObjectToWorldKHR = 6031,
+        OpRayQueryGetIntersectionWorldToObjectKHR = 6032,
+        OpAtomicFAddEXT = 6035,
     },
 
 }
