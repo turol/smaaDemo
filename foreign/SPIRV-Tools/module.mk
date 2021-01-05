@@ -81,19 +81,19 @@ opencl.debuginfo.100.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/ext
 opencl.std.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.opencl.std.100.grammar.json $(d)/utils/generate_grammar_tables.py
 	$(PYTHON) $(word 2, $^) --extinst-opencl-grammar=$< --opencl-insts-output=$@
 
-spv-amd-gcn-shader.insts.inc: $(d)/source/extinst.spv-amd-gcn-shader.grammar.json $(d)/utils/generate_grammar_tables.py
+spv-amd-gcn-shader.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-gcn-shader.grammar.json $(d)/utils/generate_grammar_tables.py
 	$(PYTHON) $(word 2, $^) --extinst-vendor-grammar=$< --vendor-insts-output=$@
 
 
-spv-amd-shader-ballot.insts.inc: $(d)/source/extinst.spv-amd-shader-ballot.grammar.json $(d)/utils/generate_grammar_tables.py
+spv-amd-shader-ballot.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-shader-ballot.grammar.json $(d)/utils/generate_grammar_tables.py
 	$(PYTHON) $(word 2, $^) --extinst-vendor-grammar=$< --vendor-insts-output=$@
 
 
-spv-amd-shader-explicit-vertex-parameter.insts.inc: $(d)/source/extinst.spv-amd-shader-explicit-vertex-parameter.grammar.json $(d)/utils/generate_grammar_tables.py
+spv-amd-shader-explicit-vertex-parameter.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-shader-explicit-vertex-parameter.grammar.json $(d)/utils/generate_grammar_tables.py
 	$(PYTHON) $(word 2, $^) --extinst-vendor-grammar=$< --vendor-insts-output=$@
 
 
-spv-amd-shader-trinary-minmax.insts.inc: $(d)/source/extinst.spv-amd-shader-trinary-minmax.grammar.json $(d)/utils/generate_grammar_tables.py
+spv-amd-shader-trinary-minmax.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-shader-trinary-minmax.grammar.json $(d)/utils/generate_grammar_tables.py
 	$(PYTHON) $(word 2, $^) --extinst-vendor-grammar=$< --vendor-insts-output=$@
 
 
