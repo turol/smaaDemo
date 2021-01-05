@@ -1,5 +1,5 @@
-commit 8dd174809fb86498e5870276be7c84a8bf4c8254
-Author: Steven Perron <stevenperron@google.com>
-Date:   Tue Feb 4 09:35:13 2020 -0500
+commit 8910ea5f1c7bc38f79a8b70b265cd9d1571f4b56
+Author: Nico Weber <nicolasweber@gmx.de>
+Date:   Sun Feb 23 18:50:59 2020 -0500
 
-    Finalize SPIRV-Tools v2020.1
+    Fix Wrange-loop-analysis warnings in SPIRV-Tools. (#3201)

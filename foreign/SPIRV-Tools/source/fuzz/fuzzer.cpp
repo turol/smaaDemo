@@ -21,11 +21,17 @@
 #include "fuzzer_pass_adjust_memory_operands_masks.h"
 #include "source/fuzz/fact_manager.h"
 #include "source/fuzz/fuzzer_context.h"
+#include "source/fuzz/fuzzer_pass_add_access_chains.h"
 #include "source/fuzz/fuzzer_pass_add_composite_types.h"
 #include "source/fuzz/fuzzer_pass_add_dead_blocks.h"
 #include "source/fuzz/fuzzer_pass_add_dead_breaks.h"
 #include "source/fuzz/fuzzer_pass_add_dead_continues.h"
+#include "source/fuzz/fuzzer_pass_add_function_calls.h"
+#include "source/fuzz/fuzzer_pass_add_global_variables.h"
+#include "source/fuzz/fuzzer_pass_add_loads.h"
+#include "source/fuzz/fuzzer_pass_add_local_variables.h"
 #include "source/fuzz/fuzzer_pass_add_no_contraction_decorations.h"
+#include "source/fuzz/fuzzer_pass_add_stores.h"
 #include "source/fuzz/fuzzer_pass_add_useful_constructs.h"
 #include "source/fuzz/fuzzer_pass_adjust_function_controls.h"
 #include "source/fuzz/fuzzer_pass_adjust_loop_controls.h"
@@ -179,6 +185,9 @@ Fuzzer::FuzzerResultStatus Fuzzer::Run(
   // Apply some semantics-preserving passes.
   std::vector<std::unique_ptr<FuzzerPass>> passes;
   while (passes.empty()) {
+    MaybeAddPass<FuzzerPassAddAccessChains>(&passes, ir_context.get(),
+                                            &fact_manager, &fuzzer_context,
+                                            transformation_sequence_out);
     MaybeAddPass<FuzzerPassAddCompositeTypes>(&passes, ir_context.get(),
                                               &fact_manager, &fuzzer_context,
                                               transformation_sequence_out);
@@ -191,6 +200,21 @@ Fuzzer::FuzzerResultStatus Fuzzer::Run(
     MaybeAddPass<FuzzerPassAddDeadContinues>(&passes, ir_context.get(),
                                              &fact_manager, &fuzzer_context,
                                              transformation_sequence_out);
+    MaybeAddPass<FuzzerPassAddFunctionCalls>(&passes, ir_context.get(),
+                                             &fact_manager, &fuzzer_context,
+                                             transformation_sequence_out);
+    MaybeAddPass<FuzzerPassAddGlobalVariables>(&passes, ir_context.get(),
+                                               &fact_manager, &fuzzer_context,
+                                               transformation_sequence_out);
+    MaybeAddPass<FuzzerPassAddLoads>(&passes, ir_context.get(), &fact_manager,
+                                     &fuzzer_context,
+                                     transformation_sequence_out);
+    MaybeAddPass<FuzzerPassAddLocalVariables>(&passes, ir_context.get(),
+                                              &fact_manager, &fuzzer_context,
+                                              transformation_sequence_out);
+    MaybeAddPass<FuzzerPassAddStores>(&passes, ir_context.get(), &fact_manager,
+                                      &fuzzer_context,
+                                      transformation_sequence_out);
     MaybeAddPass<FuzzerPassApplyIdSynonyms>(&passes, ir_context.get(),
                                             &fact_manager, &fuzzer_context,
                                             transformation_sequence_out);

@@ -168,7 +168,7 @@ message Fact {
     FactDataSynonym data_synonym_fact = 2;
     FactBlockIsDead block_is_dead_fact = 3;
     FactFunctionIsLivesafe function_is_livesafe_fact = 4;
-    FactValueOfVariableIsArbitrary value_of_variable_is_arbitrary = 5;
+    FactPointeeValueIsIrrelevant pointee_value_is_irrelevant = 5;
   }
 }
 
@@ -223,17 +223,15 @@ message FactFunctionIsLivesafe {
   uint32 function_id = 1;
 }
 
-message FactValueOfVariableIsArbitrary {
+message FactPointeeValueIsIrrelevant {
 
-  // Records the fact that the value stored in the variable or function
-  // parameter with the given id can be arbitrary: the module's observable
-  // behaviour does not depend on it.  This means that arbitrary stores can be
-  // made to the variable, and that nothing can be guaranteed about values
-  // loaded from the variable.
+  // Records the fact that value of the data pointed to by a pointer id does
+  // not influence the observable behaviour of the module.  This means that
+  // arbitrary stores can be made through the pointer, and that nothing can be
+  // guaranteed about the values that are loaded via the pointer.
 
-  // The result id of an OpVariable instruction, or an OpFunctionParameter
-  // instruction with pointer type
-  uint32 variable_id = 1;
+  // A result id of pointer type
+  uint32 pointer_id = 1;
 }
 
 message AccessChainClampingInfo {
@@ -339,11 +337,35 @@ message Transformation {
     TransformationAddGlobalUndef add_global_undef = 32;
     TransformationAddFunction add_function = 33;
     TransformationAddDeadBlock add_dead_block = 34;
+    TransformationAddLocalVariable add_local_variable = 35;
+    TransformationLoad load = 36;
+    TransformationStore store = 37;
+    TransformationFunctionCall function_call = 38;
+    TransformationAccessChain access_chain = 39;
     // Add additional option using the next available number.
   }
 }
 
 // Keep transformation message types in alphabetical order:
+
+message TransformationAccessChain {
+
+  // Adds an access chain instruction based on a given pointer and indices.
+
+  // Result id for the access chain
+  uint32 fresh_id = 1;
+
+  // The pointer from which the access chain starts
+  uint32 pointer_id = 2;
+
+  // Zero or more access chain indices
+  repeated uint32 index_id = 3;
+
+  // A descriptor for an instruction in a block before which the new
+  // OpAccessChain instruction should be inserted
+  InstructionDescriptor instruction_to_insert_before = 4;
+
+}
 
 message TransformationAddConstantBoolean {
 
@@ -504,15 +526,38 @@ message TransformationAddGlobalVariable {
   // The type of the global variable
   uint32 type_id = 2;
 
-  // Optional initializer; 0 if there is no initializer
+  // Initial value of the variable
   uint32 initializer_id = 3;
 
-  // True if and only if the value of the variable should be regarded, in
-  // general, as totally unknown and subject to change (even if, due to an
-  // initializer, the original value is known).  This is the case for variables
-  // added when a module is donated, for example, and means that stores to such
-  // variables can be performed in an arbitrary fashion.
-  bool value_is_arbitrary = 4;
+  // True if and only if the behaviour of the module should not depend on the
+  // value of the variable, in which case stores to the variable can be
+  // performed in an arbitrary fashion.
+  bool value_is_irrelevant = 4;
+
+}
+
+message TransformationAddLocalVariable {
+
+  // Adds a local variable of the given type (which must be a pointer with
+  // Function storage class) to the given function, initialized to the given
+  // id.
+
+  // Fresh id for the local variable
+  uint32 fresh_id = 1;
+
+  // The type of the local variable
+  uint32 type_id = 2;
+
+  // The id of the function to which the local variable should be added
+  uint32 function_id = 3;
+
+  // Initial value of the variable
+  uint32 initializer_id = 4;
+
+  // True if and only if the behaviour of the module should not depend on the
+  // value of the variable, in which case stores to the variable can be
+  // performed in an arbitrary fashion.
+  bool value_is_irrelevant = 5;
 
 }
 
@@ -704,6 +749,45 @@ message TransformationCopyObject {
 
   // A fresh id for the copied object
   uint32 fresh_id = 3;
+
+}
+
+message TransformationFunctionCall {
+
+  // A transformation that introduces an OpFunctionCall instruction.  The call
+  // must not make the module's call graph cyclic.  Beyond that, if the call
+  // is in a dead block it can be to any function with arbitrary suitably-typed
+  // arguments; otherwise it must be to a livesafe function, with injected
+  // variables as pointer arguments and arbitrary non-pointer arguments.
+
+  // A fresh id for the result of the call
+  uint32 fresh_id = 1;
+
+  // Id of the function to be called
+  uint32 callee_id = 2;
+
+  // Ids for arguments to the function
+  repeated uint32 argument_id = 3;
+
+  // A descriptor for an instruction in a block before which the new
+  // OpFunctionCall instruction should be inserted
+  InstructionDescriptor instruction_to_insert_before = 4;
+
+}
+
+message TransformationLoad {
+
+  // Transformation that adds an OpLoad instruction from a pointer into an id.
+
+  // The result of the load instruction
+  uint32 fresh_id = 1;
+
+  // The pointer to be loaded from
+  uint32 pointer_id = 2;
+
+  // A descriptor for an instruction in a block before which the new OpLoad
+  // instruction should be inserted
+  InstructionDescriptor instruction_to_insert_before = 3;
 
 }
 
@@ -916,6 +1000,22 @@ message TransformationSplitBlock {
   // earlier transformations, it may inhibit later transformations from
   // applying.
   uint32 fresh_id = 2;
+
+}
+
+message TransformationStore {
+
+  // Transformation that adds an OpStore instruction of an id to a pointer.
+
+  // The pointer to be stored to
+  uint32 pointer_id = 1;
+
+  // The value to be stored
+  uint32 value_id = 2;
+
+  // A descriptor for an instruction in a block before which the new OpStore
+  // instruction should be inserted
+  InstructionDescriptor instruction_to_insert_before = 3;
 
 }
 
