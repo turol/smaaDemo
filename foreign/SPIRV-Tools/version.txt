@@ -1,5 +1,17 @@
-commit ab4fe12a46be66d56734f879a317f888ec0425bf
-Author: Vasyl Teliman <vasniktel@gmail.com>
-Date:   Thu Jul 30 18:51:29 2020 +0300
+commit 50300450af880da63178ce077a91c8a2a0794a7d
+Author: alan-baker <alanbaker@google.com>
+Date:   Thu Jul 30 12:08:53 2020 -0400
 
-    spirv-fuzz: Fix memory bugs (#3622)
+    Validator support for non-semantic clspv reflection (#3618)
+    
+    
+    * Generate ext inst table for reflection
+    * Change build to use grammar files from SPIRV-Headers instead of
+      SPIRV-Tools
+    * Add enum for clspv reflection extended instruction set
+      * count it as non-semantic
+    * validate clspv reflection extended instruction set
+    * Remove local extended inst sets
+    * update headers deps
+    * Update nbuilds to use grammars from SPIRV-Headers instead of
+      local duplicates
