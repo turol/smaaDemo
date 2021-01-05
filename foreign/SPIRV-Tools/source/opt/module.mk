@@ -32,6 +32,7 @@ FILES:= \
 	dead_branch_elim_pass.cpp \
 	dead_insert_elim_pass.cpp \
 	dead_variable_elimination.cpp \
+	debug_info_manager.cpp \
 	decompose_initialized_variables_pass.cpp \
 	decoration_manager.cpp \
 	def_use_manager.cpp \

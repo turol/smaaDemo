@@ -18,9 +18,10 @@
 #include <functional>
 #include <vector>
 
-#include "source/fuzz/fact_manager.h"
 #include "source/fuzz/fuzzer_context.h"
 #include "source/fuzz/protobufs/spirvfuzz_protobufs.h"
+#include "source/fuzz/transformation.h"
+#include "source/fuzz/transformation_context.h"
 #include "source/opt/ir_context.h"
 
 namespace spvtools {
@@ -29,22 +30,25 @@ namespace fuzz {
 // Interface for applying a pass of transformations to a module.
 class FuzzerPass {
  public:
-  FuzzerPass(opt::IRContext* ir_context, FactManager* fact_manager,
+  FuzzerPass(opt::IRContext* ir_context,
+             TransformationContext* transformation_context,
              FuzzerContext* fuzzer_context,
              protobufs::TransformationSequence* transformations);
 
   virtual ~FuzzerPass();
 
   // Applies the pass to the module |ir_context_|, assuming and updating
-  // facts from |fact_manager_|, and using |fuzzer_context_| to guide the
-  // process.  Appends to |transformations_| all transformations that were
-  // applied during the pass.
+  // information from |transformation_context_|, and using |fuzzer_context_| to
+  // guide the process.  Appends to |transformations_| all transformations that
+  // were applied during the pass.
   virtual void Apply() = 0;
 
  protected:
   opt::IRContext* GetIRContext() const { return ir_context_; }
 
-  FactManager* GetFactManager() const { return fact_manager_; }
+  TransformationContext* GetTransformationContext() const {
+    return transformation_context_;
+  }
 
   FuzzerContext* GetFuzzerContext() const { return fuzzer_context_; }
 
@@ -91,11 +95,11 @@ class FuzzerPass {
 
   // A generic helper for applying a transformation that should be applicable
   // by construction, and adding it to the sequence of applied transformations.
-  template <typename TransformationType>
-  void ApplyTransformation(const TransformationType& transformation) {
-    assert(transformation.IsApplicable(GetIRContext(), *GetFactManager()) &&
+  void ApplyTransformation(const Transformation& transformation) {
+    assert(transformation.IsApplicable(GetIRContext(),
+                                       *GetTransformationContext()) &&
            "Transformation should be applicable by construction.");
-    transformation.Apply(GetIRContext(), GetFactManager());
+    transformation.Apply(GetIRContext(), GetTransformationContext());
     *GetTransformations()->add_transformation() = transformation.ToMessage();
   }
 
@@ -103,14 +107,15 @@ class FuzzerPass {
   // not exist, a transformation is applied to add it.
   uint32_t FindOrCreateBoolType();
 
-  // Returns the id of an OpTypeInt instruction, with width 32 and signedness
-  // specified by |is_signed|.  If such an instruction does not exist, a
-  // transformation is applied to add it.
-  uint32_t FindOrCreate32BitIntegerType(bool is_signed);
+  // Returns the id of an OpTypeInt instruction, with width and signedness
+  // specified by |width| and |is_signed|, respectively.  If such an instruction
+  // does not exist, a transformation is applied to add it.
+  uint32_t FindOrCreateIntegerType(uint32_t width, bool is_signed);
 
-  // Returns the id of an OpTypeFloat instruction, with width 32.  If such an
-  // instruction does not exist, a transformation is applied to add it.
-  uint32_t FindOrCreate32BitFloatType();
+  // Returns the id of an OpTypeFloat instruction, with width specified by
+  // |width|.  If such an instruction does not exist, a transformation is
+  // applied to add it.
+  uint32_t FindOrCreateFloatType(uint32_t width);
 
   // Returns the id of an OpTypeFunction %<return_type_id> %<...argument_id>
   // instruction. If such an instruction doesn't exist, a transformation
@@ -137,46 +142,60 @@ class FuzzerPass {
   uint32_t FindOrCreatePointerType(uint32_t base_type_id,
                                    SpvStorageClass storage_class);
 
-  // Returns the id of an OpTypePointer instruction, with a 32-bit integer base
-  // type of signedness specified by |is_signed|.  If the pointer type or
-  // required integer base type do not exist, transformations are applied to add
-  // them.
-  uint32_t FindOrCreatePointerTo32BitIntegerType(bool is_signed,
-                                                 SpvStorageClass storage_class);
+  // Returns the id of an OpTypePointer instruction, with a integer base
+  // type of width and signedness specified by |width| and |is_signed|,
+  // respectively.  If the pointer type or required integer base type do not
+  // exist, transformations are applied to add them.
+  uint32_t FindOrCreatePointerToIntegerType(uint32_t width, bool is_signed,
+                                            SpvStorageClass storage_class);
 
-  // Returns the id of an OpConstant instruction, with 32-bit integer type of
-  // signedness specified by |is_signed|, with |word| as its value.  If either
-  // the required integer type or the constant do not exist, transformations are
-  // applied to add them.
-  uint32_t FindOrCreate32BitIntegerConstant(uint32_t word, bool is_signed);
+  // Returns the id of an OpConstant instruction, with a integer type of
+  // width and signedness specified by |width| and |is_signed|, respectively,
+  // with |words| as its value.  If either the required integer type or the
+  // constant do not exist, transformations are applied to add them.
+  uint32_t FindOrCreateIntegerConstant(const std::vector<uint32_t>& words,
+                                       uint32_t width, bool is_signed);
 
-  // Returns the id of an OpConstant instruction, with 32-bit floating-point
-  // type, with |word| as its value.  If either the required floating-point type
-  // or the constant do not exist, transformations are applied to add them.
-  uint32_t FindOrCreate32BitFloatConstant(uint32_t word);
+  // Returns the id of an OpConstant instruction, with a floating-point
+  // type of width specified by |width|, with |words| as its value.  If either
+  // the required floating-point type or the constant do not exist,
+  // transformations are applied to add them.
+  uint32_t FindOrCreateFloatConstant(const std::vector<uint32_t>& words,
+                                     uint32_t width);
 
   // Returns the id of an OpConstantTrue or OpConstantFalse instruction,
   // according to |value|.  If either the required instruction or the bool
   // type do not exist, transformations are applied to add them.
   uint32_t FindOrCreateBoolConstant(bool value);
 
+  // Returns the id of an OpConstant instruction of type with |type_id|
+  // that consists of |words|. If that instruction doesn't exist,
+  // transformations are applied to add it. |type_id| must be a valid
+  // result id of either scalar or boolean OpType* instruction that exists
+  // in the module.
+  uint32_t FindOrCreateConstant(const std::vector<uint32_t>& words,
+                                uint32_t type_id);
+
   // Returns the result id of an instruction of the form:
   //   %id = OpUndef %|type_id|
   // If no such instruction exists, a transformation is applied to add it.
   uint32_t FindOrCreateGlobalUndef(uint32_t type_id);
 
-  // Yields a pair, (base_type_ids, base_type_ids_to_pointers), such that:
-  // - base_type_ids captures every scalar or composite type declared in the
-  //   module (i.e., all int, bool, float, vector, matrix, struct and array
-  //   types
-  // - base_type_ids_to_pointers maps every such base type to the sequence
+  // Define a *basic type* to be an integer, boolean or floating-point type,
+  // or a matrix, vector, struct or fixed-size array built from basic types.  In
+  // particular, a basic type cannot contain an opaque type (such as an image),
+  // or a runtime-sized array.
+  //
+  // Yields a pair, (basic_type_ids, basic_type_ids_to_pointers), such that:
+  // - basic_type_ids captures every basic type declared in the module.
+  // - basic_type_ids_to_pointers maps every such basic type to the sequence
   //   of all pointer types that have storage class |storage_class| and the
-  //   given base type as their pointee type.  The sequence may be empty for
-  //   some base types if no pointers to those types are defined for the given
+  //   given basic type as their pointee type.  The sequence may be empty for
+  //   some basic types if no pointers to those types are defined for the given
   //   storage class, and the sequence will have multiple elements if there are
-  //   repeated pointer declarations for the same base type and storage class.
+  //   repeated pointer declarations for the same basic type and storage class.
   std::pair<std::vector<uint32_t>, std::map<uint32_t, std::vector<uint32_t>>>
-  GetAvailableBaseTypesAndPointers(SpvStorageClass storage_class) const;
+  GetAvailableBasicTypesAndPointers(SpvStorageClass storage_class) const;
 
   // Given a type id, |scalar_or_composite_type_id|, which must correspond to
   // some scalar or composite type, returns the result id of an instruction
@@ -230,7 +249,7 @@ class FuzzerPass {
       const std::vector<uint32_t>& constant_ids);
 
   opt::IRContext* ir_context_;
-  FactManager* fact_manager_;
+  TransformationContext* transformation_context_;
   FuzzerContext* fuzzer_context_;
   protobufs::TransformationSequence* transformations_;
 };

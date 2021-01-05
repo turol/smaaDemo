@@ -21,10 +21,11 @@ namespace spvtools {
 namespace fuzz {
 
 FuzzerPassAddAccessChains::FuzzerPassAddAccessChains(
-    opt::IRContext* ir_context, FactManager* fact_manager,
+    opt::IRContext* ir_context, TransformationContext* transformation_context,
     FuzzerContext* fuzzer_context,
     protobufs::TransformationSequence* transformations)
-    : FuzzerPass(ir_context, fact_manager, fuzzer_context, transformations) {}
+    : FuzzerPass(ir_context, transformation_context, fuzzer_context,
+                 transformations) {}
 
 FuzzerPassAddAccessChains::~FuzzerPassAddAccessChains() = default;
 
@@ -136,8 +137,8 @@ void FuzzerPassAddAccessChains::Apply() {
           //  using clamping to ensure they are in-bounds.
           uint32_t index_value =
               GetFuzzerContext()->GetRandomIndexForAccessChain(bound);
-          index_ids.push_back(FindOrCreate32BitIntegerConstant(
-              index_value, GetFuzzerContext()->ChooseEven()));
+          index_ids.push_back(FindOrCreateIntegerConstant(
+              {index_value}, 32, GetFuzzerContext()->ChooseEven()));
           switch (subobject_type->opcode()) {
             case SpvOpTypeArray:
             case SpvOpTypeMatrix:
