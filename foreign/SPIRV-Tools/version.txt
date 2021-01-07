@@ -1,7 +1,5 @@
-commit 6fac705e76165663544e8562537c4165d3bac190
-Author: Alastair Donaldson <afdx@google.com>
-Date:   Mon Oct 19 17:36:21 2020 +0100
+commit a1d38174b1f7d2651c718ae661886d606cb50a32
+Author: Tobski <TobyHector@hotmail.com>
+Date:   Tue Oct 20 13:00:13 2020 +0100
 
-    spirv-val: Fix validation of OpPhi instructions (#3919)
-    
-    Fixes #3918.
+    Support SPV_KHR_fragment_shading_rate (#3943)

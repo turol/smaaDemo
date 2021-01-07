@@ -1,5 +1,5 @@
-commit c43a43c7cc3af55910b9bec2a71e3e8a622443cf
-Author: Triang3l <hwguy.siplus@gmail.com>
-Date:   Mon Oct 12 19:31:57 2020 +0300
+commit be32cb6c8fb0c694d60b4d9772ef6d299738159c
+Author: Tobski <TobyHector@hotmail.com>
+Date:   Mon Oct 19 21:55:32 2020 +0100
 
-     Register the Xenia emulator as a generator (#171)
+    Added SPV_KHR_fragment_shading_rate (#172)
