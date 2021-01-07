@@ -54,6 +54,7 @@ if(SPIRV_BUILD_FUZZER)
         fuzzer_pass.h
         fuzzer_pass_add_access_chains.h
         fuzzer_pass_add_bit_instruction_synonyms.h
+        fuzzer_pass_add_composite_extract.h
         fuzzer_pass_add_composite_inserts.h
         fuzzer_pass_add_composite_types.h
         fuzzer_pass_add_copy_memory.h
@@ -85,6 +86,7 @@ if(SPIRV_BUILD_FUZZER)
         fuzzer_pass_copy_objects.h
         fuzzer_pass_donate_modules.h
         fuzzer_pass_duplicate_regions_with_selections.h
+        fuzzer_pass_expand_vector_reductions.h
         fuzzer_pass_flatten_conditional_branches.h
         fuzzer_pass_inline_functions.h
         fuzzer_pass_invert_comparison_operators.h
@@ -178,6 +180,7 @@ if(SPIRV_BUILD_FUZZER)
         transformation_context.h
         transformation_duplicate_region_with_selection.h
         transformation_equation_instruction.h
+        transformation_expand_vector_reduction.h
         transformation_flatten_conditional_branch.h
         transformation_function_call.h
         transformation_inline_function.h
@@ -241,6 +244,7 @@ if(SPIRV_BUILD_FUZZER)
         fuzzer_pass.cpp
         fuzzer_pass_add_access_chains.cpp
         fuzzer_pass_add_bit_instruction_synonyms.cpp
+        fuzzer_pass_add_composite_extract.cpp
         fuzzer_pass_add_composite_inserts.cpp
         fuzzer_pass_add_composite_types.cpp
         fuzzer_pass_add_copy_memory.cpp
@@ -272,6 +276,7 @@ if(SPIRV_BUILD_FUZZER)
         fuzzer_pass_copy_objects.cpp
         fuzzer_pass_donate_modules.cpp
         fuzzer_pass_duplicate_regions_with_selections.cpp
+        fuzzer_pass_expand_vector_reductions.cpp
         fuzzer_pass_flatten_conditional_branches.cpp
         fuzzer_pass_inline_functions.cpp
         fuzzer_pass_invert_comparison_operators.cpp
@@ -363,6 +368,7 @@ if(SPIRV_BUILD_FUZZER)
         transformation_context.cpp
         transformation_duplicate_region_with_selection.cpp
         transformation_equation_instruction.cpp
+        transformation_expand_vector_reduction.cpp
         transformation_flatten_conditional_branch.cpp
         transformation_function_call.cpp
         transformation_inline_function.cpp
@@ -441,7 +447,7 @@ if(SPIRV_BUILD_FUZZER)
 
   # The fuzzer reuses a lot of functionality from the SPIRV-Tools library.
   target_link_libraries(SPIRV-Tools-fuzz
-        PUBLIC ${SPIRV_TOOLS}-static
+        PUBLIC ${SPIRV_TOOLS_FULL_VISIBILITY}
         PUBLIC SPIRV-Tools-opt
         PUBLIC SPIRV-Tools-reduce
         PUBLIC protobuf::libprotobuf)

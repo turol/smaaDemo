@@ -1,5 +1,11 @@
-commit a1d38174b1f7d2651c718ae661886d606cb50a32
-Author: Tobski <TobyHector@hotmail.com>
-Date:   Tue Oct 20 13:00:13 2020 +0100
+commit 671914c28e8249f0a555726a0f3f38691fe5c1df
+Author: greg-lunarg <greg@lunarg.com>
+Date:   Wed Nov 18 10:39:15 2020 -0700
 
-    Support SPV_KHR_fragment_shading_rate (#3943)
+    Fix buffer oob instrumentation for matrix refs (#4025)
+    
+    Fix buffer oob instrumentation for matrix refs.
+    
+    Matrix stride decoration is not on matrix type but is a member decoration
+    on the enclosing struct type. Also correctly apply matrix stride depending
+    on row or column major.

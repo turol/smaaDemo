@@ -509,7 +509,7 @@ void TransformationMergeFunctionReturns::Apply(
           {SPV_OPERAND_TYPE_LOOP_CONTROL, {SpvLoopControlMaskNone}}}));
 
   // Add conditional branch:
-  // 	OpBranchConditional %true %block_after_entry %outer_header_id
+  //   OpBranchConditional %true %block_after_entry %outer_header_id
   // This will always branch to %block_after_entry, but it also creates a back
   // edge for the loop (which is never traversed).
   outer_loop_header->AddInstruction(MakeUnique<opt::Instruction>(
@@ -517,7 +517,7 @@ void TransformationMergeFunctionReturns::Apply(
       opt::Instruction::OperandList{
           {SPV_OPERAND_TYPE_ID, {constant_true}},
           {SPV_OPERAND_TYPE_ID, {block_after_entry}},
-          {SPV_OPERAND_TYPE_LOOP_CONTROL, {message_.outer_header_id()}}}));
+          {SPV_OPERAND_TYPE_ID, {message_.outer_header_id()}}}));
 
   // Insert the header right after the entry block.
   function->InsertBasicBlockAfter(std::move(outer_loop_header),
@@ -579,7 +579,6 @@ void TransformationMergeFunctionReturns::Apply(
   }
 
   // Insert the new return block at the end of the function.
-  outer_return_block->SetParent(function);
   function->AddBasicBlock(std::move(outer_return_block));
 
   // All analyses must be invalidated because the structure of the module was

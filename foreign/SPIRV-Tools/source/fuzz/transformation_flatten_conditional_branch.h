@@ -27,11 +27,16 @@ class TransformationFlattenConditionalBranch : public Transformation {
 
   TransformationFlattenConditionalBranch(
       uint32_t header_block_id, bool true_branch_first,
+      uint32_t fresh_id_for_bvec2_selector,
+      uint32_t fresh_id_for_bvec3_selector,
+      uint32_t fresh_id_for_bvec4_selector,
       const std::vector<protobufs::SideEffectWrapperInfo>&
           side_effect_wrappers_info);
 
   // - |message_.header_block_id| must be the label id of a reachable selection
   //   header, which ends with an OpBranchConditional instruction.
+  // - The condition of the OpBranchConditional instruction must not be an
+  //   irrelevant id.
   // - The header block and the merge block must describe a single-entry,
   //   single-exit region.
   // - The region must not contain barrier or OpSampledImage instructions.
@@ -67,6 +72,7 @@ class TransformationFlattenConditionalBranch : public Transformation {
   // instructions are OpSelectionMerge and OpBranchConditional.
   static bool GetProblematicInstructionsIfConditionalCanBeFlattened(
       opt::IRContext* ir_context, opt::BasicBlock* header,
+      const TransformationContext& transformation_context,
       std::set<opt::Instruction*>* instructions_that_need_ids);
 
   // Returns true iff the given instruction needs a placeholder to be enclosed
@@ -80,6 +86,19 @@ class TransformationFlattenConditionalBranch : public Transformation {
   // result type, its result id is not used in the module.
   static bool InstructionNeedsPlaceholder(opt::IRContext* ir_context,
                                           const opt::Instruction& instruction);
+
+  // Returns true if and only if the SPIR-V version is such that the arguments
+  // to OpSelect are restricted to only scalars, pointers (if the appropriate
+  // capability is enabled) and component-wise vectors.
+  static bool OpSelectArgumentsAreRestricted(opt::IRContext* ir_context);
+
+  // Find the first block where flow converges (it is not necessarily the merge
+  // block) by walking the true branch until reaching a block that post-
+  // dominates the header.
+  // This is necessary because a potential common set of blocks at the end of
+  // the construct should not be duplicated.
+  static uint32_t FindConvergenceBlock(opt::IRContext* ir_context,
+                                       const opt::BasicBlock& header_block);
 
  private:
   // Returns an unordered_map mapping instructions to the info required to
@@ -99,14 +118,30 @@ class TransformationFlattenConditionalBranch : public Transformation {
   // |dead_blocks| and |irrelevant_ids| are used to record the ids of blocks
   // and instructions for which dead block and irrelevant id facts should
   // ultimately be created.
-  opt::BasicBlock* EncloseInstructionInConditional(
+  static opt::BasicBlock* EncloseInstructionInConditional(
       opt::IRContext* ir_context,
       const TransformationContext& transformation_context,
       opt::BasicBlock* block, opt::Instruction* instruction,
       const protobufs::SideEffectWrapperInfo& wrapper_info,
       uint32_t condition_id, bool exec_if_cond_true,
       std::vector<uint32_t>* dead_blocks,
-      std::vector<uint32_t>* irrelevant_ids) const;
+      std::vector<uint32_t>* irrelevant_ids);
+
+  // Turns every OpPhi instruction of |convergence_block| -- the convergence
+  // block for |header_block| (both in |ir_context|) into an OpSelect
+  // instruction.
+  void RewriteOpPhiInstructionsAtConvergenceBlock(
+      const opt::BasicBlock& header_block, uint32_t convergence_block_id,
+      opt::IRContext* ir_context) const;
+
+  // Adds an OpCompositeExtract instruction to the start of |block| in
+  // |ir_context|, with result id given by |fresh_id|.  The instruction will
+  // make a |dimension|-dimensional boolean vector with
+  // |branch_condition_operand| at every component.
+  static void AddBooleanVectorConstructorToBlock(
+      uint32_t fresh_id, uint32_t dimension,
+      const opt::Operand& branch_condition_operand, opt::IRContext* ir_context,
+      opt::BasicBlock* block);
 
   // Returns true if the given instruction either has no side effects or it can
   // be handled by being enclosed in a conditional.

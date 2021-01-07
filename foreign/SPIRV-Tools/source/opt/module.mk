@@ -89,7 +89,6 @@ FILES:= \
 	pass_manager.cpp \
 	pch_source_opt.cpp \
 	private_to_local_pass.cpp \
-	process_lines_pass.cpp \
 	propagator.cpp \
 	reduce_load_size.cpp \
 	redundancy_elimination.cpp \

@@ -556,6 +556,7 @@ message Transformation {
     TransformationReplaceBranchFromDeadBlockWithExit replace_branch_from_dead_block_with_exit = 82;
     TransformationWrapEarlyTerminatorInFunction wrap_early_terminator_in_function = 83;
     TransformationMergeFunctionReturns merge_function_returns = 84;
+    TransformationExpandVectorReduction expand_vector_reduction = 85;
     // Add additional option using the next available number.
   }
 }
@@ -1417,6 +1418,21 @@ message TransformationEquationInstruction {
 
 }
 
+message TransformationExpandVectorReduction {
+
+  // A transformation that adds synonyms for OpAny and OpAll instructions by
+  // evaluating each vector component with the corresponding logical operation.
+  // There is a SPIR-V code example in the header file of the transformation
+  // class that can help understand the transformation.
+
+  // The OpAny or OpAll instruction result id.
+  uint32 instruction_result_id = 1;
+
+  // The fresh ids required to apply the transformation.
+  repeated uint32 fresh_ids = 2;
+
+}
+
 message TransformationFlattenConditionalBranch {
 
   // A transformation that takes a selection construct with a header
@@ -1468,10 +1484,23 @@ message TransformationFlattenConditionalBranch {
   // field is true.
   bool true_branch_first = 2;
 
+  // If the convergence block contains an OpPhi with bvec2 result type, it may
+  // be necessary to introduce a bvec2 with the selection construct's condition
+  // in both components in order to turn the OpPhi into an OpSelect.  This
+  // this field provides a fresh id for an OpCompositeConstruct instruction for
+  // this purpose.  It should be set to 0 if no such instruction is required.
+  uint32 fresh_id_for_bvec2_selector = 3;
+
+  // The same as |fresh_id_for_bvec2_selector| but for the bvec3 case.
+  uint32 fresh_id_for_bvec3_selector = 4;
+
+  // The same as |fresh_id_for_bvec2_selector| but for the bvec4 case.
+  uint32 fresh_id_for_bvec4_selector = 5;
+
   // A list of instructions with side effects, which must be enclosed
   // inside smaller conditionals before flattening the main one, and
   // the corresponding fresh ids and module ids needed.
-  repeated SideEffectWrapperInfo side_effect_wrapper_info = 3;
+  repeated SideEffectWrapperInfo side_effect_wrapper_info = 6;
 }
 
 message TransformationFunctionCall {

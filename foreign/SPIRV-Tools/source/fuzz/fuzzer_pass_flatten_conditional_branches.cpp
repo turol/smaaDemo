@@ -47,10 +47,13 @@ void FuzzerPassFlattenConditionalBranches::Apply() {
         continue;
       }
 
-      // Only consider this block if it is the header of a conditional.
+      // Only consider this block if it is the header of a conditional, with a
+      // non-irrelevant condition.
       if (block.GetMergeInst() &&
           block.GetMergeInst()->opcode() == SpvOpSelectionMerge &&
-          block.terminator()->opcode() == SpvOpBranchConditional) {
+          block.terminator()->opcode() == SpvOpBranchConditional &&
+          !GetTransformationContext()->GetFactManager()->IdIsIrrelevant(
+              block.terminator()->GetSingleWordInOperand(0))) {
         selection_headers.emplace_back(&block);
       }
     }
@@ -68,9 +71,111 @@ void FuzzerPassFlattenConditionalBranches::Apply() {
       // Do not consider this header if the conditional cannot be flattened.
       if (!TransformationFlattenConditionalBranch::
               GetProblematicInstructionsIfConditionalCanBeFlattened(
-                  GetIRContext(), header, &instructions_that_need_ids)) {
+                  GetIRContext(), header, *GetTransformationContext(),
+                  &instructions_that_need_ids)) {
         continue;
       }
+
+      uint32_t convergence_block_id =
+          TransformationFlattenConditionalBranch::FindConvergenceBlock(
+              GetIRContext(), *header);
+
+      // If the SPIR-V version is restricted so that OpSelect can only work on
+      // scalar, pointer and vector types then we cannot apply this
+      // transformation to a header whose convergence block features OpPhi
+      // instructions on different types, as we cannot convert such instructions
+      // to OpSelect instructions.
+      if (TransformationFlattenConditionalBranch::
+              OpSelectArgumentsAreRestricted(GetIRContext())) {
+        if (!GetIRContext()
+                 ->cfg()
+                 ->block(convergence_block_id)
+                 ->WhileEachPhiInst(
+                     [this](opt::Instruction* phi_instruction) -> bool {
+                       switch (GetIRContext()
+                                   ->get_def_use_mgr()
+                                   ->GetDef(phi_instruction->type_id())
+                                   ->opcode()) {
+                         case SpvOpTypeBool:
+                         case SpvOpTypeInt:
+                         case SpvOpTypeFloat:
+                         case SpvOpTypePointer:
+                         case SpvOpTypeVector:
+                           return true;
+                         default:
+                           return false;
+                       }
+                     })) {
+          // An OpPhi is performed on a type not supported by OpSelect; we
+          // cannot flatten this selection.
+          continue;
+        }
+      }
+
+      // If the construct's convergence block features OpPhi instructions with
+      // vector result types then we may be *forced*, by the SPIR-V version, to
+      // turn these into component-wise OpSelect instructions, or we might wish
+      // to do so anyway.  The following booleans capture whether we will opt
+      // to use a component-wise select even if we don't have to.
+      bool use_component_wise_2d_select_even_if_optional =
+          GetFuzzerContext()->ChooseEven();
+      bool use_component_wise_3d_select_even_if_optional =
+          GetFuzzerContext()->ChooseEven();
+      bool use_component_wise_4d_select_even_if_optional =
+          GetFuzzerContext()->ChooseEven();
+
+      // If we do need to perform any component-wise selections, we will need a
+      // fresh id for a boolean vector representing the selection's condition
+      // repeated N times, where N is the vector dimension.
+      uint32_t fresh_id_for_bvec2_selector = 0;
+      uint32_t fresh_id_for_bvec3_selector = 0;
+      uint32_t fresh_id_for_bvec4_selector = 0;
+
+      GetIRContext()
+          ->cfg()
+          ->block(convergence_block_id)
+          ->ForEachPhiInst([this, &fresh_id_for_bvec2_selector,
+                            &fresh_id_for_bvec3_selector,
+                            &fresh_id_for_bvec4_selector,
+                            use_component_wise_2d_select_even_if_optional,
+                            use_component_wise_3d_select_even_if_optional,
+                            use_component_wise_4d_select_even_if_optional](
+                               opt::Instruction* phi_instruction) {
+            opt::Instruction* type_instruction =
+                GetIRContext()->get_def_use_mgr()->GetDef(
+                    phi_instruction->type_id());
+            switch (type_instruction->opcode()) {
+              case SpvOpTypeVector: {
+                uint32_t dimension =
+                    type_instruction->GetSingleWordInOperand(1);
+                switch (dimension) {
+                  case 2:
+                    PrepareForOpPhiOnVectors(
+                        dimension,
+                        use_component_wise_2d_select_even_if_optional,
+                        &fresh_id_for_bvec2_selector);
+                    break;
+                  case 3:
+                    PrepareForOpPhiOnVectors(
+                        dimension,
+                        use_component_wise_3d_select_even_if_optional,
+                        &fresh_id_for_bvec3_selector);
+                    break;
+                  case 4:
+                    PrepareForOpPhiOnVectors(
+                        dimension,
+                        use_component_wise_4d_select_even_if_optional,
+                        &fresh_id_for_bvec4_selector);
+                    break;
+                  default:
+                    assert(false && "Invalid vector dimension.");
+                }
+                break;
+              }
+              default:
+                break;
+            }
+          });
 
       // Some instructions will require to be enclosed inside conditionals
       // because they have side effects (for example, loads and stores). Some of
@@ -110,14 +215,35 @@ void FuzzerPassFlattenConditionalBranches::Apply() {
           }
         }
 
-        wrappers_info.emplace_back(wrapper_info);
+        wrappers_info.push_back(std::move(wrapper_info));
       }
 
       // Apply the transformation, evenly choosing whether to lay out the true
       // branch or the false branch first.
       ApplyTransformation(TransformationFlattenConditionalBranch(
-          header->id(), GetFuzzerContext()->ChooseEven(), wrappers_info));
+          header->id(), GetFuzzerContext()->ChooseEven(),
+          fresh_id_for_bvec2_selector, fresh_id_for_bvec3_selector,
+          fresh_id_for_bvec4_selector, wrappers_info));
     }
+  }
+}
+
+void FuzzerPassFlattenConditionalBranches::PrepareForOpPhiOnVectors(
+    uint32_t vector_dimension, bool use_vector_select_if_optional,
+    uint32_t* fresh_id_for_bvec_selector) {
+  if (*fresh_id_for_bvec_selector != 0) {
+    // We already have a fresh id for a component-wise OpSelect of this
+    // dimension
+    return;
+  }
+  if (TransformationFlattenConditionalBranch::OpSelectArgumentsAreRestricted(
+          GetIRContext()) ||
+      use_vector_select_if_optional) {
+    // We either have to, or have chosen to, perform a component-wise select, so
+    // we ensure that the right boolean vector type is available, and grab a
+    // fresh id.
+    FindOrCreateVectorType(FindOrCreateBoolType(), vector_dimension);
+    *fresh_id_for_bvec_selector = GetFuzzerContext()->GetFreshId();
   }
 }
 

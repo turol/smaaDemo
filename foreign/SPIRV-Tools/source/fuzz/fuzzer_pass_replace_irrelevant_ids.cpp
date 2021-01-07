@@ -70,10 +70,12 @@ void FuzzerPassReplaceIrrelevantIds::Apply() {
   }
 
   // For every type for which we have at least one irrelevant id, record all ids
-  // in the module which have that type.
+  // in the module which have that type. Skip ids of OpFunction instructions as
+  // we cannot use these as replacements.
   for (const auto& pair : GetIRContext()->get_def_use_mgr()->id_to_defs()) {
     uint32_t type_id = pair.second->type_id();
-    if (type_id && types_to_ids.count(type_id)) {
+    if (pair.second->opcode() != SpvOpFunction && type_id &&
+        types_to_ids.count(type_id)) {
       types_to_ids[type_id].push_back(pair.first);
     }
   }
@@ -113,8 +115,9 @@ void FuzzerPassReplaceIrrelevantIds::Apply() {
               fuzzerutil::InOperandIndexFromOperandIndex(*use_inst, use_index);
 
           // Only go ahead if this id use can be replaced in principle.
-          if (!fuzzerutil::IdUseCanBeReplaced(GetIRContext(), use_inst,
-                                              in_index)) {
+          if (!fuzzerutil::IdUseCanBeReplaced(GetIRContext(),
+                                              *GetTransformationContext(),
+                                              use_inst, in_index)) {
             return;
           }
 
@@ -122,7 +125,7 @@ void FuzzerPassReplaceIrrelevantIds::Apply() {
           std::vector<uint32_t> available_replacement_ids;
 
           for (auto replacement_id : types_to_ids[type_id]) {
-            // We cannot replace an id with itself.
+            // It would be pointless to replace an id with itself.
             if (replacement_id == irrelevant_id) {
               continue;
             }

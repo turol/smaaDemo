@@ -40,6 +40,10 @@ RepeatedPassRecommenderStandard::GetFuturePassRecommendations(
     // - Adding bit instruction synonyms creates opportunities to apply synonyms
     return RandomOrderAndNonNull({pass_instances_->GetApplyIdSynonyms()});
   }
+  if (&pass == pass_instances_->GetAddCompositeExtract()) {
+    // - This transformation can introduce synonyms to the fact manager.
+    return RandomOrderAndNonNull({pass_instances_->GetApplyIdSynonyms()});
+  }
   if (&pass == pass_instances_->GetAddCompositeInserts()) {
     // - Having added inserts we will have more vectors, so there is scope for
     //   vector shuffling
@@ -201,6 +205,10 @@ RepeatedPassRecommenderStandard::GetFuturePassRecommendations(
   if (&pass == pass_instances_->GetDuplicateRegionsWithSelections()) {
     // - Parts of duplicated regions can be outlined
     return RandomOrderAndNonNull({pass_instances_->GetOutlineFunctions()});
+  }
+  if (&pass == pass_instances_->GetExpandVectorReductions()) {
+    // - Adding OpAny and OpAll synonyms creates opportunities to apply synonyms
+    return RandomOrderAndNonNull({pass_instances_->GetApplyIdSynonyms()});
   }
   if (&pass == pass_instances_->GetFlattenConditionalBranches()) {
     // - Parts of flattened selections can be outlined
