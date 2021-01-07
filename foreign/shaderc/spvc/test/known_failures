@@ -9,6 +9,7 @@ shaders-hlsl/comp/num-workgroups-alone.comp,False
 shaders-hlsl/comp/num-workgroups-alone.comp,True
 shaders-hlsl/comp/num-workgroups-with-builtins.comp,False
 shaders-hlsl/comp/num-workgroups-with-builtins.comp,True
+shaders-hlsl/frag/image-query-uav.nonwritable-uav-texture.frag,False
 shaders-hlsl/frag/readonly-coherent-ssbo.force-uav.frag,False
 shaders-hlsl/frag/readonly-coherent-ssbo.force-uav.frag,True
 shaders-hlsl/frag/separate-combined-fake-overload.sm30.frag,False
@@ -70,6 +71,7 @@ shaders-no-opt/asm/frag/phi.zero-initialize.asm.frag,False
 shaders-no-opt/asm/temporary.zero-initialize.asm.frag,False
 shaders-no-opt/frag/variables.zero-initialize.frag,False
 shaders-reflection/asm/aliased-entry-point-names.asm.multi,False
+shaders-reflection/asm/comp/pointer-to-array-of-physical-pointer.asm.comp,False
 shaders-reflection/asm/op-source-glsl-ssbo-1.asm.comp,False
 shaders-reflection/asm/op-source-glsl-ssbo-2.asm.comp,False
 shaders-reflection/asm/op-source-hlsl-uav-1.asm.comp,False
@@ -78,6 +80,8 @@ shaders-reflection/asm/op-source-none-ssbo-1.asm.comp,False
 shaders-reflection/asm/op-source-none-ssbo-2.asm.comp,False
 shaders-reflection/asm/op-source-none-uav-1.asm.comp,False
 shaders-reflection/asm/op-source-none-uav-2.asm.comp,False
+shaders-reflection/comp/array-of-physical-pointer.comp,False
+shaders-reflection/comp/physical-pointer.comp,False
 shaders-reflection/comp/struct-layout.comp,False
 shaders-reflection/comp/struct-packing.comp,False
 shaders-reflection/comp/workgroup-size-spec-constant.comp,False
