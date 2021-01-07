@@ -1,21 +1,5 @@
-commit cd590fa3341284cd6d1ee82366155786cfd44c96
-Author: David Neto <dneto@google.com>
-Date:   Mon Nov 23 12:23:54 2020 -0500
+commit b27b1afd12d05bf238ac7368bb49de73cd620a8e
+Author: Diego Novillo <dnovillo@google.com>
+Date:   Mon Dec 7 11:14:01 2020 -0500
 
-    Update MeshShadingNV dependencies (and land Ray tracing updates) (#4028)
-    
-    * Update to final ray tracing extensions
-    
-    Drop Provisional from ray tracing enums
-        sed -ie 's/RayQueryProvisionalKHR/RayQueryKHR/g' **/*
-        sed -ie 's/RayTracingProvisionalKHR/RayTracingKHR/g' **/*
-    Add terminator support for SpvOpIgnoreIntersectionKHR and SpvOpTerminateRayKHR
-    Update deps for SPIRV-Headers
-    
-    * Update capability dependencies for MeshShadingNV
-    
-    Accommodate https://github.com/KhronosGroup/SPIRV-Headers/pull/180
-    
-    MeshShadingNV: enables PrimitiveId, Layer, and ViewportIndex
-    
-    Co-authored-by: Daniel Koch <dkoch@nvidia.com>
+    Update CHANGES to include latest ray tacing fixes.
