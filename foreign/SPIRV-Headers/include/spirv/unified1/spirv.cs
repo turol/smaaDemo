@@ -49,7 +49,7 @@ namespace Spv
     {
         public const uint MagicNumber = 0x07230203;
         public const uint Version = 0x00010500;
-        public const uint Revision = 3;
+        public const uint Revision = 4;
         public const uint OpCodeMask = 0xffff;
         public const uint WordCountShift = 16;
 
@@ -270,6 +270,8 @@ namespace Spv
             Rg8ui = 37,
             R16ui = 38,
             R8ui = 39,
+            R64ui = 40,
+            R64i = 41,
         }
 
         public enum ImageChannelOrder
@@ -907,6 +909,7 @@ namespace Spv
             FragmentMaskAMD = 5010,
             StencilExportEXT = 5013,
             ImageReadWriteLodAMD = 5015,
+            Int64ImageEXT = 5016,
             ShaderClockKHR = 5055,
             SampleMaskOverrideCoverageNV = 5249,
             GeometryShaderPassthroughNV = 5251,
@@ -1401,6 +1404,9 @@ namespace Spv
             OpSubgroupAnyKHR = 4429,
             OpSubgroupAllEqualKHR = 4430,
             OpSubgroupReadInvocationKHR = 4432,
+            OpTraceRayKHR = 4445,
+            OpExecuteCallableKHR = 4446,
+            OpConvertUToAccelerationStructureKHR = 4447,
             OpTypeRayQueryProvisionalKHR = 4472,
             OpRayQueryInitializeKHR = 4473,
             OpRayQueryTerminateKHR = 4474,
@@ -1429,10 +1435,8 @@ namespace Spv
             OpTerminateRayKHR = 5336,
             OpTerminateRayNV = 5336,
             OpTraceNV = 5337,
-            OpTraceRayKHR = 5337,
             OpTypeAccelerationStructureKHR = 5341,
             OpTypeAccelerationStructureNV = 5341,
-            OpExecuteCallableKHR = 5344,
             OpExecuteCallableNV = 5344,
             OpTypeCooperativeMatrixNV = 5358,
             OpCooperativeMatrixLoadNV = 5359,

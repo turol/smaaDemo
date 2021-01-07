@@ -45,7 +45,7 @@
 spv = {
     'MagicNumber' : 0x07230203,
     'Version' : 0x00010500,
-    'Revision' : 3,
+    'Revision' : 4,
     'OpCodeMask' : 0xffff,
     'WordCountShift' : 16,
 
@@ -256,6 +256,8 @@ spv = {
         'Rg8ui' : 37,
         'R16ui' : 38,
         'R8ui' : 39,
+        'R64ui' : 40,
+        'R64i' : 41,
     },
 
     'ImageChannelOrder' : {
@@ -865,6 +867,7 @@ spv = {
         'FragmentMaskAMD' : 5010,
         'StencilExportEXT' : 5013,
         'ImageReadWriteLodAMD' : 5015,
+        'Int64ImageEXT' : 5016,
         'ShaderClockKHR' : 5055,
         'SampleMaskOverrideCoverageNV' : 5249,
         'GeometryShaderPassthroughNV' : 5251,
@@ -1351,6 +1354,9 @@ spv = {
         'OpSubgroupAnyKHR' : 4429,
         'OpSubgroupAllEqualKHR' : 4430,
         'OpSubgroupReadInvocationKHR' : 4432,
+        'OpTraceRayKHR' : 4445,
+        'OpExecuteCallableKHR' : 4446,
+        'OpConvertUToAccelerationStructureKHR' : 4447,
         'OpTypeRayQueryProvisionalKHR' : 4472,
         'OpRayQueryInitializeKHR' : 4473,
         'OpRayQueryTerminateKHR' : 4474,
@@ -1379,10 +1385,8 @@ spv = {
         'OpTerminateRayKHR' : 5336,
         'OpTerminateRayNV' : 5336,
         'OpTraceNV' : 5337,
-        'OpTraceRayKHR' : 5337,
         'OpTypeAccelerationStructureKHR' : 5341,
         'OpTypeAccelerationStructureNV' : 5341,
-        'OpExecuteCallableKHR' : 5344,
         'OpExecuteCallableNV' : 5344,
         'OpTypeCooperativeMatrixNV' : 5358,
         'OpCooperativeMatrixLoadNV' : 5359,

@@ -1,5 +1,5 @@
-commit be32cb6c8fb0c694d60b4d9772ef6d299738159c
-Author: Tobski <TobyHector@hotmail.com>
-Date:   Mon Oct 19 21:55:32 2020 +0100
+commit eb5e409129c5a4c611a10683d94f4a1649622bd7
+Author: alelenv <alele@nvidia.com>
+Date:   Mon Jun 15 11:08:39 2020 -0700
 
-    Added SPV_KHR_fragment_shading_rate (#172)
+    Updated headers for new trace/executeCallable and acceleration structure cast.

@@ -54,11 +54,11 @@
 typedef unsigned int SpvId;
 
 #define SPV_VERSION 0x10500
-#define SPV_REVISION 3
+#define SPV_REVISION 4
 
 static const unsigned int SpvMagicNumber = 0x07230203;
 static const unsigned int SpvVersion = 0x00010500;
-static const unsigned int SpvRevision = 3;
+static const unsigned int SpvRevision = 4;
 static const unsigned int SpvOpCodeMask = 0xffff;
 static const unsigned int SpvWordCountShift = 16;
 
@@ -278,6 +278,8 @@ typedef enum SpvImageFormat_ {
     SpvImageFormatRg8ui = 37,
     SpvImageFormatR16ui = 38,
     SpvImageFormatR8ui = 39,
+    SpvImageFormatR64ui = 40,
+    SpvImageFormatR64i = 41,
     SpvImageFormatMax = 0x7fffffff,
 } SpvImageFormat;
 
@@ -907,6 +909,7 @@ typedef enum SpvCapability_ {
     SpvCapabilityFragmentMaskAMD = 5010,
     SpvCapabilityStencilExportEXT = 5013,
     SpvCapabilityImageReadWriteLodAMD = 5015,
+    SpvCapabilityInt64ImageEXT = 5016,
     SpvCapabilityShaderClockKHR = 5055,
     SpvCapabilitySampleMaskOverrideCoverageNV = 5249,
     SpvCapabilityGeometryShaderPassthroughNV = 5251,
@@ -1399,6 +1402,9 @@ typedef enum SpvOp_ {
     SpvOpSubgroupAnyKHR = 4429,
     SpvOpSubgroupAllEqualKHR = 4430,
     SpvOpSubgroupReadInvocationKHR = 4432,
+    SpvOpTraceRayKHR = 4445,
+    SpvOpExecuteCallableKHR = 4446,
+    SpvOpConvertUToAccelerationStructureKHR = 4447,
     SpvOpTypeRayQueryProvisionalKHR = 4472,
     SpvOpRayQueryInitializeKHR = 4473,
     SpvOpRayQueryTerminateKHR = 4474,
@@ -1427,10 +1433,8 @@ typedef enum SpvOp_ {
     SpvOpTerminateRayKHR = 5336,
     SpvOpTerminateRayNV = 5336,
     SpvOpTraceNV = 5337,
-    SpvOpTraceRayKHR = 5337,
     SpvOpTypeAccelerationStructureKHR = 5341,
     SpvOpTypeAccelerationStructureNV = 5341,
-    SpvOpExecuteCallableKHR = 5344,
     SpvOpExecuteCallableNV = 5344,
     SpvOpTypeCooperativeMatrixNV = 5358,
     SpvOpCooperativeMatrixLoadNV = 5359,
@@ -1970,6 +1974,9 @@ inline void SpvHasResultAndType(SpvOp opcode, bool *hasResult, bool *hasResultTy
     case SpvOpSubgroupAnyKHR: *hasResult = true; *hasResultType = true; break;
     case SpvOpSubgroupAllEqualKHR: *hasResult = true; *hasResultType = true; break;
     case SpvOpSubgroupReadInvocationKHR: *hasResult = true; *hasResultType = true; break;
+    case SpvOpTraceRayKHR: *hasResult = false; *hasResultType = false; break;
+    case SpvOpExecuteCallableKHR: *hasResult = false; *hasResultType = false; break;
+    case SpvOpConvertUToAccelerationStructureKHR: *hasResult = true; *hasResultType = true; break;
     case SpvOpTypeRayQueryProvisionalKHR: *hasResult = true; *hasResultType = false; break;
     case SpvOpRayQueryInitializeKHR: *hasResult = false; *hasResultType = false; break;
     case SpvOpRayQueryTerminateKHR: *hasResult = false; *hasResultType = false; break;
