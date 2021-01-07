@@ -92,10 +92,11 @@ typedef enum {
   shaderc_spvc_binding_type_storage_buffer = 0x00000001,
   shaderc_spvc_binding_type_readonly_storage_buffer = 0x00000002,
   shaderc_spvc_binding_type_sampler = 0x00000003,
-  shaderc_spvc_binding_type_sampled_texture = 0x00000004,
-  shaderc_spvc_binding_type_storage_texture = 0x00000005,
-  shaderc_spvc_binding_type_readonly_storage_texture = 0x00000006,
-  shaderc_spvc_binding_type_writeonly_storage_texture = 0x00000007,
+  shaderc_spvc_binding_type_comparison_sampler = 0x00000004,
+  shaderc_spvc_binding_type_sampled_texture = 0x00000005,
+  shaderc_spvc_binding_type_storage_texture = 0x00000006,
+  shaderc_spvc_binding_type_readonly_storage_texture = 0x00000007,
+  shaderc_spvc_binding_type_writeonly_storage_texture = 0x00000008,
 } shaderc_spvc_binding_type;
 
 typedef enum {
@@ -454,6 +455,12 @@ shaderc_spvc_compile_options_set_hlsl_point_size_compat(
 // If true, ignore PointCoord.  Default is false.
 SHADERC_EXPORT shaderc_spvc_status
 shaderc_spvc_compile_options_set_hlsl_point_coord_compat(
+    shaderc_spvc_compile_options_t options, bool b);
+
+// If true, set non-writable storage images to be SRV, see spirv_hlsl.hpp in
+// SPIRV-Cross for more details.
+SHADERC_EXPORT shaderc_spvc_status
+shaderc_spvc_compile_options_set_hlsl_nonwritable_uav_texture_as_srv(
     shaderc_spvc_compile_options_t options, bool b);
 
 // If true (default is false):

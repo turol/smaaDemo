@@ -630,6 +630,15 @@ shaderc_spvc_status shaderc_spvc_compile_options_set_hlsl_point_coord_compat(
   return shaderc_spvc_status_success;
 }
 
+shaderc_spvc_status
+shaderc_spvc_compile_options_set_hlsl_nonwritable_uav_texture_as_srv(
+    shaderc_spvc_compile_options_t options, bool b) {
+  CHECK_OPTIONS(nullptr, options);
+
+  options->hlsl.nonwritable_uav_texture_as_srv = b;
+  return shaderc_spvc_status_success;
+}
+
 shaderc_spvc_status shaderc_spvc_compile_options_set_fixup_clipspace(
     shaderc_spvc_compile_options_t options, bool b) {
   CHECK_OPTIONS(nullptr, options);
@@ -1065,6 +1074,21 @@ shaderc_spvc_status shaderc_spvc_get_binding_info(
         bindings->texture_dimension = spirv_dim_to_texture_view_dimension(
             imageType.dim, imageType.arrayed);
         bindings->multisampled = imageType.ms;
+      } break;
+      case shaderc_spvc_binding_type_sampler: {
+        // The inheritance hierarchy here is odd, it goes
+        // Compiler->CompilerGLSL->CompilerHLSL/MSL/Reflection.
+        // CompilerGLSL is an intermediate super class for all of the other leaf
+        // classes. The method we need is defined on CompilerGLSL, not Compiler.
+        // This cast is safe, since we only should ever have a
+        // CompilerGLSL/HLSL/MSL/Reflection in |cross_compiler|.
+        auto* glsl_compiler = reinterpret_cast<spirv_cross::CompilerGLSL*>(
+            context->cross_compiler.get());
+        if (glsl_compiler->variable_is_depth_or_compare(shader_resource.id)) {
+          bindings->binding_type = shaderc_spvc_binding_type_comparison_sampler;
+        } else {
+          bindings->binding_type = shaderc_spvc_binding_type_sampler;
+        }
       } break;
       default:
         bindings->binding_type = binding_type;
