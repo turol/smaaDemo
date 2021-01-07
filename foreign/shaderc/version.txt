@@ -1,5 +1,5 @@
-commit 7c2aa93903558f017f31b35df163bce5fe849f45
-Author: Ryan Harrison <rharrison@google.com>
-Date:   Tue Jun 9 14:45:26 2020 -0400
+commit 4162bb13b426dab68ebe411ea7ef05f6343bea95
+Author: David Neto <dneto@google.com>
+Date:   Thu Jul 23 17:35:29 2020 -0400
 
-    Finalize shaderc v2020.1
+    Finalize shaderc v2020.2

@@ -242,6 +242,7 @@ typedef struct {
   shaderc_spvc_texture_format_type texture_component_type;
   bool multisampled;
   shaderc_spvc_storage_texture_format storage_texture_format;
+  uint64_t minimum_buffer_size;
 } shaderc_spvc_binding_info;
 
 typedef struct {
@@ -455,6 +456,11 @@ shaderc_spvc_compile_options_set_hlsl_point_size_compat(
 // If true, ignore PointCoord.  Default is false.
 SHADERC_EXPORT shaderc_spvc_status
 shaderc_spvc_compile_options_set_hlsl_point_coord_compat(
+    shaderc_spvc_compile_options_t options, bool b);
+
+// If true, enable 16-bit types.  Default is false.
+SHADERC_EXPORT shaderc_spvc_status
+shaderc_spvc_compile_options_set_hlsl_enable_16bit_types(
     shaderc_spvc_compile_options_t options, bool b);
 
 // If true, set non-writable storage images to be SRV, see spirv_hlsl.hpp in

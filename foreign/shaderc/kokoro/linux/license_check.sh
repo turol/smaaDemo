@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2017 Google Inc.
+# Copyright (C) 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,13 +13,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Linux Build Script.
 
-# Fail on any error.
-set -e
-# Display commands being run.
-set -x
+set -e # Fail on any error.
 
-SCRIPT_DIR=`dirname "$BASH_SOURCE"`
-source $SCRIPT_DIR/build.sh RELEASE_MINGW
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )"
+ROOT_DIR="$( cd "${SCRIPT_DIR}/../.." >/dev/null 2>&1 && pwd )"
+
+docker run --rm -i \
+  --volume "${ROOT_DIR}:${ROOT_DIR}:ro" \
+  --workdir "${ROOT_DIR}" \
+  --env ROOT_DIR="${ROOT_DIR}" \
+  --env SCRIPT_DIR="${SCRIPT_DIR}" \
+  --entrypoint "${SCRIPT_DIR}/license_check_docker.sh" \
+  "gcr.io/shaderc-build/radial-build:latest"
