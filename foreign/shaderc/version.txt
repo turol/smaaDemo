@@ -1,86 +1,70 @@
-commit 41f271e6139ceb6a54457fb2da14571f66100a9a
+commit 15a66d72f33a099ec65e0fd37cf14548ed1d2bdb
 Author: Ryan Harrison <rharrison@google.com>
-Date:   Tue Apr 28 16:25:30 2020 -0400
+Date:   Mon May 4 16:27:03 2020 -0400
 
-    Rolling 5 dependencies, updating expectations, and fixing build issues (#1051)
+    Rolling 5 dependencies and fixing build (#1057)
     
-    Roll third_party/glslang/ 3f4e5c456..f03cb290a (9 commits)
+    Roll third_party/glslang/ f03cb290a..b5f003d7a (7 commits)
     
-    https://github.com/KhronosGroup/glslang/compare/3f4e5c456306...f03cb290ac10
+    https://github.com/KhronosGroup/glslang/compare/f03cb290ac10...b5f003d7a3ec
     
-    $ git log 3f4e5c456..f03cb290a --date=short --no-merges --format='%ad %ae %s'
-    2020-04-27 63069047+pmistryNV Add support for extension GL_ARB_texture_query_lod. (#2194)
-    2020-04-28 dj2 Remove unused Es310Desktop430 (#2200)
-    2020-04-27 63069047+pmistryNV Add support for extension GL_ARB_shading_language_packing (#2192)
-    2020-04-27 cepheus Move to SPIR-V 1.5 Rev. 3, bump revision, remove a status from README.
-    2020-04-24 johnkslang Note about Build Status.
-    2020-04-24 cepheus Move to latest SPIR-V header, and bump glslang revision.
-    2020-04-22 63069047+pmistryNV Add support for extension GL_ARB_shader_storage_buffer_object (#2184)
-    2020-04-22 antidote.crk TPpToken: Fix compiling on clang-10 (#2189)
-    2020-04-21 mennovink20 xcode warnings fix (#2188)
+    $ git log f03cb290a..b5f003d7a --date=short --no-merges --format='%ad %ae %s'
+    2020-05-01 cepheus Fix #2191: Error check for indexing reference containing unsize array.
+    2020-05-01 cepheus GLSL: Separate out swizzle handling (potentially fixing bugs).
+    2020-04-21 pmistry Add support for es extension GL_EXT_blend_func_extended * Introduces builtin variables gl_SecondaryFragColorEXT and gl_SecondaryFragDataEXT * Introduces builtin constant gl_MaxDualSourceDrawBuffersEXT * enables support for layout qualifier "index" in es profile
+    2020-04-30 63069047+pmistryNV Add support for extension GL_EXT_shader_integer_mix (#2203)
+    2020-04-26 pmistry Add support for extension GL_EXT_shader_implicit_conversions Updated extension management in TIntermediate class.
+    2020-04-30 cepheus Fix #2201: Improve const and copy constructor for TVarLivePair.
+    2020-04-29 63069047+pmistryNV Add support for extension GL_ARB_vertex_attrib_64bit (#2193)
     
-    Roll third_party/re2/ a5c78ae3e..209319c1b (5 commits)
+    Roll third_party/googletest/ dcc92d0ab..0eea2e9fc (16 commits)
     
-    https://github.com/google/re2/compare/a5c78ae3ea90...209319c1bf57
+    https://github.com/google/googletest/compare/dcc92d0ab6c4...0eea2e9fc634
     
-    $ git log a5c78ae3e..209319c1b --date=short --no-merges --format='%ad %ae %s'
-    2020-04-23 junyer Compute first_byte_ eagerly.
-    2020-04-23 junyer Remove unused flags_ member from Prog class.
-    2020-04-23 junyer Replace some uses of "LL" and "ULL" suffixes.
-    2020-04-21 junyer Explain the need for double backslashes.
-    2020-04-20 junyer Remove memrchr() and the logic that calls it.
+    $ git log dcc92d0ab..0eea2e9fc --date=short --no-merges --format='%ad %ae %s'
+    2020-04-30 absl-team Googletest export
+    2020-04-28 absl-team Googletest export
+    2020-04-27 absl-team Googletest export
+    2020-04-24 absl-team Googletest export
+    2020-04-23 absl-team Googletest export
+    2020-04-20 absl-team Googletest export
+    2020-04-20 absl-team Googletest export
+    2020-04-17 absl-team Googletest export
+    2020-03-28 arthur.j.odwyer Add -Wdeprecated to the build configuration.
+    2020-04-16 arthur.j.odwyer Fix a -Wdeprecated warning.
+    2020-04-16 arthur.j.odwyer Fix a -Wdeprecated warning.
+    2020-04-16 arthur.j.odwyer Fix a -Wdeprecated warning.
+    2020-04-16 arthur.j.odwyer Remove all uses of GTEST_DISALLOW_{MOVE_,}ASSIGN_.
+    2020-04-19 igor.n.nazarenko Enable protobuf printing for open-source proto messages.
+    2020-04-16 arthur.j.odwyer VariadicMatcher needs a non-defaulted move constructor for compile-time performance.
+    2020-04-05 jijyunneng Remove duplicate codes existed in get-nprocessors.sh
     
-    Roll third_party/spirv-cross/ f38cbeb81..7e0295abf (17 commits)
+    Roll third_party/re2/ 209319c1b..8aef3d19d (1 commit)
     
-    https://github.com/KhronosGroup/SPIRV-Cross/compare/f38cbeb814c7...7e0295abf81c
+    https://github.com/google/re2/compare/209319c1bf57...8aef3d19dba9
     
-    $ git log f38cbeb81..7e0295abf --date=short --no-merges --format='%ad %ae %s'
-    2020-04-28 rharrison Update SPIR-V Headers to 1.5 rev 3
-    2020-04-27 post Work around odd deadlock in test_shaders.py in --parallel mode.
-    2020-04-27 post Implement OpAtomicLoad/OpAtomicStore.
-    2020-04-27 post MSL: Fix case where subpassInput is passed to leaf functions.
-    2020-04-27 alexis.payen Fixed recursion in combined_decoration_for_member Members in nested structs were not properly iterated on, and as a result, flags like row major for matrices could be not propagated properly.
-    2020-04-23 dsinclair Roll GLSLang, SPIRV-Tools and SPIRV-Headers.
-    2020-04-21 post GLSL: Support f16x2 <-> f32 bitcast.
-    2020-04-21 post Be a bit more careful what nonuniform state is propagated.
-    2020-04-21 post Handle RayQueryKHR type.
-    2020-04-21 post Update SPIR-V headers.
-    2020-04-18 devsh.graphicsprogramming Fix issue #1327
-    2020-04-21 post HLSL: Add parens in unpackUint2x32 for clarity.
-    2020-04-21 post HLSL: Only allow 64-bit integers in SM 6.0.
-    2020-04-21 post Ensure unpack/pack2x32 tests are compatible with test suite.
-    2020-04-17 bingkan GLSL/HLSL: Support packUint2x32 and unpackUint2x32
-    2020-04-21 post MSL: Deal correctly with initializers on Private variables.
-    2020-04-20 post MSL: Support edge case with DX layout in scalar block layout.
+    $ git log 209319c1b..8aef3d19d --date=short --no-merges --format='%ad %ae %s'
+    2020-05-02 junyer `^' is a caret, not a carat.
     
-    Roll third_party/spirv-headers/ 2ad0492fb..c0df742ec (5 commits)
+    Roll third_party/spirv-cross/ 7e0295abf..92f7d36c7 (2 commits)
     
-    https://github.com/KhronosGroup/SPIRV-Headers/compare/2ad0492fb009...c0df742ec0b8
+    https://github.com/KhronosGroup/SPIRV-Cross/compare/7e0295abf81c...92f7d36c72bc
     
-    $ git log 2ad0492fb..c0df742ec --date=short --no-merges --format='%ad %ae %s'
-    2020-04-24 cepheus Update headers to SPIR-V 1.5 Revision 3
-    2020-04-24 cepheus Add a bunch of missing "version" : "None" for ray tracing.
-    2020-04-24 cepheus Rebuild the headers with the fixed grammar file.
-    2020-04-24 cepheus Add missing "version" : "None" for ShaderCallKHR
-    2020-04-24 cepheus Grammar: The ray-tracing updates were not done in numerical ordering.
+    $ git log 7e0295abf..92f7d36c7 --date=short --no-merges --format='%ad %ae %s'
+    2020-04-30 post MSL: Redirect member indices when buffer has been sorted by Offset.
+    2020-04-30 cwallez Fix -Wmicrosoft-enum-value
     
-    Roll third_party/spirv-tools/ 61b7de3c3..d0a87194f (12 commits)
+    Roll third_party/spirv-tools/ d0a87194f..2e1d208ed (4 commits)
     
-    https://github.com/KhronosGroup/SPIRV-Tools/compare/61b7de3c39f0...d0a87194f7b9
+    https://github.com/KhronosGroup/SPIRV-Tools/compare/d0a87194f7b9...2e1d208ed9de
     
-    $ git log 61b7de3c3..d0a87194f --date=short --no-merges --format='%ad %ae %s'
-    2020-04-28 jaebaek Set DebugScope for termination instructions (#3323)
-    2020-04-28 afdx spirv-fuzz: Do not outline regions that end with a loop header (#3312)
-    2020-04-27 bclayton vscode: Handle '|' chains on BitEnum / ValueEnum (#3309)
-    2020-04-27 jaebaek Add debug information analysis (#3305)
-    2020-04-27 dneto Add spvtools::opt::Operand::AsLiteralUint64 (#3320)
-    2020-04-27 afdx spirv-fuzz: Pass on validator options during shrinking (#3317)
-    2020-04-27 afdx spirv-fuzz: Clamp statically out-of-bounds accesses in code donation (#3315)
-    2020-04-27 afdx spirv-fuzz: Fix memory management in the fact manager (#3313)
-    2020-04-27 afdx spirv-fuzz: Do not replace the Sample argument in OpImageTexelPointer (#3311)
-    2020-04-23 afdx Allow various validation options to be passed to spirv-opt (#3314)
-    2020-04-23 Chaitanyas0101 typo fix: in README.md exectuable->executable (#3306)
-    2020-04-20 afdx spirv-fuzz: Make handling of synonym facts more efficient (#3301)
+    $ git log d0a87194f..2e1d208ed --date=short --no-merges --format='%ad %ae %s'
+    2020-05-01 afdx spirv-fuzz: Do not allow adding stores to read-only pointers (#3316)
+    2020-04-30 paulthomson reduce: increase default step limit (#3327)
+    2020-04-30 afdx Generalize IsReadOnlyVariable() to apply to pointers (#3325)
+    2020-04-28 stevenperron Delete nullptr in function bb list immedietly (#3326)
     
     Created with:
       roll-dep third_party/effcee third_party/glslang third_party/googletest third_party/re2 third_party/spirv-cross third_party/spirv-headers third_party/spirv-tools
+    
+    Fixes #1056

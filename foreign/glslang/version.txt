@@ -1,5 +1,8 @@
-commit 2c53baedbb64049e15ed8d3b38f867c1d9bec097
-Author: pmistryNV <63069047+pmistryNV@users.noreply.github.com>
-Date:   Thu Apr 30 21:41:33 2020 -0700
+commit e05cc20ec20a154d94256c744a3837c23719c0f9
+Author: Pankaj Mistry <pmistry@nvidia.com>
+Date:   Tue Apr 21 11:33:57 2020 -0700
 
-    Add support for extension GL_EXT_shader_integer_mix (#2203)
+    Add support for es extension GL_EXT_blend_func_extended
+    * Introduces builtin variables gl_SecondaryFragColorEXT and gl_SecondaryFragDataEXT
+    * Introduces builtin constant gl_MaxDualSourceDrawBuffersEXT
+    * enables support for layout qualifier "index" in es profile
