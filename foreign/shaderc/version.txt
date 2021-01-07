@@ -1,5 +1,5 @@
-commit 1fce59794079f90ceb091190adbbb5499acd4e95
+commit 0dbd899941a43ffd55df527d65128b3b66e75c9c
 Author: Ryan Harrison <rharrison@google.com>
-Date:   Wed Sep 2 15:52:17 2020 -0400
+Date:   Wed Dec 9 16:30:21 2020 -0500
 
-    Finalize SPIRV-Tools v2020.3
+    Finalize v2020.4

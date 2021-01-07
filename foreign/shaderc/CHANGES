@@ -1,5 +1,11 @@
 Revision history for Shaderc
 
+v2020.4 2020-12-09
+ - Removed svpc
+ - Fixed issues with embedders getting duplicate symbols
+ - Converted C-style casts to static_cast
+ - Rolled ahead to fix/pickup Vulkan Raytracing support
+
 v2020.3 2020-09-02
  - General:
    - Last release with spvc
