@@ -696,6 +696,8 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
                 setOpenGlSpv();
                 if (argv[0][2] != 0)
                     ClientInputSemanticsVersion = getAttachedNumber("-G<num> client input semantics");
+                if (ClientInputSemanticsVersion != 100)
+                    Error("unknown client version for -G, should be 100");
                 break;
             case 'H':
                 Options |= EOptionHumanReadableSpv;
@@ -732,6 +734,8 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
                 setVulkanSpv();
                 if (argv[0][2] != 0)
                     ClientInputSemanticsVersion = getAttachedNumber("-V<num> client input semantics");
+                if (ClientInputSemanticsVersion != 100)
+                    Error("unknown client version for -V, should be 100");
                 break;
             case 'c':
                 Options |= EOptionDumpConfig;
@@ -839,6 +843,10 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
     if ((Options & EOptionFlattenUniformArrays) != 0 &&
         (Options & EOptionReadHlsl) == 0)
         Error("uniform array flattening only valid when compiling HLSL source.");
+
+    if ((Options & EOptionReadHlsl) && (Client == glslang::EShClientOpenGL)) {
+        Error("Using HLSL input under OpenGL semantics is not currently supported.");
+    }
 
     // rationalize client and target language
     if (TargetLanguage == glslang::EShTargetNone) {
@@ -1557,7 +1565,8 @@ void usage()
            "              'ver', when present, is the version of the input semantics,\n"
            "              which will appear in #define GL_SPIRV ver;\n"
            "              '--client opengl100' is the same as -G100;\n"
-           "              a '--target-env' for OpenGL will also imply '-G'\n"
+           "              a '--target-env' for OpenGL will also imply '-G';\n"
+           "              currently only supports GLSL\n"
            "  -H          print human readable form of SPIR-V; turns on -V\n"
            "  -I<dir>     add dir to the include search path; includer's directory\n"
            "              is searched first, followed by left-to-right order of -I\n"

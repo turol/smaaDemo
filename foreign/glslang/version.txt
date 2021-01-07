@@ -1,58 +1,8 @@
-commit fbe9a23baf2cb020fe3f80d68d972e2a97d9b954
-Author: Ben Clayton <bclayton@google.com>
-Date:   Wed Jun 17 11:17:19 2020 +0100
+commit 3de5cfe50edecd001e6d703555284d9b10b3dd57
+Merge: 480f6039 78dbd751
+Author: greg-lunarg <greg@lunarg.com>
+Date:   Wed Jan 6 19:29:37 2021 -0700
 
-    Generate build information from CHANGES.md
+    Merge pull request #2498 from dezinjob/fix-option-replacement-vs
     
-    This PR significantly reworks the way glslang is versioned.
-    
-    Instead of committing changes to the `GLSLANG_MINOR_VERSION` define in
-    `glslang/Public/ShaderLang.h`, and using `make-revision` to generate
-    `GLSLANG_PATCH_LEVEL` in `glslang/Include/revision.h`, all version
-    information is now derived from the new `CHANGES.md` file.
-    
-    `CHANGES.md` acts as the single source of truth for glslang version
-    information, along with a convenient place to put all release notes for
-    each notable change made.
-    
-    `CHANGES.md` is parsed using the new `build_info.py` python script.
-    This script can read basic template files to produce new source files,
-    which it does to read the new `build_info.h.tmpl` to generate (at build
-    time) a glslang private header at
-    `<build-dir>/include/glslang/build_info.h`.
-    I've written generators for each of the CMake, Bazel, gn, and
-    `Android.mk` build scripts.
-    
-    The new version code conforms to the Semantic Versioning 2.0 spec.
-    
-    This new version is also used by the CMake rules to produce versioned
-    shared objects, including a major-versioned SONAME.
-    
-    New APIs:
-    ---------
-    
-    * `glslang::GetVersion()` returns a `Version` struct with the version
-      major, minor, patch and flavor.
-    
-    Breaking API changes:
-    ---------------------
-    
-    * The public defines `GLSLANG_MINOR_VERSION` and `GLSLANG_PATCH_LEVEL`
-      have been entirely removed.
-    * `glslang/Public/ShaderLang.h` and `glslang/Include/revision.h` have
-      been deleted.
-    * Instead, `<build-dir>/include/glslang/build_info.h` is created in
-      the build directory, and `<build-dir>/include` is a CMake `PUBLIC`
-      (dependee-inherited) include directory for the glslang targets.
-    * `<build-dir>/include/glslang/build_info.h` contains the following
-       new #defines:
-       `GLSLANG_VERSION_MAJOR`, `GLSLANG_VERSION_MINOR`,
-       `GLSLANG_VERSION_PATCH`, `GLSLANG_VERSION_FLAVOR`,
-       `GLSLANG_VERSION_GREATER_THAN(major, minor, patch)`,
-       `GLSLANG_VERSION_GREATER_OR_EQUAL_TO(major, minor, patch)`,
-       `GLSLANG_VERSION_LESS_THAN(major, minor, patch)`,
-       `GLSLANG_VERSION_LESS_OR_EQUAL_TO(major, minor, patch)`
-    *  The CMake install output directory contains a copy of
-       `build_info.h` at: `include/glslang/build_info.h`
-    *  Python3 is now always required to build glslang (likely always
-       required for transitive dependency builds).
+    Fix option replacement when flags are empty

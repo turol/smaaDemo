@@ -129,7 +129,7 @@ TEST_P(HlslLegalDebugTest, FromFile)
 }
 
 // clang-format off
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ToSpirv, HlslCompileTest,
     ::testing::ValuesIn(std::vector<FileNameEntryPointPair>{
         {"hlsl.amend.frag", "f1"},
@@ -308,10 +308,12 @@ INSTANTIATE_TEST_CASE_P(
         {"hlsl.pp.vert", "main"},
         {"hlsl.pp.line.frag", "main"},
         {"hlsl.precise.frag", "main"},
+        {"hlsl.printf.comp", "main"},
         {"hlsl.promote.atomic.frag", "main"},
         {"hlsl.promote.binary.frag", "main"},
         {"hlsl.promote.vec1.frag", "main"},
         {"hlsl.promotions.frag", "main"},
+        {"hlsl.round.dx10.frag", "main"},
         {"hlsl.rw.atomics.frag", "main"},
         {"hlsl.rw.bracket.frag", "main"},
         {"hlsl.rw.register.frag", "main"},
@@ -430,7 +432,7 @@ INSTANTIATE_TEST_CASE_P(
 // clang-format on
 
 // clang-format off
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ToSpirv, HlslVulkan1_1CompileTest,
     ::testing::ValuesIn(std::vector<FileNameEntryPointPair>{
         {"hlsl.wavebroadcast.comp", "CSMain"},
@@ -448,7 +450,7 @@ INSTANTIATE_TEST_CASE_P(
 // clang-format on
 
 // clang-format off
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ToSpirv, HlslCompileAndFlattenTest,
     ::testing::ValuesIn(std::vector<FileNameEntryPointPair>{
         {"hlsl.array.flatten.frag", "main"},
@@ -460,7 +462,7 @@ INSTANTIATE_TEST_CASE_P(
 
 #if ENABLE_OPT
 // clang-format off
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ToSpirv, HlslLegalizeTest,
     ::testing::ValuesIn(std::vector<FileNameEntryPointPair>{
         {"hlsl.aliasOpaque.frag", "main"},
@@ -478,7 +480,7 @@ INSTANTIATE_TEST_CASE_P(
 #endif
 
 // clang-format off
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ToSpirv, HlslDebugTest,
     ::testing::ValuesIn(std::vector<FileNameEntryPointPair>{
         {"hlsl.pp.line2.frag", "MainPs"}
@@ -486,9 +488,10 @@ INSTANTIATE_TEST_CASE_P(
     FileNameAsCustomTestSuffix
 );
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ToSpirv, HlslDX9CompatibleTest,
     ::testing::ValuesIn(std::vector<FileNameEntryPointPair>{
+        {"hlsl.round.dx9.frag", "main"},
         {"hlsl.sample.dx9.frag", "main"},
         {"hlsl.sample.dx9.vert", "main"},
     }),
@@ -496,7 +499,7 @@ INSTANTIATE_TEST_CASE_P(
 );
 
 // clang-format off
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ToSpirv, HlslLegalDebugTest,
     ::testing::ValuesIn(std::vector<FileNameEntryPointPair>{
         {"hlsl.pp.line4.frag", "MainPs"}
