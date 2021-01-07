@@ -1,5 +1,5 @@
-commit f76bb2f09f858c3014b329961d836964e515095d
+commit 687a83c645171a9beb22c5090c22d45bae5b7623
 Author: Ryan Harrison <rharrison@google.com>
-Date:   Wed Jan 22 15:15:53 2020 -0500
+Date:   Mon Apr 6 15:28:22 2020 -0400
 
-    Fix the version string (#971)
+    Finalize shaderc v2020.0
