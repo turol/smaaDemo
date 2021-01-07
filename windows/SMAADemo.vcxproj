@@ -395,6 +395,13 @@
     </ClCompile>
     <ClCompile Include="..\foreign\glslang\glslang\GenericCodeGen\CodeGen.cpp" />
     <ClCompile Include="..\foreign\glslang\glslang\GenericCodeGen\Link.cpp" />
+    <ClCompile Include="..\foreign\glslang\glslang\HLSL\hlslAttributes.cpp" />
+    <ClCompile Include="..\foreign\glslang\glslang\HLSL\hlslGrammar.cpp" />
+    <ClCompile Include="..\foreign\glslang\glslang\HLSL\hlslOpMap.cpp" />
+    <ClCompile Include="..\foreign\glslang\glslang\HLSL\hlslParseables.cpp" />
+    <ClCompile Include="..\foreign\glslang\glslang\HLSL\hlslParseHelper.cpp" />
+    <ClCompile Include="..\foreign\glslang\glslang\HLSL\hlslScanContext.cpp" />
+    <ClCompile Include="..\foreign\glslang\glslang\HLSL\hlslTokenStream.cpp" />
     <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\attribute.cpp" />
     <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\Constant.cpp" />
     <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\glslang_tab.cpp" />
@@ -423,14 +430,6 @@
     <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\SymbolTable.cpp" />
     <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\Versions.cpp" />
     <ClCompile Include="..\foreign\glslang\glslang\OSDependent\Windows\ossource.cpp" />
-    <ClCompile Include="..\foreign\glslang\hlsl\hlslAttributes.cpp" />
-    <ClCompile Include="..\foreign\glslang\hlsl\hlslGrammar.cpp" />
-    <ClCompile Include="..\foreign\glslang\hlsl\hlslOpMap.cpp" />
-    <ClCompile Include="..\foreign\glslang\hlsl\hlslParseables.cpp" />
-    <ClCompile Include="..\foreign\glslang\hlsl\hlslParseHelper.cpp" />
-    <ClCompile Include="..\foreign\glslang\hlsl\hlslScanContext.cpp" />
-    <ClCompile Include="..\foreign\glslang\hlsl\hlslTokenStream.cpp" />
-    <ClCompile Include="..\foreign\glslang\hlsl\pch.cpp" />
     <ClCompile Include="..\foreign\glslang\OGLCompilersDLL\InitializeDll.cpp" />
     <ClCompile Include="..\foreign\glslang\SPIRV\disassemble.cpp" />
     <ClCompile Include="..\foreign\glslang\SPIRV\doc.cpp" />
@@ -482,15 +481,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\AreaTex.h" />
-    <ClInclude Include="..\foreign\glslang\hlsl\hlslAttributes.h" />
-    <ClInclude Include="..\foreign\glslang\hlsl\hlslGrammar.h" />
-    <ClInclude Include="..\foreign\glslang\hlsl\hlslOpMap.h" />
-    <ClInclude Include="..\foreign\glslang\hlsl\hlslParseables.h" />
-    <ClInclude Include="..\foreign\glslang\hlsl\hlslParseHelper.h" />
-    <ClInclude Include="..\foreign\glslang\hlsl\hlslScanContext.h" />
-    <ClInclude Include="..\foreign\glslang\hlsl\hlslTokens.h" />
-    <ClInclude Include="..\foreign\glslang\hlsl\hlslTokenStream.h" />
-    <ClInclude Include="..\foreign\glslang\hlsl\pch.h" />
+    <ClInclude Include="..\foreign\glslang\glslang\HLSL\hlslAttributes.h" />
+    <ClInclude Include="..\foreign\glslang\glslang\HLSL\hlslGrammar.h" />
+    <ClInclude Include="..\foreign\glslang\glslang\HLSL\hlslOpMap.h" />
+    <ClInclude Include="..\foreign\glslang\glslang\HLSL\hlslParseables.h" />
+    <ClInclude Include="..\foreign\glslang\glslang\HLSL\hlslParseHelper.h" />
+    <ClInclude Include="..\foreign\glslang\glslang\HLSL\hlslScanContext.h" />
+    <ClInclude Include="..\foreign\glslang\glslang\HLSL\hlslTokens.h" />
+    <ClInclude Include="..\foreign\glslang\glslang\HLSL\hlslTokenStream.h" />
+    <ClInclude Include="..\foreign\glslang\glslang\HLSL\pch.h" />
     <ClInclude Include="..\fxaa3_11.h" />
     <ClInclude Include="..\renderer\NullRenderer.h" />
     <ClInclude Include="..\renderer\OpenGLRenderer.h" />
