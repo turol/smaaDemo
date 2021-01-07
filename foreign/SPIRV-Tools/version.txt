@@ -1,11 +1,21 @@
-commit 671914c28e8249f0a555726a0f3f38691fe5c1df
-Author: greg-lunarg <greg@lunarg.com>
-Date:   Wed Nov 18 10:39:15 2020 -0700
+commit cd590fa3341284cd6d1ee82366155786cfd44c96
+Author: David Neto <dneto@google.com>
+Date:   Mon Nov 23 12:23:54 2020 -0500
 
-    Fix buffer oob instrumentation for matrix refs (#4025)
+    Update MeshShadingNV dependencies (and land Ray tracing updates) (#4028)
     
-    Fix buffer oob instrumentation for matrix refs.
+    * Update to final ray tracing extensions
     
-    Matrix stride decoration is not on matrix type but is a member decoration
-    on the enclosing struct type. Also correctly apply matrix stride depending
-    on row or column major.
+    Drop Provisional from ray tracing enums
+        sed -ie 's/RayQueryProvisionalKHR/RayQueryKHR/g' **/*
+        sed -ie 's/RayTracingProvisionalKHR/RayTracingKHR/g' **/*
+    Add terminator support for SpvOpIgnoreIntersectionKHR and SpvOpTerminateRayKHR
+    Update deps for SPIRV-Headers
+    
+    * Update capability dependencies for MeshShadingNV
+    
+    Accommodate https://github.com/KhronosGroup/SPIRV-Headers/pull/180
+    
+    MeshShadingNV: enables PrimitiveId, Layer, and ViewportIndex
+    
+    Co-authored-by: Daniel Koch <dkoch@nvidia.com>

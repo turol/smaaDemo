@@ -1,5 +1,8 @@
-commit eb5e409129c5a4c611a10683d94f4a1649622bd7
-Author: alelenv <alele@nvidia.com>
-Date:   Mon Jun 15 11:08:39 2020 -0700
+commit 4de110ce1c78fda37932c735ef7f747e6f6cbee8
+Merge: 5ab5c96 6323756
+Author: Raun Krisch <raun.krisch@gmail.com>
+Date:   Mon Nov 23 08:58:25 2020 -0600
 
-    Updated headers for new trace/executeCallable and acceleration structure cast.
+    Merge pull request #182 from dgkoch/khr_rt_final
+    
+    Updates to final ray tracing extensions
