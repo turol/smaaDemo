@@ -478,10 +478,9 @@ bool Replay(const spv_target_env& target_env,
       spvtools::fuzz::Replayer(
           target_env, spvtools::utils::CLIMessageConsumer, binary_in,
           initial_facts, transformation_sequence, num_transformations_to_apply,
-          0, fuzzer_options->replay_validation_enabled, validator_options)
+          fuzzer_options->replay_validation_enabled, validator_options)
           .Run();
-
-  *binary_out = std::move(replay_result.transformed_binary);
+  replay_result.transformed_module->module()->ToBinary(binary_out, false);
   *transformations_applied = std::move(replay_result.applied_transformations);
   return replay_result.status ==
          spvtools::fuzz::Replayer::ReplayerResultStatus::kComplete;
@@ -617,6 +616,34 @@ void DumpShader(spvtools::opt::IRContext* context, const char* filename) {
   std::vector<uint32_t> binary;
   context->module()->ToBinary(&binary, false);
   DumpShader(binary, filename);
+}
+
+// Dumps |transformations| to file |filename| in binary format. Useful for
+// interactive debugging.
+void DumpTransformationsBinary(
+    const spvtools::fuzz::protobufs::TransformationSequence& transformations,
+    const char* filename) {
+  std::ofstream transformations_file;
+  transformations_file.open(filename, std::ios::out | std::ios::binary);
+  transformations.SerializeToOstream(&transformations_file);
+  transformations_file.close();
+}
+
+// Dumps |transformations| to file |filename| in JSON format. Useful for
+// interactive debugging.
+void DumpTransformationsJson(
+    const spvtools::fuzz::protobufs::TransformationSequence& transformations,
+    const char* filename) {
+  std::string json_string;
+  auto json_options = google::protobuf::util::JsonOptions();
+  json_options.add_whitespace = true;
+  auto json_generation_status = google::protobuf::util::MessageToJsonString(
+      transformations, &json_string, json_options);
+  if (json_generation_status == google::protobuf::util::Status::OK) {
+    std::ofstream transformations_json_file(filename);
+    transformations_json_file << json_string;
+    transformations_json_file.close();
+  }
 }
 
 const auto kDefaultEnvironment = SPV_ENV_UNIVERSAL_1_3;

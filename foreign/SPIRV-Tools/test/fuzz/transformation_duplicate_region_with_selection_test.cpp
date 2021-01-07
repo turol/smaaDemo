@@ -14,6 +14,9 @@
 
 #include "source/fuzz/transformation_duplicate_region_with_selection.h"
 
+#include "gtest/gtest.h"
+#include "source/fuzz/counter_overflow_id_source.h"
+#include "source/fuzz/fuzzer_util.h"
 #include "test/fuzz/fuzz_test_util.h"
 
 namespace spvtools {
@@ -76,13 +79,11 @@ TEST(TransformationDuplicateRegionWithSelectionTest, BasicUseTest) {
   const auto env = SPV_ENV_UNIVERSAL_1_4;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   TransformationDuplicateRegionWithSelection transformation_good_1 =
       TransformationDuplicateRegionWithSelection(
           500, 19, 501, 800, 800, {{800, 100}}, {{13, 201}, {15, 202}},
@@ -90,9 +91,11 @@ TEST(TransformationDuplicateRegionWithSelectionTest, BasicUseTest) {
 
   ASSERT_TRUE(transformation_good_1.IsApplicable(context.get(),
                                                  transformation_context));
-  transformation_good_1.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation_good_1, context.get(),
+                        &transformation_context);
 
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
   std::string expected_shader = R"(
                OpCapability Shader
                OpCapability VariablePointers
@@ -208,13 +211,11 @@ TEST(TransformationDuplicateRegionWithSelectionTest, BasicExitBlockTest) {
   const auto env = SPV_ENV_UNIVERSAL_1_4;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   TransformationDuplicateRegionWithSelection transformation_good_1 =
       TransformationDuplicateRegionWithSelection(
           500, 19, 501, 800, 800, {{800, 100}}, {{13, 201}, {15, 202}},
@@ -222,9 +223,11 @@ TEST(TransformationDuplicateRegionWithSelectionTest, BasicExitBlockTest) {
 
   ASSERT_TRUE(transformation_good_1.IsApplicable(context.get(),
                                                  transformation_context));
-  transformation_good_1.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation_good_1, context.get(),
+                        &transformation_context);
 
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   std::string expected_shader = R"(
    OpCapability Shader
@@ -347,13 +350,11 @@ TEST(TransformationDuplicateRegionWithSelectionTest, NotApplicableCFGTest) {
   const auto env = SPV_ENV_UNIVERSAL_1_4;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   // Bad: |entry_block_id| refers to the entry block of the function (this
   // transformation currently avoids such cases).
   TransformationDuplicateRegionWithSelection transformation_bad_1 =
@@ -445,13 +446,11 @@ TEST(TransformationDuplicateRegionWithSelectionTest, NotApplicableIdTest) {
   const auto env = SPV_ENV_UNIVERSAL_1_4;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   // Bad: A value in the |original_label_to_duplicate_label| is not a fresh id.
   TransformationDuplicateRegionWithSelection transformation_bad_1 =
       TransformationDuplicateRegionWithSelection(
@@ -510,6 +509,7 @@ TEST(TransformationDuplicateRegionWithSelectionTest, NotApplicableIdTest) {
   ASSERT_FALSE(
       transformation_bad_7.IsApplicable(context.get(), transformation_context));
 
+#ifndef NDEBUG
   // Bad: Instruction with id 15 is from the original region and is available
   // at the end of the region but it is not present in the
   // |original_id_to_phi_id|.
@@ -517,8 +517,9 @@ TEST(TransformationDuplicateRegionWithSelectionTest, NotApplicableIdTest) {
       TransformationDuplicateRegionWithSelection(
           500, 19, 501, 800, 800, {{800, 100}}, {{13, 201}, {15, 202}},
           {{13, 301}});
-  ASSERT_FALSE(
-      transformation_bad_8.IsApplicable(context.get(), transformation_context));
+  ASSERT_DEATH(
+      transformation_bad_8.IsApplicable(context.get(), transformation_context),
+      "Bad attempt to query whether overflow ids are available.");
 
   // Bad: Instruction with id 15 is from the original region but it is
   // not present in the |original_id_to_duplicate_id|.
@@ -526,8 +527,10 @@ TEST(TransformationDuplicateRegionWithSelectionTest, NotApplicableIdTest) {
       TransformationDuplicateRegionWithSelection(500, 19, 501, 800, 800,
                                                  {{800, 100}}, {{13, 201}},
                                                  {{13, 301}, {15, 302}});
-  ASSERT_FALSE(
-      transformation_bad_9.IsApplicable(context.get(), transformation_context));
+  ASSERT_DEATH(
+      transformation_bad_9.IsApplicable(context.get(), transformation_context),
+      "Bad attempt to query whether overflow ids are available.");
+#endif
 
   // Bad: |condition_id| does not refer to the valid instruction.
   TransformationDuplicateRegionWithSelection transformation_bad_10 =
@@ -616,12 +619,11 @@ TEST(TransformationDuplicateRegionWithSelectionTest, NotApplicableCFGTest2) {
   const auto env = SPV_ENV_UNIVERSAL_1_4;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   // Bad: The exit block cannot be a header of a loop, because the region won't
   // be a single-entry, single-exit region.
   TransformationDuplicateRegionWithSelection transformation_bad_1 =
@@ -699,12 +701,11 @@ TEST(TransformationDuplicateRegionWithSelectionTest, NotApplicableCFGTest3) {
   const auto env = SPV_ENV_UNIVERSAL_1_4;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   // Bad: The block with id 7, which is not an exit block, has two successors:
   // the block with id 10 and the block with id 16. The block with id 16 is not
   // in the region.
@@ -784,13 +785,11 @@ TEST(TransformationDuplicateRegionWithSelectionTest, MultipleBlocksLoopTest) {
   const auto env = SPV_ENV_UNIVERSAL_1_4;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   TransformationDuplicateRegionWithSelection transformation_good_1 =
       TransformationDuplicateRegionWithSelection(
           500, 30, 501, 50, 15,
@@ -811,8 +810,10 @@ TEST(TransformationDuplicateRegionWithSelectionTest, MultipleBlocksLoopTest) {
            {21, 307}});
   ASSERT_TRUE(transformation_good_1.IsApplicable(context.get(),
                                                  transformation_context));
-  transformation_good_1.Apply(context.get(), &transformation_context);
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ApplyAndCheckFreshIds(transformation_good_1, context.get(),
+                        &transformation_context);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   std::string expected_shader = R"(
                  OpCapability Shader
@@ -973,14 +974,13 @@ TEST(TransformationDuplicateRegionWithSelectionTest,
   const auto env = SPV_ENV_UNIVERSAL_1_4;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   TransformationDuplicateRegionWithSelection transformation_good_1 =
       TransformationDuplicateRegionWithSelection(
@@ -989,8 +989,10 @@ TEST(TransformationDuplicateRegionWithSelectionTest,
 
   ASSERT_TRUE(transformation_good_1.IsApplicable(context.get(),
                                                  transformation_context));
-  transformation_good_1.Apply(context.get(), &transformation_context);
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ApplyAndCheckFreshIds(transformation_good_1, context.get(),
+                        &transformation_context);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   std::string expected_shader = R"(
                OpCapability Shader
@@ -1128,13 +1130,11 @@ TEST(TransformationDuplicateRegionWithSelectionTest, NotApplicableEarlyReturn) {
   const auto env = SPV_ENV_UNIVERSAL_1_4;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   // Bad: The block with id 50, which is the entry block, has two successors:
   // the block with id 18 and the block with id 22. The block 22 has an early
   // return from the function, so that the entry block is not post-dominated by
@@ -1207,22 +1207,23 @@ TEST(TransformationDuplicateRegionWithSelectionTest,
   const auto env = SPV_ENV_UNIVERSAL_1_4;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   TransformationDuplicateRegionWithSelection transformation_good_1 =
       TransformationDuplicateRegionWithSelection(
           500, 21, 501, 50, 50, {{50, 100}}, {{51, 201}}, {{51, 301}});
   ASSERT_TRUE(transformation_good_1.IsApplicable(context.get(),
                                                  transformation_context));
-  transformation_good_1.Apply(context.get(), &transformation_context);
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ApplyAndCheckFreshIds(transformation_good_1, context.get(),
+                        &transformation_context);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   std::string expected_shader = R"(
                OpCapability Shader
@@ -1344,13 +1345,11 @@ TEST(TransformationDuplicateRegionWithSelectionTest,
   const auto env = SPV_ENV_UNIVERSAL_1_4;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   // Bad: There is no required capability CapabilityVariablePointers
   TransformationDuplicateRegionWithSelection transformation_bad_1 =
       TransformationDuplicateRegionWithSelection(
@@ -1406,14 +1405,13 @@ TEST(TransformationDuplicateRegionWithSelectionTest,
   const auto env = SPV_ENV_UNIVERSAL_1_4;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   TransformationDuplicateRegionWithSelection transformation_good_1 =
       TransformationDuplicateRegionWithSelection(
@@ -1421,8 +1419,10 @@ TEST(TransformationDuplicateRegionWithSelectionTest,
           {{12, 301}, {14, 302}});
   ASSERT_TRUE(transformation_good_1.IsApplicable(context.get(),
                                                  transformation_context));
-  transformation_good_1.Apply(context.get(), &transformation_context);
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ApplyAndCheckFreshIds(transformation_good_1, context.get(),
+                        &transformation_context);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   std::string expected_shader = R"(
                OpCapability Shader
@@ -1526,14 +1526,13 @@ TEST(TransformationDuplicateRegionWithSelectionTest,
   const auto env = SPV_ENV_UNIVERSAL_1_4;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   TransformationDuplicateRegionWithSelection transformation_good_1 =
       TransformationDuplicateRegionWithSelection(
@@ -1541,8 +1540,10 @@ TEST(TransformationDuplicateRegionWithSelectionTest,
           {{12, 301}, {14, 302}});
   ASSERT_TRUE(transformation_good_1.IsApplicable(context.get(),
                                                  transformation_context));
-  transformation_good_1.Apply(context.get(), &transformation_context);
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ApplyAndCheckFreshIds(transformation_good_1, context.get(),
+                        &transformation_context);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   std::string expected_shader = R"(
                OpCapability Shader
@@ -1665,13 +1666,11 @@ TEST(TransformationDuplicateRegionWithSelectionTest,
   const auto env = SPV_ENV_UNIVERSAL_1_4;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   TransformationDuplicateRegionWithSelection transformation_bad =
       TransformationDuplicateRegionWithSelection(
           500, 50, 501, 27, 14, {{27, 101}, {14, 102}}, {{29, 201}, {31, 202}},
@@ -1679,6 +1678,341 @@ TEST(TransformationDuplicateRegionWithSelectionTest,
 
   ASSERT_FALSE(
       transformation_bad.IsApplicable(context.get(), transformation_context));
+}
+
+TEST(TransformationDuplicateRegionWithSelectionTest,
+     MultiplePredecessorsNotApplicableTest) {
+  // This test handles a case where the entry block has multiple predecessors
+  // and the transformation is not applicable.
+
+  std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %4 "main"
+               OpExecutionMode %4 OriginUpperLeft
+               OpSource ESSL 310
+               OpName %4 "main"
+               OpName %10 "fun1(i1;"
+               OpName %9 "a"
+               OpName %18 "b"
+               OpName %24 "b"
+               OpName %27 "param"
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeInt 32 1
+          %7 = OpTypePointer Function %6
+          %8 = OpTypeFunction %2 %7
+         %13 = OpConstant %6 2
+         %14 = OpTypeBool
+         %23 = OpTypePointer Function %14
+         %25 = OpConstantTrue %14
+         %26 = OpConstant %6 1
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+         %24 = OpVariable %23 Function
+         %27 = OpVariable %7 Function
+               OpStore %24 %25
+               OpStore %27 %26
+         %28 = OpFunctionCall %2 %10 %27
+               OpReturn
+               OpFunctionEnd
+         %10 = OpFunction %2 None %8
+          %9 = OpFunctionParameter %7
+         %11 = OpLabel
+         %18 = OpVariable %7 Function
+         %12 = OpLoad %6 %9
+         %15 = OpSLessThan %14 %12 %13
+               OpSelectionMerge %17 None
+               OpBranchConditional %15 %16 %20
+         %16 = OpLabel
+         %19 = OpLoad %6 %9
+               OpStore %18 %19
+               OpBranch %60
+         %20 = OpLabel
+         %21 = OpLoad %6 %9
+         %22 = OpIAdd %6 %21 %13
+               OpStore %18 %22
+               OpBranch %60
+         %60 = OpLabel
+               OpBranch %17
+         %17 = OpLabel
+               OpReturn
+               OpFunctionEnd
+    )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_4;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+  spvtools::ValidatorOptions validator_options;
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
+
+  TransformationDuplicateRegionWithSelection transformation_bad =
+      TransformationDuplicateRegionWithSelection(500, 25, 501, 60, 60,
+                                                 {{60, 101}}, {{}}, {{}});
+
+  ASSERT_FALSE(
+      transformation_bad.IsApplicable(context.get(), transformation_context));
+}
+
+TEST(TransformationDuplicateRegionWithSelectionTest, OverflowIds) {
+  // This test checks that the transformation correctly uses overflow ids, when
+  // they are both needed and provided.
+
+  std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %4 "main"
+               OpExecutionMode %4 OriginUpperLeft
+               OpSource ESSL 310
+               OpName %4 "main"
+               OpName %6 "fun("
+               OpName %10 "s"
+               OpName %17 "b"
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %8 = OpTypeInt 32 1
+          %9 = OpTypePointer Function %8
+         %11 = OpConstant %8 0
+         %13 = OpConstant %8 2
+         %15 = OpTypeBool
+         %16 = OpTypePointer Function %15
+         %18 = OpConstantTrue %15
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+         %17 = OpVariable %16 Function
+               OpStore %17 %18
+         %19 = OpFunctionCall %2 %6
+               OpReturn
+               OpFunctionEnd
+          %6 = OpFunction %2 None %3
+          %7 = OpLabel
+         %10 = OpVariable %9 Function
+               OpBranch %50
+         %50 = OpLabel
+               OpStore %10 %11
+         %12 = OpLoad %8 %10
+         %14 = OpIAdd %8 %12 %13
+               OpStore %10 %14
+               OpKill
+               OpFunctionEnd
+         )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_4;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+  spvtools::ValidatorOptions validator_options;
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  auto overflow_ids_unique_ptr = MakeUnique<CounterOverflowIdSource>(1000);
+  auto overflow_ids_ptr = overflow_ids_unique_ptr.get();
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options,
+      std::move(overflow_ids_unique_ptr));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+
+  // The mappings do not provide sufficient ids, thus overflow ids are required.
+  TransformationDuplicateRegionWithSelection transformation_good_1 =
+      TransformationDuplicateRegionWithSelection(500, 18, 501, 50, 50, {},
+                                                 {{12, 201}}, {{14, 302}});
+  ASSERT_TRUE(transformation_good_1.IsApplicable(context.get(),
+                                                 transformation_context));
+  ApplyAndCheckFreshIds(transformation_good_1, context.get(),
+                        &transformation_context,
+                        overflow_ids_ptr->GetIssuedOverflowIds());
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+
+  std::string expected_shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %4 "main"
+               OpExecutionMode %4 OriginUpperLeft
+               OpSource ESSL 310
+               OpName %4 "main"
+               OpName %6 "fun("
+               OpName %10 "s"
+               OpName %17 "b"
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %8 = OpTypeInt 32 1
+          %9 = OpTypePointer Function %8
+         %11 = OpConstant %8 0
+         %13 = OpConstant %8 2
+         %15 = OpTypeBool
+         %16 = OpTypePointer Function %15
+         %18 = OpConstantTrue %15
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+         %17 = OpVariable %16 Function
+               OpStore %17 %18
+         %19 = OpFunctionCall %2 %6
+               OpReturn
+               OpFunctionEnd
+          %6 = OpFunction %2 None %3
+          %7 = OpLabel
+         %10 = OpVariable %9 Function
+               OpBranch %500
+        %500 = OpLabel
+               OpSelectionMerge %501 None
+               OpBranchConditional %18 %50 %1000
+         %50 = OpLabel
+               OpStore %10 %11
+         %12 = OpLoad %8 %10
+         %14 = OpIAdd %8 %12 %13
+               OpStore %10 %14
+               OpBranch %501
+       %1000 = OpLabel
+               OpStore %10 %11
+        %201 = OpLoad %8 %10
+       %1002 = OpIAdd %8 %201 %13
+               OpStore %10 %1002
+               OpBranch %501
+        %501 = OpLabel
+       %1001 = OpPhi %8 %12 %50 %201 %1000
+        %302 = OpPhi %8 %14 %50 %1002 %1000
+               OpKill
+               OpFunctionEnd
+        )";
+
+  ASSERT_TRUE(IsEqual(env, expected_shader, context.get()));
+}
+
+TEST(TransformationDuplicateRegionWithSelectionTest,
+     RegionExitIsOpBranchConditional) {
+  // Checks the case where the exit block of a region ends with
+  // OpBranchConditional (but is not a header).
+  std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %4 "main"
+               OpExecutionMode %4 OriginUpperLeft
+               OpSource ESSL 320
+               OpName %4 "main"
+               OpName %8 "i"
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeInt 32 1
+          %7 = OpTypePointer Function %6
+          %9 = OpConstant %6 0
+         %16 = OpConstant %6 100
+         %17 = OpTypeBool
+	 %50 = OpConstantTrue %17
+         %20 = OpConstant %6 1
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+          %8 = OpVariable %7 Function
+               OpStore %8 %9
+               OpBranch %10
+         %10 = OpLabel
+               OpLoopMerge %12 %13 None
+               OpBranch %14
+         %14 = OpLabel
+         %15 = OpLoad %6 %8
+         %18 = OpSLessThan %17 %15 %16
+               OpBranchConditional %18 %11 %12
+         %11 = OpLabel
+         %19 = OpLoad %6 %8
+         %21 = OpIAdd %6 %19 %20
+               OpStore %8 %21
+               OpBranchConditional %50 %13 %12
+         %13 = OpLabel
+         %22 = OpLoad %6 %8
+         %23 = OpIAdd %6 %22 %20
+               OpStore %8 %23
+               OpBranch %10
+         %12 = OpLabel
+               OpReturn
+               OpFunctionEnd
+         )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_4;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+  spvtools::ValidatorOptions validator_options;
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+
+  TransformationDuplicateRegionWithSelection transformation_good_1 =
+      TransformationDuplicateRegionWithSelection(
+          600, 50, 601, 11, 11, {{11, 602}}, {{19, 603}, {21, 604}},
+          {{19, 605}, {21, 606}});
+  ASSERT_TRUE(transformation_good_1.IsApplicable(context.get(),
+                                                 transformation_context));
+  ApplyAndCheckFreshIds(transformation_good_1, context.get(),
+                        &transformation_context);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+
+  std::string expected_shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %4 "main"
+               OpExecutionMode %4 OriginUpperLeft
+               OpSource ESSL 320
+               OpName %4 "main"
+               OpName %8 "i"
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeInt 32 1
+          %7 = OpTypePointer Function %6
+          %9 = OpConstant %6 0
+         %16 = OpConstant %6 100
+         %17 = OpTypeBool
+	 %50 = OpConstantTrue %17
+         %20 = OpConstant %6 1
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+          %8 = OpVariable %7 Function
+               OpStore %8 %9
+               OpBranch %10
+         %10 = OpLabel
+               OpLoopMerge %12 %13 None
+               OpBranch %14
+         %14 = OpLabel
+         %15 = OpLoad %6 %8
+         %18 = OpSLessThan %17 %15 %16
+               OpBranchConditional %18 %600 %12
+        %600 = OpLabel
+               OpSelectionMerge %601 None
+               OpBranchConditional %50 %11 %602
+         %11 = OpLabel
+         %19 = OpLoad %6 %8
+         %21 = OpIAdd %6 %19 %20
+               OpStore %8 %21
+               OpBranch %601
+        %602 = OpLabel
+        %603 = OpLoad %6 %8
+        %604 = OpIAdd %6 %603 %20
+               OpStore %8 %604
+               OpBranch %601
+        %601 = OpLabel
+        %605 = OpPhi %6 %19 %11 %603 %602
+        %606 = OpPhi %6 %21 %11 %604 %602
+               OpBranchConditional %50 %13 %12
+         %13 = OpLabel
+         %22 = OpLoad %6 %8
+         %23 = OpIAdd %6 %22 %20
+               OpStore %8 %23
+               OpBranch %10
+         %12 = OpLabel
+               OpReturn
+               OpFunctionEnd
+        )";
+
+  ASSERT_TRUE(IsEqual(env, expected_shader, context.get()));
 }
 
 }  // namespace

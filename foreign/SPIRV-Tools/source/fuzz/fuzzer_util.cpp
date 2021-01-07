@@ -43,6 +43,10 @@ uint32_t MaybeGetOpConstant(opt::IRContext* ir_context,
 
 }  // namespace
 
+const spvtools::MessageConsumer kSilentMessageConsumer =
+    [](spv_message_level_t, const char*, const spv_position_t&,
+       const char*) -> void {};
+
 bool IsFreshId(opt::IRContext* context, uint32_t id) {
   return !context->get_def_use_mgr()->GetDef(id);
 }
@@ -400,11 +404,62 @@ uint32_t GetBoundForCompositeIndex(const opt::Instruction& composite_type_inst,
   }
 }
 
-bool IsValid(opt::IRContext* context, spv_validator_options validator_options) {
+bool IsValid(const opt::IRContext* context,
+             spv_validator_options validator_options,
+             MessageConsumer consumer) {
   std::vector<uint32_t> binary;
   context->module()->ToBinary(&binary, false);
   SpirvTools tools(context->grammar().target_env());
+  tools.SetMessageConsumer(consumer);
   return tools.Validate(binary.data(), binary.size(), validator_options);
+}
+
+bool IsValidAndWellFormed(const opt::IRContext* ir_context,
+                          spv_validator_options validator_options,
+                          MessageConsumer consumer) {
+  if (!IsValid(ir_context, validator_options, consumer)) {
+    consumer(SPV_MSG_INFO, nullptr, {},
+             "Module is invalid (set a breakpoint to inspect).");
+    return false;
+  }
+  // Check that all blocks in the module have appropriate parent functions.
+  for (auto& function : *ir_context->module()) {
+    for (auto& block : function) {
+      if (block.GetParent() == nullptr) {
+        std::stringstream ss;
+        ss << "Block " << block.id() << " has no parent; its parent should be "
+           << function.result_id() << " (set a breakpoint to inspect).";
+        consumer(SPV_MSG_INFO, nullptr, {}, ss.str().c_str());
+        return false;
+      }
+      if (block.GetParent() != &function) {
+        std::stringstream ss;
+        ss << "Block " << block.id() << " should have parent "
+           << function.result_id() << " but instead has parent "
+           << block.GetParent() << " (set a breakpoint to inspect).";
+        consumer(SPV_MSG_INFO, nullptr, {}, ss.str().c_str());
+        return false;
+      }
+    }
+  }
+
+  // Check that all instructions have distinct unique ids.  We map each unique
+  // id to the first instruction it is observed to be associated with so that
+  // if we encounter a duplicate we have access to the previous instruction -
+  // this is a useful aid to debugging.
+  std::unordered_map<uint32_t, opt::Instruction*> unique_ids;
+  bool found_duplicate = false;
+  ir_context->module()->ForEachInst([&consumer, &found_duplicate,
+                                     &unique_ids](opt::Instruction* inst) {
+    if (unique_ids.count(inst->unique_id()) != 0) {
+      consumer(SPV_MSG_INFO, nullptr, {},
+               "Two instructions have the same unique id (set a breakpoint to "
+               "inspect).");
+      found_duplicate = true;
+    }
+    unique_ids.insert({inst->unique_id(), inst});
+  });
+  return !found_duplicate;
 }
 
 std::unique_ptr<opt::IRContext> CloneIRContext(opt::IRContext* context) {
@@ -430,6 +485,28 @@ bool IsMergeOrContinue(opt::IRContext* ir_context, uint32_t block_id) {
           case SpvOpSelectionMerge:
             result = true;
             return false;
+          default:
+            return true;
+        }
+      });
+  return result;
+}
+
+uint32_t GetLoopFromMergeBlock(opt::IRContext* ir_context,
+                               uint32_t merge_block_id) {
+  uint32_t result = 0;
+  ir_context->get_def_use_mgr()->WhileEachUse(
+      merge_block_id,
+      [ir_context, &result](opt::Instruction* use_instruction,
+                            uint32_t use_index) -> bool {
+        switch (use_instruction->opcode()) {
+          case SpvOpLoopMerge:
+            // The merge block operand is the first operand in OpLoopMerge.
+            if (use_index == 0) {
+              result = ir_context->get_instr_block(use_instruction)->id();
+              return false;
+            }
+            return true;
           default:
             return true;
         }
@@ -989,6 +1066,11 @@ uint32_t MaybeGetStructType(opt::IRContext* ir_context,
   return ir_context->get_type_mgr()->GetId(&type);
 }
 
+uint32_t MaybeGetVoidType(opt::IRContext* ir_context) {
+  opt::analysis::Void type;
+  return ir_context->get_type_mgr()->GetId(&type);
+}
+
 uint32_t MaybeGetZeroConstant(
     opt::IRContext* ir_context,
     const TransformationContext& transformation_context,
@@ -1092,22 +1174,32 @@ uint32_t MaybeGetZeroConstant(
   }
 }
 
-bool CanCreateConstant(const opt::analysis::Type& type) {
-  switch (type.kind()) {
-    case opt::analysis::Type::kBool:
-    case opt::analysis::Type::kInteger:
-    case opt::analysis::Type::kFloat:
-    case opt::analysis::Type::kMatrix:
-    case opt::analysis::Type::kVector:
+bool CanCreateConstant(opt::IRContext* ir_context, uint32_t type_id) {
+  opt::Instruction* type_instr = ir_context->get_def_use_mgr()->GetDef(type_id);
+  assert(type_instr != nullptr && "The type must exist.");
+  assert(spvOpcodeGeneratesType(type_instr->opcode()) &&
+         "A type-generating opcode was expected.");
+  switch (type_instr->opcode()) {
+    case SpvOpTypeBool:
+    case SpvOpTypeInt:
+    case SpvOpTypeFloat:
+    case SpvOpTypeMatrix:
+    case SpvOpTypeVector:
       return true;
-    case opt::analysis::Type::kArray:
-      return CanCreateConstant(*type.AsArray()->element_type());
-    case opt::analysis::Type::kStruct:
-      return std::all_of(type.AsStruct()->element_types().begin(),
-                         type.AsStruct()->element_types().end(),
-                         [](const opt::analysis::Type* element_type) {
-                           return CanCreateConstant(*element_type);
-                         });
+    case SpvOpTypeArray:
+      return CanCreateConstant(ir_context,
+                               type_instr->GetSingleWordInOperand(0));
+    case SpvOpTypeStruct:
+      if (HasBlockOrBufferBlockDecoration(ir_context, type_id)) {
+        return false;
+      }
+      for (uint32_t index = 0; index < type_instr->NumInOperands(); index++) {
+        if (!CanCreateConstant(ir_context,
+                               type_instr->GetSingleWordInOperand(index))) {
+          return false;
+        }
+      }
+      return true;
     default:
       return false;
   }
@@ -1528,6 +1620,18 @@ bool MembersHaveBuiltInDecoration(opt::IRContext* ir_context,
   return builtin_count != 0;
 }
 
+bool HasBlockOrBufferBlockDecoration(opt::IRContext* ir_context, uint32_t id) {
+  for (auto decoration : {SpvDecorationBlock, SpvDecorationBufferBlock}) {
+    if (!ir_context->get_decoration_mgr()->WhileEachDecoration(
+            id, decoration, [](const opt::Instruction & /*unused*/) -> bool {
+              return false;
+            })) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool SplittingBeforeInstructionSeparatesOpSampledImageDefinitionFromUse(
     opt::BasicBlock* block_to_split, opt::Instruction* split_before) {
   std::set<uint32_t> sampled_image_result_ids;
@@ -1671,6 +1775,23 @@ bool InstructionHasNoSideEffects(const opt::Instruction& instruction) {
     default:
       return false;
   }
+}
+
+std::set<uint32_t> GetReachableReturnBlocks(opt::IRContext* ir_context,
+                                            uint32_t function_id) {
+  auto function = ir_context->GetFunction(function_id);
+  assert(function && "The function |function_id| must exist.");
+
+  std::set<uint32_t> result;
+
+  ir_context->cfg()->ForEachBlockInPostOrder(function->entry().get(),
+                                             [&result](opt::BasicBlock* block) {
+                                               if (block->IsReturn()) {
+                                                 result.emplace(block->id());
+                                               }
+                                             });
+
+  return result;
 }
 
 }  // namespace fuzzerutil

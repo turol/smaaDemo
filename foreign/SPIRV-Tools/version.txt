@@ -1,5 +1,7 @@
-commit b27e039c68dd9eb959bb9249fcb2c9a54841474b
-Author: Ehsan Nasiri <ehsannas@gmail.com>
-Date:   Thu Sep 24 10:53:49 2020 -0400
+commit 6fac705e76165663544e8562537c4165d3bac190
+Author: Alastair Donaldson <afdx@google.com>
+Date:   Mon Oct 19 17:36:21 2020 +0100
 
-    Finalize SPIRV-Tools v2020.5
+    spirv-val: Fix validation of OpPhi instructions (#3919)
+    
+    Fixes #3918.

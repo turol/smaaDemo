@@ -14,6 +14,8 @@
 
 #include "source/fuzz/transformation_add_loop_preheader.h"
 
+#include "gtest/gtest.h"
+#include "source/fuzz/fuzzer_util.h"
 #include "test/fuzz/fuzz_test_util.h"
 
 namespace spvtools {
@@ -67,12 +69,11 @@ TEST(TransformationAddLoopPreheaderTest, SimpleTest) {
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
 
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
-  ASSERT_TRUE(IsValid(env, context.get()));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   // %9 is not a loop header
   ASSERT_FALSE(TransformationAddLoopPreheader(9, 15, {}).IsApplicable(
@@ -90,14 +91,17 @@ TEST(TransformationAddLoopPreheaderTest, SimpleTest) {
   auto transformation1 = TransformationAddLoopPreheader(10, 20, {});
   ASSERT_TRUE(
       transformation1.IsApplicable(context.get(), transformation_context));
-  transformation1.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation1, context.get(),
+                        &transformation_context);
 
   auto transformation2 = TransformationAddLoopPreheader(12, 21, {});
   ASSERT_TRUE(
       transformation2.IsApplicable(context.get(), transformation_context));
-  transformation2.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation2, context.get(),
+                        &transformation_context);
 
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   std::string after_transformations = R"(
                OpCapability Shader
@@ -198,17 +202,17 @@ TEST(TransformationAddLoopPreheaderTest, OpPhi) {
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
 
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
-  ASSERT_TRUE(IsValid(env, context.get()));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   auto transformation1 = TransformationAddLoopPreheader(8, 40, {});
   ASSERT_TRUE(
       transformation1.IsApplicable(context.get(), transformation_context));
-  transformation1.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation1, context.get(),
+                        &transformation_context);
 
   // Not enough ids for the OpPhi instructions are given
   ASSERT_FALSE(TransformationAddLoopPreheader(13, 41, {})
@@ -229,9 +233,11 @@ TEST(TransformationAddLoopPreheaderTest, OpPhi) {
   auto transformation2 = TransformationAddLoopPreheader(13, 41, {42, 43});
   ASSERT_TRUE(
       transformation2.IsApplicable(context.get(), transformation_context));
-  transformation2.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation2, context.get(),
+                        &transformation_context);
 
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   std::string after_transformations = R"(
                OpCapability Shader

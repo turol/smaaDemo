@@ -30,6 +30,7 @@ class TransformationAddOpPhiSynonym : public Transformation {
 
   // - |message_.block_id| is the label of a block with at least one
   //   predecessor.
+  // - |message_.block_id| must not be a dead block.
   // - |message_.pred_to_id| contains a mapping from each of the predecessors of
   //   the block to an id that is available at the end of the predecessor.
   // - All the ids corresponding to a predecessor in |message_.pred_to_id|:
@@ -60,6 +61,8 @@ class TransformationAddOpPhiSynonym : public Transformation {
   // Pointer types are also allowed if the VariablePointers capability is
   // enabled and the storage class is Workgroup or StorageBuffer.
   static bool CheckTypeIsAllowed(opt::IRContext* ir_context, uint32_t type_id);
+
+  std::unordered_set<uint32_t> GetFreshIds() const override;
 
   protobufs::Transformation ToMessage() const override;
 

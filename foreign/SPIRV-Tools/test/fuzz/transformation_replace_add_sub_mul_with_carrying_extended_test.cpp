@@ -14,6 +14,7 @@
 
 #include "source/fuzz/transformation_replace_add_sub_mul_with_carrying_extended.h"
 
+#include "gtest/gtest.h"
 #include "source/fuzz/fuzzer_util.h"
 #include "test/fuzz/fuzz_test_util.h"
 
@@ -59,11 +60,9 @@ TEST(TransformationReplaceAddSubMulWithCarryingExtendedTest,
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
 
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   // Bad: |struct_fresh_id| must be fresh.
   auto transformation_bad_1 =
       TransformationReplaceAddSubMulWithCarryingExtended(14, 15);
@@ -147,11 +146,9 @@ TEST(TransformationReplaceAddSubMulWithCarryingExtendedTest,
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
 
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   // Bad: The transformation cannot be applied to an instruction OpIMul that has
   // different signedness of the types of operands.
   auto transformation_bad_1 =
@@ -244,11 +241,9 @@ TEST(TransformationReplaceAddSubMulWithCarryingExtendedTest,
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
 
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   auto transformation_bad_1 =
       TransformationReplaceAddSubMulWithCarryingExtended(50, 15);
   ASSERT_FALSE(
@@ -407,66 +402,80 @@ TEST(TransformationReplaceAddSubMulWithCarryingExtendedTest,
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
 
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   auto transformation_good_1 =
       TransformationReplaceAddSubMulWithCarryingExtended(80, 15);
   ASSERT_TRUE(transformation_good_1.IsApplicable(context.get(),
                                                  transformation_context));
-  transformation_good_1.Apply(context.get(), &transformation_context);
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ApplyAndCheckFreshIds(transformation_good_1, context.get(),
+                        &transformation_context);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   auto transformation_good_2 =
       TransformationReplaceAddSubMulWithCarryingExtended(81, 18);
   ASSERT_TRUE(transformation_good_2.IsApplicable(context.get(),
                                                  transformation_context));
-  transformation_good_2.Apply(context.get(), &transformation_context);
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ApplyAndCheckFreshIds(transformation_good_2, context.get(),
+                        &transformation_context);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   auto transformation_good_3 =
       TransformationReplaceAddSubMulWithCarryingExtended(82, 21);
   ASSERT_TRUE(transformation_good_3.IsApplicable(context.get(),
                                                  transformation_context));
-  transformation_good_3.Apply(context.get(), &transformation_context);
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ApplyAndCheckFreshIds(transformation_good_3, context.get(),
+                        &transformation_context);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   auto transformation_good_4 =
       TransformationReplaceAddSubMulWithCarryingExtended(83, 31);
   ASSERT_TRUE(transformation_good_4.IsApplicable(context.get(),
                                                  transformation_context));
-  transformation_good_4.Apply(context.get(), &transformation_context);
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ApplyAndCheckFreshIds(transformation_good_4, context.get(),
+                        &transformation_context);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   auto transformation_good_5 =
       TransformationReplaceAddSubMulWithCarryingExtended(84, 42);
   ASSERT_TRUE(transformation_good_5.IsApplicable(context.get(),
                                                  transformation_context));
-  transformation_good_5.Apply(context.get(), &transformation_context);
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ApplyAndCheckFreshIds(transformation_good_5, context.get(),
+                        &transformation_context);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   auto transformation_good_6 =
       TransformationReplaceAddSubMulWithCarryingExtended(85, 45);
   ASSERT_TRUE(transformation_good_6.IsApplicable(context.get(),
                                                  transformation_context));
-  transformation_good_6.Apply(context.get(), &transformation_context);
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ApplyAndCheckFreshIds(transformation_good_6, context.get(),
+                        &transformation_context);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   auto transformation_good_7 =
       TransformationReplaceAddSubMulWithCarryingExtended(86, 48);
   ASSERT_TRUE(transformation_good_7.IsApplicable(context.get(),
                                                  transformation_context));
-  transformation_good_7.Apply(context.get(), &transformation_context);
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ApplyAndCheckFreshIds(transformation_good_7, context.get(),
+                        &transformation_context);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   auto transformation_good_8 =
       TransformationReplaceAddSubMulWithCarryingExtended(87, 59);
   ASSERT_TRUE(transformation_good_8.IsApplicable(context.get(),
                                                  transformation_context));
-  transformation_good_8.Apply(context.get(), &transformation_context);
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ApplyAndCheckFreshIds(transformation_good_8, context.get(),
+                        &transformation_context);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   std::string after_transformation = R"(
                OpCapability Shader

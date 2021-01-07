@@ -46,7 +46,16 @@ class TransformationReplaceIrrelevantId : public Transformation {
   void Apply(opt::IRContext* ir_context,
              TransformationContext* transformation_context) const override;
 
+  std::unordered_set<uint32_t> GetFreshIds() const override;
+
   protobufs::Transformation ToMessage() const override;
+
+  // Returns true if and only if |use_instruction| is OpVariable and
+  // |replacement_for_use| is not a constant instruction - i.e., if it would be
+  // illegal to replace the variable's initializer with the given instruction.
+  static bool AttemptsToReplaceVariableInitializerWithNonConstant(
+      const opt::Instruction& use_instruction,
+      const opt::Instruction& replacement_for_use);
 
  private:
   protobufs::TransformationReplaceIrrelevantId message_;

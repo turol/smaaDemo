@@ -56,11 +56,14 @@ class TransformationAddParameter : public Transformation {
   void Apply(opt::IRContext* ir_context,
              TransformationContext* transformation_context) const override;
 
+  std::unordered_set<uint32_t> GetFreshIds() const override;
+
   protobufs::Transformation ToMessage() const override;
 
   // Returns true if the type of the parameter is supported by this
   // transformation.
-  static bool IsParameterTypeSupported(const opt::analysis::Type& type);
+  static bool IsParameterTypeSupported(opt::IRContext* ir_context,
+                                       uint32_t type_id);
 
  private:
   protobufs::TransformationAddParameter message_;

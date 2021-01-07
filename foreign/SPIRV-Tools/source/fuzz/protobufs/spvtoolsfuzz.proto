@@ -381,6 +381,58 @@ message SideEffectWrapperInfo {
   uint32 value_to_copy_id = 7;
 }
 
+message ReturnMergingInfo {
+  // TransformationMergeFunctionReturns needs to modify each merge block of
+  // loops containing return instructions, by:
+  // - adding instructions to decide whether the function is returning
+  // - adding instructions to pass on the return value of the function,
+  //   if it is returning
+  // - changing the branch instruction (which must be an unconditional branch)
+  //   to a conditional branch that, if the function is returning, branches to
+  //   the merge block of the innermost loop that contains this merge block
+  //   (which can be the new merge block introduced by the transformation).
+  //
+  // One such merge block of the form:
+  //  %block = OpLabel
+  //   %phi1 = OpPhi %type1 %val1_1 %pred1 %val1_2 %pred2
+  //   %phi2 = OpPhi %type2 %val2_1 %pred1 %val2_2 %pred2
+  //           OpBranch %next
+  //
+  // is transformed into:
+  //               %block = OpLabel
+  //     %is_returning_id = OpPhi %bool %false %pred1 %false %pred2 %true %ret_bb1 %is_bb2_returning %mer_bb2
+  // %maybe_return_val_id = OpPhi %return_type %any_returnable_val %pred1 %any_returnable_val %pred2
+  //                                            %ret_val1 %ret_bb1 %ret_val2 %mer_bb2
+  //                %phi1 = OpPhi %type1 %val1_1 %pred1 %val1_2 %pred2
+  //                                     %any_suitable_id_1 %ret_bb1 %any_suitable_id_1 %mer_bb2
+  //                %phi2 = OpPhi %type2 %val2_1 %pred1 %val2_2 %pred2
+  //                                     %any_suitable_id_1 %ret_bb1 %any_suitable_id_1 %mer_bb2
+  //                        OpBranchConditional %is_returning_id %innermost_loop_merge %next
+  //
+  // where %ret_bb1 is a block that originally contains a return instruction and %mer_bb2 is the merge block of an inner
+  // loop, from where the function might be returning.
+  //
+  // Note that the block is required to only have OpLabel, OpPhi or OpBranch instructions.
+
+  // The id of the merge block that needs to be modified.
+  uint32 merge_block_id = 1;
+
+  // A fresh id for a boolean OpPhi whose value will be true iff the function
+  // is returning. This will be used to decide whether to break out of the loop
+  // or to use the original branch of the function. This value will also be
+  // used by the merge block of the enclosing loop (if there is one) if the
+  // function is returning from this block.
+  uint32 is_returning_id = 2;
+
+  // A fresh id that will get the value being returned, if the function is
+  // returning. If the function return type is void, this is ignored.
+  uint32 maybe_return_val_id = 3;
+
+  // A mapping from each existing OpPhi id to a suitable id of the same type
+  // available to use before the instruction.
+  repeated UInt32Pair opphi_to_suitable_id = 4;
+}
+
 message LoopLimiterInfo {
 
   // Structure capturing the information required to manipulate a loop limiter
@@ -498,6 +550,12 @@ message Transformation {
     TransformationFlattenConditionalBranch flatten_conditional_branch = 76;
     TransformationAddBitInstructionSynonym add_bit_instruction_synonym = 77;
     TransformationAddLoopToCreateIntConstantSynonym add_loop_to_create_int_constant_synonym = 78;
+    TransformationWrapRegionInSelection wrap_region_in_selection = 79;
+    TransformationAddEarlyTerminatorWrapper add_early_terminator_wrapper = 80;
+    TransformationPropagateInstructionDown propagate_instruction_down = 81;
+    TransformationReplaceBranchFromDeadBlockWithExit replace_branch_from_dead_block_with_exit = 82;
+    TransformationWrapEarlyTerminatorInFunction wrap_early_terminator_in_function = 83;
+    TransformationMergeFunctionReturns merge_function_returns = 84;
     // Add additional option using the next available number.
   }
 }
@@ -545,11 +603,11 @@ message TransformationAddBitInstructionSynonym {
   //   OpBitwiseOr
   //   OpBitwiseXor
   //   OpBitwiseAnd
+  //   OpNot
   // To be supported in the future:
   //   OpShiftRightLogical
   //   OpShiftRightArithmetic
   //   OpShiftLeftLogical
-  //   OpNot
   //   OpBitReverse
   //   OpBitCount
 
@@ -711,6 +769,28 @@ message TransformationAddDeadContinue {
 
 }
 
+message TransformationAddEarlyTerminatorWrapper {
+
+  // Adds a function to the module containing a single block with a single non-
+  // label instruction that is either OpKill, OpUnreachable, or
+  // OpTerminateInvocation.  The purpose of this is to allow such instructions
+  // to be subsequently replaced with wrapper functions, which can then enable
+  // transformations (such as inlining) that are hard in the direct presence
+  // of these instructions.
+
+  // Fresh id for the function.
+  uint32 function_fresh_id = 1;
+
+  // Fresh id for the single basic block in the function.
+  uint32 label_fresh_id = 2;
+
+  // One of OpKill, OpUnreachable, OpTerminateInvocation.  If additional early
+  // termination instructions are added to SPIR-V they should also be handled
+  // here.
+  uint32 opcode = 3;
+
+}
+
 message TransformationAddFunction {
 
   // Adds a SPIR-V function to the module.
@@ -738,11 +818,12 @@ message TransformationAddFunction {
   // Id of an existing global value with the same return type as the function
   // that can be used to replace OpKill and OpReachable instructions with
   // ReturnValue instructions.  Ignored if the function has void return type.
+  // Only relevant if |is_livesafe| holds.
   uint32 kill_unreachable_return_value_id = 6;
 
   // A mapping (represented as a sequence) from every access chain result id in
   // the function to the ids required to clamp its indices to ensure they are in
-  // bounds.
+  // bounds; only relevant if |is_livesafe| holds.
   repeated AccessChainClampingInfo access_chain_clamping_info = 7;
 
 }
@@ -852,7 +933,7 @@ message TransformationAddLoopToCreateIntConstantSynonym {
   // A transformation that uses a loop to create a synonym for an integer
   // constant C (scalar or vector) using an initial value I, a step value S and
   // a number of iterations N such that C = I - N * S. For each iteration, S is
-  // added to the total.
+  // subtracted from the total.
   // The loop can be made up of one or two blocks, and it is inserted before a
   // block with a single predecessor. In the one-block case, it is of the form:
   //
@@ -862,7 +943,7 @@ message TransformationAddLoopToCreateIntConstantSynonym {
   //    %eventual_syn_id = OpISub %type_of_I %temp_id %step_val_id
   // %incremented_ctr_id = OpIAdd %int %ctr_id %int_1
   //            %cond_id = OpSLessThan %bool %incremented_ctr_id %num_iterations_id
-  //                       OpLoopMerge %block_after_loop_id %loop_id %none
+  //                       OpLoopMerge %block_after_loop_id %loop_id None
   //                       OpBranchConditional %cond_id %loop_id %block_after_loop_id
   //
   // A new OpPhi instruction is then added to %block_after_loop_id, as follows:
@@ -1487,6 +1568,65 @@ message TransformationMergeBlocks {
 
 }
 
+message TransformationMergeFunctionReturns {
+
+  // A transformation that modifies a function so that it does not return early,
+  // so it only has one return statement (ignoring unreachable blocks).
+  //
+  // The function is enclosed inside an outer loop, that is only executed once,
+  // and whose merge block is the new return block of the function.
+  //
+  // Each return instruction is replaced by:
+  //     OpBranch %innermost_loop_merge
+  // where %innermost_loop_merge is the innermost loop containing the return
+  // instruction.
+  //
+  // Each merge block whose associated loop contains return instructions is
+  // changed so that it branches to the merge block of the loop containing it,
+  // as explained in the comments to the ReturnMergingInfo message.
+  //
+  // The new return block (the merge block of the new outer loop) will be of
+  // the following form (if the return type is not void):
+  //  %outer_return_id = OpLabel
+  //   %return_val_id = OpPhi %return_type %val1 %block_1 %val2 %block_2 ...
+  //                    OpReturnValue %return_val_id
+  // where %block_k is either a return block that, in the original function, is
+  // outside of any loops, or the merge block of a loop that contains return
+  // instructions and is not, originally, nested inside another loop, and
+  // %block_k is the corresponding return value.
+  // If the function has void type, there will be no OpPhi instruction and the
+  // last instruction will be OpReturn.
+
+  // The id of the function to which the transformation is being applied.
+  uint32 function_id = 1;
+
+  // A fresh id for the header of the new outer loop.
+  uint32 outer_header_id = 2;
+
+  // A fresh id for the new return block of the function,
+  // i.e. the merge block of the new outer loop.
+  uint32 outer_return_id = 3;
+
+  // A fresh id for the value that will be returned.
+  // This is ignored if the function has void return type.
+  uint32 return_val_id = 4;
+
+  // An existing id of the same type as the return value, which is
+  // available to use at the end of the entry block.
+  // This is ignored if the function has void return type or if no
+  // loops in the function contain a return instruction.
+  // If the function is not void, the transformation will add an
+  // OpPhi instruction to each merge block whose associated loop
+  // contains at least a return instruction. The value associated
+  // with existing predecessors from which the function cannot be
+  // returning will be this id, used as a placeholder.
+  uint32 any_returnable_val_id = 5;
+
+  // The information needed to modify the merge blocks of
+  // loops containing return instructions.
+  repeated ReturnMergingInfo return_merging_info = 6;
+}
+
 message TransformationMoveBlockDown {
 
   // A transformation that moves a basic block to be one position lower in
@@ -1609,6 +1749,38 @@ message TransformationPermutePhiOperands {
 
 }
 
+message TransformationPropagateInstructionDown {
+
+  // Propagates an instruction from |block_id| into its successors.
+  // Concretely, the transformation clones the propagated instruction
+  // into some of the successors of |block_id| and removes the original
+  // instruction. Additionally, an OpPhi instruction may be added to make sure
+  // that the transformation can be applied in various scenarios.
+  //
+  // Note that the instruction might not be propagated down into every successor
+  // of |block_id| since it might make the module invalid.
+
+  // Id of the block to propagate an instruction from. The decision on what
+  // instruction to propagate is made based on whether the instruction interacts
+  // with memory, whether that instruction is used in its block etc (see the
+  // transformation class for more details).
+  uint32 block_id = 1;
+
+  // A fresh id for an OpPhi instruction. This might not be used by the
+  // transformation since an OpPhi instruction is created only if needed
+  // (e.g. an instruction is propagated into divergent blocks).
+  uint32 phi_fresh_id = 2;
+
+  // A map from the id of some successor of the |block_id| to the fresh id.
+  // The map contains a fresh id for at least every successor of the |block_id|.
+  // Every fresh id in the map corresponds to the result id of the clone,
+  // propagated into the corresponding successor block. This transformation
+  // might use overflow ids if they are available and this field doesn't account
+  // for every successor of |block_id|.
+  repeated UInt32Pair successor_id_to_fresh_id = 3;
+
+}
+
 message TransformationPropagateInstructionUp {
 
   // Propagates an instruction in the block into the block's predecessors.
@@ -1691,6 +1863,24 @@ message TransformationReplaceAddSubMulWithCarryingExtended {
 
   // The result id of the original instruction.
   uint32 result_id = 2;
+
+}
+
+message TransformationReplaceBranchFromDeadBlockWithExit {
+
+  // Given a dead block that ends with OpBranch, replaces OpBranch with an
+  // "exit" instruction; one of OpReturn/OpReturnValue, OpKill (in a fragment
+  // shader) or OpUnreachable.
+
+  // The dead block whose terminator is to be replaced.
+  uint32 block_id = 1;
+
+  // The opcode of the new terminator.
+  uint32 opcode = 2;
+
+  // Ignored unless opcode is OpReturnValue, in which case this field provides
+  // a suitable result id to be returned.
+  uint32 return_value_id = 3;
 
 }
 
@@ -2069,5 +2259,55 @@ message TransformationVectorShuffle {
 
   // Indices that indicate which components of the input vectors should be used.
   repeated uint32 component = 5;
+
+}
+
+message TransformationWrapEarlyTerminatorInFunction {
+
+  // Replaces an early terminator - OpKill, OpReachable or OpTerminateInvocation
+  // - with a call to a wrapper function for the terminator.
+
+  // A fresh id for a new OpFunctionCall instruction.
+  uint32 fresh_id = 1;
+
+  // A descriptor for an OpKill, OpUnreachable or OpTerminateInvocation
+  // instruction.
+  InstructionDescriptor early_terminator_instruction = 2;
+
+  // An id with the same type as the enclosing function's return type that is
+  // available at the early terminator.  This is used to change the terminator
+  // to OpReturnValue.  Ignored if the enclosing function has void return type,
+  // in which case OpReturn can be used as the new terminator.
+  uint32 returned_value_id = 3;
+
+}
+
+message TransformationWrapRegionInSelection {
+
+  // Transforms a single-entry-single-exit region R into
+  // if (|branch_condition|) { R } else { R }
+  // The entry block for R becomes a selection header and
+  // the exit block - a selection merge.
+  //
+  // Note that the region R is not duplicated. Thus, the effect of
+  // this transformation can be represented as follows:
+  //              entry
+  //  entry        / \
+  //    |          \ /
+  //    R   -->     R
+  //    |           |
+  //   exit        exit
+
+  // This behaviour is different from TransformationDuplicateRegionWithSelection
+  // that copies the blocks in R.
+
+  // The entry block for the region R.
+  uint32 region_entry_block_id = 1;
+
+  // The exit block for the region R.
+  uint32 region_exit_block_id = 2;
+
+  // Boolean value for the condition expression.
+  bool branch_condition = 3;
 
 }

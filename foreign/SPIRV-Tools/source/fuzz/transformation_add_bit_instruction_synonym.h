@@ -120,6 +120,8 @@ class TransformationAddBitInstructionSynonym : public Transformation {
   void Apply(opt::IRContext* ir_context,
              TransformationContext* transformation_context) const override;
 
+  std::unordered_set<uint32_t> GetFreshIds() const override;
+
   protobufs::Transformation ToMessage() const override;
 
   // Returns the number of fresh ids required to apply the transformation.
@@ -129,10 +131,10 @@ class TransformationAddBitInstructionSynonym : public Transformation {
  private:
   protobufs::TransformationAddBitInstructionSynonym message_;
 
-  // Adds an OpBitwise* synonym.
-  void AddBitwiseSynonym(opt::IRContext* ir_context,
-                         TransformationContext* transformation_context,
-                         opt::Instruction* bitwise_instruction) const;
+  // Adds OpBitwise* or OpNot synonym.
+  void AddOpBitwiseOrOpNotSynonym(opt::IRContext* ir_context,
+                                  TransformationContext* transformation_context,
+                                  opt::Instruction* bitwise_instruction) const;
 };
 
 }  // namespace fuzz

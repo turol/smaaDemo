@@ -13,6 +13,9 @@
 // limitations under the License.
 
 #include "source/fuzz/fuzzer_pass_add_opphi_synonyms.h"
+
+#include "gtest/gtest.h"
+#include "source/fuzz/fuzzer_util.h"
 #include "source/fuzz/pseudo_random_generator.h"
 #include "test/fuzz/fuzz_test_util.h"
 
@@ -32,21 +35,21 @@ protobufs::Fact MakeSynonymFact(uint32_t first, uint32_t second) {
 // Adds synonym facts to the fact manager.
 void SetUpIdSynonyms(FactManager* fact_manager) {
   // Synonyms {9, 11, 15, 16, 21, 22}
-  fact_manager->AddFact(MakeSynonymFact(11, 9));
-  fact_manager->AddFact(MakeSynonymFact(15, 9));
-  fact_manager->AddFact(MakeSynonymFact(16, 9));
-  fact_manager->AddFact(MakeSynonymFact(21, 9));
-  fact_manager->AddFact(MakeSynonymFact(22, 9));
+  fact_manager->MaybeAddFact(MakeSynonymFact(11, 9));
+  fact_manager->MaybeAddFact(MakeSynonymFact(15, 9));
+  fact_manager->MaybeAddFact(MakeSynonymFact(16, 9));
+  fact_manager->MaybeAddFact(MakeSynonymFact(21, 9));
+  fact_manager->MaybeAddFact(MakeSynonymFact(22, 9));
 
   // Synonyms {10, 23}
-  fact_manager->AddFact(MakeSynonymFact(10, 23));
+  fact_manager->MaybeAddFact(MakeSynonymFact(10, 23));
 
   // Synonyms {14, 27}
-  fact_manager->AddFact(MakeSynonymFact(14, 27));
+  fact_manager->MaybeAddFact(MakeSynonymFact(14, 27));
 
   // Synonyms {24, 26, 30}
-  fact_manager->AddFact(MakeSynonymFact(26, 24));
-  fact_manager->AddFact(MakeSynonymFact(30, 24));
+  fact_manager->MaybeAddFact(MakeSynonymFact(26, 24));
+  fact_manager->MaybeAddFact(MakeSynonymFact(30, 24));
 }
 
 // Returns true if the given lists have the same elements, regardless of their
@@ -120,13 +123,11 @@ TEST(FuzzerPassAddOpPhiSynonymsTest, HelperFunctions) {
   const auto env = SPV_ENV_UNIVERSAL_1_5;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   PseudoRandomGenerator prng(0);
   FuzzerContext fuzzer_context(&prng, 100);
   protobufs::TransformationSequence transformation_sequence;
@@ -135,7 +136,7 @@ TEST(FuzzerPassAddOpPhiSynonymsTest, HelperFunctions) {
                                          &fuzzer_context,
                                          &transformation_sequence);
 
-  SetUpIdSynonyms(&fact_manager);
+  SetUpIdSynonyms(transformation_context.GetFactManager());
 
   std::vector<std::set<uint32_t>> expected_equivalence_classes = {
       {9, 15, 21}, {11, 16, 22}, {10, 23}, {6}, {24, 26, 30}};

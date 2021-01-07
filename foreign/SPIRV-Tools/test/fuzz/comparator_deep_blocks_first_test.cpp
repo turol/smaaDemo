@@ -13,7 +13,10 @@
 // limitations under the License.
 
 #include "source/fuzz/comparator_deep_blocks_first.h"
+
+#include "gtest/gtest.h"
 #include "source/fuzz/fact_manager/fact_manager.h"
+#include "source/fuzz/fuzzer_util.h"
 #include "source/fuzz/pseudo_random_generator.h"
 #include "source/fuzz/transformation_context.h"
 #include "test/fuzz/fuzz_test_util.h"
@@ -73,13 +76,11 @@ TEST(ComparatorDeepBlocksFirstTest, Compare) {
   const auto env = SPV_ENV_UNIVERSAL_1_5;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   auto is_deeper = ComparatorDeepBlocksFirst(context.get());
 
   // The block ids and the corresponding depths are:
@@ -107,13 +108,11 @@ TEST(ComparatorDeepBlocksFirstTest, Sort) {
   const auto env = SPV_ENV_UNIVERSAL_1_5;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   // Check that, sorting using the comparator, the blocks are ordered from more
   // deeply nested to less deeply nested.
   // 17 has depth 1, 20 has depth 2, 13 has depth 0.

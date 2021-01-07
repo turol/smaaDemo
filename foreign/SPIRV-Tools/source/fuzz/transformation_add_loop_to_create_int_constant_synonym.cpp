@@ -53,8 +53,8 @@ bool TransformationAddLoopToCreateIntConstantSynonym::IsApplicable(
     opt::IRContext* ir_context,
     const TransformationContext& transformation_context) const {
   // Check that |message_.constant_id|, |message_.initial_val_id| and
-  // |message_.step_val_id| are existing constants.
-
+  // |message_.step_val_id| are existing constants, and that their values are
+  // not irrelevant.
   auto constant = ir_context->get_constant_mgr()->FindDeclaredConstant(
       message_.constant_id());
   auto initial_val = ir_context->get_constant_mgr()->FindDeclaredConstant(
@@ -63,6 +63,14 @@ bool TransformationAddLoopToCreateIntConstantSynonym::IsApplicable(
       message_.step_val_id());
 
   if (!constant || !initial_val || !step_val) {
+    return false;
+  }
+  if (transformation_context.GetFactManager()->IdIsIrrelevant(
+          message_.constant_id()) ||
+      transformation_context.GetFactManager()->IdIsIrrelevant(
+          message_.initial_val_id()) ||
+      transformation_context.GetFactManager()->IdIsIrrelevant(
+          message_.step_val_id())) {
     return false;
   }
 
@@ -101,12 +109,15 @@ bool TransformationAddLoopToCreateIntConstantSynonym::IsApplicable(
     return false;
   }
 
-  // |message_.num_iterations_id| is an integer constant with bit width 32.
+  // |message_.num_iterations_id| must be a non-irrelevant integer constant with
+  // bit width 32.
   auto num_iterations = ir_context->get_constant_mgr()->FindDeclaredConstant(
       message_.num_iterations_id());
 
   if (!num_iterations || !num_iterations->AsIntConstant() ||
-      num_iterations->type()->AsInteger()->width() != 32) {
+      num_iterations->type()->AsInteger()->width() != 32 ||
+      transformation_context.GetFactManager()->IdIsIrrelevant(
+          message_.num_iterations_id())) {
     return false;
   }
 
@@ -178,6 +189,13 @@ bool TransformationAddLoopToCreateIntConstantSynonym::IsApplicable(
 
   // Check that the block exists and has a single predecessor.
   if (!block || ir_context->cfg()->preds(block->id()).size() != 1) {
+    return false;
+  }
+
+  // Check that the block is not dead.  If it is then the new loop would be
+  // dead and the data it computes would be irrelevant, so we would not be able
+  // to make a synonym.
+  if (transformation_context.GetFactManager()->BlockIsDead(block->id())) {
     return false;
   }
 
@@ -369,12 +387,12 @@ void TransformationAddLoopToCreateIntConstantSynonym::Apply(
       [this](opt::Instruction* instruction, uint32_t operand_index) {
         assert(instruction->opcode() != SpvOpLoopMerge &&
                instruction->opcode() != SpvOpSelectionMerge &&
-               instruction->opcode() != SpvOpSwitch &&
-               "The block should not be referenced by OpLoopMerge, "
-               "OpSelectionMerge or OpSwitch instructions, by construction.");
+               "The block should not be referenced by OpLoopMerge or "
+               "OpSelectionMerge, by construction.");
         // Replace all uses of the label inside branch instructions.
         if (instruction->opcode() == SpvOpBranch ||
-            instruction->opcode() == SpvOpBranchConditional) {
+            instruction->opcode() == SpvOpBranchConditional ||
+            instruction->opcode() == SpvOpSwitch) {
           instruction->SetOperand(operand_index, {message_.loop_id()});
         }
       });
@@ -421,6 +439,14 @@ TransformationAddLoopToCreateIntConstantSynonym::ToMessage() const {
   protobufs::Transformation result;
   *result.mutable_add_loop_to_create_int_constant_synonym() = message_;
   return result;
+}
+
+std::unordered_set<uint32_t>
+TransformationAddLoopToCreateIntConstantSynonym::GetFreshIds() const {
+  return {message_.syn_id(),          message_.loop_id(),
+          message_.ctr_id(),          message_.temp_id(),
+          message_.eventual_syn_id(), message_.incremented_ctr_id(),
+          message_.cond_id(),         message_.additional_block_id()};
 }
 
 }  // namespace fuzz

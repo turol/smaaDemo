@@ -16,6 +16,7 @@
 
 #include <algorithm>
 
+#include "gtest/gtest.h"
 #include "source/fuzz/pseudo_random_generator.h"
 #include "test/fuzz/fuzz_test_util.h"
 
@@ -188,18 +189,20 @@ TEST(FuzzerPassDonateModulesTest, BasicDonation) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_3;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context =
       BuildModule(env, consumer, recipient_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context =
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator prng(0);
   FuzzerContext fuzzer_context(&prng, 100);
@@ -213,7 +216,8 @@ TEST(FuzzerPassDonateModulesTest, BasicDonation) {
 
   // We just check that the result is valid.  Checking to what it should be
   // exactly equal to would be very fragile.
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 }
 
 TEST(FuzzerPassDonateModulesTest, DonationWithUniforms) {
@@ -266,18 +270,20 @@ TEST(FuzzerPassDonateModulesTest, DonationWithUniforms) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_3;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context = BuildModule(
       env, consumer, recipient_and_donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context = BuildModule(
       env, consumer, recipient_and_donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator prng(0);
   FuzzerContext fuzzer_context(&prng, 100);
@@ -289,7 +295,8 @@ TEST(FuzzerPassDonateModulesTest, DonationWithUniforms) {
 
   fuzzer_pass.DonateSingleModule(donor_context.get(), false);
 
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   std::string after_transformation = R"(
                OpCapability Shader
@@ -394,18 +401,20 @@ TEST(FuzzerPassDonateModulesTest, DonationWithInputAndOutputVariables) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_3;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context = BuildModule(
       env, consumer, recipient_and_donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context = BuildModule(
       env, consumer, recipient_and_donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator prng(0);
   FuzzerContext fuzzer_context(&prng, 100);
@@ -417,7 +426,8 @@ TEST(FuzzerPassDonateModulesTest, DonationWithInputAndOutputVariables) {
 
   fuzzer_pass.DonateSingleModule(donor_context.get(), false);
 
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   std::string after_transformation = R"(
                OpCapability Shader
@@ -486,18 +496,20 @@ TEST(FuzzerPassDonateModulesTest, DonateFunctionTypeWithDifferentPointers) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_5;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context = BuildModule(
       env, consumer, recipient_and_donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context = BuildModule(
       env, consumer, recipient_and_donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator prng(0);
   FuzzerContext fuzzer_context(&prng, 100);
@@ -511,7 +523,8 @@ TEST(FuzzerPassDonateModulesTest, DonateFunctionTypeWithDifferentPointers) {
 
   // We just check that the result is valid.  Checking to what it should be
   // exactly equal to would be very fragile.
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 }
 
 TEST(FuzzerPassDonateModulesTest, DonateOpConstantNull) {
@@ -553,18 +566,20 @@ TEST(FuzzerPassDonateModulesTest, DonateOpConstantNull) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_3;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context =
       BuildModule(env, consumer, recipient_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context =
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator prng(0);
   FuzzerContext fuzzer_context(&prng, 100);
@@ -578,7 +593,8 @@ TEST(FuzzerPassDonateModulesTest, DonateOpConstantNull) {
 
   // We just check that the result is valid.  Checking to what it should be
   // exactly equal to would be very fragile.
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 }
 
 TEST(FuzzerPassDonateModulesTest, DonateCodeThatUsesImages) {
@@ -678,18 +694,20 @@ TEST(FuzzerPassDonateModulesTest, DonateCodeThatUsesImages) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_3;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context =
       BuildModule(env, consumer, recipient_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context =
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator prng(0);
   FuzzerContext fuzzer_context(&prng, 100);
@@ -703,7 +721,8 @@ TEST(FuzzerPassDonateModulesTest, DonateCodeThatUsesImages) {
 
   // We just check that the result is valid.  Checking to what it should be
   // exactly equal to would be very fragile.
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 }
 
 TEST(FuzzerPassDonateModulesTest, DonateCodeThatUsesSampler) {
@@ -771,18 +790,20 @@ TEST(FuzzerPassDonateModulesTest, DonateCodeThatUsesSampler) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_3;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context =
       BuildModule(env, consumer, recipient_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context =
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator prng(0);
   FuzzerContext fuzzer_context(&prng, 100);
@@ -796,7 +817,8 @@ TEST(FuzzerPassDonateModulesTest, DonateCodeThatUsesSampler) {
 
   // We just check that the result is valid.  Checking to what it should be
   // exactly equal to would be very fragile.
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 }
 
 TEST(FuzzerPassDonateModulesTest, DonateCodeThatUsesImageStructField) {
@@ -900,18 +922,20 @@ TEST(FuzzerPassDonateModulesTest, DonateCodeThatUsesImageStructField) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_3;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context =
       BuildModule(env, consumer, recipient_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context =
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator prng(0);
   FuzzerContext fuzzer_context(&prng, 100);
@@ -925,7 +949,8 @@ TEST(FuzzerPassDonateModulesTest, DonateCodeThatUsesImageStructField) {
 
   // We just check that the result is valid.  Checking to what it should be
   // exactly equal to would be very fragile.
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 }
 
 TEST(FuzzerPassDonateModulesTest, DonateCodeThatUsesImageFunctionParameter) {
@@ -1033,18 +1058,20 @@ TEST(FuzzerPassDonateModulesTest, DonateCodeThatUsesImageFunctionParameter) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_3;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context =
       BuildModule(env, consumer, recipient_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context =
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator prng(0);
   FuzzerContext fuzzer_context(&prng, 100);
@@ -1058,7 +1085,8 @@ TEST(FuzzerPassDonateModulesTest, DonateCodeThatUsesImageFunctionParameter) {
 
   // We just check that the result is valid.  Checking to what it should be
   // exactly equal to would be very fragile.
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 }
 
 TEST(FuzzerPassDonateModulesTest, DonateShaderWithImageStorageClass) {
@@ -1112,18 +1140,20 @@ TEST(FuzzerPassDonateModulesTest, DonateShaderWithImageStorageClass) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_3;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context =
       BuildModule(env, consumer, recipient_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context =
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator prng(0);
   FuzzerContext fuzzer_context(&prng, 100);
@@ -1137,7 +1167,8 @@ TEST(FuzzerPassDonateModulesTest, DonateShaderWithImageStorageClass) {
 
   // We just check that the result is valid.  Checking to what it should be
   // exactly equal to would be very fragile.
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 }
 
 TEST(FuzzerPassDonateModulesTest, DonateComputeShaderWithRuntimeArray) {
@@ -1196,18 +1227,20 @@ TEST(FuzzerPassDonateModulesTest, DonateComputeShaderWithRuntimeArray) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_3;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context =
       BuildModule(env, consumer, recipient_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context =
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator prng(0);
   FuzzerContext fuzzer_context(&prng, 100);
@@ -1221,7 +1254,8 @@ TEST(FuzzerPassDonateModulesTest, DonateComputeShaderWithRuntimeArray) {
 
   // We just check that the result is valid.  Checking to what it should be
   // exactly equal to would be very fragile.
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 }
 
 TEST(FuzzerPassDonateModulesTest, DonateComputeShaderWithRuntimeArrayLivesafe) {
@@ -1297,18 +1331,20 @@ TEST(FuzzerPassDonateModulesTest, DonateComputeShaderWithRuntimeArrayLivesafe) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_3;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context =
       BuildModule(env, consumer, recipient_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context =
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator prng(0);
   FuzzerContext fuzzer_context(&prng, 100);
@@ -1322,7 +1358,8 @@ TEST(FuzzerPassDonateModulesTest, DonateComputeShaderWithRuntimeArrayLivesafe) {
 
   // We just check that the result is valid.  Checking to what it should be
   // exactly equal to would be very fragile.
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 }
 
 TEST(FuzzerPassDonateModulesTest, DonateComputeShaderWithWorkgroupVariables) {
@@ -1366,18 +1403,20 @@ TEST(FuzzerPassDonateModulesTest, DonateComputeShaderWithWorkgroupVariables) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_3;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context =
       BuildModule(env, consumer, recipient_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context =
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator prng(0);
   FuzzerContext fuzzer_context(&prng, 100);
@@ -1391,7 +1430,8 @@ TEST(FuzzerPassDonateModulesTest, DonateComputeShaderWithWorkgroupVariables) {
 
   // We just check that the result is valid.  Checking to what it should be
   // exactly equal to would be very fragile.
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 }
 
 TEST(FuzzerPassDonateModulesTest, DonateComputeShaderWithAtomics) {
@@ -1473,18 +1513,20 @@ TEST(FuzzerPassDonateModulesTest, DonateComputeShaderWithAtomics) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_3;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context =
       BuildModule(env, consumer, recipient_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context =
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator prng(0);
   FuzzerContext fuzzer_context(&prng, 100);
@@ -1498,7 +1540,8 @@ TEST(FuzzerPassDonateModulesTest, DonateComputeShaderWithAtomics) {
 
   // We just check that the result is valid.  Checking to what it should be
   // exactly equal to would be very fragile.
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 }
 
 TEST(FuzzerPassDonateModulesTest, Miscellaneous1) {
@@ -1654,18 +1697,20 @@ TEST(FuzzerPassDonateModulesTest, Miscellaneous1) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_5;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context =
       BuildModule(env, consumer, recipient_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context =
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator rng(0);
   FuzzerContext fuzzer_context(&rng, 100);
@@ -1679,7 +1724,8 @@ TEST(FuzzerPassDonateModulesTest, Miscellaneous1) {
 
   // We just check that the result is valid.  Checking to what it should be
   // exactly equal to would be very fragile.
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 }
 
 TEST(FuzzerPassDonateModulesTest, OpSpecConstantInstructions) {
@@ -1723,18 +1769,20 @@ TEST(FuzzerPassDonateModulesTest, OpSpecConstantInstructions) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_3;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context =
       BuildModule(env, consumer, recipient_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context =
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator prng(0);
   FuzzerContext fuzzer_context(&prng, 100);
@@ -1747,7 +1795,8 @@ TEST(FuzzerPassDonateModulesTest, OpSpecConstantInstructions) {
   fuzzer_pass.DonateSingleModule(donor_context.get(), false);
 
   // Check that the module is valid first.
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   std::string expected_shader = R"(
                OpCapability Shader
@@ -1877,18 +1926,20 @@ TEST(FuzzerPassDonateModulesTest, DonationSupportsOpTypeRuntimeArray) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_0;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context =
       BuildModule(env, consumer, recipient_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context =
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator rng(0);
   FuzzerContext fuzzer_context(&rng, 100);
@@ -1900,7 +1951,8 @@ TEST(FuzzerPassDonateModulesTest, DonationSupportsOpTypeRuntimeArray) {
 
   fuzzer_pass.DonateSingleModule(donor_context.get(), false);
 
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 }
 
 TEST(FuzzerPassDonateModulesTest, HandlesCapabilities) {
@@ -1947,18 +1999,20 @@ TEST(FuzzerPassDonateModulesTest, HandlesCapabilities) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_3;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context =
       BuildModule(env, consumer, recipient_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context =
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator rng(0);
   FuzzerContext fuzzer_context(&rng, 100);
@@ -1994,7 +2048,8 @@ TEST(FuzzerPassDonateModulesTest, HandlesCapabilities) {
   fuzzer_pass.DonateSingleModule(donor_context.get(), false);
 
   // Check that donation was successful.
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   std::string after_transformation = R"(
                OpCapability Shader
@@ -2177,18 +2232,20 @@ TEST(FuzzerPassDonateModulesTest, HandlesOpPhisInMergeBlock) {
 
   const auto env = SPV_ENV_UNIVERSAL_1_3;
   const auto consumer = nullptr;
+  spvtools::ValidatorOptions validator_options;
+
   const auto recipient_context =
       BuildModule(env, consumer, recipient_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 
   const auto donor_context =
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, donor_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      donor_context.get(), validator_options, kConsoleMessageConsumer));
 
-  FactManager fact_manager(recipient_context.get());
-  spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(recipient_context.get()), validator_options);
 
   PseudoRandomGenerator prng(0);
   FuzzerContext fuzzer_context(&prng, 100);
@@ -2202,7 +2259,8 @@ TEST(FuzzerPassDonateModulesTest, HandlesOpPhisInMergeBlock) {
 
   // We just check that the result is valid. Checking to what it should be
   // exactly equal to would be very fragile.
-  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+      recipient_context.get(), validator_options, kConsoleMessageConsumer));
 }
 
 }  // namespace

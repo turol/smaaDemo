@@ -14,6 +14,8 @@
 
 #include "source/fuzz/transformation_add_type_float.h"
 
+#include "gtest/gtest.h"
+#include "source/fuzz/fuzzer_util.h"
 #include "test/fuzz/fuzz_test_util.h"
 
 namespace spvtools {
@@ -44,13 +46,11 @@ TEST(TransformationAddTypeFloatTest, IsApplicable) {
   const auto consumer = nullptr;
   const auto context =
       BuildModule(env, consumer, reference_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   // Tests non-fresh id.
   auto transformation = TransformationAddTypeFloat(1, 32);
   ASSERT_FALSE(
@@ -96,24 +96,22 @@ TEST(TransformationAddTypeFloatTest, Apply) {
   const auto consumer = nullptr;
   const auto context =
       BuildModule(env, consumer, reference_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   // Adds 16-bit float type.
   auto transformation = TransformationAddTypeFloat(6, 16);
-  transformation.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation, context.get(), &transformation_context);
 
   // Adds 32-bit float type.
   transformation = TransformationAddTypeFloat(7, 32);
-  transformation.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation, context.get(), &transformation_context);
 
   // Adds 64-bit float type.
   transformation = TransformationAddTypeFloat(8, 64);
-  transformation.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation, context.get(), &transformation_context);
 
   std::string variant_shader = R"(
          OpCapability Shader
@@ -137,7 +135,8 @@ TEST(TransformationAddTypeFloatTest, Apply) {
          OpFunctionEnd
   )";
 
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
   ASSERT_TRUE(IsEqual(env, variant_shader, context.get()));
 }
 

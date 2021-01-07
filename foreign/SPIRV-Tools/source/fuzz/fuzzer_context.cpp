@@ -31,8 +31,8 @@ const std::pair<uint32_t, uint32_t> kChanceOfAddingAnotherPassToPassLoop = {85,
 const std::pair<uint32_t, uint32_t> kChanceOfAddingAnotherStructField = {20,
                                                                          90};
 const std::pair<uint32_t, uint32_t> kChanceOfAddingArrayOrStructType = {20, 90};
-const std::pair<uint32_t, uint32_t> kChanceOfAddingBitInstructionSynonym = {20,
-                                                                            90};
+const std::pair<uint32_t, uint32_t> kChanceOfAddingBitInstructionSynonym = {5,
+                                                                            20};
 const std::pair<uint32_t, uint32_t>
     kChanceOfAddingBothBranchesWhenReplacingOpSelect = {40, 60};
 const std::pair<uint32_t, uint32_t> kChanceOfAddingCompositeInsert = {20, 50};
@@ -99,6 +99,7 @@ const std::pair<uint32_t, uint32_t> kChanceOfMakingDonorLivesafe = {40, 60};
 const std::pair<uint32_t, uint32_t> kChanceOfMakingVectorOperationDynamic = {
     20, 90};
 const std::pair<uint32_t, uint32_t> kChanceOfMergingBlocks = {20, 95};
+const std::pair<uint32_t, uint32_t> kChanceOfMergingFunctionReturns = {20, 90};
 const std::pair<uint32_t, uint32_t> kChanceOfMovingBlockDown = {20, 50};
 const std::pair<uint32_t, uint32_t> kChanceOfMutatingPointer = {20, 90};
 const std::pair<uint32_t, uint32_t> kChanceOfObfuscatingConstant = {10, 90};
@@ -106,11 +107,15 @@ const std::pair<uint32_t, uint32_t> kChanceOfOutliningFunction = {10, 90};
 const std::pair<uint32_t, uint32_t> kChanceOfPermutingInstructions = {20, 70};
 const std::pair<uint32_t, uint32_t> kChanceOfPermutingParameters = {30, 90};
 const std::pair<uint32_t, uint32_t> kChanceOfPermutingPhiOperands = {30, 90};
+const std::pair<uint32_t, uint32_t> kChanceOfPropagatingInstructionsDown = {20,
+                                                                            70};
 const std::pair<uint32_t, uint32_t> kChanceOfPropagatingInstructionsUp = {20,
                                                                           70};
 const std::pair<uint32_t, uint32_t> kChanceOfPushingIdThroughVariable = {5, 50};
 const std::pair<uint32_t, uint32_t>
     kChanceOfReplacingAddSubMulWithCarryingExtended = {20, 70};
+const std::pair<uint32_t, uint32_t>
+    kChanceOfReplacingBranchFromDeadBlockWithExit = {10, 65};
 const std::pair<uint32_t, uint32_t> kChanceOfReplacingCopyMemoryWithLoadStore =
     {20, 90};
 const std::pair<uint32_t, uint32_t> kChanceOfReplacingCopyObjectWithStoreLoad =
@@ -134,6 +139,8 @@ const std::pair<uint32_t, uint32_t> kChanceOfSwappingConditionalBranchOperands =
     {10, 70};
 const std::pair<uint32_t, uint32_t> kChanceOfTogglingAccessChainInstruction = {
     20, 90};
+const std::pair<uint32_t, uint32_t> kChanceOfWrappingRegionInSelection = {70,
+                                                                          90};
 
 // Default limits for various quantities that are chosen during fuzzing.
 // Keep them in alphabetical order.
@@ -275,6 +282,8 @@ FuzzerContext::FuzzerContext(RandomGenerator* random_generator,
   chance_of_making_vector_operation_dynamic_ =
       ChooseBetweenMinAndMax(kChanceOfMakingVectorOperationDynamic);
   chance_of_merging_blocks_ = ChooseBetweenMinAndMax(kChanceOfMergingBlocks);
+  chance_of_merging_function_returns_ =
+      ChooseBetweenMinAndMax(kChanceOfMergingFunctionReturns);
   chance_of_moving_block_down_ =
       ChooseBetweenMinAndMax(kChanceOfMovingBlockDown);
   chance_of_mutating_pointer_ =
@@ -289,12 +298,16 @@ FuzzerContext::FuzzerContext(RandomGenerator* random_generator,
       ChooseBetweenMinAndMax(kChanceOfPermutingParameters);
   chance_of_permuting_phi_operands_ =
       ChooseBetweenMinAndMax(kChanceOfPermutingPhiOperands);
+  chance_of_propagating_instructions_down_ =
+      ChooseBetweenMinAndMax(kChanceOfPropagatingInstructionsDown);
   chance_of_propagating_instructions_up_ =
       ChooseBetweenMinAndMax(kChanceOfPropagatingInstructionsUp);
   chance_of_pushing_id_through_variable_ =
       ChooseBetweenMinAndMax(kChanceOfPushingIdThroughVariable);
   chance_of_replacing_add_sub_mul_with_carrying_extended_ =
       ChooseBetweenMinAndMax(kChanceOfReplacingAddSubMulWithCarryingExtended);
+  chance_of_replacing_branch_from_dead_block_with_exit_ =
+      ChooseBetweenMinAndMax(kChanceOfReplacingBranchFromDeadBlockWithExit);
   chance_of_replacing_copy_memory_with_load_store_ =
       ChooseBetweenMinAndMax(kChanceOfReplacingCopyMemoryWithLoadStore);
   chance_of_replacing_copyobject_with_store_load_ =
@@ -320,6 +333,8 @@ FuzzerContext::FuzzerContext(RandomGenerator* random_generator,
       ChooseBetweenMinAndMax(kChanceOfSwappingConditionalBranchOperands);
   chance_of_toggling_access_chain_instruction_ =
       ChooseBetweenMinAndMax(kChanceOfTogglingAccessChainInstruction);
+  chance_of_wrapping_region_in_selection_ =
+      ChooseBetweenMinAndMax(kChanceOfWrappingRegionInSelection);
 }
 
 FuzzerContext::~FuzzerContext() = default;

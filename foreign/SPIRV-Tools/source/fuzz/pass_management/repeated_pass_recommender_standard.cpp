@@ -63,10 +63,12 @@ RepeatedPassRecommenderStandard::GetFuturePassRecommendations(
     // - Dead blocks are great for adding function calls
     // - Dead blocks are also great for adding loads and stores
     // - The guard associated with a dead block can be obfuscated
-    return RandomOrderAndNonNull({pass_instances_->GetAddFunctionCalls(),
-                                  pass_instances_->GetAddLoads(),
-                                  pass_instances_->GetAddStores(),
-                                  pass_instances_->GetObfuscateConstants()});
+    // - Branches from dead blocks may be replaced with exits
+    return RandomOrderAndNonNull(
+        {pass_instances_->GetAddFunctionCalls(), pass_instances_->GetAddLoads(),
+         pass_instances_->GetAddStores(),
+         pass_instances_->GetObfuscateConstants(),
+         pass_instances_->GetReplaceBranchesFromDeadBlocksWithExits()});
   }
   if (&pass == pass_instances_->GetAddDeadBreaks()) {
     // - The guard of the dead break is a good candidate for obfuscation
@@ -120,7 +122,8 @@ RepeatedPassRecommenderStandard::GetFuturePassRecommendations(
     //   outlining functions.
     return RandomOrderAndNonNull(
         {pass_instances_->GetDuplicateRegionsWithSelections(),
-         pass_instances_->GetOutlineFunctions()});
+         pass_instances_->GetOutlineFunctions(),
+         pass_instances_->GetWrapRegionsInSelections()});
   }
   if (&pass == pass_instances_->GetAddLoopsToCreateIntConstantSynonyms()) {
     // - New synonyms can be applied
@@ -187,8 +190,13 @@ RepeatedPassRecommenderStandard::GetFuturePassRecommendations(
   if (&pass == pass_instances_->GetDonateModules()) {
     // - New functions in the module can be called
     // - Donated dead functions produce irrelevant ids, which can be replaced
-    return RandomOrderAndNonNull({pass_instances_->GetAddFunctionCalls(),
-                                  pass_instances_->GetReplaceIrrelevantIds()});
+    // - Donated functions are good candidates for having their returns merged
+    // - Donated dead functions may allow branches to be replaced with exits
+    return RandomOrderAndNonNull(
+        {pass_instances_->GetAddFunctionCalls(),
+         pass_instances_->GetReplaceIrrelevantIds(),
+         pass_instances_->GetMergeFunctionReturns(),
+         pass_instances_->GetReplaceBranchesFromDeadBlocksWithExits()});
   }
   if (&pass == pass_instances_->GetDuplicateRegionsWithSelections()) {
     // - Parts of duplicated regions can be outlined
@@ -220,6 +228,11 @@ RepeatedPassRecommenderStandard::GetFuturePassRecommendations(
     //   different way
     return RandomOrderAndNonNull({pass_instances_->GetSplitBlocks()});
   }
+  if (&pass == pass_instances_->GetMergeFunctionReturns()) {
+    // - Functions without early returns are more likely to be able to be
+    //   inlined.
+    return RandomOrderAndNonNull({pass_instances_->GetInlineFunctions()});
+  }
   if (&pass == pass_instances_->GetMutatePointers()) {
     // - This creates irrelevant ids, which can be replaced
     return RandomOrderAndNonNull({pass_instances_->GetReplaceIrrelevantIds()});
@@ -247,6 +260,13 @@ RepeatedPassRecommenderStandard::GetFuturePassRecommendations(
     // No obvious follow-on passes
     return {};
   }
+  if (&pass == pass_instances_->GetPropagateInstructionsDown()) {
+    // - This fuzzer pass might create new synonyms that can later be applied.
+    // - This fuzzer pass might create irrelevant ids that can later be
+    //   replaced.
+    return RandomOrderAndNonNull({pass_instances_->GetApplyIdSynonyms(),
+                                  pass_instances_->GetReplaceIrrelevantIds()});
+  }
   if (&pass == pass_instances_->GetPropagateInstructionsUp()) {
     // No obvious follow-on passes
     return {};
@@ -258,6 +278,11 @@ RepeatedPassRecommenderStandard::GetFuturePassRecommendations(
   if (&pass == pass_instances_->GetReplaceAddsSubsMulsWithCarryingExtended()) {
     // No obvious follow-on passes
     return {};
+  }
+  if (&pass == pass_instances_->GetReplaceBranchesFromDeadBlocksWithExits()) {
+    // - Changing a branch to OpReturnValue introduces an irrelevant id, which
+    //   can be replaced
+    return RandomOrderAndNonNull({pass_instances_->GetReplaceIrrelevantIds()});
   }
   if (&pass == pass_instances_->GetReplaceCopyMemoriesWithLoadsStores()) {
     // No obvious follow-on passes
@@ -307,6 +332,16 @@ RepeatedPassRecommenderStandard::GetFuturePassRecommendations(
   if (&pass == pass_instances_->GetSwapBranchConditionalOperands()) {
     // No obvious follow-on passes
     return {};
+  }
+  if (&pass == pass_instances_->GetWrapRegionsInSelections()) {
+    // - This pass uses an irrelevant boolean constant - we can replace it with
+    //   something more interesting.
+    // - We can obfuscate that very constant as well.
+    // - We can flatten created selection construct.
+    return RandomOrderAndNonNull(
+        {pass_instances_->GetObfuscateConstants(),
+         pass_instances_->GetReplaceIrrelevantIds(),
+         pass_instances_->GetFlattenConditionalBranches()});
   }
   assert(false && "Unreachable: every fuzzer pass should be dealt with.");
   return {};

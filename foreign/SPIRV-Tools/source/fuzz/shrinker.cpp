@@ -16,6 +16,7 @@
 
 #include <sstream>
 
+#include "source/fuzz/added_function_reducer.h"
 #include "source/fuzz/pseudo_random_generator.h"
 #include "source/fuzz/replayer.h"
 #include "source/opt/build_module.h"
@@ -70,7 +71,7 @@ Shrinker::Shrinker(
     uint32_t step_limit, bool validate_during_replay,
     spv_validator_options validator_options)
     : target_env_(target_env),
-      consumer_(consumer),
+      consumer_(std::move(consumer)),
       binary_in_(binary_in),
       initial_facts_(initial_facts),
       transformation_sequence_in_(transformation_sequence_in),
@@ -109,8 +110,7 @@ Shrinker::ShrinkerResult Shrinker::Run() {
                transformation_sequence_in_,
                static_cast<uint32_t>(
                    transformation_sequence_in_.transformation_size()),
-               /* No overflow ids */ 0, validate_during_replay_,
-               validator_options_)
+               validate_during_replay_, validator_options_)
           .Run();
   if (initial_replay_result.status !=
       Replayer::ReplayerResultStatus::kComplete) {
@@ -120,8 +120,9 @@ Shrinker::ShrinkerResult Shrinker::Run() {
   // Get the binary that results from running these transformations, and the
   // subsequence of the initial transformations that actually apply (in
   // principle this could be a strict subsequence).
-  std::vector<uint32_t> current_best_binary =
-      std::move(initial_replay_result.transformed_binary);
+  std::vector<uint32_t> current_best_binary;
+  initial_replay_result.transformed_module->module()->ToBinary(
+      &current_best_binary, false);
   protobufs::TransformationSequence current_best_transformations =
       std::move(initial_replay_result.applied_transformations);
 
@@ -133,12 +134,6 @@ Shrinker::ShrinkerResult Shrinker::Run() {
     return {ShrinkerResultStatus::kInitialBinaryNotInteresting,
             std::vector<uint32_t>(), protobufs::TransformationSequence()};
   }
-
-  // The largest id used by the module before any shrinking has been applied
-  // serves as the first id that can be used for overflow purposes.
-  const uint32_t first_overflow_id = GetIdBound(current_best_binary);
-  assert(first_overflow_id >= GetIdBound(binary_in_) &&
-         "Applying transformations should only increase a module's id bound.");
 
   uint32_t attempt = 0;  // Keeps track of the number of shrink attempts that
                          // have been tried, whether successful or not.
@@ -201,7 +196,7 @@ Shrinker::ShrinkerResult Shrinker::Run() {
               transformations_with_chunk_removed,
               static_cast<uint32_t>(
                   transformations_with_chunk_removed.transformation_size()),
-              first_overflow_id, validate_during_replay_, validator_options_)
+              validate_during_replay_, validator_options_)
               .Run();
       if (replay_result.status != Replayer::ReplayerResultStatus::kComplete) {
         // Replay should not fail; if it does, we need to abort shrinking.
@@ -215,12 +210,14 @@ Shrinker::ShrinkerResult Shrinker::Run() {
           "Removing this chunk of transformations should not have an effect "
           "on earlier chunks.");
 
-      if (interestingness_function_(replay_result.transformed_binary,
-                                    attempt)) {
+      std::vector<uint32_t> transformed_binary;
+      replay_result.transformed_module->module()->ToBinary(&transformed_binary,
+                                                           false);
+      if (interestingness_function_(transformed_binary, attempt)) {
         // If the binary arising from the smaller transformation sequence is
         // interesting, this becomes our current best binary and transformation
         // sequence.
-        current_best_binary = std::move(replay_result.transformed_binary);
+        current_best_binary = std::move(transformed_binary);
         current_best_transformations =
             std::move(replay_result.applied_transformations);
         progress_this_round = true;
@@ -240,6 +237,51 @@ Shrinker::ShrinkerResult Shrinker::Run() {
            NumRemainingTransformations(current_best_transformations)) {
       chunk_size /= 2;
     }
+  }
+
+  // We now use spirv-reduce to minimise the functions associated with any
+  // AddFunction transformations that remain.
+  //
+  // Consider every remaining transformation.
+  for (uint32_t transformation_index = 0;
+       attempt < step_limit_ &&
+       transformation_index <
+           static_cast<uint32_t>(
+               current_best_transformations.transformation_size());
+       transformation_index++) {
+    // Skip all transformations apart from TransformationAddFunction.
+    if (!current_best_transformations.transformation(transformation_index)
+             .has_add_function()) {
+      continue;
+    }
+    // Invoke spirv-reduce on the function encoded in this AddFunction
+    // transformation.  The details of this are rather involved, and so are
+    // encapsulated in a separate class.
+    auto added_function_reducer_result =
+        AddedFunctionReducer(target_env_, consumer_, binary_in_, initial_facts_,
+                             current_best_transformations, transformation_index,
+                             interestingness_function_, validate_during_replay_,
+                             validator_options_, step_limit_, attempt)
+            .Run();
+    // Reducing the added function should succeed.  If it doesn't, we report
+    // a shrinking error.
+    if (added_function_reducer_result.status !=
+        AddedFunctionReducer::AddedFunctionReducerResultStatus::kComplete) {
+      return {ShrinkerResultStatus::kAddedFunctionReductionFailed,
+              std::vector<uint32_t>(), protobufs::TransformationSequence()};
+    }
+    assert(current_best_transformations.transformation_size() ==
+               added_function_reducer_result.applied_transformations
+                   .transformation_size() &&
+           "The number of transformations should not have changed.");
+    current_best_binary =
+        std::move(added_function_reducer_result.transformed_binary);
+    current_best_transformations =
+        std::move(added_function_reducer_result.applied_transformations);
+    // The added function reducer reports how many reduction attempts
+    // spirv-reduce took when reducing the function.  We regard each of these
+    // as a shrinker attempt.
+    attempt += added_function_reducer_result.num_reduction_attempts;
   }
 
   // Indicate whether shrinking completed or was truncated due to reaching the

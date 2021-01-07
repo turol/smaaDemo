@@ -14,6 +14,8 @@
 
 #include "source/fuzz/transformation_replace_opphi_id_from_dead_predecessor.h"
 
+#include "gtest/gtest.h"
+#include "source/fuzz/fuzzer_util.h"
 #include "test/fuzz/fuzz_test_util.h"
 
 namespace spvtools {
@@ -75,11 +77,11 @@ TEST(TransformationReplaceOpPhiIdFromDeadPredecessorTest, Inapplicable) {
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
 
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-  ASSERT_TRUE(IsValid(env, context.get()));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   // Record the fact that blocks 20, 17, 28 are dead.
   transformation_context.GetFactManager()->AddFactBlockIsDead(20);
@@ -117,11 +119,11 @@ TEST(TransformationReplaceOpPhiIdFromDeadPredecessorTest, Apply) {
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
 
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-  ASSERT_TRUE(IsValid(env, context.get()));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   // Record the fact that blocks 20, 17, 28 are dead.
   transformation_context.GetFactManager()->AddFactBlockIsDead(20);
@@ -132,21 +134,25 @@ TEST(TransformationReplaceOpPhiIdFromDeadPredecessorTest, Apply) {
       TransformationReplaceOpPhiIdFromDeadPredecessor(25, 20, 18);
   ASSERT_TRUE(
       transformation1.IsApplicable(context.get(), transformation_context));
-  transformation1.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation1, context.get(),
+                        &transformation_context);
 
   auto transformation2 =
       TransformationReplaceOpPhiIdFromDeadPredecessor(30, 28, 29);
   ASSERT_TRUE(
       transformation2.IsApplicable(context.get(), transformation_context));
-  transformation2.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation2, context.get(),
+                        &transformation_context);
 
   auto transformation3 =
       TransformationReplaceOpPhiIdFromDeadPredecessor(29, 17, 10);
   ASSERT_TRUE(
       transformation3.IsApplicable(context.get(), transformation_context));
-  transformation3.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation3, context.get(),
+                        &transformation_context);
 
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   std::string after_transformations = R"(
                OpCapability Shader

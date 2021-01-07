@@ -55,32 +55,39 @@ DataSynonymAndIdEquationFacts::DataSynonymAndIdEquationFacts(
     opt::IRContext* ir_context)
     : ir_context_(ir_context) {}
 
-void DataSynonymAndIdEquationFacts::AddFact(
+bool DataSynonymAndIdEquationFacts::MaybeAddFact(
     const protobufs::FactDataSynonym& fact,
     const DeadBlockFacts& dead_block_facts,
     const IrrelevantValueFacts& irrelevant_value_facts) {
-  (void)dead_block_facts;        // Keep release compilers happy.
-  (void)irrelevant_value_facts;  // Keep release compilers happy.
-  assert(!irrelevant_value_facts.IdIsIrrelevant(fact.data1().object(),
-                                                dead_block_facts) &&
-         !irrelevant_value_facts.IdIsIrrelevant(fact.data2().object(),
-                                                dead_block_facts) &&
-         "Irrelevant ids cannot be synonymous with other ids.");
+  if (irrelevant_value_facts.IdIsIrrelevant(fact.data1().object(),
+                                            dead_block_facts) ||
+      irrelevant_value_facts.IdIsIrrelevant(fact.data2().object(),
+                                            dead_block_facts)) {
+    // Irrelevant ids cannot be synonymous with other ids.
+    return false;
+  }
 
   // Add the fact, including all facts relating sub-components of the data
   // descriptors that are involved.
   AddDataSynonymFactRecursive(fact.data1(), fact.data2());
+  return true;
 }
 
-void DataSynonymAndIdEquationFacts::AddFact(
+bool DataSynonymAndIdEquationFacts::MaybeAddFact(
     const protobufs::FactIdEquation& fact,
     const DeadBlockFacts& dead_block_facts,
     const IrrelevantValueFacts& irrelevant_value_facts) {
-  (void)dead_block_facts;        // Keep release compilers happy.
-  (void)irrelevant_value_facts;  // Keep release compilers happy.
-  assert(
-      !irrelevant_value_facts.IdIsIrrelevant(fact.lhs_id(), dead_block_facts) &&
-      "Irrelevant ids are not allowed.");
+  if (irrelevant_value_facts.IdIsIrrelevant(fact.lhs_id(), dead_block_facts)) {
+    // Irrelevant ids cannot participate in IdEquation facts.
+    return false;
+  }
+
+  for (auto id : fact.rhs_id()) {
+    if (irrelevant_value_facts.IdIsIrrelevant(id, dead_block_facts)) {
+      // Irrelevant ids cannot participate in IdEquation facts.
+      return false;
+    }
+  }
 
   protobufs::DataDescriptor lhs_dd = MakeDataDescriptor(fact.lhs_id(), {});
 
@@ -91,9 +98,6 @@ void DataSynonymAndIdEquationFacts::AddFact(
   // equation.
   std::vector<const protobufs::DataDescriptor*> rhs_dds;
   for (auto rhs_id : fact.rhs_id()) {
-    assert(!irrelevant_value_facts.IdIsIrrelevant(rhs_id, dead_block_facts) &&
-           "Irrelevant ids are not allowed.");
-
     // Register a data descriptor based on this id in the equivalence relation
     // if needed, and then record the equivalence class representative.
     rhs_dds.push_back(RegisterDataDescriptor(MakeDataDescriptor(rhs_id, {})));
@@ -101,6 +105,7 @@ void DataSynonymAndIdEquationFacts::AddFact(
 
   // Now add the fact.
   AddEquationFactRecursive(lhs_dd, static_cast<SpvOp>(fact.opcode()), rhs_dds);
+  return true;
 }
 
 DataSynonymAndIdEquationFacts::OperationSet
@@ -400,8 +405,8 @@ void DataSynonymAndIdEquationFacts::ComputeCompositeDataSynonymFacts(
         fuzzerutil::RepeatedFieldToVector(dd2.index());
     extended_indices2.push_back(i);
     AddDataSynonymFactRecursive(
-        MakeDataDescriptor(dd1.object(), std::move(extended_indices1)),
-        MakeDataDescriptor(dd2.object(), std::move(extended_indices2)));
+        MakeDataDescriptor(dd1.object(), extended_indices1),
+        MakeDataDescriptor(dd2.object(), extended_indices2));
 
     if (i < kCompositeElementBound - 1 || i == num_composite_elements - 1) {
       // We have not reached the bound yet, or have already skipped ahead to the
@@ -576,10 +581,18 @@ void DataSynonymAndIdEquationFacts::ComputeClosureOfFacts(
               synonymous_.IsEquivalent(dd1_prefix, dd2_prefix)) {
             continue;
           }
-
+          opt::Instruction* dd1_object =
+              ir_context_->get_def_use_mgr()->GetDef(dd1->object());
+          opt::Instruction* dd2_object =
+              ir_context_->get_def_use_mgr()->GetDef(dd2->object());
+          if (dd1_object == nullptr || dd2_object == nullptr) {
+            // The objects are not both available in the module, so we cannot
+            // investigate the types of the associated data descriptors; we need
+            // to move on.
+            continue;
+          }
           // Get the type of obj_1
-          auto dd1_root_type_id =
-              ir_context_->get_def_use_mgr()->GetDef(dd1->object())->type_id();
+          auto dd1_root_type_id = dd1_object->type_id();
           // Use this type, together with a_1, ..., a_m, to get the type of
           // obj_1[a_1, ..., a_m].
           auto dd1_prefix_type = fuzzerutil::WalkCompositeTypeIndices(
@@ -587,8 +600,7 @@ void DataSynonymAndIdEquationFacts::ComputeClosureOfFacts(
 
           // Similarly, get the type of obj_2 and use it to get the type of
           // obj_2[b_1, ..., b_n].
-          auto dd2_root_type_id =
-              ir_context_->get_def_use_mgr()->GetDef(dd2->object())->type_id();
+          auto dd2_root_type_id = dd2_object->type_id();
           auto dd2_prefix_type = fuzzerutil::WalkCompositeTypeIndices(
               ir_context_, dd2_root_type_id, dd2_prefix.index());
 
@@ -862,17 +874,30 @@ DataSynonymAndIdEquationFacts::GetSynonymsForId(uint32_t id) const {
 std::vector<const protobufs::DataDescriptor*>
 DataSynonymAndIdEquationFacts::GetSynonymsForDataDescriptor(
     const protobufs::DataDescriptor& data_descriptor) const {
+  std::vector<const protobufs::DataDescriptor*> result;
   if (synonymous_.Exists(data_descriptor)) {
-    return synonymous_.GetEquivalenceClass(data_descriptor);
+    for (auto dd : synonymous_.GetEquivalenceClass(data_descriptor)) {
+      // There may be data descriptors in the equivalence class whose base
+      // objects have been removed from the module.  We do not expose these
+      // data descriptors to clients of the fact manager.
+      if (ir_context_->get_def_use_mgr()->GetDef(dd->object()) != nullptr) {
+        result.push_back(dd);
+      }
+    }
   }
-  return {};
+  return result;
 }
 
 std::vector<uint32_t>
 DataSynonymAndIdEquationFacts::GetIdsForWhichSynonymsAreKnown() const {
   std::vector<uint32_t> result;
   for (auto& data_descriptor : synonymous_.GetAllKnownValues()) {
-    if (data_descriptor->index().empty()) {
+    // We skip any data descriptors whose base objects no longer exist in the
+    // module, and we restrict attention to data descriptors for plain ids,
+    // which have no indices.
+    if (ir_context_->get_def_use_mgr()->GetDef(data_descriptor->object()) !=
+            nullptr &&
+        data_descriptor->index().empty()) {
       result.push_back(data_descriptor->object());
     }
   }

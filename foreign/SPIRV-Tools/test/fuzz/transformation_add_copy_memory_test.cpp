@@ -14,6 +14,8 @@
 
 #include "source/fuzz/transformation_add_copy_memory.h"
 
+#include "gtest/gtest.h"
+#include "source/fuzz/fuzzer_util.h"
 #include "source/fuzz/instruction_descriptor.h"
 #include "test/fuzz/fuzz_test_util.h"
 
@@ -138,13 +140,11 @@ TEST(TransformationAddCopyMemoryTest, BasicTest) {
   const auto env = SPV_ENV_UNIVERSAL_1_3;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   // Target id is not fresh (59).
   ASSERT_FALSE(TransformationAddCopyMemory(
                    MakeInstructionDescriptor(27, SpvOpFunctionCall, 0), 59, 19,
@@ -242,9 +242,13 @@ TEST(TransformationAddCopyMemoryTest, BasicTest) {
         storage_classes[i % storage_classes.size()], initializers[i]);
     ASSERT_TRUE(
         transformation.IsApplicable(context.get(), transformation_context));
-    transformation.Apply(context.get(), &transformation_context);
-    ASSERT_TRUE(IsValid(env, context.get()));
-    ASSERT_TRUE(fact_manager.PointeeValueIsIrrelevant(fresh_id));
+    ApplyAndCheckFreshIds(transformation, context.get(),
+                          &transformation_context);
+    ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+        context.get(), validator_options, kConsoleMessageConsumer));
+    ASSERT_TRUE(
+        transformation_context.GetFactManager()->PointeeValueIsIrrelevant(
+            fresh_id));
     fresh_id++;
   }
 
@@ -378,6 +382,98 @@ TEST(TransformationAddCopyMemoryTest, BasicTest) {
   )";
 
   ASSERT_TRUE(IsEqual(env, expected, context.get()));
+}
+
+TEST(TransformationAddCopyMemoryTest, DisallowBufferBlockDecoration) {
+  std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %4 "main"
+               OpExecutionMode %4 LocalSize 1 1 1
+               OpSource ESSL 320
+               OpName %4 "main"
+               OpName %7 "buf"
+               OpMemberName %7 0 "a"
+               OpMemberName %7 1 "b"
+               OpName %9 ""
+               OpMemberDecorate %7 0 Offset 0
+               OpMemberDecorate %7 1 Offset 4
+               OpDecorate %7 BufferBlock
+               OpDecorate %9 DescriptorSet 0
+               OpDecorate %9 Binding 0
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeInt 32 1
+         %10 = OpConstant %6 42
+          %7 = OpTypeStruct %6 %6
+          %8 = OpTypePointer Uniform %7
+          %9 = OpVariable %8 Uniform
+         %50 = OpUndef %7
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_0;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+  spvtools::ValidatorOptions validator_options;
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
+  ASSERT_FALSE(
+      TransformationAddCopyMemory(MakeInstructionDescriptor(5, SpvOpReturn, 0),
+                                  100, 9, SpvStorageClassPrivate, 50)
+          .IsApplicable(context.get(), transformation_context));
+}
+
+TEST(TransformationAddCopyMemoryTest, DisallowBlockDecoration) {
+  std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %4 "main" %9
+               OpExecutionMode %4 LocalSize 1 1 1
+               OpSource ESSL 320
+               OpName %4 "main"
+               OpName %7 "buf"
+               OpMemberName %7 0 "a"
+               OpMemberName %7 1 "b"
+               OpName %9 ""
+               OpMemberDecorate %7 0 Offset 0
+               OpMemberDecorate %7 1 Offset 4
+               OpDecorate %7 Block
+               OpDecorate %9 DescriptorSet 0
+               OpDecorate %9 Binding 0
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeInt 32 1
+         %10 = OpConstant %6 42
+          %7 = OpTypeStruct %6 %6
+          %8 = OpTypePointer StorageBuffer %7
+          %9 = OpVariable %8 StorageBuffer
+         %50 = OpUndef %7
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_5;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+  spvtools::ValidatorOptions validator_options;
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
+  ASSERT_FALSE(
+      TransformationAddCopyMemory(MakeInstructionDescriptor(5, SpvOpReturn, 0),
+                                  100, 9, SpvStorageClassPrivate, 50)
+          .IsApplicable(context.get(), transformation_context));
 }
 
 }  // namespace

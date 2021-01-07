@@ -46,7 +46,8 @@ bool TransformationAddSpecConstantOp::IsApplicable(
   auto clone = fuzzerutil::CloneIRContext(ir_context);
   ApplyImpl(clone.get());
   return fuzzerutil::IsValid(clone.get(),
-                             transformation_context.GetValidatorOptions());
+                             transformation_context.GetValidatorOptions(),
+                             fuzzerutil::kSilentMessageConsumer);
 }
 
 void TransformationAddSpecConstantOp::Apply(
@@ -79,6 +80,11 @@ protobufs::Transformation TransformationAddSpecConstantOp::ToMessage() const {
   protobufs::Transformation result;
   *result.mutable_add_spec_constant_op() = message_;
   return result;
+}
+
+std::unordered_set<uint32_t> TransformationAddSpecConstantOp::GetFreshIds()
+    const {
+  return {message_.fresh_id()};
 }
 
 }  // namespace fuzz

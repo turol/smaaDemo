@@ -244,6 +244,9 @@ class FuzzerContext {
     return chance_of_making_vector_operation_dynamic_;
   }
   uint32_t GetChanceOfMergingBlocks() { return chance_of_merging_blocks_; }
+  uint32_t GetChanceOfMergingFunctionReturns() {
+    return chance_of_merging_function_returns_;
+  }
   uint32_t GetChanceOfMovingBlockDown() { return chance_of_moving_block_down_; }
   uint32_t GetChanceOfMutatingPointer() { return chance_of_mutating_pointer_; }
   uint32_t GetChanceOfObfuscatingConstant() {
@@ -261,6 +264,9 @@ class FuzzerContext {
   uint32_t GetChanceOfPermutingPhiOperands() {
     return chance_of_permuting_phi_operands_;
   }
+  uint32_t GetChanceOfPropagatingInstructionsDown() {
+    return chance_of_propagating_instructions_down_;
+  }
   uint32_t GetChanceOfPropagatingInstructionsUp() {
     return chance_of_propagating_instructions_up_;
   }
@@ -269,6 +275,9 @@ class FuzzerContext {
   }
   uint32_t GetChanceOfReplacingAddSubMulWithCarryingExtended() {
     return chance_of_replacing_add_sub_mul_with_carrying_extended_;
+  }
+  uint32_t GetChanceOfReplacingBranchFromDeadBlockWithExit() {
+    return chance_of_replacing_branch_from_dead_block_with_exit_;
   }
   uint32_t GetChanceOfReplacingCopyMemoryWithLoadStore() {
     return chance_of_replacing_copy_memory_with_load_store_;
@@ -306,6 +315,9 @@ class FuzzerContext {
   }
   uint32_t GetChanceOfTogglingAccessChainInstruction() {
     return chance_of_toggling_access_chain_instruction_;
+  }
+  uint32_t GetChanceOfWrappingRegionInSelection() {
+    return chance_of_wrapping_region_in_selection_;
   }
 
   // Other functions to control transformations. Keep them in alphabetical
@@ -449,6 +461,7 @@ class FuzzerContext {
   uint32_t chance_of_making_donor_livesafe_;
   uint32_t chance_of_making_vector_operation_dynamic_;
   uint32_t chance_of_merging_blocks_;
+  uint32_t chance_of_merging_function_returns_;
   uint32_t chance_of_moving_block_down_;
   uint32_t chance_of_mutating_pointer_;
   uint32_t chance_of_obfuscating_constant_;
@@ -456,9 +469,11 @@ class FuzzerContext {
   uint32_t chance_of_permuting_instructions_;
   uint32_t chance_of_permuting_parameters_;
   uint32_t chance_of_permuting_phi_operands_;
+  uint32_t chance_of_propagating_instructions_down_;
   uint32_t chance_of_propagating_instructions_up_;
   uint32_t chance_of_pushing_id_through_variable_;
   uint32_t chance_of_replacing_add_sub_mul_with_carrying_extended_;
+  uint32_t chance_of_replacing_branch_from_dead_block_with_exit_;
   uint32_t chance_of_replacing_copy_memory_with_load_store_;
   uint32_t chance_of_replacing_copyobject_with_store_load_;
   uint32_t chance_of_replacing_id_with_synonym_;
@@ -472,6 +487,7 @@ class FuzzerContext {
   uint32_t chance_of_splitting_block_;
   uint32_t chance_of_swapping_conditional_branch_operands_;
   uint32_t chance_of_toggling_access_chain_instruction_;
+  uint32_t chance_of_wrapping_region_in_selection_;
 
   // Limits associated with various quantities for which random values are
   // chosen during fuzzing.

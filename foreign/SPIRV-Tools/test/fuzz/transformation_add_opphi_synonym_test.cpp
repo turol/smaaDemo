@@ -14,6 +14,8 @@
 
 #include "source/fuzz/transformation_add_opphi_synonym.h"
 
+#include "gtest/gtest.h"
+#include "source/fuzz/fuzzer_util.h"
 #include "test/fuzz/fuzz_test_util.h"
 
 namespace spvtools {
@@ -31,12 +33,12 @@ protobufs::Fact MakeSynonymFact(uint32_t first, uint32_t second) {
 
 // Adds synonym facts to the fact manager.
 void SetUpIdSynonyms(FactManager* fact_manager) {
-  fact_manager->AddFact(MakeSynonymFact(11, 9));
-  fact_manager->AddFact(MakeSynonymFact(13, 9));
-  fact_manager->AddFact(MakeSynonymFact(14, 9));
-  fact_manager->AddFact(MakeSynonymFact(19, 9));
-  fact_manager->AddFact(MakeSynonymFact(20, 9));
-  fact_manager->AddFact(MakeSynonymFact(10, 21));
+  fact_manager->MaybeAddFact(MakeSynonymFact(11, 9));
+  fact_manager->MaybeAddFact(MakeSynonymFact(13, 9));
+  fact_manager->MaybeAddFact(MakeSynonymFact(14, 9));
+  fact_manager->MaybeAddFact(MakeSynonymFact(19, 9));
+  fact_manager->MaybeAddFact(MakeSynonymFact(20, 9));
+  fact_manager->MaybeAddFact(MakeSynonymFact(10, 21));
 }
 
 TEST(TransformationAddOpPhiSynonymTest, Inapplicable) {
@@ -83,15 +85,14 @@ TEST(TransformationAddOpPhiSynonymTest, Inapplicable) {
   const auto env = SPV_ENV_UNIVERSAL_1_5;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
-  SetUpIdSynonyms(&fact_manager);
-  fact_manager.AddFact(MakeSynonymFact(23, 24));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
+  SetUpIdSynonyms(transformation_context.GetFactManager());
+  transformation_context.GetFactManager()->MaybeAddFact(
+      MakeSynonymFact(23, 24));
 
   // %13 is not a block label.
   ASSERT_FALSE(TransformationAddOpPhiSynonym(13, {{}}, 100)
@@ -205,50 +206,53 @@ TEST(TransformationAddOpPhiSynonymTest, Apply) {
   const auto env = SPV_ENV_UNIVERSAL_1_5;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
-  SetUpIdSynonyms(&fact_manager);
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
+  SetUpIdSynonyms(transformation_context.GetFactManager());
 
   // Add some further synonym facts.
-  fact_manager.AddFact(MakeSynonymFact(28, 9));
-  fact_manager.AddFact(MakeSynonymFact(30, 9));
+  transformation_context.GetFactManager()->MaybeAddFact(MakeSynonymFact(28, 9));
+  transformation_context.GetFactManager()->MaybeAddFact(MakeSynonymFact(30, 9));
 
   auto transformation1 = TransformationAddOpPhiSynonym(17, {{{15, 13}}}, 100);
   ASSERT_TRUE(
       transformation1.IsApplicable(context.get(), transformation_context));
-  transformation1.Apply(context.get(), &transformation_context);
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(100, {}),
-                                        MakeDataDescriptor(9, {})));
+  ApplyAndCheckFreshIds(transformation1, context.get(),
+                        &transformation_context);
+  ASSERT_TRUE(transformation_context.GetFactManager()->IsSynonymous(
+      MakeDataDescriptor(100, {}), MakeDataDescriptor(9, {})));
 
   auto transformation2 =
       TransformationAddOpPhiSynonym(16, {{{17, 19}, {18, 13}}}, 101);
   ASSERT_TRUE(
       transformation2.IsApplicable(context.get(), transformation_context));
-  transformation2.Apply(context.get(), &transformation_context);
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(101, {}),
-                                        MakeDataDescriptor(9, {})));
+  ApplyAndCheckFreshIds(transformation2, context.get(),
+                        &transformation_context);
+  ASSERT_TRUE(transformation_context.GetFactManager()->IsSynonymous(
+      MakeDataDescriptor(101, {}), MakeDataDescriptor(9, {})));
 
   auto transformation3 =
       TransformationAddOpPhiSynonym(23, {{{22, 13}, {27, 28}, {29, 30}}}, 102);
   ASSERT_TRUE(
       transformation3.IsApplicable(context.get(), transformation_context));
-  transformation3.Apply(context.get(), &transformation_context);
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(102, {}),
-                                        MakeDataDescriptor(9, {})));
+  ApplyAndCheckFreshIds(transformation3, context.get(),
+                        &transformation_context);
+  ASSERT_TRUE(transformation_context.GetFactManager()->IsSynonymous(
+      MakeDataDescriptor(102, {}), MakeDataDescriptor(9, {})));
 
   auto transformation4 = TransformationAddOpPhiSynonym(31, {{{23, 13}}}, 103);
   ASSERT_TRUE(
       transformation4.IsApplicable(context.get(), transformation_context));
-  transformation4.Apply(context.get(), &transformation_context);
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(103, {}),
-                                        MakeDataDescriptor(9, {})));
+  ApplyAndCheckFreshIds(transformation4, context.get(),
+                        &transformation_context);
+  ASSERT_TRUE(transformation_context.GetFactManager()->IsSynonymous(
+      MakeDataDescriptor(103, {}), MakeDataDescriptor(9, {})));
 
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
 
   std::string after_transformations = R"(
                OpCapability Shader
@@ -350,16 +354,15 @@ TEST(TransformationAddOpPhiSynonymTest, VariablePointers) {
   const auto env = SPV_ENV_UNIVERSAL_1_5;
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   // Declare synonyms
-  fact_manager.AddFact(MakeSynonymFact(3, 15));
-  fact_manager.AddFact(MakeSynonymFact(12, 16));
+  transformation_context.GetFactManager()->MaybeAddFact(MakeSynonymFact(3, 15));
+  transformation_context.GetFactManager()->MaybeAddFact(
+      MakeSynonymFact(12, 16));
 
   // Remove the VariablePointers capability.
   context.get()->get_feature_mgr()->RemoveCapability(
@@ -383,7 +386,7 @@ TEST(TransformationAddOpPhiSynonymTest, VariablePointers) {
       TransformationAddOpPhiSynonym(13, {{{11, 3}, {14, 15}}}, 100);
   ASSERT_TRUE(
       transformation.IsApplicable(context.get(), transformation_context));
-  transformation.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation, context.get(), &transformation_context);
 
   std::string after_transformation = R"(
                OpCapability Shader
@@ -418,6 +421,68 @@ TEST(TransformationAddOpPhiSynonymTest, VariablePointers) {
 
   ASSERT_TRUE(IsEqual(env, after_transformation, context.get()));
 }
+
+TEST(TransformationAddOpPhiSynonymTest, DeadBlock) {
+  std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %4 "main"
+               OpExecutionMode %4 OriginUpperLeft
+               OpSource ESSL 320
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeInt 32 1
+          %7 = OpTypePointer Function %6
+          %9 = OpConstant %6 2
+         %10 = OpTypeBool
+         %11 = OpConstantFalse %10
+         %15 = OpConstant %6 0
+         %50 = OpConstant %6 0
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+          %8 = OpVariable %7 Function
+               OpStore %8 %9
+               OpSelectionMerge %13 None
+               OpBranchConditional %11 %12 %13
+         %12 = OpLabel
+         %14 = OpLoad %6 %8
+         %16 = OpIEqual %10 %14 %15
+               OpSelectionMerge %18 None
+               OpBranchConditional %16 %17 %40
+         %17 = OpLabel
+               OpBranch %18
+         %40 = OpLabel
+               OpBranch %18
+         %18 = OpLabel
+               OpBranch %13
+         %13 = OpLabel
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_5;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+  spvtools::ValidatorOptions validator_options;
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
+  // Dead blocks
+  transformation_context.GetFactManager()->AddFactBlockIsDead(12);
+  transformation_context.GetFactManager()->AddFactBlockIsDead(17);
+  transformation_context.GetFactManager()->AddFactBlockIsDead(18);
+
+  // Declare synonym
+  ASSERT_TRUE(transformation_context.GetFactManager()->MaybeAddFact(
+      MakeSynonymFact(15, 50)));
+
+  // Bad because the block 18 is dead.
+  ASSERT_FALSE(TransformationAddOpPhiSynonym(18, {{{17, 15}, {40, 50}}}, 100)
+                   .IsApplicable(context.get(), transformation_context));
+}
+
 }  // namespace
 }  // namespace fuzz
 }  // namespace spvtools

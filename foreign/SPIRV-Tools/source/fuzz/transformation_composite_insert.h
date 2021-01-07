@@ -55,6 +55,8 @@ class TransformationCompositeInsert : public Transformation {
   void Apply(opt::IRContext* ir_context,
              TransformationContext* transformation_context) const override;
 
+  std::unordered_set<uint32_t> GetFreshIds() const override;
+
   protobufs::Transformation ToMessage() const override;
 
   // Checks if |instruction| is a instruction of a composite type supported by
@@ -63,6 +65,11 @@ class TransformationCompositeInsert : public Transformation {
                                               opt::Instruction* instruction);
 
  private:
+  // Helper method for adding data synonym facts when applying the
+  // transformation to |ir_context| and |transformation_context|.
+  void AddDataSynonymFacts(opt::IRContext* ir_context,
+                           TransformationContext* transformation_context) const;
+
   protobufs::TransformationCompositeInsert message_;
 };
 

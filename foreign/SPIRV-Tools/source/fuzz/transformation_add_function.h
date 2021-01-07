@@ -56,6 +56,8 @@ class TransformationAddFunction : public Transformation {
   void Apply(opt::IRContext* ir_context,
              TransformationContext* transformation_context) const override;
 
+  std::unordered_set<uint32_t> GetFreshIds() const override;
+
   protobufs::Transformation ToMessage() const override;
 
   // Helper method that, given composite type |composite_type_inst|, returns the
@@ -71,7 +73,6 @@ class TransformationAddFunction : public Transformation {
   static uint32_t GetBackEdgeBlockId(opt::IRContext* ir_context,
                                      uint32_t loop_header_block_id);
 
- private:
   // Attempts to create a function from the series of instructions in
   // |message_.instruction| and add it to |ir_context|.
   //
@@ -92,6 +93,7 @@ class TransformationAddFunction : public Transformation {
   //   to add the function.
   bool TryToAddFunction(opt::IRContext* ir_context) const;
 
+ private:
   // Should only be called if |message_.is_livesafe| holds.  Attempts to make
   // the function livesafe (see FactFunctionIsLivesafe for a definition).
   // Returns false if this is not possible, due to |message_| or |ir_context|

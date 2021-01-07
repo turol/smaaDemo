@@ -14,6 +14,8 @@
 
 #include "source/fuzz/transformation_add_type_int.h"
 
+#include "gtest/gtest.h"
+#include "source/fuzz/fuzzer_util.h"
 #include "test/fuzz/fuzz_test_util.h"
 
 namespace spvtools {
@@ -44,13 +46,11 @@ TEST(TransformationAddTypeIntTest, IsApplicable) {
   const auto consumer = nullptr;
   const auto context =
       BuildModule(env, consumer, reference_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   // Tests non-fresh id.
   auto transformation = TransformationAddTypeInt(1, 32, false);
   ASSERT_FALSE(
@@ -112,44 +112,42 @@ TEST(TransformationAddTypeIntTest, Apply) {
   const auto consumer = nullptr;
   const auto context =
       BuildModule(env, consumer, reference_shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
-  TransformationContext transformation_context(&fact_manager,
-                                               validator_options);
-
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
   // Adds signed 8-bit integer type.
   auto transformation = TransformationAddTypeInt(6, 8, true);
-  transformation.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation, context.get(), &transformation_context);
 
   // Adds signed 16-bit integer type.
   transformation = TransformationAddTypeInt(7, 16, true);
-  transformation.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation, context.get(), &transformation_context);
 
   // Adds signed 32-bit integer type.
   transformation = TransformationAddTypeInt(8, 32, true);
-  transformation.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation, context.get(), &transformation_context);
 
   // Adds signed 64-bit integer type.
   transformation = TransformationAddTypeInt(9, 64, true);
-  transformation.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation, context.get(), &transformation_context);
 
   // Adds unsigned 8-bit integer type.
   transformation = TransformationAddTypeInt(10, 8, false);
-  transformation.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation, context.get(), &transformation_context);
 
   // Adds unsigned 16-bit integer type.
   transformation = TransformationAddTypeInt(11, 16, false);
-  transformation.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation, context.get(), &transformation_context);
 
   // Adds unsigned 32-bit integer type.
   transformation = TransformationAddTypeInt(12, 32, false);
-  transformation.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation, context.get(), &transformation_context);
 
   // Adds unsigned 64-bit integer type.
   transformation = TransformationAddTypeInt(13, 64, false);
-  transformation.Apply(context.get(), &transformation_context);
+  ApplyAndCheckFreshIds(transformation, context.get(), &transformation_context);
 
   std::string variant_shader = R"(
          OpCapability Shader
@@ -179,7 +177,8 @@ TEST(TransformationAddTypeIntTest, Apply) {
          OpFunctionEnd
   )";
 
-  ASSERT_TRUE(IsValid(env, context.get()));
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
   ASSERT_TRUE(IsEqual(env, variant_shader, context.get()));
 }
 
