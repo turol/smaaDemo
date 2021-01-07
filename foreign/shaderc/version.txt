@@ -1,7 +1,5 @@
-commit df0e683b583580fcdf5670d05de76a82f39aedcb
+commit f76bb2f09f858c3014b329961d836964e515095d
 Author: Ryan Harrison <rharrison@google.com>
-Date:   Wed Jan 15 10:19:05 2020 -0500
+Date:   Wed Jan 22 15:15:53 2020 -0500
 
-    Fix incorrect casing on flags in docs (#957)
-    
-    Fixes #956
+    Fix the version string (#971)
