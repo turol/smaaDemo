@@ -1,8 +1,8 @@
-commit 4de110ce1c78fda37932c735ef7f747e6f6cbee8
-Merge: 5ab5c96 6323756
+commit f027d53ded7e230e008d37c8b47ede7cd308e19d
+Merge: 104ecc3 bdd2aa3
 Author: Raun Krisch <raun.krisch@gmail.com>
-Date:   Mon Nov 23 08:58:25 2020 -0600
+Date:   Fri Nov 27 17:52:34 2020 -0600
 
-    Merge pull request #182 from dgkoch/khr_rt_final
+    Merge pull request #184 from dgkoch/dkoch_remove_hittkhr
     
-    Updates to final ray tracing extensions
+    remove HitTKHR alias

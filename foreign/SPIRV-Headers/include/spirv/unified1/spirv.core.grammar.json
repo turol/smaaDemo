@@ -9805,7 +9805,7 @@
         {
           "enumerant" : "PrimitiveId",
           "value" : 7,
-          "capabilities" : [ "Geometry", "Tessellation", "RayTracingNV", "RayTracingKHR" ]
+          "capabilities" : [ "Geometry", "Tessellation", "RayTracingNV", "RayTracingKHR", "MeshShadingNV" ]
         },
         {
           "enumerant" : "InvocationId",
@@ -9815,12 +9815,12 @@
         {
           "enumerant" : "Layer",
           "value" : 9,
-          "capabilities" : [ "Geometry", "ShaderLayer", "ShaderViewportIndexLayerEXT" ]
+          "capabilities" : [ "Geometry", "ShaderLayer", "ShaderViewportIndexLayerEXT", "MeshShadingNV" ]
         },
         {
           "enumerant" : "ViewportIndex",
           "value" : 10,
-          "capabilities" : [ "MultiViewport", "ShaderViewportIndex", "ShaderViewportIndexLayerEXT" ]
+          "capabilities" : [ "MultiViewport", "ShaderViewportIndex", "ShaderViewportIndexLayerEXT", "MeshShadingNV" ]
         },
         {
           "enumerant" : "TessLevelOuter",
@@ -10431,15 +10431,8 @@
         {
           "enumerant" : "HitTNV",
           "value" : 5332,
-          "capabilities" : [ "RayTracingNV" , "RayTracingKHR" ],
-          "extensions" : [ "SPV_NV_ray_tracing" , "SPV_KHR_ray_tracing" ],
-          "version" : "None"
-        },
-        {
-          "enumerant" : "HitTKHR",
-          "value" : 5332,
-          "capabilities" : [ "RayTracingNV" , "RayTracingKHR" ],
-          "extensions" : [ "SPV_NV_ray_tracing" , "SPV_KHR_ray_tracing" ],
+          "capabilities" : [ "RayTracingNV" ],
+          "extensions" : [ "SPV_NV_ray_tracing" ],
           "version" : "None"
         },
         {
