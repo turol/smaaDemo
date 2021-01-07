@@ -78,6 +78,9 @@ class CompilationResult {
     uint32_t binary_length;
     status =
         shaderc_spvc_result_get_binary_length(result_.get(), &binary_length);
+    if (status != shaderc_spvc_status_success) {
+      return status;
+    }
     if (!binary_output || !binary_length) {
       *data = std::vector<uint32_t>();
     } else {
@@ -275,6 +278,12 @@ class CompileOptions {
   shaderc_spvc_status SetMSLBufferSizeBufferIndex(uint32_t index) {
     return shaderc_spvc_compile_options_set_msl_buffer_size_buffer_index(
         options_.get(), index);
+  }
+
+  // Set the additional fixed sample mask for MSL
+  shaderc_spvc_status SetMSLAdditionalFixedSampleMask(uint32_t mask) {
+    return shaderc_spvc_compile_options_set_msl_additional_fixed_sample_mask(
+        options_.get(), mask);
   }
 
   // Which HLSL shader model should be used.  Default is 30.

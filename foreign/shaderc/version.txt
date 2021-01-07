@@ -1,5 +1,5 @@
-commit 4162bb13b426dab68ebe411ea7ef05f6343bea95
-Author: David Neto <dneto@google.com>
-Date:   Thu Jul 23 17:35:29 2020 -0400
+commit 1fce59794079f90ceb091190adbbb5499acd4e95
+Author: Ryan Harrison <rharrison@google.com>
+Date:   Wed Sep 2 15:52:17 2020 -0400
 
-    Finalize shaderc v2020.2
+    Finalize SPIRV-Tools v2020.3
