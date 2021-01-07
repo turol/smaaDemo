@@ -5,7 +5,6 @@ d              := $(dir)
 
 SUBDIRS:= \
 	glslang \
-	hlsl \
 	OGLCompilersDLL \
 	SPIRV \
 	StandAlone \

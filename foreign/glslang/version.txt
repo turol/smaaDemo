@@ -1,8 +1,8 @@
-commit e05cc20ec20a154d94256c744a3837c23719c0f9
-Author: Pankaj Mistry <pmistry@nvidia.com>
-Date:   Tue Apr 21 11:33:57 2020 -0700
+commit 5aaa0c2bc82170145b0d0c5ea3fbbd8f8587b81c
+Merge: 29c9135d 31cad227
+Author: John Kessenich <johnkslang@users.noreply.github.com>
+Date:   Thu Jul 9 00:39:31 2020 -0600
 
-    Add support for es extension GL_EXT_blend_func_extended
-    * Introduces builtin variables gl_SecondaryFragColorEXT and gl_SecondaryFragDataEXT
-    * Introduces builtin constant gl_MaxDualSourceDrawBuffersEXT
-    * enables support for layout qualifier "index" in es profile
+    Merge pull request #2327 from ben-clayton/fix-pch
+    
+    Use CMake's builtin functionality for pre-compiled headers

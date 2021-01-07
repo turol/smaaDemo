@@ -36,6 +36,7 @@
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
+
 #ifndef _VERSIONS_INCLUDED_
 #define _VERSIONS_INCLUDED_
 
@@ -52,7 +53,7 @@
 // Don't maintain an ordinal set of enums (0,1,2,3...) to avoid all possible
 // defects from mixing the two different forms.
 //
-typedef enum {
+typedef enum : unsigned {
     EBadProfile           = 0,
     ENoProfile            = (1 << 0), // only for desktop, before profiles showed up
     ECoreProfile          = (1 << 1),
@@ -197,6 +198,7 @@ const char* const E_GL_EXT_ray_tracing                      = "GL_EXT_ray_tracin
 const char* const E_GL_EXT_ray_query                        = "GL_EXT_ray_query";
 const char* const E_GL_EXT_ray_flags_primitive_culling      = "GL_EXT_ray_flags_primitive_culling";
 const char* const E_GL_EXT_blend_func_extended              = "GL_EXT_blend_func_extended";
+const char* const E_GL_EXT_shader_implicit_conversions      = "GL_EXT_shader_implicit_conversions";
 
 // Arrays of extensions for the above viewportEXTs duplications
 

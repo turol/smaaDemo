@@ -1,18 +1,24 @@
 # News
 
-[![Build Status](https://travis-ci.org/KhronosGroup/glslang.svg?branch=master)](https://travis-ci.org/KhronosGroup/glslang)
-[![Build status](https://ci.appveyor.com/api/projects/status/q6fi9cb0qnhkla68/branch/master?svg=true)](https://ci.appveyor.com/project/Khronoswebmaster/glslang/branch/master)
+1. The versioning scheme is being improved, and you might notice some differences.  This is currently WIP, but will be coming soon.  See, for example, PR #2277.
 
-## Planned Deprecations/Removals
+2. If you get a new **compilation error due to a missing header**, it might be caused by this planned removal:
 
-1. **SPIRV Folder, 1-May, 2020.** Glslang, when installed through CMake,
+**SPIRV Folder, 1-May, 2020.** Glslang, when installed through CMake,
 will install a `SPIRV` folder into `${CMAKE_INSTALL_INCLUDEDIR}`.
 This `SPIRV` folder is being moved to `glslang/SPIRV`.
 During the transition the `SPIRV` folder will be installed into both locations.
 The old install of `SPIRV/` will be removed as a CMake install target no sooner than May 1, 2020.
 See issue #1964.
 
-2. **Visual Studio 2013, 20-July, 2020.** Keeping code compiling for MS Visual Studio 2013 will no longer be
+If people are only using this location to get spirv.hpp, I recommend they get that from [SPIRV-Headers](https://github.com/KhronosGroup/SPIRV-Headers) instead.
+
+[![Build Status](https://travis-ci.org/KhronosGroup/glslang.svg?branch=master)](https://travis-ci.org/KhronosGroup/glslang)
+[![Build status](https://ci.appveyor.com/api/projects/status/q6fi9cb0qnhkla68/branch/master?svg=true)](https://ci.appveyor.com/project/Khronoswebmaster/glslang/branch/master)
+
+## Planned Deprecations/Removals
+
+1. **Visual Studio 2013, 20-July, 2020.** Keeping code compiling for MS Visual Studio 2013 will no longer be
 a goal as of July 20, 2020, the fifth anniversary of the release of Visual Studio 2015.
 
 # Glslang Components and Status
