@@ -99,14 +99,6 @@ void TransformationReplaceParameterWithGlobal::Apply(
       fuzzerutil::MaybeGetZeroConstant(ir_context, *transformation_context,
                                        param_inst->type_id(), false));
 
-  // Mark the global variable's pointee as irrelevant if replaced parameter is
-  // irrelevant.
-  if (transformation_context->GetFactManager()->IdIsIrrelevant(
-          message_.parameter_id())) {
-    transformation_context->GetFactManager()->AddFactValueOfPointeeIsIrrelevant(
-        message_.global_variable_fresh_id());
-  }
-
   auto* function = fuzzerutil::GetFunctionFromParameterId(
       ir_context, message_.parameter_id());
   assert(function && "Function must exist");
@@ -188,6 +180,14 @@ void TransformationReplaceParameterWithGlobal::Apply(
   // Make sure our changes are analyzed
   ir_context->InvalidateAnalysesExceptFor(
       opt::IRContext::Analysis::kAnalysisNone);
+
+  // Mark the pointee of the global variable storing the parameter's value as
+  // irrelevant if replaced parameter is irrelevant.
+  if (transformation_context->GetFactManager()->IdIsIrrelevant(
+          message_.parameter_id())) {
+    transformation_context->GetFactManager()->AddFactValueOfPointeeIsIrrelevant(
+        message_.global_variable_fresh_id());
+  }
 }
 
 protobufs::Transformation TransformationReplaceParameterWithGlobal::ToMessage()
@@ -201,23 +201,7 @@ bool TransformationReplaceParameterWithGlobal::IsParameterTypeSupported(
     const opt::analysis::Type& type) {
   // TODO(https://github.com/KhronosGroup/SPIRV-Tools/issues/3403):
   //  Think about other type instructions we can add here.
-  switch (type.kind()) {
-    case opt::analysis::Type::kBool:
-    case opt::analysis::Type::kInteger:
-    case opt::analysis::Type::kFloat:
-    case opt::analysis::Type::kArray:
-    case opt::analysis::Type::kMatrix:
-    case opt::analysis::Type::kVector:
-      return true;
-    case opt::analysis::Type::kStruct:
-      return std::all_of(type.AsStruct()->element_types().begin(),
-                         type.AsStruct()->element_types().end(),
-                         [](const opt::analysis::Type* element_type) {
-                           return IsParameterTypeSupported(*element_type);
-                         });
-    default:
-      return false;
-  }
+  return fuzzerutil::CanCreateConstant(type);
 }
 
 }  // namespace fuzz

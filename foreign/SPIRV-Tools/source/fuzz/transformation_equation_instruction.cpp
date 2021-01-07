@@ -93,8 +93,7 @@ void TransformationEquationInstruction::Apply(
   ir_context->InvalidateAnalysesExceptFor(opt::IRContext::kAnalysisNone);
 
   transformation_context->GetFactManager()->AddFactIdEquation(
-      message_.fresh_id(), static_cast<SpvOp>(message_.opcode()), rhs_id,
-      ir_context);
+      message_.fresh_id(), static_cast<SpvOp>(message_.opcode()), rhs_id);
 }
 
 protobufs::Transformation TransformationEquationInstruction::ToMessage() const {

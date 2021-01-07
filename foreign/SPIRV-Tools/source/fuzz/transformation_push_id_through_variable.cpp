@@ -159,7 +159,7 @@ void TransformationPushIdThroughVariable::Apply(
     // and |message_.value_id| are synonymous.
     transformation_context->GetFactManager()->AddFactDataSynonym(
         MakeDataDescriptor(message_.value_synonym_id(), {}),
-        MakeDataDescriptor(message_.value_id(), {}), ir_context);
+        MakeDataDescriptor(message_.value_id(), {}));
   }
 }
 

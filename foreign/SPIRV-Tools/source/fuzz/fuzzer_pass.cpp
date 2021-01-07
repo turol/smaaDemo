@@ -17,12 +17,16 @@
 #include <set>
 
 #include "source/fuzz/fuzzer_util.h"
+#include "source/fuzz/id_use_descriptor.h"
 #include "source/fuzz/instruction_descriptor.h"
 #include "source/fuzz/transformation_add_constant_boolean.h"
 #include "source/fuzz/transformation_add_constant_composite.h"
 #include "source/fuzz/transformation_add_constant_null.h"
 #include "source/fuzz/transformation_add_constant_scalar.h"
 #include "source/fuzz/transformation_add_global_undef.h"
+#include "source/fuzz/transformation_add_global_variable.h"
+#include "source/fuzz/transformation_add_local_variable.h"
+#include "source/fuzz/transformation_add_loop_preheader.h"
 #include "source/fuzz/transformation_add_type_boolean.h"
 #include "source/fuzz/transformation_add_type_float.h"
 #include "source/fuzz/transformation_add_type_function.h"
@@ -31,6 +35,7 @@
 #include "source/fuzz/transformation_add_type_pointer.h"
 #include "source/fuzz/transformation_add_type_struct.h"
 #include "source/fuzz/transformation_add_type_vector.h"
+#include "source/fuzz/transformation_split_block.h"
 
 namespace spvtools {
 namespace fuzz {
@@ -103,7 +108,20 @@ void FuzzerPass::ForEachInstructionWithInstructionDescriptor(
         action) {
   // Consider every block in every function.
   for (auto& function : *GetIRContext()->module()) {
+    // Consider only reachable blocks. We do this in a separate loop to avoid
+    // recomputing the dominator analysis every time |action| changes the
+    // module.
+    std::vector<opt::BasicBlock*> reachable_blocks;
+
+    const auto* dominator_analysis =
+        GetIRContext()->GetDominatorAnalysis(&function);
     for (auto& block : function) {
+      if (dominator_analysis->IsReachable(&block)) {
+        reachable_blocks.push_back(&block);
+      }
+    }
+
+    for (auto* block : reachable_blocks) {
       // We now consider every instruction in the block, randomly deciding
       // whether to apply a transformation before it.
 
@@ -118,7 +136,7 @@ void FuzzerPass::ForEachInstructionWithInstructionDescriptor(
           base_opcode_skip_triples;
 
       // The initial base instruction is the block label.
-      uint32_t base = block.id();
+      uint32_t base = block->id();
 
       // Counts the number of times we have seen each opcode since we reset the
       // base instruction.
@@ -127,7 +145,7 @@ void FuzzerPass::ForEachInstructionWithInstructionDescriptor(
       // Consider every instruction in the block.  The label is excluded: it is
       // only necessary to consider it as a base in case the first instruction
       // in the block does not have a result id.
-      for (auto inst_it = block.begin(); inst_it != block.end(); ++inst_it) {
+      for (auto inst_it = block->begin(); inst_it != block->end(); ++inst_it) {
         if (inst_it->HasResultId()) {
           // In the case that the instruction has a result id, we use the
           // instruction as its own base, and clear the skip counts we have
@@ -138,7 +156,7 @@ void FuzzerPass::ForEachInstructionWithInstructionDescriptor(
         const SpvOp opcode = inst_it->opcode();
 
         // Invoke the provided function, which might apply a transformation.
-        action(&function, &block, inst_it,
+        action(&function, block, inst_it,
                MakeInstructionDescriptor(
                    base, opcode,
                    skip_count.count(opcode) ? skip_count.at(opcode) : 0));
@@ -292,8 +310,6 @@ uint32_t FuzzerPass::FindOrCreateIntegerConstant(
 uint32_t FuzzerPass::FindOrCreateFloatConstant(
     const std::vector<uint32_t>& words, uint32_t width, bool is_irrelevant) {
   auto float_type_id = FindOrCreateFloatType(width);
-  opt::analysis::FloatConstant float_constant(
-      GetIRContext()->get_type_mgr()->GetType(float_type_id)->AsFloat(), words);
   if (auto constant_id = fuzzerutil::MaybeGetScalarConstant(
           GetIRContext(), *GetTransformationContext(), words, float_type_id,
           is_irrelevant)) {
@@ -512,6 +528,204 @@ uint32_t FuzzerPass::FindOrCreateZeroConstant(
       assert(false && "Unknown type.");
       return 0;
   }
+}
+
+void FuzzerPass::MaybeAddUseToReplace(
+    opt::Instruction* use_inst, uint32_t use_index, uint32_t replacement_id,
+    std::vector<std::pair<protobufs::IdUseDescriptor, uint32_t>>*
+        uses_to_replace) {
+  // Only consider this use if it is in a block
+  if (!GetIRContext()->get_instr_block(use_inst)) {
+    return;
+  }
+
+  // Get the index of the operand restricted to input operands.
+  uint32_t in_operand_index =
+      fuzzerutil::InOperandIndexFromOperandIndex(*use_inst, use_index);
+  auto id_use_descriptor =
+      MakeIdUseDescriptorFromUse(GetIRContext(), use_inst, in_operand_index);
+  uses_to_replace->emplace_back(
+      std::make_pair(id_use_descriptor, replacement_id));
+}
+
+opt::BasicBlock* FuzzerPass::GetOrCreateSimpleLoopPreheader(
+    uint32_t header_id) {
+  auto header_block = fuzzerutil::MaybeFindBlock(GetIRContext(), header_id);
+
+  assert(header_block && header_block->IsLoopHeader() &&
+         "|header_id| should be the label id of a loop header");
+
+  auto predecessors = GetIRContext()->cfg()->preds(header_id);
+
+  assert(predecessors.size() >= 2 &&
+         "The block |header_id| should be reachable.");
+
+  auto function = header_block->GetParent();
+
+  if (predecessors.size() == 2) {
+    // The header has a single out-of-loop predecessor, which could be a
+    // preheader.
+
+    opt::BasicBlock* maybe_preheader;
+
+    if (GetIRContext()->GetDominatorAnalysis(function)->Dominates(
+            header_id, predecessors[0])) {
+      // The first predecessor is the back-edge block, because the header
+      // dominates it, so the second one is out of the loop.
+      maybe_preheader = &*function->FindBlock(predecessors[1]);
+    } else {
+      // The first predecessor is out of the loop.
+      maybe_preheader = &*function->FindBlock(predecessors[0]);
+    }
+
+    // |maybe_preheader| is a preheader if it branches unconditionally to
+    // the header. We also require it not to be a loop header.
+    if (maybe_preheader->terminator()->opcode() == SpvOpBranch &&
+        !maybe_preheader->IsLoopHeader()) {
+      return maybe_preheader;
+    }
+  }
+
+  // We need to add a preheader.
+
+  // Get a fresh id for the preheader.
+  uint32_t preheader_id = GetFuzzerContext()->GetFreshId();
+
+  // Get a fresh id for each OpPhi instruction, if there is more than one
+  // out-of-loop predecessor.
+  std::vector<uint32_t> phi_ids;
+  if (predecessors.size() > 2) {
+    header_block->ForEachPhiInst(
+        [this, &phi_ids](opt::Instruction* /* unused */) {
+          phi_ids.push_back(GetFuzzerContext()->GetFreshId());
+        });
+  }
+
+  // Add the preheader.
+  ApplyTransformation(
+      TransformationAddLoopPreheader(header_id, preheader_id, phi_ids));
+
+  // Make the newly-created preheader the new entry block.
+  return &*function->FindBlock(preheader_id);
+}
+
+opt::BasicBlock* FuzzerPass::SplitBlockAfterOpPhiOrOpVariable(
+    uint32_t block_id) {
+  auto block = fuzzerutil::MaybeFindBlock(GetIRContext(), block_id);
+  assert(block && "|block_id| must be a block label");
+  assert(!block->IsLoopHeader() && "|block_id| cannot be a loop header");
+
+  // Find the first non-OpPhi and non-OpVariable instruction.
+  auto non_phi_or_var_inst = &*block->begin();
+  while (non_phi_or_var_inst->opcode() == SpvOpPhi ||
+         non_phi_or_var_inst->opcode() == SpvOpVariable) {
+    non_phi_or_var_inst = non_phi_or_var_inst->NextNode();
+  }
+
+  // Split the block.
+  uint32_t new_block_id = GetFuzzerContext()->GetFreshId();
+  ApplyTransformation(TransformationSplitBlock(
+      MakeInstructionDescriptor(GetIRContext(), non_phi_or_var_inst),
+      new_block_id));
+
+  // We need to return the newly-created block.
+  return &*block->GetParent()->FindBlock(new_block_id);
+}
+
+uint32_t FuzzerPass::FindOrCreateLocalVariable(
+    uint32_t pointer_type_id, uint32_t function_id,
+    bool pointee_value_is_irrelevant) {
+  auto pointer_type = GetIRContext()->get_type_mgr()->GetType(pointer_type_id);
+  // No unused variables in release mode.
+  (void)pointer_type;
+  assert(pointer_type && pointer_type->AsPointer() &&
+         pointer_type->AsPointer()->storage_class() ==
+             SpvStorageClassFunction &&
+         "The pointer_type_id must refer to a defined pointer type with "
+         "storage class Function");
+  auto function = fuzzerutil::FindFunction(GetIRContext(), function_id);
+  assert(function && "The function must be defined.");
+
+  // First we try to find a suitable existing variable.
+  // All of the local variable declarations are located in the first block.
+  for (auto& instruction : *function->begin()) {
+    if (instruction.opcode() != SpvOpVariable) {
+      continue;
+    }
+    // The existing OpVariable must have type |pointer_type_id|.
+    if (instruction.type_id() != pointer_type_id) {
+      continue;
+    }
+    // Check if the found variable is marked with PointeeValueIsIrrelevant
+    // according to |pointee_value_is_irrelevant|.
+    if (GetTransformationContext()->GetFactManager()->PointeeValueIsIrrelevant(
+            instruction.result_id()) != pointee_value_is_irrelevant) {
+      continue;
+    }
+    return instruction.result_id();
+  }
+
+  // No such variable was found. Apply a transformation to get one.
+  uint32_t pointee_type_id = fuzzerutil::GetPointeeTypeIdFromPointerType(
+      GetIRContext(), pointer_type_id);
+  uint32_t result_id = GetFuzzerContext()->GetFreshId();
+  ApplyTransformation(TransformationAddLocalVariable(
+      result_id, pointer_type_id, function_id,
+      FindOrCreateZeroConstant(pointee_type_id, pointee_value_is_irrelevant),
+      pointee_value_is_irrelevant));
+  return result_id;
+}
+
+uint32_t FuzzerPass::FindOrCreateGlobalVariable(
+    uint32_t pointer_type_id, bool pointee_value_is_irrelevant) {
+  auto pointer_type = GetIRContext()->get_type_mgr()->GetType(pointer_type_id);
+  // No unused variables in release mode.
+  (void)pointer_type;
+  assert(
+      pointer_type && pointer_type->AsPointer() &&
+      (pointer_type->AsPointer()->storage_class() == SpvStorageClassPrivate ||
+       pointer_type->AsPointer()->storage_class() ==
+           SpvStorageClassWorkgroup) &&
+      "The pointer_type_id must refer to a defined pointer type with storage "
+      "class Private or Workgroup");
+
+  // First we try to find a suitable existing variable.
+  for (auto& instruction : GetIRContext()->module()->types_values()) {
+    if (instruction.opcode() != SpvOpVariable) {
+      continue;
+    }
+    // The existing OpVariable must have type |pointer_type_id|.
+    if (instruction.type_id() != pointer_type_id) {
+      continue;
+    }
+    // Check if the found variable is marked with PointeeValueIsIrrelevant
+    // according to |pointee_value_is_irrelevant|.
+    if (GetTransformationContext()->GetFactManager()->PointeeValueIsIrrelevant(
+            instruction.result_id()) != pointee_value_is_irrelevant) {
+      continue;
+    }
+    return instruction.result_id();
+  }
+
+  // No such variable was found. Apply a transformation to get one.
+  uint32_t pointee_type_id = fuzzerutil::GetPointeeTypeIdFromPointerType(
+      GetIRContext(), pointer_type_id);
+  auto storage_class = fuzzerutil::GetStorageClassFromPointerType(
+      GetIRContext(), pointer_type_id);
+  uint32_t result_id = GetFuzzerContext()->GetFreshId();
+
+  // A variable with storage class Workgroup shouldn't have an initializer.
+  if (storage_class == SpvStorageClassWorkgroup) {
+    ApplyTransformation(TransformationAddGlobalVariable(
+        result_id, pointer_type_id, SpvStorageClassWorkgroup, 0,
+        pointee_value_is_irrelevant));
+  } else {
+    ApplyTransformation(TransformationAddGlobalVariable(
+        result_id, pointer_type_id, SpvStorageClassPrivate,
+        FindOrCreateZeroConstant(pointee_type_id, pointee_value_is_irrelevant),
+        pointee_value_is_irrelevant));
+  }
+  return result_id;
 }
 
 }  // namespace fuzz

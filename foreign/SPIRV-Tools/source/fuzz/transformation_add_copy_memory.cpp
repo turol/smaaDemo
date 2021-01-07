@@ -132,6 +132,10 @@ void TransformationAddCopyMemory::Apply(
 
   fuzzerutil::UpdateModuleIdBound(ir_context, message_.fresh_id());
 
+  // Make sure our changes are analyzed
+  ir_context->InvalidateAnalysesExceptFor(
+      opt::IRContext::Analysis::kAnalysisNone);
+
   // Even though the copy memory instruction will - at least temporarily - lead
   // to the destination and source pointers referring to identical values, this
   // fact is not guaranteed to hold throughout execution of the SPIR-V code
@@ -140,10 +144,6 @@ void TransformationAddCopyMemory::Apply(
   // pointer can be used freely by other fuzzer passes.
   transformation_context->GetFactManager()->AddFactValueOfPointeeIsIrrelevant(
       message_.fresh_id());
-
-  // Make sure our changes are analyzed
-  ir_context->InvalidateAnalysesExceptFor(
-      opt::IRContext::Analysis::kAnalysisNone);
 }
 
 protobufs::Transformation TransformationAddCopyMemory::ToMessage() const {

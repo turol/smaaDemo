@@ -59,14 +59,6 @@ bool TransformationReplaceCopyObjectWithStoreLoad::IsApplicable(
     return false;
   }
 
-  // It must be valid to insert the OpStore and OpLoad instruction before it.
-  if (!fuzzerutil::CanInsertOpcodeBeforeInstruction(SpvOpStore,
-                                                    copy_object_instruction) ||
-      !fuzzerutil::CanInsertOpcodeBeforeInstruction(SpvOpLoad,
-                                                    copy_object_instruction)) {
-    return false;
-  }
-
   // A pointer type instruction pointing to the value type must be defined.
   auto pointer_type_id = fuzzerutil::MaybeGetPointerType(
       ir_context, copy_object_instruction->type_id(),
@@ -141,7 +133,7 @@ void TransformationReplaceCopyObjectWithStoreLoad::Apply(
   // and src_operand (id used by OpCopyObject) are synonymous.
   transformation_context->GetFactManager()->AddFactDataSynonym(
       MakeDataDescriptor(message_.copy_object_result_id(), {}),
-      MakeDataDescriptor(src_operand, {}), ir_context);
+      MakeDataDescriptor(src_operand, {}));
 }
 
 protobufs::Transformation

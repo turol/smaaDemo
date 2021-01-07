@@ -70,7 +70,7 @@ TEST(TransformationAddSynonymTest, NotApplicable) {
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -208,7 +208,7 @@ TEST(TransformationAddSynonymTest, AddZeroSubZeroMulOne) {
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -345,7 +345,7 @@ TEST(TransformationAddSynonymTest, LogicalAndLogicalOr) {
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -439,7 +439,7 @@ TEST(TransformationAddSynonymTest, LogicalAndConstantIsNotPresent) {
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -479,7 +479,7 @@ TEST(TransformationAddSynonymTest, LogicalOrConstantIsNotPresent) {
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -539,7 +539,7 @@ TEST(TransformationAddSynonymTest, CopyObject) {
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -636,7 +636,7 @@ TEST(TransformationAddSynonymTest, CopyBooleanConstants) {
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -944,7 +944,7 @@ TEST(TransformationAddSynonymTest, CheckIllegalCases) {
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -1139,7 +1139,7 @@ TEST(TransformationAddSynonymTest, MiscellaneousCopies) {
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -1249,7 +1249,7 @@ TEST(TransformationAddSynonymTest, DoNotCopyNullOrUndefPointers) {
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -1295,7 +1295,7 @@ TEST(TransformationAddSynonymTest, PropagateIrrelevantPointeeFact) {
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -1334,7 +1334,7 @@ TEST(TransformationAddSynonymTest, PropagateIrrelevantPointeeFact) {
       transformation_context.GetFactManager()->PointeeValueIsIrrelevant(101));
 }
 
-TEST(TransformationAddSynonym, DoNotCopyOpSampledImage) {
+TEST(TransformationAddSynonymTest, DoNotCopyOpSampledImage) {
   // This checks that we do not try to copy the result id of an OpSampledImage
   // instruction.
   std::string shader = R"(
@@ -1380,7 +1380,7 @@ TEST(TransformationAddSynonym, DoNotCopyOpSampledImage) {
   const auto consumer = nullptr;
   const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
 
-  FactManager fact_manager;
+  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -1390,6 +1390,96 @@ TEST(TransformationAddSynonym, DoNotCopyOpSampledImage) {
           216, protobufs::TransformationAddSynonym::COPY_OBJECT, 500,
           MakeInstructionDescriptor(217, SpvOpImageSampleImplicitLod, 0))
           .IsApplicable(context.get(), transformation_context));
+}
+
+TEST(TransformationAddSynonymTest, DoNotCopyVoidRunctionResult) {
+  // This checks that we do not try to copy the result of a void function.
+  std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %4 "main"
+               OpExecutionMode %4 OriginUpperLeft
+               OpSource ESSL 320
+               OpName %4 "main"
+               OpName %6 "foo("
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+          %8 = OpFunctionCall %2 %6
+               OpReturn
+               OpFunctionEnd
+          %6 = OpFunction %2 None %3
+          %7 = OpLabel
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_3;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+
+  FactManager fact_manager(context.get());
+  spvtools::ValidatorOptions validator_options;
+  TransformationContext transformation_context(&fact_manager,
+                                               validator_options);
+
+  ASSERT_FALSE(TransformationAddSynonym(
+                   8, protobufs::TransformationAddSynonym::COPY_OBJECT, 500,
+                   MakeInstructionDescriptor(8, SpvOpReturn, 0))
+                   .IsApplicable(context.get(), transformation_context));
+}
+
+TEST(TransformationAddSynonymTest, HandlesDeadBlocks) {
+  std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %4 "main"
+               OpExecutionMode %4 OriginUpperLeft
+               OpSource ESSL 320
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeBool
+          %7 = OpConstantTrue %6
+         %11 = OpTypePointer Function %6
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+         %12 = OpVariable %11 Function
+               OpSelectionMerge %10 None
+               OpBranchConditional %7 %8 %9
+          %8 = OpLabel
+               OpBranch %10
+          %9 = OpLabel
+               OpBranch %10
+         %10 = OpLabel
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_3;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+
+  FactManager fact_manager(context.get());
+  spvtools::ValidatorOptions validator_options;
+  TransformationContext transformation_context(&fact_manager,
+                                               validator_options);
+
+  fact_manager.AddFactBlockIsDead(9);
+
+  auto insert_before = MakeInstructionDescriptor(9, SpvOpBranch, 0);
+
+  ASSERT_FALSE(TransformationAddSynonym(
+                   7, protobufs::TransformationAddSynonym::COPY_OBJECT, 100,
+                   insert_before)
+                   .IsApplicable(context.get(), transformation_context));
+
+  ASSERT_FALSE(TransformationAddSynonym(
+                   12, protobufs::TransformationAddSynonym::COPY_OBJECT, 100,
+                   insert_before)
+                   .IsApplicable(context.get(), transformation_context));
 }
 
 }  // namespace

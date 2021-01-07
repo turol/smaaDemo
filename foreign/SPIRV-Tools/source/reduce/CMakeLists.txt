@@ -50,6 +50,7 @@ set(SPIRV_TOOLS_REDUCE_SOURCES
         operand_to_dominating_id_reduction_opportunity_finder.cpp
         reducer.cpp
         reduction_opportunity.cpp
+        reduction_opportunity_finder.cpp
         reduction_pass.cpp
         reduction_util.cpp
         remove_block_reduction_opportunity.cpp
@@ -70,7 +71,7 @@ set(SPIRV_TOOLS_REDUCE_SOURCES
         simple_conditional_branch_to_branch_reduction_opportunity.cpp
 )
 
-if(MSVC)
+if(MSVC AND (NOT ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")))
   # Enable parallel builds across four cores for this lib
   add_definitions(/MP4)
 endif()

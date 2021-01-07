@@ -17,15 +17,21 @@ if (${SPIRV_BUILD_FUZZER})
   set(SOURCES
           fuzz_test_util.h
 
+          call_graph_test.cpp
+          comparator_deep_blocks_first_test.cpp
           data_synonym_transformation_test.cpp
           equivalence_relation_test.cpp
           fact_manager_test.cpp
           fuzz_test_util.cpp
+          fuzzer_pass_add_opphi_synonyms_test.cpp
           fuzzer_pass_construct_composites_test.cpp
           fuzzer_pass_donate_modules_test.cpp
+          fuzzer_pass_outline_functions_test.cpp
           instruction_descriptor_test.cpp
+          fuzzer_pass_test.cpp
           replayer_test.cpp
           transformation_access_chain_test.cpp
+          transformation_add_bit_instruction_synonym_test.cpp
           transformation_add_constant_boolean_test.cpp
           transformation_add_constant_composite_test.cpp
           transformation_add_constant_null_test.cpp
@@ -39,7 +45,10 @@ if (${SPIRV_BUILD_FUZZER})
           transformation_add_global_variable_test.cpp
           transformation_add_image_sample_unused_components_test.cpp
           transformation_add_local_variable_test.cpp
+          transformation_add_loop_preheader_test.cpp
+          transformation_add_loop_to_create_int_constant_synonym_test.cpp
           transformation_add_no_contraction_decoration_test.cpp
+          transformation_add_opphi_synonym_test.cpp
           transformation_add_parameter_test.cpp
           transformation_add_relaxed_decoration_test.cpp
           transformation_add_synonym_test.cpp
@@ -55,25 +64,37 @@ if (${SPIRV_BUILD_FUZZER})
           transformation_adjust_branch_weights_test.cpp
           transformation_composite_construct_test.cpp
           transformation_composite_extract_test.cpp
+          transformation_composite_insert_test.cpp
           transformation_compute_data_synonym_fact_closure_test.cpp
+          transformation_duplicate_region_with_selection_test.cpp
           transformation_equation_instruction_test.cpp
+          transformation_flatten_conditional_branch_test.cpp
           transformation_function_call_test.cpp
+          transformation_inline_function_test.cpp
           transformation_invert_comparison_operator_test.cpp
           transformation_load_test.cpp
+          transformation_make_vector_operation_dynamic_test.cpp
           transformation_merge_blocks_test.cpp
           transformation_move_block_down_test.cpp
+          transformation_move_instruction_down_test.cpp
+          transformation_mutate_pointer_test.cpp
           transformation_outline_function_test.cpp
           transformation_permute_function_parameters_test.cpp
           transformation_permute_phi_operands_test.cpp
+          transformation_propagate_instruction_up_test.cpp
           transformation_push_id_through_variable_test.cpp
-          transformation_replace_parameter_with_global_test.cpp
+          transformation_replace_add_sub_mul_with_carrying_extended_test.cpp
           transformation_replace_boolean_constant_with_constant_binary_test.cpp
           transformation_replace_copy_object_with_store_load_test.cpp
           transformation_replace_constant_with_uniform_test.cpp
           transformation_replace_copy_memory_with_load_store_test.cpp
           transformation_replace_id_with_synonym_test.cpp
+          transformation_replace_irrelevant_id_test.cpp
           transformation_replace_linear_algebra_instruction_test.cpp
           transformation_replace_load_store_with_copy_memory_test.cpp
+          transformation_replace_opphi_id_from_dead_predecessor_test.cpp
+          transformation_replace_opselect_with_conditional_branch_test.cpp
+          transformation_replace_parameter_with_global_test.cpp
           transformation_replace_params_with_struct_test.cpp
           transformation_set_function_control_test.cpp
           transformation_set_loop_control_test.cpp

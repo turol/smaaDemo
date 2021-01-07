@@ -179,18 +179,23 @@ opt::Instruction* GetFunctionType(opt::IRContext* context,
 // function exists.
 opt::Function* FindFunction(opt::IRContext* ir_context, uint32_t function_id);
 
+// Returns true if |function| has a block that the termination instruction is
+// OpKill or OpUnreachable.
+bool FunctionContainsOpKillOrUnreachable(const opt::Function& function);
+
 // Returns |true| if one of entry points has function id |function_id|.
 bool FunctionIsEntryPoint(opt::IRContext* context, uint32_t function_id);
 
 // Checks whether |id| is available (according to dominance rules) at the use
 // point defined by input operand |use_input_operand_index| of
-// |use_instruction|.
+// |use_instruction|. |use_instruction| must be a in some basic block.
 bool IdIsAvailableAtUse(opt::IRContext* context,
                         opt::Instruction* use_instruction,
                         uint32_t use_input_operand_index, uint32_t id);
 
 // Checks whether |id| is available (according to dominance rules) at the
-// program point directly before |instruction|.
+// program point directly before |instruction|. |instruction| must be in some
+// basic block.
 bool IdIsAvailableBeforeInstruction(opt::IRContext* context,
                                     opt::Instruction* instruction, uint32_t id);
 
@@ -316,6 +321,10 @@ opt::Function* GetFunctionFromParameterId(opt::IRContext* ir_context,
 // more users, it is removed from the module. Returns the result id of the
 // OpTypeFunction instruction that is used as a type of the function with
 // |function_id|.
+//
+// CAUTION: When the old type of the function is removed from the module, its
+//          memory is deallocated. Be sure not to use any pointers to the old
+//          type when this function returns.
 uint32_t UpdateFunctionType(opt::IRContext* ir_context, uint32_t function_id,
                             uint32_t new_function_type_result_id,
                             uint32_t return_type_id,
@@ -379,6 +388,11 @@ uint32_t MaybeGetZeroConstant(
     opt::IRContext* ir_context,
     const TransformationContext& transformation_context,
     uint32_t scalar_or_composite_type_id, bool is_irrelevant);
+
+// Returns true if it is possible to create an OpConstant or an
+// OpConstantComposite instruction of |type|. That is, returns true if |type|
+// and all its constituents are either scalar or composite.
+bool CanCreateConstant(const opt::analysis::Type& type);
 
 // Returns the result id of an OpConstant instruction. |scalar_type_id| must be
 // a result id of a scalar type (i.e. int, float or bool). Returns 0 if no such
@@ -455,9 +469,21 @@ void AddVectorType(opt::IRContext* ir_context, uint32_t result_id,
 
 // Creates a new OpTypeStruct instruction in the module. Updates module's id
 // bound to accommodate for |result_id|. |component_type_ids| may not contain
-// a result id of an OpTypeFunction.
+// a result id of an OpTypeFunction. if |component_type_ids| contains a result
+// of an OpTypeStruct instruction, that struct may not have BuiltIn members.
 void AddStructType(opt::IRContext* ir_context, uint32_t result_id,
                    const std::vector<uint32_t>& component_type_ids);
+
+// Returns a vector of words representing the integer |value|, only considering
+// the last |width| bits. The last |width| bits are sign-extended if the value
+// is signed, zero-extended if it is unsigned.
+// |width| must be <= 64.
+// If |width| <= 32, returns a vector containing one value. If |width| > 64,
+// returns a vector containing two values, with the first one representing the
+// lower-order word of the value and the second one representing the
+// higher-order word.
+std::vector<uint32_t> IntToWords(uint64_t value, uint32_t width,
+                                 bool is_signed);
 
 // Returns a bit pattern that represents a floating-point |value|.
 inline uint32_t FloatToWord(float value) {
@@ -483,8 +509,45 @@ std::map<uint32_t, uint32_t> RepeatedUInt32PairToMap(
 google::protobuf::RepeatedPtrField<protobufs::UInt32Pair>
 MapToRepeatedUInt32Pair(const std::map<uint32_t, uint32_t>& data);
 
-}  // namespace fuzzerutil
+// Returns the last instruction in |block_id| before which an instruction with
+// opcode |opcode| can be inserted, or nullptr if there is no such instruction.
+opt::Instruction* GetLastInsertBeforeInstruction(opt::IRContext* ir_context,
+                                                 uint32_t block_id,
+                                                 SpvOp opcode);
 
+// Checks whether various conditions hold related to the acceptability of
+// replacing the id use at |use_in_operand_index| of |use_instruction| with a
+// synonym or another id of appropriate type if the original id is irrelevant.
+// In particular, this checks that:
+// - the id use is not an index into a struct field in an OpAccessChain - such
+//   indices must be constants, so it is dangerous to replace them.
+// - the id use is not a pointer function call argument, on which there are
+//   restrictions that make replacement problematic.
+// - the id use is not the Sample parameter of an OpImageTexelPointer
+//   instruction, as this must satisfy particular requirements.
+bool IdUseCanBeReplaced(opt::IRContext* ir_context,
+                        opt::Instruction* use_instruction,
+                        uint32_t use_in_operand_index);
+
+// Requires that |struct_type_id| is the id of a struct type, and (as per the
+// SPIR-V spec) that either all or none of the members of |struct_type_id| have
+// the BuiltIn decoration. Returns true if and only if all members have the
+// BuiltIn decoration.
+bool MembersHaveBuiltInDecoration(opt::IRContext* ir_context,
+                                  uint32_t struct_type_id);
+
+// Returns true iff splitting block |block_to_split| just before the instruction
+// |split_before| would separate an OpSampledImage instruction from its usage.
+bool SplittingBeforeInstructionSeparatesOpSampledImageDefinitionFromUse(
+    opt::BasicBlock* block_to_split, opt::Instruction* split_before);
+
+// Returns true if the instruction given has no side effects.
+// TODO(https://github.com/KhronosGroup/SPIRV-Tools/issues/3758): Add any
+//  missing instructions to the list. In particular, GLSL extended instructions
+//  (called using OpExtInst) have not been considered.
+bool InstructionHasNoSideEffects(const opt::Instruction& instruction);
+
+}  // namespace fuzzerutil
 }  // namespace fuzz
 }  // namespace spvtools
 

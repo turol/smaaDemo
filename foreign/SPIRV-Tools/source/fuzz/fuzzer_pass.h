@@ -70,9 +70,9 @@ class FuzzerPass {
       std::function<bool(opt::IRContext*, opt::Instruction*)>
           instruction_is_relevant) const;
 
-  // A helper method that iterates through each instruction in each block, at
-  // all times tracking an instruction descriptor that allows the latest
-  // instruction to be located even if it has no result id.
+  // A helper method that iterates through each instruction in each reachable
+  // block, at all times tracking an instruction descriptor that allows the
+  // latest instruction to be located even if it has no result id.
   //
   // The code to manipulate the instruction descriptor is a bit fiddly.  The
   // point of this method is to avoiding having to duplicate it in multiple
@@ -272,6 +272,52 @@ class FuzzerPass {
   // --------------+-------------------------------
   uint32_t FindOrCreateZeroConstant(uint32_t scalar_or_composite_type_id,
                                     bool is_irrelevant);
+
+  // Adds a pair (id_use_descriptor, |replacement_id|) to the vector
+  // |uses_to_replace|, where id_use_descriptor is the id use descriptor
+  // representing the usage of an id in the |use_inst| instruction, at operand
+  // index |use_index|, only if the instruction is in a basic block.
+  // If the instruction is not in a basic block, it does nothing.
+  void MaybeAddUseToReplace(
+      opt::Instruction* use_inst, uint32_t use_index, uint32_t replacement_id,
+      std::vector<std::pair<protobufs::IdUseDescriptor, uint32_t>>*
+          uses_to_replace);
+
+  // Returns the preheader of the loop with header |header_id|, which satisfies
+  // all of the following conditions:
+  // - It is the only out-of-loop predecessor of the header
+  // - It unconditionally branches to the header
+  // - It is not a loop header itself
+  // If such preheader does not exist, a new one is added and returned.
+  // Requires |header_id| to be the label id of a loop header block that is
+  // reachable in the CFG (and thus has at least 2 predecessors).
+  opt::BasicBlock* GetOrCreateSimpleLoopPreheader(uint32_t header_id);
+
+  // Returns the second block in the pair obtained by splitting |block_id| just
+  // after the last OpPhi or OpVariable instruction in it. Assumes that the
+  // block is not a loop header.
+  opt::BasicBlock* SplitBlockAfterOpPhiOrOpVariable(uint32_t block_id);
+
+  // Returns the id of an available local variable (storage class Function) with
+  // the fact PointeeValueIsIrrelevant set according to
+  // |pointee_value_is_irrelevant|. If there is no such variable, it creates one
+  // in the |function| adding a zero initializer constant that is irrelevant.
+  // The new variable has the fact PointeeValueIsIrrelevant set according to
+  // |pointee_value_is_irrelevant|. The function returns the id of the created
+  // variable.
+  uint32_t FindOrCreateLocalVariable(uint32_t pointer_type_id,
+                                     uint32_t function_id,
+                                     bool pointee_value_is_irrelevant);
+
+  // Returns the id of an available global variable (storage class Private or
+  // Workgroup) with the fact PointeeValueIsIrrelevant set according to
+  // |pointee_value_is_irrelevant|. If there is no such variable, it creates
+  // one, adding a zero initializer constant that is irrelevant. The new
+  // variable has the fact PointeeValueIsIrrelevant set according to
+  // |pointee_value_is_irrelevant|. The function returns the id of the created
+  // variable.
+  uint32_t FindOrCreateGlobalVariable(uint32_t pointer_type_id,
+                                      bool pointee_value_is_irrelevant);
 
  private:
   opt::IRContext* ir_context_;

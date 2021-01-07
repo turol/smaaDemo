@@ -12,15 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SOURCE_FUZZ_FACT_MANAGER_H_
-#define SOURCE_FUZZ_FACT_MANAGER_H_
+#ifndef SOURCE_FUZZ_FACT_MANAGER_FACT_MANAGER_H_
+#define SOURCE_FUZZ_FACT_MANAGER_FACT_MANAGER_H_
 
-#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
 
 #include "source/fuzz/data_descriptor.h"
+#include "source/fuzz/fact_manager/constant_uniform_facts.h"
+#include "source/fuzz/fact_manager/data_synonym_and_id_equation_facts.h"
+#include "source/fuzz/fact_manager/dead_block_facts.h"
+#include "source/fuzz/fact_manager/irrelevant_value_facts.h"
+#include "source/fuzz/fact_manager/livesafe_function_facts.h"
 #include "source/fuzz/protobufs/spirvfuzz_protobufs.h"
 #include "source/opt/constants.h"
 
@@ -38,25 +42,22 @@ namespace fuzz {
 // the module.
 class FactManager {
  public:
-  FactManager();
-
-  ~FactManager();
+  explicit FactManager(opt::IRContext* ir_context);
 
   // Adds all the facts from |facts|, checking them for validity with respect to
   // |context|.  Warnings about invalid facts are communicated via
   // |message_consumer|; such facts are otherwise ignored.
   void AddFacts(const MessageConsumer& message_consumer,
-                const protobufs::FactSequence& facts, opt::IRContext* context);
+                const protobufs::FactSequence& facts);
 
   // Checks the fact for validity with respect to |context|.  Returns false,
   // with no side effects, if the fact is invalid.  Otherwise adds |fact| to the
   // fact manager.
-  bool AddFact(const protobufs::Fact& fact, opt::IRContext* context);
+  bool AddFact(const protobufs::Fact& fact);
 
   // Record the fact that |data1| and |data2| are synonymous.
   void AddFactDataSynonym(const protobufs::DataDescriptor& data1,
-                          const protobufs::DataDescriptor& data2,
-                          opt::IRContext* context);
+                          const protobufs::DataDescriptor& data2);
 
   // Records the fact that |block_id| is dead.
   void AddFactBlockIsDead(uint32_t block_id);
@@ -66,10 +67,12 @@ class FactManager {
 
   // Records the fact that the value of the pointee associated with |pointer_id|
   // is irrelevant: it does not affect the observable behaviour of the module.
+  // |pointer_id| must exist in the module and actually be a pointer.
   void AddFactValueOfPointeeIsIrrelevant(uint32_t pointer_id);
 
   // Records a fact that the |result_id| is irrelevant (i.e. it doesn't affect
-  // the semantics of the module)
+  // the semantics of the module).
+  // |result_id| must exist in the module and actually be a pointer.
   void AddFactIdIsIrrelevant(uint32_t result_id);
 
   // Records the fact that |lhs_id| is defined by the equation:
@@ -77,8 +80,7 @@ class FactManager {
   //   |lhs_id| = |opcode| |rhs_id[0]| ... |rhs_id[N-1]|
   //
   void AddFactIdEquation(uint32_t lhs_id, SpvOp opcode,
-                         const std::vector<uint32_t>& rhs_id,
-                         opt::IRContext* context);
+                         const std::vector<uint32_t>& rhs_id);
 
   // Inspects all known facts and adds corollary facts; e.g. if we know that
   // a.x == b.x and a.y == b.y, where a and b have vec2 type, we can record
@@ -92,8 +94,7 @@ class FactManager {
   // The parameter |maximum_equivalence_class_size| specifies the size beyond
   // which equivalence classes should not be mined for new facts, to avoid
   // excessively-long closure computations.
-  void ComputeClosureOfFacts(opt::IRContext* ir_context,
-                             uint32_t maximum_equivalence_class_size);
+  void ComputeClosureOfFacts(uint32_t maximum_equivalence_class_size);
 
   // The fact manager is responsible for managing a few distinct categories of
   // facts. In principle there could be different fact managers for each kind
@@ -113,20 +114,18 @@ class FactManager {
   // "constant == uniform element" fact is known.  If multiple identically-
   // valued constants are relevant, only one will appear in the sequence.
   std::vector<uint32_t> GetConstantsAvailableFromUniformsForType(
-      opt::IRContext* ir_context, uint32_t type_id) const;
+      uint32_t type_id) const;
 
   // Provides details of all uniform elements that are known to be equal to the
   // constant associated with |constant_id| in |ir_context|.
-  const std::vector<protobufs::UniformBufferElementDescriptor>
-  GetUniformDescriptorsForConstant(opt::IRContext* ir_context,
-                                   uint32_t constant_id) const;
+  std::vector<protobufs::UniformBufferElementDescriptor>
+  GetUniformDescriptorsForConstant(uint32_t constant_id) const;
 
   // Returns the id of a constant whose value is known to match that of
   // |uniform_descriptor|, and whose type matches the type of the uniform
   // element.  If multiple such constant is exist, the one that is returned
   // is arbitrary.  Returns 0 if no such constant id exists.
   uint32_t GetConstantFromUniformDescriptor(
-      opt::IRContext* context,
       const protobufs::UniformBufferElementDescriptor& uniform_descriptor)
       const;
 
@@ -191,42 +190,28 @@ class FactManager {
   // |pointer_id| is irrelevant.
   bool PointeeValueIsIrrelevant(uint32_t pointer_id) const;
 
-  // Returns true iff there exists a fact that the |result_id| is irrelevant.
+  // Returns true if there exists a fact that the |result_id| is irrelevant or
+  // if |result_id| is declared in a block that has been declared dead.
   bool IdIsIrrelevant(uint32_t result_id) const;
+
+  // Returns a set of all the ids which have been declared irrelevant, or which
+  // have been declared inside a dead block.
+  std::unordered_set<uint32_t> GetIrrelevantIds() const;
 
   // End of irrelevant value facts
   //==============================
 
  private:
-  // For each distinct kind of fact to be managed, we use a separate opaque
-  // class type.
-
-  class ConstantUniformFacts;  // Opaque class for management of
-                               // constant uniform facts.
-  std::unique_ptr<ConstantUniformFacts>
-      uniform_constant_facts_;  // Unique pointer to internal data.
-
-  class DataSynonymAndIdEquationFacts;  // Opaque class for management of data
-                                        // synonym and id equation facts.
-  std::unique_ptr<DataSynonymAndIdEquationFacts>
-      data_synonym_and_id_equation_facts_;  // Unique pointer to internal data.
-
-  class DeadBlockFacts;  // Opaque class for management of dead block facts.
-  std::unique_ptr<DeadBlockFacts>
-      dead_block_facts_;  // Unique pointer to internal data.
-
-  class LivesafeFunctionFacts;  // Opaque class for management of livesafe
-                                // function facts.
-  std::unique_ptr<LivesafeFunctionFacts>
-      livesafe_function_facts_;  // Unique pointer to internal data.
-
-  class IrrelevantValueFacts;  // Opaque class for management of
-  // facts about various irrelevant values in the module.
-  std::unique_ptr<IrrelevantValueFacts>
-      irrelevant_value_facts_;  // Unique pointer to internal data.
+  // Keep these in alphabetical order.
+  fact_manager::ConstantUniformFacts constant_uniform_facts_;
+  fact_manager::DataSynonymAndIdEquationFacts
+      data_synonym_and_id_equation_facts_;
+  fact_manager::DeadBlockFacts dead_block_facts_;
+  fact_manager::LivesafeFunctionFacts livesafe_function_facts_;
+  fact_manager::IrrelevantValueFacts irrelevant_value_facts_;
 };
 
 }  // namespace fuzz
 }  // namespace spvtools
 
-#endif  // SOURCE_FUZZ_FACT_MANAGER_H_
+#endif  // SOURCE_FUZZ_FACT_MANAGER_FACT_MANAGER_H_

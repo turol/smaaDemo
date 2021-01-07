@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "source/fuzz/transformation_replace_copy_object_with_store_load.h"
+
 #include "test/fuzz/fuzz_test_util.h"
 
 namespace spvtools {
@@ -77,7 +78,7 @@ TEST(TransformationReplaceCopyObjectWithStoreLoad, BasicScenarios) {
   const auto context =
       BuildModule(env, consumer, reference_shader, kFuzzAssembleOption);
 
-  FactManager fact_manager;
+  FactManager fact_manager(context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -108,9 +109,10 @@ TEST(TransformationReplaceCopyObjectWithStoreLoad, BasicScenarios) {
   ASSERT_FALSE(transformation_invalid_4.IsApplicable(context.get(),
                                                      transformation_context));
 
-  // Invalid: initializer_id=15 is invalid.
+  // Invalid: initializer_id=15 has the wrong type relative to the OpCopyObject
+  // instruction.
   auto transformation_invalid_5 = TransformationReplaceCopyObjectWithStoreLoad(
-      27, 30, SpvStorageClassPrivate, 15);
+      27, 30, SpvStorageClassFunction, 15);
   ASSERT_FALSE(transformation_invalid_5.IsApplicable(context.get(),
                                                      transformation_context));
 

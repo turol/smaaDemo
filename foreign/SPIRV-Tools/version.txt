@@ -1,17 +1,5 @@
-commit 50300450af880da63178ce077a91c8a2a0794a7d
-Author: alan-baker <alanbaker@google.com>
-Date:   Thu Jul 30 12:08:53 2020 -0400
+commit b27e039c68dd9eb959bb9249fcb2c9a54841474b
+Author: Ehsan Nasiri <ehsannas@gmail.com>
+Date:   Thu Sep 24 10:53:49 2020 -0400
 
-    Validator support for non-semantic clspv reflection (#3618)
-    
-    
-    * Generate ext inst table for reflection
-    * Change build to use grammar files from SPIRV-Headers instead of
-      SPIRV-Tools
-    * Add enum for clspv reflection extended instruction set
-      * count it as non-semantic
-    * validate clspv reflection extended instruction set
-    * Remove local extended inst sets
-    * update headers deps
-    * Update nbuilds to use grammars from SPIRV-Headers instead of
-      local duplicates
+    Finalize SPIRV-Tools v2020.5

@@ -125,8 +125,7 @@ void TransformationCompositeExtract::Apply(
     protobufs::DataDescriptor data_descriptor_for_result_id =
         MakeDataDescriptor(message_.fresh_id(), {});
     transformation_context->GetFactManager()->AddFactDataSynonym(
-        data_descriptor_for_extracted_element, data_descriptor_for_result_id,
-        ir_context);
+        data_descriptor_for_extracted_element, data_descriptor_for_result_id);
   }
 }
 

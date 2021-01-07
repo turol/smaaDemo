@@ -46,7 +46,7 @@ fi
 ADDITIONAL_CMAKE_FLAGS=""
 if [ $CONFIG = "ASAN" ]
 then
-  ADDITIONAL_CMAKE_FLAGS="SPIRV_USE_SANITIZER=address,bounds,null"
+  ADDITIONAL_CMAKE_FLAGS="-DSPIRV_USE_SANITIZER=address,bounds,null"
   [ $COMPILER = "clang" ] || { echo "$CONFIG requires clang"; exit 1; }
 elif [ $CONFIG = "COVERAGE" ]
 then
@@ -71,11 +71,7 @@ git clone --depth=1 https://github.com/KhronosGroup/SPIRV-Headers external/spirv
 git clone --depth=1 https://github.com/google/googletest          external/googletest
 git clone --depth=1 https://github.com/google/effcee              external/effcee
 git clone --depth=1 https://github.com/google/re2                 external/re2
-git clone --depth=1 https://github.com/protocolbuffers/protobuf   external/protobuf
-pushd external/protobuf
-git fetch --all --tags --prune
-git checkout v3.7.1
-popd
+git clone --depth=1 --branch v3.13.0 https://github.com/protocolbuffers/protobuf external/protobuf
 
 mkdir build && cd $SRC/build
 

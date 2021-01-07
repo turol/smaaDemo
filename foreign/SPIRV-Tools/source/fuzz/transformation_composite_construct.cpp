@@ -162,7 +162,7 @@ void TransformationCompositeConstruct::Apply(
                 component)) {
           transformation_context->GetFactManager()->AddFactDataSynonym(
               MakeDataDescriptor(component, {subvector_index}),
-              MakeDataDescriptor(message_.fresh_id(), {index}), ir_context);
+              MakeDataDescriptor(message_.fresh_id(), {index}));
         }
         index++;
       }
@@ -173,7 +173,7 @@ void TransformationCompositeConstruct::Apply(
               component)) {
         transformation_context->GetFactManager()->AddFactDataSynonym(
             MakeDataDescriptor(component, {}),
-            MakeDataDescriptor(message_.fresh_id(), {index}), ir_context);
+            MakeDataDescriptor(message_.fresh_id(), {index}));
       }
       index++;
     }

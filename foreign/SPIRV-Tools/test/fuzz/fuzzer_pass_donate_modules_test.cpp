@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "source/fuzz/fuzzer_pass_donate_modules.h"
+
 #include <algorithm>
 
-#include "source/fuzz/fuzzer_pass_donate_modules.h"
 #include "source/fuzz/pseudo_random_generator.h"
 #include "test/fuzz/fuzz_test_util.h"
 
@@ -195,7 +196,7 @@ TEST(FuzzerPassDonateModulesTest, BasicDonation) {
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, donor_context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(recipient_context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -273,7 +274,7 @@ TEST(FuzzerPassDonateModulesTest, DonationWithUniforms) {
       env, consumer, recipient_and_donor_shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, donor_context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(recipient_context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -401,7 +402,7 @@ TEST(FuzzerPassDonateModulesTest, DonationWithInputAndOutputVariables) {
       env, consumer, recipient_and_donor_shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, donor_context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(recipient_context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -493,7 +494,7 @@ TEST(FuzzerPassDonateModulesTest, DonateFunctionTypeWithDifferentPointers) {
       env, consumer, recipient_and_donor_shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, donor_context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(recipient_context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -560,7 +561,7 @@ TEST(FuzzerPassDonateModulesTest, DonateOpConstantNull) {
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, donor_context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(recipient_context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -685,7 +686,7 @@ TEST(FuzzerPassDonateModulesTest, DonateCodeThatUsesImages) {
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, donor_context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(recipient_context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -778,7 +779,7 @@ TEST(FuzzerPassDonateModulesTest, DonateCodeThatUsesSampler) {
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, donor_context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(recipient_context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -907,7 +908,7 @@ TEST(FuzzerPassDonateModulesTest, DonateCodeThatUsesImageStructField) {
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, donor_context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(recipient_context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -1040,7 +1041,7 @@ TEST(FuzzerPassDonateModulesTest, DonateCodeThatUsesImageFunctionParameter) {
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, donor_context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(recipient_context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -1119,7 +1120,7 @@ TEST(FuzzerPassDonateModulesTest, DonateShaderWithImageStorageClass) {
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, donor_context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(recipient_context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -1203,7 +1204,7 @@ TEST(FuzzerPassDonateModulesTest, DonateComputeShaderWithRuntimeArray) {
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, donor_context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(recipient_context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -1304,7 +1305,7 @@ TEST(FuzzerPassDonateModulesTest, DonateComputeShaderWithRuntimeArrayLivesafe) {
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, donor_context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(recipient_context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -1373,7 +1374,7 @@ TEST(FuzzerPassDonateModulesTest, DonateComputeShaderWithWorkgroupVariables) {
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, donor_context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(recipient_context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -1480,7 +1481,7 @@ TEST(FuzzerPassDonateModulesTest, DonateComputeShaderWithAtomics) {
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, donor_context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(recipient_context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -1661,7 +1662,7 @@ TEST(FuzzerPassDonateModulesTest, Miscellaneous1) {
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, donor_context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(recipient_context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -1730,7 +1731,7 @@ TEST(FuzzerPassDonateModulesTest, OpSpecConstantInstructions) {
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, donor_context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(recipient_context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -1884,7 +1885,7 @@ TEST(FuzzerPassDonateModulesTest, DonationSupportsOpTypeRuntimeArray) {
       BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
   ASSERT_TRUE(IsValid(env, donor_context.get()));
 
-  FactManager fact_manager;
+  FactManager fact_manager(recipient_context.get());
   spvtools::ValidatorOptions validator_options;
   TransformationContext transformation_context(&fact_manager,
                                                validator_options);
@@ -1899,6 +1900,308 @@ TEST(FuzzerPassDonateModulesTest, DonationSupportsOpTypeRuntimeArray) {
 
   fuzzer_pass.DonateSingleModule(donor_context.get(), false);
 
+  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+}
+
+TEST(FuzzerPassDonateModulesTest, HandlesCapabilities) {
+  std::string donor_shader = R"(
+               OpCapability VariablePointersStorageBuffer
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %4 "main"
+               OpExecutionMode %4 OriginUpperLeft
+               OpSource ESSL 310
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeFloat 32
+         %11 = OpConstant %6 23
+          %7 = OpTypePointer Function %6
+          %4 = OpFunction %2 None %3
+
+          %5 = OpLabel
+          %8 = OpVariable %7 Function
+               OpBranch %9
+
+          %9 = OpLabel
+         %10 = OpPhi %7 %8 %5
+               OpStore %10 %11
+               OpReturn
+
+               OpFunctionEnd
+  )";
+
+  std::string recipient_shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %4 "main"
+               OpExecutionMode %4 OriginUpperLeft
+               OpSource ESSL 310
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_3;
+  const auto consumer = nullptr;
+  const auto recipient_context =
+      BuildModule(env, consumer, recipient_shader, kFuzzAssembleOption);
+  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+
+  const auto donor_context =
+      BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
+  ASSERT_TRUE(IsValid(env, donor_context.get()));
+
+  FactManager fact_manager(recipient_context.get());
+  spvtools::ValidatorOptions validator_options;
+  TransformationContext transformation_context(&fact_manager,
+                                               validator_options);
+
+  PseudoRandomGenerator rng(0);
+  FuzzerContext fuzzer_context(&rng, 100);
+  protobufs::TransformationSequence transformation_sequence;
+
+  FuzzerPassDonateModules fuzzer_pass(recipient_context.get(),
+                                      &transformation_context, &fuzzer_context,
+                                      &transformation_sequence, {});
+
+  ASSERT_TRUE(donor_context->get_feature_mgr()->HasCapability(
+      SpvCapabilityVariablePointersStorageBuffer));
+  ASSERT_FALSE(recipient_context->get_feature_mgr()->HasCapability(
+      SpvCapabilityVariablePointersStorageBuffer));
+
+  fuzzer_pass.DonateSingleModule(donor_context.get(), false);
+
+  // Check that recipient module hasn't changed.
+  ASSERT_TRUE(IsEqual(env, recipient_shader, recipient_context.get()));
+
+  // Add the missing capability.
+  //
+  // We are adding VariablePointers to test the case when donor and recipient
+  // have different OpCapability instructions but the same capabilities. In our
+  // example, VariablePointers implicitly declares
+  // VariablePointersStorageBuffer. Thus, two modules must be compatible.
+  recipient_context->AddCapability(SpvCapabilityVariablePointers);
+
+  ASSERT_TRUE(donor_context->get_feature_mgr()->HasCapability(
+      SpvCapabilityVariablePointersStorageBuffer));
+  ASSERT_TRUE(recipient_context->get_feature_mgr()->HasCapability(
+      SpvCapabilityVariablePointersStorageBuffer));
+
+  fuzzer_pass.DonateSingleModule(donor_context.get(), false);
+
+  // Check that donation was successful.
+  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+
+  std::string after_transformation = R"(
+               OpCapability Shader
+               OpCapability VariablePointers
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %4 "main"
+               OpExecutionMode %4 OriginUpperLeft
+               OpSource ESSL 310
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+        %100 = OpTypeFloat 32
+        %101 = OpConstant %100 23
+        %102 = OpTypePointer Function %100
+        %105 = OpConstant %100 0
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+               OpReturn
+               OpFunctionEnd
+        %103 = OpFunction %2 None %3
+        %104 = OpLabel
+        %106 = OpVariable %102 Function %105
+               OpBranch %107
+        %107 = OpLabel
+        %108 = OpPhi %102 %106 %104
+               OpStore %108 %101
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  ASSERT_TRUE(IsEqual(env, after_transformation, recipient_context.get()));
+}
+
+TEST(FuzzerPassDonateModulesTest, HandlesOpPhisInMergeBlock) {
+  std::string donor_shader = R"(
+               ; OpPhis don't support pointers without this capability
+               ; and we need pointers to test some of the functionality
+               OpCapability VariablePointers
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %4 "main"
+               OpExecutionMode %4 OriginUpperLeft
+               OpSource ESSL 310
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+         %14 = OpTypeBool
+         %15 = OpConstantTrue %14
+         %42 = OpTypePointer Function %14
+
+          ; back-edge block is unreachable in the CFG
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+               OpBranch %6
+          %6 = OpLabel
+               OpLoopMerge %8 %7 None
+               OpBranch %8
+          %7 = OpLabel
+               OpBranch %6
+          %8 = OpLabel
+               OpReturn
+               OpFunctionEnd
+
+          ; back-edge block already has an edge to the merge block
+          %9 = OpFunction %2 None %3
+         %10 = OpLabel
+               OpBranch %11
+         %11 = OpLabel
+               OpLoopMerge %13 %12 None
+               OpBranch %12
+         %12 = OpLabel
+               OpBranchConditional %15 %11 %13
+         %13 = OpLabel
+               OpReturn
+               OpFunctionEnd
+
+         ; merge block has no OpPhis
+         %16 = OpFunction %2 None %3
+         %17 = OpLabel
+               OpBranch %18
+         %18 = OpLabel
+               OpLoopMerge %20 %19 None
+               OpBranchConditional %15 %19 %20
+         %19 = OpLabel
+               OpBranch %18
+         %20 = OpLabel
+               OpReturn
+               OpFunctionEnd
+
+         ; merge block has OpPhis and some of their operands are available at
+         ; the back-edge block
+         %21 = OpFunction %2 None %3
+         %22 = OpLabel
+               OpBranch %23
+         %23 = OpLabel
+         %24 = OpCopyObject %14 %15
+               OpLoopMerge %28 %27 None
+               OpBranchConditional %15 %25 %28
+         %25 = OpLabel
+         %26 = OpCopyObject %14 %15
+               OpBranchConditional %15 %28 %27
+         %27 = OpLabel
+               OpBranch %23
+         %28 = OpLabel
+         %29 = OpPhi %14 %24 %23 %26 %25
+               OpReturn
+               OpFunctionEnd
+
+         ; none of the OpPhis' operands dominate the back-edge block but some of
+         ; them have basic type
+         %30 = OpFunction %2 None %3
+         %31 = OpLabel
+               OpBranch %32
+         %32 = OpLabel
+               OpLoopMerge %40 %39 None
+               OpBranch %33
+         %33 = OpLabel
+               OpSelectionMerge %38 None
+               OpBranchConditional %15 %34 %36
+         %34 = OpLabel
+         %35 = OpCopyObject %14 %15
+               OpBranchConditional %35 %38 %40
+         %36 = OpLabel
+         %37 = OpCopyObject %14 %15
+               OpBranchConditional %37 %38 %40
+         %38 = OpLabel
+               OpBranch %39
+         %39 = OpLabel
+               OpBranch %32
+         %40 = OpLabel
+         %41 = OpPhi %14 %35 %34 %37 %36
+               OpReturn
+               OpFunctionEnd
+
+         ; none of the OpPhis' operands dominate the back-edge block and none of
+         ; them have basic type
+         %43 = OpFunction %2 None %3
+         %44 = OpLabel
+         %45 = OpVariable %42 Function
+               OpBranch %46
+         %46 = OpLabel
+               OpLoopMerge %54 %53 None
+               OpBranch %47
+         %47 = OpLabel
+               OpSelectionMerge %52 None
+               OpBranchConditional %15 %48 %50
+         %48 = OpLabel
+         %49 = OpCopyObject %42 %45
+               OpBranchConditional %15 %52 %54
+         %50 = OpLabel
+         %51 = OpCopyObject %42 %45
+               OpBranchConditional %15 %52 %54
+         %52 = OpLabel
+               OpBranch %53
+         %53 = OpLabel
+               OpBranch %46
+         %54 = OpLabel
+         %55 = OpPhi %42 %49 %48 %51 %50
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  std::string recipient_shader = R"(
+               ; OpPhis don't support pointers without this capability
+               ; and we need pointers to test some of the functionality
+               OpCapability VariablePointers
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %4 "main"
+               OpExecutionMode %4 OriginUpperLeft
+               OpSource ESSL 310
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_3;
+  const auto consumer = nullptr;
+  const auto recipient_context =
+      BuildModule(env, consumer, recipient_shader, kFuzzAssembleOption);
+  ASSERT_TRUE(IsValid(env, recipient_context.get()));
+
+  const auto donor_context =
+      BuildModule(env, consumer, donor_shader, kFuzzAssembleOption);
+  ASSERT_TRUE(IsValid(env, donor_context.get()));
+
+  FactManager fact_manager(recipient_context.get());
+  spvtools::ValidatorOptions validator_options;
+  TransformationContext transformation_context(&fact_manager,
+                                               validator_options);
+
+  PseudoRandomGenerator prng(0);
+  FuzzerContext fuzzer_context(&prng, 100);
+  protobufs::TransformationSequence transformation_sequence;
+
+  FuzzerPassDonateModules fuzzer_pass(recipient_context.get(),
+                                      &transformation_context, &fuzzer_context,
+                                      &transformation_sequence, {});
+
+  fuzzer_pass.DonateSingleModule(donor_context.get(), true);
+
+  // We just check that the result is valid. Checking to what it should be
+  // exactly equal to would be very fragile.
   ASSERT_TRUE(IsValid(env, recipient_context.get()));
 }
 

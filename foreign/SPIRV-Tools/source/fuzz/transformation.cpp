@@ -18,6 +18,7 @@
 
 #include "source/fuzz/fuzzer_util.h"
 #include "source/fuzz/transformation_access_chain.h"
+#include "source/fuzz/transformation_add_bit_instruction_synonym.h"
 #include "source/fuzz/transformation_add_constant_boolean.h"
 #include "source/fuzz/transformation_add_constant_composite.h"
 #include "source/fuzz/transformation_add_constant_null.h"
@@ -31,7 +32,10 @@
 #include "source/fuzz/transformation_add_global_variable.h"
 #include "source/fuzz/transformation_add_image_sample_unused_components.h"
 #include "source/fuzz/transformation_add_local_variable.h"
+#include "source/fuzz/transformation_add_loop_preheader.h"
+#include "source/fuzz/transformation_add_loop_to_create_int_constant_synonym.h"
 #include "source/fuzz/transformation_add_no_contraction_decoration.h"
+#include "source/fuzz/transformation_add_opphi_synonym.h"
 #include "source/fuzz/transformation_add_parameter.h"
 #include "source/fuzz/transformation_add_relaxed_decoration.h"
 #include "source/fuzz/transformation_add_spec_constant_op.h"
@@ -48,25 +52,37 @@
 #include "source/fuzz/transformation_adjust_branch_weights.h"
 #include "source/fuzz/transformation_composite_construct.h"
 #include "source/fuzz/transformation_composite_extract.h"
+#include "source/fuzz/transformation_composite_insert.h"
 #include "source/fuzz/transformation_compute_data_synonym_fact_closure.h"
+#include "source/fuzz/transformation_duplicate_region_with_selection.h"
 #include "source/fuzz/transformation_equation_instruction.h"
+#include "source/fuzz/transformation_flatten_conditional_branch.h"
 #include "source/fuzz/transformation_function_call.h"
+#include "source/fuzz/transformation_inline_function.h"
 #include "source/fuzz/transformation_invert_comparison_operator.h"
 #include "source/fuzz/transformation_load.h"
+#include "source/fuzz/transformation_make_vector_operation_dynamic.h"
 #include "source/fuzz/transformation_merge_blocks.h"
 #include "source/fuzz/transformation_move_block_down.h"
+#include "source/fuzz/transformation_move_instruction_down.h"
+#include "source/fuzz/transformation_mutate_pointer.h"
 #include "source/fuzz/transformation_outline_function.h"
 #include "source/fuzz/transformation_permute_function_parameters.h"
 #include "source/fuzz/transformation_permute_phi_operands.h"
+#include "source/fuzz/transformation_propagate_instruction_up.h"
 #include "source/fuzz/transformation_push_id_through_variable.h"
 #include "source/fuzz/transformation_record_synonymous_constants.h"
+#include "source/fuzz/transformation_replace_add_sub_mul_with_carrying_extended.h"
 #include "source/fuzz/transformation_replace_boolean_constant_with_constant_binary.h"
 #include "source/fuzz/transformation_replace_constant_with_uniform.h"
 #include "source/fuzz/transformation_replace_copy_memory_with_load_store.h"
 #include "source/fuzz/transformation_replace_copy_object_with_store_load.h"
 #include "source/fuzz/transformation_replace_id_with_synonym.h"
+#include "source/fuzz/transformation_replace_irrelevant_id.h"
 #include "source/fuzz/transformation_replace_linear_algebra_instruction.h"
 #include "source/fuzz/transformation_replace_load_store_with_copy_memory.h"
+#include "source/fuzz/transformation_replace_opphi_id_from_dead_predecessor.h"
+#include "source/fuzz/transformation_replace_opselect_with_conditional_branch.h"
 #include "source/fuzz/transformation_replace_parameter_with_global.h"
 #include "source/fuzz/transformation_replace_params_with_struct.h"
 #include "source/fuzz/transformation_set_function_control.h"
@@ -91,6 +107,10 @@ std::unique_ptr<Transformation> Transformation::FromMessage(
   switch (message.transformation_case()) {
     case protobufs::Transformation::TransformationCase::kAccessChain:
       return MakeUnique<TransformationAccessChain>(message.access_chain());
+    case protobufs::Transformation::TransformationCase::
+        kAddBitInstructionSynonym:
+      return MakeUnique<TransformationAddBitInstructionSynonym>(
+          message.add_bit_instruction_synonym());
     case protobufs::Transformation::TransformationCase::kAddConstantBoolean:
       return MakeUnique<TransformationAddConstantBoolean>(
           message.add_constant_boolean());
@@ -127,10 +147,20 @@ std::unique_ptr<Transformation> Transformation::FromMessage(
     case protobufs::Transformation::TransformationCase::kAddLocalVariable:
       return MakeUnique<TransformationAddLocalVariable>(
           message.add_local_variable());
+    case protobufs::Transformation::TransformationCase::kAddLoopPreheader:
+      return MakeUnique<TransformationAddLoopPreheader>(
+          message.add_loop_preheader());
+    case protobufs::Transformation::TransformationCase::
+        kAddLoopToCreateIntConstantSynonym:
+      return MakeUnique<TransformationAddLoopToCreateIntConstantSynonym>(
+          message.add_loop_to_create_int_constant_synonym());
     case protobufs::Transformation::TransformationCase::
         kAddNoContractionDecoration:
       return MakeUnique<TransformationAddNoContractionDecoration>(
           message.add_no_contraction_decoration());
+    case protobufs::Transformation::TransformationCase::kAddOpphiSynonym:
+      return MakeUnique<TransformationAddOpPhiSynonym>(
+          message.add_opphi_synonym());
     case protobufs::Transformation::TransformationCase::kAddParameter:
       return MakeUnique<TransformationAddParameter>(message.add_parameter());
     case protobufs::Transformation::TransformationCase::kAddRelaxedDecoration:
@@ -171,25 +201,48 @@ std::unique_ptr<Transformation> Transformation::FromMessage(
     case protobufs::Transformation::TransformationCase::kCompositeExtract:
       return MakeUnique<TransformationCompositeExtract>(
           message.composite_extract());
+    case protobufs::Transformation::TransformationCase::kCompositeInsert:
+      return MakeUnique<TransformationCompositeInsert>(
+          message.composite_insert());
     case protobufs::Transformation::TransformationCase::
         kComputeDataSynonymFactClosure:
       return MakeUnique<TransformationComputeDataSynonymFactClosure>(
           message.compute_data_synonym_fact_closure());
+    case protobufs::Transformation::TransformationCase::
+        kDuplicateRegionWithSelection:
+      return MakeUnique<TransformationDuplicateRegionWithSelection>(
+          message.duplicate_region_with_selection());
     case protobufs::Transformation::TransformationCase::kEquationInstruction:
       return MakeUnique<TransformationEquationInstruction>(
           message.equation_instruction());
+    case protobufs::Transformation::TransformationCase::
+        kFlattenConditionalBranch:
+      return MakeUnique<TransformationFlattenConditionalBranch>(
+          message.flatten_conditional_branch());
     case protobufs::Transformation::TransformationCase::kFunctionCall:
       return MakeUnique<TransformationFunctionCall>(message.function_call());
+    case protobufs::Transformation::TransformationCase::kInlineFunction:
+      return MakeUnique<TransformationInlineFunction>(
+          message.inline_function());
     case protobufs::Transformation::TransformationCase::
         kInvertComparisonOperator:
       return MakeUnique<TransformationInvertComparisonOperator>(
           message.invert_comparison_operator());
     case protobufs::Transformation::TransformationCase::kLoad:
       return MakeUnique<TransformationLoad>(message.load());
+    case protobufs::Transformation::TransformationCase::
+        kMakeVectorOperationDynamic:
+      return MakeUnique<TransformationMakeVectorOperationDynamic>(
+          message.make_vector_operation_dynamic());
     case protobufs::Transformation::TransformationCase::kMergeBlocks:
       return MakeUnique<TransformationMergeBlocks>(message.merge_blocks());
     case protobufs::Transformation::TransformationCase::kMoveBlockDown:
       return MakeUnique<TransformationMoveBlockDown>(message.move_block_down());
+    case protobufs::Transformation::TransformationCase::kMoveInstructionDown:
+      return MakeUnique<TransformationMoveInstructionDown>(
+          message.move_instruction_down());
+    case protobufs::Transformation::TransformationCase::kMutatePointer:
+      return MakeUnique<TransformationMutatePointer>(message.mutate_pointer());
     case protobufs::Transformation::TransformationCase::kOutlineFunction:
       return MakeUnique<TransformationOutlineFunction>(
           message.outline_function());
@@ -200,6 +253,9 @@ std::unique_ptr<Transformation> Transformation::FromMessage(
     case protobufs::Transformation::TransformationCase::kPermutePhiOperands:
       return MakeUnique<TransformationPermutePhiOperands>(
           message.permute_phi_operands());
+    case protobufs::Transformation::TransformationCase::kPropagateInstructionUp:
+      return MakeUnique<TransformationPropagateInstructionUp>(
+          message.propagate_instruction_up());
     case protobufs::Transformation::TransformationCase::kPushIdThroughVariable:
       return MakeUnique<TransformationPushIdThroughVariable>(
           message.push_id_through_variable());
@@ -208,9 +264,9 @@ std::unique_ptr<Transformation> Transformation::FromMessage(
       return MakeUnique<TransformationRecordSynonymousConstants>(
           message.record_synonymous_constants());
     case protobufs::Transformation::TransformationCase::
-        kReplaceParameterWithGlobal:
-      return MakeUnique<TransformationReplaceParameterWithGlobal>(
-          message.replace_parameter_with_global());
+        kReplaceAddSubMulWithCarryingExtended:
+      return MakeUnique<TransformationReplaceAddSubMulWithCarryingExtended>(
+          message.replace_add_sub_mul_with_carrying_extended());
     case protobufs::Transformation::TransformationCase::
         kReplaceBooleanConstantWithConstantBinary:
       return MakeUnique<TransformationReplaceBooleanConstantWithConstantBinary>(
@@ -230,6 +286,9 @@ std::unique_ptr<Transformation> Transformation::FromMessage(
     case protobufs::Transformation::TransformationCase::kReplaceIdWithSynonym:
       return MakeUnique<TransformationReplaceIdWithSynonym>(
           message.replace_id_with_synonym());
+    case protobufs::Transformation::TransformationCase::kReplaceIrrelevantId:
+      return MakeUnique<TransformationReplaceIrrelevantId>(
+          message.replace_irrelevant_id());
     case protobufs::Transformation::TransformationCase::
         kReplaceLinearAlgebraInstruction:
       return MakeUnique<TransformationReplaceLinearAlgebraInstruction>(
@@ -239,9 +298,21 @@ std::unique_ptr<Transformation> Transformation::FromMessage(
       return MakeUnique<TransformationReplaceLoadStoreWithCopyMemory>(
           message.replace_load_store_with_copy_memory());
     case protobufs::Transformation::TransformationCase::
+        kReplaceOpselectWithConditionalBranch:
+      return MakeUnique<TransformationReplaceOpSelectWithConditionalBranch>(
+          message.replace_opselect_with_conditional_branch());
+    case protobufs::Transformation::TransformationCase::
+        kReplaceParameterWithGlobal:
+      return MakeUnique<TransformationReplaceParameterWithGlobal>(
+          message.replace_parameter_with_global());
+    case protobufs::Transformation::TransformationCase::
         kReplaceParamsWithStruct:
       return MakeUnique<TransformationReplaceParamsWithStruct>(
           message.replace_params_with_struct());
+    case protobufs::Transformation::TransformationCase::
+        kReplaceOpphiIdFromDeadPredecessor:
+      return MakeUnique<TransformationReplaceOpPhiIdFromDeadPredecessor>(
+          message.replace_opphi_id_from_dead_predecessor());
     case protobufs::Transformation::TransformationCase::kSetFunctionControl:
       return MakeUnique<TransformationSetFunctionControl>(
           message.set_function_control());

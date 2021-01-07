@@ -168,6 +168,29 @@ void TransformationAddFunction::Apply(
   (void)(success);  // Keep release builds happy (otherwise they may complain
                     // that |success| is not used).
 
+  if (message_.is_livesafe()) {
+    // Make the function livesafe, which also should succeed.
+    success = TryToMakeFunctionLivesafe(ir_context, *transformation_context);
+    assert(success && "It should be possible to make the function livesafe.");
+    (void)(success);  // Keep release builds happy.
+
+    // Inform the fact manager that the function is livesafe.
+    assert(message_.instruction(0).opcode() == SpvOpFunction &&
+           "The first instruction of an 'add function' transformation must be "
+           "OpFunction.");
+    transformation_context->GetFactManager()->AddFactFunctionIsLivesafe(
+        message_.instruction(0).result_id());
+  } else {
+    // Inform the fact manager that all blocks in the function are dead.
+    for (auto& inst : message_.instruction()) {
+      if (inst.opcode() == SpvOpLabel) {
+        transformation_context->GetFactManager()->AddFactBlockIsDead(
+            inst.result_id());
+      }
+    }
+  }
+  ir_context->InvalidateAnalysesExceptFor(opt::IRContext::kAnalysisNone);
+
   // Record the fact that all pointer parameters and variables declared in the
   // function should be regarded as having irrelevant values.  This allows other
   // passes to store arbitrarily to such variables, and to pass them freely as
@@ -191,29 +214,6 @@ void TransformationAddFunction::Apply(
         break;
     }
   }
-
-  if (message_.is_livesafe()) {
-    // Make the function livesafe, which also should succeed.
-    success = TryToMakeFunctionLivesafe(ir_context, *transformation_context);
-    assert(success && "It should be possible to make the function livesafe.");
-    (void)(success);  // Keep release builds happy.
-
-    // Inform the fact manager that the function is livesafe.
-    assert(message_.instruction(0).opcode() == SpvOpFunction &&
-           "The first instruction of an 'add function' transformation must be "
-           "OpFunction.");
-    transformation_context->GetFactManager()->AddFactFunctionIsLivesafe(
-        message_.instruction(0).result_id());
-  } else {
-    // Inform the fact manager that all blocks in the function are dead.
-    for (auto& inst : message_.instruction()) {
-      if (inst.opcode() == SpvOpLabel) {
-        transformation_context->GetFactManager()->AddFactBlockIsDead(
-            inst.result_id());
-      }
-    }
-  }
-  ir_context->InvalidateAnalysesExceptFor(opt::IRContext::kAnalysisNone);
 }
 
 protobufs::Transformation TransformationAddFunction::ToMessage() const {
@@ -363,6 +363,22 @@ bool TransformationAddFunction::TryToMakeFunctionLivesafe(
   return true;
 }
 
+uint32_t TransformationAddFunction::GetBackEdgeBlockId(
+    opt::IRContext* ir_context, uint32_t loop_header_block_id) {
+  const auto* loop_header_block =
+      ir_context->cfg()->block(loop_header_block_id);
+  assert(loop_header_block && "|loop_header_block_id| is invalid");
+
+  for (auto pred : ir_context->cfg()->preds(loop_header_block_id)) {
+    if (ir_context->GetDominatorAnalysis(loop_header_block->GetParent())
+            ->Dominates(loop_header_block_id, pred)) {
+      return pred;
+    }
+  }
+
+  return 0;
+}
+
 bool TransformationAddFunction::TryToAddLoopLimiters(
     opt::IRContext* ir_context, opt::Function* added_function) const {
   // Collect up all the loop headers so that we can subsequently add loop
@@ -474,14 +490,8 @@ bool TransformationAddFunction::TryToAddLoopLimiters(
   for (auto loop_header : loop_headers) {
     // Look for the loop's back-edge block.  This is a predecessor of the loop
     // header that is dominated by the loop header.
-    uint32_t back_edge_block_id = 0;
-    for (auto pred : ir_context->cfg()->preds(loop_header->id())) {
-      if (ir_context->GetDominatorAnalysis(added_function)
-              ->Dominates(loop_header->id(), pred)) {
-        back_edge_block_id = pred;
-        break;
-      }
-    }
+    const auto back_edge_block_id =
+        GetBackEdgeBlockId(ir_context, loop_header->id());
     if (!back_edge_block_id) {
       // The loop's back-edge block must be unreachable.  This means that the
       // loop cannot iterate, so there is no need to make it lifesafe; we can
@@ -692,9 +702,7 @@ bool TransformationAddFunction::TryToAddLoopLimiters(
       back_edge_block_terminator->SetOpcode(SpvOpBranchConditional);
       back_edge_block_terminator->SetInOperands(opt::Instruction::OperandList(
           {{SPV_OPERAND_TYPE_ID, {loop_limiter_info.compare_id()}},
-           {SPV_OPERAND_TYPE_ID, {loop_header->MergeBlockId()}
-
-           },
+           {SPV_OPERAND_TYPE_ID, {loop_header->MergeBlockId()}},
            {SPV_OPERAND_TYPE_ID, {loop_header->id()}}}));
     }
 
