@@ -42,63 +42,63 @@ SPV_GENERATED:= \
 	# empty line
 
 
-build-version.inc: $(d)/CHANGES $(d)/utils/update_build_version.py
-	$(PYTHON) $(word 2, $^) $(dir $<) $@
+build-version.inc: $(d)/utils/update_build_version.py $(d)/CHANGES
+	$(PYTHON) $(word 1, $^) $(dir $(word 2, $^)) $@
 	# update_build_version.py doesn't touch the timestamp unless the file actually changes
 	touch $@
 
 
-core.insts-unified1.inc operand.kinds-unified1.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/spirv.core.grammar.json $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.debuginfo.grammar.json $(d)/utils/generate_grammar_tables.py $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.opencl.debuginfo.100.grammar.json
-	$(PYTHON) $(word 3, $^) --spirv-core-grammar=$< --extinst-debuginfo-grammar=$(word 2, $^) --extinst-cldebuginfo100-grammar=$(word 4, $^) --core-insts-output=core.insts-unified1.inc --operand-kinds-output=operand.kinds-unified1.inc
+core.insts-unified1.inc operand.kinds-unified1.inc: $(d)/utils/generate_grammar_tables.py $(d)/../SPIRV-Headers/include/spirv/unified1/spirv.core.grammar.json $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.debuginfo.grammar.json $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.opencl.debuginfo.100.grammar.json
+	$(PYTHON) $(word 1, $^) --spirv-core-grammar=$(word 2, $^) --extinst-debuginfo-grammar=$(word 3, $^) --extinst-cldebuginfo100-grammar=$(word 4, $^) --core-insts-output=core.insts-unified1.inc --operand-kinds-output=operand.kinds-unified1.inc
 
 
-debuginfo.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.debuginfo.grammar.json $(d)/utils/generate_grammar_tables.py
-	$(PYTHON) $(word 2, $^) --extinst-vendor-grammar=$< --vendor-insts-output=$@
+debuginfo.insts.inc: $(d)/utils/generate_grammar_tables.py $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.debuginfo.grammar.json
+	$(PYTHON) $(word 1, $^) --extinst-vendor-grammar=$(word 2, $^) --vendor-insts-output=$@
 
 
-DebugInfo.h: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.debuginfo.grammar.json $(d)/utils/generate_language_headers.py
-	$(PYTHON) $(word 2, $^) --extinst-grammar=$< --extinst-output-path=$@
+DebugInfo.h: $(d)/utils/generate_language_headers.py $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.debuginfo.grammar.json
+	$(PYTHON) $(word 1, $^) --extinst-grammar=$(word 2, $^) --extinst-output-path=$@
 
 
-OpenCLDebugInfo100.h: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.opencl.debuginfo.100.grammar.json $(d)/utils/generate_language_headers.py
-	$(PYTHON) $(word 2, $^) --extinst-grammar=$< --extinst-output-path=$@
+OpenCLDebugInfo100.h: $(d)/utils/generate_language_headers.py $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.opencl.debuginfo.100.grammar.json
+	$(PYTHON) $(word 1, $^) --extinst-grammar=$(word 2, $^) --extinst-output-path=$@
 
 
-enum_string_mapping.inc extension_enum.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/spirv.core.grammar.json $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.debuginfo.grammar.json $(d)/utils/generate_grammar_tables.py $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.opencl.debuginfo.100.grammar.json
-	$(PYTHON) $(word 3, $^) --spirv-core-grammar=$< --extinst-debuginfo-grammar=$(word 2, $^) --extinst-cldebuginfo100-grammar=$(word 4, $^) --extension-enum-output=extension_enum.inc --enum-string-mapping-output=enum_string_mapping.inc
+enum_string_mapping.inc extension_enum.inc: $(d)/utils/generate_grammar_tables.py $(d)/../SPIRV-Headers/include/spirv/unified1/spirv.core.grammar.json $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.debuginfo.grammar.json $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.opencl.debuginfo.100.grammar.json
+	$(PYTHON) $(word 1, $^) --spirv-core-grammar=$(word 2, $^) --extinst-debuginfo-grammar=$(word 3, $^) --extinst-cldebuginfo100-grammar=$(word 4, $^) --extension-enum-output=extension_enum.inc --enum-string-mapping-output=enum_string_mapping.inc
 
 
-generators.inc: $(d)/../SPIRV-Headers/include/spirv/spir-v.xml $(d)/utils/generate_registry_tables.py
-	$(PYTHON) $(word 2, $^) --xml=$< --generator-output=$@
+generators.inc: $(d)/utils/generate_registry_tables.py $(d)/../SPIRV-Headers/include/spirv/spir-v.xml
+	$(PYTHON) $(word 1, $^) --xml=$(word 2, $^) --generator-output=$@
 
 
-glsl.std.450.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.glsl.std.450.grammar.json $(d)/utils/generate_grammar_tables.py
-	$(PYTHON) $(word 2, $^) --extinst-glsl-grammar=$< --glsl-insts-output=$@
+glsl.std.450.insts.inc: $(d)/utils/generate_grammar_tables.py $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.glsl.std.450.grammar.json
+	$(PYTHON) $(word 1, $^) --extinst-glsl-grammar=$(word 2, $^) --glsl-insts-output=$@
 
 
-nonsemantic.clspvreflection.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.nonsemantic.clspvreflection.grammar.json $(d)/utils/generate_grammar_tables.py
-	$(PYTHON) $(word 2, $^) --extinst-vendor-grammar=$< --vendor-insts-output=$@ --vendor-operand-kind-prefix=
+nonsemantic.clspvreflection.insts.inc: $(d)/utils/generate_grammar_tables.py $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.nonsemantic.clspvreflection.grammar.json
+	$(PYTHON) $(word 1, $^) --extinst-vendor-grammar=$(word 2, $^) --vendor-insts-output=$@ --vendor-operand-kind-prefix=
 
-opencl.debuginfo.100.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.opencl.debuginfo.100.grammar.json $(d)/utils/generate_grammar_tables.py
-	$(PYTHON) $(word 2, $^) --extinst-vendor-grammar=$< --vendor-insts-output=$@ --vendor-operand-kind-prefix=CLDEBUG100_
+opencl.debuginfo.100.insts.inc: $(d)/utils/generate_grammar_tables.py $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.opencl.debuginfo.100.grammar.json
+	$(PYTHON) $(word 1, $^) --extinst-vendor-grammar=$(word 2, $^) --vendor-insts-output=$@ --vendor-operand-kind-prefix=CLDEBUG100_
 
-opencl.std.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.opencl.std.100.grammar.json $(d)/utils/generate_grammar_tables.py
-	$(PYTHON) $(word 2, $^) --extinst-opencl-grammar=$< --opencl-insts-output=$@
+opencl.std.insts.inc: $(d)/utils/generate_grammar_tables.py $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.opencl.std.100.grammar.json
+	$(PYTHON) $(word 1, $^) --extinst-opencl-grammar=$(word 2, $^) --opencl-insts-output=$@
 
-spv-amd-gcn-shader.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-gcn-shader.grammar.json $(d)/utils/generate_grammar_tables.py
-	$(PYTHON) $(word 2, $^) --extinst-vendor-grammar=$< --vendor-insts-output=$@
-
-
-spv-amd-shader-ballot.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-shader-ballot.grammar.json $(d)/utils/generate_grammar_tables.py
-	$(PYTHON) $(word 2, $^) --extinst-vendor-grammar=$< --vendor-insts-output=$@
+spv-amd-gcn-shader.insts.inc: $(d)/utils/generate_grammar_tables.py $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-gcn-shader.grammar.json
+	$(PYTHON) $(word 1, $^) --extinst-vendor-grammar=$(word 2, $^) --vendor-insts-output=$@
 
 
-spv-amd-shader-explicit-vertex-parameter.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-shader-explicit-vertex-parameter.grammar.json $(d)/utils/generate_grammar_tables.py
-	$(PYTHON) $(word 2, $^) --extinst-vendor-grammar=$< --vendor-insts-output=$@
+spv-amd-shader-ballot.insts.inc: $(d)/utils/generate_grammar_tables.py $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-shader-ballot.grammar.json
+	$(PYTHON) $(word 1, $^) --extinst-vendor-grammar=$(word 2, $^) --vendor-insts-output=$@
 
 
-spv-amd-shader-trinary-minmax.insts.inc: $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-shader-trinary-minmax.grammar.json $(d)/utils/generate_grammar_tables.py
-	$(PYTHON) $(word 2, $^) --extinst-vendor-grammar=$< --vendor-insts-output=$@
+spv-amd-shader-explicit-vertex-parameter.insts.inc: $(d)/utils/generate_grammar_tables.py $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-shader-explicit-vertex-parameter.grammar.json
+	$(PYTHON) $(word 1, $^) --extinst-vendor-grammar=$(word 2, $^) --vendor-insts-output=$@
+
+
+spv-amd-shader-trinary-minmax.insts.inc: $(d)/utils/generate_grammar_tables.py $(d)/../SPIRV-Headers/include/spirv/unified1/extinst.spv-amd-shader-trinary-minmax.grammar.json
+	$(PYTHON) $(word 1, $^) --extinst-vendor-grammar=$(word 2, $^) --vendor-insts-output=$@
 
 
 $(SRC_spirv-tools:.cpp=$(OBJSUFFIX)): $(SPV_GENERATED)
