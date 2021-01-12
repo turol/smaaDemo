@@ -152,10 +152,10 @@ BETTER_ENUM(DescriptorType, uint8_t
 )
 
 
-enum class FilterMode : uint8_t{
-	  Nearest
+BETTER_ENUM(FilterMode, uint8_t
+	, Nearest
 	, Linear
-};
+)
 
 
 enum class Format : uint8_t {
