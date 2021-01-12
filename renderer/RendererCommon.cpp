@@ -59,10 +59,6 @@ const char *descriptorTypeName(DescriptorType t) {
 	case DescriptorType::CombinedSampler:
 		return "CombinedSampler";
 
-	case DescriptorType::Count:
-		UNREACHABLE();  // shouldn't happen
-		return "Count";
-
 	}
 
 	UNREACHABLE();

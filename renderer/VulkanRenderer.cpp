@@ -122,7 +122,7 @@ template <typename T> void RendererImpl::debugNameObject(T handle, const std::st
 }
 
 
-static const std::array<vk::DescriptorType, uint8_t(DescriptorType::Count) - 1> descriptorTypes =
+static const std::array<vk::DescriptorType, DescriptorType::_size()> descriptorTypes =
 { {
 	  vk::DescriptorType::eUniformBuffer
 	, vk::DescriptorType::eStorageBuffer
@@ -3318,10 +3318,6 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layout
 
 			writes.push_back(write);
 		} break;
-
-		case DescriptorType::Count:
-			UNREACHABLE(); // shouldn't happen
-			break;
 
 		}
 

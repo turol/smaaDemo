@@ -1159,7 +1159,6 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 					break;
 
 				case DescriptorType::End:
-				case DescriptorType::Count:
 					assert(false);
 					break;
 				}
@@ -2300,10 +2299,6 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 
 			descriptors[idx] = combined;
 		} break;
-
-		case DescriptorType::Count:
-			UNREACHABLE(); // shouldn't happen
-			break;
 
 		}
 

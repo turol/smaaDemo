@@ -148,7 +148,6 @@ BETTER_ENUM(DescriptorType, uint8_t
 	, Sampler
 	, Texture
 	, CombinedSampler
-	, Count
 )
 
 
