@@ -715,6 +715,15 @@ SMAADemo::SMAADemo()
 	rendererDesc.swapchain.width  = 1280;
 	rendererDesc.swapchain.height = 720;
 
+	rendererDesc.applicationName           = "SMAA demo";
+	rendererDesc.applicationVersion.major  = 1;
+	rendererDesc.applicationVersion.minor  = 0;
+	rendererDesc.applicationVersion.patch  = 0;
+	rendererDesc.engineName                = "SMAA demo";
+	rendererDesc.engineVersion.major       = 1;
+	rendererDesc.engineVersion.minor       = 0;
+	rendererDesc.engineVersion.patch       = 0;
+
 	smaaQuality = maxSMAAQuality - 1;
 	smaaEdgeMethod  = SMAAEdgeMethod::Color;
 	smaaPredication = false;
