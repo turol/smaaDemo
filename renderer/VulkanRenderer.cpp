@@ -272,6 +272,11 @@ static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebug
 }
 
 
+static uint32_t makeVulkanVersion(const Version &v) {
+	return VK_MAKE_VERSION(v.major, v.minor, v.patch);
+};
+
+
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
 , frameAcquired(false)
@@ -408,10 +413,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	vk::ApplicationInfo appInfo;
-	appInfo.pApplicationName    = "SMAA demo";
-	appInfo.applicationVersion  = VK_MAKE_VERSION(1, 0, 0);
-	appInfo.pEngineName         = "SMAA demo";
-	appInfo.engineVersion       = VK_MAKE_VERSION(1, 0, 0);
+	appInfo.pApplicationName    = desc.applicationName.c_str();
+	appInfo.applicationVersion  = makeVulkanVersion(desc.applicationVersion);
+	appInfo.pEngineName         = desc.engineName.c_str();
+	appInfo.engineVersion       = makeVulkanVersion(desc.engineVersion);
 	appInfo.apiVersion          = VK_MAKE_VERSION(1, 0, 24);
 
 	vk::InstanceCreateInfo instanceCreateInfo;
