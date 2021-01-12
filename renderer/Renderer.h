@@ -122,13 +122,13 @@ typedef Handle<Sampler>              SamplerHandle;
 typedef Handle<Texture>              TextureHandle;
 
 
-enum class BlendFunc : uint8_t {
-	  Zero
+BETTER_ENUM(BlendFunc, uint8_t
+	, Zero
 	, One
 	, Constant
 	, SrcAlpha
 	, OneMinusSrcAlpha
-};
+)
 
 
 enum class BufferType : uint8_t {
