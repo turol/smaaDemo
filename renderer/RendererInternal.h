@@ -124,9 +124,6 @@ typedef Handle<FragmentShader>       FragmentShaderHandle;
 typedef Handle<VertexShader>         VertexShaderHandle;
 
 
-const char *descriptorTypeName(DescriptorType t);
-
-
 bool isDepthFormat(Format format);
 bool issRGBFormat(Format format);
 

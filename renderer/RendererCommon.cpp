@@ -39,33 +39,6 @@ THE SOFTWARE.
 namespace renderer {
 
 
-const char *descriptorTypeName(DescriptorType t) {
-	switch (t) {
-	case DescriptorType::End:
-		return "End";
-
-	case DescriptorType::UniformBuffer:
-		return "UniformBuffer";
-
-	case DescriptorType::StorageBuffer:
-		return "StorageBuffer";
-
-	case DescriptorType::Sampler:
-		return "Sampler";
-
-	case DescriptorType::Texture:
-		return "Texture";
-
-	case DescriptorType::CombinedSampler:
-		return "CombinedSampler";
-
-	}
-
-	UNREACHABLE();
-	return "ERROR!";
-}
-
-
 bool isDepthFormat(Format format) {
 	switch (format) {
 	case Format::Invalid:
