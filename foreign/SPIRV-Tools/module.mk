@@ -27,13 +27,11 @@ SPIRV-HEADERS_DIR:=$(d)/../SPIRV-Headers/include/spirv/unified1
 SPV_GENERATED:= \
 	build-version.inc \
 	core.insts-unified1.inc \
-	DebugInfo.h \
 	enum_string_mapping.inc \
 	extension_enum.inc \
 	generators.inc \
 	glsl.std.450.insts.inc \
 	opencl.std.insts.inc \
-	OpenCLDebugInfo100.h \
 	operand.kinds-unified1.inc \
 	# empty line
 
@@ -58,6 +56,21 @@ $(eval $(call spvtools_vendor_tables,opencl.debuginfo.100,cldi100,CLDEBUG100_) )
 $(eval $(call spvtools_vendor_tables,nonsemantic.clspvreflection,clspvreflection,) )
 
 
+# $(call spvtools_extinst_lang_headers, NAME, GRAMMAR_FILE)
+define spvtools_extinst_lang_headers
+
+$1.h: $(d)/utils/generate_language_headers.py $$(SPIRV-HEADERS_DIR)/$2
+	$$(PYTHON) $$(word 1, $$^) --extinst-grammar=$$(word 2, $$^) --extinst-output-path=$$@
+
+SPV_GENERATED+=$$(SPV_GENERATED) $1.h
+
+endef  # spvtools_extinst_lang_headers
+
+
+$(eval $(call spvtools_extinst_lang_headers,DebugInfo,extinst.debuginfo.grammar.json) )
+$(eval $(call spvtools_extinst_lang_headers,OpenCLDebugInfo100,extinst.opencl.debuginfo.100.grammar.json) )
+
+
 build-version.inc: $(d)/utils/update_build_version.py $(d)/CHANGES
 	$(PYTHON) $(word 1, $^) $(dir $(word 2, $^)) $@
 	# update_build_version.py doesn't touch the timestamp unless the file actually changes
@@ -66,14 +79,6 @@ build-version.inc: $(d)/utils/update_build_version.py $(d)/CHANGES
 
 core.insts-unified1.inc operand.kinds-unified1.inc: $(d)/utils/generate_grammar_tables.py $(SPIRV-HEADERS_DIR)/spirv.core.grammar.json $(SPIRV-HEADERS_DIR)/extinst.debuginfo.grammar.json $(SPIRV-HEADERS_DIR)/extinst.opencl.debuginfo.100.grammar.json
 	$(PYTHON) $(word 1, $^) --spirv-core-grammar=$(word 2, $^) --extinst-debuginfo-grammar=$(word 3, $^) --extinst-cldebuginfo100-grammar=$(word 4, $^) --core-insts-output=core.insts-unified1.inc --operand-kinds-output=operand.kinds-unified1.inc
-
-
-DebugInfo.h: $(d)/utils/generate_language_headers.py $(SPIRV-HEADERS_DIR)/extinst.debuginfo.grammar.json
-	$(PYTHON) $(word 1, $^) --extinst-grammar=$(word 2, $^) --extinst-output-path=$@
-
-
-OpenCLDebugInfo100.h: $(d)/utils/generate_language_headers.py $(SPIRV-HEADERS_DIR)/extinst.opencl.debuginfo.100.grammar.json
-	$(PYTHON) $(word 1, $^) --extinst-grammar=$(word 2, $^) --extinst-output-path=$@
 
 
 enum_string_mapping.inc extension_enum.inc: $(d)/utils/generate_grammar_tables.py $(SPIRV-HEADERS_DIR)/spirv.core.grammar.json $(SPIRV-HEADERS_DIR)/extinst.debuginfo.grammar.json $(SPIRV-HEADERS_DIR)/extinst.opencl.debuginfo.100.grammar.json
