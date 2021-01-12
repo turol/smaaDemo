@@ -986,7 +986,7 @@ bool RendererImpl::isRenderTargetFormatSupported(Format format) const {
 
 
 BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const void *contents) {
-	assert(type != BufferType::Invalid);
+	assert(type != +BufferType::Invalid);
 	assert(size != 0);
 	assert(contents != nullptr);
 
@@ -1071,7 +1071,7 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 
 
 BufferHandle RendererImpl::createEphemeralBuffer(BufferType type, uint32_t size, const void *contents) {
-	assert(type != BufferType::Invalid);
+	assert(type != +BufferType::Invalid);
 	assert(size != 0);
 	assert(contents != nullptr);
 
@@ -2918,7 +2918,7 @@ void RendererImpl::deleteBufferInternal(Buffer &b) {
 	this->device.destroyBuffer(b.buffer);
 	assert(b.memory != nullptr);
 	vmaFreeMemory(this->allocator, b.memory);
-	assert(b.type   != BufferType::Invalid);
+	assert(b.type   != +BufferType::Invalid);
 
 	b.buffer          = vk::Buffer();
 	b.ringBufferAlloc = false;
@@ -3175,7 +3175,7 @@ void RendererImpl::bindIndexBuffer(BufferHandle buffer, bool bit16) {
 
 	auto &b = buffers.get(buffer);
 	b.lastUsedFrame = frameNum;
-	assert(b.type == BufferType::Index);
+	assert(b.type == +BufferType::Index);
 	// "normal" buffers begin from beginning of buffer
 	vk::DeviceSize offset = 0;
 	if (b.ringBufferAlloc) {
@@ -3192,7 +3192,7 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 
 	auto &b = buffers.get(buffer);
 	b.lastUsedFrame = frameNum;
-	assert(b.type == BufferType::Vertex);
+	assert(b.type == +BufferType::Vertex);
 	// "normal" buffers begin from beginning of buffer
 	vk::DeviceSize offset = 0;
 	if (b.ringBufferAlloc) {
@@ -3248,8 +3248,8 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layout
 			Buffer &buffer = buffers.get(handle);
 			assert(buffer.size > 0);
 			buffer.lastUsedFrame = frameNum;
-			assert((buffer.type == BufferType::Uniform && l.type == DescriptorType::UniformBuffer)
-			    || (buffer.type == BufferType::Storage && l.type == DescriptorType::StorageBuffer));
+			assert((buffer.type == +BufferType::Uniform && l.type == DescriptorType::UniformBuffer)
+			    || (buffer.type == +BufferType::Storage && l.type == DescriptorType::StorageBuffer));
 
 			vk::DescriptorBufferInfo  bufWrite;
 			bufWrite.buffer = buffer.buffer;

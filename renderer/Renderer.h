@@ -131,14 +131,14 @@ BETTER_ENUM(BlendFunc, uint8_t
 )
 
 
-enum class BufferType : uint8_t {
-	  Invalid
+BETTER_ENUM(BufferType, uint8_t
+	, Invalid
 	, Index
 	, Uniform
 	, Storage
 	, Vertex
 	, Everything
-};
+)
 
 
 enum class DescriptorType : uint8_t {

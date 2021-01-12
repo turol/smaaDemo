@@ -118,7 +118,7 @@ struct Buffer {
 		assert(size   == 0);
 		assert(offset == 0);
 		assert(!buffer);
-		assert(type == BufferType::Invalid);
+		assert(type == +BufferType::Invalid);
 	}
 };
 
