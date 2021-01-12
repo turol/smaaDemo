@@ -67,6 +67,7 @@ target_compile_definitions(smaaDemo PRIVATE
 target_include_directories(smaaDemo PRIVATE
 		${PROJECT_SOURCE_DIR}
 		${Vulkan_INCLUDE_DIRS}
+		foreign
 		foreign/glm
 		foreign/imgui
 		foreign/pcg-cpp/include

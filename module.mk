@@ -59,6 +59,7 @@ CFLAGS+=-DENABLE_HLSL
 CFLAGS+=-I.
 CFLAGS+=-Iforeign
 CFLAGS+=-I$(TOPDIR)
+CFLAGS+=-isystem$(TOPDIR)/foreign
 CFLAGS+=-isystem$(TOPDIR)/foreign/glew/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/glm
 CFLAGS+=-isystem$(TOPDIR)/foreign/imgui
