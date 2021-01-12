@@ -516,7 +516,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	}
 
-	window = SDL_CreateWindow("SMAA Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, desc.swapchain.width, desc.swapchain.height, flags);
+	window = SDL_CreateWindow(desc.applicationName.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, desc.swapchain.width, desc.swapchain.height, flags);
 
 	if (!window) {
 		LOG("SDL_CreateWindow failed: %s\n", SDL_GetError());
