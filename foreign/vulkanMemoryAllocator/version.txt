@@ -1,7 +1,9 @@
-commit d00c9b6ff82cc58d64123755a0314b3fa9885eff
-Author: Nils Petter Skålerud <np_skalerud@hotmail.com>
-Date:   Thu Mar 19 19:38:52 2020 +0100
+commit f2012055ccda1fa3b27600c2cd7b457d74ded785
+Author: Adam Sawicki <adam.sawicki@amd.com>
+Date:   Mon Jan 11 18:04:42 2021 +0100
 
-    Fixed bug where pUserData was not being assigned during initialization.
+    Added support for VK_EXT_memory_priority
     
-    Signed-off-by: Nils Petter Skålerud <np_skalerud@hotmail.com>
+    Added VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT, VmaAllocationCreateInfo::priority, VmaPoolCreateInfo::priority.
+    
+    See #160

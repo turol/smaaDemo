@@ -58,6 +58,8 @@ include all public interface declarations. Example:
 //#define VMA_USE_STL_SHARED_MUTEX 0
 //#define VMA_DEBUG_GLOBAL_MUTEX 1
 //#define VMA_MEMORY_BUDGET 0
+#define VMA_STATIC_VULKAN_FUNCTIONS 0
+#define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
 
 //#define VMA_VULKAN_VERSION 1002000 // Vulkan 1.2
 #define VMA_VULKAN_VERSION 1001000 // Vulkan 1.1
@@ -84,6 +86,7 @@ include all public interface declarations. Example:
     #pragma clang diagnostic ignored "-Wunused-private-field"
     #pragma clang diagnostic ignored "-Wunused-parameter"
     #pragma clang diagnostic ignored "-Wmissing-field-initializers"
+    #pragma clang diagnostic ignored "-Wnullability-completeness"
 #endif
 
 #include "vk_mem_alloc.h"

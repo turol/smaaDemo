@@ -69,7 +69,6 @@ extern VkPhysicalDevice g_hPhysicalDevice;
 extern VkDevice g_hDevice;
 extern VkInstance g_hVulkanInstance;
 extern VmaAllocator g_hAllocator;
-extern bool g_MemoryAliasingWarningEnabled;
 extern bool VK_AMD_device_coherent_memory_enabled;
 
 void SetAllocatorCreateInfo(VmaAllocatorCreateInfo& outInfo);
@@ -97,6 +96,29 @@ static inline T align_up(T val, T align)
 }
 
 static const float PI = 3.14159265358979323846264338327950288419716939937510582f;
+
+template<typename MainT, typename NewT>
+inline void PnextChainPushFront(MainT* mainStruct, NewT* newStruct)
+{
+    newStruct->pNext = mainStruct->pNext;
+    mainStruct->pNext = newStruct;
+}
+template<typename MainT, typename NewT>
+inline void PnextChainPushBack(MainT* mainStruct, NewT* newStruct)
+{
+    struct VkAnyStruct
+    {
+        VkStructureType sType;
+        void* pNext;
+    };
+    VkAnyStruct* lastStruct = (VkAnyStruct*)mainStruct;
+    while(lastStruct->pNext != nullptr)
+    {
+        lastStruct = (VkAnyStruct*)lastStruct->pNext;
+    }
+    newStruct->pNext = nullptr;
+    lastStruct->pNext = newStruct;
+}
 
 struct vec3
 {
