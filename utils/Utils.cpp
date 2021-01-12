@@ -22,6 +22,7 @@ THE SOFTWARE.
 
 
 #include <cassert>
+#include <cerrno>
 #include <cstring>
 
 #include <sys/stat.h>
