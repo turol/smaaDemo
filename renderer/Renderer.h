@@ -141,15 +141,15 @@ BETTER_ENUM(BufferType, uint8_t
 )
 
 
-enum class DescriptorType : uint8_t {
-	  End
+BETTER_ENUM(DescriptorType, uint8_t
+	, End
 	, UniformBuffer
 	, StorageBuffer
 	, Sampler
 	, Texture
 	, CombinedSampler
 	, Count
-};
+)
 
 
 enum class FilterMode : uint8_t{

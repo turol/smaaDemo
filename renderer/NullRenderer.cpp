@@ -205,7 +205,7 @@ DSLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout *l
 	auto result = dsLayouts.add();
 	DescriptorSetLayout &dsLayout = result.first;
 
-	while (layout->type != DescriptorType::End) {
+	while (layout->type != +DescriptorType::End) {
 		dsLayout.layout.push_back(*layout);
 		layout++;
 	}

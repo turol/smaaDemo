@@ -1928,7 +1928,7 @@ DSLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout *l
 
 	unsigned int i = 0;
 	std::vector<DescriptorLayout> descriptors;
-	while (layout->type != DescriptorType::End) {
+	while (layout->type != +DescriptorType::End) {
 		vk::DescriptorSetLayoutBinding b;
 
 		b.binding         = i;
@@ -3248,8 +3248,8 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layout
 			Buffer &buffer = buffers.get(handle);
 			assert(buffer.size > 0);
 			buffer.lastUsedFrame = frameNum;
-			assert((buffer.type == +BufferType::Uniform && l.type == DescriptorType::UniformBuffer)
-			    || (buffer.type == +BufferType::Storage && l.type == DescriptorType::StorageBuffer));
+			assert((buffer.type == +BufferType::Uniform && l.type == +DescriptorType::UniformBuffer)
+			    || (buffer.type == +BufferType::Storage && l.type == +DescriptorType::StorageBuffer));
 
 			vk::DescriptorBufferInfo  bufWrite;
 			bufWrite.buffer = buffer.buffer;

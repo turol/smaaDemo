@@ -995,7 +995,7 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 			throw std::runtime_error("UBO not in descriptor sets");
 		}
 
-		assert(it->second.type == DescriptorType::UniformBuffer);
+		assert(it->second.type == +DescriptorType::UniformBuffer);
 		unsigned int openglIDX = it->second.glIndex;
 		assert(openglIDX < shaderResources.ubos.size());
 		assert(shaderResources.ubos[openglIDX] == idx);
@@ -1033,7 +1033,7 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 			throw std::runtime_error("SSBO not in descriptor sets");
 		}
 
-		assert(it->second.type == DescriptorType::StorageBuffer);
+		assert(it->second.type == +DescriptorType::StorageBuffer);
 		unsigned int openglIDX = it->second.glIndex;
 		assert(openglIDX < shaderResources.ssbos.size());
 		assert(shaderResources.ssbos[openglIDX] == idx);
@@ -1062,7 +1062,7 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 			throw std::runtime_error("Sampled image not in descriptor sets");
 		}
 
-		assert(it->second.type == DescriptorType::CombinedSampler);
+		assert(it->second.type == +DescriptorType::CombinedSampler);
 		unsigned int openglIDX = it->second.glIndex;
 		assert(openglIDX < shaderResources.textures.size());
 		assert(openglIDX < shaderResources.samplers.size());
@@ -1505,7 +1505,7 @@ DSLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout *l
 	auto result = dsLayouts.add();
 	DescriptorSetLayout &dsLayout = result.first;
 
-	while (layout->type != DescriptorType::End) {
+	while (layout->type != +DescriptorType::End) {
 		dsLayout.descriptors.push_back(*layout);
 		layout++;
 	}
