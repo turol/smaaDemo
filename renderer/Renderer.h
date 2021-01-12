@@ -34,6 +34,8 @@ THE SOFTWARE.
 
 #include <SDL.h>
 
+#include <better-enums/enum.h>
+
 #include "utils/Hash.h"
 #include "utils/Utils.h"  // for isPow2
 
