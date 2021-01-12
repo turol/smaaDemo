@@ -193,11 +193,11 @@ enum class PassBegin : uint8_t {
 };
 
 
-enum class VSync : uint8_t {
-	  Off
+BETTER_ENUM(VSync, uint8_t
+	, Off
 	, On
 	, LateSwapTear
-};
+)
 
 
 enum class VtxFormat : uint8_t {

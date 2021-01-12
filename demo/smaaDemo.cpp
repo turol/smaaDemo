@@ -3211,15 +3211,15 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				recreateSwapchain = true;
 			}
 
-			int vsyncTemp = static_cast<int>(rendererDesc.swapchain.vsync);
+			int vsyncTemp = rendererDesc.swapchain.vsync._to_integral();
 			ImGui::Text("V-Sync");
 			ImGui::RadioButton("Off",            &vsyncTemp, 0);
 			ImGui::RadioButton("On",             &vsyncTemp, 1);
 			ImGui::RadioButton("Late swap tear", &vsyncTemp, 2);
 
-			if (vsyncTemp != static_cast<int>(rendererDesc.swapchain.vsync)) {
+			if (vsyncTemp != rendererDesc.swapchain.vsync._to_integral()) {
 				recreateSwapchain = true;
-				rendererDesc.swapchain.vsync = static_cast<VSync>(vsyncTemp);
+				rendererDesc.swapchain.vsync = VSync::_from_integral(vsyncTemp);
 			}
 
 			int n = rendererDesc.swapchain.numFrames;
