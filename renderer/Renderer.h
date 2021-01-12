@@ -790,6 +790,28 @@ private:
 };
 
 
+struct Version {
+	unsigned int  major;
+	unsigned int  minor;
+	unsigned int  patch;
+
+	Version()
+	: major(0)
+	, minor(0)
+	, patch(0)
+	{
+	}
+
+	Version(const Version &)                = default;
+	Version &operator=(const Version &)     = default;
+
+	Version(Version &&) noexcept            = default;
+	Version &operator=(Version &&) noexcept = default;
+
+	~Version() {}
+};
+
+
 struct RendererDesc {
 	bool           debug;
 	bool           robustness;
@@ -800,6 +822,10 @@ struct RendererDesc {
 	bool           transferQueue;
 	unsigned int   ephemeralRingBufSize;
 	SwapchainDesc  swapchain;
+	std::string    applicationName;
+	Version        applicationVersion;
+	std::string    engineName;
+	Version        engineVersion;
 
 
 	RendererDesc()
