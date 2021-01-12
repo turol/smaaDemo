@@ -686,8 +686,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	VmaAllocatorCreateInfo allocatorInfo = {};
 	allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_0;
-	allocatorInfo.physicalDevice = physicalDevice;
-	allocatorInfo.device         = device;
+	allocatorInfo.physicalDevice   = physicalDevice;
+	allocatorInfo.device           = device;
 	allocatorInfo.instance         = instance;
 	if (dedicatedAllocation) {
 		LOG("Dedicated allocations enabled\n");
