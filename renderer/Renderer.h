@@ -203,10 +203,10 @@ BETTER_ENUM(VSync, uint8_t
 )
 
 
-enum class VtxFormat : uint8_t {
-	  Float
+BETTER_ENUM(VtxFormat, uint8_t
+	, Float
 	, UNorm8
-};
+)
 
 
 BETTER_ENUM(WrapMode, uint8_t
