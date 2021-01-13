@@ -34,6 +34,10 @@ THE SOFTWARE.
 
 #include <SDL.h>
 
+#define BETTER_ENUMS_DEFAULT_CONSTRUCTOR(Enum) \
+  public:                                      \
+    Enum() = default;
+
 #include <better-enums/enum.h>
 
 #include "utils/Hash.h"
