@@ -684,7 +684,7 @@ public:
 			struct DebugVisitor final : public boost::static_visitor<void> {
 				RenderGraph &rg;
 
-	
+
 				DebugVisitor(RenderGraph &rg_)
 				: rg(rg_)
 				{
