@@ -1181,8 +1181,8 @@ void SMAADemo::initRender() {
 	TextureDesc texDesc;
 	texDesc.width(AREATEX_WIDTH)
 	       .height(AREATEX_HEIGHT)
-	       .format(Format::RG8);
-	texDesc.name("SMAA area texture");
+	       .format(Format::RG8)
+	       .name("SMAA area texture");
 
 	if (flipSMAATextures) {
 		std::vector<unsigned char> tempBuffer(AREATEX_SIZE);
