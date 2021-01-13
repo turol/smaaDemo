@@ -95,29 +95,6 @@ BETTER_ENUM(AAMethod, uint8_t
 )
 
 
-const char *name(AAMethod m) {
-	switch (m) {
-	case AAMethod::MSAA:
-		return "MSAA";
-		break;
-
-	case AAMethod::FXAA:
-		return "FXAA";
-		break;
-
-	case AAMethod::SMAA:
-		return "SMAA";
-		break;
-
-	case AAMethod::SMAA2X:
-		return "SMAA2X";
-		break;
-	}
-
-	UNREACHABLE();
-}
-
-
 const char *smaaDebugModes[3] = { "None", "Edges", "Weights" };
 
 static const unsigned int inputTextBufferSize = 1024;
