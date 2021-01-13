@@ -69,12 +69,14 @@ target_include_directories(smaaDemo PRIVATE
 		${Vulkan_INCLUDE_DIRS}
 		foreign
 		foreign/glm
+		foreign/glslang
 		foreign/imgui
 		foreign/pcg-cpp/include
 		foreign/SPIRV-Cross
 		foreign/stb
 		foreign/tclap/include
 		foreign/vulkanMemoryAllocator/src
+		foreign/xxHash
 	)
 
 target_link_libraries(smaaDemo
