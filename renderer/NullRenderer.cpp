@@ -144,7 +144,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc) {
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
-	assert(desc.format_ != Format::Invalid);
+	assert(desc.format_ != +Format::Invalid);
 
 	auto result = rendertargets.add();
 	auto &rendertarget = result.first;

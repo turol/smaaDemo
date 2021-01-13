@@ -1172,7 +1172,7 @@ void SMAADemo::initRender() {
 			break;
 		}
 	}
-	if (depthFormat == Format::Invalid) {
+	if (depthFormat == +Format::Invalid) {
 		throw std::runtime_error("no supported depth formats");
 	}
 	LOG("Using depth format %s\n", formatName(depthFormat));

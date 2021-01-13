@@ -1227,7 +1227,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 
 	unsigned int numColorAttachments = 0;
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-		if (desc.colorRTs_[i].format == Format::Invalid) {
+		if (desc.colorRTs_[i].format == +Format::Invalid) {
 			assert(desc.colorRTs_[i].initialLayout == +Layout::Undefined);
 			// TODO: could be break, it's invalid to have holes in attachment list
 			// but should check that
@@ -1284,7 +1284,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	subpass.colorAttachmentCount = static_cast<uint32_t>(colorAttachments.size());
 	subpass.pColorAttachments    = &colorAttachments[0];
 
-	bool hasDepthStencil = (desc.depthStencilFormat_ != Format::Invalid);
+	bool hasDepthStencil = (desc.depthStencilFormat_ != +Format::Invalid);
 	vk::AttachmentReference depthAttachment;
 	if (hasDepthStencil) {
 		vk::ImageLayout layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
@@ -1363,7 +1363,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		d.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentWrite;
 
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-			if (desc.colorRTs_[i].format == Format::Invalid) {
+			if (desc.colorRTs_[i].format == +Format::Invalid) {
 				assert(desc.colorRTs_[i].initialLayout == +Layout::Undefined);
 				// TODO: could be break, it's invalid to have holes in attachment list
 				// but should check that
@@ -1606,7 +1606,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc) {
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
-	assert(desc.format_ != Format::Invalid);
+	assert(desc.format_ != +Format::Invalid);
 	assert(isPow2(desc.numSamples_));
 	assert(!desc.name_.empty());
 
@@ -1614,7 +1614,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 
 	vk::Format format = vulkanFormat(desc.format_);
 	vk::ImageCreateInfo info;
-	if (desc.additionalViewFormat_ != Format::Invalid) {
+	if (desc.additionalViewFormat_ != +Format::Invalid) {
 		info.flags   = vk::ImageCreateFlagBits::eMutableFormat;
 	}
 	info.imageType   = vk::ImageType::e2D;
@@ -1679,7 +1679,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	// TODO: std::move ?
 	rt.texture = texResult.second;
 
-	if (desc.additionalViewFormat_ != Format::Invalid) {
+	if (desc.additionalViewFormat_ != +Format::Invalid) {
 		assert(isDepthFormat(desc.format_) == isDepthFormat(desc.additionalViewFormat_));
 		auto viewResult   = textures.add();
 		Texture &view     = viewResult.first;

@@ -161,8 +161,8 @@ BETTER_ENUM(FilterMode, uint8_t
 )
 
 
-enum class Format : uint8_t {
-	  Invalid
+BETTER_ENUM(Format, uint8_t
+	, Invalid
 	, R8
 	, RG8
 	, RGB8
@@ -176,7 +176,7 @@ enum class Format : uint8_t {
 	, Depth24S8
 	, Depth24X8
 	, Depth32Float
-};
+)
 
 
 BETTER_ENUM(Layout, uint8_t

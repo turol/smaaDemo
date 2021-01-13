@@ -584,7 +584,7 @@ public:
 						assert(rtIt != rg.rendertargets.end());
 
 						Format fmt = getFormat(rtIt->second);
-						assert(fmt != Format::Invalid);
+						assert(fmt != +Format::Invalid);
 
 						rpDesc.depthStencil(fmt, PassBegin::DontCare);
 						if (desc.clearDepthAttachment) {
@@ -600,7 +600,7 @@ public:
 
 							// get format
 							Format fmt = getFormat(rtIt->second);
-							assert(fmt != Format::Invalid);
+							assert(fmt != +Format::Invalid);
 
 							auto pb = desc.colorRTs_[i].passBegin;
 							// TODO: check this, might need a forward pass over operations
@@ -830,7 +830,7 @@ public:
 
 					// get format
 					Format fmt = getFormat(rtIt->second);
-					assert(fmt != Format::Invalid);
+					assert(fmt != +Format::Invalid);
 
 					{
 						// get view from renderer, add to res
@@ -842,7 +842,7 @@ public:
 
 					// do the same for additional view format if there is one
 					Format additionalFmt = getAdditionalViewFormat(rtIt->second);
-					if (additionalFmt != Format::Invalid) {
+					if (additionalFmt != +Format::Invalid) {
 						assert(additionalFmt != fmt);
 						TextureHandle view = r.getRenderTargetView(getHandle(rtIt->second), additionalFmt);
 						res.rendertargets.emplace(std::make_pair(inputRT, additionalFmt), view);

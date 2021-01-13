@@ -540,7 +540,7 @@ struct Texture {
 		assert(tex == 0);
 		assert(!renderTarget);
 		assert(target == GL_NONE);
-		assert(format == Format::Invalid);
+		assert(format == +Format::Invalid);
 	}
 };
 

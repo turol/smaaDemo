@@ -1303,7 +1303,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 		fb.depthStencil = desc.depthStencil_;
 		glNamedFramebufferTexture(fb.fbo, GL_DEPTH_ATTACHMENT, depthRTtex.tex, 0);
 	} else {
-		assert(renderPass.desc.depthStencilFormat_ == Format::Invalid);
+		assert(renderPass.desc.depthStencilFormat_ == +Format::Invalid);
 	}
 
 	assert(isRenderPassCompatible(renderPass, fb));
@@ -1362,7 +1362,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc) {
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
-	assert(desc.format_ != Format::Invalid);
+	assert(desc.format_ != +Format::Invalid);
 	assert(isPow2(desc.numSamples_));
 	assert(!desc.name_.empty());
 
@@ -1400,7 +1400,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	// TODO: std::move?
 	rt.texture = textureResult.second;
 
-	if (desc.additionalViewFormat_ != Format::Invalid) {
+	if (desc.additionalViewFormat_ != +Format::Invalid) {
 		GLuint viewId = 0;
 		glGenTextures(1, &viewId);
 		glTextureView(viewId, tex.target, id, glTexFormat(desc.additionalViewFormat_), 0, 1, 0, 1);
@@ -2319,7 +2319,7 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 			return false;
 		}
 	} else {
-		if (pass.desc.depthStencilFormat_ != Format::Invalid) {
+		if (pass.desc.depthStencilFormat_ != +Format::Invalid) {
 			return false;
 		}
 	}
@@ -2332,7 +2332,7 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 				return false;
 			}
 		} else {
-			if (pass.desc.colorRTs_[i].format != Format::Invalid) {
+			if (pass.desc.colorRTs_[i].format != +Format::Invalid) {
 				return false;
 			}
 		}
