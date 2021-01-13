@@ -121,57 +121,6 @@ bool issRGBFormat(Format format) {
 }
 
 
-const char *formatName(Format format) {
-   switch (format) {
-	case Format::Invalid:
-		return "Invalid";
-
-	case Format::R8:
-		return "R8";
-
-	case Format::RG8:
-		return "RG8";
-
-	case Format::RGB8:
-		return "RGB8";
-
-	case Format::RGBA8:
-		return "RGBA8";
-
-	case Format::sRGBA8:
-		return "sRGBA8";
-
-	case Format::RG16Float:
-		return "RG16Float";
-
-	case Format::RGBA16Float:
-		return "RGBA16Float";
-
-	case Format::RGBA32Float:
-		return "RGBA32Float";
-
-	case Format::Depth16:
-		return "Depth16";
-
-	case Format::Depth16S8:
-		return "Depth16S8";
-
-	case Format::Depth24S8:
-		return "Depth24S8";
-
-	case Format::Depth24X8:
-		return "Depth24X8";
-
-	case Format::Depth32Float:
-		return "Depth32Float";
-
-	}
-
-	UNREACHABLE();
-	return "";
-}
-
-
 uint32_t formatSize(Format format) {
 	switch (format) {
 	case Format::Invalid:
