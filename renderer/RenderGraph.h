@@ -692,7 +692,7 @@ public:
 
 
 				void operator()(const Blit &b) const {
-					LOG("Blit %s -> %s\t%s\n", to_string(b.source), to_string(b.dest), layoutName(b.finalLayout));
+					LOG("Blit %s -> %s\t%s\n", to_string(b.source), to_string(b.dest), b.finalLayout._to_string());
 				}
 
 				void operator()(const RP &rpId) const {
@@ -709,7 +709,7 @@ public:
 					for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 						if (desc.colorRTs_[i].id != Default<RT>::value) {
 							const auto &rt = rpDesc.color(i);
-							LOG(" color %u: %s\t%s\t%s\t%s\n", i, to_string(desc.colorRTs_[i].id), passBeginName(rt.passBegin), layoutName(rt.initialLayout), layoutName(rt.finalLayout));
+							LOG(" color %u: %s\t%s\t%s\t%s\n", i, to_string(desc.colorRTs_[i].id), passBeginName(rt.passBegin), rt.initialLayout._to_string(), rt.finalLayout._to_string());
 						}
 					}
 
@@ -729,7 +729,7 @@ public:
 				}
 
 				void operator()(const ResolveMSAA &r) const {
-					LOG("ResolveMSAA %s -> %s\t%s\n", to_string(r.source), to_string(r.dest), layoutName(r.finalLayout));
+					LOG("ResolveMSAA %s -> %s\t%s\n", to_string(r.source), to_string(r.dest), r.finalLayout._to_string());
 				}
 			};
 
