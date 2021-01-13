@@ -1722,7 +1722,7 @@ SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
 	info.minFilter = vulkanFiltermode(desc.min);
 
 	vk::SamplerAddressMode m = vk::SamplerAddressMode::eClampToEdge;
-	if (desc.wrapMode == WrapMode::Wrap) {
+	if (desc.wrapMode == +WrapMode::Wrap) {
 		m = vk::SamplerAddressMode::eRepeat;
 	}
 	info.addressModeU = m;

@@ -205,10 +205,10 @@ enum class VtxFormat : uint8_t {
 };
 
 
-enum class WrapMode : uint8_t {
-	  Clamp
+BETTER_ENUM(WrapMode, uint8_t
+	, Clamp
 	, Wrap
-};
+)
 
 
 // CombinedSampler helper
