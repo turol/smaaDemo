@@ -92,7 +92,6 @@ BETTER_ENUM(AAMethod, uint8_t
 	, FXAA
 	, SMAA
 	, SMAA2X
-	, LAST = SMAA2X
 )
 
 
@@ -2184,14 +2183,14 @@ void SMAADemo::processInput() {
 				break;
 
 			case SDL_SCANCODE_M: {
-				int i = aaMethod._to_integral() + (AAMethod::_size() - 1);
+				int i = aaMethod._to_integral() + AAMethod::_size();
 
 				if (leftShift || rightShift) {
 					i = i - 1;
 				} else {
 					i = i + 1;
 				}
-				i = i % (AAMethod::_size() - 1);
+				i = i % AAMethod::_size();
 				aaMethod = AAMethod::_from_integral(i);
 				rebuildRG = true;
 				} break;
