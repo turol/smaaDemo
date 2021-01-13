@@ -129,7 +129,7 @@ public:
 
 private:
 
-	enum class State : uint8_t {
+	enum class RGState : uint8_t {
 		  Invalid
 		, Building
 		, Ready
@@ -353,7 +353,7 @@ private:
 	typedef boost::variant<Blit, RP, ResolveMSAA> Operation;
 
 
-	State                                            state;
+	RGState                                          state;
 	std::exception_ptr                               storedException;
 	bool                                             hasExternalRTs;
 	RP                                               currentRP;
@@ -380,7 +380,7 @@ public:
 
 
 	RenderGraph()
-	: state(State::Invalid)
+	: state(RGState::Invalid)
 	, hasExternalRTs(false)
 	, currentRP(Default<RP>::value)
 	, finalTarget(Default<RT>::value)
@@ -393,8 +393,8 @@ public:
 
 
 	void reset(Renderer &renderer, std::function<void(void)> processEvents) {
-		assert(state == State::Invalid || state == State::Ready);
-		state = State::Building;
+		assert(state == RGState::Invalid || state == RGState::Ready);
+		state = RGState::Building;
 
 		renderPasses.clear();
 		renderpassesWithExternalRTs.clear();
@@ -443,7 +443,7 @@ public:
 
 
 	void renderTarget(RT rt, const RenderTargetDesc &desc) {
-		assert(state == State::Building);
+		assert(state == RGState::Building);
 		assert(rt != Default<RT>::value);
 
 		InternalRT temp1;
@@ -454,7 +454,7 @@ public:
 
 
 	void externalRenderTarget(RT rt, Format format, Layout initialLayout, Layout finalLayout) {
-		assert(state == State::Building);
+		assert(state == RGState::Building);
 		assert(rt != Default<RT>::value);
 		assert(rendertargets.find(rt) == rendertargets.end());
 
@@ -471,7 +471,7 @@ public:
 
 
 	void renderPass(RP rp, const PassDesc &desc, RenderPassFunc f) {
-		assert(state == State::Building);
+		assert(state == RGState::Building);
 
 		RenderPass temp1;
 		temp1.desc   = desc;
@@ -485,7 +485,7 @@ public:
 
 
 	void resolveMSAA(RT source, RT dest) {
-		assert(state == State::Building);
+		assert(state == RGState::Building);
 
 		ResolveMSAA op;
 		op.source = source;
@@ -495,7 +495,7 @@ public:
 
 
 	void blit(RT source, RT dest) {
-		assert(state == State::Building);
+		assert(state == RGState::Building);
 
 		Blit op;
 		op.source = source;
@@ -505,7 +505,7 @@ public:
 
 
 	void presentRenderTarget(RT rt) {
-		assert(state == State::Building);
+		assert(state == RGState::Building);
 		assert(rt != Default<RT>::value);
 
 		finalTarget = rt;
@@ -513,8 +513,8 @@ public:
 
 
 	void build(Renderer &renderer) {
-		assert(state == State::Building);
-		state = State::Ready;
+		assert(state == RGState::Building);
+		state = RGState::Ready;
 
 		assert(finalTarget != Default<RT>::value);
 
@@ -744,7 +744,7 @@ public:
 
 
 	void bindExternalRT(RT rt, RenderTargetHandle handle) {
-		assert(state == State::Ready);
+		assert(state == RGState::Ready);
 		assert(handle);
 
 		auto it = rendertargets.find(rt);
@@ -760,8 +760,8 @@ public:
 
 
 	void render(Renderer &renderer) {
-		assert(state == State::Ready);
-		state = State::Rendering;
+		assert(state == RGState::Ready);
+		state = RGState::Rendering;
 
 		if (hasExternalRTs) {
 			bool hasExternal = false;
@@ -892,8 +892,8 @@ public:
 			renderer.presentFrame(getHandle(it->second));
 		}
 
-		assert(state == State::Rendering);
-		state = State::Ready;
+		assert(state == RGState::Rendering);
+		state = RGState::Ready;
 
 		assert(currentRP == Default<RP>::value);
 
@@ -929,7 +929,7 @@ public:
 
 
 	PipelineHandle createPipeline(Renderer &renderer, RP rp, PipelineDesc &desc) {
-		assert(state == State::Ready || state == State::Rendering);
+		assert(state == RGState::Ready || state == RGState::Rendering);
 
 		auto it = renderPasses.find(rp);
 		assert(it != renderPasses.end());
