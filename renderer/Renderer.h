@@ -189,11 +189,11 @@ BETTER_ENUM(Layout, uint8_t
 
 
 // rendertarget behavior when RenderPass begins
-enum class PassBegin : uint8_t {
-	  DontCare
+BETTER_ENUM(PassBegin, uint8_t
+	, DontCare
 	, Keep
 	, Clear
-};
+)
 
 
 BETTER_ENUM(VSync, uint8_t
@@ -540,7 +540,7 @@ struct RenderPassDesc {
 		colorRTs_[index].passBegin      = pb;
 		colorRTs_[index].initialLayout  = initial;
 		colorRTs_[index].finalLayout    = final;
-		if (pb == PassBegin::Clear) {
+		if (pb == +PassBegin::Clear) {
 			colorRTs_[index].clearValue = clear;
 		}
 		return *this;

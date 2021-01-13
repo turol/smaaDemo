@@ -81,7 +81,7 @@ public:
 			assert(id != Default<RT>::value);
 			colorRTs_[index].id             = id;
 			colorRTs_[index].passBegin      = pb;
-			if (pb == PassBegin::Clear) {
+			if (pb == +PassBegin::Clear) {
 				colorRTs_[index].clearValue = clear;
 			}
 			return *this;
@@ -605,7 +605,7 @@ public:
 							auto pb = desc.colorRTs_[i].passBegin;
 							// TODO: check this, might need a forward pass over operations
 							Layout initial = Layout::Undefined;
-							if (pb == PassBegin::Keep) {
+							if (pb == +PassBegin::Keep) {
 								initial = Layout::ColorAttachment;
 							}
 

@@ -2004,7 +2004,7 @@ void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle 
 	}
 
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-		if (rp.desc.colorRTs_[i].passBegin == PassBegin::Clear) {
+		if (rp.desc.colorRTs_[i].passBegin == +PassBegin::Clear) {
 			glClearBufferfv(GL_COLOR, i, glm::value_ptr(rp.desc.colorRTs_[i].clearValue));
 		}
 
