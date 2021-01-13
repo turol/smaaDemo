@@ -2980,13 +2980,14 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			}
 
 			int aa = aaMethod._to_integral();
-			ImGui::RadioButton("MSAA", &aa, static_cast<int>(AAMethod::MSAA));
-			ImGui::SameLine();
-			ImGui::RadioButton("FXAA", &aa, static_cast<int>(AAMethod::FXAA));
-			ImGui::SameLine();
-			ImGui::RadioButton("SMAA", &aa, static_cast<int>(AAMethod::SMAA));
-			ImGui::SameLine();
-			ImGui::RadioButton("SMAA2X", &aa, static_cast<int>(AAMethod::SMAA2X));
+			bool first = true;
+			for (AAMethod a : AAMethod::_values()) {
+				if (!first) {
+					ImGui::SameLine();
+				}
+				first = false;
+				ImGui::RadioButton(a._to_string(), &aa, a._to_integral());
+			}
 
 			{
 				bool tempTAA = temporalAA;
