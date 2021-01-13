@@ -13,6 +13,14 @@ struct Default {
 };
 
 
+enum class RGState : uint8_t {
+	  Invalid
+	, Building
+	, Ready
+	, Rendering
+};
+
+
 /*
  Requirements for types RT and RP:
   - must be equality comparable (implement operators == and !=)
@@ -128,14 +136,6 @@ public:
 
 
 private:
-
-	enum class RGState : uint8_t {
-		  Invalid
-		, Building
-		, Ready
-		, Rendering
-	};
-
 
 	struct RenderPass {
 		RenderPassHandle   handle;
