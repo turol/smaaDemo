@@ -1228,7 +1228,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	unsigned int numColorAttachments = 0;
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 		if (desc.colorRTs_[i].format == Format::Invalid) {
-			assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
+			assert(desc.colorRTs_[i].initialLayout == +Layout::Undefined);
 			// TODO: could be break, it's invalid to have holes in attachment list
 			// but should check that
 			continue;
@@ -1245,21 +1245,21 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		attach.samples        = samples;
 		switch (colorRT.passBegin) {
 		case PassBegin::DontCare:
-			assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
+			assert(desc.colorRTs_[i].initialLayout == +Layout::Undefined);
 
 			attach.loadOp         = vk::AttachmentLoadOp::eDontCare;
 			attach.initialLayout  = vk::ImageLayout::eUndefined;
 			break;
 
 		case PassBegin::Keep:
-			assert(desc.colorRTs_[i].initialLayout != Layout::Undefined);
+			assert(desc.colorRTs_[i].initialLayout != +Layout::Undefined);
 
 			attach.loadOp         = vk::AttachmentLoadOp::eLoad;
 			attach.initialLayout  = vulkanLayout(desc.colorRTs_[i].initialLayout);
 			break;
 
 		case PassBegin::Clear:
-			assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
+			assert(desc.colorRTs_[i].initialLayout == +Layout::Undefined);
 
 			attach.loadOp         = vk::AttachmentLoadOp::eClear;
 			attach.initialLayout  = vk::ImageLayout::eUndefined;
@@ -1364,7 +1364,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 			if (desc.colorRTs_[i].format == Format::Invalid) {
-				assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
+				assert(desc.colorRTs_[i].initialLayout == +Layout::Undefined);
 				// TODO: could be break, it's invalid to have holes in attachment list
 				// but should check that
 				continue;
@@ -3111,11 +3111,11 @@ void RendererImpl::endRenderPass() {
 
 void RendererImpl::layoutTransition(RenderTargetHandle image, Layout src, Layout dest) {
 	assert(image);
-	assert(dest != Layout::Undefined);
+	assert(dest != +Layout::Undefined);
 	assert(src != dest);
 
 	auto &rt = renderTargets.get(image);
-	assert(src == Layout::Undefined || rt.currentLayout == src);
+	assert(src == +Layout::Undefined || rt.currentLayout == src);
 	rt.currentLayout = dest;
 
 	vk::ImageMemoryBarrier b;
@@ -3376,12 +3376,12 @@ void RendererImpl::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	const auto &srcRT = renderTargets.get(source);
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
-	assert(srcRT.currentLayout == Layout::TransferSrc);
+	assert(srcRT.currentLayout == +Layout::TransferSrc);
 
 	const auto &destRT = renderTargets.get(target);
 	assert(destRT.width      >  0);
 	assert(destRT.height     >  0);
-	assert(destRT.currentLayout == Layout::TransferDst);
+	assert(destRT.currentLayout == +Layout::TransferDst);
 
 	assert(srcRT.width       == destRT.width);
 	assert(srcRT.height      == destRT.height);
@@ -3416,12 +3416,12 @@ void RendererImpl::resolveMSAA(RenderTargetHandle source, RenderTargetHandle tar
 	const auto &srcRT = renderTargets.get(source);
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
-	assert(srcRT.currentLayout == Layout::TransferSrc);
+	assert(srcRT.currentLayout == +Layout::TransferSrc);
 
 	const auto &destRT = renderTargets.get(target);
 	assert(destRT.width      >  0);
 	assert(destRT.height     >  0);
-	assert(destRT.currentLayout == Layout::TransferDst);
+	assert(destRT.currentLayout == +Layout::TransferDst);
 
 	assert(srcRT.width       == destRT.width);
 	assert(srcRT.height      == destRT.height);

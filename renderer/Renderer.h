@@ -179,13 +179,13 @@ enum class Format : uint8_t {
 };
 
 
-enum class Layout : uint8_t {
-	  Undefined
+BETTER_ENUM(Layout, uint8_t
+	, Undefined
 	, ShaderRead
 	, TransferSrc
 	, TransferDst
 	, ColorAttachment
-};
+)
 
 
 // rendertarget behavior when RenderPass begins

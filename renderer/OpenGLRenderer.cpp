@@ -1337,15 +1337,15 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 		switch (desc.colorRTs_[i].passBegin) {
 		case PassBegin::DontCare:
-			assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
+			assert(desc.colorRTs_[i].initialLayout == +Layout::Undefined);
 			break;
 
 		case PassBegin::Keep:
-			assert(desc.colorRTs_[i].initialLayout != Layout::Undefined);
+			assert(desc.colorRTs_[i].initialLayout != +Layout::Undefined);
 			break;
 
 		case PassBegin::Clear:
-			assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
+			assert(desc.colorRTs_[i].initialLayout == +Layout::Undefined);
 			pass.colorClearValues[i] = desc.colorRTs_[i].clearValue;
 			break;
 
@@ -1862,7 +1862,7 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 	auto &frame = frames.at(currentFrameIdx);
 
 	auto &rt = renderTargets.get(image);
-	assert(rt.currentLayout == Layout::TransferSrc);
+	assert(rt.currentLayout == +Layout::TransferSrc);
 
 	unsigned int width  = rt.width;
 	unsigned int height = rt.height;
@@ -2051,11 +2051,11 @@ void RendererImpl::endRenderPass() {
 
 void RendererImpl::layoutTransition(RenderTargetHandle image, Layout src UNUSED, Layout dest) {
 	assert(image);
-	assert(dest != Layout::Undefined);
+	assert(dest != +Layout::Undefined);
 	assert(src != dest);
 
 	auto &rt = renderTargets.get(image);
-	assert(src == Layout::Undefined || rt.currentLayout == src);
+	assert(src == +Layout::Undefined || rt.currentLayout == src);
 	rt.currentLayout = dest;
 }
 
@@ -2430,7 +2430,7 @@ void RendererImpl::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(srcRT.numSamples  == 1);
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
-	assert(srcRT.currentLayout == Layout::TransferSrc);
+	assert(srcRT.currentLayout == +Layout::TransferSrc);
 	assert(srcRT.texture);
 	if (srcRT.helperFBO == 0) {
 		createRTHelperFBO(srcRT);
@@ -2441,7 +2441,7 @@ void RendererImpl::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(destRT.numSamples == 1);
 	assert(destRT.width      >  0);
 	assert(destRT.height     >  0);
-	assert(destRT.currentLayout == Layout::TransferDst);
+	assert(destRT.currentLayout == +Layout::TransferDst);
 	assert(destRT.texture);
 	if (destRT.helperFBO == 0) {
 		createRTHelperFBO(destRT);
@@ -2471,7 +2471,7 @@ void RendererImpl::resolveMSAA(RenderTargetHandle source, RenderTargetHandle tar
 	assert(srcRT.numSamples  >  1);
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
-	assert(srcRT.currentLayout == Layout::TransferSrc);
+	assert(srcRT.currentLayout == +Layout::TransferSrc);
 	assert(srcRT.texture);
 	if (srcRT.helperFBO == 0) {
 		createRTHelperFBO(srcRT);
@@ -2482,7 +2482,7 @@ void RendererImpl::resolveMSAA(RenderTargetHandle source, RenderTargetHandle tar
 	assert(destRT.numSamples == 1);
 	assert(destRT.width      >  0);
 	assert(destRT.height     >  0);
-	assert(destRT.currentLayout == Layout::TransferDst);
+	assert(destRT.currentLayout == +Layout::TransferDst);
 	assert(destRT.texture);
 	if (destRT.helperFBO == 0) {
 		createRTHelperFBO(destRT);

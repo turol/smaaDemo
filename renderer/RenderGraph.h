@@ -617,8 +617,8 @@ public:
 							} else {
 								final = layoutIt->second;
 							}
-							assert(final != Layout::Undefined);
-							assert(final != Layout::TransferDst);
+							assert(final != +Layout::Undefined);
+							assert(final != +Layout::TransferDst);
 
 							rpDesc.color(i, fmt, pb, initial, final, desc.colorRTs_[i].clearValue);
 							currentLayouts[rtId] = initial;
