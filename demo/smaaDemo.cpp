@@ -87,13 +87,13 @@ using namespace renderer;
 class SMAADemo;
 
 
-enum class AAMethod : uint8_t {
-	  MSAA
+BETTER_ENUM(AAMethod, uint8_t
+	,  MSAA
 	, FXAA
 	, SMAA
 	, SMAA2X
 	, LAST = SMAA2X
-};
+)
 
 
 const char *name(AAMethod m) {
@@ -1306,10 +1306,10 @@ void SMAADemo::rebuildRenderGraph() {
 
 	renderGraph.reset(renderer, std::bind(std::mem_fn(&SMAADemo::processInput), this));
 
-	if (antialiasing && aaMethod == AAMethod::MSAA) {
+	if (antialiasing && aaMethod == +AAMethod::MSAA) {
 		numSamples = msaaQualityToSamples(msaaQuality);
 		assert(numSamples > 1);
-	} else if (antialiasing && aaMethod == AAMethod::SMAA2X) {
+	} else if (antialiasing && aaMethod == +AAMethod::SMAA2X) {
 		numSamples = 2;
 	} else {
 		numSamples = 1;
@@ -2169,7 +2169,7 @@ void SMAADemo::processInput() {
 				break;
 
 			case SDL_SCANCODE_D:
-				if (antialiasing && aaMethod == AAMethod::SMAA) {
+				if (antialiasing && aaMethod == +AAMethod::SMAA) {
 					if (leftShift || rightShift) {
 						debugMode = (debugMode + 3 - 1) % 3;
 					} else {
@@ -2184,16 +2184,15 @@ void SMAADemo::processInput() {
 				break;
 
 			case SDL_SCANCODE_M: {
-				int i = int(aaMethod) + int(AAMethod::LAST) + 1;
-
+				int i = aaMethod._to_integral() + (AAMethod::_size() - 1);
 
 				if (leftShift || rightShift) {
 					i = i - 1;
 				} else {
 					i = i + 1;
 				}
-				i = i % (int(AAMethod::LAST) + 1);
-				aaMethod = AAMethod(i);
+				i = i % (AAMethod::_size() - 1);
+				aaMethod = AAMethod::_from_integral(i);
 				rebuildRG = true;
 				} break;
 
@@ -2451,7 +2450,7 @@ void SMAADemo::mainLoopIteration() {
 
 		}
 	} else {
-		if (aaMethod == AAMethod::SMAA2X) {
+		if (aaMethod == +AAMethod::SMAA2X) {
 			subsampleIndices[0] = glm::vec4(1.0, 1.0, 1.0, 0.0f);
 		} else {
 			subsampleIndices[0] = glm::vec4(0.0f);
@@ -2558,7 +2557,7 @@ void SMAADemo::renderCubeScene(RenderPasses rp, DemoRenderGraph::PassResources &
 	// temporal jitter
 	if (antialiasing && temporalAA && !isImageScene()) {
 		glm::vec2 jitter;
-		if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
+		if (aaMethod == +AAMethod::MSAA || aaMethod == +AAMethod::SMAA2X) {
 			const glm::vec2 jitters[2] = {
 				  {  0.125f,  0.125f }
 				, { -0.125f, -0.125f }
@@ -2981,7 +2980,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				assert(temp == antialiasing);
 			}
 
-			int aa = static_cast<int>(aaMethod);
+			int aa = aaMethod._to_integral();
 			ImGui::RadioButton("MSAA", &aa, static_cast<int>(AAMethod::MSAA)); ImGui::SameLine();
 			ImGui::RadioButton("FXAA", &aa, static_cast<int>(AAMethod::FXAA)); ImGui::SameLine();
 			ImGui::RadioButton("SMAA", &aa, static_cast<int>(AAMethod::SMAA)); ImGui::SameLine();
@@ -3016,12 +3015,12 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			ImGui::Separator();
 			int msaaq = msaaQuality;
 			bool msaaChanged = ImGui::Combo("MSAA quality", &msaaq, msaaQualityLevels, maxMSAAQuality);
-			if (aaChanged || aa != static_cast<int>(aaMethod)) {
-				aaMethod = static_cast<AAMethod>(aa);
+			if (aaChanged || aa != aaMethod._to_integral()) {
+				aaMethod = AAMethod::_from_integral(aa);
 				rebuildRG = true;
 			}
 
-			if (msaaChanged && aaMethod == AAMethod::MSAA) {
+			if (msaaChanged && aaMethod == +AAMethod::MSAA) {
 				assert(msaaq >= 0);
 				msaaQuality = static_cast<unsigned int>(msaaq);
 				rebuildRG            = true;
