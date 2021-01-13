@@ -173,24 +173,6 @@ uint32_t formatSize(Format format) {
 }
 
 
-const char *passBeginName(PassBegin pb) {
-	switch (pb) {
-	case PassBegin::DontCare:
-		return "DontCare";
-
-	case PassBegin::Keep:
-		return "Keep";
-
-	case PassBegin::Clear:
-		return "Clear";
-
-	}
-
-	UNREACHABLE();
-	return "";
-}
-
-
 bool PipelineDesc::VertexAttr::operator==(const VertexAttr &other) const {
 	if (this->bufBinding != other.bufBinding) {
 		return false;

@@ -271,7 +271,6 @@ struct MemoryStats {
 typedef HashMap<std::string, std::string> ShaderMacros;
 
 
-const char *passBeginName(PassBegin pb);
 uint32_t formatSize(Format format);
 
 
