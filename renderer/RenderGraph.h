@@ -709,7 +709,7 @@ public:
 					for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 						if (desc.colorRTs_[i].id != Default<RT>::value) {
 							const auto &rt = rpDesc.color(i);
-							LOG(" color %u: %s\t%s\t%s\t%s\n", i, to_string(desc.colorRTs_[i].id), passBeginName(rt.passBegin), rt.initialLayout._to_string(), rt.finalLayout._to_string());
+							LOG(" color %u: %s\t%s\t%s\t%s\n", i, to_string(desc.colorRTs_[i].id), rt.passBegin._to_string(), rt.initialLayout._to_string(), rt.finalLayout._to_string());
 						}
 					}
 
