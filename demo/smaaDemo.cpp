@@ -2183,14 +2183,19 @@ void SMAADemo::processInput() {
 				printHelp();
 				break;
 
-			case SDL_SCANCODE_M:
+			case SDL_SCANCODE_M: {
+				int i = int(aaMethod) + int(AAMethod::LAST) + 1;
+
+
 				if (leftShift || rightShift) {
-					aaMethod = AAMethod((int(aaMethod) + int(AAMethod::LAST)) % (int(AAMethod::LAST) + 1));
+					i = i - 1;
 				} else {
-					aaMethod = AAMethod((int(aaMethod) + 1) % (int(AAMethod::LAST) + 1));
+					i = i + 1;
 				}
+				i = i % (int(AAMethod::LAST) + 1);
+				aaMethod = AAMethod(i);
 				rebuildRG = true;
-				break;
+				} break;
 
 			case SDL_SCANCODE_Q:
 				switch (aaMethod) {
