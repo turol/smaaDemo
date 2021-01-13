@@ -1692,7 +1692,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 		viewInfo.format   = vulkanFormat(desc.additionalViewFormat_);
 		view.imageView    = device.createImageView(viewInfo);
 
-		std::string viewName = desc.name_ + " " + formatName(desc.additionalViewFormat_) + " view";
+		std::string viewName = desc.name_ + " " + desc.additionalViewFormat_._to_string() + " view";
 		debugNameObject<vk::ImageView>(view.imageView, viewName);
 	}
 
