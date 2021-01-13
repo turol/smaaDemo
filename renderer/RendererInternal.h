@@ -32,10 +32,10 @@ THE SOFTWARE.
 namespace renderer {
 
 
-enum class ShaderKind : uint8_t {
-	  Vertex
+BETTER_ENUM(ShaderKind, uint8_t
+	, Vertex
 	, Fragment
-};
+)
 
 
 template <class T>
