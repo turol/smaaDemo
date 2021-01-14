@@ -499,19 +499,26 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		throw std::runtime_error("No physical Vulkan devices found");
 	}
 	LOG("%u physical devices\n", static_cast<unsigned int>(physicalDevices.size()));
+	for (unsigned int i = 0; i < physicalDevices.size(); i++) {
+		physicalDevice = physicalDevices.at(i);
+		deviceProperties = physicalDevice.getProperties();
+
+		LOG(" %u: \"%s\"\n", i, deviceProperties.deviceName.data());
+		LOG("  Device API version %u.%u.%u\n", VK_VERSION_MAJOR(deviceProperties.apiVersion), VK_VERSION_MINOR(deviceProperties.apiVersion), VK_VERSION_PATCH(deviceProperties.apiVersion));
+		LOG("  Driver version %u.%u.%u (%u) (0x%08x)\n", VK_VERSION_MAJOR(deviceProperties.driverVersion), VK_VERSION_MINOR(deviceProperties.driverVersion), VK_VERSION_PATCH(deviceProperties.driverVersion), deviceProperties.driverVersion, deviceProperties.driverVersion);
+		LOG("  VendorId 0x%x\n", deviceProperties.vendorID);
+		LOG("  DeviceId 0x%x\n", deviceProperties.deviceID);
+		LOG("  Type %s\n", vk::to_string(deviceProperties.deviceType).c_str());
+		LOG("  Name \"%s\"\n", deviceProperties.deviceName.data());
+		LOG("  uniform buffer alignment %u\n", static_cast<unsigned int>(deviceProperties.limits.minUniformBufferOffsetAlignment));
+		LOG("  storage buffer alignment %u\n", static_cast<unsigned int>(deviceProperties.limits.minStorageBufferOffsetAlignment));
+		LOG("  texel buffer alignment %u\n",   static_cast<unsigned int>(deviceProperties.limits.minTexelBufferOffsetAlignment));
+		LOG("\n");
+	}
+
 	physicalDevice = physicalDevices.at(0);
 
 	deviceProperties = physicalDevice.getProperties();
-
-	LOG("Device API version %u.%u.%u\n", VK_VERSION_MAJOR(deviceProperties.apiVersion), VK_VERSION_MINOR(deviceProperties.apiVersion), VK_VERSION_PATCH(deviceProperties.apiVersion));
-	LOG("Driver version %u.%u.%u (%u) (0x%08x)\n", VK_VERSION_MAJOR(deviceProperties.driverVersion), VK_VERSION_MINOR(deviceProperties.driverVersion), VK_VERSION_PATCH(deviceProperties.driverVersion), deviceProperties.driverVersion, deviceProperties.driverVersion);
-	LOG("VendorId 0x%x\n", deviceProperties.vendorID);
-	LOG("DeviceId 0x%x\n", deviceProperties.deviceID);
-	LOG("Type %s\n", vk::to_string(deviceProperties.deviceType).c_str());
-	LOG("Name \"%s\"\n", deviceProperties.deviceName.data());
-	LOG("uniform buffer alignment %u\n", static_cast<unsigned int>(deviceProperties.limits.minUniformBufferOffsetAlignment));
-	LOG("storage buffer alignment %u\n", static_cast<unsigned int>(deviceProperties.limits.minStorageBufferOffsetAlignment));
-	LOG("texel buffer alignment %u\n",   static_cast<unsigned int>(deviceProperties.limits.minTexelBufferOffsetAlignment));
 
 	uboAlign  = static_cast<unsigned int>(deviceProperties.limits.minUniformBufferOffsetAlignment);
 	ssboAlign = static_cast<unsigned int>(deviceProperties.limits.minStorageBufferOffsetAlignment);
