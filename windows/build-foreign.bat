@@ -7,14 +7,14 @@ cd SPIRV-Tools
 
 mkdir build
 cd build
-cmake -G%GENERATOR% -A Win32 -DSPIRV-Headers_SOURCE_DIR=%cd%/../../SPIRV-Headers ..
+cmake -G%GENERATOR% -A Win32 -DSPIRV-Headers_SOURCE_DIR=%cd:\=/%/../../SPIRV-Headers ..
 cmake --build .
 cmake --build . --config Release
 cd ..
 
 mkdir build64
 cd build64
-cmake -G%GENERATOR% -A x64 -DSPIRV-Headers_SOURCE_DIR=%cd%/../../SPIRV-Headers ..
+cmake -G%GENERATOR% -A x64 -DSPIRV-Headers_SOURCE_DIR=%cd:\=/%/../../SPIRV-Headers ..
 cmake --build .
 cmake --build . --config Release
 cd ..
