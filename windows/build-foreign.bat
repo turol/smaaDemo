@@ -39,4 +39,22 @@ cd ..
 
 cd ..
 
+cd glslang
+
+mkdir build
+cd build
+cmake -G%GENERATOR%  -A Win32 ..
+cmake --build .
+cmake --build . --config Release
+cd ..
+
+mkdir build64
+cd build64
+cmake -G%GENERATOR% -A x64 ..
+cmake --build .
+cmake --build . --config Release
+cd ..
+
+cd ..
+
 cd ../windows
