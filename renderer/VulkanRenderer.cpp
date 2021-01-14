@@ -542,6 +542,26 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		LOG("\n");
 	}
 
+	assert(physicalDevicesProperties.size() == physicalDevices.size());
+
+	if (!desc.vulkanDeviceFilter.empty()) {
+		LOG("Filtering vulkan device list for \"%s\"\n", desc.vulkanDeviceFilter.c_str());
+		bool found = false;
+		for (unsigned int i = 0; i < physicalDevicesProperties.size(); i++) {
+			if (desc.vulkanDeviceFilter == physicalDevicesProperties[i].deviceName.data()) {
+				physicalDeviceIndex = i;
+				found = true;
+				break;
+			}
+		}
+
+		if (!found) {
+			LOG("Didn't find physical device matching filter\n");
+			logFlush();
+			throw std::runtime_error("Didn't find physical device matching filter");
+		}
+	}
+
 	physicalDevice = physicalDevices.at(physicalDeviceIndex);
 	LOG("Using physical device %u \"%s\"\n", physicalDeviceIndex, deviceProperties.deviceName.data());
 
