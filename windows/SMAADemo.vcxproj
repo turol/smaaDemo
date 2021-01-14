@@ -209,7 +209,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build/source/Debug;../foreign/SPIRV-Tools/Build/source/opt/Debug;../foreign/SPIRV-Tools/Build/source/comp/Debug;../foreign/SPIRV-Cross/Build/Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -229,7 +229,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-cored.lib;spirv-cross-glsld.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-cored.lib;spirv-cross-glsld.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build64/source/Debug;../foreign/SPIRV-Tools/Build64/source/opt/Debug;../foreign/SPIRV-Tools/Build64/source/comp/Debug;../foreign/SPIRV-Cross/Build64/Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -246,7 +246,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build/source/Debug;../foreign/SPIRV-Tools/Build/source/opt/Debug;../foreign/SPIRV-Tools/Build/source/comp/Debug;../foreign/SPIRV-Cross/Build/Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -263,8 +263,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-cored.lib;spirv-cross-glsld.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build64/source/Debug;../foreign/SPIRV-Tools/Build64/source/opt/Debug;../foreign/SPIRV-Tools/Build64/source/comp/Debug;../foreign/SPIRV-Cross/Build64/Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-cored.lib;spirv-cross-glsld.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../foreign/glslang/build64/glslang/Debug;../foreign/glslang/build64/glslang/OSDependent/Windows/Debug;../foreign/glslang/build64/OGLCompilersDLL/Debug;../foreign/glslang/build64/SPIRV/Debug;../foreign/SPIRV-Tools/Build64/source/Debug;../foreign/SPIRV-Tools/Build64/source/opt/Debug;../foreign/SPIRV-Tools/Build64/source/comp/Debug;../foreign/SPIRV-Cross/Build64/Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Null|Win32'">
@@ -281,7 +281,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build/source/Debug;../foreign/SPIRV-Tools/Build/source/opt/Debug;../foreign/SPIRV-Tools/Build/source/comp/Debug;../foreign/SPIRV-Cross/Build/Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -299,7 +299,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build64/source/Debug;../foreign/SPIRV-Tools/Build64/source/opt/Debug;../foreign/SPIRV-Tools/Build64/source/comp/Debug;../foreign/SPIRV-Cross/Build64/Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -320,7 +320,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build/source/Release;../foreign/SPIRV-Tools/Build/source/opt/Release;../foreign/SPIRV-Tools/Build/source/comp/Release;../foreign/SPIRV-Cross/Build/Release</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -341,7 +341,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build/source/Release;../foreign/SPIRV-Tools/Build/source/opt/Release;../foreign/SPIRV-Tools/Build/source/comp/Release;../foreign/SPIRV-Cross/Build/Release</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -362,7 +362,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build64/source/Release;../foreign/SPIRV-Tools/Build64/source/opt/Release;../foreign/SPIRV-Tools/Build64/source/comp/Release;../foreign/SPIRV-Cross/Build64/Release</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -383,7 +383,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build64/source/Release;../foreign/SPIRV-Tools/Build64/source/opt/Release;../foreign/SPIRV-Tools/Build64/source/comp/Release;../foreign/SPIRV-Cross/Build64/Release</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -393,53 +393,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Vulkan|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Vulkan|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\foreign\glslang\glslang\GenericCodeGen\CodeGen.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\GenericCodeGen\Link.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\HLSL\hlslAttributes.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\HLSL\hlslGrammar.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\HLSL\hlslOpMap.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\HLSL\hlslParseables.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\HLSL\hlslParseHelper.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\HLSL\hlslScanContext.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\HLSL\hlslTokenStream.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\attribute.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\Constant.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\glslang_tab.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\InfoSink.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\Initialize.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\Intermediate.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\intermOut.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\IntermTraverse.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\iomapper.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\limits.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\linkValidate.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\parseConst.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\ParseContextBase.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\ParseHelper.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\PoolAlloc.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\preprocessor\Pp.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\preprocessor\PpAtom.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\preprocessor\PpContext.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\preprocessor\PpScanner.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\preprocessor\PpTokens.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\propagateNoContraction.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\reflection.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\RemoveTree.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\Scan.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\ShaderLang.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\SymbolTable.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\MachineIndependent\Versions.cpp" />
-    <ClCompile Include="..\foreign\glslang\glslang\OSDependent\Windows\ossource.cpp" />
-    <ClCompile Include="..\foreign\glslang\OGLCompilersDLL\InitializeDll.cpp" />
-    <ClCompile Include="..\foreign\glslang\SPIRV\disassemble.cpp" />
-    <ClCompile Include="..\foreign\glslang\SPIRV\doc.cpp" />
-    <ClCompile Include="..\foreign\glslang\SPIRV\GlslangToSpv.cpp" />
-    <ClCompile Include="..\foreign\glslang\SPIRV\InReadableOrder.cpp" />
-    <ClCompile Include="..\foreign\glslang\SPIRV\Logger.cpp" />
-    <ClCompile Include="..\foreign\glslang\SPIRV\SpvBuilder.cpp" />
-    <ClCompile Include="..\foreign\glslang\SPIRV\SpvPostProcess.cpp" />
-    <ClCompile Include="..\foreign\glslang\SPIRV\SPVRemapper.cpp" />
-    <ClCompile Include="..\foreign\glslang\StandAlone\ResourceLimits.cpp" />
     <ClCompile Include="..\foreign\imgui\imgui.cpp" />
     <ClCompile Include="..\foreign\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\foreign\imgui\imgui_draw.cpp" />
@@ -481,15 +434,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\AreaTex.h" />
-    <ClInclude Include="..\foreign\glslang\glslang\HLSL\hlslAttributes.h" />
-    <ClInclude Include="..\foreign\glslang\glslang\HLSL\hlslGrammar.h" />
-    <ClInclude Include="..\foreign\glslang\glslang\HLSL\hlslOpMap.h" />
-    <ClInclude Include="..\foreign\glslang\glslang\HLSL\hlslParseables.h" />
-    <ClInclude Include="..\foreign\glslang\glslang\HLSL\hlslParseHelper.h" />
-    <ClInclude Include="..\foreign\glslang\glslang\HLSL\hlslScanContext.h" />
-    <ClInclude Include="..\foreign\glslang\glslang\HLSL\hlslTokens.h" />
-    <ClInclude Include="..\foreign\glslang\glslang\HLSL\hlslTokenStream.h" />
-    <ClInclude Include="..\foreign\glslang\glslang\HLSL\pch.h" />
     <ClInclude Include="..\fxaa3_11.h" />
     <ClInclude Include="..\renderer\NullRenderer.h" />
     <ClInclude Include="..\renderer\OpenGLRenderer.h" />
