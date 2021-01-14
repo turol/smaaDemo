@@ -973,6 +973,7 @@ struct RendererImpl : public RendererBase {
 	vk::Instance                            instance;
 	vk::DebugReportCallbackEXT              debugReportCallback;
 	vk::DebugUtilsMessengerEXT              debugUtilsCallback;
+	unsigned int                            physicalDeviceIndex;
 	vk::PhysicalDevice                      physicalDevice;
 	vk::PhysicalDeviceProperties            deviceProperties;
 	vk::PhysicalDeviceFeatures              deviceFeatures;

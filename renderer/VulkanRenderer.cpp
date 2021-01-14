@@ -280,6 +280,7 @@ static uint32_t makeVulkanVersion(const Version &v) {
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
 , frameAcquired(false)
+, physicalDeviceIndex(0)
 , graphicsQueueIndex(0)
 , transferQueueIndex(0)
 , numUploads(0)
@@ -516,7 +517,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		LOG("\n");
 	}
 
-	physicalDevice = physicalDevices.at(0);
+	physicalDevice = physicalDevices.at(physicalDeviceIndex);
+	LOG("Using physical device %u \"%s\"\n", physicalDeviceIndex, deviceProperties.deviceName.data());
 
 	deviceProperties = physicalDevice.getProperties();
 
