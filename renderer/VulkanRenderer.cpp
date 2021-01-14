@@ -509,9 +509,14 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		throw std::runtime_error("No physical Vulkan devices found");
 	}
 	LOG("%u physical devices\n", static_cast<unsigned int>(physicalDevices.size()));
+
+	std::vector<vk::PhysicalDeviceProperties> physicalDevicesProperties;
+	physicalDevicesProperties.reserve(physicalDevices.size());
+
 	for (unsigned int i = 0; i < physicalDevices.size(); i++) {
 		physicalDevice = physicalDevices.at(i);
 		deviceProperties = physicalDevice.getProperties();
+		physicalDevicesProperties.push_back(deviceProperties);
 
 		LOG(" %u: \"%s\"\n", i, deviceProperties.deviceName.data());
 		LOG("  Device API version %u.%u.%u\n", VK_VERSION_MAJOR(deviceProperties.apiVersion), VK_VERSION_MINOR(deviceProperties.apiVersion), VK_VERSION_PATCH(deviceProperties.apiVersion));
@@ -540,7 +545,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	physicalDevice = physicalDevices.at(physicalDeviceIndex);
 	LOG("Using physical device %u \"%s\"\n", physicalDeviceIndex, deviceProperties.deviceName.data());
 
-	deviceProperties = physicalDevice.getProperties();
+	deviceProperties = physicalDevicesProperties.at(physicalDeviceIndex);
 
 	uboAlign  = static_cast<unsigned int>(deviceProperties.limits.minUniformBufferOffsetAlignment);
 	ssboAlign = static_cast<unsigned int>(deviceProperties.limits.minStorageBufferOffsetAlignment);
