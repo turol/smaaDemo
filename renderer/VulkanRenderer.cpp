@@ -490,6 +490,15 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 	}
 
+	if(!SDL_Vulkan_CreateSurface(window,
+								 (SDL_vulkanInstance) instance,
+								 (SDL_vulkanSurface *)&surface))
+	{
+		LOG("Failed to create Vulkan surface: %s\n", SDL_GetError());
+		// TODO: free instance, window etc...
+		throw std::runtime_error("Failed to create Vulkan surface");
+	}
+
 	std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
 	if (physicalDevices.empty()) {
 		LOG("No physical Vulkan devices found\n");
@@ -526,15 +535,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	ssboAlign = static_cast<unsigned int>(deviceProperties.limits.minStorageBufferOffsetAlignment);
 
 	deviceFeatures = physicalDevice.getFeatures();
-
-	if(!SDL_Vulkan_CreateSurface(window,
-								 (SDL_vulkanInstance) instance,
-								 (SDL_vulkanSurface *)&surface))
-	{
-		LOG("Failed to create Vulkan surface: %s\n", SDL_GetError());
-		// TODO: free instance, window etc...
-		throw std::runtime_error("Failed to create Vulkan surface");
-	}
 
 	memoryProperties = physicalDevice.getMemoryProperties();
 	LOG("%u memory types\n", memoryProperties.memoryTypeCount);
