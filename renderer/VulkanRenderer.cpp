@@ -523,6 +523,17 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		LOG("  uniform buffer alignment %u\n", static_cast<unsigned int>(deviceProperties.limits.minUniformBufferOffsetAlignment));
 		LOG("  storage buffer alignment %u\n", static_cast<unsigned int>(deviceProperties.limits.minStorageBufferOffsetAlignment));
 		LOG("  texel buffer alignment %u\n",   static_cast<unsigned int>(deviceProperties.limits.minTexelBufferOffsetAlignment));
+		std::vector<vk::QueueFamilyProperties> queueProps = physicalDevice.getQueueFamilyProperties();
+		LOG("  %u queue families\n", static_cast<unsigned int>(queueProps.size()));
+
+		bool canPresent = false;
+		for (uint32_t j = 0; j < queueProps.size(); j++) {
+			if (physicalDevice.getSurfaceSupportKHR(j, surface)) {
+				canPresent = true;
+				break;
+			}
+		}
+		LOG("  %s present to our surface\n", canPresent ? "can" : "can NOT");
 		LOG("\n");
 	}
 
