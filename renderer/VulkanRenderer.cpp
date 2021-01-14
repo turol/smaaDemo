@@ -543,6 +543,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	LOG("%u queue families\n", static_cast<unsigned int>(queueProps.size()));
 
 	graphicsQueueIndex = static_cast<uint32_t>(queueProps.size());
+	bool graphicsQueueFound = false;
 	for (uint32_t i = 0; i < queueProps.size(); i++) {
 		const auto &q = queueProps.at(i);
 		LOG(" Queue family %u\n", i);
@@ -554,7 +555,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		if (physicalDevice.getSurfaceSupportKHR(i, surface)) {
 			LOG("  Can present to our surface\n");
 			if (q.queueFlags & vk::QueueFlagBits::eGraphics) {
-				graphicsQueueIndex = i;
+				if (!graphicsQueueFound) {
+					graphicsQueueIndex = i;
+					graphicsQueueFound = true;
+				}
 			}
 		} else {
 			LOG("  Can't present to our surface\n");
