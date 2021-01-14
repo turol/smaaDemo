@@ -828,6 +828,7 @@ struct RendererDesc {
 	Version        applicationVersion;
 	std::string    engineName;
 	Version        engineVersion;
+	std::string    vulkanDeviceFilter;
 
 
 	RendererDesc()
