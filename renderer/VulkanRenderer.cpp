@@ -435,8 +435,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			validationLayers.push_back(lunargValidation);
 			LOG("Using LUNARG validation layer\n");
 		} else {
-			LOG("Validation requested but not validation layer available\n");
-			throw std::runtime_error("Validation requested but not validation layer available");
+			LOG("Validation requested but no validation layer available\n");
+			throw std::runtime_error("Validation requested but no validation layer available");
 		}
 
 		if (instanceExtensions.find(VK_EXT_DEBUG_UTILS_EXTENSION_NAME) != instanceExtensions.end()) {
