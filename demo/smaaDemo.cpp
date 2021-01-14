@@ -854,6 +854,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 
 		TCLAP::ValueArg<std::string>           aaMethodSwitch("m",    "method",     "AA Method",     false, "SMAA",        "SMAA/FXAA/MSAA", cmd);
 		TCLAP::ValueArg<std::string>           aaQualitySwitch("q",   "quality",    "AA Quality",    false, "",            "", cmd);
+		TCLAP::ValueArg<std::string>           deviceSwitch("",       "device",     "Set Vulkan device filter", false, "", "device name", cmd);
 		TCLAP::SwitchArg                       temporalAASwitch("t",  "temporal",   "Temporal AA", cmd, false);
 
 		TCLAP::UnlabeledMultiArg<std::string>  imagesArg("images",    "image files", false, "image file", cmd, true, nullptr);
@@ -871,6 +872,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		rendererDesc.swapchain.width       = windowWidthSwitch.getValue();
 		rendererDesc.swapchain.height      = windowHeightSwitch.getValue();
 		rendererDesc.swapchain.vsync       = noVsyncSwitch.getValue() ? VSync::Off : VSync::On;
+		rendererDesc.vulkanDeviceFilter    = deviceSwitch.getValue();
 
 		fpsLimit = fpsSwitch.getValue();
 
