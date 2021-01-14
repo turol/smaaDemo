@@ -1,0 +1,8 @@
+commit 5b5cac8d61339e810c5dbb4692d868a1d7ca1b2d
+Merge: b263c73 259ed45
+Author: imneme <imneme@users.noreply.github.com>
+Date:   Tue Feb 4 10:05:34 2020 -0800
+
+    Merge pull request #54 from lindale-dev/fix-msvc-warnings
+    
+    Fix MSVC warnings

@@ -1,24 +1,22 @@
 # 
 # PCG Random Number Generation for C++.
 # 
-# Copyright 2014 Melissa O'Neill <oneill@pcg-random.org>
-# 
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-# 
-#     http://www.apache.org/licenses/LICENSE-2.0
-# 
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# 
+# Copyright 2014-2017 Melissa O'Neill <oneill@pcg-random.org>,
+#                     and the PCG Project contributors.
+#
+# SPDX-License-Identifier: (Apache-2.0 OR MIT)
+#
+# Licensed under the Apache License, Version 2.0 (provided in
+# LICENSE-APACHE.txt and at http://www.apache.org/licenses/LICENSE-2.0)
+# or under the MIT license (provided in LICENSE-MIT.txt and at
+# http://opensource.org/licenses/MIT), at your option. This file may not
+# be copied, modified, or distributed except according to those terms.
+#
+# Distributed on an "AS IS" BASIS, WITHOUT WARRANTY OF ANY KIND, either
+# express or implied.  See your chosen license for details.
+#
 # For additional information about the PCG random number generation scheme,
-# including its license and other licensing options, visit
-# 
-#     http://www.pcg-random.org
+# visit http://www.pcg-random.org/.
 #
 
 TARGETS           = \
@@ -38,7 +36,18 @@ TARGETS           = \
     check-pcg64_oneseq check-pcg64_oneseq_once_insecure check-pcg64_unique \
     check-pcg128_once_insecure check-pcg128_oneseq_once_insecure
 
-CPPFLAGS += -I../include 
+# special flags for some compilers
+CPPFLAGS_clang++ += \
+	-Weverything \
+	-Wno-unknown-warning-option \
+	-Wno-c++98-compat \
+	-Wno-c++98-compat-pedantic \
+	-Wno-date-time \
+	-Wno-undef \
+	-Wno-header-hygiene \
+	-Wno-unused-macros
+
+CPPFLAGS += -I../include -Wall -Wextra $(CPPFLAGS_$(CXX))
 CXXFLAGS += -std=c++11
 CC       = $(CXX)       # Cheat so that linking uses the C++ compiler
 
