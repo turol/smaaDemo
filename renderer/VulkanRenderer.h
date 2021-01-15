@@ -49,6 +49,9 @@ THE SOFTWARE.
 #endif  // _WIN32
 
 
+// for portability_subset
+#define VK_ENABLE_BETA_EXTENSIONS 1
+
 #include <vulkan/vulkan.hpp>
 
 
