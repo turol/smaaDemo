@@ -286,6 +286,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , numUploads(0)
 , amdShaderInfo(false)
 , debugMarkers(false)
+, portabilitySubset(false)
 , ringBufferMem(nullptr)
 , persistentMapping(nullptr)
 {
@@ -705,6 +706,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	if (!checkExt(VK_KHR_MAINTENANCE1_EXTENSION_NAME)) {
 		throw std::runtime_error("Missing required extension VK_KHR_maintenance1");
 	}
+
+	portabilitySubset = checkExt(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
 
 	vk::DeviceCreateInfo deviceCreateInfo;
 	assert(numQueues <= queueCreateInfos.size());

@@ -1009,6 +1009,7 @@ struct RendererImpl : public RendererBase {
 
 	bool                                    amdShaderInfo;
 	bool                                    debugMarkers;
+	bool                                    portabilitySubset;
 
 	vk::Buffer                              ringBuffer;
 	VmaAllocation                           ringBufferMem;
