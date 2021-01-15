@@ -408,6 +408,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	std::vector<const char *> extensions(numExtensions, nullptr);
 
+	if (instanceExtensions.find(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) != instanceExtensions.end()) {
+		extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+	}
+
 	if(!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, &extensions[0])) {
 		LOG("SDL_Vulkan_GetInstanceExtensions failed: %s\n", SDL_GetError());
 		throw std::runtime_error("SDL_Vulkan_GetInstanceExtensions failed");
