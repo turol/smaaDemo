@@ -885,9 +885,19 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		std::string aaMethodStr = aaMethodSwitch.getValue();
 		std::transform(aaMethodStr.begin(), aaMethodStr.end(), aaMethodStr.begin(), ::toupper);
 		std::string aaQualityStr = aaQualitySwitch.getValue();
-		if (aaMethodStr == "SMAA") {
-			aaMethod = AAMethod::SMAA;
+		if (!aaMethodStr.empty()) {
+			auto parsed = AAMethod::_from_string_nothrow(aaMethodStr.c_str());
+			if (!parsed) {
+				LOG("Bad AA method \"%s\"\n", aaMethodStr.c_str());
+				fprintf(stderr, "Bad AA method \"%s\"\n", aaMethodStr.c_str());
+				exit(1);
+			}
 
+			aaMethod = *parsed;
+		}
+
+		switch (aaMethod) {
+		case AAMethod::SMAA:
 			if (!aaQualityStr.empty()) {
 				std::transform(aaQualityStr.begin(), aaQualityStr.end(), aaQualityStr.begin(), ::toupper);
 				for (unsigned int i = 0; i < maxSMAAQuality; i++) {
@@ -897,9 +907,9 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 					}
 				}
 			}
-		} else if (aaMethodStr == "SMAA2X") {
-			aaMethod = AAMethod::SMAA2X;
+			break;
 
+		case AAMethod::SMAA2X:
 			if (!aaQualityStr.empty()) {
 				std::transform(aaQualityStr.begin(), aaQualityStr.end(), aaQualityStr.begin(), ::toupper);
 				for (unsigned int i = 0; i < maxSMAAQuality; i++) {
@@ -909,9 +919,9 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 					}
 				}
 			}
-		} else if (aaMethodStr == "FXAA") {
-			aaMethod = AAMethod::FXAA;
+			break;
 
+		case AAMethod::FXAA:
 			if (!aaQualityStr.empty()) {
 				std::transform(aaQualityStr.begin(), aaQualityStr.end(), aaQualityStr.begin(), ::toupper);
 				for (unsigned int i = 0; i < maxFXAAQuality; i++) {
@@ -921,9 +931,9 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 					}
 				}
 			}
-		} else if (aaMethodStr == "MSAA") {
-			aaMethod = AAMethod::MSAA;
+			break;
 
+		case AAMethod::MSAA:
 			int n = atoi(aaQualityStr.c_str());
 			if (n > 0) {
 				if (!isPow2(n)) {
@@ -932,11 +942,8 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 
 				msaaQuality = msaaSamplesToQuality(n);
 			}
+			break;
 
-		} else {
-			LOG("Bad AA method \"%s\"\n", aaMethodStr.c_str());
-			fprintf(stderr, "Bad AA method \"%s\"\n", aaMethodStr.c_str());
-			exit(1);
 		}
 
 		temporalAA = temporalAASwitch.getValue();
