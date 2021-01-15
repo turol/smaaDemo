@@ -709,7 +709,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	portabilitySubset = checkExt(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
 
-	vk::DeviceCreateInfo deviceCreateInfo;
+	vk::StructureChain<vk::DeviceCreateInfo, vk::PhysicalDevicePortabilitySubsetFeaturesKHR> deviceCreateInfoChain;
+	if (!portabilitySubset) {
+		deviceCreateInfoChain.unlink<vk::PhysicalDevicePortabilitySubsetFeaturesKHR>();
+	}
+	auto &deviceCreateInfo = deviceCreateInfoChain.get<vk::DeviceCreateInfo>();
+
 	assert(numQueues <= queueCreateInfos.size());
 	deviceCreateInfo.queueCreateInfoCount     = numQueues;
 	deviceCreateInfo.pQueueCreateInfos        = queueCreateInfos.data();
