@@ -21,6 +21,9 @@ THE SOFTWARE.
 */
 
 
+#define USE_SHADERC 1
+
+
 #include "RendererInternal.h"
 #include "utils/Utils.h"
 
@@ -28,7 +31,16 @@ THE SOFTWARE.
 #include <sstream>
 #include <boost/algorithm/string/split.hpp>
 
+#ifdef USE_SHADERC
+
 #include <shaderc/shaderc.hpp>
+
+#else  // USE_SHADERC 1
+
+#include <glslang/Public/ShaderLang.h>
+
+#endif  // USE_SHADERC 1
+
 #include <spirv-tools/optimizer.hpp>
 #include <SPIRV/SPVRemapper.h>
 #include <spirv_cross.hpp>
@@ -295,6 +307,9 @@ bool PipelineDesc::operator==(const PipelineDesc &other) const {
 }
 
 
+#ifdef USE_SHADERC
+
+
 class Includer final : public shaderc::CompileOptions::IncluderInterface {
 	HashMap<std::string, std::vector<char> > &cache;
 
@@ -343,6 +358,9 @@ public:
 		delete data;
 	}
 };
+
+
+#endif  // USE_SHADERC
 
 
 std::vector<char> RendererBase::loadSource(const std::string &name) {
@@ -667,6 +685,8 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	{
 		auto src = loadSource(name);
 
+#ifdef USE_SHADERC
+
 		shaderc::CompileOptions options;
 		// TODO: optimization level?
 		options.SetIncluder(std::make_unique<Includer>(cache));
@@ -699,6 +719,8 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		}
 
 		spirv.insert(spirv.end(), result.cbegin(), result.cend());
+
+#endif  // USE_SHADERC
 
 		if (!validate(spirv)) {
 			LOG("SPIR-V for shader \"%s\" is not valid after compilation\n", shaderName.c_str());
