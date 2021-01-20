@@ -391,10 +391,26 @@ RendererBase::RendererBase(const RendererDesc &desc)
 	char *prefPath = SDL_GetPrefPath("", "SMAADemo");
 	spirvCacheDir = prefPath;
 	SDL_free(prefPath);
+
+#ifndef USE_SHADERC
+
+	bool success = glslang::InitializeProcess();
+	if (!success) {
+		throw std::runtime_error("glslang initialization failed");
+	}
+
+#endif  // USE_SHADERC
+
 }
 
 
 RendererBase::~RendererBase() {
+#ifndef USE_SHADERC
+
+	glslang::FinalizeProcess();
+
+#endif  // USE_SHADERC
+
 }
 
 
