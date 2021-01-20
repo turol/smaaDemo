@@ -31,6 +31,12 @@ THE SOFTWARE.
 #include <sstream>
 #include <boost/algorithm/string/split.hpp>
 
+#include <spirv-tools/optimizer.hpp>
+#include <SPIRV/SPVRemapper.h>
+#include <spirv_cross.hpp>
+
+#include <xxhash.h>
+
 #ifdef USE_SHADERC
 
 #include <shaderc/shaderc.hpp>
@@ -40,12 +46,6 @@ THE SOFTWARE.
 #include <glslang/Public/ShaderLang.h>
 
 #endif  // USE_SHADERC 1
-
-#include <spirv-tools/optimizer.hpp>
-#include <SPIRV/SPVRemapper.h>
-#include <spirv_cross.hpp>
-
-#include <xxhash.h>
 
 
 namespace renderer {
