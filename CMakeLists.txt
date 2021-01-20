@@ -85,4 +85,5 @@ target_link_libraries(smaaDemo
 		spirv-cross-glsl
 		SPVRemapper
 		shaderc
+		glslang-default-resource-limits
 	)

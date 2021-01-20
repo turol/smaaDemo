@@ -44,6 +44,13 @@ THE SOFTWARE.
 #else  // USE_SHADERC 1
 
 #include <glslang/Public/ShaderLang.h>
+#include <glslang/StandAlone/ResourceLimits.h>
+#include <glslang/SPIRV/SpvTools.h>
+#include <SPIRV/GlslangToSpv.h>
+
+
+using namespace glslang;
+
 
 #endif  // USE_SHADERC 1
 
@@ -360,6 +367,37 @@ public:
 };
 
 
+#else  // USE_SHADERC
+
+
+class Includer final : public TShader::Includer {
+public:
+
+	IncludeResult* includeSystem(const char *headerName, const char *includerName, size_t inclusionDepth) override {
+		return includeLocal(headerName, includerName, inclusionDepth);
+	}
+
+	IncludeResult* includeLocal(const char *headerName, const char *includerName, size_t inclusionDepth) override {
+		LOG("TODO: include \"%s\" \"%s\" %u\n", headerName, includerName, static_cast<unsigned int>(inclusionDepth));
+		return nullptr;
+	}
+
+	void releaseInclude(IncludeResult*) override {
+		LOG("TODO: releaseInclude\n");
+	}
+
+	Includer() {}
+
+	Includer(const Includer &)                = delete;
+	Includer &operator=(const Includer &)     = delete;
+
+	Includer(Includer &&) noexcept            = delete;
+	Includer &operator=(Includer &&) noexcept = delete;
+
+	~Includer() {}
+};
+
+
 #endif  // USE_SHADERC
 
 
@@ -394,7 +432,7 @@ RendererBase::RendererBase(const RendererDesc &desc)
 
 #ifndef USE_SHADERC
 
-	bool success = glslang::InitializeProcess();
+	bool success = InitializeProcess();
 	if (!success) {
 		throw std::runtime_error("glslang initialization failed");
 	}
@@ -407,7 +445,7 @@ RendererBase::RendererBase(const RendererDesc &desc)
 RendererBase::~RendererBase() {
 #ifndef USE_SHADERC
 
-	glslang::FinalizeProcess();
+	FinalizeProcess();
 
 #endif  // USE_SHADERC
 
@@ -770,6 +808,96 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		}
 
 		spirv.insert(spirv.end(), result.cbegin(), result.cend());
+
+#else  // USE_SHADERC
+
+		if (!macros.empty()) {
+			LOG("TODO: macros\n");
+		}
+
+		EShLanguage language;
+		switch (kind_) {
+		case ShaderKind::Vertex:
+			language = EShLangVertex;
+			break;
+
+		case ShaderKind::Fragment:
+			language = EShLangFragment;
+			break;
+
+		default:
+			UNREACHABLE();  // shouldn't happen
+			break;
+
+		}
+
+		TShader shader(language);
+
+#ifdef RENDERER_VULKAN
+
+		EShClient client = EShClientVulkan;
+		EShTargetClientVersion clientVersion = EShTargetVulkan_1_0;
+
+#else
+
+		EShClient client = EShClientOpenGL;
+		EShTargetClientVersion clientVersion = EShTargetOpenGL_450;
+
+#endif
+
+		char *sourceString   = src.data();
+		int sourceLen        = src.size();
+		const char *filename = name.c_str();
+
+		shader.setStringsWithLengthsAndNames(&sourceString, &sourceLen, &filename, 1);
+		shader.setEnvInput(EShSourceGlsl, language, client, 450);
+		shader.setEnvClient(client, clientVersion);
+		shader.setEnvTarget(EShTargetSpv, EShTargetSpv_1_0);
+
+		// TODO: move to RendererBase?
+		TBuiltInResource resource(DefaultTBuiltInResource);
+		Includer includer;
+
+		// compile
+		bool success = shader.parse(&resource, 450, ECoreProfile, false, false, EShMsgDefault, includer);
+		if (!success) {
+			LOG("Failed to compile shader\n");
+			throw std::runtime_error("Failed to compile shader");
+		}
+
+		const char *infoLog = shader.getInfoLog();
+		if (infoLog != nullptr && infoLog[0] != '\0') {
+			LOG("Shader info log:\n\"%s\"\n", infoLog);
+		}
+
+		// link
+		TProgram program;
+		program.addShader(&shader);
+		success = program.link(EShMsgDefault);
+		if (!success) {
+			LOG("Failed to link shader\n");
+			throw std::runtime_error("Failed to link shader");
+		}
+
+		infoLog = program.getInfoLog();
+		if (infoLog != nullptr && infoLog[0] != '\0') {
+			LOG("Program info log:\n\"%s\"\n", infoLog);
+		}
+
+		// convert to SPIR-V
+		spv::SpvBuildLogger logger;
+		glslang::SpvOptions spvOptions;
+		// TODO: only when tracing
+		if (true) {
+			spvOptions.generateDebugInfo = true;
+		} else {
+			spvOptions.stripDebugInfo = true;
+		}
+		spvOptions.disableOptimizer = true;
+		spvOptions.optimizeSize     = false;
+		spvOptions.validate         = validateShaders;
+		glslang::GlslangToSpv(*program.getIntermediate(language), spirv, &logger, &spvOptions);
+
 
 #endif  // USE_SHADERC
 
