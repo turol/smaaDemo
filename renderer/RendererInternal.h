@@ -173,35 +173,7 @@ struct RendererBase {
 
 	std::vector<uint32_t> compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderKind kind);
 
-	explicit RendererBase(const RendererDesc &desc)
-	: swapchainDesc(desc.swapchain)
-	, wantedSwapchain(desc.swapchain)
-	, swapchainDirty(true)
-	, currentFrameIdx(0)
-	, lastSyncedFrame(0)
-	, currentRefreshRate(0)
-	, maxRefreshRate(0)
-	, skipShaderCache(desc.skipShaderCache || !desc.optimizeShaders)
-	, optimizeShaders(desc.optimizeShaders)
-	, validateShaders(desc.validateShaders)
-	, frameNum(0)
-	, uboAlign(0)
-	, ssboAlign(0)
-	, ringBufSize(0)
-	, ringBufPtr(0)
-	, lastSyncedRingBufPtr(0)
-#ifndef NDEBUG
-	, inFrame(false)
-	, inRenderPass(false)
-	, validPipeline(false)
-	, pipelineDrawn(false)
-	, scissorSet(false)
-#endif //  NDEBUG
-	{
-		char *prefPath = SDL_GetPrefPath("", "SMAADemo");
-		spirvCacheDir = prefPath;
-		SDL_free(prefPath);
-	}
+	explicit RendererBase(const RendererDesc &desc);
 
 
 	RendererBase(const RendererBase &)            = delete;
@@ -210,7 +182,7 @@ struct RendererBase {
 	RendererBase &operator=(const RendererBase &) = delete;
 	RendererBase &operator=(RendererBase &&)      = delete;
 
-	~RendererBase() {}
+	~RendererBase();
 };
 
 

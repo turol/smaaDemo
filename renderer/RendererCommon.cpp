@@ -363,6 +363,41 @@ public:
 #endif  // USE_SHADERC
 
 
+RendererBase::RendererBase(const RendererDesc &desc)
+: swapchainDesc(desc.swapchain)
+, wantedSwapchain(desc.swapchain)
+, swapchainDirty(true)
+, currentFrameIdx(0)
+, lastSyncedFrame(0)
+, currentRefreshRate(0)
+, maxRefreshRate(0)
+, skipShaderCache(desc.skipShaderCache || !desc.optimizeShaders)
+, optimizeShaders(desc.optimizeShaders)
+, validateShaders(desc.validateShaders)
+, frameNum(0)
+, uboAlign(0)
+, ssboAlign(0)
+, ringBufSize(0)
+, ringBufPtr(0)
+, lastSyncedRingBufPtr(0)
+#ifndef NDEBUG
+, inFrame(false)
+, inRenderPass(false)
+, validPipeline(false)
+, pipelineDrawn(false)
+, scissorSet(false)
+#endif //  NDEBUG
+{
+	char *prefPath = SDL_GetPrefPath("", "SMAADemo");
+	spirvCacheDir = prefPath;
+	SDL_free(prefPath);
+}
+
+
+RendererBase::~RendererBase() {
+}
+
+
 std::vector<char> RendererBase::loadSource(const std::string &name) {
 	auto it = shaderSources.find(name);
 	if (it != shaderSources.end()) {
