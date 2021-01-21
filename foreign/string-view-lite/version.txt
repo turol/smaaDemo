@@ -1,0 +1,5 @@
+commit 3d2a4a7ebcc5dbdd55bd00026075c574a13c861b
+Author: Martin Moene <martin.moene@gmail.com>
+Date:   Fri Oct 9 16:01:41 2020 +0200
+
+    Release 1.6.0
