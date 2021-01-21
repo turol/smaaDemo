@@ -66,6 +66,7 @@ CFLAGS+=-isystem$(TOPDIR)/foreign/imgui
 CFLAGS+=-isystem$(TOPDIR)/foreign/mingw-std-threads
 CFLAGS+=-isystem$(TOPDIR)/foreign/pcg-cpp/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/stb
+CFLAGS+=-isystem$(TOPDIR)/foreign/string-view-lite/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/tclap/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/vulkanMemoryAllocator/src
 CFLAGS+=-isystem$(TOPDIR)/foreign/xxHash

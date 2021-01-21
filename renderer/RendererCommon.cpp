@@ -35,6 +35,8 @@ THE SOFTWARE.
 #include <SPIRV/SPVRemapper.h>
 #include <spirv_cross.hpp>
 
+#include <nonstd/string_view.hpp>
+
 #include <xxhash.h>
 
 #ifdef USE_SHADERC
