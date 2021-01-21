@@ -776,6 +776,10 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	{
 		auto src = loadSource(name);
 
+		if (!macros.empty()) {
+			LOG("TODO: macros\n");
+		}
+
 #ifdef USE_SHADERC
 
 		shaderc::CompileOptions options;
@@ -812,10 +816,6 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		spirv.insert(spirv.end(), result.cbegin(), result.cend());
 
 #else  // USE_SHADERC
-
-		if (!macros.empty()) {
-			LOG("TODO: macros\n");
-		}
 
 		EShLanguage language;
 		switch (kind_) {
