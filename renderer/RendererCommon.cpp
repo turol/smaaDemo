@@ -860,28 +860,30 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 		// compile
 		bool success = shader.parse(&resource, 450, ECoreProfile, false, false, EShMsgDefault, includer);
-		if (!success) {
-			LOG("Failed to compile shader\n");
-			throw std::runtime_error("Failed to compile shader");
-		}
 
 		const char *infoLog = shader.getInfoLog();
 		if (infoLog != nullptr && infoLog[0] != '\0') {
 			LOG("Shader info log:\n\"%s\"\n", infoLog);
 		}
 
+		if (!success) {
+			LOG("Failed to compile shader\n");
+			throw std::runtime_error("Failed to compile shader");
+		}
+
 		// link
 		TProgram program;
 		program.addShader(&shader);
 		success = program.link(EShMsgDefault);
-		if (!success) {
-			LOG("Failed to link shader\n");
-			throw std::runtime_error("Failed to link shader");
-		}
 
 		infoLog = program.getInfoLog();
 		if (infoLog != nullptr && infoLog[0] != '\0') {
 			LOG("Program info log:\n\"%s\"\n", infoLog);
+		}
+
+		if (!success) {
+			LOG("Failed to link shader\n");
+			throw std::runtime_error("Failed to link shader");
 		}
 
 		// convert to SPIR-V
