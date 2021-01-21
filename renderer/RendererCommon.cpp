@@ -806,9 +806,9 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 			// shaderc can take predefined macros
 			// glslang can not
-		if (!macros.empty()) {
-			LOG("TODO: macros\n");
-		}
+			if (!macros.empty()) {
+				LOG("TODO: macros\n");
+			}
 
 			unsigned int len = lines.size();  // the newlines
 			for (const auto &l : lines) {
