@@ -775,9 +775,54 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 	{
 		auto src = loadSource(name);
+		src.push_back('\0');
 
+		// shaderc will add GOOGLE_include_directive for us
+		// glslang will not
+		{
+			// break shader into lines
+			std::vector<nonstd::string_view> lines;
+			lines.reserve(128);  // picked a value larger than any current shader
+			const char *lineStart = &src[0];
+			while (true) {
+				const char *lineEnd = strchrnul(lineStart, '\n');
+				lines.emplace_back(lineStart, lineEnd - lineStart);
+				if (*lineEnd == '\0') {
+					break;
+				}
+				lineStart = lineEnd + 1;
+			}
+
+			// find line with #version and add the appropriate #extension after it
+			// in theory we should check for other #extension lines but we don't currently use any
+			auto interestingLine = lines.begin();
+			for ( ; interestingLine != lines.end(); interestingLine++) {
+				if (interestingLine->starts_with("#version")) {
+					interestingLine++;
+					lines.emplace(interestingLine, "#extension GL_GOOGLE_include_directive : enable");
+					break;
+				}
+			}
+
+			// shaderc can take predefined macros
+			// glslang can not
 		if (!macros.empty()) {
 			LOG("TODO: macros\n");
+		}
+
+			unsigned int len = lines.size();  // the newlines
+			for (const auto &l : lines) {
+				len += l.size();
+			}
+
+			std::vector<char> newSrc;
+			newSrc.reserve(len);
+			for (const auto &l : lines) {
+				newSrc.insert(newSrc.end(), l.begin(), l.end());
+				newSrc.emplace_back('\n');
+			}
+
+			std::swap(src, newSrc);
 		}
 
 #ifdef USE_SHADERC
