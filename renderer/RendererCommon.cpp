@@ -795,7 +795,6 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 	{
 		auto src = loadSource(name);
-		src.push_back('\0');
 
 		// shaderc will add GOOGLE_include_directive for us
 		// glslang will not
