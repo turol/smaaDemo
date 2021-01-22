@@ -803,7 +803,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			std::vector<nonstd::string_view> lines;
 			lines.reserve(128);  // picked a value larger than any current shader
 			const char *it        = &src[0];
-			const char *end       = &src[src.size()];
+			const char *end       = &src[src.size() - 1] + 1;
 			const char *lineStart = it;
 			while (it < end) {
 				if (*it == '\n') {
