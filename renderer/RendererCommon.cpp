@@ -913,25 +913,13 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 		TShader shader(language);
 
-#ifdef RENDERER_VULKAN
-
-		EShClient client = EShClientVulkan;
-		EShTargetClientVersion clientVersion = EShTargetVulkan_1_0;
-
-#else
-
-		EShClient client = EShClientOpenGL;
-		EShTargetClientVersion clientVersion = EShTargetOpenGL_450;
-
-#endif
-
 		char *sourceString   = src.data();
 		int sourceLen        = src.size();
 		const char *filename = name.c_str();
 
 		shader.setStringsWithLengthsAndNames(&sourceString, &sourceLen, &filename, 1);
-		shader.setEnvInput(EShSourceGlsl, language, client, 450);
-		shader.setEnvClient(client, clientVersion);
+		shader.setEnvInput(EShSourceGlsl, language, EShClientVulkan, 450);
+		shader.setEnvClient(EShClientVulkan, EShTargetVulkan_1_0);
 		shader.setEnvTarget(EShTargetSpv, EShTargetSpv_1_0);
 
 		// TODO: move to RendererBase?
