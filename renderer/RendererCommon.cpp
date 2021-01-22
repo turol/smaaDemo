@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 
 
-#define USE_SHADERC 1
+// #define USE_SHADERC 1
 
 
 #include "RendererInternal.h"
@@ -488,7 +488,7 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 
 // increase this when the shader compiler options change
 // so that the same source generates a different SPV
-const unsigned int shaderVersion = 78;
+const unsigned int shaderVersion = 79;
 
 
 struct CacheData {
