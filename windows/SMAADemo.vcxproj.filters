@@ -22,9 +22,6 @@
     <Filter Include="Source Files\imgui">
       <UniqueIdentifier>{be173d4f-aa82-48b1-b285-463093ec90e0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\shaderc">
-      <UniqueIdentifier>{d48c62b7-c6ff-4b2c-9448-1a46f083a3e8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\utils">
       <UniqueIdentifier>{93018a25-bf16-480a-91ad-e0669e862006}</UniqueIdentifier>
     </Filter>
@@ -51,33 +48,6 @@
     <ClCompile Include="..\foreign\imgui\imgui_draw.cpp">
       <Filter>Source Files\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="..\foreign\shaderc\libshaderc\src\shaderc.cc">
-      <Filter>Source Files\shaderc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\compiler.cc">
-      <Filter>Source Files\shaderc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\file_finder.cc">
-      <Filter>Source Files\shaderc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\io.cc">
-      <Filter>Source Files\shaderc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\message.cc">
-      <Filter>Source Files\shaderc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\resources.cc">
-      <Filter>Source Files\shaderc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\shader_stage.cc">
-      <Filter>Source Files\shaderc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\spirv_tools_wrapper.cc">
-      <Filter>Source Files\shaderc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\version_profile.cc">
-      <Filter>Source Files\shaderc</Filter>
-    </ClCompile>
     <ClCompile Include="..\utils\Utils.cpp">
       <Filter>Source Files\utils</Filter>
     </ClCompile>
@@ -101,6 +71,9 @@
     </ClCompile>
     <ClCompile Include="..\foreign\xxHash\xxhash.c">
       <Filter>Source Files\xxHash</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\imgui\imgui_tables.cpp">
+      <Filter>Source Files\imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -263,8 +263,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-cored.lib;spirv-cross-glsld.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../foreign/glslang/build64/glslang/Debug;../foreign/glslang/build64/glslang/OSDependent/Windows/Debug;../foreign/glslang/build64/OGLCompilersDLL/Debug;../foreign/glslang/build64/SPIRV/Debug;../foreign/SPIRV-Tools/Build64/source/Debug;../foreign/SPIRV-Tools/Build64/source/opt/Debug;../foreign/SPIRV-Tools/Build64/source/comp/Debug;../foreign/SPIRV-Cross/Build64/Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;glslang-default-resource-limitsd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-cored.lib;spirv-cross-glsld.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../foreign/glslang/build64/glslang/Debug;../foreign/glslang/build64/glslang/OSDependent/Windows/Debug;../foreign/glslang/build64/OGLCompilersDLL/Debug;../foreign/glslang/build64/SPIRV/Debug;../foreign/glslang/build64/Standalone/Debug;../foreign/SPIRV-Tools/Build64/source/Debug;../foreign/SPIRV-Tools/Build64/source/opt/Debug;../foreign/SPIRV-Tools/Build64/source/comp/Debug;../foreign/SPIRV-Cross/Build64/Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Null|Win32'">
@@ -396,16 +396,8 @@
     <ClCompile Include="..\foreign\imgui\imgui.cpp" />
     <ClCompile Include="..\foreign\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\foreign\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\foreign\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\foreign\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="..\foreign\shaderc\libshaderc\src\shaderc.cc" />
-    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\compiler.cc" />
-    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\file_finder.cc" />
-    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\io.cc" />
-    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\message.cc" />
-    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\resources.cc" />
-    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\shader_stage.cc" />
-    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\spirv_tools_wrapper.cc" />
-    <ClCompile Include="..\foreign\shaderc\libshaderc_util\src\version_profile.cc" />
     <ClCompile Include="..\foreign\xxHash\xxhash.c" />
     <ClCompile Include="..\renderer\NullRenderer.cpp" />
     <ClCompile Include="..\renderer\OpenGLRenderer.cpp" />
