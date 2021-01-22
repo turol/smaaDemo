@@ -74,6 +74,7 @@ target_include_directories(smaaDemo PRIVATE
 		foreign/pcg-cpp/include
 		foreign/SPIRV-Cross
 		foreign/stb
+		foreign/string-view-lite/include
 		foreign/tclap/include
 		foreign/vulkanMemoryAllocator/src
 		foreign/xxHash
