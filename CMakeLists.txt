@@ -51,6 +51,7 @@ set(SOURCE
 		renderer/VulkanRenderer.cpp
 		renderer/VulkanMemoryAllocator.cpp
 		utils/Utils.cpp
+		foreign/glslang/StandAlone/ResourceLimits.cpp
 		foreign/imgui/imgui.cpp
 		foreign/imgui/imgui_demo.cpp
 		foreign/imgui/imgui_draw.cpp
@@ -87,5 +88,4 @@ target_link_libraries(smaaDemo
 		spirv-cross-glsl
 		SPVRemapper
 		shaderc
-		glslang-default-resource-limits
 	)
