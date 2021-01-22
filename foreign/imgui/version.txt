@@ -1,8 +1,5 @@
-commit e5cb04b132cba94f902beb6186cb58b864777012
+commit 58075c4414b985b352d10718b02a8c43f25efd7c
 Author: ocornut <omarcornut@gmail.com>
-Date:   Thu Oct 8 13:55:25 2020 +0200
+Date:   Thu Jan 21 16:59:34 2021 +0100
 
-    Version 1.79
-    
-    + Update readme and mission statement.
-    Removed "Minimize screen reel-estate usage", removed details on memory consumption (still very valid, just too much noise in a mission statement)
+    Version 1.80

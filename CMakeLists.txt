@@ -54,6 +54,7 @@ set(SOURCE
 		foreign/imgui/imgui.cpp
 		foreign/imgui/imgui_demo.cpp
 		foreign/imgui/imgui_draw.cpp
+		foreign/imgui/imgui_tables.cpp
 		foreign/imgui/imgui_widgets.cpp
 		foreign/xxHash/xxhash.c
 	)
