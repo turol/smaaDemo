@@ -784,14 +784,16 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			// break shader into lines
 			std::vector<nonstd::string_view> lines;
 			lines.reserve(128);  // picked a value larger than any current shader
-			const char *lineStart = &src[0];
-			while (true) {
-				const char *lineEnd = strchrnul(lineStart, '\n');
-				lines.emplace_back(lineStart, lineEnd - lineStart);
-				if (*lineEnd == '\0') {
-					break;
+			const char *it        = &src[0];
+			const char *end       = &src[src.size()];
+			const char *lineStart = it;
+			while (it < end) {
+				if (*it == '\n') {
+					const char *lineEnd = it;
+					lines.emplace_back(lineStart, lineEnd - lineStart);
+					lineStart = lineEnd + 1;
 				}
-				lineStart = lineEnd + 1;
+				it++;
 			}
 
 			// find line with #version and add the appropriate #extension after it
