@@ -820,15 +820,31 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			for ( ; interestingLine != lines.end(); interestingLine++) {
 				if (interestingLine->starts_with("#version")) {
 					interestingLine++;
-					lines.emplace(interestingLine, "#extension GL_GOOGLE_include_directive : enable");
+					interestingLine = lines.emplace(interestingLine, "#extension GL_GOOGLE_include_directive : enable");
+					interestingLine++;
 					break;
 				}
 			}
 
 			// shaderc can take predefined macros
 			// glslang can not
+			std::vector<std::string> sorted;
 			if (!macros.empty()) {
-				LOG("TODO: macros\n");
+				sorted.reserve(macros.size());
+				for (const auto &macro : macros) {
+					std::string s = "#define " + macro.first;
+					if (!macro.second.empty()) {
+						s += " ";
+						s += macro.second;
+					}
+					sorted.emplace_back(std::move(s));
+				}
+
+				std::sort(sorted.begin(), sorted.end());
+				for (const auto &s : sorted) {
+					interestingLine = lines.emplace(interestingLine, s);
+					interestingLine++;
+				}
 			}
 
 			unsigned int len = lines.size();  // the newlines
@@ -851,10 +867,6 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		shaderc::CompileOptions options;
 		// TODO: optimization level?
 		options.SetIncluder(std::make_unique<Includer>(cache));
-
-		for (const auto &p : macros) {
-			options.AddMacroDefinition(p.first, p.second);
-		}
 
 		shaderc_shader_kind kind;
 		switch (kind_) {
