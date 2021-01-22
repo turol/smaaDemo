@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include <SPIRV/SPVRemapper.h>
 #include <spirv_cross.hpp>
 
+#define nssv_CONFIG_SELECT_STRING_VIEW nssv_STRING_VIEW_NONSTD
 #include <nonstd/string_view.hpp>
 
 #include <xxhash.h>
