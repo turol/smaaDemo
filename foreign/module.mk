@@ -7,7 +7,6 @@ SUBDIRS:= \
 	glew \
 	glslang \
 	imgui \
-	shaderc \
 	SPIRV-Cross \
 	SPIRV-Tools \
 	xxHash \

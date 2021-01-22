@@ -29,12 +29,6 @@ set(ENABLE_GLSLANG_BINARIES OFF)
 set(SKIP_GLSLANG_INSTALL ON)
 add_subdirectory(foreign/glslang)
 
-set(SHADERC_SKIP_INSTALL ON)
-set(SHADERC_ENABLE_TESTS OFF)
-set(SHADERC_ENABLE_WERROR_COMPILE OFF)
-set(SHADERC_SKIP_TESTS ON)
-add_subdirectory(foreign/shaderc)
-
 set(SPIRV_CROSS_CLI OFF)
 set(SPIRV_CROSS_ENABLE_TESTS OFF)
 set(SPIRV_CROSS_ENABLE_HLSL OFF)
@@ -85,7 +79,9 @@ target_include_directories(smaaDemo PRIVATE
 target_link_libraries(smaaDemo
 		${SDL2_LIBRARIES}
 		${Vulkan_LIBRARIES}
+		glslang
+		SPIRV
+		SPIRV-Tools-opt
 		spirv-cross-glsl
 		SPVRemapper
-		shaderc
 	)

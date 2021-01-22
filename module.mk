@@ -53,7 +53,6 @@ LDFLAGS+=$(foreach f, $(PRELOAD_FILES), --preload-file $(TOPDIR)/$(f)@$(f))
 
 CFLAGS+=$(OPTFLAGS)
 
-# required for ShaderC
 CFLAGS+=-DENABLE_HLSL
 
 CFLAGS+=-I.
@@ -77,14 +76,6 @@ ifeq ($(INTERNAL_glslang),y)
 CFLAGS+=-isystem$(TOPDIR)/foreign/glslang
 
 endif  # INTERNAL_glslang
-
-
-ifeq ($(INTERNAL_shaderc),y)
-
-CFLAGS+=-isystem$(TOPDIR)/foreign/shaderc/libshaderc/include
-CFLAGS+=-isystem$(TOPDIR)/foreign/shaderc/libshaderc_util/include
-
-endif  # INTERNAL_shaderc
 
 
 ifeq ($(INTERNAL_spirv-cross),y)

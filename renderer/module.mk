@@ -12,7 +12,7 @@ FILES:= \
 	# empty line
 
 
-DEPENDS_renderer:=sdl2 shaderc spirv-cross utils xxHash
+DEPENDS_renderer:=glslang sdl2 spirv-cross spirv-tools utils xxHash
 renderer_SRC:=$(foreach f, $(FILES), $(dir)/$(f))
 
 
