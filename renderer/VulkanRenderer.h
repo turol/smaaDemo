@@ -814,7 +814,6 @@ struct Frame : public FrameBase {
 	};
 
 	Status                        status;
-	uint32_t                      lastFrameNum;
 	unsigned int                  usedRingBufPtr;
 	std::vector<BufferHandle>     ephemeralBuffers;
 	vk::Fence                     fence;
@@ -833,7 +832,6 @@ struct Frame : public FrameBase {
 
 	Frame()
 	: status(Status::Ready)
-	, lastFrameNum(0)
 	, usedRingBufPtr(0)
 	{}
 
@@ -857,8 +855,8 @@ struct Frame : public FrameBase {
 	Frame &operator=(const Frame &) = delete;
 
 	Frame(Frame &&other) noexcept
-	: status(other.status)
-	, lastFrameNum(other.lastFrameNum)
+	: FrameBase(std::move(other))
+	, status(other.status)
 	, usedRingBufPtr(other.usedRingBufPtr)
 	, ephemeralBuffers(std::move(other.ephemeralBuffers))
 	, fence(other.fence)

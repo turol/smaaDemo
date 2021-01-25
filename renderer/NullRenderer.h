@@ -368,14 +368,12 @@ struct VertexShader {
 
 struct Frame : public FrameBase {
 	bool                      outstanding;
-	uint32_t                  lastFrameNum;
 	unsigned int              usedRingBufPtr;
 	std::vector<BufferHandle> ephemeralBuffers;
 
 
 	Frame()
 	: outstanding(false)
-	, lastFrameNum(0)
 	, usedRingBufPtr(0)
 	{}
 
@@ -388,8 +386,8 @@ struct Frame : public FrameBase {
 	Frame &operator=(const Frame &) = delete;
 
 	Frame(Frame &&other) noexcept
-	: outstanding(other.outstanding)
-	, lastFrameNum(other.lastFrameNum)
+	: FrameBase(std::move(other))
+	, outstanding(other.outstanding)
 	, usedRingBufPtr(other.usedRingBufPtr)
 	, ephemeralBuffers(std::move(other.ephemeralBuffers))
 	{

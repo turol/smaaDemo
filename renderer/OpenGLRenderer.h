@@ -593,7 +593,6 @@ typedef boost::variant<BufferHandle, CSampler, SamplerHandle, TextureHandle> Des
 
 struct Frame : public FrameBase {
 	bool                      outstanding;
-	uint32_t                  lastFrameNum;
 	unsigned int              usedRingBufPtr;
 	std::vector<BufferHandle> ephemeralBuffers;
 	GLsync                    fence;
@@ -601,7 +600,6 @@ struct Frame : public FrameBase {
 
 	Frame()
 	: outstanding(false)
-	, lastFrameNum(0)
 	, usedRingBufPtr(0)
 	, fence(nullptr)
 	{}
@@ -616,8 +614,8 @@ struct Frame : public FrameBase {
 	Frame &operator=(const Frame &) = delete;
 
 	Frame(Frame &&other) noexcept
-	: outstanding(other.outstanding)
-	, lastFrameNum(other.lastFrameNum)
+	: FrameBase(std::move(other))
+	, outstanding(other.outstanding)
 	, usedRingBufPtr(other.usedRingBufPtr)
 	, ephemeralBuffers(std::move(other.ephemeralBuffers))
 	, fence(other.fence)

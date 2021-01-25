@@ -129,7 +129,12 @@ bool issRGBFormat(Format format);
 
 
 struct FrameBase {
-	FrameBase() {}
+	uint32_t                  lastFrameNum;
+
+	FrameBase()
+	: lastFrameNum(0)
+	{
+	}
 
 	FrameBase(const FrameBase &)                = delete;
 	FrameBase &operator=(const FrameBase &)     = delete;
