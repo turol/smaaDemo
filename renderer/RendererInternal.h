@@ -128,6 +128,19 @@ bool isDepthFormat(Format format);
 bool issRGBFormat(Format format);
 
 
+struct FrameBase {
+	FrameBase() {}
+
+	FrameBase(const FrameBase &)                = delete;
+	FrameBase &operator=(const FrameBase &)     = delete;
+
+	FrameBase(FrameBase &&) noexcept            = default;
+	FrameBase &operator=(FrameBase &&) noexcept = default;
+
+	~FrameBase() {}
+};
+
+
 struct RendererBase {
 	SwapchainDesc                                        swapchainDesc;
 	SwapchainDesc                                        wantedSwapchain;

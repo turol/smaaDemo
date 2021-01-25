@@ -806,7 +806,7 @@ struct UploadOp {
 };
 
 
-struct Frame {
+struct Frame : public FrameBase {
 	enum class Status : uint8_t {
 		  Ready
 		, Pending

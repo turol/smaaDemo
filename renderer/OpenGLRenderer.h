@@ -591,7 +591,7 @@ struct VertexShader {
 typedef boost::variant<BufferHandle, CSampler, SamplerHandle, TextureHandle> Descriptor;
 
 
-struct Frame {
+struct Frame : public FrameBase {
 	bool                      outstanding;
 	uint32_t                  lastFrameNum;
 	unsigned int              usedRingBufPtr;

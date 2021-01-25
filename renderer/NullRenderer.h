@@ -366,7 +366,7 @@ struct VertexShader {
 };
 
 
-struct Frame {
+struct Frame : public FrameBase {
 	bool                      outstanding;
 	uint32_t                  lastFrameNum;
 	unsigned int              usedRingBufPtr;
