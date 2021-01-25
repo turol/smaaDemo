@@ -21,9 +21,6 @@ THE SOFTWARE.
 */
 
 
-// #define USE_SHADERC 1
-
-
 #include "RendererInternal.h"
 #include "utils/Utils.h"
 
@@ -40,12 +37,6 @@ THE SOFTWARE.
 
 #include <xxhash.h>
 
-#ifdef USE_SHADERC
-
-#include <shaderc/shaderc.hpp>
-
-#else  // USE_SHADERC 1
-
 #include <glslang/Public/ShaderLang.h>
 #include <glslang/StandAlone/ResourceLimits.h>
 #include <glslang/SPIRV/SpvTools.h>
@@ -53,9 +44,6 @@ THE SOFTWARE.
 
 
 using namespace glslang;
-
-
-#endif  // USE_SHADERC 1
 
 
 namespace renderer {
@@ -317,62 +305,6 @@ bool PipelineDesc::operator==(const PipelineDesc &other) const {
 }
 
 
-#ifdef USE_SHADERC
-
-
-class Includer final : public shaderc::CompileOptions::IncluderInterface {
-	HashMap<std::string, std::vector<char> > &cache;
-
-
-public:
-
-	explicit Includer(HashMap<std::string, std::vector<char> > &cache_)
-	: cache(cache_)
-	{
-	}
-
-	Includer(const Includer &)            = delete;
-	Includer(Includer &&)                 = delete;
-
-	Includer &operator=(const Includer &) = delete;
-	Includer &operator=(Includer &&)      = delete;
-
-	~Includer() {}
-
-
-	virtual shaderc_include_result* GetInclude(const char* requested_source, shaderc_include_type /* type */, const char* /* requesting_source */, size_t /* include_depth */) {
-		std::string filename(requested_source);
-
-		// HashMap<std::string, std::vector<char> >::iterator it = cache.find(filename);
-		auto it = cache.find(filename);
-		if (it == cache.end()) {
-			auto contents = readFile(requested_source);
-			bool inserted = false;
-			std::tie(it, inserted) = cache.emplace(std::move(filename), std::move(contents));
-			// since we just checked it's not there this must succeed
-			assert(inserted);
-		}
-
-		auto data = new shaderc_include_result;
-		data->source_name         = it->first.c_str();
-		data->source_name_length  = it->first.size();
-		data->content             = it->second.data();
-		data->content_length      = it->second.size();
-		data->user_data           = nullptr;
-
-		return data;
-	}
-
-	virtual void ReleaseInclude(shaderc_include_result* data) {
-		// no need to delete any of data's contents, they're owned by someone else
-		delete data;
-	}
-};
-
-
-#else  // USE_SHADERC
-
-
 class Includer final : public TShader::Includer {
 	HashMap<std::string, std::vector<char> > &cache;
 
@@ -420,9 +352,6 @@ public:
 };
 
 
-#endif  // USE_SHADERC
-
-
 RendererBase::RendererBase(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
 , wantedSwapchain(desc.swapchain)
@@ -452,25 +381,15 @@ RendererBase::RendererBase(const RendererDesc &desc)
 	spirvCacheDir = prefPath;
 	SDL_free(prefPath);
 
-#ifndef USE_SHADERC
-
 	bool success = InitializeProcess();
 	if (!success) {
 		throw std::runtime_error("glslang initialization failed");
 	}
-
-#endif  // USE_SHADERC
-
 }
 
 
 RendererBase::~RendererBase() {
-#ifndef USE_SHADERC
-
 	FinalizeProcess();
-
-#endif  // USE_SHADERC
-
 }
 
 
@@ -862,39 +781,6 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			std::swap(src, newSrc);
 		}
 
-#ifdef USE_SHADERC
-
-		shaderc::CompileOptions options;
-		// TODO: optimization level?
-		options.SetIncluder(std::make_unique<Includer>(cache));
-
-		shaderc_shader_kind kind;
-		switch (kind_) {
-		case ShaderKind::Vertex:
-			kind = shaderc_glsl_vertex_shader;
-			break;
-
-		case ShaderKind::Fragment:
-			kind = shaderc_glsl_fragment_shader;
-			break;
-
-		default:
-			UNREACHABLE();  // shouldn't happen
-			break;
-
-		}
-
-		shaderc::Compiler compiler;
-		auto result = compiler.CompileGlslToSpv(&src[0], src.size(), kind, name.c_str(), options);
-		if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-			LOG("Shader %s compile failed: %s\n", name.c_str(), result.GetErrorMessage().c_str());
-			throw std::runtime_error("Shader compile failed");
-		}
-
-		spirv.insert(spirv.end(), result.cbegin(), result.cend());
-
-#else  // USE_SHADERC
-
 		EShLanguage language;
 		switch (kind_) {
 		case ShaderKind::Vertex:
@@ -967,9 +853,6 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		spvOptions.optimizeSize     = false;
 		spvOptions.validate         = validateShaders;
 		glslang::GlslangToSpv(*program.getIntermediate(language), spirv, &logger, &spvOptions);
-
-
-#endif  // USE_SHADERC
 
 		if (!validate(spirv)) {
 			LOG("SPIR-V for shader \"%s\" is not valid after compilation\n", shaderName.c_str());
