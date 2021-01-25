@@ -5,7 +5,6 @@ d              := $(dir)
 
 SUBDIRS:= \
 	GenericCodeGen \
-	HLSL \
 	MachineIndependent \
 	OSDependent \
 	# empty line

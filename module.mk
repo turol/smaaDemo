@@ -53,8 +53,6 @@ LDFLAGS+=$(foreach f, $(PRELOAD_FILES), --preload-file $(TOPDIR)/$(f)@$(f))
 
 CFLAGS+=$(OPTFLAGS)
 
-CFLAGS+=-DENABLE_HLSL
-
 CFLAGS+=-I.
 CFLAGS+=-Iforeign
 CFLAGS+=-I$(TOPDIR)
