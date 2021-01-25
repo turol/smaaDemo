@@ -710,7 +710,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	}
 
 	// TODO: cache includes globally
-	HashMap<std::string, std::vector<char> > cache;
+	HashMap<std::string, std::vector<char> > includeCache;
 
 	{
 		auto src = loadSource(name);
@@ -810,7 +810,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 		// TODO: move to RendererBase?
 		TBuiltInResource resource(DefaultTBuiltInResource);
-		Includer includer(cache);
+		Includer includer(includeCache);
 
 		// compile
 		bool success = shader.parse(&resource, 450, ECoreProfile, false, false, EShMsgDefault, includer);
@@ -912,8 +912,8 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		snprintf(buffer, sizeof(buffer), "%08" PRIx64, cacheData.hash);
 		std::string spvName   = spirvCacheDir + buffer + ".spv";
 		LOG("Writing shader \"%s\" to \"%s\"\n", shaderName.c_str(), spvName.c_str());
-		cacheData.dependencies.reserve(cache.size());
-		for (const auto &p : cache) {
+		cacheData.dependencies.reserve(includeCache.size());
+		for (const auto &p : includeCache) {
 			cacheData.dependencies.push_back(p.first);
 		}
 		std::string cacheStr = cacheData.serialize();
