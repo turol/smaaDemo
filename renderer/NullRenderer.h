@@ -387,7 +387,7 @@ struct Frame : public FrameBase {
 	Frame(const Frame &)            = delete;
 	Frame &operator=(const Frame &) = delete;
 
-	Frame(Frame &&other)
+	Frame(Frame &&other) noexcept
 	: outstanding(other.outstanding)
 	, lastFrameNum(other.lastFrameNum)
 	, usedRingBufPtr(other.usedRingBufPtr)
@@ -398,7 +398,7 @@ struct Frame : public FrameBase {
 		other.usedRingBufPtr   = 0;
 	}
 
-	Frame &operator=(Frame &&other) {
+	Frame &operator=(Frame &&other) noexcept {
 		assert(ephemeralBuffers.empty());
 		ephemeralBuffers = std::move(other.ephemeralBuffers);
 		assert(other.ephemeralBuffers.empty());

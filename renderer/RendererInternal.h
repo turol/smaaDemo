@@ -190,10 +190,10 @@ struct RendererBase {
 
 
 	RendererBase(const RendererBase &)            = delete;
-	RendererBase(RendererBase &&)                 = delete;
+	RendererBase(RendererBase &&) noexcept            = delete;
 
 	RendererBase &operator=(const RendererBase &) = delete;
-	RendererBase &operator=(RendererBase &&)      = delete;
+	RendererBase &operator=(RendererBase &&) noexcept = delete;
 
 	~RendererBase();
 };
