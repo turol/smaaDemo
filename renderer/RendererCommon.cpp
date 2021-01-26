@@ -482,6 +482,13 @@ struct CacheData {
 };
 
 
+std::string RendererBase::makeSPVCacheName(uint64_t hash) {
+	char buffer[9];
+	snprintf(buffer, sizeof(buffer), "%08" PRIx64, hash);
+	return spirvCacheDir + buffer + ".spv";
+}
+
+
 bool RendererBase::loadCachedSPV(const std::string &name, const std::string &shaderName, std::vector<uint32_t> &spirv) {
 	std::string cacheName = spirvCacheDir + shaderName + ".cache";
 	if (!fileExists(cacheName)) {
@@ -494,9 +501,7 @@ bool RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 		return false;
 	}
 
-	char buffer[9];
-	snprintf(buffer, sizeof(buffer), "%08" PRIx64, cacheData.hash);
-	std::string spvName   = spirvCacheDir + buffer + ".spv";
+	std::string spvName   = makeSPVCacheName(cacheData.hash);
 	if (!fileExists(spvName)) {
 		return false;
 	}
@@ -908,9 +913,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		CacheData cacheData;
 		cacheData.version = shaderVersion;
 		cacheData.hash    = XXH64(spirv.data(), spirv.size() * 4, 0);;
-		char buffer[9];
-		snprintf(buffer, sizeof(buffer), "%08" PRIx64, cacheData.hash);
-		std::string spvName   = spirvCacheDir + buffer + ".spv";
+		std::string spvName   = makeSPVCacheName(cacheData.hash);
 		LOG("Writing shader \"%s\" to \"%s\"\n", shaderName.c_str(), spvName.c_str());
 		cacheData.dependencies.reserve(includeCache.size());
 		for (const auto &p : includeCache) {
