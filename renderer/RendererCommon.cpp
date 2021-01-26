@@ -483,9 +483,10 @@ struct CacheData {
 
 
 std::string RendererBase::makeSPVCacheName(uint64_t hash) {
-	char buffer[9];
-	snprintf(buffer, sizeof(buffer), "%08" PRIx64, hash);
-	return spirvCacheDir + buffer + ".spv";
+	char buffer[512];
+	auto ret = snprintf(buffer, sizeof(buffer), "%s%08" PRIx64 ".spv", spirvCacheDir.c_str(), hash);
+	assert(ret >= 5);
+	return std::string(buffer);
 }
 
 
