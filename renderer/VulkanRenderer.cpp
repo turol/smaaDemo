@@ -67,50 +67,6 @@ struct ResourceHasher final : public boost::static_visitor<size_t> {
 };
 
 
-template <typename T> struct DebugType {};
-
-template <> struct DebugType<vk::Framebuffer> {
-	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::eFramebuffer;
-
-	typedef VkFramebuffer Base;
-};
-
-template <> struct DebugType<vk::Image> {
-	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::eImage;
-
-	typedef VkImage Base;
-};
-
-template <> struct DebugType<vk::ImageView> {
-	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::eImageView;
-
-	typedef VkImageView Base;
-};
-
-template <> struct DebugType<vk::Pipeline> {
-	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::ePipeline;
-
-	typedef VkPipeline Base;
-};
-
-template <> struct DebugType<vk::RenderPass> {
-	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::eRenderPass;
-
-	typedef VkRenderPass Base;
-};
-
-template <> struct DebugType<vk::Sampler> {
-	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::eSampler;
-
-	typedef VkSampler Base;
-};
-
-template <> struct DebugType<vk::ShaderModule> {
-	static const vk::DebugReportObjectTypeEXT type = vk::DebugReportObjectTypeEXT::eShaderModule;
-
-	typedef VkShaderModule Base;
-};
-
 template <typename T> void RendererImpl::debugNameObject(T handle, const std::string &name) {
 	if (debugMarkers) {
 		vk::DebugMarkerObjectNameInfoEXT markerName;
