@@ -209,8 +209,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build/source/Debug;../foreign/SPIRV-Tools/Build/source/opt/Debug;../foreign/SPIRV-Tools/Build/source/comp/Debug;../foreign/SPIRV-Cross/Build/Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;glslang-default-resource-limitsd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-cored.lib;spirv-cross-glsld.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../foreign/glslang/build/glslang/Debug;../foreign/glslang/build/glslang/OSDependent/Windows/Debug;../foreign/glslang/build/OGLCompilersDLL/Debug;../foreign/glslang/build/SPIRV/Debug;../foreign/glslang/build/Standalone/Debug;../foreign/SPIRV-Tools/Build/source/Debug;../foreign/SPIRV-Tools/Build/source/opt/Debug;../foreign/SPIRV-Tools/Build/source/comp/Debug;../foreign/SPIRV-Cross/Build/Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug OpenGL|x64'">
@@ -246,8 +246,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build/source/Debug;../foreign/SPIRV-Tools/Build/source/opt/Debug;../foreign/SPIRV-Tools/Build/source/comp/Debug;../foreign/SPIRV-Cross/Build/Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;glslang-default-resource-limitsd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-cored.lib;spirv-cross-glsld.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../foreign/glslang/build/glslang/Debug;../foreign/glslang/build/glslang/OSDependent/Windows/Debug;../foreign/glslang/build/OGLCompilersDLL/Debug;../foreign/glslang/build/SPIRV/Debug;../foreign/glslang/build/Standalone/Debug;../foreign/SPIRV-Tools/Build/source/Debug;../foreign/SPIRV-Tools/Build/source/opt/Debug;../foreign/SPIRV-Tools/Build/source/comp/Debug;../foreign/SPIRV-Cross/Build/Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Vulkan|x64'">
@@ -281,8 +281,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build/source/Debug;../foreign/SPIRV-Tools/Build/source/opt/Debug;../foreign/SPIRV-Tools/Build/source/comp/Debug;../foreign/SPIRV-Cross/Build/Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;glslang-default-resource-limitsd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-cored.lib;spirv-cross-glsld.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../foreign/glslang/build/glslang/Debug;../foreign/glslang/build/glslang/OSDependent/Windows/Debug;../foreign/glslang/build/OGLCompilersDLL/Debug;../foreign/glslang/build/SPIRV/Debug;../foreign/glslang/build/Standalone/Debug;../foreign/SPIRV-Tools/Build/source/Debug;../foreign/SPIRV-Tools/Build/source/opt/Debug;../foreign/SPIRV-Tools/Build/source/comp/Debug;../foreign/SPIRV-Cross/Build/Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Null|x64'">
@@ -320,8 +320,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build/source/Release;../foreign/SPIRV-Tools/Build/source/opt/Release;../foreign/SPIRV-Tools/Build/source/comp/Release;../foreign/SPIRV-Cross/Build/Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGen.lib;SPIRV.lib;glslang-default-resource-limits.lib;SPVRemapper.lib;MachineIndependent.lib;glslang.lib;OGLCompiler.lib;OSDependent.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build/source/Release;../foreign/SPIRV-Tools/Build/source/opt/Release;../foreign/SPIRV-Tools/Build/source/comp/Release;../foreign/SPIRV-Cross/Build/Release;../foreign/glslang/build/Standalone/Release</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Vulkan|Win32'">
@@ -341,8 +341,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build/source/Release;../foreign/SPIRV-Tools/Build/source/opt/Release;../foreign/SPIRV-Tools/Build/source/comp/Release;../foreign/SPIRV-Cross/Build/Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGen.lib;SPIRV.lib;glslang-default-resource-limits.lib;SPVRemapper.lib;MachineIndependent.lib;glslang.lib;OGLCompiler.lib;OSDependent.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build/source/Release;../foreign/SPIRV-Tools/Build/source/opt/Release;../foreign/SPIRV-Tools/Build/source/comp/Release;../foreign/SPIRV-Cross/Build/Release;../foreign/glslang/build/Standalone/Release</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release OpenGL|x64'">
@@ -392,6 +392,7 @@
     <ClCompile Include="..\foreign\glew\src\glew.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Vulkan|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Vulkan|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Null|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\foreign\imgui\imgui.cpp" />
     <ClCompile Include="..\foreign\imgui\imgui_demo.cpp" />
