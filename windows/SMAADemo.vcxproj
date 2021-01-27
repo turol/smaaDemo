@@ -203,7 +203,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>RENDERER_OPENGL;WIN32;USE_GLEW;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLEW_NO_GLU;__i386;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc/include;../foreign/shaderc/libshaderc_util/include;../foreign/xxHash;../foreign/pcg-cpp/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/xxHash;../foreign/pcg-cpp/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -219,9 +219,9 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>ENABLE_HLSL;RENDERER_OPENGL;WIN32;USE_GLEW;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLEW_NO_GLU;__x86_64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RENDERER_OPENGL;WIN32;USE_GLEW;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLEW_NO_GLU;__x86_64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc/include;../foreign/shaderc/libshaderc_util/include;../foreign/xxHash;../foreign/pcg-cpp/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/xxHash;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <AdditionalOptions>
       </AdditionalOptions>
@@ -229,8 +229,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-cored.lib;spirv-cross-glsld.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build64/source/Debug;../foreign/SPIRV-Tools/Build64/source/opt/Debug;../foreign/SPIRV-Tools/Build64/source/comp/Debug;../foreign/SPIRV-Cross/Build64/Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;glslang-default-resource-limitsd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-cored.lib;spirv-cross-glsld.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../foreign/glslang/build64/glslang/Debug;../foreign/glslang/build64/glslang/OSDependent/Windows/Debug;../foreign/glslang/build64/OGLCompilersDLL/Debug;../foreign/glslang/build64/SPIRV/Debug;../foreign/glslang/build64/Standalone/Debug;../foreign/SPIRV-Tools/Build64/source/Debug;../foreign/SPIRV-Tools/Build64/source/opt/Debug;../foreign/SPIRV-Tools/Build64/source/comp/Debug;../foreign/SPIRV-Cross/Build64/Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Vulkan|Win32'">
@@ -241,7 +241,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>RENDERER_VULKAN;WIN32;USE_GLEW;GLEW_STATIC;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;__i386;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc/include;../foreign/shaderc/libshaderc_util/include;../foreign/xxHash;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/xxHash;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -256,9 +256,9 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>ENABLE_HLSL;RENDERER_VULKAN;WIN32;USE_GLEW;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;__x86_64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RENDERER_VULKAN;WIN32;USE_GLEW;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;__x86_64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc/include;../foreign/shaderc/libshaderc_util/include;../foreign/xxHash;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/xxHash;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -275,7 +275,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>RENDERER_NULL;WIN32;USE_GLEW;GLEW_STATIC;GLEW_NO_GLU;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;__i386;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc/include;../foreign/shaderc/libshaderc_util/include;../foreign/xxHash;../foreign/pcg-cpp/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/xxHash;../foreign/pcg-cpp/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -291,16 +291,16 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>ENABLE_HLSL;RENDERER_NULL;WIN32;USE_GLEW;GLEW_STATIC;GLEW_NO_GLU;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RENDERER_NULL;WIN32;USE_GLEW;GLEW_STATIC;GLEW_NO_GLU;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc/include;../foreign/shaderc/libshaderc_util/include;../foreign/pcg-cpp/include;../foreign/xxHash;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/pcg-cpp/include;../foreign/xxHash;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build64/source/Debug;../foreign/SPIRV-Tools/Build64/source/opt/Debug;../foreign/SPIRV-Tools/Build64/source/comp/Debug;../foreign/SPIRV-Cross/Build64/Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;glslang-default-resource-limitsd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-cored.lib;spirv-cross-glsl.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../foreign/glslang/build64/glslang/Debug;../foreign/glslang/build64/glslang/OSDependent/Windows/Debug;../foreign/glslang/build64/OGLCompilersDLL/Debug;../foreign/glslang/build64/SPIRV/Debug;../foreign/glslang/build64/Standalone/Debug;../foreign/SPIRV-Tools/Build64/source/Debug;../foreign/SPIRV-Tools/Build64/source/opt/Debug;../foreign/SPIRV-Tools/Build64/source/comp/Debug;../foreign/SPIRV-Cross/Build64/Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release OpenGL|Win32'">
@@ -313,7 +313,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>RENDERER_OPENGL;WIN32;USE_GLEW;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLEW_NO_GLU;__i386;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc/include;../foreign/shaderc/libshaderc_util/include;../foreign/xxHash;../foreign/pcg-cpp/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/xxHash;../foreign/pcg-cpp/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -334,7 +334,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>RENDERER_VULKAN;WIN32;USE_GLEW;GLEW_STATIC;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;__i386;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc/include;../foreign/shaderc/libshaderc_util/include;../foreign/xxHash;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/xxHash;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -353,17 +353,17 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>ENABLE_HLSL;RENDERER_OPENGL;WIN32;USE_GLEW;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLEW_NO_GLU;__x86_64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RENDERER_OPENGL;WIN32;USE_GLEW;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLEW_NO_GLU;__x86_64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc/include;../foreign/shaderc/libshaderc_util/include;../foreign/xxHash;../foreign/pcg-cpp/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/xxHash;../foreign/pcg-cpp/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build64/source/Release;../foreign/SPIRV-Tools/Build64/source/opt/Release;../foreign/SPIRV-Tools/Build64/source/comp/Release;../foreign/SPIRV-Cross/Build64/Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGen.lib;SPIRV.lib;glslang-default-resource-limits.lib;SPVRemapper.lib;MachineIndependent.lib;glslang.lib;OGLCompiler.lib;OSDependent.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build64/source/Release;../foreign/SPIRV-Tools/Build64/source/opt/Release;../foreign/SPIRV-Tools/Build64/source/comp/Release;../foreign/SPIRV-Cross/Build64/Release;../foreign/glslang/build64/Standalone/Release</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Vulkan|x64'">
@@ -374,17 +374,17 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>ENABLE_HLSL;RENDERER_VULKAN;WIN32;USE_GLEW;GLEW_STATIC;_WINDOWS;_CRT_SECURE_NO_WARNINGS;__x86_64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RENDERER_VULKAN;WIN32;USE_GLEW;GLEW_STATIC;_WINDOWS;_CRT_SECURE_NO_WARNINGS;__x86_64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/shaderc/libshaderc/include;../foreign/shaderc/libshaderc_util/include;../foreign/xxHash;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/src;../foreign/xxHash;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign;../foreign/glm;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/xxHash;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/src;../foreign/xxHash;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGend.lib;SPIRVd.lib;SPVRemapperd.lib;MachineIndependentd.lib;glslangd.lib;OGLCompilerd.lib;OSDependentd.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build64/source/Release;../foreign/SPIRV-Tools/Build64/source/opt/Release;../foreign/SPIRV-Tools/Build64/source/comp/Release;../foreign/SPIRV-Cross/Build64/Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;GenericCodeGen.lib;SPIRV.lib;glslang-default-resource-limits.lib;SPVRemapper.lib;MachineIndependent.lib;glslang.lib;OGLCompiler.lib;OSDependent.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;spirv-cross-core.lib;spirv-cross-glsl.lib;opengl32.lib;Shlwapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../foreign/SPIRV-Tools/Build64/source/Release;../foreign/SPIRV-Tools/Build64/source/opt/Release;../foreign/SPIRV-Tools/Build64/source/comp/Release;../foreign/SPIRV-Cross/Build64/Release;../foreign/glslang/build64/Standalone/Release</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
