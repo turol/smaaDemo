@@ -772,7 +772,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 				}
 			}
 
-			unsigned int len = lines.size();  // the newlines
+			size_t len = lines.size();  // the newlines
 			for (const auto &l : lines) {
 				len += l.size();
 			}
