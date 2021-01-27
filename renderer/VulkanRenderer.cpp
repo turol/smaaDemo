@@ -114,7 +114,7 @@ template <> struct DebugType<vk::ShaderModule> {
 template <typename T> void RendererImpl::debugNameObject(T handle, const std::string &name) {
 	if (debugMarkers) {
 		vk::DebugMarkerObjectNameInfoEXT markerName;
-		markerName.objectType  = DebugType<T>::type;
+		markerName.objectType  = T::debugReportObjectType;
 		markerName.object      = uint64_t(typename DebugType<T>::Base(handle));
 		markerName.pObjectName = name.c_str();
 		device.debugMarkerSetObjectNameEXT(&markerName, dispatcher);
