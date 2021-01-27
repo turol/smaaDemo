@@ -66,7 +66,7 @@ THE SOFTWARE.
 #include "vk_mem_alloc.h"
 
 
-#if defined _MSC_VER && !defined __x86_64
+#if defined _MSC_VER && !defined _WIN64
 #define VK_HASH(x) std::hash<uint64_t>()(static_cast<uint64_t>(x))
 #else
 #define VK_HASH(x) std::hash<uint64_t>()(reinterpret_cast<uint64_t>(x))
