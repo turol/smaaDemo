@@ -93,6 +93,7 @@ THE SOFTWARE.
 
 void logInit();
 void logWrite(const char* message, ...) PRINTF(1, 2);
+void logWrite(const std::string &message);
 void logShutdown();
 void logFlush();
 

@@ -52,6 +52,18 @@ void logInit() {
 }
 
 
+void logWrite(const std::string &message) {
+	if (logFile) {
+		fwrite(message.data(), 1, message.size(), logFile);
+		fputc('\n', logFile);
+	} else {
+		// Write to console if opening log file failed
+		puts(message.c_str());
+		putc('\n', stdout);
+	}
+}
+
+
 void logWrite(const char* message, ...) {
 	va_list argp;
 	va_start(argp, message);
