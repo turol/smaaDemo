@@ -535,13 +535,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	memoryProperties = physicalDevice.getMemoryProperties();
 	LOG_FMT("{} memory types", memoryProperties.memoryTypeCount);
 	for (unsigned int i = 0; i < memoryProperties.memoryTypeCount; i++ ) {
-		std::string tempString = vk::to_string(memoryProperties.memoryTypes[i].propertyFlags);
-		LOG_FMT(" {}  heap {}  {}", i, memoryProperties.memoryTypes[i].heapIndex, tempString);
+		LOG_FMT(" {}  heap {}  {}", i, memoryProperties.memoryTypes[i].heapIndex, vk::to_string(memoryProperties.memoryTypes[i].propertyFlags));
 	}
 	LOG_FMT("{} memory heaps", memoryProperties.memoryHeapCount);
 	for (unsigned int i = 0; i < memoryProperties.memoryHeapCount; i++ ) {
-		std::string tempString = vk::to_string(memoryProperties.memoryHeaps[i].flags);
-		LOG_FMT(" {}  size {}  {}", i, memoryProperties.memoryHeaps[i].size, tempString);
+		LOG_FMT(" {}  size {}  {}", i, memoryProperties.memoryHeaps[i].size, vk::to_string(memoryProperties.memoryHeaps[i].flags));
 	}
 
 	std::vector<vk::QueueFamilyProperties> queueProps = physicalDevice.getQueueFamilyProperties();
