@@ -31,6 +31,8 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 
+#include <fmt/format.h>
+
 
 #ifdef _MSC_VER
 
@@ -90,10 +92,17 @@ THE SOFTWARE.
 
 
 #define LOG(msg, ...) logWrite(msg, ##__VA_ARGS__)
+#define LOG_FMT(msg, ...) logWriteFmt(FMT_STRING(msg), ##__VA_ARGS__)
 
 void logInit();
 void logWrite(const char* message, ...) PRINTF(1, 2);
 void logWrite(const std::string &message);
+
+template <typename S, typename... Args>
+static void logWriteFmt(const S &format, const Args & ... args) {
+	logWrite(fmt::format(format, args...));
+}
+
 void logShutdown();
 void logFlush();
 
