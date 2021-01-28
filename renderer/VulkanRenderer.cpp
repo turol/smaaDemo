@@ -523,9 +523,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	physicalDevice = physicalDevices.at(physicalDeviceIndex);
-	LOG_FMT("Using physical device {} \"{}\"", physicalDeviceIndex, deviceProperties.deviceName.data());
-
 	deviceProperties = physicalDevicesProperties.at(physicalDeviceIndex);
+
+	LOG_FMT("Using physical device {} \"{}\"", physicalDeviceIndex, deviceProperties.deviceName.data());
 
 	uboAlign  = static_cast<unsigned int>(deviceProperties.limits.minUniformBufferOffsetAlignment);
 	ssboAlign = static_cast<unsigned int>(deviceProperties.limits.minStorageBufferOffsetAlignment);
