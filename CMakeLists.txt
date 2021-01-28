@@ -37,6 +37,8 @@ set(SPIRV_CROSS_ENABLE_CPP OFF)
 set(SPIRV_CROSS_ENABLE_C_API OFF)
 add_subdirectory(foreign/SPIRV-Cross)
 
+add_subdirectory(foreign/fmt)
+
 set(SOURCE
 		demo/smaaDemo.cpp
 		renderer/NullRenderer.cpp
@@ -79,6 +81,7 @@ target_include_directories(smaaDemo PRIVATE
 target_link_libraries(smaaDemo
 		${SDL2_LIBRARIES}
 		${Vulkan_LIBRARIES}
+		fmt
 		glslang
 		SPIRV
 		SPIRV-Tools-opt

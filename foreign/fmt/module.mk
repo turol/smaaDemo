@@ -3,13 +3,17 @@ dirstack_$(sp) := $(d)
 d              := $(dir)
 
 
-FILES:= \
-	Utils.cpp \
+SUBDIRS:= \
+	src \
 	# empty line
 
+DIRS:=$(addprefix $(d)/,$(SUBDIRS))
 
-DEPENDS_utils:=fmt
-utils_SRC:=$(foreach f, $(FILES), $(dir)/$(f))
+$(eval $(foreach directory, $(DIRS), $(call directory-module,$(directory)) ))
+
+
+FILES:= \
+	# empty line
 
 
 SRC_$(d):=$(addprefix $(d)/,$(FILES))
