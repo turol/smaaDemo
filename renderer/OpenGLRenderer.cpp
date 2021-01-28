@@ -133,7 +133,8 @@ static GLuint createShader(GLenum type, const std::string &name, const ShaderMac
 			// TODO: better logging
 			glGetShaderInfoLog(shader, infoLogLen, NULL, &infoLog[0]);
 			if (infoLog[0] != '\0') {
-				LOG_FMT("shader \"{}\" info log:\n{}\ninfo log end", name, &infoLog[0]); fflush(stdout);
+				LOG_FMT("shader \"{}\" info log:\n{}\ninfo log end", name, &infoLog[0]);
+				logFlush();
 			}
 		}
 	}
@@ -1203,7 +1204,8 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		std::vector<char> infoLog(status + 1, '\0');
 		// TODO: better logging
 		glGetProgramInfoLog(program, status, NULL, &infoLog[0]);
-		LOG_FMT("info log: {}", &infoLog[0]); fflush(stdout);
+		LOG_FMT("info log: {}", &infoLog[0]);
+		logFlush();
 		throw std::runtime_error("shader link failed");
 	}
 	glUseProgram(program);
