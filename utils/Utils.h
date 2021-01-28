@@ -65,18 +65,6 @@ THE SOFTWARE.
 #endif  // _MSC_VER
 
 
-#if defined(__GNUC__) && defined(_WIN32)
-
-#undef  PRIu64
-#define PRIu64 "I64u"
-
-#ifndef PRIx64
-#define PRIx64 "llx"
-#endif  // PRIx64
-
-#endif  // defined(__GNUC__) && defined(_WIN32)
-
-
 #ifdef _MSC_VER
 #define __PRETTY_FUNCTION__  __FUNCTION__
 #endif
