@@ -31,6 +31,9 @@
     <Filter Include="Source Files\xxHash">
       <UniqueIdentifier>{9da21d25-19ed-4bbf-b9c2-6f95750765c4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\fmt">
+      <UniqueIdentifier>{eb2173ae-dd2c-4ebd-9806-a9f31368cc5c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\demo\smaaDemo.cpp">
@@ -74,6 +77,12 @@
     </ClCompile>
     <ClCompile Include="..\foreign\imgui\imgui_tables.cpp">
       <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\fmt\src\format.cc">
+      <Filter>Source Files\fmt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\foreign\fmt\src\os.cc">
+      <Filter>Source Files\fmt</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
