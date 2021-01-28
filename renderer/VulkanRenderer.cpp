@@ -204,7 +204,7 @@ vk::BufferUsageFlags bufferTypeUsage(BufferType type) {
 
 
 static VkBool32 VKAPI_PTR debugMessengerFunc(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT /* messageTypes */, const VkDebugUtilsMessengerCallbackDataEXT *callbackData, void * /* pUserData*/) {
-	LOG("error of severity \"%s\" %d \"%s\" \"%s\"\n", vk::to_string(vk::DebugUtilsMessageSeverityFlagBitsEXT(severity)).c_str() , callbackData->messageIdNumber, callbackData->pMessageIdName, callbackData->pMessage);
+	LOG("error of severity \"%s\" %d \"%s\" \"%s\"", vk::to_string(vk::DebugUtilsMessageSeverityFlagBitsEXT(severity)).c_str() , callbackData->messageIdNumber, callbackData->pMessageIdName, callbackData->pMessage);
 	// TODO: log other parts of VkDebugUtilsMessengerCallbackDataEXT
 	logFlush();
 
@@ -217,7 +217,7 @@ static VkBool32 VKAPI_PTR debugMessengerFunc(VkDebugUtilsMessageSeverityFlagBits
 
 
 static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t /* messageCode */, const char * pLayerPrefix, const char * pMessage, void * /* pUserData*/) {
-	LOG("layer %s %s object %lu type %s location %lu: %s\n", pLayerPrefix, vk::to_string(vk::DebugReportFlagBitsEXT(flags)).c_str(), static_cast<unsigned long>(object), vk::to_string(vk::DebugReportObjectTypeEXT(objectType)).c_str(), static_cast<unsigned long>(location), pMessage);
+	LOG("layer %s %s object %lu type %s location %lu: %s", pLayerPrefix, vk::to_string(vk::DebugReportFlagBitsEXT(flags)).c_str(), static_cast<unsigned long>(object), vk::to_string(vk::DebugReportObjectTypeEXT(objectType)).c_str(), static_cast<unsigned long>(location), pMessage);
 	logFlush();
 
 	// make errors fatal
@@ -256,23 +256,23 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	SDL_DisplayMode mode;
 	memset(&mode, 0, sizeof(mode));
 	int numDisplays = SDL_GetNumVideoDisplays();
-	LOG("Number of displays detected: %i\n", numDisplays);
+	LOG("Number of displays detected: %i", numDisplays);
 
 	for (int i = 0; i < numDisplays; i++) {
 		int retval = SDL_GetDesktopDisplayMode(i, &mode);
 		if (retval == 0) {
-			LOG("Desktop mode for display %d: %dx%d, refresh %d Hz\n", i, mode.w, mode.h, mode.refresh_rate);
+			LOG("Desktop mode for display %d: %dx%d, refresh %d Hz", i, mode.w, mode.h, mode.refresh_rate);
 			currentRefreshRate = mode.refresh_rate;
 		} else {
-			LOG("Failed to get desktop display mode for display %d\n", i);
+			LOG("Failed to get desktop display mode for display %d", i);
 		}
 
 		int numModes = SDL_GetNumDisplayModes(i);
-		LOG("Number of display modes for display %i : %i\n", i, numModes);
+		LOG("Number of display modes for display %i : %i", i, numModes);
 
 		for (int j = 0; j < numModes; j++) {
 			SDL_GetDisplayMode(i, j, &mode);
-			LOG("Display mode %i : width %i, height %i, BPP %i, refresh %u Hz\n", j, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format), mode.refresh_rate);
+			LOG("Display mode %i : width %i, height %i, BPP %i, refresh %u Hz", j, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format), mode.refresh_rate);
 			maxRefreshRate = std::max(static_cast<unsigned int>(mode.refresh_rate), maxRefreshRate);
 		}
 	}
@@ -286,7 +286,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	window = SDL_CreateWindow(desc.applicationName.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, desc.swapchain.width, desc.swapchain.height, flags);
 
 	if (!window) {
-		LOG("SDL_CreateWindow failed: %s\n", SDL_GetError());
+		LOG("SDL_CreateWindow failed: %s", SDL_GetError());
 		throw std::runtime_error("SDL_CreateWindow failed");
 	}
 
@@ -294,11 +294,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		uint32_t instanceVersion = 0;
 		auto result = vk::enumerateInstanceVersion(&instanceVersion);
 		if (result != vk::Result::eSuccess) {
-			LOG("Failed to get Vulkan instance version: %s\n", vk::to_string(result).c_str());
+			LOG("Failed to get Vulkan instance version: %s", vk::to_string(result).c_str());
 			throw std::runtime_error("Failed to get Vulkan instance version");
 		}
 
-		LOG("Vulkan instance version %u.%u.%u\n", VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion));
+		LOG("Vulkan instance version %u.%u.%u", VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion));
 	}
 
 	HashSet<std::string>  instanceExtensions;
@@ -317,7 +317,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			instanceExtensions.insert(ext.extensionName);
 		}
 
-		LOG("Instance extensions:\n");
+		LOG("Instance extensions:");
 		std::vector<char> padding;
 		padding.reserve(maxLen + 1);
 		for (unsigned int i = 0; i < maxLen; i++) {
@@ -325,7 +325,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 		padding.push_back('\0');
 		for (const auto &ext : extensions) {
-			LOG(" %s %s %u\n", ext.extensionName.data(), &padding[strnlen(ext.extensionName, maxLen)], ext.specVersion);
+			LOG(" %s %s %u", ext.extensionName.data(), &padding[strnlen(ext.extensionName, maxLen)], ext.specVersion);
 		}
 	}
 
@@ -345,7 +345,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			instanceLayers.insert(l.layerName);
 		}
 
-		LOG("Instance layers:\n");
+		LOG("Instance layers:");
 		std::vector<char> padding;
 		padding.reserve(maxLen + 1);
 		for (unsigned int i = 0; i < maxLen; i++) {
@@ -353,13 +353,13 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 		padding.push_back('\0');
 		for (const auto &l : layers) {
-			LOG(" %s %s (version %u,\tspec %u.%u.%u)\n", l.layerName.data(), &padding[strnlen(l.layerName, maxLen)], l.implementationVersion, VK_VERSION_MAJOR(l.specVersion), VK_VERSION_MINOR(l.specVersion), VK_VERSION_PATCH(l.specVersion));
+			LOG(" %s %s (version %u,\tspec %u.%u.%u)", l.layerName.data(), &padding[strnlen(l.layerName, maxLen)], l.implementationVersion, VK_VERSION_MAJOR(l.specVersion), VK_VERSION_MINOR(l.specVersion), VK_VERSION_PATCH(l.specVersion));
 		}
 	}
 
 	unsigned int numExtensions = 0;
 	if (!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, NULL)) {
-		LOG("SDL_Vulkan_GetInstanceExtensions failed: %s\n", SDL_GetError());
+		LOG("SDL_Vulkan_GetInstanceExtensions failed: %s", SDL_GetError());
 		throw std::runtime_error("SDL_Vulkan_GetInstanceExtensions failed");
 	}
 
@@ -370,7 +370,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	if(!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, &extensions[0])) {
-		LOG("SDL_Vulkan_GetInstanceExtensions failed: %s\n", SDL_GetError());
+		LOG("SDL_Vulkan_GetInstanceExtensions failed: %s", SDL_GetError());
 		throw std::runtime_error("SDL_Vulkan_GetInstanceExtensions failed");
 	}
 
@@ -392,12 +392,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		const char *lunargValidation  = "VK_LAYER_LUNARG_standard_validation";
 		if (instanceLayers.find(khronosValidation) != instanceLayers.end()) {
 			validationLayers.push_back(khronosValidation);
-			LOG("Using KHRONOS validation layer\n");
+			LOG("Using KHRONOS validation layer");
 		} else if (instanceLayers.find(lunargValidation) != instanceLayers.end()) {
 			validationLayers.push_back(lunargValidation);
-			LOG("Using LUNARG validation layer\n");
+			LOG("Using LUNARG validation layer");
 		} else {
-			LOG("Validation requested but no validation layer available\n");
+			LOG("Validation requested but no validation layer available");
 			throw std::runtime_error("Validation requested but no validation layer available");
 		}
 
@@ -407,16 +407,16 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		} else if (instanceExtensions.find(VK_EXT_DEBUG_REPORT_EXTENSION_NAME) != instanceExtensions.end()) {
 			extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 		} else {
-			LOG("Validation requested but no debug reporting extension available\n");
+			LOG("Validation requested but no debug reporting extension available");
 			throw std::runtime_error("Validation requested but no debug reporting extension available");
 		}
 		instanceCreateInfo.enabledLayerCount    = static_cast<uint32_t>(validationLayers.size());
 		instanceCreateInfo.ppEnabledLayerNames  = &validationLayers[0];
 	}
 
-	LOG("Active instance extensions:\n");
+	LOG("Active instance extensions:");
 	for (const auto ext : extensions) {
-		LOG(" %s\n", ext);
+		LOG(" %s", ext);
 	}
 
 	instanceCreateInfo.enabledExtensionCount    = static_cast<uint32_t>(extensions.size());
@@ -455,21 +455,21 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 								 (SDL_vulkanInstance) instance,
 								 (SDL_vulkanSurface *)&surface))
 	{
-		LOG("Failed to create Vulkan surface: %s\n", SDL_GetError());
+		LOG("Failed to create Vulkan surface: %s", SDL_GetError());
 		// TODO: free instance, window etc...
 		throw std::runtime_error("Failed to create Vulkan surface");
 	}
 
 	std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
 	if (physicalDevices.empty()) {
-		LOG("No physical Vulkan devices found\n");
+		LOG("No physical Vulkan devices found");
 		instance.destroy();
 		instance = nullptr;
 		SDL_DestroyWindow(window);
 		window = nullptr;
 		throw std::runtime_error("No physical Vulkan devices found");
 	}
-	LOG("%u physical devices\n", static_cast<unsigned int>(physicalDevices.size()));
+	LOG("%u physical devices", static_cast<unsigned int>(physicalDevices.size()));
 
 	std::vector<vk::PhysicalDeviceProperties> physicalDevicesProperties;
 	physicalDevicesProperties.reserve(physicalDevices.size());
@@ -479,18 +479,18 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		deviceProperties = physicalDevice.getProperties();
 		physicalDevicesProperties.push_back(deviceProperties);
 
-		LOG(" %u: \"%s\"\n", i, deviceProperties.deviceName.data());
-		LOG("  Device API version %u.%u.%u\n", VK_VERSION_MAJOR(deviceProperties.apiVersion), VK_VERSION_MINOR(deviceProperties.apiVersion), VK_VERSION_PATCH(deviceProperties.apiVersion));
-		LOG("  Driver version %u.%u.%u (%u) (0x%08x)\n", VK_VERSION_MAJOR(deviceProperties.driverVersion), VK_VERSION_MINOR(deviceProperties.driverVersion), VK_VERSION_PATCH(deviceProperties.driverVersion), deviceProperties.driverVersion, deviceProperties.driverVersion);
-		LOG("  VendorId 0x%x\n", deviceProperties.vendorID);
-		LOG("  DeviceId 0x%x\n", deviceProperties.deviceID);
-		LOG("  Type %s\n", vk::to_string(deviceProperties.deviceType).c_str());
-		LOG("  Name \"%s\"\n", deviceProperties.deviceName.data());
-		LOG("  uniform buffer alignment %u\n", static_cast<unsigned int>(deviceProperties.limits.minUniformBufferOffsetAlignment));
-		LOG("  storage buffer alignment %u\n", static_cast<unsigned int>(deviceProperties.limits.minStorageBufferOffsetAlignment));
-		LOG("  texel buffer alignment %u\n",   static_cast<unsigned int>(deviceProperties.limits.minTexelBufferOffsetAlignment));
+		LOG(" %u: \"%s\"", i, deviceProperties.deviceName.data());
+		LOG("  Device API version %u.%u.%u", VK_VERSION_MAJOR(deviceProperties.apiVersion), VK_VERSION_MINOR(deviceProperties.apiVersion), VK_VERSION_PATCH(deviceProperties.apiVersion));
+		LOG("  Driver version %u.%u.%u (%u) (0x%08x)", VK_VERSION_MAJOR(deviceProperties.driverVersion), VK_VERSION_MINOR(deviceProperties.driverVersion), VK_VERSION_PATCH(deviceProperties.driverVersion), deviceProperties.driverVersion, deviceProperties.driverVersion);
+		LOG("  VendorId 0x%x", deviceProperties.vendorID);
+		LOG("  DeviceId 0x%x", deviceProperties.deviceID);
+		LOG("  Type %s", vk::to_string(deviceProperties.deviceType).c_str());
+		LOG("  Name \"%s\"", deviceProperties.deviceName.data());
+		LOG("  uniform buffer alignment %u", static_cast<unsigned int>(deviceProperties.limits.minUniformBufferOffsetAlignment));
+		LOG("  storage buffer alignment %u", static_cast<unsigned int>(deviceProperties.limits.minStorageBufferOffsetAlignment));
+		LOG("  texel buffer alignment %u",   static_cast<unsigned int>(deviceProperties.limits.minTexelBufferOffsetAlignment));
 		std::vector<vk::QueueFamilyProperties> queueProps = physicalDevice.getQueueFamilyProperties();
-		LOG("  %u queue families\n", static_cast<unsigned int>(queueProps.size()));
+		LOG("  %u queue families", static_cast<unsigned int>(queueProps.size()));
 
 		bool canPresent = false;
 		for (uint32_t j = 0; j < queueProps.size(); j++) {
@@ -500,13 +500,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			}
 		}
 		LOG("  %s present to our surface\n", canPresent ? "can" : "can NOT");
-		LOG("\n");
 	}
 
 	assert(physicalDevicesProperties.size() == physicalDevices.size());
 
 	if (!desc.vulkanDeviceFilter.empty()) {
-		LOG("Filtering vulkan device list for \"%s\"\n", desc.vulkanDeviceFilter.c_str());
+		LOG("Filtering vulkan device list for \"%s\"", desc.vulkanDeviceFilter.c_str());
 		bool found = false;
 		for (unsigned int i = 0; i < physicalDevicesProperties.size(); i++) {
 			if (desc.vulkanDeviceFilter == physicalDevicesProperties[i].deviceName.data()) {
@@ -517,14 +516,14 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 
 		if (!found) {
-			LOG("Didn't find physical device matching filter\n");
+			LOG("Didn't find physical device matching filter");
 			logFlush();
 			throw std::runtime_error("Didn't find physical device matching filter");
 		}
 	}
 
 	physicalDevice = physicalDevices.at(physicalDeviceIndex);
-	LOG("Using physical device %u \"%s\"\n", physicalDeviceIndex, deviceProperties.deviceName.data());
+	LOG("Using physical device %u \"%s\"", physicalDeviceIndex, deviceProperties.deviceName.data());
 
 	deviceProperties = physicalDevicesProperties.at(physicalDeviceIndex);
 
@@ -534,32 +533,32 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	deviceFeatures = physicalDevice.getFeatures();
 
 	memoryProperties = physicalDevice.getMemoryProperties();
-	LOG("%u memory types\n", memoryProperties.memoryTypeCount);
+	LOG("%u memory types", memoryProperties.memoryTypeCount);
 	for (unsigned int i = 0; i < memoryProperties.memoryTypeCount; i++ ) {
 		std::string tempString = vk::to_string(memoryProperties.memoryTypes[i].propertyFlags);
-		LOG(" %u  heap %u  %s\n", i, memoryProperties.memoryTypes[i].heapIndex, tempString.c_str());
+		LOG(" %u  heap %u  %s", i, memoryProperties.memoryTypes[i].heapIndex, tempString.c_str());
 	}
-	LOG("%u memory heaps\n", memoryProperties.memoryHeapCount);
+	LOG("%u memory heaps", memoryProperties.memoryHeapCount);
 	for (unsigned int i = 0; i < memoryProperties.memoryHeapCount; i++ ) {
 		std::string tempString = vk::to_string(memoryProperties.memoryHeaps[i].flags);
-		LOG(" %u  size %lu  %s\n", i, static_cast<unsigned long>(memoryProperties.memoryHeaps[i].size), tempString.c_str());
+		LOG(" %u  size %lu  %s", i, static_cast<unsigned long>(memoryProperties.memoryHeaps[i].size), tempString.c_str());
 	}
 
 	std::vector<vk::QueueFamilyProperties> queueProps = physicalDevice.getQueueFamilyProperties();
-	LOG("%u queue families\n", static_cast<unsigned int>(queueProps.size()));
+	LOG("%u queue families", static_cast<unsigned int>(queueProps.size()));
 
 	graphicsQueueIndex = static_cast<uint32_t>(queueProps.size());
 	bool graphicsQueueFound = false;
 	for (uint32_t i = 0; i < queueProps.size(); i++) {
 		const auto &q = queueProps.at(i);
-		LOG(" Queue family %u\n", i);
-		LOG("  Flags: %s\n", vk::to_string(q.queueFlags).c_str());
-		LOG("  Count: %u\n", q.queueCount);
-		LOG("  Timestamp valid bits: %u\n", q.timestampValidBits);
-		LOG("  Image transfer granularity: (%u, %u, %u)\n", q.minImageTransferGranularity.width, q.minImageTransferGranularity.height, q.minImageTransferGranularity.depth);
+		LOG(" Queue family %u", i);
+		LOG("  Flags: %s", vk::to_string(q.queueFlags).c_str());
+		LOG("  Count: %u", q.queueCount);
+		LOG("  Timestamp valid bits: %u", q.timestampValidBits);
+		LOG("  Image transfer granularity: (%u, %u, %u)", q.minImageTransferGranularity.width, q.minImageTransferGranularity.height, q.minImageTransferGranularity.depth);
 
 		if (physicalDevice.getSurfaceSupportKHR(i, surface)) {
-			LOG("  Can present to our surface\n");
+			LOG("  Can present to our surface");
 			if (q.queueFlags & vk::QueueFlagBits::eGraphics) {
 				if (!graphicsQueueFound) {
 					graphicsQueueIndex = i;
@@ -567,16 +566,16 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 				}
 			}
 		} else {
-			LOG("  Can't present to our surface\n");
+			LOG("  Can't present to our surface");
 		}
 	}
 
 	if (graphicsQueueIndex == queueProps.size()) {
-		LOG("Error: no graphics queue\n");
+		LOG("Error: no graphics queue");
 		throw std::runtime_error("Error: no graphics queue");
 	}
 
-	LOG("Using queue %u for graphics\n", graphicsQueueIndex);
+	LOG("Using queue %u for graphics", graphicsQueueIndex);
 
 	std::array<float, 1> queuePriorities = { { 0.0f } };
 
@@ -613,21 +612,21 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	if (transferQueueIndex != graphicsQueueIndex) {
-		LOG("Using queue %u for transfer\n", transferQueueIndex);
+		LOG("Using queue %u for transfer", transferQueueIndex);
 		queueCreateInfos[numQueues].queueFamilyIndex  = transferQueueIndex;
 		queueCreateInfos[numQueues].queueCount        = 1;
 		queueCreateInfos[numQueues].pQueuePriorities  = &queuePriorities[0];
 		numQueues++;
 	} else {
-		LOG("No separate transfer queue\n");
+		LOG("No separate transfer queue");
 	}
 
 	HashSet<std::string> availableExtensions;
 	{
 		auto exts = physicalDevice.enumerateDeviceExtensionProperties();
-		LOG("%u device extensions:\n", static_cast<unsigned int>(exts.size()));
+		LOG("%u device extensions:", static_cast<unsigned int>(exts.size()));
 		for (const auto &ext : exts) {
-			LOG("%s\n", ext.extensionName.data());
+			LOG("%s", ext.extensionName.data());
 			availableExtensions.insert(std::string(ext.extensionName.data()));
 		}
 	}
@@ -636,7 +635,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	auto checkExt = [&deviceExtensions, &availableExtensions] (const char *ext) {
 		if (availableExtensions.find(std::string(ext)) != availableExtensions.end()) {
-			LOG("Activating extension %s\n", ext);
+			LOG("Activating extension %s", ext);
 			deviceExtensions.push_back(ext);
 			return true;
 		}
@@ -655,7 +654,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		// this disables pipeline caching on radv so only enable when tracing
 		amdShaderInfo = checkExt(VK_AMD_SHADER_INFO_EXTENSION_NAME);
 		if (amdShaderInfo) {
-			LOG("VK_AMD_shader_info found\n");
+			LOG("VK_AMD_shader_info found");
 		}
 	}
 
@@ -677,12 +676,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	vk::PhysicalDeviceFeatures enabledFeatures;
 	if (desc.robustness) {
-		LOG("Robust buffer access requested\n");
+		LOG("Robust buffer access requested");
 		if (deviceFeatures.robustBufferAccess) {
 			enabledFeatures.robustBufferAccess = true;
-			LOG(" enabled\n");
+			LOG(" enabled");
 		} else {
-			LOG(" not supported\n");
+			LOG(" not supported");
 		}
 	}
 	deviceCreateInfo.pEnabledFeatures         = &enabledFeatures;
@@ -712,7 +711,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	allocatorInfo.device           = device;
 	allocatorInfo.instance         = instance;
 	if (dedicatedAllocation) {
-		LOG("Dedicated allocations enabled\n");
+		LOG("Dedicated allocations enabled");
 		allocatorInfo.flags      = VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
 	}
 
@@ -724,10 +723,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	{
 		auto surfacePresentModes_ = physicalDevice.getSurfacePresentModesKHR(surface);
 		surfacePresentModes.reserve(surfacePresentModes_.size());
-		LOG("%u present modes\n",   static_cast<uint32_t>(surfacePresentModes_.size()));
+		LOG("%u present modes",   static_cast<uint32_t>(surfacePresentModes_.size()));
 
 		for (const auto &presentMode : surfacePresentModes_) {
-			LOG(" %s\n", vk::to_string(presentMode).c_str());
+			LOG(" %s", vk::to_string(presentMode).c_str());
 			surfacePresentModes.insert(presentMode);
 		}
 	}
@@ -735,9 +734,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	{
 		auto surfaceFormats_ = physicalDevice.getSurfaceFormatsKHR(surface);
 
-		LOG("%u surface formats\n", static_cast<uint32_t>(surfaceFormats_.size()));
+		LOG("%u surface formats", static_cast<uint32_t>(surfaceFormats_.size()));
 		for (const auto &format : surfaceFormats_) {
-			LOG(" %s\t%s\n", vk::to_string(format.format).c_str(), vk::to_string(format.colorSpace).c_str());
+			LOG(" %s\t%s", vk::to_string(format.format).c_str(), vk::to_string(format.colorSpace).c_str());
 			if (format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
 				surfaceFormats.insert(format.format);
 			}
@@ -763,7 +762,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	features.SSBOSupported  = true;
 
 	if (!recreateSwapchain()) {
-		LOG("initial swapchain create failed\n");
+		LOG("initial swapchain create failed");
 		throw std::runtime_error("initial swapchain create failed");
 	}
 	recreateRingBuffer(desc.ephemeralRingBufSize);
@@ -840,13 +839,13 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 	auto result = vmaAllocateMemoryForBuffer(allocator, ringBuffer, &req, &ringBufferMem, &allocationInfo);
 
 	if (result != VK_SUCCESS) {
-		LOG("vmaAllocateMemoryForBuffer failed: %s\n", vk::to_string(vk::Result(result)).c_str());
+		LOG("vmaAllocateMemoryForBuffer failed: %s", vk::to_string(vk::Result(result)).c_str());
 		throw std::runtime_error("vmaAllocateMemoryForBuffer failed");
 	}
 
-	LOG("ringbuffer memory type: %u\n",    allocationInfo.memoryType);
-	LOG("ringbuffer memory offset: %u\n",  static_cast<unsigned int>(allocationInfo.offset));
-	LOG("ringbuffer memory size: %u\n",    static_cast<unsigned int>(allocationInfo.size));
+	LOG("ringbuffer memory type: %u",    allocationInfo.memoryType);
+	LOG("ringbuffer memory offset: %u",  static_cast<unsigned int>(allocationInfo.offset));
+	LOG("ringbuffer memory size: %u",    static_cast<unsigned int>(allocationInfo.size));
 	assert(ringBufferMem != nullptr);
 	assert(allocationInfo.offset == 0);
 	assert(allocationInfo.pMappedData != nullptr);
@@ -869,7 +868,7 @@ RendererImpl::~RendererImpl() {
 	assert(pipelineCache);
 
 	if (frameAcquired) {
-		LOG("warning: acquired but not presented frame while shutting down\n");
+		LOG("warning: acquired but not presented frame while shutting down");
 		assert(frameAcquireSem);
 		freeSemaphore(frameAcquireSem);
 		frameAcquireSem = vk::Semaphore();
@@ -1020,9 +1019,9 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	VmaAllocationInfo  allocationInfo = {};
 
 	vmaAllocateMemoryForBuffer(allocator, buffer.buffer, &req, &buffer.memory, &allocationInfo);
-	LOG("buffer memory type: %u\n",    allocationInfo.memoryType);
-	LOG("buffer memory offset: %u\n",  static_cast<unsigned int>(allocationInfo.offset));
-	LOG("buffer memory size: %u\n",    static_cast<unsigned int>(allocationInfo.size));
+	LOG("buffer memory type: %u",    allocationInfo.memoryType);
+	LOG("buffer memory offset: %u",  static_cast<unsigned int>(allocationInfo.offset));
+	LOG("buffer memory size: %u",    static_cast<unsigned int>(allocationInfo.size));
 	assert(allocationInfo.size > 0);
 	assert(allocationInfo.pMappedData == nullptr);
 	device.bindBufferMemory(buffer.buffer, allocationInfo.deviceMemory, allocationInfo.offset);
@@ -1604,10 +1603,10 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		// TODO: other stages
 
 		device.getShaderInfoAMD(result.value, vk::ShaderStageFlagBits::eVertex, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, dispatcher);
-		LOG("pipeline \"%s\" vertex SGPR %u VGPR %u\n", desc.name_.c_str(), stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
+		LOG("pipeline \"%s\" vertex SGPR %u VGPR %u", desc.name_.c_str(), stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
 
 		device.getShaderInfoAMD(result.value, vk::ShaderStageFlagBits::eFragment, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, dispatcher);
-		LOG("pipeline \"%s\" fragment SGPR %u VGPR %u\n", desc.name_.c_str(), stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
+		LOG("pipeline \"%s\" fragment SGPR %u VGPR %u", desc.name_.c_str(), stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
 	}
 
 	auto id = pipelines.add();
@@ -1829,9 +1828,9 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	VmaAllocationInfo  allocationInfo = {};
 
 	vmaAllocateMemoryForImage(allocator, tex.image, &req, &tex.memory, &allocationInfo);
-	LOG("texture image memory type: %u\n",   allocationInfo.memoryType);
-	LOG("texture image memory offset: %u\n", static_cast<unsigned int>(allocationInfo.offset));
-	LOG("texture image memory size: %u\n",   static_cast<unsigned int>(allocationInfo.size));
+	LOG("texture image memory type: %u",   allocationInfo.memoryType);
+	LOG("texture image memory offset: %u", static_cast<unsigned int>(allocationInfo.offset));
+	LOG("texture image memory size: %u",   static_cast<unsigned int>(allocationInfo.size));
 	device.bindImageMemory(tex.image, allocationInfo.deviceMemory, allocationInfo.offset);
 
 	vk::ImageViewCreateInfo viewInfo;
@@ -2065,10 +2064,10 @@ void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 		if (desc.fullscreen) {
 			// TODO: check return val?
 			SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-			LOG("Fullscreen\n");
+			LOG("Fullscreen");
 		} else {
 			SDL_SetWindowFullscreen(window, 0);
-			LOG("Windowed\n");
+			LOG("Windowed");
 		}
 	}
 
@@ -2189,12 +2188,12 @@ bool RendererImpl::recreateSwapchain() {
 	}
 
 	surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
-	LOG("image count min-max %u - %u\n", surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
-	LOG("image extent min-max %ux%u - %ux%u\n", surfaceCapabilities.minImageExtent.width, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.width, surfaceCapabilities.maxImageExtent.height);
-	LOG("current image extent %ux%u\n", surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height);
-	LOG("supported surface transforms: %s\n", vk::to_string(surfaceCapabilities.supportedTransforms).c_str());
-	LOG("supported surface alpha composite flags: %s\n", vk::to_string(surfaceCapabilities.supportedCompositeAlpha).c_str());
-	LOG("supported surface usage flags: %s\n", vk::to_string(surfaceCapabilities.supportedUsageFlags).c_str());
+	LOG("image count min-max %u - %u", surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
+	LOG("image extent min-max %ux%u - %ux%u", surfaceCapabilities.minImageExtent.width, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.width, surfaceCapabilities.maxImageExtent.height);
+	LOG("current image extent %ux%u", surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height);
+	LOG("supported surface transforms: %s", vk::to_string(surfaceCapabilities.supportedTransforms).c_str());
+	LOG("supported surface alpha composite flags: %s", vk::to_string(surfaceCapabilities.supportedCompositeAlpha).c_str());
+	LOG("supported surface usage flags: %s", vk::to_string(surfaceCapabilities.supportedUsageFlags).c_str());
 
 	int tempW = -1, tempH = -1;
 	SDL_Vulkan_GetDrawableSize(window, &tempW, &tempH);
@@ -2216,7 +2215,7 @@ bool RendererImpl::recreateSwapchain() {
 		numImages = std::min(numImages, surfaceCapabilities.maxImageCount);
 	}
 
-	LOG("Want %u images, using %u images\n", wantedSwapchain.numFrames, numImages);
+	LOG("Want %u images, using %u images", wantedSwapchain.numFrames, numImages);
 
 	swapchainDesc.fullscreen = wantedSwapchain.fullscreen;
 	swapchainDesc.numFrames  = numImages;
@@ -2290,15 +2289,15 @@ bool RendererImpl::recreateSwapchain() {
 	imageExtent.height = swapchainDesc.height;
 
 	if (!(surfaceCapabilities.supportedTransforms & vk::SurfaceTransformFlagBitsKHR::eIdentity)) {
-		LOG("warning: identity transform not supported\n");
+		LOG("warning: identity transform not supported");
 	}
 
 	if (surfaceCapabilities.currentTransform != vk::SurfaceTransformFlagBitsKHR::eIdentity) {
-		LOG("warning: current transform is not identity\n");
+		LOG("warning: current transform is not identity");
 	}
 
 	if (!(surfaceCapabilities.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eOpaque)) {
-		LOG("warning: opaque alpha not supported\n");
+		LOG("warning: opaque alpha not supported");
 	}
 
 	// FIFO is guaranteed to be supported
@@ -2314,7 +2313,7 @@ bool RendererImpl::recreateSwapchain() {
 		}
 	}
 
-	LOG("Using present mode %s\n", vk::to_string(swapchainPresentMode).c_str());
+	LOG("Using present mode %s", vk::to_string(swapchainPresentMode).c_str());
 
 	// TODO: should fallback to Unorm and communicate back to demo
 	vk::Format surfaceFormat = vk::Format::eB8G8R8A8Srgb;
@@ -2409,7 +2408,7 @@ bool RendererImpl::waitForDeviceIdle() {
 		default: {
 			// TODO: better exception types
 			std::string s = vk::to_string(waitResult);
-			LOG("wait result is not success: %s\n", s.c_str());
+			LOG("wait result is not success: %s", s.c_str());
 			throw std::runtime_error("wait result is not success " + s);
 		}
 		}
@@ -2477,7 +2476,7 @@ bool RendererImpl::beginFrame() {
 
 		case vk::Result::eErrorOutOfDateKHR:
 			// swapchain went out of date during acquire, recreate and try again
-			LOG("swapchain out of date during acquireNextImageKHR, recreating...\n");
+			LOG("swapchain out of date during acquireNextImageKHR, recreating...");
 			logFlush();
 			swapchainDirty = true;
 
@@ -2490,7 +2489,7 @@ bool RendererImpl::beginFrame() {
 			return false;
 
 		case vk::Result::eSuboptimalKHR:
-			LOG("swapchain suboptimal during acquireNextImageKHR, recreating...\n");
+			LOG("swapchain suboptimal during acquireNextImageKHR, recreating...");
 			logFlush();
 			swapchainDirty = true;
 			// suboptimal is considered success so proceed
@@ -2498,7 +2497,7 @@ bool RendererImpl::beginFrame() {
 			break;
 
 		default:
-			LOG("acquireNextImageKHR failed: %s\n", vk::to_string(result).c_str());
+			LOG("acquireNextImageKHR failed: %s", vk::to_string(result).c_str());
 			logFlush();
 			throw std::runtime_error("acquireNextImageKHR failed");
 		}
@@ -2581,7 +2580,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	unsigned int height = rt.height;
 
 	if (width != swapchainDesc.width || height != swapchainDesc.height) {
-		LOG("warning: rendertarget size mismatch at presentFrame, is (%ux%u) should be (%ux%u)\n", width, height, swapchainDesc.width, swapchainDesc.height);
+		LOG("warning: rendertarget size mismatch at presentFrame, is (%ux%u) should be (%ux%u)", width, height, swapchainDesc.width, swapchainDesc.height);
 		width  = std::min(width,  swapchainDesc.width);
 		height = std::min(height, swapchainDesc.height);
 		swapchainDirty  = true;
@@ -2649,7 +2648,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	std::vector<vk::ImageMemoryBarrier> imageAcquireBarriers;
 	std::vector<vk::BufferMemoryBarrier> bufferAcquireBarriers;
 	if (!uploads.empty()) {
-		LOG("%u uploads pending\n", static_cast<unsigned int>(uploads.size()));
+		LOG("%u uploads pending", static_cast<unsigned int>(uploads.size()));
 
 		// use semaphores to make sure draw doesn't proceed until uploads are ready
 		uploadSemaphores.reserve(uploads.size());
@@ -2665,7 +2664,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 			                           , op.bufferAcquireBarriers.begin()
 			                           , op.bufferAcquireBarriers.end());
 		}
-		LOG("Gathered %u image and %u buffer acquire barriers from %u upload ops\n"
+		LOG("Gathered %u image and %u buffer acquire barriers from %u upload ops"
 		   , static_cast<unsigned int >(imageAcquireBarriers.size())
 		   , static_cast<unsigned int >(bufferAcquireBarriers.size())
 		   , static_cast<unsigned int >(uploads.size()));
@@ -2675,7 +2674,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 		submit.pWaitDstStageMask    = semWaitMasks.data();
 
 		if (!imageAcquireBarriers.empty() || !bufferAcquireBarriers.empty()) {
-			LOG("submitting acquire barriers\n");
+			LOG("submitting acquire barriers");
 			auto barrierCmdBuf = frame.barrierCmdBuf;
 			barrierCmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 			barrierCmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTopOfPipe, vk::DependencyFlags(), {}, bufferAcquireBarriers, imageAcquireBarriers);
@@ -2719,11 +2718,11 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	if (presentResult == vk::Result::eSuccess) {
 		// nothing to do
 	} else if (presentResult == vk::Result::eErrorOutOfDateKHR) {
-		LOG("swapchain out of date during presentKHR, marking dirty\n");
+		LOG("swapchain out of date during presentKHR, marking dirty");
 		// swapchain went out of date during present, mark it dirty
 		swapchainDirty = true;
 	} else {
-		LOG("presentKHR failed: %s\n", vk::to_string(presentResult).c_str());
+		LOG("presentKHR failed: %s", vk::to_string(presentResult).c_str());
 		throw std::runtime_error("presentKHR failed");
 	}
 	frame.usedRingBufPtr = ringBufPtr;
@@ -2773,7 +2772,7 @@ bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 	default: {
 		// TODO: better exception types
 		std::string s = vk::to_string(waitResult);
-		LOG("wait result is not success: %s\n", s.c_str());
+		LOG("wait result is not success: %s", s.c_str());
 		throw std::runtime_error("wait result is not success " + s);
 	}
 	}

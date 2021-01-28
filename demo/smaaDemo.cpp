@@ -713,8 +713,8 @@ SMAADemo::SMAADemo()
 	uint64_t g = gcd(freqMult, freqDiv);
 	freqMult  /= g;
 	freqDiv   /= g;
-	LOG("freqMult: %" PRIu64 "\n", freqMult);
-	LOG("freqDiv: %"  PRIu64 "\n", freqDiv);
+	LOG("freqMult: %" PRIu64 "", freqMult);
+	LOG("freqDiv: %"  PRIu64 "", freqDiv);
 
 	lastTime = getNanoseconds();
 
@@ -728,7 +728,7 @@ SMAADemo::SMAADemo()
 		lastTime       = ticks;
 	}
 
-	LOG("sleep fudge (nanoseconds): %" PRIu64 "\n", sleepFudge);
+	LOG("sleep fudge (nanoseconds): %" PRIu64 "", sleepFudge);
 
 #ifndef IMGUI_DISABLE
 	memset(imageFileName, 0, inputTextBufferSize);
@@ -888,7 +888,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		if (!aaMethodStr.empty()) {
 			auto parsed = AAMethod::_from_string_nothrow(aaMethodStr.c_str());
 			if (!parsed) {
-				LOG("Bad AA method \"%s\"\n", aaMethodStr.c_str());
+				LOG("Bad AA method \"%s\"", aaMethodStr.c_str());
 				fprintf(stderr, "Bad AA method \"%s\"\n", aaMethodStr.c_str());
 				exit(1);
 			}
@@ -951,9 +951,9 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		imageFiles    = imagesArg.getValue();
 
 	} catch (TCLAP::ArgException &e) {
-		LOG("parseCommandLine exception: %s for arg %s\n", e.error().c_str(), e.argId().c_str());
+		LOG("parseCommandLine exception: %s for arg %s", e.error().c_str(), e.argId().c_str());
 	} catch (...) {
-		LOG("parseCommandLine: unknown exception\n");
+		LOG("parseCommandLine: unknown exception");
 	}
 }
 
@@ -1127,9 +1127,9 @@ void SMAADemo::initRender() {
 	renderer = Renderer::createRenderer(rendererDesc);
 	renderSize = renderer.getDrawableSize();
 	const auto &features = renderer.getFeatures();
-	LOG("Max MSAA samples: %u\n",  features.maxMSAASamples);
-	LOG("sRGB frame buffer: %s\n", features.sRGBFramebuffer ? "yes" : "no");
-	LOG("SSBO support: %s\n",      features.SSBOSupported ? "yes" : "no");
+	LOG("Max MSAA samples: %u",  features.maxMSAASamples);
+	LOG("sRGB frame buffer: %s", features.sRGBFramebuffer ? "yes" : "no");
+	LOG("SSBO support: %s",      features.SSBOSupported ? "yes" : "no");
 	maxMSAAQuality = msaaSamplesToQuality(features.maxMSAASamples) + 1;
 	if (msaaQuality >= maxMSAAQuality) {
 		msaaQuality = maxMSAAQuality - 1;
@@ -1138,13 +1138,13 @@ void SMAADemo::initRender() {
 	unsigned int refreshRate = renderer.getCurrentRefreshRate();
 
 	if (refreshRate == 0) {
-		LOG("Failed to get current refresh rate, using max\n");
+		LOG("Failed to get current refresh rate, using max");
 		refreshRate = renderer.getMaxRefreshRate();
 	}
 
 	if (fpsLimit == 0) {
 		if (refreshRate == 0) {
-			LOG("Failed to get refresh rate, defaulting to 60\n");
+			LOG("Failed to get refresh rate, defaulting to 60");
 			fpsLimit = 2 * 60;
 		} else {
 			fpsLimit = 2 * refreshRate;
@@ -1160,7 +1160,7 @@ void SMAADemo::initRender() {
 	if (depthFormat == +Format::Invalid) {
 		throw std::runtime_error("no supported depth formats");
 	}
-	LOG("Using depth format %s\n", depthFormat._to_string());
+	LOG("Using depth format %s", depthFormat._to_string());
 
 	renderer.registerDescriptorSetLayout<GlobalDS>();
 	renderer.registerDescriptorSetLayout<CubeSceneDS>();
@@ -1301,12 +1301,12 @@ void SMAADemo::rebuildRenderGraph() {
 	}
 
 	renderSize = renderer.getDrawableSize();
-	LOG("drawable size: %ux%u\n", renderSize.x, renderSize.y);
+	LOG("drawable size: %ux%u", renderSize.x, renderSize.y);
 
 	const unsigned int windowWidth  = renderSize.x;
 	const unsigned int windowHeight = renderSize.y;
 
-	LOG("create framebuffers at size %ux%u\n", windowWidth, windowHeight);
+	LOG("create framebuffers at size %ux%u", windowWidth, windowHeight);
 	logFlush();
 
 	if (!isImageScene()) {
@@ -1911,9 +1911,9 @@ void SMAADemo::rebuildRenderGraph() {
 void SMAADemo::loadImage(const std::string &filename) {
 	int width = 0, height = 0;
 	unsigned char *imageData = stbi_load(filename.c_str(), &width, &height, NULL, 4);
-	LOG(" %s : %p  %dx%d\n", filename.c_str(), imageData, width, height);
+	LOG(" %s : %p  %dx%d", filename.c_str(), imageData, width, height);
 	if (!imageData) {
-		LOG("Bad image: %s\n", stbi_failure_reason());
+		LOG("Bad image: %s", stbi_failure_reason());
 		return;
 	}
 
@@ -2318,7 +2318,7 @@ void SMAADemo::processInput() {
 				rendererDesc.swapchain.width  = event.window.data1;
 				rendererDesc.swapchain.height = event.window.data2;
 				recreateSwapchain = true;
-				LOG("window resize to %ux%u\n", rendererDesc.swapchain.width, rendererDesc.swapchain.height);
+				LOG("window resize to %ux%u", rendererDesc.swapchain.width, rendererDesc.swapchain.height);
 				logFlush();
 				break;
 			default:
@@ -2452,7 +2452,7 @@ void SMAADemo::render() {
 		renderer.setSwapchainDesc(rendererDesc.swapchain);
 
 		renderSize = renderer.getDrawableSize();
-		LOG("drawable size: %ux%u\n", renderSize.x, renderSize.y);
+		LOG("drawable size: %ux%u", renderSize.x, renderSize.y);
 		logFlush();
 
 		// pump events
@@ -3334,9 +3334,9 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 			}
 		}
 #if 0
-		LOG("CmdListsCount: %d\n", drawData->CmdListsCount);
-		LOG("TotalVtxCount: %d\n", drawData->TotalVtxCount);
-		LOG("TotalIdxCount: %d\n", drawData->TotalIdxCount);
+		LOG("CmdListsCount: %d", drawData->CmdListsCount);
+		LOG("TotalVtxCount: %d", drawData->TotalVtxCount);
+		LOG("TotalIdxCount: %d", drawData->TotalIdxCount);
 #endif // 0
 	} else {
 		assert(drawData->CmdLists      == nullptr);
@@ -3365,25 +3365,25 @@ int main(int argc, char *argv[]) {
 			try {
 				demo->mainLoopIteration();
 			} catch (std::exception &e) {
-				LOG("caught std::exception: \"%s\"\n", e.what());
+				LOG("caught std::exception: \"%s\"", e.what());
 				logFlush();
 				printf("caught std::exception: \"%s\"\n", e.what());
 				break;
 			} catch (...) {
-				LOG("caught unknown exception\n");
+				LOG("caught unknown exception");
 				logFlush();
 				break;
 			}
 		}
 	} catch (std::exception &e) {
-		LOG("caught std::exception \"%s\"\n", e.what());
+		LOG("caught std::exception \"%s\"", e.what());
 #ifndef _MSC_VER
 		logShutdown();
 		// so native dumps core
 		throw;
 #endif
 	} catch (...) {
-		LOG("unknown exception\n");
+		LOG("unknown exception");
 #ifndef _MSC_VER
 		logShutdown();
 		// so native dumps core
