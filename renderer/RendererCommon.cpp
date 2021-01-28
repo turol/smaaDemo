@@ -469,7 +469,7 @@ struct CacheData {
 
 	std::string serialize() const {
 		std::stringstream cacheStr;
-        cacheStr << version;
+		cacheStr << version;
 
 		cacheStr << "," << std::hex << hash;
 
