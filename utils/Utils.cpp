@@ -64,23 +64,6 @@ void logWrite(const std::string &message) {
 }
 
 
-void logWrite(const char* message, ...) {
-	va_list argp;
-	va_start(argp, message);
-	
-	if (logFile) {
-		vfprintf(logFile, message, argp);
-		fputc('\n', logFile);
-	} else {
-		// Write to console if opening log file failed
-		vprintf(message, argp);
-		putc('\n', stdout);
-	}
-
-	va_end(argp);
-}
-
-
 void logShutdown() {
 	assert(logFile);
 
