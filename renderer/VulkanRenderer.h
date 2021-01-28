@@ -55,7 +55,7 @@ THE SOFTWARE.
 #include <vulkan/vulkan.hpp>
 
 
-#if VK_HEADER_VERSION < 64
+#if VK_HEADER_VERSION < 98
 #error "Vulkan header too old"
 #endif  // VK_HEADER_VERSION < 64
 
