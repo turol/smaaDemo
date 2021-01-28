@@ -17,9 +17,6 @@ RENDERER:=vulkan
 INTERNAL_glslang:=y
 LDLIBS_glslang:=
 
-INTERNAL_shaderc:=y
-LDLIBS_shaderc:=
-
 INTERNAL_spirv-cross:=y
 LDLIBS_spirv-cross:=
 

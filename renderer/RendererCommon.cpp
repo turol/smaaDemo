@@ -718,8 +718,8 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	{
 		auto src = loadSource(name);
 
-		// shaderc will add GOOGLE_include_directive for us
-		// glslang will not
+		// we need GOOGLE_include_directive to use #include
+		// glslang has no interface for enabling it
 		{
 			// break shader into lines
 			std::vector<nonstd::string_view> lines;
@@ -748,8 +748,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 				}
 			}
 
-			// shaderc can take predefined macros
-			// glslang can not
+			// glslang has no interface for predefining macros
 			std::vector<std::string> sorted;
 			if (!macros.empty()) {
 				sorted.reserve(macros.size());
