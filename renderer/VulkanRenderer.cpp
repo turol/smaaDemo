@@ -204,7 +204,7 @@ vk::BufferUsageFlags bufferTypeUsage(BufferType type) {
 
 
 static VkBool32 VKAPI_PTR debugMessengerFunc(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT /* messageTypes */, const VkDebugUtilsMessengerCallbackDataEXT *callbackData, void * /* pUserData*/) {
-	LOG_FMT("error of severity \"{}\" {} \"{}\" \"{}\"", vk::to_string(vk::DebugUtilsMessageSeverityFlagBitsEXT(severity)), callbackData->messageIdNumber, callbackData->pMessageIdName, callbackData->pMessage);
+	LOG("error of severity \"{}\" {} \"{}\" \"{}\"", vk::to_string(vk::DebugUtilsMessageSeverityFlagBitsEXT(severity)), callbackData->messageIdNumber, callbackData->pMessageIdName, callbackData->pMessage);
 	// TODO: log other parts of VkDebugUtilsMessengerCallbackDataEXT
 	logFlush();
 
@@ -217,7 +217,7 @@ static VkBool32 VKAPI_PTR debugMessengerFunc(VkDebugUtilsMessageSeverityFlagBits
 
 
 static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t /* messageCode */, const char * pLayerPrefix, const char * pMessage, void * /* pUserData*/) {
-	LOG_FMT("layer {} {} object {} type {} location {}: {}", pLayerPrefix, vk::to_string(vk::DebugReportFlagBitsEXT(flags)), object, vk::to_string(vk::DebugReportObjectTypeEXT(objectType)), location, pMessage);
+	LOG("layer {} {} object {} type {} location {}: {}", pLayerPrefix, vk::to_string(vk::DebugReportFlagBitsEXT(flags)), object, vk::to_string(vk::DebugReportObjectTypeEXT(objectType)), location, pMessage);
 	logFlush();
 
 	// make errors fatal
@@ -256,23 +256,23 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	SDL_DisplayMode mode;
 	memset(&mode, 0, sizeof(mode));
 	int numDisplays = SDL_GetNumVideoDisplays();
-	LOG_FMT("Number of displays detected: {}", numDisplays);
+	LOG("Number of displays detected: {}", numDisplays);
 
 	for (int i = 0; i < numDisplays; i++) {
 		int retval = SDL_GetDesktopDisplayMode(i, &mode);
 		if (retval == 0) {
-			LOG_FMT("Desktop mode for display {}: {}x{}, refresh {} Hz", i, mode.w, mode.h, mode.refresh_rate);
+			LOG("Desktop mode for display {}: {}x{}, refresh {} Hz", i, mode.w, mode.h, mode.refresh_rate);
 			currentRefreshRate = mode.refresh_rate;
 		} else {
-			LOG_FMT("Failed to get desktop display mode for display {}", i);
+			LOG("Failed to get desktop display mode for display {}", i);
 		}
 
 		int numModes = SDL_GetNumDisplayModes(i);
-		LOG_FMT("Number of display modes for display {} : {}", i, numModes);
+		LOG("Number of display modes for display {} : {}", i, numModes);
 
 		for (int j = 0; j < numModes; j++) {
 			SDL_GetDisplayMode(i, j, &mode);
-			LOG_FMT("Display mode {} : width {}, height {}, BPP {}, refresh {} Hz", j, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format), mode.refresh_rate);
+			LOG("Display mode {} : width {}, height {}, BPP {}, refresh {} Hz", j, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format), mode.refresh_rate);
 			maxRefreshRate = std::max(static_cast<unsigned int>(mode.refresh_rate), maxRefreshRate);
 		}
 	}
@@ -286,7 +286,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	window = SDL_CreateWindow(desc.applicationName.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, desc.swapchain.width, desc.swapchain.height, flags);
 
 	if (!window) {
-		LOG_FMT("SDL_CreateWindow failed: {}", SDL_GetError());
+		LOG("SDL_CreateWindow failed: {}", SDL_GetError());
 		throw std::runtime_error("SDL_CreateWindow failed");
 	}
 
@@ -294,11 +294,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		uint32_t instanceVersion = 0;
 		auto result = vk::enumerateInstanceVersion(&instanceVersion);
 		if (result != vk::Result::eSuccess) {
-			LOG_FMT("Failed to get Vulkan instance version: {}", vk::to_string(result));
+			LOG("Failed to get Vulkan instance version: {}", vk::to_string(result));
 			throw std::runtime_error("Failed to get Vulkan instance version");
 		}
 
-		LOG_FMT("Vulkan instance version {}.{}.{}", VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion));
+		LOG("Vulkan instance version {}.{}.{}", VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion));
 	}
 
 	HashSet<std::string>  instanceExtensions;
@@ -317,7 +317,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			instanceExtensions.insert(ext.extensionName);
 		}
 
-		LOG_FMT("Instance extensions:");
+		LOG("Instance extensions:");
 		std::vector<char> padding;
 		padding.reserve(maxLen + 1);
 		for (unsigned int i = 0; i < maxLen; i++) {
@@ -325,7 +325,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 		padding.push_back('\0');
 		for (const auto &ext : extensions) {
-			LOG_FMT(" {} {} {}", ext.extensionName.data(), &padding[strnlen(ext.extensionName, maxLen)], ext.specVersion);
+			LOG(" {} {} {}", ext.extensionName.data(), &padding[strnlen(ext.extensionName, maxLen)], ext.specVersion);
 		}
 	}
 
@@ -345,7 +345,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			instanceLayers.insert(l.layerName);
 		}
 
-		LOG_FMT("Instance layers:");
+		LOG("Instance layers:");
 		std::vector<char> padding;
 		padding.reserve(maxLen + 1);
 		for (unsigned int i = 0; i < maxLen; i++) {
@@ -353,13 +353,13 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 		padding.push_back('\0');
 		for (const auto &l : layers) {
-			LOG_FMT(" {} {} (version {},\tspec {}.{}.{})", l.layerName.data(), &padding[strnlen(l.layerName, maxLen)], l.implementationVersion, VK_VERSION_MAJOR(l.specVersion), VK_VERSION_MINOR(l.specVersion), VK_VERSION_PATCH(l.specVersion));
+			LOG(" {} {} (version {},\tspec {}.{}.{})", l.layerName.data(), &padding[strnlen(l.layerName, maxLen)], l.implementationVersion, VK_VERSION_MAJOR(l.specVersion), VK_VERSION_MINOR(l.specVersion), VK_VERSION_PATCH(l.specVersion));
 		}
 	}
 
 	unsigned int numExtensions = 0;
 	if (!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, NULL)) {
-		LOG_FMT("SDL_Vulkan_GetInstanceExtensions failed: {}", SDL_GetError());
+		LOG("SDL_Vulkan_GetInstanceExtensions failed: {}", SDL_GetError());
 		throw std::runtime_error("SDL_Vulkan_GetInstanceExtensions failed");
 	}
 
@@ -370,7 +370,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	if(!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, &extensions[0])) {
-		LOG_FMT("SDL_Vulkan_GetInstanceExtensions failed: {}", SDL_GetError());
+		LOG("SDL_Vulkan_GetInstanceExtensions failed: {}", SDL_GetError());
 		throw std::runtime_error("SDL_Vulkan_GetInstanceExtensions failed");
 	}
 
@@ -392,12 +392,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		const char *lunargValidation  = "VK_LAYER_LUNARG_standard_validation";
 		if (instanceLayers.find(khronosValidation) != instanceLayers.end()) {
 			validationLayers.push_back(khronosValidation);
-			LOG_FMT("Using KHRONOS validation layer");
+			LOG("Using KHRONOS validation layer");
 		} else if (instanceLayers.find(lunargValidation) != instanceLayers.end()) {
 			validationLayers.push_back(lunargValidation);
-			LOG_FMT("Using LUNARG validation layer");
+			LOG("Using LUNARG validation layer");
 		} else {
-			LOG_FMT("Validation requested but no validation layer available");
+			LOG("Validation requested but no validation layer available");
 			throw std::runtime_error("Validation requested but no validation layer available");
 		}
 
@@ -407,16 +407,16 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		} else if (instanceExtensions.find(VK_EXT_DEBUG_REPORT_EXTENSION_NAME) != instanceExtensions.end()) {
 			extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 		} else {
-			LOG_FMT("Validation requested but no debug reporting extension available");
+			LOG("Validation requested but no debug reporting extension available");
 			throw std::runtime_error("Validation requested but no debug reporting extension available");
 		}
 		instanceCreateInfo.enabledLayerCount    = static_cast<uint32_t>(validationLayers.size());
 		instanceCreateInfo.ppEnabledLayerNames  = &validationLayers[0];
 	}
 
-	LOG_FMT("Active instance extensions:");
+	LOG("Active instance extensions:");
 	for (const auto ext : extensions) {
-		LOG_FMT(" {}", ext);
+		LOG(" {}", ext);
 	}
 
 	instanceCreateInfo.enabledExtensionCount    = static_cast<uint32_t>(extensions.size());
@@ -455,21 +455,21 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 								 (SDL_vulkanInstance) instance,
 								 (SDL_vulkanSurface *)&surface))
 	{
-		LOG_FMT("Failed to create Vulkan surface: {}", SDL_GetError());
+		LOG("Failed to create Vulkan surface: {}", SDL_GetError());
 		// TODO: free instance, window etc...
 		throw std::runtime_error("Failed to create Vulkan surface");
 	}
 
 	std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
 	if (physicalDevices.empty()) {
-		LOG_FMT("No physical Vulkan devices found");
+		LOG("No physical Vulkan devices found");
 		instance.destroy();
 		instance = nullptr;
 		SDL_DestroyWindow(window);
 		window = nullptr;
 		throw std::runtime_error("No physical Vulkan devices found");
 	}
-	LOG_FMT("{} physical devices", physicalDevices.size());
+	LOG("{} physical devices", physicalDevices.size());
 
 	std::vector<vk::PhysicalDeviceProperties> physicalDevicesProperties;
 	physicalDevicesProperties.reserve(physicalDevices.size());
@@ -479,18 +479,18 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		deviceProperties = physicalDevice.getProperties();
 		physicalDevicesProperties.push_back(deviceProperties);
 
-		LOG_FMT(" {}: \"{}\"", i, deviceProperties.deviceName.data());
-		LOG_FMT("  Device API version {}.{}.{}", VK_VERSION_MAJOR(deviceProperties.apiVersion), VK_VERSION_MINOR(deviceProperties.apiVersion), VK_VERSION_PATCH(deviceProperties.apiVersion));
-		LOG_FMT("  Driver version {}.{}.{} ({}) ({:#08x})", VK_VERSION_MAJOR(deviceProperties.driverVersion), VK_VERSION_MINOR(deviceProperties.driverVersion), VK_VERSION_PATCH(deviceProperties.driverVersion), deviceProperties.driverVersion, deviceProperties.driverVersion);
-		LOG_FMT("  VendorId {:#x}", deviceProperties.vendorID);
-		LOG_FMT("  DeviceId {:#x}", deviceProperties.deviceID);
-		LOG_FMT("  Type {}", vk::to_string(deviceProperties.deviceType));
-		LOG_FMT("  Name \"{}\"", deviceProperties.deviceName.data());
-		LOG_FMT("  uniform buffer alignment {}", deviceProperties.limits.minUniformBufferOffsetAlignment);
-		LOG_FMT("  storage buffer alignment {}", deviceProperties.limits.minStorageBufferOffsetAlignment);
-		LOG_FMT("  texel buffer alignment {}",   deviceProperties.limits.minTexelBufferOffsetAlignment);
+		LOG(" {}: \"{}\"", i, deviceProperties.deviceName.data());
+		LOG("  Device API version {}.{}.{}", VK_VERSION_MAJOR(deviceProperties.apiVersion), VK_VERSION_MINOR(deviceProperties.apiVersion), VK_VERSION_PATCH(deviceProperties.apiVersion));
+		LOG("  Driver version {}.{}.{} ({}) ({:#08x})", VK_VERSION_MAJOR(deviceProperties.driverVersion), VK_VERSION_MINOR(deviceProperties.driverVersion), VK_VERSION_PATCH(deviceProperties.driverVersion), deviceProperties.driverVersion, deviceProperties.driverVersion);
+		LOG("  VendorId {:#x}", deviceProperties.vendorID);
+		LOG("  DeviceId {:#x}", deviceProperties.deviceID);
+		LOG("  Type {}", vk::to_string(deviceProperties.deviceType));
+		LOG("  Name \"{}\"", deviceProperties.deviceName.data());
+		LOG("  uniform buffer alignment {}", deviceProperties.limits.minUniformBufferOffsetAlignment);
+		LOG("  storage buffer alignment {}", deviceProperties.limits.minStorageBufferOffsetAlignment);
+		LOG("  texel buffer alignment {}",   deviceProperties.limits.minTexelBufferOffsetAlignment);
 		std::vector<vk::QueueFamilyProperties> queueProps = physicalDevice.getQueueFamilyProperties();
-		LOG_FMT("  {} queue families", queueProps.size());
+		LOG("  {} queue families", queueProps.size());
 
 		bool canPresent = false;
 		for (uint32_t j = 0; j < queueProps.size(); j++) {
@@ -499,13 +499,13 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 				break;
 			}
 		}
-		LOG_FMT("  {} present to our surface\n", canPresent ? "can" : "can NOT");
+		LOG("  {} present to our surface\n", canPresent ? "can" : "can NOT");
 	}
 
 	assert(physicalDevicesProperties.size() == physicalDevices.size());
 
 	if (!desc.vulkanDeviceFilter.empty()) {
-		LOG_FMT("Filtering vulkan device list for \"{}\"", desc.vulkanDeviceFilter);
+		LOG("Filtering vulkan device list for \"{}\"", desc.vulkanDeviceFilter);
 		bool found = false;
 		for (unsigned int i = 0; i < physicalDevicesProperties.size(); i++) {
 			if (desc.vulkanDeviceFilter == physicalDevicesProperties[i].deviceName.data()) {
@@ -516,7 +516,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 
 		if (!found) {
-			LOG_FMT("Didn't find physical device matching filter");
+			LOG("Didn't find physical device matching filter");
 			logFlush();
 			throw std::runtime_error("Didn't find physical device matching filter");
 		}
@@ -525,7 +525,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	physicalDevice = physicalDevices.at(physicalDeviceIndex);
 	deviceProperties = physicalDevicesProperties.at(physicalDeviceIndex);
 
-	LOG_FMT("Using physical device {} \"{}\"", physicalDeviceIndex, deviceProperties.deviceName.data());
+	LOG("Using physical device {} \"{}\"", physicalDeviceIndex, deviceProperties.deviceName.data());
 
 	uboAlign  = static_cast<unsigned int>(deviceProperties.limits.minUniformBufferOffsetAlignment);
 	ssboAlign = static_cast<unsigned int>(deviceProperties.limits.minStorageBufferOffsetAlignment);
@@ -533,30 +533,30 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	deviceFeatures = physicalDevice.getFeatures();
 
 	memoryProperties = physicalDevice.getMemoryProperties();
-	LOG_FMT("{} memory types", memoryProperties.memoryTypeCount);
+	LOG("{} memory types", memoryProperties.memoryTypeCount);
 	for (unsigned int i = 0; i < memoryProperties.memoryTypeCount; i++ ) {
-		LOG_FMT(" {}  heap {}  {}", i, memoryProperties.memoryTypes[i].heapIndex, vk::to_string(memoryProperties.memoryTypes[i].propertyFlags));
+		LOG(" {}  heap {}  {}", i, memoryProperties.memoryTypes[i].heapIndex, vk::to_string(memoryProperties.memoryTypes[i].propertyFlags));
 	}
-	LOG_FMT("{} memory heaps", memoryProperties.memoryHeapCount);
+	LOG("{} memory heaps", memoryProperties.memoryHeapCount);
 	for (unsigned int i = 0; i < memoryProperties.memoryHeapCount; i++ ) {
-		LOG_FMT(" {}  size {}  {}", i, memoryProperties.memoryHeaps[i].size, vk::to_string(memoryProperties.memoryHeaps[i].flags));
+		LOG(" {}  size {}  {}", i, memoryProperties.memoryHeaps[i].size, vk::to_string(memoryProperties.memoryHeaps[i].flags));
 	}
 
 	std::vector<vk::QueueFamilyProperties> queueProps = physicalDevice.getQueueFamilyProperties();
-	LOG_FMT("{} queue families", queueProps.size());
+	LOG("{} queue families", queueProps.size());
 
 	graphicsQueueIndex = static_cast<uint32_t>(queueProps.size());
 	bool graphicsQueueFound = false;
 	for (uint32_t i = 0; i < queueProps.size(); i++) {
 		const auto &q = queueProps.at(i);
-		LOG_FMT(" Queue family {}", i);
-		LOG_FMT("  Flags: {}", vk::to_string(q.queueFlags));
-		LOG_FMT("  Count: {}", q.queueCount);
-		LOG_FMT("  Timestamp valid bits: {}", q.timestampValidBits);
-		LOG_FMT("  Image transfer granularity: ({}, {}, {})", q.minImageTransferGranularity.width, q.minImageTransferGranularity.height, q.minImageTransferGranularity.depth);
+		LOG(" Queue family {}", i);
+		LOG("  Flags: {}", vk::to_string(q.queueFlags));
+		LOG("  Count: {}", q.queueCount);
+		LOG("  Timestamp valid bits: {}", q.timestampValidBits);
+		LOG("  Image transfer granularity: ({}, {}, {})", q.minImageTransferGranularity.width, q.minImageTransferGranularity.height, q.minImageTransferGranularity.depth);
 
 		if (physicalDevice.getSurfaceSupportKHR(i, surface)) {
-			LOG_FMT("  Can present to our surface");
+			LOG("  Can present to our surface");
 			if (q.queueFlags & vk::QueueFlagBits::eGraphics) {
 				if (!graphicsQueueFound) {
 					graphicsQueueIndex = i;
@@ -564,16 +564,16 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 				}
 			}
 		} else {
-			LOG_FMT("  Can't present to our surface");
+			LOG("  Can't present to our surface");
 		}
 	}
 
 	if (graphicsQueueIndex == queueProps.size()) {
-		LOG_FMT("Error: no graphics queue");
+		LOG("Error: no graphics queue");
 		throw std::runtime_error("Error: no graphics queue");
 	}
 
-	LOG_FMT("Using queue {} for graphics", graphicsQueueIndex);
+	LOG("Using queue {} for graphics", graphicsQueueIndex);
 
 	std::array<float, 1> queuePriorities = { { 0.0f } };
 
@@ -610,21 +610,21 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	if (transferQueueIndex != graphicsQueueIndex) {
-		LOG_FMT("Using queue {} for transfer", transferQueueIndex);
+		LOG("Using queue {} for transfer", transferQueueIndex);
 		queueCreateInfos[numQueues].queueFamilyIndex  = transferQueueIndex;
 		queueCreateInfos[numQueues].queueCount        = 1;
 		queueCreateInfos[numQueues].pQueuePriorities  = &queuePriorities[0];
 		numQueues++;
 	} else {
-		LOG_FMT("No separate transfer queue");
+		LOG("No separate transfer queue");
 	}
 
 	HashSet<std::string> availableExtensions;
 	{
 		auto exts = physicalDevice.enumerateDeviceExtensionProperties();
-		LOG_FMT("{} device extensions:", exts.size());
+		LOG("{} device extensions:", exts.size());
 		for (const auto &ext : exts) {
-			LOG_FMT("{}", ext.extensionName.data());
+			LOG("{}", ext.extensionName.data());
 			availableExtensions.insert(std::string(ext.extensionName.data()));
 		}
 	}
@@ -633,7 +633,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	auto checkExt = [&deviceExtensions, &availableExtensions] (const char *ext) {
 		if (availableExtensions.find(std::string(ext)) != availableExtensions.end()) {
-			LOG_FMT("Activating extension {}", ext);
+			LOG("Activating extension {}", ext);
 			deviceExtensions.push_back(ext);
 			return true;
 		}
@@ -652,7 +652,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		// this disables pipeline caching on radv so only enable when tracing
 		amdShaderInfo = checkExt(VK_AMD_SHADER_INFO_EXTENSION_NAME);
 		if (amdShaderInfo) {
-			LOG_FMT("VK_AMD_shader_info found");
+			LOG("VK_AMD_shader_info found");
 		}
 	}
 
@@ -674,12 +674,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	vk::PhysicalDeviceFeatures enabledFeatures;
 	if (desc.robustness) {
-		LOG_FMT("Robust buffer access requested");
+		LOG("Robust buffer access requested");
 		if (deviceFeatures.robustBufferAccess) {
 			enabledFeatures.robustBufferAccess = true;
-			LOG_FMT(" enabled");
+			LOG(" enabled");
 		} else {
-			LOG_FMT(" not supported");
+			LOG(" not supported");
 		}
 	}
 	deviceCreateInfo.pEnabledFeatures         = &enabledFeatures;
@@ -709,7 +709,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	allocatorInfo.device           = device;
 	allocatorInfo.instance         = instance;
 	if (dedicatedAllocation) {
-		LOG_FMT("Dedicated allocations enabled");
+		LOG("Dedicated allocations enabled");
 		allocatorInfo.flags      = VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
 	}
 
@@ -721,10 +721,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	{
 		auto surfacePresentModes_ = physicalDevice.getSurfacePresentModesKHR(surface);
 		surfacePresentModes.reserve(surfacePresentModes_.size());
-		LOG_FMT("{} present modes",   surfacePresentModes_.size());
+		LOG("{} present modes",   surfacePresentModes_.size());
 
 		for (const auto &presentMode : surfacePresentModes_) {
-			LOG_FMT(" {}", vk::to_string(presentMode));
+			LOG(" {}", vk::to_string(presentMode));
 			surfacePresentModes.insert(presentMode);
 		}
 	}
@@ -732,9 +732,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	{
 		auto surfaceFormats_ = physicalDevice.getSurfaceFormatsKHR(surface);
 
-		LOG_FMT("{} surface formats", surfaceFormats_.size());
+		LOG("{} surface formats", surfaceFormats_.size());
 		for (const auto &format : surfaceFormats_) {
-			LOG_FMT(" {}\t{}", vk::to_string(format.format), vk::to_string(format.colorSpace));
+			LOG(" {}\t{}", vk::to_string(format.format), vk::to_string(format.colorSpace));
 			if (format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
 				surfaceFormats.insert(format.format);
 			}
@@ -760,7 +760,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	features.SSBOSupported  = true;
 
 	if (!recreateSwapchain()) {
-		LOG_FMT("initial swapchain create failed");
+		LOG("initial swapchain create failed");
 		throw std::runtime_error("initial swapchain create failed");
 	}
 	recreateRingBuffer(desc.ephemeralRingBufSize);
@@ -837,13 +837,13 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 	auto result = vmaAllocateMemoryForBuffer(allocator, ringBuffer, &req, &ringBufferMem, &allocationInfo);
 
 	if (result != VK_SUCCESS) {
-		LOG_FMT("vmaAllocateMemoryForBuffer failed: {}", vk::to_string(vk::Result(result)));
+		LOG("vmaAllocateMemoryForBuffer failed: {}", vk::to_string(vk::Result(result)));
 		throw std::runtime_error("vmaAllocateMemoryForBuffer failed");
 	}
 
-	LOG_FMT("ringbuffer memory type: {}",    allocationInfo.memoryType);
-	LOG_FMT("ringbuffer memory offset: {}",  allocationInfo.offset);
-	LOG_FMT("ringbuffer memory size: {}",    allocationInfo.size);
+	LOG("ringbuffer memory type: {}",    allocationInfo.memoryType);
+	LOG("ringbuffer memory offset: {}",  allocationInfo.offset);
+	LOG("ringbuffer memory size: {}",    allocationInfo.size);
 	assert(ringBufferMem != nullptr);
 	assert(allocationInfo.offset == 0);
 	assert(allocationInfo.pMappedData != nullptr);
@@ -866,7 +866,7 @@ RendererImpl::~RendererImpl() {
 	assert(pipelineCache);
 
 	if (frameAcquired) {
-		LOG_FMT("warning: acquired but not presented frame while shutting down");
+		LOG("warning: acquired but not presented frame while shutting down");
 		assert(frameAcquireSem);
 		freeSemaphore(frameAcquireSem);
 		frameAcquireSem = vk::Semaphore();
@@ -1017,9 +1017,9 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	VmaAllocationInfo  allocationInfo = {};
 
 	vmaAllocateMemoryForBuffer(allocator, buffer.buffer, &req, &buffer.memory, &allocationInfo);
-	LOG_FMT("buffer memory type: {}",    allocationInfo.memoryType);
-	LOG_FMT("buffer memory offset: {}",  allocationInfo.offset);
-	LOG_FMT("buffer memory size: {}",    allocationInfo.size);
+	LOG("buffer memory type: {}",    allocationInfo.memoryType);
+	LOG("buffer memory offset: {}",  allocationInfo.offset);
+	LOG("buffer memory size: {}",    allocationInfo.size);
 	assert(allocationInfo.size > 0);
 	assert(allocationInfo.pMappedData == nullptr);
 	device.bindBufferMemory(buffer.buffer, allocationInfo.deviceMemory, allocationInfo.offset);
@@ -1601,10 +1601,10 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		// TODO: other stages
 
 		device.getShaderInfoAMD(result.value, vk::ShaderStageFlagBits::eVertex, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, dispatcher);
-		LOG_FMT("pipeline \"{}\" vertex SGPR {} VGPR {}", desc.name_, stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
+		LOG("pipeline \"{}\" vertex SGPR {} VGPR {}", desc.name_, stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
 
 		device.getShaderInfoAMD(result.value, vk::ShaderStageFlagBits::eFragment, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, dispatcher);
-		LOG_FMT("pipeline \"{}\" fragment SGPR {} VGPR {}", desc.name_, stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
+		LOG("pipeline \"{}\" fragment SGPR {} VGPR {}", desc.name_, stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
 	}
 
 	auto id = pipelines.add();
@@ -1826,9 +1826,9 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	VmaAllocationInfo  allocationInfo = {};
 
 	vmaAllocateMemoryForImage(allocator, tex.image, &req, &tex.memory, &allocationInfo);
-	LOG_FMT("texture image memory type: {}",   allocationInfo.memoryType);
-	LOG_FMT("texture image memory offset: {}", allocationInfo.offset);
-	LOG_FMT("texture image memory size: {}",   allocationInfo.size);
+	LOG("texture image memory type: {}",   allocationInfo.memoryType);
+	LOG("texture image memory offset: {}", allocationInfo.offset);
+	LOG("texture image memory size: {}",   allocationInfo.size);
 	device.bindImageMemory(tex.image, allocationInfo.deviceMemory, allocationInfo.offset);
 
 	vk::ImageViewCreateInfo viewInfo;
@@ -2062,10 +2062,10 @@ void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 		if (desc.fullscreen) {
 			// TODO: check return val?
 			SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-			LOG_FMT("Fullscreen");
+			LOG("Fullscreen");
 		} else {
 			SDL_SetWindowFullscreen(window, 0);
-			LOG_FMT("Windowed");
+			LOG("Windowed");
 		}
 	}
 
@@ -2186,12 +2186,12 @@ bool RendererImpl::recreateSwapchain() {
 	}
 
 	surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
-	LOG_FMT("image count min-max {} - {}", surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
-	LOG_FMT("image extent min-max {}x{} - {}x{}", surfaceCapabilities.minImageExtent.width, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.width, surfaceCapabilities.maxImageExtent.height);
-	LOG_FMT("current image extent {}x{}", surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height);
-	LOG_FMT("supported surface transforms: {}", vk::to_string(surfaceCapabilities.supportedTransforms));
-	LOG_FMT("supported surface alpha composite flags: {}", vk::to_string(surfaceCapabilities.supportedCompositeAlpha));
-	LOG_FMT("supported surface usage flags: {}", vk::to_string(surfaceCapabilities.supportedUsageFlags));
+	LOG("image count min-max {} - {}", surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
+	LOG("image extent min-max {}x{} - {}x{}", surfaceCapabilities.minImageExtent.width, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.width, surfaceCapabilities.maxImageExtent.height);
+	LOG("current image extent {}x{}", surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height);
+	LOG("supported surface transforms: {}", vk::to_string(surfaceCapabilities.supportedTransforms));
+	LOG("supported surface alpha composite flags: {}", vk::to_string(surfaceCapabilities.supportedCompositeAlpha));
+	LOG("supported surface usage flags: {}", vk::to_string(surfaceCapabilities.supportedUsageFlags));
 
 	int tempW = -1, tempH = -1;
 	SDL_Vulkan_GetDrawableSize(window, &tempW, &tempH);
@@ -2213,7 +2213,7 @@ bool RendererImpl::recreateSwapchain() {
 		numImages = std::min(numImages, surfaceCapabilities.maxImageCount);
 	}
 
-	LOG_FMT("Want {} images, using {} images", wantedSwapchain.numFrames, numImages);
+	LOG("Want {} images, using {} images", wantedSwapchain.numFrames, numImages);
 
 	swapchainDesc.fullscreen = wantedSwapchain.fullscreen;
 	swapchainDesc.numFrames  = numImages;
@@ -2287,15 +2287,15 @@ bool RendererImpl::recreateSwapchain() {
 	imageExtent.height = swapchainDesc.height;
 
 	if (!(surfaceCapabilities.supportedTransforms & vk::SurfaceTransformFlagBitsKHR::eIdentity)) {
-		LOG_FMT("warning: identity transform not supported");
+		LOG("warning: identity transform not supported");
 	}
 
 	if (surfaceCapabilities.currentTransform != vk::SurfaceTransformFlagBitsKHR::eIdentity) {
-		LOG_FMT("warning: current transform is not identity");
+		LOG("warning: current transform is not identity");
 	}
 
 	if (!(surfaceCapabilities.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eOpaque)) {
-		LOG_FMT("warning: opaque alpha not supported");
+		LOG("warning: opaque alpha not supported");
 	}
 
 	// FIFO is guaranteed to be supported
@@ -2311,7 +2311,7 @@ bool RendererImpl::recreateSwapchain() {
 		}
 	}
 
-	LOG_FMT("Using present mode {}", vk::to_string(swapchainPresentMode));
+	LOG("Using present mode {}", vk::to_string(swapchainPresentMode));
 
 	// TODO: should fallback to Unorm and communicate back to demo
 	vk::Format surfaceFormat = vk::Format::eB8G8R8A8Srgb;
@@ -2406,7 +2406,7 @@ bool RendererImpl::waitForDeviceIdle() {
 		default: {
 			// TODO: better exception types
 			std::string s = vk::to_string(waitResult);
-			LOG_FMT("wait result is not success: {}", s);
+			LOG("wait result is not success: {}", s);
 			throw std::runtime_error("wait result is not success " + s);
 		}
 		}
@@ -2474,7 +2474,7 @@ bool RendererImpl::beginFrame() {
 
 		case vk::Result::eErrorOutOfDateKHR:
 			// swapchain went out of date during acquire, recreate and try again
-			LOG_FMT("swapchain out of date during acquireNextImageKHR, recreating...");
+			LOG("swapchain out of date during acquireNextImageKHR, recreating...");
 			logFlush();
 			swapchainDirty = true;
 
@@ -2487,7 +2487,7 @@ bool RendererImpl::beginFrame() {
 			return false;
 
 		case vk::Result::eSuboptimalKHR:
-			LOG_FMT("swapchain suboptimal during acquireNextImageKHR, recreating...");
+			LOG("swapchain suboptimal during acquireNextImageKHR, recreating...");
 			logFlush();
 			swapchainDirty = true;
 			// suboptimal is considered success so proceed
@@ -2495,7 +2495,7 @@ bool RendererImpl::beginFrame() {
 			break;
 
 		default:
-			LOG_FMT("acquireNextImageKHR failed: {}", vk::to_string(result));
+			LOG("acquireNextImageKHR failed: {}", vk::to_string(result));
 			logFlush();
 			throw std::runtime_error("acquireNextImageKHR failed");
 		}
@@ -2578,7 +2578,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	unsigned int height = rt.height;
 
 	if (width != swapchainDesc.width || height != swapchainDesc.height) {
-		LOG_FMT("warning: rendertarget size mismatch at presentFrame, is ({}x{}) should be ({}x{})", width, height, swapchainDesc.width, swapchainDesc.height);
+		LOG("warning: rendertarget size mismatch at presentFrame, is ({}x{}) should be ({}x{})", width, height, swapchainDesc.width, swapchainDesc.height);
 		width  = std::min(width,  swapchainDesc.width);
 		height = std::min(height, swapchainDesc.height);
 		swapchainDirty  = true;
@@ -2646,7 +2646,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	std::vector<vk::ImageMemoryBarrier> imageAcquireBarriers;
 	std::vector<vk::BufferMemoryBarrier> bufferAcquireBarriers;
 	if (!uploads.empty()) {
-		LOG_FMT("{} uploads pending", uploads.size());
+		LOG("{} uploads pending", uploads.size());
 
 		// use semaphores to make sure draw doesn't proceed until uploads are ready
 		uploadSemaphores.reserve(uploads.size());
@@ -2662,7 +2662,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 			                           , op.bufferAcquireBarriers.begin()
 			                           , op.bufferAcquireBarriers.end());
 		}
-		LOG_FMT("Gathered {} image and {} buffer acquire barriers from {} upload ops"
+		LOG("Gathered {} image and {} buffer acquire barriers from {} upload ops"
 		   , imageAcquireBarriers.size()
 		   , bufferAcquireBarriers.size()
 		   , uploads.size());
@@ -2672,7 +2672,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 		submit.pWaitDstStageMask    = semWaitMasks.data();
 
 		if (!imageAcquireBarriers.empty() || !bufferAcquireBarriers.empty()) {
-			LOG_FMT("submitting acquire barriers");
+			LOG("submitting acquire barriers");
 			auto barrierCmdBuf = frame.barrierCmdBuf;
 			barrierCmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 			barrierCmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTopOfPipe, vk::DependencyFlags(), {}, bufferAcquireBarriers, imageAcquireBarriers);
@@ -2716,11 +2716,11 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	if (presentResult == vk::Result::eSuccess) {
 		// nothing to do
 	} else if (presentResult == vk::Result::eErrorOutOfDateKHR) {
-		LOG_FMT("swapchain out of date during presentKHR, marking dirty");
+		LOG("swapchain out of date during presentKHR, marking dirty");
 		// swapchain went out of date during present, mark it dirty
 		swapchainDirty = true;
 	} else {
-		LOG_FMT("presentKHR failed: {}", vk::to_string(presentResult));
+		LOG("presentKHR failed: {}", vk::to_string(presentResult));
 		throw std::runtime_error("presentKHR failed");
 	}
 	frame.usedRingBufPtr = ringBufPtr;
@@ -2770,7 +2770,7 @@ bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 	default: {
 		// TODO: better exception types
 		std::string s = vk::to_string(waitResult);
-		LOG_FMT("wait result is not success: {}", s);
+		LOG("wait result is not success: {}", s);
 		throw std::runtime_error("wait result is not success " + s);
 	}
 	}

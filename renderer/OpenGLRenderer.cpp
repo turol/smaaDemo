@@ -133,7 +133,7 @@ static GLuint createShader(GLenum type, const std::string &name, const ShaderMac
 			// TODO: better logging
 			glGetShaderInfoLog(shader, infoLogLen, NULL, &infoLog[0]);
 			if (infoLog[0] != '\0') {
-				LOG_FMT("shader \"{}\" info log:\n{}\ninfo log end", name, &infoLog[0]);
+				LOG("shader \"{}\" info log:\n{}\ninfo log end", name, &infoLog[0]);
 				logFlush();
 			}
 		}
@@ -371,25 +371,25 @@ void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 	switch (severity)
 	{
 	case GL_DEBUG_SEVERITY_HIGH_ARB:
-		LOG_FMT("GL error from {} type {}: ({}) {}", errorSource(source), errorType(type), id, message);
+		LOG("GL error from {} type {}: ({}) {}", errorSource(source), errorType(type), id, message);
 		break;
 
 	case GL_DEBUG_SEVERITY_MEDIUM_ARB:
-		LOG_FMT("GL warning from {} type {}: ({}) {}", errorSource(source), errorType(type), id, message);
+		LOG("GL warning from {} type {}: ({}) {}", errorSource(source), errorType(type), id, message);
 		break;
 
 	case GL_DEBUG_SEVERITY_LOW_ARB:
-		LOG_FMT("GL debug from {} type {}: ({}) {}", errorSource(source), errorType(type), id, message);
+		LOG("GL debug from {} type {}: ({}) {}", errorSource(source), errorType(type), id, message);
 		break;
 
 	case GL_DEBUG_SEVERITY_NOTIFICATION:
 		if (type != GL_DEBUG_TYPE_PUSH_GROUP && type != GL_DEBUG_TYPE_POP_GROUP) {
-			LOG_FMT("GL notice from {} type {}: ({}) {}", errorSource(source), errorType(type), id, message);
+			LOG("GL notice from {} type {}: ({}) {}", errorSource(source), errorType(type), id, message);
 		}
 		break;
 
 	default:
-		LOG_FMT("GL error of unknown severity {:#04x} from {} type {}: ({}) {}", severity, errorSource(source), errorType(type), id, message);
+		LOG("GL error of unknown severity {:#04x} from {} type {}: ({}) {}", severity, errorSource(source), errorType(type), id, message);
 		break;
 	}
 }
@@ -402,7 +402,7 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 		if (i < first.ubos.size()) {
 			DSIndex other = first.ubos.at(i);
 			if (idx != other) {
-				LOG_FMT("ERROR: mismatch when merging shader UBOs, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
+				LOG("ERROR: mismatch when merging shader UBOs, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
 				throw std::runtime_error("resource mismatch");
 			}
 		} else {
@@ -415,7 +415,7 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 		if (i < first.ssbos.size()) {
 			DSIndex other = first.ssbos.at(i);
 			if (idx != other) {
-				LOG_FMT("ERROR: mismatch when merging shader SSBOs, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
+				LOG("ERROR: mismatch when merging shader SSBOs, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
 				throw std::runtime_error("resource mismatch");
 			}
 		} else {
@@ -428,7 +428,7 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 		if (i < first.textures.size()) {
 			DSIndex other = first.textures.at(i);
 			if (idx != other) {
-				LOG_FMT("ERROR: mismatch when merging shader textures, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
+				LOG("ERROR: mismatch when merging shader textures, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
 				throw std::runtime_error("resource mismatch");
 			}
 		} else {
@@ -441,7 +441,7 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 		if (i < first.samplers.size()) {
 			DSIndex other = first.samplers.at(i);
 			if (idx != other) {
-				LOG_FMT("ERROR: mismatch when merging shader textures, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
+				LOG("ERROR: mismatch when merging shader textures, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
 				throw std::runtime_error("resource mismatch");
 			}
 		} else {
@@ -490,23 +490,23 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	SDL_DisplayMode mode;
 	memset(&mode, 0, sizeof(mode));
 	int numDisplays = SDL_GetNumVideoDisplays();
-	LOG_FMT("Number of displays detected: {}", numDisplays);
+	LOG("Number of displays detected: {}", numDisplays);
 
 	for (int i = 0; i < numDisplays; i++) {
 		int retval = SDL_GetDesktopDisplayMode(i, &mode);
 		if (retval == 0) {
-			LOG_FMT("Desktop mode for display {}: {}x{}, refresh {} Hz", i, mode.w, mode.h, mode.refresh_rate);
+			LOG("Desktop mode for display {}: {}x{}, refresh {} Hz", i, mode.w, mode.h, mode.refresh_rate);
 			currentRefreshRate = mode.refresh_rate;
 		} else {
-			LOG_FMT("Failed to get desktop display mode for display {}", i);
+			LOG("Failed to get desktop display mode for display {}", i);
 		}
 
 		int numModes = SDL_GetNumDisplayModes(i);
-		LOG_FMT("Number of display modes for display {} : {}", i, numModes);
+		LOG("Number of display modes for display {} : {}", i, numModes);
 
 		for (int j = 0; j < numModes; j++) {
 			SDL_GetDisplayMode(i, j, &mode);
-			LOG_FMT("Display mode {} : width {}, height {}, BPP {}, refresh {} Hz", j, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format), mode.refresh_rate);
+			LOG("Display mode {} : width {}, height {}, BPP {}, refresh {} Hz", j, mode.w, mode.h, SDL_BITSPERPIXEL(mode.format), mode.refresh_rate);
 			maxRefreshRate = std::max(static_cast<unsigned int>(mode.refresh_rate), maxRefreshRate);
 		}
 	}
@@ -520,7 +520,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	window = SDL_CreateWindow(desc.applicationName.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, desc.swapchain.width, desc.swapchain.height, flags);
 
 	if (!window) {
-		LOG_FMT("SDL_CreateWindow failed: {}", SDL_GetError());
+		LOG("SDL_CreateWindow failed: {}", SDL_GetError());
 		throw std::runtime_error("SDL_CreateWindow failed");
 	}
 
@@ -529,7 +529,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	{
 		int value = -1;
 		SDL_GL_GetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, &value);
-		LOG_FMT("sRGB framebuffer: {}", value);
+		LOG("sRGB framebuffer: {}", value);
 		features.sRGBFramebuffer = value;
 	}
 
@@ -539,7 +539,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	case VSync::LateSwapTear:
 		retval = SDL_GL_SetSwapInterval(-1);
 		if (retval != 0) {
-			LOG_FMT("Failed to set late swap tearing vsync: {}", SDL_GetError());
+			LOG("Failed to set late swap tearing vsync: {}", SDL_GetError());
 		} else {
 			vsync = true;
 			break;
@@ -549,7 +549,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	case VSync::On:
 		retval = SDL_GL_SetSwapInterval(1);
 		if (retval != 0) {
-			LOG_FMT("Failed to set vsync: {}", SDL_GetError());
+			LOG("Failed to set vsync: {}", SDL_GetError());
 		} else {
 			vsync = true;
 		}
@@ -561,7 +561,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	}
 
-	LOG_FMT("VSync is {}", vsync ? "on" : "off");
+	LOG("VSync is {}", vsync ? "on" : "off");
 
 	// TODO: call SDL_GL_GetDrawableSize, log GL attributes etc.
 
@@ -573,43 +573,43 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	if (GLEW_VERSION_4_3 || GLEW_ARB_shader_storage_buffer_object) {
 		features.SSBOSupported = true;
-		LOG_FMT("Shader storage buffer supported");
+		LOG("Shader storage buffer supported");
 	} else {
 		features.SSBOSupported = false;
-		LOG_FMT("Shader storage buffer not supported");
+		LOG("Shader storage buffer not supported");
 	}
 
 	if (!GLEW_ARB_direct_state_access) {
-		LOG_FMT("ARB_direct_state_access not found");
+		LOG("ARB_direct_state_access not found");
 		throw std::runtime_error("ARB_direct_state_access not found");
 	}
 
 	if (!GLEW_ARB_buffer_storage) {
-		LOG_FMT("ARB_buffer_storage not found");
+		LOG("ARB_buffer_storage not found");
 		throw std::runtime_error("ARB_buffer_storage not found");
 	}
 
 	if (!GLEW_ARB_clip_control) {
-		LOG_FMT("ARB_clip_control not found");
+		LOG("ARB_clip_control not found");
 		throw std::runtime_error("ARB_clip_control not found");
 	}
 
 	if (!(GLEW_ARB_texture_view || GLEW_VERSION_4_3)) {
-		LOG_FMT("ARB_texture_view not found");
+		LOG("ARB_texture_view not found");
 		throw std::runtime_error("ARB_texture_view not found");
 	}
 
 	if (!GLEW_ARB_texture_storage_multisample) {
-		LOG_FMT("ARB_texture_storage_multisample not found");
+		LOG("ARB_texture_storage_multisample not found");
 		throw std::runtime_error("ARB_texture_storage_multisample not found");
 	}
 
 	if (wantKHRDebug) {
 		if (!GLEW_KHR_debug) {
-			LOG_FMT("KHR_debug not found");
+			LOG("KHR_debug not found");
 			throw std::runtime_error("KHR_debug not found");
 		} else {
-			LOG_FMT("KHR_debug found");
+			LOG("KHR_debug found");
 			if (debug) {
 				glDebugMessageCallback(glDebugCallback, NULL);
 				glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
@@ -619,17 +619,17 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 	}
 
-	LOG_FMT("GL vendor: \"{}\"", glGetString(GL_VENDOR));
-	LOG_FMT("GL renderer: \"{}\"", glGetString(GL_RENDERER));
-	LOG_FMT("GL version: \"{}\"", glGetString(GL_VERSION));
-	LOG_FMT("GLSL version: \"{}\"", glGetString(GL_SHADING_LANGUAGE_VERSION));
+	LOG("GL vendor: \"{}\"", glGetString(GL_VENDOR));
+	LOG("GL renderer: \"{}\"", glGetString(GL_RENDERER));
+	LOG("GL version: \"{}\"", glGetString(GL_VERSION));
+	LOG("GLSL version: \"{}\"", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
-	LOG_FMT("Interesting GL values:");
+	LOG("Interesting GL values:");
 	glValues.reserve(sizeof(interestingValues) / sizeof(interestingValues[0]));
 	for (const auto &v : interestingValues) {
 		GLint temp = -1;
 		glGetIntegerv(v.value, &temp);
-		LOG_FMT("{}: {}", v.name, temp);
+		LOG("{}: {}", v.name, temp);
 		glValues.emplace(v.value, temp);
 	}
 
@@ -645,7 +645,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	glBindVertexArray(vao);
 
 	if (!recreateSwapchain()) {
-		LOG_FMT("initial swapchain create failed");
+		LOG("initial swapchain create failed");
 		throw std::runtime_error("initial swapchain create failed");
 	}
 
@@ -986,13 +986,13 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			LOG_FMT("Duplicate UBO binding ({}, {})", idx.set, idx.binding);
+			LOG("Duplicate UBO binding ({}, {})", idx.set, idx.binding);
 			throw std::runtime_error("Duplicate UBO binding");
 		}
 
 		auto it = dsResources.find(idx);
 		if (it == dsResources.end()) {
-            LOG_FMT("UBO ({}, {}) not in descriptor sets", idx.set, idx.binding);
+            LOG("UBO ({}, {}) not in descriptor sets", idx.set, idx.binding);
 			throw std::runtime_error("UBO not in descriptor sets");
 		}
 
@@ -1002,12 +1002,12 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		assert(shaderResources.ubos[openglIDX] == idx);
 
 		uint32_t maxOffset = 0;
-		LOG_FMT("UBO {} index {} ranges:", ubo.id, openglIDX);
+		LOG("UBO {} index {} ranges:", ubo.id, openglIDX);
 		for (auto r : glsl.get_active_buffer_ranges(ubo.id)) {
-			LOG_FMT("  {}:  {}  {}", r.index, r.offset, r.range);
+			LOG("  {}:  {}  {}", r.index, r.offset, r.range);
 			maxOffset = std::max(maxOffset, static_cast<uint32_t>(r.offset + r.range));
 		}
-		LOG_FMT(" max offset: {}", maxOffset);
+		LOG(" max offset: {}", maxOffset);
 		shaderResources.uboSizes[openglIDX] = maxOffset;
 
 		// opengl doesn't like set decorations, strip them
@@ -1024,13 +1024,13 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			LOG_FMT("Duplicate SSBO binding ({}, {})", idx.set, idx.binding);
+			LOG("Duplicate SSBO binding ({}, {})", idx.set, idx.binding);
 			throw std::runtime_error("Duplicate SSBO binding");
 		}
 
 		auto it = dsResources.find(idx);
 		if (it == dsResources.end()) {
-            LOG_FMT("SSBO ({}, {}) not in descriptor sets", idx.set, idx.binding);
+            LOG("SSBO ({}, {}) not in descriptor sets", idx.set, idx.binding);
 			throw std::runtime_error("SSBO not in descriptor sets");
 		}
 
@@ -1053,13 +1053,13 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			LOG_FMT("Duplicate image binding ({}, {})", idx.set, idx.binding);
+			LOG("Duplicate image binding ({}, {})", idx.set, idx.binding);
 			throw std::runtime_error("Duplicate image binding");
 		}
 
 		auto it = dsResources.find(idx);
 		if (it == dsResources.end()) {
-            LOG_FMT("Sampled image ({}, {}) not in descriptor sets", idx.set, idx.binding);
+            LOG("Sampled image ({}, {}) not in descriptor sets", idx.set, idx.binding);
 			throw std::runtime_error("Sampled image not in descriptor sets");
 		}
 
@@ -1204,7 +1204,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 		std::vector<char> infoLog(status + 1, '\0');
 		// TODO: better logging
 		glGetProgramInfoLog(program, status, NULL, &infoLog[0]);
-		LOG_FMT("info log: {}", &infoLog[0]);
+		LOG("info log: {}", &infoLog[0]);
 		logFlush();
 		throw std::runtime_error("shader link failed");
 	}
@@ -1312,7 +1312,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 
 	GLenum status = glCheckNamedFramebufferStatus(fb.fbo, GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		LOG_FMT("Framebuffer \"{}\" is not complete: {:#04x}", desc.name_, status);
+		LOG("Framebuffer \"{}\" is not complete: {:#04x}", desc.name_, status);
 		logFlush();
 		throw std::runtime_error("Framebuffer is not complete");
 	}
@@ -1439,7 +1439,7 @@ void RendererImpl::createRTHelperFBO(RenderTarget &rt) {
 	glNamedFramebufferDrawBuffers(rt.helperFBO, 1, drawBuffers);
 	GLenum status = glCheckNamedFramebufferStatus(rt.helperFBO, GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		LOG_FMT("helper FBO for RT is not complete: {:#04x}", status);
+		LOG("helper FBO for RT is not complete: {:#04x}", status);
 		logFlush();
 		throw std::runtime_error("helper FBO for RT is not complete");
 	}
@@ -1657,10 +1657,10 @@ void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 		if (desc.fullscreen) {
 			// TODO: check return val?
 			SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-			LOG_FMT("Fullscreen");
+			LOG("Fullscreen");
 		} else {
 			SDL_SetWindowFullscreen(window, 0);
-			LOG_FMT("Windowed");
+			LOG("Windowed");
 		}
 	}
 
@@ -1672,7 +1672,7 @@ void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 			// enable vsync, using late swap tearing if possible
 			retval = SDL_GL_SetSwapInterval(-1);
 			if (retval == 0) {
-				LOG_FMT("VSync is on");
+				LOG("VSync is on");
 			} else {
 				break;
 			}
@@ -1681,13 +1681,13 @@ void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 		case VSync::On:
 			// TODO: check return val
 			SDL_GL_SetSwapInterval(1);
-			LOG_FMT("VSync is on");
+			LOG("VSync is on");
 			break;
 
 		case VSync::Off:
 			// TODO: check return val
 			SDL_GL_SetSwapInterval(0);
-			LOG_FMT("VSync is off");
+			LOG("VSync is off");
 			break;
 		}
 	}
@@ -1737,7 +1737,7 @@ bool RendererImpl::recreateSwapchain() {
 	unsigned int numImages = wantedSwapchain.numFrames;
 	numImages = std::max(numImages, 1U);
 
-	LOG_FMT("Want {} images, using {} images", wantedSwapchain.numFrames, numImages);
+	LOG("Want {} images, using {} images", wantedSwapchain.numFrames, numImages);
 
 	swapchainDesc.fullscreen = wantedSwapchain.fullscreen;
 	swapchainDesc.numFrames  = numImages;
@@ -1926,7 +1926,7 @@ bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 
 	default:
 		// TODO: do something better
-		LOG_FMT("glClientWaitSync failed: {:#04x}", result);
+		LOG("glClientWaitSync failed: {:#04x}", result);
 		throw std::runtime_error("glClientWaitSync failed");
 	}
 

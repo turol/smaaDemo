@@ -495,7 +495,7 @@ bool RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 
 	CacheData cacheData = CacheData::parse(readFile(cacheName));
 	if (cacheData.version != int(shaderVersion)) {
-		LOG_FMT("version mismatch, found {} when expected {}", cacheData.version, shaderVersion);
+		LOG("version mismatch, found {} when expected {}", cacheData.version, shaderVersion);
 		return false;
 	}
 
@@ -509,27 +509,27 @@ bool RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 	int64_t cacheTime  = getFileTimestamp(cacheName);
 
 	if (sourceTime > cacheTime) {
-		LOG_FMT("Shader \"{}\" source is newer than cache, recompiling", spvName);
+		LOG("Shader \"{}\" source is newer than cache, recompiling", spvName);
 		return false;
 	}
 
 	for (const auto &filename : cacheData.dependencies) {
 		int64_t includeTime = getFileTimestamp(filename);
 		if (includeTime > cacheTime) {
-			LOG_FMT("Include \"{}\" is newer than cache, recompiling", filename);
+			LOG("Include \"{}\" is newer than cache, recompiling", filename);
 			return false;
 		}
 	}
 
 	auto temp = readFile(spvName);
 	if (temp.size() % 4 != 0) {
-		LOG_FMT("Shader \"{}\" has incorrect size", spvName);
+		LOG("Shader \"{}\" has incorrect size", spvName);
 		return false;
 	}
 
 	spirv.resize(temp.size() / 4);
 	memcpy(&spirv[0], &temp[0], temp.size());
-	LOG_FMT("Loaded shader \"{}\" from cache", spvName);
+	LOG("Loaded shader \"{}\" from cache", spvName);
 
 	return true;
 }
@@ -567,7 +567,7 @@ static void logSpvMessage(spv_message_level_t level_, const char *source, const 
 		break;
 	}
 
-	LOG_FMT("{}: {} from {} at {}:{}", level, message, source, position.line, position.column);
+	LOG("{}: {} from {} at {}:{}", level, message, source, position.line, position.column);
 }
 
 
@@ -587,17 +587,17 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			LOG_FMT("Duplicate UBO binding ({}, {})", idx.set, idx.binding);
+			LOG("Duplicate UBO binding ({}, {})", idx.set, idx.binding);
 			throw std::runtime_error("Duplicate UBO binding");
 		}
 
 		uint32_t maxOffset = 0;
-		LOG_FMT("UBO {} ({}, {}) ranges:", ubo.id, idx.set, idx.binding);
+		LOG("UBO {} ({}, {}) ranges:", ubo.id, idx.set, idx.binding);
 		for (auto r : compiler.get_active_buffer_ranges(ubo.id)) {
-			LOG_FMT("  {}:  {}  {}", r.index, r.offset, r.range);
+			LOG("  {}:  {}  {}", r.index, r.offset, r.range);
 			maxOffset = std::max(maxOffset, static_cast<uint32_t>(r.offset + r.range));
 		}
-		LOG_FMT(" max offset: {}", maxOffset);
+		LOG(" max offset: {}", maxOffset);
 		uboSizes.emplace(idx, maxOffset);
 	}
 
@@ -610,7 +610,7 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			LOG_FMT("Duplicate SSBO binding ({}, {})", idx.set, idx.binding);
+			LOG("Duplicate SSBO binding ({}, {})", idx.set, idx.binding);
 			throw std::runtime_error("Duplicate SSBO binding");
 		}
 	}
@@ -624,7 +624,7 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			LOG_FMT("Duplicate combined image/sampler binding ({}, {})", idx.set, idx.binding);
+			LOG("Duplicate combined image/sampler binding ({}, {})", idx.set, idx.binding);
 			throw std::runtime_error("Duplicate combined image/sampler binding");
 		}
 	}
@@ -638,7 +638,7 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			LOG_FMT("Duplicate image binding ({}, {})", idx.set, idx.binding);
+			LOG("Duplicate image binding ({}, {})", idx.set, idx.binding);
 			throw std::runtime_error("Duplicate image binding");
 		}
 	}
@@ -652,7 +652,7 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			LOG_FMT("Duplicate image sampler binding ({}, {})", idx.set, idx.binding);
+			LOG("Duplicate image sampler binding ({}, {})", idx.set, idx.binding);
 			throw std::runtime_error("Duplicate sampler binding");
 		}
 	}
@@ -682,10 +682,10 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 	std::vector<uint32_t> spirv;
 	if (!skipShaderCache) {
-		LOG_FMT("Looking for \"{}\" in cache...", shaderName);
+		LOG("Looking for \"{}\" in cache...", shaderName);
 		bool found = loadCachedSPV(name, shaderName, spirv);
 		if (found) {
-			LOG_FMT("\"{}\" found in cache", shaderName);
+			LOG("\"{}\" found in cache", shaderName);
 
 			// TODO: only in debug
 			// need to move debug flag to base class
@@ -695,7 +695,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 			return spirv;
 		} else {
-			LOG_FMT("\"{}\" not found in cache", shaderName);
+			LOG("\"{}\" not found in cache", shaderName);
 		}
 	}
 
@@ -819,11 +819,11 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 		const char *infoLog = shader.getInfoLog();
 		if (infoLog != nullptr && infoLog[0] != '\0') {
-			LOG_FMT("Shader info log:\n\"{}\"", infoLog);
+			LOG("Shader info log:\n\"{}\"", infoLog);
 		}
 
 		if (!success) {
-			LOG_FMT("Failed to compile shader");
+			LOG("Failed to compile shader");
 			throw std::runtime_error("Failed to compile shader");
 		}
 
@@ -834,11 +834,11 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 		infoLog = program.getInfoLog();
 		if (infoLog != nullptr && infoLog[0] != '\0') {
-			LOG_FMT("Program info log:\n\"{}\"", infoLog);
+			LOG("Program info log:\n\"{}\"", infoLog);
 		}
 
 		if (!success) {
-			LOG_FMT("Failed to link shader");
+			LOG("Failed to link shader");
 			throw std::runtime_error("Failed to link shader");
 		}
 
@@ -857,7 +857,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		glslang::GlslangToSpv(*program.getIntermediate(language), spirv, &logger, &spvOptions);
 
 		if (!validate(spirv)) {
-			LOG_FMT("SPIR-V for shader \"{}\" is not valid after compilation", shaderName);
+			LOG("SPIR-V for shader \"{}\" is not valid after compilation", shaderName);
 			throw std::runtime_error("Shader validation failed");
 		}
 	}
@@ -874,7 +874,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		spvtools::Optimizer opt(SPV_ENV_UNIVERSAL_1_2);
 
 		opt.SetMessageConsumer([] (spv_message_level_t level, const char *source, const spv_position_t &position, const char *message) {
-			LOG_FMT("{}: {} {}:{}:{} {}", level, source, position.line, position.column, position.index, message);
+			LOG("{}: {} {}:{}:{} {}", level, source, position.line, position.column, position.index, message);
 		});
 
 		// SPIRV-Tools optimizer
@@ -888,7 +888,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		}
 
 		if (!validate(optimized)) {
-			LOG_FMT("SPIR-V for shader \"{}\" is not valid after optimization", shaderName);
+			LOG("SPIR-V for shader \"{}\" is not valid after optimization", shaderName);
 			throw std::runtime_error("Shader validation failed");
 		}
 
@@ -898,7 +898,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			remapper.remap(optimized);
 
 			if (!validate(optimized)) {
-				LOG_FMT("SPIR-V for shader \"{}\" is not valid after remapping", shaderName);
+				LOG("SPIR-V for shader \"{}\" is not valid after remapping", shaderName);
 				throw std::runtime_error("Shader validation failed");
 			}
 		}
@@ -911,7 +911,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		cacheData.version = shaderVersion;
 		cacheData.hash    = XXH64(spirv.data(), spirv.size() * 4, 0);;
 		std::string spvName   = makeSPVCacheName(cacheData.hash);
-		LOG_FMT("Writing shader \"{}\" to \"{}\"", shaderName, spvName);
+		LOG("Writing shader \"{}\" to \"{}\"", shaderName, spvName);
 		cacheData.dependencies.reserve(includeCache.size());
 		for (const auto &p : includeCache) {
 			cacheData.dependencies.push_back(p.first);
@@ -1146,7 +1146,7 @@ unsigned int RendererImpl::ringBufferAllocate(unsigned int size, unsigned int al
 
 	if (size > ringBufSize) {
 		unsigned int newSize = nextPow2(size);
-		LOG_FMT("WARNING: out of ringbuffer space, reallocating to {} bytes", newSize);
+		LOG("WARNING: out of ringbuffer space, reallocating to {} bytes", newSize);
 		recreateRingBuffer(newSize);
 
 		assert(ringBufPtr == 0);
@@ -1178,7 +1178,7 @@ unsigned int RendererImpl::ringBufferAllocate(unsigned int size, unsigned int al
 		unsigned int newSize = ringBufSize * 2;
 		assert(size < newSize);
 
-		LOG_FMT("WARNING: out of ringbuffer space, reallocating to {} bytes", newSize);
+		LOG("WARNING: out of ringbuffer space, reallocating to {} bytes", newSize);
 		recreateRingBuffer(newSize);
 
 		assert(ringBufPtr == 0);

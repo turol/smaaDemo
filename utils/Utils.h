@@ -79,7 +79,7 @@ THE SOFTWARE.
 	}
 
 
-#define LOG_FMT(msg, ...) logWriteFmt(FMT_STRING(msg), ##__VA_ARGS__)
+#define LOG(msg, ...) logWriteFmt(FMT_STRING(msg), ##__VA_ARGS__)
 
 void logInit();
 void logWrite(const std::string &message);

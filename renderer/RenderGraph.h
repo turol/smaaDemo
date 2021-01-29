@@ -518,7 +518,7 @@ public:
 
 		assert(finalTarget != Default<RT>::value);
 
-		LOG_FMT("RenderGraph::build start");
+		LOG("RenderGraph::build start");
 
 		// TODO: sort operations so they don't have to be added in order
 
@@ -692,29 +692,29 @@ public:
 
 
 				void operator()(const Blit &b) const {
-					LOG_FMT("Blit {} -> {}\t{}", to_string(b.source), to_string(b.dest), b.finalLayout._to_string());
+					LOG("Blit {} -> {}\t{}", to_string(b.source), to_string(b.dest), b.finalLayout._to_string());
 				}
 
 				void operator()(const RP &rpId) const {
-					LOG_FMT("RenderPass {}", to_string(rpId));
+					LOG("RenderPass {}", to_string(rpId));
 					auto it = rg.renderPasses.find(rpId);
 					assert(it != rg.renderPasses.end());
 					const auto &desc   = it->second.desc;
 					const auto &rpDesc = it->second.rpDesc;
 
 					if (desc.depthStencil_ != Default<RT>::value) {
-						LOG_FMT(" depthStencil {}", to_string(desc.depthStencil_));
+						LOG(" depthStencil {}", to_string(desc.depthStencil_));
 					}
 
 					for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 						if (desc.colorRTs_[i].id != Default<RT>::value) {
 							const auto &rt = rpDesc.color(i);
-							LOG_FMT(" color {}: {}\t{}\t{}\t{}", i, to_string(desc.colorRTs_[i].id), rt.passBegin._to_string(), rt.initialLayout._to_string(), rt.finalLayout._to_string());
+							LOG(" color {}: {}\t{}\t{}\t{}", i, to_string(desc.colorRTs_[i].id), rt.passBegin._to_string(), rt.initialLayout._to_string(), rt.finalLayout._to_string());
 						}
 					}
 
 					if (!desc.inputRendertargets.empty()) {
-						LOG_FMT(" inputs:");
+						LOG(" inputs:");
 						std::vector<RT> inputs;
 						inputs.reserve(desc.inputRendertargets.size());
 						for (auto i : desc.inputRendertargets) {
@@ -723,13 +723,13 @@ public:
 
 						std::sort(inputs.begin(), inputs.end());
 						for (auto i : inputs) {
-							LOG_FMT("  {}", to_string(i));
+							LOG("  {}", to_string(i));
 						}
 					}
 				}
 
 				void operator()(const ResolveMSAA &r) const {
-					LOG_FMT("ResolveMSAA {} -> {}\t{}", to_string(r.source), to_string(r.dest), r.finalLayout._to_string());
+					LOG("ResolveMSAA {} -> {}\t{}", to_string(r.source), to_string(r.dest), r.finalLayout._to_string());
 				}
 			};
 
@@ -738,7 +738,7 @@ public:
 				boost::apply_visitor(d, op);
 			}
 		}
-		LOG_FMT("RenderGraph::build end");
+		LOG("RenderGraph::build end");
 		logFlush();
 	}
 
@@ -853,9 +853,9 @@ public:
 					it->second.func(rp, res);
 				} catch (std::exception &e) {
 					// TODO: log renderpass
-					LOG_FMT("Exception \"{}\" during renderpass", e.what());
+					LOG("Exception \"{}\" during renderpass", e.what());
 					if (rg.storedException) {
-						LOG_FMT("Already have an exception, not stored");
+						LOG("Already have an exception, not stored");
 					} else {
 						rg.storedException = std::current_exception();
 					}
@@ -922,7 +922,7 @@ public:
 		assert(currentRP == Default<RP>::value);
 
 		if (storedException) {
-			LOG_FMT("re-throwing exception");
+			LOG("re-throwing exception");
 			std::rethrow_exception(storedException);
 		}
 	}
