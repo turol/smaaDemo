@@ -52,7 +52,7 @@ void logInit() {
 }
 
 
-void logWrite(const std::string &message) {
+void logWrite(const nonstd::string_view &message) {
 	// Write to console if opening log file failed
 	FILE *f = logFile ? logFile : stdout;
 	fwrite(message.data(), 1, message.size(), f);
