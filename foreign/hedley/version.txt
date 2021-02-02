@@ -1,0 +1,5 @@
+commit 4a59eb6d8e3e73b6c60aed2c92a6590d26df93d8
+Author: Evan Nemerson <evan@nemerson.com>
+Date:   Sun Aug 23 19:00:36 2020 -0700
+
+    Update NEWS for v14
