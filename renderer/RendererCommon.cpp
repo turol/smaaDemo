@@ -942,11 +942,6 @@ Renderer::~Renderer() {
 }
 
 
-bool Renderer::isRenderTargetFormatSupported(Format format) const {
-	return impl->isRenderTargetFormatSupported(format);
-}
-
-
 unsigned int Renderer::getCurrentRefreshRate() const {
 	return impl->currentRefreshRate;
 }

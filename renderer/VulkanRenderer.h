@@ -1095,8 +1095,6 @@ struct RendererImpl : public RendererBase {
 
 	template <typename T> void debugNameObject(T h, const std::string &name);
 
-	bool isRenderTargetFormatSupported(Format format) const;
-
 	RenderTargetHandle   createRenderTarget(const RenderTargetDesc &desc);
 	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
 	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);

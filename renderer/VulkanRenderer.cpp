@@ -984,7 +984,7 @@ RendererImpl::~RendererImpl() {
 }
 
 
-bool RendererImpl::isRenderTargetFormatSupported(Format format) const {
+bool Renderer::isRenderTargetFormatSupported(Format format) const {
 	// TODO: cache these at startup
 	vk::ImageUsageFlags flags(vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
 	if (isDepthFormat(format)) {
@@ -993,7 +993,7 @@ bool RendererImpl::isRenderTargetFormatSupported(Format format) const {
 		flags |= vk::ImageUsageFlagBits::eColorAttachment;
 	}
 	vk::ImageFormatProperties prop;
-	auto result = physicalDevice.getImageFormatProperties(vulkanFormat(format), vk::ImageType::e2D, vk::ImageTiling::eOptimal, flags, vk::ImageCreateFlags(), &prop);
+	auto result = impl->physicalDevice.getImageFormatProperties(vulkanFormat(format), vk::ImageType::e2D, vk::ImageTiling::eOptimal, flags, vk::ImageCreateFlags(), &prop);
 
 	return (result == vk::Result::eSuccess);
 }

@@ -72,7 +72,7 @@ RendererImpl::~RendererImpl() {
 }
 
 
-bool RendererImpl::isRenderTargetFormatSupported(Format /* format */) const {
+bool Renderer::isRenderTargetFormatSupported(Format /* format */) const {
 	// TODO: actually check it...
 	return true;
 }
