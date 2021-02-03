@@ -317,6 +317,7 @@ private:
 	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS>  colors_;
 	std::string                                              name_;
 
+	friend class Renderer;
 	friend struct RendererImpl;
 };
 
@@ -500,6 +501,7 @@ public:
 	bool operator==(const PipelineDesc &other) const;
 
 
+	friend class Renderer;
 	friend struct RendererImpl;
 };
 
@@ -587,6 +589,7 @@ private:
 	float                                        depthClearValue;
 
 
+	friend class Renderer;
 	friend struct RendererImpl;
 };
 
@@ -657,6 +660,8 @@ private:
 	Format         additionalViewFormat_;
 	std::string    name_;
 
+
+	friend class Renderer;
 	friend struct RendererImpl;
 };
 
@@ -698,6 +703,8 @@ private:
 	WrapMode    wrapMode;
 	std::string name_;
 
+
+	friend class Renderer;
 	friend struct RendererImpl;
 };
 
@@ -788,6 +795,8 @@ private:
 	std::array<MipLevel, MAX_TEXTURE_MIPLEVELS>  mipData_;
 	std::string                                  name_;
 
+
+	friend class Renderer;
 	friend struct RendererImpl;
 };
 
