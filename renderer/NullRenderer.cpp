@@ -133,8 +133,8 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 }
 
 
-PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
-	auto result = pipelines.add();
+PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
+	auto result = impl->pipelines.add();
 	auto &pipeline = result.first;
 	pipeline.desc = desc;
 	return result.second;

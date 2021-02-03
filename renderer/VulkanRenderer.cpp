@@ -1456,16 +1456,16 @@ static vk::BlendFactor vulkanBlendFactor(BlendFunc b) {
 }
 
 
-PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
+PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	vk::GraphicsPipelineCreateInfo info;
 
 	ShaderMacros macros_(desc.shaderMacros_);
 	macros_.emplace("VULKAN_FLIP", "1");
 
-	auto vshaderHandle = createVertexShader(desc.vertexShaderName, macros_);
-	const auto &v = vertexShaders.get(vshaderHandle);
-	auto fshaderHandle = createFragmentShader(desc.fragmentShaderName, macros_);
-	const auto &f = fragmentShaders.get(fshaderHandle);
+	auto vshaderHandle = impl->createVertexShader(desc.vertexShaderName, macros_);
+	const auto &v = impl->vertexShaders.get(vshaderHandle);
+	auto fshaderHandle = impl->createFragmentShader(desc.fragmentShaderName, macros_);
+	const auto &f = impl->fragmentShaders.get(fshaderHandle);
 
 	std::array<vk::PipelineShaderStageCreateInfo, 2> stages;
 	stages[0].stage  = vk::ShaderStageFlagBits::eVertex;
@@ -1529,7 +1529,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	raster.lineWidth = 1.0;
 	info.pRasterizationState        = &raster;
 
-	const auto &renderPass = renderPasses.get(desc.renderPass_);
+	const auto &renderPass = impl->renderPasses.get(desc.renderPass_);
 	info.renderPass = renderPass.renderPass;
 
 	vk::PipelineMultisampleStateCreateInfo multisample;
@@ -1578,7 +1578,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	std::vector<vk::DescriptorSetLayout> layouts;
 	for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
 		if (desc.descriptorSetLayouts[i]) {
-			const auto &layout = dsLayouts.get(desc.descriptorSetLayouts[i]);
+			const auto &layout = impl->dsLayouts.get(desc.descriptorSetLayouts[i]);
 			layouts.push_back(layout.layout);
 		}
 	}
@@ -1587,27 +1587,29 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	layoutInfo.setLayoutCount = static_cast<uint32_t>(layouts.size());
 	layoutInfo.pSetLayouts    = &layouts[0];
 
+	auto device = impl->device;
+
 	auto layout = device.createPipelineLayout(layoutInfo);
 	info.layout = layout;
 
-	auto result = device.createGraphicsPipeline(pipelineCache, info);
+	auto result = device.createGraphicsPipeline(impl->pipelineCache, info);
 	// TODO: check success instead of implicitly using result.value
 
-	debugNameObject<vk::Pipeline>(result.value, desc.name_);
+	impl->debugNameObject<vk::Pipeline>(result.value, desc.name_);
 
-	if (amdShaderInfo) {
+	if (impl->amdShaderInfo) {
 		vk::ShaderStatisticsInfoAMD stats;
 		size_t dataSize = sizeof(stats);
 		// TODO: other stages
 
-		device.getShaderInfoAMD(result.value, vk::ShaderStageFlagBits::eVertex, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, dispatcher);
+		device.getShaderInfoAMD(result.value, vk::ShaderStageFlagBits::eVertex, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, impl->dispatcher);
 		LOG("pipeline \"{}\" vertex SGPR {} VGPR {}", desc.name_, stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
 
-		device.getShaderInfoAMD(result.value, vk::ShaderStageFlagBits::eFragment, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, dispatcher);
+		device.getShaderInfoAMD(result.value, vk::ShaderStageFlagBits::eFragment, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, impl->dispatcher);
 		LOG("pipeline \"{}\" fragment SGPR {} VGPR {}", desc.name_, stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
 	}
 
-	auto id = pipelines.add();
+	auto id = impl->pipelines.add();
 	Pipeline &p = id.first;
 	p.pipeline = result.value;
 	p.layout   = layout;

@@ -1106,28 +1106,28 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 }
 
 
-PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
+PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	assert(!desc.vertexShaderName.empty());
 	assert(!desc.fragmentShaderName.empty());
 	assert(desc.renderPass_);
 	assert(!desc.name_.empty());
 
 #ifndef NDEBUG
-	const auto &rp = renderPasses.get(desc.renderPass_);
+	const auto &rp = impl->renderPasses.get(desc.renderPass_);
 	assert(desc.numSamples_ == rp.numSamples);
 #endif //  NDEBUG
 
-	auto vshaderHandle = createVertexShader(desc.vertexShaderName, desc.shaderMacros_);
-	const auto &v = vertexShaders.get(vshaderHandle);
-	auto fshaderHandle = createFragmentShader(desc.fragmentShaderName, desc.shaderMacros_);
-	const auto &f = fragmentShaders.get(fshaderHandle);
+	auto vshaderHandle = impl->createVertexShader(desc.vertexShaderName, desc.shaderMacros_);
+	const auto &v = impl->vertexShaders.get(vshaderHandle);
+	auto fshaderHandle = impl->createFragmentShader(desc.fragmentShaderName, desc.shaderMacros_);
+	const auto &f = impl->fragmentShaders.get(fshaderHandle);
 
 	// construct map of descriptor set resources
 	ResourceMap      dsResources;
 	ShaderResources  shaderResources;
 	for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
 		if (desc.descriptorSetLayouts[i]) {
-			const auto &layoutDesc = dsLayouts.get(desc.descriptorSetLayouts[i]).descriptors;
+			const auto &layoutDesc = impl->dsLayouts.get(desc.descriptorSetLayouts[i]).descriptors;
 			for (unsigned int binding = 0; binding < layoutDesc.size(); binding++) {
 				DSIndex idx;
 				idx.set     = i;
@@ -1210,7 +1210,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	}
 	glUseProgram(program);
 
-	auto result = pipelines.add();
+	auto result = impl->pipelines.add();
 	Pipeline &pipeline = result.first;
 	pipeline.desc      = desc;
 	pipeline.shader    = program;
@@ -1218,7 +1218,7 @@ PipelineHandle RendererImpl::createPipeline(const PipelineDesc &desc) {
 	pipeline.destBlend = blendFunc(desc.destinationBlend_);
 	pipeline.resources = std::move(shaderResources);
 
-	if (tracing) {
+	if (impl->tracing) {
 		glObjectLabel(GL_PROGRAM, program, desc.name_.size(), desc.name_.c_str());
 	}
 

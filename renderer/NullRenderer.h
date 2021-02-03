@@ -449,7 +449,6 @@ struct RendererImpl : public RendererBase {
 	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
 	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);
 	RenderPassHandle     createRenderPass(const RenderPassDesc &desc);
-	PipelineHandle       createPipeline(const PipelineDesc &desc);
 	SamplerHandle        createSampler(const SamplerDesc &desc);
 	TextureHandle        createTexture(const TextureDesc &desc);
 

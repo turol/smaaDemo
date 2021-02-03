@@ -957,11 +957,6 @@ const RendererFeatures &Renderer::getFeatures() const {
 }
 
 
-PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
-	return impl->createPipeline(desc);
-}
-
-
 RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 	return impl->createRenderPass(desc);
 }
