@@ -124,8 +124,8 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 }
 
 
-RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
-	auto result = renderpasses.add();
+RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
+	auto result = impl->renderpasses.add();
 	auto &rp    = result.first;
 	rp.desc     = desc;
 

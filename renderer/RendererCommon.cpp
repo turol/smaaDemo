@@ -957,11 +957,6 @@ const RendererFeatures &Renderer::getFeatures() const {
 }
 
 
-RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
-	return impl->createRenderPass(desc);
-}
-
-
 RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	return impl->createRenderTarget(desc);
 }

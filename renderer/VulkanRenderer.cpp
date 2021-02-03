@@ -1225,7 +1225,7 @@ static vk::SampleCountFlagBits sampleCountFlagsFromNum(unsigned int numSamples) 
 }
 
 
-RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
+RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 	assert(!desc.name_.empty());
 
 	vk::RenderPassCreateInfo info;
@@ -1234,7 +1234,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	std::vector<vk::AttachmentDescription> attachments;
 	std::vector<vk::AttachmentReference> colorAttachments;
 
-	auto result   = renderPasses.add();
+	auto result   = impl->renderPasses.add();
 	RenderPass &r = result.first;
 
 	vk::SampleCountFlagBits samples = sampleCountFlagsFromNum(desc.numSamples_);
@@ -1421,12 +1421,12 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 	info.dependencyCount = 2;
 	info.pDependencies   = &dependencies[0];
 
-	r.renderPass  = device.createRenderPass(info);
+	r.renderPass  = impl->device.createRenderPass(info);
 	r.numSamples  = desc.numSamples_;
 	r.numColorAttachments = numColorAttachments;
 	r.desc        = desc;
 
-	debugNameObject<vk::RenderPass>(r.renderPass, desc.name_);
+	impl->debugNameObject<vk::RenderPass>(r.renderPass, desc.name_);
 
 	return result.second;
 }

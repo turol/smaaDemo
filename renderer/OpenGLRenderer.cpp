@@ -1325,7 +1325,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 }
 
 
-RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
+RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 	assert(!desc.name_.empty());
 
 	GLbitfield clearMask = 0;
@@ -1333,7 +1333,7 @@ RenderPassHandle RendererImpl::createRenderPass(const RenderPassDesc &desc) {
 		clearMask |= GL_DEPTH_BUFFER_BIT;
 	}
 
-	auto result = renderPasses.add();
+	auto result = impl->renderPasses.add();
 	RenderPass &pass = result.first;
 	pass.desc = desc;
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
