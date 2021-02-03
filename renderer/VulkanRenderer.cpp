@@ -1797,7 +1797,7 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 }
 
 
-TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
+TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 	assert(desc.width_   > 0);
 	assert(desc.height_  > 0);
 	assert(desc.numMips_ > 0);
@@ -1817,7 +1817,9 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	assert(!isDepthFormat(desc.format_));
 	info.usage       = flags;
 
-	auto result = textures.add();
+	auto device = impl->device;
+
+	auto result = impl->textures.add();
 	Texture &tex = result.first;
 	tex.width  = desc.width_;
 	tex.height = desc.height_;
@@ -1829,7 +1831,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	req.pUserData      = const_cast<char *>(desc.name_.c_str());
 	VmaAllocationInfo  allocationInfo = {};
 
-	vmaAllocateMemoryForImage(allocator, tex.image, &req, &tex.memory, &allocationInfo);
+	vmaAllocateMemoryForImage(impl->allocator, tex.image, &req, &tex.memory, &allocationInfo);
 	LOG("texture image memory type: {}",   allocationInfo.memoryType);
 	LOG("texture image memory offset: {}", allocationInfo.offset);
 	LOG("texture image memory size: {}",   allocationInfo.size);
@@ -1844,13 +1846,13 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	viewInfo.subresourceRange.layerCount = 1;
 	tex.imageView = device.createImageView(viewInfo);
 
-	debugNameObject<vk::Image>(tex.image, desc.name_);
-	debugNameObject<vk::ImageView>(tex.imageView, desc.name_);
+	impl->debugNameObject<vk::Image>(tex.image, desc.name_);
+	impl->debugNameObject<vk::ImageView>(tex.imageView, desc.name_);
 
 	// TODO: reuse command buffer for multiple copies
 	unsigned int w = desc.width_, h = desc.height_;
 	unsigned int bufferSize = 0;
-	uint32_t align = std::max(formatSize(desc.format_), static_cast<uint32_t>(deviceProperties.limits.optimalBufferCopyOffsetAlignment));
+	uint32_t align = std::max(formatSize(desc.format_), static_cast<uint32_t>(impl->deviceProperties.limits.optimalBufferCopyOffsetAlignment));
 	std::vector<vk::BufferImageCopy> regions;
 	regions.reserve(desc.numMips_);
 	for (unsigned int i = 0; i < desc.numMips_; i++) {
@@ -1879,7 +1881,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		h = std::max(h / 2, 1u);
 	}
 
-	UploadOp op = allocateUploadOp(bufferSize);
+	UploadOp op = impl->allocateUploadOp(bufferSize);
 	op.semWaitMask = vk::PipelineStageFlagBits::eFragmentShader;
 
 	// transition to transfer destination
@@ -1911,7 +1913,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 			memcpy(mappedPtr + regions[i].bufferOffset, desc.mipData_[i].data, desc.mipData_[i].size);
 		}
 
-		vmaFlushAllocation(allocator, op.memory, 0, bufferSize);
+		vmaFlushAllocation(impl->allocator, op.memory, 0, bufferSize);
 
 		op.cmdBuf.copyBufferToImage(op.stagingBuffer, tex.image, vk::ImageLayout::eTransferDstOptimal, regions);
 
@@ -1920,9 +1922,9 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		barrier.dstAccessMask       = vk::AccessFlagBits::eMemoryRead;
 		barrier.oldLayout           = vk::ImageLayout::eTransferDstOptimal;
 		barrier.newLayout           = vk::ImageLayout::eShaderReadOnlyOptimal;
-		if (transferQueueIndex != graphicsQueueIndex) {
-			barrier.srcQueueFamilyIndex = transferQueueIndex;
-			barrier.dstQueueFamilyIndex = graphicsQueueIndex;
+		if (impl->transferQueueIndex != impl->graphicsQueueIndex) {
+			barrier.srcQueueFamilyIndex = impl->transferQueueIndex;
+			barrier.dstQueueFamilyIndex = impl->graphicsQueueIndex;
 		} else {
 			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -1930,12 +1932,12 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 
 		op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTopOfPipe, vk::DependencyFlags(), {}, {}, { barrier });
 
-		if (transferQueueIndex != graphicsQueueIndex) {
+		if (impl->transferQueueIndex != impl->graphicsQueueIndex) {
 			op.imageAcquireBarriers.push_back(barrier);
 		}
 	}
 
-	submitUploadOp(std::move(op));
+	impl->submitUploadOp(std::move(op));
 
 	return result.second;
 }

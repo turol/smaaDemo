@@ -1464,7 +1464,7 @@ SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
 }
 
 
-TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
+TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 	assert(desc.width_   > 0);
 	assert(desc.height_  > 0);
 	assert(desc.numMips_ > 0);
@@ -1485,7 +1485,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 		h = std::max(h / 2, 1u);
 	}
 
-	auto result  = textures.add();
+	auto result  = impl->textures.add();
 	Texture &tex = result.first;
 	tex.tex    = texture;
 	tex.width  = desc.width_;
@@ -1494,7 +1494,7 @@ TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
 	tex.format = desc.format_;
 	assert(!tex.renderTarget);
 
-	if (tracing) {
+	if (impl->tracing) {
 		glObjectLabel(GL_TEXTURE, texture, desc.name_.size(), desc.name_.c_str());
 	}
 

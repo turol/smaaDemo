@@ -185,14 +185,14 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 }
 
 
-TextureHandle RendererImpl::createTexture(const TextureDesc &desc) {
+TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 	assert(desc.width_   > 0);
 	assert(desc.height_  > 0);
 	assert(desc.numMips_ > 0);
 
 	// TODO: check data
 
-	auto result = textures.add();
+	auto result = impl->textures.add();
 	Texture &texture = result.first;
 	// TODO: check desc
 	texture.desc = desc;
