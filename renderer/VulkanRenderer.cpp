@@ -1084,25 +1084,25 @@ BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *
 }
 
 
-BufferHandle RendererImpl::createEphemeralBuffer(BufferType type, uint32_t size, const void *contents) {
+BufferHandle Renderer::createEphemeralBuffer(BufferType type, uint32_t size, const void *contents) {
 	assert(type != +BufferType::Invalid);
 	assert(size != 0);
 	assert(contents != nullptr);
 
 	// TODO: separate ringbuffers based on type
-	unsigned int beginPtr = ringBufferAllocate(size, bufferAlignment(type));
+	unsigned int beginPtr = impl->ringBufferAllocate(size, impl->bufferAlignment(type));
 
-	memcpy(persistentMapping + beginPtr, contents, size);
+	memcpy(impl->persistentMapping + beginPtr, contents, size);
 
-	auto result    = buffers.add();
+	auto result    = impl->buffers.add();
 	Buffer &buffer = result.first;
-	buffer.buffer          = ringBuffer;
+	buffer.buffer          = impl->ringBuffer;
 	buffer.ringBufferAlloc = true;
 	buffer.offset          = beginPtr;
 	buffer.size            = size;
 	buffer.type            = type;
 
-	frames.at(currentFrameIdx).ephemeralBuffers.push_back(result.second);
+	impl->frames.at(impl->currentFrameIdx).ephemeralBuffers.push_back(result.second);
 
 	return result.second;
 }

@@ -94,22 +94,22 @@ BufferHandle Renderer::createBuffer(BufferType /* type */, uint32_t size, const 
 }
 
 
-BufferHandle RendererImpl::createEphemeralBuffer(BufferType /* type */, uint32_t size, const void *contents) {
+BufferHandle Renderer::createEphemeralBuffer(BufferType /* type */, uint32_t size, const void *contents) {
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	unsigned int beginPtr = ringBufferAllocate(size, 256);
+	unsigned int beginPtr = impl->ringBufferAllocate(size, 256);
 
 	// TODO: use valgrind to enforce we only write to intended parts of ring buffer
-	memcpy(&ringBuffer[beginPtr], contents, size);
+	memcpy(&impl->ringBuffer[beginPtr], contents, size);
 
-	auto result    = buffers.add();
+	auto result    = impl->buffers.add();
 	Buffer &buffer = result.first;
 	buffer.ringBufferAlloc = true;
 	buffer.beginOffs       = beginPtr;
 	buffer.size            = size;
 
-	frames.at(currentFrameIdx).ephemeralBuffers.push_back(result.second);
+	impl->frames.at(impl->currentFrameIdx).ephemeralBuffers.push_back(result.second);
 
 	return result.second;
 }

@@ -710,7 +710,6 @@ struct RendererImpl : public RendererBase {
 	FramebufferHandle    createFramebuffer(const FramebufferDesc &desc);
 	RenderPassHandle     createRenderPass(const RenderPassDesc &desc);
 	PipelineHandle       createPipeline(const PipelineDesc &desc);
-	BufferHandle         createEphemeralBuffer(BufferType type, uint32_t size, const void *contents);
 	SamplerHandle        createSampler(const SamplerDesc &desc);
 	TextureHandle        createTexture(const TextureDesc &desc);
 

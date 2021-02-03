@@ -885,30 +885,30 @@ BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *
 }
 
 
-BufferHandle RendererImpl::createEphemeralBuffer(BufferType type, uint32_t size, const void *contents) {
+BufferHandle Renderer::createEphemeralBuffer(BufferType type, uint32_t size, const void *contents) {
 	assert(type != +BufferType::Invalid);
 	assert(size != 0);
 	assert(contents != nullptr);
 
 	// TODO: use appropriate alignment
 	// TODO: need buffer usage flags for that
-	unsigned int beginPtr = ringBufferAllocate(size, std::max(uboAlign, ssboAlign));
+	unsigned int beginPtr = impl->ringBufferAllocate(size, std::max(impl->uboAlign, impl->ssboAlign));
 
-	if (persistentMapInUse) {
-		memcpy(persistentMapping + beginPtr, contents, size);
+	if (impl->persistentMapInUse) {
+		memcpy(impl->persistentMapping + beginPtr, contents, size);
 	} else {
-		glNamedBufferSubData(ringBuffer, beginPtr, size, contents);
+		glNamedBufferSubData(impl->ringBuffer, beginPtr, size, contents);
 	}
 
-	auto result    = buffers.add();
+	auto result    = impl->buffers.add();
 	Buffer &buffer = result.first;
-	buffer.buffer          = ringBuffer;
+	buffer.buffer          = impl->ringBuffer;
 	buffer.ringBufferAlloc = true;
 	buffer.offset          = beginPtr;
 	buffer.size            = size;
 	buffer.type            = type;
 
-	frames.at(currentFrameIdx).ephemeralBuffers.push_back(result.second);
+	impl->frames.at(impl->currentFrameIdx).ephemeralBuffers.push_back(result.second);
 
 	return result.second;
 }
