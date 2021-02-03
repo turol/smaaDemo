@@ -44,13 +44,11 @@ THE SOFTWARE.
 #ifdef _MSC_VER
 
 #define fileno _fileno
-#define PRINTF(x, y)
 #define UNUSED
 #define DEBUG_ASSERTED
 
 #else   // _MSC_VER
 
-#define PRINTF(x, y) __attribute__((format(printf, x, y)))
 #define UNUSED        __attribute__((unused))
 
 
