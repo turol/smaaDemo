@@ -957,11 +957,6 @@ const RendererFeatures &Renderer::getFeatures() const {
 }
 
 
-void Renderer::deleteFramebuffer(FramebufferHandle handle) {
-	impl->deleteFramebuffer(handle);
-}
-
-
 void Renderer::deletePipeline(PipelineHandle handle) {
 	impl->deletePipeline(handle);
 }

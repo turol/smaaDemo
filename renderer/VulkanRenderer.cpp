@@ -2012,10 +2012,10 @@ void Renderer::deleteBuffer(BufferHandle handle) {
 }
 
 
-void RendererImpl::deleteFramebuffer(FramebufferHandle handle) {
-	framebuffers.removeWith(handle, [this](Framebuffer &fb) {
+void Renderer::deleteFramebuffer(FramebufferHandle handle) {
+	impl->framebuffers.removeWith(handle, [this](Framebuffer &fb) {
 		// TODO: if lastUsedFrame has already been synced we could delete immediately
-		this->deleteResources.emplace_back(std::move(fb));
+		impl->deleteResources.emplace_back(std::move(fb));
 	} );
 }
 

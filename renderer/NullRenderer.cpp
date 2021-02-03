@@ -226,7 +226,7 @@ void Renderer::deleteBuffer(BufferHandle /* handle */) {
 }
 
 
-void RendererImpl::deleteFramebuffer(FramebufferHandle /*  */) {
+void Renderer::deleteFramebuffer(FramebufferHandle /*  */) {
 }
 
 

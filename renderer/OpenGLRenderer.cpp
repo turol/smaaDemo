@@ -1557,8 +1557,8 @@ void Renderer::deleteBuffer(BufferHandle handle) {
 }
 
 
-void RendererImpl::deleteFramebuffer(FramebufferHandle handle) {
-	framebuffers.removeWith(handle, [](Framebuffer &fb) {
+void Renderer::deleteFramebuffer(FramebufferHandle handle) {
+	impl->framebuffers.removeWith(handle, [](Framebuffer &fb) {
 		assert(fb.fbo != 0);
 		assert(fb.numSamples > 0);
 		glDeleteFramebuffers(1, &fb.fbo);
