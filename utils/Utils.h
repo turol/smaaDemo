@@ -38,6 +38,8 @@ THE SOFTWARE.
 
 #include <fmt/format.h>
 
+#include <hedley/hedley.h>
+
 
 #ifdef _MSC_VER
 
