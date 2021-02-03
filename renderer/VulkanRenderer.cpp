@@ -1943,7 +1943,7 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 }
 
 
-DSLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout *layout) {
+DSLayoutHandle Renderer::createDescriptorSetLayout(const DescriptorLayout *layout) {
 	std::vector<vk::DescriptorSetLayoutBinding> bindings;
 
 	unsigned int i = 0;
@@ -1970,9 +1970,9 @@ DSLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout *l
 	info.bindingCount = static_cast<uint32_t>(bindings.size());
 	info.pBindings    = &bindings[0];
 
-	auto result = dsLayouts.add();
+	auto result = impl->dsLayouts.add();
 	DescriptorSetLayout &dsLayout = result.first;
-	dsLayout.layout = device.createDescriptorSetLayout(info);
+	dsLayout.layout = impl->device.createDescriptorSetLayout(info);
 	dsLayout.descriptors = std::move(descriptors);
 
 	return result.second;

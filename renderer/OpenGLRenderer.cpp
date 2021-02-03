@@ -1502,8 +1502,8 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 }
 
 
-DSLayoutHandle RendererImpl::createDescriptorSetLayout(const DescriptorLayout *layout) {
-	auto result = dsLayouts.add();
+DSLayoutHandle Renderer::createDescriptorSetLayout(const DescriptorLayout *layout) {
+	auto result = impl->dsLayouts.add();
 	DescriptorSetLayout &dsLayout = result.first;
 
 	while (layout->type != +DescriptorType::End) {

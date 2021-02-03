@@ -957,11 +957,6 @@ const RendererFeatures &Renderer::getFeatures() const {
 }
 
 
-DSLayoutHandle Renderer::createDescriptorSetLayout(const DescriptorLayout *layout) {
-	return impl->createDescriptorSetLayout(layout);
-}
-
-
 TextureHandle Renderer::getRenderTargetView(RenderTargetHandle handle, Format f) {
 	return impl->getRenderTargetView(handle, f);
 }
