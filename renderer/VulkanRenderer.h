@@ -1095,7 +1095,6 @@ struct RendererImpl : public RendererBase {
 
 	template <typename T> void debugNameObject(T h, const std::string &name);
 
-	RenderTargetHandle   createRenderTarget(const RenderTargetDesc &desc);
 	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
 	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);
 	SamplerHandle        createSampler(const SamplerDesc &desc);

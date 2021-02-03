@@ -957,11 +957,6 @@ const RendererFeatures &Renderer::getFeatures() const {
 }
 
 
-RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
-	return impl->createRenderTarget(desc);
-}
-
-
 SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
 	return impl->createSampler(desc);
 }

@@ -1361,7 +1361,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 }
 
 
-RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc) {
+RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
 	assert(desc.format_ != +Format::Invalid);
@@ -1380,11 +1380,11 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 		glTextureStorage2D(id, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
 	}
 	glTextureParameteri(id, GL_TEXTURE_MAX_LEVEL, 0);
-	if (tracing) {
+	if (impl->tracing) {
 		glObjectLabel(GL_TEXTURE, id, desc.name_.size(), desc.name_.c_str());
 	}
 
-	auto textureResult = textures.add();
+	auto textureResult = impl->textures.add();
 	Texture &tex = textureResult.first;
 	tex.tex           = id;
 	tex.width         = desc.width_;
@@ -1393,7 +1393,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	tex.target        = target;
 	tex.format        = desc.format_;
 
-	auto result = renderTargets.add();
+	auto result = impl->renderTargets.add();
 	RenderTarget &rt = result.first;
 	rt.width  = desc.width_;
 	rt.height = desc.height_;
@@ -1407,7 +1407,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 		glGenTextures(1, &viewId);
 		glTextureView(viewId, tex.target, id, glTexFormat(desc.additionalViewFormat_), 0, 1, 0, 1);
 
-		auto viewResult   = textures.add();
+		auto viewResult   = impl->textures.add();
 		Texture &view     = viewResult.first;
 		view.tex          = viewId;
 		view.width        = desc.width_;

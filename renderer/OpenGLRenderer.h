@@ -704,7 +704,6 @@ struct RendererImpl : public RendererBase {
 	~RendererImpl();
 
 
-	RenderTargetHandle   createRenderTarget(const RenderTargetDesc &desc);
 	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
 	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);
 	SamplerHandle        createSampler(const SamplerDesc &desc);

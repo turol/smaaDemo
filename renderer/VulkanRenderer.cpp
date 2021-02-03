@@ -1619,7 +1619,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 }
 
 
-RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc) {
+RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
 	assert(desc.format_ != +Format::Invalid);
@@ -1651,21 +1651,23 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	}
 	info.usage       = flags;
 
-	auto result = renderTargets.add();
+	auto device = impl->device;
+
+	auto result = impl->renderTargets.add();
 	RenderTarget &rt = result.first;
 	rt.width  = desc.width_;
 	rt.height = desc.height_;
 	rt.image = device.createImage(info);
 	rt.format = desc.format_;
 
-	auto texResult   = textures.add();
+	auto texResult   = impl->textures.add();
 	Texture &tex     = texResult.first;
 	tex.width        = desc.width_;
 	tex.height       = desc.height_;
 	tex.image        = rt.image;
 	tex.renderTarget = true;
 
-	debugNameObject<vk::Image>(tex.image, desc.name_);
+	impl->debugNameObject<vk::Image>(tex.image, desc.name_);
 
 	VmaAllocationCreateInfo req = {};
 	req.usage          = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -1673,7 +1675,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	req.pUserData      = const_cast<char *>(desc.name_.c_str());
 	VmaAllocationInfo  allocationInfo = {};
 
-	vmaAllocateMemoryForImage(allocator, rt.image, &req, &tex.memory, &allocationInfo);
+	vmaAllocateMemoryForImage(impl->allocator, rt.image, &req, &tex.memory, &allocationInfo);
 	device.bindImageMemory(rt.image, allocationInfo.deviceMemory, allocationInfo.offset);
 
 	vk::ImageViewCreateInfo viewInfo;
@@ -1690,14 +1692,14 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 	rt.imageView = device.createImageView(viewInfo);
 	tex.imageView    = rt.imageView;
 
-	debugNameObject<vk::ImageView>(tex.imageView, desc.name_);
+	impl->debugNameObject<vk::ImageView>(tex.imageView, desc.name_);
 
 	// TODO: std::move ?
 	rt.texture = texResult.second;
 
 	if (desc.additionalViewFormat_ != +Format::Invalid) {
 		assert(isDepthFormat(desc.format_) == isDepthFormat(desc.additionalViewFormat_));
-		auto viewResult   = textures.add();
+		auto viewResult   = impl->textures.add();
 		Texture &view     = viewResult.first;
 		rt.additionalView = viewResult.second;
 		view.width        = desc.width_;
@@ -1709,7 +1711,7 @@ RenderTargetHandle RendererImpl::createRenderTarget(const RenderTargetDesc &desc
 		view.imageView    = device.createImageView(viewInfo);
 
 		std::string viewName = desc.name_ + " " + desc.additionalViewFormat_._to_string() + " view";
-		debugNameObject<vk::ImageView>(view.imageView, viewName);
+		impl->debugNameObject<vk::ImageView>(view.imageView, viewName);
 	}
 
 	return result.second;
