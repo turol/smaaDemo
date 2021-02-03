@@ -1568,8 +1568,8 @@ void Renderer::deleteFramebuffer(FramebufferHandle handle) {
 }
 
 
-void RendererImpl::deletePipeline(PipelineHandle handle) {
-	pipelines.removeWith(handle, [](Pipeline &p) {
+void Renderer::deletePipeline(PipelineHandle handle) {
+	impl->pipelines.removeWith(handle, [](Pipeline &p) {
 		assert(p.shader != 0);
 		glDeleteProgram(p.shader);
 		p.shader = 0;

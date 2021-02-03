@@ -957,11 +957,6 @@ const RendererFeatures &Renderer::getFeatures() const {
 }
 
 
-void Renderer::deletePipeline(PipelineHandle handle) {
-	impl->deletePipeline(handle);
-}
-
-
 void Renderer::deleteRenderPass(RenderPassHandle handle) {
 	impl->deleteRenderPass(handle);
 }

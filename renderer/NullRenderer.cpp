@@ -230,7 +230,7 @@ void Renderer::deleteFramebuffer(FramebufferHandle /*  */) {
 }
 
 
-void RendererImpl::deletePipeline(PipelineHandle /* handle */) {
+void Renderer::deletePipeline(PipelineHandle /* handle */) {
 }
 
 

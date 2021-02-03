@@ -2020,10 +2020,10 @@ void Renderer::deleteFramebuffer(FramebufferHandle handle) {
 }
 
 
-void RendererImpl::deletePipeline(PipelineHandle handle) {
-	pipelines.removeWith(handle, [this](Pipeline &p) {
+void Renderer::deletePipeline(PipelineHandle handle) {
+	impl->pipelines.removeWith(handle, [this](Pipeline &p) {
 		// TODO: if lastUsedFrame has already been synced we could delete immediately
-		this->deleteResources.emplace_back(std::move(p));
+		impl->deleteResources.emplace_back(std::move(p));
 	} );
 }
 
