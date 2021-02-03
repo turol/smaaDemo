@@ -1122,7 +1122,6 @@ struct RendererImpl : public RendererBase {
 
 
 	void setSwapchainDesc(const SwapchainDesc &desc);
-	glm::uvec2 getDrawableSize() const;
 	MemoryStats getMemStats() const;
 
 	HEDLEY_WARN_UNUSED_RESULT bool waitForDeviceIdle();

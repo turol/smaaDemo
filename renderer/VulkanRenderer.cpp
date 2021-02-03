@@ -2166,9 +2166,9 @@ unsigned int RendererImpl::bufferAlignment(BufferType type) {
 }
 
 
-glm::uvec2 RendererImpl::getDrawableSize() const {
+glm::uvec2 Renderer::getDrawableSize() const {
 	int w = -1, h = -1;
-	SDL_Vulkan_GetDrawableSize(window, &w, &h);
+	SDL_Vulkan_GetDrawableSize(impl->window, &w, &h);
 	if (w <= 0 || h <= 0) {
 		throw std::runtime_error("drawable size is negative");
 	}

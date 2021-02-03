@@ -255,8 +255,8 @@ void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 }
 
 
-glm::uvec2 RendererImpl::getDrawableSize() const {
-	return glm::uvec2(swapchainDesc.width, swapchainDesc.height);
+glm::uvec2 Renderer::getDrawableSize() const {
+	return glm::uvec2(impl->swapchainDesc.width, impl->swapchainDesc.height);
 }
 
 
