@@ -957,11 +957,6 @@ const RendererFeatures &Renderer::getFeatures() const {
 }
 
 
-void Renderer::deleteTexture(TextureHandle handle) {
-	impl->deleteTexture(handle);
-}
-
-
 void Renderer::setSwapchainDesc(const SwapchainDesc &desc) {
 	impl->setSwapchainDesc(desc);
 }

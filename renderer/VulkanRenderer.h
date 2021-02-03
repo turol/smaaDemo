@@ -1098,9 +1098,6 @@ struct RendererImpl : public RendererBase {
 	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
 	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);
 
-	void deleteTexture(TextureHandle handle);
-
-
 	void setSwapchainDesc(const SwapchainDesc &desc);
 	MemoryStats getMemStats() const;
 

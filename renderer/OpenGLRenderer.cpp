@@ -1635,8 +1635,8 @@ void Renderer::deleteSampler(SamplerHandle handle) {
 }
 
 
-void RendererImpl::deleteTexture(TextureHandle handle) {
-	textures.removeWith(handle, [](Texture &tex) {
+void Renderer::deleteTexture(TextureHandle handle) {
+	impl->textures.removeWith(handle, [](Texture &tex) {
 		assert(!tex.renderTarget);
 		assert(tex.tex != 0);
 		assert(tex.target != GL_NONE);

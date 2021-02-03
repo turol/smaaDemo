@@ -246,7 +246,7 @@ void Renderer::deleteSampler(SamplerHandle /* handle */) {
 }
 
 
-void RendererImpl::deleteTexture(TextureHandle /* handle */) {
+void Renderer::deleteTexture(TextureHandle /* handle */) {
 }
 
 

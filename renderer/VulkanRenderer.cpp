@@ -2052,10 +2052,10 @@ void Renderer::deleteSampler(SamplerHandle handle) {
 }
 
 
-void RendererImpl::deleteTexture(TextureHandle handle) {
-	textures.removeWith(handle, [this](Texture &tex) {
+void Renderer::deleteTexture(TextureHandle handle) {
+	impl->textures.removeWith(handle, [this](Texture &tex) {
 		// TODO: if lastUsedFrame has already been synced we could delete immediately
-		this->deleteResources.emplace_back(std::move(tex));
+		impl->deleteResources.emplace_back(std::move(tex));
 	} );
 }
 
