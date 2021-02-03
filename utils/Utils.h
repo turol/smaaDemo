@@ -46,14 +46,12 @@ THE SOFTWARE.
 #define fileno _fileno
 #define PRINTF(x, y)
 #define UNUSED
-#define WARN_UNUSED_RESULT
 #define DEBUG_ASSERTED
 
 #else   // _MSC_VER
 
 #define PRINTF(x, y) __attribute__((format(printf, x, y)))
 #define UNUSED        __attribute__((unused))
-#define WARN_UNUSED_RESULT  __attribute__((warn_unused_result))
 
 
 #ifdef NDEBUG

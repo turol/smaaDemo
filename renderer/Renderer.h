@@ -950,10 +950,10 @@ public:
 	glm::uvec2 getDrawableSize() const;
 	MemoryStats getMemStats() const;
 
-	bool waitForDeviceIdle() WARN_UNUSED_RESULT;
+	bool waitForDeviceIdle() HEDLEY_WARN_UNUSED_RESULT;
 
 	// rendering
-	bool beginFrame() WARN_UNUSED_RESULT;
+	bool beginFrame() HEDLEY_WARN_UNUSED_RESULT;
 	void presentFrame(RenderTargetHandle image);
 
 	void beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle);

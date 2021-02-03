@@ -1018,11 +1018,11 @@ struct RendererImpl : public RendererBase {
 
 	unsigned int bufferAlignment(BufferType type);
 
-	bool recreateSwapchain() WARN_UNUSED_RESULT;
+	bool recreateSwapchain() HEDLEY_WARN_UNUSED_RESULT;
 	void recreateRingBuffer(unsigned int newSize);
 	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);
 
-	bool waitForFrame(unsigned int frameIdx) WARN_UNUSED_RESULT;
+	bool waitForFrame(unsigned int frameIdx) HEDLEY_WARN_UNUSED_RESULT;
 	void cleanupFrame(unsigned int frameIdx);
 
 	UploadOp allocateUploadOp(uint32_t size);
@@ -1125,7 +1125,7 @@ struct RendererImpl : public RendererBase {
 	glm::uvec2 getDrawableSize() const;
 	MemoryStats getMemStats() const;
 
-	bool waitForDeviceIdle() WARN_UNUSED_RESULT;
+	bool waitForDeviceIdle() HEDLEY_WARN_UNUSED_RESULT;
 
 	bool beginFrame();
 	void presentFrame(RenderTargetHandle image);
