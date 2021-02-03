@@ -2044,10 +2044,10 @@ void Renderer::deleteRenderTarget(RenderTargetHandle &handle) {
 }
 
 
-void RendererImpl::deleteSampler(SamplerHandle handle) {
-	samplers.removeWith(handle, [this](struct Sampler &s) {
+void Renderer::deleteSampler(SamplerHandle handle) {
+	impl->samplers.removeWith(handle, [this](struct Sampler &s) {
 		// TODO: if lastUsedFrame has already been synced we could delete immediately
-		this->deleteResources.emplace_back(std::move(s));
+		impl->deleteResources.emplace_back(std::move(s));
 	} );
 }
 

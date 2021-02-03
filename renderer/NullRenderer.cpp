@@ -242,7 +242,7 @@ void Renderer::deleteRenderTarget(RenderTargetHandle &) {
 }
 
 
-void RendererImpl::deleteSampler(SamplerHandle /* handle */) {
+void Renderer::deleteSampler(SamplerHandle /* handle */) {
 }
 
 
