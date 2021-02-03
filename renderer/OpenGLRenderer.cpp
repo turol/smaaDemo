@@ -1516,22 +1516,22 @@ DSLayoutHandle Renderer::createDescriptorSetLayout(const DescriptorLayout *layou
 }
 
 
-TextureHandle RendererImpl::getRenderTargetView(RenderTargetHandle handle, Format f) {
-	const auto &rt = renderTargets.get(handle);
+TextureHandle Renderer::getRenderTargetView(RenderTargetHandle handle, Format f) {
+	const auto &rt = impl->renderTargets.get(handle);
 
 	TextureHandle result;
 	if (f == rt.format) {
 		result = rt.texture;
 
 #ifndef NDEBUG
-		const auto &tex = textures.get(result);
+		const auto &tex = impl->textures.get(result);
 		assert(tex.renderTarget);
 #endif //  NDEBUG
 	} else {
 		result = rt.additionalView;
 
 #ifndef NDEBUG
-		const auto &tex = textures.get(result);
+		const auto &tex = impl->textures.get(result);
 		assert(tex.renderTarget);
 		assert(tex.format == f);
 #endif //  NDEBUG
