@@ -2004,10 +2004,10 @@ TextureHandle Renderer::getRenderTargetView(RenderTargetHandle handle, Format f)
 }
 
 
-void RendererImpl::deleteBuffer(BufferHandle handle) {
-	buffers.removeWith(handle, [this](struct Buffer &b) {
+void Renderer::deleteBuffer(BufferHandle handle) {
+	impl->buffers.removeWith(handle, [this](struct Buffer &b) {
 		// TODO: if b.lastUsedFrame has already been synced we could delete immediately
-		this->deleteResources.emplace_back(std::move(b));
+		impl->deleteResources.emplace_back(std::move(b));
 	} );
 }
 

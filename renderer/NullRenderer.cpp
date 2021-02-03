@@ -222,7 +222,7 @@ TextureHandle Renderer::getRenderTargetView(RenderTargetHandle /* handle */, For
 }
 
 
-void RendererImpl::deleteBuffer(BufferHandle /* handle */) {
+void Renderer::deleteBuffer(BufferHandle /* handle */) {
 }
 
 

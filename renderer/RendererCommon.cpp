@@ -957,11 +957,6 @@ const RendererFeatures &Renderer::getFeatures() const {
 }
 
 
-void Renderer::deleteBuffer(BufferHandle handle) {
-	impl->deleteBuffer(handle);
-}
-
-
 void Renderer::deleteFramebuffer(FramebufferHandle handle) {
 	impl->deleteFramebuffer(handle);
 }

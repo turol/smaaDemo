@@ -707,7 +707,6 @@ struct RendererImpl : public RendererBase {
 	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
 	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);
 
-	void deleteBuffer(BufferHandle handle);
 	void deleteFramebuffer(FramebufferHandle fbo);
 	void deletePipeline(PipelineHandle handle);
 	void deleteRenderPass(RenderPassHandle fbo);
