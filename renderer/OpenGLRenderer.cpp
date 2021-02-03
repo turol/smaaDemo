@@ -1446,8 +1446,8 @@ void RendererImpl::createRTHelperFBO(RenderTarget &rt) {
 }
 
 
-SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
-	auto result = samplers.add();
+SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
+	auto result = impl->samplers.add();
 	Sampler &sampler = result.first;
 	glCreateSamplers(1, &sampler.sampler);
 
@@ -1456,7 +1456,7 @@ SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
 	glSamplerParameteri(sampler.sampler, GL_TEXTURE_WRAP_S,     (desc.wrapMode == +WrapMode::Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 	glSamplerParameteri(sampler.sampler, GL_TEXTURE_WRAP_T,     (desc.wrapMode == +WrapMode::Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 
-	if (tracing) {
+	if (impl->tracing) {
 		glObjectLabel(GL_SAMPLER, sampler.sampler, desc.name_.size(), desc.name_.c_str());
 	}
 

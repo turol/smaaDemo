@@ -1733,7 +1733,7 @@ static vk::Filter vulkanFiltermode(FilterMode m) {
 }
 
 
-SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
+SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
 	vk::SamplerCreateInfo info;
 
 	info.magFilter = vulkanFiltermode(desc.mag);
@@ -1747,11 +1747,11 @@ SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
 	info.addressModeV = m;
 	info.addressModeW = m;
 
-	auto result = samplers.add();
+	auto result = impl->samplers.add();
 	struct Sampler &sampler = result.first;
-	sampler.sampler    = device.createSampler(info);
+	sampler.sampler    = impl->device.createSampler(info);
 
-	debugNameObject<vk::Sampler>(sampler.sampler, desc.name_);
+	impl->debugNameObject<vk::Sampler>(sampler.sampler, desc.name_);
 
 	return result.second;
 }

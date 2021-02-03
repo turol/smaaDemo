@@ -153,8 +153,8 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 }
 
 
-SamplerHandle RendererImpl::createSampler(const SamplerDesc &desc) {
-	auto result = samplers.add();
+SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
+	auto result = impl->samplers.add();
 	Sampler &sampler = result.first;
 	// TODO: check desc
 	sampler.desc = desc;
