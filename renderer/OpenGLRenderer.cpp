@@ -1232,15 +1232,15 @@ static const GLenum drawBuffers[MAX_COLOR_RENDERTARGETS] = {
 };
 
 
-FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
+FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	assert(!desc.name_.empty());
 	assert(desc.renderPass_);
 
 #ifndef NDEBUG
-	auto &renderPass = renderPasses.get(desc.renderPass_);
+	auto &renderPass = impl->renderPasses.get(desc.renderPass_);
 #endif  // NDEBUG
 
-	auto result = framebuffers.add();
+	auto result = impl->framebuffers.add();
 	Framebuffer &fb = result.first;
 	glCreateFramebuffers(1, &fb.fbo);
 
@@ -1253,7 +1253,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 		}
 		numColorAttachments++;
 
-		const auto &colorRT = renderTargets.get(desc.colors_[i]);
+		const auto &colorRT = impl->renderTargets.get(desc.colors_[i]);
 
 		if (width == 0) {
 			assert(height == 0);
@@ -1267,7 +1267,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 		assert(colorRT.width  > 0);
 		assert(colorRT.height > 0);
 		assert(colorRT.numSamples > 0);
-		assert(colorRT.numSamples <= static_cast<unsigned int>(glValues[GL_MAX_COLOR_TEXTURE_SAMPLES]));
+		assert(colorRT.numSamples <= static_cast<unsigned int>(impl->glValues[GL_MAX_COLOR_TEXTURE_SAMPLES]));
 		assert(colorRT.numSamples == renderPass.numSamples);
 		assert(colorRT.texture);
 		assert(colorRT.format == renderPass.desc.colorRTs_[i].format);
@@ -1280,7 +1280,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 		fb.width      = colorRT.width;
 		fb.height     = colorRT.height;
 
-		const auto &colorRTtex = textures.get(colorRT.texture);
+		const auto &colorRTtex = impl->textures.get(colorRT.texture);
 		assert(colorRTtex.renderTarget);
 		assert(colorRTtex.tex != 0);
 
@@ -1290,16 +1290,16 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	glNamedFramebufferDrawBuffers(fb.fbo, numColorAttachments, drawBuffers);
 
 	if (desc.depthStencil_) {
-		const auto &depthRT = renderTargets.get(desc.depthStencil_);
+		const auto &depthRT = impl->renderTargets.get(desc.depthStencil_);
 		assert(depthRT.format == renderPass.desc.depthStencilFormat_);
 		assert(depthRT.width  == width);
 		assert(depthRT.height == height);
 		assert(depthRT.texture);
 		assert(depthRT.numSamples > 0);
-		assert(depthRT.numSamples <= static_cast<unsigned int>(glValues[GL_MAX_DEPTH_TEXTURE_SAMPLES]));
+		assert(depthRT.numSamples <= static_cast<unsigned int>(impl->glValues[GL_MAX_DEPTH_TEXTURE_SAMPLES]));
 		assert(depthRT.numSamples == renderPass.numSamples);
 
-		const auto &depthRTtex = textures.get(depthRT.texture);
+		const auto &depthRTtex = impl->textures.get(depthRT.texture);
 		assert(depthRTtex.renderTarget);
 		assert(depthRTtex.tex != 0);
 		fb.depthStencil = desc.depthStencil_;
@@ -1308,7 +1308,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 		assert(renderPass.desc.depthStencilFormat_ == +Format::Invalid);
 	}
 
-	assert(isRenderPassCompatible(renderPass, fb));
+	assert(impl->isRenderPassCompatible(renderPass, fb));
 
 	GLenum status = glCheckNamedFramebufferStatus(fb.fbo, GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
@@ -1317,7 +1317,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 		throw std::runtime_error("Framebuffer is not complete");
 	}
 
-	if (tracing) {
+	if (impl->tracing) {
 		glObjectLabel(GL_FRAMEBUFFER, fb.fbo, desc.name_.size(), desc.name_.c_str());
 	}
 

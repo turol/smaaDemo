@@ -957,11 +957,6 @@ const RendererFeatures &Renderer::getFeatures() const {
 }
 
 
-FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
-	return impl->createFramebuffer(desc);
-}
-
-
 PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	return impl->createPipeline(desc);
 }

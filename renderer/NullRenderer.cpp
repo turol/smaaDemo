@@ -115,8 +115,8 @@ BufferHandle Renderer::createEphemeralBuffer(BufferType /* type */, uint32_t siz
 }
 
 
-FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
-	auto result = framebuffers.add();
+FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
+	auto result = impl->framebuffers.add();
 	auto &fb = result.first;
 	fb.renderPass = desc.renderPass_;
 

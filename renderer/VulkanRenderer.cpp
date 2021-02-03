@@ -1131,11 +1131,11 @@ static vk::ImageLayout vulkanLayout(Layout l) {
 }
 
 
-FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
+FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	assert(!desc.name_.empty());
 	assert(desc.renderPass_);
 
-	auto &renderPass = renderPasses.get(desc.renderPass_);
+	auto &renderPass = impl->renderPasses.get(desc.renderPass_);
 	assert(renderPass.renderPass);
 
 	std::vector<vk::ImageView> attachmentViews;
@@ -1146,7 +1146,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 			continue;
 		}
 
-		const auto &colorRT = renderTargets.get(desc.colors_[i]);
+		const auto &colorRT = impl->renderTargets.get(desc.colors_[i]);
 
 		if (width == 0) {
 			assert(height == 0);
@@ -1165,7 +1165,7 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	}
 
 	if (desc.depthStencil_) {
-		const auto &depthRT = renderTargets.get(desc.depthStencil_);
+		const auto &depthRT = impl->renderTargets.get(desc.depthStencil_);
 		assert(depthRT.width  == width);
 		assert(depthRT.height == height);
 		assert(depthRT.imageView);
@@ -1182,14 +1182,14 @@ FramebufferHandle RendererImpl::createFramebuffer(const FramebufferDesc &desc) {
 	fbInfo.height           = height;
 	fbInfo.layers           = 1;
 
-	auto result     = framebuffers.add();
+	auto result     = impl->framebuffers.add();
 	Framebuffer &fb = result.first;
 	fb.desc         = desc;
 	fb.width        = width;
 	fb.height       = height;
-	fb.framebuffer  = device.createFramebuffer(fbInfo);
+	fb.framebuffer  = impl->device.createFramebuffer(fbInfo);
 
-	debugNameObject<vk::Framebuffer>(fb.framebuffer, desc.name_);
+	impl->debugNameObject<vk::Framebuffer>(fb.framebuffer, desc.name_);
 
 	return result.second;
 }
