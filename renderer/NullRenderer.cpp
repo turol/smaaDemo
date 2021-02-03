@@ -234,7 +234,7 @@ void Renderer::deletePipeline(PipelineHandle /* handle */) {
 }
 
 
-void RendererImpl::deleteRenderPass(RenderPassHandle /* fbo */) {
+void Renderer::deleteRenderPass(RenderPassHandle /* fbo */) {
 }
 
 

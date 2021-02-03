@@ -1577,8 +1577,8 @@ void Renderer::deletePipeline(PipelineHandle handle) {
 }
 
 
-void RendererImpl::deleteRenderPass(RenderPassHandle handle) {
-	renderPasses.removeWith(handle, [](RenderPass &) {
+void Renderer::deleteRenderPass(RenderPassHandle handle) {
+	impl->renderPasses.removeWith(handle, [](RenderPass &) {
 	} );
 }
 

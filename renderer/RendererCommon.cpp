@@ -957,11 +957,6 @@ const RendererFeatures &Renderer::getFeatures() const {
 }
 
 
-void Renderer::deleteRenderPass(RenderPassHandle handle) {
-	impl->deleteRenderPass(handle);
-}
-
-
 void Renderer::deleteRenderTarget(RenderTargetHandle &rt) {
 	impl->deleteRenderTarget(rt);
 }

@@ -2028,10 +2028,10 @@ void Renderer::deletePipeline(PipelineHandle handle) {
 }
 
 
-void RendererImpl::deleteRenderPass(RenderPassHandle handle) {
-	renderPasses.removeWith(handle, [this](RenderPass &rp) {
+void Renderer::deleteRenderPass(RenderPassHandle handle) {
+	impl->renderPasses.removeWith(handle, [this](RenderPass &rp) {
 		// TODO: if lastUsedFrame has already been synced we could delete immediately
-		this->deleteResources.emplace_back(std::move(rp));
+		impl->deleteResources.emplace_back(std::move(rp));
 	} );
 }
 
