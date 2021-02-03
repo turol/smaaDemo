@@ -999,7 +999,7 @@ bool Renderer::isRenderTargetFormatSupported(Format format) const {
 }
 
 
-BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const void *contents) {
+BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *contents) {
 	assert(type != +BufferType::Invalid);
 	assert(size != 0);
 	assert(contents != nullptr);
@@ -1008,27 +1008,27 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	info.size  = size;
 	info.usage = bufferTypeUsage(type) | vk::BufferUsageFlagBits::eTransferDst;
 
-	auto result    = buffers.add();
+	auto result    = impl->buffers.add();
 	Buffer &buffer = result.first;
-	buffer.buffer  = device.createBuffer(info);
+	buffer.buffer  = impl->device.createBuffer(info);
 
 	VmaAllocationCreateInfo req = {};
 	req.usage          = VMA_MEMORY_USAGE_GPU_ONLY;
 	VmaAllocationInfo  allocationInfo = {};
 
-	vmaAllocateMemoryForBuffer(allocator, buffer.buffer, &req, &buffer.memory, &allocationInfo);
+	vmaAllocateMemoryForBuffer(impl->allocator, buffer.buffer, &req, &buffer.memory, &allocationInfo);
 	LOG("buffer memory type: {}",    allocationInfo.memoryType);
 	LOG("buffer memory offset: {}",  allocationInfo.offset);
 	LOG("buffer memory size: {}",    allocationInfo.size);
 	assert(allocationInfo.size > 0);
 	assert(allocationInfo.pMappedData == nullptr);
-	device.bindBufferMemory(buffer.buffer, allocationInfo.deviceMemory, allocationInfo.offset);
+	impl->device.bindBufferMemory(buffer.buffer, allocationInfo.deviceMemory, allocationInfo.offset);
 	buffer.offset = static_cast<uint32_t>(allocationInfo.offset);
 	buffer.size   = size;
 	buffer.type   = type;
 
 	// copy contents to GPU memory
-	UploadOp op = allocateUploadOp(size);
+	UploadOp op = impl->allocateUploadOp(size);
 	switch (type) {
 	case BufferType::Invalid:
 		HEDLEY_UNREACHABLE();
@@ -1048,7 +1048,7 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	}
 
 	memcpy(static_cast<char *>(op.allocationInfo.pMappedData), contents, size);
-    vmaFlushAllocation(allocator, buffer.memory, 0, size);
+    vmaFlushAllocation(impl->allocator, buffer.memory, 0, size);
 
 	// TODO: reuse command buffer for multiple copies
 	vk::BufferCopy copyRegion;
@@ -1061,9 +1061,9 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	vk::BufferMemoryBarrier barrier;
 	barrier.srcAccessMask       = vk::AccessFlagBits::eTransferWrite;
 	barrier.dstAccessMask       = vk::AccessFlagBits::eMemoryRead;
-	if (transferQueueIndex != graphicsQueueIndex) {
-		barrier.srcQueueFamilyIndex = transferQueueIndex;
-		barrier.dstQueueFamilyIndex = graphicsQueueIndex;
+	if (impl->transferQueueIndex != impl->graphicsQueueIndex) {
+		barrier.srcQueueFamilyIndex = impl->transferQueueIndex;
+		barrier.dstQueueFamilyIndex = impl->graphicsQueueIndex;
 	} else {
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -1074,11 +1074,11 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 
 	op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTopOfPipe, vk::DependencyFlags(), {}, { barrier }, {});
 
-	if (transferQueueIndex != graphicsQueueIndex) {
+	if (impl->transferQueueIndex != impl->graphicsQueueIndex) {
 		op.bufferAcquireBarriers.push_back(barrier);
 	}
 
-	submitUploadOp(std::move(op));
+	impl->submitUploadOp(std::move(op));
 
 	return result.second;
 }

@@ -862,17 +862,17 @@ bool Renderer::isRenderTargetFormatSupported(Format format) const {
 }
 
 
-BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const void *contents) {
+BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *contents) {
 	assert(type != +BufferType::Invalid);
 	assert(size != 0);
 	assert(contents != nullptr);
 
 	unsigned int bufferFlags = 0;
-	if (tracing) {
+	if (impl->tracing) {
 		bufferFlags |= GL_MAP_READ_BIT;
 	}
 
-	auto result    = buffers.add();
+	auto result    = impl->buffers.add();
 	Buffer &buffer = result.first;
 	glCreateBuffers(1, &buffer.buffer);
 	glNamedBufferStorage(buffer.buffer, size, contents, bufferFlags);

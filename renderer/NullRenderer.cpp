@@ -78,11 +78,11 @@ bool Renderer::isRenderTargetFormatSupported(Format /* format */) const {
 }
 
 
-BufferHandle RendererImpl::createBuffer(BufferType /* type */, uint32_t size, const void *contents) {
+BufferHandle Renderer::createBuffer(BufferType /* type */, uint32_t size, const void *contents) {
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	auto result    = buffers.add();
+	auto result    = impl->buffers.add();
 	Buffer &buffer = result.first;
 	buffer.ringBufferAlloc = false;
 	buffer.beginOffs       = 0;
