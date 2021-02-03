@@ -54,7 +54,7 @@ namespace renderer {
 bool isDepthFormat(Format format) {
 	switch (format) {
 	case Format::Invalid:
-		UNREACHABLE();
+		HEDLEY_UNREACHABLE();
 		return false;
 
 	case Format::R8:
@@ -96,7 +96,7 @@ bool isDepthFormat(Format format) {
 
 	}
 
-	UNREACHABLE();
+	HEDLEY_UNREACHABLE();
 	return false;
 }
 
@@ -104,7 +104,7 @@ bool isDepthFormat(Format format) {
 bool issRGBFormat(Format format) {
 	switch (format) {
 	case Format::Invalid:
-		UNREACHABLE();
+		HEDLEY_UNREACHABLE();
 		return false;
 
 	case Format::R8:
@@ -128,7 +128,7 @@ bool issRGBFormat(Format format) {
 
 	}
 
-	UNREACHABLE();
+	HEDLEY_UNREACHABLE();
 	return false;
 }
 
@@ -136,7 +136,7 @@ bool issRGBFormat(Format format) {
 uint32_t formatSize(Format format) {
 	switch (format) {
 	case Format::Invalid:
-		UNREACHABLE();
+		HEDLEY_UNREACHABLE();
 		return 4;
 
 	case Format::R8:
@@ -180,7 +180,7 @@ uint32_t formatSize(Format format) {
 
 	}
 
-	UNREACHABLE();
+	HEDLEY_UNREACHABLE();
 	return 4;
 }
 
@@ -796,7 +796,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			break;
 
 		default:
-			UNREACHABLE();  // shouldn't happen
+			HEDLEY_UNREACHABLE();  // shouldn't happen
 			break;
 
 		}

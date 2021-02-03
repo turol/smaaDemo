@@ -167,7 +167,7 @@ static GLenum blendFunc(BlendFunc b) {
 
 	}
 
-	UNREACHABLE();
+	HEDLEY_UNREACHABLE();
 	return GL_NONE;
 }
 
@@ -175,7 +175,7 @@ static GLenum blendFunc(BlendFunc b) {
 static GLenum glTexFormat(Format format) {
 	switch (format) {
 	case Format::Invalid:
-		UNREACHABLE();
+		HEDLEY_UNREACHABLE();
 
 	case Format::R8:
 		return GL_R8;
@@ -218,14 +218,14 @@ static GLenum glTexFormat(Format format) {
 
 	}
 
-	UNREACHABLE();
+	HEDLEY_UNREACHABLE();
 }
 
 
 static GLenum glTexBaseFormat(Format format) {
 	switch (format) {
 	case Format::Invalid:
-		UNREACHABLE();
+		HEDLEY_UNREACHABLE();
 
 	case Format::R8:
 		return GL_RED;
@@ -272,7 +272,7 @@ static GLenum glTexBaseFormat(Format format) {
 
 	}
 
-	UNREACHABLE();
+	HEDLEY_UNREACHABLE();
 }
 
 
@@ -2238,7 +2238,7 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 		switch (l.type) {
 		case DescriptorType::End:
 			// can't happen because createDesciptorSetLayout doesn't let it
-			UNREACHABLE();
+			HEDLEY_UNREACHABLE();
 			break;
 
 		case DescriptorType::UniformBuffer: {
@@ -2386,7 +2386,7 @@ void RendererImpl::rebindDescriptorSets() {
 		} break;
 
 		default:
-			UNREACHABLE();
+			HEDLEY_UNREACHABLE();
 			break;
 		}
 	}
@@ -2410,7 +2410,7 @@ void RendererImpl::rebindDescriptorSets() {
 		} break;
 
 		default:
-			UNREACHABLE();
+			HEDLEY_UNREACHABLE();
 			break;
 		}
 	}

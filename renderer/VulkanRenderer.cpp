@@ -103,7 +103,7 @@ static vk::Format vulkanVertexFormat(VtxFormat format, uint8_t count) {
 
 		}
 
-		UNREACHABLE();
+		HEDLEY_UNREACHABLE();
 		return vk::Format::eUndefined;
 
 	case VtxFormat::UNorm8:
@@ -112,7 +112,7 @@ static vk::Format vulkanVertexFormat(VtxFormat format, uint8_t count) {
 
 	}
 
-	UNREACHABLE();
+	HEDLEY_UNREACHABLE();
 	return vk::Format::eUndefined;
 }
 
@@ -120,7 +120,7 @@ static vk::Format vulkanVertexFormat(VtxFormat format, uint8_t count) {
 static vk::Format vulkanFormat(Format format) {
 	switch (format) {
 	case Format::Invalid:
-		UNREACHABLE();
+		HEDLEY_UNREACHABLE();
 		return vk::Format::eUndefined;
 
 	case Format::R8:
@@ -164,7 +164,7 @@ static vk::Format vulkanFormat(Format format) {
 
 	}
 
-	UNREACHABLE();
+	HEDLEY_UNREACHABLE();
 	return vk::Format::eUndefined;
 }
 
@@ -173,7 +173,7 @@ vk::BufferUsageFlags bufferTypeUsage(BufferType type) {
 	vk::BufferUsageFlags flags;
 	switch (type) {
 	case BufferType::Invalid:
-		UNREACHABLE();
+		HEDLEY_UNREACHABLE();
 		break;
 
 	case BufferType::Index:
@@ -1031,7 +1031,7 @@ BufferHandle RendererImpl::createBuffer(BufferType type, uint32_t size, const vo
 	UploadOp op = allocateUploadOp(size);
 	switch (type) {
 	case BufferType::Invalid:
-		UNREACHABLE();
+		HEDLEY_UNREACHABLE();
 		break;
 
 	case BufferType::Index:
@@ -1126,7 +1126,7 @@ static vk::ImageLayout vulkanLayout(Layout l) {
 		return vk::ImageLayout::eColorAttachmentOptimal;
 	}
 
-	UNREACHABLE();
+	HEDLEY_UNREACHABLE();
 	return vk::ImageLayout::eUndefined;
 }
 
@@ -1220,7 +1220,7 @@ static vk::SampleCountFlagBits sampleCountFlagsFromNum(unsigned int numSamples) 
 
 	}
 
-	UNREACHABLE();
+	HEDLEY_UNREACHABLE();
 	return vk::SampleCountFlagBits::e1;
 }
 
@@ -1451,7 +1451,7 @@ static vk::BlendFactor vulkanBlendFactor(BlendFunc b) {
 
 	}
 
-	UNREACHABLE();
+	HEDLEY_UNREACHABLE();
 	return vk::BlendFactor::eZero;
 }
 
@@ -1723,7 +1723,7 @@ static vk::Filter vulkanFiltermode(FilterMode m) {
         return vk::Filter::eLinear;
 	}
 
-	UNREACHABLE();
+	HEDLEY_UNREACHABLE();
 
 	return vk::Filter::eNearest;
 }
@@ -2125,14 +2125,14 @@ static const std::array<vk::PresentModeKHR, numPresentModes> &vsyncMode(VSync mo
 
 	}
 
-	UNREACHABLE();
+	HEDLEY_UNREACHABLE();
 }
 
 
 unsigned int RendererImpl::bufferAlignment(BufferType type) {
 	switch (type) {
 	case BufferType::Invalid:
-		UNREACHABLE();
+		HEDLEY_UNREACHABLE();
 		break;
 
 	case BufferType::Index:
@@ -2160,7 +2160,7 @@ unsigned int RendererImpl::bufferAlignment(BufferType type) {
 
 	}
 
-	UNREACHABLE();
+	HEDLEY_UNREACHABLE();
 
 	return 64;
 }
@@ -3252,7 +3252,7 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layout
 		switch (l.type) {
 		case DescriptorType::End:
 			// can't happen because createDesciptorSetLayout doesn't let it
-			UNREACHABLE();
+			HEDLEY_UNREACHABLE();
 			break;
 
 		case DescriptorType::UniformBuffer:

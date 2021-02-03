@@ -309,7 +309,7 @@ static const char *to_string(Rendertargets r) {
 
 	}
 
-	UNREACHABLE();
+	HEDLEY_UNREACHABLE();
 	return "";
 }
 
@@ -373,7 +373,7 @@ static const char *to_string(RenderPasses r) {
 		return "Invalid";
 	}
 
-	UNREACHABLE();
+	HEDLEY_UNREACHABLE();
 	return "";
 }
 
