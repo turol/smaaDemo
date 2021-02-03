@@ -437,7 +437,7 @@ struct RendererImpl : public RendererBase {
 	void recreateRingBuffer(unsigned int newSize);
 	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);
 
-	bool waitForFrame(unsigned int frameIdx) HEDLEY_WARN_UNUSED_RESULT;
+	HEDLEY_WARN_UNUSED_RESULT bool waitForFrame(unsigned int frameIdx);
 	void deleteFrameInternal(Frame &f);
 
 	explicit RendererImpl(const RendererDesc &desc);
@@ -475,7 +475,7 @@ struct RendererImpl : public RendererBase {
 	glm::uvec2 getDrawableSize() const;
 	MemoryStats getMemStats() const;
 
-	bool waitForDeviceIdle() HEDLEY_WARN_UNUSED_RESULT;
+	HEDLEY_WARN_UNUSED_RESULT bool waitForDeviceIdle();
 
 	bool beginFrame();
 	void presentFrame(RenderTargetHandle image);
