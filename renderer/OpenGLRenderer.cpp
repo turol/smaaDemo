@@ -872,8 +872,8 @@ BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *
 		bufferFlags |= GL_MAP_READ_BIT;
 	}
 
-	auto result    = impl->buffers.add();
-	Buffer &buffer = result.first;
+	auto result            = impl->buffers.add();
+	Buffer &buffer         = result.first;
 	glCreateBuffers(1, &buffer.buffer);
 	glNamedBufferStorage(buffer.buffer, size, contents, bufferFlags);
 	buffer.ringBufferAlloc = false;

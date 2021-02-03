@@ -82,8 +82,8 @@ BufferHandle Renderer::createBuffer(BufferType /* type */, uint32_t size, const 
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	auto result    = impl->buffers.add();
-	Buffer &buffer = result.first;
+	auto result            = impl->buffers.add();
+	Buffer &buffer         = result.first;
 	buffer.ringBufferAlloc = false;
 	buffer.beginOffs       = 0;
 	buffer.size            = size;
