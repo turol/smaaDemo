@@ -2036,10 +2036,10 @@ void Renderer::deleteRenderPass(RenderPassHandle handle) {
 }
 
 
-void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
-	renderTargets.removeWith(handle, [this](struct RenderTarget &rt) {
+void Renderer::deleteRenderTarget(RenderTargetHandle &handle) {
+	impl->renderTargets.removeWith(handle, [this](struct RenderTarget &rt) {
 		// TODO: if lastUsedFrame has already been synced we could delete immediately
-		this->deleteResources.emplace_back(std::move(rt));
+		impl->deleteResources.emplace_back(std::move(rt));
 	} );
 }
 

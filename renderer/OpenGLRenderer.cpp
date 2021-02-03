@@ -1583,8 +1583,8 @@ void Renderer::deleteRenderPass(RenderPassHandle handle) {
 }
 
 
-void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
-	renderTargets.removeWith(handle, [this](RenderTarget &rt) {
+void Renderer::deleteRenderTarget(RenderTargetHandle &handle) {
+	impl->renderTargets.removeWith(handle, [this](RenderTarget &rt) {
 		assert(rt.texture);
 		assert(rt.numSamples > 0);
 
@@ -1595,7 +1595,7 @@ void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
 		}
 
 		{
-			auto &tex = this->textures.get(rt.texture);
+			auto &tex = impl->textures.get(rt.texture);
 			assert(tex.renderTarget);
 			assert(tex.target != GL_NONE);
 			tex.renderTarget = false;
@@ -1605,11 +1605,11 @@ void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
 			tex.target = GL_NONE;
 			tex.format = Format::Invalid;
 		}
-		this->textures.remove(rt.texture);
+		impl->textures.remove(rt.texture);
 		rt.texture = TextureHandle();
 
 		if (rt.additionalView) {
-			auto &view = this->textures.get(rt.additionalView);
+			auto &view = impl->textures.get(rt.additionalView);
 			assert(view.renderTarget);
 			assert(view.target != GL_NONE);
 			view.renderTarget = false;
@@ -1618,7 +1618,7 @@ void RendererImpl::deleteRenderTarget(RenderTargetHandle &handle) {
 			view.tex = 0;
 			view.target = GL_NONE;
 			view.format = Format::Invalid;
-			this->textures.remove(rt.additionalView);
+			impl->textures.remove(rt.additionalView);
 			rt.additionalView = TextureHandle();
 		}
 	} );

@@ -450,7 +450,6 @@ struct RendererImpl : public RendererBase {
 
 	void deleteSampler(SamplerHandle handle);
 	void deleteTexture(TextureHandle handle);
-	void deleteRenderTarget(RenderTargetHandle &fbo);
 
 
 	void setSwapchainDesc(const SwapchainDesc &desc);

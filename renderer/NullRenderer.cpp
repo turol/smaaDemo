@@ -238,7 +238,7 @@ void Renderer::deleteRenderPass(RenderPassHandle /* fbo */) {
 }
 
 
-void RendererImpl::deleteRenderTarget(RenderTargetHandle &) {
+void Renderer::deleteRenderTarget(RenderTargetHandle &) {
 }
 
 

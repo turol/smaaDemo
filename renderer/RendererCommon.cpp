@@ -957,11 +957,6 @@ const RendererFeatures &Renderer::getFeatures() const {
 }
 
 
-void Renderer::deleteRenderTarget(RenderTargetHandle &rt) {
-	impl->deleteRenderTarget(rt);
-}
-
-
 void Renderer::deleteSampler(SamplerHandle handle) {
 	impl->deleteSampler(handle);
 }
