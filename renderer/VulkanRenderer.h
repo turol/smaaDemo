@@ -1100,7 +1100,6 @@ struct RendererImpl : public RendererBase {
 
 	HEDLEY_WARN_UNUSED_RESULT bool waitForDeviceIdle();
 
-	void drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount);
 	void drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int minIndex, unsigned int maxIndex);
 };
 

@@ -446,13 +446,13 @@ void Renderer::draw(unsigned int /* firstVertex */, unsigned int vertexCount) {
 }
 
 
-void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
-	assert(inRenderPass);
-	assert(validPipeline);
+void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
+	assert(impl->inRenderPass);
+	assert(impl->validPipeline);
 	assert(vertexCount > 0);
 	assert(instanceCount > 0);
-	assert(!currentPipeline.scissorTest_ || scissorSet);
-	pipelineDrawn = true;
+	assert(!impl->currentPipeline.scissorTest_ || impl->scissorSet);
+	impl->pipelineDrawn = true;
 }
 
 

@@ -3474,16 +3474,16 @@ void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 }
 
 
-void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
+void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
 #ifndef NDEBUG
-	assert(inRenderPass);
-	assert(validPipeline);
+	assert(impl->inRenderPass);
+	assert(impl->validPipeline);
 	assert(vertexCount > 0);
 	assert(instanceCount > 0);
-	pipelineDrawn = true;
+	impl->pipelineDrawn = true;
 #endif //  NDEBUG
 
-	currentCommandBuffer.drawIndexed(vertexCount, instanceCount, 0, 0, 0);
+	impl->currentCommandBuffer.drawIndexed(vertexCount, instanceCount, 0, 0, 0);
 }
 
 

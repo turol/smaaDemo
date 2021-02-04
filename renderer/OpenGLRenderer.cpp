@@ -2520,25 +2520,25 @@ void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 }
 
 
-void RendererImpl::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
+void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
 #ifndef NDEBUG
-	assert(inRenderPass);
-	assert(validPipeline);
+	assert(impl->inRenderPass);
+	assert(impl->validPipeline);
 	assert(instanceCount > 0);
 	assert(vertexCount > 0);
-	const auto &p = pipelines.get(currentPipeline);
-	assert(!p.desc.scissorTest_ || scissorSet);
-	pipelineDrawn = true;
+	const auto &p = impl->pipelines.get(impl->currentPipeline);
+	assert(!p.desc.scissorTest_ || impl->scissorSet);
+	impl->pipelineDrawn = true;
 #endif //  NDEBUG
 
-	if (decriptorSetsDirty) {
-		rebindDescriptorSets();
+	if (impl->decriptorSetsDirty) {
+		impl->rebindDescriptorSets();
 	}
-	assert(!decriptorSetsDirty);
+	assert(!impl->decriptorSetsDirty);
 
 	// TODO: get primitive from current pipeline
-	GLenum format = idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT ;
-	auto ptr = reinterpret_cast<const void *>(indexBufByteOffset);
+	GLenum format = impl->idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT ;
+	auto ptr = reinterpret_cast<const void *>(impl->indexBufByteOffset);
 	if (instanceCount == 1) {
 		glDrawElements(GL_TRIANGLES, vertexCount, format, ptr);
 	} else {
