@@ -2214,17 +2214,17 @@ void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 }
 
 
-void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHandle, const void *data_) {
+void Renderer::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHandle, const void *data_) {
 #ifndef NDEBUG
-	assert(validPipeline);
-	const auto &p = pipelines.get(currentPipeline);
+	assert(impl->validPipeline);
+	const auto &p = impl->pipelines.get(impl->currentPipeline);
 	assert(p.desc.descriptorSetLayouts[index] == layoutHandle);
 #endif  // NDEBUG
 
-	decriptorSetsDirty = true;
+	impl->decriptorSetsDirty = true;
 
 	// TODO: get shader bindings from current pipeline, use index
-	const DescriptorSetLayout &layout = dsLayouts.get(layoutHandle);
+	const DescriptorSetLayout &layout = impl->dsLayouts.get(layoutHandle);
 
 	const char *data = reinterpret_cast<const char *>(data_);
 	unsigned int descIndex = 0;
@@ -2242,62 +2242,62 @@ void RendererImpl::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHa
 		case DescriptorType::UniformBuffer: {
 			// this is part of the struct, we know it's correctly aligned and right type
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
-			const Buffer &buffer = buffers.get(handle);
+			const Buffer &buffer = impl->buffers.get(handle);
 			assert(buffer.size > 0);
 			assert(buffer.type == +BufferType::Uniform);
 			if (buffer.ringBufferAlloc) {
-				assert(buffer.buffer == ringBuffer);
-				assert(buffer.offset + buffer.size < ringBufSize);
+				assert(buffer.buffer == impl->ringBuffer);
+				assert(buffer.offset + buffer.size < impl->ringBufSize);
 			} else {
 				assert(buffer.buffer != 0);
 				assert(buffer.offset == 0);
 			}
-			descriptors[idx] = handle;
+			impl->descriptors[idx] = handle;
 		} break;
 
 		case DescriptorType::StorageBuffer: {
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
-			const Buffer &buffer = buffers.get(handle);
+			const Buffer &buffer = impl->buffers.get(handle);
 			assert(buffer.size  > 0);
 			assert(buffer.type == +BufferType::Storage);
 			if (buffer.ringBufferAlloc) {
-				assert(buffer.buffer == ringBuffer);
-				assert(buffer.offset + buffer.size < ringBufSize);
+				assert(buffer.buffer == impl->ringBuffer);
+				assert(buffer.offset + buffer.size < impl->ringBufSize);
 			} else {
 				assert(buffer.buffer != 0);
 				assert(buffer.offset == 0);
 			}
-			descriptors[idx] = handle;
+			impl->descriptors[idx] = handle;
 		} break;
 
 		case DescriptorType::Sampler: {
 			SamplerHandle handle = *reinterpret_cast<const SamplerHandle *>(data + l.offset);
 
 #ifndef NDEBUG
-			const auto &sampler = samplers.get(handle);
+			const auto &sampler = impl->samplers.get(handle);
 			assert(sampler.sampler);
 #endif  // NDEBUG
 
-			descriptors[idx] = handle;
+			impl->descriptors[idx] = handle;
 		} break;
 
 		case DescriptorType::Texture: {
 			TextureHandle texHandle = *reinterpret_cast<const TextureHandle *>(data + l.offset);
-			descriptors[idx] = texHandle;
+			impl->descriptors[idx] = texHandle;
 		} break;
 
 		case DescriptorType::CombinedSampler: {
 			const CSampler &combined = *reinterpret_cast<const CSampler *>(data + l.offset);
 
 #ifndef NDEBUG
-			const Texture &tex = textures.get(combined.tex);
+			const Texture &tex = impl->textures.get(combined.tex);
 			assert(tex.tex);
 
-			const auto &sampler = samplers.get(combined.sampler);
+			const auto &sampler = impl->samplers.get(combined.sampler);
 			assert(sampler.sampler);
 #endif  // NDEBUG
 
-			descriptors[idx] = combined;
+			impl->descriptors[idx] = combined;
 		} break;
 
 		}

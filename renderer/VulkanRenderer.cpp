@@ -3225,16 +3225,18 @@ void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 }
 
 
-void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHandle, const void *data_) {
-	assert(inFrame);
-	assert(validPipeline);
+void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHandle, const void *data_) {
+	assert(impl->inFrame);
+	assert(impl->validPipeline);
 
-	const DescriptorSetLayout &layout = dsLayouts.get(layoutHandle);
+	const DescriptorSetLayout &layout = impl->dsLayouts.get(layoutHandle);
 
 	vk::DescriptorSetAllocateInfo dsInfo;
-	dsInfo.descriptorPool      = frames.at(currentFrameIdx).dsPool;
+	dsInfo.descriptorPool      = impl->frames.at(impl->currentFrameIdx).dsPool;
 	dsInfo.descriptorSetCount  = 1;
 	dsInfo.pSetLayouts         = &layout.layout;
+
+	auto device = impl->device;
 
 	vk::DescriptorSet ds = device.allocateDescriptorSets(dsInfo)[0];
 
@@ -3267,9 +3269,9 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layout
 		case DescriptorType::StorageBuffer: {
 			// this is part of the struct, we know it's correctly aligned and right type
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
-			Buffer &buffer = buffers.get(handle);
+			Buffer &buffer = impl->buffers.get(handle);
 			assert(buffer.size > 0);
-			buffer.lastUsedFrame = frameNum;
+			buffer.lastUsedFrame = impl->frameNum;
 			assert((buffer.type == +BufferType::Uniform && l.type == +DescriptorType::UniformBuffer)
 			    || (buffer.type == +BufferType::Storage && l.type == +DescriptorType::StorageBuffer));
 
@@ -3287,7 +3289,7 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layout
 		} break;
 
 		case DescriptorType::Sampler: {
-			const auto &sampler = samplers.get(*reinterpret_cast<const SamplerHandle *>(data + l.offset));
+			const auto &sampler = impl->samplers.get(*reinterpret_cast<const SamplerHandle *>(data + l.offset));
 			assert(sampler.sampler);
 
 			vk::DescriptorImageInfo imgWrite;
@@ -3303,7 +3305,7 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layout
 
 		case DescriptorType::Texture: {
 			TextureHandle texHandle = *reinterpret_cast<const TextureHandle *>(data + l.offset);
-			const auto &tex = textures.get(texHandle);
+			const auto &tex = impl->textures.get(texHandle);
 			assert(tex.image);
 			assert(tex.imageView);
 
@@ -3322,10 +3324,10 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layout
 		case DescriptorType::CombinedSampler: {
 			const CSampler &combined = *reinterpret_cast<const CSampler *>(data + l.offset);
 
-			const Texture &tex = textures.get(combined.tex);
+			const Texture &tex = impl->textures.get(combined.tex);
 			assert(tex.image);
 			assert(tex.imageView);
-			const Sampler &s   = samplers.get(combined.sampler);
+			const Sampler &s   = impl->samplers.get(combined.sampler);
 			assert(s.sampler);
 
 			vk::DescriptorImageInfo  imgWrite;
@@ -3347,7 +3349,7 @@ void RendererImpl::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layout
 	}
 
 	device.updateDescriptorSets(writes, {});
-	currentCommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, currentPipelineLayout, dsIndex, { ds }, {});
+	impl->currentCommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, impl->currentPipelineLayout, dsIndex, { ds }, {});
 }
 
 

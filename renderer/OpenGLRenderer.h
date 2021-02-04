@@ -712,8 +712,6 @@ struct RendererImpl : public RendererBase {
 	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 	void setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 
-	void bindDescriptorSet(unsigned int index, DSLayoutHandle layout, const void *data);
-
 	void blit(RenderTargetHandle source, RenderTargetHandle target);
 	void resolveMSAA(RenderTargetHandle source, RenderTargetHandle target);
 

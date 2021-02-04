@@ -404,8 +404,8 @@ void Renderer::bindVertexBuffer(unsigned int /* binding */, BufferHandle /* buff
 }
 
 
-void RendererImpl::bindDescriptorSet(unsigned int /* index */, DSLayoutHandle /* layout */, const void * /* data_ */) {
-	assert(validPipeline);
+void Renderer::bindDescriptorSet(unsigned int /* index */, DSLayoutHandle /* layout */, const void * /* data_ */) {
+	assert(impl->validPipeline);
 }
 
 

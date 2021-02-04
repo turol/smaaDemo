@@ -962,11 +962,6 @@ bool Renderer::waitForDeviceIdle() {
 }
 
 
-void Renderer::bindDescriptorSet(unsigned int index, DSLayoutHandle layout, const void *data) {
-	impl->bindDescriptorSet(index, layout, data);
-}
-
-
 void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 	impl->setScissorRect(x, y, width, height);
 }
