@@ -365,10 +365,10 @@ void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHa
 }
 
 
-void RendererImpl::endRenderPass() {
-	assert(inFrame);
-	assert(inRenderPass);
-	inRenderPass = false;
+void Renderer::endRenderPass() {
+	assert(impl->inFrame);
+	assert(impl->inRenderPass);
+	impl->inRenderPass = false;
 }
 
 

@@ -3106,28 +3106,28 @@ void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHa
 }
 
 
-void RendererImpl::endRenderPass() {
+void Renderer::endRenderPass() {
 #ifndef NDEBUG
-	assert(inFrame);
-	assert(inRenderPass);
-	inRenderPass = false;
+	assert(impl->inFrame);
+	assert(impl->inRenderPass);
+	impl->inRenderPass = false;
 #endif  // NDEBUG
 
-	currentCommandBuffer.endRenderPass();
+	impl->currentCommandBuffer.endRenderPass();
 
-	const auto &pass = renderPasses.get(currentRenderPass);
-	const auto &fb = framebuffers.get(currentFramebuffer);
+	const auto &pass = impl->renderPasses.get(impl->currentRenderPass);
+	const auto &fb   = impl->framebuffers.get(impl->currentFramebuffer);
 
 	// TODO: track depthstencil layout too
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 		if (fb.desc.colors_[i]) {
-			auto &rt = renderTargets.get(fb.desc.colors_[i]);
+			auto &rt = impl->renderTargets.get(fb.desc.colors_[i]);
 			rt.currentLayout = pass.desc.colorRTs_[i].finalLayout;
 		}
 	}
 
-	currentRenderPass = RenderPassHandle();
-	currentFramebuffer = FramebufferHandle();
+	impl->currentRenderPass  = RenderPassHandle();
+	impl->currentFramebuffer = FramebufferHandle();
 }
 
 
