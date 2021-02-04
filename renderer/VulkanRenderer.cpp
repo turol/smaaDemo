@@ -3353,23 +3353,23 @@ void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHand
 }
 
 
-void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
-	assert(inFrame);
+void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+	assert(impl->inFrame);
 
-	currentViewport.x        = static_cast<float>(x);
+	impl->currentViewport.x        = static_cast<float>(x);
 	// TODO: check viewport y direction when not using full height
-	currentViewport.y        = static_cast<float>(y);
-	currentViewport.width    = static_cast<float>(width);
-	currentViewport.height   = static_cast<float>(height);
-	currentViewport.maxDepth = 1.0f;
+	impl->currentViewport.y        = static_cast<float>(y);
+	impl->currentViewport.width    = static_cast<float>(width);
+	impl->currentViewport.height   = static_cast<float>(height);
+	impl->currentViewport.maxDepth = 1.0f;
 
 	// use VK_KHR_maintenance1 negative viewport to flip it
 	// so we don't need flip in shader
-	vk::Viewport realViewport =  currentViewport;
+	vk::Viewport realViewport =  impl->currentViewport;
 	realViewport.y            += realViewport.height;
 	realViewport.height       =  -realViewport.height;
 
-	currentCommandBuffer.setViewport(0, 1, &realViewport);
+	impl->currentCommandBuffer.setViewport(0, 1, &realViewport);
 }
 
 

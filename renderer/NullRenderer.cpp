@@ -409,8 +409,8 @@ void Renderer::bindDescriptorSet(unsigned int /* index */, DSLayoutHandle /* lay
 }
 
 
-void RendererImpl::setViewport(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
-	assert(inFrame);
+void Renderer::setViewport(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
+	assert(impl->inFrame);
 }
 
 

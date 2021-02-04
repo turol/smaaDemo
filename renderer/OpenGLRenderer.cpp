@@ -2060,8 +2060,8 @@ void Renderer::layoutTransition(RenderTargetHandle image, Layout src UNUSED, Lay
 }
 
 
-void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
-	assert(inFrame);
+void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+	assert(impl->inFrame);
 	glViewport(x, y, width, height);
 }
 

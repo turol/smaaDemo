@@ -962,11 +962,6 @@ bool Renderer::waitForDeviceIdle() {
 }
 
 
-void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
-	impl->setViewport(x, y, width, height);
-}
-
-
 void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	impl->blit(source, target);
 }
