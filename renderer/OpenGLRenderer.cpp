@@ -2173,23 +2173,23 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 }
 
 
-void RendererImpl::bindIndexBuffer(BufferHandle handle, bool bit16) {
-	assert(inFrame);
-	assert(validPipeline);
+void Renderer::bindIndexBuffer(BufferHandle handle, bool bit16) {
+	assert(impl->inFrame);
+	assert(impl->validPipeline);
 
-	const Buffer &buffer = buffers.get(handle);
+	const Buffer &buffer = impl->buffers.get(handle);
 	assert(buffer.size > 0);
 	assert(buffer.type == +BufferType::Index);
 	if (buffer.ringBufferAlloc) {
-		assert(buffer.buffer == ringBuffer);
-		assert(buffer.offset + buffer.size < ringBufSize);
+		assert(buffer.buffer == impl->ringBuffer);
+		assert(buffer.offset + buffer.size < impl->ringBufSize);
 	} else {
 		assert(buffer.buffer != 0);
 		assert(buffer.offset == 0);
 	}
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.buffer);
-	indexBufByteOffset = buffer.offset;
-	idxBuf16Bit = bit16;
+	impl->indexBufByteOffset = buffer.offset;
+	impl->idxBuf16Bit        = bit16;
 }
 
 

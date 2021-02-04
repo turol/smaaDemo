@@ -962,11 +962,6 @@ bool Renderer::waitForDeviceIdle() {
 }
 
 
-void Renderer::bindIndexBuffer(BufferHandle buffer, bool bit16) {
-	impl->bindIndexBuffer(buffer, bit16);
-}
-
-
 void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 	impl->bindVertexBuffer(binding, buffer);
 }

@@ -3191,12 +3191,12 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 }
 
 
-void RendererImpl::bindIndexBuffer(BufferHandle buffer, bool bit16) {
-	assert(inFrame);
-	assert(validPipeline);
+void Renderer::bindIndexBuffer(BufferHandle buffer, bool bit16) {
+	assert(impl->inFrame);
+	assert(impl->validPipeline);
 
-	auto &b = buffers.get(buffer);
-	b.lastUsedFrame = frameNum;
+	auto &b = impl->buffers.get(buffer);
+	b.lastUsedFrame = impl->frameNum;
 	assert(b.type == +BufferType::Index);
 	// "normal" buffers begin from beginning of buffer
 	vk::DeviceSize offset = 0;
@@ -3204,7 +3204,7 @@ void RendererImpl::bindIndexBuffer(BufferHandle buffer, bool bit16) {
 		// but ephemeral buffers use the ringbuffer and an offset
 		offset = b.offset;
 	}
-	currentCommandBuffer.bindIndexBuffer(b.buffer, offset, bit16 ? vk::IndexType::eUint16 : vk::IndexType::eUint32);
+	impl->currentCommandBuffer.bindIndexBuffer(b.buffer, offset, bit16 ? vk::IndexType::eUint16 : vk::IndexType::eUint32);
 }
 
 
