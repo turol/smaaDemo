@@ -414,10 +414,10 @@ void RendererImpl::setViewport(unsigned int /* x */, unsigned int /* y */, unsig
 }
 
 
-void RendererImpl::setScissorRect(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
-	assert(validPipeline);
-	assert(currentPipeline.scissorTest_);
-	scissorSet = true;
+void Renderer::setScissorRect(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
+	assert(impl->validPipeline);
+	assert(impl->currentPipeline.scissorTest_);
+	impl->scissorSet = true;
 }
 
 

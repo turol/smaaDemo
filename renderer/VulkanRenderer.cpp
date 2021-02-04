@@ -3373,10 +3373,10 @@ void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int widt
 }
 
 
-void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 #ifndef NDEBUG
-	assert(validPipeline);
-	scissorSet = true;
+	assert(impl->validPipeline);
+	impl->scissorSet = true;
 #endif  // NDEBUG
 
 	vk::Rect2D rect;
@@ -3385,7 +3385,7 @@ void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int w
 	rect.extent.width  = width;
 	rect.extent.height = height;
 
-	currentCommandBuffer.setScissor(0, 1, &rect);
+	impl->currentCommandBuffer.setScissor(0, 1, &rect);
 }
 
 

@@ -1101,7 +1101,6 @@ struct RendererImpl : public RendererBase {
 	HEDLEY_WARN_UNUSED_RESULT bool waitForDeviceIdle();
 
 	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
-	void setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 
 	void blit(RenderTargetHandle source, RenderTargetHandle target);
 	void resolveMSAA(RenderTargetHandle source, RenderTargetHandle target);

@@ -962,11 +962,6 @@ bool Renderer::waitForDeviceIdle() {
 }
 
 
-void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
-	impl->setScissorRect(x, y, width, height);
-}
-
-
 void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 	impl->setViewport(x, y, width, height);
 }

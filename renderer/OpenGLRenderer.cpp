@@ -2066,18 +2066,18 @@ void RendererImpl::setViewport(unsigned int x, unsigned int y, unsigned int widt
 }
 
 
-void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 #ifndef NDEBUG
-	assert(validPipeline);
+	assert(impl->validPipeline);
 
-	const auto &p = pipelines.get(currentPipeline);
+	const auto &p = impl->pipelines.get(impl->currentPipeline);
 	assert(p.desc.scissorTest_);
-	scissorSet = true;
+	impl->scissorSet = true;
 #endif  // NDEBUG
 
 	// flip y from Vulkan convention to OpenGL convention
 	// TODO: should use current FB height
-	glScissor(x, swapchainDesc.height - (y + height), width, height);
+	glScissor(x, impl->swapchainDesc.height - (y + height), width, height);
 }
 
 
