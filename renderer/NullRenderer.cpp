@@ -372,7 +372,7 @@ void Renderer::endRenderPass() {
 }
 
 
-void RendererImpl::layoutTransition(RenderTargetHandle image, Layout src, Layout dest) {
+void Renderer::layoutTransition(RenderTargetHandle image, Layout src, Layout dest) {
 	assert(image);
 	assert(dest != +Layout::Undefined);
 	assert(src != dest);

@@ -2049,12 +2049,12 @@ void Renderer::endRenderPass() {
 }
 
 
-void RendererImpl::layoutTransition(RenderTargetHandle image, Layout src UNUSED, Layout dest) {
+void Renderer::layoutTransition(RenderTargetHandle image, Layout src UNUSED, Layout dest) {
 	assert(image);
 	assert(dest != +Layout::Undefined);
 	assert(src != dest);
 
-	auto &rt = renderTargets.get(image);
+	auto &rt = impl->renderTargets.get(image);
 	assert(src == +Layout::Undefined || rt.currentLayout == src);
 	rt.currentLayout = dest;
 }

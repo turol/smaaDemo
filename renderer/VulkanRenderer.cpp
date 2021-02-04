@@ -3131,12 +3131,12 @@ void Renderer::endRenderPass() {
 }
 
 
-void RendererImpl::layoutTransition(RenderTargetHandle image, Layout src, Layout dest) {
+void Renderer::layoutTransition(RenderTargetHandle image, Layout src, Layout dest) {
 	assert(image);
 	assert(dest != +Layout::Undefined);
 	assert(src != dest);
 
-	auto &rt = renderTargets.get(image);
+	auto &rt = impl->renderTargets.get(image);
 	assert(src == +Layout::Undefined || rt.currentLayout == src);
 	rt.currentLayout = dest;
 
@@ -3152,7 +3152,7 @@ void RendererImpl::layoutTransition(RenderTargetHandle image, Layout src, Layout
 	b.subresourceRange.layerCount = 1;
 
 	// TODO: should allow user to specify stage masks
-	currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), {}, {}, { b });
+	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), {}, {}, { b });
 }
 
 

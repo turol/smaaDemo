@@ -962,11 +962,6 @@ bool Renderer::waitForDeviceIdle() {
 }
 
 
-void Renderer::layoutTransition(RenderTargetHandle image, Layout src, Layout dest) {
-	impl->layoutTransition(image, src, dest);
-}
-
-
 void Renderer::bindPipeline(PipelineHandle pipeline) {
 	impl->bindPipeline(pipeline);
 }
