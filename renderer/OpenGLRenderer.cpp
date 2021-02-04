@@ -2081,20 +2081,20 @@ void RendererImpl::setScissorRect(unsigned int x, unsigned int y, unsigned int w
 }
 
 
-void RendererImpl::bindPipeline(PipelineHandle pipeline) {
+void Renderer::bindPipeline(PipelineHandle pipeline) {
 #ifndef NDEBUG
-	assert(inFrame);
+	assert(impl->inFrame);
 	assert(pipeline);
-	assert(inRenderPass);
-	assert(pipelineDrawn);
-	pipelineDrawn = false;
-	validPipeline = true;
-	scissorSet = false;
+	assert(impl->inRenderPass);
+	assert(impl->pipelineDrawn);
+	impl->pipelineDrawn = false;
+	impl->validPipeline = true;
+	impl->scissorSet = false;
 #endif  // NDEBUG
 
-	decriptorSetsDirty = true;
+	impl->decriptorSetsDirty = true;
 
-	const auto &p = pipelines.get(pipeline);
+	const auto &p = impl->pipelines.get(pipeline);
 
 	// TODO: shadow state, set only necessary
 	glUseProgram(p.shader);
@@ -2135,7 +2135,7 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 		glDisable(GL_BLEND);
 	}
 
-	uint32_t oldMask = currentPipeline ? (pipelines.get(currentPipeline).desc.vertexAttribMask) : 0;
+	uint32_t oldMask = impl->currentPipeline ? (impl->pipelines.get(impl->currentPipeline).desc.vertexAttribMask) : 0;
 	uint32_t newMask = p.desc.vertexAttribMask;
 
 	// enable/disable changed attributes
@@ -2169,7 +2169,7 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 		glVertexAttribBinding(bit, attr.bufBinding);
 	});
 
-	currentPipeline = pipeline;
+	impl->currentPipeline = pipeline;
 }
 
 

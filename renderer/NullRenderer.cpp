@@ -379,16 +379,16 @@ void Renderer::layoutTransition(RenderTargetHandle image, Layout src, Layout des
 }
 
 
-void RendererImpl::bindPipeline(PipelineHandle pipeline) {
-	assert(inFrame);
+void Renderer::bindPipeline(PipelineHandle pipeline) {
+	assert(impl->inFrame);
 	assert(pipeline);
-	assert(inRenderPass);
-	assert(pipelineDrawn);
-	pipelineDrawn = false;
-	validPipeline = true;
-	scissorSet = false;
+	assert(impl->inRenderPass);
+	assert(impl->pipelineDrawn);
+	impl->pipelineDrawn = false;
+	impl->validPipeline = true;
+	impl->scissorSet    = false;
 
-	currentPipeline = pipelines.get(pipeline).desc;
+	impl->currentPipeline = impl->pipelines.get(pipeline).desc;
 }
 
 

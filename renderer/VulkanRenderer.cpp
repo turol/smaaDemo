@@ -3156,21 +3156,21 @@ void Renderer::layoutTransition(RenderTargetHandle image, Layout src, Layout des
 }
 
 
-void RendererImpl::bindPipeline(PipelineHandle pipeline) {
+void Renderer::bindPipeline(PipelineHandle pipeline) {
 #ifndef NDEBUG
-	assert(inFrame);
-	assert(inRenderPass);
-	assert(pipelineDrawn);
-	pipelineDrawn = false;
-	validPipeline = true;
-	scissorSet = false;
+	assert(impl->inFrame);
+	assert(impl->inRenderPass);
+	assert(impl->pipelineDrawn);
+	impl->pipelineDrawn = false;
+	impl->validPipeline = true;
+	impl->scissorSet = false;
 #endif  // NDEBUG
 
 	// TODO: make sure current renderpass matches the one in pipeline
 
-	const auto &p = pipelines.get(pipeline);
-	currentCommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, p.pipeline);
-	currentPipelineLayout = p.layout;
+	const auto &p = impl->pipelines.get(pipeline);
+	impl->currentCommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, p.pipeline);
+	impl->currentPipelineLayout = p.layout;
 
 	if (!p.scissor) {
 		// Vulkan always requires a scissor rect
@@ -3178,14 +3178,14 @@ void RendererImpl::bindPipeline(PipelineHandle pipeline) {
 		// TODO: shouldn't need this is previous pipeline didn't use scissor
 		// except for first pipeline of the command buffer
 		vk::Rect2D rect;
-		rect.offset.x      = static_cast<int32_t>(currentViewport.x);
-		rect.offset.y      = static_cast<int32_t>(currentViewport.y);
-		rect.extent.width  = static_cast<uint32_t>(currentViewport.width);
-		rect.extent.height = static_cast<uint32_t>(currentViewport.height);
+		rect.offset.x      = static_cast<int32_t>(impl->currentViewport.x);
+		rect.offset.y      = static_cast<int32_t>(impl->currentViewport.y);
+		rect.extent.width  = static_cast<uint32_t>(impl->currentViewport.width);
+		rect.extent.height = static_cast<uint32_t>(impl->currentViewport.height);
 
-		currentCommandBuffer.setScissor(0, 1, &rect);
+		impl->currentCommandBuffer.setScissor(0, 1, &rect);
 #ifndef NDEBUG
-		scissorSet = true;
+		impl->scissorSet = true;
 #endif  // NDEBUG
 	}
 }

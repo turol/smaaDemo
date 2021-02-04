@@ -962,11 +962,6 @@ bool Renderer::waitForDeviceIdle() {
 }
 
 
-void Renderer::bindPipeline(PipelineHandle pipeline) {
-	impl->bindPipeline(pipeline);
-}
-
-
 void Renderer::bindIndexBuffer(BufferHandle buffer, bool bit16) {
 	impl->bindIndexBuffer(buffer, bit16);
 }
