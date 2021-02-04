@@ -962,11 +962,6 @@ bool Renderer::waitForDeviceIdle() {
 }
 
 
-void Renderer::drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int minIndex, unsigned int maxIndex) {
-	impl->drawIndexedOffset(vertexCount, firstIndex, minIndex, maxIndex);
-}
-
-
 unsigned int RendererImpl::ringBufferAllocate(unsigned int size, unsigned int alignment) {
 	assert(alignment != 0);
 	assert(isPow2(alignment));

@@ -2547,24 +2547,24 @@ void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int insta
 }
 
 
-void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int minIndex, unsigned int maxIndex) {
+void Renderer::drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int minIndex, unsigned int maxIndex) {
 #ifndef NDEBUG
-	assert(inRenderPass);
-	assert(validPipeline);
+	assert(impl->inRenderPass);
+	assert(impl->validPipeline);
 	assert(vertexCount > 0);
-	const auto &p = pipelines.get(currentPipeline);
-	assert(!p.desc.scissorTest_ || scissorSet);
-	pipelineDrawn = true;
+	const auto &p = impl->pipelines.get(impl->currentPipeline);
+	assert(!p.desc.scissorTest_ || impl->scissorSet);
+	impl->pipelineDrawn = true;
 #endif //  NDEBUG
 
-	if (decriptorSetsDirty) {
-		rebindDescriptorSets();
+	if (impl->decriptorSetsDirty) {
+		impl->rebindDescriptorSets();
 	}
-	assert(!decriptorSetsDirty);
+	assert(!impl->decriptorSetsDirty);
 
-	GLenum format        = idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
-	unsigned int idxSize = idxBuf16Bit ? 2                 : 4 ;
-	auto ptr = reinterpret_cast<const char *>(firstIndex * idxSize + indexBufByteOffset);
+	GLenum format        = impl->idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
+	unsigned int idxSize = impl->idxBuf16Bit ? 2                 : 4 ;
+	auto ptr = reinterpret_cast<const char *>(firstIndex * idxSize + impl->indexBufByteOffset);
 	// TODO: get primitive from current pipeline
 	glDrawRangeElements(GL_TRIANGLES, minIndex, maxIndex, vertexCount, format, ptr);
 }

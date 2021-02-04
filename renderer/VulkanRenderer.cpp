@@ -3487,15 +3487,15 @@ void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int insta
 }
 
 
-void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int /* minIndex */, unsigned int /* maxIndex */) {
+void Renderer::drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int /* minIndex */, unsigned int /* maxIndex */) {
 #ifndef NDEBUG
-	assert(inRenderPass);
-	assert(validPipeline);
+	assert(impl->inRenderPass);
+	assert(impl->validPipeline);
 	assert(vertexCount > 0);
-	pipelineDrawn = true;
+	impl->pipelineDrawn = true;
 #endif //  NDEBUG
 
-	currentCommandBuffer.drawIndexed(vertexCount, 1, firstIndex, 0, 0);
+	impl->currentCommandBuffer.drawIndexed(vertexCount, 1, firstIndex, 0, 0);
 }
 
 

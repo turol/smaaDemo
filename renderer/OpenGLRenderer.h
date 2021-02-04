@@ -708,8 +708,6 @@ struct RendererImpl : public RendererBase {
 	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);
 
 	HEDLEY_WARN_UNUSED_RESULT bool waitForDeviceIdle();
-
-	void drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int minIndex, unsigned int maxIndex);
 };
 
 

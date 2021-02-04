@@ -456,12 +456,12 @@ void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int insta
 }
 
 
-void RendererImpl::drawIndexedOffset(unsigned int vertexCount, unsigned int /* firstIndex */, unsigned int /* minIndex */, unsigned int /* maxIndex */) {
-	assert(inRenderPass);
-	assert(validPipeline);
+void Renderer::drawIndexedOffset(unsigned int vertexCount, unsigned int /* firstIndex */, unsigned int /* minIndex */, unsigned int /* maxIndex */) {
+	assert(impl->inRenderPass);
+	assert(impl->validPipeline);
 	assert(vertexCount > 0);
-	assert(!currentPipeline.scissorTest_ || scissorSet);
-	pipelineDrawn = true;
+	assert(!impl->currentPipeline.scissorTest_ || impl->scissorSet);
+	impl->pipelineDrawn = true;
 }
 
 
