@@ -398,9 +398,9 @@ void Renderer::bindIndexBuffer(BufferHandle /* buffer */, bool /* bit16 */ ) {
 }
 
 
-void RendererImpl::bindVertexBuffer(unsigned int /* binding */, BufferHandle /* buffer */) {
-	assert(inFrame);
-	assert(validPipeline);
+void Renderer::bindVertexBuffer(unsigned int /* binding */, BufferHandle /* buffer */) {
+	assert(impl->inFrame);
+	assert(impl->validPipeline);
 }
 
 

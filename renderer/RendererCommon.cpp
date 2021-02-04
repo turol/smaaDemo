@@ -962,11 +962,6 @@ bool Renderer::waitForDeviceIdle() {
 }
 
 
-void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
-	impl->bindVertexBuffer(binding, buffer);
-}
-
-
 void Renderer::bindDescriptorSet(unsigned int index, DSLayoutHandle layout, const void *data) {
 	impl->bindDescriptorSet(index, layout, data);
 }

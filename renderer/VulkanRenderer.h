@@ -1103,8 +1103,6 @@ struct RendererImpl : public RendererBase {
 	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 	void setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 
-	void bindVertexBuffer(unsigned int binding, BufferHandle buffer);
-
 	void bindDescriptorSet(unsigned int index, DSLayoutHandle layout, const void *data);
 
 	void blit(RenderTargetHandle source, RenderTargetHandle target);

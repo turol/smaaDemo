@@ -2193,23 +2193,23 @@ void Renderer::bindIndexBuffer(BufferHandle handle, bool bit16) {
 }
 
 
-void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
-	assert(inFrame);
-	assert(validPipeline);
+void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
+	assert(impl->inFrame);
+	assert(impl->validPipeline);
 
-	const Buffer &buffer = buffers.get(handle);
+	const Buffer &buffer = impl->buffers.get(handle);
 	assert(buffer.size >  0);
 	assert(buffer.type == +BufferType::Vertex);
 	if (buffer.ringBufferAlloc) {
 		// this is not strictly correct since we might have reallocated the ringbuf bigger
 		// but it should never fail, at worst it will not spot some errors immediately after realloc
 		// which are rare events anyway
-		assert(buffer.offset + buffer.size < ringBufSize);
+		assert(buffer.offset + buffer.size < impl->ringBufSize);
 	} else {
 		assert(buffer.buffer != 0);
 		assert(buffer.offset == 0);
 	}
-	const auto &p = pipelines.get(currentPipeline);
+	const auto &p = impl->pipelines.get(impl->currentPipeline);
 	glBindVertexBuffer(binding, buffer.buffer, buffer.offset, p.desc.vertexBuffers[binding].stride);
 }
 

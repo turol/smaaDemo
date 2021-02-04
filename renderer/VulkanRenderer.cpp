@@ -3208,12 +3208,12 @@ void Renderer::bindIndexBuffer(BufferHandle buffer, bool bit16) {
 }
 
 
-void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
-	assert(inFrame);
-	assert(validPipeline);
+void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
+	assert(impl->inFrame);
+	assert(impl->validPipeline);
 
-	auto &b = buffers.get(buffer);
-	b.lastUsedFrame = frameNum;
+	auto &b = impl->buffers.get(buffer);
+	b.lastUsedFrame = impl->frameNum;
 	assert(b.type == +BufferType::Vertex);
 	// "normal" buffers begin from beginning of buffer
 	vk::DeviceSize offset = 0;
@@ -3221,7 +3221,7 @@ void RendererImpl::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 		// but ephemeral buffers use the ringbuffer and an offset
 		offset = b.offset;
 	}
-	currentCommandBuffer.bindVertexBuffers(binding, 1, &b.buffer, &offset);
+	impl->currentCommandBuffer.bindVertexBuffers(binding, 1, &b.buffer, &offset);
 }
 
 
