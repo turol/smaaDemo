@@ -957,11 +957,6 @@ const RendererFeatures &Renderer::getFeatures() const {
 }
 
 
-void Renderer::setSwapchainDesc(const SwapchainDesc &desc) {
-	impl->setSwapchainDesc(desc);
-}
-
-
 MemoryStats Renderer::getMemStats() const {
 	return impl->getMemStats();
 }

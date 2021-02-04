@@ -1649,22 +1649,22 @@ void Renderer::deleteTexture(TextureHandle handle) {
 }
 
 
-void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
+void Renderer::setSwapchainDesc(const SwapchainDesc &desc) {
 	bool changed = false;
 
-	if (swapchainDesc.fullscreen != desc.fullscreen) {
+	if (impl->swapchainDesc.fullscreen != desc.fullscreen) {
 		changed = true;
 		if (desc.fullscreen) {
 			// TODO: check return val?
-			SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+			SDL_SetWindowFullscreen(impl->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 			LOG("Fullscreen");
 		} else {
-			SDL_SetWindowFullscreen(window, 0);
+			SDL_SetWindowFullscreen(impl->window, 0);
 			LOG("Windowed");
 		}
 	}
 
-	if (swapchainDesc.vsync != desc.vsync) {
+	if (impl->swapchainDesc.vsync != desc.vsync) {
 		changed = true;
 		int retval = 0;
 		switch (desc.vsync) {
@@ -1692,21 +1692,21 @@ void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
 		}
 	}
 
-	if (swapchainDesc.numFrames != desc.numFrames) {
+	if (impl->swapchainDesc.numFrames != desc.numFrames) {
 		changed = true;
 	}
 
-	if (swapchainDesc.width     != desc.width) {
+	if (impl->swapchainDesc.width     != desc.width) {
 		changed = true;
 	}
 
-	if (swapchainDesc.height    != desc.height) {
+	if (impl->swapchainDesc.height    != desc.height) {
 		changed = true;
 	}
 
 	if (changed) {
-		wantedSwapchain = desc;
-		swapchainDirty  = true;
+		impl->wantedSwapchain = desc;
+		impl->swapchainDirty  = true;
 	}
 }
 

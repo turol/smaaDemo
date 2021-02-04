@@ -250,8 +250,8 @@ void Renderer::deleteTexture(TextureHandle /* handle */) {
 }
 
 
-void RendererImpl::setSwapchainDesc(const SwapchainDesc &desc) {
-	swapchainDesc  = desc;
+void Renderer::setSwapchainDesc(const SwapchainDesc &desc) {
+	impl->swapchainDesc  = desc;
 }
 
 
