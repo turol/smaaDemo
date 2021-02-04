@@ -957,11 +957,6 @@ const RendererFeatures &Renderer::getFeatures() const {
 }
 
 
-MemoryStats Renderer::getMemStats() const {
-	return impl->getMemStats();
-}
-
-
 bool Renderer::waitForDeviceIdle() {
 	return impl->waitForDeviceIdle();
 }

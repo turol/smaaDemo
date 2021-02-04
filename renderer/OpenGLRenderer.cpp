@@ -1772,7 +1772,7 @@ bool RendererImpl::recreateSwapchain() {
 }
 
 
-MemoryStats RendererImpl::getMemStats() const {
+MemoryStats Renderer::getMemStats() const {
 	MemoryStats stats;
 	return stats;
 }

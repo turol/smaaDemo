@@ -260,7 +260,7 @@ glm::uvec2 Renderer::getDrawableSize() const {
 }
 
 
-MemoryStats RendererImpl::getMemStats() const {
+MemoryStats Renderer::getMemStats() const {
 	MemoryStats stats;
 	return stats;
 }

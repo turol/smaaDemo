@@ -2369,10 +2369,10 @@ bool RendererImpl::recreateSwapchain() {
 }
 
 
-MemoryStats RendererImpl::getMemStats() const {
+MemoryStats Renderer::getMemStats() const {
 	VmaStats vmaStats;
 	memset(&vmaStats, 0, sizeof(VmaStats));
-	vmaCalculateStats(allocator, &vmaStats);
+	vmaCalculateStats(impl->allocator, &vmaStats);
 	MemoryStats stats;
 	stats.allocationCount    = vmaStats.total.allocationCount;
 	stats.subAllocationCount = vmaStats.total.unusedRangeCount;

@@ -1098,8 +1098,6 @@ struct RendererImpl : public RendererBase {
 	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
 	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);
 
-	MemoryStats getMemStats() const;
-
 	HEDLEY_WARN_UNUSED_RESULT bool waitForDeviceIdle();
 
 	bool beginFrame();
