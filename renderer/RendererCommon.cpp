@@ -962,11 +962,6 @@ bool Renderer::waitForDeviceIdle() {
 }
 
 
-void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target) {
-	impl->resolveMSAA(source, target);
-}
-
-
 void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	impl->draw(firstVertex, vertexCount);
 }

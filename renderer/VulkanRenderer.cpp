@@ -3428,21 +3428,21 @@ void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 }
 
 
-void RendererImpl::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target) {
+void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(source);
 	assert(target);
 
-	assert(!inRenderPass);
+	assert(!impl->inRenderPass);
 
 	// TODO: check numSamples make sense
 	// TODO: check they're both color targets
 
-	const auto &srcRT = renderTargets.get(source);
+	const auto &srcRT = impl->renderTargets.get(source);
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
 	assert(srcRT.currentLayout == +Layout::TransferSrc);
 
-	const auto &destRT = renderTargets.get(target);
+	const auto &destRT = impl->renderTargets.get(target);
 	assert(destRT.width      >  0);
 	assert(destRT.height     >  0);
 	assert(destRT.currentLayout == +Layout::TransferDst);
@@ -3458,7 +3458,7 @@ void RendererImpl::resolveMSAA(RenderTargetHandle source, RenderTargetHandle tar
 	r.extent.width              = srcRT.width;
 	r.extent.height             = srcRT.height;
 	r.extent.depth              = 1;
-	currentCommandBuffer.resolveImage(srcRT.image, vk::ImageLayout::eTransferSrcOptimal, destRT.image, vk::ImageLayout::eTransferDstOptimal, { r } );
+	impl->currentCommandBuffer.resolveImage(srcRT.image, vk::ImageLayout::eTransferSrcOptimal, destRT.image, vk::ImageLayout::eTransferDstOptimal, { r } );
 }
 
 

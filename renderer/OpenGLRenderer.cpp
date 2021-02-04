@@ -2459,33 +2459,33 @@ void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 }
 
 
-void RendererImpl::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target) {
+void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(source);
 	assert(target);
 
-	assert(!inRenderPass);
+	assert(!impl->inRenderPass);
 
 	// TODO: check they're both color targets
 
-	auto &srcRT = renderTargets.get(source);
+	auto &srcRT = impl->renderTargets.get(source);
 	assert(srcRT.numSamples  >  1);
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
 	assert(srcRT.currentLayout == +Layout::TransferSrc);
 	assert(srcRT.texture);
 	if (srcRT.helperFBO == 0) {
-		createRTHelperFBO(srcRT);
+		impl->createRTHelperFBO(srcRT);
 	}
 	assert(srcRT.helperFBO != 0);
 
-	auto &destRT = renderTargets.get(target);
+	auto &destRT = impl->renderTargets.get(target);
 	assert(destRT.numSamples == 1);
 	assert(destRT.width      >  0);
 	assert(destRT.height     >  0);
 	assert(destRT.currentLayout == +Layout::TransferDst);
 	assert(destRT.texture);
 	if (destRT.helperFBO == 0) {
-		createRTHelperFBO(destRT);
+		impl->createRTHelperFBO(destRT);
 	}
 	assert(destRT.helperFBO != 0);
 
