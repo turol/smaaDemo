@@ -962,11 +962,6 @@ bool Renderer::waitForDeviceIdle() {
 }
 
 
-bool Renderer::beginFrame() {
-	return  impl->beginFrame();
-}
-
-
 void Renderer::presentFrame(RenderTargetHandle image) {
 	impl->presentFrame(image);
 }

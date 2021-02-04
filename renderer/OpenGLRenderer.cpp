@@ -1795,52 +1795,50 @@ bool RendererImpl::waitForDeviceIdle() {
 }
 
 
-bool RendererImpl::beginFrame() {
+bool Renderer::beginFrame() {
 #ifndef NDEBUG
-	assert(!inFrame);
+	assert(!impl->inFrame);
 #endif //  NDEBUG
 
-	if (swapchainDirty) {
+	if (impl->swapchainDirty) {
 		// return false when recreateSwapchain fails and let caller deal with it
-		if (!recreateSwapchain()) {
-			assert(swapchainDirty);
+		if (!impl->recreateSwapchain()) {
+			assert(impl->swapchainDirty);
 			return false;
 		}
-		assert(!swapchainDirty);
+		assert(!impl->swapchainDirty);
 	}
 
-	currentFrameIdx        = frameNum % frames.size();
-	assert(currentFrameIdx < frames.size());
-	auto &frame            = frames.at(currentFrameIdx);
+	impl->currentFrameIdx        = impl->frameNum % impl->frames.size();
+	assert(impl->currentFrameIdx < impl->frames.size());
+	auto &frame                  = impl->frames.at(impl->currentFrameIdx);
 
 	// frames are a ringbuffer
 	// if the frame we want to reuse is still pending on the GPU, wait for it
 	if (frame.outstanding) {
-		if (!waitForFrame(currentFrameIdx)) {
+		if (!impl->waitForFrame(impl->currentFrameIdx)) {
 			return false;
 		}
 	}
 	assert(!frame.outstanding);
 
-	currentPipeline        = PipelineHandle();
-
 #ifndef NDEBUG
 
-	inFrame       = true;
-	inRenderPass  = false;
-	validPipeline = false;
-	pipelineDrawn = true;
+	impl->inFrame       = true;
+	impl->inRenderPass  = false;
+	impl->validPipeline = false;
+	impl->pipelineDrawn = true;
 
 #endif //  NDEBUG
 
-	currentPipeline        = PipelineHandle();
-	descriptors.clear();
+	impl->currentPipeline        = PipelineHandle();
+	impl->descriptors.clear();
 
 	// TODO: reset all relevant state in case some 3rd-party program fucked them up
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDepthMask(GL_TRUE);
 
-	if (features.sRGBFramebuffer) {
+	if (impl->features.sRGBFramebuffer) {
 		glEnable(GL_FRAMEBUFFER_SRGB);
 	} else {
 		glDisable(GL_FRAMEBUFFER_SRGB);

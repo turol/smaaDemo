@@ -283,21 +283,21 @@ bool RendererImpl::waitForDeviceIdle() {
 }
 
 
-bool RendererImpl::beginFrame() {
-	assert(!inFrame);
-	inFrame       = true;
-	inRenderPass  = false;
-	validPipeline = false;
-	pipelineDrawn = true;
+bool Renderer::beginFrame() {
+	assert(!impl->inFrame);
+	impl->inFrame       = true;
+	impl->inRenderPass  = false;
+	impl->validPipeline = false;
+	impl->pipelineDrawn = true;
 
-	currentFrameIdx        = frameNum % frames.size();
-	assert(currentFrameIdx < frames.size());
-	auto &frame            = frames.at(currentFrameIdx);
+	impl->currentFrameIdx        = impl->frameNum % impl->frames.size();
+	assert(impl->currentFrameIdx < impl->frames.size());
+	auto &frame                  = impl->frames.at(impl->currentFrameIdx);
 
 	// frames are a ringbuffer
 	// if the frame we want to reuse is still pending on the GPU, wait for it
 	if (frame.outstanding) {
-		while (! waitForFrame(currentFrameIdx)) {}
+		while (! impl->waitForFrame(impl->currentFrameIdx)) {}
 	}
 	assert(!frame.outstanding);
 

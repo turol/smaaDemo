@@ -2447,32 +2447,34 @@ bool RendererImpl::waitForDeviceIdle() {
 }
 
 
-bool RendererImpl::beginFrame() {
+bool Renderer::beginFrame() {
 #ifndef NDEBUG
-	assert(!inFrame);
+	assert(!impl->inFrame);
 #endif  // NDEBUG
 
-	if (frameAcquired) {
-		assert(frameAcquireSem);
+	auto device = impl->device;
+
+	if (impl->frameAcquired) {
+		assert(impl->frameAcquireSem);
 		// nothing, continue to wait
 	} else {
-		assert(!frameAcquireSem);
+		assert(!impl->frameAcquireSem);
 
-		if (swapchainDirty) {
+		if (impl->swapchainDirty) {
 			// return false when recreateSwapchain fails and let caller deal with it
-			if (!recreateSwapchain()) {
-				assert(swapchainDirty);
+			if (!impl->recreateSwapchain()) {
+				assert(impl->swapchainDirty);
 				return false;
 			}
-			assert(!swapchainDirty);
+			assert(!impl->swapchainDirty);
 		}
 
 		// acquire next image
 		uint32_t imageIdx = 0xFFFFFFFFU;
 
-		frameAcquireSem = allocateSemaphore();
+		impl->frameAcquireSem = impl->allocateSemaphore();
 
-		vk::Result result = device.acquireNextImageKHR(swapchain, 0, frameAcquireSem, vk::Fence(), &imageIdx);
+		vk::Result result = device.acquireNextImageKHR(impl->swapchain, 0, impl->frameAcquireSem, vk::Fence(), &imageIdx);
 		switch (result) {
 		case vk::Result::eSuccess:
 			// nothing to do
@@ -2482,20 +2484,20 @@ bool RendererImpl::beginFrame() {
 			// swapchain went out of date during acquire, recreate and try again
 			LOG("swapchain out of date during acquireNextImageKHR, recreating...");
 			logFlush();
-			swapchainDirty = true;
+			impl->swapchainDirty = true;
 
 			// fallthrough
 		case vk::Result::eTimeout:
 		case vk::Result::eNotReady:
-			freeSemaphore(frameAcquireSem);
-			frameAcquireSem = vk::Semaphore();
+			impl->freeSemaphore(impl->frameAcquireSem);
+			impl->frameAcquireSem = vk::Semaphore();
 
 			return false;
 
 		case vk::Result::eSuboptimalKHR:
 			LOG("swapchain suboptimal during acquireNextImageKHR, recreating...");
 			logFlush();
-			swapchainDirty = true;
+			impl->swapchainDirty = true;
 			// suboptimal is considered success so proceed
 
 			break;
@@ -2506,13 +2508,13 @@ bool RendererImpl::beginFrame() {
 			throw std::runtime_error("acquireNextImageKHR failed");
 		}
 
-		frameAcquired = true;
+		impl->frameAcquired = true;
 
-		assert(imageIdx < frames.size());
-		currentFrameIdx        = imageIdx;
+		assert(imageIdx < impl->frames.size());
+		impl->currentFrameIdx        = imageIdx;
 	}
 
-	auto &frame            = frames.at(currentFrameIdx);
+	auto &frame            = impl->frames.at(impl->currentFrameIdx);
 
 	// frames are a ringbuffer
 	// if the frame we want to reuse is still pending on the GPU, wait for it
@@ -2523,12 +2525,12 @@ bool RendererImpl::beginFrame() {
 		break;
 
 	case Frame::Status::Pending:
-		if(!waitForFrame(currentFrameIdx)) {
+		if(!impl->waitForFrame(impl->currentFrameIdx)) {
 			return false;
 		}
 
 		assert(frame.status == Frame::Status::Done);
-		cleanupFrame(currentFrameIdx);
+		impl->cleanupFrame(impl->currentFrameIdx);
 
 		break;
 
@@ -2538,35 +2540,35 @@ bool RendererImpl::beginFrame() {
 
 	assert(frame.status == Frame::Status::Ready);
 
-	frameAcquired = false;
+	impl->frameAcquired = false;
 
 #ifndef NDEBUG
-	inFrame       = true;
-	inRenderPass  = false;
-	validPipeline = false;
-	pipelineDrawn = true;
+	impl->inFrame       = true;
+	impl->inRenderPass  = false;
+	impl->validPipeline = false;
+	impl->pipelineDrawn = true;
 #endif  // NDEBUG
 	device.resetFences( { frame.fence } );
 
 	assert(!frame.acquireSem);
-	frame.acquireSem       = frameAcquireSem;
-	frameAcquireSem        = vk::Semaphore();
+	frame.acquireSem             = impl->frameAcquireSem;
+	impl->frameAcquireSem        = vk::Semaphore();
 
 	assert(!frame.renderDoneSem);
-	frame.renderDoneSem    = allocateSemaphore();
+	frame.renderDoneSem    = impl->allocateSemaphore();
 
 	// set command buffer to recording
-	currentCommandBuffer = frame.commandBuffer;
-	currentCommandBuffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+	impl->currentCommandBuffer = frame.commandBuffer;
+	impl->currentCommandBuffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 
-	currentPipelineLayout = vk::PipelineLayout();
+	impl->currentPipelineLayout = vk::PipelineLayout();
 
 	// mark buffers deleted during gap between frames to be deleted when this frame has synced
 	// TODO: we could move this earlier and add these to the previous frame's list
-	if (!deleteResources.empty()) {
+	if (!impl->deleteResources.empty()) {
 		assert(frame.deleteResources.empty());
-		frame.deleteResources = std::move(deleteResources);
-		assert(deleteResources.empty());
+		frame.deleteResources = std::move(impl->deleteResources);
+		assert(impl->deleteResources.empty());
 	}
 
 	return true;
