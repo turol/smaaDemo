@@ -1963,28 +1963,28 @@ void RendererImpl::deleteFrameInternal(Frame &f UNUSED) {
 }
 
 
-void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle) {
+void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle) {
 #ifndef NDEBUG
-	assert(inFrame);
-	assert(!inRenderPass);
-	inRenderPass  = true;
-	validPipeline = false;
+	assert(impl->inFrame);
+	assert(!impl->inRenderPass);
+	impl->inRenderPass  = true;
+	impl->validPipeline = false;
 #endif //  NDEBUG
 
 	assert(fbHandle);
-	const auto &fb = framebuffers.get(fbHandle);
+	const auto &fb = impl->framebuffers.get(fbHandle);
 	assert(fb.fbo != 0);
 
 	assert(rpHandle);
-	const auto &rp = renderPasses.get(rpHandle);
+	const auto &rp = impl->renderPasses.get(rpHandle);
 
-	if (tracing) {
+	if (impl->tracing) {
 		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, -1, rp.desc.name_.c_str());
 	}
 
 	// make sure renderpass and framebuffer match
 	// OpenGL doesn't care but Vulkan does
-	assert(fb.renderPass == rpHandle || isRenderPassCompatible(rp, fb));
+	assert(fb.renderPass == rpHandle || impl->isRenderPassCompatible(rp, fb));
 
 	assert(fb.fbo != 0);
 	assert(fb.width > 0);
@@ -2017,8 +2017,8 @@ void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle 
 		}
 	}
 
-	currentRenderPass  = rpHandle;
-	currentFramebuffer = fbHandle;
+	impl->currentRenderPass  = rpHandle;
+	impl->currentFramebuffer = fbHandle;
 }
 
 

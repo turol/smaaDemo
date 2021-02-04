@@ -351,14 +351,14 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 }
 
 
-void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle) {
-	assert(inFrame);
-	assert(!inRenderPass);
-	inRenderPass  = true;
-	validPipeline = false;
+void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle) {
+	assert(impl->inFrame);
+	assert(!impl->inRenderPass);
+	impl->inRenderPass  = true;
+	impl->validPipeline = false;
 
 	assert(fbHandle);
-	const auto &fb = framebuffers.get(fbHandle);
+	const auto &fb = impl->framebuffers.get(fbHandle);
 
 	// make sure renderpass and framebuffer match
 	assert(fb.renderPass == rpHandle);

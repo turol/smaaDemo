@@ -3074,17 +3074,17 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 }
 
 
-void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle) {
+void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle) {
 #ifndef NDEBUG
-	assert(inFrame);
-	assert(!inRenderPass);
-	inRenderPass  = true;
-	validPipeline = false;
+	assert(impl->inFrame);
+	assert(!impl->inRenderPass);
+	impl->inRenderPass  = true;
+	impl->validPipeline = false;
 #endif  // NDEBUG
 
-	const auto &pass = renderPasses.get(rpHandle);
+	const auto &pass = impl->renderPasses.get(rpHandle);
 	assert(pass.renderPass);
-	const auto &fb   = framebuffers.get(fbHandle);
+	const auto &fb   = impl->framebuffers.get(fbHandle);
 	assert(fb.framebuffer);
 	assert(fb.width  > 0);
 	assert(fb.height > 0);
@@ -3098,11 +3098,11 @@ void RendererImpl::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle 
 	info.clearValueCount           = pass.clearValueCount;
 	info.pClearValues              = &pass.clearValues[0];
 
-	currentCommandBuffer.beginRenderPass(info, vk::SubpassContents::eInline);
+	impl->currentCommandBuffer.beginRenderPass(info, vk::SubpassContents::eInline);
 
-	currentPipelineLayout = vk::PipelineLayout();
-	currentRenderPass  = rpHandle;
-	currentFramebuffer = fbHandle;
+	impl->currentPipelineLayout = vk::PipelineLayout();
+	impl->currentRenderPass  = rpHandle;
+	impl->currentFramebuffer = fbHandle;
 }
 
 
