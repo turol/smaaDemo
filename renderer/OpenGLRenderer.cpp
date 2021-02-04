@@ -2500,20 +2500,20 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 }
 
 
-void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
+void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 #ifndef NDEBUG
-	assert(inRenderPass);
-	assert(validPipeline);
+	assert(impl->inRenderPass);
+	assert(impl->validPipeline);
 	assert(vertexCount > 0);
-	const auto &p = pipelines.get(currentPipeline);
-	assert(!p.desc.scissorTest_ || scissorSet);
-	pipelineDrawn = true;
+	const auto &p = impl->pipelines.get(impl->currentPipeline);
+	assert(!p.desc.scissorTest_ || impl->scissorSet);
+	impl->pipelineDrawn = true;
 #endif //  NDEBUG
 
-	if (decriptorSetsDirty) {
-		rebindDescriptorSets();
+	if (impl->decriptorSetsDirty) {
+		impl->rebindDescriptorSets();
 	}
-	assert(!decriptorSetsDirty);
+	assert(!impl->decriptorSetsDirty);
 
 	// TODO: get primitive from current pipeline
 	glDrawArrays(GL_TRIANGLES, firstVertex, vertexCount);

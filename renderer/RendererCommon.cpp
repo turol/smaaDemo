@@ -962,11 +962,6 @@ bool Renderer::waitForDeviceIdle() {
 }
 
 
-void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
-	impl->draw(firstVertex, vertexCount);
-}
-
-
 void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
 	impl->drawIndexedInstanced(vertexCount, instanceCount);
 }

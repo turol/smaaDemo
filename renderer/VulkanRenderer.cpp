@@ -3462,15 +3462,15 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 }
 
 
-void RendererImpl::draw(unsigned int firstVertex, unsigned int vertexCount) {
+void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 #ifndef NDEBUG
-	assert(inRenderPass);
-	assert(validPipeline);
+	assert(impl->inRenderPass);
+	assert(impl->validPipeline);
 	assert(vertexCount > 0);
-	pipelineDrawn = true;
+	impl->pipelineDrawn = true;
 #endif  // NDEBUG
 
-	currentCommandBuffer.draw(vertexCount, 1, firstVertex, 0);
+	impl->currentCommandBuffer.draw(vertexCount, 1, firstVertex, 0);
 }
 
 
