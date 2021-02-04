@@ -962,11 +962,6 @@ bool Renderer::waitForDeviceIdle() {
 }
 
 
-void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
-	impl->blit(source, target);
-}
-
-
 void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target) {
 	impl->resolveMSAA(source, target);
 }

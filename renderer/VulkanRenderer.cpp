@@ -3389,20 +3389,20 @@ void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width
 }
 
 
-void RendererImpl::blit(RenderTargetHandle source, RenderTargetHandle target) {
+void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(source);
 	assert(target);
 
-	assert(!inRenderPass);
+	assert(!impl->inRenderPass);
 
 	// TODO: check numSamples is 1 for both
 
-	const auto &srcRT = renderTargets.get(source);
+	const auto &srcRT = impl->renderTargets.get(source);
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
 	assert(srcRT.currentLayout == +Layout::TransferSrc);
 
-	const auto &destRT = renderTargets.get(target);
+	const auto &destRT = impl->renderTargets.get(target);
 	assert(destRT.width      >  0);
 	assert(destRT.height     >  0);
 	assert(destRT.currentLayout == +Layout::TransferDst);
@@ -3424,7 +3424,7 @@ void RendererImpl::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	b.dstOffsets[1u].x          = srcRT.width;
 	b.dstOffsets[1u].y          = srcRT.height;
 	b.dstOffsets[1u].z          = 1;
-	currentCommandBuffer.blitImage(srcRT.image, vk::ImageLayout::eTransferSrcOptimal, destRT.image, vk::ImageLayout::eTransferDstOptimal, { b }, vk::Filter::eNearest );
+	impl->currentCommandBuffer.blitImage(srcRT.image, vk::ImageLayout::eTransferSrcOptimal, destRT.image, vk::ImageLayout::eTransferDstOptimal, { b }, vk::Filter::eNearest );
 }
 
 

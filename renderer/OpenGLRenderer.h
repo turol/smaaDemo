@@ -709,7 +709,6 @@ struct RendererImpl : public RendererBase {
 
 	HEDLEY_WARN_UNUSED_RESULT bool waitForDeviceIdle();
 
-	void blit(RenderTargetHandle source, RenderTargetHandle target);
 	void resolveMSAA(RenderTargetHandle source, RenderTargetHandle target);
 
 	void draw(unsigned int firstVertex, unsigned int vertexCount);
