@@ -1853,15 +1853,15 @@ bool Renderer::beginFrame() {
 }
 
 
-void RendererImpl::presentFrame(RenderTargetHandle image) {
+void Renderer::presentFrame(RenderTargetHandle image) {
 #ifndef NDEBUG
-	assert(inFrame);
-	inFrame = false;
+	assert(impl->inFrame);
+	impl->inFrame = false;
 #endif //  NDEBUG
 
-	auto &frame = frames.at(currentFrameIdx);
+	auto &frame = impl->frames.at(impl->currentFrameIdx);
 
-	auto &rt = renderTargets.get(image);
+	auto &rt = impl->renderTargets.get(image);
 	assert(rt.currentLayout == +Layout::TransferSrc);
 
 	unsigned int width  = rt.width;
@@ -1869,7 +1869,7 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 
 	// TODO: only if enabled
 	glDisable(GL_SCISSOR_TEST);
-	if (features.sRGBFramebuffer) {
+	if (impl->features.sRGBFramebuffer) {
 		glEnable(GL_FRAMEBUFFER_SRGB);
 	} else {
 		glDisable(GL_FRAMEBUFFER_SRGB);
@@ -1877,14 +1877,14 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 
 
 	// TODO: necessary? should do linear blit?
-	assert(width  == swapchainDesc.width);
-	assert(height == swapchainDesc.height);
+	assert(width  == impl->swapchainDesc.width);
+	assert(height == impl->swapchainDesc.height);
 
 	assert(width > 0);
 	assert(height > 0);
 
 	if (rt.helperFBO == 0) {
-		createRTHelperFBO(rt);
+		impl->createRTHelperFBO(rt);
 	}
 	assert(rt.helperFBO != 0);
 
@@ -1893,14 +1893,14 @@ void RendererImpl::presentFrame(RenderTargetHandle image) {
 	                     , 0, 0, width, height
 	                     , GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-	SDL_GL_SwapWindow(window);
+	SDL_GL_SwapWindow(impl->window);
 
 	frame.fence        = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-	frame.usedRingBufPtr = ringBufPtr;
+	frame.usedRingBufPtr = impl->ringBufPtr;
 	frame.outstanding  = true;
-	frame.lastFrameNum = frameNum;
+	frame.lastFrameNum = impl->frameNum;
 
-	frameNum++;
+	impl->frameNum++;
 }
 
 

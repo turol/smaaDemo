@@ -709,8 +709,6 @@ struct RendererImpl : public RendererBase {
 
 	HEDLEY_WARN_UNUSED_RESULT bool waitForDeviceIdle();
 
-	void presentFrame(RenderTargetHandle image);
-
 	void beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle);
 	void endRenderPass();
 

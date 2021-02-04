@@ -305,17 +305,17 @@ bool Renderer::beginFrame() {
 }
 
 
-void RendererImpl::presentFrame(RenderTargetHandle /* rt */) {
-	assert(inFrame);
-	inFrame = false;
+void Renderer::presentFrame(RenderTargetHandle /* rt */) {
+	assert(impl->inFrame);
+	impl->inFrame = false;
 
-	auto &frame = frames.at(currentFrameIdx);
+	auto &frame = impl->frames.at(impl->currentFrameIdx);
 
-	frame.usedRingBufPtr = ringBufPtr;
+	frame.usedRingBufPtr = impl->ringBufPtr;
 	frame.outstanding    = true;
-	frame.lastFrameNum   = frameNum;
+	frame.lastFrameNum   = impl->frameNum;
 
-	frameNum++;
+	impl->frameNum++;
 }
 
 

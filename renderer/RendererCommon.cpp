@@ -962,11 +962,6 @@ bool Renderer::waitForDeviceIdle() {
 }
 
 
-void Renderer::presentFrame(RenderTargetHandle image) {
-	impl->presentFrame(image);
-}
-
-
 void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle) {
 	impl->beginRenderPass(rpHandle, fbHandle);
 }

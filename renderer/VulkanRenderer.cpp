@@ -2575,27 +2575,27 @@ bool Renderer::beginFrame() {
 }
 
 
-void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
+void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 #ifndef NDEBUG
-	assert(inFrame);
-	inFrame = false;
+	assert(impl->inFrame);
+	impl->inFrame = false;
 #endif  // NDEBUG
 
-	const auto &rt = renderTargets.get(rtHandle);
+	const auto &rt = impl->renderTargets.get(rtHandle);
 	unsigned int width  = rt.width;
 	unsigned int height = rt.height;
 
-	if (width != swapchainDesc.width || height != swapchainDesc.height) {
-		LOG("warning: rendertarget size mismatch at presentFrame, is ({}x{}) should be ({}x{})", width, height, swapchainDesc.width, swapchainDesc.height);
-		width  = std::min(width,  swapchainDesc.width);
-		height = std::min(height, swapchainDesc.height);
-		swapchainDirty  = true;
+	if (width != impl->swapchainDesc.width || height != impl->swapchainDesc.height) {
+		LOG("warning: rendertarget size mismatch at presentFrame, is ({}x{}) should be ({}x{})", width, height, impl->swapchainDesc.width, impl->swapchainDesc.height);
+		width  = std::min(width,  impl->swapchainDesc.width);
+		height = std::min(height, impl->swapchainDesc.height);
+		impl->swapchainDirty  = true;
 	}
 
-	auto &frame = frames.at(currentFrameIdx);
-	device.resetFences( { frame.fence } );
+	auto &frame = impl->frames.at(impl->currentFrameIdx);
+	impl->device.resetFences( { frame.fence } );
 
-	currentCommandBuffer.end();
+	impl->currentCommandBuffer.end();
 	// TODO: this could be a baked buffer
 	frame.presentCmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 
@@ -2653,13 +2653,13 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	std::vector<vk::PipelineStageFlags> semWaitMasks;
 	std::vector<vk::ImageMemoryBarrier> imageAcquireBarriers;
 	std::vector<vk::BufferMemoryBarrier> bufferAcquireBarriers;
-	if (!uploads.empty()) {
-		LOG("{} uploads pending", uploads.size());
+	if (!impl->uploads.empty()) {
+		LOG("{} uploads pending", impl->uploads.size());
 
 		// use semaphores to make sure draw doesn't proceed until uploads are ready
-		uploadSemaphores.reserve(uploads.size());
-		semWaitMasks.reserve(uploads.size());
-		for (auto &op : uploads) {
+		uploadSemaphores.reserve(impl->uploads.size());
+		semWaitMasks.reserve(impl->uploads.size());
+		for (auto &op : impl->uploads) {
 			uploadSemaphores.push_back(op.semaphore);
 			semWaitMasks.push_back(op.semWaitMask);
 
@@ -2673,7 +2673,7 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 		LOG("Gathered {} image and {} buffer acquire barriers from {} upload ops"
 		   , imageAcquireBarriers.size()
 		   , bufferAcquireBarriers.size()
-		   , uploads.size());
+		   , impl->uploads.size());
 
 		submit.waitSemaphoreCount   = static_cast<uint32_t>(uploadSemaphores.size());
 		submit.pWaitSemaphores      = uploadSemaphores.data();
@@ -2687,16 +2687,16 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 			barrierCmdBuf.end();
 
 			submitBuffers[0] = barrierCmdBuf;
-			submitBuffers[1] = currentCommandBuffer;
+			submitBuffers[1] = impl->currentCommandBuffer;
 			submit.commandBufferCount = 2;
 		} else {
-			submitBuffers[0]            = currentCommandBuffer;
+			submitBuffers[0]            = impl->currentCommandBuffer;
 			submit.commandBufferCount   = 1;
 		}
 
 		submit.pCommandBuffers      = submitBuffers.data();
 	} else {
-		submitBuffers[0]            = currentCommandBuffer;
+		submitBuffers[0]            = impl->currentCommandBuffer;
 		submit.pCommandBuffers      = submitBuffers.data();
 		submit.commandBufferCount   = 1;
 	}
@@ -2710,53 +2710,53 @@ void RendererImpl::presentFrame(RenderTargetHandle rtHandle) {
 	submit2.signalSemaphoreCount = 1;
 	submit2.pSignalSemaphores    = &frame.renderDoneSem;
 
-	queue.submit({ submit, submit2 }, frame.fence);
+	impl->queue.submit({ submit, submit2 }, frame.fence);
 
 	// present
 	vk::PresentInfoKHR presentInfo;
 	presentInfo.waitSemaphoreCount = 1;
 	presentInfo.pWaitSemaphores    = &frame.renderDoneSem;
 	presentInfo.swapchainCount     = 1;
-	presentInfo.pSwapchains        = &swapchain;
-	presentInfo.pImageIndices      = &currentFrameIdx;
+	presentInfo.pSwapchains        = &impl->swapchain;
+	presentInfo.pImageIndices      = &impl->currentFrameIdx;
 
-	auto presentResult = queue.presentKHR(&presentInfo);
+	auto presentResult = impl->queue.presentKHR(&presentInfo);
 	if (presentResult == vk::Result::eSuccess) {
 		// nothing to do
 	} else if (presentResult == vk::Result::eErrorOutOfDateKHR) {
 		LOG("swapchain out of date during presentKHR, marking dirty");
 		// swapchain went out of date during present, mark it dirty
-		swapchainDirty = true;
+		impl->swapchainDirty = true;
 	} else {
 		LOG("presentKHR failed: {}", vk::to_string(presentResult));
 		throw std::runtime_error("presentKHR failed");
 	}
-	frame.usedRingBufPtr = ringBufPtr;
+	frame.usedRingBufPtr = impl->ringBufPtr;
 	frame.status         = Frame::Status::Pending;
-	frame.lastFrameNum = frameNum;
+	frame.lastFrameNum   = impl->frameNum;
 
 	// mark buffers deleted during frame to be deleted when the frame has synced
-	if (!deleteResources.empty()) {
+	if (!impl->deleteResources.empty()) {
 		if (frame.deleteResources.empty()) {
 			// frame.deleteResources is empty, easy case
-			frame.deleteResources = std::move(deleteResources);
+			frame.deleteResources = std::move(impl->deleteResources);
 		} else {
 			// there's stuff already in frame.deleteResources
 			// from deleting things "between" frames
 			do {
-				frame.deleteResources.emplace_back(std::move(deleteResources.back()));
-				deleteResources.pop_back();
-			} while (!deleteResources.empty());
+				frame.deleteResources.emplace_back(std::move(impl->deleteResources.back()));
+				impl->deleteResources.pop_back();
+			} while (!impl->deleteResources.empty());
 		}
 
-		assert(deleteResources.empty());
+		assert(impl->deleteResources.empty());
 	}
 
-	if (!uploads.empty()) {
+	if (!impl->uploads.empty()) {
 		assert(frame.uploads.empty());
-		frame.uploads = std::move(uploads);
+		frame.uploads = std::move(impl->uploads);
 	}
-	frameNum++;
+	impl->frameNum++;
 }
 
 
