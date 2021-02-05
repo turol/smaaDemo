@@ -1919,9 +1919,6 @@ bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 		// nothing
 		break;
 
-	case GL_TIMEOUT_EXPIRED:
-		return false;
-
 	default:
 		// TODO: do something better
 		LOG("glClientWaitSync failed: {:#04x}", result);
