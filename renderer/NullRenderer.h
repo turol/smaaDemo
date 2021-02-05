@@ -77,7 +77,7 @@ struct Buffer {
 
 
 struct DescriptorSetLayout {
-	std::vector<DescriptorLayout> layout;
+	std::vector<DescriptorLayout>  layout;
 
 
 	DescriptorSetLayout() {}
@@ -269,7 +269,7 @@ struct RenderTarget {
 
 
 struct Sampler {
-	SamplerDesc desc;
+	SamplerDesc  desc;
 
 
 	Sampler(const Sampler &)            = delete;
@@ -300,7 +300,7 @@ struct Sampler {
 
 
 struct Texture {
-	TextureDesc desc;
+	TextureDesc  desc;
 
 
 	Texture(const Texture &)            = delete;
@@ -332,7 +332,7 @@ struct Texture {
 
 
 struct VertexShader {
-	std::string name;
+	std::string  name;
 
 
 	VertexShader()
@@ -367,9 +367,9 @@ struct VertexShader {
 
 
 struct Frame : public FrameBase {
-	bool                      outstanding;
-	unsigned int              usedRingBufPtr;
-	std::vector<BufferHandle> ephemeralBuffers;
+	bool                       outstanding;
+	unsigned int               usedRingBufPtr;
+	std::vector<BufferHandle>  ephemeralBuffers;
 
 
 	Frame()
@@ -391,9 +391,9 @@ struct Frame : public FrameBase {
 	, usedRingBufPtr(other.usedRingBufPtr)
 	, ephemeralBuffers(std::move(other.ephemeralBuffers))
 	{
-		other.outstanding      = false;
-		other.lastFrameNum     = 0;
-		other.usedRingBufPtr   = 0;
+		other.outstanding     = false;
+		other.lastFrameNum    = 0;
+		other.usedRingBufPtr  = 0;
 	}
 
 	Frame &operator=(Frame &&other) noexcept {
@@ -401,14 +401,14 @@ struct Frame : public FrameBase {
 		ephemeralBuffers = std::move(other.ephemeralBuffers);
 		assert(other.ephemeralBuffers.empty());
 
-		outstanding = other.outstanding;
-		other.outstanding = false;
+		outstanding           = other.outstanding;
+		other.outstanding     = false;
 
-		lastFrameNum = other.lastFrameNum;
-		other.lastFrameNum = 0;
+		lastFrameNum          = other.lastFrameNum;
+		other.lastFrameNum    = 0;
 
-		usedRingBufPtr       = other.usedRingBufPtr;
-		other.usedRingBufPtr = 0;
+		usedRingBufPtr        = other.usedRingBufPtr;
+		other.usedRingBufPtr  = 0;
 
 		return *this;
 	}
@@ -416,22 +416,22 @@ struct Frame : public FrameBase {
 
 
 struct RendererImpl : public RendererBase {
-	std::vector<char> ringBuffer;
+	std::vector<char>                       ringBuffer;
 
-	std::vector<Frame>                       frames;
+	std::vector<Frame>                      frames;
 
-	ResourceContainer<Buffer>              buffers;
+	ResourceContainer<Buffer>               buffers;
 	ResourceContainer<DescriptorSetLayout>  dsLayouts;
-	ResourceContainer<FragmentShader>        fragmentShaders;
-	ResourceContainer<Framebuffer>         framebuffers;
-	ResourceContainer<Pipeline>            pipelines;
-	ResourceContainer<RenderPass>          renderpasses;
-	ResourceContainer<RenderTarget>        rendertargets;
-	ResourceContainer<Sampler>             samplers;
-	ResourceContainer<Texture>             textures;
-	ResourceContainer<VertexShader>          vertexShaders;
+	ResourceContainer<FragmentShader>       fragmentShaders;
+	ResourceContainer<Framebuffer>          framebuffers;
+	ResourceContainer<Pipeline>             pipelines;
+	ResourceContainer<RenderPass>           renderpasses;
+	ResourceContainer<RenderTarget>         rendertargets;
+	ResourceContainer<Sampler>              samplers;
+	ResourceContainer<Texture>              textures;
+	ResourceContainer<VertexShader>         vertexShaders;
 
-	PipelineDesc  currentPipeline;
+	PipelineDesc                            currentPipeline;
 
 
 	void recreateRingBuffer(unsigned int newSize);
