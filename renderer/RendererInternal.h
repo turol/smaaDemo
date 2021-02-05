@@ -151,6 +151,7 @@ struct RendererBase {
 	SwapchainDesc                                        wantedSwapchain;
 	bool                                                 swapchainDirty;
 
+	uint64_t                                             frameTimeoutNanos;
 	uint32_t                                             currentFrameIdx;
 	uint32_t                                             lastSyncedFrame;
 
