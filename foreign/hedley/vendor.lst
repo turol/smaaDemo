@@ -45,6 +45,7 @@ test/unavailable.c
 test/unknown-cpp-attributes.c
 test/unknown-pragmas.c
 test/unreachable.c
+test/unused-function.c
 test/visibility.c
 test/warn-unused-result.c
 test/warn.c

@@ -1,5 +1,5 @@
-commit 4a59eb6d8e3e73b6c60aed2c92a6590d26df93d8
+commit 8fb0604a8095f6c907378cc3f0391520ae843f6f
 Author: Evan Nemerson <evan@nemerson.com>
-Date:   Sun Aug 23 19:00:36 2020 -0700
+Date:   Thu Feb 4 20:42:21 2021 -0800
 
-    Update NEWS for v14
+    Update NEWS for v15.
