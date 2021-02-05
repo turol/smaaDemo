@@ -437,7 +437,7 @@ struct RendererImpl : public RendererBase {
 	void recreateRingBuffer(unsigned int newSize);
 	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);
 
-	HEDLEY_WARN_UNUSED_RESULT bool waitForFrame(unsigned int frameIdx);
+	void waitForFrame(unsigned int frameIdx);
 	void deleteFrameInternal(Frame &f);
 
 	explicit RendererImpl(const RendererDesc &desc);

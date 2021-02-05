@@ -2525,10 +2525,7 @@ bool Renderer::beginFrame() {
 		break;
 
 	case Frame::Status::Pending:
-		if(!impl->waitForFrame(impl->currentFrameIdx)) {
-			return false;
-		}
-
+		impl->waitForFrame(impl->currentFrameIdx);
 		assert(frame.status == Frame::Status::Done);
 		impl->cleanupFrame(impl->currentFrameIdx);
 
@@ -2760,7 +2757,7 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 }
 
 
-bool RendererImpl::waitForFrame(unsigned int frameIdx) {
+void RendererImpl::waitForFrame(unsigned int frameIdx) {
 	assert(frameIdx < frames.size());
 
 	Frame &frame = frames.at(frameIdx);
@@ -2781,8 +2778,6 @@ bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 	}
 
 	frame.status = Frame::Status::Done;
-
-	return true;
 }
 
 

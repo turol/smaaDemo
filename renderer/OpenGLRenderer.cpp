@@ -1783,10 +1783,7 @@ bool RendererImpl::waitForDeviceIdle() {
 		auto &f = frames.at(i);
 		if (f.outstanding) {
 			// try to wait
-			if (!waitForFrame(i)) {
-				assert(f.outstanding);
-				return false;
-			}
+			waitForFrame(i);
 			assert(!f.outstanding);
 		}
 	}
@@ -1816,9 +1813,7 @@ bool Renderer::beginFrame() {
 	// frames are a ringbuffer
 	// if the frame we want to reuse is still pending on the GPU, wait for it
 	if (frame.outstanding) {
-		if (!impl->waitForFrame(impl->currentFrameIdx)) {
-			return false;
-		}
+		impl->waitForFrame(impl->currentFrameIdx);
 	}
 	assert(!frame.outstanding);
 
@@ -1904,7 +1899,7 @@ void Renderer::presentFrame(RenderTargetHandle image) {
 }
 
 
-bool RendererImpl::waitForFrame(unsigned int frameIdx) {
+void RendererImpl::waitForFrame(unsigned int frameIdx) {
 	assert(frameIdx < frames.size());
 
 	Frame &frame = frames.at(frameIdx);
@@ -1950,8 +1945,6 @@ bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 	frame.outstanding = false;
 	lastSyncedFrame = std::max(lastSyncedFrame, frame.lastFrameNum);
 	lastSyncedRingBufPtr = std::max(lastSyncedRingBufPtr, frame.usedRingBufPtr);
-
-	return true;
 }
 
 
