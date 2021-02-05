@@ -2772,9 +2772,6 @@ bool RendererImpl::waitForFrame(unsigned int frameIdx) {
 		// nothing
 		break;
 
-	case vk::Result::eTimeout:
-		return false;
-
 	default: {
 		// TODO: better exception types
 		std::string s = vk::to_string(waitResult);
