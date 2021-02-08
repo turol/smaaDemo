@@ -2417,7 +2417,7 @@ bool RendererImpl::waitForDeviceIdle() {
 		}
 		}
 
-		unsigned int UNUSED count = 0;
+		unsigned int DEBUG_ASSERTED count = 0;
 		for (unsigned int i = 0; i < frames.size(); i++) {
 			auto &f = frames.at(i);
 			switch (f.status) {
