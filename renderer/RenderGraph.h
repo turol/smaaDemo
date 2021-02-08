@@ -392,7 +392,7 @@ public:
 	}
 
 
-	void reset(Renderer &renderer, std::function<void(void)> processEvents) {
+	void reset(Renderer &renderer, std::function<void(void)> /* processEvents */) {
 		assert(state == +RGState::Invalid || state == +RGState::Ready);
 		state = RGState::Building;
 
@@ -436,9 +436,7 @@ public:
 
 		operations.clear();
 
-		while (!renderer.waitForDeviceIdle()) {
-			processEvents();
-		}
+		renderer.waitForDeviceIdle();
 	}
 
 

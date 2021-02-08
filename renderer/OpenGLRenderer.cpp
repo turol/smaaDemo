@@ -727,11 +727,7 @@ RendererImpl::~RendererImpl() {
 	assert(ringBuffer != 0);
 
 	// wait for all pending frames to finish
-	while (!waitForDeviceIdle()) {
-		// run event loop to avoid hangs
-		SDL_PumpEvents();
-		// TODO: wait?
-	}
+	waitForDeviceIdle();
 
 	for (unsigned int i = 0; i < frames.size(); i++) {
 		auto &f = frames.at(i);
@@ -1745,9 +1741,7 @@ bool RendererImpl::recreateSwapchain() {
 
 	if (frames.size() != numImages) {
 		if (numImages < frames.size()) {
-			// FIXME: return false if waitForDeviceIdle fails
-			while (!waitForDeviceIdle()) {
-			}
+			waitForDeviceIdle();
 
 			// decreasing, delete old and resize
 			for (unsigned int i = numImages; i < frames.size(); i++) {
@@ -1778,7 +1772,7 @@ MemoryStats Renderer::getMemStats() const {
 }
 
 
-bool RendererImpl::waitForDeviceIdle() {
+void RendererImpl::waitForDeviceIdle() {
 	for (unsigned int i = 0; i < frames.size(); i++) {
 		auto &f = frames.at(i);
 		if (f.outstanding) {
@@ -1787,8 +1781,6 @@ bool RendererImpl::waitForDeviceIdle() {
 			assert(!f.outstanding);
 		}
 	}
-
-	return true;
 }
 
 

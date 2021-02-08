@@ -959,7 +959,7 @@ public:
 	glm::uvec2 getDrawableSize() const;
 	MemoryStats getMemStats() const;
 
-	HEDLEY_WARN_UNUSED_RESULT bool waitForDeviceIdle();
+	void waitForDeviceIdle();
 
 	// rendering
 	HEDLEY_WARN_UNUSED_RESULT bool beginFrame();

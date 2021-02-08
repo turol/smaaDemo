@@ -958,7 +958,7 @@ const RendererFeatures &Renderer::getFeatures() const {
 }
 
 
-bool Renderer::waitForDeviceIdle() {
+void Renderer::waitForDeviceIdle() {
 	return impl->waitForDeviceIdle();
 }
 

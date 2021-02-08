@@ -880,11 +880,7 @@ RendererImpl::~RendererImpl() {
 	device.destroyPipelineCache(pipelineCache);
 	pipelineCache = vk::PipelineCache();
 
-	while (!waitForDeviceIdle()) {
-		// run event loop to avoid hangs
-		SDL_PumpEvents();
-		// TODO: wait?
-	}
+	waitForDeviceIdle();
 
 	for (unsigned int i = 0; i < frames.size(); i++) {
 		auto &f = frames.at(i);
@@ -2186,10 +2182,7 @@ glm::uvec2 Renderer::getDrawableSize() const {
 bool RendererImpl::recreateSwapchain() {
 	assert(swapchainDirty);
 
-	// check for idle, make caller deal if not
-	if (!waitForDeviceIdle()) {
-		return false;
-	}
+	waitForDeviceIdle();
 
 	surfaceCapabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
 	LOG("image count min-max {} - {}", surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
@@ -2382,7 +2375,7 @@ MemoryStats Renderer::getMemStats() const {
 }
 
 
-bool RendererImpl::waitForDeviceIdle() {
+void RendererImpl::waitForDeviceIdle() {
 	std::vector<vk::Fence> fences;
 
 	for (unsigned int i = 0; i < frames.size(); i++) {
@@ -2433,8 +2426,6 @@ bool RendererImpl::waitForDeviceIdle() {
 		this->deleteResourceInternal(const_cast<Resource &>(r));
 	}
 	deleteResources.clear();
-
-	return true;
 }
 
 
