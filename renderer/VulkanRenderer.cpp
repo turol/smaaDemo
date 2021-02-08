@@ -2400,7 +2400,7 @@ bool RendererImpl::waitForDeviceIdle() {
 	}
 
 	if (!fences.empty()) {
-		auto waitResult = device.waitForFences( fences, true, 0);
+		auto waitResult = device.waitForFences( fences, true, frameTimeoutNanos);
 		switch (waitResult) {
 		case vk::Result::eSuccess:
 			// nothing
