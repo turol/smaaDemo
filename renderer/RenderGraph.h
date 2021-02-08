@@ -392,7 +392,7 @@ public:
 	}
 
 
-	void reset(Renderer &renderer, std::function<void(void)> /* processEvents */) {
+	void reset(Renderer &renderer) {
 		assert(state == +RGState::Invalid || state == +RGState::Ready);
 		state = RGState::Building;
 

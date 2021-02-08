@@ -751,7 +751,7 @@ SMAADemo::~SMAADemo() {
 		renderer.deleteRenderTarget(temporalRTs[1]);
 	}
 
-	renderGraph.reset(renderer, SDL_PumpEvents);
+	renderGraph.reset(renderer);
 
 	if (cubeVBO) {
 		renderer.deleteBuffer(cubeVBO);
@@ -1289,7 +1289,7 @@ void SMAADemo::rebuildRenderGraph() {
 		temporalRTs[1] = RenderTargetHandle();
 	}
 
-	renderGraph.reset(renderer, std::bind(std::mem_fn(&SMAADemo::processInput), this));
+	renderGraph.reset(renderer);
 
 	if (antialiasing && aaMethod == +AAMethod::MSAA) {
 		numSamples = msaaQualityToSamples(msaaQuality);
