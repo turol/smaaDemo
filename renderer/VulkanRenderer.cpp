@@ -2401,17 +2401,11 @@ bool RendererImpl::waitForDeviceIdle() {
 
 	if (!fences.empty()) {
 		auto waitResult = device.waitForFences( fences, true, frameTimeoutNanos);
-		switch (waitResult) {
-		case vk::Result::eSuccess:
-			// nothing
-			break;
-
-		default: {
+		if (waitResult != vk::Result::eSuccess) {
 			// TODO: better exception types
 			std::string s = vk::to_string(waitResult);
 			LOG("wait result is not success: {}", s);
 			throw std::runtime_error("wait result is not success " + s);
-		}
 		}
 
 		unsigned int DEBUG_ASSERTED count = 0;
