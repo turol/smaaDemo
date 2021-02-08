@@ -2406,9 +2406,6 @@ bool RendererImpl::waitForDeviceIdle() {
 			// nothing
 			break;
 
-		case vk::Result::eTimeout:
-			return false;
-
 		default: {
 			// TODO: better exception types
 			std::string s = vk::to_string(waitResult);
