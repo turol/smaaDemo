@@ -209,8 +209,14 @@ static VkBool32 VKAPI_PTR debugMessengerFunc(VkDebugUtilsMessageSeverityFlagBits
 	logFlush();
 
 	// make errors fatal
-	// TODO: errors only, not warnings or other info
-	abort();
+	switch (vk::DebugUtilsMessageSeverityFlagBitsEXT(severity)) {
+	case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
+	case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
+		abort();
+
+	default:
+		break;
+	}
 
 	return VK_FALSE;
 }
@@ -221,8 +227,14 @@ static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebug
 	logFlush();
 
 	// make errors fatal
-	// TODO: errors only, not warnings or other info
-	abort();
+	switch (vk::DebugReportFlagBitsEXT(flags)) {
+	case vk::DebugReportFlagBitsEXT::eWarning:
+	case vk::DebugReportFlagBitsEXT::eError:
+		abort();
+
+	default:
+		break;
+	}
 
 	return VK_FALSE;
 }
