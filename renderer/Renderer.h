@@ -288,6 +288,7 @@ BETTER_ENUM(Layout, uint8_t
 	, TransferSrc
 	, TransferDst
 	, ColorAttachment
+	, Present
 )
 
 

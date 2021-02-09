@@ -1132,6 +1132,9 @@ static vk::ImageLayout vulkanLayout(Layout l) {
 
 	case Layout::ColorAttachment:
 		return vk::ImageLayout::eColorAttachmentOptimal;
+
+	case Layout::Present:
+		return vk::ImageLayout::ePresentSrcKHR;
 	}
 
 	HEDLEY_UNREACHABLE();
@@ -1411,6 +1414,10 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 			case Layout::ColorAttachment:
 				d.dstStageMask   |= vk::PipelineStageFlagBits::eColorAttachmentOutput;
 				d.dstAccessMask  |= vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
+				break;
+
+			case Layout::Present:
+				d.dstStageMask   |= vk::PipelineStageFlagBits::eBottomOfPipe;
 				break;
 
 			}
