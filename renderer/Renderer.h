@@ -68,6 +68,106 @@ struct Texture;
 template <class T> class ResourceContainer;
 
 
+// #define HANDLE_OWNERSHIP_DEBUG 1
+
+
+#ifdef HANDLE_OWNERSHIP_DEBUG
+
+
+template <class T>
+class Handle {
+	friend class ResourceContainer<T>;
+
+	uint32_t handle;
+	bool owned;
+
+
+	Handle(uint32_t handle_, bool owned_ = true)
+	: handle(handle_)
+	, owned(owned_)
+	{
+	}
+
+public:
+
+
+	Handle()
+	: handle(0)
+	, owned(false)
+	{
+	}
+
+
+	~Handle() {
+		assert(!owned);
+	}
+
+
+	// copying a Handle, new copy is not owned no matter what
+	Handle(const Handle<T> &other)
+	: handle(other.handle)
+	, owned(false)
+	{
+	}
+
+
+	Handle &operator=(const Handle<T> &other) noexcept {
+		if (this != &other) {
+			assert(!this->owned && "Overwriting an owned handle when copying");
+			handle = other.handle;
+		}
+
+		return *this;
+	}
+
+
+	// Moving an owned handle takes ownership
+	Handle(Handle<T> &&other) noexcept
+	: handle(0)
+	, owned(false)
+	{
+		assert(other.handle && "Trying to move an empty handle");
+		handle       = other.handle;
+		owned        = other.owned;
+
+		other.handle = 0;
+		other.owned  = false;
+	}
+
+
+	Handle<T> &operator=(Handle<T> &&other) noexcept {
+		if (this != &other) {
+			assert(!this->owned && "Overwriting an owned handle when moving");
+			handle       = other.handle;
+			owned        = other.owned;
+
+			other.handle = 0;
+            other.owned  = false;
+		}
+
+		return *this;
+	}
+
+
+	bool operator==(const Handle<T> &other) const {
+		return handle == other.handle;
+	}
+
+
+	bool operator!=(const Handle<T> &other) const {
+		return handle != other.handle;
+	}
+
+
+	explicit operator bool() const {
+		return handle != 0;
+	}
+};
+
+
+#else  // HANDLE_OWNERSHIP_DEBUG
+
+
 template <class T>
 class Handle {
 	friend class ResourceContainer<T>;
@@ -114,6 +214,9 @@ public:
 		return handle != 0;
 	}
 };
+
+
+#endif  // HANDLE_OWNERSHIP_DEBUG
 
 
 typedef Handle<Buffer>               BufferHandle;
