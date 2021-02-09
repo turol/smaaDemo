@@ -53,8 +53,8 @@ public:
 	ResourceContainer(const ResourceContainer<T> &)            = delete;
 	ResourceContainer &operator=(const ResourceContainer<T> &) = delete;
 
-	ResourceContainer(ResourceContainer<T> &&)                 = delete;
-	ResourceContainer &operator=(ResourceContainer<T> &&)      = delete;
+	ResourceContainer(ResourceContainer<T> &&) noexcept            = delete;
+	ResourceContainer &operator=(ResourceContainer<T> &&) noexcept = delete;
 
 	~ResourceContainer() {}
 

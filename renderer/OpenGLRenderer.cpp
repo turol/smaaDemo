@@ -952,11 +952,11 @@ struct ResourceInfo {
 
 
 	ResourceInfo(const ResourceInfo &)            = default;
-	ResourceInfo(ResourceInfo &&)                 = default;
+	ResourceInfo(ResourceInfo &&) noexcept        = default;
 
 
 	ResourceInfo &operator=(const ResourceInfo &) = default;
-	ResourceInfo &operator=(ResourceInfo &&)      = default;
+	ResourceInfo &operator=(ResourceInfo &&) noexcept = default;
 
 	~ResourceInfo() {}
 };

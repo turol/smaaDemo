@@ -50,10 +50,10 @@ struct ShaderResources {
 	~ShaderResources() {}
 
 	ShaderResources(const ShaderResources &)            = default;
-	ShaderResources(ShaderResources &&)                 = default;
+	ShaderResources(ShaderResources &&) noexcept        = default;
 
 	ShaderResources &operator=(const ShaderResources &) = default;
-	ShaderResources &operator=(ShaderResources &&)      = default;
+	ShaderResources &operator=(ShaderResources &&) noexcept = default;
 
 };
 
@@ -231,7 +231,7 @@ struct Framebuffer {
 		other.depthStencil = RenderTargetHandle();
 	}
 
-	Framebuffer &operator=(Framebuffer &&other) = delete;
+	Framebuffer &operator=(Framebuffer &&other) noexcept = delete;
 
 	Framebuffer()
 	: width(0)

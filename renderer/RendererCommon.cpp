@@ -428,8 +428,8 @@ struct CacheData {
 	CacheData(const CacheData &)            = default;
 	CacheData &operator=(const CacheData &) = default;
 
-	CacheData(CacheData &&)                 = default;
-	CacheData &operator=(CacheData &&)      = default;
+	CacheData(CacheData &&) noexcept            = default;
+	CacheData &operator=(CacheData &&) noexcept = default;
 
 	~CacheData() {}
 

@@ -125,8 +125,8 @@ class RandomGen {
 
 	RandomGen(const RandomGen &) = delete;
 	RandomGen &operator=(const RandomGen &) = delete;
-	RandomGen(RandomGen &&) = delete;
-	RandomGen &operator=(RandomGen &&) = delete;
+	RandomGen(RandomGen &&) noexcept            = delete;
+	RandomGen &operator=(RandomGen &&) noexcept = delete;
 
 public:
 
@@ -557,8 +557,8 @@ class SMAADemo {
 
 	SMAADemo(const SMAADemo &) = delete;
 	SMAADemo &operator=(const SMAADemo &) = delete;
-	SMAADemo(SMAADemo &&) = delete;
-	SMAADemo &operator=(SMAADemo &&) = delete;
+	SMAADemo(SMAADemo &&) noexcept            = delete;
+	SMAADemo &operator=(SMAADemo &&) noexcept = delete;
 
 	void rebuildRenderGraph();
 

@@ -1056,10 +1056,10 @@ struct RendererImpl : public RendererBase {
 		}
 
 		ResourceDeleter(const ResourceDeleter &)            = default;
-		ResourceDeleter(ResourceDeleter &&)                 = default;
+		ResourceDeleter(ResourceDeleter &&) noexcept        = default;
 
 		ResourceDeleter &operator=(const ResourceDeleter &) = default;
-		ResourceDeleter &operator=(ResourceDeleter &&)      = default;
+		ResourceDeleter &operator=(ResourceDeleter &&) noexcept = default;
 
 		~ResourceDeleter() {}
 

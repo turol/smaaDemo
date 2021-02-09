@@ -45,7 +45,7 @@ struct Buffer {
 	Buffer(const Buffer &)            = delete;
 	Buffer &operator=(const Buffer &) = delete;
 
-	Buffer(Buffer &&other)
+	Buffer(Buffer &&other) noexcept
 	: ringBufferAlloc(other.ringBufferAlloc)
 	, beginOffs(other.beginOffs)
 	, size(other.size)
@@ -55,7 +55,7 @@ struct Buffer {
 		other.size            = 0;
 	}
 
-	Buffer &operator=(Buffer &&other) {
+	Buffer &operator=(Buffer &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -85,13 +85,13 @@ struct DescriptorSetLayout {
 	DescriptorSetLayout(const DescriptorSetLayout &)            = delete;
 	DescriptorSetLayout &operator=(const DescriptorSetLayout &) = delete;
 
-	DescriptorSetLayout(DescriptorSetLayout &&other)
+	DescriptorSetLayout(DescriptorSetLayout &&other) noexcept
 	: layout(std::move(other.layout))
 	{
 		assert(other.layout.empty());
 	}
 
-	DescriptorSetLayout &operator=(DescriptorSetLayout &&other) {
+	DescriptorSetLayout &operator=(DescriptorSetLayout &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -118,13 +118,13 @@ struct FragmentShader {
 	FragmentShader(const FragmentShader &)            = delete;
 	FragmentShader &operator=(const FragmentShader &) = delete;
 
-	FragmentShader(FragmentShader &&other)
+	FragmentShader(FragmentShader &&other) noexcept
 	: name(std::move(other.name))
 	{
 		assert(other.name.empty());
 	}
 
-	FragmentShader &operator=(FragmentShader &&other) {
+	FragmentShader &operator=(FragmentShader &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -148,13 +148,13 @@ struct Framebuffer {
 	Framebuffer(const Framebuffer &)            = delete;
 	Framebuffer &operator=(const Framebuffer &) = delete;
 
-	Framebuffer(Framebuffer &&other)
+	Framebuffer(Framebuffer &&other) noexcept
 	: renderPass(other.renderPass)
 	{
 		other.renderPass = RenderPassHandle();
 	}
 
-	Framebuffer &operator=(Framebuffer &&other) {
+	Framebuffer &operator=(Framebuffer &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -182,13 +182,13 @@ struct Pipeline {
 	Pipeline(const Pipeline &)            = delete;
 	Pipeline &operator=(const Pipeline &) = delete;
 
-	Pipeline(Pipeline &&other)
+	Pipeline(Pipeline &&other) noexcept
 	: desc(other.desc)
 	{
 		other.desc = PipelineDesc();
 	}
 
-	Pipeline &operator=(Pipeline &&other) {
+	Pipeline &operator=(Pipeline &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -213,13 +213,13 @@ struct RenderPass {
 	RenderPass(const RenderPass &)            = delete;
 	RenderPass &operator=(const RenderPass &) = delete;
 
-	RenderPass(RenderPass &&other)
+	RenderPass(RenderPass &&other) noexcept
 	: desc(other.desc)
 	{
 		other.desc = RenderPassDesc();
 	}
 
-	RenderPass &operator=(RenderPass &&other) {
+	RenderPass &operator=(RenderPass &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -244,13 +244,13 @@ struct RenderTarget {
 	RenderTarget(const RenderTarget &)            = delete;
 	RenderTarget &operator=(const RenderTarget &) = delete;
 
-	RenderTarget(RenderTarget &&other)
+	RenderTarget(RenderTarget &&other) noexcept
 	: desc(other.desc)
 	{
 		other.desc = RenderTargetDesc();
 	}
 
-	RenderTarget &operator=(RenderTarget &&other) {
+	RenderTarget &operator=(RenderTarget &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -275,13 +275,13 @@ struct Sampler {
 	Sampler(const Sampler &)            = delete;
 	Sampler &operator=(const Sampler &) = delete;
 
-	Sampler(Sampler &&other)
+	Sampler(Sampler &&other) noexcept
 	: desc(other.desc)
 	{
 		other.desc = SamplerDesc();
 	}
 
-	Sampler &operator=(Sampler &&other) {
+	Sampler &operator=(Sampler &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -306,13 +306,13 @@ struct Texture {
 	Texture(const Texture &)            = delete;
 	Texture &operator=(const Texture &) = delete;
 
-	Texture(Texture &&other)
+	Texture(Texture &&other) noexcept
 	: desc(other.desc)
 	{
 		other.desc = TextureDesc();
 	}
 
-	Texture &operator=(Texture &&other)
+	Texture &operator=(Texture &&other) noexcept
 	{
 		if (this == &other) {
 			return *this;
@@ -343,13 +343,13 @@ struct VertexShader {
 	VertexShader(const VertexShader &)            = delete;
 	VertexShader &operator=(const VertexShader &) = delete;
 
-	VertexShader(VertexShader &&other)
+	VertexShader(VertexShader &&other) noexcept
 	: name(std::move(other.name))
 	{
 		assert(other.name.empty());
 	}
 
-	VertexShader &operator=(VertexShader &&other) {
+	VertexShader &operator=(VertexShader &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
