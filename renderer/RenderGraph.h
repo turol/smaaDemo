@@ -533,11 +533,15 @@ public:
 							 );
 		}
 
+		// TODO: log operations
+		// TODO: merge operations
+
 		// automatically decide layouts
 		{
 			HashMap<RT, Layout> currentLayouts;
 
 			// initialize final render target to transfer src
+			// TODO: Layout::Present
 			currentLayouts[finalTarget] = Layout::TransferSrc;
 
 			// initialize external rendertargets final layouts
