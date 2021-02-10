@@ -938,6 +938,7 @@ struct Frame : public FrameBase {
 		usedRingBufPtr       = other.usedRingBufPtr;
 		other.usedRingBufPtr = 0;
 
+		assert(deleteResources.empty());
 		deleteResources = std::move(other.deleteResources);
 		assert(other.deleteResources.empty());
 
