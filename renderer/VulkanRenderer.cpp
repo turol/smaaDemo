@@ -2475,7 +2475,7 @@ bool Renderer::beginFrame() {
 
 		impl->frameAcquireSem = impl->allocateSemaphore();
 
-		vk::Result result = device.acquireNextImageKHR(impl->swapchain, 0, impl->frameAcquireSem, vk::Fence(), &imageIdx);
+		vk::Result result = device.acquireNextImageKHR(impl->swapchain, impl->frameTimeoutNanos, impl->frameAcquireSem, vk::Fence(), &imageIdx);
 		switch (result) {
 		case vk::Result::eSuccess:
 			// nothing to do
