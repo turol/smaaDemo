@@ -2467,37 +2467,26 @@ bool Renderer::beginFrame() {
 		impl->frameAcquireSem = impl->allocateSemaphore();
 
 		vk::Result result = device.acquireNextImageKHR(impl->swapchain, impl->frameTimeoutNanos, impl->frameAcquireSem, vk::Fence(), &imageIdx);
-		switch (result) {
-		case vk::Result::eSuccess:
-			// nothing to do
-			break;
+		while (result != vk::Result::eSuccess) {
+			if (result == vk::Result::eSuboptimalKHR) {
+				LOG("swapchain suboptimal during acquireNextImageKHR, recreating on next frame...");
+				logFlush();
+				impl->swapchainDirty = true;
+				break;
+			} else if (result == vk::Result::eErrorOutOfDateKHR) {
+				// swapchain went out of date during acquire, recreate and try again
+				LOG("swapchain out of date during acquireNextImageKHR, recreating immediately...");
+				logFlush();
+				impl->swapchainDirty = true;
+				impl->recreateSwapchain();
+				assert(!impl->swapchainDirty);
+			} else {
+				LOG("acquireNextImageKHR failed: {}", vk::to_string(result));
+				logFlush();
+				throw std::runtime_error("acquireNextImageKHR failed");
+			}
 
-		case vk::Result::eErrorOutOfDateKHR:
-			// swapchain went out of date during acquire, recreate and try again
-			LOG("swapchain out of date during acquireNextImageKHR, recreating...");
-			logFlush();
-			impl->swapchainDirty = true;
-
-			// fallthrough
-		case vk::Result::eTimeout:
-		case vk::Result::eNotReady:
-			impl->freeSemaphore(impl->frameAcquireSem);
-			impl->frameAcquireSem = vk::Semaphore();
-
-			return false;
-
-		case vk::Result::eSuboptimalKHR:
-			LOG("swapchain suboptimal during acquireNextImageKHR, recreating...");
-			logFlush();
-			impl->swapchainDirty = true;
-			// suboptimal is considered success so proceed
-
-			break;
-
-		default:
-			LOG("acquireNextImageKHR failed: {}", vk::to_string(result));
-			logFlush();
-			throw std::runtime_error("acquireNextImageKHR failed");
+			result = device.acquireNextImageKHR(impl->swapchain, impl->frameTimeoutNanos, impl->frameAcquireSem, vk::Fence(), &imageIdx);
 		}
 
 		impl->frameAcquired = true;
