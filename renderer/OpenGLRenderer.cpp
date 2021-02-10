@@ -1793,7 +1793,8 @@ bool Renderer::beginFrame() {
 		// return false when recreateSwapchain fails and let caller deal with it
 		if (!impl->recreateSwapchain()) {
 			assert(impl->swapchainDirty);
-			return false;
+			LOG("swapchain still dirty after recreateSwapchain");
+			throw std::runtime_error("swapchain still dirty after recreateSwapchain");
 		}
 		assert(!impl->swapchainDirty);
 	}
