@@ -2551,6 +2551,7 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 	}
 
 	auto &frame = impl->frames.at(impl->currentFrameIdx);
+	assert(frame.acquireSem);
 	impl->device.resetFences( { frame.fence } );
 
 	impl->currentCommandBuffer.end();
@@ -2615,8 +2616,8 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 		LOG("{} uploads pending", impl->uploads.size());
 
 		// use semaphores to make sure draw doesn't proceed until uploads are ready
-		waitSemaphores.reserve(impl->uploads.size());
-		semWaitMasks.reserve(impl->uploads.size());
+		waitSemaphores.reserve(impl->uploads.size() + 1);
+		semWaitMasks.reserve(impl->uploads.size() + 1);
 		for (auto &op : impl->uploads) {
 			waitSemaphores.push_back(op.semaphore);
 			semWaitMasks.push_back(op.semWaitMask);
@@ -2632,6 +2633,9 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 		   , imageAcquireBarriers.size()
 		   , bufferAcquireBarriers.size()
 		   , impl->uploads.size());
+
+		waitSemaphores.push_back(frame.acquireSem);
+		semWaitMasks.push_back(acquireWaitStage);
 
 		submit.waitSemaphoreCount   = static_cast<uint32_t>(waitSemaphores.size());
 		submit.pWaitSemaphores      = waitSemaphores.data();
@@ -2654,15 +2658,19 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 
 		submit.pCommandBuffers      = submitBuffers.data();
 	} else {
+		waitSemaphores.push_back(frame.acquireSem);
+		semWaitMasks.push_back(acquireWaitStage);
+
+		submit.waitSemaphoreCount   = static_cast<uint32_t>(waitSemaphores.size());
+		submit.pWaitSemaphores      = waitSemaphores.data();
+		submit.pWaitDstStageMask    = semWaitMasks.data();
+
 		submitBuffers[0]            = impl->currentCommandBuffer;
 		submit.pCommandBuffers      = submitBuffers.data();
 		submit.commandBufferCount   = 1;
 	}
 
 	vk::SubmitInfo submit2;
-	submit2.waitSemaphoreCount   = 1;
-	submit2.pWaitSemaphores      = &frame.acquireSem;
-	submit2.pWaitDstStageMask    = &acquireWaitStage;
 	submit2.commandBufferCount   = 1;
 	submit2.pCommandBuffers      = &frame.presentCmdBuf;
 	submit2.signalSemaphoreCount = 1;
