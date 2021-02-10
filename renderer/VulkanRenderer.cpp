@@ -2607,7 +2607,7 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 
 	std::array<vk::CommandBuffer, 2> submitBuffers;
 
-	std::vector<vk::Semaphore>          uploadSemaphores;
+	std::vector<vk::Semaphore>          waitSemaphores;
 	std::vector<vk::PipelineStageFlags> semWaitMasks;
 	std::vector<vk::ImageMemoryBarrier> imageAcquireBarriers;
 	std::vector<vk::BufferMemoryBarrier> bufferAcquireBarriers;
@@ -2615,10 +2615,10 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 		LOG("{} uploads pending", impl->uploads.size());
 
 		// use semaphores to make sure draw doesn't proceed until uploads are ready
-		uploadSemaphores.reserve(impl->uploads.size());
+		waitSemaphores.reserve(impl->uploads.size());
 		semWaitMasks.reserve(impl->uploads.size());
 		for (auto &op : impl->uploads) {
-			uploadSemaphores.push_back(op.semaphore);
+			waitSemaphores.push_back(op.semaphore);
 			semWaitMasks.push_back(op.semWaitMask);
 
 			imageAcquireBarriers.insert(imageAcquireBarriers.end()
@@ -2633,8 +2633,8 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 		   , bufferAcquireBarriers.size()
 		   , impl->uploads.size());
 
-		submit.waitSemaphoreCount   = static_cast<uint32_t>(uploadSemaphores.size());
-		submit.pWaitSemaphores      = uploadSemaphores.data();
+		submit.waitSemaphoreCount   = static_cast<uint32_t>(waitSemaphores.size());
+		submit.pWaitSemaphores      = waitSemaphores.data();
 		submit.pWaitDstStageMask    = semWaitMasks.data();
 
 		if (!imageAcquireBarriers.empty() || !bufferAcquireBarriers.empty()) {
