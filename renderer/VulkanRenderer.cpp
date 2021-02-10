@@ -2628,13 +2628,6 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 		   , bufferAcquireBarriers.size()
 		   , impl->uploads.size());
 
-		waitSemaphores.push_back(frame.acquireSem);
-		semWaitMasks.push_back(acquireWaitStage);
-
-		submit.waitSemaphoreCount   = static_cast<uint32_t>(waitSemaphores.size());
-		submit.pWaitSemaphores      = waitSemaphores.data();
-		submit.pWaitDstStageMask    = semWaitMasks.data();
-
 		if (!imageAcquireBarriers.empty() || !bufferAcquireBarriers.empty()) {
 			LOG("submitting acquire barriers");
 			auto barrierCmdBuf = frame.barrierCmdBuf;
@@ -2652,17 +2645,17 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 
 		submit.pCommandBuffers      = submitBuffers.data();
 	} else {
-		waitSemaphores.push_back(frame.acquireSem);
-		semWaitMasks.push_back(acquireWaitStage);
-
-		submit.waitSemaphoreCount   = static_cast<uint32_t>(waitSemaphores.size());
-		submit.pWaitSemaphores      = waitSemaphores.data();
-		submit.pWaitDstStageMask    = semWaitMasks.data();
-
 		submitBuffers[0]            = impl->currentCommandBuffer;
 		submit.pCommandBuffers      = submitBuffers.data();
 		submit.commandBufferCount   = 1;
 	}
+
+	waitSemaphores.push_back(frame.acquireSem);
+	semWaitMasks.push_back(acquireWaitStage);
+
+	submit.waitSemaphoreCount   = static_cast<uint32_t>(waitSemaphores.size());
+	submit.pWaitSemaphores      = waitSemaphores.data();
+	submit.pWaitDstStageMask    = semWaitMasks.data();
 
 	submit.signalSemaphoreCount = 1;
 	submit.pSignalSemaphores    = &frame.renderDoneSem;
