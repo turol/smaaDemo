@@ -247,7 +247,6 @@ static uint32_t makeVulkanVersion(const Version &v) {
 
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
-, frameAcquired(false)
 , physicalDeviceIndex(0)
 , graphicsQueueIndex(0)
 , transferQueueIndex(0)
@@ -874,14 +873,7 @@ RendererImpl::~RendererImpl() {
 	assert(transferCmdPool);
 	assert(pipelineCache);
 
-	if (frameAcquired) {
-		LOG("warning: acquired but not presented frame while shutting down");
-		assert(frameAcquireSem);
-		freeSemaphore(frameAcquireSem);
-		frameAcquireSem = vk::Semaphore();
-	} else {
-		assert(!frameAcquireSem);
-	}
+	assert(!frameAcquireSem);
 
 	// save pipeline cache
 	auto cacheData = device.getPipelineCacheData(pipelineCache);
@@ -2450,10 +2442,6 @@ void Renderer::beginFrame() {
 
 	auto device = impl->device;
 
-	if (impl->frameAcquired) {
-		assert(impl->frameAcquireSem);
-		// nothing, continue to wait
-	} else {
 		assert(!impl->frameAcquireSem);
 
 		if (impl->swapchainDirty) {
@@ -2489,18 +2477,14 @@ void Renderer::beginFrame() {
 			result = device.acquireNextImageKHR(impl->swapchain, impl->frameTimeoutNanos, impl->frameAcquireSem, vk::Fence(), &imageIdx);
 		}
 
-		impl->frameAcquired = true;
-
 		assert(imageIdx < impl->frames.size());
 		impl->currentFrameIdx        = imageIdx;
-	}
 
 	auto &frame            = impl->frames.at(impl->currentFrameIdx);
 
 	// frames are a ringbuffer
 	// if the frame we want to reuse is still pending on the GPU, wait for it
 	// if not done, return false and let caller deal with calling us again
-	// frameAcquired should make sure we don't acquire again
 	switch (frame.status) {
 	case Frame::Status::Ready:
 		break;
@@ -2517,8 +2501,6 @@ void Renderer::beginFrame() {
 	}
 
 	assert(frame.status == Frame::Status::Ready);
-
-	impl->frameAcquired = false;
 
 #ifndef NDEBUG
 	impl->inFrame       = true;
