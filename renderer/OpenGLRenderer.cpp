@@ -644,11 +644,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	glCreateVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	if (!recreateSwapchain()) {
-		LOG("initial swapchain create failed");
-		throw std::runtime_error("initial swapchain create failed");
-	}
-
+	recreateSwapchain();
 	recreateRingBuffer(desc.ephemeralRingBufSize);
 
 	// swap once to get better traces
@@ -1718,7 +1714,7 @@ glm::uvec2 Renderer::getDrawableSize() const {
 }
 
 
-bool RendererImpl::recreateSwapchain() {
+void RendererImpl::recreateSwapchain() {
 	assert(swapchainDirty);
 
 	int w = -1, h = -1;
@@ -1761,8 +1757,6 @@ bool RendererImpl::recreateSwapchain() {
 	}
 
 	swapchainDirty = false;
-
-	return true;
 }
 
 
@@ -1790,12 +1784,7 @@ bool Renderer::beginFrame() {
 #endif //  NDEBUG
 
 	if (impl->swapchainDirty) {
-		// return false when recreateSwapchain fails and let caller deal with it
-		if (!impl->recreateSwapchain()) {
-			assert(impl->swapchainDirty);
-			LOG("swapchain still dirty after recreateSwapchain");
-			throw std::runtime_error("swapchain still dirty after recreateSwapchain");
-		}
+		impl->recreateSwapchain();
 		assert(!impl->swapchainDirty);
 	}
 

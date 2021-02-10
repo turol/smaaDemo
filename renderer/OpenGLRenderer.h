@@ -690,7 +690,7 @@ struct RendererImpl : public RendererBase {
 
 	void rebindDescriptorSets();
 
-	HEDLEY_WARN_UNUSED_RESULT bool recreateSwapchain();
+	void recreateSwapchain();
 	void recreateRingBuffer(unsigned int newSize);
 	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);
 

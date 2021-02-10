@@ -771,10 +771,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 	features.SSBOSupported  = true;
 
-	if (!recreateSwapchain()) {
-		LOG("initial swapchain create failed");
-		throw std::runtime_error("initial swapchain create failed");
-	}
+	recreateSwapchain();
 	recreateRingBuffer(desc.ephemeralRingBufSize);
 
 	vk::CommandPoolCreateInfo cp;
@@ -2198,7 +2195,7 @@ glm::uvec2 Renderer::getDrawableSize() const {
 }
 
 
-bool RendererImpl::recreateSwapchain() {
+void RendererImpl::recreateSwapchain() {
 	assert(swapchainDirty);
 
 	waitForDeviceIdle();
@@ -2376,8 +2373,6 @@ bool RendererImpl::recreateSwapchain() {
 	}
 
 	swapchainDirty = false;
-
-	return true;
 }
 
 
@@ -2462,11 +2457,7 @@ bool Renderer::beginFrame() {
 		assert(!impl->frameAcquireSem);
 
 		if (impl->swapchainDirty) {
-			// return false when recreateSwapchain fails and let caller deal with it
-			if (!impl->recreateSwapchain()) {
-				assert(impl->swapchainDirty);
-				return false;
-			}
+			impl->recreateSwapchain();
 			assert(!impl->swapchainDirty);
 		}
 
