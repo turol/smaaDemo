@@ -1778,7 +1778,7 @@ void RendererImpl::waitForDeviceIdle() {
 }
 
 
-bool Renderer::beginFrame() {
+void Renderer::beginFrame() {
 #ifndef NDEBUG
 	assert(!impl->inFrame);
 #endif //  NDEBUG
@@ -1825,8 +1825,6 @@ bool Renderer::beginFrame() {
 	// TODO: only clear depth/stencil if we have it
 	// TODO: set color/etc write masks if necessary
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-	return true;
 }
 
 

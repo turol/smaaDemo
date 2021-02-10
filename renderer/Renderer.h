@@ -1066,7 +1066,7 @@ public:
 	void waitForDeviceIdle();
 
 	// rendering
-	HEDLEY_WARN_UNUSED_RESULT bool beginFrame();
+	void beginFrame();
 	void presentFrame(RenderTargetHandle image);
 
 	void beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle);

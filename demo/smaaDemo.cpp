@@ -2472,16 +2472,7 @@ void SMAADemo::render() {
 	}
 
 	// TODO: this should be in RenderGraph
-	if (!renderer.beginFrame()) {
-		// check if caused by swapchain out of date, recreate if so
-		if (renderer.isSwapchainDirty() ) {
-			recreateSwapchain = true;
-		}
-
-		// TODO: yield or sleep to avoid high cpu usage
-
-		return;
-	}
+	renderer.beginFrame();
 
 	if (antialiasing && temporalAA && !isImageScene()) {
 		assert(temporalRTs[0]);
