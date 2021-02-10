@@ -821,7 +821,6 @@ struct Frame : public FrameBase {
 	vk::DescriptorPool            dsPool;
 	vk::CommandPool               commandPool;
 	vk::CommandBuffer             commandBuffer;
-	vk::CommandBuffer             presentCmdBuf;
 	vk::CommandBuffer             barrierCmdBuf;
 	vk::Semaphore                 acquireSem;
 	vk::Semaphore                 renderDoneSem;
@@ -842,7 +841,6 @@ struct Frame : public FrameBase {
 		assert(!dsPool);
 		assert(!commandPool);
 		assert(!commandBuffer);
-		assert(!presentCmdBuf);
 		assert(!barrierCmdBuf);
 		assert(!acquireSem);
 		assert(!renderDoneSem);
@@ -864,7 +862,6 @@ struct Frame : public FrameBase {
 	, dsPool(other.dsPool)
 	, commandPool(other.commandPool)
 	, commandBuffer(other.commandBuffer)
-	, presentCmdBuf(other.presentCmdBuf)
 	, barrierCmdBuf(other.barrierCmdBuf)
 	, acquireSem(other.acquireSem)
 	, renderDoneSem(other.renderDoneSem)
@@ -876,7 +873,6 @@ struct Frame : public FrameBase {
 		other.dsPool           = vk::DescriptorPool();
 		other.commandPool      = vk::CommandPool();
 		other.commandBuffer    = vk::CommandBuffer();
-		other.presentCmdBuf    = vk::CommandBuffer();
 		other.barrierCmdBuf    = vk::CommandBuffer();
 		other.acquireSem       = vk::Semaphore();
 		other.renderDoneSem    = vk::Semaphore();
@@ -908,10 +904,6 @@ struct Frame : public FrameBase {
 		assert(!commandBuffer);
 		commandBuffer        = other.commandBuffer;
 		other.commandBuffer  = vk::CommandBuffer();
-
-		assert(!presentCmdBuf);
-		presentCmdBuf        = other.presentCmdBuf;
-		other.presentCmdBuf  = vk::CommandBuffer();
 
 		assert(!barrierCmdBuf);
 		barrierCmdBuf        = other.barrierCmdBuf;

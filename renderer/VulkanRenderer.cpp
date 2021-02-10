@@ -2275,15 +2275,13 @@ void RendererImpl::recreateSwapchain() {
 				f.commandPool = device.createCommandPool(cp);
 
 				assert(!f.commandBuffer);
-				assert(!f.presentCmdBuf);
 				assert(!f.barrierCmdBuf);
 				// create command buffer
-				vk::CommandBufferAllocateInfo info(f.commandPool, vk::CommandBufferLevel::ePrimary, 3);
+				vk::CommandBufferAllocateInfo info(f.commandPool, vk::CommandBufferLevel::ePrimary, 2);
 				auto bufs = device.allocateCommandBuffers(info);
-				assert(bufs.size() == 3);
+				assert(bufs.size() == 2);
 				f.commandBuffer = bufs.at(0);
-				f.presentCmdBuf = bufs.at(1);
-				f.barrierCmdBuf = bufs.at(2);
+				f.barrierCmdBuf = bufs.at(1);
 			}
 		}
 	}
@@ -2554,10 +2552,6 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 	assert(frame.acquireSem);
 	impl->device.resetFences( { frame.fence } );
 
-	impl->currentCommandBuffer.end();
-	// TODO: this could be a baked buffer
-	frame.presentCmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
-
 	vk::Image image        = frame.image;
 	vk::ImageLayout layout = vk::ImageLayout::eTransferDstOptimal;
 
@@ -2582,7 +2576,7 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 	// TODO: add eComputeShader when implementing cs
 	// TODO: reduce wait mask
 	vk::PipelineStageFlags acquireWaitStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-	frame.presentCmdBuf.pipelineBarrier(acquireWaitStage, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
+	impl->currentCommandBuffer.pipelineBarrier(acquireWaitStage, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
 
 	vk::ImageBlit blit;
 	blit.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
@@ -2592,7 +2586,7 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 	blit.dstOffsets[1u]            = blit.srcOffsets[1u];
 
 	// blit draw image to presentation image
-	frame.presentCmdBuf.blitImage(rt.image, vk::ImageLayout::eTransferSrcOptimal, image, layout, { blit }, vk::Filter::eNearest);
+	impl->currentCommandBuffer.blitImage(rt.image, vk::ImageLayout::eTransferSrcOptimal, image, layout, { blit }, vk::Filter::eNearest);
 
 	// transition to present
 	barrier.srcAccessMask       = vk::AccessFlagBits::eTransferWrite;
@@ -2600,8 +2594,8 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 	barrier.oldLayout           = layout;
 	barrier.newLayout           = vk::ImageLayout::ePresentSrcKHR;
 	barrier.image               = image;
-	frame.presentCmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
-	frame.presentCmdBuf.end();
+	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
+	impl->currentCommandBuffer.end();
 
 	// submit command buffers
 	vk::SubmitInfo submit;
@@ -2670,13 +2664,10 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 		submit.commandBufferCount   = 1;
 	}
 
-	vk::SubmitInfo submit2;
-	submit2.commandBufferCount   = 1;
-	submit2.pCommandBuffers      = &frame.presentCmdBuf;
-	submit2.signalSemaphoreCount = 1;
-	submit2.pSignalSemaphores    = &frame.renderDoneSem;
+	submit.signalSemaphoreCount = 1;
+	submit.pSignalSemaphores    = &frame.renderDoneSem;
 
-	impl->queue.submit({ submit, submit2 }, frame.fence);
+	impl->queue.submit({ submit }, frame.fence);
 
 	// present
 	vk::PresentInfoKHR presentInfo;
@@ -3017,11 +3008,9 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 	f.dsPool = vk::DescriptorPool();
 
 	assert(f.commandBuffer);
-	assert(f.presentCmdBuf);
 	assert(f.barrierCmdBuf);
-	device.freeCommandBuffers(f.commandPool, { f.commandBuffer, f.presentCmdBuf, f.barrierCmdBuf });
+	device.freeCommandBuffers(f.commandPool, { f.commandBuffer, f.barrierCmdBuf });
 	f.commandBuffer = vk::CommandBuffer();
-	f.presentCmdBuf = vk::CommandBuffer();
 	f.barrierCmdBuf = vk::CommandBuffer();
 
 	assert(!f.acquireSem);
