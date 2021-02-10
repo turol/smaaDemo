@@ -752,6 +752,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 	}
 
+	LOG("framebufferColorSampleCounts: {}",   vk::to_string(deviceProperties.limits.framebufferColorSampleCounts));
+	LOG("framebufferDepthSampleCounts: {}",   vk::to_string(deviceProperties.limits.framebufferDepthSampleCounts));
+	LOG("framebufferStencilSampleCounts: {}", vk::to_string(deviceProperties.limits.framebufferStencilSampleCounts));
+
 	uint32_t maxSamples = static_cast<uint32_t>(deviceProperties.limits.framebufferColorSampleCounts);
 	maxSamples &= static_cast<uint32_t>(deviceProperties.limits.framebufferDepthSampleCounts);
 	maxSamples &= static_cast<uint32_t>(deviceProperties.limits.framebufferStencilSampleCounts);
@@ -768,6 +772,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			break;
 		}
 	}
+	LOG("maxMSAASamples: {}", features.maxMSAASamples);
 	features.SSBOSupported  = true;
 
 	recreateSwapchain();
