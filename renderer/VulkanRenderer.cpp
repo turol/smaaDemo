@@ -2287,6 +2287,9 @@ void RendererImpl::recreateSwapchain() {
 				assert(bufs.size() == 2);
 				f.commandBuffer = bufs.at(0);
 				f.barrierCmdBuf = bufs.at(1);
+
+				assert(!f.renderDoneSem);
+				f.renderDoneSem = allocateSemaphore();
 			}
 		}
 	}
@@ -2517,9 +2520,6 @@ void Renderer::beginFrame() {
 	frame.acquireSem             = impl->frameAcquireSem;
 	impl->frameAcquireSem        = vk::Semaphore();
 
-	assert(!frame.renderDoneSem);
-	frame.renderDoneSem    = impl->allocateSemaphore();
-
 	// set command buffer to recording
 	impl->currentCommandBuffer = frame.commandBuffer;
 	impl->currentCommandBuffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
@@ -2608,6 +2608,7 @@ void Renderer::presentFrame() {
 	auto &frame = impl->frames.at(impl->currentFrameIdx);
 
 	assert(frame.acquireSem);
+	assert(frame.renderDoneSem);
 	impl->device.resetFences( { frame.fence } );
 
 	impl->currentCommandBuffer.end();
@@ -2798,10 +2799,6 @@ void RendererImpl::cleanupFrame(unsigned int frameIdx) {
 	assert(frame.acquireSem);
 	freeSemaphore(frame.acquireSem);
 	frame.acquireSem = vk::Semaphore();
-
-	assert(frame.renderDoneSem);
-	freeSemaphore(frame.renderDoneSem);
-	frame.renderDoneSem = vk::Semaphore();
 
 	frame.status         = Frame::Status::Ready;
 	lastSyncedFrame      = std::max(lastSyncedFrame, frame.lastFrameNum);
@@ -3028,7 +3025,10 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 	f.barrierCmdBuf = vk::CommandBuffer();
 
 	assert(!f.acquireSem);
-	assert(!f.renderDoneSem);
+
+	assert(f.renderDoneSem);
+	freeSemaphore(f.renderDoneSem);
+	f.renderDoneSem = vk::Semaphore();
 
 	assert(f.commandPool);
 	device.destroyCommandPool(f.commandPool);
