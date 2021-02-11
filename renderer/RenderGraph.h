@@ -574,9 +574,9 @@ public:
 					auto it = rg.renderPasses.find(rpId);
 					assert(it != rg.renderPasses.end());
 
-					auto &rp     = it->second;
-					auto &rpDesc = rp.rpDesc;
-					auto &desc   = rp.desc;
+					RenderPass     &rp     = it->second;
+					RenderPassDesc &rpDesc = rp.rpDesc;
+					PassDesc       &desc   = rp.desc;
 
 					rpDesc.name(desc.name_);
 					rpDesc.numSamples(desc.numSamples_);
