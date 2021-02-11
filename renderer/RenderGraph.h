@@ -616,6 +616,7 @@ public:
 							if (layoutIt == currentLayouts.end()) {
 								// unused
 								// TODO: remove it entirely
+								LOG("Unused rendertarget \"{}\" in renderpass \"{}\"", to_string(rtId), to_string(rpId));
 							} else {
 								final = layoutIt->second;
 							}
