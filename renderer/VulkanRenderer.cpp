@@ -2231,6 +2231,13 @@ void RendererImpl::recreateSwapchain() {
 	swapchainDesc.numFrames  = numImages;
 	swapchainDesc.vsync      = wantedSwapchain.vsync;
 
+	// always destroy the old image views
+	for (Frame &f : frames) {
+		assert(f.imageView);
+		device.destroyImageView(f.imageView);
+		f.imageView = vk::ImageView();
+	}
+
 	if (frames.size() != numImages) {
 		if (numImages < frames.size()) {
 			// decreasing, delete old and resize
@@ -2270,8 +2277,9 @@ void RendererImpl::recreateSwapchain() {
 				assert(!f.fence);
 				f.fence = device.createFence(vk::FenceCreateInfo());
 
-				// we fill this in after we've created the swapchain
+				// we fill these in after we've created the swapchain
 				assert(!f.image);
+				assert(!f.imageView);
 
 				assert(!f.dsPool);
 				f.dsPool = device.createDescriptorPool(dsInfo);
@@ -2341,7 +2349,8 @@ void RendererImpl::recreateSwapchain() {
 	swapchainCreateInfo.imageColorSpace       = vk::ColorSpaceKHR::eSrgbNonlinear;
 	swapchainCreateInfo.imageExtent           = imageExtent;
 	swapchainCreateInfo.imageArrayLayers      = 1;
-	swapchainCreateInfo.imageUsage            = vk::ImageUsageFlagBits::eTransferDst;
+	// TODO: need eStorage when implementing compute shaders
+	swapchainCreateInfo.imageUsage            = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eColorAttachment;
 
 	// no concurrent access
 	swapchainCreateInfo.imageSharingMode      = vk::SharingMode::eExclusive;
@@ -2366,8 +2375,18 @@ void RendererImpl::recreateSwapchain() {
 	assert(swapchainImages.size() == frames.size());
 	assert(swapchainImages.size() == numImages);
 
+	vk::ImageViewCreateInfo info;
+	info.viewType                    = vk::ImageViewType::e2D;
+	info.format                      = surfaceFormat;
+	info.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+	info.subresourceRange.levelCount = 1;
+	info.subresourceRange.layerCount = 1;
 	for (unsigned int i = 0; i < numImages; i++) {
-		frames.at(i).image = swapchainImages.at(i);
+		Frame &f = frames.at(i);
+		f.image     = swapchainImages.at(i);
+		info.image  = f.image;
+		assert(!f.imageView);
+		f.imageView = device.createImageView(info);
 	}
 
 	swapchainDirty = false;
@@ -3013,6 +3032,11 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 
 	// owned by swapchain, don't delete
 	f.image = vk::Image();
+
+	if (f.imageView) {
+		device.destroyImageView(f.imageView);
+		f.imageView = vk::ImageView();
+	}
 
 	assert(f.dsPool);
 	device.destroyDescriptorPool(f.dsPool);

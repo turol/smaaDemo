@@ -818,6 +818,7 @@ struct Frame : public FrameBase {
 	std::vector<BufferHandle>     ephemeralBuffers;
 	vk::Fence                     fence;
 	vk::Image                     image;
+	vk::ImageView                 imageView;
 	vk::DescriptorPool            dsPool;
 	vk::CommandPool               commandPool;
 	vk::CommandBuffer             commandBuffer;
@@ -838,6 +839,7 @@ struct Frame : public FrameBase {
 		assert(ephemeralBuffers.empty());
 		assert(!fence);
 		assert(!image);
+		assert(!imageView);
 		assert(!dsPool);
 		assert(!commandPool);
 		assert(!commandBuffer);
@@ -859,6 +861,7 @@ struct Frame : public FrameBase {
 	, ephemeralBuffers(std::move(other.ephemeralBuffers))
 	, fence(other.fence)
 	, image(other.image)
+	, imageView(other.imageView)
 	, dsPool(other.dsPool)
 	, commandPool(other.commandPool)
 	, commandBuffer(other.commandBuffer)
@@ -869,6 +872,7 @@ struct Frame : public FrameBase {
 	, uploads(std::move(other.uploads))
 	{
 		other.image            = vk::Image();
+		other.imageView        = vk::ImageView();
 		other.fence            = vk::Fence();
 		other.dsPool           = vk::DescriptorPool();
 		other.commandPool      = vk::CommandPool();
@@ -888,6 +892,10 @@ struct Frame : public FrameBase {
 		assert(!image);
 		image                = other.image;
 		other.image          = vk::Image();
+
+		assert(!imageView);
+		imageView            = other.imageView;
+		other.imageView      = vk::ImageView();
 
 		assert(!fence);
 		fence                = other.fence;
