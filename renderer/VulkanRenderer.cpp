@@ -2231,11 +2231,16 @@ void RendererImpl::recreateSwapchain() {
 	swapchainDesc.numFrames  = numImages;
 	swapchainDesc.vsync      = wantedSwapchain.vsync;
 
-	// always destroy the old image views
+	// always destroy the old image views and framebuffers
 	for (Frame &f : frames) {
 		assert(f.imageView);
 		device.destroyImageView(f.imageView);
 		f.imageView = vk::ImageView();
+
+		if (f.framebuffer) {
+			device.destroyFramebuffer(f.framebuffer);
+			f.framebuffer = vk::Framebuffer();
+		}
 	}
 
 	if (frames.size() != numImages) {
@@ -2280,6 +2285,7 @@ void RendererImpl::recreateSwapchain() {
 				// we fill these in after we've created the swapchain
 				assert(!f.image);
 				assert(!f.imageView);
+				assert(!f.framebuffer);
 
 				assert(!f.dsPool);
 				f.dsPool = device.createDescriptorPool(dsInfo);
@@ -3036,6 +3042,11 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 	if (f.imageView) {
 		device.destroyImageView(f.imageView);
 		f.imageView = vk::ImageView();
+	}
+
+	if (f.framebuffer) {
+		device.destroyFramebuffer(f.framebuffer);
+		f.framebuffer = vk::Framebuffer();
 	}
 
 	assert(f.dsPool);
