@@ -2559,8 +2559,8 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 
 	// transition image to transfer dst optimal
 	vk::ImageMemoryBarrier barrier;
-	barrier.srcAccessMask       = vk::AccessFlagBits();
-	barrier.dstAccessMask       = vk::AccessFlagBits::eTransferWrite;
+	barrier.srcAccessMask       = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
+	barrier.dstAccessMask       = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
 	barrier.oldLayout           = vk::ImageLayout::eUndefined;
 	barrier.newLayout           = layout;
 	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -2575,10 +2575,7 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 	range.layerCount            = VK_REMAINING_ARRAY_LAYERS;
 	barrier.subresourceRange    = range;
 
-	// TODO: add eComputeShader when implementing cs
-	// TODO: reduce wait mask
-	vk::PipelineStageFlags acquireWaitStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-	impl->currentCommandBuffer.pipelineBarrier(acquireWaitStage, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
+	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
 
 	vk::ImageBlit blit;
 	blit.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
@@ -2591,12 +2588,12 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 	impl->currentCommandBuffer.blitImage(rt.image, vk::ImageLayout::eTransferSrcOptimal, image, layout, { blit }, vk::Filter::eNearest);
 
 	// transition to present
-	barrier.srcAccessMask       = vk::AccessFlagBits::eTransferWrite;
-	barrier.dstAccessMask       = vk::AccessFlags();
+	barrier.srcAccessMask       = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
+	barrier.dstAccessMask       = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
 	barrier.oldLayout           = layout;
 	barrier.newLayout           = vk::ImageLayout::ePresentSrcKHR;
 	barrier.image               = image;
-	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
+	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
 
 	presentFrame();
 }
@@ -2619,7 +2616,7 @@ void Renderer::presentFrame() {
 	// currently transfer and/or color output
 	// in the future also compute shader
 	// should be a parameter to this function?
-	vk::PipelineStageFlags acquireWaitStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+	vk::PipelineStageFlags acquireWaitStage = vk::PipelineStageFlagBits::eAllCommands;
 
 	// submit command buffers
 	vk::SubmitInfo submit;
