@@ -2539,7 +2539,6 @@ void Renderer::beginFrame() {
 void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 #ifndef NDEBUG
 	assert(impl->inFrame);
-	impl->inFrame = false;
 #endif  // NDEBUG
 
 	const auto &rt = impl->renderTargets.get(rtHandle);
@@ -2554,8 +2553,6 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 	}
 
 	auto &frame = impl->frames.at(impl->currentFrameIdx);
-	assert(frame.acquireSem);
-	impl->device.resetFences( { frame.fence } );
 
 	vk::Image image        = frame.image;
 	vk::ImageLayout layout = vk::ImageLayout::eTransferDstOptimal;
@@ -2600,7 +2597,29 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 	barrier.newLayout           = vk::ImageLayout::ePresentSrcKHR;
 	barrier.image               = image;
 	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
+
+	presentFrame();
+}
+
+
+void Renderer::presentFrame() {
+#ifndef NDEBUG
+	assert(impl->inFrame);
+	impl->inFrame = false;
+#endif  // NDEBUG
+
+	auto &frame = impl->frames.at(impl->currentFrameIdx);
+
+	assert(frame.acquireSem);
+	impl->device.resetFences( { frame.fence } );
+
 	impl->currentCommandBuffer.end();
+
+	// TODO: this should be all the stages that access the backbuffer
+	// currently transfer and/or color output
+	// in the future also compute shader
+	// should be a parameter to this function?
+	vk::PipelineStageFlags acquireWaitStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 
 	// submit command buffers
 	vk::SubmitInfo submit;

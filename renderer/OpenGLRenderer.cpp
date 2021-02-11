@@ -1831,10 +1831,7 @@ void Renderer::beginFrame() {
 void Renderer::presentFrame(RenderTargetHandle image) {
 #ifndef NDEBUG
 	assert(impl->inFrame);
-	impl->inFrame = false;
 #endif //  NDEBUG
-
-	auto &frame = impl->frames.at(impl->currentFrameIdx);
 
 	auto &rt = impl->renderTargets.get(image);
 	assert(rt.currentLayout == +Layout::TransferSrc);
@@ -1867,6 +1864,17 @@ void Renderer::presentFrame(RenderTargetHandle image) {
 	                     , 0, 0, width, height
 	                     , 0, 0, width, height
 	                     , GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+	presentFrame();
+}
+
+void Renderer::presentFrame() {
+#ifndef NDEBUG
+	assert(impl->inFrame);
+	impl->inFrame = false;
+#endif //  NDEBUG
+
+	auto &frame = impl->frames.at(impl->currentFrameIdx);
 
 	SDL_GL_SwapWindow(impl->window);
 

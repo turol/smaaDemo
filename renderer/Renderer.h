@@ -1068,6 +1068,7 @@ public:
 	// rendering
 	void beginFrame();
 	void presentFrame(RenderTargetHandle image);
+	void presentFrame();
 
 	void beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle);
 	void endRenderPass();
