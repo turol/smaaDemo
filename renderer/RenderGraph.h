@@ -353,6 +353,20 @@ private:
 	typedef boost::variant<Blit, RP, ResolveMSAA> Operation;
 
 
+	struct DebugLogVisitor final : public boost::static_visitor<void> {
+		void operator()(const Blit &b) const {
+			LOG("Blit {} {} {}", to_string(b.source), to_string(b.dest), b.finalLayout);
+		}
+
+		void operator()(const RP &rpId) const {
+			LOG("Renderpass {}", to_string(rpId));
+		}
+
+		void operator()(const ResolveMSAA &resolve) const {
+			LOG("ResolveMSAA {} {} {}", to_string(resolve.source), to_string(resolve.dest), resolve.finalLayout);
+		}
+	};
+
 	RGState                                          state;
 	std::exception_ptr                               storedException;
 	bool                                             hasExternalRTs;
