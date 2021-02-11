@@ -616,15 +616,17 @@ public:
 							if (layoutIt == currentLayouts.end()) {
 								// unused
 								// TODO: remove it entirely
-								LOG("Unused rendertarget \"{}\" in renderpass \"{}\"", to_string(rtId), to_string(rpId));
+								LOG("Removed unused rendertarget \"{}\" in renderpass \"{}\"", to_string(rtId), to_string(rpId));
+								desc.colorRTs_[i].id        = Default<RT>::value;
+								desc.colorRTs_[i].passBegin = PassBegin::DontCare;
 							} else {
 								final = layoutIt->second;
-							}
 							assert(final != +Layout::Undefined);
 							assert(final != +Layout::TransferDst);
 
 							rpDesc.color(i, fmt, pb, initial, final, desc.colorRTs_[i].clearValue);
 							currentLayouts[rtId] = initial;
+							}
 						}
 					}
 
