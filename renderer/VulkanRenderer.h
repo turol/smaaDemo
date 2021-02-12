@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 
 // TODO: use std::variant if the compiler has C++17
-#include <boost/variant/variant.hpp>
+#include <boost/variant2/variant.hpp>
 
 
 #ifdef _WIN32
@@ -688,7 +688,7 @@ struct VertexShader {
 };
 
 
-typedef boost::variant<Buffer, Framebuffer, Pipeline, RenderPass, RenderTarget, Sampler, Texture> Resource;
+typedef boost::variant2::variant<Buffer, Framebuffer, Pipeline, RenderPass, RenderTarget, Sampler, Texture> Resource;
 
 
 }	// namespace renderer
@@ -1054,7 +1054,7 @@ struct RendererImpl : public RendererBase {
 	~RendererImpl();
 
 
-	struct ResourceDeleter final : public boost::static_visitor<> {
+	struct ResourceDeleter final {
 		RendererImpl *r;
 
 

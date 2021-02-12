@@ -29,8 +29,6 @@ THE SOFTWARE.
 #include <algorithm>
 #include <vector>
 
-#include <boost/variant/get.hpp>
-
 #include <spirv_glsl.hpp>
 
 #include "Renderer.h"
@@ -2330,7 +2328,7 @@ void RendererImpl::rebindDescriptorSets() {
 	for (unsigned int i = 0; i < resources.ubos.size(); i++) {
 		const auto &r = resources.ubos.at(i);
 		const auto &d = descriptors.at(r);
-		const Buffer &buffer = buffers.get(boost::get<BufferHandle>(d));
+		const Buffer &buffer = buffers.get(boost::variant2::get<BufferHandle>(d));
 		assert(resources.uboSizes[i] <= buffer.size);
 		glBindBufferRange(GL_UNIFORM_BUFFER, i, buffer.buffer, buffer.offset, buffer.size);
 	}
@@ -2338,7 +2336,7 @@ void RendererImpl::rebindDescriptorSets() {
 	for (unsigned int i = 0; i < resources.ssbos.size(); i++) {
 		const auto &r = resources.ssbos.at(i);
 		const auto &d = descriptors.at(r);
-		const Buffer &buffer = buffers.get(boost::get<BufferHandle>(d));
+		const Buffer &buffer = buffers.get(boost::variant2::get<BufferHandle>(d));
 		glBindBufferRange(GL_SHADER_STORAGE_BUFFER, i, buffer.buffer, buffer.offset, buffer.size);
 	}
 
@@ -2350,13 +2348,13 @@ void RendererImpl::rebindDescriptorSets() {
 		// std::variant has holds_alternative
 		switch (d.which()) {
 		case 1: {
-			const CSampler &combined = boost::get<CSampler>(d);
+			const CSampler &combined = boost::variant2::get<CSampler>(d);
 			const Texture &tex  = textures.get(combined.tex);
 			glBindTextureUnit(i, tex.tex);
 		} break;
 
 		case 3: {
-			const TextureHandle &handle = boost::get<TextureHandle>(d);
+			const TextureHandle &handle = boost::variant2::get<TextureHandle>(d);
 			const Texture &tex  = textures.get(handle);
 			glBindTextureUnit(i, tex.tex);
 		} break;
@@ -2374,13 +2372,13 @@ void RendererImpl::rebindDescriptorSets() {
 		// std::variant has holds_alternative
 		switch (d.which()) {
 		case 1: {
-			const CSampler &combined = boost::get<CSampler>(d);
+			const CSampler &combined = boost::variant2::get<CSampler>(d);
 			const auto &sampler = samplers.get(combined.sampler);
 			glBindSampler(i, sampler.sampler);
 		} break;
 
 		case 2: {
-			const SamplerHandle &handle = boost::get<SamplerHandle>(d);
+			const SamplerHandle &handle = boost::variant2::get<SamplerHandle>(d);
 			const auto &sampler = samplers.get(handle);
 			glBindSampler(i, sampler.sampler);
 		} break;

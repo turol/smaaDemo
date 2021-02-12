@@ -29,14 +29,11 @@ THE SOFTWARE.
 #include "RendererInternal.h"
 #include "utils/Utils.h"
 
-#include <boost/variant/apply_visitor.hpp>
-#include <boost/variant/static_visitor.hpp>
-
 
 namespace renderer {
 
 
-struct ResourceHasher final : public boost::static_visitor<size_t> {
+struct ResourceHasher final {
 	size_t operator()(const Buffer &b) const {
 		return b.getHash();
 	}
@@ -3026,7 +3023,7 @@ void RendererImpl::deleteTextureInternal(Texture &tex) {
 
 
 void RendererImpl::deleteResourceInternal(Resource &r) {
-	boost::apply_visitor(ResourceDeleter(this), r);
+	boost::variant2::visit(ResourceDeleter(this), r);
 }
 
 
@@ -3504,7 +3501,7 @@ void Renderer::drawIndexedOffset(unsigned int vertexCount, unsigned int firstInd
 namespace std {
 
 	size_t hash<renderer::Resource>::operator()(const renderer::Resource &r) const {
-		return boost::apply_visitor(renderer::ResourceHasher(), r);
+		return boost::variant2::visit(renderer::ResourceHasher(), r);
 	}
 
 }  // namespace std

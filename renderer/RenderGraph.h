@@ -4,6 +4,8 @@
 
 #include "utils/Hash.h"
 
+#include <boost/variant2/variant.hpp>
+
 
 namespace renderer {
 
@@ -165,12 +167,12 @@ private:
 	};
 
 
-	typedef boost::variant<ExternalRT, InternalRT> Rendertarget;
+	typedef boost::variant2::variant<ExternalRT, InternalRT> Rendertarget;
 
 
 	template <typename FE, typename FI>
 	static void visitRendertarget(Rendertarget &rt, FE &&fe, FI &&fi) {
-		struct FuncVisitor final : public boost::static_visitor<void> {
+		struct FuncVisitor final {
 			FE fe;
 			FI fi;
 
@@ -189,13 +191,13 @@ private:
 			}
 		};
 
-		return boost::apply_visitor(FuncVisitor(std::move(fe), std::move(fi)), rt);
+		return boost::variant2::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
 	}
 
 
 	template <typename FE, typename FI>
 	static void visitRendertarget(const Rendertarget &rt, FE &&fe, FI &&fi) {
-		struct FuncVisitor final : public boost::static_visitor<void> {
+		struct FuncVisitor final {
 			FE fe;
 			FI fi;
 
@@ -214,13 +216,13 @@ private:
 			}
 		};
 
-		return boost::apply_visitor(FuncVisitor(std::move(fe), std::move(fi)), rt);
+		return boost::variant2::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
 	}
 
 
 	template <typename T, typename FE, typename FI>
 	static T visitRendertargetValue(Rendertarget &rt, FE &&fe, FI &&fi) {
-		struct FuncVisitor final : public boost::static_visitor<T> {
+		struct FuncVisitor final {
 			FE fe;
 			FI fi;
 
@@ -239,13 +241,13 @@ private:
 			}
 		};
 
-		return boost::apply_visitor(FuncVisitor(std::move(fe), std::move(fi)), rt);
+		return boost::variant2::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
 	}
 
 
 	template <typename T, typename FE, typename FI>
 	static T visitRendertargetValue(const Rendertarget &rt, FE &&fe, FI &&fi) {
-		struct FuncVisitor final : public boost::static_visitor<T> {
+		struct FuncVisitor final {
 			FE fe;
 			FI fi;
 
@@ -264,7 +266,7 @@ private:
 			}
 		};
 
-		return boost::apply_visitor(FuncVisitor(std::move(fe), std::move(fi)), rt);
+		return boost::variant2::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
 	}
 
 
@@ -350,10 +352,10 @@ private:
 		PipelineHandle  handle;
 	};
 
-	typedef boost::variant<Blit, RP, ResolveMSAA> Operation;
+	typedef boost::variant2::variant<Blit, RP, ResolveMSAA> Operation;
 
 
-	struct DebugLogVisitor final : public boost::static_visitor<void> {
+	struct DebugLogVisitor final {
 		void operator()(const Blit &b) const {
 			LOG("Blit {} {} {}", to_string(b.source), to_string(b.dest), b.finalLayout);
 		}
@@ -568,7 +570,7 @@ public:
 								 );
 			}
 
-			struct LayoutVisitor final : public boost::static_visitor<void> {
+			struct LayoutVisitor final {
 				HashMap<RT, Layout> &currentLayouts;
 				RenderGraph &rg;
 
@@ -658,7 +660,7 @@ public:
 
 			LayoutVisitor lv(currentLayouts, *this);
 			for (auto it = operations.rbegin(); it != operations.rend(); it++) {
-				boost::apply_visitor(lv, *it);
+				boost::variant2::visit(lv, *it);
 			}
 
 		}
@@ -700,7 +702,7 @@ public:
 
 		// write description to debug log
 		{
-			struct DebugVisitor final : public boost::static_visitor<void> {
+			struct DebugVisitor final {
 				RenderGraph &rg;
 
 
@@ -754,7 +756,7 @@ public:
 
 			DebugVisitor d(*this);
 			for (const auto &op : operations) {
-				boost::apply_visitor(d, op);
+				boost::variant2::visit(d, op);
 			}
 		}
 		LOG("RenderGraph::build end");
@@ -805,7 +807,7 @@ public:
 			}
 		}
 
-		struct OpVisitor final : public boost::static_visitor<void> {
+		struct OpVisitor final {
 			Renderer    &r;
 			RenderGraph &rg;
 
@@ -902,7 +904,7 @@ public:
 		};
 
 		for (const auto &op : operations) {
-			boost::apply_visitor(OpVisitor(renderer, *this), op);
+			boost::variant2::visit(OpVisitor(renderer, *this), op);
 		}
 
 		{

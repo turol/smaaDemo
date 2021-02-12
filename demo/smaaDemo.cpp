@@ -36,11 +36,6 @@ THE SOFTWARE.
 #include <stdexcept>
 #include <vector>
 
-// TODO: use std::variant if the compiler has C++17
-#include <boost/variant/variant.hpp>
-#include <boost/variant/apply_visitor.hpp>
-#include <boost/variant/static_visitor.hpp>
-
 #include <imgui.h>
 #include <imgui_internal.h>
 
