@@ -1321,7 +1321,10 @@ void SMAADemo::rebuildRenderGraph() {
 	if (!isImageScene()) {
 		// cube scene
 
-		{
+		// when any AA is enabled render to temporary rendertarget "MainColor"
+		// when AA is disabled render directly to "FinalRender"
+		auto renderRT = Rendertargets::MainColor;
+		if (antialiasing) {
 			RenderTargetDesc rtDesc;
 			rtDesc.name("main color")
 				  .numSamples(numSamples)
@@ -1330,6 +1333,8 @@ void SMAADemo::rebuildRenderGraph() {
 				  .width(windowWidth)
 				  .height(windowHeight);
 			renderGraph.renderTarget(Rendertargets::MainColor, rtDesc);
+		} else {
+			renderRT = Rendertargets::FinalRender;
 		}
 
 		// TODO: only create velocity buffer when doing temporal AA
@@ -1367,7 +1372,7 @@ void SMAADemo::rebuildRenderGraph() {
 		}
 
 		DemoRenderGraph::PassDesc desc;
-		desc.color(0, Rendertargets::MainColor, PassBegin::Clear)
+		desc.color(0, renderRT,                 PassBegin::Clear)
 		    .color(1, velocityRT,               PassBegin::Clear)
 		    .depthStencil(Rendertargets::MainDepth,  PassBegin::Clear)
 		    .clearDepth(1.0f)
@@ -1378,7 +1383,10 @@ void SMAADemo::rebuildRenderGraph() {
 	} else {
 		// image scene
 
-		{
+		// when any AA is enabled render to temporary rendertarget "MainColor"
+		// when AA is disabled render directly to "FinalRender"
+		auto renderRT = Rendertargets::MainColor;
+		if (antialiasing) {
 			RenderTargetDesc rtDesc;
 			rtDesc.name("main color")
 				  .numSamples(numSamples)
@@ -1387,6 +1395,8 @@ void SMAADemo::rebuildRenderGraph() {
 				  .width(windowWidth)
 				  .height(windowHeight);
 			renderGraph.renderTarget(Rendertargets::MainColor, rtDesc);
+		} else {
+			renderRT = Rendertargets::FinalRender;
 		}
 
 		// TODO: don't use velocity buffer
@@ -1423,7 +1433,7 @@ void SMAADemo::rebuildRenderGraph() {
 		}
 
 		DemoRenderGraph::PassDesc desc;
-		desc.color(0, Rendertargets::MainColor, PassBegin::Clear)
+		desc.color(0, renderRT,                 PassBegin::Clear)
 		    .color(1, velocityRT,               PassBegin::Clear)
 		    .depthStencil(Rendertargets::MainDepth,  PassBegin::Clear)
 		    .clearDepth(1.0f)
@@ -1864,8 +1874,6 @@ void SMAADemo::rebuildRenderGraph() {
 			} break;
 			}
 		}
-	} else {
-		renderGraph.blit(Rendertargets::MainColor, Rendertargets::FinalRender);
 	}
 
 #ifndef IMGUI_DISABLE
