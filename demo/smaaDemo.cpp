@@ -1309,6 +1309,15 @@ void SMAADemo::rebuildRenderGraph() {
 	LOG("create framebuffers at size {}x{}", windowWidth, windowHeight);
 	logFlush();
 
+	{
+		RenderTargetDesc rtDesc;
+		rtDesc.name("final")
+		      .format(Format::sRGBA8)
+		      .width(windowWidth)
+		      .height(windowHeight);
+		renderGraph.renderTarget(Rendertargets::FinalRender, rtDesc);
+	}
+
 	if (!isImageScene()) {
 		// cube scene
 
@@ -1422,15 +1431,6 @@ void SMAADemo::rebuildRenderGraph() {
 		    .numSamples(numSamples);
 
 		renderGraph.renderPass(RenderPasses::Scene, desc, [this] (RenderPasses rp, DemoRenderGraph::PassResources &r) { this->renderImageScene(rp, r); } );
-	}
-
-	{
-		RenderTargetDesc rtDesc;
-		rtDesc.name("final")
-		      .format(Format::sRGBA8)
-		      .width(windowWidth)
-		      .height(windowHeight);
-		renderGraph.renderTarget(Rendertargets::FinalRender, rtDesc);
 	}
 
 	if (antialiasing) {
