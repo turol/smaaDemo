@@ -27,8 +27,7 @@ THE SOFTWARE.
 
 #include <GL/glew.h>
 
-// TODO: use std::variant if the compiler has C++17
-#include <boost/variant2/variant.hpp>
+#include <mpark/variant.hpp>
 
 
 namespace renderer {
@@ -586,7 +585,7 @@ struct VertexShader {
 };
 
 
-typedef boost::variant2::variant<BufferHandle, CSampler, SamplerHandle, TextureHandle> Descriptor;
+typedef mpark::variant<BufferHandle, CSampler, SamplerHandle, TextureHandle> Descriptor;
 
 
 struct Frame : public FrameBase {

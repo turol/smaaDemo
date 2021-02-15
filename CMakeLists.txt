@@ -69,6 +69,7 @@ target_include_directories(smaaDemo PRIVATE
 		foreign/glm
 		foreign/glslang
 		foreign/imgui
+		foreign/mpark-variant/include
 		foreign/pcg-cpp/include
 		foreign/SPIRV-Cross
 		foreign/stb

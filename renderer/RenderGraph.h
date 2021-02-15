@@ -4,7 +4,7 @@
 
 #include "utils/Hash.h"
 
-#include <boost/variant2/variant.hpp>
+#include <mpark/variant.hpp>
 
 
 namespace renderer {
@@ -167,7 +167,7 @@ private:
 	};
 
 
-	typedef boost::variant2::variant<ExternalRT, InternalRT> Rendertarget;
+	typedef mpark::variant<ExternalRT, InternalRT> Rendertarget;
 
 
 	template <typename FE, typename FI>
@@ -191,7 +191,7 @@ private:
 			}
 		};
 
-		return boost::variant2::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
+		return mpark::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
 	}
 
 
@@ -216,7 +216,7 @@ private:
 			}
 		};
 
-		return boost::variant2::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
+		return mpark::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
 	}
 
 
@@ -241,7 +241,7 @@ private:
 			}
 		};
 
-		return boost::variant2::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
+		return mpark::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
 	}
 
 
@@ -266,7 +266,7 @@ private:
 			}
 		};
 
-		return boost::variant2::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
+		return mpark::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
 	}
 
 
@@ -352,7 +352,7 @@ private:
 		PipelineHandle  handle;
 	};
 
-	typedef boost::variant2::variant<Blit, RP, ResolveMSAA> Operation;
+	typedef mpark::variant<Blit, RP, ResolveMSAA> Operation;
 
 
 	struct DebugLogVisitor final {
@@ -660,7 +660,7 @@ public:
 
 			LayoutVisitor lv(currentLayouts, *this);
 			for (auto it = operations.rbegin(); it != operations.rend(); it++) {
-				boost::variant2::visit(lv, *it);
+				mpark::visit(lv, *it);
 			}
 
 		}
@@ -756,7 +756,7 @@ public:
 
 			DebugVisitor d(*this);
 			for (const auto &op : operations) {
-				boost::variant2::visit(d, op);
+				mpark::visit(d, op);
 			}
 		}
 		LOG("RenderGraph::build end");
@@ -904,7 +904,7 @@ public:
 		};
 
 		for (const auto &op : operations) {
-			boost::variant2::visit(OpVisitor(renderer, *this), op);
+			mpark::visit(OpVisitor(renderer, *this), op);
 		}
 
 		{

@@ -28,8 +28,7 @@ THE SOFTWARE.
 #define VULKAN_HPP_NO_SMART_HANDLE     1
 
 
-// TODO: use std::variant if the compiler has C++17
-#include <boost/variant2/variant.hpp>
+#include <mpark/variant.hpp>
 
 
 #ifdef _WIN32
@@ -688,7 +687,7 @@ struct VertexShader {
 };
 
 
-typedef boost::variant2::variant<Buffer, Framebuffer, Pipeline, RenderPass, RenderTarget, Sampler, Texture> Resource;
+typedef mpark::variant<Buffer, Framebuffer, Pipeline, RenderPass, RenderTarget, Sampler, Texture> Resource;
 
 
 }	// namespace renderer

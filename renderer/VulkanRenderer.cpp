@@ -3023,7 +3023,7 @@ void RendererImpl::deleteTextureInternal(Texture &tex) {
 
 
 void RendererImpl::deleteResourceInternal(Resource &r) {
-	boost::variant2::visit(ResourceDeleter(this), r);
+	mpark::visit(ResourceDeleter(this), r);
 }
 
 
@@ -3501,7 +3501,7 @@ void Renderer::drawIndexedOffset(unsigned int vertexCount, unsigned int firstInd
 namespace std {
 
 	size_t hash<renderer::Resource>::operator()(const renderer::Resource &r) const {
-		return boost::variant2::visit(renderer::ResourceHasher(), r);
+		return mpark::visit(renderer::ResourceHasher(), r);
 	}
 
 }  // namespace std
