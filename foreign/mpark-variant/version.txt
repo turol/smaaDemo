@@ -1,0 +1,5 @@
+commit 3c7fc8266bb46046b42c2dc2663f9f505f0cec28
+Author: Gavin Ridley <gavin.keith.ridley@gmail.com>
+Date:   Wed Jan 8 20:00:21 2020 -0500
+
+    Workaround for NVCC 10.2.
