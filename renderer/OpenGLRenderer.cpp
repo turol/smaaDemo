@@ -2344,48 +2344,32 @@ void RendererImpl::rebindDescriptorSets() {
 		const auto &r = resources.textures.at(i);
 		const auto &d = descriptors.at(r);
 
-		// TODO: find a better way than magic numbers
-		// std::variant has holds_alternative
-		switch (d.which()) {
-		case 1: {
+		if (boost::variant2::holds_alternative<CSampler>(d)) {
 			const CSampler &combined = boost::variant2::get<CSampler>(d);
 			const Texture &tex  = textures.get(combined.tex);
 			glBindTextureUnit(i, tex.tex);
-		} break;
-
-		case 3: {
+		} else if (boost::variant2::holds_alternative<TextureHandle>(d)) {
 			const TextureHandle &handle = boost::variant2::get<TextureHandle>(d);
 			const Texture &tex  = textures.get(handle);
 			glBindTextureUnit(i, tex.tex);
-		} break;
-
-		default:
+		} else {
 			HEDLEY_UNREACHABLE();
-			break;
 		}
 	}
 
 	for (unsigned int i = 0; i < resources.samplers.size(); i++) {
 		const auto &r = resources.samplers.at(i);
 		const auto &d = descriptors.at(r);
-		// TODO: find a better way than magic numbers
-		// std::variant has holds_alternative
-		switch (d.which()) {
-		case 1: {
+		if (boost::variant2::holds_alternative<CSampler>(d)) {
 			const CSampler &combined = boost::variant2::get<CSampler>(d);
 			const auto &sampler = samplers.get(combined.sampler);
 			glBindSampler(i, sampler.sampler);
-		} break;
-
-		case 2: {
+		} else if (boost::variant2::holds_alternative<SamplerHandle>(d)) {
 			const SamplerHandle &handle = boost::variant2::get<SamplerHandle>(d);
 			const auto &sampler = samplers.get(handle);
 			glBindSampler(i, sampler.sampler);
-		} break;
-
-		default:
+		} else {
 			HEDLEY_UNREACHABLE();
-			break;
 		}
 	}
 
