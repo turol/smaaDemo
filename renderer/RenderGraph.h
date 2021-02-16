@@ -140,6 +140,7 @@ public:
 private:
 
 	struct RenderPass {
+		RP                 id;
 		RenderPassHandle   handle;
 		FramebufferHandle  fb;
 		RenderPassFunc     func;
@@ -494,6 +495,7 @@ public:
 		assert(state == +RGState::Building);
 
 		RenderPass temp1;
+		temp1.id     = rp;
 		temp1.desc   = desc;
 		temp1.func   = f;
 
