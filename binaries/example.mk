@@ -39,7 +39,6 @@ CFLAGS+=-Wno-unused-local-typedefs
 CFLAGS+=$(shell sdl2-config --cflags)
 OPTFLAGS:=-O
 OPTFLAGS+=-ffast-math
-OPTFLAGS+=-fdata-sections -ffunction-sections
 
 
 # lazy assignment because CFLAGS is changed later
@@ -48,9 +47,6 @@ CXXFLAGS+=-std=c++14
 
 
 LDFLAGS:=-g -Wl,-rpath,. -Wl,-rpath,/usr/local/lib:./lib32
-LDFLAGS+=-Wl,--gc-sections
-# enable this if you're using gold linker
-#LFDLAGS+=-Wl,--icf=all
 LDLIBS:=-lpthread
 LDLIBS_sdl2:=$(shell sdl2-config --libs)
 LDLIBS_opengl:=-lGL
