@@ -437,11 +437,12 @@ public:
 		rendertargets.clear();
 
 		for (auto &op : operations) {
-			if (!mpark::holds_alternative<RenderPass>(op)) {
+			auto *rp_ = mpark::get_if<RenderPass>(&op);
+			if (!rp_) {
 				continue;
 			}
 
-			auto &rp = mpark::get<RenderPass>(op);
+			RenderPass &rp = *rp_;
 			if (rp.handle) {
 				renderer.deleteRenderPass(rp.handle);
 				rp.handle = RenderPassHandle();
@@ -663,10 +664,12 @@ public:
 
 		// create low-level renderpass objects
 		for (auto &op : operations) {
-			if (!mpark::holds_alternative<RenderPass>(op)) {
+			auto *rp_ = mpark::get_if<RenderPass>(&op);
+			if (!rp_) {
 				continue;
 			}
-			auto &rp = mpark::get<RenderPass>(op);
+
+			RenderPass &rp = *rp_;
 			const auto &desc = rp.desc;
 
 			assert(!rp.handle);
@@ -794,11 +797,12 @@ public:
 
 			// build framebuffers
 			for (auto &op : operations) {
-				if (!mpark::holds_alternative<RenderPass>(op)) {
+				auto *rp_ = mpark::get_if<RenderPass>(&op);
+				if (!rp_) {
 					continue;
 				}
 
-				auto &rp = mpark::get<RenderPass>(op);
+				RenderPass &rp = *rp_;
 				if (renderpassesWithExternalRTs.find(rp.id) == renderpassesWithExternalRTs.end()) {
 					continue;
 				}
@@ -928,11 +932,12 @@ public:
 
 			// clear framebuffers
 			for (auto &op : operations) {
-				if (!mpark::holds_alternative<RenderPass>(op)) {
+				auto *rp_ = mpark::get_if<RenderPass>(&op);
+				if (!rp_) {
 					continue;
 				}
 
-				auto &rp = mpark::get<RenderPass>(op);
+				RenderPass &rp = *rp_;
 				if (renderpassesWithExternalRTs.find(rp.id) == renderpassesWithExternalRTs.end()) {
 					continue;
 				}
@@ -958,11 +963,12 @@ public:
 		// TODO: use hash map
 		bool found = false;
 		for (auto &op : operations) {
-			if (!mpark::holds_alternative<RenderPass>(op)) {
+			auto *rp_ = mpark::get_if<RenderPass>(&op);
+			if (!rp_) {
 				continue;
 			}
 
-			auto &rpData = mpark::get<RenderPass>(op);
+			RenderPass &rpData = *rp_;
 			if (rpData.id == rp) {
 				desc.renderPass(rpData.handle);
 				found = true;
