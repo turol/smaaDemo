@@ -666,16 +666,16 @@ public:
 			if (!mpark::holds_alternative<RenderPass>(op)) {
 				continue;
 			}
-			auto &temp = mpark::get<RenderPass>(op);
-			const auto &desc = temp.desc;
+			auto &rp = mpark::get<RenderPass>(op);
+			const auto &desc = rp.desc;
 
-			assert(!temp.handle);
+			assert(!rp.handle);
 			// TODO: cache render passes
-			auto rpHandle = renderer.createRenderPass(temp.rpDesc);
+			auto rpHandle = renderer.createRenderPass(rp.rpDesc);
 			assert(rpHandle);
-			temp.handle = rpHandle;
+			rp.handle = rpHandle;
 
-			assert(!temp.fb);
+			assert(!rp.fb);
 
 			// if this renderpass has external RTs we defer its creation
 			bool hasExternal = false;
@@ -692,9 +692,9 @@ public:
 			// TODO: check depthStencil too
 
 			if (!hasExternal) {
-				buildRenderPassFramebuffer(renderer, temp);
+				buildRenderPassFramebuffer(renderer, rp);
 			} else {
-				auto result DEBUG_ASSERTED = renderpassesWithExternalRTs.insert(temp.id);
+				auto result DEBUG_ASSERTED = renderpassesWithExternalRTs.insert(rp.id);
 				assert(result.second);
 			}
 		}
