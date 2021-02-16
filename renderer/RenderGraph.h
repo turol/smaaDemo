@@ -550,9 +550,6 @@ public:
 							 );
 		}
 
-		// TODO: log operations
-		// TODO: merge operations
-
 		// automatically decide layouts
 		{
 			HashMap<RT, Layout> currentLayouts;
@@ -662,7 +659,70 @@ public:
 
 		}
 
-		// create low-level renderpass objects
+		// TODO: merge operations
+		{
+			// this is pretty bad abuse of for syntax but it allows to use continue in the loop
+			for (auto curr = operations.begin(), next = curr + 1; next != operations.end(); curr = next++) {
+				// the silly &* is because the thing is an iterator and get_if requires a pointer
+				auto *currRP_ = mpark::get_if<RenderPass>(&*curr);
+				auto *nextRP_ = mpark::get_if<RenderPass>(&*next);
+
+				// if we have two renderpasses...
+				if (currRP_ && nextRP_) {
+					RenderPass &currRP = *currRP_;
+					RenderPass &nextRP = *nextRP_;
+					LOG("Checking for merge of render passes \"{}\" and \"{}\"", to_string(currRP.id), to_string(nextRP.id));
+
+					PassDesc currDesc = currRP.desc;
+					PassDesc nextDesc = nextRP.desc;
+					// that use the same render targets
+					// and the second renderpass passbegin is Keep
+					// no nested continue in C++, need hackery
+					bool out = false;
+
+					for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+						auto &currRT = currDesc.colorRTs_[i];
+						auto &nextRT = nextDesc.colorRTs_[i];
+
+						if (currRT.id != nextRT.id) {
+							LOG(" color rendertargets {} don't match", i);
+							out = true;
+							break;
+						}
+
+						if (nextRT.id != Default<RT>::value) {
+							// we checked above that these match
+							assert(currRT.id != Default<RT>::value);
+							if (nextRT.passBegin != +PassBegin::Keep) {
+								LOG(" color rendertarget {} passBegin is not keep", i);
+								out = true;
+								break;
+							}
+
+							if (nextDesc.inputRendertargets.find(currRT.id) != nextDesc.inputRendertargets.end()) {
+                                LOG(" color rendertarget {} is input of next pass", i);
+								out = true;
+								break;
+							}
+						}
+					}
+
+					if (out) {
+						continue;
+					}
+
+					// TODO: this could be loosened if the second doesn't use depthStencil
+					if (currDesc.depthStencil_ != nextDesc.depthStencil_) {
+						LOG(" depthStencils don't match");
+						continue;
+					}
+
+					LOG(" could merge passes");
+				}
+			}
+		}
+
+		// create low-level renderpass objects and framebuffers
 		for (auto &op : operations) {
 			auto *rp_ = mpark::get_if<RenderPass>(&op);
 			if (!rp_) {
