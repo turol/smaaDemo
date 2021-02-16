@@ -341,6 +341,12 @@ private:
 		Layout         finalLayout;
 	};
 
+
+	struct RPData {
+		RP  id;
+	};
+
+
 	struct ResolveMSAA {
 		RT             source;
 		RT             dest;
@@ -352,7 +358,7 @@ private:
 		PipelineHandle  handle;
 	};
 
-	typedef mpark::variant<Blit, RP, ResolveMSAA> Operation;
+	typedef mpark::variant<Blit, RPData, ResolveMSAA> Operation;
 
 
 	struct DebugLogVisitor final {
@@ -494,7 +500,9 @@ public:
 		auto temp2 DEBUG_ASSERTED = renderPasses.emplace(rp, temp1);
 		assert(temp2.second);
 
-		operations.push_back(rp);
+		RPData rpData;
+		rpData.id = rp;
+		operations.emplace_back(std::move(rpData));
 	}
 
 
@@ -586,8 +594,8 @@ public:
 					currentLayouts[b.source] = Layout::TransferSrc;
 				}
 
-				void operator()(RP &rpId) const {
-					auto it = rg.renderPasses.find(rpId);
+				void operator()(RPData &rpData) const {
+					auto it = rg.renderPasses.find(rpData.id);
 					assert(it != rg.renderPasses.end());
 
 					RenderPass     &rp     = it->second;
@@ -632,7 +640,7 @@ public:
 							if (layoutIt == currentLayouts.end()) {
 								// unused
 								// TODO: remove it entirely
-								LOG("Removed unused rendertarget \"{}\" in renderpass \"{}\"", to_string(rtId), to_string(rpId));
+								LOG("Removed unused rendertarget \"{}\" in renderpass \"{}\"", to_string(rtId), to_string(rpData.id));
 								desc.colorRTs_[i].id        = Default<RT>::value;
 								desc.colorRTs_[i].passBegin = PassBegin::DontCare;
 							} else {
@@ -716,9 +724,9 @@ public:
 					LOG("Blit {} -> {}\t{}", to_string(b.source), to_string(b.dest), b.finalLayout._to_string());
 				}
 
-				void operator()(const RP &rpId) const {
-					LOG("RenderPass {}", to_string(rpId));
-					auto it = rg.renderPasses.find(rpId);
+				void operator()(const RPData &rpData) const {
+					LOG("RenderPass {}", to_string(rpData.id));
+					auto it = rg.renderPasses.find(rpData.id);
 					assert(it != rg.renderPasses.end());
 					const auto &desc   = it->second.desc;
 					const auto &rpDesc = it->second.rpDesc;
@@ -833,11 +841,11 @@ public:
 				r.layoutTransition(targetHandle, Layout::TransferDst, b.finalLayout);
 			}
 
-			void operator()(const RP &rp) const {
+			void operator()(const RPData &rp) const {
 				assert(rg.currentRP == Default<RP>::value);
-				rg.currentRP = rp;
+				rg.currentRP = rp.id;
 
-				auto it = rg.renderPasses.find(rp);
+				auto it = rg.renderPasses.find(rp.id);
 				assert(it != rg.renderPasses.end());
 
 				r.beginRenderPass(it->second.handle, it->second.fb);
@@ -871,7 +879,7 @@ public:
 				}
 
 				try {
-					it->second.func(rp, res);
+					it->second.func(rp.id, res);
 				} catch (std::exception &e) {
 					// TODO: log renderpass
 					LOG("Exception \"{}\" during renderpass", e.what());
@@ -884,7 +892,7 @@ public:
 				}
 				r.endRenderPass();
 
-				assert(rg.currentRP == rp);
+				assert(rg.currentRP == rp.id);
 				rg.currentRP = Default<RP>::value;
 			}
 
