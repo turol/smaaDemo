@@ -343,11 +343,6 @@ private:
 	};
 
 
-	struct RPData {
-		RP  id;
-	};
-
-
 	struct ResolveMSAA {
 		RT             source;
 		RT             dest;
@@ -359,7 +354,7 @@ private:
 		PipelineHandle  handle;
 	};
 
-	typedef mpark::variant<Blit, RPData, ResolveMSAA> Operation;
+	typedef mpark::variant<Blit, RenderPass, ResolveMSAA> Operation;
 
 
 	struct DebugLogVisitor final {
@@ -388,7 +383,6 @@ private:
 	// TODO: use hash map
 	std::vector<Pipeline>                            pipelines;
 
-	HashMap<RP, RenderPass>                          renderPasses;
 	HashSet<RP>                                      renderpassesWithExternalRTs;
 
 
@@ -419,7 +413,6 @@ public:
 		assert(state == +RGState::Invalid || state == +RGState::Ready);
 		state = RGState::Building;
 
-		renderPasses.clear();
 		renderpassesWithExternalRTs.clear();
 		hasExternalRTs = false;
 
@@ -443,8 +436,12 @@ public:
 		}
 		rendertargets.clear();
 
-		for (auto &p : renderPasses) {
-			auto &rp = p.second;
+		for (auto &op : operations) {
+			if (!mpark::holds_alternative<RenderPass>(op)) {
+				continue;
+			}
+
+			auto &rp = mpark::get<RenderPass>(op);
 			if (rp.handle) {
 				renderer.deleteRenderPass(rp.handle);
 				rp.handle = RenderPassHandle();
@@ -455,8 +452,6 @@ public:
 				rp.fb = FramebufferHandle();
 			}
 		}
-		renderPasses.clear();
-
 		operations.clear();
 
 		renderer.waitForDeviceIdle();
@@ -494,16 +489,11 @@ public:
 	void renderPass(RP rp, const PassDesc &desc, RenderPassFunc f) {
 		assert(state == +RGState::Building);
 
-		RenderPass temp1;
-		temp1.id     = rp;
-		temp1.desc   = desc;
-		temp1.func   = f;
-
-		auto temp2 DEBUG_ASSERTED = renderPasses.emplace(rp, temp1);
-		assert(temp2.second);
-
-		RPData rpData;
+		RenderPass rpData;
 		rpData.id = rp;
+		rpData.desc = desc;
+		rpData.func = f;
+
 		operations.emplace_back(std::move(rpData));
 	}
 
@@ -596,11 +586,7 @@ public:
 					currentLayouts[b.source] = Layout::TransferSrc;
 				}
 
-				void operator()(RPData &rpData) const {
-					auto it = rg.renderPasses.find(rpData.id);
-					assert(it != rg.renderPasses.end());
-
-					RenderPass     &rp     = it->second;
+				void operator()(RenderPass &rp) const {
 					RenderPassDesc &rpDesc = rp.rpDesc;
 					PassDesc       &desc   = rp.desc;
 
@@ -642,7 +628,7 @@ public:
 							if (layoutIt == currentLayouts.end()) {
 								// unused
 								// TODO: remove it entirely
-								LOG("Removed unused rendertarget \"{}\" in renderpass \"{}\"", to_string(rtId), to_string(rpData.id));
+								LOG("Removed unused rendertarget \"{}\" in renderpass \"{}\"", to_string(rtId), to_string(rp.id));
 								desc.colorRTs_[i].id        = Default<RT>::value;
 								desc.colorRTs_[i].passBegin = PassBegin::DontCare;
 							} else {
@@ -676,8 +662,11 @@ public:
 		}
 
 		// create low-level renderpass objects
-		for (auto &p : renderPasses) {
-			auto &temp = p.second;
+		for (auto &op : operations) {
+			if (!mpark::holds_alternative<RenderPass>(op)) {
+				continue;
+			}
+			auto &temp = mpark::get<RenderPass>(op);
 			const auto &desc = temp.desc;
 
 			assert(!temp.handle);
@@ -705,7 +694,7 @@ public:
 			if (!hasExternal) {
 				buildRenderPassFramebuffer(renderer, temp);
 			} else {
-				auto result DEBUG_ASSERTED = renderpassesWithExternalRTs.insert(p.first);
+				auto result DEBUG_ASSERTED = renderpassesWithExternalRTs.insert(temp.id);
 				assert(result.second);
 			}
 		}
@@ -726,12 +715,10 @@ public:
 					LOG("Blit {} -> {}\t{}", to_string(b.source), to_string(b.dest), b.finalLayout._to_string());
 				}
 
-				void operator()(const RPData &rpData) const {
+				void operator()(const RenderPass &rpData) const {
 					LOG("RenderPass {}", to_string(rpData.id));
-					auto it = rg.renderPasses.find(rpData.id);
-					assert(it != rg.renderPasses.end());
-					const auto &desc   = it->second.desc;
-					const auto &rpDesc = it->second.rpDesc;
+					const auto &desc   = rpData.desc;
+					const auto &rpDesc = rpData.rpDesc;
 
 					if (desc.depthStencil_ != Default<RT>::value) {
 						LOG(" depthStencil {}", to_string(desc.depthStencil_));
@@ -806,10 +793,15 @@ public:
 			assert(hasExternal);
 
 			// build framebuffers
-			for (auto rpName : renderpassesWithExternalRTs) {
-				auto it = renderPasses.find(rpName);
-				assert(it != renderPasses.end());
-				auto &rp = it->second;
+			for (auto &op : operations) {
+				if (!mpark::holds_alternative<RenderPass>(op)) {
+					continue;
+				}
+
+				auto &rp = mpark::get<RenderPass>(op);
+				if (renderpassesWithExternalRTs.find(rp.id) == renderpassesWithExternalRTs.end()) {
+					continue;
+				}
 
 				assert(!rp.fb);
 				buildRenderPassFramebuffer(renderer, rp);
@@ -843,18 +835,15 @@ public:
 				r.layoutTransition(targetHandle, Layout::TransferDst, b.finalLayout);
 			}
 
-			void operator()(const RPData &rp) const {
+			void operator()(const RenderPass &rp) const {
 				assert(rg.currentRP == Default<RP>::value);
 				rg.currentRP = rp.id;
 
-				auto it = rg.renderPasses.find(rp.id);
-				assert(it != rg.renderPasses.end());
-
-				r.beginRenderPass(it->second.handle, it->second.fb);
+				r.beginRenderPass(rp.handle, rp.fb);
 
 				PassResources res;
 				// TODO: build ahead of time, fill here?
-				for (RT inputRT : it->second.desc.inputRendertargets) {
+				for (RT inputRT : rp.desc.inputRendertargets) {
 					// get rendertarget desc
 					auto rtIt = rg.rendertargets.find(inputRT);
 					assert(rtIt != rg.rendertargets.end());
@@ -881,7 +870,7 @@ public:
 				}
 
 				try {
-					it->second.func(rp.id, res);
+					rp.func(rp.id, res);
 				} catch (std::exception &e) {
 					// TODO: log renderpass
 					LOG("Exception \"{}\" during renderpass", e.what());
@@ -938,11 +927,15 @@ public:
 			}
 
 			// clear framebuffers
-			for (auto rpName : renderpassesWithExternalRTs) {
-				// clear framebuffers
-				auto it = renderPasses.find(rpName);
-				assert(it != renderPasses.end());
-				auto &rp = it->second;
+			for (auto &op : operations) {
+				if (!mpark::holds_alternative<RenderPass>(op)) {
+					continue;
+				}
+
+				auto &rp = mpark::get<RenderPass>(op);
+				if (renderpassesWithExternalRTs.find(rp.id) == renderpassesWithExternalRTs.end()) {
+					continue;
+				}
 
 				assert(rp.fb);
 				// TODO: cache them
@@ -962,9 +955,21 @@ public:
 	PipelineHandle createPipeline(Renderer &renderer, RP rp, PipelineDesc &desc) {
 		assert(state == +RGState::Ready || state == +RGState::Rendering);
 
-		auto it = renderPasses.find(rp);
-		assert(it != renderPasses.end());
-		desc.renderPass(it->second.handle);
+		// TODO: use hash map
+		bool found = false;
+		for (auto &op : operations) {
+			if (!mpark::holds_alternative<RenderPass>(op)) {
+				continue;
+			}
+
+			auto &rpData = mpark::get<RenderPass>(op);
+			if (rpData.id == rp) {
+				desc.renderPass(rpData.handle);
+				found = true;
+				break;
+			}
+		}
+		assert(found);
 
 		// TODO: use hash map
 		for (const auto &pipeline : pipelines) {
