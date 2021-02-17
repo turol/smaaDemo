@@ -338,6 +338,16 @@ private:
 			}
 		}
 
+		if (firstDesc.numSamples_ != secondDesc.numSamples_) {
+			LOG(" numSamples don't match");
+			return false;
+		}
+
+		if (secondDesc.clearDepthAttachment) {
+			LOG(" second pass clears depth");
+			return false;
+		}
+
 		// TODO: this could be loosened if the second doesn't use depthStencil
 		if (firstDesc.depthStencil_ != secondDesc.depthStencil_) {
 			LOG(" depthStencils don't match");
