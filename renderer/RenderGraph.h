@@ -141,6 +141,7 @@ private:
 
 	struct RenderPass {
 		RP                 id;
+		std::string        name;
 		RenderPassHandle   handle;
 		FramebufferHandle  fb;
 		RenderPassFunc     func;
@@ -308,7 +309,7 @@ private:
 
 
 	static bool canMergeRenderPasses(const RenderPass &first, const RenderPass &second) {
-		LOG("Checking for merge of render passes \"{}\" and \"{}\"", to_string(first.id), to_string(second.id));
+		LOG("Checking for merge of render passes \"{}\" and \"{}\"", first.name, second.name);
 
 		PassDesc firstDesc  = first.desc;
 		PassDesc secondDesc = second.desc;
@@ -364,7 +365,7 @@ private:
 
 		FramebufferDesc fbDesc;
 		fbDesc.renderPass(rp.handle)
-			  .name(desc.name_);
+			  .name(rp.name);
 
 		if (desc.depthStencil_ != Default<RT>::value) {
 			auto it = rendertargets.find(desc.depthStencil_);
@@ -544,6 +545,7 @@ public:
 
 		RenderPass rpData;
 		rpData.id = rp;
+		rpData.name = desc.name_;
 		rpData.desc = desc;
 		rpData.func = f;
 
@@ -640,7 +642,7 @@ public:
 					RenderPassDesc &rpDesc = rp.rpDesc;
 					PassDesc       &desc   = rp.desc;
 
-					rpDesc.name(desc.name_);
+					rpDesc.name(rp.name);
 					rpDesc.numSamples(desc.numSamples_);
 
 					if (desc.depthStencil_ != Default<RT>::value) {
