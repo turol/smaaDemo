@@ -307,6 +307,48 @@ private:
 	}
 
 
+	static bool canMergeRenderPasses(const RenderPass &first, const RenderPass &second) {
+		LOG("Checking for merge of render passes \"{}\" and \"{}\"", to_string(first.id), to_string(second.id));
+
+		PassDesc firstDesc  = first.desc;
+		PassDesc secondDesc = second.desc;
+		// that use the same render targets
+		// and the second renderpass passbegin is Keep
+		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+			auto &firstRT  = firstDesc.colorRTs_[i];
+			auto &secondRT = secondDesc.colorRTs_[i];
+
+			if (firstRT.id != secondRT.id) {
+				LOG(" color rendertargets {} don't match", i);
+				return false;
+			}
+
+			if (secondRT.id != Default<RT>::value) {
+				// we checked above that these match
+				assert(firstRT.id != Default<RT>::value);
+				if (secondRT.passBegin != +PassBegin::Keep) {
+					LOG(" color rendertarget {} passBegin is not keep", i);
+					return false;
+				}
+
+				if (secondDesc.inputRendertargets.find(firstRT.id) != secondDesc.inputRendertargets.end()) {
+					LOG(" color rendertarget {} is input of second pass", i);
+					return false;
+				}
+			}
+		}
+
+		// TODO: this could be loosened if the second doesn't use depthStencil
+		if (firstDesc.depthStencil_ != secondDesc.depthStencil_) {
+			LOG(" depthStencils don't match");
+			return false;
+		}
+
+		LOG(" could merge passes");
+		return true;
+	}
+
+
 	void buildRenderPassFramebuffer(Renderer &renderer, RenderPass &rp) {
 		const auto &desc = rp.desc;
 
@@ -667,58 +709,11 @@ public:
 				auto *currRP_ = mpark::get_if<RenderPass>(&*curr);
 				auto *nextRP_ = mpark::get_if<RenderPass>(&*next);
 
-				// if we have two renderpasses...
+				// if we have two renderpasses check if we can merge them
 				if (currRP_ && nextRP_) {
-					RenderPass &currRP = *currRP_;
-					RenderPass &nextRP = *nextRP_;
-					LOG("Checking for merge of render passes \"{}\" and \"{}\"", to_string(currRP.id), to_string(nextRP.id));
-
-					PassDesc currDesc = currRP.desc;
-					PassDesc nextDesc = nextRP.desc;
-					// that use the same render targets
-					// and the second renderpass passbegin is Keep
-					// no nested continue in C++, need hackery
-					bool out = false;
-
-					for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-						auto &currRT = currDesc.colorRTs_[i];
-						auto &nextRT = nextDesc.colorRTs_[i];
-
-						if (currRT.id != nextRT.id) {
-							LOG(" color rendertargets {} don't match", i);
-							out = true;
-							break;
-						}
-
-						if (nextRT.id != Default<RT>::value) {
-							// we checked above that these match
-							assert(currRT.id != Default<RT>::value);
-							if (nextRT.passBegin != +PassBegin::Keep) {
-								LOG(" color rendertarget {} passBegin is not keep", i);
-								out = true;
-								break;
-							}
-
-							if (nextDesc.inputRendertargets.find(currRT.id) != nextDesc.inputRendertargets.end()) {
-                                LOG(" color rendertarget {} is input of next pass", i);
-								out = true;
-								break;
-							}
-						}
-					}
-
-					if (out) {
-						continue;
-					}
-
-					// TODO: this could be loosened if the second doesn't use depthStencil
-					if (currDesc.depthStencil_ != nextDesc.depthStencil_) {
-						LOG(" depthStencils don't match");
-						continue;
-					}
-
-					LOG(" could merge passes");
+					canMergeRenderPasses(*currRP_, *nextRP_);
 				}
+				// TODO: if second operation is resolve, check if that can be merged as well
 			}
 		}
 
