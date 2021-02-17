@@ -642,8 +642,8 @@ public:
 					RenderPassDesc &rpDesc = rp.rpDesc;
 					PassDesc       &desc   = rp.desc;
 
-					rpDesc.name(rp.name);
-					rpDesc.numSamples(desc.numSamples_);
+					rpDesc.name(rp.name)
+					      .numSamples(desc.numSamples_);
 
 					if (desc.depthStencil_ != Default<RT>::value) {
 						auto rtIt = rg.rendertargets.find(desc.depthStencil_);
