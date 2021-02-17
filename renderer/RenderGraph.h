@@ -1021,7 +1021,7 @@ public:
 		assert(state == +RGState::Ready || state == +RGState::Rendering);
 
 		// TODO: use hash map
-		bool found = false;
+		bool DEBUG_ASSERTED found = false;
 		for (auto &op : operations) {
 			auto *rp_ = mpark::get_if<RenderPass>(&op);
 			if (!rp_) {
