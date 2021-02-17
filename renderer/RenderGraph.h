@@ -737,6 +737,7 @@ public:
 			}
 
 			RenderPass &rp = *rp_;
+			rp.rpDesc.name(rp.name);
 			const auto &desc = rp.desc;
 
 			assert(!rp.handle);
@@ -786,7 +787,7 @@ public:
 				}
 
 				void operator()(const RenderPass &rpData) const {
-					LOG("RenderPass {}", to_string(rpData.id));
+					LOG("RenderPass {} \"{}\"", to_string(rpData.id), rpData.name);
 					const auto &desc   = rpData.desc;
 					const auto &rpDesc = rpData.rpDesc;
 
