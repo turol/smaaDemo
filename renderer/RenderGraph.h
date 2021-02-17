@@ -144,7 +144,7 @@ private:
 		std::string        name;
 		RenderPassHandle   handle;
 		FramebufferHandle  fb;
-		RenderPassFunc     func;
+		std::vector<RenderPassFunc> renderFunctions;
 		PassDesc           desc;
 		RenderPassDesc     rpDesc;
 	};
@@ -547,7 +547,7 @@ public:
 		rpData.id = rp;
 		rpData.name = desc.name_;
 		rpData.desc = desc;
-		rpData.func = f;
+		rpData.renderFunctions.emplace_back(std::move(f));
 
 		operations.emplace_back(std::move(rpData));
 	}
@@ -941,7 +941,10 @@ public:
 				}
 
 				try {
-					rp.func(rp.id, res);
+					assert(!rp.renderFunctions.empty());
+					for (auto &f : rp.renderFunctions) {
+						f(rp.id, res);
+					}
 				} catch (std::exception &e) {
 					// TODO: log renderpass
 					LOG("Exception \"{}\" during renderpass", e.what());
