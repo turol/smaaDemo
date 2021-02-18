@@ -623,8 +623,8 @@ public:
 			}
 
 			struct LayoutVisitor final {
-				HashMap<RT, Layout> &currentLayouts;
-				RenderGraph &rg;
+				HashMap<RT, Layout>  &currentLayouts;
+				RenderGraph          &rg;
 
 
 				LayoutVisitor(HashMap<RT, Layout> &currentLayouts_, RenderGraph &rg_)
