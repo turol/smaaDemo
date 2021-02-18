@@ -349,8 +349,8 @@ private:
 			return false;
 		}
 
-		// TODO: this could be loosened if the second doesn't use depthStencil
-		if (firstDesc.depthStencil_ != secondDesc.depthStencil_) {
+		if (firstDesc.depthStencil_ != secondDesc.depthStencil_
+		    && secondDesc.depthStencil_ != Default<RT>::value) {
 			LOG(" depthStencils don't match");
 			return false;
 		}
