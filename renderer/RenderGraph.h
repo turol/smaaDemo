@@ -676,8 +676,12 @@ public:
 
 		// TODO: sort operations so they don't have to be added in order
 
-		// automatically decide layouts
-		{
+		// need to iterate these since removing rendertargets can lead to merging passes
+		// and merging passes leads to having to recalculate layouts
+		bool keepGoing = false;
+		do {
+			keepGoing = false;
+			// automatically decide layouts
 			HashMap<RT, Layout> currentLayouts;
 
 			// initialize final render target to transfer src
@@ -699,10 +703,7 @@ public:
 				mpark::visit(lv, *it);
 			}
 
-		}
-
 		// TODO: merge operations
-		{
 			// this is pretty bad abuse of for syntax but it allows to use continue in the loop
 			for (auto curr = operations.begin(), next = curr + 1; next != operations.end(); curr = next++) {
 				// the silly &* is because the thing is an iterator and get_if requires a pointer
@@ -712,10 +713,11 @@ public:
 				// if we have two renderpasses check if we can merge them
 				if (currRP_ && nextRP_) {
 					canMergeRenderPasses(*currRP_, *nextRP_);
+					// TODO: actually merge, set keepGoing to true
 				}
 				// TODO: if second operation is resolve, check if that can be merged as well
 			}
-		}
+		} while (keepGoing);
 
 		// create rendertargets
 		for (auto &p : rendertargets) {
