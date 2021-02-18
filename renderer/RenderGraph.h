@@ -678,6 +678,7 @@ public:
 
 		// need to iterate these since removing rendertargets can lead to merging passes
 		// and merging passes leads to having to recalculate layouts
+		// TODO: find a single-pass algorithm for this
 		bool keepGoing = false;
 		do {
 			keepGoing = false;
@@ -703,19 +704,45 @@ public:
 				mpark::visit(lv, *it);
 			}
 
-		// TODO: merge operations
-			// this is pretty bad abuse of for syntax but it allows to use continue in the loop
-			for (auto curr = operations.begin(), next = curr + 1; next != operations.end(); curr = next++) {
+			// merge operations if possible
+			auto curr = operations.begin();
+			auto next = curr + 1;
+			while (next != operations.end()) {
 				// the silly &* is because the thing is an iterator and get_if requires a pointer
 				auto *currRP_ = mpark::get_if<RenderPass>(&*curr);
 				auto *nextRP_ = mpark::get_if<RenderPass>(&*next);
 
 				// if we have two renderpasses check if we can merge them
 				if (currRP_ && nextRP_) {
-					canMergeRenderPasses(*currRP_, *nextRP_);
-					// TODO: actually merge, set keepGoing to true
+					if (canMergeRenderPasses(*currRP_, *nextRP_)) {
+						// add name of next to current
+						currRP_->name += " / " + nextRP_->name;
+
+						// add next function(s) to curr
+						assert(!currRP_->renderFunctions.empty());
+						assert(!nextRP_->renderFunctions.empty());
+						for (auto &f : nextRP_->renderFunctions) {
+							currRP_->renderFunctions.emplace_back(std::move(f));
+						}
+						nextRP_->renderFunctions.clear();
+
+						// remove the second render pass
+						// std::vector erase says documentation:
+						//  "Invalidates iterators and references at or after the point of the erase, including the end() iterator."
+						// so we trust that this doesn't invalidate the curr iterator
+						next = operations.erase(next);
+
+						// do the outer loop again to recalculate layouts
+						keepGoing = true;
+
+						// don't advance the iterators so we check the newly merged pass against next
+						continue;
+					}
 				}
 				// TODO: if second operation is resolve, check if that can be merged as well
+
+				curr = next;
+				next++;
 			}
 		} while (keepGoing);
 
