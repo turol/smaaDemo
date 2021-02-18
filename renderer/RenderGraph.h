@@ -676,19 +676,6 @@ public:
 
 		// TODO: sort operations so they don't have to be added in order
 
-		// create rendertargets
-		// TODO: remove unused RTs first
-		for (auto &p : rendertargets) {
-			assert(p.first != Default<RT>::value);
-
-			visitRendertarget(p.second
-							  , nopExternal
-							  , [&] (InternalRT &i) {
-								  i.handle = renderer.createRenderTarget(i.desc);
-							  }
-							 );
-		}
-
 		// automatically decide layouts
 		{
 			HashMap<RT, Layout> currentLayouts;
@@ -728,6 +715,18 @@ public:
 				}
 				// TODO: if second operation is resolve, check if that can be merged as well
 			}
+		}
+
+		// create rendertargets
+		for (auto &p : rendertargets) {
+			assert(p.first != Default<RT>::value);
+
+			visitRendertarget(p.second
+							  , nopExternal
+							  , [&] (InternalRT &i) {
+								  i.handle = renderer.createRenderTarget(i.desc);
+							  }
+							 );
 		}
 
 		// create low-level renderpass objects and framebuffers
