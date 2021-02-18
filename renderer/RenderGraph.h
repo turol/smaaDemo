@@ -923,6 +923,9 @@ public:
 
 
 			void operator()(const Blit &b) const {
+				assert(b.source != rg.finalTarget);
+				assert(b.dest   != rg.finalTarget);
+
 				auto srcIt = rg.rendertargets.find(b.source);
 				assert(srcIt != rg.rendertargets.end());
 				RenderTargetHandle sourceHandle = getHandle(srcIt->second);
@@ -939,6 +942,8 @@ public:
 			void operator()(const RenderPass &rp) const {
 				assert(rg.currentRP == Default<RP>::value);
 				rg.currentRP = rp.id;
+				assert(rp.handle);
+				assert(rp.fb);
 
 				r.beginRenderPass(rp.handle, rp.fb);
 
@@ -992,6 +997,8 @@ public:
 			}
 
 			void operator()(const ResolveMSAA &resolve) const {
+				assert(resolve.source != rg.finalTarget);
+
 				auto srcIt = rg.rendertargets.find(resolve.source);
 				assert(srcIt != rg.rendertargets.end());
 				RenderTargetHandle sourceHandle = getHandle(srcIt->second);
