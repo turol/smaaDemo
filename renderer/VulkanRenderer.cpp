@@ -3117,6 +3117,9 @@ void Renderer::endRenderPass() {
 	impl->inRenderPass = false;
 #endif  // NDEBUG
 
+	assert(impl->currentRenderPass);
+	assert(impl->currentFramebuffer);
+
 	impl->currentCommandBuffer.endRenderPass();
 
 	const auto &pass = impl->renderPasses.get(impl->currentRenderPass);
