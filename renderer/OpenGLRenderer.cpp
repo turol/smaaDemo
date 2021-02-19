@@ -190,6 +190,15 @@ static GLenum glTexFormat(Format format) {
 	case Format::sRGBA8:
 		return GL_SRGB8_ALPHA8;
 
+	// OpenGL doesn't really support these but Vulkan requires them...
+	case Format::BGRA8:
+		abort();
+		return GL_NONE;
+
+	case Format::sBGRA8:
+		abort();
+		return GL_NONE;
+
 	case Format::RG16Float:
 		return GL_RG16F;
 
@@ -242,6 +251,10 @@ static GLenum glTexBaseFormat(Format format) {
 
 	case Format::sRGBA8:
 		return GL_RGBA;
+
+	case Format::BGRA8:
+	case Format::sBGRA8:
+		return GL_BGRA;
 
 	case Format::Depth16:
 		// not supposed to use this format here

@@ -72,6 +72,10 @@ bool isDepthFormat(Format format) {
 	case Format::sRGBA8:
 		return false;
 
+	case Format::BGRA8:
+	case Format::sBGRA8:
+		return false;
+
 	case Format::RG16Float:
 	case Format::RGBA16Float:
 		return false;
@@ -111,11 +115,13 @@ bool issRGBFormat(Format format) {
 	case Format::RG8:
 	case Format::RGB8:
 	case Format::RGBA8:
+	case Format::BGRA8:
 	case Format::RG16Float:
 	case Format::RGBA16Float:
 	case Format::RGBA32Float:
 		return false;
 
+	case Format::sBGRA8:
 	case Format::sRGBA8:
 		return true;
 
@@ -152,6 +158,10 @@ uint32_t formatSize(Format format) {
 		return 4;
 
 	case Format::sRGBA8:
+		return 4;
+
+	case Format::BGRA8:
+	case Format::sBGRA8:
 		return 4;
 
 	case Format::RG16Float:
