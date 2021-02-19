@@ -1030,6 +1030,7 @@ public:
 	unsigned int getMaxRefreshRate() const;
 
 	const RendererFeatures &getFeatures() const;
+	Format getSwapchainFormat() const;
 
 	// TODO: add buffer usage flags
 	BufferHandle          createBuffer(BufferType type, uint32_t size, const void *contents);

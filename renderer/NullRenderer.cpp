@@ -35,6 +35,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 {
 	SDL_Init(SDL_INIT_EVENTS);
 
+	swapchainFormat = Format::sRGBA8;
+
 	currentRefreshRate = 60;
 	maxRefreshRate     = 60;
 

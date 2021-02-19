@@ -368,6 +368,7 @@ RendererBase::RendererBase(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
 , wantedSwapchain(desc.swapchain)
 , swapchainDirty(true)
+, swapchainFormat(Format::Invalid)
 , frameTimeoutNanos(1000000000ULL)
 , currentFrameIdx(0)
 , lastSyncedFrame(0)
@@ -965,6 +966,11 @@ unsigned int Renderer::getMaxRefreshRate() const {
 
 const RendererFeatures &Renderer::getFeatures() const {
 	return impl->features;
+}
+
+
+Format Renderer::getSwapchainFormat() const {
+	return impl->swapchainFormat;
 }
 
 

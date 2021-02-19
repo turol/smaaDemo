@@ -1767,6 +1767,7 @@ void RendererImpl::recreateSwapchain() {
 		}
 	}
 
+	swapchainFormat = Format::sRGBA8;
 	swapchainDirty = false;
 }
 

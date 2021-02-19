@@ -2344,6 +2344,7 @@ void RendererImpl::recreateSwapchain() {
 	LOG("Using present mode {}", vk::to_string(swapchainPresentMode));
 
 	// TODO: should fallback to Unorm and communicate back to demo
+	// TODO: should iterate through supported formats and pick an appropriate one
 	vk::Format surfaceFormat = vk::Format::eB8G8R8A8Srgb;
 	if (surfaceFormats.find(surfaceFormat) == surfaceFormats.end()) {
 		throw std::runtime_error("No sRGB format backbuffer support");
@@ -2398,6 +2399,7 @@ void RendererImpl::recreateSwapchain() {
 		f.imageView = device.createImageView(info);
 	}
 
+	swapchainFormat = Format::sBGRA8;
 	swapchainDirty = false;
 }
 
