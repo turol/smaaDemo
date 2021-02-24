@@ -3120,9 +3120,14 @@ void Renderer::endRenderPass() {
 #endif  // NDEBUG
 
 	assert(impl->currentRenderPass);
-	assert(impl->currentFramebuffer);
 
 	impl->currentCommandBuffer.endRenderPass();
+
+	if (impl->renderingToSwapchain) {
+		assert(!impl->currentFramebuffer);
+		impl->renderingToSwapchain = false;
+	} else {
+		assert(impl->currentFramebuffer);
 
 	const auto &pass = impl->renderPasses.get(impl->currentRenderPass);
 	const auto &fb   = impl->framebuffers.get(impl->currentFramebuffer);
@@ -3134,11 +3139,10 @@ void Renderer::endRenderPass() {
 			rt.currentLayout = pass.desc.colorRTs_[i].finalLayout;
 		}
 	}
+	impl->currentFramebuffer = FramebufferHandle();
+	}
 
 	impl->currentRenderPass  = RenderPassHandle();
-	impl->currentFramebuffer = FramebufferHandle();
-
-	impl->renderingToSwapchain = false;
 }
 
 

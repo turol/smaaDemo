@@ -2025,6 +2025,12 @@ void Renderer::endRenderPass() {
 		glPopDebugGroup();
 	}
 
+	if (impl->renderingToSwapchain) {
+		assert(!impl->currentFramebuffer);
+		impl->renderingToSwapchain = false;
+	} else {
+		assert(impl->currentFramebuffer);
+
 	const auto &pass = impl->renderPasses.get(impl->currentRenderPass);
 	const auto &fb   = impl->framebuffers.get(impl->currentFramebuffer);
 
@@ -2036,10 +2042,10 @@ void Renderer::endRenderPass() {
 		}
 	}
 
-	impl->currentRenderPass  = RenderPassHandle();
 	impl->currentFramebuffer = FramebufferHandle();
+	}
 
-	impl->renderingToSwapchain = false;
+	impl->currentRenderPass  = RenderPassHandle();
 }
 
 
