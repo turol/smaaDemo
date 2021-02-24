@@ -3086,6 +3086,8 @@ void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHa
 	impl->validPipeline = false;
 #endif  // NDEBUG
 
+	assert(!impl->renderingToSwapchain);
+
 	const auto &pass = impl->renderPasses.get(rpHandle);
 	assert(pass.renderPass);
 	const auto &fb   = impl->framebuffers.get(fbHandle);
@@ -3135,6 +3137,8 @@ void Renderer::endRenderPass() {
 
 	impl->currentRenderPass  = RenderPassHandle();
 	impl->currentFramebuffer = FramebufferHandle();
+
+	impl->renderingToSwapchain = false;
 }
 
 

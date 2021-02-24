@@ -348,6 +348,8 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle) {
 	assert(impl->inFrame);
 	assert(!impl->inRenderPass);
+	assert(!impl->renderingToSwapchain);
+
 	impl->inRenderPass  = true;
 	impl->validPipeline = false;
 
@@ -363,6 +365,7 @@ void Renderer::endRenderPass() {
 	assert(impl->inFrame);
 	assert(impl->inRenderPass);
 	impl->inRenderPass = false;
+	impl->renderingToSwapchain = false;
 }
 
 
