@@ -170,6 +170,7 @@ struct RendererBase {
 
 	RenderPassHandle                                     currentRenderPass;
 	FramebufferHandle                                    currentFramebuffer;
+	bool                                                 renderingToSwapchain;
 
 	unsigned int                                         ringBufSize;
 	unsigned int                                         ringBufPtr;
