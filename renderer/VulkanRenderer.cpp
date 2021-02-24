@@ -3129,17 +3129,17 @@ void Renderer::endRenderPass() {
 	} else {
 		assert(impl->currentFramebuffer);
 
-	const auto &pass = impl->renderPasses.get(impl->currentRenderPass);
-	const auto &fb   = impl->framebuffers.get(impl->currentFramebuffer);
+		const auto &pass = impl->renderPasses.get(impl->currentRenderPass);
+		const auto &fb   = impl->framebuffers.get(impl->currentFramebuffer);
 
-	// TODO: track depthstencil layout too
-	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-		if (fb.desc.colors_[i]) {
-			auto &rt = impl->renderTargets.get(fb.desc.colors_[i]);
-			rt.currentLayout = pass.desc.colorRTs_[i].finalLayout;
+		// TODO: track depthstencil layout too
+		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+			if (fb.desc.colors_[i]) {
+				auto &rt = impl->renderTargets.get(fb.desc.colors_[i]);
+				rt.currentLayout = pass.desc.colorRTs_[i].finalLayout;
+			}
 		}
-	}
-	impl->currentFramebuffer = FramebufferHandle();
+		impl->currentFramebuffer = FramebufferHandle();
 	}
 
 	impl->currentRenderPass  = RenderPassHandle();
