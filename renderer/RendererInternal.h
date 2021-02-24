@@ -168,6 +168,9 @@ struct RendererBase {
 	unsigned int                                         uboAlign;
 	unsigned int                                         ssboAlign;
 
+	RenderPassHandle                                     currentRenderPass;
+	FramebufferHandle                                    currentFramebuffer;
+
 	unsigned int                                         ringBufSize;
 	unsigned int                                         ringBufPtr;
 	// we have synced with the GPU up to this ringbuffer index

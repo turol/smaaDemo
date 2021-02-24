@@ -1001,8 +1001,6 @@ struct RendererImpl : public RendererBase {
 	vk::CommandBuffer                       currentCommandBuffer;
 	vk::PipelineLayout                      currentPipelineLayout;
 	vk::Viewport                            currentViewport;
-	RenderPassHandle                        currentRenderPass;
-	FramebufferHandle                       currentFramebuffer;
 
 	VmaAllocator                            allocator;
 

@@ -670,8 +670,6 @@ struct RendererImpl : public RendererBase {
 	char                                     *persistentMapping;
 
 	PipelineHandle                           currentPipeline;
-	RenderPassHandle                         currentRenderPass;
-	FramebufferHandle                        currentFramebuffer;
 
 	bool                                     decriptorSetsDirty;
 	HashMap<DSIndex, Descriptor>             descriptors;
