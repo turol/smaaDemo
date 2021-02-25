@@ -747,31 +747,31 @@ SMAADemo::~SMAADemo() {
 	}
 
 	if (renderer) {
-	renderGraph.reset(renderer);
+		renderGraph.reset(renderer);
 
-	if (cubeVBO) {
-		renderer.deleteBuffer(cubeVBO);
-		cubeVBO = BufferHandle();
+		if (cubeVBO) {
+			renderer.deleteBuffer(cubeVBO);
+			cubeVBO = BufferHandle();
 
-		renderer.deleteBuffer(cubeIBO);
-		cubeIBO = BufferHandle();
-	}
+			renderer.deleteBuffer(cubeIBO);
+			cubeIBO = BufferHandle();
+		}
 
-	if (linearSampler) {
-		renderer.deleteSampler(linearSampler);
-		linearSampler = SamplerHandle();
+		if (linearSampler) {
+			renderer.deleteSampler(linearSampler);
+			linearSampler = SamplerHandle();
 
-		renderer.deleteSampler(nearestSampler);
-		nearestSampler = SamplerHandle();
-	}
+			renderer.deleteSampler(nearestSampler);
+			nearestSampler = SamplerHandle();
+		}
 
-	if (areaTex) {
-		renderer.deleteTexture(areaTex);
-		areaTex = TextureHandle();
+		if (areaTex) {
+			renderer.deleteTexture(areaTex);
+			areaTex = TextureHandle();
 
-		renderer.deleteTexture(searchTex);
-		searchTex = TextureHandle();
-	}
+			renderer.deleteTexture(searchTex);
+			searchTex = TextureHandle();
+		}
 	}
 }
 
