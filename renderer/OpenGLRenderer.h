@@ -201,6 +201,7 @@ struct Framebuffer {
 	RenderTargetHandle                                       depthStencil;
 	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS>  colors;
 	RenderPassHandle                                         renderPass;
+	FramebufferDesc                                          desc;
 
 
 	Framebuffer(const Framebuffer &)            = delete;
@@ -214,6 +215,7 @@ struct Framebuffer {
 	, fbo(other.fbo)
 	, depthStencil(other.depthStencil)
 	, renderPass(other.renderPass)
+	, desc(other.desc)
 	{
 		other.width        = 0;
 		other.height       = 0;
@@ -226,6 +228,7 @@ struct Framebuffer {
 		other.colors[0]    = RenderTargetHandle();
 		other.renderPass   = RenderPassHandle();
 		other.depthStencil = RenderTargetHandle();
+		other.desc         = FramebufferDesc();
 	}
 
 	Framebuffer &operator=(Framebuffer &&other) noexcept = delete;

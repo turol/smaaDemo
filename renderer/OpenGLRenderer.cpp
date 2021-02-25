@@ -1245,6 +1245,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 
 	auto result = impl->framebuffers.add();
 	Framebuffer &fb = result.first;
+	fb.desc = desc;
 	glCreateFramebuffers(1, &fb.fbo);
 
 	unsigned int width UNUSED = 0, height UNUSED = 0;
@@ -1567,6 +1568,7 @@ void Renderer::deleteFramebuffer(FramebufferHandle handle) {
 		glDeleteFramebuffers(1, &fb.fbo);
 		fb.fbo = 0;
 		fb.numSamples = 0;
+		fb.desc = FramebufferDesc();
 	} );
 }
 
