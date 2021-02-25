@@ -746,6 +746,7 @@ SMAADemo::~SMAADemo() {
 		renderer.deleteRenderTarget(temporalRTs[1]);
 	}
 
+	if (renderer) {
 	renderGraph.reset(renderer);
 
 	if (cubeVBO) {
@@ -770,6 +771,7 @@ SMAADemo::~SMAADemo() {
 
 		renderer.deleteTexture(searchTex);
 		searchTex = TextureHandle();
+	}
 	}
 }
 
