@@ -372,12 +372,12 @@ struct Pipeline {
 
 
 struct RenderPass {
-	vk::RenderPass renderPass;
-	unsigned int                   clearValueCount;
+	vk::RenderPass                                           renderPass;
+	unsigned int                                             clearValueCount;
 	std::array<vk::ClearValue, MAX_COLOR_RENDERTARGETS + 1>  clearValues;
-	unsigned int                   numSamples;
-	unsigned int                   numColorAttachments;
-	RenderPassDesc                 desc;
+	unsigned int                                             numSamples;
+	unsigned int                                             numColorAttachments;
+	RenderPassDesc                                           desc;
 
 
 	RenderPass() noexcept
@@ -480,14 +480,14 @@ struct RenderTarget{
 	, format(other.format)
 	, imageView(other.imageView)
 	{
-		other.width         = 0;
-		other.height        = 0;
-		other.currentLayout = Layout::Undefined;
-		other.texture       = TextureHandle();
+		other.width          = 0;
+		other.height         = 0;
+		other.currentLayout  = Layout::Undefined;
+		other.texture        = TextureHandle();
 		other.additionalView = TextureHandle();
-		other.image         = vk::Image();
-		other.format        = Format::Invalid;
-		other.imageView     = vk::ImageView();
+		other.image          = vk::Image();
+		other.format         = Format::Invalid;
+		other.imageView      = vk::ImageView();
 	}
 
 	RenderTarget &operator=(RenderTarget &&other) noexcept {
@@ -498,23 +498,23 @@ struct RenderTarget{
 		assert(!image);
 		assert(!imageView);
 
-		width               = other.width;
-		height              = other.height;
-		currentLayout       = other.currentLayout;
-		texture             = other.texture;
-		additionalView      = other.additionalView;
-		image               = other.image;
-		format              = other.format;
-		imageView           = other.imageView;
+		width                = other.width;
+		height               = other.height;
+		currentLayout        = other.currentLayout;
+		texture              = other.texture;
+		additionalView       = other.additionalView;
+		image                = other.image;
+		format               = other.format;
+		imageView            = other.imageView;
 
-		other.width         = 0;
-		other.height        = 0;
-		other.currentLayout = Layout::Undefined;
-		other.texture       = TextureHandle();
+		other.width          = 0;
+		other.height         = 0;
+		other.currentLayout  = Layout::Undefined;
+		other.texture        = TextureHandle();
 		other.additionalView = TextureHandle();
-		other.image         = vk::Image();
-		other.format        = Format::Invalid;
-		other.imageView     = vk::ImageView();
+		other.image          = vk::Image();
+		other.format         = Format::Invalid;
+		other.imageView      = vk::ImageView();
 
 		return *this;
 	}
@@ -789,7 +789,7 @@ struct UploadOp {
 		memory              = other.memory;
 		other.memory        = VK_NULL_HANDLE;
 
-		imageAcquireBarriers     = std::move(other.imageAcquireBarriers);
+		imageAcquireBarriers      = std::move(other.imageAcquireBarriers);
 		assert(other.imageAcquireBarriers.empty());
 
 		bufferAcquireBarriers     = std::move(other.bufferAcquireBarriers);
