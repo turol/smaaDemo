@@ -1023,6 +1023,9 @@ public:
 	~Renderer();
 
 
+	operator bool() const {
+		return bool(impl);
+	}
 
 
 	bool isRenderTargetFormatSupported(Format format) const;
