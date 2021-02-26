@@ -1676,6 +1676,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	RenderTarget &rt = result.first;
 	rt.width  = desc.width_;
 	rt.height = desc.height_;
+	rt.numSamples = desc.numSamples_;
 	rt.image = device.createImage(info);
 	rt.format = desc.format_;
 

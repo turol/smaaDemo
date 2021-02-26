@@ -450,8 +450,8 @@ struct RenderPass {
 
 
 struct RenderTarget{
-	// TODO: add numSamples
 	unsigned int         width, height;
+	unsigned int         numSamples;
 	Layout               currentLayout;
 	TextureHandle        texture;
 	TextureHandle        additionalView;
@@ -463,6 +463,7 @@ struct RenderTarget{
 	RenderTarget() noexcept
 	: width(0)
 	, height(0)
+	, numSamples(0)
 	, currentLayout(Layout::Undefined)
 	, format(Format::Invalid)
 	{}
@@ -473,6 +474,7 @@ struct RenderTarget{
 	RenderTarget(RenderTarget &&other) noexcept
 	: width(other.width)
 	, height(other.height)
+	, numSamples(other.numSamples)
 	, currentLayout(other.currentLayout)
 	, texture(other.texture)
 	, additionalView(other.additionalView)
@@ -482,6 +484,7 @@ struct RenderTarget{
 	{
 		other.width          = 0;
 		other.height         = 0;
+		other.numSamples     = 0;
 		other.currentLayout  = Layout::Undefined;
 		other.texture        = TextureHandle();
 		other.additionalView = TextureHandle();
@@ -500,6 +503,7 @@ struct RenderTarget{
 
 		width                = other.width;
 		height               = other.height;
+		numSamples           = other.numSamples;
 		currentLayout        = other.currentLayout;
 		texture              = other.texture;
 		additionalView       = other.additionalView;
@@ -509,6 +513,7 @@ struct RenderTarget{
 
 		other.width          = 0;
 		other.height         = 0;
+		other.numSamples     = 0;
 		other.currentLayout  = Layout::Undefined;
 		other.texture        = TextureHandle();
 		other.additionalView = TextureHandle();
