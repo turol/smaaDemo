@@ -198,7 +198,6 @@ struct Framebuffer {
 	unsigned int                                             numSamples;
 	bool                                                     sRGB;
 	GLuint                                                   fbo;
-	RenderTargetHandle                                       depthStencil;
 	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS>  colors;
 	RenderPassHandle                                         renderPass;
 	FramebufferDesc                                          desc;
@@ -213,7 +212,6 @@ struct Framebuffer {
 	, numSamples(other.numSamples)
 	, sRGB(other.sRGB)
 	, fbo(other.fbo)
-	, depthStencil(other.depthStencil)
 	, renderPass(other.renderPass)
 	, desc(other.desc)
 	{
@@ -227,7 +225,6 @@ struct Framebuffer {
 		this->colors[0]    = other.colors[0];
 		other.colors[0]    = RenderTargetHandle();
 		other.renderPass   = RenderPassHandle();
-		other.depthStencil = RenderTargetHandle();
 		other.desc         = FramebufferDesc();
 	}
 

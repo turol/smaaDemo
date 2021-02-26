@@ -1306,7 +1306,6 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 		const auto &depthRTtex = impl->textures.get(depthRT.texture);
 		assert(depthRTtex.renderTarget);
 		assert(depthRTtex.tex != 0);
-		fb.depthStencil = desc.depthStencil_;
 		glNamedFramebufferTexture(fb.fbo, GL_DEPTH_ATTACHMENT, depthRTtex.tex, 0);
 	} else {
 		assert(renderPass.desc.depthStencilFormat_ == +Format::Invalid);
@@ -2314,8 +2313,8 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 		return false;
 	}
 
-	if (fb.depthStencil) {
-		const auto &depthRT = renderTargets.get(fb.depthStencil);
+	if (fb.desc.depthStencil_) {
+		const auto &depthRT = renderTargets.get(fb.desc.depthStencil_);
 
 		if (pass.desc.depthStencilFormat_ != depthRT.format) {
 			return false;
