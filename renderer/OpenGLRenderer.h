@@ -194,10 +194,10 @@ struct FragmentShader {
 
 
 struct Framebuffer {
+	GLuint                                                   fbo;
 	unsigned int                                             width, height;
 	unsigned int                                             numSamples;
 	bool                                                     sRGB;
-	GLuint                                                   fbo;
 	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS>  colors;
 	RenderPassHandle                                         renderPass;
 	FramebufferDesc                                          desc;
@@ -207,19 +207,19 @@ struct Framebuffer {
 	Framebuffer &operator=(const Framebuffer &) = delete;
 
 	Framebuffer(Framebuffer &&other) noexcept
-	: width(other.width)
+	: fbo(other.fbo)
+	, width(other.width)
 	, height(other.height)
 	, numSamples(other.numSamples)
 	, sRGB(other.sRGB)
-	, fbo(other.fbo)
 	, renderPass(other.renderPass)
 	, desc(other.desc)
 	{
+		other.fbo          = 0;
 		other.width        = 0;
 		other.height       = 0;
 		other.numSamples   = 0;
 		other.sRGB         = false;
-		other.fbo          = 0;
 		// TODO: use std::move
 		assert(!other.colors[1]);
 		this->colors[0]    = other.colors[0];
@@ -231,11 +231,11 @@ struct Framebuffer {
 	Framebuffer &operator=(Framebuffer &&other) noexcept = delete;
 
 	Framebuffer()
-	: width(0)
+	: fbo(0)
+	, width(0)
 	, height(0)
 	, numSamples(0)
 	, sRGB(false)
-	, fbo(0)
 	{
 	}
 
