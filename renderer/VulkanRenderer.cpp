@@ -2263,8 +2263,11 @@ void RendererImpl::recreateSwapchain() {
 		f.imageView = vk::ImageView();
 
 		if (f.framebuffer) {
-			device.destroyFramebuffer(f.framebuffer);
-			f.framebuffer = vk::Framebuffer();
+			framebuffers.removeWith(f.framebuffer, [this](Framebuffer &fb) {
+				deleteResources.emplace_back(std::move(fb));
+			} );
+
+			f.framebuffer = FramebufferHandle();
 		}
 	}
 
@@ -3072,8 +3075,11 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 	}
 
 	if (f.framebuffer) {
-		device.destroyFramebuffer(f.framebuffer);
-		f.framebuffer = vk::Framebuffer();
+		framebuffers.removeWith(f.framebuffer, [this](Framebuffer &fb) {
+			deleteResources.emplace_back(std::move(fb));
+		} );
+
+		f.framebuffer = FramebufferHandle();
 	}
 
 	assert(f.dsPool);

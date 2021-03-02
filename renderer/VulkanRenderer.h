@@ -829,7 +829,7 @@ struct Frame : public FrameBase {
 	vk::Fence                     fence;
 	vk::Image                     image;
 	vk::ImageView                 imageView;
-	vk::Framebuffer               framebuffer;
+	FramebufferHandle             framebuffer;
 	vk::DescriptorPool            dsPool;
 	vk::CommandPool               commandPool;
 	vk::CommandBuffer             commandBuffer;
@@ -886,7 +886,7 @@ struct Frame : public FrameBase {
 	{
 		other.image            = vk::Image();
 		other.imageView        = vk::ImageView();
-		other.framebuffer      = vk::Framebuffer();
+		other.framebuffer      = FramebufferHandle();
 		other.fence            = vk::Fence();
 		other.dsPool           = vk::DescriptorPool();
 		other.commandPool      = vk::CommandPool();
@@ -913,7 +913,7 @@ struct Frame : public FrameBase {
 
 		assert(!framebuffer);
 		framebuffer          = other.framebuffer;
-		other.framebuffer    = vk::Framebuffer();
+		other.framebuffer    = FramebufferHandle();
 
 		assert(!fence);
 		fence                = other.fence;
