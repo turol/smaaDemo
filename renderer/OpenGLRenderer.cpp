@@ -1277,7 +1277,6 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 		assert(colorRT.format == renderPass.desc.colorRTs_[i].format);
 		fb.renderPass = desc.renderPass_;
 		fb.numSamples = colorRT.numSamples;
-		fb.colors[i]  = desc.colors_[i];
 		if (issRGBFormat(colorRT.format)) {
 			fb.sRGB   = true;
 		}
@@ -2037,8 +2036,8 @@ void Renderer::endRenderPass() {
 
 		// TODO: track depthstencil layout too
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-			if (fb.colors[i]) {
-				auto &rt = impl->renderTargets.get(fb.colors[i]);
+			if (fb.desc.colors_[i]) {
+				auto &rt = impl->renderTargets.get(fb.desc.colors_[i]);
 				rt.currentLayout = pass.desc.colorRTs_[i].finalLayout;
 			}
 		}
@@ -2326,8 +2325,8 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 	}
 
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-		if (fb.colors[i]) {
-			const auto &colorRT = renderTargets.get(fb.colors[i]);
+		if (fb.desc.colors_[i]) {
+			const auto &colorRT = renderTargets.get(fb.desc.colors_[i]);
 
 			if (pass.desc.colorRTs_[i].format != colorRT.format) {
 				return false;

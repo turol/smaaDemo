@@ -198,7 +198,6 @@ struct Framebuffer {
 	unsigned int                                             width, height;
 	unsigned int                                             numSamples;
 	bool                                                     sRGB;
-	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS>  colors;
 	RenderPassHandle                                         renderPass;
 	FramebufferDesc                                          desc;
 
@@ -220,10 +219,6 @@ struct Framebuffer {
 		other.height       = 0;
 		other.numSamples   = 0;
 		other.sRGB         = false;
-		// TODO: use std::move
-		assert(!other.colors[1]);
-		this->colors[0]    = other.colors[0];
-		other.colors[0]    = RenderTargetHandle();
 		other.renderPass   = RenderPassHandle();
 		other.desc         = FramebufferDesc();
 	}
