@@ -3390,6 +3390,41 @@ void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHand
 }
 
 
+bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuffer &fb) {
+	if (pass.numSamples != fb.numSamples) {
+		return false;
+	}
+
+	if (fb.desc.depthStencil_) {
+		const auto &depthRT = renderTargets.get(fb.desc.depthStencil_);
+
+		if (pass.desc.depthStencilFormat_ != depthRT.format) {
+			return false;
+		}
+	} else {
+		if (pass.desc.depthStencilFormat_ != +Format::Invalid) {
+			return false;
+		}
+	}
+
+	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+		if (fb.desc.colors_[i]) {
+			const auto &colorRT = renderTargets.get(fb.desc.colors_[i]);
+
+			if (pass.desc.colorRTs_[i].format != colorRT.format) {
+				return false;
+			}
+		} else {
+			if (pass.desc.colorRTs_[i].format != +Format::Invalid) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+
 void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 	assert(impl->inFrame);
 

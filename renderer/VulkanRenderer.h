@@ -1033,6 +1033,8 @@ struct RendererImpl : public RendererBase {
 	std::vector<Resource>                   deleteResources;
 
 
+	bool isRenderPassCompatible(const RenderPass &pass, const Framebuffer &fb);
+
 	unsigned int bufferAlignment(BufferType type);
 
 	void recreateSwapchain();
