@@ -200,6 +200,8 @@ struct Framebuffer {
 	bool                                                     sRGB;
 	RenderPassHandle                                         renderPass;
 	FramebufferDesc                                          desc;
+	std::array<Format, MAX_COLOR_RENDERTARGETS>              colorFormats;
+	Format                                                   depthStencilFormat;
 
 
 	Framebuffer(const Framebuffer &)            = delete;
@@ -213,6 +215,7 @@ struct Framebuffer {
 	, sRGB(other.sRGB)
 	, renderPass(other.renderPass)
 	, desc(other.desc)
+	, depthStencilFormat(other.depthStencilFormat)
 	{
 		other.fbo          = 0;
 		other.width        = 0;
@@ -221,6 +224,11 @@ struct Framebuffer {
 		other.sRGB         = false;
 		other.renderPass   = RenderPassHandle();
 		other.desc         = FramebufferDesc();
+		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+			colorFormats[i]       = other.colorFormats[i];
+			other.colorFormats[i] = Format::Invalid;
+		}
+		other.depthStencilFormat = Format::Invalid;
 	}
 
 	Framebuffer &operator=(Framebuffer &&other) noexcept = delete;
@@ -231,12 +239,17 @@ struct Framebuffer {
 	, height(0)
 	, numSamples(0)
 	, sRGB(false)
+	, depthStencilFormat(Format::Invalid)
 	{
+		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+			colorFormats[i] = Format::Invalid;
+		}
 	}
 
 	~Framebuffer() {
 		assert(fbo == 0);
 		assert(numSamples == 0);
+		assert(depthStencilFormat == +Format::Invalid);
 	}
 };
 

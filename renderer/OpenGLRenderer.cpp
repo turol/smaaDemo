@@ -1253,6 +1253,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	unsigned int numColorAttachments = 0;
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 		if (!desc.colors_[i]) {
+			fb.colorFormats[i] = Format::Invalid;
 			continue;
 		}
 		numColorAttachments++;
@@ -1275,6 +1276,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 		assert(colorRT.numSamples == renderPass.numSamples);
 		assert(colorRT.texture);
 		assert(colorRT.format == renderPass.desc.colorRTs_[i].format);
+		fb.colorFormats[i] = colorRT.format;
 		fb.renderPass = desc.renderPass_;
 		fb.numSamples = colorRT.numSamples;
 		if (issRGBFormat(colorRT.format)) {
@@ -1306,6 +1308,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 		assert(depthRTtex.renderTarget);
 		assert(depthRTtex.tex != 0);
 		glNamedFramebufferTexture(fb.fbo, GL_DEPTH_ATTACHMENT, depthRTtex.tex, 0);
+		fb.depthStencilFormat = depthRT.format;
 	} else {
 		assert(renderPass.desc.depthStencilFormat_ == +Format::Invalid);
 	}
@@ -1567,6 +1570,7 @@ void Renderer::deleteFramebuffer(FramebufferHandle handle) {
 		fb.fbo = 0;
 		fb.numSamples = 0;
 		fb.desc = FramebufferDesc();
+		fb.depthStencilFormat = Format::Invalid;
 	} );
 }
 

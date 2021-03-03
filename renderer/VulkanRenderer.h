@@ -257,6 +257,8 @@ struct Framebuffer {
 	unsigned int     width, height;
 	unsigned int     numSamples;
 	FramebufferDesc  desc;
+	std::array<Format, MAX_COLOR_RENDERTARGETS>  colorFormats;
+	Format                                       depthStencilFormat;
 	// TODO: store info about attachments to allow tracking layout
 
 
@@ -264,7 +266,12 @@ struct Framebuffer {
 	: width(0)
 	, height(0)
 	, numSamples(0)
-	{}
+	, depthStencilFormat(Format::Invalid)
+	{
+		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+			colorFormats[i] = Format::Invalid;
+		}
+	}
 
 	Framebuffer(const Framebuffer &)            = delete;
 	Framebuffer &operator=(const Framebuffer &) = delete;
@@ -275,11 +282,17 @@ struct Framebuffer {
 	, height(other.height)
 	, numSamples(other.numSamples)
 	, desc(other.desc)
+	, depthStencilFormat(other.depthStencilFormat)
 	{
 		other.framebuffer = vk::Framebuffer();
 		other.width       = 0;
 		other.height      = 0;
 		other.numSamples  = 0;
+		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+			colorFormats[i]       = other.colorFormats[i];
+			other.colorFormats[i] = Format::Invalid;
+		}
+		other.depthStencilFormat = Format::Invalid;
 	}
 
 	Framebuffer &operator=(Framebuffer &&other) noexcept {
@@ -294,11 +307,19 @@ struct Framebuffer {
 		height            = other.height;
 		numSamples        = other.numSamples;
 		desc              = other.desc;
+		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+			colorFormats[i] = other.colorFormats[i];
+		}
+		depthStencilFormat = other.depthStencilFormat;
 
 		other.framebuffer = vk::Framebuffer();
 		other.width       = 0;
 		other.height      = 0;
 		other.numSamples  = 0;
+		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+			other.colorFormats[i] = Format::Invalid;
+		}
+		other.depthStencilFormat = Format::Invalid;
 
 		return *this;
 	}

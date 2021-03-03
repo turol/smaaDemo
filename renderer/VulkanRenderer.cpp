@@ -1157,8 +1157,10 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	unsigned int width = 0, height = 0;
 	unsigned int numSamples = 0;
 
+	std::array<Format, MAX_COLOR_RENDERTARGETS> colorFormats;
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 		if (!desc.colors_[i]) {
+			colorFormats[i] = Format::Invalid;
 			continue;
 		}
 
@@ -1181,9 +1183,12 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 		assert(colorRT.numSamples > 0);
 		assert(colorRT.imageView);
 		// TODO: make sure renderPass formats match actual framebuffer attachments
+		assert(colorRT.format == renderPass.desc.colorRTs_[i].format);
+		colorFormats[i] = colorRT.format;
 		attachmentViews.push_back(colorRT.imageView);
 	}
 
+	auto depthStencilFormat = Format::Invalid;
 	if (desc.depthStencil_) {
 		const auto &depthRT = impl->renderTargets.get(desc.depthStencil_);
 		assert(depthRT.width  == width);
@@ -1191,6 +1196,9 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 		assert(depthRT.numSamples == numSamples);
 		assert(depthRT.imageView);
 		attachmentViews.push_back(depthRT.imageView);
+		depthStencilFormat = depthRT.format;
+	} else {
+		assert(renderPass.desc.depthStencilFormat_ == +Format::Invalid);
 	}
 
 	vk::FramebufferCreateInfo fbInfo;
@@ -1210,6 +1218,10 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	fb.height       = height;
 	fb.numSamples   = numSamples;
 	fb.framebuffer  = impl->device.createFramebuffer(fbInfo);
+	fb.depthStencilFormat = depthStencilFormat;
+	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+		fb.colorFormats[i] = colorFormats[i];
+	}
 
 	impl->debugNameObject<vk::Framebuffer>(fb.framebuffer, desc.name_);
 
@@ -2975,6 +2987,7 @@ void RendererImpl::deleteFramebufferInternal(Framebuffer &fb) {
 	fb.framebuffer = vk::Framebuffer();
 	fb.width       = 0;
 	fb.height      = 0;
+	fb.depthStencilFormat = Format::Invalid;
 }
 
 
