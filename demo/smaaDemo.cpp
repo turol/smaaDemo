@@ -83,7 +83,7 @@ class SMAADemo;
 
 
 BETTER_ENUM(AAMethod, uint8_t
-	,  MSAA
+	, MSAA
 	, FXAA
 	, SMAA
 	, SMAA2X
