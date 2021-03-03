@@ -2177,7 +2177,7 @@ void SMAADemo::processInput() {
 				int i = aaMethod._to_integral();
 
 				if (leftShift || rightShift) {
-					i = i - 1 + AAMethod::_size();
+					i = i - 1 + int(AAMethod::_size());
 				} else {
 					i = i + 1;
 				}
