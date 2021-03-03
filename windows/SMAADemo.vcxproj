@@ -434,6 +434,7 @@
     <ClInclude Include="..\renderer\OpenGLRenderer.h" />
     <ClInclude Include="..\renderer\Renderer.h" />
     <ClInclude Include="..\renderer\RendererInternal.h" />
+    <ClInclude Include="..\renderer\RenderGraph.h" />
     <ClInclude Include="..\renderer\VulkanRenderer.h" />
     <ClInclude Include="..\SearchTex.h" />
     <ClInclude Include="..\smaa.h" />
