@@ -2318,11 +2318,13 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 
 	if (fb.desc.depthStencil_) {
 		const auto &depthRT = renderTargets.get(fb.desc.depthStencil_);
+		assert(depthRT.format == fb.depthStencilFormat);
 
-		if (pass.desc.depthStencilFormat_ != depthRT.format) {
+		if (pass.desc.depthStencilFormat_ != fb.depthStencilFormat) {
 			return false;
 		}
 	} else {
+		assert(fb.depthStencilFormat == +Format::Invalid);
 		if (pass.desc.depthStencilFormat_ != +Format::Invalid) {
 			return false;
 		}
@@ -2331,11 +2333,13 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 		if (fb.desc.colors_[i]) {
 			const auto &colorRT = renderTargets.get(fb.desc.colors_[i]);
+			assert(colorRT.format == fb.colorFormats[i]);
 
-			if (pass.desc.colorRTs_[i].format != colorRT.format) {
+			if (pass.desc.colorRTs_[i].format != fb.colorFormats[i]) {
 				return false;
 			}
 		} else {
+			assert(fb.colorFormats[i] == +Format::Invalid);
 			if (pass.desc.colorRTs_[i].format != +Format::Invalid) {
 				return false;
 			}
