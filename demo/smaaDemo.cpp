@@ -1306,10 +1306,11 @@ void SMAADemo::rebuildRenderGraph() {
 	LOG("create framebuffers at size {}x{}", windowWidth, windowHeight);
 	logFlush();
 
+	Format swapchainFormat = renderer.getSwapchainFormat();
 	{
 		RenderTargetDesc rtDesc;
 		rtDesc.name("final")
-		      .format(Format::sRGBA8)
+		      .format(swapchainFormat)
 		      .width(windowWidth)
 		      .height(windowHeight);
 		renderGraph.renderTarget(Rendertargets::FinalRender, rtDesc);
@@ -1325,7 +1326,7 @@ void SMAADemo::rebuildRenderGraph() {
 			RenderTargetDesc rtDesc;
 			rtDesc.name("main color")
 				  .numSamples(numSamples)
-				  .format(Format::sRGBA8)
+				  .format(swapchainFormat)
 				  .additionalViewFormat(Format::RGBA8)
 				  .width(windowWidth)
 				  .height(windowHeight);
@@ -1387,7 +1388,7 @@ void SMAADemo::rebuildRenderGraph() {
 			RenderTargetDesc rtDesc;
 			rtDesc.name("main color")
 				  .numSamples(numSamples)
-				  .format(Format::sRGBA8)
+				  .format(swapchainFormat)
 				  .additionalViewFormat(Format::RGBA8)
 				  .width(windowWidth)
 				  .height(windowHeight);
@@ -1445,7 +1446,7 @@ void SMAADemo::rebuildRenderGraph() {
 			{
 				RenderTargetDesc rtDesc;
 				rtDesc.name("Temporal resolve 1")
-				      .format(Format::sRGBA8)  // TODO: not right?
+				      .format(swapchainFormat)
 				      .width(windowWidth)
 				      .height(windowHeight);
 				temporalRTs[0] = renderer.createRenderTarget(rtDesc);
@@ -1453,8 +1454,8 @@ void SMAADemo::rebuildRenderGraph() {
 				rtDesc.name("Temporal resolve 2");
 				temporalRTs[1] = renderer.createRenderTarget(rtDesc);
 
-				renderGraph.externalRenderTarget(Rendertargets::TemporalPrevious, Format::sRGBA8, Layout::ShaderRead, Layout::ShaderRead);
-				renderGraph.externalRenderTarget(Rendertargets::TemporalCurrent,  Format::sRGBA8, Layout::Undefined,  Layout::ShaderRead);
+				renderGraph.externalRenderTarget(Rendertargets::TemporalPrevious, swapchainFormat, Layout::ShaderRead, Layout::ShaderRead);
+				renderGraph.externalRenderTarget(Rendertargets::TemporalCurrent,  swapchainFormat, Layout::Undefined,  Layout::ShaderRead);
 			}
 
 			if (numSamples > 1) {
