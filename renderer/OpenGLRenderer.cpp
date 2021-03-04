@@ -2460,6 +2460,7 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 	// TODO: check they're both color targets
 
 	auto &srcRT = impl->renderTargets.get(source);
+	assert(isColorFormat(srcRT.format));
 	assert(srcRT.numSamples  >  1);
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
@@ -2471,6 +2472,7 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 	assert(srcRT.helperFBO != 0);
 
 	auto &destRT = impl->renderTargets.get(target);
+	assert(isColorFormat(destRT.format));
 	assert(destRT.numSamples == 1);
 	assert(destRT.width      >  0);
 	assert(destRT.height     >  0);

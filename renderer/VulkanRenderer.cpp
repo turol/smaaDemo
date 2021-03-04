@@ -3536,14 +3536,15 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 	assert(!impl->inRenderPass);
 
 	// TODO: check numSamples make sense
-	// TODO: check they're both color targets
 
 	const auto &srcRT = impl->renderTargets.get(source);
+	assert(isColorFormat(srcRT.format));
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
 	assert(srcRT.currentLayout == +Layout::TransferSrc);
 
 	const auto &destRT = impl->renderTargets.get(target);
+	assert(isColorFormat(destRT.format));
 	assert(destRT.width      >  0);
 	assert(destRT.height     >  0);
 	assert(destRT.currentLayout == +Layout::TransferDst);
