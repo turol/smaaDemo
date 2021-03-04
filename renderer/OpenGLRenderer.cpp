@@ -2484,6 +2484,7 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 	assert(destRT.helperFBO != 0);
 
 	assert(srcRT.helperFBO   != destRT.helperFBO);
+	assert(srcRT.format      == destRT.format);
 	assert(srcRT.width       == destRT.width);
 	assert(srcRT.height      == destRT.height);
 

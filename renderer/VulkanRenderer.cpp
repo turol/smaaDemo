@@ -3549,6 +3549,7 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 	assert(destRT.height     >  0);
 	assert(destRT.currentLayout == +Layout::TransferDst);
 
+	assert(srcRT.format      == destRT.format);
 	assert(srcRT.width       == destRT.width);
 	assert(srcRT.height      == destRT.height);
 
