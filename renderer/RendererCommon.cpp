@@ -817,7 +817,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		TShader shader(language);
 
 		char *sourceString   = src.data();
-		int sourceLen        = src.size();
+		int sourceLen        = int(src.size());
 		const char *filename = name.c_str();
 
 		shader.setStringsWithLengthsAndNames(&sourceString, &sourceLen, &filename, 1);
