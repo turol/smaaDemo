@@ -90,43 +90,21 @@ bool isDepthFormat(Format format) {
 		return false;
 
 	case Format::R8:
-		return false;
-
 	case Format::RG8:
-		return false;
-
 	case Format::RGB8:
-		return false;
-
 	case Format::RGBA8:
-		return false;
-
 	case Format::sRGBA8:
-		return false;
-
 	case Format::BGRA8:
 	case Format::sBGRA8:
-		return false;
-
 	case Format::RG16Float:
 	case Format::RGBA16Float:
-		return false;
-
 	case Format::RGBA32Float:
 		return false;
 
 	case Format::Depth16:
-		return true;
-
 	case Format::Depth16S8:
-		return true;
-
 	case Format::Depth24S8:
-		return true;
-
 	case Format::Depth24X8:
-		return true;
-
 	case Format::Depth32Float:
 		return true;
 
