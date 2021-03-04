@@ -3089,7 +3089,13 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 
 	if (f.framebuffer) {
 		framebuffers.removeWith(f.framebuffer, [this](Framebuffer &fb) {
-			deleteResources.emplace_back(std::move(fb));
+			// since we synced the frame this is idle and can be removed immediately
+			// also if we're shutting down we can't put any more stuff into deleteResources
+			device.destroyFramebuffer(fb.framebuffer);
+			fb.framebuffer = vk::Framebuffer();
+			fb.width       = 0;
+			fb.height      = 0;
+			fb.depthStencilFormat = Format::Invalid;
 		} );
 
 		f.framebuffer = FramebufferHandle();
