@@ -562,6 +562,8 @@ public:
 		auto DEBUG_ASSERTED destIt = rendertargets.find(dest);
 		assert(destIt != rendertargets.end());
 
+		assert(getFormat(srcIt->second) == getFormat(destIt->second));
+
 		ResolveMSAA op;
 		op.source = source;
 		op.dest   = dest;
