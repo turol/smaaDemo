@@ -51,6 +51,38 @@ using namespace glslang;
 namespace renderer {
 
 
+bool isColorFormat(Format format) {
+	switch (format) {
+	case Format::Invalid:
+		HEDLEY_UNREACHABLE();
+		return false;
+
+	case Format::R8:
+	case Format::RG8:
+	case Format::RGB8:
+	case Format::RGBA8:
+	case Format::sRGBA8:
+	case Format::BGRA8:
+	case Format::sBGRA8:
+	case Format::RG16Float:
+	case Format::RGBA16Float:
+	case Format::RGBA32Float:
+		return true;
+
+	case Format::Depth16:
+	case Format::Depth16S8:
+	case Format::Depth24S8:
+	case Format::Depth24X8:
+	case Format::Depth32Float:
+		return false;
+
+	}
+
+	HEDLEY_UNREACHABLE();
+	return false;
+}
+
+
 bool isDepthFormat(Format format) {
 	switch (format) {
 	case Format::Invalid:

@@ -124,6 +124,7 @@ typedef Handle<FragmentShader>       FragmentShaderHandle;
 typedef Handle<VertexShader>         VertexShaderHandle;
 
 
+bool isColorFormat(Format format);
 bool isDepthFormat(Format format);
 bool issRGBFormat(Format format);
 
