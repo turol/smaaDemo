@@ -124,11 +124,6 @@ typedef Handle<FragmentShader>       FragmentShaderHandle;
 typedef Handle<VertexShader>         VertexShaderHandle;
 
 
-bool isColorFormat(Format format);
-bool isDepthFormat(Format format);
-bool issRGBFormat(Format format);
-
-
 struct FrameBase {
 	uint32_t                  lastFrameNum;
 

@@ -321,6 +321,11 @@ BETTER_ENUM(WrapMode, uint8_t
 )
 
 
+bool isColorFormat(Format format);
+bool isDepthFormat(Format format);
+bool issRGBFormat(Format format);
+
+
 // CombinedSampler helper
 struct CSampler {
 	TextureHandle tex;
