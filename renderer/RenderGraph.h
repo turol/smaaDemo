@@ -576,9 +576,11 @@ public:
 
 		auto DEBUG_ASSERTED srcIt = rendertargets.find(source);
 		assert(srcIt != rendertargets.end());
+		assert(isColorFormat(getFormat(srcIt->second)));
 
 		auto DEBUG_ASSERTED destIt = rendertargets.find(dest);
 		assert(destIt != rendertargets.end());
+		assert(isColorFormat(getFormat(destIt->second)));
 
 		Blit op;
 		op.source = source;
