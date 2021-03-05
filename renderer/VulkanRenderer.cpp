@@ -3101,6 +3101,8 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 		f.framebuffer = FramebufferHandle();
 	}
 
+	f.lastSwapchainRenderPass = RenderPassHandle();
+
 	assert(f.dsPool);
 	device.destroyDescriptorPool(f.dsPool);
 	f.dsPool = vk::DescriptorPool();
