@@ -3436,7 +3436,7 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 		if (fb.desc.colors_[i]) {
-			const auto &colorRT = renderTargets.get(fb.desc.colors_[i]);
+			const auto &colorRT DEBUG_ASSERTED = renderTargets.get(fb.desc.colors_[i]);
 			assert(colorRT.format == fb.colorFormats[i]);
 
 			if (pass.desc.colorRTs_[i].format != fb.colorFormats[i]) {

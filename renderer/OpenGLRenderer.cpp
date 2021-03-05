@@ -2317,7 +2317,7 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 	}
 
 	if (fb.desc.depthStencil_) {
-		const auto &depthRT = renderTargets.get(fb.desc.depthStencil_);
+		const auto &depthRT DEBUG_ASSERTED = renderTargets.get(fb.desc.depthStencil_);
 		assert(depthRT.format == fb.depthStencilFormat);
 
 		if (pass.desc.depthStencilFormat_ != fb.depthStencilFormat) {
@@ -2332,7 +2332,7 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 		if (fb.desc.colors_[i]) {
-			const auto &colorRT = renderTargets.get(fb.desc.colors_[i]);
+			const auto &colorRT DEBUG_ASSERTED = renderTargets.get(fb.desc.colors_[i]);
 			assert(colorRT.format == fb.colorFormats[i]);
 
 			if (pass.desc.colorRTs_[i].format != fb.colorFormats[i]) {
