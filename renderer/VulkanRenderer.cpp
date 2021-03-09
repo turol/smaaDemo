@@ -3206,8 +3206,8 @@ void Renderer::layoutTransition(RenderTargetHandle image, Layout src, Layout des
 
 	vk::ImageMemoryBarrier b;
 	// TODO: should allow user to specify access flags
-	b.srcAccessMask               = vk::AccessFlagBits::eColorAttachmentWrite;
-	b.dstAccessMask               = vk::AccessFlagBits::eMemoryRead;
+	b.srcAccessMask               = vk::AccessFlagBits::eMemoryWrite;
+	b.dstAccessMask               = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
 	b.oldLayout                   = vulkanLayout(src);
 	b.newLayout                   = vulkanLayout(dest);
 	b.image                       = rt.image;
@@ -3216,7 +3216,7 @@ void Renderer::layoutTransition(RenderTargetHandle image, Layout src, Layout des
 	b.subresourceRange.layerCount = 1;
 
 	// TODO: should allow user to specify stage masks
-	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), {}, {}, { b });
+	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eBottomOfPipe, vk::PipelineStageFlagBits::eTopOfPipe, vk::DependencyFlags(), {}, {}, { b });
 }
 
 
