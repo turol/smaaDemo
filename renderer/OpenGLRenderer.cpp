@@ -1828,6 +1828,7 @@ void Renderer::beginFrame() {
 	impl->descriptors.clear();
 
 	// TODO: reset all relevant state in case some 3rd-party program fucked them up
+	glDisable(GL_SCISSOR_TEST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDepthMask(GL_TRUE);
 
