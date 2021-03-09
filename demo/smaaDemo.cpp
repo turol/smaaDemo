@@ -1917,7 +1917,7 @@ void SMAADemo::rebuildRenderGraph() {
 void SMAADemo::loadImage(const std::string &filename) {
 	int width = 0, height = 0;
 	unsigned char *imageData = stbi_load(filename.c_str(), &width, &height, NULL, 4);
-	LOG(" {} : {}  {}x{}", filename, imageData, width, height);
+	LOG(" {} : {}x{}", filename, width, height);
 	if (!imageData) {
 		LOG("Bad image: {}", stbi_failure_reason());
 		return;
