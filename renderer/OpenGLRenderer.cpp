@@ -2019,6 +2019,54 @@ void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHa
 }
 
 
+void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
+#ifndef NDEBUG
+	assert(impl->inFrame);
+	assert(!impl->inRenderPass);
+	impl->inRenderPass  = true;
+	impl->validPipeline = false;
+#endif //  NDEBUG
+
+	assert(!impl->renderingToSwapchain);
+	impl->renderingToSwapchain = true;
+
+	assert(rpHandle);
+	const auto &rp = impl->renderPasses.get(rpHandle);
+
+	glDisable(GL_SCISSOR_TEST);
+
+	if (impl->tracing) {
+		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, -1, rp.desc.name_.c_str());
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	if (impl->features.sRGBFramebuffer) {
+		glEnable(GL_FRAMEBUFFER_SRGB);
+	} else {
+		glDisable(GL_FRAMEBUFFER_SRGB);
+	}
+
+	glDisable(GL_MULTISAMPLE);
+
+	assert(rp.desc.colorRTs_[0].format    == impl->swapchainFormat);
+	if (rp.desc.colorRTs_[0].passBegin == +PassBegin::Clear) {
+		glClearBufferfv(GL_COLOR, 0, glm::value_ptr(rp.desc.colorRTs_[0].clearValue));
+	}
+	assert(rp.desc.colorRTs_[1].format    == +Format::Invalid);
+	assert(rp.desc.colorRTs_[1].passBegin == +PassBegin::DontCare);
+
+	if (rp.clearMask) {
+		// TODO: stencil
+		if ((rp.clearMask & GL_DEPTH_BUFFER_BIT) != 0) {
+			glClearBufferfv(GL_DEPTH, 0, &rp.depthClearValue);
+		}
+	}
+
+	impl->currentRenderPass  = rpHandle;
+	impl->currentFramebuffer = FramebufferHandle();
+}
+
+
 void Renderer::endRenderPass() {
 #ifndef NDEBUG
 	assert(impl->inFrame);
