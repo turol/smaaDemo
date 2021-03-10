@@ -3695,6 +3695,64 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 }
 
 
+void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLayout) {
+	assert(source);
+	assert(finalLayout != +Layout::Undefined);
+
+	assert(impl->inFrame);
+	assert(!impl->inRenderPass);
+	assert(!impl->renderingToSwapchain);
+
+	auto &srcRT = impl->renderTargets.get(source);
+	assert(isColorFormat(srcRT.format));
+	assert(srcRT.numSamples  >  1);
+	assert(srcRT.width       >  0);
+	assert(srcRT.height      >  0);
+	assert(srcRT.image);
+
+	auto &frame = impl->frames.at(impl->currentFrameIdx);
+	unsigned int width = impl->swapchainDesc.width, height = impl->swapchainDesc.height;
+
+	assert(frame.image);
+	assert(frame.imageView);
+
+	assert(srcRT.format      == impl->swapchainFormat);
+	assert(srcRT.width       == width);
+	assert(srcRT.height      == height);
+
+	// transitition swapchain from undefined -> transferdst
+	vk::ImageMemoryBarrier b;
+	// TODO: should allow user to specify access flags
+	// TODO: should tighten access masks
+	b.srcAccessMask               = vk::AccessFlagBits::eMemoryWrite;
+	b.dstAccessMask               = vk::AccessFlagBits::eMemoryRead;
+	b.oldLayout                   = vk::ImageLayout::eUndefined;
+	b.newLayout                   = vk::ImageLayout::eTransferDstOptimal;
+	b.image                       = frame.image;
+	b.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+	b.subresourceRange.levelCount = 1;
+	b.subresourceRange.layerCount = 1;
+
+	// TODO: should allow user to specify stage masks
+	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), {}, {}, { b });
+
+	vk::ImageResolve r;
+	r.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+	r.srcSubresource.layerCount = 1;
+	r.dstSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+	r.dstSubresource.layerCount = 1;
+	r.extent.width              = width;
+	r.extent.height             = height;
+	r.extent.depth              = 1;
+	impl->currentCommandBuffer.resolveImage(srcRT.image, vk::ImageLayout::eTransferSrcOptimal, frame.image, vk::ImageLayout::eTransferDstOptimal, { r } );
+
+	// transition swapchain from transferdst -> final
+	b.oldLayout                   = vk::ImageLayout::eTransferDstOptimal;
+	b.newLayout                   = vulkanLayout(finalLayout);
+	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), {}, {}, { b });
+}
+
+
 void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 #ifndef NDEBUG
 	assert(impl->inRenderPass);

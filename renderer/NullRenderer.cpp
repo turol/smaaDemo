@@ -458,6 +458,16 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 }
 
 
+void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLayout) {
+	assert(source);
+	assert(finalLayout != +Layout::Undefined);
+
+	assert(impl->inFrame);
+	assert(!impl->inRenderPass);
+	assert(!impl->renderingToSwapchain);
+}
+
+
 void Renderer::draw(unsigned int /* firstVertex */, unsigned int vertexCount) {
 	assert(impl->inRenderPass);
 	assert(impl->validPipeline);

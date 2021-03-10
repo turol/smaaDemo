@@ -1101,6 +1101,7 @@ public:
 
 	void blit(RenderTargetHandle source, RenderTargetHandle target);
 	void resolveMSAA(RenderTargetHandle source, RenderTargetHandle target);
+	void resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLayout);
 
 	void draw(unsigned int firstVertex, unsigned int vertexCount);
 	void drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount);
