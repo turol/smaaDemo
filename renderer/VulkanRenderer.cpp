@@ -3207,10 +3207,12 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 		// create framebuffer if it doesn't exist
 
 		FramebufferDesc fbDesc;
-		fbDesc.depthStencil(impl->builtinDepthRT)
-		      .renderPass(rpHandle)
+		fbDesc.renderPass(rpHandle)
 		      .name(fmt::format("Swapchain image {}", impl->currentFrameIdx));
 
+		if (pass.desc.depthStencilFormat_ != +Format::Invalid) {
+			fbDesc.depthStencil(impl->builtinDepthRT);
+		}
 		std::vector<vk::ImageView> attachmentViews;
 		unsigned int numSamples = 1;
 
