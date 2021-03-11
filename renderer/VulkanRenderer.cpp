@@ -3551,7 +3551,7 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 	}
 
 	if (fb.desc.depthStencil_) {
-		const auto &depthRT = renderTargets.get(fb.desc.depthStencil_);
+		const auto &depthRT DEBUG_ASSERTED = renderTargets.get(fb.desc.depthStencil_);
 		assert(depthRT.format == fb.depthStencilFormat);
 
 		if (pass.desc.depthStencilFormat_ != fb.depthStencilFormat) {
