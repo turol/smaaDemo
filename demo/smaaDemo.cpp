@@ -3310,7 +3310,8 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 
 			BufferHandle vtxBuf = renderer.createEphemeralBuffer(BufferType::Vertex, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert), cmd_list->VtxBuffer.Data);
 			BufferHandle idxBuf = renderer.createEphemeralBuffer(BufferType::Index, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx), cmd_list->IdxBuffer.Data);
-			renderer.bindIndexBuffer(idxBuf, true);
+			assert(sizeof(ImDrawIdx) == sizeof(uint16_t) || sizeof(ImDrawIdx) == sizeof(uint32_t));
+			renderer.bindIndexBuffer(idxBuf, sizeof(ImDrawIdx) == sizeof(uint16_t));
 			renderer.bindVertexBuffer(0, vtxBuf);
 
 			unsigned int idx_buffer_offset = 0;
