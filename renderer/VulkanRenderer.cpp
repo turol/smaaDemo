@@ -3575,8 +3575,7 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 				return false;
 			}
 		} else {
-			assert(fb.colorFormats[i] == +Format::Invalid);
-			if (pass.desc.colorRTs_[i].format != +Format::Invalid) {
+			if (pass.desc.colorRTs_[i].format != fb.colorFormats[i]) {
 				return false;
 			}
 		}
