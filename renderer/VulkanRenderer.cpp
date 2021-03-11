@@ -3570,15 +3570,11 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 		if (fb.desc.colors_[i]) {
 			const auto &colorRT DEBUG_ASSERTED = renderTargets.get(fb.desc.colors_[i]);
 			assert(colorRT.format == fb.colorFormats[i]);
+		}
 
 			if (pass.desc.colorRTs_[i].format != fb.colorFormats[i]) {
 				return false;
 			}
-		} else {
-			if (pass.desc.colorRTs_[i].format != fb.colorFormats[i]) {
-				return false;
-			}
-		}
 	}
 
 	return true;
