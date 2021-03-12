@@ -398,17 +398,17 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	vk::InstanceCreateInfo instanceCreateInfo;
 	instanceCreateInfo.pApplicationInfo         = &appInfo;
 
-	std::vector<const char *> validationLayers;
+	std::vector<const char *> activeLayers;
 
 	bool newDebugExtension = false;
 	if (enableValidation) {
 		const char *khronosValidation = "VK_LAYER_KHRONOS_validation";
 		const char *lunargValidation  = "VK_LAYER_LUNARG_standard_validation";
 		if (instanceLayers.find(khronosValidation) != instanceLayers.end()) {
-			validationLayers.push_back(khronosValidation);
+			activeLayers.push_back(khronosValidation);
 			LOG("Using KHRONOS validation layer");
 		} else if (instanceLayers.find(lunargValidation) != instanceLayers.end()) {
-			validationLayers.push_back(lunargValidation);
+			activeLayers.push_back(lunargValidation);
 			LOG("Using LUNARG validation layer");
 		} else {
 			LOG("Validation requested but no validation layer available");
@@ -424,8 +424,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			LOG("Validation requested but no debug reporting extension available");
 			throw std::runtime_error("Validation requested but no debug reporting extension available");
 		}
-		instanceCreateInfo.enabledLayerCount    = static_cast<uint32_t>(validationLayers.size());
-		instanceCreateInfo.ppEnabledLayerNames  = &validationLayers[0];
+		instanceCreateInfo.enabledLayerCount    = static_cast<uint32_t>(activeLayers.size());
+		instanceCreateInfo.ppEnabledLayerNames  = &activeLayers[0];
 	}
 
 	LOG("Active instance extensions:");
@@ -701,8 +701,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	deviceCreateInfo.enabledExtensionCount    = static_cast<uint32_t>(deviceExtensions.size());
 	deviceCreateInfo.ppEnabledExtensionNames  = &deviceExtensions[0];
 	if (enableValidation) {
-		deviceCreateInfo.enabledLayerCount    = static_cast<uint32_t>(validationLayers.size());
-		deviceCreateInfo.ppEnabledLayerNames  = &validationLayers[0];
+		deviceCreateInfo.enabledLayerCount    = static_cast<uint32_t>(activeLayers.size());
+		deviceCreateInfo.ppEnabledLayerNames  = &activeLayers[0];
 	}
 
 	device = physicalDevice.createDevice(deviceCreateInfo);
