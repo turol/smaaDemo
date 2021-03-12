@@ -2766,6 +2766,9 @@ void Renderer::presentFrame() {
 		LOG("swapchain out of date during presentKHR, marking dirty");
 		// swapchain went out of date during present, mark it dirty
 		impl->swapchainDirty = true;
+	} else if (presentResult == vk::Result::eSuboptimalKHR) {
+		LOG("swapchain suboptimal during presentKHR, marking dirty");
+		impl->swapchainDirty = true;
 	} else {
 		LOG("presentKHR failed: {}", vk::to_string(presentResult));
 		throw std::runtime_error("presentKHR failed");
