@@ -707,8 +707,7 @@ public:
 			HashMap<RT, Layout> currentLayouts;
 
 			// initialize final render target to transfer src
-			// TODO: Layout::Present
-			currentLayouts[finalTarget] = Layout::TransferSrc;
+			currentLayouts[finalTarget] = Layout::Present;
 
 			// initialize external rendertargets final layouts
 			for (const auto &rt : rendertargets) {
@@ -790,6 +789,15 @@ public:
 			rp.rpDesc.name(rp.name);
 			const auto &desc = rp.desc;
 
+			// if this is the final renderpass (which renders to swapchain)
+			// we don't create its framebuffer here
+			// Renderer will do that internally
+			// we do have to make sure the format matches swapchain
+			bool isFinal     = false;
+			if (desc.colorRTs_[0].id == finalTarget) {
+				isFinal = true;
+			}
+
 			assert(!rp.handle);
 			// TODO: cache render passes
 			auto rpHandle = renderer.createRenderPass(rp.rpDesc);
@@ -813,7 +821,9 @@ public:
 			// TODO: check depthStencil too
 
 			if (!hasExternal) {
+				if (!isFinal) {
 				buildRenderPassFramebuffer(renderer, rp);
+				}
 			} else {
 				auto result DEBUG_ASSERTED = renderpassesWithExternalRTs.insert(rp.id);
 				assert(result.second);
@@ -964,9 +974,15 @@ public:
 				assert(rg.currentRP == Default<RP>::value);
 				rg.currentRP = rp.id;
 				assert(rp.handle);
-				assert(rp.fb);
 
+				if (rp.fb) {
 				r.beginRenderPass(rp.handle, rp.fb);
+				} else {
+					// must be final pass
+					// TODO: check that
+
+					r.beginRenderPassSwapchain(rp.handle);
+				}
 
 				PassResources res;
 				// TODO: build ahead of time, fill here?
@@ -1024,6 +1040,7 @@ public:
 				assert(srcIt != rg.rendertargets.end());
 				RenderTargetHandle sourceHandle = getHandle(srcIt->second);
 
+				if (resolve.dest != rg.finalTarget) {
 				auto destIt = rg.rendertargets.find(resolve.dest);
 				assert(destIt != rg.rendertargets.end());
 				RenderTargetHandle targetHandle = getHandle(destIt->second);
@@ -1031,6 +1048,9 @@ public:
 				r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
 				r.resolveMSAA(sourceHandle, targetHandle);
 				r.layoutTransition(targetHandle, Layout::TransferDst, resolve.finalLayout);
+				} else {
+					r.resolveMSAAToSwapchain(sourceHandle, resolve.finalLayout);
+				}
 			}
 		};
 
@@ -1039,9 +1059,9 @@ public:
 		}
 
 		{
-			auto it = rendertargets.find(finalTarget);
+			auto it DEBUG_ASSERTED = rendertargets.find(finalTarget);
 			assert(it != rendertargets.end());
-			renderer.presentFrame(getHandle(it->second));
+			renderer.presentFrame();
 		}
 
 		assert(state == +RGState::Rendering);
