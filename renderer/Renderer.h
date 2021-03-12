@@ -337,9 +337,9 @@ struct CSampler {
 	}
 
 	CSampler(const CSampler &other)                = default;
-	CSampler(CSampler &&other) noexcept            = default;
-
 	CSampler &operator=(const CSampler &other)     = default;
+
+	CSampler(CSampler &&other) noexcept            = default;
 	CSampler &operator=(CSampler &&other) noexcept = default;
 
 	~CSampler() {
@@ -372,9 +372,9 @@ struct MemoryStats {
 	~MemoryStats() {}
 
 	MemoryStats(const MemoryStats &stats)                = default;
-	MemoryStats(MemoryStats &&stats) noexcept            = default;
-
 	MemoryStats &operator=(const MemoryStats &stats)     = default;
+
+	MemoryStats(MemoryStats &&stats) noexcept            = default;
 	MemoryStats &operator=(MemoryStats &&stats) noexcept = default;
 };
 
@@ -393,9 +393,9 @@ struct FramebufferDesc {
 	~FramebufferDesc() { }
 
 	FramebufferDesc(const FramebufferDesc &)                = default;
-	FramebufferDesc(FramebufferDesc &&) noexcept            = default;
-
 	FramebufferDesc &operator=(const FramebufferDesc &)     = default;
+
+	FramebufferDesc(FramebufferDesc &&) noexcept            = default;
 	FramebufferDesc &operator=(FramebufferDesc &&) noexcept = default;
 
 
@@ -604,9 +604,9 @@ public:
 	~PipelineDesc() {}
 
 	PipelineDesc(const PipelineDesc &desc)                = default;
-	PipelineDesc(PipelineDesc &&desc) noexcept            = default;
-
 	PipelineDesc &operator=(const PipelineDesc &desc)     = default;
+
+	PipelineDesc(PipelineDesc &&desc) noexcept            = default;
 	PipelineDesc &operator=(PipelineDesc &&desc) noexcept = default;
 
 	bool operator==(const PipelineDesc &other) const;
@@ -636,9 +636,9 @@ struct RenderPassDesc {
 	~RenderPassDesc() { }
 
 	RenderPassDesc(const RenderPassDesc &)                = default;
-	RenderPassDesc(RenderPassDesc &&) noexcept            = default;
-
 	RenderPassDesc &operator=(const RenderPassDesc &)     = default;
+
+	RenderPassDesc(RenderPassDesc &&) noexcept            = default;
 	RenderPassDesc &operator=(RenderPassDesc &&) noexcept = default;
 
 	RenderPassDesc &depthStencil(Format ds, PassBegin) {
@@ -718,9 +718,9 @@ struct RenderTargetDesc {
 	~RenderTargetDesc() { }
 
 	RenderTargetDesc(const RenderTargetDesc &)                = default;
-	RenderTargetDesc(RenderTargetDesc &&) noexcept            = default;
-
 	RenderTargetDesc &operator=(const RenderTargetDesc &)     = default;
+
+	RenderTargetDesc(RenderTargetDesc &&) noexcept            = default;
 	RenderTargetDesc &operator=(RenderTargetDesc &&) noexcept = default;
 
 
@@ -786,9 +786,9 @@ struct SamplerDesc {
 	}
 
 	SamplerDesc(const SamplerDesc &desc)                = default;
-	SamplerDesc(SamplerDesc &&desc) noexcept            = default;
-
 	SamplerDesc &operator=(const SamplerDesc &desc)     = default;
+
+	SamplerDesc(SamplerDesc &&desc) noexcept            = default;
 	SamplerDesc &operator=(SamplerDesc &&desc) noexcept = default;
 
 	~SamplerDesc() {}
@@ -851,9 +851,9 @@ struct TextureDesc {
 	~TextureDesc() { }
 
 	TextureDesc(const TextureDesc &)                = default;
-	TextureDesc(TextureDesc &&) noexcept            = default;
-
 	TextureDesc &operator=(const TextureDesc &)     = default;
+
+	TextureDesc(TextureDesc &&) noexcept            = default;
 	TextureDesc &operator=(TextureDesc &&) noexcept = default;
 
 
