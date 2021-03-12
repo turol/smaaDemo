@@ -700,10 +700,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	deviceCreateInfo.enabledExtensionCount    = static_cast<uint32_t>(deviceExtensions.size());
 	deviceCreateInfo.ppEnabledExtensionNames  = &deviceExtensions[0];
-	if (enableValidation) {
-		deviceCreateInfo.enabledLayerCount    = static_cast<uint32_t>(activeLayers.size());
-		deviceCreateInfo.ppEnabledLayerNames  = &activeLayers[0];
-	}
 
 	device = physicalDevice.createDevice(deviceCreateInfo);
 
