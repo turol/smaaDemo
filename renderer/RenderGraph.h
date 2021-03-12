@@ -600,15 +600,12 @@ public:
 	struct LayoutVisitor final {
 		HashMap<RT, Layout>  &currentLayouts;
 		RenderGraph          &rg;
-		Format               swapchainFormat;
 
 
-		LayoutVisitor(HashMap<RT, Layout> &currentLayouts_, RenderGraph &rg_, Format swapchainFormat_)
+		LayoutVisitor(HashMap<RT, Layout> &currentLayouts_, RenderGraph &rg_)
 		: currentLayouts(currentLayouts_)
 		, rg(rg_)
-		, swapchainFormat(swapchainFormat_)
 		{
-			assert(swapchainFormat != +Format::Invalid);
 		}
 
 		void operator()(Blit &b) const {
@@ -700,7 +697,6 @@ public:
 		// TODO: find a single-pass algorithm for this
 		bool keepGoing = false;
 
-		Format swapchainFormat = renderer.getSwapchainFormat();
 		do {
 			keepGoing = false;
 			// automatically decide layouts
@@ -719,7 +715,7 @@ public:
 								 );
 			}
 
-			LayoutVisitor lv(currentLayouts, *this, swapchainFormat);
+			LayoutVisitor lv(currentLayouts, *this);
 			for (auto it = operations.rbegin(); it != operations.rend(); it++) {
 				mpark::visit(lv, *it);
 			}
