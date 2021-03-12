@@ -822,7 +822,7 @@ public:
 
 			if (!hasExternal) {
 				if (!isFinal) {
-				buildRenderPassFramebuffer(renderer, rp);
+					buildRenderPassFramebuffer(renderer, rp);
 				}
 			} else {
 				auto result DEBUG_ASSERTED = renderpassesWithExternalRTs.insert(rp.id);
@@ -976,7 +976,7 @@ public:
 				assert(rp.handle);
 
 				if (rp.fb) {
-				r.beginRenderPass(rp.handle, rp.fb);
+					r.beginRenderPass(rp.handle, rp.fb);
 				} else {
 					// must be final pass
 					// TODO: check that
@@ -1041,13 +1041,13 @@ public:
 				RenderTargetHandle sourceHandle = getHandle(srcIt->second);
 
 				if (resolve.dest != rg.finalTarget) {
-				auto destIt = rg.rendertargets.find(resolve.dest);
-				assert(destIt != rg.rendertargets.end());
-				RenderTargetHandle targetHandle = getHandle(destIt->second);
+					auto destIt = rg.rendertargets.find(resolve.dest);
+					assert(destIt != rg.rendertargets.end());
+					RenderTargetHandle targetHandle = getHandle(destIt->second);
 
-				r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
-				r.resolveMSAA(sourceHandle, targetHandle);
-				r.layoutTransition(targetHandle, Layout::TransferDst, resolve.finalLayout);
+					r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
+					r.resolveMSAA(sourceHandle, targetHandle);
+					r.layoutTransition(targetHandle, Layout::TransferDst, resolve.finalLayout);
 				} else {
 					r.resolveMSAAToSwapchain(sourceHandle, resolve.finalLayout);
 				}
