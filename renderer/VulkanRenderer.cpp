@@ -821,8 +821,6 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 		buffer.offset          = ringBufPtr;
 		ringBufPtr             = 0;
 
-		buffer.lastUsedFrame   = frameNum;
-
 		deleteResources.emplace_back(std::move(buffer));
 	}
 
@@ -2041,7 +2039,6 @@ TextureHandle Renderer::getRenderTargetView(RenderTargetHandle handle, Format f)
 
 void Renderer::deleteBuffer(BufferHandle handle) {
 	impl->buffers.removeWith(handle, [this](struct Buffer &b) {
-		// TODO: if b.lastUsedFrame has already been synced we could delete immediately
 		impl->deleteResources.emplace_back(std::move(b));
 	} );
 }
@@ -2049,7 +2046,6 @@ void Renderer::deleteBuffer(BufferHandle handle) {
 
 void Renderer::deleteFramebuffer(FramebufferHandle handle) {
 	impl->framebuffers.removeWith(handle, [this](Framebuffer &fb) {
-		// TODO: if lastUsedFrame has already been synced we could delete immediately
 		impl->deleteResources.emplace_back(std::move(fb));
 	} );
 }
@@ -2057,7 +2053,6 @@ void Renderer::deleteFramebuffer(FramebufferHandle handle) {
 
 void Renderer::deletePipeline(PipelineHandle handle) {
 	impl->pipelines.removeWith(handle, [this](Pipeline &p) {
-		// TODO: if lastUsedFrame has already been synced we could delete immediately
 		impl->deleteResources.emplace_back(std::move(p));
 	} );
 }
@@ -2065,7 +2060,6 @@ void Renderer::deletePipeline(PipelineHandle handle) {
 
 void Renderer::deleteRenderPass(RenderPassHandle handle) {
 	impl->renderPasses.removeWith(handle, [this](RenderPass &rp) {
-		// TODO: if lastUsedFrame has already been synced we could delete immediately
 		impl->deleteResources.emplace_back(std::move(rp));
 	} );
 }
@@ -2073,7 +2067,6 @@ void Renderer::deleteRenderPass(RenderPassHandle handle) {
 
 void Renderer::deleteRenderTarget(RenderTargetHandle &handle) {
 	impl->renderTargets.removeWith(handle, [this](struct RenderTarget &rt) {
-		// TODO: if lastUsedFrame has already been synced we could delete immediately
 		impl->deleteResources.emplace_back(std::move(rt));
 	} );
 }
@@ -2081,7 +2074,6 @@ void Renderer::deleteRenderTarget(RenderTargetHandle &handle) {
 
 void Renderer::deleteSampler(SamplerHandle handle) {
 	impl->samplers.removeWith(handle, [this](struct Sampler &s) {
-		// TODO: if lastUsedFrame has already been synced we could delete immediately
 		impl->deleteResources.emplace_back(std::move(s));
 	} );
 }
@@ -2089,7 +2081,6 @@ void Renderer::deleteSampler(SamplerHandle handle) {
 
 void Renderer::deleteTexture(TextureHandle handle) {
 	impl->textures.removeWith(handle, [this](Texture &tex) {
-		// TODO: if lastUsedFrame has already been synced we could delete immediately
 		impl->deleteResources.emplace_back(std::move(tex));
 	} );
 }
@@ -2888,7 +2879,6 @@ void RendererImpl::cleanupFrame(unsigned int frameIdx) {
 		buffer.memory          = 0;
 		buffer.size            = 0;
 		buffer.offset          = 0;
-		buffer.lastUsedFrame   = 0;
 
 		buffers.remove(handle);
 	}
@@ -2965,7 +2955,6 @@ void RendererImpl::freeSemaphore(vk::Semaphore sem) {
 
 void RendererImpl::deleteBufferInternal(Buffer &b) {
 	assert(!b.ringBufferAlloc);
-	assert(b.lastUsedFrame <= lastSyncedFrame);
 	this->device.destroyBuffer(b.buffer);
 	assert(b.memory != nullptr);
 	vmaFreeMemory(this->allocator, b.memory);
@@ -2976,7 +2965,6 @@ void RendererImpl::deleteBufferInternal(Buffer &b) {
 	b.memory          = 0;
 	b.size            = 0;
 	b.offset          = 0;
-	b.lastUsedFrame   = 0;
 	b.type            = BufferType::Invalid;
 }
 
@@ -3389,7 +3377,6 @@ void Renderer::bindIndexBuffer(BufferHandle buffer, bool bit16) {
 	assert(impl->validPipeline);
 
 	auto &b = impl->buffers.get(buffer);
-	b.lastUsedFrame = impl->frameNum;
 	assert(b.type == +BufferType::Index);
 	// "normal" buffers begin from beginning of buffer
 	vk::DeviceSize offset = 0;
@@ -3406,7 +3393,6 @@ void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 	assert(impl->validPipeline);
 
 	auto &b = impl->buffers.get(buffer);
-	b.lastUsedFrame = impl->frameNum;
 	assert(b.type == +BufferType::Vertex);
 	// "normal" buffers begin from beginning of buffer
 	vk::DeviceSize offset = 0;
@@ -3464,7 +3450,6 @@ void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHand
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			Buffer &buffer = impl->buffers.get(handle);
 			assert(buffer.size > 0);
-			buffer.lastUsedFrame = impl->frameNum;
 			assert((buffer.type == +BufferType::Uniform && l.type == +DescriptorType::UniformBuffer)
 			    || (buffer.type == +BufferType::Storage && l.type == +DescriptorType::StorageBuffer));
 

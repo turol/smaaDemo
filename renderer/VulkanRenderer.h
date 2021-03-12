@@ -98,7 +98,6 @@ struct Buffer {
 	uint32_t       offset;
 	vk::Buffer     buffer;
 	VmaAllocation  memory;
-	uint32_t       lastUsedFrame;
 	BufferType     type;
 
 
@@ -107,7 +106,6 @@ struct Buffer {
 	, size(0)
 	, offset(0)
 	, memory(nullptr)
-	, lastUsedFrame(0)
 	, type(BufferType::Invalid)
 	{}
 
@@ -120,7 +118,6 @@ struct Buffer {
 	, offset(other.offset)
 	, buffer(other.buffer)
 	, memory(other.memory)
-	, lastUsedFrame(other.lastUsedFrame)
 	, type(other.type)
 	{
 
@@ -129,7 +126,6 @@ struct Buffer {
 		other.offset          = 0;
 		other.buffer          = vk::Buffer();
 		other.memory          = 0;
-		other.lastUsedFrame   = 0;
 		other.type            = BufferType::Invalid;
 	}
 
@@ -146,7 +142,6 @@ struct Buffer {
 		offset                = other.offset;
 		buffer                = other.buffer;
 		memory                = other.memory;
-		lastUsedFrame         = other.lastUsedFrame;
 		type                  = other.type;
 
 		other.ringBufferAlloc = false;
@@ -154,7 +149,6 @@ struct Buffer {
 		other.offset          = 0;
 		other.buffer          = vk::Buffer();
 		other.memory          = 0;
-		other.lastUsedFrame   = 0;
 		other.type            = BufferType::Invalid;
 		assert(type == +BufferType::Invalid);
 
