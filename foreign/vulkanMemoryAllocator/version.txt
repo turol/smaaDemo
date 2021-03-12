@@ -1,9 +1,5 @@
-commit f2012055ccda1fa3b27600c2cd7b457d74ded785
+commit d1851f0ded5e7d5555be3c839a47f057d6952131
 Author: Adam Sawicki <adam.sawicki@amd.com>
-Date:   Mon Jan 11 18:04:42 2021 +0100
+Date:   Thu Mar 11 15:16:30 2021 +0100
 
-    Added support for VK_EXT_memory_priority
-    
-    Added VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT, VmaAllocationCreateInfo::priority, VmaPoolCreateInfo::priority.
-    
-    See #160
+    Rebuilt binaries, regenerated documentation

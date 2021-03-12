@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018-2020 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2018-2021 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -3683,7 +3683,8 @@ void Player::ExecuteResizeAllocation(size_t lineNumber, const CsvSplit& csvSplit
                 const auto it = m_Allocations.find(origPtr);
                 if(it != m_Allocations.end())
                 {
-                    vmaResizeAllocation(m_Allocator, it->second.allocation, newSize);
+                    // Do nothing - the function was deprecated and has been removed.
+                    //vmaResizeAllocation(m_Allocator, it->second.allocation, newSize);
                     UpdateMemStats();
                 }
                 else
