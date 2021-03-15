@@ -216,11 +216,11 @@ static const std::array<ShaderDefines::SMAAParameters, maxSMAAQuality> defaultSM
 } };
 
 
-enum class SMAAEdgeMethod : uint8_t {
-	  Color
+BETTER_ENUM(SMAAEdgeMethod, uint8_t
+	, Color
 	, Luma
 	, Depth
-};
+)
 
 
 struct Image {
@@ -2700,11 +2700,11 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 		macros.emplace(qualityString, "1");
 
-		if (smaaEdgeMethod != SMAAEdgeMethod::Color) {
+		if (smaaEdgeMethod != +SMAAEdgeMethod::Color) {
 			macros.emplace("EDGEMETHOD", std::to_string(static_cast<uint8_t>(smaaEdgeMethod)));
 		}
 
-		if (smaaPredication && smaaEdgeMethod != SMAAEdgeMethod::Depth) {
+		if (smaaPredication && smaaEdgeMethod != +SMAAEdgeMethod::Depth) {
 			macros.emplace("SMAA_PREDICATION", "1");
 		}
 
@@ -2736,7 +2736,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 
 	EdgeDetectionDS edgeDS;
 	edgeDS.smaaUBO = smaaUBOBuf;
-	if (smaaEdgeMethod == SMAAEdgeMethod::Depth) {
+	if (smaaEdgeMethod == +SMAAEdgeMethod::Depth) {
 		edgeDS.color.tex     = r.get(Rendertargets::MainDepth);
 	} else {
 		edgeDS.color.tex     = r.get(input, Format::RGBA8);
@@ -3078,12 +3078,12 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				ImGui::PopStyleVar();
 			}
 
-			int em = static_cast<int>(smaaEdgeMethod);
+			int em = smaaEdgeMethod._to_integral();;
 			ImGui::Text("SMAA edge detection");
-			ImGui::RadioButton("Color", &em, static_cast<int>(SMAAEdgeMethod::Color));
-			ImGui::RadioButton("Luma",  &em, static_cast<int>(SMAAEdgeMethod::Luma));
-			ImGui::RadioButton("Depth", &em, static_cast<int>(SMAAEdgeMethod::Depth));
-			smaaEdgeMethod = static_cast<SMAAEdgeMethod>(em);
+			for (SMAAEdgeMethod e : SMAAEdgeMethod::_values()) {
+				ImGui::RadioButton(e._to_string(), &em, e._to_integral());
+			}
+			smaaEdgeMethod = SMAAEdgeMethod::_from_integral(em);
 
 			int d = debugMode;
 			ImGui::Combo("SMAA debug", &d, smaaDebugModes, 3);
