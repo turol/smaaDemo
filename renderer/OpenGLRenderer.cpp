@@ -1845,46 +1845,6 @@ void Renderer::beginFrame() {
 }
 
 
-void Renderer::presentFrame(RenderTargetHandle image) {
-#ifndef NDEBUG
-	assert(impl->inFrame);
-#endif //  NDEBUG
-
-	auto &rt = impl->renderTargets.get(image);
-	assert(rt.currentLayout == +Layout::TransferSrc);
-
-	unsigned int width  = rt.width;
-	unsigned int height = rt.height;
-
-	// TODO: only if enabled
-	glDisable(GL_SCISSOR_TEST);
-	if (impl->features.sRGBFramebuffer) {
-		glEnable(GL_FRAMEBUFFER_SRGB);
-	} else {
-		glDisable(GL_FRAMEBUFFER_SRGB);
-	}
-
-
-	// TODO: necessary? should do linear blit?
-	assert(width  == impl->swapchainDesc.width);
-	assert(height == impl->swapchainDesc.height);
-
-	assert(width > 0);
-	assert(height > 0);
-
-	if (rt.helperFBO == 0) {
-		impl->createRTHelperFBO(rt);
-	}
-	assert(rt.helperFBO != 0);
-
-	glBlitNamedFramebuffer(rt.helperFBO, 0
-	                     , 0, 0, width, height
-	                     , 0, 0, width, height
-	                     , GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-	presentFrame();
-}
-
 void Renderer::presentFrame() {
 #ifndef NDEBUG
 	assert(impl->inFrame);

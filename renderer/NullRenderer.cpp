@@ -320,11 +320,6 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 }
 
 
-void Renderer::presentFrame(RenderTargetHandle /* rt */) {
-	presentFrame();
-}
-
-
 void Renderer::presentFrame() {
 	assert(impl->inFrame);
 	impl->inFrame = false;
