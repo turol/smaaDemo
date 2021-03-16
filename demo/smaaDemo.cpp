@@ -432,14 +432,18 @@ namespace renderer {
 
 template<>
 struct Default<Rendertargets> {
-	static constexpr Rendertargets  value = Rendertargets::Invalid;
+	static const Rendertargets  value;
 };
+
+const Rendertargets  Default<Rendertargets>::value = Rendertargets::Invalid;
 
 
 template<>
 struct Default<RenderPasses> {
-	static constexpr RenderPasses  value = RenderPasses::Invalid;
+	static const RenderPasses  value;
 };
+
+const RenderPasses  Default<RenderPasses>::value = RenderPasses::Invalid;
 
 
 } // namespace renderer
