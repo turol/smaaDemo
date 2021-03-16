@@ -3110,12 +3110,25 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			smaaEdgeMethod = SMAAEdgeMethod::_from_integral(em);
 
 			int d = debugMode;
-			ImGui::Combo("SMAA debug", &d, smaaDebugModes, 3);
+			if (ImGui::BeginCombo("SMAA debug", smaaDebugModes[d])) {
+				for (int i = 0; i < 3; i++) {
+					const bool is_selected = (i == d);
+					if (ImGui::Selectable(smaaDebugModes[i], is_selected)) {
+						d = i;
+					}
+
+					if (is_selected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+
 			assert(d >= 0);
 			assert(d < 3);
 			if (int(debugMode) != d) {
 				debugMode = d;
 				rebuildRG = true;
+			}
 			}
 
 			int fq = fxaaQuality;
