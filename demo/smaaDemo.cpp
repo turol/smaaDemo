@@ -90,6 +90,13 @@ BETTER_ENUM(AAMethod, uint8_t
 )
 
 
+BETTER_ENUM(SMAADebugMode, uint8_t
+	, None
+	, Edges
+	, Weights
+)
+
+
 const char *smaaDebugModes[3] = { "None", "Edges", "Weights" };
 
 static const unsigned int inputTextBufferSize = 1024;
