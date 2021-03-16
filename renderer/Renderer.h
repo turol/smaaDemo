@@ -38,6 +38,10 @@ THE SOFTWARE.
   public:                                      \
     Enum() = default;
 
+#ifndef BETTER_ENUMS_CONSTEXPR_TO_STRING
+#define BETTER_ENUMS_CONSTEXPR_TO_STRING
+#endif
+
 #include <better-enums/enum.h>
 
 #include "utils/Hash.h"
