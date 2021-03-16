@@ -2179,7 +2179,7 @@ void SMAADemo::processInput() {
 			case SDL_SCANCODE_D:
 				if (antialiasing && aaMethod == +AAMethod::SMAA) {
 					int d = debugMode._to_integral();
-					const int count = SMAADebugMode::_size();
+					const int count = int(SMAADebugMode::_size());
 					if (leftShift || rightShift) {
 						d = (d + count - 1) % count;
 					} else {
