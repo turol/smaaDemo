@@ -269,48 +269,7 @@ BETTER_ENUM(Rendertargets, uint32_t
 
 
 static const char *to_string(Rendertargets r) {
-
-	switch (r) {
-	case Rendertargets::MainColor:
-		return "MainColor";
-
-	case Rendertargets::MainDepth:
-		return "MainDepth";
-
-	case Rendertargets::Velocity:
-		return "Velocity";
-
-	case Rendertargets::VelocityMS:
-		return "VelocityMS";
-
-	case Rendertargets::Edges:
-		return "Edges";
-
-	case Rendertargets::BlendWeights:
-		return "BlendWeights";
-
-	case Rendertargets::TemporalPrevious:
-		return "TemporalPrevious";
-
-	case Rendertargets::TemporalCurrent:
-		return "TemporalCurrent";
-
-	case Rendertargets::Subsample1:
-		return "Subsample1";
-
-	case Rendertargets::Subsample2:
-		return "Subsample2";
-
-	case Rendertargets::FinalRender:
-		return "FinalRender";
-
-	case Rendertargets::Invalid:
-		return "Invalid";
-
-	}
-
-	HEDLEY_UNREACHABLE();
-	return "";
+	return r._to_string();
 }
 
 
