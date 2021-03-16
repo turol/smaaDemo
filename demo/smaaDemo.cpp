@@ -502,6 +502,7 @@ class SMAADemo {
 	float                                             cameraDistance;
 	uint64_t                                          rotationTime;
 	unsigned int                                      rotationPeriodSeconds;
+	unsigned int                                      numRenderedFrames;
 	RandomGen                                         random;
 	std::vector<Image>                                images;
 	std::vector<ShaderDefines::Cube>                  cubes;
@@ -667,6 +668,7 @@ SMAADemo::SMAADemo()
 , cameraDistance(25.0f)
 , rotationTime(0)
 , rotationPeriodSeconds(30)
+, numRenderedFrames(0)
 , random(1)
 
 , depthFormat(Format::Invalid)
@@ -733,6 +735,8 @@ SMAADemo::SMAADemo()
 
 
 SMAADemo::~SMAADemo() {
+	LOG("{} frames rendered", numRenderedFrames);
+
 #ifndef IMGUI_DISABLE
 	if (imGuiContext) {
 		ImGui::DestroyContext(imGuiContext);
@@ -2492,6 +2496,8 @@ void SMAADemo::render() {
 	}
 
 	renderGraph.render(renderer);
+
+	numRenderedFrames++;
 }
 
 
