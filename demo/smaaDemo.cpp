@@ -97,8 +97,6 @@ BETTER_ENUM(SMAADebugMode, uint8_t
 )
 
 
-const char *smaaDebugModes[3] = { "None", "Edges", "Weights" };
-
 static const unsigned int inputTextBufferSize = 1024;
 
 
@@ -473,7 +471,7 @@ class SMAADemo {
 	// 1 or 2 if SMAA
 	// 2.. if MSAA
 	unsigned int                                      numSamples;
-	unsigned int                                      debugMode;
+	SMAADebugMode                                     debugMode;
 	unsigned int                                      fxaaQuality;
 	unsigned int                                      msaaQuality;
 	unsigned int                                      maxMSAAQuality;
@@ -650,7 +648,7 @@ SMAADemo::SMAADemo()
 , temporalReproject(true)
 , reprojectionWeightScale(30.0f)
 , numSamples(1)
-, debugMode(0)
+, debugMode(SMAADebugMode::None)
 , fxaaQuality(maxFXAAQuality - 1)
 , msaaQuality(0)
 , maxMSAAQuality(1)
@@ -1708,7 +1706,7 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 
 				switch (debugMode) {
-				case 0:
+				case SMAADebugMode::None:
 					// blendweights pass
 					{
 						RenderTargetDesc rtDesc;
@@ -1739,7 +1737,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 					break;
 
-				case 1:
+				case SMAADebugMode::Edges:
 					// visualize edges
 					{
 						DemoRenderGraph::PassDesc desc;
@@ -1752,7 +1750,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 					break;
 
-				case 2:
+				case SMAADebugMode::Weights:
 					// blendweights pass
 					{
 						RenderTargetDesc rtDesc;
@@ -2180,12 +2178,15 @@ void SMAADemo::processInput() {
 
 			case SDL_SCANCODE_D:
 				if (antialiasing && aaMethod == +AAMethod::SMAA) {
+					int d = debugMode._to_integral();
+					const int count = SMAADebugMode::_size();
 					if (leftShift || rightShift) {
-						debugMode = (debugMode + 3 - 1) % 3;
+						d = (d + count - 1) % count;
 					} else {
-						debugMode = (debugMode + 1) % 3;
+						d = (d + 1) % count;
 					}
 					rebuildRG = true;
+					debugMode = SMAADebugMode::_from_integral(d);
 				}
 				break;
 
@@ -3109,9 +3110,11 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			}
 			smaaEdgeMethod = SMAAEdgeMethod::_from_integral(em);
 
-			int d = debugMode;
+			int d = debugMode._to_integral();
+			constexpr auto smaaDebugModes = SMAADebugMode::_names();
+
 			if (ImGui::BeginCombo("SMAA debug", smaaDebugModes[d])) {
-				for (int i = 0; i < 3; i++) {
+				for (int i = 0; i < int(SMAADebugMode::_size()); i++) {
 					const bool is_selected = (i == d);
 					if (ImGui::Selectable(smaaDebugModes[i], is_selected)) {
 						d = i;
@@ -3124,9 +3127,9 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				ImGui::EndCombo();
 
 				assert(d >= 0);
-				assert(d < 3);
-				if (int(debugMode) != d) {
-					debugMode = d;
+				assert(d < int(SMAADebugMode::_size()));
+				if (debugMode._to_integral() != d) {
+					debugMode = SMAADebugMode::_from_integral(d);
 					rebuildRG = true;
 				}
 			}
