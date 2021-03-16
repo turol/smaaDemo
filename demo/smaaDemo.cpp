@@ -291,49 +291,7 @@ BETTER_ENUM(RenderPasses, uint32_t
 
 
 static const char *to_string(RenderPasses r) {
-	switch (r) {
-	case RenderPasses::Scene:
-		return "Scene";
-
-	case RenderPasses::Final:
-		return "Final";
-
-	case RenderPasses::GUI:
-		return "GUI";
-
-	case RenderPasses::FXAA:
-		return "FXAA";
-
-	case RenderPasses::Separate:
-		return "Separate";
-
-	case RenderPasses::SMAAEdges:
-		return "SMAAEdges";
-
-	case RenderPasses::SMAAWeights:
-		return "SMAAweights";
-
-	case RenderPasses::SMAABlend:
-		return "SMAABlend";
-
-	case RenderPasses::SMAAEdges2:
-		return "SMAAEdges2";
-
-	case RenderPasses::SMAAWeights2:
-		return "SMAAWeights2";
-
-	case RenderPasses::SMAA2XBlend1:
-		return "SMAA2XBlend1";
-
-	case RenderPasses::SMAA2XBlend2:
-		return "SMAA2XBlend2";
-
-	case RenderPasses::Invalid:
-		return "Invalid";
-	}
-
-	HEDLEY_UNREACHABLE();
-	return "";
+	return r._to_string();
 }
 
 
