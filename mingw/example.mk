@@ -51,7 +51,7 @@ LDFLAGS:=-mwindows
 LDFLAGS+=-gstabs
 LDFLAGS+=-L.
 LDFLAGS+=-static-libstdc++ -static-libgcc
-LDLIBS:=-lSDL2main -lSDL2
+LDLIBS:=-lSDL2main -lSDL2 -limm32
 LDLIBS_opengl:=-lopengl32
 LDLIBS_vulkan:=vulkan-1.lib
 
