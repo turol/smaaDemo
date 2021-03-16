@@ -314,8 +314,8 @@ static const char *to_string(Rendertargets r) {
 }
 
 
-enum class RenderPasses : uint32_t {
-	  Invalid
+BETTER_ENUM(RenderPasses, uint32_t
+	, Invalid
 	, Scene
 	, Final
 	, GUI
@@ -328,7 +328,7 @@ enum class RenderPasses : uint32_t {
 	, SMAAWeights2
 	, SMAA2XBlend1
 	, SMAA2XBlend2
-};
+)
 
 
 static const char *to_string(RenderPasses r) {
