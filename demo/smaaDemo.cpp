@@ -3123,12 +3123,12 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				}
 				ImGui::EndCombo();
 
-			assert(d >= 0);
-			assert(d < 3);
-			if (int(debugMode) != d) {
-				debugMode = d;
-				rebuildRG = true;
-			}
+				assert(d >= 0);
+				assert(d < 3);
+				if (int(debugMode) != d) {
+					debugMode = d;
+					rebuildRG = true;
+				}
 			}
 
 			int fq = fxaaQuality;
