@@ -503,6 +503,7 @@ class SMAADemo {
 	uint64_t                                          rotationTime;
 	unsigned int                                      rotationPeriodSeconds;
 	unsigned int                                      numRenderedFrames;
+	unsigned int                                      maxRenderedFrames;
 	RandomGen                                         random;
 	std::vector<Image>                                images;
 	std::vector<ShaderDefines::Cube>                  cubes;
@@ -669,6 +670,7 @@ SMAADemo::SMAADemo()
 , rotationTime(0)
 , rotationPeriodSeconds(30)
 , numRenderedFrames(0)
+, maxRenderedFrames(0)
 , random(1)
 
 , depthFormat(Format::Invalid)
@@ -850,6 +852,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::ValueArg<unsigned int>          windowHeightSwitch("", "height",     "Window height", false, rendererDesc.swapchain.height, "height", cmd);
 
 		TCLAP::ValueArg<unsigned int>          fpsSwitch("",          "fps",        "FPS limit",     false, 0,                             "FPS",    cmd);
+		TCLAP::ValueArg<unsigned int>          framesSwitch("",       "frames",     "Frames to render", false, 0,                      "Frames",    cmd);
 
 		TCLAP::ValueArg<unsigned int>          rotateSwitch("",       "rotate",     "Rotation period", false, 0,          "seconds", cmd);
 
@@ -876,6 +879,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		rendererDesc.vulkanDeviceFilter    = deviceSwitch.getValue();
 
 		fpsLimit = fpsSwitch.getValue();
+		maxRenderedFrames = framesSwitch.getValue();
 
 		unsigned int r = rotateSwitch.getValue();
 		if (r != 0) {
@@ -2498,6 +2502,9 @@ void SMAADemo::render() {
 	renderGraph.render(renderer);
 
 	numRenderedFrames++;
+	if (maxRenderedFrames > 0 && numRenderedFrames >= maxRenderedFrames) {
+		keepGoing = false;
+	}
 }
 
 
