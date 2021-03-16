@@ -252,8 +252,8 @@ struct Image {
 };
 
 
-enum class Rendertargets : uint32_t {
-	  Invalid
+BETTER_ENUM(Rendertargets, uint32_t
+	, Invalid
 	, MainColor
 	, MainDepth
 	, Velocity
@@ -265,7 +265,7 @@ enum class Rendertargets : uint32_t {
 	, Subsample1
 	, Subsample2
 	, FinalRender
-};
+)
 
 
 static const char *to_string(Rendertargets r) {
