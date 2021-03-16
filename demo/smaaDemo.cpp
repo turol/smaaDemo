@@ -243,9 +243,9 @@ struct Image {
 
 
 	Image(const Image &)             = default;
-	Image(Image &&) noexcept            = default;
-
 	Image &operator=(const Image &)  = default;
+
+	Image(Image &&) noexcept            = default;
 	Image &operator=(Image &&) noexcept = default;
 
 	~Image() {}
