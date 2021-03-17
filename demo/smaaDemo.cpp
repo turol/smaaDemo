@@ -823,8 +823,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 					if (aaMethodStr == "NONE") {
 						antialiasing = false;
 					} else {
-						LOG("Bad AA method {}", aaMethodStr);
-						fprintf(stderr, "Bad AA method \"%s\"\n", aaMethodStr.c_str());
+						LOG_ERROR("Bad AA method \"{}\"", aaMethodStr);
 						exit(1);
 					}
 				} else {
@@ -893,8 +892,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 				if (maybe) {
 					debugMode = *maybe;
 				} else {
-					LOG("Bad SMAA debug mode {}", debugModeStr);
-					fprintf(stderr, "Bad SMAA debug mode \"%s\"\n", debugModeStr.c_str());
+					LOG_ERROR("Bad SMAA debug mode \"{}\"", debugModeStr);
 					exit(1);
 				}
 			}
