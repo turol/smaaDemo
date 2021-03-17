@@ -814,6 +814,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 			rotationPeriodSeconds = std::max(1U, std::min(r, 60U));
 		}
 
+		{
 		std::string aaMethodStr = aaMethodSwitch.getValue();
 		std::transform(aaMethodStr.begin(), aaMethodStr.end(), aaMethodStr.begin(), ::toupper);
 		if (!aaMethodStr.empty()) {
@@ -830,7 +831,9 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 				aaMethod = *parsed;
 			}
 		}
+		}
 
+		{
 		std::string aaQualityStr = aaQualitySwitch.getValue();
 		switch (aaMethod) {
 		case AAMethod::SMAA:
@@ -880,6 +883,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 			}
 			break;
 
+		}
 		}
 
 		{
