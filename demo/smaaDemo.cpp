@@ -817,18 +817,17 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		{
 			std::string aaMethodStr = aaMethodSwitch.getValue();
 			if (!aaMethodStr.empty()) {
-					auto parsed = AAMethod::_from_string_nocase_nothrow(aaMethodStr.c_str());
-					if (!parsed) {
-				std::transform(aaMethodStr.begin(), aaMethodStr.end(), aaMethodStr.begin(), ::toupper);
-				if (aaMethodStr == "NONE") {
-					antialiasing = false;
-				} else {
+				auto parsed = AAMethod::_from_string_nocase_nothrow(aaMethodStr.c_str());
+				if (!parsed) {
+					std::transform(aaMethodStr.begin(), aaMethodStr.end(), aaMethodStr.begin(), ::toupper);
+					if (aaMethodStr == "NONE") {
+						antialiasing = false;
+					} else {
 						LOG("Bad AA method {}", aaMethodStr);
 						fprintf(stderr, "Bad AA method \"%s\"\n", aaMethodStr.c_str());
 						exit(1);
 					}
-					} else {
-
+				} else {
 					aaMethod = *parsed;
 				}
 			}
