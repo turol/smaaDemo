@@ -774,19 +774,19 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::SwitchArg                       noVsyncSwitch("",      "novsync",    "Disable vsync",                 cmd, false);
 		TCLAP::SwitchArg                       noTransferQSwitch("",  "no-transfer-queue", "Disable transfer queue", cmd, false);
 
-		TCLAP::ValueArg<unsigned int>          windowWidthSwitch("",  "width",      "Window width",  false, rendererDesc.swapchain.width,  "width",  cmd);
-		TCLAP::ValueArg<unsigned int>          windowHeightSwitch("", "height",     "Window height", false, rendererDesc.swapchain.height, "height", cmd);
+		TCLAP::ValueArg<unsigned int>          windowWidthSwitch("",  "width",      "Window width",             false, rendererDesc.swapchain.width,  "width",              cmd);
+		TCLAP::ValueArg<unsigned int>          windowHeightSwitch("", "height",     "Window height",            false, rendererDesc.swapchain.height, "height",             cmd);
 
-		TCLAP::ValueArg<unsigned int>          fpsSwitch("",          "fps",        "FPS limit",     false, 0,                             "FPS",    cmd);
-		TCLAP::ValueArg<unsigned int>          framesSwitch("",       "frames",     "Frames to render", false, 0,                      "Frames",    cmd);
+		TCLAP::ValueArg<unsigned int>          fpsSwitch("",          "fps",        "FPS limit",                false, 0,                             "FPS",                cmd);
+		TCLAP::ValueArg<unsigned int>          framesSwitch("",       "frames",     "Frames to render",         false, 0,                             "Frames",             cmd);
 
-		TCLAP::ValueArg<unsigned int>          rotateSwitch("",       "rotate",     "Rotation period", false, 0,          "seconds", cmd);
+		TCLAP::ValueArg<unsigned int>          rotateSwitch("",       "rotate",     "Rotation period",          false, 0,                             "seconds",            cmd);
 
-		TCLAP::ValueArg<std::string>           aaMethodSwitch("m",    "method",     "AA Method",     false, "SMAA",        "SMAA/FXAA/MSAA", cmd);
-		TCLAP::ValueArg<std::string>           aaQualitySwitch("q",   "quality",    "AA Quality",    false, "",            "", cmd);
-		TCLAP::ValueArg<std::string>           debugModeSwitch("d",   "debugmode",  "SMAA debug mode",     false, "None",        "None/Edges/Weights", cmd);
-		TCLAP::ValueArg<std::string>           deviceSwitch("",       "device",     "Set Vulkan device filter", false, "", "device name", cmd);
-		TCLAP::SwitchArg                       temporalAASwitch("t",  "temporal",   "Temporal AA", cmd, false);
+		TCLAP::ValueArg<std::string>           aaMethodSwitch("m",    "method",     "AA Method",                false, "SMAA",                        "SMAA/FXAA/MSAA",     cmd);
+		TCLAP::ValueArg<std::string>           aaQualitySwitch("q",   "quality",    "AA Quality",               false, "",                            "",                   cmd);
+		TCLAP::ValueArg<std::string>           debugModeSwitch("d",   "debugmode",  "SMAA debug mode",          false, "None",                        "None/Edges/Weights", cmd);
+		TCLAP::ValueArg<std::string>           deviceSwitch("",       "device",     "Set Vulkan device filter", false, "",                            "device name",        cmd);
+		TCLAP::SwitchArg                       temporalAASwitch("t",  "temporal",   "Temporal AA",   cmd, false);
 
 		TCLAP::UnlabeledMultiArg<std::string>  imagesArg("images",    "image files", false, "image file", cmd, true, nullptr);
 
@@ -815,75 +815,75 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		}
 
 		{
-		std::string aaMethodStr = aaMethodSwitch.getValue();
-		std::transform(aaMethodStr.begin(), aaMethodStr.end(), aaMethodStr.begin(), ::toupper);
-		if (!aaMethodStr.empty()) {
-			if (aaMethodStr == "NONE") {
-				antialiasing = false;
-			} else {
-				auto parsed = AAMethod::_from_string_nothrow(aaMethodStr.c_str());
-				if (!parsed) {
-					LOG("Bad AA method {}", aaMethodStr);
-					fprintf(stderr, "Bad AA method \"%s\"\n", aaMethodStr.c_str());
-					exit(1);
-				}
+			std::string aaMethodStr = aaMethodSwitch.getValue();
+			std::transform(aaMethodStr.begin(), aaMethodStr.end(), aaMethodStr.begin(), ::toupper);
+			if (!aaMethodStr.empty()) {
+				if (aaMethodStr == "NONE") {
+					antialiasing = false;
+				} else {
+					auto parsed = AAMethod::_from_string_nothrow(aaMethodStr.c_str());
+					if (!parsed) {
+						LOG("Bad AA method {}", aaMethodStr);
+						fprintf(stderr, "Bad AA method \"%s\"\n", aaMethodStr.c_str());
+						exit(1);
+					}
 
-				aaMethod = *parsed;
+					aaMethod = *parsed;
+				}
 			}
-		}
 		}
 
 		{
-		std::string aaQualityStr = aaQualitySwitch.getValue();
-		switch (aaMethod) {
-		case AAMethod::SMAA:
-			if (!aaQualityStr.empty()) {
-				std::transform(aaQualityStr.begin(), aaQualityStr.end(), aaQualityStr.begin(), ::toupper);
-				for (unsigned int i = 0; i < maxSMAAQuality; i++) {
-					if (aaQualityStr == smaaQualityLevels[i]) {
-						smaaQuality = i;
-						break;
+			std::string aaQualityStr = aaQualitySwitch.getValue();
+			switch (aaMethod) {
+			case AAMethod::SMAA:
+				if (!aaQualityStr.empty()) {
+					std::transform(aaQualityStr.begin(), aaQualityStr.end(), aaQualityStr.begin(), ::toupper);
+					for (unsigned int i = 0; i < maxSMAAQuality; i++) {
+						if (aaQualityStr == smaaQualityLevels[i]) {
+							smaaQuality = i;
+							break;
+						}
 					}
 				}
-			}
-			break;
+				break;
 
-		case AAMethod::SMAA2X:
-			if (!aaQualityStr.empty()) {
-				std::transform(aaQualityStr.begin(), aaQualityStr.end(), aaQualityStr.begin(), ::toupper);
-				for (unsigned int i = 0; i < maxSMAAQuality; i++) {
-					if (aaQualityStr == smaaQualityLevels[i]) {
-						smaaQuality = i;
-						break;
+			case AAMethod::SMAA2X:
+				if (!aaQualityStr.empty()) {
+					std::transform(aaQualityStr.begin(), aaQualityStr.end(), aaQualityStr.begin(), ::toupper);
+					for (unsigned int i = 0; i < maxSMAAQuality; i++) {
+						if (aaQualityStr == smaaQualityLevels[i]) {
+							smaaQuality = i;
+							break;
+						}
 					}
 				}
-			}
-			break;
+				break;
 
-		case AAMethod::FXAA:
-			if (!aaQualityStr.empty()) {
-				std::transform(aaQualityStr.begin(), aaQualityStr.end(), aaQualityStr.begin(), ::toupper);
-				for (unsigned int i = 0; i < maxFXAAQuality; i++) {
-					if (aaQualityStr == fxaaQualityLevels[i]) {
-						fxaaQuality = i;
-						break;
+			case AAMethod::FXAA:
+				if (!aaQualityStr.empty()) {
+					std::transform(aaQualityStr.begin(), aaQualityStr.end(), aaQualityStr.begin(), ::toupper);
+					for (unsigned int i = 0; i < maxFXAAQuality; i++) {
+						if (aaQualityStr == fxaaQualityLevels[i]) {
+							fxaaQuality = i;
+							break;
+						}
 					}
 				}
-			}
-			break;
+				break;
 
-		case AAMethod::MSAA:
-			int n = atoi(aaQualityStr.c_str());
-			if (n > 0) {
-				if (!isPow2(n)) {
-					n = nextPow2(n);
+			case AAMethod::MSAA:
+				int n = atoi(aaQualityStr.c_str());
+				if (n > 0) {
+					if (!isPow2(n)) {
+						n = nextPow2(n);
+					}
+
+					msaaQuality = msaaSamplesToQuality(n);
 				}
+				break;
 
-				msaaQuality = msaaSamplesToQuality(n);
 			}
-			break;
-
-		}
 		}
 
 		{
