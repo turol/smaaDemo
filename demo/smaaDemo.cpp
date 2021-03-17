@@ -821,7 +821,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 				if (aaMethodStr == "NONE") {
 					antialiasing = false;
 				} else {
-					auto parsed = AAMethod::_from_string_nothrow(aaMethodStr.c_str());
+					auto parsed = AAMethod::_from_string_nocase_nothrow(aaMethodStr.c_str());
 					if (!parsed) {
 						LOG("Bad AA method {}", aaMethodStr);
 						fprintf(stderr, "Bad AA method \"%s\"\n", aaMethodStr.c_str());
