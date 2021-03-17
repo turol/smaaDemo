@@ -816,7 +816,6 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 
 		std::string aaMethodStr = aaMethodSwitch.getValue();
 		std::transform(aaMethodStr.begin(), aaMethodStr.end(), aaMethodStr.begin(), ::toupper);
-		std::string aaQualityStr = aaQualitySwitch.getValue();
 		if (!aaMethodStr.empty()) {
 			if (aaMethodStr == "NONE") {
 				antialiasing = false;
@@ -832,6 +831,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 			}
 		}
 
+		std::string aaQualityStr = aaQualitySwitch.getValue();
 		switch (aaMethod) {
 		case AAMethod::SMAA:
 			if (!aaQualityStr.empty()) {
