@@ -784,6 +784,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 
 		TCLAP::ValueArg<std::string>           aaMethodSwitch("m",    "method",     "AA Method",     false, "SMAA",        "SMAA/FXAA/MSAA", cmd);
 		TCLAP::ValueArg<std::string>           aaQualitySwitch("q",   "quality",    "AA Quality",    false, "",            "", cmd);
+		TCLAP::ValueArg<std::string>           debugModeSwitch("d",   "debugmode",  "SMAA debug mode",     false, "None",        "None/Edges/Weights", cmd);
 		TCLAP::ValueArg<std::string>           deviceSwitch("",       "device",     "Set Vulkan device filter", false, "", "device name", cmd);
 		TCLAP::SwitchArg                       temporalAASwitch("t",  "temporal",   "Temporal AA", cmd, false);
 
@@ -879,6 +880,20 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 			}
 			break;
 
+		}
+
+		{
+			std::string debugModeStr = debugModeSwitch.getValue();
+			if (!debugModeStr.empty()) {
+				auto maybe = SMAADebugMode::_from_string_nocase_nothrow(debugModeStr.c_str());
+				if (maybe) {
+					debugMode = *maybe;
+				} else {
+					LOG("Bad SMAA debug mode {}", debugModeStr);
+					fprintf(stderr, "Bad SMAA debug mode \"%s\"\n", debugModeStr.c_str());
+					exit(1);
+				}
+			}
 		}
 
 		temporalAA = temporalAASwitch.getValue();
