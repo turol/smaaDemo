@@ -60,6 +60,18 @@ void logWrite(const nonstd::string_view &message) {
 }
 
 
+void logWriteError(const nonstd::string_view &message) {
+	// Write to log and stderr
+	if (logFile) {
+		fwrite(message.data(), 1, message.size(), logFile);
+		fputc('\n', logFile);
+	}
+
+	fwrite(message.data(), 1, message.size(), stderr);
+	fputc('\n', stderr);
+}
+
+
 void logShutdown() {
 	assert(logFile);
 

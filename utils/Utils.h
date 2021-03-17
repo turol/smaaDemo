@@ -81,13 +81,21 @@ THE SOFTWARE.
 
 
 #define LOG(msg, ...) logWriteFmt(FMT_STRING(msg), ##__VA_ARGS__)
+#define LOG_ERROR(msg, ...)  logWriteErrorFmt(FMT_STRING(msg), ##__VA_ARGS__)
+
 
 void logInit();
 void logWrite(const nonstd::string_view &message);
+void logWriteError(const nonstd::string_view &message);
 
 template <typename S, typename... Args>
 static void logWriteFmt(const S &format, const Args & ... args) {
 	logWrite(fmt::format(format, args...));
+}
+
+template <typename S, typename... Args>
+static void logWriteErrorFmt(const S &format, const Args & ... args) {
+	logWriteError(fmt::format(format, args...));
 }
 
 void logShutdown();
