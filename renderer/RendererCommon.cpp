@@ -408,7 +408,7 @@ RendererBase::RendererBase(const RendererDesc &desc)
 
 	bool success = InitializeProcess();
 	if (!success) {
-		throw std::runtime_error("glslang initialization failed");
+		THROW_ERROR("glslang initialization failed");
 	}
 }
 
@@ -612,8 +612,7 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			LOG("Duplicate UBO binding ({}, {})", idx.set, idx.binding);
-			throw std::runtime_error("Duplicate UBO binding");
+			THROW_ERROR("Duplicate UBO binding ({}, {})", idx.set, idx.binding);
 		}
 
 		uint32_t maxOffset = 0;
@@ -635,8 +634,7 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			LOG("Duplicate SSBO binding ({}, {})", idx.set, idx.binding);
-			throw std::runtime_error("Duplicate SSBO binding");
+			THROW_ERROR("Duplicate SSBO binding ({}, {})", idx.set, idx.binding);
 		}
 	}
 
@@ -649,8 +647,7 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			LOG("Duplicate combined image/sampler binding ({}, {})", idx.set, idx.binding);
-			throw std::runtime_error("Duplicate combined image/sampler binding");
+			THROW_ERROR("Duplicate combined image/sampler binding ({}, {})", idx.set, idx.binding);
 		}
 	}
 
@@ -663,8 +660,7 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			LOG("Duplicate image binding ({}, {})", idx.set, idx.binding);
-			throw std::runtime_error("Duplicate image binding");
+			THROW_ERROR("Duplicate image binding ({}, {})", idx.set, idx.binding);
 		}
 	}
 
@@ -677,8 +673,7 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			LOG("Duplicate image sampler binding ({}, {})", idx.set, idx.binding);
-			throw std::runtime_error("Duplicate sampler binding");
+			THROW_ERROR("Duplicate image sampler binding ({}, {})", idx.set, idx.binding);
 		}
 	}
 }
@@ -848,8 +843,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		}
 
 		if (!success) {
-			LOG("Failed to compile shader");
-			throw std::runtime_error("Failed to compile shader");
+			THROW_ERROR("Failed to compile shader");
 		}
 
 		// link
@@ -863,8 +857,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		}
 
 		if (!success) {
-			LOG("Failed to link shader");
-			throw std::runtime_error("Failed to link shader");
+			THROW_ERROR("Failed to link shader");
 		}
 
 		// convert to SPIR-V
@@ -882,8 +875,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		glslang::GlslangToSpv(*program.getIntermediate(language), spirv, &logger, &spvOptions);
 
 		if (!validate(spirv)) {
-			LOG("SPIR-V for shader \"{}\" is not valid after compilation", shaderName);
-			throw std::runtime_error("Shader validation failed");
+			THROW_ERROR("SPIR-V for shader \"{}\" is not valid after compilation", shaderName);
 		}
 	}
 
@@ -909,12 +901,11 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		optimized.reserve(spirv.size());
 		bool success = opt.Run(&spirv[0], spirv.size(), &optimized);
 		if (!success) {
-			throw std::runtime_error("Shader optimization failed");
+			THROW_ERROR("Shader optimization failed");
 		}
 
 		if (!validate(optimized)) {
-			LOG("SPIR-V for shader \"{}\" is not valid after optimization", shaderName);
-			throw std::runtime_error("Shader validation failed");
+			THROW_ERROR("SPIR-V for shader \"{}\" is not valid after optimization", shaderName);
 		}
 
 		// glslang SPV remapper
@@ -923,8 +914,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			remapper.remap(optimized);
 
 			if (!validate(optimized)) {
-				LOG("SPIR-V for shader \"{}\" is not valid after remapping", shaderName);
-				throw std::runtime_error("Shader validation failed");
+				THROW_ERROR("SPIR-V for shader \"{}\" is not valid after remapping", shaderName);
 			}
 		}
 

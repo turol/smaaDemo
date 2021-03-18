@@ -139,7 +139,7 @@ static GLuint createShader(GLenum type, const std::string &name, const ShaderMac
 
 	if (status != GL_TRUE) {
 		glDeleteShader(shader);
-		throw std::runtime_error("shader compile failed");
+		THROW_ERROR("shader compile failed");
 	}
 
 	return shader;
@@ -413,8 +413,7 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 		if (i < first.ubos.size()) {
 			DSIndex other = first.ubos.at(i);
 			if (idx != other) {
-				LOG("ERROR: mismatch when merging shader UBOs, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
-				throw std::runtime_error("resource mismatch");
+				THROW_ERROR("mismatch when merging shader UBOs, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
 			}
 		} else {
 			first.ubos.push_back(idx);
@@ -426,8 +425,7 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 		if (i < first.ssbos.size()) {
 			DSIndex other = first.ssbos.at(i);
 			if (idx != other) {
-				LOG("ERROR: mismatch when merging shader SSBOs, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
-				throw std::runtime_error("resource mismatch");
+				THROW_ERROR("mismatch when merging shader SSBOs, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
 			}
 		} else {
 			first.ssbos.push_back(idx);
@@ -439,8 +437,7 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 		if (i < first.textures.size()) {
 			DSIndex other = first.textures.at(i);
 			if (idx != other) {
-				LOG("ERROR: mismatch when merging shader textures, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
-				throw std::runtime_error("resource mismatch");
+				THROW_ERROR("mismatch when merging shader textures, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
 			}
 		} else {
 			first.textures.push_back(idx);
@@ -452,8 +449,7 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 		if (i < first.samplers.size()) {
 			DSIndex other = first.samplers.at(i);
 			if (idx != other) {
-				LOG("ERROR: mismatch when merging shader textures, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
-				throw std::runtime_error("resource mismatch");
+				THROW_ERROR("mismatch when merging shader textures, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
 			}
 		} else {
 			first.samplers.push_back(idx);
@@ -531,8 +527,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	window = SDL_CreateWindow(desc.applicationName.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, desc.swapchain.width, desc.swapchain.height, flags);
 
 	if (!window) {
-		LOG("SDL_CreateWindow failed: {}", SDL_GetError());
-		throw std::runtime_error("SDL_CreateWindow failed");
+		THROW_ERROR("SDL_CreateWindow failed: {}", SDL_GetError());
 	}
 
 	context = SDL_GL_CreateContext(window);
@@ -591,34 +586,28 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	if (!GLEW_ARB_direct_state_access) {
-		LOG("ARB_direct_state_access not found");
-		throw std::runtime_error("ARB_direct_state_access not found");
+		THROW_ERROR("ARB_direct_state_access not found");
 	}
 
 	if (!GLEW_ARB_buffer_storage) {
-		LOG("ARB_buffer_storage not found");
-		throw std::runtime_error("ARB_buffer_storage not found");
+		THROW_ERROR("ARB_buffer_storage not found");
 	}
 
 	if (!GLEW_ARB_clip_control) {
-		LOG("ARB_clip_control not found");
-		throw std::runtime_error("ARB_clip_control not found");
+		THROW_ERROR("ARB_clip_control not found");
 	}
 
 	if (!(GLEW_ARB_texture_view || GLEW_VERSION_4_3)) {
-		LOG("ARB_texture_view not found");
-		throw std::runtime_error("ARB_texture_view not found");
+		THROW_ERROR("ARB_texture_view not found");
 	}
 
 	if (!GLEW_ARB_texture_storage_multisample) {
-		LOG("ARB_texture_storage_multisample not found");
-		throw std::runtime_error("ARB_texture_storage_multisample not found");
+		THROW_ERROR("ARB_texture_storage_multisample not found");
 	}
 
 	if (wantKHRDebug) {
 		if (!GLEW_KHR_debug) {
-			LOG("KHR_debug not found");
-			throw std::runtime_error("KHR_debug not found");
+			THROW_ERROR("KHR_debug not found");
 		} else {
 			LOG("KHR_debug found");
 			if (debug) {
@@ -989,14 +978,12 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			LOG("Duplicate UBO binding ({}, {})", idx.set, idx.binding);
-			throw std::runtime_error("Duplicate UBO binding");
+			THROW_ERROR("Duplicate UBO binding ({}, {})", idx.set, idx.binding);
 		}
 
 		auto it = dsResources.find(idx);
 		if (it == dsResources.end()) {
-            LOG("UBO ({}, {}) not in descriptor sets", idx.set, idx.binding);
-			throw std::runtime_error("UBO not in descriptor sets");
+            THROW_ERROR("UBO ({}, {}) not in descriptor sets", idx.set, idx.binding);
 		}
 
 		assert(it->second.type == +DescriptorType::UniformBuffer);
@@ -1027,14 +1014,12 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			LOG("Duplicate SSBO binding ({}, {})", idx.set, idx.binding);
-			throw std::runtime_error("Duplicate SSBO binding");
+			THROW_ERROR("Duplicate SSBO binding ({}, {})", idx.set, idx.binding);
 		}
 
 		auto it = dsResources.find(idx);
 		if (it == dsResources.end()) {
-            LOG("SSBO ({}, {}) not in descriptor sets", idx.set, idx.binding);
-			throw std::runtime_error("SSBO not in descriptor sets");
+            THROW_ERROR("SSBO ({}, {}) not in descriptor sets", idx.set, idx.binding);
 		}
 
 		assert(it->second.type == +DescriptorType::StorageBuffer);
@@ -1056,14 +1041,12 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			LOG("Duplicate image binding ({}, {})", idx.set, idx.binding);
-			throw std::runtime_error("Duplicate image binding");
+			THROW_ERROR("Duplicate image binding ({}, {})", idx.set, idx.binding);
 		}
 
 		auto it = dsResources.find(idx);
 		if (it == dsResources.end()) {
-            LOG("Sampled image ({}, {}) not in descriptor sets", idx.set, idx.binding);
-			throw std::runtime_error("Sampled image not in descriptor sets");
+            THROW_ERROR("Sampled image ({}, {}) not in descriptor sets", idx.set, idx.binding);
 		}
 
 		assert(it->second.type == +DescriptorType::CombinedSampler);
@@ -1209,7 +1192,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 		glGetProgramInfoLog(program, status, NULL, &infoLog[0]);
 		LOG("info log: {}", &infoLog[0]);
 		logFlush();
-		throw std::runtime_error("shader link failed");
+		THROW_ERROR("shader link failed");
 	}
 	glUseProgram(program);
 
@@ -1317,9 +1300,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 
 	GLenum status = glCheckNamedFramebufferStatus(fb.fbo, GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		LOG("Framebuffer \"{}\" is not complete: {:#04x}", desc.name_, status);
-		logFlush();
-		throw std::runtime_error("Framebuffer is not complete");
+		THROW_ERROR("Framebuffer \"{}\" is not complete: {:#04x}", desc.name_, status);
 	}
 
 	if (impl->tracing) {
@@ -1444,9 +1425,7 @@ void RendererImpl::createRTHelperFBO(RenderTarget &rt) {
 	glNamedFramebufferDrawBuffers(rt.helperFBO, 1, drawBuffers);
 	GLenum status = glCheckNamedFramebufferStatus(rt.helperFBO, GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		LOG("helper FBO for RT is not complete: {:#04x}", status);
-		logFlush();
-		throw std::runtime_error("helper FBO for RT is not complete");
+		THROW_ERROR("helper FBO for RT is not complete: {:#04x}", status);
 	}
 }
 
@@ -1722,7 +1701,7 @@ glm::uvec2 Renderer::getDrawableSize() const {
 	int w = -1, h = -1;
 	SDL_GL_GetDrawableSize(impl->window, &w, &h);
 	if (w <= 0 || h <= 0) {
-		throw std::runtime_error("drawable size is negative");
+		THROW_ERROR("drawable size is negative");
 	}
 
 	return glm::uvec2(w, h);
@@ -1735,7 +1714,7 @@ void RendererImpl::recreateSwapchain() {
 	int w = -1, h = -1;
 	SDL_GL_GetDrawableSize(window, &w, &h);
 	if (w <= 0 || h <= 0) {
-		throw std::runtime_error("drawable size is negative");
+		THROW_ERROR("drawable size is negative");
 	}
 
 	swapchainDesc.width  = w;
@@ -1881,8 +1860,7 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 
 	default:
 		// TODO: do something better
-		LOG("glClientWaitSync failed: {:#04x}", result);
-		throw std::runtime_error("glClientWaitSync failed");
+		THROW_ERROR("glClientWaitSync failed: {:#04x}", result);
 	}
 
 	glDeleteSync(frame.fence);

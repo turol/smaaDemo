@@ -300,16 +300,14 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	window = SDL_CreateWindow(desc.applicationName.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, desc.swapchain.width, desc.swapchain.height, flags);
 
 	if (!window) {
-		LOG("SDL_CreateWindow failed: {}", SDL_GetError());
-		throw std::runtime_error("SDL_CreateWindow failed");
+		THROW_ERROR("SDL_CreateWindow failed: {}", SDL_GetError());
 	}
 
 	{
 		uint32_t instanceVersion = 0;
 		auto result = vk::enumerateInstanceVersion(&instanceVersion);
 		if (result != vk::Result::eSuccess) {
-			LOG("Failed to get Vulkan instance version: {}", vk::to_string(result));
-			throw std::runtime_error("Failed to get Vulkan instance version");
+			THROW_ERROR("Failed to get Vulkan instance version: {}", vk::to_string(result));
 		}
 
 		LOG("Vulkan instance version {}.{}.{}", VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion));
@@ -373,8 +371,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	unsigned int numExtensions = 0;
 	if (!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, NULL)) {
-		LOG("SDL_Vulkan_GetInstanceExtensions failed: {}", SDL_GetError());
-		throw std::runtime_error("SDL_Vulkan_GetInstanceExtensions failed");
+		THROW_ERROR("SDL_Vulkan_GetInstanceExtensions failed: {}", SDL_GetError());
 	}
 
 	std::vector<const char *> extensions(numExtensions, nullptr);
@@ -384,8 +381,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	if(!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, &extensions[0])) {
-		LOG("SDL_Vulkan_GetInstanceExtensions failed: {}", SDL_GetError());
-		throw std::runtime_error("SDL_Vulkan_GetInstanceExtensions failed");
+		THROW_ERROR("SDL_Vulkan_GetInstanceExtensions failed: {}", SDL_GetError());
 	}
 
 	vk::ApplicationInfo appInfo;
@@ -411,8 +407,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			activeLayers.push_back(lunargValidation);
 			LOG("Using LUNARG validation layer");
 		} else {
-			LOG("Validation requested but no validation layer available");
-			throw std::runtime_error("Validation requested but no validation layer available");
+			THROW_ERROR("Validation requested but no validation layer available");
 		}
 
 		if (instanceExtensions.find(VK_EXT_DEBUG_UTILS_EXTENSION_NAME) != instanceExtensions.end()) {
@@ -421,8 +416,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		} else if (instanceExtensions.find(VK_EXT_DEBUG_REPORT_EXTENSION_NAME) != instanceExtensions.end()) {
 			extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 		} else {
-			LOG("Validation requested but no debug reporting extension available");
-			throw std::runtime_error("Validation requested but no debug reporting extension available");
+			THROW_ERROR("Validation requested but no debug reporting extension available");
 		}
 		instanceCreateInfo.enabledLayerCount    = static_cast<uint32_t>(activeLayers.size());
 		instanceCreateInfo.ppEnabledLayerNames  = &activeLayers[0];
@@ -469,19 +463,17 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 								 (SDL_vulkanInstance) instance,
 								 (SDL_vulkanSurface *)&surface))
 	{
-		LOG("Failed to create Vulkan surface: {}", SDL_GetError());
 		// TODO: free instance, window etc...
-		throw std::runtime_error("Failed to create Vulkan surface");
+		THROW_ERROR("Failed to create Vulkan surface: {}", SDL_GetError());
 	}
 
 	std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
 	if (physicalDevices.empty()) {
-		LOG("No physical Vulkan devices found");
 		instance.destroy();
 		instance = nullptr;
 		SDL_DestroyWindow(window);
 		window = nullptr;
-		throw std::runtime_error("No physical Vulkan devices found");
+		THROW_ERROR("No physical Vulkan devices found");
 	}
 	LOG("{} physical devices", physicalDevices.size());
 
@@ -530,9 +522,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 
 		if (!found) {
-			LOG("Didn't find physical device matching filter");
-			logFlush();
-			throw std::runtime_error("Didn't find physical device matching filter");
+			THROW_ERROR("Didn't find physical device matching filter");
 		}
 	}
 
@@ -583,8 +573,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	if (graphicsQueueIndex == queueProps.size()) {
-		LOG("Error: no graphics queue");
-		throw std::runtime_error("Error: no graphics queue");
+		THROW_ERROR("Error: no graphics queue");
 	}
 
 	LOG("Using queue {} for graphics", graphicsQueueIndex);
@@ -671,7 +660,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	if (!checkExt(VK_KHR_MAINTENANCE1_EXTENSION_NAME)) {
-		throw std::runtime_error("Missing required extension VK_KHR_maintenance1");
+		THROW_ERROR("Missing required extension VK_KHR_maintenance1");
 	}
 
 	portabilitySubset = checkExt(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
@@ -847,8 +836,7 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 	auto result = vmaAllocateMemoryForBuffer(allocator, ringBuffer, &req, &ringBufferMem, &allocationInfo);
 
 	if (result != VK_SUCCESS) {
-		LOG("vmaAllocateMemoryForBuffer failed: {}", vk::to_string(vk::Result(result)));
-		throw std::runtime_error("vmaAllocateMemoryForBuffer failed");
+		THROW_ERROR("vmaAllocateMemoryForBuffer failed: {}", vk::to_string(vk::Result(result)));
 	}
 
 	LOG("ringbuffer memory type: {}",    allocationInfo.memoryType);
@@ -2202,7 +2190,7 @@ glm::uvec2 Renderer::getDrawableSize() const {
 	int w = -1, h = -1;
 	SDL_Vulkan_GetDrawableSize(impl->window, &w, &h);
 	if (w <= 0 || h <= 0) {
-		throw std::runtime_error("drawable size is negative");
+		THROW_ERROR("drawable size is negative");
 	}
 
 	return glm::uvec2(w, h);
@@ -2232,7 +2220,7 @@ void RendererImpl::recreateSwapchain() {
 	int tempW = -1, tempH = -1;
 	SDL_Vulkan_GetDrawableSize(window, &tempW, &tempH);
 	if (tempW <= 0 || tempH <= 0) {
-		throw std::runtime_error("drawable size is negative");
+		THROW_ERROR("drawable size is negative");
 	}
 
 	// this is nasty but apparently surface might not have resized yet
@@ -2371,7 +2359,7 @@ void RendererImpl::recreateSwapchain() {
 	// TODO: should iterate through supported formats and pick an appropriate one
 	vk::Format surfaceFormat = vk::Format::eB8G8R8A8Srgb;
 	if (surfaceFormats.find(surfaceFormat) == surfaceFormats.end()) {
-		throw std::runtime_error("No sRGB format backbuffer support");
+		THROW_ERROR("No sRGB format backbuffer support");
 	}
 	features.sRGBFramebuffer = true;
 
@@ -2461,10 +2449,7 @@ void RendererImpl::waitForDeviceIdle() {
 	if (!fences.empty()) {
 		auto waitResult = device.waitForFences( fences, true, frameTimeoutNanos);
 		if (waitResult != vk::Result::eSuccess) {
-			// TODO: better exception types
-			std::string s = vk::to_string(waitResult);
-			LOG("wait result is not success: {}", s);
-			throw std::runtime_error("wait result is not success " + s);
+			THROW_ERROR("wait result is not success: {}", vk::to_string(waitResult));
 		}
 
 		unsigned int DEBUG_ASSERTED count = 0;
@@ -2529,9 +2514,7 @@ void Renderer::beginFrame() {
 				impl->recreateSwapchain();
 				assert(!impl->swapchainDirty);
 			} else {
-				LOG("acquireNextImageKHR failed: {}", vk::to_string(result));
-				logFlush();
-				throw std::runtime_error("acquireNextImageKHR failed");
+				THROW_ERROR("acquireNextImageKHR failed: {}", vk::to_string(result));
 			}
 
 			result = device.acquireNextImageKHR(impl->swapchain, impl->frameTimeoutNanos, impl->frameAcquireSem, vk::Fence(), &imageIdx);
@@ -2694,8 +2677,7 @@ void Renderer::presentFrame() {
 		LOG("swapchain suboptimal during presentKHR, marking dirty");
 		impl->swapchainDirty = true;
 	} else {
-		LOG("presentKHR failed: {}", vk::to_string(presentResult));
-		throw std::runtime_error("presentKHR failed");
+		THROW_ERROR("presentKHR failed: {}", vk::to_string(presentResult));
 	}
 	frame.usedRingBufPtr = impl->ringBufPtr;
 	frame.status         = Frame::Status::Pending;
@@ -2739,10 +2721,7 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 		break;
 
 	default: {
-		// TODO: better exception types
-		std::string s = vk::to_string(waitResult);
-		LOG("wait result is not success: {}", s);
-		throw std::runtime_error("wait result is not success " + s);
+		THROW_ERROR("wait result is not success: {}", vk::to_string(waitResult));
 	}
 	}
 

@@ -92,23 +92,19 @@ std::vector<char> readTextFile(std::string filename) {
 	std::unique_ptr<FILE, FILEDeleter> file(fopen(filename.c_str(), "rb"));
 
 	if (!file) {
-		// TODO: better exception
-		throw std::runtime_error("file not found " + filename);
+		THROW_ERROR("file not found {}", filename);
 	}
 
 	int fd = fileno(file.get());
 	if (fd < 0) {
-		// TODO: better exception
-		throw std::runtime_error("no fd");
+		THROW_ERROR("no fd");
 	}
 
 	struct stat statbuf;
 	memset(&statbuf, 0, sizeof(struct stat));
 	int retval = fstat(fd, &statbuf);
 	if (retval < 0) {
-		// TODO: better exception
-		std::string msg = "fstat failed for \"" + filename + "\": " + strerror(errno);
-		throw std::runtime_error(msg);
+		THROW_ERROR("fstat failed for \"{}\": {}", filename, strerror(errno));
 	}
 
 	unsigned int filesize = static_cast<unsigned int>(statbuf.st_size);
@@ -118,8 +114,7 @@ std::vector<char> readTextFile(std::string filename) {
 	size_t ret = fread(&buf[0], 1, filesize, file.get());
 	if (ret != filesize)
 	{
-		// TODO: better exception
-		throw std::runtime_error("fread failed");
+		THROW_ERROR("fread failed");
 	}
 
 	return buf;
@@ -130,23 +125,19 @@ std::vector<char> readFile(std::string filename) {
 	std::unique_ptr<FILE, FILEDeleter> file(fopen(filename.c_str(), "rb"));
 
 	if (!file) {
-		// TODO: better exception
-		throw std::runtime_error("file not found " + filename);
+		THROW_ERROR("file not found {}", filename);
 	}
 
 	int fd = fileno(file.get());
 	if (fd < 0) {
-		// TODO: better exception
-		throw std::runtime_error("no fd");
+		THROW_ERROR("no fd");
 	}
 
 	struct stat statbuf;
 	memset(&statbuf, 0, sizeof(struct stat));
 	int retval = fstat(fd, &statbuf);
 	if (retval < 0) {
-		// TODO: better exception
-		std::string msg = "fstat failed for \"" + filename + "\": " + strerror(errno);
-		throw std::runtime_error(msg);
+		THROW_ERROR("fstat failed for \"{}\": {}", filename,  strerror(errno));
 	}
 
 	unsigned int filesize = static_cast<unsigned int>(statbuf.st_size);
@@ -155,8 +146,7 @@ std::vector<char> readFile(std::string filename) {
 	size_t ret = fread(&buf[0], 1, filesize, file.get());
 	if (ret != filesize)
 	{
-		// TODO: better exception
-		throw std::runtime_error("fread failed");
+		THROW_ERROR("fread failed");
 	}
 
 	return buf;
@@ -186,9 +176,7 @@ int64_t getFileTimestamp(const std::string &filename) {
 	memset(&statbuf, 0, sizeof(struct stat));
 	int retval = stat(filename.c_str(), &statbuf);
 	if (retval < 0) {
-		// TODO: better exception
-		std::string msg = "fstat failed for \"" + filename + "\": " + strerror(errno);
-		throw std::runtime_error(msg);
+		THROW_ERROR("fstat failed for \"{}\": {}", filename, strerror(errno));
 	}
 	return statbuf.st_mtime;
 }
