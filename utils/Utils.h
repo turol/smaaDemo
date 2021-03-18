@@ -101,6 +101,16 @@ static void logWriteErrorFmt(const S &format, const Args & ... args) {
 void logShutdown();
 void logFlush();
 
+
+#define THROW_ERROR(msg, ...)                                        \
+	{                                                                \
+		std::string errorMessage = fmt::format(msg, ##__VA_ARGS__);  \
+		logWriteError(errorMessage);                                 \
+		logFlush();                                                  \
+		throw std::runtime_error(errorMessage);                      \
+	}
+
+
 std::vector<char> readTextFile(std::string filename);
 std::vector<char> readFile(std::string filename);
 void writeFile(const std::string &filename, const void *contents, size_t size);
