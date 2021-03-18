@@ -937,6 +937,8 @@ public:
 			}
 		}
 
+		renderer.beginFrame();
+
 		struct OpVisitor final {
 			Renderer    &r;
 			RenderGraph &rg;

@@ -2435,9 +2435,6 @@ void SMAADemo::render() {
 		}
 	}
 
-	// TODO: this should be in RenderGraph
-	renderer.beginFrame();
-
 	if (antialiasing && temporalAA && !isImageScene()) {
 		assert(temporalRTs[0]);
 		assert(temporalRTs[1]);
