@@ -70,11 +70,11 @@ THE SOFTWARE.
 #define __PRETTY_FUNCTION__  __FUNCTION__
 #endif
 
-#define STUBBED(str) \
+#define LOG_TODO(str) \
 	{ \
 		static bool seen = false; \
 		if (!seen) { \
-			printf("STUBBED: %s in %s at %s:%d\n", str, __PRETTY_FUNCTION__, __FILE__,  __LINE__); \
+			printf("TODO: %s in %s at %s:%d\n", str, __PRETTY_FUNCTION__, __FILE__,  __LINE__); \
 			seen = true; \
 		} \
 	}
