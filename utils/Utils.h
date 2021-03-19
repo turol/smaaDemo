@@ -79,13 +79,13 @@ THE SOFTWARE.
 #else  // NDEBUG
 
 
-#define LOG_TODO(str) \
-	{ \
-		static bool seen = false; \
-		if (!seen) { \
-			logWriteFmt(FMT_STRING("TODO: {} in {} at {}:{}"), str, __PRETTY_FUNCTION__, __FILE__,  __LINE__); \
-			seen = true; \
-		} \
+#define LOG_TODO(str)                                                                                           \
+	{                                                                                                           \
+		static bool seen = false;                                                                               \
+		if (!seen) {                                                                                            \
+			logWriteFmt(FMT_STRING("TODO: {} in {} at {}:{}"), str, __PRETTY_FUNCTION__, __FILE__,  __LINE__);  \
+			seen = true;                                                                                        \
+		}                                                                                                       \
 	}
 
 
