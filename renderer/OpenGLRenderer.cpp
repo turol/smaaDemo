@@ -119,7 +119,7 @@ static GLuint createShader(GLenum type, const std::string &name, const ShaderMac
 	glShaderSource(shader, 1, &sourcePointer, &sourceLen);
 	glCompileShader(shader);
 
-	// TODO: defer checking to enable multithreaded shader compile
+	LOG_TODO("defer checking to enable multithreaded shader compile");
 	GLint status = 0;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
 
@@ -128,7 +128,7 @@ static GLuint createShader(GLenum type, const std::string &name, const ShaderMac
 		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLen);
 		if (infoLogLen != 0) {
 			std::vector<char> infoLog(infoLogLen + 1, '\0');
-			// TODO: better logging
+			LOG_TODO("better logging");
 			glGetShaderInfoLog(shader, infoLogLen, NULL, &infoLog[0]);
 			if (infoLog[0] != '\0') {
 				LOG("shader \"{}\" info log:\n{}\ninfo log end", name, &infoLog[0]);
@@ -473,11 +473,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , indexBufByteOffset(0)
 {
 
-	// TODO: check return value
+	LOG_TODO("check return value");
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
 
-	// TODO: highdpi
-	// TODO: check errors
+	LOG_TODO("highdpi");
+	LOG_TODO("check errors");
 
 	unsigned int glMajor = 4;
 	unsigned int glMinor = 5;
@@ -569,12 +569,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	LOG("VSync is {}", vsync ? "on" : "off");
 
-	// TODO: call SDL_GL_GetDrawableSize, log GL attributes etc.
+	LOG_TODO("call SDL_GL_GetDrawableSize, log GL attributes etc.");
 
 	glewExperimental = true;
 	glewInit();
 
-	// TODO: check extensions
+	LOG_TODO("check extensions");
 	// at least direct state access, texture storage
 
 	if (GLEW_VERSION_4_3 || GLEW_ARB_shader_storage_buffer_object) {
@@ -638,7 +638,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	features.maxMSAASamples = std::min(glValues[GL_MAX_COLOR_TEXTURE_SAMPLES], glValues[GL_MAX_DEPTH_TEXTURE_SAMPLES]);
 
-	// TODO: use GL_UPPER_LEFT to match Vulkan
+	LOG_TODO("use GL_UPPER_LEFT to match Vulkan");
 	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
 	glCreateVertexArrays(1, &vao);
@@ -686,7 +686,7 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 
 	// set up ring buffer
 	glCreateBuffers(1, &ringBuffer);
-	// TODO: proper error checking
+	LOG_TODO("proper error checking");
 	assert(ringBuffer != 0);
 	assert(ringBufSize               == 0);
 	assert(ringBufPtr                == 0);
@@ -700,7 +700,7 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 		// need GL_DYNAMIC_STORAGE_BIT since we intend to glBufferSubData it
 		bufferFlags |= GL_DYNAMIC_STORAGE_BIT;
 	} else {
-		// TODO: do we need GL_DYNAMIC_STORAGE_BIT?
+		LOG_TODO("do we need GL_DYNAMIC_STORAGE_BIT?");
 		// spec seems to say only for glBufferSubData, not persistent mapping
 		bufferFlags |= GL_MAP_WRITE_BIT;
 		bufferFlags |= GL_MAP_PERSISTENT_BIT;
@@ -882,8 +882,8 @@ BufferHandle Renderer::createEphemeralBuffer(BufferType type, uint32_t size, con
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	// TODO: use appropriate alignment
-	// TODO: need buffer usage flags for that
+	LOG_TODO("use appropriate alignment");
+	LOG_TODO("need buffer usage flags for that");
 	unsigned int beginPtr = impl->ringBufferAllocate(size, std::max(impl->uboAlign, impl->ssboAlign));
 
 	if (impl->persistentMapInUse) {
@@ -964,7 +964,7 @@ typedef HashMap<DSIndex, ResourceInfo> ResourceMap;
 static void processShaderResources(ShaderResources &shaderResources, const ResourceMap& dsResources, spirv_cross::CompilerGLSL &glsl) {
 	shaderResources.uboSizes.resize(shaderResources.ubos.size(), 0);
 
-	// TODO: only in debug mode
+	LOG_TODO("only in debug mode");
 	HashSet<DSIndex> bindings;
 
 	auto spvResources = glsl.get_shader_resources();
@@ -1062,7 +1062,7 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 	}
 
 	// build combined image samplers
-	// TODO: need to store this info
+	LOG_TODO("need to store this info");
 	glsl.build_combined_image_samplers();
 
 	for (const spirv_cross::CombinedImageSampler &c : glsl.get_combined_image_samplers()) {
@@ -1174,7 +1174,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 		fragmentShader = createShader(GL_FRAGMENT_SHADER, f.name, f.macros, glslFrag);
 	}
 
-	// TODO: cache shaders
+	LOG_TODO("cache shaders");
 	GLuint program = glCreateProgram();
 
 	glAttachShader(program, vertexShader);
@@ -1188,7 +1188,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	if (status != GL_TRUE) {
 		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &status);
 		std::vector<char> infoLog(status + 1, '\0');
-		// TODO: better logging
+		LOG_TODO("better logging");
 		glGetProgramInfoLog(program, status, NULL, &infoLog[0]);
 		LOG("info log: {}", &infoLog[0]);
 		logFlush();
@@ -1385,7 +1385,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	rt.height = desc.height_;
 	rt.format = desc.format_;
 	rt.numSamples = desc.numSamples_;
-	// TODO: std::move?
+	LOG_TODO("std::move?");
 	rt.texture = textureResult.second;
 
 	if (desc.additionalViewFormat_ != +Format::Invalid) {
@@ -1641,7 +1641,7 @@ void Renderer::setSwapchainDesc(const SwapchainDesc &desc) {
 	if (impl->swapchainDesc.fullscreen != desc.fullscreen) {
 		changed = true;
 		if (desc.fullscreen) {
-			// TODO: check return val?
+			LOG_TODO("check return val?");
 			SDL_SetWindowFullscreen(impl->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 			LOG("Fullscreen");
 		} else {
@@ -1665,13 +1665,13 @@ void Renderer::setSwapchainDesc(const SwapchainDesc &desc) {
 			// fallthrough
 
 		case VSync::On:
-			// TODO: check return val
+			LOG_TODO("check return val");
 			SDL_GL_SetSwapInterval(1);
 			LOG("VSync is on");
 			break;
 
 		case VSync::Off:
-			// TODO: check return val
+			LOG_TODO("check return val");
 			SDL_GL_SetSwapInterval(0);
 			LOG("VSync is off");
 			break;
@@ -1746,7 +1746,7 @@ void RendererImpl::recreateSwapchain() {
 			// increasing, resize and initialize new
 			frames.resize(numImages);
 
-			// TODO: put some stuff here
+			LOG_TODO("put some stuff here");
 		}
 	}
 
@@ -1806,7 +1806,7 @@ void Renderer::beginFrame() {
 	impl->currentPipeline        = PipelineHandle();
 	impl->descriptors.clear();
 
-	// TODO: reset all relevant state in case some 3rd-party program fucked them up
+	LOG_TODO("reset all relevant state in case some 3rd-party program fucked them up");
 	glDisable(GL_SCISSOR_TEST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDepthMask(GL_TRUE);
@@ -1818,8 +1818,8 @@ void Renderer::beginFrame() {
 	}
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	// TODO: only clear depth/stencil if we have it
-	// TODO: set color/etc write masks if necessary
+	LOG_TODO("only clear depth/stencil if we have it");
+	LOG_TODO("set color/etc write masks if necessary");
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
@@ -1859,7 +1859,7 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 		break;
 
 	default:
-		// TODO: do something better
+		LOG_TODO("do something better");
 		THROW_ERROR("glClientWaitSync failed: {:#04x}", result);
 	}
 
@@ -1946,7 +1946,7 @@ void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHa
 	}
 
 	if (rp.clearMask) {
-		// TODO: stencil
+		LOG_TODO("stencil");
 		if ((rp.clearMask & GL_DEPTH_BUFFER_BIT) != 0) {
 			glClearBufferfv(GL_DEPTH, 0, &rp.depthClearValue);
 		}
@@ -1994,7 +1994,7 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 	assert(rp.desc.colorRTs_[1].passBegin == +PassBegin::DontCare);
 
 	if (rp.clearMask) {
-		// TODO: stencil
+		LOG_TODO("stencil");
 		if ((rp.clearMask & GL_DEPTH_BUFFER_BIT) != 0) {
 			glClearBufferfv(GL_DEPTH, 0, &rp.depthClearValue);
 		}
@@ -2025,7 +2025,7 @@ void Renderer::endRenderPass() {
 		const auto &pass = impl->renderPasses.get(impl->currentRenderPass);
 		const auto &fb   = impl->framebuffers.get(impl->currentFramebuffer);
 
-		// TODO: track depthstencil layout too
+		LOG_TODO("track depthstencil layout too");
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 			if (fb.desc.colors_[i]) {
 				auto &rt = impl->renderTargets.get(fb.desc.colors_[i]);
@@ -2067,7 +2067,7 @@ void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width
 #endif  // NDEBUG
 
 	// flip y from Vulkan convention to OpenGL convention
-	// TODO: should use current FB height
+	LOG_TODO("should use current FB height");
 	glScissor(x, impl->swapchainDesc.height - (y + height), width, height);
 }
 
@@ -2087,7 +2087,7 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 
 	const auto &p = impl->pipelines.get(pipeline);
 
-	// TODO: shadow state, set only necessary
+	LOG_TODO("shadow state, set only necessary");
 	glUseProgram(p.shader);
 	if (p.desc.depthWrite_) {
 		glDepthMask(GL_TRUE);
@@ -2115,11 +2115,11 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 
 	if (p.desc.blending_) {
 		glEnable(GL_BLEND);
-		// TODO: get from Pipeline
+		LOG_TODO("get from Pipeline");
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(p.srcBlend, p.destBlend);
 		if (p.srcBlend == GL_CONSTANT_ALPHA || p.destBlend == GL_CONSTANT_ALPHA) {
-			// TODO: get from Pipeline
+			LOG_TODO("get from Pipeline");
 			glBlendColor(0.5f, 0.5f, 0.5f, 0.5f);
 		}
 	} else {
@@ -2214,7 +2214,7 @@ void Renderer::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHandle
 
 	impl->decriptorSetsDirty = true;
 
-	// TODO: get shader bindings from current pipeline, use index
+	LOG_TODO("get shader bindings from current pipeline, use index");
 	const DescriptorSetLayout &layout = impl->dsLayouts.get(layoutHandle);
 
 	const char *data = reinterpret_cast<const char *>(data_);
@@ -2343,7 +2343,7 @@ void RendererImpl::rebindDescriptorSets() {
 	const auto &pipeline  = pipelines.get(currentPipeline);
 	const auto &resources = pipeline.resources;
 
-	// TODO: only change what is necessary
+	LOG_TODO("only change what is necessary");
 	for (unsigned int i = 0; i < resources.ubos.size(); i++) {
 		const auto &r = resources.ubos.at(i);
 		const auto &d = descriptors.at(r);
@@ -2402,7 +2402,7 @@ void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 
 	assert(!impl->inRenderPass);
 
-	// TODO: check they're both color targets
+	LOG_TODO("check they're both color targets");
 	// or implement depth blit
 
 	auto &srcRT = impl->renderTargets.get(source);
@@ -2444,7 +2444,7 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 
 	assert(!impl->inRenderPass);
 
-	// TODO: check they're both color targets
+	LOG_TODO("check they're both color targets");
 
 	auto &srcRT = impl->renderTargets.get(source);
 	assert(isColorFormat(srcRT.format));
@@ -2531,7 +2531,7 @@ void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	}
 	assert(!impl->decriptorSetsDirty);
 
-	// TODO: get primitive from current pipeline
+	LOG_TODO("get primitive from current pipeline");
 	glDrawArrays(GL_TRIANGLES, firstVertex, vertexCount);
 }
 
@@ -2552,7 +2552,7 @@ void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int insta
 	}
 	assert(!impl->decriptorSetsDirty);
 
-	// TODO: get primitive from current pipeline
+	LOG_TODO("get primitive from current pipeline");
 	GLenum format = impl->idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT ;
 	auto ptr = reinterpret_cast<const void *>(impl->indexBufByteOffset);
 	if (instanceCount == 1) {
@@ -2581,7 +2581,7 @@ void Renderer::drawIndexedOffset(unsigned int vertexCount, unsigned int firstInd
 	GLenum format        = impl->idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
 	unsigned int idxSize = impl->idxBuf16Bit ? 2                 : 4 ;
 	auto ptr = reinterpret_cast<const char *>(firstIndex * idxSize + impl->indexBufByteOffset);
-	// TODO: get primitive from current pipeline
+	LOG_TODO("get primitive from current pipeline");
 	glDrawRangeElements(GL_TRIANGLES, minIndex, maxIndex, vertexCount, format, ptr);
 }
 

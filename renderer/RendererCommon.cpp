@@ -300,7 +300,7 @@ bool PipelineDesc::operator==(const PipelineDesc &other) const {
 		}
 	}
 
-	// TODO: only check enabled attributes
+	LOG_TODO("only check enabled attributes");
 	for (unsigned int i = 0; i < MAX_VERTEX_ATTRIBS; i++) {
 		if (this->vertexAttribs[i] != other.vertexAttribs[i]) {
 			return false;
@@ -707,7 +707,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		if (found) {
 			LOG("\"{}\" found in cache", shaderName);
 
-			// TODO: only in debug
+			LOG_TODO("only in debug");
 			// need to move debug flag to base class
 			if (true) {
 				checkSPVBindings(spirv);
@@ -732,7 +732,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		validate = [] (const std::vector<uint32_t> &) { return true; };
 	}
 
-	// TODO: cache includes globally
+	LOG_TODO("cache includes globally");
 	HashMap<std::string, std::vector<char> > includeCache;
 
 	{
@@ -830,7 +830,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		shader.setEnvClient(EShClientVulkan, EShTargetVulkan_1_0);
 		shader.setEnvTarget(EShTargetSpv, EShTargetSpv_1_0);
 
-		// TODO: move to RendererBase?
+		LOG_TODO("move to RendererBase?");
 		TBuiltInResource resource(DefaultTBuiltInResource);
 		Includer includer(includeCache);
 
@@ -863,7 +863,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		// convert to SPIR-V
 		spv::SpvBuildLogger logger;
 		glslang::SpvOptions spvOptions;
-		// TODO: only when tracing
+		LOG_TODO("only when tracing");
 		if (true) {
 			spvOptions.generateDebugInfo = true;
 		} else {
@@ -879,7 +879,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		}
 	}
 
-	// TODO: only in debug
+	LOG_TODO("only in debug");
 	// need to move debug flag to base class
 	if (true) {
 		checkSPVBindings(spirv);
@@ -887,7 +887,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 	// SPIR-V optimization
 	if (optimizeShaders) {
-		// TODO: better target environment selection?
+		LOG_TODO("better target environment selection?");
 		spvtools::Optimizer opt(SPV_ENV_UNIVERSAL_1_2);
 
 		opt.SetMessageConsumer([] (spv_message_level_t level, const char *source, const spv_position_t &position, const char *message) {
@@ -998,12 +998,12 @@ unsigned int RendererImpl::ringBufferAllocate(unsigned int size, unsigned int al
 	const unsigned int mask  = ~add;
 	unsigned int alignedPtr  = (ringBufPtr + add) & mask;
 	assert(ringBufPtr <= alignedPtr);
-	// TODO: ring buffer size should be pow2, se should use add & mask here too
+	LOG_TODO("ring buffer size should be pow2, se should use add & mask here too");
 	unsigned int beginPtr    =  alignedPtr % ringBufSize;
 
 	if (beginPtr + size >= ringBufSize) {
 		// we went past the end and have to go back to beginning
-		// TODO: add and mask here too
+		LOG_TODO("add and mask here too");
 		ringBufPtr = (ringBufPtr / ringBufSize + 1) * ringBufSize;
 		assert((ringBufPtr & ~mask) == 0);
 		alignedPtr  = (ringBufPtr + add) & mask;
