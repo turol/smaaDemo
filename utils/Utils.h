@@ -74,7 +74,7 @@ THE SOFTWARE.
 	{ \
 		static bool seen = false; \
 		if (!seen) { \
-			printf("TODO: %s in %s at %s:%d\n", str, __PRETTY_FUNCTION__, __FILE__,  __LINE__); \
+			logWriteFmt(FMT_STRING("TODO: {} in {} at {}:{}"), str, __PRETTY_FUNCTION__, __FILE__,  __LINE__); \
 			seen = true; \
 		} \
 	}
