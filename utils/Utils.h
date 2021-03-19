@@ -104,7 +104,7 @@ void logFlush();
 
 #define THROW_ERROR(msg, ...)                                        \
 	{                                                                \
-		std::string errorMessage = fmt::format(msg, ##__VA_ARGS__);  \
+		std::string errorMessage = fmt::format(FMT_STRING(msg), ##__VA_ARGS__);  \
 		logWriteError(errorMessage);                                 \
 		logFlush();                                                  \
 		throw std::runtime_error(errorMessage);                      \
