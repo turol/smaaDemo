@@ -65,10 +65,12 @@ void logWriteError(const nonstd::string_view &message) {
 	if (logFile) {
 		fwrite(message.data(), 1, message.size(), logFile);
 		fputc('\n', logFile);
+		fflush(logFile);
 	}
 
 	fwrite(message.data(), 1, message.size(), stderr);
 	fputc('\n', stderr);
+	fflush(stderr);
 }
 
 
