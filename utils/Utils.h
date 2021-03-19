@@ -70,6 +70,15 @@ THE SOFTWARE.
 #define __PRETTY_FUNCTION__  __FUNCTION__
 #endif
 
+
+#ifdef NDEBUG
+
+#define LOG_TODO(str)
+
+
+#else  // NDEBUG
+
+
 #define LOG_TODO(str) \
 	{ \
 		static bool seen = false; \
@@ -78,6 +87,9 @@ THE SOFTWARE.
 			seen = true; \
 		} \
 	}
+
+
+#endif  // NDEBUG
 
 
 #define LOG(msg, ...)        logWriteFmt(FMT_STRING(msg), ##__VA_ARGS__)
