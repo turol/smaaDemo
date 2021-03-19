@@ -188,7 +188,7 @@ struct DescriptorSetLayout {
 	, layout(other.layout)
 	{
 		other.layout = vk::DescriptorSetLayout();
-		assert(descriptors.empty());
+		assert(other.descriptors.empty());
 	}
 
 	DescriptorSetLayout &operator=(DescriptorSetLayout &&other) noexcept {
@@ -199,7 +199,7 @@ struct DescriptorSetLayout {
 		assert(!layout);
 
 		descriptors  = std::move(other.descriptors);
-		assert(descriptors.empty());
+		assert(other.descriptors.empty());
 
 		layout       = other.layout;
 		other.layout = vk::DescriptorSetLayout();
