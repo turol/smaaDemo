@@ -80,7 +80,7 @@ THE SOFTWARE.
 	}
 
 
-#define LOG(msg, ...) logWriteFmt(FMT_STRING(msg), ##__VA_ARGS__)
+#define LOG(msg, ...)        logWriteFmt(FMT_STRING(msg), ##__VA_ARGS__)
 #define LOG_ERROR(msg, ...)  logWriteErrorFmt(FMT_STRING(msg), ##__VA_ARGS__)
 
 
@@ -102,11 +102,11 @@ void logShutdown();
 void logFlush();
 
 
-#define THROW_ERROR(msg, ...)                                        \
-	{                                                                \
+#define THROW_ERROR(msg, ...)                                                    \
+	{                                                                            \
 		std::string errorMessage = fmt::format(FMT_STRING(msg), ##__VA_ARGS__);  \
-		logWriteError(errorMessage);                                 \
-		throw std::runtime_error(errorMessage);                      \
+		logWriteError(errorMessage);                                             \
+		throw std::runtime_error(errorMessage);                                  \
 	}
 
 
