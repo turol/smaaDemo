@@ -435,54 +435,54 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 const unsigned int shaderVersion = 79;
 
 
-	CacheData CacheData::parse(const std::vector<char> &cacheStr_) {
-		std::vector<std::string> split;
-		split.reserve(3);
-		{
-			std::string cacheStr(cacheStr_.begin(), cacheStr_.end());
-			boost::algorithm::split(split, cacheStr, [] (char c) -> bool { return c == ','; });
-		}
+CacheData CacheData::parse(const std::vector<char> &cacheStr_) {
+	std::vector<std::string> split;
+	split.reserve(3);
+	{
+		std::string cacheStr(cacheStr_.begin(), cacheStr_.end());
+		boost::algorithm::split(split, cacheStr, [] (char c) -> bool { return c == ','; });
+	}
 
-		CacheData cacheData;
-		if (split.size() < 2) {
-			// not enough components, parse fails
-            return cacheData;
-		}
-
-		cacheData.version = atoi(split[0].c_str());
-		if (cacheData.version != shaderVersion) {
-			// version mismatch, don't try to continue parsing
-			return cacheData;
-		}
-
-		try {
-			cacheData.hash = std::stoull(split[1].c_str(), nullptr, 16);
-		} catch (...) {
-			// parsing fails
-			cacheData.version = 0;
-			return cacheData;
-		}
-
-		if (split.size() >= 3) {
-			cacheData.dependencies.insert(cacheData.dependencies.end(), split.begin() + 2, split.end());
-		}
-
+	CacheData cacheData;
+	if (split.size() < 2) {
+		// not enough components, parse fails
 		return cacheData;
 	}
 
-
-	std::string CacheData::serialize() const {
-		std::stringstream cacheStr;
-		cacheStr << version;
-
-		cacheStr << "," << std::hex << hash;
-
-		for (const auto &f : dependencies) {
-			cacheStr << "," << f;
-		}
-
-		return cacheStr.str();
+	cacheData.version = atoi(split[0].c_str());
+	if (cacheData.version != shaderVersion) {
+		// version mismatch, don't try to continue parsing
+		return cacheData;
 	}
+
+	try {
+		cacheData.hash = std::stoull(split[1].c_str(), nullptr, 16);
+	} catch (...) {
+		// parsing fails
+		cacheData.version = 0;
+		return cacheData;
+	}
+
+	if (split.size() >= 3) {
+		cacheData.dependencies.insert(cacheData.dependencies.end(), split.begin() + 2, split.end());
+	}
+
+	return cacheData;
+}
+
+
+std::string CacheData::serialize() const {
+	std::stringstream cacheStr;
+	cacheStr << version;
+
+	cacheStr << "," << std::hex << hash;
+
+	for (const auto &f : dependencies) {
+		cacheStr << "," << f;
+	}
+
+	return cacheStr.str();
+}
 
 
 std::string RendererBase::makeSPVCacheName(uint64_t hash) {
