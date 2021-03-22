@@ -67,6 +67,15 @@ public:
 	}
 
 
+	Handle<T> add(T &&resource) {
+		unsigned int handle = next;
+		next++;
+		auto result DEBUG_ASSERTED = resources.emplace(handle, std::move(resource));
+		assert(result.second);
+		return Handle<T>(handle);
+	}
+
+
 	const T &get(Handle<T> handle) const {
 		assert(handle.handle != 0);
 
