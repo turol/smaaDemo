@@ -228,6 +228,8 @@ struct RendererBase {
 
 	bool loadCachedSPV(const std::string &name, const std::string &shaderName, std::vector<uint32_t> &spirv);
 
+	void addCachedSPV(const std::string &shaderName, const std::vector<uint32_t> &spirv, const HashMap<std::string, std::vector<char> > &includeCache);
+
 	std::vector<uint32_t> compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderKind kind);
 
 	explicit RendererBase(const RendererDesc &desc);

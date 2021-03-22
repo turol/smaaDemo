@@ -657,6 +657,24 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 }
 
 
+void RendererBase::addCachedSPV(const std::string &shaderName, const std::vector<uint32_t> &spirv, const HashMap<std::string, std::vector<char> > &includeCache) {
+		CacheData cacheData;
+		cacheData.version = shaderVersion;
+		cacheData.hash    = XXH64(spirv.data(), spirv.size() * 4, 0);;
+		std::string spvName   = makeSPVCacheName(cacheData.hash);
+		LOG("Writing shader \"{}\" to \"{}\"", shaderName, spvName);
+		cacheData.dependencies.reserve(includeCache.size());
+		for (const auto &p : includeCache) {
+			cacheData.dependencies.push_back(p.first);
+		}
+		std::string cacheStr = cacheData.serialize();
+
+		std::string cacheName = spirvCacheDir + shaderName + ".cache";
+		writeFile(cacheName, cacheStr.c_str(), cacheStr.size());
+		writeFile(spvName, &spirv[0], spirv.size() * 4);
+}
+
+
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderKind kind_) {
 	// check spir-v cache first
 	std::string shaderName = name;
@@ -900,20 +918,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	}
 
 	if (!skipShaderCache) {
-		CacheData cacheData;
-		cacheData.version = shaderVersion;
-		cacheData.hash    = XXH64(spirv.data(), spirv.size() * 4, 0);;
-		std::string spvName   = makeSPVCacheName(cacheData.hash);
-		LOG("Writing shader \"{}\" to \"{}\"", shaderName, spvName);
-		cacheData.dependencies.reserve(includeCache.size());
-		for (const auto &p : includeCache) {
-			cacheData.dependencies.push_back(p.first);
-		}
-		std::string cacheStr = cacheData.serialize();
-
-		std::string cacheName = spirvCacheDir + shaderName + ".cache";
-		writeFile(cacheName, cacheStr.c_str(), cacheStr.size());
-		writeFile(spvName, &spirv[0], spirv.size() * 4);
+		addCachedSPV(shaderName, spirv, includeCache);
 	}
 
 	return spirv;
