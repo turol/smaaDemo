@@ -455,8 +455,13 @@ struct CacheData {
 
 	~CacheData() {}
 
+	static CacheData parse(const std::vector<char> &cacheStr_);
 
-	static CacheData parse(const std::vector<char> &cacheStr_) {
+	std::string serialize() const;
+};
+
+
+	CacheData CacheData::parse(const std::vector<char> &cacheStr_) {
 		std::vector<std::string> split;
 		split.reserve(3);
 		{
@@ -492,7 +497,7 @@ struct CacheData {
 	}
 
 
-	std::string serialize() const {
+	std::string CacheData::serialize() const {
 		std::stringstream cacheStr;
 		cacheStr << version;
 
@@ -504,7 +509,6 @@ struct CacheData {
 
 		return cacheStr.str();
 	}
-};
 
 
 std::string RendererBase::makeSPVCacheName(uint64_t hash) {
