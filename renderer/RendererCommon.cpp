@@ -435,32 +435,6 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 const unsigned int shaderVersion = 79;
 
 
-struct CacheData {
-	unsigned int              version;
-	uint64_t                  hash;
-	std::vector<std::string>  dependencies;
-
-
-	CacheData()
-	: version(0)
-	, hash(0)
-	{
-	}
-
-	CacheData(const CacheData &)                = default;
-	CacheData &operator=(const CacheData &)     = default;
-
-	CacheData(CacheData &&) noexcept            = default;
-	CacheData &operator=(CacheData &&) noexcept = default;
-
-	~CacheData() {}
-
-	static CacheData parse(const std::vector<char> &cacheStr_);
-
-	std::string serialize() const;
-};
-
-
 	CacheData CacheData::parse(const std::vector<char> &cacheStr_) {
 		std::vector<std::string> split;
 		split.reserve(3);
