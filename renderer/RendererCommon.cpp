@@ -447,8 +447,8 @@ struct CacheData {
 	{
 	}
 
-	CacheData(const CacheData &)            = default;
-	CacheData &operator=(const CacheData &) = default;
+	CacheData(const CacheData &)                = default;
+	CacheData &operator=(const CacheData &)     = default;
 
 	CacheData(CacheData &&) noexcept            = default;
 	CacheData &operator=(CacheData &&) noexcept = default;
@@ -460,7 +460,7 @@ struct CacheData {
 		std::vector<std::string> split;
 		split.reserve(3);
 		{
-		std::string cacheStr(cacheStr_.begin(), cacheStr_.end());
+			std::string cacheStr(cacheStr_.begin(), cacheStr_.end());
 			boost::algorithm::split(split, cacheStr, [] (char c) -> bool { return c == ','; });
 		}
 
