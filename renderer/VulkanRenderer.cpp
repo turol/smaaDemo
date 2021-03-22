@@ -1991,12 +1991,11 @@ DSLayoutHandle Renderer::createDescriptorSetLayout(const DescriptorLayout *layou
 	info.bindingCount = static_cast<uint32_t>(bindings.size());
 	info.pBindings    = &bindings[0];
 
-	auto result = impl->dsLayouts.add();
-	DescriptorSetLayout &dsLayout = result.first;
+	DescriptorSetLayout dsLayout;
 	dsLayout.layout = impl->device.createDescriptorSetLayout(info);
 	dsLayout.descriptors = std::move(descriptors);
 
-	return result.second;
+	return impl->dsLayouts.add(std::move(dsLayout));
 }
 
 
