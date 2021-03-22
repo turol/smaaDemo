@@ -39,6 +39,9 @@ add_subdirectory(foreign/SPIRV-Cross)
 
 add_subdirectory(foreign/fmt)
 
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+add_subdirectory(foreign/nlohmann_json)
+
 set(SOURCE
 		demo/smaaDemo.cpp
 		renderer/NullRenderer.cpp
@@ -79,11 +82,12 @@ target_include_directories(smaaDemo PRIVATE
 		foreign/xxHash
 	)
 
-target_link_libraries(smaaDemo
+target_link_libraries(smaaDemo PRIVATE
 		${SDL2_LIBRARIES}
 		${Vulkan_LIBRARIES}
 		fmt
 		glslang
+		nlohmann_json::nlohmann_json
 		SPIRV
 		SPIRV-Tools-opt
 		spirv-cross-glsl
