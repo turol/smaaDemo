@@ -26,7 +26,6 @@ THE SOFTWARE.
 
 #include <algorithm>
 #include <sstream>
-#include <boost/algorithm/string/split.hpp>
 
 #include <spirv-tools/optimizer.hpp>
 #include <SPIRV/SPVRemapper.h>
@@ -438,35 +437,29 @@ const unsigned int shaderVersion = 79;
 
 
 CacheData CacheData::parse(const std::vector<char> &cacheStr_) {
-	std::vector<std::string> split;
-	split.reserve(3);
-	{
-		std::string cacheStr(cacheStr_.begin(), cacheStr_.end());
-		boost::algorithm::split(split, cacheStr, [] (char c) -> bool { return c == ','; });
-	}
-
 	CacheData cacheData;
-	if (split.size() < 2) {
-		// not enough components, parse fails
-		return cacheData;
-	}
-
-	cacheData.version = atoi(split[0].c_str());
-	if (cacheData.version != shaderVersion) {
-		// version mismatch, don't try to continue parsing
-		return cacheData;
-	}
 
 	try {
-		cacheData.hash = std::stoull(split[1].c_str(), nullptr, 16);
-	} catch (...) {
+		nlohmann::json j = nlohmann::json::parse(cacheStr_.begin(), cacheStr_.end());
+
+		cacheData.version     = j["version"].get<unsigned int>();
+		if (cacheData.version != shaderVersion) {
+			// version mismatch, don't try to continue parsing
+			return cacheData;
+		}
+		cacheData.hash         = std::stoull(j["hash"].get<std::string>(), nullptr, 16);
+		for (auto &dep : j["dependencies"]) {
+			cacheData.dependencies.push_back(dep);
+		}
+
+	} catch (std::exception &e) {
+		LOG_ERROR("Exception while parsing shader cache data: \"{}\"", e.what());
 		// parsing fails
 		cacheData.version = 0;
-		return cacheData;
-	}
-
-	if (split.size() >= 3) {
-		cacheData.dependencies.insert(cacheData.dependencies.end(), split.begin() + 2, split.end());
+	} catch (...) {
+		LOG_ERROR("Unknown exception while parsing shader cache data");
+		// parsing fails
+		cacheData.version = 0;
 	}
 
 	return cacheData;
@@ -474,16 +467,13 @@ CacheData CacheData::parse(const std::vector<char> &cacheStr_) {
 
 
 std::string CacheData::serialize() const {
-	std::stringstream cacheStr;
-	cacheStr << version;
+	nlohmann::json j {
+	      { "version",      version }
+	    , { "hash",         fmt::format("{:08x}", hash) }
+	    , { "dependencies", dependencies }
+	};
 
-	cacheStr << "," << std::hex << hash;
-
-	for (const auto &f : dependencies) {
-		cacheStr << "," << f;
-	}
-
-	return cacheStr.str();
+	return j.dump();
 }
 
 
