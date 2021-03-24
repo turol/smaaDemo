@@ -1768,13 +1768,12 @@ SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
 	info.addressModeV = m;
 	info.addressModeW = m;
 
-	auto result = impl->samplers.add();
-	struct Sampler &sampler = result.first;
+	Sampler sampler;
 	sampler.sampler    = impl->device.createSampler(info);
 
 	impl->debugNameObject<vk::Sampler>(sampler.sampler, desc.name_);
 
-	return result.second;
+	return impl->samplers.add(std::move(sampler));
 }
 
 
