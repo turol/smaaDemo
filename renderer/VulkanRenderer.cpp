@@ -1002,8 +1002,7 @@ BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *
 	info.size  = size;
 	info.usage = bufferTypeUsage(type) | vk::BufferUsageFlagBits::eTransferDst;
 
-	auto result    = impl->buffers.add();
-	Buffer &buffer = result.first;
+	Buffer buffer;
 	buffer.buffer  = impl->device.createBuffer(info);
 
 	VmaAllocationCreateInfo req = {};
@@ -1074,7 +1073,7 @@ BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *
 
 	impl->submitUploadOp(std::move(op));
 
-	return result.second;
+	return impl->buffers.add(std::move(buffer));
 }
 
 
