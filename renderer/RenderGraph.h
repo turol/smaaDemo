@@ -140,13 +140,13 @@ public:
 private:
 
 	struct RenderPass {
-		RP                 id;
-		std::string        name;
-		RenderPassHandle   handle;
-		FramebufferHandle  fb;
-		std::vector<RenderPassFunc> renderFunctions;
-		PassDesc           desc;
-		RenderPassDesc     rpDesc;
+		RP                           id;
+		std::string                  name;
+		RenderPassHandle             handle;
+		FramebufferHandle            fb;
+		std::vector<RenderPassFunc>  renderFunctions;
+		PassDesc                     desc;
+		RenderPassDesc               rpDesc;
 	};
 
 
