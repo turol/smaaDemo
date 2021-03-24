@@ -1838,8 +1838,7 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 
 	auto device = impl->device;
 
-	auto result = impl->textures.add();
-	Texture &tex = result.first;
+	Texture tex;
 	tex.width  = desc.width_;
 	tex.height = desc.height_;
 	tex.image  = device.createImage(info);
@@ -1958,7 +1957,7 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 
 	impl->submitUploadOp(std::move(op));
 
-	return result.second;
+	return impl->textures.add(std::move(tex));
 }
 
 
