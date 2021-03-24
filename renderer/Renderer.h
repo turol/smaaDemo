@@ -130,7 +130,6 @@ public:
 	: handle(0)
 	, owned(false)
 	{
-		assert(other.handle && "Trying to move an empty handle");
 		handle       = other.handle;
 		owned        = other.owned;
 
