@@ -1645,8 +1645,6 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	assert(isPow2(desc.numSamples_));
 	assert(!desc.name_.empty());
 
-	LOG_TODO("use NV_dedicated_allocation when available");
-
 	vk::Format format = vulkanFormat(desc.format_);
 	vk::ImageCreateInfo info;
 	if (desc.additionalViewFormat_ != +Format::Invalid) {
