@@ -1777,11 +1777,11 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 
 	VertexShader &v = result_.first;
 	vk::ShaderModuleCreateInfo info;
-	info.codeSize = spirv.size() * 4;
-	info.pCode    = &spirv[0];
+	info.codeSize  = spirv.size() * 4;
+	info.pCode     = &spirv[0];
 	v.shaderModule = device.createShaderModule(info);
 
-		LOG_TODO("add macros to name");
+	LOG_TODO("add macros to name");
 	debugNameObject<vk::ShaderModule>(v.shaderModule, vertexShaderName);
 
 	return result_.second;
@@ -1797,11 +1797,11 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 
 	FragmentShader &f = result_.first;
 	vk::ShaderModuleCreateInfo info;
-	info.codeSize = spirv.size() * 4;
-	info.pCode    = &spirv[0];
+	info.codeSize  = spirv.size() * 4;
+	info.pCode     = &spirv[0];
 	f.shaderModule = device.createShaderModule(info);
 
-		LOG_TODO("add macros to name");
+	LOG_TODO("add macros to name");
 	debugNameObject<vk::ShaderModule>(f.shaderModule, fragmentShaderName);
 
 	return result_.second;
