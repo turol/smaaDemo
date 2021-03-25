@@ -1192,8 +1192,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	fbInfo.height           = height;
 	fbInfo.layers           = 1;
 
-	auto result     = impl->framebuffers.add();
-	Framebuffer &fb = result.first;
+	Framebuffer fb;
 	fb.desc         = desc;
 	fb.width        = width;
 	fb.height       = height;
@@ -1206,7 +1205,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 
 	impl->debugNameObject<vk::Framebuffer>(fb.framebuffer, desc.name_);
 
-	return result.second;
+	return impl->framebuffers.add(std::move(fb));
 }
 
 
