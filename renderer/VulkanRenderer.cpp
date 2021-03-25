@@ -1670,16 +1670,14 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 
 	auto device = impl->device;
 
-	auto result      = impl->renderTargets.add();
-	RenderTarget &rt = result.first;
+	RenderTarget rt;
 	rt.width         = desc.width_;
 	rt.height        = desc.height_;
 	rt.numSamples    = desc.numSamples_;
 	rt.image         = device.createImage(info);
 	rt.format        = desc.format_;
 
-	auto texResult   = impl->textures.add();
-	Texture &tex     = texResult.first;
+	Texture tex;
 	tex.width        = desc.width_;
 	tex.height       = desc.height_;
 	tex.image        = rt.image;
@@ -1712,14 +1710,11 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 
 	impl->debugNameObject<vk::ImageView>(tex.imageView, desc.name_);
 
-	LOG_TODO("std::move ?");
-	rt.texture = texResult.second;
+	rt.texture = impl->textures.add(std::move(tex));
 
 	if (desc.additionalViewFormat_ != +Format::Invalid) {
 		assert(isDepthFormat(desc.format_) == isDepthFormat(desc.additionalViewFormat_));
-		auto viewResult   = impl->textures.add();
-		Texture &view     = viewResult.first;
-		rt.additionalView = viewResult.second;
+		Texture view;
 		view.width        = desc.width_;
 		view.height       = desc.height_;
 		view.image        = rt.image;
@@ -1730,9 +1725,10 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 
 		std::string viewName = desc.name_ + " " + desc.additionalViewFormat_._to_string() + " view";
 		impl->debugNameObject<vk::ImageView>(view.imageView, viewName);
+		rt.additionalView = impl->textures.add(std::move(view));
 	}
 
-	return result.second;
+	return impl->renderTargets.add(std::move(rt));
 }
 
 
