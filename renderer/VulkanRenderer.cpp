@@ -1791,9 +1791,7 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 
 	std::vector<uint32_t> spirv = compileSpirv(fragmentShaderName, macros, ShaderKind::Fragment);
 
-	auto result_ = fragmentShaders.add();
-
-	FragmentShader &f = result_.first;
+	FragmentShader f;
 	vk::ShaderModuleCreateInfo info;
 	info.codeSize  = spirv.size() * 4;
 	info.pCode     = &spirv[0];
@@ -1802,7 +1800,8 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	LOG_TODO("add macros to name");
 	debugNameObject<vk::ShaderModule>(f.shaderModule, fragmentShaderName);
 
-	return result_.second;
+	return fragmentShaders.add(std::move(f));
+
 }
 
 
