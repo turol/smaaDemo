@@ -383,9 +383,8 @@ private:
 		}
 
 		LOG_TODO("cache framebuffers");
-		auto fbHandle = renderer.createFramebuffer(fbDesc);
-		assert(fbHandle);
-		rp.fb = fbHandle;
+		rp.fb = renderer.createFramebuffer(fbDesc);
+		assert(rp.fb);
 	}
 
 
