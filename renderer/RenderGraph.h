@@ -795,9 +795,8 @@ public:
 
 			assert(!rp.handle);
 			LOG_TODO("cache render passes");
-			auto rpHandle = renderer.createRenderPass(rp.rpDesc);
-			assert(rpHandle);
-			rp.handle = rpHandle;
+			rp.handle = renderer.createRenderPass(rp.rpDesc);
+			assert(rp.handle);
 
 			assert(!rp.fb);
 
