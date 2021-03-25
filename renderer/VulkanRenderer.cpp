@@ -1626,13 +1626,12 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 		LOG("pipeline \"{}\" fragment SGPR {} VGPR {}", desc.name_, stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
 	}
 
-	auto id = impl->pipelines.add();
-	Pipeline &p = id.first;
+	Pipeline p;
 	p.pipeline = result.value;
 	p.layout   = layout;
 	p.scissor  = desc.scissorTest_;
 
-	return id.second;
+	return impl->pipelines.add(std::move(p));
 }
 
 
