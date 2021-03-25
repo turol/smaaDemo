@@ -1249,8 +1249,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 	std::vector<vk::AttachmentDescription> attachments;
 	std::vector<vk::AttachmentReference> colorAttachments;
 
-	auto result   = impl->renderPasses.add();
-	RenderPass &r = result.first;
+	RenderPass r;
 
 	vk::SampleCountFlagBits samples = sampleCountFlagsFromNum(desc.numSamples_);
 
@@ -1447,7 +1446,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 
 	impl->debugNameObject<vk::RenderPass>(r.renderPass, desc.name_);
 
-	return result.second;
+	return impl->renderPasses.add(std::move(r));
 }
 
 
