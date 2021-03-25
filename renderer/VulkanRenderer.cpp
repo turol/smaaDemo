@@ -1773,9 +1773,7 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 
 	std::vector<uint32_t> spirv = compileSpirv(vertexShaderName, macros, ShaderKind::Vertex);
 
-	auto result_ = vertexShaders.add();
-
-	VertexShader &v = result_.first;
+	VertexShader v;
 	vk::ShaderModuleCreateInfo info;
 	info.codeSize  = spirv.size() * 4;
 	info.pCode     = &spirv[0];
@@ -1784,7 +1782,7 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	LOG_TODO("add macros to name");
 	debugNameObject<vk::ShaderModule>(v.shaderModule, vertexShaderName);
 
-	return result_.second;
+	return vertexShaders.add(std::move(v));
 }
 
 
