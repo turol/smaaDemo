@@ -78,15 +78,17 @@ template <class T> class ResourceContainer;
 #ifdef HANDLE_OWNERSHIP_DEBUG
 
 
-template <class T>
+template <class T, typename BaseType = uint32_t>
 class Handle {
+	using HandleType = BaseType;
+
 	friend class ResourceContainer<T>;
 
-	uint32_t handle;
+	HandleType handle;
 	bool owned;
 
 
-	Handle(uint32_t handle_, bool owned_ = true)
+	Handle(HandleType handle_, bool owned_ = true)
 	: handle(handle_)
 	, owned(owned_)
 	{
@@ -108,14 +110,14 @@ public:
 
 
 	// copying a Handle, new copy is not owned no matter what
-	Handle(const Handle<T> &other)
+	Handle(const Handle<T, HandleType> &other)
 	: handle(other.handle)
 	, owned(false)
 	{
 	}
 
 
-	Handle &operator=(const Handle<T> &other) noexcept {
+	Handle &operator=(const Handle<T, HandleType> &other) noexcept {
 		if (this != &other) {
 			assert(!this->owned && "Overwriting an owned handle when copying");
 			handle = other.handle;
@@ -126,7 +128,7 @@ public:
 
 
 	// Moving an owned handle takes ownership
-	Handle(Handle<T> &&other) noexcept
+	Handle(Handle<T, HandleType> &&other) noexcept
 	: handle(0)
 	, owned(false)
 	{
@@ -138,7 +140,7 @@ public:
 	}
 
 
-	Handle<T> &operator=(Handle<T> &&other) noexcept {
+	Handle<T, HandleType> &operator=(Handle<T, HandleType> &&other) noexcept {
 		if (this != &other) {
 			assert(!this->owned && "Overwriting an owned handle when moving");
 			handle       = other.handle;
@@ -152,12 +154,12 @@ public:
 	}
 
 
-	bool operator==(const Handle<T> &other) const {
+	bool operator==(const Handle<T, HandleType> &other) const {
 		return handle == other.handle;
 	}
 
 
-	bool operator!=(const Handle<T> &other) const {
+	bool operator!=(const Handle<T, HandleType> &other) const {
 		return handle != other.handle;
 	}
 
@@ -171,14 +173,16 @@ public:
 #else  // HANDLE_OWNERSHIP_DEBUG
 
 
-template <class T>
+template <class T, typename BaseType = uint32_t>
 class Handle {
+	using HandleType = BaseType;
+
 	friend class ResourceContainer<T>;
 
-	uint32_t handle;
+	HandleType handle;
 
 
-	explicit Handle(uint32_t handle_)
+	explicit Handle(HandleType handle_)
 	: handle(handle_)
 	{
 	}
@@ -196,19 +200,19 @@ public:
 	}
 
 
-	Handle(const Handle<T> &other)                     = default;
-	Handle &operator=(const Handle<T> &other) noexcept = default;
+	Handle(const Handle<T, HandleType> &other)                     = default;
+	Handle &operator=(const Handle<T, HandleType> &other) noexcept = default;
 
-	Handle(Handle<T> &&other) noexcept                 = default;
-	Handle<T> &operator=(Handle<T> &&other) noexcept   = default;
+	Handle(Handle<T, HandleType> &&other) noexcept                 = default;
+	Handle<T, HandleType> &operator=(Handle<T, HandleType> &&other) noexcept   = default;
 
 
-	bool operator==(const Handle<T> &other) const {
+	bool operator==(const Handle<T, HandleType> &other) const {
 		return handle == other.handle;
 	}
 
 
-	bool operator!=(const Handle<T> &other) const {
+	bool operator!=(const Handle<T, HandleType> &other) const {
 		return handle != other.handle;
 	}
 
