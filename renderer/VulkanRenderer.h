@@ -1009,7 +1009,7 @@ struct RendererImpl : public RendererBase {
 	ResourceContainer<RenderTarget>         renderTargets;
 	ResourceContainer<Sampler>              samplers;
 	ResourceContainer<Texture>              textures;
-	ResourceContainer<VertexShader>         vertexShaders;
+	ResourceContainer<VertexShader, uint32_t, true>    vertexShaders;
 
 	vk::DispatchLoaderDynamic               dispatcher;
 
