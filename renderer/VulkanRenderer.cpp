@@ -1606,6 +1606,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 
 	auto device = impl->device;
 
+	LOG_TODO("cache Vulkan pipeline layouts");
 	auto layout = device.createPipelineLayout(layoutInfo);
 	info.layout = layout;
 
