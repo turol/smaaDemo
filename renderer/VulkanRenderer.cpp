@@ -1604,13 +1604,11 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	layoutInfo.setLayoutCount = static_cast<uint32_t>(layouts.size());
 	layoutInfo.pSetLayouts    = &layouts[0];
 
-	auto device = impl->device;
-
 	LOG_TODO("cache Vulkan pipeline layouts");
-	auto layout = device.createPipelineLayout(layoutInfo);
+	auto layout = impl->device.createPipelineLayout(layoutInfo);
 	info.layout = layout;
 
-	auto result = device.createGraphicsPipeline(impl->pipelineCache, info);
+	auto result = impl->device.createGraphicsPipeline(impl->pipelineCache, info);
 	LOG_TODO("check success instead of implicitly using result.value");
 
 	impl->debugNameObject<vk::Pipeline>(result.value, desc.name_);
@@ -1620,10 +1618,10 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 		size_t dataSize = sizeof(stats);
 		LOG_TODO("other stages");
 
-		device.getShaderInfoAMD(result.value, vk::ShaderStageFlagBits::eVertex, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, impl->dispatcher);
+		impl->device.getShaderInfoAMD(result.value, vk::ShaderStageFlagBits::eVertex, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, impl->dispatcher);
 		LOG("pipeline \"{}\" vertex SGPR {} VGPR {}", desc.name_, stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
 
-		device.getShaderInfoAMD(result.value, vk::ShaderStageFlagBits::eFragment, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, impl->dispatcher);
+		impl->device.getShaderInfoAMD(result.value, vk::ShaderStageFlagBits::eFragment, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, impl->dispatcher);
 		LOG("pipeline \"{}\" fragment SGPR {} VGPR {}", desc.name_, stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
 	}
 
