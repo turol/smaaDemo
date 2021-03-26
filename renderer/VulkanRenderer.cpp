@@ -1476,19 +1476,21 @@ static vk::BlendFactor vulkanBlendFactor(BlendFunc b) {
 PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	vk::GraphicsPipelineCreateInfo info;
 
+	std::array<vk::PipelineShaderStageCreateInfo, 2> stages;
+
+	{
 	ShaderMacros macros_(desc.shaderMacros_);
 	macros_.emplace("VULKAN_FLIP", "1");
 
 	const auto &v = impl->vertexShaders.get(impl->createVertexShader(desc.vertexShaderName, macros_));
-	const auto &f = impl->fragmentShaders.get(impl->createFragmentShader(desc.fragmentShaderName, macros_));
-
-	std::array<vk::PipelineShaderStageCreateInfo, 2> stages;
 	stages[0].stage  = vk::ShaderStageFlagBits::eVertex;
 	stages[0].module = v.shaderModule;
 	stages[0].pName  = "main";
+	const auto &f = impl->fragmentShaders.get(impl->createFragmentShader(desc.fragmentShaderName, macros_));
 	stages[1].stage  = vk::ShaderStageFlagBits::eFragment;
 	stages[1].module = f.shaderModule;
 	stages[1].pName  = "main";
+	}
 
 	info.stageCount = 2;
 	info.pStages = &stages[0];
