@@ -1479,10 +1479,8 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	ShaderMacros macros_(desc.shaderMacros_);
 	macros_.emplace("VULKAN_FLIP", "1");
 
-	auto vshaderHandle = impl->createVertexShader(desc.vertexShaderName, macros_);
-	const auto &v = impl->vertexShaders.get(vshaderHandle);
-	auto fshaderHandle = impl->createFragmentShader(desc.fragmentShaderName, macros_);
-	const auto &f = impl->fragmentShaders.get(fshaderHandle);
+	const auto &v = impl->vertexShaders.get(impl->createVertexShader(desc.vertexShaderName, macros_));
+	const auto &f = impl->fragmentShaders.get(impl->createFragmentShader(desc.fragmentShaderName, macros_));
 
 	std::array<vk::PipelineShaderStageCreateInfo, 2> stages;
 	stages[0].stage  = vk::ShaderStageFlagBits::eVertex;
