@@ -69,7 +69,7 @@ struct Sampler;
 struct Texture;
 
 
-template <class T> class ResourceContainer;
+template <class T, typename HandleBaseType = uint32_t> class ResourceContainer;
 
 
 // #define HANDLE_OWNERSHIP_DEBUG 1
@@ -82,7 +82,7 @@ template <class T, typename BaseType = uint32_t>
 class Handle {
 	using HandleType = BaseType;
 
-	friend class ResourceContainer<T>;
+	friend class ResourceContainer<T, BaseType>;
 
 	HandleType handle;
 	bool owned;
@@ -177,7 +177,7 @@ template <class T, typename BaseType = uint32_t>
 class Handle {
 	using HandleType = BaseType;
 
-	friend class ResourceContainer<T>;
+	friend class ResourceContainer<T, BaseType>;
 
 	HandleType handle;
 

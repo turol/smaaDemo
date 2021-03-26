@@ -38,9 +38,9 @@ BETTER_ENUM(ShaderKind, uint8_t
 )
 
 
-template <class T>
+template <class T, typename HandleBaseType>
 class ResourceContainer {
-    using HandleType = Handle<T>;
+    using HandleType = Handle<T, HandleBaseType>;
 
 	HashMap<unsigned int, T>            resources;
 	unsigned int                        next;
