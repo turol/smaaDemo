@@ -84,7 +84,8 @@ template <class T, typename BaseType = uint32_t>
 class Handle {
 	using HandleType = BaseType;
 
-	friend class ResourceContainer<T, BaseType>;
+	friend class ResourceContainer<T, BaseType, true>;
+	friend class ResourceContainer<T, BaseType, false>;
 
 	HandleType handle;
 	bool owned;
@@ -179,7 +180,8 @@ template <class T, typename BaseType = uint32_t>
 class Handle {
 	using HandleType = BaseType;
 
-	friend class ResourceContainer<T, BaseType>;
+	friend class ResourceContainer<T, BaseType, true>;
+	friend class ResourceContainer<T, BaseType, false>;
 
 	HandleType handle;
 
