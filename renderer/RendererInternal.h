@@ -40,6 +40,8 @@ BETTER_ENUM(ShaderKind, uint8_t
 
 template <class T>
 class ResourceContainer {
+    using HandleType = Handle<T>;
+
 	HashMap<unsigned int, T>            resources;
 	unsigned int                        next;
 
@@ -58,25 +60,25 @@ public:
 
 	~ResourceContainer() {}
 
-	std::pair<T &, Handle<T> > add() {
+	std::pair<T &, HandleType > add() {
 		unsigned int handle = next;
 		next++;
 		auto result = resources.emplace(handle, T());
 		assert(result.second);
-		return std::make_pair(std::ref(result.first->second), Handle<T>(handle));
+		return std::make_pair(std::ref(result.first->second), HandleType(handle));
 	}
 
 
-	Handle<T> add(T &&resource) {
+	HandleType add(T &&resource) {
 		unsigned int handle = next;
 		next++;
 		auto result DEBUG_ASSERTED = resources.emplace(handle, std::move(resource));
 		assert(result.second);
-		return Handle<T>(handle);
+		return HandleType(handle);
 	}
 
 
-	const T &get(Handle<T> handle) const {
+	const T &get(HandleType handle) const {
 		assert(handle.handle != 0);
 
 		auto it = resources.find(handle.handle);
@@ -86,7 +88,7 @@ public:
 	}
 
 
-	T &get(Handle<T> handle) {
+	T &get(HandleType handle) {
 		assert(handle.handle != 0);
 
 		auto it = resources.find(handle.handle);
@@ -96,7 +98,7 @@ public:
 	}
 
 
-	void remove(Handle<T> handle) {
+	void remove(HandleType handle) {
 		assert(handle.handle != 0);
 
 		auto it = resources.find(handle.handle);
@@ -105,7 +107,7 @@ public:
 	}
 
 
-	template <typename F> void removeWith(Handle<T> handle, F &&f) {
+	template <typename F> void removeWith(HandleType handle, F &&f) {
 		assert(handle.handle != 0);
 
 		auto it = resources.find(handle.handle);
