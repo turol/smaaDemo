@@ -3145,8 +3145,7 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 		fbInfo.height           = height;
 		fbInfo.layers           = 1;
 
-		auto result     = impl->framebuffers.add();
-		Framebuffer &fb = result.first;
+		Framebuffer fb;
 		fb.desc               = fbDesc;
 		fb.width              = width;
 		fb.height             = height;
@@ -3159,7 +3158,7 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 
 		impl->debugNameObject<vk::Framebuffer>(fb.framebuffer, fbDesc.name_);
 
-		frame.framebuffer = result.second;
+		frame.framebuffer = impl->framebuffers.add(std::move(fb));
 	}
 	assert(frame.framebuffer);
 
