@@ -1550,6 +1550,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	info.renderPass = renderPass.renderPass;
 
 	vk::PipelineMultisampleStateCreateInfo multisample;
+	assert(desc.numSamples_ == renderPass.numSamples);
 	multisample.rasterizationSamples = sampleCountFlagsFromNum(desc.numSamples_);
 	info.pMultisampleState = &multisample;
 
