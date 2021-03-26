@@ -65,7 +65,16 @@ public:
 		next++;
 		auto result = resources.emplace(handle, T());
 		assert(result.second);
+
+#ifdef HANDLE_OWNERSHIP_DEBUG
+
+		return std::make_pair(std::ref(result.first->second), HandleType(handle, !owned));
+
+#else //  HANDLE_OWNERSHIP_DEBUG
+
 		return std::make_pair(std::ref(result.first->second), HandleType(handle));
+
+#endif  // HANDLE_OWNERSHIP_DEBUG
 	}
 
 
@@ -74,7 +83,16 @@ public:
 		next++;
 		auto result DEBUG_ASSERTED = resources.emplace(handle, std::move(resource));
 		assert(result.second);
+
+#ifdef HANDLE_OWNERSHIP_DEBUG
+
+		return HandleType(handle, !owned);
+
+#else  // HANDLE_OWNERSHIP_DEBUG
+
 		return HandleType(handle);
+
+#endif  // HANDLE_OWNERSHIP_DEBUG
 	}
 
 
