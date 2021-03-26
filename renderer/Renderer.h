@@ -69,7 +69,9 @@ struct Sampler;
 struct Texture;
 
 
-template <class T, typename HandleBaseType = uint32_t> class ResourceContainer;
+// owned is whether the container owns the resources or not
+// when false they're owned by the caller
+template <class T, typename HandleBaseType = uint32_t, bool owned = false> class ResourceContainer;
 
 
 // #define HANDLE_OWNERSHIP_DEBUG 1
