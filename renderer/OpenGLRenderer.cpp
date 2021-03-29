@@ -1193,8 +1193,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	}
 	glUseProgram(program);
 
-	auto result = impl->pipelines.add();
-	Pipeline &pipeline = result.first;
+	Pipeline pipeline;
 	pipeline.desc      = desc;
 	pipeline.shader    = program;
 	pipeline.srcBlend  = blendFunc(desc.sourceBlend_);
@@ -1205,7 +1204,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 		glObjectLabel(GL_PROGRAM, program, desc.name_.size(), desc.name_.c_str());
 	}
 
-	return result.second;
+	return impl->pipelines.add(std::move(pipeline));
 }
 
 
