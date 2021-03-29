@@ -2968,8 +2968,7 @@ void RendererImpl::deleteRenderTargetInternal(RenderTarget &rt) {
 	vmaFreeMemory(this->allocator, tex.memory);
 	tex.memory = nullptr;
 
-	this->textures.remove(rt.texture);
-	rt.texture = TextureHandle();
+	this->textures.remove(std::move(rt.texture));
 
 	this->device.destroyImageView(rt.imageView);
 	this->device.destroyImage(rt.image);
