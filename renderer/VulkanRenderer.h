@@ -1001,7 +1001,7 @@ struct RendererImpl : public RendererBase {
 	RenderTargetHandle                      builtinDepthRT;
 
 	ResourceContainer<Buffer>               buffers;
-	ResourceContainer<DescriptorSetLayout>  dsLayouts;
+	ResourceContainer<DescriptorSetLayout, uint32_t, true>  dsLayouts;
 	ResourceContainer<FragmentShader, uint32_t, true>  fragmentShaders;
 	ResourceContainer<Framebuffer>          framebuffers;
 	ResourceContainer<Pipeline>             pipelines;
