@@ -390,8 +390,8 @@ struct RenderTarget {
 	, height(other.height)
 	, numSamples(other.numSamples)
 	, currentLayout(other.currentLayout)
-	, texture(other.texture)   // TODO: use std::move
-	, additionalView(other.additionalView)
+	, texture(std::move(other.texture))
+	, additionalView(std::move(other.additionalView))
 	, helperFBO(other.helperFBO)
 	, format(other.format)
 	{
