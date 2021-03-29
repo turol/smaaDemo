@@ -1318,8 +1318,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 		clearMask |= GL_DEPTH_BUFFER_BIT;
 	}
 
-	auto result = impl->renderPasses.add();
-	RenderPass &pass = result.first;
+	RenderPass pass;
 	pass.desc = desc;
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 		switch (desc.colorRTs_[i].passBegin) {
@@ -1342,7 +1341,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 	pass.clearMask       = clearMask;
 	pass.numSamples      = desc.numSamples_;
 
-	return result.second;
+	return impl->renderPasses.add(std::move(pass));
 }
 
 
