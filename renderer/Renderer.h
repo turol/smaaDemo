@@ -1079,6 +1079,13 @@ public:
 	void deleteSampler(SamplerHandle &handle);
 	void deleteTexture(TextureHandle &handle);
 
+	void deleteBuffer(BufferHandle &&handle);
+	void deleteFramebuffer(FramebufferHandle &&handle);
+	void deletePipeline(PipelineHandle &&handle);
+	void deleteRenderPass(RenderPassHandle &&handle);
+	void deleteRenderTarget(RenderTargetHandle &&handle);
+	void deleteSampler(SamplerHandle &&handle);
+	void deleteTexture(TextureHandle &&handle);
 
 	void setSwapchainDesc(const SwapchainDesc &desc);
 	bool isSwapchainDirty() const;

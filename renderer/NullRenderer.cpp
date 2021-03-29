@@ -248,6 +248,34 @@ void Renderer::deleteTexture(TextureHandle & /* handle */) {
 }
 
 
+void Renderer::deleteBuffer(BufferHandle && /* handle */) {
+}
+
+
+void Renderer::deleteFramebuffer(FramebufferHandle && /*  */) {
+}
+
+
+void Renderer::deletePipeline(PipelineHandle && /* handle */) {
+}
+
+
+void Renderer::deleteRenderPass(RenderPassHandle && /* handle */) {
+}
+
+
+void Renderer::deleteRenderTarget(RenderTargetHandle && /* handle */) {
+}
+
+
+void Renderer::deleteSampler(SamplerHandle && /* handle */) {
+}
+
+
+void Renderer::deleteTexture(TextureHandle && /* handle */) {
+}
+
+
 void Renderer::setSwapchainDesc(const SwapchainDesc &desc) {
 	impl->swapchainDesc  = desc;
 }
