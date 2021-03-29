@@ -2773,7 +2773,7 @@ void RendererImpl::cleanupFrame(unsigned int frameIdx) {
 	}
 	frame.deleteResources.clear();
 
-	for (auto handle : frame.ephemeralBuffers) {
+	for (auto &handle : frame.ephemeralBuffers) {
 		Buffer &buffer = buffers.get(handle);
 		assert(buffer.size   >  0);
 
@@ -2783,7 +2783,7 @@ void RendererImpl::cleanupFrame(unsigned int frameIdx) {
 		buffer.size            = 0;
 		buffer.offset          = 0;
 
-		buffers.remove(handle);
+		buffers.remove(std::move(handle));
 	}
 	frame.ephemeralBuffers.clear();
 }
