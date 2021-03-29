@@ -165,6 +165,8 @@ public:
 		assert(it != resources.end());
 		f(it->second);
 		resources.erase(it);
+
+		handle.handle = 0;
 	}
 
 
