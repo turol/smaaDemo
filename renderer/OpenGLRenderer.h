@@ -132,7 +132,7 @@ struct DescriptorSetLayout {
 	DescriptorSetLayout(DescriptorSetLayout &&other) noexcept
 	: descriptors(std::move(other.descriptors))
 	{
-		assert(descriptors.empty());
+		assert(other.descriptors.empty());
 	}
 
 	DescriptorSetLayout &operator=(DescriptorSetLayout &&other) noexcept {
@@ -141,7 +141,7 @@ struct DescriptorSetLayout {
 		}
 
 		descriptors  = std::move(other.descriptors);
-		assert(descriptors.empty());
+		assert(other.descriptors.empty());
 
 		return *this;
 	}
