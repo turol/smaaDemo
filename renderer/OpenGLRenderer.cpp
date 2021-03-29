@@ -924,12 +924,11 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 
 	std::vector<uint32_t> spirv = compileSpirv(fragmentShaderName, macros, ShaderKind::Fragment);
 
-	auto result_ = fragmentShaders.add();
-	auto &f = result_.first;
+	FragmentShader f;
 	f.name      = fragmentShaderName;
 	f.spirv     = std::move(spirv);
 
-	return result_.second;
+	return fragmentShaders.add(std::move(f));
 }
 
 
