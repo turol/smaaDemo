@@ -674,35 +674,29 @@ SMAADemo::~SMAADemo() {
 
 	if (temporalRTs[0]) {
 		assert(temporalRTs[1]);
-		renderer.deleteRenderTarget(temporalRTs[0]);
-		renderer.deleteRenderTarget(temporalRTs[1]);
+		renderer.deleteRenderTarget(std::move(temporalRTs[0]));
+		renderer.deleteRenderTarget(std::move(temporalRTs[1]));
 	}
 
 	if (renderer) {
 		renderGraph.reset(renderer);
 
 		if (cubeVBO) {
-			renderer.deleteBuffer(cubeVBO);
-			cubeVBO = BufferHandle();
-
-			renderer.deleteBuffer(cubeIBO);
-			cubeIBO = BufferHandle();
+			assert(cubeIBO);
+			renderer.deleteBuffer(std::move(cubeVBO));
+			renderer.deleteBuffer(std::move(cubeIBO));
 		}
 
 		if (linearSampler) {
-			renderer.deleteSampler(linearSampler);
-			linearSampler = SamplerHandle();
-
-			renderer.deleteSampler(nearestSampler);
-			nearestSampler = SamplerHandle();
+			assert(nearestSampler);
+			renderer.deleteSampler(std::move(linearSampler));
+			renderer.deleteSampler(std::move(nearestSampler));
 		}
 
 		if (areaTex) {
-			renderer.deleteTexture(areaTex);
-			areaTex = TextureHandle();
-
-			renderer.deleteTexture(searchTex);
-			searchTex = TextureHandle();
+			assert(searchTex);
+			renderer.deleteTexture(std::move(areaTex));
+			renderer.deleteTexture(std::move(searchTex));
 		}
 	}
 }
