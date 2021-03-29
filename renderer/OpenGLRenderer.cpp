@@ -1100,10 +1100,8 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	assert(desc.numSamples_ == rp.numSamples);
 #endif //  NDEBUG
 
-	auto vshaderHandle = impl->createVertexShader(desc.vertexShaderName, desc.shaderMacros_);
-	const auto &v = impl->vertexShaders.get(vshaderHandle);
-	auto fshaderHandle = impl->createFragmentShader(desc.fragmentShaderName, desc.shaderMacros_);
-	const auto &f = impl->fragmentShaders.get(fshaderHandle);
+	const auto &v = impl->vertexShaders.get(impl->createVertexShader(desc.vertexShaderName, desc.shaderMacros_));
+	const auto &f = impl->fragmentShaders.get(impl->createFragmentShader(desc.fragmentShaderName, desc.shaderMacros_));
 
 	// construct map of descriptor set resources
 	ResourceMap      dsResources;
