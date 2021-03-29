@@ -667,6 +667,9 @@ SMAADemo::~SMAADemo() {
 
 #ifndef IMGUI_DISABLE
 	if (imGuiContext) {
+		assert(imguiFontsTex);
+		renderer.deleteTexture(std::move(imguiFontsTex));
+
 		ImGui::DestroyContext(imGuiContext);
 		imGuiContext = nullptr;
 	}
