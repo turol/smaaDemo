@@ -872,10 +872,9 @@ RendererImpl::~RendererImpl() {
 	pipelineCache = vk::PipelineCache();
 
 	if (builtinDepthRT) {
-		renderTargets.removeWith(builtinDepthRT, [this](struct RenderTarget &rt) {
+		renderTargets.removeWith(std::move(builtinDepthRT), [this](struct RenderTarget &rt) {
 			deleteResources.emplace_back(std::move(rt));
 		} );
-		builtinDepthRT = RenderTargetHandle();
 	}
 
 	waitForDeviceIdle();
