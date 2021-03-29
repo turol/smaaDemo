@@ -1127,14 +1127,16 @@ public:
 			}
 		}
 
+		// store the owning handle in pipelines and return a non-owning copy
 		auto handle = renderer.createPipeline(desc);
+		PipelineHandle result = handle;
 
 		Pipeline pipeline;
 		pipeline.desc   = desc;
-		pipeline.handle = handle;
+		pipeline.handle = std::move(handle);
 		pipelines.emplace_back(std::move(pipeline));
 
-		return handle;
+		return result;
 	}
 
 
