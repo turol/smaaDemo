@@ -1378,8 +1378,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	tex.target        = target;
 	tex.format        = desc.format_;
 
-	auto result = impl->renderTargets.add();
-	RenderTarget &rt = result.first;
+	RenderTarget rt;
 	rt.width  = desc.width_;
 	rt.height = desc.height_;
 	rt.format = desc.format_;
@@ -1403,7 +1402,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 		rt.additionalView = viewResult.second;
 	}
 
-	return result.second;
+	return impl->renderTargets.add(std::move(rt));
 }
 
 
