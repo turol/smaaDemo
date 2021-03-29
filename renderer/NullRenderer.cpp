@@ -220,31 +220,31 @@ TextureHandle Renderer::getRenderTargetView(RenderTargetHandle /* handle */, For
 }
 
 
-void Renderer::deleteBuffer(BufferHandle /* handle */) {
+void Renderer::deleteBuffer(BufferHandle & /* handle */) {
 }
 
 
-void Renderer::deleteFramebuffer(FramebufferHandle /*  */) {
+void Renderer::deleteFramebuffer(FramebufferHandle & /*  */) {
 }
 
 
-void Renderer::deletePipeline(PipelineHandle /* handle */) {
+void Renderer::deletePipeline(PipelineHandle & /* handle */) {
 }
 
 
-void Renderer::deleteRenderPass(RenderPassHandle /* fbo */) {
+void Renderer::deleteRenderPass(RenderPassHandle & /* handle */) {
 }
 
 
-void Renderer::deleteRenderTarget(RenderTargetHandle &) {
+void Renderer::deleteRenderTarget(RenderTargetHandle & /* handle */) {
 }
 
 
-void Renderer::deleteSampler(SamplerHandle /* handle */) {
+void Renderer::deleteSampler(SamplerHandle & /* handle */) {
 }
 
 
-void Renderer::deleteTexture(TextureHandle /* handle */) {
+void Renderer::deleteTexture(TextureHandle & /* handle */) {
 }
 
 

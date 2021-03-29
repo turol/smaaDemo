@@ -1525,7 +1525,7 @@ TextureHandle Renderer::getRenderTargetView(RenderTargetHandle handle, Format f)
 }
 
 
-void Renderer::deleteBuffer(BufferHandle handle) {
+void Renderer::deleteBuffer(BufferHandle &handle) {
 	impl->buffers.removeWith(handle, [](struct Buffer &b) {
 		assert(b.buffer != 0);
 		glDeleteBuffers(1, &b.buffer);
@@ -1541,7 +1541,7 @@ void Renderer::deleteBuffer(BufferHandle handle) {
 }
 
 
-void Renderer::deleteFramebuffer(FramebufferHandle handle) {
+void Renderer::deleteFramebuffer(FramebufferHandle &handle) {
 	impl->framebuffers.removeWith(handle, [](Framebuffer &fb) {
 		assert(fb.fbo != 0);
 		assert(fb.numSamples > 0);
@@ -1554,7 +1554,7 @@ void Renderer::deleteFramebuffer(FramebufferHandle handle) {
 }
 
 
-void Renderer::deletePipeline(PipelineHandle handle) {
+void Renderer::deletePipeline(PipelineHandle &handle) {
 	impl->pipelines.removeWith(handle, [](Pipeline &p) {
 		assert(p.shader != 0);
 		glDeleteProgram(p.shader);
@@ -1563,7 +1563,7 @@ void Renderer::deletePipeline(PipelineHandle handle) {
 }
 
 
-void Renderer::deleteRenderPass(RenderPassHandle handle) {
+void Renderer::deleteRenderPass(RenderPassHandle &handle) {
 	impl->renderPasses.removeWith(handle, [](RenderPass &) {
 	} );
 }
@@ -1611,7 +1611,7 @@ void Renderer::deleteRenderTarget(RenderTargetHandle &handle) {
 }
 
 
-void Renderer::deleteSampler(SamplerHandle handle) {
+void Renderer::deleteSampler(SamplerHandle &handle) {
 	impl->samplers.removeWith(handle, [](Sampler &sampler) {
 		assert(sampler.sampler != 0);
 
@@ -1621,7 +1621,7 @@ void Renderer::deleteSampler(SamplerHandle handle) {
 }
 
 
-void Renderer::deleteTexture(TextureHandle handle) {
+void Renderer::deleteTexture(TextureHandle &handle) {
 	impl->textures.removeWith(handle, [](Texture &tex) {
 		assert(!tex.renderTarget);
 		assert(tex.tex != 0);

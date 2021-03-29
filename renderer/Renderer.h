@@ -1071,13 +1071,13 @@ public:
 	// might be ephemeral, don't store
 	TextureHandle        getRenderTargetView(RenderTargetHandle handle, Format f);
 
-	void deleteBuffer(BufferHandle handle);
-	void deleteFramebuffer(FramebufferHandle handle);
-	void deletePipeline(PipelineHandle handle);
-	void deleteRenderPass(RenderPassHandle handle);
+	void deleteBuffer(BufferHandle &handle);
+	void deleteFramebuffer(FramebufferHandle &handle);
+	void deletePipeline(PipelineHandle &handle);
+	void deleteRenderPass(RenderPassHandle &handle);
 	void deleteRenderTarget(RenderTargetHandle &handle);
-	void deleteSampler(SamplerHandle handle);
-	void deleteTexture(TextureHandle handle);
+	void deleteSampler(SamplerHandle &handle);
+	void deleteTexture(TextureHandle &handle);
 
 
 	void setSwapchainDesc(const SwapchainDesc &desc);
