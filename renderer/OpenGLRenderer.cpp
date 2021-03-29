@@ -1389,15 +1389,14 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 		glGenTextures(1, &viewId);
 		glTextureView(viewId, target, id, glTexFormat(desc.additionalViewFormat_), 0, 1, 0, 1);
 
-		auto viewResult   = impl->textures.add();
-		Texture &view     = viewResult.first;
+		Texture view;
 		view.tex          = viewId;
 		view.width        = desc.width_;
 		view.height       = desc.height_;
 		view.renderTarget = true;
 		view.target       = target;
 		view.format       = desc.additionalViewFormat_;
-		rt.additionalView = viewResult.second;
+		rt.additionalView = impl->textures.add(std::move(view));
 	}
 
 	return impl->renderTargets.add(std::move(rt));
