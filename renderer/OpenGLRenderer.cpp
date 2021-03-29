@@ -1431,8 +1431,7 @@ void RendererImpl::createRTHelperFBO(RenderTarget &rt) {
 
 
 SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
-	auto result = impl->samplers.add();
-	Sampler &sampler = result.first;
+	Sampler sampler;
 	glCreateSamplers(1, &sampler.sampler);
 
 	glSamplerParameteri(sampler.sampler, GL_TEXTURE_MIN_FILTER, (desc.min == +FilterMode::Nearest) ? GL_NEAREST: GL_LINEAR);
@@ -1444,7 +1443,7 @@ SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
 		glObjectLabel(GL_SAMPLER, sampler.sampler, desc.name_.size(), desc.name_.c_str());
 	}
 
-	return result.second;
+	return impl->samplers.add(std::move(sampler));
 }
 
 
