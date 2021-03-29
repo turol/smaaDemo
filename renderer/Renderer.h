@@ -1072,10 +1072,10 @@ public:
 	TextureHandle        getRenderTargetView(RenderTargetHandle handle, Format f);
 
 	void deleteBuffer(BufferHandle handle);
-	void deleteFramebuffer(FramebufferHandle fbo);
+	void deleteFramebuffer(FramebufferHandle handle);
 	void deletePipeline(PipelineHandle handle);
-	void deleteRenderPass(RenderPassHandle fbo);
-	void deleteRenderTarget(RenderTargetHandle &fbo);
+	void deleteRenderPass(RenderPassHandle handle);
+	void deleteRenderTarget(RenderTargetHandle &handle);
 	void deleteSampler(SamplerHandle handle);
 	void deleteTexture(TextureHandle handle);
 
