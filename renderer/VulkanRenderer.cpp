@@ -2957,8 +2957,7 @@ void RendererImpl::deleteRenderTargetInternal(RenderTarget &rt) {
 		view.imageView    = vk::ImageView();
 		view.renderTarget = false;
 
-		this->textures.remove(rt.additionalView);
-		rt.additionalView = TextureHandle();
+		this->textures.remove(std::move(rt.additionalView));
 	}
 
 	tex.image        = vk::Image();
