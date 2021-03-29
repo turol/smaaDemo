@@ -891,17 +891,20 @@ BufferHandle Renderer::createEphemeralBuffer(BufferType type, uint32_t size, con
 		glNamedBufferSubData(impl->ringBuffer, beginPtr, size, contents);
 	}
 
-	auto result    = impl->buffers.add();
-	Buffer &buffer = result.first;
+	Buffer buffer;
 	buffer.buffer          = impl->ringBuffer;
 	buffer.ringBufferAlloc = true;
 	buffer.offset          = beginPtr;
 	buffer.size            = size;
 	buffer.type            = type;
 
-	impl->frames.at(impl->currentFrameIdx).ephemeralBuffers.push_back(result.second);
+	auto handle = impl->buffers.add(std::move(buffer));
 
-	return result.second;
+	// move the the owning handle and return a non-owning copy
+	BufferHandle result = handle;
+	impl->frames.at(impl->currentFrameIdx).ephemeralBuffers.push_back(std::move(handle));
+
+	return result;
 }
 
 
