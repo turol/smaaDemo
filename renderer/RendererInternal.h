@@ -125,8 +125,41 @@ public:
 	}
 
 
+	void remove(HandleType &&handle) {
+		assert(handle.handle != 0);
+
+#ifdef HANDLE_OWNERSHIP_DEBUG
+
+		assert(handle.owned);
+		handle.owned = false;
+
+#endif // HANDLE_OWNERSHIP_DEBUG
+
+		auto it = resources.find(handle.handle);
+		assert(it != resources.end());
+		resources.erase(it);
+	}
+
+
 	template <typename F> void removeWith(HandleType &handle, F &&f) {
 		assert(handle.handle != 0);
+
+		auto it = resources.find(handle.handle);
+		assert(it != resources.end());
+		f(it->second);
+		resources.erase(it);
+	}
+
+
+	template <typename F> void removeWith(HandleType &&handle, F &&f) {
+		assert(handle.handle != 0);
+
+#ifdef HANDLE_OWNERSHIP_DEBUG
+
+		assert(handle.owned);
+		handle.owned = false;
+
+#endif // HANDLE_OWNERSHIP_DEBUG
 
 		auto it = resources.find(handle.handle);
 		assert(it != resources.end());
