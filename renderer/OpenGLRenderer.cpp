@@ -864,8 +864,7 @@ BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *
 		bufferFlags |= GL_MAP_READ_BIT;
 	}
 
-	auto result            = impl->buffers.add();
-	Buffer &buffer         = result.first;
+	Buffer buffer;
 	glCreateBuffers(1, &buffer.buffer);
 	glNamedBufferStorage(buffer.buffer, size, contents, bufferFlags);
 	buffer.ringBufferAlloc = false;
@@ -873,7 +872,7 @@ BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *
 	buffer.size            = size;
 	buffer.type            = type;
 
-	return result.second;
+	return impl->buffers.add(std::move(buffer));
 }
 
 
@@ -1468,8 +1467,7 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 		h = std::max(h / 2, 1u);
 	}
 
-	auto result  = impl->textures.add();
-	Texture &tex = result.first;
+	Texture tex;
 	tex.tex    = texture;
 	tex.width  = desc.width_;
 	tex.height = desc.height_;
@@ -1481,7 +1479,7 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 		glObjectLabel(GL_TEXTURE, texture, desc.name_.size(), desc.name_.c_str());
 	}
 
-	return result.second;
+	return impl->textures.add(std::move(tex));
 }
 
 
