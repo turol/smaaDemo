@@ -910,13 +910,12 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 
     std::vector<uint32_t> spirv = compileSpirv(vertexShaderName, macros, ShaderKind::Vertex);
 
-	auto result_ = vertexShaders.add();
-	auto &v = result_.first;
+	VertexShader v;
 	v.name      = vertexShaderName;
 	v.spirv     = std::move(spirv);
 	v.macros    = macros;
 
-	return result_.second;
+	return vertexShaders.add(std::move(v));
 }
 
 
