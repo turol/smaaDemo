@@ -2285,11 +2285,9 @@ void RendererImpl::recreateSwapchain() {
 		f.imageView = vk::ImageView();
 
 		if (f.framebuffer) {
-			framebuffers.removeWith(f.framebuffer, [this](Framebuffer &fb) {
+			framebuffers.removeWith(std::move(f.framebuffer), [this](Framebuffer &fb) {
 				deleteResources.emplace_back(std::move(fb));
 			} );
-
-			f.framebuffer = FramebufferHandle();
 		}
 	}
 
