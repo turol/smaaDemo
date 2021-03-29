@@ -1225,8 +1225,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	auto &renderPass = impl->renderPasses.get(desc.renderPass_);
 #endif  // NDEBUG
 
-	auto result = impl->framebuffers.add();
-	Framebuffer &fb = result.first;
+	Framebuffer fb;
 	fb.desc = desc;
 	glCreateFramebuffers(1, &fb.fbo);
 
@@ -1306,7 +1305,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 		glObjectLabel(GL_FRAMEBUFFER, fb.fbo, desc.name_.size(), desc.name_.c_str());
 	}
 
-	return result.second;
+	return impl->framebuffers.add(std::move(fb));
 }
 
 
