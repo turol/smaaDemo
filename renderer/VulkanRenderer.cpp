@@ -3025,7 +3025,7 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 	}
 
 	if (f.framebuffer) {
-		framebuffers.removeWith(f.framebuffer, [this](Framebuffer &fb) {
+		framebuffers.removeWith(std::move(f.framebuffer), [this](Framebuffer &fb) {
 			// since we synced the frame this is idle and can be removed immediately
 			// also if we're shutting down we can't put any more stuff into deleteResources
 			device.destroyFramebuffer(fb.framebuffer);
@@ -3034,8 +3034,6 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 			fb.height      = 0;
 			fb.depthStencilFormat = Format::Invalid;
 		} );
-
-		f.framebuffer = FramebufferHandle();
 	}
 
 	f.lastSwapchainRenderPass = RenderPassHandle();
