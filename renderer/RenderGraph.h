@@ -482,7 +482,6 @@ public:
 							  , [&] (InternalRT &i) {
 								  assert(i.handle);
 								  renderer.deleteRenderTarget(i.handle);
-								  i.handle = RenderTargetHandle();
 							  }
 							 );
 		}
