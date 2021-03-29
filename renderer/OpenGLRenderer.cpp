@@ -1369,8 +1369,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 		glObjectLabel(GL_TEXTURE, id, desc.name_.size(), desc.name_.c_str());
 	}
 
-	auto textureResult = impl->textures.add();
-	Texture &tex = textureResult.first;
+	Texture tex;
 	tex.tex           = id;
 	tex.width         = desc.width_;
 	tex.height        = desc.height_;
@@ -1383,8 +1382,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	rt.height = desc.height_;
 	rt.format = desc.format_;
 	rt.numSamples = desc.numSamples_;
-	LOG_TODO("std::move?");
-	rt.texture = textureResult.second;
+	rt.texture = impl->textures.add(std::move(tex));
 
 	if (desc.additionalViewFormat_ != +Format::Invalid) {
 		GLuint viewId = 0;
