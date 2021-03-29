@@ -1389,7 +1389,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	if (desc.additionalViewFormat_ != +Format::Invalid) {
 		GLuint viewId = 0;
 		glGenTextures(1, &viewId);
-		glTextureView(viewId, tex.target, id, glTexFormat(desc.additionalViewFormat_), 0, 1, 0, 1);
+		glTextureView(viewId, target, id, glTexFormat(desc.additionalViewFormat_), 0, 1, 0, 1);
 
 		auto viewResult   = impl->textures.add();
 		Texture &view     = viewResult.first;
