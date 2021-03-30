@@ -138,6 +138,8 @@ public:
 		auto it = resources.find(handle.handle);
 		assert(it != resources.end());
 		resources.erase(it);
+
+		handle.handle = 0;
 	}
 
 
