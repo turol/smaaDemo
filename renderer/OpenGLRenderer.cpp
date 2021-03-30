@@ -1964,7 +1964,7 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 	glDeleteSync(frame.fence);
 	frame.fence = nullptr;
 
-	for (auto handle : frame.ephemeralBuffers) {
+	for (auto &handle : frame.ephemeralBuffers) {
 		Buffer &buffer = buffers.get(handle);
 		if (buffer.ringBufferAlloc) {
 			buffer.buffer          = 0;
@@ -1980,7 +1980,7 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 		assert(buffer.type != +BufferType::Invalid);
 		buffer.type   = BufferType::Invalid;
 
-		buffers.remove(handle);
+		buffers.remove(std::move(handle));
 	}
 	frame.ephemeralBuffers.clear();
 	frame.outstanding = false;
