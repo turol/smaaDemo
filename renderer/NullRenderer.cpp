@@ -188,12 +188,11 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 
 	LOG_TODO("check data");
 
-	auto result = impl->textures.add();
-	Texture &texture = result.first;
+	Texture texture;
 	LOG_TODO("check desc");
 	texture.desc = desc;
 
-	return result.second;
+	return impl->textures.add(std::move(texture));
 }
 
 
