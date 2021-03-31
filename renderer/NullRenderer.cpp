@@ -129,10 +129,9 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 
 
 PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
-	auto result = impl->pipelines.add();
-	auto &pipeline = result.first;
+	Pipeline pipeline;
 	pipeline.desc = desc;
-	return result.second;
+	return impl->pipelines.add(std::move(pipeline));
 }
 
 
