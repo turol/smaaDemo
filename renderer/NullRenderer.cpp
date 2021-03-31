@@ -122,11 +122,10 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 
 
 RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
-	auto result = impl->renderpasses.add();
-	auto &rp    = result.first;
+	RenderPass rp;
 	rp.desc     = desc;
 
-	return result.second;
+	return impl->renderpasses.add(std::move(rp));
 }
 
 
