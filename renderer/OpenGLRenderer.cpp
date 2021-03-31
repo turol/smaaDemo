@@ -1687,8 +1687,7 @@ void Renderer::deleteRenderTarget(RenderTargetHandle &&handle) {
 			tex.target = GL_NONE;
 			tex.format = Format::Invalid;
 		}
-		impl->textures.remove(rt.texture);
-		rt.texture = TextureHandle();
+		impl->textures.remove(std::move(rt.texture));
 
 		if (rt.additionalView) {
 			auto &view = impl->textures.get(rt.additionalView);
@@ -1700,8 +1699,7 @@ void Renderer::deleteRenderTarget(RenderTargetHandle &&handle) {
 			view.tex = 0;
 			view.target = GL_NONE;
 			view.format = Format::Invalid;
-			impl->textures.remove(rt.additionalView);
-			rt.additionalView = TextureHandle();
+			impl->textures.remove(std::move(rt.additionalView));
 		}
 	} );
 }
