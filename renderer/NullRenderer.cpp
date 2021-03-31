@@ -152,12 +152,11 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 
 
 SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
-	auto result = impl->samplers.add();
-	Sampler &sampler = result.first;
+	Sampler sampler;
 	LOG_TODO("check desc");
 	sampler.desc = desc;
 
-	return result.second;
+	return impl->samplers.add(std::move(sampler));
 }
 
 
