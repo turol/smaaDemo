@@ -143,10 +143,9 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	assert(desc.height_ > 0);
 	assert(desc.format_ != +Format::Invalid);
 
-	auto result = impl->rendertargets.add();
-	auto &rendertarget = result.first;
+	RenderTarget rendertarget;
 	rendertarget.desc = desc;
-	return result.second;
+	return impl->rendertargets.add(std::move(rendertarget));
 }
 
 
