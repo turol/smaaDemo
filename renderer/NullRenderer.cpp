@@ -321,9 +321,9 @@ void Renderer::beginFrame() {
 
 void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 	assert(rpHandle);
-	assert(!impl->inFrame);
-	impl->inFrame       = true;
-	impl->inRenderPass  = false;
+	assert(impl->inFrame);
+	assert(!impl->inRenderPass);
+	impl->inRenderPass  = true;
 	impl->validPipeline = false;
 	impl->pipelineDrawn = true;
 
