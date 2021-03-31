@@ -100,15 +100,18 @@ BufferHandle Renderer::createEphemeralBuffer(BufferType /* type */, uint32_t siz
 	LOG_TODO("use valgrind to enforce we only write to intended parts of ring buffer");
 	memcpy(&impl->ringBuffer[beginPtr], contents, size);
 
-	auto result    = impl->buffers.add();
-	Buffer &buffer = result.first;
+	Buffer buffer;
 	buffer.ringBufferAlloc = true;
 	buffer.beginOffs       = beginPtr;
 	buffer.size            = size;
 
-	impl->frames.at(impl->currentFrameIdx).ephemeralBuffers.push_back(result.second);
+	auto handle = impl->buffers.add(std::move(buffer));
 
-	return result.second;
+	// move the the owning handle and return a non-owning copy
+	BufferHandle result = handle;
+	impl->frames.at(impl->currentFrameIdx).ephemeralBuffers.push_back(std::move(handle));
+
+	return result;
 }
 
 
