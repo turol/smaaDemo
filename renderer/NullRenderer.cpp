@@ -363,7 +363,7 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 	Frame &frame = frames.at(frameIdx);
 	assert(frame.outstanding);
 
-	for (auto handle : frame.ephemeralBuffers) {
+	for (auto &handle : frame.ephemeralBuffers) {
 		Buffer &buffer = buffers.get(handle);
 		if (buffer.ringBufferAlloc) {
 			buffer.ringBufferAlloc = false;
@@ -373,7 +373,7 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 		buffer.size = 0;
 		buffer.beginOffs = 0;
 
-		buffers.remove(handle);
+		buffers.remove(std::move(handle));
 	}
 	frame.ephemeralBuffers.clear();
 	frame.outstanding    = false;
