@@ -200,8 +200,7 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 
 
 DSLayoutHandle Renderer::createDescriptorSetLayout(const DescriptorLayout *layout) {
-	auto result = impl->dsLayouts.add();
-	DescriptorSetLayout &dsLayout = result.first;
+	DescriptorSetLayout dsLayout;
 
 	while (layout->type != +DescriptorType::End) {
 		dsLayout.layout.push_back(*layout);
@@ -209,7 +208,7 @@ DSLayoutHandle Renderer::createDescriptorSetLayout(const DescriptorLayout *layou
 	}
 	assert(layout->offset == 0);
 
-	return result.second;
+	return impl->dsLayouts.add(std::move(dsLayout));
 }
 
 
