@@ -113,11 +113,10 @@ BufferHandle Renderer::createEphemeralBuffer(BufferType /* type */, uint32_t siz
 
 
 FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
-	auto result = impl->framebuffers.add();
-	auto &fb = result.first;
+	Framebuffer fb;
 	fb.renderPass = desc.renderPass_;
 
-	return result.second;
+	return impl->framebuffers.add(std::move(fb));
 }
 
 
