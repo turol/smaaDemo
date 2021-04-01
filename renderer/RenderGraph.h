@@ -1065,7 +1065,7 @@ public:
 			for (auto &p : rendertargets) {
 				// clear the bindings
 				visitRendertarget(p.second
-								  , [&] (ExternalRT &e) { assert(e.handle); e.handle = RenderTargetHandle(); }
+								  , [&] (ExternalRT &e) { assert(e.handle); e.handle.reset(); }
 								  , nopInternal
 								 );
 			}

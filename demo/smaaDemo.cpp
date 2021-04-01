@@ -1840,25 +1840,25 @@ void SMAADemo::rebuildRenderGraph() {
 
 	renderGraph.build(renderer);
 
-	cubePipeline           = PipelineHandle();
-	imagePipeline          = PipelineHandle();
-	blitPipeline           = PipelineHandle();
-	guiPipeline            = PipelineHandle();
-	separatePipeline       = PipelineHandle();
-	temporalAAPipelines[0] = PipelineHandle();
-	temporalAAPipelines[1] = PipelineHandle();
-	fxaaPipeline           = PipelineHandle();
+	cubePipeline.reset();
+	imagePipeline.reset();
+	blitPipeline.reset();
+	guiPipeline.reset();
+	separatePipeline.reset();
+	temporalAAPipelines[0].reset();
+	temporalAAPipelines[1].reset();
+	fxaaPipeline.reset();
 
-	smaaPipelines.edgePipeline         = PipelineHandle();
-	smaaPipelines.blendWeightPipeline  = PipelineHandle();
-	smaaPipelines.neighborPipelines[0] = PipelineHandle();
-	smaaPipelines.neighborPipelines[1] = PipelineHandle();
+	smaaPipelines.edgePipeline.reset();
+	smaaPipelines.blendWeightPipeline.reset();
+	smaaPipelines.neighborPipelines[0].reset();
+	smaaPipelines.neighborPipelines[1].reset();
 
 	for (unsigned int i = 0; i < 2; i++) {
-		temporalAAPipelines[i] = PipelineHandle();
+		temporalAAPipelines[i].reset();
 	}
 
-	separatePipeline = PipelineHandle();
+	separatePipeline.reset();
 
 	rebuildRG = false;
 }
@@ -2159,7 +2159,7 @@ void SMAADemo::processInput() {
 						fxaaQuality = fxaaQuality + 1;
 					}
 					fxaaQuality  = fxaaQuality % maxFXAAQuality;
-					fxaaPipeline = PipelineHandle();
+					fxaaPipeline.reset();
 					break;
 
 				case AAMethod::SMAA:
@@ -2172,10 +2172,10 @@ void SMAADemo::processInput() {
 					smaaQuality     = smaaQuality % maxSMAAQuality;
 					smaaParameters  = defaultSMAAParameters[smaaQuality];
 
-					smaaPipelines.edgePipeline         = PipelineHandle();
-					smaaPipelines.blendWeightPipeline  = PipelineHandle();
-					smaaPipelines.neighborPipelines[0] = PipelineHandle();
-					smaaPipelines.neighborPipelines[1] = PipelineHandle();
+					smaaPipelines.edgePipeline.reset();
+					smaaPipelines.blendWeightPipeline.reset();
+					smaaPipelines.neighborPipelines[0].reset();
+					smaaPipelines.neighborPipelines[1].reset();
 
 					break;
 
@@ -2978,10 +2978,10 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				if (sq != 0) {
 					smaaParameters  = defaultSMAAParameters[sq];
 				}
-				smaaPipelines.edgePipeline         = PipelineHandle();
-				smaaPipelines.blendWeightPipeline  = PipelineHandle();
-				smaaPipelines.neighborPipelines[0] = PipelineHandle();
-				smaaPipelines.neighborPipelines[1] = PipelineHandle();
+				smaaPipelines.edgePipeline.reset();
+				smaaPipelines.blendWeightPipeline.reset();
+				smaaPipelines.neighborPipelines[0].reset();
+				smaaPipelines.neighborPipelines[1].reset();
 			}
 
 			if (ImGui::CollapsingHeader("SMAA custom properties")) {
@@ -3071,7 +3071,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			assert(fq >= 0);
 			assert(fq < int(maxFXAAQuality));
 			if (fq != int(fxaaQuality)) {
-				fxaaPipeline = PipelineHandle();
+				fxaaPipeline.reset();
 				fxaaQuality = fq;
 			}
 		}
