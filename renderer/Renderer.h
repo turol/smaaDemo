@@ -170,6 +170,12 @@ public:
 	explicit operator bool() const {
 		return handle != 0;
 	}
+
+
+	void reset() {
+		assert(!owned);
+		handle = 0;
+	}
 };
 
 
@@ -223,6 +229,11 @@ public:
 
 	explicit operator bool() const {
 		return handle != 0;
+	}
+
+
+	void reset() {
+		handle = 0;
 	}
 };
 
