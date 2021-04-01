@@ -134,16 +134,6 @@ public:
 	}
 
 
-	template <typename F> void removeWith(HandleType &handle, F &&f) {
-		assert(handle.handle != 0);
-
-		auto it = resources.find(handle.handle);
-		assert(it != resources.end());
-		f(it->second);
-		resources.erase(it);
-	}
-
-
 	template <typename F> void removeWith(HandleType &&handle, F &&f) {
 		assert(handle.handle != 0);
 
