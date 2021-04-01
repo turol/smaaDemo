@@ -215,41 +215,6 @@ TextureHandle Renderer::getRenderTargetView(RenderTargetHandle /* handle */, For
 }
 
 
-void Renderer::deleteBuffer(BufferHandle &handle) {
-	impl->buffers.remove(std::move(handle));
-}
-
-
-void Renderer::deleteFramebuffer(FramebufferHandle &handle) {
-	impl->framebuffers.remove(std::move(handle));
-}
-
-
-void Renderer::deletePipeline(PipelineHandle &handle) {
-	impl->pipelines.remove(std::move(handle));
-}
-
-
-void Renderer::deleteRenderPass(RenderPassHandle &handle) {
-	impl->renderpasses.remove(std::move(handle));
-}
-
-
-void Renderer::deleteRenderTarget(RenderTargetHandle &handle) {
-	impl->rendertargets.remove(std::move(handle));
-}
-
-
-void Renderer::deleteSampler(SamplerHandle &handle) {
-	impl->samplers.remove(std::move(handle));
-}
-
-
-void Renderer::deleteTexture(TextureHandle &handle) {
-	impl->textures.remove(std::move(handle));
-}
-
-
 void Renderer::deleteBuffer(BufferHandle &&handle) {
 	impl->buffers.remove(std::move(handle));
 }

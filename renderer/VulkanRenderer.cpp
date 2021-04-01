@@ -2011,55 +2011,6 @@ TextureHandle Renderer::getRenderTargetView(RenderTargetHandle handle, Format f)
 }
 
 
-void Renderer::deleteBuffer(BufferHandle &handle) {
-	impl->buffers.removeWith(std::move(handle), [this](struct Buffer &b) {
-		impl->deleteResources.emplace_back(std::move(b));
-	} );
-}
-
-
-void Renderer::deleteFramebuffer(FramebufferHandle &handle) {
-	impl->framebuffers.removeWith(std::move(handle), [this](Framebuffer &fb) {
-		impl->deleteResources.emplace_back(std::move(fb));
-	} );
-}
-
-
-void Renderer::deletePipeline(PipelineHandle &handle) {
-	impl->pipelines.removeWith(std::move(handle), [this](Pipeline &p) {
-		impl->deleteResources.emplace_back(std::move(p));
-	} );
-}
-
-
-void Renderer::deleteRenderPass(RenderPassHandle &handle) {
-	impl->renderPasses.removeWith(std::move(handle), [this](RenderPass &rp) {
-		impl->deleteResources.emplace_back(std::move(rp));
-	} );
-}
-
-
-void Renderer::deleteRenderTarget(RenderTargetHandle &handle) {
-	impl->renderTargets.removeWith(std::move(handle), [this](struct RenderTarget &rt) {
-		impl->deleteResources.emplace_back(std::move(rt));
-	} );
-}
-
-
-void Renderer::deleteSampler(SamplerHandle &handle) {
-	impl->samplers.removeWith(std::move(handle), [this](struct Sampler &s) {
-		impl->deleteResources.emplace_back(std::move(s));
-	} );
-}
-
-
-void Renderer::deleteTexture(TextureHandle &handle) {
-	impl->textures.removeWith(std::move(handle), [this](Texture &tex) {
-		impl->deleteResources.emplace_back(std::move(tex));
-	} );
-}
-
-
 void Renderer::deleteBuffer(BufferHandle &&handle) {
 	impl->buffers.removeWith(std::move(handle), [this](struct Buffer &b) {
 		impl->deleteResources.emplace_back(std::move(b));
