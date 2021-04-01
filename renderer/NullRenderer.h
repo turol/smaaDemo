@@ -421,15 +421,15 @@ struct RendererImpl : public RendererBase {
 	std::vector<Frame>                      frames;
 
 	ResourceContainer<Buffer>               buffers;
-	ResourceContainer<DescriptorSetLayout>  dsLayouts;
-	ResourceContainer<FragmentShader>       fragmentShaders;
+	ResourceContainer<DescriptorSetLayout, uint32_t, true>  dsLayouts;
+	ResourceContainer<FragmentShader, uint32_t, true>       fragmentShaders;
 	ResourceContainer<Framebuffer>          framebuffers;
 	ResourceContainer<Pipeline>             pipelines;
 	ResourceContainer<RenderPass>           renderpasses;
 	ResourceContainer<RenderTarget>         rendertargets;
 	ResourceContainer<Sampler>              samplers;
 	ResourceContainer<Texture>              textures;
-	ResourceContainer<VertexShader>         vertexShaders;
+	ResourceContainer<VertexShader, uint32_t, true>         vertexShaders;
 
 	PipelineDesc                            currentPipeline;
 
