@@ -770,7 +770,7 @@ RendererImpl::~RendererImpl() {
 			tex.tex = 0;
 		}
 
-		this->textures.remove(rt.texture);
+		this->textures.remove(std::move(rt.texture));
 		rt.texture.reset();
 
 		if (rt.additionalView) {
@@ -780,7 +780,7 @@ RendererImpl::~RendererImpl() {
 			assert(view.tex != 0);
 			glDeleteTextures(1, &view.tex);
 			view.tex = 0;
-			this->textures.remove(rt.additionalView);
+			this->textures.remove(std::move(rt.additionalView));
 			rt.additionalView.reset();
 		}
 	} );
