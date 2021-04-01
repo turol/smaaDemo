@@ -1232,8 +1232,8 @@ void SMAADemo::rebuildRenderGraph() {
 
 	if (temporalRTs[0]) {
 		assert(temporalRTs[1]);
-		renderer.deleteRenderTarget(temporalRTs[0]);
-		renderer.deleteRenderTarget(temporalRTs[1]);
+		renderer.deleteRenderTarget(std::move(temporalRTs[0]));
+		renderer.deleteRenderTarget(std::move(temporalRTs[1]));
 	}
 
 	renderGraph.reset(renderer);

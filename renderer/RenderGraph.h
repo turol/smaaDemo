@@ -469,7 +469,7 @@ public:
 		hasExternalRTs = false;
 
 		for (auto &p : pipelines) {
-			renderer.deletePipeline(p.handle);
+			renderer.deletePipeline(std::move(p.handle));
 		}
 		pipelines.clear();
 
@@ -480,7 +480,7 @@ public:
 							  , nopExternal
 							  , [&] (InternalRT &i) {
 								  assert(i.handle);
-								  renderer.deleteRenderTarget(i.handle);
+								  renderer.deleteRenderTarget(std::move(i.handle));
 							  }
 							 );
 		}
@@ -494,11 +494,11 @@ public:
 
 			RenderPass &rp = *rp_;
 			if (rp.handle) {
-				renderer.deleteRenderPass(rp.handle);
+				renderer.deleteRenderPass(std::move(rp.handle));
 			}
 
 			if (rp.fb) {
-				renderer.deleteFramebuffer(rp.fb);
+				renderer.deleteFramebuffer(std::move(rp.fb));
 			}
 		}
 		operations.clear();
@@ -1084,7 +1084,7 @@ public:
 
 				assert(rp.fb);
 				LOG_TODO("cache them");
-				renderer.deleteFramebuffer(rp.fb);
+				renderer.deleteFramebuffer(std::move(rp.fb));
 			}
 		}
 		assert(currentRP == Default<RP>::value);
