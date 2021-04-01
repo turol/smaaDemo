@@ -470,7 +470,6 @@ public:
 
 		for (auto &p : pipelines) {
 			renderer.deletePipeline(p.handle);
-			p.handle = PipelineHandle();
 		}
 		pipelines.clear();
 
@@ -496,12 +495,10 @@ public:
 			RenderPass &rp = *rp_;
 			if (rp.handle) {
 				renderer.deleteRenderPass(rp.handle);
-				rp.handle = RenderPassHandle();
 			}
 
 			if (rp.fb) {
 				renderer.deleteFramebuffer(rp.fb);
-				rp.fb = FramebufferHandle();
 			}
 		}
 		operations.clear();
@@ -1088,7 +1085,6 @@ public:
 				assert(rp.fb);
 				LOG_TODO("cache them");
 				renderer.deleteFramebuffer(rp.fb);
-				rp.fb = FramebufferHandle();
 			}
 		}
 		assert(currentRP == Default<RP>::value);

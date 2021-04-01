@@ -1233,9 +1233,7 @@ void SMAADemo::rebuildRenderGraph() {
 	if (temporalRTs[0]) {
 		assert(temporalRTs[1]);
 		renderer.deleteRenderTarget(temporalRTs[0]);
-		temporalRTs[0] = RenderTargetHandle();
 		renderer.deleteRenderTarget(temporalRTs[1]);
-		temporalRTs[1] = RenderTargetHandle();
 	}
 
 	renderGraph.reset(renderer);
