@@ -116,15 +116,6 @@ public:
 	}
 
 
-	void remove(HandleType &handle) {
-		assert(handle.handle != 0);
-
-		auto it = resources.find(handle.handle);
-		assert(it != resources.end());
-		resources.erase(it);
-	}
-
-
 	void remove(HandleType &&handle) {
 		assert(handle.handle != 0);
 
