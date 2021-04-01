@@ -3121,8 +3121,7 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 		if (frame.framebuffer) {
 			const auto &fb   = impl->framebuffers.get(frame.framebuffer);
 			if (!impl->isRenderPassCompatible(pass, fb)) {
-				deleteFramebuffer(frame.framebuffer);
-				frame.framebuffer = FramebufferHandle();
+				deleteFramebuffer(std::move(frame.framebuffer));
 			}
 		}
 
