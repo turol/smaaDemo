@@ -2983,7 +2983,7 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 		} );
 	}
 
-	f.lastSwapchainRenderPass = RenderPassHandle();
+	f.lastSwapchainRenderPass.reset();
 
 	assert(f.dsPool);
 	device.destroyDescriptorPool(f.dsPool);
@@ -3167,7 +3167,7 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 
 	impl->currentPipelineLayout = vk::PipelineLayout();
 	impl->currentRenderPass     = rpHandle;
-	impl->currentFramebuffer    = FramebufferHandle();
+	impl->currentFramebuffer.reset();
 }
 
 
@@ -3198,10 +3198,10 @@ void Renderer::endRenderPass() {
 				rt.currentLayout = pass.desc.colorRTs_[i].finalLayout;
 			}
 		}
-		impl->currentFramebuffer = FramebufferHandle();
+		impl->currentFramebuffer.reset();
 	}
 
-	impl->currentRenderPass  = RenderPassHandle();
+	impl->currentRenderPass.reset();
 }
 
 

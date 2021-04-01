@@ -771,7 +771,7 @@ RendererImpl::~RendererImpl() {
 		}
 
 		this->textures.remove(rt.texture);
-		rt.texture = TextureHandle();
+		rt.texture.reset();
 
 		if (rt.additionalView) {
 			auto &view = this->textures.get(rt.additionalView);
@@ -781,7 +781,7 @@ RendererImpl::~RendererImpl() {
 			glDeleteTextures(1, &view.tex);
 			view.tex = 0;
 			this->textures.remove(rt.additionalView);
-			rt.additionalView = TextureHandle();
+			rt.additionalView.reset();
 		}
 	} );
 
@@ -1789,7 +1789,7 @@ void Renderer::beginFrame() {
 
 #endif //  NDEBUG
 
-	impl->currentPipeline        = PipelineHandle();
+	impl->currentPipeline.reset();
 	impl->descriptors.clear();
 
 	LOG_TODO("reset all relevant state in case some 3rd-party program fucked them up");
@@ -1987,7 +1987,7 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 	}
 
 	impl->currentRenderPass  = rpHandle;
-	impl->currentFramebuffer = FramebufferHandle();
+	impl->currentFramebuffer.reset();
 }
 
 
@@ -2019,10 +2019,10 @@ void Renderer::endRenderPass() {
 			}
 		}
 
-		impl->currentFramebuffer = FramebufferHandle();
+		impl->currentFramebuffer.reset();
 	}
 
-	impl->currentRenderPass  = RenderPassHandle();
+	impl->currentRenderPass.reset();
 }
 
 
