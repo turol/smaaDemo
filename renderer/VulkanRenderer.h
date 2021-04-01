@@ -507,8 +507,6 @@ struct RenderTarget{
 		other.height         = 0;
 		other.numSamples     = 0;
 		other.currentLayout  = Layout::Undefined;
-		other.texture        = TextureHandle();
-		other.additionalView = TextureHandle();
 		other.image          = vk::Image();
 		other.format         = Format::Invalid;
 		other.imageView      = vk::ImageView();
@@ -536,8 +534,6 @@ struct RenderTarget{
 		other.height         = 0;
 		other.numSamples     = 0;
 		other.currentLayout  = Layout::Undefined;
-		other.texture        = TextureHandle();
-		other.additionalView = TextureHandle();
 		other.image          = vk::Image();
 		other.format         = Format::Invalid;
 		other.imageView      = vk::ImageView();
@@ -891,8 +887,8 @@ struct Frame : public FrameBase {
 	, fence(other.fence)
 	, image(other.image)
 	, imageView(other.imageView)
-	, framebuffer(other.framebuffer)
-	, lastSwapchainRenderPass(other.lastSwapchainRenderPass)
+	, framebuffer(std::move(other.framebuffer))
+	, lastSwapchainRenderPass(std::move(other.lastSwapchainRenderPass))
 	, dsPool(other.dsPool)
 	, commandPool(other.commandPool)
 	, commandBuffer(other.commandBuffer)
@@ -904,8 +900,7 @@ struct Frame : public FrameBase {
 	{
 		other.image            = vk::Image();
 		other.imageView        = vk::ImageView();
-		other.framebuffer      = FramebufferHandle();
-		other.lastSwapchainRenderPass = RenderPassHandle();
+		other.lastSwapchainRenderPass.reset();
 		other.fence            = vk::Fence();
 		other.dsPool           = vk::DescriptorPool();
 		other.commandPool      = vk::CommandPool();
@@ -931,12 +926,11 @@ struct Frame : public FrameBase {
 		other.imageView      = vk::ImageView();
 
 		assert(!framebuffer);
-		framebuffer          = other.framebuffer;
-		other.framebuffer    = FramebufferHandle();
+		framebuffer          = std::move(other.framebuffer);
 
 		assert(!lastSwapchainRenderPass);
-		lastSwapchainRenderPass = other.lastSwapchainRenderPass;
-		other.lastSwapchainRenderPass = RenderPassHandle();
+		lastSwapchainRenderPass = std::move(other.lastSwapchainRenderPass);
+		other.lastSwapchainRenderPass.reset();
 
 		assert(!fence);
 		fence                = other.fence;

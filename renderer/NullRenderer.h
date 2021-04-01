@@ -149,9 +149,8 @@ struct Framebuffer {
 	Framebuffer &operator=(const Framebuffer &) = delete;
 
 	Framebuffer(Framebuffer &&other) noexcept
-	: renderPass(other.renderPass)
+	: renderPass(std::move(other.renderPass))
 	{
-		other.renderPass = RenderPassHandle();
 	}
 
 	Framebuffer &operator=(Framebuffer &&other) noexcept {
@@ -161,9 +160,7 @@ struct Framebuffer {
 
 		assert(!renderPass);
 
-		renderPass       = other.renderPass;
-
-		other.renderPass = RenderPassHandle();
+		renderPass       = std::move(other.renderPass);
 
 		return *this;
 	}

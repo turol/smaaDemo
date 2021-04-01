@@ -213,7 +213,7 @@ struct Framebuffer {
 	, height(other.height)
 	, numSamples(other.numSamples)
 	, sRGB(other.sRGB)
-	, renderPass(other.renderPass)
+	, renderPass(std::move(other.renderPass))
 	, desc(other.desc)
 	, depthStencilFormat(other.depthStencilFormat)
 	{
@@ -222,7 +222,6 @@ struct Framebuffer {
 		other.height       = 0;
 		other.numSamples   = 0;
 		other.sRGB         = false;
-		other.renderPass   = RenderPassHandle();
 		other.desc         = FramebufferDesc();
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 			colorFormats[i]       = other.colorFormats[i];
@@ -399,8 +398,8 @@ struct RenderTarget {
 		other.height          = 0;
 		other.numSamples      = 0;
 		other.currentLayout   = Layout::Undefined;
-		other.texture         = TextureHandle();
-		other.additionalView  = TextureHandle();
+		other.texture.reset();
+		other.additionalView.reset();
 		other.helperFBO       = 0;
 		other.format          = Format::Invalid;
 	}
@@ -426,8 +425,6 @@ struct RenderTarget {
 		other.height          = 0;
 		other.numSamples      = 0;
 		other.currentLayout   = Layout::Undefined;
-		other.texture         = TextureHandle();
-		other.additionalView  = TextureHandle();
 		other.helperFBO       = 0;
 		other.format          = Format::Invalid;
 
