@@ -527,6 +527,10 @@ class SMAADemo {
 
 	void setTemporalAA(bool enabled);
 
+	void setPrevAAMethod();
+
+	void setNextAAMethod();
+
 	bool isImageScene() const {
 		return activeScene != 0;
 	}
@@ -2013,6 +2017,26 @@ void SMAADemo::setAntialiasing(bool enabled) {
 
 void SMAADemo::setTemporalAA(bool enabled) {
 	temporalAA = enabled;
+	rebuildRG = true;
+}
+
+
+void SMAADemo::setPrevAAMethod() {
+	int i = aaMethod._to_integral();
+
+	i = i - 1 + int(AAMethod::_size());
+	i = i % AAMethod::_size();
+	aaMethod = AAMethod::_from_integral(i);
+	rebuildRG = true;
+}
+
+
+void SMAADemo::setNextAAMethod() {
+	int i = aaMethod._to_integral();
+
+	i = i + 1;
+	i = i % AAMethod::_size();
+	aaMethod = AAMethod::_from_integral(i);
 	rebuildRG = true;
 }
 
