@@ -831,6 +831,10 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 					}
 				} else {
 					aaMethod = *parsed;
+					if (!isAAMethodSupported(aaMethod)) {
+						LOG_ERROR("Requested AA method {} is not supported", aaMethod._to_string());
+						exit(1);
+					}
 				}
 			}
 		}
@@ -1088,6 +1092,23 @@ void SMAADemo::initRender() {
 	maxMSAAQuality = msaaSamplesToQuality(features.maxMSAASamples) + 1;
 	if (msaaQuality >= maxMSAAQuality) {
 		msaaQuality = maxMSAAQuality - 1;
+	}
+
+	unsigned int supportedCount = 0;
+	for (AAMethod a : AAMethod::_values()) {
+		bool supported = isAAMethodSupported(a);
+		if (supported) {
+			supportedCount++;
+		}
+		LOG("AA method {}: {}", a._to_string(), supported ? "supported" : "not supported");
+	}
+
+	if (supportedCount == 0) {
+        THROW_ERROR("No supported AA methods");
+	}
+
+	if (!isAAMethodSupported(aaMethod)) {
+		setNextAAMethod();
 	}
 
 	unsigned int refreshRate = renderer.getCurrentRefreshRate();
@@ -2043,9 +2064,11 @@ bool SMAADemo::isAAMethodSupported(AAMethod method) const {
 void SMAADemo::setPrevAAMethod() {
 	int i = aaMethod._to_integral();
 
+	do {
 	i = i - 1 + int(AAMethod::_size());
 	i = i % AAMethod::_size();
 	aaMethod = AAMethod::_from_integral(i);
+	} while (!isAAMethodSupported(aaMethod));
 	rebuildRG = true;
 }
 
@@ -2053,9 +2076,11 @@ void SMAADemo::setPrevAAMethod() {
 void SMAADemo::setNextAAMethod() {
 	int i = aaMethod._to_integral();
 
+	do {
 	i = i + 1;
 	i = i % AAMethod::_size();
 	aaMethod = AAMethod::_from_integral(i);
+	} while (!isAAMethodSupported(aaMethod));
 	rebuildRG = true;
 }
 
@@ -2963,7 +2988,19 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 					ImGui::SameLine();
 				}
 				first = false;
+
+				bool supported = isAAMethodSupported(a);
+				if (!supported) {
+					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+					ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+				}
+
 				ImGui::RadioButton(a._to_string(), &aa, a._to_integral());
+
+				if (!supported) {
+					ImGui::PopItemFlag();
+					ImGui::PopStyleVar();
+				}
 			}
 
 			{
@@ -2997,6 +3034,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			bool msaaChanged = ImGui::Combo("MSAA quality", &msaaq, msaaQualityLevels, maxMSAAQuality);
 			if (aaChanged || aa != aaMethod._to_integral()) {
 				aaMethod = AAMethod::_from_integral(aa);
+				assert(isAAMethodSupported(aaMethod));
 				rebuildRG = true;
 			}
 
