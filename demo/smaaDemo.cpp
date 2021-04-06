@@ -2998,8 +2998,8 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				ImGui::RadioButton(a._to_string(), &aa, a._to_integral());
 
 				if (!supported) {
-					ImGui::PopItemFlag();
 					ImGui::PopStyleVar();
+					ImGui::PopItemFlag();
 				}
 			}
 
@@ -3020,8 +3020,8 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				}
 				ImGui::Checkbox("Temporal reprojection", &temporalReproject);
 				if (!temporalAA) {
-					ImGui::PopItemFlag();
 					ImGui::PopStyleVar();
+					ImGui::PopItemFlag();
 				}
 			}
 
@@ -3084,8 +3084,8 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				smaaParameters.cornerRounding = s;
 
 				if (smaaQuality != 0) {
-					ImGui::PopItemFlag();
 					ImGui::PopStyleVar();
+					ImGui::PopItemFlag();
 				}
 			}
 
@@ -3106,8 +3106,8 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			}
 
 			if (!smaaPredication) {
-				ImGui::PopItemFlag();
 				ImGui::PopStyleVar();
+				ImGui::PopItemFlag();
 			}
 
 			int em = smaaEdgeMethod._to_integral();;
