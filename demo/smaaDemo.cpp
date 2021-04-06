@@ -2152,16 +2152,11 @@ void SMAADemo::processInput() {
 				break;
 
 			case SDL_SCANCODE_M: {
-				int i = aaMethod._to_integral();
-
 				if (leftShift || rightShift) {
-					i = i - 1 + int(AAMethod::_size());
+					setPrevAAMethod();
 				} else {
-					i = i + 1;
+					setNextAAMethod();
 				}
-				i = i % AAMethod::_size();
-				aaMethod = AAMethod::_from_integral(i);
-				rebuildRG = true;
 				} break;
 
 			case SDL_SCANCODE_Q:
