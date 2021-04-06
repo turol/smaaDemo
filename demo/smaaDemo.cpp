@@ -527,6 +527,8 @@ class SMAADemo {
 
 	void setTemporalAA(bool enabled);
 
+	bool isAAMethodSupported(AAMethod method) const;
+
 	void setPrevAAMethod();
 
 	void setNextAAMethod();
@@ -2018,6 +2020,23 @@ void SMAADemo::setAntialiasing(bool enabled) {
 void SMAADemo::setTemporalAA(bool enabled) {
 	temporalAA = enabled;
 	rebuildRG = true;
+}
+
+
+bool SMAADemo::isAAMethodSupported(AAMethod method) const {
+	switch (method) {
+	case AAMethod::MSAA:
+        return (maxMSAAQuality > 1);
+
+	case AAMethod::FXAA:
+	case AAMethod::SMAA:
+		return true;
+
+	case AAMethod::SMAA2X:
+        return (maxMSAAQuality > 1);
+	}
+
+	HEDLEY_UNREACHABLE();
 }
 
 
