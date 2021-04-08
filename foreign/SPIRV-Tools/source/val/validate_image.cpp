@@ -899,6 +899,7 @@ spv_result_t ValidateTypeSampledImage(ValidationState_t& _,
   // Vulkan uses the Sampled=1 case.
   if ((info.sampled != 0) && (info.sampled != 1)) {
     return _.diag(SPV_ERROR_INVALID_DATA, inst)
+           << _.VkErrorID(4657)
            << "Sampled image type requires an image type with \"Sampled\" "
               "operand set to 0 or 1";
   }
@@ -1456,11 +1457,20 @@ spv_result_t ValidateImageGather(ValidationState_t& _,
   }
 
   if (opcode == SpvOpImageGather || opcode == SpvOpImageSparseGather) {
-    const uint32_t component_index_type = _.GetOperandTypeId(inst, 4);
+    const uint32_t component = inst->GetOperandAs<uint32_t>(4);
+    const uint32_t component_index_type = _.GetTypeId(component);
     if (!_.IsIntScalarType(component_index_type) ||
         _.GetBitWidth(component_index_type) != 32) {
       return _.diag(SPV_ERROR_INVALID_DATA, inst)
              << "Expected Component to be 32-bit int scalar";
+    }
+    if (spvIsVulkanEnv(_.context()->target_env)) {
+      if (!spvOpcodeIsConstant(_.GetIdOpcode(component))) {
+        return _.diag(SPV_ERROR_INVALID_DATA, inst)
+               << _.VkErrorID(4664)
+               << "Expected Component Operand to be a const object for Vulkan "
+                  "environment";
+      }
     }
   } else {
     assert(opcode == SpvOpImageDrefGather ||

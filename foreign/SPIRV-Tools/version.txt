@@ -1,5 +1,5 @@
-commit d71ac38b8ee14f9acad22a3bcb0c294d489bedf4
-Author: sfricke-samsung <46493288+sfricke-samsung@users.noreply.github.com>
-Date:   Wed Jan 27 16:37:45 2021 -0800
+commit 07383c65d92896d07b305675f8c78a61ac88246e
+Author: Jaebaek Seo <jaebaek@google.com>
+Date:   Thu Feb 18 10:39:52 2021 -0500
 
-    spirv-val: Add Vulkan image gather offset VUID (#4118)
+    Finalize SPIRV-Tools v2020.7
