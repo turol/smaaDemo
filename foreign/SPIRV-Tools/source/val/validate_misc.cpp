@@ -37,10 +37,6 @@ spv_result_t ValidateUndef(ValidationState_t& _, const Instruction* inst) {
            << "Cannot create undefined values with 8- or 16-bit types";
   }
 
-  if (spvIsWebGPUEnv(_.context()->target_env)) {
-    return _.diag(SPV_ERROR_INVALID_BINARY, inst) << "OpUndef is disallowed";
-  }
-
   return SPV_SUCCESS;
 }
 
@@ -56,7 +52,7 @@ spv_result_t ValidateShaderClock(ValidationState_t& _,
   std::tie(is_int32, is_const_int32, value) = _.EvalInt32IfConst(scope);
   if (is_const_int32 && value != SpvScopeSubgroup && value != SpvScopeDevice) {
     return _.diag(SPV_ERROR_INVALID_DATA, inst)
-           << "Scope must be Subgroup or Device";
+           << _.VkErrorID(4652) << "Scope must be Subgroup or Device";
   }
 
   // Result Type must be a 64 - bit unsigned integer type or

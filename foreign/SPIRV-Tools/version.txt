@@ -1,5 +1,5 @@
-commit b27b1afd12d05bf238ac7368bb49de73cd620a8e
-Author: Diego Novillo <dnovillo@google.com>
-Date:   Mon Dec 7 11:14:01 2020 -0500
+commit d71ac38b8ee14f9acad22a3bcb0c294d489bedf4
+Author: sfricke-samsung <46493288+sfricke-samsung@users.noreply.github.com>
+Date:   Wed Jan 27 16:37:45 2021 -0800
 
-    Update CHANGES to include latest ray tacing fixes.
+    spirv-val: Add Vulkan image gather offset VUID (#4118)

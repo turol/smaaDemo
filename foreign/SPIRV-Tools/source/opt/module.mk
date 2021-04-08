@@ -33,7 +33,6 @@ FILES:= \
 	dead_insert_elim_pass.cpp \
 	dead_variable_elimination.cpp \
 	debug_info_manager.cpp \
-	decompose_initialized_variables_pass.cpp \
 	decoration_manager.cpp \
 	def_use_manager.cpp \
 	desc_sroa.cpp \
@@ -51,7 +50,6 @@ FILES:= \
 	fold_spec_constant_op_and_composite_pass.cpp \
 	freeze_spec_constant_value_pass.cpp \
 	function.cpp \
-	generate_webgpu_initializers_pass.cpp \
 	graphics_robust_access_pass.cpp \
 	if_conversion.cpp \
 	inline_exhaustive_pass.cpp \
@@ -65,7 +63,6 @@ FILES:= \
 	instrument_pass.cpp \
 	ir_context.cpp \
 	ir_loader.cpp \
-	legalize_vector_shuffle_pass.cpp \
 	licm_pass.cpp \
 	local_access_chain_convert_pass.cpp \
 	local_redundancy_elimination.cpp \
@@ -101,10 +98,8 @@ FILES:= \
 	scalar_replacement_pass.cpp \
 	set_spec_constant_default_value_pass.cpp \
 	simplification_pass.cpp \
-	split_invalid_unreachable_pass.cpp \
 	ssa_rewrite_pass.cpp \
 	strength_reduction_pass.cpp \
-	strip_atomic_counter_memory_pass.cpp \
 	strip_debug_info_pass.cpp \
 	strip_reflect_info_pass.cpp \
 	struct_cfg_analysis.cpp \
