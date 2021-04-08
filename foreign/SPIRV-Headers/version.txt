@@ -1,8 +1,8 @@
-commit f027d53ded7e230e008d37c8b47ede7cd308e19d
-Merge: 104ecc3 bdd2aa3
-Author: Raun Krisch <raun.krisch@gmail.com>
-Date:   Fri Nov 27 17:52:34 2020 -0600
+commit f88a1f98fa7a44ccfcf33d810c72b200e7d9a78a
+Merge: 6804a04 820d0ae
+Author: John Kessenich <johnkslang@users.noreply.github.com>
+Date:   Wed Mar 31 22:43:44 2021 +0700
 
-    Merge pull request #184 from dgkoch/dkoch_remove_hittkhr
+    Merge pull request #201 from baldurk/spv-khr-non-semantic-info
     
-    remove HitTKHR alias
+    Add NonSemantic.Vulkan.DebugInfo.100 JSON/header

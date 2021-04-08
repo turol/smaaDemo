@@ -25,6 +25,7 @@
 #include <assert.h>
 #include <string.h>
 #include <algorithm>
+#include <cstdlib>
 #include <iostream>
 #include <unordered_map>
 #include <unordered_set>
@@ -61,6 +62,8 @@ EnumValues ImageChannelDataTypeParams;
 EnumValues ImageOperandsParams;
 EnumValues FPFastMathParams;
 EnumValues FPRoundingModeParams;
+EnumValues FPDenormModeParams;
+EnumValues FPOperationModeParams;
 EnumValues LinkageTypeParams;
 EnumValues DecorationParams;
 EnumValues BuiltInParams;
@@ -178,6 +181,10 @@ ClassOptionality ToOperandClassAndOptionality(const std::string& operandKind, co
             type = OperandImageChannelDataType;
         } else if (operandKind == "FPRoundingMode") {
             type = OperandFPRoundingMode;
+        } else if (operandKind == "FPDenormMode") {
+            type = OperandFPDenormMode;
+        } else if (operandKind == "FPOperationMode") {
+            type = OperandFPOperationMode;
         } else if (operandKind == "LinkageType") {
             type = OperandLinkageType;
         } else if (operandKind == "AccessQualifier") {
@@ -320,6 +327,8 @@ void jsonToSpirv(const std::string& jsonPath, bool buildingHeaders)
 
     // process the instructions
     const Json::Value insts = root["instructions"];
+    unsigned maxOpcode = 0;
+    bool firstOpcode = true;
     for (const auto& inst : insts) {
         const auto printingClass = inst["class"].asString();
         if (printingClass.size() == 0) {
@@ -335,6 +344,19 @@ void jsonToSpirv(const std::string& jsonPath, bool buildingHeaders)
         }
         const auto opcode = inst["opcode"].asUInt();
         const std::string name = inst["opname"].asString();
+        if (firstOpcode) {
+          maxOpcode = opcode;
+          firstOpcode = false;
+        } else {
+          if (maxOpcode > opcode) {
+            std::cerr << "Error: " << name
+                      << " is out of order. It follows the instruction with opcode " << maxOpcode
+                      << std::endl;
+            std::exit(1);
+          } else {
+            maxOpcode = opcode;
+          }
+        }
         EnumCaps caps = getCaps(inst);
         std::string version = inst["version"].asString();
         std::string lastVersion = inst["lastVersion"].asString();
@@ -378,12 +400,27 @@ void jsonToSpirv(const std::string& jsonPath, bool buildingHeaders)
             return result;
         };
 
+        unsigned maxValue = 0;
+        bool firstValue = true;
         for (const auto& enumerant : source["enumerants"]) {
             unsigned value;
             bool skip_zero_in_bitfield;
             std::tie(value, skip_zero_in_bitfield) = getValue(enumerant);
             if (skip_zero_in_bitfield)
                 continue;
+            if (firstValue) {
+              maxValue = value;
+              firstValue = false;
+            } else {
+              if (maxValue > value) {
+                std::cerr << "Error: " << source["kind"] << " enumerant " << enumerant["enumerant"]
+                          << " is out of order. It has value " <<  value
+                          << " but follows the enumerant with value " << maxValue << std::endl;
+                std::exit(1);
+              } else {
+                maxValue = value;
+              }
+            }
             EnumCaps caps(getCaps(enumerant));
             std::string version = enumerant["version"].asString();
             std::string lastVersion = enumerant["lastVersion"].asString();
@@ -452,6 +489,10 @@ void jsonToSpirv(const std::string& jsonPath, bool buildingHeaders)
             establishOperandClass(enumName, OperandFPFastMath, &FPFastMathParams, operandEnum, category);
         } else if (enumName == "FPRoundingMode") {
             establishOperandClass(enumName, OperandFPRoundingMode, &FPRoundingModeParams, operandEnum, category);
+        } else if (enumName == "FPDenormMode") {
+            establishOperandClass(enumName, OperandFPDenormMode, &FPDenormModeParams, operandEnum, category);
+        } else if (enumName == "FPOperationMode") {
+            establishOperandClass(enumName, OperandFPOperationMode, &FPOperationModeParams, operandEnum, category);
         } else if (enumName == "LinkageType") {
             establishOperandClass(enumName, OperandLinkageType, &LinkageTypeParams, operandEnum, category);
         } else if (enumName == "FunctionParameterAttribute") {
