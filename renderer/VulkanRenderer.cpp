@@ -2470,41 +2470,41 @@ void Renderer::beginFrame() {
 
 	auto device = impl->device;
 
-		assert(!impl->frameAcquireSem);
+	assert(!impl->frameAcquireSem);
 
-		if (impl->swapchainDirty) {
+	if (impl->swapchainDirty) {
+		impl->recreateSwapchain();
+		assert(!impl->swapchainDirty);
+	}
+
+	// acquire next image
+	uint32_t imageIdx = 0xFFFFFFFFU;
+
+	impl->frameAcquireSem = impl->allocateSemaphore();
+
+	vk::Result result = device.acquireNextImageKHR(impl->swapchain, impl->frameTimeoutNanos, impl->frameAcquireSem, vk::Fence(), &imageIdx);
+	while (result != vk::Result::eSuccess) {
+		if (result == vk::Result::eSuboptimalKHR) {
+			LOG("swapchain suboptimal during acquireNextImageKHR, recreating on next frame...");
+			logFlush();
+			impl->swapchainDirty = true;
+			break;
+		} else if (result == vk::Result::eErrorOutOfDateKHR) {
+			// swapchain went out of date during acquire, recreate and try again
+			LOG("swapchain out of date during acquireNextImageKHR, recreating immediately...");
+			logFlush();
+			impl->swapchainDirty = true;
 			impl->recreateSwapchain();
 			assert(!impl->swapchainDirty);
+		} else {
+			THROW_ERROR("acquireNextImageKHR failed: {}", vk::to_string(result));
 		}
 
-		// acquire next image
-		uint32_t imageIdx = 0xFFFFFFFFU;
+		result = device.acquireNextImageKHR(impl->swapchain, impl->frameTimeoutNanos, impl->frameAcquireSem, vk::Fence(), &imageIdx);
+	}
 
-		impl->frameAcquireSem = impl->allocateSemaphore();
-
-		vk::Result result = device.acquireNextImageKHR(impl->swapchain, impl->frameTimeoutNanos, impl->frameAcquireSem, vk::Fence(), &imageIdx);
-		while (result != vk::Result::eSuccess) {
-			if (result == vk::Result::eSuboptimalKHR) {
-				LOG("swapchain suboptimal during acquireNextImageKHR, recreating on next frame...");
-				logFlush();
-				impl->swapchainDirty = true;
-				break;
-			} else if (result == vk::Result::eErrorOutOfDateKHR) {
-				// swapchain went out of date during acquire, recreate and try again
-				LOG("swapchain out of date during acquireNextImageKHR, recreating immediately...");
-				logFlush();
-				impl->swapchainDirty = true;
-				impl->recreateSwapchain();
-				assert(!impl->swapchainDirty);
-			} else {
-				THROW_ERROR("acquireNextImageKHR failed: {}", vk::to_string(result));
-			}
-
-			result = device.acquireNextImageKHR(impl->swapchain, impl->frameTimeoutNanos, impl->frameAcquireSem, vk::Fence(), &imageIdx);
-		}
-
-		assert(imageIdx < impl->frames.size());
-		impl->currentFrameIdx        = imageIdx;
+	assert(imageIdx < impl->frames.size());
+	impl->currentFrameIdx        = imageIdx;
 
 	auto &frame            = impl->frames.at(impl->currentFrameIdx);
 
