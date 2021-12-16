@@ -61,6 +61,7 @@ FILES:= \
 	instruction.cpp \
 	instruction_list.cpp \
 	instrument_pass.cpp \
+	interp_fixup_pass.cpp \
 	ir_context.cpp \
 	ir_loader.cpp \
 	licm_pass.cpp \

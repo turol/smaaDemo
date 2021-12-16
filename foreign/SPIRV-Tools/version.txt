@@ -1,5 +1,5 @@
-commit 07383c65d92896d07b305675f8c78a61ac88246e
-Author: Jaebaek Seo <jaebaek@google.com>
-Date:   Thu Feb 18 10:39:52 2021 -0500
+commit c2d5375fa7cc87c93f692e7200d5d974283d4391
+Author: Jakub Kuderski <kubak@google.com>
+Date:   Wed Apr 21 10:13:07 2021 -0400
 
-    Finalize SPIRV-Tools v2020.7
+    Finalize SPIRV-Tools v2021.1
