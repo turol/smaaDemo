@@ -70,6 +70,7 @@ endef  # spvtools_extinst_lang_headers
 
 $(eval $(call spvtools_extinst_lang_headers,DebugInfo,extinst.debuginfo.grammar.json) )
 $(eval $(call spvtools_extinst_lang_headers,OpenCLDebugInfo100,extinst.opencl.debuginfo.100.grammar.json) )
+$(eval $(call spvtools_extinst_lang_headers,NonSemanticVulkanDebugInfo100,extinst.debuginfo.grammar.json) )
 
 
 build-version.inc: $(d)/utils/update_build_version.py $(d)/CHANGES
