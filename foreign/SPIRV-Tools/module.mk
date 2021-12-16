@@ -43,7 +43,7 @@ define spvtools_vendor_tables
 $1.insts.inc: $(d)/utils/generate_grammar_tables.py extinst.$1.grammar.json
 	$$(PYTHON) $$(word 1, $$^) --extinst-vendor-grammar=$$(word 2, $$^) --vendor-insts-output=$$@ --vendor-operand-kind-prefix=$3
 
-SPV_GENERATED+=$$(SPV_GENERATED) $1.insts.inc
+SPV_GENERATED:=$$(SPV_GENERATED) $1.insts.inc
 
 endef  # spvtools_vendor_tables
 
@@ -63,7 +63,7 @@ define spvtools_extinst_lang_headers
 $1.h: $(d)/utils/generate_language_headers.py $2
 	$$(PYTHON) $$(word 1, $$^) --extinst-grammar=$$(word 2, $$^) --extinst-output-path=$$@
 
-SPV_GENERATED+=$$(SPV_GENERATED) $1.h
+SPV_GENERATED:=$$(SPV_GENERATED) $1.h
 
 endef  # spvtools_extinst_lang_headers
 
