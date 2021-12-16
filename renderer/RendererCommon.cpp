@@ -652,7 +652,7 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 void RendererBase::addCachedSPV(const std::string &shaderName, const std::vector<uint32_t> &spirv, const HashMap<std::string, std::vector<char> > &includeCache) {
 	CacheData cacheData;
 	cacheData.version     = shaderVersion;
-	cacheData.hash        = XXH64(spirv.data(), spirv.size() * 4, 0);;
+	cacheData.hash        = XXH64(spirv.data(), spirv.size() * 4, 0);
 	std::string spvName   = makeSPVCacheName(cacheData.hash);
 	LOG("Writing shader \"{}\" to \"{}\"", shaderName, spvName);
 	cacheData.dependencies.reserve(includeCache.size());
