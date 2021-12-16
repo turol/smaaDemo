@@ -84,7 +84,6 @@ kokoro/shaderc-smoketest/build.sh
 kokoro/shaderc-smoketest/continuous.cfg
 kokoro/shaderc-smoketest/presubmit.cfg
 kokoro/windows-msvc-2013-release/build.bat
-kokoro/windows-msvc-2013-release/continuous.cfg
 kokoro/windows-msvc-2013-release/presubmit.cfg
 kokoro/windows-msvc-2015-release-bazel/build.bat
 kokoro/windows-msvc-2015-release-bazel/continuous.cfg
@@ -244,6 +243,8 @@ source/fuzz/fuzzer_pass_permute_blocks.cpp
 source/fuzz/fuzzer_pass_permute_blocks.h
 source/fuzz/fuzzer_pass_permute_function_parameters.cpp
 source/fuzz/fuzzer_pass_permute_function_parameters.h
+source/fuzz/fuzzer_pass_permute_function_variables.cpp
+source/fuzz/fuzzer_pass_permute_function_variables.h
 source/fuzz/fuzzer_pass_permute_instructions.cpp
 source/fuzz/fuzzer_pass_permute_instructions.h
 source/fuzz/fuzzer_pass_permute_phi_operands.cpp
@@ -282,6 +283,8 @@ source/fuzz/fuzzer_pass_swap_commutable_operands.cpp
 source/fuzz/fuzzer_pass_swap_commutable_operands.h
 source/fuzz/fuzzer_pass_swap_conditional_branch_operands.cpp
 source/fuzz/fuzzer_pass_swap_conditional_branch_operands.h
+source/fuzz/fuzzer_pass_swap_functions.cpp
+source/fuzz/fuzzer_pass_swap_functions.h
 source/fuzz/fuzzer_pass_toggle_access_chain_instruction.cpp
 source/fuzz/fuzzer_pass_toggle_access_chain_instruction.h
 source/fuzz/fuzzer_pass_wrap_regions_in_selections.cpp
@@ -485,6 +488,10 @@ source/fuzz/transformation_swap_commutable_operands.cpp
 source/fuzz/transformation_swap_commutable_operands.h
 source/fuzz/transformation_swap_conditional_branch_operands.cpp
 source/fuzz/transformation_swap_conditional_branch_operands.h
+source/fuzz/transformation_swap_function_variables.cpp
+source/fuzz/transformation_swap_function_variables.h
+source/fuzz/transformation_swap_two_functions.cpp
+source/fuzz/transformation_swap_two_functions.h
 source/fuzz/transformation_toggle_access_chain_instruction.cpp
 source/fuzz/transformation_toggle_access_chain_instruction.h
 source/fuzz/transformation_vector_shuffle.cpp
@@ -906,6 +913,7 @@ test/fuzz/fuzzer_pass_outline_functions_test.cpp
 test/fuzz/fuzzer_pass_test.cpp
 test/fuzz/fuzzer_replayer_test.cpp
 test/fuzz/fuzzer_shrinker_test.cpp
+test/fuzz/fuzzerutil_test.cpp
 test/fuzz/instruction_descriptor_test.cpp
 test/fuzz/replayer_test.cpp
 test/fuzz/shrinker_test.cpp
@@ -989,6 +997,8 @@ test/fuzz/transformation_split_block_test.cpp
 test/fuzz/transformation_store_test.cpp
 test/fuzz/transformation_swap_commutable_operands_test.cpp
 test/fuzz/transformation_swap_conditional_branch_operands_test.cpp
+test/fuzz/transformation_swap_function_variables_test.cpp
+test/fuzz/transformation_swap_two_functions_test.cpp
 test/fuzz/transformation_toggle_access_chain_instruction_test.cpp
 test/fuzz/transformation_vector_shuffle_test.cpp
 test/fuzz/transformation_wrap_early_terminator_in_function_test.cpp
@@ -1249,6 +1259,7 @@ test/val/val_explicit_reserved_test.cpp
 test/val/val_ext_inst_test.cpp
 test/val/val_extension_spv_khr_expect_assume.cpp
 test/val/val_extension_spv_khr_linkonce_odr.cpp
+test/val/val_extension_spv_khr_subgroup_uniform_control_flow.cpp
 test/val/val_extension_spv_khr_terminate_invocation.cpp
 test/val/val_extensions_test.cpp
 test/val/val_fixtures.h
