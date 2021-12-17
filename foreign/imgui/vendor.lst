@@ -32,6 +32,7 @@ backends/imgui_impl_opengl2.cpp
 backends/imgui_impl_opengl2.h
 backends/imgui_impl_opengl3.cpp
 backends/imgui_impl_opengl3.h
+backends/imgui_impl_opengl3_loader.h
 backends/imgui_impl_osx.h
 backends/imgui_impl_osx.mm
 backends/imgui_impl_sdl.cpp
@@ -150,9 +151,6 @@ examples/example_win32_directx9/example_win32_directx9.vcxproj
 examples/example_win32_directx9/example_win32_directx9.vcxproj.filters
 examples/example_win32_directx9/main.cpp
 examples/imgui_examples.sln
-examples/libs/gl3w/GL/gl3w.c
-examples/libs/gl3w/GL/gl3w.h
-examples/libs/gl3w/GL/glcorearb.h
 examples/libs/glfw/COPYING.txt
 examples/libs/glfw/include/GLFW/glfw3.h
 examples/libs/glfw/include/GLFW/glfw3native.h

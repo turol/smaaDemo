@@ -1,5 +1,8 @@
-commit ad5d1a8429ea219d3d34e6a36a48918650402697
+commit d2ffbd9b86dcb9953659f56d6645d03c55f0bbcd
 Author: ocornut <omarcornut@gmail.com>
-Date:   Mon May 24 17:16:27 2021 +0200
+Date:   Fri Aug 20 17:30:49 2021 +0200
 
-    Version 1.83
+    Version 1.84
+    
+    Fix PVS Studio false positive //-V1020
+    Fix missing #ifndef for IMGUI_IMPL_OPENGL_LOADER_CUSTOM path
