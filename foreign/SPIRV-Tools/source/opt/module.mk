@@ -28,6 +28,7 @@ FILES:= \
 	constants.cpp \
 	const_folding_rules.cpp \
 	convert_to_half_pass.cpp \
+	convert_to_sampled_image_pass.cpp \
 	copy_prop_arrays.cpp \
 	dead_branch_elim_pass.cpp \
 	dead_insert_elim_pass.cpp \
@@ -93,6 +94,7 @@ FILES:= \
 	register_pressure.cpp \
 	relax_float_ops_pass.cpp \
 	remove_duplicates_pass.cpp \
+	remove_unused_interface_variables_pass.cpp \
 	replace_invalid_opc.cpp \
 	scalar_analysis.cpp \
 	scalar_analysis_simplification.cpp \

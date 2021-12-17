@@ -1796,6 +1796,639 @@ TEST(TransformationReplaceIdWithSynonymTest, IncompatibleTypes) {
                    .IsApplicable(context.get(), transformation_context));
 }
 
+TEST(TransformationReplaceIdWithSynonymTest,
+     AtomicScopeAndMemorySemanticsMustBeConstant) {
+  const std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %4 "main"
+               OpExecutionMode %4 LocalSize 1 1 1
+               OpSource ESSL 320
+               OpSourceExtension "GL_KHR_memory_scope_semantics"
+               OpMemberDecorate %9 0 Offset 0
+               OpDecorate %9 Block
+               OpDecorate %11 DescriptorSet 0
+               OpDecorate %11 Binding 0
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeInt 32 1
+         %17 = OpTypeInt 32 0
+          %7 = OpTypePointer Function %6
+          %9 = OpTypeStruct %6
+         %10 = OpTypePointer StorageBuffer %9
+         %11 = OpVariable %10 StorageBuffer
+         %86 = OpTypeStruct %17
+         %87 = OpTypePointer Workgroup %86         
+         %88 = OpVariable %87 Workgroup
+         %12 = OpConstant %6 0
+         %13 = OpTypePointer StorageBuffer %6
+         %15 = OpConstant %6 2
+         %16 = OpConstant %6 64
+         %89 = OpTypePointer Workgroup %17
+         %18 = OpConstant %17 1
+         %19 = OpConstant %17 0
+         %20 = OpConstant %17 64
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+          %8 = OpVariable %7 Function
+        %100 = OpCopyObject %6 %15 ; A non-constant version of %15
+        %101 = OpCopyObject %17 %20 ; A non-constant version of %20
+         %14 = OpAccessChain %13 %11 %12
+         %90 = OpAccessChain %89 %88 %19
+         %21 = OpAtomicLoad %6 %14 %15 %20
+         %22 = OpAtomicExchange %6 %14 %15 %20 %16
+         %23 = OpAtomicCompareExchange %6 %14 %15 %20 %12 %16 %15
+         %24 = OpAtomicIIncrement %6 %14 %15 %20
+         %25 = OpAtomicIDecrement %6 %14 %15 %20
+         %26 = OpAtomicIAdd %6  %14 %15 %20 %16
+         %27 = OpAtomicISub %6  %14 %15 %20 %16
+         %28 = OpAtomicSMin %6  %14 %15 %20 %16
+         %29 = OpAtomicUMin %17 %90 %15 %20 %18
+         %30 = OpAtomicSMax %6  %14 %15 %20 %15
+         %31 = OpAtomicUMax %17 %90 %15 %20 %18
+         %32 = OpAtomicAnd  %6  %14 %15 %20 %16
+         %33 = OpAtomicOr   %6  %14 %15 %20 %16
+         %34 = OpAtomicXor  %6  %14 %15 %20 %16
+               OpStore %8 %21
+               OpAtomicStore %14 %15 %20 %12
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_3;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+  spvtools::ValidatorOptions validator_options;
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
+
+  // Tell the fact manager that %100 and %15 are synonymous
+  transformation_context.GetFactManager()->AddFactDataSynonym(
+      MakeDataDescriptor(100, {}), MakeDataDescriptor(15, {}));
+
+  // Tell the fact manager that %101 and %20 are synonymous
+  transformation_context.GetFactManager()->AddFactDataSynonym(
+      MakeDataDescriptor(101, {}), MakeDataDescriptor(20, {}));
+  // OpAtomicLoad
+  const auto& scope_operand = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(21), 1);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(scope_operand, 100)
+                   .IsApplicable(context.get(), transformation_context));
+
+  const auto& semantics_operand = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(21), 2);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(semantics_operand, 101)
+                   .IsApplicable(context.get(), transformation_context));
+  // OpAtomicExchange.
+  const auto& scope_operand2 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(22), 1);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(scope_operand2, 100)
+                   .IsApplicable(context.get(), transformation_context));
+
+  const auto& semantics_operand2 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(22), 2);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(semantics_operand2, 101)
+                   .IsApplicable(context.get(), transformation_context));
+  // OpAtomicCompareExchange.
+  const auto& scope_operand3 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(23), 1);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(scope_operand3, 100)
+                   .IsApplicable(context.get(), transformation_context));
+
+  const auto& semantics_equal_operand3 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(23), 2);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(semantics_equal_operand3, 101)
+                   .IsApplicable(context.get(), transformation_context));
+  const auto& semantics_unequal_operand3 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(23), 3);
+  ASSERT_FALSE(
+      TransformationReplaceIdWithSynonym(semantics_unequal_operand3, 101)
+          .IsApplicable(context.get(), transformation_context));
+  // OpAtomicIIncrement.
+  const auto& scope_operand4 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(24), 1);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(scope_operand4, 100)
+                   .IsApplicable(context.get(), transformation_context));
+
+  const auto& semantics_operand4 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(24), 2);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(semantics_operand4, 101)
+                   .IsApplicable(context.get(), transformation_context));
+
+  // OpAtomicIDecrement.
+  const auto& scope_operand5 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(25), 1);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(scope_operand5, 100)
+                   .IsApplicable(context.get(), transformation_context));
+
+  const auto& semantics_operand5 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(25), 2);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(semantics_operand5, 101)
+                   .IsApplicable(context.get(), transformation_context));
+
+  // OpAtomicIAdd.
+  const auto& scope_operand6 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(26), 1);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(scope_operand6, 100)
+                   .IsApplicable(context.get(), transformation_context));
+
+  const auto& semantics_operand6 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(26), 2);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(semantics_operand6, 101)
+                   .IsApplicable(context.get(), transformation_context));
+  // OpAtomicISub
+  const auto& scope_operand8 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(27), 1);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(scope_operand8, 100)
+                   .IsApplicable(context.get(), transformation_context));
+
+  const auto& semantics_operand8 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(27), 2);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(semantics_operand8, 101)
+                   .IsApplicable(context.get(), transformation_context));
+
+  // OpAtomicSMin
+  const auto& scope_operand9 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(28), 1);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(scope_operand9, 100)
+                   .IsApplicable(context.get(), transformation_context));
+
+  const auto& semantics_operand9 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(28), 2);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(semantics_operand9, 101)
+                   .IsApplicable(context.get(), transformation_context));
+  // OpAtomicUMin
+  const auto& scope_operand10 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(29), 1);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(scope_operand10, 100)
+                   .IsApplicable(context.get(), transformation_context));
+
+  const auto& semantics_operand10 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(29), 2);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(semantics_operand10, 101)
+                   .IsApplicable(context.get(), transformation_context));
+
+  // OpAtomicSMax
+  const auto& scope_operand11 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(30), 1);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(scope_operand11, 100)
+                   .IsApplicable(context.get(), transformation_context));
+
+  const auto& semantics_operand11 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(30), 2);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(semantics_operand11, 101)
+                   .IsApplicable(context.get(), transformation_context));
+  // OpAtomicUMax
+  const auto& scope_operand12 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(31), 1);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(scope_operand12, 100)
+                   .IsApplicable(context.get(), transformation_context));
+
+  const auto& semantics_operand12 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(31), 2);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(semantics_operand12, 101)
+                   .IsApplicable(context.get(), transformation_context));
+
+  // OpAtomicAnd
+  const auto& scope_operand13 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(32), 1);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(scope_operand13, 100)
+                   .IsApplicable(context.get(), transformation_context));
+
+  const auto& semantics_operand13 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(32), 2);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(semantics_operand13, 101)
+                   .IsApplicable(context.get(), transformation_context));
+
+  // OpAtomicOr
+  const auto& scope_operand14 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(33), 1);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(scope_operand14, 100)
+                   .IsApplicable(context.get(), transformation_context));
+
+  const auto& semantics_operand14 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(33), 2);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(semantics_operand14, 101)
+                   .IsApplicable(context.get(), transformation_context));
+
+  // OpAtomicXor
+  const auto& scope_operand15 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(34), 1);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(scope_operand15, 100)
+                   .IsApplicable(context.get(), transformation_context));
+
+  const auto& semantics_operand15 = MakeIdUseDescriptorFromUse(
+      context.get(), context->get_def_use_mgr()->GetDef(34), 2);
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym(semantics_operand15, 101)
+                   .IsApplicable(context.get(), transformation_context));
+}
+
+// TODO(https://github.com/KhronosGroup/SPIRV-Tools/issues/4345): Improve this
+//  test so that it covers more atomic operations, and enable the test once the
+//  issue is fixed.
+TEST(TransformationReplaceIdWithSynonymTest,
+     DISABLED_SignOfAtomicScopeAndMemorySemanticsDoesNotMatter) {
+  // TODO(https://github.com/KhronosGroup/SPIRV-Tools/issues/4345): both the
+  //  GLSL comment and the corresponding SPIR-V should be updated to cover a
+  //  larger number of atomic operations.
+  // The following SPIR-V came from this GLSL, edited to add some synonyms:
+  //
+  // #version 320 es
+  //
+  // #extension GL_KHR_memory_scope_semantics : enable
+  //
+  // layout(set = 0, binding = 0) buffer Buf {
+  //   int x;
+  // };
+  //
+  // void main() {
+  //   int tmp = atomicLoad(x,
+  //                        gl_ScopeWorkgroup,
+  //                        gl_StorageSemanticsBuffer,
+  //                        gl_SemanticsRelaxed);
+  // }
+  const std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %4 "main"
+               OpExecutionMode %4 LocalSize 1 1 1
+               OpSource ESSL 320
+               OpSourceExtension "GL_KHR_memory_scope_semantics"
+               OpMemberDecorate %9 0 Offset 0
+               OpDecorate %9 Block
+               OpDecorate %11 DescriptorSet 0
+               OpDecorate %11 Binding 0
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeInt 32 1
+          %7 = OpTypePointer Function %6
+          %9 = OpTypeStruct %6
+         %10 = OpTypePointer StorageBuffer %9
+         %11 = OpVariable %10 StorageBuffer
+         %12 = OpConstant %6 0
+         %13 = OpTypePointer StorageBuffer %6
+         %15 = OpConstant %6 2
+         %16 = OpConstant %6 64
+         %17 = OpTypeInt 32 0
+        %100 = OpConstant %17 2 ; The same as %15, but with unsigned int type
+         %18 = OpConstant %17 1
+         %19 = OpConstant %17 0
+         %20 = OpConstant %17 64
+        %101 = OpConstant %6 64 ; The same as %20, but with signed int type
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+          %8 = OpVariable %7 Function
+         %14 = OpAccessChain %13 %11 %12
+         %21 = OpAtomicLoad %6 %14 %15 %20
+               OpStore %8 %21
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_3;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+  spvtools::ValidatorOptions validator_options;
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+  TransformationContext transformation_context(
+      MakeUnique<FactManager>(context.get()), validator_options);
+
+  // Tell the fact manager that %100 and %15 are synonymous
+  transformation_context.GetFactManager()->AddFactDataSynonym(
+      MakeDataDescriptor(100, {}), MakeDataDescriptor(15, {}));
+
+  // Tell the fact manager that %101 and %20 are synonymous
+  transformation_context.GetFactManager()->AddFactDataSynonym(
+      MakeDataDescriptor(101, {}), MakeDataDescriptor(20, {}));
+
+  {
+    const auto& scope_operand = MakeIdUseDescriptorFromUse(
+        context.get(), context->get_def_use_mgr()->GetDef(21), 1);
+    TransformationReplaceIdWithSynonym replace_scope(scope_operand, 100);
+    ASSERT_TRUE(
+        replace_scope.IsApplicable(context.get(), transformation_context));
+    ApplyAndCheckFreshIds(replace_scope, context.get(),
+                          &transformation_context);
+    ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+        context.get(), validator_options, kConsoleMessageConsumer));
+  }
+
+  {
+    const auto& semantics_operand = MakeIdUseDescriptorFromUse(
+        context.get(), context->get_def_use_mgr()->GetDef(21), 2);
+    TransformationReplaceIdWithSynonym replace_semantics(semantics_operand,
+                                                         101);
+    ASSERT_TRUE(
+        replace_semantics.IsApplicable(context.get(), transformation_context));
+    ApplyAndCheckFreshIds(replace_semantics, context.get(),
+                          &transformation_context);
+    ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(
+        context.get(), validator_options, kConsoleMessageConsumer));
+  }
+
+  const std::string after_transformation = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %4 "main"
+               OpExecutionMode %4 LocalSize 1 1 1
+               OpSource ESSL 320
+               OpSourceExtension "GL_KHR_memory_scope_semantics"
+               OpMemberDecorate %9 0 Offset 0
+               OpDecorate %9 Block
+               OpDecorate %11 DescriptorSet 0
+               OpDecorate %11 Binding 0
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeInt 32 1
+          %7 = OpTypePointer Function %6
+          %9 = OpTypeStruct %6
+         %10 = OpTypePointer StorageBuffer %9
+         %11 = OpVariable %10 StorageBuffer
+         %12 = OpConstant %6 0
+         %13 = OpTypePointer StorageBuffer %6
+         %15 = OpConstant %6 2
+         %16 = OpConstant %6 64
+         %17 = OpTypeInt 32 0
+        %100 = OpConstant %17 2
+         %18 = OpConstant %17 1
+         %19 = OpConstant %17 0
+         %20 = OpConstant %17 64
+        %101 = OpConstant %6 64
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+          %8 = OpVariable %7 Function
+         %14 = OpAccessChain %13 %11 %12
+         %21 = OpAtomicLoad %6 %14 %100 %101
+               OpStore %8 %21
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  ASSERT_TRUE(IsEqual(env, after_transformation, context.get()));
+}
+
+// TODO(https://github.com/KhronosGroup/SPIRV-Tools/issues/4345): Improve this
+//  test so that it covers more atomic operations, and enable the test once the
+//  issue is fixed.
+TEST(TransformationReplaceIdWithSynonymTest, TypesAreCompatible) {
+  const std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %4 "main"
+               OpExecutionMode %4 OriginUpperLeft
+               OpSource ESSL 320
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeInt 32 1
+          %9 = OpTypeInt 32 0
+          %8 = OpTypeStruct %6
+         %10 = OpTypePointer StorageBuffer %8
+         %11 = OpVariable %10 StorageBuffer
+         %86 = OpTypeStruct %9
+         %87 = OpTypePointer Workgroup %86
+         %88 = OpVariable %87 Workgroup
+         %89 = OpTypePointer Workgroup %9
+         %19 = OpConstant %9 0
+         %18 = OpConstant %9 1
+         %12 = OpConstant %6 0
+         %13 = OpTypePointer StorageBuffer %6
+         %15 = OpConstant %6 2
+         %16 = OpConstant %6 7
+         %20 = OpConstant %9 64
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+         %14 = OpAccessChain %13 %11 %12
+         %90 = OpAccessChain %89 %88 %19
+         %21 = OpAtomicLoad %6 %14 %15 %20
+         %22 = OpAtomicExchange %6 %14 %15 %20 %16
+         %23 = OpAtomicCompareExchange %6 %14 %15 %20 %12 %16 %15
+         %24 = OpAtomicIIncrement %6 %14 %15 %20
+         %25 = OpAtomicIDecrement %6 %14 %15 %20
+         %26 = OpAtomicIAdd %6  %14 %15 %20 %16
+         %27 = OpAtomicISub %6  %14 %15 %20 %16
+         %28 = OpAtomicSMin %6  %14 %15 %20 %16
+         %29 = OpAtomicUMin %9 %90 %15 %20 %18
+         %30 = OpAtomicSMax %6  %14 %15 %20 %15
+         %31 = OpAtomicUMax %9 %90 %15 %20 %18
+         %32 = OpAtomicAnd  %6  %14 %15 %20 %16
+         %33 = OpAtomicOr   %6  %14 %15 %20 %16
+         %34 = OpAtomicXor  %6  %14 %15 %20 %16
+               OpAtomicStore %14 %15 %20 %16
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_3;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+  spvtools::ValidatorOptions validator_options;
+  ASSERT_TRUE(fuzzerutil::IsValidAndWellFormed(context.get(), validator_options,
+                                               kConsoleMessageConsumer));
+
+  const uint32_t int_type = 6;   // The id of OpTypeInt 32 1
+  const uint32_t uint_type = 9;  // The id of OpTypeInt 32 0
+
+  // OpAtomicLoad
+#ifndef NDEBUG
+  ASSERT_DEATH(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+                   context.get(), SpvOpAtomicLoad, 0, int_type, uint_type),
+               "Signedness check should not occur on a pointer operand.");
+#endif
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicLoad, 1, int_type, uint_type));
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicLoad, 2, int_type, uint_type));
+
+  // OpAtomicExchange
+#ifndef NDEBUG
+  ASSERT_DEATH(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+                   context.get(), SpvOpAtomicExchange, 0, int_type, uint_type),
+               "Signedness check should not occur on a pointer operand.");
+#endif
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicExchange, 1, int_type, uint_type));
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicExchange, 2, int_type, uint_type));
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicExchange, 3, int_type, uint_type));
+
+  // OpAtomicStore
+#ifndef NDEBUG
+  ASSERT_DEATH(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+                   context.get(), SpvOpAtomicStore, 0, int_type, uint_type),
+               "Signedness check should not occur on a pointer operand.");
+#endif
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicStore, 1, int_type, uint_type));
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicStore, 2, int_type, uint_type));
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicStore, 3, int_type, uint_type));
+
+  // OpAtomicCompareExchange
+#ifndef NDEBUG
+  ASSERT_DEATH(
+      TransformationReplaceIdWithSynonym::TypesAreCompatible(
+          context.get(), SpvOpAtomicCompareExchange, 0, int_type, uint_type),
+      "Signedness check should not occur on a pointer operand.");
+#endif
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicCompareExchange, 1, int_type, uint_type));
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicCompareExchange, 2, int_type, uint_type));
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicCompareExchange, 3, int_type, uint_type));
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicCompareExchange, 4, int_type, uint_type));
+
+  // OpAtomicIIncrement
+#ifndef NDEBUG
+  ASSERT_DEATH(
+      TransformationReplaceIdWithSynonym::TypesAreCompatible(
+          context.get(), SpvOpAtomicIIncrement, 0, int_type, uint_type),
+      "Signedness check should not occur on a pointer operand.");
+#endif
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicIIncrement, 1, int_type, uint_type));
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicIIncrement, 2, int_type, uint_type));
+
+// OpAtomicIDecrement
+#ifndef NDEBUG
+  ASSERT_DEATH(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+                   context.get(), SpvOpAtomicStore, 0, int_type, uint_type),
+               "Signedness check should not occur on a pointer operand.");
+#endif
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicStore, 1, int_type, uint_type));
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicStore, 2, int_type, uint_type));
+
+// OpAtomicIAdd
+#ifndef NDEBUG
+  ASSERT_DEATH(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+                   context.get(), SpvOpAtomicIAdd, 0, int_type, uint_type),
+               "Signedness check should not occur on a pointer operand.");
+#endif
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicIAdd, 1, int_type, uint_type));
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicIAdd, 2, int_type, uint_type));
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicIAdd, 3, int_type, uint_type));
+
+// OpAtomicISub
+#ifndef NDEBUG
+  ASSERT_DEATH(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+                   context.get(), SpvOpAtomicISub, 0, int_type, uint_type),
+               "Signedness check should not occur on a pointer operand.");
+#endif
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicISub, 1, int_type, uint_type));
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicISub, 2, int_type, uint_type));
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicISub, 3, int_type, uint_type));
+
+// OpAtomicSMin
+#ifndef NDEBUG
+  ASSERT_DEATH(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+                   context.get(), SpvOpAtomicSMin, 0, int_type, uint_type),
+               "Signedness check should not occur on a pointer operand.");
+#endif
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicSMin, 1, int_type, uint_type));
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicSMin, 2, int_type, uint_type));
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicSMin, 3, int_type, uint_type));
+
+// OpAtomicUMin
+#ifndef NDEBUG
+  ASSERT_DEATH(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+                   context.get(), SpvOpAtomicUMin, 0, int_type, uint_type),
+               "Signedness check should not occur on a pointer operand.");
+#endif
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicUMin, 1, int_type, uint_type));
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicUMin, 2, int_type, uint_type));
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicUMin, 3, int_type, uint_type));
+
+// OpAtomicSMax
+#ifndef NDEBUG
+  ASSERT_DEATH(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+                   context.get(), SpvOpAtomicSMax, 0, int_type, uint_type),
+               "Signedness check should not occur on a pointer operand.");
+#endif
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicSMax, 1, int_type, uint_type));
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicSMax, 2, int_type, uint_type));
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicSMax, 3, int_type, uint_type));
+
+// OpAtomicUMax
+#ifndef NDEBUG
+  ASSERT_DEATH(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+                   context.get(), SpvOpAtomicUMax, 0, int_type, uint_type),
+               "Signedness check should not occur on a pointer operand.");
+#endif
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicUMax, 1, int_type, uint_type));
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicUMax, 2, int_type, uint_type));
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicUMax, 3, int_type, uint_type));
+
+// OpAtomicAnd
+#ifndef NDEBUG
+  ASSERT_DEATH(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+                   context.get(), SpvOpAtomicAnd, 0, int_type, uint_type),
+               "Signedness check should not occur on a pointer operand.");
+#endif
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicAnd, 1, int_type, uint_type));
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicAnd, 2, int_type, uint_type));
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicAnd, 3, int_type, uint_type));
+
+// OpAtomicOr
+#ifndef NDEBUG
+  ASSERT_DEATH(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+                   context.get(), SpvOpAtomicOr, 0, int_type, uint_type),
+               "Signedness check should not occur on a pointer operand.");
+#endif
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicOr, 1, int_type, uint_type));
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicOr, 2, int_type, uint_type));
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicOr, 3, int_type, uint_type));
+
+// OpAtomicXor
+#ifndef NDEBUG
+  ASSERT_DEATH(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+                   context.get(), SpvOpAtomicXor, 0, int_type, uint_type),
+               "Signedness check should not occur on a pointer operand.");
+#endif
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicXor, 1, int_type, uint_type));
+  ASSERT_TRUE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicXor, 2, int_type, uint_type));
+  ASSERT_FALSE(TransformationReplaceIdWithSynonym::TypesAreCompatible(
+      context.get(), SpvOpAtomicXor, 3, int_type, uint_type));
+}
+
 }  // namespace
 }  // namespace fuzz
 }  // namespace spvtools

@@ -143,6 +143,15 @@ Options (in lexicographical order):)",
                does not support RelaxedPrecision or ignores it. This pass also
                removes all RelaxedPrecision decorations.)");
   printf(R"(
+  --convert-to-sampled-image "<descriptor set>:<binding> ..."
+               convert images and/or samplers with the given pairs of descriptor
+               set and binding to sampled images. If a pair of an image and a
+               sampler have the same pair of descriptor set and binding that is
+               one of the given pairs, they will be converted to a sampled
+               image. In addition, if only an image or a sampler has the
+               descriptor set and binding that is one of the given pairs, it
+               will be converted to a sampled image.)");
+  printf(R"(
   --copy-propagate-arrays
                Does propagation of memory references when an array is a copy of
                another.  It will only propagate an array if the source is never
@@ -405,6 +414,12 @@ Options (in lexicographical order):)",
   --remove-duplicates
                Removes duplicate types, decorations, capabilities and extension
                instructions.)");
+  printf(R"(
+  --remove-unused-interface-variables
+               Removes variables referenced on the |OpEntryPoint| instruction 
+               that are not referenced in the entry point function or any function 
+               in its call tree.  Note that this could cause the shader interface 
+               to no longer match other shader stages.)");
   printf(R"(
   --replace-invalid-opcode
                Replaces instructions whose opcode is valid for shader modules,

@@ -1,31 +1,5 @@
-commit e065c482c6c98ef22900822d32a21df8c5473054
-Author: Kévin Petit <kpet@free.fr>
-Date:   Wed Jun 23 18:32:24 2021 +0100
+commit 1fbed83c8aab8517d821fcb4164c08567951938f
+Author: Jaebaek Seo <jaebaek@google.com>
+Date:   Wed Aug 25 10:08:20 2021 -0400
 
-    Initial support for SPV_KHR_integer_dot_product (#4327)
-    
-    * Initial support for SPV_KHR_integer_dot_product
-    
-    - Adds new operand types for packed-vector-format
-    - Moves ray tracing enums to the end
-    
-    - PackedVectorFormat is a new optional operand type, so it requires
-      special handling in grammar table generation.
-    
-    - Add SPV_KHR_integer_dot_product to optimizer whitelists.
-    
-    - Pass-through validation: valid cases pass validation
-      Validation errors are not checked.
-    
-    - Update SPIRV-Headers
-    
-    Patch by David Neto <dneto@google.com>
-    Rebase and minor tweaks by Kevin Petit <kevin.petit@arm.com>
-    
-    Signed-off-by: David Neto <dneto@google.com>
-    Signed-off-by: Kevin Petit <kevin.petit@arm.com>
-    Change-Id: Icb41741cb7f0f1063e5541ce25e5ba6c02266d2c
-    
-    * format fixes
-    
-    Change-Id: I35c82ec27bded3d1b62373fa6daec3ffd91105a3
+    Finalize SPIRV-Tools v2021.3

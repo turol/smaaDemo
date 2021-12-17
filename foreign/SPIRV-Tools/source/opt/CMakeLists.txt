@@ -27,8 +27,11 @@ set(SPIRV_TOOLS_OPT_SOURCES
   composite.h
   const_folding_rules.h
   constants.h
+  control_dependence.h
+  convert_to_sampled_image_pass.h
   convert_to_half_pass.h
   copy_prop_arrays.h
+  dataflow.h
   dead_branch_elim_pass.h
   dead_insert_elim_pass.h
   dead_variable_elimination.h
@@ -96,6 +99,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   register_pressure.h
   relax_float_ops_pass.h
   remove_duplicates_pass.h
+  remove_unused_interface_variables_pass.h
   replace_invalid_opc.h
   scalar_analysis.h
   scalar_analysis_nodes.h
@@ -132,8 +136,11 @@ set(SPIRV_TOOLS_OPT_SOURCES
   composite.cpp
   const_folding_rules.cpp
   constants.cpp
+  control_dependence.cpp
+  convert_to_sampled_image_pass.cpp
   convert_to_half_pass.cpp
   copy_prop_arrays.cpp
+  dataflow.cpp
   dead_branch_elim_pass.cpp
   dead_insert_elim_pass.cpp
   dead_variable_elimination.cpp
@@ -197,6 +204,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   register_pressure.cpp
   relax_float_ops_pass.cpp
   remove_duplicates_pass.cpp
+  remove_unused_interface_variables_pass.cpp
   replace_invalid_opc.cpp
   scalar_analysis.cpp
   scalar_analysis_simplification.cpp
