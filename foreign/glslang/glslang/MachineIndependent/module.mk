@@ -33,6 +33,7 @@ FILES:= \
 	RemoveTree.cpp \
 	Scan.cpp \
 	ShaderLang.cpp \
+	SpirvIntrinsics.cpp \
 	SymbolTable.cpp \
 	Versions.cpp \
 	# empty line
