@@ -50,7 +50,7 @@
 #define MPARK_BUILTIN_UNREACHABLE
 #endif
 
-#if __has_builtin(__type_pack_element)
+#if __has_builtin(__type_pack_element) && !(defined(__ICC))
 #define MPARK_TYPE_PACK_ELEMENT
 #endif
 
@@ -64,7 +64,8 @@
 #endif
 
 #if __has_feature(cxx_exceptions) || defined(__cpp_exceptions) || \
-    (defined(_MSC_VER) && defined(_CPPUNWIND))
+    (defined(_MSC_VER) && defined(_CPPUNWIND)) || \
+    defined(__EXCEPTIONS)
 #define MPARK_EXCEPTIONS
 #endif
 
