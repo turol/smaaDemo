@@ -4,7 +4,7 @@
 import errno, os, re, sys
 from subprocess import check_call, CalledProcessError, Popen, PIPE, STDOUT
 
-versions = ['1.0.0', '1.1.0', '2.0.0', '3.0.2', '4.0.0', '4.1.0', '5.0.0', '5.1.0', '5.2.0', '5.2.1', '5.3.0', '6.0.0', '6.1.0', '6.1.1', '6.1.2', '6.2.0', '6.2.1', '7.0.0', '7.0.1', '7.0.2', '7.0.3', '7.1.0', '7.1.1', '7.1.2', '7.1.3', '8.0.0']
+versions = ['1.0.0', '1.1.0', '2.0.0', '3.0.2', '4.0.0', '4.1.0', '5.0.0', '5.1.0', '5.2.0', '5.2.1', '5.3.0', '6.0.0', '6.1.0', '6.1.1', '6.1.2', '6.2.0', '6.2.1', '7.0.0', '7.0.1', '7.0.2', '7.0.3', '7.1.0', '7.1.1', '7.1.2', '7.1.3', '8.0.0', '8.0.1']
 
 class Pip:
   def __init__(self, venv_dir):
@@ -27,7 +27,7 @@ def create_build_env(venv_dir='virtualenv'):
   pip.install('wheel')
   pip.install('six')
   pip.install('sphinx-doc/sphinx', 'v3.3.0')
-  pip.install('michaeljones/breathe', 'v4.16.0')
+  pip.install('michaeljones/breathe', 'v4.25.0')
 
 def build_docs(version='dev', **kwargs):
   doc_dir = kwargs.get('doc_dir', os.path.dirname(os.path.realpath(__file__)))
@@ -66,6 +66,8 @@ def build_docs(version='dev', **kwargs):
                           "FMT_BEGIN_NAMESPACE=namespace fmt {{" \
                           "FMT_END_NAMESPACE=}}" \
                           "FMT_STRING_ALIAS=1" \
+                          "FMT_VARIADIC(...)=" \
+                          "FMT_VARIADIC_W(...)=" \
                           "FMT_DOC=1"
       EXCLUDE_SYMBOLS   = fmt::formatter fmt::printf_formatter fmt::arg_join \
                           fmt::basic_format_arg::handle
