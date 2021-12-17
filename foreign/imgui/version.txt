@@ -1,5 +1,5 @@
-commit e3e1fbcf025cf83413815751f7c33500e1314d57
-Author: Nicolas Noble <nicolasnoble@users.noreply.github.com>
-Date:   Mon Aug 23 15:03:22 2021 +0200
+commit 55d35d8387c15bf0cfd71861df67af8cfbda7456
+Author: ocornut <omarcornut@gmail.com>
+Date:   Mon Oct 11 19:03:37 2021 +0200
 
-    Backends: OpenGL3: OpenGL: Fixed ES 3.0 shader ("#version 300 es") to use normal precision floats. (#4463)
+    Version 1.85

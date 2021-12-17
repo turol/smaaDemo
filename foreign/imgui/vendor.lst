@@ -37,6 +37,8 @@ backends/imgui_impl_osx.h
 backends/imgui_impl_osx.mm
 backends/imgui_impl_sdl.cpp
 backends/imgui_impl_sdl.h
+backends/imgui_impl_sdlrenderer.cpp
+backends/imgui_impl_sdlrenderer.h
 backends/imgui_impl_vulkan.cpp
 backends/imgui_impl_vulkan.h
 backends/imgui_impl_wgpu.cpp
@@ -130,6 +132,12 @@ examples/example_sdl_opengl3/build_win32.bat
 examples/example_sdl_opengl3/example_sdl_opengl3.vcxproj
 examples/example_sdl_opengl3/example_sdl_opengl3.vcxproj.filters
 examples/example_sdl_opengl3/main.cpp
+examples/example_sdl_sdlrenderer/Makefile
+examples/example_sdl_sdlrenderer/README.md
+examples/example_sdl_sdlrenderer/build_win32.bat
+examples/example_sdl_sdlrenderer/example_sdl_sdlrenderer.vcxproj
+examples/example_sdl_sdlrenderer/example_sdl_sdlrenderer.vcxproj.filters
+examples/example_sdl_sdlrenderer/main.cpp
 examples/example_sdl_vulkan/build_win32.bat
 examples/example_sdl_vulkan/example_sdl_vulkan.vcxproj
 examples/example_sdl_vulkan/example_sdl_vulkan.vcxproj.filters
