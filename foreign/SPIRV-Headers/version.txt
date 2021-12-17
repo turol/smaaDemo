@@ -1,8 +1,8 @@
-commit 07f259e68af3a540038fa32df522554e74f53ed5
-Merge: f5417a4 7b5a2f4
-Author: John Kessenich <johnkslang@users.noreply.github.com>
-Date:   Wed Jun 16 22:43:41 2021 +0700
+commit e71feddb3f17c5586ff7f4cfb5ed1258b800574b
+Merge: 1160d54 5f003bd
+Author: Raun Krisch <raun.krisch@gmail.com>
+Date:   Wed Aug 11 11:26:16 2021 -0500
 
-    Merge pull request #218 from KhronosGroup/fix-ordering
+    Merge pull request #226 from clayengine/master
     
-    Fix two ordering problems and rebuild headers.
+    Clay is an internal framework of Tellusim Technologies Inc.

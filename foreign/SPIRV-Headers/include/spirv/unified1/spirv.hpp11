@@ -653,6 +653,7 @@ enum class BuiltIn : unsigned {
     HitTNV = 5332,
     HitKindKHR = 5333,
     HitKindNV = 5333,
+    CurrentRayTimeNV = 5334,
     IncomingRayFlagsKHR = 5351,
     IncomingRayFlagsNV = 5351,
     RayGeometryIndexKHR = 5352,
@@ -722,6 +723,7 @@ enum class FunctionControlShift : unsigned {
     DontInline = 1,
     Pure = 2,
     Const = 3,
+    OptNoneINTEL = 16,
     Max = 0x7fffffff,
 };
 
@@ -731,6 +733,7 @@ enum class FunctionControlMask : unsigned {
     DontInline = 0x00000002,
     Pure = 0x00000004,
     Const = 0x00000008,
+    OptNoneINTEL = 0x00010000,
 };
 
 enum class MemorySemanticsShift : unsigned {
@@ -989,6 +992,7 @@ enum class Capability : unsigned {
     StorageTexelBufferArrayNonUniformIndexing = 5312,
     StorageTexelBufferArrayNonUniformIndexingEXT = 5312,
     RayTracingNV = 5340,
+    RayTracingMotionBlurNV = 5341,
     VulkanMemoryModel = 5345,
     VulkanMemoryModelKHR = 5345,
     VulkanMemoryModelDeviceScope = 5346,
@@ -1041,9 +1045,17 @@ enum class Capability : unsigned {
     IOPipesINTEL = 5943,
     BlockingPipesINTEL = 5945,
     FPGARegINTEL = 5948,
+    DotProductInputAllKHR = 6016,
+    DotProductInput4x8BitKHR = 6017,
+    DotProductInput4x8BitPackedKHR = 6018,
+    DotProductKHR = 6019,
+    BitInstructions = 6025,
     AtomicFloat32AddEXT = 6033,
     AtomicFloat64AddEXT = 6034,
     LongConstantCompositeINTEL = 6089,
+    OptNoneINTEL = 6094,
+    AtomicFloat16AddEXT = 6095,
+    DebugInfoModuleINTEL = 6114,
     Max = 0x7fffffff,
 };
 
@@ -1139,6 +1151,11 @@ enum class OverflowModes : unsigned {
     SAT = 1,
     SAT_ZERO = 2,
     SAT_SYM = 3,
+    Max = 0x7fffffff,
+};
+
+enum class PackedVectorFormat : unsigned {
+    PackedVectorFormat4x8BitKHR = 0,
     Max = 0x7fffffff,
 };
 
@@ -1499,6 +1516,12 @@ enum class Op : unsigned {
     OpConvertUToAccelerationStructureKHR = 4447,
     OpIgnoreIntersectionKHR = 4448,
     OpTerminateRayKHR = 4449,
+    OpSDotKHR = 4450,
+    OpUDotKHR = 4451,
+    OpSUDotKHR = 4452,
+    OpSDotAccSatKHR = 4453,
+    OpUDotAccSatKHR = 4454,
+    OpSUDotAccSatKHR = 4455,
     OpTypeRayQueryKHR = 4472,
     OpRayQueryInitializeKHR = 4473,
     OpRayQueryTerminateKHR = 4474,
@@ -1525,6 +1548,8 @@ enum class Op : unsigned {
     OpIgnoreIntersectionNV = 5335,
     OpTerminateRayNV = 5336,
     OpTraceNV = 5337,
+    OpTraceMotionNV = 5338,
+    OpTraceRayMotionNV = 5339,
     OpTypeAccelerationStructureKHR = 5341,
     OpTypeAccelerationStructureNV = 5341,
     OpExecuteCallableNV = 5344,
@@ -2139,6 +2164,12 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case Op::OpConvertUToAccelerationStructureKHR: *hasResult = true; *hasResultType = true; break;
     case Op::OpIgnoreIntersectionKHR: *hasResult = false; *hasResultType = false; break;
     case Op::OpTerminateRayKHR: *hasResult = false; *hasResultType = false; break;
+    case Op::OpSDotKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpUDotKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpSUDotKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpSDotAccSatKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpUDotAccSatKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpSUDotAccSatKHR: *hasResult = true; *hasResultType = true; break;
     case Op::OpTypeRayQueryKHR: *hasResult = true; *hasResultType = false; break;
     case Op::OpRayQueryInitializeKHR: *hasResult = false; *hasResultType = false; break;
     case Op::OpRayQueryTerminateKHR: *hasResult = false; *hasResultType = false; break;
@@ -2164,6 +2195,8 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case Op::OpIgnoreIntersectionNV: *hasResult = false; *hasResultType = false; break;
     case Op::OpTerminateRayNV: *hasResult = false; *hasResultType = false; break;
     case Op::OpTraceNV: *hasResult = false; *hasResultType = false; break;
+    case Op::OpTraceMotionNV: *hasResult = false; *hasResultType = false; break;
+    case Op::OpTraceRayMotionNV: *hasResult = false; *hasResultType = false; break;
     case Op::OpTypeAccelerationStructureNV: *hasResult = true; *hasResultType = false; break;
     case Op::OpExecuteCallableNV: *hasResult = false; *hasResultType = false; break;
     case Op::OpTypeCooperativeMatrixNV: *hasResult = true; *hasResultType = false; break;
