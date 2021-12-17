@@ -1,6 +1,6 @@
-commit db78ac1d7716f56fc9f1b030b715f872f93964e4
-Merge: f4155e472 b3e5cb7f2
+commit f42a74b8f53cc308647123d49d33d1c8122e3f42
+Merge: 8cae9d7cd 1de378f58
 Author: Niels Lohmann <mail@nlohmann.me>
-Date:   Thu Aug 6 13:49:29 2020 +0200
+Date:   Tue Aug 17 20:40:42 2021 +0200
 
-    Merge branch 'release/3.9.1' into develop
+    Merge branch 'release/3.10.0' into develop
