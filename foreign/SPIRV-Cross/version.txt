@@ -1,8 +1,8 @@
-commit e50f7d1ce8e162d0c826e84168cfa234e4de4ec9
-Merge: 762c3082 c8765a75
+commit e9cc6403341baf0edd430a4027b074d0a06b782f
+Merge: 25868923 6d8302ef
 Author: Hans-Kristian Arntzen <post@arntzen-software.no>
-Date:   Fri Dec 11 14:38:13 2020 +0100
+Date:   Tue Nov 30 14:21:40 2021 +0100
 
-    Merge pull request #1566 from KhronosGroup/subgroup-table-fix
+    Merge pull request #1815 from etra0/fix-1768
     
-    GLSL: Fix KHR subgroup extension table for subgroups.
+    MSL: Add 64 bit switch support

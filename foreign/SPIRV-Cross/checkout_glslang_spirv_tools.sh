@@ -1,14 +1,11 @@
 #!/bin/bash
+# Copyright 2016-2021 The Khronos Group Inc.
+# SPDX-License-Identifier: Apache-2.0
 
-GLSLANG_REV=4dcc12d1a441b29d5901bc708bb1343d29d6459f
-SPIRV_TOOLS_REV=0a1fb588cd365f7737cb121fdd64553923e0cef6
-SPIRV_HEADERS_REV=060627f0b0d2fa8581b5acb939f46e3b9e500593
-
-if [ -z $PROTOCOL ]; then
-	PROTOCOL=git
-fi
-
-echo "Using protocol \"$PROTOCOL\" for checking out repositories. If this is problematic, try PROTOCOL=https $0."
+GLSLANG_REV=3de5cfe50edecd001e6d703555284d9b10b3dd57
+SPIRV_TOOLS_REV=f3ccb633dfd7c5de1f9f0a2d2e9d7a25f2478206
+SPIRV_HEADERS_REV=f027d53ded7e230e008d37c8b47ede7cd308e19d
+PROTOCOL=https
 
 if [ -d external/glslang ]; then
 	echo "Updating glslang to revision $GLSLANG_REV."
