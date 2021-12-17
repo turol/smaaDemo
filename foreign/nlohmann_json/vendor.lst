@@ -40,6 +40,9 @@ doc/docset/Info.plist
 doc/docset/Makefile
 doc/docset/README.md
 doc/docset/docSet.sql
+doc/docset/docset.json
+doc/docset/icon.png
+doc/docset/icon@2x.png
 doc/examples/README.cpp
 doc/examples/README.link
 doc/examples/README.output
@@ -648,6 +651,8 @@ include/nlohmann/detail/json_pointer.hpp
 include/nlohmann/detail/json_ref.hpp
 include/nlohmann/detail/macro_scope.hpp
 include/nlohmann/detail/macro_unscope.hpp
+include/nlohmann/detail/meta/call_std/begin.hpp
+include/nlohmann/detail/meta/call_std/end.hpp
 include/nlohmann/detail/meta/cpp_future.hpp
 include/nlohmann/detail/meta/detected.hpp
 include/nlohmann/detail/meta/identity_tag.hpp
