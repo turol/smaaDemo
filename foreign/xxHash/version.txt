@@ -1,8 +1,8 @@
-commit 94e5f23e736f2bb67ebdf90727353e65344f9fc0
-Merge: 3a322e2 b9a0ec2
+commit 35b0373c697b5f160d3db26b1cbb45a0d5ba788c
+Merge: f2d738a c7ed8b5
 Author: Yann Collet <Cyan4973@users.noreply.github.com>
-Date:   Mon Jul 27 11:57:06 2020 -0700
+Date:   Mon Nov 29 10:34:10 2021 -0800
 
-    Merge pull request #441 from Cyan4973/dev
+    Merge pull request #619 from Cyan4973/dev
     
-    improved inline help
+    activate _dispatch() (when enabled) in benchmark mode
