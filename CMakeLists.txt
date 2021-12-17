@@ -78,7 +78,7 @@ target_include_directories(smaaDemo PRIVATE
 		foreign/stb
 		foreign/string-view-lite/include
 		foreign/tclap/include
-		foreign/vulkanMemoryAllocator/src
+		foreign/vulkanMemoryAllocator/include
 		foreign/xxHash
 	)
 

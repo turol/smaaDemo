@@ -1,5 +1,7 @@
-commit d1851f0ded5e7d5555be3c839a47f057d6952131
+commit 4586be47d8181e02121a3e7d52622145c91f40ca
 Author: Adam Sawicki <adam.sawicki@amd.com>
-Date:   Thu Mar 11 15:16:30 2021 +0100
+Date:   Fri Dec 17 12:11:06 2021 +0100
 
-    Rebuilt binaries, regenerated documentation
+    Fixed usage of VMA_STATIC_VULKAN_FUNCTIONS, VMA_DYNAMIC_VULKAN_FUNCTIONS in CmakeLists.txt
+    
+    Fixes #215

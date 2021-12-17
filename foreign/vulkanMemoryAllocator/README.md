@@ -2,7 +2,7 @@
 
 Easy to integrate Vulkan memory allocation library.
 
-**Documentation:** See [Vulkan Memory Allocator](https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/) (generated from Doxygen-style comments in [src/vk_mem_alloc.h](src/vk_mem_alloc.h))
+**Documentation:** See [Vulkan Memory Allocator](https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/) (generated from Doxygen-style comments in [include/vk_mem_alloc.h](include/vk_mem_alloc.h))
 
 **License:** MIT. See [LICENSE.txt](LICENSE.txt)
 
@@ -13,7 +13,7 @@ Easy to integrate Vulkan memory allocation library.
 **Build status:**
 
 - Windows: [![Build status](https://ci.appveyor.com/api/projects/status/4vlcrb0emkaio2pn/branch/master?svg=true)](https://ci.appveyor.com/project/adam-sawicki-amd/vulkanmemoryallocator/branch/master)  
-- Linux: [![Build Status](https://travis-ci.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.svg?branch=master)](https://travis-ci.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
+- Linux: [![Build Status](https://app.travis-ci.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.svg?branch=master)](https://app.travis-ci.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
 
 # Problem
 
@@ -60,10 +60,12 @@ Additional features:
 - Convert this JSON dump into a picture to visualize your memory. See [tools/VmaDumpVis](tools/VmaDumpVis/README.md).
 - Debugging incorrect memory usage: Enable initialization of all allocated memory with a bit pattern to detect usage of uninitialized or freed memory. Enable validation of a magic number before and after every allocation to detect out-of-bounds memory corruption.
 - Record and replay sequence of calls to library functions to a file to check correctness, measure performance, and gather statistics.
+- Support for interoperability with OpenGL.
+- Virtual allocator: Interface for using core allocation algorithm to allocate any custom data, e.g. pieces of one large buffer.
 
 # Prequisites
 
-- Self-contained C++ library in single header file. No external dependencies other than standard C and C++ library and of course Vulkan. STL containers are not used by default.
+- Self-contained C++ library in single header file. No external dependencies other than standard C and C++ library and of course Vulkan. Some features of C++14 used. STL containers are not used by default.
 - Public interface in C, in same convention as Vulkan API. Implementation in C++.
 - Error handling implemented by returning `VkResult` error codes - same way as in Vulkan.
 - Interface documented using Doxygen-style comments.
@@ -94,6 +96,42 @@ With this one function call:
 
 `VmaAllocation` is an object that represents memory assigned to this buffer. It can be queried for parameters like Vulkan memory handle and offset.
 
+# How to build
+
+On Windows it is recommended to use [CMake UI](https://cmake.org/runningcmake/). Alternatively you can generate a Visual Studio project map using CMake in command line: `cmake -B./build/ -DCMAKE_BUILD_TYPE=Debug -G "Visual Studio 16 2019" -A x64 ./`
+
+On Linux:
+
+```
+mkdir build
+cd build
+cmake ..
+make
+```
+
+The following targets are available
+
+| Target | Description | CMake option | Default setting |
+| ------------- | ------------- | ------------- | ------------- |
+| VmaSample | VMA sample application | `VMA_BUILD_SAMPLE` | `OFF` |
+| VmaBuildSampleShaders | Shaders for VmaSample | `VMA_BUILD_SAMPLE_SHADERS` | `OFF` |
+| VmaReplay | Replay tool for VMA .csv trace files | `VMA_BUILD_REPLAY` | `OFF` |
+
+Please note that while VulkanMemoryAllocator library is supported on other platforms besides Windows, VmaSample and VmaReplay are not.
+
+These CMake options are available
+
+| CMake option | Description | Default setting |
+| ------------- | ------------- | ------------- |
+| `VMA_RECORDING_ENABLED` | Enable VMA memory recording for debugging | `OFF` |
+| `VMA_USE_STL_CONTAINERS` | Use C++ STL containers instead of VMA's containers | `OFF` |
+| `VMA_STATIC_VULKAN_FUNCTIONS` | Link statically with Vulkan API | `OFF` |
+| `VMA_DYNAMIC_VULKAN_FUNCTIONS` | Fetch pointers to Vulkan functions internally (no static linking) | `ON` |
+| `VMA_DEBUG_ALWAYS_DEDICATED_MEMORY` | Every allocation will have its own memory block | `OFF` |
+| `VMA_DEBUG_INITIALIZE_ALLOCATIONS` | Automatically fill new allocations and destroyed allocations with some bit pattern | `OFF` |
+| `VMA_DEBUG_GLOBAL_MUTEX` | Enable single mutex protecting all entry calls to the library | `OFF` |
+| `VMA_DEBUG_DONT_EXCEED_MAX_MEMORY_ALLOCATION_COUNT` | Never exceed [VkPhysicalDeviceLimits::maxMemoryAllocationCount](https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/vkspec.html#limits-maxMemoryAllocationCount) and return error | `OFF` |
+
 # Binaries
 
 The release comes with precompiled binary executables for "VulkanSample" application which contains test suite and "VmaReplay" tool. They are compiled using Visual Studio 2019, so they require appropriate libraries to work, including "MSVCP140.dll", "VCRUNTIME140.dll", "VCRUNTIME140_1.dll". If their launch fails with error message telling about those files missing, please download and install [Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads), "x64" version.
@@ -104,6 +142,7 @@ See **[Documentation](https://gpuopen-librariesandsdks.github.io/VulkanMemoryAll
 
 # Software using this library
 
+- **[X-Plane](https://x-plane.com/)**
 - **[Detroit: Become Human](https://gpuopen.com/learn/porting-detroit-3/)**
 - **[Vulkan Samples](https://github.com/LunarG/VulkanSamples)** - official Khronos Vulkan samples. License: Apache-style.
 - **[Anvil](https://github.com/GPUOpen-LibrariesAndSDKs/Anvil)** - cross-platform framework for Vulkan. License: MIT.
@@ -119,6 +158,7 @@ See **[Documentation](https://gpuopen-librariesandsdks.github.io/VulkanMemoryAll
 - **[vkQuake2](https://github.com/kondrak/vkQuake2)** - vanilla Quake 2 with Vulkan support. License: GNU GPL.
 - **[Vulkan Best Practice for Mobile Developers](https://github.com/ARM-software/vulkan_best_practice_for_mobile_developers)** from ARM. License: MIT.
 - **[RPCS3](https://github.com/RPCS3/rpcs3)** - PlayStation 3 emulator/debugger. License: GNU GPLv2.
+- **[PPSSPP](https://github.com/hrydgard/ppsspp)** - Playstation Portable emulator/debugger. License: GNU GPLv2+.
 
 [Many other projects on GitHub](https://github.com/search?q=AMD_VULKAN_MEMORY_ALLOCATOR_H&type=Code) and some game development studios that use Vulkan in their games.
 
@@ -129,6 +169,6 @@ See **[Documentation](https://gpuopen-librariesandsdks.github.io/VulkanMemoryAll
 - **[VulkanMemoryAllocator-Hpp](https://github.com/malte-v/VulkanMemoryAllocator-Hpp)** - C++ binding for this library. License: CC0-1.0.
 - **[PyVMA](https://github.com/realitix/pyvma)** - Python wrapper for this library. Author: Jean-Sébastien B. (@realitix). License: Apache 2.0.
 - **[vk-mem](https://github.com/gwihlidal/vk-mem-rs)** - Rust binding for this library. Author: Graham Wihlidal. License: Apache 2.0 or MIT.
-- **[Haskell bindings](https://hackage.haskell.org/package/VulkanMemoryAllocator)**, **[github](https://github.com/expipiplus1/vulkan/tree/master/VulkanMemoryAllocator)** - Haskell bindings for this library. Author: Joe Hermaszewski (@expipiplus1). License BSD-3-Clause.
+- **[Haskell bindings](https://hackage.haskell.org/package/VulkanMemoryAllocator)**, **[github](https://github.com/expipiplus1/vulkan/tree/master/VulkanMemoryAllocator)** - Haskell bindings for this library. Author: Ellie Hermaszewska (@expipiplus1). License BSD-3-Clause.
 - **[vma_sample_sdl](https://github.com/rextimmy/vma_sample_sdl)** - SDL port of the sample app of this library (with the goal of running it on multiple platforms, including MacOS). Author: @rextimmy. License: MIT.
 - **[vulkan-malloc](https://github.com/dylanede/vulkan-malloc)** - Vulkan memory allocation library for Rust. Based on version 1 of this library. Author: Dylan Ede (@dylanede). License: MIT / Apache 2.0.
