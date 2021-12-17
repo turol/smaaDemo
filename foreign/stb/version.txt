@@ -1,5 +1,11 @@
-commit 0224a44a10564a214595797b4c88323f79a5f934
-Author: Sean Barrett <sean@nothings.org>
-Date:   Sun Feb 2 20:30:25 2020 -0800
+commit 5ba0baaa269b3fd681828e0e3b3ac0f1472eaf40
+Author: Fabian Giesen <rygorous@gmail.com>
+Date:   Sun Jul 25 20:24:10 2021 -0700
 
-    stb_image: fix new warnings
+    stb_image: Reject fractional JPEG component subsampling ratios
+    
+    The component resamplers are not written to support this and I've
+    never seen it happen in a real (non-crafted) JPEG file so I'm
+    fine rejecting this as outright corrupt.
+    
+    Fixes issue #1178.
