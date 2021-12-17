@@ -1,8 +1,8 @@
-commit e71feddb3f17c5586ff7f4cfb5ed1258b800574b
-Merge: 1160d54 5f003bd
-Author: Raun Krisch <raun.krisch@gmail.com>
-Date:   Wed Aug 11 11:26:16 2021 -0500
+commit eddd4dfc930f1374a70797460240a501c7d333f7
+Merge: d53b496 dcd4752
+Author: John Kessenich <johnkslang@users.noreply.github.com>
+Date:   Thu Dec 16 00:32:43 2021 +0700
 
-    Merge pull request #226 from clayengine/master
+    Merge pull request #259 from KhronosGroup/version-1.6
     
-    Clay is an internal framework of Tellusim Technologies Inc.
+    Update headers with SPIR-V version 1.6, revision 1.

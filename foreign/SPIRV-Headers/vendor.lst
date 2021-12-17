@@ -7,6 +7,7 @@ CMakeLists.txt
 CODE_OF_CONDUCT.md
 LICENSE
 README.md
+SPIRV-Headers.pc.in
 WORKSPACE
 cmake/Config.cmake.in
 example/CMakeLists.txt
