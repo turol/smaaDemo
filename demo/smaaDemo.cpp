@@ -37,7 +37,6 @@ THE SOFTWARE.
 #include <vector>
 
 #include <imgui.h>
-#include <imgui_internal.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -2991,15 +2990,13 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 
 				bool supported = isAAMethodSupported(a);
 				if (!supported) {
-					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-					ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+					ImGui::BeginDisabled();
 				}
 
 				ImGui::RadioButton(a._to_string(), &aa, a._to_integral());
 
 				if (!supported) {
-					ImGui::PopStyleVar();
-					ImGui::PopItemFlag();
+					ImGui::EndDisabled();
 				}
 			}
 
@@ -3015,13 +3012,11 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 
 				// temporal reprojection only enabled when temporal AA is
 				if (!temporalAA) {
-					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-					ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+					ImGui::BeginDisabled();
 				}
 				ImGui::Checkbox("Temporal reprojection", &temporalReproject);
 				if (!temporalAA) {
-					ImGui::PopStyleVar();
-					ImGui::PopItemFlag();
+					ImGui::EndDisabled();
 				}
 			}
 
@@ -3061,11 +3056,8 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			}
 
 			if (ImGui::CollapsingHeader("SMAA custom properties")) {
-				// parameters can only be changed in custom mode
-				// https://github.com/ocornut/imgui/issues/211
 				if (smaaQuality != 0) {
-					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-					ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+					ImGui::BeginDisabled();
 				}
 
 				ImGui::SliderFloat("SMAA color/luma edge threshold", &smaaParameters.threshold,      0.0f, 0.5f);
@@ -3084,16 +3076,14 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				smaaParameters.cornerRounding = s;
 
 				if (smaaQuality != 0) {
-					ImGui::PopStyleVar();
-					ImGui::PopItemFlag();
+					ImGui::EndDisabled();
 				}
 			}
 
 			ImGui::Checkbox("Predicated thresholding", &smaaPredication);
 
 			if (!smaaPredication) {
-				ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+				ImGui::BeginDisabled();
 			}
 
 			ImGui::SliderFloat("Predication threshold", &predicationThreshold, 0.0f, 1.0f, "%.4f");
@@ -3106,8 +3096,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			}
 
 			if (!smaaPredication) {
-				ImGui::PopStyleVar();
-				ImGui::PopItemFlag();
+				ImGui::EndDisabled();
 			}
 
 			int em = smaaEdgeMethod._to_integral();;
