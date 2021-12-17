@@ -1,8 +1,10 @@
-commit 5b5cac8d61339e810c5dbb4692d868a1d7ca1b2d
-Merge: b263c73 259ed45
-Author: imneme <imneme@users.noreply.github.com>
-Date:   Tue Feb 4 10:05:34 2020 -0800
+commit ffd522e7188bef30a00c74dc7eb9de5faff90092
+Author: Melissa O'Neill <oneill@acm.org>
+Date:   Mon Apr 5 20:45:04 2021 -0700
 
-    Merge pull request #54 from lindale-dev/fix-msvc-warnings
+    Fix multiple-definition issue.
     
-    Fix MSVC warnings
+    To keep the header-only nature of things, the 64-bit specializations
+    are now partial specializations (or the equivalent via overloading)
+    so that everything is still a parameterized template of some kind.
+    Ugh.
