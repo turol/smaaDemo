@@ -1,5 +1,5 @@
-.appveyor.yml
 .clang-format
+.github/workflows/wasm.yml
 .gitignore
 .gn
 Android.mk
@@ -25,6 +25,7 @@ cmake/SPIRV-Tools-shared.pc.in
 cmake/SPIRV-Tools.pc.in
 cmake/write_pkg_config.cmake
 codereview.settings
+docker-compose.yml
 docs/downloads.md
 docs/projects.md
 docs/spirv-fuzz.md
@@ -59,6 +60,9 @@ kokoro/linux-clang-release-bazel/presubmit.cfg
 kokoro/linux-clang-release/build.sh
 kokoro/linux-clang-release/continuous.cfg
 kokoro/linux-clang-release/presubmit.cfg
+kokoro/linux-clang-ubsan/build.sh
+kokoro/linux-clang-ubsan/continuous.cfg
+kokoro/linux-clang-ubsan/presubmit.cfg
 kokoro/linux-gcc-debug/build.sh
 kokoro/linux-gcc-debug/continuous.cfg
 kokoro/linux-gcc-debug/presubmit.cfg
@@ -116,7 +120,6 @@ source/ext_inst.cpp
 source/ext_inst.h
 source/extensions.cpp
 source/extensions.h
-source/extinst.nonsemantic.vulkan.debuginfo.100.grammar.json
 source/fuzz/CMakeLists.txt
 source/fuzz/added_function_reducer.cpp
 source/fuzz/added_function_reducer.h
@@ -519,7 +522,9 @@ source/link/linker.cpp
 source/lint/CMakeLists.txt
 source/lint/divergence_analysis.cpp
 source/lint/divergence_analysis.h
+source/lint/lint_divergent_derivatives.cpp
 source/lint/linter.cpp
+source/lint/lints.h
 source/macro.h
 source/name_mapper.cpp
 source/name_mapper.h
@@ -582,6 +587,8 @@ source/opt/def_use_manager.cpp
 source/opt/def_use_manager.h
 source/opt/desc_sroa.cpp
 source/opt/desc_sroa.h
+source/opt/desc_sroa_util.cpp
+source/opt/desc_sroa_util.h
 source/opt/dominator_analysis.cpp
 source/opt/dominator_analysis.h
 source/opt/dominator_tree.cpp
@@ -703,6 +710,8 @@ source/opt/remove_duplicates_pass.cpp
 source/opt/remove_duplicates_pass.h
 source/opt/remove_unused_interface_variables_pass.cpp
 source/opt/remove_unused_interface_variables_pass.h
+source/opt/replace_desc_array_access_using_var_index.cpp
+source/opt/replace_desc_array_access_using_var_index.h
 source/opt/replace_invalid_opc.cpp
 source/opt/replace_invalid_opc.h
 source/opt/scalar_analysis.cpp
@@ -895,6 +904,11 @@ source/val/validate_small_type_uses.cpp
 source/val/validate_type.cpp
 source/val/validation_state.cpp
 source/val/validation_state.h
+source/wasm/README.md
+source/wasm/build.sh
+source/wasm/package.json
+source/wasm/spirv-tools.cpp
+source/wasm/spirv-tools.d.ts
 test/CMakeLists.txt
 test/assembly_context_test.cpp
 test/assembly_format_test.cpp
@@ -1118,9 +1132,12 @@ test/fuzzers/corpora/spv/graphicsfuzz_084.spv
 test/fuzzers/corpora/spv/graphicsfuzz_085.spv
 test/fuzzers/corpora/spv/graphicsfuzz_086.spv
 test/fuzzers/corpora/spv/simple.spv
+test/fuzzers/random_generator.cpp
+test/fuzzers/random_generator.h
 test/fuzzers/spvtools_as_fuzzer.cpp
 test/fuzzers/spvtools_binary_parser_fuzzer.cpp
 test/fuzzers/spvtools_dis_fuzzer.cpp
+test/fuzzers/spvtools_fuzz_fuzzer.cpp
 test/fuzzers/spvtools_opt_legalization_fuzzer.cpp
 test/fuzzers/spvtools_opt_performance_fuzzer.cpp
 test/fuzzers/spvtools_opt_size_fuzzer.cpp
@@ -1267,6 +1284,7 @@ test/opt/redundancy_elimination_test.cpp
 test/opt/register_liveness.cpp
 test/opt/relax_float_ops_test.cpp
 test/opt/remove_unused_interface_variables_test.cpp
+test/opt/replace_desc_array_access_using_var_index_test.cpp
 test/opt/replace_invalid_opc_test.cpp
 test/opt/scalar_analysis.cpp
 test/opt/scalar_replacement_test.cpp
@@ -1358,6 +1376,7 @@ test/val/CMakeLists.txt
 test/val/pch_test_val.cpp
 test/val/pch_test_val.h
 test/val/val_adjacency_test.cpp
+test/val/val_annotation_test.cpp
 test/val/val_arithmetics_test.cpp
 test/val/val_atomics_test.cpp
 test/val/val_barriers_test.cpp
@@ -1407,6 +1426,7 @@ test/val/val_storage_test.cpp
 test/val/val_type_unique_test.cpp
 test/val/val_validation_state_test.cpp
 test/val/val_version_test.cpp
+test/wasm/test.js
 tools/CMakeLists.txt
 tools/as/as.cpp
 tools/cfg/bin_to_dot.cpp

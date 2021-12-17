@@ -37,6 +37,7 @@ FILES:= \
 	decoration_manager.cpp \
 	def_use_manager.cpp \
 	desc_sroa.cpp \
+	desc_sroa_util.cpp \
 	dominator_analysis.cpp \
 	dominator_tree.cpp \
 	eliminate_dead_constant_pass.cpp \
@@ -93,6 +94,7 @@ FILES:= \
 	redundancy_elimination.cpp \
 	register_pressure.cpp \
 	relax_float_ops_pass.cpp \
+	replace_desc_array_access_using_var_index.cpp \
 	remove_duplicates_pass.cpp \
 	remove_unused_interface_variables_pass.cpp \
 	replace_invalid_opc.cpp \

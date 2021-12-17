@@ -54,7 +54,7 @@ $(eval $(call spvtools_vendor_tables,spv-amd-gcn-shader,spv-amd-gs,) )
 $(eval $(call spvtools_vendor_tables,spv-amd-shader-ballot,spv-amd-sb,) )
 $(eval $(call spvtools_vendor_tables,debuginfo,debuginfo,) )
 $(eval $(call spvtools_vendor_tables,opencl.debuginfo.100,cldi100,CLDEBUG100_) )
-$(eval $(call spvtools_vendor_tables,nonsemantic.vulkan.debuginfo.100,vkdi100,VKDEBUG100_) )
+$(eval $(call spvtools_vendor_tables,nonsemantic.shader.debuginfo.100,shdi100,SHDEBUG100_) )
 $(eval $(call spvtools_vendor_tables,nonsemantic.clspvreflection,clspvreflection,) )
 
 
@@ -71,7 +71,7 @@ endef  # spvtools_extinst_lang_headers
 
 $(eval $(call spvtools_extinst_lang_headers,DebugInfo,extinst.debuginfo.grammar.json) )
 $(eval $(call spvtools_extinst_lang_headers,OpenCLDebugInfo100,extinst.opencl.debuginfo.100.grammar.json) )
-$(eval $(call spvtools_extinst_lang_headers,NonSemanticVulkanDebugInfo100,extinst.nonsemantic.shader.debuginfo.100.grammar.json) )
+$(eval $(call spvtools_extinst_lang_headers,NonSemanticShaderDebugInfo100,extinst.nonsemantic.shader.debuginfo.100.grammar.json) )
 
 
 build-version.inc: $(d)/utils/update_build_version.py $(d)/CHANGES
