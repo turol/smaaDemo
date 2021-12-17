@@ -1,8 +1,5 @@
-commit d2ffbd9b86dcb9953659f56d6645d03c55f0bbcd
-Author: ocornut <omarcornut@gmail.com>
-Date:   Fri Aug 20 17:30:49 2021 +0200
+commit e3e1fbcf025cf83413815751f7c33500e1314d57
+Author: Nicolas Noble <nicolasnoble@users.noreply.github.com>
+Date:   Mon Aug 23 15:03:22 2021 +0200
 
-    Version 1.84
-    
-    Fix PVS Studio false positive //-V1020
-    Fix missing #ifndef for IMGUI_IMPL_OPENGL_LOADER_CUSTOM path
+    Backends: OpenGL3: OpenGL: Fixed ES 3.0 shader ("#version 300 es") to use normal precision floats. (#4463)
