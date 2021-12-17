@@ -617,6 +617,8 @@ doc/mkdocs/docs/integration/example.cpp
 doc/mkdocs/docs/integration/index.md
 doc/mkdocs/docs/integration/package_managers.md
 doc/mkdocs/docs/integration/pkg-config.md
+doc/mkdocs/docs/integration/vcpkg/CMakeLists.txt
+doc/mkdocs/docs/integration/vcpkg/example.cpp
 doc/mkdocs/mkdocs.yml
 doc/mkdocs/requirements.txt
 doc/scripts/git-update-ghpages

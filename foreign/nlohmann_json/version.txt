@@ -1,6 +1,7 @@
-commit f42a74b8f53cc308647123d49d33d1c8122e3f42
-Merge: 8cae9d7cd 1de378f58
-Author: Niels Lohmann <mail@nlohmann.me>
-Date:   Tue Aug 17 20:40:42 2021 +0200
+commit 7194245a314d142a5560f6906a87f7c67ebbcf2e
+Author: mb0202 <73970644+mb0202@users.noreply.github.com>
+Date:   Tue Aug 24 02:08:02 2021 -0400
 
-    Merge branch 'release/3.10.0' into develop
+    Fixed typo in parse.md (#2968)
+    
+    Changed a potential typo: "charater" -> "character"
