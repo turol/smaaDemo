@@ -1258,6 +1258,7 @@ test/val/val_entry_point.cpp
 test/val/val_explicit_reserved_test.cpp
 test/val/val_ext_inst_test.cpp
 test/val/val_extension_spv_khr_expect_assume.cpp
+test/val/val_extension_spv_khr_integer_dot_product.cpp
 test/val/val_extension_spv_khr_linkonce_odr.cpp
 test/val/val_extension_spv_khr_subgroup_uniform_control_flow.cpp
 test/val/val_extension_spv_khr_terminate_invocation.cpp
