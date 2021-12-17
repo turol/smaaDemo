@@ -1,0 +1,10 @@
+LICENSE
+README.md
+mingw.condition_variable.h
+mingw.future.h
+mingw.invoke.h
+mingw.mutex.h
+mingw.shared_mutex.h
+mingw.thread.h
+tests/CMakeLists.txt
+tests/tests.cpp
