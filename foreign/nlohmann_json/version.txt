@@ -1,6 +1,6 @@
-commit fec56a1a16c6e1c1b1f4e116a20e79398282626c
-Merge: aa0e847e5 a09bfa5fa
+commit 4f8fba14066156b73f1189a2b8bd568bde5284c5
+Merge: fec56a1a1 b5364faf9
 Author: Niels Lohmann <mail@nlohmann.me>
-Date:   Sat Oct 16 14:47:12 2021 +0200
+Date:   Mon Jan 3 06:40:09 2022 +0100
 
-    Merge branch 'release/3.10.4'
+    Merge branch 'release/3.10.5'
