@@ -24,8 +24,6 @@ backends/imgui_impl_glfw.cpp
 backends/imgui_impl_glfw.h
 backends/imgui_impl_glut.cpp
 backends/imgui_impl_glut.h
-backends/imgui_impl_marmalade.cpp
-backends/imgui_impl_marmalade.h
 backends/imgui_impl_metal.h
 backends/imgui_impl_metal.mm
 backends/imgui_impl_opengl2.cpp
@@ -108,9 +106,6 @@ examples/example_glut_opengl2/Makefile
 examples/example_glut_opengl2/example_glut_opengl2.vcxproj
 examples/example_glut_opengl2/example_glut_opengl2.vcxproj.filters
 examples/example_glut_opengl2/main.cpp
-examples/example_marmalade/data/app.icf
-examples/example_marmalade/main.cpp
-examples/example_marmalade/marmalade_example.mkb
 examples/example_null/Makefile
 examples/example_null/build_win32.bat
 examples/example_null/main.cpp
