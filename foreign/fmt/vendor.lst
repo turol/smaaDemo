@@ -124,6 +124,11 @@ support/README
 support/Vagrantfile
 support/appveyor-build.py
 support/appveyor.yml
+support/bazel/.bazelrc
+support/bazel/.bazelversion
+support/bazel/BUILD.bazel
+support/bazel/README.md
+support/bazel/WORKSPACE.bazel
 support/build-docs.py
 support/build.gradle
 support/cmake/FindSetEnv.cmake
@@ -134,6 +139,7 @@ support/cmake/fmt.pc.in
 support/compute-powers.py
 support/docopt.py
 support/manage.py
+support/printable.py
 support/rst2md.py
 support/rtd/conf.py
 support/rtd/index.rst
@@ -147,6 +153,7 @@ test/assert-test.cc
 test/chrono-test.cc
 test/color-test.cc
 test/compile-error-test/CMakeLists.txt
+test/compile-fp-test.cc
 test/compile-test.cc
 test/core-test.cc
 test/cuda-test/CMakeLists.txt
@@ -155,7 +162,6 @@ test/cuda-test/cuda-cpp14.cu
 test/enforce-checks-test.cc
 test/find-package-test/CMakeLists.txt
 test/find-package-test/main.cc
-test/format
 test/format-impl-test.cc
 test/format-test.cc
 test/fuzzing/.gitignore
@@ -163,6 +169,7 @@ test/fuzzing/CMakeLists.txt
 test/fuzzing/README.md
 test/fuzzing/build.sh
 test/fuzzing/chrono-duration.cc
+test/fuzzing/chrono-timepoint.cc
 test/fuzzing/float.cc
 test/fuzzing/fuzzer-common.h
 test/fuzzing/main.cc
@@ -181,18 +188,19 @@ test/gtest/gtest/gtest.h
 test/header-only-test.cc
 test/mock-allocator.h
 test/module-test.cc
+test/noexception-test.cc
 test/os-test.cc
 test/ostream-test.cc
 test/posix-mock-test.cc
 test/posix-mock.h
 test/printf-test.cc
+test/ranges-odr-test.cc
 test/ranges-test.cc
 test/scan-test.cc
 test/scan.h
 test/static-export-test/CMakeLists.txt
 test/static-export-test/library.cc
 test/static-export-test/main.cc
-test/std-format-test.cc
 test/test-assert.h
 test/test-main.cc
 test/unicode-test.cc
