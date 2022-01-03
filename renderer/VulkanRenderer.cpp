@@ -1437,13 +1437,13 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 			d.dstAccessMask  |= vk::AccessFlagBits::eShaderRead;
 		}
 	}
-	info.dependencyCount = 2;
-	info.pDependencies   = &dependencies[0];
+	info.dependencyCount  = 2;
+	info.pDependencies    = &dependencies[0];
 
-	r.renderPass  = impl->device.createRenderPass(info);
-	r.numSamples  = desc.numSamples_;
+	r.renderPass          = impl->device.createRenderPass(info);
+	r.numSamples          = desc.numSamples_;
 	r.numColorAttachments = numColorAttachments;
-	r.desc        = desc;
+	r.desc                = desc;
 
 	impl->debugNameObject<vk::RenderPass>(r.renderPass, desc.name_);
 
