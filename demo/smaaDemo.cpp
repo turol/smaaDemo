@@ -3263,6 +3263,15 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				fpsLimit = f;
 			}
 
+			{
+				ImGui::Separator();
+				bool syncDebug = renderer.getSynchronizationDebugMode();
+				if (ImGui::Checkbox("Debug synchronization", &syncDebug)) {
+					renderer.setSynchronizationDebugMode(syncDebug);
+					rebuildRG = true;
+				}
+			}
+
 			ImGui::Separator();
 			LOG_TODO("measure actual GPU time");
 			ImGui::LabelText("FPS", "%.1f", io.Framerate);

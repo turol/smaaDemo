@@ -1059,6 +1059,9 @@ public:
 	unsigned int getCurrentRefreshRate() const;
 	unsigned int getMaxRefreshRate() const;
 
+	bool getSynchronizationDebugMode() const;
+	void setSynchronizationDebugMode(bool mode);
+
 	const RendererFeatures &getFeatures() const;
 	Format getSwapchainFormat() const;
 

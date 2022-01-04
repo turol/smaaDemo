@@ -1361,6 +1361,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 		d.srcSubpass       = VK_SUBPASS_EXTERNAL;
 		d.dstSubpass       = 0;
 
+		if (!impl->synchronizationDebugMode) {
 		LOG_TODO("should come from desc");
 		// depends on whether previous thing was rendering or msaa resolve
 		d.srcStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eTransfer;
@@ -1381,6 +1382,13 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 			d.dstStageMask    |= vk::PipelineStageFlagBits::eEarlyFragmentTests;
 			d.dstAccessMask   |= vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
 		}
+		} else {
+			d.srcStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
+			d.srcAccessMask    = vk::AccessFlagBits::eMemoryWrite;
+
+			d.dstStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
+			d.dstAccessMask    = vk::AccessFlagBits::eMemoryRead;
+		}
 	}
 	{
 		// access after the pass
@@ -1388,6 +1396,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 		d.srcSubpass       = 0;
 		d.dstSubpass       = VK_SUBPASS_EXTERNAL;
 
+		if (!impl->synchronizationDebugMode) {
 		d.srcStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 		d.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentWrite;
 
@@ -1435,6 +1444,13 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 
 			d.dstStageMask   |= vk::PipelineStageFlagBits::eFragmentShader;
 			d.dstAccessMask  |= vk::AccessFlagBits::eShaderRead;
+		}
+		} else {
+			d.srcStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
+			d.srcAccessMask    = vk::AccessFlagBits::eMemoryWrite;
+
+			d.dstStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
+			d.dstAccessMask    = vk::AccessFlagBits::eMemoryRead;
 		}
 	}
 	info.dependencyCount  = 2;

@@ -385,6 +385,7 @@ RendererBase::RendererBase(const RendererDesc &desc)
 , lastSyncedFrame(0)
 , currentRefreshRate(0)
 , maxRefreshRate(0)
+, synchronizationDebugMode(false)
 , skipShaderCache(desc.skipShaderCache || !desc.optimizeShaders)
 , optimizeShaders(desc.optimizeShaders)
 , validateShaders(desc.validateShaders)
@@ -937,6 +938,16 @@ unsigned int Renderer::getCurrentRefreshRate() const {
 
 unsigned int Renderer::getMaxRefreshRate() const {
 	return impl->maxRefreshRate;
+}
+
+
+bool Renderer::getSynchronizationDebugMode() const {
+	return impl->synchronizationDebugMode;
+}
+
+
+void Renderer::setSynchronizationDebugMode(bool mode) {
+	impl->synchronizationDebugMode = mode;
 }
 
 

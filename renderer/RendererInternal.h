@@ -228,6 +228,7 @@ struct RendererBase {
 	unsigned int                                         currentRefreshRate;
 	unsigned int                                         maxRefreshRate;
 	RendererFeatures                                     features;
+	bool                                                 synchronizationDebugMode;
 
 	bool                                                 skipShaderCache;
 	bool                                                 optimizeShaders;
