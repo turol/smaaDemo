@@ -258,7 +258,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>RENDERER_VULKAN;WIN32;USE_GLEW;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;__x86_64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign;../foreign/fmt/include;../foreign/glm;../foreign/mpark-variant/include;../foreign/nlohmann_json/include;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/xxHash;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign;../foreign/fmt/include;../foreign/glm;../foreign/mpark-variant/include;../foreign/nlohmann_json/include;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/glew/include;../foreign/imgui;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Tools/include;../foreign/xxHash;../foreign/SPIRV-Tools/source;../foreign/pcg-cpp/include;../foreign/vulkanMemoryAllocator/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
