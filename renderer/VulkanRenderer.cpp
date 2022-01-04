@@ -1362,26 +1362,26 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 		d.dstSubpass       = 0;
 
 		if (!impl->synchronizationDebugMode) {
-		LOG_TODO("should come from desc");
-		// depends on whether previous thing was rendering or msaa resolve
-		d.srcStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eTransfer;
-		d.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eTransferWrite;
-
-		d.dstStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-		LOG_TODO("shouldn't need read unless we load the attachment and use blending");
-		d.dstAccessMask    = vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
-
-		d.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
-
-		if (hasDepthStencil) {
 			LOG_TODO("should come from desc");
 			// depends on whether previous thing was rendering or msaa resolve
-			d.srcStageMask    |= vk::PipelineStageFlagBits::eLateFragmentTests | vk::PipelineStageFlagBits::eTransfer;
-			d.srcAccessMask   |= vk::AccessFlagBits::eDepthStencilAttachmentWrite | vk::AccessFlagBits::eTransferWrite;
+			d.srcStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eTransfer;
+			d.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eTransferWrite;
 
-			d.dstStageMask    |= vk::PipelineStageFlagBits::eEarlyFragmentTests;
-			d.dstAccessMask   |= vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
-		}
+			d.dstStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+			LOG_TODO("shouldn't need read unless we load the attachment and use blending");
+			d.dstAccessMask    = vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
+
+			d.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
+
+			if (hasDepthStencil) {
+				LOG_TODO("should come from desc");
+				// depends on whether previous thing was rendering or msaa resolve
+				d.srcStageMask    |= vk::PipelineStageFlagBits::eLateFragmentTests | vk::PipelineStageFlagBits::eTransfer;
+				d.srcAccessMask   |= vk::AccessFlagBits::eDepthStencilAttachmentWrite | vk::AccessFlagBits::eTransferWrite;
+
+				d.dstStageMask    |= vk::PipelineStageFlagBits::eEarlyFragmentTests;
+				d.dstAccessMask   |= vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+			}
 		} else {
 			d.srcStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
 			d.srcAccessMask    = vk::AccessFlagBits::eMemoryWrite;
@@ -1397,54 +1397,54 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 		d.dstSubpass       = VK_SUBPASS_EXTERNAL;
 
 		if (!impl->synchronizationDebugMode) {
-		d.srcStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-		d.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentWrite;
+			d.srcStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+			d.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentWrite;
 
-		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-			if (desc.colorRTs_[i].format == +Format::Invalid) {
-				assert(desc.colorRTs_[i].initialLayout == +Layout::Undefined);
-				LOG_TODO("could be break, it's invalid to have holes in attachment list");
-				// but should check that
-				continue;
+			for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+				if (desc.colorRTs_[i].format == +Format::Invalid) {
+					assert(desc.colorRTs_[i].initialLayout == +Layout::Undefined);
+					LOG_TODO("could be break, it's invalid to have holes in attachment list");
+					// but should check that
+					continue;
+				}
+
+				switch (desc.colorRTs_[i].finalLayout) {
+				case Layout::Undefined:
+				case Layout::TransferDst:
+					assert(false);
+					break;
+
+				case Layout::ShaderRead:
+					d.dstStageMask   |= vk::PipelineStageFlagBits::eFragmentShader;
+					d.dstAccessMask  |= vk::AccessFlagBits::eShaderRead;
+					break;
+
+				case Layout::TransferSrc:
+					d.dstStageMask   |= vk::PipelineStageFlagBits::eTransfer;
+					d.dstAccessMask  |= vk::AccessFlagBits::eTransferRead;
+					break;
+
+				case Layout::ColorAttachment:
+					d.dstStageMask   |= vk::PipelineStageFlagBits::eColorAttachmentOutput;
+					d.dstAccessMask  |= vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
+					break;
+
+				case Layout::Present:
+					d.dstStageMask   |= vk::PipelineStageFlagBits::eBottomOfPipe;
+					break;
+
+				}
 			}
 
-			switch (desc.colorRTs_[i].finalLayout) {
-			case Layout::Undefined:
-			case Layout::TransferDst:
-				assert(false);
-				break;
+			d.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
 
-			case Layout::ShaderRead:
+			if (hasDepthStencil) {
+				d.srcStageMask   |= vk::PipelineStageFlagBits::eLateFragmentTests;
+				d.srcAccessMask  |= vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+
 				d.dstStageMask   |= vk::PipelineStageFlagBits::eFragmentShader;
 				d.dstAccessMask  |= vk::AccessFlagBits::eShaderRead;
-				break;
-
-			case Layout::TransferSrc:
-				d.dstStageMask   |= vk::PipelineStageFlagBits::eTransfer;
-				d.dstAccessMask  |= vk::AccessFlagBits::eTransferRead;
-				break;
-
-			case Layout::ColorAttachment:
-				d.dstStageMask   |= vk::PipelineStageFlagBits::eColorAttachmentOutput;
-				d.dstAccessMask  |= vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
-				break;
-
-			case Layout::Present:
-				d.dstStageMask   |= vk::PipelineStageFlagBits::eBottomOfPipe;
-				break;
-
 			}
-		}
-
-		d.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
-
-		if (hasDepthStencil) {
-			d.srcStageMask   |= vk::PipelineStageFlagBits::eLateFragmentTests;
-			d.srcAccessMask  |= vk::AccessFlagBits::eDepthStencilAttachmentWrite;
-
-			d.dstStageMask   |= vk::PipelineStageFlagBits::eFragmentShader;
-			d.dstAccessMask  |= vk::AccessFlagBits::eShaderRead;
-		}
 		} else {
 			d.srcStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
 			d.srcAccessMask    = vk::AccessFlagBits::eMemoryWrite;
