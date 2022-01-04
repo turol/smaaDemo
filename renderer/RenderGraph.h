@@ -566,24 +566,6 @@ public:
 	}
 
 
-	void blit(RT source, RT dest) {
-		assert(state == +RGState::Building);
-
-		auto DEBUG_ASSERTED srcIt = rendertargets.find(source);
-		assert(srcIt != rendertargets.end());
-		assert(isColorFormat(getFormat(srcIt->second)));
-
-		auto DEBUG_ASSERTED destIt = rendertargets.find(dest);
-		assert(destIt != rendertargets.end());
-		assert(isColorFormat(getFormat(destIt->second)));
-
-		Blit op;
-		op.source = source;
-		op.dest   = dest;
-		operations.push_back(op);
-	}
-
-
 	void presentRenderTarget(RT rt) {
 		assert(state == +RGState::Building);
 		assert(rt != Default<RT>::value);
