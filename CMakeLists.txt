@@ -67,7 +67,6 @@ target_compile_definitions(smaaDemo PRIVATE
 
 target_include_directories(smaaDemo PRIVATE
 		${PROJECT_SOURCE_DIR}
-		${Vulkan_INCLUDE_DIRS}
 		foreign
 		foreign/glm
 		foreign/glslang
@@ -80,11 +79,10 @@ target_include_directories(smaaDemo PRIVATE
 		foreign/tclap/include
 		foreign/vulkanMemoryAllocator/include
 		foreign/xxHash
+		${Vulkan_INCLUDE_DIRS}
 	)
 
 target_link_libraries(smaaDemo PRIVATE
-		${SDL2_LIBRARIES}
-		${Vulkan_LIBRARIES}
 		fmt
 		glslang
 		nlohmann_json::nlohmann_json
@@ -92,4 +90,6 @@ target_link_libraries(smaaDemo PRIVATE
 		SPIRV-Tools-opt
 		spirv-cross-glsl
 		SPVRemapper
+		${SDL2_LIBRARIES}
+		${Vulkan_LIBRARIES}
 	)
