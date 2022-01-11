@@ -3260,31 +3260,36 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 
 		if (ImGui::CollapsingHeader("Scene properties", ImGuiTreeNodeFlags_DefaultOpen)) {
 			{
-				LOG_TODO("don't regenerate this on every frame");
-				std::vector<const char *> scenes;
-				scenes.reserve(images.size() + 1);
-				scenes.push_back("Shapes");
-				for (const auto &img : images) {
-					scenes.push_back(img.shortName.c_str());
-				}
-				assert(activeScene < scenes.size());
 				int s = activeScene;
 
-				if (ImGui::BeginCombo("Scene", scenes[activeScene])) {
-					for (size_t i = 0; i < scenes.size(); i++) {
-						bool selected = (i == activeScene);
-						if (ImGui::Selectable(scenes[i], selected)) {
-							s = i;
+				if (ImGui::BeginCombo("Scene", (activeScene == 0) ? "Shapes" : images[activeScene - 1].shortName.c_str())) {
+					{
+						bool selected = (activeScene == 0);
+						if (ImGui::Selectable("Shapes", selected)) {
+							s = 0;
 						}
 
 						if (selected) {
 							ImGui::SetItemDefaultFocus();
 						}
 					}
+
+					for (size_t i = 0; i < images.size(); i++) {
+						bool selected = (activeScene == i + 1);
+						if (ImGui::Selectable(images[i].shortName.c_str(), selected)) {
+							s = i + 1;
+						}
+
+						if (selected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+
+					ImGui::EndCombo();
 				}
 
 				assert(s >= 0);
-				assert(s < int(scenes.size()));
+				assert(s < int(images.size() + 1));
 				if (s != int(activeScene)) {
 					// if old or new scene is shapes we must rebuild RG
 					if (activeScene == 0 || s == 0) {
