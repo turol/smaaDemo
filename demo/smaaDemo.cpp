@@ -99,6 +99,19 @@ BETTER_ENUM(SMAADebugMode, uint8_t
 )
 
 
+BETTER_ENUM(Shape, uint8_t
+	, Cube
+	, Tetrahedron
+	, Octahedron
+	, Dodecahedron
+	, Icosahedron
+	, Sphere
+	, Torus
+	, KleinBottle
+	, TrefoilKnot
+)
+
+
 static const unsigned int inputTextBufferSize = 1024;
 
 
