@@ -2689,8 +2689,8 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	globalDS.nearestSampler = nearestSampler;
 	renderer.bindDescriptorSet(0, globalDS);
 
-	renderer.bindVertexBuffer(0, shapeBuffers[Shape::Cube].vertices);
-	renderer.bindIndexBuffer(shapeBuffers[Shape::Cube].indices, false);
+	renderer.bindVertexBuffer(0, shapeBuffers[activeShape].vertices);
+	renderer.bindIndexBuffer(shapeBuffers[activeShape].indices, false);
 
 	ShapeSceneDS shapeDS;
 	// FIXME: remove unused UBO hack
@@ -2706,7 +2706,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 		numShapes     = shapeOrderNum;
 	}
 
-	renderer.drawIndexedInstanced(shapeBuffers[Shape::Cube].numVertices, numShapes);
+	renderer.drawIndexedInstanced(shapeBuffers[activeShape].numVertices, numShapes);
 }
 
 
