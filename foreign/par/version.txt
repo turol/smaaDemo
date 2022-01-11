@@ -1,0 +1,5 @@
+commit 310c51baf44a368b9d302db14206d5fbe7dd3093
+Author: Matija Kecman <matija@cloudnc.com>
+Date:   Tue Dec 22 17:52:16 2020 +0000
+
+    Support degenerate scaling and add `par_shapes_create_parametric_disk`
