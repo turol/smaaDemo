@@ -759,13 +759,16 @@ SMAADemo::~SMAADemo() {
 	if (renderer) {
 		renderGraph.reset(renderer);
 
-		if (shapeBuffers[Shape::Cube].vertices) {
-			assert(shapeBuffers[Shape::Cube].indices);
-			assert(shapeBuffers[Shape::Cube].numVertices);
+		for (unsigned int i = 0; i < Shape::_size(); i++) {
+			Shape s = Shape::_from_integral(i);
+			if (shapeBuffers[s].vertices) {
+				assert(shapeBuffers[s].indices);
+				assert(shapeBuffers[s].numVertices);
 
-			shapeBuffers[Shape::Cube].numVertices = 0;
-			renderer.deleteBuffer(std::move(shapeBuffers[Shape::Cube].vertices));
-			renderer.deleteBuffer(std::move(shapeBuffers[Shape::Cube].indices));
+				shapeBuffers[s].numVertices = 0;
+				renderer.deleteBuffer(std::move(shapeBuffers[s].vertices));
+				renderer.deleteBuffer(std::move(shapeBuffers[s].indices));
+			}
 		}
 
 		if (linearSampler) {
@@ -1222,9 +1225,33 @@ void SMAADemo::initRender() {
 	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear) .name("linear"));
 	nearestSampler = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Nearest).magFilter(FilterMode::Nearest).name("nearest"));
 
+	auto createShapeBuffers = [this] (float scale, par_shapes_mesh *mesh) -> ShapeRenderBuffers {
+		assert(mesh);
+
+		par_shapes_scale(mesh, scale, scale, scale);
+
+		ShapeRenderBuffers srb;
+		srb.numVertices = mesh->ntriangles * 3;
+		srb.vertices    = renderer.createBuffer(BufferType::Vertex, mesh->npoints    * 3 * sizeof(float),        mesh->points);
+		srb.indices     = renderer.createBuffer(BufferType::Index,  mesh->ntriangles * 3 * sizeof(PAR_SHAPES_T), mesh->triangles);
+
+		par_shapes_free_mesh(mesh);
+
+		return srb;
+	};
+
 	shapeBuffers[Shape::Cube].numVertices = 3 * 2 * 6;
 	shapeBuffers[Shape::Cube].vertices    = renderer.createBuffer(BufferType::Vertex, sizeof(vertices), &vertices[0]);
 	shapeBuffers[Shape::Cube].indices     = renderer.createBuffer(BufferType::Index, sizeof(indices), &indices[0]);
+
+	shapeBuffers[Shape::Tetrahedron]  = createShapeBuffers(1.75f, par_shapes_create_tetrahedron());
+	shapeBuffers[Shape::Octahedron]   = createShapeBuffers(1.5f,  par_shapes_create_octahedron());
+	shapeBuffers[Shape::Dodecahedron] = createShapeBuffers(1.5f,  par_shapes_create_dodecahedron());
+	shapeBuffers[Shape::Icosahedron]  = createShapeBuffers(1.5f,  par_shapes_create_icosahedron());
+	shapeBuffers[Shape::Sphere]       = createShapeBuffers(1.25f, par_shapes_create_subdivided_sphere(3));
+	shapeBuffers[Shape::Torus]        = createShapeBuffers(1.0f,  par_shapes_create_torus(24, 32, 0.25f));
+	shapeBuffers[Shape::KleinBottle]  = createShapeBuffers(0.15f, par_shapes_create_klein_bottle(16, 40));
+	shapeBuffers[Shape::TrefoilKnot]  = createShapeBuffers(1.5f,  par_shapes_create_trefoil_knot(48, 72, 0.5f));
 
 #ifdef RENDERER_OPENGL
 
