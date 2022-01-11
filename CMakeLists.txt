@@ -44,6 +44,7 @@ add_subdirectory(foreign/nlohmann_json)
 
 set(SOURCE
 		demo/smaaDemo.cpp
+		demo/par_shapes.cpp
 		renderer/NullRenderer.cpp
 		renderer/OpenGLRenderer.cpp
 		renderer/RendererCommon.cpp
@@ -72,6 +73,7 @@ target_include_directories(smaaDemo PRIVATE
 		foreign/glslang
 		foreign/imgui
 		foreign/mpark-variant/include
+		foreign/par
 		foreign/pcg-cpp/include
 		foreign/SPIRV-Cross
 		foreign/stb

@@ -64,6 +64,7 @@ CFLAGS+=-isystem$(TOPDIR)/foreign/imgui
 CFLAGS+=-isystem$(TOPDIR)/foreign/mingw-std-threads
 CFLAGS+=-isystem$(TOPDIR)/foreign/mpark-variant/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/nlohmann_json/include
+CFLAGS+=-isystem$(TOPDIR)/foreign/par
 CFLAGS+=-isystem$(TOPDIR)/foreign/pcg-cpp/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/stb
 CFLAGS+=-isystem$(TOPDIR)/foreign/string-view-lite/include

@@ -43,6 +43,9 @@ THE SOFTWARE.
 
 #include <tclap/CmdLine.h>
 
+#define PAR_SHAPES_T uint32_t
+#include <par_shapes.h>
+
 #include <pcg_random.hpp>
 
 #include "renderer/Renderer.h"

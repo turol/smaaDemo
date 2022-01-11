@@ -8,7 +8,7 @@ FILES:= \
 
 
 smaaDemo_MODULES:=imgui renderer utils
-smaaDemo_SRC:=$(foreach f, smaaDemo.cpp, $(dir)/$(f))
+smaaDemo_SRC:=$(foreach f, smaaDemo.cpp par_shapes.cpp, $(dir)/$(f))
 
 
 PROGRAMS+= \
