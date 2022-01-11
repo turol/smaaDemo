@@ -25,32 +25,44 @@ THE SOFTWARE.
 
 #include "shaderDefines.h"
 
-readonly restrict layout(std430, set = 1, binding = 1) buffer cubeData {
-    Cube cubes[];
+
+layout(location = ATTR_POS) in vec3 position;
+
+
+readonly restrict layout(std430, set = 1, binding = 1) buffer shapeData {
+    Shape shapes[];
 };
 
 
-layout(location = 0) flat in int instance;
-layout(location = 1) in vec3 currPos;
-layout(location = 2) in vec3 prevPos;
-
-
-layout (location = 0) out vec4 outColor;
-layout (location = 1) out vec2 outVelocity;
+layout(location = 0) flat out int instance;
+layout(location = 1) out vec3 currPos;
+layout(location = 2) out vec3 prevPos;
 
 
 void main(void)
 {
-    Cube cube = cubes[instance];
+    Shape shape = shapes[gl_InstanceIndex];
 
-    vec4 color = vec4(cube.color, 0.0);
+    // rotate
+    // this is quaternion multiplication from glm
+    vec3 v = position;
+    vec3 rotationQuat = shape.rotation.xyz;
+    float qw = shape.rotation.w;
+    vec3 uv = cross(rotationQuat, v);
+    vec3 uuv = cross(rotationQuat, uv);
+    uv *= (2.0 * qw);
+    uuv *= 2.0;
+    vec3 rotatedPos = v + uv + uuv;
+    vec4 worldPos = vec4(rotatedPos + shape.position, 1.0);
 
-    color.w = dot(color.xyz, vec3(0.299, 0.587, 0.114));
-    outColor = color;
-    outVelocity = vec2(0.0, 0.0);
+    gl_Position = viewProj * worldPos;
+    currPos     = gl_Position.xyw;
+    prevPos     = (prevViewProj * worldPos).xyw;
+    // Positions in projection space are in [-1, 1] range, while texture
+    // coordinates are in [0, 1] range. So, we divide by 2 to get velocities in
+    // the scale (and flip the y axis):
+    currPos.xy *= vec2(0.5, -0.5);
+    prevPos.xy *= vec2(0.5, -0.5);
 
-    // w stored in z
-    vec2 curr   = currPos.xy / currPos.z;
-    vec2 prev   = prevPos.xy / prevPos.z;
-    outVelocity = curr - prev;
+    instance = gl_InstanceIndex;
 }

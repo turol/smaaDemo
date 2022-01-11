@@ -415,14 +415,14 @@ class SMAADemo {
 	uint64_t                                          freqDiv;
 
 	// scene things
-	// 0 for cubes
+	// 0 for shapes
 	// 1.. for images
 	unsigned int                                      activeScene;
-	unsigned int                                      cubesPerSide;
+	unsigned int                                      shapesPerSide;
 	unsigned int                                      colorMode;
-	bool                                              rotateCubes;
-	bool                                              visualizeCubeOrder;
-	unsigned int                                      cubeOrderNum;
+	bool                                              rotateShapes;
+	bool                                              visualizeShapeOrder;
+	unsigned int                                      shapeOrderNum;
 	float                                             cameraRotation;
 	float                                             cameraDistance;
 	uint64_t                                          rotationTime;
@@ -431,7 +431,7 @@ class SMAADemo {
 	unsigned int                                      maxRenderedFrames;
 	RandomGen                                         random;
 	std::vector<Image>                                images;
-	std::vector<ShaderDefines::Cube>                  cubes;
+	std::vector<ShaderDefines::Shape>                 shapes;
 
 	glm::mat4                                         currViewProj;
 	glm::mat4                                         prevViewProj;
@@ -442,7 +442,7 @@ class SMAADemo {
 
 	std::array<RenderTargetHandle, 2>                 temporalRTs;
 
-	PipelineHandle                                    cubePipeline;
+	PipelineHandle                                    shapePipeline;
 	PipelineHandle                                    imagePipeline;
 	PipelineHandle                                    blitPipeline;
 	PipelineHandle                                    guiPipeline;
@@ -450,8 +450,8 @@ class SMAADemo {
 	std::array<PipelineHandle, 2>                     temporalAAPipelines;
 	PipelineHandle                                    fxaaPipeline;
 
-	BufferHandle                                      cubeVBO;
-	BufferHandle                                      cubeIBO;
+	BufferHandle                                      shapeVBO;
+	BufferHandle                                      shapeIBO;
 
 	SamplerHandle                                     linearSampler;
 	SamplerHandle                                     nearestSampler;
@@ -506,7 +506,7 @@ class SMAADemo {
 
 #endif  // IMGUI_DISABLE
 
-	void renderCubeScene(RenderPasses rp, DemoRenderGraph::PassResources &r);
+	void renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources &r);
 
 	void renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources &r);
 
@@ -516,11 +516,11 @@ class SMAADemo {
 		return (SDL_GetPerformanceCounter() - tickBase) * freqMult / freqDiv;
 	}
 
-	void shuffleCubeRendering();
+	void shuffleShapeRendering();
 
-	void reorderCubeRendering();
+	void reorderShapeRendering();
 
-	void colorCubes();
+	void colorShapes();
 
 	void setAntialiasing(bool enabled);
 
@@ -547,7 +547,7 @@ public:
 
 	void initRender();
 
-	void createCubes();
+	void createShapes();
 
 	void mainLoopIteration();
 
@@ -591,11 +591,11 @@ SMAADemo::SMAADemo()
 , freqDiv(0)
 
 , activeScene(0)
-, cubesPerSide(8)
+, shapesPerSide(8)
 , colorMode(0)
-, rotateCubes(false)
-, visualizeCubeOrder(false)
-, cubeOrderNum(1)
+, rotateShapes(false)
+, visualizeShapeOrder(false)
+, shapeOrderNum(1)
 , cameraRotation(0.0f)
 , cameraDistance(25.0f)
 , rotationTime(0)
@@ -689,10 +689,10 @@ SMAADemo::~SMAADemo() {
 	if (renderer) {
 		renderGraph.reset(renderer);
 
-		if (cubeVBO) {
-			assert(cubeIBO);
-			renderer.deleteBuffer(std::move(cubeVBO));
-			renderer.deleteBuffer(std::move(cubeIBO));
+		if (shapeVBO) {
+			assert(shapeIBO);
+			renderer.deleteBuffer(std::move(shapeVBO));
+			renderer.deleteBuffer(std::move(shapeIBO));
 		}
 
 		if (linearSampler) {
@@ -812,7 +812,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 
 		unsigned int r = rotateSwitch.getValue();
 		if (r != 0) {
-			rotateCubes           = true;
+			rotateShapes           = true;
 			rotationPeriodSeconds = std::max(1U, std::min(r, 60U));
 		}
 
@@ -937,7 +937,7 @@ const DescriptorLayout GlobalDS::layout[] = {
 DSLayoutHandle GlobalDS::layoutHandle;
 
 
-struct CubeSceneDS {
+struct ShapeSceneDS {
 	BufferHandle unused;
 	BufferHandle instances;
 
@@ -946,13 +946,13 @@ struct CubeSceneDS {
 };
 
 
-const DescriptorLayout CubeSceneDS::layout[] = {
-	  { DescriptorType::UniformBuffer,  offsetof(CubeSceneDS, unused)    }
-	, { DescriptorType::StorageBuffer,  offsetof(CubeSceneDS, instances) }
+const DescriptorLayout ShapeSceneDS::layout[] = {
+	  { DescriptorType::UniformBuffer,  offsetof(ShapeSceneDS, unused)    }
+	, { DescriptorType::StorageBuffer,  offsetof(ShapeSceneDS, instances) }
 	, { DescriptorType::End,            0                                }
 };
 
-DSLayoutHandle CubeSceneDS::layoutHandle;
+DSLayoutHandle ShapeSceneDS::layoutHandle;
 
 
 struct ColorCombinedDS {
@@ -1138,7 +1138,7 @@ void SMAADemo::initRender() {
 	LOG("Using depth format {}", depthFormat._to_string());
 
 	renderer.registerDescriptorSetLayout<GlobalDS>();
-	renderer.registerDescriptorSetLayout<CubeSceneDS>();
+	renderer.registerDescriptorSetLayout<ShapeSceneDS>();
 	renderer.registerDescriptorSetLayout<ColorCombinedDS>();
 	renderer.registerDescriptorSetLayout<ColorTexDS>();
 	renderer.registerDescriptorSetLayout<EdgeDetectionDS>();
@@ -1149,8 +1149,8 @@ void SMAADemo::initRender() {
 	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear) .name("linear"));
 	nearestSampler = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Nearest).magFilter(FilterMode::Nearest).name("nearest"));
 
-	cubeVBO = renderer.createBuffer(BufferType::Vertex, sizeof(vertices), &vertices[0]);
-	cubeIBO = renderer.createBuffer(BufferType::Index, sizeof(indices), &indices[0]);
+	shapeVBO = renderer.createBuffer(BufferType::Vertex, sizeof(vertices), &vertices[0]);
+	shapeIBO = renderer.createBuffer(BufferType::Index, sizeof(indices), &indices[0]);
 
 #ifdef RENDERER_OPENGL
 
@@ -1293,7 +1293,7 @@ void SMAADemo::rebuildRenderGraph() {
 	}
 
 	if (!isImageScene()) {
-		// cube scene
+		// shape scene
 
 		// when any AA is enabled render to temporary rendertarget "MainColor"
 		// when AA is disabled render directly to "FinalRender"
@@ -1353,7 +1353,7 @@ void SMAADemo::rebuildRenderGraph() {
 		    .name("Scene")
 		    .numSamples(numSamples);
 
-		renderGraph.renderPass(RenderPasses::Scene, desc, [this] (RenderPasses rp, DemoRenderGraph::PassResources &r) { this->renderCubeScene(rp, r); } );
+		renderGraph.renderPass(RenderPasses::Scene, desc, [this] (RenderPasses rp, DemoRenderGraph::PassResources &r) { this->renderShapeScene(rp, r); } );
 	} else {
 		// image scene
 
@@ -1866,7 +1866,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 	renderGraph.build(renderer);
 
-	cubePipeline.reset();
+	shapePipeline.reset();
 	imagePipeline.reset();
 	blitPipeline.reset();
 	guiPipeline.reset();
@@ -1927,22 +1927,22 @@ void SMAADemo::loadImage(const std::string &filename) {
 }
 
 
-void SMAADemo::createCubes() {
-	// cube of cubes, n^3 cubes total
-	const unsigned int numCubes = static_cast<unsigned int>(pow(cubesPerSide, 3));
+void SMAADemo::createShapes() {
+	// shape of shapes, n^3 shapes total
+	const unsigned int numShapes = static_cast<unsigned int>(pow(shapesPerSide, 3));
 
-	const float cubeDiameter = sqrtf(3.0f);
-	const float cubeDistance = cubeDiameter + 1.0f;
+	const float shapeDiameter = sqrtf(3.0f);
+	const float shapeDistance = shapeDiameter + 1.0f;
 
-	const float bigCubeSide = cubeDistance * cubesPerSide;
+	const float bigShapeSide = shapeDistance * shapesPerSide;
 
-	cubes.clear();
-	cubes.reserve(numCubes);
+	shapes.clear();
+	shapes.reserve(numShapes);
 
 	unsigned int order = 0;
-	for (unsigned int x = 0; x < cubesPerSide; x++) {
-		for (unsigned int y = 0; y < cubesPerSide; y++) {
-			for (unsigned int z = 0; z < cubesPerSide; z++) {
+	for (unsigned int x = 0; x < shapesPerSide; x++) {
+		for (unsigned int y = 0; y < shapesPerSide; y++) {
+			for (unsigned int z = 0; z < shapesPerSide; z++) {
 				float qx = random.randFloat();
 				float qy = random.randFloat();
 				float qz = random.randFloat();
@@ -1953,39 +1953,39 @@ void SMAADemo::createCubes() {
 				qz *= reciprocLen;
 				qw *= reciprocLen;
 
-				ShaderDefines::Cube cube;
-				cube.position = glm::vec3((x * cubeDistance) - (bigCubeSide / 2.0f)
-				                        , (y * cubeDistance) - (bigCubeSide / 2.0f)
-				                        , (z * cubeDistance) - (bigCubeSide / 2.0f));
+				ShaderDefines::Shape shape;
+				shape.position = glm::vec3((x * shapeDistance) - (bigShapeSide / 2.0f)
+				                        , (y * shapeDistance) - (bigShapeSide / 2.0f)
+				                        , (z * shapeDistance) - (bigShapeSide / 2.0f));
 
-				cube.order    = order;
+				shape.order    = order;
 				order++;
 
-				cube.rotation = glm::vec4(qx, qy, qz, qw);
-				cube.color    = glm::vec3(1.0f, 1.0f, 1.0f);
-				cubes.emplace_back(cube);
+				shape.rotation = glm::vec4(qx, qy, qz, qw);
+				shape.color    = glm::vec3(1.0f, 1.0f, 1.0f);
+				shapes.emplace_back(shape);
 			}
 		}
 	}
 
-	colorCubes();
+	colorShapes();
 }
 
 
-void SMAADemo::shuffleCubeRendering() {
-	const unsigned int numCubes = static_cast<unsigned int>(cubes.size());
-	for (unsigned int i = 0; i < numCubes - 1; i++) {
-		unsigned int victim = random.range(i, numCubes);
-		std::swap(cubes[i], cubes[victim]);
+void SMAADemo::shuffleShapeRendering() {
+	const unsigned int numShapes = static_cast<unsigned int>(shapes.size());
+	for (unsigned int i = 0; i < numShapes - 1; i++) {
+		unsigned int victim = random.range(i, numShapes);
+		std::swap(shapes[i], shapes[victim]);
 	}
 }
 
 
-void SMAADemo::reorderCubeRendering() {
-	auto cubeCompare = [] (const ShaderDefines::Cube &a, const ShaderDefines::Cube &b) {
+void SMAADemo::reorderShapeRendering() {
+	auto shapeCompare = [] (const ShaderDefines::Shape &a, const ShaderDefines::Shape &b) {
 		return a.order < b.order;
 	};
-	std::sort(cubes.begin(), cubes.end(), cubeCompare);
+	std::sort(shapes.begin(), shapes.end(), shapeCompare);
 }
 
 
@@ -1998,16 +1998,16 @@ static float sRGB2linear(float v) {
 }
 
 
-void SMAADemo::colorCubes() {
+void SMAADemo::colorShapes() {
 	if (colorMode == 0) {
-		for (auto &cube : cubes) {
+		for (auto &shape : shapes) {
 			// random RGB
-			cube.color.x = sRGB2linear(random.randFloat());
-			cube.color.y = sRGB2linear(random.randFloat());
-			cube.color.z = sRGB2linear(random.randFloat());
+			shape.color.x = sRGB2linear(random.randFloat());
+			shape.color.y = sRGB2linear(random.randFloat());
+			shape.color.z = sRGB2linear(random.randFloat());
 		}
 	} else {
-		for (auto &cube : cubes) {
+		for (auto &shape : shapes) {
 			// YCbCr, fixed luma, random chroma, alpha = 1.0
 			// worst case scenario for luma edge detection
 			LOG_TODO("use the same luma as shader");
@@ -2023,9 +2023,9 @@ void SMAADemo::colorCubes() {
 			float g = (y - c_blue * cb - c_red * cr) / c_green;
 			float b = cb * (2 - 2 * c_blue) + y;
 
-			cube.color.x = sRGB2linear(r);
-			cube.color.y = sRGB2linear(g);
-			cube.color.z = sRGB2linear(b);
+			shape.color.x = sRGB2linear(r);
+			shape.color.y = sRGB2linear(g);
+			shape.color.z = sRGB2linear(b);
 		}
 	}
 }
@@ -2086,7 +2086,7 @@ void SMAADemo::setNextAAMethod() {
 
 static void printHelp() {
 	printf(" a                - toggle antialiasing on/off\n");
-	printf(" c                - re-color cubes\n");
+	printf(" c                - re-color shapes\n");
 	printf(" d                - cycle through debug visualizations\n");
 	printf(" f                - toggle fullscreen\n");
 	printf(" h                - print help\n");
@@ -2095,7 +2095,7 @@ static void printHelp() {
 	printf(" t                - toggle temporal antialiasing on/off\n");
 	printf(" v                - toggle vsync\n");
 	printf(" LEFT/RIGHT ARROW - cycle through scenes\n");
-	printf(" SPACE            - toggle cube rotation\n");
+	printf(" SPACE            - toggle shape rotation\n");
 	printf(" ESC              - quit\n");
 }
 
@@ -2162,7 +2162,7 @@ void SMAADemo::processInput() {
 				break;
 
 			case SDL_SCANCODE_SPACE:
-				rotateCubes = !rotateCubes;
+				rotateShapes = !rotateShapes;
 				break;
 
 			case SDL_SCANCODE_A:
@@ -2173,7 +2173,7 @@ void SMAADemo::processInput() {
 				if (rightShift || leftShift) {
 					colorMode = (colorMode + 1) % 2;
 				}
-				colorCubes();
+				colorShapes();
 				break;
 
 			case SDL_SCANCODE_D:
@@ -2275,12 +2275,12 @@ void SMAADemo::processInput() {
 				// fallthrough
 			case SDL_SCANCODE_RIGHT:
 				{
-					// if old or new scene is cubes we must rebuild RG
+					// if old or new scene is shapes we must rebuild RG
 					if (!isImageScene()) {
 						rebuildRG = true;
 					}
 
-					// all images + cubes scene
+					// all images + shapes scene
 					unsigned int numScenes = static_cast<unsigned int>(images.size()) + 1;
 					activeScene = (activeScene + sceneIncrement + numScenes) % numScenes;
 
@@ -2417,10 +2417,10 @@ void SMAADemo::mainLoopIteration() {
 
 #endif  // IMGUI_DISABLE
 
-	if (!isImageScene() && rotateCubes) {
+	if (!isImageScene() && rotateShapes) {
 		rotationTime += elapsed;
 
-		LOG_TODO("increasing rotation period can make cubes spin backwards");
+		LOG_TODO("increasing rotation period can make shapes spin backwards");
 		const uint64_t rotationPeriod = rotationPeriodSeconds * 1000000000ULL;
 		rotationTime   = rotationTime % rotationPeriod;
 		cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
@@ -2508,31 +2508,31 @@ void SMAADemo::render() {
 }
 
 
-void SMAADemo::renderCubeScene(RenderPasses rp, DemoRenderGraph::PassResources & /* r */) {
-	if (!cubePipeline) {
-		std::string name = "cubes";
+void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources & /* r */) {
+	if (!shapePipeline) {
+		std::string name = "shapes";
 		if (numSamples > 1) {
 			name += " MSAA x" + std::to_string(numSamples);
 		}
 
 		PipelineDesc plDesc;
 		plDesc.name(name)
-		      .vertexShader("cube")
-		      .fragmentShader("cube")
+		      .vertexShader("shape")
+		      .fragmentShader("shape")
 		      .numSamples(numSamples)
 		      .descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<CubeSceneDS>(1)
+		      .descriptorSetLayout<ShapeSceneDS>(1)
 		      .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
 		      .vertexBufferStride(ATTR_POS, sizeof(Vertex))
 		      .depthWrite(true)
 		      .depthTest(true)
 		      .cullFaces(true);
 
-		cubePipeline = renderGraph.createPipeline(renderer, rp, plDesc);
+		shapePipeline = renderGraph.createPipeline(renderer, rp, plDesc);
 	}
-    assert(cubePipeline);
+    assert(shapePipeline);
 
-	renderer.bindPipeline(cubePipeline);
+	renderer.bindPipeline(shapePipeline);
 
 	const unsigned int windowWidth  = rendererDesc.swapchain.width;
 	const unsigned int windowHeight = rendererDesc.swapchain.height;
@@ -2541,12 +2541,12 @@ void SMAADemo::renderCubeScene(RenderPasses rp, DemoRenderGraph::PassResources &
 	globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 	globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
 
-	LOG_TODO("better calculation, and check cube size (side is sqrt(3) currently)");
-	const float cubeDiameter = sqrtf(3.0f);
-	const float cubeDistance = cubeDiameter + 1.0f;
+	LOG_TODO("better calculation, and check shape size (side is sqrt(3) currently)");
+	const float shapeDiameter = sqrtf(3.0f);
+	const float shapeDistance = shapeDiameter + 1.0f;
 
-	float farPlane  = cameraDistance + cubeDistance * float(cubesPerSide + 1);
-	float nearPlane = std::max(0.1f, cameraDistance - cubeDistance * float(cubesPerSide + 1));
+	float farPlane  = cameraDistance + shapeDistance * float(shapesPerSide + 1);
+	float nearPlane = std::max(0.1f, cameraDistance - shapeDistance * float(shapesPerSide + 1));
 
 	glm::mat4 model  = glm::rotate(glm::mat4(1.0f), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 view   = glm::lookAt(glm::vec3(cameraDistance, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -2588,24 +2588,24 @@ void SMAADemo::renderCubeScene(RenderPasses rp, DemoRenderGraph::PassResources &
 	globalDS.nearestSampler = nearestSampler;
 	renderer.bindDescriptorSet(0, globalDS);
 
-	renderer.bindVertexBuffer(0, cubeVBO);
-	renderer.bindIndexBuffer(cubeIBO, false);
+	renderer.bindVertexBuffer(0, shapeVBO);
+	renderer.bindIndexBuffer(shapeIBO, false);
 
-	CubeSceneDS cubeDS;
+	ShapeSceneDS shapeDS;
 	// FIXME: remove unused UBO hack
 	uint32_t temp    = 0;
-	cubeDS.unused    = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-	cubeDS.instances = renderer.createEphemeralBuffer(BufferType::Storage, static_cast<uint32_t>(sizeof(ShaderDefines::Cube) * cubes.size()), &cubes[0]);
-	renderer.bindDescriptorSet(1, cubeDS);
+	shapeDS.unused    = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
+	shapeDS.instances = renderer.createEphemeralBuffer(BufferType::Storage, static_cast<uint32_t>(sizeof(ShaderDefines::Shape) * shapes.size()), &shapes[0]);
+	renderer.bindDescriptorSet(1, shapeDS);
 
-	unsigned int numCubes = static_cast<unsigned int>(cubes.size());
-	if (visualizeCubeOrder) {
-		cubeOrderNum = cubeOrderNum % numCubes;
-		cubeOrderNum++;
-		numCubes     = cubeOrderNum;
+	unsigned int numShapes = static_cast<unsigned int>(shapes.size());
+	if (visualizeShapeOrder) {
+		shapeOrderNum = shapeOrderNum % numShapes;
+		shapeOrderNum++;
+		numShapes     = shapeOrderNum;
 	}
 
-	renderer.drawIndexedInstanced(3 * 2 * 6, numCubes);
+	renderer.drawIndexedInstanced(3 * 2 * 6, numShapes);
 }
 
 
@@ -3145,7 +3145,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			LOG_TODO("don't regenerate this on every frame");
 			std::vector<const char *> scenes;
 			scenes.reserve(images.size() + 1);
-			scenes.push_back("Cubes");
+			scenes.push_back("Shapes");
 			for (const auto &img : images) {
 				scenes.push_back(img.shortName.c_str());
 			}
@@ -3155,7 +3155,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			assert(s >= 0);
 			assert(s < int(scenes.size()));
 			if (s != int(activeScene)) {
-				// if old or new scene is cubes we must rebuild RG
+				// if old or new scene is shapes we must rebuild RG
 				if (activeScene == 0 || s == 0) {
 					rebuildRG = true;
 				}
@@ -3183,11 +3183,11 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 
 			ImGui::Columns(1);
 
-			int m = cubesPerSide;
-			bool changed = ImGui::InputInt("Cubes per side", &m);
+			int m = shapesPerSide;
+			bool changed = ImGui::InputInt("Shapes per side", &m);
 			if (changed && m > 0 && m < 55) {
-				cubesPerSide = m;
-				createCubes();
+				shapesPerSide = m;
+				createShapes();
 			}
 
 			float l = cameraDistance;
@@ -3195,7 +3195,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				cameraDistance = l;
 			}
 
-			ImGui::Checkbox("Rotate cubes", &rotateCubes);
+			ImGui::Checkbox("Rotate shapes", &rotateShapes);
 			int p = rotationPeriodSeconds;
 			ImGui::SliderInt("Rotation period (sec)", &p, 1, 60);
 			assert(p >= 1);
@@ -3203,31 +3203,31 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			rotationPeriodSeconds = p;
 
 			ImGui::Separator();
-			ImGui::Text("Cube coloring mode");
+			ImGui::Text("Shape coloring mode");
 			int newColorMode = colorMode;
 			ImGui::RadioButton("RGB",   &newColorMode, 0);
 			ImGui::RadioButton("YCbCr", &newColorMode, 1);
 
 			if (int(colorMode) != newColorMode) {
 				colorMode = newColorMode;
-				colorCubes();
+				colorShapes();
 			}
 
-			if (ImGui::Button("Re-color cubes")) {
-				colorCubes();
+			if (ImGui::Button("Re-color shapes")) {
+				colorShapes();
 			}
 
-			if (ImGui::Button("Shuffle cube rendering order")) {
-				shuffleCubeRendering();
-				cubeOrderNum = 1;
+			if (ImGui::Button("Shuffle shape rendering order")) {
+				shuffleShapeRendering();
+				shapeOrderNum = 1;
 			}
 
-			if (ImGui::Button("Reorder cube rendering order")) {
-				reorderCubeRendering();
-				cubeOrderNum = 1;
+			if (ImGui::Button("Reorder shape rendering order")) {
+				reorderShapeRendering();
+				shapeOrderNum = 1;
 			}
 
-			ImGui::Checkbox("Visualize cube order", &visualizeCubeOrder);
+			ImGui::Checkbox("Visualize shape order", &visualizeShapeOrder);
 		}
 
 		if (ImGui::CollapsingHeader("Swapchain properties", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -3401,7 +3401,7 @@ int main(int argc, char *argv[]) {
 		demo->parseCommandLine(argc, argv);
 
 		demo->initRender();
-		demo->createCubes();
+		demo->createShapes();
 		printHelp();
 
 		while (demo->shouldKeepGoing()) {

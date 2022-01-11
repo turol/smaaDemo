@@ -69,7 +69,7 @@ layout(set = 1, binding = 0, std140) uniform SMAAUBO
 #endif  // SMAA_PRESET_CUSTOM
 
 
-struct Cube {
+struct Shape {
 	vec4   rotation;
 	vec3   position;
 	uint   order;
