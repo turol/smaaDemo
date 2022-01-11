@@ -490,6 +490,7 @@ class SMAADemo {
 	unsigned int                                      shapesPerSide;
 	unsigned int                                      colorMode;
 	bool                                              rotateShapes;
+	Shape                                             activeShape;
 	bool                                              visualizeShapeOrder;
 	unsigned int                                      shapeOrderNum;
 	float                                             cameraRotation;
@@ -662,6 +663,7 @@ SMAADemo::SMAADemo()
 , shapesPerSide(8)
 , colorMode(0)
 , rotateShapes(false)
+, activeShape(Shape::Cube)
 , visualizeShapeOrder(false)
 , shapeOrderNum(1)
 , cameraRotation(0.0f)
