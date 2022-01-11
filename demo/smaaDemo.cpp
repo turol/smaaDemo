@@ -3254,57 +3254,57 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 
 		if (ImGui::CollapsingHeader("Scene properties", ImGuiTreeNodeFlags_DefaultOpen)) {
 			{
-			LOG_TODO("don't regenerate this on every frame");
-			std::vector<const char *> scenes;
-			scenes.reserve(images.size() + 1);
-			scenes.push_back("Shapes");
-			for (const auto &img : images) {
-				scenes.push_back(img.shortName.c_str());
-			}
-			assert(activeScene < scenes.size());
-			int s = activeScene;
-			ImGui::Combo("Scene", &s, &scenes[0], static_cast<int>(scenes.size()));
-			assert(s >= 0);
-			assert(s < int(scenes.size()));
-			if (s != int(activeScene)) {
-				// if old or new scene is shapes we must rebuild RG
-				if (activeScene == 0 || s == 0) {
-					rebuildRG = true;
+				LOG_TODO("don't regenerate this on every frame");
+				std::vector<const char *> scenes;
+				scenes.reserve(images.size() + 1);
+				scenes.push_back("Shapes");
+				for (const auto &img : images) {
+					scenes.push_back(img.shortName.c_str());
 				}
-				activeScene = s;
-			}
+				assert(activeScene < scenes.size());
+				int s = activeScene;
+				ImGui::Combo("Scene", &s, &scenes[0], static_cast<int>(scenes.size()));
+				assert(s >= 0);
+				assert(s < int(scenes.size()));
+				if (s != int(activeScene)) {
+					// if old or new scene is shapes we must rebuild RG
+					if (activeScene == 0 || s == 0) {
+						rebuildRG = true;
+					}
+					activeScene = s;
+				}
 
-			ImGui::InputText("Load image", imageFileName, inputTextBufferSize);
+				ImGui::InputText("Load image", imageFileName, inputTextBufferSize);
 			}
 
 			{
-			ImGui::Columns(2);
+				ImGui::Columns(2);
 
-			if (ImGui::Button("Paste")) {
-				char *clipboard = SDL_GetClipboardText();
-				if (clipboard) {
-					size_t length = strnlen(clipboard, inputTextBufferSize - 1);
-					strncpy(imageFileName, clipboard, length);
-					imageFileName[length] = '\0';
-					SDL_free(clipboard);
+				if (ImGui::Button("Paste")) {
+					char *clipboard = SDL_GetClipboardText();
+					if (clipboard) {
+						size_t length = strnlen(clipboard, inputTextBufferSize - 1);
+						strncpy(imageFileName, clipboard, length);
+						imageFileName[length] = '\0';
+						SDL_free(clipboard);
+					}
 				}
-			}
-			ImGui::NextColumn();
-			if (ImGui::Button("Load")) {
-				std::string filename(imageFileName);
-				loadImage(filename);
-			}
+				ImGui::NextColumn();
+				if (ImGui::Button("Load")) {
+					std::string filename(imageFileName);
+					loadImage(filename);
+				}
 
-			ImGui::Columns(1);
+				ImGui::Columns(1);
 			}
 
 			{
-			int m = shapesPerSide;
-			bool changed = ImGui::InputInt("Shapes per side", &m);
-			if (changed && m > 0 && m < 55) {
-				shapesPerSide = m;
-				createShapes();
-			}
+				int m = shapesPerSide;
+				bool changed = ImGui::InputInt("Shapes per side", &m);
+				if (changed && m > 0 && m < 55) {
+					shapesPerSide = m;
+					createShapes();
+				}
 			}
 
 			float l = cameraDistance;
