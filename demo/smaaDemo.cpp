@@ -2345,6 +2345,16 @@ void SMAADemo::processInput() {
 				}
 				break;
 
+			case SDL_SCANCODE_S: {
+				int i = activeShape._to_integral();
+				if (leftShift || rightShift) {
+					i = (i + Shape::_size() - 1) % Shape::_size();
+				} else {
+					i = (i                  + 1) % Shape::_size();
+				}
+				activeShape = Shape::_from_integral(i);
+			} break;
+
 			case SDL_SCANCODE_T:
 				setTemporalAA(!temporalAA);
 				break;
