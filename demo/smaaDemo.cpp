@@ -3269,7 +3269,20 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				}
 				assert(activeScene < scenes.size());
 				int s = activeScene;
-				ImGui::Combo("Scene", &s, &scenes[0], static_cast<int>(scenes.size()));
+
+				if (ImGui::BeginCombo("Scene", scenes[activeScene])) {
+					for (size_t i = 0; i < scenes.size(); i++) {
+						bool selected = (i == activeScene);
+						if (ImGui::Selectable(scenes[i], selected)) {
+							s = i;
+						}
+
+						if (selected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+				}
+
 				assert(s >= 0);
 				assert(s < int(scenes.size()));
 				if (s != int(activeScene)) {
