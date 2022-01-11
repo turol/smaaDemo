@@ -1249,10 +1249,7 @@ void SMAADemo::initRender() {
 		return srb;
 	};
 
-	shapeBuffers[Shape::Cube].numVertices = 3 * 2 * 6;
-	shapeBuffers[Shape::Cube].vertices    = renderer.createBuffer(BufferType::Vertex, sizeof(vertices), &vertices[0]);
-	shapeBuffers[Shape::Cube].indices     = renderer.createBuffer(BufferType::Index, sizeof(indices), &indices[0]);
-
+	shapeBuffers[Shape::Cube]         = createShapeBuffers(sqrtf(3.0f), par_shapes_create_cube());
 	shapeBuffers[Shape::Tetrahedron]  = createShapeBuffers(1.75f, par_shapes_create_tetrahedron());
 	shapeBuffers[Shape::Octahedron]   = createShapeBuffers(1.5f,  par_shapes_create_octahedron());
 	shapeBuffers[Shape::Dodecahedron] = createShapeBuffers(1.5f,  par_shapes_create_dodecahedron());
