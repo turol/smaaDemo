@@ -3253,6 +3253,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 		}
 
 		if (ImGui::CollapsingHeader("Scene properties", ImGuiTreeNodeFlags_DefaultOpen)) {
+			{
 			LOG_TODO("don't regenerate this on every frame");
 			std::vector<const char *> scenes;
 			scenes.reserve(images.size() + 1);
@@ -3274,7 +3275,9 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			}
 
 			ImGui::InputText("Load image", imageFileName, inputTextBufferSize);
+			}
 
+			{
 			ImGui::Columns(2);
 
 			if (ImGui::Button("Paste")) {
@@ -3293,12 +3296,15 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			}
 
 			ImGui::Columns(1);
+			}
 
+			{
 			int m = shapesPerSide;
 			bool changed = ImGui::InputInt("Shapes per side", &m);
 			if (changed && m > 0 && m < 55) {
 				shapesPerSide = m;
 				createShapes();
+			}
 			}
 
 			float l = cameraDistance;
