@@ -368,6 +368,59 @@ const RenderPasses  Default<RenderPasses>::value = RenderPasses::Invalid;
 } // namespace renderer
 
 
+struct ShapeRenderBuffers {
+	unsigned int  numVertices;
+	BufferHandle  vertices;
+	BufferHandle  indices;
+
+
+	ShapeRenderBuffers()
+	: numVertices(0)
+	{}
+
+	// not copyable
+	ShapeRenderBuffers(const ShapeRenderBuffers &other)            = delete;
+	ShapeRenderBuffers &operator=(const ShapeRenderBuffers &other) = delete;
+
+	// movable
+	ShapeRenderBuffers(ShapeRenderBuffers &&other) noexcept {
+		numVertices = other.numVertices;
+		other.numVertices = 0;
+
+		vertices = std::move(other.vertices);
+		other.vertices.reset();
+
+		indices  = std::move(other.indices);
+		other.indices.reset();
+	}
+
+	ShapeRenderBuffers &operator=(ShapeRenderBuffers &&other) {
+		assert(this != &other);
+
+		assert(!numVertices);
+		assert(!vertices);
+		assert(!indices);
+
+		numVertices = other.numVertices;
+		other.numVertices = 0;
+
+		vertices = std::move(other.vertices);
+		other.vertices.reset();
+
+		indices  = std::move(other.indices);
+		other.indices.reset();
+
+		return *this;
+	}
+
+	~ShapeRenderBuffers() {
+		assert(!numVertices);
+		assert(!vertices);
+		assert(!indices);
+	}
+};
+
+
 class SMAADemo {
 	using DemoRenderGraph = RenderGraph<Rendertargets, RenderPasses>;
 
