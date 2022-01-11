@@ -1228,6 +1228,15 @@ void SMAADemo::initRender() {
 	auto createShapeBuffers = [this] (float scale, par_shapes_mesh *mesh) -> ShapeRenderBuffers {
 		assert(mesh);
 
+		float aabb[6] = {};
+		par_shapes_compute_aabb(mesh, aabb);
+		aabb[0] = (aabb[0] + aabb[3]) * 0.5;
+		aabb[1] = (aabb[1] + aabb[4]) * 0.5;
+		aabb[2] = (aabb[2] + aabb[5]) * 0.5;
+
+		LOG("center: ({}, {}, {})", aabb[0],  aabb[1],  aabb[2]);
+		par_shapes_translate(mesh, -aabb[0], -aabb[1], -aabb[2]);
+
 		par_shapes_scale(mesh, scale, scale, scale);
 
 		ShapeRenderBuffers srb;
