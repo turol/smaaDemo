@@ -84,6 +84,9 @@
     <ClCompile Include="..\foreign\fmt\src\os.cc">
       <Filter>Source Files\fmt</Filter>
     </ClCompile>
+    <ClCompile Include="..\demo\par_shapes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\fxaa.frag">
