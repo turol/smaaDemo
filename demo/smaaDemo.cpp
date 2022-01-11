@@ -3298,6 +3298,24 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				ImGui::Columns(1);
 			}
 
+			// shape selection
+			{
+				if (ImGui::BeginCombo("Shape", activeShape._to_string())) {
+					for (Shape s : Shape::_values()) {
+						bool selected = (s == activeShape);
+						if (ImGui::Selectable(s._to_string(), selected)) {
+							activeShape = s;
+						}
+
+						if (selected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+
+					ImGui::EndCombo();
+				}
+			}
+
 			{
 				int m = shapesPerSide;
 				bool changed = ImGui::InputInt("Shapes per side", &m);
