@@ -3,6 +3,7 @@ cmake_policy(SET CMP0048 NEW)
 cmake_policy(SET CMP0077 NEW)
 
 project(SMAADemo VERSION 1.0.0 LANGUAGES C CXX)
+set(VS_STARTUP_PROJECT SMAADemo)
 
 INCLUDE(FindVulkan)
 
