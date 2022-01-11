@@ -506,8 +506,7 @@ class SMAADemo {
 	std::array<PipelineHandle, 2>                     temporalAAPipelines;
 	PipelineHandle                                    fxaaPipeline;
 
-	BufferHandle                                      shapeVBO;
-	BufferHandle                                      shapeIBO;
+	ShapeRenderBuffers                                cubeBuffers;
 
 	SamplerHandle                                     linearSampler;
 	SamplerHandle                                     nearestSampler;
@@ -745,10 +744,13 @@ SMAADemo::~SMAADemo() {
 	if (renderer) {
 		renderGraph.reset(renderer);
 
-		if (shapeVBO) {
-			assert(shapeIBO);
-			renderer.deleteBuffer(std::move(shapeVBO));
-			renderer.deleteBuffer(std::move(shapeIBO));
+		if (cubeBuffers.vertices) {
+			assert(cubeBuffers.indices);
+			assert(cubeBuffers.numVertices);
+
+			cubeBuffers.numVertices = 0;
+			renderer.deleteBuffer(std::move(cubeBuffers.vertices));
+			renderer.deleteBuffer(std::move(cubeBuffers.indices));
 		}
 
 		if (linearSampler) {
@@ -1205,8 +1207,9 @@ void SMAADemo::initRender() {
 	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear) .name("linear"));
 	nearestSampler = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Nearest).magFilter(FilterMode::Nearest).name("nearest"));
 
-	shapeVBO = renderer.createBuffer(BufferType::Vertex, sizeof(vertices), &vertices[0]);
-	shapeIBO = renderer.createBuffer(BufferType::Index, sizeof(indices), &indices[0]);
+	cubeBuffers.numVertices = 3 * 2 * 6;
+	cubeBuffers.vertices    = renderer.createBuffer(BufferType::Vertex, sizeof(vertices), &vertices[0]);
+	cubeBuffers.indices     = renderer.createBuffer(BufferType::Index, sizeof(indices), &indices[0]);
 
 #ifdef RENDERER_OPENGL
 
@@ -2644,8 +2647,8 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	globalDS.nearestSampler = nearestSampler;
 	renderer.bindDescriptorSet(0, globalDS);
 
-	renderer.bindVertexBuffer(0, shapeVBO);
-	renderer.bindIndexBuffer(shapeIBO, false);
+	renderer.bindVertexBuffer(0, cubeBuffers.vertices);
+	renderer.bindIndexBuffer(cubeBuffers.indices, false);
 
 	ShapeSceneDS shapeDS;
 	// FIXME: remove unused UBO hack
@@ -2661,7 +2664,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 		numShapes     = shapeOrderNum;
 	}
 
-	renderer.drawIndexedInstanced(3 * 2 * 6, numShapes);
+	renderer.drawIndexedInstanced(cubeBuffers.numVertices, numShapes);
 }
 
 
