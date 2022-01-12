@@ -786,55 +786,6 @@ SMAADemo::~SMAADemo() {
 }
 
 
-struct Vertex {
-	float x, y, z;
-};
-
-
-const float coord = sqrtf(3.0f) / 2.0f;
-
-
-static const Vertex vertices[] =
-{
-	  { -coord , -coord, -coord }
-	, { -coord ,  coord, -coord }
-	, {  coord , -coord, -coord }
-	, {  coord ,  coord, -coord }
-	, { -coord , -coord,  coord }
-	, { -coord ,  coord,  coord }
-	, {  coord , -coord,  coord }
-	, {  coord ,  coord,  coord }
-};
-
-
-static const uint32_t indices[] =
-{
-	// top
-	  1, 3, 5
-	, 5, 3, 7
-
-	// front
-	, 0, 2, 1
-	, 1, 2, 3
-
-	// back
-	, 7, 6, 5
-	, 5, 6, 4
-
-	// left
-	, 0, 1, 4
-	, 4, 1, 5
-
-	// right
-	, 2, 6, 3
-	, 3, 6, 7
-
-	// bottom
-	, 2, 0, 6
-	, 6, 0, 4
-};
-
-
 #define VBO_OFFSETOF(st, member) reinterpret_cast<GLvoid *>(offsetof(st, member))
 
 
