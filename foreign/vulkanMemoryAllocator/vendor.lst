@@ -6,9 +6,7 @@ Doxyfile
 LICENSE.txt
 README.md
 build/src/Release/VmaSample.exe
-build/src/VmaReplay/Release/VmaReplay.exe
 docs/.nojekyll
-docs/Recording file format.md
 docs/gfx/Aliasing.png
 docs/gfx/Buddy_allocator.png
 docs/gfx/Linear_allocator_1_algo_default.png
@@ -16,7 +14,6 @@ docs/gfx/Linear_allocator_2_algo_linear.png
 docs/gfx/Linear_allocator_3_free_at_once.png
 docs/gfx/Linear_allocator_4_stack.png
 docs/gfx/Linear_allocator_5_ring_buffer.png
-docs/gfx/Linear_allocator_6_ring_buffer_lost.png
 docs/gfx/Linear_allocator_7_double_stack.png
 docs/gfx/Margins_1.png
 docs/gfx/Margins_2.png
@@ -254,14 +251,6 @@ src/SparseBindingTest.cpp
 src/SparseBindingTest.h
 src/Tests.cpp
 src/Tests.h
-src/VmaReplay/CMakeLists.txt
-src/VmaReplay/Common.cpp
-src/VmaReplay/Common.h
-src/VmaReplay/Constants.cpp
-src/VmaReplay/Constants.h
-src/VmaReplay/VmaReplay.cpp
-src/VmaReplay/VmaUsage.cpp
-src/VmaReplay/VmaUsage.h
 src/VmaUsage.cpp
 src/VmaUsage.h
 src/VulkanSample.cpp

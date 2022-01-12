@@ -1,7 +1,5 @@
-commit 4586be47d8181e02121a3e7d52622145c91f40ca
+commit c5870ad3c24b0eec723e0451c043f43d765785c9
 Author: Adam Sawicki <adam.sawicki@amd.com>
-Date:   Fri Dec 17 12:11:06 2021 +0100
+Date:   Wed Jan 12 12:57:02 2022 +0100
 
-    Fixed usage of VMA_STATIC_VULKAN_FUNCTIONS, VMA_DYNAMIC_VULKAN_FUNCTIONS in CmakeLists.txt
-    
-    Fixes #215
+    Forgot to delete VmaReplay.exe

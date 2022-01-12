@@ -26,20 +26,8 @@ set_target_properties(
 
 target_include_directories(VulkanMemoryAllocator PUBLIC "${PROJECT_SOURCE_DIR}/include")
 
-if(${VMA_DYNAMIC_VULKAN_FUNCTIONS})
-    set(VULKAN_USE_DYNAMIC ${VMA_DYNAMIC_VULKAN_FUNCTIONS})
-else()
-    set(VULKAN_USE_DYNAMIC 0)
-endif()
-
-if(${VMA_STATIC_VULKAN_FUNCTIONS})
-    set(VULKAN_USE_STATIC ${VMA_STATIC_VULKAN_FUNCTIONS})
-else()
-    set(VULKAN_USE_STATIC 1)
-endif()
-
 # Only link to Vulkan if static linking is used
-if(${VULKAN_USE_STATIC})
+if(${VMA_STATIC_VULKAN_FUNCTIONS})
     target_link_libraries(VulkanMemoryAllocator PUBLIC Vulkan::Vulkan)
 endif()
 
@@ -47,9 +35,8 @@ target_compile_definitions(
     VulkanMemoryAllocator
 
     PUBLIC
-    VMA_USE_STL_CONTAINERS=$<BOOL:${VMA_USE_STL_CONTAINERS}>
-    VMA_STATIC_VULKAN_FUNCTIONS=$<BOOL:${VULKAN_USE_STATIC}>
-    VMA_DYNAMIC_VULKAN_FUNCTIONS=$<BOOL:${VULKAN_USE_DYNAMIC}>
+    VMA_STATIC_VULKAN_FUNCTIONS=$<BOOL:${VMA_STATIC_VULKAN_FUNCTIONS}>
+    VMA_DYNAMIC_VULKAN_FUNCTIONS=$<BOOL:${VMA_DYNAMIC_VULKAN_FUNCTIONS}>
     VMA_DEBUG_ALWAYS_DEDICATED_MEMORY=$<BOOL:${VMA_DEBUG_ALWAYS_DEDICATED_MEMORY}>
     VMA_DEBUG_INITIALIZE_ALLOCATIONS=$<BOOL:${VMA_DEBUG_INITIALIZE_ALLOCATIONS}>
     VMA_DEBUG_GLOBAL_MUTEX=$<BOOL:${VMA_DEBUG_GLOBAL_MUTEX}>
@@ -116,8 +103,4 @@ endif()
 
 if(VMA_BUILD_SAMPLE_SHADERS)
     add_subdirectory(Shaders)
-endif()
-
-if(VMA_BUILD_REPLAY)
-    add_subdirectory(VmaReplay)
 endif()
