@@ -2640,7 +2640,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ShapeSceneDS>(1)
 		      .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
-		      .vertexBufferStride(ATTR_POS, 3 * sizeof(float))
+		      .vertexBufferStride(0, 3 * sizeof(float))
 		      .depthWrite(true)
 		      .depthTest(true)
 		      .cullFaces(true);
@@ -3493,7 +3493,7 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 				  .vertexAttrib(ATTR_POS,   0, 2, VtxFormat::Float,  offsetof(ImDrawVert, pos))
 				  .vertexAttrib(ATTR_UV,    0, 2, VtxFormat::Float,  offsetof(ImDrawVert, uv))
 				  .vertexAttrib(ATTR_COLOR, 0, 4, VtxFormat::UNorm8, offsetof(ImDrawVert, col))
-				  .vertexBufferStride(ATTR_POS, sizeof(ImDrawVert))
+				  .vertexBufferStride(0, sizeof(ImDrawVert))
 				  .name("gui");
 
 			guiPipeline = renderGraph.createPipeline(renderer, rp, plDesc);
