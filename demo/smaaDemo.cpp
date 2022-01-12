@@ -2640,7 +2640,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ShapeSceneDS>(1)
 		      .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
-		      .vertexBufferStride(ATTR_POS, sizeof(Vertex))
+		      .vertexBufferStride(ATTR_POS, 3 * sizeof(float))
 		      .depthWrite(true)
 		      .depthTest(true)
 		      .cullFaces(true);
