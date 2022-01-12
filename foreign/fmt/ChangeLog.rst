@@ -1,5 +1,24 @@
-8.1.0 - TBD
------------
+8.1.1 - 2022-01-06
+------------------
+
+* Restored ABI compatibility with version 8.0.x
+  (`#2695 <https://github.com/fmtlib/fmt/issues/2695>`_,
+  `#2696 <https://github.com/fmtlib/fmt/pull/2696>`_).
+  Thanks `@saraedum (Julian Rüth) <https://github.com/saraedum>`_.
+
+* Fixed chorno formatting on big endian systems
+  (`#2698 <https://github.com/fmtlib/fmt/issues/2698>`_,
+  `#2699 <https://github.com/fmtlib/fmt/pull/2699>`_).
+  Thanks `@phprus (Vladislav Shchapov) <https://github.com/phprus>`_ and
+  `@xvitaly (Vitaly Zaitsev) <https://github.com/xvitaly>`_.
+
+* Fixed a linkage error with mingw
+  (`#2691 <https://github.com/fmtlib/fmt/issues/2691>`_,
+  `#2692 <https://github.com/fmtlib/fmt/pull/2692>`_).
+  Thanks `@rbberger (Richard Berger) <https://github.com/rbberger>`_.
+
+8.1.0 - 2022-01-02
+------------------
 
 * Optimized chrono formatting
   (`#2500 <https://github.com/fmtlib/fmt/pull/2500>`_,
