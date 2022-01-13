@@ -160,9 +160,14 @@ static inline uint64_t gcd(uint64_t a, uint64_t b) {
 
 
 static inline uint32_t popCount(uint32_t v) {
+
 #ifdef __GNUC__
 
 	uint32_t retval = __builtin_popcount(v);
+
+#elif defined(_MSC_VER)
+
+	uint32_t retval = __popcnt(v);
 
 #else // __GNUC__
 
