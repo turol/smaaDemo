@@ -3680,6 +3680,18 @@ void Renderer::drawIndexed(unsigned int vertexCount, unsigned int firstIndex) {
 }
 
 
+void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int vertexOffset) {
+#ifndef NDEBUG
+	assert(impl->inRenderPass);
+	assert(impl->validPipeline);
+	assert(vertexCount > 0);
+	impl->pipelineDrawn = true;
+#endif //  NDEBUG
+
+	impl->currentCommandBuffer.drawIndexed(vertexCount, 1, firstIndex, vertexOffset, 0);
+}
+
+
 } // namespace renderer
 
 

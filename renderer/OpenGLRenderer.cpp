@@ -2572,6 +2572,29 @@ void Renderer::drawIndexed(unsigned int vertexCount, unsigned int firstIndex) {
 }
 
 
+void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int vertexOffset) {
+#ifndef NDEBUG
+	assert(impl->inRenderPass);
+	assert(impl->validPipeline);
+	assert(vertexCount > 0);
+	const auto &p = impl->pipelines.get(impl->currentPipeline);
+	assert(!p.desc.scissorTest_ || impl->scissorSet);
+	impl->pipelineDrawn = true;
+#endif //  NDEBUG
+
+	if (impl->decriptorSetsDirty) {
+		impl->rebindDescriptorSets();
+	}
+	assert(!impl->decriptorSetsDirty);
+
+	GLenum format        = impl->idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
+	unsigned int idxSize = impl->idxBuf16Bit ? 2                 : 4 ;
+	auto ptr = reinterpret_cast<const char *>(firstIndex * idxSize + impl->indexBufByteOffset);
+	LOG_TODO("get primitive from current pipeline");
+	glDrawElementsBaseVertex(GL_TRIANGLES, vertexCount, format, ptr, vertexOffset);
+}
+
+
 } // namespace renderer
 
 

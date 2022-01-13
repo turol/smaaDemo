@@ -493,6 +493,15 @@ void Renderer::drawIndexed(unsigned int vertexCount, unsigned int /* firstIndex 
 }
 
 
+void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int /* firstIndex */, unsigned int /* vertexOffset */) {
+	assert(impl->inRenderPass);
+	assert(impl->validPipeline);
+	assert(vertexCount > 0);
+	assert(!impl->currentPipeline.scissorTest_ || impl->scissorSet);
+	impl->pipelineDrawn = true;
+}
+
+
 } // namespace renderer
 
 
