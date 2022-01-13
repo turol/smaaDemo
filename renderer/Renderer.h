@@ -1127,8 +1127,8 @@ public:
 	void resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLayout);
 
 	void draw(unsigned int firstVertex, unsigned int vertexCount);
-	void drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount);
 	void drawIndexed(unsigned int vertexCount, unsigned int firstIndex);
+	void drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount);
 	void drawIndexedVertexOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int vertexOffset);
 };
 
