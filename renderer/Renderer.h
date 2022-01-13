@@ -1128,7 +1128,7 @@ public:
 
 	void draw(unsigned int firstVertex, unsigned int vertexCount);
 	void drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount);
-	void drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int minIndex, unsigned int maxIndex);
+	void drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex);
 };
 
 

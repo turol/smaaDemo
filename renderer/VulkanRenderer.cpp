@@ -3668,7 +3668,7 @@ void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int insta
 }
 
 
-void Renderer::drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int /* minIndex */, unsigned int /* maxIndex */) {
+void Renderer::drawIndexedOffset(unsigned int vertexCount, unsigned int firstIndex) {
 #ifndef NDEBUG
 	assert(impl->inRenderPass);
 	assert(impl->validPipeline);
