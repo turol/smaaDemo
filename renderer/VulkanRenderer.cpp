@@ -543,7 +543,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 	LOG("{} memory heaps", memoryProperties.memoryHeapCount);
 	for (unsigned int i = 0; i < memoryProperties.memoryHeapCount; i++ ) {
-		LOG(" {}  size {}  {}", i, memoryProperties.memoryHeaps[i].size, vk::to_string(memoryProperties.memoryHeaps[i].flags));
+		auto sizeMB = (memoryProperties.memoryHeaps[i].size + 1048576 - 1) / 1048576;
+		LOG(" {}  size {}  ({} MB)  {}", i, memoryProperties.memoryHeaps[i].size, sizeMB, vk::to_string(memoryProperties.memoryHeaps[i].flags));
 	}
 
 	std::vector<vk::QueueFamilyProperties> queueProps = physicalDevice.getQueueFamilyProperties();
