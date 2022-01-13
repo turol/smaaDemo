@@ -159,6 +159,25 @@ static inline uint64_t gcd(uint64_t a, uint64_t b) {
 }
 
 
+static inline uint32_t popCount(uint32_t v) {
+#ifdef __GNUC__
+
+	uint32_t retval = __builtin_popcount(v);
+
+#else // __GNUC__
+
+	uint32_t retval = 0;
+	while (v != 0) {
+		retval++;
+		v = v & (v - 1);
+	}
+
+#endif  // __GNUC__
+
+	return retval;
+}
+
+
 #define OPTIMIZED_FOREACHBIT 1
 
 
