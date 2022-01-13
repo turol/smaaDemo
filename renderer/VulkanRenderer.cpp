@@ -604,8 +604,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			}
 
 			// is it a smaller set of flags than the currently chosen queue?
-			LOG_TODO("slight abuse of comparison here, should compare count of set bits");
-			if (static_cast<uint32_t>(q.queueFlags) < currentFlags) {
+			if (popCount(static_cast<uint32_t>(q.queueFlags)) < popCount(currentFlags)) {
 				transferQueueIndex = i;
 				currentFlags       = static_cast<uint32_t>(q.queueFlags);
 			}
