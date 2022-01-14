@@ -306,6 +306,12 @@ BETTER_ENUM(Format, uint8_t
 )
 
 
+BETTER_ENUM(IndexFormat, uint8_t
+	, b32
+	, b16
+)
+
+
 BETTER_ENUM(Layout, uint8_t
 	, Undefined
 	, ShaderRead
