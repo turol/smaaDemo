@@ -1181,9 +1181,9 @@ void SMAADemo::initRender() {
 
 		float aabb[6] = {};
 		par_shapes_compute_aabb(mesh, aabb);
-		aabb[0] = (aabb[0] + aabb[3]) * 0.5;
-		aabb[1] = (aabb[1] + aabb[4]) * 0.5;
-		aabb[2] = (aabb[2] + aabb[5]) * 0.5;
+		aabb[0] = (aabb[0] + aabb[3]) * 0.5f;
+		aabb[1] = (aabb[1] + aabb[4]) * 0.5f;
+		aabb[2] = (aabb[2] + aabb[5]) * 0.5f;
 
 		LOG("center: ({}, {}, {})", aabb[0],  aabb[1],  aabb[2]);
 		par_shapes_translate(mesh, -aabb[0], -aabb[1], -aabb[2]);
@@ -2303,13 +2303,13 @@ void SMAADemo::processInput() {
 				break;
 
 			case SDL_SCANCODE_S: {
-				int i = activeShape._to_integral();
+				size_t i = activeShape._to_integral();
 				if (leftShift || rightShift) {
 					i = (i + Shape::_size() - 1) % Shape::_size();
 				} else {
 					i = (i                  + 1) % Shape::_size();
 				}
-				activeShape = Shape::_from_integral(i);
+				activeShape = Shape::_from_integral(static_cast<Shape::_integral>(i));
 			} break;
 
 			case SDL_SCANCODE_T:
@@ -3211,7 +3211,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 
 		if (ImGui::CollapsingHeader("Scene properties", ImGuiTreeNodeFlags_DefaultOpen)) {
 			{
-				int s = activeScene;
+				unsigned int s = activeScene;
 
 				if (ImGui::BeginCombo("Scene", (activeScene == 0) ? "Shapes" : images[activeScene - 1].shortName.c_str())) {
 					{
@@ -3225,7 +3225,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 						}
 					}
 
-					for (size_t i = 0; i < images.size(); i++) {
+					for (unsigned int i = 0; i < images.size(); i++) {
 						bool selected = (activeScene == i + 1);
 						if (ImGui::Selectable(images[i].shortName.c_str(), selected)) {
 							s = i + 1;
