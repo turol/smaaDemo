@@ -3413,8 +3413,10 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 	ImGui::End();
 
 #if 0
-	bool demoVisible = true;
+
+	static bool demoVisible = true;
 	ImGui::ShowDemoWindow(&demoVisible);
+
 #endif  // 0
 
 	ImGui::Render();
