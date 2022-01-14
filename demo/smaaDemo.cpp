@@ -3239,9 +3239,8 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 					ImGui::EndCombo();
 				}
 
-				assert(s >= 0);
-				assert(s < int(images.size() + 1));
-				if (s != int(activeScene)) {
+				assert(s < images.size() + 1U);
+				if (s != activeScene) {
 					// if old or new scene is shapes we must rebuild RG
 					if (activeScene == 0 || s == 0) {
 						rebuildRG = true;
