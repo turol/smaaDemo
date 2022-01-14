@@ -236,6 +236,9 @@ static const std::array<ShaderDefines::SMAAParameters, maxSMAAQuality> defaultSM
 } };
 
 
+static const float defaultCameraDistance = 25.0f;
+
+
 BETTER_ENUM(SMAAEdgeMethod, uint8_t
 	, Color
 	, Luma
@@ -670,7 +673,7 @@ SMAADemo::SMAADemo()
 , visualizeShapeOrder(false)
 , shapeOrderNum(1)
 , cameraRotation(0.0f)
-, cameraDistance(25.0f)
+, cameraDistance(defaultCameraDistance)
 , rotationTime(0)
 , rotationPeriodSeconds(30)
 , numRenderedFrames(0)
@@ -2436,6 +2439,13 @@ void SMAADemo::processInput() {
 			break;
 
 		case SDL_MOUSEBUTTONDOWN:
+			if (!io.WantCaptureMouse) {
+				if (event.button.button == SDL_BUTTON_MIDDLE) {
+					cameraDistance = defaultCameraDistance;
+				}
+			}
+
+            // fallthrough
 		case SDL_MOUSEBUTTONUP:
 			if (event.button.button < 6) {
 				// SDL and imgui have left and middle in different order
@@ -2452,6 +2462,12 @@ void SMAADemo::processInput() {
 			break;
 
 #else   // IMGUI_DISABLE
+
+		case SDL_MOUSEBUTTONDOWN:
+			if (event.button.button == SDL_BUTTON_MIDDLE) {
+				cameraDistance = defaultCameraDistance;
+			}
+			break;
 
 		case SDL_MOUSEWHEEL:
 			cameraDistance -= event.wheel.y;
