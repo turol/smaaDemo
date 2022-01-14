@@ -170,6 +170,35 @@ static GLenum blendFunc(BlendFunc b) {
 }
 
 
+static GLenum glIndexFormat(IndexFormat indexFormat) {
+	switch (indexFormat) {
+	case IndexFormat::b16:
+		return GL_UNSIGNED_SHORT;
+
+	case IndexFormat::b32:
+		return GL_UNSIGNED_INT;
+
+	}
+
+	HEDLEY_UNREACHABLE();
+	return GL_NONE;
+}
+
+
+static unsigned int glIndexSize(IndexFormat indexFormat) {
+	switch (indexFormat) {
+	case IndexFormat::b16:
+		return 2;
+
+	case IndexFormat::b32:
+		return 4;
+
+	}
+
+	HEDLEY_UNREACHABLE();
+	return 0;
+}
+
 static GLenum glTexFormat(Format format) {
 	switch (format) {
 	case Format::Invalid:
@@ -469,7 +498,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , debug(desc.debug)
 , tracing(desc.tracing)
 , vao(0)
-, idxBuf16Bit(false)
+, indexFormat(IndexFormat::b32)
 , indexBufByteOffset(0)
 {
 
@@ -2150,7 +2179,7 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 }
 
 
-void Renderer::bindIndexBuffer(BufferHandle handle, bool bit16) {
+void Renderer::bindIndexBuffer(BufferHandle handle, IndexFormat indexFormat) {
 	assert(impl->inFrame);
 	assert(impl->validPipeline);
 
@@ -2166,7 +2195,7 @@ void Renderer::bindIndexBuffer(BufferHandle handle, bool bit16) {
 	}
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.buffer);
 	impl->indexBufByteOffset = buffer.offset;
-	impl->idxBuf16Bit        = bit16;
+	impl->indexFormat        = indexFormat;
 }
 
 
@@ -2539,7 +2568,7 @@ void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int insta
 	assert(!impl->decriptorSetsDirty);
 
 	LOG_TODO("get primitive from current pipeline");
-	GLenum format = impl->idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT ;
+	GLenum format = glIndexFormat(impl->indexFormat);
 	auto ptr = reinterpret_cast<const void *>(impl->indexBufByteOffset);
 	if (instanceCount == 1) {
 		glDrawElements(GL_TRIANGLES, vertexCount, format, ptr);
@@ -2564,8 +2593,8 @@ void Renderer::drawIndexed(unsigned int vertexCount, unsigned int firstIndex) {
 	}
 	assert(!impl->decriptorSetsDirty);
 
-	GLenum format        = impl->idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
-	unsigned int idxSize = impl->idxBuf16Bit ? 2                 : 4 ;
+	GLenum format        = glIndexFormat(impl->indexFormat);
+	unsigned int idxSize = glIndexSize(impl->indexFormat);
 	auto ptr = reinterpret_cast<const char *>(firstIndex * idxSize + impl->indexBufByteOffset);
 	LOG_TODO("get primitive from current pipeline");
 	glDrawElements(GL_TRIANGLES, vertexCount, format, ptr);
@@ -2587,8 +2616,8 @@ void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int fi
 	}
 	assert(!impl->decriptorSetsDirty);
 
-	GLenum format        = impl->idxBuf16Bit ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
-	unsigned int idxSize = impl->idxBuf16Bit ? 2                 : 4 ;
+	GLenum format        = glIndexFormat(impl->indexFormat);
+	unsigned int idxSize = glIndexSize(impl->indexFormat);
 	auto ptr = reinterpret_cast<const char *>(firstIndex * idxSize + impl->indexBufByteOffset);
 	LOG_TODO("get primitive from current pipeline");
 	glDrawElementsBaseVertex(GL_TRIANGLES, vertexCount, format, ptr, vertexOffset);

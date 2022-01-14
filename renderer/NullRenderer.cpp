@@ -410,7 +410,7 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 }
 
 
-void Renderer::bindIndexBuffer(BufferHandle /* buffer */, bool /* bit16 */ ) {
+void Renderer::bindIndexBuffer(BufferHandle /* buffer */, IndexFormat /* indexFormat */) {
 	assert(impl->inFrame);
 	assert(impl->validPipeline);
 }

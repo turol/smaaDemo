@@ -682,7 +682,7 @@ struct RendererImpl : public RendererBase {
 	bool                                     debug;
 	bool                                     tracing;
 	GLuint                                   vao;
-	bool                                     idxBuf16Bit;
+	IndexFormat                              indexFormat;
 	unsigned int                             indexBufByteOffset;
 
 

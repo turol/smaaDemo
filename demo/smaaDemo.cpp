@@ -2686,7 +2686,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	renderer.bindDescriptorSet(0, globalDS);
 
 	renderer.bindVertexBuffer(0, shapeBuffers[activeShape].vertices);
-	renderer.bindIndexBuffer(shapeBuffers[activeShape].indices, false);
+	renderer.bindIndexBuffer(shapeBuffers[activeShape].indices, IndexFormat::b32);
 
 	ShapeSceneDS shapeDS;
 	// FIXME: remove unused UBO hack
@@ -3521,7 +3521,7 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 		for (int n = 0; n < drawData->CmdListsCount; n++) {
 			const ImDrawList* cmd_list = drawData->CmdLists[n];
 
-			renderer.bindIndexBuffer(idxBuf, sizeof(ImDrawIdx) == sizeof(uint16_t));
+			renderer.bindIndexBuffer(idxBuf, (sizeof(ImDrawIdx) == sizeof(uint16_t)) ? IndexFormat::b16 : IndexFormat::b32);
 			renderer.bindVertexBuffer(0, vtxBuf);
 
 			for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++) {

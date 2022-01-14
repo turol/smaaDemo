@@ -1125,7 +1125,7 @@ public:
 		bindDescriptorSet(index, T::layoutHandle, &data);
 	}
 
-	void bindIndexBuffer(BufferHandle buffer, bool bit16);
+	void bindIndexBuffer(BufferHandle buffer, IndexFormat indexFormat);
 	void bindVertexBuffer(unsigned int binding, BufferHandle buffer);
 
 	void blit(RenderTargetHandle source, RenderTargetHandle target);

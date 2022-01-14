@@ -85,6 +85,21 @@ static const std::array<vk::DescriptorType, DescriptorType::_size()> descriptorT
 } };
 
 
+static vk::IndexType vulkanIndexFormat(IndexFormat indexFormat) {
+	switch (indexFormat) {
+	case IndexFormat::b16:
+		return vk::IndexType::eUint16;
+
+	case IndexFormat::b32:
+		return vk::IndexType::eUint32;
+
+	}
+
+	HEDLEY_UNREACHABLE();
+	return vk::IndexType::eNoneKHR;
+}
+
+
 static vk::Format vulkanVertexFormat(VtxFormat format, uint8_t count) {
 	switch (format) {
 	case VtxFormat::Float:
@@ -3281,7 +3296,7 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 }
 
 
-void Renderer::bindIndexBuffer(BufferHandle buffer, bool bit16) {
+void Renderer::bindIndexBuffer(BufferHandle buffer, IndexFormat indexFormat) {
 	assert(impl->inFrame);
 	assert(impl->validPipeline);
 
@@ -3293,7 +3308,7 @@ void Renderer::bindIndexBuffer(BufferHandle buffer, bool bit16) {
 		// but ephemeral buffers use the ringbuffer and an offset
 		offset = b.offset;
 	}
-	impl->currentCommandBuffer.bindIndexBuffer(b.buffer, offset, bit16 ? vk::IndexType::eUint16 : vk::IndexType::eUint32);
+	impl->currentCommandBuffer.bindIndexBuffer(b.buffer, offset, vulkanIndexFormat(indexFormat));
 }
 
 
