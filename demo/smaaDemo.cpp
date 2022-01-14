@@ -3468,10 +3468,10 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 		int indexCount  = drawData->TotalIdxCount;
 
 		if (guiVertices.size() < static_cast<size_t>(vertexCount)) {
-		guiVertices.resize(vertexCount);
+			guiVertices.resize(vertexCount);
 		}
 		if (guiIndices.size() < static_cast<size_t>(indexCount)) {
-		guiIndices.resize(indexCount);
+			guiIndices.resize(indexCount);
 		}
 
 		int vertexOffset = 0;
