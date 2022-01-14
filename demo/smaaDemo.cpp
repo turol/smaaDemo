@@ -543,6 +543,9 @@ class SMAADemo {
 	char                                              imageFileName[inputTextBufferSize];
 	char                                              clipboardText[inputTextBufferSize];
 
+	std::vector<ImDrawVert>                           guiVertices;
+	std::vector<ImDrawIdx>                            guiIndices;
+
 #endif  // IMGUI_DISABLE
 
 
@@ -3464,12 +3467,12 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 		int vertexCount = drawData->TotalVtxCount;
 		int indexCount  = drawData->TotalIdxCount;
 
-		LOG_TODO("keep buffers in SMAADemo class so they're not reallocated every frame");
-		std::vector<ImDrawVert> guiVertices;
-		std::vector<ImDrawIdx>  guiIndices;
-
+		if (guiVertices.size() < static_cast<size_t>(vertexCount)) {
 		guiVertices.resize(vertexCount);
+		}
+		if (guiIndices.size() < static_cast<size_t>(indexCount)) {
 		guiIndices.resize(indexCount);
+		}
 
 		int vertexOffset = 0;
 		int indexOffset  = 0;
