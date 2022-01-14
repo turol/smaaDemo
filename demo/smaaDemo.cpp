@@ -3458,19 +3458,43 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 		colorDS.unused = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
 		colorDS.color = imguiFontsTex;
 		renderer.bindDescriptorSet(1, colorDS);
-		LOG_TODO("upload all buffers first, render after");
-		// and one buffer each vertex/index
 
+		assert(sizeof(ImDrawIdx) == sizeof(uint16_t) || sizeof(ImDrawIdx) == sizeof(uint32_t));
+
+		int vertexCount = drawData->TotalVtxCount;
+		int indexCount  = drawData->TotalIdxCount;
+
+		LOG_TODO("keep buffers in SMAADemo class so they're not reallocated every frame");
+		std::vector<ImDrawVert> guiVertices;
+		std::vector<ImDrawIdx>  guiIndices;
+
+		guiVertices.resize(vertexCount);
+		guiIndices.resize(indexCount);
+
+		int vertexOffset = 0;
+		int indexOffset  = 0;
+		for (int n = 0; n < drawData->CmdListsCount; n++) {
+			const ImDrawList* cmd_list = drawData->CmdLists[n];
+			memcpy(&guiVertices[vertexOffset], cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
+			memcpy(&guiIndices[indexOffset],   cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
+			vertexOffset += cmd_list->VtxBuffer.Size;
+			indexOffset  += cmd_list->IdxBuffer.Size;
+		}
+
+		assert(vertexOffset == vertexCount);
+		assert(indexOffset  == indexCount);
+
+		BufferHandle vtxBuf = renderer.createEphemeralBuffer(BufferType::Vertex, vertexCount * sizeof(ImDrawVert), guiVertices.data());
+		BufferHandle idxBuf = renderer.createEphemeralBuffer(BufferType::Index,  indexCount  * sizeof(ImDrawIdx),  guiIndices.data());
+
+		indexOffset  = 0;
+		vertexOffset = 0;
 		for (int n = 0; n < drawData->CmdListsCount; n++) {
 			const ImDrawList* cmd_list = drawData->CmdLists[n];
 
-			BufferHandle vtxBuf = renderer.createEphemeralBuffer(BufferType::Vertex, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert), cmd_list->VtxBuffer.Data);
-			BufferHandle idxBuf = renderer.createEphemeralBuffer(BufferType::Index, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx), cmd_list->IdxBuffer.Data);
-			assert(sizeof(ImDrawIdx) == sizeof(uint16_t) || sizeof(ImDrawIdx) == sizeof(uint32_t));
 			renderer.bindIndexBuffer(idxBuf, sizeof(ImDrawIdx) == sizeof(uint16_t));
 			renderer.bindVertexBuffer(0, vtxBuf);
 
-			unsigned int idx_buffer_offset = 0;
 			for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++) {
 				const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
 				if (pcmd->UserCallback) {
@@ -3482,16 +3506,22 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 					assert(pcmd->TextureId == 0);
 					renderer.setScissorRect(static_cast<unsigned int>(pcmd->ClipRect.x), static_cast<unsigned int>(pcmd->ClipRect.y),
 						static_cast<unsigned int>(pcmd->ClipRect.z - pcmd->ClipRect.x), static_cast<unsigned int>(pcmd->ClipRect.w - pcmd->ClipRect.y));
-					renderer.drawIndexed(pcmd->ElemCount, idx_buffer_offset);
+					renderer.drawIndexedVertexOffset(pcmd->ElemCount, indexOffset, vertexOffset);
 				}
-				idx_buffer_offset += pcmd->ElemCount;
+				indexOffset  += pcmd->ElemCount;
 			}
+
+			vertexOffset += cmd_list->VtxBuffer.Size;
 		}
+
 #if 0
+
 		LOG("CmdListsCount: {}", drawData->CmdListsCount);
 		LOG("TotalVtxCount: {}", drawData->TotalVtxCount);
 		LOG("TotalIdxCount: {}", drawData->TotalIdxCount);
+
 #endif // 0
+
 	} else {
 		assert(drawData->CmdLists      == nullptr);
 		assert(drawData->TotalVtxCount == 0);
