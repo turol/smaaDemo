@@ -2446,7 +2446,17 @@ void SMAADemo::processInput() {
 
 		case SDL_MOUSEWHEEL:
 			io.MouseWheel = static_cast<float>(event.wheel.y);
+			if (!io.WantCaptureMouse) {
+				cameraDistance -= event.wheel.y;
+			}
 			break;
+
+#else   // IMGUI_DISABLE
+
+		case SDL_MOUSEWHEEL:
+			cameraDistance -= event.wheel.y;
+			break;
+
 
 #endif  // IMGUI_DISABLE
 
