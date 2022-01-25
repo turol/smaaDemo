@@ -1,5 +1,5 @@
-commit c5870ad3c24b0eec723e0451c043f43d765785c9
+commit a4d39851fd7c76aa78846057bc3522546062fcfb
 Author: Adam Sawicki <adam.sawicki@amd.com>
-Date:   Wed Jan 12 12:57:02 2022 +0100
+Date:   Mon Jan 24 15:16:13 2022 +0100
 
-    Forgot to delete VmaReplay.exe
+    Fixed syntax errors
