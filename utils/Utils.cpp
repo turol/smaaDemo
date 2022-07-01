@@ -45,6 +45,9 @@ void logInit() {
 	assert(!logFile);
 
 	char *logFilePath = SDL_GetPrefPath("", "SMAADemo");
+	if (logFilePath == nullptr) {
+		THROW_ERROR("SDL_GetPrefPath failed");
+	}
 	std::string logFileName(logFilePath);
 	SDL_free(logFilePath);
 	logFileName += "logfile.txt";
