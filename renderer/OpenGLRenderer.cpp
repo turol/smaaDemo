@@ -648,10 +648,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 	}
 
-	LOG("GL vendor: \"{}\"", glGetString(GL_VENDOR));
-	LOG("GL renderer: \"{}\"", glGetString(GL_RENDERER));
-	LOG("GL version: \"{}\"", glGetString(GL_VERSION));
-	LOG("GLSL version: \"{}\"", glGetString(GL_SHADING_LANGUAGE_VERSION));
+	LOG("GL vendor: \"{}\"",    reinterpret_cast<const char *>(glGetString(GL_VENDOR)));
+	LOG("GL renderer: \"{}\"",  reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
+	LOG("GL version: \"{}\"",   reinterpret_cast<const char *>(glGetString(GL_VERSION)));
+	LOG("GLSL version: \"{}\"", reinterpret_cast<const char *>(glGetString(GL_SHADING_LANGUAGE_VERSION)));
 
 	LOG("Interesting GL values:");
 	glValues.reserve(sizeof(interestingValues) / sizeof(interestingValues[0]));
