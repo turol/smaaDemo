@@ -1,4 +1,5 @@
 .clang-format
+.github/issue_template.md
 .github/pull_request_template.md
 .github/workflows/doc.yml
 .github/workflows/linux.yml
@@ -108,11 +109,11 @@ include/fmt/compile.h
 include/fmt/core.h
 include/fmt/format-inl.h
 include/fmt/format.h
-include/fmt/locale.h
 include/fmt/os.h
 include/fmt/ostream.h
 include/fmt/printf.h
 include/fmt/ranges.h
+include/fmt/std.h
 include/fmt/xchar.h
 src/fmt.cc
 src/format.cc
@@ -159,6 +160,7 @@ test/core-test.cc
 test/cuda-test/CMakeLists.txt
 test/cuda-test/cpp14.cc
 test/cuda-test/cuda-cpp14.cu
+test/detect-stdfs.cc
 test/enforce-checks-test.cc
 test/find-package-test/CMakeLists.txt
 test/find-package-test/main.cc
@@ -201,6 +203,7 @@ test/scan.h
 test/static-export-test/CMakeLists.txt
 test/static-export-test/library.cc
 test/static-export-test/main.cc
+test/std-test.cc
 test/test-assert.h
 test/test-main.cc
 test/unicode-test.cc
