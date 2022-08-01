@@ -48,6 +48,7 @@ backends/vulkan/glsl_shader.frag
 backends/vulkan/glsl_shader.vert
 docs/BACKENDS.md
 docs/CHANGELOG.txt
+docs/CONTRIBUTING.md
 docs/EXAMPLES.md
 docs/FAQ.md
 docs/FONTS.md

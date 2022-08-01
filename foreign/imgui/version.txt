@@ -1,5 +1,7 @@
-commit c71a50deb5ddf1ea386b91e60fa2e4a26d080074
+commit 9aae45eb4a05a5a1f96be1ef37eb503a12ceb889
 Author: ocornut <omarcornut@gmail.com>
-Date:   Mon Feb 7 17:41:24 2022 +0100
+Date:   Tue Jun 21 17:38:27 2022 +0200
 
-    Version 1.87
+    Version 1.88
+    
+    (fix "Show Debug Log" checkbox in Metrics window)
