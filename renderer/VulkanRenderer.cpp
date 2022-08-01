@@ -312,7 +312,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	}
 
-	window = SDL_CreateWindow(desc.applicationName.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, desc.swapchain.width, desc.swapchain.height, flags);
+	window = SDL_CreateWindow((desc.applicationName + " (Vulkan)").c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, desc.swapchain.width, desc.swapchain.height, flags);
 
 	if (!window) {
 		THROW_ERROR("SDL_CreateWindow failed: {}", SDL_GetError());
