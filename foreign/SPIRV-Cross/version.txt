@@ -1,8 +1,8 @@
-commit e9cc6403341baf0edd430a4027b074d0a06b782f
-Merge: 25868923 6d8302ef
+commit 0cccd0a65a67f33922f8d0742b5930fd15353fa7
+Merge: c24d5a7b 4dfac510
 Author: Hans-Kristian Arntzen <post@arntzen-software.no>
-Date:   Tue Nov 30 14:21:40 2021 +0100
+Date:   Fri Jul 22 21:45:47 2022 +0200
 
-    Merge pull request #1815 from etra0/fix-1768
+    Merge pull request #1986 from KhronosGroup/fix-1975
     
-    MSL: Add 64 bit switch support
+    Handle multiple breaks out of switches.

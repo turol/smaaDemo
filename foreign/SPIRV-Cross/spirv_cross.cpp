@@ -36,16 +36,16 @@ using namespace SPIRV_CROSS_NAMESPACE;
 
 Compiler::Compiler(vector<uint32_t> ir_)
 {
-	Parser parser(move(ir_));
+	Parser parser(std::move(ir_));
 	parser.parse();
-	set_ir(move(parser.get_parsed_ir()));
+	set_ir(std::move(parser.get_parsed_ir()));
 }
 
 Compiler::Compiler(const uint32_t *ir_, size_t word_count)
 {
 	Parser parser(ir_, word_count);
 	parser.parse();
-	set_ir(move(parser.get_parsed_ir()));
+	set_ir(std::move(parser.get_parsed_ir()));
 }
 
 Compiler::Compiler(const ParsedIR &ir_)
@@ -55,12 +55,12 @@ Compiler::Compiler(const ParsedIR &ir_)
 
 Compiler::Compiler(ParsedIR &&ir_)
 {
-	set_ir(move(ir_));
+	set_ir(std::move(ir_));
 }
 
 void Compiler::set_ir(ParsedIR &&ir_)
 {
-	ir = move(ir_);
+	ir = std::move(ir_);
 	parse_fixup();
 }
 
@@ -852,7 +852,7 @@ unordered_set<VariableID> Compiler::get_active_interface_variables() const
 
 void Compiler::set_enabled_interface_variables(std::unordered_set<VariableID> active_variables)
 {
-	active_interface_variables = move(active_variables);
+	active_interface_variables = std::move(active_variables);
 	check_active_interface_variables = true;
 }
 
@@ -1050,10 +1050,12 @@ void Compiler::parse_fixup()
 		if (id.get_type() == TypeConstant)
 		{
 			auto &c = id.get<SPIRConstant>();
-			if (ir.meta[c.self].decoration.builtin && ir.meta[c.self].decoration.builtin_type == BuiltInWorkgroupSize)
+			if (has_decoration(c.self, DecorationBuiltIn) &&
+			    BuiltIn(get_decoration(c.self, DecorationBuiltIn)) == BuiltInWorkgroupSize)
 			{
 				// In current SPIR-V, there can be just one constant like this.
 				// All entry points will receive the constant value.
+				// WorkgroupSize take precedence over LocalSizeId.
 				for (auto &entry : ir.entry_points)
 				{
 					entry.second.workgroup_size.constant = c.self;
@@ -1675,6 +1677,11 @@ const SmallVector<SPIRBlock::Case> &Compiler::get_case_list(const SPIRBlock &blo
 		const auto &type = get<SPIRType>(var->basetype);
 		width = type.width;
 	}
+	else if (const auto *undef = maybe_get<SPIRUndef>(block.condition))
+	{
+		const auto &type = get<SPIRType>(undef->basetype);
+		width = type.width;
+	}
 	else
 	{
 		auto search = ir.load_type_width.find(block.condition);
@@ -2156,6 +2163,12 @@ void Compiler::set_execution_mode(ExecutionMode mode, uint32_t arg0, uint32_t ar
 		execution.workgroup_size.z = arg2;
 		break;
 
+	case ExecutionModeLocalSizeId:
+		execution.workgroup_size.id_x = arg0;
+		execution.workgroup_size.id_y = arg1;
+		execution.workgroup_size.id_z = arg2;
+		break;
+
 	case ExecutionModeInvocations:
 		execution.invocations = arg0;
 		break;
@@ -2183,6 +2196,7 @@ uint32_t Compiler::get_work_group_size_specialization_constants(SpecializationCo
 	y = { 0, 0 };
 	z = { 0, 0 };
 
+	// WorkgroupSize builtin takes precedence over LocalSize / LocalSizeId.
 	if (execution.workgroup_size.constant != 0)
 	{
 		auto &c = get<SPIRConstant>(execution.workgroup_size.constant);
@@ -2205,6 +2219,29 @@ uint32_t Compiler::get_work_group_size_specialization_constants(SpecializationCo
 			z.constant_id = get_decoration(c.m.c[0].id[2], DecorationSpecId);
 		}
 	}
+	else if (execution.flags.get(ExecutionModeLocalSizeId))
+	{
+		auto &cx = get<SPIRConstant>(execution.workgroup_size.id_x);
+		if (cx.specialization)
+		{
+			x.id = execution.workgroup_size.id_x;
+			x.constant_id = get_decoration(execution.workgroup_size.id_x, DecorationSpecId);
+		}
+
+		auto &cy = get<SPIRConstant>(execution.workgroup_size.id_y);
+		if (cy.specialization)
+		{
+			y.id = execution.workgroup_size.id_y;
+			y.constant_id = get_decoration(execution.workgroup_size.id_y, DecorationSpecId);
+		}
+
+		auto &cz = get<SPIRConstant>(execution.workgroup_size.id_z);
+		if (cz.specialization)
+		{
+			z.id = execution.workgroup_size.id_z;
+			z.constant_id = get_decoration(execution.workgroup_size.id_z, DecorationSpecId);
+		}
+	}
 
 	return execution.workgroup_size.constant;
 }
@@ -2214,15 +2251,42 @@ uint32_t Compiler::get_execution_mode_argument(spv::ExecutionMode mode, uint32_t
 	auto &execution = get_entry_point();
 	switch (mode)
 	{
+	case ExecutionModeLocalSizeId:
+		if (execution.flags.get(ExecutionModeLocalSizeId))
+		{
+			switch (index)
+			{
+			case 0:
+				return execution.workgroup_size.id_x;
+			case 1:
+				return execution.workgroup_size.id_y;
+			case 2:
+				return execution.workgroup_size.id_z;
+			default:
+				return 0;
+			}
+		}
+		else
+			return 0;
+
 	case ExecutionModeLocalSize:
 		switch (index)
 		{
 		case 0:
-			return execution.workgroup_size.x;
+			if (execution.flags.get(ExecutionModeLocalSizeId) && execution.workgroup_size.id_x != 0)
+				return get<SPIRConstant>(execution.workgroup_size.id_x).scalar();
+			else
+				return execution.workgroup_size.x;
 		case 1:
-			return execution.workgroup_size.y;
+			if (execution.flags.get(ExecutionModeLocalSizeId) && execution.workgroup_size.id_y != 0)
+				return get<SPIRConstant>(execution.workgroup_size.id_y).scalar();
+			else
+				return execution.workgroup_size.y;
 		case 2:
-			return execution.workgroup_size.z;
+			if (execution.flags.get(ExecutionModeLocalSizeId) && execution.workgroup_size.id_z != 0)
+				return get<SPIRConstant>(execution.workgroup_size.id_z).scalar();
+			else
+				return execution.workgroup_size.z;
 		default:
 			return 0;
 		}
@@ -2449,7 +2513,7 @@ void Compiler::CombinedImageSamplerHandler::push_remap_parameters(const SPIRFunc
 	unordered_map<uint32_t, uint32_t> remapping;
 	for (uint32_t i = 0; i < length; i++)
 		remapping[func.arguments[i].id] = remap_parameter(args[i]);
-	parameter_remapping.push(move(remapping));
+	parameter_remapping.push(std::move(remapping));
 }
 
 void Compiler::CombinedImageSamplerHandler::pop_remap_parameters()
@@ -3165,7 +3229,20 @@ bool Compiler::AnalyzeVariableScopeAccessHandler::handle(spv::Op op, const uint3
 	// Keep track of the types of temporaries, so we can hoist them out as necessary.
 	uint32_t result_type, result_id;
 	if (compiler.instruction_to_result_type(result_type, result_id, op, args, length))
+	{
+		// For some opcodes, we will need to override the result id.
+		// If we need to hoist the temporary, the temporary type is the input, not the result.
+		// FIXME: This will likely break with OpCopyObject + hoisting, but we'll have to
+		// solve it if we ever get there ...
+		if (op == OpConvertUToAccelerationStructureKHR)
+		{
+			auto itr = result_id_to_type.find(args[2]);
+			if (itr != result_id_to_type.end())
+				result_type = itr->second;
+		}
+
 		result_id_to_type[result_id] = result_type;
+	}
 
 	switch (op)
 	{
@@ -3667,6 +3744,7 @@ void Compiler::analyze_variable_scope(SPIRFunction &entry, AnalyzeVariableScopeA
 		DominatorBuilder builder(cfg);
 		auto &blocks = var.second;
 		auto &type = expression_type(var.first);
+		BlockID potential_continue_block = 0;
 
 		// Figure out which block is dominating all accesses of those variables.
 		for (auto &block : blocks)
@@ -3688,14 +3766,13 @@ void Compiler::analyze_variable_scope(SPIRFunction &entry, AnalyzeVariableScopeA
 				{
 					// The variable is used in multiple continue blocks, this is not a loop
 					// candidate, signal that by setting block to -1u.
-					auto &potential = potential_loop_variables[var.first];
-
-					if (potential == 0)
-						potential = block;
+					if (potential_continue_block == 0)
+						potential_continue_block = block;
 					else
-						potential = ~(0u);
+						potential_continue_block = ~(0u);
 				}
 			}
+
 			builder.add_block(block);
 		}
 
@@ -3703,6 +3780,34 @@ void Compiler::analyze_variable_scope(SPIRFunction &entry, AnalyzeVariableScopeA
 
 		// Add it to a per-block list of variables.
 		BlockID dominating_block = builder.get_dominator();
+
+		if (dominating_block && potential_continue_block != 0 && potential_continue_block != ~0u)
+		{
+			auto &inner_block = get<SPIRBlock>(dominating_block);
+
+			BlockID merge_candidate = 0;
+
+			// Analyze the dominator. If it lives in a different loop scope than the candidate continue
+			// block, reject the loop variable candidate.
+			if (inner_block.merge == SPIRBlock::MergeLoop)
+				merge_candidate = inner_block.merge_block;
+			else if (inner_block.loop_dominator != SPIRBlock::NoDominator)
+				merge_candidate = get<SPIRBlock>(inner_block.loop_dominator).merge_block;
+
+			if (merge_candidate != 0 && cfg.is_reachable(merge_candidate))
+			{
+				// If the merge block has a higher post-visit order, we know that continue candidate
+				// cannot reach the merge block, and we have two separate scopes.
+				if (!cfg.is_reachable(potential_continue_block) ||
+				    cfg.get_visit_order(merge_candidate) > cfg.get_visit_order(potential_continue_block))
+				{
+					potential_continue_block = 0;
+				}
+			}
+		}
+
+		if (potential_continue_block != 0 && potential_continue_block != ~0u)
+			potential_loop_variables[var.first] = potential_continue_block;
 
 		// For variables whose dominating block is inside a loop, there is a risk that these variables
 		// actually need to be preserved across loop iterations. We can express this by adding
@@ -4303,7 +4408,7 @@ void Compiler::analyze_image_and_sampler_usage()
 	handler.dependency_hierarchy.clear();
 	traverse_all_reachable_opcodes(get<SPIRFunction>(ir.default_entry_point), handler);
 
-	comparison_ids = move(handler.comparison_ids);
+	comparison_ids = std::move(handler.comparison_ids);
 	need_subpass_input = handler.need_subpass_input;
 
 	// Forward information from separate images and samplers into combined image samplers.
@@ -4356,7 +4461,7 @@ void Compiler::build_function_control_flow_graphs_and_analyze()
 	CFGBuilder handler(*this);
 	handler.function_cfgs[ir.default_entry_point].reset(new CFG(*this, get<SPIRFunction>(ir.default_entry_point)));
 	traverse_all_reachable_opcodes(get<SPIRFunction>(ir.default_entry_point), handler);
-	function_cfgs = move(handler.function_cfgs);
+	function_cfgs = std::move(handler.function_cfgs);
 	bool single_function = function_cfgs.size() <= 1;
 
 	for (auto &f : function_cfgs)
@@ -4646,46 +4751,22 @@ bool Compiler::reflection_ssbo_instance_name_is_significant() const
 	return aliased_ssbo_types;
 }
 
-bool Compiler::instruction_to_result_type(uint32_t &result_type, uint32_t &result_id, spv::Op op, const uint32_t *args,
-                                          uint32_t length)
+bool Compiler::instruction_to_result_type(uint32_t &result_type, uint32_t &result_id, spv::Op op,
+                                          const uint32_t *args, uint32_t length)
 {
-	// Most instructions follow the pattern of <result-type> <result-id> <arguments>.
-	// There are some exceptions.
-	switch (op)
-	{
-	case OpStore:
-	case OpCopyMemory:
-	case OpCopyMemorySized:
-	case OpImageWrite:
-	case OpAtomicStore:
-	case OpAtomicFlagClear:
-	case OpEmitStreamVertex:
-	case OpEndStreamPrimitive:
-	case OpControlBarrier:
-	case OpMemoryBarrier:
-	case OpGroupWaitEvents:
-	case OpRetainEvent:
-	case OpReleaseEvent:
-	case OpSetUserEventStatus:
-	case OpCaptureEventProfilingInfo:
-	case OpCommitReadPipe:
-	case OpCommitWritePipe:
-	case OpGroupCommitReadPipe:
-	case OpGroupCommitWritePipe:
-	case OpLine:
-	case OpNoLine:
+	if (length < 2)
 		return false;
 
-	default:
-		if (length > 1 && maybe_get<SPIRType>(args[0]) != nullptr)
-		{
-			result_type = args[0];
-			result_id = args[1];
-			return true;
-		}
-		else
-			return false;
+	bool has_result_id = false, has_result_type = false;
+	HasResultAndType(op, &has_result_id, &has_result_type);
+	if (has_result_id && has_result_type)
+	{
+		result_type = args[0];
+		result_id = args[1];
+		return true;
 	}
+	else
+		return false;
 }
 
 Bitset Compiler::combined_decoration_for_member(const SPIRType &type, uint32_t index) const
@@ -4769,6 +4850,12 @@ void Compiler::force_recompile()
 	is_force_recompile = true;
 }
 
+void Compiler::force_recompile_guarantee_forward_progress()
+{
+	force_recompile();
+	is_force_recompile_forward_progress = true;
+}
+
 bool Compiler::is_forcing_recompilation() const
 {
 	return is_force_recompile;
@@ -4777,6 +4864,7 @@ bool Compiler::is_forcing_recompilation() const
 void Compiler::clear_force_recompile()
 {
 	is_force_recompile = false;
+	is_force_recompile_forward_progress = false;
 }
 
 Compiler::PhysicalStorageBufferPointerHandler::PhysicalStorageBufferPointerHandler(Compiler &compiler_)
@@ -4958,7 +5046,7 @@ void Compiler::analyze_non_block_pointer_types()
 	for (auto type : handler.non_block_types)
 		physical_storage_non_block_pointer_types.push_back(type);
 	sort(begin(physical_storage_non_block_pointer_types), end(physical_storage_non_block_pointer_types));
-	physical_storage_type_to_alignment = move(handler.physical_block_type_meta);
+	physical_storage_type_to_alignment = std::move(handler.physical_block_type_meta);
 }
 
 bool Compiler::InterlockedResourceAccessPrepassHandler::handle(Op op, const uint32_t *, uint32_t)
