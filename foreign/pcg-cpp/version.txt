@@ -1,10 +1,5 @@
-commit ffd522e7188bef30a00c74dc7eb9de5faff90092
+commit 428802d1a5634f96bcd0705fab379ff0113bcf13
 Author: Melissa O'Neill <oneill@acm.org>
-Date:   Mon Apr 5 20:45:04 2021 -0700
+Date:   Fri Apr 8 10:07:14 2022 -0700
 
-    Fix multiple-definition issue.
-    
-    To keep the header-only nature of things, the 64-bit specializations
-    are now partial specializations (or the equivalent via overloading)
-    so that everything is still a parameterized template of some kind.
-    Ugh.
+    Update year.
