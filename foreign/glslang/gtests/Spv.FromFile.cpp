@@ -126,7 +126,7 @@ TEST_P(CompileToSpirv14Test, FromFile)
 TEST_P(CompileToSpirv16Test, FromFile)
 {
     loadFileCompileAndCheck(GlobalTestSettings.testRoot, GetParam(),
-                            Source::GLSL, Semantics::Vulkan, glslang::EShTargetUniversal, glslang::EShTargetSpv_1_6,
+                            Source::GLSL, Semantics::Vulkan, glslang::EShTargetVulkan_1_3, glslang::EShTargetSpv_1_6,
                             Target::Spv);
 }
 
@@ -258,6 +258,7 @@ INSTANTIATE_TEST_SUITE_P(
         "rayQuery-initialization.Error.comp",
         "rayQuery-global.rgen",
         "rayQuery-types.comp",
+        "rayQuery-OpConvertUToAccelerationStructureKHR.comp",
         "spv.set.vert",
         "spv.double.comp",
         "spv.100ops.frag",
@@ -444,6 +445,7 @@ INSTANTIATE_TEST_SUITE_P(
         "spv.textureBuffer.vert",
         "spv.image.frag",
         "spv.imageAtomic64.frag",
+        "spv.imageAtomic64.comp",
         "spv.types.frag",
         "spv.uint.frag",
         "spv.uniformArray.frag",
@@ -484,7 +486,9 @@ INSTANTIATE_TEST_SUITE_P(
         "spv.smBuiltins.frag",
         "spv.builtin.PrimitiveShadingRateEXT.vert",
         "spv.builtin.ShadingRateEXT.frag",
-        "spv.atomicAdd.bufferReference.comp"
+        "spv.atomicAdd.bufferReference.comp",
+        "spv.fragmentShaderBarycentric3.frag",
+        "spv.fragmentShaderBarycentric4.frag",
     })),
     FileNameAsCustomTestSuffix
 );
@@ -528,6 +532,7 @@ INSTANTIATE_TEST_SUITE_P(
         "spv.vulkan110.int16.frag",
         "spv.int32.frag",
         "spv.explicittypes.frag",
+        "spv.float16NoRelaxed.vert",
         "spv.float32.frag",
         "spv.float64.frag",
         "spv.memoryScopeSemantics.comp",
@@ -636,6 +641,8 @@ INSTANTIATE_TEST_SUITE_P(
         "spv.1.6.conditionalDiscard.frag",
         "spv.1.6.helperInvocation.frag",
         "spv.1.6.specConstant.comp",
+        "spv.1.6.samplerBuffer.frag",
+        "spv.1.6.separate.frag",
     })),
     FileNameAsCustomTestSuffix
 );

@@ -137,6 +137,7 @@ Test/450.vert
 Test/460.frag
 Test/460.vert
 Test/BestMatchFunction.vert
+Test/EndStreamPrimitive.geom
 Test/GL_ARB_draw_instanced.vert
 Test/GL_ARB_fragment_coord_conventions.vert
 Test/GL_ARB_gpu_shader5.u2i.vert
@@ -240,6 +241,7 @@ Test/baseResults/450.vert.out
 Test/baseResults/460.frag.out
 Test/baseResults/460.vert.out
 Test/baseResults/BestMatchFunction.vert.out
+Test/baseResults/EndStreamPrimitive.geom.out
 Test/baseResults/GL_ARB_draw_instanced.vert.out
 Test/baseResults/GL_ARB_fragment_coord_conventions.vert.out
 Test/baseResults/GL_ARB_gpu_shader5.u2i.vert.out
@@ -265,6 +267,7 @@ Test/baseResults/constFoldIntMin.frag.out
 Test/baseResults/constantUnaryConversion.comp.out
 Test/baseResults/contradict_0.geom.out
 Test/baseResults/conversion.frag.out
+Test/baseResults/coord_conventions.frag.out
 Test/baseResults/cppBad.vert.out
 Test/baseResults/cppBad2.vert.out
 Test/baseResults/cppBad3.vert.out
@@ -289,14 +292,24 @@ Test/baseResults/discard-dce.frag.out
 Test/baseResults/doWhileLoop.frag.out
 Test/baseResults/earlyReturnDiscard.frag.out
 Test/baseResults/empty.frag.out
+Test/baseResults/enhanced.0.frag.out
+Test/baseResults/enhanced.1.frag.out
+Test/baseResults/enhanced.2.frag.out
+Test/baseResults/enhanced.3.link.out
+Test/baseResults/enhanced.4.link.out
+Test/baseResults/enhanced.5.link.out
+Test/baseResults/enhanced.6.link.out
+Test/baseResults/enhanced.7.link.out
 Test/baseResults/errors.frag.out
 Test/baseResults/es-link1.frag.out
 Test/baseResults/findFunction.frag.out
+Test/baseResults/floatBitsToInt.vert.out
 Test/baseResults/flowControl.frag.out
 Test/baseResults/forLoop.frag.out
 Test/baseResults/forwardRef.frag.out
 Test/baseResults/functionCall.frag.out
 Test/baseResults/functionSemantics.frag.out
+Test/baseResults/gl_FragCoord.frag.out
 Test/baseResults/glsl.-D-U.frag.out
 Test/baseResults/glsl.140.layoutOffset.error.vert.out
 Test/baseResults/glsl.430.layoutOffset.error.vert.out
@@ -345,6 +358,12 @@ Test/baseResults/glsl.es320.subgroupQuad.comp.out
 Test/baseResults/glsl.es320.subgroupShuffle.comp.out
 Test/baseResults/glsl.es320.subgroupShuffleRelative.comp.out
 Test/baseResults/glsl.es320.subgroupVote.comp.out
+Test/baseResults/glsl.versionOverride.comp.out
+Test/baseResults/glsl.versionOverride.frag.out
+Test/baseResults/glsl.versionOverride.geom.out
+Test/baseResults/glsl.versionOverride.tesc.out
+Test/baseResults/glsl.versionOverride.tese.out
+Test/baseResults/glsl.versionOverride.vert.out
 Test/baseResults/glspv.esversion.vert.out
 Test/baseResults/glspv.frag.out
 Test/baseResults/glspv.version.frag.out
@@ -478,6 +497,7 @@ Test/baseResults/hlsl.init.frag.out
 Test/baseResults/hlsl.init2.frag.out
 Test/baseResults/hlsl.inoutquals.frag.out
 Test/baseResults/hlsl.inoutquals.negative.frag.out
+Test/baseResults/hlsl.instance.geom.out
 Test/baseResults/hlsl.int.dot.frag.out
 Test/baseResults/hlsl.intrinsic.frexp.frag.out
 Test/baseResults/hlsl.intrinsic.frexp.vert.out
@@ -736,6 +756,7 @@ Test/baseResults/negativeArraySize.comp.out
 Test/baseResults/negativeWorkGroupSize.comp.out
 Test/baseResults/newTexture.frag.out
 Test/baseResults/noMain.vert.out
+Test/baseResults/noMatchingFunction.frag.out
 Test/baseResults/nonSquare.vert.out
 Test/baseResults/nonVulkan.frag.out
 Test/baseResults/nonuniform.frag.out
@@ -783,6 +804,7 @@ Test/baseResults/preprocessor.simple.vert.err
 Test/baseResults/preprocessor.simple.vert.out
 Test/baseResults/preprocessor.success_if_parse_would_fail.vert.err
 Test/baseResults/preprocessor.success_if_parse_would_fail.vert.out
+Test/baseResults/rayQuery-OpConvertUToAccelerationStructureKHR.comp.out
 Test/baseResults/rayQuery-allOps.Error.rgen.out
 Test/baseResults/rayQuery-allOps.comp.out
 Test/baseResults/rayQuery-allOps.frag.out
@@ -855,6 +877,8 @@ Test/baseResults/spv.1.4.sparseTexture.frag.out
 Test/baseResults/spv.1.4.texture.frag.out
 Test/baseResults/spv.1.6.conditionalDiscard.frag.out
 Test/baseResults/spv.1.6.helperInvocation.frag.out
+Test/baseResults/spv.1.6.samplerBuffer.frag.out
+Test/baseResults/spv.1.6.separate.frag.out
 Test/baseResults/spv.1.6.specConstant.comp.out
 Test/baseResults/spv.100ops.frag.out
 Test/baseResults/spv.130.frag.out
@@ -1008,6 +1032,7 @@ Test/baseResults/spv.do-while-continue-break.vert.out
 Test/baseResults/spv.doWhileLoop.frag.out
 Test/baseResults/spv.double.comp.out
 Test/baseResults/spv.drawParams.vert.out
+Test/baseResults/spv.earlyAndlateFragmentTests.frag.out
 Test/baseResults/spv.earlyReturnDiscard.frag.out
 Test/baseResults/spv.explicittypes.frag.out
 Test/baseResults/spv.ext.AccelDecl.frag.out
@@ -1038,6 +1063,7 @@ Test/baseResults/spv.extPostDepthCoverage.frag.out
 Test/baseResults/spv.extPostDepthCoverage_Error.frag.out
 Test/baseResults/spv.float16.frag.out
 Test/baseResults/spv.float16Fetch.frag.out
+Test/baseResults/spv.float16NoRelaxed.vert.out
 Test/baseResults/spv.float16convertonlyarith.comp.out
 Test/baseResults/spv.float16convertonlystorage.comp.out
 Test/baseResults/spv.float32.frag.out
@@ -1056,6 +1082,8 @@ Test/baseResults/spv.fragmentDensity.frag.out
 Test/baseResults/spv.fragmentDensity.vert.out
 Test/baseResults/spv.fragmentShaderBarycentric.frag.out
 Test/baseResults/spv.fragmentShaderBarycentric2.frag.out
+Test/baseResults/spv.fragmentShaderBarycentric3.frag.out
+Test/baseResults/spv.fragmentShaderBarycentric4.frag.out
 Test/baseResults/spv.fsi.frag.out
 Test/baseResults/spv.fsi_Error.frag.out
 Test/baseResults/spv.fullyCovered.frag.out
@@ -1071,6 +1099,7 @@ Test/baseResults/spv.hlslDebugInfo.frag.out
 Test/baseResults/spv.hlslOffsets.vert.out
 Test/baseResults/spv.image.frag.out
 Test/baseResults/spv.image.load-formatted.frag.out
+Test/baseResults/spv.imageAtomic64.comp.out
 Test/baseResults/spv.imageAtomic64.frag.out
 Test/baseResults/spv.imageLoadStoreLod.frag.out
 Test/baseResults/spv.int16.amd.frag.out
@@ -1245,6 +1274,7 @@ Test/baseResults/spv.texture.frag.out
 Test/baseResults/spv.texture.sampler.transform.frag.out
 Test/baseResults/spv.texture.vert.out
 Test/baseResults/spv.textureBuffer.vert.out
+Test/baseResults/spv.textureError.frag.out
 Test/baseResults/spv.textureGatherBiasLod.frag.out
 Test/baseResults/spv.types.frag.out
 Test/baseResults/spv.uint.frag.out
@@ -1306,6 +1336,7 @@ Test/baseResults/vk.relaxed.changeSet.vert.out
 Test/baseResults/vk.relaxed.errorcheck.vert.out
 Test/baseResults/vk.relaxed.frag.out
 Test/baseResults/vk.relaxed.link1.frag.out
+Test/baseResults/vk.relaxed.stagelink.0.0.vert.out
 Test/baseResults/vk.relaxed.stagelink.vert.out
 Test/baseResults/voidFunction.frag.out
 Test/baseResults/vulkan.ast.vert.out
@@ -1322,6 +1353,7 @@ Test/baseResults/web.operations.frag.out
 Test/baseResults/web.separate.frag.out
 Test/baseResults/web.texture.frag.out
 Test/baseResults/whileLoop.frag.out
+Test/baseResults/xfbUnsizedArray.error.tese.out
 Test/baseResults/xfbUnsizedArray.error.vert.out
 Test/bump
 Test/comment.frag
@@ -1335,6 +1367,7 @@ Test/constantUnaryConversion.comp
 Test/contradict_0.geom
 Test/contradict_1.geom
 Test/conversion.frag
+Test/coord_conventions.frag
 Test/cppBad.vert
 Test/cppBad2.vert
 Test/cppBad3.vert
@@ -1361,16 +1394,31 @@ Test/earlyReturnDiscard.frag
 Test/empty.frag
 Test/empty2.frag
 Test/empty3.frag
+Test/enhanced.0.frag
+Test/enhanced.1.frag
+Test/enhanced.2.frag
+Test/enhanced.3.frag
+Test/enhanced.3.vert
+Test/enhanced.4.frag
+Test/enhanced.4.vert
+Test/enhanced.5.frag
+Test/enhanced.5.vert
+Test/enhanced.6.frag
+Test/enhanced.6.vert
+Test/enhanced.7.frag
+Test/enhanced.7.vert
 Test/errors.frag
 Test/es-link1.frag
 Test/es-link2.frag
 Test/findFunction.frag
+Test/floatBitsToInt.vert
 Test/flowControl.frag
 Test/foo.h
 Test/forLoop.frag
 Test/forwardRef.frag
 Test/functionCall.frag
 Test/functionSemantics.frag
+Test/gl_FragCoord.frag
 Test/glsl.-D-U.frag
 Test/glsl.140.layoutOffset.error.vert
 Test/glsl.430.layoutOffset.error.vert
@@ -1418,6 +1466,12 @@ Test/glsl.es320.subgroupQuad.comp
 Test/glsl.es320.subgroupShuffle.comp
 Test/glsl.es320.subgroupShuffleRelative.comp
 Test/glsl.es320.subgroupVote.comp
+Test/glsl.versionOverride.comp
+Test/glsl.versionOverride.frag
+Test/glsl.versionOverride.geom
+Test/glsl.versionOverride.tesc
+Test/glsl.versionOverride.tese
+Test/glsl.versionOverride.vert
 Test/glslangValidator
 Test/glspv.esversion.vert
 Test/glspv.frag
@@ -1552,6 +1606,7 @@ Test/hlsl.init.frag
 Test/hlsl.init2.frag
 Test/hlsl.inoutquals.frag
 Test/hlsl.inoutquals.negative.frag
+Test/hlsl.instance.geom
 Test/hlsl.int.dot.frag
 Test/hlsl.intrinsic.frexp.frag
 Test/hlsl.intrinsic.frexp.vert
@@ -1857,6 +1912,7 @@ Test/newTexture.frag
 Test/noMain.vert
 Test/noMain1.geom
 Test/noMain2.geom
+Test/noMatchingFunction.frag
 Test/nonSquare.vert
 Test/nonVulkan.frag
 Test/nonuniform.frag
@@ -1889,6 +1945,7 @@ Test/preprocessor.many.endif.vert
 Test/preprocessor.pragma.vert
 Test/preprocessor.simple.vert
 Test/preprocessor.success_if_parse_would_fail.vert
+Test/rayQuery-OpConvertUToAccelerationStructureKHR.comp
 Test/rayQuery-allOps.Error.rgen
 Test/rayQuery-allOps.comp
 Test/rayQuery-allOps.frag
@@ -1962,6 +2019,8 @@ Test/spv.1.4.sparseTexture.frag
 Test/spv.1.4.texture.frag
 Test/spv.1.6.conditionalDiscard.frag
 Test/spv.1.6.helperInvocation.frag
+Test/spv.1.6.samplerBuffer.frag
+Test/spv.1.6.separate.frag
 Test/spv.1.6.specConstant.comp
 Test/spv.100ops.frag
 Test/spv.130.frag
@@ -2114,6 +2173,7 @@ Test/spv.do-while-continue-break.vert
 Test/spv.doWhileLoop.frag
 Test/spv.double.comp
 Test/spv.drawParams.vert
+Test/spv.earlyAndlateFragmentTests.frag
 Test/spv.earlyReturnDiscard.frag
 Test/spv.explicittypes.frag
 Test/spv.ext.AccelDecl.frag
@@ -2144,6 +2204,7 @@ Test/spv.extPostDepthCoverage.frag
 Test/spv.extPostDepthCoverage_Error.frag
 Test/spv.float16.frag
 Test/spv.float16Fetch.frag
+Test/spv.float16NoRelaxed.vert
 Test/spv.float16convertonlyarith.comp
 Test/spv.float16convertonlystorage.comp
 Test/spv.float32.frag
@@ -2162,6 +2223,8 @@ Test/spv.fragmentDensity.frag
 Test/spv.fragmentDensity.vert
 Test/spv.fragmentShaderBarycentric.frag
 Test/spv.fragmentShaderBarycentric2.frag
+Test/spv.fragmentShaderBarycentric3.frag
+Test/spv.fragmentShaderBarycentric4.frag
 Test/spv.fsi.frag
 Test/spv.fsi_Error.frag
 Test/spv.fullyCovered.frag
@@ -2177,6 +2240,7 @@ Test/spv.hlslDebugInfo.vert
 Test/spv.hlslOffsets.vert
 Test/spv.image.frag
 Test/spv.image.load-formatted.frag
+Test/spv.imageAtomic64.comp
 Test/spv.imageAtomic64.frag
 Test/spv.imageLoadStoreLod.frag
 Test/spv.int16.amd.frag
@@ -2352,6 +2416,7 @@ Test/spv.texture.frag
 Test/spv.texture.sampler.transform.frag
 Test/spv.texture.vert
 Test/spv.textureBuffer.vert
+Test/spv.textureError.frag
 Test/spv.textureGatherBiasLod.frag
 Test/spv.types.frag
 Test/spv.uint.frag
@@ -2418,6 +2483,12 @@ Test/vk.relaxed.errorcheck.vert
 Test/vk.relaxed.frag
 Test/vk.relaxed.link1.frag
 Test/vk.relaxed.link2.frag
+Test/vk.relaxed.stagelink.0.0.frag
+Test/vk.relaxed.stagelink.0.0.vert
+Test/vk.relaxed.stagelink.0.1.frag
+Test/vk.relaxed.stagelink.0.1.vert
+Test/vk.relaxed.stagelink.0.2.frag
+Test/vk.relaxed.stagelink.0.2.vert
 Test/vk.relaxed.stagelink.frag
 Test/vk.relaxed.stagelink.vert
 Test/voidFunction.frag
@@ -2437,6 +2508,7 @@ Test/web.separate.frag
 Test/web.testlist
 Test/web.texture.frag
 Test/whileLoop.frag
+Test/xfbUnsizedArray.error.tese
 Test/xfbUnsizedArray.error.vert
 WORKSPACE
 _config.yml

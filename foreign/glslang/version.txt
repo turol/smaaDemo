@@ -1,8 +1,8 @@
-commit 9b20b25138bfe916173c9341075b996be14baa69
-Merge: ed37354f 7a49192d
+commit f0ce653a25726000d4f37d94de33b95f942ff657
+Merge: 22d39cd6 457d11eb
 Author: Greg Fischer <greg@lunarg.com>
-Date:   Thu Dec 16 15:32:54 2021 -0700
+Date:   Wed Jul 27 17:39:33 2022 -0600
 
-    Merge pull request #2845 from greg-lunarg/sup1.6
+    Merge pull request #2986 from jeremy-lunarg/hayes-update-macos-runner
     
-    Add support for spirv1.6
+    Update MacOS runner
