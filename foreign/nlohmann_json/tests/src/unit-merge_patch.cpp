@@ -1,6 +1,6 @@
 //     __ _____ _____ _____
 //  __|  |   __|     |   | |  JSON for Modern C++ (supporting code)
-// |  |  |__   |  |  | | | |  version 3.11.0
+// |  |  |__   |  |  | | | |  version 3.11.1
 // |_____|_____|_____|_|___|  https://github.com/nlohmann/json
 //
 // SPDX-FileCopyrightText: 2013-2022 Niels Lohmann <https://nlohmann.me>
@@ -10,7 +10,9 @@
 
 #include <nlohmann/json.hpp>
 using nlohmann::json;
-using namespace nlohmann::literals; // NOLINT(google-build-using-namespace)
+#ifdef JSON_TEST_NO_GLOBAL_UDLS
+    using namespace nlohmann::literals; // NOLINT(google-build-using-namespace)
+#endif
 
 TEST_CASE("JSON Merge Patch")
 {
