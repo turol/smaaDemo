@@ -1,5 +1,5 @@
-commit ab8eb607750208066e2d57eff6a34dbaf05f5ada
-Author: Jakub Kuderski <kubak@google.com>
-Date:   Thu Nov 11 12:06:08 2021 -0500
+commit b1877de5cd776117050bd42f08d04b52bce16099
+Author: Diego Novillo <dnovillo@google.com>
+Date:   Wed Jan 26 14:59:42 2022 -0500
 
-    Finalize SPIRV-Tools v2021.4
+    Finalize SPIRV-Tools v2022.1

@@ -230,12 +230,13 @@ Optimizer::PassToken CreateNullPass();
 // Section 3.32.2 of the SPIR-V spec) of the SPIR-V module to be optimized.
 Optimizer::PassToken CreateStripDebugInfoPass();
 
-// Creates a strip-reflect-info pass.
-// A strip-reflect-info pass removes all reflections instructions.
-// For now, this is limited to removing decorations defined in
-// SPV_GOOGLE_hlsl_functionality1.  The coverage may expand in
-// the future.
+// [Deprecated] This will create a strip-nonsemantic-info pass.  See below.
 Optimizer::PassToken CreateStripReflectInfoPass();
+
+// Creates a strip-nonsemantic-info pass.
+// A strip-nonsemantic-info pass removes all reflections and explicitly
+// non-semantic instructions.
+Optimizer::PassToken CreateStripNonSemanticInfoPass();
 
 // Creates an eliminate-dead-functions pass.
 // An eliminate-dead-functions pass will remove all functions that are not in
@@ -519,7 +520,8 @@ Optimizer::PassToken CreateDeadInsertElimPass();
 // interface are considered live and are not eliminated. This mode is needed
 // by GPU-Assisted validation instrumentation, where a change in the interface
 // is not allowed.
-Optimizer::PassToken CreateAggressiveDCEPass(bool preserve_interface = false);
+Optimizer::PassToken CreateAggressiveDCEPass();
+Optimizer::PassToken CreateAggressiveDCEPass(bool preserve_interface);
 
 // Creates a remove-unused-interface-variables pass.
 // Removes variables referenced on the |OpEntryPoint| instruction that are not
@@ -832,6 +834,19 @@ Optimizer::PassToken CreateFixStorageClassPass();
 //   In this case, the pass will clamp the index between 0 and 2^15-1
 //   inclusive.
 Optimizer::PassToken CreateGraphicsRobustAccessPass();
+
+// Create a pass to spread Volatile semantics to variables with SMIDNV,
+// WarpIDNV, SubgroupSize, SubgroupLocalInvocationId, SubgroupEqMask,
+// SubgroupGeMask, SubgroupGtMask, SubgroupLeMask, or SubgroupLtMask BuiltIn
+// decorations or OpLoad for them when the shader model is the ray generation,
+// closest hit, miss, intersection, or callable. This pass can be used for
+// VUID-StandaloneSpirv-VulkanMemoryModel-04678 and
+// VUID-StandaloneSpirv-VulkanMemoryModel-04679 (See "Standalone SPIR-V
+// Validation" section of Vulkan spec "Appendix A: Vulkan Environment for
+// SPIR-V"). When the SPIR-V version is 1.6 or above, the pass also spreads
+// the Volatile semantics to a variable with HelperInvocation BuiltIn decoration
+// in the fragement shader.
+Optimizer::PassToken CreateSpreadVolatileSemanticsPass();
 
 // Create a pass to replace a descriptor access using variable index.
 // This pass replaces every access using a variable index to array variable
