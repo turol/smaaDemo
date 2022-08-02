@@ -1,8 +1,13 @@
-commit eddd4dfc930f1374a70797460240a501c7d333f7
-Merge: d53b496 dcd4752
-Author: John Kessenich <johnkslang@users.noreply.github.com>
-Date:   Thu Dec 16 00:32:43 2021 +0700
+commit 0bcc624926a25a2a273d07877fd25a6ff5ba1cfb
+Author: Kévin Petit <kpet@free.fr>
+Date:   Tue Jul 5 14:10:51 2022 +0100
 
-    Merge pull request #259 from KhronosGroup/version-1.6
+    Update clspv reflection non-semantic instruction set (#284)
     
-    Update headers with SPIR-V version 1.6, revision 1.
+    Add support for:
+    
+    - Pointer arguments
+    - Program scope variables
+    - Image channel order and data type queries
+    
+    Signed-off-by: Kévin Petit <kpet@free.fr>
