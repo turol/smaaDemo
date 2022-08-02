@@ -55,8 +55,7 @@ spv_result_t ValidatePhi(ValidationState_t& _, const Instruction* inst) {
   }
   if (_.IsPointerType(inst->type_id()) &&
       _.addressing_model() == SpvAddressingModelLogical) {
-    if (!_.features().variable_pointers &&
-        !_.features().variable_pointers_storage_buffer) {
+    if (!_.features().variable_pointers) {
       return _.diag(SPV_ERROR_INVALID_DATA, inst)
              << "Using pointers with OpPhi requires capability "
              << "VariablePointers or VariablePointersStorageBuffer";
@@ -249,13 +248,9 @@ spv_result_t ValidateReturnValue(ValidationState_t& _,
            << _.getIdName(value->type_id()) << "' is missing or void.";
   }
 
-  const bool uses_variable_pointer =
-      _.features().variable_pointers ||
-      _.features().variable_pointers_storage_buffer;
-
   if (_.addressing_model() == SpvAddressingModelLogical &&
-      SpvOpTypePointer == value_type->opcode() && !uses_variable_pointer &&
-      !_.options()->relax_logical_pointer) {
+      SpvOpTypePointer == value_type->opcode() &&
+      !_.features().variable_pointers && !_.options()->relax_logical_pointer) {
     return _.diag(SPV_ERROR_INVALID_ID, inst)
            << "OpReturnValue value's type <id> '"
            << _.getIdName(value->type_id())
@@ -675,7 +670,7 @@ spv_result_t ValidateStructuredSelections(
     } else if (terminator->opcode() == SpvOpSwitch) {
       if (!merge) {
         return _.diag(SPV_ERROR_INVALID_CFG, terminator)
-               << "OpSwitch must be preceeded by an OpSelectionMerge "
+               << "OpSwitch must be preceded by an OpSelectionMerge "
                   "instruction";
       }
       // Mark the targets as seen.
@@ -917,7 +912,7 @@ spv_result_t PerformCfgChecks(ValidationState_t& _) {
           }
         }
       }
-      // If we have structed control flow, check that no block has a control
+      // If we have structured control flow, check that no block has a control
       // flow nesting depth larger than the limit.
       if (_.HasCapability(SpvCapabilityShader)) {
         const int control_flow_nesting_depth_limit =

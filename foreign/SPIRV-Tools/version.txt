@@ -1,5 +1,5 @@
-commit b1877de5cd776117050bd42f08d04b52bce16099
-Author: Diego Novillo <dnovillo@google.com>
-Date:   Wed Jan 26 14:59:42 2022 -0500
+commit 7826e1941eab1aa66fbe84c48b95921bff402a96
+Author: Natalie Chouinard <chouinard@google.com>
+Date:   Thu Apr 7 19:21:52 2022 +0000
 
-    Finalize SPIRV-Tools v2022.1
+    Finalize SPIRV-Tools v2022.2

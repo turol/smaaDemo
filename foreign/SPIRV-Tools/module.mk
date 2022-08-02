@@ -75,7 +75,7 @@ $(eval $(call spvtools_extinst_lang_headers,NonSemanticShaderDebugInfo100,extins
 
 
 build-version.inc: $(d)/utils/update_build_version.py $(d)/CHANGES
-	$(PYTHON) $(word 1, $^) $(dir $(word 2, $^)) $@
+	$(PYTHON) $(word 1, $^) $(word 2, $^) $@
 	# update_build_version.py doesn't touch the timestamp unless the file actually changes
 	touch $@
 

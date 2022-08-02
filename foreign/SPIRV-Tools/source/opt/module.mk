@@ -43,6 +43,7 @@ FILES:= \
 	eliminate_dead_constant_pass.cpp \
 	eliminate_dead_functions_pass.cpp \
 	eliminate_dead_functions_util.cpp \
+	eliminate_dead_input_components_pass.cpp \
 	eliminate_dead_members_pass.cpp \
 	feature_manager.cpp \
 	fix_storage_class.cpp \
@@ -95,6 +96,7 @@ FILES:= \
 	register_pressure.cpp \
 	relax_float_ops_pass.cpp \
 	replace_desc_array_access_using_var_index.cpp \
+	remove_dontinline_pass.cpp \
 	remove_duplicates_pass.cpp \
 	remove_unused_interface_variables_pass.cpp \
 	replace_invalid_opc.cpp \

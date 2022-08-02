@@ -44,7 +44,7 @@ struct OptStatus {
 // initialization and setup. Note that |source| and |position| are irrelevant
 // here because we are still not processing a SPIR-V input file.
 void opt_diagnostic(spv_message_level_t level, const char* /*source*/,
-                    const spv_position_t& /*positon*/, const char* message) {
+                    const spv_position_t& /*position*/, const char* message) {
   if (level == SPV_MSG_ERROR) {
     fprintf(stderr, "error: ");
   }
@@ -207,6 +207,10 @@ Options (in lexicographical order):)",
                Deletes unreferenced inserts into composites, most notably
                unused stores to vector components, that are not removed by
                aggressive dead code elimination.)");
+  printf(R"(
+  --eliminate-dead-input-components
+               Deletes unused components from input variables. Currently
+               deletes trailing unused elements from input arrays.)");
   printf(R"(
   --eliminate-dead-variables
                Deletes module scope variables that are not referenced.)");
