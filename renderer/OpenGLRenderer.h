@@ -317,13 +317,11 @@ struct RenderPass {
 	std::array<glm::vec4, MAX_COLOR_RENDERTARGETS>  colorClearValues;
 	float           depthClearValue;
 	GLbitfield      clearMask;
-	unsigned int    numSamples;
 
 
 	RenderPass()
 	: depthClearValue(1.0f)
 	, clearMask(0)
-	, numSamples(0)
 	{}
 
 	RenderPass(const RenderPass &) = delete;
@@ -333,7 +331,6 @@ struct RenderPass {
 	: desc(other.desc)
 	, depthClearValue(other.depthClearValue)
 	, clearMask(other.clearMask)
-	, numSamples(other.numSamples)
 	{
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 			colorClearValues[i] = other.colorClearValues[i];
@@ -351,7 +348,6 @@ struct RenderPass {
 		}
 		depthClearValue = other.depthClearValue;
 		clearMask       = other.clearMask;
-		numSamples      = other.numSamples;
 
 		return *this;
 	}

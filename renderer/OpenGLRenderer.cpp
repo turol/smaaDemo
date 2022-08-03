@@ -1129,7 +1129,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 
 #ifndef NDEBUG
 	const auto &rp = impl->renderPasses.get(desc.renderPass_);
-	assert(desc.numSamples_ == rp.numSamples);
+	assert(desc.numSamples_ == rp.desc.numSamples_);
 #endif //  NDEBUG
 
 	const auto &v = impl->vertexShaders.get(impl->createVertexShader(desc.vertexShaderName, desc.shaderMacros_));
@@ -1281,7 +1281,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 		assert(colorRT.height > 0);
 		assert(colorRT.numSamples > 0);
 		assert(colorRT.numSamples <= static_cast<unsigned int>(impl->glValues[GL_MAX_COLOR_TEXTURE_SAMPLES]));
-		assert(colorRT.numSamples == renderPass.numSamples);
+		assert(colorRT.numSamples == renderPass.desc.numSamples_);
 		assert(colorRT.texture);
 		assert(colorRT.format == renderPass.desc.colorRTs_[i].format);
 		fb.colorFormats[i] = colorRT.format;
@@ -1310,7 +1310,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 		assert(depthRT.texture);
 		assert(depthRT.numSamples > 0);
 		assert(depthRT.numSamples <= static_cast<unsigned int>(impl->glValues[GL_MAX_DEPTH_TEXTURE_SAMPLES]));
-		assert(depthRT.numSamples == renderPass.numSamples);
+		assert(depthRT.numSamples == renderPass.desc.numSamples_);
 
 		const auto &depthRTtex = impl->textures.get(depthRT.texture);
 		assert(depthRTtex.renderTarget);
@@ -1365,7 +1365,6 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 	}
 	pass.depthClearValue = desc.depthClearValue;
 	pass.clearMask       = clearMask;
-	pass.numSamples      = desc.numSamples_;
 
 	return impl->renderPasses.add(std::move(pass));
 }
@@ -2308,7 +2307,7 @@ void Renderer::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHandle
 
 
 bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuffer &fb) {
-	if (pass.numSamples != fb.numSamples) {
+	if (pass.desc.numSamples_ != fb.numSamples) {
 		return false;
 	}
 

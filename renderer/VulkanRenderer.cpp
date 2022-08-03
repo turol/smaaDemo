@@ -1472,7 +1472,6 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 	info.pDependencies    = &dependencies[0];
 
 	r.renderPass          = impl->device.createRenderPass(info);
-	r.numSamples          = desc.numSamples_;
 	r.numColorAttachments = numColorAttachments;
 	r.desc                = desc;
 
@@ -1583,7 +1582,6 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	info.renderPass = renderPass.renderPass;
 
 	vk::PipelineMultisampleStateCreateInfo multisample;
-	assert(desc.numSamples_ == renderPass.numSamples);
 	multisample.rasterizationSamples = sampleCountFlagsFromNum(desc.numSamples_);
 	info.pMultisampleState = &multisample;
 
@@ -2946,7 +2944,6 @@ void RendererImpl::deleteRenderPassInternal(RenderPass &rp) {
 	this->device.destroyRenderPass(rp.renderPass);
 	rp.renderPass = vk::RenderPass();
 	rp.clearValueCount = 0;
-	rp.numSamples      = 0;
 	rp.numColorAttachments = 0;
 }
 
@@ -3443,7 +3440,7 @@ void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHand
 
 
 bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuffer &fb) {
-	if (pass.numSamples != fb.numSamples) {
+	if (pass.desc.numSamples_ != fb.numSamples) {
 		return false;
 	}
 

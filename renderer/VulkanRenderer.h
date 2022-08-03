@@ -396,14 +396,12 @@ struct RenderPass {
 	vk::RenderPass                                           renderPass;
 	unsigned int                                             clearValueCount;
 	std::array<vk::ClearValue, MAX_COLOR_RENDERTARGETS + 1>  clearValues;
-	unsigned int                                             numSamples;
 	unsigned int                                             numColorAttachments;
 	RenderPassDesc                                           desc;
 
 
 	RenderPass() noexcept
 	: clearValueCount(0)
-	, numSamples(0)
 	, numColorAttachments(0)
 	{
 	}
@@ -414,7 +412,6 @@ struct RenderPass {
 	RenderPass(RenderPass &&other) noexcept
 	: renderPass(other.renderPass)
 	, clearValueCount(other.clearValueCount)
-	, numSamples(other.numSamples)
 	, numColorAttachments(other.numColorAttachments)
 	, desc(other.desc)
 	{
@@ -424,7 +421,6 @@ struct RenderPass {
 
 		other.renderPass = vk::RenderPass();
 		other.clearValueCount = 0;
-		other.numSamples      = 0;
 		other.numColorAttachments = 0;
 	}
 
@@ -437,7 +433,6 @@ struct RenderPass {
 
 		renderPass       = other.renderPass;
 		clearValueCount  = other.clearValueCount;
-		numSamples       = other.numSamples;
 		desc             = other.desc;
 		numColorAttachments = other.numColorAttachments;
 
@@ -447,7 +442,6 @@ struct RenderPass {
 
 		other.renderPass = vk::RenderPass();
 		other.clearValueCount = 0;
-		other.numSamples      = 0;
 		other.numColorAttachments = 0;
 
 		return *this;
@@ -456,7 +450,6 @@ struct RenderPass {
 	~RenderPass() {
 		assert(!renderPass);
 		assert(clearValueCount == 0);
-		assert(numSamples == 0);
 		assert(numColorAttachments == 0);
 	}
 
