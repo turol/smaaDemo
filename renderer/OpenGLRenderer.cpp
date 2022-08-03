@@ -1770,12 +1770,6 @@ void RendererImpl::recreateSwapchain() {
 }
 
 
-MemoryStats Renderer::getMemStats() const {
-	MemoryStats stats;
-	return stats;
-}
-
-
 void RendererImpl::waitForDeviceIdle() {
 	for (unsigned int i = 0; i < frames.size(); i++) {
 		auto &f = frames.at(i);

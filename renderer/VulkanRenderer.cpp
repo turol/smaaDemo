@@ -2430,19 +2430,6 @@ void RendererImpl::recreateSwapchain() {
 }
 
 
-MemoryStats Renderer::getMemStats() const {
-	VmaStats vmaStats;
-	memset(&vmaStats, 0, sizeof(VmaStats));
-	vmaCalculateStats(impl->allocator, &vmaStats);
-	MemoryStats stats;
-	stats.allocationCount    = vmaStats.total.allocationCount;
-	stats.subAllocationCount = vmaStats.total.unusedRangeCount;
-	stats.usedBytes          = vmaStats.total.usedBytes;
-	stats.unusedBytes        = vmaStats.total.unusedBytes;
-	return stats;
-}
-
-
 void RendererImpl::waitForDeviceIdle() {
 	std::vector<vk::Fence> fences;
 

@@ -3414,18 +3414,6 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			LOG_TODO("measure actual GPU time");
 			ImGui::LabelText("FPS", "%.1f", io.Framerate);
 			ImGui::LabelText("Frame time ms", "%.1f", 1000.0f / io.Framerate);
-
-#ifdef RENDERER_VULKAN
-			ImGui::Separator();
-			// VMA memory allocation stats
-			MemoryStats stats = renderer.getMemStats();
-			float usedMegabytes = static_cast<float>(stats.usedBytes) / (1024.0f * 1024.0f);
-			float totalMegabytes = static_cast<float>(stats.usedBytes + stats.unusedBytes) / (1024.0f * 1024.0f);
-			ImGui::LabelText("Allocation count", "%u", stats.allocationCount);
-			ImGui::LabelText("Suballocation count", "%u", stats.subAllocationCount);
-			ImGui::LabelText("Used memory (MB)", "%.2f", usedMegabytes);
-			ImGui::LabelText("Total memory (MB)", "%.2f", totalMegabytes);
-#endif
 		}
 
 		if (ImGui::Button("Quit")) {

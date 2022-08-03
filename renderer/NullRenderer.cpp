@@ -260,12 +260,6 @@ glm::uvec2 Renderer::getDrawableSize() const {
 }
 
 
-MemoryStats Renderer::getMemStats() const {
-	MemoryStats stats;
-	return stats;
-}
-
-
 void RendererImpl::waitForDeviceIdle() {
 	for (unsigned int i = 0; i < frames.size(); i++) {
 		auto &f = frames.at(i);

@@ -382,31 +382,6 @@ struct DescriptorLayout {
 };
 
 
-struct MemoryStats {
-	uint32_t allocationCount;
-	uint32_t subAllocationCount;
-	uint64_t usedBytes;
-	uint64_t unusedBytes;
-
-
-	MemoryStats()
-	: allocationCount(0)
-	, subAllocationCount(0)
-	, usedBytes(0)
-	, unusedBytes(0)
-	{
-	}
-
-	~MemoryStats() {}
-
-	MemoryStats(const MemoryStats &stats)                = default;
-	MemoryStats &operator=(const MemoryStats &stats)     = default;
-
-	MemoryStats(MemoryStats &&stats) noexcept            = default;
-	MemoryStats &operator=(MemoryStats &&stats) noexcept = default;
-};
-
-
 typedef HashMap<std::string, std::string> ShaderMacros;
 
 
@@ -1102,7 +1077,6 @@ public:
 	void setSwapchainDesc(const SwapchainDesc &desc);
 	bool isSwapchainDirty() const;
 	glm::uvec2 getDrawableSize() const;
-	MemoryStats getMemStats() const;
 
 	void waitForDeviceIdle();
 
