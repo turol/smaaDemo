@@ -1215,9 +1215,9 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	fb.height       = height;
 	fb.numSamples   = numSamples;
 	fb.framebuffer  = impl->device.createFramebuffer(fbInfo);
-	fb.depthStencilFormat = depthStencilFormat;
+	fb.depthStencilTarget.format = depthStencilFormat;
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-		fb.colorFormats[i] = colorFormats[i];
+		fb.colorTargets[i].format = colorFormats[i];
 	}
 
 	impl->debugNameObject<vk::Framebuffer>(fb.framebuffer, desc.name_);
@@ -2889,7 +2889,7 @@ void RendererImpl::deleteFramebufferInternal(Framebuffer &fb) {
 	fb.framebuffer = vk::Framebuffer();
 	fb.width       = 0;
 	fb.height      = 0;
-	fb.depthStencilFormat = Format::Invalid;
+	fb.depthStencilTarget.format = Format::Invalid;
 }
 
 
@@ -2994,7 +2994,7 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 			fb.framebuffer = vk::Framebuffer();
 			fb.width       = 0;
 			fb.height      = 0;
-			fb.depthStencilFormat = Format::Invalid;
+			fb.depthStencilTarget.format = Format::Invalid;
 		} );
 	}
 
@@ -3157,9 +3157,9 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 		fb.height             = height;
 		fb.numSamples         = numSamples;
 		fb.framebuffer        = impl->device.createFramebuffer(fbInfo);
-		fb.depthStencilFormat = depthStencilFormat;
+		fb.depthStencilTarget.format = depthStencilFormat;
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-			fb.colorFormats[i] = colorFormats[i];
+			fb.colorTargets[i].format = colorFormats[i];
 		}
 
 		impl->debugNameObject<vk::Framebuffer>(fb.framebuffer, fbDesc.name_);
@@ -3446,13 +3446,13 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 
 	if (fb.desc.depthStencil_) {
 		const auto &depthRT DEBUG_ASSERTED = renderTargets.get(fb.desc.depthStencil_);
-		assert(depthRT.format == fb.depthStencilFormat);
+		assert(depthRT.format == fb.depthStencilTarget.format);
 
-		if (pass.desc.depthStencilFormat_ != fb.depthStencilFormat) {
+		if (pass.desc.depthStencilFormat_ != fb.depthStencilTarget.format) {
 			return false;
 		}
 	} else {
-		assert(fb.depthStencilFormat == +Format::Invalid);
+		assert(fb.depthStencilTarget.format == +Format::Invalid);
 		if (pass.desc.depthStencilFormat_ != +Format::Invalid) {
 			return false;
 		}
@@ -3461,10 +3461,10 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 		if (fb.desc.colors_[i]) {
 			const auto &colorRT DEBUG_ASSERTED = renderTargets.get(fb.desc.colors_[i]);
-			assert(colorRT.format == fb.colorFormats[i]);
+			assert(colorRT.format == fb.colorTargets[i].format);
 		}
 
-		if (pass.desc.colorRTs_[i].format != fb.colorFormats[i]) {
+		if (pass.desc.colorRTs_[i].format != fb.colorTargets[i].format) {
 			return false;
 		}
 	}

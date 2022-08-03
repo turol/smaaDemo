@@ -247,12 +247,17 @@ struct FragmentShader {
 
 
 struct Framebuffer {
+	struct RTInfo
+	{
+		Format  format;
+	};
+
 	vk::Framebuffer                              framebuffer;
 	unsigned int                                 width, height;
 	unsigned int                                 numSamples;
 	FramebufferDesc                              desc;
-	std::array<Format, MAX_COLOR_RENDERTARGETS>  colorFormats;
-	Format                                       depthStencilFormat;
+	std::array<RTInfo, MAX_COLOR_RENDERTARGETS>  colorTargets;
+	RTInfo                                       depthStencilTarget;
 	// TODO: store info about attachments to allow tracking layout
 
 
@@ -260,11 +265,11 @@ struct Framebuffer {
 	: width(0)
 	, height(0)
 	, numSamples(0)
-	, depthStencilFormat(Format::Invalid)
 	{
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-			colorFormats[i] = Format::Invalid;
+			colorTargets[i].format = Format::Invalid;
 		}
+		depthStencilTarget.format = Format::Invalid;
 	}
 
 	Framebuffer(const Framebuffer &)            = delete;
@@ -276,17 +281,17 @@ struct Framebuffer {
 	, height(other.height)
 	, numSamples(other.numSamples)
 	, desc(other.desc)
-	, depthStencilFormat(other.depthStencilFormat)
 	{
 		other.framebuffer = vk::Framebuffer();
 		other.width       = 0;
 		other.height      = 0;
 		other.numSamples  = 0;
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-			colorFormats[i]       = other.colorFormats[i];
-			other.colorFormats[i] = Format::Invalid;
+			colorTargets[i].format       = other.colorTargets[i].format;
+			other.colorTargets[i].format = Format::Invalid;
 		}
-		other.depthStencilFormat = Format::Invalid;
+		depthStencilTarget.format       = other.depthStencilTarget.format;
+		other.depthStencilTarget.format = Format::Invalid;
 	}
 
 	Framebuffer &operator=(Framebuffer &&other) noexcept {
@@ -302,18 +307,18 @@ struct Framebuffer {
 		numSamples        = other.numSamples;
 		desc              = other.desc;
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-			colorFormats[i] = other.colorFormats[i];
+			colorTargets[i].format = other.colorTargets[i].format;
 		}
-		depthStencilFormat = other.depthStencilFormat;
+		depthStencilTarget.format = other.depthStencilTarget.format;
 
 		other.framebuffer = vk::Framebuffer();
 		other.width       = 0;
 		other.height      = 0;
 		other.numSamples  = 0;
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-			other.colorFormats[i] = Format::Invalid;
+			other.colorTargets[i].format = Format::Invalid;
 		}
-		other.depthStencilFormat = Format::Invalid;
+		other.depthStencilTarget.format = Format::Invalid;
 
 		return *this;
 	}
