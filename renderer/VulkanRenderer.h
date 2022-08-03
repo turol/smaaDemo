@@ -247,10 +247,10 @@ struct FragmentShader {
 
 
 struct Framebuffer {
-	vk::Framebuffer  framebuffer;
-	unsigned int     width, height;
-	unsigned int     numSamples;
-	FramebufferDesc  desc;
+	vk::Framebuffer                              framebuffer;
+	unsigned int                                 width, height;
+	unsigned int                                 numSamples;
+	FramebufferDesc                              desc;
 	std::array<Format, MAX_COLOR_RENDERTARGETS>  colorFormats;
 	Format                                       depthStencilFormat;
 	// TODO: store info about attachments to allow tracking layout

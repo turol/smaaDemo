@@ -454,10 +454,10 @@ class PipelineDesc {
 	// TODO: per-MRT blending
 
 	struct VertexAttr {
-		uint8_t bufBinding;
-		uint8_t count;
-		VtxFormat format;
-		uint8_t offset;
+		uint8_t    bufBinding;
+		uint8_t    count;
+		VtxFormat  format;
+		uint8_t    offset;
 
 		bool operator==(const VertexAttr &other) const;
 		bool operator!=(const VertexAttr &other) const;
