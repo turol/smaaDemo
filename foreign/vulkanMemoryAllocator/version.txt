@@ -1,5 +1,8 @@
-commit a4d39851fd7c76aa78846057bc3522546062fcfb
+commit f6d6e278a6989f854dcc03adf3360c873ca4bad1
+Merge: 51c8b56 b367bf3
 Author: Adam Sawicki <adam.sawicki@amd.com>
-Date:   Mon Jan 24 15:16:13 2022 +0100
+Date:   Wed Jul 27 10:09:09 2022 +0200
 
-    Fixed syntax errors
+    Merge pull request #277 from Max-Rodriguez/grammar-patch
+    
+    docs: Fixed typo under 'Selecting Vulkan version' doc section
