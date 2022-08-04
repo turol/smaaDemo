@@ -502,6 +502,18 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , indexBufByteOffset(0)
 {
 
+	{
+		SDL_version version;
+
+		memset(&version, 0, sizeof(version));
+		SDL_VERSION(&version);
+		LOG("Compiled against SDL version {}.{}.{}", version.major, version.minor, version.patch);
+
+		memset(&version, 0, sizeof(version));
+		SDL_GetVersion(&version);
+		LOG("Runtime SDL version {}.{}.{}", version.major, version.minor, version.patch);
+	}
+
 	LOG_TODO("check return value");
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
 

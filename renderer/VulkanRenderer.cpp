@@ -278,6 +278,18 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	bool enableValidation = desc.debug;
 	bool enableMarkers    = desc.tracing;
 
+	{
+		SDL_version version;
+
+		memset(&version, 0, sizeof(version));
+		SDL_VERSION(&version);
+		LOG("Compiled against SDL version {}.{}.{}", version.major, version.minor, version.patch);
+
+		memset(&version, 0, sizeof(version));
+		SDL_GetVersion(&version);
+		LOG("Runtime SDL version {}.{}.{}", version.major, version.minor, version.patch);
+	}
+
 	// renderdoc crashes if SDL tries to init GL renderer so disable it
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
 	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
