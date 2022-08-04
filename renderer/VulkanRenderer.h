@@ -769,15 +769,15 @@ namespace renderer {
 
 
 struct UploadOp {
-	vk::CommandBuffer       cmdBuf;
-	vk::Semaphore           semaphore;
-	vk::PipelineStageFlags  semWaitMask;
-	vk::Buffer              stagingBuffer;
-	VmaAllocation           memory;
-	VmaAllocationInfo       allocationInfo;
-	std::vector<vk::ImageMemoryBarrier> imageAcquireBarriers;
-	std::vector<vk::BufferMemoryBarrier> bufferAcquireBarriers;
-	bool                    coherent;
+	vk::CommandBuffer                     cmdBuf;
+	vk::Semaphore                         semaphore;
+	vk::PipelineStageFlags                semWaitMask;
+	vk::Buffer                            stagingBuffer;
+	VmaAllocation                         memory;
+	VmaAllocationInfo                     allocationInfo;
+	std::vector<vk::ImageMemoryBarrier>   imageAcquireBarriers;
+	std::vector<vk::BufferMemoryBarrier>  bufferAcquireBarriers;
+	bool                                  coherent;
 
 
 	UploadOp() noexcept
@@ -837,31 +837,31 @@ struct UploadOp {
 		assert(bufferAcquireBarriers.empty());
 		assert(!coherent);
 
-		cmdBuf              = other.cmdBuf;
-		other.cmdBuf        = vk::CommandBuffer();
+		cmdBuf                = other.cmdBuf;
+		other.cmdBuf          = vk::CommandBuffer();
 
-		semaphore           = other.semaphore;
-		other.semaphore     = vk::Semaphore();
+		semaphore             = other.semaphore;
+		other.semaphore       = vk::Semaphore();
 
-		semWaitMask         = other.semWaitMask;
-		other.semWaitMask   = vk::PipelineStageFlags();
+		semWaitMask           = other.semWaitMask;
+		other.semWaitMask     = vk::PipelineStageFlags();
 
-		stagingBuffer       = other.stagingBuffer;
-		other.stagingBuffer = vk::Buffer();
+		stagingBuffer         = other.stagingBuffer;
+		other.stagingBuffer   = vk::Buffer();
 
-		memory              = other.memory;
-		other.memory        = VK_NULL_HANDLE;
+		memory                = other.memory;
+		other.memory          = VK_NULL_HANDLE;
 
-		imageAcquireBarriers      = std::move(other.imageAcquireBarriers);
+		imageAcquireBarriers  = std::move(other.imageAcquireBarriers);
 		assert(other.imageAcquireBarriers.empty());
 
-		bufferAcquireBarriers     = std::move(other.bufferAcquireBarriers);
+		bufferAcquireBarriers = std::move(other.bufferAcquireBarriers);
 		assert(other.bufferAcquireBarriers.empty());
 
-		coherent            = other.coherent;
-		other.coherent      = false;
+		coherent               = other.coherent;
+		other.coherent         = false;
 
-		allocationInfo      = other.allocationInfo;
+		allocationInfo         = other.allocationInfo;
 
 		return *this;
 	}
@@ -1028,67 +1028,67 @@ struct Frame : public FrameBase {
 
 
 struct RendererImpl : public RendererBase {
-	SDL_Window                              *window;
+	SDL_Window                                              *window;
 
-	vk::Semaphore                           frameAcquireSem;
+	vk::Semaphore                                           frameAcquireSem;
 
-	std::vector<Frame>                      frames;
-	RenderTargetHandle                      builtinDepthRT;
+	std::vector<Frame>                                      frames;
+	RenderTargetHandle                                      builtinDepthRT;
 
-	ResourceContainer<Buffer>               buffers;
+	ResourceContainer<Buffer>                               buffers;
 	ResourceContainer<DescriptorSetLayout, uint32_t, true>  dsLayouts;
-	ResourceContainer<FragmentShader, uint32_t, true>  fragmentShaders;
-	ResourceContainer<Framebuffer>          framebuffers;
-	ResourceContainer<Pipeline>             pipelines;
-	ResourceContainer<RenderPass>           renderPasses;
-	ResourceContainer<RenderTarget>         renderTargets;
-	ResourceContainer<Sampler>              samplers;
-	ResourceContainer<Texture>              textures;
-	ResourceContainer<VertexShader, uint32_t, true>    vertexShaders;
+	ResourceContainer<FragmentShader, uint32_t, true>       fragmentShaders;
+	ResourceContainer<Framebuffer>                          framebuffers;
+	ResourceContainer<Pipeline>                             pipelines;
+	ResourceContainer<RenderPass>                           renderPasses;
+	ResourceContainer<RenderTarget>                         renderTargets;
+	ResourceContainer<Sampler>                              samplers;
+	ResourceContainer<Texture>                              textures;
+	ResourceContainer<VertexShader, uint32_t, true>         vertexShaders;
 
-	vk::DispatchLoaderDynamic               dispatcher;
+	vk::DispatchLoaderDynamic                               dispatcher;
 
-	vk::Instance                            instance;
-	vk::DebugReportCallbackEXT              debugReportCallback;
-	vk::DebugUtilsMessengerEXT              debugUtilsCallback;
-	unsigned int                            physicalDeviceIndex;
-	vk::PhysicalDevice                      physicalDevice;
-	vk::PhysicalDeviceProperties            deviceProperties;
-	vk::PhysicalDeviceFeatures              deviceFeatures;
-	vk::Device                              device;
-	vk::SurfaceKHR                          surface;
-	vk::PhysicalDeviceMemoryProperties      memoryProperties;
-	uint32_t                                graphicsQueueIndex;
-	uint32_t                                transferQueueIndex;
-	HashSet<vk::Format>                     surfaceFormats;
-	vk::SurfaceCapabilitiesKHR              surfaceCapabilities;
-	HashSet<vk::PresentModeKHR>             surfacePresentModes;
-	vk::SwapchainKHR                        swapchain;
-	vk::PipelineCache                       pipelineCache;
-	vk::Queue                               queue;
-	vk::Queue                               transferQueue;
+	vk::Instance                                            instance;
+	vk::DebugReportCallbackEXT                              debugReportCallback;
+	vk::DebugUtilsMessengerEXT                              debugUtilsCallback;
+	unsigned int                                            physicalDeviceIndex;
+	vk::PhysicalDevice                                      physicalDevice;
+	vk::PhysicalDeviceProperties                            deviceProperties;
+	vk::PhysicalDeviceFeatures                              deviceFeatures;
+	vk::Device                                              device;
+	vk::SurfaceKHR                                          surface;
+	vk::PhysicalDeviceMemoryProperties                      memoryProperties;
+	uint32_t                                                graphicsQueueIndex;
+	uint32_t                                                transferQueueIndex;
+	HashSet<vk::Format>                                     surfaceFormats;
+	vk::SurfaceCapabilitiesKHR                              surfaceCapabilities;
+	HashSet<vk::PresentModeKHR>                             surfacePresentModes;
+	vk::SwapchainKHR                                        swapchain;
+	vk::PipelineCache                                       pipelineCache;
+	vk::Queue                                               queue;
+	vk::Queue                                               transferQueue;
 
-	vk::CommandBuffer                       currentCommandBuffer;
-	vk::PipelineLayout                      currentPipelineLayout;
-	vk::Viewport                            currentViewport;
+	vk::CommandBuffer                                       currentCommandBuffer;
+	vk::PipelineLayout                                      currentPipelineLayout;
+	vk::Viewport                                            currentViewport;
 
-	VmaAllocator                            allocator;
+	VmaAllocator                                            allocator;
 
-	vk::CommandPool                         transferCmdPool;
-	std::vector<UploadOp>                   uploads;
-	size_t                                  numUploads;
+	vk::CommandPool                                         transferCmdPool;
+	std::vector<UploadOp>                                   uploads;
+	size_t                                                  numUploads;
 
-	std::vector<vk::Semaphore>              freeSemaphores;
+	std::vector<vk::Semaphore>                              freeSemaphores;
 
-	bool                                    amdShaderInfo;
-	bool                                    debugMarkers;
-	bool                                    portabilitySubset;
+	bool                                                    amdShaderInfo;
+	bool                                                    debugMarkers;
+	bool                                                    portabilitySubset;
 
-	vk::Buffer                              ringBuffer;
-	VmaAllocation                           ringBufferMem;
-	char                                    *persistentMapping;
+	vk::Buffer                                              ringBuffer;
+	VmaAllocation                                           ringBufferMem;
+	char                                                    *persistentMapping;
 
-	std::vector<Resource>                   deleteResources;
+	std::vector<Resource>                                   deleteResources;
 
 
 	bool isRenderPassCompatible(const RenderPass &pass, const Framebuffer &fb);
