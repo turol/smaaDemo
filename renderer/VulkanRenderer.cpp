@@ -292,7 +292,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	// renderdoc crashes if SDL tries to init GL renderer so disable it
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
-	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
+	{
+		int retval = SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO);
+		if (retval != 0) {
+			THROW_ERROR("SDL_Init failed: {}", SDL_GetError());
+		}
+	}
 
 	SDL_DisplayMode mode;
 	memset(&mode, 0, sizeof(mode));

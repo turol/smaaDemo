@@ -514,8 +514,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		LOG("Runtime SDL version {}.{}.{}", version.major, version.minor, version.patch);
 	}
 
-	LOG_TODO("check return value");
-	SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
+	{
+		int retval = SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
+		if (retval != 0) {
+			THROW_ERROR("SDL_Init failed: {}", SDL_GetError());
+		}
+	}
 
 	LOG_TODO("highdpi");
 	LOG_TODO("check errors");
