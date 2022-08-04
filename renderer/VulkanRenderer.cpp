@@ -1047,7 +1047,7 @@ BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *
 	assert(allocationInfo.size > 0);
 	assert(allocationInfo.pMappedData == nullptr);
 	impl->device.bindBufferMemory(buffer.buffer, allocationInfo.deviceMemory, allocationInfo.offset);
-	buffer.offset = static_cast<uint32_t>(allocationInfo.offset);
+	buffer.offset = 0;
 	buffer.size   = size;
 	buffer.type   = type;
 
