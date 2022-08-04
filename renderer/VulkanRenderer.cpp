@@ -882,7 +882,7 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 		THROW_ERROR("vmaAllocateMemoryForBuffer failed: {}", vk::to_string(vk::Result(result)));
 	}
 
-	LOG("ringbuffer memory type: {}",    allocationInfo.memoryType);
+	LOG("ringbuffer memory type: {} ({})", allocationInfo.memoryType, vk::to_string(memoryProperties.memoryTypes[allocationInfo.memoryType].propertyFlags));
 	LOG("ringbuffer memory offset: {}",  allocationInfo.offset);
 	LOG("ringbuffer memory size: {}",    allocationInfo.size);
 	assert(ringBufferMem != nullptr);
@@ -1052,7 +1052,7 @@ BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *
 	VmaAllocationInfo  allocationInfo = {};
 
 	vmaAllocateMemoryForBuffer(impl->allocator, buffer.buffer, &req, &buffer.memory, &allocationInfo);
-	LOG("buffer memory type: {}",    allocationInfo.memoryType);
+	LOG("buffer memory type: {} ({})", allocationInfo.memoryType, vk::to_string(impl->memoryProperties.memoryTypes[allocationInfo.memoryType].propertyFlags));
 	LOG("buffer memory offset: {}",  allocationInfo.offset);
 	LOG("buffer memory size: {}",    allocationInfo.size);
 	assert(allocationInfo.size > 0);
@@ -1901,7 +1901,7 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 	VmaAllocationInfo  allocationInfo = {};
 
 	vmaAllocateMemoryForImage(impl->allocator, tex.image, &req, &tex.memory, &allocationInfo);
-	LOG("texture image memory type: {}",   allocationInfo.memoryType);
+	LOG("texture image memory type: {} ({})", allocationInfo.memoryType, vk::to_string(impl->memoryProperties.memoryTypes[allocationInfo.memoryType].propertyFlags));
 	LOG("texture image memory offset: {}", allocationInfo.offset);
 	LOG("texture image memory size: {}",   allocationInfo.size);
 	device.bindImageMemory(tex.image, allocationInfo.deviceMemory, allocationInfo.offset);
