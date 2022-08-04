@@ -823,6 +823,10 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 		assert(ringBufSize       != 0);
 		assert(persistentMapping != nullptr);
 
+        // flush in case it's not coherent
+		LOG_TODO("flush only parts updated this frame");
+		vmaFlushAllocation(allocator, ringBufferMem, 0, VK_WHOLE_SIZE);
+
 		// create a Buffer object which we can put into deleteResources
 		Buffer buffer;
 		buffer.buffer          = ringBuffer;
@@ -2606,6 +2610,10 @@ void Renderer::presentFrame() {
 	impl->device.resetFences( { frame.fence } );
 
 	impl->currentCommandBuffer.end();
+
+	// flush ephemeral ringbuffer if it's not coherent
+	LOG_TODO("flush only parts updated this frame");
+	vmaFlushAllocation(impl->allocator, impl->ringBufferMem, 0, VK_WHOLE_SIZE);
 
 	LOG_TODO("this should be all the stages that access the backbuffer");
 	// currently transfer and/or color output
