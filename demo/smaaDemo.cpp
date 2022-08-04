@@ -505,6 +505,7 @@ class SMAADemo {
 	RandomGen                                         random;
 	std::vector<Image>                                images;
 	std::vector<ShaderDefines::Shape>                 shapes;
+	BufferHandle                                      shapesBuffer;
 
 	glm::mat4                                         currViewProj;
 	glm::mat4                                         prevViewProj;
@@ -763,6 +764,10 @@ SMAADemo::~SMAADemo() {
 	}
 
 	if (renderer) {
+		if (shapesBuffer) {
+			renderer.deleteBuffer(std::move(shapesBuffer));
+		}
+
 		renderGraph.reset(renderer);
 
 		for (unsigned int i = 0; i < Shape::_size(); i++) {
@@ -2000,6 +2005,9 @@ void SMAADemo::createShapes() {
 
 	const float bigShapeSide = shapeDistance * shapesPerSide;
 
+	if (shapesBuffer) {
+		renderer.deleteBuffer(std::move(shapesBuffer));
+	}
 	shapes.clear();
 	shapes.reserve(numShapes);
 
@@ -2037,6 +2045,10 @@ void SMAADemo::createShapes() {
 
 
 void SMAADemo::shuffleShapeRendering() {
+	if (shapesBuffer) {
+		renderer.deleteBuffer(std::move(shapesBuffer));
+	}
+
 	const unsigned int numShapes = static_cast<unsigned int>(shapes.size());
 	for (unsigned int i = 0; i < numShapes - 1; i++) {
 		unsigned int victim = random.range(i, numShapes);
@@ -2046,6 +2058,10 @@ void SMAADemo::shuffleShapeRendering() {
 
 
 void SMAADemo::reorderShapeRendering() {
+	if (shapesBuffer) {
+		renderer.deleteBuffer(std::move(shapesBuffer));
+	}
+
 	auto shapeCompare = [] (const ShaderDefines::Shape &a, const ShaderDefines::Shape &b) {
 		return a.order < b.order;
 	};
@@ -2063,6 +2079,10 @@ static float sRGB2linear(float v) {
 
 
 void SMAADemo::colorShapes() {
+	if (shapesBuffer) {
+		renderer.deleteBuffer(std::move(shapesBuffer));
+	}
+
 	if (colorMode == 0) {
 		for (auto &shape : shapes) {
 			// random RGB
@@ -2688,11 +2708,15 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	renderer.bindVertexBuffer(0, shapeBuffers[activeShape].vertices);
 	renderer.bindIndexBuffer(shapeBuffers[activeShape].indices, IndexFormat::b32);
 
+	if (!shapesBuffer) {
+        shapesBuffer = renderer.createBuffer(BufferType::Storage, static_cast<uint32_t>(sizeof(ShaderDefines::Shape) * shapes.size()), &shapes[0]);;
+	}
+
 	ShapeSceneDS shapeDS;
 	// FIXME: remove unused UBO hack
 	uint32_t temp    = 0;
 	shapeDS.unused    = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
-	shapeDS.instances = renderer.createEphemeralBuffer(BufferType::Storage, static_cast<uint32_t>(sizeof(ShaderDefines::Shape) * shapes.size()), &shapes[0]);
+	shapeDS.instances = shapesBuffer;
 	renderer.bindDescriptorSet(1, shapeDS);
 
 	unsigned int numShapes = static_cast<unsigned int>(shapes.size());
