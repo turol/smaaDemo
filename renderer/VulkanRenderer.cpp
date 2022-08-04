@@ -1216,8 +1216,12 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	fb.numSamples   = numSamples;
 	fb.framebuffer  = impl->device.createFramebuffer(fbInfo);
 	fb.depthStencilTarget.format = depthStencilFormat;
+	fb.depthStencilTarget.initialLayout = Layout::Undefined;
+	fb.depthStencilTarget.finalLayout   = Layout::Undefined;
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 		fb.colorTargets[i].format = colorFormats[i];
+		fb.colorTargets[i].initialLayout = renderPass.desc.colorRTs_[i].initialLayout;
+		fb.colorTargets[i].finalLayout   = renderPass.desc.colorRTs_[i].finalLayout;
 	}
 
 	impl->debugNameObject<vk::Framebuffer>(fb.framebuffer, desc.name_);
@@ -2890,6 +2894,8 @@ void RendererImpl::deleteFramebufferInternal(Framebuffer &fb) {
 	fb.width       = 0;
 	fb.height      = 0;
 	fb.depthStencilTarget.format = Format::Invalid;
+	fb.depthStencilTarget.initialLayout = Layout::Undefined;
+	fb.depthStencilTarget.finalLayout   = Layout::Undefined;
 }
 
 
@@ -2995,6 +3001,8 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 			fb.width       = 0;
 			fb.height      = 0;
 			fb.depthStencilTarget.format = Format::Invalid;
+			fb.depthStencilTarget.initialLayout = Layout::Undefined;
+			fb.depthStencilTarget.finalLayout   = Layout::Undefined;
 		} );
 	}
 
@@ -3158,8 +3166,12 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 		fb.numSamples         = numSamples;
 		fb.framebuffer        = impl->device.createFramebuffer(fbInfo);
 		fb.depthStencilTarget.format = depthStencilFormat;
+		fb.depthStencilTarget.initialLayout = Layout::Undefined;
+		fb.depthStencilTarget.finalLayout   = Layout::Undefined;
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 			fb.colorTargets[i].format = colorFormats[i];
+			fb.colorTargets[i].initialLayout = pass.desc.colorRTs_[i].initialLayout;
+			fb.colorTargets[i].finalLayout   = pass.desc.colorRTs_[i].finalLayout;
 		}
 
 		impl->debugNameObject<vk::Framebuffer>(fb.framebuffer, fbDesc.name_);
@@ -3451,6 +3463,8 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 		if (pass.desc.depthStencilFormat_ != fb.depthStencilTarget.format) {
 			return false;
 		}
+
+		// TODO: check layouts once they're properly stored
 	} else {
 		assert(fb.depthStencilTarget.format == +Format::Invalid);
 		if (pass.desc.depthStencilFormat_ != +Format::Invalid) {
@@ -3465,6 +3479,14 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 		}
 
 		if (pass.desc.colorRTs_[i].format != fb.colorTargets[i].format) {
+			return false;
+		}
+
+		if (pass.desc.colorRTs_[i].initialLayout != fb.colorTargets[i].initialLayout) {
+			return false;
+		}
+
+		if (pass.desc.colorRTs_[i].finalLayout != fb.colorTargets[i].finalLayout) {
 			return false;
 		}
 	}

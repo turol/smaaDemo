@@ -250,6 +250,8 @@ struct Framebuffer {
 	struct RTInfo
 	{
 		Format  format;
+		Layout  initialLayout;
+		Layout  finalLayout;
 	};
 
 	vk::Framebuffer                              framebuffer;
@@ -257,8 +259,9 @@ struct Framebuffer {
 	unsigned int                                 numSamples;
 	FramebufferDesc                              desc;
 	std::array<RTInfo, MAX_COLOR_RENDERTARGETS>  colorTargets;
+	// depthStencilTargets layouts are not used, always Undefined
+	// TODO: fix that (needs more things in Layout)
 	RTInfo                                       depthStencilTarget;
-	// TODO: store info about attachments to allow tracking layout
 
 
 	Framebuffer() noexcept
@@ -268,8 +271,12 @@ struct Framebuffer {
 	{
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 			colorTargets[i].format = Format::Invalid;
+			colorTargets[i].initialLayout = Layout::Undefined;
+			colorTargets[i].finalLayout   = Layout::Undefined;
 		}
 		depthStencilTarget.format = Format::Invalid;
+		depthStencilTarget.initialLayout = Layout::Undefined;
+		depthStencilTarget.finalLayout   = Layout::Undefined;
 	}
 
 	Framebuffer(const Framebuffer &)            = delete;
@@ -289,9 +296,21 @@ struct Framebuffer {
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 			colorTargets[i].format       = other.colorTargets[i].format;
 			other.colorTargets[i].format = Format::Invalid;
+
+			colorTargets[i].initialLayout       = other.colorTargets[i].initialLayout;
+			other.colorTargets[i].initialLayout = Layout::Undefined;
+
+			colorTargets[i].finalLayout         = other.colorTargets[i].finalLayout;
+			other.colorTargets[i].finalLayout   = Layout::Undefined;
 		}
 		depthStencilTarget.format       = other.depthStencilTarget.format;
 		other.depthStencilTarget.format = Format::Invalid;
+
+		depthStencilTarget.initialLayout       = other.depthStencilTarget.initialLayout;
+		other.depthStencilTarget.initialLayout = Layout::Undefined;
+
+		depthStencilTarget.finalLayout         = other.depthStencilTarget.finalLayout;
+		other.depthStencilTarget.finalLayout   = Layout::Undefined;
 	}
 
 	Framebuffer &operator=(Framebuffer &&other) noexcept {
@@ -308,8 +327,12 @@ struct Framebuffer {
 		desc              = other.desc;
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 			colorTargets[i].format = other.colorTargets[i].format;
+			colorTargets[i].initialLayout = other.colorTargets[i].initialLayout;
+			colorTargets[i].finalLayout   = other.colorTargets[i].finalLayout;
 		}
 		depthStencilTarget.format = other.depthStencilTarget.format;
+		depthStencilTarget.initialLayout = other.depthStencilTarget.initialLayout;
+		depthStencilTarget.finalLayout   = other.depthStencilTarget.finalLayout;
 
 		other.framebuffer = vk::Framebuffer();
 		other.width       = 0;
@@ -317,8 +340,12 @@ struct Framebuffer {
 		other.numSamples  = 0;
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 			other.colorTargets[i].format = Format::Invalid;
+			other.colorTargets[i].initialLayout = Layout::Undefined;
+			other.colorTargets[i].finalLayout   = Layout::Undefined;
 		}
 		other.depthStencilTarget.format = Format::Invalid;
+		other.depthStencilTarget.initialLayout = Layout::Undefined;
+		other.depthStencilTarget.finalLayout   = Layout::Undefined;
 
 		return *this;
 	}
