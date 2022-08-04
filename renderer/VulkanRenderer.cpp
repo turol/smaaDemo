@@ -640,6 +640,13 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			if (popCount(static_cast<uint32_t>(q.queueFlags)) < popCount(currentFlags)) {
 				transferQueueIndex = i;
 				currentFlags       = static_cast<uint32_t>(q.queueFlags);
+				continue;
+			}
+
+			// is it smaller set or equal to current and current is still graphics queue?
+			if (transferQueueIndex == graphicsQueueIndex && popCount(static_cast<uint32_t>(q.queueFlags)) <= popCount(currentFlags)) {
+				transferQueueIndex = i;
+				currentFlags       = static_cast<uint32_t>(q.queueFlags);
 			}
 		}
 	}
