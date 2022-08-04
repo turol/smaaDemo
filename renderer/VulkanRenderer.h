@@ -62,6 +62,22 @@ THE SOFTWARE.
 
 #include "utils/Hash.h"
 
+
+// These are the new versions of these macros
+// vk_mem_alloc.h requires them but they're not defined in old vulkan.h
+#ifndef VK_API_VERSION_MAJOR
+#define VK_API_VERSION_MAJOR(version) VK_VERSION_MAJOR(version)
+#endif  // VK_API_VERSION_MAJOR
+
+#ifndef VK_API_VERSION_MINOR
+#define VK_API_VERSION_MINOR(version) VK_VERSION_MINOR(version)
+#endif  // VK_API_VERSION_MINOR
+
+#ifndef VK_API_VERSION_PATCH
+#define VK_API_VERSION_PATCH(version) VK_VERSION_PATCH(version)
+#endif  // VK_API_VERSION_PATCH
+
+
 #include "vk_mem_alloc.h"
 
 
