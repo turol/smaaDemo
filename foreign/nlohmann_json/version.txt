@@ -1,6 +1,6 @@
-commit 69d744867f8847c91a126fa25e9a6a3d67b3be41
-Merge: cbaf1033b f2020da0d
+commit bc889afb4c5bf1c0d8ee29ef35eaaf4c8bef8a5d
+Merge: 69d744867 9d6918629
 Author: Niels Lohmann <mail@nlohmann.me>
-Date:   Mon Aug 1 23:31:38 2022 +0200
+Date:   Fri Aug 12 15:06:06 2022 +0200
 
-    Merge branch 'release/3.11.1'
+    Merge branch 'release/3.11.2'
