@@ -1,6 +1,6 @@
 # string_view lite: A single-file header-only version of a C++17-like string_view for C++98, C++11 and later
 
-[![Language](https://img.shields.io/badge/C%2B%2B-98/11/14/17-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization) [![License](https://img.shields.io/badge/license-BSL-blue.svg)](https://opensource.org/licenses/BSL-1.0) [![Build Status](https://travis-ci.org/martinmoene/string-view-lite.svg?branch=master)](https://travis-ci.org/martinmoene/string-view-lite) [![Build status](https://ci.appveyor.com/api/projects/status/1ha3wnxtam547m8p?svg=true)](https://ci.appveyor.com/project/martinmoene/string-view-lite) [![Version](https://badge.fury.io/gh/martinmoene%2Fstring-view-lite.svg)](https://github.com/martinmoene/string-view-lite/releases) [![download](https://img.shields.io/badge/latest-download-blue.svg)](https://github.com/martinmoene/string-view-lite/blob/master/include/nonstd/string_view.hpp) [![Conan](https://img.shields.io/badge/on-conan-blue.svg)](https://bintray.com/conan/conan-center/string-view-lite%3A_) [![Try it on wandbox](https://img.shields.io/badge/on-wandbox-blue.svg)](https://wandbox.org/permlink/ZfX49QqynfuQikTX) [![Try it on godbolt online](https://img.shields.io/badge/on-godbolt-blue.svg)](https://godbolt.org/z/YtxnAn)
+[![Language](https://img.shields.io/badge/C%2B%2B-98/11/14/17-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization) [![License](https://img.shields.io/badge/license-BSL-blue.svg)](https://opensource.org/licenses/BSL-1.0) [![Build Status](https://github.com/martinmoene/string-view-lite/actions/workflows/ci.yml/badge.svg)](https://github.com/martinmoene/string-view-lite/actions/workflows/ci.yml) [![Build Status](https://travis-ci.org/martinmoene/string-view-lite.svg?branch=master)](https://travis-ci.org/martinmoene/string-view-lite) [![Build status](https://ci.appveyor.com/api/projects/status/1ha3wnxtam547m8p?svg=true)](https://ci.appveyor.com/project/martinmoene/string-view-lite) [![Version](https://badge.fury.io/gh/martinmoene%2Fstring-view-lite.svg)](https://github.com/martinmoene/string-view-lite/releases) [![download](https://img.shields.io/badge/latest-download-blue.svg)](https://github.com/martinmoene/string-view-lite/blob/master/include/nonstd/string_view.hpp) [![Conan](https://img.shields.io/badge/on-conan-blue.svg)](https://conan.io/center/string-view-lite) [![Try it on wandbox](https://img.shields.io/badge/on-wandbox-blue.svg)](https://wandbox.org/permlink/ZfX49QqynfuQikTX) [![Try it on godbolt online](https://img.shields.io/badge/on-godbolt-blue.svg)](https://godbolt.org/z/YtxnAn)
 
 **Contents**  
 
@@ -196,6 +196,18 @@ Define this to 1 to provide `std::string`&ndash; `nonstd::string_view` interoper
 -D<b>nssv_CONFIG_CONVERSION_STD_STRING_FREE_FUNCTIONS</b>=1  
 Define this to 1 to provide `std::string`&ndash; `nonstd::string_view` interoperability via free functions, define it to 0 to omit all said functions. This also controls the presence of these function if `std::string_view` is used. Default is undefined.
 
+### Omit use of streams
+
+At default, *string-view lite* provides operations to overload the `operator<<`. If you want to use the library without the use of standard streams, you can control this with the following macro:
+
+-D<b>nssv_CONFIG_NO_STREAM_INSERTION</b>=1  
+Define this to 1 to omit the use of standard streams. Default is undefined
+
+### Enable compilation errors
+
+\-D<b>nssv\_CONFIG\_CONFIRMS\_COMPILATION\_ERRORS</b>=0  
+Define this macro to 1 to experience the by-design compile-time errors of the library in the test suite. Default is 0.
+
 ## Reported to work with
 
 The table below mentions the compiler versions *string-view lite* is reported to work with.
@@ -244,7 +256,7 @@ All tests should pass, indicating your platform is supported and you are ready t
 ## Other implementations of string_view
 
 - Marshall Clow. [string_view implementation for libc++](https://github.com/mclow/string_view). GitHub.
-- LLVM libc++. [string_view](https://llvm.org/svn/llvm-project/libcxx/trunk/include/string_view). GitHub.
+- LLVM libc++. [string_view](https://github.com/llvm/llvm-project/blob/main/libcxx/include/string_view). GitHub.
 - Matthew Rodusek's, @bitwizeshift. [string_view Standalone](https://github.com/bitwizeshift/string_view-standalone). GitHub.
 - @satoren. [string_view for C++03 C++11 C++14](https://github.com/satoren/string_view). GitHub.
 - Google Abseil [string_view](https://github.com/abseil/abseil-cpp/tree/master/absl/strings) (non-templated).
@@ -274,6 +286,7 @@ All tests should pass, indicating your platform is supported and you are ready t
 - Marshall Clow. [p0403 - Literal suffixes for basic_string_view](http://wg21.link/p0403). 2016.
 - Peter Sommerlad. [p0506 - use string_view for library function parameters instead of const string &/const char *](http://wg21.link/p0506). 2017.
 - Daniel Krugler. [wg2946 - LWG 2758's resolution missed further corrections](https://wg21.link/lwg2946). 2017.
+- Yuriy Chernyshov. [p2166 - A Proposal to Prohibit std::basic_string and std::basic_string_view construction from nullptr](https://wg21.link/p2166). 2020. **Adopted 2021-06**.
 
 ## Appendix
 
@@ -283,12 +296,18 @@ The version of *string-view lite* is available via tag `[.version]`. The followi
 
 ### A.2 string-view lite test specification
 
+<details>
+<summary>click to expand</summary>
+<p>
+
 ```Text
 string_view: Allows to default construct an empty string_view
 string_view: Allows to construct from pointer and size
 string_view: Allows to construct from C-string
 string_view: Allows to copy-construct from empty string_view
 string_view: Allows to copy-construct from non-empty string_view
+string_view: Disallows to copy-construct from nullptr (C++11)
+string_view: Disallows to copy-assign from nullptr (C++11)
 string_view: Allows to copy-assign from empty string_view
 string_view: Allows to copy-assign from non-empty string_view
 string_view: Allows forward iteration
@@ -372,3 +391,6 @@ to_string(): convert to std::string via to_string() [extension]
 to_string_view(): convert from std::string via to_string_view() [extension]
 tweak header: reads tweak header if supported [tweak]
 ```
+
+</p>
+</details>

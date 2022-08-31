@@ -27,13 +27,14 @@ set unit_select=-D%unit_prfx%_CONFIG_SELECT_%UCAP%=%unit_prfx%_%UCAP%_DEFAULT
 set unit_config=^
     -Dnssv_CONFIG_STD_SV_OPERATOR=1 ^
     -Dnssv_CONFIG_USR_SV_OPERATOR=1 ^
+    -Dnssv_CONFIG_CONFIRMS_COMPILATION_ERRORS=0 ^
     -Dnssv_STRING_VIEW_HEADER=\"nonstd/string_view.hpp\"
 
 rem -flto / -fwhole-program
 set  optflags=-O2
 set warnflags=-Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow -Wno-padded -Wno-missing-noreturn
 
-%gpp% -std=%std% %optflags% %warnflags% %unit_select% %unit_config% -o %unit_file%-main.t.exe -I../include -I. %unit_file%-main.t.cpp %unit_file%.t.cpp && %unit_file%-main.t.exe
+%gpp% -std=%std% %optflags% %warnflags% %unit_select% %unit_config% -o %unit_file%-main.t.exe -isystem lest -I../include -I. %unit_file%-main.t.cpp %unit_file%.t.cpp && %unit_file%-main.t.exe
 
 endlocal & goto :EOF
 
