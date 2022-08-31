@@ -3176,6 +3176,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				smaaPipelines.neighborPipelines[1].reset();
 			}
 
+			{
 			if (ImGui::CollapsingHeader("SMAA custom properties")) {
 				if (smaaQuality != 0) {
 					ImGui::BeginDisabled();
@@ -3199,6 +3200,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				if (smaaQuality != 0) {
 					ImGui::EndDisabled();
 				}
+			}
 			}
 
 			ImGui::Checkbox("Predicated thresholding", &smaaPredication);
