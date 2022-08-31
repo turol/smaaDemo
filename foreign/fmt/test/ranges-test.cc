@@ -40,6 +40,8 @@ TEST(ranges_test, format_2d_array) {
 TEST(ranges_test, format_array_of_literals) {
   const char* arr[] = {"1234", "abcd"};
   EXPECT_EQ(fmt::format("{}", arr), "[\"1234\", \"abcd\"]");
+  EXPECT_EQ(fmt::format("{:n}", arr), "\"1234\", \"abcd\"");
+  EXPECT_EQ(fmt::format("{:n:}", arr), "1234, abcd");
 }
 #endif  // FMT_RANGES_TEST_ENABLE_C_STYLE_ARRAY
 
@@ -47,17 +49,20 @@ TEST(ranges_test, format_vector) {
   auto v = std::vector<int>{1, 2, 3, 5, 7, 11};
   EXPECT_EQ(fmt::format("{}", v), "[1, 2, 3, 5, 7, 11]");
   EXPECT_EQ(fmt::format("{::#x}", v), "[0x1, 0x2, 0x3, 0x5, 0x7, 0xb]");
+  EXPECT_EQ(fmt::format("{:n:#x}", v), "0x1, 0x2, 0x3, 0x5, 0x7, 0xb");
 }
 
 TEST(ranges_test, format_vector2) {
   auto v = std::vector<std::vector<int>>{{1, 2}, {3, 5}, {7, 11}};
   EXPECT_EQ(fmt::format("{}", v), "[[1, 2], [3, 5], [7, 11]]");
   EXPECT_EQ(fmt::format("{:::#x}", v), "[[0x1, 0x2], [0x3, 0x5], [0x7, 0xb]]");
+  EXPECT_EQ(fmt::format("{:n:n:#x}", v), "0x1, 0x2, 0x3, 0x5, 0x7, 0xb");
 }
 
 TEST(ranges_test, format_map) {
   auto m = std::map<std::string, int>{{"one", 1}, {"two", 2}};
   EXPECT_EQ(fmt::format("{}", m), "{\"one\": 1, \"two\": 2}");
+  EXPECT_EQ(fmt::format("{:n}", m), "\"one\": 1, \"two\": 2");
 }
 
 TEST(ranges_test, format_set) {
@@ -375,8 +380,15 @@ TEST(ranges_test, escape_string) {
     EXPECT_EQ(fmt::format("{}", vec{"\xcd\xb8"}), "[\"\\u0378\"]");
     // Unassigned Unicode code points.
     EXPECT_EQ(fmt::format("{}", vec{"\xf0\xaa\x9b\x9e"}), "[\"\\U0002a6de\"]");
+    // Broken utf-8.
     EXPECT_EQ(fmt::format("{}", vec{"\xf4\x8f\xbf\xc0"}),
               "[\"\\xf4\\x8f\\xbf\\xc0\"]");
+    EXPECT_EQ(fmt::format("{}", vec{"\xf0\x28"}), "[\"\\xf0(\"]");
+    EXPECT_EQ(fmt::format("{}", vec{"\xe1\x28"}), "[\"\\xe1(\"]");
+    EXPECT_EQ(fmt::format("{}", vec{std::string("\xf0\x28\0\0anything", 12)}),
+              "[\"\\xf0(\\x00\\x00anything\"]");
+
+    // Correct utf-8.
     EXPECT_EQ(fmt::format("{}", vec{"понедельник"}), "[\"понедельник\"]");
   }
 }
@@ -405,4 +417,8 @@ TEST(ranges_test, range_of_range_of_mixed_const) {
 
   fmt_ref_view<decltype(v)> r{&v};
   EXPECT_EQ(fmt::format("{}", r), "[[1, 2, 3], [4, 5]]");
+}
+
+TEST(ranges_test, vector_char) {
+  EXPECT_EQ(fmt::format("{}", std::vector<char>{'a', 'b'}), "['a', 'b']");
 }

@@ -123,8 +123,6 @@ support/AndroidManifest.xml
 support/C++.sublime-syntax
 support/README
 support/Vagrantfile
-support/appveyor-build.py
-support/appveyor.yml
 support/bazel/.bazelrc
 support/bazel/.bazelversion
 support/bazel/BUILD.bazel

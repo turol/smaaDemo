@@ -8,9 +8,6 @@ target_link_libraries(test-main gtest fmt)
 
 function(add_fmt_executable name)
   add_executable(${name} ${ARGN})
-  if (MINGW)
-    target_link_libraries(${name} -static-libgcc -static-libstdc++)
-  endif ()
   # (Wstringop-overflow) - [meta-bug] bogus/missing -Wstringop-overflow warnings
   #   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=88443
   # Bogus -Wstringop-overflow warning
@@ -19,6 +16,8 @@ function(add_fmt_executable name)
   #   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=95353
   if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND
       NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)
+    target_compile_options(${name} PRIVATE -Wno-stringop-overflow)
+    # The linker flag is needed for LTO.
     target_link_libraries(${name} -Wno-stringop-overflow)
   endif ()
 endfunction()
