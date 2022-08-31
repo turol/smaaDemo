@@ -46,6 +46,7 @@ FILES:= \
 	eliminate_dead_input_components_pass.cpp \
 	eliminate_dead_members_pass.cpp \
 	feature_manager.cpp \
+	fix_func_call_arguments.cpp \
 	fix_storage_class.cpp \
 	flatten_decoration_pass.cpp \
 	fold.cpp \
@@ -64,6 +65,7 @@ FILES:= \
 	instruction.cpp \
 	instruction_list.cpp \
 	instrument_pass.cpp \
+	interface_var_sroa.cpp \
 	interp_fixup_pass.cpp \
 	ir_context.cpp \
 	ir_loader.cpp \

@@ -48,6 +48,8 @@ FILES:= \
 	validate_mode_setting.cpp \
 	validate_non_uniform.cpp \
 	validate_primitives.cpp \
+	validate_ray_query.cpp \
+	validate_ray_tracing.cpp \
 	validate_scopes.cpp \
 	validate_small_type_uses.cpp \
 	validate_type.cpp \
