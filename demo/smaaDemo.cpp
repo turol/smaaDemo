@@ -454,6 +454,7 @@ class SMAADemo {
 	// aa things
 	bool                                              antialiasing;
 	AAMethod                                          aaMethod;
+	bool                                              aaMethodSetExplicitly;
 	bool                                              temporalAA;
 	bool                                              temporalAAFirstFrame;
 	unsigned int                                      temporalFrame;
@@ -644,6 +645,7 @@ SMAADemo::SMAADemo()
 
 , antialiasing(true)
 , aaMethod(AAMethod::SMAA)
+, aaMethodSetExplicitly(false)
 , temporalAA(false)
 , temporalAAFirstFrame(false)
 , temporalFrame(0)
@@ -868,10 +870,8 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 					}
 				} else {
 					aaMethod = *parsed;
-					if (!isAAMethodSupported(aaMethod)) {
-						LOG_ERROR("Requested AA method {} is not supported", aaMethod._to_string());
-						exit(1);
-					}
+					// we don't know supported methods yet, delay the check until we do
+					aaMethodSetExplicitly = true;
 				}
 			}
 		}
@@ -1145,6 +1145,9 @@ void SMAADemo::initRender() {
 	}
 
 	if (!isAAMethodSupported(aaMethod)) {
+		if (aaMethodSetExplicitly) {
+			THROW_ERROR("Requested AA method {} is not supported", aaMethod._to_string());
+		}
 		setNextAAMethod();
 	}
 
