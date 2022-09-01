@@ -3673,7 +3673,7 @@ void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLay
 	LOG_TODO("should allow user to specify access flags");
 	LOG_TODO("should tighten access masks");
 	b.srcAccessMask               = vk::AccessFlagBits::eMemoryWrite;
-	b.dstAccessMask               = vk::AccessFlagBits::eMemoryRead;
+	b.dstAccessMask               = vk::AccessFlagBits::eTransferWrite;
 	b.oldLayout                   = vk::ImageLayout::eUndefined;
 	b.newLayout                   = vk::ImageLayout::eTransferDstOptimal;
 	b.image                       = frame.image;
