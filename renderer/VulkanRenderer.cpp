@@ -664,6 +664,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	HashSet<std::string> availableExtensions;
 	{
 		auto exts = physicalDevice.enumerateDeviceExtensionProperties();
+		std::sort(exts.begin(), exts.end()
+		  , [] (const vk::ExtensionProperties &a, const vk::ExtensionProperties &b) {
+			  return strcmp(a.extensionName, b.extensionName) < 0;
+		});
+
 		LOG("{} device extensions:", exts.size());
 		for (const auto &ext : exts) {
 			LOG("{}", ext.extensionName.data());
