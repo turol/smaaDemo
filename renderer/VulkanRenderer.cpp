@@ -753,6 +753,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		LOG("Dedicated allocations enabled");
 		allocatorInfo.flags       |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
 	}
+	VmaVulkanFunctions vmaVulkanFunctions    = {};
+	vmaVulkanFunctions.vkGetInstanceProcAddr = getInstanceProc;
+	vmaVulkanFunctions.vkGetDeviceProcAddr   = vkGetDeviceProcAddr;
+	allocatorInfo.pVulkanFunctions = &vmaVulkanFunctions;
 	allocatorInfo.instance         = instance;
 	allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_0;
 
