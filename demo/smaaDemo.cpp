@@ -819,7 +819,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::ValueArg<unsigned int>          windowWidthSwitch("",  "width",      "Window width",             false, rendererDesc.swapchain.width,  "width",              cmd);
 		TCLAP::ValueArg<unsigned int>          windowHeightSwitch("", "height",     "Window height",            false, rendererDesc.swapchain.height, "height",             cmd);
 
-		TCLAP::ValueArg<unsigned int>          fpsSwitch("",          "fps",        "FPS limit",                false, 0,                             "FPS",                cmd);
+		TCLAP::ValueArg<int>                   fpsSwitch("",          "fps",        "FPS limit",                false, -1,                            "FPS",                cmd);
 		TCLAP::ValueArg<unsigned int>          framesSwitch("",       "frames",     "Frames to render",         false, 0,                             "Frames",             cmd);
 
 		TCLAP::ValueArg<unsigned int>          rotateSwitch("",       "rotate",     "Rotation period",          false, 0,                             "seconds",            cmd);
@@ -847,7 +847,22 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		rendererDesc.swapchain.vsync       = noVsyncSwitch.getValue() ? VSync::Off : VSync::On;
 		rendererDesc.vulkanDeviceFilter    = deviceSwitch.getValue();
 
-		fpsLimit = fpsSwitch.getValue();
+		{
+			int temp = fpsSwitch.getValue();
+			if (temp < 0) {
+				// automatic
+				fpsLimitActive = true;
+				fpsLimit       = 0;
+			} else if (temp == 0 || temp > std::numeric_limits<int>::max()) {
+				// disabled
+				fpsLimitActive = false;
+				fpsLimit       = 0;
+			} else {
+				// limited to specific
+				fpsLimitActive = true;
+				fpsLimit       = static_cast<unsigned int>(temp);
+			}
+		}
 		maxRenderedFrames = framesSwitch.getValue();
 
 		unsigned int r = rotateSwitch.getValue();
@@ -1158,7 +1173,7 @@ void SMAADemo::initRender() {
 		refreshRate = renderer.getMaxRefreshRate();
 	}
 
-	if (fpsLimit == 0) {
+	if (fpsLimitActive && fpsLimit == 0) {
 		if (refreshRate == 0) {
 			LOG("Failed to get refresh rate, defaulting to 60");
 			fpsLimit = 2 * 60;
