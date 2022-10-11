@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include <nonstd/string_view.hpp>
 
 #include <fmt/format.h>
+#include <fmt/compile.h>
 
 #include <hedley/hedley.h>
 
@@ -83,7 +84,7 @@ THE SOFTWARE.
 	{                                                                                                           \
 		static bool seen = false;                                                                               \
 		if (!seen) {                                                                                            \
-			logWriteFmt(FMT_STRING("TODO: {} in {} at {}:{}"), str, __PRETTY_FUNCTION__, __FILE__,  __LINE__);  \
+			logWriteFmt(FMT_COMPILE("TODO: {} in {} at {}:{}"), str, __PRETTY_FUNCTION__, __FILE__,  __LINE__);  \
 			seen = true;                                                                                        \
 		}                                                                                                       \
 	}
@@ -92,8 +93,8 @@ THE SOFTWARE.
 #endif  // NDEBUG
 
 
-#define LOG(msg, ...)        logWriteFmt(FMT_STRING(msg), ##__VA_ARGS__)
-#define LOG_ERROR(msg, ...)  logWriteErrorFmt(FMT_STRING(msg), ##__VA_ARGS__)
+#define LOG(msg, ...)        logWriteFmt(FMT_COMPILE(msg), ##__VA_ARGS__)
+#define LOG_ERROR(msg, ...)  logWriteErrorFmt(FMT_COMPILE(msg), ##__VA_ARGS__)
 
 
 void logInit();
@@ -116,7 +117,7 @@ void logFlush();
 
 #define THROW_ERROR(msg, ...)                                                    \
 	{                                                                            \
-		std::string errorMessage = fmt::format(FMT_STRING(msg), ##__VA_ARGS__);  \
+		std::string errorMessage = fmt::format(FMT_COMPILE(msg), ##__VA_ARGS__);  \
 		logWriteError(errorMessage);                                             \
 		throw std::runtime_error(errorMessage);                                  \
 	}
