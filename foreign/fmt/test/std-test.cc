@@ -6,11 +6,11 @@
 // For the license information refer to format.h.
 
 #include "fmt/std.h"
-#include "fmt/ranges.h"
 
 #include <string>
 #include <vector>
 
+#include "fmt/ranges.h"
 #include "gtest/gtest.h"
 
 TEST(std_test, path) {
@@ -75,5 +75,45 @@ TEST(std_test, variant) {
 
   EXPECT_EQ(fmt::format("{}", v4), "variant(monostate)");
   EXPECT_EQ(fmt::format("{}", v5), "variant(\"yes, this is variant\")");
+
+  volatile int i = 42;  // Test compile error before GCC 11 described in #3068.
+  EXPECT_EQ(fmt::format("{}", i), "42");
 #endif
+}
+
+template <typename Catch> void exception_test() {
+  try {
+    throw std::runtime_error("Test Exception");
+  } catch (const Catch& ex) {
+    EXPECT_EQ("Test Exception", fmt::format("{}", ex));
+    EXPECT_EQ("std::runtime_error: Test Exception", fmt::format("{:t}", ex));
+  }
+}
+
+namespace my_ns1 {
+namespace my_ns2 {
+struct my_exception : public std::exception {
+ private:
+  std::string msg;
+
+ public:
+  my_exception(const std::string& s) : msg(s) {}
+  const char* what() const noexcept override;
+};
+const char* my_exception::what() const noexcept { return msg.c_str(); }
+}  // namespace my_ns2
+}  // namespace my_ns1
+
+TEST(std_test, exception) {
+  exception_test<std::exception>();
+  exception_test<std::runtime_error>();
+
+  try {
+    using namespace my_ns1::my_ns2;
+    throw my_exception("My Exception");
+  } catch (const std::exception& ex) {
+    EXPECT_EQ("my_ns1::my_ns2::my_exception: My Exception",
+              fmt::format("{:t}", ex));
+    EXPECT_EQ("My Exception", fmt::format("{:}", ex));
+  }
 }

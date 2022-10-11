@@ -1,5 +1,5 @@
-commit a33701196adfad74917046096bf5a2aa0ab0bb50
-Author: Victor Zverovich <viz@fb.com>
-Date:   Sat Aug 27 08:57:10 2022 -0700
+commit e2f6d7665b134c20bc704f0c3d1d0d9305b4f564
+Author: Sergiu Deitsch <sergiu.deitsch@gmail.com>
+Date:   Mon Sep 12 11:01:44 2022 +0200
 
-    Update version
+    fix gcc <= 7.1 compile errors

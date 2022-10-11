@@ -17,7 +17,7 @@
 #include <type_traits>
 
 // The fmt library version in the form major * 10000 + minor * 100 + patch.
-#define FMT_VERSION 90100
+#define FMT_VERSION 90101
 
 #if defined(__clang__) && !defined(__ibmxl__)
 #  define FMT_CLANG_VERSION (__clang_major__ * 100 + __clang_minor__)
@@ -69,9 +69,7 @@
 #  define FMT_HAS_FEATURE(x) 0
 #endif
 
-#if (defined(__has_include) || FMT_ICC_VERSION >= 1600 || \
-     FMT_MSC_VERSION > 1900) &&                           \
-    !defined(__INTELLISENSE__)
+#if defined(__has_include) || FMT_ICC_VERSION >= 1600 || FMT_MSC_VERSION > 1900
 #  define FMT_HAS_INCLUDE(x) __has_include(x)
 #else
 #  define FMT_HAS_INCLUDE(x) 0
@@ -277,7 +275,7 @@
 #  if defined(__cpp_nontype_template_args) &&                  \
       ((FMT_GCC_VERSION >= 903 && FMT_CPLUSPLUS >= 201709L) || \
        __cpp_nontype_template_args >= 201911L) &&              \
-      !defined(__NVCOMPILER)
+      !defined(__NVCOMPILER) && !defined(__LCC__)
 #    define FMT_USE_NONTYPE_TEMPLATE_ARGS 1
 #  else
 #    define FMT_USE_NONTYPE_TEMPLATE_ARGS 0
@@ -286,7 +284,7 @@
 
 // Enable minimal optimizations for more compact code in debug mode.
 FMT_GCC_PRAGMA("GCC push_options")
-#if !defined(__OPTIMIZE__) && !defined(__NVCOMPILER)
+#if !defined(__OPTIMIZE__) && !defined(__NVCOMPILER) && !defined(__LCC__)
 FMT_GCC_PRAGMA("GCC optimize(\"Og\")")
 #endif
 
@@ -332,7 +330,7 @@ struct monostate {
 #ifdef FMT_DOC
 #  define FMT_ENABLE_IF(...)
 #else
-#  define FMT_ENABLE_IF(...) enable_if_t<(__VA_ARGS__), int> = 0
+#  define FMT_ENABLE_IF(...) fmt::enable_if_t<(__VA_ARGS__), int> = 0
 #endif
 
 FMT_BEGIN_DETAIL_NAMESPACE
@@ -484,6 +482,18 @@ template <typename Char> class basic_string_view {
   FMT_CONSTEXPR void remove_prefix(size_t n) noexcept {
     data_ += n;
     size_ -= n;
+  }
+
+  FMT_CONSTEXPR_CHAR_TRAITS bool starts_with(
+      basic_string_view<Char> sv) const noexcept {
+    return size_ >= sv.size_ &&
+           std::char_traits<Char>::compare(data_, sv.data_, sv.size_) == 0;
+  }
+  FMT_CONSTEXPR_CHAR_TRAITS bool starts_with(Char c) const noexcept {
+    return size_ >= 1 && std::char_traits<Char>::eq(*data_, c);
+  }
+  FMT_CONSTEXPR_CHAR_TRAITS bool starts_with(const Char* s) const {
+    return starts_with(basic_string_view<Char>(s));
   }
 
   // Lexicographically compare this string reference to other.
@@ -755,8 +765,11 @@ class compile_parse_context
   using base::check_arg_id;
 
   FMT_CONSTEXPR void check_dynamic_spec(int arg_id) {
+    detail::ignore_unused(arg_id);
+#if !defined(__LCC__)
     if (arg_id < num_args_ && types_ && !is_integral_type(types_[arg_id]))
       this->on_error("width/precision is not integer");
+#endif
   }
 };
 FMT_END_DETAIL_NAMESPACE
@@ -892,11 +905,11 @@ template <typename T> class buffer {
   buffer(const buffer&) = delete;
   void operator=(const buffer&) = delete;
 
-  auto begin() noexcept -> T* { return ptr_; }
-  auto end() noexcept -> T* { return ptr_ + size_; }
+  FMT_INLINE auto begin() noexcept -> T* { return ptr_; }
+  FMT_INLINE auto end() noexcept -> T* { return ptr_ + size_; }
 
-  auto begin() const noexcept -> const T* { return ptr_; }
-  auto end() const noexcept -> const T* { return ptr_ + size_; }
+  FMT_INLINE auto begin() const noexcept -> const T* { return ptr_; }
+  FMT_INLINE auto end() const noexcept -> const T* { return ptr_ + size_; }
 
   /** Returns the size of this buffer. */
   constexpr auto size() const noexcept -> size_t { return size_; }
@@ -1112,7 +1125,7 @@ auto get_buffer(OutputIt out) -> iterator_buffer<OutputIt, T> {
 }
 
 template <typename Buffer>
-auto get_iterator(Buffer& buf) -> decltype(buf.out()) {
+FMT_INLINE auto get_iterator(Buffer& buf) -> decltype(buf.out()) {
   return buf.out();
 }
 template <typename T> auto get_iterator(buffer<T>& buf) -> buffer_appender<T> {
@@ -1712,7 +1725,7 @@ class locale_ref {
   const void* locale_;  // A type-erased pointer to std::locale.
 
  public:
-  constexpr locale_ref() : locale_(nullptr) {}
+  constexpr FMT_INLINE locale_ref() : locale_(nullptr) {}
   template <typename Locale> explicit locale_ref(const Locale& loc);
 
   explicit operator bool() const noexcept { return locale_ != nullptr; }
@@ -2382,6 +2395,7 @@ FMT_CONSTEXPR auto parse_align(const Char* begin, const Char* end,
         auto c = *begin;
         if (c == '{')
           return handler.on_error("invalid fill character '{'"), begin;
+        if (c == '}') return begin;
         handler.on_fill(basic_string_view<Char>(begin, to_unsigned(p - begin)));
         begin = p + 1;
       } else
@@ -3009,11 +3023,11 @@ void check_format_string(S format_str) {
   ignore_unused(invalid_format);
 }
 
+// Don't use type_identity for args to simplify symbols.
 template <typename Char>
-void vformat_to(
-    buffer<Char>& buf, basic_string_view<Char> fmt,
-    basic_format_args<FMT_BUFFER_CONTEXT(type_identity_t<Char>)> args,
-    locale_ref loc = {});
+void vformat_to(buffer<Char>& buf, basic_string_view<Char> fmt,
+                basic_format_args<FMT_BUFFER_CONTEXT(Char)> args,
+                locale_ref loc = {});
 
 FMT_API void vprint_mojibake(std::FILE*, string_view, format_args);
 #ifndef _WIN32
@@ -3272,7 +3286,8 @@ template <typename... T>
 FMT_NODISCARD FMT_INLINE auto formatted_size(format_string<T...> fmt,
                                              T&&... args) -> size_t {
   auto buf = detail::counting_buffer<>();
-  detail::vformat_to(buf, string_view(fmt), fmt::make_format_args(args...), {});
+  detail::vformat_to(buf, string_view(fmt),
+                     format_args(fmt::make_format_args(args...)), {});
   return buf.count();
 }
 

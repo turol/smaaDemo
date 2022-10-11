@@ -1205,6 +1205,7 @@ constexpr auto uint128_max = ~static_cast<__uint128_t>(0);
 TEST(format_test, format_dec) {
   EXPECT_EQ("0", fmt::format("{0}", 0));
   EXPECT_EQ("42", fmt::format("{0}", 42));
+  EXPECT_EQ("42>", fmt::format("{:}>", 42));
   EXPECT_EQ("42", fmt::format("{0:d}", 42));
   EXPECT_EQ("42", fmt::format("{0}", 42u));
   EXPECT_EQ("-42", fmt::format("{0}", -42));
@@ -2006,6 +2007,7 @@ TEST(format_test, output_iterators) {
 
 TEST(format_test, formatted_size) {
   EXPECT_EQ(2u, fmt::formatted_size("{}", 42));
+  EXPECT_EQ(2u, fmt::formatted_size(std::locale(), "{}", 42));
 }
 
 TEST(format_test, format_to_no_args) {
@@ -2178,7 +2180,9 @@ TEST(format_test, format_string_errors) {
   EXPECT_ERROR("{: }", "format specifier requires signed argument", unsigned);
   EXPECT_ERROR("{:{}}", "argument not found", int);
   EXPECT_ERROR("{:.{}}", "argument not found", double);
+#    if defined(__cpp_lib_is_constant_evaluated) && !defined(__LCC__)
   EXPECT_ERROR("{:{}}", "width/precision is not integer", int, double);
+#    endif
   EXPECT_ERROR("{:.2}", "precision not allowed for this argument type", int);
   EXPECT_ERROR("{:s}", "invalid type specifier", int);
   EXPECT_ERROR("{:s}", "invalid type specifier", char);
@@ -2309,3 +2313,57 @@ TEST(format_int_test, format_int) {
   os << max_value<int64_t>();
   EXPECT_EQ(os.str(), fmt::format_int(max_value<int64_t>()).str());
 }
+
+#ifndef FMT_STATIC_THOUSANDS_SEPARATOR
+
+#  include <locale>
+
+class format_facet : public fmt::format_facet<std::locale> {
+ protected:
+  struct int_formatter {
+    fmt::appender out;
+
+    template <typename T, FMT_ENABLE_IF(fmt::detail::is_integer<T>::value)>
+    auto operator()(T value) -> bool {
+      fmt::format_to(out, "[{}]", value);
+      return true;
+    }
+
+    template <typename T, FMT_ENABLE_IF(!fmt::detail::is_integer<T>::value)>
+    auto operator()(T) -> bool {
+      return false;
+    }
+  };
+
+  auto do_put(fmt::appender out, fmt::loc_value val,
+              const fmt::format_specs&) const -> bool override;
+};
+
+auto format_facet::do_put(fmt::appender out, fmt::loc_value val,
+                          const fmt::format_specs&) const -> bool {
+  return val.visit(int_formatter{out});
+}
+
+TEST(format_test, format_facet) {
+  auto loc = std::locale(std::locale(), new format_facet());
+  EXPECT_EQ(fmt::format(loc, "{:L}", 42), "[42]");
+  EXPECT_EQ(fmt::format(loc, "{:L}", -42), "[-42]");
+}
+
+TEST(format_test, format_facet_separator) {
+  // U+2019 RIGHT SINGLE QUOTATION MARK is a digit separator in the de_CH
+  // locale.
+  auto loc =
+      std::locale({}, new fmt::format_facet<std::locale>("\xe2\x80\x99"));
+  EXPECT_EQ(fmt::format(loc, "{:L}", 1000),
+            "1\xe2\x80\x99"
+            "000");
+}
+
+TEST(format_test, format_facet_grouping) {
+  auto loc =
+      std::locale({}, new fmt::format_facet<std::locale>(",", {1, 2, 3}));
+  EXPECT_EQ(fmt::format(loc, "{:L}", 1234567890), "1,234,567,89,0");
+}
+
+#endif  // FMT_STATIC_THOUSANDS_SEPARATOR
