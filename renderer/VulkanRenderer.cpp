@@ -408,9 +408,16 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	std::vector<const char *> extensions(numExtensions, nullptr);
 
-	if (instanceExtensions.find(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) != instanceExtensions.end()) {
-		extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-	}
+	auto checkInstanceExtension = [&extensions, &instanceExtensions] (const char *ext) {
+		if (instanceExtensions.find(ext) != instanceExtensions.end()) {
+			LOG("Activating instance extension {}", ext);
+			extensions.push_back(ext);
+			return true;
+		}
+		return false;
+	};
+
+	checkInstanceExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
 	if(!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, &extensions[0])) {
 		THROW_ERROR("SDL_Vulkan_GetInstanceExtensions failed: {}", SDL_GetError());
@@ -442,11 +449,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			THROW_ERROR("Validation requested but no validation layer available");
 		}
 
-		if (instanceExtensions.find(VK_EXT_DEBUG_UTILS_EXTENSION_NAME) != instanceExtensions.end()) {
-			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+		if (checkInstanceExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
+			LOG("Using new debug extension");
 			newDebugExtension = true;
-		} else if (instanceExtensions.find(VK_EXT_DEBUG_REPORT_EXTENSION_NAME) != instanceExtensions.end()) {
-			extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+		} else if (checkInstanceExtension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME)) {
+			LOG("Using old debug extension");
 		} else {
 			THROW_ERROR("Validation requested but no debug reporting extension available");
 		}
