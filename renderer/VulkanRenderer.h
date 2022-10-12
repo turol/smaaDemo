@@ -1058,6 +1058,7 @@ struct RendererImpl : public RendererBase {
 	vk::PhysicalDevice                                      physicalDevice;
 	vk::PhysicalDeviceProperties                            deviceProperties;
 	vk::PhysicalDeviceFeatures                              deviceFeatures;
+	bool                                                    pipelineExecutableInfo;
 	vk::Device                                              device;
 	vk::SurfaceKHR                                          surface;
 	vk::PhysicalDeviceMemoryProperties                      memoryProperties;

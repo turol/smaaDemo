@@ -266,6 +266,7 @@ static uint32_t makeVulkanVersion(const Version &v) {
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
 , physicalDeviceIndex(0)
+, pipelineExecutableInfo(false)
 , graphicsQueueIndex(0)
 , transferQueueIndex(0)
 , numUploads(0)
@@ -417,7 +418,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		return false;
 	};
 
-	checkInstanceExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+	bool deviceProperties2 = checkInstanceExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
 	if(!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, &extensions[0])) {
 		THROW_ERROR("SDL_Vulkan_GetInstanceExtensions failed: {}", SDL_GetError());
@@ -702,7 +703,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		debugMarkers = checkExt(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
 	}
 
-	vk::StructureChain<vk::DeviceCreateInfo, vk::PhysicalDevicePortabilitySubsetFeaturesKHR> deviceCreateInfoChain;
+	vk::StructureChain<vk::DeviceCreateInfo, vk::PhysicalDevicePortabilitySubsetFeaturesKHR, vk::PhysicalDevicePipelineExecutablePropertiesFeaturesKHR> deviceCreateInfoChain;
 
 	if (desc.tracing) {
 		// this disables pipeline caching on radv so only enable when tracing
@@ -710,6 +711,16 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		if (amdShaderInfo) {
 			LOG("VK_AMD_shader_info found");
 		}
+
+		pipelineExecutableInfo = deviceProperties2 && checkExt(VK_KHR_PIPELINE_EXECUTABLE_PROPERTIES_EXTENSION_NAME);
+		if (pipelineExecutableInfo) {
+			deviceCreateInfoChain.get<vk::PhysicalDevicePipelineExecutablePropertiesFeaturesKHR>().pipelineExecutableInfo = true;
+		} else {
+			LOG("VK_KHR_pipeline_executable_properties not found");
+			deviceCreateInfoChain.unlink<vk::PhysicalDevicePipelineExecutablePropertiesFeaturesKHR>();
+		}
+	} else {
+		deviceCreateInfoChain.unlink<vk::PhysicalDevicePipelineExecutablePropertiesFeaturesKHR>();
 	}
 
 	if (!checkExt(VK_KHR_MAINTENANCE1_EXTENSION_NAME)) {
@@ -1556,6 +1567,10 @@ static vk::BlendFactor vulkanBlendFactor(BlendFunc b) {
 PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	vk::GraphicsPipelineCreateInfo info;
 
+	if (impl->pipelineExecutableInfo) {
+		info.flags = vk::PipelineCreateFlagBits::eCaptureStatisticsKHR;
+	}
+
 	std::array<vk::PipelineShaderStageCreateInfo, 2> stages;
 
 	{
@@ -1692,6 +1707,47 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	LOG_TODO("check success instead of implicitly using result.value");
 
 	impl->debugNameObject<vk::Pipeline>(result.value, desc.name_);
+
+	if (impl->pipelineExecutableInfo) {
+		vk::PipelineInfoKHR pipelineInfo;
+		pipelineInfo.pipeline = result.value;
+		std::vector<vk::PipelineExecutablePropertiesKHR> properties = impl->device.getPipelineExecutablePropertiesKHR(pipelineInfo, impl->dispatcher);
+		LOG("Pipeline properties {}:", properties.size());
+
+		vk::PipelineExecutableInfoKHR executableInfo;
+		executableInfo.pipeline = result.value;
+
+		uint32_t i = 0;
+		for (const auto &property : properties) {
+			LOG("Stages {} name \"{}\" description \"{}\" subgroupSize {}", vk::to_string(property.stages), property.name, property.description, property.subgroupSize);
+			executableInfo.executableIndex = i;
+			i++;
+
+			std::vector<vk::PipelineExecutableStatisticKHR> statistics = impl->device.getPipelineExecutableStatisticsKHR(executableInfo, impl->dispatcher);
+			for (const auto &stat : statistics) {
+				switch (stat.format) {
+				case vk::PipelineExecutableStatisticFormatKHR::eBool32:
+					LOG("  {}: {}  format {} \"{}\"", stat.name, stat.value.b32 ? "true" : "false", vk::to_string(stat.format), stat.description);
+					break;
+
+				case vk::PipelineExecutableStatisticFormatKHR::eInt64:
+					LOG("  {}: {}  format {} \"{}\"", stat.name, stat.value.i64, vk::to_string(stat.format), stat.description);
+					break;
+
+				case vk::PipelineExecutableStatisticFormatKHR::eUint64:
+					LOG("  {}: {}  format {} \"{}\"", stat.name, stat.value.u64, vk::to_string(stat.format), stat.description);
+					break;
+
+				case vk::PipelineExecutableStatisticFormatKHR::eFloat64:
+					LOG("  {}: {}  format {} \"{}\"", stat.name, stat.value.f64, vk::to_string(stat.format), stat.description);
+					break;
+
+				}
+			}
+		}
+
+
+	}
 
 	if (impl->amdShaderInfo) {
 		vk::ShaderStatisticsInfoAMD stats;
