@@ -695,6 +695,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		debugMarkers = checkExt(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
 	}
 
+	vk::StructureChain<vk::DeviceCreateInfo, vk::PhysicalDevicePortabilitySubsetFeaturesKHR> deviceCreateInfoChain;
+
 	if (desc.tracing) {
 		// this disables pipeline caching on radv so only enable when tracing
 		amdShaderInfo = checkExt(VK_AMD_SHADER_INFO_EXTENSION_NAME);
@@ -708,8 +710,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	portabilitySubset = checkExt(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
-
-	vk::StructureChain<vk::DeviceCreateInfo, vk::PhysicalDevicePortabilitySubsetFeaturesKHR> deviceCreateInfoChain;
 	if (!portabilitySubset) {
 		deviceCreateInfoChain.unlink<vk::PhysicalDevicePortabilitySubsetFeaturesKHR>();
 	}
