@@ -753,7 +753,7 @@ struct VertexShader {
 };
 
 
-typedef mpark::variant<Buffer, Framebuffer, Pipeline, RenderPass, RenderTarget, Sampler, Texture> Resource;
+using Resource = mpark::variant<Buffer, Framebuffer, Pipeline, RenderPass, RenderTarget, Sampler, Texture>;
 
 
 }	// namespace renderer

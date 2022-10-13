@@ -241,14 +241,14 @@ public:
 #endif  // HANDLE_OWNERSHIP_DEBUG
 
 
-typedef Handle<Buffer>               BufferHandle;
-typedef Handle<DescriptorSetLayout>  DSLayoutHandle;
-typedef Handle<Framebuffer>          FramebufferHandle;
-typedef Handle<Pipeline>             PipelineHandle;
-typedef Handle<RenderPass>           RenderPassHandle;
-typedef Handle<RenderTarget>         RenderTargetHandle;
-typedef Handle<Sampler>              SamplerHandle;
-typedef Handle<Texture>              TextureHandle;
+using BufferHandle       = Handle<Buffer>;
+using DSLayoutHandle     = Handle<DescriptorSetLayout>;
+using FramebufferHandle  = Handle<Framebuffer>;
+using PipelineHandle     = Handle<Pipeline>;
+using RenderPassHandle   = Handle<RenderPass>;
+using RenderTargetHandle = Handle<RenderTarget>;
+using SamplerHandle      = Handle<Sampler>;
+using TextureHandle      = Handle<Texture>;
 
 
 BETTER_ENUM(BlendFunc, uint8_t
@@ -382,7 +382,7 @@ struct DescriptorLayout {
 };
 
 
-typedef HashMap<std::string, std::string> ShaderMacros;
+using ShaderMacros = HashMap<std::string, std::string>;
 
 
 uint32_t formatSize(Format format);

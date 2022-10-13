@@ -134,7 +134,7 @@ public:
 		float                                        depthClearValue;
 	};
 
-	typedef  std::function<void(RP, PassResources &)>  RenderPassFunc;
+	using RenderPassFunc = std::function<void(RP, PassResources &)>;
 
 
 private:
@@ -169,7 +169,7 @@ private:
 	};
 
 
-	typedef mpark::variant<ExternalRT, InternalRT> Rendertarget;
+	using Rendertarget = mpark::variant<ExternalRT, InternalRT>;
 
 
 	template <typename FE, typename FI>
@@ -406,7 +406,7 @@ private:
 		PipelineHandle  handle;
 	};
 
-	typedef mpark::variant<Blit, RenderPass, ResolveMSAA> Operation;
+	using Operation = mpark::variant<Blit, RenderPass, ResolveMSAA>;
 
 
 	struct DebugLogVisitor final {

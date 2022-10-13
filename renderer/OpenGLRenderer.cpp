@@ -1003,7 +1003,7 @@ struct ResourceInfo {
 };
 
 
-typedef HashMap<DSIndex, ResourceInfo> ResourceMap;
+using ResourceMap = HashMap<DSIndex, ResourceInfo>;
 
 
 static void processShaderResources(ShaderResources &shaderResources, const ResourceMap& dsResources, spirv_cross::CompilerGLSL &glsl) {

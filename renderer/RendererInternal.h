@@ -167,8 +167,8 @@ struct FragmentShader;
 struct VertexShader;
 
 
-typedef Handle<FragmentShader>       FragmentShaderHandle;
-typedef Handle<VertexShader>         VertexShaderHandle;
+using FragmentShaderHandle = Handle<FragmentShader>;
+using VertexShaderHandle   = Handle<VertexShader>;
 
 
 struct CacheData {

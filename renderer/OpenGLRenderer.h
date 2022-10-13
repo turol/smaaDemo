@@ -586,7 +586,7 @@ struct VertexShader {
 };
 
 
-typedef mpark::variant<BufferHandle, CSampler, SamplerHandle, TextureHandle> Descriptor;
+using Descriptor = mpark::variant<BufferHandle, CSampler, SamplerHandle, TextureHandle>;
 
 
 struct Frame : public FrameBase {
