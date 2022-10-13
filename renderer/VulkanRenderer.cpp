@@ -270,7 +270,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 , graphicsQueueIndex(0)
 , transferQueueIndex(0)
 , numUploads(0)
-, amdShaderInfo(false)
 , debugMarkers(false)
 , portabilitySubset(false)
 , ringBufferMem(nullptr)
@@ -694,12 +693,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	vk::StructureChain<vk::DeviceCreateInfo, vk::PhysicalDevicePortabilitySubsetFeaturesKHR, vk::PhysicalDevicePipelineExecutablePropertiesFeaturesKHR> deviceCreateInfoChain;
 
 	if (desc.tracing) {
-		// this disables pipeline caching on radv so only enable when tracing
-		amdShaderInfo = checkExt(VK_AMD_SHADER_INFO_EXTENSION_NAME);
-		if (amdShaderInfo) {
-			LOG("VK_AMD_shader_info found");
-		}
-
 		pipelineExecutableInfo = deviceProperties2 && checkExt(VK_KHR_PIPELINE_EXECUTABLE_PROPERTIES_EXTENSION_NAME);
 		if (pipelineExecutableInfo) {
 			deviceCreateInfoChain.get<vk::PhysicalDevicePipelineExecutablePropertiesFeaturesKHR>().pipelineExecutableInfo = true;
@@ -1759,18 +1752,6 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 		}
 
 
-	}
-
-	if (impl->amdShaderInfo) {
-		vk::ShaderStatisticsInfoAMD stats;
-		size_t dataSize = sizeof(stats);
-		LOG_TODO("other stages");
-
-		impl->device.getShaderInfoAMD(result.value, vk::ShaderStageFlagBits::eVertex, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, impl->dispatcher);
-		LOG("pipeline \"{}\" vertex SGPR {} VGPR {}", desc.name_, stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
-
-		impl->device.getShaderInfoAMD(result.value, vk::ShaderStageFlagBits::eFragment, vk::ShaderInfoTypeAMD::eStatistics, &dataSize, &stats, impl->dispatcher);
-		LOG("pipeline \"{}\" fragment SGPR {} VGPR {}", desc.name_, stats.resourceUsage.numUsedSgprs, stats.resourceUsage.numUsedVgprs);
 	}
 
 	Pipeline p;

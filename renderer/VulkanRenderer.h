@@ -1084,7 +1084,6 @@ struct RendererImpl : public RendererBase {
 
 	std::vector<vk::Semaphore>                              freeSemaphores;
 
-	bool                                                    amdShaderInfo;
 	bool                                                    debugMarkers;
 	bool                                                    portabilitySubset;
 
