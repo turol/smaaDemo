@@ -363,14 +363,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 
 		LOG("Instance extensions:");
-		std::vector<char> padding;
-		padding.reserve(maxLen + 1);
-		for (unsigned int i = 0; i < maxLen; i++) {
-			padding.push_back(' ');
-		}
-		padding.push_back('\0');
 		for (const auto &ext : extensions) {
-			LOG(" {} {} {}", ext.extensionName.data(), &padding[strnlen(ext.extensionName, maxLen)], ext.specVersion);
+			LOG(" {:<{}} {}", ext.extensionName.data(), maxLen, ext.specVersion);
 		}
 	}
 
@@ -391,14 +385,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 
 		LOG("Instance layers:");
-		std::vector<char> padding;
-		padding.reserve(maxLen + 1);
-		for (unsigned int i = 0; i < maxLen; i++) {
-			padding.push_back(' ');
-		}
-		padding.push_back('\0');
 		for (const auto &l : layers) {
-			LOG(" {} {} (version {},\tspec {}.{}.{})", l.layerName.data(), &padding[strnlen(l.layerName, maxLen)], l.implementationVersion, VK_VERSION_MAJOR(l.specVersion), VK_VERSION_MINOR(l.specVersion), VK_VERSION_PATCH(l.specVersion));
+			LOG(" {:<{}} (version {},\tspec {}.{}.{})", l.layerName.data(), maxLen, l.implementationVersion, VK_VERSION_MAJOR(l.specVersion), VK_VERSION_MINOR(l.specVersion), VK_VERSION_PATCH(l.specVersion));
 		}
 	}
 
