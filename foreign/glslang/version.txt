@@ -1,8 +1,8 @@
-commit f0ce653a25726000d4f37d94de33b95f942ff657
-Merge: 22d39cd6 457d11eb
+commit 5755de46b07e4374c05fb1081f65f7ae1f8cca81
+Merge: ef6c9714 78221d61
 Author: Greg Fischer <greg@lunarg.com>
-Date:   Wed Jul 27 17:39:33 2022 -0600
+Date:   Thu Oct 13 11:29:59 2022 -0600
 
-    Merge pull request #2986 from jeremy-lunarg/hayes-update-macos-runner
+    Merge pull request #3049 from jeremy-lunarg/hayes-update-changes
     
-    Update MacOS runner
+    Update CHANGES for release 11.12.0
