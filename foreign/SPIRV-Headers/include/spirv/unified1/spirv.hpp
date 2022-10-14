@@ -94,6 +94,8 @@ enum ExecutionModel {
     ExecutionModelMissNV = 5317,
     ExecutionModelCallableKHR = 5318,
     ExecutionModelCallableNV = 5318,
+    ExecutionModelTaskEXT = 5364,
+    ExecutionModelMeshEXT = 5365,
     ExecutionModelMax = 0x7fffffff,
 };
 
@@ -169,10 +171,13 @@ enum ExecutionMode {
     ExecutionModeStencilRefUnchangedBackAMD = 5082,
     ExecutionModeStencilRefGreaterBackAMD = 5083,
     ExecutionModeStencilRefLessBackAMD = 5084,
+    ExecutionModeOutputLinesEXT = 5269,
     ExecutionModeOutputLinesNV = 5269,
+    ExecutionModeOutputPrimitivesEXT = 5270,
     ExecutionModeOutputPrimitivesNV = 5270,
     ExecutionModeDerivativeGroupQuadsNV = 5289,
     ExecutionModeDerivativeGroupLinearNV = 5290,
+    ExecutionModeOutputTrianglesEXT = 5298,
     ExecutionModeOutputTrianglesNV = 5298,
     ExecutionModePixelInterlockOrderedEXT = 5366,
     ExecutionModePixelInterlockUnorderedEXT = 5367,
@@ -222,6 +227,7 @@ enum StorageClass {
     StorageClassShaderRecordBufferNV = 5343,
     StorageClassPhysicalStorageBuffer = 5349,
     StorageClassPhysicalStorageBufferEXT = 5349,
+    StorageClassTaskPayloadWorkgroupEXT = 5402,
     StorageClassCodeSectionINTEL = 5605,
     StorageClassDeviceOnlyINTEL = 5936,
     StorageClassHostOnlyINTEL = 5937,
@@ -504,6 +510,7 @@ enum Decoration {
     DecorationPassthroughNV = 5250,
     DecorationViewportRelativeNV = 5252,
     DecorationSecondaryViewportRelativeNV = 5256,
+    DecorationPerPrimitiveEXT = 5271,
     DecorationPerPrimitiveNV = 5271,
     DecorationPerViewNV = 5272,
     DecorationPerTaskNV = 5273,
@@ -606,6 +613,11 @@ enum BuiltIn {
     BuiltInSubgroupLocalInvocationId = 41,
     BuiltInVertexIndex = 42,
     BuiltInInstanceIndex = 43,
+    BuiltInCoreIDARM = 4160,
+    BuiltInCoreCountARM = 4161,
+    BuiltInCoreMaxIDARM = 4162,
+    BuiltInWarpIDARM = 4163,
+    BuiltInWarpMaxIDARM = 4164,
     BuiltInSubgroupEqMask = 4416,
     BuiltInSubgroupEqMaskKHR = 4416,
     BuiltInSubgroupGeMask = 4417,
@@ -653,6 +665,10 @@ enum BuiltIn {
     BuiltInFragmentSizeNV = 5292,
     BuiltInFragInvocationCountEXT = 5293,
     BuiltInInvocationsPerPixelNV = 5293,
+    BuiltInPrimitivePointIndicesEXT = 5294,
+    BuiltInPrimitiveLineIndicesEXT = 5295,
+    BuiltInPrimitiveTriangleIndicesEXT = 5296,
+    BuiltInCullPrimitiveEXT = 5299,
     BuiltInLaunchIdKHR = 5319,
     BuiltInLaunchIdNV = 5319,
     BuiltInLaunchSizeKHR = 5320,
@@ -945,6 +961,7 @@ enum Capability {
     CapabilityShaderLayer = 69,
     CapabilityShaderViewportIndex = 70,
     CapabilityUniformDecoration = 71,
+    CapabilityCoreBuiltinsARM = 4165,
     CapabilityFragmentShadingRateKHR = 4422,
     CapabilitySubgroupBallotKHR = 4423,
     CapabilityDrawParameters = 4427,
@@ -993,6 +1010,7 @@ enum Capability {
     CapabilityFragmentFullyCoveredEXT = 5265,
     CapabilityMeshShadingNV = 5266,
     CapabilityImageFootprintNV = 5282,
+    CapabilityMeshShadingEXT = 5283,
     CapabilityFragmentBarycentricKHR = 5284,
     CapabilityFragmentBarycentricNV = 5284,
     CapabilityComputeDerivativeGroupQuadsNV = 5288,
@@ -1040,6 +1058,7 @@ enum Capability {
     CapabilityFragmentShaderPixelInterlockEXT = 5378,
     CapabilityDemoteToHelperInvocation = 5379,
     CapabilityDemoteToHelperInvocationEXT = 5379,
+    CapabilityRayTracingOpacityMicromapEXT = 5381,
     CapabilityBindlessTextureNV = 5390,
     CapabilitySubgroupShuffleINTEL = 5568,
     CapabilitySubgroupBufferBlockIOINTEL = 5569,
@@ -1113,6 +1132,7 @@ enum RayFlagsShift {
     RayFlagsCullNoOpaqueKHRShift = 7,
     RayFlagsSkipTrianglesKHRShift = 8,
     RayFlagsSkipAABBsKHRShift = 9,
+    RayFlagsForceOpacityMicromap2StateEXTShift = 10,
     RayFlagsMax = 0x7fffffff,
 };
 
@@ -1128,6 +1148,7 @@ enum RayFlagsMask {
     RayFlagsCullNoOpaqueKHRMask = 0x00000080,
     RayFlagsSkipTrianglesKHRMask = 0x00000100,
     RayFlagsSkipAABBsKHRMask = 0x00000200,
+    RayFlagsForceOpacityMicromap2StateEXTMask = 0x00000400,
 };
 
 enum RayQueryIntersection {
@@ -1592,6 +1613,8 @@ enum Op {
     OpFragmentFetchAMD = 5012,
     OpReadClockKHR = 5056,
     OpImageSampleFootprintNV = 5283,
+    OpEmitMeshTasksEXT = 5294,
+    OpSetMeshOutputsEXT = 5295,
     OpGroupNonUniformPartitionNV = 5296,
     OpWritePackedPrimitiveIndices4x8NV = 5299,
     OpReportIntersectionKHR = 5334,
@@ -2265,6 +2288,8 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case OpFragmentFetchAMD: *hasResult = true; *hasResultType = true; break;
     case OpReadClockKHR: *hasResult = true; *hasResultType = true; break;
     case OpImageSampleFootprintNV: *hasResult = true; *hasResultType = true; break;
+    case OpEmitMeshTasksEXT: *hasResult = false; *hasResultType = false; break;
+    case OpSetMeshOutputsEXT: *hasResult = false; *hasResultType = false; break;
     case OpGroupNonUniformPartitionNV: *hasResult = true; *hasResultType = true; break;
     case OpWritePackedPrimitiveIndices4x8NV: *hasResult = false; *hasResultType = false; break;
     case OpReportIntersectionNV: *hasResult = true; *hasResultType = true; break;

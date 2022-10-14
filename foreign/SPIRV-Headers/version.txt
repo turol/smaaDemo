@@ -1,13 +1,8 @@
-commit 0bcc624926a25a2a273d07877fd25a6ff5ba1cfb
-Author: Kévin Petit <kpet@free.fr>
-Date:   Tue Jul 5 14:10:51 2022 +0100
+commit 85a1ed200d50660786c1a88d9166e871123cce39
+Merge: 9cae924 4b5d128
+Author: John Kessenich <johnkslang@users.noreply.github.com>
+Date:   Wed Oct 5 23:04:10 2022 +0700
 
-    Update clspv reflection non-semantic instruction set (#284)
+    Merge pull request #294 from kpet/clspv-texel-buffer
     
-    Add support for:
-    
-    - Pointer arguments
-    - Program scope variables
-    - Image channel order and data type queries
-    
-    Signed-off-by: Kévin Petit <kpet@free.fr>
+    Add support for texel buffers to clspv non-semantic instruction set
