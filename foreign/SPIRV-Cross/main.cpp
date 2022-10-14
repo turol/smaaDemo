@@ -536,6 +536,7 @@ static void print_resources(const Compiler &compiler, const ShaderResources &res
 	print_resources(compiler, "push", res.push_constant_buffers);
 	print_resources(compiler, "counters", res.atomic_counters);
 	print_resources(compiler, "acceleration structures", res.acceleration_structures);
+	print_resources(compiler, "record buffers", res.shader_record_buffers);
 	print_resources(compiler, spv::StorageClassInput, res.builtin_inputs);
 	print_resources(compiler, spv::StorageClassOutput, res.builtin_outputs);
 }
@@ -681,7 +682,8 @@ struct CLIArguments
 	SmallVector<uint32_t> msl_device_argument_buffers;
 	SmallVector<pair<uint32_t, uint32_t>> msl_dynamic_buffers;
 	SmallVector<pair<uint32_t, uint32_t>> msl_inline_uniform_blocks;
-	SmallVector<MSLShaderInput> msl_shader_inputs;
+	SmallVector<MSLShaderInterfaceVariable> msl_shader_inputs;
+	SmallVector<MSLShaderInterfaceVariable> msl_shader_outputs;
 	SmallVector<PLSArg> pls_in;
 	SmallVector<PLSArg> pls_out;
 	SmallVector<Remap> remaps;
@@ -708,7 +710,12 @@ struct CLIArguments
 	bool msl = false;
 	bool hlsl = false;
 	bool hlsl_compat = false;
+
 	bool hlsl_support_nonzero_base = false;
+	bool hlsl_base_vertex_index_explicit_binding = false;
+	uint32_t hlsl_base_vertex_index_register_index = 0;
+	uint32_t hlsl_base_vertex_index_register_space = 0;
+
 	bool hlsl_force_storage_buffer_as_uav = false;
 	bool hlsl_nonwritable_uav_texture_as_srv = false;
 	bool hlsl_enable_16bit_types = false;
@@ -805,6 +812,7 @@ static void print_help_hlsl()
 	                "\t\tPointSize is ignored, and PointCoord returns (0.5, 0.5).\n"
 	                "\t[--hlsl-support-nonzero-basevertex-baseinstance]:\n\t\tSupport base vertex and base instance by emitting a special cbuffer declared as:\n"
 	                "\t\tcbuffer SPIRV_Cross_VertexInfo { int SPIRV_Cross_BaseVertex; int SPIRV_Cross_BaseInstance; };\n"
+	                "\t[--hlsl-basevertex-baseinstance-binding <register index> <register space>]:\n\t\tAssign a fixed binding to SPIRV_Cross_VertexInfo.\n"
 	                "\t[--hlsl-auto-binding (push, cbv, srv, uav, sampler, all)]\n"
 	                "\t\tDo not emit any : register(#) bindings for specific resource types, and rely on HLSL compiler to assign something.\n"
 	                "\t[--hlsl-force-storage-buffer-as-uav]:\n\t\tAlways emit SSBOs as UAVs, even when marked as read-only.\n"
@@ -871,6 +879,10 @@ static void print_help_msl()
 	                "\t[--msl-enable-frag-output-mask <mask>]:\n\t\tOnly selectively enable fragment outputs. Useful if pipeline does not enable fragment output for certain locations, as pipeline creation might otherwise fail.\n"
 	                "\t[--msl-no-clip-distance-user-varying]:\n\t\tDo not emit user varyings to emulate gl_ClipDistance in fragment shaders.\n"
 	                "\t[--msl-shader-input <index> <format> <size>]:\n\t\tSpecify the format of the shader input at <index>.\n"
+	                "\t\t<format> can be 'any32', 'any16', 'u16', 'u8', or 'other', to indicate a 32-bit opaque value, 16-bit opaque value, 16-bit unsigned integer, 8-bit unsigned integer, "
+	                "or other-typed variable. <size> is the vector length of the variable, which must be greater than or equal to that declared in the shader.\n"
+	                "\t\tUseful if shader stage interfaces don't match up, as pipeline creation might otherwise fail.\n"
+	                "\t[--msl-shader-output <index> <format> <size>]:\n\t\tSpecify the format of the shader output at <index>.\n"
 	                "\t\t<format> can be 'any32', 'any16', 'u16', 'u8', or 'other', to indicate a 32-bit opaque value, 16-bit opaque value, 16-bit unsigned integer, 8-bit unsigned integer, "
 	                "or other-typed variable. <size> is the vector length of the variable, which must be greater than or equal to that declared in the shader.\n"
 	                "\t\tUseful if shader stage interfaces don't match up, as pipeline creation might otherwise fail.\n"
@@ -1082,6 +1094,10 @@ static ExecutionModel stage_to_execution_model(const std::string &stage)
 		return ExecutionModelMissKHR;
 	else if (stage == "rcall")
 		return ExecutionModelCallableKHR;
+	else if (stage == "mesh")
+		return spv::ExecutionModelMeshEXT;
+	else if (stage == "task")
+		return spv::ExecutionModelTaskEXT;
 	else
 		SPIRV_CROSS_THROW("Invalid stage.");
 }
@@ -1178,6 +1194,8 @@ static string compile_iteration(const CLIArguments &args, std::vector<uint32_t> 
 			msl_comp->add_inline_uniform_block(v.first, v.second);
 		for (auto &v : args.msl_shader_inputs)
 			msl_comp->add_msl_shader_input(v);
+		for (auto &v : args.msl_shader_outputs)
+			msl_comp->add_msl_shader_output(v);
 		if (args.msl_combined_sampler_suffix)
 			msl_comp->set_combined_sampler_suffix(args.msl_combined_sampler_suffix);
 	}
@@ -1359,6 +1377,12 @@ static string compile_iteration(const CLIArguments &args, std::vector<uint32_t> 
 		hlsl_opts.flatten_matrix_vertex_input_semantics = args.hlsl_flatten_matrix_vertex_input_semantics;
 		hlsl->set_hlsl_options(hlsl_opts);
 		hlsl->set_resource_binding_flags(args.hlsl_binding_flags);
+		if (args.hlsl_base_vertex_index_explicit_binding)
+		{
+			hlsl->set_hlsl_aux_buffer_binding(HLSL_AUX_BINDING_BASE_VERTEX_INSTANCE,
+			                                  args.hlsl_base_vertex_index_register_index,
+			                                  args.hlsl_base_vertex_index_register_space);
+		}
 	}
 
 	if (build_dummy_sampler)
@@ -1521,6 +1545,11 @@ static int main_inner(int argc, char *argv[])
 	cbs.add("--hlsl-enable-compat", [&args](CLIParser &) { args.hlsl_compat = true; });
 	cbs.add("--hlsl-support-nonzero-basevertex-baseinstance",
 	        [&args](CLIParser &) { args.hlsl_support_nonzero_base = true; });
+	cbs.add("--hlsl-basevertex-baseinstance-binding", [&args](CLIParser &parser) {
+		args.hlsl_base_vertex_index_explicit_binding = true;
+		args.hlsl_base_vertex_index_register_index = parser.next_uint();
+		args.hlsl_base_vertex_index_register_space = parser.next_uint();
+	});
 	cbs.add("--hlsl-auto-binding", [&args](CLIParser &parser) {
 		args.hlsl_binding_flags |= hlsl_resource_type_to_flag(parser.next_string());
 	});
@@ -1581,22 +1610,40 @@ static int main_inner(int argc, char *argv[])
 	cbs.add("--msl-no-clip-distance-user-varying",
 	        [&args](CLIParser &) { args.msl_enable_clip_distance_user_varying = false; });
 	cbs.add("--msl-shader-input", [&args](CLIParser &parser) {
-		MSLShaderInput input;
+		MSLShaderInterfaceVariable input;
 		// Make sure next_uint() is called in-order.
 		input.location = parser.next_uint();
 		const char *format = parser.next_value_string("other");
 		if (strcmp(format, "any32") == 0)
-			input.format = MSL_SHADER_INPUT_FORMAT_ANY32;
+			input.format = MSL_SHADER_VARIABLE_FORMAT_ANY32;
 		else if (strcmp(format, "any16") == 0)
-			input.format = MSL_SHADER_INPUT_FORMAT_ANY16;
+			input.format = MSL_SHADER_VARIABLE_FORMAT_ANY16;
 		else if (strcmp(format, "u16") == 0)
-			input.format = MSL_SHADER_INPUT_FORMAT_UINT16;
+			input.format = MSL_SHADER_VARIABLE_FORMAT_UINT16;
 		else if (strcmp(format, "u8") == 0)
-			input.format = MSL_SHADER_INPUT_FORMAT_UINT8;
+			input.format = MSL_SHADER_VARIABLE_FORMAT_UINT8;
 		else
-			input.format = MSL_SHADER_INPUT_FORMAT_OTHER;
+			input.format = MSL_SHADER_VARIABLE_FORMAT_OTHER;
 		input.vecsize = parser.next_uint();
 		args.msl_shader_inputs.push_back(input);
+	});
+	cbs.add("--msl-shader-output", [&args](CLIParser &parser) {
+		MSLShaderInterfaceVariable output;
+		// Make sure next_uint() is called in-order.
+		output.location = parser.next_uint();
+		const char *format = parser.next_value_string("other");
+		if (strcmp(format, "any32") == 0)
+			output.format = MSL_SHADER_VARIABLE_FORMAT_ANY32;
+		else if (strcmp(format, "any16") == 0)
+			output.format = MSL_SHADER_VARIABLE_FORMAT_ANY16;
+		else if (strcmp(format, "u16") == 0)
+			output.format = MSL_SHADER_VARIABLE_FORMAT_UINT16;
+		else if (strcmp(format, "u8") == 0)
+			output.format = MSL_SHADER_VARIABLE_FORMAT_UINT8;
+		else
+			output.format = MSL_SHADER_VARIABLE_FORMAT_OTHER;
+		output.vecsize = parser.next_uint();
+		args.msl_shader_outputs.push_back(output);
 	});
 	cbs.add("--msl-multi-patch-workgroup", [&args](CLIParser &) { args.msl_multi_patch_workgroup = true; });
 	cbs.add("--msl-vertex-for-tessellation", [&args](CLIParser &) { args.msl_vertex_for_tessellation = true; });

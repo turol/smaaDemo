@@ -1,8 +1,8 @@
-commit 0cccd0a65a67f33922f8d0742b5930fd15353fa7
-Merge: c24d5a7b 4dfac510
+commit f09ba2777714871bddb70d049878af34b94fa54d
+Merge: f15d465a b5386e3e
 Author: Hans-Kristian Arntzen <post@arntzen-software.no>
-Date:   Fri Jul 22 21:45:47 2022 +0200
+Date:   Mon Oct 3 14:54:07 2022 +0200
 
-    Merge pull request #1986 from KhronosGroup/fix-1975
+    Merge pull request #2035 from KhronosGroup/fix-2032
     
-    Handle multiple breaks out of switches.
+    HLSL: Improve support for VertexInfo aux struct.
