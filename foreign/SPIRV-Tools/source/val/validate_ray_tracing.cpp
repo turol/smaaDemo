@@ -112,8 +112,10 @@ spv_result_t RayTracingPass(ValidationState_t& _, const Instruction* inst) {
       if (payload->opcode() != SpvOpVariable) {
         return _.diag(SPV_ERROR_INVALID_DATA, inst)
                << "Payload must be the result of a OpVariable";
-      } else if (payload->word(3) != SpvStorageClassRayPayloadKHR &&
-                 payload->word(3) != SpvStorageClassIncomingRayPayloadKHR) {
+      } else if (payload->GetOperandAs<uint32_t>(2) !=
+                     SpvStorageClassRayPayloadKHR &&
+                 payload->GetOperandAs<uint32_t>(2) !=
+                     SpvStorageClassIncomingRayPayloadKHR) {
         return _.diag(SPV_ERROR_INVALID_DATA, inst)
                << "Payload must have storage class RayPayloadKHR or "
                   "IncomingRayPayloadKHR";
@@ -174,12 +176,20 @@ spv_result_t RayTracingPass(ValidationState_t& _, const Instruction* inst) {
             return true;
           });
 
+      const uint32_t sbt_index = _.GetOperandTypeId(inst, 0);
+      if (!_.IsUnsignedIntScalarType(sbt_index) ||
+          _.GetBitWidth(sbt_index) != 32) {
+        return _.diag(SPV_ERROR_INVALID_DATA, inst)
+               << "SBT Index must be a 32-bit unsigned int scalar";
+      }
+
       const auto callable_data = _.FindDef(inst->GetOperandAs<uint32_t>(1));
       if (callable_data->opcode() != SpvOpVariable) {
         return _.diag(SPV_ERROR_INVALID_DATA, inst)
                << "Callable Data must be the result of a OpVariable";
-      } else if (callable_data->word(3) != SpvStorageClassCallableDataKHR &&
-                 callable_data->word(3) !=
+      } else if (callable_data->GetOperandAs<uint32_t>(2) !=
+                     SpvStorageClassCallableDataKHR &&
+                 callable_data->GetOperandAs<uint32_t>(2) !=
                      SpvStorageClassIncomingCallableDataKHR) {
         return _.diag(SPV_ERROR_INVALID_DATA, inst)
                << "Callable Data must have storage class CallableDataKHR or "

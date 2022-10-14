@@ -1,10 +1,5 @@
-commit 409e1167951de8d7ab9334773885fa656bc898d5
-Author: Nathan Gauër <brioche@google.com>
-Date:   Thu Aug 11 16:25:53 2022 +0000
+commit eb0a36633d2acf4de82588504f951ad0f2cecacb
+Author: Diego Novillo <dnovillo@google.com>
+Date:   Wed Oct 12 12:15:28 2022 -0400
 
-    Finalize SPIRV-Tools v2022.3
-    
-    The previous amend to the CHANGES file mentioned v2022.4. That was a
-    mistake as v2022.3 was never released.
-    
-    Signed-off-by: Nathan Gauër <brioche@google.com>
+    Finalize SPIRV-Tools v2022.4

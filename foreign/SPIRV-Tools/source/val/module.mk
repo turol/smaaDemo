@@ -44,6 +44,7 @@ FILES:= \
 	validate_logicals.cpp \
 	validate_memory.cpp \
 	validate_memory_semantics.cpp \
+	validate_mesh_shading.cpp \
 	validate_misc.cpp \
 	validate_mode_setting.cpp \
 	validate_non_uniform.cpp \
