@@ -30,6 +30,15 @@ THE SOFTWARE.
 #include <mpark/variant.hpp>
 
 
+namespace spirv_cross {
+
+
+class CompilerGLSL;
+
+
+}  // namespace spirv_cross
+
+
 namespace renderer {
 
 
@@ -699,6 +708,7 @@ struct RendererImpl : public RendererBase {
 
 	~RendererImpl();
 
+	GLuint createShader(GLenum type, const std::string &name, const ShaderMacros &macros, spirv_cross::CompilerGLSL &glsl);
 
 	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
 	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros);

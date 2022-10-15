@@ -107,7 +107,7 @@ static std::vector<char> spirv2glsl(const std::string &name, const ShaderMacros 
 }
 
 
-static GLuint createShader(GLenum type, const std::string &name, const ShaderMacros &macros, spirv_cross::CompilerGLSL &glsl) {
+GLuint RendererImpl::createShader(GLenum type, const std::string &name, const ShaderMacros &macros, spirv_cross::CompilerGLSL &glsl) {
 	assert(type == GL_VERTEX_SHADER || type == GL_FRAGMENT_SHADER);
 
 	std::vector<char> src = spirv2glsl(name, macros, glsl);
@@ -1213,8 +1213,8 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 		glslFrag.set_common_options(glslOptions);
 		processShaderResources(shaderResources, dsResources, glslFrag);
 
-		vertexShader = createShader(GL_VERTEX_SHADER, v.name, v.macros, glslVert);
-		fragmentShader = createShader(GL_FRAGMENT_SHADER, f.name, f.macros, glslFrag);
+		vertexShader = impl->createShader(GL_VERTEX_SHADER, v.name, v.macros, glslVert);
+		fragmentShader = impl->createShader(GL_FRAGMENT_SHADER, f.name, f.macros, glslFrag);
 	}
 
 	LOG_TODO("cache shaders");
