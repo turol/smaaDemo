@@ -69,7 +69,7 @@ static void pushString(std::vector<char> &v, const std::string &str) {
 }
 
 
-static std::vector<char> spirv2glsl(const std::string &name, const ShaderMacros &macros, spirv_cross::CompilerGLSL &glsl) {
+std::vector<char> RendererImpl::spirv2glsl(const std::string &name, const ShaderMacros &macros, spirv_cross::CompilerGLSL &glsl) {
 	std::string src_ = glsl.compile();
 
 	std::vector<char> result;

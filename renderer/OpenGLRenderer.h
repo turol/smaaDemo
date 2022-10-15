@@ -708,6 +708,8 @@ struct RendererImpl : public RendererBase {
 
 	~RendererImpl();
 
+	std::vector<char> spirv2glsl(const std::string &name, const ShaderMacros &macros, spirv_cross::CompilerGLSL &glsl);
+
 	GLuint createShader(GLenum type, const std::string &name, const ShaderMacros &macros, spirv_cross::CompilerGLSL &glsl);
 
 	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros);
