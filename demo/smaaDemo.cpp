@@ -2799,7 +2799,7 @@ void SMAADemo::renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 		std::string qualityString(fxaaQualityLevels[fxaaQuality]);
 
 		ShaderMacros macros;
-		macros.emplace("FXAA_QUALITY_PRESET", qualityString);
+		macros.set("FXAA_QUALITY_PRESET", qualityString);
 
 		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
@@ -2857,14 +2857,14 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 	if (!smaaPipelines.edgePipeline) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
-		macros.emplace(qualityString, "1");
+		macros.set(qualityString, "1");
 
 		if (smaaEdgeMethod != +SMAAEdgeMethod::Color) {
-			macros.emplace("EDGEMETHOD", std::to_string(static_cast<uint8_t>(smaaEdgeMethod)));
+			macros.set("EDGEMETHOD", std::to_string(static_cast<uint8_t>(smaaEdgeMethod)));
 		}
 
 		if (smaaPredication && smaaEdgeMethod != +SMAAEdgeMethod::Depth) {
-			macros.emplace("SMAA_PREDICATION", "1");
+			macros.set("SMAA_PREDICATION", "1");
 		}
 
 		PipelineDesc plDesc;
@@ -2913,7 +2913,7 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 	if (!smaaPipelines.blendWeightPipeline) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
-		macros.emplace(qualityString, "1");
+		macros.set(qualityString, "1");
 
 		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
@@ -2958,7 +2958,7 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 	if (!smaaPipelines.neighborPipelines[pass]) {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
-		macros.emplace(qualityString, "1");
+		macros.set(qualityString, "1");
 
 		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
@@ -3036,7 +3036,7 @@ void SMAADemo::renderSMAADebug(RenderPasses rp, DemoRenderGraph::PassResources &
 void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 	if (!temporalAAPipelines[temporalReproject]) {
 		ShaderMacros macros;
-		macros.emplace("SMAA_REPROJECTION", std::to_string(temporalReproject));
+		macros.set("SMAA_REPROJECTION", std::to_string(temporalReproject));
 
 		PipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)

@@ -1556,7 +1556,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 
 	{
 		ShaderMacros macros_(desc.shaderMacros_);
-		macros_.emplace("VULKAN_FLIP", "1");
+		macros_.set("VULKAN_FLIP", "1");
 
 		const auto &v = impl->vertexShaders.get(impl->createVertexShader(desc.vertexShaderName, macros_));
 		stages[0].stage  = vk::ShaderStageFlagBits::eVertex;

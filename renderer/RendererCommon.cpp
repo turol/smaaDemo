@@ -673,8 +673,8 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	std::string shaderName = name;
 	{
 		std::vector<std::string> sorted;
-		sorted.reserve(macros.size());
-		for (const auto &macro : macros) {
+		sorted.reserve(macros.impl.size());
+		for (const auto &macro : macros.impl) {
 			std::string s = macro.first;
 			if (!macro.second.empty()) {
 				s += "=";
@@ -759,9 +759,9 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 			// glslang has no interface for predefining macros
 			std::vector<std::string> sorted;
-			if (!macros.empty()) {
-				sorted.reserve(macros.size());
-				for (const auto &macro : macros) {
+			if (!macros.impl.empty()) {
+				sorted.reserve(macros.impl.size());
+				for (const auto &macro : macros.impl) {
 					std::string s = "#define " + macro.first;
 					if (!macro.second.empty()) {
 						s += " ";

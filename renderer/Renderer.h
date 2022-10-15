@@ -382,7 +382,33 @@ struct DescriptorLayout {
 };
 
 
-using ShaderMacros = HashMap<std::string, std::string>;
+class ShaderMacros {
+	HashMap<std::string, std::string> impl;
+
+	friend class Renderer;
+	friend struct RendererBase;
+	friend struct RendererImpl;
+
+public:
+
+	ShaderMacros() {}
+
+	ShaderMacros(const ShaderMacros &other)            = default;
+	ShaderMacros& operator=(const ShaderMacros &other) = default;
+
+	ShaderMacros(ShaderMacros &&other) noexcept            = default;
+	ShaderMacros& operator=(ShaderMacros &&other) noexcept = default;
+
+	~ShaderMacros() {}
+
+	void set(nonstd::string_view key, nonstd::string_view value) {
+		impl.emplace(key, value);
+	}
+
+	bool operator!=(const ShaderMacros &other) const {
+		return this->impl != other.impl;
+	}
+};
 
 
 uint32_t formatSize(Format format);
