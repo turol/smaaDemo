@@ -672,21 +672,13 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	// check spir-v cache first
 	std::string shaderName = name;
 	{
-		std::vector<std::string> sorted;
 		assert(std::is_sorted(macros.impl.begin(), macros.impl.end()));
-		sorted.reserve(macros.impl.size());
 		for (const auto &macro : macros.impl) {
-			std::string s = macro.key;
+			shaderName += "_" + macro.key;
 			if (!macro.value.empty()) {
-				s += "=";
-				s += macro.value;
+				shaderName += "=";
+				shaderName += macro.value;
 			}
-			sorted.emplace_back(std::move(s));
-		}
-
-		std::sort(sorted.begin(), sorted.end());
-		for (const auto &s : sorted) {
-			shaderName += "_" + s;
 		}
 	}
 
