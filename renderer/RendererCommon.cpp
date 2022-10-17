@@ -729,69 +729,31 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		auto src = loadSource(name);
 
 		// we need GOOGLE_include_directive to use #include
-		// glslang has no interface for enabling it
+		// glslang has no interface for enabling extensions or predefining macros
+		// use preamble
+		std::vector<char> preamble;
+
 		{
-			// break shader into lines
-			std::vector<nonstd::string_view> lines;
-			lines.reserve(128);  // picked a value larger than any current shader
-			const char *it        = &src[0];
-			const char *end       = &src[src.size() - 1] + 1;
-			const char *lineStart = it;
-			while (it < end) {
-				if (*it == '\n') {
-					const char *lineEnd = it;
-					lines.emplace_back(lineStart, lineEnd - lineStart);
-					lineStart = lineEnd + 1;
-				}
-				it++;
-			}
+			nonstd::string_view ext = "#extension GL_GOOGLE_include_directive : enable\n";
+			preamble.insert(preamble.end(), ext.begin(), ext.end());
 
-			// find line with #version and add the appropriate #extension after it
-			// in theory we should check for other #extension lines but we don't currently use any
-			auto interestingLine = lines.begin();
-			for ( ; interestingLine != lines.end(); interestingLine++) {
-				if (interestingLine->starts_with("#version")) {
-					interestingLine++;
-					interestingLine = lines.emplace(interestingLine, "#extension GL_GOOGLE_include_directive : enable");
-					interestingLine++;
-					break;
-				}
-			}
-
-			// glslang has no interface for predefining macros
-			std::vector<std::string> sorted;
 			if (!macros.impl.empty()) {
 				assert(std::is_sorted(macros.impl.begin(), macros.impl.end()));
-				sorted.reserve(macros.impl.size());
+
+				nonstd::string_view define = "#define ";
 				for (const auto &macro : macros.impl) {
-					std::string s = "#define " + macro.key;
+					preamble.insert(preamble.end(), define.begin(), define.end());
+					preamble.insert(preamble.end(), macro.key.begin(), macro.key.end());
 					if (!macro.value.empty()) {
-						s += " ";
-						s += macro.value;
+						preamble.push_back(' ');
+						preamble.insert(preamble.end(), macro.value.begin(), macro.value.end());
 					}
-					sorted.emplace_back(std::move(s));
-				}
-
-				std::sort(sorted.begin(), sorted.end());
-				for (const auto &s : sorted) {
-					interestingLine = lines.emplace(interestingLine, s);
-					interestingLine++;
+					preamble.push_back('\n');
 				}
 			}
 
-			size_t len = lines.size();  // the newlines
-			for (const auto &l : lines) {
-				len += l.size();
-			}
-
-			std::vector<char> newSrc;
-			newSrc.reserve(len);
-			for (const auto &l : lines) {
-				newSrc.insert(newSrc.end(), l.begin(), l.end());
-				newSrc.emplace_back('\n');
-			}
-
-			std::swap(src, newSrc);
+			preamble.push_back('\0');
+			LOG("shader preamble: \"\n{}\"\n", preamble.data());
 		}
 
 		EShLanguage language;
@@ -816,6 +778,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		int sourceLen        = int(src.size());
 		const char *filename = name.c_str();
 
+		shader.setPreamble(preamble.data());
 		shader.setStringsWithLengthsAndNames(&sourceString, &sourceLen, &filename, 1);
 		shader.setEnvInput(EShSourceGlsl, language, EShClientVulkan, 450);
 		shader.setEnvClient(EShClientVulkan, EShTargetVulkan_1_0);
