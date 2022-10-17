@@ -76,12 +76,13 @@ std::vector<char> RendererImpl::spirv2glsl(const std::string &name, const Shader
 	{
 		size_t size = src_.size() + 3 + name.size() + 1;
 		std::vector<std::string> sorted;
+		assert(std::is_sorted(macros.impl.begin(), macros.impl.end()));
 		sorted.reserve(macros.impl.size());
 		for (const auto &macro : macros.impl) {
-			std::string str = macro.first;
-			if (!macro.second.empty()) {
+			std::string str = macro.key;
+			if (!macro.value.empty()) {
 				str += "=";
-				str += macro.second;
+				str += macro.value;
 			}
 			size += 3 + str.size() + 1;
 			sorted.emplace_back(std::move(str));

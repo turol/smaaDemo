@@ -385,11 +385,37 @@ struct DescriptorLayout {
 struct ShaderMacro {
 	std::string key;
 	std::string value;
+
+
+	ShaderMacro() {}
+
+	template <typename K, typename V>
+	ShaderMacro(K &&key_, V &&value_)
+	: key(std::forward<K>(key_))
+	, value(std::forward<V>(value_))
+	{}
+
+	ShaderMacro(const ShaderMacro &other)            = default;
+	ShaderMacro& operator=(const ShaderMacro &other) = default;
+
+	ShaderMacro(ShaderMacro &&other) noexcept            = default;
+	ShaderMacro& operator=(ShaderMacro &&other) noexcept = default;
+
+	~ShaderMacro() {}
+
+	bool operator<(const ShaderMacro &other) const {
+		return this->key < other.key;
+	}
+
+	bool operator==(const ShaderMacro &other) const {
+		return this->key == other.key;
+	}
 };
 
 
 class ShaderMacros {
-	HashMap<std::string, std::string> impl;
+	// sorted according to key, no duplicates
+	std::vector<ShaderMacro> impl;
 
 	friend class Renderer;
 	friend struct RendererBase;
@@ -408,7 +434,15 @@ public:
 	~ShaderMacros() {}
 
 	void set(nonstd::string_view key, nonstd::string_view value) {
-		impl.emplace(key, value);
+		for (auto &macro : impl) {
+			if (macro.key == key) {
+				macro.value = std::string(value);
+				return;
+			}
+		}
+		assert(std::is_sorted(impl.begin(), impl.end()));
+		impl.emplace_back(key, value);
+		std::sort(impl.begin(), impl.end());
 	}
 
 	bool operator!=(const ShaderMacros &other) const {
