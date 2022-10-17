@@ -382,6 +382,12 @@ struct DescriptorLayout {
 };
 
 
+struct ShaderMacro {
+	std::string key;
+	std::string value;
+};
+
+
 class ShaderMacros {
 	HashMap<std::string, std::string> impl;
 
