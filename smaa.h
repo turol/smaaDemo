@@ -567,6 +567,19 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #define SMAA_FLIP_Y 1
 #endif  // SMAA_FLIP_Y
 
+#if defined(SMAA_GLSL_SEPARATE_SAMPLER)
+
+#define SMAATexture2D(tex) texture2D tex
+#define SMAATexturePass2D(tex) tex
+#define SMAASampleLevelZero(tex, coord) textureLod(sampler2D(tex, LinearSampler), coord, 0.0)
+#define SMAASampleLevelZeroPoint(tex, coord) textureLod(sampler2D(tex, PointSampler), coord, 0.0)
+#define SMAASampleLevelZeroOffset(tex, coord, offset) textureLodOffset(sampler2D(tex, LinearSampler), coord, 0.0, offset)
+#define SMAASample(tex, coord) texture(sampler2D(tex, LinearSampler), coord)
+#define SMAASamplePoint(tex, coord) texture(sampler2D(tex, PointSampler), coord)
+#define SMAASampleOffset(tex, coord, offset) texture(sampler2D(tex, LinearSampler), coord, offset)
+
+#else  // SMAA_GLSL_SEPARATE_SAMPLER
+
 #define SMAATexture2D(tex) sampler2D tex
 #define SMAATexturePass2D(tex) tex
 #define SMAASampleLevelZero(tex, coord) textureLod(tex, coord, 0.0)
@@ -575,6 +588,9 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #define SMAASample(tex, coord) texture(tex, coord)
 #define SMAASamplePoint(tex, coord) texture(tex, coord)
 #define SMAASampleOffset(tex, coord, offset) texture(tex, coord, offset)
+
+#endif  // SMAA_GLSL_SEPARATE_SAMPLER
+
 #define SMAA_FLATTEN
 #define SMAA_BRANCH
 #define lerp(a, b, t) mix(a, b, t)
@@ -583,7 +599,16 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #if defined(SMAA_GLSL_4)
 
 #define mad(a, b, c) fma(a, b, c)
+
+#if defined(SMAA_GLSL_SEPARATE_SAMPLER)
+
+#define SMAAGather(tex, coord) textureGather(sampler2D(tex, LinearSampler), coord)
+
+#else  // SMAA_GLSL_SEPARATE_SAMPLER
+
 #define SMAAGather(tex, coord) textureGather(tex, coord)
+
+#endif  // SMAA_GLSL_SEPARATE_SAMPLER
 
 #else  // defined(SMAA_GLSL_4)
 
