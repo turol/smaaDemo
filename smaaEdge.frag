@@ -53,18 +53,18 @@ layout (location = 0) out vec4 outColor;
 
 #if EDGEMETHOD == 2
 
-layout(set = 1, binding = 1) uniform sampler2D depthTex;
+layout(set = 1, binding = 1) uniform SMAATexture2D(depthTex);
 
 #else  // EDGEMETHOD
 
-layout(set = 1, binding = 1) uniform sampler2D colorTex;
+layout(set = 1, binding = 1) uniform SMAATexture2D(colorTex);
 
 #endif  // EDGEMETHOD
 
 
 #if SMAA_PREDICATION
 
-layout(set = 1, binding = 2) uniform sampler2D predicationTex;
+layout(set = 1, binding = 2) uniform SMAATexture2D(predicationTex);
 
 #endif  // SMAA_PREDICATION
 
