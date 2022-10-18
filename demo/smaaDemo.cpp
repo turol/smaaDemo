@@ -969,6 +969,28 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 }
 
 
+// not used for BufferHandle because the type alone does not differentiate UBO and SSBO
+template <typename T> struct DescriptorTyper;
+
+template<>
+struct DescriptorTyper<CSampler> {
+	static constexpr DescriptorType value = DescriptorType::CombinedSampler;
+};
+
+template<>
+struct DescriptorTyper<SamplerHandle> {
+	static constexpr DescriptorType value = DescriptorType::Sampler;
+};
+
+template<>
+struct DescriptorTyper<TextureHandle> {
+	static constexpr DescriptorType value = DescriptorType::Texture;
+};
+
+
+#define DESCRIPTOR(ds, member) { DescriptorTyper<decltype(member)>::value, offsetof(ds, member) }
+
+
 struct GlobalDS {
 	BufferHandle   globalUniforms;
 	SamplerHandle  linearSampler;
@@ -982,8 +1004,8 @@ struct GlobalDS {
 
 const DescriptorLayout GlobalDS::layout[] = {
 	  { DescriptorType::UniformBuffer,  offsetof(GlobalDS, globalUniforms) }
-	, { DescriptorType::Sampler,        offsetof(GlobalDS, linearSampler ) }
-	, { DescriptorType::Sampler,        offsetof(GlobalDS, nearestSampler) }
+	, DESCRIPTOR(GlobalDS, linearSampler )
+	, DESCRIPTOR(GlobalDS, nearestSampler)
 	, { DescriptorType::End,            0                                  }
 };
 
@@ -1019,7 +1041,7 @@ struct ColorCombinedDS {
 
 const DescriptorLayout ColorCombinedDS::layout[] = {
 	  { DescriptorType::UniformBuffer,    offsetof(ColorCombinedDS, unused) }
-	, { DescriptorType::CombinedSampler,  offsetof(ColorCombinedDS, color)  }
+	, DESCRIPTOR(ColorCombinedDS, color)
 	, { DescriptorType::End,              0,                                }
 };
 
@@ -1037,7 +1059,7 @@ struct ColorTexDS {
 
 const DescriptorLayout ColorTexDS::layout[] = {
 	  { DescriptorType::UniformBuffer,  offsetof(ColorTexDS, unused) }
-	, { DescriptorType::Texture,        offsetof(ColorTexDS, color)  }
+	, DESCRIPTOR(ColorTexDS, color)
 	, { DescriptorType::End,            0,                           }
 };
 
@@ -1056,8 +1078,8 @@ struct EdgeDetectionDS {
 
 const DescriptorLayout EdgeDetectionDS::layout[] = {
 	  { DescriptorType::UniformBuffer,    offsetof(EdgeDetectionDS, smaaUBO)        }
-	, { DescriptorType::CombinedSampler,  offsetof(EdgeDetectionDS, color)          }
-	, { DescriptorType::CombinedSampler,  offsetof(EdgeDetectionDS, predicationTex) }
+	, DESCRIPTOR(EdgeDetectionDS, color)
+	, DESCRIPTOR(EdgeDetectionDS, predicationTex)
 	, { DescriptorType::End,              0,                                        }
 };
 
@@ -1077,9 +1099,9 @@ struct BlendWeightDS {
 
 const DescriptorLayout BlendWeightDS::layout[] = {
 	  { DescriptorType::UniformBuffer,    offsetof(BlendWeightDS, smaaUBO)   }
-	, { DescriptorType::CombinedSampler,  offsetof(BlendWeightDS, edgesTex)  }
-	, { DescriptorType::CombinedSampler,  offsetof(BlendWeightDS, areaTex)   }
-	, { DescriptorType::CombinedSampler,  offsetof(BlendWeightDS, searchTex) }
+	, DESCRIPTOR(BlendWeightDS, edgesTex)
+	, DESCRIPTOR(BlendWeightDS, areaTex)
+	, DESCRIPTOR(BlendWeightDS, searchTex)
 	, { DescriptorType::End,              0,                                 }
 };
 
@@ -1098,8 +1120,8 @@ struct NeighborBlendDS {
 
 const DescriptorLayout NeighborBlendDS::layout[] = {
 	  { DescriptorType::UniformBuffer,    offsetof(NeighborBlendDS, smaaUBO)      }
-	, { DescriptorType::CombinedSampler,  offsetof(NeighborBlendDS, color)        }
-	, { DescriptorType::CombinedSampler,  offsetof(NeighborBlendDS, blendweights) }
+	, DESCRIPTOR(NeighborBlendDS, color)
+	, DESCRIPTOR(NeighborBlendDS, blendweights)
 	, { DescriptorType::End,              0                                       }
 };
 
@@ -1119,9 +1141,9 @@ struct TemporalAADS {
 
 const DescriptorLayout TemporalAADS::layout[] = {
 	  { DescriptorType::UniformBuffer,    offsetof(TemporalAADS, smaaUBO)     }
-	, { DescriptorType::CombinedSampler,  offsetof(TemporalAADS, currentTex)  }
-	, { DescriptorType::CombinedSampler,  offsetof(TemporalAADS, previousTex) }
-	, { DescriptorType::CombinedSampler,  offsetof(TemporalAADS, velocityTex) }
+	, DESCRIPTOR(TemporalAADS, currentTex)
+	, DESCRIPTOR(TemporalAADS, previousTex)
+	, DESCRIPTOR(TemporalAADS, velocityTex)
 	, { DescriptorType::End,              0                                   }
 };
 
