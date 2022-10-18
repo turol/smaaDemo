@@ -1693,7 +1693,29 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 		vk::PipelineInfoKHR pipelineInfo;
 		pipelineInfo.pipeline = result.value;
 		std::vector<vk::PipelineExecutablePropertiesKHR> properties = impl->device.getPipelineExecutablePropertiesKHR(pipelineInfo, impl->dispatcher);
-		LOG("Pipeline executable properties:", properties.size());
+		{
+			std::vector<char> pipelineName;
+
+			pipelineName.insert(pipelineName.end(), desc.vertexShaderName.begin(), desc.vertexShaderName.end());
+			nonstd::string_view vert(".vert ");
+			pipelineName.insert(pipelineName.end(), vert.begin(), vert.end());
+
+			pipelineName.insert(pipelineName.end(), desc.fragmentShaderName.begin(), desc.fragmentShaderName.end());
+			nonstd::string_view frag(".frag");
+			pipelineName.insert(pipelineName.end(), frag.begin(), frag.end());
+
+			for (const auto &macro : desc.shaderMacros_.impl) {
+				pipelineName.push_back(' ');
+				pipelineName.insert(pipelineName.end(), macro.key.begin(), macro.key.end());
+				if (!macro.value.empty()) {
+					pipelineName.push_back('=');
+					pipelineName.insert(pipelineName.end(), macro.value.begin(), macro.value.end());
+				}
+			}
+
+			pipelineName.push_back('\0');
+			LOG("Pipeline \"{}\" executable properties:", pipelineName.data());
+		}
 
 		vk::PipelineExecutableInfoKHR executableInfo;
 		executableInfo.pipeline = result.value;
