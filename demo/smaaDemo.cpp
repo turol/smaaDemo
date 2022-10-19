@@ -1403,6 +1403,20 @@ void SMAADemo::initRender() {
 
 			gameControllers.emplace_back(std::move(gc));
 		}
+
+		if (!gameControllers.empty()) {
+			int oldState = SDL_GameControllerEventState(SDL_QUERY);
+			LOG("SDL gamecontroller event state is {}", oldState);
+			if (oldState != SDL_ENABLE) {
+				LOG("Enabling SDL game controller events");
+				int newState = SDL_GameControllerEventState(SDL_ENABLE);
+				if (newState == SDL_ENABLE) {
+					LOG(" succeeded");
+				} else {
+					LOG(" failed");
+				}
+			}
+		}
 	} else {
 		LOG("SDL_NumJoysticks() failed: {}", SDL_GetError());
 	}
@@ -1412,6 +1426,13 @@ void SMAADemo::initRender() {
 		imGuiContext = ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO();
 		io.IniFilename                 = nullptr;
+
+		if ((io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) != 0) {
+			if (!gameControllers.empty()) {
+				io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+				io.ConfigFlags  |= ImGuiConfigFlags_NavEnableGamepad;
+			}
+		}
 
 		LOG_TODO("clipboard");
 		io.SetClipboardTextFn = SetClipboardText;
@@ -2417,6 +2438,32 @@ static ImGuiKey ImGui_ImplSDL2_KeycodeToImGuiKey(int keycode)
 }
 
 
+static const ImGuiKey ImGuiGamepadButtons[] =
+{
+	  ImGuiKey_GamepadFaceDown   // SDL_CONTROLLER_BUTTON_A
+	, ImGuiKey_GamepadFaceRight  // SDL_CONTROLLER_BUTTON_B
+	, ImGuiKey_GamepadFaceLeft   // SDL_CONTROLLER_BUTTON_X
+	, ImGuiKey_GamepadFaceUp     // SDL_CONTROLLER_BUTTON_Y
+	, ImGuiKey_GamepadBack       // SDL_CONTROLLER_BUTTON_BACK
+	, ImGuiKey_None              // SDL_CONTROLLER_BUTTON_GUIDE
+	, ImGuiKey_GamepadStart      // SDL_CONTROLLER_BUTTON_START
+	, ImGuiKey_GamepadL3         // SDL_CONTROLLER_BUTTON_LEFTSTICK
+	, ImGuiKey_GamepadR3         // SDL_CONTROLLER_BUTTON_RIGHTSTICK
+	, ImGuiKey_GamepadL1         // SDL_CONTROLLER_BUTTON_LEFTSHOULDER
+	, ImGuiKey_GamepadR1         // SDL_CONTROLLER_BUTTON_RIGHTSHOULDER
+	, ImGuiKey_GamepadDpadUp     // SDL_CONTROLLER_BUTTON_DPAD_UP
+	, ImGuiKey_GamepadDpadDown   // SDL_CONTROLLER_BUTTON_DPAD_DOWN
+	, ImGuiKey_GamepadDpadLeft   // SDL_CONTROLLER_BUTTON_DPAD_LEFT
+	, ImGuiKey_GamepadDpadRight  // SDL_CONTROLLER_BUTTON_DPAD_RIGHT
+	, ImGuiKey_None              // SDL_CONTROLLER_BUTTON_MISC1
+	, ImGuiKey_None              // SDL_CONTROLLER_BUTTON_PADDLE1
+	, ImGuiKey_None              // SDL_CONTROLLER_BUTTON_PADDLE2
+	, ImGuiKey_None              // SDL_CONTROLLER_BUTTON_PADDLE3
+	, ImGuiKey_None              // SDL_CONTROLLER_BUTTON_PADDLE4
+	, ImGuiKey_None              // SDL_CONTROLLER_BUTTON_TOUCHPAD
+};
+
+
 #endif  // IMGUI_DISABLE
 
 
@@ -2685,6 +2732,88 @@ void SMAADemo::processInput() {
 			} break;
 
 #ifndef IMGUI_DISABLE
+
+		case SDL_CONTROLLERBUTTONDOWN:
+		case SDL_CONTROLLERBUTTONUP: {
+			assert(event.cbutton.button < sizeof(ImGuiGamepadButtons));
+			ImGuiKey key = ImGuiGamepadButtons[event.cbutton.button];
+			if (key != ImGuiKey_None) {
+				io.AddKeyEvent(key, event.cbutton.state == SDL_PRESSED);
+			}
+
+		} break;
+
+		case SDL_CONTROLLERAXISMOTION: {
+			LOG_TODO("configurable dead zones");
+			const int stickDeadZone = 8192;
+			const int triggerDeadZone = 1024;
+
+#define NORMALIZED_AXIS(min, max)  ((static_cast<float>(event.caxis.value) - min) / (max - min))
+
+			switch (event.caxis.axis) {
+			case SDL_CONTROLLER_AXIS_LEFTX:
+				if (event.caxis.value > stickDeadZone) {
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadLStickLeft,  false, 0.0f);
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadLStickRight, true , NORMALIZED_AXIS(stickDeadZone, 32767));
+				} else if ((event.caxis.value < stickDeadZone)) {
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadLStickLeft,  true , NORMALIZED_AXIS(-stickDeadZone, -32768));
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadLStickRight, false, 0.0f);
+				} else {
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadLStickLeft,  false, 0.0f);
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadLStickRight, false, 0.0f);
+				}
+				break;
+
+			case SDL_CONTROLLER_AXIS_LEFTY:
+				if (event.caxis.value > stickDeadZone) {
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadLStickUp,   false, 0.0f);
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadLStickDown, true , NORMALIZED_AXIS(stickDeadZone, 32767));
+				} else if ((event.caxis.value < stickDeadZone)) {
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadLStickUp,   true , NORMALIZED_AXIS(-stickDeadZone, -32768));
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadLStickDown, false, 0.0f);
+				} else {
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadLStickUp,   false, 0.0f);
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadLStickDown, false, 0.0f);
+				}
+				break;
+
+			case SDL_CONTROLLER_AXIS_RIGHTX:
+				if (event.caxis.value > stickDeadZone) {
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadRStickLeft,  false, 0.0f);
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadRStickRight, true , NORMALIZED_AXIS(stickDeadZone, 32767));
+				} else if ((event.caxis.value < stickDeadZone)) {
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadRStickLeft,  true , NORMALIZED_AXIS(-stickDeadZone, -32768));
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadRStickRight, false, 0.0f);
+				} else {
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadRStickLeft,  false, 0.0f);
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadRStickRight, false, 0.0f);
+				}
+				break;
+
+			case SDL_CONTROLLER_AXIS_RIGHTY:
+				if (event.caxis.value > stickDeadZone) {
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadRStickUp,   false, 0.0f);
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadRStickDown, true , NORMALIZED_AXIS(stickDeadZone, 32767));
+				} else if ((event.caxis.value < stickDeadZone)) {
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadRStickUp,   true , NORMALIZED_AXIS(-stickDeadZone, -32768));
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadRStickDown, false, 0.0f);
+				} else {
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadRStickUp,   false, 0.0f);
+					io.AddKeyAnalogEvent(ImGuiKey_GamepadRStickDown, false, 0.0f);
+				}
+				break;
+
+			case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
+				io.AddKeyAnalogEvent(ImGuiKey_GamepadL2, event.caxis.value > triggerDeadZone, NORMALIZED_AXIS(triggerDeadZone, 32767));
+				break;
+
+			case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
+				io.AddKeyAnalogEvent(ImGuiKey_GamepadR2, event.caxis.value > triggerDeadZone, NORMALIZED_AXIS(triggerDeadZone, 32767));
+				break;
+			}
+
+#undef NORMALIZED_AXIS
+		} break;
 
 		case SDL_TEXTINPUT:
 			io.AddInputCharactersUTF8(event.text.text);
