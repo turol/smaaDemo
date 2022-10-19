@@ -24,7 +24,7 @@ THE SOFTWARE.
 #version 450 core
 
 #include "shaderDefines.h"
-#include "utils.h"
+#include "shaderUtils.h"
 
 
 layout(location = ATTR_POS)   in vec2 position;

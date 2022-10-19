@@ -37,7 +37,7 @@ THE SOFTWARE.
 
 
 #include "smaa.h"
-#include "utils.h"
+#include "shaderUtils.h"
 
 
 layout (location = 0) out vec2 texcoord;

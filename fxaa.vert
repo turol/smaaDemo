@@ -24,7 +24,7 @@ THE SOFTWARE.
 #version 450 core
 
 #include "shaderDefines.h"
-#include "utils.h"
+#include "shaderUtils.h"
 
 #define FXAA_PC 1
 #define FXAA_GLSL_130 1
