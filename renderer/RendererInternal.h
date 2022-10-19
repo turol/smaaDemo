@@ -263,11 +263,11 @@ struct RendererBase {
 
 	std::vector<char> loadSource(const std::string &name);
 
-	std::string makeSPVCacheName(uint64_t hash);
+	std::string makeSPVCacheName(uint64_t hash, ShaderStage stage);
 
-	bool loadCachedSPV(const std::string &name, const std::string &shaderName, std::vector<uint32_t> &spirv);
+	bool loadCachedSPV(const std::string &name, const std::string &shaderName, ShaderStage stage, std::vector<uint32_t> &spirv);
 
-	void addCachedSPV(const std::string &shaderName, const std::vector<uint32_t> &spirv, const HashMap<std::string, std::vector<char> > &includeCache);
+	void addCachedSPV(const std::string &shaderName, ShaderStage stage, const std::vector<uint32_t> &spirv, const HashMap<std::string, std::vector<char> > &includeCache);
 
 	std::vector<uint32_t> compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderStage stage);
 

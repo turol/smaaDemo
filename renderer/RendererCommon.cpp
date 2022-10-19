@@ -478,12 +478,15 @@ std::string CacheData::serialize() const {
 }
 
 
-std::string RendererBase::makeSPVCacheName(uint64_t hash) {
-	return fmt::format("{}{:08x}.spv", spirvCacheDir, hash);
+static const char *const shaderStages[] = { "vert", "frag" };
+
+
+std::string RendererBase::makeSPVCacheName(uint64_t hash, ShaderStage stage) {
+	return fmt::format("{}{:08x}.{}.spv", spirvCacheDir, hash, shaderStages[stage]);
 }
 
 
-bool RendererBase::loadCachedSPV(const std::string &name, const std::string &shaderName, std::vector<uint32_t> &spirv) {
+bool RendererBase::loadCachedSPV(const std::string &name, const std::string &shaderName, ShaderStage stage, std::vector<uint32_t> &spirv) {
 	std::string cacheName = spirvCacheDir + shaderName + ".cache";
 	if (!fileExists(cacheName)) {
 		return false;
@@ -495,7 +498,7 @@ bool RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 		return false;
 	}
 
-	std::string spvName   = makeSPVCacheName(cacheData.hash);
+	std::string spvName   = makeSPVCacheName(cacheData.hash, stage);
 	if (!fileExists(spvName)) {
 		return false;
 	}
@@ -650,11 +653,11 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 }
 
 
-void RendererBase::addCachedSPV(const std::string &shaderName, const std::vector<uint32_t> &spirv, const HashMap<std::string, std::vector<char> > &includeCache) {
+void RendererBase::addCachedSPV(const std::string &shaderName, ShaderStage stage, const std::vector<uint32_t> &spirv, const HashMap<std::string, std::vector<char> > &includeCache) {
 	CacheData cacheData;
 	cacheData.version     = shaderVersion;
 	cacheData.hash        = XXH64(spirv.data(), spirv.size() * 4, 0);
-	std::string spvName   = makeSPVCacheName(cacheData.hash);
+	std::string spvName   = makeSPVCacheName(cacheData.hash, stage);
 	LOG("Writing shader \"{}\" to \"{}\"", shaderName, spvName);
 	cacheData.dependencies.reserve(includeCache.size());
 	for (const auto &p : includeCache) {
@@ -685,7 +688,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	std::vector<uint32_t> spirv;
 	if (!skipShaderCache) {
 		LOG("Looking for \"{}\" in cache...", shaderName);
-		bool found = loadCachedSPV(name, shaderName, spirv);
+		bool found = loadCachedSPV(name, shaderName, stage_, spirv);
 		if (found) {
 			LOG("\"{}\" found in cache", shaderName);
 
@@ -868,7 +871,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	}
 
 	if (!skipShaderCache) {
-		addCachedSPV(shaderName, spirv, includeCache);
+		addCachedSPV(shaderName, stage_, spirv, includeCache);
 	}
 
 	return spirv;
