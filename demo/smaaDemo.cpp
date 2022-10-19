@@ -2128,6 +2128,9 @@ void SMAADemo::loadImage(const char *filename) {
 
 	stbi_image_free(imageData);
 
+	if (!isImageScene()) {
+		rebuildRG = true;
+	}
 	activeScene = static_cast<unsigned int>(images.size());
 }
 
