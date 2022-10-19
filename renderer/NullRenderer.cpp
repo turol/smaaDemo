@@ -33,7 +33,7 @@ namespace renderer {
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
 {
-	SDL_Init(SDL_INIT_EVENTS);
+	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
 
 	swapchainFormat = Format::sRGBA8;
 

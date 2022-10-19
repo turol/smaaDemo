@@ -440,6 +440,14 @@ struct ShapeRenderBuffers {
 };
 
 
+struct GameControllerDeleter {
+	void operator()(SDL_GameController *gc) { SDL_GameControllerClose(gc); }
+};
+
+
+using GameController = std::unique_ptr<SDL_GameController, GameControllerDeleter>;
+
+
 class SMAADemo {
 	using DemoRenderGraph = RenderGraph<Rendertargets, RenderPasses>;
 
@@ -543,6 +551,8 @@ class SMAADemo {
 	bool                                              rightCtrl,  leftCtrl;
 
 #ifndef IMGUI_DISABLE
+
+	std::vector<GameController>                       gameControllers;
 
 	// gui things
 	TextureHandle                                     imguiFontsTex;
@@ -760,6 +770,9 @@ SMAADemo::~SMAADemo() {
 		ImGui::DestroyContext(imGuiContext);
 		imGuiContext = nullptr;
 	}
+
+	gameControllers.clear();
+
 #endif  // IMGUI_DISABLE
 
 	if (temporalRTs[0]) {
@@ -1360,6 +1373,40 @@ void SMAADemo::initRender() {
 	}
 
 #ifndef IMGUI_DISABLE
+
+	int numJoysticks = SDL_NumJoysticks();
+	if (numJoysticks >= 0) {
+		LOG("{} joystick{}", numJoysticks, (numJoysticks == 1) ? "" : "s");
+		for (int i = 0; i < numJoysticks; i++) {
+			bool isGameController = SDL_IsGameController(i);
+			LOG("Joystick {} is {}a gamecontroller", i, (isGameController ? "" : "not "));
+			if (!isGameController) {
+				continue;
+			}
+
+			GameController gc(SDL_GameControllerOpen(i));
+			if (!gc) {
+				LOG("Failed to open gamecontroller {}: {}", i, SDL_GetError());
+				continue;
+			}
+
+			const char *name = SDL_GameControllerName(gc.get());
+			LOG(" name: \"{}\"", (name != nullptr) ? name : "<no name>");
+
+			char *mapping = SDL_GameControllerMapping(gc.get());
+			if (mapping) {
+				LOG(" mapping string: \"{}\"", mapping);
+				SDL_free(mapping);
+			} else {
+				LOG(" no mapping");
+			}
+
+			gameControllers.emplace_back(std::move(gc));
+		}
+	} else {
+		LOG("SDL_NumJoysticks() failed: {}", SDL_GetError());
+	}
+
 	// imgui setup
 	{
 		imGuiContext = ImGui::CreateContext();

@@ -512,7 +512,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	{
-		int retval = SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
+		int retval = SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
 		if (retval != 0) {
 			THROW_ERROR("SDL_Init failed: {}", SDL_GetError());
 		}
