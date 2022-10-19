@@ -953,7 +953,7 @@ BufferHandle Renderer::createEphemeralBuffer(BufferType type, uint32_t size, con
 VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros) {
 	std::string vertexShaderName   = name + ".vert";
 
-    std::vector<uint32_t> spirv = compileSpirv(vertexShaderName, macros, ShaderKind::Vertex);
+    std::vector<uint32_t> spirv = compileSpirv(vertexShaderName, macros, ShaderStage::Vertex);
 
 	VertexShader v;
 	v.name      = vertexShaderName;
@@ -967,7 +967,7 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros &macros) {
 	std::string fragmentShaderName = name + ".frag";
 
-	std::vector<uint32_t> spirv = compileSpirv(fragmentShaderName, macros, ShaderKind::Fragment);
+	std::vector<uint32_t> spirv = compileSpirv(fragmentShaderName, macros, ShaderStage::Fragment);
 
 	FragmentShader f;
 	f.name      = fragmentShaderName;

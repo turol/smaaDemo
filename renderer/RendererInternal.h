@@ -32,7 +32,7 @@ THE SOFTWARE.
 namespace renderer {
 
 
-BETTER_ENUM(ShaderKind, uint8_t
+BETTER_ENUM(ShaderStage, uint8_t
 	, Vertex
 	, Fragment
 )
@@ -269,7 +269,7 @@ struct RendererBase {
 
 	void addCachedSPV(const std::string &shaderName, const std::vector<uint32_t> &spirv, const HashMap<std::string, std::vector<char> > &includeCache);
 
-	std::vector<uint32_t> compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderKind kind);
+	std::vector<uint32_t> compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderStage stage);
 
 	explicit RendererBase(const RendererDesc &desc);
 

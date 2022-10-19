@@ -668,7 +668,7 @@ void RendererBase::addCachedSPV(const std::string &shaderName, const std::vector
 }
 
 
-std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderKind kind_) {
+std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderStage stage_) {
 	// check spir-v cache first
 	std::string shaderName = name;
 	{
@@ -749,12 +749,12 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		}
 
 		EShLanguage language;
-		switch (kind_) {
-		case ShaderKind::Vertex:
+		switch (stage_) {
+		case ShaderStage::Vertex:
 			language = EShLangVertex;
 			break;
 
-		case ShaderKind::Fragment:
+		case ShaderStage::Fragment:
 			language = EShLangFragment;
 			break;
 
