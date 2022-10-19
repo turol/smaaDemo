@@ -600,7 +600,7 @@ class SMAADemo {
 
 	void renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources &r);
 
-	void loadImage(const std::string &filename);
+	void loadImage(const char *filename);
 
 	uint64_t getNanoseconds() {
 		return (SDL_GetPerformanceCounter() - tickBase) * freqMult / freqDiv;
@@ -1369,7 +1369,7 @@ void SMAADemo::initRender() {
 
 	images.reserve(imageFiles.size());
 	for (const auto &filename : imageFiles) {
-		loadImage(filename);
+		loadImage(filename.c_str());
 	}
 
 #ifndef IMGUI_DISABLE
@@ -2095,9 +2095,9 @@ void SMAADemo::rebuildRenderGraph() {
 }
 
 
-void SMAADemo::loadImage(const std::string &filename) {
+void SMAADemo::loadImage(const char *filename) {
 	int width = 0, height = 0;
-	unsigned char *imageData = stbi_load(filename.c_str(), &width, &height, NULL, 4);
+	unsigned char *imageData = stbi_load(filename, &width, &height, NULL, 4);
 	LOG(" {} : {}x{}", filename, width, height);
 	if (!imageData) {
 		LOG("Bad image: {}", stbi_failure_reason());
@@ -2107,12 +2107,12 @@ void SMAADemo::loadImage(const std::string &filename) {
 	images.push_back(Image());
 	auto &img      = images.back();
 	img.filename   = filename;
-	auto lastSlash = filename.rfind('/');
+	auto lastSlash = img.filename.rfind('/');
 	if (lastSlash != std::string::npos) {
-		img.shortName = filename.substr(lastSlash + 1);
+		img.shortName = img.filename.substr(lastSlash + 1);
 	}
 	else {
-		img.shortName = filename;
+		img.shortName = img.filename;
 	}
 
 	TextureDesc texDesc;
@@ -2725,10 +2725,9 @@ void SMAADemo::processInput() {
 			break;
 
 		case SDL_DROPFILE: {
-				char* droppedFile = event.drop.file;
-				std::string filestring(droppedFile);
+				char *droppedFile = event.drop.file;
+				loadImage(droppedFile);
 				SDL_free(droppedFile);
-				loadImage(filestring);
 			} break;
 
 #ifndef IMGUI_DISABLE
@@ -3753,8 +3752,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				}
 				ImGui::NextColumn();
 				if (ImGui::Button("Load")) {
-					std::string filename(imageFileName);
-					loadImage(filename);
+					loadImage(imageFileName);
 				}
 
 				ImGui::Columns(1);
