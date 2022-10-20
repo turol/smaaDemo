@@ -624,7 +624,7 @@ void RendererBase::addCachedSPV(const std::string &shaderName, ShaderStage stage
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderStage stage_) {
 	// check spir-v cache first
 	std::string shaderName = name;
-	{
+
 		assert(std::is_sorted(macros.impl.begin(), macros.impl.end()));
 		for (const auto &macro : macros.impl) {
 			shaderName += "_" + macro.key;
@@ -633,7 +633,6 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 				shaderName += macro.value;
 			}
 		}
-	}
 
 	std::vector<uint32_t> spirv;
 	if (!skipShaderCache) {
@@ -675,7 +674,6 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		// use preamble
 		std::vector<char> preamble;
 
-		{
 			nonstd::string_view ext = "#extension GL_GOOGLE_include_directive : enable\n";
 			preamble.insert(preamble.end(), ext.begin(), ext.end());
 
@@ -696,7 +694,6 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 			preamble.push_back('\0');
 			LOG("shader preamble: \"\n{}\"\n", preamble.data());
-		}
 
 		EShLanguage language;
 		switch (stage_) {
