@@ -55,10 +55,10 @@ struct ShaderResources {
 	ShaderResources() {}
 	~ShaderResources() {}
 
-	ShaderResources(const ShaderResources &)            = default;
-	ShaderResources(ShaderResources &&) noexcept        = default;
+	ShaderResources(const ShaderResources &)                = default;
+	ShaderResources(ShaderResources &&) noexcept            = default;
 
-	ShaderResources &operator=(const ShaderResources &) = default;
+	ShaderResources &operator=(const ShaderResources &)     = default;
 	ShaderResources &operator=(ShaderResources &&) noexcept = default;
 
 };
@@ -263,8 +263,8 @@ struct Framebuffer {
 
 
 struct Pipeline {
-	PipelineDesc    desc;
-	GLuint          shader;
+	PipelineDesc     desc;
+	GLuint           shader;
 	GLenum           srcBlend;
 	GLenum           destBlend;
 	ShaderResources  resources;
@@ -322,10 +322,10 @@ struct Pipeline {
 
 
 struct RenderPass {
-	RenderPassDesc  desc;
+	RenderPassDesc                                  desc;
 	std::array<glm::vec4, MAX_COLOR_RENDERTARGETS>  colorClearValues;
-	float           depthClearValue;
-	GLbitfield      clearMask;
+	float                                           depthClearValue;
+	GLbitfield                                      clearMask;
 
 
 	RenderPass()
@@ -657,38 +657,38 @@ struct Frame : public FrameBase {
 
 
 struct RendererImpl : public RendererBase {
-	SDL_Window                               *window;
-	SDL_GLContext                            context;
+	SDL_Window                                              *window;
+	SDL_GLContext                                           context;
 
-	HashMap<GLenum, int>                     glValues;
+	HashMap<GLenum, int>                                    glValues;
 
-	std::vector<Frame>                       frames;
+	std::vector<Frame>                                      frames;
 
-	ResourceContainer<Buffer>                buffers;
-	ResourceContainer<DescriptorSetLayout, uint32_t, true>   dsLayouts;
-	ResourceContainer<FragmentShader, uint32_t, true>        fragmentShaders;
-	ResourceContainer<Framebuffer>           framebuffers;
-	ResourceContainer<Pipeline>              pipelines;
-	ResourceContainer<RenderPass>            renderPasses;
-	ResourceContainer<RenderTarget>          renderTargets;
-	ResourceContainer<Sampler>               samplers;
-	ResourceContainer<Texture>               textures;
-	ResourceContainer<VertexShader, uint32_t, true>          vertexShaders;
+	ResourceContainer<Buffer>                               buffers;
+	ResourceContainer<DescriptorSetLayout, uint32_t, true>  dsLayouts;
+	ResourceContainer<FragmentShader, uint32_t, true>       fragmentShaders;
+	ResourceContainer<Framebuffer>                          framebuffers;
+	ResourceContainer<Pipeline>                             pipelines;
+	ResourceContainer<RenderPass>                           renderPasses;
+	ResourceContainer<RenderTarget>                         renderTargets;
+	ResourceContainer<Sampler>                              samplers;
+	ResourceContainer<Texture>                              textures;
+	ResourceContainer<VertexShader, uint32_t, true>         vertexShaders;
 
-	GLuint                                   ringBuffer;
-	bool                                     persistentMapInUse;
-	char                                     *persistentMapping;
+	GLuint                                                  ringBuffer;
+	bool                                                    persistentMapInUse;
+	char                                                    *persistentMapping;
 
-	PipelineHandle                           currentPipeline;
+	PipelineHandle                                          currentPipeline;
 
-	bool                                     decriptorSetsDirty;
-	HashMap<DSIndex, Descriptor>             descriptors;
+	bool                                                    decriptorSetsDirty;
+	HashMap<DSIndex, Descriptor>                            descriptors;
 
-	bool                                     debug;
-	bool                                     tracing;
-	GLuint                                   vao;
-	IndexFormat                              indexFormat;
-	unsigned int                             indexBufByteOffset;
+	bool                                                    debug;
+	bool                                                    tracing;
+	GLuint                                                  vao;
+	IndexFormat                                             indexFormat;
+	unsigned int                                            indexBufByteOffset;
 
 
 	bool isRenderPassCompatible(const RenderPass &pass, const Framebuffer &fb);

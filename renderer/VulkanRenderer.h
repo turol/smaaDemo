@@ -313,8 +313,8 @@ struct Framebuffer {
 		other.height      = 0;
 		other.numSamples  = 0;
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-			colorTargets[i].format       = other.colorTargets[i].format;
-			other.colorTargets[i].format = Format::Invalid;
+			colorTargets[i].format              = other.colorTargets[i].format;
+			other.colorTargets[i].format        = Format::Invalid;
 
 			colorTargets[i].initialLayout       = other.colorTargets[i].initialLayout;
 			other.colorTargets[i].initialLayout = Layout::Undefined;
@@ -322,14 +322,14 @@ struct Framebuffer {
 			colorTargets[i].finalLayout         = other.colorTargets[i].finalLayout;
 			other.colorTargets[i].finalLayout   = Layout::Undefined;
 		}
-		depthStencilTarget.format       = other.depthStencilTarget.format;
-		other.depthStencilTarget.format = Format::Invalid;
+		depthStencilTarget.format               = other.depthStencilTarget.format;
+		other.depthStencilTarget.format         = Format::Invalid;
 
-		depthStencilTarget.initialLayout       = other.depthStencilTarget.initialLayout;
-		other.depthStencilTarget.initialLayout = Layout::Undefined;
+		depthStencilTarget.initialLayout        = other.depthStencilTarget.initialLayout;
+		other.depthStencilTarget.initialLayout  = Layout::Undefined;
 
-		depthStencilTarget.finalLayout         = other.depthStencilTarget.finalLayout;
-		other.depthStencilTarget.finalLayout   = Layout::Undefined;
+		depthStencilTarget.finalLayout          = other.depthStencilTarget.finalLayout;
+		other.depthStencilTarget.finalLayout    = Layout::Undefined;
 	}
 
 	Framebuffer &operator=(Framebuffer &&other) noexcept {
@@ -345,26 +345,26 @@ struct Framebuffer {
 		numSamples        = other.numSamples;
 		desc              = other.desc;
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-			colorTargets[i].format = other.colorTargets[i].format;
+			colorTargets[i].format        = other.colorTargets[i].format;
 			colorTargets[i].initialLayout = other.colorTargets[i].initialLayout;
 			colorTargets[i].finalLayout   = other.colorTargets[i].finalLayout;
 		}
-		depthStencilTarget.format = other.depthStencilTarget.format;
-		depthStencilTarget.initialLayout = other.depthStencilTarget.initialLayout;
-		depthStencilTarget.finalLayout   = other.depthStencilTarget.finalLayout;
+		depthStencilTarget.format         = other.depthStencilTarget.format;
+		depthStencilTarget.initialLayout  = other.depthStencilTarget.initialLayout;
+		depthStencilTarget.finalLayout    = other.depthStencilTarget.finalLayout;
 
 		other.framebuffer = vk::Framebuffer();
 		other.width       = 0;
 		other.height      = 0;
 		other.numSamples  = 0;
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-			other.colorTargets[i].format = Format::Invalid;
+			other.colorTargets[i].format        = Format::Invalid;
 			other.colorTargets[i].initialLayout = Layout::Undefined;
 			other.colorTargets[i].finalLayout   = Layout::Undefined;
 		}
-		other.depthStencilTarget.format = Format::Invalid;
-		other.depthStencilTarget.initialLayout = Layout::Undefined;
-		other.depthStencilTarget.finalLayout   = Layout::Undefined;
+		other.depthStencilTarget.format         = Format::Invalid;
+		other.depthStencilTarget.initialLayout  = Layout::Undefined;
+		other.depthStencilTarget.finalLayout    = Layout::Undefined;
 
 		return *this;
 	}

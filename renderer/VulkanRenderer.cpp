@@ -488,7 +488,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	if(!SDL_Vulkan_CreateSurface(window,
 								 (SDL_vulkanInstance) instance,
-								 (SDL_vulkanSurface *)&surface))
+								 (SDL_vulkanSurface *) &surface))
 	{
 		LOG_TODO("free instance, window etc...");
 		THROW_ERROR("Failed to create Vulkan surface: {}", SDL_GetError());
@@ -508,7 +508,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	physicalDevicesProperties.reserve(physicalDevices.size());
 
 	for (unsigned int i = 0; i < physicalDevices.size(); i++) {
-		physicalDevice = physicalDevices.at(i);
+		physicalDevice   = physicalDevices.at(i);
 		deviceProperties = physicalDevice.getProperties();
 		physicalDevicesProperties.push_back(deviceProperties);
 
@@ -815,11 +815,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	vk::CommandPoolCreateInfo cp;
 	cp.queueFamilyIndex = transferQueueIndex;
-	transferCmdPool = device.createCommandPool(cp);
+	transferCmdPool     = device.createCommandPool(cp);
 
 	vk::PipelineCacheCreateInfo cacheInfo;
 	std::vector<char> cacheData;
-	std::string plCacheFile =  spirvCacheDir + "pipeline.cache";
+	std::string plCacheFile = spirvCacheDir + "pipeline.cache";
 	if (!desc.skipShaderCache && fileExists(plCacheFile)) {
 		cacheData                 = readFile(plCacheFile);
 		cacheInfo.initialDataSize = cacheData.size();
@@ -993,7 +993,7 @@ RendererImpl::~RendererImpl() {
 	swapchain = vk::SwapchainKHR();
 
 	instance.destroySurfaceKHR(surface);
-	surface = vk::SurfaceKHR();
+	surface   = vk::SurfaceKHR();
 
 	vmaDestroyAllocator(allocator);
 	allocator = VK_NULL_HANDLE;
@@ -1321,12 +1321,12 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 
 		const auto &colorRT = desc.colorRTs_[i];
 
-		uint32_t attachNum    = static_cast<uint32_t>(attachments.size());
+		uint32_t attachNum     = static_cast<uint32_t>(attachments.size());
 		vk::ImageLayout layout = vk::ImageLayout::eColorAttachmentOptimal;
 
 		vk::AttachmentDescription attach;
-		attach.format         = vulkanFormat(colorRT.format);
-		attach.samples        = samples;
+		attach.format          = vulkanFormat(colorRT.format);
+		attach.samples         = samples;
 		switch (colorRT.passBegin) {
 		case PassBegin::DontCare:
 			assert(desc.colorRTs_[i].initialLayout == +Layout::Undefined);
@@ -1569,11 +1569,11 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	}
 
 	info.stageCount = 2;
-	info.pStages = &stages[0];
+	info.pStages    = &stages[0];
 
 	vk::PipelineVertexInputStateCreateInfo vinput;
 	std::vector<vk::VertexInputAttributeDescription> attrs;
-	std::vector<vk::VertexInputBindingDescription> bindings;
+	std::vector<vk::VertexInputBindingDescription>   bindings;
 	if (desc.vertexAttribMask) {
 		uint32_t bufmask = 0;
 		forEachSetBit(desc.vertexAttribMask, [&attrs, &bufmask, &desc] (uint32_t bit, uint32_t /* mask */) {
@@ -1813,30 +1813,30 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	} else {
 		flags |= vk::ImageUsageFlagBits::eColorAttachment;
 	}
-	info.usage       = flags;
+	info.usage        = flags;
 
 	auto device = impl->device;
 
 	RenderTarget rt;
-	rt.width         = desc.width_;
-	rt.height        = desc.height_;
-	rt.numSamples    = desc.numSamples_;
-	rt.image         = device.createImage(info);
-	rt.format        = desc.format_;
+	rt.width          = desc.width_;
+	rt.height         = desc.height_;
+	rt.numSamples     = desc.numSamples_;
+	rt.image          = device.createImage(info);
+	rt.format         = desc.format_;
 
 	Texture tex;
-	tex.width        = desc.width_;
-	tex.height       = desc.height_;
-	tex.image        = rt.image;
-	tex.renderTarget = true;
+	tex.width         = desc.width_;
+	tex.height        = desc.height_;
+	tex.image         = rt.image;
+	tex.renderTarget  = true;
 
 	impl->debugNameObject<vk::Image>(tex.image, desc.name_);
 
 	VmaAllocationCreateInfo req = {};
-	req.usage          = VMA_MEMORY_USAGE_GPU_ONLY;
-	req.flags          = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
-	req.pUserData      = const_cast<char *>(desc.name_.c_str());
-	VmaAllocationInfo  allocationInfo = {};
+	req.usage         = VMA_MEMORY_USAGE_GPU_ONLY;
+	req.flags         = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+	req.pUserData     = const_cast<char *>(desc.name_.c_str());
+	VmaAllocationInfo allocationInfo = {};
 
 	vmaAllocateMemoryForImage(impl->allocator, rt.image, &req, &tex.memory, &allocationInfo);
 	device.bindImageMemory(rt.image, allocationInfo.deviceMemory, allocationInfo.offset);
@@ -1852,8 +1852,8 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	}
 	viewInfo.subresourceRange.levelCount = 1;
 	viewInfo.subresourceRange.layerCount = 1;
-	rt.imageView = device.createImageView(viewInfo);
-	tex.imageView    = rt.imageView;
+	rt.imageView      = device.createImageView(viewInfo);
+	tex.imageView     = rt.imageView;
 
 	impl->debugNameObject<vk::ImageView>(tex.imageView, desc.name_);
 
@@ -1977,9 +1977,9 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 	auto device = impl->device;
 
 	Texture tex;
-	tex.width  = desc.width_;
-	tex.height = desc.height_;
-	tex.image  = device.createImage(info);
+	tex.width   = desc.width_;
+	tex.height  = desc.height_;
+	tex.image   = device.createImage(info);
 
 	VmaAllocationCreateInfo  req = {};
 	req.usage          = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -2123,11 +2123,11 @@ DSLayoutHandle Renderer::createDescriptorSetLayout(const DescriptorLayout *layou
 	assert(layout->offset == 0);
 
 	vk::DescriptorSetLayoutCreateInfo info;
-	info.bindingCount = static_cast<uint32_t>(bindings.size());
-	info.pBindings    = &bindings[0];
+	info.bindingCount    = static_cast<uint32_t>(bindings.size());
+	info.pBindings       = &bindings[0];
 
 	DescriptorSetLayout dsLayout;
-	dsLayout.layout = impl->device.createDescriptorSetLayout(info);
+	dsLayout.layout      = impl->device.createDescriptorSetLayout(info);
 	dsLayout.descriptors = std::move(descriptors);
 
 	return impl->dsLayouts.add(std::move(dsLayout));

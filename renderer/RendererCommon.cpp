@@ -625,14 +625,14 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	// check spir-v cache first
 	std::string shaderName = name;
 
-		assert(std::is_sorted(macros.impl.begin(), macros.impl.end()));
-		for (const auto &macro : macros.impl) {
-			shaderName += "_" + macro.key;
-			if (!macro.value.empty()) {
-				shaderName += "=";
-				shaderName += macro.value;
-			}
+	assert(std::is_sorted(macros.impl.begin(), macros.impl.end()));
+	for (const auto &macro : macros.impl) {
+		shaderName += "_" + macro.key;
+		if (!macro.value.empty()) {
+			shaderName += "=";
+			shaderName += macro.value;
 		}
+	}
 
 	std::vector<uint32_t> spirv;
 	if (!skipShaderCache) {
@@ -674,26 +674,26 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		// use preamble
 		std::vector<char> preamble;
 
-			nonstd::string_view ext = "#extension GL_GOOGLE_include_directive : enable\n";
-			preamble.insert(preamble.end(), ext.begin(), ext.end());
+		nonstd::string_view ext = "#extension GL_GOOGLE_include_directive : enable\n";
+		preamble.insert(preamble.end(), ext.begin(), ext.end());
 
-			if (!macros.impl.empty()) {
-				assert(std::is_sorted(macros.impl.begin(), macros.impl.end()));
+		if (!macros.impl.empty()) {
+			assert(std::is_sorted(macros.impl.begin(), macros.impl.end()));
 
-				nonstd::string_view define = "#define ";
-				for (const auto &macro : macros.impl) {
-					preamble.insert(preamble.end(), define.begin(), define.end());
-					preamble.insert(preamble.end(), macro.key.begin(), macro.key.end());
-					if (!macro.value.empty()) {
-						preamble.push_back(' ');
-						preamble.insert(preamble.end(), macro.value.begin(), macro.value.end());
-					}
-					preamble.push_back('\n');
+			nonstd::string_view define = "#define ";
+			for (const auto &macro : macros.impl) {
+				preamble.insert(preamble.end(), define.begin(), define.end());
+				preamble.insert(preamble.end(), macro.key.begin(), macro.key.end());
+				if (!macro.value.empty()) {
+					preamble.push_back(' ');
+					preamble.insert(preamble.end(), macro.value.begin(), macro.value.end());
 				}
+				preamble.push_back('\n');
 			}
+		}
 
-			preamble.push_back('\0');
-			LOG("shader preamble: \"\n{}\"\n", preamble.data());
+		preamble.push_back('\0');
+		LOG("shader preamble: \"\n{}\"\n", preamble.data());
 
 		EShLanguage language;
 		switch (stage_) {
