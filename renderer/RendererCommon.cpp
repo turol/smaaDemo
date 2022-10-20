@@ -40,7 +40,6 @@ THE SOFTWARE.
 
 #include <xxhash.h>
 
-#include <glslang/Public/ShaderLang.h>
 #include <glslang/StandAlone/ResourceLimits.h>
 #include <glslang/SPIRV/SpvTools.h>
 #include <SPIRV/GlslangToSpv.h>
@@ -323,53 +322,6 @@ bool PipelineDesc::operator==(const PipelineDesc &other) const {
 
 	return true;
 }
-
-
-class Includer final : public glslang::TShader::Includer {
-	HashMap<std::string, std::vector<char> > &cache;
-
-public:
-
-	IncludeResult *includeSystem(const char *headerName, const char *includerName, size_t inclusionDepth) override {
-		return includeLocal(headerName, includerName, inclusionDepth);
-	}
-
-	IncludeResult *includeLocal(const char *headerName, const char * /* includerName */, size_t /* inclusionDepth */) override {
-		std::string filename(headerName);
-
-		// HashMap<std::string, std::vector<char> >::iterator it = cache.find(filename);
-		auto it = cache.find(filename);
-		if (it == cache.end()) {
-			auto contents = readFile(headerName);
-			bool inserted = false;
-			std::tie(it, inserted) = cache.emplace(std::move(filename), std::move(contents));
-			// since we just checked it's not there this must succeed
-			assert(inserted);
-		}
-
-		return new IncludeResult(filename, it->second.data(), it->second.size(), nullptr);
-	}
-
-	void releaseInclude(IncludeResult *data) override {
-		assert(data);
-		// no need to delete any of data's contents, they're owned by someone else
-
-		delete data;
-	}
-
-	explicit Includer(HashMap<std::string, std::vector<char> > &cache_)
-	: cache(cache_)
-	{
-	}
-
-	Includer(const Includer &)                = delete;
-	Includer &operator=(const Includer &)     = delete;
-
-	Includer(Includer &&) noexcept            = delete;
-	Includer &operator=(Includer &&) noexcept = delete;
-
-	~Includer() {}
-};
 
 
 RendererBase::RendererBase(const RendererDesc &desc)
