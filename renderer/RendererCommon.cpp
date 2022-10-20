@@ -345,6 +345,7 @@ RendererBase::RendererBase(const RendererDesc &desc)
 , ringBufSize(0)
 , ringBufPtr(0)
 , lastSyncedRingBufPtr(0)
+, includer(includeCache)
 #ifndef NDEBUG
 , inFrame(false)
 , inRenderPass(false)
@@ -727,7 +728,6 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 		LOG_TODO("move to RendererBase?");
 		TBuiltInResource resource(glslang::DefaultTBuiltInResource);
-		Includer includer(includeCache);
 
 		// compile
 		bool success = shader.parse(&resource, 450, ECoreProfile, false, false, EShMsgDefault, includer);
