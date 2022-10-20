@@ -248,6 +248,7 @@ struct RendererBase {
 	unsigned int                                         lastSyncedRingBufPtr;
 
 	HashMap<std::string, std::vector<char> >             shaderSources;
+	HashMap<std::string, std::vector<char> >             includeCache;
 
 #ifndef NDEBUG
 	// debugging
@@ -267,7 +268,7 @@ struct RendererBase {
 
 	bool loadCachedSPV(const std::string &name, const std::string &shaderName, ShaderStage stage, std::vector<uint32_t> &spirv);
 
-	void addCachedSPV(const std::string &shaderName, ShaderStage stage, const std::vector<uint32_t> &spirv, const HashMap<std::string, std::vector<char> > &includeCache);
+	void addCachedSPV(const std::string &shaderName, ShaderStage stage, const std::vector<uint32_t> &spirv);
 
 	std::vector<uint32_t> compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderStage stage);
 

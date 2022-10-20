@@ -653,7 +653,7 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 }
 
 
-void RendererBase::addCachedSPV(const std::string &shaderName, ShaderStage stage, const std::vector<uint32_t> &spirv, const HashMap<std::string, std::vector<char> > &includeCache) {
+void RendererBase::addCachedSPV(const std::string &shaderName, ShaderStage stage, const std::vector<uint32_t> &spirv) {
 	CacheData cacheData;
 	cacheData.version     = shaderVersion;
 	cacheData.hash        = XXH64(spirv.data(), spirv.size() * 4, 0);
@@ -716,9 +716,6 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	} else {
 		validate = [] (const std::vector<uint32_t> &) { return true; };
 	}
-
-	LOG_TODO("cache includes globally");
-	HashMap<std::string, std::vector<char> > includeCache;
 
 	{
 		auto src = loadSource(name);
@@ -871,7 +868,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	}
 
 	if (!skipShaderCache) {
-		addCachedSPV(shaderName, stage_, spirv, includeCache);
+		addCachedSPV(shaderName, stage_, spirv);
 	}
 
 	return spirv;
