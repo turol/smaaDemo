@@ -46,9 +46,6 @@ THE SOFTWARE.
 #include <SPIRV/GlslangToSpv.h>
 
 
-using namespace glslang;
-
-
 namespace renderer {
 
 
@@ -328,16 +325,16 @@ bool PipelineDesc::operator==(const PipelineDesc &other) const {
 }
 
 
-class Includer final : public TShader::Includer {
+class Includer final : public glslang::TShader::Includer {
 	HashMap<std::string, std::vector<char> > &cache;
 
 public:
 
-	IncludeResult* includeSystem(const char *headerName, const char *includerName, size_t inclusionDepth) override {
+	IncludeResult *includeSystem(const char *headerName, const char *includerName, size_t inclusionDepth) override {
 		return includeLocal(headerName, includerName, inclusionDepth);
 	}
 
-	IncludeResult* includeLocal(const char *headerName, const char * /* includerName */, size_t /* inclusionDepth */) override {
+	IncludeResult *includeLocal(const char *headerName, const char * /* includerName */, size_t /* inclusionDepth */) override {
 		std::string filename(headerName);
 
 		// HashMap<std::string, std::vector<char> >::iterator it = cache.find(filename);
@@ -408,7 +405,7 @@ RendererBase::RendererBase(const RendererDesc &desc)
 	spirvCacheDir = prefPath;
 	SDL_free(prefPath);
 
-	bool success = InitializeProcess();
+	bool success = glslang::InitializeProcess();
 	if (!success) {
 		THROW_ERROR("glslang initialization failed");
 	}
@@ -416,7 +413,7 @@ RendererBase::RendererBase(const RendererDesc &desc)
 
 
 RendererBase::~RendererBase() {
-	FinalizeProcess();
+	glslang::FinalizeProcess();
 }
 
 
@@ -764,7 +761,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 		}
 
-		TShader shader(language);
+		glslang::TShader shader(language);
 
 		char *sourceString   = src.data();
 		int sourceLen        = int(src.size());
@@ -772,12 +769,12 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 		shader.setPreamble(preamble.data());
 		shader.setStringsWithLengthsAndNames(&sourceString, &sourceLen, &filename, 1);
-		shader.setEnvInput(EShSourceGlsl, language, EShClientVulkan, 450);
-		shader.setEnvClient(EShClientVulkan, EShTargetVulkan_1_0);
-		shader.setEnvTarget(EShTargetSpv, EShTargetSpv_1_0);
+		shader.setEnvInput(glslang::EShSourceGlsl, language, glslang::EShClientVulkan, 450);
+		shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_0);
+		shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
 
 		LOG_TODO("move to RendererBase?");
-		TBuiltInResource resource(DefaultTBuiltInResource);
+		TBuiltInResource resource(glslang::DefaultTBuiltInResource);
 		Includer includer(includeCache);
 
 		// compile
@@ -793,7 +790,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		}
 
 		// link
-		TProgram program;
+		glslang::TProgram program;
 		program.addShader(&shader);
 		success = program.link(EShMsgDefault);
 
