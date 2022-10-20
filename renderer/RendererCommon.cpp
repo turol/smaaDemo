@@ -726,11 +726,8 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_0);
 		shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
 
-		LOG_TODO("move to RendererBase?");
-		TBuiltInResource resource(glslang::DefaultTBuiltInResource);
-
 		// compile
-		bool success = shader.parse(&resource, 450, ECoreProfile, false, false, EShMsgDefault, includer);
+		bool success = shader.parse(&glslang::DefaultTBuiltInResource, 450, ECoreProfile, false, false, EShMsgDefault, includer);
 
 		const char *infoLog = shader.getInfoLog();
 		if (infoLog != nullptr && infoLog[0] != '\0') {
