@@ -218,51 +218,51 @@ struct FrameBase {
 
 
 struct RendererBase {
-class Includer final : public glslang::TShader::Includer {
-	HashMap<std::string, std::vector<char> > &cache;
+	class Includer final : public glslang::TShader::Includer {
+		HashMap<std::string, std::vector<char> > &cache;
 
-public:
+	public:
 
-	IncludeResult *includeSystem(const char *headerName, const char *includerName, size_t inclusionDepth) override {
-		return includeLocal(headerName, includerName, inclusionDepth);
-	}
-
-	IncludeResult *includeLocal(const char *headerName, const char * /* includerName */, size_t /* inclusionDepth */) override {
-		std::string filename(headerName);
-
-		// HashMap<std::string, std::vector<char> >::iterator it = cache.find(filename);
-		auto it = cache.find(filename);
-		if (it == cache.end()) {
-			auto contents = readFile(headerName);
-			bool inserted = false;
-			std::tie(it, inserted) = cache.emplace(std::move(filename), std::move(contents));
-			// since we just checked it's not there this must succeed
-			assert(inserted);
+		IncludeResult *includeSystem(const char *headerName, const char *includerName, size_t inclusionDepth) override {
+			return includeLocal(headerName, includerName, inclusionDepth);
 		}
 
-		return new IncludeResult(filename, it->second.data(), it->second.size(), nullptr);
-	}
+		IncludeResult *includeLocal(const char *headerName, const char * /* includerName */, size_t /* inclusionDepth */) override {
+			std::string filename(headerName);
 
-	void releaseInclude(IncludeResult *data) override {
-		assert(data);
-		// no need to delete any of data's contents, they're owned by someone else
+			// HashMap<std::string, std::vector<char> >::iterator it = cache.find(filename);
+			auto it = cache.find(filename);
+			if (it == cache.end()) {
+				auto contents = readFile(headerName);
+				bool inserted = false;
+				std::tie(it, inserted) = cache.emplace(std::move(filename), std::move(contents));
+				// since we just checked it's not there this must succeed
+				assert(inserted);
+			}
 
-		delete data;
-	}
+			return new IncludeResult(filename, it->second.data(), it->second.size(), nullptr);
+		}
 
-	explicit Includer(HashMap<std::string, std::vector<char> > &cache_)
-	: cache(cache_)
-	{
-	}
+		void releaseInclude(IncludeResult *data) override {
+			assert(data);
+			// no need to delete any of data's contents, they're owned by someone else
 
-	Includer(const Includer &)                = delete;
-	Includer &operator=(const Includer &)     = delete;
+			delete data;
+		}
 
-	Includer(Includer &&) noexcept            = delete;
-	Includer &operator=(Includer &&) noexcept = delete;
+		explicit Includer(HashMap<std::string, std::vector<char> > &cache_)
+		: cache(cache_)
+		{
+		}
 
-	~Includer() {}
-};
+		Includer(const Includer &)                = delete;
+		Includer &operator=(const Includer &)     = delete;
+
+		Includer(Includer &&) noexcept            = delete;
+		Includer &operator=(Includer &&) noexcept = delete;
+
+		~Includer() {}
+	};
 
 
 	SwapchainDesc                                        swapchainDesc;
