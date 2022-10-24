@@ -345,7 +345,7 @@ RendererBase::RendererBase(const RendererDesc &desc)
 , ringBufSize(0)
 , ringBufPtr(0)
 , lastSyncedRingBufPtr(0)
-, includer(includeCache)
+, includer(this)
 #ifndef NDEBUG
 , inFrame(false)
 , inRenderPass(false)
@@ -919,6 +919,23 @@ unsigned int RendererImpl::ringBufferAllocate(unsigned int size, unsigned int al
 
 bool Renderer::isSwapchainDirty() const {
 	return impl->swapchainDirty;
+}
+
+
+glslang::TShader::Includer::IncludeResult *RendererBase::handleInclude(const char *headerName, const char * /* includerName */, size_t /* inclusionDepth */) {
+	std::string filename(headerName);
+
+	// HashMap<std::string, std::vector<char> >::iterator it = cache.find(filename);
+	auto it = includeCache.find(filename);
+	if (it == includeCache.end()) {
+		auto contents = readFile(headerName);
+		bool inserted = false;
+		std::tie(it, inserted) = includeCache.emplace(std::move(filename), std::move(contents));
+		// since we just checked it's not there this must succeed
+		assert(inserted);
+	}
+
+	return new glslang::TShader::Includer::IncludeResult(filename, it->second.data(), it->second.size(), nullptr);
 }
 
 

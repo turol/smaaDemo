@@ -219,28 +219,17 @@ struct FrameBase {
 
 struct RendererBase {
 	class Includer final : public glslang::TShader::Includer {
-		HashMap<std::string, std::vector<char> > &cache;
+		// not owned
+		RendererBase *renderer;
 
 	public:
 
 		IncludeResult *includeSystem(const char *headerName, const char *includerName, size_t inclusionDepth) override {
-			return includeLocal(headerName, includerName, inclusionDepth);
+			return renderer->handleInclude(headerName, includerName, inclusionDepth);
 		}
 
-		IncludeResult *includeLocal(const char *headerName, const char * /* includerName */, size_t /* inclusionDepth */) override {
-			std::string filename(headerName);
-
-			// HashMap<std::string, std::vector<char> >::iterator it = cache.find(filename);
-			auto it = cache.find(filename);
-			if (it == cache.end()) {
-				auto contents = readFile(headerName);
-				bool inserted = false;
-				std::tie(it, inserted) = cache.emplace(std::move(filename), std::move(contents));
-				// since we just checked it's not there this must succeed
-				assert(inserted);
-			}
-
-			return new IncludeResult(filename, it->second.data(), it->second.size(), nullptr);
+		IncludeResult *includeLocal(const char *headerName, const char *includerName, size_t inclusionDepth) override {
+			return renderer->handleInclude(headerName, includerName, inclusionDepth);
 		}
 
 		void releaseInclude(IncludeResult *data) override {
@@ -250,8 +239,8 @@ struct RendererBase {
 			delete data;
 		}
 
-		explicit Includer(HashMap<std::string, std::vector<char> > &cache_)
-		: cache(cache_)
+		explicit Includer(RendererBase *renderer_)
+		: renderer(renderer_)
 		{
 		}
 
@@ -325,6 +314,8 @@ struct RendererBase {
 	std::vector<uint32_t> compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderStage stage);
 
 	explicit RendererBase(const RendererDesc &desc);
+
+	glslang::TShader::Includer::IncludeResult *handleInclude(const char *headerName, const char *includerName, size_t inclusionDepth);
 
 
 	RendererBase(const RendererBase &)            = delete;
