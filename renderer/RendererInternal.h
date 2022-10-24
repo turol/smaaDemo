@@ -217,6 +217,7 @@ struct FrameBase {
 };
 
 
+struct RendererBase {
 class Includer final : public glslang::TShader::Includer {
 	HashMap<std::string, std::vector<char> > &cache;
 
@@ -264,7 +265,6 @@ public:
 };
 
 
-struct RendererBase {
 	SwapchainDesc                                        swapchainDesc;
 	SwapchainDesc                                        wantedSwapchain;
 	bool                                                 swapchainDirty;
