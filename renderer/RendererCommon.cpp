@@ -922,7 +922,9 @@ bool Renderer::isSwapchainDirty() const {
 }
 
 
-glslang::TShader::Includer::IncludeResult *RendererBase::handleInclude(const char *headerName, const char * /* includerName */, size_t /* inclusionDepth */) {
+glslang::TShader::Includer::IncludeResult *RendererBase::handleInclude(const char *headerName, const char *includerName, size_t inclusionDepth) {
+	LOG("\"{}\" includes \"{}\" at depth {}", includerName, headerName, inclusionDepth);
+
 	std::string filename(headerName);
 
 	// HashMap<std::string, std::vector<char> >::iterator it = cache.find(filename);
