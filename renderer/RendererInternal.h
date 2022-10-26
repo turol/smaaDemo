@@ -218,11 +218,10 @@ struct FrameBase {
 
 
 struct RendererBase {
-	class Includer final : public glslang::TShader::Includer {
+	struct Includer final : public glslang::TShader::Includer {
 		// not owned
 		RendererBase *renderer;
 
-	public:
 
 		IncludeResult *includeSystem(const char *headerName, const char *includerName, size_t inclusionDepth) override {
 			return renderer->handleInclude(headerName, includerName, inclusionDepth);
