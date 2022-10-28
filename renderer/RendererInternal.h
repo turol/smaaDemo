@@ -220,7 +220,7 @@ struct FrameBase {
 struct RendererBase {
 	struct Includer final : public glslang::TShader::Includer {
 		// not owned
-		RendererBase *renderer;
+		RendererBase         *renderer;
 		HashSet<std::string> included;
 
 
