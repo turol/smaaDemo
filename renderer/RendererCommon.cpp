@@ -933,7 +933,7 @@ bool Renderer::isSwapchainDirty() const {
 }
 
 
-glslang::TShader::Includer::IncludeResult *RendererBase::handleInclude(const char *headerName, const char *includerName, size_t inclusionDepth) {
+glslang::TShader::Includer::IncludeResult *RendererBase::handleInclude(Includer & /* includer */, const char *headerName, const char *includerName, size_t inclusionDepth) {
 	assert(headerName   != nullptr);
 	assert(includerName != nullptr);
 

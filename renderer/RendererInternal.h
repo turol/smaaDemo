@@ -224,11 +224,11 @@ struct RendererBase {
 
 
 		IncludeResult *includeSystem(const char *headerName, const char *includerName, size_t inclusionDepth) override {
-			return renderer->handleInclude(headerName, includerName, inclusionDepth);
+			return renderer->handleInclude(*this, headerName, includerName, inclusionDepth);
 		}
 
 		IncludeResult *includeLocal(const char *headerName, const char *includerName, size_t inclusionDepth) override {
-			return renderer->handleInclude(headerName, includerName, inclusionDepth);
+			return renderer->handleInclude(*this, headerName, includerName, inclusionDepth);
 		}
 
 		void releaseInclude(IncludeResult *data) override {
@@ -312,7 +312,7 @@ struct RendererBase {
 
 	explicit RendererBase(const RendererDesc &desc);
 
-	glslang::TShader::Includer::IncludeResult *handleInclude(const char *headerName, const char *includerName, size_t inclusionDepth);
+	glslang::TShader::Includer::IncludeResult *handleInclude(Includer &includer, const char *headerName, const char *includerName, size_t inclusionDepth);
 
 
 	RendererBase(const RendererBase &)            = delete;
