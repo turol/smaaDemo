@@ -612,15 +612,15 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 }
 
 
-void RendererBase::addCachedSPV(const std::string &shaderName, ShaderStage stage, const std::vector<uint32_t> &spirv) {
+void RendererBase::addCachedSPV(Includer &includer, const std::string &shaderName, ShaderStage stage, const std::vector<uint32_t> &spirv) {
 	CacheData cacheData;
 	cacheData.version     = shaderVersion;
 	cacheData.hash        = XXH64(spirv.data(), spirv.size() * 4, 0);
 	std::string spvName   = makeSPVCacheName(cacheData.hash, stage);
 	LOG("Writing shader \"{}\" to \"{}\"", shaderName, spvName);
-	cacheData.dependencies.reserve(includeCache.size());
-	for (const auto &p : includeCache) {
-		cacheData.dependencies.push_back(p.first);
+	cacheData.dependencies.reserve(includer.included.size());
+	for (const auto &include : includer.included) {
+		cacheData.dependencies.push_back(include);
 	}
 	std::string cacheStr = cacheData.serialize();
 
@@ -822,7 +822,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	}
 
 	if (!skipShaderCache) {
-		addCachedSPV(shaderName, stage_, spirv);
+		addCachedSPV(includer, shaderName, stage_, spirv);
 	}
 
 	return spirv;
@@ -933,13 +933,14 @@ bool Renderer::isSwapchainDirty() const {
 }
 
 
-glslang::TShader::Includer::IncludeResult *RendererBase::handleInclude(Includer & /* includer */, const char *headerName, const char *includerName, size_t inclusionDepth) {
+glslang::TShader::Includer::IncludeResult *RendererBase::handleInclude(Includer &includer, const char *headerName, const char *includerName, size_t inclusionDepth) {
 	assert(headerName   != nullptr);
 	assert(includerName != nullptr);
 
 	LOG("\"{}\" includes \"{}\" at depth {}", includerName, headerName, inclusionDepth);
 
 	std::string filename(headerName);
+	includer.included.insert(filename);
 
 	// HashMap<std::string, std::vector<char> >::iterator it = cache.find(filename);
 	auto it = includeCache.find(filename);
