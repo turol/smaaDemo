@@ -933,6 +933,9 @@ bool Renderer::isSwapchainDirty() const {
 
 
 glslang::TShader::Includer::IncludeResult *RendererBase::handleInclude(const char *headerName, const char *includerName, size_t inclusionDepth) {
+	assert(headerName   != nullptr);
+	assert(includerName != nullptr);
+
 	LOG("\"{}\" includes \"{}\" at depth {}", includerName, headerName, inclusionDepth);
 
 	std::string filename(headerName);
