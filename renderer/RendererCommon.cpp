@@ -387,6 +387,16 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 const unsigned int shaderVersion = 100;
 
 
+void to_json(nlohmann::json &j, const ShaderStage &stage) {
+	j = stage._to_string();
+}
+
+
+void from_json(const nlohmann::json &j, ShaderStage &key) {
+	key = ShaderStage::_from_string(j.get<std::string>().c_str());
+}
+
+
 CacheData CacheData::parse(const std::vector<char> &cacheStr_) {
 	CacheData cacheData;
 
