@@ -292,7 +292,6 @@ struct RendererBase {
 	unsigned int                                         lastSyncedRingBufPtr;
 
 	HashMap<std::string, ShaderFileData>                 shaderSources;
-	HashMap<std::string, std::vector<char> >             includeCache;
 
 
 #ifndef NDEBUG

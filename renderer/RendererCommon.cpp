@@ -948,17 +948,19 @@ glslang::TShader::Includer::IncludeResult *RendererBase::handleInclude(Includer 
 	std::string filename(headerName);
 	includer.included.insert(filename);
 
-	// HashMap<std::string, std::vector<char> >::iterator it = cache.find(filename);
-	auto it = includeCache.find(filename);
-	if (it == includeCache.end()) {
-		auto contents = readFile(headerName);
+	auto it = shaderSources.find(filename);
+	if (it == shaderSources.end()) {
+		ShaderFileData d;
+		d.contents  = readFile(filename);
+		d.timestamp = getFileTimestamp(filename);
+
 		bool inserted = false;
-		std::tie(it, inserted) = includeCache.emplace(std::move(filename), std::move(contents));
+		std::tie(it, inserted) = shaderSources.emplace(filename, std::move(d));
 		// since we just checked it's not there this must succeed
 		assert(inserted);
 	}
 
-	return new glslang::TShader::Includer::IncludeResult(filename, it->second.data(), it->second.size(), nullptr);
+	return new glslang::TShader::Includer::IncludeResult(filename, it->second.contents.data(), it->second.contents.size(), nullptr);
 }
 
 
