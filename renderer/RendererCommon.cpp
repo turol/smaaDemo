@@ -372,11 +372,17 @@ RendererBase::~RendererBase() {
 std::vector<char> RendererBase::loadSource(const std::string &name) {
 	auto it = shaderSources.find(name);
 	if (it != shaderSources.end()) {
-		return it->second;
+		return it->second.contents;
 	} else {
-		auto source = readFile(name);
-		shaderSources.emplace(name, source);
-		return source;
+		ShaderFileData d;
+		d.contents  = readFile(name);
+		d.timestamp = getFileTimestamp(name);
+
+		bool inserted = false;
+		std::tie(it, inserted) = shaderSources.emplace(name, std::move(d));
+		assert(inserted);
+
+		return it->second.contents;
 	}
 }
 

@@ -291,7 +291,7 @@ struct RendererBase {
 	// we have synced with the GPU up to this ringbuffer index
 	unsigned int                                         lastSyncedRingBufPtr;
 
-	HashMap<std::string, std::vector<char> >             shaderSources;
+	HashMap<std::string, ShaderFileData>                 shaderSources;
 	HashMap<std::string, std::vector<char> >             includeCache;
 
 
