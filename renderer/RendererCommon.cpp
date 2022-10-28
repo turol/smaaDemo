@@ -345,7 +345,6 @@ RendererBase::RendererBase(const RendererDesc &desc)
 , ringBufSize(0)
 , ringBufPtr(0)
 , lastSyncedRingBufPtr(0)
-, includer(this)
 #ifndef NDEBUG
 , inFrame(false)
 , inRenderPass(false)
@@ -675,6 +674,8 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	} else {
 		validate = [] (const std::vector<uint32_t> &) { return true; };
 	}
+
+	Includer includer(this);
 
 	{
 		auto src = loadSource(name);

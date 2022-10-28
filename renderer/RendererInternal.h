@@ -287,8 +287,6 @@ struct RendererBase {
 	HashMap<std::string, std::vector<char> >             shaderSources;
 	HashMap<std::string, std::vector<char> >             includeCache;
 
-	Includer                                             includer;
-
 
 #ifndef NDEBUG
 	// debugging
