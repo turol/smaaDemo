@@ -173,6 +173,12 @@ using FragmentShaderHandle = Handle<FragmentShader>;
 using VertexShaderHandle   = Handle<VertexShader>;
 
 
+struct ShaderFileData {
+	int64_t            timestamp;
+	std::vector<char>  contents;
+};
+
+
 struct CacheData {
 	unsigned int              version;
 	uint64_t                  hash;
