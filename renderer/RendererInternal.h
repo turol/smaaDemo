@@ -223,6 +223,33 @@ struct FrameBase {
 };
 
 
+}  // namespace renderer
+
+
+namespace std {
+
+
+	template <> struct hash<renderer::ShaderMacro> {
+		size_t operator()(const renderer::ShaderMacro &m) const {
+			size_t h = 0;
+			h = combineHashes(h, std::hash<std::string>()(m.key));
+			h = combineHashes(h, std::hash<std::string>()(m.value));
+			return h;
+		}
+	};
+
+
+	template <> struct hash<renderer::ShaderMacros> {
+		size_t operator()(const renderer::ShaderMacros &macros) const;
+	};
+
+
+} // namespace std
+
+
+namespace renderer {
+
+
 struct RendererBase {
 	struct Includer final : public glslang::TShader::Includer {
 		// not owned
@@ -328,6 +355,10 @@ struct RendererBase {
 	RendererBase &operator=(RendererBase &&) noexcept = delete;
 
 	~RendererBase();
+
+	static size_t hashMacros(const ShaderMacros &macros) {
+		return hashRange(macros.impl.begin(), macros.impl.end());
+	}
 };
 
 
