@@ -499,6 +499,40 @@ bool RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 }
 
 
+void to_json(nlohmann::json &j, const ShaderMacros &macros) {
+	// hax because impl is private
+	RendererBase::to_json(j, macros);
+}
+
+
+void RendererBase::to_json(nlohmann::json &j, const ShaderMacros &macros) {
+	j = nlohmann::json();
+
+	for (const ShaderMacro &macro : macros.impl) {
+		j[macro.key] = macro.value;
+	}
+}
+
+
+void from_json(const nlohmann::json &j, ShaderMacros &macros) {
+	// hax because impl is private
+	RendererBase::from_json(j, macros);
+}
+
+
+void RendererBase::from_json(const nlohmann::json &j, ShaderMacros &macros) {
+	macros.impl.reserve(j.size());
+	for (const auto &jsonMacro : j.items()) {
+		ShaderMacro macro;
+		macro.key   = jsonMacro.key();
+		macro.value = jsonMacro.value();
+		macros.impl.emplace_back(std::move(macro));
+	}
+
+	std::sort(macros.impl.begin(), macros.impl.end());
+}
+
+
 static void logSpvMessage(spv_message_level_t level_, const char *source, const spv_position_t &position, const char *message) {
 	const char *level;
 	switch (level_) {

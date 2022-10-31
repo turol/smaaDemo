@@ -30,6 +30,8 @@ THE SOFTWARE.
 
 #include <glslang/Public/ShaderLang.h>
 
+#include <nlohmann/json.hpp>
+
 
 namespace renderer {
 
@@ -359,6 +361,10 @@ struct RendererBase {
 	static size_t hashMacros(const ShaderMacros &macros) {
 		return hashRange(macros.impl.begin(), macros.impl.end());
 	}
+
+	static void to_json(nlohmann::json &j, const ShaderMacros &macros);
+
+	static void from_json(const nlohmann::json &j, ShaderMacros &macros);
 };
 
 
