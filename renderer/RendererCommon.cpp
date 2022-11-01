@@ -405,7 +405,7 @@ void from_json(const nlohmann::json &j, ShaderStage &key) {
 struct CacheData {
 	unsigned int              version;
 	uint64_t                  hash;
-	std::vector<std::string>  dependencies;
+	HashSet<std::string>      dependencies;
 
 
 	CacheData()
@@ -441,7 +441,7 @@ CacheData CacheData::parse(const std::vector<char> &cacheStr_) {
 		}
 		cacheData.hash         = std::stoull(j["hash"].get<std::string>(), nullptr, 16);
 		for (auto &dep : j["dependencies"]) {
-			cacheData.dependencies.push_back(dep);
+			cacheData.dependencies.emplace(dep.get<std::string>());
 		}
 
 	} catch (std::exception &e) {
@@ -684,10 +684,8 @@ void RendererBase::addCachedSPV(Includer &includer, const std::string &shaderNam
 	cacheData.hash        = XXH64(spirv.data(), spirv.size() * 4, 0);
 	std::string spvName   = makeSPVCacheName(cacheData.hash, stage);
 	LOG("Writing shader \"{}\" to \"{}\"", shaderName, spvName);
-	cacheData.dependencies.reserve(includer.included.size());
-	for (const auto &include : includer.included) {
-		cacheData.dependencies.push_back(include);
-	}
+	cacheData.dependencies = includer.included;
+
 	std::string cacheStr = cacheData.serialize();
 
 	std::string cacheName = spirvCacheDir + shaderName + ".cache";
