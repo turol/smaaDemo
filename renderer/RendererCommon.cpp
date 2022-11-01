@@ -473,6 +473,7 @@ bool RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 
 	std::string spvName   = makeSPVCacheName(cacheData.hash, stage);
 	if (!fileExists(spvName)) {
+		LOG("SPIR-V file {} not found", spvName);
 		return false;
 	}
 
