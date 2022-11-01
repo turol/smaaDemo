@@ -442,13 +442,13 @@ CacheData CacheData::parse(const std::vector<char> &cacheStr_) {
 	try {
 		nlohmann::json j = nlohmann::json::parse(cacheStr_.begin(), cacheStr_.end());
 
-		cacheData.version     = j["version"].get<unsigned int>();
+		cacheData.version     = j.at("version").get<unsigned int>();
 		if (cacheData.version != shaderVersion) {
 			// version mismatch, don't try to continue parsing
 			return cacheData;
 		}
-		cacheData.hash         = std::stoull(j["hash"].get<std::string>(), nullptr, 16);
-		for (auto &dep : j["dependencies"]) {
+		cacheData.hash         = std::stoull(j.at("hash").get<std::string>(), nullptr, 16);
+		for (auto &dep : j.at("dependencies")) {
 			cacheData.dependencies.emplace(dep.get<std::string>());
 		}
 
