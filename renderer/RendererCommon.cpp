@@ -448,9 +448,7 @@ CacheData CacheData::parse(const std::vector<char> &cacheStr_) {
 			return cacheData;
 		}
 		cacheData.hash         = std::stoull(j.at("hash").get<std::string>(), nullptr, 16);
-		for (auto &dep : j.at("dependencies")) {
-			cacheData.dependencies.emplace(dep.get<std::string>());
-		}
+		cacheData.dependencies = j.at("dependencies").get<HashSet<std::string>>();
 
 	} catch (std::exception &e) {
 		LOG_ERROR("Exception while parsing shader cache data: \"{}\"", e.what());
