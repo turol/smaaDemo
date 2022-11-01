@@ -427,6 +427,15 @@ struct CacheData {
 };
 
 
+void to_json(nlohmann::json &j, const CacheData &cacheData) {
+	j = nlohmann::json {
+	      { "version",      cacheData.version }
+	    , { "hash",         fmt::format("{:08x}", cacheData.hash) }
+	    , { "dependencies", cacheData.dependencies }
+	};
+}
+
+
 CacheData CacheData::parse(const std::vector<char> &cacheStr_) {
 	CacheData cacheData;
 
@@ -458,11 +467,7 @@ CacheData CacheData::parse(const std::vector<char> &cacheStr_) {
 
 
 std::string CacheData::serialize() const {
-	nlohmann::json j {
-	      { "version",      version }
-	    , { "hash",         fmt::format("{:08x}", hash) }
-	    , { "dependencies", dependencies }
-	};
+	nlohmann::json j = *this;
 
 	return j.dump();
 }
