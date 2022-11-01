@@ -434,6 +434,14 @@ void to_json(nlohmann::json &j, const CacheData &cacheData) {
 }
 
 
+static const char *const shaderStages[] = { "vert", "frag" };
+
+
+std::string RendererBase::makeSPVCacheName(uint64_t hash, ShaderStage stage) {
+	return fmt::format("{}{:08x}.{}.spv", spirvCacheDir, hash, shaderStages[stage]);
+}
+
+
 CacheData CacheData::parse(const std::vector<char> &cacheStr_) {
 	CacheData cacheData;
 
@@ -459,14 +467,6 @@ CacheData CacheData::parse(const std::vector<char> &cacheStr_) {
 	}
 
 	return cacheData;
-}
-
-
-static const char *const shaderStages[] = { "vert", "frag" };
-
-
-std::string RendererBase::makeSPVCacheName(uint64_t hash, ShaderStage stage) {
-	return fmt::format("{}{:08x}.{}.spv", spirvCacheDir, hash, shaderStages[stage]);
 }
 
 
