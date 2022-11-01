@@ -550,7 +550,7 @@ void RendererBase::from_json(const nlohmann::json &j, ShaderMacros &macros) {
 	for (const auto &jsonMacro : j.items()) {
 		ShaderMacro macro;
 		macro.key   = jsonMacro.key();
-		macro.value = jsonMacro.value();
+		macro.value = jsonMacro.value().get<std::string>();
 		macros.impl.emplace_back(std::move(macro));
 	}
 
