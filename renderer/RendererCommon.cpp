@@ -420,8 +420,6 @@ struct CacheData {
 	CacheData &operator=(CacheData &&) noexcept = default;
 
 	~CacheData() {}
-
-	static CacheData parse(const std::vector<char> &cacheStr_);
 };
 
 
@@ -442,16 +440,22 @@ std::string RendererBase::makeSPVCacheName(uint64_t hash, ShaderStage stage) {
 }
 
 
-CacheData CacheData::parse(const std::vector<char> &cacheStr_) {
+bool RendererBase::loadCachedSPV(const std::string &name, const std::string &shaderName, ShaderStage stage, std::vector<uint32_t> &spirv) {
+	std::string cacheName = spirvCacheDir + shaderName + ".cache";
+	if (!fileExists(cacheName)) {
+		return false;
+	}
+
 	CacheData cacheData;
 
 	try {
+		std::vector<char> cacheStr_ = readFile(cacheName);
 		nlohmann::json j = nlohmann::json::parse(cacheStr_.begin(), cacheStr_.end());
 
 		cacheData.version     = j.at("version").get<unsigned int>();
 		if (cacheData.version != shaderVersion) {
 			// version mismatch, don't try to continue parsing
-			return cacheData;
+			return false;
 		}
 		cacheData.hash         = std::stoull(j.at("hash").get<std::string>(), nullptr, 16);
 		cacheData.dependencies = j.at("dependencies").get<HashSet<std::string>>();
@@ -459,24 +463,13 @@ CacheData CacheData::parse(const std::vector<char> &cacheStr_) {
 	} catch (std::exception &e) {
 		LOG_ERROR("Exception while parsing shader cache data: \"{}\"", e.what());
 		// parsing fails
-		cacheData.version = 0;
+		return false;
 	} catch (...) {
 		LOG_ERROR("Unknown exception while parsing shader cache data");
 		// parsing fails
-		cacheData.version = 0;
-	}
-
-	return cacheData;
-}
-
-
-bool RendererBase::loadCachedSPV(const std::string &name, const std::string &shaderName, ShaderStage stage, std::vector<uint32_t> &spirv) {
-	std::string cacheName = spirvCacheDir + shaderName + ".cache";
-	if (!fileExists(cacheName)) {
 		return false;
 	}
 
-	CacheData cacheData = CacheData::parse(readFile(cacheName));
 	if (cacheData.version != int(shaderVersion)) {
 		LOG("version mismatch, found {} when expected {}", cacheData.version, shaderVersion);
 		return false;
