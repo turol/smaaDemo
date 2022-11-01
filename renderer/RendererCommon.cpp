@@ -422,8 +422,6 @@ struct CacheData {
 	~CacheData() {}
 
 	static CacheData parse(const std::vector<char> &cacheStr_);
-
-	std::string serialize() const;
 };
 
 
@@ -461,13 +459,6 @@ CacheData CacheData::parse(const std::vector<char> &cacheStr_) {
 	}
 
 	return cacheData;
-}
-
-
-std::string CacheData::serialize() const {
-	nlohmann::json j = *this;
-
-	return j.dump();
 }
 
 
@@ -688,7 +679,8 @@ void RendererBase::addCachedSPV(Includer &includer, const std::string &shaderNam
 	LOG("Writing shader \"{}\" to \"{}\"", shaderName, spvName);
 	cacheData.dependencies = includer.included;
 
-	std::string cacheStr = cacheData.serialize();
+	nlohmann::json j = cacheData;
+	std::string cacheStr = j.dump();
 
 	std::string cacheName = spirvCacheDir + shaderName + ".cache";
 	writeFile(cacheName, cacheStr.c_str(), cacheStr.size());
