@@ -455,6 +455,7 @@ bool RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 		cacheData.version     = j.at("version").get<unsigned int>();
 		if (cacheData.version != shaderVersion) {
 			// version mismatch, don't try to continue parsing
+			LOG("version mismatch, found {} when expected {}", cacheData.version, shaderVersion);
 			return false;
 		}
 		cacheData.hash         = std::stoull(j.at("hash").get<std::string>(), nullptr, 16);
@@ -467,11 +468,6 @@ bool RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 	} catch (...) {
 		LOG_ERROR("Unknown exception while parsing shader cache data");
 		// parsing fails
-		return false;
-	}
-
-	if (cacheData.version != int(shaderVersion)) {
-		LOG("version mismatch, found {} when expected {}", cacheData.version, shaderVersion);
 		return false;
 	}
 
