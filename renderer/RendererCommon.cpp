@@ -44,6 +44,21 @@ THE SOFTWARE.
 #include <SPIRV/GlslangToSpv.h>
 
 
+namespace fmt {
+
+
+template <> struct formatter<renderer::ShaderMacros>: formatter<std::string> {
+	// parse is inherited from formatter<std::string>
+
+	template <typename FormatContext>
+	auto format(const renderer::ShaderMacros &macros, FormatContext &ctx) const {
+		return formatter<std::string>::format(renderer::RendererBase::formatMacros(macros), ctx);
+	}
+};
+
+
+} // namespace fmt
+
 namespace renderer {
 
 

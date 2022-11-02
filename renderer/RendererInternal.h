@@ -340,6 +340,26 @@ struct RendererBase {
 	static void to_json(nlohmann::json &j, const ShaderMacros &macros);
 
 	static void from_json(const nlohmann::json &j, ShaderMacros &macros);
+
+	static std::string formatMacros(const ShaderMacros &macros) {
+		std::string result;
+		bool first = true;
+
+		for (const ShaderMacro &macro : macros.impl) {
+			if (!first) {
+				result += " ";
+			}
+
+			result += macro.key;
+			if (!macro.value.empty()) {
+				result += "=" + macro.value;
+			}
+
+			first = false;
+		}
+
+		return result;
+	}
 };
 
 
