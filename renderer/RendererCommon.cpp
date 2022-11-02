@@ -432,6 +432,13 @@ void to_json(nlohmann::json &j, const CacheData &cacheData) {
 }
 
 
+void from_json(const nlohmann::json &j, CacheData &cacheData) {
+	cacheData.version      = j.at("version").get<unsigned int>();
+	cacheData.hash         = std::stoull(j.at("hash").get<std::string>(), nullptr, 16);
+	cacheData.dependencies = j.at("dependencies").get<HashSet<std::string>>();
+}
+
+
 static const char *const shaderStages[] = { "vert", "frag" };
 
 
@@ -450,17 +457,12 @@ bool RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 
 	try {
 		std::vector<char> cacheStr_ = readFile(cacheName);
-		nlohmann::json j = nlohmann::json::parse(cacheStr_.begin(), cacheStr_.end());
-
-		cacheData.version     = j.at("version").get<unsigned int>();
+		nlohmann::json::parse(cacheStr_.begin(), cacheStr_.end()).get_to(cacheData);
 		if (cacheData.version != shaderVersion) {
 			// version mismatch, don't try to continue parsing
 			LOG("version mismatch, found {} when expected {}", cacheData.version, shaderVersion);
 			return false;
 		}
-		cacheData.hash         = std::stoull(j.at("hash").get<std::string>(), nullptr, 16);
-		cacheData.dependencies = j.at("dependencies").get<HashSet<std::string>>();
-
 	} catch (std::exception &e) {
 		LOG_ERROR("Exception while parsing shader cache data: \"{}\"", e.what());
 		// parsing fails
