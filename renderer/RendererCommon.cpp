@@ -57,6 +57,16 @@ template <> struct formatter<renderer::ShaderMacros>: formatter<std::string> {
 };
 
 
+template <> struct formatter<renderer::ShaderStage>: formatter<std::string> {
+	// parse is inherited from formatter<std::string>
+
+	template <typename FormatContext>
+	auto format(renderer::ShaderStage stage, FormatContext &ctx) const {
+		return formatter<std::string>::format(stage._to_string(), ctx);
+	}
+};
+
+
 } // namespace fmt
 
 namespace renderer {
