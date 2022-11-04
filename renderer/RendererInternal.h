@@ -182,6 +182,29 @@ struct ShaderFileData {
 };
 
 
+struct ShaderCacheKey {
+	std::string   name;
+	ShaderStage   stage;
+	ShaderMacros  macros;
+
+	bool operator==(const ShaderCacheKey &other) const {
+		if (stage != other.stage) {
+			return false;
+		}
+
+		if (name != other.name) {
+			return false;
+		}
+
+		if (macros != other.macros) {
+			return false;
+		}
+
+		return true;
+	}
+};
+
+
 struct FrameBase {
 	uint32_t                  lastFrameNum;
 
