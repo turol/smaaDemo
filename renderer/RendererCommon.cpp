@@ -385,11 +385,21 @@ RendererBase::RendererBase(const RendererDesc &desc)
 	if (!success) {
 		THROW_ERROR("glslang initialization failed");
 	}
+
+	if (skipShaderCache) {
+		LOG("Shader cache loading skipped");
+	} else {
+		loadShaderCache();
+	}
 }
 
 
 RendererBase::~RendererBase() {
 	glslang::FinalizeProcess();
+
+	if (!skipShaderCache) {
+		saveShaderCache();
+	}
 }
 
 
@@ -1030,6 +1040,14 @@ glslang::TShader::Includer::IncludeResult *RendererBase::handleInclude(Includer 
 	}
 
 	return new glslang::TShader::Includer::IncludeResult(filename, it->second.contents.data(), it->second.contents.size(), nullptr);
+}
+
+
+void RendererBase::loadShaderCache() {
+}
+
+
+void RendererBase::saveShaderCache() {
 }
 
 

@@ -314,6 +314,10 @@ struct RendererBase {
 
 	std::string makeSPVCacheName(uint64_t hash, ShaderStage stage);
 
+	void loadShaderCache();
+
+	void saveShaderCache();
+
 	bool loadCachedSPV(const std::string &name, const std::string &shaderName, ShaderStage stage, std::vector<uint32_t> &spirv);
 
 	void addCachedSPV(Includer &includer, const std::string &shaderName, ShaderStage stage, const std::vector<uint32_t> &spirv);
