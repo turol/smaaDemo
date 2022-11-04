@@ -733,6 +733,11 @@ void RendererBase::addCachedSPV(Includer &includer, const std::string &shaderNam
 
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderStage stage_) {
 	// check spir-v cache first
+	ShaderCacheKey cacheKey;
+	cacheKey.name   = name;
+	cacheKey.stage  = stage_;
+	cacheKey.macros = macros;
+
 	std::string shaderName = name;
 
 	assert(std::is_sorted(macros.impl.begin(), macros.impl.end()));
@@ -746,10 +751,10 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 	std::vector<uint32_t> spirv;
 	if (!skipShaderCache) {
-		LOG("Looking for \"{}\" in cache...", shaderName);
+		LOG("Looking for shader \"{}\" in cache...", cacheKey);
 		bool found = loadCachedSPV(name, shaderName, stage_, spirv);
 		if (found) {
-			LOG("\"{}\" found in cache", shaderName);
+			LOG("Shader \"{}\" found in cache", cacheKey);
 
 			LOG_TODO("only in debug");
 			// need to move debug flag to base class
@@ -759,7 +764,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 			return spirv;
 		} else {
-			LOG("\"{}\" not found in cache", shaderName);
+			LOG("Shader \"{}\" not found in cache", cacheKey);
 		}
 	}
 
@@ -876,7 +881,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		glslang::GlslangToSpv(*program.getIntermediate(language), spirv, &logger, &spvOptions);
 
 		if (!validate(spirv)) {
-			THROW_ERROR("SPIR-V for shader \"{}\" is not valid after compilation", shaderName);
+			THROW_ERROR("SPIR-V for shader \"{}\" is not valid after compilation", cacheKey);
 		}
 	}
 
@@ -906,7 +911,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		}
 
 		if (!validate(optimized)) {
-			THROW_ERROR("SPIR-V for shader \"{}\" is not valid after optimization", shaderName);
+			THROW_ERROR("SPIR-V for shader \"{}\" is not valid after optimization", cacheKey);
 		}
 
 		// glslang SPV remapper
@@ -915,7 +920,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			remapper.remap(optimized);
 
 			if (!validate(optimized)) {
-				THROW_ERROR("SPIR-V for shader \"{}\" is not valid after remapping", shaderName);
+				THROW_ERROR("SPIR-V for shader \"{}\" is not valid after remapping", cacheKey);
 			}
 		}
 
