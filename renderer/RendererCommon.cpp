@@ -424,7 +424,7 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 	if (it != shaderSources.end()) {
 		return it->second.contents;
 	} else {
-		ShaderFileData d;
+		ShaderSourceData d;
 		d.contents  = readFile(name);
 		d.timestamp = getFileTimestamp(name);
 
@@ -1045,7 +1045,7 @@ glslang::TShader::Includer::IncludeResult *RendererBase::handleInclude(Includer 
 
 	auto it = shaderSources.find(filename);
 	if (it == shaderSources.end()) {
-		ShaderFileData d;
+		ShaderSourceData d;
 		d.contents  = readFile(filename);
 		d.timestamp = getFileTimestamp(filename);
 

@@ -176,7 +176,7 @@ using FragmentShaderHandle = Handle<FragmentShader>;
 using VertexShaderHandle   = Handle<VertexShader>;
 
 
-struct ShaderFileData {
+struct ShaderSourceData {
 	int64_t            timestamp;
 	std::vector<char>  contents;
 };
@@ -318,7 +318,7 @@ struct RendererBase {
 	// we have synced with the GPU up to this ringbuffer index
 	unsigned int                                         lastSyncedRingBufPtr;
 
-	HashMap<std::string, ShaderFileData>                 shaderSources;
+	HashMap<std::string, ShaderSourceData>               shaderSources;
 
 
 #ifndef NDEBUG
