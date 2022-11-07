@@ -498,36 +498,21 @@ std::string RendererBase::makeSPVCacheName(uint64_t hash, ShaderStage stage) {
 }
 
 
-bool RendererBase::loadCachedSPV(const std::string &name, const std::string &shaderName, ShaderStage stage, std::vector<uint32_t> &spirv) {
+void RendererBase::loadCachedSPV(const std::string &name, const std::string &shaderName, ShaderStage stage, std::vector<uint32_t> &spirv) {
 	std::string cacheName = spirvCacheDir + shaderName + ".cache";
-	if (!fileExists(cacheName)) {
-		return false;
-	}
 
 	CacheData cacheData;
 
-	try {
 		std::vector<char> cacheStr_ = readFile(cacheName);
 		nlohmann::json::parse(cacheStr_.begin(), cacheStr_.end()).get_to(cacheData);
 		if (cacheData.version != shaderVersion) {
 			// version mismatch, don't try to continue parsing
-			LOG("version mismatch, found {} when expected {}", cacheData.version, shaderVersion);
-			return false;
+			THROW_ERROR("version mismatch, found {} when expected {}", cacheData.version, shaderVersion);
 		}
-	} catch (std::exception &e) {
-		LOG_ERROR("Exception while parsing shader cache data: \"{}\"", e.what());
-		// parsing fails
-		return false;
-	} catch (...) {
-		LOG_ERROR("Unknown exception while parsing shader cache data");
-		// parsing fails
-		return false;
-	}
 
 	std::string spvName   = makeSPVCacheName(cacheData.hash, stage);
 	if (!fileExists(spvName)) {
-		LOG("SPIR-V file {} not found", spvName);
-		return false;
+		THROW_ERROR("SPIR-V file {} not found", spvName);
 	}
 
 	// check timestamp against source and header files
@@ -535,29 +520,24 @@ bool RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 	int64_t cacheTime  = getFileTimestamp(cacheName);
 
 	if (sourceTime > cacheTime) {
-		LOG("Shader \"{}\" source is newer than cache, recompiling", spvName);
-		return false;
+		THROW_ERROR("Shader \"{}\" source is newer than cache, recompiling", spvName);
 	}
 
 	for (const auto &filename : cacheData.dependencies) {
 		int64_t includeTime = getFileTimestamp(filename);
 		if (includeTime > cacheTime) {
-			LOG("Include \"{}\" is newer than cache, recompiling", filename);
-			return false;
+			THROW_ERROR("Include \"{}\" is newer than cache, recompiling", filename);
 		}
 	}
 
 	auto temp = readFile(spvName);
 	if (temp.size() % 4 != 0) {
-		LOG("Shader \"{}\" has incorrect size", spvName);
-		return false;
+		THROW_ERROR("Shader \"{}\" has incorrect size", spvName);
 	}
 
 	spirv.resize(temp.size() / 4);
 	memcpy(&spirv[0], &temp[0], temp.size());
 	LOG("Loaded shader \"{}\" from cache", spvName);
-
-	return true;
 }
 
 
@@ -735,8 +715,9 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	std::vector<uint32_t> spirv;
 	if (!skipShaderCache) {
 		LOG("Looking for shader \"{}\" in cache...", cacheKey);
-		bool found = loadCachedSPV(name, shaderName, stage, spirv);
-		if (found) {
+		try {
+			loadCachedSPV(name, shaderName, stage, spirv);
+
 			LOG("Shader \"{}\" found in cache", cacheKey);
 
 			LOG_TODO("only in debug");
@@ -746,7 +727,11 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			}
 
 			return spirv;
-		} else {
+		} catch (std::exception &e) {
+			LOG_ERROR("Exception while loading shader cache data: \"{}\"", e.what());
+			LOG("Shader \"{}\" not found in cache", cacheKey);
+		} catch (...) {
+			LOG_ERROR("Unknown exception while loading shader cache data");
 			LOG("Shader \"{}\" not found in cache", cacheKey);
 		}
 	}
