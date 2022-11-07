@@ -915,7 +915,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		cacheData.version     = shaderVersion;
 		cacheData.hash        = XXH64(spirv.data(), spirv.size() * 4, 0);
 		std::string spvName   = makeSPVCacheName(cacheData.hash, stage);
-		LOG("Writing shader \"{}\" to \"{}\"", shaderName, spvName);
+		LOG("Writing shader \"{}\" to \"{}\"", cacheKey, spvName);
 		cacheData.dependencies = includer.included;
 
 		nlohmann::json j = cacheData;
