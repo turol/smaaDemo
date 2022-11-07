@@ -714,23 +714,6 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 }
 
 
-void RendererBase::addCachedSPV(Includer &includer, const std::string &shaderName, ShaderStage stage, const std::vector<uint32_t> &spirv) {
-	CacheData cacheData;
-	cacheData.version     = shaderVersion;
-	cacheData.hash        = XXH64(spirv.data(), spirv.size() * 4, 0);
-	std::string spvName   = makeSPVCacheName(cacheData.hash, stage);
-	LOG("Writing shader \"{}\" to \"{}\"", shaderName, spvName);
-	cacheData.dependencies = includer.included;
-
-	nlohmann::json j = cacheData;
-	std::string cacheStr = j.dump();
-
-	std::string cacheName = spirvCacheDir + shaderName + ".cache";
-	writeFile(cacheName, cacheStr.c_str(), cacheStr.size());
-	writeFile(spvName, &spirv[0], spirv.size() * 4);
-}
-
-
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderStage stage) {
 	// check spir-v cache first
 	ShaderCacheKey cacheKey;
@@ -928,7 +911,19 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	}
 
 	if (!skipShaderCache) {
-		addCachedSPV(includer, shaderName, stage, spirv);
+		CacheData cacheData;
+		cacheData.version     = shaderVersion;
+		cacheData.hash        = XXH64(spirv.data(), spirv.size() * 4, 0);
+		std::string spvName   = makeSPVCacheName(cacheData.hash, stage);
+		LOG("Writing shader \"{}\" to \"{}\"", shaderName, spvName);
+		cacheData.dependencies = includer.included;
+
+		nlohmann::json j = cacheData;
+		std::string cacheStr = j.dump();
+
+		std::string cacheName = spirvCacheDir + shaderName + ".cache";
+		writeFile(cacheName, cacheStr.c_str(), cacheStr.size());
+		writeFile(spvName, &spirv[0], spirv.size() * 4);
 	}
 
 	return spirv;
