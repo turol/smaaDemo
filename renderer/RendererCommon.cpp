@@ -731,11 +731,11 @@ void RendererBase::addCachedSPV(Includer &includer, const std::string &shaderNam
 }
 
 
-std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderStage stage_) {
+std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderStage stage) {
 	// check spir-v cache first
 	ShaderCacheKey cacheKey;
 	cacheKey.name   = name;
-	cacheKey.stage  = stage_;
+	cacheKey.stage  = stage;
 	cacheKey.macros = macros;
 
 	std::string shaderName = name;
@@ -752,7 +752,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	std::vector<uint32_t> spirv;
 	if (!skipShaderCache) {
 		LOG("Looking for shader \"{}\" in cache...", cacheKey);
-		bool found = loadCachedSPV(name, shaderName, stage_, spirv);
+		bool found = loadCachedSPV(name, shaderName, stage, spirv);
 		if (found) {
 			LOG("Shader \"{}\" found in cache", cacheKey);
 
@@ -813,7 +813,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		LOG("shader preamble: \"\n{}\"\n", preamble.data());
 
 		EShLanguage language;
-		switch (stage_) {
+		switch (stage) {
 		case ShaderStage::Vertex:
 			language = EShLangVertex;
 			break;
@@ -928,7 +928,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	}
 
 	if (!skipShaderCache) {
-		addCachedSPV(includer, shaderName, stage_, spirv);
+		addCachedSPV(includer, shaderName, stage, spirv);
 	}
 
 	return spirv;
