@@ -503,12 +503,12 @@ void RendererBase::loadCachedSPV(const std::string &name, const std::string &sha
 
 	CacheData cacheData;
 
-		std::vector<char> cacheStr_ = readFile(cacheName);
-		nlohmann::json::parse(cacheStr_.begin(), cacheStr_.end()).get_to(cacheData);
-		if (cacheData.version != shaderVersion) {
-			// version mismatch, don't try to continue parsing
-			THROW_ERROR("version mismatch, found {} when expected {}", cacheData.version, shaderVersion);
-		}
+	std::vector<char> cacheStr_ = readFile(cacheName);
+	nlohmann::json::parse(cacheStr_.begin(), cacheStr_.end()).get_to(cacheData);
+	if (cacheData.version != shaderVersion) {
+		// version mismatch, don't try to continue parsing
+		THROW_ERROR("version mismatch, found {} when expected {}", cacheData.version, shaderVersion);
+	}
 
 	std::string spvName   = makeSPVCacheName(cacheData.hash, stage);
 	if (!fileExists(spvName)) {
