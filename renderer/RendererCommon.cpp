@@ -673,45 +673,45 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	if (!skipShaderCache) {
 		LOG("Looking for shader \"{}\" in cache...", cacheKey);
 		try {
-	std::string cacheName = spirvCacheDir + shaderName + ".cache";
+			std::string cacheName = spirvCacheDir + shaderName + ".cache";
 
-	CacheData cacheData;
+			CacheData cacheData;
 
-	std::vector<char> cacheStr_ = readFile(cacheName);
-	nlohmann::json::parse(cacheStr_.begin(), cacheStr_.end()).get_to(cacheData);
-	if (cacheData.version != shaderVersion) {
-		// version mismatch, don't try to continue parsing
-		THROW_ERROR("version mismatch, found {} when expected {}", cacheData.version, shaderVersion);
-	}
+			std::vector<char> cacheStr_ = readFile(cacheName);
+			nlohmann::json::parse(cacheStr_.begin(), cacheStr_.end()).get_to(cacheData);
+			if (cacheData.version != shaderVersion) {
+				// version mismatch, don't try to continue parsing
+				THROW_ERROR("version mismatch, found {} when expected {}", cacheData.version, shaderVersion);
+			}
 
-	std::string spvName   = makeSPVCacheName(cacheData.hash, stage);
-	if (!fileExists(spvName)) {
-		THROW_ERROR("SPIR-V file {} not found", spvName);
-	}
+			std::string spvName   = makeSPVCacheName(cacheData.hash, stage);
+			if (!fileExists(spvName)) {
+				THROW_ERROR("SPIR-V file {} not found", spvName);
+			}
 
-	// check timestamp against source and header files
-	int64_t sourceTime = getFileTimestamp(name);
-	int64_t cacheTime  = getFileTimestamp(cacheName);
+			// check timestamp against source and header files
+			int64_t sourceTime = getFileTimestamp(name);
+			int64_t cacheTime  = getFileTimestamp(cacheName);
 
-	if (sourceTime > cacheTime) {
-		THROW_ERROR("Shader \"{}\" source is newer than cache, recompiling", spvName);
-	}
+			if (sourceTime > cacheTime) {
+				THROW_ERROR("Shader \"{}\" source is newer than cache, recompiling", spvName);
+			}
 
-	for (const auto &filename : cacheData.dependencies) {
-		int64_t includeTime = getFileTimestamp(filename);
-		if (includeTime > cacheTime) {
-			THROW_ERROR("Include \"{}\" is newer than cache, recompiling", filename);
-		}
-	}
+			for (const auto &filename : cacheData.dependencies) {
+				int64_t includeTime = getFileTimestamp(filename);
+				if (includeTime > cacheTime) {
+					THROW_ERROR("Include \"{}\" is newer than cache, recompiling", filename);
+				}
+			}
 
-	auto temp = readFile(spvName);
-	if (temp.size() % 4 != 0) {
-		THROW_ERROR("Shader \"{}\" has incorrect size", spvName);
-	}
+			auto temp = readFile(spvName);
+			if (temp.size() % 4 != 0) {
+				THROW_ERROR("Shader \"{}\" has incorrect size", spvName);
+			}
 
-	spirv.resize(temp.size() / 4);
-	memcpy(&spirv[0], &temp[0], temp.size());
-	LOG("Loaded shader \"{}\" from cache", spvName);
+			spirv.resize(temp.size() / 4);
+			memcpy(&spirv[0], &temp[0], temp.size());
+			LOG("Loaded shader \"{}\" from cache", spvName);
 
 			LOG("Shader \"{}\" found in cache", cacheKey);
 
