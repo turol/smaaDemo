@@ -709,6 +709,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 				THROW_ERROR("Shader \"{}\" has incorrect size", spvName);
 			}
 
+			LOG_TODO("avoid memcpy, read directly into spirv");
 			spirv.resize(temp.size() / 4);
 			memcpy(&spirv[0], &temp[0], temp.size());
 
