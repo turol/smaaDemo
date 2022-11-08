@@ -711,9 +711,8 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 			spirv.resize(temp.size() / 4);
 			memcpy(&spirv[0], &temp[0], temp.size());
-			LOG("Loaded shader \"{}\" from cache", spvName);
 
-			LOG("Shader \"{}\" found in cache", cacheKey);
+			LOG("Shader \"{}\" found in cache as {}", cacheKey, spvName);
 
 			LOG_TODO("only in debug");
 			// need to move debug flag to base class
