@@ -669,7 +669,6 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		}
 	}
 
-	std::vector<uint32_t> spirv;
 	if (!skipShaderCache) {
 		LOG("Looking for shader \"{}\" in cache...", cacheKey);
 		try {
@@ -710,6 +709,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			}
 
 			LOG_TODO("avoid memcpy, read directly into spirv");
+			std::vector<uint32_t> spirv;
 			spirv.resize(temp.size() / 4);
 			memcpy(&spirv[0], &temp[0], temp.size());
 
@@ -746,6 +746,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 	Includer includer(this);
 
+	std::vector<uint32_t> spirv;
 	{
 		auto src = loadSource(name);
 
