@@ -709,8 +709,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			}
 
 			LOG_TODO("avoid memcpy, read directly into spirv");
-			std::vector<uint32_t> spirv;
-			spirv.resize(temp.size() / 4);
+			std::vector<uint32_t> spirv(temp.size() / 4);
 			memcpy(&spirv[0], &temp[0], temp.size());
 
 			LOG("Shader \"{}\" found in cache as {}", cacheKey, spvName);
