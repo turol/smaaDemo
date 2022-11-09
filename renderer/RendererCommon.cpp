@@ -672,6 +672,30 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 	if (!skipShaderCache) {
 		LOG("Looking for shader \"{}\" in cache...", cacheKey);
 		try {
+			auto it = shaderCache.find(cacheKey);
+			if (it != shaderCache.end()) {
+				std::string spvName = makeSPVCacheName(it->second.spirvHash, stage);
+				LOG("\"{}\" found in memory cache as {}", cacheKey, spvName);
+				LOG_TODO("avoid unnecessary copy of SPIR-V data");
+				auto temp = readFile(spvName);
+				if (temp.size() % 4 != 0) {
+					LOG_ERROR("Shader \"{}\" has incorrect size {}", spvName, temp.size());
+					goto compilationNeeded;
+				}
+
+				std::vector<uint32_t> spirv(temp.size() / 4);
+				memcpy(&spirv[0], &temp[0], temp.size());
+
+				LOG_TODO("only in debug");
+				// need to move debug flag to base class
+				if (true) {
+					checkSPVBindings(spirv);
+				}
+
+				LOG("Loaded shader \"{}\" from cache", cacheKey);
+				return spirv;
+			}
+
 			std::string cacheName = spirvCacheDir + shaderName + ".cache";
 			if (!fileExists(cacheName)) {
 				LOG("Cache file {} not found", cacheName);
@@ -721,13 +745,21 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			std::vector<uint32_t> spirv(temp.size() / 4);
 			memcpy(&spirv[0], &temp[0], temp.size());
 
-			LOG("Shader \"{}\" found in cache as {}", cacheKey, spvName);
+			LOG("Shader \"{}\" found in disk cache as {}", cacheKey, spvName);
 
 			LOG_TODO("only in debug");
 			// need to move debug flag to base class
 			if (true) {
 				checkSPVBindings(spirv);
 			}
+
+			ShaderCacheData newCacheData;
+			newCacheData.spirvHash = XXH64(spirv.data(), spirv.size() * 4, 0);
+			newCacheData.includes  = std::move(cacheData.dependencies);
+
+			bool inserted = false;
+			std::tie(it, inserted) = shaderCache.emplace(std::move(cacheKey), std::move(newCacheData));
+			assert(inserted);
 
 			return spirv;
 		} catch (std::exception &e) {
@@ -901,9 +933,20 @@ compilationNeeded:
 	}
 
 	if (!skipShaderCache) {
+		uint64_t hash = XXH64(spirv.data(), spirv.size() * 4, 0);
+
+		{
+			ShaderCacheData cacheData;
+			cacheData.spirvHash = hash;
+			cacheData.includes  = includer.included;
+
+			auto inserted = shaderCache.emplace(cacheKey, std::move(cacheData));
+			assert(inserted.second);
+		}
+
 		CacheData cacheData;
 		cacheData.version     = shaderVersion;
-		cacheData.hash        = XXH64(spirv.data(), spirv.size() * 4, 0);
+		cacheData.hash        = hash;
 		std::string spvName   = makeSPVCacheName(cacheData.hash, stage);
 		LOG("Writing shader \"{}\" to \"{}\"", cacheKey, spvName);
 		cacheData.dependencies = includer.included;

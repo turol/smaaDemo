@@ -205,6 +205,14 @@ struct ShaderCacheKey {
 };
 
 
+struct ShaderCacheData {
+	uint64_t              spirvHash;
+	// can't store SPIR-V bytecode here because we don't want to
+	// unconditionally load it on initial cache load
+	HashSet<std::string>  includes;
+};
+
+
 struct FrameBase {
 	uint32_t                  lastFrameNum;
 
@@ -241,6 +249,17 @@ namespace std {
 
 	template <> struct hash<renderer::ShaderMacros> {
 		size_t operator()(const renderer::ShaderMacros &macros) const;
+	};
+
+
+	template <> struct hash<renderer::ShaderCacheKey> {
+		size_t operator()(const renderer::ShaderCacheKey &key) const {
+			size_t h = 0;
+			h = combineHashes(h, hash<std::string>()(key.name));
+			h = combineHashes(h, hash<int>()(key.stage._to_integral()));
+			h = combineHashes(h, hash<renderer::ShaderMacros>()(key.macros));
+			return h;
+		}
 	};
 
 
@@ -319,6 +338,7 @@ struct RendererBase {
 	unsigned int                                         lastSyncedRingBufPtr;
 
 	HashMap<std::string, ShaderSourceData>               shaderSources;
+	HashMap<ShaderCacheKey, ShaderCacheData>             shaderCache;
 
 
 #ifndef NDEBUG
