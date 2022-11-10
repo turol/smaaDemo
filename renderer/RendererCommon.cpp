@@ -956,7 +956,7 @@ compilationNeeded:
 		cacheData.spirvHash = hash;
 		cacheData.includes  = includer.included;
 
-		auto DEBUG_ASSERTED inserted = shaderCache.emplace(cacheKey, std::move(cacheData));
+		auto DEBUG_ASSERTED inserted = shaderCache.emplace(std::move(cacheKey), std::move(cacheData));
 		assert(inserted.second);
 		cacheModified = true;
 	}
