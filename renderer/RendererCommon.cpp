@@ -694,6 +694,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 				}
 
 				LOG("Loaded shader \"{}\" from cache", cacheKey);
+
 				return spirv;
 			}
 
@@ -937,13 +938,13 @@ compilationNeeded:
 	if (!skipShaderCache) {
 		uint64_t hash = XXH64(spirv.data(), spirv.size() * 4, 0);
 
-			ShaderCacheData cacheData;
-			cacheData.spirvHash = hash;
-			cacheData.includes  = includer.included;
+		ShaderCacheData cacheData;
+		cacheData.spirvHash = hash;
+		cacheData.includes  = includer.included;
 
-			auto DEBUG_ASSERTED inserted = shaderCache.emplace(cacheKey, std::move(cacheData));
-			assert(inserted.second);
-			cacheModified = true;
+		auto DEBUG_ASSERTED inserted = shaderCache.emplace(cacheKey, std::move(cacheData));
+		assert(inserted.second);
+		cacheModified = true;
 
 		CacheData oldCacheData;
 		oldCacheData.version = shaderVersion;
