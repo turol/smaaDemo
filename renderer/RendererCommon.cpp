@@ -947,14 +947,14 @@ compilationNeeded:
 			cacheModified = true;
 		}
 
-		CacheData cacheData;
-		cacheData.version     = shaderVersion;
-		cacheData.hash        = hash;
-		std::string spvName   = makeSPVCacheName(cacheData.hash, stage);
+		CacheData oldCacheData;
+		oldCacheData.version = shaderVersion;
+		oldCacheData.hash    = hash;
+		std::string spvName  = makeSPVCacheName(hash, stage);
 		LOG("Writing shader \"{}\" to \"{}\"", cacheKey, spvName);
-		cacheData.dependencies = includer.included;
+		oldCacheData.dependencies = includer.included;
 
-		nlohmann::json j = cacheData;
+		nlohmann::json j = oldCacheData;
 		std::string cacheStr = j.dump();
 
 		std::string cacheName = spirvCacheDir + shaderName + ".cache";
