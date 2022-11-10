@@ -1093,10 +1093,21 @@ glslang::TShader::Includer::IncludeResult *RendererBase::handleInclude(Includer 
 
 
 void RendererBase::loadShaderCache() {
+	std::string cacheFile = spirvCacheDir + "shaderCache.json";
+	if (!fileExists(cacheFile)) {
+		LOG("Shader cache file {} not found", cacheFile);
+		return;
+	}
+	LOG("Load cache from {}", cacheFile);
+
+	LOG_TODO("load shader cache");
 }
 
 
 void RendererBase::saveShaderCache() {
+	LOG("Cache contains {} shader variants and {} source files", shaderCache.size(), shaderSources.size());
+
+	LOG_TODO("save shader cache");
 }
 
 
