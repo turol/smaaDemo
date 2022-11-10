@@ -385,6 +385,7 @@ RendererBase::RendererBase(const RendererDesc &desc)
 , ringBufSize(0)
 , ringBufPtr(0)
 , lastSyncedRingBufPtr(0)
+, cacheModified(false)
 #ifndef NDEBUG
 , inFrame(false)
 , inRenderPass(false)
@@ -760,6 +761,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			bool inserted = false;
 			std::tie(it, inserted) = shaderCache.emplace(std::move(cacheKey), std::move(newCacheData));
 			assert(inserted);
+			cacheModified = true;
 
 			return spirv;
 		} catch (std::exception &e) {
@@ -942,6 +944,7 @@ compilationNeeded:
 
 			auto DEBUG_ASSERTED inserted = shaderCache.emplace(cacheKey, std::move(cacheData));
 			assert(inserted.second);
+			cacheModified = true;
 		}
 
 		CacheData cacheData;
@@ -1107,6 +1110,10 @@ void RendererBase::loadShaderCache() {
 void RendererBase::saveShaderCache() {
 	LOG("Cache contains {} shader variants and {} source files", shaderCache.size(), shaderSources.size());
 
+	if (!cacheModified) {
+		LOG("Cache not modified, skipping save");
+		return;
+	}
 	LOG_TODO("save shader cache");
 }
 
