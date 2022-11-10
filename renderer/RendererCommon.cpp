@@ -937,7 +937,6 @@ compilationNeeded:
 	if (!skipShaderCache) {
 		uint64_t hash = XXH64(spirv.data(), spirv.size() * 4, 0);
 
-		{
 			ShaderCacheData cacheData;
 			cacheData.spirvHash = hash;
 			cacheData.includes  = includer.included;
@@ -945,7 +944,6 @@ compilationNeeded:
 			auto DEBUG_ASSERTED inserted = shaderCache.emplace(cacheKey, std::move(cacheData));
 			assert(inserted.second);
 			cacheModified = true;
-		}
 
 		CacheData oldCacheData;
 		oldCacheData.version = shaderVersion;
