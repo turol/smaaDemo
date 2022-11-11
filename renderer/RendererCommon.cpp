@@ -1165,7 +1165,27 @@ void RendererBase::saveShaderCache() {
 		LOG("Cache not modified, skipping save");
 		return;
 	}
-	LOG_TODO("save shader cache");
+
+	HashMap<std::string, ShaderSourceCacheData> shaderFileData;
+	shaderFileData.reserve(shaderSources.size());
+	for (const auto &d : shaderSources) {
+		ShaderSourceCacheData fileData;
+		fileData.timestamp = d.second.timestamp;
+		fileData.fileSize  = d.second.contents.size();
+		shaderFileData.emplace(d.first, std::move(fileData));
+	}
+
+	nlohmann::json j = {
+		  { "version" ,    shaderVersion  }
+		, { "filedata",    shaderFileData }
+		, { "shaderCache", shaderCache    }
+	};
+
+	std::string cacheData = j.dump(2);
+
+	std::string cacheFile = spirvCacheDir + "shaderCache.json";
+	LOG("Save cache to {}", cacheFile);
+	writeFile(cacheFile, cacheData.c_str(), cacheData.size());
 }
 
 
