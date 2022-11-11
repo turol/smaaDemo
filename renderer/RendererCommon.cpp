@@ -1154,7 +1154,95 @@ void RendererBase::loadShaderCache() {
 	}
 	LOG("Load cache from {}", cacheFile);
 
-	LOG_TODO("load shader cache");
+	try {
+		auto cacheData    = readFile(cacheFile);
+		nlohmann::json j  = nlohmann::json::parse(cacheData.begin(), cacheData.end());
+		auto version      = j.at("version").get<unsigned int>();
+		if (version != shaderVersion) {
+			// version mismatch, don't try to continue parsing
+			LOG("Cache version mismatch, is {}, expected {}", version, shaderVersion);
+			return;
+		}
+
+		HashMap<std::string, ShaderSourceCacheData> newShaderSourceData;
+		j.at("filedata").get_to(newShaderSourceData);
+
+		HashSet<std::string> changedFiles;
+		HashMap<std::string, ShaderSourceData> newShaderSources;
+		newShaderSources.reserve(newShaderSourceData.size());
+
+		for (const auto &kvp : newShaderSourceData) {
+			const std::string &filename              = kvp.first;
+			const ShaderSourceCacheData &fileCacheData = kvp.second;
+
+			if (!fileExists(filename)) {
+				LOG("cache mentions file \"{}\" which no longer exists", filename);
+				changedFiles.insert(filename);
+				continue;
+			}
+
+			int64_t timestamp = getFileTimestamp(filename);
+			auto contents = readFile(filename);
+			if (timestamp > fileCacheData.timestamp || contents.size() != fileCacheData.fileSize) {
+				LOG("cache mentions file \"{}\" which has changed", filename);
+				changedFiles.insert(filename);
+				continue;
+			}
+
+			ShaderSourceData fileData;
+			fileData.contents  = std::move(contents);
+			fileData.timestamp = timestamp;
+
+			newShaderSources.emplace(filename, std::move(fileData));
+		}
+
+		HashMap<ShaderCacheKey, ShaderCacheData> newShaderCache;
+		j.at("shaderCache").get_to(newShaderCache);
+
+		unsigned int numInvalidated = 0;
+		for (auto it = newShaderCache.begin(); it != newShaderCache.end(); ) {
+			const ShaderCacheKey  &key  = it->first;
+			const ShaderCacheData &data = it->second;
+			bool invalidate = false;
+
+			if (changedFiles.find(key.name) != changedFiles.end()) {
+				LOG("Invalidate shader \"{}\" because source file has changed", key);
+				invalidate = true;
+			}
+
+			for (const std::string &include : data.includes) {
+				if (changedFiles.find(include) != changedFiles.end()) {
+					LOG("Invalidate shader \"{}\" because it includes file {} which has changed", key, include);
+					invalidate = true;
+					break;
+				}
+			}
+
+			std::string spvName = makeSPVCacheName(data.spirvHash, key.stage);
+			if (!fileExists(spvName)) {
+				LOG("Invalidate shader \"{}\" because it points to SPIR-V file {} which no longer exists", key, spvName);
+				invalidate = true;
+				break;
+			}
+
+			if (invalidate) {
+				it = newShaderCache.erase(it);
+				cacheModified = true;
+			} else {
+				it++;
+			}
+		}
+
+		LOG("Loaded cache containing {} shader variants and {} files", newShaderCache.size(), newShaderSources.size());
+		LOG("Invalidated {} cache entries", numInvalidated);
+
+		shaderSources = std::move(newShaderSources);
+		shaderCache   = std::move(newShaderCache);
+	} catch (std::exception &e) {
+		LOG("Error while loading shader cache: \"{}\", cache discarded", e.what());
+	} catch (...) {
+		LOG("Unknown error while loading shader cache, cache discarded");
+	}
 }
 
 
