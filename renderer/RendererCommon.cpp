@@ -533,6 +533,22 @@ void RendererBase::from_json(const nlohmann::json &j, ShaderMacros &macros) {
 }
 
 
+void to_json(nlohmann::json &j, const ShaderCacheKey &key) {
+	j = nlohmann::json {
+		  { "name",   key.name   }
+		, { "stage",  key.stage  }
+		, { "macros", key.macros }
+	};
+}
+
+
+void from_json(const nlohmann::json &j, ShaderCacheKey &key) {
+	j.at("name").get_to(key.name);
+	j.at("stage").get_to(key.stage);
+	j.at("macros").get_to(key.macros);
+}
+
+
 static void logSpvMessage(spv_message_level_t level_, const char *source, const spv_position_t &position, const char *message) {
 	const char *level;
 	switch (level_) {
