@@ -549,6 +549,20 @@ void from_json(const nlohmann::json &j, ShaderCacheKey &key) {
 }
 
 
+void to_json(nlohmann::json &j, const ShaderCacheData &data) {
+	j = nlohmann::json {
+		  { "hash",     data.spirvHash }
+		, { "includes", data.includes  }
+	};
+}
+
+
+void from_json(const nlohmann::json &j, ShaderCacheData &data) {
+	j.at("hash").get_to(data.spirvHash);
+	j.at("includes").get_to(data.includes);
+}
+
+
 static void logSpvMessage(spv_message_level_t level_, const char *source, const spv_position_t &position, const char *message) {
 	const char *level;
 	switch (level_) {
