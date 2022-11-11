@@ -443,6 +443,14 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 const unsigned int shaderVersion = 100;
 
 
+// helper for storing in cache .json
+// like ShaderSourceData but with file size instead of contents
+struct ShaderSourceCacheData {
+	int64_t  timestamp;
+	uint32_t fileSize;
+};
+
+
 void to_json(nlohmann::json &j, const ShaderStage &stage) {
 	j = stage._to_string();
 }
@@ -450,6 +458,20 @@ void to_json(nlohmann::json &j, const ShaderStage &stage) {
 
 void from_json(const nlohmann::json &j, ShaderStage &key) {
 	key = ShaderStage::_from_string(j.get<std::string>().c_str());
+}
+
+
+void to_json(nlohmann::json &j, const ShaderSourceCacheData &data) {
+	j = nlohmann::json {
+		  { "timestamp", data.timestamp }
+		, { "fileSize",  data.fileSize  }
+	};
+}
+
+
+void from_json(const nlohmann::json &j, ShaderSourceCacheData &data) {
+	j.at("timestamp").get_to(data.timestamp);
+	j.at("fileSize").get_to(data.fileSize);
 }
 
 
