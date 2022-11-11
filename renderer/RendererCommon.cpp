@@ -475,44 +475,6 @@ void from_json(const nlohmann::json &j, ShaderSourceCacheData &data) {
 }
 
 
-struct CacheData {
-	unsigned int              version;
-	uint64_t                  hash;
-	HashSet<std::string>      dependencies;
-
-
-	CacheData()
-	: version(0)
-	, hash(0)
-	{
-	}
-
-	CacheData(const CacheData &)                = default;
-	CacheData &operator=(const CacheData &)     = default;
-
-	CacheData(CacheData &&) noexcept            = default;
-	CacheData &operator=(CacheData &&) noexcept = default;
-
-	~CacheData() {}
-};
-
-
-void to_json(nlohmann::json &j, const CacheData &cacheData) {
-	j = nlohmann::json {
-	      { "version",      cacheData.version }
-	    , { "hash",         fmt::format("{:08x}", cacheData.hash) }
-	    , { "dependencies", cacheData.dependencies }
-	};
-}
-
-
-void from_json(const nlohmann::json &j, CacheData &cacheData) {
-	cacheData.version      = j.at("version").get<unsigned int>();
-	cacheData.hash         = std::stoull(j.at("hash").get<std::string>(), nullptr, 16);
-	cacheData.dependencies = j.at("dependencies").get<HashSet<std::string>>();
-}
-
-
 static const char *const shaderStages[] = { "vert", "frag" };
 
 
