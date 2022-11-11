@@ -990,18 +990,8 @@ compilationNeeded:
 	if (!skipShaderCache) {
 		uint64_t hash = XXH64(spirv.data(), spirv.size() * 4, 0);
 
-		CacheData oldCacheData;
-		oldCacheData.version = shaderVersion;
-		oldCacheData.hash    = hash;
 		std::string spvName  = makeSPVCacheName(hash, stage);
 		LOG("Writing shader \"{}\" to \"{}\"", cacheKey, spvName);
-		oldCacheData.dependencies = includer.included;
-
-		nlohmann::json j = oldCacheData;
-		std::string cacheStr = j.dump();
-
-		std::string cacheName = spirvCacheDir + shaderName + ".cache";
-		writeFile(cacheName, cacheStr.c_str(), cacheStr.size());
 		writeFile(spvName, &spirv[0], spirv.size() * 4);
 
 		ShaderCacheData cacheData;
