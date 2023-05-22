@@ -43,7 +43,7 @@ OPTFLAGS+=-ffast-math
 
 # lazy assignment because CFLAGS is changed later
 CXXFLAGS=$(CFLAGS)
-CXXFLAGS+=-std=c++14
+CXXFLAGS+=-std=c++17
 
 
 LDFLAGS:=-g -Wl,-rpath,. -Wl,-rpath,/usr/local/lib:./lib32

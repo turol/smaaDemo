@@ -44,7 +44,7 @@ OPTFLAGS+=-ffast-math
 
 # lazy assignment because CFLAGS is changed later
 CXXFLAGS=$(CFLAGS)
-CXXFLAGS+=-std=gnu++14
+CXXFLAGS+=-std=gnu++17
 
 
 LDFLAGS:=-mwindows
