@@ -12,7 +12,9 @@ local.mk
 
 binaries/*.inc
 binaries/DebugInfo.h
+binaries/NonSemanticShaderDebugInfo100.h
 binaries/OpenCLDebugInfo100.h
+build_info.h
 
 mingw/*.h
 mingw/*.inc
