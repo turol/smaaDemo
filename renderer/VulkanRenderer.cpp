@@ -70,7 +70,10 @@ template <typename T> void RendererImpl::debugNameObject(T handle, const std::st
 		markerName.objectType  = T::debugReportObjectType;
 		markerName.object      = uint64_t(typename T::CType(handle));
 		markerName.pObjectName = name.c_str();
-		device.debugMarkerSetObjectNameEXT(&markerName, dispatcher);
+		vk::Result result = device.debugMarkerSetObjectNameEXT(&markerName, dispatcher);
+		if (result != vk::Result::eSuccess) {
+			LOG_ERROR("Failed to set debug name on {} \"{}\": {}", vk::to_string(T::debugReportObjectType), name, vk::to_string(result));
+		}
 	}
 }
 
