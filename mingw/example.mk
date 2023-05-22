@@ -34,7 +34,7 @@ PYTHON:=/usr/bin/python
 WIN32:=y
 
 
-CFLAGS:=-gstabs -mwindows
+CFLAGS:=-g -mwindows
 CFLAGS+=-Wall -Wextra -Wshadow -Werror
 CFLAGS+=-I.
 CFLAGS+=-D_WIN32_WINNT=0x0600

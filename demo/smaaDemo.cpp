@@ -61,14 +61,6 @@ THE SOFTWARE.
 #include <glm/gtc/type_ptr.hpp>
 
 
-// mingw fuckery...
-#if defined(__GNUC__) && defined(_WIN32)
-
-#include <mingw.thread.h>
-
-#endif  // defined(__GNUC__) && defined(_WIN32)
-
-
 namespace ShaderDefines {
 
 using namespace glm;
