@@ -2,6 +2,7 @@
 #define HASH_H
 
 
+#include <cstddef>
 #include <cstdint>
 
 #include <unordered_map>
