@@ -1757,19 +1757,19 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 			for (const auto &stat : statistics) {
 				switch (stat.format) {
 				case vk::PipelineExecutableStatisticFormatKHR::eBool32:
-					LOG("  {:<{}}\t{:>{}}\t{}", stat.name, maxNameLen, stat.value.b32 ? "true" : "false", maxValueLen, stat.description);
+					LOG("  {:<{}}\t{:>{}}\t{}", stat.name.data(), maxNameLen, stat.value.b32 ? "true" : "false", maxValueLen, stat.description.data());
 					break;
 
 				case vk::PipelineExecutableStatisticFormatKHR::eInt64:
-					LOG("  {:<{}}\t{:>{}}\t{}", stat.name, maxNameLen, stat.value.i64, maxValueLen, stat.description);
+					LOG("  {:<{}}\t{:>{}}\t{}", stat.name.data(), maxNameLen, stat.value.i64, maxValueLen, stat.description.data());
 					break;
 
 				case vk::PipelineExecutableStatisticFormatKHR::eUint64:
-					LOG("  {:<{}}\t{:>{}}\t{}", stat.name, maxNameLen, stat.value.u64, maxValueLen, stat.description);
+					LOG("  {:<{}}\t{:>{}}\t{}", stat.name.data(), maxNameLen, stat.value.u64, maxValueLen, stat.description.data());
 					break;
 
 				case vk::PipelineExecutableStatisticFormatKHR::eFloat64:
-					LOG("  {:<{}}\t{:>{}}\t{}", stat.name, maxNameLen, stat.value.f64, maxValueLen, stat.description);
+					LOG("  {:<{}}\t{:>{}}\t{}", stat.name.data(), maxNameLen, stat.value.f64, maxValueLen, stat.description.data());
 					break;
 
 				}
