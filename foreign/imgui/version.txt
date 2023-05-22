@@ -1,7 +1,7 @@
-commit 9aae45eb4a05a5a1f96be1ef37eb503a12ceb889
+commit 81160fee56027226bc80b48e196d0332f5541a8c
 Author: ocornut <omarcornut@gmail.com>
-Date:   Tue Jun 21 17:38:27 2022 +0200
+Date:   Tue Nov 15 14:23:44 2022 +0100
 
-    Version 1.88
+    Version 1.89
     
-    (fix "Show Debug Log" checkbox in Metrics window)
+    + fix warning from a582d92
