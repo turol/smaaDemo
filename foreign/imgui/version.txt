@@ -1,7 +1,5 @@
-commit f3f6295d532b98e322691afb8ef418209d963786
+commit 1ebb91382757777382b3629ced2a573996e46453
 Author: ocornut <omarcornut@gmail.com>
-Date:   Tue Mar 14 16:08:31 2023 +0100
+Date:   Thu Apr 13 15:51:04 2023 +0200
 
-    Version 1.89.4
-    
-    Commented out obsolete enums/functions names: ImGuiSliderFlags_ClampOnInput, ImGuiInputTextFlags_AlwaysInsertMode, ImDrawList::AddBezierCurve(), ImDrawList::PathBezierCurveTo()()
+    Version 1.89.5
