@@ -22,6 +22,7 @@ docs/gfx/VMA_class_diagram.png
 docs/html/allocation_annotation.html
 docs/html/annotated.html
 docs/html/bc_s.png
+docs/html/bc_sd.png
 docs/html/bdwn.png
 docs/html/choosing_memory_type.html
 docs/html/classes.html
@@ -33,6 +34,7 @@ docs/html/defragmentation.html
 docs/html/deprecated.html
 docs/html/dir_d44c64559bbebec7f509842c48db8b23.html
 docs/html/doc.png
+docs/html/docd.png
 docs/html/doxygen.css
 docs/html/doxygen.svg
 docs/html/dynsections.js
@@ -60,8 +62,10 @@ docs/html/menu.js
 docs/html/menudata.js
 docs/html/modules.html
 docs/html/nav_f.png
+docs/html/nav_fd.png
 docs/html/nav_g.png
 docs/html/nav_h.png
+docs/html/nav_hd.png
 docs/html/open.png
 docs/html/opengl_interop.html
 docs/html/pages.html
@@ -124,7 +128,10 @@ docs/html/search/groups_2.html
 docs/html/search/groups_2.js
 docs/html/search/groups_3.html
 docs/html/search/groups_3.js
+docs/html/search/mag.svg
+docs/html/search/mag_d.svg
 docs/html/search/mag_sel.svg
+docs/html/search/mag_seld.svg
 docs/html/search/nomatches.html
 docs/html/search/pages_0.html
 docs/html/search/pages_0.js
@@ -185,6 +192,7 @@ docs/html/search/variables_b.js
 docs/html/search/variables_c.html
 docs/html/search/variables_c.js
 docs/html/splitbar.png
+docs/html/splitbard.png
 docs/html/statistics.html
 docs/html/staying_within_budget.html
 docs/html/struct_vma_allocation.html
@@ -232,9 +240,13 @@ docs/html/struct_vma_vulkan_functions.html
 docs/html/sync_off.png
 docs/html/sync_on.png
 docs/html/tab_a.png
+docs/html/tab_ad.png
 docs/html/tab_b.png
+docs/html/tab_bd.png
 docs/html/tab_h.png
+docs/html/tab_hd.png
 docs/html/tab_s.png
+docs/html/tab_sd.png
 docs/html/tabs.css
 docs/html/usage_patterns.html
 docs/html/virtual_allocator.html

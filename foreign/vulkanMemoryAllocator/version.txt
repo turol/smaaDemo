@@ -1,8 +1,8 @@
-commit f6d6e278a6989f854dcc03adf3360c873ca4bad1
-Merge: 51c8b56 b367bf3
+commit 0e89587db3ebee4d463f191bd296374c5fafc8ea
 Author: Adam Sawicki <adam.sawicki@amd.com>
-Date:   Wed Jul 27 10:09:09 2022 +0200
+Date:   Tue May 2 12:44:06 2023 +0200
 
-    Merge pull request #277 from Max-Rodriguez/grammar-patch
+    Updated Doxyfile for Doxygen 1.9.6
     
-    docs: Fixed typo under 'Selecting Vulkan version' doc section
+    Regenerated documentation.
+    Fixes #335
