@@ -666,6 +666,16 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 }
 
 
+static const std::array<const char *, 6> spirvOptLogLevels = {
+	  "fatal error"
+	, "internal error"
+	, "error"
+	, "warning"
+	, "info"
+	, "debug"
+};
+
+
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderStage stage) {
 	// check spir-v cache first
 	ShaderCacheKey cacheKey;
@@ -840,7 +850,7 @@ compilationNeeded:
 		spvtools::Optimizer opt(SPV_ENV_UNIVERSAL_1_2);
 
 		opt.SetMessageConsumer([] (spv_message_level_t level, const char *source, const spv_position_t &position, const char *message) {
-			LOG("{}: {} {}:{}:{} {}", level, source, position.line, position.column, position.index, message);
+			LOG("SPIR-V opt {}: {} {}:{}:{} {}", spirvOptLogLevels[level], source, position.line, position.column, position.index, message);
 		});
 
 		// SPIRV-Tools optimizer
