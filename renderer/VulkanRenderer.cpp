@@ -1725,7 +1725,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 
 		uint32_t i = 0;
 		for (const auto &property : properties) {
-			LOG(" Executable {} \"{}\" {}  {}  subgroupSize {}", i, property.name, vk::to_string(property.stages), property.description, property.subgroupSize);
+			LOG(" Executable {} \"{}\" {}  {}  subgroupSize {}", i, property.name.data(), vk::to_string(property.stages), property.description.data(), property.subgroupSize);
 			executableInfo.executableIndex = i;
 			i++;
 
