@@ -1034,7 +1034,7 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		assert(shaderResources.ubos[openglIDX] == idx);
 
 		uint32_t maxOffset = 0;
-		LOG("UBO {} index {} ranges:", ubo.id, openglIDX);
+		LOG("UBO {} index {} ranges:", static_cast<uint32_t>(ubo.id), openglIDX);
 		for (auto r : glsl.get_active_buffer_ranges(ubo.id)) {
 			LOG("  {}:  {}  {}", r.index, r.offset, r.range);
 			maxOffset = std::max(maxOffset, static_cast<uint32_t>(r.offset + r.range));
