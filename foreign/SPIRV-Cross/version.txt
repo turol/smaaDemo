@@ -1,8 +1,8 @@
-commit f09ba2777714871bddb70d049878af34b94fa54d
-Merge: f15d465a b5386e3e
+commit 12542fc6fc05000e04742daf93892a0b10edbe80
+Merge: 28b11e01 bf752eda
 Author: Hans-Kristian Arntzen <post@arntzen-software.no>
-Date:   Mon Oct 3 14:54:07 2022 +0200
+Date:   Fri May 19 12:44:33 2023 +0200
 
-    Merge pull request #2035 from KhronosGroup/fix-2032
+    Merge pull request #2152 from KhronosGroup/fix-2143
     
-    HLSL: Improve support for VertexInfo aux struct.
+    Land PR 2143
