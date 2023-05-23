@@ -1,6 +1,7 @@
 .clang-format
 .github/issue_template.md
 .github/pull_request_template.md
+.github/workflows/cifuzz.yml
 .github/workflows/doc.yml
 .github/workflows/linux.yml
 .github/workflows/macos.yml
@@ -123,7 +124,6 @@ support/AndroidManifest.xml
 support/C++.sublime-syntax
 support/README
 support/Vagrantfile
-support/bazel/.bazelrc
 support/bazel/.bazelversion
 support/bazel/BUILD.bazel
 support/bazel/README.md
@@ -132,7 +132,6 @@ support/build-docs.py
 support/build.gradle
 support/cmake/FindSetEnv.cmake
 support/cmake/JoinPaths.cmake
-support/cmake/cxx14.cmake
 support/cmake/fmt-config.cmake.in
 support/cmake/fmt.pc.in
 support/compute-powers.py
