@@ -87,8 +87,8 @@ class Handle {
 	friend class ResourceContainer<T, BaseType, true>;
 	friend class ResourceContainer<T, BaseType, false>;
 
-	HandleType  handle;
-	bool        owned;
+	HandleType  handle = 0;
+	bool        owned  = false;
 
 
 	Handle(HandleType handle_, bool owned_ = true)
@@ -100,10 +100,7 @@ class Handle {
 public:
 
 
-	Handle()
-	: handle(0)
-	, owned(false)
-	{
+	Handle() {
 	}
 
 
@@ -115,7 +112,6 @@ public:
 	// copying a Handle, new copy is not owned no matter what
 	Handle(const Handle<T, HandleType> &other)
 	: handle(other.handle)
-	, owned(false)
 	{
 	}
 
@@ -131,10 +127,7 @@ public:
 
 
 	// Moving an owned handle takes ownership
-	Handle(Handle<T, HandleType> &&other) noexcept
-	: handle(0)
-	, owned(false)
-	{
+	Handle(Handle<T, HandleType> &&other) noexcept {
 		handle       = other.handle;
 		owned        = other.owned;
 
@@ -189,7 +182,7 @@ class Handle {
 	friend class ResourceContainer<T, BaseType, true>;
 	friend class ResourceContainer<T, BaseType, false>;
 
-	HandleType handle;
+	HandleType handle = 0;
 
 
 	explicit Handle(HandleType handle_)
@@ -200,9 +193,7 @@ class Handle {
 public:
 
 
-	Handle()
-	: handle(0)
-	{
+	Handle() {
 	}
 
 
@@ -507,30 +498,30 @@ class PipelineDesc {
 	std::string           fragmentShaderName;
 	RenderPassHandle      renderPass_;
 	ShaderMacros          shaderMacros_;
-	uint32_t              vertexAttribMask;
-	unsigned int          numSamples_;
-	bool                  depthWrite_;
-	bool                  depthTest_;
-	bool                  cullFaces_;
-	bool                  scissorTest_;
-	bool                  blending_;
-	BlendFunc             sourceBlend_;
-	BlendFunc             destinationBlend_;
+	uint32_t              vertexAttribMask  = 0;
+	unsigned int          numSamples_       = 1;
+	bool                  depthWrite_       = false;
+	bool                  depthTest_        = false;
+	bool                  cullFaces_        = false;
+	bool                  scissorTest_      = false;
+	bool                  blending_         = false;
+	BlendFunc             sourceBlend_      = BlendFunc::One;
+	BlendFunc             destinationBlend_ = BlendFunc::Zero;
 	// TODO: blend equation
 	// TODO: per-MRT blending
 
 	struct VertexAttr {
-		uint8_t    bufBinding;
-		uint8_t    count;
-		VtxFormat  format;
-		uint8_t    offset;
+		uint8_t    bufBinding = 0;
+		uint8_t    count      = 0;
+		VtxFormat  format     = VtxFormat::Float;
+		uint8_t    offset     = 0;
 
 		bool operator==(const VertexAttr &other) const;
 		bool operator!=(const VertexAttr &other) const;
 	};
 
 	struct VertexBuf {
-		uint32_t stride;
+		uint32_t stride = 0;
 
 		bool operator==(const VertexBuf &other) const;
 		bool operator!=(const VertexBuf &other) const;
@@ -648,26 +639,7 @@ public:
 		return *this;
 	}
 
-	PipelineDesc()
-	: vertexAttribMask(0)
-	, numSamples_(1)
-	, depthWrite_(false)
-	, depthTest_(false)
-	, cullFaces_(false)
-	, scissorTest_(false)
-	, blending_(false)
-	, sourceBlend_(BlendFunc::One)
-	, destinationBlend_(BlendFunc::Zero)
-	{
-		for (unsigned int i = 0; i < MAX_VERTEX_ATTRIBS; i++) {
-			vertexAttribs[i].bufBinding = 0;
-			vertexAttribs[i].count      = 0;
-			vertexAttribs[i].offset     = 0;
-		}
-
-		for (unsigned int i = 0; i < MAX_VERTEX_BUFFERS; i++) {
-			vertexBuffers[i].stride = 0;
-		}
+	PipelineDesc() {
 	}
 
 	~PipelineDesc() {}
@@ -687,19 +659,7 @@ public:
 
 
 struct RenderPassDesc {
-	RenderPassDesc()
-	: depthStencilFormat_(Format::Invalid)
-	, numSamples_(1)
-	, clearDepthAttachment(false)
-	, depthClearValue(1.0f)
-	{
-		for (auto &rt : colorRTs_) {
-			rt.format        = Format::Invalid;
-			rt.passBegin     = PassBegin::DontCare;
-			rt.initialLayout = Layout::Undefined;
-			rt.finalLayout   = Layout::Undefined;
-			rt.clearValue    = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
-		}
+	RenderPassDesc() {
 	}
 
 	~RenderPassDesc() { }
@@ -745,11 +705,11 @@ struct RenderPassDesc {
 
 
 	struct RTInfo {
-		Format     format;
-		PassBegin  passBegin;
-		Layout     initialLayout;
-		Layout     finalLayout;
-		glm::vec4  clearValue;
+		Format     format         = Format::Invalid;
+		PassBegin  passBegin      = PassBegin::DontCare;
+		Layout     initialLayout  = Layout::Undefined;
+		Layout     finalLayout    = Layout::Undefined;
+		glm::vec4  clearValue     = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
 	};
 
 
@@ -761,12 +721,12 @@ struct RenderPassDesc {
 
 private:
 
-	Format                                       depthStencilFormat_;
+	Format                                       depthStencilFormat_  = Format::Invalid;
 	std::array<RTInfo, MAX_COLOR_RENDERTARGETS>  colorRTs_;
-	unsigned int                                 numSamples_;
+	unsigned int                                 numSamples_          = 1;
 	std::string                                  name_;
-	bool                                         clearDepthAttachment;
-	float                                        depthClearValue;
+	bool                                         clearDepthAttachment = false;
+	float                                        depthClearValue      = 1.0f;
 
 
 	friend class Renderer;
@@ -775,13 +735,7 @@ private:
 
 
 struct RenderTargetDesc {
-	RenderTargetDesc()
-	: width_(0)
-	, height_(0)
-	, numSamples_(1)
-	, format_(Format::Invalid)
-	, additionalViewFormat_(Format::Invalid)
-	{
+	RenderTargetDesc() {
 	}
 
 	~RenderTargetDesc() { }
@@ -834,10 +788,11 @@ struct RenderTargetDesc {
 
 private:
 
-	unsigned int   width_, height_;
-	unsigned int   numSamples_;
-	Format         format_;
-	Format         additionalViewFormat_;
+	unsigned int   width_                = 0;
+	unsigned int   height_               = 0;
+	unsigned int   numSamples_           = 1;
+	Format         format_               = Format::Invalid;
+	Format         additionalViewFormat_ = Format::Invalid;
 	std::string    name_;
 
 
@@ -847,11 +802,7 @@ private:
 
 
 struct SamplerDesc {
-	SamplerDesc()
-	: min(FilterMode::Nearest)
-	, mag(FilterMode::Nearest)
-	, wrapMode(WrapMode::Clamp)
-	{
+	SamplerDesc() {
 	}
 
 	SamplerDesc(const SamplerDesc &desc)                = default;
@@ -879,8 +830,9 @@ struct SamplerDesc {
 
 private:
 
-	FilterMode  min, mag;
-	WrapMode    wrapMode;
+	FilterMode  min      = FilterMode::Nearest;
+	FilterMode  mag      = FilterMode::Nearest;
+	WrapMode    wrapMode = WrapMode::Clamp;
 	std::string name_;
 
 
@@ -890,31 +842,20 @@ private:
 
 
 struct SwapchainDesc {
-	unsigned int  width, height;
-	unsigned int  numFrames;
-	VSync         vsync;
-	bool          fullscreen;
+	unsigned int  width      = 0;
+	unsigned int  height     = 0;
+	unsigned int  numFrames  = 3;
+	VSync         vsync      = VSync::On;
+	bool          fullscreen = false;
 
 
-	SwapchainDesc()
-	: width(0)
-	, height(0)
-	, numFrames(3)
-	, vsync(VSync::On)
-	, fullscreen(false)
-	{
+	SwapchainDesc() {
 	}
 };
 
 
 struct TextureDesc {
-	TextureDesc()
-	: width_(0)
-	, height_(0)
-	, numMips_(1)
-	, format_(Format::Invalid)
-	{
-		std::fill(mipData_.begin(), mipData_.end(), MipLevel());
+	TextureDesc() {
 	}
 
 	~TextureDesc() { }
@@ -959,19 +900,14 @@ struct TextureDesc {
 private:
 
 	struct MipLevel {
-		const void   *data;
-		unsigned int  size;
-
-		MipLevel()
-		: data(nullptr)
-		, size(0)
-		{
-		}
+		const void   *data  = nullptr;
+		unsigned int  size  = 0;
 	};
 
-	unsigned int                                 width_, height_;
-	unsigned int                                 numMips_;
-	Format                                       format_;
+	unsigned int                                 width_    = 0;
+	unsigned int                                 height_   = 0;
+	unsigned int                                 numMips_  = 1;
+	Format                                       format_   = Format::Invalid;
 	std::array<MipLevel, MAX_TEXTURE_MIPLEVELS>  mipData_;
 	std::string                                  name_;
 
@@ -982,15 +918,11 @@ private:
 
 
 struct Version {
-	unsigned int  major;
-	unsigned int  minor;
-	unsigned int  patch;
+	unsigned int  major = 0;
+	unsigned int  minor = 0;
+	unsigned int  patch = 0;
 
-	Version()
-	: major(0)
-	, minor(0)
-	, patch(0)
-	{
+	Version() {
 	}
 
 	Version(const Version &)                = default;
@@ -1004,14 +936,14 @@ struct Version {
 
 
 struct RendererDesc {
-	bool           debug;
-	bool           robustness;
-	bool           tracing;
-	bool           skipShaderCache;
-	bool           optimizeShaders;
-	bool           validateShaders;
-	bool           transferQueue;
-	unsigned int   ephemeralRingBufSize;
+	bool           debug                = false;
+	bool           robustness           = false;
+	bool           tracing              = false;
+	bool           skipShaderCache      = false;
+	bool           optimizeShaders      = true;
+	bool           validateShaders      = false;
+	bool           transferQueue        = true;
+	unsigned int   ephemeralRingBufSize = 1 * 1048576;
 	SwapchainDesc  swapchain;
 	std::string    applicationName;
 	Version        applicationVersion;
@@ -1020,31 +952,18 @@ struct RendererDesc {
 	std::string    vulkanDeviceFilter;
 
 
-	RendererDesc()
-	: debug(false)
-	, robustness(false)
-	, tracing(false)
-	, skipShaderCache(false)
-	, optimizeShaders(true)
-	, validateShaders(false)
-	, transferQueue(true)
-	, ephemeralRingBufSize(1 * 1048576)
-	{
+	RendererDesc() {
 	}
 };
 
 
 struct RendererFeatures {
-	uint32_t  maxMSAASamples;
-	bool      sRGBFramebuffer;
-	bool      SSBOSupported;
+	uint32_t  maxMSAASamples   = 1;
+	bool      sRGBFramebuffer  = false;
+	bool      SSBOSupported    = false;
 
 
-	RendererFeatures()
-	: maxMSAASamples(1)
-	, sRGBFramebuffer(false)
-	, SSBOSupported(false)
-	{
+	RendererFeatures() {
 	}
 };
 

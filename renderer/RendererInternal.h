@@ -48,13 +48,11 @@ class ResourceContainer {
     using HandleType = Handle<T, HandleBaseType>;
 
 	HashMap<unsigned int, T>            resources;
-	unsigned int                        next;
+	unsigned int                        next       = 1;
 
 
 public:
-	ResourceContainer()
-	: next(1)
-	{
+	ResourceContainer() {
 	}
 
 	ResourceContainer(const ResourceContainer<T> &)            = delete;
@@ -214,11 +212,9 @@ struct ShaderCacheData {
 
 
 struct FrameBase {
-	uint32_t                  lastFrameNum;
+	uint32_t                  lastFrameNum = 0;
 
-	FrameBase()
-	: lastFrameNum(0)
-	{
+	FrameBase() {
 	}
 
 	FrameBase(const FrameBase &)                = delete;
