@@ -79,12 +79,12 @@ using namespace renderer;
 class SMAADemo;
 
 
-BETTER_ENUM(AAMethod, uint8_t
-	, MSAA
+enum class AAMethod : uint8_t {
+	  MSAA
 	, FXAA
 	, SMAA
 	, SMAA2X
-)
+};
 
 
 BETTER_ENUM(SMAADebugMode, uint8_t
@@ -882,7 +882,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		{
 			std::string aaMethodStr = aaMethodSwitch.getValue();
 			if (!aaMethodStr.empty()) {
-				auto parsed = AAMethod::_from_string_nocase_nothrow(aaMethodStr.c_str());
+				auto parsed = magic_enum::enum_cast<AAMethod>(aaMethodStr);
 				if (!parsed) {
 					std::transform(aaMethodStr.begin(), aaMethodStr.end(), aaMethodStr.begin(), ::toupper);
 					if (aaMethodStr == "NONE") {
@@ -1219,12 +1219,12 @@ void SMAADemo::initRender() {
 	}
 
 	unsigned int supportedCount = 0;
-	for (AAMethod a : AAMethod::_values()) {
+	for (AAMethod a : magic_enum::enum_values<AAMethod>()) {
 		bool supported = isAAMethodSupported(a);
 		if (supported) {
 			supportedCount++;
 		}
-		LOG("AA method {}: {}", a._to_string(), supported ? "supported" : "not supported");
+		LOG("AA method {}: {}", magic_enum::enum_name(a), supported ? "supported" : "not supported");
 	}
 
 	if (supportedCount == 0) {
@@ -1233,7 +1233,7 @@ void SMAADemo::initRender() {
 
 	if (!isAAMethodSupported(aaMethod)) {
 		if (aaMethodSetExplicitly) {
-			THROW_ERROR("Requested AA method {} is not supported", aaMethod._to_string());
+			THROW_ERROR("Requested AA method {} is not supported", magic_enum::enum_name(aaMethod));
 		}
 		setNextAAMethod();
 	}
@@ -1461,10 +1461,10 @@ void SMAADemo::rebuildRenderGraph() {
 
 	renderGraph.reset(renderer);
 
-	if (antialiasing && aaMethod == +AAMethod::MSAA) {
+	if (antialiasing && aaMethod == AAMethod::MSAA) {
 		numSamples = msaaQualityToSamples(msaaQuality);
 		assert(numSamples > 1);
-	} else if (antialiasing && aaMethod == +AAMethod::SMAA2X) {
+	} else if (antialiasing && aaMethod == AAMethod::SMAA2X) {
 		numSamples = 2;
 	} else {
 		numSamples = 1;
@@ -2276,24 +2276,24 @@ bool SMAADemo::isAAMethodSupported(AAMethod method) const {
 
 
 void SMAADemo::setPrevAAMethod() {
-	int i = aaMethod._to_integral();
+	int i = magic_enum::enum_integer(aaMethod);
 
 	do {
-		i = i - 1 + int(AAMethod::_size());
-		i = i % AAMethod::_size();
-		aaMethod = AAMethod::_from_integral(i);
+		i = i - 1 + int(magic_enum::enum_count<AAMethod>());
+		i = i % magic_enum::enum_count<AAMethod>();
+		aaMethod = magic_enum::enum_value<AAMethod>(i);
 	} while (!isAAMethodSupported(aaMethod));
 	rebuildRG = true;
 }
 
 
 void SMAADemo::setNextAAMethod() {
-	int i = aaMethod._to_integral();
+	int i = magic_enum::enum_integer(aaMethod);
 
 	do {
 		i = i + 1;
-		i = i % AAMethod::_size();
-		aaMethod = AAMethod::_from_integral(i);
+		i = i % magic_enum::enum_count<AAMethod>();
+		aaMethod = magic_enum::enum_value<AAMethod>(i);
 	} while (!isAAMethodSupported(aaMethod));
 	rebuildRG = true;
 }
@@ -2539,7 +2539,7 @@ void SMAADemo::processInput() {
 				break;
 
 			case SDL_SCANCODE_D:
-				if (antialiasing && aaMethod == +AAMethod::SMAA) {
+				if (antialiasing && aaMethod == AAMethod::SMAA) {
 					int d = debugMode._to_integral();
 					const int count = int(SMAADebugMode::_size());
 					if (leftShift || rightShift) {
@@ -2924,7 +2924,7 @@ void SMAADemo::mainLoopIteration() {
 
 		}
 	} else {
-		if (aaMethod == +AAMethod::SMAA2X) {
+		if (aaMethod == AAMethod::SMAA2X) {
 			subsampleIndices[0] = glm::vec4(1.0, 1.0, 1.0, 0.0f);
 		} else {
 			subsampleIndices[0] = glm::vec4(0.0f);
@@ -3024,7 +3024,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	// temporal jitter
 	if (antialiasing && temporalAA && !isImageScene()) {
 		glm::vec2 jitter;
-		if (aaMethod == +AAMethod::MSAA || aaMethod == +AAMethod::SMAA2X) {
+		if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
 			const glm::vec2 jitters[2] = {
 				  {  0.125f,  0.125f }
 				, { -0.125f, -0.125f }
@@ -3527,9 +3527,9 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				assert(temp == antialiasing);
 			}
 
-			int aa = aaMethod._to_integral();
+			int aa = magic_enum::enum_integer(aaMethod);
 			bool first = true;
-			for (AAMethod a : AAMethod::_values()) {
+			for (AAMethod a : magic_enum::enum_values<AAMethod>()) {
 				if (!first) {
 					ImGui::SameLine();
 				}
@@ -3540,7 +3540,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 					ImGui::BeginDisabled();
 				}
 
-				ImGui::RadioButton(a._to_string(), &aa, a._to_integral());
+				ImGui::RadioButton(magic_enum::enum_name(a).data(), &aa, magic_enum::enum_integer(a));
 
 				if (!supported) {
 					ImGui::EndDisabled();
@@ -3574,13 +3574,13 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			ImGui::Separator();
 			int msaaq = msaaQuality;
 			bool msaaChanged = ImGui::Combo("MSAA quality", &msaaq, msaaQualityLevels, maxMSAAQuality);
-			if (aaChanged || aa != aaMethod._to_integral()) {
-				aaMethod = AAMethod::_from_integral(aa);
+			if (aaChanged || aa != magic_enum::enum_integer(aaMethod)) {
+				aaMethod = magic_enum::enum_value<AAMethod>(aa);
 				assert(isAAMethodSupported(aaMethod));
 				rebuildRG = true;
 			}
 
-			if (msaaChanged && aaMethod == +AAMethod::MSAA) {
+			if (msaaChanged && aaMethod == AAMethod::MSAA) {
 				assert(msaaq >= 0);
 				msaaQuality = static_cast<unsigned int>(msaaq);
 				rebuildRG            = true;
