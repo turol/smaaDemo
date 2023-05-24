@@ -163,6 +163,7 @@ const char* const E_GL_ARB_texture_query_lod            = "GL_ARB_texture_query_
 const char* const E_GL_ARB_vertex_attrib_64bit          = "GL_ARB_vertex_attrib_64bit";
 const char* const E_GL_ARB_draw_instanced               = "GL_ARB_draw_instanced";
 const char* const E_GL_ARB_fragment_coord_conventions   = "GL_ARB_fragment_coord_conventions";
+const char* const E_GL_ARB_bindless_texture             = "GL_ARB_bindless_texture";
 
 const char* const E_GL_KHR_shader_subgroup_basic            = "GL_KHR_shader_subgroup_basic";
 const char* const E_GL_KHR_shader_subgroup_vote             = "GL_KHR_shader_subgroup_vote";
@@ -276,6 +277,7 @@ const int Num_viewportEXTs = sizeof(viewportEXTs) / sizeof(viewportEXTs[0]);
 const char* const E_GL_NV_cooperative_matrix                    = "GL_NV_cooperative_matrix";
 const char* const E_GL_NV_shader_sm_builtins                    = "GL_NV_shader_sm_builtins";
 const char* const E_GL_NV_integer_cooperative_matrix            = "GL_NV_integer_cooperative_matrix";
+const char* const E_GL_NV_shader_invocation_reorder             = "GL_NV_shader_invocation_reorder";
 
 // AEP
 const char* const E_GL_ANDROID_extension_pack_es31a             = "GL_ANDROID_extension_pack_es31a";

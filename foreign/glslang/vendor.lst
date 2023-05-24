@@ -138,6 +138,7 @@ Test/460.frag
 Test/460.vert
 Test/BestMatchFunction.vert
 Test/EndStreamPrimitive.geom
+Test/GL_ARB_bindless_texture.frag
 Test/GL_ARB_draw_instanced.vert
 Test/GL_ARB_fragment_coord_conventions.vert
 Test/GL_ARB_gpu_shader5.u2i.vert
@@ -242,6 +243,7 @@ Test/baseResults/460.frag.out
 Test/baseResults/460.vert.out
 Test/baseResults/BestMatchFunction.vert.out
 Test/baseResults/EndStreamPrimitive.geom.out
+Test/baseResults/GL_ARB_bindless_texture.frag.out
 Test/baseResults/GL_ARB_draw_instanced.vert.out
 Test/baseResults/GL_ARB_fragment_coord_conventions.vert.out
 Test/baseResults/GL_ARB_gpu_shader5.u2i.vert.out
@@ -713,6 +715,9 @@ Test/baseResults/hlsl.whileLoop.frag.out
 Test/baseResults/hlsl.y-negate-1.vert.out
 Test/baseResults/hlsl.y-negate-2.vert.out
 Test/baseResults/hlsl.y-negate-3.vert.out
+Test/baseResults/implicitArraySize.vert.out
+Test/baseResults/implicitArraySize1.geom.out
+Test/baseResults/implicitArraySizeBuiltin.vert.out
 Test/baseResults/implicitInnerAtomicUint.frag.out
 Test/baseResults/include.vert.out
 Test/baseResults/invalidSwizzle.vert.out
@@ -1030,6 +1035,7 @@ Test/baseResults/spv.debugInfo.1.1.frag.out
 Test/baseResults/spv.debugInfo.frag.out
 Test/baseResults/spv.debugPrintf.frag.out
 Test/baseResults/spv.debugPrintf_Error.frag.out
+Test/baseResults/spv.debuginfo.const_params.glsl.comp.out
 Test/baseResults/spv.debuginfo.glsl.comp.out
 Test/baseResults/spv.debuginfo.glsl.frag.out
 Test/baseResults/spv.debuginfo.glsl.geom.out
@@ -1187,6 +1193,9 @@ Test/baseResults/spv.nonuniform3.frag.out
 Test/baseResults/spv.nonuniform4.frag.out
 Test/baseResults/spv.nonuniform5.frag.out
 Test/baseResults/spv.nullInit.comp.out
+Test/baseResults/spv.nv.hitobject-allops.rchit.out
+Test/baseResults/spv.nv.hitobject-allops.rgen.out
+Test/baseResults/spv.nv.hitobject-allops.rmiss.out
 Test/baseResults/spv.offsets.frag.out
 Test/baseResults/spv.paramMemory.420.frag.out
 Test/baseResults/spv.paramMemory.frag.out
@@ -1334,6 +1343,7 @@ Test/baseResults/spv.xfbOffsetOnStructMembersAssignment.vert.out
 Test/baseResults/spv.xfbOverlapOffsetCheckWithBlockAndMember.vert.out
 Test/baseResults/spv.xfbStrideJustOnce.vert.out
 Test/baseResults/stringToDouble.vert.out
+Test/baseResults/struct.error.frag.out
 Test/baseResults/structAssignment.frag.out
 Test/baseResults/structDeref.frag.out
 Test/baseResults/structure.frag.out
@@ -1848,6 +1858,12 @@ Test/hlsl.y-negate-1.vert
 Test/hlsl.y-negate-2.vert
 Test/hlsl.y-negate-3.vert
 Test/i1.h
+Test/implicitArraySize.frag
+Test/implicitArraySize.vert
+Test/implicitArraySize1.geom
+Test/implicitArraySize2.geom
+Test/implicitArraySizeBuiltin.geom
+Test/implicitArraySizeBuiltin.vert
 Test/implicitInnerAtomicUint.frag
 Test/inc1/badInc.h
 Test/inc1/bar.h
@@ -2196,6 +2212,7 @@ Test/spv.dead-complex-merge-after-return.vert
 Test/spv.debugInfo.frag
 Test/spv.debugPrintf.frag
 Test/spv.debugPrintf_Error.frag
+Test/spv.debuginfo.const_params.glsl.comp
 Test/spv.debuginfo.glsl.comp
 Test/spv.debuginfo.glsl.frag
 Test/spv.debuginfo.glsl.geom
@@ -2353,6 +2370,9 @@ Test/spv.nonuniform3.frag
 Test/spv.nonuniform4.frag
 Test/spv.nonuniform5.frag
 Test/spv.nullInit.comp
+Test/spv.nv.hitobject-allops.rchit
+Test/spv.nv.hitobject-allops.rgen
+Test/spv.nv.hitobject-allops.rmiss
 Test/spv.offsets.frag
 Test/spv.paramMemory.420.frag
 Test/spv.paramMemory.frag
@@ -2503,6 +2523,7 @@ Test/spv.xfbOffsetOnStructMembersAssignment.vert
 Test/spv.xfbOverlapOffsetCheckWithBlockAndMember.vert
 Test/spv.xfbStrideJustOnce.vert
 Test/stringToDouble.vert
+Test/struct.error.frag
 Test/structAssignment.frag
 Test/structDeref.frag
 Test/structure.frag

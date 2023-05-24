@@ -652,6 +652,12 @@ INSTANTIATE_TEST_SUITE_P(
         "spv.atomiAddEXT.task",
         "spv.460.subgroupEXT.task",
         "spv.460.subgroupEXT.mesh",
+
+        // SPV_NV_shader_execution_reorder
+
+        "spv.nv.hitobject-allops.rgen",
+        "spv.nv.hitobject-allops.rchit",
+        "spv.nv.hitobject-allops.rmiss",
     })),
     FileNameAsCustomTestSuffix
 );
@@ -852,7 +858,8 @@ INSTANTIATE_TEST_SUITE_P(
         "spv.debuginfo.glsl.comp",
         "spv.debuginfo.glsl.geom",
         "spv.debuginfo.glsl.tesc",
-        "spv.debuginfo.glsl.tese"
+        "spv.debuginfo.glsl.tese",
+        "spv.debuginfo.const_params.glsl.comp"
     })),
     FileNameAsCustomTestSuffix
 );
