@@ -7,7 +7,6 @@ SUBDIRS:= \
 	glslang \
 	OGLCompilersDLL \
 	SPIRV \
-	StandAlone \
 	# empty line
 
 DIRS:=$(addprefix $(d)/,$(SUBDIRS))

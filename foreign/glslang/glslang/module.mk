@@ -7,6 +7,7 @@ SUBDIRS:= \
 	GenericCodeGen \
 	MachineIndependent \
 	OSDependent \
+	ResourceLimits \
 	# empty line
 
 DIRS:=$(addprefix $(d)/,$(SUBDIRS))

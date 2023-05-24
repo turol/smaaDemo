@@ -53,10 +53,8 @@ SPIRV/spirv.hpp
 SPIRV/spvIR.h
 StandAlone/CMakeLists.txt
 StandAlone/DirStackFileIncluder.h
-StandAlone/ResourceLimits.cpp
 StandAlone/StandAlone.cpp
 StandAlone/Worklist.h
-StandAlone/resource_limits_c.cpp
 StandAlone/spirv-remap.cpp
 Test/100.conf
 Test/100.frag
@@ -560,6 +558,7 @@ Test/baseResults/hlsl.multiDescriptorSet.frag.out
 Test/baseResults/hlsl.multiEntry.vert.out
 Test/baseResults/hlsl.multiReturn.frag.out
 Test/baseResults/hlsl.namespace.frag.out
+Test/baseResults/hlsl.nested-runtimeArray.frag.out
 Test/baseResults/hlsl.noSemantic.functionality1.comp.out
 Test/baseResults/hlsl.nonint-index.frag.out
 Test/baseResults/hlsl.nonstaticMemberFunction.frag.out
@@ -1703,6 +1702,7 @@ Test/hlsl.multiDescriptorSet.frag
 Test/hlsl.multiEntry.vert
 Test/hlsl.multiReturn.frag
 Test/hlsl.namespace.frag
+Test/hlsl.nested-runtimeArray.frag
 Test/hlsl.noSemantic.functionality1.comp
 Test/hlsl.nonint-index.frag
 Test/hlsl.nonstaticMemberFunction.frag
@@ -2688,6 +2688,8 @@ glslang/OSDependent/osinclude.h
 glslang/Public/ResourceLimits.h
 glslang/Public/ShaderLang.h
 glslang/Public/resource_limits_c.h
+glslang/ResourceLimits/ResourceLimits.cpp
+glslang/ResourceLimits/resource_limits_c.cpp
 glslang/updateGrammar
 gtests/AST.FromFile.cpp
 gtests/BuiltInResource.FromFile.cpp
