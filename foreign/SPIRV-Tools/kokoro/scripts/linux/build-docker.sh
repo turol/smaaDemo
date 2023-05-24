@@ -20,6 +20,11 @@ set -e
 # Display commands being run.
 set -x
 
+# This is required to run any git command in the docker since owner will
+# have changed between the clone environment, and the docker container.
+# Marking the root of the repo as safe for ownership changes.
+git config --global --add safe.directory $ROOT_DIR
+
 . /bin/using.sh # Declare the bash `using` function for configuring toolchains.
 
 if [ $COMPILER = "clang" ]; then
@@ -186,10 +191,10 @@ elif [ $TOOL = "bazel" ]; then
   using bazel-5.0.0
 
   echo $(date): Build everything...
-  bazel build :all
+  bazel build --cxxopt=-std=c++17 :all
   echo $(date): Build completed.
 
   echo $(date): Starting bazel test...
-  bazel test :all
+  bazel test --cxxopt=-std=c++17 :all
   echo $(date): Bazel test completed.
 fi

@@ -25,7 +25,7 @@ headers, and XML registry.
 
 <img alt="Linux" src="kokoro/img/linux.png" width="20px" height="20px" hspace="2px"/>[![Linux Build Status](https://storage.googleapis.com/spirv-tools/badges/build_status_linux_clang_release.svg)](https://storage.googleapis.com/spirv-tools/badges/build_link_linux_clang_release.html)
 <img alt="MacOS" src="kokoro/img/macos.png" width="20px" height="20px" hspace="2px"/>[![MacOS Build Status](https://storage.googleapis.com/spirv-tools/badges/build_status_macos_clang_release.svg)](https://storage.googleapis.com/spirv-tools/badges/build_link_macos_clang_release.html)
-<img alt="Windows" src="kokoro/img/windows.png" width="20px" height="20px" hspace="2px"/>[![Windows Build Status](https://storage.googleapis.com/spirv-tools/badges/build_status_windows_release.svg)](https://storage.googleapis.com/spirv-tools/badges/build_link_windows_vs2017_release.html)
+<img alt="Windows" src="kokoro/img/windows.png" width="20px" height="20px" hspace="2px"/>[![Windows Build Status](https://storage.googleapis.com/spirv-tools/badges/build_status_windows_release.svg)](https://storage.googleapis.com/spirv-tools/badges/build_link_windows_vs2019_release.html)
 
 [More downloads](docs/downloads.md)
 
@@ -380,10 +380,18 @@ fuzzer tests.
 
 ### Build using Bazel
 You can also use [Bazel](https://bazel.build/) to build the project.
+
+On linux:
 ```sh
 cd <spirv-dir>
-bazel build :all
+bazel build --cxxopt=-std=c++17 :all
 ```
+
+On windows:
+```sh
+bazel build --cxxopt=/std:c++17 :all
+```
+
 ### Build a node.js package using Emscripten
 
 The SPIRV-Tools core library can be built to a WebAssembly [node.js](https://nodejs.org)
@@ -435,8 +443,12 @@ On MacOS
 
 On Windows
 - Visual Studio 2017
+- Visual Studio 2019
+- Visual Studio 2022
 
-Other compilers or later versions may work, but they are not tested.
+Note: Visual Studio 2017 has incomplete c++17 support. We might stop
+testing it soon. Other compilers or later versions may work, but they are not
+tested.
 
 ### CMake options
 
@@ -497,7 +509,7 @@ The script requires Chromium's
 
 ### Usage
 
-The internals of the library use C++11 features, and are exposed via both a C
+The internals of the library use C++17 features, and are exposed via both a C
 and C++ API.
 
 In order to use the library from an application, the include path should point
@@ -719,10 +731,16 @@ Use `bazel test :all` to run all tests. This will run tests in parallel by defau
 To run a single test target, specify `:my_test_target` instead of `:all`. Test target
 names get printed when you run `bazel test :all`. For example, you can run
 `opt_def_use_test` with:
+
+on linux:
 ```shell
-bazel test :opt_def_use_test
+bazel test --cxxopt=-std=c++17 :opt_def_use_test
 ```
 
+on windows:
+```shell
+bazel test --cxxopt=/std:c++17 :opt_def_use_test
+```
 
 ## Future Work
 <a name="future"></a>

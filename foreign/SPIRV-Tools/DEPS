@@ -3,17 +3,15 @@ use_relative_paths = True
 vars = {
   'github': 'https://github.com',
 
-  'effcee_revision': 'c7b4db79f340f7a9981e8a484f6d5785e24242d1',
+  'effcee_revision': '66edefd2bb641de8a2f46b476de21f227fc03a28',
 
-  # Pin to the last version of googletest that supports C++11.
-  # Anything later requires C++14
-  'googletest_revision': 'v1.12.0',
+  'googletest_revision': '038e392ebd8081c756e180475cc361f711fb438d',
 
   # Use protobufs before they gained the dependency on abseil
   'protobuf_revision': 'v3.13.0.1',
 
-  're2_revision': '954656f47fe8fb505d4818da1e128417a79ea500',
-  'spirv_headers_revision': 'd13b52222c39a7e9a401b44646f0ca3a640fbd47',
+  're2_revision': 'b059ae85c83ca6b1f29dba20e92e4acb85cb5b29',
+  'spirv_headers_revision': '1feaf4414eb2b353764d01d88f8aa4bcc67b60db',
 }
 
 deps = {
