@@ -53,6 +53,7 @@ namespace spv {
         #include "GLSL.ext.EXT.h"
         #include "GLSL.ext.AMD.h"
         #include "GLSL.ext.NV.h"
+        #include "GLSL.ext.ARM.h"
     }
 }
 
@@ -439,6 +440,11 @@ const char* BuiltInString(int builtIn)
     case BuiltInPrimitiveLineIndicesEXT:         return "PrimitiveLineIndicesEXT";
     case BuiltInPrimitiveTriangleIndicesEXT:     return "PrimitiveTriangleIndicesEXT";
     case BuiltInCullPrimitiveEXT:                return "CullPrimitiveEXT";
+    case BuiltInCoreCountARM:           return "CoreCountARM";
+    case BuiltInCoreIDARM:              return "CoreIDARM";
+    case BuiltInCoreMaxIDARM:           return "CoreMaxIDARM";
+    case BuiltInWarpIDARM:              return "WarpIDARM";
+    case BuiltInWarpMaxIDARM:           return "BuiltInWarpMaxIDARM";
 
     default: return "Bad";
     }
@@ -998,6 +1004,7 @@ const char* CapabilityString(int info)
     case CapabilityWorkgroupMemoryExplicitLayoutKHR:            return "CapabilityWorkgroupMemoryExplicitLayoutKHR";
     case CapabilityWorkgroupMemoryExplicitLayout8BitAccessKHR:  return "CapabilityWorkgroupMemoryExplicitLayout8BitAccessKHR";
     case CapabilityWorkgroupMemoryExplicitLayout16BitAccessKHR: return "CapabilityWorkgroupMemoryExplicitLayout16BitAccessKHR";
+    case CapabilityCoreBuiltinsARM:                             return "CoreBuiltinsARM";
 
     default: return "Bad";
     }
@@ -1607,7 +1614,7 @@ void Parameterize()
     DecorationOperands[DecorationInputAttachmentIndex].push(OperandLiteralNumber, "'Attachment Index'");
     DecorationOperands[DecorationAlignment].push(OperandLiteralNumber, "'Alignment'");
 
-    OperandClassParams[OperandSource].set(0, SourceString, 0);
+    OperandClassParams[OperandSource].set(0, SourceString, nullptr);
     OperandClassParams[OperandExecutionModel].set(0, ExecutionModelString, nullptr);
     OperandClassParams[OperandAddressing].set(0, AddressingString, nullptr);
     OperandClassParams[OperandMemory].set(0, MemoryString, nullptr);
@@ -1639,7 +1646,7 @@ void Parameterize()
     OperandClassParams[OperandKernelEnqueueFlags].set(0, KernelEnqueueFlagsString, nullptr);
     OperandClassParams[OperandKernelProfilingInfo].set(0, KernelProfilingInfoString, nullptr, true);
     OperandClassParams[OperandCapability].set(0, CapabilityString, nullptr);
-    OperandClassParams[OperandOpcode].set(OpCodeMask + 1, OpcodeString, 0);
+    OperandClassParams[OperandOpcode].set(OpCodeMask + 1, OpcodeString, nullptr);
 
     // set name of operator, an initial set of <id> style operands, and the description
 

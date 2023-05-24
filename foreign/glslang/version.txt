@@ -1,8 +1,8 @@
-commit 5755de46b07e4374c05fb1081f65f7ae1f8cca81
-Merge: ef6c9714 78221d61
+commit 77551c429f86c0e077f26552b7c1c0f12a9f235e
+Merge: 5f6fa4e7 683c0f34
 Author: Greg Fischer <greg@lunarg.com>
-Date:   Thu Oct 13 11:29:59 2022 -0600
+Date:   Tue Dec 6 15:34:33 2022 -0700
 
-    Merge pull request #3049 from jeremy-lunarg/hayes-update-changes
+    Merge pull request #3081 from jeremy-lunarg/hayes-update-changes
     
-    Update CHANGES for release 11.12.0
+    Update CHANGES for release 11.13.0

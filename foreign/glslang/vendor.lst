@@ -24,6 +24,7 @@ README.md
 SPIRV/CInterface/spirv_c_interface.cpp
 SPIRV/CMakeLists.txt
 SPIRV/GLSL.ext.AMD.h
+SPIRV/GLSL.ext.ARM.h
 SPIRV/GLSL.ext.EXT.h
 SPIRV/GLSL.ext.KHR.h
 SPIRV/GLSL.ext.NV.h
@@ -53,11 +54,9 @@ SPIRV/spvIR.h
 StandAlone/CMakeLists.txt
 StandAlone/DirStackFileIncluder.h
 StandAlone/ResourceLimits.cpp
-StandAlone/ResourceLimits.h
 StandAlone/StandAlone.cpp
 StandAlone/Worklist.h
 StandAlone/resource_limits_c.cpp
-StandAlone/resource_limits_c.h
 StandAlone/spirv-remap.cpp
 Test/100.conf
 Test/100.frag
@@ -880,6 +879,7 @@ Test/baseResults/spv.1.4.sparseTexture.frag.out
 Test/baseResults/spv.1.4.texture.frag.out
 Test/baseResults/spv.1.6.conditionalDiscard.frag.out
 Test/baseResults/spv.1.6.helperInvocation.frag.out
+Test/baseResults/spv.1.6.helperInvocation.memmodel.frag.out
 Test/baseResults/spv.1.6.samplerBuffer.frag.out
 Test/baseResults/spv.1.6.separate.frag.out
 Test/baseResults/spv.1.6.specConstant.comp.out
@@ -925,6 +925,8 @@ Test/baseResults/spv.8bitstorage-ubo.vert.out
 Test/baseResults/spv.8bitstorage-uint.frag.out
 Test/baseResults/spv.8bitstorage_Error-int.frag.out
 Test/baseResults/spv.8bitstorage_Error-uint.frag.out
+Test/baseResults/spv.ARMCoreBuiltIns.frag.out
+Test/baseResults/spv.ARMCoreBuiltIns.vert.out
 Test/baseResults/spv.AnyHitShader.rahit.out
 Test/baseResults/spv.AnyHitShaderMotion.rahit.out
 Test/baseResults/spv.AnyHitShader_Errors.rahit.out
@@ -2044,6 +2046,7 @@ Test/spv.1.4.sparseTexture.frag
 Test/spv.1.4.texture.frag
 Test/spv.1.6.conditionalDiscard.frag
 Test/spv.1.6.helperInvocation.frag
+Test/spv.1.6.helperInvocation.memmodel.frag
 Test/spv.1.6.samplerBuffer.frag
 Test/spv.1.6.separate.frag
 Test/spv.1.6.specConstant.comp
@@ -2088,6 +2091,8 @@ Test/spv.8bitstorage-ubo.vert
 Test/spv.8bitstorage-uint.frag
 Test/spv.8bitstorage_Error-int.frag
 Test/spv.8bitstorage_Error-uint.frag
+Test/spv.ARMCoreBuiltIns.frag
+Test/spv.ARMCoreBuiltIns.vert
 Test/spv.AnyHitShader.rahit
 Test/spv.AnyHitShaderMotion.rahit
 Test/spv.AnyHitShader_Errors.rahit
@@ -2659,7 +2664,9 @@ glslang/OSDependent/Windows/CMakeLists.txt
 glslang/OSDependent/Windows/main.cpp
 glslang/OSDependent/Windows/ossource.cpp
 glslang/OSDependent/osinclude.h
+glslang/Public/ResourceLimits.h
 glslang/Public/ShaderLang.h
+glslang/Public/resource_limits_c.h
 glslang/updateGrammar
 gtests/AST.FromFile.cpp
 gtests/BuiltInResource.FromFile.cpp

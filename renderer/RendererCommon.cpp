@@ -39,7 +39,7 @@ THE SOFTWARE.
 
 #include <xxhash.h>
 
-#include <glslang/StandAlone/ResourceLimits.h>
+#include <glslang/Public/ResourceLimits.h>
 #include <glslang/SPIRV/SpvTools.h>
 #include <SPIRV/GlslangToSpv.h>
 
@@ -440,7 +440,7 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 
 // increase this when the shader compiler options change
 // so that the same source generates a different SPV
-const unsigned int shaderVersion = 103;
+const unsigned int shaderVersion = 104;
 
 
 // helper for storing in cache .json
@@ -794,7 +794,7 @@ compilationNeeded:
 		shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
 
 		// compile
-		bool success = shader.parse(&glslang::DefaultTBuiltInResource, 450, ECoreProfile, false, false, EShMsgDefault, includer);
+		bool success = shader.parse(GetDefaultResources(), 450, ECoreProfile, false, false, EShMsgDefault, includer);
 
 		const char *infoLog = shader.getInfoLog();
 		if (infoLog != nullptr && infoLog[0] != '\0') {

@@ -301,6 +301,10 @@ void TParseVersions::initializeExtensionBehavior()
     extensionBehavior[E_GL_NV_shader_sm_builtins]                    = EBhDisable;
     extensionBehavior[E_GL_NV_integer_cooperative_matrix]            = EBhDisable;
 
+    // ARM
+    extensionBehavior[E_GL_ARM_shader_core_builtins]    = EBhDisable;
+
+
     // AEP
     extensionBehavior[E_GL_ANDROID_extension_pack_es31a]             = EBhDisable;
     extensionBehavior[E_GL_KHR_blend_equation_advanced]              = EBhDisable;
@@ -1066,8 +1070,8 @@ void TParseVersions::checkExtensionStage(const TSourceLoc& loc, const char * con
     if (strcmp(extension, "GL_NV_mesh_shader") == 0) {
         requireStage(loc, (EShLanguageMask)(EShLangTaskMask | EShLangMeshMask | EShLangFragmentMask),
                      "#extension GL_NV_mesh_shader");
-        profileRequires(loc, ECoreProfile, 450, 0, "#extension GL_NV_mesh_shader");
-        profileRequires(loc, EEsProfile, 320, 0, "#extension GL_NV_mesh_shader");
+        profileRequires(loc, ECoreProfile, 450, nullptr, "#extension GL_NV_mesh_shader");
+        profileRequires(loc, EEsProfile, 320, nullptr, "#extension GL_NV_mesh_shader");
         if (extensionTurnedOn(E_GL_EXT_mesh_shader)) {
             error(loc, "GL_EXT_mesh_shader is already turned on, and not allowed with", "#extension", extension);
         }
@@ -1075,8 +1079,8 @@ void TParseVersions::checkExtensionStage(const TSourceLoc& loc, const char * con
     else if (strcmp(extension, "GL_EXT_mesh_shader") == 0) {
         requireStage(loc, (EShLanguageMask)(EShLangTaskMask | EShLangMeshMask | EShLangFragmentMask),
                      "#extension GL_EXT_mesh_shader");
-        profileRequires(loc, ECoreProfile, 450, 0, "#extension GL_EXT_mesh_shader");
-        profileRequires(loc, EEsProfile, 320, 0, "#extension GL_EXT_mesh_shader");
+        profileRequires(loc, ECoreProfile, 450, nullptr, "#extension GL_EXT_mesh_shader");
+        profileRequires(loc, EEsProfile, 320, nullptr, "#extension GL_EXT_mesh_shader");
         if (extensionTurnedOn(E_GL_NV_mesh_shader)) {
             error(loc, "GL_NV_mesh_shader is already turned on, and not allowed with", "#extension", extension);
         }

@@ -836,11 +836,15 @@ int TParseContext::getIoArrayImplicitSize(const TQualifier &qualifier, TString *
     } else if (language == EShLangMesh) {
         unsigned int maxPrimitives =
             intermediate.getPrimitives() != TQualifier::layoutNotSet ? intermediate.getPrimitives() : 0;
-        if (qualifier.builtIn == EbvPrimitiveIndicesNV || qualifier.builtIn == EbvPrimitiveTriangleIndicesEXT ||
-            qualifier.builtIn == EbvPrimitiveLineIndicesEXT || qualifier.builtIn == EbvPrimitivePointIndicesEXT) {
+        if (qualifier.builtIn == EbvPrimitiveIndicesNV) {
             expectedSize = maxPrimitives * TQualifier::mapGeometryToSize(intermediate.getOutputPrimitive());
             str = "max_primitives*";
             str += TQualifier::getGeometryString(intermediate.getOutputPrimitive());
+        }
+        else if (qualifier.builtIn == EbvPrimitiveTriangleIndicesEXT || qualifier.builtIn == EbvPrimitiveLineIndicesEXT ||
+                 qualifier.builtIn == EbvPrimitivePointIndicesEXT) {
+            expectedSize = maxPrimitives;
+            str = "max_primitives";
         }
         else if (qualifier.isPerPrimitive()) {
             expectedSize = maxPrimitives;
@@ -1161,7 +1165,7 @@ TFunction* TParseContext::handleFunctionDeclarator(const TSourceLoc& loc, TFunct
     if (symbol && builtIn && function.getBuiltInOp() == EOpSpirvInst)
         symbol = nullptr;
 #endif
-    const TFunction* prevDec = symbol ? symbol->getAsFunction() : 0;
+    const TFunction* prevDec = symbol ? symbol->getAsFunction() : nullptr;
     if (prevDec) {
         if (prevDec->isPrototyped() && prototype)
             profileRequires(loc, EEsProfile, 300, nullptr, "multiple prototypes for same function");
@@ -3136,7 +3140,7 @@ void TParseContext::reservedPpErrorCheck(const TSourceLoc& loc, const char* iden
             ppWarn(loc, "\"defined\" is (un)defined:", op,  identifier);
         else
             ppError(loc, "\"defined\" can't be (un)defined:", op,  identifier);
-    else if (strstr(identifier, "__") != 0 && !extensionTurnedOn(E_GL_EXT_spirv_intrinsics)) {
+    else if (strstr(identifier, "__") != nullptr && !extensionTurnedOn(E_GL_EXT_spirv_intrinsics)) {
         // The extension GL_EXT_spirv_intrinsics allows us to declare macros prefixed with "__".
         if (isEsProfile() && version >= 300 &&
             (strcmp(identifier, "__LINE__") == 0 ||
@@ -5202,7 +5206,7 @@ void TParseContext::inductiveLoopCheck(const TSourceLoc& loc, TIntermNode* init,
     bool badInit = false;
     if (! init || ! init->getAsAggregate() || init->getAsAggregate()->getSequence().size() != 1)
         badInit = true;
-    TIntermBinary* binaryInit = 0;
+    TIntermBinary* binaryInit = nullptr;
     if (! badInit) {
         // get the declaration assignment
         binaryInit = init->getAsAggregate()->getSequence()[0]->getAsBinaryNode();
@@ -5973,8 +5977,14 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
         if (id == "max_vertices") {
             requireExtensions(loc, Num_AEP_mesh_shader, AEP_mesh_shader, "max_vertices");
             publicType.shaderQualifiers.vertices = value;
-            if (value > resources.maxMeshOutputVerticesNV)
-                error(loc, "too large, must be less than gl_MaxMeshOutputVerticesNV", "max_vertices", "");
+            int max = extensionTurnedOn(E_GL_EXT_mesh_shader) ? resources.maxMeshOutputVerticesEXT
+                                                              : resources.maxMeshOutputVerticesNV;
+            if (value > max) {
+                TString maxsErrtring = "too large, must be less than ";
+                maxsErrtring.append(extensionTurnedOn(E_GL_EXT_mesh_shader) ? "gl_MaxMeshOutputVerticesEXT"
+                                                                            : "gl_MaxMeshOutputVerticesNV");
+                error(loc, maxsErrtring.c_str(), "max_vertices", "");
+            }
             if (nonLiteral)
                 error(loc, "needs a literal integer", "max_vertices", "");
             return;
@@ -5982,8 +5992,14 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
         if (id == "max_primitives") {
             requireExtensions(loc, Num_AEP_mesh_shader, AEP_mesh_shader, "max_primitives");
             publicType.shaderQualifiers.primitives = value;
-            if (value > resources.maxMeshOutputPrimitivesNV)
-                error(loc, "too large, must be less than gl_MaxMeshOutputPrimitivesNV", "max_primitives", "");
+            int max = extensionTurnedOn(E_GL_EXT_mesh_shader) ? resources.maxMeshOutputPrimitivesEXT
+                                                              : resources.maxMeshOutputPrimitivesNV;
+            if (value > max) {
+                TString maxsErrtring = "too large, must be less than ";
+                maxsErrtring.append(extensionTurnedOn(E_GL_EXT_mesh_shader) ? "gl_MaxMeshOutputPrimitivesEXT"
+                                                                            : "gl_MaxMeshOutputPrimitivesNV");
+                error(loc, maxsErrtring.c_str(), "max_primitives", "");
+            }
             if (nonLiteral)
                 error(loc, "needs a literal integer", "max_primitives", "");
             return;
@@ -5999,7 +6015,7 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             if (language == EShLangMesh || language == EShLangTask) {
                 requireExtensions(loc, Num_AEP_mesh_shader, AEP_mesh_shader, "gl_WorkGroupSize");
             } else {
-                profileRequires(loc, EEsProfile, 310, 0, "gl_WorkGroupSize");
+                profileRequires(loc, EEsProfile, 310, nullptr, "gl_WorkGroupSize");
                 profileRequires(loc, ~EEsProfile, 430, E_GL_ARB_compute_shader, "gl_WorkGroupSize");
             }
 #endif
@@ -7066,7 +7082,7 @@ TIntermTyped* TParseContext::vkRelaxedRemapFunctionCall(const TSourceLoc& loc, T
             realFunc.addParameter(TParameter().copyParam((*function)[i]));
         }
 
-        TParameter tmpP = { 0, &uintType };
+        TParameter tmpP = { nullptr, &uintType };
         realFunc.addParameter(TParameter().copyParam(tmpP));
         arguments = intermediate.growAggregate(arguments, intermediate.addConstantUnion(1, loc, true));
 
@@ -7083,7 +7099,7 @@ TIntermTyped* TParseContext::vkRelaxedRemapFunctionCall(const TSourceLoc& loc, T
             realFunc.addParameter(TParameter().copyParam((*function)[i]));
         }
 
-        TParameter tmpP = { 0, &uintType };
+        TParameter tmpP = { nullptr, &uintType };
         realFunc.addParameter(TParameter().copyParam(tmpP));
         arguments = intermediate.growAggregate(arguments, intermediate.addConstantUnion(-1, loc, true));
 
