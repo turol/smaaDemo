@@ -1,4 +1,3 @@
-.appveyor.yml
 .clang-format
 .gitattributes
 .github/workflows/continuous_deployment.yml
@@ -6,6 +5,7 @@
 .github/workflows/deploy.js
 .gitignore
 .gn
+.mailmap
 Android.mk
 BUILD.bazel
 BUILD.gn
@@ -311,6 +311,9 @@ Test/baseResults/functionCall.frag.out
 Test/baseResults/functionSemantics.frag.out
 Test/baseResults/gl_FragCoord.frag.out
 Test/baseResults/glsl.-D-U.frag.out
+Test/baseResults/glsl.-P.frag.out
+Test/baseResults/glsl.-P.function.frag.out
+Test/baseResults/glsl.-P.include.frag.out
 Test/baseResults/glsl.140.layoutOffset.error.vert.out
 Test/baseResults/glsl.430.layoutOffset.error.vert.out
 Test/baseResults/glsl.450.subgroup.frag.out
@@ -440,6 +443,7 @@ Test/baseResults/hlsl.domain.3.tese.out
 Test/baseResults/hlsl.earlydepthstencil.frag.out
 Test/baseResults/hlsl.emptystruct.init.vert.out
 Test/baseResults/hlsl.emptystructreturn.frag.out
+Test/baseResults/hlsl.emptystructreturn.tesc.out
 Test/baseResults/hlsl.emptystructreturn.vert.out
 Test/baseResults/hlsl.entry-in.frag.out
 Test/baseResults/hlsl.entry-out.frag.out
@@ -678,6 +682,8 @@ Test/baseResults/hlsl.structbuffer.incdec.frag.out
 Test/baseResults/hlsl.structbuffer.rw.frag.out
 Test/baseResults/hlsl.structbuffer.rwbyte.frag.out
 Test/baseResults/hlsl.structbuffer.rwbyte2.comp.out
+Test/baseResults/hlsl.structcopy.comp.out
+Test/baseResults/hlsl.structcopylogical.comp.out
 Test/baseResults/hlsl.structin.vert.out
 Test/baseResults/hlsl.subpass.frag.out
 Test/baseResults/hlsl.switch.frag.out
@@ -1084,6 +1090,12 @@ Test/baseResults/spv.ext.RayGenShaderArray.rgen.out
 Test/baseResults/spv.ext.RayGenShader_Errors.rgen.out
 Test/baseResults/spv.ext.RayPrimCull_Errors.rgen.out
 Test/baseResults/spv.ext.RayQueryDecl.frag.out
+Test/baseResults/spv.ext.ShaderTileImage.color.frag.out
+Test/baseResults/spv.ext.ShaderTileImage.depth_stencil.frag.out
+Test/baseResults/spv.ext.ShaderTileImage.overlap.frag.out
+Test/baseResults/spv.ext.ShaderTileImage.subpassinput.frag.out
+Test/baseResults/spv.ext.ShaderTileImage.typemismatch.frag.out
+Test/baseResults/spv.ext.ShaderTileImage.wronglayout.frag.out
 Test/baseResults/spv.ext.World3x4.rahit.out
 Test/baseResults/spv.ext.meshShaderBuiltins.mesh.out
 Test/baseResults/spv.ext.meshShaderRedeclBuiltins.mesh.out
@@ -1143,6 +1155,8 @@ Test/baseResults/spv.intcoopmat.comp.out
 Test/baseResults/spv.interpOps.frag.out
 Test/baseResults/spv.intrinsicsSpirvByReference.vert.out
 Test/baseResults/spv.intrinsicsSpirvDecorate.frag.out
+Test/baseResults/spv.intrinsicsSpirvDecorateId.comp.out
+Test/baseResults/spv.intrinsicsSpirvDecorateString.comp.out
 Test/baseResults/spv.intrinsicsSpirvExecutionMode.frag.out
 Test/baseResults/spv.intrinsicsSpirvInstruction.vert.out
 Test/baseResults/spv.intrinsicsSpirvLiteral.vert.out
@@ -1261,6 +1275,7 @@ Test/baseResults/spv.stereoViewRendering.tesc.out
 Test/baseResults/spv.stereoViewRendering.vert.out
 Test/baseResults/spv.storageBuffer.vert.out
 Test/baseResults/spv.structAssignment.frag.out
+Test/baseResults/spv.structCopy.comp.out
 Test/baseResults/spv.structDeref.frag.out
 Test/baseResults/spv.structure.frag.out
 Test/baseResults/spv.subgroup.frag.out
@@ -1456,6 +1471,10 @@ Test/functionCall.frag
 Test/functionSemantics.frag
 Test/gl_FragCoord.frag
 Test/glsl.-D-U.frag
+Test/glsl.-P.frag
+Test/glsl.-P.function.frag
+Test/glsl.-P.include.frag
+Test/glsl.-P.included.glsl
 Test/glsl.140.layoutOffset.error.vert
 Test/glsl.430.layoutOffset.error.vert
 Test/glsl.450.subgroup.frag
@@ -1582,6 +1601,7 @@ Test/hlsl.domain.3.tese
 Test/hlsl.earlydepthstencil.frag
 Test/hlsl.emptystruct.init.vert
 Test/hlsl.emptystructreturn.frag
+Test/hlsl.emptystructreturn.tesc
 Test/hlsl.emptystructreturn.vert
 Test/hlsl.entry-in.frag
 Test/hlsl.entry-out.frag
@@ -1820,6 +1840,8 @@ Test/hlsl.structbuffer.incdec.frag
 Test/hlsl.structbuffer.rw.frag
 Test/hlsl.structbuffer.rwbyte.frag
 Test/hlsl.structbuffer.rwbyte2.comp
+Test/hlsl.structcopy.comp
+Test/hlsl.structcopylogical.comp
 Test/hlsl.structin.vert
 Test/hlsl.subpass.frag
 Test/hlsl.switch.frag
@@ -2262,6 +2284,12 @@ Test/spv.ext.RayGenShaderArray.rgen
 Test/spv.ext.RayGenShader_Errors.rgen
 Test/spv.ext.RayPrimCull_Errors.rgen
 Test/spv.ext.RayQueryDecl.frag
+Test/spv.ext.ShaderTileImage.color.frag
+Test/spv.ext.ShaderTileImage.depth_stencil.frag
+Test/spv.ext.ShaderTileImage.overlap.frag
+Test/spv.ext.ShaderTileImage.subpassinput.frag
+Test/spv.ext.ShaderTileImage.typemismatch.frag
+Test/spv.ext.ShaderTileImage.wronglayout.frag
 Test/spv.ext.World3x4.rahit
 Test/spv.ext.meshShaderBuiltins.mesh
 Test/spv.ext.meshShaderRedeclBuiltins.mesh
@@ -2321,6 +2349,8 @@ Test/spv.intcoopmat.comp
 Test/spv.interpOps.frag
 Test/spv.intrinsicsSpirvByReference.vert
 Test/spv.intrinsicsSpirvDecorate.frag
+Test/spv.intrinsicsSpirvDecorateId.comp
+Test/spv.intrinsicsSpirvDecorateString.comp
 Test/spv.intrinsicsSpirvExecutionMode.frag
 Test/spv.intrinsicsSpirvInstruction.vert
 Test/spv.intrinsicsSpirvLiteral.vert
@@ -2439,6 +2469,7 @@ Test/spv.stereoViewRendering.tesc
 Test/spv.stereoViewRendering.vert
 Test/spv.storageBuffer.vert
 Test/spv.structAssignment.frag
+Test/spv.structCopy.comp
 Test/spv.structDeref.frag
 Test/spv.structure.frag
 Test/spv.subgroup.frag
@@ -2747,9 +2778,9 @@ kokoro/linux-gcc-cmake/static/presubmit.cfg
 kokoro/macos-clang-release-bazel/build.sh
 kokoro/macos-clang-release-bazel/continuous.cfg
 kokoro/macos-clang-release-bazel/presubmit.cfg
-kokoro/windows-msvc-2015-release-bazel/build.bat
-kokoro/windows-msvc-2015-release-bazel/continuous.cfg
-kokoro/windows-msvc-2015-release-bazel/presubmit.cfg
+kokoro/windows-msvc-2019-release-bazel/build.bat
+kokoro/windows-msvc-2019-release-bazel/continuous.cfg
+kokoro/windows-msvc-2019-release-bazel/presubmit.cfg
 license-checker.cfg
 ndk_test/Android.mk
 ndk_test/jni/Application.mk
