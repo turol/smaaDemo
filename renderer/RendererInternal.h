@@ -65,7 +65,7 @@ public:
 
 	~ResourceContainer() {}
 
-	std::pair<T &, HandleType > add() {
+	std::pair<T &, HandleType> add() {
 		unsigned int handle = next;
 		next++;
 		auto result = resources.emplace(handle, T());

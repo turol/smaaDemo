@@ -87,8 +87,8 @@ class Handle {
 	friend class ResourceContainer<T, BaseType, true>;
 	friend class ResourceContainer<T, BaseType, false>;
 
-	HandleType handle;
-	bool owned;
+	HandleType  handle;
+	bool        owned;
 
 
 	Handle(HandleType handle_, bool owned_ = true)
