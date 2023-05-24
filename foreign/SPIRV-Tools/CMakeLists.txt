@@ -12,26 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cmake_minimum_required(VERSION 2.8.12)
-if (POLICY CMP0048)
-  cmake_policy(SET CMP0048 NEW)
-endif()
-if (POLICY CMP0054)
-  # Avoid dereferencing variables or interpret keywords that have been
-  # quoted or bracketed.
-  # https://cmake.org/cmake/help/v3.1/policy/CMP0054.html
-  cmake_policy(SET CMP0054 NEW)
-endif()
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+cmake_minimum_required(VERSION 3.17.2)
 
 project(spirv-tools)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 enable_testing()
 set(SPIRV_TOOLS "SPIRV-Tools")
 
 include(GNUInstallDirs)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_CXX_STANDARD 11)
+
+# Require at least C++11
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 11)
+endif()
+if(${CMAKE_CXX_STANDARD} LESS 11)
+  message(FATAL_ERROR "SPIRV-Tools requires C++11 or later, but is configured for C++${CMAKE_CXX_STANDARD})")
+endif()
+
 
 option(ENABLE_RTTI "Enables RTTI" OFF)
 option(SPIRV_ALLOW_TIMERS "Allow timers via clock_gettime on supported platforms" ON)
@@ -200,7 +201,7 @@ function(spvtools_default_compile_options TARGET)
     if(NOT "${SPIRV_PERF}" STREQUAL "")
       target_compile_options(${TARGET} PRIVATE -fno-omit-frame-pointer)
     endif()
-    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
       set(SPIRV_USE_SANITIZER "" CACHE STRING
         "Use the clang sanitizer [address|memory|thread|...]")
       if(NOT "${SPIRV_USE_SANITIZER}" STREQUAL "")

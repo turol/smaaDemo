@@ -1,5 +1,7 @@
 # SPIR-V Tools
 
+NEWS 2023-01-11: Development occurs on the `main` branch.
+
 ## Overview
 
 The SPIR-V Tools project provides an API and commands for processing SPIR-V
@@ -96,10 +98,10 @@ and in-progress work.
 
 *Note*: The validator checks some Universal Limits, from section 2.17 of the SPIR-V spec.
 The validator will fail on a module that exceeds those minimum upper bound limits.
-It is [future work](https://github.com/KhronosGroup/SPIRV-Tools/projects/1#card-1052403)
-to parameterize the validator to allow larger
-limits accepted by a more than minimally capable SPIR-V consumer.
+The validator has been parameterized to allow larger values, for use when targeting 
+a more-than-minimally-capable SPIR-V consumer.
 
+See [`tools/val/val.cpp`](tools/val/val.cpp) or run `spirv-val --help` for the command-line help.
 
 ### Optimizer
 
@@ -271,7 +273,7 @@ Contributions via merge request are welcome. Changes should:
   `clang-format version 5.0.0` for SPIRV-Tools. Settings are defined by
   the included [.clang-format](.clang-format) file.
 
-We intend to maintain a linear history on the GitHub `master` branch.
+We intend to maintain a linear history on the GitHub `main` branch.
 
 ### Getting the source
 
@@ -432,7 +434,6 @@ On MacOS
 - AppleClang 11.0
 
 On Windows
-- Visual Studio 2015
 - Visual Studio 2017
 
 Other compilers or later versions may work, but they are not tested.

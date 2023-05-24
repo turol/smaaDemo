@@ -1,4 +1,6 @@
+.bazelversion
 .clang-format
+.github/workflows/bazel.yml
 .github/workflows/wasm.yml
 .gitignore
 .gn
@@ -25,7 +27,6 @@ cmake/SPIRV-Tools-shared.pc.in
 cmake/SPIRV-Tools.pc.in
 cmake/write_pkg_config.cmake
 codereview.settings
-docker-compose.yml
 docs/downloads.md
 docs/projects.md
 docs/spirv-fuzz.md
@@ -88,17 +89,12 @@ kokoro/scripts/windows/build.bat
 kokoro/shaderc-smoketest/build.sh
 kokoro/shaderc-smoketest/continuous.cfg
 kokoro/shaderc-smoketest/presubmit.cfg
-kokoro/windows-msvc-2013-release/build.bat
-kokoro/windows-msvc-2013-release/presubmit.cfg
-kokoro/windows-msvc-2015-release-bazel/build.bat
-kokoro/windows-msvc-2015-release-bazel/continuous.cfg
-kokoro/windows-msvc-2015-release-bazel/presubmit.cfg
-kokoro/windows-msvc-2015-release/build.bat
-kokoro/windows-msvc-2015-release/continuous.cfg
-kokoro/windows-msvc-2015-release/presubmit.cfg
 kokoro/windows-msvc-2017-debug/build.bat
 kokoro/windows-msvc-2017-debug/continuous.cfg
 kokoro/windows-msvc-2017-debug/presubmit.cfg
+kokoro/windows-msvc-2017-release-bazel/build.bat
+kokoro/windows-msvc-2017-release-bazel/continuous.cfg
+kokoro/windows-msvc-2017-release-bazel/presubmit.cfg
 kokoro/windows-msvc-2017-release/build.bat
 kokoro/windows-msvc-2017-release/continuous.cfg
 kokoro/windows-msvc-2017-release/presubmit.cfg
@@ -541,6 +537,8 @@ source/opt/aggressive_dead_code_elim_pass.cpp
 source/opt/aggressive_dead_code_elim_pass.h
 source/opt/amd_ext_to_khr.cpp
 source/opt/amd_ext_to_khr.h
+source/opt/analyze_live_input_pass.cpp
+source/opt/analyze_live_input_pass.h
 source/opt/basic_block.cpp
 source/opt/basic_block.h
 source/opt/block_merge_pass.cpp
@@ -603,10 +601,12 @@ source/opt/eliminate_dead_functions_pass.cpp
 source/opt/eliminate_dead_functions_pass.h
 source/opt/eliminate_dead_functions_util.cpp
 source/opt/eliminate_dead_functions_util.h
-source/opt/eliminate_dead_input_components_pass.cpp
-source/opt/eliminate_dead_input_components_pass.h
+source/opt/eliminate_dead_io_components_pass.cpp
+source/opt/eliminate_dead_io_components_pass.h
 source/opt/eliminate_dead_members_pass.cpp
 source/opt/eliminate_dead_members_pass.h
+source/opt/eliminate_dead_output_stores_pass.cpp
+source/opt/eliminate_dead_output_stores_pass.h
 source/opt/empty_pass.h
 source/opt/feature_manager.cpp
 source/opt/feature_manager.h
@@ -660,6 +660,8 @@ source/opt/ir_loader.h
 source/opt/iterator.h
 source/opt/licm_pass.cpp
 source/opt/licm_pass.h
+source/opt/liveness.cpp
+source/opt/liveness.h
 source/opt/local_access_chain_convert_pass.cpp
 source/opt/local_access_chain_convert_pass.h
 source/opt/local_redundancy_elimination.cpp
@@ -916,6 +918,7 @@ source/val/validate_non_uniform.cpp
 source/val/validate_primitives.cpp
 source/val/validate_ray_query.cpp
 source/val/validate_ray_tracing.cpp
+source/val/validate_ray_tracing_reorder.cpp
 source/val/validate_scopes.cpp
 source/val/validate_scopes.h
 source/val/validate_small_type_uses.cpp
@@ -924,6 +927,7 @@ source/val/validation_state.cpp
 source/val/validation_state.h
 source/wasm/README.md
 source/wasm/build.sh
+source/wasm/docker-compose.yml
 source/wasm/package.json
 source/wasm/spirv-tools.cpp
 source/wasm/spirv-tools.d.ts
@@ -1286,6 +1290,7 @@ test/operand_test.cpp
 test/opt/CMakeLists.txt
 test/opt/aggressive_dead_code_elim_test.cpp
 test/opt/amd_ext_to_khr.cpp
+test/opt/analyze_live_input_test.cpp
 test/opt/assembly_builder.h
 test/opt/assembly_builder_test.cpp
 test/opt/block_merge_test.cpp
@@ -1325,8 +1330,9 @@ test/opt/dominator_tree/unreachable_for.cpp
 test/opt/dominator_tree/unreachable_for_post.cpp
 test/opt/eliminate_dead_const_test.cpp
 test/opt/eliminate_dead_functions_test.cpp
-test/opt/eliminate_dead_input_components_test.cpp
+test/opt/eliminate_dead_io_components_test.cpp
 test/opt/eliminate_dead_member_test.cpp
+test/opt/eliminate_dead_output_stores_test.cpp
 test/opt/feature_manager_test.cpp
 test/opt/fix_func_call_arguments_test.cpp
 test/opt/fix_storage_class_test.cpp
@@ -1541,6 +1547,7 @@ test/val/val_non_uniform_test.cpp
 test/val/val_opencl_test.cpp
 test/val/val_primitives_test.cpp
 test/val/val_ray_query_test.cpp
+test/val/val_ray_tracing_reorder_test.cpp
 test/val/val_ray_tracing_test.cpp
 test/val/val_small_type_uses_test.cpp
 test/val/val_ssa_test.cpp

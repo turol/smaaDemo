@@ -51,6 +51,7 @@ FILES:= \
 	validate_primitives.cpp \
 	validate_ray_query.cpp \
 	validate_ray_tracing.cpp \
+	validate_ray_tracing_reorder.cpp \
 	validate_scopes.cpp \
 	validate_small_type_uses.cpp \
 	validate_type.cpp \

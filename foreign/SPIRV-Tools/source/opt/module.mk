@@ -13,6 +13,7 @@ $(eval $(foreach directory, $(DIRS), $(call directory-module,$(directory)) ))
 
 FILES:= \
 	aggressive_dead_code_elim_pass.cpp \
+	analyze_live_input_pass.cpp \
 	amd_ext_to_khr.cpp \
 	basic_block.cpp \
 	block_merge_pass.cpp \
@@ -43,8 +44,9 @@ FILES:= \
 	eliminate_dead_constant_pass.cpp \
 	eliminate_dead_functions_pass.cpp \
 	eliminate_dead_functions_util.cpp \
-	eliminate_dead_input_components_pass.cpp \
+	eliminate_dead_io_components_pass.cpp \
 	eliminate_dead_members_pass.cpp \
+	eliminate_dead_output_stores_pass.cpp \
 	feature_manager.cpp \
 	fix_func_call_arguments.cpp \
 	fix_storage_class.cpp \
@@ -70,6 +72,7 @@ FILES:= \
 	ir_context.cpp \
 	ir_loader.cpp \
 	licm_pass.cpp \
+	liveness.cpp \
 	local_access_chain_convert_pass.cpp \
 	local_redundancy_elimination.cpp \
 	local_single_block_elim_pass.cpp \

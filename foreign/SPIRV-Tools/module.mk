@@ -81,11 +81,11 @@ build-version.inc: $(d)/utils/update_build_version.py $(d)/CHANGES
 
 
 core.insts-unified1.inc operand.kinds-unified1.inc: $(d)/utils/generate_grammar_tables.py spirv.core.grammar.json extinst.debuginfo.grammar.json extinst.opencl.debuginfo.100.grammar.json
-	$(PYTHON) $(word 1, $^) --spirv-core-grammar=$(word 2, $^) --extinst-debuginfo-grammar=$(word 3, $^) --extinst-cldebuginfo100-grammar=$(word 4, $^) --core-insts-output=core.insts-unified1.inc --operand-kinds-output=operand.kinds-unified1.inc
+	$(PYTHON) $(word 1, $^) --spirv-core-grammar=$(word 2, $^) --extinst-debuginfo-grammar=$(word 3, $^) --extinst-cldebuginfo100-grammar=$(word 4, $^) --core-insts-output=core.insts-unified1.inc --operand-kinds-output=operand.kinds-unified1.inc --output-language=c++
 
 
 enum_string_mapping.inc extension_enum.inc: $(d)/utils/generate_grammar_tables.py spirv.core.grammar.json extinst.debuginfo.grammar.json extinst.opencl.debuginfo.100.grammar.json
-	$(PYTHON) $(word 1, $^) --spirv-core-grammar=$(word 2, $^) --extinst-debuginfo-grammar=$(word 3, $^) --extinst-cldebuginfo100-grammar=$(word 4, $^) --extension-enum-output=extension_enum.inc --enum-string-mapping-output=enum_string_mapping.inc
+	$(PYTHON) $(word 1, $^) --spirv-core-grammar=$(word 2, $^) --extinst-debuginfo-grammar=$(word 3, $^) --extinst-cldebuginfo100-grammar=$(word 4, $^) --extension-enum-output=extension_enum.inc --enum-string-mapping-output=enum_string_mapping.inc --output-language=c++
 
 
 generators.inc: $(d)/utils/generate_registry_tables.py $(d)/../SPIRV-Headers/include/spirv/spir-v.xml
@@ -93,11 +93,11 @@ generators.inc: $(d)/utils/generate_registry_tables.py $(d)/../SPIRV-Headers/inc
 
 
 glsl.std.450.insts.inc: $(d)/utils/generate_grammar_tables.py extinst.glsl.std.450.grammar.json
-	$(PYTHON) $(word 1, $^) --extinst-glsl-grammar=$(word 2, $^) --glsl-insts-output=$@
+	$(PYTHON) $(word 1, $^) --extinst-glsl-grammar=$(word 2, $^) --glsl-insts-output=$@ --output-language=c++
 
 
 opencl.std.insts.inc: $(d)/utils/generate_grammar_tables.py extinst.opencl.std.100.grammar.json
-	$(PYTHON) $(word 1, $^) --extinst-opencl-grammar=$(word 2, $^) --opencl-insts-output=$@
+	$(PYTHON) $(word 1, $^) --extinst-opencl-grammar=$(word 2, $^) --opencl-insts-output=$@ --output-language=c++
 
 
 $(SRC_spirv-tools:.cpp=$(OBJSUFFIX)): $(SPV_GENERATED)
