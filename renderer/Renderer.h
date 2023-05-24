@@ -44,6 +44,8 @@ THE SOFTWARE.
 
 #include <better-enums/enum.h>
 
+#include <magic_enum.hpp>
+
 #include "utils/Hash.h"
 #include "utils/Utils.h"  // for isPow2
 
