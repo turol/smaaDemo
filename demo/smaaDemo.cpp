@@ -832,7 +832,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 
 		TCLAP::ValueArg<unsigned int>          rotateSwitch("",       "rotate",     "Rotation period",          false, 0,                             "seconds",            cmd);
 
-		TCLAP::ValueArg<std::string>           aaMethodSwitch("m",    "method",     "AA Method",                false, "SMAA",                        "SMAA/FXAA/MSAA",     cmd);
+		TCLAP::ValueArg<std::string>           aaMethodSwitch("m",    "method",     "AA Method",                false, "SMAA",                        "SMAA/SMAA2X/FXAA/MSAA",     cmd);
 		TCLAP::ValueArg<std::string>           aaQualitySwitch("q",   "quality",    "AA Quality",               false, "",                            "",                   cmd);
 		TCLAP::ValueArg<std::string>           debugModeSwitch("d",   "debugmode",  "SMAA debug mode",          false, "None",                        "None/Edges/Weights", cmd);
 		TCLAP::ValueArg<std::string>           deviceSwitch("",       "device",     "Set Vulkan device filter", false, "",                            "device name",        cmd);
