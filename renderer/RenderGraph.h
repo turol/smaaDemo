@@ -15,12 +15,12 @@ struct Default {
 };
 
 
-BETTER_ENUM(RGState, uint8_t
-	, Invalid
+enum class RGState : uint8_t {
+	  Invalid
 	, Building
 	, Ready
 	, Rendering
-)
+};
 
 
 /*
@@ -462,7 +462,7 @@ public:
 
 
 	void reset(Renderer &renderer) {
-		assert(state == +RGState::Invalid || state == +RGState::Ready);
+		assert(state == RGState::Invalid || state == RGState::Ready);
 		state = RGState::Building;
 
 		renderpassesWithExternalRTs.clear();
@@ -508,7 +508,7 @@ public:
 
 
 	void renderTarget(RT rt, const RenderTargetDesc &desc) {
-		assert(state == +RGState::Building);
+		assert(state == RGState::Building);
 		assert(rt != Default<RT>::value);
 
 		InternalRT temp1;
@@ -519,7 +519,7 @@ public:
 
 
 	void externalRenderTarget(RT rt, Format format, Layout initialLayout, Layout finalLayout) {
-		assert(state == +RGState::Building);
+		assert(state == RGState::Building);
 		assert(rt != Default<RT>::value);
 		assert(rendertargets.find(rt) == rendertargets.end());
 
@@ -536,7 +536,7 @@ public:
 
 
 	void renderPass(RP rp, const PassDesc &desc, RenderPassFunc f) {
-		assert(state == +RGState::Building);
+		assert(state == RGState::Building);
 
 		RenderPass rpData;
 		rpData.id = rp;
@@ -549,7 +549,7 @@ public:
 
 
 	void resolveMSAA(RT source, RT dest) {
-		assert(state == +RGState::Building);
+		assert(state == RGState::Building);
 
 		auto DEBUG_ASSERTED srcIt = rendertargets.find(source);
 		assert(srcIt != rendertargets.end());
@@ -567,7 +567,7 @@ public:
 
 
 	void presentRenderTarget(RT rt) {
-		assert(state == +RGState::Building);
+		assert(state == RGState::Building);
 		assert(rt != Default<RT>::value);
 
 		finalTarget = rt;
@@ -660,7 +660,7 @@ public:
 
 
 	void build(Renderer &renderer) {
-		assert(state == +RGState::Building);
+		assert(state == RGState::Building);
 		state = RGState::Ready;
 
 		assert(finalTarget != Default<RT>::value);
@@ -865,7 +865,7 @@ public:
 
 
 	void bindExternalRT(RT rt, RenderTargetHandle handle) {
-		assert(state == +RGState::Ready);
+		assert(state == RGState::Ready);
 		assert(handle);
 
 		auto it = rendertargets.find(rt);
@@ -881,7 +881,7 @@ public:
 
 
 	void render(Renderer &renderer) {
-		assert(state == +RGState::Ready);
+		assert(state == RGState::Ready);
 		state = RGState::Rendering;
 
 		if (hasExternalRTs) {
@@ -1038,7 +1038,7 @@ public:
 			renderer.presentFrame();
 		}
 
-		assert(state == +RGState::Rendering);
+		assert(state == RGState::Rendering);
 		state = RGState::Ready;
 
 		assert(currentRP == Default<RP>::value);
@@ -1079,7 +1079,7 @@ public:
 
 
 	PipelineHandle createPipeline(Renderer &renderer, RP rp, PipelineDesc &desc) {
-		assert(state == +RGState::Ready || state == +RGState::Rendering);
+		assert(state == RGState::Ready || state == RGState::Rendering);
 
 		LOG_TODO("use hash map");
 		bool DEBUG_ASSERTED found = false;
