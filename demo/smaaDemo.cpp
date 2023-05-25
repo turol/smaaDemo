@@ -895,11 +895,11 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 						// we don't know supported methods yet, delay the check until we do
 						aaMethodSetExplicitly = true;
 					} else {
-					if (aaMethodStr == "NONE") {
-						antialiasing = false;
-					} else {
-						LOG_ERROR("Bad AA method \"{}\"", aaMethodStr);
-						exit(1);
+						if (aaMethodStr == "NONE") {
+							antialiasing = false;
+						} else {
+							LOG_ERROR("Bad AA method \"{}\"", aaMethodStr);
+							exit(1);
 						}
 					}
 				}
