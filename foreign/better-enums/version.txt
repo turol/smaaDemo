@@ -1,7 +1,0 @@
-commit c35576bed0295689540b39873126129adfa0b4c8
-Author: Anton Bachin <antonbachin@yahoo.com>
-Date:   Mon Oct 19 08:45:29 2020 +0300
-
-    Docs: update version number
-    
-    [skip ci]
