@@ -91,7 +91,7 @@ public:
 			assert(id != Default<RT>::value);
 			colorRTs_[index].id             = id;
 			colorRTs_[index].passBegin      = pb;
-			if (pb == +PassBegin::Clear) {
+			if (pb == PassBegin::Clear) {
 				colorRTs_[index].clearValue = clear;
 			}
 			return *this;
@@ -327,7 +327,7 @@ private:
 			if (secondRT.id != Default<RT>::value) {
 				// we checked above that these match
 				assert(firstRT.id != Default<RT>::value);
-				if (secondRT.passBegin != +PassBegin::Keep) {
+				if (secondRT.passBegin != PassBegin::Keep) {
 					LOG(" color rendertarget {} passBegin is not keep", i);
 					return false;
 				}
@@ -602,7 +602,7 @@ public:
 				assert(rtIt != rg.rendertargets.end());
 
 				Format fmt = getFormat(rtIt->second);
-				assert(fmt != +Format::Invalid);
+				assert(fmt != Format::Invalid);
 
 				rpDesc.depthStencil(fmt, PassBegin::DontCare);
 				if (desc.clearDepthAttachment) {
@@ -618,12 +618,12 @@ public:
 
 					// get format
 					Format fmt = getFormat(rtIt->second);
-					assert(fmt != +Format::Invalid);
+					assert(fmt != Format::Invalid);
 
 					auto pb = desc.colorRTs_[i].passBegin;
 					LOG_TODO("check this, might need a forward pass over operations");
 					Layout initial = Layout::Undefined;
-					if (pb == +PassBegin::Keep) {
+					if (pb == PassBegin::Keep) {
 						initial = Layout::ColorAttachment;
 					}
 
@@ -637,8 +637,8 @@ public:
 						desc.colorRTs_[i].passBegin = PassBegin::DontCare;
 					} else {
 						final = layoutIt->second;
-						assert(final != +Layout::Undefined);
-						assert(final != +Layout::TransferDst);
+						assert(final != Layout::Undefined);
+						assert(final != Layout::TransferDst);
 
 						rpDesc.color(i, fmt, pb, initial, final, desc.colorRTs_[i].clearValue);
 						currentLayouts[rtId] = initial;
@@ -815,7 +815,7 @@ public:
 
 
 				void operator()(const Blit &b) const {
-					LOG("Blit {} -> {}\t{}", to_string(b.source), to_string(b.dest), b.finalLayout._to_string());
+					LOG("Blit {} -> {}\t{}", to_string(b.source), to_string(b.dest), magic_enum::enum_name(b.finalLayout));
 				}
 
 				void operator()(const RenderPass &rpData) const {
@@ -830,7 +830,7 @@ public:
 					for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 						if (desc.colorRTs_[i].id != Default<RT>::value) {
 							const auto &rt = rpDesc.color(i);
-							LOG(" color {}: {}\t{}\t{}\t{}", i, to_string(desc.colorRTs_[i].id), rt.passBegin._to_string(), rt.initialLayout._to_string(), rt.finalLayout._to_string());
+							LOG(" color {}: {}\t{}\t{}\t{}", i, to_string(desc.colorRTs_[i].id), magic_enum::enum_name(rt.passBegin), magic_enum::enum_name(rt.initialLayout), magic_enum::enum_name(rt.finalLayout));
 						}
 					}
 
@@ -850,7 +850,7 @@ public:
 				}
 
 				void operator()(const ResolveMSAA &r) const {
-					LOG("ResolveMSAA {} -> {}\t{}", to_string(r.source), to_string(r.dest), r.finalLayout._to_string());
+					LOG("ResolveMSAA {} -> {}\t{}", to_string(r.source), to_string(r.dest), magic_enum::enum_name(r.finalLayout));
 				}
 			};
 
@@ -967,7 +967,7 @@ public:
 
 					// get format
 					Format fmt = getFormat(rtIt->second);
-					assert(fmt != +Format::Invalid);
+					assert(fmt != Format::Invalid);
 
 					{
 						// get view from renderer, add to res
@@ -979,7 +979,7 @@ public:
 
 					// do the same for additional view format if there is one
 					Format additionalFmt = getAdditionalViewFormat(rtIt->second);
-					if (additionalFmt != +Format::Invalid) {
+					if (additionalFmt != Format::Invalid) {
 						assert(additionalFmt != fmt);
 						TextureHandle view = r.getRenderTargetView(getHandle(rtIt->second), additionalFmt);
 						res.rendertargets.emplace(std::make_pair(inputRT, additionalFmt), view);

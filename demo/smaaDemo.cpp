@@ -1269,10 +1269,10 @@ void SMAADemo::initRender() {
 			break;
 		}
 	}
-	if (depthFormat == +Format::Invalid) {
+	if (depthFormat == Format::Invalid) {
 		THROW_ERROR("no supported depth formats");
 	}
-	LOG("Using depth format {}", depthFormat._to_string());
+	LOG("Using depth format {}", magic_enum::enum_name(depthFormat));
 
 	renderer.registerDescriptorSetLayout<GlobalDS>();
 	renderer.registerDescriptorSetLayout<ShapeSceneDS>();
@@ -3836,15 +3836,15 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				recreateSwapchain = true;
 			}
 
-			int vsyncTemp = rendererDesc.swapchain.vsync._to_integral();
+			int vsyncTemp = magic_enum::enum_integer(rendererDesc.swapchain.vsync);
 			ImGui::Text("V-Sync");
 			ImGui::RadioButton("Off",            &vsyncTemp, 0);
 			ImGui::RadioButton("On",             &vsyncTemp, 1);
 			ImGui::RadioButton("Late swap tear", &vsyncTemp, 2);
 
-			if (vsyncTemp != rendererDesc.swapchain.vsync._to_integral()) {
+			if (vsyncTemp != magic_enum::enum_integer(rendererDesc.swapchain.vsync)) {
 				recreateSwapchain = true;
-				rendererDesc.swapchain.vsync = VSync::_from_integral(vsyncTemp);
+				rendererDesc.swapchain.vsync = magic_enum::enum_value<VSync>(vsyncTemp);
 			}
 
 			int n = rendererDesc.swapchain.numFrames;

@@ -124,7 +124,7 @@ struct Buffer {
 		assert(size   == 0);
 		assert(offset == 0);
 		assert(!buffer);
-		assert(type == +BufferType::Invalid);
+		assert(type == BufferType::Invalid);
 	}
 };
 
@@ -257,7 +257,7 @@ struct Framebuffer {
 	~Framebuffer() {
 		assert(fbo == 0);
 		assert(numSamples == 0);
-		assert(depthStencilFormat == +Format::Invalid);
+		assert(depthStencilFormat == Format::Invalid);
 	}
 };
 
@@ -547,7 +547,7 @@ struct Texture {
 		assert(tex == 0);
 		assert(!renderTarget);
 		assert(target == GL_NONE);
-		assert(format == +Format::Invalid);
+		assert(format == Format::Invalid);
 	}
 };
 

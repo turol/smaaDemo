@@ -897,7 +897,7 @@ bool Renderer::isRenderTargetFormatSupported(Format format) const {
 
 
 BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *contents) {
-	assert(type != +BufferType::Invalid);
+	assert(type != BufferType::Invalid);
 	assert(size != 0);
 	assert(contents != nullptr);
 
@@ -919,7 +919,7 @@ BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *
 
 
 BufferHandle Renderer::createEphemeralBuffer(BufferType type, uint32_t size, const void *contents) {
-	assert(type != +BufferType::Invalid);
+	assert(type != BufferType::Invalid);
 	assert(size != 0);
 	assert(contents != nullptr);
 
@@ -1028,7 +1028,7 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
             THROW_ERROR("UBO ({}, {}) not in descriptor sets", idx.set, idx.binding);
 		}
 
-		assert(it->second.type == +DescriptorType::UniformBuffer);
+		assert(it->second.type == DescriptorType::UniformBuffer);
 		unsigned int openglIDX = it->second.glIndex;
 		assert(openglIDX < shaderResources.ubos.size());
 		assert(shaderResources.ubos[openglIDX] == idx);
@@ -1064,7 +1064,7 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
             THROW_ERROR("SSBO ({}, {}) not in descriptor sets", idx.set, idx.binding);
 		}
 
-		assert(it->second.type == +DescriptorType::StorageBuffer);
+		assert(it->second.type == DescriptorType::StorageBuffer);
 		unsigned int openglIDX = it->second.glIndex;
 		assert(openglIDX < shaderResources.ssbos.size());
 		assert(shaderResources.ssbos[openglIDX] == idx);
@@ -1091,7 +1091,7 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
             THROW_ERROR("Sampled image ({}, {}) not in descriptor sets", idx.set, idx.binding);
 		}
 
-		assert(it->second.type == +DescriptorType::CombinedSampler);
+		assert(it->second.type == DescriptorType::CombinedSampler);
 		unsigned int openglIDX = it->second.glIndex;
 		assert(openglIDX < shaderResources.textures.size());
 		assert(openglIDX < shaderResources.samplers.size());
@@ -1331,7 +1331,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 		glNamedFramebufferTexture(fb.fbo, GL_DEPTH_ATTACHMENT, depthRTtex.tex, 0);
 		fb.depthStencilFormat = depthRT.format;
 	} else {
-		assert(renderPass.desc.depthStencilFormat_ == +Format::Invalid);
+		assert(renderPass.desc.depthStencilFormat_ == Format::Invalid);
 	}
 
 	assert(impl->isRenderPassCompatible(renderPass, fb));
@@ -1362,15 +1362,15 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 		switch (desc.colorRTs_[i].passBegin) {
 		case PassBegin::DontCare:
-			assert(desc.colorRTs_[i].initialLayout == +Layout::Undefined);
+			assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
 			break;
 
 		case PassBegin::Keep:
-			assert(desc.colorRTs_[i].initialLayout != +Layout::Undefined);
+			assert(desc.colorRTs_[i].initialLayout != Layout::Undefined);
 			break;
 
 		case PassBegin::Clear:
-			assert(desc.colorRTs_[i].initialLayout == +Layout::Undefined);
+			assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
 			pass.colorClearValues[i] = desc.colorRTs_[i].clearValue;
 			break;
 
@@ -1386,7 +1386,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
-	assert(desc.format_ != +Format::Invalid);
+	assert(desc.format_ != Format::Invalid);
 	assert(isPow2(desc.numSamples_));
 	assert(!desc.name_.empty());
 
@@ -1421,7 +1421,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	rt.numSamples = desc.numSamples_;
 	rt.texture = impl->textures.add(std::move(tex));
 
-	if (desc.additionalViewFormat_ != +Format::Invalid) {
+	if (desc.additionalViewFormat_ != Format::Invalid) {
 		GLuint viewId = 0;
 		glGenTextures(1, &viewId);
 		glTextureView(viewId, target, id, glTexFormat(desc.additionalViewFormat_), 0, 1, 0, 1);
@@ -1466,10 +1466,10 @@ SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
 	Sampler sampler;
 	glCreateSamplers(1, &sampler.sampler);
 
-	glSamplerParameteri(sampler.sampler, GL_TEXTURE_MIN_FILTER, (desc.min == +FilterMode::Nearest) ? GL_NEAREST: GL_LINEAR);
-	glSamplerParameteri(sampler.sampler, GL_TEXTURE_MAG_FILTER, (desc.mag == +FilterMode::Nearest) ? GL_NEAREST: GL_LINEAR);
-	glSamplerParameteri(sampler.sampler, GL_TEXTURE_WRAP_S,     (desc.wrapMode == +WrapMode::Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-	glSamplerParameteri(sampler.sampler, GL_TEXTURE_WRAP_T,     (desc.wrapMode == +WrapMode::Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+	glSamplerParameteri(sampler.sampler, GL_TEXTURE_MIN_FILTER, (desc.min == FilterMode::Nearest) ? GL_NEAREST: GL_LINEAR);
+	glSamplerParameteri(sampler.sampler, GL_TEXTURE_MAG_FILTER, (desc.mag == FilterMode::Nearest) ? GL_NEAREST: GL_LINEAR);
+	glSamplerParameteri(sampler.sampler, GL_TEXTURE_WRAP_S,     (desc.wrapMode == WrapMode::Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+	glSamplerParameteri(sampler.sampler, GL_TEXTURE_WRAP_T,     (desc.wrapMode == WrapMode::Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 
 	if (impl->tracing) {
 		glObjectLabel(GL_SAMPLER, sampler.sampler, desc.name_.size(), desc.name_.c_str());
@@ -1519,7 +1519,7 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 DSLayoutHandle Renderer::createDescriptorSetLayout(const DescriptorLayout *layout) {
 	DescriptorSetLayout dsLayout;
 
-	while (layout->type != +DescriptorType::End) {
+	while (layout->type != DescriptorType::End) {
 		dsLayout.descriptors.push_back(*layout);
 		layout++;
 	}
@@ -1564,7 +1564,7 @@ void Renderer::deleteBuffer(BufferHandle &&handle) {
 		b.size   = 0;
 
 		assert(!b.ringBufferAlloc);
-		assert(b.type != +BufferType::Invalid);
+		assert(b.type != BufferType::Invalid);
 		b.type   = BufferType::Invalid;
 	} );
 }
@@ -1900,7 +1900,7 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 		assert(buffer.size   >  0);
 		buffer.size = 0;
 		buffer.offset = 0;
-		assert(buffer.type != +BufferType::Invalid);
+		assert(buffer.type != BufferType::Invalid);
 		buffer.type   = BufferType::Invalid;
 
 		buffers.remove(std::move(handle));
@@ -1960,7 +1960,7 @@ void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHa
 	}
 
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-		if (rp.desc.colorRTs_[i].passBegin == +PassBegin::Clear) {
+		if (rp.desc.colorRTs_[i].passBegin == PassBegin::Clear) {
 			glClearBufferfv(GL_COLOR, i, glm::value_ptr(rp.desc.colorRTs_[i].clearValue));
 		}
 
@@ -2008,11 +2008,11 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 	glDisable(GL_MULTISAMPLE);
 
 	assert(rp.desc.colorRTs_[0].format    == impl->swapchainFormat);
-	if (rp.desc.colorRTs_[0].passBegin == +PassBegin::Clear) {
+	if (rp.desc.colorRTs_[0].passBegin == PassBegin::Clear) {
 		glClearBufferfv(GL_COLOR, 0, glm::value_ptr(rp.desc.colorRTs_[0].clearValue));
 	}
-	assert(rp.desc.colorRTs_[1].format    == +Format::Invalid);
-	assert(rp.desc.colorRTs_[1].passBegin == +PassBegin::DontCare);
+	assert(rp.desc.colorRTs_[1].format    == Format::Invalid);
+	assert(rp.desc.colorRTs_[1].passBegin == PassBegin::DontCare);
 
 	if (rp.clearMask) {
 		LOG_TODO("stencil");
@@ -2063,11 +2063,11 @@ void Renderer::endRenderPass() {
 
 void Renderer::layoutTransition(RenderTargetHandle image, Layout src UNUSED, Layout dest) {
 	assert(image);
-	assert(dest != +Layout::Undefined);
+	assert(dest != Layout::Undefined);
 	assert(src != dest);
 
 	auto &rt = impl->renderTargets.get(image);
-	assert(src == +Layout::Undefined || rt.currentLayout == src);
+	assert(src == Layout::Undefined || rt.currentLayout == src);
 	rt.currentLayout = dest;
 }
 
@@ -2191,7 +2191,7 @@ void Renderer::bindIndexBuffer(BufferHandle handle, IndexFormat indexFormat) {
 
 	const Buffer &buffer = impl->buffers.get(handle);
 	assert(buffer.size > 0);
-	assert(buffer.type == +BufferType::Index);
+	assert(buffer.type == BufferType::Index);
 	if (buffer.ringBufferAlloc) {
 		assert(buffer.buffer == impl->ringBuffer);
 		assert(buffer.offset + buffer.size < impl->ringBufSize);
@@ -2211,7 +2211,7 @@ void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 
 	const Buffer &buffer = impl->buffers.get(handle);
 	assert(buffer.size >  0);
-	assert(buffer.type == +BufferType::Vertex);
+	assert(buffer.type == BufferType::Vertex);
 	if (buffer.ringBufferAlloc) {
 		// this is not strictly correct since we might have reallocated the ringbuf bigger
 		// but it should never fail, at worst it will not spot some errors immediately after realloc
@@ -2256,7 +2256,7 @@ void Renderer::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHandle
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			const Buffer &buffer = impl->buffers.get(handle);
 			assert(buffer.size > 0);
-			assert(buffer.type == +BufferType::Uniform);
+			assert(buffer.type == BufferType::Uniform);
 			if (buffer.ringBufferAlloc) {
 				assert(buffer.buffer == impl->ringBuffer);
 				assert(buffer.offset + buffer.size < impl->ringBufSize);
@@ -2271,7 +2271,7 @@ void Renderer::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHandle
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			const Buffer &buffer = impl->buffers.get(handle);
 			assert(buffer.size  > 0);
-			assert(buffer.type == +BufferType::Storage);
+			assert(buffer.type == BufferType::Storage);
 			if (buffer.ringBufferAlloc) {
 				assert(buffer.buffer == impl->ringBuffer);
 				assert(buffer.offset + buffer.size < impl->ringBufSize);
@@ -2332,8 +2332,8 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 			return false;
 		}
 	} else {
-		assert(fb.depthStencilFormat == +Format::Invalid);
-		if (pass.desc.depthStencilFormat_ != +Format::Invalid) {
+		assert(fb.depthStencilFormat == Format::Invalid);
+		if (pass.desc.depthStencilFormat_ != Format::Invalid) {
 			return false;
 		}
 	}
@@ -2347,8 +2347,8 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 				return false;
 			}
 		} else {
-			assert(fb.colorFormats[i] == +Format::Invalid);
-			if (pass.desc.colorRTs_[i].format != +Format::Invalid) {
+			assert(fb.colorFormats[i] == Format::Invalid);
+			if (pass.desc.colorRTs_[i].format != Format::Invalid) {
 				return false;
 			}
 		}
@@ -2430,7 +2430,7 @@ void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(srcRT.numSamples  == 1);
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
-	assert(srcRT.currentLayout == +Layout::TransferSrc);
+	assert(srcRT.currentLayout == Layout::TransferSrc);
 	assert(srcRT.texture);
 	if (srcRT.helperFBO == 0) {
 		impl->createRTHelperFBO(srcRT);
@@ -2441,7 +2441,7 @@ void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(destRT.numSamples == 1);
 	assert(destRT.width      >  0);
 	assert(destRT.height     >  0);
-	assert(destRT.currentLayout == +Layout::TransferDst);
+	assert(destRT.currentLayout == Layout::TransferDst);
 	assert(destRT.texture);
 	if (destRT.helperFBO == 0) {
 		impl->createRTHelperFBO(destRT);
@@ -2472,7 +2472,7 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 	assert(srcRT.numSamples  >  1);
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
-	assert(srcRT.currentLayout == +Layout::TransferSrc);
+	assert(srcRT.currentLayout == Layout::TransferSrc);
 	assert(srcRT.texture);
 	if (srcRT.helperFBO == 0) {
 		impl->createRTHelperFBO(srcRT);
@@ -2484,7 +2484,7 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 	assert(destRT.numSamples == 1);
 	assert(destRT.width      >  0);
 	assert(destRT.height     >  0);
-	assert(destRT.currentLayout == +Layout::TransferDst);
+	assert(destRT.currentLayout == Layout::TransferDst);
 	assert(destRT.texture);
 	if (destRT.helperFBO == 0) {
 		impl->createRTHelperFBO(destRT);
@@ -2505,7 +2505,7 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 
 void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLayout DEBUG_ASSERTED) {
 	assert(source);
-	assert(finalLayout != +Layout::Undefined);
+	assert(finalLayout != Layout::Undefined);
 
 	assert(impl->inFrame);
 	assert(!impl->inRenderPass);
@@ -2516,7 +2516,7 @@ void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLay
 	assert(srcRT.numSamples  >  1);
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
-	assert(srcRT.currentLayout == +Layout::TransferSrc);
+	assert(srcRT.currentLayout == Layout::TransferSrc);
 	assert(srcRT.texture);
 	if (srcRT.helperFBO == 0) {
 		impl->createRTHelperFBO(srcRT);

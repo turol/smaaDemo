@@ -244,43 +244,43 @@ using SamplerHandle      = Handle<Sampler>;
 using TextureHandle      = Handle<Texture>;
 
 
-BETTER_ENUM(BlendFunc, uint8_t
-	, Zero
+enum class BlendFunc : uint8_t {
+	  Zero
 	, One
 	, Constant
 	, SrcAlpha
 	, OneMinusSrcAlpha
-)
+};
 
 
-BETTER_ENUM(BufferType, uint8_t
-	, Invalid
+enum class BufferType : uint8_t {
+	  Invalid
 	, Index
 	, Uniform
 	, Storage
 	, Vertex
 	, Everything
-)
+};
 
 
-BETTER_ENUM(DescriptorType, uint8_t
-	, UniformBuffer
+enum class DescriptorType : uint8_t {
+	  UniformBuffer
 	, StorageBuffer
 	, Sampler
 	, Texture
 	, CombinedSampler
 	, End
-)
+};
 
 
-BETTER_ENUM(FilterMode, uint8_t
-	, Nearest
+enum class FilterMode : uint8_t {
+	  Nearest
 	, Linear
-)
+};
 
 
-BETTER_ENUM(Format, uint8_t
-	, Invalid
+enum class Format : uint8_t {
+	  Invalid
 	, R8
 	, RG8
 	, RGB8
@@ -296,50 +296,50 @@ BETTER_ENUM(Format, uint8_t
 	, Depth24S8
 	, Depth24X8
 	, Depth32Float
-)
+};
 
 
-BETTER_ENUM(IndexFormat, uint8_t
-	, b32
+enum class IndexFormat : uint8_t {
+	  b32
 	, b16
-)
+};
 
 
-BETTER_ENUM(Layout, uint8_t
-	, Undefined
+enum class Layout : uint8_t {
+	  Undefined
 	, ShaderRead
 	, TransferSrc
 	, TransferDst
 	, ColorAttachment
 	, Present
-)
+};
 
 
 // rendertarget behavior when RenderPass begins
-BETTER_ENUM(PassBegin, uint8_t
-	, DontCare
+enum class PassBegin : uint8_t {
+	  DontCare
 	, Keep
 	, Clear
-)
+};
 
 
-BETTER_ENUM(VSync, uint8_t
-	, Off
+enum class VSync : uint8_t {
+	  Off
 	, On
 	, LateSwapTear
-)
+};
 
 
-BETTER_ENUM(VtxFormat, uint8_t
-	, Float
+enum class VtxFormat : uint8_t {
+	  Float
 	, UNorm8
-)
+};
 
 
-BETTER_ENUM(WrapMode, uint8_t
-	, Clamp
+enum class WrapMode : uint8_t {
+	  Clamp
 	, Wrap
-)
+};
 
 
 bool isColorFormat(Format format);
@@ -683,7 +683,7 @@ struct RenderPassDesc {
 		colorRTs_[index].passBegin      = pb;
 		colorRTs_[index].initialLayout  = initial;
 		colorRTs_[index].finalLayout    = final;
-		if (pb == +PassBegin::Clear) {
+		if (pb == PassBegin::Clear) {
 			colorRTs_[index].clearValue = clear;
 		}
 		return *this;

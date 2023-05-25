@@ -169,7 +169,7 @@ struct Buffer {
 		other.buffer          = vk::Buffer();
 		other.memory          = 0;
 		other.type            = BufferType::Invalid;
-		assert(type == +BufferType::Invalid);
+		assert(type == BufferType::Invalid);
 
 		return *this;
 	}

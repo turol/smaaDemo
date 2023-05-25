@@ -141,7 +141,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
-	assert(desc.format_ != +Format::Invalid);
+	assert(desc.format_ != Format::Invalid);
 
 	RenderTarget rendertarget;
 	rendertarget.desc = desc;
@@ -198,7 +198,7 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 DSLayoutHandle Renderer::createDescriptorSetLayout(const DescriptorLayout *layout) {
 	DescriptorSetLayout dsLayout;
 
-	while (layout->type != +DescriptorType::End) {
+	while (layout->type != DescriptorType::End) {
 		dsLayout.layout.push_back(*layout);
 		layout++;
 	}
@@ -386,7 +386,7 @@ void Renderer::endRenderPass() {
 
 void Renderer::layoutTransition(RenderTargetHandle image, Layout src, Layout dest) {
 	assert(image);
-	assert(dest != +Layout::Undefined);
+	assert(dest != Layout::Undefined);
 	assert(src != dest);
 }
 
@@ -451,7 +451,7 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 
 void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLayout) {
 	assert(source);
-	assert(finalLayout != +Layout::Undefined);
+	assert(finalLayout != Layout::Undefined);
 
 	assert(impl->inFrame);
 	assert(!impl->inRenderPass);

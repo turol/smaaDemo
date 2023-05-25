@@ -26,6 +26,8 @@ THE SOFTWARE.
 
 #include <SDL_vulkan.h>
 
+#include <magic_enum_containers.hpp>
+
 #include "RendererInternal.h"
 #include "utils/Utils.h"
 
@@ -78,7 +80,7 @@ template <typename T> void RendererImpl::debugNameObject(T handle, const std::st
 }
 
 
-static const std::array<vk::DescriptorType, DescriptorType::_size()> descriptorTypes =
+static const magic_enum::containers::array<DescriptorType, vk::DescriptorType> descriptorTypes =
 { {
 	  vk::DescriptorType::eUniformBuffer
 	, vk::DescriptorType::eStorageBuffer
@@ -1047,7 +1049,7 @@ bool Renderer::isRenderTargetFormatSupported(Format format) const {
 
 
 BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *contents) {
-	assert(type != +BufferType::Invalid);
+	assert(type != BufferType::Invalid);
 	assert(size != 0);
 	assert(contents != nullptr);
 
@@ -1131,7 +1133,7 @@ BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *
 
 
 BufferHandle Renderer::createEphemeralBuffer(BufferType type, uint32_t size, const void *contents) {
-	assert(type != +BufferType::Invalid);
+	assert(type != BufferType::Invalid);
 	assert(size != 0);
 	assert(contents != nullptr);
 
@@ -1235,7 +1237,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 		attachmentViews.push_back(depthRT.imageView);
 		depthStencilFormat = depthRT.format;
 	} else {
-		assert(renderPass.desc.depthStencilFormat_ == +Format::Invalid);
+		assert(renderPass.desc.depthStencilFormat_ == Format::Invalid);
 	}
 
 	vk::FramebufferCreateInfo fbInfo;
@@ -1314,8 +1316,8 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 
 	unsigned int numColorAttachments = 0;
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-		if (desc.colorRTs_[i].format == +Format::Invalid) {
-			assert(desc.colorRTs_[i].initialLayout == +Layout::Undefined);
+		if (desc.colorRTs_[i].format == Format::Invalid) {
+			assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
 			LOG_TODO("could be break, it's invalid to have holes in attachment list");
 			// but should check that
 			continue;
@@ -1332,21 +1334,21 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 		attach.samples         = samples;
 		switch (colorRT.passBegin) {
 		case PassBegin::DontCare:
-			assert(desc.colorRTs_[i].initialLayout == +Layout::Undefined);
+			assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
 
 			attach.loadOp         = vk::AttachmentLoadOp::eDontCare;
 			attach.initialLayout  = vk::ImageLayout::eUndefined;
 			break;
 
 		case PassBegin::Keep:
-			assert(desc.colorRTs_[i].initialLayout != +Layout::Undefined);
+			assert(desc.colorRTs_[i].initialLayout != Layout::Undefined);
 
 			attach.loadOp         = vk::AttachmentLoadOp::eLoad;
 			attach.initialLayout  = vulkanLayout(desc.colorRTs_[i].initialLayout);
 			break;
 
 		case PassBegin::Clear:
-			assert(desc.colorRTs_[i].initialLayout == +Layout::Undefined);
+			assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
 
 			attach.loadOp         = vk::AttachmentLoadOp::eClear;
 			attach.initialLayout  = vk::ImageLayout::eUndefined;
@@ -1371,7 +1373,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 	subpass.colorAttachmentCount = static_cast<uint32_t>(colorAttachments.size());
 	subpass.pColorAttachments    = &colorAttachments[0];
 
-	bool hasDepthStencil = (desc.depthStencilFormat_ != +Format::Invalid);
+	bool hasDepthStencil = (desc.depthStencilFormat_ != Format::Invalid);
 	vk::AttachmentReference depthAttachment;
 	if (hasDepthStencil) {
 		vk::ImageLayout layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
@@ -1459,8 +1461,8 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 			d.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentWrite;
 
 			for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-				if (desc.colorRTs_[i].format == +Format::Invalid) {
-					assert(desc.colorRTs_[i].initialLayout == +Layout::Undefined);
+				if (desc.colorRTs_[i].format == Format::Invalid) {
+					assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
 					LOG_TODO("could be break, it's invalid to have holes in attachment list");
 					// but should check that
 					continue;
@@ -1656,7 +1658,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	vk::PipelineColorBlendStateCreateInfo blendInfo;
 	blendInfo.attachmentCount = static_cast<uint32_t>(colorBlendStates.size());
 	blendInfo.pAttachments    = &colorBlendStates[0];
-	if (desc.blending_ && (desc.sourceBlend_ == +BlendFunc::Constant || desc.destinationBlend_ == +BlendFunc::Constant)) {
+	if (desc.blending_ && (desc.sourceBlend_ == BlendFunc::Constant || desc.destinationBlend_ == BlendFunc::Constant)) {
 		LOG_TODO("get from desc");
 		for (unsigned int i = 0; i < 4; i++) {
 			blendInfo.blendConstants[i] = 0.5f;
@@ -1791,13 +1793,13 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
-	assert(desc.format_ != +Format::Invalid);
+	assert(desc.format_ != Format::Invalid);
 	assert(isPow2(desc.numSamples_));
 	assert(!desc.name_.empty());
 
 	vk::Format format = vulkanFormat(desc.format_);
 	vk::ImageCreateInfo info;
-	if (desc.additionalViewFormat_ != +Format::Invalid) {
+	if (desc.additionalViewFormat_ != Format::Invalid) {
 		info.flags   = vk::ImageCreateFlagBits::eMutableFormat;
 	}
 	info.imageType   = vk::ImageType::e2D;
@@ -1862,7 +1864,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 
 	rt.texture = impl->textures.add(std::move(tex));
 
-	if (desc.additionalViewFormat_ != +Format::Invalid) {
+	if (desc.additionalViewFormat_ != Format::Invalid) {
 		assert(isDepthFormat(desc.format_) == isDepthFormat(desc.additionalViewFormat_));
 		Texture view;
 		view.width        = desc.width_;
@@ -1873,7 +1875,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 		viewInfo.format   = vulkanFormat(desc.additionalViewFormat_);
 		view.imageView    = device.createImageView(viewInfo);
 
-		impl->debugNameObject<vk::ImageView>(view.imageView, fmt::format("{} {} view", desc.name_, desc.additionalViewFormat_._to_string()));
+		impl->debugNameObject<vk::ImageView>(view.imageView, fmt::format("{} {} view", desc.name_, magic_enum::enum_name(desc.additionalViewFormat_)));
 		rt.additionalView = impl->textures.add(std::move(view));
 	}
 
@@ -1903,7 +1905,7 @@ SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
 	info.minFilter = vulkanFiltermode(desc.min);
 
 	vk::SamplerAddressMode m = vk::SamplerAddressMode::eClampToEdge;
-	if (desc.wrapMode == +WrapMode::Wrap) {
+	if (desc.wrapMode == WrapMode::Wrap) {
 		m = vk::SamplerAddressMode::eRepeat;
 	}
 	info.addressModeU = m;
@@ -2106,11 +2108,11 @@ DSLayoutHandle Renderer::createDescriptorSetLayout(const DescriptorLayout *layou
 
 	unsigned int i = 0;
 	std::vector<DescriptorLayout> descriptors;
-	while (layout->type != +DescriptorType::End) {
+	while (layout->type != DescriptorType::End) {
 		vk::DescriptorSetLayoutBinding b;
 
 		b.binding         = i;
-		b.descriptorType  = descriptorTypes[uint8_t(layout->type)];
+		b.descriptorType  = descriptorTypes[layout->type];
 		b.descriptorCount = 1;
 		LOG_TODO("should specify stages in layout");
 		b.stageFlags      = vk::ShaderStageFlagBits::eAll;
@@ -2997,7 +2999,7 @@ void RendererImpl::deleteBufferInternal(Buffer &b) {
 	this->device.destroyBuffer(b.buffer);
 	assert(b.memory != nullptr);
 	vmaFreeMemory(this->allocator, b.memory);
-	assert(b.type   != +BufferType::Invalid);
+	assert(b.type   != BufferType::Invalid);
 
 	b.buffer          = vk::Buffer();
 	b.ringBufferAlloc = false;
@@ -3202,7 +3204,7 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 	assert(pass.renderPass);
 	assert(MAX_COLOR_RENDERTARGETS == 2);
 	assert(pass.desc.colorRTs_[0].format == impl->swapchainFormat);
-	assert(pass.desc.colorRTs_[1].format == +Format::Invalid);
+	assert(pass.desc.colorRTs_[1].format == Format::Invalid);
 
 	auto &frame = impl->frames.at(impl->currentFrameIdx);
 	unsigned int width = impl->swapchainDesc.width, height = impl->swapchainDesc.height;
@@ -3234,7 +3236,7 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 		fbDesc.renderPass(rpHandle)
 		      .name(fmt::format("Swapchain image {}", impl->currentFrameIdx));
 
-		if (pass.desc.depthStencilFormat_ != +Format::Invalid) {
+		if (pass.desc.depthStencilFormat_ != Format::Invalid) {
 			fbDesc.depthStencil(impl->builtinDepthRT);
 		}
 		std::vector<vk::ImageView> attachmentViews;
@@ -3248,7 +3250,7 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 		attachmentViews.push_back(frame.imageView);
 
 		auto depthStencilFormat = pass.desc.depthStencilFormat_;
-		if (depthStencilFormat != +Format::Invalid) {
+		if (depthStencilFormat != Format::Invalid) {
 			if (!impl->builtinDepthRT) {
 				RenderTargetDesc rtDesc;
 				rtDesc.width(width)
@@ -3354,11 +3356,11 @@ void Renderer::endRenderPass() {
 
 void Renderer::layoutTransition(RenderTargetHandle image, Layout src, Layout dest) {
 	assert(image);
-	assert(dest != +Layout::Undefined);
+	assert(dest != Layout::Undefined);
 	assert(src != dest);
 
 	auto &rt = impl->renderTargets.get(image);
-	assert(src == +Layout::Undefined || rt.currentLayout == src);
+	assert(src == Layout::Undefined || rt.currentLayout == src);
 	rt.currentLayout = dest;
 
 	vk::ImageMemoryBarrier b;
@@ -3417,7 +3419,7 @@ void Renderer::bindIndexBuffer(BufferHandle buffer, IndexFormat indexFormat) {
 	assert(impl->validPipeline);
 
 	auto &b = impl->buffers.get(buffer);
-	assert(b.type == +BufferType::Index);
+	assert(b.type == BufferType::Index);
 	// "normal" buffers begin from beginning of buffer
 	vk::DeviceSize offset = 0;
 	if (b.ringBufferAlloc) {
@@ -3433,7 +3435,7 @@ void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 	assert(impl->validPipeline);
 
 	auto &b = impl->buffers.get(buffer);
-	assert(b.type == +BufferType::Vertex);
+	assert(b.type == BufferType::Vertex);
 	// "normal" buffers begin from beginning of buffer
 	vk::DeviceSize offset = 0;
 	if (b.ringBufferAlloc) {
@@ -3476,7 +3478,7 @@ void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHand
 		write.dstBinding      = index;
 		write.descriptorCount = 1;
 		LOG_TODO("move to a helper function");
-		write.descriptorType  = descriptorTypes[uint8_t(l.type)];
+		write.descriptorType  = descriptorTypes[l.type];
 
 		switch (l.type) {
 		case DescriptorType::End:
@@ -3490,8 +3492,8 @@ void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHand
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			Buffer &buffer = impl->buffers.get(handle);
 			assert(buffer.size > 0);
-			assert((buffer.type == +BufferType::Uniform && l.type == +DescriptorType::UniformBuffer)
-			    || (buffer.type == +BufferType::Storage && l.type == +DescriptorType::StorageBuffer));
+			assert((buffer.type == BufferType::Uniform && l.type == DescriptorType::UniformBuffer)
+			    || (buffer.type == BufferType::Storage && l.type == DescriptorType::StorageBuffer));
 
 			vk::DescriptorBufferInfo  bufWrite;
 			bufWrite.buffer = buffer.buffer;
@@ -3586,8 +3588,8 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 
 		// TODO: check layouts once they're properly stored
 	} else {
-		assert(fb.depthStencilTarget.format == +Format::Invalid);
-		if (pass.desc.depthStencilFormat_ != +Format::Invalid) {
+		assert(fb.depthStencilTarget.format == Format::Invalid);
+		if (pass.desc.depthStencilFormat_ != Format::Invalid) {
 			return false;
 		}
 	}
@@ -3662,12 +3664,12 @@ void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	const auto &srcRT = impl->renderTargets.get(source);
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
-	assert(srcRT.currentLayout == +Layout::TransferSrc);
+	assert(srcRT.currentLayout == Layout::TransferSrc);
 
 	const auto &destRT = impl->renderTargets.get(target);
 	assert(destRT.width      >  0);
 	assert(destRT.height     >  0);
-	assert(destRT.currentLayout == +Layout::TransferDst);
+	assert(destRT.currentLayout == Layout::TransferDst);
 
 	assert(srcRT.width       == destRT.width);
 	assert(srcRT.height      == destRT.height);
@@ -3702,13 +3704,13 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 	assert(isColorFormat(srcRT.format));
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
-	assert(srcRT.currentLayout == +Layout::TransferSrc);
+	assert(srcRT.currentLayout == Layout::TransferSrc);
 
 	const auto &destRT = impl->renderTargets.get(target);
 	assert(isColorFormat(destRT.format));
 	assert(destRT.width      >  0);
 	assert(destRT.height     >  0);
-	assert(destRT.currentLayout == +Layout::TransferDst);
+	assert(destRT.currentLayout == Layout::TransferDst);
 
 	assert(srcRT.format      == destRT.format);
 	assert(srcRT.width       == destRT.width);
@@ -3728,7 +3730,7 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 
 void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLayout) {
 	assert(source);
-	assert(finalLayout != +Layout::Undefined);
+	assert(finalLayout != Layout::Undefined);
 
 	assert(impl->inFrame);
 	assert(!impl->inRenderPass);
