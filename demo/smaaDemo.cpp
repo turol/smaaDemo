@@ -87,11 +87,11 @@ enum class AAMethod : uint8_t {
 };
 
 
-BETTER_ENUM(SMAADebugMode, uint8_t
-	, None
+enum class SMAADebugMode : uint8_t {
+	  None
 	, Edges
 	, Weights
-)
+};
 
 
 BETTER_ENUM(Shape, uint8_t
@@ -962,7 +962,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		{
 			std::string debugModeStr = debugModeSwitch.getValue();
 			if (!debugModeStr.empty()) {
-				auto maybe = SMAADebugMode::_from_string_nocase_nothrow(debugModeStr.c_str());
+				auto maybe = magic_enum::enum_cast<SMAADebugMode>(debugModeStr);
 				if (maybe) {
 					debugMode = *maybe;
 				} else {
@@ -2547,15 +2547,15 @@ void SMAADemo::processInput() {
 
 			case SDL_SCANCODE_D:
 				if (antialiasing && aaMethod == AAMethod::SMAA) {
-					int d = debugMode._to_integral();
-					const int count = int(SMAADebugMode::_size());
+					int d = magic_enum::enum_integer<SMAADebugMode>(debugMode);
+					const int count = magic_enum::enum_count<SMAADebugMode>();
 					if (leftShift || rightShift) {
 						d = (d + count - 1) % count;
 					} else {
 						d = (d + 1) % count;
 					}
 					rebuildRG = true;
-					debugMode = SMAADebugMode::_from_integral(d);
+					debugMode = magic_enum::enum_value<SMAADebugMode>(d);
 				}
 				break;
 
@@ -3663,13 +3663,13 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			}
 			smaaEdgeMethod = SMAAEdgeMethod::_from_integral(em);
 
-			int d = debugMode._to_integral();
-			constexpr auto smaaDebugModes = SMAADebugMode::_names();
+			int d = magic_enum::enum_integer(debugMode);
+			constexpr auto smaaDebugModes = magic_enum::enum_names<SMAADebugMode>();
 
-			if (ImGui::BeginCombo("SMAA debug", smaaDebugModes[d])) {
-				for (int i = 0; i < int(SMAADebugMode::_size()); i++) {
+			if (ImGui::BeginCombo("SMAA debug", smaaDebugModes[d].data())) {
+				for (int i = 0; i < int(magic_enum::enum_count<SMAADebugMode>()); i++) {
 					const bool is_selected = (i == d);
-					if (ImGui::Selectable(smaaDebugModes[i], is_selected)) {
+					if (ImGui::Selectable(smaaDebugModes[i].data(), is_selected)) {
 						d = i;
 					}
 
@@ -3680,9 +3680,9 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				ImGui::EndCombo();
 
 				assert(d >= 0);
-				assert(d < int(SMAADebugMode::_size()));
-				if (debugMode._to_integral() != d) {
-					debugMode = SMAADebugMode::_from_integral(d);
+				assert(d < int(magic_enum::enum_count<SMAADebugMode>()));
+				if (magic_enum::enum_integer(debugMode) != d) {
+					debugMode = magic_enum::enum_value<SMAADebugMode>(d);
 					rebuildRG = true;
 				}
 			}
