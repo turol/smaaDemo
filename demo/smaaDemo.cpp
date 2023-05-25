@@ -38,6 +38,8 @@ THE SOFTWARE.
 
 #include <imgui.h>
 
+#include <magic_enum_containers.hpp>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -94,8 +96,8 @@ enum class SMAADebugMode : uint8_t {
 };
 
 
-BETTER_ENUM(Shape, uint8_t
-	, Cube
+enum class Shape : uint8_t {
+	  Cube
 	, Tetrahedron
 	, Octahedron
 	, Dodecahedron
@@ -104,7 +106,7 @@ BETTER_ENUM(Shape, uint8_t
 	, Torus
 	, KleinBottle
 	, TrefoilKnot
-)
+};
 
 
 static const unsigned int inputTextBufferSize = 1024;
@@ -234,11 +236,11 @@ static const std::array<ShaderDefines::SMAAParameters, maxSMAAQuality> defaultSM
 static const float defaultCameraDistance = 25.0f;
 
 
-BETTER_ENUM(SMAAEdgeMethod, uint8_t
-	, Color
+enum class SMAAEdgeMethod : uint8_t {
+	  Color
 	, Luma
 	, Depth
-)
+};
 
 
 struct Image {
@@ -265,8 +267,8 @@ struct Image {
 };
 
 
-BETTER_ENUM(Rendertargets, uint32_t
-	, Invalid
+enum class Rendertargets : uint32_t {
+	  Invalid
 	, MainColor
 	, MainDepth
 	, Velocity
@@ -278,16 +280,16 @@ BETTER_ENUM(Rendertargets, uint32_t
 	, Subsample1
 	, Subsample2
 	, FinalRender
-)
+};
 
 
 static const char *to_string(Rendertargets r) {
-	return r._to_string();
+	return magic_enum::enum_name(r).data();
 }
 
 
-BETTER_ENUM(RenderPasses, uint32_t
-	, Invalid
+enum class RenderPasses : uint32_t {
+	  Invalid
 	, Scene
 	, Final
 	, GUI
@@ -300,11 +302,11 @@ BETTER_ENUM(RenderPasses, uint32_t
 	, SMAAWeights2
 	, SMAA2XBlend1
 	, SMAA2XBlend2
-)
+};
 
 
 static const char *to_string(RenderPasses r) {
-	return r._to_string();
+	return magic_enum::enum_name(r).data();
 }
 
 
@@ -528,7 +530,7 @@ class SMAADemo {
 	std::array<PipelineHandle, 2>                     temporalAAPipelines;
 	PipelineHandle                                    fxaaPipeline;
 
-	std::array<ShapeRenderBuffers, Shape::_size()>    shapeBuffers;
+	magic_enum::containers::array<Shape, ShapeRenderBuffers>  shapeBuffers;
 
 	SamplerHandle                                     linearSampler;
 	SamplerHandle                                     nearestSampler;
@@ -780,8 +782,8 @@ SMAADemo::~SMAADemo() {
 
 		renderGraph.reset(renderer);
 
-		for (unsigned int i = 0; i < Shape::_size(); i++) {
-			Shape s = Shape::_from_integral(i);
+		for (unsigned int i = 0; i < magic_enum::enum_count<Shape>(); i++) {
+			Shape s = magic_enum::enum_value<Shape>(i);
 			if (shapeBuffers[s].vertices) {
 				assert(shapeBuffers[s].indices);
 				assert(shapeBuffers[s].numVertices);
@@ -1293,7 +1295,7 @@ void SMAADemo::initRender() {
 		aabb[1] = (aabb[1] + aabb[4]) * 0.5f;
 		aabb[2] = (aabb[2] + aabb[5]) * 0.5f;
 
-		LOG("{} center: ({}, {}, {})", shape._to_string(), aabb[0],  aabb[1],  aabb[2]);
+		LOG("{} center: ({}, {}, {})", magic_enum::enum_name(shape), aabb[0],  aabb[1],  aabb[2]);
 		par_shapes_translate(mesh, -aabb[0], -aabb[1], -aabb[2]);
 
 		par_shapes_scale(mesh, scale, scale, scale);
@@ -2614,13 +2616,13 @@ void SMAADemo::processInput() {
 				break;
 
 			case SDL_SCANCODE_S: {
-				size_t i = activeShape._to_integral();
+				size_t i = magic_enum::enum_integer(activeShape);
 				if (leftShift || rightShift) {
-					i = (i + Shape::_size() - 1) % Shape::_size();
+					i = (i + magic_enum::enum_count<Shape>() - 1) % magic_enum::enum_count<Shape>();
 				} else {
-					i = (i                  + 1) % Shape::_size();
+					i = (i                  + 1) % magic_enum::enum_count<Shape>();
 				}
-				activeShape = Shape::_from_integral(static_cast<Shape::_integral>(i));
+				activeShape = magic_enum::enum_value<Shape>(i);
 			} break;
 
 			case SDL_SCANCODE_T:
@@ -3201,11 +3203,11 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 		macros.set("SMAA_GLSL_SEPARATE_SAMPLER", "1");
 #endif  // SMAA_GLSL_SEPARATE_SAMPLER 1
 
-		if (smaaEdgeMethod != +SMAAEdgeMethod::Color) {
+		if (smaaEdgeMethod != SMAAEdgeMethod::Color) {
 			macros.set("EDGEMETHOD", std::to_string(static_cast<uint8_t>(smaaEdgeMethod)));
 		}
 
-		if (smaaPredication && smaaEdgeMethod != +SMAAEdgeMethod::Depth) {
+		if (smaaPredication && smaaEdgeMethod != SMAAEdgeMethod::Depth) {
 			macros.set("SMAA_PREDICATION", "1");
 		}
 
@@ -3240,7 +3242,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 
 #if SMAA_GLSL_SEPARATE_SAMPLER
 
-	if (smaaEdgeMethod == +SMAAEdgeMethod::Depth) {
+	if (smaaEdgeMethod == SMAAEdgeMethod::Depth) {
 		edgeDS.color         = r.get(Rendertargets::MainDepth);
 	} else {
 		edgeDS.color         = r.get(input, Format::RGBA8);
@@ -3251,7 +3253,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 
 #else  // SMAA_GLSL_SEPARATE_SAMPLER
 
-	if (smaaEdgeMethod == +SMAAEdgeMethod::Depth) {
+	if (smaaEdgeMethod == SMAAEdgeMethod::Depth) {
 		edgeDS.color.tex     = r.get(Rendertargets::MainDepth);
 	} else {
 		edgeDS.color.tex     = r.get(input, Format::RGBA8);
@@ -3656,12 +3658,12 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				ImGui::EndDisabled();
 			}
 
-			int em = smaaEdgeMethod._to_integral();;
+			int em = magic_enum::enum_integer(smaaEdgeMethod);
 			ImGui::Text("SMAA edge detection");
-			for (SMAAEdgeMethod e : SMAAEdgeMethod::_values()) {
-				ImGui::RadioButton(e._to_string(), &em, e._to_integral());
+			for (SMAAEdgeMethod e : magic_enum::enum_values<SMAAEdgeMethod>()) {
+				ImGui::RadioButton(magic_enum::enum_name(e).data(), &em, magic_enum::enum_integer(e));
 			}
-			smaaEdgeMethod = SMAAEdgeMethod::_from_integral(em);
+			smaaEdgeMethod = magic_enum::enum_value<SMAAEdgeMethod>(em);
 
 			int d = magic_enum::enum_integer(debugMode);
 			constexpr auto smaaDebugModes = magic_enum::enum_names<SMAADebugMode>();
@@ -3762,10 +3764,10 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 
 			// shape selection
 			{
-				if (ImGui::BeginCombo("Shape", activeShape._to_string())) {
-					for (Shape s : Shape::_values()) {
+				if (ImGui::BeginCombo("Shape", magic_enum::enum_name(activeShape).data())) {
+					for (Shape s : magic_enum::enum_values<Shape>()) {
 						bool selected = (s == activeShape);
-						if (ImGui::Selectable(s._to_string(), selected)) {
+						if (ImGui::Selectable(magic_enum::enum_name(s).data(), selected)) {
 							activeShape = s;
 						}
 
