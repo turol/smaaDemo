@@ -883,18 +883,25 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 			std::string aaMethodStr = aaMethodSwitch.getValue();
 			if (!aaMethodStr.empty()) {
 				auto parsed = magic_enum::enum_cast<AAMethod>(aaMethodStr);
-				if (!parsed) {
+				if (parsed) {
+					aaMethod = *parsed;
+					// we don't know supported methods yet, delay the check until we do
+					aaMethodSetExplicitly = true;
+				} else {
 					std::transform(aaMethodStr.begin(), aaMethodStr.end(), aaMethodStr.begin(), ::toupper);
+					parsed = magic_enum::enum_cast<AAMethod>(aaMethodStr);
+					if (parsed) {
+						aaMethod = *parsed;
+						// we don't know supported methods yet, delay the check until we do
+						aaMethodSetExplicitly = true;
+					} else {
 					if (aaMethodStr == "NONE") {
 						antialiasing = false;
 					} else {
 						LOG_ERROR("Bad AA method \"{}\"", aaMethodStr);
 						exit(1);
+						}
 					}
-				} else {
-					aaMethod = *parsed;
-					// we don't know supported methods yet, delay the check until we do
-					aaMethodSetExplicitly = true;
 				}
 			}
 		}
