@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <SPIRV/SPVRemapper.h>
 #include <spirv_cross.hpp>
 
+#include <magic_enum_containers.hpp>
 
 #ifndef nssv_CONFIG_SELECT_STRING_VIEW
 #define nssv_CONFIG_SELECT_STRING_VIEW nssv_STRING_VIEW_NONSTD
@@ -62,7 +63,7 @@ template <> struct formatter<renderer::ShaderStage>: formatter<std::string> {
 
 	template <typename FormatContext>
 	auto format(renderer::ShaderStage stage, FormatContext &ctx) const {
-		return formatter<std::string>::format(stage._to_string(), ctx);
+		return formatter<std::string>::format(magic_enum::enum_name(stage), ctx);
 	}
 };
 
@@ -72,7 +73,7 @@ template <> struct formatter<renderer::ShaderCacheKey>: formatter<std::string> {
 
 	template <typename FormatContext>
 	auto format(const renderer::ShaderCacheKey &cacheKey, FormatContext &ctx) const {
-		std::string result = cacheKey.stage._to_string();
+		std::string result(magic_enum::enum_name(cacheKey.stage));
 		result += " " + cacheKey.name;
 		std::string macros = renderer::RendererBase::formatMacros(cacheKey.macros);
 		if (!macros.empty()) {
@@ -452,12 +453,12 @@ struct ShaderSourceCacheData {
 
 
 void to_json(nlohmann::json &j, const ShaderStage &stage) {
-	j = stage._to_string();
+	j = magic_enum::enum_name(stage);
 }
 
 
 void from_json(const nlohmann::json &j, ShaderStage &key) {
-	key = ShaderStage::_from_string(j.get<std::string>().c_str());
+	key = *magic_enum::enum_cast<ShaderStage>(j.get<std::string>());
 }
 
 
@@ -475,7 +476,7 @@ void from_json(const nlohmann::json &j, ShaderSourceCacheData &data) {
 }
 
 
-static const char *const shaderStages[] = { "vert", "frag" };
+static const magic_enum::containers::array<ShaderStage, const char *> shaderStages = { "vert", "frag" };
 
 
 std::string RendererBase::makeSPVCacheName(uint64_t hash, ShaderStage stage) {
