@@ -1873,8 +1873,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 		viewInfo.format   = vulkanFormat(desc.additionalViewFormat_);
 		view.imageView    = device.createImageView(viewInfo);
 
-		std::string viewName = desc.name_ + " " + desc.additionalViewFormat_._to_string() + " view";
-		impl->debugNameObject<vk::ImageView>(view.imageView, viewName);
+		impl->debugNameObject<vk::ImageView>(view.imageView, fmt::format("{} {} view", desc.name_, desc.additionalViewFormat_._to_string()));
 		rt.additionalView = impl->textures.add(std::move(view));
 	}
 
