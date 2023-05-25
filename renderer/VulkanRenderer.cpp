@@ -2111,8 +2111,7 @@ DSLayoutHandle Renderer::createDescriptorSetLayout(const DescriptorLayout *layou
 		vk::DescriptorSetLayoutBinding b;
 
 		b.binding         = i;
-		LOG_TODO("make layout End last in enum so this is nicer");
-		b.descriptorType  = descriptorTypes[uint8_t(layout->type) - 1];
+		b.descriptorType  = descriptorTypes[uint8_t(layout->type)];
 		b.descriptorCount = 1;
 		LOG_TODO("should specify stages in layout");
 		b.stageFlags      = vk::ShaderStageFlagBits::eAll;
@@ -3478,7 +3477,7 @@ void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHand
 		write.dstBinding      = index;
 		write.descriptorCount = 1;
 		LOG_TODO("move to a helper function");
-		write.descriptorType  = descriptorTypes[uint8_t(l.type) - 1];
+		write.descriptorType  = descriptorTypes[uint8_t(l.type)];
 
 		switch (l.type) {
 		case DescriptorType::End:

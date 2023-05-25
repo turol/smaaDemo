@@ -264,12 +264,12 @@ BETTER_ENUM(BufferType, uint8_t
 
 
 BETTER_ENUM(DescriptorType, uint8_t
-	, End
 	, UniformBuffer
 	, StorageBuffer
 	, Sampler
 	, Texture
 	, CombinedSampler
+	, End
 )
 
 
