@@ -64,7 +64,7 @@ static const GLValueName interestingValues[] = {
 void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /* length */, const GLchar *message, const void * /* userParam */);
 
 
-static void pushString(std::vector<char> &v, const std::string &str) {
+static void pushString(std::vector<char> &v, std::string_view str) {
 	v.insert(v.end(), str.begin(), str.end());
 }
 
