@@ -247,12 +247,11 @@ struct Image {
 	std::string    filename;
 	std::string    shortName;
 	TextureHandle  tex;
-	unsigned int   width, height;
+	unsigned int   width = 0;
+	unsigned int   height = 0;
 
 
 	Image()
-	: width(0)
-	, height(0)
 	{
 	}
 
@@ -382,13 +381,12 @@ const RenderPasses  Default<RenderPasses>::value = RenderPasses::Invalid;
 
 
 struct ShapeRenderBuffers {
-	unsigned int  numVertices;
+	unsigned int  numVertices = 0;
 	BufferHandle  vertices;
 	BufferHandle  indices;
 
 
 	ShapeRenderBuffers()
-	: numVertices(0)
 	{}
 
 	// not copyable
@@ -452,63 +450,63 @@ class SMAADemo {
 	// command line things
 	std::vector<std::string>                          imageFiles;
 
-	bool                                              recreateSwapchain;
-	bool                                              rebuildRG;
-	bool                                              keepGoing;
+	bool                                              recreateSwapchain = false;
+	bool                                              rebuildRG         = true;
+	bool                                              keepGoing         = true;
 
 	// aa things
-	bool                                              antialiasing;
-	AAMethod                                          aaMethod;
-	bool                                              aaMethodSetExplicitly;
-	bool                                              temporalAA;
-	bool                                              temporalAAFirstFrame;
-	unsigned int                                      temporalFrame;
-	bool                                              temporalReproject;
-	float                                             reprojectionWeightScale;
+	bool                                              antialiasing            = true;
+	AAMethod                                          aaMethod                = AAMethod::SMAA;
+	bool                                              aaMethodSetExplicitly   = false;
+	bool                                              temporalAA              = false;
+	bool                                              temporalAAFirstFrame    = false;
+	unsigned int                                      temporalFrame           = 0;
+	bool                                              temporalReproject       = true;
+	float                                             reprojectionWeightScale = 30.0f;
 	// number of samples in current scene fb
 	// 1 or 2 if SMAA
 	// 2.. if MSAA
-	unsigned int                                      numSamples;
-	SMAADebugMode                                     debugMode;
-	unsigned int                                      fxaaQuality;
-	unsigned int                                      msaaQuality;
-	unsigned int                                      maxMSAAQuality;
+	unsigned int                                      numSamples     = 1;
+	SMAADebugMode                                     debugMode      = SMAADebugMode::None;
+	unsigned int                                      fxaaQuality    = maxFXAAQuality - 1;
+	unsigned int                                      msaaQuality    = 0;
+	unsigned int                                      maxMSAAQuality = 1;
 
 	unsigned int                                      smaaQuality;
 	SMAAEdgeMethod                                    smaaEdgeMethod;
 	bool                                              smaaPredication;
 	ShaderDefines::SMAAParameters                     smaaParameters;
 
-	float                                             predicationThreshold;
-	float                                             predicationScale;
-	float                                             predicationStrength;
+	float                                             predicationThreshold = 0.01f;
+	float                                             predicationScale     = 2.0f;
+	float                                             predicationStrength  = 0.4f;
 
 	// timing things
-	bool                                              fpsLimitActive;
-	uint32_t                                          fpsLimit;
-	uint64_t                                          sleepFudge;
-	uint64_t                                          tickBase;
-	uint64_t                                          lastTime;
-	uint64_t                                          freqMult;
-	uint64_t                                          freqDiv;
+	bool                                              fpsLimitActive = true;
+	uint32_t                                          fpsLimit       = 0;
+	uint64_t                                          sleepFudge     = 0;
+	uint64_t                                          tickBase       = 0;
+	uint64_t                                          lastTime       = 0;
+	uint64_t                                          freqMult       = 0;
+	uint64_t                                          freqDiv        = 0;
 
 	// scene things
 	// 0 for shapes
 	// 1.. for images
-	unsigned int                                      activeScene;
-	unsigned int                                      shapesPerSide;
-	unsigned int                                      colorMode;
-	bool                                              rotateShapes;
-	Shape                                             activeShape;
-	bool                                              visualizeShapeOrder;
-	unsigned int                                      shapeOrderNum;
-	float                                             cameraRotation;
-	float                                             cameraDistance;
-	uint64_t                                          rotationTime;
-	unsigned int                                      rotationPeriodSeconds;
-	unsigned int                                      numRenderedFrames;
-	unsigned int                                      maxRenderedFrames;
-	RandomGen                                         random;
+	unsigned int                                      activeScene            = 0;
+	unsigned int                                      shapesPerSide          = 8;
+	unsigned int                                      colorMode              = 0;
+	bool                                              rotateShapes           = false;
+	Shape                                             activeShape            = Shape::Cube;
+	bool                                              visualizeShapeOrder    = false;
+	unsigned int                                      shapeOrderNum          = 1;
+	float                                             cameraRotation         = 0.0f;
+	float                                             cameraDistance         = defaultCameraDistance;
+	uint64_t                                          rotationTime           = 0;
+	unsigned int                                      rotationPeriodSeconds  = 30;
+	unsigned int                                      numRenderedFrames      = 0;
+	unsigned int                                      maxRenderedFrames      = 0;
+	RandomGen                                         random                 { 1 };
 	std::vector<Image>                                images;
 	std::vector<ShaderDefines::Shape>                 shapes;
 	BufferHandle                                      shapesBuffer;
@@ -518,7 +516,7 @@ class SMAADemo {
 	std::array<glm::vec4, 2>                          subsampleIndices;
 
 	Renderer                                          renderer;
-	Format                                            depthFormat;
+	Format                                            depthFormat = Format::Invalid;
 
 	std::array<RenderTargetHandle, 2>                 temporalRTs;
 
@@ -540,9 +538,12 @@ class SMAADemo {
 	TextureHandle                                     searchTex;
 
 	// input
-	bool                                              rightShift, leftShift;
-	bool                                              rightAlt,   leftAlt;
-	bool                                              rightCtrl,  leftCtrl;
+	bool                                              rightShift      = false;
+	bool                                              leftShift       = false;
+	bool                                              rightAlt        = false;
+	bool                                              leftAlt         = false;
+	bool                                              rightCtrl       = false;
+	bool                                              leftCtrl        = false;
 
 #ifndef IMGUI_DISABLE
 
@@ -550,8 +551,8 @@ class SMAADemo {
 
 	// gui things
 	TextureHandle                                     imguiFontsTex;
-	ImGuiContext                                      *imGuiContext;
-	bool                                              textInputActive;
+	ImGuiContext                                      *imGuiContext   = nullptr;
+	bool                                              textInputActive = false;
 	char                                              imageFileName[inputTextBufferSize];
 	char                                              clipboardText[inputTextBufferSize];
 
@@ -646,63 +647,6 @@ public:
 
 
 SMAADemo::SMAADemo()
-: recreateSwapchain(false)
-, rebuildRG(true)
-, keepGoing(true)
-
-, antialiasing(true)
-, aaMethod(AAMethod::SMAA)
-, aaMethodSetExplicitly(false)
-, temporalAA(false)
-, temporalAAFirstFrame(false)
-, temporalFrame(0)
-, temporalReproject(true)
-, reprojectionWeightScale(30.0f)
-, numSamples(1)
-, debugMode(SMAADebugMode::None)
-, fxaaQuality(maxFXAAQuality - 1)
-, msaaQuality(0)
-, maxMSAAQuality(1)
-, predicationThreshold(0.01f)
-, predicationScale(2.0f)
-, predicationStrength(0.4f)
-
-, fpsLimitActive(true)
-, fpsLimit(0)
-, sleepFudge(0)
-, tickBase(0)
-, lastTime(0)
-, freqMult(0)
-, freqDiv(0)
-
-, activeScene(0)
-, shapesPerSide(8)
-, colorMode(0)
-, rotateShapes(false)
-, activeShape(Shape::Cube)
-, visualizeShapeOrder(false)
-, shapeOrderNum(1)
-, cameraRotation(0.0f)
-, cameraDistance(defaultCameraDistance)
-, rotationTime(0)
-, rotationPeriodSeconds(30)
-, numRenderedFrames(0)
-, maxRenderedFrames(0)
-, random(1)
-
-, depthFormat(Format::Invalid)
-
-, rightShift(false)
-, leftShift(false)
-, rightAlt(false)
-, leftAlt(false)
-, rightCtrl(false)
-, leftCtrl(false)
-
-#ifndef IMGUI_DISABLE
-, imGuiContext(nullptr)
-, textInputActive(false)
-#endif  // IMGUI_DISABLE
 {
 	rendererDesc.swapchain.width  = 1280;
 	rendererDesc.swapchain.height = 720;
