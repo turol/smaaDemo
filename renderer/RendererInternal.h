@@ -298,7 +298,7 @@ struct RendererBase {
 		Includer(Includer &&) noexcept            = delete;
 		Includer &operator=(Includer &&) noexcept = delete;
 
-		~Includer() {}
+		~Includer() override {}
 	};
 
 
