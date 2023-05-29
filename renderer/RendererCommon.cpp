@@ -48,26 +48,6 @@ THE SOFTWARE.
 namespace fmt {
 
 
-template <> struct formatter<renderer::ShaderMacros>: formatter<std::string> {
-	// parse is inherited from formatter<std::string>
-
-	template <typename FormatContext>
-	auto format(const renderer::ShaderMacros &macros, FormatContext &ctx) const {
-		return formatter<std::string>::format(renderer::RendererBase::formatMacros(macros), ctx);
-	}
-};
-
-
-template <> struct formatter<renderer::ShaderStage>: formatter<std::string> {
-	// parse is inherited from formatter<std::string>
-
-	template <typename FormatContext>
-	auto format(renderer::ShaderStage stage, FormatContext &ctx) const {
-		return formatter<std::string>::format(magic_enum::enum_name(stage), ctx);
-	}
-};
-
-
 template <> struct formatter<renderer::ShaderCacheKey>: formatter<std::string> {
 	// parse is inherited from formatter<std::string>
 
