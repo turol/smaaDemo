@@ -48,6 +48,11 @@ THE SOFTWARE.
 namespace renderer {
 
 
+auto format_as(ShaderStage stage) {
+	return magic_enum::enum_name(stage);
+}
+
+
 auto format_as(ShaderCacheKey cacheKey) {
 	std::string result(magic_enum::enum_name(cacheKey.stage));
 	result += " " + cacheKey.name;
