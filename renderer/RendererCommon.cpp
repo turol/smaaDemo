@@ -45,28 +45,18 @@ THE SOFTWARE.
 #include <SPIRV/GlslangToSpv.h>
 
 
-namespace fmt {
+namespace renderer {
 
 
-template <> struct formatter<renderer::ShaderCacheKey>: formatter<std::string> {
-	// parse is inherited from formatter<std::string>
-
-	template <typename FormatContext>
-	auto format(const renderer::ShaderCacheKey &cacheKey, FormatContext &ctx) const {
+auto format_as(ShaderCacheKey cacheKey) {
 		std::string result(magic_enum::enum_name(cacheKey.stage));
 		result += " " + cacheKey.name;
 		std::string macros = renderer::RendererBase::formatMacros(cacheKey.macros);
 		if (!macros.empty()) {
 			result += " " + macros;
 		}
-		return formatter<std::string>::format(result, ctx);
-	}
-};
-
-
-} // namespace fmt
-
-namespace renderer {
+		return result;
+}
 
 
 bool isColorFormat(Format format) {
