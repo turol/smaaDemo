@@ -427,8 +427,8 @@ void to_json(nlohmann::json &j, const ShaderStage &stage) {
 }
 
 
-void from_json(const nlohmann::json &j, ShaderStage &key) {
-	key = *magic_enum::enum_cast<ShaderStage>(j.get<std::string>());
+void from_json(const nlohmann::json &j, ShaderStage &stage) {
+	stage = *magic_enum::enum_cast<ShaderStage>(j.get<std::string>());
 }
 
 
