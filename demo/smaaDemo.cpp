@@ -72,7 +72,7 @@ using namespace glm;
 }  // namespace ShaderDefines
 
 
-// #define SMAA_GLSL_SEPARATE_SAMPLER 1
+#define SMAA_GLSL_SEPARATE_SAMPLER 1
 
 
 using namespace renderer;
