@@ -431,6 +431,10 @@ public:
 	bool operator!=(const ShaderMacros &other) const {
 		return this->impl != other.impl;
 	}
+
+	bool empty() const {
+		return impl.empty();
+	}
 };
 
 

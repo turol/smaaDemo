@@ -51,9 +51,8 @@ namespace renderer {
 auto format_as(ShaderCacheKey cacheKey) {
 	std::string result(magic_enum::enum_name(cacheKey.stage));
 	result += " " + cacheKey.name;
-	std::string macros = renderer::RendererBase::formatMacros(cacheKey.macros);
-	if (!macros.empty()) {
-		result += " " + macros;
+	if (!cacheKey.macros.empty()) {
+		result += " " + renderer::RendererBase::formatMacros(cacheKey.macros);
 	}
 	return result;
 }
