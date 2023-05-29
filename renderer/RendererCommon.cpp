@@ -54,12 +54,11 @@ auto format_as(ShaderStage stage) {
 
 
 auto format_as(ShaderCacheKey cacheKey) {
-	std::string result(magic_enum::enum_name(cacheKey.stage));
-	result += " " + cacheKey.name;
 	if (!cacheKey.macros.empty()) {
-		result += " " + renderer::RendererBase::formatMacros(cacheKey.macros);
+		return fmt::format("{} {} {}", cacheKey.stage, cacheKey.name, renderer::RendererBase::formatMacros(cacheKey.macros));
+	} else {
+		return fmt::format("{} {}", cacheKey.stage, cacheKey.name);
 	}
-	return result;
 }
 
 
