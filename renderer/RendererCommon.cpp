@@ -25,7 +25,6 @@ THE SOFTWARE.
 #include "utils/Utils.h"
 
 #include <algorithm>
-#include <sstream>
 #include <string_view>
 
 #include <spirv-tools/optimizer.hpp>
