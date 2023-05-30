@@ -1,5 +1,0 @@
-commit 7b1867b7c08f9ac010fb8b9dae79ff8c8359bafb
-Author: Martin Moene <martin.moene@gmail.com>
-Date:   Wed Aug 10 10:19:58 2022 +0200
-
-    Release 1.7.0
