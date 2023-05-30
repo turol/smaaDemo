@@ -645,10 +645,18 @@ static const std::array<const char *, 6> spirvOptLogLevels = {
 };
 
 
+
+static constexpr magic_enum::containers::array<ShaderStage, const char *>  shaderFilenameExtensions =
+{
+	  ".vert"
+	, ".frag"
+};
+
+
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderStage stage) {
 	// check spir-v cache first
 	ShaderCacheKey cacheKey;
-	cacheKey.filename = name;
+	cacheKey.filename = name + shaderFilenameExtensions[stage];
 	cacheKey.stage  = stage;
 	cacheKey.macros = macros;
 
@@ -706,7 +714,7 @@ compilationNeeded:
 
 	std::vector<uint32_t> spirv;
 	{
-		auto src = loadSource(name);
+		auto src = loadSource(cacheKey.filename);
 
 		// we need GOOGLE_include_directive to use #include
 		// glslang has no interface for enabling extensions or predefining macros
@@ -754,7 +762,7 @@ compilationNeeded:
 
 		char *sourceString   = src.data();
 		int sourceLen        = int(src.size());
-		const char *filename = name.c_str();
+		const char *filename = cacheKey.filename.c_str();
 
 		shader.setPreamble(preamble.data());
 		shader.setStringsWithLengthsAndNames(&sourceString, &sourceLen, &filename, 1);

@@ -1702,12 +1702,8 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 			std::vector<char> pipelineName;
 
 			pipelineName.insert(pipelineName.end(), desc.vertexShaderName.begin(), desc.vertexShaderName.end());
-			std::string_view vert(".vert ");
-			pipelineName.insert(pipelineName.end(), vert.begin(), vert.end());
 
 			pipelineName.insert(pipelineName.end(), desc.fragmentShaderName.begin(), desc.fragmentShaderName.end());
-			std::string_view frag(".frag");
-			pipelineName.insert(pipelineName.end(), frag.begin(), frag.end());
 
 			for (const auto &macro : desc.shaderMacros_.impl) {
 				pipelineName.push_back(' ');
@@ -1922,9 +1918,7 @@ SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
 
 
 VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros) {
-	std::string vertexShaderName   = name + ".vert";
-
-	std::vector<uint32_t> spirv = compileSpirv(vertexShaderName, macros, ShaderStage::Vertex);
+	std::vector<uint32_t> spirv = compileSpirv(name, macros, ShaderStage::Vertex);
 
 	VertexShader v;
 	vk::ShaderModuleCreateInfo info;
@@ -1933,16 +1927,14 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	v.shaderModule = device.createShaderModule(info);
 
 	LOG_TODO("add macros to name");
-	debugNameObject<vk::ShaderModule>(v.shaderModule, vertexShaderName);
+	debugNameObject<vk::ShaderModule>(v.shaderModule, name);
 
 	return vertexShaders.add(std::move(v));
 }
 
 
 FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros &macros) {
-	std::string fragmentShaderName   = name + ".frag";
-
-	std::vector<uint32_t> spirv = compileSpirv(fragmentShaderName, macros, ShaderStage::Fragment);
+	std::vector<uint32_t> spirv = compileSpirv(name, macros, ShaderStage::Fragment);
 
 	FragmentShader f;
 	vk::ShaderModuleCreateInfo info;
@@ -1951,7 +1943,7 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	f.shaderModule = device.createShaderModule(info);
 
 	LOG_TODO("add macros to name");
-	debugNameObject<vk::ShaderModule>(f.shaderModule, fragmentShaderName);
+	debugNameObject<vk::ShaderModule>(f.shaderModule, name);
 
 	return fragmentShaders.add(std::move(f));
 
