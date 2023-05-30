@@ -50,9 +50,9 @@ auto format_as(ShaderStage stage) {
 
 auto format_as(ShaderCacheKey cacheKey) {
 	if (!cacheKey.macros.empty()) {
-		return fmt::format("{} {} {}", cacheKey.stage, cacheKey.name, renderer::RendererBase::formatMacros(cacheKey.macros));
+		return fmt::format("{} {} {}", cacheKey.stage, cacheKey.filename, renderer::RendererBase::formatMacros(cacheKey.macros));
 	} else {
-		return fmt::format("{} {}", cacheKey.stage, cacheKey.name);
+		return fmt::format("{} {}", cacheKey.stage, cacheKey.filename);
 	}
 }
 
@@ -488,7 +488,7 @@ void RendererBase::from_json(const nlohmann::json &j, ShaderMacros &macros) {
 
 void to_json(nlohmann::json &j, const ShaderCacheKey &key) {
 	j = nlohmann::json {
-		  { "name",   key.name   }
+		  { "name",   key.filename }
 		, { "stage",  key.stage  }
 		, { "macros", key.macros }
 	};
@@ -496,7 +496,7 @@ void to_json(nlohmann::json &j, const ShaderCacheKey &key) {
 
 
 void from_json(const nlohmann::json &j, ShaderCacheKey &key) {
-	j.at("name").get_to(key.name);
+	j.at("name").get_to(key.filename);
 	j.at("stage").get_to(key.stage);
 	j.at("macros").get_to(key.macros);
 }
@@ -648,7 +648,7 @@ static const std::array<const char *, 6> spirvOptLogLevels = {
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderStage stage) {
 	// check spir-v cache first
 	ShaderCacheKey cacheKey;
-	cacheKey.name   = name;
+	cacheKey.filename = name;
 	cacheKey.stage  = stage;
 	cacheKey.macros = macros;
 
@@ -1057,7 +1057,7 @@ void RendererBase::loadShaderCache() {
 			const ShaderCacheData &data = it->second;
 			bool invalidate = false;
 
-			if (changedFiles.find(key.name) != changedFiles.end()) {
+			if (changedFiles.find(key.filename) != changedFiles.end()) {
 				LOG("Invalidate shader \"{}\" because source file has changed", key);
 				invalidate = true;
 			}

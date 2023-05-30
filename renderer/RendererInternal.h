@@ -181,7 +181,7 @@ struct ShaderSourceData {
 
 
 struct ShaderCacheKey {
-	std::string   name;
+	std::string   filename;
 	ShaderStage   stage;
 	ShaderMacros  macros;
 
@@ -190,7 +190,7 @@ struct ShaderCacheKey {
 			return false;
 		}
 
-		if (name != other.name) {
+		if (filename != other.filename) {
 			return false;
 		}
 
@@ -251,7 +251,7 @@ namespace std {
 	template <> struct hash<renderer::ShaderCacheKey> {
 		size_t operator()(const renderer::ShaderCacheKey &key) const {
 			size_t h = 0;
-			h = combineHashes(h, hash<std::string>()(key.name));
+			h = combineHashes(h, hash<std::string>()(key.filename));
 			h = combineHashes(h, hash<int>()(magic_enum::enum_integer(key.stage)));
 			h = combineHashes(h, hash<renderer::ShaderMacros>()(key.macros));
 			return h;
