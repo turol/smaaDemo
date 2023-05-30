@@ -4,7 +4,7 @@
 
 #include "utils/Hash.h"
 
-#include <mpark/variant.hpp>
+#include <variant>
 
 
 namespace renderer {
@@ -169,7 +169,7 @@ private:
 	};
 
 
-	using Rendertarget = mpark::variant<ExternalRT, InternalRT>;
+	using Rendertarget = std::variant<ExternalRT, InternalRT>;
 
 
 	template <typename FE, typename FI>
@@ -193,7 +193,7 @@ private:
 			}
 		};
 
-		return mpark::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
+		return std::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
 	}
 
 
@@ -218,7 +218,7 @@ private:
 			}
 		};
 
-		return mpark::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
+		return std::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
 	}
 
 
@@ -243,7 +243,7 @@ private:
 			}
 		};
 
-		return mpark::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
+		return std::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
 	}
 
 
@@ -268,7 +268,7 @@ private:
 			}
 		};
 
-		return mpark::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
+		return std::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
 	}
 
 
@@ -406,7 +406,7 @@ private:
 		PipelineHandle  handle;
 	};
 
-	using Operation = mpark::variant<Blit, RenderPass, ResolveMSAA>;
+	using Operation = std::variant<Blit, RenderPass, ResolveMSAA>;
 
 
 	struct DebugLogVisitor final {
@@ -487,7 +487,7 @@ public:
 		rendertargets.clear();
 
 		for (auto &op : operations) {
-			auto *rp_ = mpark::get_if<RenderPass>(&op);
+			auto *rp_ = std::get_if<RenderPass>(&op);
 			if (!rp_) {
 				continue;
 			}
@@ -694,7 +694,7 @@ public:
 
 			LayoutVisitor lv(currentLayouts, *this);
 			for (auto it = operations.rbegin(); it != operations.rend(); it++) {
-				mpark::visit(lv, *it);
+				std::visit(lv, *it);
 			}
 
 			// merge operations if possible
@@ -702,8 +702,8 @@ public:
 			auto next = curr + 1;
 			while (next != operations.end()) {
 				// the silly &* is because the thing is an iterator and get_if requires a pointer
-				auto *currRP_ = mpark::get_if<RenderPass>(&*curr);
-				auto *nextRP_ = mpark::get_if<RenderPass>(&*next);
+				auto *currRP_ = std::get_if<RenderPass>(&*curr);
+				auto *nextRP_ = std::get_if<RenderPass>(&*next);
 
 				// if we have two renderpasses check if we can merge them
 				if (currRP_ && nextRP_) {
@@ -753,7 +753,7 @@ public:
 
 		// create low-level renderpass objects and framebuffers
 		for (auto &op : operations) {
-			auto *rp_ = mpark::get_if<RenderPass>(&op);
+			auto *rp_ = std::get_if<RenderPass>(&op);
 			if (!rp_) {
 				continue;
 			}
@@ -856,7 +856,7 @@ public:
 
 			DebugVisitor d(*this);
 			for (const auto &op : operations) {
-				mpark::visit(d, op);
+				std::visit(d, op);
 			}
 		}
 		LOG("RenderGraph::build end");
@@ -897,7 +897,7 @@ public:
 
 			// build framebuffers
 			for (auto &op : operations) {
-				auto *rp_ = mpark::get_if<RenderPass>(&op);
+				auto *rp_ = std::get_if<RenderPass>(&op);
 				if (!rp_) {
 					continue;
 				}
@@ -1029,7 +1029,7 @@ public:
 		};
 
 		for (const auto &op : operations) {
-			mpark::visit(OpVisitor(renderer, *this), op);
+			std::visit(OpVisitor(renderer, *this), op);
 		}
 
 		{
@@ -1054,7 +1054,7 @@ public:
 
 			// clear framebuffers
 			for (auto &op : operations) {
-				auto *rp_ = mpark::get_if<RenderPass>(&op);
+				auto *rp_ = std::get_if<RenderPass>(&op);
 				if (!rp_) {
 					continue;
 				}
@@ -1084,7 +1084,7 @@ public:
 		LOG_TODO("use hash map");
 		bool DEBUG_ASSERTED found = false;
 		for (auto &op : operations) {
-			auto *rp_ = mpark::get_if<RenderPass>(&op);
+			auto *rp_ = std::get_if<RenderPass>(&op);
 			if (!rp_) {
 				continue;
 			}

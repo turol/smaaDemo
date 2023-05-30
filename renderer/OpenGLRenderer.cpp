@@ -2368,7 +2368,7 @@ void RendererImpl::rebindDescriptorSets() {
 	for (unsigned int i = 0; i < resources.ubos.size(); i++) {
 		const auto &r = resources.ubos.at(i);
 		const auto &d = descriptors.at(r);
-		const Buffer &buffer = buffers.get(mpark::get<BufferHandle>(d));
+		const Buffer &buffer = buffers.get(std::get<BufferHandle>(d));
 		assert(resources.uboSizes[i] <= buffer.size);
 		glBindBufferRange(GL_UNIFORM_BUFFER, i, buffer.buffer, buffer.offset, buffer.size);
 	}
@@ -2376,7 +2376,7 @@ void RendererImpl::rebindDescriptorSets() {
 	for (unsigned int i = 0; i < resources.ssbos.size(); i++) {
 		const auto &r = resources.ssbos.at(i);
 		const auto &d = descriptors.at(r);
-		const Buffer &buffer = buffers.get(mpark::get<BufferHandle>(d));
+		const Buffer &buffer = buffers.get(std::get<BufferHandle>(d));
 		glBindBufferRange(GL_SHADER_STORAGE_BUFFER, i, buffer.buffer, buffer.offset, buffer.size);
 	}
 
@@ -2384,12 +2384,12 @@ void RendererImpl::rebindDescriptorSets() {
 		const auto &r = resources.textures.at(i);
 		const auto &d = descriptors.at(r);
 
-		if (mpark::holds_alternative<CSampler>(d)) {
-			const CSampler &combined = mpark::get<CSampler>(d);
+		if (std::holds_alternative<CSampler>(d)) {
+			const CSampler &combined = std::get<CSampler>(d);
 			const Texture &tex  = textures.get(combined.tex);
 			glBindTextureUnit(i, tex.tex);
-		} else if (mpark::holds_alternative<TextureHandle>(d)) {
-			const TextureHandle &handle = mpark::get<TextureHandle>(d);
+		} else if (std::holds_alternative<TextureHandle>(d)) {
+			const TextureHandle &handle = std::get<TextureHandle>(d);
 			const Texture &tex  = textures.get(handle);
 			glBindTextureUnit(i, tex.tex);
 		} else {
@@ -2400,12 +2400,12 @@ void RendererImpl::rebindDescriptorSets() {
 	for (unsigned int i = 0; i < resources.samplers.size(); i++) {
 		const auto &r = resources.samplers.at(i);
 		const auto &d = descriptors.at(r);
-		if (mpark::holds_alternative<CSampler>(d)) {
-			const CSampler &combined = mpark::get<CSampler>(d);
+		if (std::holds_alternative<CSampler>(d)) {
+			const CSampler &combined = std::get<CSampler>(d);
 			const auto &sampler = samplers.get(combined.sampler);
 			glBindSampler(i, sampler.sampler);
-		} else if (mpark::holds_alternative<SamplerHandle>(d)) {
-			const SamplerHandle &handle = mpark::get<SamplerHandle>(d);
+		} else if (std::holds_alternative<SamplerHandle>(d)) {
+			const SamplerHandle &handle = std::get<SamplerHandle>(d);
 			const auto &sampler = samplers.get(handle);
 			glBindSampler(i, sampler.sampler);
 		} else {

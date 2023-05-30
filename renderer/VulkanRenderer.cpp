@@ -3096,7 +3096,7 @@ void RendererImpl::deleteTextureInternal(Texture &tex) {
 
 
 void RendererImpl::deleteResourceInternal(Resource &r) {
-	mpark::visit(ResourceDeleter(this), r);
+	std::visit(ResourceDeleter(this), r);
 }
 
 
@@ -3841,7 +3841,7 @@ void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int fi
 namespace std {
 
 	size_t hash<renderer::Resource>::operator()(const renderer::Resource &r) const {
-		return mpark::visit(renderer::ResourceHasher(), r);
+		return std::visit(renderer::ResourceHasher(), r);
 	}
 
 }  // namespace std

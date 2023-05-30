@@ -28,7 +28,7 @@ THE SOFTWARE.
 #define VULKAN_HPP_NO_SMART_HANDLE     1
 
 
-#include <mpark/variant.hpp>
+#include <variant>
 
 
 #ifdef _WIN32
@@ -753,7 +753,7 @@ struct VertexShader {
 };
 
 
-using Resource = mpark::variant<Buffer, Framebuffer, Pipeline, RenderPass, RenderTarget, Sampler, Texture>;
+using Resource = std::variant<Buffer, Framebuffer, Pipeline, RenderPass, RenderTarget, Sampler, Texture>;
 
 
 }	// namespace renderer

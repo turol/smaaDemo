@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 #include <GL/glew.h>
 
-#include <mpark/variant.hpp>
+#include <variant>
 
 
 namespace spirv_cross {
@@ -595,7 +595,7 @@ struct VertexShader {
 };
 
 
-using Descriptor = mpark::variant<BufferHandle, CSampler, SamplerHandle, TextureHandle>;
+using Descriptor = std::variant<BufferHandle, CSampler, SamplerHandle, TextureHandle>;
 
 
 struct Frame : public FrameBase {
