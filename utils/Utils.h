@@ -200,7 +200,7 @@ void forEachSetBit(uint32_t v_, F &&f) {
 		assert((value & mask) != 0);
 		f(bit, mask);
 
-		uint32_t UNUSED oldValue = value;
+		uint32_t DEBUG_ASSERTED oldValue = value;
 		value ^= mask;
 		assert(value < oldValue);
 	}
