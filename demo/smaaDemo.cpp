@@ -3160,8 +3160,8 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 		      .depthTest(false)
 		      .cullFaces(true)
 		      .descriptorSetLayout<GlobalDS>(0)
-		      .shaderMacros(macros)
 		      .descriptorSetLayout<EdgeDetectionDS>(1)
+		      .shaderMacros(macros)
 		      .vertexShader("smaaEdge")
 		      .fragmentShader("smaaEdge")
 		      .name(std::string("SMAA edges ") + std::to_string(smaaQuality));
