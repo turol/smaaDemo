@@ -160,7 +160,7 @@ static inline uint32_t popCount(uint32_t v) {
 
 #ifdef __GNUC__
 
-	uint32_t retval = __builtin_popcount(v);
+	uint32_t retval = static_cast<uint32_t>(__builtin_popcount(v));
 
 #elif defined(_MSC_VER)
 
