@@ -416,7 +416,7 @@ public:
 
 	~ShaderMacros() {}
 
-	void set(nonstd::string_view key, nonstd::string_view value) {
+	void set(std::string_view key, std::string_view value) {
 		for (auto &macro : impl) {
 			if (macro.key == key) {
 				macro.value = std::string(value);

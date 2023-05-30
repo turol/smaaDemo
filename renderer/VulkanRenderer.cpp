@@ -1702,11 +1702,11 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 			std::vector<char> pipelineName;
 
 			pipelineName.insert(pipelineName.end(), desc.vertexShaderName.begin(), desc.vertexShaderName.end());
-			nonstd::string_view vert(".vert ");
+			std::string_view vert(".vert ");
 			pipelineName.insert(pipelineName.end(), vert.begin(), vert.end());
 
 			pipelineName.insert(pipelineName.end(), desc.fragmentShaderName.begin(), desc.fragmentShaderName.end());
-			nonstd::string_view frag(".frag");
+			std::string_view frag(".frag");
 			pipelineName.insert(pipelineName.end(), frag.begin(), frag.end());
 
 			for (const auto &macro : desc.shaderMacros_.impl) {

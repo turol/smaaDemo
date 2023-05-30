@@ -29,12 +29,8 @@ THE SOFTWARE.
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
-
-#ifndef nssv_CONFIG_SELECT_STRING_VIEW
-#define nssv_CONFIG_SELECT_STRING_VIEW nssv_STRING_VIEW_NONSTD
-#endif  // nssv_CONFIG_SELECT_STRING_VIEW
-#include <nonstd/string_view.hpp>
 
 #include <fmt/format.h>
 #include <fmt/compile.h>
@@ -98,8 +94,8 @@ THE SOFTWARE.
 
 
 void logInit();
-void logWrite(const nonstd::string_view &message);
-void logWriteError(const nonstd::string_view &message);
+void logWrite(const std::string_view &message);
+void logWriteError(const std::string_view &message);
 
 template <typename S, typename... Args>
 static void logWriteFmt(const S &format, const Args & ... args) {

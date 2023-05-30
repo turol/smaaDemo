@@ -26,17 +26,13 @@ THE SOFTWARE.
 
 #include <algorithm>
 #include <sstream>
+#include <string_view>
 
 #include <spirv-tools/optimizer.hpp>
 #include <SPIRV/SPVRemapper.h>
 #include <spirv_cross.hpp>
 
 #include <magic_enum_containers.hpp>
-
-#ifndef nssv_CONFIG_SELECT_STRING_VIEW
-#define nssv_CONFIG_SELECT_STRING_VIEW nssv_STRING_VIEW_NONSTD
-#endif  // nssv_CONFIG_SELECT_STRING_VIEW
-#include <nonstd/string_view.hpp>
 
 #include <xxhash.h>
 
@@ -718,13 +714,13 @@ compilationNeeded:
 		// use preamble
 		std::vector<char> preamble;
 
-		nonstd::string_view ext = "#extension GL_GOOGLE_include_directive : enable\n";
+		std::string_view ext = "#extension GL_GOOGLE_include_directive : enable\n";
 		preamble.insert(preamble.end(), ext.begin(), ext.end());
 
 		if (!macros.impl.empty()) {
 			assert(std::is_sorted(macros.impl.begin(), macros.impl.end()));
 
-			nonstd::string_view define = "#define ";
+			std::string_view define = "#define ";
 			for (const auto &macro : macros.impl) {
 				preamble.insert(preamble.end(), define.begin(), define.end());
 				preamble.insert(preamble.end(), macro.key.begin(), macro.key.end());
