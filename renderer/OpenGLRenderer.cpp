@@ -1152,7 +1152,10 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	ResourceMap      dsResources;
 	ShaderResources  shaderResources;
 	for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
-		if (desc.descriptorSetLayouts[i]) {
+		if (!desc.descriptorSetLayouts[i]) {
+			continue;
+		}
+
 			const auto &layoutDesc = impl->dsLayouts.get(desc.descriptorSetLayouts[i]).descriptors;
 			for (unsigned int binding = 0; binding < layoutDesc.size(); binding++) {
 				DSIndex idx;
@@ -1192,7 +1195,6 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 
 				dsResources.emplace(idx, ResourceInfo(type, glIndex));
 			}
-		}
 	}
 
 	GLuint vertexShader = 0;
