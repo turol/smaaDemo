@@ -1151,10 +1151,32 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	// construct map of descriptor set resources
 	ResourceMap      dsResources;
 	ShaderResources  shaderResources;
+
+#ifndef NDEBUG
+	bool endReached = false;
+#endif  // NDEBUG
+
 	for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
+#ifdef NDEBUG
+
 		if (!desc.descriptorSetLayouts[i]) {
+			break;
+		}
+
+#else  // NDEBUG
+
+		// all non-null descriptor set layouts must be first, followed by only nulls
+		if (endReached) {
+			assert(!desc.descriptorSetLayouts[i]);
 			continue;
 		}
+
+		if (!desc.descriptorSetLayouts[i]) {
+			endReached = true;
+			continue;
+		}
+
+#endif  // NDEBUG
 
 		const auto &layoutDesc = impl->dsLayouts.get(desc.descriptorSetLayouts[i]).descriptors;
 		for (unsigned int binding = 0; binding < layoutDesc.size(); binding++) {
