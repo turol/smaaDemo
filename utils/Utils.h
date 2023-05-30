@@ -94,8 +94,8 @@ THE SOFTWARE.
 
 
 void logInit();
-void logWrite(const std::string_view &message);
-void logWriteError(const std::string_view &message);
+void logWrite(std::string_view message);
+void logWriteError(std::string_view message);
 
 template <typename S, typename... Args>
 static void logWriteFmt(const S &format, const Args & ... args) {

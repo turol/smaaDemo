@@ -55,7 +55,7 @@ void logInit() {
 }
 
 
-void logWrite(const std::string_view &message) {
+void logWrite(std::string_view message) {
 	// Write to console if opening log file failed
 	FILE *f = logFile ? logFile : stdout;
 	fwrite(message.data(), 1, message.size(), f);
@@ -63,7 +63,7 @@ void logWrite(const std::string_view &message) {
 }
 
 
-void logWriteError(const std::string_view &message) {
+void logWriteError(std::string_view message) {
 	// Write to log and stderr
 	if (logFile) {
 		fwrite(message.data(), 1, message.size(), logFile);
