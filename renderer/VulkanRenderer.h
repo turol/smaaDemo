@@ -45,6 +45,8 @@ THE SOFTWARE.
 
 #include <windows.h>
 
+#define VMA_USE_STL_SHARED_MUTEX 0
+
 #endif  // _WIN32
 
 
