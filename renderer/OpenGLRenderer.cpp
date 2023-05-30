@@ -1156,45 +1156,45 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 			continue;
 		}
 
-			const auto &layoutDesc = impl->dsLayouts.get(desc.descriptorSetLayouts[i]).descriptors;
-			for (unsigned int binding = 0; binding < layoutDesc.size(); binding++) {
-				DSIndex idx;
-				idx.set     = i;
-				idx.binding = binding;
-				uint32_t glIndex = 0xFFFFFFFFU;
+		const auto &layoutDesc = impl->dsLayouts.get(desc.descriptorSetLayouts[i]).descriptors;
+		for (unsigned int binding = 0; binding < layoutDesc.size(); binding++) {
+			DSIndex idx;
+			idx.set     = i;
+			idx.binding = binding;
+			uint32_t glIndex = 0xFFFFFFFFU;
 
-				auto type = layoutDesc.at(binding).type;
-				switch (type) {
-				case DescriptorType::UniformBuffer:
-					glIndex = shaderResources.ubos.size();
-					shaderResources.ubos.push_back(idx);
-					break;
+			auto type = layoutDesc.at(binding).type;
+			switch (type) {
+			case DescriptorType::UniformBuffer:
+				glIndex = shaderResources.ubos.size();
+				shaderResources.ubos.push_back(idx);
+				break;
 
-				case DescriptorType::StorageBuffer:
-					glIndex = shaderResources.ssbos.size();
-					shaderResources.ssbos.push_back(idx);
-					break;
+			case DescriptorType::StorageBuffer:
+				glIndex = shaderResources.ssbos.size();
+				shaderResources.ssbos.push_back(idx);
+				break;
 
-				case DescriptorType::Sampler:
-				case DescriptorType::Texture:
-                    // gets assigned later after spirv-cross has built combined samplers
-					break;
+			case DescriptorType::Sampler:
+			case DescriptorType::Texture:
+				// gets assigned later after spirv-cross has built combined samplers
+				break;
 
-				case DescriptorType::CombinedSampler:
-					glIndex         = shaderResources.textures.size();
-					assert(glIndex == shaderResources.samplers.size());
+			case DescriptorType::CombinedSampler:
+				glIndex         = shaderResources.textures.size();
+				assert(glIndex == shaderResources.samplers.size());
 
-					shaderResources.textures.push_back(idx);
-					shaderResources.samplers.push_back(idx);
-					break;
+				shaderResources.textures.push_back(idx);
+				shaderResources.samplers.push_back(idx);
+				break;
 
-				case DescriptorType::End:
-					assert(false);
-					break;
-				}
-
-				dsResources.emplace(idx, ResourceInfo(type, glIndex));
+			case DescriptorType::End:
+				assert(false);
+				break;
 			}
+
+			dsResources.emplace(idx, ResourceInfo(type, glIndex));
+		}
 	}
 
 	GLuint vertexShader = 0;
