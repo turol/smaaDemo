@@ -26,13 +26,6 @@ THE SOFTWARE.
 #include <mutex>
 
 
-#if defined(__GNUC__) && defined(_WIN32)
-
-#include <mingw.mutex.h>
-
-#endif  // defined(__GNUC__) && defined(_WIN32)
-
-
 // needs to be before RendererInternal.h
 #define VMA_IMPLEMENTATION
 
