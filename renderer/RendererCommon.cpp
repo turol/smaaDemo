@@ -336,32 +336,10 @@ bool PipelineDesc::operator==(const PipelineDesc &other) const {
 RendererBase::RendererBase(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
 , wantedSwapchain(desc.swapchain)
-, swapchainDirty(true)
-, swapchainFormat(Format::Invalid)
-, frameTimeoutNanos(1000000000ULL)
-, currentFrameIdx(0)
-, lastSyncedFrame(0)
-, currentRefreshRate(0)
-, maxRefreshRate(0)
-, synchronizationDebugMode(false)
 , skipShaderCache(desc.skipShaderCache || !desc.optimizeShaders)
 , optimizeShaders(desc.optimizeShaders)
 , validateShaders(desc.validateShaders)
-, frameNum(0)
-, uboAlign(0)
-, ssboAlign(0)
 , renderingToSwapchain(false)
-, ringBufSize(0)
-, ringBufPtr(0)
-, lastSyncedRingBufPtr(0)
-, cacheModified(false)
-#ifndef NDEBUG
-, inFrame(false)
-, inRenderPass(false)
-, validPipeline(false)
-, pipelineDrawn(false)
-, scissorSet(false)
-#endif //  NDEBUG
 {
 	char *prefPath = SDL_GetPrefPath("", "SMAADemo");
 	spirvCacheDir = prefPath;

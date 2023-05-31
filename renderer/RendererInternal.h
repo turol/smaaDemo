@@ -304,47 +304,47 @@ struct RendererBase {
 
 	SwapchainDesc                                        swapchainDesc;
 	SwapchainDesc                                        wantedSwapchain;
-	bool                                                 swapchainDirty;
-	Format                                               swapchainFormat;
+	bool                                                 swapchainDirty            = true;
+	Format                                               swapchainFormat           = Format::Invalid;
 
-	uint64_t                                             frameTimeoutNanos;
-	uint32_t                                             currentFrameIdx;
-	uint32_t                                             lastSyncedFrame;
+	uint64_t                                             frameTimeoutNanos         = 1000000000ULL;
+	uint32_t                                             currentFrameIdx           = 0;
+	uint32_t                                             lastSyncedFrame           = 0;
 
-	unsigned int                                         currentRefreshRate;
-	unsigned int                                         maxRefreshRate;
+	unsigned int                                         currentRefreshRate        = 0;
+	unsigned int                                         maxRefreshRate            = 0;
 	RendererFeatures                                     features;
-	bool                                                 synchronizationDebugMode;
+	bool                                                 synchronizationDebugMode  = false;
 
-	bool                                                 skipShaderCache;
-	bool                                                 optimizeShaders;
-	bool                                                 validateShaders;
-	unsigned int                                         frameNum;
+	bool                                                 skipShaderCache           = false;
+	bool                                                 optimizeShaders           = true;
+	bool                                                 validateShaders           = false;
+	unsigned int                                         frameNum                  = 0;
 
-	unsigned int                                         uboAlign;
-	unsigned int                                         ssboAlign;
+	unsigned int                                         uboAlign                  = 0;
+	unsigned int                                         ssboAlign                 = 0;
 
 	RenderPassHandle                                     currentRenderPass;
 	FramebufferHandle                                    currentFramebuffer;
-	bool                                                 renderingToSwapchain;
+	bool                                                 renderingToSwapchain      = false;
 
-	unsigned int                                         ringBufSize;
-	unsigned int                                         ringBufPtr;
+	unsigned int                                         ringBufSize               = 0;
+	unsigned int                                         ringBufPtr                = 0;
 	// we have synced with the GPU up to this ringbuffer index
-	unsigned int                                         lastSyncedRingBufPtr;
+	unsigned int                                         lastSyncedRingBufPtr      = 0;
 
 	HashMap<std::string, ShaderSourceData>               shaderSources;
 	HashMap<ShaderCacheKey, ShaderCacheData>             shaderCache;
-	bool                                                 cacheModified;
+	bool                                                 cacheModified             = false;
 
 
 #ifndef NDEBUG
 	// debugging
-	bool                                                 inFrame;
-	bool                                                 inRenderPass;
-	bool                                                 validPipeline;
-	bool                                                 pipelineDrawn;
-	bool                                                 scissorSet;
+	bool                                                 inFrame                   = false;
+	bool                                                 inRenderPass              = false;
+	bool                                                 validPipeline             = false;
+	bool                                                 pipelineDrawn             = false;
+	bool                                                 scissorSet                = false;
 #endif //  NDEBUG
 
 	std::string                                          spirvCacheDir;
