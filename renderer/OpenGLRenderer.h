@@ -434,7 +434,7 @@ struct RenderTarget {
 		other.format          = Format::Invalid;
 
 		return *this;
-	};
+	}
 
 	~RenderTarget() {
 		assert(numSamples == 0);
