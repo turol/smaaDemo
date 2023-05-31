@@ -657,8 +657,8 @@ struct Frame : public FrameBase {
 
 
 struct RendererImpl : public RendererBase {
-	SDL_Window                                              *window;
-	SDL_GLContext                                           context;
+	SDL_Window                                              *window             = nullptr;
+	SDL_GLContext                                           context             = nullptr;
 
 	HashMap<GLenum, int>                                    glValues;
 
@@ -675,20 +675,20 @@ struct RendererImpl : public RendererBase {
 	ResourceContainer<Texture>                              textures;
 	ResourceContainer<VertexShader, uint32_t, true>         vertexShaders;
 
-	GLuint                                                  ringBuffer;
-	bool                                                    persistentMapInUse;
-	char                                                    *persistentMapping;
+	GLuint                                                  ringBuffer          = 0;
+	bool                                                    persistentMapInUse  = false;
+	char                                                    *persistentMapping  = nullptr;
 
 	PipelineHandle                                          currentPipeline;
 
-	bool                                                    decriptorSetsDirty;
+	bool                                                    decriptorSetsDirty  = true;
 	HashMap<DSIndex, Descriptor>                            descriptors;
 
-	bool                                                    debug;
-	bool                                                    tracing;
-	GLuint                                                  vao;
-	IndexFormat                                             indexFormat;
-	unsigned int                                            indexBufByteOffset;
+	bool                                                    debug               = false;
+	bool                                                    tracing             = false;
+	GLuint                                                  vao                 = 0;
+	IndexFormat                                             indexFormat         = IndexFormat::b32;
+	unsigned int                                            indexBufByteOffset  = 0;
 
 
 	bool isRenderPassCompatible(const RenderPass &pass, const Framebuffer &fb);

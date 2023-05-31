@@ -486,17 +486,8 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
-, window(nullptr)
-, context(nullptr)
-, ringBuffer(0)
-, persistentMapInUse(false)
-, persistentMapping(nullptr)
-, decriptorSetsDirty(true)
 , debug(desc.debug)
 , tracing(desc.tracing)
-, vao(0)
-, indexFormat(IndexFormat::b32)
-, indexBufByteOffset(0)
 {
 
 	{
