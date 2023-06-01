@@ -52,3 +52,4 @@ test/test_aliases.cpp
 test/test_containers.cpp
 test/test_flags.cpp
 test/test_nonascii.cpp
+test/test_wchar_t.cpp
