@@ -65,20 +65,14 @@ struct ShaderResources {
 
 
 struct Buffer {
-	bool           ringBufferAlloc;
-	uint32_t       size;
-	uint32_t       offset;
-	GLuint         buffer;
-	BufferType     type;
+	bool           ringBufferAlloc  = false;
+	uint32_t       size             = 0;
+	uint32_t       offset           = 0;
+	GLuint         buffer           = 0;
+	BufferType     type             = BufferType::Invalid;
 
 
-	Buffer()
-	: ringBufferAlloc(false)
-	, size(0)
-	, offset(0)
-	, buffer(0)
-	, type(BufferType::Invalid)
-	{}
+	Buffer() {}
 
 	Buffer(const Buffer &)            = delete;
 	Buffer &operator=(const Buffer &) = delete;
@@ -203,14 +197,15 @@ struct FragmentShader {
 
 
 struct Framebuffer {
-	GLuint                                                   fbo;
-	unsigned int                                             width, height;
-	unsigned int                                             numSamples;
-	bool                                                     sRGB;
-	RenderPassHandle                                         renderPass;
-	FramebufferDesc                                          desc;
-	std::array<Format, MAX_COLOR_RENDERTARGETS>              colorFormats;
-	Format                                                   depthStencilFormat;
+	GLuint                                       fbo                 = 0;
+	unsigned int                                 width               = 0;
+	unsigned int                                 height              = 0;
+	unsigned int                                 numSamples          = 0;
+	bool                                         sRGB                = false;
+	RenderPassHandle                             renderPass;
+	FramebufferDesc                              desc;
+	std::array<Format, MAX_COLOR_RENDERTARGETS>  colorFormats;
+	Format                                       depthStencilFormat  = Format::Invalid;
 
 
 	Framebuffer(const Framebuffer &)            = delete;
@@ -241,14 +236,7 @@ struct Framebuffer {
 
 	Framebuffer &operator=(Framebuffer &&other) noexcept = delete;
 
-	Framebuffer()
-	: fbo(0)
-	, width(0)
-	, height(0)
-	, numSamples(0)
-	, sRGB(false)
-	, depthStencilFormat(Format::Invalid)
-	{
+	Framebuffer() {
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 			colorFormats[i] = Format::Invalid;
 		}
@@ -264,9 +252,9 @@ struct Framebuffer {
 
 struct Pipeline {
 	PipelineDesc     desc;
-	GLuint           shader;
-	GLenum           srcBlend;
-	GLenum           destBlend;
+	GLuint           shader     = 0;
+	GLenum           srcBlend   = GL_ONE;
+	GLenum           destBlend  = GL_ZERO;
 	ShaderResources  resources;
 
 
@@ -308,9 +296,6 @@ struct Pipeline {
 	}
 
 	Pipeline()
-	: shader(0)
-	, srcBlend(GL_ONE)
-	, destBlend(GL_ZERO)
 	{
 	}
 
@@ -324,14 +309,11 @@ struct Pipeline {
 struct RenderPass {
 	RenderPassDesc                                  desc;
 	std::array<glm::vec4, MAX_COLOR_RENDERTARGETS>  colorClearValues;
-	float                                           depthClearValue;
-	GLbitfield                                      clearMask;
+	float                                           depthClearValue  = 1.0f;
+	GLbitfield                                      clearMask        = 0;
 
 
-	RenderPass()
-	: depthClearValue(1.0f)
-	, clearMask(0)
-	{}
+	RenderPass() {}
 
 	RenderPass(const RenderPass &) = delete;
 	RenderPass &operator=(const RenderPass &) = delete;
@@ -367,22 +349,17 @@ struct RenderPass {
 
 
 struct RenderTarget {
-	unsigned int   width, height;
-	unsigned int   numSamples;
-	Layout         currentLayout;
+	unsigned int   width           = 0;
+	unsigned int   height          = 0;
+	unsigned int   numSamples      = 0;
+	Layout         currentLayout   = Layout::Undefined;
 	TextureHandle  texture;
 	TextureHandle  additionalView;
-	GLuint         helperFBO;
-	Format         format;
+	GLuint         helperFBO       = 0;
+	Format         format          = Format::Invalid;
 
 
 	RenderTarget()
-	: width(0)
-	, height(0)
-	, numSamples(0)
-	, currentLayout(Layout::Undefined)
-	, helperFBO(0)
-	, format(Format::Invalid)
 	{
 	}
 
@@ -446,11 +423,10 @@ struct RenderTarget {
 
 
 struct Sampler {
-	GLuint sampler;
+	GLuint sampler  = 0;
 
 
 	Sampler()
-	: sampler(0)
 	{
 	}
 
@@ -483,20 +459,15 @@ struct Sampler {
 
 
 struct Texture {
-	unsigned int  width, height;
-	bool          renderTarget;
-	GLuint        tex;
-	GLenum        target;
-	Format        format;
+	unsigned int  width         = 0;
+	unsigned int  height        = 0;
+	bool          renderTarget  = false;
+	GLuint        tex           = 0;
+	GLenum        target        = GL_NONE;
+	Format        format        = Format::Invalid;
 
 
 	Texture()
-	: width(0)
-	, height(0)
-	, renderTarget(false)
-	, tex(0)
-	, target(GL_NONE)
-	, format(Format::Invalid)
 	{
 	}
 
@@ -599,17 +570,13 @@ using Descriptor = std::variant<BufferHandle, CSampler, SamplerHandle, TextureHa
 
 
 struct Frame : public FrameBase {
-	bool                      outstanding;
-	unsigned int              usedRingBufPtr;
+	bool                      outstanding       = false;
+	unsigned int              usedRingBufPtr    = 0;
 	std::vector<BufferHandle> ephemeralBuffers;
-	GLsync                    fence;
+	GLsync                    fence             = nullptr;
 
 
-	Frame()
-	: outstanding(false)
-	, usedRingBufPtr(0)
-	, fence(nullptr)
-	{}
+	Frame() {}
 
 	~Frame() {
 		assert(!outstanding);
