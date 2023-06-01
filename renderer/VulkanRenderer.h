@@ -1056,16 +1056,16 @@ struct RendererImpl : public RendererBase {
 	vk::Instance                                            instance;
 	vk::DebugReportCallbackEXT                              debugReportCallback;
 	vk::DebugUtilsMessengerEXT                              debugUtilsCallback;
-	unsigned int                                            physicalDeviceIndex;
+	unsigned int                                            physicalDeviceIndex     = 0;
 	vk::PhysicalDevice                                      physicalDevice;
 	vk::PhysicalDeviceProperties                            deviceProperties;
 	vk::PhysicalDeviceFeatures                              deviceFeatures;
-	bool                                                    pipelineExecutableInfo;
+	bool                                                    pipelineExecutableInfo  = false;
 	vk::Device                                              device;
 	vk::SurfaceKHR                                          surface;
 	vk::PhysicalDeviceMemoryProperties                      memoryProperties;
-	uint32_t                                                graphicsQueueIndex;
-	uint32_t                                                transferQueueIndex;
+	uint32_t                                                graphicsQueueIndex      = 0;
+	uint32_t                                                transferQueueIndex      = 0;
 	HashSet<vk::Format>                                     surfaceFormats;
 	vk::SurfaceCapabilitiesKHR                              surfaceCapabilities;
 	HashSet<vk::PresentModeKHR>                             surfacePresentModes;
@@ -1082,16 +1082,16 @@ struct RendererImpl : public RendererBase {
 
 	vk::CommandPool                                         transferCmdPool;
 	std::vector<UploadOp>                                   uploads;
-	size_t                                                  numUploads;
+	size_t                                                  numUploads              = 0;
 
 	std::vector<vk::Semaphore>                              freeSemaphores;
 
-	bool                                                    debugMarkers;
-	bool                                                    portabilitySubset;
+	bool                                                    debugMarkers            = false;
+	bool                                                    portabilitySubset       = false;
 
 	vk::Buffer                                              ringBuffer;
-	VmaAllocation                                           ringBufferMem;
-	char                                                    *persistentMapping;
+	VmaAllocation                                           ringBufferMem           = nullptr;
+	char                                                    *persistentMapping      = nullptr;
 
 	std::vector<Resource>                                   deleteResources;
 

@@ -270,15 +270,6 @@ static uint32_t makeVulkanVersion(const Version &v) {
 
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
-, physicalDeviceIndex(0)
-, pipelineExecutableInfo(false)
-, graphicsQueueIndex(0)
-, transferQueueIndex(0)
-, numUploads(0)
-, debugMarkers(false)
-, portabilitySubset(false)
-, ringBufferMem(nullptr)
-, persistentMapping(nullptr)
 {
 	bool enableValidation = desc.debug;
 	bool enableMarkers    = desc.tracing;
