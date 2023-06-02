@@ -386,7 +386,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	unsigned int numExtensions = 0;
-	if (!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, NULL)) {
+	if (!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, nullptr)) {
 		THROW_ERROR("SDL_Vulkan_GetInstanceExtensions failed: {}", SDL_GetError());
 	}
 
@@ -846,7 +846,7 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 		buffer.ringBufferAlloc = false;
 
 		buffer.memory          = ringBufferMem;
-		ringBufferMem          = VK_NULL_HANDLE;
+		ringBufferMem          = nullptr;
 		persistentMapping      = nullptr;
 
 		buffer.size            = ringBufSize;
@@ -992,7 +992,7 @@ RendererImpl::~RendererImpl() {
 	surface   = vk::SurfaceKHR();
 
 	vmaDestroyAllocator(allocator);
-	allocator = VK_NULL_HANDLE;
+	allocator = nullptr;
 
 	for (auto &sem : freeSemaphores) {
 		device.destroySemaphore(sem);
@@ -2859,7 +2859,7 @@ void RendererImpl::cleanupFrame(unsigned int frameIdx) {
 				vmaFreeMemory(allocator, op.memory);
 
 				op.stagingBuffer = vk::Buffer();
-				op.memory        = VK_NULL_HANDLE;
+				op.memory        = nullptr;
 				op.coherent      = false;
 			} else {
 				assert(!op.memory);
@@ -2900,7 +2900,7 @@ void RendererImpl::cleanupFrame(unsigned int frameIdx) {
 
 		buffer.buffer          = vk::Buffer();
 		buffer.ringBufferAlloc = false;
-		buffer.memory          = 0;
+		buffer.memory          = nullptr;
 		buffer.size            = 0;
 		buffer.offset          = 0;
 
@@ -2986,7 +2986,7 @@ void RendererImpl::deleteBufferInternal(Buffer &b) {
 
 	b.buffer          = vk::Buffer();
 	b.ringBufferAlloc = false;
-	b.memory          = 0;
+	b.memory          = nullptr;
 	b.size            = 0;
 	b.offset          = 0;
 	b.type            = BufferType::Invalid;

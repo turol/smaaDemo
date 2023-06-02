@@ -146,7 +146,7 @@ struct Buffer {
 		other.size            = 0;
 		other.offset          = 0;
 		other.buffer          = vk::Buffer();
-		other.memory          = 0;
+		other.memory          = nullptr;
 		other.type            = BufferType::Invalid;
 	}
 
@@ -169,7 +169,7 @@ struct Buffer {
 		other.size            = 0;
 		other.offset          = 0;
 		other.buffer          = vk::Buffer();
-		other.memory          = 0;
+		other.memory          = nullptr;
 		other.type            = BufferType::Invalid;
 		assert(type == BufferType::Invalid);
 
@@ -678,7 +678,7 @@ struct Texture {
 		other.height       = 0;
 		other.image        = vk::Image();
 		other.imageView    = vk::ImageView();
-		other.memory       = 0;
+		other.memory       = nullptr;
 		other.renderTarget = false;
 	}
 
@@ -699,7 +699,7 @@ struct Texture {
 		other.renderTarget = false;
 		other.image        = vk::Image();
 		other.imageView    = vk::ImageView();
-		other.memory       = 0;
+		other.memory       = nullptr;
 
 		return *this;
 	}
@@ -786,7 +786,7 @@ struct UploadOp {
 
 
 	UploadOp() noexcept
-	: memory(VK_NULL_HANDLE)
+	: memory(nullptr)
 	, coherent(false)
 	{
 		allocationInfo = {};
@@ -821,7 +821,7 @@ struct UploadOp {
 		other.semaphore     = vk::Semaphore();
 		other.semWaitMask   = vk::PipelineStageFlags();
 		other.stagingBuffer = vk::Buffer();
-		other.memory        = VK_NULL_HANDLE;
+		other.memory        = nullptr;
 		assert(other.imageAcquireBarriers.empty());
 		assert(other.bufferAcquireBarriers.empty());
 		other.coherent      = false;
@@ -855,7 +855,7 @@ struct UploadOp {
 		other.stagingBuffer   = vk::Buffer();
 
 		memory                = other.memory;
-		other.memory          = VK_NULL_HANDLE;
+		other.memory          = nullptr;
 
 		imageAcquireBarriers  = std::move(other.imageAcquireBarriers);
 		assert(other.imageAcquireBarriers.empty());

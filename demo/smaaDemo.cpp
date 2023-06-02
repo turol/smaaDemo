@@ -2042,7 +2042,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 void SMAADemo::loadImage(const char *filename) {
 	int width = 0, height = 0;
-	unsigned char *imageData = stbi_load(filename, &width, &height, NULL, 4);
+	unsigned char *imageData = stbi_load(filename, &width, &height, nullptr, 4);
 	LOG(" {} : {}x{}", filename, width, height);
 	if (!imageData) {
 		LOG("Bad image: {}", stbi_failure_reason());
@@ -3925,7 +3925,7 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 
 					pcmd->UserCallback(cmd_list, pcmd);
 				} else {
-					assert(pcmd->TextureId == 0);
+					assert(pcmd->TextureId == nullptr);
 					renderer.setScissorRect(static_cast<unsigned int>(pcmd->ClipRect.x), static_cast<unsigned int>(pcmd->ClipRect.y),
 						static_cast<unsigned int>(pcmd->ClipRect.z - pcmd->ClipRect.x), static_cast<unsigned int>(pcmd->ClipRect.w - pcmd->ClipRect.y));
 					renderer.drawIndexedVertexOffset(pcmd->ElemCount, indexOffset, vertexOffset);

@@ -126,7 +126,7 @@ GLuint RendererImpl::createShader(GLenum type, const std::string &name, const Sh
 		if (infoLogLen != 0) {
 			std::vector<char> infoLog(infoLogLen + 1, '\0');
 			LOG_TODO("better logging");
-			glGetShaderInfoLog(shader, infoLogLen, NULL, &infoLog[0]);
+			glGetShaderInfoLog(shader, infoLogLen, nullptr, &infoLog[0]);
 			if (infoLog[0] != '\0') {
 				LOG("shader \"{}\" info log:\n{}\ninfo log end", name, &infoLog[0]);
 				logFlush();
@@ -644,8 +644,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		} else {
 			LOG("KHR_debug found");
 			if (debug) {
-				glDebugMessageCallback(glDebugCallback, NULL);
-				glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+				glDebugMessageCallback(glDebugCallback, nullptr);
+				glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 
 				glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 			}
@@ -1240,7 +1240,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &status);
 		std::vector<char> infoLog(status + 1, '\0');
 		LOG_TODO("better logging");
-		glGetProgramInfoLog(program, status, NULL, &infoLog[0]);
+		glGetProgramInfoLog(program, status, nullptr, &infoLog[0]);
 		LOG("info log: {}", &infoLog[0]);
 		logFlush();
 		THROW_ERROR("shader link failed");
