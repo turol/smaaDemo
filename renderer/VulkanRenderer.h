@@ -114,21 +114,15 @@ namespace renderer {
 
 
 struct Buffer {
-	bool           ringBufferAlloc;
-	uint32_t       size;
-	uint32_t       offset;
+	bool           ringBufferAlloc  = false;
+	uint32_t       size             = 0;
+	uint32_t       offset           = 0;
 	vk::Buffer     buffer;
-	VmaAllocation  memory;
-	BufferType     type;
+	VmaAllocation  memory           = nullptr;
+	BufferType     type             = BufferType::Invalid;
 
 
-	Buffer() noexcept
-	: ringBufferAlloc(false)
-	, size(0)
-	, offset(0)
-	, memory(nullptr)
-	, type(BufferType::Invalid)
-	{}
+	Buffer() noexcept {}
 
 	Buffer(const Buffer &)            = delete;
 	Buffer &operator=(const Buffer &) = delete;
@@ -270,14 +264,15 @@ struct FragmentShader {
 struct Framebuffer {
 	struct RTInfo
 	{
-		Format  format;
-		Layout  initialLayout;
-		Layout  finalLayout;
+		Format  format         = Format::Invalid;
+		Layout  initialLayout  = Layout::Undefined;
+		Layout  finalLayout    = Layout::Undefined;
 	};
 
 	vk::Framebuffer                              framebuffer;
-	unsigned int                                 width, height;
-	unsigned int                                 numSamples;
+	unsigned int                                 width         = 0;
+	unsigned int                                 height        = 0;
+	unsigned int                                 numSamples    = 0;
 	FramebufferDesc                              desc;
 	std::array<RTInfo, MAX_COLOR_RENDERTARGETS>  colorTargets;
 	// depthStencilTargets layouts are not used, always Undefined
@@ -286,18 +281,7 @@ struct Framebuffer {
 
 
 	Framebuffer() noexcept
-	: width(0)
-	, height(0)
-	, numSamples(0)
 	{
-		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-			colorTargets[i].format = Format::Invalid;
-			colorTargets[i].initialLayout = Layout::Undefined;
-			colorTargets[i].finalLayout   = Layout::Undefined;
-		}
-		depthStencilTarget.format = Format::Invalid;
-		depthStencilTarget.initialLayout = Layout::Undefined;
-		depthStencilTarget.finalLayout   = Layout::Undefined;
 	}
 
 	Framebuffer(const Framebuffer &)            = delete;
@@ -389,12 +373,10 @@ struct Framebuffer {
 struct Pipeline {
 	vk::Pipeline       pipeline;
 	vk::PipelineLayout layout;
-	bool               scissor;
+	bool               scissor  = false;
 
 
-	Pipeline() noexcept
-	: scissor(false)
-	{}
+	Pipeline() noexcept {}
 
 	Pipeline(const Pipeline &)            = delete;
 	Pipeline &operator=(const Pipeline &) = delete;
@@ -447,15 +429,13 @@ struct Pipeline {
 
 struct RenderPass {
 	vk::RenderPass                                           renderPass;
-	unsigned int                                             clearValueCount;
+	unsigned int                                             clearValueCount     = 0;
 	std::array<vk::ClearValue, MAX_COLOR_RENDERTARGETS + 1>  clearValues;
-	unsigned int                                             numColorAttachments;
+	unsigned int                                             numColorAttachments = 0;
 	RenderPassDesc                                           desc;
 
 
 	RenderPass() noexcept
-	: clearValueCount(0)
-	, numColorAttachments(0)
 	{
 	}
 
@@ -517,23 +497,18 @@ struct RenderPass {
 
 
 struct RenderTarget{
-	unsigned int         width, height;
-	unsigned int         numSamples;
-	Layout               currentLayout;
+	unsigned int         width          = 0;
+	unsigned int         height         = 0;
+	unsigned int         numSamples     = 0;
+	Layout               currentLayout  = Layout::Undefined;
 	TextureHandle        texture;
 	TextureHandle        additionalView;
 	vk::Image            image;
-	Format               format;
+	Format               format         = Format::Invalid;
 	vk::ImageView        imageView;
 
 
-	RenderTarget() noexcept
-	: width(0)
-	, height(0)
-	, numSamples(0)
-	, currentLayout(Layout::Undefined)
-	, format(Format::Invalid)
-	{}
+	RenderTarget() noexcept {}
 
 	RenderTarget(const RenderTarget &)            = delete;
 	RenderTarget &operator=(const RenderTarget &) = delete;
@@ -647,18 +622,15 @@ struct Sampler {
 
 
 struct Texture {
-	unsigned int         width, height;
-	bool                 renderTarget;
+	unsigned int         width        = 0;
+	unsigned int         height       = 0;
+	bool                 renderTarget = false;
 	vk::Image            image;
 	vk::ImageView        imageView;
-	VmaAllocation        memory;
+	VmaAllocation        memory       = nullptr;
 
 
 	Texture() noexcept
-	: width(0)
-	, height(0)
-	, renderTarget(false)
-	, memory(nullptr)
 	{
 	}
 
@@ -778,16 +750,14 @@ struct UploadOp {
 	vk::Semaphore                         semaphore;
 	vk::PipelineStageFlags                semWaitMask;
 	vk::Buffer                            stagingBuffer;
-	VmaAllocation                         memory;
+	VmaAllocation                         memory                 = nullptr;
 	VmaAllocationInfo                     allocationInfo;
 	std::vector<vk::ImageMemoryBarrier>   imageAcquireBarriers;
 	std::vector<vk::BufferMemoryBarrier>  bufferAcquireBarriers;
-	bool                                  coherent;
+	bool                                  coherent               = false;
 
 
 	UploadOp() noexcept
-	: memory(nullptr)
-	, coherent(false)
 	{
 		allocationInfo = {};
 	}
@@ -880,8 +850,8 @@ struct Frame : public FrameBase {
 		, Done
 	};
 
-	Status                        status;
-	unsigned int                  usedRingBufPtr;
+	Status                        status             = Status::Ready;
+	unsigned int                  usedRingBufPtr     = 0;
 	std::vector<BufferHandle>     ephemeralBuffers;
 	vk::Fence                     fence;
 	vk::Image                     image;
@@ -899,10 +869,7 @@ struct Frame : public FrameBase {
 	std::vector<UploadOp>         uploads;
 
 
-	Frame()
-	: status(Status::Ready)
-	, usedRingBufPtr(0)
-	{}
+	Frame() {}
 
 	~Frame() {
 		assert(ephemeralBuffers.empty());
