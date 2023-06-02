@@ -36,6 +36,7 @@ WIN32:=n
 
 CFLAGS:=-g -Wall -Wextra -Werror -Wshadow
 CFLAGS+=-Wno-unused-local-typedefs
+CFLAGS+=-Wzero-as-null-pointer-constant
 CFLAGS+=$(shell sdl2-config --cflags)
 OPTFLAGS:=-O
 OPTFLAGS+=-ffast-math
