@@ -265,7 +265,7 @@ static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebug
 
 static uint32_t makeVulkanVersion(const Version &v) {
 	return VK_MAKE_VERSION(v.major, v.minor, v.patch);
-};
+}
 
 
 RendererImpl::RendererImpl(const RendererDesc &desc)
