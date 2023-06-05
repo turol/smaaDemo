@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include "Renderer.h"
 #include "utils/Utils.h"
 
+#include <spirv-tools/libspirv.h>
+
 #include <glslang/Public/ShaderLang.h>
 
 #define JSON_USE_IMPLICIT_CONVERSIONS 0
@@ -315,6 +317,8 @@ struct RendererBase {
 	unsigned int                                         maxRefreshRate            = 0;
 	RendererFeatures                                     features;
 	bool                                                 synchronizationDebugMode  = false;
+
+	spv_target_env                                       spirvEnvironment          = SPV_ENV_UNIVERSAL_1_2;
 
 	bool                                                 skipShaderCache           = false;
 	bool                                                 optimizeShaders           = true;

@@ -678,8 +678,8 @@ compilationNeeded:
 	std::function<bool(const std::vector<uint32_t> &)> validate;
 	if (validateShaders) {
 		validate =
-			[] (const std::vector<uint32_t> &s) {
-				spvtools::SpirvTools tools(SPV_ENV_UNIVERSAL_1_2);
+			[this] (const std::vector<uint32_t> &s) {
+				spvtools::SpirvTools tools(this->spirvEnvironment);
 				tools.SetMessageConsumer(logSpvMessage);
 				return tools.Validate(s);
 			}
@@ -802,7 +802,7 @@ compilationNeeded:
 	// SPIR-V optimization
 	if (optimizeShaders) {
 		LOG_TODO("better target environment selection?");
-		spvtools::Optimizer opt(SPV_ENV_UNIVERSAL_1_2);
+		spvtools::Optimizer opt(spirvEnvironment);
 
 		opt.SetMessageConsumer([] (spv_message_level_t level, const char *source, const spv_position_t &position, const char *message) {
 			LOG("SPIR-V opt {}: {} {}:{}:{} {}", spirvOptLogLevels[level], source, position.line, position.column, position.index, message);
