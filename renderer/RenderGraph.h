@@ -61,16 +61,7 @@ public:
 
 	struct PassDesc {
 		PassDesc()
-		: depthStencil_(Default<RT>::value)
-		, numSamples_(1)
-		, clearDepthAttachment(false)
-		, depthClearValue(1.0f)
 		{
-			for (auto &rt : colorRTs_) {
-				rt.id            = Default<RT>::value;
-				rt.passBegin     = PassBegin::DontCare;
-				rt.clearValue    = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
-			}
 		}
 
 		~PassDesc() { }
@@ -120,18 +111,18 @@ public:
 		}
 
 		struct RTInfo {
-			RT             id;
-			PassBegin      passBegin;
-			glm::vec4      clearValue;
+			RT             id          = Default<RT>::value;
+			PassBegin      passBegin   = PassBegin::DontCare;
+			glm::vec4      clearValue  = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
 		};
 
-		RT                                           depthStencil_;
+		RT                                           depthStencil_         = Default<RT>::value;
 		std::array<RTInfo, MAX_COLOR_RENDERTARGETS>  colorRTs_;
 		HashSet<RT>                                  inputRendertargets;
-		unsigned int                                 numSamples_;
+		unsigned int                                 numSamples_           = 1;
 		std::string                                  name_;
-		bool                                         clearDepthAttachment;
-		float                                        depthClearValue;
+		bool                                         clearDepthAttachment  = false;
+		float                                        depthClearValue       = 1.0f;
 	};
 
 	using RenderPassFunc = std::function<void(RP, PassResources &)>;
@@ -423,12 +414,12 @@ private:
 		}
 	};
 
-	RGState                                          state;
+	RGState                                          state            = RGState::Invalid;
 	std::exception_ptr                               storedException;
-	bool                                             hasExternalRTs;
-	RP                                               currentRP;
+	bool                                             hasExternalRTs   = false;
+	RP                                               currentRP        = Default<RP>::value;
 	std::vector<Operation>                           operations;
-	RT                                               finalTarget;
+	RT                                               finalTarget      = Default<RT>::value;
 
 	HashMap<RT, Rendertarget>                        rendertargets;
 
@@ -449,10 +440,6 @@ public:
 
 
 	RenderGraph()
-	: state(RGState::Invalid)
-	, hasExternalRTs(false)
-	, currentRP(Default<RP>::value)
-	, finalTarget(Default<RT>::value)
 	{
 	}
 
