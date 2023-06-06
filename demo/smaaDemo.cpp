@@ -249,6 +249,20 @@ enum class SMAAEdgeMethod : uint8_t {
 };
 
 
+template <typename Enum> Enum nextValue(Enum v) {
+	int i = magic_enum::enum_integer(v);
+	i = (i + 1) % magic_enum::enum_count<Enum>();
+	return magic_enum::enum_value<Enum>(i);
+}
+
+
+template <typename Enum> Enum prevValue(Enum v) {
+	int i = magic_enum::enum_integer(v);
+	i = (i + magic_enum::enum_count<Enum>() - 1) % magic_enum::enum_count<Enum>();
+	return magic_enum::enum_value<Enum>(i);
+}
+
+
 struct Image {
 	std::string    filename;
 	std::string    shortName;
