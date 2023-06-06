@@ -109,6 +109,12 @@ enum class Shape : uint8_t {
 };
 
 
+enum class ColorMode : uint8_t {
+	  RGB
+	, YCbCr
+};
+
+
 static const unsigned int inputTextBufferSize = 1024;
 
 
@@ -495,7 +501,7 @@ class SMAADemo {
 	// 1.. for images
 	unsigned int                                      activeScene            = 0;
 	unsigned int                                      shapesPerSide          = 8;
-	unsigned int                                      colorMode              = 0;
+	ColorMode                                         colorMode              = ColorMode::RGB;
 	bool                                              rotateShapes           = false;
 	Shape                                             activeShape            = Shape::Cube;
 	bool                                              visualizeShapeOrder    = false;
@@ -2167,7 +2173,7 @@ void SMAADemo::colorShapes() {
 		renderer.deleteBuffer(std::move(shapesBuffer));
 	}
 
-	if (colorMode == 0) {
+	if (colorMode == ColorMode::RGB) {
 		for (auto &shape : shapes) {
 			// random RGB
 			shape.color.x = sRGB2linear(random.randFloat());
@@ -2485,8 +2491,12 @@ void SMAADemo::processInput() {
 				break;
 
 			case SDL_SCANCODE_C:
+				// pressing 'c' re-colors the shapes
 				if (rightShift || leftShift) {
-					colorMode = (colorMode + 1) % 2;
+					// holding shift also changes mode
+					int c = magic_enum::enum_integer(colorMode);
+					c = (c + 1) % magic_enum::enum_count<ColorMode>();
+					colorMode = magic_enum::enum_value<ColorMode>(c);
 				}
 				colorShapes();
 				break;
@@ -3747,12 +3757,12 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 
 			ImGui::Separator();
 			ImGui::Text("Shape coloring mode");
-			int newColorMode = colorMode;
+			int newColorMode = magic_enum::enum_integer(colorMode);
 			ImGui::RadioButton("RGB",   &newColorMode, 0);
 			ImGui::RadioButton("YCbCr", &newColorMode, 1);
 
-			if (int(colorMode) != newColorMode) {
-				colorMode = newColorMode;
+			if (magic_enum::enum_integer(colorMode) != newColorMode) {
+				colorMode = magic_enum::enum_value<ColorMode>(newColorMode);
 				colorShapes();
 			}
 
