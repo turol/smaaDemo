@@ -3623,12 +3623,8 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				ImGui::EndDisabled();
 			}
 
-			int em = magic_enum::enum_integer(smaaEdgeMethod);
 			ImGui::Text("SMAA edge detection");
-			for (SMAAEdgeMethod e : magic_enum::enum_values<SMAAEdgeMethod>()) {
-				ImGui::RadioButton(magic_enum::enum_name(e).data(), &em, magic_enum::enum_integer(e));
-			}
-			smaaEdgeMethod = magic_enum::enum_value<SMAAEdgeMethod>(em);
+			smaaEdgeMethod = enumRadioButton(smaaEdgeMethod);
 
 			int d = magic_enum::enum_integer(debugMode);
 			constexpr auto smaaDebugModes = magic_enum::enum_names<SMAADebugMode>();
@@ -3768,12 +3764,11 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 
 			ImGui::Separator();
 			ImGui::Text("Shape coloring mode");
-			int newColorMode = magic_enum::enum_integer(colorMode);
-			ImGui::RadioButton("RGB",   &newColorMode, 0);
-			ImGui::RadioButton("YCbCr", &newColorMode, 1);
 
-			if (magic_enum::enum_integer(colorMode) != newColorMode) {
-				colorMode = magic_enum::enum_value<ColorMode>(newColorMode);
+			auto newColorMode = enumRadioButton(colorMode);
+
+			if (colorMode != newColorMode) {
+				colorMode = newColorMode;
 				colorShapes();
 			}
 
