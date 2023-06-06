@@ -2249,24 +2249,17 @@ bool SMAADemo::isAAMethodSupported(AAMethod method) const {
 
 
 void SMAADemo::setPrevAAMethod() {
-	int i = magic_enum::enum_integer(aaMethod);
-
 	do {
-		i = i - 1 + int(magic_enum::enum_count<AAMethod>());
-		i = i % magic_enum::enum_count<AAMethod>();
-		aaMethod = magic_enum::enum_value<AAMethod>(i);
+		aaMethod = prevValue(aaMethod);
 	} while (!isAAMethodSupported(aaMethod));
 	rebuildRG = true;
 }
 
 
 void SMAADemo::setNextAAMethod() {
-	int i = magic_enum::enum_integer(aaMethod);
 
 	do {
-		i = i + 1;
-		i = i % magic_enum::enum_count<AAMethod>();
-		aaMethod = magic_enum::enum_value<AAMethod>(i);
+		aaMethod = nextValue(aaMethod);
 	} while (!isAAMethodSupported(aaMethod));
 	rebuildRG = true;
 }
@@ -2508,24 +2501,19 @@ void SMAADemo::processInput() {
 				// pressing 'c' re-colors the shapes
 				if (rightShift || leftShift) {
 					// holding shift also changes mode
-					int c = magic_enum::enum_integer(colorMode);
-					c = (c + 1) % magic_enum::enum_count<ColorMode>();
-					colorMode = magic_enum::enum_value<ColorMode>(c);
+					colorMode = nextValue(colorMode);
 				}
 				colorShapes();
 				break;
 
 			case SDL_SCANCODE_D:
 				if (antialiasing && aaMethod == AAMethod::SMAA) {
-					int d = magic_enum::enum_integer<SMAADebugMode>(debugMode);
-					const int count = magic_enum::enum_count<SMAADebugMode>();
 					if (leftShift || rightShift) {
-						d = (d + count - 1) % count;
+						debugMode = prevValue(debugMode);
 					} else {
-						d = (d + 1) % count;
+						debugMode = nextValue(debugMode);
 					}
 					rebuildRG = true;
-					debugMode = magic_enum::enum_value<SMAADebugMode>(d);
 				}
 				break;
 
@@ -2584,13 +2572,11 @@ void SMAADemo::processInput() {
 				break;
 
 			case SDL_SCANCODE_S: {
-				size_t i = magic_enum::enum_integer(activeShape);
 				if (leftShift || rightShift) {
-					i = (i + magic_enum::enum_count<Shape>() - 1) % magic_enum::enum_count<Shape>();
+					activeShape = prevValue(activeShape);
 				} else {
-					i = (i                  + 1) % magic_enum::enum_count<Shape>();
+					activeShape = nextValue(activeShape);
 				}
-				activeShape = magic_enum::enum_value<Shape>(i);
 			} break;
 
 			case SDL_SCANCODE_T:
