@@ -263,6 +263,9 @@ template <typename Enum> Enum prevValue(Enum v) {
 }
 
 
+#ifndef IMGUI_DISABLE
+
+
 template <typename Enum> Enum enumRadioButton(Enum current) {
 	int i = magic_enum::enum_integer(current);
 
@@ -272,6 +275,9 @@ template <typename Enum> Enum enumRadioButton(Enum current) {
 
 	return magic_enum::enum_value<Enum>(i);
 }
+
+
+#endif  // IMGUI_DISABLE
 
 
 struct Image {
