@@ -263,6 +263,17 @@ template <typename Enum> Enum prevValue(Enum v) {
 }
 
 
+template <typename Enum> Enum enumRadioButton(Enum current) {
+	int i = magic_enum::enum_integer(current);
+
+	for (Enum e : magic_enum::enum_values<Enum>()) {
+		ImGui::RadioButton(magic_enum::enum_name(e).data(), &i, magic_enum::enum_integer(e));
+	}
+
+	return magic_enum::enum_value<Enum>(i);
+}
+
+
 struct Image {
 	std::string    filename;
 	std::string    shortName;
