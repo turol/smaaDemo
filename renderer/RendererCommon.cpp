@@ -607,7 +607,7 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			THROW_ERROR("Duplicate image sampler binding ({}, {})", idx.set, idx.binding);
+			THROW_ERROR("Duplicate image sampler binding ({}, {}) \"{}\"", idx.set, idx.binding, s.name);
 		}
 	}
 }
