@@ -37,9 +37,6 @@ THE SOFTWARE.
 
 #define SMAA_REPROJECTION_WEIGHT_SCALE reprojWeigthScale
 
-#define LinearSampler linearSampler
-#define PointSampler  nearestSampler
-
 
 #include "smaa.h"
 

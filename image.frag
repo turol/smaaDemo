@@ -34,7 +34,7 @@ layout (location = 1) out vec2 outVelocity;
 
 void main(void)
 {
-    vec4 color = texture(sampler2D(colorTex, linearSampler), texcoord);
+    vec4 color = texture(sampler2D(colorTex, LinearSampler), texcoord);
     color.w = dot(color.xyz, vec3(0.299, 0.587, 0.114));
     outColor = color;
     outVelocity = vec2(0.0, 0.0);

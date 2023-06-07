@@ -38,5 +38,5 @@ layout (location = 0) out vec4 outColor;
 
 void main(void)
 {
-    outColor = color * texture(sampler2D(colorTex, linearSampler), uv);
+    outColor = color * texture(sampler2D(colorTex, LinearSampler), uv);
 }

@@ -35,5 +35,5 @@ layout (location = 0) out vec4 outColor;
 
 void main(void)
 {
-    outColor = texture(sampler2D(colorTex, linearSampler), texcoord);
+    outColor = texture(sampler2D(colorTex, LinearSampler), texcoord);
 }

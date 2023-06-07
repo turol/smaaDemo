@@ -36,10 +36,6 @@ THE SOFTWARE.
 #endif
 
 
-#define LinearSampler linearSampler
-#define PointSampler  nearestSampler
-
-
 #include "smaa.h"
 
 
