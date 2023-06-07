@@ -72,9 +72,6 @@ using namespace glm;
 }  // namespace ShaderDefines
 
 
-#define SMAA_GLSL_SEPARATE_SAMPLER 1
-
-
 using namespace renderer;
 
 
@@ -1068,17 +1065,8 @@ DSLayoutHandle ColorTexDS::layoutHandle;
 struct EdgeDetectionDS {
 	BufferHandle  smaaUBO;
 
-#if SMAA_GLSL_SEPARATE_SAMPLER
-
 	TextureHandle color;
 	TextureHandle predicationTex;
-
-#else  // SMAA_GLSL_SEPARATE_SAMPLER
-
-	CSampler color;
-	CSampler predicationTex;
-
-#endif  // SMAA_GLSL_SEPARATE_SAMPLER
 
 	static const DescriptorLayout layout[];
 	static DSLayoutHandle layoutHandle;
@@ -1098,19 +1086,9 @@ DSLayoutHandle EdgeDetectionDS::layoutHandle;
 struct BlendWeightDS {
 	BufferHandle  smaaUBO;
 
-#if SMAA_GLSL_SEPARATE_SAMPLER
-
 	TextureHandle edgesTex;
 	TextureHandle areaTex;
 	TextureHandle searchTex;
-
-#else  // SMAA_GLSL_SEPARATE_SAMPLER
-
-	CSampler edgesTex;
-	CSampler areaTex;
-	CSampler searchTex;
-
-#endif  // SMAA_GLSL_SEPARATE_SAMPLER
 
 	static const DescriptorLayout layout[];
 	static DSLayoutHandle layoutHandle;
@@ -1131,17 +1109,8 @@ DSLayoutHandle BlendWeightDS::layoutHandle;
 struct NeighborBlendDS {
 	BufferHandle  smaaUBO;
 
-#if SMAA_GLSL_SEPARATE_SAMPLER
-
 	TextureHandle color;
 	TextureHandle blendweights;
-
-#else  // SMAA_GLSL_SEPARATE_SAMPLER
-
-	CSampler color;
-	CSampler blendweights;
-
-#endif  // SMAA_GLSL_SEPARATE_SAMPLER
 
 	static const DescriptorLayout layout[];
 	static DSLayoutHandle layoutHandle;
@@ -1161,19 +1130,9 @@ DSLayoutHandle NeighborBlendDS::layoutHandle;
 struct TemporalAADS {
 	BufferHandle  smaaUBO;
 
-#if SMAA_GLSL_SEPARATE_SAMPLER
-
 	TextureHandle currentTex;
 	TextureHandle previousTex;
 	TextureHandle velocityTex;
-
-#else  // SMAA_GLSL_SEPARATE_SAMPLER
-
-	CSampler currentTex;
-	CSampler previousTex;
-	CSampler velocityTex;
-
-#endif  // SMAA_GLSL_SEPARATE_SAMPLER
 
 	static const DescriptorLayout layout[];
 	static DSLayoutHandle layoutHandle;
@@ -3169,10 +3128,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 		macros.set(qualityString, "1");
-
-#ifdef SMAA_GLSL_SEPARATE_SAMPLER
 		macros.set("SMAA_GLSL_SEPARATE_SAMPLER", "1");
-#endif  // SMAA_GLSL_SEPARATE_SAMPLER 1
 
 		if (smaaEdgeMethod != SMAAEdgeMethod::Color) {
 			macros.set("EDGEMETHOD", std::to_string(static_cast<uint8_t>(smaaEdgeMethod)));
@@ -3211,8 +3167,6 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 	EdgeDetectionDS edgeDS;
 	edgeDS.smaaUBO = smaaUBOBuf;
 
-#if SMAA_GLSL_SEPARATE_SAMPLER
-
 	if (smaaEdgeMethod == SMAAEdgeMethod::Depth) {
 		edgeDS.color         = r.get(Rendertargets::MainDepth);
 	} else {
@@ -3222,20 +3176,6 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 	LOG_TODO("only set when using predication");
 	edgeDS.predicationTex    = r.get(Rendertargets::MainDepth);
 
-#else  // SMAA_GLSL_SEPARATE_SAMPLER
-
-	if (smaaEdgeMethod == SMAAEdgeMethod::Depth) {
-		edgeDS.color.tex     = r.get(Rendertargets::MainDepth);
-	} else {
-		edgeDS.color.tex     = r.get(input, Format::RGBA8);
-	}
-	edgeDS.color.sampler = nearestSampler;
-
-	LOG_TODO("only set when using predication");
-	edgeDS.predicationTex.tex     = r.get(Rendertargets::MainDepth);
-	edgeDS.predicationTex.sampler = nearestSampler;
-
-#endif  // SMAA_GLSL_SEPARATE_SAMPLER
 
 	renderer.bindDescriptorSet(1, edgeDS);
 	renderer.draw(0, 3);
@@ -3247,10 +3187,7 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 		macros.set(qualityString, "1");
-
-#ifdef SMAA_GLSL_SEPARATE_SAMPLER
 		macros.set("SMAA_GLSL_SEPARATE_SAMPLER", "1");
-#endif  // SMAA_GLSL_SEPARATE_SAMPLER 1
 
 		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
@@ -3280,22 +3217,9 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 	BlendWeightDS blendWeightDS;
 	blendWeightDS.smaaUBO           = smaaUBOBuf;
 
-#ifdef SMAA_GLSL_SEPARATE_SAMPLER
-
 	blendWeightDS.edgesTex          = r.get(Rendertargets::Edges);
 	blendWeightDS.areaTex           = areaTex;
 	blendWeightDS.searchTex         = searchTex;
-
-#else  // SMAA_GLSL_SEPARATE_SAMPLER
-
-	blendWeightDS.edgesTex.tex      = r.get(Rendertargets::Edges);
-	blendWeightDS.edgesTex.sampler  = linearSampler;
-	blendWeightDS.areaTex.tex       = areaTex;
-	blendWeightDS.areaTex.sampler   = linearSampler;
-	blendWeightDS.searchTex.tex     = searchTex;
-	blendWeightDS.searchTex.sampler = linearSampler;
-
-#endif  // SMAA_GLSL_SEPARATE_SAMPLER
 
 	renderer.bindDescriptorSet(1, blendWeightDS);
 
@@ -3308,10 +3232,7 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 		macros.set(qualityString, "1");
-
-#ifdef SMAA_GLSL_SEPARATE_SAMPLER
 		macros.set("SMAA_GLSL_SEPARATE_SAMPLER", "1");
-#endif  // SMAA_GLSL_SEPARATE_SAMPLER 1
 
 		PipelineDesc plDesc;
 		plDesc.depthWrite(false)
@@ -3353,19 +3274,8 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 	NeighborBlendDS neighborBlendDS;
 	neighborBlendDS.smaaUBO              = smaaUBOBuf;
 
-#ifdef SMAA_GLSL_SEPARATE_SAMPLER
-
 	neighborBlendDS.color                = r.get(input);
 	neighborBlendDS.blendweights         = r.get(Rendertargets::BlendWeights);
-
-#else  // SMAA_GLSL_SEPARATE_SAMPLER
-
-	neighborBlendDS.color.tex            = r.get(input);
-	neighborBlendDS.color.sampler        = linearSampler;
-	neighborBlendDS.blendweights.tex     = r.get(Rendertargets::BlendWeights);
-	neighborBlendDS.blendweights.sampler = linearSampler;
-
-#endif  // SMAA_GLSL_SEPARATE_SAMPLER
 
 	renderer.bindDescriptorSet(1, neighborBlendDS);
 
@@ -3401,10 +3311,7 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 	if (!temporalAAPipelines[temporalReproject]) {
 		ShaderMacros macros;
 		macros.set("SMAA_REPROJECTION", std::to_string(temporalReproject));
-
-#ifdef SMAA_GLSL_SEPARATE_SAMPLER
 		macros.set("SMAA_GLSL_SEPARATE_SAMPLER", "1");
-#endif  // SMAA_GLSL_SEPARATE_SAMPLER 1
 
 		PipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
@@ -3432,8 +3339,6 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 	TemporalAADS temporalDS;
 	temporalDS.smaaUBO             = smaaUBOBuf;
 
-#ifdef SMAA_GLSL_SEPARATE_SAMPLER
-
 	temporalDS.currentTex      = r.get(Rendertargets::TemporalCurrent);
 	if (temporalAAFirstFrame) {
 		// to prevent flicker on first frame after enabling
@@ -3444,25 +3349,6 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 		temporalDS.previousTex = r.get(Rendertargets::TemporalPrevious);
 	}
 	temporalDS.velocityTex     = r.get(Rendertargets::Velocity);
-
-#else  // SMAA_GLSL_SEPARATE_SAMPLER
-
-	temporalDS.currentTex.tex      = r.get(Rendertargets::TemporalCurrent);
-	temporalDS.currentTex.sampler  = nearestSampler;
-	if (temporalAAFirstFrame) {
-		// to prevent flicker on first frame after enabling
-		LOG_TODO("should just do blit");
-		temporalDS.previousTex.tex     = r.get(Rendertargets::TemporalCurrent);
-		temporalDS.previousTex.sampler = nearestSampler;
-		temporalAAFirstFrame = false;
-	} else {
-		temporalDS.previousTex.tex     = r.get(Rendertargets::TemporalPrevious);
-		temporalDS.previousTex.sampler = nearestSampler;
-	}
-	temporalDS.velocityTex.tex         = r.get(Rendertargets::Velocity);
-	temporalDS.velocityTex.sampler     = nearestSampler;
-
-#endif  // SMAA_GLSL_SEPARATE_SAMPLER
 
 	renderer.bindDescriptorSet(1, temporalDS);
 	renderer.draw(0, 3);
