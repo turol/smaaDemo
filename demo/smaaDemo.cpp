@@ -2993,12 +2993,11 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	const float shapeDiameter = sqrtf(3.0f);
 	const float shapeDistance = shapeDiameter + 1.0f;
 
-	float farPlane  = cameraDistance + shapeDistance * float(shapesPerSide + 1);
 	float nearPlane = std::max(0.1f, cameraDistance - shapeDistance * float(shapesPerSide + 1));
 
 	glm::mat4 model  = glm::rotate(glm::mat4(1.0f), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 view   = glm::lookAt(glm::vec3(cameraDistance, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 proj   = glm::perspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, nearPlane, farPlane);
+	glm::mat4 proj   = glm::infinitePerspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, nearPlane);
 	glm::mat4 viewProj = proj * view * model;
 
 	// temporal jitter
