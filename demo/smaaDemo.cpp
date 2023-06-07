@@ -539,6 +539,7 @@ class SMAADemo {
 	unsigned int                                      shapeOrderNum          = 1;
 	float                                             cameraRotation         = 0.0f;
 	float                                             cameraDistance         = defaultCameraDistance;
+	float                                             fovDegrees             = 65.0f;
 	uint64_t                                          rotationTime           = 0;
 	unsigned int                                      rotationPeriodSeconds  = 30;
 	unsigned int                                      numRenderedFrames      = 0;
@@ -2997,7 +2998,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 
 	glm::mat4 model  = glm::rotate(glm::mat4(1.0f), cameraRotation, glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 view   = glm::lookAt(glm::vec3(cameraDistance, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 proj   = glm::infinitePerspective(float(65.0f * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, nearPlane);
+	glm::mat4 proj   = glm::infinitePerspective(float(fovDegrees * M_PI * 2.0f / 360.0f), float(windowWidth) / windowHeight, nearPlane);
 	glm::mat4 viewProj = proj * view * model;
 
 	// temporal jitter
@@ -3758,6 +3759,11 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			float l = cameraDistance;
 			if (ImGui::SliderFloat("Camera distance", &l, 1.0f, 256.0f, "%.1f")) {
 				cameraDistance = l;
+			}
+
+			l = fovDegrees;
+			if (ImGui::SliderFloat("FOV degrees", &l, 1.0, 179.0f, "%.1f")) {
+				fovDegrees = l;
 			}
 
 			ImGui::Checkbox("Rotate shapes", &rotateShapes);
