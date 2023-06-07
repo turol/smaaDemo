@@ -2979,7 +2979,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 
 		shapePipeline = renderGraph.createPipeline(renderer, rp, plDesc);
 	}
-    assert(shapePipeline);
+	assert(shapePipeline);
 
 	renderer.bindPipeline(shapePipeline);
 
@@ -3040,7 +3040,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	renderer.bindIndexBuffer(shapeBuffers[activeShape].indices, IndexFormat::b32);
 
 	if (!shapesBuffer) {
-        shapesBuffer = renderer.createBuffer(BufferType::Storage, static_cast<uint32_t>(sizeof(ShaderDefines::Shape) * shapes.size()), &shapes[0]);;
+		shapesBuffer = renderer.createBuffer(BufferType::Storage, static_cast<uint32_t>(sizeof(ShaderDefines::Shape) * shapes.size()), &shapes[0]);;
 	}
 
 	ShapeSceneDS shapeDS;
