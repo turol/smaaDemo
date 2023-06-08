@@ -649,17 +649,34 @@ static const std::array<const char *, 6> spirvOptLogLevels = {
 
 
 
-static constexpr magic_enum::containers::array<ShaderStage, const char *>  shaderFilenameExtensions =
+static constexpr magic_enum::containers::array<ShaderStage, const char *>  glslShaderFilenameExtensions =
 {
 	  ".vert"
 	, ".frag"
 };
 
 
+static constexpr magic_enum::containers::array<ShaderStage, const char *>  hlslEntryPointNames = {
+	  "vertexShader"
+	, "fragmentShader"
+};
+
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, ShaderLanguage shaderLanguage, const ShaderMacros &macros, ShaderStage stage) {
 	// check spir-v cache first
 	ShaderCacheKey cacheKey;
-	cacheKey.filename = name + shaderFilenameExtensions[stage];
+	switch (shaderLanguage) {
+		case ShaderLanguage::GLSL:
+			cacheKey.filename = name + glslShaderFilenameExtensions[stage];
+			break;
+
+		case ShaderLanguage::HLSL:
+			cacheKey.filename = name + ".hlsl";
+			break;
+
+		default:
+			HEDLEY_UNREACHABLE();  // shouldn't happen
+			break;
+	}
 	cacheKey.stage  = stage;
 	cacheKey.language = shaderLanguage;
 	cacheKey.macros = macros;
@@ -764,13 +781,33 @@ compilationNeeded:
 
 		glslang::TShader shader(language);
 
+		glslang::EShSource source;
+		switch (shaderLanguage) {
+		case ShaderLanguage::GLSL:
+			source = glslang::EShSourceGlsl;
+			break;
+
+		case ShaderLanguage::HLSL:
+			source = glslang::EShSourceHlsl;
+			shader.setSourceEntryPoint(hlslEntryPointNames[stage]);
+			shader.setEntryPoint("main");
+			break;
+
+		default:
+			HEDLEY_UNREACHABLE();  // shouldn't happen
+			break;
+		}
+
 		char *sourceString   = src.data();
 		int sourceLen        = int(src.size());
 		const char *filename = cacheKey.filename.c_str();
 
-		shader.setPreamble(preamble.data());
+		if (!preamble.empty()) {
+			shader.setPreamble(preamble.data());
+		}
+
 		shader.setStringsWithLengthsAndNames(&sourceString, &sourceLen, &filename, 1);
-		shader.setEnvInput(glslang::EShSourceGlsl, language, glslang::EShClientVulkan, 450);
+		shader.setEnvInput(source, language, glslang::EShClientVulkan, 450);
 		shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_0);
 		shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
 
