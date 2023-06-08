@@ -1554,11 +1554,11 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 		ShaderMacros macros_(desc.shaderMacros_);
 		macros_.set("VULKAN_FLIP", "1");
 
-		const auto &v = impl->vertexShaders.get(impl->createVertexShader(desc.vertexShaderName, macros_));
+		const auto &v = impl->vertexShaders.get(impl->createVertexShader(desc.vertexShaderName, macros_, desc.shaderLanguage_));
 		stages[0].stage  = vk::ShaderStageFlagBits::eVertex;
 		stages[0].module = v.shaderModule;
 		stages[0].pName  = "main";
-		const auto &f = impl->fragmentShaders.get(impl->createFragmentShader(desc.fragmentShaderName, macros_));
+		const auto &f = impl->fragmentShaders.get(impl->createFragmentShader(desc.fragmentShaderName, macros_, desc.shaderLanguage_));
 		stages[1].stage  = vk::ShaderStageFlagBits::eFragment;
 		stages[1].module = f.shaderModule;
 		stages[1].pName  = "main";
@@ -1908,7 +1908,7 @@ SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
 }
 
 
-VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros) {
+VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros, ShaderLanguage /* shaderLanguage */) {
 	std::vector<uint32_t> spirv = compileSpirv(name, macros, ShaderStage::Vertex);
 
 	VertexShader v;
@@ -1924,7 +1924,7 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 }
 
 
-FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros &macros) {
+FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros &macros, ShaderLanguage /* shaderLanguage */) {
 	std::vector<uint32_t> spirv = compileSpirv(name, macros, ShaderStage::Fragment);
 
 	FragmentShader f;

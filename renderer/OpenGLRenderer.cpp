@@ -941,7 +941,7 @@ BufferHandle Renderer::createEphemeralBuffer(BufferType type, uint32_t size, con
 }
 
 
-VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros) {
+VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros, ShaderLanguage /* shaderLanguage */) {
 	std::vector<uint32_t> spirv = compileSpirv(name, macros, ShaderStage::Vertex);
 
 	VertexShader v;
@@ -953,7 +953,7 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 }
 
 
-FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros &macros) {
+FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros &macros, ShaderLanguage /* shaderLanguage */) {
 	std::vector<uint32_t> spirv = compileSpirv(name, macros, ShaderStage::Fragment);
 
 	FragmentShader f;
@@ -1132,8 +1132,8 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	assert(desc.numSamples_ == rp.desc.numSamples_);
 #endif //  NDEBUG
 
-	const auto &v = impl->vertexShaders.get(impl->createVertexShader(desc.vertexShaderName, desc.shaderMacros_));
-	const auto &f = impl->fragmentShaders.get(impl->createFragmentShader(desc.fragmentShaderName, desc.shaderMacros_));
+	const auto &v = impl->vertexShaders.get(impl->createVertexShader(desc.vertexShaderName, desc.shaderMacros_, desc.shaderLanguage_));
+	const auto &f = impl->fragmentShaders.get(impl->createFragmentShader(desc.fragmentShaderName, desc.shaderMacros_, desc.shaderLanguage_));
 
 	// construct map of descriptor set resources
 	ResourceMap      dsResources;
