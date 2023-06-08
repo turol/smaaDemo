@@ -500,6 +500,7 @@ class PipelineDesc {
 	std::string           fragmentShaderName;
 	RenderPassHandle      renderPass_;
 	ShaderMacros          shaderMacros_;
+	ShaderLanguage        shaderLanguage_   = ShaderLanguage::GLSL;
 	uint32_t              vertexAttribMask  = 0;
 	unsigned int          numSamples_       = 1;
 	bool                  depthWrite_       = false;
@@ -552,6 +553,11 @@ public:
 
 	PipelineDesc &shaderMacros(const ShaderMacros &m) {
 		shaderMacros_ = m;
+		return *this;
+	}
+
+	PipelineDesc &shaderLanguage(ShaderLanguage lang) {
+		shaderLanguage_ = lang;
 		return *this;
 	}
 
