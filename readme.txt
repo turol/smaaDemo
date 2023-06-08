@@ -52,9 +52,7 @@ GLEW (http://glew.sourceforge.net)
 GLM (OpenGL Mathematics) (http://glm.g-truc.net/0.9.8)
 glslang (https://github.com/KhronosGroup/glslang)
 Dear ImGui (https://github.com/ocornut/imgui)
-mingw-std-threads (https://github.com/meganz/mingw-std-threads)
 PCG-Random (http://www.pcg-random.org)
-Shaderc (https://github.com/google/shaderc)
 SPIRV-Cross (https://github.com/KhronosGroup/SPIRV-Cross)
 SPIRV-Headers (https://github.com/KhronosGroup/SPIRV-Headers)
 SPIRV-Tools (https://github.com/KhronosGroup/SPIRV-Tools)
@@ -76,3 +74,5 @@ Copyright and License
 Copyright (c) 2015-2023 Alternative Games Ltd / Turo Lamminen
 
 This code is licensed under the MIT license (see license.txt).
+
+Third-party code under foreign/ is licensed according to their respective licenses.
