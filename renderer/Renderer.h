@@ -313,6 +313,12 @@ enum class PassBegin : uint8_t {
 };
 
 
+enum class ShaderLanguage : uint8_t {
+	  GLSL
+	, HLSL
+};
+
+
 enum class VSync : uint8_t {
 	  Off
 	, On
