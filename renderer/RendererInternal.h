@@ -185,10 +185,15 @@ struct ShaderSourceData {
 struct ShaderCacheKey {
 	std::string   filename;
 	ShaderStage   stage;
+	ShaderLanguage  language;
 	ShaderMacros  macros;
 
 	bool operator==(const ShaderCacheKey &other) const {
 		if (stage != other.stage) {
+			return false;
+		}
+
+		if (language != other.language) {
 			return false;
 		}
 
@@ -254,6 +259,7 @@ namespace std {
 		size_t operator()(const renderer::ShaderCacheKey &key) const {
 			size_t h = 0;
 			h = combineHashes(h, hash<std::string>()(key.filename));
+			h = combineHashes(h, hash<int>()(magic_enum::enum_integer(key.language)));
 			h = combineHashes(h, hash<int>()(magic_enum::enum_integer(key.stage)));
 			h = combineHashes(h, hash<renderer::ShaderMacros>()(key.macros));
 			return h;

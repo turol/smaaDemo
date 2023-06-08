@@ -56,9 +56,9 @@ auto format_as(ShaderStage stage) {
 
 auto format_as(ShaderCacheKey cacheKey) {
 	if (!cacheKey.macros.empty()) {
-		return fmt::format("{} {} {}", cacheKey.stage, cacheKey.filename, renderer::RendererBase::formatMacros(cacheKey.macros));
+		return fmt::format("{} {} {} {}", cacheKey.stage, cacheKey.language, cacheKey.filename, renderer::RendererBase::formatMacros(cacheKey.macros));
 	} else {
-		return fmt::format("{} {}", cacheKey.stage, cacheKey.filename);
+		return fmt::format("{} {} {}", cacheKey.stage, cacheKey.language, cacheKey.filename);
 	}
 }
 
@@ -394,7 +394,7 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 // increase this when the shader compiler options change
 // so that the same source generates a different SPV
 // or the cache json format changes
-const unsigned int shaderVersion = 108;
+const unsigned int shaderVersion = 109;
 
 
 // helper for storing in cache .json
@@ -412,6 +412,16 @@ void to_json(nlohmann::json &j, const ShaderStage &stage) {
 
 void from_json(const nlohmann::json &j, ShaderStage &stage) {
 	stage = *magic_enum::enum_cast<ShaderStage>(j.get<std::string>());
+}
+
+
+void to_json(nlohmann::json &j, const ShaderLanguage &language) {
+	j = magic_enum::enum_name(language);
+}
+
+
+void from_json(const nlohmann::json &j, ShaderLanguage &language) {
+	language = *magic_enum::enum_cast<ShaderLanguage>(j.get<std::string>());
 }
 
 
@@ -475,6 +485,7 @@ void to_json(nlohmann::json &j, const ShaderCacheKey &key) {
 	j = nlohmann::json {
 		  { "name",   key.filename }
 		, { "stage",  key.stage  }
+		, { "language",  key.language  }
 		, { "macros", key.macros }
 	};
 }
@@ -483,6 +494,7 @@ void to_json(nlohmann::json &j, const ShaderCacheKey &key) {
 void from_json(const nlohmann::json &j, ShaderCacheKey &key) {
 	j.at("name").get_to(key.filename);
 	j.at("stage").get_to(key.stage);
+	j.at("language").get_to(key.language);
 	j.at("macros").get_to(key.macros);
 }
 
@@ -644,11 +656,12 @@ static constexpr magic_enum::containers::array<ShaderStage, const char *>  shade
 };
 
 
-std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, ShaderLanguage /* shaderLanguage */, const ShaderMacros &macros, ShaderStage stage) {
+std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, ShaderLanguage shaderLanguage, const ShaderMacros &macros, ShaderStage stage) {
 	// check spir-v cache first
 	ShaderCacheKey cacheKey;
 	cacheKey.filename = name + shaderFilenameExtensions[stage];
 	cacheKey.stage  = stage;
+	cacheKey.language = shaderLanguage;
 	cacheKey.macros = macros;
 
 	if (!skipShaderCache) {
