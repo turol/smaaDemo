@@ -544,8 +544,12 @@
 #ifndef SMAA_FLIP_Y
 #define SMAA_FLIP_Y 0
 #endif  // SMAA_FLIP_Y
+
+#ifndef SMAA_HLSL_NO_SAMPLERS
 SamplerState LinearSampler { Filter = MIN_MAG_LINEAR_MIP_POINT; AddressU = Clamp; AddressV = Clamp; };
 SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; AddressV = Clamp; };
+#endif  // SMAA_HLSL_NO_SAMPLERS
+
 #define SMAATexture2D(tex) Texture2D tex
 #define SMAATexturePass2D(tex) tex
 #define SMAASampleLevelZero(tex, coord) tex.SampleLevel(LinearSampler, coord, 0)
