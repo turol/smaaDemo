@@ -1908,8 +1908,8 @@ SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
 }
 
 
-VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros, ShaderLanguage /* shaderLanguage */) {
-	std::vector<uint32_t> spirv = compileSpirv(name, macros, ShaderStage::Vertex);
+VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros, ShaderLanguage shaderLanguage) {
+	std::vector<uint32_t> spirv = compileSpirv(name, shaderLanguage, macros, ShaderStage::Vertex);
 
 	VertexShader v;
 	vk::ShaderModuleCreateInfo info;
@@ -1924,8 +1924,8 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 }
 
 
-FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros &macros, ShaderLanguage /* shaderLanguage */) {
-	std::vector<uint32_t> spirv = compileSpirv(name, macros, ShaderStage::Fragment);
+FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros &macros, ShaderLanguage shaderLanguage) {
+	std::vector<uint32_t> spirv = compileSpirv(name, shaderLanguage, macros, ShaderStage::Fragment);
 
 	FragmentShader f;
 	vk::ShaderModuleCreateInfo info;

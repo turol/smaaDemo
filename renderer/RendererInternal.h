@@ -362,7 +362,7 @@ struct RendererBase {
 
 	void saveShaderCache();
 
-	std::vector<uint32_t> compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderStage stage);
+	std::vector<uint32_t> compileSpirv(const std::string &name, ShaderLanguage /* shaderLanguage */, const ShaderMacros &macros, ShaderStage stage);
 
 	explicit RendererBase(const RendererDesc &desc);
 

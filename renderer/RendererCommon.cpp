@@ -639,7 +639,7 @@ static constexpr magic_enum::containers::array<ShaderStage, const char *>  shade
 };
 
 
-std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const ShaderMacros &macros, ShaderStage stage) {
+std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, ShaderLanguage /* shaderLanguage */, const ShaderMacros &macros, ShaderStage stage) {
 	// check spir-v cache first
 	ShaderCacheKey cacheKey;
 	cacheKey.filename = name + shaderFilenameExtensions[stage];
