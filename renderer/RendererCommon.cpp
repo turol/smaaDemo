@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "utils/Utils.h"
 
 #include <algorithm>
+#include <charconv>
 #include <string_view>
 
 #include <spirv-tools/optimizer.hpp>
@@ -387,7 +388,8 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 
 // increase this when the shader compiler options change
 // so that the same source generates a different SPV
-const unsigned int shaderVersion = 107;
+// or the cache json format changes
+const unsigned int shaderVersion = 108;
 
 
 // helper for storing in cache .json
@@ -482,14 +484,20 @@ void from_json(const nlohmann::json &j, ShaderCacheKey &key) {
 
 void to_json(nlohmann::json &j, const ShaderCacheData &data) {
 	j = nlohmann::json {
-		  { "hash",     data.spirvHash }
+		  { "hash",     fmt::format(FMT_STRING("{:08x}"), data.spirvHash) }
 		, { "includes", data.includes  }
 	};
 }
 
 
 void from_json(const nlohmann::json &j, ShaderCacheData &data) {
-	j.at("hash").get_to(data.spirvHash);
+	const std::string_view str = j.at("hash").get<std::string_view>();
+	const char *b = str.data();
+	const char *e = str.data() + str.size();
+	auto result = std::from_chars(b, e, data.spirvHash, 16);
+	if (result.ptr != e) {
+		throw std::runtime_error(fmt::format(FMT_STRING("Failed to parse cache key \"{}\""), str));
+	}
 	j.at("includes").get_to(data.includes);
 }
 
