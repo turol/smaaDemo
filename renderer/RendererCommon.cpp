@@ -44,6 +44,11 @@ THE SOFTWARE.
 namespace renderer {
 
 
+auto format_as(ShaderLanguage language) {
+	return magic_enum::enum_name(language);
+}
+
+
 auto format_as(ShaderStage stage) {
 	return magic_enum::enum_name(stage);
 }
