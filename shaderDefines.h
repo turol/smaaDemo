@@ -3,6 +3,16 @@
 #define ATTR_COLOR 2
 
 
+#ifdef HLSL
+
+#define mat4 float4x4
+#define vec2 float2
+#define vec3 float3
+#define vec4 float4
+
+#endif  // HLSL
+
+
 struct SMAAParameters {
 	float threshold;
 	float depthThreshold;
@@ -19,6 +29,14 @@ struct SMAAParameters {
 #ifdef __cplusplus
 
 struct Globals
+
+#elif defined(HLSL)
+
+[[vk::binding(1, 0)]] SamplerState LinearSampler;
+[[vk::binding(2, 0)]] SamplerState PointSampler;
+
+[[vk::binding(0, 0)]] cbuffer Globals
+
 
 #else  // __cplusplus
 
@@ -40,6 +58,10 @@ layout(set = 0, binding = 0, std140) uniform Globals
 #ifdef __cplusplus
 
 struct SMAAUBO
+
+#elif defined(HLSL)
+
+[[vk::binding(0, 1)]] cbuffer SMAAUBO
 
 #else  // __cplusplus
 
