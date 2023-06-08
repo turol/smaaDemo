@@ -505,6 +505,7 @@ class SMAADemo {
 	unsigned int                                      fxaaQuality    = maxFXAAQuality - 1;
 	unsigned int                                      msaaQuality    = 0;
 	unsigned int                                      maxMSAAQuality = 1;
+	ShaderLanguage                                    preferredShaderLanguage = ShaderLanguage::GLSL;
 
 	unsigned int                                      smaaQuality;
 	SMAAEdgeMethod                                    smaaEdgeMethod;
@@ -3145,6 +3146,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<EdgeDetectionDS>(1)
 		      .shaderMacros(macros)
+		      .shaderLanguage(preferredShaderLanguage)
 		      .vertexShader("smaaEdge")
 		      .fragmentShader("smaaEdge")
 		      .name(std::string("SMAA edges ") + std::to_string(smaaQuality));
@@ -3196,6 +3198,7 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<BlendWeightDS>(1)
 		      .shaderMacros(macros)
+		      .shaderLanguage(preferredShaderLanguage)
 		      .vertexShader("smaaBlendWeight")
 		      .fragmentShader("smaaBlendWeight")
 		      .name(std::string("SMAA weights ") + std::to_string(smaaQuality));
@@ -3241,6 +3244,7 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<NeighborBlendDS>(1)
 		      .shaderMacros(macros)
+		      .shaderLanguage(preferredShaderLanguage)
 		      .vertexShader("smaaNeighbor")
 		      .fragmentShader("smaaNeighbor");
 
@@ -3319,6 +3323,7 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 			  .vertexShader("temporal")
 			  .fragmentShader("temporal")
 			  .shaderMacros(macros)
+			  .shaderLanguage(preferredShaderLanguage)
 			  .name("temporal AA");
 
 		temporalAAPipelines[temporalReproject] = renderGraph.createPipeline(renderer, rp, plDesc);
@@ -3517,6 +3522,15 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 
 			ImGui::Text("SMAA edge detection");
 			smaaEdgeMethod = enumRadioButton(smaaEdgeMethod);
+
+			{
+				ImGui::Text("Shader language");
+				auto newShaderLanguage = enumRadioButton(preferredShaderLanguage);
+				if (preferredShaderLanguage != newShaderLanguage) {
+					preferredShaderLanguage = newShaderLanguage;
+					rebuildRG = true;
+				}
+			}
 
 			int d = magic_enum::enum_integer(debugMode);
 			constexpr auto smaaDebugModes = magic_enum::enum_names<SMAADebugMode>();
