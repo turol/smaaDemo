@@ -52,7 +52,6 @@ set(SOURCE
 		renderer/VulkanRenderer.cpp
 		renderer/VulkanMemoryAllocator.cpp
 		utils/Utils.cpp
-		foreign/glslang/StandAlone/ResourceLimits.cpp
 		foreign/imgui/imgui.cpp
 		foreign/imgui/imgui_demo.cpp
 		foreign/imgui/imgui_draw.cpp
@@ -73,6 +72,7 @@ target_include_directories(smaaDemo PRIVATE
 		foreign/glm
 		foreign/glslang
 		foreign/imgui
+		foreign/magic_enum/include
 		foreign/par
 		foreign/pcg-cpp/include
 		foreign/SPIRV-Cross
@@ -86,6 +86,7 @@ target_include_directories(smaaDemo PRIVATE
 target_link_libraries(smaaDemo PRIVATE
 		fmt
 		glslang
+		glslang-default-resource-limits
 		nlohmann_json::nlohmann_json
 		SPIRV
 		SPIRV-Tools-opt
