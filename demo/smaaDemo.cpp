@@ -817,6 +817,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::ValueArg<std::string>           aaMethodSwitch("m",    "method",     "AA Method",                false, "SMAA",                        "SMAA/SMAA2X/FXAA/MSAA",     cmd);
 		TCLAP::ValueArg<std::string>           aaQualitySwitch("q",   "quality",    "AA Quality",               false, "",                            "",                   cmd);
 		TCLAP::ValueArg<std::string>           debugModeSwitch("d",   "debugmode",  "SMAA debug mode",          false, "None",                        "None/Edges/Weights", cmd);
+		TCLAP::ValueArg<std::string>           shaderLanguageSwitch("l", "shader-language", "shader language",  false, "GLSL",                        "GLSL/HLSL",          cmd);
 		TCLAP::ValueArg<std::string>           deviceSwitch("",       "device",     "Set Vulkan device filter", false, "",                            "device name",        cmd);
 		TCLAP::SwitchArg                       temporalAASwitch("t",  "temporal",   "Temporal AA",   cmd, false);
 
@@ -950,6 +951,26 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 				} else {
 					LOG_ERROR("Bad SMAA debug mode \"{}\"", debugModeStr);
 					exit(1);
+				}
+			}
+		}
+
+		{
+			std::string languageStr = shaderLanguageSwitch.getValue();
+			if (!languageStr.empty()) {
+				auto maybe = magic_enum::enum_cast<ShaderLanguage>(languageStr);
+				if (maybe) {
+					preferredShaderLanguage = *maybe;
+				} else {
+					std::string uppercased = languageStr;
+					std::transform(uppercased.begin(), uppercased.end(), uppercased.begin(), ::toupper);
+					maybe = magic_enum::enum_cast<ShaderLanguage>(uppercased);
+					if (maybe) {
+						preferredShaderLanguage = *maybe;
+					} else {
+						LOG_ERROR("Bad shader language \"{}\"", languageStr);
+						exit(1);
+					}
 				}
 			}
 		}
