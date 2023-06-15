@@ -27,8 +27,8 @@ THE SOFTWARE.
 #include <cstdio>
 
 #include <charconv>
-#include <thread>
 #include <chrono>
+#include <thread>
 
 #include <algorithm>
 #include <functional>
