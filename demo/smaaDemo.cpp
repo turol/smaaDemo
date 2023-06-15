@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <cinttypes>
 #include <cstdio>
 
+#include <charconv>
 #include <thread>
 #include <chrono>
 
@@ -929,7 +930,15 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 				break;
 
 			case AAMethod::MSAA:
-				int n = atoi(aaQualityStr.c_str());
+				int n = 0;
+				const char *b = aaQualityStr.data();
+				const char *e = aaQualityStr.data() + aaQualityStr.size();
+				auto result = std::from_chars(b, e, n);
+				if (result.ptr != e) {
+					LOG_ERROR("Bad quality value: \"{}\" is not a number", aaQualityStr);
+					exit(1);
+				}
+
 				if (n > 0) {
 					if (!isPow2(n)) {
 						n = nextPow2(n);
