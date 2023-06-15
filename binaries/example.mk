@@ -13,6 +13,7 @@ UBSAN:=n
 
 RENDERER:=vulkan
 
+USE_GLEW:=y
 
 INTERNAL_glslang:=y
 LDLIBS_glslang:=

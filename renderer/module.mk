@@ -18,8 +18,12 @@ renderer_SRC:=$(foreach f, $(FILES), $(dir)/$(f))
 
 ifeq ($(RENDERER),opengl)
 
+CFLAGS+=-DRENDERER_OPENGL
+
+ifeq ($(USE_GLEW),y)
 DEPENDS_renderer+=glew
-CFLAGS+=-DRENDERER_OPENGL -DGLEW_STATIC -DGLEW_NO_GLU
+CFLAGS+=-DGLEW_STATIC -DGLEW_NO_GLU
+endif  # USE_GLEW
 
 else ifeq ($(RENDERER),null)
 
@@ -30,7 +34,7 @@ else ifeq ($(RENDERER),vulkan)
 DEPENDS_renderer+=vulkan
 CFLAGS+=-DRENDERER_VULKAN
 
-else
+else  # RENDERER
 
 $(error "Unknown render")
 

@@ -60,7 +60,6 @@ CFLAGS+=-Iforeign
 CFLAGS+=-I$(TOPDIR)
 CFLAGS+=-isystem$(TOPDIR)/foreign
 CFLAGS+=-isystem$(TOPDIR)/foreign/fmt/include
-CFLAGS+=-isystem$(TOPDIR)/foreign/glew/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/glm
 CFLAGS+=-isystem$(TOPDIR)/foreign/imgui
 CFLAGS+=-isystem$(TOPDIR)/foreign/magic_enum/include
@@ -71,6 +70,10 @@ CFLAGS+=-isystem$(TOPDIR)/foreign/stb
 CFLAGS+=-isystem$(TOPDIR)/foreign/tclap/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/vulkanMemoryAllocator/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/xxHash
+
+ifeq ($(USE_GLEW),y)
+CFLAGS+=-isystem$(TOPDIR)/foreign/glew/include
+endif  # USE_GLEW
 
 
 ifeq ($(INTERNAL_glslang),y)
