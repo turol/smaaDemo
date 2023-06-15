@@ -1200,7 +1200,7 @@ void SMAADemo::initRender() {
 	}
 
 	if (supportedCount == 0) {
-        THROW_ERROR("No supported AA methods");
+		THROW_ERROR("No supported AA methods");
 	}
 
 	if (!isAAMethodSupported(aaMethod)) {
@@ -1470,11 +1470,11 @@ void SMAADemo::rebuildRenderGraph() {
 		if (antialiasing) {
 			RenderTargetDesc rtDesc;
 			rtDesc.name("main color")
-				  .numSamples(numSamples)
-				  .format(swapchainFormat)
-				  .additionalViewFormat(Format::RGBA8)
-				  .width(windowWidth)
-				  .height(windowHeight);
+			      .numSamples(numSamples)
+			      .format(swapchainFormat)
+			      .additionalViewFormat(Format::RGBA8)
+			      .width(windowWidth)
+			      .height(windowHeight);
 			renderGraph.renderTarget(Rendertargets::MainColor, rtDesc);
 		} else {
 			renderRT = Rendertargets::FinalRender;
@@ -1484,10 +1484,10 @@ void SMAADemo::rebuildRenderGraph() {
 		{
 			RenderTargetDesc rtDesc;
 			rtDesc.name("velocity")
-				  .numSamples(1)
-				  .format(Format::RG16Float)
-				  .width(windowWidth)
-				  .height(windowHeight);
+			      .numSamples(1)
+			      .format(Format::RG16Float)
+			      .width(windowWidth)
+			      .height(windowHeight);
 			renderGraph.renderTarget(Rendertargets::Velocity, rtDesc);
 		}
 
@@ -1495,10 +1495,10 @@ void SMAADemo::rebuildRenderGraph() {
 		if (numSamples > 1) {
 			RenderTargetDesc rtDesc;
 			rtDesc.name("velocity multisample")
-				  .numSamples(numSamples)
-				  .format(Format::RG16Float)
-				  .width(windowWidth)
-				  .height(windowHeight);
+			      .numSamples(numSamples)
+			      .format(Format::RG16Float)
+			      .width(windowWidth)
+			      .height(windowHeight);
 			renderGraph.renderTarget(Rendertargets::VelocityMS, rtDesc);
 
 			velocityRT = Rendertargets::VelocityMS;
@@ -1507,10 +1507,10 @@ void SMAADemo::rebuildRenderGraph() {
 		{
 			RenderTargetDesc rtDesc;
 			rtDesc.name("main depth")
-				  .numSamples(numSamples)
-				  .format(depthFormat)
-				  .width(windowWidth)
-				  .height(windowHeight);
+			      .numSamples(numSamples)
+			      .format(depthFormat)
+			      .width(windowWidth)
+			      .height(windowHeight);
 			renderGraph.renderTarget(Rendertargets::MainDepth, rtDesc);
 		}
 
@@ -1532,11 +1532,11 @@ void SMAADemo::rebuildRenderGraph() {
 		if (antialiasing) {
 			RenderTargetDesc rtDesc;
 			rtDesc.name("main color")
-				  .numSamples(numSamples)
-				  .format(swapchainFormat)
-				  .additionalViewFormat(Format::RGBA8)
-				  .width(windowWidth)
-				  .height(windowHeight);
+			      .numSamples(numSamples)
+			      .format(swapchainFormat)
+			      .additionalViewFormat(Format::RGBA8)
+			      .width(windowWidth)
+			      .height(windowHeight);
 			renderGraph.renderTarget(Rendertargets::MainColor, rtDesc);
 		} else {
 			renderRT = Rendertargets::FinalRender;
@@ -1546,10 +1546,10 @@ void SMAADemo::rebuildRenderGraph() {
 		{
 			RenderTargetDesc rtDesc;
 			rtDesc.name("velocity")
-				  .numSamples(1)
-				  .format(Format::RG16Float)
-				  .width(windowWidth)
-				  .height(windowHeight);
+			      .numSamples(1)
+			      .format(Format::RG16Float)
+			      .width(windowWidth)
+			      .height(windowHeight);
 			renderGraph.renderTarget(Rendertargets::Velocity, rtDesc);
 		}
 
@@ -1557,10 +1557,10 @@ void SMAADemo::rebuildRenderGraph() {
 		if (numSamples > 1) {
 			RenderTargetDesc rtDesc;
 			rtDesc.name("velocity multisample")
-				  .numSamples(numSamples)
-				  .format(Format::RG16Float)
-				  .width(windowWidth)
-				  .height(windowHeight);
+			      .numSamples(numSamples)
+			      .format(Format::RG16Float)
+			      .width(windowWidth)
+			      .height(windowHeight);
 			renderGraph.renderTarget(Rendertargets::VelocityMS, rtDesc);
 			velocityRT = Rendertargets::VelocityMS;
 		}
@@ -1568,10 +1568,10 @@ void SMAADemo::rebuildRenderGraph() {
 		{
 			RenderTargetDesc rtDesc;
 			rtDesc.name("main depth")
-				  .numSamples(numSamples)
-				  .format(depthFormat)
-				  .width(windowWidth)
-				  .height(windowHeight);
+			      .numSamples(numSamples)
+			      .format(depthFormat)
+			      .width(windowWidth)
+			      .height(windowHeight);
 			renderGraph.renderTarget(Rendertargets::MainDepth, rtDesc);
 		}
 
@@ -1617,7 +1617,7 @@ void SMAADemo::rebuildRenderGraph() {
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::TemporalCurrent, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::MainColor)
-                        .name("FXAA temporal");
+					    .name("FXAA temporal");
 
 					renderGraph.renderPass(RenderPasses::FXAA, desc, std::bind(&SMAADemo::renderFXAA, this, _1, _2));
 				}
@@ -1628,9 +1628,9 @@ void SMAADemo::rebuildRenderGraph() {
 				{
 					RenderTargetDesc rtDesc;
 					rtDesc.name("SMAA edges")
-						  .format(Format::RGBA8)
-						  .width(windowWidth)
-						  .height(windowHeight);
+					      .format(Format::RGBA8)
+					      .width(windowWidth)
+					      .height(windowHeight);
 					renderGraph.renderTarget(Rendertargets::Edges, rtDesc);
 				}
 
@@ -1640,7 +1640,7 @@ void SMAADemo::rebuildRenderGraph() {
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::MainColor)
 					    .inputRendertarget(Rendertargets::MainDepth)
-						.name("SMAA edges");
+					    .name("SMAA edges");
 
 					renderGraph.renderPass(RenderPasses::SMAAEdges, desc, std::bind(&SMAADemo::renderSMAAEdges, this, _1, _2, Rendertargets::MainColor, 0));
 				}
@@ -1649,15 +1649,15 @@ void SMAADemo::rebuildRenderGraph() {
 				{
 					RenderTargetDesc rtDesc;
 					rtDesc.name("SMAA weights")
-						  .format(Format::RGBA8)
-						  .width(windowWidth)
-						  .height(windowHeight);
+					      .format(Format::RGBA8)
+					      .width(windowWidth)
+					      .height(windowHeight);
 					renderGraph.renderTarget(Rendertargets::BlendWeights, rtDesc);
 
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::BlendWeights, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Edges)
-						.name("SMAA weights");
+					    .name("SMAA weights");
 
 					renderGraph.renderPass(RenderPasses::SMAAWeights, desc, std::bind(&SMAADemo::renderSMAAWeights, this, _1, _2, 0));
 				}
@@ -1668,7 +1668,7 @@ void SMAADemo::rebuildRenderGraph() {
 					desc.color(0, Rendertargets::TemporalCurrent, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::MainColor)
 					    .inputRendertarget(Rendertargets::BlendWeights)
-						.name("SMAA blend");
+					    .name("SMAA blend");
 
 					renderGraph.renderPass(RenderPasses::SMAABlend, desc, std::bind(&SMAADemo::renderSMAABlend, this, _1, _2, Rendertargets::MainColor, 0));
 				}
@@ -1678,9 +1678,9 @@ void SMAADemo::rebuildRenderGraph() {
 				{
 					RenderTargetDesc rtDesc;
 					rtDesc.format(Format::sRGBA8)
-						  .additionalViewFormat(Format::RGBA8)
-						  .width(windowWidth)
-						  .height(windowHeight);
+					      .additionalViewFormat(Format::RGBA8)
+					      .width(windowWidth)
+					      .height(windowHeight);
 
 					rtDesc.name("Subsample separate 1");
 					renderGraph.renderTarget(Rendertargets::Subsample1, rtDesc);
@@ -1705,9 +1705,9 @@ void SMAADemo::rebuildRenderGraph() {
 				{
 					RenderTargetDesc rtDesc;
 					rtDesc.name("SMAA edges")
-						  .format(Format::RGBA8)
-						  .width(windowWidth)
-						  .height(windowHeight);
+					      .format(Format::RGBA8)
+					      .width(windowWidth)
+					      .height(windowHeight);
 					renderGraph.renderTarget(Rendertargets::Edges, rtDesc);
 				}
 
@@ -1717,7 +1717,7 @@ void SMAADemo::rebuildRenderGraph() {
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample1)
 					    .inputRendertarget(Rendertargets::MainDepth)
-						.name("SMAA edges");
+					    .name("SMAA edges");
 
 					renderGraph.renderPass(RenderPasses::SMAAEdges, desc, std::bind(&SMAADemo::renderSMAAEdges, this, _1, _2, Rendertargets::Subsample1, 0));
 				}
@@ -1726,15 +1726,15 @@ void SMAADemo::rebuildRenderGraph() {
 				{
 					RenderTargetDesc rtDesc;
 					rtDesc.name("SMAA weights")
-						  .format(Format::RGBA8)
-						  .width(windowWidth)
-						  .height(windowHeight);
+					      .format(Format::RGBA8)
+					      .width(windowWidth)
+					      .height(windowHeight);
 					renderGraph.renderTarget(Rendertargets::BlendWeights, rtDesc);
 
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::BlendWeights, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Edges)
-						.name("SMAA weights");
+					    .name("SMAA weights");
 
 					renderGraph.renderPass(RenderPasses::SMAAWeights, desc, std::bind(&SMAADemo::renderSMAAWeights, this, _1, _2, 0));
 				}
@@ -1745,7 +1745,7 @@ void SMAADemo::rebuildRenderGraph() {
 					desc.color(0, Rendertargets::TemporalCurrent, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample1)
 					    .inputRendertarget(Rendertargets::BlendWeights)
-						.name("SMAA2x blend 1");
+					    .name("SMAA2x blend 1");
 
 					renderGraph.renderPass(RenderPasses::SMAA2XBlend1, desc, std::bind(&SMAADemo::renderSMAABlend, this, _1, _2, Rendertargets::Subsample1, 0));
 				}
@@ -1757,7 +1757,7 @@ void SMAADemo::rebuildRenderGraph() {
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample2)
 					    .inputRendertarget(Rendertargets::MainDepth)
-						.name("SMAA edges");
+					    .name("SMAA edges");
 
 					renderGraph.renderPass(RenderPasses::SMAAEdges2, desc, std::bind(&SMAADemo::renderSMAAEdges, this, _1, _2, Rendertargets::Subsample2, 1));
 				}
@@ -1767,7 +1767,7 @@ void SMAADemo::rebuildRenderGraph() {
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::BlendWeights, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Edges)
-						.name("SMAA weights");
+					    .name("SMAA weights");
 
 					renderGraph.renderPass(RenderPasses::SMAAWeights2, desc, std::bind(&SMAADemo::renderSMAAWeights, this, _1, _2, 1));
 				}
@@ -1778,7 +1778,7 @@ void SMAADemo::rebuildRenderGraph() {
 					desc.color(0, Rendertargets::TemporalCurrent, PassBegin::Keep)
 					    .inputRendertarget(Rendertargets::Subsample2)
 					    .inputRendertarget(Rendertargets::BlendWeights)
-						.name("SMAA2x blend 2");
+					    .name("SMAA2x blend 2");
 
 					renderGraph.renderPass(RenderPasses::SMAA2XBlend2, desc, std::bind(&SMAADemo::renderSMAABlend, this, _1, _2, Rendertargets::Subsample2, 1));
 				}
@@ -1788,10 +1788,10 @@ void SMAADemo::rebuildRenderGraph() {
 			{
 				DemoRenderGraph::PassDesc desc;
 				desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
-					.inputRendertarget(Rendertargets::TemporalPrevious)
-					.inputRendertarget(Rendertargets::TemporalCurrent)
-					.inputRendertarget(Rendertargets::Velocity)
-					.name("Temporal AA");
+				    .inputRendertarget(Rendertargets::TemporalPrevious)
+				    .inputRendertarget(Rendertargets::TemporalCurrent)
+				    .inputRendertarget(Rendertargets::Velocity)
+				    .name("Temporal AA");
 
 				renderGraph.renderPass(RenderPasses::Final, desc, std::bind(&SMAADemo::renderTemporalAA, this, _1, _2));
 			}
@@ -1816,9 +1816,9 @@ void SMAADemo::rebuildRenderGraph() {
 				{
 					RenderTargetDesc rtDesc;
 					rtDesc.name("SMAA edges")
-						  .format(Format::RGBA8)
-						  .width(windowWidth)
-						  .height(windowHeight);
+					      .format(Format::RGBA8)
+					      .width(windowWidth)
+					      .height(windowHeight);
 					renderGraph.renderTarget(Rendertargets::Edges, rtDesc);
 				}
 
@@ -1828,7 +1828,7 @@ void SMAADemo::rebuildRenderGraph() {
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::MainColor)
 					    .inputRendertarget(Rendertargets::MainDepth)
-						.name("SMAA edges");
+					    .name("SMAA edges");
 
 					renderGraph.renderPass(RenderPasses::SMAAEdges, desc, std::bind(&SMAADemo::renderSMAAEdges, this, _1, _2, Rendertargets::MainColor, 0));
 				}
@@ -1839,15 +1839,15 @@ void SMAADemo::rebuildRenderGraph() {
 					{
 						RenderTargetDesc rtDesc;
 						rtDesc.name("SMAA weights")
-							  .format(Format::RGBA8)
-							  .width(windowWidth)
-							  .height(windowHeight);
+						      .format(Format::RGBA8)
+						      .width(windowWidth)
+						      .height(windowHeight);
 						renderGraph.renderTarget(Rendertargets::BlendWeights, rtDesc);
 
 						DemoRenderGraph::PassDesc desc;
 						desc.color(0, Rendertargets::BlendWeights, PassBegin::Clear)
 						    .inputRendertarget(Rendertargets::Edges)
-							.name("SMAA weights");
+						    .name("SMAA weights");
 
 						renderGraph.renderPass(RenderPasses::SMAAWeights, desc, std::bind(&SMAADemo::renderSMAAWeights, this, _1, _2, 0));
 					}
@@ -1858,7 +1858,7 @@ void SMAADemo::rebuildRenderGraph() {
 						desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
 						    .inputRendertarget(Rendertargets::MainColor)
 						    .inputRendertarget(Rendertargets::BlendWeights)
-							.name("SMAA blend");
+						    .name("SMAA blend");
 
 						renderGraph.renderPass(RenderPasses::SMAABlend, desc, std::bind(&SMAADemo::renderSMAABlend, this, _1, _2, Rendertargets::MainColor, 0));
 					}
@@ -1871,7 +1871,7 @@ void SMAADemo::rebuildRenderGraph() {
 						DemoRenderGraph::PassDesc desc;
 						desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
 						    .inputRendertarget(Rendertargets::Edges)
-							.name("Visualize edges");
+						    .name("Visualize edges");
 
 						renderGraph.renderPass(RenderPasses::Final, desc, std::bind(&SMAADemo::renderSMAADebug, this, _1, _2, Rendertargets::Edges));
 					}
@@ -1883,15 +1883,15 @@ void SMAADemo::rebuildRenderGraph() {
 					{
 						RenderTargetDesc rtDesc;
 						rtDesc.name("SMAA weights")
-							  .format(Format::RGBA8)
-							  .width(windowWidth)
-							  .height(windowHeight);
+						      .format(Format::RGBA8)
+						      .width(windowWidth)
+						      .height(windowHeight);
 						renderGraph.renderTarget(Rendertargets::BlendWeights, rtDesc);
 
 						DemoRenderGraph::PassDesc desc;
 						desc.color(0, Rendertargets::BlendWeights, PassBegin::Clear)
 						    .inputRendertarget(Rendertargets::Edges)
-							.name("SMAA weights");
+						    .name("SMAA weights");
 
 						renderGraph.renderPass(RenderPasses::SMAAWeights, desc, std::bind(&SMAADemo::renderSMAAWeights, this, _1, _2, 0));
 					}
@@ -1901,7 +1901,7 @@ void SMAADemo::rebuildRenderGraph() {
 						DemoRenderGraph::PassDesc desc;
 						desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
 						    .inputRendertarget(Rendertargets::BlendWeights)
-							.name("Visualize blend weights");
+						    .name("Visualize blend weights");
 
 						renderGraph.renderPass(RenderPasses::Final, desc, std::bind(&SMAADemo::renderSMAADebug, this, _1, _2, Rendertargets::BlendWeights));
 					}
@@ -1914,9 +1914,9 @@ void SMAADemo::rebuildRenderGraph() {
 				{
 					RenderTargetDesc rtDesc;
 					rtDesc.format(Format::sRGBA8)
-						  .additionalViewFormat(Format::RGBA8)
-						  .width(windowWidth)
-						  .height(windowHeight);
+					      .additionalViewFormat(Format::RGBA8)
+					      .width(windowWidth)
+					      .height(windowHeight);
 
 					rtDesc.name("Subsample separate 1");
 					renderGraph.renderTarget(Rendertargets::Subsample1, rtDesc);
@@ -1937,9 +1937,9 @@ void SMAADemo::rebuildRenderGraph() {
 				{
 					RenderTargetDesc rtDesc;
 					rtDesc.name("SMAA edges")
-						  .format(Format::RGBA8)
-						  .width(windowWidth)
-						  .height(windowHeight);
+					      .format(Format::RGBA8)
+					      .width(windowWidth)
+					      .height(windowHeight);
 					renderGraph.renderTarget(Rendertargets::Edges, rtDesc);
 
 					LOG_TODO("only add MainDepth when using predication");
@@ -1947,7 +1947,7 @@ void SMAADemo::rebuildRenderGraph() {
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample1)
 					    .inputRendertarget(Rendertargets::MainDepth)
-						.name("SMAA edges");
+					    .name("SMAA edges");
 
 					renderGraph.renderPass(RenderPasses::SMAAEdges, desc, std::bind(&SMAADemo::renderSMAAEdges, this, _1, _2, Rendertargets::Subsample1, 0));
 				}
@@ -1956,15 +1956,15 @@ void SMAADemo::rebuildRenderGraph() {
 				{
 					RenderTargetDesc rtDesc;
 					rtDesc.name("SMAA weights")
-						  .format(Format::RGBA8)
-						  .width(windowWidth)
-						  .height(windowHeight);
+					      .format(Format::RGBA8)
+					      .width(windowWidth)
+					      .height(windowHeight);
 					renderGraph.renderTarget(Rendertargets::BlendWeights, rtDesc);
 
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::BlendWeights, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Edges)
-						.name("SMAA weights");
+					    .name("SMAA weights");
 
 					renderGraph.renderPass(RenderPasses::SMAAWeights, desc, std::bind(&SMAADemo::renderSMAAWeights, this, _1, _2, 0));
 				}
@@ -1975,7 +1975,7 @@ void SMAADemo::rebuildRenderGraph() {
 					desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample1)
 					    .inputRendertarget(Rendertargets::BlendWeights)
-						.name("SMAA2x blend 1");
+					    .name("SMAA2x blend 1");
 
 					renderGraph.renderPass(RenderPasses::SMAA2XBlend1, desc, std::bind(&SMAADemo::renderSMAABlend, this, _1, _2, Rendertargets::Subsample1, 0));
 				}
@@ -1988,7 +1988,7 @@ void SMAADemo::rebuildRenderGraph() {
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample2)
 					    .inputRendertarget(Rendertargets::MainDepth)
-						.name("SMAA edges");
+					    .name("SMAA edges");
 
 					renderGraph.renderPass(RenderPasses::SMAAEdges2, desc, std::bind(&SMAADemo::renderSMAAEdges, this, _1, _2, Rendertargets::Subsample2, 1));
 				}
@@ -1998,7 +1998,7 @@ void SMAADemo::rebuildRenderGraph() {
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::BlendWeights, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Edges)
-						.name("SMAA weights");
+					    .name("SMAA weights");
 
 					renderGraph.renderPass(RenderPasses::SMAAWeights2, desc, std::bind(&SMAADemo::renderSMAAWeights, this, _1, _2, 1));
 				}
@@ -2009,7 +2009,7 @@ void SMAADemo::rebuildRenderGraph() {
 					desc.color(0, Rendertargets::FinalRender, PassBegin::Keep)
 					    .inputRendertarget(Rendertargets::Subsample2)
 					    .inputRendertarget(Rendertargets::BlendWeights)
-						.name("SMAA2x blend 2");
+					    .name("SMAA2x blend 2");
 
 					renderGraph.renderPass(RenderPasses::SMAA2XBlend2, desc, std::bind(&SMAADemo::renderSMAABlend, this, _1, _2, Rendertargets::Subsample2, 1));
 				}
@@ -2024,7 +2024,7 @@ void SMAADemo::rebuildRenderGraph() {
 	{
 		DemoRenderGraph::PassDesc desc;
 		desc.color(0, Rendertargets::FinalRender, PassBegin::Keep)
-			.name("GUI");
+		    .name("GUI");
 
 		renderGraph.renderPass(RenderPasses::GUI, desc, std::bind(&SMAADemo::renderGUI, this, _1, _2));
 	}
@@ -2233,14 +2233,14 @@ void SMAADemo::setTemporalAA(bool enabled) {
 bool SMAADemo::isAAMethodSupported(AAMethod method) const {
 	switch (method) {
 	case AAMethod::MSAA:
-        return (maxMSAAQuality > 1);
+		return (maxMSAAQuality > 1);
 
 	case AAMethod::FXAA:
 	case AAMethod::SMAA:
 		return true;
 
 	case AAMethod::SMAA2X:
-        return (maxMSAAQuality > 1);
+		return (maxMSAAQuality > 1);
 	}
 
 	HEDLEY_UNREACHABLE();
