@@ -28,6 +28,10 @@ static inline uint32_t combineHashes(uint32_t seed, uint32_t value) {
 }
 
 
+#ifndef __EMSCRIPTEN__
+
+// for some reason this causes an ambiguous call error on emscripten
+
 static inline uint64_t combineHashes(uint64_t h, uint64_t k) {
 	const uint64_t m = 0xc6a4a7935bd1e995UL;
 	const int r = 47;
@@ -45,6 +49,9 @@ static inline uint64_t combineHashes(uint64_t h, uint64_t k) {
 
 	return h;
 }
+
+
+#endif  // __EMSCRIPTEN__
 
 
 template <typename It>
