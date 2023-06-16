@@ -604,13 +604,15 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	LOG_TODO("call SDL_GL_GetDrawableSize, log GL attributes etc.");
 
+#ifdef USE_GLEW
 	glewExperimental = true;
 	glewInit();
+#endif  // USE_GLEW
 
 	LOG_TODO("check extensions");
 	// at least direct state access, texture storage
 
-	if (GLEW_VERSION_4_3 || GLEW_ARB_shader_storage_buffer_object) {
+	if (GL_SUPPORTED_VERSION(4, 3) || GL_SUPPORTED_EXT(ARB_shader_storage_buffer_object)) {
 		features.SSBOSupported = true;
 		LOG("Shader storage buffer supported");
 	} else {
@@ -618,28 +620,28 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		LOG("Shader storage buffer not supported");
 	}
 
-	if (!GLEW_ARB_direct_state_access) {
+	if (!GL_SUPPORTED_EXT(ARB_direct_state_access)) {
 		THROW_ERROR("ARB_direct_state_access not found");
 	}
 
-	if (!GLEW_ARB_buffer_storage) {
+	if (!GL_SUPPORTED_EXT(ARB_buffer_storage)) {
 		THROW_ERROR("ARB_buffer_storage not found");
 	}
 
-	if (!GLEW_ARB_clip_control) {
+	if (!GL_SUPPORTED_EXT(ARB_clip_control)) {
 		THROW_ERROR("ARB_clip_control not found");
 	}
 
-	if (!(GLEW_ARB_texture_view || GLEW_VERSION_4_3)) {
+	if (!(GL_SUPPORTED_EXT(ARB_texture_view) || GL_SUPPORTED_VERSION(4, 3))) {
 		THROW_ERROR("ARB_texture_view not found");
 	}
 
-	if (!GLEW_ARB_texture_storage_multisample) {
+	if (!GL_SUPPORTED_EXT(ARB_texture_storage_multisample)) {
 		THROW_ERROR("ARB_texture_storage_multisample not found");
 	}
 
 	if (wantKHRDebug) {
-		if (!GLEW_KHR_debug) {
+		if (!GL_SUPPORTED_EXT(KHR_debug)) {
 			THROW_ERROR("KHR_debug not found");
 		} else {
 			LOG("KHR_debug found");

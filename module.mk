@@ -71,9 +71,9 @@ CFLAGS+=-isystem$(TOPDIR)/foreign/tclap/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/vulkanMemoryAllocator/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/xxHash
 
-ifeq ($(USE_GLEW),y)
+ifeq ($(GL_LOADER),glew)
 CFLAGS+=-isystem$(TOPDIR)/foreign/glew/include
-endif  # USE_GLEW
+endif  # GL_LOADER
 
 
 ifeq ($(INTERNAL_glslang),y)

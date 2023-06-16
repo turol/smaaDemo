@@ -20,10 +20,16 @@ ifeq ($(RENDERER),opengl)
 
 CFLAGS+=-DRENDERER_OPENGL
 
-ifeq ($(USE_GLEW),y)
+ifeq ($(GL_LOADER),glew)
 DEPENDS_renderer+=glew
-CFLAGS+=-DGLEW_STATIC -DGLEW_NO_GLU
-endif  # USE_GLEW
+CFLAGS+=-DUSE_GLEW -DGLEW_STATIC -DGLEW_NO_GLU
+
+else ifeq ($(GL_LOADER),epoxy)
+
+DEPENDS_renderer+=epoxy
+CFLAGS+=-DUSE_EPOXY
+
+endif  # GL_LOADER
 
 else ifeq ($(RENDERER),null)
 

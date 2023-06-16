@@ -13,7 +13,7 @@ UBSAN:=n
 
 RENDERER:=vulkan
 
-USE_GLEW:=y
+GL_LOADER:=glew
 
 
 INTERNAL_glslang:=y

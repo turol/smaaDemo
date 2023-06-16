@@ -25,7 +25,26 @@ THE SOFTWARE.
 #define OPENGLRENDERER_H
 
 
+#ifdef USE_GLEW
+
 #include <GL/glew.h>
+
+#define GL_SUPPORTED_VERSION(major, minor)  GLEW_VERSION_ ## major ## _ ## minor
+#define GL_SUPPORTED_EXT(name)              GLEW_ ## name
+
+#elif defined(USE_EPOXY)
+
+#include <epoxy/gl.h>
+
+#define GL_SUPPORTED_VERSION(major, minor)  (epoxy_gl_version() > (major * 10 + minor))
+#define GL_SUPPORTED_EXT(name)              epoxy_has_gl_extension("GL_" HEDLEY_STRINGIFY(name))
+
+#else  // GL header
+
+#include <GL/gl.h>
+
+#endif  // GL header
+
 
 #include <variant>
 
