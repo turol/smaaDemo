@@ -403,10 +403,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	bool deviceProperties2 = checkInstanceExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
-#ifdef VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
-	checkInstanceExtension(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-#endif  // VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
-
 	if(!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, &extensions[0])) {
 		THROW_ERROR("SDL_Vulkan_GetInstanceExtensions failed: {}", SDL_GetError())
 	}
@@ -420,6 +416,13 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	vk::InstanceCreateInfo instanceCreateInfo;
 	instanceCreateInfo.pApplicationInfo         = &appInfo;
+
+#ifdef VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
+	if (checkInstanceExtension(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME)) {
+		instanceCreateInfo.flags |= vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR;
+	}
+
+#endif  // VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
 
 	std::vector<const char *> activeLayers;
 
