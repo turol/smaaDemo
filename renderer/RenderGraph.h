@@ -373,7 +373,7 @@ private:
 			}
 		}
 
-		LOG_TODO("cache framebuffers");
+		LOG_TODO("cache framebuffers")
 		rp.fb = renderer.createFramebuffer(fbDesc);
 		assert(rp.fb);
 	}
@@ -608,7 +608,7 @@ public:
 					assert(fmt != Format::Invalid);
 
 					auto pb = desc.colorRTs_[i].passBegin;
-					LOG_TODO("check this, might need a forward pass over operations");
+					LOG_TODO("check this, might need a forward pass over operations")
 					Layout initial = Layout::Undefined;
 					if (pb == PassBegin::Keep) {
 						initial = Layout::ColorAttachment;
@@ -618,7 +618,7 @@ public:
 					auto layoutIt = currentLayouts.find(rtId);
 					if (layoutIt == currentLayouts.end()) {
 						// unused
-						LOG_TODO("remove it entirely");
+						LOG_TODO("remove it entirely")
 						LOG("Removed unused rendertarget \"{}\" in renderpass \"{}\"", to_string(rtId), to_string(rp.id));
 						desc.colorRTs_[i].id        = Default<RT>::value;
 						desc.colorRTs_[i].passBegin = PassBegin::DontCare;
@@ -654,11 +654,11 @@ public:
 
 		LOG("RenderGraph::build start");
 
-		LOG_TODO("sort operations so they don't have to be added in order");
+		LOG_TODO("sort operations so they don't have to be added in order")
 
 		// need to iterate these since removing rendertargets can lead to merging passes
 		// and merging passes leads to having to recalculate layouts
-		LOG_TODO("find a single-pass algorithm for this");
+		LOG_TODO("find a single-pass algorithm for this")
 		bool keepGoing = false;
 
 		do {
@@ -719,7 +719,7 @@ public:
 						continue;
 					}
 				}
-				LOG_TODO("if second operation is resolve, check if that can be merged as well");
+				LOG_TODO("if second operation is resolve, check if that can be merged as well")
 
 				curr = next;
 				next++;
@@ -759,7 +759,7 @@ public:
 			}
 
 			assert(!rp.handle);
-			LOG_TODO("cache render passes");
+			LOG_TODO("cache render passes")
 			rp.handle = renderer.createRenderPass(rp.rpDesc);
 			assert(rp.handle);
 
@@ -777,7 +777,7 @@ public:
 					}
 				}
 			}
-			LOG_TODO("check depthStencil too");
+			LOG_TODO("check depthStencil too")
 
 			if (!hasExternal) {
 				if (!isFinal) {
@@ -940,13 +940,13 @@ public:
 					r.beginRenderPass(rp.handle, rp.fb);
 				} else {
 					// must be final pass
-					LOG_TODO("check that");
+					LOG_TODO("check that")
 
 					r.beginRenderPassSwapchain(rp.handle);
 				}
 
 				PassResources res;
-				LOG_TODO("build ahead of time, fill here?");
+				LOG_TODO("build ahead of time, fill here?")
 				for (RT inputRT : rp.desc.inputRendertargets) {
 					// get rendertarget desc
 					auto rtIt = rg.rendertargets.find(inputRT);
@@ -979,7 +979,7 @@ public:
 						f(rp.id, res);
 					}
 				} catch (std::exception &e) {
-					LOG_TODO("log renderpass");
+					LOG_TODO("log renderpass")
 					LOG("Exception \"{}\" during renderpass", e.what());
 					if (rg.storedException) {
 						LOG("Already have an exception, not stored");
@@ -1052,7 +1052,7 @@ public:
 				}
 
 				assert(rp.fb);
-				LOG_TODO("cache them");
+				LOG_TODO("cache them")
 				renderer.deleteFramebuffer(std::move(rp.fb));
 			}
 		}
@@ -1068,7 +1068,7 @@ public:
 	PipelineHandle createPipeline(Renderer &renderer, RP rp, PipelineDesc &desc) {
 		assert(state == RGState::Ready || state == RGState::Rendering);
 
-		LOG_TODO("use hash map");
+		LOG_TODO("use hash map")
 		bool DEBUG_ASSERTED found = false;
 		for (auto &op : operations) {
 			auto *rp_ = std::get_if<RenderPass>(&op);
@@ -1085,7 +1085,7 @@ public:
 		}
 		assert(found);
 
-		LOG_TODO("use hash map");
+		LOG_TODO("use hash map")
 		for (const auto &pipeline : pipelines) {
 			if (pipeline.desc == desc) {
 				return pipeline.handle;

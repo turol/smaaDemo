@@ -194,7 +194,7 @@ static unsigned int msaaSamplesToQuality(unsigned int q) {
 		return 0;
 	}
 
-	LOG_TODO("have a more specific function for this");
+	LOG_TODO("have a more specific function for this")
 	unsigned int retval = 0;
 	unsigned int count = 0;
 	forEachSetBit(q, [&] (uint32_t bit, uint32_t /* mask */) {
@@ -375,7 +375,7 @@ template <> struct hash<std::pair<Rendertargets, Format> > {
 		size_t a = hash<Rendertargets>()(k.first);
 		size_t b = hash<Format>()(k.second);
 
-		LOG_TODO("put this in a helper function");
+		LOG_TODO("put this in a helper function")
 		a ^= b + 0x9e3779b9 + (a << 6) + (a >> 2);
 
 		return a;
@@ -1209,12 +1209,12 @@ void SMAADemo::initRender() {
 	}
 
 	if (supportedCount == 0) {
-		THROW_ERROR("No supported AA methods");
+		THROW_ERROR("No supported AA methods")
 	}
 
 	if (!isAAMethodSupported(aaMethod)) {
 		if (aaMethodSetExplicitly) {
-			THROW_ERROR("Requested AA method {} is not supported", magic_enum::enum_name(aaMethod));
+			THROW_ERROR("Requested AA method {} is not supported", magic_enum::enum_name(aaMethod))
 		}
 		setNextAAMethod();
 	}
@@ -1242,7 +1242,7 @@ void SMAADemo::initRender() {
 		}
 	}
 	if (depthFormat == Format::Invalid) {
-		THROW_ERROR("no supported depth formats");
+		THROW_ERROR("no supported depth formats")
 	}
 	LOG("Using depth format {}", magic_enum::enum_name(depthFormat));
 
@@ -1407,7 +1407,7 @@ void SMAADemo::initRender() {
 			}
 		}
 
-		LOG_TODO("clipboard");
+		LOG_TODO("clipboard")
 		io.SetClipboardTextFn = SetClipboardText;
 		io.GetClipboardTextFn = GetClipboardText;
 		io.ClipboardUserData  = clipboardText;
@@ -1489,7 +1489,7 @@ void SMAADemo::rebuildRenderGraph() {
 			renderRT = Rendertargets::FinalRender;
 		}
 
-		LOG_TODO("only create velocity buffer when doing temporal AA");
+		LOG_TODO("only create velocity buffer when doing temporal AA")
 		{
 			RenderTargetDesc rtDesc;
 			rtDesc.name("velocity")
@@ -1551,7 +1551,7 @@ void SMAADemo::rebuildRenderGraph() {
 			renderRT = Rendertargets::FinalRender;
 		}
 
-		LOG_TODO("don't use velocity buffer");
+		LOG_TODO("don't use velocity buffer")
 		{
 			RenderTargetDesc rtDesc;
 			rtDesc.name("velocity")
@@ -1644,7 +1644,7 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 
 				{
-					LOG_TODO("only add MainDepth when using predication");
+					LOG_TODO("only add MainDepth when using predication")
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::MainColor)
@@ -1708,7 +1708,7 @@ void SMAADemo::rebuildRenderGraph() {
 					renderGraph.renderPass(RenderPasses::Separate, desc, std::bind(&SMAADemo::renderSeparate, this, _1, _2));
 				}
 
-				LOG_TODO("clean up the renderpass mess");
+				LOG_TODO("clean up the renderpass mess")
 
 				// edges pass
 				{
@@ -1721,7 +1721,7 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 
 				{
-					LOG_TODO("only add MainDepth when using predication");
+					LOG_TODO("only add MainDepth when using predication")
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample1)
@@ -1761,7 +1761,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 				// edges pass
 				{
-					LOG_TODO("only add MainDepth when using predication");
+					LOG_TODO("only add MainDepth when using predication")
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample2)
@@ -1832,7 +1832,7 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 
 				{
-					LOG_TODO("only add MainDepth when using predication");
+					LOG_TODO("only add MainDepth when using predication")
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::MainColor)
@@ -1951,7 +1951,7 @@ void SMAADemo::rebuildRenderGraph() {
 					      .height(windowHeight);
 					renderGraph.renderTarget(Rendertargets::Edges, rtDesc);
 
-					LOG_TODO("only add MainDepth when using predication");
+					LOG_TODO("only add MainDepth when using predication")
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample1)
@@ -1992,7 +1992,7 @@ void SMAADemo::rebuildRenderGraph() {
 				// second pass
 				// edges pass
 				{
-					LOG_TODO("only add MainDepth when using predication");
+					LOG_TODO("only add MainDepth when using predication")
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::Edges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample2)
@@ -2206,7 +2206,7 @@ void SMAADemo::colorShapes() {
 		for (auto &shape : shapes) {
 			// YCbCr, fixed luma, random chroma, alpha = 1.0
 			// worst case scenario for luma edge detection
-			LOG_TODO("use the same luma as shader");
+			LOG_TODO("use the same luma as shader")
 
 			float y = 0.3f;
 			const float c_red   = 0.299f
@@ -2709,7 +2709,7 @@ void SMAADemo::processInput() {
 		} break;
 
 		case SDL_CONTROLLERAXISMOTION: {
-			LOG_TODO("configurable dead zones");
+			LOG_TODO("configurable dead zones")
 			const int stickDeadZone = 8192;
 			const int triggerDeadZone = 1024;
 
@@ -2859,7 +2859,7 @@ void SMAADemo::mainLoopIteration() {
 	if (!isImageScene() && rotateShapes) {
 		rotationTime += elapsed;
 
-		LOG_TODO("increasing rotation period can make shapes spin backwards");
+		LOG_TODO("increasing rotation period can make shapes spin backwards")
 		const uint64_t rotationPeriod = rotationPeriodSeconds * 1000000000ULL;
 		rotationTime   = rotationTime % rotationPeriod;
 		cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
@@ -2980,7 +2980,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 	globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
 
-	LOG_TODO("better calculation, and check shape size (side is sqrt(3) currently)");
+	LOG_TODO("better calculation, and check shape size (side is sqrt(3) currently)")
 	const float shapeDiameter = sqrtf(3.0f);
 	const float shapeDistance = shapeDiameter + 1.0f;
 
@@ -3030,7 +3030,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	renderer.bindIndexBuffer(shapeBuffers[activeShape].indices, IndexFormat::b32);
 
 	if (!shapesBuffer) {
-		shapesBuffer = renderer.createBuffer(BufferType::Storage, static_cast<uint32_t>(sizeof(ShaderDefines::Shape) * shapes.size()), &shapes[0]);;
+		shapesBuffer = renderer.createBuffer(BufferType::Storage, static_cast<uint32_t>(sizeof(ShaderDefines::Shape) * shapes.size()), &shapes[0]);
 	}
 
 	ShapeSceneDS shapeDS;
@@ -3132,7 +3132,7 @@ void SMAADemo::renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 
 void SMAADemo::renderSeparate(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 	if (!separatePipeline) {
-		LOG_TODO("does this need its own DS?");
+		LOG_TODO("does this need its own DS?")
 		PipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
 			  .descriptorSetLayout<ColorCombinedDS>(1)
@@ -3186,7 +3186,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 
 	renderer.bindPipeline(smaaPipelines.edgePipeline);
 
-	LOG_TODO("this is redundant, clean it up");
+	LOG_TODO("this is redundant, clean it up")
 	ShaderDefines::SMAAUBO smaaUBO;
 	smaaUBO.smaaParameters        = smaaParameters;
 	smaaUBO.predicationThreshold  = predicationThreshold;
@@ -3206,7 +3206,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 		edgeDS.color         = r.get(input, Format::RGBA8);
 	}
 
-	LOG_TODO("only set when using predication");
+	LOG_TODO("only set when using predication")
 	edgeDS.predicationTex    = r.get(Rendertargets::MainDepth);
 
 
@@ -3236,7 +3236,7 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 		smaaPipelines.blendWeightPipeline = renderGraph.createPipeline(renderer, rp, plDesc);
 	}
 
-	LOG_TODO("this is redundant, clean it up");
+	LOG_TODO("this is redundant, clean it up")
 	ShaderDefines::SMAAUBO smaaUBO;
 	smaaUBO.smaaParameters        = smaaParameters;
 	smaaUBO.predicationThreshold  = predicationThreshold;
@@ -3292,7 +3292,7 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 		smaaPipelines.neighborPipelines[pass] = renderGraph.createPipeline(renderer, rp, plDesc);
 	}
 
-	LOG_TODO("this is redundant, clean it up");
+	LOG_TODO("this is redundant, clean it up")
 	ShaderDefines::SMAAUBO smaaUBO;
 	smaaUBO.smaaParameters        = smaaParameters;
 	smaaUBO.predicationThreshold  = predicationThreshold;
@@ -3378,7 +3378,7 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 	temporalDS.currentTex      = r.get(Rendertargets::TemporalCurrent);
 	if (temporalAAFirstFrame) {
 		// to prevent flicker on first frame after enabling
-		LOG_TODO("should just do blit");
+		LOG_TODO("should just do blit")
 		temporalDS.previousTex = r.get(Rendertargets::TemporalCurrent);
 		temporalAAFirstFrame   = false;
 	} else {
@@ -3750,7 +3750,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			}
 
 			int n = rendererDesc.swapchain.numFrames;
-			LOG_TODO("ask Renderer for the limits");
+			LOG_TODO("ask Renderer for the limits")
 			if (ImGui::SliderInt("frames ahead", &n, 1, 16)) {
 				rendererDesc.swapchain.numFrames = n;
 				recreateSwapchain = true;
@@ -3774,7 +3774,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			}
 
 			ImGui::Separator();
-			LOG_TODO("measure actual GPU time");
+			LOG_TODO("measure actual GPU time")
 			ImGui::LabelText("FPS", "%.1f", io.Framerate);
 			ImGui::LabelText("Frame time ms", "%.1f", 1000.0f / io.Framerate);
 		}
@@ -3878,7 +3878,7 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 			for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++) {
 				const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
 				if (pcmd->UserCallback) {
-					LOG_TODO("this probably does nothing useful for us");
+					LOG_TODO("this probably does nothing useful for us")
 					assert(false);
 
 					pcmd->UserCallback(cmd_list, pcmd);

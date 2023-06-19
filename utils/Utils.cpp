@@ -46,7 +46,7 @@ void logInit() {
 
 	char *logFilePath = SDL_GetPrefPath("", "SMAADemo");
 	if (logFilePath == nullptr) {
-		THROW_ERROR("SDL_GetPrefPath failed");
+		THROW_ERROR("SDL_GetPrefPath failed")
 	}
 	std::string logFileName(logFilePath);
 	SDL_free(logFilePath);
@@ -97,19 +97,19 @@ std::vector<char> readTextFile(std::string filename) {
 	std::unique_ptr<FILE, FILEDeleter> file(fopen(filename.c_str(), "rb"));
 
 	if (!file) {
-		THROW_ERROR("file not found {}", filename);
+		THROW_ERROR("file not found {}", filename)
 	}
 
 	int fd = fileno(file.get());
 	if (fd < 0) {
-		THROW_ERROR("no fd");
+		THROW_ERROR("no fd")
 	}
 
 	struct stat statbuf;
 	memset(&statbuf, 0, sizeof(struct stat));
 	int retval = fstat(fd, &statbuf);
 	if (retval < 0) {
-		THROW_ERROR("fstat failed for \"{}\": {}", filename, strerror(errno));
+		THROW_ERROR("fstat failed for \"{}\": {}", filename, strerror(errno))
 	}
 
 	unsigned int filesize = static_cast<unsigned int>(statbuf.st_size);
@@ -119,7 +119,7 @@ std::vector<char> readTextFile(std::string filename) {
 	size_t ret = fread(&buf[0], 1, filesize, file.get());
 	if (ret != filesize)
 	{
-		THROW_ERROR("fread failed");
+		THROW_ERROR("fread failed")
 	}
 
 	return buf;
@@ -130,19 +130,19 @@ std::vector<char> readFile(std::string filename) {
 	std::unique_ptr<FILE, FILEDeleter> file(fopen(filename.c_str(), "rb"));
 
 	if (!file) {
-		THROW_ERROR("file not found {}", filename);
+		THROW_ERROR("file not found {}", filename)
 	}
 
 	int fd = fileno(file.get());
 	if (fd < 0) {
-		THROW_ERROR("no fd");
+		THROW_ERROR("no fd")
 	}
 
 	struct stat statbuf;
 	memset(&statbuf, 0, sizeof(struct stat));
 	int retval = fstat(fd, &statbuf);
 	if (retval < 0) {
-		THROW_ERROR("fstat failed for \"{}\": {}", filename,  strerror(errno));
+		THROW_ERROR("fstat failed for \"{}\": {}", filename,  strerror(errno))
 	}
 
 	unsigned int filesize = static_cast<unsigned int>(statbuf.st_size);
@@ -151,7 +151,7 @@ std::vector<char> readFile(std::string filename) {
 	size_t ret = fread(&buf[0], 1, filesize, file.get());
 	if (ret != filesize)
 	{
-		THROW_ERROR("fread failed");
+		THROW_ERROR("fread failed")
 	}
 
 	return buf;
@@ -181,7 +181,7 @@ int64_t getFileTimestamp(const std::string &filename) {
 	memset(&statbuf, 0, sizeof(struct stat));
 	int retval = stat(filename.c_str(), &statbuf);
 	if (retval < 0) {
-		THROW_ERROR("fstat failed for \"{}\": {}", filename, strerror(errno));
+		THROW_ERROR("fstat failed for \"{}\": {}", filename, strerror(errno))
 	}
 	return statbuf.st_mtime;
 }

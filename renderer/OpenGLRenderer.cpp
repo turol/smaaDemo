@@ -116,7 +116,7 @@ GLuint RendererImpl::createShader(GLenum type, const std::string &name, const Sh
 	glShaderSource(shader, 1, &sourcePointer, &sourceLen);
 	glCompileShader(shader);
 
-	LOG_TODO("defer checking to enable multithreaded shader compile");
+	LOG_TODO("defer checking to enable multithreaded shader compile")
 	GLint status = 0;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
 
@@ -125,7 +125,7 @@ GLuint RendererImpl::createShader(GLenum type, const std::string &name, const Sh
 		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLen);
 		if (infoLogLen != 0) {
 			std::vector<char> infoLog(infoLogLen + 1, '\0');
-			LOG_TODO("better logging");
+			LOG_TODO("better logging")
 			glGetShaderInfoLog(shader, infoLogLen, nullptr, &infoLog[0]);
 			if (infoLog[0] != '\0') {
 				LOG("shader \"{}\" info log:\n{}\ninfo log end", name, &infoLog[0]);
@@ -136,7 +136,7 @@ GLuint RendererImpl::createShader(GLenum type, const std::string &name, const Sh
 
 	if (status != GL_TRUE) {
 		glDeleteShader(shader);
-		THROW_ERROR("shader compile failed");
+		THROW_ERROR("shader compile failed")
 	}
 
 	return shader;
@@ -439,7 +439,7 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 		if (i < first.ubos.size()) {
 			DSIndex other = first.ubos.at(i);
 			if (idx != other) {
-				THROW_ERROR("mismatch when merging shader UBOs, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
+				THROW_ERROR("mismatch when merging shader UBOs, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding)
 			}
 		} else {
 			first.ubos.push_back(idx);
@@ -451,7 +451,7 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 		if (i < first.ssbos.size()) {
 			DSIndex other = first.ssbos.at(i);
 			if (idx != other) {
-				THROW_ERROR("mismatch when merging shader SSBOs, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
+				THROW_ERROR("mismatch when merging shader SSBOs, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding)
 			}
 		} else {
 			first.ssbos.push_back(idx);
@@ -463,7 +463,7 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 		if (i < first.textures.size()) {
 			DSIndex other = first.textures.at(i);
 			if (idx != other) {
-				THROW_ERROR("mismatch when merging shader textures, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
+				THROW_ERROR("mismatch when merging shader textures, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding)
 			}
 		} else {
 			first.textures.push_back(idx);
@@ -475,7 +475,7 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 		if (i < first.samplers.size()) {
 			DSIndex other = first.samplers.at(i);
 			if (idx != other) {
-				THROW_ERROR("mismatch when merging shader textures, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding);
+				THROW_ERROR("mismatch when merging shader textures, {} is ({}, {}) when expecting ({}, {})", i, idx.set, idx.binding, other.set, other.binding)
 			}
 		} else {
 			first.samplers.push_back(idx);
@@ -494,7 +494,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		SDL_version version;
 
 		memset(&version, 0, sizeof(version));
-		SDL_VERSION(&version);
+		SDL_VERSION(&version)
 		LOG("Compiled against SDL version {}.{}.{}", version.major, version.minor, version.patch);
 
 		memset(&version, 0, sizeof(version));
@@ -505,12 +505,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	{
 		int retval = SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
 		if (retval != 0) {
-			THROW_ERROR("SDL_Init failed: {}", SDL_GetError());
+			THROW_ERROR("SDL_Init failed: {}", SDL_GetError())
 		}
 	}
 
-	LOG_TODO("highdpi");
-	LOG_TODO("check errors");
+	LOG_TODO("highdpi")
+	LOG_TODO("check errors")
 
 	unsigned int glMajor = 4;
 	unsigned int glMinor = 5;
@@ -560,7 +560,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	window = SDL_CreateWindow((desc.applicationName + " (OpenGL)").c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, desc.swapchain.width, desc.swapchain.height, flags);
 
 	if (!window) {
-		THROW_ERROR("SDL_CreateWindow failed: {}", SDL_GetError());
+		THROW_ERROR("SDL_CreateWindow failed: {}", SDL_GetError())
 	}
 
 	context = SDL_GL_CreateContext(window);
@@ -602,14 +602,14 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	LOG("VSync is {}", vsync ? "on" : "off");
 
-	LOG_TODO("call SDL_GL_GetDrawableSize, log GL attributes etc.");
+	LOG_TODO("call SDL_GL_GetDrawableSize, log GL attributes etc.")
 
 #ifdef USE_GLEW
 	glewExperimental = true;
 	glewInit();
 #endif  // USE_GLEW
 
-	LOG_TODO("check extensions");
+	LOG_TODO("check extensions")
 	// at least direct state access, texture storage
 
 	if (GL_SUPPORTED_VERSION(4, 3) || GL_SUPPORTED_EXT(ARB_shader_storage_buffer_object)) {
@@ -621,28 +621,28 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	if (!GL_SUPPORTED_EXT(ARB_direct_state_access)) {
-		THROW_ERROR("ARB_direct_state_access not found");
+		THROW_ERROR("ARB_direct_state_access not found")
 	}
 
 	if (!GL_SUPPORTED_EXT(ARB_buffer_storage)) {
-		THROW_ERROR("ARB_buffer_storage not found");
+		THROW_ERROR("ARB_buffer_storage not found")
 	}
 
 	if (!GL_SUPPORTED_EXT(ARB_clip_control)) {
-		THROW_ERROR("ARB_clip_control not found");
+		THROW_ERROR("ARB_clip_control not found")
 	}
 
 	if (!(GL_SUPPORTED_EXT(ARB_texture_view) || GL_SUPPORTED_VERSION(4, 3))) {
-		THROW_ERROR("ARB_texture_view not found");
+		THROW_ERROR("ARB_texture_view not found")
 	}
 
 	if (!GL_SUPPORTED_EXT(ARB_texture_storage_multisample)) {
-		THROW_ERROR("ARB_texture_storage_multisample not found");
+		THROW_ERROR("ARB_texture_storage_multisample not found")
 	}
 
 	if (wantKHRDebug) {
 		if (!GL_SUPPORTED_EXT(KHR_debug)) {
-			THROW_ERROR("KHR_debug not found");
+			THROW_ERROR("KHR_debug not found")
 		} else {
 			LOG("KHR_debug found");
 			if (debug) {
@@ -673,7 +673,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	features.maxMSAASamples = std::min(glValues[GL_MAX_COLOR_TEXTURE_SAMPLES], glValues[GL_MAX_DEPTH_TEXTURE_SAMPLES]);
 
-	LOG_TODO("use GL_UPPER_LEFT to match Vulkan");
+	LOG_TODO("use GL_UPPER_LEFT to match Vulkan")
 	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
 	glCreateVertexArrays(1, &vao);
@@ -721,7 +721,7 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 
 	// set up ring buffer
 	glCreateBuffers(1, &ringBuffer);
-	LOG_TODO("proper error checking");
+	LOG_TODO("proper error checking")
 	assert(ringBuffer != 0);
 	assert(ringBufSize               == 0);
 	assert(ringBufPtr                == 0);
@@ -735,7 +735,7 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 		// need GL_DYNAMIC_STORAGE_BIT since we intend to glBufferSubData it
 		bufferFlags |= GL_DYNAMIC_STORAGE_BIT;
 	} else {
-		LOG_TODO("do we need GL_DYNAMIC_STORAGE_BIT?");
+		LOG_TODO("do we need GL_DYNAMIC_STORAGE_BIT?")
 		// spec seems to say only for glBufferSubData, not persistent mapping
 		bufferFlags |= GL_MAP_WRITE_BIT;
 		bufferFlags |= GL_MAP_PERSISTENT_BIT;
@@ -916,8 +916,8 @@ BufferHandle Renderer::createEphemeralBuffer(BufferType type, uint32_t size, con
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	LOG_TODO("use appropriate alignment");
-	LOG_TODO("need buffer usage flags for that");
+	LOG_TODO("use appropriate alignment")
+	LOG_TODO("need buffer usage flags for that")
 	unsigned int beginPtr = impl->ringBufferAllocate(size, std::max(impl->uboAlign, impl->ssboAlign));
 
 	if (impl->persistentMapInUse) {
@@ -995,7 +995,7 @@ using ResourceMap = HashMap<DSIndex, ResourceInfo>;
 static void processShaderResources(ShaderResources &shaderResources, const ResourceMap& dsResources, spirv_cross::CompilerGLSL &glsl) {
 	shaderResources.uboSizes.resize(shaderResources.ubos.size(), 0);
 
-	LOG_TODO("only in debug mode");
+	LOG_TODO("only in debug mode")
 	HashSet<DSIndex> bindings;
 
 	auto spvResources = glsl.get_shader_resources();
@@ -1009,12 +1009,12 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			THROW_ERROR("Duplicate UBO binding ({}, {})", idx.set, idx.binding);
+			THROW_ERROR("Duplicate UBO binding ({}, {})", idx.set, idx.binding)
 		}
 
 		auto it = dsResources.find(idx);
 		if (it == dsResources.end()) {
-            THROW_ERROR("UBO ({}, {}) not in descriptor sets", idx.set, idx.binding);
+            THROW_ERROR("UBO ({}, {}) not in descriptor sets", idx.set, idx.binding)
 		}
 
 		assert(it->second.type == DescriptorType::UniformBuffer);
@@ -1045,12 +1045,12 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			THROW_ERROR("Duplicate SSBO binding ({}, {})", idx.set, idx.binding);
+			THROW_ERROR("Duplicate SSBO binding ({}, {})", idx.set, idx.binding)
 		}
 
 		auto it = dsResources.find(idx);
 		if (it == dsResources.end()) {
-            THROW_ERROR("SSBO ({}, {}) not in descriptor sets", idx.set, idx.binding);
+            THROW_ERROR("SSBO ({}, {}) not in descriptor sets", idx.set, idx.binding)
 		}
 
 		assert(it->second.type == DescriptorType::StorageBuffer);
@@ -1072,12 +1072,12 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			THROW_ERROR("Duplicate image binding ({}, {})", idx.set, idx.binding);
+			THROW_ERROR("Duplicate image binding ({}, {})", idx.set, idx.binding)
 		}
 
 		auto it = dsResources.find(idx);
 		if (it == dsResources.end()) {
-            THROW_ERROR("Sampled image ({}, {}) not in descriptor sets", idx.set, idx.binding);
+            THROW_ERROR("Sampled image ({}, {}) not in descriptor sets", idx.set, idx.binding)
 		}
 
 		assert(it->second.type == DescriptorType::CombinedSampler);
@@ -1093,7 +1093,7 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 	}
 
 	// build combined image samplers
-	LOG_TODO("need to store this info");
+	LOG_TODO("need to store this info")
 	glsl.build_combined_image_samplers();
 
 	for (const spirv_cross::CombinedImageSampler &c : glsl.get_combined_image_samplers()) {
@@ -1227,7 +1227,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 		fragmentShader = impl->createShader(GL_FRAGMENT_SHADER, f.name, f.macros, glslFrag);
 	}
 
-	LOG_TODO("cache shaders");
+	LOG_TODO("cache shaders")
 	GLuint program = glCreateProgram();
 
 	glAttachShader(program, vertexShader);
@@ -1241,11 +1241,11 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	if (status != GL_TRUE) {
 		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &status);
 		std::vector<char> infoLog(status + 1, '\0');
-		LOG_TODO("better logging");
+		LOG_TODO("better logging")
 		glGetProgramInfoLog(program, status, nullptr, &infoLog[0]);
 		LOG("info log: {}", &infoLog[0]);
 		logFlush();
-		THROW_ERROR("shader link failed");
+		THROW_ERROR("shader link failed")
 	}
 	glUseProgram(program);
 
@@ -1351,7 +1351,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 
 	GLenum status = glCheckNamedFramebufferStatus(fb.fbo, GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		THROW_ERROR("Framebuffer \"{}\" is not complete: {:#04x}", desc.name_, status);
+		THROW_ERROR("Framebuffer \"{}\" is not complete: {:#04x}", desc.name_, status)
 	}
 
 	if (impl->tracing) {
@@ -1470,7 +1470,7 @@ void RendererImpl::createRTHelperFBO(RenderTarget &rt) {
 	glNamedFramebufferDrawBuffers(rt.helperFBO, 1, drawBuffers);
 	GLenum status = glCheckNamedFramebufferStatus(rt.helperFBO, GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		THROW_ERROR("helper FBO for RT is not complete: {:#04x}", status);
+		THROW_ERROR("helper FBO for RT is not complete: {:#04x}", status)
 	}
 }
 
@@ -1681,7 +1681,7 @@ void Renderer::setSwapchainDesc(const SwapchainDesc &desc) {
 	if (impl->swapchainDesc.fullscreen != desc.fullscreen) {
 		changed = true;
 		if (desc.fullscreen) {
-			LOG_TODO("check return val?");
+			LOG_TODO("check return val?")
 			SDL_SetWindowFullscreen(impl->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 			LOG("Fullscreen");
 		} else {
@@ -1705,13 +1705,13 @@ void Renderer::setSwapchainDesc(const SwapchainDesc &desc) {
 			// fallthrough
 
 		case VSync::On:
-			LOG_TODO("check return val");
+			LOG_TODO("check return val")
 			SDL_GL_SetSwapInterval(1);
 			LOG("VSync is on");
 			break;
 
 		case VSync::Off:
-			LOG_TODO("check return val");
+			LOG_TODO("check return val")
 			SDL_GL_SetSwapInterval(0);
 			LOG("VSync is off");
 			break;
@@ -1741,7 +1741,7 @@ glm::uvec2 Renderer::getDrawableSize() const {
 	int w = -1, h = -1;
 	SDL_GL_GetDrawableSize(impl->window, &w, &h);
 	if (w <= 0 || h <= 0) {
-		THROW_ERROR("drawable size is negative");
+		THROW_ERROR("drawable size is negative")
 	}
 
 	return glm::uvec2(w, h);
@@ -1754,7 +1754,7 @@ void RendererImpl::recreateSwapchain() {
 	int w = -1, h = -1;
 	SDL_GL_GetDrawableSize(window, &w, &h);
 	if (w <= 0 || h <= 0) {
-		THROW_ERROR("drawable size is negative");
+		THROW_ERROR("drawable size is negative")
 	}
 
 	swapchainDesc.width  = w;
@@ -1786,7 +1786,7 @@ void RendererImpl::recreateSwapchain() {
 			// increasing, resize and initialize new
 			frames.resize(numImages);
 
-			LOG_TODO("put some stuff here");
+			LOG_TODO("put some stuff here")
 		}
 	}
 
@@ -1840,7 +1840,7 @@ void Renderer::beginFrame() {
 	impl->currentPipeline.reset();
 	impl->descriptors.clear();
 
-	LOG_TODO("reset all relevant state in case some 3rd-party program fucked them up");
+	LOG_TODO("reset all relevant state in case some 3rd-party program fucked them up")
 	glDisable(GL_SCISSOR_TEST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDepthMask(GL_TRUE);
@@ -1852,8 +1852,8 @@ void Renderer::beginFrame() {
 	}
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	LOG_TODO("only clear depth/stencil if we have it");
-	LOG_TODO("set color/etc write masks if necessary");
+	LOG_TODO("only clear depth/stencil if we have it")
+	LOG_TODO("set color/etc write masks if necessary")
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
@@ -1893,8 +1893,8 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 		break;
 
 	default:
-		LOG_TODO("do something better");
-		THROW_ERROR("glClientWaitSync failed: {:#04x}", result);
+		LOG_TODO("do something better")
+		THROW_ERROR("glClientWaitSync failed: {:#04x}", result)
 	}
 
 	glDeleteSync(frame.fence);
@@ -1980,7 +1980,7 @@ void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHa
 	}
 
 	if (rp.clearMask) {
-		LOG_TODO("stencil");
+		LOG_TODO("stencil")
 		if ((rp.clearMask & GL_DEPTH_BUFFER_BIT) != 0) {
 			glClearBufferfv(GL_DEPTH, 0, &rp.depthClearValue);
 		}
@@ -2028,7 +2028,7 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 	assert(rp.desc.colorRTs_[1].passBegin == PassBegin::DontCare);
 
 	if (rp.clearMask) {
-		LOG_TODO("stencil");
+		LOG_TODO("stencil")
 		if ((rp.clearMask & GL_DEPTH_BUFFER_BIT) != 0) {
 			glClearBufferfv(GL_DEPTH, 0, &rp.depthClearValue);
 		}
@@ -2059,7 +2059,7 @@ void Renderer::endRenderPass() {
 		const auto &pass = impl->renderPasses.get(impl->currentRenderPass);
 		const auto &fb   = impl->framebuffers.get(impl->currentFramebuffer);
 
-		LOG_TODO("track depthstencil layout too");
+		LOG_TODO("track depthstencil layout too")
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 			if (fb.desc.colors_[i]) {
 				auto &rt = impl->renderTargets.get(fb.desc.colors_[i]);
@@ -2101,7 +2101,7 @@ void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width
 #endif  // NDEBUG
 
 	// flip y from Vulkan convention to OpenGL convention
-	LOG_TODO("should use current FB height");
+	LOG_TODO("should use current FB height")
 	glScissor(x, impl->swapchainDesc.height - (y + height), width, height);
 }
 
@@ -2121,7 +2121,7 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 
 	const auto &p = impl->pipelines.get(pipeline);
 
-	LOG_TODO("shadow state, set only necessary");
+	LOG_TODO("shadow state, set only necessary")
 	glUseProgram(p.shader);
 	if (p.desc.depthWrite_) {
 		glDepthMask(GL_TRUE);
@@ -2149,11 +2149,11 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 
 	if (p.desc.blending_) {
 		glEnable(GL_BLEND);
-		LOG_TODO("get from Pipeline");
+		LOG_TODO("get from Pipeline")
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(p.srcBlend, p.destBlend);
 		if (p.srcBlend == GL_CONSTANT_ALPHA || p.destBlend == GL_CONSTANT_ALPHA) {
-			LOG_TODO("get from Pipeline");
+			LOG_TODO("get from Pipeline")
 			glBlendColor(0.5f, 0.5f, 0.5f, 0.5f);
 		}
 	} else {
@@ -2248,7 +2248,7 @@ void Renderer::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHandle
 
 	impl->decriptorSetsDirty = true;
 
-	LOG_TODO("get shader bindings from current pipeline, use index");
+	LOG_TODO("get shader bindings from current pipeline, use index")
 	const DescriptorSetLayout &layout = impl->dsLayouts.get(layoutHandle);
 
 	const char *data = reinterpret_cast<const char *>(data_);
@@ -2377,7 +2377,7 @@ void RendererImpl::rebindDescriptorSets() {
 	const auto &pipeline  = pipelines.get(currentPipeline);
 	const auto &resources = pipeline.resources;
 
-	LOG_TODO("only change what is necessary");
+	LOG_TODO("only change what is necessary")
 	for (unsigned int i = 0; i < resources.ubos.size(); i++) {
 		const auto &r = resources.ubos.at(i);
 		const auto &d = descriptors.at(r);
@@ -2436,7 +2436,7 @@ void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 
 	assert(!impl->inRenderPass);
 
-	LOG_TODO("check they're both color targets");
+	LOG_TODO("check they're both color targets")
 	// or implement depth blit
 
 	auto &srcRT = impl->renderTargets.get(source);
@@ -2478,7 +2478,7 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 
 	assert(!impl->inRenderPass);
 
-	LOG_TODO("check they're both color targets");
+	LOG_TODO("check they're both color targets")
 
 	auto &srcRT = impl->renderTargets.get(source);
 	assert(isColorFormat(srcRT.format));
@@ -2565,7 +2565,7 @@ void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	}
 	assert(!impl->decriptorSetsDirty);
 
-	LOG_TODO("get primitive from current pipeline");
+	LOG_TODO("get primitive from current pipeline")
 	glDrawArrays(GL_TRIANGLES, firstVertex, vertexCount);
 }
 
@@ -2586,7 +2586,7 @@ void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int insta
 	}
 	assert(!impl->decriptorSetsDirty);
 
-	LOG_TODO("get primitive from current pipeline");
+	LOG_TODO("get primitive from current pipeline")
 	GLenum format = glIndexFormat(impl->indexFormat);
 	auto ptr = reinterpret_cast<const void *>(impl->indexBufByteOffset);
 	if (instanceCount == 1) {
@@ -2615,7 +2615,7 @@ void Renderer::drawIndexed(unsigned int vertexCount, unsigned int firstIndex) {
 	GLenum format        = glIndexFormat(impl->indexFormat);
 	unsigned int idxSize = glIndexSize(impl->indexFormat);
 	auto ptr = reinterpret_cast<const char *>(firstIndex * idxSize + impl->indexBufByteOffset);
-	LOG_TODO("get primitive from current pipeline");
+	LOG_TODO("get primitive from current pipeline")
 	glDrawElements(GL_TRIANGLES, vertexCount, format, ptr);
 }
 
@@ -2638,7 +2638,7 @@ void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int fi
 	GLenum format        = glIndexFormat(impl->indexFormat);
 	unsigned int idxSize = glIndexSize(impl->indexFormat);
 	auto ptr = reinterpret_cast<const char *>(firstIndex * idxSize + impl->indexBufByteOffset);
-	LOG_TODO("get primitive from current pipeline");
+	LOG_TODO("get primitive from current pipeline")
 	glDrawElementsBaseVertex(GL_TRIANGLES, vertexCount, format, ptr, vertexOffset);
 }
 

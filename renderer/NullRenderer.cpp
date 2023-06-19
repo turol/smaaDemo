@@ -52,7 +52,7 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 	ringBufPtr  = 0;
 	ringBufSize = newSize;
 	ringBuffer.resize(newSize, 0);
-	LOG_TODO("use valgrind to make sure we only write to intended parts of ring buffer");
+	LOG_TODO("use valgrind to make sure we only write to intended parts of ring buffer")
 }
 
 
@@ -71,7 +71,7 @@ RendererImpl::~RendererImpl() {
 
 
 bool Renderer::isRenderTargetFormatSupported(Format /* format */) const {
-	LOG_TODO("actually check it...");
+	LOG_TODO("actually check it...")
 	return true;
 }
 
@@ -85,7 +85,7 @@ BufferHandle Renderer::createBuffer(BufferType /* type */, uint32_t size, const 
 	buffer.beginOffs       = 0;
 	buffer.size            = size;
 
-	LOG_TODO("store contents into buffer");
+	LOG_TODO("store contents into buffer")
 
 	return impl->buffers.add(std::move(buffer));
 }
@@ -97,7 +97,7 @@ BufferHandle Renderer::createEphemeralBuffer(BufferType /* type */, uint32_t siz
 
 	unsigned int beginPtr = impl->ringBufferAllocate(size, 256);
 
-	LOG_TODO("use valgrind to enforce we only write to intended parts of ring buffer");
+	LOG_TODO("use valgrind to enforce we only write to intended parts of ring buffer")
 	memcpy(&impl->ringBuffer[beginPtr], contents, size);
 
 	Buffer buffer;
@@ -151,7 +151,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 
 SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
 	Sampler sampler;
-	LOG_TODO("check desc");
+	LOG_TODO("check desc")
 	sampler.desc = desc;
 
 	return impl->samplers.add(std::move(sampler));
@@ -185,10 +185,10 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 	assert(desc.height_  > 0);
 	assert(desc.numMips_ > 0);
 
-	LOG_TODO("check data");
+	LOG_TODO("check data")
 
 	Texture texture;
-	LOG_TODO("check desc");
+	LOG_TODO("check desc")
 	texture.desc = desc;
 
 	return impl->textures.add(std::move(texture));

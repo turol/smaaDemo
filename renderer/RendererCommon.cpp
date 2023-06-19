@@ -312,7 +312,7 @@ bool PipelineDesc::operator==(const PipelineDesc &other) const {
 		}
 	}
 
-	LOG_TODO("only check enabled attributes");
+	LOG_TODO("only check enabled attributes")
 	for (unsigned int i = 0; i < MAX_VERTEX_ATTRIBS; i++) {
 		if (this->vertexAttribs[i] != other.vertexAttribs[i]) {
 			return false;
@@ -353,7 +353,7 @@ RendererBase::RendererBase(const RendererDesc &desc)
 
 	bool success = glslang::InitializeProcess();
 	if (!success) {
-		THROW_ERROR("glslang initialization failed");
+		THROW_ERROR("glslang initialization failed")
 	}
 
 	if (skipShaderCache) {
@@ -571,7 +571,7 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			THROW_ERROR("Duplicate UBO binding ({}, {})", idx.set, idx.binding);
+			THROW_ERROR("Duplicate UBO binding ({}, {})", idx.set, idx.binding)
 		}
 
 		uint32_t maxOffset = 0;
@@ -593,7 +593,7 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			THROW_ERROR("Duplicate SSBO binding ({}, {})", idx.set, idx.binding);
+			THROW_ERROR("Duplicate SSBO binding ({}, {})", idx.set, idx.binding)
 		}
 	}
 
@@ -606,7 +606,7 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			THROW_ERROR("Duplicate combined image/sampler binding ({}, {})", idx.set, idx.binding);
+			THROW_ERROR("Duplicate combined image/sampler binding ({}, {})", idx.set, idx.binding)
 		}
 	}
 
@@ -619,7 +619,7 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			THROW_ERROR("Duplicate image binding ({}, {})", idx.set, idx.binding);
+			THROW_ERROR("Duplicate image binding ({}, {})", idx.set, idx.binding)
 		}
 	}
 
@@ -632,7 +632,7 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 		// if not, there's a bug in the shader
 		auto b = bindings.insert(idx);
 		if (!b.second) {
-			THROW_ERROR("Duplicate image sampler binding ({}, {}) \"{}\"", idx.set, idx.binding, s.name);
+			THROW_ERROR("Duplicate image sampler binding ({}, {}) \"{}\"", idx.set, idx.binding, s.name)
 		}
 	}
 }
@@ -688,7 +688,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, Shader
 			if (it != shaderCache.end()) {
 				std::string spvName = makeSPVCacheName(it->second.spirvHash, stage);
 				LOG("\"{}\" found in memory cache as {}", cacheKey, spvName);
-				LOG_TODO("avoid unnecessary copy of SPIR-V data");
+				LOG_TODO("avoid unnecessary copy of SPIR-V data")
 				auto temp = readFile(spvName);
 				if (temp.size() % 4 != 0) {
 					LOG_ERROR("Shader \"{}\" has incorrect size {}", spvName, temp.size());
@@ -698,7 +698,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, Shader
 				std::vector<uint32_t> spirv(temp.size() / 4);
 				memcpy(&spirv[0], &temp[0], temp.size());
 
-				LOG_TODO("only in debug");
+				LOG_TODO("only in debug")
 				// need to move debug flag to base class
 				if (true) {
 					checkSPVBindings(spirv);
@@ -820,7 +820,7 @@ compilationNeeded:
 		}
 
 		if (!success) {
-			THROW_ERROR("Failed to compile shader");
+			THROW_ERROR("Failed to compile shader")
 		}
 
 		// link
@@ -834,13 +834,13 @@ compilationNeeded:
 		}
 
 		if (!success) {
-			THROW_ERROR("Failed to link shader");
+			THROW_ERROR("Failed to link shader")
 		}
 
 		// convert to SPIR-V
 		spv::SpvBuildLogger logger;
 		glslang::SpvOptions spvOptions;
-		LOG_TODO("only when tracing");
+		LOG_TODO("only when tracing")
 		if (true) {
 			spvOptions.generateDebugInfo = true;
 		} else {
@@ -852,11 +852,11 @@ compilationNeeded:
 		glslang::GlslangToSpv(*program.getIntermediate(language), spirv, &logger, &spvOptions);
 
 		if (!validate(spirv)) {
-			THROW_ERROR("SPIR-V for shader \"{}\" is not valid after compilation", cacheKey);
+			THROW_ERROR("SPIR-V for shader \"{}\" is not valid after compilation", cacheKey)
 		}
 	}
 
-	LOG_TODO("only in debug");
+	LOG_TODO("only in debug")
 	// need to move debug flag to base class
 	if (true) {
 		checkSPVBindings(spirv);
@@ -864,7 +864,7 @@ compilationNeeded:
 
 	// SPIR-V optimization
 	if (optimizeShaders) {
-		LOG_TODO("better target environment selection?");
+		LOG_TODO("better target environment selection?")
 		spvtools::Optimizer opt(spirvEnvironment);
 
 		opt.SetMessageConsumer([] (spv_message_level_t level, const char *source, const spv_position_t &position, const char *message) {
@@ -878,11 +878,11 @@ compilationNeeded:
 		optimized.reserve(spirv.size());
 		bool success = opt.Run(&spirv[0], spirv.size(), &optimized);
 		if (!success) {
-			THROW_ERROR("Shader optimization failed");
+			THROW_ERROR("Shader optimization failed")
 		}
 
 		if (!validate(optimized)) {
-			THROW_ERROR("SPIR-V for shader \"{}\" is not valid after optimization", cacheKey);
+			THROW_ERROR("SPIR-V for shader \"{}\" is not valid after optimization", cacheKey)
 		}
 
 		// glslang SPV remapper
@@ -891,7 +891,7 @@ compilationNeeded:
 			remapper.remap(optimized);
 
 			if (!validate(optimized)) {
-				THROW_ERROR("SPIR-V for shader \"{}\" is not valid after remapping", cacheKey);
+				THROW_ERROR("SPIR-V for shader \"{}\" is not valid after remapping", cacheKey)
 			}
 		}
 
@@ -984,12 +984,12 @@ unsigned int RendererImpl::ringBufferAllocate(unsigned int size, unsigned int al
 	const unsigned int mask  = ~add;
 	unsigned int alignedPtr  = (ringBufPtr + add) & mask;
 	assert(ringBufPtr <= alignedPtr);
-	LOG_TODO("ring buffer size should be pow2, se should use add & mask here too");
+	LOG_TODO("ring buffer size should be pow2, se should use add & mask here too")
 	unsigned int beginPtr    =  alignedPtr % ringBufSize;
 
 	if (beginPtr + size >= ringBufSize) {
 		// we went past the end and have to go back to beginning
-		LOG_TODO("add and mask here too");
+		LOG_TODO("add and mask here too")
 		ringBufPtr = (ringBufPtr / ringBufSize + 1) * ringBufSize;
 		assert((ringBufPtr & ~mask) == 0);
 		alignedPtr  = (ringBufPtr + add) & mask;

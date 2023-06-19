@@ -228,7 +228,7 @@ vk::BufferUsageFlags bufferTypeUsage(BufferType type) {
 
 static VkBool32 VKAPI_PTR debugMessengerFunc(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT /* messageTypes */, const VkDebugUtilsMessengerCallbackDataEXT *callbackData, void * /* pUserData*/) {
 	LOG("error of severity \"{}\" {} \"{}\" \"{}\"", vk::to_string(vk::DebugUtilsMessageSeverityFlagBitsEXT(severity)), callbackData->messageIdNumber, callbackData->pMessageIdName, callbackData->pMessage);
-	LOG_TODO("log other parts of VkDebugUtilsMessengerCallbackDataEXT");
+	LOG_TODO("log other parts of VkDebugUtilsMessengerCallbackDataEXT")
 	logFlush();
 
 	// make errors fatal
@@ -278,7 +278,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		SDL_version version;
 
 		memset(&version, 0, sizeof(version));
-		SDL_VERSION(&version);
+		SDL_VERSION(&version)
 		LOG("Compiled against SDL version {}.{}.{}", version.major, version.minor, version.patch);
 
 		memset(&version, 0, sizeof(version));
@@ -291,7 +291,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	{
 		int retval = SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
 		if (retval != 0) {
-			THROW_ERROR("SDL_Init failed: {}", SDL_GetError());
+			THROW_ERROR("SDL_Init failed: {}", SDL_GetError())
 		}
 	}
 
@@ -328,14 +328,14 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	window = SDL_CreateWindow((desc.applicationName + " (Vulkan)").c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, desc.swapchain.width, desc.swapchain.height, flags);
 
 	if (!window) {
-		THROW_ERROR("SDL_CreateWindow failed: {}", SDL_GetError());
+		THROW_ERROR("SDL_CreateWindow failed: {}", SDL_GetError())
 	}
 
 	{
 		uint32_t instanceVersion = 0;
 		auto result = vk::enumerateInstanceVersion(&instanceVersion);
 		if (result != vk::Result::eSuccess) {
-			THROW_ERROR("Failed to get Vulkan instance version: {}", vk::to_string(result));
+			THROW_ERROR("Failed to get Vulkan instance version: {}", vk::to_string(result))
 		}
 
 		LOG("Vulkan instance version {}.{}.{}", VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion));
@@ -387,7 +387,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	unsigned int numExtensions = 0;
 	if (!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, nullptr)) {
-		THROW_ERROR("SDL_Vulkan_GetInstanceExtensions failed: {}", SDL_GetError());
+		THROW_ERROR("SDL_Vulkan_GetInstanceExtensions failed: {}", SDL_GetError())
 	}
 
 	std::vector<const char *> extensions(numExtensions, nullptr);
@@ -408,7 +408,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 #endif  // VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
 
 	if(!SDL_Vulkan_GetInstanceExtensions(window, &numExtensions, &extensions[0])) {
-		THROW_ERROR("SDL_Vulkan_GetInstanceExtensions failed: {}", SDL_GetError());
+		THROW_ERROR("SDL_Vulkan_GetInstanceExtensions failed: {}", SDL_GetError())
 	}
 
 	vk::ApplicationInfo appInfo;
@@ -434,7 +434,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			activeLayers.push_back(lunargValidation);
 			LOG("Using LUNARG validation layer");
 		} else {
-			THROW_ERROR("Validation requested but no validation layer available");
+			THROW_ERROR("Validation requested but no validation layer available")
 		}
 
 		if (checkInstanceExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
@@ -443,7 +443,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		} else if (checkInstanceExtension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME)) {
 			LOG("Using old debug extension");
 		} else {
-			THROW_ERROR("Validation requested but no debug reporting extension available");
+			THROW_ERROR("Validation requested but no debug reporting extension available")
 		}
 		instanceCreateInfo.enabledLayerCount    = static_cast<uint32_t>(activeLayers.size());
 		instanceCreateInfo.ppEnabledLayerNames  = &activeLayers[0];
@@ -490,8 +490,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 								 (SDL_vulkanInstance) instance,
 								 (SDL_vulkanSurface *) &surface))
 	{
-		LOG_TODO("free instance, window etc...");
-		THROW_ERROR("Failed to create Vulkan surface: {}", SDL_GetError());
+		LOG_TODO("free instance, window etc...")
+		THROW_ERROR("Failed to create Vulkan surface: {}", SDL_GetError())
 	}
 
 	std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
@@ -500,7 +500,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		instance = nullptr;
 		SDL_DestroyWindow(window);
 		window = nullptr;
-		THROW_ERROR("No physical Vulkan devices found");
+		THROW_ERROR("No physical Vulkan devices found")
 	}
 	LOG("{} physical devices", physicalDevices.size());
 
@@ -549,7 +549,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 
 		if (!found) {
-			THROW_ERROR("Didn't find physical device matching filter");
+			THROW_ERROR("Didn't find physical device matching filter")
 		}
 	}
 
@@ -601,7 +601,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	if (graphicsQueueIndex == queueProps.size()) {
-		THROW_ERROR("Error: no graphics queue");
+		THROW_ERROR("Error: no graphics queue")
 	}
 
 	LOG("Using queue {} for graphics", graphicsQueueIndex);
@@ -705,7 +705,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	if (!checkExt(VK_KHR_MAINTENANCE1_EXTENSION_NAME)) {
-		THROW_ERROR("Missing required extension VK_KHR_maintenance1");
+		THROW_ERROR("Missing required extension VK_KHR_maintenance1")
 	}
 
 	portabilitySubset = checkExt(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
@@ -794,10 +794,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	uint32_t maxSamples = static_cast<uint32_t>(deviceProperties.limits.framebufferColorSampleCounts);
 	maxSamples &= static_cast<uint32_t>(deviceProperties.limits.framebufferDepthSampleCounts);
 	maxSamples &= static_cast<uint32_t>(deviceProperties.limits.framebufferStencilSampleCounts);
-	LOG_TODO("what about sampledImage*SamplerCounts?");
+	LOG_TODO("what about sampledImage*SamplerCounts?")
 	// those should probably go in a separate variable
 	// we want to count the number of lowest bits set to get highest AA level
-	LOG_TODO("there are better ways to do this");
+	LOG_TODO("there are better ways to do this")
 	// foro example negate and count trailing zeros
 	for (unsigned int i = 0; i < 7; i++) {
 		uint32_t bit = 1 << i;
@@ -839,7 +839,7 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 		assert(persistentMapping != nullptr);
 
         // flush in case it's not coherent
-		LOG_TODO("flush only parts updated this frame");
+		LOG_TODO("flush only parts updated this frame")
 		vmaFlushAllocation(allocator, ringBufferMem, 0, VK_WHOLE_SIZE);
 
 		// create a Buffer object which we can put into deleteResources
@@ -887,7 +887,7 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 	auto result = vmaAllocateMemoryForBuffer(allocator, ringBuffer, &req, &ringBufferMem, &allocationInfo);
 
 	if (result != VK_SUCCESS) {
-		THROW_ERROR("vmaAllocateMemoryForBuffer failed: {}", vk::to_string(vk::Result(result)));
+		THROW_ERROR("vmaAllocateMemoryForBuffer failed: {}", vk::to_string(vk::Result(result)))
 	}
 
 	LOG("ringbuffer memory type: {} ({})", allocationInfo.memoryType, vk::to_string(memoryProperties.memoryTypes[allocationInfo.memoryType].propertyFlags));
@@ -1029,7 +1029,7 @@ RendererImpl::~RendererImpl() {
 
 
 bool Renderer::isRenderTargetFormatSupported(Format format) const {
-	LOG_TODO("cache these at startup");
+	LOG_TODO("cache these at startup")
 	vk::ImageUsageFlags flags(vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
 	if (isDepthFormat(format)) {
 		flags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
@@ -1093,7 +1093,7 @@ BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *
 	memcpy(static_cast<char *>(op.allocationInfo.pMappedData), contents, size);
     vmaFlushAllocation(impl->allocator, buffer.memory, 0, size);
 
-	LOG_TODO("reuse command buffer for multiple copies");
+	LOG_TODO("reuse command buffer for multiple copies")
 	vk::BufferCopy copyRegion;
 	copyRegion.srcOffset = 0;
 	copyRegion.dstOffset = 0;
@@ -1132,7 +1132,7 @@ BufferHandle Renderer::createEphemeralBuffer(BufferType type, uint32_t size, con
 	assert(size != 0);
 	assert(contents != nullptr);
 
-	LOG_TODO("separate ringbuffers based on type");
+	LOG_TODO("separate ringbuffers based on type")
 	unsigned int beginPtr = impl->ringBufferAllocate(size, impl->bufferAlignment(type));
 
 	memcpy(impl->persistentMapping + beginPtr, contents, size);
@@ -1216,7 +1216,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 		assert(colorRT.height > 0);
 		assert(colorRT.numSamples > 0);
 		assert(colorRT.imageView);
-		LOG_TODO("make sure renderPass formats match actual framebuffer attachments");
+		LOG_TODO("make sure renderPass formats match actual framebuffer attachments")
 		assert(colorRT.format == renderPass.desc.colorRTs_[i].format);
 		colorFormats[i] = colorRT.format;
 		attachmentViews.push_back(colorRT.imageView);
@@ -1313,7 +1313,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 		if (desc.colorRTs_[i].format == Format::Invalid) {
 			assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
-			LOG_TODO("could be break, it's invalid to have holes in attachment list");
+			LOG_TODO("could be break, it's invalid to have holes in attachment list")
 			// but should check that
 			continue;
 		}
@@ -1377,7 +1377,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 		uint32_t attachNum    = static_cast<uint32_t>(attachments.size());
 		attach.format         = vulkanFormat(desc.depthStencilFormat_);
 		attach.samples        = samples;
-		LOG_TODO("these should be customizable via RenderPassDesc");
+		LOG_TODO("these should be customizable via RenderPassDesc")
 		attach.loadOp         = vk::AttachmentLoadOp::eDontCare;
 		if (desc.clearDepthAttachment) {
 			attach.loadOp     = vk::AttachmentLoadOp::eClear;
@@ -1386,11 +1386,11 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 			r.clearValues[attachNum].depthStencil = vk::ClearDepthStencilValue(1.0f, 0);
 		}
 		attach.storeOp        = vk::AttachmentStoreOp::eStore;
-		LOG_TODO("stencil");
+		LOG_TODO("stencil")
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
 		attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
 		attach.initialLayout  = vk::ImageLayout::eUndefined;
-		LOG_TODO("finalLayout should come from desc");
+		LOG_TODO("finalLayout should come from desc")
 		attach.finalLayout    = vk::ImageLayout::eShaderReadOnlyOptimal;
 		attachments.push_back(attach);
 
@@ -1417,19 +1417,19 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 		d.dstSubpass       = 0;
 
 		if (!impl->synchronizationDebugMode) {
-			LOG_TODO("should come from desc");
+			LOG_TODO("should come from desc")
 			// depends on whether previous thing was rendering or msaa resolve
 			d.srcStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eTransfer;
 			d.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eTransferWrite;
 
 			d.dstStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-			LOG_TODO("shouldn't need read unless we load the attachment and use blending");
+			LOG_TODO("shouldn't need read unless we load the attachment and use blending")
 			d.dstAccessMask    = vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
 
 			d.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
 
 			if (hasDepthStencil) {
-				LOG_TODO("should come from desc");
+				LOG_TODO("should come from desc")
 				// depends on whether previous thing was rendering or msaa resolve
 				d.srcStageMask    |= vk::PipelineStageFlagBits::eLateFragmentTests | vk::PipelineStageFlagBits::eTransfer;
 				d.srcAccessMask   |= vk::AccessFlagBits::eDepthStencilAttachmentWrite | vk::AccessFlagBits::eTransferWrite;
@@ -1458,7 +1458,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 			for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 				if (desc.colorRTs_[i].format == Format::Invalid) {
 					assert(desc.colorRTs_[i].initialLayout == Layout::Undefined);
-					LOG_TODO("could be break, it's invalid to have holes in attachment list");
+					LOG_TODO("could be break, it's invalid to have holes in attachment list")
 					// but should check that
 					continue;
 				}
@@ -1654,7 +1654,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	blendInfo.attachmentCount = static_cast<uint32_t>(colorBlendStates.size());
 	blendInfo.pAttachments    = &colorBlendStates[0];
 	if (desc.blending_ && (desc.sourceBlend_ == BlendFunc::Constant || desc.destinationBlend_ == BlendFunc::Constant)) {
-		LOG_TODO("get from desc");
+		LOG_TODO("get from desc")
 		for (unsigned int i = 0; i < 4; i++) {
 			blendInfo.blendConstants[i] = 0.5f;
 		}
@@ -1680,12 +1680,12 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	layoutInfo.setLayoutCount = static_cast<uint32_t>(layouts.size());
 	layoutInfo.pSetLayouts    = &layouts[0];
 
-	LOG_TODO("cache Vulkan pipeline layouts");
+	LOG_TODO("cache Vulkan pipeline layouts")
 	auto layout = impl->device.createPipelineLayout(layoutInfo);
 	info.layout = layout;
 
 	auto result = impl->device.createGraphicsPipeline(impl->pipelineCache, info);
-	LOG_TODO("check success instead of implicitly using result.value");
+	LOG_TODO("check success instead of implicitly using result.value")
 
 	impl->debugNameObject<vk::Pipeline>(result.value, desc.name_);
 
@@ -1727,7 +1727,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 			size_t maxValueLen = 5;  // "false"
 			for (const auto &stat : statistics) {
 				maxNameLen = std::max(maxNameLen, strnlen(stat.name, VK_MAX_DESCRIPTION_SIZE));
-				LOG_TODO("better way to calculate formatted number length");
+				LOG_TODO("better way to calculate formatted number length")
 				switch (stat.format) {
 				case vk::PipelineExecutableStatisticFormatKHR::eBool32:
 					break;
@@ -1802,7 +1802,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	// validation layer says: vkCreateImage(): samples VK_SAMPLE_COUNT_16_BIT is not supported by format 0x0000000F. The Vulkan spec states: samples must be a bit value that is set in imageCreateSampleCounts (as defined in Image Creation Limits).
 	// (https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/vkspec.html#VUID-VkImageCreateInfo-samples-02258)
 	info.samples     = sampleCountFlagsFromNum(desc.numSamples_);
-	LOG_TODO("usage should come from desc");
+	LOG_TODO("usage should come from desc")
 	vk::ImageUsageFlags flags(vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
 	if (isDepthFormat(desc.format_)) {
 		flags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
@@ -1921,7 +1921,7 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	info.pCode     = &spirv[0];
 	v.shaderModule = device.createShaderModule(info);
 
-	LOG_TODO("add macros to name");
+	LOG_TODO("add macros to name")
 	debugNameObject<vk::ShaderModule>(v.shaderModule, name);
 
 	return vertexShaders.add(std::move(v));
@@ -1937,7 +1937,7 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	info.pCode     = &spirv[0];
 	f.shaderModule = device.createShaderModule(info);
 
-	LOG_TODO("add macros to name");
+	LOG_TODO("add macros to name")
 	debugNameObject<vk::ShaderModule>(f.shaderModule, name);
 
 	return fragmentShaders.add(std::move(f));
@@ -1950,7 +1950,7 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 	assert(desc.height_  > 0);
 	assert(desc.numMips_ > 0);
 
-	LOG_TODO("check PhysicalDeviceFormatProperties");
+	LOG_TODO("check PhysicalDeviceFormatProperties")
 
 	vk::Format format = vulkanFormat(desc.format_);
 
@@ -1996,7 +1996,7 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 	impl->debugNameObject<vk::Image>(tex.image, desc.name_);
 	impl->debugNameObject<vk::ImageView>(tex.imageView, desc.name_);
 
-	LOG_TODO("reuse command buffer for multiple copies");
+	LOG_TODO("reuse command buffer for multiple copies")
 	unsigned int w = desc.width_, h = desc.height_;
 	unsigned int bufferSize = 0;
 	uint32_t align = std::max(formatSize(desc.format_), static_cast<uint32_t>(impl->deviceProperties.limits.optimalBufferCopyOffsetAlignment));
@@ -2041,7 +2041,7 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 		range.layerCount            = VK_REMAINING_ARRAY_LAYERS;
 
 		vk::ImageMemoryBarrier barrier;
-		LOG_TODO("should this be eHostWrite?");
+		LOG_TODO("should this be eHostWrite?")
 		barrier.srcAccessMask        = vk::AccessFlagBits();
 		barrier.dstAccessMask        = vk::AccessFlagBits::eTransferWrite;
 		barrier.oldLayout            = vk::ImageLayout::eUndefined;
@@ -2051,7 +2051,7 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 		barrier.image                = tex.image;
 		barrier.subresourceRange     = range;
 
-		LOG_TODO("relax stage flag bits");
+		LOG_TODO("relax stage flag bits")
 		op.cmdBuf.pipelineBarrier(vk::PipelineStageFlagBits::eHost, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), {}, {}, { barrier });
 
 		char *mappedPtr = static_cast<char *>(op.allocationInfo.pMappedData);
@@ -2101,7 +2101,7 @@ DSLayoutHandle Renderer::createDescriptorSetLayout(const DescriptorLayout *layou
 		b.binding         = i;
 		b.descriptorType  = descriptorTypes[layout->type];
 		b.descriptorCount = 1;
-		LOG_TODO("should specify stages in layout");
+		LOG_TODO("should specify stages in layout")
 		b.stageFlags      = vk::ShaderStageFlagBits::eAll;
 
 		bindings.push_back(b);
@@ -2204,7 +2204,7 @@ void Renderer::setSwapchainDesc(const SwapchainDesc &desc) {
 	if (impl->swapchainDesc.fullscreen != desc.fullscreen) {
 		changed = true;
 		if (desc.fullscreen) {
-			LOG_TODO("check return val?");
+			LOG_TODO("check return val?")
 			SDL_SetWindowFullscreen(impl->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 			LOG("Fullscreen");
 		} else {
@@ -2280,7 +2280,7 @@ unsigned int RendererImpl::bufferAlignment(BufferType type) {
 		break;
 
 	case BufferType::Index:
-		LOG_TODO("can we find something more accurate?");
+		LOG_TODO("can we find something more accurate?")
 		return 4;
 		break;
 
@@ -2293,7 +2293,7 @@ unsigned int RendererImpl::bufferAlignment(BufferType type) {
 		break;
 
 	case BufferType::Vertex:
-		LOG_TODO("can we find something more accurate?");
+		LOG_TODO("can we find something more accurate?")
 		return 16;
 		break;
 
@@ -2314,7 +2314,7 @@ glm::uvec2 Renderer::getDrawableSize() const {
 	int w = -1, h = -1;
 	SDL_Vulkan_GetDrawableSize(impl->window, &w, &h);
 	if (w <= 0 || h <= 0) {
-		THROW_ERROR("drawable size is negative");
+		THROW_ERROR("drawable size is negative")
 	}
 
 	return glm::uvec2(w, h);
@@ -2343,7 +2343,7 @@ void RendererImpl::recreateSwapchain() {
 	int tempW = -1, tempH = -1;
 	SDL_Vulkan_GetDrawableSize(window, &tempW, &tempH);
 	if (tempW <= 0 || tempH <= 0) {
-		THROW_ERROR("drawable size is negative");
+		THROW_ERROR("drawable size is negative")
 	}
 
 	// this is nasty but apparently surface might not have resized yet
@@ -2396,7 +2396,7 @@ void RendererImpl::recreateSwapchain() {
 			frames.resize(numImages);
 
 			// descriptor pool
-			LOG_TODO("these limits are arbitrary, find better ones");
+			LOG_TODO("these limits are arbitrary, find better ones")
 			std::vector<vk::DescriptorPoolSize> poolSizes;
 			for (const auto t : descriptorTypes ) {
 				vk::DescriptorPoolSize s;
@@ -2445,7 +2445,7 @@ void RendererImpl::recreateSwapchain() {
 	}
 
 	vk::Extent2D imageExtent;
-	LOG_TODO("check against min and max");
+	LOG_TODO("check against min and max")
 	imageExtent.width  = swapchainDesc.width;
 	imageExtent.height = swapchainDesc.height;
 
@@ -2465,7 +2465,7 @@ void RendererImpl::recreateSwapchain() {
 	vk::PresentModeKHR swapchainPresentMode = vk::PresentModeKHR::eFifo;
 	// pick from the supported modes based on a prioritized
 	// list depending on whether we want vsync or not
-	LOG_TODO("check against");
+	LOG_TODO("check against")
 	// https://timothylottes.github.io/20180202.html
 	for (const auto presentMode : vsyncMode(swapchainDesc.vsync)) {
 		if (surfacePresentModes.find(presentMode) != surfacePresentModes.end()) {
@@ -2476,11 +2476,11 @@ void RendererImpl::recreateSwapchain() {
 
 	LOG("Using present mode {}", vk::to_string(swapchainPresentMode));
 
-	LOG_TODO("should fallback to Unorm and communicate back to demo");
-	LOG_TODO("should iterate through supported formats and pick an appropriate one");
+	LOG_TODO("should fallback to Unorm and communicate back to demo")
+	LOG_TODO("should iterate through supported formats and pick an appropriate one")
 	vk::Format surfaceFormat = vk::Format::eB8G8R8A8Srgb;
 	if (surfaceFormats.find(surfaceFormat) == surfaceFormats.end()) {
-		THROW_ERROR("No sRGB format backbuffer support");
+		THROW_ERROR("No sRGB format backbuffer support")
 	}
 	features.sRGBFramebuffer = true;
 
@@ -2492,7 +2492,7 @@ void RendererImpl::recreateSwapchain() {
 	swapchainCreateInfo.imageColorSpace       = vk::ColorSpaceKHR::eSrgbNonlinear;
 	swapchainCreateInfo.imageExtent           = imageExtent;
 	swapchainCreateInfo.imageArrayLayers      = 1;
-	LOG_TODO("need eStorage when implementing compute shaders");
+	LOG_TODO("need eStorage when implementing compute shaders")
 	swapchainCreateInfo.imageUsage            = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eColorAttachment;
 
 	// no concurrent access
@@ -2514,7 +2514,7 @@ void RendererImpl::recreateSwapchain() {
 	swapchain = newSwapchain;
 
 	std::vector<vk::Image> swapchainImages = device.getSwapchainImagesKHR(swapchain);
-	LOG_TODO("implementation doesn't have to obey size, should resize here");
+	LOG_TODO("implementation doesn't have to obey size, should resize here")
 	assert(swapchainImages.size() == frames.size());
 	assert(swapchainImages.size() == numImages);
 
@@ -2557,7 +2557,7 @@ void RendererImpl::waitForDeviceIdle() {
 	if (!fences.empty()) {
 		auto waitResult = device.waitForFences( fences, true, frameTimeoutNanos);
 		if (waitResult != vk::Result::eSuccess) {
-			THROW_ERROR("wait result is not success: {}", vk::to_string(waitResult));
+			THROW_ERROR("wait result is not success: {}", vk::to_string(waitResult))
 		}
 
 		unsigned int DEBUG_ASSERTED count = 0;
@@ -2622,7 +2622,7 @@ void Renderer::beginFrame() {
 			impl->recreateSwapchain();
 			assert(!impl->swapchainDirty);
 		} else {
-			THROW_ERROR("acquireNextImageKHR failed: {}", vk::to_string(result));
+			THROW_ERROR("acquireNextImageKHR failed: {}", vk::to_string(result))
 		}
 
 		result = device.acquireNextImageKHR(impl->swapchain, impl->frameTimeoutNanos, impl->frameAcquireSem, vk::Fence(), &imageIdx);
@@ -2672,7 +2672,7 @@ void Renderer::beginFrame() {
 	impl->currentPipelineLayout = vk::PipelineLayout();
 
 	// mark buffers deleted during gap between frames to be deleted when this frame has synced
-	LOG_TODO("we could move this earlier and add these to the previous frame's list");
+	LOG_TODO("we could move this earlier and add these to the previous frame's list")
 	if (!impl->deleteResources.empty()) {
 		assert(frame.deleteResources.empty());
 		frame.deleteResources = std::move(impl->deleteResources);
@@ -2696,10 +2696,10 @@ void Renderer::presentFrame() {
 	impl->currentCommandBuffer.end();
 
 	// flush ephemeral ringbuffer if it's not coherent
-	LOG_TODO("flush only parts updated this frame");
+	LOG_TODO("flush only parts updated this frame")
 	vmaFlushAllocation(impl->allocator, impl->ringBufferMem, 0, VK_WHOLE_SIZE);
 
-	LOG_TODO("this should be all the stages that access the backbuffer");
+	LOG_TODO("this should be all the stages that access the backbuffer")
 	// currently transfer and/or color output
 	// in the future also compute shader
 	// should be a parameter to this function?
@@ -2789,7 +2789,7 @@ void Renderer::presentFrame() {
 		LOG("swapchain suboptimal during presentKHR, marking dirty");
 		impl->swapchainDirty = true;
 	} else {
-		THROW_ERROR("presentKHR failed: {}", vk::to_string(presentResult));
+		THROW_ERROR("presentKHR failed: {}", vk::to_string(presentResult))
 	}
 	frame.usedRingBufPtr = impl->ringBufPtr;
 	frame.status         = Frame::Status::Pending;
@@ -2833,7 +2833,7 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 		break;
 
 	default: {
-		THROW_ERROR("wait result is not success: {}", vk::to_string(waitResult));
+		THROW_ERROR("wait result is not success: {}", vk::to_string(waitResult))
 	}
 	}
 
@@ -2875,7 +2875,7 @@ void RendererImpl::cleanupFrame(unsigned int frameIdx) {
 		frame.uploads.clear();
 
 		// if all pending uploads are complete, reset the command pool
-		LOG_TODO("should use multiple command pools");
+		LOG_TODO("should use multiple command pools")
 		if (numUploads == 0) {
 			device.resetCommandPool(transferCmdPool, vk::CommandPoolResetFlags());
 		}
@@ -2917,14 +2917,14 @@ void RendererImpl::cleanupFrame(unsigned int frameIdx) {
 UploadOp RendererImpl::allocateUploadOp(uint32_t size) {
 	UploadOp op;
 
-	LOG_TODO("have a free list of semaphores instead of creating new ones all the time");
+	LOG_TODO("have a free list of semaphores instead of creating new ones all the time")
 	op.semaphore = allocateSemaphore();
 
 	vk::CommandBufferAllocateInfo cmdInfo(transferCmdPool, vk::CommandBufferLevel::ePrimary, 1);
 	op.cmdBuf = device.allocateCommandBuffers(cmdInfo)[0];
 	op.cmdBuf.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 
-	LOG_TODO("move staging buffer, memory and command buffer allocation to allocateUploadOp");
+	LOG_TODO("move staging buffer, memory and command buffer allocation to allocateUploadOp")
 	vk::BufferCreateInfo bufInfo;
 	bufInfo.size      = size;
 	bufInfo.usage     = vk::BufferUsageFlagBits::eTransferSrc;
@@ -3327,7 +3327,7 @@ void Renderer::endRenderPass() {
 		const auto &pass = impl->renderPasses.get(impl->currentRenderPass);
 		const auto &fb   = impl->framebuffers.get(impl->currentFramebuffer);
 
-		LOG_TODO("track depthstencil layout too");
+		LOG_TODO("track depthstencil layout too")
 		for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 			if (fb.desc.colors_[i]) {
 				auto &rt = impl->renderTargets.get(fb.desc.colors_[i]);
@@ -3351,7 +3351,7 @@ void Renderer::layoutTransition(RenderTargetHandle image, Layout src, Layout des
 	rt.currentLayout = dest;
 
 	vk::ImageMemoryBarrier b;
-	LOG_TODO("should allow user to specify access flags");
+	LOG_TODO("should allow user to specify access flags")
 	b.srcAccessMask               = vk::AccessFlagBits::eMemoryWrite;
 	b.dstAccessMask               = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
 	b.oldLayout                   = vulkanLayout(src);
@@ -3361,7 +3361,7 @@ void Renderer::layoutTransition(RenderTargetHandle image, Layout src, Layout des
 	b.subresourceRange.levelCount = 1;
 	b.subresourceRange.layerCount = 1;
 
-	LOG_TODO("should allow user to specify stage masks");
+	LOG_TODO("should allow user to specify stage masks")
 	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlags(), {}, {}, { b });
 }
 
@@ -3376,7 +3376,7 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 	impl->scissorSet = false;
 #endif  // NDEBUG
 
-	LOG_TODO("make sure current renderpass matches the one in pipeline");
+	LOG_TODO("make sure current renderpass matches the one in pipeline")
 
 	const auto &p = impl->pipelines.get(pipeline);
 	impl->currentCommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, p.pipeline);
@@ -3385,7 +3385,7 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 	if (!p.scissor) {
 		// Vulkan always requires a scissor rect
 		// if we don't use scissor set default here
-		LOG_TODO("shouldn't need this is previous pipeline didn't use scissor");
+		LOG_TODO("shouldn't need this is previous pipeline didn't use scissor")
 		// except for first pipeline of the command buffer
 		vk::Rect2D rect;
 		rect.offset.x      = static_cast<int32_t>(impl->currentViewport.x);
@@ -3464,7 +3464,7 @@ void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHand
 		write.dstSet          = ds;
 		write.dstBinding      = index;
 		write.descriptorCount = 1;
-		LOG_TODO("move to a helper function");
+		LOG_TODO("move to a helper function")
 		write.descriptorType  = descriptorTypes[l.type];
 
 		switch (l.type) {
@@ -3608,7 +3608,7 @@ void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, u
 	assert(impl->inFrame);
 
 	impl->currentViewport.x        = static_cast<float>(x);
-	LOG_TODO("check viewport y direction when not using full height");
+	LOG_TODO("check viewport y direction when not using full height")
 	impl->currentViewport.y        = static_cast<float>(y);
 	impl->currentViewport.width    = static_cast<float>(width);
 	impl->currentViewport.height   = static_cast<float>(height);
@@ -3646,7 +3646,7 @@ void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 
 	assert(!impl->inRenderPass);
 
-	LOG_TODO("check numSamples is 1 for both");
+	LOG_TODO("check numSamples is 1 for both")
 
 	const auto &srcRT = impl->renderTargets.get(source);
 	assert(srcRT.width       >  0);
@@ -3661,7 +3661,7 @@ void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(srcRT.width       == destRT.width);
 	assert(srcRT.height      == destRT.height);
 
-	LOG_TODO("check they're both color targets");
+	LOG_TODO("check they're both color targets")
 	// or implement depth blit
 
 	vk::ImageBlit b;
@@ -3685,7 +3685,7 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 
 	assert(!impl->inRenderPass);
 
-	LOG_TODO("check numSamples make sense");
+	LOG_TODO("check numSamples make sense")
 
 	const auto &srcRT = impl->renderTargets.get(source);
 	assert(isColorFormat(srcRT.format));
@@ -3742,8 +3742,8 @@ void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLay
 
 	// transitition swapchain from undefined -> transferdst
 	vk::ImageMemoryBarrier b;
-	LOG_TODO("should allow user to specify access flags");
-	LOG_TODO("should tighten access masks");
+	LOG_TODO("should allow user to specify access flags")
+	LOG_TODO("should tighten access masks")
 	b.srcAccessMask               = vk::AccessFlagBits::eMemoryWrite;
 	b.dstAccessMask               = vk::AccessFlagBits::eTransferWrite;
 	b.oldLayout                   = vk::ImageLayout::eUndefined;
@@ -3753,7 +3753,7 @@ void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLay
 	b.subresourceRange.levelCount = 1;
 	b.subresourceRange.layerCount = 1;
 
-	LOG_TODO("should allow user to specify stage masks");
+	LOG_TODO("should allow user to specify stage masks")
 	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), {}, {}, { b });
 
 	vk::ImageResolve r;
