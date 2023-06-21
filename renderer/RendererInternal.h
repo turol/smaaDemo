@@ -177,15 +177,15 @@ using VertexShaderHandle   = Handle<VertexShader>;
 
 
 struct ShaderSourceData {
-	int64_t            timestamp;
+	int64_t            timestamp  = 0;
 	std::vector<char>  contents;
 };
 
 
 struct ShaderCacheKey {
 	std::string     filename;
-	ShaderStage     stage;
-	ShaderLanguage  language;
+	ShaderStage     stage     = ShaderStage::Vertex;
+	ShaderLanguage  language  = ShaderLanguage::GLSL;
 	ShaderMacros    macros;
 
 	bool operator==(const ShaderCacheKey &other) const {
@@ -211,7 +211,7 @@ struct ShaderCacheKey {
 
 
 struct ShaderCacheData {
-	uint64_t              spirvHash;
+	uint64_t              spirvHash  = 0;
 	// can't store SPIR-V bytecode here because we don't want to
 	// unconditionally load it on initial cache load
 	HashSet<std::string>  includes;
@@ -276,7 +276,7 @@ namespace renderer {
 struct RendererBase {
 	struct Includer final : public glslang::TShader::Includer {
 		// not owned
-		RendererBase         *renderer;
+		RendererBase         *renderer  = nullptr;
 		HashSet<std::string> included;
 
 
@@ -414,8 +414,8 @@ struct RendererBase {
 
 
 struct DSIndex {
-	uint8_t set;
-	uint8_t binding;
+	uint8_t set      = 0;
+	uint8_t binding  = 0;
 
 
 	bool operator==(const DSIndex &other) const {
