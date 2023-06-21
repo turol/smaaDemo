@@ -29,16 +29,13 @@ namespace renderer {
 
 
 struct Buffer {
-	bool          ringBufferAlloc;
-	unsigned int  beginOffs;
-	unsigned int  size;
+	bool          ringBufferAlloc  = false;
+	unsigned int  beginOffs        = 0;
+	unsigned int  size             = 0;
 	// TODO: usage flags for debugging
 
 
 	Buffer()
-	: ringBufferAlloc(false)
-	, beginOffs(0)
-	, size(0)
 	{
 	}
 
@@ -364,14 +361,12 @@ struct VertexShader {
 
 
 struct Frame : public FrameBase {
-	bool                       outstanding;
-	unsigned int               usedRingBufPtr;
+	bool                       outstanding     = false;
+	unsigned int               usedRingBufPtr  = 0;
 	std::vector<BufferHandle>  ephemeralBuffers;
 
 
 	Frame()
-	: outstanding(false)
-	, usedRingBufPtr(0)
 	{}
 
 	~Frame() {
