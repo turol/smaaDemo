@@ -148,9 +148,9 @@ private:
 
 
 	struct ExternalRT {
-		Format              format;
-		Layout              initialLayout;
-		Layout              finalLayout;
+		Format              format         = Format::Invalid;
+		Layout              initialLayout  = Layout::Undefined;
+		Layout              finalLayout    = Layout::Undefined;
 
 		// not owned by us
 		// only valid during frame
@@ -380,16 +380,16 @@ private:
 
 
 	struct Blit {
-		RT             source;
-		RT             dest;
-		Layout         finalLayout;
+		RT             source       = Default<RT>::value;
+		RT             dest         = Default<RT>::value;
+		Layout         finalLayout  = Layout::Undefined;
 	};
 
 
 	struct ResolveMSAA {
-		RT             source;
-		RT             dest;
-		Layout         finalLayout;
+		RT             source       = Default<RT>::value;
+		RT             dest         = Default<RT>::value;
+		Layout         finalLayout  = Layout::Undefined;
 	};
 
 	struct Pipeline {
