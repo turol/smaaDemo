@@ -1815,7 +1815,7 @@ void SMAADemo::rebuildRenderGraph() {
 				DemoRenderGraph::PassDesc desc;
 				desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
 				    .inputRendertarget(Rendertargets::MainColor)
-					.name("FXAA");
+				    .name("FXAA");
 
 				renderGraph.renderPass(RenderPasses::FXAA, desc, std::bind(&SMAADemo::renderFXAA, this, _1, _2));
 			} break;

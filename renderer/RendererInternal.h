@@ -183,10 +183,10 @@ struct ShaderSourceData {
 
 
 struct ShaderCacheKey {
-	std::string   filename;
-	ShaderStage   stage;
+	std::string     filename;
+	ShaderStage     stage;
 	ShaderLanguage  language;
-	ShaderMacros  macros;
+	ShaderMacros    macros;
 
 	bool operator==(const ShaderCacheKey &other) const {
 		if (stage != other.stage) {
@@ -428,7 +428,7 @@ struct DSIndex {
 };
 
 
-}		// namespace renderer
+}  // namespace renderer
 
 
 namespace std {
