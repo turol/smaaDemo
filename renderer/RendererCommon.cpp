@@ -56,9 +56,9 @@ auto format_as(ShaderStage stage) {
 
 auto format_as(ShaderCacheKey cacheKey) {
 	if (!cacheKey.macros.empty()) {
-		return fmt::format("{} {} {} {}", cacheKey.stage, cacheKey.language, cacheKey.filename, renderer::RendererBase::formatMacros(cacheKey.macros));
+		return fmt::format("{} {} {} {} {}", cacheKey.stage, cacheKey.language, cacheKey.filename, magic_enum::enum_name(cacheKey.spirvEnvironment), renderer::RendererBase::formatMacros(cacheKey.macros));
 	} else {
-		return fmt::format("{} {} {}", cacheKey.stage, cacheKey.language, cacheKey.filename);
+		return fmt::format("{} {} {} {}", cacheKey.stage, cacheKey.language, cacheKey.filename, magic_enum::enum_name(cacheKey.spirvEnvironment));
 	}
 }
 
@@ -394,7 +394,7 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 // increase this when the shader compiler options change
 // so that the same source generates a different SPV
 // or the cache json format changes
-const unsigned int shaderVersion = 109;
+const unsigned int shaderVersion = 110;
 
 
 // helper for storing in cache .json
@@ -486,6 +486,7 @@ void to_json(nlohmann::json &j, const ShaderCacheKey &key) {
 		  { "name",   key.filename }
 		, { "stage",  key.stage  }
 		, { "language",  key.language  }
+		, { "spirv_environment",  magic_enum::enum_name(key.spirvEnvironment)  }
 		, { "macros", key.macros }
 	};
 }
@@ -495,6 +496,11 @@ void from_json(const nlohmann::json &j, ShaderCacheKey &key) {
 	j.at("name").get_to(key.filename);
 	j.at("stage").get_to(key.stage);
 	j.at("language").get_to(key.language);
+	{
+		std::string_view env;
+		j.at("spirv_environment").get_to(env);
+		key.spirvEnvironment = *magic_enum::enum_cast<spv_target_env>(env);
+	}
 	j.at("macros").get_to(key.macros);
 }
 
@@ -679,6 +685,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, Shader
 	}
 	cacheKey.stage  = stage;
 	cacheKey.language = shaderLanguage;
+	cacheKey.spirvEnvironment = spirvEnvironment;
 	cacheKey.macros = macros;
 
 	if (!skipShaderCache) {

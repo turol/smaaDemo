@@ -186,6 +186,7 @@ struct ShaderCacheKey {
 	std::string     filename;
 	ShaderStage     stage     = ShaderStage::Vertex;
 	ShaderLanguage  language  = ShaderLanguage::GLSL;
+	spv_target_env  spirvEnvironment  = SPV_ENV_UNIVERSAL_1_0;
 	ShaderMacros    macros;
 
 	bool operator==(const ShaderCacheKey &other) const {
@@ -194,6 +195,10 @@ struct ShaderCacheKey {
 		}
 
 		if (language != other.language) {
+			return false;
+		}
+
+		if (spirvEnvironment != other.spirvEnvironment) {
 			return false;
 		}
 
@@ -261,6 +266,7 @@ namespace std {
 			h = combineHashes(h, hash<std::string>()(key.filename));
 			h = combineHashes(h, hash<int>()(magic_enum::enum_integer(key.language)));
 			h = combineHashes(h, hash<int>()(magic_enum::enum_integer(key.stage)));
+			h = combineHashes(h, hash<int>()(magic_enum::enum_integer(key.spirvEnvironment)));
 			h = combineHashes(h, hash<renderer::ShaderMacros>()(key.macros));
 			return h;
 		}
