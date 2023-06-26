@@ -22,6 +22,7 @@
 // SOFTWARE.
 
 #include <iostream>
+
 #define MAGIC_ENUM_ENABLE_HASH
 #include <magic_enum_switch.hpp>
 
@@ -38,8 +39,8 @@ constexpr std::string_view DoWork<Color::GREEN>() {
 }
 
 // Helper type for the visitor pattern.
-template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+template <typename... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+template <typename... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 int main() {
   Color c = Color::RED;

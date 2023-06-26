@@ -5,7 +5,7 @@
 // | |  | | (_| | (_| | | (__  | |____| | | | |_| | | | | | | | |____|_|   |_|
 // |_|  |_|\__,_|\__, |_|\___| |______|_| |_|\__,_|_| |_| |_|  \_____|
 //                __/ | https://github.com/Neargye/magic_enum
-//               |___/  version 0.9.1
+//               |___/  version 0.9.2
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
@@ -142,7 +142,7 @@ constexpr decltype(auto) constexpr_switch(F&& f, E value, Def&& def) {
 
 } // namespace magic_enum::detail
 
-template <typename Result = detail::default_result_type, typename E, auto S = detail::subtype_v<E>, typename F, typename R = detail::result_t<E, S, Result, F>>
+template <typename Result = detail::default_result_type, typename E, detail::enum_subtype S = detail::subtype_v<E>, typename F, typename R = detail::result_t<E, S, Result, F>>
 constexpr decltype(auto) enum_switch(F&& f, E value) {
   using D = std::decay_t<E>;
   static_assert(std::is_enum_v<D>, "magic_enum::enum_switch requires enum type.");
@@ -165,7 +165,7 @@ constexpr decltype(auto) enum_switch(F&& f, E value) {
   return enum_switch<Result, E, S>(std::forward<F>(f), value);
 }
 
-template <typename Result, typename E, auto S = detail::subtype_v<E>, typename F, typename R = detail::result_t<E, S, Result, F>>
+template <typename Result, typename E, detail::enum_subtype S = detail::subtype_v<E>, typename F, typename R = detail::result_t<E, S, Result, F>>
 constexpr decltype(auto) enum_switch(F&& f, E value, Result&& result) {
   using D = std::decay_t<E>;
   static_assert(std::is_enum_v<D>, "magic_enum::enum_switch requires enum type.");
