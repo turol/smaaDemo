@@ -1,7 +1,15 @@
+//  __  __             _        ______                          _____
+// |  \/  |           (_)      |  ____|                        / ____|_     _
+// | \  / | __ _  __ _ _  ___  | |__   _ __  _   _ _ __ ___   | |   _| |_ _| |_
+// | |\/| |/ _` |/ _` | |/ __| |  __| | '_ \| | | | '_ ` _ \  | |  |_   _|_   _|
+// | |  | | (_| | (_| | | (__  | |____| | | | |_| | | | | | | | |____|_|   |_|
+// |_|  |_|\__,_|\__, |_|\___| |______|_| |_|\__,_|_| |_| |_|  \_____|
+//                __/ | https://github.com/Neargye/magic_enum
+//               |___/  version 0.9.3
+//
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2019 - 2023 Daniil Goncharov <neargye@gmail.com>.
-// Copyright (c) 2022 - 2023 Bela Schaum <schaumb@gmail.com>.
 //
 // Permission is hereby  granted, free of charge, to any  person obtaining a copy
 // of this software and associated  documentation files (the "Software"), to deal
@@ -21,36 +29,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#if defined(_MSC_VER)
-#  pragma warning(push)
-#  pragma warning(disable : 4244) // warning C4244: 'argument': conversion from 'const T' to 'unsigned int', possible loss of data.
-#endif
+#ifndef NEARGYE_MAGIC_ENUM_ALL_HPP
+#define NEARGYE_MAGIC_ENUM_ALL_HPP
 
-#include <iostream>
+#include "magic_enum.hpp"
+#include "magic_enum_containers.hpp"
+#include "magic_enum_flags.hpp"
+#include "magic_enum_format.hpp"
+#include "magic_enum_fuse.hpp"
+#include "magic_enum_iostream.hpp"
+#include "magic_enum_switch.hpp"
+#include "magic_enum_utility.hpp"
 
-#include <magic_enum_containers.hpp>
-
-enum class Color { RED = 1, GREEN = 2, BLUE = 4 };
-template <>
-struct magic_enum::customize::enum_range<Color> {
-  static constexpr bool is_flags = true;
-};
-
-int main() {
-
-  std::cout << std::boolalpha;
-  magic_enum::containers::set color_set {Color::RED, Color::GREEN, Color::BLUE};
-  std::cout << color_set.empty() << std::endl; // false
-  std::cout << color_set.size() << std::endl; // 3
-
-  color_set.clear();
-  std::cout << color_set.empty() << std::endl; // true
-  std::cout << color_set.size() << std::endl; // 0
-
-  color_set.insert(Color::GREEN);
-  color_set.insert(Color::BLUE);
-  std::cout << color_set.empty() << std::endl; // false
-  std::cout << color_set.size() << std::endl; // 2
-
-  return 0;
-}
+#endif // NEARGYE_MAGIC_ENUM_ALL_HPP

@@ -30,6 +30,7 @@
 #include <magic_enum.hpp>
 #include <magic_enum_fuse.hpp>
 #include <magic_enum_iostream.hpp>
+#include <magic_enum_utility.hpp>
 
 #include <array>
 #include <cctype>
@@ -140,14 +141,14 @@ TEST_CASE("enum_cast") {
     REQUIRE_FALSE(enum_cast<number>("four").has_value());
     REQUIRE_FALSE(enum_cast<number>("None").has_value());
 
-    REQUIRE(magic_enum::enum_cast<crc_hack>("b5a7b602ab754d7ab30fb42c4fb28d82").has_value());
-    REQUIRE_FALSE(magic_enum::enum_cast<crc_hack>("d19f2e9e82d14b96be4fa12b8a27ee9f").has_value());
+    REQUIRE(enum_cast<crc_hack>("b5a7b602ab754d7ab30fb42c4fb28d82").has_value());
+    REQUIRE_FALSE(enum_cast<crc_hack>("d19f2e9e82d14b96be4fa12b8a27ee9f").has_value());
 
-    constexpr auto crc = magic_enum::enum_cast<crc_hack_2>("b5a7b602ab754d7ab30fb42c4fb28d82");
+    constexpr auto crc = enum_cast<crc_hack_2>("b5a7b602ab754d7ab30fb42c4fb28d82");
     REQUIRE(crc.value() == crc_hack_2::b5a7b602ab754d7ab30fb42c4fb28d82);
-    REQUIRE(magic_enum::enum_cast<crc_hack_2>("d19f2e9e82d14b96be4fa12b8a27ee9f").value() == crc_hack_2::d19f2e9e82d14b96be4fa12b8a27ee9f);
+    REQUIRE(enum_cast<crc_hack_2>("d19f2e9e82d14b96be4fa12b8a27ee9f").value() == crc_hack_2::d19f2e9e82d14b96be4fa12b8a27ee9f);
 
-    REQUIRE(magic_enum::enum_cast<BoolTest>("Nay").has_value());
+    REQUIRE(enum_cast<BoolTest>("Nay").has_value());
   }
 
   SECTION("integer") {
@@ -408,7 +409,7 @@ TEST_CASE("enum_value") {
 }
 
 TEST_CASE("enum_values") {
-  REQUIRE(std::is_same_v<decltype(magic_enum::enum_values<Color>()), const std::array<Color, 3>&>);
+  REQUIRE(std::is_same_v<decltype(enum_values<Color>()), const std::array<Color, 3>&>);
 
   constexpr auto& s1 = enum_values<Color&>();
   REQUIRE(s1 == std::array<Color, 3>{{Color::RED, Color::GREEN, Color::BLUE}});
@@ -648,7 +649,7 @@ TEST_CASE("enum_name") {
 }
 
 TEST_CASE("enum_names") {
-  REQUIRE(std::is_same_v<decltype(magic_enum::enum_names<Color>()), const std::array<std::string_view, 3>&>);
+  REQUIRE(std::is_same_v<decltype(enum_names<Color>()), const std::array<std::string_view, 3>&>);
 
   constexpr auto& s1 = enum_names<Color&>();
   REQUIRE(s1 == std::array<std::string_view, 3>{{"red", "GREEN", "BLUE"}});
@@ -664,7 +665,7 @@ TEST_CASE("enum_names") {
 }
 
 TEST_CASE("enum_entries") {
-  REQUIRE(std::is_same_v<decltype(magic_enum::enum_entries<Color>()), const std::array<std::pair<Color, std::string_view>, 3>&>);
+  REQUIRE(std::is_same_v<decltype(enum_entries<Color>()), const std::array<std::pair<Color, std::string_view>, 3>&>);
 
   constexpr auto& s1 = enum_entries<Color&>();
   REQUIRE(s1 == std::array<std::pair<Color, std::string_view>, 3>{{{Color::RED, "red"}, {Color::GREEN, "GREEN"}, {Color::BLUE, "BLUE"}}});
@@ -843,6 +844,38 @@ TEST_CASE("enum_type_name") {
   REQUIRE(enum_type_name<const Numbers>() == "Numbers");
   REQUIRE(enum_type_name<const Directions&>() == "Directions");
   REQUIRE(enum_type_name<number>() == "number");
+
+  REQUIRE(enum_type_name<lt1>() == "lt1");
+  REQUIRE(enum_type_name<lt2>() == "lt2");
+  REQUIRE(enum_type_name<lt3>() == "lt3");
+  REQUIRE(enum_type_name<lt4>() == "lt4");
+  REQUIRE(enum_type_name<foo1::lt5>() == "lt5");
+  REQUIRE(enum_type_name<foo2::lt6>() == "lt6");
+  REQUIRE(enum_type_name<decltype(foo2::s6)>() == "lt6");
+
+  REQUIRE(enum_type_name<boo1::lt1>() == "lt1");
+  REQUIRE(enum_type_name<boo1::lt2>() == "lt2");
+  REQUIRE(enum_type_name<boo1::lt3>() == "lt3");
+  REQUIRE(enum_type_name<boo1::lt4>() == "lt4");
+  REQUIRE(enum_type_name<boo1::foo1::lt5>() == "lt5");
+  REQUIRE(enum_type_name<boo1::foo2::lt6>() == "lt6");
+  REQUIRE(enum_type_name<decltype(boo1::foo2::s6)>() == "lt6");
+
+  REQUIRE(enum_type_name<boo2::boo3::lt1>() == "lt1");
+  REQUIRE(enum_type_name<boo2::boo3::lt2>() == "lt2");
+  REQUIRE(enum_type_name<boo2::boo3::lt3>() == "lt3");
+  REQUIRE(enum_type_name<boo2::boo3::lt4>() == "lt4");
+  REQUIRE(enum_type_name<boo2::boo3::foo1::lt5>() == "lt5");
+  REQUIRE(enum_type_name<boo2::boo3::foo2::lt6>() == "lt6");
+  REQUIRE(enum_type_name<decltype(boo2::boo3::foo2::s6)>() == "lt6");
+
+  REQUIRE(enum_type_name<a_lt1>() == "a_lt1");
+  REQUIRE(enum_type_name<a_lt2>() == "a_lt2");
+  REQUIRE(enum_type_name<a_lt3>() == "a_lt3");
+  REQUIRE(enum_type_name<a_lt4>() == "a_lt4");
+  REQUIRE(enum_type_name<a_foo1::a_lt5>() == "a_lt5");
+  REQUIRE(enum_type_name<a_foo2::a_lt6>() == "a_lt6");
+  REQUIRE(enum_type_name<decltype(a_foo2::s6)>() == "a_lt6");
 }
 
 #if defined(MAGIC_ENUM_SUPPORTED_ALIASES)
@@ -879,7 +912,7 @@ TEST_CASE("extrema") {
   };
 
   REQUIRE(magic_enum::enum_name<BadColor>(BadColor::NONE).empty());
-  REQUIRE_FALSE(magic_enum::enum_cast<BadColor>(std::numeric_limits<std::uint64_t>::max()).has_value());
+  REQUIRE_FALSE(enum_cast<BadColor>(std::numeric_limits<std::uint64_t>::max()).has_value());
   REQUIRE_FALSE(magic_enum::enum_contains<BadColor>(std::numeric_limits<std::uint64_t>::max()));
   REQUIRE_FALSE(magic_enum::enum_contains<BadColor>(BadColor::NONE));
 
@@ -1090,10 +1123,10 @@ TEST_CASE("constexpr_for") {
 #endif
 
 static int switch_case_2d(Color color, Directions direction) {
-  switch (magic_enum::enum_fuse(color, direction).value()) {
-    case magic_enum::enum_fuse(Color::RED, Directions::Up).value():
+  switch (enum_fuse(color, direction).value()) {
+    case enum_fuse(Color::RED, Directions::Up).value():
       return 1;
-    case magic_enum::enum_fuse(Color::BLUE, Directions::Down).value():
+    case enum_fuse(Color::BLUE, Directions::Down).value():
       return 2;
     default:
       return 0;
@@ -1103,10 +1136,10 @@ static int switch_case_2d(Color color, Directions direction) {
 enum class Index { zero = 0, one = 1, two = 2 };
 
 static int switch_case_3d(Color color, Directions direction, Index index) {
-  switch (magic_enum::enum_fuse(color, direction, index).value()) {
-    case magic_enum::enum_fuse(Color::RED, Directions::Up, Index::zero).value():
+  switch (enum_fuse(color, direction, index).value()) {
+    case enum_fuse(Color::RED, Directions::Up, Index::zero).value():
       return 1;
-    case magic_enum::enum_fuse(Color::BLUE, Directions::Up, Index::zero).value():
+    case enum_fuse(Color::BLUE, Directions::Up, Index::zero).value():
       return 2;
     default:
       return 0;
@@ -1140,3 +1173,65 @@ TEST_CASE("format-base") {
 }
 
 #endif
+
+TEST_CASE("enum_next_value") {
+  REQUIRE(enum_next_value(Color::RED) == Color::GREEN);
+  REQUIRE(enum_next_value(Color::RED, 2) == Color::BLUE);
+  REQUIRE(enum_next_value(Color::RED, 1) == Color::GREEN);
+  REQUIRE(enum_next_value(Color::RED, 0) == Color::RED);
+  REQUIRE(enum_next_value(Color::BLUE, -2) == Color::RED);
+  REQUIRE(enum_next_value(Color::BLUE, -1) == Color::GREEN);
+  REQUIRE_FALSE(enum_next_value(Color::BLUE).has_value());
+  REQUIRE_FALSE(enum_next_value(Color::RED, -1).has_value());
+  REQUIRE_FALSE(enum_next_value(Color::RED, 10).has_value());
+}
+
+TEST_CASE("enum_next_value_circular") {
+  REQUIRE(enum_next_value_circular(Color::RED) == Color::GREEN);
+  REQUIRE(enum_next_value_circular(Color::RED, 2) == Color::BLUE);
+  REQUIRE(enum_next_value_circular(Color::RED, 1) == Color::GREEN);
+  REQUIRE(enum_next_value_circular(Color::RED, 0) == Color::RED);
+  REQUIRE(enum_next_value_circular(Color::BLUE, -2) == Color::RED);
+  REQUIRE(enum_next_value_circular(Color::BLUE, -1) == Color::GREEN);
+  REQUIRE(enum_next_value_circular(Color::BLUE) == Color::RED);
+  REQUIRE(enum_next_value_circular(Color::BLUE, 4) == Color::RED);
+  REQUIRE(enum_next_value_circular(Color::BLUE, 3) == Color::BLUE);
+  REQUIRE(enum_next_value_circular(Color::BLUE, 2) == Color::GREEN);
+  REQUIRE(enum_next_value_circular(Color::BLUE, 1) == Color::RED);
+  REQUIRE(enum_next_value_circular(Color::BLUE, 0) == Color::BLUE);
+  REQUIRE(enum_next_value_circular(Color::RED, -1) == Color::BLUE);
+  REQUIRE(enum_next_value_circular(Color::RED, -2) == Color::GREEN);
+  REQUIRE(enum_next_value_circular(Color::RED, -3) == Color::RED);
+  REQUIRE(enum_next_value_circular(Color::RED, -4) == Color::BLUE);
+}
+
+TEST_CASE("enum_prev_value") {
+  REQUIRE(enum_prev_value(Color::BLUE) == Color::GREEN);
+  REQUIRE(enum_prev_value(Color::BLUE, 2) == Color::RED);
+  REQUIRE(enum_prev_value(Color::BLUE, 1) == Color::GREEN);
+  REQUIRE(enum_prev_value(Color::RED, -2) == Color::BLUE);
+  REQUIRE(enum_prev_value(Color::RED, -1) == Color::GREEN);
+  REQUIRE(enum_prev_value(Color::BLUE, 0) == Color::BLUE);
+  REQUIRE_FALSE(enum_prev_value(Color::RED).has_value());
+  REQUIRE_FALSE(enum_prev_value(Color::BLUE, -1).has_value());
+  REQUIRE_FALSE(enum_prev_value(Color::BLUE, 10).has_value());
+}
+
+TEST_CASE("enum_prev_value_circular") {
+  REQUIRE(enum_prev_value_circular(Color::RED) == Color::BLUE);
+  REQUIRE(enum_prev_value_circular(Color::RED, 2) == Color::GREEN);
+  REQUIRE(enum_prev_value_circular(Color::RED, 1) == Color::BLUE);
+  REQUIRE(enum_prev_value_circular(Color::RED, 0) == Color::RED);
+  REQUIRE(enum_prev_value_circular(Color::BLUE, -2) == Color::GREEN);
+  REQUIRE(enum_prev_value_circular(Color::BLUE, -1) == Color::RED);
+  REQUIRE(enum_prev_value_circular(Color::BLUE) == Color::GREEN);
+  REQUIRE(enum_prev_value_circular(Color::BLUE, 4) == Color::GREEN);
+  REQUIRE(enum_prev_value_circular(Color::BLUE, 3) == Color::BLUE);
+  REQUIRE(enum_prev_value_circular(Color::BLUE, 2) == Color::RED);
+  REQUIRE(enum_prev_value_circular(Color::BLUE, 1) == Color::GREEN);
+  REQUIRE(enum_prev_value_circular(Color::BLUE, 0) == Color::BLUE);
+  REQUIRE(enum_prev_value_circular(Color::RED, -1) == Color::GREEN);
+  REQUIRE(enum_prev_value_circular(Color::RED, -2) == Color::BLUE);
+  REQUIRE(enum_prev_value_circular(Color::RED, -3) == Color::RED);
+  REQUIRE(enum_prev_value_circular(Color::RED, -4) == Color::GREEN);
+}

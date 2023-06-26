@@ -31,12 +31,14 @@ example/example_custom_name.cpp
 example/example_nonascii_name.cpp
 example/example_switch.cpp
 include/magic_enum.hpp
+include/magic_enum_all.hpp
 include/magic_enum_containers.hpp
 include/magic_enum_flags.hpp
 include/magic_enum_format.hpp
 include/magic_enum_fuse.hpp
 include/magic_enum_iostream.hpp
 include/magic_enum_switch.hpp
+include/magic_enum_utility.hpp
 meson.build
 meson_options.txt
 package.xml

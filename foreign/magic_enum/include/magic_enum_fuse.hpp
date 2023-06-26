@@ -5,7 +5,7 @@
 // | |  | | (_| | (_| | | (__  | |____| | | | |_| | | | | | | | |____|_|   |_|
 // |_|  |_|\__,_|\__, |_|\___| |______|_| |_|\__,_|_| |_| |_|  \_____|
 //                __/ | https://github.com/Neargye/magic_enum
-//               |___/  version 0.9.2
+//               |___/  version 0.9.3
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
@@ -84,7 +84,7 @@ template <detail::enum_subtype S, typename... Es>
 #else
   const auto fuse = detail::typesafe_fuse_enum<S, std::decay_t<Es>...>(values...);
 #endif
-  return assert(fuse), fuse;
+  return MAGIC_ENUM_ASSERT(fuse), fuse;
 }
 
 // Returns a bijective mix of several enum values. This can be used to emulate 2D switch/case statements.

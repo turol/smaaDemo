@@ -5,7 +5,7 @@
 // | |  | | (_| | (_| | | (__  | |____| | | | |_| | | | | | | | |____|_|   |_|
 // |_|  |_|\__,_|\__, |_|\___| |______|_| |_|\__,_|_| |_| |_|  \_____|
 //                __/ | https://github.com/Neargye/magic_enum
-//               |___/  version 0.9.2
+//               |___/  version 0.9.3
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
@@ -33,19 +33,25 @@
 #ifndef NEARGYE_MAGIC_ENUM_CONTAINERS_HPP
 #define NEARGYE_MAGIC_ENUM_CONTAINERS_HPP
 
-#include <stdexcept>
-
 #include "magic_enum.hpp"
+
+#if !defined(MAGIC_ENUM_NO_EXCEPTION) && (defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND))
+#  include <stdexcept>
+#  define MAGIC_ENUM_THROW(...) throw (__VA_ARGS__)
+#else
+#  include <cstdlib>
+#  define MAGIC_ENUM_THROW(...) std::abort()
+#endif
 
 namespace magic_enum::containers {
 
 namespace detail {
 
 template <typename T, typename = void>
-[[maybe_unused]] constexpr static bool is_transparent_v{};
+static constexpr bool is_transparent_v{};
 
 template <typename T>
-constexpr static bool is_transparent_v<T, std::void_t<typename T::is_transparent>>{true};
+static constexpr bool is_transparent_v<T, std::void_t<typename T::is_transparent>>{true};
 
 template <typename Eq = std::equal_to<>, typename T1, typename T2>
 constexpr bool equal(T1&& t1, T2&& t2, Eq&& eq = {}) {
@@ -94,7 +100,6 @@ constexpr std::size_t popcount(T x) noexcept {
 template <typename Cmp = std::less<>, typename ForwardIt, typename E>
 constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, E&& e, Cmp&& comp = {}) {
   auto count = std::distance(first, last);
-
   for (auto it = first; count > 0;) {
     auto step = count / 2;
     std::advance(it, step);
@@ -115,8 +120,8 @@ constexpr auto equal_range(BidirIt begin, BidirIt end, E&& e, Cmp&& comp = {}) {
 }
 
 template <typename E = void, typename Cmp = std::less<E>, typename = void>
-struct indexing {
-  [[nodiscard]] constexpr static auto get_indices() noexcept {
+class indexing {
+  [[nodiscard]] static constexpr auto get_indices() noexcept {
     // reverse result index mapping
     std::array<std::size_t, enum_count<E>()> rev_res{};
 
@@ -150,59 +155,72 @@ struct indexing {
     return std::pair{sorted_values, res};
   }
 
-  constexpr static inline std::array<E, enum_count<E>()> values = get_indices().first;
-  constexpr static inline const std::array<E, enum_count<E>()>* values_v = &values;
-  constexpr static inline std::array<std::size_t, enum_count<E>()> reindex = get_indices().second;
+  static constexpr auto indices = get_indices();
 
-  [[nodiscard]] constexpr inline optional<std::size_t> operator()(E val) const noexcept {
-    if (auto opt = enum_index(val)) {
-      return reindex[*opt];
+ public:
+  [[nodiscard]] static constexpr const E* begin() noexcept { return indices.first.data(); }
+
+  [[nodiscard]] static constexpr const E* end() noexcept { return indices.first.data() + indices.first.size(); }
+
+  [[nodiscard]] static constexpr const E* it(std::size_t i) noexcept { return indices.first.data() + i; }
+
+  [[nodiscard]] static constexpr optional<std::size_t> at(E val) noexcept {
+    if (auto i = enum_index(val)) {
+      return indices.second[*i];
     }
     return {};
   }
 };
 
-template <typename E, typename Less>
-struct indexing<E, Less, std::enable_if_t<std::is_enum_v<std::decay_t<E>> && (std::is_same_v<Less, std::less<E>> || std::is_same_v<Less, std::less<>>)>> {
-  constexpr static inline const std::array<E, enum_count<E>()>* values_v = &enum_values<E>();
-  [[nodiscard]] constexpr inline optional<std::size_t> operator()(E val) const noexcept { return enum_index(val); }
+template <typename E, typename Cmp>
+class indexing<E, Cmp, std::enable_if_t<std::is_enum_v<std::decay_t<E>> && (std::is_same_v<Cmp, std::less<E>> || std::is_same_v<Cmp, std::less<>>)>> {
+   static constexpr auto& values = enum_values<E>();
+
+ public:
+   [[nodiscard]] static constexpr const E* begin() noexcept { return values.data(); }
+
+   [[nodiscard]] static constexpr const E* end() noexcept { return values.data() + values.size(); }
+
+  [[nodiscard]] static constexpr const E* it(std::size_t i) noexcept { return values.data() + i; }
+
+  [[nodiscard]] static constexpr optional<std::size_t> at(E val) noexcept { return enum_index(val); }
 };
 
-template <typename Less>
-struct indexing<void, Less, void> {
+template <typename Cmp>
+struct indexing<void, Cmp, void> {
   using is_transparent = std::true_type;
+
   template <typename E>
-  [[nodiscard]] constexpr inline optional<std::size_t> operator()(E val) const noexcept {
-    constexpr indexing<E, Less> ix{};
-    return ix(val);
+  [[nodiscard]] static constexpr optional<std::size_t> at(E val) noexcept {
+    return indexing<E, Cmp>::at(val);
   }
 };
 
-template <typename E = void, typename OP = std::less<>, typename = void>
+template <typename E = void, typename Cmp = std::less<>, typename = void>
 struct name_sort_impl {
-  [[nodiscard]] constexpr inline bool operator()(E e1, E e2) const noexcept { return OP{}(enum_name(e1), enum_name(e2)); }
+  [[nodiscard]] constexpr bool operator()(E e1, E e2) const noexcept { return Cmp{}(enum_name(e1), enum_name(e2)); }
 };
 
-template <typename OP>
-struct name_sort_impl<void, OP> {
+template <typename Cmp>
+struct name_sort_impl<void, Cmp> {
   using is_transparent = std::true_type;
-  template <typename S = OP, typename = void>
-  struct FullCmp : S {};
 
-  template <typename S>
-  struct FullCmp<S, std::enable_if_t<!std::is_invocable_v<S, string_view, string_view> && std::is_invocable_v<S, char_type, char_type>>> {
-    [[nodiscard]] constexpr inline bool operator()(string_view s1, string_view s2) const noexcept { return lexicographical_compare<S>(s1, s2); }
+  template <typename C = Cmp, typename = void>
+  struct FullCmp : C {};
+
+  template <typename C>
+  struct FullCmp<C, std::enable_if_t<!std::is_invocable_v<C, string_view, string_view> && std::is_invocable_v<C, char_type, char_type>>> {
+    [[nodiscard]] constexpr bool operator()(string_view s1, string_view s2) const noexcept { return lexicographical_compare<C>(s1, s2); }
   };
 
   template <typename E1, typename E2>
-  [[nodiscard]] constexpr inline std::enable_if_t<
+  [[nodiscard]] constexpr std::enable_if_t<
       // at least one of need to be an enum type
-      (std::is_enum_v<std::decay_t<E1>> || std::is_enum_v<std::decay_t<E2>>)&&
+      (std::is_enum_v<std::decay_t<E1>> || std::is_enum_v<std::decay_t<E2>>) &&
       // if both is enum, only accept if the same enum
-      (!std::is_enum_v<std::decay_t<E1>> || !std::is_enum_v<std::decay_t<E2>> || std::is_same_v<E1, E2>)&&
+      (!std::is_enum_v<std::decay_t<E1>> || !std::is_enum_v<std::decay_t<E2>> || std::is_same_v<E1, E2>) &&
       // is invocable with comparator
-      (std::is_invocable_r_v<bool, FullCmp<>, std::conditional_t<std::is_enum_v<std::decay_t<E1>>, string_view, E1>,
-                             std::conditional_t<std::is_enum_v<std::decay_t<E2>>, string_view, E2>>),
+      (std::is_invocable_r_v<bool, FullCmp<>, std::conditional_t<std::is_enum_v<std::decay_t<E1>>, string_view, E1>, std::conditional_t<std::is_enum_v<std::decay_t<E2>>, string_view, E2>>),
       bool>
   operator()(E1 e1, E2 e2) const noexcept {
     using D1 = std::decay_t<E1>;
@@ -242,12 +260,9 @@ struct FilteredIterator {
   constexpr FilteredIterator(FilteredIterator&&) noexcept = default;
   constexpr FilteredIterator& operator=(FilteredIterator&&) noexcept = default;
 
-  template <typename OtherParent, typename OtherIterator,
-            typename = std::enable_if_t<std::is_convertible_v<OtherParent, Parent> && std::is_convertible_v<OtherIterator, Iterator>>*>
+  template <typename OtherParent, typename OtherIterator, typename = std::enable_if_t<std::is_convertible_v<OtherParent, Parent> && std::is_convertible_v<OtherIterator, Iterator>>*>
   constexpr explicit FilteredIterator(const FilteredIterator<OtherParent, OtherIterator, Getter, Predicate>& other)
       : parent(other.parent), first(other.first), last(other.last), current(other.current), getter(other.getter), predicate(other.predicate) {}
-
-  ~FilteredIterator() = default;
 
   constexpr FilteredIterator(Parent p, Iterator begin, Iterator end, Iterator curr, Getter getter = {}, Predicate pred = {})
       : parent(p), first(std::move(begin)), last(std::move(end)), current(std::move(curr)), getter{std::move(getter)}, predicate{std::move(pred)} {
@@ -294,18 +309,20 @@ struct FilteredIterator {
 } // namespace detail
 
 template <typename E = void>
-using name_less [[maybe_unused]] = detail::name_sort_impl<E>;
-template <typename E = void>
-using name_greater [[maybe_unused]] = detail::name_sort_impl<E, std::greater<>>;
+using name_less = detail::name_sort_impl<E>;
 
-using name_less_ci [[maybe_unused]] = detail::name_sort_impl<void, magic_enum::detail::case_insensitive<std::less<>>>;
-using name_greater_ci [[maybe_unused]] = detail::name_sort_impl<void, magic_enum::detail::case_insensitive<std::greater<>>>;
+template <typename E = void>
+using name_greater = detail::name_sort_impl<E, std::greater<>>;
+
+using name_less_case_insensitive = detail::name_sort_impl<void, magic_enum::detail::case_insensitive<std::less<>>>;
+
+using name_greater_case_insensitive = detail::name_sort_impl<void, magic_enum::detail::case_insensitive<std::greater<>>>;
 
 template <typename E = void>
 using default_indexing = detail::indexing<E>;
 
 template <typename Cmp = std::less<>>
-using comparator_indexing [[maybe_unused]] = detail::indexing<void, Cmp>;
+using comparator_indexing = detail::indexing<void, Cmp>;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                          ARRAY                                                            //
@@ -314,7 +331,7 @@ template <typename E, typename V, typename Index = default_indexing<E>>
 struct array {
   static_assert(std::is_enum_v<E>);
   static_assert(std::is_trivially_constructible_v<Index>);
-  static_assert(enum_count<E>() == 0 || Index{}(enum_values<E>().front())); // check Index is constexpr
+  static_assert(enum_count<E>() == 0 || Index::at(enum_values<E>().front())); // check Index is constexpr
 
   using index_type = Index;
   using container_type = std::array<V, enum_count<E>()>;
@@ -332,22 +349,28 @@ struct array {
   using const_reverse_iterator = typename container_type::const_reverse_iterator;
 
   constexpr reference at(E pos) {
-    if (auto index = index_type{}(pos)) {
+    if (auto index = index_type::at(pos)) {
       return a[*index];
     }
-    throw std::out_of_range("enum array::at: unrecognized position");
+    MAGIC_ENUM_THROW(std::out_of_range("magic_enum::containers::array::at Unrecognized position"));
   }
 
   constexpr const_reference at(E pos) const {
-    if (auto index = index_type{}(pos)) {
+    if (auto index = index_type::at(pos)) {
       return a[*index];
     }
-    throw std::out_of_range("enum array::at: unrecognized position");
+    MAGIC_ENUM_THROW(std::out_of_range("magic_enum::containers::array::at: Unrecognized position"));
   }
 
-  [[nodiscard]] constexpr reference operator[](E pos) noexcept { return a[*index_type{}(pos)]; }
+  [[nodiscard]] constexpr reference operator[](E pos) {
+    auto i = index_type::at(pos);
+    return MAGIC_ENUM_ASSERT(i), a[*i];
+  }
 
-  [[nodiscard]] constexpr const_reference operator[](E pos) const noexcept { return a[*index_type{}(pos)]; }
+  [[nodiscard]] constexpr const_reference operator[](E pos) const {
+    auto i = index_type::at(pos);
+    return MAGIC_ENUM_ASSERT(i), a[*i];
+  }
 
   [[nodiscard]] constexpr reference front() noexcept { return a.front(); }
 
@@ -398,7 +421,7 @@ struct array {
   }
 
   constexpr void swap(array& other) noexcept(std::is_nothrow_swappable_v<V>) {
-    for (std::size_t i{}; i < a.size(); ++i) {
+    for (std::size_t i = 0; i < a.size(); ++i) {
       auto v = std::move(other.a[i]);
       other.a[i] = std::move(a[i]);
       a[i] = std::move(v);
@@ -458,17 +481,17 @@ template <typename E, typename Index = default_indexing<E>>
 class bitset {
   static_assert(std::is_enum_v<E>);
   static_assert(std::is_trivially_constructible_v<Index>);
-  static_assert(enum_count<E>() == 0 || Index{}(enum_values<E>().front())); // check Index is constexpr
+  static_assert(enum_count<E>() == 0 || Index::at(enum_values<E>().front())); // check Index is constexpr
 
   using base_type = std::conditional_t<enum_count<E>() <= 8,  std::uint_least8_t,
                     std::conditional_t<enum_count<E>() <= 16, std::uint_least16_t,
                     std::conditional_t<enum_count<E>() <= 32, std::uint_least32_t,
                                                               std::uint_least64_t>>>;
 
-  constexpr static std::size_t bits_per_base = sizeof(base_type) * 8;
-  constexpr static std::size_t base_type_count = (enum_count<E>() > 0 ? (enum_count<E>() - 1) / bits_per_base + 1 : 0);
-  constexpr static std::size_t not_interested = base_type_count * bits_per_base - enum_count<E>();
-  constexpr static base_type last_value_max = (base_type{1} << (bits_per_base - not_interested)) - 1;
+  static constexpr std::size_t bits_per_base = sizeof(base_type) * 8;
+  static constexpr std::size_t base_type_count = (enum_count<E>() > 0 ? (enum_count<E>() - 1) / bits_per_base + 1 : 0);
+  static constexpr std::size_t not_interested = base_type_count * bits_per_base - enum_count<E>();
+  static constexpr base_type last_value_max = (base_type{1} << (bits_per_base - not_interested)) - 1;
 
   template <typename parent_t = bitset*>
   class reference_impl {
@@ -514,10 +537,10 @@ class bitset {
   [[nodiscard]] constexpr T to_(detail::raw_access_t) const {
     T res{};
     T flag{1};
-    for (std::size_t i{}; i < size(); ++i, flag <<= 1) {
+    for (std::size_t i = 0; i < size(); ++i, flag <<= 1) {
       if (const_reference{this, i}) {
         if (i >= sizeof(T) * 8) {
-          throw std::overflow_error("cannot represent enum in this type");
+          MAGIC_ENUM_THROW(std::overflow_error("magic_enum::containers::bitset::to: Cannot represent enum in this type"));
         }
         res |= flag;
       }
@@ -535,10 +558,10 @@ class bitset {
 
   constexpr explicit bitset(detail::raw_access_t, unsigned long long val) : a{{}} {
     unsigned long long bit{1};
-    for (std::size_t i{}; i < (sizeof(val) * 8); ++i, bit <<= 1) {
+    for (std::size_t i = 0; i < (sizeof(val) * 8); ++i, bit <<= 1) {
       if ((val & bit) > 0) {
         if (i >= enum_count<E>()) {
-          throw std::out_of_range("enum bitset::constructor: Upper bit set in raw number");
+          MAGIC_ENUM_THROW(std::out_of_range("magic_enum::containers::bitset::constructor: Upper bit set in raw number"));
         }
 
         reference{this, i} = true;
@@ -548,21 +571,21 @@ class bitset {
 
   constexpr explicit bitset(detail::raw_access_t, string_view sv, string_view::size_type pos = 0, string_view::size_type n = string_view::npos, char_type zero = static_cast<char_type>('0'), char_type one = static_cast<char_type>('1'))
       : a{{}} {
-    std::size_t i{};
+    std::size_t i = 0;
     for (auto c : sv.substr(pos, n)) {
       if (c == one) {
         if (i >= enum_count<E>()) {
-          throw std::out_of_range("enum bitset::constructor: Upper bit set in raw string");
+          MAGIC_ENUM_THROW(std::out_of_range("magic_enum::containers::bitset::constructor: Upper bit set in raw string"));
         }
         reference{this, i} = true;
       } else if (c != zero) {
-        throw std::invalid_argument("enum bitset::constructor: unrecognized character in raw string");
+        MAGIC_ENUM_THROW(std::invalid_argument("magic_enum::containers::bitset::constructor: Unrecognized character in raw string"));
       }
       ++i;
     }
   }
 
-  constexpr explicit bitset(detail::raw_access_t, const char_type* str, std::size_t n = ~std::size_t{}, char_type zero = static_cast<char_type>('0'), char_type one = static_cast<char_type>('1'))
+  constexpr explicit bitset(detail::raw_access_t, const char_type* str, std::size_t n = ~std::size_t{0}, char_type zero = static_cast<char_type>('0'), char_type one = static_cast<char_type>('1'))
       : bitset(string_view{str, (std::min)(std::char_traits<char_type>::length(str), n)}, 0, n, zero, one) {}
 
   constexpr bitset(std::initializer_list<E> starters) : a{{}} {
@@ -586,24 +609,24 @@ class bitset {
       }
     }
     if (u != 0) {
-      throw std::invalid_argument("enum bitset::constructor: unrecognized enum value in flag");
+      MAGIC_ENUM_THROW(std::invalid_argument("magic_enum::containers::bitset::constructor: Unrecognized enum value in flag"));
     }
   }
 
   template <typename Cmp = std::equal_to<>>
   constexpr explicit bitset(string_view sv, Cmp&& cmp = {}, char_type sep = static_cast<char_type>('|')) {
-    for (std::size_t to{}; (to = magic_enum::detail::find(sv, sep)) != string_view::npos; sv.remove_prefix(to + 1)) {
+    for (std::size_t to = 0; (to = magic_enum::detail::find(sv, sep)) != string_view::npos; sv.remove_prefix(to + 1)) {
       if (auto v = enum_cast<E>(sv.substr(0, to), cmp)) {
         set(v);
       } else {
-        throw std::invalid_argument("enum bitset::constructor: unrecognized enum value in string");
+        MAGIC_ENUM_THROW(std::invalid_argument("magic_enum::containers::bitset::constructor: Unrecognized enum value in string"));
       }
     }
     if (!sv.empty()) {
       if (auto v = enum_cast<E>(sv, cmp)) {
         set(v);
       } else {
-        throw std::invalid_argument("enum bitset::constructor: unrecognized enum value in string");
+        MAGIC_ENUM_THROW(std::invalid_argument("magic_enum::containers::bitset::constructor: Unrecognized enum value in string"));
       }
     }
   }
@@ -612,15 +635,21 @@ class bitset {
 
   [[nodiscard]] friend constexpr bool operator!=(const bitset& lhs, const bitset& rhs) noexcept { return !detail::equal(lhs.a, rhs.a); }
 
-  [[nodiscard]] constexpr bool operator[](E pos) const noexcept { return static_cast<bool>(const_reference(this, *index_type{}(pos))); }
+  [[nodiscard]] constexpr bool operator[](E pos) const {
+    auto i = index_type::at(pos);
+    return MAGIC_ENUM_ASSERT(i), static_cast<bool>(const_reference(this, *i));
+  }
 
-  [[nodiscard]] constexpr reference operator[](E pos) noexcept { return reference{this, *index_type{}(pos)}; }
+  [[nodiscard]] constexpr reference operator[](E pos) {
+    auto i = index_type::at(pos);
+    return MAGIC_ENUM_ASSERT(i), reference{this, *i};
+  }
 
   constexpr bool test(E pos) const {
-    if (auto ix = index_type{}(pos)) {
-      return static_cast<bool>(const_reference(this, *ix));
+    if (auto i = index_type::at(pos)) {
+      return static_cast<bool>(const_reference(this, *i));
     }
-    throw std::out_of_range("enum bitset::test: unrecognized position");
+    MAGIC_ENUM_THROW(std::out_of_range("magic_enum::containers::bitset::test: Unrecognized position"));
   }
 
   [[nodiscard]] constexpr bool all() const noexcept {
@@ -628,7 +657,7 @@ class bitset {
       return true;
     }
 
-    for (std::size_t i{}; i < base_type_count - (not_interested > 0); ++i) {
+    for (std::size_t i = 0; i < base_type_count - (not_interested > 0); ++i) {
       auto check = ~a[i];
       if (check) {
         return false;
@@ -652,7 +681,7 @@ class bitset {
   [[nodiscard]] constexpr bool none() const noexcept { return !any(); }
 
   [[nodiscard]] constexpr std::size_t count() const noexcept {
-    std::size_t c{};
+    std::size_t c = 0;
     for (auto& v : a) {
       c += detail::popcount(v);
     }
@@ -664,21 +693,21 @@ class bitset {
   [[nodiscard]] constexpr std::size_t max_size() const noexcept { return enum_count<E>(); }
 
   constexpr bitset& operator&=(const bitset& other) noexcept {
-    for (std::size_t i{}; i < base_type_count; ++i) {
+    for (std::size_t i = 0; i < base_type_count; ++i) {
       a[i] &= other.a[i];
     }
     return *this;
   }
 
   constexpr bitset& operator|=(const bitset& other) noexcept {
-    for (std::size_t i{}; i < base_type_count; ++i) {
+    for (std::size_t i = 0; i < base_type_count; ++i) {
       a[i] |= other.a[i];
     }
     return *this;
   }
 
   constexpr bitset& operator^=(const bitset& other) noexcept {
-    for (std::size_t i{}; i < base_type_count; ++i) {
+    for (std::size_t i = 0; i < base_type_count; ++i) {
       a[i] ^= other.a[i];
     }
     return *this;
@@ -686,7 +715,7 @@ class bitset {
 
   [[nodiscard]] constexpr bitset operator~() const noexcept {
     bitset res;
-    for (std::size_t i{}; i < base_type_count - (not_interested > 0); ++i) {
+    for (std::size_t i = 0; i < base_type_count - (not_interested > 0); ++i) {
       res.a[i] = ~a[i];
     }
 
@@ -697,8 +726,8 @@ class bitset {
   }
 
   constexpr bitset& set() noexcept {
-    for (std::size_t i{}; i < base_type_count - (not_interested > 0); ++i) {
-      a[i] = ~base_type{};
+    for (std::size_t i = 0; i < base_type_count - (not_interested > 0); ++i) {
+      a[i] = ~base_type{0};
     }
 
     if constexpr (not_interested > 0) {
@@ -708,21 +737,21 @@ class bitset {
   }
 
   constexpr bitset& set(E pos, bool value = true) {
-    if (auto ix = index_type{}(pos)) {
-      reference{this, *ix} = value;
+    if (auto i = index_type::at(pos)) {
+      reference{this, *i} = value;
       return *this;
     }
-    throw std::out_of_range("enum bitset::set: unrecognized position");
+    MAGIC_ENUM_THROW(std::out_of_range("magic_enum::containers::bitset::set: Unrecognized position"));
   }
 
   constexpr bitset& reset() noexcept { return *this = bitset{}; }
 
   constexpr bitset& reset(E pos) {
-    if (auto ix = index_type{}(pos)) {
-      reference{this, *ix} = false;
+    if (auto i = index_type::at(pos)) {
+      reference{this, *i} = false;
       return *this;
     }
-    throw std::out_of_range("enum bitset::reset: unrecognized position");
+    MAGIC_ENUM_THROW(std::out_of_range("magic_enum::containers::bitset::reset: Unrecognized position"));
   }
 
   constexpr bitset& flip() noexcept { return *this = ~*this; }
@@ -748,7 +777,7 @@ class bitset {
   template <typename V = E>
   [[nodiscard]] constexpr explicit operator std::enable_if_t<magic_enum::detail::subtype_v<V> == magic_enum::detail::enum_subtype::flags, E>() const {
     E res{};
-    for (auto& e : enum_values<E>()) {
+    for (const auto& e : enum_values<E>()) {
       if (test(e)) {
         res |= e;
       }
@@ -759,7 +788,7 @@ class bitset {
   [[nodiscard]] string to_string(char_type sep = static_cast<char_type>('|')) const {
     string name;
 
-    for (auto& e : enum_values<E>()) {
+    for (const auto& e : enum_values<E>()) {
       if (test(e)) {
         if (!name.empty()) {
           name.append(1, sep);
@@ -774,7 +803,7 @@ class bitset {
   [[nodiscard]] string to_string(detail::raw_access_t, char_type zero = static_cast<char_type>('0'), char_type one = static_cast<char_type>('1')) const {
     string name;
     name.reserve(size());
-    for (std::size_t i{}; i < size(); ++i) {
+    for (std::size_t i = 0; i < size(); ++i) {
       name.append(1, const_reference{this, i} ? one : zero);
     }
     return name;
@@ -804,9 +833,9 @@ explicit bitset(V starter) -> bitset<V>;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                           SET                                                             //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template <typename E, typename CExprLess = std::less<E>>
+template <typename E, typename Cmp = std::less<E>>
 class set {
-  using index_type = detail::indexing<E, CExprLess>;
+  using index_type = detail::indexing<E, Cmp>;
   struct Getter {
     constexpr const E& operator()(const set*, const E* p) const noexcept { return *p; }
   };
@@ -820,8 +849,8 @@ class set {
   using value_type = E;
   using size_type = std::size_t;
   using difference_type = std::ptrdiff_t;
-  using key_compare = CExprLess;
-  using value_compare = CExprLess;
+  using key_compare = Cmp;
+  using value_compare = Cmp;
   using reference = value_type&;
   using const_reference = const value_type&;
   using pointer = value_type*;
@@ -867,11 +896,11 @@ class set {
   }
 
   constexpr const_iterator begin() const noexcept {
-    return const_iterator{this, &(*index_type::values_v->begin()), &(*index_type::values_v->end()), &(*index_type::values_v->begin())};
+    return const_iterator{this, index_type::begin(), index_type::end(), index_type::begin()};
   }
 
   constexpr const_iterator end() const noexcept {
-    return const_iterator{this, &(*index_type::values_v->begin()), &(*index_type::values_v->end()), &(*index_type::values_v->end())};
+    return const_iterator{this, index_type::begin(), index_type::end(), index_type::end()};
   }
 
   constexpr const_iterator cbegin() const noexcept { return begin(); }
@@ -898,7 +927,7 @@ class set {
   }
 
   constexpr std::pair<iterator, bool> insert(const value_type& value) noexcept {
-    if (auto i = index_type{}(value)) {
+    if (auto i = index_type::at(value)) {
       typename container_type::reference ref = a[value];
       bool r = !ref;
       if (r) {
@@ -906,7 +935,7 @@ class set {
         ++s;
       }
 
-      return {iterator{this, &(*index_type::values_v->begin()), &(*index_type::values_v->end()), &(*index_type::values_v)[*i]}, r};
+      return {iterator{this, index_type::begin(), index_type::end(), index_type::it(*i)}, r};
     }
     return {end(), false};
   }
@@ -947,7 +976,6 @@ class set {
 
   constexpr iterator erase(const_iterator first, const_iterator last) noexcept {
     while ((first = erase(first)) != last) {
-      ;
     }
     return first;
   }
@@ -964,8 +992,8 @@ class set {
 
   template <typename K, typename KC = key_compare>
   constexpr std::enable_if_t<detail::is_transparent_v<KC>, size_type> erase(K&& x) noexcept {
-    size_type c{};
-    for (auto [first, last] = detail::equal_range(index_type::values_v->begin(), index_type::values_v->end(), x, key_compare{}); first != last;) {
+    size_type c = 0;
+    for (auto [first, last] = detail::equal_range(index_type::begin(), index_type::end(), x, key_compare{}); first != last;) {
       c += erase(*first++);
     }
     return c;
@@ -977,26 +1005,27 @@ class set {
     other = cp;
   }
 
-  [[nodiscard]] constexpr size_type count(const key_type& key) const noexcept { return index_type{}(key) && a[key]; }
+  [[nodiscard]] constexpr size_type count(const key_type& key) const noexcept { return index_type::at(key) && a[key]; }
 
   template <typename K, typename KC = key_compare>
   [[nodiscard]] constexpr std::enable_if_t<detail::is_transparent_v<KC>, size_type> count(const K& x) const {
-    size_type c{};
-    for (auto [first, last] = detail::equal_range(index_type::values_v->begin(), index_type::values_v->end(), x, key_compare{}); first != last; ++first) {
+    size_type c = 0;
+    for (auto [first, last] = detail::equal_range(index_type::begin(), index_type::end(), x, key_compare{}); first != last; ++first) {
       c += count(*first);
     }
     return c;
   }
 
   [[nodiscard]] constexpr const_iterator find(const key_type& key) const noexcept {
-    if (auto i = index_type{}(key); i && a.test(key))
-      return const_iterator{this, index_type::values_v->begin(), index_type::values_v->end(), &(*index_type::values_v)[*i]};
+    if (auto i = index_type::at(key); i && a.test(key)) {
+      return const_iterator{this, index_type::begin(), index_type::end(), index_type::it(*i)};
+    }
     return end();
   }
 
   template <typename K, typename KC = key_compare>
   [[nodiscard]] constexpr std::enable_if_t<detail::is_transparent_v<KC>, const_iterator> find(const K& x) const {
-    for (auto [first, last] = detail::equal_range(index_type::values_v->begin(), index_type::values_v->end(), x, key_compare{}); first != last; ++first) {
+    for (auto [first, last] = detail::equal_range(index_type::begin(), index_type::end(), x, key_compare{}); first != last; ++first) {
       if (a.test(*first)) {
         return find(*first);
       }
@@ -1019,8 +1048,8 @@ class set {
   }
 
   [[nodiscard]] constexpr const_iterator lower_bound(const key_type& key) const noexcept {
-    if (auto i = index_type{}(key)) {
-      auto it = const_iterator{this, index_type::values_v->begin(), index_type::values_v->end(), &(*index_type::values_v)[*i]};
+    if (auto i = index_type::at(key)) {
+      auto it = const_iterator{this, index_type::begin(), index_type::end(), index_type::it(*i)};
       return a.test(key) ? it : std::next(it);
     }
     return end();
@@ -1028,20 +1057,20 @@ class set {
 
   template <typename K, typename KC = key_compare>
   [[nodiscard]] constexpr std::enable_if_t<detail::is_transparent_v<KC>, const_iterator> lower_bound(const K& x) const noexcept {
-    auto [first, last] = detail::equal_range(index_type::values_v->begin(), index_type::values_v->end(), x, key_compare{});
+    auto [first, last] = detail::equal_range(index_type::begin(), index_type::end(), x, key_compare{});
     return first != last ? lower_bound(*first) : end();
   }
 
   [[nodiscard]] constexpr const_iterator upper_bound(const key_type& key) const noexcept {
-    if (auto i = index_type{}(key)) {
-      return std::next(const_iterator{this, index_type::values_v->begin(), index_type::values_v->end(), &(*index_type::values_v)[*i]});
+    if (auto i = index_type::at(key)) {
+      return std::next(const_iterator{this, index_type::begin(), index_type::end(), index_type::it(*i)});
     }
     return end();
   }
 
   template <typename K, typename KC = key_compare>
   [[nodiscard]] constexpr std::enable_if_t<detail::is_transparent_v<KC>, const_iterator> upper_bound(const K& x) const noexcept {
-    auto [first, last] = detail::equal_range(index_type::values_v->begin(), index_type::values_v->end(), x, key_compare{});
+    auto [first, last] = detail::equal_range(index_type::begin(), index_type::end(), x, key_compare{});
     return first != last ? upper_bound(*std::prev(last)) : end();
   }
 
@@ -1061,8 +1090,8 @@ class set {
       return false;
     }
 
-    for (auto& e : *index_type::values_v) {
-      if (auto c = rhs.contains(e); c != lhs.contains(e)) {
+    for (auto it = index_type::begin(); it != index_type::end(); ++it) {
+      if (auto c = rhs.contains(*it); c != lhs.contains(*it)) {
         return c;
       }
     }
@@ -1087,11 +1116,10 @@ class set {
     }
     return old_size - size();
   }
-  //...
 
  private:
   container_type a;
-  std::size_t s{};
+  std::size_t s = 0;
 };
 
 template <typename V, int = 0>
