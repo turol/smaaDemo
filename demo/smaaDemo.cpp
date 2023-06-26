@@ -39,7 +39,7 @@ THE SOFTWARE.
 
 #include <imgui.h>
 
-#include <magic_enum_containers.hpp>
+#include <magic_enum_all.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -2258,7 +2258,7 @@ bool SMAADemo::isAAMethodSupported(AAMethod method) const {
 
 void SMAADemo::setPrevAAMethod() {
 	do {
-		aaMethod = prevValue(aaMethod);
+		aaMethod = magic_enum::enum_prev_value_circular(aaMethod);
 	} while (!isAAMethodSupported(aaMethod));
 	rebuildRG = true;
 }
@@ -2267,7 +2267,7 @@ void SMAADemo::setPrevAAMethod() {
 void SMAADemo::setNextAAMethod() {
 
 	do {
-		aaMethod = nextValue(aaMethod);
+		aaMethod = magic_enum::enum_next_value_circular(aaMethod);
 	} while (!isAAMethodSupported(aaMethod));
 	rebuildRG = true;
 }
@@ -2509,7 +2509,7 @@ void SMAADemo::processInput() {
 				// pressing 'c' re-colors the shapes
 				if (rightShift || leftShift) {
 					// holding shift also changes mode
-					colorMode = nextValue(colorMode);
+					colorMode = magic_enum::enum_next_value_circular(colorMode);
 				}
 				colorShapes();
 				break;
@@ -2517,9 +2517,9 @@ void SMAADemo::processInput() {
 			case SDL_SCANCODE_D:
 				if (antialiasing && aaMethod == AAMethod::SMAA) {
 					if (leftShift || rightShift) {
-						debugMode = prevValue(debugMode);
+						debugMode = magic_enum::enum_prev_value_circular(debugMode);
 					} else {
-						debugMode = nextValue(debugMode);
+						debugMode = magic_enum::enum_next_value_circular(debugMode);
 					}
 					rebuildRG = true;
 				}
@@ -2581,9 +2581,9 @@ void SMAADemo::processInput() {
 
 			case SDL_SCANCODE_S: {
 				if (leftShift || rightShift) {
-					activeShape = prevValue(activeShape);
+					activeShape = magic_enum::enum_prev_value_circular(activeShape);
 				} else {
-					activeShape = nextValue(activeShape);
+					activeShape = magic_enum::enum_next_value_circular(activeShape);
 				}
 			} break;
 
