@@ -673,6 +673,30 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	features.maxMSAASamples = std::min(glValues[GL_MAX_COLOR_TEXTURE_SAMPLES], glValues[GL_MAX_DEPTH_TEXTURE_SAMPLES]);
 
+	if (GL_SUPPORTED_VERSION(4, 0)) {
+		spirvEnvironment = SPV_ENV_OPENGL_4_0;
+	}
+
+	if (GL_SUPPORTED_VERSION(4, 1)) {
+		spirvEnvironment = SPV_ENV_OPENGL_4_1;
+	}
+
+	if (GL_SUPPORTED_VERSION(4, 2)) {
+		spirvEnvironment = SPV_ENV_OPENGL_4_2;
+	}
+
+	if (GL_SUPPORTED_VERSION(4, 3)) {
+		spirvEnvironment = SPV_ENV_OPENGL_4_3;
+	}
+
+	// There is no SPIR-V target env for OpenGL 4.4
+
+	if (GL_SUPPORTED_VERSION(4, 5)) {
+		spirvEnvironment = SPV_ENV_OPENGL_4_5;
+	}
+
+	LOG("Using SPIR-V target environment {}", magic_enum::enum_name(spirvEnvironment));
+
 	LOG_TODO("use GL_UPPER_LEFT to match Vulkan")
 	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
