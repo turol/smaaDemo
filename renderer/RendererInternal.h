@@ -330,7 +330,7 @@ struct RendererBase {
 	RendererFeatures                                     features;
 	bool                                                 synchronizationDebugMode  = false;
 
-	spv_target_env                                       spirvEnvironment          = SPV_ENV_UNIVERSAL_1_2;
+	spv_target_env                                       spirvEnvironment          = SPV_ENV_UNIVERSAL_1_0;
 
 	bool                                                 skipShaderCache           = false;
 	bool                                                 optimizeShaders           = true;
