@@ -711,6 +711,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		THROW_ERROR("Missing required extension VK_KHR_maintenance1")
 	}
 
+	spirvEnvironment = SPV_ENV_VULKAN_1_0;
+	LOG_TODO("pick SPIR-V version based on Vulkan version and extensions")
+	LOG("Using SPIR-V target environment {}", magic_enum::enum_name(spirvEnvironment));
+
 	portabilitySubset = checkExt(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
 	if (!portabilitySubset) {
 		deviceCreateInfoChain.unlink<vk::PhysicalDevicePortabilitySubsetFeaturesKHR>();
