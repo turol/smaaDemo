@@ -313,6 +313,7 @@ enum class RenderPasses : uint32_t {
 	, Scene
 	, Final
 	, GUI
+	, MSAAResolve
 	, FXAA
 	, Separate
 	, SMAAEdges
@@ -1599,12 +1600,12 @@ void SMAADemo::rebuildRenderGraph() {
 			}
 
 			if (numSamples > 1) {
-				renderGraph.resolveMSAA(Rendertargets::VelocityMS, Rendertargets::Velocity);
+				renderGraph.resolveMSAA(RenderPasses::MSAAResolve, Rendertargets::VelocityMS, Rendertargets::Velocity);
 			}
 
 			switch (aaMethod) {
 			case AAMethod::MSAA: {
-				renderGraph.resolveMSAA(Rendertargets::MainColor, Rendertargets::TemporalCurrent);
+				renderGraph.resolveMSAA(RenderPasses::MSAAResolve, Rendertargets::MainColor, Rendertargets::TemporalCurrent);
 			} break;
 
 			case AAMethod::FXAA: {
@@ -1794,7 +1795,7 @@ void SMAADemo::rebuildRenderGraph() {
 			// no temporal AA
 			switch (aaMethod) {
 			case AAMethod::MSAA: {
-				renderGraph.resolveMSAA(Rendertargets::MainColor, Rendertargets::FinalRender);
+				renderGraph.resolveMSAA(RenderPasses::MSAAResolve, Rendertargets::MainColor, Rendertargets::FinalRender);
 			} break;
 
 			case AAMethod::FXAA: {

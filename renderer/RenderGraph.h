@@ -535,7 +535,7 @@ public:
 	}
 
 
-	void resolveMSAA(RT source, RT dest) {
+	void resolveMSAA(RP /* rp */, RT source, RT dest) {
 		assert(state == RGState::Building);
 
 		auto DEBUG_ASSERTED srcIt = rendertargets.find(source);
