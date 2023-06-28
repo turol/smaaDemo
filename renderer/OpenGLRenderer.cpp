@@ -486,9 +486,9 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
-, debug(desc.debug)
 , tracing(desc.tracing)
 {
+	debug = desc.debug;
 
 	{
 		SDL_version version;

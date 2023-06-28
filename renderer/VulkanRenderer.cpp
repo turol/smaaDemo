@@ -271,6 +271,8 @@ static uint32_t makeVulkanVersion(const Version &v) {
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
 {
+	debug = desc.debug;
+
 	bool enableValidation = desc.debug;
 	bool enableMarkers    = desc.tracing;
 

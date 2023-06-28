@@ -352,6 +352,7 @@ struct RendererBase {
 	HashMap<std::string, ShaderSourceData>               shaderSources;
 	HashMap<ShaderCacheKey, ShaderCacheData>             shaderCache;
 	bool                                                 cacheModified             = false;
+	bool                                                 debug                     = false;
 
 
 #ifndef NDEBUG
