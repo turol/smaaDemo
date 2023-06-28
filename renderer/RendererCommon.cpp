@@ -871,7 +871,6 @@ compilationNeeded:
 
 	// SPIR-V optimization
 	if (optimizeShaders) {
-		LOG_TODO("better target environment selection?")
 		spvtools::Optimizer opt(spirvEnvironment);
 
 		opt.SetMessageConsumer([] (spv_message_level_t level, const char *source, const spv_position_t &position, const char *message) {
