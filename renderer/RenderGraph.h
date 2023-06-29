@@ -4,7 +4,11 @@
 
 #include "utils/Hash.h"
 
+#include <algorithm>
+#include <functional>
 #include <variant>
+
+#include "renderer/Renderer.h"
 
 
 namespace renderer {
