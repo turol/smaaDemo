@@ -731,6 +731,66 @@ public:
 			}
 		} while (keepGoing);
 
+		// write description to debug log before creating resources in case we trigger a validation error during that
+		{
+			struct DebugVisitor final {
+				RenderGraph &rg;
+
+
+				DebugVisitor(RenderGraph &rg_)
+				: rg(rg_)
+				{
+				}
+
+
+				void operator()(const Blit &b) const {
+					LOG("Blit {} -> {}\t{}", to_string(b.source), to_string(b.dest), magic_enum::enum_name(b.finalLayout));
+				}
+
+				void operator()(const RenderPass &rpData) const {
+					LOG("RenderPass {} \"{}\"", to_string(rpData.id), rpData.name);
+					const auto &desc   = rpData.desc;
+					const auto &rpDesc = rpData.rpDesc;
+
+					if (desc.depthStencil_ != Default<RT>::value) {
+						LOG(" depthStencil {}", to_string(desc.depthStencil_));
+					}
+
+					for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+						if (desc.colorRTs_[i].id != Default<RT>::value) {
+							const auto &rt = rpDesc.color(i);
+							LOG(" color {}: {}\t{}\t{}\t{}", i, to_string(desc.colorRTs_[i].id), magic_enum::enum_name(rt.passBegin), magic_enum::enum_name(rt.initialLayout), magic_enum::enum_name(rt.finalLayout));
+						}
+					}
+
+					if (!desc.inputRendertargets.empty()) {
+						LOG(" inputs:");
+						std::vector<RT> inputs;
+						inputs.reserve(desc.inputRendertargets.size());
+						for (auto i : desc.inputRendertargets) {
+							inputs.push_back(i);
+						}
+
+						std::sort(inputs.begin(), inputs.end());
+						for (auto i : inputs) {
+							LOG("  {}", to_string(i));
+						}
+					}
+				}
+
+				void operator()(const ResolveMSAA &r) const {
+					LOG("ResolveMSAA {} -> {}\t{}", to_string(r.source), to_string(r.dest), magic_enum::enum_name(r.finalLayout));
+				}
+			};
+
+			DebugVisitor d(*this);
+			for (const auto &op : operations) {
+				std::visit(d, op);
+			}
+
+			logFlush();
+		}
+
 		// create rendertargets
 		for (auto &p : rendertargets) {
 			assert(p.first != Default<RT>::value);
@@ -794,63 +854,6 @@ public:
 			}
 		}
 
-		// write description to debug log
-		{
-			struct DebugVisitor final {
-				RenderGraph &rg;
-
-
-				DebugVisitor(RenderGraph &rg_)
-				: rg(rg_)
-				{
-				}
-
-
-				void operator()(const Blit &b) const {
-					LOG("Blit {} -> {}\t{}", to_string(b.source), to_string(b.dest), magic_enum::enum_name(b.finalLayout));
-				}
-
-				void operator()(const RenderPass &rpData) const {
-					LOG("RenderPass {} \"{}\"", to_string(rpData.id), rpData.name);
-					const auto &desc   = rpData.desc;
-					const auto &rpDesc = rpData.rpDesc;
-
-					if (desc.depthStencil_ != Default<RT>::value) {
-						LOG(" depthStencil {}", to_string(desc.depthStencil_));
-					}
-
-					for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
-						if (desc.colorRTs_[i].id != Default<RT>::value) {
-							const auto &rt = rpDesc.color(i);
-							LOG(" color {}: {}\t{}\t{}\t{}", i, to_string(desc.colorRTs_[i].id), magic_enum::enum_name(rt.passBegin), magic_enum::enum_name(rt.initialLayout), magic_enum::enum_name(rt.finalLayout));
-						}
-					}
-
-					if (!desc.inputRendertargets.empty()) {
-						LOG(" inputs:");
-						std::vector<RT> inputs;
-						inputs.reserve(desc.inputRendertargets.size());
-						for (auto i : desc.inputRendertargets) {
-							inputs.push_back(i);
-						}
-
-						std::sort(inputs.begin(), inputs.end());
-						for (auto i : inputs) {
-							LOG("  {}", to_string(i));
-						}
-					}
-				}
-
-				void operator()(const ResolveMSAA &r) const {
-					LOG("ResolveMSAA {} -> {}\t{}", to_string(r.source), to_string(r.dest), magic_enum::enum_name(r.finalLayout));
-				}
-			};
-
-			DebugVisitor d(*this);
-			for (const auto &op : operations) {
-				std::visit(d, op);
-			}
-		}
 		LOG("RenderGraph::build end");
 		logFlush();
 	}
