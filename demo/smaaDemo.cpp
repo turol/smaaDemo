@@ -3550,6 +3550,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				}
 			}
 
+			{
 			int d = magic_enum::enum_integer(debugMode);
 			constexpr auto smaaDebugModes = magic_enum::enum_names<SMAADebugMode>();
 
@@ -3573,7 +3574,9 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 					rebuildRG = true;
 				}
 			}
+			}
 
+			{
 			int fq = fxaaQuality;
 			ImGui::Separator();
 			ImGui::Combo("FXAA quality", &fq, fxaaQualityLevels, maxFXAAQuality);
@@ -3582,6 +3585,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			if (fq != int(fxaaQuality)) {
 				fxaaPipeline.reset();
 				fxaaQuality = fq;
+			}
 			}
 		}
 
