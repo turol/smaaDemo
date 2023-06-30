@@ -3196,7 +3196,6 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 	LOG_TODO("only set when using predication")
 	edgeDS.predicationTex    = r.get(Rendertargets::MainDepth);
 
-
 	renderer.bindDescriptorSet(1, edgeDS);
 	renderer.draw(0, 3);
 }
@@ -3551,41 +3550,41 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			}
 
 			{
-			int d = magic_enum::enum_integer(debugMode);
-			constexpr auto smaaDebugModes = magic_enum::enum_names<SMAADebugMode>();
+				int d = magic_enum::enum_integer(debugMode);
+				constexpr auto smaaDebugModes = magic_enum::enum_names<SMAADebugMode>();
 
-			if (ImGui::BeginCombo("SMAA debug", smaaDebugModes[d].data())) {
-				for (int i = 0; i < int(magic_enum::enum_count<SMAADebugMode>()); i++) {
-					const bool is_selected = (i == d);
-					if (ImGui::Selectable(smaaDebugModes[i].data(), is_selected)) {
-						d = i;
+				if (ImGui::BeginCombo("SMAA debug", smaaDebugModes[d].data())) {
+					for (int i = 0; i < int(magic_enum::enum_count<SMAADebugMode>()); i++) {
+						const bool is_selected = (i == d);
+						if (ImGui::Selectable(smaaDebugModes[i].data(), is_selected)) {
+							d = i;
+						}
+
+						if (is_selected) {
+							ImGui::SetItemDefaultFocus();
+						}
 					}
+					ImGui::EndCombo();
 
-					if (is_selected) {
-						ImGui::SetItemDefaultFocus();
+					assert(d >= 0);
+					assert(d < int(magic_enum::enum_count<SMAADebugMode>()));
+					if (magic_enum::enum_integer(debugMode) != d) {
+						debugMode = magic_enum::enum_value<SMAADebugMode>(d);
+						rebuildRG = true;
 					}
 				}
-				ImGui::EndCombo();
-
-				assert(d >= 0);
-				assert(d < int(magic_enum::enum_count<SMAADebugMode>()));
-				if (magic_enum::enum_integer(debugMode) != d) {
-					debugMode = magic_enum::enum_value<SMAADebugMode>(d);
-					rebuildRG = true;
-				}
-			}
 			}
 
 			{
-			int fq = fxaaQuality;
-			ImGui::Separator();
-			ImGui::Combo("FXAA quality", &fq, fxaaQualityLevels, maxFXAAQuality);
-			assert(fq >= 0);
-			assert(fq < int(maxFXAAQuality));
-			if (fq != int(fxaaQuality)) {
-				fxaaPipeline.reset();
-				fxaaQuality = fq;
-			}
+				int fq = fxaaQuality;
+				ImGui::Separator();
+				ImGui::Combo("FXAA quality", &fq, fxaaQualityLevels, maxFXAAQuality);
+				assert(fq >= 0);
+				assert(fq < int(maxFXAAQuality));
+				if (fq != int(fxaaQuality)) {
+					fxaaPipeline.reset();
+					fxaaQuality = fq;
+				}
 			}
 		}
 
