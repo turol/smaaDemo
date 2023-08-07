@@ -3798,6 +3798,7 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 	assert(drawData->Valid);
 
 	if (drawData->CmdListsCount > 0) {
+		assert(!drawData->CmdLists.empty());
 		assert(drawData->TotalVtxCount >  0);
 		assert(drawData->TotalIdxCount >  0);
 
@@ -3892,6 +3893,7 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 #endif // 0
 
 	} else {
+		assert(drawData->CmdLists.empty());
 		assert(drawData->TotalVtxCount == 0);
 		assert(drawData->TotalIdxCount == 0);
 	}
