@@ -1,5 +1,7 @@
-commit 5319d1cffafd5045c4742892c38c9e5cfa23d195
+commit d4ddc46e7773e9a9b68f965d007968f35ca4e09a
 Author: ocornut <omarcornut@gmail.com>
-Date:   Wed May 31 14:46:24 2023 +0200
+Date:   Tue Jul 4 16:20:51 2023 +0200
 
-    Version 1.89.6
+    InputText: Fixed a crash on deactivating a ReadOnly buffer. (#6570, #6292, #4714)
+    
+    This will be part of 1.89.7 Tagged relase.
