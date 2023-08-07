@@ -1,5 +1,23 @@
-commit 44d72a9b36702f093dd20815561a56778b2d181e
+commit e7c6084fd1d6d6f5ac393e842728d8be309688ca
 Author: Nathan Gauër <brioche@google.com>
-Date:   Mon Mar 13 11:33:58 2023 +0100
+Date:   Tue May 16 17:06:35 2023 +0200
 
-    Prepare release v2023.2 (#5151)
+    Prepare release 2023.3 (#5222)
+    
+    * Roll external/googletest/ bc860af08..bb2941fcc (1 commit)
+    
+    https://github.com/google/googletest/compare/bc860af08783...bb2941fcc611
+    
+    $ git log bc860af08..bb2941fcc --date=short --no-merges --format='%ad %ae %s'
+    2023-05-11 absl-team Give CreateArgvFromArgs internal linkage
+    
+    Created with:
+      roll-dep external/googletest
+    
+    * Prepare release v2023.3
+    
+    Signed-off-by: Nathan Gauër <brioche@google.com>
+    
+    ---------
+    
+    Signed-off-by: Nathan Gauër <brioche@google.com>

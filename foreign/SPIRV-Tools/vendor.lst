@@ -2,6 +2,7 @@
 .clang-format
 .github/workflows/autoroll.yml
 .github/workflows/bazel.yml
+.github/workflows/release.yml
 .github/workflows/wasm.yml
 .gitignore
 .gn
@@ -1373,6 +1374,7 @@ test/opt/loop_optimizations/fusion_compatibility.cpp
 test/opt/loop_optimizations/fusion_illegal.cpp
 test/opt/loop_optimizations/fusion_legal.cpp
 test/opt/loop_optimizations/fusion_pass.cpp
+test/opt/loop_optimizations/hoist_access_chains.cpp
 test/opt/loop_optimizations/hoist_all_loop_types.cpp
 test/opt/loop_optimizations/hoist_double_nested_loops.cpp
 test/opt/loop_optimizations/hoist_from_independent_loops.cpp
@@ -1486,6 +1488,8 @@ test/tools/CMakeLists.txt
 test/tools/expect.py
 test/tools/expect_unittest.py
 test/tools/flags_test.cpp
+test/tools/objdump/CMakeLists.txt
+test/tools/objdump/extract_source_test.cpp
 test/tools/opt/CMakeLists.txt
 test/tools/opt/flags.py
 test/tools/opt/oconfig.py
@@ -1575,6 +1579,9 @@ tools/lesspipe/CMakeLists.txt
 tools/lesspipe/spirv-lesspipe.sh
 tools/link/linker.cpp
 tools/lint/lint.cpp
+tools/objdump/extract_source.cpp
+tools/objdump/extract_source.h
+tools/objdump/objdump.cpp
 tools/opt/opt.cpp
 tools/reduce/reduce.cpp
 tools/sva/.eslintrc.json
