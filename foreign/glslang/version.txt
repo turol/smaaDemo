@@ -1,5 +1,5 @@
-commit d1517d64cfca91f573af1bf7341dc3a5113349c0
+commit 9b1a0f4d3e054d9b21ae584a20c06c98628c3015
 Author: Jeremy Hayes <jeremy@lunarg.com>
-Date:   Wed May 17 13:21:32 2023 -0600
+Date:   Tue Jul 18 17:35:14 2023 -0600
 
-    Update CHANGES for release 12.2.0
+    Update CHANGES for release 12.3.0

@@ -7,7 +7,6 @@
 .gn
 .mailmap
 Android.mk
-BUILD.bazel
 BUILD.gn
 CHANGES.md
 CMakeLists.txt
@@ -21,6 +20,7 @@ OGLCompilersDLL/InitializeDll.cpp
 OGLCompilersDLL/InitializeDll.h
 README-spirv-remap.txt
 README.md
+SECURITY.md
 SPIRV/CInterface/spirv_c_interface.cpp
 SPIRV/CMakeLists.txt
 SPIRV/GLSL.ext.AMD.h
@@ -567,6 +567,7 @@ Test/baseResults/hlsl.noSemantic.functionality1.comp.out
 Test/baseResults/hlsl.nonint-index.frag.out
 Test/baseResults/hlsl.nonstaticMemberFunction.frag.out
 Test/baseResults/hlsl.numericsuffixes.frag.out
+Test/baseResults/hlsl.numericsuffixes.negative.frag.out
 Test/baseResults/hlsl.numthreads.comp.out
 Test/baseResults/hlsl.opaque-type-bug.frag.out
 Test/baseResults/hlsl.overload.frag.out
@@ -1163,6 +1164,7 @@ Test/baseResults/spv.intrinsicsSpirvLiteral.vert.out
 Test/baseResults/spv.intrinsicsSpirvStorageClass.rchit.out
 Test/baseResults/spv.intrinsicsSpirvType.rgen.out
 Test/baseResults/spv.intrinsicsSpirvTypeLocalVar.vert.out
+Test/baseResults/spv.intrinsicsSpirvTypeWithTypeSpecifier.vert.out
 Test/baseResults/spv.invariantAll.vert.out
 Test/baseResults/spv.layer.tese.out
 Test/baseResults/spv.layoutNested.vert.out
@@ -1727,6 +1729,7 @@ Test/hlsl.noSemantic.functionality1.comp
 Test/hlsl.nonint-index.frag
 Test/hlsl.nonstaticMemberFunction.frag
 Test/hlsl.numericsuffixes.frag
+Test/hlsl.numericsuffixes.negative.frag
 Test/hlsl.numthreads.comp
 Test/hlsl.opaque-type-bug.frag
 Test/hlsl.overload.frag
@@ -2357,6 +2360,7 @@ Test/spv.intrinsicsSpirvLiteral.vert
 Test/spv.intrinsicsSpirvStorageClass.rchit
 Test/spv.intrinsicsSpirvType.rgen
 Test/spv.intrinsicsSpirvTypeLocalVar.vert
+Test/spv.intrinsicsSpirvTypeWithTypeSpecifier.vert
 Test/spv.invariantAll.vert
 Test/spv.layer.tese
 Test/spv.layoutNested.vert
@@ -2766,21 +2770,12 @@ kokoro/linux-clang-gn/build-docker.sh
 kokoro/linux-clang-gn/build.sh
 kokoro/linux-clang-gn/continuous.cfg
 kokoro/linux-clang-gn/presubmit.cfg
-kokoro/linux-clang-release-bazel/build.sh
-kokoro/linux-clang-release-bazel/continuous.cfg
-kokoro/linux-clang-release-bazel/presubmit.cfg
 kokoro/linux-gcc-cmake/build-docker.sh
 kokoro/linux-gcc-cmake/build.sh
 kokoro/linux-gcc-cmake/shared/continuous.cfg
 kokoro/linux-gcc-cmake/shared/presubmit.cfg
 kokoro/linux-gcc-cmake/static/continuous.cfg
 kokoro/linux-gcc-cmake/static/presubmit.cfg
-kokoro/macos-clang-release-bazel/build.sh
-kokoro/macos-clang-release-bazel/continuous.cfg
-kokoro/macos-clang-release-bazel/presubmit.cfg
-kokoro/windows-msvc-2019-release-bazel/build.bat
-kokoro/windows-msvc-2019-release-bazel/continuous.cfg
-kokoro/windows-msvc-2019-release-bazel/presubmit.cfg
 license-checker.cfg
 ndk_test/Android.mk
 ndk_test/jni/Application.mk
