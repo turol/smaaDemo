@@ -1,8 +1,8 @@
-commit bdbfd019be6952fd8fa9bd5606a8798a7530c853
-Merge: 268a061 d8c780f
+commit 10db9d4e194246a020a4148e220837ac7c68cfd9
+Merge: 6e09e44 72e4c7e
 Author: John Kessenich <johnkslang@users.noreply.github.com>
-Date:   Wed May 17 23:01:51 2023 +0700
+Date:   Wed Jun 21 10:30:20 2023 -0600
 
-    Merge pull request #346 from kpet/constexpr-maskall
+    Merge pull request #354 from kpet/spv-ext-image-raw10-raw12
     
-    Make the generated operators for masks constexpr
+    Add definitions for SVP_EXT_image_raw10_raw12

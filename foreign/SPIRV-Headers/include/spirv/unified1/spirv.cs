@@ -65,6 +65,7 @@ namespace Spv
             HLSL = 5,
             CPP_for_OpenCL = 6,
             SYCL = 7,
+            HERO_C = 8,
         }
 
         public enum ExecutionModel
@@ -352,6 +353,8 @@ namespace Spv
             Float = 14,
             UnormInt24 = 15,
             UnormInt101010_2 = 16,
+            UnsignedIntRaw10EXT = 19,
+            UnsignedIntRaw12EXT = 20,
         }
 
         public enum ImageOperandsShift
