@@ -1,8 +1,8 @@
-commit 35b0373c697b5f160d3db26b1cbb45a0d5ba788c
-Merge: f2d738a c7ed8b5
+commit bbb27a5efb85b92a0486cf361a8635715a53f6ba
+Merge: 35b0373 72e69d3
 Author: Yann Collet <Cyan4973@users.noreply.github.com>
-Date:   Mon Nov 29 10:34:10 2021 -0800
+Date:   Fri Jul 21 03:01:35 2023 -0700
 
-    Merge pull request #619 from Cyan4973/dev
+    Merge pull request #873 from Cyan4973/dev
     
-    activate _dispatch() (when enabled) in benchmark mode
+    v0.8.2
