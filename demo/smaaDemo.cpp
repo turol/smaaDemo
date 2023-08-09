@@ -784,32 +784,33 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 	try {
 		TCLAP::CmdLine cmd("SMAA demo", ' ', "1.0");
 
-		TCLAP::SwitchArg                       debugSwitch("",        "debug",      "Enable renderer debugging",     cmd, false);
-		TCLAP::SwitchArg                       robustSwitch("",       "robust",     "Enable renderer robustness",    cmd, false);
-		TCLAP::SwitchArg                       tracingSwitch("",      "trace",      "Enable renderer tracing",       cmd, false);
-		TCLAP::SwitchArg                       noCacheSwitch("",      "nocache",    "Don't load shaders from cache", cmd, false);
-		TCLAP::SwitchArg                       noOptSwitch("",        "noopt",      "Don't optimize shaders",        cmd, false);
-		TCLAP::SwitchArg                       validateSwitch("",     "validate",   "Validate shader SPIR-V",        cmd, false);
-		TCLAP::SwitchArg                       fullscreenSwitch("f",  "fullscreen", "Start in fullscreen mode",      cmd, false);
-		TCLAP::SwitchArg                       noVsyncSwitch("",      "novsync",    "Disable vsync",                 cmd, false);
-		TCLAP::SwitchArg                       noTransferQSwitch("",  "no-transfer-queue", "Disable transfer queue", cmd, false);
+		TCLAP::SwitchArg                       debugSwitch("",           "debug",             "Enable renderer debugging",     cmd, false);
+		TCLAP::SwitchArg                       robustSwitch("",          "robust",            "Enable renderer robustness",    cmd, false);
+		TCLAP::SwitchArg                       tracingSwitch("",         "trace",             "Enable renderer tracing",       cmd, false);
+		TCLAP::SwitchArg                       noCacheSwitch("",         "nocache",           "Don't load shaders from cache", cmd, false);
+		TCLAP::SwitchArg                       noOptSwitch("",           "noopt",             "Don't optimize shaders",        cmd, false);
+		TCLAP::SwitchArg                       validateSwitch("",        "validate",          "Validate shader SPIR-V",        cmd, false);
+		TCLAP::SwitchArg                       fullscreenSwitch("f",     "fullscreen",        "Start in fullscreen mode",      cmd, false);
+		TCLAP::SwitchArg                       noVsyncSwitch("",         "novsync",           "Disable vsync",                 cmd, false);
+		TCLAP::SwitchArg                       noTransferQSwitch("",     "no-transfer-queue", "Disable transfer queue",        cmd, false);
 
-		TCLAP::ValueArg<unsigned int>          windowWidthSwitch("",  "width",      "Window width",             false, rendererDesc.swapchain.width,  "width",              cmd);
-		TCLAP::ValueArg<unsigned int>          windowHeightSwitch("", "height",     "Window height",            false, rendererDesc.swapchain.height, "height",             cmd);
+		TCLAP::ValueArg<unsigned int>          windowWidthSwitch("",     "width",             "Window width",             false, rendererDesc.swapchain.width,  "width",                 cmd);
+		TCLAP::ValueArg<unsigned int>          windowHeightSwitch("",    "height",            "Window height",            false, rendererDesc.swapchain.height, "height",                cmd);
 
-		TCLAP::ValueArg<int>                   fpsSwitch("",          "fps",        "FPS limit",                false, -1,                            "FPS",                cmd);
-		TCLAP::ValueArg<unsigned int>          framesSwitch("",       "frames",     "Frames to render",         false, 0,                             "Frames",             cmd);
+		TCLAP::ValueArg<int>                   fpsSwitch("",             "fps",               "FPS limit",                false, -1,                            "FPS",                   cmd);
+		TCLAP::ValueArg<unsigned int>          framesSwitch("",          "frames",            "Frames to render",         false, 0,                             "Frames",                cmd);
 
-		TCLAP::ValueArg<unsigned int>          rotateSwitch("",       "rotate",     "Rotation period",          false, 0,                             "seconds",            cmd);
+		TCLAP::ValueArg<unsigned int>          rotateSwitch("",          "rotate",            "Rotation period",          false, 0,                             "seconds",               cmd);
 
-		TCLAP::ValueArg<std::string>           aaMethodSwitch("m",    "method",     "AA Method",                false, "SMAA",                        "SMAA/SMAA2X/FXAA/MSAA",     cmd);
-		TCLAP::ValueArg<std::string>           aaQualitySwitch("q",   "quality",    "AA Quality",               false, "",                            "",                   cmd);
-		TCLAP::ValueArg<std::string>           debugModeSwitch("d",   "debugmode",  "SMAA debug mode",          false, "None",                        "None/Edges/Weights", cmd);
-		TCLAP::ValueArg<std::string>           shaderLanguageSwitch("l", "shader-language", "shader language",  false, "GLSL",                        "GLSL/HLSL",          cmd);
-		TCLAP::ValueArg<std::string>           deviceSwitch("",       "device",     "Set Vulkan device filter", false, "",                            "device name",        cmd);
-		TCLAP::SwitchArg                       temporalAASwitch("t",  "temporal",   "Temporal AA",   cmd, false);
+		TCLAP::ValueArg<std::string>           aaMethodSwitch("m",       "method",            "AA Method",                false, "SMAA",                        "SMAA/SMAA2X/FXAA/MSAA", cmd);
+		TCLAP::ValueArg<std::string>           aaQualitySwitch("q",      "quality",           "AA Quality",               false, "",                            "",                      cmd);
+		TCLAP::ValueArg<std::string>           debugModeSwitch("d",      "debugmode",         "SMAA debug mode",          false, "None",                        "None/Edges/Weights",    cmd);
+		TCLAP::ValueArg<std::string>           shaderLanguageSwitch("l", "shader-language",   "shader language",          false, "GLSL",                        "GLSL/HLSL",             cmd);
+		TCLAP::ValueArg<std::string>           deviceSwitch("",          "device",            "Set Vulkan device filter", false, "",                            "device name",           cmd);
 
-		TCLAP::UnlabeledMultiArg<std::string>  imagesArg("images",    "image files", false, "image file", cmd, true, nullptr);
+		TCLAP::SwitchArg                       temporalAASwitch("t",     "temporal",          "Temporal AA", cmd, false);
+
+		TCLAP::UnlabeledMultiArg<std::string>  imagesArg("images",       "image files", false, "image file", cmd, true, nullptr);
 
 		cmd.parse(argc, argv);
 

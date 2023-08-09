@@ -616,7 +616,7 @@ public:
 		assert(state == RGState::Building);
 
 		RenderPass rpData;
-		rpData.id = rp;
+		rpData.id   = rp;
 		rpData.name = desc.name_;
 		rpData.desc = desc;
 		rpData.renderFunctions.emplace_back(std::move(f));
