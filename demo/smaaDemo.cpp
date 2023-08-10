@@ -854,26 +854,19 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		{
 			std::string aaMethodStr = aaMethodSwitch.getValue();
 			if (!aaMethodStr.empty()) {
-				auto parsed = magic_enum::enum_cast<AAMethod>(aaMethodStr);
+				auto parsed = magic_enum::enum_cast<AAMethod>(aaMethodStr, magic_enum::case_insensitive);
 				if (parsed) {
 					aaMethod = *parsed;
 					// we don't know supported methods yet, delay the check until we do
 					aaMethodSetExplicitly = true;
 				} else {
 					std::transform(aaMethodStr.begin(), aaMethodStr.end(), aaMethodStr.begin(), ::toupper);
-					parsed = magic_enum::enum_cast<AAMethod>(aaMethodStr);
-					if (parsed) {
-						aaMethod = *parsed;
-						// we don't know supported methods yet, delay the check until we do
-						aaMethodSetExplicitly = true;
-					} else {
 						if (aaMethodStr == "NONE") {
 							antialiasing = false;
 						} else {
 							LOG_ERROR("Bad AA method \"{}\"", aaMethodStr);
 							exit(1);
 						}
-					}
 				}
 			}
 		}
@@ -942,7 +935,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		{
 			std::string debugModeStr = debugModeSwitch.getValue();
 			if (!debugModeStr.empty()) {
-				auto maybe = magic_enum::enum_cast<SMAADebugMode>(debugModeStr);
+				auto maybe = magic_enum::enum_cast<SMAADebugMode>(debugModeStr, magic_enum::case_insensitive);
 				if (maybe) {
 					debugMode = *maybe;
 				} else {
@@ -955,19 +948,12 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		{
 			std::string languageStr = shaderLanguageSwitch.getValue();
 			if (!languageStr.empty()) {
-				auto maybe = magic_enum::enum_cast<ShaderLanguage>(languageStr);
+				auto maybe = magic_enum::enum_cast<ShaderLanguage>(languageStr, magic_enum::case_insensitive);
 				if (maybe) {
 					preferredShaderLanguage = *maybe;
 				} else {
-					std::string uppercased = languageStr;
-					std::transform(uppercased.begin(), uppercased.end(), uppercased.begin(), ::toupper);
-					maybe = magic_enum::enum_cast<ShaderLanguage>(uppercased);
-					if (maybe) {
-						preferredShaderLanguage = *maybe;
-					} else {
 						LOG_ERROR("Bad shader language \"{}\"", languageStr);
 						exit(1);
-					}
 				}
 			}
 		}
