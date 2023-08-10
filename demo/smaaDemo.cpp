@@ -861,11 +861,11 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 					aaMethodSetExplicitly = true;
 				} else {
 					if ((aaMethodStr.size() == 4) && (strncasecmp(aaMethodStr.data(), "none", 4) == 0)) {
-							antialiasing = false;
-						} else {
-							LOG_ERROR("Bad AA method \"{}\"", aaMethodStr);
-							exit(1);
-						}
+						antialiasing = false;
+					} else {
+						LOG_ERROR("Bad AA method \"{}\"", aaMethodStr);
+						exit(1);
+					}
 				}
 			}
 		}
@@ -951,8 +951,8 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 				if (maybe) {
 					preferredShaderLanguage = *maybe;
 				} else {
-						LOG_ERROR("Bad shader language \"{}\"", languageStr);
-						exit(1);
+					LOG_ERROR("Bad shader language \"{}\"", languageStr);
+					exit(1);
 				}
 			}
 		}
