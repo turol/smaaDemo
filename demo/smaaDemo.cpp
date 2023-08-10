@@ -3895,7 +3895,7 @@ int main(int argc, char *argv[]) {
 		auto demo = std::make_unique<SMAADemo>();
 
 		try {
-		demo->parseCommandLine(argc, argv);
+			demo->parseCommandLine(argc, argv);
 		} catch (std::exception &e) {
 			LOG_ERROR("{}", e.what());
 			exit(1);
