@@ -962,9 +962,11 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		imageFiles    = imagesArg.getValue();
 
 	} catch (TCLAP::ArgException &e) {
-		LOG("parseCommandLine exception: {} for arg {}", e.error(), e.argId());
+		THROW_ERROR("parseCommandLine exception: {} for arg {}", e.error(), e.argId());
+	} catch (std::runtime_error &) {
+		throw;
 	} catch (...) {
-		LOG("parseCommandLine: unknown exception");
+		THROW_ERROR("parseCommandLine: unknown exception");
 	}
 }
 
