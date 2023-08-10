@@ -860,8 +860,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 					// we don't know supported methods yet, delay the check until we do
 					aaMethodSetExplicitly = true;
 				} else {
-					std::transform(aaMethodStr.begin(), aaMethodStr.end(), aaMethodStr.begin(), ::toupper);
-						if (aaMethodStr == "NONE") {
+					if ((aaMethodStr.size() == 4) && (strncasecmp(aaMethodStr.data(), "none", 4) == 0)) {
 							antialiasing = false;
 						} else {
 							LOG_ERROR("Bad AA method \"{}\"", aaMethodStr);
