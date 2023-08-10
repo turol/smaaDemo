@@ -44,6 +44,8 @@ THE SOFTWARE.
 #define UNUSED
 #define DEBUG_ASSERTED
 
+#define strncasecmp strnicmp
+
 #else   // _MSC_VER
 
 #define UNUSED        __attribute__((unused))
