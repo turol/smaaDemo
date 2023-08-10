@@ -25,8 +25,8 @@ THE SOFTWARE.
 #define RENDERER_H
 
 
-#include <string>
 #include <array>
+#include <string>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE 1
