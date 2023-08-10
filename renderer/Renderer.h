@@ -25,6 +25,7 @@ THE SOFTWARE.
 #define RENDERER_H
 
 
+#include <algorithm>
 #include <array>
 #include <string>
 
