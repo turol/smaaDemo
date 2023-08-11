@@ -863,7 +863,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 					if ((aaMethodStr.size() == 4) && (strncasecmp(aaMethodStr.data(), "none", 4) == 0)) {
 						antialiasing = false;
 					} else {
-						THROW_ERROR("Bad AA method \"{}\"", aaMethodStr);
+						THROW_ERROR("Bad AA method \"{}\"", aaMethodStr)
 					}
 				}
 			}
@@ -937,7 +937,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 				if (maybe) {
 					debugMode = *maybe;
 				} else {
-					THROW_ERROR("Bad SMAA debug mode \"{}\"", debugModeStr);
+					THROW_ERROR("Bad SMAA debug mode \"{}\"", debugModeStr)
 				}
 			}
 		}
@@ -949,7 +949,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 				if (maybe) {
 					preferredShaderLanguage = *maybe;
 				} else {
-					THROW_ERROR("Bad shader language \"{}\"", languageStr);
+					THROW_ERROR("Bad shader language \"{}\"", languageStr)
 				}
 			}
 		}
@@ -959,11 +959,11 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		imageFiles    = imagesArg.getValue();
 
 	} catch (TCLAP::ArgException &e) {
-		THROW_ERROR("parseCommandLine exception: {} for arg {}", e.error(), e.argId());
+		THROW_ERROR("parseCommandLine exception: {} for arg {}", e.error(), e.argId())
 	} catch (std::runtime_error &) {
 		throw;
 	} catch (...) {
-		THROW_ERROR("parseCommandLine: unknown exception");
+		THROW_ERROR("parseCommandLine: unknown exception")
 	}
 }
 
