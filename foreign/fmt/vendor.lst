@@ -1,4 +1,5 @@
 .clang-format
+.github/dependabot.yml
 .github/issue_template.md
 .github/pull_request_template.md
 .github/workflows/cifuzz.yml

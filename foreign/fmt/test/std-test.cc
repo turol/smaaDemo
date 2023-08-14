@@ -7,6 +7,7 @@
 
 #include "fmt/std.h"
 
+#include <bitset>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -15,22 +16,23 @@
 #include "fmt/ranges.h"
 #include "gtest-extra.h"  // StartsWith
 
-using testing::StartsWith;
-
 #ifdef __cpp_lib_filesystem
 TEST(std_test, path) {
-  EXPECT_EQ(fmt::format("{:8}", std::filesystem::path("foo")), "\"foo\"   ");
-  EXPECT_EQ(fmt::format("{}", std::filesystem::path("foo\"bar.txt")),
-            "\"foo\\\"bar.txt\"");
-  EXPECT_EQ(fmt::format("{:?}", std::filesystem::path("foo\"bar.txt")),
-            "\"foo\\\"bar.txt\"");
+  using std::filesystem::path;
+  EXPECT_EQ(fmt::format("{}", path("/usr/bin")), "/usr/bin");
+  EXPECT_EQ(fmt::format("{:?}", path("/usr/bin")), "\"/usr/bin\"");
+  EXPECT_EQ(fmt::format("{:8}", path("foo")), "foo     ");
+
+  EXPECT_EQ(fmt::format("{}", path("foo\"bar")), "foo\"bar");
+  EXPECT_EQ(fmt::format("{:?}", path("foo\"bar")), "\"foo\\\"bar\"");
 
 #  ifdef _WIN32
-  EXPECT_EQ(fmt::format("{}", std::filesystem::path(
+  EXPECT_EQ(fmt::format("{}", path(
                                   L"\x0428\x0447\x0443\x0447\x044B\x043D\x0448"
                                   L"\x0447\x044B\x043D\x0430")),
-            "\"Шчучыншчына\"");
-  EXPECT_EQ(fmt::format("{}", std::filesystem::path(L"\xd800")), "\"\\ud800\"");
+            "Шчучыншчына");
+  EXPECT_EQ(fmt::format("{}", path(L"\xd800")), "�");
+  EXPECT_EQ(fmt::format("{:?}", path(L"\xd800")), "\"\\ud800\"");
 #  endif
 }
 
@@ -39,7 +41,7 @@ TEST(ranges_std_test, format_vector_path) {
   auto p = std::filesystem::path("foo/bar.txt");
   auto c = std::vector<std::string>{"abc", "def"};
   EXPECT_EQ(fmt::format("path={}, range={}", p, c),
-            "path=\"foo/bar.txt\", range=[\"abc\", \"def\"]");
+            "path=foo/bar.txt, range=[\"abc\", \"def\"]");
 }
 
 // Test that path is not escaped twice in the debug mode.
@@ -190,6 +192,7 @@ const char* my_exception::what() const noexcept { return msg.c_str(); }
 }  // namespace my_ns1
 
 TEST(std_test, exception) {
+  using testing::StartsWith;
   exception_test<std::exception>();
   exception_test<std::runtime_error>();
 
@@ -218,4 +221,18 @@ TEST(std_test, exception) {
                 StartsWith("std::filesystem::filesystem_error: "));
   }
 #endif
+}
+
+TEST(std_test, format_bit_reference) {
+  std::bitset<2> bs(1);
+  EXPECT_EQ(fmt::format("{} {}", bs[0], bs[1]), "true false");
+  std::vector<bool> v = {true, false};
+  EXPECT_EQ(fmt::format("{} {}", v[0], v[1]), "true false");
+}
+
+TEST(std_test, format_const_bit_reference) {
+  const std::bitset<2> bs(1);
+  EXPECT_EQ(fmt::format("{} {}", bs[0], bs[1]), "true false");
+  const std::vector<bool> v = {true, false};
+  EXPECT_EQ(fmt::format("{} {}", v[0], v[1]), "true false");
 }
