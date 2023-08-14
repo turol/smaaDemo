@@ -1678,10 +1678,24 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	info.pDynamicState    = &dyn;
 
 	std::vector<vk::DescriptorSetLayout> layouts;
+
+	bool endReached DEBUG_ASSERTED = false;
 	for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
 		if (desc.descriptorSetLayouts[i]) {
+			assert(!endReached);
 			const auto &layout = impl->dsLayouts.get(desc.descriptorSetLayouts[i]);
 			layouts.push_back(layout.layout);
+		} else {
+			// all non-null descriptor set layouts must be first, followed by only nulls
+#ifdef NDEBUG
+
+			break;
+
+#else  // DEBUG
+
+			endReached = true;
+
+#endif  // DEBUG
 		}
 	}
 
