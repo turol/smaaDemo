@@ -1554,6 +1554,18 @@ static vk::BlendFactor vulkanBlendFactor(BlendFunc b) {
 }
 
 
+vk::PipelineLayout RendererImpl::createPipelineLayout(const PipelineLayoutKey &key) {
+	vk::PipelineLayoutCreateInfo layoutInfo;
+	layoutInfo.setLayoutCount = static_cast<uint32_t>(key.layoutCount);
+	layoutInfo.pSetLayouts    = key.layouts.data();
+
+	LOG_TODO("cache Vulkan pipeline layouts")
+	vk::PipelineLayout layout = device.createPipelineLayout(layoutInfo);
+
+	return layout;
+}
+
+
 PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	vk::GraphicsPipelineCreateInfo info;
 
@@ -1677,16 +1689,13 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	dyn.pDynamicStates    = &dynStates[0];
 	info.pDynamicState    = &dyn;
 
-	std::array<vk::DescriptorSetLayout, MAX_DESCRIPTOR_SETS> layouts;
+	PipelineLayoutKey key;
 
 	bool endReached DEBUG_ASSERTED = false;
-	size_t layoutCount = 0;
 	for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
 		if (desc.descriptorSetLayouts[i]) {
 			assert(!endReached);
-			const auto &layout = impl->dsLayouts.get(desc.descriptorSetLayouts[i]);
-			layouts[layoutCount] = layout.layout;
-			layoutCount++;
+			key.add(impl->dsLayouts.get(desc.descriptorSetLayouts[i]).layout);
 		} else {
 			// all non-null descriptor set layouts must be first, followed by only nulls
 #ifdef NDEBUG
@@ -1701,13 +1710,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 		}
 	}
 
-	vk::PipelineLayoutCreateInfo layoutInfo;
-	layoutInfo.setLayoutCount = static_cast<uint32_t>(layoutCount);
-	layoutInfo.pSetLayouts    = &layouts[0];
-
-	LOG_TODO("cache Vulkan pipeline layouts")
-	auto layout = impl->device.createPipelineLayout(layoutInfo);
-	info.layout = layout;
+	info.layout = impl->createPipelineLayout(key);
 
 	auto result = impl->device.createGraphicsPipeline(impl->pipelineCache, info);
 	LOG_TODO("check success instead of implicitly using result.value")
@@ -1799,7 +1802,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 
 	Pipeline p;
 	p.pipeline = result.value;
-	p.layout   = layout;
+	p.layout   = info.layout;
 	p.scissor  = desc.scissorTest_;
 
 	return impl->pipelines.add(std::move(p));

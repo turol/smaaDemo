@@ -727,6 +727,19 @@ struct VertexShader {
 };
 
 
+struct PipelineLayoutKey {
+	size_t                                                    layoutCount = 0;
+	std::array<vk::DescriptorSetLayout, MAX_DESCRIPTOR_SETS>  layouts;
+
+	void add(vk::DescriptorSetLayout l) {
+		assert(layoutCount < MAX_DESCRIPTOR_SETS);
+
+		layouts[layoutCount] = l;
+		layoutCount++;
+	}
+};
+
+
 using Resource = std::variant<Buffer, Framebuffer, Pipeline, RenderPass, RenderTarget, Sampler, Texture>;
 
 
@@ -1079,6 +1092,8 @@ struct RendererImpl : public RendererBase {
 
 	vk::Semaphore allocateSemaphore();
 	void freeSemaphore(vk::Semaphore sem);
+
+	vk::PipelineLayout createPipelineLayout(const PipelineLayoutKey &key);
 
 	void deleteBufferInternal(Buffer &b);
 	void deleteFramebufferInternal(Framebuffer &fb);
