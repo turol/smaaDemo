@@ -1012,8 +1012,8 @@ DSLayoutHandle GlobalDS::layoutHandle;
 
 
 struct ShapeSceneDS {
-	BufferHandle unused;
-	BufferHandle instances;
+	BufferHandle  unused;
+	BufferHandle  instances;
 
 	static const DescriptorLayout layout[];
 	static DSLayoutHandle layoutHandle;
@@ -1023,15 +1023,15 @@ struct ShapeSceneDS {
 const DescriptorLayout ShapeSceneDS::layout[] = {
 	  { DescriptorType::UniformBuffer,  offsetof(ShapeSceneDS, unused)    }
 	, { DescriptorType::StorageBuffer,  offsetof(ShapeSceneDS, instances) }
-	, { DescriptorType::End,            0                                }
+	, { DescriptorType::End,            0                                 }
 };
 
 DSLayoutHandle ShapeSceneDS::layoutHandle;
 
 
 struct ColorCombinedDS {
-	BufferHandle unused;
-	CSampler color;
+	BufferHandle  unused;
+	CSampler      color;
 
 	static const DescriptorLayout layout[];
 	static DSLayoutHandle layoutHandle;
@@ -1048,8 +1048,8 @@ DSLayoutHandle ColorCombinedDS::layoutHandle;
 
 
 struct ColorTexDS {
-	BufferHandle unused;
-	TextureHandle color;
+	BufferHandle   unused;
+	TextureHandle  color;
 
 	static const DescriptorLayout layout[];
 	static DSLayoutHandle layoutHandle;
@@ -1066,10 +1066,10 @@ DSLayoutHandle ColorTexDS::layoutHandle;
 
 
 struct EdgeDetectionDS {
-	BufferHandle  smaaUBO;
+	BufferHandle   smaaUBO;
 
-	TextureHandle color;
-	TextureHandle predicationTex;
+	TextureHandle  color;
+	TextureHandle  predicationTex;
 
 	static const DescriptorLayout layout[];
 	static DSLayoutHandle layoutHandle;
@@ -1077,21 +1077,21 @@ struct EdgeDetectionDS {
 
 
 const DescriptorLayout EdgeDetectionDS::layout[] = {
-	  { DescriptorType::UniformBuffer,    offsetof(EdgeDetectionDS, smaaUBO)        }
+	  { DescriptorType::UniformBuffer,    offsetof(EdgeDetectionDS, smaaUBO) }
 	, DESCRIPTOR(EdgeDetectionDS, color)
 	, DESCRIPTOR(EdgeDetectionDS, predicationTex)
-	, { DescriptorType::End,              0,                                        }
+	, { DescriptorType::End,              0,                                 }
 };
 
 DSLayoutHandle EdgeDetectionDS::layoutHandle;
 
 
 struct BlendWeightDS {
-	BufferHandle  smaaUBO;
+	BufferHandle   smaaUBO;
 
-	TextureHandle edgesTex;
-	TextureHandle areaTex;
-	TextureHandle searchTex;
+	TextureHandle  edgesTex;
+	TextureHandle  areaTex;
+	TextureHandle  searchTex;
 
 	static const DescriptorLayout layout[];
 	static DSLayoutHandle layoutHandle;
@@ -1099,21 +1099,21 @@ struct BlendWeightDS {
 
 
 const DescriptorLayout BlendWeightDS::layout[] = {
-	  { DescriptorType::UniformBuffer,    offsetof(BlendWeightDS, smaaUBO)   }
+	  { DescriptorType::UniformBuffer,    offsetof(BlendWeightDS, smaaUBO) }
 	, DESCRIPTOR(BlendWeightDS, edgesTex)
 	, DESCRIPTOR(BlendWeightDS, areaTex)
 	, DESCRIPTOR(BlendWeightDS, searchTex)
-	, { DescriptorType::End,              0,                                 }
+	, { DescriptorType::End,              0,                               }
 };
 
 DSLayoutHandle BlendWeightDS::layoutHandle;
 
 
 struct NeighborBlendDS {
-	BufferHandle  smaaUBO;
+	BufferHandle   smaaUBO;
 
-	TextureHandle color;
-	TextureHandle blendweights;
+	TextureHandle  color;
+	TextureHandle  blendweights;
 
 	static const DescriptorLayout layout[];
 	static DSLayoutHandle layoutHandle;
@@ -1121,21 +1121,21 @@ struct NeighborBlendDS {
 
 
 const DescriptorLayout NeighborBlendDS::layout[] = {
-	  { DescriptorType::UniformBuffer,    offsetof(NeighborBlendDS, smaaUBO)      }
+	  { DescriptorType::UniformBuffer,    offsetof(NeighborBlendDS, smaaUBO) }
 	, DESCRIPTOR(NeighborBlendDS, color)
 	, DESCRIPTOR(NeighborBlendDS, blendweights)
-	, { DescriptorType::End,              0                                       }
+	, { DescriptorType::End,              0                                  }
 };
 
 DSLayoutHandle NeighborBlendDS::layoutHandle;
 
 
 struct TemporalAADS {
-	BufferHandle  smaaUBO;
+	BufferHandle   smaaUBO;
 
-	TextureHandle currentTex;
-	TextureHandle previousTex;
-	TextureHandle velocityTex;
+	TextureHandle  currentTex;
+	TextureHandle  previousTex;
+	TextureHandle  velocityTex;
 
 	static const DescriptorLayout layout[];
 	static DSLayoutHandle layoutHandle;
@@ -1143,11 +1143,11 @@ struct TemporalAADS {
 
 
 const DescriptorLayout TemporalAADS::layout[] = {
-	  { DescriptorType::UniformBuffer,    offsetof(TemporalAADS, smaaUBO)     }
+	  { DescriptorType::UniformBuffer,    offsetof(TemporalAADS, smaaUBO) }
 	, DESCRIPTOR(TemporalAADS, currentTex)
 	, DESCRIPTOR(TemporalAADS, previousTex)
 	, DESCRIPTOR(TemporalAADS, velocityTex)
-	, { DescriptorType::End,              0                                   }
+	, { DescriptorType::End,              0                               }
 };
 
 DSLayoutHandle TemporalAADS::layoutHandle;
@@ -1160,12 +1160,12 @@ static const std::array<Format, numDepths> depths
 
 
 void SMAADemo::initRender() {
-	renderer = Renderer::createRenderer(rendererDesc);
+	renderer   = Renderer::createRenderer(rendererDesc);
 	renderSize = renderer.getDrawableSize();
 	const auto &features = renderer.getFeatures();
 	LOG("Max MSAA samples: {}",  features.maxMSAASamples);
 	LOG("sRGB frame buffer: {}", features.sRGBFramebuffer ? "yes" : "no");
-	LOG("SSBO support: {}",      features.SSBOSupported ? "yes" : "no");
+	LOG("SSBO support: {}",      features.SSBOSupported   ? "yes" : "no");
 	maxMSAAQuality = msaaSamplesToQuality(features.maxMSAASamples) + 1;
 	if (msaaQuality >= maxMSAAQuality) {
 		msaaQuality = maxMSAAQuality - 1;
