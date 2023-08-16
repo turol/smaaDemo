@@ -967,6 +967,11 @@ RendererImpl::~RendererImpl() {
 		deletePipelineInternal(p);
 	} );
 
+	for (auto &p : pipelineLayoutCache) {
+		device.destroyPipelineLayout(p.second);
+		p.second = vk::PipelineLayout();
+	}
+
 	framebuffers.clearWith([this](Framebuffer &fb) {
 		deleteFramebufferInternal(fb);
 	} );
@@ -1555,12 +1560,21 @@ static vk::BlendFactor vulkanBlendFactor(BlendFunc b) {
 
 
 vk::PipelineLayout RendererImpl::createPipelineLayout(const PipelineLayoutKey &key) {
+	{
+		auto it = pipelineLayoutCache.find(key);
+		if (it != pipelineLayoutCache.end()) {
+			return it->second;
+		}
+	}
+
 	vk::PipelineLayoutCreateInfo layoutInfo;
 	layoutInfo.setLayoutCount = static_cast<uint32_t>(key.layoutCount);
 	layoutInfo.pSetLayouts    = key.layouts.data();
 
-	LOG_TODO("cache Vulkan pipeline layouts")
 	vk::PipelineLayout layout = device.createPipelineLayout(layoutInfo);
+
+	auto it = pipelineLayoutCache.emplace(key, layout);
+	assert(it.second == true);
 
 	return layout;
 }
@@ -3037,7 +3051,6 @@ void RendererImpl::deleteFramebufferInternal(Framebuffer &fb) {
 
 
 void RendererImpl::deletePipelineInternal(Pipeline &p) {
-	device.destroyPipelineLayout(p.layout);
 	p.layout = vk::PipelineLayout();
 	device.destroyPipeline(p.pipeline);
 	p.pipeline = vk::Pipeline();
@@ -3854,6 +3867,15 @@ void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int fi
 
 
 namespace std {
+
+	size_t hash<renderer::PipelineLayoutKey>::operator()(const renderer::PipelineLayoutKey &key) const {
+		size_t h = std::hash<size_t>()(key.layoutCount);
+		for (size_t i = 0; i < key.layoutCount; i++) {
+			h = combineHashes(h, std::hash<size_t>()(VK_HASH(VkDescriptorSetLayout(key.layouts[i]))));
+		}
+
+		return h;
+	}
 
 	size_t hash<renderer::Resource>::operator()(const renderer::Resource &r) const {
 		return std::visit(renderer::ResourceHasher(), r);

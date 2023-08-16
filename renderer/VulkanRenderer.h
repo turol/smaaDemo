@@ -372,7 +372,7 @@ struct Framebuffer {
 
 struct Pipeline {
 	vk::Pipeline       pipeline;
-	vk::PipelineLayout layout;
+	vk::PipelineLayout layout;  // not owned
 	bool               scissor  = false;
 
 
@@ -737,6 +737,34 @@ struct PipelineLayoutKey {
 		layouts[layoutCount] = l;
 		layoutCount++;
 	}
+
+	bool operator==(const PipelineLayoutKey &other) const {
+		if (this->layoutCount != other.layoutCount) {
+			return false;
+		}
+
+		for (size_t i = 0; i < this->layoutCount; i++) {
+			if (this->layouts[i] != other.layouts[i]) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	PipelineLayoutKey() {
+		for (auto &p : layouts) {
+			p = vk::DescriptorSetLayout();
+		}
+	}
+
+	PipelineLayoutKey(const PipelineLayoutKey &)            = default;
+	PipelineLayoutKey &operator=(const PipelineLayoutKey &) = default;
+
+	PipelineLayoutKey(PipelineLayoutKey &&)                 = default;
+	PipelineLayoutKey &operator=(PipelineLayoutKey &&)      = default;
+
+	~PipelineLayoutKey() = default;
 };
 
 
@@ -747,6 +775,10 @@ using Resource = std::variant<Buffer, Framebuffer, Pipeline, RenderPass, RenderT
 
 
 namespace std {
+
+	template <> struct hash<renderer::PipelineLayoutKey> {
+		size_t operator()(const renderer::PipelineLayoutKey &key) const;
+	};
 
 	template <> struct hash<renderer::Resource> {
 		size_t operator()(const renderer::Resource &r) const;
@@ -1030,6 +1062,8 @@ struct RendererImpl : public RendererBase {
 	ResourceContainer<Sampler>                              samplers;
 	ResourceContainer<Texture>                              textures;
 	ResourceContainer<VertexShader, uint32_t, true>         vertexShaders;
+
+	HashMap<PipelineLayoutKey, vk::PipelineLayout>          pipelineLayoutCache;
 
 	vk::DispatchLoaderDynamic                               dispatcher;
 
