@@ -1573,7 +1573,7 @@ vk::PipelineLayout RendererImpl::createPipelineLayout(const PipelineLayoutKey &k
 
 	vk::PipelineLayout layout = device.createPipelineLayout(layoutInfo);
 
-	auto it = pipelineLayoutCache.emplace(key, layout);
+	auto it DEBUG_ASSERTED = pipelineLayoutCache.emplace(key, layout);
 	assert(it.second == true);
 
 	return layout;
