@@ -989,15 +989,17 @@ struct DescriptorTyper<TextureHandle> {
 
 #define DESCRIPTOR(ds, member) { DescriptorTyper<decltype(member)>::value, offsetof(ds, member) }
 
+#define DS_LAYOUT_MEMBERS                    \
+    static const DescriptorLayout layout[];  \
+    static DSLayoutHandle layoutHandle
+
 
 struct GlobalDS {
 	BufferHandle   globalUniforms;
 	SamplerHandle  linearSampler;
 	SamplerHandle  nearestSampler;
 
-
-	static const DescriptorLayout layout[];
-	static DSLayoutHandle layoutHandle;
+	DS_LAYOUT_MEMBERS;
 };
 
 
@@ -1015,8 +1017,7 @@ struct ShapeSceneDS {
 	BufferHandle  unused;
 	BufferHandle  instances;
 
-	static const DescriptorLayout layout[];
-	static DSLayoutHandle layoutHandle;
+	DS_LAYOUT_MEMBERS;
 };
 
 
@@ -1033,8 +1034,7 @@ struct ColorCombinedDS {
 	BufferHandle  unused;
 	CSampler      color;
 
-	static const DescriptorLayout layout[];
-	static DSLayoutHandle layoutHandle;
+	DS_LAYOUT_MEMBERS;
 };
 
 
@@ -1051,8 +1051,7 @@ struct ColorTexDS {
 	BufferHandle   unused;
 	TextureHandle  color;
 
-	static const DescriptorLayout layout[];
-	static DSLayoutHandle layoutHandle;
+	DS_LAYOUT_MEMBERS;
 };
 
 
@@ -1071,8 +1070,7 @@ struct EdgeDetectionDS {
 	TextureHandle  color;
 	TextureHandle  predicationTex;
 
-	static const DescriptorLayout layout[];
-	static DSLayoutHandle layoutHandle;
+	DS_LAYOUT_MEMBERS;
 };
 
 
@@ -1093,8 +1091,7 @@ struct BlendWeightDS {
 	TextureHandle  areaTex;
 	TextureHandle  searchTex;
 
-	static const DescriptorLayout layout[];
-	static DSLayoutHandle layoutHandle;
+	DS_LAYOUT_MEMBERS;
 };
 
 
@@ -1115,8 +1112,7 @@ struct NeighborBlendDS {
 	TextureHandle  color;
 	TextureHandle  blendweights;
 
-	static const DescriptorLayout layout[];
-	static DSLayoutHandle layoutHandle;
+	DS_LAYOUT_MEMBERS;
 };
 
 
@@ -1137,8 +1133,7 @@ struct TemporalAADS {
 	TextureHandle  previousTex;
 	TextureHandle  velocityTex;
 
-	static const DescriptorLayout layout[];
-	static DSLayoutHandle layoutHandle;
+	DS_LAYOUT_MEMBERS;
 };
 
 
