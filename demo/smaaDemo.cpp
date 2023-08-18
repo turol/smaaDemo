@@ -593,6 +593,17 @@ class SMAADemo {
 
 	void rebuildRenderGraph();
 
+	template <typename F>
+	PipelineHandle getCachedPipeline(PipelineHandle &cachedPipeline, F &&createFunc) {
+		if (cachedPipeline) {
+			return cachedPipeline;
+		}
+
+		cachedPipeline = createFunc();
+		assert(cachedPipeline);
+		return cachedPipeline;
+	}
+
 	void renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r);
 
 	void renderSeparate(RenderPasses rp, DemoRenderGraph::PassResources &r);
