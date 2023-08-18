@@ -2926,7 +2926,7 @@ void SMAADemo::render() {
 
 
 void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources & /* r */) {
-	if (!shapePipeline) {
+	renderer.bindPipeline(getCachedPipeline(shapePipeline, [&] () {
 		std::string name = "shapes";
 		if (numSamples > 1) {
 			name += " MSAA x" + std::to_string(numSamples);
@@ -2945,11 +2945,8 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 		      .depthTest(true)
 		      .cullFaces(true);
 
-		shapePipeline = renderGraph.createPipeline(renderer, rp, plDesc);
-	}
-	assert(shapePipeline);
-
-	renderer.bindPipeline(shapePipeline);
+		return renderGraph.createPipeline(renderer, rp, plDesc);
+	} ));
 
 	const unsigned int windowWidth  = rendererDesc.swapchain.width;
 	const unsigned int windowHeight = rendererDesc.swapchain.height;
@@ -3030,7 +3027,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 
 
 void SMAADemo::renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources & /* r */) {
-	if (!imagePipeline) {
+	renderer.bindPipeline(getCachedPipeline(imagePipeline, [&] () {
 		PipelineDesc plDesc;
 		plDesc.numSamples(numSamples)
 		      .descriptorSetLayout<GlobalDS>(0)
@@ -3039,10 +3036,8 @@ void SMAADemo::renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources 
 		      .fragmentShader("image")
 		      .name("image");
 
-		imagePipeline = renderGraph.createPipeline(renderer, rp, plDesc);
-	}
-
-	renderer.bindPipeline(imagePipeline);
+		return renderGraph.createPipeline(renderer, rp, plDesc);
+	}));
 
 	assert(activeScene > 0);
 	const auto &image = images.at(activeScene - 1);
@@ -3074,7 +3069,7 @@ void SMAADemo::renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources 
 
 
 void SMAADemo::renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
-	if (!fxaaPipeline) {
+	renderer.bindPipeline(getCachedPipeline(fxaaPipeline, [&] () {
 		std::string qualityString(fxaaQualityLevels[fxaaQuality]);
 
 		ShaderMacros macros;
@@ -3092,11 +3087,9 @@ void SMAADemo::renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 		      .shaderLanguage(preferredShaderLanguage)
 		      .name(std::string("FXAA ") + qualityString);
 
-		fxaaPipeline = renderGraph.createPipeline(renderer, rp, plDesc);
-	}
-	assert(fxaaPipeline);
+		return renderGraph.createPipeline(renderer, rp, plDesc);
+	}));
 
-	renderer.bindPipeline(fxaaPipeline);
 	ColorCombinedDS colorDS;
 	// FIXME: remove unused UBO hack
 	uint32_t temp         = 0;
@@ -3109,7 +3102,7 @@ void SMAADemo::renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 
 
 void SMAADemo::renderSeparate(RenderPasses rp, DemoRenderGraph::PassResources &r) {
-	if (!separatePipeline) {
+	renderer.bindPipeline(getCachedPipeline(separatePipeline, [&] () {
 		LOG_TODO("does this need its own DS?")
 		PipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
@@ -3118,10 +3111,9 @@ void SMAADemo::renderSeparate(RenderPasses rp, DemoRenderGraph::PassResources &r
 			  .fragmentShader("separate")
 			  .name("subsample separate");
 
-		separatePipeline = renderGraph.createPipeline(renderer, rp, plDesc);
-	}
+		return renderGraph.createPipeline(renderer, rp, plDesc);
+	}));
 
-	renderer.bindPipeline(separatePipeline);
 	ColorCombinedDS separateDS;
 	// FIXME: remove unused UBO hack
 	uint32_t temp            = 0;
@@ -3134,7 +3126,7 @@ void SMAADemo::renderSeparate(RenderPasses rp, DemoRenderGraph::PassResources &r
 
 
 void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &r, Rendertargets input, int pass) {
-	if (!smaaPipelines.edgePipeline) {
+	renderer.bindPipeline(getCachedPipeline(smaaPipelines.edgePipeline, [&] () {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 		macros.set(qualityString, "1");
@@ -3159,10 +3151,8 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 		      .vertexShader("smaaEdge")
 		      .fragmentShader("smaaEdge")
 		      .name(std::string("SMAA edges ") + std::to_string(smaaQuality));
-		smaaPipelines.edgePipeline      = renderGraph.createPipeline(renderer, rp, plDesc);
-	}
-
-	renderer.bindPipeline(smaaPipelines.edgePipeline);
+		return renderGraph.createPipeline(renderer, rp, plDesc);
+	}));
 
 	LOG_TODO("this is redundant, clean it up")
 	ShaderDefines::SMAAUBO smaaUBO;
@@ -3193,7 +3183,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 
 
 void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources &r, int pass) {
-	if (!smaaPipelines.blendWeightPipeline) {
+	renderer.bindPipeline(getCachedPipeline(smaaPipelines.blendWeightPipeline, [&] () {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 		macros.set(qualityString, "1");
@@ -3210,8 +3200,8 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 		      .vertexShader("smaaBlendWeight")
 		      .fragmentShader("smaaBlendWeight")
 		      .name(std::string("SMAA weights ") + std::to_string(smaaQuality));
-		smaaPipelines.blendWeightPipeline = renderGraph.createPipeline(renderer, rp, plDesc);
-	}
+		return renderGraph.createPipeline(renderer, rp, plDesc);
+	}));
 
 	LOG_TODO("this is redundant, clean it up")
 	ShaderDefines::SMAAUBO smaaUBO;
@@ -3224,7 +3214,6 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 
 	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
 
-	renderer.bindPipeline(smaaPipelines.blendWeightPipeline);
 	BlendWeightDS blendWeightDS;
 	blendWeightDS.smaaUBO           = smaaUBOBuf;
 
@@ -3239,7 +3228,8 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 
 
 void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &r, Rendertargets input, int pass) {
-	if (!smaaPipelines.neighborPipelines[pass]) {
+	// full effect
+	renderer.bindPipeline(getCachedPipeline(smaaPipelines.neighborPipelines[pass], [&] () {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 		macros.set(qualityString, "1");
@@ -3266,8 +3256,8 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 			      .name(std::string("SMAA blend (S2X) ") + std::to_string(smaaQuality));
 		}
 
-		smaaPipelines.neighborPipelines[pass] = renderGraph.createPipeline(renderer, rp, plDesc);
-	}
+		return renderGraph.createPipeline(renderer, rp, plDesc);
+	}));
 
 	LOG_TODO("this is redundant, clean it up")
 	ShaderDefines::SMAAUBO smaaUBO;
@@ -3279,9 +3269,6 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 	smaaUBO.subsampleIndices      = subsampleIndices[pass];
 
 	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
-
-	// full effect
-	renderer.bindPipeline(smaaPipelines.neighborPipelines[pass]);
 
 	NeighborBlendDS neighborBlendDS;
 	neighborBlendDS.smaaUBO              = smaaUBOBuf;
@@ -3296,7 +3283,7 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 
 
 void SMAADemo::renderSMAADebug(RenderPasses rp, DemoRenderGraph::PassResources &r, Rendertargets rt) {
-	if (!blitPipeline) {
+	renderer.bindPipeline(getCachedPipeline(blitPipeline, [&] () {
 		PipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ColorTexDS>(1)
@@ -3304,11 +3291,10 @@ void SMAADemo::renderSMAADebug(RenderPasses rp, DemoRenderGraph::PassResources &
 		      .fragmentShader("blit")
 		      .name("blit");
 
-		blitPipeline = renderGraph.createPipeline(renderer, rp, plDesc);
-	}
+		return renderGraph.createPipeline(renderer, rp, plDesc);
+	}));
 
 	ColorTexDS blitDS;
-	renderer.bindPipeline(blitPipeline);
 	// FIXME: remove unused UBO hack
 	uint32_t temp  = 0;
 	blitDS.unused  = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
@@ -3320,7 +3306,7 @@ void SMAADemo::renderSMAADebug(RenderPasses rp, DemoRenderGraph::PassResources &
 
 
 void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
-	if (!temporalAAPipelines[temporalReproject]) {
+	renderer.bindPipeline(getCachedPipeline(temporalAAPipelines[temporalReproject], [&] () {
 		ShaderMacros macros;
 		macros.set("SMAA_REPROJECTION", std::to_string(temporalReproject));
 		macros.set("SMAA_GLSL_SEPARATE_SAMPLER", "1");
@@ -3334,10 +3320,8 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 			  .shaderLanguage(preferredShaderLanguage)
 			  .name("temporal AA");
 
-		temporalAAPipelines[temporalReproject] = renderGraph.createPipeline(renderer, rp, plDesc);
-	}
-
-	renderer.bindPipeline(temporalAAPipelines[temporalReproject]);
+		return renderGraph.createPipeline(renderer, rp, plDesc);
+	}));
 
 	ShaderDefines::SMAAUBO smaaUBO;
 	smaaUBO.smaaParameters        = smaaParameters;
@@ -3793,7 +3777,7 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 		assert(drawData->TotalVtxCount >  0);
 		assert(drawData->TotalIdxCount >  0);
 
-        if (!guiPipeline) {
+		renderer.bindPipeline(getCachedPipeline(guiPipeline, [&] () {
 			PipelineDesc plDesc;
 			plDesc.descriptorSetLayout<GlobalDS>(0)
 				  .descriptorSetLayout<ColorTexDS>(1)
@@ -3809,10 +3793,9 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 				  .vertexBufferStride(0, sizeof(ImDrawVert))
 				  .name("gui");
 
-			guiPipeline = renderGraph.createPipeline(renderer, rp, plDesc);
-		}
+			return renderGraph.createPipeline(renderer, rp, plDesc);
+		}));
 
-		renderer.bindPipeline(guiPipeline);
 		ColorTexDS colorDS;
 		// FIXME: remove unused UBO hack
 		uint32_t temp = 0;
