@@ -1151,7 +1151,7 @@ DSLayoutHandle TemporalAADS::layoutHandle;
 
 static const int numDepths = 5;
 static const std::array<Format, numDepths> depths
-  = { { Format::Depth24X8, Format::Depth24S8, Format::Depth32Float, Format::Depth16, Format::Depth16S8 } };
+  = { Format::Depth24X8, Format::Depth24S8, Format::Depth32Float, Format::Depth16, Format::Depth16S8 };
 
 
 void SMAADemo::initRender() {

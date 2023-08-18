@@ -81,13 +81,13 @@ template <typename T> void RendererImpl::debugNameObject(T handle, const std::st
 
 
 static const magic_enum::containers::array<DescriptorType, vk::DescriptorType> descriptorTypes =
-{ {
+{
 	  vk::DescriptorType::eUniformBuffer
 	, vk::DescriptorType::eStorageBuffer
 	, vk::DescriptorType::eSampler
 	, vk::DescriptorType::eSampledImage
 	, vk::DescriptorType::eCombinedImageSampler
-} };
+};
 
 
 static vk::IndexType vulkanIndexFormat(IndexFormat indexFormat) {
@@ -611,7 +611,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	LOG("Using queue {} for graphics", graphicsQueueIndex);
 
-	std::array<float, 1> queuePriorities = { { 0.0f } };
+	std::array<float, 1> queuePriorities = { 0.0f };
 
 	std::array<vk::DeviceQueueCreateInfo, 2> queueCreateInfos;
 	unsigned int numQueues = 0;
@@ -1361,7 +1361,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 
 			attach.loadOp         = vk::AttachmentLoadOp::eClear;
 			attach.initialLayout  = vk::ImageLayout::eUndefined;
-			std::array<float, 4> color = { { colorRT.clearValue.x, colorRT.clearValue.y, colorRT.clearValue.z, colorRT.clearValue.a } };
+			std::array<float, 4> color = { colorRT.clearValue.x, colorRT.clearValue.y, colorRT.clearValue.z, colorRT.clearValue.a };
 			r.clearValueCount = attachNum + 1;
 			assert(r.clearValueCount <= 2);
 			r.clearValues[attachNum].color = vk::ClearColorValue(color);
