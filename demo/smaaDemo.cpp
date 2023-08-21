@@ -374,9 +374,9 @@ template <> struct hash<std::pair<Rendertargets, Format> > {
 
 
 struct SMAAPipelines {
-	PipelineHandle                 edgePipeline;
-	PipelineHandle                 blendWeightPipeline;
-	std::array<PipelineHandle, 2>  neighborPipelines;
+	GraphicsPipelineHandle                 edgePipeline;
+	GraphicsPipelineHandle                 blendWeightPipeline;
+	std::array<GraphicsPipelineHandle, 2>  neighborPipelines;
 };
 
 
@@ -544,13 +544,13 @@ class SMAADemo {
 
 	std::array<RenderTargetHandle, 2>                 temporalRTs;
 
-	PipelineHandle                                    shapePipeline;
-	PipelineHandle                                    imagePipeline;
-	PipelineHandle                                    blitPipeline;
-	PipelineHandle                                    guiPipeline;
-	PipelineHandle                                    separatePipeline;
-	std::array<PipelineHandle, 2>                     temporalAAPipelines;
-	PipelineHandle                                    fxaaPipeline;
+	GraphicsPipelineHandle                                    shapePipeline;
+	GraphicsPipelineHandle                                    imagePipeline;
+	GraphicsPipelineHandle                                    blitPipeline;
+	GraphicsPipelineHandle                                    guiPipeline;
+	GraphicsPipelineHandle                                    separatePipeline;
+	std::array<GraphicsPipelineHandle, 2>                     temporalAAPipelines;
+	GraphicsPipelineHandle                                    fxaaPipeline;
 
 	magic_enum::containers::array<Shape, ShapeRenderBuffers>  shapeBuffers;
 
@@ -594,7 +594,7 @@ class SMAADemo {
 	void rebuildRenderGraph();
 
 	template <typename F>
-	PipelineHandle getCachedPipeline(PipelineHandle &cachedPipeline, F &&createFunc) {
+	GraphicsPipelineHandle getCachedPipeline(GraphicsPipelineHandle &cachedPipeline, F &&createFunc) {
 		if (cachedPipeline) {
 			return cachedPipeline;
 		}

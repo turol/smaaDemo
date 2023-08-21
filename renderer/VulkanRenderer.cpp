@@ -1580,7 +1580,7 @@ vk::PipelineLayout RendererImpl::createPipelineLayout(const PipelineLayoutKey &k
 }
 
 
-PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
+GraphicsPipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	vk::GraphicsPipelineCreateInfo info;
 
 	if (impl->pipelineExecutableInfo) {
@@ -2205,7 +2205,7 @@ void Renderer::deleteFramebuffer(FramebufferHandle &&handle) {
 }
 
 
-void Renderer::deletePipeline(PipelineHandle &&handle) {
+void Renderer::deletePipeline(GraphicsPipelineHandle &&handle) {
 	impl->pipelines.removeWith(std::move(handle), [this](GraphicsPipeline &p) {
 		impl->deleteResources.emplace_back(std::move(p));
 	} );
@@ -3407,7 +3407,7 @@ void Renderer::layoutTransition(RenderTargetHandle image, Layout src, Layout des
 }
 
 
-void Renderer::bindGraphicsPipeline(PipelineHandle pipeline) {
+void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 #ifndef NDEBUG
 	assert(impl->inFrame);
 	assert(impl->inRenderPass);

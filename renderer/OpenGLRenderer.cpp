@@ -1149,7 +1149,7 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 }
 
 
-PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
+GraphicsPipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	assert(!desc.vertexShaderName.empty());
 	assert(!desc.fragmentShaderName.empty());
 	assert(desc.renderPass_);
@@ -1613,7 +1613,7 @@ void Renderer::deleteFramebuffer(FramebufferHandle &&handle) {
 }
 
 
-void Renderer::deletePipeline(PipelineHandle &&handle) {
+void Renderer::deletePipeline(GraphicsPipelineHandle &&handle) {
 	impl->pipelines.removeWith(std::move(handle), [](GraphicsPipeline &p) {
 		assert(p.shader != 0);
 		glDeleteProgram(p.shader);
@@ -2123,7 +2123,7 @@ void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width
 }
 
 
-void Renderer::bindGraphicsPipeline(PipelineHandle pipeline) {
+void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 #ifndef NDEBUG
 	assert(impl->inFrame);
 	assert(pipeline);

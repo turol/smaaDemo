@@ -228,7 +228,7 @@ public:
 using BufferHandle       = Handle<Buffer>;
 using DSLayoutHandle     = Handle<DescriptorSetLayout>;
 using FramebufferHandle  = Handle<Framebuffer>;
-using PipelineHandle     = Handle<GraphicsPipeline>;
+using GraphicsPipelineHandle  = Handle<GraphicsPipeline>;
 using RenderPassHandle   = Handle<RenderPass>;
 using RenderTargetHandle = Handle<RenderTarget>;
 using SamplerHandle      = Handle<Sampler>;
@@ -1044,7 +1044,7 @@ public:
 	BufferHandle          createBuffer(BufferType type, uint32_t size, const void *contents);
 	BufferHandle          createEphemeralBuffer(BufferType type, uint32_t size, const void *contents);
 	FramebufferHandle     createFramebuffer(const FramebufferDesc &desc);
-	PipelineHandle        createPipeline(const PipelineDesc &desc);
+	GraphicsPipelineHandle  createPipeline(const PipelineDesc &desc);
 	RenderPassHandle      createRenderPass(const RenderPassDesc &desc);
 	RenderTargetHandle    createRenderTarget(const RenderTargetDesc &desc);
 	SamplerHandle         createSampler(const SamplerDesc &desc);
@@ -1062,7 +1062,7 @@ public:
 
 	void deleteBuffer(BufferHandle &&handle);
 	void deleteFramebuffer(FramebufferHandle &&handle);
-	void deletePipeline(PipelineHandle &&handle);
+	void deletePipeline(GraphicsPipelineHandle &&handle);
 	void deleteRenderPass(RenderPassHandle &&handle);
 	void deleteRenderTarget(RenderTargetHandle &&handle);
 	void deleteSampler(SamplerHandle &&handle);
@@ -1087,7 +1087,7 @@ public:
 	void setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 
-	void bindGraphicsPipeline(PipelineHandle pipeline);
+	void bindGraphicsPipeline(GraphicsPipelineHandle pipeline);
 	void bindDescriptorSet(unsigned int index, const DSLayoutHandle layout, const void *data);
 	template <typename T> void bindDescriptorSet(unsigned int index, const T &data) {
 		bindDescriptorSet(index, T::layoutHandle, &data);

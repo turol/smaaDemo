@@ -665,7 +665,7 @@ struct RendererImpl : public RendererBase {
 	bool                                                    persistentMapInUse  = false;
 	char                                                    *persistentMapping  = nullptr;
 
-	PipelineHandle                                          currentPipeline;
+	GraphicsPipelineHandle                                  currentPipeline;
 
 	bool                                                    decriptorSetsDirty  = true;
 	HashMap<DSIndex, Descriptor>                            descriptors;

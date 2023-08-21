@@ -398,7 +398,7 @@ private:
 
 	struct GraphicsPipeline {
 		PipelineDesc    desc;
-		PipelineHandle  handle;
+		GraphicsPipelineHandle  handle;
 	};
 
 	using Operation = std::variant<Blit, RenderPass, ResolveMSAA>;
@@ -1073,7 +1073,7 @@ public:
 	}
 
 
-	PipelineHandle createPipeline(Renderer &renderer, RP rp, PipelineDesc &desc) {
+	GraphicsPipelineHandle createPipeline(Renderer &renderer, RP rp, PipelineDesc &desc) {
 		assert(state == RGState::Ready || state == RGState::Rendering);
 
 		LOG_TODO("use hash map")
@@ -1102,7 +1102,7 @@ public:
 
 		// store the owning handle in pipelines and return a non-owning copy
 		auto handle = renderer.createPipeline(desc);
-		PipelineHandle result = handle;
+		GraphicsPipelineHandle result = handle;
 
 		GraphicsPipeline pipeline;
 		pipeline.desc   = desc;
