@@ -1056,7 +1056,7 @@ struct RendererImpl : public RendererBase {
 	ResourceContainer<DescriptorSetLayout, uint32_t, true>  dsLayouts;
 	ResourceContainer<FragmentShader, uint32_t, true>       fragmentShaders;
 	ResourceContainer<Framebuffer>                          framebuffers;
-	ResourceContainer<GraphicsPipeline>                     pipelines;
+	ResourceContainer<GraphicsPipeline>                     graphicsPipelines;
 	ResourceContainer<RenderPass>                           renderPasses;
 	ResourceContainer<RenderTarget>                         renderTargets;
 	ResourceContainer<Sampler>                              samplers;

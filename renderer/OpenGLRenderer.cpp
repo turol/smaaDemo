@@ -847,7 +847,7 @@ RendererImpl::~RendererImpl() {
 	} );
 
 
-	pipelines.clearWith([](GraphicsPipeline &p) {
+	graphicsPipelines.clearWith([](GraphicsPipeline &p) {
 		assert(p.shader != 0);
 		glDeleteProgram(p.shader);
 		p.shader = 0;
@@ -1277,7 +1277,7 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 		glObjectLabel(GL_PROGRAM, program, desc.name_.size(), desc.name_.c_str());
 	}
 
-	return impl->pipelines.add(std::move(pipeline));
+	return impl->graphicsPipelines.add(std::move(pipeline));
 }
 
 
@@ -1614,7 +1614,7 @@ void Renderer::deleteFramebuffer(FramebufferHandle &&handle) {
 
 
 void Renderer::deleteGraphicsPipeline(GraphicsPipelineHandle &&handle) {
-	impl->pipelines.removeWith(std::move(handle), [](GraphicsPipeline &p) {
+	impl->graphicsPipelines.removeWith(std::move(handle), [](GraphicsPipeline &p) {
 		assert(p.shader != 0);
 		glDeleteProgram(p.shader);
 		p.shader = 0;
@@ -2112,7 +2112,7 @@ void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width
 #ifndef NDEBUG
 	assert(impl->validPipeline);
 
-	const auto &p = impl->pipelines.get(impl->currentPipeline);
+	const auto &p = impl->graphicsPipelines.get(impl->currentPipeline);
 	assert(p.desc.scissorTest_);
 	impl->scissorSet = true;
 #endif  // NDEBUG
@@ -2136,7 +2136,7 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 
 	impl->decriptorSetsDirty = true;
 
-	const auto &p = impl->pipelines.get(pipeline);
+	const auto &p = impl->graphicsPipelines.get(pipeline);
 
 	LOG_TODO("shadow state, set only necessary")
 	glUseProgram(p.shader);
@@ -2177,7 +2177,7 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 		glDisable(GL_BLEND);
 	}
 
-	uint32_t oldMask = impl->currentPipeline ? (impl->pipelines.get(impl->currentPipeline).desc.vertexAttribMask) : 0;
+	uint32_t oldMask = impl->currentPipeline ? (impl->graphicsPipelines.get(impl->currentPipeline).desc.vertexAttribMask) : 0;
 	uint32_t newMask = p.desc.vertexAttribMask;
 
 	// enable/disable changed attributes
@@ -2251,7 +2251,7 @@ void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 		assert(buffer.buffer != 0);
 		assert(buffer.offset == 0);
 	}
-	const auto &p = impl->pipelines.get(impl->currentPipeline);
+	const auto &p = impl->graphicsPipelines.get(impl->currentPipeline);
 	glBindVertexBuffer(binding, buffer.buffer, buffer.offset, p.desc.vertexBuffers[binding].stride);
 }
 
@@ -2259,7 +2259,7 @@ void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 void Renderer::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHandle, const void *data_) {
 #ifndef NDEBUG
 	assert(impl->validPipeline);
-	const auto &p = impl->pipelines.get(impl->currentPipeline);
+	const auto &p = impl->graphicsPipelines.get(impl->currentPipeline);
 	assert(p.desc.descriptorSetLayouts[index] == layoutHandle);
 #endif  // NDEBUG
 
@@ -2391,7 +2391,7 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 void RendererImpl::rebindDescriptorSets() {
 	assert(decriptorSetsDirty);
 
-	const auto &pipeline  = pipelines.get(currentPipeline);
+	const auto &pipeline  = graphicsPipelines.get(currentPipeline);
 	const auto &resources = pipeline.resources;
 
 	LOG_TODO("only change what is necessary")
@@ -2572,7 +2572,7 @@ void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	assert(impl->inRenderPass);
 	assert(impl->validPipeline);
 	assert(vertexCount > 0);
-	const auto &p = impl->pipelines.get(impl->currentPipeline);
+	const auto &p = impl->graphicsPipelines.get(impl->currentPipeline);
 	assert(!p.desc.scissorTest_ || impl->scissorSet);
 	impl->pipelineUsed = true;
 #endif //  NDEBUG
@@ -2593,7 +2593,7 @@ void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int insta
 	assert(impl->validPipeline);
 	assert(instanceCount > 0);
 	assert(vertexCount > 0);
-	const auto &p = impl->pipelines.get(impl->currentPipeline);
+	const auto &p = impl->graphicsPipelines.get(impl->currentPipeline);
 	assert(!p.desc.scissorTest_ || impl->scissorSet);
 	impl->pipelineUsed = true;
 #endif //  NDEBUG
@@ -2619,7 +2619,7 @@ void Renderer::drawIndexed(unsigned int vertexCount, unsigned int firstIndex) {
 	assert(impl->inRenderPass);
 	assert(impl->validPipeline);
 	assert(vertexCount > 0);
-	const auto &p = impl->pipelines.get(impl->currentPipeline);
+	const auto &p = impl->graphicsPipelines.get(impl->currentPipeline);
 	assert(!p.desc.scissorTest_ || impl->scissorSet);
 	impl->pipelineUsed = true;
 #endif //  NDEBUG
@@ -2642,7 +2642,7 @@ void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int fi
 	assert(impl->inRenderPass);
 	assert(impl->validPipeline);
 	assert(vertexCount > 0);
-	const auto &p = impl->pipelines.get(impl->currentPipeline);
+	const auto &p = impl->graphicsPipelines.get(impl->currentPipeline);
 	assert(!p.desc.scissorTest_ || impl->scissorSet);
 	impl->pipelineUsed = true;
 #endif //  NDEBUG

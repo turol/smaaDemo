@@ -136,7 +136,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDesc &desc) {
 	GraphicsPipeline pipeline;
 	pipeline.desc = desc;
-	return impl->pipelines.add(std::move(pipeline));
+	return impl->graphicsPipelines.add(std::move(pipeline));
 }
 
 
@@ -228,7 +228,7 @@ void Renderer::deleteFramebuffer(FramebufferHandle &&handle) {
 
 
 void Renderer::deleteGraphicsPipeline(GraphicsPipelineHandle &&handle) {
-	impl->pipelines.remove(std::move(handle));
+	impl->graphicsPipelines.remove(std::move(handle));
 }
 
 
@@ -402,7 +402,7 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 	impl->validPipeline = true;
 	impl->scissorSet    = false;
 
-	impl->currentPipeline = impl->pipelines.get(pipeline).desc;
+	impl->currentPipeline = impl->graphicsPipelines.get(pipeline).desc;
 }
 
 

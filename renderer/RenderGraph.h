@@ -514,7 +514,7 @@ private:
 	HashMap<RT, Rendertarget>                        rendertargets;
 
 	// TODO: use hash map
-	std::vector<GraphicsPipeline>                    pipelines;
+	std::vector<GraphicsPipeline>                    graphicsPipelines;
 
 	HashSet<RP>                                      renderpassesWithExternalRTs;
 
@@ -545,10 +545,10 @@ public:
 		renderpassesWithExternalRTs.clear();
 		hasExternalRTs = false;
 
-		for (auto &p : pipelines) {
+		for (auto &p : graphicsPipelines) {
 			renderer.deleteGraphicsPipeline(std::move(p.handle));
 		}
-		pipelines.clear();
+		graphicsPipelines.clear();
 
 		for (auto &rt : rendertargets) {
 			assert(rt.first != Default<RT>::value);
@@ -1094,20 +1094,20 @@ public:
 		assert(found);
 
 		LOG_TODO("use hash map")
-		for (const auto &pipeline : pipelines) {
+		for (const auto &pipeline : graphicsPipelines) {
 			if (pipeline.desc == desc) {
 				return pipeline.handle;
 			}
 		}
 
-		// store the owning handle in pipelines and return a non-owning copy
+		// store the owning handle in graphicsPipelines and return a non-owning copy
 		auto handle = renderer.createGraphicsPipeline(desc);
 		GraphicsPipelineHandle result = handle;
 
 		GraphicsPipeline pipeline;
 		pipeline.desc   = desc;
 		pipeline.handle = std::move(handle);
-		pipelines.emplace_back(std::move(pipeline));
+		graphicsPipelines.emplace_back(std::move(pipeline));
 
 		return result;
 	}

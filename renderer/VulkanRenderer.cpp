@@ -963,7 +963,7 @@ RendererImpl::~RendererImpl() {
 		deleteSamplerInternal(s);
 	} );
 
-	pipelines.clearWith([this](GraphicsPipeline &p) {
+	graphicsPipelines.clearWith([this](GraphicsPipeline &p) {
 		deleteGraphicsPipelineInternal(p);
 	} );
 
@@ -1819,7 +1819,7 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 	p.layout   = info.layout;
 	p.scissor  = desc.scissorTest_;
 
-	return impl->pipelines.add(std::move(p));
+	return impl->graphicsPipelines.add(std::move(p));
 }
 
 
@@ -2206,7 +2206,7 @@ void Renderer::deleteFramebuffer(FramebufferHandle &&handle) {
 
 
 void Renderer::deleteGraphicsPipeline(GraphicsPipelineHandle &&handle) {
-	impl->pipelines.removeWith(std::move(handle), [this](GraphicsPipeline &p) {
+	impl->graphicsPipelines.removeWith(std::move(handle), [this](GraphicsPipeline &p) {
 		impl->deleteResources.emplace_back(std::move(p));
 	} );
 }
@@ -3419,7 +3419,7 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 
 	LOG_TODO("make sure current renderpass matches the one in pipeline")
 
-	const auto &p = impl->pipelines.get(pipeline);
+	const auto &p = impl->graphicsPipelines.get(pipeline);
 	impl->currentCommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, p.pipeline);
 	impl->currentPipelineLayout = p.layout;
 
