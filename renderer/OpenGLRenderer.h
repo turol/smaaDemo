@@ -271,10 +271,10 @@ struct Framebuffer {
 
 struct GraphicsPipeline {
 	GraphicsPipelineDesc  desc;
-	GLuint           shader     = 0;
-	GLenum           srcBlend   = GL_ONE;
-	GLenum           destBlend  = GL_ZERO;
-	ShaderResources  resources;
+	GLuint                shader     = 0;
+	GLenum                srcBlend   = GL_ONE;
+	GLenum                destBlend  = GL_ZERO;
+	ShaderResources       resources;
 
 
 	GraphicsPipeline(const GraphicsPipeline &)            = delete;

@@ -2131,7 +2131,7 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 	assert(impl->pipelineUsed);
 	impl->pipelineUsed  = false;
 	impl->validPipeline = true;
-	impl->scissorSet = false;
+	impl->scissorSet    = false;
 #endif  // NDEBUG
 
 	impl->decriptorSetsDirty = true;

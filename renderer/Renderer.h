@@ -225,14 +225,14 @@ public:
 #endif  // HANDLE_OWNERSHIP_DEBUG
 
 
-using BufferHandle       = Handle<Buffer>;
-using DSLayoutHandle     = Handle<DescriptorSetLayout>;
-using FramebufferHandle  = Handle<Framebuffer>;
+using BufferHandle            = Handle<Buffer>;
+using DSLayoutHandle          = Handle<DescriptorSetLayout>;
+using FramebufferHandle       = Handle<Framebuffer>;
 using GraphicsPipelineHandle  = Handle<GraphicsPipeline>;
-using RenderPassHandle   = Handle<RenderPass>;
-using RenderTargetHandle = Handle<RenderTarget>;
-using SamplerHandle      = Handle<Sampler>;
-using TextureHandle      = Handle<Texture>;
+using RenderPassHandle        = Handle<RenderPass>;
+using RenderTargetHandle      = Handle<RenderTarget>;
+using SamplerHandle           = Handle<Sampler>;
+using TextureHandle           = Handle<Texture>;
 
 
 enum class BlendFunc : uint8_t {
@@ -1041,14 +1041,14 @@ public:
 	Format getSwapchainFormat() const;
 
 	// TODO: add buffer usage flags
-	BufferHandle          createBuffer(BufferType type, uint32_t size, const void *contents);
-	BufferHandle          createEphemeralBuffer(BufferType type, uint32_t size, const void *contents);
-	FramebufferHandle     createFramebuffer(const FramebufferDesc &desc);
+	BufferHandle            createBuffer(BufferType type, uint32_t size, const void *contents);
+	BufferHandle            createEphemeralBuffer(BufferType type, uint32_t size, const void *contents);
+	FramebufferHandle       createFramebuffer(const FramebufferDesc &desc);
 	GraphicsPipelineHandle  createGraphicsPipeline(const GraphicsPipelineDesc &desc);
-	RenderPassHandle      createRenderPass(const RenderPassDesc &desc);
-	RenderTargetHandle    createRenderTarget(const RenderTargetDesc &desc);
-	SamplerHandle         createSampler(const SamplerDesc &desc);
-	TextureHandle         createTexture(const TextureDesc &desc);
+	RenderPassHandle        createRenderPass(const RenderPassDesc &desc);
+	RenderTargetHandle      createRenderTarget(const RenderTargetDesc &desc);
+	SamplerHandle           createSampler(const SamplerDesc &desc);
+	TextureHandle           createTexture(const TextureDesc &desc);
 	// TODO: non-ephemeral descriptor set
 
 	DSLayoutHandle createDescriptorSetLayout(const DescriptorLayout *layout);
