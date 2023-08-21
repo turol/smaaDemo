@@ -1613,7 +1613,7 @@ void Renderer::deleteFramebuffer(FramebufferHandle &&handle) {
 }
 
 
-void Renderer::deletePipeline(GraphicsPipelineHandle &&handle) {
+void Renderer::deleteGraphicsPipeline(GraphicsPipelineHandle &&handle) {
 	impl->pipelines.removeWith(std::move(handle), [](GraphicsPipeline &p) {
 		assert(p.shader != 0);
 		glDeleteProgram(p.shader);

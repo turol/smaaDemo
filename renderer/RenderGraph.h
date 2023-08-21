@@ -546,7 +546,7 @@ public:
 		hasExternalRTs = false;
 
 		for (auto &p : pipelines) {
-			renderer.deletePipeline(std::move(p.handle));
+			renderer.deleteGraphicsPipeline(std::move(p.handle));
 		}
 		pipelines.clear();
 

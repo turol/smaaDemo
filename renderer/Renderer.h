@@ -1062,7 +1062,7 @@ public:
 
 	void deleteBuffer(BufferHandle &&handle);
 	void deleteFramebuffer(FramebufferHandle &&handle);
-	void deletePipeline(GraphicsPipelineHandle &&handle);
+	void deleteGraphicsPipeline(GraphicsPipelineHandle &&handle);
 	void deleteRenderPass(RenderPassHandle &&handle);
 	void deleteRenderTarget(RenderTargetHandle &&handle);
 	void deleteSampler(SamplerHandle &&handle);

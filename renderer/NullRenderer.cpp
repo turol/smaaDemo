@@ -227,7 +227,7 @@ void Renderer::deleteFramebuffer(FramebufferHandle &&handle) {
 }
 
 
-void Renderer::deletePipeline(GraphicsPipelineHandle &&handle) {
+void Renderer::deleteGraphicsPipeline(GraphicsPipelineHandle &&handle) {
 	impl->pipelines.remove(std::move(handle));
 }
 

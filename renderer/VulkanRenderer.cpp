@@ -2205,7 +2205,7 @@ void Renderer::deleteFramebuffer(FramebufferHandle &&handle) {
 }
 
 
-void Renderer::deletePipeline(GraphicsPipelineHandle &&handle) {
+void Renderer::deleteGraphicsPipeline(GraphicsPipelineHandle &&handle) {
 	impl->pipelines.removeWith(std::move(handle), [this](GraphicsPipeline &p) {
 		impl->deleteResources.emplace_back(std::move(p));
 	} );
