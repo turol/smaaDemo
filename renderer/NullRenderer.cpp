@@ -402,7 +402,7 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 	impl->validPipeline = true;
 	impl->scissorSet    = false;
 
-	impl->currentPipeline = impl->graphicsPipelines.get(pipeline).desc;
+	impl->currentGraphicsPipeline = impl->graphicsPipelines.get(pipeline).desc;
 }
 
 
@@ -430,7 +430,7 @@ void Renderer::setViewport(unsigned int /* x */, unsigned int /* y */, unsigned 
 
 void Renderer::setScissorRect(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
 	assert(impl->validPipeline);
-	assert(impl->currentPipeline.scissorTest_);
+	assert(impl->currentGraphicsPipeline.scissorTest_);
 	impl->scissorSet = true;
 }
 
@@ -465,7 +465,7 @@ void Renderer::draw(unsigned int /* firstVertex */, unsigned int vertexCount) {
 	assert(impl->inRenderPass);
 	assert(impl->validPipeline);
 	assert(vertexCount > 0);
-	assert(!impl->currentPipeline.scissorTest_ || impl->scissorSet);
+	assert(!impl->currentGraphicsPipeline.scissorTest_ || impl->scissorSet);
 	impl->pipelineUsed = true;
 }
 
@@ -475,7 +475,7 @@ void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int insta
 	assert(impl->validPipeline);
 	assert(vertexCount > 0);
 	assert(instanceCount > 0);
-	assert(!impl->currentPipeline.scissorTest_ || impl->scissorSet);
+	assert(!impl->currentGraphicsPipeline.scissorTest_ || impl->scissorSet);
 	impl->pipelineUsed = true;
 }
 
@@ -484,7 +484,7 @@ void Renderer::drawIndexed(unsigned int vertexCount, unsigned int /* firstIndex 
 	assert(impl->inRenderPass);
 	assert(impl->validPipeline);
 	assert(vertexCount > 0);
-	assert(!impl->currentPipeline.scissorTest_ || impl->scissorSet);
+	assert(!impl->currentGraphicsPipeline.scissorTest_ || impl->scissorSet);
 	impl->pipelineUsed = true;
 }
 
@@ -493,7 +493,7 @@ void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int /*
 	assert(impl->inRenderPass);
 	assert(impl->validPipeline);
 	assert(vertexCount > 0);
-	assert(!impl->currentPipeline.scissorTest_ || impl->scissorSet);
+	assert(!impl->currentGraphicsPipeline.scissorTest_ || impl->scissorSet);
 	impl->pipelineUsed = true;
 }
 
