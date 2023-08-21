@@ -393,7 +393,7 @@ void Renderer::layoutTransition(RenderTargetHandle image, Layout src, Layout des
 }
 
 
-void Renderer::bindPipeline(PipelineHandle pipeline) {
+void Renderer::bindGraphicsPipeline(PipelineHandle pipeline) {
 	assert(impl->inFrame);
 	assert(pipeline);
 	assert(impl->inRenderPass);

@@ -1087,7 +1087,7 @@ public:
 	void setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 
-	void bindPipeline(PipelineHandle pipeline);
+	void bindGraphicsPipeline(PipelineHandle pipeline);
 	void bindDescriptorSet(unsigned int index, const DSLayoutHandle layout, const void *data);
 	template <typename T> void bindDescriptorSet(unsigned int index, const T &data) {
 		bindDescriptorSet(index, T::layoutHandle, &data);

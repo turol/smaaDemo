@@ -3407,7 +3407,7 @@ void Renderer::layoutTransition(RenderTargetHandle image, Layout src, Layout des
 }
 
 
-void Renderer::bindPipeline(PipelineHandle pipeline) {
+void Renderer::bindGraphicsPipeline(PipelineHandle pipeline) {
 #ifndef NDEBUG
 	assert(impl->inFrame);
 	assert(impl->inRenderPass);

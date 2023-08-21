@@ -2123,7 +2123,7 @@ void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width
 }
 
 
-void Renderer::bindPipeline(PipelineHandle pipeline) {
+void Renderer::bindGraphicsPipeline(PipelineHandle pipeline) {
 #ifndef NDEBUG
 	assert(impl->inFrame);
 	assert(pipeline);
