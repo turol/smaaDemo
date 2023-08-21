@@ -964,7 +964,7 @@ RendererImpl::~RendererImpl() {
 	} );
 
 	pipelines.clearWith([this](GraphicsPipeline &p) {
-		deletePipelineInternal(p);
+		deleteGraphicsPipelineInternal(p);
 	} );
 
 	for (auto &p : pipelineLayoutCache) {
@@ -3050,7 +3050,7 @@ void RendererImpl::deleteFramebufferInternal(Framebuffer &fb) {
 }
 
 
-void RendererImpl::deletePipelineInternal(GraphicsPipeline &p) {
+void RendererImpl::deleteGraphicsPipelineInternal(GraphicsPipeline &p) {
 	p.layout = vk::PipelineLayout();
 	device.destroyPipeline(p.pipeline);
 	p.pipeline = vk::Pipeline();

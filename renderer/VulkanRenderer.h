@@ -1131,7 +1131,7 @@ struct RendererImpl : public RendererBase {
 
 	void deleteBufferInternal(Buffer &b);
 	void deleteFramebufferInternal(Framebuffer &fb);
-	void deletePipelineInternal(GraphicsPipeline &p);
+	void deleteGraphicsPipelineInternal(GraphicsPipeline &p);
 	void deleteRenderPassInternal(RenderPass &rp);
 	void deleteRenderTargetInternal(RenderTarget &rt);
 	void deleteResourceInternal(Resource &r);
@@ -1170,7 +1170,7 @@ struct RendererImpl : public RendererBase {
 		}
 
 		void operator()(GraphicsPipeline &p) const {
-			r->deletePipelineInternal(p);
+			r->deleteGraphicsPipelineInternal(p);
 		}
 
 		void operator()(RenderPass &rp) const {
