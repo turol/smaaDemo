@@ -1580,7 +1580,7 @@ vk::PipelineLayout RendererImpl::createPipelineLayout(const PipelineLayoutKey &k
 }
 
 
-GraphicsPipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
+GraphicsPipelineHandle Renderer::createGraphicsPipeline(const PipelineDesc &desc) {
 	vk::GraphicsPipelineCreateInfo info;
 
 	if (impl->pipelineExecutableInfo) {

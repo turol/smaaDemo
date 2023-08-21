@@ -2945,7 +2945,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 		      .depthTest(true)
 		      .cullFaces(true);
 
-		return renderGraph.createPipeline(renderer, rp, plDesc);
+		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	} ));
 
 	const unsigned int windowWidth  = rendererDesc.swapchain.width;
@@ -3036,7 +3036,7 @@ void SMAADemo::renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources 
 		      .fragmentShader("image")
 		      .name("image");
 
-		return renderGraph.createPipeline(renderer, rp, plDesc);
+		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	}));
 
 	assert(activeScene > 0);
@@ -3087,7 +3087,7 @@ void SMAADemo::renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 		      .shaderLanguage(preferredShaderLanguage)
 		      .name(std::string("FXAA ") + qualityString);
 
-		return renderGraph.createPipeline(renderer, rp, plDesc);
+		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	}));
 
 	ColorCombinedDS colorDS;
@@ -3111,7 +3111,7 @@ void SMAADemo::renderSeparate(RenderPasses rp, DemoRenderGraph::PassResources &r
 			  .fragmentShader("separate")
 			  .name("subsample separate");
 
-		return renderGraph.createPipeline(renderer, rp, plDesc);
+		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	}));
 
 	ColorCombinedDS separateDS;
@@ -3151,7 +3151,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 		      .vertexShader("smaaEdge")
 		      .fragmentShader("smaaEdge")
 		      .name(std::string("SMAA edges ") + std::to_string(smaaQuality));
-		return renderGraph.createPipeline(renderer, rp, plDesc);
+		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	}));
 
 	LOG_TODO("this is redundant, clean it up")
@@ -3200,7 +3200,7 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 		      .vertexShader("smaaBlendWeight")
 		      .fragmentShader("smaaBlendWeight")
 		      .name(std::string("SMAA weights ") + std::to_string(smaaQuality));
-		return renderGraph.createPipeline(renderer, rp, plDesc);
+		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	}));
 
 	LOG_TODO("this is redundant, clean it up")
@@ -3256,7 +3256,7 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 			      .name(std::string("SMAA blend (S2X) ") + std::to_string(smaaQuality));
 		}
 
-		return renderGraph.createPipeline(renderer, rp, plDesc);
+		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	}));
 
 	LOG_TODO("this is redundant, clean it up")
@@ -3291,7 +3291,7 @@ void SMAADemo::renderSMAADebug(RenderPasses rp, DemoRenderGraph::PassResources &
 		      .fragmentShader("blit")
 		      .name("blit");
 
-		return renderGraph.createPipeline(renderer, rp, plDesc);
+		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	}));
 
 	ColorTexDS blitDS;
@@ -3320,7 +3320,7 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 			  .shaderLanguage(preferredShaderLanguage)
 			  .name("temporal AA");
 
-		return renderGraph.createPipeline(renderer, rp, plDesc);
+		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	}));
 
 	ShaderDefines::SMAAUBO smaaUBO;
@@ -3793,7 +3793,7 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 				  .vertexBufferStride(0, sizeof(ImDrawVert))
 				  .name("gui");
 
-			return renderGraph.createPipeline(renderer, rp, plDesc);
+			return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 		}));
 
 		ColorTexDS colorDS;

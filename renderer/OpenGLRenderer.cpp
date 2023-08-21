@@ -1149,7 +1149,7 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 }
 
 
-GraphicsPipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
+GraphicsPipelineHandle Renderer::createGraphicsPipeline(const PipelineDesc &desc) {
 	assert(!desc.vertexShaderName.empty());
 	assert(!desc.fragmentShaderName.empty());
 	assert(desc.renderPass_);

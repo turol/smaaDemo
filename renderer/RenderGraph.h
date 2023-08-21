@@ -1073,7 +1073,7 @@ public:
 	}
 
 
-	GraphicsPipelineHandle createPipeline(Renderer &renderer, RP rp, PipelineDesc &desc) {
+	GraphicsPipelineHandle createGraphicsPipeline(Renderer &renderer, RP rp, PipelineDesc &desc) {
 		assert(state == RGState::Ready || state == RGState::Rendering);
 
 		LOG_TODO("use hash map")
@@ -1101,7 +1101,7 @@ public:
 		}
 
 		// store the owning handle in pipelines and return a non-owning copy
-		auto handle = renderer.createPipeline(desc);
+		auto handle = renderer.createGraphicsPipeline(desc);
 		GraphicsPipelineHandle result = handle;
 
 		GraphicsPipeline pipeline;

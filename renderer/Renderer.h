@@ -1044,7 +1044,7 @@ public:
 	BufferHandle          createBuffer(BufferType type, uint32_t size, const void *contents);
 	BufferHandle          createEphemeralBuffer(BufferType type, uint32_t size, const void *contents);
 	FramebufferHandle     createFramebuffer(const FramebufferDesc &desc);
-	GraphicsPipelineHandle  createPipeline(const PipelineDesc &desc);
+	GraphicsPipelineHandle  createGraphicsPipeline(const PipelineDesc &desc);
 	RenderPassHandle      createRenderPass(const RenderPassDesc &desc);
 	RenderTargetHandle    createRenderTarget(const RenderTargetDesc &desc);
 	SamplerHandle         createSampler(const SamplerDesc &desc);
