@@ -3426,7 +3426,7 @@ void Renderer::bindPipeline(PipelineHandle pipeline) {
 	if (!p.scissor) {
 		// Vulkan always requires a scissor rect
 		// if we don't use scissor set default here
-		LOG_TODO("shouldn't need this is previous pipeline didn't use scissor")
+		LOG_TODO("shouldn't need this if previous pipeline didn't use scissor")
 		// except for first pipeline of the command buffer
 		vk::Rect2D rect;
 		rect.offset.x      = static_cast<int32_t>(impl->currentViewport.x);
