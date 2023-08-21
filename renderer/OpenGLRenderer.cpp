@@ -1850,7 +1850,7 @@ void Renderer::beginFrame() {
 	impl->inFrame       = true;
 	impl->inRenderPass  = false;
 	impl->validPipeline = false;
-	impl->pipelineDrawn = true;
+	impl->pipelineUsed  = true;
 
 #endif //  NDEBUG
 
@@ -2128,8 +2128,8 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 	assert(impl->inFrame);
 	assert(pipeline);
 	assert(impl->inRenderPass);
-	assert(impl->pipelineDrawn);
-	impl->pipelineDrawn = false;
+	assert(impl->pipelineUsed);
+	impl->pipelineUsed  = false;
 	impl->validPipeline = true;
 	impl->scissorSet = false;
 #endif  // NDEBUG
@@ -2574,7 +2574,7 @@ void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	assert(vertexCount > 0);
 	const auto &p = impl->pipelines.get(impl->currentPipeline);
 	assert(!p.desc.scissorTest_ || impl->scissorSet);
-	impl->pipelineDrawn = true;
+	impl->pipelineUsed = true;
 #endif //  NDEBUG
 
 	if (impl->decriptorSetsDirty) {
@@ -2595,7 +2595,7 @@ void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int insta
 	assert(vertexCount > 0);
 	const auto &p = impl->pipelines.get(impl->currentPipeline);
 	assert(!p.desc.scissorTest_ || impl->scissorSet);
-	impl->pipelineDrawn = true;
+	impl->pipelineUsed = true;
 #endif //  NDEBUG
 
 	if (impl->decriptorSetsDirty) {
@@ -2621,7 +2621,7 @@ void Renderer::drawIndexed(unsigned int vertexCount, unsigned int firstIndex) {
 	assert(vertexCount > 0);
 	const auto &p = impl->pipelines.get(impl->currentPipeline);
 	assert(!p.desc.scissorTest_ || impl->scissorSet);
-	impl->pipelineDrawn = true;
+	impl->pipelineUsed = true;
 #endif //  NDEBUG
 
 	if (impl->decriptorSetsDirty) {
@@ -2644,7 +2644,7 @@ void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int fi
 	assert(vertexCount > 0);
 	const auto &p = impl->pipelines.get(impl->currentPipeline);
 	assert(!p.desc.scissorTest_ || impl->scissorSet);
-	impl->pipelineDrawn = true;
+	impl->pipelineUsed = true;
 #endif //  NDEBUG
 
 	if (impl->decriptorSetsDirty) {

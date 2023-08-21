@@ -2699,7 +2699,7 @@ void Renderer::beginFrame() {
 	impl->inFrame       = true;
 	impl->inRenderPass  = false;
 	impl->validPipeline = false;
-	impl->pipelineDrawn = true;
+	impl->pipelineUsed  = true;
 #endif  // NDEBUG
 	device.resetFences( { frame.fence } );
 
@@ -3411,8 +3411,8 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 #ifndef NDEBUG
 	assert(impl->inFrame);
 	assert(impl->inRenderPass);
-	assert(impl->pipelineDrawn);
-	impl->pipelineDrawn = false;
+	assert(impl->pipelineUsed);
+	impl->pipelineUsed  = false;
 	impl->validPipeline = true;
 	impl->scissorSet = false;
 #endif  // NDEBUG
@@ -3819,7 +3819,7 @@ void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	assert(impl->inRenderPass);
 	assert(impl->validPipeline);
 	assert(vertexCount > 0);
-	impl->pipelineDrawn = true;
+	impl->pipelineUsed = true;
 #endif  // NDEBUG
 
 	impl->currentCommandBuffer.draw(vertexCount, 1, firstVertex, 0);
@@ -3832,7 +3832,7 @@ void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int insta
 	assert(impl->validPipeline);
 	assert(vertexCount > 0);
 	assert(instanceCount > 0);
-	impl->pipelineDrawn = true;
+	impl->pipelineUsed = true;
 #endif //  NDEBUG
 
 	impl->currentCommandBuffer.drawIndexed(vertexCount, instanceCount, 0, 0, 0);
@@ -3844,7 +3844,7 @@ void Renderer::drawIndexed(unsigned int vertexCount, unsigned int firstIndex) {
 	assert(impl->inRenderPass);
 	assert(impl->validPipeline);
 	assert(vertexCount > 0);
-	impl->pipelineDrawn = true;
+	impl->pipelineUsed = true;
 #endif //  NDEBUG
 
 	impl->currentCommandBuffer.drawIndexed(vertexCount, 1, firstIndex, 0, 0);
@@ -3856,7 +3856,7 @@ void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int fi
 	assert(impl->inRenderPass);
 	assert(impl->validPipeline);
 	assert(vertexCount > 0);
-	impl->pipelineDrawn = true;
+	impl->pipelineUsed = true;
 #endif //  NDEBUG
 
 	impl->currentCommandBuffer.drawIndexed(vertexCount, 1, firstIndex, vertexOffset, 0);

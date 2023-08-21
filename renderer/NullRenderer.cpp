@@ -279,7 +279,7 @@ void Renderer::beginFrame() {
 	impl->inFrame       = true;
 	impl->inRenderPass  = false;
 	impl->validPipeline = false;
-	impl->pipelineDrawn = true;
+	impl->pipelineUsed  = true;
 
 	impl->currentFrameIdx        = impl->frameNum % impl->frames.size();
 	assert(impl->currentFrameIdx < impl->frames.size());
@@ -300,7 +300,7 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 	assert(!impl->inRenderPass);
 	impl->inRenderPass  = true;
 	impl->validPipeline = false;
-	impl->pipelineDrawn = true;
+	impl->pipelineUsed  = true;
 
 	assert(!impl->renderingToSwapchain);
 	impl->renderingToSwapchain = true;
@@ -397,8 +397,8 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 	assert(impl->inFrame);
 	assert(pipeline);
 	assert(impl->inRenderPass);
-	assert(impl->pipelineDrawn);
-	impl->pipelineDrawn = false;
+	assert(impl->pipelineUsed);
+	impl->pipelineUsed  = false;
 	impl->validPipeline = true;
 	impl->scissorSet    = false;
 
@@ -466,7 +466,7 @@ void Renderer::draw(unsigned int /* firstVertex */, unsigned int vertexCount) {
 	assert(impl->validPipeline);
 	assert(vertexCount > 0);
 	assert(!impl->currentPipeline.scissorTest_ || impl->scissorSet);
-	impl->pipelineDrawn = true;
+	impl->pipelineUsed = true;
 }
 
 
@@ -476,7 +476,7 @@ void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int insta
 	assert(vertexCount > 0);
 	assert(instanceCount > 0);
 	assert(!impl->currentPipeline.scissorTest_ || impl->scissorSet);
-	impl->pipelineDrawn = true;
+	impl->pipelineUsed = true;
 }
 
 
@@ -485,7 +485,7 @@ void Renderer::drawIndexed(unsigned int vertexCount, unsigned int /* firstIndex 
 	assert(impl->validPipeline);
 	assert(vertexCount > 0);
 	assert(!impl->currentPipeline.scissorTest_ || impl->scissorSet);
-	impl->pipelineDrawn = true;
+	impl->pipelineUsed = true;
 }
 
 
@@ -494,7 +494,7 @@ void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int /*
 	assert(impl->validPipeline);
 	assert(vertexCount > 0);
 	assert(!impl->currentPipeline.scissorTest_ || impl->scissorSet);
-	impl->pipelineDrawn = true;
+	impl->pipelineUsed = true;
 }
 
 

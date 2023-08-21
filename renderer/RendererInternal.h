@@ -360,7 +360,7 @@ struct RendererBase {
 	bool                                                 inFrame                   = false;
 	bool                                                 inRenderPass              = false;
 	bool                                                 validPipeline             = false;
-	bool                                                 pipelineDrawn             = false;
+	bool                                                 pipelineUsed              = false;
 	bool                                                 scissorSet                = false;
 #endif //  NDEBUG
 
