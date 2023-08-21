@@ -270,7 +270,7 @@ struct Framebuffer {
 
 
 struct GraphicsPipeline {
-	PipelineDesc     desc;
+	GraphicsPipelineDesc  desc;
 	GLuint           shader     = 0;
 	GLenum           srcBlend   = GL_ONE;
 	GLenum           destBlend  = GL_ZERO;
@@ -287,7 +287,7 @@ struct GraphicsPipeline {
 	, destBlend(other.destBlend)
 	, resources(other.resources)
 	{
-		other.desc      = PipelineDesc();
+		other.desc      = GraphicsPipelineDesc();
 		other.shader    = 0;
 		other.srcBlend  = GL_NONE;
 		other.destBlend = GL_NONE;
@@ -305,7 +305,7 @@ struct GraphicsPipeline {
 		destBlend       = other.destBlend;
 		resources       = other.resources;
 
-		other.desc      = PipelineDesc();
+		other.desc      = GraphicsPipelineDesc();
 		other.shader    = 0;
 		other.srcBlend  = GL_NONE;
 		other.destBlend = GL_NONE;

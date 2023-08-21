@@ -217,7 +217,7 @@ uint32_t formatSize(Format format) {
 }
 
 
-bool PipelineDesc::VertexAttr::operator==(const VertexAttr &other) const {
+bool GraphicsPipelineDesc::VertexAttr::operator==(const VertexAttr &other) const {
 	if (this->bufBinding != other.bufBinding) {
 		return false;
 	}
@@ -238,12 +238,12 @@ bool PipelineDesc::VertexAttr::operator==(const VertexAttr &other) const {
 }
 
 
-bool PipelineDesc::VertexAttr::operator!=(const VertexAttr &other) const {
+bool GraphicsPipelineDesc::VertexAttr::operator!=(const VertexAttr &other) const {
 	return !(*this == other);
 }
 
 
-bool PipelineDesc::VertexBuf::operator==(const VertexBuf &other) const {
+bool GraphicsPipelineDesc::VertexBuf::operator==(const VertexBuf &other) const {
 	if (this->stride != other.stride) {
 		return false;
 	}
@@ -252,12 +252,12 @@ bool PipelineDesc::VertexBuf::operator==(const VertexBuf &other) const {
 }
 
 
-bool PipelineDesc::VertexBuf::operator!=(const VertexBuf &other) const {
+bool GraphicsPipelineDesc::VertexBuf::operator!=(const VertexBuf &other) const {
 	return !(*this == other);
 }
 
 
-bool PipelineDesc::operator==(const PipelineDesc &other) const {
+bool GraphicsPipelineDesc::operator==(const GraphicsPipelineDesc &other) const {
 	if (this->vertexShaderName   != other.vertexShaderName) {
 		return false;
 	}

@@ -133,7 +133,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 }
 
 
-GraphicsPipelineHandle Renderer::createGraphicsPipeline(const PipelineDesc &desc) {
+GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDesc &desc) {
 	GraphicsPipeline pipeline;
 	pipeline.desc = desc;
 	return impl->pipelines.add(std::move(pipeline));

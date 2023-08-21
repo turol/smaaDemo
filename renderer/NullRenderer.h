@@ -170,7 +170,7 @@ struct Framebuffer {
 
 
 struct GraphicsPipeline {
-	PipelineDesc  desc;
+	GraphicsPipelineDesc  desc;
 
 
 	GraphicsPipeline(const GraphicsPipeline &)            = delete;
@@ -179,7 +179,7 @@ struct GraphicsPipeline {
 	GraphicsPipeline(GraphicsPipeline &&other) noexcept
 	: desc(other.desc)
 	{
-		other.desc = PipelineDesc();
+		other.desc = GraphicsPipelineDesc();
 	}
 
 	GraphicsPipeline &operator=(GraphicsPipeline &&other) noexcept {
@@ -189,7 +189,7 @@ struct GraphicsPipeline {
 
 		desc       = other.desc;
 
-		other.desc = PipelineDesc();
+		other.desc = GraphicsPipelineDesc();
 
 		return *this;
 	}
@@ -423,7 +423,7 @@ struct RendererImpl : public RendererBase {
 	ResourceContainer<Texture>                              textures;
 	ResourceContainer<VertexShader, uint32_t, true>         vertexShaders;
 
-	PipelineDesc                                            currentPipeline;
+	GraphicsPipelineDesc                                    currentPipeline;
 
 
 	void recreateRingBuffer(unsigned int newSize);

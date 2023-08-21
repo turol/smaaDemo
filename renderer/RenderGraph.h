@@ -397,7 +397,7 @@ private:
 	};
 
 	struct GraphicsPipeline {
-		PipelineDesc    desc;
+		GraphicsPipelineDesc    desc;
 		GraphicsPipelineHandle  handle;
 	};
 
@@ -1073,7 +1073,7 @@ public:
 	}
 
 
-	GraphicsPipelineHandle createGraphicsPipeline(Renderer &renderer, RP rp, PipelineDesc &desc) {
+	GraphicsPipelineHandle createGraphicsPipeline(Renderer &renderer, RP rp, GraphicsPipelineDesc &desc) {
 		assert(state == RGState::Ready || state == RGState::Rendering);
 
 		LOG_TODO("use hash map")

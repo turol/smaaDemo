@@ -496,7 +496,7 @@ private:
 };
 
 
-class PipelineDesc {
+class GraphicsPipelineDesc {
 	std::string           vertexShaderName;
 	std::string           fragmentShaderName;
 	RenderPassHandle      renderPass_;
@@ -540,34 +540,34 @@ class PipelineDesc {
 
 public:
 
-	PipelineDesc &vertexShader(const std::string &name) {
+	GraphicsPipelineDesc &vertexShader(const std::string &name) {
 		assert(!name.empty());
 		vertexShaderName = name;
 		return *this;
 	}
 
-	PipelineDesc &fragmentShader(const std::string &name) {
+	GraphicsPipelineDesc &fragmentShader(const std::string &name) {
 		assert(!name.empty());
 		fragmentShaderName = name;
 		return *this;
 	}
 
-	PipelineDesc &shaderMacros(const ShaderMacros &m) {
+	GraphicsPipelineDesc &shaderMacros(const ShaderMacros &m) {
 		shaderMacros_ = m;
 		return *this;
 	}
 
-	PipelineDesc &shaderLanguage(ShaderLanguage lang) {
+	GraphicsPipelineDesc &shaderLanguage(ShaderLanguage lang) {
 		shaderLanguage_ = lang;
 		return *this;
 	}
 
-	PipelineDesc &renderPass(RenderPassHandle h) {
+	GraphicsPipelineDesc &renderPass(RenderPassHandle h) {
 		renderPass_ = h;
 		return *this;
 	}
 
-	PipelineDesc &vertexAttrib(uint32_t attrib, uint8_t bufBinding, uint8_t count, VtxFormat format, uint8_t offset) {
+	GraphicsPipelineDesc &vertexAttrib(uint32_t attrib, uint8_t bufBinding, uint8_t count, VtxFormat format, uint8_t offset) {
 		assert(attrib < MAX_VERTEX_ATTRIBS);
 
 		vertexAttribs[attrib].bufBinding = bufBinding;
@@ -580,86 +580,86 @@ public:
 		return *this;
 	}
 
-	PipelineDesc &vertexBufferStride(uint8_t buf, uint32_t stride) {
+	GraphicsPipelineDesc &vertexBufferStride(uint8_t buf, uint32_t stride) {
 		assert(buf < MAX_VERTEX_BUFFERS);
 		vertexBuffers[buf].stride = stride;
 
 		return *this;
 	}
 
-	PipelineDesc &descriptorSetLayout(unsigned int index, DSLayoutHandle handle) {
+	GraphicsPipelineDesc &descriptorSetLayout(unsigned int index, DSLayoutHandle handle) {
 		assert(index < MAX_DESCRIPTOR_SETS);
 		descriptorSetLayouts[index] = handle;
 		return *this;
 	}
 
-	template <typename T> PipelineDesc &descriptorSetLayout(unsigned int index) {
+	template <typename T> GraphicsPipelineDesc &descriptorSetLayout(unsigned int index) {
 		assert(index < MAX_DESCRIPTOR_SETS);
 		descriptorSetLayouts[index] = T::layoutHandle;
 		return *this;
 	}
 
-	PipelineDesc &blending(bool b) {
+	GraphicsPipelineDesc &blending(bool b) {
 		blending_ = b;
 		return *this;
 	}
 
-	PipelineDesc &sourceBlend(BlendFunc b) {
+	GraphicsPipelineDesc &sourceBlend(BlendFunc b) {
 		assert(blending_);
 		sourceBlend_ = b;
 		return *this;
 	}
 
-	PipelineDesc &destinationBlend(BlendFunc b) {
+	GraphicsPipelineDesc &destinationBlend(BlendFunc b) {
 		assert(blending_);
 		destinationBlend_ = b;
 		return *this;
 	}
 
-	PipelineDesc &depthWrite(bool d) {
+	GraphicsPipelineDesc &depthWrite(bool d) {
 		depthWrite_ = d;
 		return *this;
 	}
 
-	PipelineDesc &depthTest(bool d) {
+	GraphicsPipelineDesc &depthTest(bool d) {
 		depthTest_ = d;
 		return *this;
 	}
 
-	PipelineDesc &cullFaces(bool c) {
+	GraphicsPipelineDesc &cullFaces(bool c) {
 		cullFaces_ = c;
 		return *this;
 	}
 
-	PipelineDesc &scissorTest(bool s) {
+	GraphicsPipelineDesc &scissorTest(bool s) {
 		scissorTest_ = s;
 		return *this;
 	}
 
-	PipelineDesc &name(const std::string &str) {
+	GraphicsPipelineDesc &name(const std::string &str) {
 		name_ = str;
 		return *this;
 	}
 
-	PipelineDesc &numSamples(unsigned int n) {
+	GraphicsPipelineDesc &numSamples(unsigned int n) {
 		assert(n != 0);
 		assert(isPow2(n));
 		numSamples_ = n;
 		return *this;
 	}
 
-	PipelineDesc() {
+	GraphicsPipelineDesc() {
 	}
 
-	~PipelineDesc() {}
+	~GraphicsPipelineDesc() {}
 
-	PipelineDesc(const PipelineDesc &desc)                = default;
-	PipelineDesc &operator=(const PipelineDesc &desc)     = default;
+	GraphicsPipelineDesc(const GraphicsPipelineDesc &desc)                = default;
+	GraphicsPipelineDesc &operator=(const GraphicsPipelineDesc &desc)     = default;
 
-	PipelineDesc(PipelineDesc &&desc) noexcept            = default;
-	PipelineDesc &operator=(PipelineDesc &&desc) noexcept = default;
+	GraphicsPipelineDesc(GraphicsPipelineDesc &&desc) noexcept            = default;
+	GraphicsPipelineDesc &operator=(GraphicsPipelineDesc &&desc) noexcept = default;
 
-	bool operator==(const PipelineDesc &other) const;
+	bool operator==(const GraphicsPipelineDesc &other) const;
 
 
 	friend class Renderer;
@@ -1044,7 +1044,7 @@ public:
 	BufferHandle          createBuffer(BufferType type, uint32_t size, const void *contents);
 	BufferHandle          createEphemeralBuffer(BufferType type, uint32_t size, const void *contents);
 	FramebufferHandle     createFramebuffer(const FramebufferDesc &desc);
-	GraphicsPipelineHandle  createGraphicsPipeline(const PipelineDesc &desc);
+	GraphicsPipelineHandle  createGraphicsPipeline(const GraphicsPipelineDesc &desc);
 	RenderPassHandle      createRenderPass(const RenderPassDesc &desc);
 	RenderTargetHandle    createRenderTarget(const RenderTargetDesc &desc);
 	SamplerHandle         createSampler(const SamplerDesc &desc);

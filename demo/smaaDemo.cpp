@@ -2932,7 +2932,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 			name += " MSAA x" + std::to_string(numSamples);
 		}
 
-		PipelineDesc plDesc;
+		GraphicsPipelineDesc plDesc;
 		plDesc.name(name)
 		      .vertexShader("shape")
 		      .fragmentShader("shape")
@@ -3028,7 +3028,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 
 void SMAADemo::renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources & /* r */) {
 	renderer.bindGraphicsPipeline(getCachedPipeline(imagePipeline, [&] () {
-		PipelineDesc plDesc;
+		GraphicsPipelineDesc plDesc;
 		plDesc.numSamples(numSamples)
 		      .descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ColorTexDS>(1)
@@ -3075,7 +3075,7 @@ void SMAADemo::renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 		ShaderMacros macros;
 		macros.set("FXAA_QUALITY_PRESET", qualityString);
 
-		PipelineDesc plDesc;
+		GraphicsPipelineDesc plDesc;
 		plDesc.depthWrite(false)
 		      .depthTest(false)
 		      .cullFaces(true)
@@ -3104,7 +3104,7 @@ void SMAADemo::renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 void SMAADemo::renderSeparate(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 	renderer.bindGraphicsPipeline(getCachedPipeline(separatePipeline, [&] () {
 		LOG_TODO("does this need its own DS?")
-		PipelineDesc plDesc;
+		GraphicsPipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
 			  .descriptorSetLayout<ColorCombinedDS>(1)
 			  .vertexShader("temporal")
@@ -3140,7 +3140,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 			macros.set("SMAA_PREDICATION", "1");
 		}
 
-		PipelineDesc plDesc;
+		GraphicsPipelineDesc plDesc;
 		plDesc.depthWrite(false)
 		      .depthTest(false)
 		      .cullFaces(true)
@@ -3189,7 +3189,7 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 		macros.set(qualityString, "1");
 		macros.set("SMAA_GLSL_SEPARATE_SAMPLER", "1");
 
-		PipelineDesc plDesc;
+		GraphicsPipelineDesc plDesc;
 		plDesc.depthWrite(false)
 		      .depthTest(false)
 		      .cullFaces(true)
@@ -3235,7 +3235,7 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 		macros.set(qualityString, "1");
 		macros.set("SMAA_GLSL_SEPARATE_SAMPLER", "1");
 
-		PipelineDesc plDesc;
+		GraphicsPipelineDesc plDesc;
 		plDesc.depthWrite(false)
 		      .depthTest(false)
 		      .cullFaces(true)
@@ -3284,7 +3284,7 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 
 void SMAADemo::renderSMAADebug(RenderPasses rp, DemoRenderGraph::PassResources &r, Rendertargets rt) {
 	renderer.bindGraphicsPipeline(getCachedPipeline(blitPipeline, [&] () {
-		PipelineDesc plDesc;
+		GraphicsPipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ColorTexDS>(1)
 		      .vertexShader("blit")
@@ -3311,7 +3311,7 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 		macros.set("SMAA_REPROJECTION", std::to_string(temporalReproject));
 		macros.set("SMAA_GLSL_SEPARATE_SAMPLER", "1");
 
-		PipelineDesc plDesc;
+		GraphicsPipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
 			  .descriptorSetLayout<TemporalAADS>(1)
 			  .vertexShader("temporal")
@@ -3778,7 +3778,7 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 		assert(drawData->TotalIdxCount >  0);
 
 		renderer.bindGraphicsPipeline(getCachedPipeline(guiPipeline, [&] () {
-			PipelineDesc plDesc;
+			GraphicsPipelineDesc plDesc;
 			plDesc.descriptorSetLayout<GlobalDS>(0)
 				  .descriptorSetLayout<ColorTexDS>(1)
 				  .vertexShader("gui")
