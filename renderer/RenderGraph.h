@@ -396,7 +396,7 @@ private:
 		Layout         finalLayout  = Layout::Undefined;
 	};
 
-	struct Pipeline {
+	struct GraphicsPipeline {
 		PipelineDesc    desc;
 		PipelineHandle  handle;
 	};
@@ -514,7 +514,7 @@ private:
 	HashMap<RT, Rendertarget>                        rendertargets;
 
 	// TODO: use hash map
-	std::vector<Pipeline>                            pipelines;
+	std::vector<GraphicsPipeline>                    pipelines;
 
 	HashSet<RP>                                      renderpassesWithExternalRTs;
 
@@ -1104,7 +1104,7 @@ public:
 		auto handle = renderer.createPipeline(desc);
 		PipelineHandle result = handle;
 
-		Pipeline pipeline;
+		GraphicsPipeline pipeline;
 		pipeline.desc   = desc;
 		pipeline.handle = std::move(handle);
 		pipelines.emplace_back(std::move(pipeline));

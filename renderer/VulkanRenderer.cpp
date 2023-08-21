@@ -44,7 +44,7 @@ struct ResourceHasher final {
 		return fb.getHash();
 	}
 
-	size_t operator()(const Pipeline &p) const {
+	size_t operator()(const GraphicsPipeline &p) const {
 		return p.getHash();
 	}
 
@@ -963,7 +963,7 @@ RendererImpl::~RendererImpl() {
 		deleteSamplerInternal(s);
 	} );
 
-	pipelines.clearWith([this](Pipeline &p) {
+	pipelines.clearWith([this](GraphicsPipeline &p) {
 		deletePipelineInternal(p);
 	} );
 
@@ -1752,7 +1752,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 			}
 
 			pipelineName.push_back('\0');
-			LOG("Pipeline \"{}\" executable properties:", pipelineName.data());
+			LOG("GraphicsPipeline \"{}\" executable properties:", pipelineName.data());
 		}
 
 		vk::PipelineExecutableInfoKHR executableInfo;
@@ -1814,7 +1814,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 
 	}
 
-	Pipeline p;
+	GraphicsPipeline p;
 	p.pipeline = result.value;
 	p.layout   = info.layout;
 	p.scissor  = desc.scissorTest_;
@@ -2206,7 +2206,7 @@ void Renderer::deleteFramebuffer(FramebufferHandle &&handle) {
 
 
 void Renderer::deletePipeline(PipelineHandle &&handle) {
-	impl->pipelines.removeWith(std::move(handle), [this](Pipeline &p) {
+	impl->pipelines.removeWith(std::move(handle), [this](GraphicsPipeline &p) {
 		impl->deleteResources.emplace_back(std::move(p));
 	} );
 }
@@ -3050,7 +3050,7 @@ void RendererImpl::deleteFramebufferInternal(Framebuffer &fb) {
 }
 
 
-void RendererImpl::deletePipelineInternal(Pipeline &p) {
+void RendererImpl::deletePipelineInternal(GraphicsPipeline &p) {
 	p.layout = vk::PipelineLayout();
 	device.destroyPipeline(p.pipeline);
 	p.pipeline = vk::Pipeline();

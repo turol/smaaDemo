@@ -55,7 +55,7 @@ namespace renderer {
 struct Buffer;
 struct DescriptorSetLayout;
 struct Framebuffer;
-struct Pipeline;
+struct GraphicsPipeline;
 struct RenderPass;
 struct RenderTarget;
 struct Sampler;
@@ -228,7 +228,7 @@ public:
 using BufferHandle       = Handle<Buffer>;
 using DSLayoutHandle     = Handle<DescriptorSetLayout>;
 using FramebufferHandle  = Handle<Framebuffer>;
-using PipelineHandle     = Handle<Pipeline>;
+using PipelineHandle     = Handle<GraphicsPipeline>;
 using RenderPassHandle   = Handle<RenderPass>;
 using RenderTargetHandle = Handle<RenderTarget>;
 using SamplerHandle      = Handle<Sampler>;

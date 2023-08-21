@@ -370,18 +370,18 @@ struct Framebuffer {
 };
 
 
-struct Pipeline {
+struct GraphicsPipeline {
 	vk::Pipeline       pipeline;
 	vk::PipelineLayout layout;  // not owned
 	bool               scissor  = false;
 
 
-	Pipeline() noexcept {}
+	GraphicsPipeline() noexcept {}
 
-	Pipeline(const Pipeline &)            = delete;
-	Pipeline &operator=(const Pipeline &) = delete;
+	GraphicsPipeline(const GraphicsPipeline &)            = delete;
+	GraphicsPipeline &operator=(const GraphicsPipeline &) = delete;
 
-	Pipeline(Pipeline &&other) noexcept
+	GraphicsPipeline(GraphicsPipeline &&other) noexcept
 	: pipeline(other.pipeline)
 	, layout(other.layout)
 	, scissor(other.scissor)
@@ -391,7 +391,7 @@ struct Pipeline {
 		other.scissor  = false;
 	}
 
-	Pipeline &operator=(Pipeline &&other) noexcept {
+	GraphicsPipeline &operator=(GraphicsPipeline &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -410,13 +410,13 @@ struct Pipeline {
 		return *this;
 	}
 
-	~Pipeline() {
+	~GraphicsPipeline() {
 		assert(!pipeline);
 		assert(!layout);
 	}
 
 
-	bool operator==(const Pipeline &other) const {
+	bool operator==(const GraphicsPipeline &other) const {
 		return this->pipeline == other.pipeline;
 	}
 
@@ -768,7 +768,7 @@ struct PipelineLayoutKey {
 };
 
 
-using Resource = std::variant<Buffer, Framebuffer, Pipeline, RenderPass, RenderTarget, Sampler, Texture>;
+using Resource = std::variant<Buffer, Framebuffer, GraphicsPipeline, RenderPass, RenderTarget, Sampler, Texture>;
 
 
 }	// namespace renderer
@@ -1056,7 +1056,7 @@ struct RendererImpl : public RendererBase {
 	ResourceContainer<DescriptorSetLayout, uint32_t, true>  dsLayouts;
 	ResourceContainer<FragmentShader, uint32_t, true>       fragmentShaders;
 	ResourceContainer<Framebuffer>                          framebuffers;
-	ResourceContainer<Pipeline>                             pipelines;
+	ResourceContainer<GraphicsPipeline>                     pipelines;
 	ResourceContainer<RenderPass>                           renderPasses;
 	ResourceContainer<RenderTarget>                         renderTargets;
 	ResourceContainer<Sampler>                              samplers;
@@ -1131,7 +1131,7 @@ struct RendererImpl : public RendererBase {
 
 	void deleteBufferInternal(Buffer &b);
 	void deleteFramebufferInternal(Framebuffer &fb);
-	void deletePipelineInternal(Pipeline &p);
+	void deletePipelineInternal(GraphicsPipeline &p);
 	void deleteRenderPassInternal(RenderPass &rp);
 	void deleteRenderTargetInternal(RenderTarget &rt);
 	void deleteResourceInternal(Resource &r);
@@ -1169,7 +1169,7 @@ struct RendererImpl : public RendererBase {
 			r->deleteFramebufferInternal(fb);
 		}
 
-		void operator()(Pipeline &p) const {
+		void operator()(GraphicsPipeline &p) const {
 			r->deletePipelineInternal(p);
 		}
 

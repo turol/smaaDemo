@@ -269,7 +269,7 @@ struct Framebuffer {
 };
 
 
-struct Pipeline {
+struct GraphicsPipeline {
 	PipelineDesc     desc;
 	GLuint           shader     = 0;
 	GLenum           srcBlend   = GL_ONE;
@@ -277,10 +277,10 @@ struct Pipeline {
 	ShaderResources  resources;
 
 
-	Pipeline(const Pipeline &)            = delete;
-	Pipeline &operator=(const Pipeline &) = delete;
+	GraphicsPipeline(const GraphicsPipeline &)            = delete;
+	GraphicsPipeline &operator=(const GraphicsPipeline &) = delete;
 
-	Pipeline(Pipeline &&other) noexcept
+	GraphicsPipeline(GraphicsPipeline &&other) noexcept
 	: desc(other.desc)
 	, shader(other.shader)
 	, srcBlend(other.srcBlend)
@@ -294,7 +294,7 @@ struct Pipeline {
 		other.resources = ShaderResources();
 	}
 
-	Pipeline &operator=(Pipeline &&other) noexcept {
+	GraphicsPipeline &operator=(GraphicsPipeline &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -314,12 +314,12 @@ struct Pipeline {
 		return *this;
 	}
 
-	Pipeline()
+	GraphicsPipeline()
 	{
 	}
 
 
-	~Pipeline() {
+	~GraphicsPipeline() {
 		assert(shader == 0);
 	}
 };
@@ -654,7 +654,7 @@ struct RendererImpl : public RendererBase {
 	ResourceContainer<DescriptorSetLayout, uint32_t, true>  dsLayouts;
 	ResourceContainer<FragmentShader, uint32_t, true>       fragmentShaders;
 	ResourceContainer<Framebuffer>                          framebuffers;
-	ResourceContainer<Pipeline>                             pipelines;
+	ResourceContainer<GraphicsPipeline>                     pipelines;
 	ResourceContainer<RenderPass>                           renderPasses;
 	ResourceContainer<RenderTarget>                         renderTargets;
 	ResourceContainer<Sampler>                              samplers;

@@ -847,7 +847,7 @@ RendererImpl::~RendererImpl() {
 	} );
 
 
-	pipelines.clearWith([](Pipeline &p) {
+	pipelines.clearWith([](GraphicsPipeline &p) {
 		assert(p.shader != 0);
 		glDeleteProgram(p.shader);
 		p.shader = 0;
@@ -1266,7 +1266,7 @@ PipelineHandle Renderer::createPipeline(const PipelineDesc &desc) {
 	}
 	glUseProgram(program);
 
-	Pipeline pipeline;
+	GraphicsPipeline pipeline;
 	pipeline.desc      = desc;
 	pipeline.shader    = program;
 	pipeline.srcBlend  = blendFunc(desc.sourceBlend_);
@@ -1614,7 +1614,7 @@ void Renderer::deleteFramebuffer(FramebufferHandle &&handle) {
 
 
 void Renderer::deletePipeline(PipelineHandle &&handle) {
-	impl->pipelines.removeWith(std::move(handle), [](Pipeline &p) {
+	impl->pipelines.removeWith(std::move(handle), [](GraphicsPipeline &p) {
 		assert(p.shader != 0);
 		glDeleteProgram(p.shader);
 		p.shader = 0;
@@ -2166,11 +2166,11 @@ void Renderer::bindGraphicsPipeline(PipelineHandle pipeline) {
 
 	if (p.desc.blending_) {
 		glEnable(GL_BLEND);
-		LOG_TODO("get from Pipeline")
+		LOG_TODO("get from GraphicsPipeline")
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(p.srcBlend, p.destBlend);
 		if (p.srcBlend == GL_CONSTANT_ALPHA || p.destBlend == GL_CONSTANT_ALPHA) {
-			LOG_TODO("get from Pipeline")
+			LOG_TODO("get from GraphicsPipeline")
 			glBlendColor(0.5f, 0.5f, 0.5f, 0.5f);
 		}
 	} else {

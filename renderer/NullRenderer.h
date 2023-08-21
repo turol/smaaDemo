@@ -169,20 +169,20 @@ struct Framebuffer {
 };
 
 
-struct Pipeline {
+struct GraphicsPipeline {
 	PipelineDesc  desc;
 
 
-	Pipeline(const Pipeline &)            = delete;
-	Pipeline &operator=(const Pipeline &) = delete;
+	GraphicsPipeline(const GraphicsPipeline &)            = delete;
+	GraphicsPipeline &operator=(const GraphicsPipeline &) = delete;
 
-	Pipeline(Pipeline &&other) noexcept
+	GraphicsPipeline(GraphicsPipeline &&other) noexcept
 	: desc(other.desc)
 	{
 		other.desc = PipelineDesc();
 	}
 
-	Pipeline &operator=(Pipeline &&other) noexcept {
+	GraphicsPipeline &operator=(GraphicsPipeline &&other) noexcept {
 		if (this == &other) {
 			return *this;
 		}
@@ -194,9 +194,9 @@ struct Pipeline {
 		return *this;
 	}
 
-	Pipeline() {}
+	GraphicsPipeline() {}
 
-	~Pipeline() {}
+	~GraphicsPipeline() {}
 };
 
 
@@ -416,7 +416,7 @@ struct RendererImpl : public RendererBase {
 	ResourceContainer<DescriptorSetLayout, uint32_t, true>  dsLayouts;
 	ResourceContainer<FragmentShader, uint32_t, true>       fragmentShaders;
 	ResourceContainer<Framebuffer>                          framebuffers;
-	ResourceContainer<Pipeline>                             pipelines;
+	ResourceContainer<GraphicsPipeline>                     pipelines;
 	ResourceContainer<RenderPass>                           renderpasses;
 	ResourceContainer<RenderTarget>                         rendertargets;
 	ResourceContainer<Sampler>                              samplers;
