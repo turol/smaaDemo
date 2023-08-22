@@ -4500,7 +4500,7 @@
       "operands" : [
         { "kind" : "IdResult" },
         { "kind" : "IdRef",        "name" : "'Component Type'" },
-        { "kind" : "IdScope",      "name" : "'Execution'" },
+        { "kind" : "IdScope",      "name" : "'Scope'" },
         { "kind" : "IdRef",        "name" : "'Rows'" },
         { "kind" : "IdRef",        "name" : "'Columns'" },
         { "kind" : "IdRef",        "name" : "'Use'" }
@@ -4518,7 +4518,7 @@
         { "kind" : "IdRef",             "name" : "'Pointer'" },
         { "kind" : "IdRef",             "name" : "'MemoryLayout'" },
         { "kind" : "IdRef",             "name" : "'Stride'", "quantifier": "?" },
-        { "kind" : "MemoryAccess",      "quantifier" : "?" }
+        { "kind" : "MemoryAccess",      "name" : "'Memory Operand'", "quantifier" : "?" }
       ],
       "capabilities" : [ "CooperativeMatrixKHR" ],
       "version" : "None"
@@ -4532,7 +4532,7 @@
         { "kind" : "IdRef",             "name" : "'Object'" },
         { "kind" : "IdRef",             "name" : "'MemoryLayout'" },
         { "kind" : "IdRef",             "name" : "'Stride'", "quantifier": "?" },
-        { "kind" : "MemoryAccess",      "quantifier" : "?" }
+        { "kind" : "MemoryAccess",      "name" : "'Memory Operand'", "quantifier" : "?" }
       ],
       "capabilities" : [ "CooperativeMatrixKHR" ],
       "version" : "None"
@@ -4547,7 +4547,7 @@
         { "kind" : "IdRef",             "name" : "'A'" },
         { "kind" : "IdRef",             "name" : "'B'" },
         { "kind" : "IdRef",             "name" : "'C'" },
-        { "kind" : "CooperativeMatrixOperands",             "quantifier" : "?" }
+        { "kind" : "CooperativeMatrixOperands", "name" : "'Cooperative Matrix Operands'", "quantifier" : "?" }
       ],
       "capabilities" : [ "CooperativeMatrixKHR" ],
       "version" : "None"
@@ -10159,6 +10159,14 @@
         {
           "enumerant" : "HERO_C",
           "value" : 8
+        },
+        {
+          "enumerant" : "NZSL",
+          "value" : 9
+        },
+        {
+          "enumerant" : "WGSL",
+          "value" : 10
         }
       ]
     },
@@ -12793,6 +12801,15 @@
           "version" : "None"
         },
         {
+          "enumerant" : "FPMaxErrorDecorationINTEL",
+          "value" : 6170,
+          "parameters" : [
+            { "kind" : "LiteralFloat", "name" : "'Max Error'" }
+          ],
+          "capabilities" : [ "FPMaxErrorINTEL" ],
+          "version" : "None"
+        },
+        {
           "enumerant" : "LatencyControlLabelINTEL",
           "value" : 6172,
           "parameters" : [
@@ -15264,6 +15281,12 @@
           "version" : "None"
         },
         {
+          "enumerant" : "FPMaxErrorINTEL",
+          "value" : 6169,
+          "extensions" : [ "SPV_INTEL_fp_max_error" ],
+          "version" : "None"
+        },
+        {
           "enumerant" : "FPGALatencyControlINTEL",
           "value" : 6171,
           "extensions" : [ "SPV_INTEL_fpga_latency_control" ],
@@ -15365,39 +15388,39 @@
       "kind" : "CooperativeMatrixOperands",
       "enumerants" : [
         {
-          "enumerant" : "None",
+          "enumerant" : "NoneKHR",
           "value" : "0x0000",
-          "capabilities" : [ "CooperativeMatrixKHR" ],
+          "extensions" : [ "SPV_KHR_cooperative_matrix" ],
           "version" : "None"
         },
         {
-          "enumerant" : "MatrixASignedComponents",
+          "enumerant" : "MatrixASignedComponentsKHR",
           "value" : "0x0001",
-          "capabilities" : [ "CooperativeMatrixKHR" ],
+          "extensions" : [ "SPV_KHR_cooperative_matrix" ],
           "version" : "None"
         },
         {
-          "enumerant" : "MatrixBSignedComponents",
+          "enumerant" : "MatrixBSignedComponentsKHR",
           "value" : "0x0002",
-          "capabilities" : [ "CooperativeMatrixKHR" ],
+          "extensions" : [ "SPV_KHR_cooperative_matrix" ],
           "version" : "None"
         },
         {
-          "enumerant" : "MatrixCSignedComponents",
+          "enumerant" : "MatrixCSignedComponentsKHR",
           "value" : "0x0004",
-          "capabilities" : [ "CooperativeMatrixKHR" ],
+          "extensions" : [ "SPV_KHR_cooperative_matrix" ],
           "version" : "None"
         },
         {
-          "enumerant" : "MatrixResultSignedComponents",
+          "enumerant" : "MatrixResultSignedComponentsKHR",
           "value" : "0x0008",
-          "capabilities" : [ "CooperativeMatrixKHR" ],
+          "extensions" : [ "SPV_KHR_cooperative_matrix" ],
           "version" : "None"
         },
         {
-          "enumerant" : "SaturatingAccumulation",
+          "enumerant" : "SaturatingAccumulationKHR",
           "value" : "0x0010",
-          "capabilities" : [ "CooperativeMatrixKHR" ],
+          "extensions" : [ "SPV_KHR_cooperative_matrix" ],
           "version" : "None"
         }
       ]
@@ -15409,13 +15432,13 @@
         {
           "enumerant" : "RowMajorKHR",
           "value" : 0,
-          "capabilities" : [ "CooperativeMatrixKHR" ],
+          "extensions" : [ "SPV_KHR_cooperative_matrix" ],
           "version" : "None"
         },
         {
           "enumerant" : "ColumnMajorKHR",
           "value" : 1,
-          "capabilities" : [ "CooperativeMatrixKHR" ],
+          "extensions" : [ "SPV_KHR_cooperative_matrix" ],
           "version" : "None"
         }
       ]
@@ -15427,19 +15450,19 @@
         {
           "enumerant" : "MatrixAKHR",
           "value" : 0,
-          "capabilities" : [ "CooperativeMatrixKHR" ],
+          "extensions" : [ "SPV_KHR_cooperative_matrix" ],
           "version" : "None"
         },
         {
           "enumerant" : "MatrixBKHR",
           "value" : 1,
-          "capabilities" : [ "CooperativeMatrixKHR" ],
+          "extensions" : [ "SPV_KHR_cooperative_matrix" ],
           "version" : "None"
         },
         {
           "enumerant" : "MatrixAccumulatorKHR",
           "value" : 2,
-          "capabilities" : [ "CooperativeMatrixKHR" ],
+          "extensions" : [ "SPV_KHR_cooperative_matrix" ],
           "version" : "None"
         }
       ]

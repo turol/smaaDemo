@@ -70,6 +70,8 @@ enum SourceLanguage {
     SourceLanguageCPP_for_OpenCL = 6,
     SourceLanguageSYCL = 7,
     SourceLanguageHERO_C = 8,
+    SourceLanguageNZSL = 9,
+    SourceLanguageWGSL = 10,
     SourceLanguageMax = 0x7fffffff,
 };
 
@@ -587,6 +589,7 @@ enum Decoration {
     DecorationSingleElementVectorINTEL = 6085,
     DecorationVectorComputeCallableFunctionINTEL = 6087,
     DecorationMediaBlockIOINTEL = 6140,
+    DecorationFPMaxErrorDecorationINTEL = 6170,
     DecorationLatencyControlLabelINTEL = 6172,
     DecorationLatencyControlConstraintINTEL = 6173,
     DecorationConduitKernelArgumentINTEL = 6175,
@@ -1167,6 +1170,7 @@ enum Capability {
     CapabilityBFloat16ConversionINTEL = 6115,
     CapabilitySplitBarrierINTEL = 6141,
     CapabilityFPGAKernelAttributesv2INTEL = 6161,
+    CapabilityFPMaxErrorINTEL = 6169,
     CapabilityFPGALatencyControlINTEL = 6171,
     CapabilityFPGAArgumentInterfacesINTEL = 6174,
     CapabilityGroupUniformArithmeticKHR = 6400,
@@ -1277,21 +1281,21 @@ enum PackedVectorFormat {
 };
 
 enum CooperativeMatrixOperandsShift {
-    CooperativeMatrixOperandsMatrixASignedComponentsShift = 0,
-    CooperativeMatrixOperandsMatrixBSignedComponentsShift = 1,
-    CooperativeMatrixOperandsMatrixCSignedComponentsShift = 2,
-    CooperativeMatrixOperandsMatrixResultSignedComponentsShift = 3,
-    CooperativeMatrixOperandsSaturatingAccumulationShift = 4,
+    CooperativeMatrixOperandsMatrixASignedComponentsKHRShift = 0,
+    CooperativeMatrixOperandsMatrixBSignedComponentsKHRShift = 1,
+    CooperativeMatrixOperandsMatrixCSignedComponentsKHRShift = 2,
+    CooperativeMatrixOperandsMatrixResultSignedComponentsKHRShift = 3,
+    CooperativeMatrixOperandsSaturatingAccumulationKHRShift = 4,
     CooperativeMatrixOperandsMax = 0x7fffffff,
 };
 
 enum CooperativeMatrixOperandsMask {
     CooperativeMatrixOperandsMaskNone = 0,
-    CooperativeMatrixOperandsMatrixASignedComponentsMask = 0x00000001,
-    CooperativeMatrixOperandsMatrixBSignedComponentsMask = 0x00000002,
-    CooperativeMatrixOperandsMatrixCSignedComponentsMask = 0x00000004,
-    CooperativeMatrixOperandsMatrixResultSignedComponentsMask = 0x00000008,
-    CooperativeMatrixOperandsSaturatingAccumulationMask = 0x00000010,
+    CooperativeMatrixOperandsMatrixASignedComponentsKHRMask = 0x00000001,
+    CooperativeMatrixOperandsMatrixBSignedComponentsKHRMask = 0x00000002,
+    CooperativeMatrixOperandsMatrixCSignedComponentsKHRMask = 0x00000004,
+    CooperativeMatrixOperandsMatrixResultSignedComponentsKHRMask = 0x00000008,
+    CooperativeMatrixOperandsSaturatingAccumulationKHRMask = 0x00000010,
 };
 
 enum CooperativeMatrixLayout {

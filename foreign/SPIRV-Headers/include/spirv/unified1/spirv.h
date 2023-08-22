@@ -74,6 +74,8 @@ typedef enum SpvSourceLanguage_ {
     SpvSourceLanguageCPP_for_OpenCL = 6,
     SpvSourceLanguageSYCL = 7,
     SpvSourceLanguageHERO_C = 8,
+    SpvSourceLanguageNZSL = 9,
+    SpvSourceLanguageWGSL = 10,
     SpvSourceLanguageMax = 0x7fffffff,
 } SpvSourceLanguage;
 
@@ -591,6 +593,7 @@ typedef enum SpvDecoration_ {
     SpvDecorationSingleElementVectorINTEL = 6085,
     SpvDecorationVectorComputeCallableFunctionINTEL = 6087,
     SpvDecorationMediaBlockIOINTEL = 6140,
+    SpvDecorationFPMaxErrorDecorationINTEL = 6170,
     SpvDecorationLatencyControlLabelINTEL = 6172,
     SpvDecorationLatencyControlConstraintINTEL = 6173,
     SpvDecorationConduitKernelArgumentINTEL = 6175,
@@ -1171,6 +1174,7 @@ typedef enum SpvCapability_ {
     SpvCapabilityBFloat16ConversionINTEL = 6115,
     SpvCapabilitySplitBarrierINTEL = 6141,
     SpvCapabilityFPGAKernelAttributesv2INTEL = 6161,
+    SpvCapabilityFPMaxErrorINTEL = 6169,
     SpvCapabilityFPGALatencyControlINTEL = 6171,
     SpvCapabilityFPGAArgumentInterfacesINTEL = 6174,
     SpvCapabilityGroupUniformArithmeticKHR = 6400,
@@ -1281,21 +1285,21 @@ typedef enum SpvPackedVectorFormat_ {
 } SpvPackedVectorFormat;
 
 typedef enum SpvCooperativeMatrixOperandsShift_ {
-    SpvCooperativeMatrixOperandsMatrixASignedComponentsShift = 0,
-    SpvCooperativeMatrixOperandsMatrixBSignedComponentsShift = 1,
-    SpvCooperativeMatrixOperandsMatrixCSignedComponentsShift = 2,
-    SpvCooperativeMatrixOperandsMatrixResultSignedComponentsShift = 3,
-    SpvCooperativeMatrixOperandsSaturatingAccumulationShift = 4,
+    SpvCooperativeMatrixOperandsMatrixASignedComponentsKHRShift = 0,
+    SpvCooperativeMatrixOperandsMatrixBSignedComponentsKHRShift = 1,
+    SpvCooperativeMatrixOperandsMatrixCSignedComponentsKHRShift = 2,
+    SpvCooperativeMatrixOperandsMatrixResultSignedComponentsKHRShift = 3,
+    SpvCooperativeMatrixOperandsSaturatingAccumulationKHRShift = 4,
     SpvCooperativeMatrixOperandsMax = 0x7fffffff,
 } SpvCooperativeMatrixOperandsShift;
 
 typedef enum SpvCooperativeMatrixOperandsMask_ {
     SpvCooperativeMatrixOperandsMaskNone = 0,
-    SpvCooperativeMatrixOperandsMatrixASignedComponentsMask = 0x00000001,
-    SpvCooperativeMatrixOperandsMatrixBSignedComponentsMask = 0x00000002,
-    SpvCooperativeMatrixOperandsMatrixCSignedComponentsMask = 0x00000004,
-    SpvCooperativeMatrixOperandsMatrixResultSignedComponentsMask = 0x00000008,
-    SpvCooperativeMatrixOperandsSaturatingAccumulationMask = 0x00000010,
+    SpvCooperativeMatrixOperandsMatrixASignedComponentsKHRMask = 0x00000001,
+    SpvCooperativeMatrixOperandsMatrixBSignedComponentsKHRMask = 0x00000002,
+    SpvCooperativeMatrixOperandsMatrixCSignedComponentsKHRMask = 0x00000004,
+    SpvCooperativeMatrixOperandsMatrixResultSignedComponentsKHRMask = 0x00000008,
+    SpvCooperativeMatrixOperandsSaturatingAccumulationKHRMask = 0x00000010,
 } SpvCooperativeMatrixOperandsMask;
 
 typedef enum SpvCooperativeMatrixLayout_ {

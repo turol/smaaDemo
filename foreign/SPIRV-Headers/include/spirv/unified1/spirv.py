@@ -61,6 +61,8 @@ spv = {
         'CPP_for_OpenCL' : 6,
         'SYCL' : 7,
         'HERO_C' : 8,
+        'NZSL' : 9,
+        'WGSL' : 10,
     },
 
     'ExecutionModel' : {
@@ -560,6 +562,7 @@ spv = {
         'SingleElementVectorINTEL' : 6085,
         'VectorComputeCallableFunctionINTEL' : 6087,
         'MediaBlockIOINTEL' : 6140,
+        'FPMaxErrorDecorationINTEL' : 6170,
         'LatencyControlLabelINTEL' : 6172,
         'LatencyControlConstraintINTEL' : 6173,
         'ConduitKernelArgumentINTEL' : 6175,
@@ -1129,6 +1132,7 @@ spv = {
         'BFloat16ConversionINTEL' : 6115,
         'SplitBarrierINTEL' : 6141,
         'FPGAKernelAttributesv2INTEL' : 6161,
+        'FPMaxErrorINTEL' : 6169,
         'FPGALatencyControlINTEL' : 6171,
         'FPGAArgumentInterfacesINTEL' : 6174,
         'GroupUniformArithmeticKHR' : 6400,
@@ -1228,20 +1232,20 @@ spv = {
     },
 
     'CooperativeMatrixOperandsShift' : {
-        'MatrixASignedComponents' : 0,
-        'MatrixBSignedComponents' : 1,
-        'MatrixCSignedComponents' : 2,
-        'MatrixResultSignedComponents' : 3,
-        'SaturatingAccumulation' : 4,
+        'MatrixASignedComponentsKHR' : 0,
+        'MatrixBSignedComponentsKHR' : 1,
+        'MatrixCSignedComponentsKHR' : 2,
+        'MatrixResultSignedComponentsKHR' : 3,
+        'SaturatingAccumulationKHR' : 4,
     },
 
     'CooperativeMatrixOperandsMask' : {
         'MaskNone' : 0,
-        'MatrixASignedComponents' : 0x00000001,
-        'MatrixBSignedComponents' : 0x00000002,
-        'MatrixCSignedComponents' : 0x00000004,
-        'MatrixResultSignedComponents' : 0x00000008,
-        'SaturatingAccumulation' : 0x00000010,
+        'MatrixASignedComponentsKHR' : 0x00000001,
+        'MatrixBSignedComponentsKHR' : 0x00000002,
+        'MatrixCSignedComponentsKHR' : 0x00000004,
+        'MatrixResultSignedComponentsKHR' : 0x00000008,
+        'SaturatingAccumulationKHR' : 0x00000010,
     },
 
     'CooperativeMatrixLayout' : {

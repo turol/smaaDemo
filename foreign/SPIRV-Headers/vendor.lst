@@ -7,6 +7,7 @@ CMakeLists.txt
 CODE_OF_CONDUCT.md
 LICENSE
 README.md
+SECURITY.md
 WORKSPACE
 cmake/SPIRV-Headers.pc.in
 include/spirv/1.0/GLSL.std.450.h

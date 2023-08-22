@@ -1,7 +1,8 @@
-commit 9b527c0fb60124936d0906d44803bec51a0200fb
-Author: Kevin Petit <kevin.petit@arm.com>
-Date:   Wed Jun 21 17:54:47 2023 +0100
+commit 124a9665e464ef98b8b718d572d5f329311061eb
+Merge: f14a663 b846bb7
+Author: David Neto <dneto@google.com>
+Date:   Fri Aug 4 13:44:58 2023 -0400
 
-    Add definitions for SPV_KHR_cooperative_matrix
+    Merge pull request #367 from dneto0/coop-matrix-enums-deps
     
-    Signed-off-by: Kevin Petit <kevin.petit@arm.com>
+    Cooperative matrix enums depend on the extension
