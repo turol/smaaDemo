@@ -1,8 +1,8 @@
-commit 12542fc6fc05000e04742daf93892a0b10edbe80
-Merge: 28b11e01 bf752eda
+commit 633dc301350952a9a895c8db42eed371ea969a64
+Merge: a3f02681 79d63934
 Author: Hans-Kristian Arntzen <post@arntzen-software.no>
-Date:   Fri May 19 12:44:33 2023 +0200
+Date:   Thu Aug 17 13:51:54 2023 +0200
 
-    Merge pull request #2152 from KhronosGroup/fix-2143
+    Merge pull request #2187 from KhronosGroup/mesh-invariant-position
     
-    Land PR 2143
+    GLSL: Emit inline invariant position for mesh shaders.
