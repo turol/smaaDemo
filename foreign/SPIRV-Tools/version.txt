@@ -1,15 +1,5 @@
-commit 04cdb2d344706052c7a2d359294e830ebac63e74
-Author: archimedus <10398515+archimedus@users.noreply.github.com>
-Date:   Fri Jun 23 00:33:36 2023 +0200
+commit e553b884c7c9febaa4e52334f683641fb5f196a0
+Author: Nathan Gauër <brioche@google.com>
+Date:   Tue Aug 8 15:41:26 2023 +0200
 
-    SPV_KHR_cooperative_matrix (#5286)
-    
-    * SPV_KHR_cooperative_matrix
-    
-    * Update DEPS with headers
-    
-    * Update according to review recommendations
-    
-    * Bugfix and formatting
-    
-    * Formatting missed or damaged by VS2022
+    Prepare release for v2023.4.rc2 (#5362)

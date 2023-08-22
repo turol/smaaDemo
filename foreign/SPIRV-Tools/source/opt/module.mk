@@ -116,6 +116,7 @@ FILES:= \
 	strip_debug_info_pass.cpp \
 	strip_nonsemantic_info_pass.cpp \
 	struct_cfg_analysis.cpp \
+	trim_capabilities_pass.cpp \
 	type_manager.cpp \
 	types.cpp \
 	unify_const_pass.cpp \

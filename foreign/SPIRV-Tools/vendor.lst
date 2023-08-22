@@ -18,6 +18,7 @@ DEPS
 LICENSE
 PRESUBMIT.py
 README.md
+SECURITY.md
 WORKSPACE
 android_test/Android.mk
 android_test/jni/Application.mk
@@ -754,6 +755,8 @@ source/opt/strip_nonsemantic_info_pass.h
 source/opt/struct_cfg_analysis.cpp
 source/opt/struct_cfg_analysis.h
 source/opt/tree_iterator.h
+source/opt/trim_capabilities_pass.cpp
+source/opt/trim_capabilities_pass.h
 source/opt/type_manager.cpp
 source/opt/type_manager.h
 source/opt/types.cpp
@@ -1426,6 +1429,7 @@ test/opt/strength_reduction_test.cpp
 test/opt/strip_debug_info_test.cpp
 test/opt/strip_nonsemantic_info_test.cpp
 test/opt/struct_cfg_analysis_test.cpp
+test/opt/trim_capabilities_pass_test.cpp
 test/opt/type_manager_test.cpp
 test/opt/types_test.cpp
 test/opt/unify_const_test.cpp
