@@ -1,3 +1,4 @@
+.bazelrc
 .bazelversion
 .clang-format
 .github/workflows/autoroll.yml
@@ -1012,6 +1013,9 @@ test/diff/diff_files/multiple_different_entry_points_src.spvasm
 test/diff/diff_files/multiple_same_entry_points_autogen.cpp
 test/diff/diff_files/multiple_same_entry_points_dst.spvasm
 test/diff/diff_files/multiple_same_entry_points_src.spvasm
+test/diff/diff_files/ray_query_types_autogen.cpp
+test/diff/diff_files/ray_query_types_dst.spvasm
+test/diff/diff_files/ray_query_types_src.spvasm
 test/diff/diff_files/reordered_if_blocks_autogen.cpp
 test/diff/diff_files/reordered_if_blocks_dst.spvasm
 test/diff/diff_files/reordered_if_blocks_src.spvasm

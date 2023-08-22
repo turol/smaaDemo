@@ -1,23 +1,13 @@
-commit e7c6084fd1d6d6f5ac393e842728d8be309688ca
-Author: Nathan Gauër <brioche@google.com>
-Date:   Tue May 16 17:06:35 2023 +0200
+commit 16098b3c1096f990f08ff2cf6a74252e483c7c18
+Author: Steven Perron <stevenperron@google.com>
+Date:   Thu Jun 22 15:15:53 2023 -0700
 
-    Prepare release 2023.3 (#5222)
+    Have effcee add abseil subdirectory (#5281)
     
-    * Roll external/googletest/ bc860af08..bb2941fcc (1 commit)
+    We currently add the abseil in the external/CMakeLists.txt. However, it
+    is not needed by spirv-tools directly. Instead we set effcee's variable
+    with the abseil source directory, and let effcee add it.
     
-    https://github.com/google/googletest/compare/bc860af08783...bb2941fcc611
-    
-    $ git log bc860af08..bb2941fcc --date=short --no-merges --format='%ad %ae %s'
-    2023-05-11 absl-team Give CreateArgvFromArgs internal linkage
-    
-    Created with:
-      roll-dep external/googletest
-    
-    * Prepare release v2023.3
-    
-    Signed-off-by: Nathan Gauër <brioche@google.com>
-    
-    ---------
-    
-    Signed-off-by: Nathan Gauër <brioche@google.com>
+    This will mean that abseil will be checked out only if effcee is
+    used. We currently get a few reports from people that use to only checkout
+    spirv-headers, and now get errors because abseil is missing.
