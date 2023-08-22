@@ -1,8 +1,7 @@
-commit 10db9d4e194246a020a4148e220837ac7c68cfd9
-Merge: 6e09e44 72e4c7e
-Author: John Kessenich <johnkslang@users.noreply.github.com>
-Date:   Wed Jun 21 10:30:20 2023 -0600
+commit 9b527c0fb60124936d0906d44803bec51a0200fb
+Author: Kevin Petit <kevin.petit@arm.com>
+Date:   Wed Jun 21 17:54:47 2023 +0100
 
-    Merge pull request #354 from kpet/spv-ext-image-raw10-raw12
+    Add definitions for SPV_KHR_cooperative_matrix
     
-    Add definitions for SVP_EXT_image_raw10_raw12
+    Signed-off-by: Kevin Petit <kevin.petit@arm.com>

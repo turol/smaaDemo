@@ -1,13 +1,15 @@
-commit 16098b3c1096f990f08ff2cf6a74252e483c7c18
-Author: Steven Perron <stevenperron@google.com>
-Date:   Thu Jun 22 15:15:53 2023 -0700
+commit 04cdb2d344706052c7a2d359294e830ebac63e74
+Author: archimedus <10398515+archimedus@users.noreply.github.com>
+Date:   Fri Jun 23 00:33:36 2023 +0200
 
-    Have effcee add abseil subdirectory (#5281)
+    SPV_KHR_cooperative_matrix (#5286)
     
-    We currently add the abseil in the external/CMakeLists.txt. However, it
-    is not needed by spirv-tools directly. Instead we set effcee's variable
-    with the abseil source directory, and let effcee add it.
+    * SPV_KHR_cooperative_matrix
     
-    This will mean that abseil will be checked out only if effcee is
-    used. We currently get a few reports from people that use to only checkout
-    spirv-headers, and now get errors because abseil is missing.
+    * Update DEPS with headers
+    
+    * Update according to review recommendations
+    
+    * Bugfix and formatting
+    
+    * Formatting missed or damaged by VS2022
