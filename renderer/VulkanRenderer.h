@@ -54,6 +54,7 @@ THE SOFTWARE.
 #define VK_ENABLE_BETA_EXTENSIONS 1
 
 #include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_hash.hpp>
 
 
 #if VK_HEADER_VERSION < 98
@@ -84,30 +85,6 @@ THE SOFTWARE.
 
 
 #include "vk_mem_alloc.h"
-
-
-#if defined _MSC_VER && !defined _WIN64
-#define VK_HASH(x) std::hash<uint64_t>()(static_cast<uint64_t>(x))
-#else
-#define VK_HASH(x) std::hash<uint64_t>()(reinterpret_cast<uint64_t>(x))
-#endif
-
-
-namespace std {
-
-	template <> struct hash<vk::Format> {
-		size_t operator()(const vk::Format &f) const {
-			return hash<uint32_t>()(static_cast<uint32_t>(VkFormat(f)));
-		}
-	};
-
-	template <> struct hash<vk::PresentModeKHR> {
-		size_t operator()(const vk::PresentModeKHR &m) const {
-			return hash<uint32_t>()(static_cast<uint32_t>(VkPresentModeKHR(m)));
-		}
-	};
-
-}  // namespace std
 
 
 namespace renderer {
@@ -183,7 +160,7 @@ struct Buffer {
 	}
 
 	size_t hashValue() const {
-		return VK_HASH(VkBuffer(buffer));
+		return std::hash<vk::Buffer>()(buffer);
 	}
 };
 
@@ -365,7 +342,7 @@ struct Framebuffer {
 	}
 
 	size_t hashValue() const {
-		return VK_HASH(VkFramebuffer(framebuffer));
+		return std::hash<vk::Framebuffer>()(framebuffer);
 	}
 };
 
@@ -422,7 +399,7 @@ struct GraphicsPipeline {
 
 
 	size_t hashValue() const {
-		return VK_HASH(VkPipeline(pipeline));
+		return std::hash<vk::Pipeline>()(pipeline);
 	}
 };
 
@@ -491,7 +468,7 @@ struct RenderPass {
 	}
 
 	size_t hashValue() const {
-		return VK_HASH(VkRenderPass(renderPass));
+		return std::hash<vk::RenderPass>()(renderPass);
 	}
 };
 
@@ -573,7 +550,7 @@ struct RenderTarget{
 	}
 
 	size_t hashValue() const {
-		return VK_HASH(VkImage(image));
+		return std::hash<vk::Image>()(image);
 	}
 };
 
@@ -616,7 +593,7 @@ struct Sampler {
 	}
 
 	size_t hashValue() const {
-		return VK_HASH(VkSampler(sampler));
+		return std::hash<vk::Sampler>()(sampler);
 	}
 };
 
@@ -686,7 +663,7 @@ struct Texture {
 	}
 
 	size_t hashValue() const {
-		return VK_HASH(VkImage(image));
+		return std::hash<vk::Image>()(image);
 	}
 };
 
