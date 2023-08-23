@@ -1185,14 +1185,3 @@ void RendererBase::saveShaderCache() {
 
 
 }	// namespace renderer
-
-
-namespace std {
-
-
-size_t hash<renderer::ShaderMacros>::operator()(const renderer::ShaderMacros &macros) const {
-	return renderer::RendererBase::hashMacros(macros);
-}
-
-
-}  // namespace std

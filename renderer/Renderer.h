@@ -400,6 +400,13 @@ struct ShaderMacro {
 	bool operator==(const ShaderMacro &other) const {
 		return this->key == other.key;
 	}
+
+	size_t hashValue() const {
+		size_t h = 0;
+		h = combineHashes(h, std::hash<std::string>()(key));
+		h = combineHashes(h, std::hash<std::string>()(value));
+		return h;
+	}
 };
 
 
@@ -441,6 +448,16 @@ public:
 
 	bool empty() const {
 		return impl.empty();
+	}
+
+	size_t hashValue() const {
+		size_t h = 0;
+
+		for (const ShaderMacro &m : impl) {
+			h = combineHashes(h, m.hashValue());
+		}
+
+		return h;
 	}
 };
 
@@ -1108,6 +1125,19 @@ public:
 
 
 }  // namespace renderer
+
+
+namespace std {
+
+
+template <> struct hash<renderer::ShaderMacros> {
+	size_t operator()(const renderer::ShaderMacros &macros) const {
+		return macros.hashValue();
+	}
+};
+
+
+}  // namespace std
 
 
 #endif  // RENDERER_H
