@@ -182,7 +182,7 @@ struct Buffer {
 		return this->buffer == other.buffer;
 	}
 
-	size_t getHash() const {
+	size_t hashValue() const {
 		return VK_HASH(VkBuffer(buffer));
 	}
 };
@@ -364,7 +364,7 @@ struct Framebuffer {
 		return this->framebuffer == other.framebuffer;
 	}
 
-	size_t getHash() const {
+	size_t hashValue() const {
 		return VK_HASH(VkFramebuffer(framebuffer));
 	}
 };
@@ -421,7 +421,7 @@ struct GraphicsPipeline {
 	}
 
 
-	size_t getHash() const {
+	size_t hashValue() const {
 		return VK_HASH(VkPipeline(pipeline));
 	}
 };
@@ -490,7 +490,7 @@ struct RenderPass {
 		return this->renderPass == other.renderPass;
 	}
 
-	size_t getHash() const {
+	size_t hashValue() const {
 		return VK_HASH(VkRenderPass(renderPass));
 	}
 };
@@ -572,7 +572,7 @@ struct RenderTarget{
 		return this->image == other.image;
 	}
 
-	size_t getHash() const {
+	size_t hashValue() const {
 		return VK_HASH(VkImage(image));
 	}
 };
@@ -615,7 +615,7 @@ struct Sampler {
 		return this->sampler == other.sampler;
 	}
 
-	size_t getHash() const {
+	size_t hashValue() const {
 		return VK_HASH(VkSampler(sampler));
 	}
 };
@@ -685,7 +685,7 @@ struct Texture {
 		return this->image == other.image;
 	}
 
-	size_t getHash() const {
+	size_t hashValue() const {
 		return VK_HASH(VkImage(image));
 	}
 };

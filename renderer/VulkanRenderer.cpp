@@ -37,31 +37,31 @@ namespace renderer {
 
 struct ResourceHasher final {
 	size_t operator()(const Buffer &b) const {
-		return b.getHash();
+		return b.hashValue();
 	}
 
 	size_t operator()(const Framebuffer &fb) const {
-		return fb.getHash();
+		return fb.hashValue();
 	}
 
 	size_t operator()(const GraphicsPipeline &p) const {
-		return p.getHash();
+		return p.hashValue();
 	}
 
 	size_t operator()(const RenderPass &rp) const {
-		return rp.getHash();
+		return rp.hashValue();
 	}
 
 	size_t operator()(const RenderTarget &rt) const {
-		return rt.getHash();
+		return rt.hashValue();
 	}
 
 	size_t operator()(const Sampler &s) const {
-		return s.getHash();
+		return s.hashValue();
 	}
 
 	size_t operator()(const Texture &t) const {
-		return t.getHash();
+		return t.hashValue();
 	}
 };
 
