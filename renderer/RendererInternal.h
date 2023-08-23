@@ -26,6 +26,8 @@ THE SOFTWARE.
 
 
 #include "Renderer.h"
+
+#include "utils/Hash.h"
 #include "utils/Utils.h"
 
 #include <spirv-tools/libspirv.h>

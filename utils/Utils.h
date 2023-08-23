@@ -25,6 +25,7 @@ THE SOFTWARE.
 #define UTILS_H
 
 
+#include <cassert>
 #include <cinttypes>
 
 #include <memory>
