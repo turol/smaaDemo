@@ -65,7 +65,7 @@ size_t hashRange(It b, It e) {
 	size_t h = 0;
 
 	for (It it = b; it != e; it++) {
-		h = combineHashes(h, std::hash<typename It::value_type>()(*it));
+		hashCombine(h, *it);
 	}
 
 	return h;

@@ -250,11 +250,11 @@ namespace std {
 	template <> struct hash<renderer::ShaderCacheKey> {
 		size_t operator()(const renderer::ShaderCacheKey &key) const {
 			size_t h = 0;
-			h = combineHashes(h, hash<std::string>()(key.filename));
-			h = combineHashes(h, hash<int>()(magic_enum::enum_integer(key.language)));
-			h = combineHashes(h, hash<int>()(magic_enum::enum_integer(key.stage)));
-			h = combineHashes(h, hash<int>()(magic_enum::enum_integer(key.spirvEnvironment)));
-			h = combineHashes(h, hash<renderer::ShaderMacros>()(key.macros));
+			hashCombine(h, key.filename);
+			hashCombine(h, magic_enum::enum_integer(key.language));
+			hashCombine(h, magic_enum::enum_integer(key.stage));
+			hashCombine(h, magic_enum::enum_integer(key.spirvEnvironment));
+			hashCombine(h, key.macros);
 			return h;
 		}
 	};

@@ -403,8 +403,8 @@ struct ShaderMacro {
 
 	size_t hashValue() const {
 		size_t h = 0;
-		h = combineHashes(h, std::hash<std::string>()(key));
-		h = combineHashes(h, std::hash<std::string>()(value));
+		hashCombine(h, key);
+		hashCombine(h, value);
 		return h;
 	}
 };
@@ -454,7 +454,7 @@ public:
 		size_t h = 0;
 
 		for (const ShaderMacro &m : impl) {
-			h = combineHashes(h, m.hashValue());
+			hashCombine(h, m.hashValue());
 		}
 
 		return h;

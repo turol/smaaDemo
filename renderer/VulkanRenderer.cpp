@@ -3869,9 +3869,10 @@ void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int fi
 namespace std {
 
 	size_t hash<renderer::PipelineLayoutKey>::operator()(const renderer::PipelineLayoutKey &key) const {
-		size_t h = std::hash<size_t>()(key.layoutCount);
+		size_t h = 0;
+		hashCombine(h, key.layoutCount);
 		for (size_t i = 0; i < key.layoutCount; i++) {
-			h = combineHashes(h, std::hash<vk::DescriptorSetLayout>()(key.layouts[i]));
+			hashCombine(h, key.layouts[i]);
 		}
 
 		return h;
