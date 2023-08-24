@@ -54,6 +54,12 @@ static inline uint64_t combineHashes(uint64_t h, uint64_t k) {
 #endif  // __EMSCRIPTEN__
 
 
+template <typename T>
+void hashCombine(size_t &h, const T &value) {
+	h = combineHashes(h, std::hash<T>()(value));
+}
+
+
 template <typename It>
 size_t hashRange(It b, It e) {
 	size_t h = 0;
