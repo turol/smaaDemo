@@ -17,46 +17,33 @@ template <typename T>
 	using HashSet = std::unordered_set<T>;
 
 
-// These come from boost
-// Copyright 2005-2014 Daniel James.
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-static inline uint32_t combineHashes(uint32_t seed, uint32_t value) {
-	seed ^= value + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-
-	return seed;
-}
-
-
-#ifndef __EMSCRIPTEN__
-
-// for some reason this causes an ambiguous call error on emscripten
-
-static inline uint64_t combineHashes(uint64_t h, uint64_t k) {
-	const uint64_t m = 0xc6a4a7935bd1e995UL;
-	const int r = 47;
-
-	k *= m;
-	k ^= k >> r;
-	k *= m;
-
-	h ^= k;
-	h *= m;
-
-	// Completely arbitrary number, to prevent 0's
-	// from hashing to 0.
-	h += 0xe6546b64;
-
-	return h;
-}
-
-
-#endif  // __EMSCRIPTEN__
-
-
 template <typename T>
 void hashCombine(size_t &h, const T &value) {
-	h = combineHashes(h, std::hash<T>()(value));
+	if constexpr (sizeof(size_t) == sizeof(uint64_t)) {
+		uint64_t k = std::hash<T>()(value);
+		// These come from boost
+		// Copyright 2005-2014 Daniel James.
+		// Distributed under the Boost Software License, Version 1.0. (See accompanying
+		// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+		const uint64_t m = 0xc6a4a7935bd1e995UL;
+		const int r = 47;
+
+		k *= m;
+		k ^= k >> r;
+		k *= m;
+
+		h ^= k;
+		h *= m;
+
+		// Completely arbitrary number, to prevent 0's
+		// from hashing to 0.
+		h += 0xe6546b64;
+	} else {
+		assert(sizeof(size_t) == sizeof(uint32_t));
+		uint32_t k = std::hash<T>()(value);
+
+		h ^= k + 0x9e3779b9 + (h << 6) + (h >> 2);
+	}
 }
 
 
