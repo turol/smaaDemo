@@ -162,6 +162,11 @@ public:
 		assert(!owned);
 		handle = 0;
 	}
+
+
+	size_t hashValue() const {
+		return std::hash<HandleType>()(handle);
+	}
 };
 
 
@@ -218,6 +223,11 @@ public:
 
 	void reset() {
 		handle = 0;
+	}
+
+
+	size_t hashValue() const {
+		return std::hash<HandleType>()(handle);
 	}
 };
 
@@ -1128,6 +1138,14 @@ public:
 
 
 namespace std {
+
+
+template <typename T>
+struct hash<renderer::Handle<T> > {
+	size_t operator()(const renderer::Handle<T> &handle) const {
+		return handle.hashValue();
+	}
+};
 
 
 template <> struct hash<renderer::ShaderMacros> {
