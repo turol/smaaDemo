@@ -740,6 +740,7 @@ struct RenderPassDesc {
 	}
 
 
+	// TODO: this is public because RenderGraph needs to access it, shouldn't
 	struct RTInfo {
 		Format     format         = Format::Invalid;
 		PassBegin  passBegin      = PassBegin::DontCare;
