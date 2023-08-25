@@ -5,12 +5,10 @@ spv.ext.meshShaderBuiltins.mesh
 
                               Capability ClipDistance
                               Capability CullDistance
-                              Capability FragmentShadingRateKHR
                               Capability DrawParameters
                               Capability MultiView
                               Capability MeshShadingEXT
                               Extension  "SPV_EXT_mesh_shader"
-                              Extension  "SPV_KHR_fragment_shading_rate"
                1:             ExtInstImport  "GLSL.std.450"
                               MemoryModel Logical GLSL450
                               EntryPoint MeshEXT 4  "main" 13 19 24 41 93 134 152 155
@@ -43,7 +41,6 @@ spv.ext.meshShaderBuiltins.mesh
                               MemberName 90(gl_MeshPerPrimitiveEXT) 1  "gl_Layer"
                               MemberName 90(gl_MeshPerPrimitiveEXT) 2  "gl_ViewportIndex"
                               MemberName 90(gl_MeshPerPrimitiveEXT) 3  "gl_CullPrimitiveEXT"
-                              MemberName 90(gl_MeshPerPrimitiveEXT) 4  "gl_PrimitiveShadingRateEXT"
                               Name 93  "gl_MeshPrimitivesEXT"
                               Name 134  "gl_PrimitiveTriangleIndicesEXT"
                               Name 150  "id"
@@ -66,8 +63,6 @@ spv.ext.meshShaderBuiltins.mesh
                               MemberDecorate 90(gl_MeshPerPrimitiveEXT) 2 BuiltIn ViewportIndex
                               MemberDecorate 90(gl_MeshPerPrimitiveEXT) 3 PerPrimitiveNV
                               MemberDecorate 90(gl_MeshPerPrimitiveEXT) 3 BuiltIn CullPrimitiveEXT
-                              MemberDecorate 90(gl_MeshPerPrimitiveEXT) 4 PerPrimitiveNV
-                              MemberDecorate 90(gl_MeshPerPrimitiveEXT) 4 BuiltIn PrimitiveShadingRateKHR
                               Decorate 90(gl_MeshPerPrimitiveEXT) Block
                               Decorate 134(gl_PrimitiveTriangleIndicesEXT) BuiltIn PrimitiveTriangleIndicesEXT
                               Decorate 152(gl_DrawIDARB) BuiltIn DrawIndex
@@ -113,7 +108,7 @@ spv.ext.meshShaderBuiltins.mesh
               63:      8(int) Constant 264
               64:      8(int) Constant 2
               89:             TypeBool
-90(gl_MeshPerPrimitiveEXT):             TypeStruct 43(int) 43(int) 43(int) 89(bool) 43(int)
+90(gl_MeshPerPrimitiveEXT):             TypeStruct 43(int) 43(int) 43(int) 89(bool)
               91:             TypeArray 90(gl_MeshPerPrimitiveEXT) 29
               92:             TypePointer Output 91
 93(gl_MeshPrimitivesEXT):     92(ptr) Variable Output

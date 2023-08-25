@@ -3,6 +3,7 @@
 .github/workflows/continuous_deployment.yml
 .github/workflows/continuous_integration.yml
 .github/workflows/deploy.js
+.github/workflows/scorecard.yml
 .gitignore
 .gn
 .mailmap
@@ -28,6 +29,7 @@ SPIRV/GLSL.ext.ARM.h
 SPIRV/GLSL.ext.EXT.h
 SPIRV/GLSL.ext.KHR.h
 SPIRV/GLSL.ext.NV.h
+SPIRV/GLSL.ext.QCOM.h
 SPIRV/GLSL.std.450.h
 SPIRV/GlslangToSpv.cpp
 SPIRV/GlslangToSpv.h
@@ -1026,6 +1028,12 @@ Test/baseResults/spv.constructComposite.comp.out
 Test/baseResults/spv.controlFlowAttributes.frag.out
 Test/baseResults/spv.conversion.frag.out
 Test/baseResults/spv.coopmat.comp.out
+Test/baseResults/spv.coopmatKHR.comp.out
+Test/baseResults/spv.coopmatKHR_Error.comp.out
+Test/baseResults/spv.coopmatKHR_arithmetic.comp.out
+Test/baseResults/spv.coopmatKHR_arithmeticError.comp.out
+Test/baseResults/spv.coopmatKHR_constructor.comp.out
+Test/baseResults/spv.coopmatKHR_constructorError.comp.out
 Test/baseResults/spv.coopmat_Error.comp.out
 Test/baseResults/spv.dataOut.frag.out
 Test/baseResults/spv.dataOutIndirect.frag.out
@@ -1099,6 +1107,7 @@ Test/baseResults/spv.ext.ShaderTileImage.typemismatch.frag.out
 Test/baseResults/spv.ext.ShaderTileImage.wronglayout.frag.out
 Test/baseResults/spv.ext.World3x4.rahit.out
 Test/baseResults/spv.ext.meshShaderBuiltins.mesh.out
+Test/baseResults/spv.ext.meshShaderBuiltinsShadingRate.mesh.out
 Test/baseResults/spv.ext.meshShaderRedeclBuiltins.mesh.out
 Test/baseResults/spv.ext.meshShaderTaskMem.mesh.out
 Test/baseResults/spv.ext.meshShaderUserDefined.mesh.out
@@ -1154,6 +1163,7 @@ Test/baseResults/spv.int8.frag.out
 Test/baseResults/spv.intOps.vert.out
 Test/baseResults/spv.intcoopmat.comp.out
 Test/baseResults/spv.interpOps.frag.out
+Test/baseResults/spv.intrinsicsFakeEnable.vert.out
 Test/baseResults/spv.intrinsicsSpirvByReference.vert.out
 Test/baseResults/spv.intrinsicsSpirvDecorate.frag.out
 Test/baseResults/spv.intrinsicsSpirvDecorateId.comp.out
@@ -1328,6 +1338,11 @@ Test/baseResults/spv.texture.vert.out
 Test/baseResults/spv.textureBuffer.vert.out
 Test/baseResults/spv.textureError.frag.out
 Test/baseResults/spv.textureGatherBiasLod.frag.out
+Test/baseResults/spv.tpipBlockMatchSAD.frag.out
+Test/baseResults/spv.tpipBlockMatchSSD.frag.out
+Test/baseResults/spv.tpipBoxFilter.frag.out
+Test/baseResults/spv.tpipSampleWeighted.frag.out
+Test/baseResults/spv.tpipTextureArrays.frag.out
 Test/baseResults/spv.types.frag.out
 Test/baseResults/spv.uint.frag.out
 Test/baseResults/spv.uniformArray.frag.out
@@ -1966,7 +1981,6 @@ Test/loopsArtificial.frag
 Test/mains.frag
 Test/mains1.frag
 Test/mains2.frag
-Test/makeDoc
 Test/matrix.frag
 Test/matrix2.frag
 Test/matrixError.vert
@@ -2223,6 +2237,12 @@ Test/spv.constructComposite.comp
 Test/spv.controlFlowAttributes.frag
 Test/spv.conversion.frag
 Test/spv.coopmat.comp
+Test/spv.coopmatKHR.comp
+Test/spv.coopmatKHR_Error.comp
+Test/spv.coopmatKHR_arithmetic.comp
+Test/spv.coopmatKHR_arithmeticError.comp
+Test/spv.coopmatKHR_constructor.comp
+Test/spv.coopmatKHR_constructorError.comp
 Test/spv.coopmat_Error.comp
 Test/spv.dataOut.frag
 Test/spv.dataOutIndirect.frag
@@ -2295,6 +2315,7 @@ Test/spv.ext.ShaderTileImage.typemismatch.frag
 Test/spv.ext.ShaderTileImage.wronglayout.frag
 Test/spv.ext.World3x4.rahit
 Test/spv.ext.meshShaderBuiltins.mesh
+Test/spv.ext.meshShaderBuiltinsShadingRate.mesh
 Test/spv.ext.meshShaderRedeclBuiltins.mesh
 Test/spv.ext.meshShaderTaskMem.mesh
 Test/spv.ext.meshShaderUserDefined.mesh
@@ -2350,6 +2371,7 @@ Test/spv.int8.frag
 Test/spv.intOps.vert
 Test/spv.intcoopmat.comp
 Test/spv.interpOps.frag
+Test/spv.intrinsicsFakeEnable.vert
 Test/spv.intrinsicsSpirvByReference.vert
 Test/spv.intrinsicsSpirvDecorate.frag
 Test/spv.intrinsicsSpirvDecorateId.comp
@@ -2525,6 +2547,11 @@ Test/spv.texture.vert
 Test/spv.textureBuffer.vert
 Test/spv.textureError.frag
 Test/spv.textureGatherBiasLod.frag
+Test/spv.tpipBlockMatchSAD.frag
+Test/spv.tpipBlockMatchSSD.frag
+Test/spv.tpipBoxFilter.frag
+Test/spv.tpipSampleWeighted.frag
+Test/spv.tpipTextureArrays.frag
 Test/spv.types.frag
 Test/spv.uint.frag
 Test/spv.uniformArray.frag
@@ -2618,7 +2645,6 @@ Test/web.texture.frag
 Test/whileLoop.frag
 Test/xfbUnsizedArray.error.tese
 Test/xfbUnsizedArray.error.vert
-WORKSPACE
 _config.yml
 build_info.h.tmpl
 build_info.py
@@ -2686,7 +2712,6 @@ glslang/MachineIndependent/Versions.h
 glslang/MachineIndependent/attribute.cpp
 glslang/MachineIndependent/attribute.h
 glslang/MachineIndependent/gl_types.h
-glslang/MachineIndependent/glslang.m4
 glslang/MachineIndependent/glslang.y
 glslang/MachineIndependent/glslang_tab.cpp
 glslang/MachineIndependent/glslang_tab.cpp.h
