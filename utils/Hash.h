@@ -47,16 +47,4 @@ void hashCombine(size_t &h, const T &value) {
 }
 
 
-template <typename It>
-size_t hashRange(It b, It e) {
-	size_t h = 0;
-
-	for (It it = b; it != e; it++) {
-		hashCombine(h, *it);
-	}
-
-	return h;
-}
-
-
 #endif  // HASH_H
