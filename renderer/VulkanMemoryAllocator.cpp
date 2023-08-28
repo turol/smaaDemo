@@ -24,41 +24,6 @@ THE SOFTWARE.
 #ifdef RENDERER_VULKAN
 
 
-#ifdef _WIN32
-
-// mingw doesn't support std::mutex
-// substitute a no-op replacement since we're not using multiple threads
-
-#define VMA_MUTEX NoopMutex
-
-
-class NoopMutex {
-public:
-
-	NoopMutex() {}
-
-	NoopMutex(const NoopMutex &)            = delete;
-	NoopMutex &operator=(const NoopMutex &) = delete;
-
-	NoopMutex(NoopMutex &&)                 = delete;
-	NoopMutex &operator=(NoopMutex &&)      = delete;
-
-	~NoopMutex() {}
-
-	void Lock() {}
-	void Unlock() {}
-};
-
-
-#else  // _WIN32
-
-
-#include <mutex>
-
-
-#endif  // _WIN32
-
-
 // needs to be before RendererInternal.h
 #define VMA_IMPLEMENTATION
 
