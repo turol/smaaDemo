@@ -29,8 +29,8 @@ LDLIBS_spirv-tools:=
 
 
 # compiler options etc
-CC:=i686-w64-mingw32-gcc
-CXX:=i686-w64-mingw32-g++
+CC:=i686-w64-mingw32-gcc-posix
+CXX:=i686-w64-mingw32-g++-posix
 PYTHON:=/usr/bin/python
 
 WIN32:=y
