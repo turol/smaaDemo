@@ -6,6 +6,7 @@
 .github/workflows/doc.yml
 .github/workflows/linux.yml
 .github/workflows/macos.yml
+.github/workflows/scorecard.yml
 .github/workflows/windows.yml
 .gitignore
 CMakeLists.txt
