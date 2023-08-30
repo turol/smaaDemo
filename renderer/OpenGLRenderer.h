@@ -667,7 +667,7 @@ struct RendererImpl : public RendererBase {
 
 	GraphicsPipelineHandle                                  currentGraphicsPipeline;
 
-	bool                                                    decriptorSetsDirty  = true;
+	bool                                                    descriptorSetsDirty = true;
 	HashMap<DSIndex, Descriptor>                            descriptors;
 
 	bool                                                    tracing             = false;

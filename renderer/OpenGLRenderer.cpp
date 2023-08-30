@@ -2134,7 +2134,7 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 	impl->scissorSet    = false;
 #endif  // NDEBUG
 
-	impl->decriptorSetsDirty = true;
+	impl->descriptorSetsDirty = true;
 
 	const auto &p = impl->graphicsPipelines.get(pipeline);
 
@@ -2263,7 +2263,7 @@ void Renderer::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHandle
 	assert(p.desc.descriptorSetLayouts[index] == layoutHandle);
 #endif  // NDEBUG
 
-	impl->decriptorSetsDirty = true;
+	impl->descriptorSetsDirty = true;
 
 	LOG_TODO("get shader bindings from current pipeline, use index")
 	const DescriptorSetLayout &layout = impl->dsLayouts.get(layoutHandle);
@@ -2389,7 +2389,7 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 
 
 void RendererImpl::rebindDescriptorSets() {
-	assert(decriptorSetsDirty);
+	assert(descriptorSetsDirty);
 
 	const auto &pipeline  = graphicsPipelines.get(currentGraphicsPipeline);
 	const auto &resources = pipeline.resources;
@@ -2443,7 +2443,7 @@ void RendererImpl::rebindDescriptorSets() {
 		}
 	}
 
-	decriptorSetsDirty = false;
+	descriptorSetsDirty = false;
 }
 
 
@@ -2577,10 +2577,10 @@ void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 	impl->pipelineUsed = true;
 #endif //  NDEBUG
 
-	if (impl->decriptorSetsDirty) {
+	if (impl->descriptorSetsDirty) {
 		impl->rebindDescriptorSets();
 	}
-	assert(!impl->decriptorSetsDirty);
+	assert(!impl->descriptorSetsDirty);
 
 	LOG_TODO("get primitive from current pipeline")
 	glDrawArrays(GL_TRIANGLES, firstVertex, vertexCount);
@@ -2598,10 +2598,10 @@ void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int insta
 	impl->pipelineUsed = true;
 #endif //  NDEBUG
 
-	if (impl->decriptorSetsDirty) {
+	if (impl->descriptorSetsDirty) {
 		impl->rebindDescriptorSets();
 	}
-	assert(!impl->decriptorSetsDirty);
+	assert(!impl->descriptorSetsDirty);
 
 	LOG_TODO("get primitive from current pipeline")
 	GLenum format = glIndexFormat(impl->indexFormat);
@@ -2624,10 +2624,10 @@ void Renderer::drawIndexed(unsigned int vertexCount, unsigned int firstIndex) {
 	impl->pipelineUsed = true;
 #endif //  NDEBUG
 
-	if (impl->decriptorSetsDirty) {
+	if (impl->descriptorSetsDirty) {
 		impl->rebindDescriptorSets();
 	}
-	assert(!impl->decriptorSetsDirty);
+	assert(!impl->descriptorSetsDirty);
 
 	GLenum format        = glIndexFormat(impl->indexFormat);
 	unsigned int idxSize = glIndexSize(impl->indexFormat);
@@ -2647,10 +2647,10 @@ void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int fi
 	impl->pipelineUsed = true;
 #endif //  NDEBUG
 
-	if (impl->decriptorSetsDirty) {
+	if (impl->descriptorSetsDirty) {
 		impl->rebindDescriptorSets();
 	}
-	assert(!impl->decriptorSetsDirty);
+	assert(!impl->descriptorSetsDirty);
 
 	GLenum format        = glIndexFormat(impl->indexFormat);
 	unsigned int idxSize = glIndexSize(impl->indexFormat);
