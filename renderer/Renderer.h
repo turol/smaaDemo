@@ -1141,6 +1141,13 @@ public:
 namespace std {
 
 
+template <> struct hash<renderer::BlendFunc> {
+	size_t operator()(const renderer::BlendFunc &f) const {
+		return std::hash<size_t>()(magic_enum::enum_integer(f));
+	}
+};
+
+
 template <typename T>
 struct hash<renderer::Handle<T> > {
 	size_t operator()(const renderer::Handle<T> &handle) const {
