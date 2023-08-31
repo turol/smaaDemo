@@ -549,6 +549,15 @@ class GraphicsPipelineDesc {
 
 		bool operator==(const VertexAttr &other) const;
 		bool operator!=(const VertexAttr &other) const;
+
+		size_t hashValue() const {
+			size_t h = 0;
+			hashCombine(h, bufBinding);
+			hashCombine(h, count);
+			hashCombine(h, format);
+			hashCombine(h, offset);
+			return h;
+		}
 	};
 
 	struct VertexBuf {
@@ -556,6 +565,10 @@ class GraphicsPipelineDesc {
 
 		bool operator==(const VertexBuf &other) const;
 		bool operator!=(const VertexBuf &other) const;
+
+		size_t hashValue() const {
+			return std::hash<uint32_t>()(stride);
+		}
 	};
 
 	std::array<VertexAttr,     MAX_VERTEX_ATTRIBS>   vertexAttribs;
@@ -688,6 +701,28 @@ public:
 
 	bool operator==(const GraphicsPipelineDesc &other) const;
 
+	size_t hashValue() const {
+		size_t h = 0;
+		hashCombine(h, vertexShaderName);
+		hashCombine(h, fragmentShaderName);
+		hashCombine(h, renderPass_);
+		hashCombine(h, shaderMacros_);
+		hashCombine(h, shaderLanguage_);
+		hashCombine(h, vertexAttribMask);
+		hashCombine(h, numSamples_);
+		hashCombine(h, depthWrite_);
+		hashCombine(h, depthTest_);
+		hashCombine(h, cullFaces_);
+		hashCombine(h, scissorTest_);
+		hashCombine(h, blending_);
+		hashCombine(h, sourceBlend_);
+		hashCombine(h, destinationBlend_);
+		hashContainer(h, vertexAttribs, [] (const VertexAttr &a) { return a.hashValue(); });
+		hashContainer(h, vertexBuffers, [] (const VertexBuf &b)  { return b.hashValue(); });
+		hashContainer(h, descriptorSetLayouts);
+		hashCombine(h, name_);
+		return h;
+	}
 
 	friend class Renderer;
 	friend struct RendererImpl;
@@ -1152,6 +1187,13 @@ template <typename T>
 struct hash<renderer::Handle<T> > {
 	size_t operator()(const renderer::Handle<T> &handle) const {
 		return handle.hashValue();
+	}
+};
+
+
+template <> struct hash<renderer::GraphicsPipelineDesc> {
+	size_t operator()(const renderer::GraphicsPipelineDesc &desc) const {
+		return desc.hashValue();
 	}
 };
 
