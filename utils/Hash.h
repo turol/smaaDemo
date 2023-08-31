@@ -47,4 +47,20 @@ void hashCombine(size_t &h, const T &value) {
 }
 
 
+template <typename Container>
+void hashContainer(size_t &h, const Container &c) {
+	for (typename Container::const_iterator it = std::begin(c); it != std::end(c); it++) {
+		hashCombine(h, *it);
+	}
+}
+
+
+template <typename Container, typename F>
+void hashContainer(size_t &h, const Container &c, F &&f) {
+	for (typename Container::const_iterator it = std::begin(c); it != std::end(c); it++) {
+		hashCombine(h, f(*it));
+	}
+}
+
+
 #endif  // HASH_H
