@@ -274,6 +274,10 @@ bool GraphicsPipelineDesc::operator==(const GraphicsPipelineDesc &other) const {
 		return false;
 	}
 
+	if (this->shaderLanguage_    != other.shaderLanguage_) {
+		return false;
+	}
+
 	if (this->vertexAttribMask   != other.vertexAttribMask) {
 		return false;
 	}
