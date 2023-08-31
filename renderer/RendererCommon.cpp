@@ -439,7 +439,7 @@ void from_json(const nlohmann::json &j, ShaderSourceCacheData &data) {
 }
 
 
-static const magic_enum::containers::array<ShaderStage, const char *> shaderStages = { "vert", "frag" };
+static const magic_enum::containers::array<ShaderStage, const char *> shaderStages = { "vert", "frag", "comp" };
 
 
 std::string RendererBase::makeSPVCacheName(uint64_t hash, ShaderStage stage) {
@@ -659,12 +659,14 @@ static constexpr magic_enum::containers::array<ShaderStage, const char *>  glslS
 {
 	  ".vert"
 	, ".frag"
+	, ".comp"
 };
 
 
 static constexpr magic_enum::containers::array<ShaderStage, const char *>  hlslEntryPointNames = {
 	  "vertexShader"
 	, "fragmentShader"
+	, "computeShader"
 };
 
 std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, ShaderLanguage shaderLanguage, const ShaderMacros &macros, ShaderStage stage) {
@@ -778,6 +780,10 @@ compilationNeeded:
 
 		case ShaderStage::Fragment:
 			language = EShLangFragment;
+			break;
+
+		case ShaderStage::Compute:
+			language = EShLangCompute;
 			break;
 
 		default:
