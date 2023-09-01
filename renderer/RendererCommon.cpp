@@ -1194,4 +1194,90 @@ void RendererBase::saveShaderCache() {
 }
 
 
+bool RenderPassDesc::operator==(const RenderPassDesc &other) const {
+	if (this->depthStencilFormat_ != other.depthStencilFormat_) {
+		return false;
+	}
+
+	for (unsigned int i = 0; i< MAX_COLOR_RENDERTARGETS; i++) {
+		const auto &lhs = this->colorRTs_[i];
+		const auto &rhs = other.colorRTs_[i];
+
+		if (lhs.format != rhs.format) {
+			return false;
+		}
+
+		// if Invalid, rest of the fields don't matter
+		if (lhs.format == Format::Invalid) {
+			continue;
+		}
+
+		if (lhs.passBegin != rhs.passBegin) {
+			return false;
+		}
+
+		if (lhs.initialLayout != rhs.initialLayout) {
+			return false;
+		}
+
+		if (lhs.finalLayout != rhs.finalLayout) {
+			return false;
+		}
+
+		if (lhs.passBegin == PassBegin::Clear && lhs.clearValue != rhs.clearValue) {
+			return false;
+		}
+	}
+
+	if (this->numSamples_ != other.numSamples_) {
+		return false;
+	}
+
+	if (this->clearDepthAttachment != other.clearDepthAttachment) {
+		return false;
+	}
+
+	if (this->clearDepthAttachment && this->depthClearValue != other.depthClearValue) {
+		return false;
+	}
+
+	return true;
+}
+
+
+size_t RenderPassDesc::RTInfo::hashValue() const {
+	size_t h = 0;
+
+	hashCombine(h, format);
+	if (format == Format::Invalid) {
+		return h;
+	}
+
+	hashCombine(h, passBegin);
+	if (passBegin == PassBegin::Clear) {
+		hashCombine(h, clearValue.x);
+		hashCombine(h, clearValue.y);
+		hashCombine(h, clearValue.z);
+		hashCombine(h, clearValue.w);
+	}
+	hashCombine(h, initialLayout);
+	hashCombine(h, finalLayout);
+
+	return h;
+}
+
+
+size_t RenderPassDesc::hashValue() const {
+	size_t h = 0;
+
+	hashCombine(h, depthStencilFormat_);
+	hashContainer(h, colorRTs_, [] (const RTInfo &r) { return r.hashValue(); });
+	hashCombine(h, numSamples_);
+	hashCombine(h, name_);
+	hashCombine(h, clearDepthAttachment);
+	hashCombine(h, depthClearValue);
+
+	return h;
+}
+
 }	// namespace renderer

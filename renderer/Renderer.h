@@ -782,6 +782,8 @@ struct RenderPassDesc {
 		Layout     initialLayout  = Layout::Undefined;
 		Layout     finalLayout    = Layout::Undefined;
 		glm::vec4  clearValue     = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
+		size_t hashValue() const;
 	};
 
 
@@ -790,6 +792,9 @@ struct RenderPassDesc {
 		return colorRTs_[index];
 	}
 
+	bool operator==(const RenderPassDesc &other) const;
+
+	size_t hashValue() const;
 
 private:
 
@@ -1193,6 +1198,13 @@ struct hash<renderer::Handle<T> > {
 
 template <> struct hash<renderer::GraphicsPipelineDesc> {
 	size_t operator()(const renderer::GraphicsPipelineDesc &desc) const {
+		return desc.hashValue();
+	}
+};
+
+
+template <> struct hash<renderer::RenderPassDesc> {
+	size_t operator()(const renderer::RenderPassDesc &desc) const {
 		return desc.hashValue();
 	}
 };
