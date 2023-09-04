@@ -511,6 +511,8 @@ private:
 	std::vector<Operation>                           operations;
 	RT                                               finalTarget      = Default<RT>::value;
 
+	HashMap<RenderPassDesc, RenderPassHandle>        renderPassCache;
+
 	HashMap<RT, Rendertarget>                        rendertargets;
 
 	// TODO: use hash map
@@ -551,6 +553,11 @@ public:
 			renderer.deleteGraphicsPipeline(std::move(p.handle));
 		}
 		graphicsPipelines.clear();
+
+		for (auto &rp : renderPassCache) {
+			renderer.deleteRenderPass(std::move(rp.second));
+		}
+		renderPassCache.clear();
 	}
 
 
@@ -581,9 +588,7 @@ public:
 			}
 
 			RenderPass &rp = *rp_;
-			if (rp.handle) {
-				renderer.deleteRenderPass(std::move(rp.handle));
-			}
+			rp.handle.reset();
 
 			if (rp.fb) {
 				renderer.deleteFramebuffer(std::move(rp.fb));
@@ -835,8 +840,17 @@ public:
 			}
 
 			assert(!rp.handle);
-			LOG_TODO("cache render passes")
-			rp.handle = renderer.createRenderPass(rp.rpDesc);
+			{
+				auto it = renderPassCache.find(rp.rpDesc);
+				if (it != renderPassCache.end()) {
+					rp.handle = it->second;
+				} else {
+					auto handle = renderer.createRenderPass(rp.rpDesc);
+					// store owning handle in cache and return a non-owning copy
+					rp.handle = handle;
+					renderPassCache.emplace(rp.rpDesc, std::move(handle));
+				}
+			}
 			assert(rp.handle);
 
 			assert(!rp.fb);
