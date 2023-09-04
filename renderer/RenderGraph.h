@@ -535,6 +535,14 @@ public:
 
 
 	~RenderGraph() {
+		assert(state != RGState::Ready);
+		assert(state != RGState::Rendering);
+		assert(!storedException);
+		assert(!hasExternalRTs);
+		assert(operations.empty());
+		assert(rendertargets.empty());
+		assert(graphicsPipelines.empty());
+		assert(renderpassesWithExternalRTs.empty());
 	}
 
 
