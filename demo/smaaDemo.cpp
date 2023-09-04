@@ -760,6 +760,7 @@ SMAADemo::~SMAADemo() {
 		}
 
 		renderGraph.reset(renderer);
+		renderGraph.clearCaches(renderer);
 
 		for (unsigned int i = 0; i < magic_enum::enum_count<Shape>(); i++) {
 			Shape s = magic_enum::enum_value<Shape>(i);

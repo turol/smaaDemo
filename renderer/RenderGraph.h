@@ -546,17 +546,20 @@ public:
 	}
 
 
+	void clearCaches(Renderer &renderer) {
+		for (auto &p : graphicsPipelines) {
+			renderer.deleteGraphicsPipeline(std::move(p.handle));
+		}
+		graphicsPipelines.clear();
+	}
+
+
 	void reset(Renderer &renderer) {
 		assert(state == RGState::Invalid || state == RGState::Ready);
 		state = RGState::Building;
 
 		renderpassesWithExternalRTs.clear();
 		hasExternalRTs = false;
-
-		for (auto &p : graphicsPipelines) {
-			renderer.deleteGraphicsPipeline(std::move(p.handle));
-		}
-		graphicsPipelines.clear();
 
 		for (auto &rt : rendertargets) {
 			assert(rt.first != Default<RT>::value);
