@@ -396,10 +396,6 @@ private:
 		Layout         finalLayout  = Layout::Undefined;
 	};
 
-	struct GraphicsPipeline {
-		GraphicsPipelineDesc    desc;
-		GraphicsPipelineHandle  handle;
-	};
 
 	using Operation = std::variant<Blit, RenderPass, ResolveMSAA>;
 
@@ -515,8 +511,7 @@ private:
 
 	HashMap<RT, Rendertarget>                        rendertargets;
 
-	// TODO: use hash map
-	std::vector<GraphicsPipeline>                    graphicsPipelines;
+	HashMap<GraphicsPipelineDesc, GraphicsPipelineHandle>  graphicsPipelines;
 
 	HashSet<RP>                                      renderpassesWithExternalRTs;
 
@@ -550,7 +545,7 @@ public:
 
 	void clearCaches(Renderer &renderer) {
 		for (auto &p : graphicsPipelines) {
-			renderer.deleteGraphicsPipeline(std::move(p.handle));
+			renderer.deleteGraphicsPipeline(std::move(p.second));
 		}
 		graphicsPipelines.clear();
 
@@ -1118,10 +1113,11 @@ public:
 		}
 		assert(found);
 
-		LOG_TODO("use hash map")
-		for (const auto &pipeline : graphicsPipelines) {
-			if (pipeline.desc == desc) {
-				return pipeline.handle;
+		{
+			LOG_TODO("this is too strict, renderpasses only need to be compatible instead of identical")
+			auto it = graphicsPipelines.find(desc);
+			if (it != graphicsPipelines.end()) {
+				return it->second;
 			}
 		}
 
@@ -1129,10 +1125,7 @@ public:
 		auto handle = renderer.createGraphicsPipeline(desc);
 		GraphicsPipelineHandle result = handle;
 
-		GraphicsPipeline pipeline;
-		pipeline.desc   = desc;
-		pipeline.handle = std::move(handle);
-		graphicsPipelines.emplace_back(std::move(pipeline));
+		graphicsPipelines.emplace(desc, std::move(handle));
 
 		return result;
 	}
