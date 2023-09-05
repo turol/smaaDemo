@@ -758,6 +758,9 @@ compilationNeeded:
 		std::string_view ext = "#extension GL_GOOGLE_include_directive : enable\n";
 		preamble.insert(preamble.end(), ext.begin(), ext.end());
 
+		ext = "#extension GL_EXT_control_flow_attributes : enable\n";
+		preamble.insert(preamble.end(), ext.begin(), ext.end());
+
 		if (!macros.impl.empty()) {
 			assert(std::is_sorted(macros.impl.begin(), macros.impl.end()));
 
