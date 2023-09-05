@@ -642,15 +642,15 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 
 #define API_V_DIR(v) -(v)
 #define API_V_COORD(v) (1.0 - v)
-#define API_V_BELOW(v1, v2)	v1 < v2
-#define API_V_ABOVE(v1, v2)	v1 > v2
+#define API_V_BELOW(v1, v2) v1 < v2
+#define API_V_ABOVE(v1, v2) v1 > v2
 
 #else  // VULKAN_FLIP
 
 #define API_V_DIR(v) v
 #define API_V_COORD(v) v
-#define API_V_BELOW(v1, v2)	v1 > v2
-#define API_V_ABOVE(v1, v2)	v1 < v2
+#define API_V_BELOW(v1, v2) v1 > v2
+#define API_V_ABOVE(v1, v2) v1 < v2
 
 #endif  // VULKAN_FLIP
 
@@ -934,7 +934,7 @@ float4 SMAADecodeDiagBilinearAccess(float4 e) {
  * These functions allows to perform diagonal pattern searches.
  */
 float2 SMAASearchDiag1(SMAATexture2D(edgesTex), float2 texcoord, float2 dir, out float2 e) {
-	dir.y = API_V_DIR(dir.y);
+    dir.y = API_V_DIR(dir.y);
     float4 coord = float4(texcoord, -1.0, 1.0);
     float3 t = float3(SMAA_RT_METRICS.xy, 1.0);
     while (coord.z < float(SMAA_MAX_SEARCH_STEPS_DIAG - 1) &&
@@ -947,7 +947,7 @@ float2 SMAASearchDiag1(SMAATexture2D(edgesTex), float2 texcoord, float2 dir, out
 }
 
 float2 SMAASearchDiag2(SMAATexture2D(edgesTex), float2 texcoord, float2 dir, out float2 e) {
-	dir.y = API_V_DIR(dir.y);
+    dir.y = API_V_DIR(dir.y);
     float4 coord = float4(texcoord, -1.0, 1.0);
     coord.x += 0.25 * SMAA_RT_METRICS.x; // See @SearchDiag2Optimization
     float3 t = float3(SMAA_RT_METRICS.xy, 1.0);
@@ -985,7 +985,7 @@ float2 SMAAAreaDiag(SMAATexture2D(areaTex), float2 dist, float2 e, float offset)
     // Move to proper place, according to the subpixel offset:
     texcoord.y += SMAA_AREATEX_SUBTEX_SIZE * offset;
 
-	texcoord.y = API_V_COORD(texcoord.y);
+    texcoord.y = API_V_COORD(texcoord.y);
 
     // Do it!
     return SMAA_AREATEX_SELECT(SMAASampleLevelZero(areaTex, texcoord));
@@ -1087,8 +1087,8 @@ float SMAASearchLength(SMAATexture2D(searchTex), float2 e, float offset) {
     scale *= 1.0 / SMAA_SEARCHTEX_PACKED_SIZE;
     bias *= 1.0 / SMAA_SEARCHTEX_PACKED_SIZE;
 
-	float2 coord = mad(scale, e, bias);
-	coord.y = API_V_COORD(coord.y);
+    float2 coord = mad(scale, e, bias);
+    coord.y = API_V_COORD(coord.y);
 
     // Lookup the search texture:
     return SMAA_SEARCHTEX_SELECT(SMAASampleLevelZero(searchTex, coord));
@@ -1179,7 +1179,7 @@ float2 SMAAArea(SMAATexture2D(areaTex), float2 dist, float e1, float e2, float o
     // Move to proper place, according to the subpixel offset:
     texcoord.y = mad(SMAA_AREATEX_SUBTEX_SIZE, offset, texcoord.y);
 
-	texcoord.y = API_V_COORD(texcoord.y);
+    texcoord.y = API_V_COORD(texcoord.y);
 
     // Do it!
     return SMAA_AREATEX_SELECT(SMAASampleLevelZero(areaTex, texcoord));
