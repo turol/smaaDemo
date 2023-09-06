@@ -539,6 +539,7 @@
 #define SMAASampleOffset(tex, coord, offset) tex2D(tex, coord + offset * SMAA_RT_METRICS.xy)
 #define SMAA_FLATTEN [flatten]
 #define SMAA_BRANCH [branch]
+#define SMAA_LOOP [loop]
 #endif
 #if defined(SMAA_HLSL_4) || defined(SMAA_HLSL_4_1)
 #ifndef SMAA_FLIP_Y
@@ -560,6 +561,7 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #define SMAASampleOffset(tex, coord, offset) tex.Sample(LinearSampler, coord, offset)
 #define SMAA_FLATTEN [flatten]
 #define SMAA_BRANCH [branch]
+#define SMAA_LOOP [loop]
 #define SMAATexture2DMS2(tex) Texture2DMS<float4, 2> tex
 #define SMAALoad(tex, pos, sample) tex.Load(pos, sample)
 #if defined(SMAA_HLSL_4_1)
@@ -598,6 +600,7 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 // These are provided by GL_EXT_control_flow_attributes extension
 #define SMAA_FLATTEN [[flatten]]
 #define SMAA_BRANCH  [[branch]]
+#define SMAA_LOOP    [[loop]]
 #define lerp(a, b, t) mix(a, b, t)
 #define saturate(a) clamp(a, 0.0, 1.0)
 
