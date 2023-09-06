@@ -595,8 +595,9 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 
 #endif  // SMAA_GLSL_SEPARATE_SAMPLER
 
-#define SMAA_FLATTEN
-#define SMAA_BRANCH
+// These are provided by GL_EXT_control_flow_attributes extension
+#define SMAA_FLATTEN [[flatten]]
+#define SMAA_BRANCH  [[branch]]
 #define lerp(a, b, t) mix(a, b, t)
 #define saturate(a) clamp(a, 0.0, 1.0)
 
