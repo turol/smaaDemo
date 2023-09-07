@@ -1963,10 +1963,6 @@ void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHa
 	assert(rpHandle);
 	const auto &rp = impl->renderPasses.get(rpHandle);
 
-	if (impl->tracing) {
-		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, -1, rp.desc.name_.c_str());
-	}
-
 	// make sure renderpass and framebuffer match
 	// OpenGL doesn't care but Vulkan does
 	assert(fb.renderPass == rpHandle || impl->isRenderPassCompatible(rp, fb));
@@ -2023,10 +2019,6 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 
 	glDisable(GL_SCISSOR_TEST);
 
-	if (impl->tracing) {
-		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, -1, rp.desc.name_.c_str());
-	}
-
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	if (impl->features.sRGBFramebuffer) {
 		glEnable(GL_FRAMEBUFFER_SRGB);
@@ -2061,10 +2053,6 @@ void Renderer::endRenderPass() {
 	assert(impl->inRenderPass);
 	impl->inRenderPass = false;
 #endif  // NDEBUG
-
-	if (impl->tracing) {
-		glPopDebugGroup();
-	}
 
 	if (impl->renderingToSwapchain) {
 		assert(!impl->currentFramebuffer);
