@@ -68,11 +68,11 @@ struct ResourceHasher final {
 
 template <typename T> void RendererImpl::debugNameObject(T handle, const std::string &name) {
 	if (debugMarkers) {
-		vk::DebugMarkerObjectNameInfoEXT markerName;
-		markerName.objectType  = T::debugReportObjectType;
-		markerName.object      = uint64_t(typename T::CType(handle));
-		markerName.pObjectName = name.c_str();
-		vk::Result result = device.debugMarkerSetObjectNameEXT(&markerName, dispatcher);
+		vk::DebugUtilsObjectNameInfoEXT objectNameInfo;
+		objectNameInfo.objectType   = T::objectType;
+		objectNameInfo.objectHandle = uint64_t(typename T::CType(handle));
+		objectNameInfo.pObjectName  = name.c_str();
+		vk::Result result = device.setDebugUtilsObjectNameEXT(&objectNameInfo, dispatcher);
 		if (result != vk::Result::eSuccess) {
 			LOG_ERROR("Failed to set debug name on {} \"{}\": {}", vk::to_string(T::debugReportObjectType), name, vk::to_string(result));
 		}
