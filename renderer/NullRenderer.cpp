@@ -33,8 +33,6 @@ namespace renderer {
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
 {
-	debug = desc.debug;
-
 	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
 
 	swapchainFormat = Format::sRGBA8;

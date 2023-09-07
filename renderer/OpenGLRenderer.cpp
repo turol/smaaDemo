@@ -490,8 +490,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
 , tracing(desc.tracing)
 {
-	debug = desc.debug;
-
 	{
 		SDL_version version;
 

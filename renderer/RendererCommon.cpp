@@ -350,6 +350,7 @@ RendererBase::RendererBase(const RendererDesc &desc)
 , optimizeShaders(desc.optimizeShaders)
 , validateShaders(desc.validateShaders)
 , renderingToSwapchain(false)
+, debug(desc.debug)
 {
 	char *prefPath = SDL_GetPrefPath("", "SMAADemo");
 	spirvCacheDir = prefPath;
