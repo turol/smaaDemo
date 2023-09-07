@@ -3861,6 +3861,35 @@ void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int fi
 }
 
 
+DebugGroupHandle Renderer::beginDebugGroup(const std::string &name) {
+	assert(impl->inFrame);
+	assert(!name.empty());
+
+	if (impl->tracing) {
+		vk::DebugUtilsLabelEXT l;
+		l.pLabelName = name.c_str();
+		impl->currentCommandBuffer.beginDebugUtilsLabelEXT(l, impl->dispatcher);
+	}
+
+	impl->activeDebugGroups++;
+	return DebugGroupHandle(impl->activeDebugGroups);
+}
+
+
+void Renderer::endDebugGroup(DebugGroupHandle &&g) {
+	assert(impl->inFrame);
+	assert(g.count != 0);
+	assert(g.count == impl->activeDebugGroups);
+	assert(impl->activeDebugGroups > 0);
+	impl->activeDebugGroups--;
+	g.count = 0;
+
+	if (impl->tracing) {
+		impl->currentCommandBuffer.endDebugUtilsLabelEXT(impl->dispatcher);
+	}
+}
+
+
 } // namespace renderer
 
 

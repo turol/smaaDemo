@@ -170,6 +170,75 @@ public:
 };
 
 
+// this is different from other Handles because it's not backed by a Resource
+class DebugGroupHandle {
+	friend class Renderer;
+
+	unsigned int  count = 0;
+	bool          owned = false;
+
+
+	explicit DebugGroupHandle(unsigned int count_)
+	: count(count_)
+	, owned(true)
+	{
+	}
+
+public:
+
+
+	DebugGroupHandle() {
+	}
+
+
+	~DebugGroupHandle() {
+		assert(count == 0);
+		assert(!owned);
+	}
+
+
+	// copying a Handle, new copy is not owned no matter what
+	DebugGroupHandle(const DebugGroupHandle &other)
+	: count(other.count)
+	{
+	}
+
+
+	DebugGroupHandle &operator=(const DebugGroupHandle &other) noexcept {
+		if (this != &other) {
+			assert(!this->owned && "Overwriting an owned handle when copying");
+			count = other.count;
+		}
+
+		return *this;
+	}
+
+
+	// Moving an owned handle takes ownership
+	DebugGroupHandle(DebugGroupHandle &&other) noexcept {
+		count        = other.count;
+		owned        = other.owned;
+
+		other.count  = 0;
+		other.owned  = false;
+	}
+
+
+	DebugGroupHandle &operator=(DebugGroupHandle &&other) noexcept {
+		if (this != &other) {
+			assert(!this->owned && "Overwriting an owned handle when moving");
+			count        = other.count;
+			owned        = other.owned;
+
+			other.count  = 0;
+			other.owned  = false;
+		}
+
+		return *this;
+	}
+};
+
+
 #else  // HANDLE_OWNERSHIP_DEBUG
 
 
@@ -229,6 +298,38 @@ public:
 	size_t hashValue() const {
 		return std::hash<HandleType>()(handle);
 	}
+};
+
+
+// this is different from other Handles because it's not backed by a Resource
+class DebugGroupHandle {
+	friend class Renderer;
+
+	unsigned int  count = 0;
+
+
+	explicit DebugGroupHandle(unsigned int count_)
+	: count(count_)
+	{
+	}
+
+public:
+
+
+	DebugGroupHandle() {
+	}
+
+
+	~DebugGroupHandle() {
+		assert(count == 0);
+	}
+
+
+	DebugGroupHandle(const DebugGroupHandle &other)            noexcept = default;
+	DebugGroupHandle &operator=(const DebugGroupHandle &other) noexcept = default;
+
+	DebugGroupHandle(DebugGroupHandle &&other)                 noexcept = default;
+	DebugGroupHandle &operator=(DebugGroupHandle &&other)      noexcept = default;
 };
 
 
@@ -1172,6 +1273,9 @@ public:
 	void drawIndexed(unsigned int vertexCount, unsigned int firstIndex);
 	void drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount);
 	void drawIndexedVertexOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int vertexOffset);
+
+	DebugGroupHandle beginDebugGroup(const std::string &name);
+	void endDebugGroup(DebugGroupHandle &&g);
 };
 
 

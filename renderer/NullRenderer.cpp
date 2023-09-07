@@ -496,6 +496,25 @@ void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int /*
 }
 
 
+DebugGroupHandle Renderer::beginDebugGroup(const std::string &name DEBUG_ASSERTED) {
+	assert(impl->inFrame);
+	assert(!name.empty());
+
+	impl->activeDebugGroups++;
+	return DebugGroupHandle(impl->activeDebugGroups);
+}
+
+
+void Renderer::endDebugGroup(DebugGroupHandle &&g) {
+	assert(impl->inFrame);
+	assert(g.count != 0);
+	assert(g.count == impl->activeDebugGroups);
+	assert(impl->activeDebugGroups > 0);
+	impl->activeDebugGroups--;
+	g.count = 0;
+}
+
+
 } // namespace renderer
 
 

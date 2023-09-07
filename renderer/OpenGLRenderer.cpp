@@ -1876,6 +1876,8 @@ void Renderer::presentFrame() {
 #ifndef NDEBUG
 	assert(impl->inFrame);
 	impl->inFrame = false;
+
+	assert(impl->activeDebugGroups == 0);
 #endif //  NDEBUG
 
 	auto &frame = impl->frames.at(impl->currentFrameIdx);
@@ -2654,6 +2656,33 @@ void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int fi
 	auto ptr = reinterpret_cast<const char *>(firstIndex * idxSize + impl->indexBufByteOffset);
 	LOG_TODO("get primitive from current pipeline")
 	glDrawElementsBaseVertex(GL_TRIANGLES, vertexCount, format, ptr, vertexOffset);
+}
+
+
+DebugGroupHandle Renderer::beginDebugGroup(const std::string &name) {
+	assert(impl->inFrame);
+	assert(!name.empty());
+
+	if (impl->tracing) {
+		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, -1, name.c_str());
+	}
+
+	impl->activeDebugGroups++;
+	return DebugGroupHandle(impl->activeDebugGroups);
+}
+
+
+void Renderer::endDebugGroup(DebugGroupHandle &&g) {
+	assert(impl->inFrame);
+	assert(g.count != 0);
+	assert(g.count == impl->activeDebugGroups);
+	assert(impl->activeDebugGroups > 0);
+	impl->activeDebugGroups--;
+	g.count = 0;
+
+	if (impl->tracing) {
+		glPopDebugGroup();
+	}
 }
 
 

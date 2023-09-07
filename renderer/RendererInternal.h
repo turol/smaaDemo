@@ -343,6 +343,7 @@ struct RendererBase {
 	bool                                                 debug                     = false;
 	bool                                                 tracing                   = false;
 
+	unsigned int                                         activeDebugGroups         = 0;
 
 #ifndef NDEBUG
 	// debugging
