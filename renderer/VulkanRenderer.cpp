@@ -429,13 +429,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	bool newDebugExtension = false;
 	if (enableValidation) {
 		const char *khronosValidation = "VK_LAYER_KHRONOS_validation";
-		const char *lunargValidation  = "VK_LAYER_LUNARG_standard_validation";
 		if (instanceLayers.find(khronosValidation) != instanceLayers.end()) {
 			activeLayers.push_back(khronosValidation);
 			LOG("Using KHRONOS validation layer");
-		} else if (instanceLayers.find(lunargValidation) != instanceLayers.end()) {
-			activeLayers.push_back(lunargValidation);
-			LOG("Using LUNARG validation layer");
 		} else {
 			THROW_ERROR("Validation requested but no validation layer available")
 		}
