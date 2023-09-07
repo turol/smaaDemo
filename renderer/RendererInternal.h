@@ -341,6 +341,7 @@ struct RendererBase {
 	HashMap<ShaderCacheKey, ShaderCacheData>             shaderCache;
 	bool                                                 cacheModified             = false;
 	bool                                                 debug                     = false;
+	bool                                                 tracing                   = false;
 
 
 #ifndef NDEBUG

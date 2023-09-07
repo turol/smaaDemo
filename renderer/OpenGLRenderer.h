@@ -670,7 +670,6 @@ struct RendererImpl : public RendererBase {
 	bool                                                    descriptorSetsDirty = true;
 	HashMap<DSIndex, Descriptor>                            descriptors;
 
-	bool                                                    tracing             = false;
 	GLuint                                                  vao                 = 0;
 	IndexFormat                                             indexFormat         = IndexFormat::b32;
 	unsigned int                                            indexBufByteOffset  = 0;
