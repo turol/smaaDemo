@@ -245,24 +245,6 @@ static VkBool32 VKAPI_PTR debugMessengerFunc(VkDebugUtilsMessageSeverityFlagBits
 }
 
 
-static VkBool32 VKAPI_PTR debugCallbackFunc(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t /* messageCode */, const char * pLayerPrefix, const char * pMessage, void * /* pUserData*/) {
-	LOG("layer {} {} object {} type {} location {}: {}", pLayerPrefix, vk::to_string(vk::DebugReportFlagBitsEXT(flags)), object, vk::to_string(vk::DebugReportObjectTypeEXT(objectType)), location, pMessage);
-	logFlush();
-
-	// make errors fatal
-	switch (vk::DebugReportFlagBitsEXT(flags)) {
-	case vk::DebugReportFlagBitsEXT::eWarning:
-	case vk::DebugReportFlagBitsEXT::eError:
-		abort();
-
-	default:
-		break;
-	}
-
-	return VK_FALSE;
-}
-
-
 static uint32_t makeVulkanVersion(const Version &v) {
 	return VK_MAKE_VERSION(v.major, v.minor, v.patch);
 }
@@ -426,7 +408,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	std::vector<const char *> activeLayers;
 
-	bool newDebugExtension = false;
 	if (enableValidation) {
 		const char *khronosValidation = "VK_LAYER_KHRONOS_validation";
 		if (instanceLayers.find(khronosValidation) != instanceLayers.end()) {
@@ -436,12 +417,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			THROW_ERROR("Validation requested but no validation layer available")
 		}
 
-		if (checkInstanceExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
-			LOG("Using new debug extension");
-			newDebugExtension = true;
-		} else if (checkInstanceExtension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME)) {
-			LOG("Using old debug extension");
-		} else {
+		if (!checkInstanceExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
 			THROW_ERROR("Validation requested but no debug reporting extension available")
 		}
 		instanceCreateInfo.enabledLayerCount    = static_cast<uint32_t>(activeLayers.size());
@@ -470,19 +446,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 #endif  // VK_HEADER_VERSION
 
 	if (enableValidation) {
-		if (newDebugExtension) {
 			vk::DebugUtilsMessengerCreateInfoEXT messengerInfo;
 			messengerInfo.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
 			messengerInfo.messageType     = vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
 			messengerInfo.pfnUserCallback = debugMessengerFunc;
 
 			debugUtilsCallback = instance.createDebugUtilsMessengerEXT(messengerInfo, nullptr, dispatcher);
-		} else {
-			vk::DebugReportCallbackCreateInfoEXT callbackInfo;
-			callbackInfo.flags       = vk::DebugReportFlagBitsEXT::eError;
-			callbackInfo.pfnCallback = debugCallbackFunc;
-			debugReportCallback      = instance.createDebugReportCallbackEXT(callbackInfo, nullptr, dispatcher);
-		}
 	}
 
 	if(!SDL_Vulkan_CreateSurface(window,
@@ -1016,11 +985,6 @@ RendererImpl::~RendererImpl() {
 
 	device.destroy();
 	device = vk::Device();
-
-	if (debugReportCallback) {
-		instance.destroyDebugReportCallbackEXT(debugReportCallback, nullptr, dispatcher);
-		debugReportCallback = vk::DebugReportCallbackEXT();
-	}
 
 	if (debugUtilsCallback) {
 		instance.destroyDebugUtilsMessengerEXT(debugUtilsCallback, nullptr, dispatcher);
