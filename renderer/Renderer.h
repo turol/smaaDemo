@@ -1279,6 +1279,33 @@ public:
 };
 
 
+class ScopedDebugGroup {
+	Renderer          &renderer;
+	DebugGroupHandle  handle;
+
+
+public:
+
+	ScopedDebugGroup(Renderer &renderer_, const std::string &name)
+	: renderer(renderer_)
+	, handle(renderer.beginDebugGroup(name))
+	{
+	}
+
+	~ScopedDebugGroup() {
+		renderer.endDebugGroup(std::move(handle));
+	}
+
+	// not copyable
+	ScopedDebugGroup(const ScopedDebugGroup &)            noexcept = delete;
+	ScopedDebugGroup &operator=(const ScopedDebugGroup &) noexcept = delete;
+
+	// not movable
+	ScopedDebugGroup(ScopedDebugGroup &&)                 noexcept = delete;
+	ScopedDebugGroup &operator=(ScopedDebugGroup &&)      noexcept = delete;
+};
+
+
 }  // namespace renderer
 
 
