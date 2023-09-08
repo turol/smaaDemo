@@ -964,6 +964,8 @@ public:
 				rg.currentRP = rp.id;
 				assert(rp.handle);
 
+				renderer::ScopedDebugGroup g(r, rp.name);
+
 				if (rp.fb) {
 					r.beginRenderPass(rp.handle, rp.fb);
 				} else {
