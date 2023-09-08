@@ -420,7 +420,14 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		if (!checkInstanceExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
 			THROW_ERROR("Validation requested but no debug reporting extension available")
 		}
-		instanceCreateInfo.enabledLayerCount    = static_cast<uint32_t>(activeLayers.size());
+	}
+
+	if (activeLayers.empty()) {
+		LOG("No active Vulkan layers");
+	} else {
+		auto count = static_cast<uint32_t>(activeLayers.size());
+		LOG("{} active Vulkan layer{}", count, (count > 1) ? "s" : "");
+		instanceCreateInfo.enabledLayerCount    = count;
 		instanceCreateInfo.ppEnabledLayerNames  = &activeLayers[0];
 	}
 
