@@ -416,9 +416,11 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		} else {
 			THROW_ERROR("Validation requested but no validation layer available")
 		}
+	}
 
+	if (enableValidation || enableMarkers) {
 		if (!checkInstanceExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
-			THROW_ERROR("Validation requested but no debug reporting extension available")
+			THROW_ERROR("Debugging requested but debug reporting extension not available")
 		}
 	}
 
