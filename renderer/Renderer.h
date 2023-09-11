@@ -895,7 +895,9 @@ struct RenderPassDesc : public DescBase<RenderPassDesc> {
 		return fmt::format("{}\t{}\t{}", magic_enum::enum_name(rt.passBegin), magic_enum::enum_name(rt.initialLayout), magic_enum::enum_name(rt.finalLayout));
 	}
 
-	// TODO: this is public because RenderGraph needs to access it, shouldn't
+
+private:
+
 	struct RTInfo {
 		Format     format         = Format::Invalid;
 		PassBegin  passBegin      = PassBegin::DontCare;
@@ -912,8 +914,6 @@ struct RenderPassDesc : public DescBase<RenderPassDesc> {
 		return colorRTs_[index];
 	}
 
-
-private:
 
 	Format                                       depthStencilFormat_  = Format::Invalid;
 	std::array<RTInfo, MAX_COLOR_RENDERTARGETS>  colorRTs_;
