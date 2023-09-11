@@ -816,28 +816,7 @@ public:
 
 	bool operator==(const GraphicsPipelineDesc &other) const;
 
-	size_t hashValue() const {
-		size_t h = 0;
-		hashCombine(h, name_);
-		hashCombine(h, vertexShaderName);
-		hashCombine(h, fragmentShaderName);
-		hashCombine(h, renderPass_);
-		hashCombine(h, shaderMacros_);
-		hashCombine(h, shaderLanguage_);
-		hashCombine(h, vertexAttribMask);
-		hashCombine(h, numSamples_);
-		hashCombine(h, depthWrite_);
-		hashCombine(h, depthTest_);
-		hashCombine(h, cullFaces_);
-		hashCombine(h, scissorTest_);
-		hashCombine(h, blending_);
-		hashCombine(h, sourceBlend_);
-		hashCombine(h, destinationBlend_);
-		hashContainer(h, vertexAttribs, [] (const VertexAttr &a) { return a.hashValue(); });
-		hashContainer(h, vertexBuffers, [] (const VertexBuf &b)  { return b.hashValue(); });
-		hashContainer(h, descriptorSetLayouts);
-		return h;
-	}
+	size_t hashValue() const;
 
 	friend class Renderer;
 	friend struct RendererImpl;
