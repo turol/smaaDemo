@@ -603,7 +603,7 @@ public:
 };
 
 
-struct FramebufferDesc {
+struct FramebufferDesc : public DescBase<FramebufferDesc> {
 	FramebufferDesc()
 	{
 	}
@@ -633,25 +633,19 @@ struct FramebufferDesc {
 		return *this;
 	}
 
-	FramebufferDesc &name(const std::string &str) {
-		name_ = str;
-		return *this;
-	}
-
 
 private:
 
 	RenderPassHandle                                         renderPass_;
 	RenderTargetHandle                                       depthStencil_;
 	std::array<RenderTargetHandle, MAX_COLOR_RENDERTARGETS>  colors_;
-	std::string                                              name_;
 
 	friend class Renderer;
 	friend struct RendererImpl;
 };
 
 
-class GraphicsPipelineDesc {
+class GraphicsPipelineDesc : public DescBase<GraphicsPipelineDesc> {
 	std::string           vertexShaderName;
 	std::string           fragmentShaderName;
 	RenderPassHandle      renderPass_;
@@ -702,8 +696,6 @@ class GraphicsPipelineDesc {
 	std::array<VertexAttr,     MAX_VERTEX_ATTRIBS>   vertexAttribs;
 	std::array<VertexBuf,      MAX_VERTEX_BUFFERS>   vertexBuffers;
 	std::array<DSLayoutHandle, MAX_DESCRIPTOR_SETS>  descriptorSetLayouts;
-
-	std::string                                      name_;
 
 
 public:
@@ -804,11 +796,6 @@ public:
 		return *this;
 	}
 
-	GraphicsPipelineDesc &name(const std::string &str) {
-		name_ = str;
-		return *this;
-	}
-
 	GraphicsPipelineDesc &numSamples(unsigned int n) {
 		assert(n != 0);
 		assert(isPow2(n));
@@ -857,7 +844,7 @@ public:
 };
 
 
-struct RenderPassDesc {
+struct RenderPassDesc : public DescBase<RenderPassDesc> {
 	RenderPassDesc() {
 	}
 
@@ -889,11 +876,6 @@ struct RenderPassDesc {
 	RenderPassDesc &clearDepth(float v) {
 		clearDepthAttachment  = true;
 		depthClearValue       = v;
-		return *this;
-	}
-
-	RenderPassDesc &name(const std::string &str) {
-		name_ = str;
 		return *this;
 	}
 
@@ -929,7 +911,6 @@ private:
 	Format                                       depthStencilFormat_  = Format::Invalid;
 	std::array<RTInfo, MAX_COLOR_RENDERTARGETS>  colorRTs_;
 	unsigned int                                 numSamples_          = 1;
-	std::string                                  name_;
 	bool                                         clearDepthAttachment = false;
 	float                                        depthClearValue      = 1.0f;
 
@@ -939,7 +920,7 @@ private:
 };
 
 
-struct RenderTargetDesc {
+struct RenderTargetDesc : public DescBase<RenderTargetDesc> {
 	RenderTargetDesc() {
 	}
 
@@ -980,11 +961,6 @@ struct RenderTargetDesc {
 		return *this;
 	}
 
-	RenderTargetDesc &name(const std::string &str) {
-		name_ = str;
-		return *this;
-	}
-
 	unsigned int width()      const  { return width_; }
 	unsigned int height()     const  { return height_; }
 	unsigned int numSamples() const  { return numSamples_; }
@@ -998,7 +974,6 @@ private:
 	unsigned int   numSamples_           = 1;
 	Format         format_               = Format::Invalid;
 	Format         additionalViewFormat_ = Format::Invalid;
-	std::string    name_;
 
 
 	friend class Renderer;
@@ -1006,7 +981,7 @@ private:
 };
 
 
-struct SamplerDesc {
+struct SamplerDesc : public DescBase<SamplerDesc> {
 	SamplerDesc() {
 	}
 
@@ -1028,17 +1003,11 @@ struct SamplerDesc {
 		return *this;
 	}
 
-	SamplerDesc &name(const std::string &str) {
-		name_ = str;
-		return *this;
-	}
-
 private:
 
 	FilterMode  min      = FilterMode::Nearest;
 	FilterMode  mag      = FilterMode::Nearest;
 	WrapMode    wrapMode = WrapMode::Clamp;
-	std::string name_;
 
 
 	friend class Renderer;
@@ -1059,7 +1028,7 @@ struct SwapchainDesc {
 };
 
 
-struct TextureDesc {
+struct TextureDesc : public DescBase<TextureDesc> {
 	TextureDesc() {
 	}
 
@@ -1096,11 +1065,6 @@ struct TextureDesc {
 		return *this;
 	}
 
-	TextureDesc &name(const std::string &str) {
-		name_ = str;
-		return *this;
-	}
-
 
 private:
 
@@ -1114,7 +1078,6 @@ private:
 	unsigned int                                 numMips_  = 1;
 	Format                                       format_   = Format::Invalid;
 	std::array<MipLevel, MAX_TEXTURE_MIPLEVELS>  mipData_;
-	std::string                                  name_;
 
 
 	friend class Renderer;
