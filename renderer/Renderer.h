@@ -884,6 +884,9 @@ struct RenderPassDesc : public DescBase<RenderPassDesc> {
 		return *this;
 	}
 
+	bool operator==(const RenderPassDesc &other) const;
+
+	size_t hashValue() const;
 
 	// TODO: this is public because RenderGraph needs to access it, shouldn't
 	struct RTInfo {
@@ -902,9 +905,6 @@ struct RenderPassDesc : public DescBase<RenderPassDesc> {
 		return colorRTs_[index];
 	}
 
-	bool operator==(const RenderPassDesc &other) const;
-
-	size_t hashValue() const;
 
 private:
 
