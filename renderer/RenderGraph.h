@@ -769,8 +769,7 @@ public:
 
 					for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 						if (desc.colorRTs_[i].id != Default<RT>::value) {
-							const auto &rt = rpDesc.color(i);
-							LOG(" color {}: {}\t{}\t{}\t{}", i, to_string(desc.colorRTs_[i].id), magic_enum::enum_name(rt.passBegin), magic_enum::enum_name(rt.initialLayout), magic_enum::enum_name(rt.finalLayout));
+							LOG(" color {}: {}\t{}", i, to_string(desc.colorRTs_[i].id), rpDesc.colorRTDebug(i));
 						}
 					}
 

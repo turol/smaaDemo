@@ -888,6 +888,13 @@ struct RenderPassDesc : public DescBase<RenderPassDesc> {
 
 	size_t hashValue() const;
 
+	std::string colorRTDebug(unsigned int i) const {
+		assert(i < MAX_COLOR_RENDERTARGETS);
+		const auto &rt = colorRTs_[i];
+
+		return fmt::format("{}\t{}\t{}", magic_enum::enum_name(rt.passBegin), magic_enum::enum_name(rt.initialLayout), magic_enum::enum_name(rt.finalLayout));
+	}
+
 	// TODO: this is public because RenderGraph needs to access it, shouldn't
 	struct RTInfo {
 		Format     format         = Format::Invalid;
