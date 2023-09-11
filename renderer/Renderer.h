@@ -576,6 +576,33 @@ public:
 uint32_t formatSize(Format format);
 
 
+template <class Derived>
+struct DescBase {
+
+protected:
+	std::string  name_;
+
+public:
+
+	DescBase() {}
+
+	DescBase(const DescBase &other)                = default;
+	DescBase &operator=(const DescBase &other)     = default;
+
+	DescBase(DescBase &&other) noexcept            = default;
+	DescBase &operator=(DescBase &&other) noexcept = default;
+
+	~DescBase() {}
+
+	Derived &name(const std::string &str) {
+		assert(!str.empty());
+		name_ = str;
+
+		return *static_cast<Derived *>(this);
+	}
+};
+
+
 struct FramebufferDesc {
 	FramebufferDesc()
 	{
