@@ -1275,10 +1275,10 @@ size_t RenderPassDesc::RTInfo::hashValue() const {
 size_t RenderPassDesc::hashValue() const {
 	size_t h = 0;
 
+	hashCombine(h, name_);
 	hashCombine(h, depthStencilFormat_);
 	hashContainer(h, colorRTs_, [] (const RTInfo &r) { return r.hashValue(); });
 	hashCombine(h, numSamples_);
-	hashCombine(h, name_);
 	hashCombine(h, clearDepthAttachment);
 	hashCombine(h, depthClearValue);
 

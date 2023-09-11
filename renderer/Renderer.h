@@ -818,6 +818,7 @@ public:
 
 	size_t hashValue() const {
 		size_t h = 0;
+		hashCombine(h, name_);
 		hashCombine(h, vertexShaderName);
 		hashCombine(h, fragmentShaderName);
 		hashCombine(h, renderPass_);
@@ -835,7 +836,6 @@ public:
 		hashContainer(h, vertexAttribs, [] (const VertexAttr &a) { return a.hashValue(); });
 		hashContainer(h, vertexBuffers, [] (const VertexBuf &b)  { return b.hashValue(); });
 		hashContainer(h, descriptorSetLayouts);
-		hashCombine(h, name_);
 		return h;
 	}
 
