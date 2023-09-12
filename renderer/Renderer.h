@@ -690,12 +690,10 @@ public:
 };
 
 
-class GraphicsPipelineDesc : public DescBase<GraphicsPipelineDesc> {
+class GraphicsPipelineDesc : public PipelineDescBase<GraphicsPipelineDesc> {
 	std::string           vertexShaderName;
 	std::string           fragmentShaderName;
 	RenderPassHandle      renderPass_;
-	ShaderMacros          shaderMacros_;
-	ShaderLanguage        shaderLanguage_   = ShaderLanguage::GLSL;
 	uint32_t              vertexAttribMask  = 0;
 	unsigned int          numSamples_       = 1;
 	bool                  depthWrite_       = false;
@@ -740,7 +738,6 @@ class GraphicsPipelineDesc : public DescBase<GraphicsPipelineDesc> {
 
 	std::array<VertexAttr,     MAX_VERTEX_ATTRIBS>   vertexAttribs;
 	std::array<VertexBuf,      MAX_VERTEX_BUFFERS>   vertexBuffers;
-	std::array<DSLayoutHandle, MAX_DESCRIPTOR_SETS>  descriptorSetLayouts;
 
 
 public:
@@ -754,16 +751,6 @@ public:
 	GraphicsPipelineDesc &fragmentShader(const std::string &name) {
 		assert(!name.empty());
 		fragmentShaderName = name;
-		return *this;
-	}
-
-	GraphicsPipelineDesc &shaderMacros(const ShaderMacros &m) {
-		shaderMacros_ = m;
-		return *this;
-	}
-
-	GraphicsPipelineDesc &shaderLanguage(ShaderLanguage lang) {
-		shaderLanguage_ = lang;
 		return *this;
 	}
 
@@ -789,18 +776,6 @@ public:
 		assert(buf < MAX_VERTEX_BUFFERS);
 		vertexBuffers[buf].stride = stride;
 
-		return *this;
-	}
-
-	GraphicsPipelineDesc &descriptorSetLayout(unsigned int index, DSLayoutHandle handle) {
-		assert(index < MAX_DESCRIPTOR_SETS);
-		descriptorSetLayouts[index] = handle;
-		return *this;
-	}
-
-	template <typename T> GraphicsPipelineDesc &descriptorSetLayout(unsigned int index) {
-		assert(index < MAX_DESCRIPTOR_SETS);
-		descriptorSetLayouts[index] = T::layoutHandle;
 		return *this;
 	}
 
