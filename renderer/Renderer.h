@@ -645,6 +645,51 @@ private:
 };
 
 
+template <class Derived>
+class PipelineDescBase : public DescBase<Derived> {
+
+protected:
+
+	ShaderMacros                                     shaderMacros_;
+	ShaderLanguage                                   shaderLanguage_   = ShaderLanguage::GLSL;
+	std::array<DSLayoutHandle, MAX_DESCRIPTOR_SETS>  descriptorSetLayouts;
+
+public:
+
+	PipelineDescBase() {}
+
+	PipelineDescBase(const PipelineDescBase &other)                = default;
+	PipelineDescBase &operator=(const PipelineDescBase &other)     = default;
+
+	PipelineDescBase(PipelineDescBase &&other) noexcept            = default;
+	PipelineDescBase &operator=(PipelineDescBase &&other) noexcept = default;
+
+	~PipelineDescBase() {}
+
+	Derived &shaderMacros(const ShaderMacros &m) {
+		shaderMacros_ = m;
+		return *static_cast<Derived *>(this);
+	}
+
+	Derived &shaderLanguage(ShaderLanguage lang) {
+		shaderLanguage_ = lang;
+		return *static_cast<Derived *>(this);
+	}
+
+	Derived &descriptorSetLayout(unsigned int index, DSLayoutHandle handle) {
+		assert(index < MAX_DESCRIPTOR_SETS);
+		descriptorSetLayouts[index] = handle;
+		return *static_cast<Derived *>(this);
+	}
+
+	template <typename T> Derived &descriptorSetLayout(unsigned int index) {
+		assert(index < MAX_DESCRIPTOR_SETS);
+		descriptorSetLayouts[index] = T::layoutHandle;
+		return *static_cast<Derived *>(this);
+	}
+};
+
+
 class GraphicsPipelineDesc : public DescBase<GraphicsPipelineDesc> {
 	std::string           vertexShaderName;
 	std::string           fragmentShaderName;
