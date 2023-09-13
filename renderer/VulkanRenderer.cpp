@@ -1395,64 +1395,64 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 	if (impl->synchronizationDebugMode) {
 	{
 		// access from before the pass
-		vk::SubpassDependency &d = dependencies[0];
-		d.srcSubpass       = VK_SUBPASS_EXTERNAL;
-		d.dstSubpass       = 0;
+		vk::SubpassDependency &before = dependencies[0];
+		before.srcSubpass       = VK_SUBPASS_EXTERNAL;
+		before.dstSubpass       = 0;
 
-			d.srcStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
-			d.srcAccessMask    = vk::AccessFlagBits::eMemoryWrite;
+			before.srcStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
+			before.srcAccessMask    = vk::AccessFlagBits::eMemoryWrite;
 
-			d.dstStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
-			d.dstAccessMask    = vk::AccessFlagBits::eMemoryRead;
+			before.dstStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
+			before.dstAccessMask    = vk::AccessFlagBits::eMemoryRead;
 	}
 	{
 		// access after the pass
-		vk::SubpassDependency &d = dependencies[1];
-		d.srcSubpass       = 0;
-		d.dstSubpass       = VK_SUBPASS_EXTERNAL;
+		vk::SubpassDependency &after = dependencies[1];
+		after.srcSubpass       = 0;
+		after.dstSubpass       = VK_SUBPASS_EXTERNAL;
 
-		d.srcStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
-		d.srcAccessMask    = vk::AccessFlagBits::eMemoryWrite;
+		after.srcStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
+		after.srcAccessMask    = vk::AccessFlagBits::eMemoryWrite;
 
-		d.dstStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
-		d.dstAccessMask    = vk::AccessFlagBits::eMemoryRead;
+		after.dstStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
+		after.dstAccessMask    = vk::AccessFlagBits::eMemoryRead;
 	}
 	} else {
 	{
 		// access from before the pass
-		vk::SubpassDependency &d = dependencies[0];
-		d.srcSubpass       = VK_SUBPASS_EXTERNAL;
-		d.dstSubpass       = 0;
+		vk::SubpassDependency &before = dependencies[0];
+		before.srcSubpass       = VK_SUBPASS_EXTERNAL;
+		before.dstSubpass       = 0;
 
 		LOG_TODO("should come from desc")
 		// depends on whether previous thing was rendering or msaa resolve
-		d.srcStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eTransfer;
-		d.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eTransferWrite;
+		before.srcStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eTransfer;
+		before.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eTransferWrite;
 
-		d.dstStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+		before.dstStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 		LOG_TODO("shouldn't need read unless we load the attachment and use blending")
-		d.dstAccessMask    = vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
+		before.dstAccessMask    = vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
 
-		d.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
+		before.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
 
 		if (hasDepthStencil) {
 			LOG_TODO("should come from desc")
 			// depends on whether previous thing was rendering or msaa resolve
-			d.srcStageMask    |= vk::PipelineStageFlagBits::eLateFragmentTests | vk::PipelineStageFlagBits::eTransfer;
-			d.srcAccessMask   |= vk::AccessFlagBits::eDepthStencilAttachmentWrite | vk::AccessFlagBits::eTransferWrite;
+			before.srcStageMask    |= vk::PipelineStageFlagBits::eLateFragmentTests | vk::PipelineStageFlagBits::eTransfer;
+			before.srcAccessMask   |= vk::AccessFlagBits::eDepthStencilAttachmentWrite | vk::AccessFlagBits::eTransferWrite;
 
-			d.dstStageMask    |= vk::PipelineStageFlagBits::eEarlyFragmentTests;
-			d.dstAccessMask   |= vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+			before.dstStageMask    |= vk::PipelineStageFlagBits::eEarlyFragmentTests;
+			before.dstAccessMask   |= vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
 		}
 	}
 	{
 		// access after the pass
-		vk::SubpassDependency &d = dependencies[1];
-		d.srcSubpass       = 0;
-		d.dstSubpass       = VK_SUBPASS_EXTERNAL;
+		vk::SubpassDependency &after = dependencies[1];
+		after.srcSubpass       = 0;
+		after.dstSubpass       = VK_SUBPASS_EXTERNAL;
 
-			d.srcStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-			d.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentWrite;
+			after.srcStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+			after.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentWrite;
 
 			for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
 				if (desc.colorRTs_[i].format == Format::Invalid) {
@@ -1469,35 +1469,35 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 					break;
 
 				case Layout::ShaderRead:
-					d.dstStageMask   |= vk::PipelineStageFlagBits::eFragmentShader;
-					d.dstAccessMask  |= vk::AccessFlagBits::eShaderRead;
+					after.dstStageMask   |= vk::PipelineStageFlagBits::eFragmentShader;
+					after.dstAccessMask  |= vk::AccessFlagBits::eShaderRead;
 					break;
 
 				case Layout::TransferSrc:
-					d.dstStageMask   |= vk::PipelineStageFlagBits::eTransfer;
-					d.dstAccessMask  |= vk::AccessFlagBits::eTransferRead;
+					after.dstStageMask   |= vk::PipelineStageFlagBits::eTransfer;
+					after.dstAccessMask  |= vk::AccessFlagBits::eTransferRead;
 					break;
 
 				case Layout::ColorAttachment:
-					d.dstStageMask   |= vk::PipelineStageFlagBits::eColorAttachmentOutput;
-					d.dstAccessMask  |= vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
+					after.dstStageMask   |= vk::PipelineStageFlagBits::eColorAttachmentOutput;
+					after.dstAccessMask  |= vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
 					break;
 
 				case Layout::Present:
-					d.dstStageMask   |= vk::PipelineStageFlagBits::eBottomOfPipe;
+					after.dstStageMask   |= vk::PipelineStageFlagBits::eBottomOfPipe;
 					break;
 
 				}
 			}
 
-			d.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
+			after.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
 
 			if (hasDepthStencil) {
-				d.srcStageMask   |= vk::PipelineStageFlagBits::eLateFragmentTests;
-				d.srcAccessMask  |= vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+				after.srcStageMask   |= vk::PipelineStageFlagBits::eLateFragmentTests;
+				after.srcAccessMask  |= vk::AccessFlagBits::eDepthStencilAttachmentWrite;
 
-				d.dstStageMask   |= vk::PipelineStageFlagBits::eFragmentShader;
-				d.dstAccessMask  |= vk::AccessFlagBits::eShaderRead;
+				after.dstStageMask   |= vk::PipelineStageFlagBits::eFragmentShader;
+				after.dstAccessMask  |= vk::AccessFlagBits::eShaderRead;
 			}
 	}
 	}
