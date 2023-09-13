@@ -99,38 +99,35 @@ With this one function call:
 
 # How to build
 
-On Windows it is recommended to use [CMake UI](https://cmake.org/runningcmake/). Alternatively you can generate a Visual Studio project map using CMake in command line: `cmake -B./build/ -DCMAKE_BUILD_TYPE=Debug -G "Visual Studio 16 2019" -A x64 ./`
+On Windows it is recommended to use [CMake GUI](https://cmake.org/runningcmake/).
+
+Alternatively you can generate/open a Visual Studio from the command line:
+
+```sh
+# By default CMake picks the newest version of Visual Studio it can use
+cmake -S .  -B build -D VMA_BUILD_SAMPLES=ON
+cmake --open build
+```
 
 On Linux:
 
+```sh
+cmake -S . -B build
+# Since VMA has no source files, you can skip to installation immediately
+cmake --install build --prefix build/install
 ```
-mkdir build
-cd build
-cmake ..
-make
+
+## How to use
+
+After calling either `find_package` or `add_subdirectory` simply link the library.
+This automatically handles configuring the include directory. Example:
+
+```cmake
+find_package(VulkanMemoryAllocator CONFIG REQUIRED)
+target_link_libraries(YourGameEngine PRIVATE GPUOpen::VulkanMemoryAllocator)
 ```
 
-The following targets are available
-
-| Target | Description | CMake option | Default setting |
-| ------------- | ------------- | ------------- | ------------- |
-| VmaSample | VMA sample application | `VMA_BUILD_SAMPLE` | `OFF` |
-| VmaBuildSampleShaders | Shaders for VmaSample | `VMA_BUILD_SAMPLE_SHADERS` | `OFF` |
-
-Please note that while VulkanMemoryAllocator library is supported on other platforms besides Windows, VmaSample is not.
-
-These CMake options are available
-
-| CMake option | Description | Default setting |
-| ------------- | ------------- | ------------- |
-| `VMA_RECORDING_ENABLED` | Enable VMA memory recording for debugging | `OFF` |
-| `VMA_USE_STL_CONTAINERS` | Use C++ STL containers instead of VMA's containers | `OFF` |
-| `VMA_STATIC_VULKAN_FUNCTIONS` | Link statically with Vulkan API | `OFF` |
-| `VMA_DYNAMIC_VULKAN_FUNCTIONS` | Fetch pointers to Vulkan functions internally (no static linking) | `ON` |
-| `VMA_DEBUG_ALWAYS_DEDICATED_MEMORY` | Every allocation will have its own memory block | `OFF` |
-| `VMA_DEBUG_INITIALIZE_ALLOCATIONS` | Automatically fill new allocations and destroyed allocations with some bit pattern | `OFF` |
-| `VMA_DEBUG_GLOBAL_MUTEX` | Enable single mutex protecting all entry calls to the library | `OFF` |
-| `VMA_DEBUG_DONT_EXCEED_MAX_MEMORY_ALLOCATION_COUNT` | Never exceed [VkPhysicalDeviceLimits::maxMemoryAllocationCount](https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/vkspec.html#limits-maxMemoryAllocationCount) and return error | `OFF` |
+For more info on using CMake visit the official [CMake documentation](https://cmake.org/cmake/help/latest/index.html).
 
 ## Building using vcpkg
 
@@ -163,6 +160,7 @@ See **[Documentation](https://gpuopen-librariesandsdks.github.io/VulkanMemoryAll
 - **[Flax Engine](https://flaxengine.com/)**
 - **[Godot Engine](https://github.com/godotengine/godot/)** - multi-platform 2D and 3D game engine. License: MIT.
 - **[Lightweight Java Game Library (LWJGL)](https://www.lwjgl.org/)** - includes binding of the library for Java. License: BSD.
+- **[LightweightVK](https://github.com/corporateshark/lightweightvk)** - lightweight C++ bindless Vulkan 1.3 wrapper. License: MIT.
 - **[PowerVR SDK](https://github.com/powervr-graphics/Native_SDK)** - C++ cross-platform 3D graphics SDK, from Imagination. License: MIT.
 - **[Skia](https://github.com/google/skia)** - complete 2D graphic library for drawing Text, Geometries, and Images, from Google.
 - **[The Forge](https://github.com/ConfettiFX/The-Forge)** - cross-platform rendering framework. Apache License 2.0.
@@ -172,6 +170,7 @@ See **[Documentation](https://gpuopen-librariesandsdks.github.io/VulkanMemoryAll
 - **[Vulkan Best Practice for Mobile Developers](https://github.com/ARM-software/vulkan_best_practice_for_mobile_developers)** from ARM. License: MIT.
 - **[RPCS3](https://github.com/RPCS3/rpcs3)** - PlayStation 3 emulator/debugger. License: GNU GPLv2.
 - **[PPSSPP](https://github.com/hrydgard/ppsspp)** - Playstation Portable emulator/debugger. License: GNU GPLv2+.
+- **[Wicked Engine<img src="https://github.com/turanszkij/WickedEngine/blob/master/Content/logo_small.png" width="28px" align="center"/>](https://github.com/turanszkij/WickedEngine)** - 3D engine with modern graphics 
 
 [Many other projects on GitHub](https://github.com/search?q=AMD_VULKAN_MEMORY_ALLOCATOR_H&type=Code) and some game development studios that use Vulkan in their games.
 
@@ -180,7 +179,7 @@ See **[Documentation](https://gpuopen-librariesandsdks.github.io/VulkanMemoryAll
 - **[D3D12 Memory Allocator](https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator)** - equivalent library for Direct3D 12. License: MIT.
 - **[Awesome Vulkan](https://github.com/vinjn/awesome-vulkan)** - a curated list of awesome Vulkan libraries, debuggers and resources.
 - **[vcpkg](https://github.com/Microsoft/vcpkg)** dependency manager from Microsoft also offers a port of this library.
-- **[VulkanMemoryAllocator-Hpp](https://github.com/malte-v/VulkanMemoryAllocator-Hpp)** - C++ binding for this library. License: CC0-1.0.
+- **[VulkanMemoryAllocator-Hpp](https://github.com/YaaZ/VulkanMemoryAllocator-Hpp)** - C++ binding for this library. License: CC0-1.0.
 - **[PyVMA](https://github.com/realitix/pyvma)** - Python wrapper for this library. Author: Jean-Sébastien B. (@realitix). License: Apache 2.0.
 - **[vk-mem](https://github.com/gwihlidal/vk-mem-rs)** - Rust binding for this library. Author: Graham Wihlidal. License: Apache 2.0 or MIT.
 - **[Haskell bindings](https://hackage.haskell.org/package/VulkanMemoryAllocator)**, **[github](https://github.com/expipiplus1/vulkan/tree/master/VulkanMemoryAllocator)** - Haskell bindings for this library. Author: Ellie Hermaszewska (@expipiplus1). License BSD-3-Clause.

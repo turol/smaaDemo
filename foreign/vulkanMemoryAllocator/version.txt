@@ -1,8 +1,7 @@
-commit 0e89587db3ebee4d463f191bd296374c5fafc8ea
+commit 2f382df218d7e8516dee3b3caccb819a62b571a2
 Author: Adam Sawicki <adam.sawicki@amd.com>
-Date:   Tue May 2 12:44:06 2023 +0200
+Date:   Mon Sep 11 17:58:15 2023 +0200
 
-    Updated Doxyfile for Doxygen 1.9.6
+    Fixed signed/unsigned mismatch in FindMemoryPreferences
     
-    Regenerated documentation.
-    Fixes #335
+    For compatibility with UBSan. Fixes #368 - thanks @markridgewell

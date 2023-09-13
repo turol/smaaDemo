@@ -272,8 +272,6 @@ src/Tests.h
 src/VmaUsage.cpp
 src/VmaUsage.h
 src/VulkanSample.cpp
-src/cmake/Config.cmake.in
-src/cmake/install_target.cmake
 src/vk_mem_alloc.natvis
 tools/GpuMemDumpVis/GpuMemDump.schema.json
 tools/GpuMemDumpVis/GpuMemDumpVis.py
