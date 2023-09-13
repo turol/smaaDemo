@@ -346,6 +346,7 @@ bool GraphicsPipelineDesc::operator==(const GraphicsPipelineDesc &other) const {
 RendererBase::RendererBase(const RendererDesc &desc)
 : swapchainDesc(desc.swapchain)
 , wantedSwapchain(desc.swapchain)
+, synchronizationDebugMode(desc.synchronizationDebug)
 , skipShaderCache(desc.skipShaderCache || !desc.optimizeShaders)
 , optimizeShaders(desc.optimizeShaders)
 , validateShaders(desc.validateShaders)
