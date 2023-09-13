@@ -3735,6 +3735,9 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				bool syncDebug = renderer.getSynchronizationDebugMode();
 				if (ImGui::Checkbox("Debug synchronization", &syncDebug)) {
 					renderer.setSynchronizationDebugMode(syncDebug);
+					// need to clear caches because synchronization debug is a renderer property
+					// and not rendergraph
+					renderGraph.clearCaches(renderer);
 					rebuildRG = true;
 				}
 			}

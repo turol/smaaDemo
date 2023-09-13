@@ -1392,6 +1392,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 	// subpass dependencies (external)
 	std::array<vk::SubpassDependency, 2> dependencies;
 
+	LOG_TODO("synchronization debug should be a rendergraph property")
 	if (impl->synchronizationDebugMode) {
 		// access from before the pass
 		vk::SubpassDependency &before = dependencies[0];
