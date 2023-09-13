@@ -1393,7 +1393,6 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 	std::array<vk::SubpassDependency, 2> dependencies;
 
 	if (impl->synchronizationDebugMode) {
-	{
 		// access from before the pass
 		vk::SubpassDependency &before = dependencies[0];
 		before.srcSubpass       = VK_SUBPASS_EXTERNAL;
@@ -1404,8 +1403,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 
 			before.dstStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
 			before.dstAccessMask    = vk::AccessFlagBits::eMemoryRead;
-	}
-	{
+
 		// access after the pass
 		vk::SubpassDependency &after = dependencies[1];
 		after.srcSubpass       = 0;
@@ -1416,9 +1414,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 
 		after.dstStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
 		after.dstAccessMask    = vk::AccessFlagBits::eMemoryRead;
-	}
 	} else {
-	{
 		// access from before the pass
 		vk::SubpassDependency &before = dependencies[0];
 		before.srcSubpass       = VK_SUBPASS_EXTERNAL;
@@ -1444,8 +1440,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 			before.dstStageMask    |= vk::PipelineStageFlagBits::eEarlyFragmentTests;
 			before.dstAccessMask   |= vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
 		}
-	}
-	{
+
 		// access after the pass
 		vk::SubpassDependency &after = dependencies[1];
 		after.srcSubpass       = 0;
@@ -1499,7 +1494,6 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 				after.dstStageMask   |= vk::PipelineStageFlagBits::eFragmentShader;
 				after.dstAccessMask  |= vk::AccessFlagBits::eShaderRead;
 			}
-	}
 	}
 
 	info.dependencyCount  = dependencies.size();
