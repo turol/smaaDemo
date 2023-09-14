@@ -1225,7 +1225,7 @@ size_t GraphicsPipelineDesc::hashValue() const {
 
 
 bool RenderPassDesc::operator==(const RenderPassDesc &other) const {
-	if (this->depthStencilFormat_ != other.depthStencilFormat_) {
+	if (this->depthStencil_.format != other.depthStencil_.format) {
 		return false;
 	}
 
@@ -1263,11 +1263,11 @@ bool RenderPassDesc::operator==(const RenderPassDesc &other) const {
 		return false;
 	}
 
-	if (this->clearDepthAttachment != other.clearDepthAttachment) {
+	if (this->depthStencil_.passBegin != other.depthStencil_.passBegin) {
 		return false;
 	}
 
-	if (this->clearDepthAttachment && this->depthClearValue != other.depthClearValue) {
+	if (this->depthStencil_.passBegin == PassBegin::Clear && this->depthStencil_.clearValue.x != other.depthStencil_.clearValue.x) {
 		return false;
 	}
 
@@ -1301,11 +1301,9 @@ size_t RenderPassDesc::hashValue() const {
 	size_t h = 0;
 
 	hashCombine(h, name_);
-	hashCombine(h, depthStencilFormat_);
+	hashCombine(h, depthStencil_.hashValue());
 	hashContainer(h, colorRTs_, [] (const RTInfo &r) { return r.hashValue(); });
 	hashCombine(h, numSamples_);
-	hashCombine(h, clearDepthAttachment);
-	hashCombine(h, depthClearValue);
 
 	return h;
 }

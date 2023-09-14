@@ -1344,7 +1344,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 
 	if (desc.depthStencil_) {
 		const auto &depthRT = impl->renderTargets.get(desc.depthStencil_);
-		assert(depthRT.format == renderPass.desc.depthStencilFormat_);
+		assert(depthRT.format == renderPass.desc.depthStencil_.format);
 		assert(depthRT.width  == width);
 		assert(depthRT.height == height);
 		assert(depthRT.texture);
@@ -1358,7 +1358,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 		glNamedFramebufferTexture(fb.fbo, GL_DEPTH_ATTACHMENT, depthRTtex.tex, 0);
 		fb.depthStencilFormat = depthRT.format;
 	} else {
-		assert(renderPass.desc.depthStencilFormat_ == Format::Invalid);
+		assert(renderPass.desc.depthStencil_.format == Format::Invalid);
 	}
 
 	assert(impl->isRenderPassCompatible(renderPass, fb));
@@ -1380,8 +1380,20 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 	assert(!desc.name_.empty());
 
 	GLbitfield clearMask = 0;
-	if (desc.clearDepthAttachment) {
+	switch (desc.depthStencil_.passBegin) {
+	case PassBegin::DontCare:
+		// this could go either way
 		clearMask |= GL_DEPTH_BUFFER_BIT;
+		break;
+
+	case PassBegin::Keep:
+		// nothing
+		break;
+
+	case PassBegin::Clear:
+		clearMask |= GL_DEPTH_BUFFER_BIT;
+		break;
+
 	}
 
 	RenderPass pass;
@@ -1403,7 +1415,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 
 		}
 	}
-	pass.depthClearValue = desc.depthClearValue;
+	pass.depthClearValue = desc.depthStencil_.clearValue.x;
 	pass.clearMask       = clearMask;
 
 	return impl->renderPasses.add(std::move(pass));
@@ -2345,12 +2357,12 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 		const auto &depthRT DEBUG_ASSERTED = renderTargets.get(fb.desc.depthStencil_);
 		assert(depthRT.format == fb.depthStencilFormat);
 
-		if (pass.desc.depthStencilFormat_ != fb.depthStencilFormat) {
+		if (pass.desc.depthStencil_.format != fb.depthStencilFormat) {
 			return false;
 		}
 	} else {
 		assert(fb.depthStencilFormat == Format::Invalid);
-		if (pass.desc.depthStencilFormat_ != Format::Invalid) {
+		if (pass.desc.depthStencil_.format != Format::Invalid) {
 			return false;
 		}
 	}

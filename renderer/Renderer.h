@@ -845,6 +845,7 @@ public:
 
 struct RenderPassDesc : public DescBase<RenderPassDesc> {
 	RenderPassDesc() {
+		depthStencil_.passBegin = PassBegin::DontCare;
 	}
 
 	~RenderPassDesc() { }
@@ -856,7 +857,8 @@ struct RenderPassDesc : public DescBase<RenderPassDesc> {
 	RenderPassDesc &operator=(RenderPassDesc &&) noexcept = default;
 
 	RenderPassDesc &depthStencil(Format ds, PassBegin) {
-		depthStencilFormat_ = ds;
+		assert(isDepthFormat(ds));
+		depthStencil_.format = ds;
 		return *this;
 	}
 
@@ -873,8 +875,8 @@ struct RenderPassDesc : public DescBase<RenderPassDesc> {
 	}
 
 	RenderPassDesc &clearDepth(float v) {
-		clearDepthAttachment  = true;
-		depthClearValue       = v;
+		depthStencil_.passBegin    = PassBegin::Clear;
+		depthStencil_.clearValue.x = v;
 		return *this;
 	}
 
@@ -914,11 +916,9 @@ private:
 	}
 
 
-	Format                                       depthStencilFormat_  = Format::Invalid;
+	RTInfo                                       depthStencil_;
 	std::array<RTInfo, MAX_COLOR_RENDERTARGETS>  colorRTs_;
 	unsigned int                                 numSamples_          = 1;
-	bool                                         clearDepthAttachment = false;
-	float                                        depthClearValue      = 1.0f;
 
 
 	friend class Renderer;

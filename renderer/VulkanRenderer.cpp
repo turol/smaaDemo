@@ -1213,7 +1213,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 		attachmentViews.push_back(depthRT.imageView);
 		depthStencilFormat = depthRT.format;
 	} else {
-		assert(renderPass.desc.depthStencilFormat_ == Format::Invalid);
+		assert(renderPass.desc.depthStencil_.format == Format::Invalid);
 	}
 
 	vk::FramebufferCreateInfo fbInfo;
@@ -1349,23 +1349,33 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 	subpass.colorAttachmentCount = static_cast<uint32_t>(colorAttachments.size());
 	subpass.pColorAttachments    = &colorAttachments[0];
 
-	bool hasDepthStencil = (desc.depthStencilFormat_ != Format::Invalid);
+	bool hasDepthStencil = (desc.depthStencil_.format != Format::Invalid);
 	vk::AttachmentReference depthAttachment;
 	if (hasDepthStencil) {
 		vk::ImageLayout layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
 		vk::AttachmentDescription attach;
 		uint32_t attachNum    = static_cast<uint32_t>(attachments.size());
-		attach.format         = vulkanFormat(desc.depthStencilFormat_);
+		attach.format         = vulkanFormat(desc.depthStencil_.format);
 		attach.samples        = samples;
-		LOG_TODO("these should be customizable via RenderPassDesc")
-		attach.loadOp         = vk::AttachmentLoadOp::eDontCare;
-		if (desc.clearDepthAttachment) {
+
+		switch (desc.depthStencil_.passBegin) {
+		case PassBegin::DontCare:
+			attach.loadOp     = vk::AttachmentLoadOp::eDontCare;
+			break;
+
+		case PassBegin::Keep:
+			attach.loadOp     = vk::AttachmentLoadOp::eLoad;
+			break;
+
+		case PassBegin::Clear:
 			attach.loadOp     = vk::AttachmentLoadOp::eClear;
 			r.clearValueCount = attachNum + 1;
-            assert(attachNum < r.clearValues.size());
+			assert(attachNum < r.clearValues.size());
 			r.clearValues[attachNum].depthStencil = vk::ClearDepthStencilValue(1.0f, 0);
+			break;
 		}
+
 		attach.storeOp        = vk::AttachmentStoreOp::eStore;
 		LOG_TODO("stencil")
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
@@ -3239,7 +3249,7 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 		fbDesc.renderPass(rpHandle)
 		      .name(fmt::format("Swapchain image {}", impl->currentFrameIdx));
 
-		if (pass.desc.depthStencilFormat_ != Format::Invalid) {
+		if (pass.desc.depthStencil_.format != Format::Invalid) {
 			fbDesc.depthStencil(impl->builtinDepthRT);
 		}
 		std::vector<vk::ImageView> attachmentViews;
@@ -3252,7 +3262,7 @@ void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
 
 		attachmentViews.push_back(frame.imageView);
 
-		auto depthStencilFormat = pass.desc.depthStencilFormat_;
+		auto depthStencilFormat = pass.desc.depthStencil_.format;
 		if (depthStencilFormat != Format::Invalid) {
 			if (!impl->builtinDepthRT) {
 				RenderTargetDesc rtDesc;
@@ -3585,14 +3595,14 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 		const auto &depthRT DEBUG_ASSERTED = renderTargets.get(fb.desc.depthStencil_);
 		assert(depthRT.format == fb.depthStencilTarget.format);
 
-		if (pass.desc.depthStencilFormat_ != fb.depthStencilTarget.format) {
+		if (pass.desc.depthStencil_.format != fb.depthStencilTarget.format) {
 			return false;
 		}
 
 		// TODO: check layouts once they're properly stored
 	} else {
 		assert(fb.depthStencilTarget.format == Format::Invalid);
-		if (pass.desc.depthStencilFormat_ != Format::Invalid) {
+		if (pass.desc.depthStencil_.format != Format::Invalid) {
 			return false;
 		}
 	}
