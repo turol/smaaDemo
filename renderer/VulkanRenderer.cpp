@@ -1399,11 +1399,11 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 		before.srcSubpass       = VK_SUBPASS_EXTERNAL;
 		before.dstSubpass       = 0;
 
-		before.srcStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
+		before.srcStageMask     = vk::PipelineStageFlagBits::eAllCommands;
 		before.srcAccessMask    = vk::AccessFlagBits::eMemoryWrite;
 
 		before.dstStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
-		before.dstAccessMask    = vk::AccessFlagBits::eMemoryRead;
+		before.dstAccessMask    = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
 
 		// access after the pass
 		vk::SubpassDependency &after = dependencies[1];
@@ -1413,8 +1413,8 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 		after.srcStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
 		after.srcAccessMask    = vk::AccessFlagBits::eMemoryWrite;
 
-		after.dstStageMask     = vk::PipelineStageFlagBits::eAllGraphics;
-		after.dstAccessMask    = vk::AccessFlagBits::eMemoryRead;
+		after.dstStageMask     = vk::PipelineStageFlagBits::eAllCommands;
+		after.dstAccessMask    = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
 	} else {
 		// access from before the pass
 		vk::SubpassDependency &before = dependencies[0];
