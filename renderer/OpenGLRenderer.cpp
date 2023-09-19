@@ -966,8 +966,8 @@ BufferHandle Renderer::createEphemeralBuffer(BufferType type, uint32_t size, con
 }
 
 
-VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros, ShaderLanguage shaderLanguage) {
-	std::vector<uint32_t> spirv = compileSpirv(name, shaderLanguage, macros, ShaderStage::Vertex);
+VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const std::string &entryPoint, const ShaderMacros &macros, ShaderLanguage shaderLanguage) {
+	std::vector<uint32_t> spirv = compileSpirv(name, entryPoint, shaderLanguage, macros, ShaderStage::Vertex);
 
 	VertexShader v;
 	v.name      = name;
@@ -978,8 +978,8 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 }
 
 
-FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros &macros, ShaderLanguage shaderLanguage) {
-	std::vector<uint32_t> spirv = compileSpirv(name, shaderLanguage, macros, ShaderStage::Fragment);
+FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const std::string &entryPoint, const ShaderMacros &macros, ShaderLanguage shaderLanguage) {
+	std::vector<uint32_t> spirv = compileSpirv(name, entryPoint, shaderLanguage, macros, ShaderStage::Fragment);
 
 	FragmentShader f;
 	f.name      = name;
@@ -1157,8 +1157,8 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 	assert(desc.numSamples_ == rp.desc.numSamples_);
 #endif //  NDEBUG
 
-	const auto &v = impl->vertexShaders.get(impl->createVertexShader(desc.vertexShaderName, desc.shaderMacros_, desc.shaderLanguage_));
-	const auto &f = impl->fragmentShaders.get(impl->createFragmentShader(desc.fragmentShaderName, desc.shaderMacros_, desc.shaderLanguage_));
+	const auto &v = impl->vertexShaders.get(impl->createVertexShader(desc.vertexShaderName, desc.vertexShaderEntryPoint, desc.shaderMacros_, desc.shaderLanguage_));
+	const auto &f = impl->fragmentShaders.get(impl->createFragmentShader(desc.fragmentShaderName, desc.fragmentShaderEntryPoint, desc.shaderMacros_, desc.shaderLanguage_));
 
 	// construct map of descriptor set resources
 	ResourceMap      dsResources;

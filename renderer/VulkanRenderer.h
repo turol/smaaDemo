@@ -1181,8 +1181,8 @@ struct RendererImpl : public RendererBase {
 
 	template <typename T> void debugNameObject(T h, const std::string &name);
 
-	VertexShaderHandle   createVertexShader(const std::string &name, const ShaderMacros &macros, ShaderLanguage shaderLanguage);
-	FragmentShaderHandle createFragmentShader(const std::string &name, const ShaderMacros &macros, ShaderLanguage shaderLanguage);
+	VertexShaderHandle   createVertexShader(const std::string &name, const std::string &entryPoint, const ShaderMacros &macros, ShaderLanguage shaderLanguage);
+	FragmentShaderHandle createFragmentShader(const std::string &name, const std::string &entryPoint, const ShaderMacros &macros, ShaderLanguage shaderLanguage);
 
 	void waitForDeviceIdle();
 };

@@ -187,6 +187,7 @@ struct ShaderSourceData {
 
 struct ShaderCacheKey {
 	std::string     filename;
+	std::string     entryPoint;
 	ShaderStage     stage     = ShaderStage::Vertex;
 	ShaderLanguage  language  = ShaderLanguage::GLSL;
 	spv_target_env  spirvEnvironment  = SPV_ENV_UNIVERSAL_1_0;
@@ -206,6 +207,10 @@ struct ShaderCacheKey {
 		}
 
 		if (filename != other.filename) {
+			return false;
+		}
+
+		if (filename != other.entryPoint) {
 			return false;
 		}
 
@@ -251,6 +256,8 @@ namespace std {
 	template <> struct hash<renderer::ShaderCacheKey> {
 		size_t operator()(const renderer::ShaderCacheKey &key) const {
 			size_t h = 0;
+			hashCombine(h, key.filename);
+			hashCombine(h, key.entryPoint);
 			hashCombine(h, key.filename);
 			hashCombine(h, magic_enum::enum_integer(key.language));
 			hashCombine(h, magic_enum::enum_integer(key.stage));
@@ -365,7 +372,7 @@ struct RendererBase {
 
 	void saveShaderCache();
 
-	std::vector<uint32_t> compileSpirv(const std::string &name, ShaderLanguage /* shaderLanguage */, const ShaderMacros &macros, ShaderStage stage);
+	std::vector<uint32_t> compileSpirv(const std::string &name, const std::string &entryPoint, ShaderLanguage /* shaderLanguage */, const ShaderMacros &macros, ShaderStage stage);
 
 	explicit RendererBase(const RendererDesc &desc);
 

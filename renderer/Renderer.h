@@ -708,7 +708,9 @@ public:
 
 class GraphicsPipelineDesc : public PipelineDescBase<GraphicsPipelineDesc> {
 	std::string           vertexShaderName;
+	std::string           vertexShaderEntryPoint;
 	std::string           fragmentShaderName;
+	std::string           fragmentShaderEntryPoint;
 	RenderPassHandle      renderPass_;
 	uint32_t              vertexAttribMask  = 0;
 	unsigned int          numSamples_       = 1;
@@ -758,15 +760,25 @@ class GraphicsPipelineDesc : public PipelineDescBase<GraphicsPipelineDesc> {
 
 public:
 
-	GraphicsPipelineDesc &vertexShader(const std::string &name) {
+	GraphicsPipelineDesc &vertexShader(const std::string &name, const std::string &entryPoint = "") {
 		assert(!name.empty());
+		if (shaderLanguage_ == ShaderLanguage::GLSL) {
+			// entry point only supported in HLSL
+			assert(entryPoint.empty());
+		}
 		vertexShaderName = name;
+		vertexShaderEntryPoint = entryPoint;
 		return *this;
 	}
 
-	GraphicsPipelineDesc &fragmentShader(const std::string &name) {
+	GraphicsPipelineDesc &fragmentShader(const std::string &name, const std::string &entryPoint = "") {
 		assert(!name.empty());
+		if (shaderLanguage_ == ShaderLanguage::GLSL) {
+			// entry point only supported in HLSL
+			assert(entryPoint.empty());
+		}
 		fragmentShaderName = name;
+		fragmentShaderEntryPoint = entryPoint;
 		return *this;
 	}
 

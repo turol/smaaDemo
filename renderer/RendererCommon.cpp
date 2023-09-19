@@ -56,9 +56,9 @@ auto format_as(ShaderStage stage) {
 
 auto format_as(ShaderCacheKey cacheKey) {
 	if (!cacheKey.macros.empty()) {
-		return fmt::format("{} {} {} {} {}", cacheKey.stage, cacheKey.language, cacheKey.filename, magic_enum::enum_name(cacheKey.spirvEnvironment), renderer::RendererBase::formatMacros(cacheKey.macros));
+		return fmt::format("{} {} {} {} \"{}\" {}", cacheKey.stage, cacheKey.language, cacheKey.filename, magic_enum::enum_name(cacheKey.spirvEnvironment), cacheKey.entryPoint, renderer::RendererBase::formatMacros(cacheKey.macros));
 	} else {
-		return fmt::format("{} {} {} {}", cacheKey.stage, cacheKey.language, cacheKey.filename, magic_enum::enum_name(cacheKey.spirvEnvironment));
+		return fmt::format("{} {} {} {} \"{}\"", cacheKey.stage, cacheKey.language, cacheKey.filename, magic_enum::enum_name(cacheKey.spirvEnvironment), cacheKey.entryPoint);
 	}
 }
 
@@ -401,7 +401,7 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 // increase this when the shader compiler options change
 // so that the same source generates a different SPV
 // or the cache json format changes
-const unsigned int shaderVersion = 119;
+const unsigned int shaderVersion = 120;
 
 
 // helper for storing in cache .json
@@ -491,6 +491,7 @@ void RendererBase::from_json(const nlohmann::json &j, ShaderMacros &macros) {
 void to_json(nlohmann::json &j, const ShaderCacheKey &key) {
 	j = nlohmann::json {
 		  { "name",   key.filename }
+		, { "entrypoint",  key.entryPoint  }
 		, { "stage",  key.stage  }
 		, { "language",  key.language  }
 		, { "spirv_environment",  magic_enum::enum_name(key.spirvEnvironment)  }
@@ -501,6 +502,7 @@ void to_json(nlohmann::json &j, const ShaderCacheKey &key) {
 
 void from_json(const nlohmann::json &j, ShaderCacheKey &key) {
 	j.at("name").get_to(key.filename);
+	j.at("entrypoint").get_to(key.entryPoint);
 	j.at("stage").get_to(key.stage);
 	j.at("language").get_to(key.language);
 	{
@@ -676,7 +678,8 @@ static constexpr magic_enum::containers::array<ShaderStage, const char *>  hlslE
 	, "computeShader"
 };
 
-std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, ShaderLanguage shaderLanguage, const ShaderMacros &macros, ShaderStage stage) {
+
+std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const std::string &entryPoint, ShaderLanguage shaderLanguage, const ShaderMacros &macros, ShaderStage stage) {
 	// check spir-v cache first
 	ShaderCacheKey cacheKey;
 	switch (shaderLanguage) {
@@ -692,6 +695,7 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, Shader
 			HEDLEY_UNREACHABLE();  // shouldn't happen
 			break;
 	}
+	cacheKey.entryPoint = entryPoint;
 	cacheKey.stage  = stage;
 	cacheKey.language = shaderLanguage;
 	cacheKey.spirvEnvironment = spirvEnvironment;
@@ -812,7 +816,11 @@ compilationNeeded:
 
 		case ShaderLanguage::HLSL:
 			source = glslang::EShSourceHlsl;
+			if (entryPoint.empty()) {
 			shader.setSourceEntryPoint(hlslEntryPointNames[stage]);
+			} else {
+				shader.setSourceEntryPoint(entryPoint.c_str());
+			}
 			shader.setEntryPoint("main");
 			break;
 

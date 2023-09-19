@@ -1634,11 +1634,11 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 		ShaderMacros macros_(desc.shaderMacros_);
 		macros_.set("VULKAN_FLIP", "1");
 
-		const auto &v = impl->vertexShaders.get(impl->createVertexShader(desc.vertexShaderName, macros_, desc.shaderLanguage_));
+		const auto &v = impl->vertexShaders.get(impl->createVertexShader(desc.vertexShaderName, desc.vertexShaderEntryPoint, macros_, desc.shaderLanguage_));
 		stages[0].stage  = vk::ShaderStageFlagBits::eVertex;
 		stages[0].module = v.shaderModule;
 		stages[0].pName  = "main";
-		const auto &f = impl->fragmentShaders.get(impl->createFragmentShader(desc.fragmentShaderName, macros_, desc.shaderLanguage_));
+		const auto &f = impl->fragmentShaders.get(impl->createFragmentShader(desc.fragmentShaderName, desc.fragmentShaderEntryPoint, macros_, desc.shaderLanguage_));
 		stages[1].stage  = vk::ShaderStageFlagBits::eFragment;
 		stages[1].module = f.shaderModule;
 		stages[1].pName  = "main";
@@ -2036,8 +2036,8 @@ SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
 }
 
 
-VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const ShaderMacros &macros, ShaderLanguage shaderLanguage) {
-	std::vector<uint32_t> spirv = compileSpirv(name, shaderLanguage, macros, ShaderStage::Vertex);
+VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, const std::string &entryPoint, const ShaderMacros &macros, ShaderLanguage shaderLanguage) {
+	std::vector<uint32_t> spirv = compileSpirv(name, entryPoint, shaderLanguage, macros, ShaderStage::Vertex);
 
 	VertexShader v;
 	vk::ShaderModuleCreateInfo info;
@@ -2045,15 +2045,15 @@ VertexShaderHandle RendererImpl::createVertexShader(const std::string &name, con
 	info.pCode     = &spirv[0];
 	v.shaderModule = device.createShaderModule(info);
 
-	LOG_TODO("add macros to name")
+	LOG_TODO("add macros and entry point to name")
 	debugNameObject<vk::ShaderModule>(v.shaderModule, name);
 
 	return vertexShaders.add(std::move(v));
 }
 
 
-FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const ShaderMacros &macros, ShaderLanguage shaderLanguage) {
-	std::vector<uint32_t> spirv = compileSpirv(name, shaderLanguage, macros, ShaderStage::Fragment);
+FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name, const std::string &entryPoint, const ShaderMacros &macros, ShaderLanguage shaderLanguage) {
+	std::vector<uint32_t> spirv = compileSpirv(name, entryPoint, shaderLanguage, macros, ShaderStage::Fragment);
 
 	FragmentShader f;
 	vk::ShaderModuleCreateInfo info;
@@ -2061,7 +2061,7 @@ FragmentShaderHandle RendererImpl::createFragmentShader(const std::string &name,
 	info.pCode     = &spirv[0];
 	f.shaderModule = device.createShaderModule(info);
 
-	LOG_TODO("add macros to name")
+	LOG_TODO("add macros and entry point to name")
 	debugNameObject<vk::ShaderModule>(f.shaderModule, name);
 
 	return fragmentShaders.add(std::move(f));
