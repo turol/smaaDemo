@@ -416,19 +416,19 @@ private:
 
 
 	struct LayoutVisitor final {
-		HashMap<RT, Layout>  &currentLayouts;
+		HashMap<RT, Layout>  &nextLayouts;
 		RenderGraph          &rg;
 
 
-		LayoutVisitor(HashMap<RT, Layout> &currentLayouts_, RenderGraph &rg_)
-		: currentLayouts(currentLayouts_)
+		LayoutVisitor(HashMap<RT, Layout> &nextLayouts_, RenderGraph &rg_)
+		: nextLayouts(nextLayouts_)
 		, rg(rg_)
 		{
 		}
 
 		void operator()(Blit &b) const {
-			b.finalLayout            = currentLayouts[b.dest];
-			currentLayouts[b.source] = Layout::TransferSrc;
+			b.finalLayout         = nextLayouts[b.dest];
+			nextLayouts[b.source] = Layout::TransferSrc;
 		}
 
 		void operator()(RenderPass &rp) const {
@@ -469,8 +469,8 @@ private:
 					}
 
 					Layout final = Layout::ColorAttachment;
-					auto layoutIt = currentLayouts.find(rtId);
-					if (layoutIt == currentLayouts.end()) {
+					auto layoutIt = nextLayouts.find(rtId);
+					if (layoutIt == nextLayouts.end()) {
 						// unused
 						LOG_TODO("remove it entirely")
 						LOG("Removed unused rendertarget \"{}\" in renderpass \"{}\"", to_string(rtId), to_string(rp.id));
@@ -482,20 +482,20 @@ private:
 						assert(final != Layout::TransferDst);
 
 						rpDesc.color(i, fmt, pb, initial, final, desc.colorRTs_[i].clearValue);
-						currentLayouts[rtId] = initial;
+						nextLayouts[rtId] = initial;
 					}
 				}
 			}
 
 			// mark input rt current layout as shader read
 			for (RT inputRT : desc.inputRendertargets) {
-				currentLayouts[inputRT] = Layout::ShaderRead;
+				nextLayouts[inputRT] = Layout::ShaderRead;
 			}
 		}
 
 		void operator()(ResolveMSAA &resolve) const {
-			resolve.finalLayout            = currentLayouts[resolve.dest];
-			currentLayouts[resolve.source] = Layout::TransferSrc;
+			resolve.finalLayout         = nextLayouts[resolve.dest];
+			nextLayouts[resolve.source] = Layout::TransferSrc;
 		}
 	};
 
@@ -680,22 +680,22 @@ public:
 		do {
 			keepGoing = false;
 			// automatically decide layouts
-			HashMap<RT, Layout> currentLayouts;
+			HashMap<RT, Layout> nextLayouts;
 
 			// initialize final render target to transfer src
-			currentLayouts[finalTarget] = Layout::Present;
+			nextLayouts[finalTarget] = Layout::Present;
 
 			// initialize external rendertargets final layouts
 			for (const auto &rt : rendertargets) {
 				visitRendertarget(rt.second
-								  , [&rt, &currentLayouts] (const ExternalRT &e) {
-									  currentLayouts[rt.first] = e.finalLayout;
+								  , [&rt, &nextLayouts] (const ExternalRT &e) {
+									  nextLayouts[rt.first] = e.finalLayout;
 								  }
 								  , nopInternal
 								 );
 			}
 
-			LayoutVisitor lv(currentLayouts, *this);
+			LayoutVisitor lv(nextLayouts, *this);
 			for (auto it = operations.rbegin(); it != operations.rend(); it++) {
 				std::visit(lv, *it);
 			}
