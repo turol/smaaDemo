@@ -1796,7 +1796,6 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 			}
 		}
 
-
 	}
 
 	GraphicsPipeline p;
