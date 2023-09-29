@@ -1987,6 +1987,11 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 	info.mipLevels   = desc.numMips_;
 	info.arrayLayers = 1;
 
+	// must have some usage
+	assert(desc.usage_.any());
+	// rendertargets are not created with this
+	assert(!desc.usage_.test(TextureUsage::RenderTarget));
+
 	vk::ImageUsageFlags flags(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
 	assert(!isDepthFormat(desc.format_));
 	info.usage       = flags;
@@ -1997,6 +2002,7 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 	tex.width   = desc.width_;
 	tex.height  = desc.height_;
 	tex.image   = device.createImage(info);
+	tex.usage   = desc.usage_;
 
 	VmaAllocationCreateInfo  req = {};
 	req.usage          = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -3104,6 +3110,7 @@ void RendererImpl::deleteTextureInternal(Texture &tex) {
 	assert(tex.memory != nullptr);
 	vmaFreeMemory(this->allocator, tex.memory);
 	tex.memory = nullptr;
+	tex.usage.reset();
 }
 
 

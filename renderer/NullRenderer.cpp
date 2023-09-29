@@ -185,6 +185,11 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 	assert(desc.height_  > 0);
 	assert(desc.numMips_ > 0);
 
+	// must have some usage
+	assert(desc.usage_.any());
+	// rendertargets are not created with this
+	assert(!desc.usage_.test(TextureUsage::RenderTarget));
+
 	LOG_TODO("check data")
 
 	Texture texture;

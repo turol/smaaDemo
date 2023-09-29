@@ -484,6 +484,7 @@ struct Texture {
 	GLuint        tex           = 0;
 	GLenum        target        = GL_NONE;
 	Format        format        = Format::Invalid;
+	TextureUsageSet  usage;
 
 
 	Texture()
@@ -501,6 +502,7 @@ struct Texture {
 	, tex(other.tex)
 	, target(other.target)
 	, format(other.format)
+	, usage(other.usage)
 	{
 		other.tex          = 0;
 		other.width        = 0;
@@ -508,6 +510,7 @@ struct Texture {
 		other.renderTarget = false;
 		other.target       = GL_NONE;
 		other.format       = Format::Invalid;
+		other.usage.reset();
 	}
 
 	Texture &operator=(Texture &&other) noexcept {
@@ -521,6 +524,7 @@ struct Texture {
 		tex                = other.tex;
 		target             = other.target;
 		format             = other.format;
+		usage              = other.usage;
 
 		other.width        = 0;
 		other.height       = 0;
@@ -528,6 +532,7 @@ struct Texture {
 		other.tex          = 0;
 		other.target       = GL_NONE;
 		other.format       = Format::Invalid;
+		other.usage.reset();
 
 		return *this;
 	}
@@ -538,6 +543,7 @@ struct Texture {
 		assert(!renderTarget);
 		assert(target == GL_NONE);
 		assert(format == Format::Invalid);
+		assert(usage.none());
 	}
 };
 

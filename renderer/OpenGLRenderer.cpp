@@ -1523,6 +1523,11 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 	assert(desc.height_  > 0);
 	assert(desc.numMips_ > 0);
 
+	// must have some usage
+	assert(desc.usage_.any());
+	// rendertargets are not created with this
+	assert(!desc.usage_.test(TextureUsage::RenderTarget));
+
 	GLuint texture = 0;
 	GLenum target = GL_TEXTURE_2D;
 	glCreateTextures(target, 1, &texture);
@@ -1545,6 +1550,7 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 	tex.height = desc.height_;
 	tex.target = target;
 	tex.format = desc.format_;
+	tex.usage  = desc.usage_;
 	assert(!tex.renderTarget);
 
 	if (impl->tracing) {
@@ -1697,6 +1703,7 @@ void Renderer::deleteTexture(TextureHandle &&handle) {
 		tex.tex = 0;
 		tex.target = GL_NONE;
 		tex.format = Format::Invalid;
+		tex.usage.reset();
 	} );
 }
 

@@ -605,6 +605,7 @@ struct Texture {
 	vk::Image            image;
 	vk::ImageView        imageView;
 	VmaAllocation        memory       = nullptr;
+	TextureUsageSet      usage;
 
 
 	Texture() noexcept
@@ -622,6 +623,7 @@ struct Texture {
 	, image(other.image)
 	, imageView(other.imageView)
 	, memory(other.memory)
+	, usage(other.usage)
 	{
 		other.width        = 0;
 		other.height       = 0;
@@ -629,6 +631,7 @@ struct Texture {
 		other.imageView    = vk::ImageView();
 		other.memory       = nullptr;
 		other.renderTarget = false;
+		other.usage.reset();
 	}
 
 	Texture &operator=(Texture &&other) noexcept {
@@ -642,6 +645,7 @@ struct Texture {
 		image              = other.image;
 		imageView          = other.imageView;
 		memory             = other.memory;
+		usage              = other.usage;
 
 		other.width        = 0;
 		other.height       = 0;
@@ -649,6 +653,7 @@ struct Texture {
 		other.image        = vk::Image();
 		other.imageView    = vk::ImageView();
 		other.memory       = nullptr;
+		other.usage.reset();
 
 		return *this;
 	}
@@ -656,6 +661,7 @@ struct Texture {
 	~Texture() {
 		assert(!image);
 		assert(!imageView);
+		assert(usage.none());
 	}
 
 	bool operator==(const Texture &other) const {
