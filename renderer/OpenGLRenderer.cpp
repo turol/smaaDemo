@@ -2339,6 +2339,13 @@ void Renderer::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHandle
 
 		case DescriptorType::Texture: {
 			TextureHandle texHandle = *reinterpret_cast<const TextureHandle *>(data + l.offset);
+
+#ifndef NDEBUG
+			const Texture &tex = impl->textures.get(texHandle);
+			assert(tex.tex);
+			assert(tex.usage.test(TextureUsage::Sampling));
+#endif  // NDEBUG
+
 			impl->descriptors[idx] = texHandle;
 		} break;
 
@@ -2348,6 +2355,7 @@ void Renderer::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHandle
 #ifndef NDEBUG
 			const Texture &tex = impl->textures.get(combined.tex);
 			assert(tex.tex);
+			assert(tex.usage.test(TextureUsage::Sampling));
 
 			const auto &sampler = impl->samplers.get(combined.sampler);
 			assert(sampler.sampler);

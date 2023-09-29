@@ -3554,6 +3554,7 @@ void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHand
 			const auto &tex = impl->textures.get(texHandle);
 			assert(tex.image);
 			assert(tex.imageView);
+			assert(tex.usage.test(TextureUsage::Sampling));
 
 			vk::DescriptorImageInfo imgWrite;
 			imgWrite.imageView   = tex.imageView;
@@ -3573,6 +3574,7 @@ void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHand
 			const Texture &tex = impl->textures.get(combined.tex);
 			assert(tex.image);
 			assert(tex.imageView);
+			assert(tex.usage.test(TextureUsage::Sampling));
 			const Sampler &s   = impl->samplers.get(combined.sampler);
 			assert(s.sampler);
 
