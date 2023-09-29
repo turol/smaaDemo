@@ -1287,6 +1287,7 @@ void SMAADemo::initRender() {
 	texDesc.width(AREATEX_WIDTH)
 	       .height(AREATEX_HEIGHT)
 	       .format(Format::RG8)
+	       .usage({ TextureUsage::Sampling })
 	       .name("SMAA area texture");
 
 	if (flipSMAATextures) {
@@ -2073,6 +2074,7 @@ void SMAADemo::loadImage(const char *filename) {
 	texDesc.width(width)
 	       .height(height)
 	       .name(img.shortName)
+	       .usage({ TextureUsage::Sampling })
 	       .format(Format::sRGBA8);
 
 	texDesc.mipLevelData(0, imageData, width * height * 4);
