@@ -598,6 +598,7 @@ public:
 	void renderTarget(RT rt, const RenderTargetDesc &desc) {
 		assert(state == RGState::Building);
 		assert(rt != Default<RT>::value);
+		assert(desc.usage().test(TextureUsage::RenderTarget));
 
 		InternalRT temp1;
 		temp1.desc   = desc;
@@ -626,6 +627,15 @@ public:
 	void renderPass(RP rp, const PassDesc &desc, RenderPassFunc f) {
 		assert(state == RGState::Building);
 
+		// check usage of input rendertargets
+		for (RT rt : desc.inputRendertargets) {
+			auto it = rendertargets.find(rt);
+			assert(it != rendertargets.end());
+			if (std::holds_alternative<InternalRT>(it->second)) {
+				assert(std::get<InternalRT>(it->second).desc.usage().test(TextureUsage::Sampling));
+			}
+		}
+
 		RenderPass rpData;
 		rpData.id   = rp;
 		rpData.name = desc.name_;
@@ -641,9 +651,15 @@ public:
 
 		auto DEBUG_ASSERTED srcIt = rendertargets.find(source);
 		assert(srcIt != rendertargets.end());
+		if (std::holds_alternative<InternalRT>(srcIt->second)) {
+			assert(std::get<InternalRT>(srcIt->second).desc.usage().test(TextureUsage::ResolveSource));
+		}
 
 		auto DEBUG_ASSERTED destIt = rendertargets.find(dest);
 		assert(destIt != rendertargets.end());
+		if (std::holds_alternative<InternalRT>(destIt->second)) {
+			assert(std::get<InternalRT>(destIt->second).desc.usage().test(TextureUsage::ResolveDestination));
+		}
 
 		assert(getFormat(srcIt->second) == getFormat(destIt->second));
 
@@ -657,6 +673,12 @@ public:
 	void presentRenderTarget(RT rt) {
 		assert(state == RGState::Building);
 		assert(rt != Default<RT>::value);
+
+		auto it = rendertargets.find(rt);
+		assert(it != rendertargets.end());
+		if (std::holds_alternative<InternalRT>(it->second)) {
+			assert(std::get<InternalRT>(it->second).desc.usage().test(TextureUsage::Present));
+		}
 
 		finalTarget = rt;
 	}
