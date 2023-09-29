@@ -1015,12 +1015,12 @@ struct RenderTargetDesc : public DescBase<RenderTargetDesc> {
 
 private:
 
-	unsigned int   width_                = 0;
-	unsigned int   height_               = 0;
-	unsigned int   numSamples_           = 1;
-	Format         format_               = Format::Invalid;
-	Format         additionalViewFormat_ = Format::Invalid;
-	TextureUsageSet  usage_              = { TextureUsage::RenderTarget };
+	unsigned int     width_                = 0;
+	unsigned int     height_               = 0;
+	unsigned int     numSamples_           = 1;
+	Format           format_               = Format::Invalid;
+	Format           additionalViewFormat_ = Format::Invalid;
+	TextureUsageSet  usage_                = { TextureUsage::RenderTarget };
 
 
 	friend class Renderer;

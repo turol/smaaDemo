@@ -605,13 +605,13 @@ struct Sampler {
 
 
 struct Texture {
-	unsigned int         width        = 0;
-	unsigned int         height       = 0;
-	bool                 renderTarget = false;
-	vk::Image            image;
-	vk::ImageView        imageView;
-	VmaAllocation        memory       = nullptr;
-	TextureUsageSet      usage;
+	unsigned int     width        = 0;
+	unsigned int     height       = 0;
+	bool             renderTarget = false;
+	vk::Image        image;
+	vk::ImageView    imageView;
+	VmaAllocation    memory       = nullptr;
+	TextureUsageSet  usage;
 
 
 	Texture() noexcept

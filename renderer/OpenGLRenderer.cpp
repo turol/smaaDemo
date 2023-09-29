@@ -1456,11 +1456,11 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	tex.usage         = desc.usage_;
 
 	RenderTarget rt;
-	rt.width  = desc.width_;
-	rt.height = desc.height_;
-	rt.format = desc.format_;
+	rt.width      = desc.width_;
+	rt.height     = desc.height_;
+	rt.format     = desc.format_;
 	rt.numSamples = desc.numSamples_;
-	rt.texture = impl->textures.add(std::move(tex));
+	rt.texture    = impl->textures.add(std::move(tex));
 	rt.usage      = desc.usage_;
 
 	if (desc.additionalViewFormat_ != Format::Invalid) {
@@ -1667,7 +1667,7 @@ void Renderer::deleteRenderTarget(RenderTargetHandle &&handle) {
 			tex.renderTarget = false;
 			assert(tex.tex != 0);
 			glDeleteTextures(1, &tex.tex);
-			tex.tex = 0;
+			tex.tex    = 0;
 			tex.target = GL_NONE;
 			tex.format = Format::Invalid;
 			tex.usage.reset();
@@ -1681,7 +1681,7 @@ void Renderer::deleteRenderTarget(RenderTargetHandle &&handle) {
 			view.renderTarget = false;
 			assert(view.tex != 0);
 			glDeleteTextures(1, &view.tex);
-			view.tex = 0;
+			view.tex    = 0;
 			view.target = GL_NONE;
 			view.format = Format::Invalid;
 			view.usage.reset();

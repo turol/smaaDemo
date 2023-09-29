@@ -368,14 +368,14 @@ struct RenderPass {
 
 
 struct RenderTarget {
-	unsigned int   width           = 0;
-	unsigned int   height          = 0;
-	unsigned int   numSamples      = 0;
-	Layout         currentLayout   = Layout::Undefined;
-	TextureHandle  texture;
-	TextureHandle  additionalView;
-	GLuint         helperFBO       = 0;
-	Format         format          = Format::Invalid;
+	unsigned int     width           = 0;
+	unsigned int     height          = 0;
+	unsigned int     numSamples      = 0;
+	Layout           currentLayout   = Layout::Undefined;
+	TextureHandle    texture;
+	TextureHandle    additionalView;
+	GLuint           helperFBO       = 0;
+	Format           format          = Format::Invalid;
 	TextureUsageSet  usage;
 
 
@@ -484,12 +484,12 @@ struct Sampler {
 
 
 struct Texture {
-	unsigned int  width         = 0;
-	unsigned int  height        = 0;
-	bool          renderTarget  = false;
-	GLuint        tex           = 0;
-	GLenum        target        = GL_NONE;
-	Format        format        = Format::Invalid;
+	unsigned int     width         = 0;
+	unsigned int     height        = 0;
+	bool             renderTarget  = false;
+	GLuint           tex           = 0;
+	GLenum           target        = GL_NONE;
+	Format           format        = Format::Invalid;
 	TextureUsageSet  usage;
 
 
