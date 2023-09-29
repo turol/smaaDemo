@@ -483,6 +483,7 @@ struct RenderTarget{
 	vk::Image            image;
 	Format               format         = Format::Invalid;
 	vk::ImageView        imageView;
+	TextureUsageSet      usage;
 
 
 	RenderTarget() noexcept {}
@@ -500,6 +501,7 @@ struct RenderTarget{
 	, image(other.image)
 	, format(other.format)
 	, imageView(other.imageView)
+	, usage(other.usage)
 	{
 		other.width          = 0;
 		other.height         = 0;
@@ -508,6 +510,7 @@ struct RenderTarget{
 		other.image          = vk::Image();
 		other.format         = Format::Invalid;
 		other.imageView      = vk::ImageView();
+		other.usage.reset();
 	}
 
 	RenderTarget &operator=(RenderTarget &&other) noexcept {
@@ -527,6 +530,7 @@ struct RenderTarget{
 		image                = other.image;
 		format               = other.format;
 		imageView            = other.imageView;
+		usage                = other.usage;
 
 		other.width          = 0;
 		other.height         = 0;
@@ -535,6 +539,7 @@ struct RenderTarget{
 		other.image          = vk::Image();
 		other.format         = Format::Invalid;
 		other.imageView      = vk::ImageView();
+		other.usage.reset();
 
 		return *this;
 	}
@@ -542,6 +547,7 @@ struct RenderTarget{
 	~RenderTarget() {
 		assert(!image);
 		assert(!imageView);
+		assert(usage.none());
 	}
 
 

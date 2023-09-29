@@ -142,6 +142,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	assert(desc.width_  > 0);
 	assert(desc.height_ > 0);
 	assert(desc.format_ != Format::Invalid);
+	assert(desc.usage_.test(TextureUsage::RenderTarget));
 
 	RenderTarget rendertarget;
 	rendertarget.desc = desc;

@@ -376,6 +376,7 @@ struct RenderTarget {
 	TextureHandle  additionalView;
 	GLuint         helperFBO       = 0;
 	Format         format          = Format::Invalid;
+	TextureUsageSet  usage;
 
 
 	RenderTarget()
@@ -394,6 +395,7 @@ struct RenderTarget {
 	, additionalView(std::move(other.additionalView))
 	, helperFBO(other.helperFBO)
 	, format(other.format)
+	, usage(other.usage)
 	{
 		other.width           = 0;
 		other.height          = 0;
@@ -403,6 +405,7 @@ struct RenderTarget {
 		other.additionalView.reset();
 		other.helperFBO       = 0;
 		other.format          = Format::Invalid;
+		other.usage.reset();
 	}
 
 	RenderTarget &operator=(RenderTarget &&other) noexcept {
@@ -421,6 +424,7 @@ struct RenderTarget {
 		additionalView        = other.additionalView;
 		helperFBO             = other.helperFBO;
 		format                = other.format;
+		usage                 = other.usage;
 
 		other.width           = 0;
 		other.height          = 0;
@@ -428,6 +432,7 @@ struct RenderTarget {
 		other.currentLayout   = Layout::Undefined;
 		other.helperFBO       = 0;
 		other.format          = Format::Invalid;
+		other.usage.reset();
 
 		return *this;
 	}
@@ -436,6 +441,7 @@ struct RenderTarget {
 		assert(numSamples == 0);
 		assert(helperFBO  == 0);
 		assert(!texture);
+		assert(usage.none());
 	}
 
 };

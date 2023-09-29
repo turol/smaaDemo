@@ -1428,6 +1428,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	assert(desc.format_ != Format::Invalid);
 	assert(isPow2(desc.numSamples_));
 	assert(!desc.name_.empty());
+	assert(desc.usage_.test(TextureUsage::RenderTarget));
 
 	GLuint id = 0;
 	GLenum target;
@@ -1452,6 +1453,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	tex.renderTarget  = true;
 	tex.target        = target;
 	tex.format        = desc.format_;
+	tex.usage         = desc.usage_;
 
 	RenderTarget rt;
 	rt.width  = desc.width_;
@@ -1459,6 +1461,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	rt.format = desc.format_;
 	rt.numSamples = desc.numSamples_;
 	rt.texture = impl->textures.add(std::move(tex));
+	rt.usage      = desc.usage_;
 
 	if (desc.additionalViewFormat_ != Format::Invalid) {
 		GLuint viewId = 0;
@@ -1472,6 +1475,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 		view.renderTarget = true;
 		view.target       = target;
 		view.format       = desc.additionalViewFormat_;
+		view.usage        = desc.usage_;
 		rt.additionalView = impl->textures.add(std::move(view));
 	}
 
@@ -1654,6 +1658,8 @@ void Renderer::deleteRenderTarget(RenderTargetHandle &&handle) {
 			rt.helperFBO = 0;
 		}
 
+		rt.usage.reset();
+
 		{
 			auto &tex = impl->textures.get(rt.texture);
 			assert(tex.renderTarget);
@@ -1664,6 +1670,7 @@ void Renderer::deleteRenderTarget(RenderTargetHandle &&handle) {
 			tex.tex = 0;
 			tex.target = GL_NONE;
 			tex.format = Format::Invalid;
+			tex.usage.reset();
 		}
 		impl->textures.remove(std::move(rt.texture));
 
@@ -1677,6 +1684,7 @@ void Renderer::deleteRenderTarget(RenderTargetHandle &&handle) {
 			view.tex = 0;
 			view.target = GL_NONE;
 			view.format = Format::Invalid;
+			view.usage.reset();
 			impl->textures.remove(std::move(rt.additionalView));
 		}
 	} );

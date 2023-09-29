@@ -1813,6 +1813,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	assert(desc.format_ != Format::Invalid);
 	assert(isPow2(desc.numSamples_));
 	assert(!desc.name_.empty());
+	assert(desc.usage_.test(TextureUsage::RenderTarget));
 
 	vk::Format format = vulkanFormat(desc.format_);
 	vk::ImageCreateInfo info;
@@ -1845,12 +1846,14 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	rt.numSamples     = desc.numSamples_;
 	rt.image          = device.createImage(info);
 	rt.format         = desc.format_;
+	rt.usage          = desc.usage_;
 
 	Texture tex;
 	tex.width         = desc.width_;
 	tex.height        = desc.height_;
 	tex.image         = rt.image;
 	tex.renderTarget  = true;
+	tex.usage         = desc.usage_;
 
 	impl->debugNameObject<vk::Image>(tex.image, desc.name_);
 
@@ -1888,6 +1891,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 		view.height       = desc.height_;
 		view.image        = rt.image;
 		view.renderTarget = true;
+		view.usage        = desc.usage_;
 
 		viewInfo.format   = vulkanFormat(desc.additionalViewFormat_);
 		view.imageView    = device.createImageView(viewInfo);
@@ -3065,6 +3069,7 @@ void RendererImpl::deleteRenderTargetInternal(RenderTarget &rt) {
 		view.image        = vk::Image();
 		view.imageView    = vk::ImageView();
 		view.renderTarget = false;
+		view.usage.reset();
 
 		this->textures.remove(std::move(rt.additionalView));
 	}
@@ -3072,6 +3077,7 @@ void RendererImpl::deleteRenderTargetInternal(RenderTarget &rt) {
 	tex.image        = vk::Image();
 	tex.imageView    = vk::ImageView();
 	tex.renderTarget = false;
+	tex.usage.reset();
 
 	assert(tex.memory != nullptr);
 	vmaFreeMemory(this->allocator, tex.memory);
@@ -3083,6 +3089,7 @@ void RendererImpl::deleteRenderTargetInternal(RenderTarget &rt) {
 	this->device.destroyImage(rt.image);
 	rt.imageView = vk::ImageView();
 	rt.image     = vk::Image();
+	rt.usage.reset();
 }
 
 
