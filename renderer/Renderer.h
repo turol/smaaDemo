@@ -431,6 +431,17 @@ enum class ShaderLanguage : uint8_t {
 };
 
 
+enum class TextureUsage : uint8_t {
+	  BlitDestination
+	, BlitSource
+	, Present
+	, RenderTarget
+	, ResolveDestination
+	, ResolveSource
+	, Sampling
+};
+
+
 enum class VSync : uint8_t {
 	  Off
 	, On
