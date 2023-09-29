@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <SDL.h>
 
 #include <magic_enum.hpp>
+#include <magic_enum_containers.hpp>
 
 #include "utils/Hash.h"
 #include "utils/Utils.h"  // for isPow2
@@ -440,6 +441,9 @@ enum class TextureUsage : uint8_t {
 	, ResolveSource
 	, Sampling
 };
+
+
+using TextureUsageSet = magic_enum::containers::bitset<TextureUsage>;
 
 
 enum class VSync : uint8_t {
