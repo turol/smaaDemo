@@ -982,6 +982,31 @@ struct RenderTargetDesc : public DescBase<RenderTargetDesc> {
 		return *this;
 	}
 
+	RenderTargetDesc &usage(const TextureUsageSet &u) {
+		assert(u.any());
+		assert(!u.test(TextureUsage::RenderTarget));  // set implicitly
+
+		if (numSamples_ == 1) {
+			// resolve source only valid on multisampled
+			assert(!u.test(TextureUsage::ResolveSource));
+		} else {
+			// resolve destination only valid on non-multisampled
+			assert(!u.test(TextureUsage::ResolveDestination));
+			// can't blit to or from multisampled, must resolve
+			assert(!u.test(TextureUsage::BlitSource));
+			assert(!u.test(TextureUsage::BlitDestination));
+		}
+
+		usage_ = u;
+		usage_.set(TextureUsage::RenderTarget);
+		return *this;
+	}
+
+	const TextureUsageSet &usage() const {
+		return usage_;
+	}
+
+
 	unsigned int width()      const  { return width_; }
 	unsigned int height()     const  { return height_; }
 	unsigned int numSamples() const  { return numSamples_; }
@@ -995,6 +1020,7 @@ private:
 	unsigned int   numSamples_           = 1;
 	Format         format_               = Format::Invalid;
 	Format         additionalViewFormat_ = Format::Invalid;
+	TextureUsageSet  usage_              = { TextureUsage::RenderTarget };
 
 
 	friend class Renderer;
