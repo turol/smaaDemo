@@ -3735,12 +3735,14 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
 	assert(srcRT.currentLayout == Layout::TransferSrc);
+	assert(srcRT.usage.test(TextureUsage::ResolveSource));
 
 	const auto &destRT = impl->renderTargets.get(target);
 	assert(isColorFormat(destRT.format));
 	assert(destRT.width      >  0);
 	assert(destRT.height     >  0);
 	assert(destRT.currentLayout == Layout::TransferDst);
+	assert(destRT.usage.test(TextureUsage::ResolveDestination));
 
 	assert(srcRT.format      == destRT.format);
 	assert(srcRT.width       == destRT.width);
@@ -3772,6 +3774,7 @@ void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLay
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
 	assert(srcRT.image);
+	assert(srcRT.usage.test(TextureUsage::ResolveSource));
 
 	auto &frame = impl->frames.at(impl->currentFrameIdx);
 	unsigned int width = impl->swapchainDesc.width, height = impl->swapchainDesc.height;

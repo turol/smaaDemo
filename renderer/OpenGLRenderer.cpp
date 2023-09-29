@@ -2528,6 +2528,7 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 	assert(srcRT.height      >  0);
 	assert(srcRT.currentLayout == Layout::TransferSrc);
 	assert(srcRT.texture);
+	assert(srcRT.usage.test(TextureUsage::ResolveSource));
 	if (srcRT.helperFBO == 0) {
 		impl->createRTHelperFBO(srcRT);
 	}
@@ -2540,6 +2541,7 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 	assert(destRT.height     >  0);
 	assert(destRT.currentLayout == Layout::TransferDst);
 	assert(destRT.texture);
+	assert(destRT.usage.test(TextureUsage::ResolveDestination));
 	if (destRT.helperFBO == 0) {
 		impl->createRTHelperFBO(destRT);
 	}
@@ -2571,6 +2573,7 @@ void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLay
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
 	assert(srcRT.currentLayout == Layout::TransferSrc);
+	assert(srcRT.usage.test(TextureUsage::ResolveSource));
 	assert(srcRT.texture);
 	if (srcRT.helperFBO == 0) {
 		impl->createRTHelperFBO(srcRT);
