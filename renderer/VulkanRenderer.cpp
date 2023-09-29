@@ -3693,11 +3693,13 @@ void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
 	assert(srcRT.currentLayout == Layout::TransferSrc);
+	assert(srcRT.usage.test(TextureUsage::BlitSource));
 
 	const auto &destRT = impl->renderTargets.get(target);
 	assert(destRT.width      >  0);
 	assert(destRT.height     >  0);
 	assert(destRT.currentLayout == Layout::TransferDst);
+	assert(destRT.usage.test(TextureUsage::BlitDestination));
 
 	assert(srcRT.width       == destRT.width);
 	assert(srcRT.height      == destRT.height);

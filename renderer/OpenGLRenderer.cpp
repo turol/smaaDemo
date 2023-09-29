@@ -2484,6 +2484,7 @@ void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(srcRT.height      >  0);
 	assert(srcRT.currentLayout == Layout::TransferSrc);
 	assert(srcRT.texture);
+	assert(srcRT.usage.test(TextureUsage::BlitSource));
 	if (srcRT.helperFBO == 0) {
 		impl->createRTHelperFBO(srcRT);
 	}
@@ -2495,6 +2496,7 @@ void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(destRT.height     >  0);
 	assert(destRT.currentLayout == Layout::TransferDst);
 	assert(destRT.texture);
+	assert(destRT.usage.test(TextureUsage::BlitDestination));
 	if (destRT.helperFBO == 0) {
 		impl->createRTHelperFBO(destRT);
 	}
