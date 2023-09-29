@@ -1087,6 +1087,15 @@ struct TextureDesc : public DescBase<TextureDesc> {
 	}
 
 
+	TextureDesc &usage(const TextureUsageSet &u) {
+		assert(u.any());
+		assert(!u.test(TextureUsage::Present));        // only valid on rendertargets
+		assert(!u.test(TextureUsage::RenderTarget));   // rendertargets are not created with this
+		assert(!u.test(TextureUsage::ResolveSource));  // only valid on multisampled RTs
+		usage_ = u;
+		return *this;
+	}
+
 private:
 
 	struct MipLevel {
@@ -1099,6 +1108,7 @@ private:
 	unsigned int                                 numMips_  = 1;
 	Format                                       format_   = Format::Invalid;
 	std::array<MipLevel, MAX_TEXTURE_MIPLEVELS>  mipData_;
+	TextureUsageSet                              usage_;
 
 
 	friend class Renderer;
