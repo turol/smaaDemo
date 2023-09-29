@@ -1449,6 +1449,17 @@ void SMAADemo::rebuildRenderGraph() {
 		      .format(swapchainFormat)
 		      .width(windowWidth)
 		      .height(windowHeight);
+		switch (aaMethod) {
+		case AAMethod::MSAA:
+			rtDesc.usage({ TextureUsage::Present, TextureUsage::ResolveDestination });
+			break;
+
+		case AAMethod::FXAA:
+		case AAMethod::SMAA:
+		case AAMethod::SMAA2X:
+			rtDesc.usage({ TextureUsage::Present });
+			break;
+		}
 		renderGraph.renderTarget(Rendertargets::FinalRender, rtDesc);
 	}
 
@@ -1466,6 +1477,17 @@ void SMAADemo::rebuildRenderGraph() {
 			      .additionalViewFormat(Format::RGBA8)
 			      .width(windowWidth)
 			      .height(windowHeight);
+			switch (aaMethod) {
+			case AAMethod::MSAA:
+				rtDesc.usage({ TextureUsage::ResolveSource });
+				break;
+
+			case AAMethod::FXAA:
+			case AAMethod::SMAA:
+			case AAMethod::SMAA2X:
+				rtDesc.usage({ TextureUsage::Sampling });
+				break;
+			}
 			renderGraph.renderTarget(Rendertargets::MainColor, rtDesc);
 		} else {
 			renderRT = Rendertargets::FinalRender;
@@ -1479,6 +1501,17 @@ void SMAADemo::rebuildRenderGraph() {
 			      .format(Format::RG16Float)
 			      .width(windowWidth)
 			      .height(windowHeight);
+			switch (aaMethod) {
+			case AAMethod::MSAA:
+			case AAMethod::SMAA2X:
+				rtDesc.usage({ TextureUsage::Sampling, TextureUsage::ResolveDestination });
+				break;
+
+			case AAMethod::FXAA:
+			case AAMethod::SMAA:
+				rtDesc.usage({ TextureUsage::Sampling });
+				break;
+			}
 			renderGraph.renderTarget(Rendertargets::Velocity, rtDesc);
 		}
 
@@ -1488,6 +1521,7 @@ void SMAADemo::rebuildRenderGraph() {
 			rtDesc.name("velocity multisample")
 			      .numSamples(numSamples)
 			      .format(Format::RG16Float)
+			      .usage({ TextureUsage::ResolveSource })
 			      .width(windowWidth)
 			      .height(windowHeight);
 			renderGraph.renderTarget(Rendertargets::VelocityMS, rtDesc);
@@ -1502,6 +1536,17 @@ void SMAADemo::rebuildRenderGraph() {
 			      .format(depthFormat)
 			      .width(windowWidth)
 			      .height(windowHeight);
+			switch (aaMethod) {
+			case AAMethod::MSAA:
+				rtDesc.usage({ TextureUsage::ResolveSource });
+				break;
+
+			case AAMethod::FXAA:
+			case AAMethod::SMAA:
+			case AAMethod::SMAA2X:
+				rtDesc.usage({ TextureUsage::Sampling });
+				break;
+			}
 			renderGraph.renderTarget(Rendertargets::MainDepth, rtDesc);
 		}
 
@@ -1526,6 +1571,7 @@ void SMAADemo::rebuildRenderGraph() {
 			      .numSamples(numSamples)
 			      .format(swapchainFormat)
 			      .additionalViewFormat(Format::RGBA8)
+			      .usage({ TextureUsage::Sampling })
 			      .width(windowWidth)
 			      .height(windowHeight);
 			renderGraph.renderTarget(Rendertargets::MainColor, rtDesc);
@@ -1541,6 +1587,17 @@ void SMAADemo::rebuildRenderGraph() {
 			      .format(Format::RG16Float)
 			      .width(windowWidth)
 			      .height(windowHeight);
+			switch (aaMethod) {
+			case AAMethod::MSAA:
+			case AAMethod::SMAA2X:
+				rtDesc.usage({ TextureUsage::Sampling, TextureUsage::ResolveDestination });
+				break;
+
+			case AAMethod::FXAA:
+			case AAMethod::SMAA:
+				rtDesc.usage({ TextureUsage::Sampling });
+				break;
+			}
 			renderGraph.renderTarget(Rendertargets::Velocity, rtDesc);
 		}
 
@@ -1550,6 +1607,7 @@ void SMAADemo::rebuildRenderGraph() {
 			rtDesc.name("velocity multisample")
 			      .numSamples(numSamples)
 			      .format(Format::RG16Float)
+			      .usage({ TextureUsage::ResolveSource })
 			      .width(windowWidth)
 			      .height(windowHeight);
 			renderGraph.renderTarget(Rendertargets::VelocityMS, rtDesc);
@@ -1585,6 +1643,17 @@ void SMAADemo::rebuildRenderGraph() {
 				      .format(swapchainFormat)
 				      .width(windowWidth)
 				      .height(windowHeight);
+				switch (aaMethod) {
+				case AAMethod::MSAA:
+					rtDesc.usage({ TextureUsage::Sampling, TextureUsage::ResolveDestination });
+					break;
+
+				case AAMethod::FXAA:
+				case AAMethod::SMAA:
+				case AAMethod::SMAA2X:
+					rtDesc.usage({ TextureUsage::Sampling });
+					break;
+				}
 				temporalRTs[0] = renderer.createRenderTarget(rtDesc);
 
 				rtDesc.name("Temporal resolve 2");
@@ -1620,6 +1689,7 @@ void SMAADemo::rebuildRenderGraph() {
 					RenderTargetDesc rtDesc;
 					rtDesc.name("SMAA edges")
 					      .format(Format::RGBA8)
+					      .usage({ TextureUsage::Sampling })
 					      .width(windowWidth)
 					      .height(windowHeight);
 					renderGraph.renderTarget(Rendertargets::Edges, rtDesc);
@@ -1641,6 +1711,7 @@ void SMAADemo::rebuildRenderGraph() {
 					RenderTargetDesc rtDesc;
 					rtDesc.name("SMAA weights")
 					      .format(Format::RGBA8)
+					      .usage({ TextureUsage::Sampling })
 					      .width(windowWidth)
 					      .height(windowHeight);
 					renderGraph.renderTarget(Rendertargets::BlendWeights, rtDesc);
@@ -1670,6 +1741,7 @@ void SMAADemo::rebuildRenderGraph() {
 					RenderTargetDesc rtDesc;
 					rtDesc.format(Format::sRGBA8)
 					      .additionalViewFormat(Format::RGBA8)
+					      .usage({ TextureUsage::Sampling })
 					      .width(windowWidth)
 					      .height(windowHeight);
 
@@ -1697,6 +1769,7 @@ void SMAADemo::rebuildRenderGraph() {
 					RenderTargetDesc rtDesc;
 					rtDesc.name("SMAA edges")
 					      .format(Format::RGBA8)
+					      .usage({ TextureUsage::Sampling })
 					      .width(windowWidth)
 					      .height(windowHeight);
 					renderGraph.renderTarget(Rendertargets::Edges, rtDesc);
@@ -1718,6 +1791,7 @@ void SMAADemo::rebuildRenderGraph() {
 					RenderTargetDesc rtDesc;
 					rtDesc.name("SMAA weights")
 					      .format(Format::RGBA8)
+					      .usage({ TextureUsage::Sampling })
 					      .width(windowWidth)
 					      .height(windowHeight);
 					renderGraph.renderTarget(Rendertargets::BlendWeights, rtDesc);
@@ -1808,6 +1882,7 @@ void SMAADemo::rebuildRenderGraph() {
 					RenderTargetDesc rtDesc;
 					rtDesc.name("SMAA edges")
 					      .format(Format::RGBA8)
+					      .usage({ TextureUsage::Sampling })
 					      .width(windowWidth)
 					      .height(windowHeight);
 					renderGraph.renderTarget(Rendertargets::Edges, rtDesc);
@@ -1831,6 +1906,7 @@ void SMAADemo::rebuildRenderGraph() {
 						RenderTargetDesc rtDesc;
 						rtDesc.name("SMAA weights")
 						      .format(Format::RGBA8)
+						      .usage({ TextureUsage::Sampling })
 						      .width(windowWidth)
 						      .height(windowHeight);
 						renderGraph.renderTarget(Rendertargets::BlendWeights, rtDesc);
@@ -1875,6 +1951,7 @@ void SMAADemo::rebuildRenderGraph() {
 						RenderTargetDesc rtDesc;
 						rtDesc.name("SMAA weights")
 						      .format(Format::RGBA8)
+						      .usage({ TextureUsage::Sampling })
 						      .width(windowWidth)
 						      .height(windowHeight);
 						renderGraph.renderTarget(Rendertargets::BlendWeights, rtDesc);
@@ -1906,6 +1983,7 @@ void SMAADemo::rebuildRenderGraph() {
 					RenderTargetDesc rtDesc;
 					rtDesc.format(Format::sRGBA8)
 					      .additionalViewFormat(Format::RGBA8)
+					      .usage({ TextureUsage::Sampling })
 					      .width(windowWidth)
 					      .height(windowHeight);
 
@@ -1929,6 +2007,7 @@ void SMAADemo::rebuildRenderGraph() {
 					RenderTargetDesc rtDesc;
 					rtDesc.name("SMAA edges")
 					      .format(Format::RGBA8)
+					      .usage({ TextureUsage::Sampling })
 					      .width(windowWidth)
 					      .height(windowHeight);
 					renderGraph.renderTarget(Rendertargets::Edges, rtDesc);
@@ -1948,6 +2027,7 @@ void SMAADemo::rebuildRenderGraph() {
 					RenderTargetDesc rtDesc;
 					rtDesc.name("SMAA weights")
 					      .format(Format::RGBA8)
+					      .usage({ TextureUsage::Sampling })
 					      .width(windowWidth)
 					      .height(windowHeight);
 					renderGraph.renderTarget(Rendertargets::BlendWeights, rtDesc);
