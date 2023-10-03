@@ -1833,13 +1833,18 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	// validation layer says: vkCreateImage(): samples VK_SAMPLE_COUNT_16_BIT is not supported by format 0x0000000F. The Vulkan spec states: samples must be a bit value that is set in imageCreateSampleCounts (as defined in Image Creation Limits).
 	// (https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/vkspec.html#VUID-VkImageCreateInfo-samples-02258)
 	info.samples     = sampleCountFlagsFromNum(desc.numSamples_);
-	LOG_TODO("usage should come from desc")
-	vk::ImageUsageFlags flags(vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
+	vk::ImageUsageFlags flags;
+	if (desc.usage_.test(TextureUsage::BlitDestination)) { flags |= vk::ImageUsageFlagBits::eTransferDst; }
+	if (desc.usage_.test(TextureUsage::BlitSource))      { flags |= vk::ImageUsageFlagBits::eTransferSrc; }
+	assert(desc.usage_.test(TextureUsage::RenderTarget));
 	if (isDepthFormat(desc.format_)) {
 		flags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
 	} else {
 		flags |= vk::ImageUsageFlagBits::eColorAttachment;
 	}
+	if (desc.usage_.test(TextureUsage::ResolveDestination)) { flags |= vk::ImageUsageFlagBits::eTransferDst; }
+	if (desc.usage_.test(TextureUsage::ResolveSource))      { flags |= vk::ImageUsageFlagBits::eTransferSrc; }
+	if (desc.usage_.test(TextureUsage::Sampling))           { flags |= vk::ImageUsageFlagBits::eSampled;     }
 	info.usage        = flags;
 
 	auto device = impl->device;
