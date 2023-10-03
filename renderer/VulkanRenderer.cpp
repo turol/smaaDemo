@@ -1380,9 +1380,13 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 		LOG_TODO("stencil")
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
 		attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-		attach.initialLayout  = vk::ImageLayout::eUndefined;
-		LOG_TODO("finalLayout should come from desc")
-		attach.finalLayout    = vk::ImageLayout::eShaderReadOnlyOptimal;
+		attach.initialLayout  = vulkanLayout(desc.depthStencil_.initialLayout);
+		LOG_TODO("final layout should always come from desc and never be Undefined")
+		if (desc.depthStencil_.finalLayout != Layout::Undefined) {
+			attach.finalLayout    = vulkanLayout(desc.depthStencil_.finalLayout);
+		} else {
+			attach.finalLayout    = layout;
+		}
 		attachments.push_back(attach);
 
 		depthAttachment.attachment = attachNum;
