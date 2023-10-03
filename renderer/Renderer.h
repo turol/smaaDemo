@@ -871,9 +871,10 @@ struct RenderPassDesc : public DescBase<RenderPassDesc> {
 	RenderPassDesc(RenderPassDesc &&) noexcept            = default;
 	RenderPassDesc &operator=(RenderPassDesc &&) noexcept = default;
 
-	RenderPassDesc &depthStencil(Format ds, PassBegin) {
+	RenderPassDesc &depthStencil(Format ds, PassBegin pb) {
 		assert(isDepthFormat(ds));
 		depthStencil_.format = ds;
+		depthStencil_.passBegin = pb;
 		return *this;
 	}
 
