@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include <SDL_vulkan.h>
 
 #include <magic_enum_containers.hpp>
+#include <magic_enum_utility.hpp>
 
 #include "RendererInternal.h"
 #include "utils/Utils.h"
@@ -1833,18 +1834,50 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	// validation layer says: vkCreateImage(): samples VK_SAMPLE_COUNT_16_BIT is not supported by format 0x0000000F. The Vulkan spec states: samples must be a bit value that is set in imageCreateSampleCounts (as defined in Image Creation Limits).
 	// (https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/vkspec.html#VUID-VkImageCreateInfo-samples-02258)
 	info.samples     = sampleCountFlagsFromNum(desc.numSamples_);
+
 	vk::ImageUsageFlags flags;
-	if (desc.usage_.test(TextureUsage::BlitDestination)) { flags |= vk::ImageUsageFlagBits::eTransferDst; }
-	if (desc.usage_.test(TextureUsage::BlitSource))      { flags |= vk::ImageUsageFlagBits::eTransferSrc; }
 	assert(desc.usage_.test(TextureUsage::RenderTarget));
 	if (isDepthFormat(desc.format_)) {
 		flags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
 	} else {
 		flags |= vk::ImageUsageFlagBits::eColorAttachment;
 	}
-	if (desc.usage_.test(TextureUsage::ResolveDestination)) { flags |= vk::ImageUsageFlagBits::eTransferDst; }
-	if (desc.usage_.test(TextureUsage::ResolveSource))      { flags |= vk::ImageUsageFlagBits::eTransferSrc; }
-	if (desc.usage_.test(TextureUsage::Sampling))           { flags |= vk::ImageUsageFlagBits::eSampled;     }
+
+	magic_enum::enum_for_each<TextureUsage>([&] (auto u) {
+		// this is ugly but it makes the compiler check completeness of the switch
+		if (!desc.usage_.test(u)) { return; }
+
+		switch (u) {
+		case TextureUsage::BlitDestination:
+			flags |= vk::ImageUsageFlagBits::eTransferDst;
+			break;
+
+		case TextureUsage::BlitSource:
+			flags |= vk::ImageUsageFlagBits::eTransferSrc;
+			break;
+
+		case TextureUsage::Present:
+			// don't care
+			break;
+
+		case TextureUsage::RenderTarget:
+			// already handled above
+			break;
+
+		case TextureUsage::ResolveDestination:
+			flags |= vk::ImageUsageFlagBits::eTransferDst;
+			break;
+
+		case TextureUsage::ResolveSource:
+			flags |= vk::ImageUsageFlagBits::eTransferSrc;
+			break;
+
+		case TextureUsage::Sampling:
+			flags |= vk::ImageUsageFlagBits::eSampled;
+			break;
+
+		}
+	});
 	info.usage        = flags;
 
 	auto device = impl->device;
