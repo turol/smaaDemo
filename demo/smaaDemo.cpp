@@ -1449,6 +1449,8 @@ void SMAADemo::rebuildRenderGraph() {
 		      .format(swapchainFormat)
 		      .width(windowWidth)
 		      .height(windowHeight);
+
+		if (antialiasing) {
 		switch (aaMethod) {
 		case AAMethod::MSAA:
 			rtDesc.usage({ TextureUsage::Present, TextureUsage::ResolveDestination });
@@ -1459,6 +1461,9 @@ void SMAADemo::rebuildRenderGraph() {
 		case AAMethod::SMAA2X:
 			rtDesc.usage({ TextureUsage::Present });
 			break;
+		}
+		} else {
+			rtDesc.usage({ TextureUsage::Present });
 		}
 		renderGraph.renderTarget(Rendertargets::FinalRender, rtDesc);
 	}
@@ -1536,6 +1541,8 @@ void SMAADemo::rebuildRenderGraph() {
 			      .format(depthFormat)
 			      .width(windowWidth)
 			      .height(windowHeight);
+
+			if (antialiasing) {
 			switch (aaMethod) {
 			case AAMethod::MSAA:
 				rtDesc.usage({ TextureUsage::ResolveSource });
@@ -1546,6 +1553,9 @@ void SMAADemo::rebuildRenderGraph() {
 			case AAMethod::SMAA2X:
 				rtDesc.usage({ TextureUsage::Sampling });
 				break;
+			}
+			} else {
+				rtDesc.usage({ TextureUsage::Sampling });
 			}
 			renderGraph.renderTarget(Rendertargets::MainDepth, rtDesc);
 		}
