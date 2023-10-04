@@ -873,7 +873,7 @@ struct RenderPassDesc : public DescBase<RenderPassDesc> {
 
 	RenderPassDesc &depthStencil(Format ds, PassBegin pb) {
 		assert(isDepthFormat(ds));
-		depthStencil_.format = ds;
+		depthStencil_.format    = ds;
 		depthStencil_.passBegin = pb;
 		return *this;
 	}
@@ -1008,11 +1008,11 @@ struct RenderTargetDesc : public DescBase<RenderTargetDesc> {
 	}
 
 
-	unsigned int width()      const  { return width_; }
-	unsigned int height()     const  { return height_; }
-	unsigned int numSamples() const  { return numSamples_; }
-	Format       format()     const  { return format_; }
-	Format       additionalViewFormat() const  { return additionalViewFormat_; }
+	unsigned int width()                const { return width_; }
+	unsigned int height()               const { return height_; }
+	unsigned int numSamples()           const { return numSamples_; }
+	Format       format()               const { return format_; }
+	Format       additionalViewFormat() const { return additionalViewFormat_; }
 
 private:
 

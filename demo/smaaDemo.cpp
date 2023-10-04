@@ -1451,17 +1451,17 @@ void SMAADemo::rebuildRenderGraph() {
 		      .height(windowHeight);
 
 		if (antialiasing) {
-		switch (aaMethod) {
-		case AAMethod::MSAA:
-			rtDesc.usage({ TextureUsage::Present, TextureUsage::ResolveDestination });
-			break;
+			switch (aaMethod) {
+			case AAMethod::MSAA:
+				rtDesc.usage({ TextureUsage::Present, TextureUsage::ResolveDestination });
+				break;
 
-		case AAMethod::FXAA:
-		case AAMethod::SMAA:
-		case AAMethod::SMAA2X:
-			rtDesc.usage({ TextureUsage::Present });
-			break;
-		}
+			case AAMethod::FXAA:
+			case AAMethod::SMAA:
+			case AAMethod::SMAA2X:
+				rtDesc.usage({ TextureUsage::Present });
+				break;
+			}
 		} else {
 			rtDesc.usage({ TextureUsage::Present });
 		}
@@ -1543,17 +1543,17 @@ void SMAADemo::rebuildRenderGraph() {
 			      .height(windowHeight);
 
 			if (antialiasing) {
-			switch (aaMethod) {
-			case AAMethod::MSAA:
-				rtDesc.usage({ TextureUsage::ResolveSource });
-				break;
+				switch (aaMethod) {
+				case AAMethod::MSAA:
+					rtDesc.usage({ TextureUsage::ResolveSource });
+					break;
 
-			case AAMethod::FXAA:
-			case AAMethod::SMAA:
-			case AAMethod::SMAA2X:
-				rtDesc.usage({ TextureUsage::Sampling });
-				break;
-			}
+				case AAMethod::FXAA:
+				case AAMethod::SMAA:
+				case AAMethod::SMAA2X:
+					rtDesc.usage({ TextureUsage::Sampling });
+					break;
+				}
 			} else {
 				rtDesc.usage({ TextureUsage::Sampling });
 			}
