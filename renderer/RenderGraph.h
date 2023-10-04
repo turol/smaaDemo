@@ -565,6 +565,10 @@ public:
 
 		for (auto &rt : rendertargets) {
 			assert(rt.first != Default<RT>::value);
+			if (rt.first == finalTarget) {
+				// not created so don't try to delete either
+				continue;
+			}
 
 			visitRendertarget(rt.second
 							  , nopExternal
@@ -826,6 +830,10 @@ public:
 		// create rendertargets
 		for (auto &p : rendertargets) {
 			assert(p.first != Default<RT>::value);
+			if (p.first == finalTarget) {
+				// directly to swapchain, don't create
+				continue;
+			}
 
 			visitRendertarget(p.second
 							  , nopExternal
