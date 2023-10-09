@@ -465,10 +465,10 @@ private:
 					LOG_TODO("check this, might need a forward pass over operations")
 					Layout initial = Layout::Undefined;
 					if (pb == PassBegin::Keep) {
-						initial = Layout::ColorAttachment;
+						initial = Layout::RenderAttachment;
 					}
 
-					Layout final = Layout::ColorAttachment;
+					Layout final = Layout::RenderAttachment;
 					auto layoutIt = nextLayouts.find(rtId);
 					if (layoutIt == nextLayouts.end()) {
 						// unused

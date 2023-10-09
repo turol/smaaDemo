@@ -1150,7 +1150,7 @@ static vk::ImageLayout vulkanLayout(Layout l) {
 	case Layout::TransferDst:
 		return vk::ImageLayout::eTransferDstOptimal;
 
-	case Layout::ColorAttachment:
+	case Layout::RenderAttachment:
 		return vk::ImageLayout::eColorAttachmentOptimal;
 
 	case Layout::Present:
@@ -1489,7 +1489,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 				after.dstAccessMask  |= vk::AccessFlagBits::eTransferRead;
 				break;
 
-			case Layout::ColorAttachment:
+			case Layout::RenderAttachment:
 				after.dstStageMask   |= vk::PipelineStageFlagBits::eColorAttachmentOutput;
 				after.dstAccessMask  |= vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
 				break;
