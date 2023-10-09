@@ -1136,7 +1136,7 @@ BufferHandle Renderer::createEphemeralBuffer(BufferType type, uint32_t size, con
 }
 
 
-static vk::ImageLayout vulkanLayout(Layout l) {
+static vk::ImageLayout vulkanColorLayout(Layout l) {
 	switch (l) {
 	case Layout::Undefined:
 		return vk::ImageLayout::eUndefined;
@@ -1321,7 +1321,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 			assert(desc.colorRTs_[i].initialLayout != Layout::Undefined);
 
 			attach.loadOp         = vk::AttachmentLoadOp::eLoad;
-			attach.initialLayout  = vulkanLayout(desc.colorRTs_[i].initialLayout);
+			attach.initialLayout  = vulkanColorLayout(desc.colorRTs_[i].initialLayout);
 			break;
 
 		case PassBegin::Clear:
@@ -1339,7 +1339,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 		attach.storeOp        = vk::AttachmentStoreOp::eStore;
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
 		attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-		attach.finalLayout    = vulkanLayout(colorRT.finalLayout);
+		attach.finalLayout    = vulkanColorLayout(colorRT.finalLayout);
 		attachments.push_back(attach);
 
 		vk::AttachmentReference ref;
@@ -1381,10 +1381,10 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 		LOG_TODO("stencil")
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
 		attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-		attach.initialLayout  = vulkanLayout(desc.depthStencil_.initialLayout);
+		attach.initialLayout  = vulkanColorLayout(desc.depthStencil_.initialLayout);
 		LOG_TODO("final layout should always come from desc and never be Undefined")
 		if (desc.depthStencil_.finalLayout != Layout::Undefined) {
-			attach.finalLayout    = vulkanLayout(desc.depthStencil_.finalLayout);
+			attach.finalLayout    = vulkanColorLayout(desc.depthStencil_.finalLayout);
 		} else {
 			attach.finalLayout    = layout;
 		}
@@ -3436,8 +3436,8 @@ void Renderer::layoutTransition(RenderTargetHandle image, Layout src, Layout des
 	LOG_TODO("should allow user to specify access flags")
 	b.srcAccessMask               = vk::AccessFlagBits::eMemoryWrite;
 	b.dstAccessMask               = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
-	b.oldLayout                   = vulkanLayout(src);
-	b.newLayout                   = vulkanLayout(dest);
+	b.oldLayout                   = vulkanColorLayout(src);
+	b.newLayout                   = vulkanColorLayout(dest);
 	b.image                       = rt.image;
 	b.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
 	b.subresourceRange.levelCount = 1;
@@ -3857,7 +3857,7 @@ void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLay
 
 	// transition swapchain from transferdst -> final
 	b.oldLayout                   = vk::ImageLayout::eTransferDstOptimal;
-	b.newLayout                   = vulkanLayout(finalLayout);
+	b.newLayout                   = vulkanColorLayout(finalLayout);
 	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), {}, {}, { b });
 }
 
