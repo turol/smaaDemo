@@ -1162,6 +1162,32 @@ static vk::ImageLayout vulkanColorLayout(Layout l) {
 }
 
 
+static vk::ImageLayout vulkanDepthStencilLayout(Layout l) {
+	switch (l) {
+	case Layout::Undefined:
+		return vk::ImageLayout::eUndefined;
+
+	case Layout::ShaderRead:
+		return vk::ImageLayout::eShaderReadOnlyOptimal;
+
+	case Layout::TransferSrc:
+		return vk::ImageLayout::eTransferSrcOptimal;
+
+	case Layout::TransferDst:
+		return vk::ImageLayout::eTransferDstOptimal;
+
+	case Layout::RenderAttachment:
+		return vk::ImageLayout::eDepthStencilAttachmentOptimal;
+
+	case Layout::Present:
+		return vk::ImageLayout::ePresentSrcKHR;
+	}
+
+	HEDLEY_UNREACHABLE();
+	return vk::ImageLayout::eUndefined;
+}
+
+
 FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	assert(!desc.name_.empty());
 	assert(desc.renderPass_);
@@ -1381,10 +1407,10 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 		LOG_TODO("stencil")
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
 		attach.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-		attach.initialLayout  = vulkanColorLayout(desc.depthStencil_.initialLayout);
+		attach.initialLayout  = vulkanDepthStencilLayout(desc.depthStencil_.initialLayout);
 		LOG_TODO("final layout should always come from desc and never be Undefined")
 		if (desc.depthStencil_.finalLayout != Layout::Undefined) {
-			attach.finalLayout    = vulkanColorLayout(desc.depthStencil_.finalLayout);
+			attach.finalLayout    = vulkanDepthStencilLayout(desc.depthStencil_.finalLayout);
 		} else {
 			attach.finalLayout    = layout;
 		}
@@ -3431,6 +3457,9 @@ void Renderer::layoutTransition(RenderTargetHandle image, Layout src, Layout des
 	auto &rt = impl->renderTargets.get(image);
 	assert(src == Layout::Undefined || rt.currentLayout == src);
 	rt.currentLayout = dest;
+
+	LOG_TODO("should correctly handle depthstencil layouts")
+	assert(isColorFormat(rt.format));
 
 	vk::ImageMemoryBarrier b;
 	LOG_TODO("should allow user to specify access flags")
