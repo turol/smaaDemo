@@ -917,6 +917,7 @@ private:
 		PassBegin  passBegin      = PassBegin::DontCare;
 		Layout     initialLayout  = Layout::Undefined;
 		Layout     finalLayout    = Layout::Undefined;
+		TextureUsageSet  nextUsage;
 		glm::vec4  clearValue     = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
 
 		size_t hashValue() const;
