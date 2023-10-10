@@ -881,12 +881,13 @@ struct RenderPassDesc : public DescBase<RenderPassDesc> {
 		return *this;
 	}
 
-	RenderPassDesc &color(unsigned int index, Format c, PassBegin pb, Layout initial, Layout final, glm::vec4 clear = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {
+	RenderPassDesc &color(unsigned int index, Format c, PassBegin pb, Layout initial, TextureUsageSet nextUsage, Layout final, glm::vec4 clear = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {
 		assert(index < MAX_COLOR_RENDERTARGETS);
 		colorRTs_[index].format         = c;
 		colorRTs_[index].passBegin      = pb;
 		colorRTs_[index].initialLayout  = initial;
 		colorRTs_[index].finalLayout    = final;
+		colorRTs_[index].nextUsage      = nextUsage;
 		if (pb == PassBegin::Clear) {
 			colorRTs_[index].clearValue = clear;
 		}

@@ -477,7 +477,6 @@ private:
 						initial = Layout::RenderAttachment;
 					}
 
-					Layout final = Layout::RenderAttachment;
 					auto layoutIt = rtPassData.find(rtId);
 					if (layoutIt == rtPassData.end()) {
 						// unused
@@ -486,13 +485,14 @@ private:
 						desc.colorRTs_[i].id        = Default<RT>::value;
 						desc.colorRTs_[i].passBegin = PassBegin::DontCare;
 					} else {
-						final = layoutIt->second.finalLayout;
-						assert(final != Layout::Undefined);
-						assert(final != Layout::TransferDst);
+						RTPassData &rt = layoutIt->second;
+						assert(rt.finalLayout != Layout::Undefined);
+						assert(rt.finalLayout != Layout::TransferDst);
 
-						rpDesc.color(i, fmt, pb, initial, final, desc.colorRTs_[i].clearValue);
-						rtPassData[rtId].finalLayout = initial;
-						rtPassData[rtId].nextUsage   = { TextureUsage::RenderTarget };
+						LOG_TODO("also need previous usage here")
+						rpDesc.color(i, fmt, pb, initial, rt.nextUsage, rt.finalLayout, desc.colorRTs_[i].clearValue);
+						rt.finalLayout = initial;
+						rt.nextUsage   = { TextureUsage::RenderTarget };
 					}
 				}
 			}
