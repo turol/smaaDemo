@@ -167,6 +167,7 @@ private:
 
 	struct RTPassData {
 		Layout  finalLayout = Layout::Undefined;
+		TextureUsageSet  nextUsage;
 	};
 
 
@@ -435,6 +436,7 @@ private:
 		void operator()(Blit &b) const {
 			b.finalLayout         = rtPassData[b.dest].finalLayout;
 			rtPassData[b.source].finalLayout = Layout::TransferSrc;
+			rtPassData[b.source].nextUsage   = { TextureUsage::BlitSource };
 		}
 
 		void operator()(RenderPass &rp) const {
@@ -490,6 +492,7 @@ private:
 
 						rpDesc.color(i, fmt, pb, initial, final, desc.colorRTs_[i].clearValue);
 						rtPassData[rtId].finalLayout = initial;
+						rtPassData[rtId].nextUsage   = { TextureUsage::RenderTarget };
 					}
 				}
 			}
@@ -497,12 +500,14 @@ private:
 			// mark input rt current layout as shader read
 			for (RT inputRT : desc.inputRendertargets) {
 				rtPassData[inputRT].finalLayout = Layout::ShaderRead;
+				rtPassData[inputRT].nextUsage   = { TextureUsage::Sampling };
 			}
 		}
 
 		void operator()(ResolveMSAA &resolve) const {
 			resolve.finalLayout                    = rtPassData[resolve.dest].finalLayout;
 			rtPassData[resolve.source].finalLayout = Layout::TransferSrc;
+			rtPassData[resolve.source].nextUsage   = { TextureUsage::ResolveSource };
 		}
 	};
 
@@ -720,6 +725,7 @@ public:
 			{
 				RTPassData r;
 				r.finalLayout = Layout::Present;
+				r.nextUsage   = { TextureUsage::Present };
 				auto p DEBUG_ASSERTED = rtPassData.emplace(finalTarget, r);
 				assert(p.second);
 			}
@@ -730,6 +736,7 @@ public:
 								  , [&rt, &rtPassData] (const ExternalRT &e) {
 									  RTPassData r;
 									  r.finalLayout = e.finalLayout;
+									  r.nextUsage   = e.nextUsage;
 									  auto p DEBUG_ASSERTED = rtPassData.emplace(rt.first, r);
 									  assert(p.second);
 								  }
