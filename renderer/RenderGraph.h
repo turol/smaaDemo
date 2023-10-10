@@ -447,17 +447,37 @@ private:
 				  .numSamples(desc.numSamples_);
 
 			if (desc.depthStencil_ != Default<RT>::value) {
-				auto rtIt = rg.rendertargets.find(desc.depthStencil_);
+				auto rtId = desc.depthStencil_;
+				auto rtIt = rg.rendertargets.find(rtId);
 				assert(rtIt != rg.rendertargets.end());
 
 				Format fmt = getFormat(rtIt->second);
 				assert(fmt != Format::Invalid);
 
+				TextureUsageSet usage;
+				Layout finalLayout = Layout::RenderAttachment;
+				auto layoutIt = rtPassData.find(rtId);
+				if (layoutIt == rtPassData.end()) {
+					// unused
+					// can't discard, needed for depth testing during render pass
+				} else {
+                    // used, set final layout and usage
+					RTPassData &rt = layoutIt->second;
+					assert(rt.finalLayout != Layout::Undefined);
+					assert(rt.finalLayout != Layout::TransferDst);
+
+					LOG_TODO("also need previous usage here")
+					finalLayout    = rt.finalLayout;
+					usage          = rt.nextUsage;
+					rt.finalLayout = Layout::RenderAttachment;
+					rt.nextUsage   = { TextureUsage::RenderTarget };
+				}
+
 				PassBegin passBegin = PassBegin::DontCare;
 				if (desc.clearDepthAttachment) {
 					passBegin = PassBegin::Clear;
 				}
-				rpDesc.depthStencil(fmt, passBegin, desc.depthClearValue);
+				rpDesc.depthStencil(fmt, passBegin, finalLayout, usage, desc.depthClearValue);
 			}
 
 			for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {

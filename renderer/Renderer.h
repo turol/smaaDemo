@@ -871,10 +871,12 @@ struct RenderPassDesc : public DescBase<RenderPassDesc> {
 	RenderPassDesc(RenderPassDesc &&) noexcept            = default;
 	RenderPassDesc &operator=(RenderPassDesc &&) noexcept = default;
 
-	RenderPassDesc &depthStencil(Format ds, PassBegin pb, float clearValue = 1.0f) {
+	RenderPassDesc &depthStencil(Format ds, PassBegin pb, Layout finalLayout, TextureUsageSet nextUsage, float clearValue = 1.0f) {
 		assert(isDepthFormat(ds));
 		depthStencil_.format    = ds;
 		depthStencil_.passBegin = pb;
+		depthStencil_.finalLayout = finalLayout;
+		depthStencil_.nextUsage   = nextUsage;
 		if (pb == PassBegin::Clear) {
 			depthStencil_.clearValue.x = clearValue;
 		}
