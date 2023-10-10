@@ -1141,6 +1141,9 @@ static vk::ImageLayout vulkanColorLayout(Layout l) {
 	case Layout::Undefined:
 		return vk::ImageLayout::eUndefined;
 
+	case Layout::General:
+		return vk::ImageLayout::eGeneral;
+
 	case Layout::ShaderRead:
 		return vk::ImageLayout::eShaderReadOnlyOptimal;
 
@@ -1166,6 +1169,9 @@ static vk::ImageLayout vulkanDepthStencilLayout(Layout l) {
 	switch (l) {
 	case Layout::Undefined:
 		return vk::ImageLayout::eUndefined;
+
+	case Layout::General:
+		return vk::ImageLayout::eGeneral;
 
 	case Layout::ShaderRead:
 		return vk::ImageLayout::eShaderReadOnlyOptimal;
@@ -3651,6 +3657,7 @@ void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHand
 
 			vk::DescriptorImageInfo imgWrite;
 			imgWrite.imageView   = tex.imageView;
+			LOG_TODO("should be able to handle general layout")
 			imgWrite.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
 			// we trust that reserve() above makes sure this doesn't reallocate the storage
@@ -3674,6 +3681,7 @@ void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHand
 			vk::DescriptorImageInfo  imgWrite;
 			imgWrite.sampler      = s.sampler;
 			imgWrite.imageView    = tex.imageView;
+			LOG_TODO("should be able to handle general layout")
 			imgWrite.imageLayout  = vk::ImageLayout::eShaderReadOnlyOptimal;
 
 			// we trust that reserve() above makes sure this doesn't reallocate the storage

@@ -410,6 +410,7 @@ enum class IndexFormat : uint8_t {
 
 enum class Layout : uint8_t {
 	  Undefined
+	, General
 	, ShaderRead
 	, TransferSrc
 	, TransferDst
