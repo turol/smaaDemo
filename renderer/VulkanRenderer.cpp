@@ -1403,6 +1403,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 			break;
 		}
 
+		LOG_TODO("should only store if next usage is not empty")
 		attach.storeOp        = vk::AttachmentStoreOp::eStore;
 		LOG_TODO("stencil")
 		attach.stencilLoadOp  = vk::AttachmentLoadOp::eDontCare;
@@ -1550,6 +1551,7 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 			after.srcStageMask   |= vk::PipelineStageFlagBits::eLateFragmentTests;
 			after.srcAccessMask  |= vk::AccessFlagBits::eDepthStencilAttachmentWrite;
 
+			LOG_TODO("should depend on depthstencil attachment nextUsage")
 			after.dstStageMask   |= vk::PipelineStageFlagBits::eFragmentShader;
 			after.dstAccessMask  |= vk::AccessFlagBits::eShaderRead;
 		}
@@ -2081,6 +2083,8 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 	assert(desc.usage_.any());
 	// rendertargets are not created with this
 	assert(!desc.usage_.test(TextureUsage::RenderTarget));
+
+	LOG_TODO("set image usage flags based on desc usage")
 
 	vk::ImageUsageFlags flags(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
 	assert(!isDepthFormat(desc.format_));
