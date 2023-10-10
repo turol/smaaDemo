@@ -873,8 +873,8 @@ struct RenderPassDesc : public DescBase<RenderPassDesc> {
 
 	RenderPassDesc &depthStencil(Format ds, PassBegin pb, Layout finalLayout, TextureUsageSet nextUsage, float clearValue = 1.0f) {
 		assert(isDepthFormat(ds));
-		depthStencil_.format    = ds;
-		depthStencil_.passBegin = pb;
+		depthStencil_.format      = ds;
+		depthStencil_.passBegin   = pb;
 		depthStencil_.finalLayout = finalLayout;
 		depthStencil_.nextUsage   = nextUsage;
 		if (pb == PassBegin::Clear) {
@@ -916,12 +916,12 @@ struct RenderPassDesc : public DescBase<RenderPassDesc> {
 private:
 
 	struct RTInfo {
-		Format     format         = Format::Invalid;
-		PassBegin  passBegin      = PassBegin::DontCare;
-		Layout     initialLayout  = Layout::Undefined;
-		Layout     finalLayout    = Layout::Undefined;
+		Format           format         = Format::Invalid;
+		PassBegin        passBegin      = PassBegin::DontCare;
+		Layout           initialLayout  = Layout::Undefined;
+		Layout           finalLayout    = Layout::Undefined;
 		TextureUsageSet  nextUsage;
-		glm::vec4  clearValue     = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+		glm::vec4        clearValue     = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
 
 		size_t hashValue() const;
 	};

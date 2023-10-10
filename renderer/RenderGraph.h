@@ -166,7 +166,7 @@ private:
 
 
 	struct RTPassData {
-		Layout  finalLayout = Layout::Undefined;
+		Layout           finalLayout = Layout::Undefined;
 		TextureUsageSet  nextUsage;
 	};
 
@@ -424,7 +424,7 @@ private:
 
 	struct LayoutVisitor final {
 		HashMap<RT, RTPassData>  &rtPassData;
-		RenderGraph          &rg;
+		RenderGraph              &rg;
 
 
 		LayoutVisitor(HashMap<RT, RTPassData> &rtPassData_, RenderGraph &rg_)
