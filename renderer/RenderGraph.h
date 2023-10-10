@@ -155,6 +155,7 @@ private:
 		Format              format         = Format::Invalid;
 		Layout              initialLayout  = Layout::Undefined;
 		Layout              finalLayout    = Layout::Undefined;
+		TextureUsageSet     nextUsage;
 
 		// not owned by us
 		// only valid during frame
@@ -617,7 +618,7 @@ public:
 	}
 
 
-	void externalRenderTarget(RT rt, Format format, Layout initialLayout, Layout finalLayout) {
+	void externalRenderTarget(RT rt, Format format, Layout initialLayout, Layout finalLayout, TextureUsageSet nextUsage) {
 		assert(state == RGState::Building);
 		assert(rt != Default<RT>::value);
 		assert(rendertargets.find(rt) == rendertargets.end());
@@ -628,6 +629,7 @@ public:
 		e.format = format;
 		e.initialLayout = initialLayout;
 		e.finalLayout   = finalLayout;
+		e.nextUsage     = nextUsage;
 		// leave handle undefined, it's set later by bindExternalRT
 		auto temp DEBUG_ASSERTED = rendertargets.emplace(rt, e);
 		assert(temp.second);

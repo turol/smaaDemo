@@ -1669,8 +1669,8 @@ void SMAADemo::rebuildRenderGraph() {
 				rtDesc.name("Temporal resolve 2");
 				temporalRTs[1] = renderer.createRenderTarget(rtDesc);
 
-				renderGraph.externalRenderTarget(Rendertargets::TemporalPrevious, swapchainFormat, Layout::ShaderRead, Layout::ShaderRead);
-				renderGraph.externalRenderTarget(Rendertargets::TemporalCurrent,  swapchainFormat, Layout::Undefined,  Layout::ShaderRead);
+				renderGraph.externalRenderTarget(Rendertargets::TemporalPrevious, swapchainFormat, Layout::ShaderRead, Layout::ShaderRead, { TextureUsage::Sampling });
+				renderGraph.externalRenderTarget(Rendertargets::TemporalCurrent,  swapchainFormat, Layout::Undefined,  Layout::ShaderRead, { TextureUsage::Sampling });
 			}
 
 			if (numSamples > 1) {
