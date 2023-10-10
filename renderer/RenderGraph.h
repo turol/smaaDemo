@@ -164,6 +164,11 @@ private:
 	};
 
 
+	struct RTPassData {
+		Layout  finalLayout = Layout::Undefined;
+	};
+
+
 	using Rendertarget = std::variant<ExternalRT, InternalRT>;
 
 
@@ -416,19 +421,19 @@ private:
 
 
 	struct LayoutVisitor final {
-		HashMap<RT, Layout>  &nextLayouts;
+		HashMap<RT, RTPassData>  &rtPassData;
 		RenderGraph          &rg;
 
 
-		LayoutVisitor(HashMap<RT, Layout> &nextLayouts_, RenderGraph &rg_)
-		: nextLayouts(nextLayouts_)
+		LayoutVisitor(HashMap<RT, RTPassData> &rtPassData_, RenderGraph &rg_)
+		: rtPassData(rtPassData_)
 		, rg(rg_)
 		{
 		}
 
 		void operator()(Blit &b) const {
-			b.finalLayout         = nextLayouts[b.dest];
-			nextLayouts[b.source] = Layout::TransferSrc;
+			b.finalLayout         = rtPassData[b.dest].finalLayout;
+			rtPassData[b.source].finalLayout = Layout::TransferSrc;
 		}
 
 		void operator()(RenderPass &rp) const {
@@ -470,33 +475,33 @@ private:
 					}
 
 					Layout final = Layout::RenderAttachment;
-					auto layoutIt = nextLayouts.find(rtId);
-					if (layoutIt == nextLayouts.end()) {
+					auto layoutIt = rtPassData.find(rtId);
+					if (layoutIt == rtPassData.end()) {
 						// unused
 						LOG_TODO("remove it entirely")
 						LOG("Removed unused rendertarget \"{}\" in renderpass \"{}\"", to_string(rtId), to_string(rp.id));
 						desc.colorRTs_[i].id        = Default<RT>::value;
 						desc.colorRTs_[i].passBegin = PassBegin::DontCare;
 					} else {
-						final = layoutIt->second;
+						final = layoutIt->second.finalLayout;
 						assert(final != Layout::Undefined);
 						assert(final != Layout::TransferDst);
 
 						rpDesc.color(i, fmt, pb, initial, final, desc.colorRTs_[i].clearValue);
-						nextLayouts[rtId] = initial;
+						rtPassData[rtId].finalLayout = initial;
 					}
 				}
 			}
 
 			// mark input rt current layout as shader read
 			for (RT inputRT : desc.inputRendertargets) {
-				nextLayouts[inputRT] = Layout::ShaderRead;
+				rtPassData[inputRT].finalLayout = Layout::ShaderRead;
 			}
 		}
 
 		void operator()(ResolveMSAA &resolve) const {
-			resolve.finalLayout         = nextLayouts[resolve.dest];
-			nextLayouts[resolve.source] = Layout::TransferSrc;
+			resolve.finalLayout                    = rtPassData[resolve.dest].finalLayout;
+			rtPassData[resolve.source].finalLayout = Layout::TransferSrc;
 		}
 	};
 
@@ -707,22 +712,30 @@ public:
 		do {
 			keepGoing = false;
 			// automatically decide layouts
-			HashMap<RT, Layout> nextLayouts;
+			HashMap<RT, RTPassData> rtPassData;
 
 			// initialize final render target to transfer src
-			nextLayouts[finalTarget] = Layout::Present;
+			{
+				RTPassData r;
+				r.finalLayout = Layout::Present;
+				auto p DEBUG_ASSERTED = rtPassData.emplace(finalTarget, r);
+				assert(p.second);
+			}
 
 			// initialize external rendertargets final layouts
 			for (const auto &rt : rendertargets) {
 				visitRendertarget(rt.second
-								  , [&rt, &nextLayouts] (const ExternalRT &e) {
-									  nextLayouts[rt.first] = e.finalLayout;
+								  , [&rt, &rtPassData] (const ExternalRT &e) {
+									  RTPassData r;
+									  r.finalLayout = e.finalLayout;
+									  auto p DEBUG_ASSERTED = rtPassData.emplace(rt.first, r);
+									  assert(p.second);
 								  }
 								  , nopInternal
 								 );
 			}
 
-			LayoutVisitor lv(nextLayouts, *this);
+			LayoutVisitor lv(rtPassData, *this);
 			for (auto it = operations.rbegin(); it != operations.rend(); it++) {
 				std::visit(lv, *it);
 			}
