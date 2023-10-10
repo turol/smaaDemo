@@ -1499,34 +1499,51 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 				continue;
 			}
 
-			switch (desc.colorRTs_[i].finalLayout) {
-			case Layout::Undefined:
-			case Layout::TransferDst:
-				assert(false);
-				break;
+			magic_enum::enum_for_each<TextureUsage>([&] (auto u) {
+				// this is ugly but it makes the compiler check completeness of the switch
+				if (!desc.colorRTs_[i].nextUsage.test(u)) { return; }
 
-			case Layout::ShaderRead:
-				after.dstStageMask   |= vk::PipelineStageFlagBits::eFragmentShader;
-				after.dstAccessMask  |= vk::AccessFlagBits::eShaderRead;
-				break;
+				switch (u) {
+				case TextureUsage::BlitDestination:
+					after.dstStageMask   |= vk::PipelineStageFlagBits::eTransfer;
+					after.dstAccessMask  |= vk::AccessFlagBits::eTransferWrite;
+					break;
 
-			case Layout::TransferSrc:
-				after.dstStageMask   |= vk::PipelineStageFlagBits::eTransfer;
-				after.dstAccessMask  |= vk::AccessFlagBits::eTransferRead;
-				break;
+				case TextureUsage::BlitSource:
+					after.dstStageMask   |= vk::PipelineStageFlagBits::eTransfer;
+					after.dstAccessMask  |= vk::AccessFlagBits::eTransferRead;
+					break;
 
-			case Layout::RenderAttachment:
-				after.dstStageMask   |= vk::PipelineStageFlagBits::eColorAttachmentOutput;
-				after.dstAccessMask  |= vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
-				break;
+				case TextureUsage::Present:
+					// 34.10. WSI Swapchain
+					// When transitioning the image to VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, there is no
+					// need to delay subsequent processing, or perform any visibility operations
+					after.dstStageMask   |= vk::PipelineStageFlagBits::eBottomOfPipe;
+					break;
 
-			case Layout::Present:
-				after.dstStageMask   |= vk::PipelineStageFlagBits::eBottomOfPipe;
-				break;
+				case TextureUsage::RenderTarget:
+					after.dstStageMask   |= vk::PipelineStageFlagBits::eColorAttachmentOutput;
+					after.dstAccessMask  |= vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
+					break;
 
-			}
+				case TextureUsage::ResolveDestination:
+					after.dstStageMask   |= vk::PipelineStageFlagBits::eTransfer;
+					after.dstAccessMask  |= vk::AccessFlagBits::eTransferWrite;
+					break;
+
+				case TextureUsage::ResolveSource:
+					after.dstStageMask   |= vk::PipelineStageFlagBits::eTransfer;
+					after.dstAccessMask  |= vk::AccessFlagBits::eTransferRead;
+					break;
+
+				case TextureUsage::Sampling:
+					after.dstStageMask   |= vk::PipelineStageFlagBits::eFragmentShader;
+					after.dstAccessMask  |= vk::AccessFlagBits::eShaderRead;
+					break;
+				}
+
+			});
 		}
-
 		after.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
 
 		if (hasDepthStencil) {
