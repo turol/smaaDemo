@@ -871,10 +871,13 @@ struct RenderPassDesc : public DescBase<RenderPassDesc> {
 	RenderPassDesc(RenderPassDesc &&) noexcept            = default;
 	RenderPassDesc &operator=(RenderPassDesc &&) noexcept = default;
 
-	RenderPassDesc &depthStencil(Format ds, PassBegin pb) {
+	RenderPassDesc &depthStencil(Format ds, PassBegin pb, float clearValue = 1.0f) {
 		assert(isDepthFormat(ds));
 		depthStencil_.format    = ds;
 		depthStencil_.passBegin = pb;
+		if (pb == PassBegin::Clear) {
+			depthStencil_.clearValue.x = clearValue;
+		}
 		return *this;
 	}
 
@@ -887,12 +890,6 @@ struct RenderPassDesc : public DescBase<RenderPassDesc> {
 		if (pb == PassBegin::Clear) {
 			colorRTs_[index].clearValue = clear;
 		}
-		return *this;
-	}
-
-	RenderPassDesc &clearDepth(float v) {
-		depthStencil_.passBegin    = PassBegin::Clear;
-		depthStencil_.clearValue.x = v;
 		return *this;
 	}
 

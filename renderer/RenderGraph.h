@@ -445,10 +445,11 @@ private:
 				Format fmt = getFormat(rtIt->second);
 				assert(fmt != Format::Invalid);
 
-				rpDesc.depthStencil(fmt, PassBegin::DontCare);
+				PassBegin passBegin = PassBegin::DontCare;
 				if (desc.clearDepthAttachment) {
-					rpDesc.clearDepth(desc.depthClearValue);
+					passBegin = PassBegin::Clear;
 				}
+				rpDesc.depthStencil(fmt, passBegin, desc.depthClearValue);
 			}
 
 			for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
