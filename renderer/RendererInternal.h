@@ -210,7 +210,7 @@ struct ShaderCacheKey {
 			return false;
 		}
 
-		if (filename != other.entryPoint) {
+		if (entryPoint != other.entryPoint) {
 			return false;
 		}
 
@@ -258,9 +258,8 @@ namespace std {
 			size_t h = 0;
 			hashCombine(h, key.filename);
 			hashCombine(h, key.entryPoint);
-			hashCombine(h, key.filename);
-			hashCombine(h, magic_enum::enum_integer(key.language));
 			hashCombine(h, magic_enum::enum_integer(key.stage));
+			hashCombine(h, magic_enum::enum_integer(key.language));
 			hashCombine(h, magic_enum::enum_integer(key.spirvEnvironment));
 			hashCombine(h, key.macros);
 			return h;
