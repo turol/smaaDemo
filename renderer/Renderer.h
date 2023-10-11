@@ -54,6 +54,7 @@ namespace renderer {
 
 
 struct Buffer;
+struct ComputePipeline;
 struct DescriptorSetLayout;
 struct Framebuffer;
 struct GraphicsPipeline;
@@ -338,6 +339,7 @@ public:
 
 
 using BufferHandle            = Handle<Buffer>;
+using ComputePipelineHandle   = Handle<ComputePipeline>;
 using DSLayoutHandle          = Handle<DescriptorSetLayout>;
 using FramebufferHandle       = Handle<Framebuffer>;
 using GraphicsPipelineHandle  = Handle<GraphicsPipeline>;
