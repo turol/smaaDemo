@@ -695,11 +695,11 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 			HEDLEY_UNREACHABLE();  // shouldn't happen
 			break;
 	}
-	cacheKey.entryPoint = entryPoint;
-	cacheKey.stage  = stage;
-	cacheKey.language = shaderLanguage;
+	cacheKey.entryPoint       = entryPoint;
+	cacheKey.stage            = stage;
+	cacheKey.language         = shaderLanguage;
 	cacheKey.spirvEnvironment = spirvEnvironment;
-	cacheKey.macros = macros;
+	cacheKey.macros           = macros;
 
 	if (!skipShaderCache) {
 		LOG("Looking for shader \"{}\" in cache...", cacheKey);
@@ -817,7 +817,7 @@ compilationNeeded:
 		case ShaderLanguage::HLSL:
 			source = glslang::EShSourceHlsl;
 			if (entryPoint.empty()) {
-			shader.setSourceEntryPoint(hlslEntryPointNames[stage]);
+				shader.setSourceEntryPoint(hlslEntryPointNames[stage]);
 			} else {
 				shader.setSourceEntryPoint(entryPoint.c_str());
 			}

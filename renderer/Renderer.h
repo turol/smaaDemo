@@ -774,7 +774,7 @@ public:
 			// entry point only supported in HLSL
 			assert(entryPoint.empty());
 		}
-		vertexShaderName = name;
+		vertexShaderName       = name;
 		vertexShaderEntryPoint = entryPoint;
 		return *this;
 	}
@@ -785,7 +785,7 @@ public:
 			// entry point only supported in HLSL
 			assert(entryPoint.empty());
 		}
-		fragmentShaderName = name;
+		fragmentShaderName       = name;
 		fragmentShaderEntryPoint = entryPoint;
 		return *this;
 	}
