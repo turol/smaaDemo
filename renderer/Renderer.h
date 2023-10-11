@@ -421,6 +421,12 @@ enum class Layout : uint8_t {
 };
 
 
+enum class LayoutUsage : uint8_t {
+	  Specific
+	, General
+};
+
+
 // rendertarget behavior when RenderPass begins
 enum class PassBegin : uint8_t {
 	  DontCare
