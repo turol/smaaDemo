@@ -422,12 +422,12 @@ private:
 	};
 
 
-	struct LayoutVisitor final {
+	struct SpecificLayoutVisitor final {
 		HashMap<RT, RTPassData>  &rtPassData;
 		RenderGraph              &rg;
 
 
-		LayoutVisitor(HashMap<RT, RTPassData> &rtPassData_, RenderGraph &rg_)
+		SpecificLayoutVisitor(HashMap<RT, RTPassData> &rtPassData_, RenderGraph &rg_)
 		: rtPassData(rtPassData_)
 		, rg(rg_)
 		{
@@ -764,7 +764,7 @@ public:
 								 );
 			}
 
-			LayoutVisitor lv(rtPassData, *this);
+			SpecificLayoutVisitor lv(rtPassData, *this);
 			for (auto it = operations.rbegin(); it != operations.rend(); it++) {
 				std::visit(lv, *it);
 			}
