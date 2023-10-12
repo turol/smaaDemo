@@ -1652,6 +1652,7 @@ void SMAADemo::rebuildRenderGraph() {
 			rtDesc.name("main depth")
 			      .numSamples(numSamples)
 			      .format(depthFormat)
+			      .usage({ TextureUsage::Sampling })
 			      .width(windowWidth)
 			      .height(windowHeight);
 			renderGraph.renderTarget(Rendertargets::MainDepth, rtDesc);
