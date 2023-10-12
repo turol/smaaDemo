@@ -628,6 +628,8 @@ class SMAADemo {
 
 #ifndef IMGUI_DISABLE
 
+	void recreateImguiTexture();
+
 	void updateGUI(uint64_t elapsed);
 
 	void renderGUI(RenderPasses rp, DemoRenderGraph::PassResources &r);
@@ -1355,20 +1357,7 @@ void SMAADemo::initRender() {
 		io.GetClipboardTextFn = GetClipboardText;
 		io.ClipboardUserData  = clipboardText;
 
-		// Build texture atlas
-		unsigned char *pixels = nullptr;
-		int width = 0, height = 0;
-		io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-
-		TextureDesc texDesc;
-		texDesc.width(width)
-		       .height(height)
-		       .format(Format::sRGBA8)
-		       .usage({ TextureUsage::Sampling })
-		       .name("GUI")
-		       .mipLevelData(0, pixels, width * height * 4);
-		imguiFontsTex = renderer.createTexture(texDesc);
-		io.Fonts->TexID = nullptr;
+		recreateImguiTexture();
 	}
 #endif  // IMGUI_DISABLE
 }
@@ -3472,6 +3461,30 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 
 
 #ifndef IMGUI_DISABLE
+
+
+void SMAADemo::recreateImguiTexture() {
+	if (imguiFontsTex) {
+		renderer.deleteTexture(std::move(imguiFontsTex));
+	}
+
+	ImGuiIO &io = ImGui::GetIO();
+
+	// Build texture atlas
+	unsigned char *pixels = nullptr;
+	int width = 0, height = 0;
+	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+
+	TextureDesc texDesc;
+	texDesc.width(width)
+	       .height(height)
+	       .format(Format::sRGBA8)
+	       .usage({ TextureUsage::Sampling })
+	       .name("GUI")
+	       .mipLevelData(0, pixels, width * height * 4);
+	imguiFontsTex = renderer.createTexture(texDesc);
+	io.Fonts->TexID = nullptr;
+}
 
 
 void SMAADemo::updateGUI(uint64_t elapsed) {
