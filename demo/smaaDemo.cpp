@@ -1408,6 +1408,7 @@ void SMAADemo::initRender() {
 		texDesc.width(width)
 		       .height(height)
 		       .format(Format::sRGBA8)
+		       .usage({ TextureUsage::Sampling })
 		       .name("GUI")
 		       .mipLevelData(0, pixels, width * height * 4);
 		imguiFontsTex = renderer.createTexture(texDesc);
