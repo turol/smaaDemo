@@ -597,6 +597,8 @@ class SMAADemo {
 	SMAADemo(SMAADemo &&) noexcept            = delete;
 	SMAADemo &operator=(SMAADemo &&) noexcept = delete;
 
+	void recreateSMAATextures();
+
 	void rebuildRenderGraph();
 
 	template <typename F>
@@ -1279,54 +1281,7 @@ void SMAADemo::initRender() {
 	shapeBuffers[Shape::KleinBottle]  = createShapeBuffers(Shape::KleinBottle,  0.15f, par_shapes_create_klein_bottle(16, 40));
 	shapeBuffers[Shape::TrefoilKnot]  = createShapeBuffers(Shape::TrefoilKnot,  1.5f,  par_shapes_create_trefoil_knot(48, 72, 0.5f));
 
-#ifdef RENDERER_OPENGL
-
-	const bool flipSMAATextures = true;
-
-#else  // RENDERER_OPENGL
-
-	const bool flipSMAATextures = false;
-
-#endif  // RENDERER_OPENGL
-
-	TextureDesc texDesc;
-	texDesc.width(AREATEX_WIDTH)
-	       .height(AREATEX_HEIGHT)
-	       .format(Format::RG8)
-	       .usage({ TextureUsage::Sampling })
-	       .name("SMAA area texture");
-
-	if (flipSMAATextures) {
-		std::vector<unsigned char> tempBuffer(AREATEX_SIZE);
-		for (unsigned int y = 0; y < AREATEX_HEIGHT; y++) {
-			unsigned int srcY = AREATEX_HEIGHT - 1 - y;
-			//unsigned int srcY = y;
-			memcpy(&tempBuffer[y * AREATEX_PITCH], areaTexBytes + srcY * AREATEX_PITCH, AREATEX_PITCH);
-		}
-		texDesc.mipLevelData(0, &tempBuffer[0], AREATEX_SIZE);
-		areaTex = renderer.createTexture(texDesc);
-	} else {
-		texDesc.mipLevelData(0, areaTexBytes, AREATEX_SIZE);
-		areaTex = renderer.createTexture(texDesc);
-	}
-
-	texDesc.width(SEARCHTEX_WIDTH)
-	       .height(SEARCHTEX_HEIGHT)
-	       .format(Format::R8);
-	texDesc.name("SMAA search texture");
-	if (flipSMAATextures) {
-		std::vector<unsigned char> tempBuffer(SEARCHTEX_SIZE);
-		for (unsigned int y = 0; y < SEARCHTEX_HEIGHT; y++) {
-			unsigned int srcY = SEARCHTEX_HEIGHT - 1 - y;
-			//unsigned int srcY = y;
-			memcpy(&tempBuffer[y * SEARCHTEX_PITCH], searchTexBytes + srcY * SEARCHTEX_PITCH, SEARCHTEX_PITCH);
-		}
-		texDesc.mipLevelData(0, &tempBuffer[0], SEARCHTEX_SIZE);
-		searchTex = renderer.createTexture(texDesc);
-	} else {
-		texDesc.mipLevelData(0, searchTexBytes, SEARCHTEX_SIZE);
-		searchTex = renderer.createTexture(texDesc);
-	}
+	recreateSMAATextures();
 
 	images.reserve(imageFiles.size());
 	for (const auto &filename : imageFiles) {
@@ -1405,6 +1360,7 @@ void SMAADemo::initRender() {
 		int width = 0, height = 0;
 		io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
+		TextureDesc texDesc;
 		texDesc.width(width)
 		       .height(height)
 		       .format(Format::sRGBA8)
@@ -1415,6 +1371,66 @@ void SMAADemo::initRender() {
 		io.Fonts->TexID = nullptr;
 	}
 #endif  // IMGUI_DISABLE
+}
+
+
+void SMAADemo::recreateSMAATextures() {
+	if (areaTex) {
+		assert(searchTex);
+		renderer.deleteTexture(std::move(areaTex));
+		renderer.deleteTexture(std::move(searchTex));
+	} else {
+		assert(!searchTex);
+	}
+
+#ifdef RENDERER_OPENGL
+
+	const bool flipSMAATextures = true;
+
+#else  // RENDERER_OPENGL
+
+	const bool flipSMAATextures = false;
+
+#endif  // RENDERER_OPENGL
+
+	TextureDesc texDesc;
+	texDesc.width(AREATEX_WIDTH)
+	       .height(AREATEX_HEIGHT)
+	       .format(Format::RG8)
+	       .usage({ TextureUsage::Sampling })
+	       .name("SMAA area texture");
+
+	if (flipSMAATextures) {
+		std::vector<unsigned char> tempBuffer(AREATEX_SIZE);
+		for (unsigned int y = 0; y < AREATEX_HEIGHT; y++) {
+			unsigned int srcY = AREATEX_HEIGHT - 1 - y;
+			//unsigned int srcY = y;
+			memcpy(&tempBuffer[y * AREATEX_PITCH], areaTexBytes + srcY * AREATEX_PITCH, AREATEX_PITCH);
+		}
+		texDesc.mipLevelData(0, &tempBuffer[0], AREATEX_SIZE);
+		areaTex = renderer.createTexture(texDesc);
+	} else {
+		texDesc.mipLevelData(0, areaTexBytes, AREATEX_SIZE);
+		areaTex = renderer.createTexture(texDesc);
+	}
+
+	texDesc.width(SEARCHTEX_WIDTH)
+	       .height(SEARCHTEX_HEIGHT)
+	       .format(Format::R8);
+	texDesc.name("SMAA search texture");
+	if (flipSMAATextures) {
+		std::vector<unsigned char> tempBuffer(SEARCHTEX_SIZE);
+		for (unsigned int y = 0; y < SEARCHTEX_HEIGHT; y++) {
+			unsigned int srcY = SEARCHTEX_HEIGHT - 1 - y;
+			//unsigned int srcY = y;
+			memcpy(&tempBuffer[y * SEARCHTEX_PITCH], searchTexBytes + srcY * SEARCHTEX_PITCH, SEARCHTEX_PITCH);
+		}
+		texDesc.mipLevelData(0, &tempBuffer[0], SEARCHTEX_SIZE);
+		searchTex = renderer.createTexture(texDesc);
+	} else {
+		texDesc.mipLevelData(0, searchTexBytes, SEARCHTEX_SIZE);
+		searchTex = renderer.createTexture(texDesc);
+	}
 }
 
 
