@@ -1405,8 +1405,8 @@ void SMAADemo::recreateSMAATextures() {
 
 	texDesc.width(SEARCHTEX_WIDTH)
 	       .height(SEARCHTEX_HEIGHT)
-	       .format(Format::R8);
-	texDesc.name("SMAA search texture");
+	       .format(Format::R8)
+	       .name("SMAA search texture");
 	if (flipSMAATextures) {
 		std::vector<unsigned char> tempBuffer(SEARCHTEX_SIZE);
 		for (unsigned int y = 0; y < SEARCHTEX_HEIGHT; y++) {
