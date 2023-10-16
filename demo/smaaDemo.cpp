@@ -1593,9 +1593,19 @@ void SMAADemo::rebuildRenderGraph() {
 			      .numSamples(numSamples)
 			      .format(swapchainFormat)
 			      .additionalViewFormat(Format::RGBA8)
-			      .usage({ TextureUsage::Sampling })
 			      .width(windowWidth)
 			      .height(windowHeight);
+			switch (aaMethod) {
+			case AAMethod::MSAA:
+				rtDesc.usage({ TextureUsage::ResolveSource });
+				break;
+
+			case AAMethod::FXAA:
+			case AAMethod::SMAA:
+			case AAMethod::SMAA2X:
+				rtDesc.usage({ TextureUsage::Sampling });
+				break;
+			}
 			renderGraph.renderTarget(Rendertargets::MainColor, rtDesc);
 		} else {
 			renderRT = Rendertargets::FinalRender;
