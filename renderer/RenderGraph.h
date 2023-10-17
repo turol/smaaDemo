@@ -851,11 +851,14 @@ public:
 		LOG_TODO("find a single-pass algorithm for this")
 		bool keepGoing = false;
 
+		LOG("layout usage {}", magic_enum::enum_name(layoutUsage_));
 		do {
 			keepGoing = false;
 			// automatically decide layouts
 			HashMap<RT, RTPassData> rtPassData;
 
+			switch (layoutUsage_) {
+			case LayoutUsage::Specific: {
 			// initialize final render target to transfer src
 			{
 				RTPassData r;
@@ -882,6 +885,39 @@ public:
 			SpecificLayoutVisitor lv(rtPassData, *this);
 			for (auto it = operations.rbegin(); it != operations.rend(); it++) {
 				std::visit(lv, *it);
+			}
+			} break;
+
+			case LayoutUsage::General: {
+				// final render target needs to be in present layout even when otherwise using general
+				{
+					RTPassData r;
+					r.finalLayout = Layout::Present;
+					r.nextUsage   = { TextureUsage::Present };
+					auto p DEBUG_ASSERTED = rtPassData.emplace(finalTarget, r);
+					assert(p.second);
+				}
+
+				// initialize external rendertargets final layouts to general, ignore specified
+				for (const auto &rt : rendertargets) {
+					visitRendertarget(rt.second
+									  , [&rt, &rtPassData] (const ExternalRT &e) {
+										  RTPassData r;
+										  r.finalLayout = Layout::General;
+										  r.nextUsage   = e.nextUsage;
+										  auto p DEBUG_ASSERTED = rtPassData.emplace(rt.first, r);
+										  assert(p.second);
+									  }
+									  , nopInternal
+									 );
+				}
+
+				GeneralLayoutVisitor lv(rtPassData, *this);
+				for (auto it = operations.rbegin(); it != operations.rend(); it++) {
+					std::visit(lv, *it);
+				}
+			} break;
+
 			}
 
 			// merge operations if possible
