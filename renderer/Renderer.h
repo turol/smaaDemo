@@ -1209,6 +1209,7 @@ struct RendererDesc {
 struct RendererFeatures {
 	uint32_t  maxMSAASamples   = 1;
 	bool      sRGBFramebuffer  = false;
+	bool      swapchainStorage = false;
 	bool      SSBOSupported    = false;
 
 

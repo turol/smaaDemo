@@ -2472,6 +2472,8 @@ void RendererImpl::recreateSwapchain() {
 	LOG("supported surface alpha composite flags: {}", vk::to_string(surfaceCapabilities.supportedCompositeAlpha));
 	LOG("supported surface usage flags: {}", vk::to_string(surfaceCapabilities.supportedUsageFlags));
 
+	features.swapchainStorage = bool(surfaceCapabilities.supportedUsageFlags & vk::ImageUsageFlagBits::eStorage);
+
 	int tempW = -1, tempH = -1;
 	SDL_Vulkan_GetDrawableSize(window, &tempW, &tempH);
 	if (tempW <= 0 || tempH <= 0) {

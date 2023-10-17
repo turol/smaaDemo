@@ -1185,6 +1185,7 @@ void SMAADemo::initRender() {
 	const auto &features = renderer.getFeatures();
 	LOG("Max MSAA samples: {}",  features.maxMSAASamples);
 	LOG("sRGB frame buffer: {}", features.sRGBFramebuffer ? "yes" : "no");
+	LOG("swapchain can be used as storage image: {}", features.swapchainStorage ? "yes" : "no");
 	LOG("SSBO support: {}",      features.SSBOSupported   ? "yes" : "no");
 	maxMSAAQuality = msaaSamplesToQuality(features.maxMSAASamples) + 1;
 	if (msaaQuality >= maxMSAAQuality) {
