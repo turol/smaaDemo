@@ -1329,7 +1329,7 @@ public:
 
 	void bindGraphicsPipeline(GraphicsPipelineHandle pipeline);
 	void bindDescriptorSet(unsigned int index, const DSLayoutHandle layout, const void *data, LayoutUsage rtLayoutUsage);
-	template <typename T> void bindDescriptorSet(unsigned int index, const T &data, LayoutUsage rtLayoutUsage = LayoutUsage::Specific) {
+	template <typename T> void bindDescriptorSet(unsigned int index, const T &data, LayoutUsage rtLayoutUsage) {
 		bindDescriptorSet(index, T::layoutHandle, &data, rtLayoutUsage);
 	}
 
