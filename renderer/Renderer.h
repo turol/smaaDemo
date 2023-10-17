@@ -449,6 +449,8 @@ enum class TextureUsage : uint8_t {
 	, ResolveDestination
 	, ResolveSource
 	, Sampling
+	, StorageRead
+	, StorageWrite
 };
 
 

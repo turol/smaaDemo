@@ -1547,6 +1547,18 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 					after.dstStageMask   |= vk::PipelineStageFlagBits::eFragmentShader;
 					after.dstAccessMask  |= vk::AccessFlagBits::eShaderRead;
 					break;
+
+				case TextureUsage::StorageRead:
+					LOG_TODO("other shader stages")
+					after.dstStageMask   |= vk::PipelineStageFlagBits::eComputeShader;
+					after.dstAccessMask  |= vk::AccessFlagBits::eShaderRead;
+					break;
+
+				case TextureUsage::StorageWrite:
+					LOG_TODO("other shader stages")
+					after.dstStageMask   |= vk::PipelineStageFlagBits::eComputeShader;
+					after.dstAccessMask  |= vk::AccessFlagBits::eShaderWrite;
+					break;
 				}
 
 			});
@@ -1928,6 +1940,10 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 			flags |= vk::ImageUsageFlagBits::eSampled;
 			break;
 
+		case TextureUsage::StorageRead:
+		case TextureUsage::StorageWrite:
+			flags |= vk::ImageUsageFlagBits::eStorage;
+			break;
 		}
 	});
 	info.usage        = flags;
