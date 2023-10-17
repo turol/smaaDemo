@@ -532,6 +532,115 @@ private:
 	};
 
 
+	struct GeneralLayoutVisitor final {
+		HashMap<RT, RTPassData>  &rtPassData;
+		RenderGraph              &rg;
+
+
+		GeneralLayoutVisitor(HashMap<RT, RTPassData> &rtPassData_, RenderGraph &rg_)
+		: rtPassData(rtPassData_)
+		, rg(rg_)
+		{
+		}
+
+		void operator()(Blit &b) const {
+			b.finalLayout                    = rtPassData[b.dest].finalLayout;
+			rtPassData[b.source].finalLayout = Layout::General;
+			rtPassData[b.source].nextUsage   = { TextureUsage::BlitSource };
+		}
+
+		void operator()(RenderPass &rp) const {
+			RenderPassDesc &rpDesc = rp.rpDesc;
+			PassDesc       &desc   = rp.desc;
+
+			rpDesc.name(rp.name)
+				  .numSamples(desc.numSamples_);
+
+			if (desc.depthStencil_ != Default<RT>::value) {
+				auto rtId = desc.depthStencil_;
+				auto rtIt = rg.rendertargets.find(desc.depthStencil_);
+				assert(rtIt != rg.rendertargets.end());
+
+				Format fmt = getFormat(rtIt->second);
+				assert(fmt != Format::Invalid);
+
+				TextureUsageSet usage;
+				Layout finalLayout = Layout::General;
+				auto layoutIt = rtPassData.find(rtId);
+				if (layoutIt == rtPassData.end()) {
+					// unused
+					// can't discard, needed for depth testing during render pass
+				} else {
+                    // used, set final layout and usage
+					RTPassData &rt = layoutIt->second;
+					assert(rt.finalLayout != Layout::Undefined);
+					assert(rt.finalLayout != Layout::TransferDst);
+
+					LOG_TODO("also need previous usage here")
+					finalLayout    = rt.finalLayout;
+					usage          = rt.nextUsage;
+					rt.finalLayout = Layout::General;
+					rt.nextUsage   = { TextureUsage::RenderTarget };
+				}
+
+				PassBegin passBegin = PassBegin::DontCare;
+				if (desc.clearDepthAttachment) {
+					passBegin = PassBegin::Clear;
+				}
+				rpDesc.depthStencil(fmt, passBegin, finalLayout, usage, desc.depthClearValue);
+			}
+
+			for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
+				auto rtId = desc.colorRTs_[i].id;
+				if (rtId != Default<RT>::value) {
+					auto rtIt = rg.rendertargets.find(rtId);
+					assert(rtIt != rg.rendertargets.end());
+
+					// get format
+					Format fmt = getFormat(rtIt->second);
+					assert(fmt != Format::Invalid);
+
+					auto pb = desc.colorRTs_[i].passBegin;
+					LOG_TODO("check this, might need a forward pass over operations")
+					Layout initial = Layout::Undefined;
+					if (pb == PassBegin::Keep) {
+						initial = Layout::General;
+					}
+
+					auto layoutIt = rtPassData.find(rtId);
+					if (layoutIt == rtPassData.end()) {
+						// unused
+						LOG_TODO("remove it entirely")
+						LOG("Removed unused rendertarget \"{}\" in renderpass \"{}\"", to_string(rtId), to_string(rp.id));
+						desc.colorRTs_[i].id        = Default<RT>::value;
+						desc.colorRTs_[i].passBegin = PassBegin::DontCare;
+					} else {
+						RTPassData &rt = layoutIt->second;
+						assert(rt.finalLayout != Layout::Undefined);
+						assert(rt.finalLayout != Layout::TransferDst);
+
+						LOG_TODO("also need previous usage here")
+						rpDesc.color(i, fmt, pb, initial, rt.nextUsage, rt.finalLayout, desc.colorRTs_[i].clearValue);
+						rt.finalLayout = initial;
+						rt.nextUsage   = { TextureUsage::RenderTarget };
+					}
+				}
+			}
+
+			for (RT inputRT : desc.inputRendertargets) {
+				rtPassData[inputRT].finalLayout = Layout::General;
+				rtPassData[inputRT].nextUsage   = { TextureUsage::Sampling };
+			}
+		}
+
+		void operator()(ResolveMSAA &resolve) const {
+			resolve.finalLayout                    = rtPassData[resolve.dest].finalLayout;
+			rtPassData[resolve.source].finalLayout = Layout::General;
+			rtPassData[resolve.source].nextUsage   = { TextureUsage::ResolveSource };
+		}
+	};
+
+
 	RGState                                          state            = RGState::Invalid;
 	LayoutUsage                                      layoutUsage_     = LayoutUsage::Specific;
 	std::exception_ptr                               storedException;
