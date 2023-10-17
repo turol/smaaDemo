@@ -533,6 +533,7 @@ private:
 
 
 	RGState                                          state            = RGState::Invalid;
+	LayoutUsage                                      layoutUsage_     = LayoutUsage::Specific;
 	std::exception_ptr                               storedException;
 	bool                                             hasExternalRTs   = false;
 	RP                                               currentRP        = Default<RP>::value;
@@ -585,6 +586,11 @@ public:
 			renderer.deleteRenderPass(std::move(rp.second));
 		}
 		renderPassCache.clear();
+	}
+
+
+	void layoutUsage(LayoutUsage l) {
+		layoutUsage_ = l;
 	}
 
 
@@ -1108,11 +1114,24 @@ public:
 					assert(destIt != rg.rendertargets.end());
 					RenderTargetHandle targetHandle = getHandle(destIt->second);
 
-					r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
-					r.resolveMSAA(sourceHandle, targetHandle);
-					r.layoutTransition(targetHandle, Layout::TransferDst, resolve.finalLayout);
+					Layout l = Layout::Undefined;
+					switch (rg.layoutUsage_) {
+					case LayoutUsage::Specific:
+						l = Layout::TransferDst;
+						break;
+
+					case LayoutUsage::General:
+						l = Layout::General;
+						break;
+					}
+
+					r.layoutTransition(targetHandle, Layout::Undefined, l);
+					r.resolveMSAA(sourceHandle, targetHandle, rg.layoutUsage_);
+					if (l != resolve.finalLayout) {
+						r.layoutTransition(targetHandle, l, resolve.finalLayout);
+					}
 				} else {
-					r.resolveMSAAToSwapchain(sourceHandle, resolve.finalLayout);
+					r.resolveMSAAToSwapchain(sourceHandle, resolve.finalLayout, rg.layoutUsage_);
 				}
 			}
 		};
