@@ -860,11 +860,13 @@ RendererImpl::~RendererImpl() {
 		assert(!tex.renderTarget);
 		assert(tex.tex != 0);
 		assert(tex.target != GL_NONE);
+		assert(tex.usage.any());
 
 		glDeleteTextures(1, &tex.tex);
 		tex.tex = 0;
 		tex.target = GL_NONE;
 		tex.format = Format::Invalid;
+		tex.usage.reset();
 	} );
 
 	samplers.clearWith([](Sampler &sampler) {
