@@ -2,6 +2,7 @@
 #define HASH_H
 
 
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 
