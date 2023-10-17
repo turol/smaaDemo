@@ -3842,7 +3842,7 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target,
 	assert(srcRT.height      >  0);
 	switch (layoutUsage) {
 	case LayoutUsage::Specific:
-	assert(srcRT.currentLayout == Layout::TransferSrc);
+		assert(srcRT.currentLayout == Layout::TransferSrc);
 		break;
 
 	case LayoutUsage::General:
@@ -3899,7 +3899,7 @@ void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLay
 	assert(srcRT.image);
 	switch (layoutUsage) {
 	case LayoutUsage::Specific:
-	assert(srcRT.currentLayout == Layout::TransferSrc);
+		assert(srcRT.currentLayout == Layout::TransferSrc);
 		break;
 
 	case LayoutUsage::General:
