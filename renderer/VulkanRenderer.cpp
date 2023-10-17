@@ -3571,7 +3571,7 @@ void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 }
 
 
-void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHandle, const void *data_) {
+void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHandle, const void *data_, LayoutUsage rtLayoutUsage) {
 	assert(impl->inFrame);
 	assert(impl->validPipeline);
 
@@ -3657,8 +3657,11 @@ void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHand
 
 			vk::DescriptorImageInfo imgWrite;
 			imgWrite.imageView   = tex.imageView;
-			LOG_TODO("should be able to handle general layout")
 			imgWrite.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+
+			if (tex.usage.test(TextureUsage::RenderTarget) && rtLayoutUsage == LayoutUsage::General) {
+				imgWrite.imageLayout = vk::ImageLayout::eGeneral;
+			}
 
 			// we trust that reserve() above makes sure this doesn't reallocate the storage
 			imageWrites.push_back(imgWrite);
@@ -3681,8 +3684,10 @@ void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHand
 			vk::DescriptorImageInfo  imgWrite;
 			imgWrite.sampler      = s.sampler;
 			imgWrite.imageView    = tex.imageView;
-			LOG_TODO("should be able to handle general layout")
 			imgWrite.imageLayout  = vk::ImageLayout::eShaderReadOnlyOptimal;
+			if (tex.usage.test(TextureUsage::RenderTarget) && rtLayoutUsage == LayoutUsage::General) {
+				imgWrite.imageLayout = vk::ImageLayout::eGeneral;
+			}
 
 			// we trust that reserve() above makes sure this doesn't reallocate the storage
 			imageWrites.push_back(imgWrite);

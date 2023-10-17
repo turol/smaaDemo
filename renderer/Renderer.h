@@ -1328,9 +1328,9 @@ public:
 	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 
 	void bindGraphicsPipeline(GraphicsPipelineHandle pipeline);
-	void bindDescriptorSet(unsigned int index, const DSLayoutHandle layout, const void *data);
-	template <typename T> void bindDescriptorSet(unsigned int index, const T &data) {
-		bindDescriptorSet(index, T::layoutHandle, &data);
+	void bindDescriptorSet(unsigned int index, const DSLayoutHandle layout, const void *data, LayoutUsage rtLayoutUsage);
+	template <typename T> void bindDescriptorSet(unsigned int index, const T &data, LayoutUsage rtLayoutUsage = LayoutUsage::Specific) {
+		bindDescriptorSet(index, T::layoutHandle, &data, rtLayoutUsage);
 	}
 
 	void bindIndexBuffer(BufferHandle buffer, IndexFormat indexFormat);

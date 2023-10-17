@@ -2270,7 +2270,7 @@ void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 }
 
 
-void Renderer::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHandle, const void *data_) {
+void Renderer::bindDescriptorSet(unsigned int index, DSLayoutHandle layoutHandle, const void *data_, LayoutUsage /* rtLayoutUsage */) {
 #ifndef NDEBUG
 	assert(impl->validPipeline);
 	const auto &p = impl->graphicsPipelines.get(impl->currentGraphicsPipeline);
