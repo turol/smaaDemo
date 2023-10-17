@@ -2513,7 +2513,7 @@ void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 }
 
 
-void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target) {
+void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target, LayoutUsage layoutUsage) {
 	assert(source);
 	assert(target);
 
@@ -2526,7 +2526,15 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 	assert(srcRT.numSamples  >  1);
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
+	switch (layoutUsage) {
+	case LayoutUsage::Specific:
 	assert(srcRT.currentLayout == Layout::TransferSrc);
+		break;
+
+	case LayoutUsage::General:
+		assert(srcRT.currentLayout == Layout::General);
+		break;
+	}
 	assert(srcRT.texture);
 	assert(srcRT.usage.test(TextureUsage::ResolveSource));
 	if (srcRT.helperFBO == 0) {
@@ -2539,7 +2547,15 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 	assert(destRT.numSamples == 1);
 	assert(destRT.width      >  0);
 	assert(destRT.height     >  0);
+	switch (layoutUsage) {
+	case LayoutUsage::Specific:
 	assert(destRT.currentLayout == Layout::TransferDst);
+		break;
+
+	case LayoutUsage::General:
+		assert(destRT.currentLayout == Layout::General);
+		break;
+	}
 	assert(destRT.texture);
 	assert(destRT.usage.test(TextureUsage::ResolveDestination));
 	if (destRT.helperFBO == 0) {
@@ -2559,7 +2575,7 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 }
 
 
-void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLayout DEBUG_ASSERTED) {
+void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLayout DEBUG_ASSERTED, LayoutUsage layoutUsage) {
 	assert(source);
 	assert(finalLayout != Layout::Undefined);
 
@@ -2572,7 +2588,15 @@ void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLay
 	assert(srcRT.numSamples  >  1);
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
+	switch (layoutUsage) {
+	case LayoutUsage::Specific:
 	assert(srcRT.currentLayout == Layout::TransferSrc);
+		break;
+
+	case LayoutUsage::General:
+		assert(srcRT.currentLayout == Layout::General);
+		break;
+	}
 	assert(srcRT.usage.test(TextureUsage::ResolveSource));
 	assert(srcRT.texture);
 	if (srcRT.helperFBO == 0) {

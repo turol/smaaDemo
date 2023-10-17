@@ -3823,7 +3823,7 @@ void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 }
 
 
-void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target) {
+void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target, LayoutUsage layoutUsage) {
 	assert(source);
 	assert(target);
 
@@ -3835,14 +3835,30 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 	assert(isColorFormat(srcRT.format));
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
+	switch (layoutUsage) {
+	case LayoutUsage::Specific:
 	assert(srcRT.currentLayout == Layout::TransferSrc);
+		break;
+
+	case LayoutUsage::General:
+		assert(srcRT.currentLayout == Layout::General);
+		break;
+	}
 	assert(srcRT.usage.test(TextureUsage::ResolveSource));
 
 	const auto &destRT = impl->renderTargets.get(target);
 	assert(isColorFormat(destRT.format));
 	assert(destRT.width      >  0);
 	assert(destRT.height     >  0);
+	switch (layoutUsage) {
+	case LayoutUsage::Specific:
 	assert(destRT.currentLayout == Layout::TransferDst);
+		break;
+
+	case LayoutUsage::General:
+		assert(destRT.currentLayout == Layout::General);
+		break;
+	}
 	assert(destRT.usage.test(TextureUsage::ResolveDestination));
 
 	assert(srcRT.format      == destRT.format);
@@ -3857,11 +3873,12 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 	r.extent.width              = srcRT.width;
 	r.extent.height             = srcRT.height;
 	r.extent.depth              = 1;
-	impl->currentCommandBuffer.resolveImage(srcRT.image, vk::ImageLayout::eTransferSrcOptimal, destRT.image, vk::ImageLayout::eTransferDstOptimal, { r } );
+	impl->currentCommandBuffer.resolveImage(srcRT.image, vulkanColorLayout(srcRT.currentLayout), destRT.image, vulkanColorLayout(destRT.currentLayout), { r } );
+
 }
 
 
-void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLayout) {
+void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLayout, LayoutUsage layoutUsage) {
 	assert(source);
 	assert(finalLayout != Layout::Undefined);
 
@@ -3875,6 +3892,15 @@ void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLay
 	assert(srcRT.width       >  0);
 	assert(srcRT.height      >  0);
 	assert(srcRT.image);
+	switch (layoutUsage) {
+	case LayoutUsage::Specific:
+	assert(srcRT.currentLayout == Layout::TransferSrc);
+		break;
+
+	case LayoutUsage::General:
+		assert(srcRT.currentLayout == Layout::General);
+		break;
+	}
 	assert(srcRT.usage.test(TextureUsage::ResolveSource));
 
 	auto &frame = impl->frames.at(impl->currentFrameIdx);
@@ -3887,14 +3913,25 @@ void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLay
 	assert(srcRT.width       == width);
 	assert(srcRT.height      == height);
 
-	// transitition swapchain from undefined -> transferdst
+	// transitition swapchain from undefined -> ( transferdst | general )
+	vk::ImageLayout swapchainLayout = vk::ImageLayout::eUndefined;
+	switch (layoutUsage) {
+	case LayoutUsage::Specific:
+		swapchainLayout = vk::ImageLayout::eTransferDstOptimal;
+		break;
+
+	case LayoutUsage::General:
+		swapchainLayout = vk::ImageLayout::eGeneral;
+		break;
+	}
+
 	vk::ImageMemoryBarrier b;
 	LOG_TODO("should allow user to specify access flags")
 	LOG_TODO("should tighten access masks")
 	b.srcAccessMask               = vk::AccessFlagBits::eMemoryWrite;
 	b.dstAccessMask               = vk::AccessFlagBits::eTransferWrite;
 	b.oldLayout                   = vk::ImageLayout::eUndefined;
-	b.newLayout                   = vk::ImageLayout::eTransferDstOptimal;
+	b.newLayout                   = swapchainLayout;
 	b.image                       = frame.image;
 	b.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
 	b.subresourceRange.levelCount = 1;
@@ -3911,10 +3948,10 @@ void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLay
 	r.extent.width              = width;
 	r.extent.height             = height;
 	r.extent.depth              = 1;
-	impl->currentCommandBuffer.resolveImage(srcRT.image, vk::ImageLayout::eTransferSrcOptimal, frame.image, vk::ImageLayout::eTransferDstOptimal, { r } );
+	impl->currentCommandBuffer.resolveImage(srcRT.image, vulkanColorLayout(srcRT.currentLayout), frame.image, swapchainLayout, { r } );
 
-	// transition swapchain from transferdst -> final
-	b.oldLayout                   = vk::ImageLayout::eTransferDstOptimal;
+	// transition swapchain from ( transferdst | general ) -> final
+	b.oldLayout                   = swapchainLayout;
 	b.newLayout                   = vulkanColorLayout(finalLayout);
 	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), {}, {}, { b });
 }

@@ -447,7 +447,7 @@ void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 }
 
 
-void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target) {
+void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target, LayoutUsage /* layoutUsage */) {
 	assert(source);
 	assert(target);
 
@@ -455,7 +455,7 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target)
 }
 
 
-void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLayout) {
+void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLayout, LayoutUsage /* layoutUsage */) {
 	assert(source);
 	assert(finalLayout != Layout::Undefined);
 
