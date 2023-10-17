@@ -1337,8 +1337,8 @@ public:
 	void bindVertexBuffer(unsigned int binding, BufferHandle buffer);
 
 	void blit(RenderTargetHandle source, RenderTargetHandle target);
-	void resolveMSAA(RenderTargetHandle source, RenderTargetHandle target, LayoutUsage layoutUsage = LayoutUsage::Specific);
-	void resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLayout, LayoutUsage layoutUsage = LayoutUsage::Specific);
+	void resolveMSAA(RenderTargetHandle source, RenderTargetHandle target, LayoutUsage layoutUsage);
+	void resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLayout, LayoutUsage layoutUsage);
 
 	void draw(unsigned int firstVertex, unsigned int vertexCount);
 	void drawIndexed(unsigned int vertexCount, unsigned int firstIndex);
