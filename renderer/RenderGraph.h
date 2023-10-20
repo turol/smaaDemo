@@ -829,6 +829,7 @@ public:
 		auto it = rendertargets.find(rt);
 		assert(it != rendertargets.end());
 		if (std::holds_alternative<InternalRT>(it->second)) {
+			assert(std::get<InternalRT>(it->second).desc.usage().test(TextureUsage::BlitSource));
 			assert(std::get<InternalRT>(it->second).desc.usage().test(TextureUsage::Present));
 		}
 
