@@ -712,10 +712,6 @@ public:
 
 		for (auto &rt : rendertargets) {
 			assert(rt.first != Default<RT>::value);
-			if (rt.first == finalTarget) {
-				// not created so don't try to delete either
-				continue;
-			}
 
 			visitRendertarget(rt.second
 							  , nopExternal
@@ -863,8 +859,8 @@ public:
 			// initialize final render target to transfer src
 			{
 				RTPassData r;
-				r.finalLayout = Layout::Present;
-				r.nextUsage   = { TextureUsage::Present };
+				r.finalLayout = Layout::TransferSrc;
+				r.nextUsage   = { TextureUsage::BlitSource };
 				auto p DEBUG_ASSERTED = rtPassData.emplace(finalTarget, r);
 				assert(p.second);
 			}
@@ -890,11 +886,11 @@ public:
 			} break;
 
 			case LayoutUsage::General: {
-				// final render target needs to be in present layout even when otherwise using general
+				// initialize final render target to general
 				{
 					RTPassData r;
-					r.finalLayout = Layout::Present;
-					r.nextUsage   = { TextureUsage::Present };
+					r.finalLayout = Layout::General;
+					r.nextUsage   = { TextureUsage::BlitSource };
 					auto p DEBUG_ASSERTED = rtPassData.emplace(finalTarget, r);
 					assert(p.second);
 				}
@@ -1025,10 +1021,6 @@ public:
 		// create rendertargets
 		for (auto &p : rendertargets) {
 			assert(p.first != Default<RT>::value);
-			if (p.first == finalTarget) {
-				// directly to swapchain, don't create
-				continue;
-			}
 
 			visitRendertarget(p.second
 							  , nopExternal
@@ -1048,15 +1040,6 @@ public:
 			RenderPass &rp = *rp_;
 			rp.rpDesc.name(rp.name);
 			const auto &desc = rp.desc;
-
-			// if this is the final renderpass (which renders to swapchain)
-			// we don't create its framebuffer here
-			// Renderer will do that internally
-			// we do have to make sure the format matches swapchain
-			bool isFinal     = false;
-			if (desc.colorRTs_[0].id == finalTarget) {
-				isFinal = true;
-			}
 
 			assert(!rp.handle);
 			{
@@ -1089,9 +1072,7 @@ public:
 			LOG_TODO("check depthStencil too")
 
 			if (!hasExternal) {
-				if (!isFinal) {
 					buildRenderPassFramebuffer(renderer, rp);
-				}
 			} else {
 				auto result DEBUG_ASSERTED = renderpassesWithExternalRTs.insert(rp.id);
 				assert(result.second);
@@ -1168,7 +1149,6 @@ public:
 
 			void operator()(const Blit &b) const {
 				assert(b.source != rg.finalTarget);
-				assert(b.dest   != rg.finalTarget);
 
 				auto srcIt = rg.rendertargets.find(b.source);
 				assert(srcIt != rg.rendertargets.end());
@@ -1255,7 +1235,6 @@ public:
 				assert(srcIt != rg.rendertargets.end());
 				RenderTargetHandle sourceHandle = getHandle(srcIt->second);
 
-				if (resolve.dest != rg.finalTarget) {
 					auto destIt = rg.rendertargets.find(resolve.dest);
 					assert(destIt != rg.rendertargets.end());
 					RenderTargetHandle targetHandle = getHandle(destIt->second);
@@ -1276,9 +1255,6 @@ public:
 					if (l != resolve.finalLayout) {
 						r.layoutTransition(targetHandle, l, resolve.finalLayout);
 					}
-				} else {
-					r.resolveMSAAToSwapchain(sourceHandle, resolve.finalLayout, rg.layoutUsage_);
-				}
 			}
 		};
 
@@ -1287,11 +1263,11 @@ public:
 		}
 
 		{
-			auto it DEBUG_ASSERTED = rendertargets.find(finalTarget);
+			auto it = rendertargets.find(finalTarget);
 			assert(it != rendertargets.end());
-			const Rendertarget &rt DEBUG_ASSERTED = it->second;
+			const Rendertarget &rt = it->second;
 			assert(std::holds_alternative<InternalRT>(rt));
-			renderer.presentFrame();
+			renderer.presentFrame(std::get<InternalRT>(rt).handle);
 		}
 
 		assert(state == RGState::Rendering);
