@@ -2831,6 +2831,69 @@ void Renderer::beginFrame() {
 }
 
 
+void Renderer::presentFrame(RenderTargetHandle rtHandle) {
+#ifndef NDEBUG
+	assert(impl->inFrame);
+#endif  // NDEBUG
+
+	const auto &rt = impl->renderTargets.get(rtHandle);
+	unsigned int width  = rt.width;
+	unsigned int height = rt.height;
+
+	if (width != impl->swapchainDesc.width || height != impl->swapchainDesc.height) {
+		LOG("warning: rendertarget size mismatch at presentFrame, is ({}x{}) should be ({}x{})", width, height, impl->swapchainDesc.width, impl->swapchainDesc.height);
+		width  = std::min(width,  impl->swapchainDesc.width);
+		height = std::min(height, impl->swapchainDesc.height);
+		impl->swapchainDirty  = true;
+	}
+
+	auto &frame = impl->frames.at(impl->currentFrameIdx);
+
+	vk::Image image        = frame.image;
+	vk::ImageLayout layout = vk::ImageLayout::eTransferDstOptimal;
+
+	// transition image to transfer dst optimal
+	vk::ImageMemoryBarrier barrier;
+	barrier.srcAccessMask       = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
+	barrier.dstAccessMask       = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
+	barrier.oldLayout           = vk::ImageLayout::eUndefined;
+	barrier.newLayout           = layout;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.image               = image;
+
+	vk::ImageSubresourceRange range;
+	range.aspectMask            = vk::ImageAspectFlagBits::eColor;
+	range.baseMipLevel          = 0;
+	range.levelCount            = VK_REMAINING_MIP_LEVELS;
+	range.baseArrayLayer        = 0;
+	range.layerCount            = VK_REMAINING_ARRAY_LAYERS;
+	barrier.subresourceRange    = range;
+
+	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
+
+	vk::ImageBlit blit;
+	blit.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+	blit.srcSubresource.layerCount = 1;
+	blit.srcOffsets[1u]            = vk::Offset3D(width, height, 1);
+	blit.dstSubresource            = blit.srcSubresource;
+	blit.dstOffsets[1u]            = blit.srcOffsets[1u];
+
+	// blit draw image to presentation image
+	impl->currentCommandBuffer.blitImage(rt.image, vk::ImageLayout::eTransferSrcOptimal, image, layout, { blit }, vk::Filter::eNearest);
+
+	// transition to present
+	barrier.srcAccessMask       = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
+	barrier.dstAccessMask       = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
+	barrier.oldLayout           = layout;
+	barrier.newLayout           = vk::ImageLayout::ePresentSrcKHR;
+	barrier.image               = image;
+	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
+
+	presentFrame();
+}
+
+
 void Renderer::presentFrame() {
 #ifndef NDEBUG
 	assert(impl->inFrame);
