@@ -1468,17 +1468,17 @@ void SMAADemo::rebuildRenderGraph() {
 		if (antialiasing) {
 			switch (aaMethod) {
 			case AAMethod::MSAA:
-				rtDesc.usage({ TextureUsage::BlitSource, TextureUsage::Present, TextureUsage::ResolveDestination });
+				rtDesc.usage({ TextureUsage::BlitSource, TextureUsage::ResolveDestination });
 				break;
 
 			case AAMethod::FXAA:
 			case AAMethod::SMAA:
 			case AAMethod::SMAA2X:
-				rtDesc.usage({ TextureUsage::BlitSource, TextureUsage::Present });
+				rtDesc.usage({ TextureUsage::BlitSource });
 				break;
 			}
 		} else {
-			rtDesc.usage({ TextureUsage::BlitSource, TextureUsage::Present });
+			rtDesc.usage({ TextureUsage::BlitSource });
 		}
 		renderGraph.renderTarget(Rendertargets::FinalRender, rtDesc);
 	}

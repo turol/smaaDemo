@@ -444,7 +444,6 @@ enum class ShaderLanguage : uint8_t {
 enum class TextureUsage : uint8_t {
 	  BlitDestination
 	, BlitSource
-	, Present
 	, RenderTarget
 	, ResolveDestination
 	, ResolveSource
@@ -1140,7 +1139,6 @@ struct TextureDesc : public DescBase<TextureDesc> {
 
 	TextureDesc &usage(const TextureUsageSet &u) {
 		assert(u.any());
-		assert(!u.test(TextureUsage::Present));        // only valid on rendertargets
 		assert(!u.test(TextureUsage::RenderTarget));   // rendertargets are not created with this
 		assert(!u.test(TextureUsage::ResolveSource));  // only valid on multisampled RTs
 		usage_ = u;

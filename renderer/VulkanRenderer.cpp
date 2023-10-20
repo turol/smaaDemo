@@ -1521,13 +1521,6 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 					after.dstAccessMask  |= vk::AccessFlagBits::eTransferRead;
 					break;
 
-				case TextureUsage::Present:
-					// 34.10. WSI Swapchain
-					// When transitioning the image to VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, there is no
-					// need to delay subsequent processing, or perform any visibility operations
-					after.dstStageMask   |= vk::PipelineStageFlagBits::eBottomOfPipe;
-					break;
-
 				case TextureUsage::RenderTarget:
 					after.dstStageMask   |= vk::PipelineStageFlagBits::eColorAttachmentOutput;
 					after.dstAccessMask  |= vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
@@ -1917,10 +1910,6 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 
 		case TextureUsage::BlitSource:
 			flags |= vk::ImageUsageFlagBits::eTransferSrc;
-			break;
-
-		case TextureUsage::Present:
-			// nothing
 			break;
 
 		case TextureUsage::RenderTarget:
