@@ -1155,9 +1155,6 @@ static vk::ImageLayout vulkanColorLayout(Layout l) {
 
 	case Layout::RenderAttachment:
 		return vk::ImageLayout::eColorAttachmentOptimal;
-
-	case Layout::Present:
-		return vk::ImageLayout::ePresentSrcKHR;
 	}
 
 	HEDLEY_UNREACHABLE();
@@ -1184,9 +1181,6 @@ static vk::ImageLayout vulkanDepthStencilLayout(Layout l) {
 
 	case Layout::RenderAttachment:
 		return vk::ImageLayout::eDepthStencilAttachmentOptimal;
-
-	case Layout::Present:
-		return vk::ImageLayout::ePresentSrcKHR;
 	}
 
 	HEDLEY_UNREACHABLE();

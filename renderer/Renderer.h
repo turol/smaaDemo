@@ -417,7 +417,6 @@ enum class Layout : uint8_t {
 	, TransferSrc
 	, TransferDst
 	, RenderAttachment
-	, Present
 };
 
 
