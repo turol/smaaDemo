@@ -1920,8 +1920,7 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 			break;
 
 		case TextureUsage::Present:
-			// can't create these, they will come from swapchain
-			assert(false);
+			// nothing
 			break;
 
 		case TextureUsage::RenderTarget:
