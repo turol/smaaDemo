@@ -1289,6 +1289,8 @@ public:
 		{
 			auto it DEBUG_ASSERTED = rendertargets.find(finalTarget);
 			assert(it != rendertargets.end());
+			const Rendertarget &rt DEBUG_ASSERTED = it->second;
+			assert(std::holds_alternative<InternalRT>(rt));
 			renderer.presentFrame();
 		}
 
