@@ -1072,7 +1072,7 @@ public:
 			LOG_TODO("check depthStencil too")
 
 			if (!hasExternal) {
-					buildRenderPassFramebuffer(renderer, rp);
+				buildRenderPassFramebuffer(renderer, rp);
 			} else {
 				auto result DEBUG_ASSERTED = renderpassesWithExternalRTs.insert(rp.id);
 				assert(result.second);
@@ -1235,26 +1235,26 @@ public:
 				assert(srcIt != rg.rendertargets.end());
 				RenderTargetHandle sourceHandle = getHandle(srcIt->second);
 
-					auto destIt = rg.rendertargets.find(resolve.dest);
-					assert(destIt != rg.rendertargets.end());
-					RenderTargetHandle targetHandle = getHandle(destIt->second);
+				auto destIt = rg.rendertargets.find(resolve.dest);
+				assert(destIt != rg.rendertargets.end());
+				RenderTargetHandle targetHandle = getHandle(destIt->second);
 
-					Layout l = Layout::Undefined;
-					switch (rg.layoutUsage_) {
-					case LayoutUsage::Specific:
-						l = Layout::TransferDst;
-						break;
+				Layout l = Layout::Undefined;
+				switch (rg.layoutUsage_) {
+				case LayoutUsage::Specific:
+					l = Layout::TransferDst;
+					break;
 
-					case LayoutUsage::General:
-						l = Layout::General;
-						break;
-					}
+				case LayoutUsage::General:
+					l = Layout::General;
+					break;
+				}
 
-					r.layoutTransition(targetHandle, Layout::Undefined, l);
-					r.resolveMSAA(sourceHandle, targetHandle, rg.layoutUsage_);
-					if (l != resolve.finalLayout) {
-						r.layoutTransition(targetHandle, l, resolve.finalLayout);
-					}
+				r.layoutTransition(targetHandle, Layout::Undefined, l);
+				r.resolveMSAA(sourceHandle, targetHandle, rg.layoutUsage_);
+				if (l != resolve.finalLayout) {
+					r.layoutTransition(targetHandle, l, resolve.finalLayout);
+				}
 			}
 		};
 
