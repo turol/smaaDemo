@@ -2486,19 +2486,6 @@ void RendererImpl::recreateSwapchain() {
 	swapchainDesc.numFrames  = numImages;
 	swapchainDesc.vsync      = wantedSwapchain.vsync;
 
-	// always destroy the old image views and framebuffers
-	for (Frame &f : frames) {
-		assert(f.imageView);
-		device.destroyImageView(f.imageView);
-		f.imageView = vk::ImageView();
-
-		if (f.framebuffer) {
-			framebuffers.removeWith(std::move(f.framebuffer), [this](Framebuffer &fb) {
-				deleteResources.emplace_back(std::move(fb));
-			} );
-		}
-	}
-
 	if (frames.size() != numImages) {
 		if (numImages < frames.size()) {
 			// decreasing, delete old and resize
@@ -2540,8 +2527,6 @@ void RendererImpl::recreateSwapchain() {
 
 				// we fill these in after we've created the swapchain
 				assert(!f.image);
-				assert(!f.imageView);
-				assert(!f.framebuffer);
 
 				assert(!f.dsPool);
 				f.dsPool = device.createDescriptorPool(dsInfo);
@@ -2647,8 +2632,6 @@ void RendererImpl::recreateSwapchain() {
 		Frame &f = frames.at(i);
 		f.image     = swapchainImages.at(i);
 		info.image  = f.image;
-		assert(!f.imageView);
-		f.imageView = device.createImageView(info);
 	}
 
 	swapchainFormat = Format::sBGRA8;
@@ -3269,27 +3252,6 @@ void RendererImpl::deleteFrameInternal(Frame &f) {
 
 	// owned by swapchain, don't delete
 	f.image = vk::Image();
-
-	if (f.imageView) {
-		device.destroyImageView(f.imageView);
-		f.imageView = vk::ImageView();
-	}
-
-	if (f.framebuffer) {
-		framebuffers.removeWith(std::move(f.framebuffer), [this](Framebuffer &fb) {
-			// since we synced the frame this is idle and can be removed immediately
-			// also if we're shutting down we can't put any more stuff into deleteResources
-			device.destroyFramebuffer(fb.framebuffer);
-			fb.framebuffer = vk::Framebuffer();
-			fb.width       = 0;
-			fb.height      = 0;
-			fb.depthStencilTarget.format = Format::Invalid;
-			fb.depthStencilTarget.initialLayout = Layout::Undefined;
-			fb.depthStencilTarget.finalLayout   = Layout::Undefined;
-		} );
-	}
-
-	f.lastSwapchainRenderPass.reset();
 
 	assert(f.dsPool);
 	device.destroyDescriptorPool(f.dsPool);

@@ -889,9 +889,6 @@ struct Frame : public FrameBase {
 	std::vector<BufferHandle>     ephemeralBuffers;
 	vk::Fence                     fence;
 	vk::Image                     image;
-	vk::ImageView                 imageView;
-	FramebufferHandle             framebuffer;
-	RenderPassHandle              lastSwapchainRenderPass; // not owned
 	vk::DescriptorPool            dsPool;
 	vk::CommandPool               commandPool;
 	vk::CommandBuffer             commandBuffer;
@@ -909,9 +906,6 @@ struct Frame : public FrameBase {
 		assert(ephemeralBuffers.empty());
 		assert(!fence);
 		assert(!image);
-		assert(!imageView);
-		assert(!framebuffer);
-		assert(!lastSwapchainRenderPass);
 		assert(!dsPool);
 		assert(!commandPool);
 		assert(!commandBuffer);
@@ -933,9 +927,6 @@ struct Frame : public FrameBase {
 	, ephemeralBuffers(std::move(other.ephemeralBuffers))
 	, fence(other.fence)
 	, image(other.image)
-	, imageView(other.imageView)
-	, framebuffer(std::move(other.framebuffer))
-	, lastSwapchainRenderPass(std::move(other.lastSwapchainRenderPass))
 	, dsPool(other.dsPool)
 	, commandPool(other.commandPool)
 	, commandBuffer(other.commandBuffer)
@@ -946,8 +937,6 @@ struct Frame : public FrameBase {
 	, uploads(std::move(other.uploads))
 	{
 		other.image            = vk::Image();
-		other.imageView        = vk::ImageView();
-		other.lastSwapchainRenderPass.reset();
 		other.fence            = vk::Fence();
 		other.dsPool           = vk::DescriptorPool();
 		other.commandPool      = vk::CommandPool();
@@ -967,17 +956,6 @@ struct Frame : public FrameBase {
 		assert(!image);
 		image                = other.image;
 		other.image          = vk::Image();
-
-		assert(!imageView);
-		imageView            = other.imageView;
-		other.imageView      = vk::ImageView();
-
-		assert(!framebuffer);
-		framebuffer          = std::move(other.framebuffer);
-
-		assert(!lastSwapchainRenderPass);
-		lastSwapchainRenderPass = std::move(other.lastSwapchainRenderPass);
-		other.lastSwapchainRenderPass.reset();
 
 		assert(!fence);
 		fence                = other.fence;
