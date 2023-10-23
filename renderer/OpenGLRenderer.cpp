@@ -2572,49 +2572,6 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target,
 }
 
 
-void Renderer::resolveMSAAToSwapchain(RenderTargetHandle source, Layout finalLayout DEBUG_ASSERTED, LayoutUsage layoutUsage) {
-	assert(source);
-	assert(finalLayout != Layout::Undefined);
-
-	assert(impl->inFrame);
-	assert(!impl->inRenderPass);
-	assert(!impl->renderingToSwapchain);
-
-	auto &srcRT = impl->renderTargets.get(source);
-	assert(isColorFormat(srcRT.format));
-	assert(srcRT.numSamples  >  1);
-	assert(srcRT.width       >  0);
-	assert(srcRT.height      >  0);
-	switch (layoutUsage) {
-	case LayoutUsage::Specific:
-		assert(srcRT.currentLayout == Layout::TransferSrc);
-		break;
-
-	case LayoutUsage::General:
-		assert(srcRT.currentLayout == Layout::General);
-		break;
-	}
-	assert(srcRT.usage.test(TextureUsage::ResolveSource));
-	assert(srcRT.texture);
-	if (srcRT.helperFBO == 0) {
-		impl->createRTHelperFBO(srcRT);
-	}
-	assert(srcRT.helperFBO != 0);
-
-	unsigned int width  = impl->swapchainDesc.width;
-	unsigned int height = impl->swapchainDesc.height;
-
-	assert(srcRT.format      == impl->swapchainFormat);
-	assert(srcRT.width       == width);
-	assert(srcRT.height      == height);
-
-	glBlitNamedFramebuffer(srcRT.helperFBO, 0
-	                     , 0, 0, width, height
-	                     , 0, 0, width, height
-	                     , GL_COLOR_BUFFER_BIT, GL_LINEAR);
-}
-
-
 void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 #ifndef NDEBUG
 	assert(impl->inRenderPass);
