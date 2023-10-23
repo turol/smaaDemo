@@ -1039,7 +1039,6 @@ struct RendererImpl : public RendererBase {
 	vk::Semaphore                                           frameAcquireSem;
 
 	std::vector<Frame>                                      frames;
-	RenderTargetHandle                                      builtinDepthRT;
 
 	ResourceContainer<Buffer>                               buffers;
 	ResourceContainer<DescriptorSetLayout, uint32_t, true>  dsLayouts;

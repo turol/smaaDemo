@@ -904,12 +904,6 @@ RendererImpl::~RendererImpl() {
 	device.destroyPipelineCache(pipelineCache);
 	pipelineCache = vk::PipelineCache();
 
-	if (builtinDepthRT) {
-		renderTargets.removeWith(std::move(builtinDepthRT), [this](struct RenderTarget &rt) {
-			deleteResources.emplace_back(std::move(rt));
-		} );
-	}
-
 	waitForDeviceIdle();
 
 	for (unsigned int i = 0; i < frames.size(); i++) {
@@ -2453,12 +2447,6 @@ glm::uvec2 Renderer::getDrawableSize() const {
 
 void RendererImpl::recreateSwapchain() {
 	assert(swapchainDirty);
-
-	if (builtinDepthRT) {
-		renderTargets.removeWith(std::move(builtinDepthRT), [this](struct RenderTarget &rt) {
-			deleteResources.emplace_back(std::move(rt));
-		} );
-	}
 
 	waitForDeviceIdle();
 
