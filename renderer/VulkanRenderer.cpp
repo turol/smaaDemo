@@ -2597,7 +2597,7 @@ void RendererImpl::recreateSwapchain() {
 	swapchainCreateInfo.imageColorSpace       = vk::ColorSpaceKHR::eSrgbNonlinear;
 	swapchainCreateInfo.imageExtent           = imageExtent;
 	swapchainCreateInfo.imageArrayLayers      = 1;
-	swapchainCreateInfo.imageUsage            = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eColorAttachment;
+	swapchainCreateInfo.imageUsage            = vk::ImageUsageFlagBits::eTransferDst;
 
 	// no concurrent access
 	swapchainCreateInfo.imageSharingMode      = vk::SharingMode::eExclusive;
