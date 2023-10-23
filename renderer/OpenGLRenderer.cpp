@@ -1937,10 +1937,6 @@ void Renderer::presentFrame(RenderTargetHandle image) {
 	                     , 0, 0, width, height
 	                     , GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-	presentFrame();
-}
-
-void Renderer::presentFrame() {
 #ifndef NDEBUG
 	assert(impl->inFrame);
 	impl->inFrame = false;

@@ -2871,17 +2871,10 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 	barrier.image               = image;
 	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
 
-	presentFrame();
-}
-
-
-void Renderer::presentFrame() {
 #ifndef NDEBUG
 	assert(impl->inFrame);
 	impl->inFrame = false;
 #endif  // NDEBUG
-
-	auto &frame = impl->frames.at(impl->currentFrameIdx);
 
 	assert(frame.acquireSem);
 	assert(frame.renderDoneSem);
