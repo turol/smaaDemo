@@ -1170,7 +1170,7 @@ public:
 
 				renderer::ScopedDebugGroup g(r, rp.name);
 
-					r.beginRenderPass(rp.handle, rp.fb);
+				r.beginRenderPass(rp.handle, rp.fb);
 
 				PassResources res;
 				LOG_TODO("build ahead of time, fill here?")
