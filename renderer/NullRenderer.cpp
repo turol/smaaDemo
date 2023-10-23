@@ -298,30 +298,6 @@ void Renderer::beginFrame() {
 }
 
 
-void Renderer::beginRenderPassSwapchain(RenderPassHandle rpHandle) {
-	assert(rpHandle);
-	assert(impl->inFrame);
-	assert(!impl->inRenderPass);
-	impl->inRenderPass  = true;
-	impl->validPipeline = false;
-	impl->pipelineUsed  = true;
-
-	assert(!impl->renderingToSwapchain);
-	impl->renderingToSwapchain = true;
-
-	impl->currentFrameIdx        = impl->frameNum % impl->frames.size();
-	assert(impl->currentFrameIdx < impl->frames.size());
-	auto &frame                  = impl->frames.at(impl->currentFrameIdx);
-
-	// frames are a ringbuffer
-	// if the frame we want to reuse is still pending on the GPU, wait for it
-	if (frame.outstanding) {
-		impl->waitForFrame(impl->currentFrameIdx);
-	}
-	assert(!frame.outstanding);
-}
-
-
 void Renderer::presentFrame(RenderTargetHandle /* rt */) {
 	presentFrame();
 }

@@ -1320,7 +1320,6 @@ public:
 	void presentFrame();
 
 	void beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle);
-	void beginRenderPassSwapchain(RenderPassHandle rpHandle);
 	void endRenderPass();
 
 	void layoutTransition(RenderTargetHandle image, Layout src, Layout dest);
