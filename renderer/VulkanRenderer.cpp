@@ -2815,6 +2815,7 @@ void Renderer::beginFrame() {
 void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 #ifndef NDEBUG
 	assert(impl->inFrame);
+	impl->inFrame = false;
 #endif  // NDEBUG
 
 	const auto &rt = impl->renderTargets.get(rtHandle);
@@ -2829,6 +2830,8 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 	}
 
 	auto &frame = impl->frames.at(impl->currentFrameIdx);
+	assert(frame.acquireSem);
+	assert(frame.renderDoneSem);
 
 	vk::Image image        = frame.image;
 	vk::ImageLayout layout = vk::ImageLayout::eTransferDstOptimal;
@@ -2871,13 +2874,6 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 	barrier.image               = image;
 	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
 
-#ifndef NDEBUG
-	assert(impl->inFrame);
-	impl->inFrame = false;
-#endif  // NDEBUG
-
-	assert(frame.acquireSem);
-	assert(frame.renderDoneSem);
 	impl->device.resetFences( { frame.fence } );
 
 	impl->currentCommandBuffer.end();

@@ -1904,6 +1904,9 @@ void Renderer::beginFrame() {
 void Renderer::presentFrame(RenderTargetHandle image) {
 #ifndef NDEBUG
 	assert(impl->inFrame);
+	impl->inFrame = false;
+
+	assert(impl->activeDebugGroups == 0);
 #endif //  NDEBUG
 
 	auto &rt = impl->renderTargets.get(image);
@@ -1936,13 +1939,6 @@ void Renderer::presentFrame(RenderTargetHandle image) {
 	                     , 0, 0, width, height
 	                     , 0, 0, width, height
 	                     , GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-#ifndef NDEBUG
-	assert(impl->inFrame);
-	impl->inFrame = false;
-
-	assert(impl->activeDebugGroups == 0);
-#endif //  NDEBUG
 
 	auto &frame = impl->frames.at(impl->currentFrameIdx);
 
