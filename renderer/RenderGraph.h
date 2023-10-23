@@ -1166,17 +1166,11 @@ public:
 				assert(rg.currentRP == Default<RP>::value);
 				rg.currentRP = rp.id;
 				assert(rp.handle);
+				assert(rp.fb);
 
 				renderer::ScopedDebugGroup g(r, rp.name);
 
-				if (rp.fb) {
 					r.beginRenderPass(rp.handle, rp.fb);
-				} else {
-					// must be final pass
-					LOG_TODO("check that")
-
-					r.beginRenderPassSwapchain(rp.handle);
-				}
 
 				PassResources res;
 				LOG_TODO("build ahead of time, fill here?")
