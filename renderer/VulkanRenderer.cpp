@@ -3097,7 +3097,6 @@ void RendererImpl::cleanupFrame(unsigned int frameIdx) {
 UploadOp RendererImpl::allocateUploadOp(uint32_t size) {
 	UploadOp op;
 
-	LOG_TODO("have a free list of semaphores instead of creating new ones all the time")
 	op.semaphore = allocateSemaphore();
 
 	vk::CommandBufferAllocateInfo cmdInfo(transferCmdPool, vk::CommandBufferLevel::ePrimary, 1);
