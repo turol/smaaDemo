@@ -298,7 +298,7 @@ void Renderer::beginFrame() {
 }
 
 
-void Renderer::presentFrame(RenderTargetHandle /* rt */) {
+void Renderer::presentFrame(RenderTargetHandle /* rt */, LayoutUsage /* layoutUsage */) {
 	assert(impl->inFrame);
 	impl->inFrame = false;
 

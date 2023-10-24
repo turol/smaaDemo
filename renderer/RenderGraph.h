@@ -1260,7 +1260,7 @@ public:
 			assert(it != rendertargets.end());
 			const Rendertarget &rt = it->second;
 			assert(std::holds_alternative<InternalRT>(rt));
-			renderer.presentFrame(std::get<InternalRT>(rt).handle);
+			renderer.presentFrame(std::get<InternalRT>(rt).handle, layoutUsage_);
 		}
 
 		assert(state == RGState::Rendering);

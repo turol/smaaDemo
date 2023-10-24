@@ -1901,7 +1901,7 @@ void Renderer::beginFrame() {
 }
 
 
-void Renderer::presentFrame(RenderTargetHandle image) {
+void Renderer::presentFrame(RenderTargetHandle image, LayoutUsage /* layoutUsage */) {
 #ifndef NDEBUG
 	assert(impl->inFrame);
 	impl->inFrame = false;

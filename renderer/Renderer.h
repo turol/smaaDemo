@@ -1316,7 +1316,7 @@ public:
 
 	// rendering
 	void beginFrame();
-	void presentFrame(RenderTargetHandle image);
+	void presentFrame(RenderTargetHandle image, LayoutUsage layoutUsage);
 
 	void beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHandle);
 	void endRenderPass();

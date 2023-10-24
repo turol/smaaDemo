@@ -2783,7 +2783,7 @@ void Renderer::beginFrame() {
 }
 
 
-void Renderer::presentFrame(RenderTargetHandle rtHandle) {
+void Renderer::presentFrame(RenderTargetHandle rtHandle, LayoutUsage /* layoutUsage */) {
 #ifndef NDEBUG
 	assert(impl->inFrame);
 	impl->inFrame = false;
