@@ -2805,6 +2805,7 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 	assert(frame.renderDoneSem);
 
 	vk::Image image        = frame.image;
+	vk::ImageLayout srcLayout  = vk::ImageLayout::eTransferSrcOptimal;
 	vk::ImageLayout destLayout = vk::ImageLayout::eTransferDstOptimal;
 
 	// transition image to transfer dst optimal
@@ -2835,7 +2836,7 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 	blit.dstOffsets[1u]            = blit.srcOffsets[1u];
 
 	// blit draw image to presentation image
-	impl->currentCommandBuffer.blitImage(rt.image, vk::ImageLayout::eTransferSrcOptimal, image, destLayout, { blit }, vk::Filter::eNearest);
+	impl->currentCommandBuffer.blitImage(rt.image, srcLayout, image, destLayout, { blit }, vk::Filter::eNearest);
 
 	// transition to present
 	barrier.srcAccessMask       = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
