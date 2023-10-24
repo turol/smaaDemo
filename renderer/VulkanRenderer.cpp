@@ -2808,10 +2808,18 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 	vk::ImageLayout srcLayout  = vk::ImageLayout::eTransferSrcOptimal;
 	vk::ImageLayout destLayout = vk::ImageLayout::eTransferDstOptimal;
 
-	// transition image to transfer dst optimal
+	// transition swapchain image to transfer dst optimal
+	/* vulkan spec says: When the presentable image will be accessed by some stage S, the recommended
+	 idiom for ensuring correct synchronization is:
+	  The VkSubmitInfo used to submit the image layout transition for execution includes
+	  vkAcquireNextImageKHR::semaphore in its pWaitSemaphores member, with the corresponding element
+	  of pWaitDstStageMask including S.
+	  The synchronization command that performs any necessary image layout transition includes S in
+	  both the srcStageMask and dstStageMask.
+	 */
 	vk::ImageMemoryBarrier barrier;
-	barrier.srcAccessMask       = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
-	barrier.dstAccessMask       = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
+	barrier.srcAccessMask       = vk::AccessFlagBits::eTransferWrite;
+	barrier.dstAccessMask       = vk::AccessFlagBits::eTransferWrite;
 	barrier.oldLayout           = vk::ImageLayout::eUndefined;
 	barrier.newLayout           = destLayout;
 	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -2826,7 +2834,7 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 	range.layerCount            = VK_REMAINING_ARRAY_LAYERS;
 	barrier.subresourceRange    = range;
 
-	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
+	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
 
 	vk::ImageBlit blit;
 	blit.srcSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
@@ -2838,13 +2846,19 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle) {
 	// blit draw image to presentation image
 	impl->currentCommandBuffer.blitImage(rt.image, srcLayout, image, destLayout, { blit }, vk::Filter::eNearest);
 
-	// transition to present
-	barrier.srcAccessMask       = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
-	barrier.dstAccessMask       = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
+	// transition swapchain image to present
+	/* vulkan spec says: When transitioning the image to VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR or
+	 VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, there is no need to delay subsequent processing, or perform
+	 any visibility operations (as vkQueuePresentKHR performs automatic visibility operations). To
+	 achieve this, the dstAccessMask member of the VkImageMemoryBarrier should be set to 0, and the
+	 dstStageMask parameter should be set to VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT.
+	 */
+	barrier.srcAccessMask       = vk::AccessFlagBits::eTransferWrite;
+	barrier.dstAccessMask       = vk::AccessFlagBits {};
 	barrier.oldLayout           = destLayout;
 	barrier.newLayout           = vk::ImageLayout::ePresentSrcKHR;
 	barrier.image               = image;
-	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
+	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlagBits::eByRegion, {}, {}, { barrier });
 
 	impl->device.resetFences( { frame.fence } );
 
