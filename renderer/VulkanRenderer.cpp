@@ -2783,7 +2783,7 @@ void Renderer::beginFrame() {
 }
 
 
-void Renderer::presentFrame(RenderTargetHandle rtHandle, LayoutUsage /* layoutUsage */) {
+void Renderer::presentFrame(RenderTargetHandle rtHandle, LayoutUsage layoutUsage) {
 #ifndef NDEBUG
 	assert(impl->inFrame);
 	impl->inFrame = false;
@@ -2807,6 +2807,17 @@ void Renderer::presentFrame(RenderTargetHandle rtHandle, LayoutUsage /* layoutUs
 	vk::Image image        = frame.image;
 	vk::ImageLayout srcLayout  = vk::ImageLayout::eTransferSrcOptimal;
 	vk::ImageLayout destLayout = vk::ImageLayout::eTransferDstOptimal;
+
+	switch (layoutUsage) {
+	case LayoutUsage::Specific:
+		// nothing
+		break;
+
+	case LayoutUsage::General:
+		srcLayout  = vk::ImageLayout::eGeneral;
+		destLayout = vk::ImageLayout::eGeneral;
+		break;
+	}
 
 	// transition swapchain image to transfer dst optimal
 	/* vulkan spec says: When the presentable image will be accessed by some stage S, the recommended
