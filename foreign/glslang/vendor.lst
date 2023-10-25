@@ -1,5 +1,6 @@
 .clang-format
 .gitattributes
+.github/dependabot.yml
 .github/workflows/continuous_deployment.yml
 .github/workflows/continuous_integration.yml
 .github/workflows/deploy.js
@@ -349,6 +350,7 @@ Test/baseResults/glsl.entryPointRename.vert.bad.out
 Test/baseResults/glsl.entryPointRename.vert.out
 Test/baseResults/glsl.entryPointRename2.vert.out
 Test/baseResults/glsl.es300.layoutOffset.error.vert.out
+Test/baseResults/glsl.es320.extTextureShadowLod.frag.out
 Test/baseResults/glsl.es320.subgroup.frag.out
 Test/baseResults/glsl.es320.subgroup.geom.out
 Test/baseResults/glsl.es320.subgroup.tesc.out
@@ -365,6 +367,7 @@ Test/baseResults/glsl.es320.subgroupQuad.comp.out
 Test/baseResults/glsl.es320.subgroupShuffle.comp.out
 Test/baseResults/glsl.es320.subgroupShuffleRelative.comp.out
 Test/baseResults/glsl.es320.subgroupVote.comp.out
+Test/baseResults/glsl.ext.textureShadowLod.frag.out
 Test/baseResults/glsl.versionOverride.comp.out
 Test/baseResults/glsl.versionOverride.frag.out
 Test/baseResults/glsl.versionOverride.geom.out
@@ -396,6 +399,7 @@ Test/baseResults/hlsl.basic.comp.out
 Test/baseResults/hlsl.basic.geom.out
 Test/baseResults/hlsl.boolConv.vert.out
 Test/baseResults/hlsl.buffer.frag.out
+Test/baseResults/hlsl.buffer_ref_parameter.comp.out
 Test/baseResults/hlsl.calculatelod.dx10.frag.out
 Test/baseResults/hlsl.calculatelodunclamped.dx10.frag.out
 Test/baseResults/hlsl.cast.frag.out
@@ -987,6 +991,7 @@ Test/baseResults/spv.atomicCounter.comp.out
 Test/baseResults/spv.atomicFloat.comp.out
 Test/baseResults/spv.atomicFloat_Error.comp.out
 Test/baseResults/spv.atomicInt64.comp.out
+Test/baseResults/spv.atomicRvalue.error.vert.out
 Test/baseResults/spv.atomicStoreInt64.comp.out
 Test/baseResults/spv.barrier.vert.out
 Test/baseResults/spv.bitCast.frag.out
@@ -1049,6 +1054,7 @@ Test/baseResults/spv.debugInfo.1.1.frag.out
 Test/baseResults/spv.debugInfo.frag.out
 Test/baseResults/spv.debugPrintf.frag.out
 Test/baseResults/spv.debugPrintf_Error.frag.out
+Test/baseResults/spv.debuginfo.bufferref.glsl.frag.out
 Test/baseResults/spv.debuginfo.const_params.glsl.comp.out
 Test/baseResults/spv.debuginfo.glsl.comp.out
 Test/baseResults/spv.debuginfo.glsl.frag.out
@@ -1062,6 +1068,7 @@ Test/baseResults/spv.debuginfo.hlsl.geom.out
 Test/baseResults/spv.debuginfo.hlsl.tesc.out
 Test/baseResults/spv.debuginfo.hlsl.tese.out
 Test/baseResults/spv.debuginfo.hlsl.vert.out
+Test/baseResults/spv.debuginfo.scalar_types.glsl.frag.out
 Test/baseResults/spv.deepRvalue.frag.out
 Test/baseResults/spv.demoteDisabled.frag.out
 Test/baseResults/spv.depthOut.frag.out
@@ -1076,6 +1083,7 @@ Test/baseResults/spv.drawParams.vert.out
 Test/baseResults/spv.earlyAndlateFragmentTests.frag.out
 Test/baseResults/spv.earlyReturnDiscard.frag.out
 Test/baseResults/spv.explicittypes.frag.out
+Test/baseResults/spv.exportFunctions.comp.out
 Test/baseResults/spv.ext.AccelDecl.frag.out
 Test/baseResults/spv.ext.AnyHitShader.rahit.out
 Test/baseResults/spv.ext.AnyHitShader_Errors.rahit.out
@@ -1112,6 +1120,8 @@ Test/baseResults/spv.ext.meshShaderRedeclBuiltins.mesh.out
 Test/baseResults/spv.ext.meshShaderTaskMem.mesh.out
 Test/baseResults/spv.ext.meshShaderUserDefined.mesh.out
 Test/baseResults/spv.ext.meshTaskShader.task.out
+Test/baseResults/spv.ext.textureShadowLod.error.frag.out
+Test/baseResults/spv.ext.textureShadowLod.frag.out
 Test/baseResults/spv.extPostDepthCoverage.frag.out
 Test/baseResults/spv.extPostDepthCoverage_Error.frag.out
 Test/baseResults/spv.float16.frag.out
@@ -1121,6 +1131,7 @@ Test/baseResults/spv.float16convertonlyarith.comp.out
 Test/baseResults/spv.float16convertonlystorage.comp.out
 Test/baseResults/spv.float32.frag.out
 Test/baseResults/spv.float64.frag.out
+Test/baseResults/spv.floatFetch.frag.out
 Test/baseResults/spv.flowControl.frag.out
 Test/baseResults/spv.for-complex-condition.vert.out
 Test/baseResults/spv.for-continue-break.vert.out
@@ -1218,6 +1229,11 @@ Test/baseResults/spv.nonuniform3.frag.out
 Test/baseResults/spv.nonuniform4.frag.out
 Test/baseResults/spv.nonuniform5.frag.out
 Test/baseResults/spv.nullInit.comp.out
+Test/baseResults/spv.nv.dmm-allops.comp.out
+Test/baseResults/spv.nv.dmm-allops.mesh.out
+Test/baseResults/spv.nv.dmm-allops.rahit.out
+Test/baseResults/spv.nv.dmm-allops.rchit.out
+Test/baseResults/spv.nv.dmm-allops.rgen.out
 Test/baseResults/spv.nv.hitobject-allops.rchit.out
 Test/baseResults/spv.nv.hitobject-allops.rgen.out
 Test/baseResults/spv.nv.hitobject-allops.rmiss.out
@@ -1522,6 +1538,7 @@ Test/glsl.autosampledtextures.frag
 Test/glsl.entryPointRename.vert
 Test/glsl.entryPointRename2.vert
 Test/glsl.es300.layoutOffset.error.vert
+Test/glsl.es320.extTextureShadowLod.frag
 Test/glsl.es320.subgroup.frag
 Test/glsl.es320.subgroup.geom
 Test/glsl.es320.subgroup.tesc
@@ -1538,6 +1555,7 @@ Test/glsl.es320.subgroupQuad.comp
 Test/glsl.es320.subgroupShuffle.comp
 Test/glsl.es320.subgroupShuffleRelative.comp
 Test/glsl.es320.subgroupVote.comp
+Test/glsl.ext.textureShadowLod.frag
 Test/glsl.versionOverride.comp
 Test/glsl.versionOverride.frag
 Test/glsl.versionOverride.geom
@@ -1570,6 +1588,7 @@ Test/hlsl.basic.comp
 Test/hlsl.basic.geom
 Test/hlsl.boolConv.vert
 Test/hlsl.buffer.frag
+Test/hlsl.buffer_ref_parameter.comp
 Test/hlsl.calculatelod.dx10.frag
 Test/hlsl.calculatelodunclamped.dx10.frag
 Test/hlsl.cast.frag
@@ -2196,6 +2215,7 @@ Test/spv.atomicFloat.comp
 Test/spv.atomicFloat2.comp
 Test/spv.atomicFloat_Error.comp
 Test/spv.atomicInt64.comp
+Test/spv.atomicRvalue.error.vert
 Test/spv.atomicStoreInt64.comp
 Test/spv.barrier.vert
 Test/spv.bitCast.frag
@@ -2257,6 +2277,7 @@ Test/spv.dead-complex-merge-after-return.vert
 Test/spv.debugInfo.frag
 Test/spv.debugPrintf.frag
 Test/spv.debugPrintf_Error.frag
+Test/spv.debuginfo.bufferref.glsl.frag
 Test/spv.debuginfo.const_params.glsl.comp
 Test/spv.debuginfo.glsl.comp
 Test/spv.debuginfo.glsl.frag
@@ -2270,6 +2291,7 @@ Test/spv.debuginfo.hlsl.geom
 Test/spv.debuginfo.hlsl.tesc
 Test/spv.debuginfo.hlsl.tese
 Test/spv.debuginfo.hlsl.vert
+Test/spv.debuginfo.scalar_types.glsl.frag
 Test/spv.deepRvalue.frag
 Test/spv.demoteDisabled.frag
 Test/spv.depthOut.frag
@@ -2284,6 +2306,7 @@ Test/spv.drawParams.vert
 Test/spv.earlyAndlateFragmentTests.frag
 Test/spv.earlyReturnDiscard.frag
 Test/spv.explicittypes.frag
+Test/spv.exportFunctions.comp
 Test/spv.ext.AccelDecl.frag
 Test/spv.ext.AnyHitShader.rahit
 Test/spv.ext.AnyHitShader_Errors.rahit
@@ -2320,6 +2343,8 @@ Test/spv.ext.meshShaderRedeclBuiltins.mesh
 Test/spv.ext.meshShaderTaskMem.mesh
 Test/spv.ext.meshShaderUserDefined.mesh
 Test/spv.ext.meshTaskShader.task
+Test/spv.ext.textureShadowLod.error.frag
+Test/spv.ext.textureShadowLod.frag
 Test/spv.extPostDepthCoverage.frag
 Test/spv.extPostDepthCoverage_Error.frag
 Test/spv.float16.frag
@@ -2329,6 +2354,7 @@ Test/spv.float16convertonlyarith.comp
 Test/spv.float16convertonlystorage.comp
 Test/spv.float32.frag
 Test/spv.float64.frag
+Test/spv.floatFetch.frag
 Test/spv.flowControl.frag
 Test/spv.for-complex-condition.vert
 Test/spv.for-continue-break.vert
@@ -2426,6 +2452,11 @@ Test/spv.nonuniform3.frag
 Test/spv.nonuniform4.frag
 Test/spv.nonuniform5.frag
 Test/spv.nullInit.comp
+Test/spv.nv.dmm-allops.comp
+Test/spv.nv.dmm-allops.mesh
+Test/spv.nv.dmm-allops.rahit
+Test/spv.nv.dmm-allops.rchit
+Test/spv.nv.dmm-allops.rgen
 Test/spv.nv.hitobject-allops.rchit
 Test/spv.nv.hitobject-allops.rgen
 Test/spv.nv.hitobject-allops.rmiss
