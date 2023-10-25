@@ -1761,7 +1761,9 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 	info.layout = impl->createPipelineLayout(key);
 
 	auto result = impl->device.createGraphicsPipeline(impl->pipelineCache, info);
-	LOG_TODO("check success instead of implicitly using result.value")
+	if (result.result != vk::Result::eSuccess) {
+		THROW_ERROR("Failed to create graphics pipeline: {}", vk::to_string(result.result))
+	}
 
 	impl->debugNameObject<vk::Pipeline>(result.value, desc.name_);
 
