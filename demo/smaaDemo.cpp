@@ -1457,11 +1457,10 @@ void SMAADemo::rebuildRenderGraph() {
 	LOG("create framebuffers at size {}x{}", windowWidth, windowHeight);
 	logFlush();
 
-	Format swapchainFormat = renderer.getSwapchainFormat();
 	{
 		RenderTargetDesc rtDesc;
 		rtDesc.name("final")
-		      .format(swapchainFormat)
+		      .format(Format::sRGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
 
@@ -1493,7 +1492,7 @@ void SMAADemo::rebuildRenderGraph() {
 			RenderTargetDesc rtDesc;
 			rtDesc.name("main color")
 			      .numSamples(numSamples)
-			      .format(swapchainFormat)
+			      .format(Format::sRGBA8)
 			      .additionalViewFormat(Format::RGBA8)
 			      .width(windowWidth)
 			      .height(windowHeight);
@@ -1594,7 +1593,7 @@ void SMAADemo::rebuildRenderGraph() {
 			RenderTargetDesc rtDesc;
 			rtDesc.name("main color")
 			      .numSamples(numSamples)
-			      .format(swapchainFormat)
+			      .format(Format::sRGBA8)
 			      .additionalViewFormat(Format::RGBA8)
 			      .width(windowWidth)
 			      .height(windowHeight);
@@ -1676,7 +1675,7 @@ void SMAADemo::rebuildRenderGraph() {
 			{
 				RenderTargetDesc rtDesc;
 				rtDesc.name("Temporal resolve 1")
-				      .format(swapchainFormat)
+				      .format(Format::sRGBA8)
 				      .width(windowWidth)
 				      .height(windowHeight);
 				switch (aaMethod) {
@@ -1695,8 +1694,8 @@ void SMAADemo::rebuildRenderGraph() {
 				rtDesc.name("Temporal resolve 2");
 				temporalRTs[1] = renderer.createRenderTarget(rtDesc);
 
-				renderGraph.externalRenderTarget(Rendertargets::TemporalPrevious, swapchainFormat, Layout::ShaderRead, Layout::ShaderRead, { TextureUsage::Sampling });
-				renderGraph.externalRenderTarget(Rendertargets::TemporalCurrent,  swapchainFormat, Layout::Undefined,  Layout::ShaderRead, { TextureUsage::Sampling });
+				renderGraph.externalRenderTarget(Rendertargets::TemporalPrevious, Format::sRGBA8, Layout::ShaderRead, Layout::ShaderRead, { TextureUsage::Sampling });
+				renderGraph.externalRenderTarget(Rendertargets::TemporalCurrent,  Format::sRGBA8, Layout::Undefined,  Layout::ShaderRead, { TextureUsage::Sampling });
 			}
 
 			if (numSamples > 1) {
