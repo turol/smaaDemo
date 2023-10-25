@@ -986,11 +986,6 @@ const RendererFeatures &Renderer::getFeatures() const {
 }
 
 
-Format Renderer::getSwapchainFormat() const {
-	return impl->swapchainFormat;
-}
-
-
 void Renderer::waitForDeviceIdle() {
 	return impl->waitForDeviceIdle();
 }
