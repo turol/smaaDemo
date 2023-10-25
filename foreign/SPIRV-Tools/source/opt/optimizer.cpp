@@ -15,6 +15,7 @@
 #include "spirv-tools/optimizer.hpp"
 
 #include <cassert>
+#include <charconv>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -157,7 +158,8 @@ Optimizer& Optimizer::RegisterLegalizationPasses(bool preserve_interface) {
           .RegisterPass(CreateDeadInsertElimPass())
           .RegisterPass(CreateReduceLoadSizePass())
           .RegisterPass(CreateAggressiveDCEPass(preserve_interface))
-          .RegisterPass(CreateInterpolateFixupPass());
+          .RegisterPass(CreateInterpolateFixupPass())
+          .RegisterPass(CreateInvocationInterlockPlacementPass());
 }
 
 Optimizer& Optimizer::RegisterLegalizationPasses() {
@@ -433,14 +435,12 @@ bool Optimizer::RegisterPassFromFlag(const std::string& flag) {
              pass_name == "inst-desc-idx-check" ||
              pass_name == "inst-buff-oob-check") {
     // preserve legacy names
-    RegisterPass(CreateInstBindlessCheckPass(7, 23));
+    RegisterPass(CreateInstBindlessCheckPass(23));
     RegisterPass(CreateSimplificationPass());
     RegisterPass(CreateDeadBranchElimPass());
     RegisterPass(CreateBlockMergePass());
-    RegisterPass(CreateAggressiveDCEPass(true));
   } else if (pass_name == "inst-buff-addr-check") {
-    RegisterPass(CreateInstBuffAddrCheckPass(7, 23));
-    RegisterPass(CreateAggressiveDCEPass(true));
+    RegisterPass(CreateInstBuffAddrCheckPass(23));
   } else if (pass_name == "convert-relaxed-to-half") {
     RegisterPass(CreateConvertRelaxedToHalfPass());
   } else if (pass_name == "relax-float-ops") {
@@ -549,6 +549,39 @@ bool Optimizer::RegisterPassFromFlag(const std::string& flag) {
              pass_args.c_str());
       return false;
     }
+  } else if (pass_name == "switch-descriptorset") {
+    if (pass_args.size() == 0) {
+      Error(consumer(), nullptr, {},
+            "--switch-descriptorset requires a from:to argument.");
+      return false;
+    }
+    uint32_t from_set, to_set;
+    const char* start = pass_args.data();
+    const char* end = pass_args.data() + pass_args.size();
+
+    auto result = std::from_chars(start, end, from_set);
+    if (result.ec != std::errc()) {
+      Errorf(consumer(), nullptr, {},
+             "Invalid argument for --switch-descriptorset: %s",
+             pass_args.c_str());
+      return false;
+    }
+    start = result.ptr;
+    if (start[0] != ':') {
+      Errorf(consumer(), nullptr, {},
+             "Invalid argument for --switch-descriptorset: %s",
+             pass_args.c_str());
+      return false;
+    }
+    start++;
+    result = std::from_chars(start, end, to_set);
+    if (result.ec != std::errc() || result.ptr != end) {
+      Errorf(consumer(), nullptr, {},
+             "Invalid argument for --switch-descriptorset: %s",
+             pass_args.c_str());
+      return false;
+    }
+    RegisterPass(CreateSwitchDescriptorSetPass(from_set, to_set));
   } else {
     Errorf(consumer(), nullptr, {},
            "Unknown flag '--%s'. Use --help for a list of valid flags",
@@ -946,10 +979,9 @@ Optimizer::PassToken CreateUpgradeMemoryModelPass() {
       MakeUnique<opt::UpgradeMemoryModel>());
 }
 
-Optimizer::PassToken CreateInstBindlessCheckPass(uint32_t desc_set,
-                                                 uint32_t shader_id) {
+Optimizer::PassToken CreateInstBindlessCheckPass(uint32_t shader_id) {
   return MakeUnique<Optimizer::PassToken::Impl>(
-      MakeUnique<opt::InstBindlessCheckPass>(desc_set, shader_id));
+      MakeUnique<opt::InstBindlessCheckPass>(shader_id));
 }
 
 Optimizer::PassToken CreateInstDebugPrintfPass(uint32_t desc_set,
@@ -958,10 +990,9 @@ Optimizer::PassToken CreateInstDebugPrintfPass(uint32_t desc_set,
       MakeUnique<opt::InstDebugPrintfPass>(desc_set, shader_id));
 }
 
-Optimizer::PassToken CreateInstBuffAddrCheckPass(uint32_t desc_set,
-                                                 uint32_t shader_id) {
+Optimizer::PassToken CreateInstBuffAddrCheckPass(uint32_t shader_id) {
   return MakeUnique<Optimizer::PassToken::Impl>(
-      MakeUnique<opt::InstBuffAddrCheckPass>(desc_set, shader_id));
+      MakeUnique<opt::InstBuffAddrCheckPass>(shader_id));
 }
 
 Optimizer::PassToken CreateConvertRelaxedToHalfPass() {
@@ -1075,6 +1106,16 @@ Optimizer::PassToken CreateFixFuncCallArgumentsPass() {
 Optimizer::PassToken CreateTrimCapabilitiesPass() {
   return MakeUnique<Optimizer::PassToken::Impl>(
       MakeUnique<opt::TrimCapabilitiesPass>());
+}
+
+Optimizer::PassToken CreateSwitchDescriptorSetPass(uint32_t from, uint32_t to) {
+  return MakeUnique<Optimizer::PassToken::Impl>(
+      MakeUnique<opt::SwitchDescriptorSetPass>(from, to));
+}
+
+Optimizer::PassToken CreateInvocationInterlockPlacementPass() {
+  return MakeUnique<Optimizer::PassToken::Impl>(
+      MakeUnique<opt::InvocationInterlockPlacementPass>());
 }
 }  // namespace spvtools
 

@@ -69,6 +69,7 @@ FILES:= \
 	instrument_pass.cpp \
 	interface_var_sroa.cpp \
 	interp_fixup_pass.cpp \
+	invocation_interlock_placement_pass.cpp \
 	ir_context.cpp \
 	ir_loader.cpp \
 	licm_pass.cpp \
@@ -116,6 +117,7 @@ FILES:= \
 	strip_debug_info_pass.cpp \
 	strip_nonsemantic_info_pass.cpp \
 	struct_cfg_analysis.cpp \
+	switch_descriptorset_pass.cpp \
 	trim_capabilities_pass.cpp \
 	type_manager.cpp \
 	types.cpp \

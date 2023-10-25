@@ -136,6 +136,7 @@ SPVTOOLS_OPT_SRC_FILES := \
 		source/opt/instrument_pass.cpp \
 		source/opt/interface_var_sroa.cpp \
 		source/opt/interp_fixup_pass.cpp \
+		source/opt/invocation_interlock_placement_pass.cpp \
 		source/opt/ir_context.cpp \
 		source/opt/ir_loader.cpp \
 		source/opt/licm_pass.cpp \
@@ -182,6 +183,7 @@ SPVTOOLS_OPT_SRC_FILES := \
 		source/opt/strip_debug_info_pass.cpp \
 		source/opt/strip_nonsemantic_info_pass.cpp \
 		source/opt/struct_cfg_analysis.cpp \
+		source/opt/switch_descriptorset_pass.cpp \
 		source/opt/trim_capabilities_pass.cpp \
 		source/opt/type_manager.cpp \
 		source/opt/types.cpp \

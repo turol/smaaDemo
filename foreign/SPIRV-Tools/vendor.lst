@@ -1,9 +1,11 @@
 .bazelrc
 .bazelversion
 .clang-format
+.github/dependabot.yml
 .github/workflows/autoroll.yml
 .github/workflows/bazel.yml
 .github/workflows/release.yml
+.github/workflows/scorecard.yml
 .github/workflows/wasm.yml
 .gitignore
 .gn
@@ -656,6 +658,8 @@ source/opt/interface_var_sroa.cpp
 source/opt/interface_var_sroa.h
 source/opt/interp_fixup_pass.cpp
 source/opt/interp_fixup_pass.h
+source/opt/invocation_interlock_placement_pass.cpp
+source/opt/invocation_interlock_placement_pass.h
 source/opt/ir_builder.h
 source/opt/ir_context.cpp
 source/opt/ir_context.h
@@ -754,6 +758,8 @@ source/opt/strip_nonsemantic_info_pass.cpp
 source/opt/strip_nonsemantic_info_pass.h
 source/opt/struct_cfg_analysis.cpp
 source/opt/struct_cfg_analysis.h
+source/opt/switch_descriptorset_pass.cpp
+source/opt/switch_descriptorset_pass.h
 source/opt/tree_iterator.h
 source/opt/trim_capabilities_pass.cpp
 source/opt/trim_capabilities_pass.h
@@ -1364,6 +1370,7 @@ test/opt/instruction_list_test.cpp
 test/opt/instruction_test.cpp
 test/opt/interface_var_sroa_test.cpp
 test/opt/interp_fixup_test.cpp
+test/opt/invocation_interlock_placement_test.cpp
 test/opt/ir_builder.cpp
 test/opt/ir_context_test.cpp
 test/opt/ir_loader_test.cpp
@@ -1429,6 +1436,7 @@ test/opt/strength_reduction_test.cpp
 test/opt/strip_debug_info_test.cpp
 test/opt/strip_nonsemantic_info_test.cpp
 test/opt/struct_cfg_analysis_test.cpp
+test/opt/switch_descriptorset_test.cpp
 test/opt/trim_capabilities_pass_test.cpp
 test/opt/type_manager_test.cpp
 test/opt/types_test.cpp
