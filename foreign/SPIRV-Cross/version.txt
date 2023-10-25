@@ -1,8 +1,8 @@
-commit 633dc301350952a9a895c8db42eed371ea969a64
-Merge: a3f02681 79d63934
+commit 637cff3d05892801daa43c93907e17151c7dfd31
+Merge: 2de1265f 2fba284b
 Author: Hans-Kristian Arntzen <post@arntzen-software.no>
-Date:   Thu Aug 17 13:51:54 2023 +0200
+Date:   Mon Oct 23 15:21:23 2023 +0200
 
-    Merge pull request #2187 from KhronosGroup/mesh-invariant-position
+    Merge pull request #2220 from KhronosGroup/pr-2208
     
-    GLSL: Emit inline invariant position for mesh shaders.
+    Land PR 2208 and fix more issues with sample mask

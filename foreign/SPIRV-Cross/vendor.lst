@@ -87,6 +87,7 @@ reference/opt/shaders-hlsl/comp/spec-constant-op-member-array.comp
 reference/opt/shaders-hlsl/comp/spec-constant-work-group-size.comp
 reference/opt/shaders-hlsl/comp/ssbo-array-length.comp
 reference/opt/shaders-hlsl/comp/ssbo-array.comp
+reference/opt/shaders-hlsl/comp/ssbo-store-array.comp
 reference/opt/shaders-hlsl/flatten/array.flatten.vert
 reference/opt/shaders-hlsl/flatten/basic.flatten.vert
 reference/opt/shaders-hlsl/flatten/copy.flatten.vert
@@ -317,6 +318,7 @@ reference/opt/shaders-msl/comp/local-invocation-index.comp
 reference/opt/shaders-msl/comp/local-size-duplicate-spec-id.comp
 reference/opt/shaders-msl/comp/mat3-row-maj-read-write-const.comp
 reference/opt/shaders-msl/comp/mat3.comp
+reference/opt/shaders-msl/comp/metal3_1_regression_patch.replace-recursive-inputs.msl3.comp
 reference/opt/shaders-msl/comp/mod.comp
 reference/opt/shaders-msl/comp/modf.comp
 reference/opt/shaders-msl/comp/outer-product.comp
@@ -1080,6 +1082,8 @@ reference/shaders-hlsl-no-opt/asm/frag/pixel-interlock-callstack.sm51.fxconly.as
 reference/shaders-hlsl-no-opt/asm/frag/pixel-interlock-control-flow.sm51.fxconly.asm.frag
 reference/shaders-hlsl-no-opt/asm/frag/pixel-interlock-split-functions.sm51.fxconly.asm.frag
 reference/shaders-hlsl-no-opt/asm/frag/reserved-function-identifier.asm.frag
+reference/shaders-hlsl-no-opt/asm/frag/sample-mask-load-store-array-uint.asm.frag
+reference/shaders-hlsl-no-opt/asm/frag/sample-mask-load-store-array.asm.frag
 reference/shaders-hlsl-no-opt/asm/frag/scalar-select.spv14.asm.frag
 reference/shaders-hlsl-no-opt/asm/frag/struct-packing-last-element-array-matrix-rule.invalid.asm.frag
 reference/shaders-hlsl-no-opt/asm/frag/subgroup-arithmetic-cast.invalid.nofxc.sm60.asm.frag
@@ -1182,6 +1186,7 @@ reference/shaders-hlsl/comp/spec-constant-op-member-array.comp
 reference/shaders-hlsl/comp/spec-constant-work-group-size.comp
 reference/shaders-hlsl/comp/ssbo-array-length.comp
 reference/shaders-hlsl/comp/ssbo-array.comp
+reference/shaders-hlsl/comp/ssbo-store-array.comp
 reference/shaders-hlsl/flatten/array.flatten.vert
 reference/shaders-hlsl/flatten/basic.flatten.vert
 reference/shaders-hlsl/flatten/copy.flatten.vert
@@ -1343,6 +1348,8 @@ reference/shaders-msl-no-opt/asm/frag/pixel-interlock-control-flow.msl2.asm.frag
 reference/shaders-msl-no-opt/asm/frag/pixel-interlock-split-functions.msl2.asm.frag
 reference/shaders-msl-no-opt/asm/frag/private-initializer-direct-store.asm.frag
 reference/shaders-msl-no-opt/asm/frag/reserved-function-identifier.asm.frag
+reference/shaders-msl-no-opt/asm/frag/sample-mask-load-store-array-uint.asm.frag
+reference/shaders-msl-no-opt/asm/frag/sample-mask-load-store-array.asm.frag
 reference/shaders-msl-no-opt/asm/frag/scalar-select.spv14.asm.frag
 reference/shaders-msl-no-opt/asm/frag/subgroup-arithmetic-cast.msl21.asm.frag
 reference/shaders-msl-no-opt/asm/frag/switch-block-case-fallthrough.asm.invalid.frag
@@ -1415,6 +1422,7 @@ reference/shaders-msl-no-opt/comp/bitcast-16bit-1.invalid.comp
 reference/shaders-msl-no-opt/comp/bitcast-16bit-2.invalid.comp
 reference/shaders-msl-no-opt/comp/bitfield.comp
 reference/shaders-msl-no-opt/comp/buffer-device-address-from-pointer-complex-chain.msl23.comp
+reference/shaders-msl-no-opt/comp/extract-atomics-from-function.comp
 reference/shaders-msl-no-opt/comp/glsl.std450.comp
 reference/shaders-msl-no-opt/comp/illegal-struct-name.asm.comp
 reference/shaders-msl-no-opt/comp/implicit-integer-promotion.comp
@@ -1452,6 +1460,7 @@ reference/shaders-msl-no-opt/frag/min-max-clamp.relax-nan.invalid.asm.frag
 reference/shaders-msl-no-opt/frag/nonuniform-constructor.msl2.frag
 reference/shaders-msl-no-opt/frag/pixel-interlock-simple-callstack.msl2.frag
 reference/shaders-msl-no-opt/frag/pull-interpolant-access-chain.msl23.frag
+reference/shaders-msl-no-opt/frag/ray-query-mutability.spv14.vk.msl24.frag
 reference/shaders-msl-no-opt/frag/scalar-block-layout-ubo-std430.vk.nocompat.invalid.frag
 reference/shaders-msl-no-opt/frag/shadow-compare-global-alias.invalid.frag
 reference/shaders-msl-no-opt/frag/struct-bool-edge-cases.frag
@@ -1661,6 +1670,7 @@ reference/shaders-msl/comp/local-invocation-index.comp
 reference/shaders-msl/comp/local-size-duplicate-spec-id.comp
 reference/shaders-msl/comp/mat3-row-maj-read-write-const.comp
 reference/shaders-msl/comp/mat3.comp
+reference/shaders-msl/comp/metal3_1_regression_patch.replace-recursive-inputs.msl3.comp
 reference/shaders-msl/comp/mod.comp
 reference/shaders-msl/comp/modf.comp
 reference/shaders-msl/comp/outer-product.comp
@@ -1987,6 +1997,7 @@ reference/shaders-no-opt/asm/comp/bitcast-fp16-fp32.asm.vk.comp
 reference/shaders-no-opt/asm/comp/bitcast-fp16-fp32.asm.vk.comp.vk
 reference/shaders-no-opt/asm/comp/bitfield-signed-operations.asm.comp
 reference/shaders-no-opt/asm/comp/bitscan.asm.comp
+reference/shaders-no-opt/asm/comp/block-undef.noeliminate.invalid.asm.comp
 reference/shaders-no-opt/asm/comp/buffer-atomic-nonuniform.vk.nocompat.asm.comp.vk
 reference/shaders-no-opt/asm/comp/buffer-device-address-ptr-casting.vk.nocompat.asm.comp.vk
 reference/shaders-no-opt/asm/comp/buffer-reference-aliased-block-name.nocompat.vk.asm.comp.vk
@@ -1998,6 +2009,7 @@ reference/shaders-no-opt/asm/comp/constant-composite-undef.asm.comp
 reference/shaders-no-opt/asm/comp/constant-lut-name-aliasing.asm.comp
 reference/shaders-no-opt/asm/comp/copy-logical.spv14.asm.comp
 reference/shaders-no-opt/asm/comp/eliminate-globals-not-in-entry-point.noeliminate.spv14.asm.comp
+reference/shaders-no-opt/asm/comp/empty-ubo-block.noeliminate.asm.comp
 reference/shaders-no-opt/asm/comp/expression-nesting-limits.asm.comp
 reference/shaders-no-opt/asm/comp/extended-debug-extinst.invalid.asm.comp
 reference/shaders-no-opt/asm/comp/fuzz-collapse-degenerate-loop.asm.comp
@@ -2062,6 +2074,8 @@ reference/shaders-no-opt/asm/frag/relaxed-precision-inheritance-rules-hoisted-te
 reference/shaders-no-opt/asm/frag/relaxed-precision-inheritance-rules.asm.frag
 reference/shaders-no-opt/asm/frag/reserved-function-identifier.asm.frag
 reference/shaders-no-opt/asm/frag/reserved-identifiers.asm.frag
+reference/shaders-no-opt/asm/frag/sample-mask-load-store-array-uint.asm.frag
+reference/shaders-no-opt/asm/frag/sample-mask-load-store-array.asm.frag
 reference/shaders-no-opt/asm/frag/scalar-select.spv14.asm.frag
 reference/shaders-no-opt/asm/frag/selection-merge-to-continue.asm.invalid.frag
 reference/shaders-no-opt/asm/frag/sparse-texture-feedback-uint-code.asm.desktop.frag
@@ -2082,6 +2096,7 @@ reference/shaders-no-opt/asm/frag/while-loop-inverted-test.asm.frag
 reference/shaders-no-opt/asm/geom/store-uint-layer.invalid.asm.geom
 reference/shaders-no-opt/asm/loop-header-self-continue-break.asm.comp
 reference/shaders-no-opt/asm/mesh/invariant-position-dx-style.vk.nocompat.spv14.asm.mesh.vk
+reference/shaders-no-opt/asm/mesh/mesh-shader-clip-cull.vk.nocompat.spv14.asm.mesh.vk
 reference/shaders-no-opt/asm/mesh/mesh-shader-plain-builtin-outputs.spv14.asm.vk.nocompat.mesh.vk
 reference/shaders-no-opt/asm/rgen/acceleration-nonuniform.spv14.vk.nocompat.asm.rgen.vk
 reference/shaders-no-opt/asm/task/task-shader.vk.nocompat.spv14.asm.task.vk
@@ -2657,6 +2672,8 @@ shaders-hlsl-no-opt/asm/frag/pixel-interlock-callstack.sm51.fxconly.asm.frag
 shaders-hlsl-no-opt/asm/frag/pixel-interlock-control-flow.sm51.fxconly.asm.frag
 shaders-hlsl-no-opt/asm/frag/pixel-interlock-split-functions.sm51.fxconly.asm.frag
 shaders-hlsl-no-opt/asm/frag/reserved-function-identifier.asm.frag
+shaders-hlsl-no-opt/asm/frag/sample-mask-load-store-array-uint.asm.frag
+shaders-hlsl-no-opt/asm/frag/sample-mask-load-store-array.asm.frag
 shaders-hlsl-no-opt/asm/frag/scalar-select.spv14.asm.frag
 shaders-hlsl-no-opt/asm/frag/struct-packing-last-element-array-matrix-rule.invalid.asm.frag
 shaders-hlsl-no-opt/asm/frag/subgroup-arithmetic-cast.invalid.nofxc.sm60.asm.frag
@@ -2759,6 +2776,7 @@ shaders-hlsl/comp/spec-constant-op-member-array.comp
 shaders-hlsl/comp/spec-constant-work-group-size.comp
 shaders-hlsl/comp/ssbo-array-length.comp
 shaders-hlsl/comp/ssbo-array.comp
+shaders-hlsl/comp/ssbo-store-array.comp
 shaders-hlsl/flatten/array.flatten.vert
 shaders-hlsl/flatten/basic.flatten.vert
 shaders-hlsl/flatten/copy.flatten.vert
@@ -2919,6 +2937,8 @@ shaders-msl-no-opt/asm/frag/pixel-interlock-control-flow.msl2.asm.frag
 shaders-msl-no-opt/asm/frag/pixel-interlock-split-functions.msl2.asm.frag
 shaders-msl-no-opt/asm/frag/private-initializer-direct-store.asm.frag
 shaders-msl-no-opt/asm/frag/reserved-function-identifier.asm.frag
+shaders-msl-no-opt/asm/frag/sample-mask-load-store-array-uint.asm.frag
+shaders-msl-no-opt/asm/frag/sample-mask-load-store-array.asm.frag
 shaders-msl-no-opt/asm/frag/scalar-select.spv14.asm.frag
 shaders-msl-no-opt/asm/frag/subgroup-arithmetic-cast.msl21.asm.frag
 shaders-msl-no-opt/asm/frag/switch-block-case-fallthrough.asm.invalid.frag
@@ -2991,6 +3011,7 @@ shaders-msl-no-opt/comp/bitcast-16bit-1.invalid.comp
 shaders-msl-no-opt/comp/bitcast-16bit-2.invalid.comp
 shaders-msl-no-opt/comp/bitfield.comp
 shaders-msl-no-opt/comp/buffer-device-address-from-pointer-complex-chain.msl23.comp
+shaders-msl-no-opt/comp/extract-atomics-from-function.comp
 shaders-msl-no-opt/comp/glsl.std450.comp
 shaders-msl-no-opt/comp/illegal-struct-name.asm.comp
 shaders-msl-no-opt/comp/implicit-integer-promotion.comp
@@ -3028,6 +3049,7 @@ shaders-msl-no-opt/frag/min-max-clamp.relax-nan.invalid.asm.frag
 shaders-msl-no-opt/frag/nonuniform-constructor.msl2.frag
 shaders-msl-no-opt/frag/pixel-interlock-simple-callstack.msl2.frag
 shaders-msl-no-opt/frag/pull-interpolant-access-chain.msl23.frag
+shaders-msl-no-opt/frag/ray-query-mutability.spv14.vk.msl24.frag
 shaders-msl-no-opt/frag/scalar-block-layout-ubo-std430.vk.nocompat.invalid.frag
 shaders-msl-no-opt/frag/shadow-compare-global-alias.invalid.frag
 shaders-msl-no-opt/frag/struct-bool-edge-cases.frag
@@ -3235,6 +3257,7 @@ shaders-msl/comp/local-invocation-index.comp
 shaders-msl/comp/local-size-duplicate-spec-id.comp
 shaders-msl/comp/mat3-row-maj-read-write-const.comp
 shaders-msl/comp/mat3.comp
+shaders-msl/comp/metal3_1_regression_patch.replace-recursive-inputs.msl3.comp
 shaders-msl/comp/mod.comp
 shaders-msl/comp/modf.comp
 shaders-msl/comp/outer-product.comp
@@ -3560,6 +3583,7 @@ shaders-no-opt/asm/comp/bda-to-array-in-buffer.asm.spv16.nocompat.vk.comp
 shaders-no-opt/asm/comp/bitcast-fp16-fp32.asm.vk.comp
 shaders-no-opt/asm/comp/bitfield-signed-operations.asm.comp
 shaders-no-opt/asm/comp/bitscan.asm.comp
+shaders-no-opt/asm/comp/block-undef.noeliminate.invalid.asm.comp
 shaders-no-opt/asm/comp/buffer-atomic-nonuniform.vk.nocompat.asm.comp
 shaders-no-opt/asm/comp/buffer-device-address-ptr-casting.vk.nocompat.asm.comp
 shaders-no-opt/asm/comp/buffer-reference-aliased-block-name.nocompat.vk.asm.comp
@@ -3571,6 +3595,7 @@ shaders-no-opt/asm/comp/constant-composite-undef.asm.comp
 shaders-no-opt/asm/comp/constant-lut-name-aliasing.asm.comp
 shaders-no-opt/asm/comp/copy-logical.spv14.asm.comp
 shaders-no-opt/asm/comp/eliminate-globals-not-in-entry-point.noeliminate.spv14.asm.comp
+shaders-no-opt/asm/comp/empty-ubo-block.noeliminate.asm.comp
 shaders-no-opt/asm/comp/expression-nesting-limits.asm.comp
 shaders-no-opt/asm/comp/extended-debug-extinst.invalid.asm.comp
 shaders-no-opt/asm/comp/fuzz-collapse-degenerate-loop.asm.comp
@@ -3632,6 +3657,8 @@ shaders-no-opt/asm/frag/relaxed-precision-inheritance-rules-hoisted-temporary.as
 shaders-no-opt/asm/frag/relaxed-precision-inheritance-rules.asm.frag
 shaders-no-opt/asm/frag/reserved-function-identifier.asm.frag
 shaders-no-opt/asm/frag/reserved-identifiers.asm.frag
+shaders-no-opt/asm/frag/sample-mask-load-store-array-uint.asm.frag
+shaders-no-opt/asm/frag/sample-mask-load-store-array.asm.frag
 shaders-no-opt/asm/frag/scalar-select.spv14.asm.frag
 shaders-no-opt/asm/frag/selection-merge-to-continue.asm.invalid.frag
 shaders-no-opt/asm/frag/sparse-texture-feedback-uint-code.asm.desktop.frag
@@ -3651,6 +3678,7 @@ shaders-no-opt/asm/frag/while-loop-inverted-test.asm.frag
 shaders-no-opt/asm/geom/store-uint-layer.invalid.asm.geom
 shaders-no-opt/asm/loop-header-self-continue-break.asm.comp
 shaders-no-opt/asm/mesh/invariant-position-dx-style.vk.nocompat.spv14.asm.mesh
+shaders-no-opt/asm/mesh/mesh-shader-clip-cull.vk.nocompat.spv14.asm.mesh
 shaders-no-opt/asm/mesh/mesh-shader-plain-builtin-outputs.spv14.asm.vk.nocompat.mesh
 shaders-no-opt/asm/rgen/acceleration-nonuniform.spv14.vk.nocompat.asm.rgen
 shaders-no-opt/asm/task/task-shader.vk.nocompat.spv14.asm.task
@@ -4166,6 +4194,7 @@ spirv_cpp.cpp
 spirv_cpp.hpp
 spirv_cross.cpp
 spirv_cross.hpp
+spirv_cross.natvis
 spirv_cross_c.cpp
 spirv_cross_c.h
 spirv_cross_containers.hpp
