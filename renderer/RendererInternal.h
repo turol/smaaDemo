@@ -313,7 +313,6 @@ struct RendererBase {
 	SwapchainDesc                                        swapchainDesc;
 	SwapchainDesc                                        wantedSwapchain;
 	bool                                                 swapchainDirty            = true;
-	Format                                               swapchainFormat           = Format::Invalid;
 
 	uint64_t                                             frameTimeoutNanos         = 1000000000ULL;
 	uint32_t                                             currentFrameIdx           = 0;

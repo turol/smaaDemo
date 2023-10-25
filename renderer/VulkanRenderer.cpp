@@ -2634,7 +2634,6 @@ void RendererImpl::recreateSwapchain() {
 		info.image  = f.image;
 	}
 
-	swapchainFormat = Format::sBGRA8;
 	swapchainDirty = false;
 }
 
