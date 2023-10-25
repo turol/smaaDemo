@@ -1,8 +1,16 @@
-commit 124a9665e464ef98b8b718d572d5f329311061eb
-Merge: f14a663 b846bb7
-Author: David Neto <dneto@google.com>
-Date:   Fri Aug 4 13:44:58 2023 -0400
+commit 88bc5e321c2839707df8b1ab534e243e00744177
+Author: bwlodarcz <bertrand.wlodarczyk@intel.com>
+Date:   Wed Oct 18 17:44:09 2023 +0200
 
-    Merge pull request #367 from dneto0/coop-matrix-enums-deps
+    Headers support for new FPGAMemoryAttributesINTEL (#384)
     
-    Cooperative matrix enums depend on the extension
+    * Headers support for new FPGAMemoryAttributesINTEL
+    
+    Implementation of three new FPGAMemoryAttributesINTEL:
+     - StridesizeINTEL
+     - WordsizeINTEL
+     - TrueDualPortIntel
+    
+    Specification: https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/INTEL/SPV_INTEL_fpga_memory_attributes.asciidoc
+    
+    * Update_1
