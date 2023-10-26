@@ -1161,7 +1161,7 @@ struct RendererImpl : public RendererBase {
 	VertexShaderHandle   createVertexShader(const std::string &name, const std::string &entryPoint, const ShaderMacros &macros, ShaderLanguage shaderLanguage);
 	FragmentShaderHandle createFragmentShader(const std::string &name, const std::string &entryPoint, const ShaderMacros &macros, ShaderLanguage shaderLanguage);
 
-	void logPipelineStatistics(const std::vector<char> &pipelineName, vk::Pipeline pipeline);
+	void logPipelineStatistics(std::string_view pipelineName, vk::Pipeline pipeline);
 
 	void waitForDeviceIdle();
 };

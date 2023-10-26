@@ -1785,8 +1785,7 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 			}
 		}
 
-		pipelineName.push_back('\0');
-		impl->logPipelineStatistics(pipelineName, pipeline);
+		impl->logPipelineStatistics(std::string_view(pipelineName.data(), pipelineName.size()), pipeline);
 	}
 
 	GraphicsPipeline p;
@@ -1798,8 +1797,8 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 }
 
 
-void RendererImpl::logPipelineStatistics(const std::vector<char> &pipelineName, vk::Pipeline pipeline) {
-	LOG("GraphicsPipeline \"{}\" executable properties:", pipelineName.data());
+void RendererImpl::logPipelineStatistics(std::string_view pipelineName, vk::Pipeline pipeline) {
+	LOG("GraphicsPipeline \"{}\" executable properties:", pipelineName);
 
 	vk::PipelineInfoKHR pipelineInfo;
 	pipelineInfo.pipeline = pipeline;
