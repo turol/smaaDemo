@@ -1765,11 +1765,13 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 		THROW_ERROR("Failed to create graphics pipeline: {}", vk::to_string(result.result))
 	}
 
-	impl->debugNameObject<vk::Pipeline>(result.value, desc.name_);
+	vk::Pipeline pipeline = result.value;
+
+	impl->debugNameObject<vk::Pipeline>(pipeline, desc.name_);
 
 	if (impl->pipelineExecutableInfo) {
 		vk::PipelineInfoKHR pipelineInfo;
-		pipelineInfo.pipeline = result.value;
+		pipelineInfo.pipeline = pipeline;
 		std::vector<vk::PipelineExecutablePropertiesKHR> properties = impl->device.getPipelineExecutablePropertiesKHR(pipelineInfo, impl->dispatcher);
 		{
 			std::vector<char> pipelineName;
@@ -1792,7 +1794,7 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 		}
 
 		vk::PipelineExecutableInfoKHR executableInfo;
-		executableInfo.pipeline = result.value;
+		executableInfo.pipeline = pipeline;
 
 		uint32_t i = 0;
 		for (const auto &property : properties) {
@@ -1850,7 +1852,7 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 	}
 
 	GraphicsPipeline p;
-	p.pipeline = result.value;
+	p.pipeline = pipeline;
 	p.layout   = info.layout;
 	p.scissor  = desc.scissorTest_;
 
