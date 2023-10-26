@@ -1773,7 +1773,7 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 		std::vector<char> pipelineName;
 
 		pipelineName.insert(pipelineName.end(), desc.vertexShaderName.begin(), desc.vertexShaderName.end());
-
+		pipelineName.push_back('_');
 		pipelineName.insert(pipelineName.end(), desc.fragmentShaderName.begin(), desc.fragmentShaderName.end());
 
 		for (const auto &macro : desc.shaderMacros_.impl) {
