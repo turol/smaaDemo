@@ -1770,22 +1770,22 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 	impl->debugNameObject<vk::Pipeline>(pipeline, desc.name_);
 
 	if (impl->pipelineExecutableInfo) {
-			std::vector<char> pipelineName;
+		std::vector<char> pipelineName;
 
-			pipelineName.insert(pipelineName.end(), desc.vertexShaderName.begin(), desc.vertexShaderName.end());
+		pipelineName.insert(pipelineName.end(), desc.vertexShaderName.begin(), desc.vertexShaderName.end());
 
-			pipelineName.insert(pipelineName.end(), desc.fragmentShaderName.begin(), desc.fragmentShaderName.end());
+		pipelineName.insert(pipelineName.end(), desc.fragmentShaderName.begin(), desc.fragmentShaderName.end());
 
-			for (const auto &macro : desc.shaderMacros_.impl) {
-				pipelineName.push_back(' ');
-				pipelineName.insert(pipelineName.end(), macro.key.begin(), macro.key.end());
-				if (!macro.value.empty()) {
-					pipelineName.push_back('=');
-					pipelineName.insert(pipelineName.end(), macro.value.begin(), macro.value.end());
-				}
+		for (const auto &macro : desc.shaderMacros_.impl) {
+			pipelineName.push_back(' ');
+			pipelineName.insert(pipelineName.end(), macro.key.begin(), macro.key.end());
+			if (!macro.value.empty()) {
+				pipelineName.push_back('=');
+				pipelineName.insert(pipelineName.end(), macro.value.begin(), macro.value.end());
 			}
+		}
 
-			pipelineName.push_back('\0');
+		pipelineName.push_back('\0');
 		impl->logPipelineStatistics(pipelineName, pipeline);
 	}
 
@@ -1799,67 +1799,67 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 
 
 void RendererImpl::logPipelineStatistics(const std::vector<char> &pipelineName, vk::Pipeline pipeline) {
-		LOG("GraphicsPipeline \"{}\" executable properties:", pipelineName.data());
+	LOG("GraphicsPipeline \"{}\" executable properties:", pipelineName.data());
 
-		vk::PipelineInfoKHR pipelineInfo;
-		pipelineInfo.pipeline = pipeline;
-		std::vector<vk::PipelineExecutablePropertiesKHR> properties = device.getPipelineExecutablePropertiesKHR(pipelineInfo, dispatcher);
+	vk::PipelineInfoKHR pipelineInfo;
+	pipelineInfo.pipeline = pipeline;
+	std::vector<vk::PipelineExecutablePropertiesKHR> properties = device.getPipelineExecutablePropertiesKHR(pipelineInfo, dispatcher);
 
-		vk::PipelineExecutableInfoKHR executableInfo;
-		executableInfo.pipeline = pipeline;
+	vk::PipelineExecutableInfoKHR executableInfo;
+	executableInfo.pipeline = pipeline;
 
-		uint32_t i = 0;
-		for (const auto &property : properties) {
-			LOG(" Executable {} \"{}\" {}  {}  subgroupSize {}", i, property.name.data(), vk::to_string(property.stages), property.description.data(), property.subgroupSize);
-			executableInfo.executableIndex = i;
-			i++;
+	uint32_t i = 0;
+	for (const auto &property : properties) {
+		LOG(" Executable {} \"{}\" {}  {}  subgroupSize {}", i, property.name.data(), vk::to_string(property.stages), property.description.data(), property.subgroupSize);
+		executableInfo.executableIndex = i;
+		i++;
 
-			std::vector<vk::PipelineExecutableStatisticKHR> statistics = device.getPipelineExecutableStatisticsKHR(executableInfo, dispatcher);
-			size_t maxNameLen  = 1;
-			size_t maxValueLen = 5;  // "false"
-			for (const auto &stat : statistics) {
-				maxNameLen = std::max(maxNameLen, strnlen(stat.name, VK_MAX_DESCRIPTION_SIZE));
-				LOG_TODO("better way to calculate formatted number length")
-				switch (stat.format) {
-				case vk::PipelineExecutableStatisticFormatKHR::eBool32:
-					break;
+		std::vector<vk::PipelineExecutableStatisticKHR> statistics = device.getPipelineExecutableStatisticsKHR(executableInfo, dispatcher);
+		size_t maxNameLen  = 1;
+		size_t maxValueLen = 5;  // "false"
+		for (const auto &stat : statistics) {
+			maxNameLen = std::max(maxNameLen, strnlen(stat.name, VK_MAX_DESCRIPTION_SIZE));
+			LOG_TODO("better way to calculate formatted number length")
+			switch (stat.format) {
+			case vk::PipelineExecutableStatisticFormatKHR::eBool32:
+				break;
 
-				case vk::PipelineExecutableStatisticFormatKHR::eInt64:
-					maxValueLen = std::max(maxValueLen, fmt::format("{}", stat.value.i64).size());
-					break;
+			case vk::PipelineExecutableStatisticFormatKHR::eInt64:
+				maxValueLen = std::max(maxValueLen, fmt::format("{}", stat.value.i64).size());
+				break;
 
-				case vk::PipelineExecutableStatisticFormatKHR::eUint64:
-					maxValueLen = std::max(maxValueLen, fmt::format("{}", stat.value.u64).size());
-					break;
+			case vk::PipelineExecutableStatisticFormatKHR::eUint64:
+				maxValueLen = std::max(maxValueLen, fmt::format("{}", stat.value.u64).size());
+				break;
 
-				case vk::PipelineExecutableStatisticFormatKHR::eFloat64:
-					maxValueLen = std::max(maxValueLen, fmt::format("{}", stat.value.f64).size());
-					break;
+			case vk::PipelineExecutableStatisticFormatKHR::eFloat64:
+				maxValueLen = std::max(maxValueLen, fmt::format("{}", stat.value.f64).size());
+				break;
 
-				}
-			}
-
-			for (const auto &stat : statistics) {
-				switch (stat.format) {
-				case vk::PipelineExecutableStatisticFormatKHR::eBool32:
-					LOG("  {:<{}}\t{:>{}}\t{}", stat.name.data(), maxNameLen, stat.value.b32 ? "true" : "false", maxValueLen, stat.description.data());
-					break;
-
-				case vk::PipelineExecutableStatisticFormatKHR::eInt64:
-					LOG("  {:<{}}\t{:>{}}\t{}", stat.name.data(), maxNameLen, stat.value.i64, maxValueLen, stat.description.data());
-					break;
-
-				case vk::PipelineExecutableStatisticFormatKHR::eUint64:
-					LOG("  {:<{}}\t{:>{}}\t{}", stat.name.data(), maxNameLen, stat.value.u64, maxValueLen, stat.description.data());
-					break;
-
-				case vk::PipelineExecutableStatisticFormatKHR::eFloat64:
-					LOG("  {:<{}}\t{:>{}}\t{}", stat.name.data(), maxNameLen, stat.value.f64, maxValueLen, stat.description.data());
-					break;
-
-				}
 			}
 		}
+
+		for (const auto &stat : statistics) {
+			switch (stat.format) {
+			case vk::PipelineExecutableStatisticFormatKHR::eBool32:
+				LOG("  {:<{}}\t{:>{}}\t{}", stat.name.data(), maxNameLen, stat.value.b32 ? "true" : "false", maxValueLen, stat.description.data());
+				break;
+
+			case vk::PipelineExecutableStatisticFormatKHR::eInt64:
+				LOG("  {:<{}}\t{:>{}}\t{}", stat.name.data(), maxNameLen, stat.value.i64, maxValueLen, stat.description.data());
+				break;
+
+			case vk::PipelineExecutableStatisticFormatKHR::eUint64:
+				LOG("  {:<{}}\t{:>{}}\t{}", stat.name.data(), maxNameLen, stat.value.u64, maxValueLen, stat.description.data());
+				break;
+
+			case vk::PipelineExecutableStatisticFormatKHR::eFloat64:
+				LOG("  {:<{}}\t{:>{}}\t{}", stat.name.data(), maxNameLen, stat.value.f64, maxValueLen, stat.description.data());
+				break;
+
+			}
+		}
+	}
 }
 
 
