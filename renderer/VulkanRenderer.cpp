@@ -1770,10 +1770,6 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 	impl->debugNameObject<vk::Pipeline>(pipeline, desc.name_);
 
 	if (impl->pipelineExecutableInfo) {
-		vk::PipelineInfoKHR pipelineInfo;
-		pipelineInfo.pipeline = pipeline;
-		std::vector<vk::PipelineExecutablePropertiesKHR> properties = impl->device.getPipelineExecutablePropertiesKHR(pipelineInfo, impl->dispatcher);
-		{
 			std::vector<char> pipelineName;
 
 			pipelineName.insert(pipelineName.end(), desc.vertexShaderName.begin(), desc.vertexShaderName.end());
@@ -1790,8 +1786,24 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 			}
 
 			pipelineName.push_back('\0');
-			LOG("GraphicsPipeline \"{}\" executable properties:", pipelineName.data());
-		}
+		impl->logPipelineStatistics(pipelineName, pipeline);
+	}
+
+	GraphicsPipeline p;
+	p.pipeline = pipeline;
+	p.layout   = info.layout;
+	p.scissor  = desc.scissorTest_;
+
+	return impl->graphicsPipelines.add(std::move(p));
+}
+
+
+void RendererImpl::logPipelineStatistics(const std::vector<char> &pipelineName, vk::Pipeline pipeline) {
+		LOG("GraphicsPipeline \"{}\" executable properties:", pipelineName.data());
+
+		vk::PipelineInfoKHR pipelineInfo;
+		pipelineInfo.pipeline = pipeline;
+		std::vector<vk::PipelineExecutablePropertiesKHR> properties = device.getPipelineExecutablePropertiesKHR(pipelineInfo, dispatcher);
 
 		vk::PipelineExecutableInfoKHR executableInfo;
 		executableInfo.pipeline = pipeline;
@@ -1802,7 +1814,7 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 			executableInfo.executableIndex = i;
 			i++;
 
-			std::vector<vk::PipelineExecutableStatisticKHR> statistics = impl->device.getPipelineExecutableStatisticsKHR(executableInfo, impl->dispatcher);
+			std::vector<vk::PipelineExecutableStatisticKHR> statistics = device.getPipelineExecutableStatisticsKHR(executableInfo, dispatcher);
 			size_t maxNameLen  = 1;
 			size_t maxValueLen = 5;  // "false"
 			for (const auto &stat : statistics) {
@@ -1848,15 +1860,6 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 				}
 			}
 		}
-
-	}
-
-	GraphicsPipeline p;
-	p.pipeline = pipeline;
-	p.layout   = info.layout;
-	p.scissor  = desc.scissorTest_;
-
-	return impl->graphicsPipelines.add(std::move(p));
 }
 
 
