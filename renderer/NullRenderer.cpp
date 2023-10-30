@@ -396,7 +396,7 @@ void Renderer::bindVertexBuffer(unsigned int /* binding */, BufferHandle /* buff
 }
 
 
-void Renderer::bindDescriptorSet(unsigned int /* index */, DSLayoutHandle layoutHandle, const void * /* data_ */, LayoutUsage /* rtLayoutUsage */) {
+void Renderer::bindDescriptorSet(PipelineType /* bindPoint */, unsigned int /* index */, DSLayoutHandle layoutHandle, const void * /* data_ */, LayoutUsage /* rtLayoutUsage */) {
 	assert(layoutHandle);
 	assert(impl->validPipeline);
 }

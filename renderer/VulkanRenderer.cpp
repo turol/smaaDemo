@@ -3470,7 +3470,13 @@ void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 }
 
 
-void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHandle, const void *data_, LayoutUsage rtLayoutUsage) {
+static const magic_enum::containers::array<PipelineType, vk::PipelineBindPoint> vulkanBindPoints = {
+	  vk::PipelineBindPoint::eGraphics
+	, vk::PipelineBindPoint::eCompute
+};
+
+
+void Renderer::bindDescriptorSet(PipelineType bindPoint, unsigned int dsIndex, DSLayoutHandle layoutHandle, const void *data_, LayoutUsage rtLayoutUsage) {
 	assert(layoutHandle);
 	assert(impl->inFrame);
 	assert(impl->validPipeline);
@@ -3603,7 +3609,7 @@ void Renderer::bindDescriptorSet(unsigned int dsIndex, DSLayoutHandle layoutHand
 	}
 
 	device.updateDescriptorSets(writes, {});
-	impl->currentCommandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, impl->currentPipelineLayout, dsIndex, { ds }, {});
+	impl->currentCommandBuffer.bindDescriptorSets(vulkanBindPoints[bindPoint], impl->currentPipelineLayout, dsIndex, { ds }, {});
 }
 
 
