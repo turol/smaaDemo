@@ -79,12 +79,6 @@ using namespace renderer;
 class SMAADemo;
 
 
-enum PipelineType : uint8_t {
-	  Graphics
-	, Compute
-};
-
-
 enum class AAMethod : uint8_t {
 	  MSAA
 	, FXAA

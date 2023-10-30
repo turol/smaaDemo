@@ -434,6 +434,12 @@ enum class PassBegin : uint8_t {
 };
 
 
+enum PipelineType : uint8_t {
+	  Graphics
+	, Compute
+};
+
+
 enum class ShaderLanguage : uint8_t {
 	  GLSL
 	, HLSL
