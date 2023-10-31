@@ -37,7 +37,8 @@ WIN32:=n
 
 CFLAGS:=-g -Wall -Wextra -Werror -Wshadow
 CFLAGS+=-Wno-unused-local-typedefs
-CFLAGS+=$(shell sdl2-config --cflags)
+# convert -I include path to -isystem to avoid getting warnings from SDL2 headers
+CFLAGS+=$(shell sdl2-config --cflags | sed 's/-I/-isystem/g')
 OPTFLAGS:=-O
 OPTFLAGS+=-ffast-math
 
