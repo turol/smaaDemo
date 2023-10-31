@@ -852,7 +852,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 				// automatic
 				fpsLimitActive = true;
 				fpsLimit       = 0;
-			} else if (temp == 0 || temp > std::numeric_limits<int>::max()) {
+			} else if (temp == 0) {
 				// disabled
 				fpsLimitActive = false;
 				fpsLimit       = 0;
