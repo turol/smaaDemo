@@ -1,7 +1,7 @@
-commit 2f382df218d7e8516dee3b3caccb819a62b571a2
+commit dc8a3fb0f24b5afe42b95a58b49ff9d9f4204f2e
 Author: Adam Sawicki <adam.sawicki@amd.com>
-Date:   Mon Sep 11 17:58:15 2023 +0200
+Date:   Mon Oct 30 18:27:40 2023 +0100
 
-    Fixed signed/unsigned mismatch in FindMemoryPreferences
+    Fixed GpuMemDumpVis.py to not use deprecated Pillow function textsize
     
-    For compatibility with UBSan. Fixes #368 - thanks @markridgewell
+    See #375 Thanks @alecazam
