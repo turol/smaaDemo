@@ -2704,7 +2704,7 @@ void SMAADemo::processInput() {
 
 			case SDL_SCANCODE_LEFT:
 				sceneIncrement = -1;
-				// fallthrough
+				HEDLEY_FALL_THROUGH;
 			case SDL_SCANCODE_RIGHT:
 				{
 					// if old or new scene is shapes we must rebuild RG
@@ -2884,7 +2884,7 @@ void SMAADemo::processInput() {
 				}
 			}
 
-            // fallthrough
+			HEDLEY_FALL_THROUGH;
 		case SDL_MOUSEBUTTONUP:
 			if (event.button.button < 6) {
 				// SDL and imgui have left and middle in different order
