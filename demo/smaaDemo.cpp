@@ -794,9 +794,6 @@ SMAADemo::~SMAADemo() {
 }
 
 
-#define VBO_OFFSETOF(st, member) reinterpret_cast<GLvoid *>(offsetof(st, member))
-
-
 void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 	try {
 		TCLAP::CmdLine cmd("SMAA demo", ' ', "1.0");
