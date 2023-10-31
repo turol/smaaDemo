@@ -596,8 +596,8 @@ class SMAADemo {
 
 	void rebuildRenderGraph();
 
-	template <typename F>
-	GraphicsPipelineHandle getCachedGraphicsPipeline(GraphicsPipelineHandle &cachedPipeline, F &&createFunc) {
+	template <typename F, typename PipelineHandle>
+	PipelineHandle getCachedPipeline(PipelineHandle &cachedPipeline, F &&createFunc) {
 		if (cachedPipeline) {
 			return cachedPipeline;
 		}
@@ -3040,7 +3040,7 @@ void SMAADemo::render() {
 
 
 void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources & /* r */) {
-	renderer.bindGraphicsPipeline(getCachedGraphicsPipeline(shapePipeline, [&] () {
+	renderer.bindGraphicsPipeline(getCachedPipeline(shapePipeline, [&] () {
 		std::string name = "shapes";
 		if (numSamples > 1) {
 			name += " MSAA x" + std::to_string(numSamples);
@@ -3141,7 +3141,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 
 
 void SMAADemo::renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources & /* r */) {
-	renderer.bindGraphicsPipeline(getCachedGraphicsPipeline(imagePipeline, [&] () {
+	renderer.bindGraphicsPipeline(getCachedPipeline(imagePipeline, [&] () {
 		GraphicsPipelineDesc plDesc;
 		plDesc.numSamples(numSamples)
 		      .descriptorSetLayout<GlobalDS>(0)
@@ -3183,7 +3183,7 @@ void SMAADemo::renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources 
 
 
 void SMAADemo::renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
-	renderer.bindGraphicsPipeline(getCachedGraphicsPipeline(fxaaPipeline, [&] () {
+	renderer.bindGraphicsPipeline(getCachedPipeline(fxaaPipeline, [&] () {
 		std::string qualityString(fxaaQualityLevels[fxaaQuality]);
 
 		ShaderMacros macros;
@@ -3216,7 +3216,7 @@ void SMAADemo::renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 
 
 void SMAADemo::renderSeparate(RenderPasses rp, DemoRenderGraph::PassResources &r) {
-	renderer.bindGraphicsPipeline(getCachedGraphicsPipeline(separatePipeline, [&] () {
+	renderer.bindGraphicsPipeline(getCachedPipeline(separatePipeline, [&] () {
 		LOG_TODO("does this need its own DS?")
 		GraphicsPipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
@@ -3240,7 +3240,7 @@ void SMAADemo::renderSeparate(RenderPasses rp, DemoRenderGraph::PassResources &r
 
 
 void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &r, Rendertargets input, int pass) {
-	renderer.bindGraphicsPipeline(getCachedGraphicsPipeline(smaaPipelines.edgePipeline, [&] () {
+	renderer.bindGraphicsPipeline(getCachedPipeline(smaaPipelines.edgePipeline, [&] () {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 		macros.set(qualityString, "1");
@@ -3297,7 +3297,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 
 
 void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources &r, int pass) {
-	renderer.bindGraphicsPipeline(getCachedGraphicsPipeline(smaaPipelines.blendWeightPipeline, [&] () {
+	renderer.bindGraphicsPipeline(getCachedPipeline(smaaPipelines.blendWeightPipeline, [&] () {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 		macros.set(qualityString, "1");
@@ -3343,7 +3343,7 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 
 void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &r, Rendertargets input, int pass) {
 	// full effect
-	renderer.bindGraphicsPipeline(getCachedGraphicsPipeline(smaaPipelines.neighborPipelines[pass], [&] () {
+	renderer.bindGraphicsPipeline(getCachedPipeline(smaaPipelines.neighborPipelines[pass], [&] () {
 		ShaderMacros macros;
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 		macros.set(qualityString, "1");
@@ -3397,7 +3397,7 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 
 
 void SMAADemo::renderSMAADebug(RenderPasses rp, DemoRenderGraph::PassResources &r, Rendertargets rt) {
-	renderer.bindGraphicsPipeline(getCachedGraphicsPipeline(blitPipeline, [&] () {
+	renderer.bindGraphicsPipeline(getCachedPipeline(blitPipeline, [&] () {
 		GraphicsPipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<ColorTexDS>(1)
@@ -3420,7 +3420,7 @@ void SMAADemo::renderSMAADebug(RenderPasses rp, DemoRenderGraph::PassResources &
 
 
 void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
-	renderer.bindGraphicsPipeline(getCachedGraphicsPipeline(temporalAAPipelines[temporalReproject], [&] () {
+	renderer.bindGraphicsPipeline(getCachedPipeline(temporalAAPipelines[temporalReproject], [&] () {
 		ShaderMacros macros;
 		macros.set("SMAA_REPROJECTION", std::to_string(temporalReproject));
 		macros.set("SMAA_GLSL_SEPARATE_SAMPLER", "1");
@@ -3929,7 +3929,7 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 		assert(drawData->TotalVtxCount >  0);
 		assert(drawData->TotalIdxCount >  0);
 
-		renderer.bindGraphicsPipeline(getCachedGraphicsPipeline(guiPipeline, [&] () {
+		renderer.bindGraphicsPipeline(getCachedPipeline(guiPipeline, [&] () {
 			GraphicsPipelineDesc plDesc;
 			plDesc.descriptorSetLayout<GlobalDS>(0)
 				  .descriptorSetLayout<ColorTexDS>(1)
