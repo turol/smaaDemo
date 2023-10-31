@@ -1468,11 +1468,10 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 
 		before.dependencyFlags  = vk::DependencyFlagBits::eByRegion;
 
-		if (hasDepthStencil) {
-			LOG_TODO("should come from desc (previous usage)")
-			// depends on whether previous thing was rendering or msaa resolve
-			before.srcStageMask    |= vk::PipelineStageFlagBits::eLateFragmentTests | vk::PipelineStageFlagBits::eTransfer;
-			before.srcAccessMask   |= vk::AccessFlagBits::eDepthStencilAttachmentWrite | vk::AccessFlagBits::eTransferWrite;
+		if (hasDepthStencil && desc.depthStencil_.passBegin == PassBegin::Keep) {
+			LOG_TODO("should depend on depthstencil attachment previous usage")
+			before.srcStageMask    |= vk::PipelineStageFlagBits::eLateFragmentTests;
+			before.srcAccessMask   |= vk::AccessFlagBits::eDepthStencilAttachmentWrite;
 
 			before.dstStageMask    |= vk::PipelineStageFlagBits::eEarlyFragmentTests;
 			before.dstAccessMask   |= vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
