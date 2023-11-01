@@ -25,6 +25,8 @@ THE SOFTWARE.
 #define RENDERERINTERNAL_H
 
 
+#include <variant>
+
 #include "Renderer.h"
 
 #include "utils/Hash.h"
@@ -271,6 +273,9 @@ namespace std {
 
 
 namespace renderer {
+
+
+using PipelineHandle = std::variant<std::nullopt_t, GraphicsPipelineHandle, ComputePipelineHandle>;
 
 
 struct RendererBase {
