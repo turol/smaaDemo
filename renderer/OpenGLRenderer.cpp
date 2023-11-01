@@ -1879,6 +1879,7 @@ void Renderer::beginFrame() {
 
 #endif //  NDEBUG
 
+	impl->currentPipeline = std::nullopt;
 	impl->currentGraphicsPipeline.reset();
 	impl->descriptors.clear();
 
@@ -2214,6 +2215,7 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 	});
 
 	impl->currentGraphicsPipeline = pipeline;
+	impl->currentPipeline = pipeline;
 }
 
 

@@ -282,6 +282,7 @@ void Renderer::beginFrame() {
 	impl->inRenderPass  = false;
 	impl->validPipeline = false;
 	impl->pipelineUsed  = true;
+	impl->currentPipeline = std::nullopt;
 
 	impl->currentFrameIdx        = impl->frameNum % impl->frames.size();
 	assert(impl->currentFrameIdx < impl->frames.size());
@@ -347,6 +348,7 @@ void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHa
 
 	impl->inRenderPass  = true;
 	impl->validPipeline = false;
+	impl->currentPipeline = std::nullopt;
 
 	assert(fbHandle);
 	const auto &fb = impl->framebuffers.get(fbHandle);
@@ -381,6 +383,7 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 	impl->scissorSet    = false;
 
 	impl->currentGraphicsPipeline = impl->graphicsPipelines.get(pipeline).desc;
+	impl->currentPipeline         = pipeline;
 }
 
 

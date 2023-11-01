@@ -2776,6 +2776,7 @@ void Renderer::beginFrame() {
 	impl->currentCommandBuffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 
 	impl->currentPipelineLayout = vk::PipelineLayout();
+	impl->currentPipeline       = std::nullopt;
 
 	// mark buffers deleted during gap between frames to be deleted when this frame has synced
 	LOG_TODO("we could move this earlier and add these to the previous frame's list")
@@ -3334,6 +3335,7 @@ void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHa
 
 	impl->currentCommandBuffer.beginRenderPass(info, vk::SubpassContents::eInline);
 
+	impl->currentPipeline       = std::nullopt;
 	impl->currentPipelineLayout = vk::PipelineLayout();
 	impl->currentRenderPass  = rpHandle;
 	impl->currentFramebuffer = fbHandle;
@@ -3417,6 +3419,7 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 	const auto &p = impl->graphicsPipelines.get(pipeline);
 	impl->currentCommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, p.pipeline);
 	impl->currentPipelineLayout = p.layout;
+	impl->currentPipeline       = pipeline;
 
 	if (!p.scissor) {
 		// Vulkan always requires a scissor rect
@@ -3440,6 +3443,7 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 void Renderer::bindIndexBuffer(BufferHandle buffer, IndexFormat indexFormat) {
 	assert(impl->inFrame);
 	assert(impl->validPipeline);
+	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 
 	auto &b = impl->buffers.get(buffer);
 	assert(b.type == BufferType::Index);
@@ -3456,6 +3460,7 @@ void Renderer::bindIndexBuffer(BufferHandle buffer, IndexFormat indexFormat) {
 void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 	assert(impl->inFrame);
 	assert(impl->validPipeline);
+	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 
 	auto &b = impl->buffers.get(buffer);
 	assert(b.type == BufferType::Vertex);
@@ -3479,6 +3484,7 @@ void Renderer::bindDescriptorSet(PipelineType bindPoint, unsigned int dsIndex, D
 	assert(layoutHandle);
 	assert(impl->inFrame);
 	assert(impl->validPipeline);
+	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 
 	const DescriptorSetLayout &layout = impl->dsLayouts.get(layoutHandle);
 
@@ -3679,6 +3685,7 @@ void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, u
 void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 #ifndef NDEBUG
 	assert(impl->validPipeline);
+	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	impl->scissorSet = true;
 #endif  // NDEBUG
 
@@ -3792,6 +3799,7 @@ void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 #ifndef NDEBUG
 	assert(impl->inRenderPass);
 	assert(impl->validPipeline);
+	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	assert(vertexCount > 0);
 	impl->pipelineUsed = true;
 #endif  // NDEBUG
@@ -3804,6 +3812,7 @@ void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int insta
 #ifndef NDEBUG
 	assert(impl->inRenderPass);
 	assert(impl->validPipeline);
+	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	assert(vertexCount > 0);
 	assert(instanceCount > 0);
 	impl->pipelineUsed = true;
@@ -3817,6 +3826,7 @@ void Renderer::drawIndexed(unsigned int vertexCount, unsigned int firstIndex) {
 #ifndef NDEBUG
 	assert(impl->inRenderPass);
 	assert(impl->validPipeline);
+	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	assert(vertexCount > 0);
 	impl->pipelineUsed = true;
 #endif //  NDEBUG
@@ -3829,6 +3839,7 @@ void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int fi
 #ifndef NDEBUG
 	assert(impl->inRenderPass);
 	assert(impl->validPipeline);
+	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	assert(vertexCount > 0);
 	impl->pipelineUsed = true;
 #endif //  NDEBUG
