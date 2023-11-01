@@ -270,28 +270,28 @@ struct Framebuffer {
 
 
 struct GraphicsPipeline {
-	GraphicsPipelineDesc  desc;
 	GLuint                shader     = 0;
+	ShaderResources       resources;
 	GLenum                srcBlend   = GL_ONE;
 	GLenum                destBlend  = GL_ZERO;
-	ShaderResources       resources;
+	GraphicsPipelineDesc  desc;
 
 
 	GraphicsPipeline(const GraphicsPipeline &)            = delete;
 	GraphicsPipeline &operator=(const GraphicsPipeline &) = delete;
 
 	GraphicsPipeline(GraphicsPipeline &&other) noexcept
-	: desc(other.desc)
-	, shader(other.shader)
+	: shader(other.shader)
+	, resources(other.resources)
 	, srcBlend(other.srcBlend)
 	, destBlend(other.destBlend)
-	, resources(other.resources)
+	, desc(other.desc)
 	{
-		other.desc      = GraphicsPipelineDesc();
 		other.shader    = 0;
+		other.resources = ShaderResources();
 		other.srcBlend  = GL_NONE;
 		other.destBlend = GL_NONE;
-		other.resources = ShaderResources();
+		other.desc      = GraphicsPipelineDesc();
 	}
 
 	GraphicsPipeline &operator=(GraphicsPipeline &&other) noexcept {
@@ -299,17 +299,17 @@ struct GraphicsPipeline {
 			return *this;
 		}
 
-		desc            = other.desc;
 		shader          = other.shader;
+		resources       = other.resources;
 		srcBlend        = other.srcBlend;
 		destBlend       = other.destBlend;
-		resources       = other.resources;
+		desc            = other.desc;
 
-		other.desc      = GraphicsPipelineDesc();
 		other.shader    = 0;
+		other.resources = ShaderResources();
 		other.srcBlend  = GL_NONE;
 		other.destBlend = GL_NONE;
-		other.resources = ShaderResources();
+		other.desc      = GraphicsPipelineDesc();
 
 		return *this;
 	}
