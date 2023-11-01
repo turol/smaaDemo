@@ -2618,6 +2618,10 @@ void SMAADemo::processInput() {
 				printHelp();
 				break;
 
+			case SDL_SCANCODE_L: {
+				preferredShaderLanguage = magic_enum::enum_next_value_circular(preferredShaderLanguage);
+			} break;
+
 			case SDL_SCANCODE_M: {
 				if (leftShift || rightShift) {
 					setPrevAAMethod();
