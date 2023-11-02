@@ -423,8 +423,6 @@ struct RendererImpl : public RendererBase {
 	ResourceContainer<Texture>                              textures;
 	ResourceContainer<VertexShader, uint32_t, true>         vertexShaders;
 
-	GraphicsPipelineDesc                                    currentGraphicsPipeline;
-
 
 	void recreateRingBuffer(unsigned int newSize);
 	unsigned int ringBufferAllocate(unsigned int size, unsigned int alignPower);
