@@ -280,7 +280,6 @@ void Renderer::beginFrame() {
 	assert(!impl->inFrame);
 	impl->inFrame       = true;
 	impl->inRenderPass  = false;
-	impl->validPipeline = false;
 	impl->pipelineUsed  = true;
 	impl->currentPipeline = std::nullopt;
 
@@ -347,7 +346,6 @@ void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHa
 	assert(!impl->renderingToSwapchain);
 
 	impl->inRenderPass  = true;
-	impl->validPipeline = false;
 	impl->currentPipeline = std::nullopt;
 
 	assert(fbHandle);
@@ -379,7 +377,6 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 	assert(impl->inRenderPass);
 	assert(impl->pipelineUsed);
 	impl->pipelineUsed  = false;
-	impl->validPipeline = true;
 	impl->scissorSet    = false;
 
 	impl->currentPipeline         = pipeline;
@@ -388,21 +385,18 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 
 void Renderer::bindIndexBuffer(BufferHandle /* buffer */, IndexFormat /* indexFormat */) {
 	assert(impl->inFrame);
-	assert(impl->validPipeline);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 }
 
 
 void Renderer::bindVertexBuffer(unsigned int /* binding */, BufferHandle /* buffer */) {
 	assert(impl->inFrame);
-	assert(impl->validPipeline);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 }
 
 
 void Renderer::bindDescriptorSet(PipelineType /* bindPoint */, unsigned int /* index */, DSLayoutHandle layoutHandle, const void * /* data_ */, LayoutUsage /* rtLayoutUsage */) {
 	assert(layoutHandle);
-	assert(impl->validPipeline);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 }
 
@@ -413,7 +407,6 @@ void Renderer::setViewport(unsigned int /* x */, unsigned int /* y */, unsigned 
 
 
 void Renderer::setScissorRect(unsigned int /* x */, unsigned int /* y */, unsigned int /* width */, unsigned int /* height */) {
-	assert(impl->validPipeline);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	const auto DEBUG_ASSERTED &p = impl->graphicsPipelines.get(std::get<GraphicsPipelineHandle>(impl->currentPipeline));
 	assert(p.desc.scissorTest_);
@@ -439,7 +432,6 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target,
 
 void Renderer::draw(unsigned int /* firstVertex */, unsigned int vertexCount) {
 	assert(impl->inRenderPass);
-	assert(impl->validPipeline);
 	assert(vertexCount > 0);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	const auto DEBUG_ASSERTED &p = impl->graphicsPipelines.get(std::get<GraphicsPipelineHandle>(impl->currentPipeline));
@@ -450,7 +442,6 @@ void Renderer::draw(unsigned int /* firstVertex */, unsigned int vertexCount) {
 
 void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
 	assert(impl->inRenderPass);
-	assert(impl->validPipeline);
 	assert(vertexCount > 0);
 	assert(instanceCount > 0);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
@@ -462,7 +453,6 @@ void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int insta
 
 void Renderer::drawIndexed(unsigned int vertexCount, unsigned int /* firstIndex */) {
 	assert(impl->inRenderPass);
-	assert(impl->validPipeline);
 	assert(vertexCount > 0);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	const auto DEBUG_ASSERTED &p = impl->graphicsPipelines.get(std::get<GraphicsPipelineHandle>(impl->currentPipeline));
@@ -473,7 +463,6 @@ void Renderer::drawIndexed(unsigned int vertexCount, unsigned int /* firstIndex 
 
 void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int /* firstIndex */, unsigned int /* vertexOffset */) {
 	assert(impl->inRenderPass);
-	assert(impl->validPipeline);
 	assert(vertexCount > 0);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	const auto DEBUG_ASSERTED &p = impl->graphicsPipelines.get(std::get<GraphicsPipelineHandle>(impl->currentPipeline));

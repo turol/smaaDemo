@@ -1874,7 +1874,6 @@ void Renderer::beginFrame() {
 
 	impl->inFrame       = true;
 	impl->inRenderPass  = false;
-	impl->validPipeline = false;
 	impl->pipelineUsed  = true;
 
 #endif //  NDEBUG
@@ -2010,7 +2009,6 @@ void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHa
 	assert(impl->inFrame);
 	assert(!impl->inRenderPass);
 	impl->inRenderPass  = true;
-	impl->validPipeline = false;
 #endif //  NDEBUG
 
 	assert(!impl->renderingToSwapchain);
@@ -2113,8 +2111,6 @@ void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, u
 
 void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 #ifndef NDEBUG
-	assert(impl->validPipeline);
-
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	const auto &p = impl->graphicsPipelines.get(std::get<GraphicsPipelineHandle>(impl->currentPipeline));
 	assert(p.desc.scissorTest_);
@@ -2134,7 +2130,6 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 	assert(impl->inRenderPass);
 	assert(impl->pipelineUsed);
 	impl->pipelineUsed  = false;
-	impl->validPipeline = true;
 	impl->scissorSet    = false;
 #endif  // NDEBUG
 
@@ -2224,7 +2219,6 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 
 void Renderer::bindIndexBuffer(BufferHandle handle, IndexFormat indexFormat) {
 	assert(impl->inFrame);
-	assert(impl->validPipeline);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 
 	const Buffer &buffer = impl->buffers.get(handle);
@@ -2245,7 +2239,6 @@ void Renderer::bindIndexBuffer(BufferHandle handle, IndexFormat indexFormat) {
 
 void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 	assert(impl->inFrame);
-	assert(impl->validPipeline);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 
 	const Buffer &buffer = impl->buffers.get(handle);
@@ -2270,7 +2263,6 @@ void Renderer::bindDescriptorSet(PipelineType /* bindPoint */, unsigned int inde
 	assert(layoutHandle);
 
 #ifndef NDEBUG
-	assert(impl->validPipeline);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	const auto &p = impl->graphicsPipelines.get(std::get<GraphicsPipelineHandle>(impl->currentPipeline));
 	assert(p.desc.descriptorSetLayouts[index] == layoutHandle);
@@ -2578,7 +2570,6 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target,
 void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 #ifndef NDEBUG
 	assert(impl->inRenderPass);
-	assert(impl->validPipeline);
 	assert(vertexCount > 0);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	const auto &p = impl->graphicsPipelines.get(std::get<GraphicsPipelineHandle>(impl->currentPipeline));
@@ -2599,7 +2590,6 @@ void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
 #ifndef NDEBUG
 	assert(impl->inRenderPass);
-	assert(impl->validPipeline);
 	assert(instanceCount > 0);
 	assert(vertexCount > 0);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
@@ -2627,7 +2617,6 @@ void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int insta
 void Renderer::drawIndexed(unsigned int vertexCount, unsigned int firstIndex) {
 #ifndef NDEBUG
 	assert(impl->inRenderPass);
-	assert(impl->validPipeline);
 	assert(vertexCount > 0);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	const auto &p = impl->graphicsPipelines.get(std::get<GraphicsPipelineHandle>(impl->currentPipeline));
@@ -2651,7 +2640,6 @@ void Renderer::drawIndexed(unsigned int vertexCount, unsigned int firstIndex) {
 void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int vertexOffset) {
 #ifndef NDEBUG
 	assert(impl->inRenderPass);
-	assert(impl->validPipeline);
 	assert(vertexCount > 0);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	const auto &p = impl->graphicsPipelines.get(std::get<GraphicsPipelineHandle>(impl->currentPipeline));

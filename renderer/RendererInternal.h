@@ -360,7 +360,6 @@ struct RendererBase {
 	// debugging
 	bool                                                 inFrame                   = false;
 	bool                                                 inRenderPass              = false;
-	bool                                                 validPipeline             = false;
 	bool                                                 pipelineUsed              = false;
 	bool                                                 scissorSet                = false;
 #endif //  NDEBUG

@@ -2762,7 +2762,6 @@ void Renderer::beginFrame() {
 #ifndef NDEBUG
 	impl->inFrame       = true;
 	impl->inRenderPass  = false;
-	impl->validPipeline = false;
 	impl->pipelineUsed  = true;
 #endif  // NDEBUG
 	device.resetFences( { frame.fence } );
@@ -3312,7 +3311,6 @@ void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHa
 	assert(impl->inFrame);
 	assert(!impl->inRenderPass);
 	impl->inRenderPass  = true;
-	impl->validPipeline = false;
 #endif  // NDEBUG
 
 	assert(!impl->renderingToSwapchain);
@@ -3410,7 +3408,6 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 	assert(impl->inRenderPass);
 	assert(impl->pipelineUsed);
 	impl->pipelineUsed  = false;
-	impl->validPipeline = true;
 	impl->scissorSet    = false;
 #endif  // NDEBUG
 
@@ -3442,7 +3439,6 @@ void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 
 void Renderer::bindIndexBuffer(BufferHandle buffer, IndexFormat indexFormat) {
 	assert(impl->inFrame);
-	assert(impl->validPipeline);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 
 	auto &b = impl->buffers.get(buffer);
@@ -3459,7 +3455,6 @@ void Renderer::bindIndexBuffer(BufferHandle buffer, IndexFormat indexFormat) {
 
 void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 	assert(impl->inFrame);
-	assert(impl->validPipeline);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 
 	auto &b = impl->buffers.get(buffer);
@@ -3483,7 +3478,6 @@ static const magic_enum::containers::array<PipelineType, vk::PipelineBindPoint> 
 void Renderer::bindDescriptorSet(PipelineType bindPoint, unsigned int dsIndex, DSLayoutHandle layoutHandle, const void *data_, LayoutUsage rtLayoutUsage) {
 	assert(layoutHandle);
 	assert(impl->inFrame);
-	assert(impl->validPipeline);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 
 	const DescriptorSetLayout &layout = impl->dsLayouts.get(layoutHandle);
@@ -3684,7 +3678,6 @@ void Renderer::setViewport(unsigned int x, unsigned int y, unsigned int width, u
 
 void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
 #ifndef NDEBUG
-	assert(impl->validPipeline);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	impl->scissorSet = true;
 #endif  // NDEBUG
@@ -3798,7 +3791,6 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target,
 void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 #ifndef NDEBUG
 	assert(impl->inRenderPass);
-	assert(impl->validPipeline);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	assert(vertexCount > 0);
 	impl->pipelineUsed = true;
@@ -3811,7 +3803,6 @@ void Renderer::draw(unsigned int firstVertex, unsigned int vertexCount) {
 void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount) {
 #ifndef NDEBUG
 	assert(impl->inRenderPass);
-	assert(impl->validPipeline);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	assert(vertexCount > 0);
 	assert(instanceCount > 0);
@@ -3825,7 +3816,6 @@ void Renderer::drawIndexedInstanced(unsigned int vertexCount, unsigned int insta
 void Renderer::drawIndexed(unsigned int vertexCount, unsigned int firstIndex) {
 #ifndef NDEBUG
 	assert(impl->inRenderPass);
-	assert(impl->validPipeline);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	assert(vertexCount > 0);
 	impl->pipelineUsed = true;
@@ -3838,7 +3828,6 @@ void Renderer::drawIndexed(unsigned int vertexCount, unsigned int firstIndex) {
 void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int vertexOffset) {
 #ifndef NDEBUG
 	assert(impl->inRenderPass);
-	assert(impl->validPipeline);
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 	assert(vertexCount > 0);
 	impl->pipelineUsed = true;
