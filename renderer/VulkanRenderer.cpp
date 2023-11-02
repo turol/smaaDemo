@@ -3313,8 +3313,6 @@ void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHa
 	impl->inRenderPass  = true;
 #endif  // NDEBUG
 
-	assert(!impl->renderingToSwapchain);
-
 	const auto &pass = impl->renderPasses.get(rpHandle);
 	assert(pass.renderPass);
 	const auto &fb   = impl->framebuffers.get(fbHandle);
@@ -3351,10 +3349,6 @@ void Renderer::endRenderPass() {
 
 	impl->currentCommandBuffer.endRenderPass();
 
-	if (impl->renderingToSwapchain) {
-		assert(!impl->currentFramebuffer);
-		impl->renderingToSwapchain = false;
-	} else {
 		assert(impl->currentFramebuffer);
 
 		const auto &pass = impl->renderPasses.get(impl->currentRenderPass);
@@ -3368,7 +3362,6 @@ void Renderer::endRenderPass() {
 			}
 		}
 		impl->currentFramebuffer.reset();
-	}
 
 	impl->currentRenderPass.reset();
 }

@@ -341,7 +341,6 @@ struct RendererBase {
 	RenderPassHandle                                     currentRenderPass;
 	FramebufferHandle                                    currentFramebuffer;
 	PipelineHandle                                       currentPipeline           = std::nullopt;
-	bool                                                 renderingToSwapchain      = false;
 
 	unsigned int                                         ringBufSize               = 0;
 	unsigned int                                         ringBufPtr                = 0;

@@ -350,7 +350,6 @@ RendererBase::RendererBase(const RendererDesc &desc)
 , skipShaderCache(desc.skipShaderCache || !desc.optimizeShaders)
 , optimizeShaders(desc.optimizeShaders)
 , validateShaders(desc.validateShaders)
-, renderingToSwapchain(false)
 , debug(desc.debug)
 , tracing(desc.tracing)
 {
