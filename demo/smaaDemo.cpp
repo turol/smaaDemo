@@ -4125,20 +4125,20 @@ int main(int argc, char *argv[]) {
 		if (demo->isAutoMode()) {
 			demo->runAuto();
 		} else {
-		while (demo->shouldKeepGoing()) {
-			try {
-				demo->mainLoopIteration();
-			} catch (std::exception &e) {
-				LOG("caught std::exception: \"{}\"", e.what());
-				logFlush();
-				printf("caught std::exception: \"%s\"\n", e.what());
-				break;
-			} catch (...) {
-				LOG("caught unknown exception");
-				logFlush();
-				break;
+			while (demo->shouldKeepGoing()) {
+				try {
+					demo->mainLoopIteration();
+				} catch (std::exception &e) {
+					LOG("caught std::exception: \"{}\"", e.what());
+					logFlush();
+					printf("caught std::exception: \"%s\"\n", e.what());
+					break;
+				} catch (...) {
+					LOG("caught unknown exception");
+					logFlush();
+					break;
+				}
 			}
-		}
 		}
 	} catch (std::exception &e) {
 		LOG("caught std::exception \"{}\"", e.what());
