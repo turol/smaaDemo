@@ -485,6 +485,11 @@ void Renderer::endDebugGroup(DebugGroupHandle &&g) {
 	assert(impl->activeDebugGroups > 0);
 	impl->activeDebugGroups--;
 	g.count = 0;
+
+#ifdef HANDLE_OWNERSHIP_DEBUG
+	assert(g.owned);
+	g.owned = false;
+#endif  // HANDLE_OWNERSHIP_DEBUG
 }
 
 

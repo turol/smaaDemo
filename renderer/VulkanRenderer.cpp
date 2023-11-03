@@ -3852,6 +3852,11 @@ void Renderer::endDebugGroup(DebugGroupHandle &&g) {
 	impl->activeDebugGroups--;
 	g.count = 0;
 
+#ifdef HANDLE_OWNERSHIP_DEBUG
+	assert(g.owned);
+	g.owned = false;
+#endif  // HANDLE_OWNERSHIP_DEBUG
+
 	if (impl->tracing) {
 		impl->currentCommandBuffer.endDebugUtilsLabelEXT(impl->dispatcher);
 	}
