@@ -475,6 +475,7 @@ class SMAADemo {
 	bool                                              recreateSwapchain = false;
 	bool                                              rebuildRG         = true;
 	bool                                              keepGoing         = true;
+	bool                                              autoMode          = false;
 	LayoutUsage                                       layoutUsage       = LayoutUsage::Specific;
 
 	// aa things
@@ -674,9 +675,15 @@ public:
 
 	void createShapes();
 
+	void runAuto();
+
 	void mainLoopIteration();
 
 	void processInput();
+
+	bool isAutoMode() const {
+		return autoMode;
+	}
 
 	bool shouldKeepGoing() const {
 		return keepGoing;
@@ -798,6 +805,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 	try {
 		TCLAP::CmdLine cmd("SMAA demo", ' ', "1.0");
 
+		TCLAP::SwitchArg                       autoSwitch("",            "auto",              "Run through modes and exit",       cmd, false);
 		TCLAP::SwitchArg                       debugSwitch("",           "debug",             "Enable renderer debugging",     cmd, false);
 		TCLAP::SwitchArg                       syncDebugSwitch("",       "syncdebug",         "Enable synchronization debugging", cmd, false);
 		TCLAP::SwitchArg                       robustSwitch("",          "robust",            "Enable renderer robustness",    cmd, false);
@@ -828,6 +836,8 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::UnlabeledMultiArg<std::string>  imagesArg("images",       "image files", false, "image file", cmd, true, nullptr);
 
 		cmd.parse(argc, argv);
+
+		autoMode                           = autoSwitch.getValue();
 
 		rendererDesc.debug                 = debugSwitch.getValue();
 		rendererDesc.synchronizationDebug  = syncDebugSwitch.getValue();
@@ -2924,6 +2934,71 @@ void SMAADemo::processInput() {
 }
 
 
+void SMAADemo::runAuto() {
+	auto innermostLoop = [this] () {
+		for (bool onOff : { true, false }) {
+			antialiasing = onOff;
+			rebuildRG    = true;
+			for (Shape s : magic_enum::enum_values<Shape>()) {
+				activeShape = s;
+				if (temporalAA) {
+					for (unsigned int i = 0; i < 3; i++) {
+						mainLoopIteration();
+					}
+				} else {
+					mainLoopIteration();
+				}
+			}
+		}
+	};
+
+	for (auto method : magic_enum::enum_values<AAMethod>()) {
+		if (!isAAMethodSupported(method)) {
+			continue;
+		}
+
+		aaMethod  = method;
+		for (bool taa : { false, true }) {
+			temporalAA = taa;
+			for (auto shaderLang : magic_enum::enum_values<ShaderLanguage>()) {
+				preferredShaderLanguage = shaderLang;
+				switch (method) {
+				case AAMethod::MSAA:
+					for (unsigned int q = 0; q < maxMSAAQuality; q++) {
+						msaaQuality = q;
+						innermostLoop();
+					}
+					break;
+
+				case AAMethod::FXAA:
+					for (unsigned int q = 0; q < maxFXAAQuality; q++) {
+						fxaaQuality = q;
+
+						innermostLoop();
+					}
+					break;
+
+				case AAMethod::SMAA:
+				case AAMethod::SMAA2X:
+					for (unsigned int q = 0; q < maxSMAAQuality; q++) {
+						smaaQuality = q;
+
+						for (auto e : magic_enum::enum_values<SMAAEdgeMethod>()) {
+                            smaaEdgeMethod = e;
+							innermostLoop();
+						}
+					}
+				}
+
+				if (!keepGoing) {
+					return;
+				}
+			}
+		}
+	}
+}
+
+
 void SMAADemo::mainLoopIteration() {
 	uint64_t ticks   = getNanoseconds();
 	uint64_t elapsed = ticks - lastTime;
@@ -4047,6 +4122,9 @@ int main(int argc, char *argv[]) {
 		demo->createShapes();
 		printHelp();
 
+		if (demo->isAutoMode()) {
+			demo->runAuto();
+		} else {
 		while (demo->shouldKeepGoing()) {
 			try {
 				demo->mainLoopIteration();
@@ -4060,6 +4138,7 @@ int main(int argc, char *argv[]) {
 				logFlush();
 				break;
 			}
+		}
 		}
 	} catch (std::exception &e) {
 		LOG("caught std::exception \"{}\"", e.what());
