@@ -908,28 +908,24 @@ compilationNeeded:
 		// SPIRV-Tools optimizer
 		opt.RegisterPerformancePasses();
 
-		std::vector<uint32_t> optimized;
-		optimized.reserve(spirv.size());
-		bool success = opt.Run(&spirv[0], spirv.size(), &optimized, options);
+		bool success = opt.Run(&spirv[0], spirv.size(), &spirv, options);
 		if (!success) {
 			THROW_ERROR("Shader optimization failed")
 		}
 
-		if (!validate(optimized)) {
+		if (!validate(spirv)) {
 			THROW_ERROR("SPIR-V for shader \"{}\" is not valid after optimization", cacheKey)
 		}
 
 		// glslang SPV remapper
 		{
 			spv::spirvbin_t remapper;
-			remapper.remap(optimized);
+			remapper.remap(spirv);
 
-			if (!validate(optimized)) {
+			if (!validate(spirv)) {
 				THROW_ERROR("SPIR-V for shader \"{}\" is not valid after remapping", cacheKey)
 			}
 		}
-
-		std::swap(spirv, optimized);
 	}
 
 	if (!skipShaderCache) {
