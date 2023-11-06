@@ -2984,7 +2984,10 @@ void SMAADemo::runAuto() {
 
 						for (auto e : magic_enum::enum_values<SMAAEdgeMethod>()) {
 							smaaEdgeMethod = e;
-							innermostLoop();
+							for (auto d : magic_enum::enum_values<SMAADebugMode>()) {
+								debugMode = d;
+								innermostLoop();
+							}
 						}
 					}
 					break;
