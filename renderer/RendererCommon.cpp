@@ -881,7 +881,8 @@ compilationNeeded:
 		spvOptions.validate         = validateShaders;
 		glslang::GlslangToSpv(*program.getIntermediate(language), spirv, &logger, &spvOptions);
 
-		if (!validate(spirv)) {
+		// HLSL is not necessarily valid, might need legalization first
+		if (shaderLanguage != ShaderLanguage::HLSL && !validate(spirv)) {
 			THROW_ERROR("SPIR-V for shader \"{}\" is not valid after compilation", cacheKey)
 		}
 	}
