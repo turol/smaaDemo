@@ -899,12 +899,18 @@ compilationNeeded:
 			LOG("SPIR-V opt {}: {} {}:{}:{} {}", spirvOptLogLevels[level], (source != nullptr) ? source : "(no source file)", position.line, position.column, position.index, message);
 		});
 
+		spvtools::OptimizerOptions options;
+		if (shaderLanguage == ShaderLanguage::HLSL) {
+			// HLSL is not necessarily valid before legalization
+			options.set_run_validator(false);
+		}
+
 		// SPIRV-Tools optimizer
 		opt.RegisterPerformancePasses();
 
 		std::vector<uint32_t> optimized;
 		optimized.reserve(spirv.size());
-		bool success = opt.Run(&spirv[0], spirv.size(), &optimized);
+		bool success = opt.Run(&spirv[0], spirv.size(), &optimized, options);
 		if (!success) {
 			THROW_ERROR("Shader optimization failed")
 		}
