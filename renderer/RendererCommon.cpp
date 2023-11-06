@@ -892,7 +892,7 @@ compilationNeeded:
 	}
 
 	// SPIR-V optimization
-	if (optimizeShaders) {
+	if (optimizeShaders || shaderLanguage == ShaderLanguage::HLSL) {
 		spvtools::Optimizer opt(spirvEnvironment);
 
 		opt.SetMessageConsumer([] (spv_message_level_t level, const char *source, const spv_position_t &position, const char *message) {
@@ -905,8 +905,13 @@ compilationNeeded:
 			options.set_run_validator(false);
 		}
 
+		if (optimizeShaders) {
 		// SPIRV-Tools optimizer
 		opt.RegisterPerformancePasses();
+		} else {
+			// legalize only
+			opt.RegisterLegalizationPasses();
+		}
 
 		bool success = opt.Run(&spirv[0], spirv.size(), &spirv, options);
 		if (!success) {
@@ -918,7 +923,7 @@ compilationNeeded:
 		}
 
 		// glslang SPV remapper
-		{
+		if (optimizeShaders) {
 			spv::spirvbin_t remapper;
 			remapper.remap(spirv);
 
