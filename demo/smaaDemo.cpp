@@ -2979,12 +2979,23 @@ void SMAADemo::runAuto() {
 					break;
 
 				case AAMethod::SMAA:
-				case AAMethod::SMAA2X:
 					for (unsigned int q = 0; q < maxSMAAQuality; q++) {
 						smaaQuality = q;
 
 						for (auto e : magic_enum::enum_values<SMAAEdgeMethod>()) {
-                            smaaEdgeMethod = e;
+							smaaEdgeMethod = e;
+							innermostLoop();
+						}
+					}
+					break;
+
+				case AAMethod::SMAA2X:
+					for (unsigned int q = 0; q < maxSMAAQuality; q++) {
+						smaaQuality = q;
+
+						// depth causes problems because it's multisampled
+						for (auto e : { SMAAEdgeMethod::Color, SMAAEdgeMethod::Luma }) {
+							smaaEdgeMethod = e;
 							innermostLoop();
 						}
 					}
