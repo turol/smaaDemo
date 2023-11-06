@@ -886,8 +886,6 @@ compilationNeeded:
 		}
 	}
 
-	LOG_TODO("only in debug")
-	// need to move debug flag to base class
 	if (debug) {
 		checkSPVBindings(spirv);
 	}
