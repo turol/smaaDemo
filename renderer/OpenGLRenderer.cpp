@@ -594,7 +594,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		break;
 
 	case VSync::Off:
-		// nothing here
+		retval = SDL_GL_SetSwapInterval(0);
+		if (retval != 0) {
+			LOG("Failed to disable vsync: {}", SDL_GetError());
+		} else {
+			vsync = false;
+		}
 		break;
 
 	}
