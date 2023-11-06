@@ -906,8 +906,8 @@ compilationNeeded:
 		}
 
 		if (optimizeShaders) {
-		// SPIRV-Tools optimizer
-		opt.RegisterPerformancePasses();
+			// SPIRV-Tools optimizer
+			opt.RegisterPerformancePasses();
 		} else {
 			// legalize only
 			opt.RegisterLegalizationPasses();
