@@ -895,7 +895,7 @@ compilationNeeded:
 		spvtools::Optimizer opt(spirvEnvironment);
 
 		opt.SetMessageConsumer([] (spv_message_level_t level, const char *source, const spv_position_t &position, const char *message) {
-			LOG("SPIR-V opt {}: {} {}:{}:{} {}", spirvOptLogLevels[level], source, position.line, position.column, position.index, message);
+			LOG("SPIR-V opt {}: {} {}:{}:{} {}", spirvOptLogLevels[level], (source != nullptr) ? source : "(no source file)", position.line, position.column, position.index, message);
 		});
 
 		// SPIRV-Tools optimizer
