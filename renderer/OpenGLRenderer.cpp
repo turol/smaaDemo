@@ -2259,12 +2259,6 @@ void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 void Renderer::bindDescriptorSet(PipelineType /* bindPoint */, unsigned int index, DSLayoutHandle layoutHandle, const void *data_, LayoutUsage /* rtLayoutUsage */) {
 	assert(layoutHandle);
 
-#ifndef NDEBUG
-	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
-	const auto &p = impl->graphicsPipelines.get(std::get<GraphicsPipelineHandle>(impl->currentPipeline));
-	assert(p.desc.descriptorSetLayouts[index] == layoutHandle);
-#endif  // NDEBUG
-
 	impl->descriptorSetsDirty = true;
 
 	LOG_TODO("get shader bindings from current pipeline, use index")

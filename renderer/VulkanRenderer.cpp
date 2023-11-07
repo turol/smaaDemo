@@ -3470,7 +3470,6 @@ static const magic_enum::containers::array<PipelineType, vk::PipelineBindPoint> 
 void Renderer::bindDescriptorSet(PipelineType bindPoint, unsigned int dsIndex, DSLayoutHandle layoutHandle, const void *data_, LayoutUsage rtLayoutUsage) {
 	assert(layoutHandle);
 	assert(impl->inFrame);
-	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 
 	const DescriptorSetLayout &layout = impl->dsLayouts.get(layoutHandle);
 

@@ -395,7 +395,6 @@ void Renderer::bindVertexBuffer(unsigned int /* binding */, BufferHandle /* buff
 
 void Renderer::bindDescriptorSet(PipelineType /* bindPoint */, unsigned int /* index */, DSLayoutHandle layoutHandle, const void * /* data_ */, LayoutUsage /* rtLayoutUsage */) {
 	assert(layoutHandle);
-	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 }
 
 
