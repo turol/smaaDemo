@@ -3499,7 +3499,6 @@ void Renderer::bindDescriptorSet(PipelineType bindPoint, unsigned int dsIndex, D
 		write.dstSet          = ds;
 		write.dstBinding      = index;
 		write.descriptorCount = 1;
-		LOG_TODO("move to a helper function")
 		write.descriptorType  = descriptorTypes[l.type];
 
 		switch (l.type) {
