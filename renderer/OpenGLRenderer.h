@@ -269,9 +269,47 @@ struct Framebuffer {
 };
 
 
-struct GraphicsPipeline {
+struct PipelineBase {
 	GLuint                shader     = 0;
 	ShaderResources       resources;
+
+	PipelineBase()
+	: shader(0)
+	{
+	}
+
+	PipelineBase(const PipelineBase &)            = delete;
+	PipelineBase &operator=(const PipelineBase &) = delete;
+
+	PipelineBase(PipelineBase &&other)
+	: shader(other.shader)
+	, resources(std::move(other.resources))
+	{
+		other.shader  = 0;
+	}
+
+	PipelineBase &operator=(PipelineBase &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		assert(this->shader == 0);
+
+		this->shader    = other.shader;
+		this->resources = std::move(other.resources);
+
+		other.shader    = 0;
+
+		return *this;
+	}
+
+	~PipelineBase() {
+		assert(shader == 0);
+	}
+};
+
+
+struct GraphicsPipeline : public PipelineBase {
 	GLenum                srcBlend   = GL_ONE;
 	GLenum                destBlend  = GL_ZERO;
 	GraphicsPipelineDesc  desc;
@@ -281,14 +319,11 @@ struct GraphicsPipeline {
 	GraphicsPipeline &operator=(const GraphicsPipeline &) = delete;
 
 	GraphicsPipeline(GraphicsPipeline &&other) noexcept
-	: shader(other.shader)
-	, resources(other.resources)
+	: PipelineBase(std::move(other))
 	, srcBlend(other.srcBlend)
 	, destBlend(other.destBlend)
 	, desc(other.desc)
 	{
-		other.shader    = 0;
-		other.resources = ShaderResources();
 		other.srcBlend  = GL_NONE;
 		other.destBlend = GL_NONE;
 		other.desc      = GraphicsPipelineDesc();
@@ -299,14 +334,12 @@ struct GraphicsPipeline {
 			return *this;
 		}
 
-		shader          = other.shader;
-		resources       = other.resources;
+		PipelineBase::operator=(std::move(other));
+
 		srcBlend        = other.srcBlend;
 		destBlend       = other.destBlend;
 		desc            = other.desc;
 
-		other.shader    = 0;
-		other.resources = ShaderResources();
 		other.srcBlend  = GL_NONE;
 		other.destBlend = GL_NONE;
 		other.desc      = GraphicsPipelineDesc();
@@ -320,7 +353,6 @@ struct GraphicsPipeline {
 
 
 	~GraphicsPipeline() {
-		assert(shader == 0);
 	}
 };
 

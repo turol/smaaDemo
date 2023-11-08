@@ -347,9 +347,50 @@ struct Framebuffer {
 };
 
 
-struct GraphicsPipeline {
+struct PipelineBase {
 	vk::Pipeline       pipeline;
 	vk::PipelineLayout layout;  // not owned
+
+	PipelineBase()
+	{
+	}
+
+	PipelineBase(const PipelineBase &)            = delete;
+	PipelineBase &operator=(const PipelineBase &) = delete;
+
+	PipelineBase(PipelineBase &&other)
+	: pipeline(other.pipeline)
+	, layout(other.layout)
+	{
+		other.pipeline = vk::Pipeline();
+		other.layout   = vk::PipelineLayout();
+	}
+
+	PipelineBase &operator=(PipelineBase &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		assert(!this->pipeline);
+		assert(!this->layout);
+
+		this->pipeline = other.pipeline;
+		this->layout   = other.layout;
+
+		other.pipeline = vk::Pipeline();
+		other.layout   = vk::PipelineLayout();
+
+		return *this;
+	}
+
+	~PipelineBase() {
+		assert(!pipeline);
+		assert(!layout);
+	}
+};
+
+
+struct GraphicsPipeline : public PipelineBase {
 	bool               scissor  = false;
 
 
@@ -359,12 +400,9 @@ struct GraphicsPipeline {
 	GraphicsPipeline &operator=(const GraphicsPipeline &) = delete;
 
 	GraphicsPipeline(GraphicsPipeline &&other) noexcept
-	: pipeline(other.pipeline)
-	, layout(other.layout)
+	: PipelineBase(std::move(other))
 	, scissor(other.scissor)
 	{
-		other.pipeline = vk::Pipeline();
-		other.layout   = vk::PipelineLayout();
 		other.scissor  = false;
 	}
 
@@ -373,23 +411,16 @@ struct GraphicsPipeline {
 			return *this;
 		}
 
-		assert(!pipeline);
-		assert(!layout);
+		PipelineBase::operator=(std::move(other));
 
-		pipeline       = other.pipeline;
-		layout         = other.layout;
 		scissor        = other.scissor;
 
-		other.pipeline = vk::Pipeline();
-		other.layout   = vk::PipelineLayout();
 		other.scissor  = false;
 
 		return *this;
 	}
 
 	~GraphicsPipeline() {
-		assert(!pipeline);
-		assert(!layout);
 	}
 
 

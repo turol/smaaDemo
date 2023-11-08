@@ -169,7 +169,32 @@ struct Framebuffer {
 };
 
 
-struct GraphicsPipeline {
+struct PipelineBase {
+	PipelineBase()
+	{
+	}
+
+	PipelineBase(const PipelineBase &)            = delete;
+	PipelineBase &operator=(const PipelineBase &) = delete;
+
+	PipelineBase(PipelineBase &&)
+	{
+	}
+
+	PipelineBase &operator=(PipelineBase &&other) {
+		if (this == &other) {
+			return *this;
+		}
+
+		return *this;
+	}
+
+	~PipelineBase() {
+	}
+};
+
+
+struct GraphicsPipeline : public PipelineBase {
 	GraphicsPipelineDesc  desc;
 
 
@@ -177,7 +202,8 @@ struct GraphicsPipeline {
 	GraphicsPipeline &operator=(const GraphicsPipeline &) = delete;
 
 	GraphicsPipeline(GraphicsPipeline &&other) noexcept
-	: desc(other.desc)
+	: PipelineBase(std::move(other))
+	, desc(other.desc)
 	{
 		other.desc = GraphicsPipelineDesc();
 	}
@@ -186,6 +212,8 @@ struct GraphicsPipeline {
 		if (this == &other) {
 			return *this;
 		}
+
+		PipelineBase::operator=(std::move(other));
 
 		desc       = other.desc;
 
