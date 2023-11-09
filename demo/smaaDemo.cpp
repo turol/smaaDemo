@@ -2957,6 +2957,17 @@ void SMAADemo::runAuto() {
 			continue;
 		}
 
+#ifdef RENDERER_VULKAN
+
+		for (auto l : magic_enum::enum_values<LayoutUsage>()) {
+			layoutUsage = l;
+
+#else // #RENDERER_VULKAN
+
+		{
+
+#endif // #RENDERER_VULKAN
+
 		aaMethod  = method;
 		for (bool taa : { false, true }) {
 			temporalAA = taa;
@@ -3007,6 +3018,7 @@ void SMAADemo::runAuto() {
 				if (!keepGoing) {
 					return;
 				}
+			}
 			}
 		}
 	}
