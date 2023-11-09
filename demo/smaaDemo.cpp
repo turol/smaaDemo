@@ -2968,57 +2968,57 @@ void SMAADemo::runAuto() {
 
 #endif // #RENDERER_VULKAN
 
-		aaMethod  = method;
-		for (bool taa : { false, true }) {
-			temporalAA = taa;
-			for (auto shaderLang : magic_enum::enum_values<ShaderLanguage>()) {
-				preferredShaderLanguage = shaderLang;
-				switch (method) {
-				case AAMethod::MSAA:
-					for (unsigned int q = 0; q < maxMSAAQuality; q++) {
-						msaaQuality = q;
-						innermostLoop();
-					}
-					break;
+			aaMethod  = method;
+			for (bool taa : { false, true }) {
+				temporalAA = taa;
+				for (auto shaderLang : magic_enum::enum_values<ShaderLanguage>()) {
+					preferredShaderLanguage = shaderLang;
+					switch (method) {
+					case AAMethod::MSAA:
+						for (unsigned int q = 0; q < maxMSAAQuality; q++) {
+							msaaQuality = q;
+							innermostLoop();
+						}
+						break;
 
-				case AAMethod::FXAA:
-					for (unsigned int q = 0; q < maxFXAAQuality; q++) {
-						fxaaQuality = q;
+					case AAMethod::FXAA:
+						for (unsigned int q = 0; q < maxFXAAQuality; q++) {
+							fxaaQuality = q;
 
-						innermostLoop();
-					}
-					break;
+							innermostLoop();
+						}
+						break;
 
-				case AAMethod::SMAA:
-					for (unsigned int q = 0; q < maxSMAAQuality; q++) {
-						smaaQuality = q;
+					case AAMethod::SMAA:
+						for (unsigned int q = 0; q < maxSMAAQuality; q++) {
+							smaaQuality = q;
 
-						for (auto e : magic_enum::enum_values<SMAAEdgeMethod>()) {
-							smaaEdgeMethod = e;
-							for (auto d : magic_enum::enum_values<SMAADebugMode>()) {
-								debugMode = d;
+							for (auto e : magic_enum::enum_values<SMAAEdgeMethod>()) {
+								smaaEdgeMethod = e;
+								for (auto d : magic_enum::enum_values<SMAADebugMode>()) {
+									debugMode = d;
+									innermostLoop();
+								}
+							}
+						}
+						break;
+
+					case AAMethod::SMAA2X:
+						for (unsigned int q = 0; q < maxSMAAQuality; q++) {
+							smaaQuality = q;
+
+							// depth causes problems because it's multisampled
+							for (auto e : { SMAAEdgeMethod::Color, SMAAEdgeMethod::Luma }) {
+								smaaEdgeMethod = e;
 								innermostLoop();
 							}
 						}
 					}
-					break;
 
-				case AAMethod::SMAA2X:
-					for (unsigned int q = 0; q < maxSMAAQuality; q++) {
-						smaaQuality = q;
-
-						// depth causes problems because it's multisampled
-						for (auto e : { SMAAEdgeMethod::Color, SMAAEdgeMethod::Luma }) {
-							smaaEdgeMethod = e;
-							innermostLoop();
-						}
+					if (!keepGoing) {
+						return;
 					}
 				}
-
-				if (!keepGoing) {
-					return;
-				}
-			}
 			}
 		}
 	}

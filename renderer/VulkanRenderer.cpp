@@ -1698,9 +1698,9 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 	info.pMultisampleState = &multisample;
 
 	vk::PipelineDepthStencilStateCreateInfo ds;
-	ds.depthTestEnable  = desc.depthTest_;
-	ds.depthWriteEnable = desc.depthWrite_;
-	ds.depthCompareOp   = vk::CompareOp::eLess;
+	ds.depthTestEnable      = desc.depthTest_;
+	ds.depthWriteEnable     = desc.depthWrite_;
+	ds.depthCompareOp       = vk::CompareOp::eLess;
 	info.pDepthStencilState = &ds;
 
 	std::vector<vk::PipelineColorBlendAttachmentState> colorBlendStates;
@@ -2634,7 +2634,7 @@ void RendererImpl::recreateSwapchain() {
 	info.subresourceRange.levelCount = 1;
 	info.subresourceRange.layerCount = 1;
 	for (unsigned int i = 0; i < numImages; i++) {
-		Frame &f = frames.at(i);
+		Frame &f    = frames.at(i);
 		f.image     = swapchainImages.at(i);
 		info.image  = f.image;
 	}
@@ -2650,7 +2650,7 @@ void RendererImpl::waitForDeviceIdle() {
 		auto &f = frames.at(i);
 		switch (f.status) {
 		case Frame::Status::Ready:
-            break;
+			break;
 
 		case Frame::Status::Pending:
 			fences.push_back(f.fence);
@@ -3036,8 +3036,8 @@ void RendererImpl::cleanupFrame(unsigned int frameIdx) {
 			device.freeCommandBuffers(transferCmdPool, { op.cmdBuf } );
 			freeSemaphore(op.semaphore);
 
-			op.cmdBuf    = vk::CommandBuffer();
-			op.semaphore = vk::Semaphore();
+			op.cmdBuf      = vk::CommandBuffer();
+			op.semaphore   = vk::Semaphore();
 			op.semWaitMask = vk::PipelineStageFlags();
 
 			if (op.stagingBuffer) {
@@ -3774,7 +3774,6 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target,
 	r.extent.height             = srcRT.height;
 	r.extent.depth              = 1;
 	impl->currentCommandBuffer.resolveImage(srcRT.image, vulkanColorLayout(srcRT.currentLayout), destRT.image, vulkanColorLayout(destRT.currentLayout), { r } );
-
 }
 
 
