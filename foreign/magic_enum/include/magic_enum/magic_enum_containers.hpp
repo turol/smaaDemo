@@ -5,7 +5,7 @@
 // | |  | | (_| | (_| | | (__  | |____| | | | |_| | | | | | | | |____|_|   |_|
 // |_|  |_|\__,_|\__, |_|\___| |______|_| |_|\__,_|_| |_| |_|  \_____|
 //                __/ | https://github.com/Neargye/magic_enum
-//               |___/  version 0.9.3
+//               |___/  version 0.9.4
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
@@ -982,7 +982,7 @@ class set {
 
   constexpr size_type erase(const key_type& key) noexcept {
     typename container_type::reference ref = a[key];
-    bool res = ref;
+    bool res = static_cast<bool>(ref);
     if (res) {
       --s;
     }

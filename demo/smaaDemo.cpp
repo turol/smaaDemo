@@ -39,7 +39,7 @@ THE SOFTWARE.
 
 #include <imgui.h>
 
-#include <magic_enum_all.hpp>
+#include <magic_enum/magic_enum_all.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>

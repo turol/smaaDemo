@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include <SPIRV/SPVRemapper.h>
 #include <spirv_cross.hpp>
 
-#include <magic_enum_containers.hpp>
+#include <magic_enum/magic_enum_containers.hpp>
 
 #include <xxhash.h>
 

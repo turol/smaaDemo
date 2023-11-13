@@ -5,7 +5,7 @@
 // | |  | | (_| | (_| | | (__  | |____| | | | |_| | | | | | | | |____|_|   |_|
 // |_|  |_|\__,_|\__, |_|\___| |______|_| |_|\__,_|_| |_| |_|  \_____|
 //                __/ | https://github.com/Neargye/magic_enum
-//               |___/  version 0.9.3
+//               |___/  version 0.9.4
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
@@ -34,7 +34,7 @@
 
 #define MAGIC_ENUM_VERSION_MAJOR 0
 #define MAGIC_ENUM_VERSION_MINOR 9
-#define MAGIC_ENUM_VERSION_PATCH 3
+#define MAGIC_ENUM_VERSION_PATCH 4
 
 #include <array>
 #include <cstddef>
@@ -69,9 +69,11 @@
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wunknown-warning-option"
 #  pragma clang diagnostic ignored "-Wenum-constexpr-conversion"
+#  pragma clang diagnostic ignored "-Wuseless-cast" // suppresses 'static_cast<char_type>('\0')' for char_type = char (common on Linux).
 #elif defined(__GNUC__)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // May be used uninitialized 'return {};'.
+#  pragma GCC diagnostic ignored "-Wuseless-cast" // suppresses 'static_cast<char_type>('\0')' for char_type = char (common on Linux).
 #elif defined(_MSC_VER)
 #  pragma warning(push)
 #  pragma warning(disable : 26495) // Variable 'static_str<N>::chars_' is uninitialized.
@@ -301,7 +303,7 @@ class case_insensitive {
 
  public:
   template <typename L, typename R>
-  constexpr auto operator()(L lhs,R rhs) const noexcept -> std::enable_if_t<std::is_same_v<std::decay_t<L>, char_type> && std::is_same_v<std::decay_t<R>, char_type>, bool> {
+  constexpr auto operator()(L lhs, R rhs) const noexcept -> std::enable_if_t<std::is_same_v<std::decay_t<L>, char_type> && std::is_same_v<std::decay_t<R>, char_type>, bool> {
     return Op{}(to_lower(lhs), to_lower(rhs));
   }
 };
@@ -423,10 +425,20 @@ constexpr auto n() noexcept {
     constexpr auto name_ptr = MAGIC_ENUM_GET_TYPE_NAME_BUILTIN(E);
     constexpr auto name = name_ptr ? str_view{name_ptr, std::char_traits<char>::length(name_ptr)} : str_view{};
 #elif defined(__clang__)
-    auto name = str_view{__PRETTY_FUNCTION__ + 34, sizeof(__PRETTY_FUNCTION__) - 36};
+    str_view name;
+    if constexpr (sizeof(__PRETTY_FUNCTION__) == sizeof(__FUNCTION__)) {
+      static_assert(always_false_v<E>, "magic_enum::detail::n requires __PRETTY_FUNCTION__.");
+      return str_view{};
+    } else {
+      name.size_ = sizeof(__PRETTY_FUNCTION__) - 36;
+      name.str_ = __PRETTY_FUNCTION__ + 34;
+    }
 #elif defined(__GNUC__)
     auto name = str_view{__PRETTY_FUNCTION__, sizeof(__PRETTY_FUNCTION__) - 1};
-    if (name.str_[name.size_ - 1] == ']') {
+    if constexpr (sizeof(__PRETTY_FUNCTION__) == sizeof(__FUNCTION__)) {
+      static_assert(always_false_v<E>, "magic_enum::detail::n requires __PRETTY_FUNCTION__.");
+      return str_view{};
+    } else if (name.str_[name.size_ - 1] == ']') {
       name.size_ -= 50;
       name.str_ += 49;
     } else {
@@ -434,7 +446,11 @@ constexpr auto n() noexcept {
       name.str_ += 37;
     }
 #elif defined(_MSC_VER)
-    auto name = str_view{__FUNCSIG__ + 40, sizeof(__FUNCSIG__) - 57};
+    // CLI/C++ workaround (see https://github.com/Neargye/magic_enum/issues/284).
+    str_view name;
+    name.str_ = __FUNCSIG__;
+    name.str_ += 40;
+    name.size_ += sizeof(__FUNCSIG__) - 57;
 #else
     auto name = str_view{};
 #endif
@@ -485,7 +501,14 @@ constexpr auto n() noexcept {
     constexpr auto name_ptr = MAGIC_ENUM_GET_ENUM_NAME_BUILTIN(V);
     auto name = name_ptr ? str_view{name_ptr, std::char_traits<char>::length(name_ptr)} : str_view{};
 #elif defined(__clang__)
-    auto name = str_view{__PRETTY_FUNCTION__ + 34, sizeof(__PRETTY_FUNCTION__) - 36};
+    str_view name;
+    if constexpr (sizeof(__PRETTY_FUNCTION__) == sizeof(__FUNCTION__)) {
+      static_assert(always_false_v<decltype(V)>, "magic_enum::detail::n requires __PRETTY_FUNCTION__.");
+      return str_view{};
+    } else {
+      name.size_ = sizeof(__PRETTY_FUNCTION__) - 36;
+      name.str_ = __PRETTY_FUNCTION__ + 34;
+    }
     if (name.size_ > 22 && name.str_[0] == '(' && name.str_[1] == 'a' && name.str_[10] == ' ' && name.str_[22] == ':') {
       name.size_ -= 23;
       name.str_ += 23;
@@ -495,7 +518,10 @@ constexpr auto n() noexcept {
     }
 #elif defined(__GNUC__)
     auto name = str_view{__PRETTY_FUNCTION__, sizeof(__PRETTY_FUNCTION__) - 1};
-    if (name.str_[name.size_ - 1] == ']') {
+    if constexpr (sizeof(__PRETTY_FUNCTION__) == sizeof(__FUNCTION__)) {
+      static_assert(always_false_v<decltype(V)>, "magic_enum::detail::n requires __PRETTY_FUNCTION__.");
+      return str_view{};
+    } else if (name.str_[name.size_ - 1] == ']') {
       name.size_ -= 55;
       name.str_ += 54;
     } else {
@@ -508,7 +534,10 @@ constexpr auto n() noexcept {
 #elif defined(_MSC_VER)
     str_view name;
     if ((__FUNCSIG__[5] == '_' && __FUNCSIG__[35] != '(') || (__FUNCSIG__[5] == 'c' && __FUNCSIG__[41] != '(')) {
-      name = str_view{__FUNCSIG__ + 35, sizeof(__FUNCSIG__) - 52};
+      // CLI/C++ workaround (see https://github.com/Neargye/magic_enum/issues/284).
+      name.str_ = __FUNCSIG__;
+      name.str_ += 35;
+      name.size_ = sizeof(__FUNCSIG__) - 52;
     }
 #else
     auto name = str_view{};
@@ -543,7 +572,10 @@ constexpr auto n() noexcept {
   constexpr auto name_ptr = MAGIC_ENUM_GET_ENUM_NAME_BUILTIN(V);
   auto name = name_ptr ? str_view{name_ptr, std::char_traits<char>::length(name_ptr)} : str_view{};
 #  else
-  str_view name = str_view{__FUNCSIG__, sizeof(__FUNCSIG__) - 17};
+  // CLI/C++ workaround (see https://github.com/Neargye/magic_enum/issues/284).
+  str_view name;
+  name.str_ = __FUNCSIG__;
+  name.size_ = sizeof(__FUNCSIG__) - 17;
   std::size_t p = 0;
   for (std::size_t i = name.size_; i > 0; --i) {
     if (name.str_[i] == ',' || name.str_[i] == ':') {
@@ -688,7 +720,7 @@ constexpr void valid_count(bool* valid, std::size_t& count) noexcept {
     }                                                       \
   }
 
-  MAGIC_ENUM_FOR_EACH_256(MAGIC_ENUM_V);
+  MAGIC_ENUM_FOR_EACH_256(MAGIC_ENUM_V)
 
   if constexpr ((I + 256) < Size) {
     valid_count<E, S, Size, Min, I + 256>(valid, count);
@@ -797,7 +829,8 @@ inline constexpr auto max_v = (count_v<E, S> > 0) ? static_cast<U>(values_v<E, S
 
 template <typename E, enum_subtype S, std::size_t... I>
 constexpr auto names(std::index_sequence<I...>) noexcept {
-  return std::array<string_view, sizeof...(I)>{{enum_name_v<E, values_v<E, S>[I]>...}};
+  constexpr auto names = std::array<string_view, sizeof...(I)>{{enum_name_v<E, values_v<E, S>[I]>...}};
+  return names;
 }
 
 template <typename E, enum_subtype S>
@@ -808,7 +841,8 @@ using names_t = decltype((names_v<D, S>));
 
 template <typename E, enum_subtype S, std::size_t... I>
 constexpr auto entries(std::index_sequence<I...>) noexcept {
-  return std::array<std::pair<E, string_view>, sizeof...(I)>{{{values_v<E, S>[I], enum_name_v<E, values_v<E, S>[I]>}...}};
+  constexpr auto entries = std::array<std::pair<E, string_view>, sizeof...(I)>{{{values_v<E, S>[I], enum_name_v<E, values_v<E, S>[I]>}...}};
+  return entries;
 }
 
 template <typename E, enum_subtype S>

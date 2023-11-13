@@ -35,8 +35,8 @@ THE SOFTWARE.
 
 #include <SDL.h>
 
-#include <magic_enum.hpp>
-#include <magic_enum_containers.hpp>
+#include <magic_enum/magic_enum.hpp>
+#include <magic_enum/magic_enum_containers.hpp>
 
 #include "utils/Hash.h"
 #include "utils/Utils.h"  // for isPow2

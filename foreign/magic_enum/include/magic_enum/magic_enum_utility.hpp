@@ -5,7 +5,7 @@
 // | |  | | (_| | (_| | | (__  | |____| | | | |_| | | | | | | | |____|_|   |_|
 // |_|  |_|\__,_|\__, |_|\___| |______|_| |_|\__,_|_| |_| |_|  \_____|
 //                __/ | https://github.com/Neargye/magic_enum
-//               |___/  version 0.9.3
+//               |___/  version 0.9.4
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
@@ -84,7 +84,7 @@ template <typename E, detail::enum_subtype S = detail::subtype_v<E>>
   if (const auto i = enum_index<D, S>(value)) {
     const std::ptrdiff_t index = (static_cast<std::ptrdiff_t>(*i) + n);
     if (index >= 0 && index < count) {
-      return enum_value<D, S>(index);
+      return enum_value<D, S>(static_cast<std::size_t>(index));
     }
   }
   return {};
@@ -98,7 +98,7 @@ template <typename E, detail::enum_subtype S = detail::subtype_v<E>>
   if (const auto i = enum_index<D, S>(value)) {
     const std::ptrdiff_t index = ((((static_cast<std::ptrdiff_t>(*i) + n) % count) + count) % count);
     if (index >= 0 && index < count) {
-      return enum_value<D, S>(index);
+      return enum_value<D, S>(static_cast<std::size_t>(index));
     }
   }
   return MAGIC_ENUM_ASSERT(false), value;
@@ -112,7 +112,7 @@ template <typename E, detail::enum_subtype S = detail::subtype_v<E>>
   if (const auto i = enum_index<D, S>(value)) {
     const std::ptrdiff_t index = (static_cast<std::ptrdiff_t>(*i) - n);
     if (index >= 0 && index < count) {
-      return enum_value<D, S>(index);
+      return enum_value<D, S>(static_cast<std::size_t>(index));
     }
   }
   return {};
@@ -126,7 +126,7 @@ template <typename E, detail::enum_subtype S = detail::subtype_v<E>>
   if (const auto i = enum_index<D, S>(value)) {
     const std::ptrdiff_t index = ((((static_cast<std::ptrdiff_t>(*i) - n) % count) + count) % count);
     if (index >= 0 && index < count) {
-      return enum_value<D, S>(index);
+      return enum_value<D, S>(static_cast<std::size_t>(index));
     }
   }
   return MAGIC_ENUM_ASSERT(false), value;
