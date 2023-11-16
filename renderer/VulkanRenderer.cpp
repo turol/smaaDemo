@@ -88,6 +88,7 @@ static const magic_enum::containers::array<DescriptorType, vk::DescriptorType> d
 	, vk::DescriptorType::eSampler
 	, vk::DescriptorType::eSampledImage
 	, vk::DescriptorType::eCombinedImageSampler
+	, vk::DescriptorType::eStorageImage
 };
 
 
@@ -3583,6 +3584,25 @@ void Renderer::bindDescriptorSet(PipelineType bindPoint, unsigned int dsIndex, D
 			if (tex.usage.test(TextureUsage::RenderTarget) && rtLayoutUsage == LayoutUsage::General) {
 				imgWrite.imageLayout = vk::ImageLayout::eGeneral;
 			}
+
+			// we trust that reserve() above makes sure this doesn't reallocate the storage
+			imageWrites.push_back(imgWrite);
+
+			write.pImageInfo = &imageWrites.back();
+
+			writes.push_back(write);
+		} break;
+
+		case DescriptorType::StorageImageWrite: {
+			TextureHandle texHandle = *reinterpret_cast<const TextureHandle *>(data + l.offset);
+			const auto &tex = impl->textures.get(texHandle);
+			assert(tex.image);
+			assert(tex.imageView);
+			assert(tex.usage.test(TextureUsage::StorageWrite) );
+
+			vk::DescriptorImageInfo imgWrite;
+			imgWrite.imageView   = tex.imageView;
+			imgWrite.imageLayout = vk::ImageLayout::eGeneral;
 
 			// we trust that reserve() above makes sure this doesn't reallocate the storage
 			imageWrites.push_back(imgWrite);

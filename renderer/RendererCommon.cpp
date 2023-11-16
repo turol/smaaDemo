@@ -649,6 +649,19 @@ static void checkSPVBindings(const std::vector<uint32_t> &spirv) {
 			THROW_ERROR("Duplicate image sampler binding ({}, {}) \"{}\"", idx.set, idx.binding, s.name)
 		}
 	}
+
+	for (const auto &s : spvResources.storage_images) {
+		DSIndex idx;
+		idx.set     = compiler.get_decoration(s.id, spv::DecorationDescriptorSet);
+		idx.binding = compiler.get_decoration(s.id, spv::DecorationBinding);
+
+		// must be the first time we find this (set, binding) combination
+		// if not, there's a bug in the shader
+		auto b = bindings.insert(idx);
+		if (!b.second) {
+			THROW_ERROR("Duplicate storage image binding ({}, {}) \"{}\"", idx.set, idx.binding, s.name)
+		}
+	}
 }
 
 

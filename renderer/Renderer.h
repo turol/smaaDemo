@@ -374,6 +374,7 @@ enum class DescriptorType : uint8_t {
 	, Sampler
 	, Texture
 	, CombinedSampler
+	, StorageImageWrite
 	, End
 };
 

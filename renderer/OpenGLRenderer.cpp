@@ -1122,6 +1122,41 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		glsl.set_decoration(s.id, spv::DecorationBinding, openglIDX);
 	}
 
+	for (const auto &s : spvResources.storage_images) {
+		DSIndex idx;
+		idx.set     = glsl.get_decoration(s.id, spv::DecorationDescriptorSet);
+		idx.binding = glsl.get_decoration(s.id, spv::DecorationBinding);
+
+		// must be the first time we find this (set, binding) combination
+		// if not, there's a bug in the shader
+		auto b = bindings.insert(idx);
+		if (!b.second) {
+			THROW_ERROR("Duplicate storage image binding ({}, {})", idx.set, idx.binding)
+		}
+
+		auto it = dsResources.find(idx);
+		if (it == dsResources.end()) {
+            THROW_ERROR("Storage image ({}, {}) not in descriptor sets", idx.set, idx.binding)
+		}
+
+		spirv_cross::Bitset mask = glsl.get_decoration_bitset(s.id);
+		bool readable = !mask.get(spv::DecorationNonReadable);
+		bool writable = !mask.get(spv::DecorationNonWritable);
+		if (readable || !writable) {
+			LOG_TODO("implement storage image reads and read/writes")
+			THROW_ERROR("storage image unsupported mode")
+		}
+
+		assert(it->second.type == DescriptorType::StorageImageWrite);
+		unsigned int openglIDX = it->second.glIndex;
+		assert(openglIDX < shaderResources.storageImages.size());
+		assert(shaderResources.storageImages[openglIDX] == idx);
+
+		// opengl doesn't like set decorations, strip them
+		glsl.unset_decoration(s.id, spv::DecorationDescriptorSet);
+		glsl.set_decoration(s.id, spv::DecorationBinding, openglIDX);
+	}
+
 	// build combined image samplers
 	LOG_TODO("need to store this info")
 	glsl.build_combined_image_samplers();
@@ -1218,6 +1253,11 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 
 				shaderResources.textures.push_back(idx);
 				shaderResources.samplers.push_back(idx);
+				break;
+
+			case DescriptorType::StorageImageWrite:
+				glIndex = shaderResources.storageImages.size();
+				shaderResources.storageImages.push_back(idx);
 				break;
 
 			case DescriptorType::End:
@@ -2347,6 +2387,18 @@ void Renderer::bindDescriptorSet(PipelineType /* bindPoint */, unsigned int inde
 			impl->descriptors[idx] = combined;
 		} break;
 
+		case DescriptorType::StorageImageWrite: {
+			TextureHandle texHandle = *reinterpret_cast<const TextureHandle *>(data + l.offset);
+
+#ifndef NDEBUG
+			const Texture &tex = impl->textures.get(texHandle);
+			assert(tex.tex);
+			assert(tex.usage.test(TextureUsage::StorageWrite));
+#endif  // NDEBUG
+
+			impl->descriptors[idx] = texHandle;
+		} break;
+
 		}
 
 		descIndex++;
@@ -2447,6 +2499,16 @@ void RendererImpl::rebindDescriptorSets() {
 		} else {
 			HEDLEY_UNREACHABLE();
 		}
+	}
+
+	for (unsigned int i = 0; i < resources.storageImages.size(); i++) {
+		const auto &r = resources.storageImages.at(i);
+		const auto &d = descriptors.at(r);
+		assert(std::holds_alternative<TextureHandle>(d));
+		const TextureHandle &handle = std::get<TextureHandle>(d);
+		const Texture &tex = textures.get(handle);
+		LOG_TODO("implement read and read/write storage images")
+		glBindImageTexture(i, tex.tex, 0, GL_FALSE, 0, GL_WRITE_ONLY, glTexFormat(tex.format));
 	}
 
 	descriptorSetsDirty = false;
