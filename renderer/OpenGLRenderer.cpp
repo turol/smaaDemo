@@ -1044,7 +1044,7 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 
 		auto it = dsResources.find(idx);
 		if (it == dsResources.end()) {
-            THROW_ERROR("UBO ({}, {}) not in descriptor sets", idx.set, idx.binding)
+			THROW_ERROR("UBO ({}, {}) not in descriptor sets", idx.set, idx.binding)
 		}
 
 		assert(it->second.type == DescriptorType::UniformBuffer);
@@ -1080,7 +1080,7 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 
 		auto it = dsResources.find(idx);
 		if (it == dsResources.end()) {
-            THROW_ERROR("SSBO ({}, {}) not in descriptor sets", idx.set, idx.binding)
+			THROW_ERROR("SSBO ({}, {}) not in descriptor sets", idx.set, idx.binding)
 		}
 
 		assert(it->second.type == DescriptorType::StorageBuffer);
@@ -1107,7 +1107,7 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 
 		auto it = dsResources.find(idx);
 		if (it == dsResources.end()) {
-            THROW_ERROR("Sampled image ({}, {}) not in descriptor sets", idx.set, idx.binding)
+			THROW_ERROR("Sampled image ({}, {}) not in descriptor sets", idx.set, idx.binding)
 		}
 
 		assert(it->second.type == DescriptorType::CombinedSampler);
@@ -1136,7 +1136,7 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 
 		auto it = dsResources.find(idx);
 		if (it == dsResources.end()) {
-            THROW_ERROR("Storage image ({}, {}) not in descriptor sets", idx.set, idx.binding)
+			THROW_ERROR("Storage image ({}, {}) not in descriptor sets", idx.set, idx.binding)
 		}
 
 		spirv_cross::Bitset mask = glsl.get_decoration_bitset(s.id);
