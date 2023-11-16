@@ -1088,6 +1088,12 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		assert(openglIDX < shaderResources.ssbos.size());
 		assert(shaderResources.ssbos[openglIDX] == idx);
 
+		spirv_cross::Bitset mask = glsl.get_buffer_block_flags(ssbo.id);
+		bool writable = !mask.get(spv::DecorationNonWritable);
+		if (writable) {
+			LOG_TODO("implement writable SSBOs")
+		}
+
 		// opengl doesn't like set decorations, strip them
 		glsl.unset_decoration(ssbo.id, spv::DecorationDescriptorSet);
 		glsl.set_decoration(ssbo.id, spv::DecorationBinding, openglIDX);
