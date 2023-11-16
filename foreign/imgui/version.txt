@@ -1,5 +1,7 @@
-commit c6e0284ac58b3f205c95365478888f7b53b077e2
+commit b81bd7ed984ce095c20a059dd0f4d527e006998f
 Author: ocornut <omarcornut@gmail.com>
-Date:   Mon Sep 4 15:16:55 2023 +0200
+Date:   Wed Nov 15 15:20:20 2023 +0100
 
-    Fixed minor warning.
+    Version 1.90.0
+    
+    w/ Changelog tweaks.
