@@ -14,8 +14,6 @@ MODULE.bazel
 README.md
 SECURITY.md
 WORKSPACE.bazel
-bazel/BUILD.bazel
-bazel/copts.bzl
 cmake/GenPkgConfig/GenPkgConfig.cmake
 cmake/GenPkgConfig/ReadMe.md
 cmake/GenPkgConfig/UNLICENSE

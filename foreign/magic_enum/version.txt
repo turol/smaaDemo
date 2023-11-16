@@ -1,5 +1,5 @@
-commit ea5b977b8db8f0eaf9c41540f1b7db99b8abe389
+commit e55b9b54d5cf61f8e117cafb17846d7d742dd3b4
 Author: neargye <neargye@gmail.com>
-Date:   Sun Nov 12 17:36:48 2023 +0400
+Date:   Thu Nov 16 12:32:10 2023 +0400
 
-    v0.9.4
+    v0.9.5
