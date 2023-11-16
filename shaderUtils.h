@@ -59,3 +59,16 @@ vec3 sRGB2linear(vec3 v) {
     return vec3(sRGB2linear(v.x), sRGB2linear(v.y), sRGB2linear(v.z));
 }
 
+
+float linear2sRGB(float v) {
+    if (v <= 0.00031308) {
+        return 12.92 * v;
+    } else {
+        return 1.055 * pow(v, (1.0 / 2.4) ) - 0.055;
+    }
+}
+
+
+vec3 linear2sRGB(vec3 v) {
+    return vec3(linear2sRGB(v.x), linear2sRGB(v.y), linear2sRGB(v.z));
+}
