@@ -2453,6 +2453,7 @@ bool RendererImpl::isRenderPassCompatible(const RenderPass &pass, const Framebuf
 
 void RendererImpl::rebindDescriptorSets() {
 	assert(descriptorSetsDirty);
+	assert(!std::holds_alternative<std::nullopt_t>(currentPipeline));
 
 	assert(std::holds_alternative<GraphicsPipelineHandle>(currentPipeline));
 	const auto &pipeline  = graphicsPipelines.get(std::get<GraphicsPipelineHandle>(currentPipeline));
