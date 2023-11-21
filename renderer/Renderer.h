@@ -721,6 +721,83 @@ public:
 };
 
 
+class ComputePipelineDesc : public PipelineDescBase<ComputePipelineDesc> {
+	std::string  computeShaderName;
+	std::string  entryPoint_;
+	// TODO: dispatch dimensionality
+
+
+public:
+
+	ComputePipelineDesc &computeShader(const std::string &name, const std::string &entryPoint = "") {
+		assert(!name.empty());
+		if (shaderLanguage_ == ShaderLanguage::GLSL) {
+			// entry point only supported in HLSL
+			assert(entryPoint.empty());
+		}
+
+		computeShaderName = name;
+		entryPoint_       = entryPoint;
+
+		return *this;
+	}
+
+	ComputePipelineDesc() {}
+
+	~ComputePipelineDesc() {}
+
+	ComputePipelineDesc(const ComputePipelineDesc &desc)                = default;
+	ComputePipelineDesc &operator=(const ComputePipelineDesc &desc)     = default;
+
+	ComputePipelineDesc(ComputePipelineDesc &&desc) noexcept            = default;
+	ComputePipelineDesc &operator=(ComputePipelineDesc &&desc) noexcept = default;
+
+	bool operator==(const ComputePipelineDesc &other) const {
+		if (this->computeShaderName != other.computeShaderName) {
+			return false;
+		}
+
+		if (this->entryPoint_ != other.entryPoint_) {
+			return false;
+		}
+
+		if (this->shaderMacros_ != other.shaderMacros_) {
+			return false;
+		}
+
+		if (this->shaderLanguage_ != other.shaderLanguage_) {
+			return false;
+		}
+
+		for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
+			if (this->descriptorSetLayouts[i] != other.descriptorSetLayouts[i]) {
+				return false;
+			}
+		}
+
+		if (this->name_ != other.name_) {
+			return false;
+		}
+
+		return true;
+	}
+
+	size_t hashValue() const {
+		size_t h = 0;
+		hashCombine(h, name_);
+		hashCombine(h, computeShaderName);
+		hashCombine(h, shaderMacros_);
+		hashCombine(h, shaderLanguage_);
+		hashContainer(h, descriptorSetLayouts);
+		return h;
+	}
+
+
+	friend class Renderer;
+	friend struct RendererImpl;
+};
+
+
 class GraphicsPipelineDesc : public PipelineDescBase<GraphicsPipelineDesc> {
 	std::string           vertexShaderName;
 	std::string           vertexShaderEntryPoint;
@@ -1419,6 +1496,13 @@ template <> struct hash<renderer::RenderPassDesc> {
 template <> struct hash<renderer::ShaderMacros> {
 	size_t operator()(const renderer::ShaderMacros &macros) const {
 		return macros.hashValue();
+	}
+};
+
+
+template <> struct hash<renderer::ComputePipelineDesc> {
+	size_t operator()(const renderer::ComputePipelineDesc &desc) const {
+		return desc.hashValue();
 	}
 };
 
