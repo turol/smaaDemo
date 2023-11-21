@@ -1148,8 +1148,11 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		spirv_cross::Bitset mask = glsl.get_decoration_bitset(s.id);
 		bool readable = !mask.get(spv::DecorationNonReadable);
 		bool writable = !mask.get(spv::DecorationNonWritable);
-		if (readable || !writable) {
+		if (readable) {
 			LOG_TODO("implement storage image reads and read/writes")
+		}
+
+		if (!writable) {
 			THROW_ERROR("storage image unsupported mode")
 		}
 
