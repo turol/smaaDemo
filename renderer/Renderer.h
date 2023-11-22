@@ -1429,6 +1429,8 @@ public:
 	void drawIndexedInstanced(unsigned int vertexCount, unsigned int instanceCount);
 	void drawIndexedVertexOffset(unsigned int vertexCount, unsigned int firstIndex, unsigned int vertexOffset);
 
+	void dispatchCompute2D(unsigned int xGroups, unsigned int yGroups);
+
 	DebugGroupHandle beginDebugGroup(const std::string &name);
 	void endDebugGroup(DebugGroupHandle &&g);
 };

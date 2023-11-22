@@ -2875,6 +2875,25 @@ void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int fi
 }
 
 
+void Renderer::dispatchCompute2D(unsigned int xGroups, unsigned int yGroups) {
+#ifndef NDEBUG
+	assert(!impl->inRenderPass);
+	assert(std::holds_alternative<ComputePipelineHandle>(impl->currentPipeline));
+	assert(xGroups > 0);
+	assert(yGroups > 0);
+	impl->pipelineUsed = true;
+	LOG_TODO("check compute pipeline was created with proper dimensionality")
+#endif //  NDEBUG
+
+	if (impl->descriptorSetsDirty) {
+		impl->rebindDescriptorSets();
+	}
+	assert(!impl->descriptorSetsDirty);
+
+	glDispatchCompute(xGroups, yGroups, 1);
+}
+
+
 DebugGroupHandle Renderer::beginDebugGroup(const std::string &name) {
 	assert(impl->inFrame);
 	assert(!name.empty());

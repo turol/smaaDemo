@@ -496,6 +496,16 @@ void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int /*
 }
 
 
+void Renderer::dispatchCompute2D(unsigned int xGroups, unsigned int yGroups) {
+	assert(!impl->inRenderPass);
+	assert(std::holds_alternative<ComputePipelineHandle>(impl->currentPipeline));
+	assert(xGroups > 0);
+	assert(yGroups > 0);
+	impl->pipelineUsed = true;
+	LOG_TODO("check compute pipeline was created with proper dimensionality")
+}
+
+
 DebugGroupHandle Renderer::beginDebugGroup(const std::string &name DEBUG_ASSERTED) {
 	assert(impl->inFrame);
 	assert(!name.empty());
