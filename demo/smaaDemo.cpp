@@ -487,6 +487,7 @@ class SMAADemo {
 	unsigned int                                      temporalFrame           = 0;
 	bool                                              temporalReproject       = true;
 	float                                             reprojectionWeightScale = 30.0f;
+	PipelineType                                      pipelineType            = PipelineType::Graphics;
 	// number of samples in current scene fb
 	// 1 or 2 if SMAA
 	// 2.. if MSAA
@@ -829,6 +830,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::ValueArg<std::string>           aaQualitySwitch("q",      "quality",           "AA Quality",               false, "",                            "",                      cmd);
 		TCLAP::ValueArg<std::string>           debugModeSwitch("d",      "debugmode",         "SMAA debug mode",          false, "None",                        "None/Edges/Weights",    cmd);
 		TCLAP::ValueArg<std::string>           shaderLanguageSwitch("l", "shader-language",   "shader language",          false, "GLSL",                        "GLSL/HLSL",             cmd);
+		TCLAP::ValueArg<std::string>           pipelineTypeSwitch("p",   "pipeline-type",     "Pipeline type",            false, "Graphics",                    "Graphics/Compute",      cmd);
 		TCLAP::ValueArg<std::string>           deviceSwitch("",          "device",            "Set Vulkan device filter", false, "",                            "device name",           cmd);
 
 		TCLAP::SwitchArg                       temporalAASwitch("t",     "temporal",          "Temporal AA", cmd, false);
@@ -976,6 +978,18 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 					preferredShaderLanguage = *maybe;
 				} else {
 					THROW_ERROR("Bad shader language \"{}\"", languageStr)
+				}
+			}
+		}
+
+		{
+			std::string pipelineStr = pipelineTypeSwitch.getValue();
+			if (!pipelineStr.empty()) {
+				auto maybe = magic_enum::enum_cast<PipelineType>(pipelineStr, magic_enum::case_insensitive);
+				if (maybe) {
+					pipelineType = *maybe;
+				} else {
+					THROW_ERROR("Bad pipeline type \"{}\"", pipelineStr)
 				}
 			}
 		}
@@ -2640,6 +2654,12 @@ void SMAADemo::processInput() {
 				}
 				} break;
 
+			case SDL_SCANCODE_P:
+				// switch between compute and graphics pipelines
+				pipelineType = magic_enum::enum_next_value_circular(pipelineType);
+				rebuildRG    = true;
+				break;
+
 			case SDL_SCANCODE_Q:
 				switch (aaMethod) {
 				case AAMethod::MSAA:
@@ -3215,7 +3235,12 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	globalDS.linearSampler  = linearSampler;
 	globalDS.nearestSampler = nearestSampler;
+	// always bind to graphics pipelines
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
+	// only bind to compute pipelines when they're used
+	if (pipelineType == PipelineType::Compute) {
+		renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
+	}
 
 	renderer.bindVertexBuffer(0, shapeBuffers[activeShape].vertices);
 	renderer.bindIndexBuffer(shapeBuffers[activeShape].indices, IndexFormat::b32);
@@ -3673,6 +3698,16 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			float w = reprojectionWeightScale;
 			ImGui::SliderFloat("Reprojection weight scale", &w, 0.0f, 80.0f);
 			reprojectionWeightScale = w;
+
+			{
+				ImGui::Separator();
+				ImGui::Text("Preferred pipeline type");
+				auto newPipelineType = enumRadioButton(pipelineType);
+				if (pipelineType != newPipelineType) {
+					pipelineType  = newPipelineType;
+					rebuildRG = true;
+				}
+			}
 
 			ImGui::Separator();
 			int msaaq = msaaQuality;
