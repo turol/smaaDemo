@@ -806,6 +806,7 @@ private:
 
 	HashMap<RT, Rendertarget>                        rendertargets;
 
+	HashMap<ComputePipelineDesc, ComputePipelineHandle>    computePipelines;
 	HashMap<GraphicsPipelineDesc, GraphicsPipelineHandle>  graphicsPipelines;
 
 	HashSet<RP>                                      renderpassesWithExternalRTs;
@@ -839,6 +840,11 @@ public:
 
 
 	void clearCaches(Renderer &renderer) {
+		for (auto &p : computePipelines) {
+			renderer.deleteComputePipeline(std::move(p.second));
+		}
+		computePipelines.clear();
+
 		for (auto &p : graphicsPipelines) {
 			renderer.deleteGraphicsPipeline(std::move(p.second));
 		}
@@ -1583,6 +1589,22 @@ public:
 			LOG("re-throwing exception");
 			std::rethrow_exception(storedException);
 		}
+	}
+
+
+	ComputePipelineHandle createComputePipeline(Renderer &renderer, const ComputePipelineDesc &desc) {
+		auto it = computePipelines.find(desc);
+		if (it != computePipelines.end()) {
+			return it->second;
+		}
+
+		// store the owning handle in computePipelines and return a non-owning copy
+		auto handle = renderer.createComputePipeline(desc);
+		ComputePipelineHandle result = handle;
+
+		computePipelines.emplace(desc, std::move(handle));
+
+		return result;
 	}
 
 
