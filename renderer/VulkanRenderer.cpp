@@ -1466,10 +1466,14 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 		before.srcSubpass       = VK_SUBPASS_EXTERNAL;
 		before.dstSubpass       = 0;
 
-		LOG_TODO("should come from desc (previous usage)")
-		// depends on whether previous thing was rendering or msaa resolve
-		before.srcStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eTransfer;
-		before.srcAccessMask    = vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eTransferWrite;
+		LOG_TODO("these should come from desc (previous usage)")
+		// depends on whether previous thing was rendering, compute or msaa resolve
+		before.srcStageMask     |= vk::PipelineStageFlagBits::eColorAttachmentOutput;
+		before.srcAccessMask    |= vk::AccessFlagBits::eColorAttachmentWrite;
+		before.srcStageMask     |= vk::PipelineStageFlagBits::eComputeShader;
+		before.srcAccessMask    |= vk::AccessFlagBits::eShaderWrite;
+		before.srcStageMask     |= vk::PipelineStageFlagBits::eTransfer;
+		before.srcAccessMask    |= vk::AccessFlagBits::eTransferWrite;
 
 		before.dstStageMask     = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 		LOG_TODO("shouldn't need read unless we load the attachment and use blending")
