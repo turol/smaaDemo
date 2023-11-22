@@ -310,6 +310,36 @@ struct PipelineBase {
 };
 
 
+struct ComputePipeline : public PipelineBase {
+
+	ComputePipeline(const ComputePipeline &)            = delete;
+	ComputePipeline &operator=(const ComputePipeline &) = delete;
+
+	ComputePipeline(ComputePipeline &&other) noexcept
+	: PipelineBase(std::move(other))
+	{
+	}
+
+	ComputePipeline &operator=(ComputePipeline &&other) noexcept {
+		if (this == &other) {
+			return *this;
+		}
+
+		PipelineBase::operator=(std::move(other));
+
+		return *this;
+	}
+
+	ComputePipeline()
+	{
+	}
+
+
+	~ComputePipeline() {
+	}
+};
+
+
 struct GraphicsPipeline : public PipelineBase {
 	GLenum                srcBlend   = GL_ONE;
 	GLenum                destBlend  = GL_ZERO;
@@ -696,6 +726,7 @@ struct RendererImpl : public RendererBase {
 	std::vector<Frame>                                      frames;
 
 	ResourceContainer<Buffer>                               buffers;
+	ResourceContainer<ComputePipeline>                      computePipelines;
 	ResourceContainer<DescriptorSetLayout, uint32_t, true>  dsLayouts;
 	ResourceContainer<FragmentShader, uint32_t, true>       fragmentShaders;
 	ResourceContainer<Framebuffer>                          framebuffers;

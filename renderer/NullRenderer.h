@@ -194,6 +194,34 @@ struct PipelineBase {
 };
 
 
+struct ComputePipeline : public PipelineBase {
+	ComputePipelineDesc  desc;
+
+
+	ComputePipeline(const ComputePipeline &)            = delete;
+	ComputePipeline &operator=(const ComputePipeline &) = delete;
+
+	ComputePipeline(ComputePipeline &&other) noexcept
+	: PipelineBase(std::move(other))
+	, desc(other.desc)
+	{
+		other.desc = ComputePipelineDesc();
+	}
+
+	ComputePipeline &operator=(ComputePipeline &&other) noexcept {
+		desc       = other.desc;
+
+		other.desc = ComputePipelineDesc();
+
+		return *this;
+	}
+
+	ComputePipeline() {}
+
+	~ComputePipeline() {}
+};
+
+
 struct GraphicsPipeline : public PipelineBase {
 	GraphicsPipelineDesc  desc;
 
@@ -441,6 +469,7 @@ struct RendererImpl : public RendererBase {
 	std::vector<Frame>                                      frames;
 
 	ResourceContainer<Buffer>                               buffers;
+	ResourceContainer<ComputePipeline>                      computePipelines;
 	ResourceContainer<DescriptorSetLayout, uint32_t, true>  dsLayouts;
 	ResourceContainer<FragmentShader, uint32_t, true>       fragmentShaders;
 	ResourceContainer<Framebuffer>                          framebuffers;

@@ -107,7 +107,7 @@ std::vector<char> RendererImpl::spirv2glsl(std::string_view name, const ShaderMa
 
 
 GLuint RendererImpl::createShader(GLenum type, const std::string &name, const ShaderMacros &macros, spirv_cross::CompilerGLSL &glsl) {
-	assert(type == GL_VERTEX_SHADER || type == GL_FRAGMENT_SHADER);
+	assert(type == GL_VERTEX_SHADER || type == GL_FRAGMENT_SHADER || type == GL_COMPUTE_SHADER);
 
 	std::vector<char> src = spirv2glsl(name, macros, glsl);
 
@@ -1197,6 +1197,123 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 }
 
 
+ComputePipelineHandle Renderer::createComputePipeline(const ComputePipelineDesc &desc) {
+	assert(!desc.computeShaderName.empty());
+	assert(!desc.name_.empty());
+
+	std::vector<uint32_t> spirv = impl->compileSpirv(desc.computeShaderName, desc.entryPoint_, desc.shaderLanguage_, desc.shaderMacros_, ShaderStage::Compute);
+
+	// construct map of descriptor set resources
+	ResourceMap      dsResources;
+	ShaderResources  shaderResources;
+
+	bool endReached DEBUG_ASSERTED = false;
+	for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
+		if (desc.descriptorSetLayouts[i]) {
+			assert(!endReached);
+		} else {
+			// all non-null descriptor set layouts must be first, followed by only nulls
+#ifdef NDEBUG
+
+			break;
+
+#else  // DEBUG
+
+			endReached = true;
+
+#endif  // DEBUG
+		}
+
+		const auto &layoutDesc = impl->dsLayouts.get(desc.descriptorSetLayouts[i]).descriptors;
+		for (unsigned int binding = 0; binding < layoutDesc.size(); binding++) {
+			DSIndex idx;
+			idx.set     = i;
+			idx.binding = binding;
+			uint32_t glIndex = 0xFFFFFFFFU;
+
+			auto type = layoutDesc.at(binding).type;
+			switch (type) {
+			case DescriptorType::UniformBuffer:
+				glIndex = shaderResources.ubos.size();
+				shaderResources.ubos.push_back(idx);
+				break;
+
+			case DescriptorType::StorageBuffer:
+				glIndex = shaderResources.ssbos.size();
+				shaderResources.ssbos.push_back(idx);
+				break;
+
+			case DescriptorType::Sampler:
+			case DescriptorType::Texture:
+				// gets assigned later after spirv-cross has built combined samplers
+				break;
+
+			case DescriptorType::CombinedSampler:
+				glIndex         = shaderResources.textures.size();
+				assert(glIndex == shaderResources.samplers.size());
+
+				shaderResources.textures.push_back(idx);
+				shaderResources.samplers.push_back(idx);
+				break;
+
+			case DescriptorType::StorageImageWrite:
+				glIndex = shaderResources.storageImages.size();
+				shaderResources.storageImages.push_back(idx);
+				break;
+
+			case DescriptorType::End:
+				assert(false);
+				break;
+			}
+
+			dsResources.emplace(idx, ResourceInfo(type, glIndex));
+		}
+	}
+
+	GLuint computeShader = 0;
+	{
+		spirv_cross::CompilerGLSL::Options glslOptions;
+		glslOptions.vertex.fixup_clipspace = false;
+		glslOptions.vertex.support_nonzero_base_instance = false;
+
+		spirv_cross::CompilerGLSL glslComp(spirv);
+		glslComp.set_common_options(glslOptions);
+		processShaderResources(shaderResources, dsResources, glslComp);
+
+		computeShader = impl->createShader(GL_COMPUTE_SHADER, desc.computeShaderName, desc.shaderMacros_, glslComp);
+	}
+
+	GLuint program = glCreateProgram();
+
+	glAttachShader(program, computeShader);
+	glLinkProgram(program);
+	glDeleteShader(computeShader);
+
+	GLint status = 0;
+	glGetProgramiv(program, GL_LINK_STATUS, &status);
+	if (status != GL_TRUE) {
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &status);
+		std::vector<char> infoLog(status + 1, '\0');
+		LOG_TODO("better logging")
+		glGetProgramInfoLog(program, status, nullptr, &infoLog[0]);
+		LOG("info log: {}", &infoLog[0]);
+		logFlush();
+		THROW_ERROR("shader link failed")
+	}
+	glUseProgram(program);
+
+	ComputePipeline pipeline;
+	pipeline.shader    = program;
+	pipeline.resources = std::move(shaderResources);
+
+	if (impl->tracing) {
+		glObjectLabel(GL_PROGRAM, program, desc.name_.size(), desc.name_.c_str());
+	}
+
+	return impl->computePipelines.add(std::move(pipeline));
+}
+
+
 GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDesc &desc) {
 	assert(!desc.vertexShaderName.empty());
 	assert(!desc.fragmentShaderName.empty());
@@ -1684,6 +1801,15 @@ void Renderer::deleteFramebuffer(FramebufferHandle &&handle) {
 		fb.numSamples = 0;
 		fb.desc = FramebufferDesc();
 		fb.depthStencilFormat = Format::Invalid;
+	} );
+}
+
+
+void Renderer::deleteComputePipeline(ComputePipelineHandle &&handle) {
+	impl->computePipelines.removeWith(std::move(handle), [](ComputePipeline &p) {
+		assert(p.shader != 0);
+		glDeleteProgram(p.shader);
+		p.shader = 0;
 	} );
 }
 

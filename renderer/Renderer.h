@@ -1365,6 +1365,7 @@ public:
 
 	// TODO: add buffer usage flags
 	BufferHandle            createBuffer(BufferType type, uint32_t size, const void *contents);
+	ComputePipelineHandle   createComputePipeline(const ComputePipelineDesc &desc);
 	BufferHandle            createEphemeralBuffer(BufferType type, uint32_t size, const void *contents);
 	FramebufferHandle       createFramebuffer(const FramebufferDesc &desc);
 	GraphicsPipelineHandle  createGraphicsPipeline(const GraphicsPipelineDesc &desc);
@@ -1384,6 +1385,7 @@ public:
 	TextureHandle        getRenderTargetView(RenderTargetHandle handle, Format f);
 
 	void deleteBuffer(BufferHandle &&handle);
+	void deleteComputePipeline(ComputePipelineHandle &&handle);
 	void deleteFramebuffer(FramebufferHandle &&handle);
 	void deleteGraphicsPipeline(GraphicsPipelineHandle &&handle);
 	void deleteRenderPass(RenderPassHandle &&handle);

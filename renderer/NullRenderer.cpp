@@ -129,6 +129,16 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 }
 
 
+ComputePipelineHandle Renderer::createComputePipeline(const ComputePipelineDesc &desc) {
+	assert(!desc.computeShaderName.empty());
+	assert(!desc.name_.empty());
+
+	ComputePipeline pipeline;
+	pipeline.desc = desc;
+	return impl->computePipelines.add(std::move(pipeline));
+}
+
+
 GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDesc &desc) {
 	GraphicsPipeline pipeline;
 	pipeline.desc = desc;
@@ -226,6 +236,11 @@ void Renderer::deleteBuffer(BufferHandle &&handle) {
 
 void Renderer::deleteFramebuffer(FramebufferHandle &&handle) {
 	impl->framebuffers.remove(std::move(handle));
+}
+
+
+void Renderer::deleteComputePipeline(ComputePipelineHandle &&handle) {
+	impl->computePipelines.remove(std::move(handle));
 }
 
 

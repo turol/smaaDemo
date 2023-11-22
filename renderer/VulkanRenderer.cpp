@@ -41,6 +41,10 @@ struct ResourceHasher final {
 		return b.hashValue();
 	}
 
+	size_t operator()(const ComputePipeline &p) const {
+		return p.hashValue();
+	}
+
 	size_t operator()(const Framebuffer &fb) const {
 		return fb.hashValue();
 	}
@@ -931,6 +935,10 @@ RendererImpl::~RendererImpl() {
 		deleteSamplerInternal(s);
 	} );
 
+	computePipelines.clearWith([this](ComputePipeline &p) {
+		deleteComputePipelineInternal(p);
+	} );
+
 	graphicsPipelines.clearWith([this](GraphicsPipeline &p) {
 		deleteGraphicsPipelineInternal(p);
 	} );
@@ -1614,6 +1622,90 @@ vk::PipelineLayout RendererImpl::createPipelineLayout(const PipelineLayoutKey &k
 }
 
 
+ComputePipelineHandle Renderer::createComputePipeline(const ComputePipelineDesc &desc) {
+	assert(!desc.computeShaderName.empty());
+	assert(!desc.name_.empty());
+
+	ShaderMacros macros_(desc.shaderMacros_);
+	macros_.set("VULKAN_FLIP", "1");
+
+	std::vector<uint32_t> spirv = impl->compileSpirv(desc.computeShaderName, desc.entryPoint_, desc.shaderLanguage_, macros_, ShaderStage::Compute);
+
+	vk::ShaderModuleCreateInfo sm;
+	sm.codeSize  = spirv.size() * 4;
+	sm.pCode     = &spirv[0];
+	vk::ShaderModule shaderModule = impl->device.createShaderModule(sm);
+
+	std::string pipelineName;
+
+	pipelineName.insert(pipelineName.end(), desc.computeShaderName.begin(), desc.computeShaderName.end());
+
+	for (const auto &macro : desc.shaderMacros_.impl) {
+		pipelineName.push_back(' ');
+		pipelineName.insert(pipelineName.end(), macro.key.begin(), macro.key.end());
+		if (!macro.value.empty()) {
+			pipelineName.push_back('=');
+			pipelineName.insert(pipelineName.end(), macro.value.begin(), macro.value.end());
+		}
+	}
+
+	impl->debugNameObject<vk::ShaderModule>(shaderModule, pipelineName.data());
+
+	vk::ComputePipelineCreateInfo info;
+
+	if (impl->pipelineExecutableInfo) {
+		info.flags = vk::PipelineCreateFlagBits::eCaptureStatisticsKHR;
+	}
+
+	info.stage.stage  = vk::ShaderStageFlagBits::eCompute;
+	info.stage.module = shaderModule;
+	info.stage.pName  = "main";
+
+	PipelineLayoutKey key;
+
+	bool endReached DEBUG_ASSERTED = false;
+	for (unsigned int i = 0; i < MAX_DESCRIPTOR_SETS; i++) {
+		if (desc.descriptorSetLayouts[i]) {
+			assert(!endReached);
+			key.add(impl->dsLayouts.get(desc.descriptorSetLayouts[i]).layout);
+		} else {
+			// all non-null descriptor set layouts must be first, followed by only nulls
+#ifdef NDEBUG
+
+			break;
+
+#else  // DEBUG
+
+			endReached = true;
+
+#endif  // DEBUG
+		}
+	}
+
+	info.layout = impl->createPipelineLayout(key);
+
+	auto result = impl->device.createComputePipeline(impl->pipelineCache, info);
+	impl->device.destroyShaderModule(shaderModule);
+	if (result.result != vk::Result::eSuccess) {
+		THROW_ERROR("Failed to create graphics pipeline: {}", vk::to_string(result.result))
+	}
+
+	vk::Pipeline pipeline = result.value;
+
+	impl->debugNameObject<vk::Pipeline>(result.value, pipelineName);
+
+	if (impl->pipelineExecutableInfo) {
+		impl->logPipelineStatistics(std::string_view(pipelineName.data(), pipelineName.size()), pipeline);
+	}
+
+	ComputePipeline p;
+	p.pipeline = result.value;
+	p.layout   = info.layout;
+
+	return impl->computePipelines.add(std::move(p));
+}
+
+
 GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDesc &desc) {
 	vk::GraphicsPipelineCreateInfo info;
 
@@ -2289,6 +2381,13 @@ void Renderer::deleteBuffer(BufferHandle &&handle) {
 void Renderer::deleteFramebuffer(FramebufferHandle &&handle) {
 	impl->framebuffers.removeWith(std::move(handle), [this](Framebuffer &fb) {
 		impl->deleteResources.emplace_back(std::move(fb));
+	} );
+}
+
+
+void Renderer::deleteComputePipeline(ComputePipelineHandle &&handle) {
+	impl->computePipelines.removeWith(std::move(handle), [this](ComputePipeline &p) {
+		impl->deleteResources.emplace_back(std::move(p));
 	} );
 }
 
@@ -3189,6 +3288,13 @@ void RendererImpl::deleteFramebufferInternal(Framebuffer &fb) {
 	fb.depthStencilTarget.format = Format::Invalid;
 	fb.depthStencilTarget.initialLayout = Layout::Undefined;
 	fb.depthStencilTarget.finalLayout   = Layout::Undefined;
+}
+
+
+void RendererImpl::deleteComputePipelineInternal(ComputePipeline &p) {
+	p.layout = vk::PipelineLayout();
+	device.destroyPipeline(p.pipeline);
+	p.pipeline = vk::Pipeline();
 }
 
 

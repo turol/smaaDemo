@@ -390,6 +390,43 @@ struct PipelineBase {
 };
 
 
+struct ComputePipeline : public PipelineBase {
+
+	ComputePipeline(const ComputePipeline &)            = delete;
+	ComputePipeline &operator=(const ComputePipeline &) = delete;
+
+	ComputePipeline(ComputePipeline &&other) noexcept
+	: PipelineBase(std::move(other))
+	{
+	}
+
+	ComputePipeline &operator=(ComputePipeline &&other) noexcept {
+		if (this == &other) {
+			return *this;
+		}
+
+		PipelineBase::operator=(std::move(other));
+
+		return *this;
+	}
+
+	ComputePipeline() {}
+
+	~ComputePipeline() {
+	}
+
+
+	bool operator==(const ComputePipeline &other) const {
+		return this->pipeline == other.pipeline;
+	}
+
+
+	size_t hashValue() const {
+		return std::hash<vk::Pipeline>()(pipeline);
+	}
+};
+
+
 struct GraphicsPipeline : public PipelineBase {
 	bool               scissor  = false;
 
@@ -788,7 +825,7 @@ struct PipelineLayoutKey {
 };
 
 
-using Resource = std::variant<Buffer, Framebuffer, GraphicsPipeline, RenderPass, RenderTarget, Sampler, Texture>;
+using Resource = std::variant<Buffer, ComputePipeline, Framebuffer, GraphicsPipeline, RenderPass, RenderTarget, Sampler, Texture>;
 
 
 }	// namespace renderer
@@ -1050,6 +1087,7 @@ struct RendererImpl : public RendererBase {
 	std::vector<Frame>                                      frames;
 
 	ResourceContainer<Buffer>                               buffers;
+	ResourceContainer<ComputePipeline>                      computePipelines;
 	ResourceContainer<DescriptorSetLayout, uint32_t, true>  dsLayouts;
 	ResourceContainer<FragmentShader, uint32_t, true>       fragmentShaders;
 	ResourceContainer<Framebuffer>                          framebuffers;
@@ -1126,6 +1164,7 @@ struct RendererImpl : public RendererBase {
 	vk::PipelineLayout createPipelineLayout(const PipelineLayoutKey &key);
 
 	void deleteBufferInternal(Buffer &b);
+	void deleteComputePipelineInternal(ComputePipeline &p);
 	void deleteFramebufferInternal(Framebuffer &fb);
 	void deleteGraphicsPipelineInternal(GraphicsPipeline &p);
 	void deleteRenderPassInternal(RenderPass &rp);
@@ -1159,6 +1198,10 @@ struct RendererImpl : public RendererBase {
 
 		void operator()(Buffer &b) const {
 			r->deleteBufferInternal(b);
+		}
+
+		void operator()(ComputePipeline &p) const {
+			r->deleteComputePipelineInternal(p);
 		}
 
 		void operator()(Framebuffer &fb) const {
