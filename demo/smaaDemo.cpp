@@ -554,6 +554,7 @@ class SMAADemo {
 	GraphicsPipelineHandle                                    separatePipeline;
 	std::array<GraphicsPipelineHandle, 2>                     temporalAAPipelines;
 	GraphicsPipelineHandle                                    fxaaPipeline;
+	ComputePipelineHandle                                     fxaaComputePipeline;
 
 	magic_enum::containers::array<Shape, ShapeRenderBuffers>  shapeBuffers;
 
@@ -608,6 +609,8 @@ class SMAADemo {
 		assert(cachedPipeline);
 		return cachedPipeline;
 	}
+
+	void computeFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r, Rendertargets output);
 
 	void renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r);
 
@@ -1070,6 +1073,25 @@ const DescriptorLayout ShapeSceneDS::layout[] = {
 DSLayoutHandle ShapeSceneDS::layoutHandle;
 
 
+struct FXAAComputeDS {
+	BufferHandle   unused;
+	CSampler       color;
+	TextureHandle  outputImage;
+
+	DS_LAYOUT_MEMBERS;
+};
+
+
+const DescriptorLayout FXAAComputeDS::layout[] = {
+	  { DescriptorType::UniformBuffer,     offsetof(FXAAComputeDS, unused)    }
+	, DESCRIPTOR(FXAAComputeDS, color)
+	, { DescriptorType::StorageImageWrite, offsetof(FXAAComputeDS, outputImage) }
+	, { DescriptorType::End,               0                                    }
+};
+
+DSLayoutHandle FXAAComputeDS::layoutHandle;
+
+
 struct ColorCombinedDS {
 	BufferHandle  unused;
 	CSampler      color;
@@ -1256,6 +1278,7 @@ void SMAADemo::initRender() {
 
 	renderer.registerDescriptorSetLayout<GlobalDS>();
 	renderer.registerDescriptorSetLayout<ShapeSceneDS>();
+	renderer.registerDescriptorSetLayout<FXAAComputeDS>();
 	renderer.registerDescriptorSetLayout<ColorCombinedDS>();
 	renderer.registerDescriptorSetLayout<ColorTexDS>();
 	renderer.registerDescriptorSetLayout<EdgeDetectionDS>();
@@ -1476,6 +1499,7 @@ void SMAADemo::rebuildRenderGraph() {
 		RenderTargetDesc rtDesc;
 		rtDesc.name("final")
 		      .format(Format::sRGBA8)
+			  .additionalViewFormat(Format::RGBA8)
 		      .width(windowWidth)
 		      .height(windowHeight);
 
@@ -1486,6 +1510,20 @@ void SMAADemo::rebuildRenderGraph() {
 				break;
 
 			case AAMethod::FXAA:
+				switch (pipelineType) {
+				case PipelineType::Compute:
+					// sRGBA format not allowed with storage image
+					rtDesc.usage({ TextureUsage::BlitSource, TextureUsage::StorageWrite })
+					      .format(Format::RGBA8)
+					      .additionalViewFormat(Format::Invalid);
+					break;
+
+				case PipelineType::Graphics:
+					rtDesc.usage({ TextureUsage::BlitSource });
+					break;
+				}
+				break;
+
 			case AAMethod::SMAA:
 			case AAMethod::SMAA2X:
 				rtDesc.usage({ TextureUsage::BlitSource });
@@ -1688,29 +1726,46 @@ void SMAADemo::rebuildRenderGraph() {
 	if (antialiasing) {
 		if (temporalAA && !isImageScene()) {
 			{
+				Format fmt = Format::sRGBA8;
+
 				RenderTargetDesc rtDesc;
-				rtDesc.name("Temporal resolve 1")
-				      .format(Format::sRGBA8)
-				      .width(windowWidth)
-				      .height(windowHeight);
 				switch (aaMethod) {
 				case AAMethod::MSAA:
 					rtDesc.usage({ TextureUsage::Sampling, TextureUsage::ResolveDestination });
 					break;
 
 				case AAMethod::FXAA:
+					switch (pipelineType) {
+					case PipelineType::Graphics:
+						rtDesc.usage({ TextureUsage::Sampling });
+						break;
+
+					case PipelineType::Compute:
+						fmt = Format::RGBA8;
+						rtDesc.usage({ TextureUsage::Sampling, TextureUsage::StorageWrite });
+						break;
+
+					}
+					break;
+
 				case AAMethod::SMAA:
 				case AAMethod::SMAA2X:
 					rtDesc.usage({ TextureUsage::Sampling });
 					break;
 				}
+
+				rtDesc.name("Temporal resolve 1")
+				      .format(fmt)
+				      .width(windowWidth)
+				      .height(windowHeight);
+
 				temporalRTs[0] = renderer.createRenderTarget(rtDesc);
 
 				rtDesc.name("Temporal resolve 2");
 				temporalRTs[1] = renderer.createRenderTarget(rtDesc);
 
-				renderGraph.externalRenderTarget(Rendertargets::TemporalPrevious, Format::sRGBA8, Layout::ShaderRead, Layout::ShaderRead, { TextureUsage::Sampling });
-				renderGraph.externalRenderTarget(Rendertargets::TemporalCurrent,  Format::sRGBA8, Layout::Undefined,  Layout::ShaderRead, { TextureUsage::Sampling });
+				renderGraph.externalRenderTarget(Rendertargets::TemporalPrevious, fmt, Layout::ShaderRead, Layout::ShaderRead, { TextureUsage::Sampling });
+				renderGraph.externalRenderTarget(Rendertargets::TemporalCurrent,  fmt, Layout::Undefined,  Layout::ShaderRead, { TextureUsage::Sampling });
 			}
 
 			if (numSamples > 1) {
@@ -1723,13 +1778,23 @@ void SMAADemo::rebuildRenderGraph() {
 			} break;
 
 			case AAMethod::FXAA: {
-				{
+				switch (pipelineType) {
+				case PipelineType::Compute: {
+					DemoRenderGraph::ComputePassDesc desc;
+					desc.sampledRendertarget(Rendertargets::MainColor)
+					    .storageImageWrite(Rendertargets::TemporalCurrent)
+					    .name("FXAA temporal");
+					renderGraph.computePass(RenderPasses::FXAA, desc, std::bind(&SMAADemo::computeFXAA, this, _1, _2, Rendertargets::TemporalCurrent));
+				} break;
+
+				case PipelineType::Graphics: {
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::TemporalCurrent, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::MainColor)
 					    .name("FXAA temporal");
 
 					renderGraph.renderPass(RenderPasses::FXAA, desc, std::bind(&SMAADemo::renderFXAA, this, _1, _2));
+				} break;
 				}
 			} break;
 
@@ -1918,12 +1983,24 @@ void SMAADemo::rebuildRenderGraph() {
 			} break;
 
 			case AAMethod::FXAA: {
+				switch (pipelineType) {
+				case PipelineType::Compute: {
+					DemoRenderGraph::ComputePassDesc desc;
+					desc.sampledRendertarget(Rendertargets::MainColor)
+					    .storageImageWrite(Rendertargets::FinalRender)
+					    .name("FXAA");
+					renderGraph.computePass(RenderPasses::FXAA, desc, std::bind(&SMAADemo::computeFXAA, this, _1, _2, Rendertargets::FinalRender));
+				} break;
+
+				case PipelineType::Graphics: {
 				DemoRenderGraph::PassDesc desc;
 				desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
 				    .inputRendertarget(Rendertargets::MainColor)
 				    .name("FXAA");
 
 				renderGraph.renderPass(RenderPasses::FXAA, desc, std::bind(&SMAADemo::renderFXAA, this, _1, _2));
+					} break;
+				}
 			} break;
 
 			case AAMethod::SMAA: {
@@ -2164,6 +2241,7 @@ void SMAADemo::rebuildRenderGraph() {
 	temporalAAPipelines[0].reset();
 	temporalAAPipelines[1].reset();
 	fxaaPipeline.reset();
+	fxaaComputePipeline.reset();
 
 	smaaPipelines.edgePipeline.reset();
 	smaaPipelines.blendWeightPipeline.reset();
@@ -3306,6 +3384,41 @@ void SMAADemo::renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	colorDS.color = image.tex;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 1, colorDS, layoutUsage);
 	renderer.draw(0, 3);
+}
+
+
+void SMAADemo::computeFXAA(RenderPasses /* rp */, DemoRenderGraph::PassResources &r, Rendertargets output) {
+	LOG_TODO("use two-pass algorithm from https://github.com/Microsoft/DirectX-Graphics-Samples/blob/master/MiniEngine/Core/Shaders/FXAAPass1CS.hlsli")
+
+	renderer.bindComputePipeline(getCachedPipeline(fxaaComputePipeline, [&] () {
+		std::string qualityString(fxaaQualityLevels[fxaaQuality]);
+
+		ShaderMacros macros;
+		macros.set("FXAA_QUALITY_PRESET", qualityString);
+
+		ComputePipelineDesc plDesc;
+		plDesc.descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<FXAAComputeDS>(1)
+		      .shaderMacros(macros)
+		      .shaderLanguage(preferredShaderLanguage)
+		      .computeShader("fxaa")
+		      .name(std::string("FXAA ") + qualityString);
+
+		return renderGraph.createComputePipeline(renderer, plDesc);
+	}));
+
+	FXAAComputeDS fxaaDS;
+	// FIXME: remove unused UBO hack
+	uint32_t temp        = 0;
+	fxaaDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
+	fxaaDS.color.tex     = r.get(Rendertargets::MainColor, Format::sRGBA8);
+	fxaaDS.color.sampler = linearSampler;
+	fxaaDS.outputImage   = r.get(output, Format::RGBA8);
+	renderer.bindDescriptorSet(PipelineType::Compute, 1, fxaaDS, layoutUsage);
+
+	unsigned int groupsX = (rendererDesc.swapchain.width  + FXAA_COMPUTE_GROUP_X - 1) / FXAA_COMPUTE_GROUP_X;
+	unsigned int groupsY = (rendererDesc.swapchain.height + FXAA_COMPUTE_GROUP_Y - 1) / FXAA_COMPUTE_GROUP_Y;
+	renderer.dispatchCompute2D(groupsX, groupsY);
 }
 
 
