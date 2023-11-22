@@ -3083,11 +3083,16 @@ void SMAADemo::runAuto() {
 						for (unsigned int q = 0; q < maxFXAAQuality; q++) {
 							fxaaQuality = q;
 
-							innermostLoop();
+							for (auto p : magic_enum::enum_values<PipelineType>()) {
+								pipelineType = p;
+								innermostLoop();
+							}
 						}
 						break;
 
 					case AAMethod::SMAA:
+						pipelineType = PipelineType::Graphics;
+
 						for (unsigned int q = 0; q < maxSMAAQuality; q++) {
 							smaaQuality = q;
 
@@ -3102,6 +3107,8 @@ void SMAADemo::runAuto() {
 						break;
 
 					case AAMethod::SMAA2X:
+						pipelineType = PipelineType::Graphics;
+
 						for (unsigned int q = 0; q < maxSMAAQuality; q++) {
 							smaaQuality = q;
 
