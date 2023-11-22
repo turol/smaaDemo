@@ -121,6 +121,49 @@ public:
 		float                                        depthClearValue       = 1.0f;
 	};
 
+
+	struct ComputePassDesc {
+		ComputePassDesc()
+		{
+		}
+
+		~ComputePassDesc() { }
+
+		ComputePassDesc(const ComputePassDesc &)                = default;
+		ComputePassDesc(ComputePassDesc &&) noexcept            = default;
+
+		ComputePassDesc &operator=(const ComputePassDesc &)     = default;
+		ComputePassDesc &operator=(ComputePassDesc &&) noexcept = default;
+
+		ComputePassDesc &name(const std::string &str) {
+			name_ = str;
+			return *this;
+		}
+
+		ComputePassDesc &storageImageWrite(RT id) {
+			assert(sampledImages.find(id)  == sampledImages.end());
+			assert(writeImages.find(id) == writeImages.end());
+
+			auto p DEBUG_ASSERTED = writeImages.insert(id);
+			assert(p.second);
+			return *this;
+		}
+
+		ComputePassDesc &sampledRendertarget(RT id) {
+			assert(sampledImages.find(id)  == sampledImages.end());
+			assert(writeImages.find(id) == writeImages.end());
+
+			auto p DEBUG_ASSERTED = sampledImages.insert(id);
+			assert(p.second);
+			return *this;
+		}
+
+		std::string  name_;
+		HashSet<RT>  sampledImages;
+		HashSet<RT>  writeImages;
+	};
+
+
 	using RenderPassFunc = std::function<void(RP, PassResources &)>;
 
 
