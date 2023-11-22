@@ -177,6 +177,14 @@ private:
 	};
 
 
+	struct ComputePass {
+		RP                   id;
+		ComputePassDesc      desc;
+		RenderPassFunc       function;
+		HashMap<RT, Layout>  finalLayoutTransitions;
+	};
+
+
 	struct RenderPass {
 		RP                           id;
 		std::string                  name;
@@ -447,7 +455,7 @@ private:
 	};
 
 
-	using Operation = std::variant<Blit, RenderPass, ResolveMSAA>;
+	using Operation = std::variant<Blit, ComputePass, RenderPass, ResolveMSAA>;
 
 
 	struct DebugLogVisitor final {
@@ -480,6 +488,56 @@ private:
 			b.finalLayout         = rtPassData[b.dest].finalLayout;
 			rtPassData[b.source].finalLayout = Layout::TransferSrc;
 			rtPassData[b.source].nextUsage   = { TextureUsage::BlitSource };
+		}
+
+		void operator()(ComputePass &cp) const {
+			// in case this is not the first loop of the algorithm
+			cp.finalLayoutTransitions.clear();
+
+			for (RT image : cp.desc.sampledImages) {
+				RTPassData &rt = rtPassData[image];
+				switch (rt.finalLayout) {
+				case Layout::Undefined:
+					// unused after this
+					break;
+
+				case Layout::ShaderRead:
+					// already matches, nothing to do
+					break;
+
+				case Layout::General:
+				case Layout::TransferSrc:
+				case Layout::TransferDst:
+				case Layout::RenderAttachment: {
+					auto it DEBUG_ASSERTED = cp.finalLayoutTransitions.emplace(image, rt.finalLayout);
+					assert(it.second);
+				} break;
+				}
+				rt.finalLayout = Layout::ShaderRead;
+			}
+
+			for (RT image : cp.desc.writeImages) {
+				RTPassData &rt = rtPassData[image];
+				switch (rt.finalLayout) {
+				case Layout::Undefined:
+					// unused after this, should not happen
+					assert(false);
+					break;
+
+				case Layout::General:
+					// already matches, nothing to do
+					break;
+
+				case Layout::ShaderRead:
+				case Layout::TransferSrc:
+				case Layout::TransferDst:
+				case Layout::RenderAttachment: {
+					auto it DEBUG_ASSERTED = cp.finalLayoutTransitions.emplace(image, rt.finalLayout);
+					assert(it.second);
+				} break;
+				}
+				rt.finalLayout = Layout::General;
+			}
 		}
 
 		void operator()(RenderPass &rp) const {
@@ -590,6 +648,58 @@ private:
 			b.finalLayout                    = rtPassData[b.dest].finalLayout;
 			rtPassData[b.source].finalLayout = Layout::General;
 			rtPassData[b.source].nextUsage   = { TextureUsage::BlitSource };
+		}
+
+		void operator()(ComputePass &cp) const {
+			// in case this is not the first loop of the algorithm
+			cp.finalLayoutTransitions.clear();
+
+			for (RT image : cp.desc.sampledImages) {
+				RTPassData &rt = rtPassData[image];
+				switch (rt.finalLayout) {
+				case Layout::Undefined:
+					// unused after this
+					break;
+
+				case Layout::General:
+					// already matches, nothing to do
+					break;
+
+				case Layout::ShaderRead:
+				case Layout::TransferSrc:
+				case Layout::TransferDst:
+				case Layout::RenderAttachment: {
+					auto it DEBUG_ASSERTED = cp.finalLayoutTransitions.emplace(image, rt.finalLayout);
+					assert(it.second);
+				} break;
+
+				}
+				rt.finalLayout = Layout::General;
+			}
+
+			for (RT image : cp.desc.writeImages) {
+				RTPassData &rt = rtPassData[image];
+				switch (rt.finalLayout) {
+				case Layout::Undefined:
+					// unused after this, should not happen
+					assert(false);
+					break;
+
+				case Layout::General:
+					// already matches, nothing to do
+					break;
+
+				case Layout::ShaderRead:
+				case Layout::TransferSrc:
+				case Layout::TransferDst:
+				case Layout::RenderAttachment: {
+					auto it DEBUG_ASSERTED = cp.finalLayoutTransitions.emplace(image, rt.finalLayout);
+					assert(it.second);
+				} break;
+
+				}
+				rt.finalLayout = Layout::General;
+			}
 		}
 
 		void operator()(RenderPass &rp) const {
@@ -837,6 +947,36 @@ public:
 	}
 
 
+	void computePass(RP rp, const ComputePassDesc &desc, RenderPassFunc f) {
+		assert(state == RGState::Building);
+
+		// check usage of sampled rendertargets
+		for (RT rt : desc.sampledImages) {
+			auto it = rendertargets.find(rt);
+			assert(it != rendertargets.end());
+			if (std::holds_alternative<InternalRT>(it->second)) {
+				assert(std::get<InternalRT>(it->second).desc.usage().test(TextureUsage::Sampling));
+			}
+		}
+
+		// check usage of storage image rts
+		for (RT rt : desc.writeImages) {
+			auto it = rendertargets.find(rt);
+			assert(it != rendertargets.end());
+			if (std::holds_alternative<InternalRT>(it->second)) {
+				assert(std::get<InternalRT>(it->second).desc.usage().test(TextureUsage::StorageWrite));
+			}
+		}
+
+		ComputePass cpData;
+		cpData.id       = rp;
+		cpData.desc     = desc;
+		cpData.function = std::move(f);
+
+		operations.emplace_back(std::move(cpData));
+	}
+
+
 	void resolveMSAA(RP /* rp */, RT source, RT dest) {
 		assert(state == RGState::Building);
 
@@ -1015,6 +1155,21 @@ public:
 
 				void operator()(const Blit &b) const {
 					LOG("Blit {} -> {}\t{}", to_string(b.source), to_string(b.dest), magic_enum::enum_name(b.finalLayout));
+				}
+
+				void operator()(const ComputePass &cp) const {
+					LOG("ComputePass {} \"{}\"", to_string(cp.id), cp.desc.name_);
+					for (RT sampledImage : cp.desc.sampledImages) {
+						LOG(" sampled image {}", to_string(sampledImage));
+					}
+
+					for (RT writeImage : cp.desc.writeImages) {
+						LOG(" write image {}", to_string(writeImage));
+					}
+
+					for (const auto &p : cp.finalLayoutTransitions) {
+						LOG(" {} -> {}", to_string(p.first), magic_enum::enum_name(p.second));
+					}
 				}
 
 				void operator()(const RenderPass &rpData) const {
@@ -1203,6 +1358,91 @@ public:
 				r.layoutTransition(targetHandle, Layout::Undefined, Layout::TransferDst);
 				r.blit(sourceHandle, targetHandle);
 				r.layoutTransition(targetHandle, Layout::TransferDst, b.finalLayout);
+			}
+
+			void operator()(const ComputePass &cp) const {
+				PassResources res;
+				LOG_TODO("build resources ahead of time, fill here?")
+
+				for (RT image : cp.desc.sampledImages) {
+					// get rendertarget desc
+					auto rtIt = rg.rendertargets.find(image);
+					assert(rtIt != rg.rendertargets.end());
+
+					// get format
+					Format fmt = getFormat(rtIt->second);
+					assert(fmt != Format::Invalid);
+
+					{
+						// get view from renderer, add to res
+						TextureHandle view = r.getRenderTargetView(getHandle(rtIt->second), fmt);
+						res.rendertargets.emplace(std::make_pair(image, fmt), view);
+						// also add it with Format::Invalid so default works easier
+						res.rendertargets.emplace(std::make_pair(image, Format::Invalid), view);
+					}
+
+					// do the same for additional view format if there is one
+					Format additionalFmt = getAdditionalViewFormat(rtIt->second);
+					if (additionalFmt != Format::Invalid) {
+						assert(additionalFmt != fmt);
+						TextureHandle view = r.getRenderTargetView(getHandle(rtIt->second), additionalFmt);
+						res.rendertargets.emplace(std::make_pair(image, additionalFmt), view);
+					}
+				}
+
+				for (RT image : cp.desc.writeImages) {
+					// get rendertarget desc
+					auto rtIt = rg.rendertargets.find(image);
+					assert(rtIt != rg.rendertargets.end());
+
+					LOG_TODO("move this to its own initialLayoutTransitions list")
+					RenderTargetHandle targetHandle = getHandle(rtIt->second);
+					r.layoutTransition(targetHandle, Layout::Undefined, Layout::General);
+
+					// get format
+					LOG_TODO("format should come from cp.desc.writeImages")
+					Format fmt = getFormat(rtIt->second);
+					assert(fmt != Format::Invalid);
+					assert(isColorFormat(fmt));
+					assert(!issRGBFormat(fmt));
+
+					{
+						// get view from renderer, add to res
+						TextureHandle view = r.getRenderTargetView(getHandle(rtIt->second), fmt);
+						res.rendertargets.emplace(std::make_pair(image, fmt), view);
+						// also add it with Format::Invalid so default works easier
+						res.rendertargets.emplace(std::make_pair(image, Format::Invalid), view);
+					}
+
+					// do the same for additional view format if there is one
+					Format additionalFmt = getAdditionalViewFormat(rtIt->second);
+					if (additionalFmt != Format::Invalid) {
+						assert(additionalFmt != fmt);
+						TextureHandle view = r.getRenderTargetView(getHandle(rtIt->second), additionalFmt);
+						res.rendertargets.emplace(std::make_pair(image, additionalFmt), view);
+					}
+				}
+
+				try {
+					cp.function(cp.id, res);
+				} catch (std::exception &e) {
+					LOG("Exception \"{}\" during computepass {}", e.what(), to_string(cp.id));
+
+					if (rg.storedException) {
+						LOG("Already have an exception, not stored");
+					} else {
+						rg.storedException = std::current_exception();
+					}
+				}
+
+				for (const auto &p : cp.finalLayoutTransitions) {
+					RT rt    = p.first;
+					Layout l = p.second;
+					auto it = rg.rendertargets.find(rt);
+					assert(it != rg.rendertargets.end());
+					RenderTargetHandle targetHandle = getHandle(it->second);
+					r.layoutTransition(targetHandle, Layout::General, l);
+				}
 			}
 
 			void operator()(const RenderPass &rp) const {
