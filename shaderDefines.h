@@ -2,6 +2,8 @@
 #define ATTR_UV    1
 #define ATTR_COLOR 2
 
+#define FXAA_COMPUTE_GROUP_X 8
+#define FXAA_COMPUTE_GROUP_Y 8
 
 #ifdef HLSL
 
