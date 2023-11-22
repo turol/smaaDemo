@@ -3501,6 +3501,23 @@ void Renderer::layoutTransition(RenderTargetHandle image, Layout src, Layout des
 }
 
 
+void Renderer::bindComputePipeline(ComputePipelineHandle pipeline) {
+#ifndef NDEBUG
+	assert(impl->inFrame);
+	assert(pipeline);
+	assert(!impl->inRenderPass);
+	assert(impl->pipelineUsed);
+	impl->pipelineUsed  = false;
+	impl->scissorSet    = false;
+#endif  // NDEBUG
+
+	const auto &p = impl->computePipelines.get(pipeline);
+	impl->currentCommandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, p.pipeline);
+	impl->currentPipelineLayout = p.layout;
+	impl->currentPipeline       = pipeline;
+}
+
+
 void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 #ifndef NDEBUG
 	assert(impl->inFrame);

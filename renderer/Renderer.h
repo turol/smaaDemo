@@ -1411,6 +1411,7 @@ public:
 	void setScissorRect(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 	void setViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 
+	void bindComputePipeline(ComputePipelineHandle pipeline);
 	void bindGraphicsPipeline(GraphicsPipelineHandle pipeline);
 	void bindDescriptorSet(PipelineType bindPoint, unsigned int index, const DSLayoutHandle layout, const void *data, LayoutUsage rtLayoutUsage);
 	template <typename T> void bindDescriptorSet(PipelineType bindPoint, unsigned int index, const T &data, LayoutUsage rtLayoutUsage) {

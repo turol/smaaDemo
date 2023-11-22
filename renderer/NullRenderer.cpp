@@ -384,6 +384,18 @@ void Renderer::layoutTransition(RenderTargetHandle image, Layout src, Layout des
 }
 
 
+void Renderer::bindComputePipeline(ComputePipelineHandle pipeline) {
+	assert(impl->inFrame);
+	assert(pipeline);
+	assert(!impl->inRenderPass);
+	assert(impl->pipelineUsed);
+	impl->pipelineUsed  = false;
+	impl->scissorSet    = false;
+
+	impl->currentPipeline = pipeline;
+}
+
+
 void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 	assert(impl->inFrame);
 	assert(pipeline);

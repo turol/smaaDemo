@@ -2295,6 +2295,24 @@ void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width
 }
 
 
+void Renderer::bindComputePipeline(ComputePipelineHandle pipeline) {
+#ifndef NDEBUG
+	assert(impl->inFrame);
+	assert(pipeline);
+	assert(!impl->inRenderPass);
+	assert(impl->pipelineUsed);
+	impl->pipelineUsed  = false;
+	impl->scissorSet    = false;
+#endif  // NDEBUG
+
+	impl->descriptorSetsDirty = true;
+	impl->currentPipeline = pipeline;
+	const auto &c = impl->computePipelines.get(pipeline);
+
+	glUseProgram(c.shader);
+}
+
+
 void Renderer::bindGraphicsPipeline(GraphicsPipelineHandle pipeline) {
 #ifndef NDEBUG
 	assert(impl->inFrame);
@@ -2584,9 +2602,16 @@ void RendererImpl::rebindDescriptorSets() {
 	assert(descriptorSetsDirty);
 	assert(!std::holds_alternative<std::nullopt_t>(currentPipeline));
 
-	assert(std::holds_alternative<GraphicsPipelineHandle>(currentPipeline));
-	const auto &pipeline  = graphicsPipelines.get(std::get<GraphicsPipelineHandle>(currentPipeline));
-	const auto &resources = pipeline.resources;
+	// abusing a lambda because can't default-initialize a reference
+	const ShaderResources &resources = [&] () {
+		if (std::holds_alternative<GraphicsPipelineHandle>(currentPipeline)) {
+            return graphicsPipelines.get(std::get<GraphicsPipelineHandle>(currentPipeline)).resources;
+		} else if (std::holds_alternative<ComputePipelineHandle>(currentPipeline)) {
+            return computePipelines.get(std::get<ComputePipelineHandle>(currentPipeline)).resources;
+		}
+
+		HEDLEY_UNREACHABLE();
+	} ();
 
 	LOG_TODO("only change what is necessary")
 	for (unsigned int i = 0; i < resources.ubos.size(); i++) {
