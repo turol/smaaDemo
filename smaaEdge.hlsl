@@ -49,13 +49,6 @@ THE SOFTWARE.
 #endif  // EDGEMETHOD
 
 
-#if SMAA_PREDICATION
-
-[[vk::binding(2, 1)]]uniform SMAATexture2D(predicationTex);
-
-#endif  // SMAA_PREDICATION
-
-
 struct VertexOut {
     float4 position : SV_POSITION;
     float2 texcoord : TEXCOORD0;
@@ -97,27 +90,11 @@ float4 fragmentShader(VertexOut v)
 
 #if EDGEMETHOD == 0
 
-#if SMAA_PREDICATION
-
-    return float4(SMAAColorEdgeDetectionPS(v.texcoord, offsets, colorTex, predicationTex), 0.0, 0.0);
-
-#else  // SMAA_PREDICATION
-
     return float4(SMAAColorEdgeDetectionPS(v.texcoord, offsets, colorTex), 0.0, 0.0);
-
-#endif  // SMAA_PREDICATION
 
 #elif EDGEMETHOD == 1
 
-#if SMAA_PREDICATION
-
-    return float4(SMAALumaEdgeDetectionPS(v.texcoord, offsets, colorTex, predicationTex), 0.0, 0.0);
-
-#else  // SMAA_PREDICATION
-
     return float4(SMAALumaEdgeDetectionPS(v.texcoord, offsets, colorTex), 0.0, 0.0);
-
-#endif  // SMAA_PREDICATION
 
 #elif EDGEMETHOD == 2
 

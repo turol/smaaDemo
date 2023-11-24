@@ -500,12 +500,7 @@ class SMAADemo {
 
 	unsigned int                                      smaaQuality;
 	SMAAEdgeMethod                                    smaaEdgeMethod;
-	bool                                              smaaPredication;
 	ShaderDefines::SMAAParameters                     smaaParameters;
-
-	float                                             predicationThreshold = 0.01f;
-	float                                             predicationScale     = 2.0f;
-	float                                             predicationStrength  = 0.4f;
 
 	// timing things
 	bool                                              fpsLimitActive = true;
@@ -713,7 +708,6 @@ SMAADemo::SMAADemo()
 
 	smaaQuality = maxSMAAQuality - 1;
 	smaaEdgeMethod  = SMAAEdgeMethod::Color;
-	smaaPredication = false;
 	smaaParameters  = defaultSMAAParameters[smaaQuality];
 
 	uint64_t freq = SDL_GetPerformanceFrequency();
@@ -1130,7 +1124,6 @@ struct EdgeDetectionDS {
 	BufferHandle   smaaUBO;
 
 	TextureHandle  color;
-	TextureHandle  predicationTex;
 
 	DS_LAYOUT_MEMBERS;
 };
@@ -1139,7 +1132,6 @@ struct EdgeDetectionDS {
 const DescriptorLayout EdgeDetectionDS::layout[] = {
 	  { DescriptorType::UniformBuffer,    offsetof(EdgeDetectionDS, smaaUBO) }
 	, DESCRIPTOR(EdgeDetectionDS, color)
-	, DESCRIPTOR(EdgeDetectionDS, predicationTex)
 	, { DescriptorType::End,              0,                                 }
 };
 
@@ -3497,10 +3489,6 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 			macros.set("EDGEMETHOD", std::to_string(static_cast<uint8_t>(smaaEdgeMethod)));
 		}
 
-		if (smaaPredication && smaaEdgeMethod != SMAAEdgeMethod::Depth) {
-			macros.set("SMAA_PREDICATION", "1");
-		}
-
 		GraphicsPipelineDesc plDesc;
 		plDesc.depthWrite(false)
 		      .depthTest(false)
@@ -3518,9 +3506,6 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 	LOG_TODO("this is redundant, clean it up")
 	ShaderDefines::SMAAUBO smaaUBO;
 	smaaUBO.smaaParameters        = smaaParameters;
-	smaaUBO.predicationThreshold  = predicationThreshold;
-	smaaUBO.predicationScale      = predicationScale;
-	smaaUBO.predicationStrength   = predicationStrength;
 	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
 	smaaUBO.subsampleIndices      = subsampleIndices[pass];
 
@@ -3534,9 +3519,6 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 	} else {
 		edgeDS.color         = r.get(input, Format::RGBA8);
 	}
-
-	LOG_TODO("only set when using predication")
-	edgeDS.predicationTex    = r.get(Rendertargets::MainDepth);
 
 	renderer.bindDescriptorSet(PipelineType::Graphics, 1, edgeDS, layoutUsage);
 	renderer.draw(0, 3);
@@ -3567,9 +3549,6 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 	LOG_TODO("this is redundant, clean it up")
 	ShaderDefines::SMAAUBO smaaUBO;
 	smaaUBO.smaaParameters        = smaaParameters;
-	smaaUBO.predicationThreshold  = predicationThreshold;
-	smaaUBO.predicationScale      = predicationScale;
-	smaaUBO.predicationStrength   = predicationStrength;
 	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
 	smaaUBO.subsampleIndices      = subsampleIndices[pass];
 
@@ -3623,9 +3602,6 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 	LOG_TODO("this is redundant, clean it up")
 	ShaderDefines::SMAAUBO smaaUBO;
 	smaaUBO.smaaParameters        = smaaParameters;
-	smaaUBO.predicationThreshold  = predicationThreshold;
-	smaaUBO.predicationScale      = predicationScale;
-	smaaUBO.predicationStrength   = predicationStrength;
 	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
 	smaaUBO.subsampleIndices      = subsampleIndices[pass];
 
@@ -3686,9 +3662,6 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 
 	ShaderDefines::SMAAUBO smaaUBO;
 	smaaUBO.smaaParameters        = smaaParameters;
-	smaaUBO.predicationThreshold  = predicationThreshold;
-	smaaUBO.predicationScale      = predicationScale;
-	smaaUBO.predicationStrength   = predicationStrength;
 	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
 	smaaUBO.subsampleIndices      = subsampleIndices[0];
 
@@ -3886,25 +3859,6 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				if (smaaQuality != 0) {
 					ImGui::EndDisabled();
 				}
-			}
-
-			ImGui::Checkbox("Predicated thresholding", &smaaPredication);
-
-			if (!smaaPredication) {
-				ImGui::BeginDisabled();
-			}
-
-			ImGui::SliderFloat("Predication threshold", &predicationThreshold, 0.0f, 1.0f, "%.4f");
-			ImGui::SliderFloat("Predication scale",     &predicationScale,     1.0f, 5.0f);
-			ImGui::SliderFloat("Predication strength",  &predicationStrength,  0.0f, 1.0f);
-			if (ImGui::Button("Reset predication values")) {
-				predicationThreshold = 0.01f;
-				predicationScale     = 2.0f;
-				predicationStrength  = 0.4f;
-			}
-
-			if (!smaaPredication) {
-				ImGui::EndDisabled();
 			}
 
 			ImGui::Text("SMAA edge detection");

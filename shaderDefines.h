@@ -75,9 +75,6 @@ layout(set = 1, binding = 0, std140) uniform SMAAUBO
 
 	vec4 subsampleIndices;
 
-	float predicationThreshold;
-	float predicationScale;
-	float predicationStrength;
 	float reprojWeigthScale;
 };
 
