@@ -38,15 +38,7 @@ THE SOFTWARE.
 #include "shaderUtils.h"
 
 
-#if EDGEMETHOD == 2
-
-[[vk::binding(1, 1)]] uniform SMAATexture2D(depthTex);
-
-#else  // EDGEMETHOD
-
 [[vk::binding(1, 1)]] uniform SMAATexture2D(colorTex);
-
-#endif  // EDGEMETHOD
 
 
 struct VertexOut {
@@ -95,10 +87,6 @@ float4 fragmentShader(VertexOut v)
 #elif EDGEMETHOD == 1
 
     return float4(SMAALumaEdgeDetectionPS(v.texcoord, offsets, colorTex), 0.0, 0.0);
-
-#elif EDGEMETHOD == 2
-
-    return float4(SMAADepthEdgeDetectionPS(v.texcoord, offsets, depthTex), 0.0, 0.0);
 
 #else
 

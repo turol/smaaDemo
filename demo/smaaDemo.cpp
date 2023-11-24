@@ -243,7 +243,6 @@ static const float defaultCameraDistance = 25.0f;
 enum class SMAAEdgeMethod : uint8_t {
 	  Color
 	, Luma
-	, Depth
 };
 
 
@@ -1803,11 +1802,9 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 
 				{
-					LOG_TODO("only add MainDepth when using predication")
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::SMAAEdges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::MainColor)
-					    .inputRendertarget(Rendertargets::MainDepth)
 					    .name("SMAA edges");
 
 					renderGraph.renderPass(RenderPasses::SMAAEdges, desc, std::bind(&SMAADemo::renderSMAAEdges, this, _1, _2, Rendertargets::MainColor, 0));
@@ -1883,11 +1880,9 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 
 				{
-					LOG_TODO("only add MainDepth when using predication")
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::SMAAEdges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample1)
-					    .inputRendertarget(Rendertargets::MainDepth)
 					    .name("SMAA edges");
 
 					renderGraph.renderPass(RenderPasses::SMAAEdges, desc, std::bind(&SMAADemo::renderSMAAEdges, this, _1, _2, Rendertargets::Subsample1, 0));
@@ -1924,11 +1919,9 @@ void SMAADemo::rebuildRenderGraph() {
 
 				// edges pass
 				{
-					LOG_TODO("only add MainDepth when using predication")
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::SMAAEdges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample2)
-					    .inputRendertarget(Rendertargets::MainDepth)
 					    .name("SMAA edges");
 
 					renderGraph.renderPass(RenderPasses::SMAAEdges2, desc, std::bind(&SMAADemo::renderSMAAEdges, this, _1, _2, Rendertargets::Subsample2, 1));
@@ -2008,11 +2001,9 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 
 				{
-					LOG_TODO("only add MainDepth when using predication")
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::SMAAEdges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::MainColor)
-					    .inputRendertarget(Rendertargets::MainDepth)
 					    .name("SMAA edges");
 
 					renderGraph.renderPass(RenderPasses::SMAAEdges, desc, std::bind(&SMAADemo::renderSMAAEdges, this, _1, _2, Rendertargets::MainColor, 0));
@@ -2131,11 +2122,9 @@ void SMAADemo::rebuildRenderGraph() {
 					      .height(windowHeight);
 					renderGraph.renderTarget(Rendertargets::SMAAEdges, rtDesc);
 
-					LOG_TODO("only add MainDepth when using predication")
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::SMAAEdges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample1)
-					    .inputRendertarget(Rendertargets::MainDepth)
 					    .name("SMAA edges");
 
 					renderGraph.renderPass(RenderPasses::SMAAEdges, desc, std::bind(&SMAADemo::renderSMAAEdges, this, _1, _2, Rendertargets::Subsample1, 0));
@@ -2173,11 +2162,9 @@ void SMAADemo::rebuildRenderGraph() {
 				// second pass
 				// edges pass
 				{
-					LOG_TODO("only add MainDepth when using predication")
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::SMAAEdges, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::Subsample2)
-					    .inputRendertarget(Rendertargets::MainDepth)
 					    .name("SMAA edges");
 
 					renderGraph.renderPass(RenderPasses::SMAAEdges2, desc, std::bind(&SMAADemo::renderSMAAEdges, this, _1, _2, Rendertargets::Subsample2, 1));
@@ -3514,11 +3501,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 	EdgeDetectionDS edgeDS;
 	edgeDS.smaaUBO = smaaUBOBuf;
 
-	if (smaaEdgeMethod == SMAAEdgeMethod::Depth) {
-		edgeDS.color         = r.get(Rendertargets::MainDepth);
-	} else {
 		edgeDS.color         = r.get(input, Format::RGBA8);
-	}
 
 	renderer.bindDescriptorSet(PipelineType::Graphics, 1, edgeDS, layoutUsage);
 	renderer.draw(0, 3);
