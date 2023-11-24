@@ -372,10 +372,11 @@ template <> struct hash<std::pair<Rendertargets, Format> > {
 } // namespace std
 
 
+template <typename PipelineHandle>
 struct SMAAPipelines {
-	GraphicsPipelineHandle                 edgePipeline;
-	GraphicsPipelineHandle                 blendWeightPipeline;
-	std::array<GraphicsPipelineHandle, 2>  neighborPipelines;
+	PipelineHandle                 edgePipeline;
+	PipelineHandle                 blendWeightPipeline;
+	std::array<PipelineHandle, 2>  neighborPipelines;
 };
 
 
@@ -555,7 +556,7 @@ class SMAADemo {
 	SamplerHandle                                     linearSampler;
 	SamplerHandle                                     nearestSampler;
 
-	SMAAPipelines                                     smaaPipelines;
+	SMAAPipelines<GraphicsPipelineHandle>             smaaPipelines;
 	TextureHandle                                     areaTex;
 	TextureHandle                                     searchTex;
 
