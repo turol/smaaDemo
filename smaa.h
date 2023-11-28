@@ -649,14 +649,14 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #define API_V_BELOW(v1, v2) v1 < v2
 #define API_V_ABOVE(v1, v2) v1 > v2
 
-#else  // VULKAN_FLIP
+#else  // SMAA_FLIP_Y
 
 #define API_V_DIR(v) v
 #define API_V_COORD(v) v
 #define API_V_BELOW(v1, v2) v1 > v2
 #define API_V_ABOVE(v1, v2) v1 < v2
 
-#endif  // VULKAN_FLIP
+#endif  // SMAA_FLIP_Y
 
 
 //-----------------------------------------------------------------------------
