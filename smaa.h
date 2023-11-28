@@ -703,8 +703,8 @@ float2 SMAACalculatePredicatedThreshold(float2 texcoord,
  * Conditional move:
  */
 void SMAAMovc(bool2 cond, inout float2 variable, float2 value) {
-    SMAA_FLATTEN if (cond.x) variable.x = value.x;
-    SMAA_FLATTEN if (cond.y) variable.y = value.y;
+    SMAA_FLATTEN if (cond.x) { variable.x = value.x; }
+    SMAA_FLATTEN if (cond.y) { variable.y = value.y; }
 }
 
 void SMAAMovc(bool4 cond, inout float4 variable, float4 value) {
@@ -791,8 +791,9 @@ float2 SMAALumaEdgeDetectionPS(float2 texcoord,
     float2 edges = step(threshold, delta.xy);
 
     // Then discard if there is no edge:
-    if (dot(edges, float2(1.0, 1.0)) == 0.0)
+    if (dot(edges, float2(1.0, 1.0)) == 0.0) {
         discard;
+    }
 
     // Calculate right and bottom deltas:
     float Lright = dot(SMAASamplePoint(colorTex, offset[1].xy).rgb, weights);
@@ -853,8 +854,9 @@ float2 SMAAColorEdgeDetectionPS(float2 texcoord,
     float2 edges = step(threshold, delta.xy);
 
     // Then discard if there is no edge:
-    if (dot(edges, float2(1.0, 1.0)) == 0.0)
+    if (dot(edges, float2(1.0, 1.0)) == 0.0) {
         discard;
+    }
 
     // Calculate right and bottom deltas:
     float3 Cright = SMAASamplePoint(colorTex, offset[1].xy).rgb;
@@ -897,8 +899,9 @@ float2 SMAADepthEdgeDetectionPS(float2 texcoord,
     float2 delta = abs(neighbours.xx - float2(neighbours.y, neighbours.z));
     float2 edges = step(SMAA_DEPTH_THRESHOLD, delta);
 
-    if (dot(edges, float2(1.0, 1.0)) == 0.0)
+    if (dot(edges, float2(1.0, 1.0)) == 0.0) {
         discard;
+    }
 
     return edges;
 }
@@ -1013,8 +1016,9 @@ float2 SMAACalculateDiagWeights(SMAATexture2D(edgesTex), SMAATexture2D(areaTex),
     if (e.r > 0.0) {
         d.xz = SMAASearchDiag1(SMAATexturePass2D(edgesTex), texcoord, float2(-1.0,  1.0), end);
         d.x += float(end.y > 0.9);
-    } else
+    } else {
         d.xz = float2(0.0, 0.0);
+    }
     d.yw = SMAASearchDiag1(SMAATexturePass2D(edgesTex), texcoord, float2(1.0, -1.0), end);
 
     SMAA_BRANCH
@@ -1049,8 +1053,9 @@ float2 SMAACalculateDiagWeights(SMAATexture2D(edgesTex), SMAATexture2D(areaTex),
     if (SMAASampleLevelZeroOffset(edgesTex, texcoord, int2(1, 0)).r > 0.0) {
         d.yw = SMAASearchDiag2(SMAATexturePass2D(edgesTex), texcoord, float2(1.0, 1.0), end);
         d.y += float(end.y > 0.9);
-    } else
+    } else {
         d.yw = float2(0.0, 0.0);
+    }
 
     SMAA_BRANCH
     if (d.x + d.y > 2.0) { // d.x + d.y + 1 > 3
@@ -1296,8 +1301,9 @@ float4 SMAABlendingWeightCalculationPS(float2 texcoord,
         SMAADetectHorizontalCornerPattern(SMAATexturePass2D(edgesTex), weights.rg, coords.xyzy, d);
 
 #if !defined(SMAA_DISABLE_DIAG_DETECTION)
-        } else
+        } else {
             e.r = 0.0; // Skip vertical processing.
+        }
 #endif
     }
 
