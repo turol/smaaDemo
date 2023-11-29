@@ -682,6 +682,10 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #endif  // SMAA_FLIP_Y
 
 
+#ifdef SMAA_NO_GATHER
+#undef SMAAGather
+#endif  // SMAA_NO_GATHER
+
 //-----------------------------------------------------------------------------
 // Misc functions
 

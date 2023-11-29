@@ -497,6 +497,7 @@ class SMAADemo {
 	unsigned int                                      msaaQuality    = 0;
 	unsigned int                                      maxMSAAQuality = 1;
 	ShaderLanguage                                    preferredShaderLanguage = ShaderLanguage::GLSL;
+	bool                                              useTexGather            = true;
 
 	unsigned int                                      smaaQuality;
 	SMAAEdgeMethod                                    smaaEdgeMethod;
@@ -3383,6 +3384,10 @@ void SMAADemo::computeFXAA(RenderPasses /* rp */, DemoRenderGraph::PassResources
 		ShaderMacros macros;
 		macros.set("FXAA_QUALITY_PRESET", qualityString);
 
+		if (!useTexGather) {
+			macros.set("FXAA_GATHER4_ALPHA", "0");
+		}
+
 		ComputePipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
 		      .descriptorSetLayout<FXAAComputeDS>(1)
@@ -3415,6 +3420,10 @@ void SMAADemo::renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 
 		ShaderMacros macros;
 		macros.set("FXAA_QUALITY_PRESET", qualityString);
+
+		if (!useTexGather) {
+			macros.set("FXAA_GATHER4_ALPHA", "0");
+		}
 
 		GraphicsPipelineDesc plDesc;
 		plDesc.depthWrite(false)
@@ -3477,6 +3486,10 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 			macros.set("EDGEMETHOD", std::to_string(static_cast<uint8_t>(smaaEdgeMethod)));
 		}
 
+		if (!useTexGather) {
+			macros.set("SMAA_NO_GATHER", "1");
+		}
+
 		GraphicsPipelineDesc plDesc;
 		plDesc.depthWrite(false)
 		      .depthTest(false)
@@ -3515,6 +3528,10 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 		macros.set(qualityString, "1");
 		macros.set("SMAA_GLSL_SEPARATE_SAMPLER", "1");
+
+		if (!useTexGather) {
+			macros.set("SMAA_NO_GATHER", "1");
+		}
 
 		GraphicsPipelineDesc plDesc;
 		plDesc.depthWrite(false)
@@ -3558,6 +3575,10 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
 		macros.set(qualityString, "1");
 		macros.set("SMAA_GLSL_SEPARATE_SAMPLER", "1");
+
+		if (!useTexGather) {
+			macros.set("SMAA_NO_GATHER", "1");
+		}
 
 		GraphicsPipelineDesc plDesc;
 		plDesc.depthWrite(false)
@@ -3631,6 +3652,10 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 		ShaderMacros macros;
 		macros.set("SMAA_REPROJECTION", std::to_string(temporalReproject));
 		macros.set("SMAA_GLSL_SEPARATE_SAMPLER", "1");
+
+		if (!useTexGather) {
+			macros.set("SMAA_NO_GATHER", "1");
+		}
 
 		GraphicsPipelineDesc plDesc;
 		plDesc.descriptorSetLayout<GlobalDS>(0)
@@ -3854,6 +3879,15 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				if (preferredShaderLanguage != newShaderLanguage) {
 					preferredShaderLanguage = newShaderLanguage;
 					rebuildRG = true;
+				}
+			}
+
+			{
+				temp = useTexGather;
+				bool texGatherChanged = ImGui::Checkbox("Use texture gather", &temp);
+				if (texGatherChanged) {
+					useTexGather = temp;
+					rebuildRG    = true;
 				}
 			}
 
