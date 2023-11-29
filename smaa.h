@@ -686,6 +686,17 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #undef SMAAGather
 #endif  // SMAA_NO_GATHER
 
+
+#ifdef SMAA_DISABLE_DIAG_DETECTION
+#define SMAA_USE_DIAG_DETECTION 1
+#endif  // SMAA_DISABLE_DIAG_DETECTION
+
+
+#ifdef SMAA_DISABLE_CORNER_DETECTION
+#define SMAA_USE_CORNER_DETECTION 1
+#endif  // SMAA_DISABLE_CORNER_DETECTION
+
+
 //-----------------------------------------------------------------------------
 // Misc functions
 
@@ -956,7 +967,7 @@ float2 SMAADepthEdgeDetectionPS(float2 texcoord,
 // Diagonal Search Functions
 
 
-#if !defined(SMAA_DISABLE_DIAG_DETECTION)
+#ifdef SMAA_USE_DIAG_DETECTION
 
 
 /**
@@ -1131,7 +1142,7 @@ float2 SMAACalculateDiagWeights(SMAATexture2D(edgesTex), SMAATexture2D(areaTex),
 }
 
 
-#endif  // !defined(SMAA_DISABLE_DIAG_DETECTION)
+#endif  // SMAA_USE_DIAG_DETECTION
 
 
 //-----------------------------------------------------------------------------
@@ -1267,7 +1278,7 @@ float2 SMAAArea(SMAATexture2D(areaTex), float2 dist, float e1, float e2, float o
 
 
 void SMAADetectHorizontalCornerPattern(SMAATexture2D(edgesTex), inout float2 weights, float4 texcoord, float2 d) {
-#if !defined(SMAA_DISABLE_CORNER_DETECTION)
+#ifdef SMAA_USE_CORNER_DETECTION
     float2 leftRight = step(d.xy, d.yx);
     float2 rounding = (1.0 - SMAA_CORNER_ROUNDING_NORM) * leftRight;
 
@@ -1280,12 +1291,12 @@ void SMAADetectHorizontalCornerPattern(SMAATexture2D(edgesTex), inout float2 wei
     factor.y -= rounding.y * SMAASampleLevelZeroOffset(edgesTex, texcoord.zw, int2(1, API_V_DIR(-2))).r;
 
     weights *= saturate(factor);
-#endif  //  !defined(SMAA_DISABLE_CORNER_DETECTION)
+#endif  // SMAA_USE_CORNER_DETECTION
 }
 
 
 void SMAADetectVerticalCornerPattern(SMAATexture2D(edgesTex), inout float2 weights, float4 texcoord, float2 d) {
-#if !defined(SMAA_DISABLE_CORNER_DETECTION)
+#ifdef SMAA_USE_CORNER_DETECTION
     float2 leftRight = step(d.xy, d.yx);
     float2 rounding = (1.0 - SMAA_CORNER_ROUNDING_NORM) * leftRight;
 
@@ -1298,7 +1309,7 @@ void SMAADetectVerticalCornerPattern(SMAATexture2D(edgesTex), inout float2 weigh
     factor.y -= rounding.y * SMAASampleLevelZeroOffset(edgesTex, texcoord.zw, int2(-2, API_V_DIR(1))).g;
 
     weights *= saturate(factor);
-#endif  //  !defined(SMAA_DISABLE_CORNER_DETECTION)
+#endif  // SMAA_USE_CORNER_DETECTION
 }
 
 
@@ -1318,7 +1329,7 @@ float4 SMAABlendingWeightCalculationPS(float2 texcoord,
 
     SMAA_BRANCH
     if (e.g > 0.0) { // Edge at north
-#if !defined(SMAA_DISABLE_DIAG_DETECTION)
+#ifdef SMAA_USE_DIAG_DETECTION
         // Diagonals have both north and west edges, so searching for them in
         // one of the boundaries is enough.
         weights.rg = SMAACalculateDiagWeights(SMAATexturePass2D(edgesTex), SMAATexturePass2D(areaTex), texcoord, e, subsampleIndices);
@@ -1327,7 +1338,7 @@ float4 SMAABlendingWeightCalculationPS(float2 texcoord,
         // horizontal/vertical processing.
         SMAA_BRANCH
         if (weights.r == -weights.g) { // weights.r + weights.g == 0.0
-#endif  // !defined(SMAA_DISABLE_DIAG_DETECTION)
+#endif  // SMAA_USE_DIAG_DETECTION
 
         float2 d;
 
@@ -1365,11 +1376,11 @@ float4 SMAABlendingWeightCalculationPS(float2 texcoord,
         coords.y = texcoord.y;
         SMAADetectHorizontalCornerPattern(SMAATexturePass2D(edgesTex), weights.rg, coords.xyzy, d);
 
-#if !defined(SMAA_DISABLE_DIAG_DETECTION)
+#ifdef SMAA_USE_DIAG_DETECTION
         } else {
             e.r = 0.0; // Skip vertical processing.
         }
-#endif  // !defined(SMAA_DISABLE_DIAG_DETECTION)
+#endif  // SMAA_USE_DIAG_DETECTION
     }
 
     SMAA_BRANCH
