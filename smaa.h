@@ -329,7 +329,7 @@
 #define SMAA_MAX_SEARCH_STEPS_DIAG 16
 #define SMAA_CORNER_ROUNDING 25
 
-#endif
+#endif  // SMAA_PRESET_*
 
 //-----------------------------------------------------------------------------
 // Configurable Defines
@@ -348,7 +348,7 @@
  */
 #ifndef SMAA_THRESHOLD
 #define SMAA_THRESHOLD 0.1
-#endif
+#endif  // SMAA_THRESHOLD
 
 /**
  * SMAA_DEPTH_THRESHOLD specifies the threshold for depth edge detection.
@@ -357,7 +357,7 @@
  */
 #ifndef SMAA_DEPTH_THRESHOLD
 #define SMAA_DEPTH_THRESHOLD (0.1 * SMAA_THRESHOLD)
-#endif
+#endif  // SMAA_DEPTH_THRESHOLD
 
 /**
  * SMAA_MAX_SEARCH_STEPS specifies the maximum steps performed in the
@@ -371,7 +371,7 @@
  */
 #ifndef SMAA_MAX_SEARCH_STEPS
 #define SMAA_MAX_SEARCH_STEPS 16
-#endif
+#endif  // SMAA_MAX_SEARCH_STEPS
 
 /**
  * SMAA_MAX_SEARCH_STEPS_DIAG specifies the maximum steps performed in the
@@ -387,7 +387,7 @@
  */
 #ifndef SMAA_MAX_SEARCH_STEPS_DIAG
 #define SMAA_MAX_SEARCH_STEPS_DIAG 8
-#endif
+#endif  // SMAA_MAX_SEARCH_STEPS_DIAG
 
 /**
  * SMAA_CORNER_ROUNDING specifies how much sharp corners will be rounded.
@@ -398,7 +398,7 @@
  */
 #ifndef SMAA_CORNER_ROUNDING
 #define SMAA_CORNER_ROUNDING 25
-#endif
+#endif  // SMAA_CORNER_ROUNDING
 
 /**
  * If there is an neighbor edge that has SMAA_LOCAL_CONTRAST_FACTOR times
@@ -410,7 +410,7 @@
  */
 #ifndef SMAA_LOCAL_CONTRAST_ADAPTATION_FACTOR
 #define SMAA_LOCAL_CONTRAST_ADAPTATION_FACTOR 2.0
-#endif
+#endif  // SMAA_LOCAL_CONTRAST_ADAPTATION_FACTOR
 
 /**
  * Predicated thresholding allows to better preserve texture details and to
@@ -428,7 +428,7 @@
  */
 #ifndef SMAA_PREDICATION
 #define SMAA_PREDICATION 0
-#endif
+#endif  // SMAA_PREDICATION
 
 /**
  * Threshold to be used in the additional predication buffer.
@@ -438,7 +438,7 @@
  */
 #ifndef SMAA_PREDICATION_THRESHOLD
 #define SMAA_PREDICATION_THRESHOLD 0.01
-#endif
+#endif  // SMAA_PREDICATION_THRESHOLD
 
 /**
  * How much to scale the global threshold used for luma or color edge
@@ -448,7 +448,7 @@
  */
 #ifndef SMAA_PREDICATION_SCALE
 #define SMAA_PREDICATION_SCALE 2.0
-#endif
+#endif  // SMAA_PREDICATION_SCALE
 
 /**
  * How much to locally decrease the threshold.
@@ -457,7 +457,7 @@
  */
 #ifndef SMAA_PREDICATION_STRENGTH
 #define SMAA_PREDICATION_STRENGTH 0.4
-#endif
+#endif  // SMAA_PREDICATION_STRENGTH
 
 /**
  * Temporal reprojection allows to remove ghosting artifacts when using
@@ -472,7 +472,7 @@
  */
 #ifndef SMAA_REPROJECTION
 #define SMAA_REPROJECTION 0
-#endif
+#endif  // SMAA_REPROJECTION
 
 /**
  * SMAA_REPROJECTION_WEIGHT_SCALE controls the velocity weighting. It allows to
@@ -487,7 +487,7 @@
  */
 #ifndef SMAA_REPROJECTION_WEIGHT_SCALE
 #define SMAA_REPROJECTION_WEIGHT_SCALE 30.0
-#endif
+#endif  // SMAA_REPROJECTION_WEIGHT_SCALE
 
 /**
  * On some compilers, discard and texture cannot be used in vertex shaders. Thus, they need
@@ -495,10 +495,10 @@
  */
 #ifndef SMAA_INCLUDE_VS
 #define SMAA_INCLUDE_VS 1
-#endif
+#endif  // SMAA_INCLUDE_VS
 #ifndef SMAA_INCLUDE_PS
 #define SMAA_INCLUDE_PS 1
-#endif
+#endif  // SMAA_INCLUDE_PS
 
 //-----------------------------------------------------------------------------
 // Texture Access Defines
@@ -509,21 +509,21 @@
 
 #define SMAA_AREATEX_SELECT(sample) sample.ra
 
-#else
+#else  // defined(SMAA_HLSL_3)
 
 #define SMAA_AREATEX_SELECT(sample) sample.rg
 
-#endif
+#endif  // defined(SMAA_HLSL_3)
 
-#endif
+#endif  // SMAA_AREATEX_SELECT
 
 #ifndef SMAA_SEARCHTEX_SELECT
 #define SMAA_SEARCHTEX_SELECT(sample) sample.r
-#endif
+#endif // SMAA_SEARCHTEX_SELECT
 
 #ifndef SMAA_DECODE_VELOCITY
 #define SMAA_DECODE_VELOCITY(sample) sample.rg
-#endif
+#endif  // SMAA_DECODE_VELOCITY
 
 //-----------------------------------------------------------------------------
 // Non-Configurable Defines
@@ -557,7 +557,7 @@
 #define SMAA_BRANCH [branch]
 #define SMAA_LOOP [loop]
 
-#endif
+#endif  // defined(SMAA_HLSL_3)
 
 #if defined(SMAA_HLSL_4) || defined(SMAA_HLSL_4_1)
 
@@ -586,9 +586,9 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 
 #if defined(SMAA_HLSL_4_1)
 #define SMAAGather(tex, coord) tex.Gather(LinearSampler, coord, 0)
-#endif
+#endif  // defined(SMAA_HLSL_4_1)
 
-#endif
+#endif  // defined(SMAA_HLSL_4) || defined(SMAA_HLSL_4_1)
 
 #if defined(SMAA_GLSL_3) || defined(SMAA_GLSL_4)
 
@@ -658,11 +658,11 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #define bool2 bvec2
 #define bool3 bvec3
 #define bool4 bvec4
-#endif
+#endif  // defined(SMAA_GLSL_4)
 
 #if !defined(SMAA_HLSL_3) && !defined(SMAA_HLSL_4) && !defined(SMAA_HLSL_4_1) && !defined(SMAA_GLSL_3) && !defined(SMAA_GLSL_4) && !defined(SMAA_CUSTOM_SL)
 #error you must define the shading language: SMAA_HLSL_*, SMAA_GLSL_* or SMAA_CUSTOM_SL
-#endif
+#endif  // shading language
 
 
 #if SMAA_FLIP_Y
@@ -708,7 +708,7 @@ float3 SMAAGatherNeighbours(float2 texcoord,
     float Pleft = SMAASamplePoint(tex, offset[0].xy).r;
     float Ptop  = SMAASamplePoint(tex, offset[0].zw).r;
     return float3(P, Pleft, Ptop);
-#endif
+#endif  // SMAAGather
 }
 
 
@@ -808,14 +808,14 @@ float2 SMAALumaEdgeDetectionPS(float2 texcoord,
                                SMAATexture2D(colorTex)
 #if SMAA_PREDICATION
                                , SMAATexture2D(predicationTex)
-#endif
+#endif  // SMAA_PREDICATION
                                ) {
     // Calculate the threshold:
 #if SMAA_PREDICATION
     float2 threshold = SMAACalculatePredicatedThreshold(texcoord, offset, SMAATexturePass2D(predicationTex));
-#else
+#else  // SMAA_PREDICATION
     float2 threshold = float2(SMAA_THRESHOLD, SMAA_THRESHOLD);
-#endif
+#endif  // SMAA_PREDICATION
 
     // Calculate lumas:
     float3 weights = float3(0.2126, 0.7152, 0.0722);
@@ -869,14 +869,14 @@ float2 SMAAColorEdgeDetectionPS(float2 texcoord,
                                 SMAATexture2D(colorTex)
 #if SMAA_PREDICATION
                                 , SMAATexture2D(predicationTex)
-#endif
+#endif  // SMAA_PREDICATION
                                 ) {
     // Calculate the threshold:
 #if SMAA_PREDICATION
     float2 threshold = SMAACalculatePredicatedThreshold(texcoord, offset, predicationTex);
-#else
+#else  // SMAA_PREDICATION
     float2 threshold = float2(SMAA_THRESHOLD, SMAA_THRESHOLD);
-#endif
+#endif  // SMAA_PREDICATION
 
     // Calculate color deltas:
     float4 delta;
@@ -1127,7 +1127,7 @@ float2 SMAACalculateDiagWeights(SMAATexture2D(edgesTex), SMAATexture2D(areaTex),
 }
 
 
-#endif
+#endif  // !defined(SMAA_DISABLE_DIAG_DETECTION)
 
 
 //-----------------------------------------------------------------------------
@@ -1276,7 +1276,7 @@ void SMAADetectHorizontalCornerPattern(SMAATexture2D(edgesTex), inout float2 wei
     factor.y -= rounding.y * SMAASampleLevelZeroOffset(edgesTex, texcoord.zw, int2(1, API_V_DIR(-2))).r;
 
     weights *= saturate(factor);
-#endif
+#endif  //  !defined(SMAA_DISABLE_CORNER_DETECTION)
 }
 
 
@@ -1294,7 +1294,7 @@ void SMAADetectVerticalCornerPattern(SMAATexture2D(edgesTex), inout float2 weigh
     factor.y -= rounding.y * SMAASampleLevelZeroOffset(edgesTex, texcoord.zw, int2(-2, API_V_DIR(1))).g;
 
     weights *= saturate(factor);
-#endif
+#endif  //  !defined(SMAA_DISABLE_CORNER_DETECTION)
 }
 
 
@@ -1323,7 +1323,7 @@ float4 SMAABlendingWeightCalculationPS(float2 texcoord,
         // horizontal/vertical processing.
         SMAA_BRANCH
         if (weights.r == -weights.g) { // weights.r + weights.g == 0.0
-#endif
+#endif  // !defined(SMAA_DISABLE_DIAG_DETECTION)
 
         float2 d;
 
@@ -1365,7 +1365,7 @@ float4 SMAABlendingWeightCalculationPS(float2 texcoord,
         } else {
             e.r = 0.0; // Skip vertical processing.
         }
-#endif
+#endif  // !defined(SMAA_DISABLE_DIAG_DETECTION)
     }
 
     SMAA_BRANCH
@@ -1417,7 +1417,7 @@ float4 SMAANeighborhoodBlendingPS(float2 texcoord,
                                   SMAATexture2D(blendTex)
 #if SMAA_REPROJECTION
                                   , SMAATexture2D(velocityTex)
-#endif
+#endif  // SMAA_REPROJECTION
                                   ) {
     // Fetch the blending weights for current pixel:
     float4 a;
@@ -1435,7 +1435,7 @@ float4 SMAANeighborhoodBlendingPS(float2 texcoord,
 
         // Pack velocity into the alpha channel:
         color.a = sqrt(5.0 * length(velocity));
-#endif
+#endif  // SMAA_REPROJECTION
 
         return color;
     } else {
@@ -1463,7 +1463,7 @@ float4 SMAANeighborhoodBlendingPS(float2 texcoord,
 
         // Pack velocity into the alpha channel:
         color.a = sqrt(5.0 * length(velocity));
-#endif
+#endif  // SMAA_REPROJECTION
 
         return color;
     }
@@ -1479,7 +1479,7 @@ float4 SMAAResolvePS(float2 texcoord,
                      SMAATexture2D(previousColorTex)
 #if SMAA_REPROJECTION
                      , SMAATexture2D(velocityTex)
-#endif
+#endif  // SMAA_REPROJECTION
                      ) {
 #if SMAA_REPROJECTION
     // Velocity is assumed to be calculated for motion blur, so we need to
@@ -1498,12 +1498,12 @@ float4 SMAAResolvePS(float2 texcoord,
 
     // Blend the pixels according to the calculated weight:
     return lerp(current, previous, weight);
-#else
+#else  // SMAA_REPROJECTION
     // Just blend the pixels:
     float4 current = SMAASamplePoint(currentColorTex, texcoord);
     float4 previous = SMAASamplePoint(previousColorTex, texcoord);
     return lerp(current, previous, 0.5);
-#endif
+#endif  // SMAA_REPROJECTION
 }
 
 
@@ -1525,7 +1525,7 @@ void SMAASeparatePS(float4 position,
 }
 
 
-#endif
+#endif  // SMAALoad
 
 
 //-----------------------------------------------------------------------------
