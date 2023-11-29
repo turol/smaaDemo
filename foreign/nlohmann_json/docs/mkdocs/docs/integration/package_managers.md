@@ -9,7 +9,7 @@ Throughout this page, we will describe how to compile the example file `example.
 When executed, this program should create output similar to
 
 ```json
---8<-- "../../examples/meta.output"
+--8<-- "examples/meta.output"
 ```
 
 ## Homebrew
@@ -61,6 +61,10 @@ instead. See [nlohmann-json](https://formulae.brew.sh/formula/nlohmann-json) for
 If you are using the [Meson Build System](http://mesonbuild.com), add this source tree as a [meson subproject](https://mesonbuild.com/Subprojects.html#using-a-subproject). You may also use the `include.zip` published in this project's [Releases](https://github.com/nlohmann/json/releases) to reduce the size of the vendored source tree. Alternatively, you can get a wrap file by downloading it from [Meson WrapDB](https://wrapdb.mesonbuild.com/nlohmann_json), or simply use `meson wrap install nlohmann_json`. Please see the meson project for any issues regarding the packaging.
 
 The provided `meson.build` can also be used as an alternative to cmake for installing `nlohmann_json` system-wide in which case a pkg-config file is installed. To use it, simply have your build system require the `nlohmann_json` pkg-config dependency. In Meson, it is preferred to use the [`dependency()`](https://mesonbuild.com/Reference-manual.html#dependency) object with a subproject fallback, rather than using the subproject directly.
+
+## Bazel
+
+This repository provides a [Bazel](https://bazel.build/) `WORKSPACE.bazel` and a corresponding `BUILD.bazel` file. Therefore, this repository can be referenced by workspace rules such as `http_archive`, `git_repository`, or `local_repository` from other Bazel workspaces. To use the library you only need to depend on the target `@nlohmann_json//:json` (e.g. via `deps` attribute).
 
 ## Conan
 

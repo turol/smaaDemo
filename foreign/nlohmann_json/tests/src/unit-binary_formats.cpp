@@ -1,9 +1,9 @@
 //     __ _____ _____ _____
 //  __|  |   __|     |   | |  JSON for Modern C++ (supporting code)
-// |  |  |__   |  |  | | | |  version 3.11.2
+// |  |  |__   |  |  | | | |  version 3.11.3
 // |_____|_____|_____|_|___|  https://github.com/nlohmann/json
 //
-// SPDX-FileCopyrightText: 2013-2022 Niels Lohmann <https://nlohmann.me>
+// SPDX-FileCopyrightText: 2013-2023 Niels Lohmann <https://nlohmann.me>
 // SPDX-License-Identifier: MIT
 
 #include "doctest_compatibility.h"
@@ -19,7 +19,7 @@ TEST_CASE("Binary Formats" * doctest::skip())
     SECTION("canada.json")
     {
         const auto* filename = TEST_DATA_DIRECTORY "/nativejson-benchmark/canada.json";
-        json j = json::parse(std::ifstream(filename));
+        const json j = json::parse(std::ifstream(filename));
 
         const auto json_size = j.dump().size();
         const auto bjdata_1_size = json::to_bjdata(j).size();
@@ -58,7 +58,7 @@ TEST_CASE("Binary Formats" * doctest::skip())
     SECTION("twitter.json")
     {
         const auto* filename = TEST_DATA_DIRECTORY "/nativejson-benchmark/twitter.json";
-        json j = json::parse(std::ifstream(filename));
+        const json j = json::parse(std::ifstream(filename));
 
         const auto json_size = j.dump().size();
         const auto bjdata_1_size = json::to_bjdata(j).size();
@@ -97,7 +97,7 @@ TEST_CASE("Binary Formats" * doctest::skip())
     SECTION("citm_catalog.json")
     {
         const auto* filename = TEST_DATA_DIRECTORY "/nativejson-benchmark/citm_catalog.json";
-        json j = json::parse(std::ifstream(filename));
+        const json j = json::parse(std::ifstream(filename));
 
         const auto json_size = j.dump().size();
         const auto bjdata_1_size = json::to_bjdata(j).size();
@@ -175,7 +175,7 @@ TEST_CASE("Binary Formats" * doctest::skip())
     SECTION("sample.json")
     {
         const auto* filename = TEST_DATA_DIRECTORY "/json_testsuite/sample.json";
-        json j = json::parse(std::ifstream(filename));
+        const json j = json::parse(std::ifstream(filename));
 
         const auto json_size = j.dump().size();
         const auto bjdata_1_size = json::to_bjdata(j).size();

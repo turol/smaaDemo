@@ -1,9 +1,9 @@
 //     __ _____ _____ _____
 //  __|  |   __|     |   | |  JSON for Modern C++ (supporting code)
-// |  |  |__   |  |  | | | |  version 3.11.2
+// |  |  |__   |  |  | | | |  version 3.11.3
 // |_____|_____|_____|_|___|  https://github.com/nlohmann/json
 //
-// SPDX-FileCopyrightText: 2013-2022 Niels Lohmann <https://nlohmann.me>
+// SPDX-FileCopyrightText: 2013-2023 Niels Lohmann <https://nlohmann.me>
 // SPDX-License-Identifier: MIT
 
 #include "doctest_compatibility.h"
@@ -12,6 +12,7 @@
 using nlohmann::json;
 
 #include <fstream>
+#include <limits>
 #include <sstream>
 #include "make_test_data_available.hpp"
 #include "test_utils.hpp"
@@ -22,7 +23,7 @@ TEST_CASE("BSON")
     {
         SECTION("null")
         {
-            json j = nullptr;
+            json const j = nullptr;
             CHECK_THROWS_WITH_AS(json::to_bson(j), "[json.exception.type_error.317] to serialize to BSON, top-level type must be object, but is null", json::type_error&);
         }
 
@@ -30,45 +31,45 @@ TEST_CASE("BSON")
         {
             SECTION("true")
             {
-                json j = true;
+                json const j = true;
                 CHECK_THROWS_WITH_AS(json::to_bson(j), "[json.exception.type_error.317] to serialize to BSON, top-level type must be object, but is boolean", json::type_error&);
             }
 
             SECTION("false")
             {
-                json j = false;
+                json const j = false;
                 CHECK_THROWS_WITH_AS(json::to_bson(j), "[json.exception.type_error.317] to serialize to BSON, top-level type must be object, but is boolean", json::type_error&);
             }
         }
 
         SECTION("number")
         {
-            json j = 42;
+            json const j = 42;
             CHECK_THROWS_WITH_AS(json::to_bson(j), "[json.exception.type_error.317] to serialize to BSON, top-level type must be object, but is number", json::type_error&);
         }
 
         SECTION("float")
         {
-            json j = 4.2;
+            json const j = 4.2;
             CHECK_THROWS_WITH_AS(json::to_bson(j), "[json.exception.type_error.317] to serialize to BSON, top-level type must be object, but is number", json::type_error&);
         }
 
         SECTION("string")
         {
-            json j = "not supported";
+            json const j = "not supported";
             CHECK_THROWS_WITH_AS(json::to_bson(j), "[json.exception.type_error.317] to serialize to BSON, top-level type must be object, but is string", json::type_error&);
         }
 
         SECTION("array")
         {
-            json j = std::vector<int> {1, 2, 3, 4, 5, 6, 7};
+            json const j = std::vector<int> {1, 2, 3, 4, 5, 6, 7};
             CHECK_THROWS_WITH_AS(json::to_bson(j), "[json.exception.type_error.317] to serialize to BSON, top-level type must be object, but is array", json::type_error&);
         }
     }
 
     SECTION("keys containing code-point U+0000 cannot be serialized to BSON")
     {
-        json j =
+        json const j =
         {
             { std::string("en\0try", 6), true }
         };
@@ -82,7 +83,7 @@ TEST_CASE("BSON")
     SECTION("string length must be at least 1")
     {
         // from https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=11175
-        std::vector<std::uint8_t> v =
+        std::vector<std::uint8_t> const v =
         {
             0x20, 0x20, 0x20, 0x20,
             0x02,
@@ -97,8 +98,8 @@ TEST_CASE("BSON")
     {
         SECTION("empty object")
         {
-            json j = json::object();
-            std::vector<std::uint8_t> expected =
+            json const j = json::object();
+            std::vector<std::uint8_t> const expected =
             {
                 0x05, 0x00, 0x00, 0x00, // size (little endian)
                 // no entries
@@ -115,12 +116,12 @@ TEST_CASE("BSON")
 
         SECTION("non-empty object with bool")
         {
-            json j =
+            json const j =
             {
                 { "entry", true }
             };
 
-            std::vector<std::uint8_t> expected =
+            std::vector<std::uint8_t> const expected =
             {
                 0x0D, 0x00, 0x00, 0x00, // size (little endian)
                 0x08,               // entry: boolean
@@ -139,12 +140,12 @@ TEST_CASE("BSON")
 
         SECTION("non-empty object with bool")
         {
-            json j =
+            json const j =
             {
                 { "entry", false }
             };
 
-            std::vector<std::uint8_t> expected =
+            std::vector<std::uint8_t> const expected =
             {
                 0x0D, 0x00, 0x00, 0x00, // size (little endian)
                 0x08,               // entry: boolean
@@ -163,12 +164,12 @@ TEST_CASE("BSON")
 
         SECTION("non-empty object with double")
         {
-            json j =
+            json const j =
             {
                 { "entry", 4.2 }
             };
 
-            std::vector<std::uint8_t> expected =
+            std::vector<std::uint8_t> const expected =
             {
                 0x14, 0x00, 0x00, 0x00, // size (little endian)
                 0x01, /// entry: double
@@ -187,12 +188,12 @@ TEST_CASE("BSON")
 
         SECTION("non-empty object with string")
         {
-            json j =
+            json const j =
             {
                 { "entry", "bsonstr" }
             };
 
-            std::vector<std::uint8_t> expected =
+            std::vector<std::uint8_t> const expected =
             {
                 0x18, 0x00, 0x00, 0x00, // size (little endian)
                 0x02, /// entry: string (UTF-8)
@@ -211,12 +212,12 @@ TEST_CASE("BSON")
 
         SECTION("non-empty object with null member")
         {
-            json j =
+            json const j =
             {
                 { "entry", nullptr }
             };
 
-            std::vector<std::uint8_t> expected =
+            std::vector<std::uint8_t> const expected =
             {
                 0x0C, 0x00, 0x00, 0x00, // size (little endian)
                 0x0A, /// entry: null
@@ -234,12 +235,12 @@ TEST_CASE("BSON")
 
         SECTION("non-empty object with integer (32-bit) member")
         {
-            json j =
+            json const j =
             {
                 { "entry", std::int32_t{0x12345678} }
             };
 
-            std::vector<std::uint8_t> expected =
+            std::vector<std::uint8_t> const expected =
             {
                 0x10, 0x00, 0x00, 0x00, // size (little endian)
                 0x10, /// entry: int32
@@ -258,12 +259,12 @@ TEST_CASE("BSON")
 
         SECTION("non-empty object with integer (64-bit) member")
         {
-            json j =
+            json const j =
             {
                 { "entry", std::int64_t{0x1234567804030201} }
             };
 
-            std::vector<std::uint8_t> expected =
+            std::vector<std::uint8_t> const expected =
             {
                 0x14, 0x00, 0x00, 0x00, // size (little endian)
                 0x12, /// entry: int64
@@ -282,12 +283,12 @@ TEST_CASE("BSON")
 
         SECTION("non-empty object with negative integer (32-bit) member")
         {
-            json j =
+            json const j =
             {
                 { "entry", std::int32_t{-1} }
             };
 
-            std::vector<std::uint8_t> expected =
+            std::vector<std::uint8_t> const expected =
             {
                 0x10, 0x00, 0x00, 0x00, // size (little endian)
                 0x10, /// entry: int32
@@ -306,12 +307,12 @@ TEST_CASE("BSON")
 
         SECTION("non-empty object with negative integer (64-bit) member")
         {
-            json j =
+            json const j =
             {
                 { "entry", std::int64_t{-1} }
             };
 
-            std::vector<std::uint8_t> expected =
+            std::vector<std::uint8_t> const expected =
             {
                 0x10, 0x00, 0x00, 0x00, // size (little endian)
                 0x10, /// entry: int32
@@ -331,12 +332,12 @@ TEST_CASE("BSON")
         SECTION("non-empty object with unsigned integer (64-bit) member")
         {
             // directly encoding uint64 is not supported in bson (only for timestamp values)
-            json j =
+            json const j =
             {
                 { "entry", std::uint64_t{0x1234567804030201} }
             };
 
-            std::vector<std::uint8_t> expected =
+            std::vector<std::uint8_t> const expected =
             {
                 0x14, 0x00, 0x00, 0x00, // size (little endian)
                 0x12, /// entry: int64
@@ -355,12 +356,12 @@ TEST_CASE("BSON")
 
         SECTION("non-empty object with small unsigned integer member")
         {
-            json j =
+            json const j =
             {
                 { "entry", std::uint64_t{0x42} }
             };
 
-            std::vector<std::uint8_t> expected =
+            std::vector<std::uint8_t> const expected =
             {
                 0x10, 0x00, 0x00, 0x00, // size (little endian)
                 0x10, /// entry: int32
@@ -379,12 +380,12 @@ TEST_CASE("BSON")
 
         SECTION("non-empty object with object member")
         {
-            json j =
+            json const j =
             {
                 { "entry", json::object() }
             };
 
-            std::vector<std::uint8_t> expected =
+            std::vector<std::uint8_t> const expected =
             {
                 0x11, 0x00, 0x00, 0x00, // size (little endian)
                 0x03, /// entry: embedded document
@@ -407,12 +408,12 @@ TEST_CASE("BSON")
 
         SECTION("non-empty object with array member")
         {
-            json j =
+            json const j =
             {
                 { "entry", json::array() }
             };
 
-            std::vector<std::uint8_t> expected =
+            std::vector<std::uint8_t> const expected =
             {
                 0x11, 0x00, 0x00, 0x00, // size (little endian)
                 0x04, /// entry: embedded document
@@ -435,12 +436,12 @@ TEST_CASE("BSON")
 
         SECTION("non-empty object with non-empty array member")
         {
-            json j =
+            json const j =
             {
                 { "entry", json::array({1, 2, 3, 4, 5, 6, 7, 8}) }
             };
 
-            std::vector<std::uint8_t> expected =
+            std::vector<std::uint8_t> const expected =
             {
                 0x49, 0x00, 0x00, 0x00, // size (little endian)
                 0x04, /// entry: embedded document
@@ -472,12 +473,12 @@ TEST_CASE("BSON")
         {
             const size_t N = 10;
             const auto s = std::vector<std::uint8_t>(N, 'x');
-            json j =
+            json const j =
             {
                 { "entry", json::binary(s, 0) }
             };
 
-            std::vector<std::uint8_t> expected =
+            std::vector<std::uint8_t> const expected =
             {
                 0x1B, 0x00, 0x00, 0x00, // size (little endian)
                 0x05, // entry: binary
@@ -502,12 +503,12 @@ TEST_CASE("BSON")
         {
             // an MD5 hash
             const std::vector<std::uint8_t> md5hash = {0xd7, 0x7e, 0x27, 0x54, 0xbe, 0x12, 0x37, 0xfe, 0xd6, 0x0c, 0x33, 0x98, 0x30, 0x3b, 0x8d, 0xc4};
-            json j =
+            json const j =
             {
                 { "entry", json::binary(md5hash, 5) }
             };
 
-            std::vector<std::uint8_t> expected =
+            std::vector<std::uint8_t> const expected =
             {
                 0x21, 0x00, 0x00, 0x00, // size (little endian)
                 0x05, // entry: binary
@@ -531,7 +532,7 @@ TEST_CASE("BSON")
         SECTION("Some more complex document")
         {
             // directly encoding uint64 is not supported in bson (only for timestamp values)
-            json j =
+            json const j =
             {
                 {"double", 42.5},
                 {"entry", 4.2},
@@ -539,7 +540,7 @@ TEST_CASE("BSON")
                 {"object", {{ "string", "value" }}}
             };
 
-            std::vector<std::uint8_t> expected =
+            std::vector<std::uint8_t> const expected =
             {
                 /*size */ 0x4f, 0x00, 0x00, 0x00,
                 /*entry*/ 0x01, 'd',  'o',  'u',  'b',  'l',  'e',  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x45, 0x40,
@@ -561,7 +562,7 @@ TEST_CASE("BSON")
         }
     }
 
-    SECTION("Examples from http://bsonspec.org/faq.html")
+    SECTION("Examples from https://bsonspec.org/faq.html")
     {
         SECTION("Example 1")
         {
@@ -597,7 +598,7 @@ TEST_CASE("BSON input/output_adapters")
         {"object", {{ "string", "value" }}}
     };
 
-    std::vector<std::uint8_t> bson_representation =
+    std::vector<std::uint8_t> const bson_representation =
     {
         /*size */ 0x4f, 0x00, 0x00, 0x00,
         /*entry*/ 0x01, 'd',  'o',  'u',  'b',  'l',  'e',  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x45, 0x40,
@@ -726,7 +727,7 @@ TEST_CASE("Incomplete BSON Input")
 {
     SECTION("Incomplete BSON Input 1")
     {
-        std::vector<std::uint8_t> incomplete_bson =
+        std::vector<std::uint8_t> const incomplete_bson =
         {
             0x0D, 0x00, 0x00, 0x00, // size (little endian)
             0x08,                   // entry: boolean
@@ -744,7 +745,7 @@ TEST_CASE("Incomplete BSON Input")
 
     SECTION("Incomplete BSON Input 2")
     {
-        std::vector<std::uint8_t> incomplete_bson =
+        std::vector<std::uint8_t> const incomplete_bson =
         {
             0x0D, 0x00, 0x00, 0x00, // size (little endian)
             0x08,                   // entry: boolean, unexpected EOF
@@ -760,7 +761,7 @@ TEST_CASE("Incomplete BSON Input")
 
     SECTION("Incomplete BSON Input 3")
     {
-        std::vector<std::uint8_t> incomplete_bson =
+        std::vector<std::uint8_t> const incomplete_bson =
         {
             0x41, 0x00, 0x00, 0x00, // size (little endian)
             0x04, /// entry: embedded document
@@ -782,7 +783,7 @@ TEST_CASE("Incomplete BSON Input")
 
     SECTION("Incomplete BSON Input 4")
     {
-        std::vector<std::uint8_t> incomplete_bson =
+        std::vector<std::uint8_t> const incomplete_bson =
         {
             0x0D, 0x00, // size (incomplete), unexpected EOF
         };
@@ -799,7 +800,7 @@ TEST_CASE("Incomplete BSON Input")
     {
         SECTION("key")
         {
-            json j = {{"key", "value"}};
+            json const j = {{"key", "value"}};
             auto bson_vec = json::to_bson(j);
             SaxCountdown scp(2);
             CHECK(!json::sax_parse(bson_vec, &scp, json::input_format_t::bson));
@@ -807,7 +808,7 @@ TEST_CASE("Incomplete BSON Input")
 
         SECTION("array")
         {
-            json j =
+            json const j =
             {
                 { "entry", json::array() }
             };
@@ -821,7 +822,7 @@ TEST_CASE("Incomplete BSON Input")
 TEST_CASE("Negative size of binary value")
 {
     // invalid BSON: the size of the binary value is -1
-    std::vector<std::uint8_t> input =
+    std::vector<std::uint8_t> const input =
     {
         0x21, 0x00, 0x00, 0x00, // size (little endian)
         0x05, // entry: binary
@@ -839,7 +840,7 @@ TEST_CASE("Negative size of binary value")
 
 TEST_CASE("Unsupported BSON input")
 {
-    std::vector<std::uint8_t> bson =
+    std::vector<std::uint8_t> const bson =
     {
         0x0C, 0x00, 0x00, 0x00, // size (little endian)
         0xFF,                   // entry type: Min key (not supported yet)
@@ -863,9 +864,9 @@ TEST_CASE("BSON numerical data")
         {
             SECTION("std::int64_t: INT64_MIN .. INT32_MIN-1")
             {
-                std::vector<int64_t> numbers
+                std::vector<int64_t> const numbers
                 {
-                    INT64_MIN,
+                    (std::numeric_limits<int64_t>::min)(),
                     -1000000000000000000LL,
                     -100000000000000000LL,
                     -10000000000000000LL,
@@ -875,22 +876,22 @@ TEST_CASE("BSON numerical data")
                     -1000000000000LL,
                     -100000000000LL,
                     -10000000000LL,
-                    static_cast<std::int64_t>(INT32_MIN) - 1,
+                    static_cast<std::int64_t>((std::numeric_limits<std::int32_t>::min)()) - 1,
                 };
 
-                for (auto i : numbers)
+                for (const auto i : numbers)
                 {
 
                     CAPTURE(i)
 
-                    json j =
+                    json const j =
                     {
                         { "entry", i }
                     };
                     CHECK(j.at("entry").is_number_integer());
 
-                    std::uint64_t iu = *reinterpret_cast<std::uint64_t*>(&i);
-                    std::vector<std::uint8_t> expected_bson =
+                    std::uint64_t const iu = *reinterpret_cast<const std::uint64_t*>(&i);
+                    std::vector<std::uint8_t> const expected_bson =
                     {
                         0x14u, 0x00u, 0x00u, 0x00u, // size (little endian)
                         0x12u, /// entry: int64
@@ -918,12 +919,11 @@ TEST_CASE("BSON numerical data")
                 }
             }
 
-
             SECTION("signed std::int32_t: INT32_MIN .. INT32_MAX")
             {
-                std::vector<int32_t> numbers
+                std::vector<int32_t> const numbers
                 {
-                    INT32_MIN,
+                    (std::numeric_limits<int32_t>::min)(),
                     -2147483647L,
                     -1000000000L,
                     -100000000L,
@@ -947,22 +947,22 @@ TEST_CASE("BSON numerical data")
                     100000000L,
                     1000000000L,
                     2147483646L,
-                    INT32_MAX
+                    (std::numeric_limits<int32_t>::max)()
                 };
 
-                for (auto i : numbers)
+                for (const auto i : numbers)
                 {
 
                     CAPTURE(i)
 
-                    json j =
+                    json const j =
                     {
                         { "entry", i }
                     };
                     CHECK(j.at("entry").is_number_integer());
 
-                    std::uint32_t iu = *reinterpret_cast<std::uint32_t*>(&i);
-                    std::vector<std::uint8_t> expected_bson =
+                    std::uint32_t const iu = *reinterpret_cast<const std::uint32_t*>(&i);
+                    std::vector<std::uint8_t> const expected_bson =
                     {
                         0x10u, 0x00u, 0x00u, 0x00u, // size (little endian)
                         0x10u, /// entry: int32
@@ -988,9 +988,9 @@ TEST_CASE("BSON numerical data")
 
             SECTION("signed std::int64_t: INT32_MAX+1 .. INT64_MAX")
             {
-                std::vector<int64_t> numbers
+                std::vector<int64_t> const numbers
                 {
-                    INT64_MAX,
+                    (std::numeric_limits<int64_t>::max)(),
                     1000000000000000000LL,
                     100000000000000000LL,
                     10000000000000000LL,
@@ -1000,22 +1000,22 @@ TEST_CASE("BSON numerical data")
                     1000000000000LL,
                     100000000000LL,
                     10000000000LL,
-                    static_cast<std::int64_t>(INT32_MAX) + 1,
+                    static_cast<std::int64_t>((std::numeric_limits<int32_t>::max)()) + 1,
                 };
 
-                for (auto i : numbers)
+                for (const auto i : numbers)
                 {
 
                     CAPTURE(i)
 
-                    json j =
+                    json const j =
                     {
                         { "entry", i }
                     };
                     CHECK(j.at("entry").is_number_integer());
 
-                    std::uint64_t iu = *reinterpret_cast<std::uint64_t*>(&i);
-                    std::vector<std::uint8_t> expected_bson =
+                    std::uint64_t const iu = *reinterpret_cast<const std::uint64_t*>(&i);
+                    std::vector<std::uint8_t> const expected_bson =
                     {
                         0x14u, 0x00u, 0x00u, 0x00u, // size (little endian)
                         0x12u, /// entry: int64
@@ -1048,7 +1048,7 @@ TEST_CASE("BSON numerical data")
         {
             SECTION("unsigned std::uint64_t: 0 .. INT32_MAX")
             {
-                std::vector<std::uint64_t> numbers
+                std::vector<std::uint64_t> const numbers
                 {
                     0ULL,
                     1ULL,
@@ -1062,21 +1062,21 @@ TEST_CASE("BSON numerical data")
                     100000000ULL,
                     1000000000ULL,
                     2147483646ULL,
-                    static_cast<std::uint64_t>(INT32_MAX)
+                    static_cast<std::uint64_t>((std::numeric_limits<int32_t>::max)())
                 };
 
-                for (auto i : numbers)
+                for (const auto i : numbers)
                 {
 
                     CAPTURE(i)
 
-                    json j =
+                    json const j =
                     {
                         { "entry", i }
                     };
 
                     auto iu = i;
-                    std::vector<std::uint8_t> expected_bson =
+                    std::vector<std::uint8_t> const expected_bson =
                     {
                         0x10u, 0x00u, 0x00u, 0x00u, // size (little endian)
                         0x10u, /// entry: int32
@@ -1103,11 +1103,11 @@ TEST_CASE("BSON numerical data")
 
             SECTION("unsigned std::uint64_t: INT32_MAX+1 .. INT64_MAX")
             {
-                std::vector<std::uint64_t> numbers
+                std::vector<std::uint64_t> const numbers
                 {
-                    static_cast<std::uint64_t>(INT32_MAX) + 1,
+                    static_cast<std::uint64_t>((std::numeric_limits<std::int32_t>::max)()) + 1,
                     4000000000ULL,
-                    static_cast<std::uint64_t>(UINT32_MAX),
+                    static_cast<std::uint64_t>((std::numeric_limits<std::uint32_t>::max)()),
                     10000000000ULL,
                     100000000000ULL,
                     1000000000000ULL,
@@ -1117,21 +1117,21 @@ TEST_CASE("BSON numerical data")
                     10000000000000000ULL,
                     100000000000000000ULL,
                     1000000000000000000ULL,
-                    static_cast<std::uint64_t>(INT64_MAX),
+                    static_cast<std::uint64_t>((std::numeric_limits<std::int64_t>::max)()),
                 };
 
-                for (auto i : numbers)
+                for (const auto i : numbers)
                 {
 
                     CAPTURE(i)
 
-                    json j =
+                    json const j =
                     {
                         { "entry", i }
                     };
 
                     auto iu = i;
-                    std::vector<std::uint8_t> expected_bson =
+                    std::vector<std::uint8_t> const expected_bson =
                     {
                         0x14u, 0x00u, 0x00u, 0x00u, // size (little endian)
                         0x12u, /// entry: int64
@@ -1161,27 +1161,27 @@ TEST_CASE("BSON numerical data")
 
             SECTION("unsigned std::uint64_t: INT64_MAX+1 .. UINT64_MAX")
             {
-                std::vector<std::uint64_t> numbers
+                std::vector<std::uint64_t> const numbers
                 {
-                    static_cast<std::uint64_t>(INT64_MAX) + 1ULL,
+                    static_cast<std::uint64_t>((std::numeric_limits<std::int64_t>::max)()) + 1ULL,
                     10000000000000000000ULL,
                     18000000000000000000ULL,
-                    UINT64_MAX - 1ULL,
-                    UINT64_MAX,
+                    (std::numeric_limits<std::uint64_t>::max)() - 1ULL,
+                    (std::numeric_limits<std::uint64_t>::max)(),
                 };
 
-                for (auto i : numbers)
+                for (const auto i : numbers)
                 {
 
                     CAPTURE(i)
 
-                    json j =
+                    json const j =
                     {
                         { "entry", i }
                     };
 
                     auto iu = i;
-                    std::vector<std::uint8_t> expected_bson =
+                    std::vector<std::uint8_t> const expected_bson =
                     {
                         0x14u, 0x00u, 0x00u, 0x00u, // size (little endian)
                         0x12u, /// entry: int64
@@ -1214,7 +1214,7 @@ TEST_CASE("BSON roundtrips" * doctest::skip())
 {
     SECTION("reference files")
     {
-        for (std::string filename :
+        for (const std::string filename :
                 {
                     TEST_DATA_DIRECTORY "/json.org/1.json",
                     TEST_DATA_DIRECTORY "/json.org/2.json",
@@ -1274,7 +1274,7 @@ TEST_CASE("BSON roundtrips" * doctest::skip())
                 INFO_WITH_TEMP(filename + ": output to output adapters");
                 // parse JSON file
                 std::ifstream f_json(filename);
-                json j1 = json::parse(f_json);
+                json const j1 = json::parse(f_json);
 
                 // parse BSON file
                 auto packed = utils::read_binary_file(filename + ".bson");

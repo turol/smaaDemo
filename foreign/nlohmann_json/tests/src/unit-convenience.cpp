@@ -1,9 +1,9 @@
 //     __ _____ _____ _____
 //  __|  |   __|     |   | |  JSON for Modern C++ (supporting code)
-// |  |  |__   |  |  | | | |  version 3.11.2
+// |  |  |__   |  |  | | | |  version 3.11.3
 // |_____|_____|_____|_|___|  https://github.com/nlohmann/json
 //
-// SPDX-FileCopyrightText: 2013-2022 Niels Lohmann <https://nlohmann.me>
+// SPDX-FileCopyrightText: 2013-2023 Niels Lohmann <https://nlohmann.me>
 // SPDX-License-Identifier: MIT
 
 #include "doctest_compatibility.h"
@@ -34,17 +34,17 @@ struct alt_string_iter
         impl.append(first, last);
     }
 
-    std::string::const_iterator begin() const
+    std::string::const_iterator begin() const noexcept
     {
         return impl.begin();
     }
 
-    std::string::const_iterator end() const
+    std::string::const_iterator end() const noexcept
     {
         return impl.end();
     }
 
-    std::size_t size() const
+    std::size_t size() const noexcept
     {
         return impl.size();
     }
@@ -173,9 +173,9 @@ TEST_CASE("convenience functions")
         using nlohmann::detail::concat;
 
         const char* expected = "Hello, world!";
-        alt_string_iter hello_iter{"Hello, "};
-        alt_string_data hello_data{"Hello, "};
-        std::string world = "world";
+        alt_string_iter const hello_iter{"Hello, "};
+        alt_string_data const hello_data{"Hello, "};
+        std::string const world = "world";
 
         SECTION("std::string")
         {

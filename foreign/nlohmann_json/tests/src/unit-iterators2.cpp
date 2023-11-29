@@ -1,9 +1,9 @@
 //     __ _____ _____ _____
 //  __|  |   __|     |   | |  JSON for Modern C++ (supporting code)
-// |  |  |__   |  |  | | | |  version 3.11.2
+// |  |  |__   |  |  | | | |  version 3.11.3
 // |_____|_____|_____|_|___|  https://github.com/nlohmann/json
 //
-// SPDX-FileCopyrightText: 2013-2022 Niels Lohmann <https://nlohmann.me>
+// SPDX-FileCopyrightText: 2013-2023 Niels Lohmann <https://nlohmann.me>
 // SPDX-License-Identifier: MIT
 
 // cmake/test.cmake selects the C++ standard versions with which to build a
@@ -873,7 +873,6 @@ TEST_CASE("iterators 2")
         }
     }
 
-
 #if JSON_HAS_RANGES
     // JSON_HAS_CPP_20 (do not remove; see note at top of file)
     SECTION("ranges")
@@ -943,7 +942,7 @@ TEST_CASE("iterators 2")
                 json j_expected{5, 4, 3, 2, 1};
 
                 auto reversed = j | std::views::reverse;
-                CHECK(reversed == j_expected);
+                CHECK(std::ranges::equal(reversed, j_expected));
             }
 
             SECTION("transform")

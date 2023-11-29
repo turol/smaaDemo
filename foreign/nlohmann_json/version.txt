@@ -1,6 +1,5 @@
-commit bc889afb4c5bf1c0d8ee29ef35eaaf4c8bef8a5d
-Merge: 69d744867 9d6918629
+commit 9cca280a4d0ccf0c08f47a99aa71d1b0e52f8d03
 Author: Niels Lohmann <mail@nlohmann.me>
-Date:   Fri Aug 12 15:06:06 2022 +0200
+Date:   Tue Nov 28 22:36:31 2023 +0100
 
-    Merge branch 'release/3.11.2'
+    JSON for Modern C++ 3.11.3 (#4222)

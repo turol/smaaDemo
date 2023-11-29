@@ -1,9 +1,9 @@
 //     __ _____ _____ _____
 //  __|  |   __|     |   | |  JSON for Modern C++ (supporting code)
-// |  |  |__   |  |  | | | |  version 3.11.2
+// |  |  |__   |  |  | | | |  version 3.11.3
 // |_____|_____|_____|_|___|  https://github.com/nlohmann/json
 //
-// SPDX-FileCopyrightText: 2013-2022 Niels Lohmann <https://nlohmann.me>
+// SPDX-FileCopyrightText: 2013-2023 Niels Lohmann <https://nlohmann.me>
 // SPDX-License-Identifier: MIT
 
 #include "doctest_compatibility.h"
@@ -11,7 +11,6 @@
 #include <nlohmann/json.hpp>
 using nlohmann::json;
 using nlohmann::ordered_json;
-
 
 TEST_CASE("ordered_json")
 {
@@ -46,7 +45,7 @@ TEST_CASE("ordered_json")
     CHECK(oj.dump() == "{\"element3\":3,\"element2\":2}");
 
     // There are no dup keys cause constructor calls emplace...
-    json multi {{"z", 1}, {"m", 2}, {"m", 3}, {"y", 4}, {"m", 5}};
+    json const multi {{"z", 1}, {"m", 2}, {"m", 3}, {"y", 4}, {"m", 5}};
     CHECK(multi.size() == 3);
     CHECK(multi.dump() == "{\"m\":2,\"y\":4,\"z\":1}");
 

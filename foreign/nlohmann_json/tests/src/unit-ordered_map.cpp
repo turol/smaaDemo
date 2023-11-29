@@ -1,16 +1,15 @@
 //     __ _____ _____ _____
 //  __|  |   __|     |   | |  JSON for Modern C++ (supporting code)
-// |  |  |__   |  |  | | | |  version 3.11.2
+// |  |  |__   |  |  | | | |  version 3.11.3
 // |_____|_____|_____|_|___|  https://github.com/nlohmann/json
 //
-// SPDX-FileCopyrightText: 2013-2022 Niels Lohmann <https://nlohmann.me>
+// SPDX-FileCopyrightText: 2013-2023 Niels Lohmann <https://nlohmann.me>
 // SPDX-License-Identifier: MIT
 
 #include "doctest_compatibility.h"
 
 #include <nlohmann/json.hpp>
 using nlohmann::ordered_map;
-
 
 TEST_CASE("ordered_map")
 {
@@ -19,7 +18,7 @@ TEST_CASE("ordered_map")
         SECTION("constructor from iterator range")
         {
             std::map<std::string, std::string> m {{"eins", "one"}, {"zwei", "two"}, {"drei", "three"}};
-            ordered_map<std::string, std::string> om(m.begin(), m.end());
+            ordered_map<std::string, std::string> const om(m.begin(), m.end());
             CHECK(om.size() == 3);
         }
 
@@ -281,8 +280,8 @@ TEST_CASE("ordered_map")
 
         SECTION("const value_type&")
         {
-            ordered_map<std::string, std::string>::value_type vt1 {"eins", "1"};
-            ordered_map<std::string, std::string>::value_type vt4 {"vier", "four"};
+            ordered_map<std::string, std::string>::value_type const vt1 {"eins", "1"};
+            ordered_map<std::string, std::string>::value_type const vt4 {"vier", "four"};
 
             auto res1 = om.insert(vt1);
             CHECK(res1.first == om.begin());

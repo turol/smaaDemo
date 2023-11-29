@@ -1,10 +1,10 @@
 //     __ _____ _____ _____
 //  __|  |   __|     |   | |  JSON for Modern C++ (supporting code)
-// |  |  |__   |  |  | | | |  version 3.11.2
+// |  |  |__   |  |  | | | |  version 3.11.3
 // |_____|_____|_____|_|___|  https://github.com/nlohmann/json
 //
 // Copyright (c) 2013-2022 Niels Lohmann <http://nlohmann.me>.
-// SPDX-FileCopyrightText: 2013-2022 Niels Lohmann <https://nlohmann.me>
+// SPDX-FileCopyrightText: 2013-2023 Niels Lohmann <https://nlohmann.me>
 // SPDX-License-Identifier: MIT
 
 #include "doctest_compatibility.h"
@@ -71,7 +71,6 @@ TEST_CASE_TEMPLATE("element access 2", Json, nlohmann::json, nlohmann::ordered_j
             {
                 CHECK_THROWS_WITH_AS(j.at("foo"), "[json.exception.out_of_range.403] key 'foo' not found", typename Json::out_of_range&);
                 CHECK_THROWS_WITH_AS(j_const.at("foo"), "[json.exception.out_of_range.403] key 'foo' not found", typename Json::out_of_range&);
-
 
 #ifdef JSON_HAS_CPP_17
                 CHECK_THROWS_WITH_AS(j.at(std::string_view("foo")), "[json.exception.out_of_range.403] key 'foo' not found", typename Json::out_of_range&);
@@ -469,7 +468,7 @@ TEST_CASE_TEMPLATE("element access 2", Json, nlohmann::json, nlohmann::ordered_j
             }
 #ifdef JSON_HAS_CPP_17
             {
-                std::string_view key = "key";
+                std::string_view const key = "key";
                 Json j_null;
                 CHECK(j_null.is_null());
                 j_null[key] = 1;
@@ -833,13 +832,13 @@ TEST_CASE_TEMPLATE("element access 2", Json, nlohmann::json, nlohmann::ordered_j
                 {
                     {
                         Json jobject = {{"a", "a"}, {"b", 1}, {"c", 17u}};
-                        typename Json::iterator it2 = jobject.erase(jobject.begin());
+                        typename Json::iterator const it2 = jobject.erase(jobject.begin());
                         CHECK(jobject == Json({{"b", 1}, {"c", 17u}}));
                         CHECK(*it2 == Json(1));
                     }
                     {
                         Json jobject = {{"a", "a"}, {"b", 1}, {"c", 17u}};
-                        typename Json::const_iterator it2 = jobject.erase(jobject.cbegin());
+                        typename Json::const_iterator const it2 = jobject.erase(jobject.cbegin());
                         CHECK(jobject == Json({{"b", 1}, {"c", 17u}}));
                         CHECK(*it2 == Json(1));
                     }
@@ -865,13 +864,13 @@ TEST_CASE_TEMPLATE("element access 2", Json, nlohmann::json, nlohmann::ordered_j
                 {
                     {
                         Json jobject = {{"a", "a"}, {"b", 1}, {"c", 17u}};
-                        typename Json::iterator it2 = jobject.erase(jobject.begin(), jobject.begin());
+                        typename Json::iterator const it2 = jobject.erase(jobject.begin(), jobject.begin());
                         CHECK(jobject == Json({{"a", "a"}, {"b", 1}, {"c", 17u}}));
                         CHECK(*it2 == Json("a"));
                     }
                     {
                         Json jobject = {{"a", "a"}, {"b", 1}, {"c", 17u}};
-                        typename Json::const_iterator it2 = jobject.erase(jobject.cbegin(), jobject.cbegin());
+                        typename Json::const_iterator const it2 = jobject.erase(jobject.cbegin(), jobject.cbegin());
                         CHECK(jobject == Json({{"a", "a"}, {"b", 1}, {"c", 17u}}));
                         CHECK(*it2 == Json("a"));
                     }
@@ -881,15 +880,15 @@ TEST_CASE_TEMPLATE("element access 2", Json, nlohmann::json, nlohmann::ordered_j
                 {
                     {
                         Json jobject = {{"a", "a"}, {"b", 1}, {"c", 17u}};
-                        typename Json::iterator it = jobject.find("b");
-                        typename Json::iterator it2 = jobject.erase(it);
+                        typename Json::iterator const it = jobject.find("b");
+                        typename Json::iterator const it2 = jobject.erase(it);
                         CHECK(jobject == Json({{"a", "a"}, {"c", 17u}}));
                         CHECK(*it2 == Json(17));
                     }
                     {
                         Json jobject = {{"a", "a"}, {"b", 1}, {"c", 17u}};
-                        typename Json::const_iterator it = jobject.find("b");
-                        typename Json::const_iterator it2 = jobject.erase(it);
+                        typename Json::const_iterator const it = jobject.find("b");
+                        typename Json::const_iterator const it2 = jobject.erase(it);
                         CHECK(jobject == Json({{"a", "a"}, {"c", 17u}}));
                         CHECK(*it2 == Json(17));
                     }
@@ -899,13 +898,13 @@ TEST_CASE_TEMPLATE("element access 2", Json, nlohmann::json, nlohmann::ordered_j
                 {
                     {
                         Json jobject = {{"a", "a"}, {"b", 1}, {"c", 17u}, {"d", false}, {"e", true}};
-                        typename Json::iterator it2 = jobject.erase(jobject.find("b"), jobject.find("e"));
+                        typename Json::iterator const it2 = jobject.erase(jobject.find("b"), jobject.find("e"));
                         CHECK(jobject == Json({{"a", "a"}, {"e", true}}));
                         CHECK(*it2 == Json(true));
                     }
                     {
                         Json jobject = {{"a", "a"}, {"b", 1}, {"c", 17u}, {"d", false}, {"e", true}};
-                        typename Json::const_iterator it2 = jobject.erase(jobject.find("b"), jobject.find("e"));
+                        typename Json::const_iterator const it2 = jobject.erase(jobject.find("b"), jobject.find("e"));
                         CHECK(jobject == Json({{"a", "a"}, {"e", true}}));
                         CHECK(*it2 == Json(true));
                     }
@@ -1509,7 +1508,7 @@ TEST_CASE_TEMPLATE("element access 2 (additional value() tests)", Json, nlohmann
 
     const char* cpstr = "default";
     const char castr[] = "default"; // NOLINT(hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
-    string_t str = "default";
+    string_t const str = "default";
 
     number_integer_t integer = 69;
     std::size_t size = 69;
@@ -1522,9 +1521,9 @@ TEST_CASE_TEMPLATE("element access 2 (additional value() tests)", Json, nlohmann
             CHECK(j.value("foo", cpstr) == "bar");
             CHECK(j.value("foo", castr) == "bar");
             CHECK(j.value("foo", str) == "bar");
-            // this test is in fact different than the one below,
+            // this test is in fact different from the one below,
             // because of 0 considering const char * overloads
-            // where as any other number does not
+            // whereas any other number does not
             CHECK(j.value("baz", 0) == 42);
             CHECK(j.value("baz", 47) == 42);
             CHECK(j.value("baz", integer) == 42);
@@ -1592,9 +1591,9 @@ TEST_CASE_TEMPLATE("element access 2 (additional value() tests)", Json, nlohmann
 
         SECTION("string_t/object_t::key_type key")
         {
-            string_t key = "foo";
-            string_t key2 = "baz";
-            string_t key_notfound = "bar";
+            string_t const key = "foo";
+            string_t const key2 = "baz";
+            string_t const key_notfound = "bar";
 
             CHECK(j.value(key, "default") == "bar");
             CHECK(j.value(key, cpstr) == "bar");
@@ -1618,9 +1617,9 @@ TEST_CASE_TEMPLATE("element access 2 (additional value() tests)", Json, nlohmann
 #ifdef JSON_HAS_CPP_17
         SECTION("std::string_view key")
         {
-            std::string_view key = "foo";
-            std::string_view key2 = "baz";
-            std::string_view key_notfound = "bar";
+            std::string_view const key = "foo";
+            std::string_view const key2 = "baz";
+            std::string_view const key_notfound = "bar";
 
             CHECK(j.value(key, "default") == "bar");
             CHECK(j.value(key, cpstr) == "bar");
@@ -1730,9 +1729,9 @@ TEST_CASE_TEMPLATE("element access 2 (additional value() tests)", Json, nlohmann
 
         SECTION("string_t/object_t::key_type key")
         {
-            string_t key = "foo";
-            string_t key2 = "baz";
-            string_t key_notfound = "bar";
+            string_t const key = "foo";
+            string_t const key2 = "baz";
+            string_t const key_notfound = "bar";
 
             CHECK(j.template value<string_t>(key, "default") == "bar");
             CHECK(j.template value<string_t>(key, cpstr) == "bar");
@@ -1756,9 +1755,9 @@ TEST_CASE_TEMPLATE("element access 2 (additional value() tests)", Json, nlohmann
 #ifdef JSON_HAS_CPP_17
         SECTION("std::string_view key")
         {
-            std::string_view key = "foo";
-            std::string_view key2 = "baz";
-            std::string_view key_notfound = "bar";
+            std::string_view const key = "foo";
+            std::string_view const key2 = "baz";
+            std::string_view const key_notfound = "bar";
 
             CHECK(j.template value<string_t>(key, "default") == "bar");
             CHECK(j.template value<string_t>(key, cpstr) == "bar");

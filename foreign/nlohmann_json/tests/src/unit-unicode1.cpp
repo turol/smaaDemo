@@ -1,9 +1,9 @@
 //     __ _____ _____ _____
 //  __|  |   __|     |   | |  JSON for Modern C++ (supporting code)
-// |  |  |__   |  |  | | | |  version 3.11.2
+// |  |  |__   |  |  | | | |  version 3.11.3
 // |_____|_____|_____|_|___|  https://github.com/nlohmann/json
 //
-// SPDX-FileCopyrightText: 2013-2022 Niels Lohmann <https://nlohmann.me>
+// SPDX-FileCopyrightText: 2013-2023 Niels Lohmann <https://nlohmann.me>
 // SPDX-License-Identifier: MIT
 
 #include "doctest_compatibility.h"
@@ -102,7 +102,7 @@ TEST_CASE("Unicode (1/5)" * doctest::skip())
             }
         }
 
-#if 0
+#if 0 // NOLINT(readability-avoid-unconditional-preprocessor-if)
         SECTION("incorrect sequences")
         {
             SECTION("high surrogate without low surrogate")
@@ -233,9 +233,9 @@ void roundtrip(bool success_expected, const std::string& s)
     json _;
 
     // create JSON string value
-    json j = s;
+    const json j = s;
     // create JSON text
-    std::string ps = std::string("\"") + s + "\"";
+    const std::string ps = std::string("\"") + s + "\"";
 
     if (success_expected)
     {
@@ -253,7 +253,7 @@ void roundtrip(bool success_expected, const std::string& s)
         CHECK_NOTHROW(_ = json::parse(j.dump()));
 
         // after roundtrip, the same string is stored
-        json jr = json::parse(j.dump());
+        const json jr = json::parse(j.dump());
         CHECK(jr.get<std::string>() == s);
     }
     else
@@ -442,7 +442,7 @@ TEST_CASE("Markus Kuhn's UTF-8 decoder capability and stress test")
 
         SECTION("4.1  Examples of an overlong ASCII character")
         {
-            // With a safe UTF-8 decoder, all of the following five overlong
+            // With a safe UTF-8 decoder, all the following five overlong
             // representations of the ASCII character slash ("/") should be rejected
             // like a malformed UTF-8 sequence, for instance by substituting it with
             // a replacement character. If you see a slash below, you do not have a

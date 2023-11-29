@@ -1,9 +1,9 @@
 //     __ _____ _____ _____
 //  __|  |   __|     |   | |  JSON for Modern C++ (supporting code)
-// |  |  |__   |  |  | | | |  version 3.11.2
+// |  |  |__   |  |  | | | |  version 3.11.3
 // |_____|_____|_____|_|___|  https://github.com/nlohmann/json
 //
-// SPDX-FileCopyrightText: 2013-2022 Niels Lohmann <https://nlohmann.me>
+// SPDX-FileCopyrightText: 2013-2023 Niels Lohmann <https://nlohmann.me>
 // SPDX-License-Identifier: MIT
 
 // XXX:
@@ -61,11 +61,11 @@ float make_float(uint64_t f, int e)
         e--;
     }
 
-    uint64_t biased_exponent = (e == kDenormalExponent && (f & kHiddenBit) == 0)
-                               ? 0
-                               : static_cast<uint64_t>(e + kExponentBias);
+    const uint64_t biased_exponent = (e == kDenormalExponent && (f & kHiddenBit) == 0)
+                                     ? 0
+                                     : static_cast<uint64_t>(e + kExponentBias);
 
-    uint64_t bits = (f & kSignificandMask) | (biased_exponent << kPhysicalSignificandSize);
+    const uint64_t bits = (f & kSignificandMask) | (biased_exponent << kPhysicalSignificandSize);
     return reinterpret_bits<float>(static_cast<uint32_t>(bits));
 }
 
@@ -113,11 +113,11 @@ double make_double(uint64_t f, int e)
         e--;
     }
 
-    uint64_t biased_exponent = (e == kDenormalExponent && (f & kHiddenBit) == 0)
-                               ? 0
-                               : static_cast<uint64_t>(e + kExponentBias);
+    const uint64_t biased_exponent = (e == kDenormalExponent && (f & kHiddenBit) == 0)
+                                     ? 0
+                                     : static_cast<uint64_t>(e + kExponentBias);
 
-    uint64_t bits = (f & kSignificandMask) | (biased_exponent << kPhysicalSignificandSize);
+    const uint64_t bits = (f & kSignificandMask) | (biased_exponent << kPhysicalSignificandSize);
     return reinterpret_bits<double>(bits);
 }
 } // namespace
@@ -458,7 +458,7 @@ TEST_CASE("formatting")
     {
         auto check_integer = [](std::int64_t number, const std::string & expected)
         {
-            nlohmann::json j = number;
+            const nlohmann::json j = number;
             CHECK(j.dump() == expected);
         };
 

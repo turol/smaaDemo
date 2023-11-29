@@ -1,9 +1,9 @@
 //     __ _____ _____ _____
 //  __|  |   __|     |   | |  JSON for Modern C++ (supporting code)
-// |  |  |__   |  |  | | | |  version 3.11.2
+// |  |  |__   |  |  | | | |  version 3.11.3
 // |_____|_____|_____|_|___|  https://github.com/nlohmann/json
 //
-// SPDX-FileCopyrightText: 2013-2022 Niels Lohmann <https://nlohmann.me>
+// SPDX-FileCopyrightText: 2013-2023 Niels Lohmann <https://nlohmann.me>
 // SPDX-License-Identifier: MIT
 
 /*
@@ -32,20 +32,20 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     try
     {
         // step 1: parse input
-        json j1 = json::parse(data, data + size);
+        json const j1 = json::parse(data, data + size);
 
         try
         {
             // step 2: round trip
 
             // first serialization
-            std::string s1 = j1.dump();
+            std::string const s1 = j1.dump();
 
             // parse serialization
-            json j2 = json::parse(s1);
+            json const j2 = json::parse(s1);
 
             // second serialization
-            std::string s2 = j2.dump();
+            std::string const s2 = j2.dump();
 
             // serializations must match
             assert(s1 == s2);

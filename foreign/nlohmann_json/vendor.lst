@@ -1,3 +1,4 @@
+.cirrus.yml
 .clang-format
 .clang-tidy
 .github/CODEOWNERS
@@ -9,11 +10,13 @@
 .github/PULL_REQUEST_TEMPLATE.md
 .github/SECURITY.md
 .github/config.yml
-.github/external_ci/.drone.yml
 .github/external_ci/appveyor.yml
 .github/labeler.yml
 .github/stale.yml
+.github/workflows/check_amalgamation.yml
+.github/workflows/cifuzz.yml
 .github/workflows/codeql-analysis.yml
+.github/workflows/comment_check_amalgamation.yml
 .github/workflows/labeler.yml
 .github/workflows/macos.yml
 .github/workflows/publish_documentation.yml
@@ -25,6 +28,7 @@
 .reuse/dep5
 .reuse/templates/json.jinja2
 .reuse/templates/json_support.jinja2
+BUILD.bazel
 CITATION.cff
 CMakeLists.txt
 ChangeLog.md
@@ -34,12 +38,15 @@ LICENSES/BSD-3-Clause.txt
 LICENSES/GPL-3.0-only.txt
 LICENSES/MIT.txt
 Makefile
+Package.swift
 README.md
+WORKSPACE.bazel
 cmake/ci.cmake
 cmake/config.cmake.in
 cmake/download_test_data.cmake
 cmake/nlohmann_jsonConfigVersion.cmake.in
 cmake/pkg-config.pc.in
+cmake/scripts/gen_bazel_build_file.cmake
 cmake/test.cmake
 docs/Makefile
 docs/README.md
@@ -243,6 +250,8 @@ docs/examples/is_structured.cpp
 docs/examples/is_structured.output
 docs/examples/items.cpp
 docs/examples/items.output
+docs/examples/json_base_class_t.cpp
+docs/examples/json_base_class_t.output
 docs/examples/json_lines.cpp
 docs/examples/json_lines.output
 docs/examples/json_pointer.cpp
@@ -285,6 +294,10 @@ docs/examples/nlohmann_define_type_intrusive_explicit.cpp
 docs/examples/nlohmann_define_type_intrusive_explicit.output
 docs/examples/nlohmann_define_type_intrusive_macro.cpp
 docs/examples/nlohmann_define_type_intrusive_macro.output
+docs/examples/nlohmann_define_type_intrusive_only_serialize_explicit.cpp
+docs/examples/nlohmann_define_type_intrusive_only_serialize_explicit.output
+docs/examples/nlohmann_define_type_intrusive_only_serialize_macro.cpp
+docs/examples/nlohmann_define_type_intrusive_only_serialize_macro.output
 docs/examples/nlohmann_define_type_intrusive_with_default_explicit.cpp
 docs/examples/nlohmann_define_type_intrusive_with_default_explicit.output
 docs/examples/nlohmann_define_type_intrusive_with_default_macro.cpp
@@ -293,6 +306,10 @@ docs/examples/nlohmann_define_type_non_intrusive_explicit.cpp
 docs/examples/nlohmann_define_type_non_intrusive_explicit.output
 docs/examples/nlohmann_define_type_non_intrusive_macro.cpp
 docs/examples/nlohmann_define_type_non_intrusive_macro.output
+docs/examples/nlohmann_define_type_non_intrusive_only_serialize_explicit.cpp
+docs/examples/nlohmann_define_type_non_intrusive_only_serialize_explicit.output
+docs/examples/nlohmann_define_type_non_intrusive_only_serialize_macro.cpp
+docs/examples/nlohmann_define_type_non_intrusive_only_serialize_macro.output
 docs/examples/nlohmann_define_type_non_intrusive_with_default_explicit.cpp
 docs/examples/nlohmann_define_type_non_intrusive_with_default_explicit.output
 docs/examples/nlohmann_define_type_non_intrusive_with_default_macro.cpp
@@ -532,6 +549,7 @@ docs/mkdocs/docs/api/basic_json/is_primitive.md
 docs/mkdocs/docs/api/basic_json/is_string.md
 docs/mkdocs/docs/api/basic_json/is_structured.md
 docs/mkdocs/docs/api/basic_json/items.md
+docs/mkdocs/docs/api/basic_json/json_base_class_t.md
 docs/mkdocs/docs/api/basic_json/json_serializer.md
 docs/mkdocs/docs/api/basic_json/max_size.md
 docs/mkdocs/docs/api/basic_json/merge_patch.md
@@ -627,6 +645,7 @@ docs/mkdocs/docs/api/macros/json_disable_enum_serialization.md
 docs/mkdocs/docs/api/macros/json_has_cpp_11.md
 docs/mkdocs/docs/api/macros/json_has_filesystem.md
 docs/mkdocs/docs/api/macros/json_has_ranges.md
+docs/mkdocs/docs/api/macros/json_has_static_rtti.md
 docs/mkdocs/docs/api/macros/json_has_three_way_comparison.md
 docs/mkdocs/docs/api/macros/json_no_io.md
 docs/mkdocs/docs/api/macros/json_noexception.md
@@ -697,6 +716,7 @@ docs/mkdocs/docs/integration/conan/Conanfile.txt
 docs/mkdocs/docs/integration/conan/example.cpp
 docs/mkdocs/docs/integration/example.cpp
 docs/mkdocs/docs/integration/index.md
+docs/mkdocs/docs/integration/migration_guide.md
 docs/mkdocs/docs/integration/package_managers.md
 docs/mkdocs/docs/integration/pkg-config.md
 docs/mkdocs/docs/integration/vcpkg/CMakeLists.txt
@@ -726,6 +746,7 @@ include/nlohmann/detail/iterators/iteration_proxy.hpp
 include/nlohmann/detail/iterators/iterator_traits.hpp
 include/nlohmann/detail/iterators/json_reverse_iterator.hpp
 include/nlohmann/detail/iterators/primitive_iterator.hpp
+include/nlohmann/detail/json_custom_base_class.hpp
 include/nlohmann/detail/json_pointer.hpp
 include/nlohmann/detail/json_ref.hpp
 include/nlohmann/detail/macro_scope.hpp
@@ -847,6 +868,7 @@ tests/src/unit-constructor1.cpp
 tests/src/unit-constructor2.cpp
 tests/src/unit-convenience.cpp
 tests/src/unit-conversions.cpp
+tests/src/unit-custom-base-class.cpp
 tests/src/unit-deserialization.cpp
 tests/src/unit-diagnostics.cpp
 tests/src/unit-disabled_exceptions.cpp
@@ -864,6 +886,7 @@ tests/src/unit-merge_patch.cpp
 tests/src/unit-meta.cpp
 tests/src/unit-modifiers.cpp
 tests/src/unit-msgpack.cpp
+tests/src/unit-no-mem-leak-on-adl-serialize.cpp
 tests/src/unit-noexcept.cpp
 tests/src/unit-ordered_json.cpp
 tests/src/unit-ordered_map.cpp
@@ -1053,9 +1076,6 @@ tools/amalgamate/README.md
 tools/amalgamate/amalgamate.py
 tools/amalgamate/config_json.json
 tools/amalgamate/config_json_fwd.json
-tools/cpplint/README.rst
-tools/cpplint/cpplint.py
-tools/cpplint/update.sh
 tools/gdb_pretty_printer/README.md
 tools/gdb_pretty_printer/nlohmann-json.py
 tools/generate_natvis/README.md

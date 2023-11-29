@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.1...3.14)
 
 ##
 ## PROJECT
 ## name and version
 ##
-project(nlohmann_json VERSION 3.11.2 LANGUAGES CXX)
+project(nlohmann_json VERSION 3.11.3 LANGUAGES CXX)
 
 ##
 ## MAIN_PROJECT CHECK
@@ -43,7 +43,7 @@ option(JSON_Diagnostics                    "Use extended diagnostic messages." O
 option(JSON_GlobalUDLs                     "Place use-defined string literals in the global namespace." ON)
 option(JSON_ImplicitConversions            "Enable implicit conversions." ON)
 option(JSON_DisableEnumSerialization       "Disable default integer enum serialization." OFF)
-option(JSON_LegacyDiscardedValueComparison "Enable legacy discarded value comparison." OFF)           
+option(JSON_LegacyDiscardedValueComparison "Enable legacy discarded value comparison." OFF)
 option(JSON_Install                        "Install CMake targets during install step." ${MAIN_PROJECT})
 option(JSON_MultipleHeaders                "Use non-amalgamated version of the library." ON)
 option(JSON_SystemInclude                  "Include as system headers (skip for clang-tidy)." OFF)
@@ -122,7 +122,7 @@ target_include_directories(
     ${NLOHMANN_JSON_TARGET_NAME}
     ${NLOHMANN_JSON_SYSTEM_INCLUDE} INTERFACE
     $<BUILD_INTERFACE:${NLOHMANN_JSON_INCLUDE_BUILD_DIR}>
-    $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:${NLOHMANN_JSON_INCLUDE_INSTALL_DIR}>
 )
 
 ## add debug view definition file for msvc (natvis)

@@ -1,9 +1,9 @@
 //     __ _____ _____ _____
 //  __|  |   __|     |   | |  JSON for Modern C++ (supporting code)
-// |  |  |__   |  |  | | | |  version 3.11.2
+// |  |  |__   |  |  | | | |  version 3.11.3
 // |_____|_____|_____|_|___|  https://github.com/nlohmann/json
 //
-// SPDX-FileCopyrightText: 2013-2022 Niels Lohmann <https://nlohmann.me>
+// SPDX-FileCopyrightText: 2013-2023 Niels Lohmann <https://nlohmann.me>
 // SPDX-License-Identifier: MIT
 
 #include "doctest_compatibility.h"
@@ -249,11 +249,11 @@ bool accept_helper(const std::string& s)
     CHECK(json::parser(nlohmann::detail::input_adapter(s)).accept(false) == !el.errored);
 
     // 5. parse with simple callback
-    json::parser_callback_t cb = [](int /*unused*/, json::parse_event_t /*unused*/, json& /*unused*/) noexcept
+    json::parser_callback_t const cb = [](int /*unused*/, json::parse_event_t /*unused*/, json& /*unused*/) noexcept
     {
         return true;
     };
-    json j_cb = json::parse(s, cb, false);
+    json const j_cb = json::parse(s, cb, false);
     const bool ok_noexcept_cb = !j_cb.is_discarded();
 
     // 6. check if this approach came to the same result
@@ -542,13 +542,13 @@ TEST_CASE("parser class")
                     CHECK(parser_helper("9007199254740991").get<int64_t>() == 9007199254740991);
                 }
 
-                SECTION("over the edge cases")  // issue #178 - Integer conversion to unsigned (incorrect handling of 64 bit integers)
+                SECTION("over the edge cases")  // issue #178 - Integer conversion to unsigned (incorrect handling of 64-bit integers)
                 {
                     // While RFC8259, Section 6 specifies a preference for support
                     // for ranges in range of IEEE 754-2008 binary64 (double precision)
-                    // this does not accommodate 64 bit integers without loss of accuracy.
-                    // As 64 bit integers are now widely used in software, it is desirable
-                    // to expand support to to the full 64 bit (signed and unsigned) range
+                    // this does not accommodate 64-bit integers without loss of accuracy.
+                    // As 64-bit integers are now widely used in software, it is desirable
+                    // to expand support to the full 64 bit (signed and unsigned) range
                     // i.e. -(2**63) -> (2**64)-1.
 
                     // -(2**63)    ** Note: compilers see negative literals as negated positive numbers (hence the -1))
@@ -822,7 +822,7 @@ TEST_CASE("parser class")
                     CHECK(accept_helper("9007199254740991"));
                 }
 
-                SECTION("over the edge cases")  // issue #178 - Integer conversion to unsigned (incorrect handling of 64 bit integers)
+                SECTION("over the edge cases")  // issue #178 - Integer conversion to unsigned (incorrect handling of 64-bit integers)
                 {
                     // While RFC8259, Section 6 specifies a preference for support
                     // for ranges in range of IEEE 754-2008 binary64 (double precision)
@@ -1093,7 +1093,7 @@ TEST_CASE("parser class")
 
             for (int c = 1; c < 128; ++c)
             {
-                std::string s = "\"\\u";
+                std::string const s = "\"\\u";
 
                 // create a string with the iterated character at each position
                 auto s1 = s + "000" + std::string(1, static_cast<char>(c)) + "\"";
@@ -1308,7 +1308,7 @@ TEST_CASE("parser class")
 
             for (int c = 1; c < 128; ++c)
             {
-                std::string s = "\"\\u";
+                std::string const s = "\"\\u";
 
                 // create a string with the iterated character at each position
                 const auto s1 = s + "000" + std::string(1, static_cast<char>(c)) + "\"";
@@ -1361,7 +1361,7 @@ TEST_CASE("parser class")
 
         // test case to make sure the callback is properly evaluated after reading a key
         {
-            json::parser_callback_t cb = [](int /*unused*/, json::parse_event_t event, json& /*unused*/) noexcept
+            json::parser_callback_t const cb = [](int /*unused*/, json::parse_event_t event, json& /*unused*/) noexcept
             {
                 return event != json::parse_event_t::key;
             };
@@ -1417,7 +1417,7 @@ TEST_CASE("parser class")
 
         SECTION("filter everything")
         {
-            json j_object = json::parse(s_object, [](int /*unused*/, json::parse_event_t /*unused*/, const json& /*unused*/) noexcept
+            json const j_object = json::parse(s_object, [](int /*unused*/, json::parse_event_t /*unused*/, const json& /*unused*/) noexcept
             {
                 return false;
             });
@@ -1425,7 +1425,7 @@ TEST_CASE("parser class")
             // the top-level object will be discarded, leaving a null
             CHECK (j_object.is_null());
 
-            json j_array = json::parse(s_array, [](int /*unused*/, json::parse_event_t /*unused*/, const json& /*unused*/) noexcept
+            json const j_array = json::parse(s_array, [](int /*unused*/, json::parse_event_t /*unused*/, const json& /*unused*/) noexcept
             {
                 return false;
             });
@@ -1574,7 +1574,7 @@ TEST_CASE("parser class")
 
         SECTION("from std::initializer_list")
         {
-            std::initializer_list<uint8_t> v = {'t', 'r', 'u', 'e'};
+            std::initializer_list<uint8_t> const v = {'t', 'r', 'u', 'e'};
             json j;
             json::parser(nlohmann::detail::input_adapter(std::begin(v), std::end(v))).parse(true, j);
             CHECK(j == json(true));
@@ -1593,7 +1593,7 @@ TEST_CASE("parser class")
     {
         SECTION("parser with callback")
         {
-            json::parser_callback_t cb = [](int /*unused*/, json::parse_event_t /*unused*/, json& /*unused*/) noexcept
+            json::parser_callback_t const cb = [](int /*unused*/, json::parse_event_t /*unused*/, json& /*unused*/) noexcept
             {
                 return true;
             };

@@ -1,10 +1,10 @@
 //     __ _____ _____ _____
 //  __|  |   __|     |   | |  JSON for Modern C++ (supporting code)
-// |  |  |__   |  |  | | | |  version 3.11.2
+// |  |  |__   |  |  | | | |  version 3.11.3
 // |_____|_____|_____|_|___|  https://github.com/nlohmann/json
 //
 // Copyright (c) 2013-2022 Niels Lohmann <http://nlohmann.me>.
-// SPDX-FileCopyrightText: 2013-2022 Niels Lohmann <https://nlohmann.me>
+// SPDX-FileCopyrightText: 2013-2023 Niels Lohmann <https://nlohmann.me>
 // SPDX-License-Identifier: MIT
 
 #include "doctest_compatibility.h"
@@ -45,7 +45,7 @@ TEST_CASE("byte_container_with_subtype")
 
     SECTION("comparisons")
     {
-        std::vector<std::uint8_t> bytes = {{0xCA, 0xFE, 0xBA, 0xBE}};
+        std::vector<std::uint8_t> const bytes = {{0xCA, 0xFE, 0xBA, 0xBE}};
         nlohmann::byte_container_with_subtype<std::vector<std::uint8_t>> container1;
         nlohmann::byte_container_with_subtype<std::vector<std::uint8_t>> container2({}, 42);
         nlohmann::byte_container_with_subtype<std::vector<std::uint8_t>> container3(bytes);
