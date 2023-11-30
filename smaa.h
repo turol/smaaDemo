@@ -499,6 +499,9 @@
 #ifndef SMAA_INCLUDE_PS
 #define SMAA_INCLUDE_PS 1
 #endif  // SMAA_INCLUDE_PS
+#ifndef SMAA_INCLUDE_CS
+#define SMAA_INCLUDE_CS 0
+#endif  // SMAA_INCLUDE_CS
 
 //-----------------------------------------------------------------------------
 // Texture Access Defines
@@ -701,7 +704,7 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 // Misc functions
 
 
-#if SMAA_INCLUDE_PS
+#if SMAA_INCLUDE_PS || SMAA_INCLUDE_CS
 
 
 /**
@@ -737,7 +740,7 @@ float2 SMAACalculatePredicatedThreshold(float2 texcoord, float4 offset0
 }
 
 
-#endif  // SMAA_INCLUDE_PS
+#endif  // SMAA_INCLUDE_PS || SMAA_INCLUDE_CS
 
 
 /**
@@ -948,6 +951,12 @@ float2 SMAADepthEdgeDetectionPS(float2 texcoord, float4 offset[3], SMAATexture2D
 
     return edges;
 }
+
+
+#endif  // SMAA_INCLUDE_PS
+
+
+#if SMAA_INCLUDE_PS || SMAA_INCLUDE_CS
 
 
 //-----------------------------------------------------------------------------
@@ -1300,6 +1309,12 @@ void SMAADetectVerticalCornerPattern(SMAATexture2D(edgesTex), inout float2 weigh
 }
 
 
+#endif  // SMAA_INCLUDE_PS || SMAA_INCLUDE_CS
+
+
+#if SMAA_INCLUDE_PS
+
+
 //-----------------------------------------------------------------------------
 // Blending Weight Calculation Pixel Shader (Second Pass)
 
@@ -1523,4 +1538,4 @@ void SMAASeparatePS(float4 position, float2 texcoord, out float4 target0, out fl
 //-----------------------------------------------------------------------------
 
 
-#endif // SMAA_INCLUDE_PS
+#endif  // SMAA_INCLUDE_PS
