@@ -707,7 +707,7 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 /**
  * Gathers current pixel, and the top-left neighbors.
  */
-float3 SMAAGatherNeighbours(float2 texcoord, float4 offset[3], SMAATexture2D(tex)) {
+float3 SMAAGatherNeighbours(float2 texcoord, float4 offset0, SMAATexture2D(tex)) {
 #ifdef SMAAGather
 
 #if SMAA_FLIP_Y
@@ -718,8 +718,8 @@ float3 SMAAGatherNeighbours(float2 texcoord, float4 offset[3], SMAATexture2D(tex
 
 #else  // SMAAGather
     float P = SMAASamplePoint(tex, texcoord).r;
-    float Pleft = SMAASamplePoint(tex, offset[0].xy).r;
-    float Ptop  = SMAASamplePoint(tex, offset[0].zw).r;
+    float Pleft = SMAASamplePoint(tex, offset0.xy).r;
+    float Ptop  = SMAASamplePoint(tex, offset0.zw).r;
     return float3(P, Pleft, Ptop);
 #endif  // SMAAGather
 }
@@ -730,7 +730,7 @@ float3 SMAAGatherNeighbours(float2 texcoord, float4 offset[3], SMAATexture2D(tex
  */
 float2 SMAACalculatePredicatedThreshold(float2 texcoord, float4 offset[3]
                                         , SMAATexture2D(predicationTex)) {
-    float3 neighbours = SMAAGatherNeighbours(texcoord, offset, SMAATexturePass2D(predicationTex));
+    float3 neighbours = SMAAGatherNeighbours(texcoord, offset[0], SMAATexturePass2D(predicationTex));
     float2 delta = abs(neighbours.xx - neighbours.yz);
     float2 edges = step(SMAA_PREDICATION_THRESHOLD, delta);
     return SMAA_PREDICATION_SCALE * SMAA_THRESHOLD * (1.0 - SMAA_PREDICATION_STRENGTH * edges);
@@ -938,7 +938,7 @@ float2 SMAAColorEdgeDetectionPS(float2 texcoord, float4 offset[3], SMAATexture2D
  * Depth Edge Detection
  */
 float2 SMAADepthEdgeDetectionPS(float2 texcoord, float4 offset[3], SMAATexture2D(depthTex)) {
-    float3 neighbours = SMAAGatherNeighbours(texcoord, offset, SMAATexturePass2D(depthTex));
+    float3 neighbours = SMAAGatherNeighbours(texcoord, offset[0], SMAATexturePass2D(depthTex));
     float2 delta = abs(neighbours.xx - float2(neighbours.y, neighbours.z));
     float2 edges = step(SMAA_DEPTH_THRESHOLD, delta);
 
