@@ -707,9 +707,7 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 /**
  * Gathers current pixel, and the top-left neighbors.
  */
-float3 SMAAGatherNeighbours(float2 texcoord,
-                            float4 offset[3],
-                            SMAATexture2D(tex)) {
+float3 SMAAGatherNeighbours(float2 texcoord, float4 offset[3], SMAATexture2D(tex)) {
 #ifdef SMAAGather
 
 #if SMAA_FLIP_Y
@@ -730,9 +728,8 @@ float3 SMAAGatherNeighbours(float2 texcoord,
 /**
  * Adjusts the threshold by means of predication.
  */
-float2 SMAACalculatePredicatedThreshold(float2 texcoord,
-                                        float4 offset[3],
-                                        SMAATexture2D(predicationTex)) {
+float2 SMAACalculatePredicatedThreshold(float2 texcoord, float4 offset[3]
+                                        , SMAATexture2D(predicationTex)) {
     float3 neighbours = SMAAGatherNeighbours(texcoord, offset, SMAATexturePass2D(predicationTex));
     float2 delta = abs(neighbours.xx - neighbours.yz);
     float2 edges = step(SMAA_PREDICATION_THRESHOLD, delta);
@@ -767,8 +764,7 @@ void SMAAMovc(bool4 cond, inout float4 variable, float4 value) {
 /**
  * Edge Detection Vertex Shader
  */
-void SMAAEdgeDetectionVS(float2 texcoord,
-                         out float4 offset[3]) {
+void SMAAEdgeDetectionVS(float2 texcoord, out float4 offset[3]) {
     offset[0] = mad(SMAA_RT_METRICS.xyxy, float4(-1.0, 0.0, 0.0, API_V_DIR(-1.0)), texcoord.xyxy);
     offset[1] = mad(SMAA_RT_METRICS.xyxy, float4( 1.0, 0.0, 0.0, API_V_DIR(1.0)), texcoord.xyxy);
     offset[2] = mad(SMAA_RT_METRICS.xyxy, float4(-2.0, 0.0, 0.0, API_V_DIR(-2.0)), texcoord.xyxy);
@@ -778,9 +774,7 @@ void SMAAEdgeDetectionVS(float2 texcoord,
 /**
  * Blend Weight Calculation Vertex Shader
  */
-void SMAABlendingWeightCalculationVS(float2 texcoord,
-                                     out float2 pixcoord,
-                                     out float4 offset[3]) {
+void SMAABlendingWeightCalculationVS(float2 texcoord, out float2 pixcoord, out float4 offset[3]) {
     pixcoord = texcoord * SMAA_RT_METRICS.zw;
 
     // We will use these offsets for the searches later on (see @PSEUDO_GATHER4):
@@ -797,8 +791,7 @@ void SMAABlendingWeightCalculationVS(float2 texcoord,
 /**
  * Neighborhood Blending Vertex Shader
  */
-void SMAANeighborhoodBlendingVS(float2 texcoord,
-                                out float4 offset) {
+void SMAANeighborhoodBlendingVS(float2 texcoord, out float4 offset) {
     offset = mad(SMAA_RT_METRICS.xyxy, float4( 1.0, 0.0, 0.0, API_V_DIR(1.0)), texcoord.xyxy);
 }
 
@@ -818,9 +811,7 @@ void SMAANeighborhoodBlendingVS(float2 texcoord,
  * IMPORTANT NOTICE: luma edge detection requires gamma-corrected colors, and
  * thus 'colorTex' should be a non-sRGB texture.
  */
-float2 SMAALumaEdgeDetectionPS(float2 texcoord,
-                               float4 offset[3],
-                               SMAATexture2D(colorTex)
+float2 SMAALumaEdgeDetectionPS(float2 texcoord, float4 offset[3], SMAATexture2D(colorTex)
 #if SMAA_PREDICATION
                                , SMAATexture2D(predicationTex)
 #endif  // SMAA_PREDICATION
@@ -879,9 +870,7 @@ float2 SMAALumaEdgeDetectionPS(float2 texcoord,
  * IMPORTANT NOTICE: color edge detection requires gamma-corrected colors, and
  * thus 'colorTex' should be a non-sRGB texture.
  */
-float2 SMAAColorEdgeDetectionPS(float2 texcoord,
-                                float4 offset[3],
-                                SMAATexture2D(colorTex)
+float2 SMAAColorEdgeDetectionPS(float2 texcoord, float4 offset[3], SMAATexture2D(colorTex)
 #if SMAA_PREDICATION
                                 , SMAATexture2D(predicationTex)
 #endif  // SMAA_PREDICATION
@@ -948,9 +937,7 @@ float2 SMAAColorEdgeDetectionPS(float2 texcoord,
 /**
  * Depth Edge Detection
  */
-float2 SMAADepthEdgeDetectionPS(float2 texcoord,
-                                float4 offset[3],
-                                SMAATexture2D(depthTex)) {
+float2 SMAADepthEdgeDetectionPS(float2 texcoord, float4 offset[3], SMAATexture2D(depthTex)) {
     float3 neighbours = SMAAGatherNeighbours(texcoord, offset, SMAATexturePass2D(depthTex));
     float2 delta = abs(neighbours.xx - float2(neighbours.y, neighbours.z));
     float2 edges = step(SMAA_DEPTH_THRESHOLD, delta);
@@ -1316,13 +1303,10 @@ void SMAADetectVerticalCornerPattern(SMAATexture2D(edgesTex), inout float2 weigh
 //-----------------------------------------------------------------------------
 // Blending Weight Calculation Pixel Shader (Second Pass)
 
-float4 SMAABlendingWeightCalculationPS(float2 texcoord,
-                                       float2 pixcoord,
-                                       float4 offset[3],
-                                       SMAATexture2D(edgesTex),
-                                       SMAATexture2D(areaTex),
-                                       SMAATexture2D(searchTex),
-                                       float4 subsampleIndices) { // Just pass zero for SMAA 1x, see @SUBSAMPLE_INDICES.
+float4 SMAABlendingWeightCalculationPS(float2 texcoord, float2 pixcoord, float4 offset[3]
+                                       , SMAATexture2D(edgesTex), SMAATexture2D(areaTex)
+                                       , SMAATexture2D(searchTex), float4 subsampleIndices) {
+// Just pass zero for SMAA 1x, see @SUBSAMPLE_INDICES.
     float4 weights = float4(0.0, 0.0, 0.0, 0.0);
 
     float2 e = SMAASample(edgesTex, texcoord).rg;
@@ -1426,10 +1410,8 @@ float4 SMAABlendingWeightCalculationPS(float2 texcoord,
 // Neighborhood Blending Pixel Shader (Third Pass)
 
 
-float4 SMAANeighborhoodBlendingPS(float2 texcoord,
-                                  float4 offset,
-                                  SMAATexture2D(colorTex),
-                                  SMAATexture2D(blendTex)
+float4 SMAANeighborhoodBlendingPS(float2 texcoord, float4 offset, SMAATexture2D(colorTex)
+                                  , SMAATexture2D(blendTex)
 #if SMAA_REPROJECTION
                                   , SMAATexture2D(velocityTex)
 #endif  // SMAA_REPROJECTION
@@ -1489,9 +1471,7 @@ float4 SMAANeighborhoodBlendingPS(float2 texcoord,
 // Temporal Resolve Pixel Shader (Optional Pass)
 
 
-float4 SMAAResolvePS(float2 texcoord,
-                     SMAATexture2D(currentColorTex),
-                     SMAATexture2D(previousColorTex)
+float4 SMAAResolvePS(float2 texcoord, SMAATexture2D(currentColorTex), SMAATexture2D(previousColorTex)
 #if SMAA_REPROJECTION
                      , SMAATexture2D(velocityTex)
 #endif  // SMAA_REPROJECTION
@@ -1529,11 +1509,8 @@ float4 SMAAResolvePS(float2 texcoord,
 #ifdef SMAALoad
 
 
-void SMAASeparatePS(float4 position,
-                    float2 texcoord,
-                    out float4 target0,
-                    out float4 target1,
-                    SMAATexture2DMS2(colorTexMS)) {
+void SMAASeparatePS(float4 position, float2 texcoord, out float4 target0, out float4 target1
+                    , SMAATexture2DMS2(colorTexMS)) {
     int2 pos = int2(position.xy);
     target0 = SMAALoad(colorTexMS, pos, 0);
     target1 = SMAALoad(colorTexMS, pos, 1);
