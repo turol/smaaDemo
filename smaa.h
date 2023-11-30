@@ -728,9 +728,9 @@ float3 SMAAGatherNeighbours(float2 texcoord, float4 offset0, SMAATexture2D(tex))
 /**
  * Adjusts the threshold by means of predication.
  */
-float2 SMAACalculatePredicatedThreshold(float2 texcoord, float4 offset[3]
+float2 SMAACalculatePredicatedThreshold(float2 texcoord, float4 offset0
                                         , SMAATexture2D(predicationTex)) {
-    float3 neighbours = SMAAGatherNeighbours(texcoord, offset[0], SMAATexturePass2D(predicationTex));
+    float3 neighbours = SMAAGatherNeighbours(texcoord, offset0, SMAATexturePass2D(predicationTex));
     float2 delta = abs(neighbours.xx - neighbours.yz);
     float2 edges = step(SMAA_PREDICATION_THRESHOLD, delta);
     return SMAA_PREDICATION_SCALE * SMAA_THRESHOLD * (1.0 - SMAA_PREDICATION_STRENGTH * edges);
@@ -818,7 +818,7 @@ float2 SMAALumaEdgeDetectionPS(float2 texcoord, float4 offset[3], SMAATexture2D(
                                ) {
     // Calculate the threshold:
 #if SMAA_PREDICATION
-    float2 threshold = SMAACalculatePredicatedThreshold(texcoord, offset, SMAATexturePass2D(predicationTex));
+    float2 threshold = SMAACalculatePredicatedThreshold(texcoord, offset[0], SMAATexturePass2D(predicationTex));
 #else  // SMAA_PREDICATION
     float2 threshold = float2(SMAA_THRESHOLD, SMAA_THRESHOLD);
 #endif  // SMAA_PREDICATION
@@ -877,7 +877,7 @@ float2 SMAAColorEdgeDetectionPS(float2 texcoord, float4 offset[3], SMAATexture2D
                                 ) {
     // Calculate the threshold:
 #if SMAA_PREDICATION
-    float2 threshold = SMAACalculatePredicatedThreshold(texcoord, offset, predicationTex);
+    float2 threshold = SMAACalculatePredicatedThreshold(texcoord, offset[0], predicationTex);
 #else  // SMAA_PREDICATION
     float2 threshold = float2(SMAA_THRESHOLD, SMAA_THRESHOLD);
 #endif  // SMAA_PREDICATION
