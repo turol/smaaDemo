@@ -1720,6 +1720,27 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.renderPass(RenderPasses::Scene, desc, std::bind(&SMAADemo::renderImageScene, this, _1, _2));
 	}
 
+	auto fxaaPass = [&] (Rendertargets output, const char *name) {
+		switch (pipelineType) {
+		case PipelineType::Compute: {
+			DemoRenderGraph::ComputePassDesc desc;
+			desc.sampledRendertarget(Rendertargets::MainColor)
+			    .storageImageWrite(output)
+			    .name(name);
+			renderGraph.computePass(RenderPasses::FXAA, desc, std::bind(&SMAADemo::computeFXAA, this, _1, _2, output));
+		} break;
+
+		case PipelineType::Graphics: {
+			DemoRenderGraph::PassDesc desc;
+			desc.color(0, output, PassBegin::Clear)
+			   .inputRendertarget(Rendertargets::MainColor)
+			   .name(name);
+
+			renderGraph.renderPass(RenderPasses::FXAA, desc, std::bind(&SMAADemo::renderFXAA, this, _1, _2));
+		} break;
+		}
+	};
+
 	if (antialiasing) {
 		if (temporalAA && isShapesScene()) {
 			{
@@ -1775,24 +1796,7 @@ void SMAADemo::rebuildRenderGraph() {
 			} break;
 
 			case AAMethod::FXAA: {
-				switch (pipelineType) {
-				case PipelineType::Compute: {
-					DemoRenderGraph::ComputePassDesc desc;
-					desc.sampledRendertarget(Rendertargets::MainColor)
-					    .storageImageWrite(Rendertargets::TemporalCurrent)
-					    .name("FXAA temporal");
-					renderGraph.computePass(RenderPasses::FXAA, desc, std::bind(&SMAADemo::computeFXAA, this, _1, _2, Rendertargets::TemporalCurrent));
-				} break;
-
-				case PipelineType::Graphics: {
-					DemoRenderGraph::PassDesc desc;
-					desc.color(0, Rendertargets::TemporalCurrent, PassBegin::Clear)
-					    .inputRendertarget(Rendertargets::MainColor)
-					    .name("FXAA temporal");
-
-					renderGraph.renderPass(RenderPasses::FXAA, desc, std::bind(&SMAADemo::renderFXAA, this, _1, _2));
-				} break;
-				}
+				fxaaPass(Rendertargets::TemporalCurrent, "FXAA temporal");
 			} break;
 
 			case AAMethod::SMAA: {
@@ -1974,24 +1978,7 @@ void SMAADemo::rebuildRenderGraph() {
 			} break;
 
 			case AAMethod::FXAA: {
-				switch (pipelineType) {
-				case PipelineType::Compute: {
-					DemoRenderGraph::ComputePassDesc desc;
-					desc.sampledRendertarget(Rendertargets::MainColor)
-					    .storageImageWrite(Rendertargets::FinalRender)
-					    .name("FXAA");
-					renderGraph.computePass(RenderPasses::FXAA, desc, std::bind(&SMAADemo::computeFXAA, this, _1, _2, Rendertargets::FinalRender));
-				} break;
-
-				case PipelineType::Graphics: {
-					DemoRenderGraph::PassDesc desc;
-					desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
-					    .inputRendertarget(Rendertargets::MainColor)
-					    .name("FXAA");
-
-					renderGraph.renderPass(RenderPasses::FXAA, desc, std::bind(&SMAADemo::renderFXAA, this, _1, _2));
-					} break;
-				}
+				fxaaPass(Rendertargets::FinalRender, "FXAA");
 			} break;
 
 			case AAMethod::SMAA: {
