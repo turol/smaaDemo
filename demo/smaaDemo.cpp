@@ -1532,7 +1532,7 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.renderTarget(Rendertargets::FinalRender, rtDesc);
 	}
 
-	if (!isImageScene()) {
+	if (isShapesScene()) {
 		// shape scene
 
 		// when any AA is enabled render to temporary rendertarget "MainColor"
@@ -1721,7 +1721,7 @@ void SMAADemo::rebuildRenderGraph() {
 	}
 
 	if (antialiasing) {
-		if (temporalAA && !isImageScene()) {
+		if (temporalAA && isShapesScene()) {
 			{
 				Format fmt = Format::sRGBA8;
 
@@ -2277,7 +2277,7 @@ void SMAADemo::loadImage(const char *filename) {
 
 	stbi_image_free(imageData);
 
-	if (!isImageScene()) {
+	if (isShapesScene()) {
 		rebuildRG = true;
 	}
 	activeScene = static_cast<unsigned int>(images.size());
@@ -2805,7 +2805,7 @@ void SMAADemo::processInput() {
 			case SDL_SCANCODE_RIGHT:
 				{
 					// if old or new scene is shapes we must rebuild RG
-					if (!isImageScene()) {
+					if (isShapesScene()) {
 						rebuildRG = true;
 					}
 
@@ -2813,7 +2813,7 @@ void SMAADemo::processInput() {
 					unsigned int numScenes = static_cast<unsigned int>(images.size()) + 1;
 					activeScene = (activeScene + sceneIncrement + numScenes) % numScenes;
 
-					if (!isImageScene()) {
+					if (isShapesScene()) {
 						rebuildRG = true;
 					}
 				}
@@ -3140,7 +3140,7 @@ void SMAADemo::mainLoopIteration() {
 
 #endif  // IMGUI_DISABLE
 
-	if (!isImageScene() && rotateShapes) {
+	if (isShapesScene() && rotateShapes) {
 		rotationTime += elapsed;
 
 		LOG_TODO("increasing rotation period can make shapes spin backwards")
@@ -3149,7 +3149,7 @@ void SMAADemo::mainLoopIteration() {
 		cameraRotation = float(M_PI * 2.0f * rotationTime) / rotationPeriod;
 	}
 
-	if (antialiasing && temporalAA && !isImageScene()) {
+	if (antialiasing && temporalAA && isShapesScene()) {
 		temporalFrame = (temporalFrame + 1) % 2;
 
 		switch (aaMethod) {
@@ -3215,7 +3215,7 @@ void SMAADemo::render() {
 		}
 	}
 
-	if (antialiasing && temporalAA && !isImageScene()) {
+	if (antialiasing && temporalAA && isShapesScene()) {
 		assert(temporalRTs[0]);
 		assert(temporalRTs[1]);
 		renderGraph.bindExternalRT(Rendertargets::TemporalPrevious, temporalRTs[1 - temporalFrame]);
@@ -3273,7 +3273,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	glm::mat4 viewProj = proj * view * model;
 
 	// temporal jitter
-	if (antialiasing && temporalAA && !isImageScene()) {
+	if (antialiasing && temporalAA && isShapesScene()) {
 		glm::vec2 jitter;
 		if (aaMethod == AAMethod::MSAA || aaMethod == AAMethod::SMAA2X) {
 			const glm::vec2 jitters[2] = {
