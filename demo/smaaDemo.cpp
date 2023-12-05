@@ -662,6 +662,10 @@ class SMAADemo {
 		return activeScene != 0;
 	}
 
+	bool isShapesScene() const {
+		return activeScene == 0;
+	}
+
 
 public:
 
