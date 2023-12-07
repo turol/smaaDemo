@@ -1737,6 +1737,13 @@ void SMAADemo::rebuildRenderGraph() {
 					  .height(windowHeight);
 				renderGraph.renderTarget(Rendertargets::SMAAEdges, rtDesc);
 
+				rtDesc.name("SMAA weights")
+					  .format(Format::RGBA8)
+					  .usage({ TextureUsage::Sampling })
+					  .width(windowWidth)
+					  .height(windowHeight);
+				renderGraph.renderTarget(Rendertargets::SMAABlendWeights, rtDesc);
+
 			} break;
 		}
 	}
@@ -1837,14 +1844,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 				// blendweights pass
 				{
-					RenderTargetDesc rtDesc;
-					rtDesc.name("SMAA weights")
-					      .format(Format::RGBA8)
-					      .usage({ TextureUsage::Sampling })
-					      .width(windowWidth)
-					      .height(windowHeight);
-					renderGraph.renderTarget(Rendertargets::SMAABlendWeights, rtDesc);
-
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::SMAABlendWeights, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::SMAAEdges)
@@ -1898,14 +1897,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 				// blendweights pass
 				{
-					RenderTargetDesc rtDesc;
-					rtDesc.name("SMAA weights")
-					      .format(Format::RGBA8)
-					      .usage({ TextureUsage::Sampling })
-					      .width(windowWidth)
-					      .height(windowHeight);
-					renderGraph.renderTarget(Rendertargets::SMAABlendWeights, rtDesc);
-
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::SMAABlendWeights, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::SMAAEdges)
@@ -1980,14 +1971,6 @@ void SMAADemo::rebuildRenderGraph() {
 				case SMAADebugMode::None:
 					// blendweights pass
 					{
-						RenderTargetDesc rtDesc;
-						rtDesc.name("SMAA weights")
-						      .format(Format::RGBA8)
-						      .usage({ TextureUsage::Sampling })
-						      .width(windowWidth)
-						      .height(windowHeight);
-						renderGraph.renderTarget(Rendertargets::SMAABlendWeights, rtDesc);
-
 						DemoRenderGraph::PassDesc desc;
 						desc.color(0, Rendertargets::SMAABlendWeights, PassBegin::Clear)
 						    .inputRendertarget(Rendertargets::SMAAEdges)
@@ -2025,14 +2008,6 @@ void SMAADemo::rebuildRenderGraph() {
 				case SMAADebugMode::Weights:
 					// blendweights pass
 					{
-						RenderTargetDesc rtDesc;
-						rtDesc.name("SMAA weights")
-						      .format(Format::RGBA8)
-						      .usage({ TextureUsage::Sampling })
-						      .width(windowWidth)
-						      .height(windowHeight);
-						renderGraph.renderTarget(Rendertargets::SMAABlendWeights, rtDesc);
-
 						DemoRenderGraph::PassDesc desc;
 						desc.color(0, Rendertargets::SMAABlendWeights, PassBegin::Clear)
 						    .inputRendertarget(Rendertargets::SMAAEdges)
@@ -2084,14 +2059,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 				// blendweights pass
 				{
-					RenderTargetDesc rtDesc;
-					rtDesc.name("SMAA weights")
-					      .format(Format::RGBA8)
-					      .usage({ TextureUsage::Sampling })
-					      .width(windowWidth)
-					      .height(windowHeight);
-					renderGraph.renderTarget(Rendertargets::SMAABlendWeights, rtDesc);
-
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::SMAABlendWeights, PassBegin::Clear)
 					    .inputRendertarget(Rendertargets::SMAAEdges)
