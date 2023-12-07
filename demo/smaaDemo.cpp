@@ -3353,7 +3353,12 @@ void SMAADemo::renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	globalDS.globalUniforms  = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	globalDS.linearSampler   = linearSampler;
 	globalDS.nearestSampler  = nearestSampler;
+	// always bind to graphics pipelines
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
+	// only bind to compute pipelines when they're used
+	if (pipelineType == PipelineType::Compute) {
+		renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
+	}
 
 	assert(activeScene - 1 < images.size());
 	ColorTexDS colorDS;
