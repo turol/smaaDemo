@@ -1720,6 +1720,29 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.renderPass(RenderPasses::Scene, desc, std::bind(&SMAADemo::renderImageScene, this, _1, _2));
 	}
 
+	// SMAA internal rendertargets
+	if (antialiasing) {
+		switch (aaMethod) {
+			case AAMethod::MSAA:
+			case AAMethod::FXAA:
+				break;
+
+			case AAMethod::SMAA:
+			case AAMethod::SMAA2X: {
+				RenderTargetDesc rtDesc;
+				rtDesc.name("SMAA edges")
+					  .format(Format::RGBA8)
+					  .usage({ TextureUsage::Sampling })
+					  .width(windowWidth)
+					  .height(windowHeight);
+				renderGraph.renderTarget(Rendertargets::SMAAEdges, rtDesc);
+
+			} break;
+		}
+	}
+
+	// pass helper lambdas
+
 	auto fxaaPass = [&] (Rendertargets output, const char *name) {
 		switch (pipelineType) {
 		case PipelineType::Compute: {
@@ -1810,16 +1833,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 			case AAMethod::SMAA: {
 				// edges pass
-				{
-					RenderTargetDesc rtDesc;
-					rtDesc.name("SMAA edges")
-					      .format(Format::RGBA8)
-					      .usage({ TextureUsage::Sampling })
-					      .width(windowWidth)
-					      .height(windowHeight);
-					renderGraph.renderTarget(Rendertargets::SMAAEdges, rtDesc);
-				}
-
 				smaaEdgesPass(RenderPasses::SMAAEdges, Rendertargets::MainColor, 0);
 
 				// blendweights pass
@@ -1881,16 +1894,6 @@ void SMAADemo::rebuildRenderGraph() {
 				LOG_TODO("clean up the renderpass mess")
 
 				// edges pass
-				{
-					RenderTargetDesc rtDesc;
-					rtDesc.name("SMAA edges")
-					      .format(Format::RGBA8)
-					      .usage({ TextureUsage::Sampling })
-					      .width(windowWidth)
-					      .height(windowHeight);
-					renderGraph.renderTarget(Rendertargets::SMAAEdges, rtDesc);
-				}
-
 				smaaEdgesPass(RenderPasses::SMAAEdges, Rendertargets::Subsample1, 0);
 
 				// blendweights pass
@@ -1971,16 +1974,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 			case AAMethod::SMAA: {
 				// edges pass
-				{
-					RenderTargetDesc rtDesc;
-					rtDesc.name("SMAA edges")
-					      .format(Format::RGBA8)
-					      .usage({ TextureUsage::Sampling })
-					      .width(windowWidth)
-					      .height(windowHeight);
-					renderGraph.renderTarget(Rendertargets::SMAAEdges, rtDesc);
-				}
-
 				smaaEdgesPass(RenderPasses::SMAAEdges, Rendertargets::MainColor, 0);
 
 				switch (debugMode) {
@@ -2087,17 +2080,7 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 
 				// edges pass
-				{
-					RenderTargetDesc rtDesc;
-					rtDesc.name("SMAA edges")
-					      .format(Format::RGBA8)
-					      .usage({ TextureUsage::Sampling })
-					      .width(windowWidth)
-					      .height(windowHeight);
-					renderGraph.renderTarget(Rendertargets::SMAAEdges, rtDesc);
-
 					smaaEdgesPass(RenderPasses::SMAAEdges, Rendertargets::Subsample1, 0);
-				}
 
 				// blendweights pass
 				{
