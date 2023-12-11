@@ -1728,6 +1728,18 @@ void SMAADemo::rebuildRenderGraph() {
 				break;
 
 			case AAMethod::SMAA2X: {
+				RenderTargetDesc rtDesc;
+				rtDesc.format(Format::sRGBA8)
+					  .additionalViewFormat(Format::RGBA8)
+					  .usage({ TextureUsage::Sampling })
+					  .width(windowWidth)
+					  .height(windowHeight);
+
+				rtDesc.name("Subsample separate 1");
+				renderGraph.renderTarget(Rendertargets::Subsample1, rtDesc);
+
+				rtDesc.name("Subsample separate 2");
+				renderGraph.renderTarget(Rendertargets::Subsample2, rtDesc);
 			}
 			HEDLEY_FALL_THROUGH;
 
@@ -1871,21 +1883,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 			case AAMethod::SMAA2X: {
 				{
-					RenderTargetDesc rtDesc;
-					rtDesc.format(Format::sRGBA8)
-					      .additionalViewFormat(Format::RGBA8)
-					      .usage({ TextureUsage::Sampling })
-					      .width(windowWidth)
-					      .height(windowHeight);
-
-					rtDesc.name("Subsample separate 1");
-					renderGraph.renderTarget(Rendertargets::Subsample1, rtDesc);
-
-					rtDesc.name("Subsample separate 2");
-					renderGraph.renderTarget(Rendertargets::Subsample2, rtDesc);
-				}
-
-				{
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::Subsample1, PassBegin::DontCare)
 					    .color(1, Rendertargets::Subsample2, PassBegin::DontCare)
@@ -2009,19 +2006,6 @@ void SMAADemo::rebuildRenderGraph() {
 
 			case AAMethod::SMAA2X: {
 				{
-					RenderTargetDesc rtDesc;
-					rtDesc.format(Format::sRGBA8)
-					      .additionalViewFormat(Format::RGBA8)
-					      .usage({ TextureUsage::Sampling })
-					      .width(windowWidth)
-					      .height(windowHeight);
-
-					rtDesc.name("Subsample separate 1");
-					renderGraph.renderTarget(Rendertargets::Subsample1, rtDesc);
-
-					rtDesc.name("Subsample separate 2");
-					renderGraph.renderTarget(Rendertargets::Subsample2, rtDesc);
-
 					DemoRenderGraph::PassDesc desc;
 					desc.color(0, Rendertargets::Subsample1, PassBegin::DontCare)
 					    .color(1, Rendertargets::Subsample2, PassBegin::DontCare)
