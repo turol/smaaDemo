@@ -1727,8 +1727,11 @@ void SMAADemo::rebuildRenderGraph() {
 			case AAMethod::FXAA:
 				break;
 
-			case AAMethod::SMAA:
 			case AAMethod::SMAA2X: {
+			}
+			HEDLEY_FALL_THROUGH;
+
+			case AAMethod::SMAA: {
 				RenderTargetDesc rtDesc;
 				rtDesc.name("SMAA edges")
 					  .format(Format::RGBA8)
