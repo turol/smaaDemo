@@ -1786,6 +1786,16 @@ void SMAADemo::rebuildRenderGraph() {
 		}
 	};
 
+	auto subsampleSeparatePass = [&] () {
+		DemoRenderGraph::PassDesc desc;
+		desc.color(0, Rendertargets::Subsample1, PassBegin::DontCare)
+			.color(1, Rendertargets::Subsample2, PassBegin::DontCare)
+			.inputRendertarget(Rendertargets::MainColor)
+			.name("Subsample separate");
+
+		renderGraph.renderPass(RenderPasses::Separate, desc, std::bind(&SMAADemo::renderSeparate, this, _1, _2));
+	};
+
 	auto smaaEdgesPass = [&] (RenderPasses renderPass, Rendertargets input, int pass) {
 		DemoRenderGraph::PassDesc desc;
 		desc.color(0, Rendertargets::SMAAEdges, PassBegin::Clear)
@@ -1882,15 +1892,7 @@ void SMAADemo::rebuildRenderGraph() {
 			} break;
 
 			case AAMethod::SMAA2X: {
-				{
-					DemoRenderGraph::PassDesc desc;
-					desc.color(0, Rendertargets::Subsample1, PassBegin::DontCare)
-					    .color(1, Rendertargets::Subsample2, PassBegin::DontCare)
-					    .inputRendertarget(Rendertargets::MainColor)
-					    .name("Subsample separate");
-
-					renderGraph.renderPass(RenderPasses::Separate, desc, std::bind(&SMAADemo::renderSeparate, this, _1, _2));
-				}
+				subsampleSeparatePass();
 
 				LOG_TODO("clean up the renderpass mess")
 
@@ -2005,15 +2007,7 @@ void SMAADemo::rebuildRenderGraph() {
 			} break;
 
 			case AAMethod::SMAA2X: {
-				{
-					DemoRenderGraph::PassDesc desc;
-					desc.color(0, Rendertargets::Subsample1, PassBegin::DontCare)
-					    .color(1, Rendertargets::Subsample2, PassBegin::DontCare)
-					    .inputRendertarget(Rendertargets::MainColor)
-					    .name("Subsample separate");
-
-					renderGraph.renderPass(RenderPasses::Separate, desc, std::bind(&SMAADemo::renderSeparate, this, _1, _2));
-				}
+				subsampleSeparatePass();
 
 				// edges pass
 					smaaEdgesPass(RenderPasses::SMAAEdges, Rendertargets::Subsample1, 0);
