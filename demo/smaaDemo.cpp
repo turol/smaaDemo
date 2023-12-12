@@ -1814,6 +1814,16 @@ void SMAADemo::rebuildRenderGraph() {
 		renderGraph.renderPass(renderPass, desc, std::bind(&SMAADemo::renderSMAAWeights, this, _1, _2, pass));
 	};
 
+	auto smaaBlendPass = [&] (RenderPasses renderPass, Rendertargets input, Rendertargets output, PassBegin passBegin, int pass, const char *name) {
+		DemoRenderGraph::PassDesc desc;
+		desc.color(0, output, passBegin)
+			.inputRendertarget(input)
+			.inputRendertarget(Rendertargets::SMAABlendWeights)
+			.name(name);
+
+		renderGraph.renderPass(renderPass, desc, std::bind(&SMAADemo::renderSMAABlend, this, _1, _2, input, pass));
+	};
+
 	if (antialiasing) {
 		if (temporalAA && isShapesScene()) {
 			{
@@ -1903,15 +1913,7 @@ void SMAADemo::rebuildRenderGraph() {
 				smaaWeightsPass(RenderPasses::SMAAWeights, 0);
 
 				// full effect
-				{
-					DemoRenderGraph::PassDesc desc;
-					desc.color(0, Rendertargets::TemporalCurrent, PassBegin::Clear)
-					    .inputRendertarget(Rendertargets::Subsample1)
-					    .inputRendertarget(Rendertargets::SMAABlendWeights)
-					    .name("SMAA2x blend 1");
-
-					renderGraph.renderPass(RenderPasses::SMAA2XBlend1, desc, std::bind(&SMAADemo::renderSMAABlend, this, _1, _2, Rendertargets::Subsample1, 0));
-				}
+				smaaBlendPass(RenderPasses::SMAA2XBlend1, Rendertargets::Subsample1, Rendertargets::TemporalCurrent, PassBegin::Clear, 0, "SMAA2x blend 1");
 
 				// edges pass
 				smaaEdgesPass(RenderPasses::SMAAEdges2, Rendertargets::Subsample2, 1);
@@ -1920,15 +1922,7 @@ void SMAADemo::rebuildRenderGraph() {
 				smaaWeightsPass(RenderPasses::SMAAWeights2, 1);
 
 				// full effect
-				{
-					DemoRenderGraph::PassDesc desc;
-					desc.color(0, Rendertargets::TemporalCurrent, PassBegin::Keep)
-					    .inputRendertarget(Rendertargets::Subsample2)
-					    .inputRendertarget(Rendertargets::SMAABlendWeights)
-					    .name("SMAA2x blend 2");
-
-					renderGraph.renderPass(RenderPasses::SMAA2XBlend2, desc, std::bind(&SMAADemo::renderSMAABlend, this, _1, _2, Rendertargets::Subsample2, 1));
-				}
+				smaaBlendPass(RenderPasses::SMAA2XBlend2, Rendertargets::Subsample2, Rendertargets::TemporalCurrent, PassBegin::Keep, 1, "SMAA2x blend 2");
 			} break;
 			}
 
@@ -1963,15 +1957,7 @@ void SMAADemo::rebuildRenderGraph() {
 					smaaWeightsPass(RenderPasses::SMAAWeights, 0);
 
 					// full effect
-					{
-						DemoRenderGraph::PassDesc desc;
-						desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
-						    .inputRendertarget(Rendertargets::MainColor)
-						    .inputRendertarget(Rendertargets::SMAABlendWeights)
-						    .name("SMAA blend");
-
-						renderGraph.renderPass(RenderPasses::SMAABlend, desc, std::bind(&SMAADemo::renderSMAABlend, this, _1, _2, Rendertargets::MainColor, 0));
-					}
+					smaaBlendPass(RenderPasses::SMAABlend, Rendertargets::MainColor, Rendertargets::FinalRender, PassBegin::Clear, 0, "SMAA blend");
 
 					break;
 
@@ -2016,15 +2002,7 @@ void SMAADemo::rebuildRenderGraph() {
 				smaaWeightsPass(RenderPasses::SMAAWeights, 0);
 
 				// final blend pass
-				{
-					DemoRenderGraph::PassDesc desc;
-					desc.color(0, Rendertargets::FinalRender, PassBegin::Clear)
-					    .inputRendertarget(Rendertargets::Subsample1)
-					    .inputRendertarget(Rendertargets::SMAABlendWeights)
-					    .name("SMAA2x blend 1");
-
-					renderGraph.renderPass(RenderPasses::SMAA2XBlend1, desc, std::bind(&SMAADemo::renderSMAABlend, this, _1, _2, Rendertargets::Subsample1, 0));
-				}
+				smaaBlendPass(RenderPasses::SMAA2XBlend1, Rendertargets::Subsample1, Rendertargets::FinalRender, PassBegin::Clear, 0, "SMAA2x blend 1");
 
 				// second pass
 				// edges pass
@@ -2034,15 +2012,7 @@ void SMAADemo::rebuildRenderGraph() {
 				smaaWeightsPass(RenderPasses::SMAAWeights2, 1);
 
 				// final blend pass
-				{
-					DemoRenderGraph::PassDesc desc;
-					desc.color(0, Rendertargets::FinalRender, PassBegin::Keep)
-					    .inputRendertarget(Rendertargets::Subsample2)
-					    .inputRendertarget(Rendertargets::SMAABlendWeights)
-					    .name("SMAA2x blend 2");
-
-					renderGraph.renderPass(RenderPasses::SMAA2XBlend2, desc, std::bind(&SMAADemo::renderSMAABlend, this, _1, _2, Rendertargets::Subsample2, 1));
-				}
+				smaaBlendPass(RenderPasses::SMAA2XBlend2, Rendertargets::Subsample2, Rendertargets::FinalRender, PassBegin::Keep, 1, "SMAA2x blend 2");
 
 			} break;
 			}
