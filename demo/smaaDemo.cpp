@@ -1836,6 +1836,8 @@ void SMAADemo::rebuildRenderGraph() {
 					break;
 
 				case AAMethod::FXAA:
+				case AAMethod::SMAA:
+				case AAMethod::SMAA2X:
 					switch (pipelineType) {
 					case PipelineType::Graphics:
 						rtDesc.usage({ TextureUsage::Sampling });
@@ -1847,11 +1849,6 @@ void SMAADemo::rebuildRenderGraph() {
 						break;
 
 					}
-					break;
-
-				case AAMethod::SMAA:
-				case AAMethod::SMAA2X:
-					rtDesc.usage({ TextureUsage::Sampling });
 					break;
 				}
 
