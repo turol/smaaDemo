@@ -1722,6 +1722,18 @@ void SMAADemo::rebuildRenderGraph() {
 
 	// SMAA internal rendertargets
 	if (antialiasing) {
+		TextureUsageSet usage;
+
+		switch (pipelineType) {
+			case PipelineType::Compute:
+				usage = { TextureUsage::Sampling, TextureUsage::StorageWrite };
+				break;
+
+			case PipelineType::Graphics:
+				usage = { TextureUsage::Sampling };
+				break;
+		}
+
 		switch (aaMethod) {
 			case AAMethod::MSAA:
 			case AAMethod::FXAA:
@@ -1731,7 +1743,7 @@ void SMAADemo::rebuildRenderGraph() {
 				RenderTargetDesc rtDesc;
 				rtDesc.format(Format::sRGBA8)
 					  .additionalViewFormat(Format::RGBA8)
-					  .usage({ TextureUsage::Sampling })
+					  .usage(usage)
 					  .width(windowWidth)
 					  .height(windowHeight);
 
@@ -1747,14 +1759,14 @@ void SMAADemo::rebuildRenderGraph() {
 				RenderTargetDesc rtDesc;
 				rtDesc.name("SMAA edges")
 					  .format(Format::RGBA8)
-					  .usage({ TextureUsage::Sampling })
+					  .usage(usage)
 					  .width(windowWidth)
 					  .height(windowHeight);
 				renderGraph.renderTarget(Rendertargets::SMAAEdges, rtDesc);
 
 				rtDesc.name("SMAA weights")
 					  .format(Format::RGBA8)
-					  .usage({ TextureUsage::Sampling })
+					  .usage(usage)
 					  .width(windowWidth)
 					  .height(windowHeight);
 				renderGraph.renderTarget(Rendertargets::SMAABlendWeights, rtDesc);
