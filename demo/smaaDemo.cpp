@@ -2850,13 +2850,10 @@ void SMAADemo::runAuto() {
 			rebuildRG    = true;
 			for (Shape s : magic_enum::enum_values<Shape>()) {
 				activeShape = s;
-				if (temporalAA) {
-					for (unsigned int i = 0; i < 3; i++) {
+				unsigned int iterations = temporalAA ? 3 : 1;
+					for (unsigned int i = 0; i < iterations; i++) {
 						mainLoopIteration();
 					}
-				} else {
-					mainLoopIteration();
-				}
 			}
 		}
 	};
