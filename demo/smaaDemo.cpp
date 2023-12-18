@@ -1913,8 +1913,6 @@ void SMAADemo::rebuildRenderGraph() {
 			case AAMethod::SMAA2X: {
 				subsampleSeparatePass();
 
-				LOG_TODO("clean up the renderpass mess")
-
 				// edges pass
 				smaaEdgesPass(RenderPasses::SMAAEdges, Rendertargets::Subsample1, 0);
 
