@@ -1743,7 +1743,7 @@ void SMAADemo::rebuildRenderGraph() {
 				RenderTargetDesc rtDesc;
 				rtDesc.format(Format::sRGBA8)
 					  .additionalViewFormat(Format::RGBA8)
-					  .usage(usage)
+					  .usage({ TextureUsage::Sampling })
 					  .width(windowWidth)
 					  .height(windowHeight);
 
