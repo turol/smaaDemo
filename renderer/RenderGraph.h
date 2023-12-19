@@ -232,8 +232,8 @@ private:
 			FI fi;
 
 			explicit FuncVisitor(FE &&fe_, FI &&fi_)
-			: fe(std::move(fe_))
-			, fi(std::move(fi_))
+			: fe(std::forward<FE>(fe_))
+			, fi(std::forward<FI>(fi_))
 			{
 			}
 
@@ -246,7 +246,7 @@ private:
 			}
 		};
 
-		return std::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
+		return std::visit(FuncVisitor(std::forward<FE>(fe), std::forward<FI>(fi)), rt);
 	}
 
 
@@ -257,8 +257,8 @@ private:
 			FI fi;
 
 			explicit FuncVisitor(FE &&fe_, FI &&fi_)
-			: fe(std::move(fe_))
-			, fi(std::move(fi_))
+			: fe(std::forward<FE>(fe_))
+			, fi(std::forward<FI>(fi_))
 			{
 			}
 
@@ -271,7 +271,7 @@ private:
 			}
 		};
 
-		return std::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
+		return std::visit(FuncVisitor(std::forward<FE>(fe), std::forward<FI>(fi)), rt);
 	}
 
 
@@ -282,8 +282,8 @@ private:
 			FI fi;
 
 			explicit FuncVisitor(FE &&fe_, FI &&fi_)
-			: fe(std::move(fe_))
-			, fi(std::move(fi_))
+			: fe(std::forward<FE>(fe_))
+			, fi(std::forward<FI>(fi_))
 			{
 			}
 
@@ -296,7 +296,7 @@ private:
 			}
 		};
 
-		return std::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
+		return std::visit(FuncVisitor(std::forward<FE>(fe), std::forward<FI>(fi)), rt);
 	}
 
 
@@ -307,8 +307,8 @@ private:
 			FI fi;
 
 			explicit FuncVisitor(FE &&fe_, FI &&fi_)
-			: fe(std::move(fe_))
-			, fi(std::move(fi_))
+			: fe(std::forward<FE>(fe_))
+			, fi(std::forward<FI>(fi_))
 			{
 			}
 
@@ -321,7 +321,7 @@ private:
 			}
 		};
 
-		return std::visit(FuncVisitor(std::move(fe), std::move(fi)), rt);
+		return std::visit(FuncVisitor(std::forward<FE>(fe), std::forward<FI>(fi)), rt);
 	}
 
 
