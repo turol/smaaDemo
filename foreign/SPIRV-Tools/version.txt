@@ -1,7 +1,7 @@
-commit 360d469b9eac54d6c6e20f609f9ec35e3a5380ad
+commit f0cc85efdbbe3a46eae90e0f915dc1509836d0fc
 Author: Nathan Gauër <brioche@google.com>
-Date:   Wed Oct 11 17:43:50 2023 +0200
+Date:   Wed Dec 20 13:22:56 2023 +0100
 
-    Prepare release v2023.5.rc1 (#5423)
+    Prepare release v2023.6 (#5510)
     
-    Prepare release v2023.5.rc1
+    Signed-off-by: Nathan Gauër <brioche@google.com>

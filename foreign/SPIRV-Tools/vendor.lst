@@ -4,6 +4,7 @@
 .github/dependabot.yml
 .github/workflows/autoroll.yml
 .github/workflows/bazel.yml
+.github/workflows/ios.yml
 .github/workflows/release.yml
 .github/workflows/scorecard.yml
 .github/workflows/wasm.yml
@@ -1291,7 +1292,6 @@ test/link/type_match_test.cpp
 test/link/unique_ids_test.cpp
 test/lint/CMakeLists.txt
 test/lint/divergence_analysis_test.cpp
-test/log_test.cpp
 test/name_mapper_test.cpp
 test/named_id_test.cpp
 test/opcode_make_test.cpp
