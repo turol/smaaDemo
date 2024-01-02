@@ -1,8 +1,8 @@
-commit 637cff3d05892801daa43c93907e17151c7dfd31
-Merge: 2de1265f 2fba284b
+commit f349c91274b91c1a7c173f2df70ec53080076191
+Merge: 13aab7f0 2603fbe5
 Author: Hans-Kristian Arntzen <post@arntzen-software.no>
-Date:   Mon Oct 23 15:21:23 2023 +0200
+Date:   Thu Dec 7 14:50:19 2023 +0100
 
-    Merge pull request #2220 from KhronosGroup/pr-2208
+    Merge pull request #2240 from KhronosGroup/fix-2239
     
-    Land PR 2208 and fix more issues with sample mask
+    MSL: Remove special case for threadgroup array wrapper.

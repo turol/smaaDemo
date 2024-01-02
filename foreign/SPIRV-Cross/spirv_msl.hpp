@@ -512,6 +512,13 @@ public:
 		// The bug has been reported to Apple, and will hopefully be fixed in future releases.
 		bool replace_recursive_inputs = false;
 
+		// If set, manual fixups of gradient vectors for cube texture lookups will be performed.
+		// All released Apple Silicon GPUs to date behave incorrectly when sampling a cube texture
+		// with explicit gradients. They will ignore one of the three partial derivatives based
+		// on the selected major axis, and expect the remaining derivatives to be partially
+		// transformed.
+		bool agx_manual_cube_grad_fixup = false;
+
 		bool is_ios() const
 		{
 			return platform == iOS;
@@ -756,6 +763,7 @@ protected:
 		SPVFuncImplArrayOfArrayCopy6Dim = SPVFuncImplArrayCopyMultidimBase + 6,
 		SPVFuncImplTexelBufferCoords,
 		SPVFuncImplImage2DAtomicCoords, // Emulate texture2D atomic operations
+		SPVFuncImplGradientCube,
 		SPVFuncImplFMul,
 		SPVFuncImplFAdd,
 		SPVFuncImplFSub,
@@ -815,6 +823,7 @@ protected:
 		SPVFuncImplVariableDescriptor,
 		SPVFuncImplVariableSizedDescriptor,
 		SPVFuncImplVariableDescriptorArray,
+		SPVFuncImplPaddedStd140
 	};
 
 	// If the underlying resource has been used for comparison then duplicate loads of that resource must be too
@@ -847,9 +856,6 @@ protected:
 	// Allow Metal to use the array<T> template to make arrays a value type
 	std::string type_to_array_glsl(const SPIRType &type) override;
 	std::string constant_op_expression(const SPIRConstantOp &cop) override;
-
-	// Threadgroup arrays can't have a wrapper type
-	std::string variable_decl(const SPIRVariable &variable) override;
 
 	bool variable_decl_is_remapped_storage(const SPIRVariable &variable, spv::StorageClass storage) const override;
 
@@ -970,6 +976,7 @@ protected:
 	void emit_specialization_constants_and_structs();
 	void emit_interface_block(uint32_t ib_var_id);
 	bool maybe_emit_array_assignment(uint32_t id_lhs, uint32_t id_rhs);
+	bool is_var_runtime_size_array(const SPIRVariable &var) const;
 	uint32_t get_resource_array_size(uint32_t id) const;
 
 	void fix_up_shader_inputs_outputs();
@@ -1096,7 +1103,7 @@ protected:
 	void analyze_sampled_image_usage();
 
 	bool access_chain_needs_stage_io_builtin_translation(uint32_t base) override;
-	void prepare_access_chain_for_scalar_access(std::string &expr, const SPIRType &type, spv::StorageClass storage,
+	bool prepare_access_chain_for_scalar_access(std::string &expr, const SPIRType &type, spv::StorageClass storage,
 	                                            bool &is_packed) override;
 	void fix_up_interpolant_access_chain(const uint32_t *ops, uint32_t length);
 	void check_physical_type_cast(std::string &expr, const SPIRType *type, uint32_t physical_type) override;
@@ -1199,7 +1206,7 @@ protected:
 	std::unordered_set<uint32_t> buffers_requiring_array_length;
 	SmallVector<std::pair<uint32_t, uint32_t>> buffer_aliases_argument;
 	SmallVector<uint32_t> buffer_aliases_discrete;
-	std::unordered_set<uint32_t> atomic_image_vars; // Emulate texture2D atomic operations
+	std::unordered_set<uint32_t> atomic_image_vars_emulated; // Emulate texture2D atomic operations
 	std::unordered_set<uint32_t> pull_model_inputs;
 	std::unordered_set<uint32_t> recursive_inputs;
 
@@ -1269,7 +1276,7 @@ protected:
 
 		CompilerMSL &compiler;
 		std::unordered_map<uint32_t, uint32_t> result_types;
-		std::unordered_map<uint32_t, uint32_t> image_pointers; // Emulate texture2D atomic operations
+		std::unordered_map<uint32_t, uint32_t> image_pointers_emulated; // Emulate texture2D atomic operations
 		bool suppress_missing_prototypes = false;
 		bool uses_atomics = false;
 		bool uses_image_write = false;

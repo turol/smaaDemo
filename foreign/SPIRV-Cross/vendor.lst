@@ -221,6 +221,7 @@ reference/opt/shaders-msl/asm/comp/vector-builtin-type-cast-func.asm.comp
 reference/opt/shaders-msl/asm/comp/vector-builtin-type-cast.asm.comp
 reference/opt/shaders-msl/asm/frag/combined-sampler-reuse.asm.frag
 reference/opt/shaders-msl/asm/frag/default-member-names.asm.frag
+reference/opt/shaders-msl/asm/frag/depth-array-texture-lod.lod-as-grad.1d-as-2d.agx-cube-grad.msl23.asm.frag
 reference/opt/shaders-msl/asm/frag/depth-image-color-format-fetch.asm.frag
 reference/opt/shaders-msl/asm/frag/depth-image-color-format-sampled.asm.frag
 reference/opt/shaders-msl/asm/frag/descriptor-array-unnamed.asm.frag
@@ -280,6 +281,8 @@ reference/opt/shaders-msl/comp/argument-buffers-image-load-store.msl2.argument.c
 reference/opt/shaders-msl/comp/array-length.comp
 reference/opt/shaders-msl/comp/array-length.msl2.argument.discrete.comp
 reference/opt/shaders-msl/comp/atomic-float.msl3.comp
+reference/opt/shaders-msl/comp/atomic-image.comp
+reference/opt/shaders-msl/comp/atomic-image.msl31.comp
 reference/opt/shaders-msl/comp/atomic.comp
 reference/opt/shaders-msl/comp/barriers.comp
 reference/opt/shaders-msl/comp/basic.comp
@@ -415,8 +418,11 @@ reference/opt/shaders-msl/frag/for-loop-continue-control-flow.frag
 reference/opt/shaders-msl/frag/for-loop-init.frag
 reference/opt/shaders-msl/frag/fp16-packing.frag
 reference/opt/shaders-msl/frag/frag-demote-checks.discard-checks.msl23.frag
+reference/opt/shaders-msl/frag/frag-demote-checks.discard-checks.msl31.frag
 reference/opt/shaders-msl/frag/frag-discard-checks-continue-block.discard-checks.msl23.frag
+reference/opt/shaders-msl/frag/frag-discard-checks-continue-block.discard-checks.msl31.frag
 reference/opt/shaders-msl/frag/frag-discard-checks.discard-checks.msl23.frag
+reference/opt/shaders-msl/frag/frag-discard-checks.discard-checks.msl31.frag
 reference/opt/shaders-msl/frag/fragment-component-padding.pad-fragment.frag
 reference/opt/shaders-msl/frag/front-facing.frag
 reference/opt/shaders-msl/frag/gather-dref.frag
@@ -445,6 +451,8 @@ reference/opt/shaders-msl/frag/packed-expression-vector-shuffle.frag
 reference/opt/shaders-msl/frag/packing-test-3.frag
 reference/opt/shaders-msl/frag/pixel-interlock-ordered.msl2.argument.frag
 reference/opt/shaders-msl/frag/pixel-interlock-ordered.msl2.frag
+reference/opt/shaders-msl/frag/pixel-interlock-ordered.msl31.argument.frag
+reference/opt/shaders-msl/frag/pixel-interlock-ordered.msl31.frag
 reference/opt/shaders-msl/frag/pls.frag
 reference/opt/shaders-msl/frag/post-depth-coverage.ios.msl2.frag
 reference/opt/shaders-msl/frag/post-depth-coverage.msl23.frag
@@ -473,6 +481,7 @@ reference/opt/shaders-msl/frag/sampler-compare-bias.msl23.1d-as-2d.frag
 reference/opt/shaders-msl/frag/sampler-compare-cascade-gradient.frag
 reference/opt/shaders-msl/frag/sampler-compare-cascade-gradient.ios.frag
 reference/opt/shaders-msl/frag/sampler-compare-cascade-gradient.msl23.frag
+reference/opt/shaders-msl/frag/sampler-cube-grad.agx-cube-grad.frag
 reference/opt/shaders-msl/frag/sampler-image-arrays.msl2.frag
 reference/opt/shaders-msl/frag/sampler-ms.frag
 reference/opt/shaders-msl/frag/sampler.frag
@@ -556,6 +565,7 @@ reference/opt/shaders-msl/tese/load-control-point-array-of-matrix.tese
 reference/opt/shaders-msl/tese/load-control-point-array.tese
 reference/opt/shaders-msl/tese/quad.domain.tese
 reference/opt/shaders-msl/tese/quad.tese
+reference/opt/shaders-msl/tese/read-patch-vertices-in-func.raw-tess-in.tese
 reference/opt/shaders-msl/tese/read-tess-level-in-func-quad.msl2.tese
 reference/opt/shaders-msl/tese/read-tess-level-in-func-quad.raw-tess-in.msl2.tese
 reference/opt/shaders-msl/tese/read-tess-level-in-func.msl2.tese
@@ -926,6 +936,7 @@ reference/opt/shaders/tese/input-array.tese
 reference/opt/shaders/tese/line.tese
 reference/opt/shaders/tese/load-array-of-array.tese
 reference/opt/shaders/tese/patch-input-array.tese
+reference/opt/shaders/tese/read-patch-vertices-in-func.tese
 reference/opt/shaders/tese/triangle.tese
 reference/opt/shaders/tese/water_tess.tese
 reference/opt/shaders/vert/basic.vert
@@ -1314,6 +1325,7 @@ reference/shaders-msl-no-opt/asm/comp/device-constant-array-load-store.force-nat
 reference/shaders-msl-no-opt/asm/comp/eliminate-globals-not-in-entry-point.noeliminate.spv14.asm.comp
 reference/shaders-msl-no-opt/asm/comp/glsl-signed-operations.asm.comp
 reference/shaders-msl-no-opt/asm/comp/glsl.std450.frexp-modf-struct.asm.comp
+reference/shaders-msl-no-opt/asm/comp/groupshared-inner-array-of-struct-copy.asm.comp
 reference/shaders-msl-no-opt/asm/comp/local-size-id-override.asm.comp
 reference/shaders-msl-no-opt/asm/comp/local-size-id.asm.comp
 reference/shaders-msl-no-opt/asm/comp/modf-storage-class.asm.comp
@@ -1325,7 +1337,11 @@ reference/shaders-msl-no-opt/asm/comp/opptrnotequal-basic.spv14.asm.comp
 reference/shaders-msl-no-opt/asm/comp/spec-constant-name-aliasing.asm.comp
 reference/shaders-msl-no-opt/asm/comp/storage-buffer-basic.invalid.asm.comp
 reference/shaders-msl-no-opt/asm/comp/storage-buffer-pointer-argument.asm.comp
+reference/shaders-msl-no-opt/asm/comp/variable-pointers-2.asm.comp
+reference/shaders-msl-no-opt/asm/comp/variable-pointers-3.asm.comp
+reference/shaders-msl-no-opt/asm/comp/variable-pointers-vector-to-scalar.asm.comp
 reference/shaders-msl-no-opt/asm/comp/variable-pointers.asm.comp
+reference/shaders-msl-no-opt/asm/comp/workgroup-uint-to-uchar-alias-ptr-access-chain.asm.comp
 reference/shaders-msl-no-opt/asm/frag/access-chain-array-ubo-partial.argument.msl2.asm.frag
 reference/shaders-msl-no-opt/asm/frag/access-chain-array-ubo-partial.asm.frag
 reference/shaders-msl-no-opt/asm/frag/anonymous-inner-struct-names.asm.frag
@@ -1425,6 +1441,7 @@ reference/shaders-msl-no-opt/comp/buffer-device-address-from-pointer-complex-cha
 reference/shaders-msl-no-opt/comp/extract-atomics-from-function.comp
 reference/shaders-msl-no-opt/comp/glsl.std450.comp
 reference/shaders-msl-no-opt/comp/illegal-struct-name.asm.comp
+reference/shaders-msl-no-opt/comp/image-array-atomic.msl31.comp
 reference/shaders-msl-no-opt/comp/implicit-integer-promotion.comp
 reference/shaders-msl-no-opt/comp/int16min-literal.comp
 reference/shaders-msl-no-opt/comp/int64.invalid.msl22.comp
@@ -1521,6 +1538,8 @@ reference/shaders-msl-no-opt/packing/matrix-multiply-unpacked-row-major-2.comp
 reference/shaders-msl-no-opt/packing/matrix-multiply-unpacked-row-major.comp
 reference/shaders-msl-no-opt/packing/member-padding.comp
 reference/shaders-msl-no-opt/packing/std140-array-of-vectors.comp
+reference/shaders-msl-no-opt/packing/std140-half-matrix-and-array-write.frag
+reference/shaders-msl-no-opt/packing/std140-half-matrix-and-array.frag
 reference/shaders-msl-no-opt/packing/struct-alignment.comp
 reference/shaders-msl-no-opt/packing/struct-packing-array-of-scalar.comp
 reference/shaders-msl-no-opt/packing/struct-packing-recursive.comp
@@ -1573,6 +1592,7 @@ reference/shaders-msl/asm/comp/vector-builtin-type-cast-func.asm.comp
 reference/shaders-msl/asm/comp/vector-builtin-type-cast.asm.comp
 reference/shaders-msl/asm/frag/combined-sampler-reuse.asm.frag
 reference/shaders-msl/asm/frag/default-member-names.asm.frag
+reference/shaders-msl/asm/frag/depth-array-texture-lod.lod-as-grad.1d-as-2d.agx-cube-grad.msl23.asm.frag
 reference/shaders-msl/asm/frag/depth-image-color-format-fetch.asm.frag
 reference/shaders-msl/asm/frag/depth-image-color-format-sampled.asm.frag
 reference/shaders-msl/asm/frag/descriptor-array-unnamed.asm.frag
@@ -1632,6 +1652,8 @@ reference/shaders-msl/comp/argument-buffers-image-load-store.msl2.argument.comp
 reference/shaders-msl/comp/array-length.comp
 reference/shaders-msl/comp/array-length.msl2.argument.discrete.comp
 reference/shaders-msl/comp/atomic-float.msl3.comp
+reference/shaders-msl/comp/atomic-image.comp
+reference/shaders-msl/comp/atomic-image.msl31.comp
 reference/shaders-msl/comp/atomic.comp
 reference/shaders-msl/comp/barriers.comp
 reference/shaders-msl/comp/basic.comp
@@ -1766,8 +1788,11 @@ reference/shaders-msl/frag/for-loop-continue-control-flow.frag
 reference/shaders-msl/frag/for-loop-init.frag
 reference/shaders-msl/frag/fp16-packing.frag
 reference/shaders-msl/frag/frag-demote-checks.discard-checks.msl23.frag
+reference/shaders-msl/frag/frag-demote-checks.discard-checks.msl31.frag
 reference/shaders-msl/frag/frag-discard-checks-continue-block.discard-checks.msl23.frag
+reference/shaders-msl/frag/frag-discard-checks-continue-block.discard-checks.msl31.frag
 reference/shaders-msl/frag/frag-discard-checks.discard-checks.msl23.frag
+reference/shaders-msl/frag/frag-discard-checks.discard-checks.msl31.frag
 reference/shaders-msl/frag/fragment-component-padding.pad-fragment.frag
 reference/shaders-msl/frag/front-facing.frag
 reference/shaders-msl/frag/gather-dref.frag
@@ -1796,6 +1821,8 @@ reference/shaders-msl/frag/packed-expression-vector-shuffle.frag
 reference/shaders-msl/frag/packing-test-3.frag
 reference/shaders-msl/frag/pixel-interlock-ordered.msl2.argument.frag
 reference/shaders-msl/frag/pixel-interlock-ordered.msl2.frag
+reference/shaders-msl/frag/pixel-interlock-ordered.msl31.argument.frag
+reference/shaders-msl/frag/pixel-interlock-ordered.msl31.frag
 reference/shaders-msl/frag/pls.frag
 reference/shaders-msl/frag/post-depth-coverage.ios.msl2.frag
 reference/shaders-msl/frag/post-depth-coverage.msl23.frag
@@ -1824,6 +1851,7 @@ reference/shaders-msl/frag/sampler-compare-bias.msl23.1d-as-2d.frag
 reference/shaders-msl/frag/sampler-compare-cascade-gradient.frag
 reference/shaders-msl/frag/sampler-compare-cascade-gradient.ios.frag
 reference/shaders-msl/frag/sampler-compare-cascade-gradient.msl23.frag
+reference/shaders-msl/frag/sampler-cube-grad.agx-cube-grad.frag
 reference/shaders-msl/frag/sampler-image-arrays.msl2.frag
 reference/shaders-msl/frag/sampler-ms.frag
 reference/shaders-msl/frag/sampler.frag
@@ -1907,6 +1935,7 @@ reference/shaders-msl/tese/load-control-point-array-of-matrix.tese
 reference/shaders-msl/tese/load-control-point-array.tese
 reference/shaders-msl/tese/quad.domain.tese
 reference/shaders-msl/tese/quad.tese
+reference/shaders-msl/tese/read-patch-vertices-in-func.raw-tess-in.tese
 reference/shaders-msl/tese/read-tess-level-in-func-quad.msl2.tese
 reference/shaders-msl/tese/read-tess-level-in-func-quad.raw-tess-in.msl2.tese
 reference/shaders-msl/tese/read-tess-level-in-func.msl2.tese
@@ -2509,6 +2538,7 @@ reference/shaders/tese/input-array.tese
 reference/shaders/tese/line.tese
 reference/shaders/tese/load-array-of-array.tese
 reference/shaders/tese/patch-input-array.tese
+reference/shaders/tese/read-patch-vertices-in-func.tese
 reference/shaders/tese/triangle.tese
 reference/shaders/tese/water_tess.tese
 reference/shaders/vert/basic.vert
@@ -2903,6 +2933,7 @@ shaders-msl-no-opt/asm/comp/device-constant-array-load-store.force-native-array.
 shaders-msl-no-opt/asm/comp/eliminate-globals-not-in-entry-point.noeliminate.spv14.asm.comp
 shaders-msl-no-opt/asm/comp/glsl-signed-operations.asm.comp
 shaders-msl-no-opt/asm/comp/glsl.std450.frexp-modf-struct.asm.comp
+shaders-msl-no-opt/asm/comp/groupshared-inner-array-of-struct-copy.asm.comp
 shaders-msl-no-opt/asm/comp/local-size-id-override.asm.comp
 shaders-msl-no-opt/asm/comp/local-size-id.asm.comp
 shaders-msl-no-opt/asm/comp/modf-storage-class.asm.comp
@@ -2914,7 +2945,11 @@ shaders-msl-no-opt/asm/comp/opptrnotequal-basic.spv14.asm.comp
 shaders-msl-no-opt/asm/comp/spec-constant-name-aliasing.asm.comp
 shaders-msl-no-opt/asm/comp/storage-buffer-basic.invalid.asm.comp
 shaders-msl-no-opt/asm/comp/storage-buffer-pointer-argument.asm.comp
+shaders-msl-no-opt/asm/comp/variable-pointers-2.asm.comp
+shaders-msl-no-opt/asm/comp/variable-pointers-3.asm.comp
+shaders-msl-no-opt/asm/comp/variable-pointers-vector-to-scalar.asm.comp
 shaders-msl-no-opt/asm/comp/variable-pointers.asm.comp
+shaders-msl-no-opt/asm/comp/workgroup-uint-to-uchar-alias-ptr-access-chain.asm.comp
 shaders-msl-no-opt/asm/frag/access-chain-array-ubo-partial.argument.msl2.asm.frag
 shaders-msl-no-opt/asm/frag/access-chain-array-ubo-partial.asm.frag
 shaders-msl-no-opt/asm/frag/anonymous-inner-struct-names.asm.frag
@@ -3014,6 +3049,7 @@ shaders-msl-no-opt/comp/buffer-device-address-from-pointer-complex-chain.msl23.c
 shaders-msl-no-opt/comp/extract-atomics-from-function.comp
 shaders-msl-no-opt/comp/glsl.std450.comp
 shaders-msl-no-opt/comp/illegal-struct-name.asm.comp
+shaders-msl-no-opt/comp/image-array-atomic.msl31.comp
 shaders-msl-no-opt/comp/implicit-integer-promotion.comp
 shaders-msl-no-opt/comp/int16min-literal.comp
 shaders-msl-no-opt/comp/int64.invalid.msl22.comp
@@ -3110,6 +3146,8 @@ shaders-msl-no-opt/packing/matrix-multiply-unpacked-row-major-2.comp
 shaders-msl-no-opt/packing/matrix-multiply-unpacked-row-major.comp
 shaders-msl-no-opt/packing/member-padding.comp
 shaders-msl-no-opt/packing/std140-array-of-vectors.comp
+shaders-msl-no-opt/packing/std140-half-matrix-and-array-write.frag
+shaders-msl-no-opt/packing/std140-half-matrix-and-array.frag
 shaders-msl-no-opt/packing/struct-alignment.comp
 shaders-msl-no-opt/packing/struct-packing-array-of-scalar.comp
 shaders-msl-no-opt/packing/struct-packing-recursive.comp
@@ -3162,6 +3200,7 @@ shaders-msl/asm/comp/vector-builtin-type-cast-func.asm.comp
 shaders-msl/asm/comp/vector-builtin-type-cast.asm.comp
 shaders-msl/asm/frag/combined-sampler-reuse.asm.frag
 shaders-msl/asm/frag/default-member-names.asm.frag
+shaders-msl/asm/frag/depth-array-texture-lod.lod-as-grad.1d-as-2d.agx-cube-grad.msl23.asm.frag
 shaders-msl/asm/frag/depth-image-color-format-fetch.asm.frag
 shaders-msl/asm/frag/depth-image-color-format-sampled.asm.frag
 shaders-msl/asm/frag/descriptor-array-unnamed.asm.frag
@@ -3219,6 +3258,8 @@ shaders-msl/comp/argument-buffers-image-load-store.msl2.argument.comp
 shaders-msl/comp/array-length.comp
 shaders-msl/comp/array-length.msl2.argument.discrete.comp
 shaders-msl/comp/atomic-float.msl3.comp
+shaders-msl/comp/atomic-image.comp
+shaders-msl/comp/atomic-image.msl31.comp
 shaders-msl/comp/atomic.comp
 shaders-msl/comp/barriers.comp
 shaders-msl/comp/basic.comp
@@ -3353,8 +3394,11 @@ shaders-msl/frag/for-loop-continue-control-flow.frag
 shaders-msl/frag/for-loop-init.frag
 shaders-msl/frag/fp16-packing.frag
 shaders-msl/frag/frag-demote-checks.discard-checks.msl23.frag
+shaders-msl/frag/frag-demote-checks.discard-checks.msl31.frag
 shaders-msl/frag/frag-discard-checks-continue-block.discard-checks.msl23.frag
+shaders-msl/frag/frag-discard-checks-continue-block.discard-checks.msl31.frag
 shaders-msl/frag/frag-discard-checks.discard-checks.msl23.frag
+shaders-msl/frag/frag-discard-checks.discard-checks.msl31.frag
 shaders-msl/frag/fragment-component-padding.pad-fragment.frag
 shaders-msl/frag/front-facing.frag
 shaders-msl/frag/gather-dref.frag
@@ -3383,6 +3427,8 @@ shaders-msl/frag/packed-expression-vector-shuffle.frag
 shaders-msl/frag/packing-test-3.frag
 shaders-msl/frag/pixel-interlock-ordered.msl2.argument.frag
 shaders-msl/frag/pixel-interlock-ordered.msl2.frag
+shaders-msl/frag/pixel-interlock-ordered.msl31.argument.frag
+shaders-msl/frag/pixel-interlock-ordered.msl31.frag
 shaders-msl/frag/pls.frag
 shaders-msl/frag/post-depth-coverage.ios.msl2.frag
 shaders-msl/frag/post-depth-coverage.msl23.frag
@@ -3411,6 +3457,7 @@ shaders-msl/frag/sampler-compare-bias.msl23.1d-as-2d.frag
 shaders-msl/frag/sampler-compare-cascade-gradient.frag
 shaders-msl/frag/sampler-compare-cascade-gradient.ios.frag
 shaders-msl/frag/sampler-compare-cascade-gradient.msl23.frag
+shaders-msl/frag/sampler-cube-grad.agx-cube-grad.frag
 shaders-msl/frag/sampler-image-arrays.msl2.frag
 shaders-msl/frag/sampler-ms.frag
 shaders-msl/frag/sampler.frag
@@ -3494,6 +3541,7 @@ shaders-msl/tese/load-control-point-array-of-matrix.tese
 shaders-msl/tese/load-control-point-array.tese
 shaders-msl/tese/quad.domain.tese
 shaders-msl/tese/quad.tese
+shaders-msl/tese/read-patch-vertices-in-func.raw-tess-in.tese
 shaders-msl/tese/read-tess-level-in-func-quad.msl2.tese
 shaders-msl/tese/read-tess-level-in-func-quad.raw-tess-in.msl2.tese
 shaders-msl/tese/read-tess-level-in-func.msl2.tese
@@ -4077,6 +4125,7 @@ shaders/tese/input-array.tese
 shaders/tese/line.tese
 shaders/tese/load-array-of-array.tese
 shaders/tese/patch-input-array.tese
+shaders/tese/read-patch-vertices-in-func.tese
 shaders/tese/triangle.tese
 shaders/tese/water_tess.tese
 shaders/vert/basic.vert
