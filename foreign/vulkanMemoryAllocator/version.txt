@@ -1,7 +1,8 @@
-commit dc8a3fb0f24b5afe42b95a58b49ff9d9f4204f2e
+commit 5e43c795daf43dd09398d8307212e85025215052
+Merge: a53702c 278c03f
 Author: Adam Sawicki <adam.sawicki@amd.com>
-Date:   Mon Oct 30 18:27:40 2023 +0100
+Date:   Mon Nov 20 10:19:25 2023 +0100
 
-    Fixed GpuMemDumpVis.py to not use deprecated Pillow function textsize
+    Merge pull request #388 from eszlari/patch-1
     
-    See #375 Thanks @alecazam
+    README.md: add Blender ref
