@@ -299,7 +299,11 @@ INSTANTIATE_TEST_SUITE_P(
         "EndStreamPrimitive.geom",
         "floatBitsToInt.vert",
         "coord_conventions.frag",
-        "gl_FragCoord.frag"
+        "gl_FragCoord.frag",
+        "glsl.interpOp.error.frag",
+        "GL_EXT_draw_instanced.vert",
+        "overflow_underflow_toinf_0.frag",
+        "GL_EXT_texture_array.frag",
     })),
     FileNameAsCustomTestSuffix
 );

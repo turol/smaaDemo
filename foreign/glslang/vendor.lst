@@ -13,13 +13,9 @@ BUILD.gn
 CHANGES.md
 CMakeLists.txt
 CODE_OF_CONDUCT.md
-ChooseMSVCCRT.cmake
 DEPS
 External/CMakeLists.txt
 LICENSE.txt
-OGLCompilersDLL/CMakeLists.txt
-OGLCompilersDLL/InitializeDll.cpp
-OGLCompilersDLL/InitializeDll.h
 README-spirv-remap.txt
 README.md
 SECURITY.md
@@ -143,7 +139,9 @@ Test/GL_ARB_bindless_texture.frag
 Test/GL_ARB_draw_instanced.vert
 Test/GL_ARB_fragment_coord_conventions.vert
 Test/GL_ARB_gpu_shader5.u2i.vert
+Test/GL_EXT_draw_instanced.vert
 Test/GL_EXT_shader_integer_mix.vert
+Test/GL_EXT_texture_array.frag
 Test/Operations.frag
 Test/aggOps.frag
 Test/always-discard.frag
@@ -248,7 +246,9 @@ Test/baseResults/GL_ARB_bindless_texture.frag.out
 Test/baseResults/GL_ARB_draw_instanced.vert.out
 Test/baseResults/GL_ARB_fragment_coord_conventions.vert.out
 Test/baseResults/GL_ARB_gpu_shader5.u2i.vert.out
+Test/baseResults/GL_EXT_draw_instanced.vert.out
 Test/baseResults/GL_EXT_shader_integer_mix.vert.out
+Test/baseResults/GL_EXT_texture_array.frag.out
 Test/baseResults/Operations.frag.out
 Test/baseResults/aggOps.frag.out
 Test/baseResults/always-discard.frag.out
@@ -368,6 +368,7 @@ Test/baseResults/glsl.es320.subgroupShuffle.comp.out
 Test/baseResults/glsl.es320.subgroupShuffleRelative.comp.out
 Test/baseResults/glsl.es320.subgroupVote.comp.out
 Test/baseResults/glsl.ext.textureShadowLod.frag.out
+Test/baseResults/glsl.interpOp.error.frag.out
 Test/baseResults/glsl.versionOverride.comp.out
 Test/baseResults/glsl.versionOverride.frag.out
 Test/baseResults/glsl.versionOverride.geom.out
@@ -567,6 +568,7 @@ Test/baseResults/hlsl.mul-truncate.frag.out
 Test/baseResults/hlsl.multiDescriptorSet.frag.out
 Test/baseResults/hlsl.multiEntry.vert.out
 Test/baseResults/hlsl.multiReturn.frag.out
+Test/baseResults/hlsl.multiView.frag.out
 Test/baseResults/hlsl.namespace.frag.out
 Test/baseResults/hlsl.nested-runtimeArray.frag.out
 Test/baseResults/hlsl.noSemantic.functionality1.comp.out
@@ -782,6 +784,7 @@ Test/baseResults/nonuniform.frag.out
 Test/baseResults/nosuffix.out
 Test/baseResults/numeral.frag.out
 Test/baseResults/nvShaderNoperspectiveInterpolation.frag.out
+Test/baseResults/overflow_underflow_toinf_0.frag.out
 Test/baseResults/overlongLiteral.frag.out
 Test/baseResults/pointCoord.frag.out
 Test/baseResults/precise.tesc.out
@@ -1295,6 +1298,9 @@ Test/baseResults/spv.specConstant.int16.comp.out
 Test/baseResults/spv.specConstant.int8.comp.out
 Test/baseResults/spv.specConstant.vert.out
 Test/baseResults/spv.specConstantComposite.vert.out
+Test/baseResults/spv.specConstantOp.float16.comp.out
+Test/baseResults/spv.specConstantOp.int16.comp.out
+Test/baseResults/spv.specConstantOp.int8.comp.out
 Test/baseResults/spv.specConstantOperations.vert.out
 Test/baseResults/spv.specTexture.frag.out
 Test/baseResults/spv.ssbo.autoassign.frag.out
@@ -1556,6 +1562,7 @@ Test/glsl.es320.subgroupShuffle.comp
 Test/glsl.es320.subgroupShuffleRelative.comp
 Test/glsl.es320.subgroupVote.comp
 Test/glsl.ext.textureShadowLod.frag
+Test/glsl.interpOp.error.frag
 Test/glsl.versionOverride.comp
 Test/glsl.versionOverride.frag
 Test/glsl.versionOverride.geom
@@ -1757,6 +1764,7 @@ Test/hlsl.mul-truncate.frag
 Test/hlsl.multiDescriptorSet.frag
 Test/hlsl.multiEntry.vert
 Test/hlsl.multiReturn.frag
+Test/hlsl.multiView.frag
 Test/hlsl.namespace.frag
 Test/hlsl.nested-runtimeArray.frag
 Test/hlsl.noSemantic.functionality1.comp
@@ -2020,6 +2028,7 @@ Test/nonuniform.frag
 Test/nosuffix
 Test/numeral.frag
 Test/nvShaderNoperspectiveInterpolation.frag
+Test/overflow_underflow_toinf_0.frag
 Test/overlongLiteral.frag
 Test/parent.h
 Test/parentBad
@@ -2518,6 +2527,9 @@ Test/spv.specConstant.int16.comp
 Test/spv.specConstant.int8.comp
 Test/spv.specConstant.vert
 Test/spv.specConstantComposite.vert
+Test/spv.specConstantOp.float16.comp
+Test/spv.specConstantOp.int16.comp
+Test/spv.specConstantOp.int8.comp
 Test/spv.specConstantOperations.vert
 Test/spv.specTexture.frag
 Test/spv.ssbo.autoassign.frag
@@ -2773,7 +2785,6 @@ glslang/OSDependent/Web/glslang.after.js
 glslang/OSDependent/Web/glslang.js.cpp
 glslang/OSDependent/Web/glslang.pre.js
 glslang/OSDependent/Windows/CMakeLists.txt
-glslang/OSDependent/Windows/main.cpp
 glslang/OSDependent/Windows/ossource.cpp
 glslang/OSDependent/osinclude.h
 glslang/Public/ResourceLimits.h
@@ -2804,8 +2815,6 @@ gtests/TestFixture.h
 gtests/VkRelaxed.FromFile.cpp
 gtests/main.cpp
 gtests/pch.h
-hlsl/CMakeLists.txt
-hlsl/stub.cpp
 known_good.json
 known_good_khr.json
 kokoro/android-ndk-build/build-docker.sh

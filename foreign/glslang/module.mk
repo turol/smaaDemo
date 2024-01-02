@@ -5,7 +5,6 @@ d              := $(dir)
 
 SUBDIRS:= \
 	glslang \
-	OGLCompilersDLL \
 	SPIRV \
 	# empty line
 
