@@ -1,16 +1,13 @@
-commit 88bc5e321c2839707df8b1ab534e243e00744177
-Author: bwlodarcz <bertrand.wlodarczyk@intel.com>
-Date:   Wed Oct 18 17:44:09 2023 +0200
+commit 1c6bb2743599e6eb6f37b2969acc0aef812e32e3
+Author: Kévin Petit <kevin.petit@arm.com>
+Date:   Wed Dec 6 17:29:54 2023 +0000
 
-    Headers support for new FPGAMemoryAttributesINTEL (#384)
+    Add a few missing calls to std::exit on error (#395)
     
-    * Headers support for new FPGAMemoryAttributesINTEL
+    Errors were printed but did not stop processing and as a result the
+    related issues were not caught by CI checks.
     
-    Implementation of three new FPGAMemoryAttributesINTEL:
-     - StridesizeINTEL
-     - WordsizeINTEL
-     - TrueDualPortIntel
     
-    Specification: https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/INTEL/SPV_INTEL_fpga_memory_attributes.asciidoc
+    Change-Id: I030c7ffe23a4730106a19e212895bef03b6ca456
     
-    * Update_1
+    Signed-off-by: Kevin Petit <kevin.petit@arm.com>

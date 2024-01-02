@@ -4856,7 +4856,7 @@
     },
     {
         "opname" : "OpTypeRayQueryKHR",
-        "class" : "Reserved",
+        "class" : "Type-Declaration",
         "opcode" : 4472,
         "operands" : [
             { "kind" : "IdResult" }
@@ -5693,7 +5693,7 @@
     },
     {
       "opname" : "OpTypeHitObjectNV",
-      "class"  : "Reserved",
+      "class"  : "Type-Declaration",
       "opcode" : 5281,
       "operands" : [
         { "kind" : "IdResult" }
@@ -5932,7 +5932,7 @@
     },
     {
       "opname" : "OpTypeAccelerationStructureNV",
-      "class"  : "Reserved",
+      "class"  : "Type-Declaration",
       "opcode" : 5341,
       "operands" : [
         { "kind" : "IdResult" }
@@ -5943,7 +5943,7 @@
     },
     {
       "opname" : "OpTypeAccelerationStructureKHR",
-      "class"  : "Reserved",
+      "class"  : "Type-Declaration",
       "opcode" : 5341,
       "operands" : [
         { "kind" : "IdResult" }
@@ -5967,7 +5967,7 @@
     },
     {
       "opname" : "OpTypeCooperativeMatrixNV",
-      "class"  : "Reserved",
+      "class"  : "Type-Declaration",
       "opcode" : 5358,
       "operands" : [
         { "kind" : "IdResult" },
@@ -9564,7 +9564,7 @@
       "operands" : [
         { "kind" : "IdRef",    "quantifier" : "*", "name" : "'Member 0 type', +\n'member 1 type', +\n..." }
       ],
-      "capabilities" : [ "LongConstantCompositeINTEL" ],
+      "capabilities" : [ "LongCompositesINTEL" ],
       "version" : "None"
     },
     {
@@ -9574,7 +9574,7 @@
       "operands" : [
         { "kind" : "IdRef",        "quantifier" : "*", "name" : "'Constituents'" }
       ],
-      "capabilities" : [ "LongConstantCompositeINTEL" ],
+      "capabilities" : [ "LongCompositesINTEL" ],
       "version" : "None"
     },
     {
@@ -9584,8 +9584,20 @@
       "operands" : [
         { "kind" : "IdRef",        "quantifier" : "*", "name" : "'Constituents'" }
       ],
-      "capabilities" : [ "LongConstantCompositeINTEL" ],
+      "capabilities" : [ "LongCompositesINTEL" ],
       "version" : "None"
+    },
+    {
+      "opname" : "OpCompositeConstructContinuedINTEL",
+      "class"  : "Composite",
+      "opcode" : 6096,
+      "operands" : [
+        { "kind" : "IdResultType" },
+        { "kind" : "IdResult" },
+        { "kind" : "IdRef",        "quantifier" : "*", "name" : "'Constituents'" }
+      ],
+      "capabilities" : [ "LongCompositesINTEL" ],
+      "version": "None"
     },
     {
       "opname" : "OpConvertFToBF16INTEL",
@@ -9922,32 +9934,32 @@
         {
           "enumerant" : "None",
           "value" : "0x0000",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "NotNaN",
           "value" : "0x0001",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "NotInf",
           "value" : "0x0002",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "NSZ",
           "value" : "0x0004",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "AllowRecip",
           "value" : "0x0008",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Fast",
           "value" : "0x0010",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "AllowContractFastINTEL",
@@ -9970,17 +9982,17 @@
         {
           "enumerant" : "None",
           "value" : "0x0000",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Flatten",
           "value" : "0x0001",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "DontFlatten",
           "value" : "0x0002",
-	  "version" : "1.0"
+          "version" : "1.0"
         }
       ]
     },
@@ -9991,17 +10003,17 @@
         {
           "enumerant" : "None",
           "value" : "0x0000",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Unroll",
           "value" : "0x0001",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "DontUnroll",
           "value" : "0x0002",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "DependencyInfinite",
@@ -10152,27 +10164,27 @@
         {
           "enumerant" : "None",
           "value" : "0x0000",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Inline",
           "value" : "0x0001",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "DontInline",
           "value" : "0x0002",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Pure",
           "value" : "0x0004",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Const",
           "value" : "0x0008",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "OptNoneINTEL",
@@ -10189,32 +10201,32 @@
         {
           "enumerant" : "Relaxed",
           "value" : "0x0000",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "None",
           "value" : "0x0000",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Acquire",
           "value" : "0x0002",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Release",
           "value" : "0x0004",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "AcquireRelease",
           "value" : "0x0008",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "SequentiallyConsistent",
           "value" : "0x0010",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "UniformMemory",
@@ -10225,17 +10237,17 @@
         {
           "enumerant" : "SubgroupMemory",
           "value" : "0x0080",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "WorkgroupMemory",
           "value" : "0x0100",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "CrossWorkgroupMemory",
           "value" : "0x0200",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "AtomicCounterMemory",
@@ -10246,7 +10258,7 @@
         {
           "enumerant" : "ImageMemory",
           "value" : "0x0800",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "OutputMemory",
@@ -10303,12 +10315,12 @@
         {
           "enumerant" : "None",
           "value" : "0x0000",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Volatile",
           "value" : "0x0001",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Aligned",
@@ -10316,12 +10328,12 @@
           "parameters" : [
             { "kind" : "LiteralInteger" }
           ],
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Nontemporal",
           "value" : "0x0004",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "MakePointerAvailable",
@@ -10403,7 +10415,7 @@
         {
           "enumerant" : "None",
           "value" : "0x0000",
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "CmdExecTime",
@@ -10528,62 +10540,62 @@
         {
           "enumerant" : "Unknown",
           "value" : 0,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "ESSL",
           "value" : 1,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "GLSL",
           "value" : 2,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "OpenCL_C",
           "value" : 3,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "OpenCL_CPP",
           "value" : 4,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "HLSL",
           "value" : 5,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "CPP_for_OpenCL",
           "value" : 6,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "SYCL",
           "value" : 7,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "HERO_C",
           "value" : 8,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "NZSL",
           "value" : 9,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "WGSL",
           "value" : 10,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Slang",
           "value" : 11,
-	  "version" : "1.0"
+          "version" : "1.0"
         }
       ]
     },
@@ -10738,7 +10750,7 @@
         {
           "enumerant" : "Logical",
           "value" : 0,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Physical32",
@@ -11490,12 +11502,12 @@
         {
           "enumerant" : "UniformConstant",
           "value" : 0,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Input",
           "value" : 1,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Uniform",
@@ -11512,12 +11524,12 @@
         {
           "enumerant" : "Workgroup",
           "value" : 4,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "CrossWorkgroup",
           "value" : 5,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Private",
@@ -11528,7 +11540,7 @@
         {
           "enumerant" : "Function",
           "value" : 7,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Generic",
@@ -11551,7 +11563,7 @@
         {
           "enumerant" : "Image",
           "value" : 11,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "StorageBuffer",
@@ -11732,12 +11744,12 @@
         {
           "enumerant" : "2D",
           "value" : 1,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "3D",
           "value" : 2,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Cube",
@@ -11825,7 +11837,7 @@
         {
           "enumerant" : "Unknown",
           "value" : 0,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Rgba32f",
@@ -12061,7 +12073,7 @@
           "capabilities" : [ "StorageImageExtendedFormats" ],
           "version": "1.0"
         },
-	{
+        {
           "enumerant" : "R64ui",
           "value" : 40,
           "capabilities" : [ "Int64ImageEXT" ],
@@ -12328,22 +12340,22 @@
         {
           "enumerant" : "RTE",
           "value" : 0,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "RTZ",
           "value" : 1,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "RTP",
           "value" : 2,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "RTN",
           "value" : 3,
-	  "version" : "1.0"
+          "version" : "1.0"
         }
       ]
     },
@@ -12362,7 +12374,7 @@
           "value" : 1,
           "capabilities" : [ "FunctionFloatControlINTEL" ],
           "version" : "None"
-	}
+        }
       ]
     },
     {
@@ -12733,17 +12745,17 @@
         {
           "enumerant" : "Restrict",
           "value" : 19,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Aliased",
           "value" : 20,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Volatile",
           "value" : 21,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Constant",
@@ -13568,31 +13580,9 @@
           "version" : "None"
         },
         {
-          "enumerant" : "InitModeINTEL",
-          "value" : 6147,
-          "parameters": [
-            { "kind" : "InitializationModeQualifier", "name" : "'Trigger'" }
-          ],
-          "capabilities" : [ "GlobalVariableFPGADecorationsINTEL" ],
-          "version" : "None"
-        },
-        {
-          "enumerant" : "ImplementInRegisterMapINTEL",
-          "value" : 6148,
-          "parameters": [
-            { "kind" : "LiteralInteger", "name" : "Value" }
-          ],
-          "capabilities" : [ "GlobalVariableFPGADecorationsINTEL" ],
-          "version" : "None"
-        },
-        {
-          "enumerant" : "HostAccessINTEL",
-          "value" : 6168,
-          "parameters": [
-            { "kind" : "HostAccessQualifier", "name" : "'Access'" },
-            { "kind" : "LiteralString", "name" : "'Name'" }
-          ],
-          "capabilities" : [ "GlobalVariableHostAccessINTEL" ],
+          "enumerant" : "StallFreeINTEL",
+          "value" : 6151,
+          "capabilities" : [ "FPGAClusterAttributesV2INTEL" ],
           "version" : "None"
         },
         {
@@ -13694,6 +13684,34 @@
           "enumerant" : "StableKernelArgumentINTEL",
           "value" : 6183,
           "capabilities" : [ "FPGAArgumentInterfacesINTEL" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "HostAccessINTEL",
+          "value" : 6188,
+          "parameters": [
+            { "kind" : "HostAccessQualifier", "name" : "'Access'" },
+            { "kind" : "LiteralString", "name" : "'Name'" }
+          ],
+          "capabilities" : [ "GlobalVariableHostAccessINTEL" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "InitModeINTEL",
+          "value" : 6190,
+          "parameters": [
+            { "kind" : "InitializationModeQualifier", "name" : "'Trigger'" }
+          ],
+          "capabilities" : [ "GlobalVariableFPGADecorationsINTEL" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "ImplementInRegisterMapINTEL",
+          "value" : 6191,
+          "parameters": [
+            { "kind" : "LiteralInteger", "name" : "Value" }
+          ],
+          "capabilities" : [ "GlobalVariableFPGADecorationsINTEL" ],
           "version" : "None"
         },
         {
@@ -13857,32 +13875,32 @@
         {
           "enumerant" : "NumWorkgroups",
           "value" : 24,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "WorkgroupSize",
           "value" : 25,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "WorkgroupId",
           "value" : 26,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "LocalInvocationId",
           "value" : 27,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "GlobalInvocationId",
           "value" : 28,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "LocalInvocationIndex",
           "value" : 29,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "WorkDim",
@@ -14626,27 +14644,27 @@
         {
           "enumerant" : "CrossDevice",
           "value" : 0,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Device",
           "value" : 1,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Workgroup",
           "value" : 2,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Subgroup",
           "value" : 3,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Invocation",
           "value" : 4,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "QueueFamily",
@@ -14750,7 +14768,7 @@
         {
           "enumerant" : "Matrix",
           "value" : 0,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Shader",
@@ -14773,17 +14791,17 @@
         {
           "enumerant" : "Addresses",
           "value" : 4,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Linkage",
           "value" : 5,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Kernel",
           "value" : 6,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Vector16",
@@ -14800,17 +14818,17 @@
         {
           "enumerant" : "Float16",
           "value" : 9,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Float64",
           "value" : 10,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Int64",
           "value" : 11,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Int64Atomics",
@@ -14869,7 +14887,7 @@
         {
           "enumerant" : "Int16",
           "value" : 22,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "TessellationPointSize",
@@ -14964,7 +14982,7 @@
         {
           "enumerant" : "Int8",
           "value" : 39,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "InputAttachment",
@@ -14987,7 +15005,7 @@
         {
           "enumerant" : "Sampled1D",
           "value" : 43,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "Image1D",
@@ -15004,7 +15022,7 @@
         {
           "enumerant" : "SampledBuffer",
           "value" : 46,
-	  "version" : "1.0"
+          "version" : "1.0"
         },
         {
           "enumerant" : "ImageBuffer",
@@ -15213,7 +15231,7 @@
         {
           "enumerant" : "WorkgroupMemoryExplicitLayout16BitAccessKHR",
           "value" : 4430,
-          "capabilities" : [ "Shader" ],
+          "capabilities" : [ "WorkgroupMemoryExplicitLayoutKHR" ],
           "extensions" : [ "SPV_KHR_workgroup_memory_explicit_layout" ],
           "version" : "None"
         },
@@ -16224,9 +16242,9 @@
           "version" : "None"
         },
         {
-          "enumerant" : "LongConstantCompositeINTEL",
+          "enumerant" : "LongCompositesINTEL",
           "value" : 6089,
-          "extensions" : [ "SPV_INTEL_long_constant_composite" ],
+          "extensions" : [ "SPV_INTEL_long_composites" ],
           "version" : "None"
         },
         {
@@ -16260,9 +16278,10 @@
           "version" : "None"
         },
         {
-          "enumerant" : "GlobalVariableFPGADecorationsINTEL",
-          "value" : 6146,
-          "extensions": [ "SPV_INTEL_global_variable_fpga_decorations" ],
+          "enumerant" : "FPGAClusterAttributesV2INTEL",
+          "value" : 6150,
+          "capabilities" : [ "FPGAClusterAttributesINTEL" ],
+          "extensions" : [ "SPV_INTEL_fpga_cluster_attributes" ],
           "version" : "None"
         },
         {
@@ -16270,12 +16289,6 @@
           "value" : 6161,
           "capabilities" : [ "FPGAKernelAttributesINTEL" ],
           "extensions" : [ "SPV_INTEL_kernel_attributes" ],
-          "version" : "None"
-        },
-        {
-          "enumerant" : "GlobalVariableHostAccessINTEL",
-          "value" : 6167,
-          "extensions": [ "SPV_INTEL_global_variable_host_access" ],
           "version" : "None"
         },
         {
@@ -16294,6 +16307,18 @@
           "enumerant" : "FPGAArgumentInterfacesINTEL",
           "value" : 6174,
           "extensions" : [ "SPV_INTEL_fpga_argument_interfaces" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "GlobalVariableHostAccessINTEL",
+          "value" : 6187,
+          "extensions": [ "SPV_INTEL_global_variable_host_access" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "GlobalVariableFPGADecorationsINTEL",
+          "value" : 6189,
+          "extensions": [ "SPV_INTEL_global_variable_fpga_decorations" ],
           "version" : "None"
         },
         {

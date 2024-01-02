@@ -604,9 +604,7 @@ enum Decoration {
     DecorationSingleElementVectorINTEL = 6085,
     DecorationVectorComputeCallableFunctionINTEL = 6087,
     DecorationMediaBlockIOINTEL = 6140,
-    DecorationInitModeINTEL = 6147,
-    DecorationImplementInRegisterMapINTEL = 6148,
-    DecorationHostAccessINTEL = 6168,
+    DecorationStallFreeINTEL = 6151,
     DecorationFPMaxErrorDecorationINTEL = 6170,
     DecorationLatencyControlLabelINTEL = 6172,
     DecorationLatencyControlConstraintINTEL = 6173,
@@ -619,6 +617,9 @@ enum Decoration {
     DecorationMMHostInterfaceMaxBurstINTEL = 6181,
     DecorationMMHostInterfaceWaitRequestINTEL = 6182,
     DecorationStableKernelArgumentINTEL = 6183,
+    DecorationHostAccessINTEL = 6188,
+    DecorationInitModeINTEL = 6190,
+    DecorationImplementInRegisterMapINTEL = 6191,
     DecorationCacheControlLoadINTEL = 6442,
     DecorationCacheControlStoreINTEL = 6443,
     DecorationMax = 0x7fffffff,
@@ -1192,18 +1193,19 @@ enum Capability {
     CapabilityGroupNonUniformRotateKHR = 6026,
     CapabilityAtomicFloat32AddEXT = 6033,
     CapabilityAtomicFloat64AddEXT = 6034,
-    CapabilityLongConstantCompositeINTEL = 6089,
+    CapabilityLongCompositesINTEL = 6089,
     CapabilityOptNoneINTEL = 6094,
     CapabilityAtomicFloat16AddEXT = 6095,
     CapabilityDebugInfoModuleINTEL = 6114,
     CapabilityBFloat16ConversionINTEL = 6115,
     CapabilitySplitBarrierINTEL = 6141,
-    CapabilityGlobalVariableFPGADecorationsINTEL = 6146,
+    CapabilityFPGAClusterAttributesV2INTEL = 6150,
     CapabilityFPGAKernelAttributesv2INTEL = 6161,
-    CapabilityGlobalVariableHostAccessINTEL = 6167,
     CapabilityFPMaxErrorINTEL = 6169,
     CapabilityFPGALatencyControlINTEL = 6171,
     CapabilityFPGAArgumentInterfacesINTEL = 6174,
+    CapabilityGlobalVariableHostAccessINTEL = 6187,
+    CapabilityGlobalVariableFPGADecorationsINTEL = 6189,
     CapabilityGroupUniformArithmeticKHR = 6400,
     CapabilityCacheControlsINTEL = 6441,
     CapabilityMax = 0x7fffffff,
@@ -2086,6 +2088,7 @@ enum Op {
     OpTypeStructContinuedINTEL = 6090,
     OpConstantCompositeContinuedINTEL = 6091,
     OpSpecConstantCompositeContinuedINTEL = 6092,
+    OpCompositeConstructContinuedINTEL = 6096,
     OpConvertFToBF16INTEL = 6116,
     OpConvertBF16ToFINTEL = 6117,
     OpControlBarrierArriveINTEL = 6142,
@@ -2809,6 +2812,7 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case OpTypeStructContinuedINTEL: *hasResult = false; *hasResultType = false; break;
     case OpConstantCompositeContinuedINTEL: *hasResult = false; *hasResultType = false; break;
     case OpSpecConstantCompositeContinuedINTEL: *hasResult = false; *hasResultType = false; break;
+    case OpCompositeConstructContinuedINTEL: *hasResult = true; *hasResultType = true; break;
     case OpConvertFToBF16INTEL: *hasResult = true; *hasResultType = true; break;
     case OpConvertBF16ToFINTEL: *hasResult = true; *hasResultType = true; break;
     case OpControlBarrierArriveINTEL: *hasResult = false; *hasResultType = false; break;
