@@ -4,6 +4,7 @@
 .github/pull_request_template.md
 .github/workflows/cifuzz.yml
 .github/workflows/doc.yml
+.github/workflows/lint.yml
 .github/workflows/linux.yml
 .github/workflows/macos.yml
 .github/workflows/scorecard.yml
@@ -11,9 +12,9 @@
 .gitignore
 CMakeLists.txt
 CONTRIBUTING.md
-ChangeLog.rst
-LICENSE.rst
-README.rst
+ChangeLog.md
+LICENSE
+README.md
 doc/CMakeLists.txt
 doc/_static/bootstrap.min.js
 doc/_static/breathe.css
@@ -140,7 +141,6 @@ support/compute-powers.py
 support/docopt.py
 support/manage.py
 support/printable.py
-support/rst2md.py
 support/rtd/conf.py
 support/rtd/index.rst
 support/rtd/theme/layout.html
