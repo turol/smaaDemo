@@ -1444,6 +1444,7 @@ public:
 				for (const auto &p : cp.finalLayoutTransitions) {
 					RT rt    = p.first;
 					Layout l = p.second;
+					assert(l != Layout::General);
 					auto it = rg.rendertargets.find(rt);
 					assert(it != rg.rendertargets.end());
 					RenderTargetHandle targetHandle = getHandle(it->second);
