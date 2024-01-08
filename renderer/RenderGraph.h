@@ -177,11 +177,17 @@ private:
 	};
 
 
+	struct LayoutTransition {
+		Layout  source       = Layout::Undefined;
+		Layout  destination  = Layout::Undefined;
+	};
+
+
 	struct ComputePass {
 		RP                   id;
 		ComputePassDesc      desc;
 		RenderPassFunc       function;
-		HashMap<RT, Layout>  finalLayoutTransitions;
+		HashMap<RT, LayoutTransition>  finalLayoutTransitions;
 	};
 
 
@@ -509,7 +515,7 @@ private:
 				case Layout::TransferSrc:
 				case Layout::TransferDst:
 				case Layout::RenderAttachment: {
-					auto it DEBUG_ASSERTED = cp.finalLayoutTransitions.emplace(image, rt.finalLayout);
+					auto it DEBUG_ASSERTED = cp.finalLayoutTransitions.emplace(image, LayoutTransition { Layout::General, rt.finalLayout } );
 					assert(it.second);
 				} break;
 				}
@@ -532,7 +538,7 @@ private:
 				case Layout::TransferSrc:
 				case Layout::TransferDst:
 				case Layout::RenderAttachment: {
-					auto it DEBUG_ASSERTED = cp.finalLayoutTransitions.emplace(image, rt.finalLayout);
+					auto it DEBUG_ASSERTED = cp.finalLayoutTransitions.emplace(image, LayoutTransition { Layout::General, rt.finalLayout } );
 					assert(it.second);
 				} break;
 				}
@@ -669,7 +675,7 @@ private:
 				case Layout::TransferSrc:
 				case Layout::TransferDst:
 				case Layout::RenderAttachment: {
-					auto it DEBUG_ASSERTED = cp.finalLayoutTransitions.emplace(image, rt.finalLayout);
+					auto it DEBUG_ASSERTED = cp.finalLayoutTransitions.emplace(image, LayoutTransition { Layout::General, rt.finalLayout } );
 					assert(it.second);
 				} break;
 
@@ -693,7 +699,7 @@ private:
 				case Layout::TransferSrc:
 				case Layout::TransferDst:
 				case Layout::RenderAttachment: {
-					auto it DEBUG_ASSERTED = cp.finalLayoutTransitions.emplace(image, rt.finalLayout);
+					auto it DEBUG_ASSERTED = cp.finalLayoutTransitions.emplace(image, LayoutTransition { Layout::General, rt.finalLayout } );
 					assert(it.second);
 				} break;
 
@@ -1174,7 +1180,7 @@ public:
 					}
 
 					for (const auto &p : cp.finalLayoutTransitions) {
-						LOG(" {} -> {}", to_string(p.first), magic_enum::enum_name(p.second));
+						LOG(" {}: {} -> {}", to_string(p.first), magic_enum::enum_name(p.second.source), magic_enum::enum_name(p.second.destination));
 					}
 				}
 
@@ -1443,12 +1449,12 @@ public:
 
 				for (const auto &p : cp.finalLayoutTransitions) {
 					RT rt    = p.first;
-					Layout l = p.second;
-					assert(l != Layout::General);
 					auto it = rg.rendertargets.find(rt);
 					assert(it != rg.rendertargets.end());
 					RenderTargetHandle targetHandle = getHandle(it->second);
-					r.layoutTransition(targetHandle, Layout::General, l);
+
+					assert(p.second.source      != p.second.destination);
+					r.layoutTransition(targetHandle, p.second.source, p.second.destination);
 				}
 			}
 
