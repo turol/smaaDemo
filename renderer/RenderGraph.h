@@ -184,9 +184,9 @@ private:
 
 
 	struct ComputePass {
-		RP                   id;
-		ComputePassDesc      desc;
-		RenderPassFunc       function;
+		RP                             id;
+		ComputePassDesc                desc;
+		RenderPassFunc                 function;
 		HashMap<RT, LayoutTransition>  finalLayoutTransitions;
 	};
 
