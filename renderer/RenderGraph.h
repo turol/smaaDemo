@@ -515,7 +515,7 @@ private:
 				case Layout::TransferSrc:
 				case Layout::TransferDst:
 				case Layout::RenderAttachment: {
-					auto it DEBUG_ASSERTED = cp.finalLayoutTransitions.emplace(image, LayoutTransition { Layout::General, rt.finalLayout } );
+					auto it DEBUG_ASSERTED = cp.finalLayoutTransitions.emplace(image, LayoutTransition { Layout::ShaderRead, rt.finalLayout } );
 					assert(it.second);
 				} break;
 				}
