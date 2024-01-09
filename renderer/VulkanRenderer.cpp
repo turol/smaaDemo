@@ -691,6 +691,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		THROW_ERROR("Missing required extension VK_KHR_maintenance1")
 	}
 
+	if (!checkExt(VK_KHR_MAINTENANCE2_EXTENSION_NAME)) {
+		THROW_ERROR("Missing required extension VK_KHR_maintenance2")
+	}
+
 	spirvEnvironment = SPV_ENV_VULKAN_1_0;
 	LOG_TODO("pick SPIR-V version based on Vulkan version and extensions")
 	LOG("Using SPIR-V target environment {}", magic_enum::enum_name(spirvEnvironment));
