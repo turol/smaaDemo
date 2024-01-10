@@ -1703,7 +1703,7 @@ ComputePipelineHandle Renderer::createComputePipeline(const ComputePipelineDesc 
 	impl->debugNameObject<vk::Pipeline>(result.value, pipelineName);
 
 	if (impl->pipelineExecutableInfo) {
-		impl->logPipelineStatistics(std::string_view(pipelineName.data(), pipelineName.size()), pipeline);
+		impl->logPipelineStatistics(PipelineType::Compute, std::string_view(pipelineName.data(), pipelineName.size()), pipeline);
 	}
 
 	ComputePipeline p;
@@ -1885,7 +1885,7 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 			}
 		}
 
-		impl->logPipelineStatistics(std::string_view(pipelineName.data(), pipelineName.size()), pipeline);
+		impl->logPipelineStatistics(PipelineType::Graphics, std::string_view(pipelineName.data(), pipelineName.size()), pipeline);
 	}
 
 	GraphicsPipeline p;
@@ -1897,8 +1897,8 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 }
 
 
-void RendererImpl::logPipelineStatistics(std::string_view pipelineName, vk::Pipeline pipeline) {
-	LOG("GraphicsPipeline \"{}\" executable properties:", pipelineName);
+void RendererImpl::logPipelineStatistics(PipelineType type, std::string_view pipelineName, vk::Pipeline pipeline) {
+	LOG("{}Pipeline \"{}\" executable properties:", magic_enum::enum_name(type), pipelineName);
 
 	vk::PipelineInfoKHR pipelineInfo;
 	pipelineInfo.pipeline = pipeline;
