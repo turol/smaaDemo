@@ -1510,6 +1510,8 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 				continue;
 			}
 
+			assert(desc.colorRTs_[i].nextUsage.any());
+
 			magic_enum::enum_for_each<TextureUsage>([&] (auto u) {
 				// this is ugly but it makes the compiler check completeness of the switch
 				if (!desc.colorRTs_[i].nextUsage.test(u)) { return; }
@@ -1570,6 +1572,8 @@ RenderPassHandle Renderer::createRenderPass(const RenderPassDesc &desc) {
 			after.dstStageMask   |= vk::PipelineStageFlagBits::eFragmentShader;
 			after.dstAccessMask  |= vk::AccessFlagBits::eShaderRead;
 		}
+
+		assert(after.dstStageMask);
 	}
 
 	info.dependencyCount  = dependencies.size();

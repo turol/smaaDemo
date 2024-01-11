@@ -520,6 +520,7 @@ private:
 				} break;
 				}
 				rt.finalLayout = Layout::ShaderRead;
+				rt.nextUsage   = { TextureUsage::Sampling };
 			}
 
 			for (RT image : cp.desc.writeImages) {
@@ -543,6 +544,7 @@ private:
 				} break;
 				}
 				rt.finalLayout = Layout::General;
+				rt.nextUsage   = { TextureUsage::StorageWrite };
 			}
 		}
 
@@ -681,6 +683,7 @@ private:
 
 				}
 				rt.finalLayout = Layout::General;
+				rt.nextUsage   = { TextureUsage::Sampling };
 			}
 
 			for (RT image : cp.desc.writeImages) {
@@ -705,6 +708,7 @@ private:
 
 				}
 				rt.finalLayout = Layout::General;
+				rt.nextUsage   = { TextureUsage::StorageWrite };
 			}
 		}
 
