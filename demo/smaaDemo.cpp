@@ -1507,6 +1507,8 @@ void SMAADemo::rebuildRenderGraph() {
 				break;
 
 			case AAMethod::FXAA:
+			case AAMethod::SMAA:
+			case AAMethod::SMAA2X:
 				switch (pipelineType) {
 				case PipelineType::Compute:
 					// sRGBA format not allowed with storage image
@@ -1521,10 +1523,6 @@ void SMAADemo::rebuildRenderGraph() {
 				}
 				break;
 
-			case AAMethod::SMAA:
-			case AAMethod::SMAA2X:
-				rtDesc.usage({ TextureUsage::BlitSource });
-				break;
 			}
 		} else {
 			rtDesc.usage({ TextureUsage::BlitSource });
