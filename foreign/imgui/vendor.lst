@@ -1,7 +1,8 @@
 .editorconfig
 .gitattributes
 .github/FUNDING.yml
-.github/issue_template.md
+.github/ISSUE_TEMPLATE/config.yml
+.github/ISSUE_TEMPLATE/issue_template.yml
 .github/pull_request_template.md
 .github/workflows/build.yml
 .github/workflows/scheduled.yml
