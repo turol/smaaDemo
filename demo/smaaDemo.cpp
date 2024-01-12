@@ -558,6 +558,7 @@ class SMAADemo {
 	SamplerHandle                                     nearestSampler;
 
 	SMAAPipelines<GraphicsPipelineHandle>             smaaPipelines;
+	SMAAPipelines<ComputePipelineHandle>              smaaComputePipelines;
 	TextureHandle                                     areaTex;
 	TextureHandle                                     searchTex;
 
@@ -612,9 +613,15 @@ class SMAADemo {
 
 	void renderSeparate(RenderPasses rp, DemoRenderGraph::PassResources &r);
 
+	void computeSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &r, Rendertargets input, Rendertargets output, int pass);
+
 	void renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &r, Rendertargets input, int pass);
 
+	void computeSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources &r, Rendertargets output, int pass);
+
 	void renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources &r, int pass);
+
+	void computeSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &r, Rendertargets input, Rendertargets output, int pass);
 
 	void renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &r, Rendertargets input, int pass);
 
@@ -1143,6 +1150,26 @@ const DescriptorLayout EdgeDetectionDS::layout[] = {
 DSLayoutHandle EdgeDetectionDS::layoutHandle;
 
 
+struct EdgeDetectionComputeDS {
+	BufferHandle   smaaUBO;
+
+	TextureHandle  color;
+	TextureHandle  outputImage;
+
+	DS_LAYOUT_MEMBERS;
+};
+
+
+const DescriptorLayout EdgeDetectionComputeDS::layout[] = {
+	  { DescriptorType::UniformBuffer,    offsetof(EdgeDetectionComputeDS, smaaUBO) }
+	, DESCRIPTOR(EdgeDetectionComputeDS, color)
+	, { DescriptorType::StorageImageWrite, offsetof(EdgeDetectionComputeDS, outputImage) }
+	, { DescriptorType::End,              0,                                 }
+};
+
+DSLayoutHandle EdgeDetectionComputeDS::layoutHandle;
+
+
 struct BlendWeightDS {
 	BufferHandle   smaaUBO;
 
@@ -1165,6 +1192,30 @@ const DescriptorLayout BlendWeightDS::layout[] = {
 DSLayoutHandle BlendWeightDS::layoutHandle;
 
 
+struct BlendWeightComputeDS {
+	BufferHandle   smaaUBO;
+
+	TextureHandle  edgesTex;
+	TextureHandle  areaTex;
+	TextureHandle  searchTex;
+	TextureHandle  outputImage;
+
+	DS_LAYOUT_MEMBERS;
+};
+
+
+const DescriptorLayout BlendWeightComputeDS::layout[] = {
+	  { DescriptorType::UniformBuffer,    offsetof(BlendWeightComputeDS, smaaUBO) }
+	, DESCRIPTOR(BlendWeightComputeDS, edgesTex)
+	, DESCRIPTOR(BlendWeightComputeDS, areaTex)
+	, DESCRIPTOR(BlendWeightComputeDS, searchTex)
+	, { DescriptorType::StorageImageWrite, offsetof(BlendWeightComputeDS, outputImage) }
+	, { DescriptorType::End,              0,                               }
+};
+
+DSLayoutHandle BlendWeightComputeDS::layoutHandle;
+
+
 struct NeighborBlendDS {
 	BufferHandle   smaaUBO;
 
@@ -1183,6 +1234,28 @@ const DescriptorLayout NeighborBlendDS::layout[] = {
 };
 
 DSLayoutHandle NeighborBlendDS::layoutHandle;
+
+
+struct NeighborBlendComputeDS {
+	BufferHandle   smaaUBO;
+
+	TextureHandle  color;
+	TextureHandle  blendweights;
+	TextureHandle  outputImage;
+
+	DS_LAYOUT_MEMBERS;
+};
+
+
+const DescriptorLayout NeighborBlendComputeDS::layout[] = {
+	  { DescriptorType::UniformBuffer,    offsetof(NeighborBlendComputeDS, smaaUBO) }
+	, DESCRIPTOR(NeighborBlendComputeDS, color)
+	, DESCRIPTOR(NeighborBlendComputeDS, blendweights)
+	, { DescriptorType::StorageImageWrite, offsetof(NeighborBlendComputeDS, outputImage) }
+	, { DescriptorType::End,              0                                  }
+};
+
+DSLayoutHandle NeighborBlendComputeDS::layoutHandle;
 
 
 struct TemporalAADS {
@@ -1279,8 +1352,11 @@ void SMAADemo::initRender() {
 	renderer.registerDescriptorSetLayout<ColorCombinedDS>();
 	renderer.registerDescriptorSetLayout<ColorTexDS>();
 	renderer.registerDescriptorSetLayout<EdgeDetectionDS>();
+	renderer.registerDescriptorSetLayout<EdgeDetectionComputeDS>();
 	renderer.registerDescriptorSetLayout<BlendWeightDS>();
+	renderer.registerDescriptorSetLayout<BlendWeightComputeDS>();
 	renderer.registerDescriptorSetLayout<NeighborBlendDS>();
+	renderer.registerDescriptorSetLayout<NeighborBlendComputeDS>();
 	renderer.registerDescriptorSetLayout<TemporalAADS>();
 
 	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear) .name("linear"));
@@ -1807,24 +1883,59 @@ void SMAADemo::rebuildRenderGraph() {
 	};
 
 	auto smaaEdgesPass = [&] (RenderPasses renderPass, Rendertargets input, int pass) {
+		switch (pipelineType) {
+		case PipelineType::Compute: {
+			DemoRenderGraph::ComputePassDesc desc;
+			desc.sampledRendertarget(input)
+				.storageImageWrite(Rendertargets::SMAAEdges)
+				.name("SMAA edges");
+			renderGraph.computePass(renderPass, desc, std::bind(&SMAADemo::computeSMAAEdges, this, _1, _2, input, Rendertargets::SMAAEdges, pass));
+		} break;
+
+		case PipelineType::Graphics: {
 		DemoRenderGraph::PassDesc desc;
 		desc.color(0, Rendertargets::SMAAEdges, PassBegin::Clear)
 			.inputRendertarget(input)
 			.name("SMAA edges");
 
 		renderGraph.renderPass(renderPass, desc, std::bind(&SMAADemo::renderSMAAEdges, this, _1, _2, input, pass));
+		} break;
+		}
 	};
 
 	auto smaaWeightsPass = [&] (RenderPasses renderPass, int pass) {
+		switch (pipelineType) {
+		case PipelineType::Compute: {
+			DemoRenderGraph::ComputePassDesc desc;
+			desc.sampledRendertarget(Rendertargets::SMAAEdges)
+				.storageImageWrite(Rendertargets::SMAABlendWeights)
+				.name("SMAA weights");
+			renderGraph.computePass(renderPass, desc, std::bind(&SMAADemo::computeSMAAWeights, this, _1, _2, Rendertargets::SMAABlendWeights, pass));
+		} break;
+
+		case PipelineType::Graphics: {
 		DemoRenderGraph::PassDesc desc;
 		desc.color(0, Rendertargets::SMAABlendWeights, PassBegin::Clear)
 			.inputRendertarget(Rendertargets::SMAAEdges)
 			.name("SMAA weights");
 
 		renderGraph.renderPass(renderPass, desc, std::bind(&SMAADemo::renderSMAAWeights, this, _1, _2, pass));
+		} break;
+		}
 	};
 
 	auto smaaBlendPass = [&] (RenderPasses renderPass, Rendertargets input, Rendertargets output, PassBegin passBegin, int pass, const char *name) {
+		switch (pipelineType) {
+		case PipelineType::Compute: {
+			DemoRenderGraph::ComputePassDesc desc;
+			desc.sampledRendertarget(input)
+			    .sampledRendertarget(Rendertargets::SMAABlendWeights)
+			    .storageImageWrite(output)
+			    .name(name);
+			renderGraph.computePass(renderPass, desc, std::bind(&SMAADemo::computeSMAABlend, this, _1, _2, input, output, pass));
+		} break;
+
+		case PipelineType::Graphics: {
 		DemoRenderGraph::PassDesc desc;
 		desc.color(0, output, passBegin)
 			.inputRendertarget(input)
@@ -1832,6 +1943,8 @@ void SMAADemo::rebuildRenderGraph() {
 			.name(name);
 
 		renderGraph.renderPass(renderPass, desc, std::bind(&SMAADemo::renderSMAABlend, this, _1, _2, input, pass));
+		} break;
+		}
 	};
 
 	if (antialiasing) {
@@ -2054,6 +2167,11 @@ void SMAADemo::rebuildRenderGraph() {
 	smaaPipelines.blendWeightPipeline.reset();
 	smaaPipelines.neighborPipelines[0].reset();
 	smaaPipelines.neighborPipelines[1].reset();
+
+	smaaComputePipelines.edgePipeline.reset();
+	smaaComputePipelines.blendWeightPipeline.reset();
+	smaaComputePipelines.neighborPipelines[0].reset();
+	smaaComputePipelines.neighborPipelines[1].reset();
 
 	for (unsigned int i = 0; i < 2; i++) {
 		temporalAAPipelines[i].reset();
@@ -3301,6 +3419,51 @@ void SMAADemo::renderSeparate(RenderPasses rp, DemoRenderGraph::PassResources &r
 }
 
 
+void SMAADemo::computeSMAAEdges(RenderPasses /* rp */, DemoRenderGraph::PassResources &r, Rendertargets input, Rendertargets output, int pass) {
+	LOG_TODO("adapt two-pass algorithm from https://github.com/Microsoft/DirectX-Graphics-Samples/blob/master/MiniEngine/Core/Shaders/FXAAPass1CS.hlsli")
+
+	renderer.bindComputePipeline(getCachedPipeline(smaaComputePipelines.edgePipeline, [&] () {
+		ShaderMacros macros;
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
+		macros.set(qualityString, "1");
+		macros.set("SMAA_GLSL_SEPARATE_SAMPLER", "1");
+
+		if (smaaEdgeMethod != SMAAEdgeMethod::Color) {
+			macros.set("EDGEMETHOD", std::to_string(static_cast<uint8_t>(smaaEdgeMethod)));
+		}
+
+		ComputePipelineDesc plDesc;
+		plDesc.descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<EdgeDetectionComputeDS>(1)
+		      .shaderMacros(macros)
+		      .shaderLanguage(preferredShaderLanguage)
+		      .computeShader("smaaEdge")
+		      .name(std::string("SMAA edges ") + std::to_string(smaaQuality));
+
+		return renderGraph.createComputePipeline(renderer, plDesc);
+	}));
+
+	LOG_TODO("this is redundant, clean it up")
+	ShaderDefines::SMAAUBO smaaUBO;
+	smaaUBO.smaaParameters        = smaaParameters;
+	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
+	smaaUBO.subsampleIndices      = subsampleIndices[pass];
+
+	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
+
+	EdgeDetectionComputeDS edgeDS;
+	edgeDS.smaaUBO     = smaaUBOBuf;
+	edgeDS.color       = r.get(input, Format::RGBA8);
+	edgeDS.outputImage = r.get(output, Format::RGBA8);
+
+	renderer.bindDescriptorSet(PipelineType::Compute, 1, edgeDS, layoutUsage);
+
+	unsigned int groupsX = (rendererDesc.swapchain.width  + SMAA_EDGES_COMPUTE_GROUP_X - 1) / SMAA_EDGES_COMPUTE_GROUP_X;
+	unsigned int groupsY = (rendererDesc.swapchain.height + SMAA_EDGES_COMPUTE_GROUP_Y - 1) / SMAA_EDGES_COMPUTE_GROUP_Y;
+	renderer.dispatchCompute2D(groupsX, groupsY);
+}
+
+
 void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &r, Rendertargets input, int pass) {
 	renderer.bindGraphicsPipeline(getCachedPipeline(smaaPipelines.edgePipeline, [&] () {
 		ShaderMacros macros;
@@ -3348,6 +3511,53 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 }
 
 
+void SMAADemo::computeSMAAWeights(RenderPasses /* rp */, DemoRenderGraph::PassResources &r, Rendertargets output, int pass) {
+	renderer.bindComputePipeline(getCachedPipeline(smaaComputePipelines.blendWeightPipeline, [&] () {
+		ShaderMacros macros;
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
+		macros.set(qualityString, "1");
+		macros.set("SMAA_GLSL_SEPARATE_SAMPLER", "1");
+
+		if (!useTexGather) {
+			macros.set("SMAA_NO_GATHER", "1");
+		}
+
+		ComputePipelineDesc plDesc;
+		plDesc.descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<BlendWeightComputeDS>(1)
+		      .shaderMacros(macros)
+		      .shaderLanguage(preferredShaderLanguage)
+		      .computeShader("smaaBlendWeight")
+		      .name(std::string("SMAA weights ") + std::to_string(smaaQuality));
+
+		return renderGraph.createComputePipeline(renderer, plDesc);
+	}));
+
+	LOG_TODO("this is redundant, clean it up")
+	ShaderDefines::SMAAUBO smaaUBO;
+	smaaUBO.smaaParameters        = smaaParameters;
+	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
+	smaaUBO.subsampleIndices      = subsampleIndices[pass];
+
+	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
+
+	BlendWeightComputeDS blendWeightDS;
+	blendWeightDS.smaaUBO         = smaaUBOBuf;
+
+	blendWeightDS.edgesTex        = r.get(Rendertargets::SMAAEdges);
+	blendWeightDS.areaTex         = areaTex;
+	blendWeightDS.searchTex       = searchTex;
+	blendWeightDS.outputImage     = r.get(output, Format::RGBA8);
+
+	renderer.bindDescriptorSet(PipelineType::Compute, 1, blendWeightDS, layoutUsage);
+
+	unsigned int groupsX = (rendererDesc.swapchain.width  + SMAA_WEIGHTS_COMPUTE_GROUP_X - 1) / SMAA_WEIGHTS_COMPUTE_GROUP_X;
+	unsigned int groupsY = (rendererDesc.swapchain.height + SMAA_WEIGHTS_COMPUTE_GROUP_Y - 1) / SMAA_WEIGHTS_COMPUTE_GROUP_Y;
+
+	renderer.dispatchCompute2D(groupsX, groupsY);
+}
+
+
 void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources &r, int pass) {
 	renderer.bindGraphicsPipeline(getCachedPipeline(smaaPipelines.blendWeightPipeline, [&] () {
 		ShaderMacros macros;
@@ -3391,6 +3601,60 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 	renderer.bindDescriptorSet(PipelineType::Graphics, 1, blendWeightDS, layoutUsage);
 
 	renderer.draw(0, 3);
+}
+
+
+void SMAADemo::computeSMAABlend(RenderPasses /* rp */, DemoRenderGraph::PassResources &r, Rendertargets input, Rendertargets output, int pass) {
+	// full effect
+	renderer.bindComputePipeline(getCachedPipeline(smaaComputePipelines.neighborPipelines[pass], [&] () {
+		ShaderMacros macros;
+		std::string qualityString(std::string("SMAA_PRESET_") + smaaQualityLevels[smaaQuality]);
+		macros.set(qualityString, "1");
+		macros.set("SMAA_GLSL_SEPARATE_SAMPLER", "1");
+
+		if (!useTexGather) {
+			macros.set("SMAA_NO_GATHER", "1");
+		}
+
+		ComputePipelineDesc plDesc;
+		plDesc.descriptorSetLayout<GlobalDS>(0)
+		      .descriptorSetLayout<NeighborBlendComputeDS>(1)
+		      .shaderMacros(macros)
+		      .shaderLanguage(preferredShaderLanguage)
+		      .computeShader("smaaNeighbor");
+
+		if (pass == 0) {
+			plDesc.name(std::string("SMAA blend ") + std::to_string(smaaQuality));
+		} else {
+			assert(pass == 1);
+			LOG_TODO("blend macro")
+			plDesc.name(std::string("SMAA blend (S2X) ") + std::to_string(smaaQuality));
+		}
+
+		return renderGraph.createComputePipeline(renderer, plDesc);
+	}));
+
+	LOG_TODO("this is redundant, clean it up")
+	ShaderDefines::SMAAUBO smaaUBO;
+	smaaUBO.smaaParameters        = smaaParameters;
+	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
+	smaaUBO.subsampleIndices      = subsampleIndices[pass];
+
+	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
+
+	NeighborBlendComputeDS neighborBlendDS;
+	neighborBlendDS.smaaUBO              = smaaUBOBuf;
+
+	neighborBlendDS.color                = r.get(input);
+	neighborBlendDS.blendweights         = r.get(Rendertargets::SMAABlendWeights);
+	neighborBlendDS.outputImage          = r.get(output);
+
+	renderer.bindDescriptorSet(PipelineType::Compute, 1, neighborBlendDS, layoutUsage);
+
+	unsigned int groupsX = (rendererDesc.swapchain.width  + SMAA_BLEND_COMPUTE_GROUP_X - 1) / SMAA_BLEND_COMPUTE_GROUP_X;
+	unsigned int groupsY = (rendererDesc.swapchain.height + SMAA_BLEND_COMPUTE_GROUP_Y - 1) / SMAA_BLEND_COMPUTE_GROUP_Y;
+
+	renderer.dispatchCompute2D(groupsX, groupsY);
 }
 
 
