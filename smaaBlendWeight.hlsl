@@ -28,6 +28,8 @@ THE SOFTWARE.
 #define SMAA_HLSL_4_1 1
 #define SMAA_HLSL_NO_SAMPLERS 1
 
+#define SMAA_INCLUDE_CS 1
+
 #ifdef VULKAN_FLIP
 #define SMAA_FLIP_Y 0
 #else  // VULKAN_FLIP
@@ -41,6 +43,7 @@ THE SOFTWARE.
 [[vk::binding(1, 1)]] uniform SMAATexture2D(edgesTex);
 [[vk::binding(2, 1)]] uniform SMAATexture2D(areaTex);
 [[vk::binding(3, 1)]] uniform SMAATexture2D(searchTex);
+[[vk::binding(4, 1)]] uniform RWTexture2D<float4> outputImage;
 
 
 struct VertexOut {
@@ -85,3 +88,22 @@ float4 fragmentShader(VertexOut v)
     offsets[2] = v.offset2;
     return SMAABlendingWeightCalculationPS(v.texcoord, v.pixcoord, offsets, edgesTex, areaTex, searchTex, subsampleIndices);
 }
+
+
+[numthreads(SMAA_WEIGHTS_COMPUTE_GROUP_X, SMAA_WEIGHTS_COMPUTE_GROUP_Y, 1)]
+void computeShader(int3 GlobalInvocationID : SV_DispatchThreadID)
+{
+    // don't write outside image in case its size is not exactly divisible by group size
+    if (GlobalInvocationID.x < screenSize.z && GlobalInvocationID.y < screenSize.w) {
+        // TODO: rearrange invocations for better cache locality
+        float2 texcoord = GlobalInvocationID.xy;
+        // account for pixel center TODO: pass precalculated value in UBO to avoid one op
+        texcoord += float2(0.5, 0.5);
+        texcoord *= screenSize.xy;
+
+        float4 pixel = SMAABlendingWeightCalculationCS(texcoord, edgesTex, areaTex, searchTex, subsampleIndices);
+
+        outputImage[GlobalInvocationID.xy] = pixel;
+    }
+}
+

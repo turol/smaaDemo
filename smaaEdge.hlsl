@@ -28,6 +28,8 @@ THE SOFTWARE.
 #define SMAA_HLSL_4_1 1
 #define SMAA_HLSL_NO_SAMPLERS 1
 
+#define SMAA_INCLUDE_CS 1
+
 #ifdef VULKAN_FLIP
 #define SMAA_FLIP_Y 0
 #else  // VULKAN_FLIP
@@ -39,6 +41,7 @@ THE SOFTWARE.
 
 
 [[vk::binding(1, 1)]] uniform SMAATexture2D(colorTex);
+[[vk::binding(2, 1)]] uniform RWTexture2D<float4> outputImage;
 
 
 struct VertexOut {
@@ -94,4 +97,34 @@ float4 fragmentShader(VertexOut v)
 
 #endif
 
+}
+
+
+[numthreads(SMAA_EDGES_COMPUTE_GROUP_X, SMAA_EDGES_COMPUTE_GROUP_Y, 1)]
+void computeShader(int3 GlobalInvocationID : SV_DispatchThreadID)
+{
+    // don't write outside image in case its size is not exactly divisible by group size
+    if (GlobalInvocationID.x < screenSize.z && GlobalInvocationID.y < screenSize.w) {
+        // TODO: rearrange invocations for better cache locality
+        float2 texcoord = GlobalInvocationID.xy;
+        // account for pixel center TODO: pass precalculated value in UBO to avoid one op
+        texcoord += float2(0.5, 0.5);
+        texcoord *= screenSize.xy;
+
+#if EDGEMETHOD == 0
+
+        float2 pixel = SMAAColorEdgeDetectionCS(texcoord, colorTex);
+
+#elif EDGEMETHOD == 1
+
+        float2 pixel = SMAALumaEdgeDetectionCS(texcoord, colorTex);
+
+#else
+
+#error Bad EDGEMETHOD
+
+#endif
+
+        outputImage[GlobalInvocationID.xy] = float4(pixel, 0.0, 0.0);
+    }
 }

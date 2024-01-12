@@ -21,74 +21,44 @@ THE SOFTWARE.
 */
 
 
-#define HLSL
+#version 450 core
+
 #include "shaderDefines.h"
 
 #define SMAA_RT_METRICS screenSize
-#define SMAA_HLSL_4_1 1
-#define SMAA_HLSL_NO_SAMPLERS 1
+#define SMAA_GLSL_4 1
 
 #define SMAA_INCLUDE_CS 1
+#define SMAA_INCLUDE_PS 0
+#define SMAA_INCLUDE_VS 0
 
 #ifdef VULKAN_FLIP
 #define SMAA_FLIP_Y 0
-#else  // VULKAN_FLIP
-#define SMAA_FLIP_Y 1
-#endif  // VULKAN_FLIP
+#endif
+
 
 #include "smaa.h"
-#include "shaderUtils.h"
 
 
-[[vk::binding(1, 1)]] uniform SMAATexture2D(colorTex);
-[[vk::binding(2, 1)]] uniform SMAATexture2D(blendTex);
-[[vk::binding(3, 1)]] uniform RWTexture2D<float4> outputImage;
+layout(local_size_x = SMAA_WEIGHTS_COMPUTE_GROUP_X, local_size_y = SMAA_WEIGHTS_COMPUTE_GROUP_Y) in;
+
+layout(set = 1, binding = 1) uniform SMAATexture2D(colorTex);
+layout(set = 1, binding = 2) uniform SMAATexture2D(blendTex);
+layout(set = 1, binding = 3, rgba8) uniform writeonly image2D outputImage;
 
 
-struct VertexOut {
-	float4 position : SV_Position;
-	float2 texcoord : TEXCOORD0;
-	float4 offset   : TEXCOORD1;
-};
-
-
-VertexOut vertexShader(uint gl_VertexIndex : SV_VertexID)
-{
-    VertexOut v;
-    float2 pos = triangleVertex(gl_VertexIndex, v.texcoord);
-
-#ifndef VULKAN_FLIP
-    v.texcoord = flipTexCoord(v.texcoord);
-#endif  // VULKAN_FLIP
-
-    v.offset = float4(0.0, 0.0, 0.0, 0.0);
-    SMAANeighborhoodBlendingVS(v.texcoord, v.offset);
-    v.position = float4(pos, 1.0, 1.0);
-
-    return v;
-}
-
-
-float4 fragmentShader(VertexOut v)
-{
-    return SMAANeighborhoodBlendingPS(v.texcoord, v.offset, colorTex, blendTex);
-}
-
-
-[numthreads(SMAA_BLEND_COMPUTE_GROUP_X, SMAA_BLEND_COMPUTE_GROUP_Y, 1)]
-void computeShader(int3 GlobalInvocationID : SV_DispatchThreadID)
+void main(void)
 {
     // don't write outside image in case its size is not exactly divisible by group size
-    if (GlobalInvocationID.x < screenSize.z && GlobalInvocationID.y < screenSize.w) {
+    if (gl_GlobalInvocationID.x < screenSize.z && gl_GlobalInvocationID.y < screenSize.w) {
         // TODO: rearrange invocations for better cache locality
-        float2 texcoord = GlobalInvocationID.xy;
+        vec2 texcoord = gl_GlobalInvocationID.xy;
         // account for pixel center TODO: pass precalculated value in UBO to avoid one op
-        texcoord += float2(0.5, 0.5);
+        texcoord += vec2(0.5, 0.5);
         texcoord *= screenSize.xy;
 
-        float4 pixel = SMAANeighborhoodBlendingCS(texcoord, colorTex, blendTex);
+        vec4 outColor = SMAANeighborhoodBlendingCS(texcoord, colorTex, blendTex);
 
-        outputImage[GlobalInvocationID.xy] = pixel;
+        imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), outColor);
     }
 }
-
