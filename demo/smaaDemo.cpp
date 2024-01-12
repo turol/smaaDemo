@@ -1893,12 +1893,12 @@ void SMAADemo::rebuildRenderGraph() {
 		} break;
 
 		case PipelineType::Graphics: {
-		DemoRenderGraph::PassDesc desc;
-		desc.color(0, Rendertargets::SMAAEdges, PassBegin::Clear)
-			.inputRendertarget(input)
-			.name("SMAA edges");
+			DemoRenderGraph::PassDesc desc;
+			desc.color(0, Rendertargets::SMAAEdges, PassBegin::Clear)
+			    .inputRendertarget(input)
+			    .name("SMAA edges");
 
-		renderGraph.renderPass(renderPass, desc, std::bind(&SMAADemo::renderSMAAEdges, this, _1, _2, input, pass));
+			renderGraph.renderPass(renderPass, desc, std::bind(&SMAADemo::renderSMAAEdges, this, _1, _2, input, pass));
 		} break;
 		}
 	};
@@ -1914,12 +1914,12 @@ void SMAADemo::rebuildRenderGraph() {
 		} break;
 
 		case PipelineType::Graphics: {
-		DemoRenderGraph::PassDesc desc;
-		desc.color(0, Rendertargets::SMAABlendWeights, PassBegin::Clear)
-			.inputRendertarget(Rendertargets::SMAAEdges)
-			.name("SMAA weights");
+			DemoRenderGraph::PassDesc desc;
+			desc.color(0, Rendertargets::SMAABlendWeights, PassBegin::Clear)
+			    .inputRendertarget(Rendertargets::SMAAEdges)
+			    .name("SMAA weights");
 
-		renderGraph.renderPass(renderPass, desc, std::bind(&SMAADemo::renderSMAAWeights, this, _1, _2, pass));
+			renderGraph.renderPass(renderPass, desc, std::bind(&SMAADemo::renderSMAAWeights, this, _1, _2, pass));
 		} break;
 		}
 	};
@@ -1936,13 +1936,13 @@ void SMAADemo::rebuildRenderGraph() {
 		} break;
 
 		case PipelineType::Graphics: {
-		DemoRenderGraph::PassDesc desc;
-		desc.color(0, output, passBegin)
-			.inputRendertarget(input)
-			.inputRendertarget(Rendertargets::SMAABlendWeights)
-			.name(name);
+			DemoRenderGraph::PassDesc desc;
+			desc.color(0, output, passBegin)
+			    .inputRendertarget(input)
+			    .inputRendertarget(Rendertargets::SMAABlendWeights)
+			    .name(name);
 
-		renderGraph.renderPass(renderPass, desc, std::bind(&SMAADemo::renderSMAABlend, this, _1, _2, input, pass));
+			renderGraph.renderPass(renderPass, desc, std::bind(&SMAADemo::renderSMAABlend, this, _1, _2, input, pass));
 		} break;
 		}
 	};
@@ -3014,16 +3014,16 @@ void SMAADemo::runAuto() {
 						for (auto p : magic_enum::enum_values<PipelineType>()) {
 							pipelineType = p;
 
-						for (unsigned int q = 0; q < maxSMAAQuality; q++) {
-							smaaQuality = q;
+							for (unsigned int q = 0; q < maxSMAAQuality; q++) {
+								smaaQuality = q;
 
-							for (auto e : magic_enum::enum_values<SMAAEdgeMethod>()) {
-								smaaEdgeMethod = e;
-								for (auto d : magic_enum::enum_values<SMAADebugMode>()) {
-									debugMode = d;
-									innermostLoop();
+								for (auto e : magic_enum::enum_values<SMAAEdgeMethod>()) {
+									smaaEdgeMethod = e;
+									for (auto d : magic_enum::enum_values<SMAADebugMode>()) {
+										debugMode = d;
+										innermostLoop();
+									}
 								}
-							}
 							}
 						}
 						break;
@@ -3032,15 +3032,15 @@ void SMAADemo::runAuto() {
 						for (auto p : magic_enum::enum_values<PipelineType>()) {
 							pipelineType = p;
 
-						for (unsigned int q = 0; q < maxSMAAQuality; q++) {
-							smaaQuality = q;
+							for (unsigned int q = 0; q < maxSMAAQuality; q++) {
+								smaaQuality = q;
 
-							// depth causes problems because it's multisampled
-							for (auto e : { SMAAEdgeMethod::Color, SMAAEdgeMethod::Luma }) {
-								smaaEdgeMethod = e;
-								innermostLoop();
+								// depth causes problems because it's multisampled
+								for (auto e : { SMAAEdgeMethod::Color, SMAAEdgeMethod::Luma }) {
+									smaaEdgeMethod = e;
+									innermostLoop();
+								}
 							}
-						}
 						}
 					}
 
