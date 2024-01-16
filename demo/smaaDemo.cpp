@@ -243,6 +243,7 @@ static const float defaultCameraDistance = 25.0f;
 enum class SMAAEdgeMethod : uint8_t {
 	  Color
 	, Luma
+	, Depth
 };
 
 
@@ -1883,10 +1884,13 @@ void SMAADemo::rebuildRenderGraph() {
 	};
 
 	auto smaaEdgesPass = [&] (RenderPasses renderPass, Rendertargets input, int pass) {
+		LOG_TODO("only add MainDepth when using predication")
+
 		switch (pipelineType) {
 		case PipelineType::Compute: {
 			DemoRenderGraph::ComputePassDesc desc;
 			desc.sampledRendertarget(input)
+			    .sampledRendertarget(Rendertargets::MainDepth)
 				.storageImageWrite(Rendertargets::SMAAEdges)
 				.name("SMAA edges");
 			renderGraph.computePass(renderPass, desc, std::bind(&SMAADemo::computeSMAAEdges, this, _1, _2, input, Rendertargets::SMAAEdges, pass));
@@ -1896,6 +1900,7 @@ void SMAADemo::rebuildRenderGraph() {
 			DemoRenderGraph::PassDesc desc;
 			desc.color(0, Rendertargets::SMAAEdges, PassBegin::Clear)
 			    .inputRendertarget(input)
+			    .inputRendertarget(Rendertargets::MainDepth)
 			    .name("SMAA edges");
 
 			renderGraph.renderPass(renderPass, desc, std::bind(&SMAADemo::renderSMAAEdges, this, _1, _2, input, pass));
@@ -3522,7 +3527,11 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 	EdgeDetectionDS edgeDS;
 	edgeDS.smaaUBO = smaaUBOBuf;
 
+	if (smaaEdgeMethod == SMAAEdgeMethod::Depth) {
+		edgeDS.color         = r.get(Rendertargets::MainDepth);
+	} else {
 		edgeDS.color         = r.get(input, Format::RGBA8);
+	}
 
 	renderer.bindDescriptorSet(PipelineType::Graphics, 1, edgeDS, layoutUsage);
 	renderer.draw(0, 3);

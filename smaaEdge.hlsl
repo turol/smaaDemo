@@ -40,7 +40,15 @@ THE SOFTWARE.
 #include "shaderUtils.h"
 
 
+#if EDGEMETHOD == 2
+
+[[vk::binding(1, 1)]] uniform SMAATexture2D(depthTex);
+
+#else  // EDGEMETHOD
+
 [[vk::binding(1, 1)]] uniform SMAATexture2D(colorTex);
+#endif  // EDGEMETHOD
+
 [[vk::binding(2, 1)]] uniform RWTexture2D<float4> outputImage;
 
 
@@ -91,6 +99,10 @@ float4 fragmentShader(VertexOut v)
 
     return float4(SMAALumaEdgeDetectionPS(v.texcoord, offsets, colorTex), 0.0, 0.0);
 
+#elif EDGEMETHOD == 2
+
+    return float4(SMAADepthEdgeDetectionPS(v.texcoord, offsets, depthTex), 0.0, 0.0);
+
 #else
 
 #error Bad EDGEMETHOD
@@ -118,6 +130,10 @@ void computeShader(int3 GlobalInvocationID : SV_DispatchThreadID)
 #elif EDGEMETHOD == 1
 
         float2 pixel = SMAALumaEdgeDetectionCS(texcoord, colorTex);
+
+#elif EDGEMETHOD == 2
+
+        float2 pixel = SMAADepthEdgeDetectionCS(texcoord, depthTex);
 
 #else
 
