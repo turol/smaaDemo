@@ -3003,9 +3003,13 @@ void SMAADemo::runAuto() {
 						for (unsigned int q = 0; q < maxFXAAQuality; q++) {
 							fxaaQuality = q;
 
+							for (bool gather : { true, false }) {
+								useTexGather = gather;
+
 							for (auto p : magic_enum::enum_values<PipelineType>()) {
 								pipelineType = p;
 								innermostLoop();
+							}
 							}
 						}
 						break;
@@ -3019,9 +3023,14 @@ void SMAADemo::runAuto() {
 
 								for (auto e : magic_enum::enum_values<SMAAEdgeMethod>()) {
 									smaaEdgeMethod = e;
+
+									for (bool gather : { true, false }) {
+										useTexGather = gather;
+
 									for (auto d : magic_enum::enum_values<SMAADebugMode>()) {
 										debugMode = d;
 										innermostLoop();
+									}
 									}
 								}
 							}
@@ -3038,7 +3047,12 @@ void SMAADemo::runAuto() {
 								// depth causes problems because it's multisampled
 								for (auto e : { SMAAEdgeMethod::Color, SMAAEdgeMethod::Luma }) {
 									smaaEdgeMethod = e;
+
+									for (bool gather : { true, false }) {
+										useTexGather = gather;
+
 									innermostLoop();
+									}
 								}
 							}
 						}
