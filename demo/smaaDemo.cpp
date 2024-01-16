@@ -488,7 +488,7 @@ class SMAADemo {
 	unsigned int                                      temporalFrame           = 0;
 	bool                                              temporalReproject       = true;
 	float                                             reprojectionWeightScale = 30.0f;
-	PipelineType                                      pipelineType            = PipelineType::Graphics;
+	PipelineType                                      pipelineType            = PipelineType::Compute;
 	// number of samples in current scene fb
 	// 1 or 2 if SMAA
 	// 2.. if MSAA
