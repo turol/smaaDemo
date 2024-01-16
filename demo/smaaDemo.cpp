@@ -3006,10 +3006,10 @@ void SMAADemo::runAuto() {
 							for (bool gather : { true, false }) {
 								useTexGather = gather;
 
-							for (auto p : magic_enum::enum_values<PipelineType>()) {
-								pipelineType = p;
-								innermostLoop();
-							}
+								for (auto p : magic_enum::enum_values<PipelineType>()) {
+									pipelineType = p;
+									innermostLoop();
+								}
 							}
 						}
 						break;
@@ -3027,10 +3027,10 @@ void SMAADemo::runAuto() {
 									for (bool gather : { true, false }) {
 										useTexGather = gather;
 
-									for (auto d : magic_enum::enum_values<SMAADebugMode>()) {
-										debugMode = d;
-										innermostLoop();
-									}
+										for (auto d : magic_enum::enum_values<SMAADebugMode>()) {
+											debugMode = d;
+											innermostLoop();
+										}
 									}
 								}
 							}
@@ -3051,7 +3051,7 @@ void SMAADemo::runAuto() {
 									for (bool gather : { true, false }) {
 										useTexGather = gather;
 
-									innermostLoop();
+										innermostLoop();
 									}
 								}
 							}
