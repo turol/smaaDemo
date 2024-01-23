@@ -3278,7 +3278,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	}
 
 	ShapeSceneDS shapeDS;
-	// FIXME: remove unused UBO hack
+	LOG_TODO("remove unused UBO hack")
 	uint32_t temp    = 0;
 	shapeDS.unused    = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
 	shapeDS.instances = shapesBuffer;
@@ -3333,7 +3333,7 @@ void SMAADemo::renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources 
 
 	assert(activeScene - 1 < images.size());
 	ColorTexDS colorDS;
-	// FIXME: remove unused UBO hack
+	LOG_TODO("remove unused UBO hack")
 	uint32_t temp  = 0;
 	colorDS.unused = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
 	colorDS.color = image.tex;
@@ -3367,7 +3367,7 @@ void SMAADemo::computeFXAA(RenderPasses /* rp */, DemoRenderGraph::PassResources
 	}));
 
 	FXAAComputeDS fxaaDS;
-	// FIXME: remove unused UBO hack
+	LOG_TODO("remove unused UBO hack")
 	uint32_t temp        = 0;
 	fxaaDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
 	fxaaDS.color.tex     = r.get(Rendertargets::MainColor, Format::sRGBA8);
@@ -3408,7 +3408,7 @@ void SMAADemo::renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 	}));
 
 	ColorCombinedDS colorDS;
-	// FIXME: remove unused UBO hack
+	LOG_TODO("remove unused UBO hack")
 	uint32_t temp         = 0;
 	colorDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
 	colorDS.color.tex     = r.get(Rendertargets::MainColor);
@@ -3432,7 +3432,7 @@ void SMAADemo::renderSeparate(RenderPasses rp, DemoRenderGraph::PassResources &r
 	}));
 
 	ColorCombinedDS separateDS;
-	// FIXME: remove unused UBO hack
+	LOG_TODO("remove unused UBO hack")
 	uint32_t temp            = 0;
 	separateDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
 	separateDS.color.tex     = r.get(Rendertargets::MainColor);
@@ -3754,7 +3754,7 @@ void SMAADemo::renderSMAADebug(RenderPasses rp, DemoRenderGraph::PassResources &
 	}));
 
 	ColorTexDS blitDS;
-	// FIXME: remove unused UBO hack
+	LOG_TODO("remove unused UBO hack")
 	uint32_t temp  = 0;
 	blitDS.unused  = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
 	blitDS.color   = r.get(rt);
@@ -4295,7 +4295,7 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 		}));
 
 		ColorTexDS colorDS;
-		// FIXME: remove unused UBO hack
+		LOG_TODO("remove unused UBO hack")
 		uint32_t temp = 0;
 		colorDS.unused = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
 		colorDS.color = imguiFontsTex;
