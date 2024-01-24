@@ -3181,6 +3181,12 @@ void SMAADemo::render() {
 		renderGraph.bindExternalRT(Rendertargets::TemporalCurrent,  temporalRTs[    temporalFrame]);
 	}
 
+	const unsigned int windowWidth  = rendererDesc.swapchain.width;
+	const unsigned int windowHeight = rendererDesc.swapchain.height;
+
+	globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
+	globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
+
 	renderGraph.render(renderer);
 
 	numRenderedFrames++;
@@ -3215,9 +3221,6 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 
 	const unsigned int windowWidth  = rendererDesc.swapchain.width;
 	const unsigned int windowHeight = rendererDesc.swapchain.height;
-
-	globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
-	globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
 
 	LOG_TODO("better calculation, and check shape size (side is sqrt(3) currently)")
 	const float shapeDiameter = sqrtf(3.0f);
@@ -3315,9 +3318,6 @@ void SMAADemo::renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	const unsigned int windowHeight = rendererDesc.swapchain.height;
 
 	renderer.setViewport(0, 0, windowWidth, windowHeight);
-
-	globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
-	globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms  = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
