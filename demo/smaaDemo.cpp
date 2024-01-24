@@ -535,6 +535,7 @@ class SMAADemo {
 	std::vector<ShaderDefines::Shape>                 shapes;
 	BufferHandle                                      shapesBuffer;
 
+	ShaderDefines::Globals                            globals;
 	glm::mat4                                         currViewProj;
 	glm::mat4                                         prevViewProj;
 	std::array<glm::vec4, 2>                          subsampleIndices;
@@ -3215,7 +3216,6 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	const unsigned int windowWidth  = rendererDesc.swapchain.width;
 	const unsigned int windowHeight = rendererDesc.swapchain.height;
 
-	ShaderDefines::Globals globals;
 	globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 	globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
 
@@ -3316,7 +3316,6 @@ void SMAADemo::renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources 
 
 	renderer.setViewport(0, 0, windowWidth, windowHeight);
 
-	ShaderDefines::Globals globals;
 	globals.screenSize            = glm::vec4(1.0f / float(windowWidth), 1.0f / float(windowHeight), windowWidth, windowHeight);
 	globals.guiOrtho              = glm::ortho(0.0f, float(windowWidth), float(windowHeight), 0.0f);
 
