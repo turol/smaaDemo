@@ -3266,12 +3266,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	globalDS.linearSampler  = linearSampler;
 	globalDS.nearestSampler = nearestSampler;
-	// always bind to graphics pipelines
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
-	// only bind to compute pipelines when they're used
-	if (pipelineType == PipelineType::Compute) {
-		renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
-	}
 
 	renderer.bindVertexBuffer(0, shapeBuffers[activeShape].vertices);
 	renderer.bindIndexBuffer(shapeBuffers[activeShape].indices, IndexFormat::b32);
@@ -3323,12 +3318,7 @@ void SMAADemo::renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	globalDS.globalUniforms  = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	globalDS.linearSampler   = linearSampler;
 	globalDS.nearestSampler  = nearestSampler;
-	// always bind to graphics pipelines
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
-	// only bind to compute pipelines when they're used
-	if (pipelineType == PipelineType::Compute) {
-		renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
-	}
 
 	assert(activeScene - 1 < images.size());
 	ColorTexDS colorDS;
@@ -3364,6 +3354,12 @@ void SMAADemo::computeFXAA(RenderPasses /* rp */, DemoRenderGraph::PassResources
 
 		return renderGraph.createComputePipeline(renderer, plDesc);
 	}));
+
+	GlobalDS globalDS;
+	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	globalDS.linearSampler  = linearSampler;
+	globalDS.nearestSampler = nearestSampler;
+	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
 
 	FXAAComputeDS fxaaDS;
 	LOG_TODO("remove unused UBO hack")
@@ -3406,6 +3402,12 @@ void SMAADemo::renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	}));
 
+	GlobalDS globalDS;
+	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	globalDS.linearSampler  = linearSampler;
+	globalDS.nearestSampler = nearestSampler;
+	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
+
 	ColorCombinedDS colorDS;
 	LOG_TODO("remove unused UBO hack")
 	uint32_t temp         = 0;
@@ -3429,6 +3431,12 @@ void SMAADemo::renderSeparate(RenderPasses rp, DemoRenderGraph::PassResources &r
 
 		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	}));
+
+	GlobalDS globalDS;
+	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	globalDS.linearSampler  = linearSampler;
+	globalDS.nearestSampler = nearestSampler;
+	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	ColorCombinedDS separateDS;
 	LOG_TODO("remove unused UBO hack")
@@ -3472,6 +3480,12 @@ void SMAADemo::computeSMAAEdges(RenderPasses /* rp */, DemoRenderGraph::PassReso
 	smaaUBO.subsampleIndices      = subsampleIndices[pass];
 
 	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
+
+	GlobalDS globalDS;
+	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	globalDS.linearSampler  = linearSampler;
+	globalDS.nearestSampler = nearestSampler;
+	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
 
 	EdgeDetectionComputeDS edgeDS;
 	edgeDS.smaaUBO     = smaaUBOBuf;
@@ -3523,6 +3537,12 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 
 	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
 
+	GlobalDS globalDS;
+	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	globalDS.linearSampler  = linearSampler;
+	globalDS.nearestSampler = nearestSampler;
+	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
+
 	EdgeDetectionDS edgeDS;
 	edgeDS.smaaUBO = smaaUBOBuf;
 
@@ -3566,6 +3586,12 @@ void SMAADemo::computeSMAAWeights(RenderPasses /* rp */, DemoRenderGraph::PassRe
 	smaaUBO.subsampleIndices      = subsampleIndices[pass];
 
 	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
+
+	GlobalDS globalDS;
+	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	globalDS.linearSampler  = linearSampler;
+	globalDS.nearestSampler = nearestSampler;
+	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
 
 	BlendWeightComputeDS blendWeightDS;
 	blendWeightDS.smaaUBO         = smaaUBOBuf;
@@ -3617,6 +3643,12 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 
 	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
 
+	GlobalDS globalDS;
+	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	globalDS.linearSampler  = linearSampler;
+	globalDS.nearestSampler = nearestSampler;
+	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
+
 	BlendWeightDS blendWeightDS;
 	blendWeightDS.smaaUBO           = smaaUBOBuf;
 
@@ -3667,6 +3699,12 @@ void SMAADemo::computeSMAABlend(RenderPasses /* rp */, DemoRenderGraph::PassReso
 	smaaUBO.subsampleIndices      = subsampleIndices[pass];
 
 	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
+
+	GlobalDS globalDS;
+	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	globalDS.linearSampler  = linearSampler;
+	globalDS.nearestSampler = nearestSampler;
+	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
 
 	NeighborBlendComputeDS neighborBlendDS;
 	neighborBlendDS.smaaUBO              = smaaUBOBuf;
@@ -3728,6 +3766,12 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 
 	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
 
+	GlobalDS globalDS;
+	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	globalDS.linearSampler  = linearSampler;
+	globalDS.nearestSampler = nearestSampler;
+	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
+
 	NeighborBlendDS neighborBlendDS;
 	neighborBlendDS.smaaUBO              = smaaUBOBuf;
 
@@ -3751,6 +3795,12 @@ void SMAADemo::renderSMAADebug(RenderPasses rp, DemoRenderGraph::PassResources &
 
 		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	}));
+
+	GlobalDS globalDS;
+	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	globalDS.linearSampler  = linearSampler;
+	globalDS.nearestSampler = nearestSampler;
+	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	ColorTexDS blitDS;
 	LOG_TODO("remove unused UBO hack")
@@ -3791,6 +3841,12 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 	smaaUBO.subsampleIndices      = subsampleIndices[0];
 
 	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
+
+	GlobalDS globalDS;
+	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	globalDS.linearSampler  = linearSampler;
+	globalDS.nearestSampler = nearestSampler;
+	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	TemporalAADS temporalDS;
 	temporalDS.smaaUBO             = smaaUBOBuf;
@@ -4292,6 +4348,12 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 
 			return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 		}));
+
+		GlobalDS globalDS;
+		globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+		globalDS.linearSampler  = linearSampler;
+		globalDS.nearestSampler = nearestSampler;
+		renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 		ColorTexDS colorDS;
 		LOG_TODO("remove unused UBO hack")
