@@ -1,8 +1,8 @@
-commit 5e43c795daf43dd09398d8307212e85025215052
-Merge: a53702c 278c03f
+commit 94b1acaef0d1fa6f721559a5f0f3ee31d5efba00
+Merge: 7924e27 6887c77
 Author: Adam Sawicki <adam.sawicki@amd.com>
-Date:   Mon Nov 20 10:19:25 2023 +0100
+Date:   Fri Jan 26 13:12:48 2024 +0100
 
-    Merge pull request #388 from eszlari/patch-1
+    Merge pull request #404 from serboupal/serboupal-semicolon
     
-    README.md: add Blender ref
+    Remove semicolon outside function
