@@ -1,5 +1,5 @@
-commit bf71a834948186f4097caa076cd2663c69a10e1e
-Author: christophe <christophe@lunarg.com>
-Date:   Mon Apr 13 19:41:16 2020 +0200
+commit 33b0eb9fa336ffd8551024b1d2690e418014553b
+Author: Christophe <christophe@lunarg.com>
+Date:   Wed Jan 24 14:40:22 2024 +0100
 
-    Updated release date
+    Updated doc
