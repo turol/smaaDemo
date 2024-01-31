@@ -3410,7 +3410,7 @@ void SMAADemo::renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 		      .depthTest(false)
 		      .cullFaces(true)
 		      .descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<ColorCombinedDS>(1)
+		      .descriptorSetLayout<FXAADS>(1)
 		      .shaderMacros(macros)
 		      .vertexShader("fxaa")
 		      .fragmentShader("fxaa")
