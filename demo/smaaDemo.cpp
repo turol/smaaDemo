@@ -1045,21 +1045,6 @@ struct DescriptorTyper<TextureHandle> {
     static DSLayoutHandle layoutHandle
 
 
-struct GlobalDS {
-	BufferHandle   globalUniforms;
-
-	DS_LAYOUT_MEMBERS;
-};
-
-
-const DescriptorLayout GlobalDS::layout[] = {
-	  { DescriptorType::UniformBuffer,  offsetof(GlobalDS, globalUniforms) }
-	, { DescriptorType::End,            0                                  }
-};
-
-DSLayoutHandle GlobalDS::layoutHandle;
-
-
 struct ShapeSceneDS {
 	BufferHandle  globals;
 	BufferHandle  instances;
@@ -1395,7 +1380,6 @@ void SMAADemo::initRender() {
 	}
 	LOG("Using depth format {}", magic_enum::enum_name(depthFormat));
 
-	renderer.registerDescriptorSetLayout<GlobalDS>();
 	renderer.registerDescriptorSetLayout<ShapeSceneDS>();
 	renderer.registerDescriptorSetLayout<FXAADS>();
 	renderer.registerDescriptorSetLayout<FXAAComputeDS>();
