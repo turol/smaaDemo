@@ -1152,7 +1152,7 @@ DSLayoutHandle ColorTexDS::layoutHandle;
 
 
 struct EdgeDetectionDS {
-	BufferHandle   smaaUBO;
+	BufferHandle   globals;
 
 	TextureHandle  color;
 
@@ -1161,7 +1161,7 @@ struct EdgeDetectionDS {
 
 
 const DescriptorLayout EdgeDetectionDS::layout[] = {
-	  { DescriptorType::UniformBuffer,    offsetof(EdgeDetectionDS, smaaUBO) }
+	  { DescriptorType::UniformBuffer,    offsetof(EdgeDetectionDS, globals) }
 	, DESCRIPTOR(EdgeDetectionDS, color)
 	, { DescriptorType::End,              0,                                 }
 };
@@ -1170,7 +1170,7 @@ DSLayoutHandle EdgeDetectionDS::layoutHandle;
 
 
 struct EdgeDetectionComputeDS {
-	BufferHandle   smaaUBO;
+	BufferHandle   globals;
 
 	TextureHandle  color;
 	TextureHandle  outputImage;
@@ -1180,7 +1180,7 @@ struct EdgeDetectionComputeDS {
 
 
 const DescriptorLayout EdgeDetectionComputeDS::layout[] = {
-	  { DescriptorType::UniformBuffer,    offsetof(EdgeDetectionComputeDS, smaaUBO) }
+	  { DescriptorType::UniformBuffer,    offsetof(EdgeDetectionComputeDS, globals) }
 	, DESCRIPTOR(EdgeDetectionComputeDS, color)
 	, { DescriptorType::StorageImageWrite, offsetof(EdgeDetectionComputeDS, outputImage) }
 	, { DescriptorType::End,              0,                                 }
@@ -1190,7 +1190,7 @@ DSLayoutHandle EdgeDetectionComputeDS::layoutHandle;
 
 
 struct BlendWeightDS {
-	BufferHandle   smaaUBO;
+	BufferHandle   globals;
 
 	TextureHandle  edgesTex;
 	TextureHandle  areaTex;
@@ -1201,7 +1201,7 @@ struct BlendWeightDS {
 
 
 const DescriptorLayout BlendWeightDS::layout[] = {
-	  { DescriptorType::UniformBuffer,    offsetof(BlendWeightDS, smaaUBO) }
+	  { DescriptorType::UniformBuffer,    offsetof(BlendWeightDS, globals) }
 	, DESCRIPTOR(BlendWeightDS, edgesTex)
 	, DESCRIPTOR(BlendWeightDS, areaTex)
 	, DESCRIPTOR(BlendWeightDS, searchTex)
@@ -1212,7 +1212,7 @@ DSLayoutHandle BlendWeightDS::layoutHandle;
 
 
 struct BlendWeightComputeDS {
-	BufferHandle   smaaUBO;
+	BufferHandle   globals;
 
 	TextureHandle  edgesTex;
 	TextureHandle  areaTex;
@@ -1224,7 +1224,7 @@ struct BlendWeightComputeDS {
 
 
 const DescriptorLayout BlendWeightComputeDS::layout[] = {
-	  { DescriptorType::UniformBuffer,    offsetof(BlendWeightComputeDS, smaaUBO) }
+	  { DescriptorType::UniformBuffer,    offsetof(BlendWeightComputeDS, globals) }
 	, DESCRIPTOR(BlendWeightComputeDS, edgesTex)
 	, DESCRIPTOR(BlendWeightComputeDS, areaTex)
 	, DESCRIPTOR(BlendWeightComputeDS, searchTex)
@@ -1236,7 +1236,7 @@ DSLayoutHandle BlendWeightComputeDS::layoutHandle;
 
 
 struct NeighborBlendDS {
-	BufferHandle   smaaUBO;
+	BufferHandle   globals;
 
 	TextureHandle  color;
 	TextureHandle  blendweights;
@@ -1246,7 +1246,7 @@ struct NeighborBlendDS {
 
 
 const DescriptorLayout NeighborBlendDS::layout[] = {
-	  { DescriptorType::UniformBuffer,    offsetof(NeighborBlendDS, smaaUBO) }
+	  { DescriptorType::UniformBuffer,    offsetof(NeighborBlendDS, globals) }
 	, DESCRIPTOR(NeighborBlendDS, color)
 	, DESCRIPTOR(NeighborBlendDS, blendweights)
 	, { DescriptorType::End,              0                                  }
@@ -1256,7 +1256,7 @@ DSLayoutHandle NeighborBlendDS::layoutHandle;
 
 
 struct NeighborBlendComputeDS {
-	BufferHandle   smaaUBO;
+	BufferHandle   globals;
 
 	TextureHandle  color;
 	TextureHandle  blendweights;
@@ -1267,7 +1267,7 @@ struct NeighborBlendComputeDS {
 
 
 const DescriptorLayout NeighborBlendComputeDS::layout[] = {
-	  { DescriptorType::UniformBuffer,    offsetof(NeighborBlendComputeDS, smaaUBO) }
+	  { DescriptorType::UniformBuffer,    offsetof(NeighborBlendComputeDS, globals) }
 	, DESCRIPTOR(NeighborBlendComputeDS, color)
 	, DESCRIPTOR(NeighborBlendComputeDS, blendweights)
 	, { DescriptorType::StorageImageWrite, offsetof(NeighborBlendComputeDS, outputImage) }
@@ -1278,7 +1278,7 @@ DSLayoutHandle NeighborBlendComputeDS::layoutHandle;
 
 
 struct TemporalAADS {
-	BufferHandle   smaaUBO;
+	BufferHandle   globals;
 
 	TextureHandle  currentTex;
 	TextureHandle  previousTex;
@@ -1289,7 +1289,7 @@ struct TemporalAADS {
 
 
 const DescriptorLayout TemporalAADS::layout[] = {
-	  { DescriptorType::UniformBuffer,    offsetof(TemporalAADS, smaaUBO) }
+	  { DescriptorType::UniformBuffer,    offsetof(TemporalAADS, globals) }
 	, DESCRIPTOR(TemporalAADS, currentTex)
 	, DESCRIPTOR(TemporalAADS, previousTex)
 	, DESCRIPTOR(TemporalAADS, velocityTex)
@@ -3482,10 +3482,9 @@ void SMAADemo::computeSMAAEdges(RenderPasses /* rp */, DemoRenderGraph::PassReso
 	}));
 
 	LOG_TODO("this is redundant, clean it up")
-	ShaderDefines::SMAAUBO smaaUBO;
-	smaaUBO.smaaParameters        = smaaParameters;
-	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
-	smaaUBO.subsampleIndices      = subsampleIndices[pass];
+	globals.smaaParameters        = smaaParameters;
+	globals.reprojWeigthScale     = reprojectionWeightScale;
+	globals.subsampleIndices      = subsampleIndices[pass];
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
@@ -3494,7 +3493,7 @@ void SMAADemo::computeSMAAEdges(RenderPasses /* rp */, DemoRenderGraph::PassReso
 	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
 
 	EdgeDetectionComputeDS edgeDS;
-	edgeDS.smaaUBO     = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);;
+	edgeDS.globals     = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	edgeDS.color       = r.get(input, Format::RGBA8);
 	edgeDS.outputImage = r.get(output, Format::RGBA8);
 
@@ -3536,10 +3535,9 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 	}));
 
 	LOG_TODO("this is redundant, clean it up")
-	ShaderDefines::SMAAUBO smaaUBO;
-	smaaUBO.smaaParameters        = smaaParameters;
-	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
-	smaaUBO.subsampleIndices      = subsampleIndices[pass];
+	globals.smaaParameters        = smaaParameters;
+	globals.reprojWeigthScale     = reprojectionWeightScale;
+	globals.subsampleIndices      = subsampleIndices[pass];
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
@@ -3548,7 +3546,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	EdgeDetectionDS edgeDS;
-	edgeDS.smaaUBO = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
+	edgeDS.globals = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 
 	if (smaaEdgeMethod == SMAAEdgeMethod::Depth) {
 		edgeDS.color         = r.get(Rendertargets::MainDepth);
@@ -3584,10 +3582,9 @@ void SMAADemo::computeSMAAWeights(RenderPasses /* rp */, DemoRenderGraph::PassRe
 	}));
 
 	LOG_TODO("this is redundant, clean it up")
-	ShaderDefines::SMAAUBO smaaUBO;
-	smaaUBO.smaaParameters        = smaaParameters;
-	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
-	smaaUBO.subsampleIndices      = subsampleIndices[pass];
+	globals.smaaParameters        = smaaParameters;
+	globals.reprojWeigthScale     = reprojectionWeightScale;
+	globals.subsampleIndices      = subsampleIndices[pass];
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
@@ -3596,7 +3593,7 @@ void SMAADemo::computeSMAAWeights(RenderPasses /* rp */, DemoRenderGraph::PassRe
 	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
 
 	BlendWeightComputeDS blendWeightDS;
-	blendWeightDS.smaaUBO         = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
+	blendWeightDS.globals         = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 
 	blendWeightDS.edgesTex        = r.get(Rendertargets::SMAAEdges);
 	blendWeightDS.areaTex         = areaTex;
@@ -3638,10 +3635,9 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 	}));
 
 	LOG_TODO("this is redundant, clean it up")
-	ShaderDefines::SMAAUBO smaaUBO;
-	smaaUBO.smaaParameters        = smaaParameters;
-	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
-	smaaUBO.subsampleIndices      = subsampleIndices[pass];
+	globals.smaaParameters        = smaaParameters;
+	globals.reprojWeigthScale     = reprojectionWeightScale;
+	globals.subsampleIndices      = subsampleIndices[pass];
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
@@ -3650,7 +3646,7 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	BlendWeightDS blendWeightDS;
-	blendWeightDS.smaaUBO           = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
+	blendWeightDS.globals           = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 
 	blendWeightDS.edgesTex          = r.get(Rendertargets::SMAAEdges);
 	blendWeightDS.areaTex           = areaTex;
@@ -3693,10 +3689,9 @@ void SMAADemo::computeSMAABlend(RenderPasses /* rp */, DemoRenderGraph::PassReso
 	}));
 
 	LOG_TODO("this is redundant, clean it up")
-	ShaderDefines::SMAAUBO smaaUBO;
-	smaaUBO.smaaParameters        = smaaParameters;
-	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
-	smaaUBO.subsampleIndices      = subsampleIndices[pass];
+	globals.smaaParameters        = smaaParameters;
+	globals.reprojWeigthScale     = reprojectionWeightScale;
+	globals.subsampleIndices      = subsampleIndices[pass];
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
@@ -3705,7 +3700,7 @@ void SMAADemo::computeSMAABlend(RenderPasses /* rp */, DemoRenderGraph::PassReso
 	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
 
 	NeighborBlendComputeDS neighborBlendDS;
-	neighborBlendDS.smaaUBO              = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
+	neighborBlendDS.globals              = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 
 	neighborBlendDS.color                = r.get(input);
 	neighborBlendDS.blendweights         = r.get(Rendertargets::SMAABlendWeights);
@@ -3757,10 +3752,9 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 	}));
 
 	LOG_TODO("this is redundant, clean it up")
-	ShaderDefines::SMAAUBO smaaUBO;
-	smaaUBO.smaaParameters        = smaaParameters;
-	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
-	smaaUBO.subsampleIndices      = subsampleIndices[pass];
+	globals.smaaParameters        = smaaParameters;
+	globals.reprojWeigthScale     = reprojectionWeightScale;
+	globals.subsampleIndices      = subsampleIndices[pass];
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
@@ -3769,7 +3763,7 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	NeighborBlendDS neighborBlendDS;
-	neighborBlendDS.smaaUBO              = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
+	neighborBlendDS.globals              = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 
 	neighborBlendDS.color                = r.get(input);
 	neighborBlendDS.blendweights         = r.get(Rendertargets::SMAABlendWeights);
@@ -3829,10 +3823,9 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	}));
 
-	ShaderDefines::SMAAUBO smaaUBO;
-	smaaUBO.smaaParameters        = smaaParameters;
-	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
-	smaaUBO.subsampleIndices      = subsampleIndices[0];
+	globals.smaaParameters        = smaaParameters;
+	globals.reprojWeigthScale     = reprojectionWeightScale;
+	globals.subsampleIndices      = subsampleIndices[0];
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
@@ -3841,7 +3834,7 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	TemporalAADS temporalDS;
-	temporalDS.smaaUBO             = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
+	temporalDS.globals             = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 
 	temporalDS.currentTex      = r.get(Rendertargets::TemporalCurrent);
 	if (temporalAAFirstFrame) {
