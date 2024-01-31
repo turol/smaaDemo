@@ -1220,6 +1220,7 @@ ComputePipelineHandle Renderer::createComputePipeline(const ComputePipelineDesc 
 #else  // DEBUG
 
 			endReached = true;
+			continue;
 
 #endif  // DEBUG
 		}
@@ -1345,6 +1346,7 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 #else  // DEBUG
 
 			endReached = true;
+			continue;
 
 #endif  // DEBUG
 		}
