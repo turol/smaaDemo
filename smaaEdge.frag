@@ -40,6 +40,10 @@ THE SOFTWARE.
 #endif
 
 
+layout(set = 1, binding = 1) uniform sampler LinearSampler;
+layout(set = 1, binding = 2) uniform sampler PointSampler;
+
+
 #include "smaa.h"
 
 
@@ -48,11 +52,11 @@ layout (location = 0) out vec4 outColor;
 
 #if EDGEMETHOD == 2
 
-layout(set = 1, binding = 1) uniform SMAATexture2D(depthTex);
+layout(set = 1, binding = 3) uniform SMAATexture2D(depthTex);
 
 #else  // EDGEMETHOD
 
-layout(set = 1, binding = 1) uniform SMAATexture2D(colorTex);
+layout(set = 1, binding = 3) uniform SMAATexture2D(colorTex);
 
 #endif  // EDGEMETHOD
 

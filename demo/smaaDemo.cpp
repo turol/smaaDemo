@@ -1047,8 +1047,6 @@ struct DescriptorTyper<TextureHandle> {
 
 struct GlobalDS {
 	BufferHandle   globalUniforms;
-	SamplerHandle  linearSampler;
-	SamplerHandle  nearestSampler;
 
 	DS_LAYOUT_MEMBERS;
 };
@@ -1056,8 +1054,6 @@ struct GlobalDS {
 
 const DescriptorLayout GlobalDS::layout[] = {
 	  { DescriptorType::UniformBuffer,  offsetof(GlobalDS, globalUniforms) }
-	, DESCRIPTOR(GlobalDS, linearSampler )
-	, DESCRIPTOR(GlobalDS, nearestSampler)
 	, { DescriptorType::End,            0                                  }
 };
 
@@ -1084,6 +1080,7 @@ DSLayoutHandle ShapeSceneDS::layoutHandle;
 struct FXAADS {
 	BufferHandle  globals;
 	CSampler      color;
+	SamplerHandle linearSampler;
 
 	DS_LAYOUT_MEMBERS;
 };
@@ -1092,6 +1089,7 @@ struct FXAADS {
 const DescriptorLayout FXAADS::layout[] = {
 	  { DescriptorType::UniformBuffer,    offsetof(FXAADS, globals) }
 	, DESCRIPTOR(FXAADS, color)
+	, DESCRIPTOR(FXAADS, linearSampler )
 	, { DescriptorType::End,              0,                                }
 };
 
@@ -1101,6 +1099,7 @@ DSLayoutHandle FXAADS::layoutHandle;
 struct FXAAComputeDS {
 	BufferHandle   globals;
 	CSampler       color;
+	SamplerHandle  linearSampler;
 	TextureHandle  outputImage;
 
 	DS_LAYOUT_MEMBERS;
@@ -1110,6 +1109,7 @@ struct FXAAComputeDS {
 const DescriptorLayout FXAAComputeDS::layout[] = {
 	  { DescriptorType::UniformBuffer,     offsetof(FXAAComputeDS, globals)    }
 	, DESCRIPTOR(FXAAComputeDS, color)
+	, DESCRIPTOR(FXAAComputeDS, linearSampler )
 	, { DescriptorType::StorageImageWrite, offsetof(FXAAComputeDS, outputImage) }
 	, { DescriptorType::End,               0                                    }
 };
@@ -1137,6 +1137,7 @@ DSLayoutHandle ColorCombinedDS::layoutHandle;
 struct ColorTexDS {
 	BufferHandle   globals;
 	TextureHandle  color;
+	SamplerHandle  linearSampler;
 
 	DS_LAYOUT_MEMBERS;
 };
@@ -1145,6 +1146,7 @@ struct ColorTexDS {
 const DescriptorLayout ColorTexDS::layout[] = {
 	  { DescriptorType::UniformBuffer,  offsetof(ColorTexDS, globals) }
 	, DESCRIPTOR(ColorTexDS, color)
+	, DESCRIPTOR(ColorTexDS, linearSampler)
 	, { DescriptorType::End,            0,                           }
 };
 
@@ -1153,6 +1155,8 @@ DSLayoutHandle ColorTexDS::layoutHandle;
 
 struct EdgeDetectionDS {
 	BufferHandle   globals;
+	SamplerHandle  linearSampler;
+	SamplerHandle  nearestSampler;
 
 	TextureHandle  color;
 
@@ -1162,6 +1166,8 @@ struct EdgeDetectionDS {
 
 const DescriptorLayout EdgeDetectionDS::layout[] = {
 	  { DescriptorType::UniformBuffer,    offsetof(EdgeDetectionDS, globals) }
+	, DESCRIPTOR(EdgeDetectionDS, linearSampler )
+	, DESCRIPTOR(EdgeDetectionDS, nearestSampler)
 	, DESCRIPTOR(EdgeDetectionDS, color)
 	, { DescriptorType::End,              0,                                 }
 };
@@ -1171,6 +1177,8 @@ DSLayoutHandle EdgeDetectionDS::layoutHandle;
 
 struct EdgeDetectionComputeDS {
 	BufferHandle   globals;
+	SamplerHandle  linearSampler;
+	SamplerHandle  nearestSampler;
 
 	TextureHandle  color;
 	TextureHandle  outputImage;
@@ -1181,6 +1189,8 @@ struct EdgeDetectionComputeDS {
 
 const DescriptorLayout EdgeDetectionComputeDS::layout[] = {
 	  { DescriptorType::UniformBuffer,    offsetof(EdgeDetectionComputeDS, globals) }
+	, DESCRIPTOR(EdgeDetectionComputeDS, linearSampler )
+	, DESCRIPTOR(EdgeDetectionComputeDS, nearestSampler)
 	, DESCRIPTOR(EdgeDetectionComputeDS, color)
 	, { DescriptorType::StorageImageWrite, offsetof(EdgeDetectionComputeDS, outputImage) }
 	, { DescriptorType::End,              0,                                 }
@@ -1191,6 +1201,8 @@ DSLayoutHandle EdgeDetectionComputeDS::layoutHandle;
 
 struct BlendWeightDS {
 	BufferHandle   globals;
+	SamplerHandle  linearSampler;
+	SamplerHandle  nearestSampler;
 
 	TextureHandle  edgesTex;
 	TextureHandle  areaTex;
@@ -1202,6 +1214,8 @@ struct BlendWeightDS {
 
 const DescriptorLayout BlendWeightDS::layout[] = {
 	  { DescriptorType::UniformBuffer,    offsetof(BlendWeightDS, globals) }
+	, DESCRIPTOR(BlendWeightDS, linearSampler )
+	, DESCRIPTOR(BlendWeightDS, nearestSampler)
 	, DESCRIPTOR(BlendWeightDS, edgesTex)
 	, DESCRIPTOR(BlendWeightDS, areaTex)
 	, DESCRIPTOR(BlendWeightDS, searchTex)
@@ -1213,6 +1227,8 @@ DSLayoutHandle BlendWeightDS::layoutHandle;
 
 struct BlendWeightComputeDS {
 	BufferHandle   globals;
+	SamplerHandle  linearSampler;
+	SamplerHandle  nearestSampler;
 
 	TextureHandle  edgesTex;
 	TextureHandle  areaTex;
@@ -1225,6 +1241,8 @@ struct BlendWeightComputeDS {
 
 const DescriptorLayout BlendWeightComputeDS::layout[] = {
 	  { DescriptorType::UniformBuffer,    offsetof(BlendWeightComputeDS, globals) }
+	, DESCRIPTOR(BlendWeightComputeDS, linearSampler )
+	, DESCRIPTOR(BlendWeightComputeDS, nearestSampler)
 	, DESCRIPTOR(BlendWeightComputeDS, edgesTex)
 	, DESCRIPTOR(BlendWeightComputeDS, areaTex)
 	, DESCRIPTOR(BlendWeightComputeDS, searchTex)
@@ -1237,6 +1255,8 @@ DSLayoutHandle BlendWeightComputeDS::layoutHandle;
 
 struct NeighborBlendDS {
 	BufferHandle   globals;
+	SamplerHandle  linearSampler;
+	SamplerHandle  nearestSampler;
 
 	TextureHandle  color;
 	TextureHandle  blendweights;
@@ -1247,6 +1267,8 @@ struct NeighborBlendDS {
 
 const DescriptorLayout NeighborBlendDS::layout[] = {
 	  { DescriptorType::UniformBuffer,    offsetof(NeighborBlendDS, globals) }
+	, DESCRIPTOR(NeighborBlendDS, linearSampler )
+	, DESCRIPTOR(NeighborBlendDS, nearestSampler)
 	, DESCRIPTOR(NeighborBlendDS, color)
 	, DESCRIPTOR(NeighborBlendDS, blendweights)
 	, { DescriptorType::End,              0                                  }
@@ -1257,6 +1279,8 @@ DSLayoutHandle NeighborBlendDS::layoutHandle;
 
 struct NeighborBlendComputeDS {
 	BufferHandle   globals;
+	SamplerHandle  linearSampler;
+	SamplerHandle  nearestSampler;
 
 	TextureHandle  color;
 	TextureHandle  blendweights;
@@ -1268,6 +1292,8 @@ struct NeighborBlendComputeDS {
 
 const DescriptorLayout NeighborBlendComputeDS::layout[] = {
 	  { DescriptorType::UniformBuffer,    offsetof(NeighborBlendComputeDS, globals) }
+	, DESCRIPTOR(NeighborBlendComputeDS, linearSampler )
+	, DESCRIPTOR(NeighborBlendComputeDS, nearestSampler)
 	, DESCRIPTOR(NeighborBlendComputeDS, color)
 	, DESCRIPTOR(NeighborBlendComputeDS, blendweights)
 	, { DescriptorType::StorageImageWrite, offsetof(NeighborBlendComputeDS, outputImage) }
@@ -1279,6 +1305,8 @@ DSLayoutHandle NeighborBlendComputeDS::layoutHandle;
 
 struct TemporalAADS {
 	BufferHandle   globals;
+	SamplerHandle  linearSampler;
+	SamplerHandle  nearestSampler;
 
 	TextureHandle  currentTex;
 	TextureHandle  previousTex;
@@ -1290,6 +1318,8 @@ struct TemporalAADS {
 
 const DescriptorLayout TemporalAADS::layout[] = {
 	  { DescriptorType::UniformBuffer,    offsetof(TemporalAADS, globals) }
+	, DESCRIPTOR(TemporalAADS, linearSampler )
+	, DESCRIPTOR(TemporalAADS, nearestSampler)
 	, DESCRIPTOR(TemporalAADS, currentTex)
 	, DESCRIPTOR(TemporalAADS, previousTex)
 	, DESCRIPTOR(TemporalAADS, velocityTex)
@@ -3282,8 +3312,6 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	globalDS.linearSampler  = linearSampler;
-	globalDS.nearestSampler = nearestSampler;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	renderer.bindVertexBuffer(0, shapeBuffers[activeShape].vertices);
@@ -3332,14 +3360,13 @@ void SMAADemo::renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources 
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms  = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	globalDS.linearSampler   = linearSampler;
-	globalDS.nearestSampler  = nearestSampler;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	assert(activeScene - 1 < images.size());
 	ColorTexDS colorDS;
 	colorDS.globals = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	colorDS.color = image.tex;
+	colorDS.linearSampler = linearSampler;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 1, colorDS, layoutUsage);
 	renderer.draw(0, 3);
 }
@@ -3371,14 +3398,13 @@ void SMAADemo::computeFXAA(RenderPasses /* rp */, DemoRenderGraph::PassResources
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	globalDS.linearSampler  = linearSampler;
-	globalDS.nearestSampler = nearestSampler;
 	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
 
 	FXAAComputeDS fxaaDS;
 	fxaaDS.globals       = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	fxaaDS.color.tex     = r.get(Rendertargets::MainColor, Format::sRGBA8);
 	fxaaDS.color.sampler = linearSampler;
+	fxaaDS.linearSampler = linearSampler;
 	fxaaDS.outputImage   = r.get(output, Format::RGBA8);
 	renderer.bindDescriptorSet(PipelineType::Compute, 1, fxaaDS, layoutUsage);
 
@@ -3416,14 +3442,13 @@ void SMAADemo::renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	globalDS.linearSampler  = linearSampler;
-	globalDS.nearestSampler = nearestSampler;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	FXAADS fxaaDS;
 	fxaaDS.globals       = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	fxaaDS.color.tex     = r.get(Rendertargets::MainColor);
 	fxaaDS.color.sampler = linearSampler;
+	fxaaDS.linearSampler = linearSampler;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 1, fxaaDS, layoutUsage);
 	renderer.draw(0, 3);
 }
@@ -3444,8 +3469,6 @@ void SMAADemo::renderSeparate(RenderPasses rp, DemoRenderGraph::PassResources &r
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	globalDS.linearSampler  = linearSampler;
-	globalDS.nearestSampler = nearestSampler;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	ColorCombinedDS separateDS;
@@ -3488,14 +3511,14 @@ void SMAADemo::computeSMAAEdges(RenderPasses /* rp */, DemoRenderGraph::PassReso
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	globalDS.linearSampler  = linearSampler;
-	globalDS.nearestSampler = nearestSampler;
 	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
 
 	EdgeDetectionComputeDS edgeDS;
 	edgeDS.globals     = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	edgeDS.color       = r.get(input, Format::RGBA8);
 	edgeDS.outputImage = r.get(output, Format::RGBA8);
+	edgeDS.linearSampler  = linearSampler;
+	edgeDS.nearestSampler = nearestSampler;
 
 	renderer.bindDescriptorSet(PipelineType::Compute, 1, edgeDS, layoutUsage);
 
@@ -3541,12 +3564,12 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	globalDS.linearSampler  = linearSampler;
-	globalDS.nearestSampler = nearestSampler;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	EdgeDetectionDS edgeDS;
 	edgeDS.globals = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	edgeDS.linearSampler  = linearSampler;
+	edgeDS.nearestSampler = nearestSampler;
 
 	if (smaaEdgeMethod == SMAAEdgeMethod::Depth) {
 		edgeDS.color         = r.get(Rendertargets::MainDepth);
@@ -3588,12 +3611,12 @@ void SMAADemo::computeSMAAWeights(RenderPasses /* rp */, DemoRenderGraph::PassRe
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	globalDS.linearSampler  = linearSampler;
-	globalDS.nearestSampler = nearestSampler;
 	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
 
 	BlendWeightComputeDS blendWeightDS;
 	blendWeightDS.globals         = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	blendWeightDS.linearSampler  = linearSampler;
+	blendWeightDS.nearestSampler = nearestSampler;
 
 	blendWeightDS.edgesTex        = r.get(Rendertargets::SMAAEdges);
 	blendWeightDS.areaTex         = areaTex;
@@ -3641,12 +3664,12 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	globalDS.linearSampler  = linearSampler;
-	globalDS.nearestSampler = nearestSampler;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	BlendWeightDS blendWeightDS;
 	blendWeightDS.globals           = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	blendWeightDS.linearSampler  = linearSampler;
+	blendWeightDS.nearestSampler = nearestSampler;
 
 	blendWeightDS.edgesTex          = r.get(Rendertargets::SMAAEdges);
 	blendWeightDS.areaTex           = areaTex;
@@ -3695,12 +3718,12 @@ void SMAADemo::computeSMAABlend(RenderPasses /* rp */, DemoRenderGraph::PassReso
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	globalDS.linearSampler  = linearSampler;
-	globalDS.nearestSampler = nearestSampler;
 	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
 
 	NeighborBlendComputeDS neighborBlendDS;
 	neighborBlendDS.globals              = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	neighborBlendDS.linearSampler  = linearSampler;
+	neighborBlendDS.nearestSampler = nearestSampler;
 
 	neighborBlendDS.color                = r.get(input);
 	neighborBlendDS.blendweights         = r.get(Rendertargets::SMAABlendWeights);
@@ -3758,12 +3781,12 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	globalDS.linearSampler  = linearSampler;
-	globalDS.nearestSampler = nearestSampler;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	NeighborBlendDS neighborBlendDS;
 	neighborBlendDS.globals              = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	neighborBlendDS.linearSampler  = linearSampler;
+	neighborBlendDS.nearestSampler = nearestSampler;
 
 	neighborBlendDS.color                = r.get(input);
 	neighborBlendDS.blendweights         = r.get(Rendertargets::SMAABlendWeights);
@@ -3788,13 +3811,12 @@ void SMAADemo::renderSMAADebug(RenderPasses rp, DemoRenderGraph::PassResources &
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	globalDS.linearSampler  = linearSampler;
-	globalDS.nearestSampler = nearestSampler;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	ColorTexDS blitDS;
 	blitDS.globals = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	blitDS.color   = r.get(rt);
+	blitDS.linearSampler = linearSampler;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 1, blitDS, layoutUsage);
 
 	renderer.draw(0, 3);
@@ -3829,12 +3851,12 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	globalDS.linearSampler  = linearSampler;
-	globalDS.nearestSampler = nearestSampler;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	TemporalAADS temporalDS;
 	temporalDS.globals             = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
+	temporalDS.linearSampler   = linearSampler;
+	temporalDS.nearestSampler  = nearestSampler;
 
 	temporalDS.currentTex      = r.get(Rendertargets::TemporalCurrent);
 	if (temporalAAFirstFrame) {
@@ -4336,13 +4358,12 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 
 		GlobalDS globalDS;
 		globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-		globalDS.linearSampler  = linearSampler;
-		globalDS.nearestSampler = nearestSampler;
 		renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 		ColorTexDS colorDS;
 		colorDS.globals = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 		colorDS.color = imguiFontsTex;
+		colorDS.linearSampler  = linearSampler;
 		renderer.bindDescriptorSet(PipelineType::Graphics, 1, colorDS, layoutUsage);
 
 		assert(sizeof(ImDrawIdx) == sizeof(uint16_t) || sizeof(ImDrawIdx) == sizeof(uint32_t));

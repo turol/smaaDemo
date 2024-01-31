@@ -32,7 +32,8 @@ THE SOFTWARE.
 
 
 [[vk::binding(1, 1)]] uniform Texture2D colorTex;
-[[vk::binding(2, 1)]] uniform RWTexture2D<float4> outputImage;
+[[vk::binding(2, 1)]] SamplerState LinearSampler;
+[[vk::binding(3, 1)]] uniform RWTexture2D<float4> outputImage;
 
 
 struct VertexOut {

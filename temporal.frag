@@ -38,13 +38,17 @@ THE SOFTWARE.
 #define SMAA_REPROJECTION_WEIGHT_SCALE reprojWeigthScale
 
 
+layout(set = 1, binding = 1) uniform sampler LinearSampler;
+layout(set = 1, binding = 2) uniform sampler PointSampler;
+
+
 #include "smaa.h"
 
 
-layout(set = 1, binding = 1) uniform SMAATexture2D(currentTex);
-layout(set = 1, binding = 2) uniform SMAATexture2D(previousTex);
+layout(set = 1, binding = 3) uniform SMAATexture2D(currentTex);
+layout(set = 1, binding = 4) uniform SMAATexture2D(previousTex);
 #if SMAA_REPROJECTION
-layout(set = 1, binding = 3) uniform SMAATexture2D(velocityTex);
+layout(set = 1, binding = 5) uniform SMAATexture2D(velocityTex);
 #endif  // SMAA_REPROJECTION
 
 

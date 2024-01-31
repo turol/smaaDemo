@@ -43,16 +43,10 @@ struct Globals
 
 #elif defined(HLSL)
 
-[[vk::binding(1, 0)]] SamplerState LinearSampler;
-[[vk::binding(2, 0)]] SamplerState PointSampler;
-
 [[vk::binding(0, 0)]] cbuffer Globals
 
 
 #else  // __cplusplus
-
-layout(set = 0, binding = 1) uniform sampler LinearSampler;
-layout(set = 0, binding = 2) uniform sampler PointSampler;
 
 layout(set = 0, binding = 0, std140) uniform Globals
 

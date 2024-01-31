@@ -36,14 +36,19 @@ THE SOFTWARE.
 #define SMAA_FLIP_Y 1
 #endif  // VULKAN_FLIP
 
+
+[[vk::binding(1, 1)]] SamplerState LinearSampler;
+[[vk::binding(2, 1)]] SamplerState PointSampler;
+
+
 #include "smaa.h"
 #include "shaderUtils.h"
 
 
-[[vk::binding(1, 1)]] uniform SMAATexture2D(currentTex);
-[[vk::binding(2, 1)]] uniform SMAATexture2D(previousTex);
+[[vk::binding(3, 1)]] uniform SMAATexture2D(currentTex);
+[[vk::binding(4, 1)]] uniform SMAATexture2D(previousTex);
 #if SMAA_REPROJECTION
-[[vk::binding(3, 1)]] uniform SMAATexture2D(velocityTex);
+[[vk::binding(5, 1)]] uniform SMAATexture2D(velocityTex);
 #endif  // SMAA_REPROJECTION
 
 

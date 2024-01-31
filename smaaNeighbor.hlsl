@@ -36,13 +36,18 @@ THE SOFTWARE.
 #define SMAA_FLIP_Y 1
 #endif  // VULKAN_FLIP
 
+
+[[vk::binding(1, 1)]] SamplerState LinearSampler;
+[[vk::binding(2, 1)]] SamplerState PointSampler;
+
+
 #include "smaa.h"
 #include "shaderUtils.h"
 
 
-[[vk::binding(1, 1)]] uniform SMAATexture2D(colorTex);
-[[vk::binding(2, 1)]] uniform SMAATexture2D(blendTex);
-[[vk::binding(3, 1)]] uniform RWTexture2D<float4> outputImage;
+[[vk::binding(3, 1)]] uniform SMAATexture2D(colorTex);
+[[vk::binding(4, 1)]] uniform SMAATexture2D(blendTex);
+[[vk::binding(5, 1)]] uniform RWTexture2D<float4> outputImage;
 
 
 struct VertexOut {
