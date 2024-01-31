@@ -203,8 +203,9 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>RENDERER_OPENGL;WIN32;USE_GLEW;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLEW_NO_GLU;__i386;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..;../foreign;../foreign/fmt/include;../foreign/glew/include;../foreign/glm;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/imgui;../foreign/mpark-variant/include;../foreign/nlohmann_json/include;../foreign/par;../foreign/pcg-cpp/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/SPIRV-Tools/source;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/xxHash;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../foreign;../foreign/fmt/include;../foreign/glew/include;../foreign/glm;../foreign/glslang;../foreign/glslang/glslang/Include;../foreign/imgui;../foreign/mpark-variant/include;../foreign/nlohmann_json/include;../foreign/par;../foreign/pcg-cpp/include;../foreign/SPIRV-Cross;../foreign/SPIRV-Headers/include;../foreign/SPIRV-Tools/include;../foreign/SPIRV-Tools/source;../foreign/stb;../foreign/string-view-lite/include;../foreign/tclap/include;../foreign/magic_enum/include;../foreign/xxHash;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
