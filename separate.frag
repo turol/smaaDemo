@@ -39,7 +39,7 @@ THE SOFTWARE.
 #include "smaa.h"
 
 
-layout(set = 1, binding = 1) uniform SMAATexture2DMS2(inputTex);
+layout(set = 0, binding = 1) uniform SMAATexture2DMS2(inputTex);
 
 
 layout (location = 0) in vec2 texcoord;

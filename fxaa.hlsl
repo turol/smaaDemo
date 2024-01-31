@@ -31,9 +31,9 @@ THE SOFTWARE.
 #include "fxaa3_11.h"
 
 
-[[vk::binding(1, 1)]] uniform Texture2D colorTex;
-[[vk::binding(2, 1)]] SamplerState LinearSampler;
-[[vk::binding(3, 1)]] uniform RWTexture2D<float4> outputImage;
+[[vk::binding(1, 0)]] uniform Texture2D colorTex;
+[[vk::binding(2, 0)]] SamplerState LinearSampler;
+[[vk::binding(3, 0)]] uniform RWTexture2D<float4> outputImage;
 
 
 struct VertexOut {

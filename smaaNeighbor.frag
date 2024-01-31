@@ -36,8 +36,8 @@ THE SOFTWARE.
 #endif
 
 
-layout(set = 1, binding = 1) uniform sampler LinearSampler;
-layout(set = 1, binding = 2) uniform sampler PointSampler;
+layout(set = 0, binding = 1) uniform sampler LinearSampler;
+layout(set = 0, binding = 2) uniform sampler PointSampler;
 
 
 #include "smaa.h"
@@ -45,8 +45,8 @@ layout(set = 1, binding = 2) uniform sampler PointSampler;
 
 layout (location = 0) out vec4 outColor;
 
-layout(set = 1, binding = 3) uniform SMAATexture2D(colorTex);
-layout(set = 1, binding = 4) uniform SMAATexture2D(blendTex);
+layout(set = 0, binding = 3) uniform SMAATexture2D(colorTex);
+layout(set = 0, binding = 4) uniform SMAATexture2D(blendTex);
 
 layout (location = 0) in vec2 texcoord;
 layout (location = 1) in vec4 offset;

@@ -29,7 +29,7 @@ THE SOFTWARE.
 layout(location = ATTR_POS) in vec3 position;
 
 
-readonly restrict layout(std430, set = 1, binding = 1) buffer shapeData {
+readonly restrict layout(std430, set = 0, binding = 1) buffer shapeData {
     Shape shapes[];
 };
 

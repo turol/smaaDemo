@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include "fxaa3_11.h"
 
 
-layout(set = 1, binding = 1) uniform sampler2D colorTex;
+layout(set = 0, binding = 1) uniform sampler2D colorTex;
 
 layout (location = 0) in vec2 texcoord;
 

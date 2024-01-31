@@ -25,7 +25,7 @@ THE SOFTWARE.
 #include "shaderDefines.h"
 
 
-[[vk::binding(1, 1)]] StructuredBuffer <Shape> shapes;
+[[vk::binding(1, 0)]] StructuredBuffer <Shape> shapes;
 
 
 struct VertexIn {

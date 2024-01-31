@@ -3256,8 +3256,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 		      .vertexShader("shape")
 		      .fragmentShader("shape")
 		      .numSamples(numSamples)
-		      .descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<ShapeSceneDS>(1)
+		      .descriptorSetLayout<ShapeSceneDS>(0)
 		      .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
 		      .vertexBufferStride(0, 3 * sizeof(float))
 		      .depthWrite(true)
@@ -3310,10 +3309,6 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 
 	renderer.setViewport(0, 0, windowWidth, windowHeight);
 
-	GlobalDS globalDS;
-	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
-
 	renderer.bindVertexBuffer(0, shapeBuffers[activeShape].vertices);
 	renderer.bindIndexBuffer(shapeBuffers[activeShape].indices, IndexFormat::b32);
 
@@ -3324,7 +3319,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	ShapeSceneDS shapeDS;
 	shapeDS.globals   = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	shapeDS.instances = shapesBuffer;
-	renderer.bindDescriptorSet(PipelineType::Graphics, 1, shapeDS, layoutUsage);
+	renderer.bindDescriptorSet(PipelineType::Graphics, 0, shapeDS, layoutUsage);
 
 	unsigned int numShapes = static_cast<unsigned int>(shapes.size());
 	if (visualizeShapeOrder) {
@@ -3341,8 +3336,7 @@ void SMAADemo::renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	renderer.bindGraphicsPipeline(getCachedPipeline(imagePipeline, [&] () {
 		GraphicsPipelineDesc plDesc;
 		plDesc.numSamples(numSamples)
-		      .descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<ColorTexDS>(1)
+		      .descriptorSetLayout<ColorTexDS>(0)
 		      .vertexShader("image")
 		      .fragmentShader("image")
 		      .name("image");
@@ -3358,16 +3352,12 @@ void SMAADemo::renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources 
 
 	renderer.setViewport(0, 0, windowWidth, windowHeight);
 
-	GlobalDS globalDS;
-	globalDS.globalUniforms  = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
-
 	assert(activeScene - 1 < images.size());
 	ColorTexDS colorDS;
 	colorDS.globals = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	colorDS.color = image.tex;
 	colorDS.linearSampler = linearSampler;
-	renderer.bindDescriptorSet(PipelineType::Graphics, 1, colorDS, layoutUsage);
+	renderer.bindDescriptorSet(PipelineType::Graphics, 0, colorDS, layoutUsage);
 	renderer.draw(0, 3);
 }
 
@@ -3386,8 +3376,7 @@ void SMAADemo::computeFXAA(RenderPasses /* rp */, DemoRenderGraph::PassResources
 		}
 
 		ComputePipelineDesc plDesc;
-		plDesc.descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<FXAAComputeDS>(1)
+		plDesc.descriptorSetLayout<FXAAComputeDS>(0)
 		      .shaderMacros(macros)
 		      .shaderLanguage(preferredShaderLanguage)
 		      .computeShader("fxaa")
@@ -3396,17 +3385,13 @@ void SMAADemo::computeFXAA(RenderPasses /* rp */, DemoRenderGraph::PassResources
 		return renderGraph.createComputePipeline(renderer, plDesc);
 	}));
 
-	GlobalDS globalDS;
-	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
-
 	FXAAComputeDS fxaaDS;
 	fxaaDS.globals       = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	fxaaDS.color.tex     = r.get(Rendertargets::MainColor, Format::sRGBA8);
 	fxaaDS.color.sampler = linearSampler;
 	fxaaDS.linearSampler = linearSampler;
 	fxaaDS.outputImage   = r.get(output, Format::RGBA8);
-	renderer.bindDescriptorSet(PipelineType::Compute, 1, fxaaDS, layoutUsage);
+	renderer.bindDescriptorSet(PipelineType::Compute, 0, fxaaDS, layoutUsage);
 
 	unsigned int groupsX = (rendererDesc.swapchain.width  + FXAA_COMPUTE_GROUP_X - 1) / FXAA_COMPUTE_GROUP_X;
 	unsigned int groupsY = (rendererDesc.swapchain.height + FXAA_COMPUTE_GROUP_Y - 1) / FXAA_COMPUTE_GROUP_Y;
@@ -3429,8 +3414,7 @@ void SMAADemo::renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 		plDesc.depthWrite(false)
 		      .depthTest(false)
 		      .cullFaces(true)
-		      .descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<FXAADS>(1)
+		      .descriptorSetLayout<FXAADS>(0)
 		      .shaderMacros(macros)
 		      .vertexShader("fxaa")
 		      .fragmentShader("fxaa")
@@ -3440,16 +3424,12 @@ void SMAADemo::renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	}));
 
-	GlobalDS globalDS;
-	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
-
 	FXAADS fxaaDS;
 	fxaaDS.globals       = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	fxaaDS.color.tex     = r.get(Rendertargets::MainColor);
 	fxaaDS.color.sampler = linearSampler;
 	fxaaDS.linearSampler = linearSampler;
-	renderer.bindDescriptorSet(PipelineType::Graphics, 1, fxaaDS, layoutUsage);
+	renderer.bindDescriptorSet(PipelineType::Graphics, 0, fxaaDS, layoutUsage);
 	renderer.draw(0, 3);
 }
 
@@ -3458,8 +3438,7 @@ void SMAADemo::renderSeparate(RenderPasses rp, DemoRenderGraph::PassResources &r
 	renderer.bindGraphicsPipeline(getCachedPipeline(separatePipeline, [&] () {
 		LOG_TODO("does this need its own DS?")
 		GraphicsPipelineDesc plDesc;
-		plDesc.descriptorSetLayout<GlobalDS>(0)
-			  .descriptorSetLayout<ColorCombinedDS>(1)
+		plDesc.descriptorSetLayout<ColorCombinedDS>(0)
 			  .vertexShader("temporal")
 			  .fragmentShader("separate")
 			  .name("subsample separate");
@@ -3467,15 +3446,11 @@ void SMAADemo::renderSeparate(RenderPasses rp, DemoRenderGraph::PassResources &r
 		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	}));
 
-	GlobalDS globalDS;
-	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
-
 	ColorCombinedDS separateDS;
 	separateDS.globals       = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	separateDS.color.tex     = r.get(Rendertargets::MainColor);
 	separateDS.color.sampler = nearestSampler;
-	renderer.bindDescriptorSet(PipelineType::Graphics, 1, separateDS, layoutUsage);
+	renderer.bindDescriptorSet(PipelineType::Graphics, 0, separateDS, layoutUsage);
 	renderer.draw(0, 3);
 }
 
@@ -3494,8 +3469,7 @@ void SMAADemo::computeSMAAEdges(RenderPasses /* rp */, DemoRenderGraph::PassReso
 		}
 
 		ComputePipelineDesc plDesc;
-		plDesc.descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<EdgeDetectionComputeDS>(1)
+		plDesc.descriptorSetLayout<EdgeDetectionComputeDS>(0)
 		      .shaderMacros(macros)
 		      .shaderLanguage(preferredShaderLanguage)
 		      .computeShader("smaaEdge")
@@ -3509,10 +3483,6 @@ void SMAADemo::computeSMAAEdges(RenderPasses /* rp */, DemoRenderGraph::PassReso
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[pass];
 
-	GlobalDS globalDS;
-	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
-
 	EdgeDetectionComputeDS edgeDS;
 	edgeDS.globals     = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	edgeDS.color       = r.get(input, Format::RGBA8);
@@ -3520,7 +3490,7 @@ void SMAADemo::computeSMAAEdges(RenderPasses /* rp */, DemoRenderGraph::PassReso
 	edgeDS.linearSampler  = linearSampler;
 	edgeDS.nearestSampler = nearestSampler;
 
-	renderer.bindDescriptorSet(PipelineType::Compute, 1, edgeDS, layoutUsage);
+	renderer.bindDescriptorSet(PipelineType::Compute, 0, edgeDS, layoutUsage);
 
 	unsigned int groupsX = (rendererDesc.swapchain.width  + SMAA_EDGES_COMPUTE_GROUP_X - 1) / SMAA_EDGES_COMPUTE_GROUP_X;
 	unsigned int groupsY = (rendererDesc.swapchain.height + SMAA_EDGES_COMPUTE_GROUP_Y - 1) / SMAA_EDGES_COMPUTE_GROUP_Y;
@@ -3547,8 +3517,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 		plDesc.depthWrite(false)
 		      .depthTest(false)
 		      .cullFaces(true)
-		      .descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<EdgeDetectionDS>(1)
+		      .descriptorSetLayout<EdgeDetectionDS>(0)
 		      .shaderMacros(macros)
 		      .shaderLanguage(preferredShaderLanguage)
 		      .vertexShader("smaaEdge")
@@ -3562,10 +3531,6 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[pass];
 
-	GlobalDS globalDS;
-	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
-
 	EdgeDetectionDS edgeDS;
 	edgeDS.globals = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	edgeDS.linearSampler  = linearSampler;
@@ -3577,7 +3542,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 		edgeDS.color         = r.get(input, Format::RGBA8);
 	}
 
-	renderer.bindDescriptorSet(PipelineType::Graphics, 1, edgeDS, layoutUsage);
+	renderer.bindDescriptorSet(PipelineType::Graphics, 0, edgeDS, layoutUsage);
 	renderer.draw(0, 3);
 }
 
@@ -3594,8 +3559,7 @@ void SMAADemo::computeSMAAWeights(RenderPasses /* rp */, DemoRenderGraph::PassRe
 		}
 
 		ComputePipelineDesc plDesc;
-		plDesc.descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<BlendWeightComputeDS>(1)
+		plDesc.descriptorSetLayout<BlendWeightComputeDS>(0)
 		      .shaderMacros(macros)
 		      .shaderLanguage(preferredShaderLanguage)
 		      .computeShader("smaaBlendWeight")
@@ -3609,10 +3573,6 @@ void SMAADemo::computeSMAAWeights(RenderPasses /* rp */, DemoRenderGraph::PassRe
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[pass];
 
-	GlobalDS globalDS;
-	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
-
 	BlendWeightComputeDS blendWeightDS;
 	blendWeightDS.globals         = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	blendWeightDS.linearSampler  = linearSampler;
@@ -3623,7 +3583,7 @@ void SMAADemo::computeSMAAWeights(RenderPasses /* rp */, DemoRenderGraph::PassRe
 	blendWeightDS.searchTex       = searchTex;
 	blendWeightDS.outputImage     = r.get(output, Format::RGBA8);
 
-	renderer.bindDescriptorSet(PipelineType::Compute, 1, blendWeightDS, layoutUsage);
+	renderer.bindDescriptorSet(PipelineType::Compute, 0, blendWeightDS, layoutUsage);
 
 	unsigned int groupsX = (rendererDesc.swapchain.width  + SMAA_WEIGHTS_COMPUTE_GROUP_X - 1) / SMAA_WEIGHTS_COMPUTE_GROUP_X;
 	unsigned int groupsY = (rendererDesc.swapchain.height + SMAA_WEIGHTS_COMPUTE_GROUP_Y - 1) / SMAA_WEIGHTS_COMPUTE_GROUP_Y;
@@ -3647,8 +3607,7 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 		plDesc.depthWrite(false)
 		      .depthTest(false)
 		      .cullFaces(true)
-		      .descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<BlendWeightDS>(1)
+		      .descriptorSetLayout<BlendWeightDS>(0)
 		      .shaderMacros(macros)
 		      .shaderLanguage(preferredShaderLanguage)
 		      .vertexShader("smaaBlendWeight")
@@ -3662,10 +3621,6 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[pass];
 
-	GlobalDS globalDS;
-	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
-
 	BlendWeightDS blendWeightDS;
 	blendWeightDS.globals           = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	blendWeightDS.linearSampler  = linearSampler;
@@ -3675,7 +3630,7 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 	blendWeightDS.areaTex           = areaTex;
 	blendWeightDS.searchTex         = searchTex;
 
-	renderer.bindDescriptorSet(PipelineType::Graphics, 1, blendWeightDS, layoutUsage);
+	renderer.bindDescriptorSet(PipelineType::Graphics, 0, blendWeightDS, layoutUsage);
 
 	renderer.draw(0, 3);
 }
@@ -3694,8 +3649,7 @@ void SMAADemo::computeSMAABlend(RenderPasses /* rp */, DemoRenderGraph::PassReso
 		}
 
 		ComputePipelineDesc plDesc;
-		plDesc.descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<NeighborBlendComputeDS>(1)
+		plDesc.descriptorSetLayout<NeighborBlendComputeDS>(0)
 		      .shaderMacros(macros)
 		      .shaderLanguage(preferredShaderLanguage)
 		      .computeShader("smaaNeighbor");
@@ -3716,10 +3670,6 @@ void SMAADemo::computeSMAABlend(RenderPasses /* rp */, DemoRenderGraph::PassReso
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[pass];
 
-	GlobalDS globalDS;
-	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
-
 	NeighborBlendComputeDS neighborBlendDS;
 	neighborBlendDS.globals              = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	neighborBlendDS.linearSampler  = linearSampler;
@@ -3729,7 +3679,7 @@ void SMAADemo::computeSMAABlend(RenderPasses /* rp */, DemoRenderGraph::PassReso
 	neighborBlendDS.blendweights         = r.get(Rendertargets::SMAABlendWeights);
 	neighborBlendDS.outputImage          = r.get(output);
 
-	renderer.bindDescriptorSet(PipelineType::Compute, 1, neighborBlendDS, layoutUsage);
+	renderer.bindDescriptorSet(PipelineType::Compute, 0, neighborBlendDS, layoutUsage);
 
 	unsigned int groupsX = (rendererDesc.swapchain.width  + SMAA_BLEND_COMPUTE_GROUP_X - 1) / SMAA_BLEND_COMPUTE_GROUP_X;
 	unsigned int groupsY = (rendererDesc.swapchain.height + SMAA_BLEND_COMPUTE_GROUP_Y - 1) / SMAA_BLEND_COMPUTE_GROUP_Y;
@@ -3754,8 +3704,7 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 		plDesc.depthWrite(false)
 		      .depthTest(false)
 		      .cullFaces(true)
-		      .descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<NeighborBlendDS>(1)
+		      .descriptorSetLayout<NeighborBlendDS>(0)
 		      .shaderMacros(macros)
 		      .shaderLanguage(preferredShaderLanguage)
 		      .vertexShader("smaaNeighbor")
@@ -3779,10 +3728,6 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[pass];
 
-	GlobalDS globalDS;
-	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
-
 	NeighborBlendDS neighborBlendDS;
 	neighborBlendDS.globals              = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	neighborBlendDS.linearSampler  = linearSampler;
@@ -3791,7 +3736,7 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 	neighborBlendDS.color                = r.get(input);
 	neighborBlendDS.blendweights         = r.get(Rendertargets::SMAABlendWeights);
 
-	renderer.bindDescriptorSet(PipelineType::Graphics, 1, neighborBlendDS, layoutUsage);
+	renderer.bindDescriptorSet(PipelineType::Graphics, 0, neighborBlendDS, layoutUsage);
 
 	renderer.draw(0, 3);
 }
@@ -3800,8 +3745,7 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 void SMAADemo::renderSMAADebug(RenderPasses rp, DemoRenderGraph::PassResources &r, Rendertargets rt) {
 	renderer.bindGraphicsPipeline(getCachedPipeline(blitPipeline, [&] () {
 		GraphicsPipelineDesc plDesc;
-		plDesc.descriptorSetLayout<GlobalDS>(0)
-		      .descriptorSetLayout<ColorTexDS>(1)
+		plDesc.descriptorSetLayout<ColorTexDS>(0)
 		      .vertexShader("blit")
 		      .fragmentShader("blit")
 		      .name("blit");
@@ -3809,15 +3753,11 @@ void SMAADemo::renderSMAADebug(RenderPasses rp, DemoRenderGraph::PassResources &
 		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	}));
 
-	GlobalDS globalDS;
-	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
-
 	ColorTexDS blitDS;
 	blitDS.globals = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	blitDS.color   = r.get(rt);
 	blitDS.linearSampler = linearSampler;
-	renderer.bindDescriptorSet(PipelineType::Graphics, 1, blitDS, layoutUsage);
+	renderer.bindDescriptorSet(PipelineType::Graphics, 0, blitDS, layoutUsage);
 
 	renderer.draw(0, 3);
 }
@@ -3834,8 +3774,7 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 		}
 
 		GraphicsPipelineDesc plDesc;
-		plDesc.descriptorSetLayout<GlobalDS>(0)
-			  .descriptorSetLayout<TemporalAADS>(1)
+		plDesc.descriptorSetLayout<TemporalAADS>(0)
 			  .vertexShader("temporal")
 			  .fragmentShader("temporal")
 			  .shaderMacros(macros)
@@ -3848,10 +3787,6 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 	globals.smaaParameters        = smaaParameters;
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[0];
-
-	GlobalDS globalDS;
-	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	TemporalAADS temporalDS;
 	temporalDS.globals             = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
@@ -3869,7 +3804,7 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 	}
 	temporalDS.velocityTex     = r.get(Rendertargets::Velocity);
 
-	renderer.bindDescriptorSet(PipelineType::Graphics, 1, temporalDS, layoutUsage);
+	renderer.bindDescriptorSet(PipelineType::Graphics, 0, temporalDS, layoutUsage);
 	renderer.draw(0, 3);
 }
 
@@ -4339,8 +4274,7 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 
 		renderer.bindGraphicsPipeline(getCachedPipeline(guiPipeline, [&] () {
 			GraphicsPipelineDesc plDesc;
-			plDesc.descriptorSetLayout<GlobalDS>(0)
-				  .descriptorSetLayout<ColorTexDS>(1)
+			plDesc.descriptorSetLayout<ColorTexDS>(0)
 				  .vertexShader("gui")
 				  .fragmentShader("gui")
 				  .blending(true)
@@ -4356,15 +4290,11 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 			return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 		}));
 
-		GlobalDS globalDS;
-		globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-		renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
-
 		ColorTexDS colorDS;
 		colorDS.globals = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 		colorDS.color = imguiFontsTex;
 		colorDS.linearSampler  = linearSampler;
-		renderer.bindDescriptorSet(PipelineType::Graphics, 1, colorDS, layoutUsage);
+		renderer.bindDescriptorSet(PipelineType::Graphics, 0, colorDS, layoutUsage);
 
 		assert(sizeof(ImDrawIdx) == sizeof(uint16_t) || sizeof(ImDrawIdx) == sizeof(uint32_t));
 

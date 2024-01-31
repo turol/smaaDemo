@@ -26,8 +26,8 @@ THE SOFTWARE.
 #include "shaderDefines.h"
 
 
-layout(set = 1, binding = 1) uniform texture2D colorTex;
-layout(set = 1, binding = 2) uniform sampler LinearSampler;
+layout(set = 0, binding = 1) uniform texture2D colorTex;
+layout(set = 0, binding = 2) uniform sampler LinearSampler;
 
 
 layout (location = 0) in vec4 color;

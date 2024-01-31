@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 #include "shaderDefines.h"
 
-readonly restrict layout(std430, set = 1, binding = 1) buffer shapeData {
+readonly restrict layout(std430, set = 0, binding = 1) buffer shapeData {
     Shape shapes[];
 };
 
