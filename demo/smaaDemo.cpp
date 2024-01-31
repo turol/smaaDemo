@@ -3497,8 +3497,6 @@ void SMAADemo::computeSMAAEdges(RenderPasses /* rp */, DemoRenderGraph::PassReso
 	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
 	smaaUBO.subsampleIndices      = subsampleIndices[pass];
 
-	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
-
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	globalDS.linearSampler  = linearSampler;
@@ -3506,7 +3504,7 @@ void SMAADemo::computeSMAAEdges(RenderPasses /* rp */, DemoRenderGraph::PassReso
 	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
 
 	EdgeDetectionComputeDS edgeDS;
-	edgeDS.smaaUBO     = smaaUBOBuf;
+	edgeDS.smaaUBO     = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);;
 	edgeDS.color       = r.get(input, Format::RGBA8);
 	edgeDS.outputImage = r.get(output, Format::RGBA8);
 
@@ -3553,8 +3551,6 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
 	smaaUBO.subsampleIndices      = subsampleIndices[pass];
 
-	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
-
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	globalDS.linearSampler  = linearSampler;
@@ -3562,7 +3558,7 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	EdgeDetectionDS edgeDS;
-	edgeDS.smaaUBO = smaaUBOBuf;
+	edgeDS.smaaUBO = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
 
 	if (smaaEdgeMethod == SMAAEdgeMethod::Depth) {
 		edgeDS.color         = r.get(Rendertargets::MainDepth);
@@ -3603,8 +3599,6 @@ void SMAADemo::computeSMAAWeights(RenderPasses /* rp */, DemoRenderGraph::PassRe
 	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
 	smaaUBO.subsampleIndices      = subsampleIndices[pass];
 
-	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
-
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	globalDS.linearSampler  = linearSampler;
@@ -3612,7 +3606,7 @@ void SMAADemo::computeSMAAWeights(RenderPasses /* rp */, DemoRenderGraph::PassRe
 	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
 
 	BlendWeightComputeDS blendWeightDS;
-	blendWeightDS.smaaUBO         = smaaUBOBuf;
+	blendWeightDS.smaaUBO         = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
 
 	blendWeightDS.edgesTex        = r.get(Rendertargets::SMAAEdges);
 	blendWeightDS.areaTex         = areaTex;
@@ -3659,8 +3653,6 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
 	smaaUBO.subsampleIndices      = subsampleIndices[pass];
 
-	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
-
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	globalDS.linearSampler  = linearSampler;
@@ -3668,7 +3660,7 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	BlendWeightDS blendWeightDS;
-	blendWeightDS.smaaUBO           = smaaUBOBuf;
+	blendWeightDS.smaaUBO           = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
 
 	blendWeightDS.edgesTex          = r.get(Rendertargets::SMAAEdges);
 	blendWeightDS.areaTex           = areaTex;
@@ -3716,8 +3708,6 @@ void SMAADemo::computeSMAABlend(RenderPasses /* rp */, DemoRenderGraph::PassReso
 	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
 	smaaUBO.subsampleIndices      = subsampleIndices[pass];
 
-	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
-
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	globalDS.linearSampler  = linearSampler;
@@ -3725,7 +3715,7 @@ void SMAADemo::computeSMAABlend(RenderPasses /* rp */, DemoRenderGraph::PassReso
 	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
 
 	NeighborBlendComputeDS neighborBlendDS;
-	neighborBlendDS.smaaUBO              = smaaUBOBuf;
+	neighborBlendDS.smaaUBO              = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
 
 	neighborBlendDS.color                = r.get(input);
 	neighborBlendDS.blendweights         = r.get(Rendertargets::SMAABlendWeights);
@@ -3782,8 +3772,6 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
 	smaaUBO.subsampleIndices      = subsampleIndices[pass];
 
-	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
-
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	globalDS.linearSampler  = linearSampler;
@@ -3791,7 +3779,7 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	NeighborBlendDS neighborBlendDS;
-	neighborBlendDS.smaaUBO              = smaaUBOBuf;
+	neighborBlendDS.smaaUBO              = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
 
 	neighborBlendDS.color                = r.get(input);
 	neighborBlendDS.blendweights         = r.get(Rendertargets::SMAABlendWeights);
@@ -3858,8 +3846,6 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 	smaaUBO.reprojWeigthScale     = reprojectionWeightScale;
 	smaaUBO.subsampleIndices      = subsampleIndices[0];
 
-	auto smaaUBOBuf = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
-
 	GlobalDS globalDS;
 	globalDS.globalUniforms = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	globalDS.linearSampler  = linearSampler;
@@ -3867,7 +3853,7 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	TemporalAADS temporalDS;
-	temporalDS.smaaUBO             = smaaUBOBuf;
+	temporalDS.smaaUBO             = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::SMAAUBO), &smaaUBO);
 
 	temporalDS.currentTex      = r.get(Rendertargets::TemporalCurrent);
 	if (temporalAAFirstFrame) {
