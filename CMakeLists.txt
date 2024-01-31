@@ -5,7 +5,18 @@ cmake_policy(SET CMP0077 NEW)
 project(SMAADemo VERSION 1.0.0 LANGUAGES C CXX)
 set(VS_STARTUP_PROJECT SMAADemo)
 
+set(RENDERER "vulkan" CACHE STRING "Renderer")
+set_property(CACHE RENDERER PROPERTY STRINGS vulkan opengl null)
+
+if(RENDERER STREQUAL "vulkan")
+
 INCLUDE(FindVulkan)
+
+elseif(RENDERER STREQUAL "opengl")
+
+INCLUDE(FindOpenGL)
+
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -60,11 +71,15 @@ set(SOURCE
 		foreign/xxHash/xxhash.c
 	)
 
-add_executable(smaaDemo ${SOURCE})
 
-target_compile_definitions(smaaDemo PRIVATE
-		RENDERER_VULKAN
-	)
+if(RENDERER STREQUAL "opengl")
+
+set(SOURCE ${SOURCE} foreign/glew/src/glew.c)
+
+endif()
+
+
+add_executable(smaaDemo ${SOURCE})
 
 target_include_directories(smaaDemo PRIVATE
 		${PROJECT_SOURCE_DIR}
@@ -80,7 +95,6 @@ target_include_directories(smaaDemo PRIVATE
 		foreign/tclap/include
 		foreign/vulkanMemoryAllocator/include
 		foreign/xxHash
-		${Vulkan_INCLUDE_DIRS}
 	)
 
 target_link_libraries(smaaDemo PRIVATE
@@ -93,5 +107,49 @@ target_link_libraries(smaaDemo PRIVATE
 		spirv-cross-glsl
 		SPVRemapper
 		${SDL2_LIBRARIES}
+	)
+
+
+if(RENDERER STREQUAL "vulkan")
+
+target_compile_definitions(smaaDemo PRIVATE
+		RENDERER_VULKAN
+	)
+
+target_include_directories(smaaDemo PRIVATE
+		${Vulkan_INCLUDE_DIRS}
+	)
+
+target_link_libraries(smaaDemo PRIVATE
 		${Vulkan_LIBRARIES}
 	)
+
+elseif(RENDERER STREQUAL "opengl")
+
+target_compile_definitions(smaaDemo PRIVATE
+		RENDERER_OPENGL
+		USE_GLEW
+		GLEW_STATIC
+	)
+
+target_include_directories(smaaDemo PRIVATE
+		foreign/glew/include
+	)
+
+target_link_libraries(smaaDemo PRIVATE
+		${OPENGL_LIBRARIES}
+	)
+
+elseif(RENDERER STREQUAL "null")
+
+target_compile_definitions(smaaDemo PRIVATE
+		RENDERER_NULL
+	)
+
+else()
+
+message(FATAL_ERROR "Bad renderer")
+
+endif()
+
+
