@@ -1065,7 +1065,7 @@ DSLayoutHandle GlobalDS::layoutHandle;
 
 
 struct ShapeSceneDS {
-	BufferHandle  unused;
+	BufferHandle  globals;
 	BufferHandle  instances;
 
 	DS_LAYOUT_MEMBERS;
@@ -1073,7 +1073,7 @@ struct ShapeSceneDS {
 
 
 const DescriptorLayout ShapeSceneDS::layout[] = {
-	  { DescriptorType::UniformBuffer,  offsetof(ShapeSceneDS, unused)    }
+	  { DescriptorType::UniformBuffer,  offsetof(ShapeSceneDS, globals)   }
 	, { DescriptorType::StorageBuffer,  offsetof(ShapeSceneDS, instances) }
 	, { DescriptorType::End,            0                                 }
 };
@@ -1082,7 +1082,7 @@ DSLayoutHandle ShapeSceneDS::layoutHandle;
 
 
 struct FXAADS {
-	BufferHandle  unused;
+	BufferHandle  globals;
 	CSampler      color;
 
 	DS_LAYOUT_MEMBERS;
@@ -1090,7 +1090,7 @@ struct FXAADS {
 
 
 const DescriptorLayout FXAADS::layout[] = {
-	  { DescriptorType::UniformBuffer,    offsetof(FXAADS, unused) }
+	  { DescriptorType::UniformBuffer,    offsetof(FXAADS, globals) }
 	, DESCRIPTOR(FXAADS, color)
 	, { DescriptorType::End,              0,                                }
 };
@@ -1099,7 +1099,7 @@ DSLayoutHandle FXAADS::layoutHandle;
 
 
 struct FXAAComputeDS {
-	BufferHandle   unused;
+	BufferHandle   globals;
 	CSampler       color;
 	TextureHandle  outputImage;
 
@@ -1108,7 +1108,7 @@ struct FXAAComputeDS {
 
 
 const DescriptorLayout FXAAComputeDS::layout[] = {
-	  { DescriptorType::UniformBuffer,     offsetof(FXAAComputeDS, unused)    }
+	  { DescriptorType::UniformBuffer,     offsetof(FXAAComputeDS, globals)    }
 	, DESCRIPTOR(FXAAComputeDS, color)
 	, { DescriptorType::StorageImageWrite, offsetof(FXAAComputeDS, outputImage) }
 	, { DescriptorType::End,               0                                    }
@@ -1118,7 +1118,7 @@ DSLayoutHandle FXAAComputeDS::layoutHandle;
 
 
 struct ColorCombinedDS {
-	BufferHandle  unused;
+	BufferHandle  globals;
 	CSampler      color;
 
 	DS_LAYOUT_MEMBERS;
@@ -1126,7 +1126,7 @@ struct ColorCombinedDS {
 
 
 const DescriptorLayout ColorCombinedDS::layout[] = {
-	  { DescriptorType::UniformBuffer,    offsetof(ColorCombinedDS, unused) }
+	  { DescriptorType::UniformBuffer,    offsetof(ColorCombinedDS, globals) }
 	, DESCRIPTOR(ColorCombinedDS, color)
 	, { DescriptorType::End,              0,                                }
 };
@@ -1135,7 +1135,7 @@ DSLayoutHandle ColorCombinedDS::layoutHandle;
 
 
 struct ColorTexDS {
-	BufferHandle   unused;
+	BufferHandle   globals;
 	TextureHandle  color;
 
 	DS_LAYOUT_MEMBERS;
@@ -1143,7 +1143,7 @@ struct ColorTexDS {
 
 
 const DescriptorLayout ColorTexDS::layout[] = {
-	  { DescriptorType::UniformBuffer,  offsetof(ColorTexDS, unused) }
+	  { DescriptorType::UniformBuffer,  offsetof(ColorTexDS, globals) }
 	, DESCRIPTOR(ColorTexDS, color)
 	, { DescriptorType::End,            0,                           }
 };
@@ -3294,9 +3294,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	}
 
 	ShapeSceneDS shapeDS;
-	LOG_TODO("remove unused UBO hack")
-	uint32_t temp    = 0;
-	shapeDS.unused    = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
+	shapeDS.globals   = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	shapeDS.instances = shapesBuffer;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 1, shapeDS, layoutUsage);
 
@@ -3340,9 +3338,7 @@ void SMAADemo::renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources 
 
 	assert(activeScene - 1 < images.size());
 	ColorTexDS colorDS;
-	LOG_TODO("remove unused UBO hack")
-	uint32_t temp  = 0;
-	colorDS.unused = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
+	colorDS.globals = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	colorDS.color = image.tex;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 1, colorDS, layoutUsage);
 	renderer.draw(0, 3);
@@ -3380,9 +3376,7 @@ void SMAADemo::computeFXAA(RenderPasses /* rp */, DemoRenderGraph::PassResources
 	renderer.bindDescriptorSet(PipelineType::Compute, 0, globalDS, layoutUsage);
 
 	FXAAComputeDS fxaaDS;
-	LOG_TODO("remove unused UBO hack")
-	uint32_t temp        = 0;
-	fxaaDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
+	fxaaDS.globals       = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	fxaaDS.color.tex     = r.get(Rendertargets::MainColor, Format::sRGBA8);
 	fxaaDS.color.sampler = linearSampler;
 	fxaaDS.outputImage   = r.get(output, Format::RGBA8);
@@ -3427,9 +3421,7 @@ void SMAADemo::renderFXAA(RenderPasses rp, DemoRenderGraph::PassResources &r) {
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	FXAADS fxaaDS;
-	LOG_TODO("remove unused UBO hack")
-	uint32_t temp         = 0;
-	fxaaDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
+	fxaaDS.globals       = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	fxaaDS.color.tex     = r.get(Rendertargets::MainColor);
 	fxaaDS.color.sampler = linearSampler;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 1, fxaaDS, layoutUsage);
@@ -3457,9 +3449,7 @@ void SMAADemo::renderSeparate(RenderPasses rp, DemoRenderGraph::PassResources &r
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	ColorCombinedDS separateDS;
-	LOG_TODO("remove unused UBO hack")
-	uint32_t temp            = 0;
-	separateDS.unused        = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
+	separateDS.globals       = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	separateDS.color.tex     = r.get(Rendertargets::MainColor);
 	separateDS.color.sampler = nearestSampler;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 1, separateDS, layoutUsage);
@@ -3809,9 +3799,7 @@ void SMAADemo::renderSMAADebug(RenderPasses rp, DemoRenderGraph::PassResources &
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 	ColorTexDS blitDS;
-	LOG_TODO("remove unused UBO hack")
-	uint32_t temp  = 0;
-	blitDS.unused  = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
+	blitDS.globals = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 	blitDS.color   = r.get(rt);
 	renderer.bindDescriptorSet(PipelineType::Graphics, 1, blitDS, layoutUsage);
 
@@ -4360,9 +4348,7 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 		renderer.bindDescriptorSet(PipelineType::Graphics, 0, globalDS, layoutUsage);
 
 		ColorTexDS colorDS;
-		LOG_TODO("remove unused UBO hack")
-		uint32_t temp = 0;
-		colorDS.unused = renderer.createEphemeralBuffer(BufferType::Uniform, 4, &temp);
+		colorDS.globals = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
 		colorDS.color = imguiFontsTex;
 		renderer.bindDescriptorSet(PipelineType::Graphics, 1, colorDS, layoutUsage);
 
