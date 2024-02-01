@@ -422,6 +422,8 @@ private:
 	void buildRenderPassFramebuffer(Renderer &renderer, RenderPass &rp) {
 		const auto &desc = rp.desc;
 
+		LOG("buildRenderPassFramebuffer for {}", rp.name);
+
 		FramebufferDesc fbDesc;
 		fbDesc.renderPass(rp.handle)
 			  .name(rp.name);
@@ -850,6 +852,8 @@ public:
 
 
 	void clearCaches(Renderer &renderer) {
+		LOG("clear caches");
+
 		for (auto &p : computePipelines) {
 			renderer.deleteComputePipeline(std::move(p.second));
 		}
@@ -1254,12 +1258,16 @@ public:
 			rp.rpDesc.name(rp.name);
 			const auto &desc = rp.desc;
 
+			LOG("create renderpass {}", rp.name);
+
 			assert(!rp.handle);
 			{
 				auto it = renderPassCache.find(rp.rpDesc);
 				if (it != renderPassCache.end()) {
 					rp.handle = it->second;
+					LOG("renderpass {} found in cache", rp.name);
 				} else {
+					LOG("renderpass {} not found in cache, creating", rp.name);
 					auto handle = renderer.createRenderPass(rp.rpDesc);
 					// store owning handle in cache and return a non-owning copy
 					rp.handle = handle;
