@@ -3462,7 +3462,6 @@ void SMAADemo::computeSMAAEdges(RenderPasses /* rp */, DemoRenderGraph::PassReso
 		return renderGraph.createComputePipeline(renderer, plDesc);
 	}));
 
-	LOG_TODO("this is redundant, clean it up")
 	globals.smaaParameters        = smaaParameters;
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[pass];
@@ -3516,7 +3515,6 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	}));
 
-	LOG_TODO("this is redundant, clean it up")
 	globals.smaaParameters        = smaaParameters;
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[pass];
@@ -3558,7 +3556,6 @@ void SMAADemo::computeSMAAWeights(RenderPasses /* rp */, DemoRenderGraph::PassRe
 		return renderGraph.createComputePipeline(renderer, plDesc);
 	}));
 
-	LOG_TODO("this is redundant, clean it up")
 	globals.smaaParameters        = smaaParameters;
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[pass];
@@ -3606,7 +3603,6 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	}));
 
-	LOG_TODO("this is redundant, clean it up")
 	globals.smaaParameters        = smaaParameters;
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[pass];
@@ -3655,7 +3651,6 @@ void SMAADemo::computeSMAABlend(RenderPasses /* rp */, DemoRenderGraph::PassReso
 		return renderGraph.createComputePipeline(renderer, plDesc);
 	}));
 
-	LOG_TODO("this is redundant, clean it up")
 	globals.smaaParameters        = smaaParameters;
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[pass];
@@ -3713,7 +3708,6 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 		return renderGraph.createGraphicsPipeline(renderer, rp, plDesc);
 	}));
 
-	LOG_TODO("this is redundant, clean it up")
 	globals.smaaParameters        = smaaParameters;
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[pass];
