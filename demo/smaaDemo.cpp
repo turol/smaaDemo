@@ -3469,7 +3469,13 @@ void SMAADemo::computeSMAAEdges(RenderPasses /* rp */, DemoRenderGraph::PassReso
 
 	EdgeDetectionComputeDS edgeDS;
 	edgeDS.globals     = renderer.createEphemeralBuffer(BufferType::Uniform, sizeof(ShaderDefines::Globals), &globals);
-	edgeDS.color       = r.get(input, Format::RGBA8);
+
+	if (smaaEdgeMethod == SMAAEdgeMethod::Depth) {
+		edgeDS.color   = r.get(Rendertargets::MainDepth);
+	} else {
+		edgeDS.color   = r.get(input, Format::RGBA8);
+	}
+
 	edgeDS.outputImage = r.get(output, Format::RGBA8);
 	edgeDS.linearSampler  = linearSampler;
 	edgeDS.nearestSampler = nearestSampler;
