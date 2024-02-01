@@ -3972,35 +3972,6 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 			smaaEdgeMethod = enumRadioButton(smaaEdgeMethod);
 
 			{
-				ImGui::Text("Shader language");
-				auto newShaderLanguage = enumRadioButton(preferredShaderLanguage);
-				if (preferredShaderLanguage != newShaderLanguage) {
-					preferredShaderLanguage = newShaderLanguage;
-					rebuildRG = true;
-				}
-			}
-
-			{
-				temp = useTexGather;
-				bool texGatherChanged = ImGui::Checkbox("Use texture gather", &temp);
-				if (texGatherChanged) {
-					useTexGather = temp;
-					rebuildRG    = true;
-				}
-			}
-
-#ifdef RENDERER_VULKAN
-			{
-				ImGui::Text("Image layout usage");
-				auto newLayoutUsage = enumRadioButton(layoutUsage);
-				if (layoutUsage != newLayoutUsage) {
-					layoutUsage = newLayoutUsage;
-					rebuildRG = true;
-				}
-			}
-#endif  // RENDERER_VULKAN
-
-			{
 				int d = magic_enum::enum_integer(debugMode);
 				constexpr auto smaaDebugModes = magic_enum::enum_names<SMAADebugMode>();
 
@@ -4037,6 +4008,38 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 					fxaaQuality = fq;
 				}
 			}
+		}
+
+		{
+			ImGui::Separator();
+			{
+				ImGui::Text("Shader language");
+				auto newShaderLanguage = enumRadioButton(preferredShaderLanguage);
+				if (preferredShaderLanguage != newShaderLanguage) {
+					preferredShaderLanguage = newShaderLanguage;
+					rebuildRG = true;
+				}
+			}
+
+			{
+				bool temp = useTexGather;
+				bool texGatherChanged = ImGui::Checkbox("Use texture gather", &temp);
+				if (texGatherChanged) {
+					useTexGather = temp;
+					rebuildRG    = true;
+				}
+			}
+
+#ifdef RENDERER_VULKAN
+			{
+				ImGui::Text("Image layout usage");
+				auto newLayoutUsage = enumRadioButton(layoutUsage);
+				if (layoutUsage != newLayoutUsage) {
+					layoutUsage = newLayoutUsage;
+					rebuildRG = true;
+				}
+			}
+#endif  // RENDERER_VULKAN
 		}
 
 		if (ImGui::CollapsingHeader("Scene properties", ImGuiTreeNodeFlags_DefaultOpen)) {
