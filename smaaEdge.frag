@@ -40,6 +40,11 @@ THE SOFTWARE.
 #endif
 
 
+#define SMAA_PREDICATION_THRESHOLD  predicationThreshold
+#define SMAA_PREDICATION_SCALE      predicationScale
+#define SMAA_PREDICATION_STRENGTH   predicationStrength
+
+
 layout(set = 0, binding = 1) uniform sampler LinearSampler;
 layout(set = 0, binding = 2) uniform sampler PointSampler;
 
@@ -61,6 +66,13 @@ layout(set = 0, binding = 3) uniform SMAATexture2D(colorTex);
 #endif  // EDGEMETHOD
 
 
+#if SMAA_PREDICATION
+
+layout(set = 0, binding = 4) uniform SMAATexture2D(predicationTex);
+
+#endif  // SMAA_PREDICATION
+
+
 layout (location = 0) in vec2 texcoord;
 layout (location = 1) in vec4 offset0;
 layout (location = 2) in vec4 offset1;
@@ -76,11 +88,27 @@ void main(void)
 
 #if EDGEMETHOD == 0
 
+#if SMAA_PREDICATION
+
+	outColor = vec4(SMAAColorEdgeDetectionPS(texcoord, offsets, colorTex, predicationTex), 0.0, 0.0);
+
+#else  // SMAA_PREDICATION
+
 	outColor = vec4(SMAAColorEdgeDetectionPS(texcoord, offsets, colorTex), 0.0, 0.0);
+
+#endif  // SMAA_PREDICATION
 
 #elif EDGEMETHOD == 1
 
+#if SMAA_PREDICATION
+
+    outColor = vec4(SMAALumaEdgeDetectionPS(texcoord, offsets, colorTex, predicationTex), 0.0, 0.0);
+
+#else  // SMAA_PREDICATION
+
     outColor = vec4(SMAALumaEdgeDetectionPS(texcoord, offsets, colorTex), 0.0, 0.0);
+
+#endif  // SMAA_PREDICATION
 
 #elif EDGEMETHOD == 2
 

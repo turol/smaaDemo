@@ -502,7 +502,12 @@ class SMAADemo {
 
 	unsigned int                                      smaaQuality;
 	SMAAEdgeMethod                                    smaaEdgeMethod;
+	bool                                              smaaPredication;
 	ShaderDefines::SMAAParameters                     smaaParameters;
+
+	float                                             predicationThreshold = 0.01f;
+	float                                             predicationScale     = 2.0f;
+	float                                             predicationStrength  = 0.4f;
 
 	// timing things
 	bool                                              fpsLimitActive = true;
@@ -722,6 +727,7 @@ SMAADemo::SMAADemo()
 
 	smaaQuality = maxSMAAQuality - 1;
 	smaaEdgeMethod  = SMAAEdgeMethod::Color;
+	smaaPredication = false;
 	smaaParameters  = defaultSMAAParameters[smaaQuality];
 
 	uint64_t freq = SDL_GetPerformanceFrequency();
@@ -1144,6 +1150,7 @@ struct EdgeDetectionDS {
 	SamplerHandle  nearestSampler;
 
 	TextureHandle  color;
+	TextureHandle  predicationTex;
 
 	DS_LAYOUT_MEMBERS;
 };
@@ -1154,6 +1161,7 @@ const DescriptorLayout EdgeDetectionDS::layout[] = {
 	, DESCRIPTOR(EdgeDetectionDS, linearSampler )
 	, DESCRIPTOR(EdgeDetectionDS, nearestSampler)
 	, DESCRIPTOR(EdgeDetectionDS, color)
+	, DESCRIPTOR(EdgeDetectionDS, predicationTex)
 	, { DescriptorType::End,              0,                                 }
 };
 
@@ -1166,6 +1174,7 @@ struct EdgeDetectionComputeDS {
 	SamplerHandle  nearestSampler;
 
 	TextureHandle  color;
+	TextureHandle  predicationTex;
 	TextureHandle  outputImage;
 
 	DS_LAYOUT_MEMBERS;
@@ -1177,6 +1186,7 @@ const DescriptorLayout EdgeDetectionComputeDS::layout[] = {
 	, DESCRIPTOR(EdgeDetectionComputeDS, linearSampler )
 	, DESCRIPTOR(EdgeDetectionComputeDS, nearestSampler)
 	, DESCRIPTOR(EdgeDetectionComputeDS, color)
+	, DESCRIPTOR(EdgeDetectionComputeDS, predicationTex)
 	, { DescriptorType::StorageImageWrite, offsetof(EdgeDetectionComputeDS, outputImage) }
 	, { DescriptorType::End,              0,                                 }
 };
@@ -3463,6 +3473,9 @@ void SMAADemo::computeSMAAEdges(RenderPasses /* rp */, DemoRenderGraph::PassReso
 	}));
 
 	globals.smaaParameters        = smaaParameters;
+	globals.predicationThreshold  = predicationThreshold;
+	globals.predicationScale      = predicationScale;
+	globals.predicationStrength   = predicationStrength;
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[pass];
 
@@ -3474,6 +3487,9 @@ void SMAADemo::computeSMAAEdges(RenderPasses /* rp */, DemoRenderGraph::PassReso
 	} else {
 		edgeDS.color   = r.get(input, Format::RGBA8);
 	}
+
+	LOG_TODO("only set when using predication, need to make a separete descriptor set layout for that")
+	edgeDS.predicationTex    = r.get(Rendertargets::MainDepth);
 
 	edgeDS.outputImage = r.get(output, Format::RGBA8);
 	edgeDS.linearSampler  = linearSampler;
@@ -3502,6 +3518,10 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 			macros.set("SMAA_NO_GATHER", "1");
 		}
 
+		if (smaaPredication && smaaEdgeMethod != SMAAEdgeMethod::Depth) {
+			macros.set("SMAA_PREDICATION", "1");
+		}
+
 		GraphicsPipelineDesc plDesc;
 		plDesc.depthWrite(false)
 		      .depthTest(false)
@@ -3516,6 +3536,9 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 	}));
 
 	globals.smaaParameters        = smaaParameters;
+	globals.predicationThreshold  = predicationThreshold;
+	globals.predicationScale      = predicationScale;
+	globals.predicationStrength   = predicationStrength;
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[pass];
 
@@ -3529,6 +3552,9 @@ void SMAADemo::renderSMAAEdges(RenderPasses rp, DemoRenderGraph::PassResources &
 	} else {
 		edgeDS.color         = r.get(input, Format::RGBA8);
 	}
+
+	LOG_TODO("only set when using predication, need to make a separete descriptor set layout for that")
+	edgeDS.predicationTex    = r.get(Rendertargets::MainDepth);
 
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, edgeDS, layoutUsage);
 	renderer.draw(0, 3);
@@ -3557,6 +3583,9 @@ void SMAADemo::computeSMAAWeights(RenderPasses /* rp */, DemoRenderGraph::PassRe
 	}));
 
 	globals.smaaParameters        = smaaParameters;
+	globals.predicationThreshold  = predicationThreshold;
+	globals.predicationScale      = predicationScale;
+	globals.predicationStrength   = predicationStrength;
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[pass];
 
@@ -3604,6 +3633,9 @@ void SMAADemo::renderSMAAWeights(RenderPasses rp, DemoRenderGraph::PassResources
 	}));
 
 	globals.smaaParameters        = smaaParameters;
+	globals.predicationThreshold  = predicationThreshold;
+	globals.predicationScale      = predicationScale;
+	globals.predicationStrength   = predicationStrength;
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[pass];
 
@@ -3652,6 +3684,9 @@ void SMAADemo::computeSMAABlend(RenderPasses /* rp */, DemoRenderGraph::PassReso
 	}));
 
 	globals.smaaParameters        = smaaParameters;
+	globals.predicationThreshold  = predicationThreshold;
+	globals.predicationScale      = predicationScale;
+	globals.predicationStrength   = predicationStrength;
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[pass];
 
@@ -3709,6 +3744,9 @@ void SMAADemo::renderSMAABlend(RenderPasses rp, DemoRenderGraph::PassResources &
 	}));
 
 	globals.smaaParameters        = smaaParameters;
+	globals.predicationThreshold  = predicationThreshold;
+	globals.predicationScale      = predicationScale;
+	globals.predicationStrength   = predicationStrength;
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[pass];
 
@@ -3769,6 +3807,9 @@ void SMAADemo::renderTemporalAA(RenderPasses rp, DemoRenderGraph::PassResources 
 	}));
 
 	globals.smaaParameters        = smaaParameters;
+	globals.predicationThreshold  = predicationThreshold;
+	globals.predicationScale      = predicationScale;
+	globals.predicationStrength   = predicationStrength;
 	globals.reprojWeigthScale     = reprojectionWeightScale;
 	globals.subsampleIndices      = subsampleIndices[0];
 
@@ -3966,6 +4007,25 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				if (smaaQuality != 0) {
 					ImGui::EndDisabled();
 				}
+			}
+
+			ImGui::Checkbox("Predicated thresholding", &smaaPredication);
+
+			if (!smaaPredication) {
+				ImGui::BeginDisabled();
+			}
+
+			ImGui::SliderFloat("Predication threshold", &predicationThreshold, 0.0f, 1.0f, "%.4f");
+			ImGui::SliderFloat("Predication scale",     &predicationScale,     1.0f, 5.0f);
+			ImGui::SliderFloat("Predication strength",  &predicationStrength,  0.0f, 1.0f);
+			if (ImGui::Button("Reset predication values")) {
+				predicationThreshold = 0.01f;
+				predicationScale     = 2.0f;
+				predicationStrength  = 0.4f;
+			}
+
+			if (!smaaPredication) {
+				ImGui::EndDisabled();
 			}
 
 			ImGui::Text("SMAA edge detection");

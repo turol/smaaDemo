@@ -54,7 +54,15 @@ THE SOFTWARE.
 [[vk::binding(3, 0)]] uniform SMAATexture2D(colorTex);
 #endif  // EDGEMETHOD
 
-[[vk::binding(4, 0)]] uniform RWTexture2D<float4> outputImage;
+
+#if SMAA_PREDICATION
+
+[[vk::binding(4, 0)]]uniform SMAATexture2D(predicationTex);
+
+#endif  // SMAA_PREDICATION
+
+
+[[vk::binding(5, 0)]] uniform RWTexture2D<float4> outputImage;
 
 
 struct VertexOut {
@@ -98,11 +106,27 @@ float4 fragmentShader(VertexOut v)
 
 #if EDGEMETHOD == 0
 
+#if SMAA_PREDICATION
+
+    return float4(SMAAColorEdgeDetectionPS(v.texcoord, offsets, colorTex, predicationTex), 0.0, 0.0);
+
+#else  // SMAA_PREDICATION
+
     return float4(SMAAColorEdgeDetectionPS(v.texcoord, offsets, colorTex), 0.0, 0.0);
+
+#endif  // SMAA_PREDICATION
 
 #elif EDGEMETHOD == 1
 
+#if SMAA_PREDICATION
+
+    return float4(SMAALumaEdgeDetectionPS(v.texcoord, offsets, colorTex, predicationTex), 0.0, 0.0);
+
+#else  // SMAA_PREDICATION
+
     return float4(SMAALumaEdgeDetectionPS(v.texcoord, offsets, colorTex), 0.0, 0.0);
+
+#endif  // SMAA_PREDICATION
 
 #elif EDGEMETHOD == 2
 

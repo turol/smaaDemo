@@ -60,7 +60,16 @@ layout(set = 0, binding = 3) uniform SMAATexture2D(depthTex);
 layout(set = 0, binding = 3) uniform SMAATexture2D(colorTex);
 
 #endif  // EDGEMETHOD
-layout(set = 0, binding = 4, rgba8) uniform writeonly image2D outputImage;
+
+
+#if SMAA_PREDICATION
+
+layout(set = 0, binding = 4) uniform SMAATexture2D(predicationTex);
+
+#endif  // SMAA_PREDICATION
+
+
+layout(set = 0, binding = 5, rgba8) uniform writeonly image2D outputImage;
 
 
 void main(void)
