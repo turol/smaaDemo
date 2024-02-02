@@ -3472,6 +3472,10 @@ void SMAADemo::computeSMAAEdges(RenderPasses /* rp */, DemoRenderGraph::PassReso
 			macros.set("EDGEMETHOD", std::to_string(static_cast<uint8_t>(smaaEdgeMethod)));
 		}
 
+		if (smaaPredication && smaaEdgeMethod != SMAAEdgeMethod::Depth) {
+			macros.set("SMAA_PREDICATION", "1");
+		}
+
 		ComputePipelineDesc plDesc;
 		plDesc.descriptorSetLayout<EdgeDetectionComputeDS>(0)
 		      .shaderMacros(macros)
