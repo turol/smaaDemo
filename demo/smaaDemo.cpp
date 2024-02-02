@@ -841,7 +841,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::ValueArg<std::string>           aaQualitySwitch("q",      "quality",           "AA Quality",               false, "",                            "",                      cmd);
 		TCLAP::ValueArg<std::string>           debugModeSwitch("d",      "debugmode",         "SMAA debug mode",          false, "None",                        "None/Edges/Weights",    cmd);
 		TCLAP::ValueArg<std::string>           shaderLanguageSwitch("l", "shader-language",   "shader language",          false, "GLSL",                        "GLSL/HLSL",             cmd);
-		TCLAP::ValueArg<std::string>           pipelineTypeSwitch("p",   "pipeline-type",     "Pipeline type",            false, "Graphics",                    "Graphics/Compute",      cmd);
+		TCLAP::ValueArg<std::string>           pipelineTypeSwitch("p",   "pipeline-type",     "Pipeline type",            false, magic_enum::enum_name(pipelineType).data(), "Graphics/Compute",      cmd);
 		TCLAP::ValueArg<std::string>           deviceSwitch("",          "device",            "Set Vulkan device filter", false, "",                            "device name",           cmd);
 
 		TCLAP::SwitchArg                       temporalAASwitch("t",     "temporal",          "Temporal AA", cmd, false);
