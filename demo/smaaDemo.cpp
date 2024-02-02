@@ -3072,6 +3072,14 @@ void SMAADemo::runAuto() {
 								for (auto e : magic_enum::enum_values<SMAAEdgeMethod>()) {
 									smaaEdgeMethod = e;
 
+									for (bool predication : { false, true }) {
+										// predicated thresholding can't be used with depth edge detection
+										// because both use the depth texture
+										if (smaaEdgeMethod == SMAAEdgeMethod::Depth && predication) {
+											continue;
+										}
+										smaaPredication = predication;
+
 									for (bool gather : { true, false }) {
 										useTexGather = gather;
 
@@ -3079,6 +3087,7 @@ void SMAADemo::runAuto() {
 											debugMode = d;
 											innermostLoop();
 										}
+									}
 									}
 								}
 							}
@@ -3093,6 +3102,7 @@ void SMAADemo::runAuto() {
 								smaaQuality = q;
 
 								// depth causes problems because it's multisampled
+								// same problem with predication
 								for (auto e : { SMAAEdgeMethod::Color, SMAAEdgeMethod::Luma }) {
 									smaaEdgeMethod = e;
 
