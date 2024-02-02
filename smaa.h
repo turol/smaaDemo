@@ -1569,7 +1569,7 @@ float2 SMAALumaEdgeDetectionCS(float2 texcoord,
 
     // Calculate the threshold:
 #if SMAA_PREDICATION
-    float2 threshold = SMAACalculatePredicatedThreshold(texcoord, offset, SMAATexturePass2D(predicationTex));
+    float2 threshold = SMAACalculatePredicatedThreshold(texcoord, offset[0], SMAATexturePass2D(predicationTex));
 #else  // SMAA_PREDICATION
     float2 threshold = float2(SMAA_THRESHOLD, SMAA_THRESHOLD);
 #endif  // SMAA_PREDICATION
@@ -1635,7 +1635,7 @@ float2 SMAAColorEdgeDetectionCS(float2 texcoord,
 
     // Calculate the threshold:
 #if SMAA_PREDICATION
-    float2 threshold = SMAACalculatePredicatedThreshold(texcoord, offset, predicationTex);
+    float2 threshold = SMAACalculatePredicatedThreshold(texcoord, offset[0], predicationTex);
 #else  // SMAA_PREDICATION
     float2 threshold = float2(SMAA_THRESHOLD, SMAA_THRESHOLD);
 #endif  // SMAA_PREDICATION

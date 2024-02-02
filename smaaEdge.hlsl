@@ -130,11 +130,27 @@ void computeShader(int3 GlobalInvocationID : SV_DispatchThreadID)
 
 #if EDGEMETHOD == 0
 
+#if SMAA_PREDICATION
+
+        float2 pixel = SMAAColorEdgeDetectionCS(texcoord, colorTex, predicationTex);
+
+#else  // SMAA_PREDICATION
+
         float2 pixel = SMAAColorEdgeDetectionCS(texcoord, colorTex);
+
+#endif  // SMAA_PREDICATION
 
 #elif EDGEMETHOD == 1
 
+#if SMAA_PREDICATION
+
+        float2 pixel = SMAALumaEdgeDetectionCS(texcoord, colorTex, predicationTex);
+
+#else  // SMAA_PREDICATION
+
         float2 pixel = SMAALumaEdgeDetectionCS(texcoord, colorTex);
+
+#endif  // SMAA_PREDICATION
 
 #elif EDGEMETHOD == 2
 

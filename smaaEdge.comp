@@ -75,11 +75,27 @@ void main(void)
 
 #if EDGEMETHOD == 0
 
-        vec2 outColor = SMAAColorEdgeDetectionCS(texcoord, colorTex);
+#if SMAA_PREDICATION
+
+        vec2 outColor = SMAAColorEdgeDetectionCS(texcoord, colorTex, predicationTex);
+
+#else  // SMAA_PREDICATION
+
+		vec2 outColor = SMAAColorEdgeDetectionCS(texcoord, colorTex);
+
+#endif  // SMAA_PREDICATION
 
 #elif EDGEMETHOD == 1
 
-        vec2 outColor = SMAALumaEdgeDetectionCS(texcoord, colorTex);
+#if SMAA_PREDICATION
+
+		vec2 outColor = SMAALumaEdgeDetectionCS(texcoord, colorTex, predicationTex);
+
+#else  // SMAA_PREDICATION
+
+		vec2 outColor = SMAALumaEdgeDetectionCS(texcoord, colorTex);
+
+#endif  // SMAA_PREDICATION
 
 #elif EDGEMETHOD == 2
 
