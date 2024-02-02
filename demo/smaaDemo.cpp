@@ -3080,14 +3080,14 @@ void SMAADemo::runAuto() {
 										}
 										smaaPredication = predication;
 
-									for (bool gather : { true, false }) {
-										useTexGather = gather;
+										for (bool gather : { true, false }) {
+											useTexGather = gather;
 
-										for (auto d : magic_enum::enum_values<SMAADebugMode>()) {
-											debugMode = d;
-											innermostLoop();
+											for (auto d : magic_enum::enum_values<SMAADebugMode>()) {
+												debugMode = d;
+												innermostLoop();
+											}
 										}
-									}
 									}
 								}
 							}
