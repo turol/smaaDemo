@@ -378,6 +378,13 @@ struct SMAAPipelines {
 	PipelineHandle                 edgePipeline;
 	PipelineHandle                 blendWeightPipeline;
 	std::array<PipelineHandle, 2>  neighborPipelines;
+
+	void reset() {
+		edgePipeline.reset();
+		blendWeightPipeline.reset();
+		neighborPipelines[0].reset();
+		neighborPipelines[1].reset();
+	}
 };
 
 
@@ -2210,16 +2217,8 @@ void SMAADemo::rebuildRenderGraph() {
 	temporalAAPipelines[1].reset();
 	fxaaPipeline.reset();
 	fxaaComputePipeline.reset();
-
-	smaaPipelines.edgePipeline.reset();
-	smaaPipelines.blendWeightPipeline.reset();
-	smaaPipelines.neighborPipelines[0].reset();
-	smaaPipelines.neighborPipelines[1].reset();
-
-	smaaComputePipelines.edgePipeline.reset();
-	smaaComputePipelines.blendWeightPipeline.reset();
-	smaaComputePipelines.neighborPipelines[0].reset();
-	smaaComputePipelines.neighborPipelines[1].reset();
+	smaaPipelines.reset();
+	smaaComputePipelines.reset();
 
 	for (unsigned int i = 0; i < 2; i++) {
 		temporalAAPipelines[i].reset();
@@ -2745,15 +2744,8 @@ void SMAADemo::processInput() {
 					smaaQuality     = smaaQuality % maxSMAAQuality;
 					smaaParameters  = defaultSMAAParameters[smaaQuality];
 
-					smaaPipelines.edgePipeline.reset();
-					smaaPipelines.blendWeightPipeline.reset();
-					smaaPipelines.neighborPipelines[0].reset();
-					smaaPipelines.neighborPipelines[1].reset();
-
-					smaaComputePipelines.edgePipeline.reset();
-					smaaComputePipelines.blendWeightPipeline.reset();
-					smaaComputePipelines.neighborPipelines[0].reset();
-					smaaComputePipelines.neighborPipelines[1].reset();
+					smaaPipelines.reset();
+					smaaComputePipelines.reset();
 
 					break;
 
@@ -3995,15 +3987,8 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				if (sq != 0) {
 					smaaParameters  = defaultSMAAParameters[sq];
 				}
-				smaaPipelines.edgePipeline.reset();
-				smaaPipelines.blendWeightPipeline.reset();
-				smaaPipelines.neighborPipelines[0].reset();
-				smaaPipelines.neighborPipelines[1].reset();
-
-				smaaComputePipelines.edgePipeline.reset();
-				smaaComputePipelines.blendWeightPipeline.reset();
-				smaaComputePipelines.neighborPipelines[0].reset();
-				smaaComputePipelines.neighborPipelines[1].reset();
+				smaaPipelines.reset();
+				smaaComputePipelines.reset();
 			}
 
 			{
