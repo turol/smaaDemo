@@ -83,17 +83,19 @@ float4 fragmentShader(VertexOut v)
 [numthreads(SMAA_BLEND_COMPUTE_GROUP_X, SMAA_BLEND_COMPUTE_GROUP_Y, 1)]
 void computeShader(int3 GlobalInvocationID : SV_DispatchThreadID)
 {
+    // TODO: rearrange invocations for better cache locality
+    int2 coord = int2(GlobalInvocationID.xy);
+
     // don't write outside image in case its size is not exactly divisible by group size
-    if (GlobalInvocationID.x < screenSize.z && GlobalInvocationID.y < screenSize.w) {
-        // TODO: rearrange invocations for better cache locality
-        float2 texcoord = GlobalInvocationID.xy;
+    if (coord.x < screenSize.z && coord.y < screenSize.w) {
+        float2 texcoord = coord.xy;
         // account for pixel center TODO: pass precalculated value in UBO to avoid one op
         texcoord += float2(0.5, 0.5);
         texcoord *= screenSize.xy;
 
         float4 pixel = SMAANeighborhoodBlendingCS(texcoord, colorTex, blendTex);
 
-        outputImage[GlobalInvocationID.xy] = pixel;
+        outputImage[coord] = pixel;
     }
 }
 
