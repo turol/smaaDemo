@@ -2732,6 +2732,7 @@ void SMAADemo::processInput() {
 					}
 					fxaaQuality  = fxaaQuality % maxFXAAQuality;
 					fxaaPipeline.reset();
+					fxaaComputePipeline.reset();
 					break;
 
 				case AAMethod::SMAA:
@@ -2748,6 +2749,11 @@ void SMAADemo::processInput() {
 					smaaPipelines.blendWeightPipeline.reset();
 					smaaPipelines.neighborPipelines[0].reset();
 					smaaPipelines.neighborPipelines[1].reset();
+
+					smaaComputePipelines.edgePipeline.reset();
+					smaaComputePipelines.blendWeightPipeline.reset();
+					smaaComputePipelines.neighborPipelines[0].reset();
+					smaaComputePipelines.neighborPipelines[1].reset();
 
 					break;
 
@@ -3993,6 +3999,11 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				smaaPipelines.blendWeightPipeline.reset();
 				smaaPipelines.neighborPipelines[0].reset();
 				smaaPipelines.neighborPipelines[1].reset();
+
+				smaaComputePipelines.edgePipeline.reset();
+				smaaComputePipelines.blendWeightPipeline.reset();
+				smaaComputePipelines.neighborPipelines[0].reset();
+				smaaComputePipelines.neighborPipelines[1].reset();
 			}
 
 			{
@@ -4079,6 +4090,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				assert(fq < int(maxFXAAQuality));
 				if (fq != int(fxaaQuality)) {
 					fxaaPipeline.reset();
+					fxaaComputePipeline.reset();
 					fxaaQuality = fq;
 				}
 			}
