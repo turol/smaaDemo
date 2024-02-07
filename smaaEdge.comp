@@ -79,20 +79,16 @@ void main(void)
 
     // don't write outside image in case its size is not exactly divisible by group size
     if (coord.x < screenSize.z && coord.y < screenSize.w) {
-        vec2 texcoord = coord.xy;
-        // account for pixel center TODO: pass precalculated value in UBO to avoid one op
-        texcoord += vec2(0.5, 0.5);
-        texcoord *= screenSize.xy;
 
 #if EDGEMETHOD == 0
 
 #if SMAA_PREDICATION
 
-        vec2 outColor = SMAAColorEdgeDetectionCS(texcoord, colorTex, predicationTex);
+        vec2 outColor = SMAAColorEdgeDetectionCS(coord, colorTex, predicationTex);
 
 #else  // SMAA_PREDICATION
 
-        vec2 outColor = SMAAColorEdgeDetectionCS(texcoord, colorTex);
+        vec2 outColor = SMAAColorEdgeDetectionCS(coord, colorTex);
 
 #endif  // SMAA_PREDICATION
 
@@ -100,17 +96,17 @@ void main(void)
 
 #if SMAA_PREDICATION
 
-        vec2 outColor = SMAALumaEdgeDetectionCS(texcoord, colorTex, predicationTex);
+        vec2 outColor = SMAALumaEdgeDetectionCS(coord, colorTex, predicationTex);
 
 #else  // SMAA_PREDICATION
 
-        vec2 outColor = SMAALumaEdgeDetectionCS(texcoord, colorTex);
+        vec2 outColor = SMAALumaEdgeDetectionCS(coord, colorTex);
 
 #endif  // SMAA_PREDICATION
 
 #elif EDGEMETHOD == 2
 
-        vec2 outColor = SMAADepthEdgeDetectionCS(texcoord, depthTex);
+        vec2 outColor = SMAADepthEdgeDetectionCS(coord, depthTex);
 
 #else
 

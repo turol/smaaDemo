@@ -1555,12 +1555,16 @@ void SMAASeparatePS(float4 position, float2 texcoord, out float4 target0, out fl
  * IMPORTANT NOTICE: luma edge detection requires gamma-corrected colors, and
  * thus 'colorTex' should be a non-sRGB texture.
  */
-float2 SMAALumaEdgeDetectionCS(float2 texcoord,
+float2 SMAALumaEdgeDetectionCS(int2 coord,
                                SMAATexture2D(colorTex)
 #if SMAA_PREDICATION
                                , SMAATexture2D(predicationTex)
 #endif  // SMAA_PREDICATION
                                ) {
+    float2 texcoord = coord.xy;
+    // account for pixel center
+    texcoord += float2(0.5, 0.5);
+    texcoord *= SMAA_RT_METRICS.xy;
 
     float4 offset[3];
     offset[0] = mad(SMAA_RT_METRICS.xyxy, float4(-1.0, 0.0, 0.0, API_V_DIR(-1.0)), texcoord.xyxy);
@@ -1621,12 +1625,16 @@ float2 SMAALumaEdgeDetectionCS(float2 texcoord,
  * IMPORTANT NOTICE: color edge detection requires gamma-corrected colors, and
  * thus 'colorTex' should be a non-sRGB texture.
  */
-float2 SMAAColorEdgeDetectionCS(float2 texcoord,
+float2 SMAAColorEdgeDetectionCS(int2 coord,
                                 SMAATexture2D(colorTex)
 #if SMAA_PREDICATION
                                 , SMAATexture2D(predicationTex)
 #endif  // SMAA_PREDICATION
                                 ) {
+    float2 texcoord = coord.xy;
+    // account for pixel center
+    texcoord += float2(0.5, 0.5);
+    texcoord *= SMAA_RT_METRICS.xy;
 
     float4 offset[3];
     offset[0] = mad(SMAA_RT_METRICS.xyxy, float4(-1.0, 0.0, 0.0, API_V_DIR(-1.0)), texcoord.xyxy);
@@ -1695,8 +1703,12 @@ float2 SMAAColorEdgeDetectionCS(float2 texcoord,
 /**
  * Depth Edge Detection
  */
-float2 SMAADepthEdgeDetectionCS(float2 texcoord,
+float2 SMAADepthEdgeDetectionCS(int2 coord,
                                 SMAATexture2D(depthTex)) {
+    float2 texcoord = coord.xy;
+    // account for pixel center
+    texcoord += float2(0.5, 0.5);
+    texcoord *= SMAA_RT_METRICS.xy;
 
     float4 offset[3];
     offset[0] = mad(SMAA_RT_METRICS.xyxy, float4(-1.0, 0.0, 0.0, API_V_DIR(-1.0)), texcoord.xyxy);
@@ -1718,9 +1730,13 @@ float2 SMAADepthEdgeDetectionCS(float2 texcoord,
 //-----------------------------------------------------------------------------
 // Blending Weight Calculation Compute Shader (Second Pass)
 
-float4 SMAABlendingWeightCalculationCS(float2 texcoord
+float4 SMAABlendingWeightCalculationCS(int2 coord
                                        , SMAATexture2D(edgesTex), SMAATexture2D(areaTex)
                                        , SMAATexture2D(searchTex), float4 subsampleIndices) {
+    float2 texcoord = coord.xy;
+    // account for pixel center
+    texcoord += float2(0.5, 0.5);
+    texcoord *= SMAA_RT_METRICS.xy;
     float2 pixcoord = texcoord * SMAA_RT_METRICS.zw;
 
     float4 offset[3];
@@ -1837,12 +1853,16 @@ float4 SMAABlendingWeightCalculationCS(float2 texcoord
 // Neighborhood Blending Compute Shader (Third Pass)
 
 
-float4 SMAANeighborhoodBlendingCS(float2 texcoord, SMAATexture2D(colorTex)
+float4 SMAANeighborhoodBlendingCS(int2 coord, SMAATexture2D(colorTex)
                                   , SMAATexture2D(blendTex)
 #if SMAA_REPROJECTION
                                   , SMAATexture2D(velocityTex)
 #endif  // SMAA_REPROJECTION
                                   ) {
+    float2 texcoord = coord.xy;
+    // account for pixel center
+    texcoord += float2(0.5, 0.5);
+    texcoord *= SMAA_RT_METRICS.xy;
 
     float4 offset = mad(SMAA_RT_METRICS.xyxy, float4( 1.0, 0.0, 0.0, API_V_DIR(1.0)), texcoord.xyxy);
 

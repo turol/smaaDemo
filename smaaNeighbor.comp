@@ -58,12 +58,7 @@ void main(void)
 
     // don't write outside image in case its size is not exactly divisible by group size
     if (coord.x < screenSize.z && coord.y < screenSize.w) {
-        vec2 texcoord = coord.xy;
-        // account for pixel center TODO: pass precalculated value in UBO to avoid one op
-        texcoord += vec2(0.5, 0.5);
-        texcoord *= screenSize.xy;
-
-        vec4 outColor = SMAANeighborhoodBlendingCS(texcoord, colorTex, blendTex);
+        vec4 outColor = SMAANeighborhoodBlendingCS(coord, colorTex, blendTex);
 
         imageStore(outputImage, coord, outColor);
     }

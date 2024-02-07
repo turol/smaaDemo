@@ -149,20 +149,16 @@ void computeShader(int3 GlobalInvocationID : SV_DispatchThreadID)
 
     // don't write outside image in case its size is not exactly divisible by group size
     if (coord.x < screenSize.z && coord.y < screenSize.w) {
-        float2 texcoord = coord.xy;
-        // account for pixel center TODO: pass precalculated value in UBO to avoid one op
-        texcoord += float2(0.5, 0.5);
-        texcoord *= screenSize.xy;
 
 #if EDGEMETHOD == 0
 
 #if SMAA_PREDICATION
 
-        float2 pixel = SMAAColorEdgeDetectionCS(texcoord, colorTex, predicationTex);
+        float2 pixel = SMAAColorEdgeDetectionCS(coord, colorTex, predicationTex);
 
 #else  // SMAA_PREDICATION
 
-        float2 pixel = SMAAColorEdgeDetectionCS(texcoord, colorTex);
+        float2 pixel = SMAAColorEdgeDetectionCS(coord, colorTex);
 
 #endif  // SMAA_PREDICATION
 
@@ -170,17 +166,17 @@ void computeShader(int3 GlobalInvocationID : SV_DispatchThreadID)
 
 #if SMAA_PREDICATION
 
-        float2 pixel = SMAALumaEdgeDetectionCS(texcoord, colorTex, predicationTex);
+        float2 pixel = SMAALumaEdgeDetectionCS(coord, colorTex, predicationTex);
 
 #else  // SMAA_PREDICATION
 
-        float2 pixel = SMAALumaEdgeDetectionCS(texcoord, colorTex);
+        float2 pixel = SMAALumaEdgeDetectionCS(coord, colorTex);
 
 #endif  // SMAA_PREDICATION
 
 #elif EDGEMETHOD == 2
 
-        float2 pixel = SMAADepthEdgeDetectionCS(texcoord, depthTex);
+        float2 pixel = SMAADepthEdgeDetectionCS(coord, depthTex);
 
 #else
 

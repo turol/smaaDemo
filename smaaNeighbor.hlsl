@@ -88,12 +88,7 @@ void computeShader(int3 GlobalInvocationID : SV_DispatchThreadID)
 
     // don't write outside image in case its size is not exactly divisible by group size
     if (coord.x < screenSize.z && coord.y < screenSize.w) {
-        float2 texcoord = coord.xy;
-        // account for pixel center TODO: pass precalculated value in UBO to avoid one op
-        texcoord += float2(0.5, 0.5);
-        texcoord *= screenSize.xy;
-
-        float4 pixel = SMAANeighborhoodBlendingCS(texcoord, colorTex, blendTex);
+        float4 pixel = SMAANeighborhoodBlendingCS(coord, colorTex, blendTex);
 
         outputImage[coord] = pixel;
     }
