@@ -1851,7 +1851,7 @@ void SMAADemo::rebuildRenderGraph() {
 
 		switch (pipelineType) {
 			case PipelineType::Compute:
-				usage = { TextureUsage::Sampling, TextureUsage::StorageWrite };
+				usage = { TextureUsage::BlitDestination, TextureUsage::Sampling, TextureUsage::StorageWrite };
 				break;
 
 			case PipelineType::Graphics:
@@ -1868,7 +1868,7 @@ void SMAADemo::rebuildRenderGraph() {
 				RenderTargetDesc rtDesc;
 				rtDesc.format(Format::sRGBA8)
 					  .additionalViewFormat(Format::RGBA8)
-					  .usage({ TextureUsage::Sampling })
+					  .usage({ TextureUsage::BlitDestination, TextureUsage::Sampling })
 					  .width(windowWidth)
 					  .height(windowHeight);
 
