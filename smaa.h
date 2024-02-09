@@ -1555,8 +1555,8 @@ void SMAASeparatePS(float4 position, float2 texcoord, out float4 target0, out fl
  * IMPORTANT NOTICE: luma edge detection requires gamma-corrected colors, and
  * thus 'colorTex' should be a non-sRGB texture.
  */
-float2 SMAALumaEdgeDetectionCS(int2 coord,
-                               SMAATexture2D(colorTex)
+float2 SMAALumaEdgeDetectionCS(int2 coord
+                               , SMAATexture2D(colorTex)
 #if SMAA_PREDICATION
                                , SMAATexture2D(predicationTex)
 #endif  // SMAA_PREDICATION
@@ -1625,8 +1625,8 @@ float2 SMAALumaEdgeDetectionCS(int2 coord,
  * IMPORTANT NOTICE: color edge detection requires gamma-corrected colors, and
  * thus 'colorTex' should be a non-sRGB texture.
  */
-float2 SMAAColorEdgeDetectionCS(int2 coord,
-                                SMAATexture2D(colorTex)
+float2 SMAAColorEdgeDetectionCS(int2 coord
+                                , SMAATexture2D(colorTex)
 #if SMAA_PREDICATION
                                 , SMAATexture2D(predicationTex)
 #endif  // SMAA_PREDICATION
@@ -1703,8 +1703,8 @@ float2 SMAAColorEdgeDetectionCS(int2 coord,
 /**
  * Depth Edge Detection
  */
-float2 SMAADepthEdgeDetectionCS(int2 coord,
-                                SMAATexture2D(depthTex)) {
+float2 SMAADepthEdgeDetectionCS(int2 coord
+                                , SMAATexture2D(depthTex)) {
     float2 texcoord = coord.xy;
     // account for pixel center
     texcoord += float2(0.5, 0.5);
