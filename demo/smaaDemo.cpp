@@ -3484,6 +3484,8 @@ void SMAADemo::computeSMAAEdges(RenderPasses /* rp */, DemoRenderGraph::PassReso
 		return renderGraph.createComputePipeline(renderer, plDesc);
 	}));
 
+	renderer.clearTexture(r.get(output, Format::RGBA8));
+
 	globals.smaaParameters        = smaaParameters;
 	globals.predicationThreshold  = predicationThreshold;
 	globals.predicationScale      = predicationScale;
