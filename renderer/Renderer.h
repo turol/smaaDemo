@@ -1421,6 +1421,8 @@ public:
 	void bindIndexBuffer(BufferHandle buffer, IndexFormat indexFormat);
 	void bindVertexBuffer(unsigned int binding, BufferHandle buffer);
 
+	void clearTexture(TextureHandle target);
+
 	void blit(RenderTargetHandle source, RenderTargetHandle target);
 	void resolveMSAA(RenderTargetHandle source, RenderTargetHandle target, LayoutUsage layoutUsage);
 

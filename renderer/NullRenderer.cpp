@@ -439,6 +439,19 @@ void Renderer::setScissorRect(unsigned int /* x */, unsigned int /* y */, unsign
 }
 
 
+void Renderer::clearTexture(TextureHandle target) {
+	assert(target);
+
+	// only for clearing compute storage images outside of a renderpass
+	assert(!impl->inRenderPass);
+
+	const auto &tex = impl->textures.get(target);
+	assert(tex.desc.usage_.test(TextureUsage::BlitDestination));
+	assert(tex.desc.usage_.test(TextureUsage::RenderTarget));
+	assert(tex.desc.usage_.test(TextureUsage::StorageWrite));
+}
+
+
 void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(source);
 	assert(target);

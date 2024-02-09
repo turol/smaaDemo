@@ -3837,6 +3837,44 @@ void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width
 }
 
 
+void Renderer::clearTexture(TextureHandle target) {
+	assert(target);
+
+	// only for clearing compute storage images outside of a renderpass
+	assert(!impl->inRenderPass);
+
+	const auto &tex = impl->textures.get(target);
+	assert(tex.renderTarget);
+	assert(tex.usage.test(TextureUsage::BlitDestination));
+	assert(tex.usage.test(TextureUsage::RenderTarget));
+	assert(tex.usage.test(TextureUsage::StorageWrite));
+
+	// don't need a barrier before the clear because the previous operation should have
+	// been a layout transition which was sufficiently broad
+
+	vk::ClearColorValue zero(0, 0, 0, 0);
+	vk::ImageSubresourceRange range;
+	range.aspectMask            = vk::ImageAspectFlagBits::eColor;
+	range.baseMipLevel          = 0;
+	range.levelCount            = VK_REMAINING_MIP_LEVELS;
+	range.baseArrayLayer        = 0;
+	range.layerCount            = VK_REMAINING_ARRAY_LAYERS;
+	impl->currentCommandBuffer.clearColorImage(tex.image, vk::ImageLayout::eGeneral, zero, range);
+
+	vk::ImageMemoryBarrier barrier;
+	barrier.srcAccessMask        = vk::AccessFlagBits::eTransferWrite;
+	barrier.dstAccessMask        = vk::AccessFlagBits::eShaderWrite;
+	barrier.oldLayout            = vk::ImageLayout::eGeneral;
+	barrier.newLayout            = vk::ImageLayout::eGeneral;
+	barrier.srcQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex  = VK_QUEUE_FAMILY_IGNORED;
+	barrier.image                = tex.image;
+	barrier.subresourceRange     = range;
+
+	impl->currentCommandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eComputeShader, vk::DependencyFlags(), {}, {}, { barrier });
+}
+
+
 void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(source);
 	assert(target);

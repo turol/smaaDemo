@@ -2678,6 +2678,23 @@ void RendererImpl::rebindDescriptorSets() {
 }
 
 
+void Renderer::clearTexture(TextureHandle target) {
+	assert(target);
+
+	// only for clearing compute storage images outside of a renderpass
+	assert(!impl->inRenderPass);
+
+	const auto &tex = impl->textures.get(target);
+	assert(tex.renderTarget);
+	assert(tex.usage.test(TextureUsage::BlitDestination));
+	assert(tex.usage.test(TextureUsage::RenderTarget));
+	assert(tex.usage.test(TextureUsage::StorageWrite));
+
+	uint32_t zero = 0;
+	glClearTexImage(tex.tex, 0, GL_RGBA, GL_UNSIGNED_BYTE, &zero);
+}
+
+
 void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(source);
 	assert(target);
