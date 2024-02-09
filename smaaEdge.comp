@@ -114,7 +114,9 @@ void main(void)
 
 #endif
 
-        imageStore(outputImage, coord, vec4(outColor, 0.0, 0.0));
+        if ((outColor.x > 0.0) || (outColor.y > 0.0)) {
+            imageStore(outputImage, coord, vec4(outColor, 0.0, 0.0));
+        }
     }
 
 }

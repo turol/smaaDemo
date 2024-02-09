@@ -184,6 +184,8 @@ void computeShader(int3 GlobalInvocationID : SV_DispatchThreadID)
 
 #endif
 
-        outputImage[coord] = float4(pixel, 0.0, 0.0);
+        if ((pixel.x > 0.0) || (pixel.y > 0.0)) {
+            outputImage[coord] = float4(pixel, 0.0, 0.0);
+        }
     }
 }
