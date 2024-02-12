@@ -576,6 +576,7 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #endif  // SMAA_HLSL_NO_SAMPLERS
 
 #define SMAATexture2D(tex) Texture2D tex
+#define SMAAWriteImage2D(tex) RWTexture2D<float4> tex
 #define SMAATexturePass2D(tex) tex
 #define SMAASampleLevelZero(tex, coord) tex.SampleLevel(LinearSampler, coord, 0)
 #define SMAASampleLevelZeroPoint(tex, coord) tex.SampleLevel(PointSampler, coord, 0)
@@ -605,6 +606,7 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #if defined(SMAA_GLSL_SEPARATE_SAMPLER)
 
 #define SMAATexture2D(tex) texture2D tex
+#define SMAAWriteImage2D(tex) writeonly image2D tex
 #define SMAATexturePass2D(tex) tex
 #define SMAASampleLevelZero(tex, coord) textureLod(sampler2D(tex, LinearSampler), coord, 0.0)
 #define SMAASampleLevelZeroPoint(tex, coord) textureLod(sampler2D(tex, PointSampler), coord, 0.0)
@@ -616,6 +618,7 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #else  // SMAA_GLSL_SEPARATE_SAMPLER
 
 #define SMAATexture2D(tex) sampler2D tex
+#define SMAAWriteImage2D(tex) writeonly image2D tex
 #define SMAATexturePass2D(tex) tex
 #define SMAASampleLevelZero(tex, coord) textureLod(tex, coord, 0.0)
 #define SMAASampleLevelZeroPoint(tex, coord) textureLod(tex, coord, 0.0)
