@@ -461,17 +461,17 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 #endif  // VK_HEADER_VERSION
 
 	if (enableValidation) {
-			vk::DebugUtilsMessengerCreateInfoEXT messengerInfo;
-			messengerInfo.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
-			messengerInfo.messageType     = vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
-			messengerInfo.pfnUserCallback = debugMessengerFunc;
+		vk::DebugUtilsMessengerCreateInfoEXT messengerInfo;
+		messengerInfo.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
+		messengerInfo.messageType     = vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
+		messengerInfo.pfnUserCallback = debugMessengerFunc;
 
-			debugUtilsCallback = instance.createDebugUtilsMessengerEXT(messengerInfo, nullptr, dispatcher);
+		debugUtilsCallback = instance.createDebugUtilsMessengerEXT(messengerInfo, nullptr, dispatcher);
 	}
 
 	if(!SDL_Vulkan_CreateSurface(window,
-								 (SDL_vulkanInstance) instance,
-								 (SDL_vulkanSurface *) &surface))
+		                         (SDL_vulkanInstance) instance,
+		                         (SDL_vulkanSurface *) &surface))
 	{
 		LOG_TODO("free instance, window etc...")
 		THROW_ERROR("Failed to create Vulkan surface: {}", SDL_GetError())
