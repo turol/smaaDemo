@@ -588,6 +588,7 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #define SMAA_LOOP [loop]
 #define SMAATexture2DMS2(tex) Texture2DMS<float4, 2> tex
 #define SMAALoad(tex, pos, sample) tex.Load(pos, sample)
+#define SMAAImageStore(tex, pos, value) tex[pos] = value
 
 #if defined(SMAA_HLSL_4_1)
 #define SMAAGather(tex, coord) tex.Gather(LinearSampler, coord, 0)
@@ -654,6 +655,7 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 
 #define SMAATexture2DMS2(tex) sampler2DMS tex
 #define SMAALoad(tex, pos, sample) texelFetch(tex, pos, sample)
+#define SMAAImageStore(tex, pos, value) imageStore(tex, pos, value)
 #define float2 vec2
 #define float3 vec3
 #define float4 vec4
