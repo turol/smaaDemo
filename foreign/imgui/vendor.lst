@@ -82,7 +82,7 @@ examples/example_apple_metal/macOS/MainMenu.storyboard
 examples/example_apple_metal/main.mm
 examples/example_apple_opengl2/example_apple_opengl2.xcodeproj/project.pbxproj
 examples/example_apple_opengl2/main.mm
-examples/example_emscripten_wgpu/Makefile
+examples/example_emscripten_wgpu/Makefile.emscripten
 examples/example_emscripten_wgpu/README.md
 examples/example_emscripten_wgpu/main.cpp
 examples/example_emscripten_wgpu/web/index.html

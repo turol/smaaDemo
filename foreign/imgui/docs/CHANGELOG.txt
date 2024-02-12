@@ -35,6 +35,58 @@ HOW TO UPDATE?
   and API updates have been a little more frequent lately. They are documented below and in imgui.cpp and should not affect all users.
 - Please report any issue!
 
+-----------------------------------------------------------------------
+ VERSION 1.90.2 (Released 2024-01-09)
+-----------------------------------------------------------------------
+
+Decorated log and release notes: https://github.com/ocornut/imgui/releases/tag/v1.90.2
+
+Breaking changes:
+
+- Commented out ImGuiIO::ImeWindowHandle obsoleted in 1.87 in favor of writing
+  to 'void* ImGuiViewport::PlatformHandleRaw'.
+- Backends: WebGPU: ImGui_ImplWGPU_Init() now takes a ImGui_ImplWGPU_InitInfo structure
+  instead of variety of parameters, allowing for easier further changes. (#7240)
+
+Other changes:
+
+- Nav: keyboard/gamepad activation mark widgets as held to give better visual feedback.
+- Nav: tweak to logic marking navigated item as hovered when using keyboard, allowing
+  the hover highlight to stay even while another item is activated.
+- Nav: Fixed SetKeyboardFocusHere() not working when current nav focus is in different scope,
+  regression from 1.90.1 related to code scoping Tab presses to local scope. (#7226) [@bratpilz]
+- Nav: Fixed pressing Escape while in a child window with _NavFlattened flag. (#7237)
+- Nav: Improve handling of Alt key to toggle menu so that key ownership may be claimed on
+  individual left/right alt key without interfering with the other.
+- Nav, Menus: Fixed click on a BeginMenu() followed by right-arrow from making the child menu
+  reopen and flicker (using ImGuiPopupFlags_NoReopen).
+- Nav: ImGuiWindowFlags_NoNavInputs is tested during scoring so NavFlattened windows can use it.
+- Popups: OpenPopup(): added ImGuiPopupFlags_NoReopen flag to specifically not close and reopen
+  a popup when it is already open. (#1497, #1533)
+  (Note that this differs from specific handling we already have in place for the case of calling
+  OpenPopup() repeatedly every frame: we already didn't reopen in that specific situation, otherwise
+  the effect would be very disastrous in term of confusion, as reopening would steal focus).
+- Popups: Slight change to popup closing logic (e.g. after focusing another window) which skipped
+  over popups that are also child windows.
+- Combo: Fixed not reusing windows optimally when used inside a popup stack.
+- Debug Tools: Metrics: Fixed debug break in SetShortcutRouting() not handling ImGuiMod_Shortcut redirect.
+- Debug Tools: Metrics: Improved Monitors and Viewports minimap display. Highlight on hover.
+- Debug Tools: Debug Log: Added "Input Routing" logging.
+- Debug Tools: Added "nop" to IM_DEBUG_BREAK macro on GCC to work around GDB bug (#7266) [@Peter0x44]
+- Backends: Vulkan: Fixed vkAcquireNextImageKHR() validation errors in VulkanSDK 1.3.275 by
+  allocating one extra semaphore than in-flight frames. (#7236) [@mklefrancois]
+- Backends: Vulkan: Fixed vkMapMemory() calls unnecessarily using full buffer size. (#3957)
+- Backends: Vulkan: Fixed handling of ImGui_ImplVulkan_InitInfo::MinAllocationSize field. (#7189, #4238)
+- Backends: WebGPU: Added ImGui_ImplWGPU_InitInfo::PipelineMultisampleState. (#7240)
+- Backends: WebGPU: Filling all WGPUDepthStencilState fields explicitly as a recent Dawn
+  update stopped setting default values. (#7232) [@GrigoryGraborenko]
+- Backends: WebGPU: Fixed pipeline layout leak. (#7245) [@rajveermalviya]
+- Backends: OpenGL3: Backup and restore GL_PIXEL_UNPACK_BUFFER. (#7253)
+- Internals: Many improvements related to yet unpublicized shortcut routing and input ownership systems.
+- Internals: InputText: Added internal helpers to force reload of user-buf when active. (#2890) [@kudaba, @ocornut]
+  Often requested in some form (#6962, #5219, #3290, #4627, #5054, #3878, #2881, #1506, #1216, #968),
+  and useful for interactive completion/suggestions popups (#2057, #718)
+
 
 -----------------------------------------------------------------------
  VERSION 1.90.1 (Released 2024-01-10)
@@ -90,6 +142,9 @@ Other changes:
 - Color Editors:
   - ColorEdit: Layout tweaks for very small sizes. (#7120, #7121)
   - ColorPicker: Fixed saturation/value cursor radius not scaling properly.
+- Tabs: Added ImGuiTabItemFlags_NoAssumedClosure to enable app to react on closure attempt,
+  without having to draw an unsaved document marker (ImGuiTabItemFlags_UnsavedDocument sets
+  _NoAssumedClosure automatically). (#7084)
 - Debug Tools:
   - Added io.ConfigDebugIsDebuggerPresent option. When enabled, this adds buttons in various
     locations of Metrics/Debugger to manually request a debugger break:
@@ -3530,8 +3585,6 @@ Decorated log and release notes: https://github.com/ocornut/imgui/releases/tag/v
 
 Breaking Changes:
 
-- Tabs: Added ImGuiTabItemFlags_NoAssumedClosure to enable app to react on closure attempt, without having to draw
-  an unsaved document marker (ImGuiTabItemFlags_UnsavedDocument sets _NoAssumedClosure automatically). (#7084)
 - DragInt(): The default compile-time format string has been changed from "%.0f" to "%d", as we are not using integers internally
   any more. If you used DragInt() with custom format strings, make sure you change them to use %d or an integer-compatible format.
   To honor backward-compatibility, the DragInt() code will currently parse and modify format strings to replace %*f with %d,
