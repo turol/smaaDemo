@@ -85,11 +85,11 @@ void main(void)
 
 #if SMAA_PREDICATION
 
-        vec2 outColor = SMAAColorEdgeDetectionCS(coord, colorTex, predicationTex);
+        SMAAColorEdgeDetectionCS(coord, outputImage, colorTex, predicationTex);
 
 #else  // SMAA_PREDICATION
 
-        vec2 outColor = SMAAColorEdgeDetectionCS(coord, colorTex);
+        SMAAColorEdgeDetectionCS(coord, outputImage, colorTex);
 
 #endif  // SMAA_PREDICATION
 
@@ -97,17 +97,17 @@ void main(void)
 
 #if SMAA_PREDICATION
 
-        vec2 outColor = SMAALumaEdgeDetectionCS(coord, colorTex, predicationTex);
+        SMAALumaEdgeDetectionCS(coord, outputImage, colorTex, predicationTex);
 
 #else  // SMAA_PREDICATION
 
-        vec2 outColor = SMAALumaEdgeDetectionCS(coord, colorTex);
+        SMAALumaEdgeDetectionCS(coord, outputImage, colorTex);
 
 #endif  // SMAA_PREDICATION
 
 #elif EDGEMETHOD == 2
 
-        vec2 outColor = SMAADepthEdgeDetectionCS(coord, depthTex);
+        SMAADepthEdgeDetectionCS(coord, outputImage, depthTex);
 
 #else
 
@@ -115,9 +115,6 @@ void main(void)
 
 #endif
 
-        if ((outColor.x > 0.0) || (outColor.y > 0.0)) {
-            imageStore(outputImage, coord, vec4(outColor, 0.0, 0.0));
-        }
     }
 
 }

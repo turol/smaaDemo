@@ -154,11 +154,11 @@ void computeShader(int3 GlobalInvocationID : SV_DispatchThreadID)
 
 #if SMAA_PREDICATION
 
-        float2 pixel = SMAAColorEdgeDetectionCS(coord, colorTex, predicationTex);
+        SMAAColorEdgeDetectionCS(coord, outputImage, colorTex, predicationTex);
 
 #else  // SMAA_PREDICATION
 
-        float2 pixel = SMAAColorEdgeDetectionCS(coord, colorTex);
+        SMAAColorEdgeDetectionCS(coord, outputImage, colorTex);
 
 #endif  // SMAA_PREDICATION
 
@@ -166,17 +166,17 @@ void computeShader(int3 GlobalInvocationID : SV_DispatchThreadID)
 
 #if SMAA_PREDICATION
 
-        float2 pixel = SMAALumaEdgeDetectionCS(coord, colorTex, predicationTex);
+        SMAALumaEdgeDetectionCS(coord, outputImage, colorTex, predicationTex);
 
 #else  // SMAA_PREDICATION
 
-        float2 pixel = SMAALumaEdgeDetectionCS(coord, colorTex);
+        SMAALumaEdgeDetectionCS(coord, outputImage, colorTex);
 
 #endif  // SMAA_PREDICATION
 
 #elif EDGEMETHOD == 2
 
-        float2 pixel = SMAADepthEdgeDetectionCS(coord, depthTex);
+        SMAADepthEdgeDetectionCS(coord, outputImage, depthTex);
 
 #else
 
@@ -184,8 +184,5 @@ void computeShader(int3 GlobalInvocationID : SV_DispatchThreadID)
 
 #endif
 
-        if ((pixel.x > 0.0) || (pixel.y > 0.0)) {
-            outputImage[coord] = float4(pixel, 0.0, 0.0);
-        }
     }
 }
