@@ -60,10 +60,6 @@ void main(void)
 
     // don't write outside image in case its size is not exactly divisible by group size
     if (coord.x < screenSize.z && coord.y < screenSize.w) {
-        vec4 outColor = SMAABlendingWeightCalculationCS(coord, edgesTex, areaTex, searchTex, subsampleIndices);
-
-        if (any(greaterThan(outColor, vec4(0.0)))) {
-            imageStore(outputImage, coord, outColor);
-        }
+        SMAABlendingWeightCalculationCS(coord, outputImage, edgesTex, areaTex, searchTex, subsampleIndices);
     }
 }

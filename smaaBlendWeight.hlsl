@@ -103,11 +103,7 @@ void computeShader(int3 GlobalInvocationID : SV_DispatchThreadID)
 
     // don't write outside image in case its size is not exactly divisible by group size
     if (coord.x < screenSize.z && coord.y < screenSize.w) {
-        float4 pixel = SMAABlendingWeightCalculationCS(coord, edgesTex, areaTex, searchTex, subsampleIndices);
-
-        if (any(pixel > float4(0.0))) {
-            outputImage[coord] = pixel;
-        }
+        SMAABlendingWeightCalculationCS(coord, outputImage, edgesTex, areaTex, searchTex, subsampleIndices);
     }
 }
 
