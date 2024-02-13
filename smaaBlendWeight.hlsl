@@ -105,7 +105,9 @@ void computeShader(int3 GlobalInvocationID : SV_DispatchThreadID)
     if (coord.x < screenSize.z && coord.y < screenSize.w) {
         float4 pixel = SMAABlendingWeightCalculationCS(coord, edgesTex, areaTex, searchTex, subsampleIndices);
 
-        outputImage[coord] = pixel;
+        if (any(pixel > float4(0.0))) {
+            outputImage[coord] = pixel;
+        }
     }
 }
 

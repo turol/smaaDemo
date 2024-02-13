@@ -61,6 +61,8 @@ void main(void)
     if (coord.x < screenSize.z && coord.y < screenSize.w) {
         vec4 outColor = SMAABlendingWeightCalculationCS(coord, edgesTex, areaTex, searchTex, subsampleIndices);
 
-        imageStore(outputImage, coord, outColor);
+        if (any(greaterThan(outColor, vec4(0.0)))) {
+            imageStore(outputImage, coord, outColor);
+        }
     }
 }
