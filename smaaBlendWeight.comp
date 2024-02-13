@@ -22,6 +22,7 @@ THE SOFTWARE.
 
 
 #version 450 core
+#extension GL_EXT_shader_image_load_formatted : require
 
 #include "shaderDefines.h"
 
