@@ -588,7 +588,7 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #define SMAA_BRANCH [branch]
 #define SMAA_LOOP [loop]
 #define SMAATexture2DMS2(tex) Texture2DMS<float4, 2> tex
-#define SMAALoad(tex, pos, sample) tex.Load(pos, sample)
+#define SMAALoadMS(tex, pos, sample) tex.Load(pos, sample)
 #define SMAAImageStore(tex, pos, value) tex[pos] = value
 
 #if defined(SMAA_HLSL_4_1)
@@ -657,7 +657,7 @@ SamplerState PointSampler { Filter = MIN_MAG_MIP_POINT; AddressU = Clamp; Addres
 #endif  // defined(SMAA_GLSL_4)
 
 #define SMAATexture2DMS2(tex) sampler2DMS tex
-#define SMAALoad(tex, pos, sample) texelFetch(tex, pos, sample)
+#define SMAALoadMS(tex, pos, sample) texelFetch(tex, pos, sample)
 #define SMAAImageStore(tex, pos, value) imageStore(tex, pos, value)
 #define float2 vec2
 #define float3 vec3
@@ -1528,18 +1528,18 @@ float4 SMAAResolvePS(float2 texcoord, SMAATexture2D(currentColorTex), SMAATextur
 // Separate Multisamples Pixel Shader (Optional Pass)
 
 
-#ifdef SMAALoad
+#ifdef SMAALoadMS
 
 
 void SMAASeparatePS(float4 position, float2 texcoord, out float4 target0, out float4 target1
                     , SMAATexture2DMS2(colorTexMS)) {
     int2 pos = int2(position.xy);
-    target0 = SMAALoad(colorTexMS, pos, 0);
-    target1 = SMAALoad(colorTexMS, pos, 1);
+    target0 = SMAALoadMS(colorTexMS, pos, 0);
+    target1 = SMAALoadMS(colorTexMS, pos, 1);
 }
 
 
-#endif  // SMAALoad
+#endif  // SMAALoadMS
 
 
 //-----------------------------------------------------------------------------
