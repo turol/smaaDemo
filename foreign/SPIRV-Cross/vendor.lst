@@ -278,6 +278,9 @@ reference/opt/shaders-msl/comp/access-private-workgroup-in-function.comp
 reference/opt/shaders-msl/comp/argument-buffers-discrete.msl2.argument.discrete.comp
 reference/opt/shaders-msl/comp/argument-buffers-image-load-store.ios.msl2.argument.comp
 reference/opt/shaders-msl/comp/argument-buffers-image-load-store.msl2.argument.comp
+reference/opt/shaders-msl/comp/argument-buffers-runtime-array-buffer.argument.device-argument-buffer.argument-tier-1.msl2.comp
+reference/opt/shaders-msl/comp/argument-buffers-runtime-array-buffer.rich-descriptor.argument.device-argument-buffer.argument-tier-1.msl2.comp
+reference/opt/shaders-msl/comp/argument-buffers-runtime-array.argument.device-argument-buffer.argument-tier-1.msl2.comp
 reference/opt/shaders-msl/comp/array-length.comp
 reference/opt/shaders-msl/comp/array-length.msl2.argument.discrete.comp
 reference/opt/shaders-msl/comp/atomic-float.msl3.comp
@@ -295,6 +298,11 @@ reference/opt/shaders-msl/comp/buffer_device_address.msl2.comp
 reference/opt/shaders-msl/comp/builtins.comp
 reference/opt/shaders-msl/comp/cfg-preserve-parameter.comp
 reference/opt/shaders-msl/comp/coherent-block.comp
+reference/opt/shaders-msl/comp/coherent-image-atomic.comp
+reference/opt/shaders-msl/comp/coherent-image-atomic.msl2.argument.comp
+reference/opt/shaders-msl/comp/coherent-image-atomic.msl2.comp
+reference/opt/shaders-msl/comp/coherent-image-atomic.msl31.argument.comp
+reference/opt/shaders-msl/comp/coherent-image-atomic.msl31.comp
 reference/opt/shaders-msl/comp/coherent-image.comp
 reference/opt/shaders-msl/comp/complex-composite-constant-array.comp
 reference/opt/shaders-msl/comp/complex-type-alias.comp
@@ -462,6 +470,7 @@ reference/opt/shaders-msl/frag/read-cull-clip-distance-in-function.frag
 reference/opt/shaders-msl/frag/readonly-ssbo.frag
 reference/opt/shaders-msl/frag/return-value-after-discard-terminator.frag
 reference/opt/shaders-msl/frag/runtime_array_as_argument_buffer.msl3.argument-tier-1.rich-descriptor.frag
+reference/opt/shaders-msl/frag/runtime_array_as_argument_buffer_buf.msl3.argument-tier-1.rich-descriptor.frag
 reference/opt/shaders-msl/frag/sample-depth-propagate-state-from-resource.frag
 reference/opt/shaders-msl/frag/sample-depth-separate-image-sampler.frag
 reference/opt/shaders-msl/frag/sample-mask-in-and-out.fixed-sample-mask.force-sample.frag
@@ -846,6 +855,9 @@ reference/opt/shaders/frag/avoid-expression-lowering-to-loop.frag
 reference/opt/shaders/frag/barycentric-khr.frag
 reference/opt/shaders/frag/barycentric-nv.frag
 reference/opt/shaders/frag/basic.frag
+reference/opt/shaders/frag/block-match-sad.frag
+reference/opt/shaders/frag/block-match-ssd.frag
+reference/opt/shaders/frag/box-filter.frag
 reference/opt/shaders/frag/complex-expression-in-access-chain.frag
 reference/opt/shaders/frag/composite-extract-forced-temporary.frag
 reference/opt/shaders/frag/constant-array.frag
@@ -877,6 +889,7 @@ reference/opt/shaders/frag/round.frag
 reference/opt/shaders/frag/sample-interlock-ordered.frag
 reference/opt/shaders/frag/sample-interlock-unordered.frag
 reference/opt/shaders/frag/sample-parameter.frag
+reference/opt/shaders/frag/sample-weighted.frag
 reference/opt/shaders/frag/sampler-ms.frag
 reference/opt/shaders/frag/sampler-proj.frag
 reference/opt/shaders/frag/sampler.frag
@@ -964,6 +977,9 @@ reference/opt/shaders/vulkan/comp/spec-constant-op-member-array.vk.comp
 reference/opt/shaders/vulkan/comp/spec-constant-op-member-array.vk.comp.vk
 reference/opt/shaders/vulkan/comp/spec-constant-work-group-size.vk.comp
 reference/opt/shaders/vulkan/comp/spec-constant-work-group-size.vk.comp.vk
+reference/opt/shaders/vulkan/frag/block-match-sad.frag
+reference/opt/shaders/vulkan/frag/block-match-ssd.frag
+reference/opt/shaders/vulkan/frag/box-filter.frag
 reference/opt/shaders/vulkan/frag/combined-texture-sampler-shadow.vk.frag
 reference/opt/shaders/vulkan/frag/combined-texture-sampler-shadow.vk.frag.vk
 reference/opt/shaders/vulkan/frag/combined-texture-sampler.vk.frag
@@ -981,6 +997,7 @@ reference/opt/shaders/vulkan/frag/push-constant-as-ubo.push-ubo.vk.frag
 reference/opt/shaders/vulkan/frag/push-constant-as-ubo.push-ubo.vk.frag.vk
 reference/opt/shaders/vulkan/frag/push-constant.vk.frag
 reference/opt/shaders/vulkan/frag/push-constant.vk.frag.vk
+reference/opt/shaders/vulkan/frag/sample-weighted.frag
 reference/opt/shaders/vulkan/frag/separate-combined-fake-overload.vk.frag
 reference/opt/shaders/vulkan/frag/separate-combined-fake-overload.vk.frag.vk
 reference/opt/shaders/vulkan/frag/separate-sampler-texture-array.vk.frag
@@ -1075,7 +1092,7 @@ reference/shaders-hlsl-no-opt/asm/comp/glsl-signed-operations.asm.comp
 reference/shaders-hlsl-no-opt/asm/comp/glsl.std450.frexp-modf-struct.fxconly.asm.comp
 reference/shaders-hlsl-no-opt/asm/comp/image-atomic-nonuniform.asm.sm51.nonuniformresource.comp
 reference/shaders-hlsl-no-opt/asm/comp/local-size-id-override.asm.comp
-reference/shaders-hlsl-no-opt/asm/comp/local-size-id.asm.comp
+reference/shaders-hlsl-no-opt/asm/comp/local-size-id.asm.invalid.comp
 reference/shaders-hlsl-no-opt/asm/comp/num-workgroups.spv14.asm.comp
 reference/shaders-hlsl-no-opt/asm/comp/spec-constant-name-aliasing.asm.comp
 reference/shaders-hlsl-no-opt/asm/comp/specialization-constant-workgroup.nofxc.asm.comp
@@ -1116,6 +1133,8 @@ reference/shaders-hlsl-no-opt/comp/illegal-struct-name.asm.comp
 reference/shaders-hlsl-no-opt/comp/intmin-literal.comp
 reference/shaders-hlsl-no-opt/comp/subgroups-boolean.invalid.nofxc.sm60.comp
 reference/shaders-hlsl-no-opt/comp/subgroups.invalid.nofxc.sm60.comp
+reference/shaders-hlsl-no-opt/comp/substruct-cbuffer-packing-straddle-top-level.comp
+reference/shaders-hlsl-no-opt/comp/substruct-cbuffer-packing-straddle.comp
 reference/shaders-hlsl-no-opt/comp/trivial-select-cast-vector.comp
 reference/shaders-hlsl-no-opt/comp/trivial-select-matrix.spv14.comp
 reference/shaders-hlsl-no-opt/frag/cbuffer-packing-straddle.frag
@@ -1327,7 +1346,7 @@ reference/shaders-msl-no-opt/asm/comp/glsl-signed-operations.asm.comp
 reference/shaders-msl-no-opt/asm/comp/glsl.std450.frexp-modf-struct.asm.comp
 reference/shaders-msl-no-opt/asm/comp/groupshared-inner-array-of-struct-copy.asm.comp
 reference/shaders-msl-no-opt/asm/comp/local-size-id-override.asm.comp
-reference/shaders-msl-no-opt/asm/comp/local-size-id.asm.comp
+reference/shaders-msl-no-opt/asm/comp/local-size-id.asm.invalid.comp
 reference/shaders-msl-no-opt/asm/comp/modf-storage-class.asm.comp
 reference/shaders-msl-no-opt/asm/comp/opptrdiff-basic.spv14.asm.comp
 reference/shaders-msl-no-opt/asm/comp/opptrdiff-opptraccesschain-elem-offset.spv14.asm.comp
@@ -1367,7 +1386,7 @@ reference/shaders-msl-no-opt/asm/frag/reserved-function-identifier.asm.frag
 reference/shaders-msl-no-opt/asm/frag/sample-mask-load-store-array-uint.asm.frag
 reference/shaders-msl-no-opt/asm/frag/sample-mask-load-store-array.asm.frag
 reference/shaders-msl-no-opt/asm/frag/scalar-select.spv14.asm.frag
-reference/shaders-msl-no-opt/asm/frag/subgroup-arithmetic-cast.msl21.asm.frag
+reference/shaders-msl-no-opt/asm/frag/subgroup-arithmetic-cast.msl21.asm.invalid.frag
 reference/shaders-msl-no-opt/asm/frag/switch-block-case-fallthrough.asm.invalid.frag
 reference/shaders-msl-no-opt/asm/frag/texture-access.swizzle.asm.frag
 reference/shaders-msl-no-opt/asm/frag/usage-tracking-modf-io-pointer.asm.frag
@@ -1446,6 +1465,7 @@ reference/shaders-msl-no-opt/comp/implicit-integer-promotion.comp
 reference/shaders-msl-no-opt/comp/int16min-literal.comp
 reference/shaders-msl-no-opt/comp/int64.invalid.msl22.comp
 reference/shaders-msl-no-opt/comp/int64min-literal.msl22.comp
+reference/shaders-msl-no-opt/comp/integer-dot-product.comp
 reference/shaders-msl-no-opt/comp/intmin-literal.comp
 reference/shaders-msl-no-opt/comp/loop.comp
 reference/shaders-msl-no-opt/comp/return.comp
@@ -1649,6 +1669,9 @@ reference/shaders-msl/comp/access-private-workgroup-in-function.comp
 reference/shaders-msl/comp/argument-buffers-discrete.msl2.argument.discrete.comp
 reference/shaders-msl/comp/argument-buffers-image-load-store.ios.msl2.argument.comp
 reference/shaders-msl/comp/argument-buffers-image-load-store.msl2.argument.comp
+reference/shaders-msl/comp/argument-buffers-runtime-array-buffer.argument.device-argument-buffer.argument-tier-1.msl2.comp
+reference/shaders-msl/comp/argument-buffers-runtime-array-buffer.rich-descriptor.argument.device-argument-buffer.argument-tier-1.msl2.comp
+reference/shaders-msl/comp/argument-buffers-runtime-array.argument.device-argument-buffer.argument-tier-1.msl2.comp
 reference/shaders-msl/comp/array-length.comp
 reference/shaders-msl/comp/array-length.msl2.argument.discrete.comp
 reference/shaders-msl/comp/atomic-float.msl3.comp
@@ -1666,6 +1689,11 @@ reference/shaders-msl/comp/buffer_device_address.msl2.comp
 reference/shaders-msl/comp/builtins.comp
 reference/shaders-msl/comp/cfg-preserve-parameter.comp
 reference/shaders-msl/comp/coherent-block.comp
+reference/shaders-msl/comp/coherent-image-atomic.comp
+reference/shaders-msl/comp/coherent-image-atomic.msl2.argument.comp
+reference/shaders-msl/comp/coherent-image-atomic.msl2.comp
+reference/shaders-msl/comp/coherent-image-atomic.msl31.argument.comp
+reference/shaders-msl/comp/coherent-image-atomic.msl31.comp
 reference/shaders-msl/comp/coherent-image.comp
 reference/shaders-msl/comp/complex-composite-constant-array.comp
 reference/shaders-msl/comp/complex-type-alias.comp
@@ -1832,6 +1860,7 @@ reference/shaders-msl/frag/read-cull-clip-distance-in-function.frag
 reference/shaders-msl/frag/readonly-ssbo.frag
 reference/shaders-msl/frag/return-value-after-discard-terminator.frag
 reference/shaders-msl/frag/runtime_array_as_argument_buffer.msl3.argument-tier-1.rich-descriptor.frag
+reference/shaders-msl/frag/runtime_array_as_argument_buffer_buf.msl3.argument-tier-1.rich-descriptor.frag
 reference/shaders-msl/frag/sample-depth-propagate-state-from-resource.frag
 reference/shaders-msl/frag/sample-depth-separate-image-sampler.frag
 reference/shaders-msl/frag/sample-mask-in-and-out.fixed-sample-mask.force-sample.frag
@@ -2030,9 +2059,13 @@ reference/shaders-no-opt/asm/comp/block-undef.noeliminate.invalid.asm.comp
 reference/shaders-no-opt/asm/comp/buffer-atomic-nonuniform.vk.nocompat.asm.comp.vk
 reference/shaders-no-opt/asm/comp/buffer-device-address-ptr-casting.vk.nocompat.asm.comp.vk
 reference/shaders-no-opt/asm/comp/buffer-reference-aliased-block-name.nocompat.vk.asm.comp.vk
+reference/shaders-no-opt/asm/comp/buffer-reference-chained-access.spv16.asm.nocompat.vk.comp.vk
+reference/shaders-no-opt/asm/comp/buffer-reference-pointer-to-plain-struct.asm.nocompat.vk.comp.vk
 reference/shaders-no-opt/asm/comp/buffer-reference-pointer-to-pod-in-buffer.asm.nocompat.vk.comp.vk
+reference/shaders-no-opt/asm/comp/buffer-reference-pointer-to-std140-std430-array.asm.spv16.nocompat.vk.comp.vk
 reference/shaders-no-opt/asm/comp/buffer-reference-pointer-to-unused-pod-in-buffer.asm.nocompat.vk.comp.vk
 reference/shaders-no-opt/asm/comp/buffer-reference-synthesized-pointer-2.asm.nocompat.vk.comp.vk
+reference/shaders-no-opt/asm/comp/buffer-reference-synthesized-pointer-to-pointer.asm.nocompat.vk.comp.vk
 reference/shaders-no-opt/asm/comp/buffer-reference-synthesized-pointer.asm.nocompat.vk.comp.vk
 reference/shaders-no-opt/asm/comp/constant-composite-undef.asm.comp
 reference/shaders-no-opt/asm/comp/constant-lut-name-aliasing.asm.comp
@@ -2049,9 +2082,10 @@ reference/shaders-no-opt/asm/comp/image-atomic-nonuniform.vk.nocompat.asm.comp.v
 reference/shaders-no-opt/asm/comp/local-size-id-override.vk.asm.comp
 reference/shaders-no-opt/asm/comp/local-size-id-override.vk.asm.comp.vk
 reference/shaders-no-opt/asm/comp/local-size-id.vk.asm.comp
-reference/shaders-no-opt/asm/comp/local-size-id.vk.asm.comp.vk
-reference/shaders-no-opt/asm/comp/loop-variable-early-read-with-initializer.asm.comp
-reference/shaders-no-opt/asm/comp/loop-variable-early-read-with-undef.asm.comp
+reference/shaders-no-opt/asm/comp/local-size-id.vk.invalid.asm.comp
+reference/shaders-no-opt/asm/comp/local-size-id.vk.invalid.asm.comp.vk
+reference/shaders-no-opt/asm/comp/loop-variable-early-read-with-initializer.asm.invalid.comp
+reference/shaders-no-opt/asm/comp/loop-variable-early-read-with-undef.asm.invalid.comp
 reference/shaders-no-opt/asm/comp/loop-variable-with-initializer.asm.comp
 reference/shaders-no-opt/asm/comp/multi-break-switch-out-of-loop.asm.comp
 reference/shaders-no-opt/asm/comp/nonuniform-bracket-handling.vk.nocompat.asm.comp.vk
@@ -2108,7 +2142,7 @@ reference/shaders-no-opt/asm/frag/sample-mask-load-store-array.asm.frag
 reference/shaders-no-opt/asm/frag/scalar-select.spv14.asm.frag
 reference/shaders-no-opt/asm/frag/selection-merge-to-continue.asm.invalid.frag
 reference/shaders-no-opt/asm/frag/sparse-texture-feedback-uint-code.asm.desktop.frag
-reference/shaders-no-opt/asm/frag/subgroup-arithmetic-cast.nocompat.vk.asm.frag.vk
+reference/shaders-no-opt/asm/frag/subgroup-arithmetic-cast.nocompat.vk.asm.invalid.frag.vk
 reference/shaders-no-opt/asm/frag/subgroup-ballot-only.vk.asm.frag
 reference/shaders-no-opt/asm/frag/subgroup-ballot-only.vk.asm.frag.vk
 reference/shaders-no-opt/asm/frag/switch-block-case-fallthrough.asm.invalid.frag
@@ -2448,6 +2482,9 @@ reference/shaders/frag/avoid-expression-lowering-to-loop.frag
 reference/shaders/frag/barycentric-khr.frag
 reference/shaders/frag/barycentric-nv.frag
 reference/shaders/frag/basic.frag
+reference/shaders/frag/block-match-sad.frag
+reference/shaders/frag/block-match-ssd.frag
+reference/shaders/frag/box-filter.frag
 reference/shaders/frag/complex-expression-in-access-chain.frag
 reference/shaders/frag/composite-extract-forced-temporary.frag
 reference/shaders/frag/constant-array.frag
@@ -2479,6 +2516,7 @@ reference/shaders/frag/round.frag
 reference/shaders/frag/sample-interlock-ordered.frag
 reference/shaders/frag/sample-interlock-unordered.frag
 reference/shaders/frag/sample-parameter.frag
+reference/shaders/frag/sample-weighted.frag
 reference/shaders/frag/sampler-ms.frag
 reference/shaders/frag/sampler-proj.frag
 reference/shaders/frag/sampler.frag
@@ -2566,6 +2604,9 @@ reference/shaders/vulkan/comp/spec-constant-op-member-array.vk.comp
 reference/shaders/vulkan/comp/spec-constant-op-member-array.vk.comp.vk
 reference/shaders/vulkan/comp/spec-constant-work-group-size.vk.comp
 reference/shaders/vulkan/comp/spec-constant-work-group-size.vk.comp.vk
+reference/shaders/vulkan/frag/block-match-sad.frag
+reference/shaders/vulkan/frag/block-match-ssd.frag
+reference/shaders/vulkan/frag/box-filter.frag
 reference/shaders/vulkan/frag/combined-texture-sampler-shadow.vk.frag
 reference/shaders/vulkan/frag/combined-texture-sampler-shadow.vk.frag.vk
 reference/shaders/vulkan/frag/combined-texture-sampler.vk.frag
@@ -2583,6 +2624,7 @@ reference/shaders/vulkan/frag/push-constant-as-ubo.push-ubo.vk.frag
 reference/shaders/vulkan/frag/push-constant-as-ubo.push-ubo.vk.frag.vk
 reference/shaders/vulkan/frag/push-constant.vk.frag
 reference/shaders/vulkan/frag/push-constant.vk.frag.vk
+reference/shaders/vulkan/frag/sample-weighted.frag
 reference/shaders/vulkan/frag/separate-combined-fake-overload.vk.frag
 reference/shaders/vulkan/frag/separate-combined-fake-overload.vk.frag.vk
 reference/shaders/vulkan/frag/separate-sampler-texture-array.vk.frag
@@ -2684,7 +2726,7 @@ shaders-hlsl-no-opt/asm/comp/glsl-signed-operations.asm.comp
 shaders-hlsl-no-opt/asm/comp/glsl.std450.frexp-modf-struct.fxconly.asm.comp
 shaders-hlsl-no-opt/asm/comp/image-atomic-nonuniform.asm.sm51.nonuniformresource.comp
 shaders-hlsl-no-opt/asm/comp/local-size-id-override.asm.comp
-shaders-hlsl-no-opt/asm/comp/local-size-id.asm.comp
+shaders-hlsl-no-opt/asm/comp/local-size-id.asm.invalid.comp
 shaders-hlsl-no-opt/asm/comp/num-workgroups.spv14.asm.comp
 shaders-hlsl-no-opt/asm/comp/spec-constant-name-aliasing.asm.comp
 shaders-hlsl-no-opt/asm/comp/specialization-constant-workgroup.nofxc.asm.comp
@@ -2725,6 +2767,8 @@ shaders-hlsl-no-opt/comp/illegal-struct-name.asm.comp
 shaders-hlsl-no-opt/comp/intmin-literal.comp
 shaders-hlsl-no-opt/comp/subgroups-boolean.invalid.nofxc.sm60.comp
 shaders-hlsl-no-opt/comp/subgroups.invalid.nofxc.sm60.comp
+shaders-hlsl-no-opt/comp/substruct-cbuffer-packing-straddle-top-level.comp
+shaders-hlsl-no-opt/comp/substruct-cbuffer-packing-straddle.comp
 shaders-hlsl-no-opt/comp/trivial-select-cast-vector.comp
 shaders-hlsl-no-opt/comp/trivial-select-matrix.spv14.comp
 shaders-hlsl-no-opt/frag/cbuffer-packing-straddle.frag
@@ -2935,7 +2979,7 @@ shaders-msl-no-opt/asm/comp/glsl-signed-operations.asm.comp
 shaders-msl-no-opt/asm/comp/glsl.std450.frexp-modf-struct.asm.comp
 shaders-msl-no-opt/asm/comp/groupshared-inner-array-of-struct-copy.asm.comp
 shaders-msl-no-opt/asm/comp/local-size-id-override.asm.comp
-shaders-msl-no-opt/asm/comp/local-size-id.asm.comp
+shaders-msl-no-opt/asm/comp/local-size-id.asm.invalid.comp
 shaders-msl-no-opt/asm/comp/modf-storage-class.asm.comp
 shaders-msl-no-opt/asm/comp/opptrdiff-basic.spv14.asm.comp
 shaders-msl-no-opt/asm/comp/opptrdiff-opptraccesschain-elem-offset.spv14.asm.comp
@@ -2975,7 +3019,7 @@ shaders-msl-no-opt/asm/frag/reserved-function-identifier.asm.frag
 shaders-msl-no-opt/asm/frag/sample-mask-load-store-array-uint.asm.frag
 shaders-msl-no-opt/asm/frag/sample-mask-load-store-array.asm.frag
 shaders-msl-no-opt/asm/frag/scalar-select.spv14.asm.frag
-shaders-msl-no-opt/asm/frag/subgroup-arithmetic-cast.msl21.asm.frag
+shaders-msl-no-opt/asm/frag/subgroup-arithmetic-cast.msl21.asm.invalid.frag
 shaders-msl-no-opt/asm/frag/switch-block-case-fallthrough.asm.invalid.frag
 shaders-msl-no-opt/asm/frag/texture-access.swizzle.asm.frag
 shaders-msl-no-opt/asm/frag/usage-tracking-modf-io-pointer.asm.frag
@@ -3054,6 +3098,7 @@ shaders-msl-no-opt/comp/implicit-integer-promotion.comp
 shaders-msl-no-opt/comp/int16min-literal.comp
 shaders-msl-no-opt/comp/int64.invalid.msl22.comp
 shaders-msl-no-opt/comp/int64min-literal.msl22.comp
+shaders-msl-no-opt/comp/integer-dot-product.comp
 shaders-msl-no-opt/comp/intmin-literal.comp
 shaders-msl-no-opt/comp/loop.comp
 shaders-msl-no-opt/comp/return.comp
@@ -3255,6 +3300,9 @@ shaders-msl/comp/access-private-workgroup-in-function.comp
 shaders-msl/comp/argument-buffers-discrete.msl2.argument.discrete.comp
 shaders-msl/comp/argument-buffers-image-load-store.ios.msl2.argument.comp
 shaders-msl/comp/argument-buffers-image-load-store.msl2.argument.comp
+shaders-msl/comp/argument-buffers-runtime-array-buffer.argument.device-argument-buffer.argument-tier-1.msl2.comp
+shaders-msl/comp/argument-buffers-runtime-array-buffer.rich-descriptor.argument.device-argument-buffer.argument-tier-1.msl2.comp
+shaders-msl/comp/argument-buffers-runtime-array.argument.device-argument-buffer.argument-tier-1.msl2.comp
 shaders-msl/comp/array-length.comp
 shaders-msl/comp/array-length.msl2.argument.discrete.comp
 shaders-msl/comp/atomic-float.msl3.comp
@@ -3272,6 +3320,11 @@ shaders-msl/comp/buffer_device_address.msl2.comp
 shaders-msl/comp/builtins.comp
 shaders-msl/comp/cfg-preserve-parameter.comp
 shaders-msl/comp/coherent-block.comp
+shaders-msl/comp/coherent-image-atomic.comp
+shaders-msl/comp/coherent-image-atomic.msl2.argument.comp
+shaders-msl/comp/coherent-image-atomic.msl2.comp
+shaders-msl/comp/coherent-image-atomic.msl31.argument.comp
+shaders-msl/comp/coherent-image-atomic.msl31.comp
 shaders-msl/comp/coherent-image.comp
 shaders-msl/comp/complex-composite-constant-array.comp
 shaders-msl/comp/complex-type-alias.comp
@@ -3438,6 +3491,7 @@ shaders-msl/frag/read-cull-clip-distance-in-function.frag
 shaders-msl/frag/readonly-ssbo.frag
 shaders-msl/frag/return-value-after-discard-terminator.frag
 shaders-msl/frag/runtime_array_as_argument_buffer.msl3.argument-tier-1.rich-descriptor.frag
+shaders-msl/frag/runtime_array_as_argument_buffer_buf.msl3.argument-tier-1.rich-descriptor.frag
 shaders-msl/frag/sample-depth-propagate-state-from-resource.frag
 shaders-msl/frag/sample-depth-separate-image-sampler.frag
 shaders-msl/frag/sample-mask-in-and-out.fixed-sample-mask.force-sample.frag
@@ -3635,9 +3689,13 @@ shaders-no-opt/asm/comp/block-undef.noeliminate.invalid.asm.comp
 shaders-no-opt/asm/comp/buffer-atomic-nonuniform.vk.nocompat.asm.comp
 shaders-no-opt/asm/comp/buffer-device-address-ptr-casting.vk.nocompat.asm.comp
 shaders-no-opt/asm/comp/buffer-reference-aliased-block-name.nocompat.vk.asm.comp
+shaders-no-opt/asm/comp/buffer-reference-chained-access.spv16.asm.nocompat.vk.comp
+shaders-no-opt/asm/comp/buffer-reference-pointer-to-plain-struct.asm.nocompat.vk.comp
 shaders-no-opt/asm/comp/buffer-reference-pointer-to-pod-in-buffer.asm.nocompat.vk.comp
+shaders-no-opt/asm/comp/buffer-reference-pointer-to-std140-std430-array.asm.spv16.nocompat.vk.comp
 shaders-no-opt/asm/comp/buffer-reference-pointer-to-unused-pod-in-buffer.asm.nocompat.vk.comp
 shaders-no-opt/asm/comp/buffer-reference-synthesized-pointer-2.asm.nocompat.vk.comp
+shaders-no-opt/asm/comp/buffer-reference-synthesized-pointer-to-pointer.asm.nocompat.vk.comp
 shaders-no-opt/asm/comp/buffer-reference-synthesized-pointer.asm.nocompat.vk.comp
 shaders-no-opt/asm/comp/constant-composite-undef.asm.comp
 shaders-no-opt/asm/comp/constant-lut-name-aliasing.asm.comp
@@ -3652,9 +3710,9 @@ shaders-no-opt/asm/comp/glsl-signed-operations.asm.comp
 shaders-no-opt/asm/comp/glsl.std450.frexp-modf-struct.asm.comp
 shaders-no-opt/asm/comp/image-atomic-nonuniform.vk.nocompat.asm.comp
 shaders-no-opt/asm/comp/local-size-id-override.vk.asm.comp
-shaders-no-opt/asm/comp/local-size-id.vk.asm.comp
-shaders-no-opt/asm/comp/loop-variable-early-read-with-initializer.asm.comp
-shaders-no-opt/asm/comp/loop-variable-early-read-with-undef.asm.comp
+shaders-no-opt/asm/comp/local-size-id.vk.invalid.asm.comp
+shaders-no-opt/asm/comp/loop-variable-early-read-with-initializer.asm.invalid.comp
+shaders-no-opt/asm/comp/loop-variable-early-read-with-undef.asm.invalid.comp
 shaders-no-opt/asm/comp/loop-variable-with-initializer.asm.comp
 shaders-no-opt/asm/comp/multi-break-switch-out-of-loop.asm.comp
 shaders-no-opt/asm/comp/nonuniform-bracket-handling.vk.nocompat.asm.comp
@@ -3710,7 +3768,7 @@ shaders-no-opt/asm/frag/sample-mask-load-store-array.asm.frag
 shaders-no-opt/asm/frag/scalar-select.spv14.asm.frag
 shaders-no-opt/asm/frag/selection-merge-to-continue.asm.invalid.frag
 shaders-no-opt/asm/frag/sparse-texture-feedback-uint-code.asm.desktop.frag
-shaders-no-opt/asm/frag/subgroup-arithmetic-cast.nocompat.vk.asm.frag
+shaders-no-opt/asm/frag/subgroup-arithmetic-cast.nocompat.vk.asm.invalid.frag
 shaders-no-opt/asm/frag/subgroup-ballot-only.vk.asm.frag
 shaders-no-opt/asm/frag/switch-block-case-fallthrough.asm.invalid.frag
 shaders-no-opt/asm/frag/switch-merge-to-continue.asm.invalid.frag
@@ -4151,6 +4209,9 @@ shaders/vulkan/comp/fp-atomic.nocompat.vk.comp
 shaders/vulkan/comp/ray-query.nocompat.spv14.invalid.vk.comp
 shaders/vulkan/comp/spec-constant-op-member-array.vk.comp
 shaders/vulkan/comp/spec-constant-work-group-size.vk.comp
+shaders/vulkan/frag/block-match-sad.frag
+shaders/vulkan/frag/block-match-ssd.frag
+shaders/vulkan/frag/box-filter.frag
 shaders/vulkan/frag/combined-texture-sampler-shadow.vk.frag
 shaders/vulkan/frag/combined-texture-sampler.vk.frag
 shaders/vulkan/frag/demote-to-helper-forwarding.asm.vk.nocompat.frag
@@ -4161,6 +4222,7 @@ shaders/vulkan/frag/input-attachment.vk.frag
 shaders/vulkan/frag/nonuniform-qualifier.vk.nocompat.frag
 shaders/vulkan/frag/push-constant-as-ubo.push-ubo.vk.frag
 shaders/vulkan/frag/push-constant.vk.frag
+shaders/vulkan/frag/sample-weighted.frag
 shaders/vulkan/frag/separate-combined-fake-overload.vk.frag
 shaders/vulkan/frag/separate-sampler-texture-array.vk.frag
 shaders/vulkan/frag/separate-sampler-texture.vk.frag

@@ -1,8 +1,8 @@
-commit f349c91274b91c1a7c173f2df70ec53080076191
-Merge: 13aab7f0 2603fbe5
+commit b8fcf307f1f347089e3c46eb4451d27f32ebc8d3
+Merge: 3198ac2f fd3ce6e8
 Author: Hans-Kristian Arntzen <post@arntzen-software.no>
-Date:   Thu Dec 7 14:50:19 2023 +0100
+Date:   Mon Feb 5 12:54:10 2024 +0100
 
-    Merge pull request #2240 from KhronosGroup/fix-2239
+    Merge pull request #2274 from DmitryTsyganov/error_message_fix
     
-    MSL: Remove special case for threadgroup array wrapper.
+    Add CompilerError constructor that accepts const char* as a parameter (Fixes #2273)
