@@ -1028,6 +1028,11 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 	LOG_TODO("only in debug mode")
 	HashSet<DSIndex> bindings;
 
+	spirv_cross::VariableID dummySampler = glsl.build_dummy_sampler_for_combined_images();
+	if (dummySampler) {
+		LOG("Shader needs dummy sampler (id {})", static_cast<uint32_t>(dummySampler));
+	}
+
 	auto spvResources = glsl.get_shader_resources();
 
 	for (const auto &ubo : spvResources.uniform_buffers) {
