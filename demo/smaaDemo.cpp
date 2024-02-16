@@ -4042,8 +4042,15 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				ImGui::EndDisabled();
 			}
 
-			ImGui::Text("SMAA edge detection");
-			smaaEdgeMethod = enumRadioButton(smaaEdgeMethod);
+			{
+				ImGui::Text("SMAA edge detection");
+				auto newEdgeMethod = enumRadioButton(smaaEdgeMethod);
+				if (smaaEdgeMethod != newEdgeMethod) {
+					smaaEdgeMethod = newEdgeMethod;
+					smaaPipelines.reset();
+					smaaComputePipelines.reset();
+				}
+			}
 
 			{
 				int d = magic_enum::enum_integer(debugMode);
