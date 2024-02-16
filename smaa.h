@@ -1740,7 +1740,7 @@ void SMAADepthEdgeDetectionCS(int2 coord
 //-----------------------------------------------------------------------------
 // Blending Weight Calculation Compute Shader (Second Pass)
 
-void SMAABlendingWeightCalculationCS(int2 coord, SMAAWriteImage2D(blendTex)
+float4 SMAABlendingWeightCalculationCS(int2 coord
                                        , SMAATexture2D(edgesTex), SMAATexture2D(areaTex)
                                        , SMAATexture2D(searchTex), float4 subsampleIndices) {
     float2 texcoord = coord.xy;
@@ -1855,9 +1855,7 @@ void SMAABlendingWeightCalculationCS(int2 coord, SMAAWriteImage2D(blendTex)
         SMAADetectVerticalCornerPattern(SMAATexturePass2D(edgesTex), weights.ba, coords.xyxz, d);
     }
 
-    if (dot(weights, float4(1.0)) > 0.0) {
-        SMAAImageStore(blendTex, coord, weights);
-    }
+    return weights;
 }
 
 
