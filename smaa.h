@@ -1762,7 +1762,7 @@ void SMAABlendingWeightCalculationCS(int2 coord, SMAAWriteImage2D(blendTex)
 // Just pass zero for SMAA 1x, see @SUBSAMPLE_INDICES.
     float4 weights = float4(0.0, 0.0, 0.0, 0.0);
 
-    float2 e = SMAASample(edgesTex, texcoord).rg;
+    float2 e = SMAALoad(edgesTex, coord).rg;
 
     SMAA_BRANCH
     if (e.g > 0.0) { // Edge at north
