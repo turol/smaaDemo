@@ -1208,9 +1208,9 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		if (dummySampler && c.sampler_id == dummySampler) {
 			shaderResources.samplers.push_back(realSampler);
 		} else {
-		idx.set     = glsl.get_decoration(c.sampler_id, spv::DecorationDescriptorSet);
-		idx.binding = glsl.get_decoration(c.sampler_id, spv::DecorationBinding);
-		shaderResources.samplers.push_back(idx);
+			idx.set     = glsl.get_decoration(c.sampler_id, spv::DecorationDescriptorSet);
+			idx.binding = glsl.get_decoration(c.sampler_id, spv::DecorationBinding);
+			shaderResources.samplers.push_back(idx);
 		}
 
 		// don't clear the set decoration because other combined samplers might need it
@@ -1219,8 +1219,8 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 
 	// now clear the set decorations
 	for (const spirv_cross::CombinedImageSampler &c : glsl.get_combined_image_samplers()) {
-		glsl.unset_decoration(c.image_id,    spv::DecorationDescriptorSet);
-		glsl.unset_decoration(c.image_id,    spv::DecorationBinding);
+		glsl.unset_decoration(c.image_id,   spv::DecorationDescriptorSet);
+		glsl.unset_decoration(c.image_id,   spv::DecorationBinding);
 		glsl.unset_decoration(c.sampler_id, spv::DecorationDescriptorSet);
 		glsl.unset_decoration(c.sampler_id, spv::DecorationBinding);
 	}
