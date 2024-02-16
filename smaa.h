@@ -1562,8 +1562,7 @@ void SMAASeparatePS(float4 position, float2 texcoord, out float4 target0, out fl
  * IMPORTANT NOTICE: luma edge detection requires gamma-corrected colors, and
  * thus 'colorTex' should be a non-sRGB texture.
  */
-void SMAALumaEdgeDetectionCS(int2 coord
-                               , SMAAWriteImage2D(edgesTex)
+float2 SMAALumaEdgeDetectionCS(int2 coord
                                , SMAATexture2D(colorTex)
 #if SMAA_PREDICATION
                                , SMAATexture2D(predicationTex)
@@ -1600,7 +1599,7 @@ void SMAALumaEdgeDetectionCS(int2 coord
 
     // Then discard if there is no edge:
     if (dot(edges, float2(1.0, 1.0)) == 0.0) {
-        return;
+        return float2(0.0, 0.0);
     }
 
     // Calculate right and bottom deltas:
@@ -1623,7 +1622,7 @@ void SMAALumaEdgeDetectionCS(int2 coord
     // Local contrast adaptation:
     edges.xy *= step(finalDelta, SMAA_LOCAL_CONTRAST_ADAPTATION_FACTOR * delta.xy);
 
-    SMAAImageStore(edgesTex, coord, float4(edges.xy, 0.0, 0.0));
+    return edges;
 }
 
 
@@ -1633,8 +1632,7 @@ void SMAALumaEdgeDetectionCS(int2 coord
  * IMPORTANT NOTICE: color edge detection requires gamma-corrected colors, and
  * thus 'colorTex' should be a non-sRGB texture.
  */
-void SMAAColorEdgeDetectionCS(int2 coord
-                                , SMAAWriteImage2D(edgesTex)
+float2 SMAAColorEdgeDetectionCS(int2 coord
                                 , SMAATexture2D(colorTex)
 #if SMAA_PREDICATION
                                 , SMAATexture2D(predicationTex)
@@ -1674,7 +1672,7 @@ void SMAAColorEdgeDetectionCS(int2 coord
 
     // Then discard if there is no edge:
     if (dot(edges, float2(1.0, 1.0)) == 0.0) {
-        return;
+        return float2(0.0, 0.0);
     }
 
     // Calculate right and bottom deltas:
@@ -1705,15 +1703,14 @@ void SMAAColorEdgeDetectionCS(int2 coord
     // Local contrast adaptation:
     edges.xy *= step(finalDelta, SMAA_LOCAL_CONTRAST_ADAPTATION_FACTOR * delta.xy);
 
-    SMAAImageStore(edgesTex, coord, float4(edges.xy, 0.0, 0.0));
+    return edges;
 }
 
 
 /**
  * Depth Edge Detection
  */
-void SMAADepthEdgeDetectionCS(int2 coord
-                                , SMAAWriteImage2D(edgesTex)
+float2 SMAADepthEdgeDetectionCS(int2 coord
                                 , SMAATexture2D(depthTex)) {
     float2 texcoord = coord.xy;
     // account for pixel center
@@ -1730,10 +1727,10 @@ void SMAADepthEdgeDetectionCS(int2 coord
     float2 edges = step(SMAA_DEPTH_THRESHOLD, delta);
 
     if (dot(edges, float2(1.0, 1.0)) == 0.0) {
-        return;
+        return float2(0.0, 0.0);
     }
 
-    SMAAImageStore(edgesTex, coord, float4(edges.xy, 0.0, 0.0));
+    return edges;
 }
 
 
