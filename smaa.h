@@ -1587,7 +1587,7 @@ float2 SMAALumaEdgeDetectionCS(int2 coord
 
     // Calculate lumas:
     float3 weights = float3(0.2126, 0.7152, 0.0722);
-    float L = dot(SMAASamplePoint(colorTex, texcoord).rgb, weights);
+    float L = dot(SMAALoad(colorTex, coord).rgb, weights);
 
     float Lleft = dot(SMAASamplePoint(colorTex, offset[0].xy).rgb, weights);
     float Ltop  = dot(SMAASamplePoint(colorTex, offset[0].zw).rgb, weights);
@@ -1657,13 +1657,13 @@ float2 SMAAColorEdgeDetectionCS(int2 coord
 
     // Calculate color deltas:
     float4 delta;
-    float3 C = SMAASamplePoint(colorTex, texcoord).rgb;
+    float3 C = SMAALoad(colorTex, coord).rgb;
 
-    float3 Cleft = SMAASamplePoint(colorTex, offset[0].xy).rgb;
+    float3 Cleft = SMAALoad(colorTex, coord + int2(-1, 0)).rgb;
     float3 t = abs(C - Cleft);
     delta.x = max(max(t.r, t.g), t.b);
 
-    float3 Ctop  = SMAASamplePoint(colorTex, offset[0].zw).rgb;
+    float3 Ctop  = SMAALoad(colorTex, coord + int2(0, API_V_DIR(-1))).rgb;
     t = abs(C - Ctop);
     delta.y = max(max(t.r, t.g), t.b);
 
@@ -1676,11 +1676,11 @@ float2 SMAAColorEdgeDetectionCS(int2 coord
     }
 
     // Calculate right and bottom deltas:
-    float3 Cright = SMAASamplePoint(colorTex, offset[1].xy).rgb;
+    float3 Cright = SMAALoad(colorTex, coord + int2(1, 0)).rgb;
     t = abs(C - Cright);
     delta.z = max(max(t.r, t.g), t.b);
 
-    float3 Cbottom  = SMAASamplePoint(colorTex, offset[1].zw).rgb;
+    float3 Cbottom  = SMAALoad(colorTex, coord + int2(0, API_V_DIR(1))).rgb;
     t = abs(C - Cbottom);
     delta.w = max(max(t.r, t.g), t.b);
 
@@ -1688,11 +1688,11 @@ float2 SMAAColorEdgeDetectionCS(int2 coord
     float2 maxDelta = max(delta.xy, delta.zw);
 
     // Calculate left-left and top-top deltas:
-    float3 Cleftleft  = SMAASamplePoint(colorTex, offset[2].xy).rgb;
+    float3 Cleftleft  = SMAALoad(colorTex, coord + int2(-2, 0)).rgb;
     t = abs(C - Cleftleft);
     delta.z = max(max(t.r, t.g), t.b);
 
-    float3 Ctoptop = SMAASamplePoint(colorTex, offset[2].zw).rgb;
+    float3 Ctoptop = SMAALoad(colorTex, coord + int2(0, API_V_DIR(-2))).rgb;
     t = abs(C - Ctoptop);
     delta.w = max(max(t.r, t.g), t.b);
 
