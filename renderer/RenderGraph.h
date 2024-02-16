@@ -1385,6 +1385,8 @@ public:
 			}
 
 			void operator()(const ComputePass &cp) const {
+				renderer::ScopedDebugGroup g(r, cp.desc.name_);
+
 				PassResources res;
 				LOG_TODO("build resources ahead of time, fill here?")
 
