@@ -1175,6 +1175,27 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 	LOG_TODO("need to store this info")
 	glsl.build_combined_image_samplers();
 
+	DSIndex realSampler;
+	if (dummySampler) {
+		// if we have a dummy sampler we need to find a real sampler to assign
+		// otherwise rebindDescriptors breaks because it sees a combined image sampler in the shader
+		// but no sampled or combined image sampler in the descriptor set
+		// if we just skip it,  our invariant that ShaderResources samplers and textures match will break
+		bool found = false;
+		for (const spirv_cross::CombinedImageSampler &c : glsl.get_combined_image_samplers()) {
+			if (c.sampler_id != dummySampler) {
+				realSampler.set     = glsl.get_decoration(c.sampler_id, spv::DecorationDescriptorSet);
+				realSampler.binding = glsl.get_decoration(c.sampler_id, spv::DecorationBinding);
+				found = true;
+				break;
+			}
+		}
+
+		if (!found) {
+			THROW_ERROR("Shader uses dummy sampler but contains no real sampler to use for it")
+		}
+	}
+
 	for (const spirv_cross::CombinedImageSampler &c : glsl.get_combined_image_samplers()) {
 		assert(shaderResources.textures.size() == shaderResources.samplers.size());
 		unsigned int openglIDX = shaderResources.textures.size();
@@ -1184,9 +1205,13 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 		idx.binding = glsl.get_decoration(c.image_id, spv::DecorationBinding);
 		shaderResources.textures.push_back(idx);
 
+		if (dummySampler && c.sampler_id == dummySampler) {
+			shaderResources.samplers.push_back(realSampler);
+		} else {
 		idx.set     = glsl.get_decoration(c.sampler_id, spv::DecorationDescriptorSet);
 		idx.binding = glsl.get_decoration(c.sampler_id, spv::DecorationBinding);
 		shaderResources.samplers.push_back(idx);
+		}
 
 		// don't clear the set decoration because other combined samplers might need it
 		glsl.set_decoration(c.combined_id, spv::DecorationBinding, openglIDX);
