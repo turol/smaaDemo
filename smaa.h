@@ -1876,13 +1876,11 @@ float4 SMAANeighborhoodBlendingCS(int2 coord, SMAATexture2D(colorTex)
     texcoord += float2(0.5, 0.5);
     texcoord *= SMAA_RT_METRICS.xy;
 
-    float4 offset = mad(SMAA_RT_METRICS.xyxy, float4( 1.0, 0.0, 0.0, API_V_DIR(1.0)), texcoord.xyxy);
-
     // Fetch the blending weights for current pixel:
     float4 a;
-    a.x = SMAASample(blendTex, offset.xy).a; // Right
-    a.y = SMAASample(blendTex, offset.zw).g; // Top
-    a.wz = SMAASample(blendTex, texcoord).xz; // Bottom / Left
+    a.x = SMAALoad(blendTex, coord + int2(1, 0)).a; // Right
+    a.y = SMAALoad(blendTex, coord + int2(0, API_V_DIR(1))).g; // Top
+    a.wz = SMAALoad(blendTex, coord).xz; // Bottom / Left
 
     // Is there any blending weight with a value greater than 0.0?
     SMAA_BRANCH
