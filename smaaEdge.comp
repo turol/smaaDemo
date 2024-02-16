@@ -70,7 +70,7 @@ layout(set = 0, binding = 4) uniform SMAATexture2D(predicationTex);
 #endif  // SMAA_PREDICATION
 
 
-layout(set = 0, binding = 5) uniform writeonly image2D outputImage;
+layout(set = 0, binding = 5, rgba8) uniform writeonly image2D outputImage;
 
 
 void main(void)
