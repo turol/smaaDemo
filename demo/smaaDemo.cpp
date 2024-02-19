@@ -3905,6 +3905,11 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 
 	if (ImGui::Begin("SMAA", &windowVisible, flags)) {
 		if (ImGui::CollapsingHeader("Antialiasing properties", ImGuiTreeNodeFlags_DefaultOpen)) {
+			{
+				ImGui::InputFloat("offset hax X", &globals.offsetHax.x, 1.0f / 255.0f);
+				ImGui::InputFloat("offset hax Y", &globals.offsetHax.y, 1.0f / 255.0f);
+			}
+
 			bool temp = antialiasing;
 			bool aaChanged = ImGui::Checkbox("Antialiasing", &temp);
 			if (aaChanged) {
