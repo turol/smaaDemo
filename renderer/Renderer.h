@@ -368,6 +368,14 @@ enum class BufferType : uint8_t {
 };
 
 
+enum class BufferUsage : uint8_t {
+	  Index
+	, Uniform
+	, Storage
+	, Vertex
+};
+
+
 enum class DescriptorType : uint8_t {
 	  UniformBuffer
 	, StorageBuffer
