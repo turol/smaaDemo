@@ -376,6 +376,9 @@ enum class BufferUsage : uint8_t {
 };
 
 
+using BufferUsageSet = magic_enum::containers::bitset<BufferUsage>;
+
+
 enum class DescriptorType : uint8_t {
 	  UniformBuffer
 	, StorageBuffer
