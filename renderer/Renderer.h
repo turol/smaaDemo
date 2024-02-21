@@ -358,16 +358,6 @@ enum class BlendFunc : uint8_t {
 };
 
 
-enum class BufferType : uint8_t {
-	  Invalid
-	, Index
-	, Uniform
-	, Storage
-	, Vertex
-	, Everything
-};
-
-
 enum class BufferUsage : uint8_t {
 	  Index
 	, Uniform
