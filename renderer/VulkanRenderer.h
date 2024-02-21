@@ -96,7 +96,7 @@ struct Buffer {
 	uint32_t       offset           = 0;
 	vk::Buffer     buffer;
 	VmaAllocation  memory           = nullptr;
-	BufferType     type             = BufferType::Invalid;
+	BufferUsageSet usage;
 
 
 	Buffer() noexcept {}
@@ -110,7 +110,7 @@ struct Buffer {
 	, offset(other.offset)
 	, buffer(other.buffer)
 	, memory(other.memory)
-	, type(other.type)
+	, usage(other.usage)
 	{
 
 		other.ringBufferAlloc = false;
@@ -118,7 +118,7 @@ struct Buffer {
 		other.offset          = 0;
 		other.buffer          = vk::Buffer();
 		other.memory          = nullptr;
-		other.type            = BufferType::Invalid;
+		other.usage.reset();
 	}
 
 	Buffer &operator=(Buffer &&other) noexcept {
@@ -134,15 +134,15 @@ struct Buffer {
 		offset                = other.offset;
 		buffer                = other.buffer;
 		memory                = other.memory;
-		type                  = other.type;
+		usage                 = other.usage;
 
 		other.ringBufferAlloc = false;
 		other.size            = 0;
 		other.offset          = 0;
 		other.buffer          = vk::Buffer();
 		other.memory          = nullptr;
-		other.type            = BufferType::Invalid;
-		assert(type == BufferType::Invalid);
+		other.usage.reset();
+		assert(!usage.any());
 
 		return *this;
 	}
@@ -1146,7 +1146,7 @@ struct RendererImpl : public RendererBase {
 
 	bool isRenderPassCompatible(const RenderPass &pass, const Framebuffer &fb);
 
-	unsigned int bufferAlignment(BufferType type);
+	unsigned int bufferAlignment(BufferUsageSet usage);
 
 	void recreateSwapchain();
 	void recreateRingBuffer(unsigned int newSize);

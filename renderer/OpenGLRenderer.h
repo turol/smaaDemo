@@ -89,7 +89,7 @@ struct Buffer {
 	uint32_t       size             = 0;
 	uint32_t       offset           = 0;
 	GLuint         buffer           = 0;
-	BufferType     type             = BufferType::Invalid;
+	BufferUsageSet usage;
 
 
 	Buffer() {}
@@ -102,13 +102,13 @@ struct Buffer {
 	, size(other.size)
 	, offset(other.offset)
 	, buffer(other.buffer)
-	, type(other.type)
+	, usage(other.usage)
 	{
 		other.ringBufferAlloc = false;
 		other.size            = 0;
 		other.offset          = 0;
 		other.buffer          = 0;
-		other.type            = BufferType::Invalid;
+		other.usage.reset();
 	}
 
 	Buffer &operator=(Buffer &&other) noexcept {
@@ -122,13 +122,13 @@ struct Buffer {
 		size                  = other.size;
 		offset                = other.offset;
 		buffer                = other.buffer;
-		type                  = other.type;
+		usage                 = other.usage;
 
 		other.ringBufferAlloc = false;
 		other.size            = 0;
 		other.offset          = 0;
 		other.buffer          = 0;
-		other.type            = BufferType::Invalid;
+		other.usage.reset();
 
 		return *this;
 	}
@@ -138,7 +138,7 @@ struct Buffer {
 		assert(size   == 0);
 		assert(offset == 0);
 		assert(!buffer);
-		assert(type == BufferType::Invalid);
+		assert(!usage.any());
 	}
 };
 

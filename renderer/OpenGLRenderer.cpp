@@ -739,7 +739,7 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 		buffer.ringBufferAlloc = false;
 		buffer.offset          = 0;
 
-		buffer.type            = BufferType::Everything;
+		buffer.usage           = { BufferUsage::Index, BufferUsage::Uniform, BufferUsage::Storage, BufferUsage::Vertex };
 
 		buffer.size            = ringBufSize;
 		ringBufSize            = 0;
@@ -919,8 +919,8 @@ bool Renderer::isRenderTargetFormatSupported(Format format) const {
 }
 
 
-BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *contents) {
-	assert(type != BufferType::Invalid);
+BufferHandle Renderer::createBuffer(BufferUsageSet usage, uint32_t size, const void *contents) {
+	assert(usage.any());
 	assert(size != 0);
 	assert(contents != nullptr);
 
@@ -935,14 +935,14 @@ BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *
 	buffer.ringBufferAlloc = false;
 	buffer.offset          = 0;
 	buffer.size            = size;
-	buffer.type            = type;
+	buffer.usage           = usage;
 
 	return impl->buffers.add(std::move(buffer));
 }
 
 
-BufferHandle Renderer::createEphemeralBuffer(BufferType type, uint32_t size, const void *contents) {
-	assert(type != BufferType::Invalid);
+BufferHandle Renderer::createEphemeralBuffer(BufferUsageSet usage, uint32_t size, const void *contents) {
+	assert(usage.any());
 	assert(size != 0);
 	assert(contents != nullptr);
 
@@ -961,7 +961,7 @@ BufferHandle Renderer::createEphemeralBuffer(BufferType type, uint32_t size, con
 	buffer.ringBufferAlloc = true;
 	buffer.offset          = beginPtr;
 	buffer.size            = size;
-	buffer.type            = type;
+	buffer.usage           = usage;
 
 	auto handle = impl->buffers.add(std::move(buffer));
 
@@ -1818,8 +1818,8 @@ void Renderer::deleteBuffer(BufferHandle &&handle) {
 		b.size   = 0;
 
 		assert(!b.ringBufferAlloc);
-		assert(b.type != BufferType::Invalid);
-		b.type   = BufferType::Invalid;
+		assert(b.usage.any());
+		b.usage.reset();
 	} );
 }
 
@@ -2199,8 +2199,8 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 		assert(buffer.size   >  0);
 		buffer.size = 0;
 		buffer.offset = 0;
-		assert(buffer.type != BufferType::Invalid);
-		buffer.type   = BufferType::Invalid;
+		assert(buffer.usage.any());
+		buffer.usage.reset();
 
 		buffers.remove(std::move(handle));
 	}
@@ -2445,7 +2445,7 @@ void Renderer::bindIndexBuffer(BufferHandle handle, IndexFormat indexFormat) {
 
 	const Buffer &buffer = impl->buffers.get(handle);
 	assert(buffer.size > 0);
-	assert(buffer.type == BufferType::Index);
+	assert(buffer.usage.test(BufferUsage::Index));
 	if (buffer.ringBufferAlloc) {
 		assert(buffer.buffer == impl->ringBuffer);
 		assert(buffer.offset + buffer.size < impl->ringBufSize);
@@ -2465,7 +2465,7 @@ void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle handle) {
 
 	const Buffer &buffer = impl->buffers.get(handle);
 	assert(buffer.size >  0);
-	assert(buffer.type == BufferType::Vertex);
+	assert(buffer.usage.test(BufferUsage::Vertex));
 	if (buffer.ringBufferAlloc) {
 		// this is not strictly correct since we might have reallocated the ringbuf bigger
 		// but it should never fail, at worst it will not spot some errors immediately after realloc
@@ -2508,7 +2508,7 @@ void Renderer::bindDescriptorSet(PipelineType /* bindPoint */, unsigned int inde
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			const Buffer &buffer = impl->buffers.get(handle);
 			assert(buffer.size > 0);
-			assert(buffer.type == BufferType::Uniform);
+			assert(buffer.usage.test(BufferUsage::Uniform));
 			if (buffer.ringBufferAlloc) {
 				assert(buffer.buffer == impl->ringBuffer);
 				assert(buffer.offset + buffer.size < impl->ringBufSize);
@@ -2523,7 +2523,7 @@ void Renderer::bindDescriptorSet(PipelineType /* bindPoint */, unsigned int inde
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			const Buffer &buffer = impl->buffers.get(handle);
 			assert(buffer.size  > 0);
-			assert(buffer.type == BufferType::Storage);
+			assert(buffer.usage.test(BufferUsage::Storage));
 			if (buffer.ringBufferAlloc) {
 				assert(buffer.buffer == impl->ringBuffer);
 				assert(buffer.offset + buffer.size < impl->ringBufSize);

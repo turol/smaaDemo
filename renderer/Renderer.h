@@ -1374,10 +1374,9 @@ public:
 
 	const RendererFeatures &getFeatures() const;
 
-	// TODO: add buffer usage flags
-	BufferHandle            createBuffer(BufferType type, uint32_t size, const void *contents);
+	BufferHandle            createBuffer(BufferUsageSet usage, uint32_t size, const void *contents);
 	ComputePipelineHandle   createComputePipeline(const ComputePipelineDesc &desc);
-	BufferHandle            createEphemeralBuffer(BufferType type, uint32_t size, const void *contents);
+	BufferHandle            createEphemeralBuffer(BufferUsageSet, uint32_t size, const void *contents);
 	FramebufferHandle       createFramebuffer(const FramebufferDesc &desc);
 	GraphicsPipelineHandle  createGraphicsPipeline(const GraphicsPipelineDesc &desc);
 	RenderPassHandle        createRenderPass(const RenderPassDesc &desc);

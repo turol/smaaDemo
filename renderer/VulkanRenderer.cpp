@@ -198,35 +198,31 @@ static vk::Format vulkanFormat(Format format) {
 }
 
 
-vk::BufferUsageFlags bufferTypeUsage(BufferType type) {
+vk::BufferUsageFlags vulkanBufferUsage(BufferUsageSet usage) {
 	vk::BufferUsageFlags flags;
-	switch (type) {
-	case BufferType::Invalid:
-		HEDLEY_UNREACHABLE();
-		break;
 
-	case BufferType::Index:
+	magic_enum::enum_for_each<BufferUsage>([&] (auto u) {
+		// this is ugly but it makes the compiler check completeness of the switch
+		if (!usage.test(u)) { return; }
+
+	switch (u) {
+	case BufferUsage::Index:
 		flags |= vk::BufferUsageFlagBits::eIndexBuffer;
 		break;
 
-	case BufferType::Uniform:
+	case BufferUsage::Uniform:
 		flags |= vk::BufferUsageFlagBits::eUniformBuffer;
 		break;
 
-	case BufferType::Storage:
+	case BufferUsage::Storage:
 		flags |= vk::BufferUsageFlagBits::eStorageBuffer;
 		break;
 
-	case BufferType::Vertex:
+	case BufferUsage::Vertex:
 		flags |= vk::BufferUsageFlagBits::eVertexBuffer;
 		break;
-
-	case BufferType::Everything:
-		// not supposed to be called
-		assert(false);
-		break;
-
 	}
+	});
 
 	return flags;
 }
@@ -851,7 +847,7 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 		buffer.size            = ringBufSize;
 		ringBufSize            = 0;
 
-		buffer.type            = BufferType::Everything;
+		buffer.usage           = { BufferUsage::Index, BufferUsage::Uniform, BufferUsage::Storage, BufferUsage::Vertex };
 
 		buffer.offset          = ringBufPtr;
 		ringBufPtr             = 0;
@@ -1036,14 +1032,14 @@ bool Renderer::isRenderTargetFormatSupported(Format format) const {
 }
 
 
-BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *contents) {
-	assert(type != BufferType::Invalid);
+BufferHandle Renderer::createBuffer(BufferUsageSet usage, uint32_t size, const void *contents) {
+	assert(usage.any());
 	assert(size != 0);
 	assert(contents != nullptr);
 
 	vk::BufferCreateInfo info;
 	info.size  = size;
-	info.usage = bufferTypeUsage(type) | vk::BufferUsageFlagBits::eTransferDst;
+	info.usage = vulkanBufferUsage(usage) | vk::BufferUsageFlagBits::eTransferDst;
 
 	Buffer buffer;
 	buffer.buffer  = impl->device.createBuffer(info);
@@ -1061,27 +1057,27 @@ BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *
 	impl->device.bindBufferMemory(buffer.buffer, allocationInfo.deviceMemory, allocationInfo.offset);
 	buffer.offset = 0;
 	buffer.size   = size;
-	buffer.type   = type;
+	buffer.usage  = usage;
 
 	// copy contents to GPU memory
 	UploadOp op = impl->allocateUploadOp(size);
-	switch (type) {
-	case BufferType::Invalid:
-		HEDLEY_UNREACHABLE();
-		break;
 
-	case BufferType::Index:
-	case BufferType::Vertex:
-	case BufferType::Everything:
-		op.semWaitMask = vk::PipelineStageFlagBits::eVertexInput;
-		break;
+	magic_enum::enum_for_each<BufferUsage>([&] (auto u) {
+		// this is ugly but it makes the compiler check completeness of the switch
+		if (!usage.test(u)) { return; }
 
-	case BufferType::Uniform:
-	case BufferType::Storage:
-		op.semWaitMask = vk::PipelineStageFlagBits::eVertexShader;
-		break;
+		switch (u) {
+		case BufferUsage::Index:
+		case BufferUsage::Vertex:
+			op.semWaitMask |= vk::PipelineStageFlagBits::eVertexInput;
+			break;
 
-	}
+		case BufferUsage::Uniform:
+		case BufferUsage::Storage:
+			op.semWaitMask |= vk::PipelineStageFlagBits::eVertexShader;
+			break;
+		}
+	});
 
 	memcpy(static_cast<char *>(op.allocationInfo.pMappedData), contents, size);
     vmaFlushAllocation(impl->allocator, buffer.memory, 0, size);
@@ -1120,13 +1116,13 @@ BufferHandle Renderer::createBuffer(BufferType type, uint32_t size, const void *
 }
 
 
-BufferHandle Renderer::createEphemeralBuffer(BufferType type, uint32_t size, const void *contents) {
-	assert(type != BufferType::Invalid);
+BufferHandle Renderer::createEphemeralBuffer(BufferUsageSet usage, uint32_t size, const void *contents) {
+	assert(usage.any());
 	assert(size != 0);
 	assert(contents != nullptr);
 
 	LOG_TODO("separate ringbuffers based on type")
-	unsigned int beginPtr = impl->ringBufferAllocate(size, impl->bufferAlignment(type));
+	unsigned int beginPtr = impl->ringBufferAllocate(size, impl->bufferAlignment(usage));
 
 	memcpy(impl->persistentMapping + beginPtr, contents, size);
 
@@ -1135,7 +1131,7 @@ BufferHandle Renderer::createEphemeralBuffer(BufferType type, uint32_t size, con
 	buffer.ringBufferAlloc = true;
 	buffer.offset          = beginPtr;
 	buffer.size            = size;
-	buffer.type            = type;
+	buffer.usage           = usage;
 
 	auto handle = impl->buffers.add(std::move(buffer));
 
@@ -2518,40 +2514,39 @@ static const std::array<vk::PresentModeKHR, numPresentModes> &vsyncMode(VSync mo
 }
 
 
-unsigned int RendererImpl::bufferAlignment(BufferType type) {
-	switch (type) {
-	case BufferType::Invalid:
-		HEDLEY_UNREACHABLE();
-		break;
+unsigned int RendererImpl::bufferAlignment(BufferUsageSet usage) {
+	unsigned int alignment = 0;
 
-	case BufferType::Index:
-		LOG_TODO("can we find something more accurate?")
-		return 4;
-		break;
+	magic_enum::enum_for_each<BufferUsage>([&] (auto u) {
+		// this is ugly but it makes the compiler check completeness of the switch
+		if (!usage.test(u)) { return; }
 
-	case BufferType::Uniform:
-		return uboAlign;
-		break;
+		switch (u) {
+		case BufferUsage::Index:
+			LOG_TODO("can we find something more accurate?")
+			alignment = std::max(alignment, 4u);
+			break;
 
-	case BufferType::Storage:
-		return ssboAlign;
-		break;
+		case BufferUsage::Uniform:
+			alignment = std::max(alignment, uboAlign);
+			break;
 
-	case BufferType::Vertex:
-		LOG_TODO("can we find something more accurate?")
-		return 16;
-		break;
+		case BufferUsage::Storage:
+			alignment = std::max(alignment, ssboAlign);
+			break;
 
-	case BufferType::Everything:
-		// not supposed to be called
-		assert(false);
-		break;
+		case BufferUsage::Vertex:
+			LOG_TODO("can we find something more accurate?")
+			alignment = std::max(alignment, 16u);
+			break;
 
-	}
+		}
+	});
 
-	HEDLEY_UNREACHABLE();
+	assert(alignment != 0);
+	assert(isPow2(alignment));
 
-	return 64;
+	return alignment;
 }
 
 
@@ -3285,14 +3280,14 @@ void RendererImpl::deleteBufferInternal(Buffer &b) {
 	this->device.destroyBuffer(b.buffer);
 	assert(b.memory != nullptr);
 	vmaFreeMemory(this->allocator, b.memory);
-	assert(b.type   != BufferType::Invalid);
+	assert(b.usage.any());
 
 	b.buffer          = vk::Buffer();
 	b.ringBufferAlloc = false;
 	b.memory          = nullptr;
 	b.size            = 0;
 	b.offset          = 0;
-	b.type            = BufferType::Invalid;
+	b.usage.reset();
 }
 
 
@@ -3574,7 +3569,7 @@ void Renderer::bindIndexBuffer(BufferHandle buffer, IndexFormat indexFormat) {
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 
 	auto &b = impl->buffers.get(buffer);
-	assert(b.type == BufferType::Index);
+	assert(b.usage.test(BufferUsage::Index));
 	// "normal" buffers begin from beginning of buffer
 	vk::DeviceSize offset = 0;
 	if (b.ringBufferAlloc) {
@@ -3590,7 +3585,7 @@ void Renderer::bindVertexBuffer(unsigned int binding, BufferHandle buffer) {
 	assert(std::holds_alternative<GraphicsPipelineHandle>(impl->currentPipeline));
 
 	auto &b = impl->buffers.get(buffer);
-	assert(b.type == BufferType::Vertex);
+	assert(b.usage.test(BufferUsage::Vertex));
 	// "normal" buffers begin from beginning of buffer
 	vk::DeviceSize offset = 0;
 	if (b.ringBufferAlloc) {
@@ -3652,8 +3647,8 @@ void Renderer::bindDescriptorSet(PipelineType bindPoint, unsigned int dsIndex, D
 			BufferHandle handle = *reinterpret_cast<const BufferHandle *>(data + l.offset);
 			Buffer &buffer = impl->buffers.get(handle);
 			assert(buffer.size > 0);
-			assert((buffer.type == BufferType::Uniform && l.type == DescriptorType::UniformBuffer)
-			    || (buffer.type == BufferType::Storage && l.type == DescriptorType::StorageBuffer));
+			assert((buffer.usage.test(BufferUsage::Uniform) && l.type == DescriptorType::UniformBuffer)
+			    || (buffer.usage.test(BufferUsage::Storage) && l.type == DescriptorType::StorageBuffer));
 
 			vk::DescriptorBufferInfo  bufWrite;
 			bufWrite.buffer = buffer.buffer;

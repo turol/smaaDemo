@@ -74,7 +74,7 @@ bool Renderer::isRenderTargetFormatSupported(Format /* format */) const {
 }
 
 
-BufferHandle Renderer::createBuffer(BufferType /* type */, uint32_t size, const void *contents) {
+BufferHandle Renderer::createBuffer(BufferUsageSet /* usage */, uint32_t size, const void *contents) {
 	assert(size != 0);
 	assert(contents != nullptr);
 
@@ -89,7 +89,7 @@ BufferHandle Renderer::createBuffer(BufferType /* type */, uint32_t size, const 
 }
 
 
-BufferHandle Renderer::createEphemeralBuffer(BufferType /* type */, uint32_t size, const void *contents) {
+BufferHandle Renderer::createEphemeralBuffer(BufferUsageSet /* usage */, uint32_t size, const void *contents) {
 	assert(size != 0);
 	assert(contents != nullptr);
 
