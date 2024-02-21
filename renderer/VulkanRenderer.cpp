@@ -205,23 +205,23 @@ vk::BufferUsageFlags vulkanBufferUsage(BufferUsageSet usage) {
 		// this is ugly but it makes the compiler check completeness of the switch
 		if (!usage.test(u)) { return; }
 
-	switch (u) {
-	case BufferUsage::Index:
-		flags |= vk::BufferUsageFlagBits::eIndexBuffer;
-		break;
+		switch (u) {
+		case BufferUsage::Index:
+			flags |= vk::BufferUsageFlagBits::eIndexBuffer;
+			break;
 
-	case BufferUsage::Uniform:
-		flags |= vk::BufferUsageFlagBits::eUniformBuffer;
-		break;
+		case BufferUsage::Uniform:
+			flags |= vk::BufferUsageFlagBits::eUniformBuffer;
+			break;
 
-	case BufferUsage::Storage:
-		flags |= vk::BufferUsageFlagBits::eStorageBuffer;
-		break;
+		case BufferUsage::Storage:
+			flags |= vk::BufferUsageFlagBits::eStorageBuffer;
+			break;
 
-	case BufferUsage::Vertex:
-		flags |= vk::BufferUsageFlagBits::eVertexBuffer;
-		break;
-	}
+		case BufferUsage::Vertex:
+			flags |= vk::BufferUsageFlagBits::eVertexBuffer;
+			break;
+		}
 	});
 
 	return flags;
