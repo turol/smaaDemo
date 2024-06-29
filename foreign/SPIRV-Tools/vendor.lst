@@ -19,6 +19,7 @@ CODE_OF_CONDUCT.md
 CONTRIBUTING.md
 DEPS
 LICENSE
+MODULE.bazel
 PRESUBMIT.py
 README.md
 SECURITY.md
@@ -1554,6 +1555,7 @@ test/val/val_extension_spv_khr_linkonce_odr_test.cpp
 test/val/val_extension_spv_khr_subgroup_rotate_test.cpp
 test/val/val_extension_spv_khr_subgroup_uniform_control_flow_test.cpp
 test/val/val_extension_spv_khr_terminate_invocation_test.cpp
+test/val/val_extension_spv_nv_raw_access_chains.cpp
 test/val/val_extensions_test.cpp
 test/val/val_fixtures.h
 test/val/val_function_test.cpp

@@ -58,6 +58,8 @@ generate_vendor_tables(extension = "debuginfo")
 
 generate_vendor_tables(extension = "nonsemantic.clspvreflection")
 
+generate_vendor_tables(extension = "nonsemantic.vkspreflection")
+
 generate_vendor_tables(
     extension = "opencl.debuginfo.100",
     operand_kind_prefix = "CLDEBUG100_",
@@ -146,6 +148,7 @@ cc_library(
         ":gen_opencl_tables_unified1",
         ":gen_vendor_tables_debuginfo",
         ":gen_vendor_tables_nonsemantic_clspvreflection",
+        ":gen_vendor_tables_nonsemantic_vkspreflection",
         ":gen_vendor_tables_nonsemantic_shader_debuginfo_100",
         ":gen_vendor_tables_opencl_debuginfo_100",
         ":gen_vendor_tables_spv_amd_gcn_shader",
@@ -426,7 +429,7 @@ cc_library(
     copts = TEST_COPTS,
     deps = [
         ":spirv_tools_internal",
-        "@com_google_googletest//:gtest",
+        "@googletest//:gtest",
     ],
 )
 
@@ -446,8 +449,8 @@ cc_library(
         "tools_util",
         ":spirv_tools_internal",
         ":test_lib",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 ) for f in glob(
     [
@@ -467,8 +470,8 @@ cc_test(
     linkstatic = 1,
     deps = [
         ":spirv_tools_opt_internal",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
         "@spirv_headers//:spirv_cpp11_headers",
     ],
 )
@@ -481,8 +484,8 @@ cc_test(
     linkstatic = 1,
     deps = [
         ":spirv_tools_internal",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -508,8 +511,8 @@ cc_library(
     linkstatic = 1,
     deps = [
         ":link_test_lib",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 ) for f in glob(
     ["test/link/*_test.cpp"],
@@ -525,8 +528,8 @@ cc_library(
         ":spirv_tools",
         ":spirv_tools_lint_internal",
         ":spirv_tools_opt_internal",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 ) for f in glob(
     ["test/lint/*_test.cpp"],
@@ -550,7 +553,7 @@ cc_library(
         ":spirv_tools_internal",
         ":spirv_tools_opt_internal",
         "@com_google_effcee//:effcee",
-        "@com_google_googletest//:gtest",
+        "@googletest//:gtest",
     ],
 )
 
@@ -566,8 +569,8 @@ cc_library(
         ":spirv_tools_opt_internal",
         ":test_lib",
         "@com_google_effcee//:effcee",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 ) for f in glob(["test/opt/*_test.cpp"])]
 
@@ -580,8 +583,8 @@ cc_library(
     deps = [
         ":opt_test_lib",
         ":spirv_tools_opt_internal",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 ) for f in glob(
     ["test/opt/dominator_tree/*.cpp"],
@@ -599,8 +602,8 @@ cc_library(
         ":spirv_tools",
         ":spirv_tools_opt_internal",
         "@com_google_effcee//:effcee",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 ) for f in glob(
     ["test/opt/loop_optimizations/*.cpp"],
@@ -621,7 +624,7 @@ cc_library(
         ":spirv_tools_reduce",
         ":test_lib",
         ":tools_io",
-        "@com_google_googletest//:gtest",
+        "@googletest//:gtest",
     ],
 )
 
@@ -636,7 +639,7 @@ cc_library(
         ":spirv_tools_internal",
         ":spirv_tools_opt_internal",
         ":spirv_tools_reduce",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest_main",
     ],
 ) for f in glob(["test/reduce/*_test.cpp"])]
 
@@ -648,8 +651,8 @@ cc_library(
     linkstatic = 1,
     deps = [
         ":spirv_tools_internal",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 ) for f in glob(["test/util/*_test.cpp"])]
 
@@ -680,8 +683,8 @@ cc_library(
         ":spirv_tools_internal",
         ":test_lib",
         ":val_test_lib",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 ) for f in glob(
     ["test/val/val_*_test.cpp"],
@@ -702,8 +705,8 @@ cc_test(
         ":spirv_tools_internal",
         ":test_lib",
         ":val_test_lib",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -719,7 +722,7 @@ cc_test(
     deps = [
         ":test_lib",
         ":val_test_lib",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )

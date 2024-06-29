@@ -56,6 +56,7 @@ $(eval $(call spvtools_vendor_tables,debuginfo,debuginfo,) )
 $(eval $(call spvtools_vendor_tables,opencl.debuginfo.100,cldi100,CLDEBUG100_) )
 $(eval $(call spvtools_vendor_tables,nonsemantic.shader.debuginfo.100,shdi100,SHDEBUG100_) )
 $(eval $(call spvtools_vendor_tables,nonsemantic.clspvreflection,clspvreflection,) )
+$(eval $(call spvtools_vendor_tables,nonsemantic.vkspreflection,vkspreflection,) )
 
 
 # $(call spvtools_extinst_lang_headers, NAME, GRAMMAR_FILE)

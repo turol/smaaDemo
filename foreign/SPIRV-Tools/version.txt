@@ -1,17 +1,14 @@
-commit 04896c462d9f3f504c99a4698605b6524af813c1
-Author: Michael Anttila <michaelanttila@google.com>
-Date:   Thu Mar 7 10:31:14 2024 -0500
+commit dd4b663e13c07fea4fbb3f70c1c91c86731099f7
+Author: Cassandra Beckley <cbeckley@google.com>
+Date:   Mon Apr 22 12:29:56 2024 -0700
 
-    Prepare release v2024.1 (#5605)
+    Prepare release v2024.2 (#5651)
     
-    * Roll external/spirv-headers/ b73e168ca..8b246ff75 (1 commit)
+    * Roll external/googletest/ eff443c6e..5a37b517a (13 commits)
     
-    https://github.com/KhronosGroup/SPIRV-Headers/compare/b73e168ca5e1...8b246ff75c66
-    
-    $ git log b73e168ca..8b246ff75 --date=short --no-merges --format='%ad %ae %s'
-    2024-03-01 rlocatti Add SPV_NV_raw_access_chains (#417)
+    https://github.com/google/googletest/compare/eff443c6ef5e...5a37b517ad4a
     
     Created with:
-      roll-dep external/spirv-headers
+      roll-dep external/googletest
     
-    * Prepare release 2024.1
+    * Prepare release v2024.2
