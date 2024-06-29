@@ -202,6 +202,9 @@ spv = {
         StreamingInterfaceINTEL = 6154,
         RegisterMapInterfaceINTEL = 6160,
         NamedBarrierCountINTEL = 6417,
+        MaximumRegistersINTEL = 6461,
+        MaximumRegistersIdINTEL = 6462,
+        NamedMaximumRegistersINTEL = 6463,
     },
 
     StorageClass = {
@@ -1004,6 +1007,7 @@ spv = {
         TileImageColorReadAccessEXT = 4166,
         TileImageDepthReadAccessEXT = 4167,
         TileImageStencilReadAccessEXT = 4168,
+        CooperativeMatrixLayoutsARM = 4201,
         FragmentShadingRateKHR = 4422,
         SubgroupBallotKHR = 4423,
         DrawParameters = 4427,
@@ -1114,6 +1118,7 @@ spv = {
         RayQueryPositionFetchKHR = 5391,
         AtomicFloat16VectorNV = 5404,
         RayTracingDisplacementMicromapNV = 5409,
+        RawAccessChainsNV = 5414,
         SubgroupShuffleINTEL = 5568,
         SubgroupBufferBlockIOINTEL = 5569,
         SubgroupImageBlockIOINTEL = 5570,
@@ -1166,6 +1171,7 @@ spv = {
         DotProductKHR = 6019,
         RayCullMaskKHR = 6020,
         CooperativeMatrixKHR = 6022,
+        ReplicatedCompositesEXT = 6024,
         BitInstructions = 6025,
         GroupNonUniformRotateKHR = 6026,
         FloatControls2 = 6029,
@@ -1187,6 +1193,7 @@ spv = {
         GroupUniformArithmeticKHR = 6400,
         MaskedGatherScatterINTEL = 6427,
         CacheControlsINTEL = 6441,
+        RegisterLimitsINTEL = 6460,
     },
 
     RayFlagsShift = {
@@ -1302,6 +1309,8 @@ spv = {
     CooperativeMatrixLayout = {
         RowMajorKHR = 0,
         ColumnMajorKHR = 1,
+        RowBlockedInterleavedARM = 4202,
+        ColumnBlockedInterleavedARM = 4203,
     },
 
     CooperativeMatrixUse = {
@@ -1335,6 +1344,21 @@ spv = {
         WriteThroughINTEL = 1,
         WriteBackINTEL = 2,
         StreamingINTEL = 3,
+    },
+
+    NamedMaximumNumberOfRegisters = {
+        AutoINTEL = 0,
+    },
+
+    RawAccessChainOperandsShift = {
+        RobustnessPerComponentNV = 0,
+        RobustnessPerElementNV = 1,
+    },
+
+    RawAccessChainOperandsMask = {
+        MaskNone = 0,
+        RobustnessPerComponentNV = 0x00000001,
+        RobustnessPerElementNV = 0x00000002,
     },
 
     Op = {
@@ -1693,6 +1717,7 @@ spv = {
         OpSubgroupAllEqualKHR = 4430,
         OpGroupNonUniformRotateKHR = 4431,
         OpSubgroupReadInvocationKHR = 4432,
+        OpExtInstWithForwardRefsKHR = 4433,
         OpTraceRayKHR = 4445,
         OpExecuteCallableKHR = 4446,
         OpConvertUToAccelerationStructureKHR = 4447,
@@ -1715,6 +1740,9 @@ spv = {
         OpCooperativeMatrixStoreKHR = 4458,
         OpCooperativeMatrixMulAddKHR = 4459,
         OpCooperativeMatrixLengthKHR = 4460,
+        OpConstantCompositeReplicateEXT = 4461,
+        OpSpecConstantCompositeReplicateEXT = 4462,
+        OpCompositeConstructReplicateEXT = 4463,
         OpTypeRayQueryKHR = 4472,
         OpRayQueryInitializeKHR = 4473,
         OpRayQueryTerminateKHR = 4474,
@@ -1814,6 +1842,7 @@ spv = {
         OpConvertUToSampledImageNV = 5395,
         OpConvertSampledImageToUNV = 5396,
         OpSamplerImageAddressingModeNV = 5397,
+        OpRawAccessChainNV = 5398,
         OpSubgroupShuffleINTEL = 5571,
         OpSubgroupShuffleDownINTEL = 5572,
         OpSubgroupShuffleUpINTEL = 5573,
