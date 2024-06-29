@@ -21,6 +21,9 @@
 #include "source/assembly_grammar.h"
 #include "source/enum_set.h"
 #include "source/operand.h"
+#include "source/spirv_target_env.h"
+#include "source/table.h"
+#include "spirv-tools/libspirv.h"
 #include "test/unit_spirv.h"
 
 namespace spvtools {
@@ -58,14 +61,16 @@ struct EnumCapabilityCase {
   uint32_t value;
   CapabilitySet expected_capabilities;
 };
-// Emits an EnumCapabilityCase to the ostream, returning the ostream.
-inline std::ostream& operator<<(std::ostream& out,
-                                const EnumCapabilityCase& ecc) {
-  out << "EnumCapabilityCase{ " << spvOperandTypeStr(ecc.type) << "("
-      << unsigned(ecc.type) << "), " << ecc.value << ", "
-      << ecc.expected_capabilities << "}";
+
+// Emits an EnumCapabilityCase to the given output stream. This is used
+// to emit failure cases when they occur, which helps debug tests.
+inline std::ostream& operator<<(std::ostream& out, EnumCapabilityCase e) {
+  out << "{" << spvOperandTypeStr(e.type) << " " << e.value << " "
+      << e.expected_capabilities << " }";
   return out;
 }
+
+using EnvEnumCapabilityCase = std::tuple<spv_target_env, EnumCapabilityCase>;
 
 // Test fixture for testing EnumCapabilityCases.
 using EnumCapabilityTest =
@@ -335,56 +340,56 @@ INSTANTIATE_TEST_SUITE_P(
 // See SPIR-V Section 3.12 Image Channel Order
 INSTANTIATE_TEST_SUITE_P(
     ImageChannelOrder, EnumCapabilityTest,
-    Combine(
-        Values(SPV_ENV_UNIVERSAL_1_0, SPV_ENV_UNIVERSAL_1_1),
-        ValuesIn(std::vector<EnumCapabilityCase>{
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::R, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::A, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::RG, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::RA, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::RGB, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::RGBA, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::BGRA, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::ARGB, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::Intensity, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::Luminance, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::Rx, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::RGx, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::RGBx, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::Depth, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::DepthStencil, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::sRGB, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::sRGBx, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::sRGBA, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::sBGRA, Kernel),
-            CASE1(IMAGE_CHANNEL_ORDER, ImageChannelOrder::ABGR, Kernel),
-        })));
+    Combine(Values(SPV_ENV_UNIVERSAL_1_0, SPV_ENV_UNIVERSAL_1_1),
+            ValuesIn(std::vector<EnumCapabilityCase>{
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::R),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::A),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::RG),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::RA),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::RGB),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::RGBA),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::BGRA),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::ARGB),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::Intensity),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::Luminance),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::Rx),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::RGx),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::RGBx),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::Depth),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::DepthStencil),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::sRGB),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::sRGBx),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::sRGBA),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::sBGRA),
+                CASE0(IMAGE_CHANNEL_ORDER, ImageChannelOrder::ABGR),
+            })));
 
 // See SPIR-V Section 3.13 Image Channel Data Type
 INSTANTIATE_TEST_SUITE_P(
     ImageChannelDataType, EnumCapabilityTest,
-    Combine(Values(SPV_ENV_UNIVERSAL_1_0, SPV_ENV_UNIVERSAL_1_1),
-            ValuesIn(std::vector<EnumCapabilityCase>{
-                // clang-format off
-                CASE1(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::SnormInt8, Kernel),
-                CASE1(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::SnormInt16, Kernel),
-                CASE1(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnormInt8, Kernel),
-                CASE1(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnormInt16, Kernel),
-                CASE1(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnormShort565, Kernel),
-                CASE1(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnormShort555, Kernel),
-                CASE1(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnormInt101010, Kernel),
-                CASE1(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::SignedInt8, Kernel),
-                CASE1(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::SignedInt16, Kernel),
-                CASE1(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::SignedInt32, Kernel),
-                CASE1(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnsignedInt8, Kernel),
-                CASE1(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnsignedInt16, Kernel),
-                CASE1(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnsignedInt32, Kernel),
-                CASE1(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::HalfFloat, Kernel),
-                CASE1(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::Float, Kernel),
-                CASE1(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnormInt24, Kernel),
-                CASE1(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnormInt101010_2, Kernel),
-                // clang-format on
-            })));
+    Combine(
+        Values(SPV_ENV_UNIVERSAL_1_0, SPV_ENV_UNIVERSAL_1_1),
+        ValuesIn(std::vector<EnumCapabilityCase>{
+            // clang-format off
+                CASE0(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::SnormInt8),
+                CASE0(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::SnormInt16),
+                CASE0(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnormInt8),
+                CASE0(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnormInt16),
+                CASE0(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnormShort565),
+                CASE0(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnormShort555),
+                CASE0(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnormInt101010),
+                CASE0(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::SignedInt8),
+                CASE0(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::SignedInt16),
+                CASE0(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::SignedInt32),
+                CASE0(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnsignedInt8),
+                CASE0(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnsignedInt16),
+                CASE0(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnsignedInt32),
+                CASE0(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::HalfFloat),
+                CASE0(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::Float),
+                CASE0(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnormInt24),
+                CASE0(IMAGE_CHANNEL_DATA_TYPE, ImageChannelDataType::UnormInt101010_2),
+            // clang-format on
+        })));
 
 // See SPIR-V Section 3.14 Image Operands
 INSTANTIATE_TEST_SUITE_P(
@@ -486,7 +491,8 @@ INSTANTIATE_TEST_SUITE_P(
                 CASE1(DECORATION, Decoration::XfbBuffer, TransformFeedback),
                 CASE1(DECORATION, Decoration::XfbStride, TransformFeedback),
                 CASE1(DECORATION, Decoration::FuncParamAttr, Kernel),
-                CASE1(DECORATION, Decoration::FPFastMathMode, Kernel),
+                CASE2(DECORATION, Decoration::FPFastMathMode, Kernel,
+                      FloatControls2),
                 CASE1(DECORATION, Decoration::LinkageAttributes, Linkage),
                 CASE1(DECORATION, Decoration::NoContraction, Shader),
                 CASE1(DECORATION, Decoration::InputAttachmentIndex,

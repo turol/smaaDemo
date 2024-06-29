@@ -703,6 +703,8 @@ source/opt/mem_pass.cpp
 source/opt/mem_pass.h
 source/opt/merge_return_pass.cpp
 source/opt/merge_return_pass.h
+source/opt/modify_maximal_reconvergence.cpp
+source/opt/modify_maximal_reconvergence.h
 source/opt/module.cpp
 source/opt/module.h
 source/opt/null_pass.h
@@ -1406,6 +1408,7 @@ test/opt/loop_optimizations/peeling_pass.cpp
 test/opt/loop_optimizations/unroll_assumptions.cpp
 test/opt/loop_optimizations/unroll_simple.cpp
 test/opt/loop_optimizations/unswitch.cpp
+test/opt/modify_maximal_reconvergence_test.cpp
 test/opt/module_test.cpp
 test/opt/module_utils.h
 test/opt/optimizer_test.cpp

@@ -90,6 +90,7 @@ FILES:= \
 	loop_utils.cpp \
 	mem_pass.cpp \
 	merge_return_pass.cpp \
+	modify_maximal_reconvergence.cpp \
 	module.cpp \
 	optimizer.cpp \
 	pass.cpp \

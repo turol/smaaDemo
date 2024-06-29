@@ -1,7 +1,14 @@
-commit f0cc85efdbbe3a46eae90e0f915dc1509836d0fc
-Author: Nathan Gauër <brioche@google.com>
-Date:   Wed Dec 20 13:22:56 2023 +0100
+commit fbc7a14b3e5e494113a464bbfafc48b94516446a
+Author: alan-baker <alanbaker@google.com>
+Date:   Tue Feb 27 15:54:08 2024 -0500
 
-    Prepare release v2023.6 (#5510)
+    Fix access chain struct checks (#5592)
     
-    Signed-off-by: Nathan Gauër <brioche@google.com>
+    * Fix access chain struct checks
+    
+    Fixes https://crbug.com/oss-fuzz/66948
+    
+    * Negative indices are invalid for struct access
+    * Fix typos
+    
+    * formatting
