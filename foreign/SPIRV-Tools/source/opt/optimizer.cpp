@@ -169,7 +169,8 @@ Optimizer& Optimizer::RegisterLegalizationPasses(bool preserve_interface) {
           .RegisterPass(CreateAggressiveDCEPass(preserve_interface))
           .RegisterPass(CreateRemoveUnusedInterfaceVariablesPass())
           .RegisterPass(CreateInterpolateFixupPass())
-          .RegisterPass(CreateInvocationInterlockPlacementPass());
+          .RegisterPass(CreateInvocationInterlockPlacementPass())
+          .RegisterPass(CreateOpExtInstWithForwardReferenceFixupPass());
 }
 
 Optimizer& Optimizer::RegisterLegalizationPasses() {
@@ -323,6 +324,8 @@ bool Optimizer::RegisterPassFromFlag(const std::string& flag,
     RegisterPass(CreateStripReflectInfoPass());
   } else if (pass_name == "strip-nonsemantic") {
     RegisterPass(CreateStripNonSemanticInfoPass());
+  } else if (pass_name == "fix-opextinst-opcodes") {
+    RegisterPass(CreateOpExtInstWithForwardReferenceFixupPass());
   } else if (pass_name == "set-spec-const-default-value") {
     if (pass_args.size() > 0) {
       auto spec_ids_vals =
@@ -451,16 +454,6 @@ bool Optimizer::RegisterPassFromFlag(const std::string& flag,
     RegisterPass(CreateWorkaround1209Pass());
   } else if (pass_name == "replace-invalid-opcode") {
     RegisterPass(CreateReplaceInvalidOpcodePass());
-  } else if (pass_name == "inst-bindless-check" ||
-             pass_name == "inst-desc-idx-check" ||
-             pass_name == "inst-buff-oob-check") {
-    // preserve legacy names
-    RegisterPass(CreateInstBindlessCheckPass(23));
-    RegisterPass(CreateSimplificationPass());
-    RegisterPass(CreateDeadBranchElimPass());
-    RegisterPass(CreateBlockMergePass());
-  } else if (pass_name == "inst-buff-addr-check") {
-    RegisterPass(CreateInstBuffAddrCheckPass(23));
   } else if (pass_name == "convert-relaxed-to-half") {
     RegisterPass(CreateConvertRelaxedToHalfPass());
   } else if (pass_name == "relax-float-ops") {
@@ -1023,20 +1016,10 @@ Optimizer::PassToken CreateUpgradeMemoryModelPass() {
       MakeUnique<opt::UpgradeMemoryModel>());
 }
 
-Optimizer::PassToken CreateInstBindlessCheckPass(uint32_t shader_id) {
-  return MakeUnique<Optimizer::PassToken::Impl>(
-      MakeUnique<opt::InstBindlessCheckPass>(shader_id));
-}
-
 Optimizer::PassToken CreateInstDebugPrintfPass(uint32_t desc_set,
                                                uint32_t shader_id) {
   return MakeUnique<Optimizer::PassToken::Impl>(
       MakeUnique<opt::InstDebugPrintfPass>(desc_set, shader_id));
-}
-
-Optimizer::PassToken CreateInstBuffAddrCheckPass(uint32_t shader_id) {
-  return MakeUnique<Optimizer::PassToken::Impl>(
-      MakeUnique<opt::InstBuffAddrCheckPass>(shader_id));
 }
 
 Optimizer::PassToken CreateConvertRelaxedToHalfPass() {
@@ -1166,6 +1149,12 @@ Optimizer::PassToken CreateModifyMaximalReconvergencePass(bool add) {
   return MakeUnique<Optimizer::PassToken::Impl>(
       MakeUnique<opt::ModifyMaximalReconvergence>(add));
 }
+
+Optimizer::PassToken CreateOpExtInstWithForwardReferenceFixupPass() {
+  return MakeUnique<Optimizer::PassToken::Impl>(
+      MakeUnique<opt::OpExtInstWithForwardReferenceFixupPass>());
+}
+
 }  // namespace spvtools
 
 extern "C" {

@@ -61,8 +61,6 @@ FILES:= \
 	inline_exhaustive_pass.cpp \
 	inline_opaque_pass.cpp \
 	inline_pass.cpp \
-	inst_bindless_check_pass.cpp \
-	inst_buff_addr_check_pass.cpp \
 	inst_debug_printf_pass.cpp \
 	instruction.cpp \
 	instruction_list.cpp \
@@ -92,6 +90,7 @@ FILES:= \
 	merge_return_pass.cpp \
 	modify_maximal_reconvergence.cpp \
 	module.cpp \
+	opextinst_forward_ref_fixup_pass.cpp \
 	optimizer.cpp \
 	pass.cpp \
 	pass_manager.cpp \

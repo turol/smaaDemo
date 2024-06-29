@@ -60,8 +60,6 @@ add_spvtools_unittest(TARGET opt
        inline_opaque_test.cpp
        inline_test.cpp
        insert_extract_elim_test.cpp
-       inst_bindless_check_test.cpp
-       inst_buff_addr_check_test.cpp
        inst_debug_printf_test.cpp
        instruction_list_test.cpp
        instruction_test.cpp
@@ -81,6 +79,7 @@ add_spvtools_unittest(TARGET opt
        modify_maximal_reconvergence_test.cpp
        module_test.cpp
        module_utils.h
+       opextinst_forward_ref_fixup_pass_test.cpp
        optimizer_test.cpp
        pass_manager_test.cpp
        pass_merge_return_test.cpp

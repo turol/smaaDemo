@@ -644,10 +644,6 @@ source/opt/inline_opaque_pass.cpp
 source/opt/inline_opaque_pass.h
 source/opt/inline_pass.cpp
 source/opt/inline_pass.h
-source/opt/inst_bindless_check_pass.cpp
-source/opt/inst_bindless_check_pass.h
-source/opt/inst_buff_addr_check_pass.cpp
-source/opt/inst_buff_addr_check_pass.h
 source/opt/inst_debug_printf_pass.cpp
 source/opt/inst_debug_printf_pass.h
 source/opt/instruction.cpp
@@ -709,6 +705,8 @@ source/opt/modify_maximal_reconvergence.h
 source/opt/module.cpp
 source/opt/module.h
 source/opt/null_pass.h
+source/opt/opextinst_forward_ref_fixup_pass.cpp
+source/opt/opextinst_forward_ref_fixup_pass.h
 source/opt/optimizer.cpp
 source/opt/pass.cpp
 source/opt/pass.h
@@ -1366,8 +1364,6 @@ test/opt/if_conversion_test.cpp
 test/opt/inline_opaque_test.cpp
 test/opt/inline_test.cpp
 test/opt/insert_extract_elim_test.cpp
-test/opt/inst_bindless_check_test.cpp
-test/opt/inst_buff_addr_check_test.cpp
 test/opt/inst_debug_printf_test.cpp
 test/opt/instruction_list_test.cpp
 test/opt/instruction_test.cpp
@@ -1412,6 +1408,7 @@ test/opt/loop_optimizations/unswitch.cpp
 test/opt/modify_maximal_reconvergence_test.cpp
 test/opt/module_test.cpp
 test/opt/module_utils.h
+test/opt/opextinst_forward_ref_fixup_pass_test.cpp
 test/opt/optimizer_test.cpp
 test/opt/pass_fixture.h
 test/opt/pass_manager_test.cpp

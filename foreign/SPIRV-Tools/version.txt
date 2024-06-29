@@ -1,14 +1,5 @@
-commit dd4b663e13c07fea4fbb3f70c1c91c86731099f7
-Author: Cassandra Beckley <cbeckley@google.com>
-Date:   Mon Apr 22 12:29:56 2024 -0700
+commit 0cfe9e7219148716dfd30b37f4d21753f098707a
+Author: Steven Perron <stevenperron@google.com>
+Date:   Thu Jun 20 10:29:42 2024 -0400
 
-    Prepare release v2024.2 (#5651)
-    
-    * Roll external/googletest/ eff443c6e..5a37b517a (13 commits)
-    
-    https://github.com/google/googletest/compare/eff443c6ef5e...5a37b517ad4a
-    
-    Created with:
-      roll-dep external/googletest
-    
-    * Prepare release v2024.2
+    Prepare release v2024.3 (#5719)
