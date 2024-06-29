@@ -24,13 +24,14 @@ THE SOFTWARE.
 #ifdef RENDERER_VULKAN
 
 
-#include <SDL_vulkan.h>
-
 #include <magic_enum/magic_enum_containers.hpp>
 #include <magic_enum/magic_enum_utility.hpp>
 
 #include "RendererInternal.h"
 #include "utils/Utils.h"
+
+// must be after vulkan.hpp (in VulkanRenderer.h) or stuff breaks
+#include <SDL_vulkan.h>
 
 
 namespace renderer {
