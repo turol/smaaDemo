@@ -235,6 +235,7 @@ public:
     Id makeCompositeDebugType(std::vector<Id> const& memberTypes, char const*const name,
         NonSemanticShaderDebugInfo100DebugCompositeType const tag, bool const isOpaqueType = false);
     Id makePointerDebugType(StorageClass storageClass, Id const baseType);
+    Id makeForwardPointerDebugType(StorageClass storageClass);
     Id makeDebugSource(const Id fileName);
     Id makeDebugCompilationUnit();
     Id createDebugGlobalVariable(Id const type, char const*const name, Id const variable);
@@ -263,9 +264,9 @@ public:
     Op getOpCode(Id id) const { return module.getInstruction(id)->getOpCode(); }
     Op getTypeClass(Id typeId) const { return getOpCode(typeId); }
     Op getMostBasicTypeClass(Id typeId) const;
-    int getNumComponents(Id resultId) const { return getNumTypeComponents(getTypeId(resultId)); }
-    int getNumTypeConstituents(Id typeId) const;
-    int getNumTypeComponents(Id typeId) const { return getNumTypeConstituents(typeId); }
+    unsigned int getNumComponents(Id resultId) const { return getNumTypeComponents(getTypeId(resultId)); }
+    unsigned int getNumTypeConstituents(Id typeId) const;
+    unsigned int getNumTypeComponents(Id typeId) const { return getNumTypeConstituents(typeId); }
     Id getScalarTypeId(Id typeId) const;
     Id getContainedTypeId(Id typeId) const;
     Id getContainedTypeId(Id typeId, int) const;
@@ -333,18 +334,18 @@ public:
         return module.getInstruction(scalarTypeId)->getImmediateOperand(0);
     }
 
-    int getTypeNumColumns(Id typeId) const
+    unsigned int getTypeNumColumns(Id typeId) const
     {
         assert(isMatrixType(typeId));
         return getNumTypeConstituents(typeId);
     }
-    int getNumColumns(Id resultId) const { return getTypeNumColumns(getTypeId(resultId)); }
-    int getTypeNumRows(Id typeId) const
+    unsigned int getNumColumns(Id resultId) const { return getTypeNumColumns(getTypeId(resultId)); }
+    unsigned int getTypeNumRows(Id typeId) const
     {
         assert(isMatrixType(typeId));
         return getNumTypeComponents(getContainedTypeId(typeId));
     }
-    int getNumRows(Id resultId) const { return getTypeNumRows(getTypeId(resultId)); }
+    unsigned int getNumRows(Id resultId) const { return getTypeNumRows(getTypeId(resultId)); }
 
     Dim getTypeDimensionality(Id typeId) const
     {
@@ -855,6 +856,8 @@ public:
     void postProcess(Instruction&);
     // Hook to visit each non-32-bit sized float/int operation in a block.
     void postProcessType(const Instruction&, spv::Id typeId);
+    // move OpSampledImage instructions to be next to their users.
+    void postProcessSamplers();
 
     void dump(std::vector<unsigned int>&) const;
 
@@ -869,6 +872,8 @@ public:
     void setToNormalCodeGenMode() { generatingOpCodeForSpecConst = false; }
     // Check if the builder is generating code for spec constants.
     bool isInSpecConstCodeGenMode() { return generatingOpCodeForSpecConst; }
+
+    void setUseReplicatedComposites(bool use) { useReplicatedComposites = use; }
 
  protected:
     Id makeIntConstant(Id typeId, unsigned value, bool specConstant);
@@ -936,6 +941,7 @@ public:
     Id uniqueId;
     Function* entryPointFunction;
     bool generatingOpCodeForSpecConst;
+    bool useReplicatedComposites { false };
     AccessChain accessChain;
 
     // special blocks of instructions for output

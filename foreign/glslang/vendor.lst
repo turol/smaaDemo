@@ -1064,6 +1064,7 @@ Test/baseResults/spv.coopmatKHR_arithmeticError.comp.out
 Test/baseResults/spv.coopmatKHR_constructor.comp.out
 Test/baseResults/spv.coopmatKHR_constructorError.comp.out
 Test/baseResults/spv.coopmat_Error.comp.out
+Test/baseResults/spv.coopmat_armlayout.comp.out
 Test/baseResults/spv.dataOut.frag.out
 Test/baseResults/spv.dataOutIndirect.frag.out
 Test/baseResults/spv.dataOutIndirect.vert.out
@@ -1092,6 +1093,7 @@ Test/baseResults/spv.debuginfo.hlsl.geom.out
 Test/baseResults/spv.debuginfo.hlsl.tesc.out
 Test/baseResults/spv.debuginfo.hlsl.tese.out
 Test/baseResults/spv.debuginfo.hlsl.vert.out
+Test/baseResults/spv.debuginfo.include.glsl.frag.out
 Test/baseResults/spv.debuginfo.rt_types.glsl.rgen.out
 Test/baseResults/spv.debuginfo.scalar_types.glsl.frag.out
 Test/baseResults/spv.deepRvalue.frag.out
@@ -1293,11 +1295,14 @@ Test/baseResults/spv.register.autoassign.frag.out
 Test/baseResults/spv.register.autoassign.rangetest.frag.out
 Test/baseResults/spv.register.noautoassign.frag.out
 Test/baseResults/spv.register.subpass.frag.out
+Test/baseResults/spv.replicate.comp.out
+Test/baseResults/spv.replicatespec.comp.out
 Test/baseResults/spv.rw.autoassign.frag.out
 Test/baseResults/spv.sample.frag.out
 Test/baseResults/spv.sampleId.frag.out
 Test/baseResults/spv.sampleMaskOverrideCoverage.frag.out
 Test/baseResults/spv.samplePosition.frag.out
+Test/baseResults/spv.sampledImageBlock.frag.out
 Test/baseResults/spv.samplerlessTextureFunctions.frag.out
 Test/baseResults/spv.scalarlayout.frag.out
 Test/baseResults/spv.scalarlayoutfloat16.frag.out
@@ -1327,6 +1332,7 @@ Test/baseResults/spv.specConstant.int16.comp.out
 Test/baseResults/spv.specConstant.int8.comp.out
 Test/baseResults/spv.specConstant.vert.out
 Test/baseResults/spv.specConstantComposite.vert.out
+Test/baseResults/spv.specConstantComposite2.vert.out
 Test/baseResults/spv.specConstantOp.float16.comp.out
 Test/baseResults/spv.specConstantOp.int16.comp.out
 Test/baseResults/spv.specConstantOp.int8.comp.out
@@ -2324,6 +2330,7 @@ Test/spv.coopmatKHR_arithmeticError.comp
 Test/spv.coopmatKHR_constructor.comp
 Test/spv.coopmatKHR_constructorError.comp
 Test/spv.coopmat_Error.comp
+Test/spv.coopmat_armlayout.comp
 Test/spv.dataOut.frag
 Test/spv.dataOutIndirect.frag
 Test/spv.dataOutIndirect.vert
@@ -2351,6 +2358,8 @@ Test/spv.debuginfo.hlsl.geom
 Test/spv.debuginfo.hlsl.tesc
 Test/spv.debuginfo.hlsl.tese
 Test/spv.debuginfo.hlsl.vert
+Test/spv.debuginfo.include.glsl.frag
+Test/spv.debuginfo.include.glsl.h
 Test/spv.debuginfo.rt_types.glsl.rgen
 Test/spv.debuginfo.scalar_types.glsl.frag
 Test/spv.deepRvalue.frag
@@ -2552,11 +2561,14 @@ Test/spv.register.autoassign.frag
 Test/spv.register.autoassign.rangetest.frag
 Test/spv.register.noautoassign.frag
 Test/spv.register.subpass.frag
+Test/spv.replicate.comp
+Test/spv.replicatespec.comp
 Test/spv.rw.autoassign.frag
 Test/spv.sample.frag
 Test/spv.sampleId.frag
 Test/spv.sampleMaskOverrideCoverage.frag
 Test/spv.samplePosition.frag
+Test/spv.sampledImageBlock.frag
 Test/spv.samplerlessTextureFunctions.frag
 Test/spv.scalarlayout.frag
 Test/spv.scalarlayoutfloat16.frag
@@ -2586,6 +2598,7 @@ Test/spv.specConstant.int16.comp
 Test/spv.specConstant.int8.comp
 Test/spv.specConstant.vert
 Test/spv.specConstantComposite.vert
+Test/spv.specConstantComposite2.vert
 Test/spv.specConstantOp.float16.comp
 Test/spv.specConstantOp.int16.comp
 Test/spv.specConstantOp.int8.comp

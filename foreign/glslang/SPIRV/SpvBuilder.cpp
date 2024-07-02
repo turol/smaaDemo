@@ -182,6 +182,10 @@ Id Builder::makeForwardPointer(StorageClass storageClass)
     constantsTypesGlobals.push_back(std::unique_ptr<Instruction>(type));
     module.mapInstruction(type);
 
+    if (emitNonSemanticShaderDebugInfo) {
+        const Id debugResultId = makeForwardPointerDebugType(storageClass);
+        debugId[type->getResultId()] = debugResultId;
+    }
     return type->getResultId();
 }
 
@@ -203,6 +207,15 @@ Id Builder::makePointerFromForwardPointer(StorageClass storageClass, Id forwardP
     groupedTypes[OpTypePointer].push_back(type);
     constantsTypesGlobals.push_back(std::unique_ptr<Instruction>(type));
     module.mapInstruction(type);
+
+    // If we are emitting nonsemantic debuginfo, we need to patch the debug pointer type
+    // that was emitted alongside the forward pointer, now that we have a pointee debug
+    // type for it to point to.
+    if (emitNonSemanticShaderDebugInfo) {
+        Instruction *debugForwardPointer = module.getInstruction(debugId[forwardPointerType]);
+        assert(debugId[pointee]);
+        debugForwardPointer->setIdOperand(2, debugId[pointee]);
+    }
 
     return type->getResultId();
 }
@@ -1045,6 +1058,29 @@ Id Builder::makePointerDebugType(StorageClass storageClass, Id const baseType)
     return type->getResultId();
 }
 
+// Emit a OpExtInstWithForwardRefsKHR nonsemantic instruction for a pointer debug type
+// where we don't have the pointee yet. Since we don't have the pointee yet, it just
+// points to itself and we rely on patching it later.
+Id Builder::makeForwardPointerDebugType(StorageClass storageClass)
+{
+    const Id scID = makeUintConstant(storageClass);
+
+    this->addExtension(spv::E_SPV_KHR_relaxed_extended_instruction);
+
+    Instruction *type = new Instruction(getUniqueId(), makeVoidType(), OpExtInstWithForwardRefsKHR);
+    type->addIdOperand(nonSemanticShaderDebugInfo);
+    type->addImmediateOperand(NonSemanticShaderDebugInfo100DebugTypePointer);
+    type->addIdOperand(type->getResultId());
+    type->addIdOperand(scID);
+    type->addIdOperand(makeUintConstant(0));
+
+    groupedDebugTypes[NonSemanticShaderDebugInfo100DebugTypePointer].push_back(type);
+    constantsTypesGlobals.push_back(std::unique_ptr<Instruction>(type));
+    module.mapInstruction(type);
+
+    return type->getResultId();
+}
+
 Id Builder::makeDebugSource(const Id fileName) {
     if (debugSourceId.find(fileName) != debugSourceId.end())
         return debugSourceId[fileName];
@@ -1276,7 +1312,7 @@ Op Builder::getMostBasicTypeClass(Id typeId) const
     }
 }
 
-int Builder::getNumTypeConstituents(Id typeId) const
+unsigned int Builder::getNumTypeConstituents(Id typeId) const
 {
     Instruction* instr = module.getInstruction(typeId);
 
@@ -1484,12 +1520,14 @@ bool Builder::isConstantOpCode(Op opcode) const
     case OpConstantFalse:
     case OpConstant:
     case OpConstantComposite:
+    case OpConstantCompositeReplicateEXT:
     case OpConstantSampler:
     case OpConstantNull:
     case OpSpecConstantTrue:
     case OpSpecConstantFalse:
     case OpSpecConstant:
     case OpSpecConstantComposite:
+    case OpSpecConstantCompositeReplicateEXT:
     case OpSpecConstantOp:
         return true;
     default:
@@ -1506,6 +1544,7 @@ bool Builder::isSpecConstantOpCode(Op opcode) const
     case OpSpecConstant:
     case OpSpecConstantComposite:
     case OpSpecConstantOp:
+    case OpSpecConstantCompositeReplicateEXT:
         return true;
     default:
         return false;
@@ -1782,9 +1821,26 @@ Id Builder::findStructConstant(Id typeId, const std::vector<Id>& comps)
 // Comments in header
 Id Builder::makeCompositeConstant(Id typeId, const std::vector<Id>& members, bool specConstant)
 {
-    Op opcode = specConstant ? OpSpecConstantComposite : OpConstantComposite;
     assert(typeId);
     Op typeClass = getTypeClass(typeId);
+
+    bool replicate = false;
+    size_t numMembers = members.size();
+    if (useReplicatedComposites) {
+        // use replicate if all members are the same
+        replicate = numMembers > 0 &&
+            std::equal(members.begin() + 1, members.end(), members.begin());
+
+        if (replicate) {
+            numMembers = 1;
+            addCapability(spv::CapabilityReplicatedCompositesEXT);
+            addExtension(spv::E_SPV_EXT_replicated_composites);
+        }
+    }
+
+    Op opcode = replicate ?
+        (specConstant ? OpSpecConstantCompositeReplicateEXT : OpConstantCompositeReplicateEXT) :
+        (specConstant ? OpSpecConstantComposite : OpConstantComposite);
 
     switch (typeClass) {
     case OpTypeVector:
@@ -1812,7 +1868,7 @@ Id Builder::makeCompositeConstant(Id typeId, const std::vector<Id>& members, boo
 
     Instruction* c = new Instruction(getUniqueId(), typeId, opcode);
     c->reserveOperands(members.size());
-    for (int op = 0; op < (int)members.size(); ++op)
+    for (size_t op = 0; op < numMembers; ++op)
         c->addIdOperand(members[op]);
     constantsTypesGlobals.push_back(std::unique_ptr<Instruction>(c));
     if (typeClass == OpTypeStruct)
@@ -2868,7 +2924,7 @@ Id Builder::createLvalueSwizzle(Id typeId, Id target, Id source, const std::vect
     swizzle->reserveOperands(2);
     swizzle->addIdOperand(target);
 
-    assert(getNumComponents(source) == (int)channels.size());
+    assert(getNumComponents(source) == channels.size());
     assert(isVector(source));
     swizzle->addIdOperand(source);
 
@@ -2928,7 +2984,17 @@ Id Builder::smearScalar(Decoration precision, Id scalar, Id vectorType)
         auto result_id = makeCompositeConstant(vectorType, members, isSpecConstant(scalar));
         smear = module.getInstruction(result_id);
     } else {
-        smear = new Instruction(getUniqueId(), vectorType, OpCompositeConstruct);
+        bool replicate = useReplicatedComposites && (numComponents > 0);
+
+        if (replicate) {
+            numComponents = 1;
+            addCapability(spv::CapabilityReplicatedCompositesEXT);
+            addExtension(spv::E_SPV_EXT_replicated_composites);
+        }
+
+        Op opcode = replicate ? OpCompositeConstructReplicateEXT : OpCompositeConstruct;
+
+        smear = new Instruction(getUniqueId(), vectorType, opcode);
         smear->reserveOperands(numComponents);
         for (int c = 0; c < numComponents; ++c)
             smear->addIdOperand(scalar);
@@ -3305,7 +3371,7 @@ Id Builder::createCompositeCompare(Decoration precision, Id value1, Id value2, b
 Id Builder::createCompositeConstruct(Id typeId, const std::vector<Id>& constituents)
 {
     assert(isAggregateType(typeId) || (getNumTypeConstituents(typeId) > 1 &&
-           getNumTypeConstituents(typeId) == (int)constituents.size()));
+           getNumTypeConstituents(typeId) == constituents.size()));
 
     if (generatingOpCodeForSpecConst) {
         // Sometime, even in spec-constant-op mode, the constant composite to be
@@ -3321,9 +3387,25 @@ Id Builder::createCompositeConstruct(Id typeId, const std::vector<Id>& constitue
                                                  [&](spv::Id id) { return isSpecConstant(id); }));
     }
 
-    Instruction* op = new Instruction(getUniqueId(), typeId, OpCompositeConstruct);
+    bool replicate = false;
+    size_t numConstituents = constituents.size();
+
+    if (useReplicatedComposites) {
+        replicate = numConstituents > 0 &&
+            std::equal(constituents.begin() + 1, constituents.end(), constituents.begin());
+    }
+
+    if (replicate) {
+        numConstituents = 1;
+        addCapability(spv::CapabilityReplicatedCompositesEXT);
+        addExtension(spv::E_SPV_EXT_replicated_composites);
+    }
+
+    Op opcode = replicate ? OpCompositeConstructReplicateEXT : OpCompositeConstruct;
+
+    Instruction* op = new Instruction(getUniqueId(), typeId, opcode);
     op->reserveOperands(constituents.size());
-    for (int c = 0; c < (int)constituents.size(); ++c)
+    for (size_t c = 0; c < numConstituents; ++c)
         op->addIdOperand(constituents[c]);
     addInstruction(std::unique_ptr<Instruction>(op));
 
@@ -3341,6 +3423,12 @@ Id Builder::createConstructor(Decoration precision, const std::vector<Id>& sourc
     // argument, smear the scalar
     if (sources.size() == 1 && isScalar(sources[0]) && numTargetComponents > 1)
         return smearScalar(precision, sources[0], resultTypeId);
+
+    // Special case: 2 vectors of equal size
+    if (sources.size() == 1 && isVector(sources[0]) && numTargetComponents == getNumComponents(sources[0])) {
+        assert(resultTypeId == getTypeId(sources[0]));
+        return sources[0];
+    }
 
     // accumulate the arguments for OpCompositeConstruct
     std::vector<Id> constituents;
@@ -3376,8 +3464,8 @@ Id Builder::createConstructor(Decoration precision, const std::vector<Id>& sourc
         if (sourcesToUse + targetComponent > numTargetComponents)
             sourcesToUse = numTargetComponents - targetComponent;
 
-        int col = 0;
-        int row = 0;
+        unsigned int col = 0;
+        unsigned int row = 0;
         for (unsigned int s = 0; s < sourcesToUse; ++s) {
             if (row >= getNumRows(sourceArg)) {
                 row = 0;
@@ -3422,8 +3510,8 @@ Id Builder::createConstructor(Decoration precision, const std::vector<Id>& sourc
 Id Builder::createMatrixConstructor(Decoration precision, const std::vector<Id>& sources, Id resultTypeId)
 {
     Id componentTypeId = getScalarTypeId(resultTypeId);
-    int numCols = getTypeNumColumns(resultTypeId);
-    int numRows = getTypeNumRows(resultTypeId);
+    unsigned int numCols = getTypeNumColumns(resultTypeId);
+    unsigned int numRows = getTypeNumRows(resultTypeId);
 
     Instruction* instr = module.getInstruction(componentTypeId);
     const unsigned bitCount = instr->getImmediateOperand(0);
@@ -3438,11 +3526,11 @@ Id Builder::createMatrixConstructor(Decoration precision, const std::vector<Id>&
         Id sourceColumnTypeId = getContainedTypeId(getTypeId(matrix));
 
         std::vector<unsigned> channels;
-        for (int row = 0; row < numRows; ++row)
+        for (unsigned int row = 0; row < numRows; ++row)
             channels.push_back(row);
 
         std::vector<Id> matrixColumns;
-        for (int col = 0; col < numCols; ++col) {
+        for (unsigned int col = 0; col < numCols; ++col) {
             std::vector<unsigned> indexes;
             indexes.push_back(col);
             Id colv = createCompositeExtract(matrix, sourceColumnTypeId, indexes);
@@ -3456,6 +3544,13 @@ Id Builder::createMatrixConstructor(Decoration precision, const std::vector<Id>&
         }
 
         return setPrecision(createCompositeConstruct(resultTypeId, matrixColumns), precision);
+    }
+
+    // Detect a matrix being constructed from a repeated vector of the correct size.
+    // Create the composite directly from it.
+    if (sources.size() == numCols && isVector(sources[0]) && getNumComponents(sources[0]) == numRows &&
+        std::equal(sources.begin() + 1, sources.end(), sources.begin())) {
+        return setPrecision(createCompositeConstruct(resultTypeId, sources), precision);
     }
 
     // Otherwise, will use a two step process
@@ -3485,12 +3580,12 @@ Id Builder::createMatrixConstructor(Decoration precision, const std::vector<Id>&
     } else if (isMatrix(sources[0])) {
         // constructing from another matrix; copy over the parts that exist in both the argument and constructee
         Id matrix = sources[0];
-        int minCols = std::min(numCols, getNumColumns(matrix));
-        int minRows = std::min(numRows, getNumRows(matrix));
-        for (int col = 0; col < minCols; ++col) {
+        unsigned int minCols = std::min(numCols, getNumColumns(matrix));
+        unsigned int minRows = std::min(numRows, getNumRows(matrix));
+        for (unsigned int col = 0; col < minCols; ++col) {
             std::vector<unsigned> indexes;
             indexes.push_back(col);
-            for (int row = 0; row < minRows; ++row) {
+            for (unsigned int row = 0; row < minRows; ++row) {
                 indexes.push_back(row);
                 ids[col][row] = createCompositeExtract(matrix, componentTypeId, indexes);
                 indexes.pop_back();
@@ -3499,12 +3594,12 @@ Id Builder::createMatrixConstructor(Decoration precision, const std::vector<Id>&
         }
     } else {
         // fill in the matrix in column-major order with whatever argument components are available
-        int row = 0;
-        int col = 0;
+        unsigned int row = 0;
+        unsigned int col = 0;
 
-        for (int arg = 0; arg < (int)sources.size() && col < numCols; ++arg) {
+        for (unsigned int arg = 0; arg < sources.size() && col < numCols; ++arg) {
             Id argComp = sources[arg];
-            for (int comp = 0; comp < getNumComponents(sources[arg]); ++comp) {
+            for (unsigned int comp = 0; comp < getNumComponents(sources[arg]); ++comp) {
                 if (getNumComponents(sources[arg]) > 1) {
                     argComp = createCompositeExtract(sources[arg], componentTypeId, comp);
                     setPrecision(argComp, precision);
@@ -3528,9 +3623,9 @@ Id Builder::createMatrixConstructor(Decoration precision, const std::vector<Id>&
     // make the column vectors
     Id columnTypeId = getContainedTypeId(resultTypeId);
     std::vector<Id> matrixColumns;
-    for (int col = 0; col < numCols; ++col) {
+    for (unsigned int col = 0; col < numCols; ++col) {
         std::vector<Id> vectorComponents;
-        for (int row = 0; row < numRows; ++row)
+        for (unsigned int row = 0; row < numRows; ++row)
             vectorComponents.push_back(ids[col][row]);
         Id column = createCompositeConstruct(columnTypeId, vectorComponents);
         setPrecision(column, precision);
@@ -3757,7 +3852,7 @@ void Builder::accessChainStore(Id rvalue, Decoration nonUniform, spv::MemoryAcce
 
     // If a swizzle exists and is not full and is not dynamic, then the swizzle will be broken into individual stores.
     if (accessChain.swizzle.size() > 0 &&
-        getNumTypeComponents(getResultingAccessChainType()) != (int)accessChain.swizzle.size() &&
+        getNumTypeComponents(getResultingAccessChainType()) != accessChain.swizzle.size() &&
         accessChain.component == NoResult) {
         for (unsigned int i = 0; i < accessChain.swizzle.size(); ++i) {
             accessChain.indexChain.push_back(makeUintConstant(accessChain.swizzle[i]));
@@ -4077,7 +4172,7 @@ void Builder::simplifyAccessChainSwizzle()
 {
     // If the swizzle has fewer components than the vector, it is subsetting, and must stay
     // to preserve that fact.
-    if (getNumTypeComponents(accessChain.preSwizzleBaseType) > (int)accessChain.swizzle.size())
+    if (getNumTypeComponents(accessChain.preSwizzleBaseType) > accessChain.swizzle.size())
         return;
 
     // if components are out of order, it is a swizzle

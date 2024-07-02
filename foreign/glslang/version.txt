@@ -1,5 +1,5 @@
-commit e8dd0b6903b34f1879520b444634c75ea2deedf5
+commit fa9c3deb49e035a8abcabe366f26aac010f6cbfb
 Author: Jeremy Hayes <jeremy@lunarg.com>
-Date:   Thu May 2 15:13:33 2024 -0600
+Date:   Tue Jun 25 16:09:26 2024 -0600
 
-    Update CHANGES for 14.2.0
+    Update CHANGES for 14.3.0

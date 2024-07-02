@@ -989,18 +989,6 @@ spv::BuiltIn TGlslangToSpvTraverser::TranslateBuiltInDecoration(glslang::TBuiltI
         return spv::BuiltInHitTriangleVertexPositionsKHR;
     case glslang::EbvInstanceCustomIndex:
         return spv::BuiltInInstanceCustomIndexKHR;
-    case glslang::EbvHitT:
-        {
-            // this is a GLSL alias of RayTmax
-            // in SPV_NV_ray_tracing it has a dedicated builtin
-            // but in SPV_KHR_ray_tracing it gets mapped to RayTmax
-            auto& extensions = glslangIntermediate->getRequestedExtensions();
-            if (extensions.find("GL_NV_ray_tracing") != extensions.end()) {
-                return spv::BuiltInHitTNV;
-            } else {
-                return spv::BuiltInRayTmaxKHR;
-            }
-        }
     case glslang::EbvHitKind:
         return spv::BuiltInHitKindKHR;
     case glslang::EbvObjectToWorld:
@@ -1594,6 +1582,8 @@ TGlslangToSpvTraverser::TGlslangToSpvTraverser(unsigned int spvVersion,
         for (auto iItr = include_txt.begin(); iItr != include_txt.end(); ++iItr)
             builder.addInclude(iItr->first, iItr->second);
     }
+
+    builder.setUseReplicatedComposites(glslangIntermediate->usingReplicatedComposites());
 
     stdBuiltins = builder.import("GLSL.std.450");
 
@@ -3715,6 +3705,12 @@ bool TGlslangToSpvTraverser::visitAggregate(glslang::TVisit visit, glslang::TInt
         idImmOps.push_back(spv::IdImmediate(true, operands[1])); // buf
         if (node->getOp() == glslang::EOpCooperativeMatrixLoad) {
             idImmOps.push_back(spv::IdImmediate(true, operands[3])); // matrixLayout
+            auto layout = builder.getConstantScalar(operands[3]);
+            if (layout == spv::CooperativeMatrixLayoutRowBlockedInterleavedARM ||
+                layout == spv::CooperativeMatrixLayoutColumnBlockedInterleavedARM) {
+                builder.addExtension(spv::E_SPV_ARM_cooperative_matrix_layouts);
+                builder.addCapability(spv::CapabilityCooperativeMatrixLayoutsARM);
+            }
             idImmOps.push_back(spv::IdImmediate(true, operands[2])); // stride
         } else {
             idImmOps.push_back(spv::IdImmediate(true, operands[2])); // stride
@@ -3739,6 +3735,12 @@ bool TGlslangToSpvTraverser::visitAggregate(glslang::TVisit visit, glslang::TInt
         idImmOps.push_back(spv::IdImmediate(true, operands[0])); // object
         if (node->getOp() == glslang::EOpCooperativeMatrixStore) {
             idImmOps.push_back(spv::IdImmediate(true, operands[3])); // matrixLayout
+            auto layout = builder.getConstantScalar(operands[3]);
+            if (layout == spv::CooperativeMatrixLayoutRowBlockedInterleavedARM ||
+                layout == spv::CooperativeMatrixLayoutColumnBlockedInterleavedARM) {
+                builder.addExtension(spv::E_SPV_ARM_cooperative_matrix_layouts);
+                builder.addCapability(spv::CapabilityCooperativeMatrixLayoutsARM);
+            }
             idImmOps.push_back(spv::IdImmediate(true, operands[2])); // stride
         } else {
             idImmOps.push_back(spv::IdImmediate(true, operands[2])); // stride
@@ -5799,8 +5801,16 @@ void TGlslangToSpvTraverser::translateArguments(const glslang::TIntermAggregate&
             lvalueCoherentFlags = builder.getAccessChain().coherentFlags;
             builder.addDecoration(lvalue_id, TranslateNonUniformDecoration(lvalueCoherentFlags));
             lvalueCoherentFlags |= TranslateCoherent(glslangArguments[i]->getAsTyped()->getType());
-        } else
-            arguments.push_back(accessChainLoad(glslangArguments[i]->getAsTyped()->getType()));
+        } else {
+            if (i > 0 &&
+                glslangArguments[i]->getAsSymbolNode() && glslangArguments[i-1]->getAsSymbolNode() &&
+                glslangArguments[i]->getAsSymbolNode()->getId() == glslangArguments[i-1]->getAsSymbolNode()->getId()) {
+                // Reuse the id if possible
+                arguments.push_back(arguments[i-1]);
+            } else {
+                arguments.push_back(accessChainLoad(glslangArguments[i]->getAsTyped()->getType()));
+            }
+        }
     }
 }
 
