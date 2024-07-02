@@ -139,6 +139,7 @@ Test/GL_ARB_bindless_texture.frag
 Test/GL_ARB_draw_instanced.vert
 Test/GL_ARB_fragment_coord_conventions.vert
 Test/GL_ARB_gpu_shader5.u2i.vert
+Test/GL_ARB_texture_multisample.vert
 Test/GL_EXT_draw_instanced.vert
 Test/GL_EXT_shader_integer_mix.vert
 Test/GL_EXT_texture_array.frag
@@ -246,6 +247,7 @@ Test/baseResults/GL_ARB_bindless_texture.frag.out
 Test/baseResults/GL_ARB_draw_instanced.vert.out
 Test/baseResults/GL_ARB_fragment_coord_conventions.vert.out
 Test/baseResults/GL_ARB_gpu_shader5.u2i.vert.out
+Test/baseResults/GL_ARB_texture_multisample.vert.out
 Test/baseResults/GL_EXT_draw_instanced.vert.out
 Test/baseResults/GL_EXT_shader_integer_mix.vert.out
 Test/baseResults/GL_EXT_texture_array.frag.out
@@ -313,6 +315,9 @@ Test/baseResults/forwardRef.frag.out
 Test/baseResults/functionCall.frag.out
 Test/baseResults/functionSemantics.frag.out
 Test/baseResults/gl_FragCoord.frag.out
+Test/baseResults/gl_samplemask_array_size.frag.out
+Test/baseResults/gl_samplemask_array_size_32.frag.out
+Test/baseResults/gl_samplemask_array_size_64.frag.out
 Test/baseResults/glsl.-D-U.frag.out
 Test/baseResults/glsl.-P.frag.out
 Test/baseResults/glsl.-P.function.frag.out
@@ -332,6 +337,7 @@ Test/baseResults/glsl.450.subgroupClustered.comp.out
 Test/baseResults/glsl.450.subgroupClusteredNeg.comp.out
 Test/baseResults/glsl.450.subgroupPartitioned.comp.out
 Test/baseResults/glsl.450.subgroupQuad.comp.out
+Test/baseResults/glsl.450.subgroupRotate.comp.out
 Test/baseResults/glsl.450.subgroupShuffle.comp.out
 Test/baseResults/glsl.450.subgroupShuffleRelative.comp.out
 Test/baseResults/glsl.450.subgroupVote.comp.out
@@ -364,6 +370,7 @@ Test/baseResults/glsl.es320.subgroupClustered.comp.out
 Test/baseResults/glsl.es320.subgroupClusteredNeg.comp.out
 Test/baseResults/glsl.es320.subgroupPartitioned.comp.out
 Test/baseResults/glsl.es320.subgroupQuad.comp.out
+Test/baseResults/glsl.es320.subgroupRotate.comp.out
 Test/baseResults/glsl.es320.subgroupShuffle.comp.out
 Test/baseResults/glsl.es320.subgroupShuffleRelative.comp.out
 Test/baseResults/glsl.es320.subgroupVote.comp.out
@@ -453,6 +460,7 @@ Test/baseResults/hlsl.emptystructreturn.frag.out
 Test/baseResults/hlsl.emptystructreturn.tesc.out
 Test/baseResults/hlsl.emptystructreturn.vert.out
 Test/baseResults/hlsl.entry-in.frag.out
+Test/baseResults/hlsl.entry-inout.vert.out
 Test/baseResults/hlsl.entry-out.frag.out
 Test/baseResults/hlsl.entry.rename.frag.out
 Test/baseResults/hlsl.explicitDescriptorSet-2.frag.out
@@ -792,6 +800,10 @@ Test/baseResults/precise_struct_block.vert.out
 Test/baseResults/precision.frag.out
 Test/baseResults/precision.vert.out
 Test/baseResults/prepost.frag.out
+Test/baseResults/preprocess.arb_shading_language_include.vert.err
+Test/baseResults/preprocess.arb_shading_language_include.vert.out
+Test/baseResults/preprocess.include_directive_missing_extension.vert.err
+Test/baseResults/preprocess.include_directive_missing_extension.vert.out
 Test/baseResults/preprocessor.bad_arg.vert.err
 Test/baseResults/preprocessor.bad_arg.vert.out
 Test/baseResults/preprocessor.cpp_style___FILE__.vert.err
@@ -900,6 +912,7 @@ Test/baseResults/spv.1.4.texture.frag.out
 Test/baseResults/spv.1.6.conditionalDiscard.frag.out
 Test/baseResults/spv.1.6.helperInvocation.frag.out
 Test/baseResults/spv.1.6.helperInvocation.memmodel.frag.out
+Test/baseResults/spv.1.6.quad.frag.out
 Test/baseResults/spv.1.6.samplerBuffer.frag.out
 Test/baseResults/spv.1.6.separate.frag.out
 Test/baseResults/spv.1.6.specConstant.comp.out
@@ -1071,6 +1084,7 @@ Test/baseResults/spv.debuginfo.hlsl.geom.out
 Test/baseResults/spv.debuginfo.hlsl.tesc.out
 Test/baseResults/spv.debuginfo.hlsl.tese.out
 Test/baseResults/spv.debuginfo.hlsl.vert.out
+Test/baseResults/spv.debuginfo.rt_types.glsl.rgen.out
 Test/baseResults/spv.debuginfo.scalar_types.glsl.frag.out
 Test/baseResults/spv.deepRvalue.frag.out
 Test/baseResults/spv.demoteDisabled.frag.out
@@ -1085,6 +1099,9 @@ Test/baseResults/spv.double.comp.out
 Test/baseResults/spv.drawParams.vert.out
 Test/baseResults/spv.earlyAndlateFragmentTests.frag.out
 Test/baseResults/spv.earlyReturnDiscard.frag.out
+Test/baseResults/spv.expect_assume.assumeEXT.comp.out
+Test/baseResults/spv.expect_assume.expectEXT.comp.out
+Test/baseResults/spv.expect_assume.expectEXT.exttypes.comp.out
 Test/baseResults/spv.explicittypes.frag.out
 Test/baseResults/spv.exportFunctions.comp.out
 Test/baseResults/spv.ext.AccelDecl.frag.out
@@ -1201,6 +1218,7 @@ Test/baseResults/spv.looseUniformNoLoc.vert.out
 Test/baseResults/spv.matFun.vert.out
 Test/baseResults/spv.matrix.frag.out
 Test/baseResults/spv.matrix2.frag.out
+Test/baseResults/spv.maximalReconvergence.vert.out
 Test/baseResults/spv.memoryQualifier.frag.out
 Test/baseResults/spv.memoryScopeSemantics.comp.out
 Test/baseResults/spv.memoryScopeSemantics_Error.comp.out
@@ -1240,6 +1258,7 @@ Test/baseResults/spv.nv.dmm-allops.rgen.out
 Test/baseResults/spv.nv.hitobject-allops.rchit.out
 Test/baseResults/spv.nv.hitobject-allops.rgen.out
 Test/baseResults/spv.nv.hitobject-allops.rmiss.out
+Test/baseResults/spv.nvAtomicFp16Vec.frag.out
 Test/baseResults/spv.offsets.frag.out
 Test/baseResults/spv.paramMemory.420.frag.out
 Test/baseResults/spv.paramMemory.frag.out
@@ -1334,6 +1353,8 @@ Test/baseResults/spv.subgroupExtendedTypesPartitioned.comp.out
 Test/baseResults/spv.subgroupExtendedTypesPartitionedNeg.comp.out
 Test/baseResults/spv.subgroupExtendedTypesQuad.comp.out
 Test/baseResults/spv.subgroupExtendedTypesQuadNeg.comp.out
+Test/baseResults/spv.subgroupExtendedTypesRotate.comp.out
+Test/baseResults/spv.subgroupExtendedTypesRotateNeg.comp.out
 Test/baseResults/spv.subgroupExtendedTypesShuffle.comp.out
 Test/baseResults/spv.subgroupExtendedTypesShuffleNeg.comp.out
 Test/baseResults/spv.subgroupExtendedTypesShuffleRelative.comp.out
@@ -1342,6 +1363,7 @@ Test/baseResults/spv.subgroupExtendedTypesVote.comp.out
 Test/baseResults/spv.subgroupExtendedTypesVoteNeg.comp.out
 Test/baseResults/spv.subgroupPartitioned.comp.out
 Test/baseResults/spv.subgroupQuad.comp.out
+Test/baseResults/spv.subgroupRotate.comp.out
 Test/baseResults/spv.subgroupShuffle.comp.out
 Test/baseResults/spv.subgroupShuffleRelative.comp.out
 Test/baseResults/spv.subgroupSizeARB.frag.out
@@ -1509,6 +1531,9 @@ Test/forwardRef.frag
 Test/functionCall.frag
 Test/functionSemantics.frag
 Test/gl_FragCoord.frag
+Test/gl_MaxSamples_32.conf
+Test/gl_MaxSamples_64.conf
+Test/gl_samplemask_array_size.frag
 Test/glsl.-D-U.frag
 Test/glsl.-P.frag
 Test/glsl.-P.function.frag
@@ -1529,6 +1554,7 @@ Test/glsl.450.subgroupClustered.comp
 Test/glsl.450.subgroupClusteredNeg.comp
 Test/glsl.450.subgroupPartitioned.comp
 Test/glsl.450.subgroupQuad.comp
+Test/glsl.450.subgroupRotate.comp
 Test/glsl.450.subgroupShuffle.comp
 Test/glsl.450.subgroupShuffleRelative.comp
 Test/glsl.450.subgroupVote.comp
@@ -1558,6 +1584,7 @@ Test/glsl.es320.subgroupClustered.comp
 Test/glsl.es320.subgroupClusteredNeg.comp
 Test/glsl.es320.subgroupPartitioned.comp
 Test/glsl.es320.subgroupQuad.comp
+Test/glsl.es320.subgroupRotate.comp
 Test/glsl.es320.subgroupShuffle.comp
 Test/glsl.es320.subgroupShuffleRelative.comp
 Test/glsl.es320.subgroupVote.comp
@@ -1647,6 +1674,7 @@ Test/hlsl.emptystructreturn.frag
 Test/hlsl.emptystructreturn.tesc
 Test/hlsl.emptystructreturn.vert
 Test/hlsl.entry-in.frag
+Test/hlsl.entry-inout.vert
 Test/hlsl.entry-out.frag
 Test/hlsl.entry.rename.frag
 Test/hlsl.explicitDescriptorSet.frag
@@ -2038,6 +2066,8 @@ Test/precise_struct_block.vert
 Test/precision.frag
 Test/precision.vert
 Test/prepost.frag
+Test/preprocess.arb_shading_language_include.vert
+Test/preprocess.include_directive_missing_extension.vert
 Test/preprocessor.bad_arg.vert
 Test/preprocessor.cpp_style___FILE__.vert
 Test/preprocessor.cpp_style_line_directive.vert
@@ -2130,6 +2160,7 @@ Test/spv.1.4.texture.frag
 Test/spv.1.6.conditionalDiscard.frag
 Test/spv.1.6.helperInvocation.frag
 Test/spv.1.6.helperInvocation.memmodel.frag
+Test/spv.1.6.quad.frag
 Test/spv.1.6.samplerBuffer.frag
 Test/spv.1.6.separate.frag
 Test/spv.1.6.specConstant.comp
@@ -2300,6 +2331,7 @@ Test/spv.debuginfo.hlsl.geom
 Test/spv.debuginfo.hlsl.tesc
 Test/spv.debuginfo.hlsl.tese
 Test/spv.debuginfo.hlsl.vert
+Test/spv.debuginfo.rt_types.glsl.rgen
 Test/spv.debuginfo.scalar_types.glsl.frag
 Test/spv.deepRvalue.frag
 Test/spv.demoteDisabled.frag
@@ -2314,6 +2346,9 @@ Test/spv.double.comp
 Test/spv.drawParams.vert
 Test/spv.earlyAndlateFragmentTests.frag
 Test/spv.earlyReturnDiscard.frag
+Test/spv.expect_assume.assumeEXT.comp
+Test/spv.expect_assume.expectEXT.comp
+Test/spv.expect_assume.expectEXT.exttypes.comp
 Test/spv.explicittypes.frag
 Test/spv.exportFunctions.comp
 Test/spv.ext.AccelDecl.frag
@@ -2430,6 +2465,7 @@ Test/spv.looseUniformNoLoc.vert
 Test/spv.matFun.vert
 Test/spv.matrix.frag
 Test/spv.matrix2.frag
+Test/spv.maximalReconvergence.vert
 Test/spv.memoryQualifier.frag
 Test/spv.memoryScopeSemantics.comp
 Test/spv.memoryScopeSemantics_Error.comp
@@ -2469,6 +2505,7 @@ Test/spv.nv.dmm-allops.rgen
 Test/spv.nv.hitobject-allops.rchit
 Test/spv.nv.hitobject-allops.rgen
 Test/spv.nv.hitobject-allops.rmiss
+Test/spv.nvAtomicFp16Vec.frag
 Test/spv.offsets.frag
 Test/spv.paramMemory.420.frag
 Test/spv.paramMemory.frag
@@ -2562,6 +2599,8 @@ Test/spv.subgroupExtendedTypesPartitioned.comp
 Test/spv.subgroupExtendedTypesPartitionedNeg.comp
 Test/spv.subgroupExtendedTypesQuad.comp
 Test/spv.subgroupExtendedTypesQuadNeg.comp
+Test/spv.subgroupExtendedTypesRotate.comp
+Test/spv.subgroupExtendedTypesRotateNeg.comp
 Test/spv.subgroupExtendedTypesShuffle.comp
 Test/spv.subgroupExtendedTypesShuffleNeg.comp
 Test/spv.subgroupExtendedTypesShuffleRelative.comp
@@ -2570,6 +2609,7 @@ Test/spv.subgroupExtendedTypesVote.comp
 Test/spv.subgroupExtendedTypesVoteNeg.comp
 Test/spv.subgroupPartitioned.comp
 Test/spv.subgroupQuad.comp
+Test/spv.subgroupRotate.comp
 Test/spv.subgroupShuffle.comp
 Test/spv.subgroupShuffleRelative.comp
 Test/spv.subgroupSizeARB.frag
@@ -2778,6 +2818,7 @@ glslang/MachineIndependent/propagateNoContraction.cpp
 glslang/MachineIndependent/propagateNoContraction.h
 glslang/MachineIndependent/reflection.cpp
 glslang/MachineIndependent/reflection.h
+glslang/MachineIndependent/span.h
 glslang/OSDependent/Unix/CMakeLists.txt
 glslang/OSDependent/Unix/ossource.cpp
 glslang/OSDependent/Web/CMakeLists.txt
