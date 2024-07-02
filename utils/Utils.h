@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include <string_view>
 #include <vector>
 
-#include <fmt/format.h>
+#include <fmt/base.h>
 #include <fmt/compile.h>
 
 #include <hedley/hedley.h>
