@@ -1,9 +1,10 @@
 .bazelignore
 .bazelrc
 .bazelversion
-.github/FUNDING.yml
+.github/dependabot.yml
 .github/workflows/bzlmod-archive.yml
 .github/workflows/macos.yml
+.github/workflows/scorecard.yml
 .github/workflows/ubuntu.yml
 .github/workflows/windows.yml
 .gitignore
@@ -40,6 +41,7 @@ include/magic_enum/magic_enum_switch.hpp
 include/magic_enum/magic_enum_utility.hpp
 meson.build
 meson_options.txt
+module/magic_enum.cppm
 package.xml
 test/.bazelrc
 test/3rdparty/Catch2/LICENSE

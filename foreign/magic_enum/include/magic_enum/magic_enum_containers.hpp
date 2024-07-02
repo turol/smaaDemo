@@ -5,11 +5,11 @@
 // | |  | | (_| | (_| | | (__  | |____| | | | |_| | | | | | | | |____|_|   |_|
 // |_|  |_|\__,_|\__, |_|\___| |______|_| |_|\__,_|_| |_| |_|  \_____|
 //                __/ | https://github.com/Neargye/magic_enum
-//               |___/  version 0.9.5
+//               |___/  version 0.9.6
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
-// Copyright (c) 2019 - 2023 Daniil Goncharov <neargye@gmail.com>.
+// Copyright (c) 2019 - 2024 Daniil Goncharov <neargye@gmail.com>.
 // Copyright (c) 2022 - 2023 Bela Schaum <schaumb@gmail.com>.
 //
 // Permission is hereby  granted, free of charge, to any  person obtaining a copy
@@ -36,10 +36,14 @@
 #include "magic_enum.hpp"
 
 #if !defined(MAGIC_ENUM_NO_EXCEPTION) && (defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND))
+#ifndef MAGIC_ENUM_USE_STD_MODULE
 #  include <stdexcept>
+#endif
 #  define MAGIC_ENUM_THROW(...) throw (__VA_ARGS__)
 #else
+#ifndef MAGIC_ENUM_USE_STD_MODULE
 #  include <cstdlib>
+#endif
 #  define MAGIC_ENUM_THROW(...) std::abort()
 #endif
 
@@ -264,8 +268,8 @@ struct FilteredIterator {
   constexpr explicit FilteredIterator(const FilteredIterator<OtherParent, OtherIterator, Getter, Predicate>& other)
       : parent(other.parent), first(other.first), last(other.last), current(other.current), getter(other.getter), predicate(other.predicate) {}
 
-  constexpr FilteredIterator(Parent p, Iterator begin, Iterator end, Iterator curr, Getter getter = {}, Predicate pred = {})
-      : parent(p), first(std::move(begin)), last(std::move(end)), current(std::move(curr)), getter{std::move(getter)}, predicate{std::move(pred)} {
+  constexpr FilteredIterator(Parent p, Iterator begin, Iterator end, Iterator curr, Getter get = {}, Predicate pred = {})
+      : parent(p), first(std::move(begin)), last(std::move(end)), current(std::move(curr)), getter{std::move(get)}, predicate{std::move(pred)} {
     if (current == first && !predicate(parent, current)) {
       ++*this;
     }
@@ -331,7 +335,7 @@ template <typename E, typename V, typename Index = default_indexing<E>>
 struct array {
   static_assert(std::is_enum_v<E>);
   static_assert(std::is_trivially_constructible_v<Index>);
-  static_assert(enum_count<E>() == 0 || Index::at(enum_values<E>().front())); // check Index is constexpr
+  static_assert(enum_count<E>() > 0 && Index::at(enum_values<E>().front()));
 
   using index_type = Index;
   using container_type = std::array<V, enum_count<E>()>;
@@ -481,7 +485,7 @@ template <typename E, typename Index = default_indexing<E>>
 class bitset {
   static_assert(std::is_enum_v<E>);
   static_assert(std::is_trivially_constructible_v<Index>);
-  static_assert(enum_count<E>() == 0 || Index::at(enum_values<E>().front())); // check Index is constexpr
+  static_assert(enum_count<E>() > 0 && Index::at(enum_values<E>().front()));
 
   using base_type = std::conditional_t<enum_count<E>() <= 8,  std::uint_least8_t,
                     std::conditional_t<enum_count<E>() <= 16, std::uint_least16_t,
@@ -501,9 +505,9 @@ class bitset {
     std::size_t num_index;
     base_type bit_index;
 
-    constexpr reference_impl(parent_t parent, std::size_t ix) noexcept : reference_impl(parent, std::pair{ix / bits_per_base, base_type{1} << (ix % bits_per_base)}) {}
+    constexpr reference_impl(parent_t p, std::size_t i) noexcept : reference_impl(p, std::pair{i / bits_per_base, base_type{1} << (i % bits_per_base)}) {}
 
-    constexpr reference_impl(parent_t parent, std::pair<std::size_t, base_type> ix) noexcept : parent(parent), num_index(std::get<0>(ix)), bit_index(std::get<1>(ix)) {}
+    constexpr reference_impl(parent_t p, std::pair<std::size_t, base_type> i) noexcept : parent(p), num_index(std::get<0>(i)), bit_index(std::get<1>(i)) {}
 
    public:
     constexpr reference_impl& operator=(bool v) noexcept {

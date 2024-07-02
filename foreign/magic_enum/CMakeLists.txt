@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 
 project(magic_enum
-    VERSION "0.9.5"
+    VERSION "0.9.6"
     HOMEPAGE_URL "https://github.com/Neargye/magic_enum"
     DESCRIPTION "A library that provides static reflection for enums, work with any enum type without any macro or boilerplate code."
     LANGUAGES CXX
@@ -22,6 +22,7 @@ endif()
 option(MAGIC_ENUM_OPT_BUILD_EXAMPLES "Build magic_enum examples" ${IS_TOPLEVEL_PROJECT})
 option(MAGIC_ENUM_OPT_BUILD_TESTS "Build and perform magic_enum tests" ${IS_TOPLEVEL_PROJECT})
 option(MAGIC_ENUM_OPT_INSTALL "Generate and install magic_enum target" ${IS_TOPLEVEL_PROJECT})
+option(MAGIC_ENUM_OPT_INSTALL_PACKAGE_XML "Include package.xml when installing" ${MAGIC_ENUM_OPT_INSTALL})
 
 if(MAGIC_ENUM_OPT_BUILD_EXAMPLES)
     add_subdirectory(example)
@@ -121,7 +122,10 @@ if(MAGIC_ENUM_OPT_INSTALL)
         INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_INCLUDEDIR}"
     )
 
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/package.xml
-            DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME})
+    if (MAGIC_ENUM_OPT_INSTALL_PACKAGE_XML)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/package.xml
+                DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME})
+    endif()
+
     include(CPack)
 endif()

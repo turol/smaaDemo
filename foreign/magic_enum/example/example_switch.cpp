@@ -1,6 +1,6 @@
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 // SPDX-License-Identifier: MIT
-// Copyright (c) 2019 - 2023 Daniil Goncharov <neargye@gmail.com>.
+// Copyright (c) 2019 - 2024 Daniil Goncharov <neargye@gmail.com>.
 // Copyright (c) 2022 - 2023 Bela Schaum <schaumb@gmail.com>.
 //
 // Permission is hereby  granted, free of charge, to any  person obtaining a copy
@@ -102,4 +102,6 @@ int main() {
   std::cout << magic_enum::enum_switch(switcher3, Color::GREEN, std::make_optional("cica")).value() << std::endl; // prints default: "cica"
   std::cout << magic_enum::enum_switch(switcher3, Color::RED, std::make_optional("cica")).value() << std::endl; // prints: "red result"
   std::cout << magic_enum::enum_switch(switcher3, Color::BLUE, std::make_optional("cica")).has_value() << std::endl; // prints: false
+
+  return 0;
 }
