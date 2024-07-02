@@ -65,6 +65,13 @@ TEST(std_test, thread_id) {
   EXPECT_FALSE(fmt::format("{}", std::this_thread::get_id()).empty());
 }
 
+TEST(std_test, complex) {
+  EXPECT_EQ(fmt::format("{}", std::complex<double>(1, 2.2)), "(1+2.2i)");
+  EXPECT_EQ(fmt::format("{}", std::complex<double>(0, 2.2)), "2.2i");
+  EXPECT_EQ(fmt::format("{:>20.2f}", std::complex<double>(1, 2.2)),
+            "        (1.00+2.20i)");
+}
+
 #ifdef __cpp_lib_source_location
 TEST(std_test, source_location) {
   std::source_location loc = std::source_location::current();
@@ -99,6 +106,34 @@ TEST(std_test, optional) {
   EXPECT_FALSE((fmt::is_formattable<unformattable>::value));
   EXPECT_FALSE((fmt::is_formattable<std::optional<unformattable>>::value));
   EXPECT_TRUE((fmt::is_formattable<std::optional<int>>::value));
+#endif
+}
+
+TEST(std_test, expected) {
+#ifdef __cpp_lib_expected
+  EXPECT_EQ(fmt::format("{}", std::expected<int, int>{1}), "expected(1)");
+  EXPECT_EQ(fmt::format("{}", std::expected<int, int>{std::unexpected(1)}),
+            "unexpected(1)");
+  EXPECT_EQ(fmt::format("{}", std::expected<std::string, int>{"test"}),
+            "expected(\"test\")");
+  EXPECT_EQ(fmt::format(
+                "{}", std::expected<int, std::string>{std::unexpected("test")}),
+            "unexpected(\"test\")");
+  EXPECT_EQ(fmt::format("{}", std::expected<char, int>{'a'}), "expected('a')");
+  EXPECT_EQ(fmt::format("{}", std::expected<int, char>{std::unexpected('a')}),
+            "unexpected('a')");
+
+  struct unformattable1 {};
+  struct unformattable2 {};
+  EXPECT_FALSE((fmt::is_formattable<unformattable1>::value));
+  EXPECT_FALSE((fmt::is_formattable<unformattable2>::value));
+  EXPECT_FALSE((fmt::is_formattable<
+                std::expected<unformattable1, unformattable2>>::value));
+  EXPECT_FALSE(
+      (fmt::is_formattable<std::expected<unformattable1, int>>::value));
+  EXPECT_FALSE(
+      (fmt::is_formattable<std::expected<int, unformattable2>>::value));
+  EXPECT_TRUE((fmt::is_formattable<std::expected<int, int>>::value));
 #endif
 }
 
@@ -265,6 +300,13 @@ TEST(std_test, exception) {
 #endif
 }
 
+#if FMT_USE_RTTI
+TEST(std_test, type_info) {
+  EXPECT_EQ(fmt::format("{}", typeid(std::runtime_error)),
+            "std::runtime_error");
+}
+#endif
+
 TEST(std_test, format_bit_reference) {
   std::bitset<2> bs(1);
   EXPECT_EQ(fmt::format("{} {}", bs[0], bs[1]), "true false");
@@ -304,3 +346,21 @@ TEST(std_test, format_atomic_flag) {
   EXPECT_EQ(fmt::format("{}", cf), "false");
 }
 #endif  // __cpp_lib_atomic_flag_test
+
+TEST(std_test, format_unique_ptr) {
+  std::unique_ptr<int> up(new int(1));
+  EXPECT_EQ(fmt::format("{}", fmt::ptr(up.get())),
+            fmt::format("{}", fmt::ptr(up)));
+  struct custom_deleter {
+    void operator()(int* p) const { delete p; }
+  };
+  std::unique_ptr<int, custom_deleter> upcd(new int(1));
+  EXPECT_EQ(fmt::format("{}", fmt::ptr(upcd.get())),
+            fmt::format("{}", fmt::ptr(upcd)));
+}
+
+TEST(std_test, format_shared_ptr) {
+  std::shared_ptr<int> sp(new int(1));
+  EXPECT_EQ(fmt::format("{}", fmt::ptr(sp.get())),
+            fmt::format("{}", fmt::ptr(sp)));
+}

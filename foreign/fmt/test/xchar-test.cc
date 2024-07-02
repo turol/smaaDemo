@@ -32,27 +32,29 @@ using testing::Contains;
 
 struct non_string {};
 
-template <typename T> class is_string_test : public testing::Test {};
+template <typename T> class has_to_string_view_test : public testing::Test {};
 
 using string_char_types = testing::Types<char, wchar_t, char16_t, char32_t>;
-TYPED_TEST_SUITE(is_string_test, string_char_types);
+TYPED_TEST_SUITE(has_to_string_view_test, string_char_types);
 
 template <typename Char>
 struct derived_from_string_view : fmt::basic_string_view<Char> {};
 
-TYPED_TEST(is_string_test, is_string) {
-  EXPECT_TRUE(fmt::detail::is_string<TypeParam*>::value);
-  EXPECT_TRUE(fmt::detail::is_string<const TypeParam*>::value);
-  EXPECT_TRUE(fmt::detail::is_string<TypeParam[2]>::value);
-  EXPECT_TRUE(fmt::detail::is_string<const TypeParam[2]>::value);
-  EXPECT_TRUE(fmt::detail::is_string<std::basic_string<TypeParam>>::value);
-  EXPECT_TRUE(fmt::detail::is_string<fmt::basic_string_view<TypeParam>>::value);
+TYPED_TEST(has_to_string_view_test, has_to_string_view) {
+  EXPECT_TRUE(fmt::detail::has_to_string_view<TypeParam*>::value);
+  EXPECT_TRUE(fmt::detail::has_to_string_view<const TypeParam*>::value);
+  EXPECT_TRUE(fmt::detail::has_to_string_view<TypeParam[2]>::value);
+  EXPECT_TRUE(fmt::detail::has_to_string_view<const TypeParam[2]>::value);
   EXPECT_TRUE(
-      fmt::detail::is_string<derived_from_string_view<TypeParam>>::value);
+      fmt::detail::has_to_string_view<std::basic_string<TypeParam>>::value);
+  EXPECT_TRUE(fmt::detail::has_to_string_view<
+              fmt::basic_string_view<TypeParam>>::value);
+  EXPECT_TRUE(fmt::detail::has_to_string_view<
+              derived_from_string_view<TypeParam>>::value);
   using fmt_string_view = fmt::detail::std_string_view<TypeParam>;
   EXPECT_TRUE(std::is_empty<fmt_string_view>::value !=
-              fmt::detail::is_string<fmt_string_view>::value);
-  EXPECT_FALSE(fmt::detail::is_string<non_string>::value);
+              fmt::detail::has_to_string_view<fmt_string_view>::value);
+  EXPECT_FALSE(fmt::detail::has_to_string_view<non_string>::value);
 }
 
 // std::is_constructible is broken in MSVC until version 2015.
@@ -181,20 +183,21 @@ TEST(xchar_test, format_custom_char) {
 }
 #endif
 
-// Convert a char8_t string to std::string. Otherwise GTest will insist on
-// inserting `char8_t` NTBS into a `char` stream which is disabled by P1423.
-template <typename S> std::string from_u8str(const S& str) {
-  return std::string(str.begin(), str.end());
-}
-
 TEST(xchar_test, format_to) {
   auto buf = std::vector<wchar_t>();
   fmt::format_to(std::back_inserter(buf), L"{}{}", 42, L'\0');
   EXPECT_STREQ(buf.data(), L"42");
 }
 
+TEST(xchar_test, compile_time_string_format_to) {
+  std::wstring ws;
+  fmt::format_to(std::back_inserter(ws), FMT_STRING(L"{}"), 42);
+  EXPECT_EQ(L"42", ws);
+}
+
 TEST(xchar_test, vformat_to) {
-  auto args = fmt::make_wformat_args(42);
+  int n = 42;
+  auto args = fmt::make_wformat_args(n);
   auto w = std::wstring();
   fmt::vformat_to(std::back_inserter(w), L"{}", args);
   EXPECT_EQ(L"42", w);
@@ -514,7 +517,7 @@ TEST(locale_test, format) {
             fmt::format(small_grouping_loc, "{:L}", max_value<uint32_t>()));
 }
 
-TEST(locale_test, format_detault_align) {
+TEST(locale_test, format_default_align) {
   auto loc = std::locale({}, new special_grouping<char>());
   EXPECT_EQ("  12,345", fmt::format(loc, "{:8L}", 12345));
 }
@@ -559,48 +562,6 @@ TEST(locale_test, int_formatter) {
   EXPECT_EQ(fmt::to_string(buf), "12,345");
 }
 
-FMT_BEGIN_NAMESPACE
-template <class charT> struct formatter<std::complex<double>, charT> {
- private:
-  detail::dynamic_format_specs<char> specs_;
-
- public:
-  FMT_CONSTEXPR typename basic_format_parse_context<charT>::iterator parse(
-      basic_format_parse_context<charT>& ctx) {
-    auto end = parse_format_specs(ctx.begin(), ctx.end(), specs_, ctx,
-                                  detail::type::float_type);
-    detail::parse_float_type_spec(specs_);
-    return end;
-  }
-
-  template <class FormatContext>
-  typename FormatContext::iterator format(const std::complex<double>& c,
-                                          FormatContext& ctx) {
-    detail::handle_dynamic_spec<detail::precision_checker>(
-        specs_.precision, specs_.precision_ref, ctx);
-    auto specs = std::string();
-    if (specs_.precision > 0) specs = fmt::format(".{}", specs_.precision);
-    if (specs_.type == presentation_type::fixed_lower) specs += 'f';
-    auto real = fmt::format(ctx.locale().template get<std::locale>(),
-                            fmt::runtime("{:" + specs + "}"), c.real());
-    auto imag = fmt::format(ctx.locale().template get<std::locale>(),
-                            fmt::runtime("{:" + specs + "}"), c.imag());
-    auto fill_align_width = std::string();
-    if (specs_.width > 0) fill_align_width = fmt::format(">{}", specs_.width);
-    return fmt::format_to(ctx.out(), runtime("{:" + fill_align_width + "}"),
-                          c.real() != 0 ? fmt::format("({}+{}i)", real, imag)
-                                        : fmt::format("{}i", imag));
-  }
-};
-FMT_END_NAMESPACE
-
-TEST(locale_test, complex) {
-  std::string s = fmt::format("{}", std::complex<double>(1, 2));
-  EXPECT_EQ(s, "(1+2i)");
-  EXPECT_EQ(fmt::format("{:.2f}", std::complex<double>(1, 2)), "(1.00+2.00i)");
-  EXPECT_EQ(fmt::format("{:8}", std::complex<double>(1, 2)), "  (1+2i)");
-}
-
 TEST(locale_test, chrono_weekday) {
   auto loc = get_locale("es_ES.UTF-8", "Spanish_Spain.1252");
   auto loc_old = std::locale::global(loc);
@@ -608,7 +569,10 @@ TEST(locale_test, chrono_weekday) {
   EXPECT_EQ(fmt::format(L"{}", sat), L"Sat");
   if (loc != std::locale::classic()) {
     // L'\xE1' is 'á'.
-    auto saturdays = std::vector<std::wstring>{L"s\xE1""b", L"s\xE1."};
+    auto saturdays = std::vector<std::wstring>{
+        L"s\xE1"
+        "b",
+        L"s\xE1."};
     EXPECT_THAT(saturdays, Contains(fmt::format(loc, L"{:L}", sat)));
   }
   std::locale::global(loc_old);
@@ -616,6 +580,13 @@ TEST(locale_test, chrono_weekday) {
 
 TEST(locale_test, sign) {
   EXPECT_EQ(fmt::format(std::locale(), L"{:L}", -50), L"-50");
+}
+
+TEST(std_test_xchar, complex) {
+  auto s = fmt::format(L"{}", std::complex<double>(1, 2));
+  EXPECT_EQ(s, L"(1+2i)");
+  EXPECT_EQ(fmt::format(L"{:.2f}", std::complex<double>(1, 2)), L"(1.00+2.00i)");
+  EXPECT_EQ(fmt::format(L"{:8}", std::complex<double>(1, 2)), L"(1+2i)  ");
 }
 
 TEST(std_test_xchar, optional) {

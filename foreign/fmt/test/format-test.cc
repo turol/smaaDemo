@@ -15,13 +15,17 @@
 
 #include <stdint.h>  // uint32_t
 
-#include <climits>      // INT_MAX
-#include <cmath>        // std::signbit
-#include <cstring>      // std::strlen
-#include <iterator>     // std::back_inserter
-#include <list>         // std::list
-#include <memory>       // std::unique_ptr
-#include <type_traits>  // std::is_default_constructible
+#include <cfenv>               // fegetexceptflag and FE_ALL_EXCEPT
+#include <climits>             // INT_MAX
+#include <cmath>               // std::signbit
+#include <condition_variable>  // std::condition_variable
+#include <cstring>             // std::strlen
+#include <iterator>            // std::back_inserter
+#include <list>                // std::list
+#include <mutex>               // std::mutex
+#include <string>              // std::string
+#include <thread>              // std::thread
+#include <type_traits>         // std::is_default_constructible
 
 #include "gtest-extra.h"
 #include "mock-allocator.h"
@@ -106,6 +110,14 @@ TEST(float_test, isfinite) {
 #endif
 }
 
+void check_no_fp_exception() {
+  fexcept_t fe;
+  fegetexceptflag(&fe, FE_ALL_EXCEPT);
+
+  // No exception flags should have been set
+  EXPECT_TRUE(fe == 0);
+}
+
 template <typename Float> void check_isnan() {
   using fmt::detail::isnan;
   EXPECT_FALSE(isnan(Float(0.0)));
@@ -118,6 +130,17 @@ template <typename Float> void check_isnan() {
   EXPECT_FALSE(isnan(Float(-limits::infinity())));
   EXPECT_TRUE(isnan(Float(limits::quiet_NaN())));
   EXPECT_TRUE(isnan(Float(-limits::quiet_NaN())));
+
+  // Sanity check: make sure no error has occurred before we start
+  check_no_fp_exception();
+
+  // Check that no exception is raised for the non-NaN case
+  isnan(Float(42.0));
+  check_no_fp_exception();
+
+  // Check that no exception is raised for the NaN case
+  isnan(Float(limits::quiet_NaN()));
+  check_no_fp_exception();
 }
 
 TEST(float_test, isnan) {
@@ -240,7 +263,8 @@ TEST(util_test, format_system_error) {
     throws_on_alloc = true;
   }
   if (!throws_on_alloc) {
-    fmt::print("warning: std::allocator allocates {} chars\n", max_size);
+    fmt::print(stderr, "warning: std::allocator allocates {} chars\n",
+               max_size);
     return;
   }
 }
@@ -448,7 +472,7 @@ TEST(memory_buffer_test, max_size_allocator_overflow) {
 }
 
 TEST(format_test, exception_from_lib) {
-  EXPECT_THROW_MSG(fmt::throw_format_error("test"), format_error, "test");
+  EXPECT_THROW_MSG(fmt::report_error("test"), format_error, "test");
 }
 
 TEST(format_test, escape) {
@@ -556,6 +580,9 @@ TEST(format_test, named_arg) {
                    "argument not found");
   EXPECT_THROW_MSG((void)fmt::format(runtime("{a}"), 42), format_error,
                    "argument not found");
+  EXPECT_THROW_MSG((void)fmt::format(runtime("{a} {}"), fmt::arg("a", 2), 42),
+                   format_error,
+                   "cannot switch from manual to automatic argument indexing");
 }
 
 TEST(format_test, auto_arg_index) {
@@ -948,6 +975,9 @@ TEST(format_test, precision) {
   EXPECT_EQ(fmt::format("{0:.3}", 1.1), "1.1");
   EXPECT_EQ(fmt::format("{:.0e}", 1.0L), "1e+00");
   EXPECT_EQ(fmt::format("{:9.1e}", 0.0), "  0.0e+00");
+  EXPECT_EQ(fmt::format("{:.7f}", 0.0000000000000071054273576010018587L),
+            "0.0000000");
+
   EXPECT_EQ(
       fmt::format("{:.494}", 4.9406564584124654E-324),
       "4.9406564584124654417656879286822137236505980261432476442558568250067550"
@@ -1540,18 +1570,6 @@ TEST(format_test, format_pointer) {
             fmt::format("{0}", reinterpret_cast<void*>(~uintptr_t())));
   EXPECT_EQ("0x1234",
             fmt::format("{}", fmt::ptr(reinterpret_cast<int*>(0x1234))));
-  std::unique_ptr<int> up(new int(1));
-  EXPECT_EQ(fmt::format("{}", fmt::ptr(up.get())),
-            fmt::format("{}", fmt::ptr(up)));
-  struct custom_deleter {
-    void operator()(int* p) const { delete p; }
-  };
-  std::unique_ptr<int, custom_deleter> upcd(new int(1));
-  EXPECT_EQ(fmt::format("{}", fmt::ptr(upcd.get())),
-            fmt::format("{}", fmt::ptr(upcd)));
-  std::shared_ptr<int> sp(new int(1));
-  EXPECT_EQ(fmt::format("{}", fmt::ptr(sp.get())),
-            fmt::format("{}", fmt::ptr(sp)));
   EXPECT_EQ(fmt::format("{}", fmt::detail::bit_cast<const void*>(
                                   &function_pointer_test)),
             fmt::format("{}", fmt::ptr(function_pointer_test)));
@@ -1603,7 +1621,8 @@ struct string_viewable {};
 
 FMT_BEGIN_NAMESPACE
 template <> struct formatter<string_viewable> : formatter<std::string_view> {
-  auto format(string_viewable, format_context& ctx) -> decltype(ctx.out()) {
+  auto format(string_viewable, format_context& ctx) const
+      -> decltype(ctx.out()) {
     return formatter<std::string_view>::format("foo", ctx);
   }
 };
@@ -1621,8 +1640,8 @@ struct explicitly_convertible_to_std_string_view {
 template <>
 struct fmt::formatter<explicitly_convertible_to_std_string_view>
     : formatter<std::string_view> {
-  auto format(explicitly_convertible_to_std_string_view v, format_context& ctx)
-      -> decltype(ctx.out()) {
+  auto format(explicitly_convertible_to_std_string_view v,
+              format_context& ctx) const -> decltype(ctx.out()) {
     return fmt::format_to(ctx.out(), "'{}'", std::string_view(v));
   }
 };
@@ -1644,7 +1663,7 @@ template <> struct formatter<date> {
     return it;
   }
 
-  auto format(const date& d, format_context& ctx) -> decltype(ctx.out()) {
+  auto format(const date& d, format_context& ctx) const -> decltype(ctx.out()) {
     // Namespace-qualify to avoid ambiguity with std::format_to.
     fmt::format_to(ctx.out(), "{}-{}-{}", d.year(), d.month(), d.day());
     return ctx.out();
@@ -1653,7 +1672,7 @@ template <> struct formatter<date> {
 
 template <> struct formatter<Answer> : formatter<int> {
   template <typename FormatContext>
-  auto format(Answer, FormatContext& ctx) -> decltype(ctx.out()) {
+  auto format(Answer, FormatContext& ctx) const -> decltype(ctx.out()) {
     return formatter<int>::format(42, ctx);
   }
 };
@@ -1753,6 +1772,79 @@ TEST(format_test, print) {
                "Don't panic!\n");
 }
 
+TEST(format_test, big_print) {
+  enum { count = 5000 };
+  auto big_print = []() {
+    for (int i = 0; i < count / 5; ++i) fmt::print("xxxxx");
+  };
+  EXPECT_WRITE(stdout, big_print(), std::string(count, 'x'));
+}
+
+// Windows CRT implements _IOLBF incorrectly (full buffering).
+#if FMT_USE_FCNTL && !defined(_WIN32)
+TEST(format_test, line_buffering) {
+  auto pipe = fmt::pipe();
+
+  int write_fd = pipe.write_end.descriptor();
+  auto write_end = pipe.write_end.fdopen("w");
+  setvbuf(write_end.get(), nullptr, _IOLBF, 4096);
+  write_end.print("42\n");
+  close(write_fd);
+  try {
+    write_end.close();
+  } catch (const std::system_error&) {
+  }
+
+  auto read_end = pipe.read_end.fdopen("r");
+  std::thread reader([&]() {
+    int n = 0;
+    int result = fscanf(read_end.get(), "%d", &n);
+    (void)result;
+    EXPECT_EQ(n, 42);
+  });
+
+  reader.join();
+}
+#endif
+
+struct deadlockable {
+  int value = 0;
+  mutable std::mutex mutex;
+};
+
+FMT_BEGIN_NAMESPACE
+template <> struct formatter<deadlockable> {
+  FMT_CONSTEXPR auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+    return ctx.begin();
+  }
+
+  auto format(const deadlockable& d, format_context& ctx) const
+      -> decltype(ctx.out()) {
+    std::lock_guard<std::mutex> lock(d.mutex);
+    return format_to(ctx.out(), "{}", d.value);
+  }
+};
+FMT_END_NAMESPACE
+
+TEST(format_test, locking_formatter) {
+  auto f = fmt::buffered_file();
+  try {
+    f = fmt::buffered_file("/dev/null", "w");
+  } catch (const std::system_error&) {
+    fmt::print(stderr, "warning: /dev/null is not supported\n");
+    return;
+  }
+  deadlockable d;
+  auto t = std::thread([&]() {
+    fmt::print(f.get(), "start t\n");
+    std::lock_guard<std::mutex> lock(d.mutex);
+    for (int i = 0; i < 1000000; ++i) d.value += 10;
+    fmt::print(f.get(), "done\n");
+  });
+  for (int i = 0; i < 100; ++i) fmt::print(f.get(), "{}", d);
+  t.join();
+}
+
 TEST(format_test, variadic) {
   EXPECT_EQ(fmt::format("{}c{}", "ab", 1), "abc1");
 }
@@ -1766,6 +1858,9 @@ TEST(format_test, bytes) {
 TEST(format_test, group_digits_view) {
   EXPECT_EQ(fmt::format("{}", fmt::group_digits(10000000)), "10,000,000");
   EXPECT_EQ(fmt::format("{:8}", fmt::group_digits(1000)), "   1,000");
+  EXPECT_EQ(fmt::format("{}", fmt::group_digits(-10000000)), "-10,000,000");
+  EXPECT_EQ(fmt::format("{:8}", fmt::group_digits(-1000)), "  -1,000");
+  EXPECT_EQ(fmt::format("{:8}", fmt::group_digits(-100)), "    -100");
 }
 
 #ifdef __cpp_generic_lambdas
@@ -1777,7 +1872,8 @@ FMT_BEGIN_NAMESPACE
 template <> struct formatter<point> : nested_formatter<double> {
   auto format(point p, format_context& ctx) const -> decltype(ctx.out()) {
     return write_padded(ctx, [this, p](auto out) -> decltype(out) {
-      return fmt::format_to(out, "({}, {})", nested(p.x), nested(p.y));
+      return fmt::format_to(out, "({}, {})", this->nested(p.x),
+                            this->nested(p.y));
     });
   }
 };
@@ -1790,40 +1886,6 @@ TEST(format_test, nested_formatter) {
 
 enum test_enum { foo, bar };
 auto format_as(test_enum e) -> int { return e; }
-
-TEST(format_test, join) {
-  using fmt::join;
-  int v1[3] = {1, 2, 3};
-  auto v2 = std::vector<float>();
-  v2.push_back(1.2f);
-  v2.push_back(3.4f);
-  void* v3[2] = {&v1[0], &v1[1]};
-
-  EXPECT_EQ(fmt::format("({})", join(v1, v1 + 3, ", ")), "(1, 2, 3)");
-  EXPECT_EQ(fmt::format("({})", join(v1, v1 + 1, ", ")), "(1)");
-  EXPECT_EQ(fmt::format("({})", join(v1, v1, ", ")), "()");
-  EXPECT_EQ(fmt::format("({:03})", join(v1, v1 + 3, ", ")), "(001, 002, 003)");
-  EXPECT_EQ("(+01.20, +03.40)",
-            fmt::format("({:+06.2f})", join(v2.begin(), v2.end(), ", ")));
-
-  EXPECT_EQ(fmt::format("{0:{1}}", join(v1, v1 + 3, ", "), 1), "1, 2, 3");
-
-  EXPECT_EQ(fmt::format("{}, {}", v3[0], v3[1]),
-            fmt::format("{}", join(v3, v3 + 2, ", ")));
-
-  EXPECT_EQ(fmt::format("({})", join(v1, ", ")), "(1, 2, 3)");
-  EXPECT_EQ(fmt::format("({:+06.2f})", join(v2, ", ")), "(+01.20, +03.40)");
-
-  auto v4 = std::vector<test_enum>{foo, bar, foo};
-  EXPECT_EQ(fmt::format("{}", join(v4, " ")), "0 1 0");
-}
-
-#ifdef __cpp_lib_byte
-TEST(format_test, join_bytes) {
-  auto v = std::vector<std::byte>{std::byte(1), std::byte(2), std::byte(3)};
-  EXPECT_EQ(fmt::format("{}", fmt::join(v, ", ")), "1, 2, 3");
-}
-#endif
 
 std::string vformat_message(int id, const char* format, fmt::format_args args) {
   auto buffer = fmt::memory_buffer();
@@ -1950,7 +2012,7 @@ template <typename, typename OutputIt> void write(OutputIt, foo) = delete;
 FMT_BEGIN_NAMESPACE
 template <>
 struct formatter<adl_test::fmt::detail::foo> : formatter<std::string> {
-  auto format(adl_test::fmt::detail::foo, format_context& ctx)
+  auto format(adl_test::fmt::detail::foo, format_context& ctx) const
       -> decltype(ctx.out()) {
     return formatter<std::string>::format("foo", ctx);
   }
@@ -2119,7 +2181,7 @@ template <> struct formatter<check_back_appender> {
   }
 
   template <typename Context>
-  auto format(check_back_appender, Context& ctx) -> decltype(ctx.out()) {
+  auto format(check_back_appender, Context& ctx) const -> decltype(ctx.out()) {
     auto out = ctx.out();
     static_assert(std::is_same<decltype(++out), decltype(out)&>::value,
                   "needs to satisfy weakly_incrementable");
@@ -2181,16 +2243,21 @@ template <typename Char, typename... T> void check_enabled_formatters() {
 }
 
 TEST(format_test, test_formatters_enabled) {
+  using custom_string =
+      std::basic_string<char, std::char_traits<char>, mock_allocator<char>>;
+  using custom_wstring = std::basic_string<wchar_t, std::char_traits<wchar_t>,
+                                           mock_allocator<wchar_t>>;
+
   check_enabled_formatters<char, bool, char, signed char, unsigned char, short,
                            unsigned short, int, unsigned, long, unsigned long,
                            long long, unsigned long long, float, double,
                            long double, void*, const void*, char*, const char*,
-                           std::string, std::nullptr_t>();
-  check_enabled_formatters<wchar_t, bool, wchar_t, signed char, unsigned char,
-                           short, unsigned short, int, unsigned, long,
-                           unsigned long, long long, unsigned long long, float,
-                           double, long double, void*, const void*, wchar_t*,
-                           const wchar_t*, std::wstring, std::nullptr_t>();
+                           std::string, custom_string, std::nullptr_t>();
+  check_enabled_formatters<
+      wchar_t, bool, wchar_t, signed char, unsigned char, short, unsigned short,
+      int, unsigned, long, unsigned long, long long, unsigned long long, float,
+      double, long double, void*, const void*, wchar_t*, const wchar_t*,
+      std::wstring, custom_wstring, std::nullptr_t>();
 }
 
 TEST(format_int_test, data) {
@@ -2206,7 +2273,7 @@ TEST(format_int_test, format_int) {
   EXPECT_EQ(fmt::format_int(42ul).str(), "42");
   EXPECT_EQ(fmt::format_int(-42l).str(), "-42");
   EXPECT_EQ(fmt::format_int(42ull).str(), "42");
-  EXPECT_EQ(fmt::format_int(-42ll).str(), "-42");\
+  EXPECT_EQ(fmt::format_int(-42ll).str(), "-42");
   EXPECT_EQ(fmt::format_int(max_value<int64_t>()).str(),
             std::to_string(max_value<int64_t>()));
 }
@@ -2233,11 +2300,11 @@ class format_facet : public fmt::format_facet<std::locale> {
   };
 
   auto do_put(fmt::appender out, fmt::loc_value val,
-              const fmt::format_specs<>&) const -> bool override;
+              const fmt::format_specs&) const -> bool override;
 };
 
 auto format_facet::do_put(fmt::appender out, fmt::loc_value val,
-                          const fmt::format_specs<>&) const -> bool {
+                          const fmt::format_specs&) const -> bool {
   return val.visit(int_formatter{out});
 }
 
@@ -2292,4 +2359,64 @@ FMT_END_NAMESPACE
 
 TEST(format_test, formatter_nonconst_char) {
   EXPECT_EQ(fmt::format("{}", convertible_to_nonconst_cstring()), "bar");
+}
+
+namespace adl_test {
+template <typename... T> void make_format_args(const T&...) = delete;
+
+struct string : std::string {};
+}  // namespace adl_test
+
+// Test that formatting functions compile when make_format_args is found by ADL.
+TEST(format_test, adl) {
+  // Only check compilation and don't run the code to avoid polluting the output
+  // and since the output is tested elsewhere.
+  if (fmt::detail::const_check(true)) return;
+  auto s = adl_test::string();
+  char buf[10];
+  (void)fmt::format("{}", s);
+  fmt::format_to(buf, "{}", s);
+  fmt::format_to_n(buf, 10, "{}", s);
+  (void)fmt::formatted_size("{}", s);
+  fmt::print("{}", s);
+  fmt::print(stdout, "{}", s);
+}
+
+struct convertible_to_int {
+  operator int() const { return 42; }
+};
+
+struct convertible_to_cstring {
+  operator const char*() const { return "foo"; }
+};
+
+FMT_BEGIN_NAMESPACE
+template <> struct formatter<convertible_to_int> {
+  FMT_CONSTEXPR auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+    return ctx.begin();
+  }
+  auto format(convertible_to_int, format_context& ctx) const
+      -> decltype(ctx.out()) {
+    auto out = ctx.out();
+    *out++ = 'x';
+    return out;
+  }
+};
+
+template <> struct formatter<convertible_to_cstring> {
+  FMT_CONSTEXPR auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+    return ctx.begin();
+  }
+  auto format(convertible_to_cstring, format_context& ctx) const
+      -> decltype(ctx.out()) {
+    auto out = ctx.out();
+    *out++ = 'y';
+    return out;
+  }
+};
+FMT_END_NAMESPACE
+
+TEST(format_test, formatter_overrides_implicit_conversion) {
+  EXPECT_EQ(fmt::format("{}", convertible_to_int()), "x");
+  EXPECT_EQ(fmt::format("{}", convertible_to_cstring()), "y");
 }
