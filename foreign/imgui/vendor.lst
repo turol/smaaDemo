@@ -82,10 +82,6 @@ examples/example_apple_metal/macOS/MainMenu.storyboard
 examples/example_apple_metal/main.mm
 examples/example_apple_opengl2/example_apple_opengl2.xcodeproj/project.pbxproj
 examples/example_apple_opengl2/main.mm
-examples/example_emscripten_wgpu/Makefile.emscripten
-examples/example_emscripten_wgpu/README.md
-examples/example_emscripten_wgpu/main.cpp
-examples/example_emscripten_wgpu/web/index.html
 examples/example_glfw_metal/Makefile
 examples/example_glfw_metal/main.mm
 examples/example_glfw_opengl2/Makefile
@@ -105,6 +101,11 @@ examples/example_glfw_vulkan/build_win64.bat
 examples/example_glfw_vulkan/example_glfw_vulkan.vcxproj
 examples/example_glfw_vulkan/example_glfw_vulkan.vcxproj.filters
 examples/example_glfw_vulkan/main.cpp
+examples/example_glfw_wgpu/CMakeLists.txt
+examples/example_glfw_wgpu/Makefile.emscripten
+examples/example_glfw_wgpu/README.md
+examples/example_glfw_wgpu/main.cpp
+examples/example_glfw_wgpu/web/index.html
 examples/example_glut_opengl2/Makefile
 examples/example_glut_opengl2/example_glut_opengl2.vcxproj
 examples/example_glut_opengl2/example_glut_opengl2.vcxproj.filters
