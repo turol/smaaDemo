@@ -376,6 +376,8 @@ def cross_compile_msl(shader, spirv, opt, iterations, paths):
         msl_args.append('--msl-force-sample-rate-shading')
     if '.discard-checks.' in shader:
         msl_args.append('--msl-check-discarded-frag-stores')
+    if '.force-frag-with-side-effects-execution.' in shader:
+        msl_args.append('--msl-force-frag-with-side-effects-execution')
     if '.lod-as-grad.' in shader:
         msl_args.append('--msl-sample-dref-lod-array-as-grad')
     if '.agx-cube-grad.' in shader:
@@ -386,6 +388,8 @@ def cross_compile_msl(shader, spirv, opt, iterations, paths):
         msl_args.append('--msl-runtime-array-rich-descriptor')
     if '.replace-recursive-inputs.' in shader:
         msl_args.append('--msl-replace-recursive-inputs')
+    if '.input-attachment-is-ds-attachment.' in shader:
+        msl_args.append('--msl-input-attachment-is-ds-attachment')
     if '.mask-location-0.' in shader:
         msl_args.append('--mask-stage-output-location')
         msl_args.append('0')

@@ -1,8 +1,8 @@
-commit b8fcf307f1f347089e3c46eb4451d27f32ebc8d3
-Merge: 3198ac2f fd3ce6e8
+commit 6fd1f75636b1c424b809ad8a84804654cf5ae48b
+Merge: d79ba7d7 eadf9d34
 Author: Hans-Kristian Arntzen <post@arntzen-software.no>
-Date:   Mon Feb 5 12:54:10 2024 +0100
+Date:   Wed Jun 19 23:25:34 2024 +0200
 
-    Merge pull request #2274 from DmitryTsyganov/error_message_fix
+    Merge pull request #2347 from billhollings/arg-buff-runtime-array
     
-    Add CompilerError constructor that accepts const char* as a parameter (Fixes #2273)
+    MSL: Support a runtime array with dynamic offset in an argument buffer.

@@ -754,6 +754,10 @@ spvc_result spvc_compiler_options_set_uint(spvc_compiler_options options, spvc_c
 	case SPVC_COMPILER_OPTION_MSL_AGX_MANUAL_CUBE_GRAD_FIXUP:
 		options->msl.agx_manual_cube_grad_fixup = value != 0;
 		break;
+
+	case SPVC_COMPILER_OPTION_MSL_FORCE_FRAGMENT_WITH_SIDE_EFFECTS_EXECUTION:
+		options->msl.force_fragment_with_side_effects_execution = value != 0;
+		break;
 #endif
 
 	default:
@@ -1342,6 +1346,34 @@ spvc_result spvc_compiler_msl_add_resource_binding(spvc_compiler compiler,
 	bind.msl_buffer = binding->msl_buffer;
 	bind.msl_texture = binding->msl_texture;
 	bind.msl_sampler = binding->msl_sampler;
+	msl.add_msl_resource_binding(bind);
+	return SPVC_SUCCESS;
+#else
+	(void)binding;
+	compiler->context->report_error("MSL function used on a non-MSL backend.");
+	return SPVC_ERROR_INVALID_ARGUMENT;
+#endif
+}
+
+spvc_result spvc_compiler_msl_add_resource_binding_2(spvc_compiler compiler,
+                                                     const spvc_msl_resource_binding_2 *binding)
+{
+#if SPIRV_CROSS_C_API_MSL
+	if (compiler->backend != SPVC_BACKEND_MSL)
+	{
+		compiler->context->report_error("MSL function used on a non-MSL backend.");
+		return SPVC_ERROR_INVALID_ARGUMENT;
+	}
+
+	auto &msl = *static_cast<CompilerMSL *>(compiler->compiler.get());
+	MSLResourceBinding bind;
+	bind.binding = binding->binding;
+	bind.desc_set = binding->desc_set;
+	bind.stage = static_cast<spv::ExecutionModel>(binding->stage);
+	bind.msl_buffer = binding->msl_buffer;
+	bind.msl_texture = binding->msl_texture;
+	bind.msl_sampler = binding->msl_sampler;
+	bind.count = binding->count;
 	msl.add_msl_resource_binding(bind);
 	return SPVC_SUCCESS;
 #else
@@ -2802,6 +2834,22 @@ void spvc_msl_resource_binding_init(spvc_msl_resource_binding *binding)
 	binding->msl_texture = binding_default.msl_texture;
 	binding->msl_sampler = binding_default.msl_sampler;
 	binding->stage = static_cast<SpvExecutionModel>(binding_default.stage);
+#else
+	memset(binding, 0, sizeof(*binding));
+#endif
+}
+
+void spvc_msl_resource_binding_init_2(spvc_msl_resource_binding_2 *binding)
+{
+#if SPIRV_CROSS_C_API_MSL
+	MSLResourceBinding binding_default;
+	binding->desc_set = binding_default.desc_set;
+	binding->binding = binding_default.binding;
+	binding->msl_buffer = binding_default.msl_buffer;
+	binding->msl_texture = binding_default.msl_texture;
+	binding->msl_sampler = binding_default.msl_sampler;
+	binding->stage = static_cast<SpvExecutionModel>(binding_default.stage);
+	binding->count = 0;
 #else
 	memset(binding, 0, sizeof(*binding));
 #endif
