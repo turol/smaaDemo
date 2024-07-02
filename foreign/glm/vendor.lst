@@ -1,5 +1,6 @@
 .github/workflows/ci.yml
 .github/workflows/make_light_release.yml
+.github/workflows/make_release.yml
 .gitignore
 CMakeLists.txt
 cmake/cmake_uninstall.cmake.in
@@ -963,6 +964,7 @@ doc/manual/frontpage1.png
 doc/manual/frontpage2.png
 doc/manual/g-truc.png
 doc/manual/logo-mini.png
+doc/manual/logo.png
 doc/manual/noise-perlin1.jpg
 doc/manual/noise-perlin2.jpg
 doc/manual/noise-perlin3.jpg
@@ -1017,6 +1019,7 @@ glm/detail/_swizzle.hpp
 glm/detail/_swizzle_func.hpp
 glm/detail/_vectorize.hpp
 glm/detail/compute_common.hpp
+glm/detail/compute_vector_decl.hpp
 glm/detail/compute_vector_relational.hpp
 glm/detail/func_common.inl
 glm/detail/func_common_simd.inl

@@ -3,6 +3,7 @@
 #if GLM_CONFIG_ALIGNED_GENTYPES == GLM_ENABLE
 #include <glm/gtc/type_aligned.hpp>
 #include <glm/gtc/type_precision.hpp>
+#include <glm/ext/scalar_relational.hpp>
 #include <glm/ext/vector_relational.hpp>
 #include <glm/ext/matrix_relational.hpp>
 
@@ -90,6 +91,114 @@ struct my_u8vec4_packed
 	glm::u8vec4 b;
 };
 GLM_STATIC_ASSERT(sizeof(my_u8vec4_packed) == sizeof(glm::uint32) + sizeof(glm::u8vec4), "glm::u8vec4 packed is not correct");
+
+static int test_copy_vec4()
+{
+	int Error = 0;
+	{
+		glm::aligned_vec4 const u(1.f, 2.f, 3.f, 4.f);
+		glm::packed_vec4 const v(u);
+		Error += glm::equal(v.x, u.x, glm::epsilon<float>()) ? 0 : 1;
+		Error += glm::equal(v.y, u.y, glm::epsilon<float>()) ? 0 : 1;
+		Error += glm::equal(v.z, u.z, glm::epsilon<float>()) ? 0 : 1;
+		Error += glm::equal(v.w, u.w, glm::epsilon<float>()) ? 0 : 1;
+	}
+	{
+		glm::packed_vec4 const u(1.f, 2.f, 3.f, 4.f);
+		glm::aligned_vec4 const v(u);
+		Error += glm::equal(v.x, u.x, glm::epsilon<float>()) ? 0 : 1;
+		Error += glm::equal(v.y, u.y, glm::epsilon<float>()) ? 0 : 1;
+		Error += glm::equal(v.z, u.z, glm::epsilon<float>()) ? 0 : 1;
+		Error += glm::equal(v.w, u.w, glm::epsilon<float>()) ? 0 : 1;
+	}
+
+	{
+		glm::aligned_dvec4 const u(1., 2., 3., 4.);
+		glm::packed_dvec4 const v(u);
+		Error += glm::equal(v.x, u.x, glm::epsilon<double>()) ? 0 : 1;
+		Error += glm::equal(v.y, u.y, glm::epsilon<double>()) ? 0 : 1;
+		Error += glm::equal(v.z, u.z, glm::epsilon<double>()) ? 0 : 1;
+		Error += glm::equal(v.w, u.w, glm::epsilon<double>()) ? 0 : 1;
+	}
+	{
+		glm::packed_dvec4 const u(1.f, 2.f, 3.f, 4.f);
+		glm::aligned_dvec4 const v(u);
+		Error += glm::equal(v.x, u.x, glm::epsilon<double>()) ? 0 : 1;
+		Error += glm::equal(v.y, u.y, glm::epsilon<double>()) ? 0 : 1;
+		Error += glm::equal(v.z, u.z, glm::epsilon<double>()) ? 0 : 1;
+		Error += glm::equal(v.w, u.w, glm::epsilon<double>()) ? 0 : 1;
+	}
+
+	{
+		glm::aligned_ivec4 const u(1, 2, 3, 4);
+		glm::packed_ivec4 const v(u);
+		Error += v.x == u.x ? 0 : 1;
+		Error += v.y == u.y ? 0 : 1;
+		Error += v.z == u.z ? 0 : 1;
+		Error += v.w == u.w ? 0 : 1;
+	}
+	{
+		glm::packed_ivec4 const u(1, 2, 3, 4);
+		glm::aligned_ivec4 const v(u);
+		Error += v.x == u.x ? 0 : 1;
+		Error += v.y == u.y ? 0 : 1;
+		Error += v.z == u.z ? 0 : 1;
+		Error += v.w == u.w ? 0 : 1;
+	}
+
+	return Error;
+}
+
+static int test_copy_vec3()
+{
+	int Error = 0;
+	{
+		glm::aligned_vec3 const u(1.f, 2.f, 3.f);
+		glm::packed_vec3 const v(u);
+		Error += glm::equal(v.x, u.x, glm::epsilon<float>()) ? 0 : 1;
+		Error += glm::equal(v.y, u.y, glm::epsilon<float>()) ? 0 : 1;
+		Error += glm::equal(v.z, u.z, glm::epsilon<float>()) ? 0 : 1;
+	}
+	{
+		glm::packed_vec3 const u(1.f, 2.f, 3.f);
+		glm::aligned_vec3 const v(u);
+		Error += glm::equal(v.x, u.x, glm::epsilon<float>()) ? 0 : 1;
+		Error += glm::equal(v.y, u.y, glm::epsilon<float>()) ? 0 : 1;
+		Error += glm::equal(v.z, u.z, glm::epsilon<float>()) ? 0 : 1;
+	}
+
+	{
+		glm::aligned_dvec3 const u(1., 2., 3.);
+		glm::packed_dvec3 const v(u);
+		Error += glm::equal(v.x, u.x, glm::epsilon<double>()) ? 0 : 1;
+		Error += glm::equal(v.y, u.y, glm::epsilon<double>()) ? 0 : 1;
+		Error += glm::equal(v.z, u.z, glm::epsilon<double>()) ? 0 : 1;
+	}
+	{
+		glm::packed_dvec3 const u(1.f, 2.f, 3.f);
+		glm::aligned_dvec3 const v(u);
+		Error += glm::equal(v.x, u.x, glm::epsilon<double>()) ? 0 : 1;
+		Error += glm::equal(v.y, u.y, glm::epsilon<double>()) ? 0 : 1;
+		Error += glm::equal(v.z, u.z, glm::epsilon<double>()) ? 0 : 1;
+	}
+
+	{
+		glm::aligned_ivec3 const u(1, 2, 3);
+		glm::packed_ivec3 const v(u);
+		Error += v.x == u.x ? 0 : 1;
+		Error += v.y == u.y ? 0 : 1;
+		Error += v.z == u.z ? 0 : 1;
+	}
+	{
+		glm::packed_ivec3 const u(1, 2, 3);
+		glm::aligned_ivec3 const v(u);
+		Error += v.x == u.x ? 0 : 1;
+		Error += v.y == u.y ? 0 : 1;
+		Error += v.z == u.z ? 0 : 1;
+	}
+
+	return Error;
+}
 
 static int test_copy()
 {
@@ -194,6 +303,8 @@ int main()
 
 	Error += test_ctor();
 	Error += test_copy();
+	Error += test_copy_vec4();
+	Error += test_copy_vec3();
 	Error += test_aligned_ivec4();
 	Error += test_aligned_mat4();
 
