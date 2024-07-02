@@ -7,7 +7,7 @@ LICENSE.txt
 README.md
 bin/Shader.frag.spv
 bin/Shader.vert.spv
-bin/VmaSample_Release_vs2019.exe
+bin/VmaSample_Release_vs2022.exe
 docs/.nojekyll
 docs/gfx/Aliasing.png
 docs/gfx/Linear_allocator_1_algo_default.png
@@ -50,7 +50,6 @@ docs/html/functions.html
 docs/html/functions_vars.html
 docs/html/general_considerations.html
 docs/html/globals.html
-docs/html/globals_defs.html
 docs/html/globals_enum.html
 docs/html/globals_eval.html
 docs/html/globals_func.html
@@ -102,7 +101,6 @@ docs/html/search/all_e.js
 docs/html/search/all_f.js
 docs/html/search/classes_0.js
 docs/html/search/close.svg
-docs/html/search/defines_0.js
 docs/html/search/enums_0.js
 docs/html/search/enumvalues_0.js
 docs/html/search/files_0.js

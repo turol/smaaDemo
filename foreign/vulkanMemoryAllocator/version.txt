@@ -1,8 +1,7 @@
-commit 94b1acaef0d1fa6f721559a5f0f3ee31d5efba00
-Merge: 7924e27 6887c77
+commit 257138b8f5686ae84491a3df9f90a77d5660c3bd
 Author: Adam Sawicki <adam.sawicki@amd.com>
-Date:   Fri Jan 26 13:12:48 2024 +0100
+Date:   Fri Jun 28 14:35:43 2024 +0200
 
-    Merge pull request #404 from serboupal/serboupal-semicolon
+    Reapply "Merge pull request #425 from abouvier/cmake-version"
     
-    Remove semicolon outside function
+    This reverts commit dd5b5cb6f2254bff9a7cdd5a94dcede6207c43ff.
