@@ -144,6 +144,7 @@ Test/GL_EXT_draw_instanced.vert
 Test/GL_EXT_shader_integer_mix.vert
 Test/GL_EXT_texture_array.frag
 Test/Operations.frag
+Test/UTF8BOM.vert
 Test/aggOps.frag
 Test/always-discard.frag
 Test/always-discard2.frag
@@ -252,6 +253,7 @@ Test/baseResults/GL_EXT_draw_instanced.vert.out
 Test/baseResults/GL_EXT_shader_integer_mix.vert.out
 Test/baseResults/GL_EXT_texture_array.frag.out
 Test/baseResults/Operations.frag.out
+Test/baseResults/UTF8BOM.vert.out
 Test/baseResults/aggOps.frag.out
 Test/baseResults/always-discard.frag.out
 Test/baseResults/always-discard2.frag.out
@@ -412,6 +414,7 @@ Test/baseResults/hlsl.calculatelod.dx10.frag.out
 Test/baseResults/hlsl.calculatelodunclamped.dx10.frag.out
 Test/baseResults/hlsl.cast.frag.out
 Test/baseResults/hlsl.cbuffer-identifier.vert.out
+Test/baseResults/hlsl.cbuffer-offsets.comp.out
 Test/baseResults/hlsl.charLit.vert.out
 Test/baseResults/hlsl.clip.frag.out
 Test/baseResults/hlsl.clipdistance-1.frag.out
@@ -705,6 +708,7 @@ Test/baseResults/hlsl.structin.vert.out
 Test/baseResults/hlsl.subpass.frag.out
 Test/baseResults/hlsl.switch.frag.out
 Test/baseResults/hlsl.swizzle.frag.out
+Test/baseResults/hlsl.swizzle.vec1.comp.out
 Test/baseResults/hlsl.synthesizeInput.frag.out
 Test/baseResults/hlsl.target.frag.out
 Test/baseResults/hlsl.targetStruct1.frag.out
@@ -742,6 +746,7 @@ Test/baseResults/implicitArraySize1.geom.out
 Test/baseResults/implicitArraySizeBuiltin.vert.out
 Test/baseResults/implicitInnerAtomicUint.frag.out
 Test/baseResults/include.vert.out
+Test/baseResults/index_outside_sample_mask_range.frag.out
 Test/baseResults/invalidSwizzle.vert.out
 Test/baseResults/iomap.blockOutVariableIn.2.vert.out
 Test/baseResults/iomap.blockOutVariableIn.vert.out
@@ -771,6 +776,8 @@ Test/baseResults/link.vk.pcNamingValid.0.0.vert.out
 Test/baseResults/link1.frag.out
 Test/baseResults/link1.vk.frag.out
 Test/baseResults/localAggregates.frag.out
+Test/baseResults/location_aliasing.tesc.out
+Test/baseResults/location_aliasing1.frag.out
 Test/baseResults/loops.frag.out
 Test/baseResults/loopsArtificial.frag.out
 Test/baseResults/mains1.frag.out
@@ -795,6 +802,7 @@ Test/baseResults/nvShaderNoperspectiveInterpolation.frag.out
 Test/baseResults/overflow_underflow_toinf_0.frag.out
 Test/baseResults/overlongLiteral.frag.out
 Test/baseResults/pointCoord.frag.out
+Test/baseResults/positive_infinity.frag.out
 Test/baseResults/precise.tesc.out
 Test/baseResults/precise_struct_block.vert.out
 Test/baseResults/precision.frag.out
@@ -1194,7 +1202,9 @@ Test/baseResults/spv.int8.frag.out
 Test/baseResults/spv.intOps.vert.out
 Test/baseResults/spv.intcoopmat.comp.out
 Test/baseResults/spv.interpOps.frag.out
+Test/baseResults/spv.intrinsicsDebugBreak.frag.out
 Test/baseResults/spv.intrinsicsFakeEnable.vert.out
+Test/baseResults/spv.intrinsicsInteractWithCoopMat.comp.out
 Test/baseResults/spv.intrinsicsSpirvByReference.vert.out
 Test/baseResults/spv.intrinsicsSpirvDecorate.frag.out
 Test/baseResults/spv.intrinsicsSpirvDecorateId.comp.out
@@ -1382,8 +1392,12 @@ Test/baseResults/spv.texture.vert.out
 Test/baseResults/spv.textureBuffer.vert.out
 Test/baseResults/spv.textureError.frag.out
 Test/baseResults/spv.textureGatherBiasLod.frag.out
+Test/baseResults/spv.tpipBlockMatchGatherSAD.frag.out
+Test/baseResults/spv.tpipBlockMatchGatherSSD.frag.out
 Test/baseResults/spv.tpipBlockMatchSAD.frag.out
 Test/baseResults/spv.tpipBlockMatchSSD.frag.out
+Test/baseResults/spv.tpipBlockMatchWindowSAD.frag.out
+Test/baseResults/spv.tpipBlockMatchWindowSSD.frag.out
 Test/baseResults/spv.tpipBoxFilter.frag.out
 Test/baseResults/spv.tpipSampleWeighted.frag.out
 Test/baseResults/spv.tpipTextureArrays.frag.out
@@ -1627,6 +1641,7 @@ Test/hlsl.calculatelod.dx10.frag
 Test/hlsl.calculatelodunclamped.dx10.frag
 Test/hlsl.cast.frag
 Test/hlsl.cbuffer-identifier.vert
+Test/hlsl.cbuffer-offsets.comp
 Test/hlsl.charLit.vert
 Test/hlsl.clip.frag
 Test/hlsl.clipdistance-1.frag
@@ -1919,6 +1934,7 @@ Test/hlsl.structin.vert
 Test/hlsl.subpass.frag
 Test/hlsl.switch.frag
 Test/hlsl.swizzle.frag
+Test/hlsl.swizzle.vec1.comp
 Test/hlsl.synthesizeInput.frag
 Test/hlsl.target.frag
 Test/hlsl.targetStruct1.frag
@@ -1972,6 +1988,7 @@ Test/inc1/path2/remote.h
 Test/inc2/bar.h
 Test/inc2/foo.h
 Test/include.vert
+Test/index_outside_sample_mask_range.frag
 Test/invalidSwizzle.vert
 Test/iomap.blockOutVariableIn.2.vert
 Test/iomap.blockOutVariableIn.frag
@@ -2031,6 +2048,8 @@ Test/link2.frag
 Test/link2.vk.frag
 Test/link3.frag
 Test/localAggregates.frag
+Test/location_aliasing.tesc
+Test/location_aliasing1.frag
 Test/loops.frag
 Test/loopsArtificial.frag
 Test/mains.frag
@@ -2061,6 +2080,7 @@ Test/overlongLiteral.frag
 Test/parent.h
 Test/parentBad
 Test/pointCoord.frag
+Test/positive_infinity.frag
 Test/precise.tesc
 Test/precise_struct_block.vert
 Test/precision.frag
@@ -2441,7 +2461,9 @@ Test/spv.int8.frag
 Test/spv.intOps.vert
 Test/spv.intcoopmat.comp
 Test/spv.interpOps.frag
+Test/spv.intrinsicsDebugBreak.frag
 Test/spv.intrinsicsFakeEnable.vert
+Test/spv.intrinsicsInteractWithCoopMat.comp
 Test/spv.intrinsicsSpirvByReference.vert
 Test/spv.intrinsicsSpirvDecorate.frag
 Test/spv.intrinsicsSpirvDecorateId.comp
@@ -2630,8 +2652,12 @@ Test/spv.texture.vert
 Test/spv.textureBuffer.vert
 Test/spv.textureError.frag
 Test/spv.textureGatherBiasLod.frag
+Test/spv.tpipBlockMatchGatherSAD.frag
+Test/spv.tpipBlockMatchGatherSSD.frag
 Test/spv.tpipBlockMatchSAD.frag
 Test/spv.tpipBlockMatchSSD.frag
+Test/spv.tpipBlockMatchWindowSAD.frag
+Test/spv.tpipBlockMatchWindowSSD.frag
 Test/spv.tpipBoxFilter.frag
 Test/spv.tpipSampleWeighted.frag
 Test/spv.tpipTextureArrays.frag

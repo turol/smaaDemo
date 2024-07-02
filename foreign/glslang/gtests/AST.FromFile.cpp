@@ -306,9 +306,13 @@ INSTANTIATE_TEST_SUITE_P(
         "coord_conventions.frag",
         "gl_FragCoord.frag",
         "glsl.interpOp.error.frag",
+        "location_aliasing.tesc",
+        "location_aliasing1.frag",
         "GL_EXT_draw_instanced.vert",
         "overflow_underflow_toinf_0.frag",
         "GL_EXT_texture_array.frag",
+        "index_outside_sample_mask_range.frag",
+        "positive_infinity.frag",
     })),
     FileNameAsCustomTestSuffix
 );

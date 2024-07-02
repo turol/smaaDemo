@@ -598,6 +598,10 @@ TIntermTyped* TParseContext::handleBracketDereference(const TSourceLoc& loc, TIn
                 indexValue >= resources.maxCullDistances) {
                 error(loc, "gl_CullDistance", "[", "array index out of range '%d'", indexValue);
             }
+            else if (base->getQualifier().builtIn == EbvSampleMask &&
+                indexValue >= (resources.maxSamples + 31) / 32) {
+                error(loc, "gl_SampleMask", "[", "array index out of range '%d'", indexValue);
+            }
             // For 2D per-view builtin arrays, update the inner dimension size in parent type
             if (base->getQualifier().isPerView() && base->getQualifier().builtIn != EbvNone) {
                 TIntermBinary* binaryNode = base->getAsBinaryNode();
@@ -6564,10 +6568,10 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
         int repeated = intermediate.addUsedLocation(qualifier, type, typeCollision);
         if (repeated >= 0 && ! typeCollision)
             error(loc, "overlapping use of location", "location", "%d", repeated);
-        // "fragment-shader outputs/tileImageEXT ... if two variables are placed within the same
-        // location, they must have the same underlying type (floating-point or integer)"
-        if (typeCollision && language == EShLangFragment && (qualifier.isPipeOutput() || qualifier.storage == EvqTileImageEXT))
-            error(loc, "fragment outputs or tileImageEXTs sharing the same location", "location", "%d must be the same basic type", repeated);
+        // When location aliasing, the aliases sharing the location must have the same underlying numerical type and bit width(
+        // floating - point or integer, 32 - bit versus 64 - bit,etc.)
+        if (typeCollision && (qualifier.isPipeInput() || qualifier.isPipeOutput() || qualifier.storage == EvqTileImageEXT))
+            error(loc, "the aliases sharing the location", "location", "%d must be the same basic type and interpolation qualification", repeated);
     }
 
     if (qualifier.hasXfbOffset() && qualifier.hasXfbBuffer()) {
@@ -7413,6 +7417,7 @@ void TParseContext::coopMatTypeParametersCheck(const TSourceLoc& loc, const TPub
         case EbtUint:
         case EbtUint8:
         case EbtUint16:
+        case EbtSpirvType:
             break;
         default:
             error(loc, "coopmat invalid basic type", TType::getBasicString(publicType.typeParameters->basicType), "");
@@ -7636,6 +7641,7 @@ struct AccessChainTraverser : public TIntermTraverser {
     {}
 
     TString path = "";
+    TStorageQualifier topLevelStorageQualifier = TStorageQualifier::EvqLast;
 
     bool visitBinary(TVisit, TIntermBinary* binary) override {
         if (binary->getOp() == EOpIndexDirectStruct)
@@ -7666,6 +7672,8 @@ struct AccessChainTraverser : public TIntermTraverser {
     }
 
     void visitSymbol(TIntermSymbol* symbol) override {
+        if (symbol->getType().isOpaque())
+            topLevelStorageQualifier = symbol->getQualifier().storage;
         if (!IsAnonymous(symbol->getName()))
             path.append(symbol->getName());
     }
@@ -7675,6 +7683,15 @@ TIntermNode* TParseContext::vkRelaxedRemapFunctionArgument(const TSourceLoc& loc
 {
     AccessChainTraverser accessChainTraverser{};
     intermTyped->traverse(&accessChainTraverser);
+
+    if (accessChainTraverser.topLevelStorageQualifier == TStorageQualifier::EvqUniform)
+    {
+        TParameter param = { 0, new TType, {} };
+        param.type->shallowCopy(intermTyped->getType());
+
+        function->addParameter(param);
+        return intermTyped;
+    }
 
     TParameter param = { NewPoolTString(accessChainTraverser.path.c_str()), new TType, {} };
     param.type->shallowCopy(intermTyped->getType());
@@ -7795,7 +7812,8 @@ TIntermNode* TParseContext::declareVariable(const TSourceLoc& loc, TString& iden
             error(loc, "unexpected number type parameters", identifier.c_str(), "");
         }
         if (publicType.typeParameters) {
-            if (!isTypeFloat(publicType.typeParameters->basicType) && !isTypeInt(publicType.typeParameters->basicType)) {
+            if (!isTypeFloat(publicType.typeParameters->basicType) &&
+                !isTypeInt(publicType.typeParameters->basicType) && publicType.typeParameters->basicType != EbtSpirvType) {
                 error(loc, "expected 8, 16, 32, or 64 bit signed or unsigned integer or 16, 32, or 64 bit float type", identifier.c_str(), "");
             }
         }
