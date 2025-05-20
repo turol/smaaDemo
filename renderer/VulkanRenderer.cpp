@@ -229,7 +229,22 @@ vk::BufferUsageFlags vulkanBufferUsage(BufferUsageSet usage) {
 }
 
 
-static VkBool32 VKAPI_PTR debugMessengerFunc(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT /* messageTypes */, const VkDebugUtilsMessengerCallbackDataEXT *callbackData, void * /* pUserData*/) {
+#if VK_HEADER_VERSION >= 304
+
+#define SEVERITY      vk::DebugUtilsMessageSeverityFlagBitsEXT
+#define MSGTYPE       vk::Flags<vk::DebugUtilsMessageTypeFlagBitsEXT>
+#define CALLBACKDATA  vk::DebugUtilsMessengerCallbackDataEXT
+
+#else  // VK_HEADER_VERSION
+
+#define SEVERITY      VkDebugUtilsMessageSeverityFlagBitsEXT
+#define MSGTYPE       VkDebugUtilsMessageTypeFlagsEXT
+#define CALLBACKDATA  VkDebugUtilsMessengerCallbackDataEXT
+
+#endif  // VK_HEADER_VERSION
+
+
+static VkBool32 VKAPI_PTR debugMessengerFunc(SEVERITY severity, MSGTYPE /* messageTypes */, const CALLBACKDATA *callbackData, void * /* pUserData*/) {
 	LOG("error of severity \"{}\" {} \"{}\" \"{}\"", vk::to_string(vk::DebugUtilsMessageSeverityFlagBitsEXT(severity)), callbackData->messageIdNumber, callbackData->pMessageIdName, callbackData->pMessage);
 	LOG_TODO("log other parts of VkDebugUtilsMessengerCallbackDataEXT")
 	logFlush();
@@ -246,6 +261,11 @@ static VkBool32 VKAPI_PTR debugMessengerFunc(VkDebugUtilsMessageSeverityFlagBits
 
 	return VK_FALSE;
 }
+
+
+#undef CALLBACKDATA
+#undef MSGTYPES
+#undef SEVERITY
 
 
 static uint32_t makeVulkanVersion(const Version &v) {
