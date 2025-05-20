@@ -1100,7 +1100,15 @@ struct RendererImpl : public RendererBase {
 
 	HashMap<PipelineLayoutKey, vk::PipelineLayout>          pipelineLayoutCache;
 
+#if VK_HEADER_VERSION >= 301
+
+	vk::detail::DispatchLoaderDynamic                       dispatcher;
+
+#else  // VK_HEADER_VERSION
+
 	vk::DispatchLoaderDynamic                               dispatcher;
+
+#endif  // VK_HEADER_VERSION
 
 	vk::Instance                                            instance;
 	vk::DebugUtilsMessengerEXT                              debugUtilsCallback;
