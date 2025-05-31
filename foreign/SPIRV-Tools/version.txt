@@ -1,5 +1,5 @@
-commit 0cfe9e7219148716dfd30b37f4d21753f098707a
+commit 6248fda376664fd92be5ee04c21d6f2da80eb03f
 Author: Steven Perron <stevenperron@google.com>
-Date:   Thu Jun 20 10:29:42 2024 -0400
+Date:   Wed Jul 17 09:22:32 2024 -0400
 
-    Prepare release v2024.3 (#5719)
+    Handle coop matrix in fix storage class (#5729)
