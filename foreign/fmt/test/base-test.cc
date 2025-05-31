@@ -114,7 +114,7 @@ TEST(base_test, is_back_insert_iterator) {
 
 TEST(base_test, buffer_appender) {
 #ifdef __cpp_lib_ranges
-  static_assert(std::output_iterator<fmt::appender, char>);
+  EXPECT_TRUE((std::output_iterator<fmt::appender, char>));
 #endif
 }
 
@@ -266,6 +266,16 @@ TEST(buffer_test, append_allocates_enough_storage) {
   buffer.try_resize(10);
   EXPECT_CALL(buffer, do_grow(19));
   buffer.append(test, test + 9);
+}
+
+TEST(base_test, get_buffer) {
+  mock_buffer<char> buffer;
+  void* buffer_ptr = &buffer;
+  auto&& appender_result = fmt::detail::get_buffer<char>(fmt::appender(buffer));
+  EXPECT_EQ(&appender_result, buffer_ptr);
+  auto&& back_inserter_result =
+      fmt::detail::get_buffer<char>(std::back_inserter(buffer));
+  EXPECT_EQ(&back_inserter_result, buffer_ptr);
 }
 
 struct custom_context {
@@ -423,6 +433,14 @@ TEST(arg_test, pointer_arg) {
   const void* cp = nullptr;
   CHECK_ARG(char, cp, p);
   CHECK_ARG_SIMPLE(cp);
+}
+
+TEST(arg_test, volatile_pointer_arg) {
+  const void* p = nullptr;
+  volatile int* vip = nullptr;
+  const volatile int* cvip = nullptr;
+  CHECK_ARG(char, p, static_cast<volatile void*>(vip));
+  CHECK_ARG(char, p, static_cast<const volatile void*>(cvip));
 }
 
 struct check_custom {

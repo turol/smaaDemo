@@ -52,6 +52,7 @@ support/bazel/MODULE.bazel
 support/bazel/README.md
 support/bazel/WORKSPACE.bazel
 support/build.gradle
+support/check-commits
 support/cmake/FindSetEnv.cmake
 support/cmake/JoinPaths.cmake
 support/cmake/fmt-config.cmake.in
@@ -110,6 +111,7 @@ test/module-test.cc
 test/noexception-test.cc
 test/os-test.cc
 test/ostream-test.cc
+test/perf-sanity.cc
 test/posix-mock-test.cc
 test/posix-mock.h
 test/printf-test.cc

@@ -1650,6 +1650,20 @@ TEST(format_test, format_explicitly_convertible_to_std_string_view) {
   EXPECT_EQ("'foo'",
             fmt::format("{}", explicitly_convertible_to_std_string_view()));
 }
+
+struct convertible_to_std_string_view {
+  operator std::string_view() const noexcept { return "Hi there"; }
+};
+FMT_BEGIN_NAMESPACE
+template <>
+class formatter<convertible_to_std_string_view>
+    : public formatter<std::string_view> {};
+FMT_END_NAMESPACE
+
+TEST(format_test, format_implicitly_convertible_and_inherits_string_view) {
+  static_assert(fmt::is_formattable<convertible_to_std_string_view>{}, "");
+  EXPECT_EQ("Hi there", fmt::format("{}", convertible_to_std_string_view{}));
+}
 #endif
 
 class Answer {};
@@ -2043,6 +2057,13 @@ TEST(format_test, output_iterators) {
   EXPECT_EQ("42", s.str());
 }
 
+TEST(format_test, fill_via_appender) {
+  fmt::memory_buffer buf;
+  auto it = fmt::appender(buf);
+  std::fill_n(it, 3, '~');
+  EXPECT_EQ(fmt::to_string(buf), "~~~");
+}
+
 TEST(format_test, formatted_size) {
   EXPECT_EQ(2u, fmt::formatted_size("{}", 42));
   EXPECT_EQ(2u, fmt::formatted_size(std::locale(), "{}", 42));
@@ -2419,4 +2440,26 @@ FMT_END_NAMESPACE
 TEST(format_test, formatter_overrides_implicit_conversion) {
   EXPECT_EQ(fmt::format("{}", convertible_to_int()), "x");
   EXPECT_EQ(fmt::format("{}", convertible_to_cstring()), "y");
+}
+
+struct ustring {
+  using value_type = unsigned;
+
+  auto find_first_of(value_type, size_t) const -> size_t;
+
+  auto data() const -> const char*;
+  auto size() const -> size_t;
+};
+
+FMT_BEGIN_NAMESPACE
+template <> struct formatter<ustring> : formatter<std::string> {
+  auto format(const ustring&, format_context& ctx) const
+      -> decltype(ctx.out()) {
+    return formatter<std::string>::format("ustring", ctx);
+  }
+};
+FMT_END_NAMESPACE
+
+TEST(format_test, ustring) {
+  EXPECT_EQ(fmt::format("{}", ustring()), "ustring");
 }

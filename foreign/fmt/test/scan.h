@@ -192,7 +192,10 @@ class file_scan_buffer final : public scan_buffer {
     flockfile(f);
     fill();
   }
-  ~file_scan_buffer() { funlockfile(file_); }
+  ~file_scan_buffer() {
+    FILE* f = file_;
+    funlockfile(f);
+  }
 };
 }  // namespace detail
 
@@ -550,7 +553,7 @@ struct scan_handler {
     return begin;
   }
 
-  void on_error(const char* message) { report_error(message); }
+  FMT_NORETURN void on_error(const char* message) { report_error(message); }
 };
 
 void vscan(detail::scan_buffer& buf, string_view fmt, scan_args args) {
