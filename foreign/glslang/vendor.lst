@@ -754,7 +754,6 @@ Test/baseResults/iomap.blockOutVariableIn.2.vert.out
 Test/baseResults/iomap.blockOutVariableIn.vert.out
 Test/baseResults/iomap.crossStage.2.vert.out
 Test/baseResults/iomap.crossStage.vert.out
-Test/baseResults/iomap.crossStage.vk.2.vert.out
 Test/baseResults/iomap.crossStage.vk.vert.out
 Test/baseResults/iomap.mismatchedBufferTypes.vert.out
 Test/baseResults/iomap.variableOutBlockIn.2.vert.out
@@ -930,6 +929,7 @@ Test/baseResults/spv.1.4.texture.frag.out
 Test/baseResults/spv.1.6.conditionalDiscard.frag.out
 Test/baseResults/spv.1.6.helperInvocation.frag.out
 Test/baseResults/spv.1.6.helperInvocation.memmodel.frag.out
+Test/baseResults/spv.1.6.nontemporalimage.frag.out
 Test/baseResults/spv.1.6.quad.frag.out
 Test/baseResults/spv.1.6.samplerBuffer.frag.out
 Test/baseResults/spv.1.6.separate.frag.out
@@ -1045,7 +1045,7 @@ Test/baseResults/spv.bufferhandle17_Errors.frag.out
 Test/baseResults/spv.bufferhandle18.frag.out
 Test/baseResults/spv.bufferhandle19_Errors.frag.out
 Test/baseResults/spv.bufferhandle2.frag.out
-Test/baseResults/spv.bufferhandle3.frag.out
+Test/baseResults/spv.bufferhandle3_Errors.frag.out
 Test/baseResults/spv.bufferhandle4.frag.out
 Test/baseResults/spv.bufferhandle5.frag.out
 Test/baseResults/spv.bufferhandle6.frag.out
@@ -1080,6 +1080,12 @@ Test/baseResults/spv.coopmatKHR_constructor.comp.out
 Test/baseResults/spv.coopmatKHR_constructorError.comp.out
 Test/baseResults/spv.coopmat_Error.comp.out
 Test/baseResults/spv.coopmat_armlayout.comp.out
+Test/baseResults/spv.coopvec.comp.out
+Test/baseResults/spv.coopvec2.comp.out
+Test/baseResults/spv.coopvecTraining.comp.out
+Test/baseResults/spv.coopvecTraining_Error.comp.out
+Test/baseResults/spv.coopvec_Error.comp.out
+Test/baseResults/spv.coopvecloadstore.comp.out
 Test/baseResults/spv.dataOut.frag.out
 Test/baseResults/spv.dataOutIndirect.frag.out
 Test/baseResults/spv.dataOutIndirect.vert.out
@@ -1220,6 +1226,8 @@ Test/baseResults/spv.int32.frag.out
 Test/baseResults/spv.int64.frag.out
 Test/baseResults/spv.int8.frag.out
 Test/baseResults/spv.intOps.vert.out
+Test/baseResults/spv.int_dot.frag.out
+Test/baseResults/spv.int_dot_Error.frag.out
 Test/baseResults/spv.intcoopmat.comp.out
 Test/baseResults/spv.interpOps.frag.out
 Test/baseResults/spv.intrinsicsDebugBreak.frag.out
@@ -1275,12 +1283,18 @@ Test/baseResults/spv.noDeadDecorations.vert.out
 Test/baseResults/spv.noLocation.vert.out
 Test/baseResults/spv.noWorkgroup.comp.out
 Test/baseResults/spv.nonSquare.vert.out
+Test/baseResults/spv.nontemporalbuffer.frag.out
 Test/baseResults/spv.nonuniform.frag.out
 Test/baseResults/spv.nonuniform2.frag.out
 Test/baseResults/spv.nonuniform3.frag.out
 Test/baseResults/spv.nonuniform4.frag.out
 Test/baseResults/spv.nonuniform5.frag.out
 Test/baseResults/spv.nullInit.comp.out
+Test/baseResults/spv.nv.cluster-allops.frag.out
+Test/baseResults/spv.nv.cluster-allops.rahit.out
+Test/baseResults/spv.nv.cluster-allops.rchit.out
+Test/baseResults/spv.nv.cluster-allops.rgen.out
+Test/baseResults/spv.nv.cluster-allops.rmiss.out
 Test/baseResults/spv.nv.dmm-allops.comp.out
 Test/baseResults/spv.nv.dmm-allops.mesh.out
 Test/baseResults/spv.nv.dmm-allops.rahit.out
@@ -1290,6 +1304,10 @@ Test/baseResults/spv.nv.hitobject-allops.rchit.out
 Test/baseResults/spv.nv.hitobject-allops.rgen.out
 Test/baseResults/spv.nv.hitobject-allops.rmiss.out
 Test/baseResults/spv.nv.hitobject-errors.rgen.out
+Test/baseResults/spv.nv.lss-allops.frag.out
+Test/baseResults/spv.nv.lss-allops.rchit.out
+Test/baseResults/spv.nv.lss-allops.rgen.out
+Test/baseResults/spv.nv.lss-allops.rmiss.out
 Test/baseResults/spv.nvAtomicFp16Vec.frag.out
 Test/baseResults/spv.offsets.frag.out
 Test/baseResults/spv.paramMemory.420.frag.out
@@ -1344,6 +1362,8 @@ Test/baseResults/spv.smBuiltins.frag.out
 Test/baseResults/spv.smBuiltins.vert.out
 Test/baseResults/spv.sparseTexture.frag.out
 Test/baseResults/spv.sparseTextureClamp.frag.out
+Test/baseResults/spv.sparsetextureoffset_non_const.vert.out
+Test/baseResults/spv.sparsetextureoffset_non_const_fail.vert.out
 Test/baseResults/spv.specConst.vert.out
 Test/baseResults/spv.specConstArrayCheck.vert.out
 Test/baseResults/spv.specConstant.comp.out
@@ -1418,6 +1438,7 @@ Test/baseResults/spv.texture.vert.out
 Test/baseResults/spv.textureBuffer.vert.out
 Test/baseResults/spv.textureError.frag.out
 Test/baseResults/spv.textureGatherBiasLod.frag.out
+Test/baseResults/spv.textureoffset_non_const.vert.out
 Test/baseResults/spv.tpipBlockMatchGatherSAD.frag.out
 Test/baseResults/spv.tpipBlockMatchGatherSSD.frag.out
 Test/baseResults/spv.tpipBlockMatchSAD.frag.out
@@ -1566,6 +1587,9 @@ Test/errors.frag
 Test/es-link1.frag
 Test/es-link2.frag
 Test/findFunction.frag
+Test/find_package/CMakeLists.txt
+Test/find_package/example.c
+Test/find_package/stub.cpp
 Test/floatBitsToInt.vert
 Test/flowControl.frag
 Test/foo.h
@@ -2029,9 +2053,6 @@ Test/iomap.crossStage.2.geom
 Test/iomap.crossStage.2.vert
 Test/iomap.crossStage.frag
 Test/iomap.crossStage.vert
-Test/iomap.crossStage.vk.2.frag
-Test/iomap.crossStage.vk.2.geom
-Test/iomap.crossStage.vk.2.vert
 Test/iomap.crossStage.vk.frag
 Test/iomap.crossStage.vk.geom
 Test/iomap.crossStage.vk.vert
@@ -2221,6 +2242,7 @@ Test/spv.1.4.texture.frag
 Test/spv.1.6.conditionalDiscard.frag
 Test/spv.1.6.helperInvocation.frag
 Test/spv.1.6.helperInvocation.memmodel.frag
+Test/spv.1.6.nontemporalimage.frag
 Test/spv.1.6.quad.frag
 Test/spv.1.6.samplerBuffer.frag
 Test/spv.1.6.separate.frag
@@ -2336,7 +2358,7 @@ Test/spv.bufferhandle17_Errors.frag
 Test/spv.bufferhandle18.frag
 Test/spv.bufferhandle19_Errors.frag
 Test/spv.bufferhandle2.frag
-Test/spv.bufferhandle3.frag
+Test/spv.bufferhandle3_Errors.frag
 Test/spv.bufferhandle4.frag
 Test/spv.bufferhandle5.frag
 Test/spv.bufferhandle6.frag
@@ -2371,6 +2393,12 @@ Test/spv.coopmatKHR_constructor.comp
 Test/spv.coopmatKHR_constructorError.comp
 Test/spv.coopmat_Error.comp
 Test/spv.coopmat_armlayout.comp
+Test/spv.coopvec.comp
+Test/spv.coopvec2.comp
+Test/spv.coopvecTraining.comp
+Test/spv.coopvecTraining_Error.comp
+Test/spv.coopvec_Error.comp
+Test/spv.coopvecloadstore.comp
 Test/spv.dataOut.frag
 Test/spv.dataOutIndirect.frag
 Test/spv.dataOutIndirect.vert
@@ -2511,6 +2539,8 @@ Test/spv.int32.frag
 Test/spv.int64.frag
 Test/spv.int8.frag
 Test/spv.intOps.vert
+Test/spv.int_dot.frag
+Test/spv.int_dot_Error.frag
 Test/spv.intcoopmat.comp
 Test/spv.interpOps.frag
 Test/spv.intrinsicsDebugBreak.frag
@@ -2566,12 +2596,18 @@ Test/spv.noDeadDecorations.vert
 Test/spv.noLocation.vert
 Test/spv.noWorkgroup.comp
 Test/spv.nonSquare.vert
+Test/spv.nontemporalbuffer.frag
 Test/spv.nonuniform.frag
 Test/spv.nonuniform2.frag
 Test/spv.nonuniform3.frag
 Test/spv.nonuniform4.frag
 Test/spv.nonuniform5.frag
 Test/spv.nullInit.comp
+Test/spv.nv.cluster-allops.frag
+Test/spv.nv.cluster-allops.rahit
+Test/spv.nv.cluster-allops.rchit
+Test/spv.nv.cluster-allops.rgen
+Test/spv.nv.cluster-allops.rmiss
 Test/spv.nv.dmm-allops.comp
 Test/spv.nv.dmm-allops.mesh
 Test/spv.nv.dmm-allops.rahit
@@ -2581,6 +2617,10 @@ Test/spv.nv.hitobject-allops.rchit
 Test/spv.nv.hitobject-allops.rgen
 Test/spv.nv.hitobject-allops.rmiss
 Test/spv.nv.hitobject-errors.rgen
+Test/spv.nv.lss-allops.frag
+Test/spv.nv.lss-allops.rchit
+Test/spv.nv.lss-allops.rgen
+Test/spv.nv.lss-allops.rmiss
 Test/spv.nvAtomicFp16Vec.frag
 Test/spv.offsets.frag
 Test/spv.paramMemory.420.frag
@@ -2635,6 +2675,8 @@ Test/spv.smBuiltins.frag
 Test/spv.smBuiltins.vert
 Test/spv.sparseTexture.frag
 Test/spv.sparseTextureClamp.frag
+Test/spv.sparsetextureoffset_non_const.vert
+Test/spv.sparsetextureoffset_non_const_fail.vert
 Test/spv.specConst.vert
 Test/spv.specConstArrayCheck.vert
 Test/spv.specConstant.comp
@@ -2710,6 +2752,7 @@ Test/spv.texture.vert
 Test/spv.textureBuffer.vert
 Test/spv.textureError.frag
 Test/spv.textureGatherBiasLod.frag
+Test/spv.textureoffset_non_const.vert
 Test/spv.tpipBlockMatchGatherSAD.frag
 Test/spv.tpipBlockMatchGatherSSD.frag
 Test/spv.tpipBlockMatchSAD.frag
@@ -2949,7 +2992,6 @@ kokoro/android-ndk-build/build-docker.sh
 kokoro/android-ndk-build/build.sh
 kokoro/android-ndk-build/continuous.cfg
 kokoro/android-ndk-build/presubmit.cfg
-kokoro/license-check/build-docker.sh
 kokoro/license-check/build.sh
 kokoro/license-check/continuous.cfg
 kokoro/license-check/presubmit.cfg

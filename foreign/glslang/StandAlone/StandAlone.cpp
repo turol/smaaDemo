@@ -56,10 +56,12 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <set>
 #include <thread>
+#include <type_traits>
 
 #include "../glslang/OSDependent/osinclude.h"
 
