@@ -1550,6 +1550,7 @@ test/val/val_extension_spv_khr_expect_assume_test.cpp
 test/val/val_extension_spv_khr_integer_dot_product_test.cpp
 test/val/val_extension_spv_khr_linkonce_odr_test.cpp
 test/val/val_extension_spv_khr_subgroup_rotate_test.cpp
+test/val/val_extension_spv_khr_subgroup_uniform_control_flow.cpp
 test/val/val_extension_spv_khr_subgroup_uniform_control_flow_test.cpp
 test/val/val_extension_spv_khr_terminate_invocation_test.cpp
 test/val/val_extension_spv_nv_raw_access_chains.cpp

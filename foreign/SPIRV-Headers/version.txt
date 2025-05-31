@@ -1,12 +1,9 @@
-commit 2acb319af38d43be3ea76bfabf3998e5281d8d12
-Author: Kévin Petit <kevin.petit@arm.com>
-Date:   Wed Jun 12 16:41:14 2024 +0100
+commit db5a00f8cebe81146cafabf89019674a3c4bf03d
+Author: alan-baker <alanbaker@google.com>
+Date:   Wed Jul 17 11:55:01 2024 -0400
 
-    SPV_ARM_cooperative_matrix_layouts (#433)
+    Support for SPV_KHR_untyped_pointers (#439)
     
-    Specification: https://github.com/KhronosGroup/SPIRV-Registry/pull/254
+    * Support for SPV_KHR_untyped_pointers
     
-    
-    Change-Id: I9406eff3371f0c3061a867ea9e50428dfefba911
-    
-    Signed-off-by: Kevin Petit <kevin.petit@arm.com>
+    * regenerate headers

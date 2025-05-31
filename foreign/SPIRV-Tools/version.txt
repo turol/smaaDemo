@@ -1,5 +1,104 @@
-commit 6248fda376664fd92be5ee04c21d6f2da80eb03f
-Author: Steven Perron <stevenperron@google.com>
-Date:   Wed Jul 17 09:22:32 2024 -0400
+commit 3ab0d22608fba1a2106326f8f9f4ed7546cc0655
+Author: alan-baker <alanbaker@google.com>
+Date:   Wed Jul 17 14:51:37 2024 -0400
 
-    Handle coop matrix in fix storage class (#5729)
+    Support SPV_KHR_untyped_pointers (#5736)
+    
+    * Support SPV_KHR_untyped_pointers
+    
+    Covers:
+    - assembler
+    - disassembler
+    - validator
+    
+    fix copyright
+    
+    Validate OpTypeUntypedPointerKHR
+    
+    * Disallow an untyped pointer in a typed pointer
+    * Validate capability requirements for untyped pointer
+    * Allow duplicate untyped pointer declarations
+    
+    Add round trip tests
+    
+    Validate OpUntypedVariableKHR
+    
+    Validate untyped access chains
+    
+    * Add a test for opcodes that generate untyped pointers
+    * simplify some checks for operands needing types
+    * validate OpUnypedAccessChainKHR, OpUntypedInBoundsAccessChainKHR,
+      OpUntypedPtrAccessChainKHR, OpUntypedInBoundsPtrAccessChainKHR
+    
+    Unify variable validation
+    
+    Validate OpCopyMemorySized
+    
+    * Fix some opcode tests to accound for untyped pointers
+    * Add validation for OpCopyMemorySized for shaders and untyped pointers
+    * fix up tests
+    
+    Validate pointer comparisons and bitcast
+    
+    * Update more helpers
+    * Fix entry validation to allow OpUntypedVariableKHR
+    * Validate OpPtrEqual, OpPtrNotEqual and OpPtrDiff
+    * Validate OpBitcast
+    
+    Validate atomics and untyped pointers
+    
+    Make interface variable validation aware of untyped pointers
+    
+    * Check OpUntypedVariableKHR in interface validation
+    
+    More untyped pointer validation
+    
+    * Validate interfaces more thoroughly
+    * Validate layouts for untyped pointer uses
+    * Improve capability checks for vulkan with OpTypeUntypedPointerKHR
+    * workgroup member explicit layout validation updates
+    
+    More validation
+    
+    * validate function arguments and parameters
+    * handle untyped pointer and variable in more places
+    
+    Add a friendly assembly name for untyped pointers
+    
+    Update OpCopyMemory validation and tests
+    
+    Fix test for token update
+    
+    Fixes for validation
+    
+    * Allow typed pointers to contain untyped pointers
+    * Fix decoration validation
+    * add untyped pointer as a case for size and alignments
+    
+    Fix interface validation
+    
+    * Grabbed the wrong storage class operand for untyped variables
+    * Add ability to specify assembler options in validation tests
+    
+    Add passthrough validation for OpUntypedArrayLengthKHR
+    
+    More validation of untyped pointers
+    
+    * Validate OpUntypedArrayLengthKHR
+    * Validate layout for OpLoad, OpStore, and OpUntypedArrayLengthKHR
+    
+    Validation support for cooperative matrix and untyped pointers
+    
+    * Allow untyped pointers for cooperative matrix KHR load and store
+    
+    Updates to match spec
+    
+    * Remove extra capability references
+    * Swap untyped variable data type and storage class operands
+    * update validation of variables
+    
+    * update deps
+    
+    ---------
+    
+    Co-authored-by: David Neto <dneto@google.com>
