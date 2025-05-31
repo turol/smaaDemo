@@ -144,6 +144,17 @@ def release(args):
     if first_section[0] == '\n':
         first_section.pop(0)
 
+    ns_version = None
+    base_h_path = os.path.join(fmt_repo.dir, 'include', 'fmt', 'base.h')
+    for line in fileinput.input(base_h_path):
+        m = re.match(r'\s*inline namespace v(.*) .*', line)
+        if m:
+            ns_version = m.group(1)
+            break
+    major_version = version.split('.')[0]
+    if not ns_version or ns_version != major_version:
+        raise Exception(f'Version mismatch {ns_version} != {major_version}')
+
     # Workaround GitHub-flavored Markdown treating newlines as <br>.
     changes = ''
     code_block = False
