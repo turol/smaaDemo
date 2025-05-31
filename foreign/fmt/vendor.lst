@@ -58,12 +58,12 @@ support/cmake/JoinPaths.cmake
 support/cmake/fmt-config.cmake.in
 support/cmake/fmt.pc.in
 support/docopt.py
-support/manage.py
 support/mkdocs
 support/mkdocs.yml
 support/printable.py
 support/python/mkdocstrings_handlers/cxx/__init__.py
 support/python/mkdocstrings_handlers/cxx/templates/README
+support/release.py
 test/CMakeLists.txt
 test/add-subdirectory-test/CMakeLists.txt
 test/add-subdirectory-test/main.cc

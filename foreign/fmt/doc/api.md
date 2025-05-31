@@ -269,17 +269,15 @@ that support C++20 `consteval`. On older compilers you can use the
 
 Unused arguments are allowed as in Python's `str.format` and ordinary functions.
 
-::: basic_format_string
+See [Type Erasure](#type-erasure) for an example of how to enable compile-time
+checks in your own functions with `fmt::format_string` while avoiding template
+bloat.
+
+::: fstring
 
 ::: format_string
 
 ::: runtime(string_view)
-
-### Named Arguments
-
-::: arg(const Char*, const T&)
-
-Named arguments are not supported in compile-time checks at the moment.
 
 ### Type Erasure
 
@@ -316,6 +314,12 @@ parameterized version.
 ::: format_args
 
 ::: basic_format_arg
+
+### Named Arguments
+
+::: arg(const Char*, const T&)
+
+Named arguments are not supported in compile-time checks at the moment.
 
 ### Compatibility
 
@@ -547,12 +551,12 @@ This is a known limitation of "perfect" forwarding in C++.
 <a id="compile-api"></a>
 ## Format String Compilation
 
-`fmt/compile.h` provides format string compilation enabled via the
-`FMT_COMPILE` macro or the `_cf` user-defined literal defined in
-namespace `fmt::literals`. Format strings marked with `FMT_COMPILE`
-or `_cf` are parsed, checked and converted into efficient formatting
-code at compile-time. This supports arguments of built-in and string
-types as well as user-defined types with `format` functions taking
+`fmt/compile.h` provides format string compilation and compile-time
+(`constexpr`) formatting enabled via the `FMT_COMPILE` macro or the `_cf`
+user-defined literal defined in namespace `fmt::literals`. Format strings
+marked with `FMT_COMPILE` or `_cf` are parsed, checked and converted into
+efficient formatting code at compile-time. This supports arguments of built-in
+and string types as well as user-defined types with `format` functions taking
 the format context type as a template parameter in their `formatter`
 specializations. For example:
 
