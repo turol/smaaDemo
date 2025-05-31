@@ -1,8 +1,24 @@
-commit 6fd1f75636b1c424b809ad8a84804654cf5ae48b
-Merge: d79ba7d7 eadf9d34
-Author: Hans-Kristian Arntzen <post@arntzen-software.no>
-Date:   Wed Jun 19 23:25:34 2024 +0200
+commit 1a69a919fa302e92b337594bd0a8aaea61037d91
+Author: Chip Davis <cdavis5x@gmail.com>
+Date:   Tue May 20 02:34:14 2025 -0600
 
-    Merge pull request #2347 from billhollings/arg-buff-runtime-array
+    MSL: Implement clustered subgroup operations for sizes other than 4.
     
-    MSL: Support a runtime array with dynamic offset in an argument buffer.
+    This is required by Vulkan 1.4. Fortunately, I hit upon a way to do this
+    with minimal overhead. The Metal compiler even inlines and unrolls the
+    recursive template used here. I just hope that the Vulkan committee
+    never agrees to mandate prefix op support--I have no idea how to do that
+    one cheaply.
+    
+    Unfortunately, the extra goop is needed to handle the case where one or
+    more threads are inactive.
+    
+    The function-like macro parameter used in `FUNC_SUBGROUP_CLUSTERED()`
+    does work with Clang and GCC. I don't know if it works with MSVC.
+    
+    Fix `LogicalAnd`, `LogicalOr`, and `LogicalXor` ops as well. These need
+    a cast for the Metal compiler to allow this, just like with the shuffle
+    and broadcast ops. The tests for these were marked "invalid," meaning no
+    validation on the transpiled MSL shader was done. Is it any wonder no
+    one caught this? It works now, though, so we can drop the `.invalid.`
+    marker.
