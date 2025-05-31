@@ -1,5 +1,8 @@
+.clang-tidy
+.github/workflows/linux.yaml
+.github/workflows/static_code_analysis.yaml
+.github/workflows/windows.yaml
 .gitignore
-.travis.yml
 CHANGELOG.md
 CMakeLists.txt
 Doxyfile
@@ -41,6 +44,7 @@ docs/html/doxygen.svg
 docs/html/doxygen_crawl.html
 docs/html/dynsections.js
 docs/html/enabling_buffer_device_address.html
+docs/html/faq.html
 docs/html/files.html
 docs/html/folderclosed.svg
 docs/html/folderclosedd.svg
@@ -122,6 +126,7 @@ docs/html/search/pages_1.js
 docs/html/search/pages_10.js
 docs/html/search/pages_11.js
 docs/html/search/pages_12.js
+docs/html/search/pages_13.js
 docs/html/search/pages_2.js
 docs/html/search/pages_3.js
 docs/html/search/pages_4.js
@@ -238,6 +243,7 @@ src/Tests.cpp
 src/Tests.h
 src/VmaUsage.cpp
 src/VmaUsage.h
+src/VolkUsage.cpp
 src/VulkanSample.cpp
 src/vk_mem_alloc.natvis
 tools/GpuMemDumpVis/GpuMemDump.schema.json
