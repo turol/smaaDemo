@@ -82,7 +82,10 @@ namespace { // anonymous namespace for file-local functions and symbols
 int NumberOfClients = 0;
 
 // global initialization lock
+#ifndef DISABLE_THREAD_SUPPORT
 std::mutex init_lock;
+#endif
+
 
 using namespace glslang;
 
@@ -420,7 +423,9 @@ void SetupBuiltinSymbolTable(int version, EProfile profile, const SpvVersion& sp
     TInfoSink infoSink;
 
     // Make sure only one thread tries to do this at a time
+#ifndef DISABLE_THREAD_SUPPORT
     const std::lock_guard<std::mutex> lock(init_lock);
+#endif
 
     // See if it's already been done for this version/profile combination
     int versionIndex = MapVersionToIndex(version);
@@ -1311,16 +1316,13 @@ bool CompileDeferred(
 //
 int ShInitialize()
 {
+#ifndef DISABLE_THREAD_SUPPORT
     const std::lock_guard<std::mutex> lock(init_lock);
+#endif
     ++NumberOfClients;
 
     if (PerProcessGPA == nullptr)
         PerProcessGPA = new TPoolAllocator();
-
-    glslang::TScanContext::fillInKeywordMap();
-#ifdef ENABLE_HLSL
-    glslang::HlslScanContext::fillInKeywordMap();
-#endif
 
     return 1;
 }
@@ -1371,7 +1373,9 @@ void ShDestruct(ShHandle handle)
 //
 int ShFinalize()
 {
+#ifndef DISABLE_THREAD_SUPPORT
     const std::lock_guard<std::mutex> lock(init_lock);
+#endif
     --NumberOfClients;
     assert(NumberOfClients >= 0);
     if (NumberOfClients > 0)
@@ -1407,11 +1411,6 @@ int ShFinalize()
         delete PerProcessGPA;
         PerProcessGPA = nullptr;
     }
-
-    glslang::TScanContext::deleteKeywordMap();
-#ifdef ENABLE_HLSL
-    glslang::HlslScanContext::deleteKeywordMap();
-#endif
 
     return 1;
 }
@@ -1717,6 +1716,10 @@ public:
     virtual bool compile(TIntermNode*, int = 0, EProfile = ENoProfile) { return true; }
 };
 
+TIoMapper* GetGlslIoMapper() {
+    return static_cast<TIoMapper*>(new TGlslIoMapper());
+}
+
 TShader::TShader(EShLanguage s)
     : stage(s), lengths(nullptr), stringNames(nullptr), preamble(""), overrideVersion(0)
 {
@@ -1848,6 +1851,9 @@ void TShader::setGlobalUniformBinding(unsigned int binding) { intermediate->setG
 
 void TShader::setAtomicCounterBlockName(const char* name) { intermediate->setAtomicCounterBlockName(name); }
 void TShader::setAtomicCounterBlockSet(unsigned int set) { intermediate->setAtomicCounterBlockSet(set); }
+
+void TShader::addSourceText(const char* text, size_t len) { intermediate->addSourceText(text, len); }
+void TShader::setSourceFile(const char* file) { intermediate->setSourceFile(file); }
 
 #ifdef ENABLE_HLSL
 // See comment above TDefaultHlslIoMapper in iomapper.cpp:
@@ -2112,6 +2118,8 @@ bool TProgram::buildReflection(int opts)
     if (! linked || reflection != nullptr)
         return false;
 
+    SetThreadPoolAllocator(pool);
+
     int firstStage = EShLangVertex, lastStage = EShLangFragment;
 
     if (opts & EShReflectionIntermediateIO) {
@@ -2160,6 +2168,12 @@ int TProgram::getNumAtomicCounters() const                            { return r
 const TObjectReflection& TProgram::getAtomicCounter(int index) const  { return reflection->getAtomicCounter(index); }
 void TProgram::dumpReflection() { if (reflection != nullptr) reflection->dump(); }
 
+TIoMapResolver* TProgram::getGlslIoResolver(EShLanguage stage) {
+    auto *intermediate = getIntermediate(stage);
+    if (!intermediate)
+        return NULL;
+    return static_cast<TIoMapResolver*>(new TDefaultGlslIoResolver(*intermediate));
+}
 //
 // I/O mapping implementation.
 //
@@ -2167,6 +2181,9 @@ bool TProgram::mapIO(TIoMapResolver* pResolver, TIoMapper* pIoMapper)
 {
     if (! linked)
         return false;
+
+    SetThreadPoolAllocator(pool);
+
     TIoMapper* ioMapper = nullptr;
     TIoMapper defaultIOMapper;
     if (pIoMapper == nullptr)

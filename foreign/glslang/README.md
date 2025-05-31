@@ -4,9 +4,13 @@
 
 # News
 
-1. `OGLCompiler` and `HLSL` stub libraries have been fully removed from the build.
+1. Building glslang as a DLL or shared library is now possible and supported.
 
-2. `OVERRIDE_MSVCCRT` has been removed in favor of `CMAKE_MSVC_RUNTIME_LIBRARY`
+2. The `GenericCodeGen`, `MachineIndependent`, `OSDependent`, and `SPIRV` libraries have been integrated into the main `glslang` library. The old separate libraries have replaced with empty stubs for a temporary compatibility period, and they will be removed entirely in the future.
+
+3. A new CMake `ENABLE_SPIRV` option has been added to control whether glslang is built with SPIR-V support. Its default value is `ON`.
+
+4. `OGLCompiler` and `HLSL` stub libraries have been fully removed from the build.
 
 Users are encouraged to utilize the standard approach via [CMAKE_MSVC_RUNTIME_LIBRARY](https://cmake.org/cmake/help/latest/variable/CMAKE_MSVC_RUNTIME_LIBRARY.html).
 
