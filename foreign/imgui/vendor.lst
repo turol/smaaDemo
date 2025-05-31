@@ -39,6 +39,9 @@ backends/imgui_impl_sdl2.cpp
 backends/imgui_impl_sdl2.h
 backends/imgui_impl_sdl3.cpp
 backends/imgui_impl_sdl3.h
+backends/imgui_impl_sdlgpu3.cpp
+backends/imgui_impl_sdlgpu3.h
+backends/imgui_impl_sdlgpu3_shaders.h
 backends/imgui_impl_sdlrenderer2.cpp
 backends/imgui_impl_sdlrenderer2.h
 backends/imgui_impl_sdlrenderer3.cpp
@@ -49,6 +52,10 @@ backends/imgui_impl_wgpu.cpp
 backends/imgui_impl_wgpu.h
 backends/imgui_impl_win32.cpp
 backends/imgui_impl_win32.h
+backends/sdlgpu3/build_instructions.txt
+backends/sdlgpu3/shader.frag
+backends/sdlgpu3/shader.vert
+backends/vulkan/build_instructions.txt
 backends/vulkan/generate_spv.sh
 backends/vulkan/glsl_shader.frag
 backends/vulkan/glsl_shader.vert
@@ -152,6 +159,11 @@ examples/example_sdl3_opengl3/build_win64.bat
 examples/example_sdl3_opengl3/example_sdl3_opengl3.vcxproj
 examples/example_sdl3_opengl3/example_sdl3_opengl3.vcxproj.filters
 examples/example_sdl3_opengl3/main.cpp
+examples/example_sdl3_sdlgpu3/Makefile
+examples/example_sdl3_sdlgpu3/build_win64.bat
+examples/example_sdl3_sdlgpu3/example_sdl3_sdlgpu3.vcxproj
+examples/example_sdl3_sdlgpu3/example_sdl3_sdlgpu3.vcxproj.filters
+examples/example_sdl3_sdlgpu3/main.cpp
 examples/example_sdl3_sdlrenderer3/Makefile
 examples/example_sdl3_sdlrenderer3/build_win32.bat
 examples/example_sdl3_sdlrenderer3/example_sdl3_sdlrenderer3.vcxproj
@@ -183,6 +195,11 @@ examples/example_win32_opengl3/build_win32.bat
 examples/example_win32_opengl3/example_win32_opengl3.vcxproj
 examples/example_win32_opengl3/example_win32_opengl3.vcxproj.filters
 examples/example_win32_opengl3/main.cpp
+examples/example_win32_vulkan/build_win32.bat
+examples/example_win32_vulkan/build_win64.bat
+examples/example_win32_vulkan/example_win32_vulkan.vcxproj
+examples/example_win32_vulkan/example_win32_vulkan.vcxproj.filters
+examples/example_win32_vulkan/main.cpp
 examples/imgui_examples.sln
 examples/libs/emscripten/emscripten_mainloop_stub.h
 examples/libs/emscripten/shell_minimal.html
