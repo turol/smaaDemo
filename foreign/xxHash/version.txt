@@ -1,8 +1,8 @@
-commit bbb27a5efb85b92a0486cf361a8635715a53f6ba
-Merge: 35b0373 72e69d3
+commit e626a72bc2321cd320e953a0ccf1584cad60f363
+Merge: bbb27a5 1ac318b
 Author: Yann Collet <Cyan4973@users.noreply.github.com>
-Date:   Fri Jul 21 03:01:35 2023 -0700
+Date:   Sun Dec 29 12:58:19 2024 -0800
 
-    Merge pull request #873 from Cyan4973/dev
+    Merge pull request #991 from Cyan4973/dev
     
-    v0.8.2
+    v0.8.3
