@@ -33,7 +33,7 @@ extern "C" {
 #endif
 
 enum {
-    NonSemanticVkspReflectionRevision = 2,
+    NonSemanticVkspReflectionRevision = 4,
     NonSemanticVkspReflectionRevision_BitWidthPadding = 0x7fffffff
 };
 

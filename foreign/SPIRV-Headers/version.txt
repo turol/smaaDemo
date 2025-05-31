@@ -1,9 +1,5 @@
-commit db5a00f8cebe81146cafabf89019674a3c4bf03d
-Author: alan-baker <alanbaker@google.com>
-Date:   Wed Jul 17 11:55:01 2024 -0400
+commit 252dc2df08f58e0e50c8437edc0e77eacdfb7559
+Author: Luna <cli-luna@protonmail.com>
+Date:   Wed Oct 16 17:47:16 2024 +0200
 
-    Support for SPV_KHR_untyped_pointers (#439)
-    
-    * Support for SPV_KHR_untyped_pointers
-    
-    * regenerate headers
+    Add nuvk's spirv emitter. (#454)
