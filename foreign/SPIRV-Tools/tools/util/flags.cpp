@@ -14,6 +14,8 @@
 
 #include "flags.h"
 
+#include <algorithm>
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>

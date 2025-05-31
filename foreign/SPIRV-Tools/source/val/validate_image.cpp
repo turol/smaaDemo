@@ -455,13 +455,14 @@ spv_result_t ValidateImageOperands(ValidationState_t& _,
     }
 
     if (!_.options()->before_hlsl_legalization &&
-        spvIsVulkanEnv(_.context()->target_env)) {
+        spvIsVulkanEnv(_.context()->target_env) &&
+        !_.options()->allow_offset_texture_operand) {
       if (opcode != spv::Op::OpImageGather &&
           opcode != spv::Op::OpImageDrefGather &&
           opcode != spv::Op::OpImageSparseGather &&
           opcode != spv::Op::OpImageSparseDrefGather) {
         return _.diag(SPV_ERROR_INVALID_DATA, inst)
-               << _.VkErrorID(4663)
+               << _.VkErrorID(10213)
                << "Image Operand Offset can only be used with "
                   "OpImage*Gather operations";
       }
@@ -994,6 +995,7 @@ bool IsAllowedSampledImageOperand(spv::Op opcode, ValidationState_t& _) {
     case spv::Op::OpImageBlockMatchWindowSSDQCOM:
     case spv::Op::OpImageBlockMatchGatherSADQCOM:
     case spv::Op::OpImageBlockMatchGatherSSDQCOM:
+    case spv::Op::OpImageSampleFootprintNV:
       return true;
     case spv::Op::OpStore:
       if (_.HasCapability(spv::Capability::BindlessTextureNV)) return true;

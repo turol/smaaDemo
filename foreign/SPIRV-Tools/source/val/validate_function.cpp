@@ -152,80 +152,6 @@ spv_result_t ValidateFunctionParameter(ValidationState_t& _,
               "type of the same index.";
   }
 
-  // Validate that PhysicalStorageBuffer have one of Restrict, Aliased,
-  // RestrictPointer, or AliasedPointer.
-  auto param_nonarray_type_id = param_type->id();
-  while (_.GetIdOpcode(param_nonarray_type_id) == spv::Op::OpTypeArray) {
-    param_nonarray_type_id =
-        _.FindDef(param_nonarray_type_id)->GetOperandAs<uint32_t>(1u);
-  }
-  if (_.GetIdOpcode(param_nonarray_type_id) == spv::Op::OpTypePointer ||
-      _.GetIdOpcode(param_nonarray_type_id) ==
-          spv::Op::OpTypeUntypedPointerKHR) {
-    auto param_nonarray_type = _.FindDef(param_nonarray_type_id);
-    if (param_nonarray_type->GetOperandAs<spv::StorageClass>(1u) ==
-        spv::StorageClass::PhysicalStorageBuffer) {
-      // check for Aliased or Restrict
-      const auto& decorations = _.id_decorations(inst->id());
-
-      bool foundAliased = std::any_of(
-          decorations.begin(), decorations.end(), [](const Decoration& d) {
-            return spv::Decoration::Aliased == d.dec_type();
-          });
-
-      bool foundRestrict = std::any_of(
-          decorations.begin(), decorations.end(), [](const Decoration& d) {
-            return spv::Decoration::Restrict == d.dec_type();
-          });
-
-      if (!foundAliased && !foundRestrict) {
-        return _.diag(SPV_ERROR_INVALID_ID, inst)
-               << "OpFunctionParameter " << inst->id()
-               << ": expected Aliased or Restrict for PhysicalStorageBuffer "
-                  "pointer.";
-      }
-      if (foundAliased && foundRestrict) {
-        return _.diag(SPV_ERROR_INVALID_ID, inst)
-               << "OpFunctionParameter " << inst->id()
-               << ": can't specify both Aliased and Restrict for "
-                  "PhysicalStorageBuffer pointer.";
-      }
-    } else if (param_nonarray_type->opcode() == spv::Op::OpTypePointer) {
-      const auto pointee_type_id =
-          param_nonarray_type->GetOperandAs<uint32_t>(2);
-      const auto pointee_type = _.FindDef(pointee_type_id);
-      if (spv::Op::OpTypePointer == pointee_type->opcode() &&
-          pointee_type->GetOperandAs<spv::StorageClass>(1u) ==
-              spv::StorageClass::PhysicalStorageBuffer) {
-        // check for AliasedPointer/RestrictPointer
-        const auto& decorations = _.id_decorations(inst->id());
-
-        bool foundAliased = std::any_of(
-            decorations.begin(), decorations.end(), [](const Decoration& d) {
-              return spv::Decoration::AliasedPointer == d.dec_type();
-            });
-
-        bool foundRestrict = std::any_of(
-            decorations.begin(), decorations.end(), [](const Decoration& d) {
-              return spv::Decoration::RestrictPointer == d.dec_type();
-            });
-
-        if (!foundAliased && !foundRestrict) {
-          return _.diag(SPV_ERROR_INVALID_ID, inst)
-                 << "OpFunctionParameter " << inst->id()
-                 << ": expected AliasedPointer or RestrictPointer for "
-                    "PhysicalStorageBuffer pointer.";
-        }
-        if (foundAliased && foundRestrict) {
-          return _.diag(SPV_ERROR_INVALID_ID, inst)
-                 << "OpFunctionParameter " << inst->id()
-                 << ": can't specify both AliasedPointer and "
-                    "RestrictPointer for PhysicalStorageBuffer pointer.";
-        }
-      }
-    }
-  }
-
   return SPV_SUCCESS;
 }
 
@@ -332,7 +258,8 @@ spv_result_t ValidateFunctionCall(ValidationState_t& _,
               _.HasCapability(spv::Capability::VariablePointers) &&
               sc == spv::StorageClass::Workgroup;
           const bool uc_ptr = sc == spv::StorageClass::UniformConstant;
-          if (!ssbo_vptr && !wg_vptr && !uc_ptr) {
+          if (!_.options()->before_hlsl_legalization && !ssbo_vptr &&
+              !wg_vptr && !uc_ptr) {
             return _.diag(SPV_ERROR_INVALID_ID, inst)
                    << "Pointer operand " << _.getIdName(argument_id)
                    << " must be a memory object declaration";

@@ -30,9 +30,9 @@ git config --global --add safe.directory $ROOT_DIR
 using python-3.12
 
 if [ $COMPILER = "clang" ]; then
-  using clang-10.0.0
+  using clang-13.0.1
 elif [ $COMPILER = "gcc" ]; then
-  using gcc-9
+  using gcc-13
 fi
 
 cd $ROOT_DIR
@@ -51,7 +51,7 @@ if [ $TOOL != "cmake-smoketest" ]; then
 fi
 
 if [ $TOOL = "cmake" ]; then
-  using cmake-3.17.2
+  using cmake-3.31.2
   using ninja-1.10.0
 
   # Possible configurations are:
@@ -116,7 +116,7 @@ if [ $TOOL = "cmake" ]; then
   cd $KOKORO_ARTIFACTS_DIR
   tar czf install.tgz install
 elif [ $TOOL = "cmake-smoketest" ]; then
-  using cmake-3.17.2
+  using cmake-3.31.2
   using ninja-1.10.0
 
   # Get shaderc.
@@ -157,8 +157,8 @@ elif [ $TOOL = "cmake-smoketest" ]; then
   ctest --output-on-failure -j4
   echo $(date): ctest completed.
 elif [ $TOOL = "cmake-android-ndk" ]; then
-  using cmake-3.17.2
-  using ndk-r25c
+  using cmake-3.31.2
+  using ndk-r27c
   using ninja-1.10.0
 
   clean_dir "$ROOT_DIR/build"
@@ -178,7 +178,7 @@ elif [ $TOOL = "cmake-android-ndk" ]; then
   ninja
   echo $(date): Build completed.
 elif [ $TOOL = "android-ndk-build" ]; then
-  using ndk-r25c
+  using ndk-r27c
 
   clean_dir "$ROOT_DIR/build"
   cd "$ROOT_DIR/build"

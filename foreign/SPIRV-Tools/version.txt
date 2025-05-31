@@ -1,7 +1,19 @@
-commit 4d2f0b40bfe290dea6c6904dafdf7fd8328ba346
-Author: Cassandra Beckley <cbeckley@google.com>
-Date:   Thu Dec 5 07:17:32 2024 -0800
+commit f289d047f49fb60488301ec62bafab85573668cc
+Author: Steven Perron <stevenperron@google.com>
+Date:   Tue Feb 25 15:54:39 2025 -0500
 
-    Prepare release (#5905)
+    [OPT] Update DebugDeclare if the var is not an OpVariable (#6014)
     
-    This is the second release candidate for v2024.4. Includes new commits since September, including Vulkan 1.4 support.
+    When inlining, DXC can pass the result of an OpAccessChain as a
+    parameter. Even if this is not valid SPIR-V, HLSL allows this for the
+    `this` pointer in member function. Part of legalizing is to inline these
+    functions.
+    
+    When this happens, the `var` operand on a debug declare for the parameter
+    will be replaced by the result of the OpAccessChain. This in invalid.
+    The debug declare needs the variable with the indexes.
+    
+    This commit add a pass over each function after inlining that will fix
+    up the debug declares that are invalid in this way.
+    
+    Fixes https://github.com/microsoft/DirectXShaderCompiler/issues/5191

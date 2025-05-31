@@ -1,5 +1,5 @@
-commit 0659679d9648a4dfdb5513efe25c495a3712dbf4
-Author: Genna Wingert <1058083+wingertge@users.noreply.github.com>
-Date:   Wed Jan 15 17:38:17 2025 +0100
+commit 6d0784e9f1ab92c17eeea94821b2465c14a52be9
+Author: josopait <josopait@goopax.com>
+Date:   Wed May 7 17:40:58 2025 +0200
 
-    Add a source language for Rust (#472)
+    Register Goopax SPIV-V generator (#514)
