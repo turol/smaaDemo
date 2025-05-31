@@ -41,7 +41,12 @@ THE SOFTWARE.
 
 #else  // GL header
 
+#define GL_GLEXT_PROTOTYPES 1
+
 #include <GL/gl.h>
+
+#define GL_SUPPORTED_VERSION(major, minor)  (20 > (major * 10 + minor))
+#define GL_SUPPORTED_EXT(name)              false
 
 #endif  // GL header
 
