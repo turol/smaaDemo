@@ -760,6 +760,8 @@ source/opt/strip_nonsemantic_info_pass.cpp
 source/opt/strip_nonsemantic_info_pass.h
 source/opt/struct_cfg_analysis.cpp
 source/opt/struct_cfg_analysis.h
+source/opt/struct_packing_pass.cpp
+source/opt/struct_packing_pass.h
 source/opt/switch_descriptorset_pass.cpp
 source/opt/switch_descriptorset_pass.h
 source/opt/tree_iterator.h
@@ -871,6 +873,8 @@ source/text.cpp
 source/text.h
 source/text_handler.cpp
 source/text_handler.h
+source/to_string.cpp
+source/to_string.h
 source/util/bit_vector.cpp
 source/util/bit_vector.h
 source/util/bitutils.h
@@ -1437,6 +1441,7 @@ test/opt/strength_reduction_test.cpp
 test/opt/strip_debug_info_test.cpp
 test/opt/strip_nonsemantic_info_test.cpp
 test/opt/struct_cfg_analysis_test.cpp
+test/opt/struct_packing_test.cpp
 test/opt/switch_descriptorset_test.cpp
 test/opt/trim_capabilities_pass_test.cpp
 test/opt/type_manager_test.cpp
@@ -1501,6 +1506,7 @@ test/text_to_binary.type_declaration_test.cpp
 test/text_to_binary_test.cpp
 test/text_word_get_test.cpp
 test/timer_test.cpp
+test/to_string_test.cpp
 test/tools/CMakeLists.txt
 test/tools/expect.py
 test/tools/expect_unittest.py

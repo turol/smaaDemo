@@ -39,6 +39,7 @@ FILES:= \
 	table.cpp \
 	text.cpp \
 	text_handler.cpp \
+	to_string.cpp \
 	# empty line
 
 

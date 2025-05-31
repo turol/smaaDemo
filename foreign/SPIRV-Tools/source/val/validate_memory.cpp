@@ -463,7 +463,9 @@ spv_result_t ValidateVariable(ValidationState_t& _, const Instruction* inst) {
     const auto initializer_id = inst->GetOperandAs<uint32_t>(initializer_index);
     const auto initializer = _.FindDef(initializer_id);
     const auto is_module_scope_var =
-        initializer && (initializer->opcode() == spv::Op::OpVariable) &&
+        initializer &&
+        (initializer->opcode() == spv::Op::OpVariable ||
+         initializer->opcode() == spv::Op::OpUntypedVariableKHR) &&
         (initializer->GetOperandAs<spv::StorageClass>(storage_class_index) !=
          spv::StorageClass::Function);
     const auto is_constant =
@@ -1160,6 +1162,23 @@ spv_result_t ValidateStore(ValidationState_t& _, const Instruction* inst) {
         object_type->opcode() != spv::Op::OpTypeMatrix) {
       return _.diag(SPV_ERROR_INVALID_ID, inst)
              << "8- or 16-bit stores must be a scalar, vector or matrix type";
+    }
+  }
+
+  if (spvIsVulkanEnv(_.context()->target_env) &&
+      !_.options()->before_hlsl_legalization) {
+    const auto isForbiddenType = [](const Instruction* type_inst) {
+      auto opcode = type_inst->opcode();
+      return opcode == spv::Op::OpTypeImage ||
+             opcode == spv::Op::OpTypeSampler ||
+             opcode == spv::Op::OpTypeSampledImage ||
+             opcode == spv::Op::OpTypeAccelerationStructureKHR;
+    };
+    if (_.ContainsType(object_type->id(), isForbiddenType)) {
+      return _.diag(SPV_ERROR_INVALID_ID, inst)
+             << _.VkErrorID(6924)
+             << "Cannot store to OpTypeImage, OpTypeSampler, "
+                "OpTypeSampledImage, or OpTypeAccelerationStructureKHR objects";
     }
   }
 
@@ -2115,14 +2134,21 @@ spv_result_t ValidateCooperativeMatrixLoadStoreKHR(ValidationState_t& _,
 
   const auto layout_index =
       (inst->opcode() == spv::Op::OpCooperativeMatrixLoadKHR) ? 3u : 2u;
-  const auto colmajor_id = inst->GetOperandAs<uint32_t>(layout_index);
-  const auto colmajor = _.FindDef(colmajor_id);
-  if (!colmajor || !_.IsIntScalarType(colmajor->type_id()) ||
-      !(spvOpcodeIsConstant(colmajor->opcode()) ||
-        spvOpcodeIsSpecConstant(colmajor->opcode()))) {
+  const auto layout_id = inst->GetOperandAs<uint32_t>(layout_index);
+  const auto layout_inst = _.FindDef(layout_id);
+  if (!layout_inst || !_.IsIntScalarType(layout_inst->type_id()) ||
+      !spvOpcodeIsConstant(layout_inst->opcode())) {
     return _.diag(SPV_ERROR_INVALID_ID, inst)
-           << "MemoryLayout operand <id> " << _.getIdName(colmajor_id)
+           << "MemoryLayout operand <id> " << _.getIdName(layout_id)
            << " must be a 32-bit integer constant instruction.";
+  }
+
+  bool stride_required = false;
+  uint64_t layout;
+  if (_.EvalConstantValUint64(layout_id, &layout)) {
+    stride_required =
+        (layout == (uint64_t)spv::CooperativeMatrixLayout::RowMajorKHR) ||
+        (layout == (uint64_t)spv::CooperativeMatrixLayout::ColumnMajorKHR);
   }
 
   const auto stride_index =
@@ -2135,6 +2161,9 @@ spv_result_t ValidateCooperativeMatrixLoadStoreKHR(ValidationState_t& _,
              << "Stride operand <id> " << _.getIdName(stride_id)
              << " must be a scalar integer type.";
     }
+  } else if (stride_required) {
+    return _.diag(SPV_ERROR_INVALID_ID, inst)
+           << "MemoryLayout " << layout << " requires a Stride.";
   }
 
   const auto memory_access_index =
