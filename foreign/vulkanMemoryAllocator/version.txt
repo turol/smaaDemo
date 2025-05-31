@@ -1,7 +1,5 @@
-commit 3bab6924988e5f19bf36586a496156cf72f70d9f
+commit c788c52156f3ef7bc7ab769cb03c110a53ac8fcb
 Author: Adam Sawicki <adam.sawicki@amd.com>
-Date:   Mon Dec 30 12:05:45 2024 +0100
+Date:   Wed Feb 5 13:05:44 2025 +0100
 
-    Version 3,.2.0
-    
-    Also rebuilt the docs.
+    Version 3.2.1
