@@ -316,6 +316,17 @@ TEST(compile_test, compile_format_string_literal) {
 }
 #endif
 
+#if defined(__cpp_if_constexpr) && defined(__cpp_return_type_deduction)
+template <typename S> auto check_is_compiled_string(const S&) -> bool {
+  return fmt::is_compiled_string<S>::value;
+}
+
+TEST(compile_test, is_compiled_string) {
+  EXPECT_TRUE(check_is_compiled_string(FMT_COMPILE("asdf")));
+  EXPECT_TRUE(check_is_compiled_string(FMT_COMPILE("{}")));
+}
+#endif
+
 // MSVS 2019 19.29.30145.0 - OK
 // MSVS 2022 19.32.31332.0, 19.37.32826.1 - compile-test.cc(362,3): fatal error
 // C1001: Internal compiler error.
@@ -327,7 +338,7 @@ TEST(compile_test, compile_format_string_literal) {
      (FMT_MSC_VERSION >= 1928 && FMT_MSC_VERSION < 1930)) && \
     defined(__cpp_lib_is_constant_evaluated)
 template <size_t max_string_length, typename Char = char> struct test_string {
-  template <typename T> constexpr bool operator==(const T& rhs) const noexcept {
+  template <typename T> constexpr auto operator==(const T& rhs) const -> bool {
     return fmt::basic_string_view<Char>(rhs).compare(buffer) == 0;
   }
   Char buffer[max_string_length]{};
