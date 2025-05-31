@@ -5,6 +5,7 @@
 .github/ISSUE_TEMPLATE/issue_template.yml
 .github/pull_request_template.md
 .github/workflows/build.yml
+.github/workflows/manual.yml
 .github/workflows/scheduled.yml
 .github/workflows/static-analysis.yml
 .gitignore
@@ -170,6 +171,7 @@ examples/example_win32_directx9/build_win32.bat
 examples/example_win32_directx9/example_win32_directx9.vcxproj
 examples/example_win32_directx9/example_win32_directx9.vcxproj.filters
 examples/example_win32_directx9/main.cpp
+examples/example_win32_opengl3/build_mingw.bat
 examples/example_win32_opengl3/build_win32.bat
 examples/example_win32_opengl3/example_win32_opengl3.vcxproj
 examples/example_win32_opengl3/example_win32_opengl3.vcxproj.filters
