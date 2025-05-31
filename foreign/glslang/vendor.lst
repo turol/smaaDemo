@@ -746,6 +746,8 @@ Test/baseResults/hlsl.y-negate-3.vert.out
 Test/baseResults/implicitArraySize.vert.out
 Test/baseResults/implicitArraySize1.geom.out
 Test/baseResults/implicitArraySizeBuiltin.vert.out
+Test/baseResults/implicitArraySizeUniform.vert.out
+Test/baseResults/implicitArraySizeUniformContradict.vert.out
 Test/baseResults/implicitInnerAtomicUint.frag.out
 Test/baseResults/include.vert.out
 Test/baseResults/index_outside_sample_mask_range.frag.out
@@ -761,7 +763,10 @@ Test/baseResults/iomap.variableOutBlockIn.vert.out
 Test/baseResults/length.frag.out
 Test/baseResults/lineContinuation.vert.out
 Test/baseResults/lineContinuation100.vert.out
+Test/baseResults/link.crossStageIO.0.vert.out
+Test/baseResults/link.crossStageIO.1.vert.out
 Test/baseResults/link.crossStageOptimization.out
+Test/baseResults/link.missingCrossStageIO.0.vert.out
 Test/baseResults/link.multiAnonBlocksInvalid.0.0.vert.out
 Test/baseResults/link.multiAnonBlocksValid.0.0.vert.out
 Test/baseResults/link.multiBlocksInvalid.0.0.vert.out
@@ -769,16 +774,20 @@ Test/baseResults/link.multiBlocksValid.1.0.vert.out
 Test/baseResults/link.redeclareBuiltin.vert.out
 Test/baseResults/link.tesselation.tese.out
 Test/baseResults/link.tesselation.vert.out
+Test/baseResults/link.vk.crossStageIO.0.vert.out
+Test/baseResults/link.vk.crossStageIO.1.vert.out
 Test/baseResults/link.vk.differentPC.0.0.frag.out
 Test/baseResults/link.vk.differentPC.1.0.frag.out
 Test/baseResults/link.vk.inconsistentGLPerVertex.0.vert.out
 Test/baseResults/link.vk.matchingPC.0.0.frag.out
+Test/baseResults/link.vk.missingCrossStageIO.0.vert.out
 Test/baseResults/link.vk.multiBlocksValid.0.0.vert.out
 Test/baseResults/link.vk.multiBlocksValid.1.0.geom.out
 Test/baseResults/link.vk.pcNamingInvalid.0.0.vert.out
 Test/baseResults/link.vk.pcNamingValid.0.0.vert.out
 Test/baseResults/link1.frag.out
 Test/baseResults/link1.vk.frag.out
+Test/baseResults/liveTraverser.switch.vert.out
 Test/baseResults/localAggregates.frag.out
 Test/baseResults/location_aliasing.tesc.out
 Test/baseResults/location_aliasing1.frag.out
@@ -1028,6 +1037,9 @@ Test/baseResults/spv.atomicInt64.comp.out
 Test/baseResults/spv.atomicRvalue.error.vert.out
 Test/baseResults/spv.atomicStoreInt64.comp.out
 Test/baseResults/spv.barrier.vert.out
+Test/baseResults/spv.bfloat16.comp.out
+Test/baseResults/spv.bfloat16_error.comp.out
+Test/baseResults/spv.bfloat16_error.frag.out
 Test/baseResults/spv.bitCast.frag.out
 Test/baseResults/spv.bool.vert.out
 Test/baseResults/spv.boolInBlock.frag.out
@@ -1102,6 +1114,7 @@ Test/baseResults/spv.debugPrintf.frag.out
 Test/baseResults/spv.debugPrintf_Error.frag.out
 Test/baseResults/spv.debuginfo.bufferref.glsl.frag.out
 Test/baseResults/spv.debuginfo.const_params.glsl.comp.out
+Test/baseResults/spv.debuginfo.continued.glsl.vert.out
 Test/baseResults/spv.debuginfo.coopmatKHR.comp.out
 Test/baseResults/spv.debuginfo.glsl.comp.out
 Test/baseResults/spv.debuginfo.glsl.frag.out
@@ -1118,6 +1131,7 @@ Test/baseResults/spv.debuginfo.hlsl.vert.out
 Test/baseResults/spv.debuginfo.implicit_br.glsl.frag.out
 Test/baseResults/spv.debuginfo.include.glsl.frag.out
 Test/baseResults/spv.debuginfo.multiline.glsl.frag.out
+Test/baseResults/spv.debuginfo.non_ascii.glsl.frag.out
 Test/baseResults/spv.debuginfo.rt_types.glsl.rgen.out
 Test/baseResults/spv.debuginfo.scalar_types.glsl.frag.out
 Test/baseResults/spv.deepRvalue.frag.out
@@ -1282,6 +1296,7 @@ Test/baseResults/spv.noBuiltInLoc.vert.out
 Test/baseResults/spv.noDeadDecorations.vert.out
 Test/baseResults/spv.noLocation.vert.out
 Test/baseResults/spv.noWorkgroup.comp.out
+Test/baseResults/spv.noexplicitlayout.comp.out
 Test/baseResults/spv.nonSquare.vert.out
 Test/baseResults/spv.nontemporalbuffer.frag.out
 Test/baseResults/spv.nonuniform.frag.out
@@ -2029,6 +2044,10 @@ Test/implicitArraySize1.geom
 Test/implicitArraySize2.geom
 Test/implicitArraySizeBuiltin.geom
 Test/implicitArraySizeBuiltin.vert
+Test/implicitArraySizeUniform.frag
+Test/implicitArraySizeUniform.vert
+Test/implicitArraySizeUniformContradict.frag
+Test/implicitArraySizeUniformContradict.vert
 Test/implicitInnerAtomicUint.frag
 Test/inc1/badInc.h
 Test/inc1/bar.h
@@ -2065,8 +2084,15 @@ Test/iomap.variableOutBlockIn.vert
 Test/length.frag
 Test/lineContinuation.vert
 Test/lineContinuation100.vert
+Test/link.crossStageIO.0.frag
+Test/link.crossStageIO.0.vert
+Test/link.crossStageIO.1.frag
+Test/link.crossStageIO.1.geom
+Test/link.crossStageIO.1.vert
 Test/link.crossStageOptimization.frag
 Test/link.crossStageOptimization.vert
+Test/link.missingCrossStageIO.0.frag
+Test/link.missingCrossStageIO.0.vert
 Test/link.multiAnonBlocksInvalid.0.0.vert
 Test/link.multiAnonBlocksInvalid.0.1.vert
 Test/link.multiAnonBlocksValid.0.0.vert
@@ -2081,6 +2107,11 @@ Test/link.tesselation.frag
 Test/link.tesselation.tesc
 Test/link.tesselation.tese
 Test/link.tesselation.vert
+Test/link.vk.crossStageIO.0.frag
+Test/link.vk.crossStageIO.0.vert
+Test/link.vk.crossStageIO.1.frag
+Test/link.vk.crossStageIO.1.geom
+Test/link.vk.crossStageIO.1.vert
 Test/link.vk.differentPC.0.0.frag
 Test/link.vk.differentPC.0.1.frag
 Test/link.vk.differentPC.0.2.frag
@@ -2092,6 +2123,8 @@ Test/link.vk.inconsistentGLPerVertex.0.vert
 Test/link.vk.matchingPC.0.0.frag
 Test/link.vk.matchingPC.0.1.frag
 Test/link.vk.matchingPC.0.2.frag
+Test/link.vk.missingCrossStageIO.0.frag
+Test/link.vk.missingCrossStageIO.0.vert
 Test/link.vk.multiBlocksValid.0.0.vert
 Test/link.vk.multiBlocksValid.0.1.vert
 Test/link.vk.multiBlocksValid.1.0.geom
@@ -2105,6 +2138,7 @@ Test/link1.vk.frag
 Test/link2.frag
 Test/link2.vk.frag
 Test/link3.frag
+Test/liveTraverser.switch.vert
 Test/localAggregates.frag
 Test/location_aliasing.tesc
 Test/location_aliasing1.frag
@@ -2341,6 +2375,9 @@ Test/spv.atomicInt64.comp
 Test/spv.atomicRvalue.error.vert
 Test/spv.atomicStoreInt64.comp
 Test/spv.barrier.vert
+Test/spv.bfloat16.comp
+Test/spv.bfloat16_error.comp
+Test/spv.bfloat16_error.frag
 Test/spv.bitCast.frag
 Test/spv.bool.vert
 Test/spv.boolInBlock.frag
@@ -2414,6 +2451,7 @@ Test/spv.debugPrintf.frag
 Test/spv.debugPrintf_Error.frag
 Test/spv.debuginfo.bufferref.glsl.frag
 Test/spv.debuginfo.const_params.glsl.comp
+Test/spv.debuginfo.continued.glsl.vert
 Test/spv.debuginfo.coopmatKHR.comp
 Test/spv.debuginfo.glsl.comp
 Test/spv.debuginfo.glsl.frag
@@ -2431,6 +2469,7 @@ Test/spv.debuginfo.implicit_br.glsl.frag
 Test/spv.debuginfo.include.glsl.frag
 Test/spv.debuginfo.include.glsl.h
 Test/spv.debuginfo.multiline.glsl.frag
+Test/spv.debuginfo.non_ascii.glsl.frag
 Test/spv.debuginfo.rt_types.glsl.rgen
 Test/spv.debuginfo.scalar_types.glsl.frag
 Test/spv.deepRvalue.frag
@@ -2595,6 +2634,7 @@ Test/spv.noBuiltInLoc.vert
 Test/spv.noDeadDecorations.vert
 Test/spv.noLocation.vert
 Test/spv.noWorkgroup.comp
+Test/spv.noexplicitlayout.comp
 Test/spv.nonSquare.vert
 Test/spv.nontemporalbuffer.frag
 Test/spv.nonuniform.frag
@@ -2975,6 +3015,7 @@ gtests/Hlsl.FromFile.cpp
 gtests/Initializer.h
 gtests/Link.FromFile.Vk.cpp
 gtests/Link.FromFile.cpp
+gtests/LiveTraverser.FromFile.cpp
 gtests/Pp.FromFile.cpp
 gtests/README.md
 gtests/Remap.FromFile.cpp

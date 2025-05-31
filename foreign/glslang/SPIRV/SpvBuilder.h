@@ -53,6 +53,7 @@
 #include "spvIR.h"
 namespace spv {
     #include "GLSL.ext.KHR.h"
+    #include "GLSL.ext.EXT.h"
     #include "NonSemanticShaderDebugInfo100.h"
 }
 
@@ -64,6 +65,7 @@ namespace spv {
 #include <sstream>
 #include <stack>
 #include <unordered_map>
+#include <unordered_set>
 #include <map>
 
 namespace spv {
@@ -204,6 +206,7 @@ public:
     Id makeIntType(int width) { return makeIntegerType(width, true); }
     Id makeUintType(int width) { return makeIntegerType(width, false); }
     Id makeFloatType(int width);
+    Id makeBFloat16Type();
     Id makeStructType(const std::vector<Id>& members, const char* name, bool const compilerGenerated = true);
     Id makeStructResultType(Id type0, Id type1);
     Id makeVectorType(Id component, int size);
@@ -400,6 +403,7 @@ public:
     Id makeFloatConstant(float f, bool specConstant = false);
     Id makeDoubleConstant(double d, bool specConstant = false);
     Id makeFloat16Constant(float f16, bool specConstant = false);
+    Id makeBFloat16Constant(float bf16, bool specConstant = false);
     Id makeFpConstant(Id type, double d, bool specConstant = false);
 
     Id importNonSemanticShaderDebugInfoInstructions();
@@ -997,6 +1001,10 @@ public:
     std::unordered_map<unsigned int, std::vector<Instruction*>> groupedDebugTypes;
     // list of OpConstantNull instructions
     std::vector<Instruction*> nullConstants;
+
+    // Track which types have explicit layouts, to avoid reusing in storage classes without layout.
+    // Currently only tracks array types.
+    std::unordered_set<unsigned int> explicitlyLaidOut;
 
     // stack of switches
     std::stack<Block*> switchMerges;
