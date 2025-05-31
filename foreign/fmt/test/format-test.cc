@@ -582,6 +582,9 @@ TEST(format_test, named_arg) {
   EXPECT_EQ("1/a/A", fmt::format("{_1}/{a_}/{A_}", fmt::arg("a_", 'a'),
                                  fmt::arg("A_", "A"), fmt::arg("_1", 1)));
   EXPECT_EQ(fmt::format("{0:{width}}", -42, fmt::arg("width", 4)), " -42");
+  EXPECT_EQ(fmt::format("{value:{width}}", fmt::arg("value", -42),
+                        fmt::arg("width", 4)),
+            " -42");
   EXPECT_EQ("st",
             fmt::format("{0:.{precision}}", "str", fmt::arg("precision", 2)));
   EXPECT_EQ(fmt::format("{} {two}", 1, fmt::arg("two", 2)), "1 2");
@@ -599,6 +602,9 @@ TEST(format_test, named_arg) {
   EXPECT_THROW_MSG((void)fmt::format(runtime("{a} {}"), fmt::arg("a", 2), 42),
                    format_error,
                    "cannot switch from manual to automatic argument indexing");
+  EXPECT_THROW_MSG(
+      (void)fmt::format("{a}", fmt::arg("a", 1), fmt::arg("a", 10)),
+      format_error, "duplicate named arg");
 }
 
 TEST(format_test, auto_arg_index) {
@@ -1821,54 +1827,6 @@ TEST(format_test, big_print) {
   EXPECT_WRITE(stdout, big_print(), std::string(count, 'x'));
 }
 
-// Windows CRT implements _IOLBF incorrectly (full buffering).
-#if FMT_USE_FCNTL
-
-#  ifndef _WIN32
-TEST(format_test, line_buffering) {
-  auto pipe = fmt::pipe();
-
-  int write_fd = pipe.write_end.descriptor();
-  auto write_end = pipe.write_end.fdopen("w");
-  setvbuf(write_end.get(), nullptr, _IOLBF, 4096);
-  write_end.print("42\n");
-  close(write_fd);
-  try {
-    write_end.close();
-  } catch (const std::system_error&) {
-  }
-
-  auto read_end = pipe.read_end.fdopen("r");
-  std::thread reader([&]() {
-    int n = 0;
-    int result = fscanf(read_end.get(), "%d", &n);
-    (void)result;
-    EXPECT_EQ(n, 42);
-  });
-
-  reader.join();
-}
-#  endif
-
-TEST(format_test, buffer_boundary) {
-  auto pipe = fmt::pipe();
-
-  auto write_end = pipe.write_end.fdopen("w");
-  setvbuf(write_end.get(), nullptr, _IOFBF, 4096);
-  for (int i = 3; i < 4094; i++)
-    write_end.print("{}", (i % 73) != 0 ? 'x' : '\n');
-  write_end.print("{} {}", 1234, 567);
-  write_end.close();
-
-  auto read_end = pipe.read_end.fdopen("r");
-  char buf[4091] = {};
-  size_t n = fread(buf, 1, sizeof(buf), read_end.get());
-  EXPECT_EQ(n, sizeof(buf));
-  EXPECT_STREQ(fgets(buf, sizeof(buf), read_end.get()), "1234 567");
-}
-
-#endif  // FMT_USE_FCNTL
-
 struct deadlockable {
   int value = 0;
   mutable std::mutex mutex;
@@ -2584,3 +2542,26 @@ TEST(base_test, format_byte) {
   EXPECT_EQ(s, "42");
 }
 #endif
+
+// Only defined after the test case.
+struct incomplete_type;
+extern const incomplete_type& external_instance;
+
+FMT_BEGIN_NAMESPACE
+template <> struct formatter<incomplete_type> : formatter<int> {
+  auto format(const incomplete_type& x, context& ctx) const -> appender;
+};
+FMT_END_NAMESPACE
+
+TEST(incomplete_type_test, format) {
+  EXPECT_EQ(fmt::format("{}", external_instance), "42");
+}
+
+struct incomplete_type {};
+const incomplete_type& external_instance = {};
+
+auto fmt::formatter<incomplete_type>::format(const incomplete_type&,
+                                             fmt::context& ctx) const
+    -> fmt::appender {
+  return formatter<int>::format(42, ctx);
+}
