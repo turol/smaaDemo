@@ -439,6 +439,43 @@ Id Builder::makeCooperativeMatrixTypeKHR(Id component, Id scope, Id rows, Id col
     constantsTypesGlobals.push_back(std::unique_ptr<Instruction>(type));
     module.mapInstruction(type);
 
+    if (emitNonSemanticShaderDebugInfo)
+    {
+        // Find a name for one of the parameters. It can either come from debuginfo for another
+        // type, or an OpName from a constant.
+        auto const findName = [&](Id id) {
+            Id id2 = debugId[id];
+            for (auto &t : groupedDebugTypes[NonSemanticShaderDebugInfo100DebugTypeBasic]) {
+                if (t->getResultId() == id2) {
+                    for (auto &s : strings) {
+                        if (s->getResultId() == t->getIdOperand(2)) {
+                            return s->getNameString();
+                        }
+                    }
+                }
+            }
+            for (auto &t : names) {
+                if (t->getIdOperand(0) == id) {
+                    return t->getNameString();
+                }
+            }
+            return "unknown";
+        };
+        std::string debugName = "coopmat<";
+        debugName += std::string(findName(component)) + ", ";
+        if (isConstantScalar(scope)) {
+            debugName += std::string("gl_Scope") + std::string(spv::ScopeToString((spv::Scope)getConstantScalar(scope))) + ", ";
+        } else {
+            debugName += std::string(findName(scope)) + ", ";
+        }
+        debugName += std::string(findName(rows)) + ", ";
+        debugName += std::string(findName(cols)) + ">";
+        // There's no nonsemantic debug info instruction for cooperative matrix types,
+        // use opaque composite instead.
+        auto const debugResultId = makeCompositeDebugType({}, debugName.c_str(), NonSemanticShaderDebugInfo100Structure, true);
+        debugId[type->getResultId()] = debugResultId;
+    }
+
     return type->getResultId();
 }
 
@@ -2324,7 +2361,7 @@ Id Builder::makeDebugFunction([[maybe_unused]] Function* function, Id nameId, Id
     return funcId;
 }
 
-Id Builder::makeDebugLexicalBlock(uint32_t line) {
+Id Builder::makeDebugLexicalBlock(uint32_t line, uint32_t column) {
     assert(!currentDebugScopeId.empty());
 
     Id lexId = getUniqueId();
@@ -2334,7 +2371,7 @@ Id Builder::makeDebugLexicalBlock(uint32_t line) {
     lex->addImmediateOperand(NonSemanticShaderDebugInfo100DebugLexicalBlock);
     lex->addIdOperand(makeDebugSource(currentFileId));
     lex->addIdOperand(makeUintConstant(line));
-    lex->addIdOperand(makeUintConstant(0)); // column
+    lex->addIdOperand(makeUintConstant(column)); // column
     lex->addIdOperand(currentDebugScopeId.top()); // scope
     constantsTypesGlobals.push_back(std::unique_ptr<Instruction>(lex));
     module.mapInstruction(lex);
@@ -2367,10 +2404,14 @@ void Builder::makeReturn(bool implicit, Id retVal)
 }
 
 // Comments in header
-void Builder::enterLexicalBlock(uint32_t line)
+void Builder::enterLexicalBlock(uint32_t line, uint32_t column)
 {
+    if (!emitNonSemanticShaderDebugInfo) {
+        return;
+    }
+
     // Generate new lexical scope debug instruction
-    Id lexId = makeDebugLexicalBlock(line);
+    Id lexId = makeDebugLexicalBlock(line, column);
     currentDebugScopeId.push(lexId);
     dirtyScopeTracker = true;
 }
@@ -2378,6 +2419,10 @@ void Builder::enterLexicalBlock(uint32_t line)
 // Comments in header
 void Builder::leaveLexicalBlock()
 {
+    if (!emitNonSemanticShaderDebugInfo) {
+        return;
+    }
+
     // Pop current scope from stack and clear current scope
     currentDebugScopeId.pop();
     dirtyScopeTracker = true;
@@ -3416,6 +3461,41 @@ Id Builder::createCompositeConstruct(Id typeId, const std::vector<Id>& constitue
     op->reserveOperands(constituents.size());
     for (size_t c = 0; c < numConstituents; ++c)
         op->addIdOperand(constituents[c]);
+    addInstruction(std::unique_ptr<Instruction>(op));
+
+    return op->getResultId();
+}
+
+// coopmat conversion
+Id Builder::createCooperativeMatrixConversion(Id typeId, Id source)
+{
+    Instruction* op = new Instruction(getUniqueId(), typeId, OpCooperativeMatrixConvertNV);
+    op->addIdOperand(source);
+    addInstruction(std::unique_ptr<Instruction>(op));
+
+    return op->getResultId();
+}
+
+// coopmat reduce
+Id Builder::createCooperativeMatrixReduce(Op opcode, Id typeId, Id source, unsigned int mask, Id func)
+{
+    Instruction* op = new Instruction(getUniqueId(), typeId, opcode);
+    op->addIdOperand(source);
+    op->addImmediateOperand(mask);
+    op->addIdOperand(func);
+    addInstruction(std::unique_ptr<Instruction>(op));
+
+    return op->getResultId();
+}
+
+// coopmat per-element operation
+Id Builder::createCooperativeMatrixPerElementOp(Id typeId, const std::vector<Id>& operands)
+{
+    Instruction* op = new Instruction(getUniqueId(), typeId, spv::OpCooperativeMatrixPerElementOpNV);
+    // skip operand[0], which is where the result is stored
+    for (uint32_t i = 1; i < operands.size(); ++i) {
+        op->addIdOperand(operands[i]);
+    }
     addInstruction(std::unique_ptr<Instruction>(op));
 
     return op->getResultId();

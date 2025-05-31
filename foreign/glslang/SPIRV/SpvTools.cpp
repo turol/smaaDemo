@@ -71,6 +71,8 @@ spv_target_env MapToSpirvToolsEnv(const SpvVersion& spvVersion, spv::SpvBuildLog
         return spv_target_env::SPV_ENV_VULKAN_1_2;
     case glslang::EShTargetVulkan_1_3:
         return spv_target_env::SPV_ENV_VULKAN_1_3;
+    case glslang::EShTargetVulkan_1_4:
+        return spv_target_env::SPV_ENV_VULKAN_1_4;
     default:
         break;
     }
@@ -309,6 +311,6 @@ void SpirvToolsStripDebugInfo(const glslang::TIntermediate& intermediate,
     optimizer.Run(spirv.data(), spirv.size(), &spirv, spvOptOptions);
 }
 
-}; // end namespace glslang
+} // end namespace glslang
 
 #endif

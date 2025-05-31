@@ -78,6 +78,8 @@ void TType::buildMangledName(TString& mangledName) const
     case EbtRayQuery:           mangledName += "rq";     break;
     case EbtSpirvType:          mangledName += "spv-t";  break;
     case EbtHitObjectNV:        mangledName += "ho";     break;
+    case EbtTensorLayoutNV:     mangledName += "tl";     break;
+    case EbtTensorViewNV:       mangledName += "tv";     break;
     case EbtSampler:
         switch (sampler.type) {
         case EbtFloat16: mangledName += "f16"; break;
@@ -169,7 +171,7 @@ void TType::buildMangledName(TString& mangledName) const
                 if (arraySizes->getDimNode(i)->getAsSymbolNode())
                     snprintf(buf, maxSize, "s%lld", arraySizes->getDimNode(i)->getAsSymbolNode()->getId());
                 else
-                    snprintf(buf, maxSize, "s%p", arraySizes->getDimNode(i));
+                    snprintf(buf, maxSize, "s%p", (void*)(arraySizes->getDimNode(i)));
             } else
                 snprintf(buf, maxSize, "%d", arraySizes->getDimSize(i));
             mangledName += '[';
@@ -344,6 +346,7 @@ void TSymbolTableLevel::readOnly()
 TSymbol::TSymbol(const TSymbol& copyOf)
 {
     name = NewPoolTString(copyOf.name->c_str());
+    mangledName = NewPoolTString(copyOf.mangledName->c_str());
     uniqueId = copyOf.uniqueId;
     writable = true;
 }

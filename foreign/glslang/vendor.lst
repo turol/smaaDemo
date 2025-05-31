@@ -756,11 +756,13 @@ Test/baseResults/iomap.crossStage.2.vert.out
 Test/baseResults/iomap.crossStage.vert.out
 Test/baseResults/iomap.crossStage.vk.2.vert.out
 Test/baseResults/iomap.crossStage.vk.vert.out
+Test/baseResults/iomap.mismatchedBufferTypes.vert.out
 Test/baseResults/iomap.variableOutBlockIn.2.vert.out
 Test/baseResults/iomap.variableOutBlockIn.vert.out
 Test/baseResults/length.frag.out
 Test/baseResults/lineContinuation.vert.out
 Test/baseResults/lineContinuation100.vert.out
+Test/baseResults/link.crossStageOptimization.out
 Test/baseResults/link.multiAnonBlocksInvalid.0.0.vert.out
 Test/baseResults/link.multiAnonBlocksValid.0.0.vert.out
 Test/baseResults/link.multiBlocksInvalid.0.0.vert.out
@@ -1067,6 +1069,9 @@ Test/baseResults/spv.constructComposite.comp.out
 Test/baseResults/spv.controlFlowAttributes.frag.out
 Test/baseResults/spv.conversion.frag.out
 Test/baseResults/spv.coopmat.comp.out
+Test/baseResults/spv.coopmat2_constructor.comp.out
+Test/baseResults/spv.coopmat2_error.comp.out
+Test/baseResults/spv.coopmat2_tensor.comp.out
 Test/baseResults/spv.coopmatKHR.comp.out
 Test/baseResults/spv.coopmatKHR_Error.comp.out
 Test/baseResults/spv.coopmatKHR_arithmetic.comp.out
@@ -1091,6 +1096,7 @@ Test/baseResults/spv.debugPrintf.frag.out
 Test/baseResults/spv.debugPrintf_Error.frag.out
 Test/baseResults/spv.debuginfo.bufferref.glsl.frag.out
 Test/baseResults/spv.debuginfo.const_params.glsl.comp.out
+Test/baseResults/spv.debuginfo.coopmatKHR.comp.out
 Test/baseResults/spv.debuginfo.glsl.comp.out
 Test/baseResults/spv.debuginfo.glsl.frag.out
 Test/baseResults/spv.debuginfo.glsl.geom.out
@@ -2029,6 +2035,8 @@ Test/iomap.crossStage.vk.2.vert
 Test/iomap.crossStage.vk.frag
 Test/iomap.crossStage.vk.geom
 Test/iomap.crossStage.vk.vert
+Test/iomap.mismatchedBufferTypes.frag
+Test/iomap.mismatchedBufferTypes.vert
 Test/iomap.variableOutBlockIn.2.vert
 Test/iomap.variableOutBlockIn.frag
 Test/iomap.variableOutBlockIn.geom
@@ -2036,6 +2044,8 @@ Test/iomap.variableOutBlockIn.vert
 Test/length.frag
 Test/lineContinuation.vert
 Test/lineContinuation100.vert
+Test/link.crossStageOptimization.frag
+Test/link.crossStageOptimization.vert
 Test/link.multiAnonBlocksInvalid.0.0.vert
 Test/link.multiAnonBlocksInvalid.0.1.vert
 Test/link.multiAnonBlocksValid.0.0.vert
@@ -2350,6 +2360,9 @@ Test/spv.constructComposite.comp
 Test/spv.controlFlowAttributes.frag
 Test/spv.conversion.frag
 Test/spv.coopmat.comp
+Test/spv.coopmat2_constructor.comp
+Test/spv.coopmat2_error.comp
+Test/spv.coopmat2_tensor.comp
 Test/spv.coopmatKHR.comp
 Test/spv.coopmatKHR_Error.comp
 Test/spv.coopmatKHR_arithmetic.comp
@@ -2373,6 +2386,7 @@ Test/spv.debugPrintf.frag
 Test/spv.debugPrintf_Error.frag
 Test/spv.debuginfo.bufferref.glsl.frag
 Test/spv.debuginfo.const_params.glsl.comp
+Test/spv.debuginfo.coopmatKHR.comp
 Test/spv.debuginfo.glsl.comp
 Test/spv.debuginfo.glsl.frag
 Test/spv.debuginfo.glsl.geom

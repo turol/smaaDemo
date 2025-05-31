@@ -270,6 +270,8 @@ static glslang::EShTargetClientVersion c_shader_client_version(glslang_target_cl
         return glslang::EShTargetVulkan_1_2;
     case GLSLANG_TARGET_VULKAN_1_3:
         return glslang::EShTargetVulkan_1_3;
+    case GLSLANG_TARGET_VULKAN_1_4:
+        return glslang::EShTargetVulkan_1_4;
     case GLSLANG_TARGET_OPENGL_450:
         return glslang::EShTargetOpenGL_450;
     default:
@@ -324,7 +326,7 @@ static EProfile c_shader_profile(glslang_profile_t profile)
 GLSLANG_EXPORT glslang_shader_t* glslang_shader_create(const glslang_input_t* input)
 {
     if (!input || !input->code) {
-        printf("Error creating shader: null input(%p)/input->code\n", input);
+        printf("Error creating shader: null input(%p)/input->code\n", (void*)input);
 
         if (input)
             printf("input->code = %p\n", input->code);

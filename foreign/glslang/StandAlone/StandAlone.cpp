@@ -109,6 +109,7 @@ enum TOptions : uint64_t {
     EOptionDumpBareVersion = (1ull << 31),
     EOptionCompileOnly = (1ull << 32),
     EOptionDisplayErrorColumn = (1ull << 33),
+    EOptionLinkTimeOptimization = (1ull << 34),
 };
 bool targetHlslFunctionality1 = false;
 bool SpvToolsDisassembler = false;
@@ -841,6 +842,9 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
                             } else if (strcmp(argv[1], "vulkan1.3") == 0) {
                                 setVulkanSpv();
                                 ClientVersion = glslang::EShTargetVulkan_1_3;
+                            } else if (strcmp(argv[1], "vulkan1.4") == 0) {
+                                setVulkanSpv();
+                                ClientVersion = glslang::EShTargetVulkan_1_4;
                             } else if (strcmp(argv[1], "opengl") == 0) {
                                 setOpenGlSpv();
                                 ClientVersion = glslang::EShTargetOpenGL_450;
@@ -899,6 +903,8 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
                         Options |= EOptionCompileOnly;
                     } else if (lowerword == "error-column") {
                         Options |= EOptionDisplayErrorColumn;
+                    } else if (lowerword == "lto") {
+                        Options |= EOptionLinkTimeOptimization;
                     } else if (lowerword == "help") {
                         usage();
                         break;
@@ -1083,6 +1089,10 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
     if ((Options & EOptionDumpReflection) && !(Options & EOptionLinkProgram))
         Error("reflection requires -l for linking");
 
+    // link time optimization makes no sense unless linking
+    if ((Options & EOptionLinkTimeOptimization) && !(Options & EOptionLinkProgram))
+        Error("link time optimization requires -l for linking");
+
     // -o or -x makes no sense if there is no target binary
     if (binaryFileName && (Options & EOptionSpv) == 0)
         Error("no binary generation requested (e.g., -V)");
@@ -1111,6 +1121,10 @@ void ProcessArguments(std::vector<std::unique_ptr<glslang::TWorkItem>>& workItem
             TargetVersion = glslang::EShTargetSpv_1_5;
             break;
         case glslang::EShTargetVulkan_1_3:
+            TargetLanguage = glslang::EShTargetSpv;
+            TargetVersion = glslang::EShTargetSpv_1_6;
+            break;
+        case glslang::EShTargetVulkan_1_4:
             TargetLanguage = glslang::EShTargetSpv;
             TargetVersion = glslang::EShTargetSpv_1_6;
             break;
@@ -1167,6 +1181,8 @@ void SetMessageOptions(EShMessages& messages)
         messages = (EShMessages)(messages | EShMsgAbsolutePath);
     if (Options & EOptionDisplayErrorColumn)
         messages = (EShMessages)(messages | EShMsgDisplayErrorColumn);
+    if (Options & EOptionLinkTimeOptimization)
+        messages = (EShMessages)(messages | EShMsgLinkTimeOptimization);
 }
 
 //
@@ -2135,7 +2151,8 @@ void usage()
            "                                    initialized with the shader binary code\n"
            "  --no-link                         Only compile shader; do not link (GLSL-only)\n"
            "                                    NOTE: this option will set the export linkage\n"
-           "                                          attribute on all functions\n");
+           "                                          attribute on all functions\n"
+           "  --lto                             perform link time optimization\n");
 
     exit(EFailUsage);
 }
