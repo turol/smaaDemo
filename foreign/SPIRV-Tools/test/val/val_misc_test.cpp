@@ -84,6 +84,27 @@ OpMemoryModel Logical GLSL450
       HasSubstr("Cannot create undefined values with 8- or 16-bit types"));
 }
 
+TEST_F(ValidateMisc, SizeOfValid) {
+  const std::string spirv = R"(
+               OpCapability Addresses
+               OpCapability Kernel
+               OpMemoryModel Physical64 OpenCL
+               OpEntryPoint Kernel %f "f"
+       %void = OpTypeVoid
+        %i32 = OpTypeInt 32 0
+        %ptr = OpTypePointer CrossWorkgroup %i32
+       %fnTy = OpTypeFunction %void
+          %f = OpFunction %void None %fnTy
+      %entry = OpLabel
+          %s = OpSizeOf %i32 %ptr
+               OpReturn
+               OpFunctionEnd
+)";
+
+  CompileSuccessfully(spirv, SPV_ENV_UNIVERSAL_1_1);
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_UNIVERSAL_1_1));
+}
+
 const std::string ShaderClockSpirv = R"(
 OpCapability Shader
 OpCapability Int64
@@ -350,6 +371,77 @@ OpEntryPoint Vertex %func "shader"
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("Invalid storage class for target environment"));
 }
+
+TEST_F(ValidateMisc, CoopMat2WorkgroupLocalSizeIdPass) {
+  const std::string body = R"(
+OpCapability Shader
+OpCapability Float16
+OpCapability Int16
+OpCapability CooperativeMatrixKHR
+OpExtension "SPV_KHR_cooperative_matrix"
+OpExtension "SPV_KHR_vulkan_memory_model"
+OpMemoryModel Logical GLSL450
+OpEntryPoint GLCompute %main "main"
+OpExecutionModeId %main LocalSizeId %u32_16 %u32_16 %u32_16
+%void = OpTypeVoid
+%func = OpTypeFunction %void
+%bool = OpTypeBool
+%f16 = OpTypeFloat 16
+%u32 = OpTypeInt 32 0
+
+%u32_16 = OpConstant %u32 16
+%use_Acc = OpConstant %u32 2
+%workgroup = OpConstant %u32 2
+
+%f16mat = OpTypeCooperativeMatrixKHR %f16 %workgroup %u32_16 %u32_16 %use_Acc
+
+%main = OpFunction %void None %func
+%main_entry = OpLabel
+
+OpReturn
+OpFunctionEnd)";
+
+  CompileSuccessfully(body.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
+}
+
+TEST_F(ValidateMisc, CoopMat2WorkgroupLocalSizeIdConstantNotDeclaredYetFail) {
+  const std::string body = R"(
+OpCapability Shader
+OpCapability Float16
+OpCapability Int16
+OpCapability CooperativeMatrixKHR
+OpExtension "SPV_KHR_cooperative_matrix"
+OpExtension "SPV_KHR_vulkan_memory_model"
+OpMemoryModel Logical GLSL450
+OpEntryPoint GLCompute %main "main"
+OpExecutionModeId %main LocalSizeId %u32_16 %u32_8 %u32_16
+%void = OpTypeVoid
+%func = OpTypeFunction %void
+%bool = OpTypeBool
+%f16 = OpTypeFloat 16
+%u32 = OpTypeInt 32 0
+
+%u32_16 = OpConstant %u32 16
+%use_Acc = OpConstant %u32 2
+%workgroup = OpConstant %u32 2
+
+%f16mat = OpTypeCooperativeMatrixKHR %f16 %workgroup %u32_16 %u32_16 %use_Acc
+%u32_8 = OpConstant %u32 8
+
+%main = OpFunction %void None %func
+%main_entry = OpLabel
+
+OpReturn
+OpFunctionEnd)";
+
+  CompileSuccessfully(body.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("OpTypeCooperativeMatrixKHR with ScopeWorkgroup used "
+                        "before LocalSizeId constant value"));
+}
+
 }  // namespace
 }  // namespace val
 }  // namespace spvtools

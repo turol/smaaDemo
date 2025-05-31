@@ -1,10 +1,7 @@
-commit 362ce7c60d040ed927464ed4f29c688dbc541886
-Author: alan-baker <alanbaker@google.com>
-Date:   Tue Sep 24 11:14:28 2024 -0400
+commit 4d2f0b40bfe290dea6c6904dafdf7fd8328ba346
+Author: Cassandra Beckley <cbeckley@google.com>
+Date:   Thu Dec 5 07:17:32 2024 -0800
 
-    Allow more levels of arrays with component decoration (#5820)
+    Prepare release (#5905)
     
-    Fixes #5819
-    
-    * Allow multiple levels of arrays in a variable with component
-      decoration
+    This is the second release candidate for v2024.4. Includes new commits since September, including Vulkan 1.4 support.

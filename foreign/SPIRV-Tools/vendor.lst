@@ -43,7 +43,6 @@ examples/CMakeLists.txt
 examples/cpp-interface/CMakeLists.txt
 examples/cpp-interface/main.cpp
 external/CMakeLists.txt
-include/spirv-tools/instrument.hpp
 include/spirv-tools/libspirv.h
 include/spirv-tools/libspirv.hpp
 include/spirv-tools/linker.hpp
@@ -644,14 +643,10 @@ source/opt/inline_opaque_pass.cpp
 source/opt/inline_opaque_pass.h
 source/opt/inline_pass.cpp
 source/opt/inline_pass.h
-source/opt/inst_debug_printf_pass.cpp
-source/opt/inst_debug_printf_pass.h
 source/opt/instruction.cpp
 source/opt/instruction.h
 source/opt/instruction_list.cpp
 source/opt/instruction_list.h
-source/opt/instrument_pass.cpp
-source/opt/instrument_pass.h
 source/opt/interface_var_sroa.cpp
 source/opt/interface_var_sroa.h
 source/opt/interp_fixup_pass.cpp
@@ -940,6 +935,7 @@ source/val/validate_ray_tracing_reorder.cpp
 source/val/validate_scopes.cpp
 source/val/validate_scopes.h
 source/val/validate_small_type_uses.cpp
+source/val/validate_tensor_layout.cpp
 source/val/validate_type.cpp
 source/val/validation_state.cpp
 source/val/validation_state.h
@@ -1282,6 +1278,7 @@ test/fuzzers/spvtools_opt_size_fuzzer.cpp
 test/fuzzers/spvtools_val_fuzzer.cpp
 test/generator_magic_number_test.cpp
 test/hex_float_test.cpp
+test/hex_to_text_test.cpp
 test/immediate_int_test.cpp
 test/libspirv_macros_test.cpp
 test/link/CMakeLists.txt
@@ -1368,7 +1365,6 @@ test/opt/if_conversion_test.cpp
 test/opt/inline_opaque_test.cpp
 test/opt/inline_test.cpp
 test/opt/insert_extract_elim_test.cpp
-test/opt/inst_debug_printf_test.cpp
 test/opt/instruction_list_test.cpp
 test/opt/instruction_test.cpp
 test/opt/interface_var_sroa_test.cpp
@@ -1599,6 +1595,7 @@ tools/dis/dis.cpp
 tools/emacs/50spirv-tools.el
 tools/emacs/CMakeLists.txt
 tools/fuzz/fuzz.cpp
+tools/io.cpp
 tools/io.h
 tools/lesspipe/CMakeLists.txt
 tools/lesspipe/spirv-lesspipe.sh

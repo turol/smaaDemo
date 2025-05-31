@@ -1,5 +1,5 @@
-commit 252dc2df08f58e0e50c8437edc0e77eacdfb7559
-Author: Luna <cli-luna@protonmail.com>
-Date:   Wed Oct 16 17:47:16 2024 +0200
+commit 0659679d9648a4dfdb5513efe25c495a3712dbf4
+Author: Genna Wingert <1058083+wingertge@users.noreply.github.com>
+Date:   Wed Jan 15 17:38:17 2025 +0100
 
-    Add nuvk's spirv emitter. (#454)
+    Add a source language for Rust (#472)

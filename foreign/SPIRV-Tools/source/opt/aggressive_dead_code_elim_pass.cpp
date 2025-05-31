@@ -40,6 +40,10 @@ constexpr uint32_t kCopyMemorySourceAddrInIdx = 1;
 constexpr uint32_t kLoadSourceAddrInIdx = 0;
 constexpr uint32_t kDebugDeclareOperandVariableIndex = 5;
 constexpr uint32_t kGlobalVariableVariableIndex = 12;
+constexpr uint32_t kExtInstSetInIdx = 0;
+constexpr uint32_t kExtInstOpInIdx = 1;
+constexpr uint32_t kInterpolantInIdx = 2;
+constexpr uint32_t kCooperativeMatrixLoadSourceAddrInIdx = 0;
 
 // Sorting functor to present annotation instructions in an easy-to-process
 // order. The functor orders by opcode first and falls back on unique id
@@ -422,6 +426,24 @@ uint32_t AggressiveDCEPass::GetLoadedVariableFromNonFunctionCalls(
     case spv::Op::OpCopyMemorySized:
       return GetVariableId(
           inst->GetSingleWordInOperand(kCopyMemorySourceAddrInIdx));
+    case spv::Op::OpExtInst: {
+      if (inst->GetSingleWordInOperand(kExtInstSetInIdx) ==
+          context()->get_feature_mgr()->GetExtInstImportId_GLSLstd450()) {
+        auto ext_inst = inst->GetSingleWordInOperand(kExtInstOpInIdx);
+        switch (ext_inst) {
+          case GLSLstd450InterpolateAtCentroid:
+          case GLSLstd450InterpolateAtOffset:
+          case GLSLstd450InterpolateAtSample:
+            return inst->GetSingleWordInOperand(kInterpolantInIdx);
+        }
+      }
+      break;
+    }
+    case spv::Op::OpCooperativeMatrixLoadNV:
+    case spv::Op::OpCooperativeMatrixLoadKHR:
+    case spv::Op::OpCooperativeMatrixLoadTensorNV:
+      return GetVariableId(
+          inst->GetSingleWordInOperand(kCooperativeMatrixLoadSourceAddrInIdx));
     default:
       break;
   }
@@ -1010,10 +1032,11 @@ void AggressiveDCEPass::InitExtensions() {
       "SPV_NV_bindless_texture",
       "SPV_EXT_shader_atomic_float_add",
       "SPV_EXT_fragment_shader_interlock",
-      "SPV_NV_compute_shader_derivatives",
+      "SPV_KHR_compute_shader_derivatives",
       "SPV_NV_cooperative_matrix",
       "SPV_KHR_cooperative_matrix",
-      "SPV_KHR_ray_tracing_position_fetch"
+      "SPV_KHR_ray_tracing_position_fetch",
+      "SPV_KHR_fragment_shading_rate"
   });
   // clang-format on
 }

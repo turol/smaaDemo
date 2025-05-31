@@ -85,7 +85,9 @@ include/spirv/unified1/spirv.lua
 include/spirv/unified1/spirv.py
 include/spirv/unified1/spv.d
 tests/CMakeLists.txt
+tests/example.c
 tests/example.cpp
+tests/example11.cpp
 tests/find_package/CMakeLists.txt
 tests/pkg_config/CMakeLists.txt
 tools/buildHeaders/CMakeLists.txt

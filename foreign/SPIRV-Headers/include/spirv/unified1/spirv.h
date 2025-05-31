@@ -13,7 +13,7 @@
 ** 
 ** MODIFICATIONS TO THIS FILE MAY MEAN IT NO LONGER ACCURATELY REFLECTS KHRONOS
 ** STANDARDS. THE UNMODIFIED, NORMATIVE VERSIONS OF KHRONOS SPECIFICATIONS AND
-** HEADER INFORMATION ARE LOCATED AT https://www.khronos.org/registry/ 
+** HEADER INFORMATION ARE LOCATED AT https://www.khronos.org/registry/
 ** 
 ** THE MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 ** OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -78,6 +78,7 @@ typedef enum SpvSourceLanguage_ {
     SpvSourceLanguageWGSL = 10,
     SpvSourceLanguageSlang = 11,
     SpvSourceLanguageZig = 12,
+    SpvSourceLanguageRust = 13,
     SpvSourceLanguageMax = 0x7fffffff,
 } SpvSourceLanguage;
 
@@ -1174,6 +1175,12 @@ typedef enum SpvCapability_ {
     SpvCapabilityAtomicFloat16VectorNV = 5404,
     SpvCapabilityRayTracingDisplacementMicromapNV = 5409,
     SpvCapabilityRawAccessChainsNV = 5414,
+    SpvCapabilityCooperativeMatrixReductionsNV = 5430,
+    SpvCapabilityCooperativeMatrixConversionsNV = 5431,
+    SpvCapabilityCooperativeMatrixPerElementOperationsNV = 5432,
+    SpvCapabilityCooperativeMatrixTensorAddressingNV = 5433,
+    SpvCapabilityCooperativeMatrixBlockLoadsNV = 5434,
+    SpvCapabilityTensorAddressingNV = 5439,
     SpvCapabilitySubgroupShuffleINTEL = 5568,
     SpvCapabilitySubgroupBufferBlockIOINTEL = 5569,
     SpvCapabilitySubgroupImageBlockIOINTEL = 5570,
@@ -1248,6 +1255,9 @@ typedef enum SpvCapability_ {
     SpvCapabilityGlobalVariableHostAccessINTEL = 6187,
     SpvCapabilityGlobalVariableFPGADecorationsINTEL = 6189,
     SpvCapabilitySubgroupBufferPrefetchINTEL = 6220,
+    SpvCapabilitySubgroup2DBlockIOINTEL = 6228,
+    SpvCapabilitySubgroup2DBlockTransformINTEL = 6229,
+    SpvCapabilitySubgroup2DBlockTransposeINTEL = 6230,
     SpvCapabilityGroupUniformArithmeticKHR = 6400,
     SpvCapabilityMaskedGatherScatterINTEL = 6427,
     SpvCapabilityCacheControlsINTEL = 6441,
@@ -1390,6 +1400,41 @@ typedef enum SpvCooperativeMatrixUse_ {
     SpvCooperativeMatrixUseMatrixAccumulatorKHR = 2,
     SpvCooperativeMatrixUseMax = 0x7fffffff,
 } SpvCooperativeMatrixUse;
+
+typedef enum SpvCooperativeMatrixReduceShift_ {
+    SpvCooperativeMatrixReduceRowShift = 0,
+    SpvCooperativeMatrixReduceColumnShift = 1,
+    SpvCooperativeMatrixReduce2x2Shift = 2,
+    SpvCooperativeMatrixReduceMax = 0x7fffffff,
+} SpvCooperativeMatrixReduceShift;
+
+typedef enum SpvCooperativeMatrixReduceMask_ {
+    SpvCooperativeMatrixReduceMaskNone = 0,
+    SpvCooperativeMatrixReduceRowMask = 0x00000001,
+    SpvCooperativeMatrixReduceColumnMask = 0x00000002,
+    SpvCooperativeMatrixReduce2x2Mask = 0x00000004,
+} SpvCooperativeMatrixReduceMask;
+
+typedef enum SpvTensorClampMode_ {
+    SpvTensorClampModeUndefined = 0,
+    SpvTensorClampModeConstant = 1,
+    SpvTensorClampModeClampToEdge = 2,
+    SpvTensorClampModeRepeat = 3,
+    SpvTensorClampModeRepeatMirrored = 4,
+    SpvTensorClampModeMax = 0x7fffffff,
+} SpvTensorClampMode;
+
+typedef enum SpvTensorAddressingOperandsShift_ {
+    SpvTensorAddressingOperandsTensorViewShift = 0,
+    SpvTensorAddressingOperandsDecodeFuncShift = 1,
+    SpvTensorAddressingOperandsMax = 0x7fffffff,
+} SpvTensorAddressingOperandsShift;
+
+typedef enum SpvTensorAddressingOperandsMask_ {
+    SpvTensorAddressingOperandsMaskNone = 0,
+    SpvTensorAddressingOperandsTensorViewMask = 0x00000001,
+    SpvTensorAddressingOperandsDecodeFuncMask = 0x00000002,
+} SpvTensorAddressingOperandsMask;
 
 typedef enum SpvInitializationModeQualifier_ {
     SpvInitializationModeQualifierInitOnDeviceReprogramINTEL = 0,
@@ -1903,6 +1948,7 @@ typedef enum SpvOp_ {
     SpvOpReorderThreadWithHintNV = 5280,
     SpvOpTypeHitObjectNV = 5281,
     SpvOpImageSampleFootprintNV = 5283,
+    SpvOpCooperativeMatrixConvertNV = 5293,
     SpvOpEmitMeshTasksEXT = 5294,
     SpvOpSetMeshOutputsEXT = 5295,
     SpvOpGroupNonUniformPartitionNV = 5296,
@@ -1927,9 +1973,26 @@ typedef enum SpvOp_ {
     SpvOpCooperativeMatrixLengthNV = 5362,
     SpvOpBeginInvocationInterlockEXT = 5364,
     SpvOpEndInvocationInterlockEXT = 5365,
+    SpvOpCooperativeMatrixReduceNV = 5366,
+    SpvOpCooperativeMatrixLoadTensorNV = 5367,
+    SpvOpCooperativeMatrixStoreTensorNV = 5368,
+    SpvOpCooperativeMatrixPerElementOpNV = 5369,
+    SpvOpTypeTensorLayoutNV = 5370,
+    SpvOpTypeTensorViewNV = 5371,
+    SpvOpCreateTensorLayoutNV = 5372,
+    SpvOpTensorLayoutSetDimensionNV = 5373,
+    SpvOpTensorLayoutSetStrideNV = 5374,
+    SpvOpTensorLayoutSliceNV = 5375,
+    SpvOpTensorLayoutSetClampValueNV = 5376,
+    SpvOpCreateTensorViewNV = 5377,
+    SpvOpTensorViewSetDimensionNV = 5378,
+    SpvOpTensorViewSetStrideNV = 5379,
     SpvOpDemoteToHelperInvocation = 5380,
     SpvOpDemoteToHelperInvocationEXT = 5380,
     SpvOpIsHelperInvocationEXT = 5381,
+    SpvOpTensorViewSetClipNV = 5382,
+    SpvOpTensorLayoutSetBlockSizeNV = 5384,
+    SpvOpCooperativeMatrixTransposeNV = 5390,
     SpvOpConvertUToImageNV = 5391,
     SpvOpConvertUToSamplerNV = 5392,
     SpvOpConvertImageToUNV = 5393,
@@ -2186,6 +2249,11 @@ typedef enum SpvOp_ {
     SpvOpControlBarrierWaitINTEL = 6143,
     SpvOpArithmeticFenceEXT = 6145,
     SpvOpSubgroupBlockPrefetchINTEL = 6221,
+    SpvOpSubgroup2DBlockLoadINTEL = 6231,
+    SpvOpSubgroup2DBlockLoadTransformINTEL = 6232,
+    SpvOpSubgroup2DBlockLoadTransposeINTEL = 6233,
+    SpvOpSubgroup2DBlockPrefetchINTEL = 6234,
+    SpvOpSubgroup2DBlockStoreINTEL = 6235,
     SpvOpGroupIMulKHR = 6401,
     SpvOpGroupFMulKHR = 6402,
     SpvOpGroupBitwiseAndKHR = 6403,
@@ -2660,6 +2728,7 @@ inline void SpvHasResultAndType(SpvOp opcode, bool *hasResult, bool *hasResultTy
     case SpvOpReorderThreadWithHintNV: *hasResult = false; *hasResultType = false; break;
     case SpvOpTypeHitObjectNV: *hasResult = true; *hasResultType = false; break;
     case SpvOpImageSampleFootprintNV: *hasResult = true; *hasResultType = true; break;
+    case SpvOpCooperativeMatrixConvertNV: *hasResult = true; *hasResultType = true; break;
     case SpvOpEmitMeshTasksEXT: *hasResult = false; *hasResultType = false; break;
     case SpvOpSetMeshOutputsEXT: *hasResult = false; *hasResultType = false; break;
     case SpvOpGroupNonUniformPartitionNV: *hasResult = true; *hasResultType = true; break;
@@ -2682,8 +2751,25 @@ inline void SpvHasResultAndType(SpvOp opcode, bool *hasResult, bool *hasResultTy
     case SpvOpCooperativeMatrixLengthNV: *hasResult = true; *hasResultType = true; break;
     case SpvOpBeginInvocationInterlockEXT: *hasResult = false; *hasResultType = false; break;
     case SpvOpEndInvocationInterlockEXT: *hasResult = false; *hasResultType = false; break;
+    case SpvOpCooperativeMatrixReduceNV: *hasResult = true; *hasResultType = true; break;
+    case SpvOpCooperativeMatrixLoadTensorNV: *hasResult = true; *hasResultType = true; break;
+    case SpvOpCooperativeMatrixStoreTensorNV: *hasResult = false; *hasResultType = false; break;
+    case SpvOpCooperativeMatrixPerElementOpNV: *hasResult = true; *hasResultType = true; break;
+    case SpvOpTypeTensorLayoutNV: *hasResult = true; *hasResultType = false; break;
+    case SpvOpTypeTensorViewNV: *hasResult = true; *hasResultType = false; break;
+    case SpvOpCreateTensorLayoutNV: *hasResult = true; *hasResultType = true; break;
+    case SpvOpTensorLayoutSetDimensionNV: *hasResult = true; *hasResultType = true; break;
+    case SpvOpTensorLayoutSetStrideNV: *hasResult = true; *hasResultType = true; break;
+    case SpvOpTensorLayoutSliceNV: *hasResult = true; *hasResultType = true; break;
+    case SpvOpTensorLayoutSetClampValueNV: *hasResult = true; *hasResultType = true; break;
+    case SpvOpCreateTensorViewNV: *hasResult = true; *hasResultType = true; break;
+    case SpvOpTensorViewSetDimensionNV: *hasResult = true; *hasResultType = true; break;
+    case SpvOpTensorViewSetStrideNV: *hasResult = true; *hasResultType = true; break;
     case SpvOpDemoteToHelperInvocation: *hasResult = false; *hasResultType = false; break;
     case SpvOpIsHelperInvocationEXT: *hasResult = true; *hasResultType = true; break;
+    case SpvOpTensorViewSetClipNV: *hasResult = true; *hasResultType = true; break;
+    case SpvOpTensorLayoutSetBlockSizeNV: *hasResult = true; *hasResultType = true; break;
+    case SpvOpCooperativeMatrixTransposeNV: *hasResult = true; *hasResultType = true; break;
     case SpvOpConvertUToImageNV: *hasResult = true; *hasResultType = true; break;
     case SpvOpConvertUToSamplerNV: *hasResult = true; *hasResultType = true; break;
     case SpvOpConvertImageToUNV: *hasResult = true; *hasResultType = true; break;
@@ -2718,7 +2804,7 @@ inline void SpvHasResultAndType(SpvOp opcode, bool *hasResult, bool *hasResultTy
     case SpvOpUMul32x16INTEL: *hasResult = true; *hasResultType = true; break;
     case SpvOpConstantFunctionPointerINTEL: *hasResult = true; *hasResultType = true; break;
     case SpvOpFunctionPointerCallINTEL: *hasResult = true; *hasResultType = true; break;
-    case SpvOpAsmTargetINTEL: *hasResult = true; *hasResultType = true; break;
+    case SpvOpAsmTargetINTEL: *hasResult = true; *hasResultType = false; break;
     case SpvOpAsmINTEL: *hasResult = true; *hasResultType = true; break;
     case SpvOpAsmCallINTEL: *hasResult = true; *hasResultType = true; break;
     case SpvOpAtomicFMinEXT: *hasResult = true; *hasResultType = true; break;
@@ -2938,6 +3024,11 @@ inline void SpvHasResultAndType(SpvOp opcode, bool *hasResult, bool *hasResultTy
     case SpvOpControlBarrierWaitINTEL: *hasResult = false; *hasResultType = false; break;
     case SpvOpArithmeticFenceEXT: *hasResult = true; *hasResultType = true; break;
     case SpvOpSubgroupBlockPrefetchINTEL: *hasResult = false; *hasResultType = false; break;
+    case SpvOpSubgroup2DBlockLoadINTEL: *hasResult = false; *hasResultType = false; break;
+    case SpvOpSubgroup2DBlockLoadTransformINTEL: *hasResult = false; *hasResultType = false; break;
+    case SpvOpSubgroup2DBlockLoadTransposeINTEL: *hasResult = false; *hasResultType = false; break;
+    case SpvOpSubgroup2DBlockPrefetchINTEL: *hasResult = false; *hasResultType = false; break;
+    case SpvOpSubgroup2DBlockStoreINTEL: *hasResult = false; *hasResultType = false; break;
     case SpvOpGroupIMulKHR: *hasResult = true; *hasResultType = true; break;
     case SpvOpGroupFMulKHR: *hasResult = true; *hasResultType = true; break;
     case SpvOpGroupBitwiseAndKHR: *hasResult = true; *hasResultType = true; break;
@@ -2965,6 +3056,7 @@ inline const char* SpvSourceLanguageToString(SpvSourceLanguage value) {
     case SpvSourceLanguageWGSL: return "WGSL";
     case SpvSourceLanguageSlang: return "Slang";
     case SpvSourceLanguageZig: return "Zig";
+    case SpvSourceLanguageRust: return "Rust";
     default: return "Unknown";
     }
 }
@@ -3794,6 +3886,12 @@ inline const char* SpvCapabilityToString(SpvCapability value) {
     case SpvCapabilityAtomicFloat16VectorNV: return "AtomicFloat16VectorNV";
     case SpvCapabilityRayTracingDisplacementMicromapNV: return "RayTracingDisplacementMicromapNV";
     case SpvCapabilityRawAccessChainsNV: return "RawAccessChainsNV";
+    case SpvCapabilityCooperativeMatrixReductionsNV: return "CooperativeMatrixReductionsNV";
+    case SpvCapabilityCooperativeMatrixConversionsNV: return "CooperativeMatrixConversionsNV";
+    case SpvCapabilityCooperativeMatrixPerElementOperationsNV: return "CooperativeMatrixPerElementOperationsNV";
+    case SpvCapabilityCooperativeMatrixTensorAddressingNV: return "CooperativeMatrixTensorAddressingNV";
+    case SpvCapabilityCooperativeMatrixBlockLoadsNV: return "CooperativeMatrixBlockLoadsNV";
+    case SpvCapabilityTensorAddressingNV: return "TensorAddressingNV";
     case SpvCapabilitySubgroupShuffleINTEL: return "SubgroupShuffleINTEL";
     case SpvCapabilitySubgroupBufferBlockIOINTEL: return "SubgroupBufferBlockIOINTEL";
     case SpvCapabilitySubgroupImageBlockIOINTEL: return "SubgroupImageBlockIOINTEL";
@@ -3863,6 +3961,9 @@ inline const char* SpvCapabilityToString(SpvCapability value) {
     case SpvCapabilityGlobalVariableHostAccessINTEL: return "GlobalVariableHostAccessINTEL";
     case SpvCapabilityGlobalVariableFPGADecorationsINTEL: return "GlobalVariableFPGADecorationsINTEL";
     case SpvCapabilitySubgroupBufferPrefetchINTEL: return "SubgroupBufferPrefetchINTEL";
+    case SpvCapabilitySubgroup2DBlockIOINTEL: return "Subgroup2DBlockIOINTEL";
+    case SpvCapabilitySubgroup2DBlockTransformINTEL: return "Subgroup2DBlockTransformINTEL";
+    case SpvCapabilitySubgroup2DBlockTransposeINTEL: return "Subgroup2DBlockTransposeINTEL";
     case SpvCapabilityGroupUniformArithmeticKHR: return "GroupUniformArithmeticKHR";
     case SpvCapabilityMaskedGatherScatterINTEL: return "MaskedGatherScatterINTEL";
     case SpvCapabilityCacheControlsINTEL: return "CacheControlsINTEL";
@@ -3958,6 +4059,17 @@ inline const char* SpvCooperativeMatrixUseToString(SpvCooperativeMatrixUse value
     case SpvCooperativeMatrixUseMatrixAKHR: return "MatrixAKHR";
     case SpvCooperativeMatrixUseMatrixBKHR: return "MatrixBKHR";
     case SpvCooperativeMatrixUseMatrixAccumulatorKHR: return "MatrixAccumulatorKHR";
+    default: return "Unknown";
+    }
+}
+
+inline const char* SpvTensorClampModeToString(SpvTensorClampMode value) {
+    switch (value) {
+    case SpvTensorClampModeUndefined: return "Undefined";
+    case SpvTensorClampModeConstant: return "Constant";
+    case SpvTensorClampModeClampToEdge: return "ClampToEdge";
+    case SpvTensorClampModeRepeat: return "Repeat";
+    case SpvTensorClampModeRepeatMirrored: return "RepeatMirrored";
     default: return "Unknown";
     }
 }
@@ -4469,6 +4581,7 @@ inline const char* SpvOpToString(SpvOp value) {
     case SpvOpReorderThreadWithHintNV: return "OpReorderThreadWithHintNV";
     case SpvOpTypeHitObjectNV: return "OpTypeHitObjectNV";
     case SpvOpImageSampleFootprintNV: return "OpImageSampleFootprintNV";
+    case SpvOpCooperativeMatrixConvertNV: return "OpCooperativeMatrixConvertNV";
     case SpvOpEmitMeshTasksEXT: return "OpEmitMeshTasksEXT";
     case SpvOpSetMeshOutputsEXT: return "OpSetMeshOutputsEXT";
     case SpvOpGroupNonUniformPartitionNV: return "OpGroupNonUniformPartitionNV";
@@ -4491,8 +4604,25 @@ inline const char* SpvOpToString(SpvOp value) {
     case SpvOpCooperativeMatrixLengthNV: return "OpCooperativeMatrixLengthNV";
     case SpvOpBeginInvocationInterlockEXT: return "OpBeginInvocationInterlockEXT";
     case SpvOpEndInvocationInterlockEXT: return "OpEndInvocationInterlockEXT";
+    case SpvOpCooperativeMatrixReduceNV: return "OpCooperativeMatrixReduceNV";
+    case SpvOpCooperativeMatrixLoadTensorNV: return "OpCooperativeMatrixLoadTensorNV";
+    case SpvOpCooperativeMatrixStoreTensorNV: return "OpCooperativeMatrixStoreTensorNV";
+    case SpvOpCooperativeMatrixPerElementOpNV: return "OpCooperativeMatrixPerElementOpNV";
+    case SpvOpTypeTensorLayoutNV: return "OpTypeTensorLayoutNV";
+    case SpvOpTypeTensorViewNV: return "OpTypeTensorViewNV";
+    case SpvOpCreateTensorLayoutNV: return "OpCreateTensorLayoutNV";
+    case SpvOpTensorLayoutSetDimensionNV: return "OpTensorLayoutSetDimensionNV";
+    case SpvOpTensorLayoutSetStrideNV: return "OpTensorLayoutSetStrideNV";
+    case SpvOpTensorLayoutSliceNV: return "OpTensorLayoutSliceNV";
+    case SpvOpTensorLayoutSetClampValueNV: return "OpTensorLayoutSetClampValueNV";
+    case SpvOpCreateTensorViewNV: return "OpCreateTensorViewNV";
+    case SpvOpTensorViewSetDimensionNV: return "OpTensorViewSetDimensionNV";
+    case SpvOpTensorViewSetStrideNV: return "OpTensorViewSetStrideNV";
     case SpvOpDemoteToHelperInvocation: return "OpDemoteToHelperInvocation";
     case SpvOpIsHelperInvocationEXT: return "OpIsHelperInvocationEXT";
+    case SpvOpTensorViewSetClipNV: return "OpTensorViewSetClipNV";
+    case SpvOpTensorLayoutSetBlockSizeNV: return "OpTensorLayoutSetBlockSizeNV";
+    case SpvOpCooperativeMatrixTransposeNV: return "OpCooperativeMatrixTransposeNV";
     case SpvOpConvertUToImageNV: return "OpConvertUToImageNV";
     case SpvOpConvertUToSamplerNV: return "OpConvertUToSamplerNV";
     case SpvOpConvertImageToUNV: return "OpConvertImageToUNV";
@@ -4747,6 +4877,11 @@ inline const char* SpvOpToString(SpvOp value) {
     case SpvOpControlBarrierWaitINTEL: return "OpControlBarrierWaitINTEL";
     case SpvOpArithmeticFenceEXT: return "OpArithmeticFenceEXT";
     case SpvOpSubgroupBlockPrefetchINTEL: return "OpSubgroupBlockPrefetchINTEL";
+    case SpvOpSubgroup2DBlockLoadINTEL: return "OpSubgroup2DBlockLoadINTEL";
+    case SpvOpSubgroup2DBlockLoadTransformINTEL: return "OpSubgroup2DBlockLoadTransformINTEL";
+    case SpvOpSubgroup2DBlockLoadTransposeINTEL: return "OpSubgroup2DBlockLoadTransposeINTEL";
+    case SpvOpSubgroup2DBlockPrefetchINTEL: return "OpSubgroup2DBlockPrefetchINTEL";
+    case SpvOpSubgroup2DBlockStoreINTEL: return "OpSubgroup2DBlockStoreINTEL";
     case SpvOpGroupIMulKHR: return "OpGroupIMulKHR";
     case SpvOpGroupFMulKHR: return "OpGroupFMulKHR";
     case SpvOpGroupBitwiseAndKHR: return "OpGroupBitwiseAndKHR";

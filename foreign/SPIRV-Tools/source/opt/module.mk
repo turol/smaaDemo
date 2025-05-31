@@ -61,10 +61,8 @@ FILES:= \
 	inline_exhaustive_pass.cpp \
 	inline_opaque_pass.cpp \
 	inline_pass.cpp \
-	inst_debug_printf_pass.cpp \
 	instruction.cpp \
 	instruction_list.cpp \
-	instrument_pass.cpp \
 	interface_var_sroa.cpp \
 	interp_fixup_pass.cpp \
 	invocation_interlock_placement_pass.cpp \

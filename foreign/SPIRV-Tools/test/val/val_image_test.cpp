@@ -1380,7 +1380,7 @@ TEST_F(ValidateImage, ImageTexelPointerResultTypeNotPointer) {
   CompileSuccessfully(GenerateShaderCode(body).c_str());
   ASSERT_EQ(SPV_ERROR_INVALID_DATA, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("Expected Result Type to be OpTypePointer"));
+              HasSubstr("Expected Result Type to be a pointer"));
 }
 
 TEST_F(ValidateImage, ImageTexelPointerResultTypeNotImageClass) {
@@ -1392,7 +1392,7 @@ TEST_F(ValidateImage, ImageTexelPointerResultTypeNotImageClass) {
   CompileSuccessfully(GenerateShaderCode(body).c_str());
   ASSERT_EQ(SPV_ERROR_INVALID_DATA, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("Expected Result Type to be OpTypePointer whose "
+              HasSubstr("Expected Result Type to be a pointer whose "
                         "Storage Class operand is Image"));
 }
 
@@ -1406,7 +1406,7 @@ TEST_F(ValidateImage, ImageTexelPointerResultTypeNotNumericNorVoid) {
   ASSERT_EQ(SPV_ERROR_INVALID_DATA, ValidateInstructions());
   EXPECT_THAT(
       getDiagnosticString(),
-      HasSubstr("Expected Result Type to be OpTypePointer whose Type operand "
+      HasSubstr("Expected Result Type to be a pointer whose Type operand "
                 "must be a scalar numerical type or OpTypeVoid"));
 }
 
@@ -4780,7 +4780,8 @@ TEST_F(ValidateImage, QueryLodWrongExecutionModel) {
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr(
-          "OpImageQueryLod requires Fragment or GLCompute execution model"));
+          "OpImageQueryLod requires Fragment, GLCompute, MeshEXT or TaskEXT "
+          "execution model"));
 }
 
 TEST_F(ValidateImage, QueryLodWrongExecutionModelWithFunc) {
@@ -4801,7 +4802,8 @@ OpFunctionEnd
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr(
-          "OpImageQueryLod requires Fragment or GLCompute execution model"));
+          "OpImageQueryLod requires Fragment, GLCompute, MeshEXT or TaskEXT "
+          "execution model"));
 }
 
 TEST_F(ValidateImage, QueryLodComputeShaderDerivatives) {
@@ -4813,12 +4815,12 @@ TEST_F(ValidateImage, QueryLodComputeShaderDerivatives) {
 )";
 
   const std::string extra = R"(
-OpCapability ComputeDerivativeGroupLinearNV
-OpExtension "SPV_NV_compute_shader_derivatives"
+OpCapability ComputeDerivativeGroupLinearKHR
+OpExtension "SPV_KHR_compute_shader_derivatives"
 )";
   const std::string mode = R"(
 OpExecutionMode %main LocalSize 8 8 1
-OpExecutionMode %main DerivativeGroupLinearNV
+OpExecutionMode %main DerivativeGroupLinearKHR
 )";
   CompileSuccessfully(
       GenerateShaderCode(body, extra, "GLCompute", mode).c_str());
@@ -4930,8 +4932,8 @@ TEST_F(ValidateImage, QueryLodComputeShaderDerivativesMissingMode) {
 )";
 
   const std::string extra = R"(
-OpCapability ComputeDerivativeGroupLinearNV
-OpExtension "SPV_NV_compute_shader_derivatives"
+OpCapability ComputeDerivativeGroupLinearKHR
+OpExtension "SPV_KHR_compute_shader_derivatives"
 )";
   const std::string mode = R"(
 OpExecutionMode %main LocalSize 8 8 1
@@ -4940,9 +4942,9 @@ OpExecutionMode %main LocalSize 8 8 1
       GenerateShaderCode(body, extra, "GLCompute", mode).c_str());
   ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("OpImageQueryLod requires DerivativeGroupQuadsNV or "
-                        "DerivativeGroupLinearNV execution mode for GLCompute "
-                        "execution model"));
+              HasSubstr("OpImageQueryLod requires DerivativeGroupQuadsKHR or "
+                        "DerivativeGroupLinearKHR execution mode for "
+                        "GLCompute, MeshEXT or TaskEXT execution model"));
 }
 
 TEST_F(ValidateImage, ImplicitLodWrongExecutionModel) {
@@ -4956,8 +4958,8 @@ TEST_F(ValidateImage, ImplicitLodWrongExecutionModel) {
   CompileSuccessfully(GenerateShaderCode(body, "", "Vertex").c_str());
   ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("ImplicitLod instructions require Fragment or "
-                        "GLCompute execution model"));
+              HasSubstr("ImplicitLod instructions require Fragment, "
+                        "GLCompute, MeshEXT or TaskEXT execution model"));
 }
 
 TEST_F(ValidateImage, ImplicitLodComputeShaderDerivatives) {
@@ -4969,12 +4971,12 @@ TEST_F(ValidateImage, ImplicitLodComputeShaderDerivatives) {
 )";
 
   const std::string extra = R"(
-OpCapability ComputeDerivativeGroupLinearNV
-OpExtension "SPV_NV_compute_shader_derivatives"
+OpCapability ComputeDerivativeGroupLinearKHR
+OpExtension "SPV_KHR_compute_shader_derivatives"
 )";
   const std::string mode = R"(
 OpExecutionMode %main LocalSize 8 8 1
-OpExecutionMode %main DerivativeGroupLinearNV
+OpExecutionMode %main DerivativeGroupLinearKHR
 )";
   CompileSuccessfully(
       GenerateShaderCode(body, extra, "GLCompute", mode).c_str());
@@ -4990,8 +4992,8 @@ TEST_F(ValidateImage, ImplicitLodComputeShaderDerivativesMissingMode) {
 )";
 
   const std::string extra = R"(
-OpCapability ComputeDerivativeGroupLinearNV
-OpExtension "SPV_NV_compute_shader_derivatives"
+OpCapability ComputeDerivativeGroupLinearKHR
+OpExtension "SPV_KHR_compute_shader_derivatives"
 )";
   const std::string mode = R"(
 OpExecutionMode %main LocalSize 8 8 1
@@ -5001,9 +5003,9 @@ OpExecutionMode %main LocalSize 8 8 1
   ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
   EXPECT_THAT(
       getDiagnosticString(),
-      HasSubstr("ImplicitLod instructions require DerivativeGroupQuadsNV or "
-                "DerivativeGroupLinearNV execution mode for GLCompute "
-                "execution model"));
+      HasSubstr("ImplicitLod instructions require DerivativeGroupQuadsKHR or "
+                "DerivativeGroupLinearKHR execution mode for GLCompute, "
+                "MeshEXT or TaskEXT execution model"));
 }
 
 TEST_F(ValidateImage, ReadSubpassDataWrongExecutionModel) {
@@ -6308,7 +6310,7 @@ TEST_F(ValidateImage, ImageTexelPointer64ResultTypeNotPointer) {
           .c_str());
   ASSERT_EQ(SPV_ERROR_INVALID_DATA, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("Expected Result Type to be OpTypePointer"));
+              HasSubstr("Expected Result Type to be a pointer"));
 }
 
 TEST_F(ValidateImage, ImageTexelPointer64ResultTypeNotImageClass) {
@@ -6324,7 +6326,7 @@ TEST_F(ValidateImage, ImageTexelPointer64ResultTypeNotImageClass) {
           .c_str());
   ASSERT_EQ(SPV_ERROR_INVALID_DATA, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("Expected Result Type to be OpTypePointer whose "
+              HasSubstr("Expected Result Type to be a pointer whose "
                         "Storage Class operand is Image"));
 }
 
@@ -6505,8 +6507,9 @@ OpFunctionEnd
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("ImplicitLod instructions require "
-                        "DerivativeGroupQuadsNV or DerivativeGroupLinearNV "
-                        "execution mode for GLCompute execution model"));
+                        "DerivativeGroupQuadsKHR or DerivativeGroupLinearKHR "
+                        "execution mode for GLCompute, MeshEXT or TaskEXT "
+                        "execution model"));
 }
 
 TEST_F(ValidateImage, TypeSampledImageNotBufferPost1p6) {
@@ -10870,6 +10873,28 @@ OpFunctionEnd
       getDiagnosticString(),
       HasSubstr(
           "Image operands must match result image operands except for depth"));
+}
+
+TEST_F(ValidateImage, ImageTexelPointerNotAPointer) {
+  const std::string code = R"(
+               OpCapability ClipDistance
+               OpMemoryModel Logical Simple
+       %void = OpTypeVoid
+         %57 = OpTypeFunction %void
+        %int = OpTypeInt 32 1
+%int_538976288 = OpConstant %int 538976288
+%int_538976288_0 = OpConstant %int 538976288
+       %8224 = OpFunction %void None %57
+      %65312 = OpLabel
+    %2097184 = OpImageTexelPointer %void %int_538976288 %int_538976288 %int_538976288_0
+               OpUnreachable
+               OpFunctionEnd
+)";
+
+  CompileSuccessfully(code);
+  EXPECT_EQ(SPV_ERROR_INVALID_DATA, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("Expected Result Type to be a pointer"));
 }
 
 }  // namespace
