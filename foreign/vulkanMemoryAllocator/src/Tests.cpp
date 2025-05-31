@@ -42,7 +42,7 @@ extern bool VK_KHR_maintenance5_enabled;
 extern PFN_vkGetBufferDeviceAddressKHR g_vkGetBufferDeviceAddressKHR;
 void BeginSingleTimeCommands();
 void EndSingleTimeCommands();
-void SetDebugUtilsObjectName(VkObjectType type, uint64_t handle, const char* name);
+void SetDebugUtilsObjectName(VkObjectType type, uint64_t handle, const std::string&);
 
 #ifndef VMA_DEBUG_MARGIN
     #define VMA_DEBUG_MARGIN 0
@@ -7826,112 +7826,6 @@ static void BasicTestTLSF()
     vmaDestroyVirtualBlock(block);
 }
 
-#if 0
-static void BasicTestBuddyAllocator()
-{
-    wprintf(L"Basic test buddy allocator\n");
-
-    RandomNumberGenerator rand{76543};
-
-    VkBufferCreateInfo sampleBufCreateInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-    sampleBufCreateInfo.size = 1024; // Whatever.
-    sampleBufCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-
-    VmaAllocationCreateInfo sampleAllocCreateInfo = {};
-
-    VmaPoolCreateInfo poolCreateInfo = {};
-    VkResult res = vmaFindMemoryTypeIndexForBufferInfo(g_hAllocator, &sampleBufCreateInfo, &sampleAllocCreateInfo, &poolCreateInfo.memoryTypeIndex);
-    TEST(res == VK_SUCCESS);
-
-    // Deliberately adding 1023 to test usable size smaller than memory block size.
-    poolCreateInfo.blockSize = 1024 * 1024 + 1023;
-    poolCreateInfo.flags = VMA_POOL_CREATE_BUDDY_ALGORITHM_BIT;
-    //poolCreateInfo.minBlockCount = poolCreateInfo.maxBlockCount = 1;
-
-    VmaPool pool = nullptr;
-    res = vmaCreatePool(g_hAllocator, &poolCreateInfo, &pool);
-    TEST(res == VK_SUCCESS);
-
-    VkBufferCreateInfo bufCreateInfo = sampleBufCreateInfo;
-
-    VmaAllocationCreateInfo allocCreateInfo = {};
-    allocCreateInfo.pool = pool;
-
-    std::vector<BufferInfo> bufInfo;
-    BufferInfo newBufInfo;
-    VmaAllocationInfo allocInfo;
-
-    bufCreateInfo.size = 1024 * 256;
-    res = vmaCreateBuffer(g_hAllocator, &bufCreateInfo, &allocCreateInfo,
-        &newBufInfo.Buffer, &newBufInfo.Allocation, &allocInfo);
-    TEST(res == VK_SUCCESS);
-    bufInfo.push_back(newBufInfo);
-
-    bufCreateInfo.size = 1024 * 512;
-    res = vmaCreateBuffer(g_hAllocator, &bufCreateInfo, &allocCreateInfo,
-        &newBufInfo.Buffer, &newBufInfo.Allocation, &allocInfo);
-    TEST(res == VK_SUCCESS);
-    bufInfo.push_back(newBufInfo);
-
-    bufCreateInfo.size = 1024 * 128;
-    res = vmaCreateBuffer(g_hAllocator, &bufCreateInfo, &allocCreateInfo,
-        &newBufInfo.Buffer, &newBufInfo.Allocation, &allocInfo);
-    TEST(res == VK_SUCCESS);
-    bufInfo.push_back(newBufInfo);
-
-    // Test very small allocation, smaller than minimum node size.
-    bufCreateInfo.size = 1;
-    res = vmaCreateBuffer(g_hAllocator, &bufCreateInfo, &allocCreateInfo,
-        &newBufInfo.Buffer, &newBufInfo.Allocation, &allocInfo);
-    TEST(res == VK_SUCCESS);
-    bufInfo.push_back(newBufInfo);
-
-    // Test some small allocation with alignment requirement.
-    {
-        VkMemoryRequirements memReq;
-        memReq.alignment = 256;
-        memReq.memoryTypeBits = UINT32_MAX;
-        memReq.size = 32;
-
-        newBufInfo.Buffer = VK_NULL_HANDLE;
-        res = vmaAllocateMemory(g_hAllocator, &memReq, &allocCreateInfo,
-            &newBufInfo.Allocation, &allocInfo);
-        TEST(res == VK_SUCCESS);
-        TEST(allocInfo.offset % memReq.alignment == 0);
-        bufInfo.push_back(newBufInfo);
-    }
-
-    //SaveAllocatorStatsToFile(L"TEST.json");
-
-    VmaDetailedStatistics stats = {};
-    vmaCalculatePoolStatistics(g_hAllocator, pool, &stats);
-    int DBG = 0; // Set breakpoint here to inspect `stats`.
-
-    // Allocate enough new buffers to surely fall into second block.
-    for(uint32_t i = 0; i < 32; ++i)
-    {
-        bufCreateInfo.size = 1024 * (rand.Generate() % 32 + 1);
-        res = vmaCreateBuffer(g_hAllocator, &bufCreateInfo, &allocCreateInfo,
-            &newBufInfo.Buffer, &newBufInfo.Allocation, &allocInfo);
-        TEST(res == VK_SUCCESS);
-        bufInfo.push_back(newBufInfo);
-    }
-
-    SaveAllocatorStatsToFile(L"BuddyTest01.json");
-
-    // Destroy the buffers in random order.
-    while(!bufInfo.empty())
-    {
-        const size_t indexToDestroy = rand.Generate() % bufInfo.size();
-        const BufferInfo& currBufInfo = bufInfo[indexToDestroy];
-        vmaDestroyBuffer(g_hAllocator, currBufInfo.Buffer, currBufInfo.Allocation);
-        bufInfo.erase(bufInfo.begin() + indexToDestroy);
-    }
-
-    vmaDestroyPool(g_hAllocator, pool);
-}
-#endif // #if 0
-
 static void BasicTestAllocatePages()
 {
     wprintf(L"Basic test allocate pages\n");
@@ -8359,6 +8253,68 @@ static void TestMappingHysteresis()
     }
 }
 
+
+static void TestWin32Handles()
+{
+#if VMA_EXTERNAL_MEMORY_WIN32
+    wprintf(L"Test Win32 handles\n");
+    constexpr static VkExportMemoryAllocateInfoKHR exportMemAllocInfo{
+        VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_KHR,
+        nullptr,
+        VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT
+    };
+    constexpr static VkExternalMemoryBufferCreateInfoKHR externalMemBufCreateInfo{
+        VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO_KHR,
+        nullptr,
+        VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT
+    };
+
+    VkBufferCreateInfo bufCreateInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+    bufCreateInfo.size = 0x10000;
+    bufCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    bufCreateInfo.pNext = &externalMemBufCreateInfo;
+
+    VmaAllocationCreateInfo allocCreateInfo = {};
+    allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+
+    uint32_t memTypeIndex = UINT32_MAX;
+    TEST(vmaFindMemoryTypeIndexForBufferInfo(g_hAllocator,
+        &bufCreateInfo, &allocCreateInfo, &memTypeIndex) == VK_SUCCESS);
+
+    VmaPoolCreateInfo poolCreateInfo = {};
+    poolCreateInfo.memoryTypeIndex = memTypeIndex;
+    poolCreateInfo.pMemoryAllocateNext = (void*)&exportMemAllocInfo;
+
+    VmaPool pool = VK_NULL_HANDLE;
+    TEST(vmaCreatePool(g_hAllocator, &poolCreateInfo, &pool) == VK_SUCCESS);
+
+    allocCreateInfo.pool = pool;
+
+    for (size_t test = 0; test < 2; ++test)
+    {
+        if (test == 1)
+            allocCreateInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+
+        VkBuffer buf = VK_NULL_HANDLE;
+        VmaAllocation alloc = VK_NULL_HANDLE;
+        TEST(vmaCreateBuffer(g_hAllocator, &bufCreateInfo, &allocCreateInfo, &buf, &alloc, nullptr) == VK_SUCCESS);
+        HANDLE handle = NULL;
+        HANDLE handle2 = NULL;
+        TEST(vmaGetMemoryWin32Handle(g_hAllocator, alloc, nullptr, &handle) == VK_SUCCESS);
+        TEST(handle != nullptr);
+        TEST(vmaGetMemoryWin32Handle(g_hAllocator, alloc, nullptr, &handle2) == VK_SUCCESS);
+        TEST(handle2 != nullptr);
+        TEST(handle2 != handle);
+
+        vmaDestroyBuffer(g_hAllocator, buf, alloc);
+        TEST(CloseHandle(handle));
+        TEST(CloseHandle(handle2));
+    }
+
+    vmaDestroyPool(g_hAllocator, pool);
+#endif
+}
+
 void Test()
 {
     wprintf(L"TESTING:\n");
@@ -8401,6 +8357,7 @@ void Test()
     TestMappingHysteresis();
     TestDeviceLocalMapped();
     TestMaintenance5();
+    TestWin32Handles();
     TestMappingMultithreaded();
     TestLinearAllocator();
     ManuallyTestLinearAllocator();

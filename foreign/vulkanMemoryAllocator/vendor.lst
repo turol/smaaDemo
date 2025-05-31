@@ -70,12 +70,14 @@ docs/html/nav_fd.png
 docs/html/nav_g.png
 docs/html/nav_h.png
 docs/html/nav_hd.png
+docs/html/navtree.css
 docs/html/open.png
 docs/html/other_api_interop.html
 docs/html/pages.html
 docs/html/plus.svg
 docs/html/plusd.svg
 docs/html/quick_start.html
+docs/html/resize.js
 docs/html/resource_aliasing.html
 docs/html/search/all_0.js
 docs/html/search/all_1.js
@@ -218,6 +220,7 @@ docs/html/vk__mem__alloc_8h.html
 docs/html/vk_amd_device_coherent_memory.html
 docs/html/vk_ext_memory_priority.html
 docs/html/vk_khr_dedicated_allocation.html
+docs/html/vk_khr_external_memory_win32.html
 include/vk_mem_alloc.h
 media/Thumbnail.png
 src/.editorconfig

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15...3.26)
 
-project(VMA VERSION 3.1.0 LANGUAGES CXX)
+project(VMA VERSION 3.2.0 LANGUAGES CXX)
 
 add_library(VulkanMemoryAllocator INTERFACE)
 add_library(GPUOpen::VulkanMemoryAllocator ALIAS VulkanMemoryAllocator)
@@ -12,7 +12,8 @@ if (CMAKE_VERSION VERSION_LESS "3.21")
     string(COMPARE EQUAL ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR} PROJECT_IS_TOP_LEVEL)
 endif()
 
-if (PROJECT_IS_TOP_LEVEL)
+option(VMA_ENABLE_INSTALL "Install VulkanMemoryAllocator" ${PROJECT_IS_TOP_LEVEL})
+if (VMA_ENABLE_INSTALL)
     include(GNUInstallDirs)
     include(CMakePackageConfigHelpers)
 
