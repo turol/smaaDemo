@@ -718,13 +718,15 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 	assert(newSize > 0);
+	GLenum target = GL_UNIFORM_BUFFER;
 
 	// if buffer already exists, free it after it's no longer in use
 	if (ringBuffer) {
 		assert(ringBufSize       != 0);
 
 		if (persistentMapInUse) {
-			glUnmapNamedBuffer(ringBuffer);
+			glBindBuffer(target, ringBuffer);
+			glUnmapBuffer(target);
 			persistentMapping = nullptr;
 		}
 
@@ -748,7 +750,7 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 	}
 
 	// set up ring buffer
-	glCreateBuffers(1, &ringBuffer);
+	glGenBuffers(1, &ringBuffer);
 	LOG_TODO("proper error checking")
 	assert(ringBuffer != 0);
 	assert(ringBufSize               == 0);
@@ -775,9 +777,10 @@ void RendererImpl::recreateRingBuffer(unsigned int newSize) {
 		bufferFlags |= GL_MAP_READ_BIT;
 	}
 
-	glNamedBufferStorage(ringBuffer, ringBufSize, nullptr, bufferFlags);
+	glBindBuffer(target, ringBuffer);
+	glBufferStorage(target, ringBufSize, nullptr, bufferFlags);
 	if (persistentMapInUse) {
-		persistentMapping = reinterpret_cast<char *>(glMapNamedBufferRange(ringBuffer, 0, ringBufSize, bufferFlags));
+		persistentMapping = reinterpret_cast<char *>(glMapBufferRange(target, 0, ringBufSize, bufferFlags));
 	}
 }
 
@@ -797,7 +800,10 @@ RendererImpl::~RendererImpl() {
 
 
 	if (persistentMapInUse) {
-		glUnmapNamedBuffer(ringBuffer);
+		GLenum target = GL_UNIFORM_BUFFER;
+		glBindBuffer(target, ringBuffer);
+		glUnmapBuffer(target);
+		glBindBuffer(target, 0);
 		persistentMapping = nullptr;
 	} else {
 		assert(persistentMapping == nullptr);
@@ -930,8 +936,10 @@ BufferHandle Renderer::createBuffer(BufferUsageSet usage, uint32_t size, const v
 	}
 
 	Buffer buffer;
-	glCreateBuffers(1, &buffer.buffer);
-	glNamedBufferStorage(buffer.buffer, size, contents, bufferFlags);
+	glGenBuffers(1, &buffer.buffer);
+	GLenum target = GL_UNIFORM_BUFFER;
+	glBindBuffer(target, buffer.buffer);
+	glBufferStorage(target, size, contents, bufferFlags);
 	buffer.ringBufferAlloc = false;
 	buffer.offset          = 0;
 	buffer.size            = size;
@@ -953,7 +961,9 @@ BufferHandle Renderer::createEphemeralBuffer(BufferUsageSet usage, uint32_t size
 	if (impl->persistentMapInUse) {
 		memcpy(impl->persistentMapping + beginPtr, contents, size);
 	} else {
-		glNamedBufferSubData(impl->ringBuffer, beginPtr, size, contents);
+		GLenum target = GL_UNIFORM_BUFFER;
+		glBindBuffer(target, impl->ringBuffer);
+		glBufferSubData(target, beginPtr, size, contents);
 	}
 
 	Buffer buffer;
