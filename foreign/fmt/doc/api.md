@@ -375,18 +375,17 @@ allocator:
     using custom_string =
       std::basic_string<char, std::char_traits<char>, custom_allocator>;
 
-    custom_string vformat(custom_allocator alloc, fmt::string_view format_str,
-                          fmt::format_args args) {
+    auto vformat(custom_allocator alloc, fmt::string_view fmt,
+                 fmt::format_args args) -> custom_string {
       auto buf = custom_memory_buffer(alloc);
-      fmt::vformat_to(std::back_inserter(buf), format_str, args);
+      fmt::vformat_to(std::back_inserter(buf), fmt, args);
       return custom_string(buf.data(), buf.size(), alloc);
     }
 
     template <typename ...Args>
-    inline custom_string format(custom_allocator alloc,
-                                fmt::string_view format_str,
-                                const Args& ... args) {
-      return vformat(alloc, format_str, fmt::make_format_args(args...));
+    auto format(custom_allocator alloc, fmt::string_view fmt,
+                const Args& ... args) -> custom_string {
+      return vformat(alloc, fmt, fmt::make_format_args(args...));
     }
 
 The allocator will be used for the output container only. Formatting
@@ -410,11 +409,11 @@ locale:
 that take `std::locale` as a parameter. The locale type is a template
 parameter to avoid the expensive `<locale>` include.
 
-::: format(const Locale&, format_string<T...>, T&&...)
+::: format(detail::locale_ref, format_string<T...>, T&&...)
 
-::: format_to(OutputIt, const Locale&, format_string<T...>, T&&...)
+::: format_to(OutputIt, detail::locale_ref, format_string<T...>, T&&...)
 
-::: formatted_size(const Locale&, format_string<T...>, T&&...)
+::: formatted_size(detail::locale_ref, format_string<T...>, T&&...)
 
 <a id="legacy-checks"></a>
 ### Legacy Compile-Time Checks
@@ -498,10 +497,13 @@ chrono-format-specifications).
 - [`std::atomic_flag`](https://en.cppreference.com/w/cpp/atomic/atomic_flag)
 - [`std::bitset`](https://en.cppreference.com/w/cpp/utility/bitset)
 - [`std::error_code`](https://en.cppreference.com/w/cpp/error/error_code)
+- [`std::exception`](https://en.cppreference.com/w/cpp/error/exception)
 - [`std::filesystem::path`](https://en.cppreference.com/w/cpp/filesystem/path)
-- [`std::monostate`](https://en.cppreference.com/w/cpp/utility/variant/monostate)
+- [`std::monostate`](
+  https://en.cppreference.com/w/cpp/utility/variant/monostate)
 - [`std::optional`](https://en.cppreference.com/w/cpp/utility/optional)
-- [`std::source_location`](https://en.cppreference.com/w/cpp/utility/source_location)
+- [`std::source_location`](
+  https://en.cppreference.com/w/cpp/utility/source_location)
 - [`std::thread::id`](https://en.cppreference.com/w/cpp/thread/thread/id)
 - [`std::variant`](https://en.cppreference.com/w/cpp/utility/variant/variant)
 
@@ -509,7 +511,7 @@ chrono-format-specifications).
 
 ::: ptr(const std::shared_ptr<T>&)
 
-### Formatting Variants
+### Variants
 
 A `std::variant` is only formattable if every variant alternative is
 formattable, and requires the `__cpp_lib_variant` [library
@@ -524,6 +526,23 @@ feature](https://en.cppreference.com/w/cpp/feature_test).
 
     fmt::print("{}", std::variant<std::monostate, char>());
     // Output: variant(monostate)
+
+## Bit-Fields and Packed Structs
+
+To format a bit-field or a field of a struct with `__attribute__((packed))`
+applied to it, you need to convert it to the underlying or compatible type via
+a cast or a unary `+` ([godbolt](https://www.godbolt.org/z/3qKKs6T5Y)):
+
+```c++
+struct smol {
+  int bit : 1;
+};
+
+auto s = smol();
+fmt::print("{}", +s.bit);
+```
+
+This is a known limitation of "perfect" forwarding in C++.
 
 <a id="compile-api"></a>
 ## Format String Compilation

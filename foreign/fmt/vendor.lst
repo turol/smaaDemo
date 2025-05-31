@@ -108,6 +108,7 @@ test/gtest/gtest/gtest.h
 test/header-only-test.cc
 test/mock-allocator.h
 test/module-test.cc
+test/no-builtin-types-test.cc
 test/noexception-test.cc
 test/os-test.cc
 test/ostream-test.cc
