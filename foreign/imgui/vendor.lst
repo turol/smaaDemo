@@ -140,6 +140,7 @@ examples/example_sdl2_sdlrenderer2/example_sdl2_sdlrenderer2.vcxproj
 examples/example_sdl2_sdlrenderer2/example_sdl2_sdlrenderer2.vcxproj.filters
 examples/example_sdl2_sdlrenderer2/main.cpp
 examples/example_sdl2_vulkan/build_win32.bat
+examples/example_sdl2_vulkan/build_win64.bat
 examples/example_sdl2_vulkan/example_sdl2_vulkan.vcxproj
 examples/example_sdl2_vulkan/example_sdl2_vulkan.vcxproj.filters
 examples/example_sdl2_vulkan/main.cpp
@@ -147,6 +148,7 @@ examples/example_sdl3_opengl3/Makefile
 examples/example_sdl3_opengl3/Makefile.emscripten
 examples/example_sdl3_opengl3/README.md
 examples/example_sdl3_opengl3/build_win32.bat
+examples/example_sdl3_opengl3/build_win64.bat
 examples/example_sdl3_opengl3/example_sdl3_opengl3.vcxproj
 examples/example_sdl3_opengl3/example_sdl3_opengl3.vcxproj.filters
 examples/example_sdl3_opengl3/main.cpp
@@ -155,6 +157,11 @@ examples/example_sdl3_sdlrenderer3/build_win32.bat
 examples/example_sdl3_sdlrenderer3/example_sdl3_sdlrenderer3.vcxproj
 examples/example_sdl3_sdlrenderer3/example_sdl3_sdlrenderer3.vcxproj.filters
 examples/example_sdl3_sdlrenderer3/main.cpp
+examples/example_sdl3_vulkan/build_win32.bat
+examples/example_sdl3_vulkan/build_win64.bat
+examples/example_sdl3_vulkan/example_sdl3_vulkan.vcxproj
+examples/example_sdl3_vulkan/example_sdl3_vulkan.vcxproj.filters
+examples/example_sdl3_vulkan/main.cpp
 examples/example_win32_directx10/build_win32.bat
 examples/example_win32_directx10/example_win32_directx10.vcxproj
 examples/example_win32_directx10/example_win32_directx10.vcxproj.filters
