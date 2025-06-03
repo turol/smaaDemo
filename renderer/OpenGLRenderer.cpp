@@ -1509,7 +1509,8 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 
 	Framebuffer fb;
 	fb.desc = desc;
-	glCreateFramebuffers(1, &fb.fbo);
+	glGenFramebuffers(1, &fb.fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fb.fbo);
 
 	unsigned int width UNUSED = 0, height UNUSED = 0;
 
@@ -1552,10 +1553,10 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 		assert(colorRTtex.renderTarget);
 		assert(colorRTtex.tex != 0);
 
-		glNamedFramebufferTexture(fb.fbo, GL_COLOR_ATTACHMENT0 + i, colorRTtex.tex, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, colorRTtex.target, colorRTtex.tex, 0);
 	}
 
-	glNamedFramebufferDrawBuffers(fb.fbo, numColorAttachments, drawBuffers);
+	glDrawBuffers(numColorAttachments, drawBuffers);
 
 	if (desc.depthStencil_) {
 		const auto &depthRT = impl->renderTargets.get(desc.depthStencil_);
@@ -1570,7 +1571,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 		const auto &depthRTtex = impl->textures.get(depthRT.texture);
 		assert(depthRTtex.renderTarget);
 		assert(depthRTtex.tex != 0);
-		glNamedFramebufferTexture(fb.fbo, GL_DEPTH_ATTACHMENT, depthRTtex.tex, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthRTtex.target, depthRTtex.tex, 0);
 		fb.depthStencilFormat = depthRT.format;
 	} else {
 		assert(renderPass.desc.depthStencil_.format == Format::Invalid);
@@ -1578,7 +1579,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 
 	assert(impl->isRenderPassCompatible(renderPass, fb));
 
-	GLenum status = glCheckNamedFramebufferStatus(fb.fbo, GL_FRAMEBUFFER);
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
 		THROW_ERROR("Framebuffer \"{}\" is not complete: {:#04x}", desc.name_, status)
 	}
@@ -1709,11 +1710,12 @@ void RendererImpl::createRTHelperFBO(RenderTarget &rt) {
 	assert(texture.target      == GL_TEXTURE_2D
 	    || texture.target      == GL_TEXTURE_2D_MULTISAMPLE);
 
-	glCreateFramebuffers(1, &rt.helperFBO);
+	glGenFramebuffers(1, &rt.helperFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, rt.helperFBO);
 	assert(rt.helperFBO   != 0);
-	glNamedFramebufferTexture(rt.helperFBO, GL_COLOR_ATTACHMENT0, texture.tex, 0);
-	glNamedFramebufferDrawBuffers(rt.helperFBO, 1, drawBuffers);
-	GLenum status = glCheckNamedFramebufferStatus(rt.helperFBO, GL_FRAMEBUFFER);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture.target, texture.tex, 0);
+	glDrawBuffers(1, drawBuffers);
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
 		THROW_ERROR("helper FBO for RT is not complete: {:#04x}", status)
 	}
@@ -2155,10 +2157,11 @@ void Renderer::presentFrame(RenderTargetHandle image, LayoutUsage /* layoutUsage
 	}
 	assert(rt.helperFBO != 0);
 
-	glBlitNamedFramebuffer(rt.helperFBO, 0
-	                     , 0, 0, width, height
-	                     , 0, 0, width, height
-	                     , GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, rt.helperFBO);
+	glBlitFramebuffer(0, 0, width, height
+	                , 0, 0, width, height
+	                , GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 	auto &frame = impl->frames.at(impl->currentFrameIdx);
 
@@ -2772,10 +2775,11 @@ void Renderer::blit(RenderTargetHandle source, RenderTargetHandle target) {
 	assert(srcRT.width       == destRT.width);
 	assert(srcRT.height      == destRT.height);
 
-	glBlitNamedFramebuffer(srcRT.helperFBO, destRT.helperFBO
-	                     , 0, 0, srcRT.width, srcRT.height
-	                     , 0, 0, destRT.width, destRT.height
-	                     , GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destRT.helperFBO);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, srcRT.helperFBO);
+	glBlitFramebuffer(0, 0, srcRT.width, srcRT.height
+	                , 0, 0, destRT.width, destRT.height
+	                , GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
 
@@ -2834,10 +2838,11 @@ void Renderer::resolveMSAA(RenderTargetHandle source, RenderTargetHandle target,
 	assert(srcRT.width       == destRT.width);
 	assert(srcRT.height      == destRT.height);
 
-	glBlitNamedFramebuffer(srcRT.helperFBO, destRT.helperFBO
-	                     , 0, 0, srcRT.width, srcRT.height
-	                     , 0, 0, destRT.width, destRT.height
-	                     , GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destRT.helperFBO);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, srcRT.helperFBO);
+	glBlitFramebuffer(0, 0, srcRT.width, srcRT.height
+	                , 0, 0, destRT.width, destRT.height
+	                , GL_COLOR_BUFFER_BIT, GL_LINEAR);
 }
 
 
