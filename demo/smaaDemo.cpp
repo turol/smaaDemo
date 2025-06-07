@@ -841,6 +841,9 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::SwitchArg                       fullscreenSwitch("f",     "fullscreen",        "Start in fullscreen mode",      cmd, false);
 		TCLAP::SwitchArg                       noVsyncSwitch("",         "novsync",           "Disable vsync",                 cmd, false);
 		TCLAP::SwitchArg                       noTransferQSwitch("",     "no-transfer-queue", "Disable transfer queue",        cmd, false);
+#ifdef RENDERER_OPENGL
+		TCLAP::SwitchArg                       glesSwitch("",            "gles",              "Use OpenGL ES",                    cmd, false);
+#endif  // RENDERER_OPENGL
 
 		TCLAP::ValueArg<unsigned int>          windowWidthSwitch("",     "width",             "Window width",             false, rendererDesc.swapchain.width,  "width",                 cmd);
 		TCLAP::ValueArg<unsigned int>          windowHeightSwitch("",    "height",            "Window height",            false, rendererDesc.swapchain.height, "height",                cmd);
@@ -873,6 +876,9 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		rendererDesc.optimizeShaders       = !noOptSwitch.getValue();
 		rendererDesc.validateShaders       = validateSwitch.getValue();
 		rendererDesc.transferQueue         = !noTransferQSwitch.getValue();
+#ifdef RENDERER_OPENGL
+		rendererDesc.gles                  = glesSwitch.getValue();
+#endif  // RENDERER_OPENGL
 		rendererDesc.swapchain.fullscreen  = fullscreenSwitch.getValue();
 		rendererDesc.swapchain.width       = windowWidthSwitch.getValue();
 		rendererDesc.swapchain.height      = windowHeightSwitch.getValue();

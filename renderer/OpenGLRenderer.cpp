@@ -511,12 +511,18 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	LOG_TODO("highdpi")
 	LOG_TODO("check errors")
 
+	unsigned int glAttr  = SDL_GL_CONTEXT_PROFILE_CORE;
 	unsigned int glMajor = 4;
 	unsigned int glMinor = 5;
+	if (desc.gles) {
+		glAttr  = SDL_GL_CONTEXT_PROFILE_ES;
+		glMajor = 3;
+		glMinor = 0;
+	}
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, glMajor);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glMinor);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, glAttr);
 	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
 	bool wantKHRDebug = debug || tracing;
 	if (wantKHRDebug) {

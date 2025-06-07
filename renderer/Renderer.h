@@ -1276,6 +1276,9 @@ struct RendererDesc {
 	bool           validateShaders      = false;
 	bool           transferQueue        = true;
 	bool           synchronizationDebug = false;
+#ifdef RENDERER_OPENGL
+	bool           gles                 = false;
+#endif  // RENDERER_OPENGL
 	unsigned int   ephemeralRingBufSize = 1 * 1048576;
 	SwapchainDesc  swapchain;
 	std::string    applicationName;
