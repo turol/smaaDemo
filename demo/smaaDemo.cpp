@@ -831,16 +831,16 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::CmdLine cmd("SMAA demo", ' ', "1.0");
 
 		TCLAP::SwitchArg                       autoSwitch("",            "auto",              "Run through modes and exit",       cmd, false);
-		TCLAP::SwitchArg                       debugSwitch("",           "debug",             "Enable renderer debugging",     cmd, false);
+		TCLAP::SwitchArg                       debugSwitch("",           "debug",             "Enable renderer debugging",        cmd, false);
 		TCLAP::SwitchArg                       syncDebugSwitch("",       "syncdebug",         "Enable synchronization debugging", cmd, false);
-		TCLAP::SwitchArg                       robustSwitch("",          "robust",            "Enable renderer robustness",    cmd, false);
-		TCLAP::SwitchArg                       tracingSwitch("",         "trace",             "Enable renderer tracing",       cmd, false);
-		TCLAP::SwitchArg                       noCacheSwitch("",         "nocache",           "Don't load shaders from cache", cmd, false);
-		TCLAP::SwitchArg                       noOptSwitch("",           "noopt",             "Don't optimize shaders",        cmd, false);
-		TCLAP::SwitchArg                       validateSwitch("",        "validate",          "Validate shader SPIR-V",        cmd, false);
-		TCLAP::SwitchArg                       fullscreenSwitch("f",     "fullscreen",        "Start in fullscreen mode",      cmd, false);
-		TCLAP::SwitchArg                       noVsyncSwitch("",         "novsync",           "Disable vsync",                 cmd, false);
-		TCLAP::SwitchArg                       noTransferQSwitch("",     "no-transfer-queue", "Disable transfer queue",        cmd, false);
+		TCLAP::SwitchArg                       robustSwitch("",          "robust",            "Enable renderer robustness",       cmd, false);
+		TCLAP::SwitchArg                       tracingSwitch("",         "trace",             "Enable renderer tracing",          cmd, false);
+		TCLAP::SwitchArg                       noCacheSwitch("",         "nocache",           "Don't load shaders from cache",    cmd, false);
+		TCLAP::SwitchArg                       noOptSwitch("",           "noopt",             "Don't optimize shaders",           cmd, false);
+		TCLAP::SwitchArg                       validateSwitch("",        "validate",          "Validate shader SPIR-V",           cmd, false);
+		TCLAP::SwitchArg                       fullscreenSwitch("f",     "fullscreen",        "Start in fullscreen mode",         cmd, false);
+		TCLAP::SwitchArg                       noVsyncSwitch("",         "novsync",           "Disable vsync",                    cmd, false);
+		TCLAP::SwitchArg                       noTransferQSwitch("",     "no-transfer-queue", "Disable transfer queue",           cmd, false);
 #ifdef RENDERER_OPENGL
 		TCLAP::SwitchArg                       glesSwitch("",            "gles",              "Use OpenGL ES",                    cmd, false);
 #endif  // RENDERER_OPENGL
