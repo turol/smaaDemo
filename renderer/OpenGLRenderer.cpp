@@ -710,7 +710,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	LOG_TODO("use GL_UPPER_LEFT to match Vulkan")
 	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
-	glCreateVertexArrays(1, &vao);
+	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
 	recreateSwapchain();
@@ -1656,14 +1656,16 @@ RenderTargetHandle Renderer::createRenderTarget(const RenderTargetDesc &desc) {
 	GLenum target;
 	if (desc.numSamples_ > 1) {
 		target = GL_TEXTURE_2D_MULTISAMPLE;
-		glCreateTextures(target, 1, &id);
-		glTextureStorage2DMultisample(id, desc.numSamples_, glTexFormat(desc.format_), desc.width_, desc.height_, true);
+		glGenTextures(1, &id);
+		glBindTexture(target, id);
+		glTexStorage2DMultisample(target, desc.numSamples_, glTexFormat(desc.format_), desc.width_, desc.height_, true);
 	} else {
 		target = GL_TEXTURE_2D;
-		glCreateTextures(target, 1, &id);
-		glTextureStorage2D(id, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
+		glGenTextures(1, &id);
+		glBindTexture(target, id);
+		glTexStorage2D(target, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
 	}
-	glTextureParameteri(id, GL_TEXTURE_MAX_LEVEL, 0);
+	glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, 0);
 	if (impl->tracing) {
 		glObjectLabel(GL_TEXTURE, id, desc.name_.size(), desc.name_.c_str());
 	}
@@ -1730,7 +1732,7 @@ void RendererImpl::createRTHelperFBO(RenderTarget &rt) {
 
 SamplerHandle Renderer::createSampler(const SamplerDesc &desc) {
 	Sampler sampler;
-	glCreateSamplers(1, &sampler.sampler);
+	glGenSamplers(1, &sampler.sampler);
 
 	glSamplerParameteri(sampler.sampler, GL_TEXTURE_MIN_FILTER, (desc.min == FilterMode::Nearest) ? GL_NEAREST: GL_LINEAR);
 	glSamplerParameteri(sampler.sampler, GL_TEXTURE_MAG_FILTER, (desc.mag == FilterMode::Nearest) ? GL_NEAREST: GL_LINEAR);
@@ -1757,15 +1759,16 @@ TextureHandle Renderer::createTexture(const TextureDesc &desc) {
 
 	GLuint texture = 0;
 	GLenum target = GL_TEXTURE_2D;
-	glCreateTextures(target, 1, &texture);
-	glTextureStorage2D(texture, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
-	glTextureParameteri(texture, GL_TEXTURE_MAX_LEVEL, desc.numMips_ - 1);
+	glGenTextures(1, &texture);
+	glBindTexture(target, texture);
+	glTexStorage2D(target, 1, glTexFormat(desc.format_), desc.width_, desc.height_);
+	glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, desc.numMips_ - 1);
 	unsigned int w = desc.width_, h = desc.height_;
 
 	for (unsigned int i = 0; i < desc.numMips_; i++) {
 		assert(desc.mipData_[i].data != nullptr);
 		assert(desc.mipData_[i].size != 0);
-		glTextureSubImage2D(texture, i, 0, 0, w, h, glTexBaseFormat(desc.format_), GL_UNSIGNED_BYTE, desc.mipData_[i].data);
+		glTexSubImage2D(target, i, 0, 0, w, h, glTexBaseFormat(desc.format_), GL_UNSIGNED_BYTE, desc.mipData_[i].data);
 
 		w = std::max(w / 2, 1u);
 		h = std::max(h / 2, 1u);
