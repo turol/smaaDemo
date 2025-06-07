@@ -725,6 +725,7 @@ struct Frame : public FrameBase {
 struct RendererImpl : public RendererBase {
 	SDL_Window                                              *window             = nullptr;
 	SDL_GLContext                                           context             = nullptr;
+	bool                                                    gles                = false;
 
 	HashMap<GLenum, int>                                    glValues;
 

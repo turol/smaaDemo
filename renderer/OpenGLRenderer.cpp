@@ -488,6 +488,7 @@ void mergeShaderResources(ShaderResources &first, const ShaderResources &second)
 
 RendererImpl::RendererImpl(const RendererDesc &desc)
 : RendererBase(desc)
+, gles(desc.gles)
 {
 	{
 		SDL_version version;
@@ -1449,6 +1450,10 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 		spirv_cross::CompilerGLSL::Options glslOptions;
 		glslOptions.vertex.fixup_clipspace = false;
 		glslOptions.vertex.support_nonzero_base_instance = false;
+		if (impl->gles) {
+			glslOptions.version = 300;
+			glslOptions.es      = true;
+		}
 
 		spirv_cross::CompilerGLSL glslVert(v.spirv);
 		glslVert.set_common_options(glslOptions);
