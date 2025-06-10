@@ -429,10 +429,10 @@ class SMAADemo {
 	std::vector<std::string>                          imageFiles;
 
 	bool                                              recreateSwapchain = false;
-	bool                                              rebuildRG         = true;
-	bool                                              keepGoing         = true;
-	bool                                              autoMode          = false;
-	LayoutUsage                                       layoutUsage       = LayoutUsage::Specific;
+	bool                                              rebuildRG                     = true;
+	bool                                              keepGoing               = true;
+	bool                                              autoMode                = false;
+	LayoutUsage                                       layoutUsage             = LayoutUsage::Specific;
 
 	// aa things
 	bool                                              antialiasing            = true;
@@ -447,11 +447,11 @@ class SMAADemo {
 	// number of samples in current scene fb
 	// 1 or 2 if SMAA
 	// 2.. if MSAA
-	unsigned int                                      numSamples     = 1;
-	SMAADebugMode                                     debugMode      = SMAADebugMode::None;
-	unsigned int                                      fxaaQuality    = maxFXAAQuality - 1;
-	unsigned int                                      msaaQuality    = 0;
-	unsigned int                                      maxMSAAQuality = 1;
+	unsigned int                                      numSamples              = 1;
+	SMAADebugMode                                     debugMode               = SMAADebugMode::None;
+	unsigned int                                      fxaaQuality             = maxFXAAQuality - 1;
+	unsigned int                                      msaaQuality             = 0;
+	unsigned int                                      maxMSAAQuality          = 1;
 	ShaderLanguage                                    preferredShaderLanguage = ShaderLanguage::GLSL;
 	bool                                              useTexGather            = true;
 
@@ -460,37 +460,37 @@ class SMAADemo {
 	bool                                              smaaPredication;
 	ShaderDefines::SMAAParameters                     smaaParameters;
 
-	float                                             predicationThreshold = 0.01f;
-	float                                             predicationScale     = 2.0f;
-	float                                             predicationStrength  = 0.4f;
+	float                                             predicationThreshold    = 0.01f;
+	float                                             predicationScale        = 2.0f;
+	float                                             predicationStrength     = 0.4f;
 
 	// timing things
-	bool                                              fpsLimitActive = true;
-	uint32_t                                          fpsLimit       = 0;
-	uint64_t                                          sleepFudge     = 0;
-	uint64_t                                          tickBase       = 0;
-	uint64_t                                          lastTime       = 0;
-	uint64_t                                          freqMult       = 0;
-	uint64_t                                          freqDiv        = 0;
+	bool                                              fpsLimitActive          = true;
+	uint32_t                                          fpsLimit                = 0;
+	uint64_t                                          sleepFudge              = 0;
+	uint64_t                                          tickBase                = 0;
+	uint64_t                                          lastTime                = 0;
+	uint64_t                                          freqMult                = 0;
+	uint64_t                                          freqDiv                 = 0;
 
 	// scene things
 	// 0 for shapes
 	// 1.. for images
-	unsigned int                                      activeScene            = 0;
-	unsigned int                                      shapesPerSide          = 8;
-	ColorMode                                         colorMode              = ColorMode::RGB;
-	bool                                              rotateShapes           = false;
-	Shape                                             activeShape            = Shape::Cube;
-	bool                                              visualizeShapeOrder    = false;
-	unsigned int                                      shapeOrderNum          = 1;
-	float                                             cameraRotation         = 0.0f;
-	float                                             cameraDistance         = defaultCameraDistance;
-	float                                             fovDegrees             = 65.0f;
-	uint64_t                                          rotationTime           = 0;
-	unsigned int                                      rotationPeriodSeconds  = 30;
-	unsigned int                                      numRenderedFrames      = 0;
-	unsigned int                                      maxRenderedFrames      = 0;
-	RandomGen                                         random                 { 1 };
+	unsigned int                                      activeScene             = 0;
+	unsigned int                                      shapesPerSide           = 8;
+	ColorMode                                         colorMode               = ColorMode::RGB;
+	bool                                              rotateShapes            = false;
+	Shape                                             activeShape             = Shape::Cube;
+	bool                                              visualizeShapeOrder     = false;
+	unsigned int                                      shapeOrderNum           = 1;
+	float                                             cameraRotation          = 0.0f;
+	float                                             cameraDistance          = defaultCameraDistance;
+	float                                             fovDegrees              = 65.0f;
+	uint64_t                                          rotationTime            = 0;
+	unsigned int                                      rotationPeriodSeconds   = 30;
+	unsigned int                                      numRenderedFrames       = 0;
+	unsigned int                                      maxRenderedFrames       = 0;
+	RandomGen                                         random                  { 1 };
 	std::vector<Image>                                images;
 	std::vector<ShaderDefines::Shape>                 shapes;
 	BufferHandle                                      shapesBuffer;
@@ -501,22 +501,22 @@ class SMAADemo {
 	std::array<glm::vec4, 2>                          subsampleIndices;
 
 	Renderer                                          renderer;
-	Format                                            depthFormat = Format::Invalid;
+	Format                                            depthFormat             = Format::Invalid;
 
 	std::array<RenderTargetHandle, 2>                 temporalRTs;
 
-	GraphicsPipelineHandle                                    shapePipeline;
-	GraphicsPipelineHandle                                    imagePipeline;
-	GraphicsPipelineHandle                                    blitPipeline;
-	GraphicsPipelineHandle                                    guiPipeline;
-	GraphicsPipelineHandle                                    separatePipeline;
-	std::array<GraphicsPipelineHandle, 2>                     temporalAAPipelines;
-	GraphicsPipelineHandle                                    fxaaPipeline;
-	ComputePipelineHandle                                     fxaaComputePipeline;
+	GraphicsPipelineHandle                            shapePipeline;
+	GraphicsPipelineHandle                            imagePipeline;
+	GraphicsPipelineHandle                            blitPipeline;
+	GraphicsPipelineHandle                            guiPipeline;
+	GraphicsPipelineHandle                            separatePipeline;
+	std::array<GraphicsPipelineHandle, 2>             temporalAAPipelines;
+	GraphicsPipelineHandle                            fxaaPipeline;
+	ComputePipelineHandle                             fxaaComputePipeline;
 
 	BufferHandle                                      shapeVertexBuffer;
 	BufferHandle                                      shapeIndexBuffer;
-	unsigned int                                      shapeNumVertices = 0;
+	unsigned int                                      shapeNumVertices        = 0;
 
 	SamplerHandle                                     linearSampler;
 	SamplerHandle                                     nearestSampler;
@@ -527,12 +527,12 @@ class SMAADemo {
 	TextureHandle                                     searchTex;
 
 	// input
-	bool                                              rightShift      = false;
-	bool                                              leftShift       = false;
-	bool                                              rightAlt        = false;
-	bool                                              leftAlt         = false;
-	bool                                              rightCtrl       = false;
-	bool                                              leftCtrl        = false;
+	bool                                              rightShift              = false;
+	bool                                              leftShift               = false;
+	bool                                              rightAlt                = false;
+	bool                                              leftAlt                 = false;
+	bool                                              rightCtrl               = false;
+	bool                                              leftCtrl                = false;
 
 #ifndef IMGUI_DISABLE
 
@@ -540,8 +540,8 @@ class SMAADemo {
 
 	// gui things
 	TextureHandle                                     imguiFontsTex;
-	ImGuiContext                                      *imGuiContext   = nullptr;
-	bool                                              textInputActive = false;
+	ImGuiContext                                      *imGuiContext           = nullptr;
+	bool                                              textInputActive         = false;
 	char                                              imageFileName[inputTextBufferSize];
 	char                                              clipboardText[inputTextBufferSize];
 
@@ -2264,11 +2264,11 @@ void SMAADemo::reorderShapeRendering() {
 
 
 static float sRGB2linear(float v) {
-    if (v <= 0.04045f) {
-        return v / 12.92f;
-    } else {
-        return powf((v + 0.055f) / 1.055f, 2.4f);
-    }
+	if (v <= 0.04045f) {
+		return v / 12.92f;
+	} else {
+		return powf((v + 0.055f) / 1.055f, 2.4f);
+	}
 }
 
 
