@@ -410,58 +410,6 @@ const RenderPasses  Default<RenderPasses>::value = RenderPasses::Invalid;
 } // namespace renderer
 
 
-struct ShapeRenderBuffers {
-	unsigned int  numVertices = 0;
-	BufferHandle  vertices;
-	BufferHandle  indices;
-
-
-	ShapeRenderBuffers()
-	{}
-
-	// not copyable
-	ShapeRenderBuffers(const ShapeRenderBuffers &other)            = delete;
-	ShapeRenderBuffers &operator=(const ShapeRenderBuffers &other) = delete;
-
-	// movable
-	ShapeRenderBuffers(ShapeRenderBuffers &&other) noexcept {
-		numVertices = other.numVertices;
-		other.numVertices = 0;
-
-		vertices = std::move(other.vertices);
-		other.vertices.reset();
-
-		indices  = std::move(other.indices);
-		other.indices.reset();
-	}
-
-	ShapeRenderBuffers &operator=(ShapeRenderBuffers &&other) {
-		assert(this != &other);
-
-		assert(!numVertices);
-		assert(!vertices);
-		assert(!indices);
-
-		numVertices = other.numVertices;
-		other.numVertices = 0;
-
-		vertices = std::move(other.vertices);
-		other.vertices.reset();
-
-		indices  = std::move(other.indices);
-		other.indices.reset();
-
-		return *this;
-	}
-
-	~ShapeRenderBuffers() {
-		assert(!numVertices);
-		assert(!vertices);
-		assert(!indices);
-	}
-};
-
-
 struct GameControllerDeleter {
 	void operator()(SDL_GameController *gc) { SDL_GameControllerClose(gc); }
 };
@@ -566,7 +514,9 @@ class SMAADemo {
 	GraphicsPipelineHandle                                    fxaaPipeline;
 	ComputePipelineHandle                                     fxaaComputePipeline;
 
-	magic_enum::containers::array<Shape, ShapeRenderBuffers>  shapeBuffers;
+	BufferHandle                                      shapeVertexBuffer;
+	BufferHandle                                      shapeIndexBuffer;
+	unsigned int                                      shapeNumVertices = 0;
 
 	SamplerHandle                                     linearSampler;
 	SamplerHandle                                     nearestSampler;
@@ -799,16 +749,13 @@ SMAADemo::~SMAADemo() {
 		renderGraph.reset(renderer);
 		renderGraph.clearCaches(renderer);
 
-		for (unsigned int i = 0; i < magic_enum::enum_count<Shape>(); i++) {
-			Shape s = magic_enum::enum_value<Shape>(i);
-			if (shapeBuffers[s].vertices) {
-				assert(shapeBuffers[s].indices);
-				assert(shapeBuffers[s].numVertices);
+		if (shapeVertexBuffer) {
+			assert(shapeIndexBuffer);
+			renderer.deleteBuffer(std::move(shapeVertexBuffer));
+			renderer.deleteBuffer(std::move(shapeIndexBuffer));
 
-				shapeBuffers[s].numVertices = 0;
-				renderer.deleteBuffer(std::move(shapeBuffers[s].vertices));
-				renderer.deleteBuffer(std::move(shapeBuffers[s].indices));
-			}
+		} else {
+			assert(!shapeIndexBuffer);
 		}
 
 		if (linearSampler) {
@@ -1418,40 +1365,6 @@ void SMAADemo::initRender() {
 
 	linearSampler  = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Linear). magFilter(FilterMode::Linear) .name("linear"));
 	nearestSampler = renderer.createSampler(SamplerDesc().minFilter(FilterMode::Nearest).magFilter(FilterMode::Nearest).name("nearest"));
-
-	auto createShapeBuffers = [this] (Shape shape, float scale, par_shapes_mesh *mesh) -> ShapeRenderBuffers {
-		assert(mesh);
-
-		float aabb[6] = {};
-		par_shapes_compute_aabb(mesh, aabb);
-		aabb[0] = (aabb[0] + aabb[3]) * 0.5f;
-		aabb[1] = (aabb[1] + aabb[4]) * 0.5f;
-		aabb[2] = (aabb[2] + aabb[5]) * 0.5f;
-
-		LOG("{} center: ({}, {}, {})", magic_enum::enum_name(shape), aabb[0],  aabb[1],  aabb[2]);
-		par_shapes_translate(mesh, -aabb[0], -aabb[1], -aabb[2]);
-
-		par_shapes_scale(mesh, scale, scale, scale);
-
-		ShapeRenderBuffers srb;
-		srb.numVertices = mesh->ntriangles * 3;
-		srb.vertices    = renderer.createBuffer({ BufferUsage::Vertex }, mesh->npoints    * 3 * sizeof(float),        mesh->points);
-		srb.indices     = renderer.createBuffer({ BufferUsage::Index },  mesh->ntriangles * 3 * sizeof(PAR_SHAPES_T), mesh->triangles);
-
-		par_shapes_free_mesh(mesh);
-
-		return srb;
-	};
-
-	shapeBuffers[Shape::Cube]         = createShapeBuffers(Shape::Cube,         sqrtf(3.0f), par_shapes_create_cube());
-	shapeBuffers[Shape::Tetrahedron]  = createShapeBuffers(Shape::Tetrahedron,  1.75f, par_shapes_create_tetrahedron());
-	shapeBuffers[Shape::Octahedron]   = createShapeBuffers(Shape::Octahedron,   1.5f,  par_shapes_create_octahedron());
-	shapeBuffers[Shape::Dodecahedron] = createShapeBuffers(Shape::Dodecahedron, 1.5f,  par_shapes_create_dodecahedron());
-	shapeBuffers[Shape::Icosahedron]  = createShapeBuffers(Shape::Icosahedron,  1.5f,  par_shapes_create_icosahedron());
-	shapeBuffers[Shape::Sphere]       = createShapeBuffers(Shape::Sphere,       1.25f, par_shapes_create_subdivided_sphere(3));
-	shapeBuffers[Shape::Torus]        = createShapeBuffers(Shape::Torus,        1.0f,  par_shapes_create_torus(24, 32, 0.25f));
-	shapeBuffers[Shape::KleinBottle]  = createShapeBuffers(Shape::KleinBottle,  0.15f, par_shapes_create_klein_bottle(16, 40));
-	shapeBuffers[Shape::TrefoilKnot]  = createShapeBuffers(Shape::TrefoilKnot,  1.5f,  par_shapes_create_trefoil_knot(48, 72, 0.5f));
 
 	recreateSMAATextures();
 
@@ -2764,6 +2677,7 @@ void SMAADemo::processInput() {
 				} else {
 					activeShape = magic_enum::enum_next_value_circular(activeShape);
 				}
+				shapeNumVertices = 0;
 			} break;
 
 			case SDL_SCANCODE_T:
@@ -3317,8 +3231,89 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 
 	renderer.setViewport(0, 0, windowWidth, windowHeight);
 
-	renderer.bindVertexBuffer(0, shapeBuffers[activeShape].vertices);
-	renderer.bindIndexBuffer(shapeBuffers[activeShape].indices, IndexFormat::b32);
+	if (shapeNumVertices == 0) {
+		if (shapeVertexBuffer) {
+			assert(shapeIndexBuffer);
+			renderer.deleteBuffer(std::move(shapeVertexBuffer));
+			renderer.deleteBuffer(std::move(shapeIndexBuffer));
+		} else {
+			assert(!shapeIndexBuffer);
+		}
+
+		float scale = 0.0f;
+		par_shapes_mesh *mesh = nullptr;
+		switch (activeShape) {
+		case Shape::Cube:
+			scale = sqrtf(3.0f);
+			mesh  = par_shapes_create_cube();
+			break;
+
+		case Shape::Tetrahedron:
+			scale = 1.75f;
+			mesh  = par_shapes_create_tetrahedron();
+			break;
+
+		case Shape::Octahedron:
+			scale = 1.5f;
+			mesh  = par_shapes_create_octahedron();
+			break;
+
+		case Shape::Dodecahedron:
+			scale = 1.5f;
+			mesh  = par_shapes_create_dodecahedron();
+			break;
+
+		case Shape::Icosahedron:
+			scale = 1.5f;
+			mesh  = par_shapes_create_icosahedron();
+			break;
+
+		case Shape::Sphere:
+			scale = 1.25f;
+			mesh  = par_shapes_create_subdivided_sphere(3);
+			break;
+
+		case Shape::Torus:
+			scale = 1.0f;
+			mesh  = par_shapes_create_torus(24, 32, 0.25f);
+			break;
+
+		case Shape::KleinBottle:
+			scale = 0.15f;
+			mesh  = par_shapes_create_klein_bottle(16, 40);
+			break;
+
+		case Shape::TrefoilKnot:
+			scale = 1.5f;
+			mesh  = par_shapes_create_trefoil_knot(48, 72, 0.5f);
+			break;
+		}
+
+		assert(mesh);
+
+		float aabb[6] = {};
+		par_shapes_compute_aabb(mesh, aabb);
+		aabb[0] = (aabb[0] + aabb[3]) * 0.5f;
+		aabb[1] = (aabb[1] + aabb[4]) * 0.5f;
+		aabb[2] = (aabb[2] + aabb[5]) * 0.5f;
+
+		LOG("{} center: ({}, {}, {})", magic_enum::enum_name(activeShape), aabb[0],  aabb[1],  aabb[2]);
+		par_shapes_translate(mesh, -aabb[0], -aabb[1], -aabb[2]);
+
+		par_shapes_scale(mesh, scale, scale, scale);
+
+		shapeNumVertices  = mesh->ntriangles * 3;
+		shapeVertexBuffer = renderer.createBuffer({ BufferUsage::Vertex }, mesh->npoints    * 3 * sizeof(float),        mesh->points);
+		shapeIndexBuffer  = renderer.createBuffer({ BufferUsage::Index },  mesh->ntriangles * 3 * sizeof(PAR_SHAPES_T), mesh->triangles);
+
+		par_shapes_free_mesh(mesh);
+	} else {
+		assert(shapeIndexBuffer);
+		assert(shapeVertexBuffer);
+	}
+
+	renderer.bindVertexBuffer(0, shapeVertexBuffer);
+	renderer.bindIndexBuffer(shapeIndexBuffer, IndexFormat::b32);
 
 	if (!shapesBuffer) {
 		shapesBuffer = renderer.createBuffer({ BufferUsage::Storage }, static_cast<uint32_t>(sizeof(ShaderDefines::Shape) * shapes.size()), &shapes[0]);
@@ -3336,7 +3331,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 		numShapes     = shapeOrderNum;
 	}
 
-	renderer.drawIndexedInstanced(shapeBuffers[activeShape].numVertices, numShapes);
+	renderer.drawIndexedInstanced(shapeNumVertices, numShapes);
 }
 
 
@@ -4199,6 +4194,7 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 						bool selected = (s == activeShape);
 						if (ImGui::Selectable(magic_enum::enum_name(s).data(), selected)) {
 							activeShape = s;
+							shapeNumVertices = 0;
 						}
 
 						if (selected) {
