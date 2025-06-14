@@ -34,9 +34,9 @@ readonly restrict layout(std430, set = 0, binding = 1) buffer shapeData {
 };
 
 
-layout(location = 0) flat out int instance;
-layout(location = 1) out vec3 currPos;
-layout(location = 2) out vec3 prevPos;
+layout(location = 0) out vec3 currPos;
+layout(location = 1) out vec3 prevPos;
+layout(location = 2) out vec3 color;
 
 
 void main(void)
@@ -63,6 +63,5 @@ void main(void)
     // the scale (and flip the y axis):
     currPos.xy *= vec2(0.5, -0.5);
     prevPos.xy *= vec2(0.5, -0.5);
-
-    instance = gl_InstanceIndex;
+    color = shape.color;
 }

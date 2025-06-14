@@ -25,14 +25,10 @@ THE SOFTWARE.
 
 #include "shaderDefines.h"
 
-readonly restrict layout(std430, set = 0, binding = 1) buffer shapeData {
-    Shape shapes[];
-};
 
-
-layout(location = 0) flat in int instance;
-layout(location = 1) in vec3 currPos;
-layout(location = 2) in vec3 prevPos;
+layout(location = 0) in vec3 currPos;
+layout(location = 1) in vec3 prevPos;
+layout(location = 2) in vec3 color;
 
 
 layout (location = 0) out vec4 outColor;
@@ -41,12 +37,8 @@ layout (location = 1) out vec2 outVelocity;
 
 void main(void)
 {
-    Shape shape = shapes[instance];
-
-    vec4 color = vec4(shape.color, 0.0);
-
-    color.w = dot(color.xyz, vec3(0.299, 0.587, 0.114));
-    outColor = color;
+    outColor.xyz = color;
+    outColor.w = dot(color.xyz, vec3(0.299, 0.587, 0.114));
     outVelocity = vec2(0.0, 0.0);
 
     // w stored in z

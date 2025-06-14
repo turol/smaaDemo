@@ -36,7 +36,7 @@ struct VertexIn {
 
 struct VertexOut {
     float4               position  : SV_POSITION;
-    nointerpolation int  instance  : TEXCOORD0;
+    float3               color     : COLOR0;
     float3               currPos   : TEXCOORD1;
     float3               prevPos   : TEXCOORD2;
 };
@@ -66,6 +66,7 @@ VertexOut vertexShader(VertexIn vin)
 
     VertexOut vout;
     vout.position = viewProj * worldPos;
+    vout.color    = shape.color;
     vout.currPos  = vout.position.xyw;
     vout.prevPos  = (prevViewProj * worldPos).xyw;
     // Positions in projection space are in [-1, 1] range, while texture
@@ -81,10 +82,8 @@ VertexOut vertexShader(VertexIn vin)
 
 FragmentOut fragmentShader(VertexOut v)
 {
-    Shape shape = shapes[v.instance];
-
     FragmentOut f;
-    float4 color = float4(shape.color, 0.0);
+    float4 color = float4(v.color, 0.0);
 
     color.w = dot(color.xyz, float3(0.299, 0.587, 0.114));
     f.color = color;
