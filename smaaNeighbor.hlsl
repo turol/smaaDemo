@@ -51,7 +51,7 @@ THE SOFTWARE.
 
 
 struct VertexOut {
-    float4 position : SV_Position;
+    float4 position : SV_POSITION;
     float2 texcoord : TEXCOORD0;
     float4 offset   : TEXCOORD1;
 };
