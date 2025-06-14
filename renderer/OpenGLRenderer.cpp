@@ -1453,6 +1453,8 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 		if (impl->gles) {
 			glslOptions.version = 300;
 			glslOptions.es      = true;
+			// WebGL requires initialized variables
+			glslOptions.force_zero_initialized_variables = true;
 		}
 
 		spirv_cross::CompilerGLSL glslVert(v.spirv);
