@@ -3181,6 +3181,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 		plDesc.name(name)
 		      .vertexShader("shape")
 		      .fragmentShader("shape")
+		      .shaderLanguage(preferredShaderLanguage)
 		      .numSamples(numSamples)
 		      .descriptorSetLayout<ShapeSceneDS>(0)
 		      .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, offsetof(ShapeVertex, pos))
