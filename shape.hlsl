@@ -65,7 +65,7 @@ VertexOut vertexShader(VertexIn vin)
     float4 worldPos = float4(rotatedPos + shape.position, 1.0);
 
     VertexOut vout;
-    vout.position = viewProj * worldPos;
+    vout.position = worldPos * viewProj;
     vout.color    = shape.color;
     vout.currPos  = vout.position.xyw;
     vout.prevPos  = (prevViewProj * worldPos).xyw;
@@ -75,7 +75,6 @@ VertexOut vertexShader(VertexIn vin)
     vout.currPos.xy *= float2(0.5, -0.5);
     vout.prevPos.xy *= float2(0.5, -0.5);
 
-    vout.instance = vin.instance;
     return vout;
 }
 
