@@ -3167,6 +3167,10 @@ void SMAADemo::render() {
 
 
 void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources & /* r */) {
+	struct ShapeVertex {
+		glm::vec3  pos;
+	};
+
 	renderer.bindGraphicsPipeline(getCachedPipeline(shapePipeline, [&] () {
 		std::string name = "shapes";
 		if (numSamples > 1) {
@@ -3179,8 +3183,8 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 		      .fragmentShader("shape")
 		      .numSamples(numSamples)
 		      .descriptorSetLayout<ShapeSceneDS>(0)
-		      .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, 0)
-		      .vertexBufferStride(0, 3 * sizeof(float))
+		      .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, offsetof(ShapeVertex, pos))
+		      .vertexBufferStride(0, sizeof(ShapeVertex))
 		      .depthWrite(true)
 		      .depthTest(true)
 		      .cullFaces(true);
@@ -3303,7 +3307,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 		par_shapes_scale(mesh, scale, scale, scale);
 
 		shapeNumVertices  = mesh->ntriangles * 3;
-		shapeVertexBuffer = renderer.createBuffer({ BufferUsage::Vertex }, mesh->npoints    * 3 * sizeof(float),        mesh->points);
+		shapeVertexBuffer = renderer.createBuffer({ BufferUsage::Vertex }, mesh->npoints    * sizeof(ShapeVertex),      mesh->points);
 		shapeIndexBuffer  = renderer.createBuffer({ BufferUsage::Index },  mesh->ntriangles * 3 * sizeof(PAR_SHAPES_T), mesh->triangles);
 
 		par_shapes_free_mesh(mesh);
