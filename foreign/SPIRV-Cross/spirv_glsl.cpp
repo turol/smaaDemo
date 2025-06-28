@@ -1529,9 +1529,12 @@ uint32_t CompilerGLSL::type_to_packed_base_size(const SPIRType &type, BufferPack
 	case SPIRType::Half:
 	case SPIRType::Short:
 	case SPIRType::UShort:
+	case SPIRType::BFloat16:
 		return 2;
 	case SPIRType::SByte:
 	case SPIRType::UByte:
+	case SPIRType::FloatE4M3:
+	case SPIRType::FloatE5M2:
 		return 1;
 
 	default:
@@ -5940,6 +5943,30 @@ string CompilerGLSL::constant_expression(const SPIRConstant &c,
 		require_extension_internal("GL_EXT_null_initializer");
 		return backend.constant_null_initializer;
 	}
+	else if (c.replicated && type.op != spv::OpTypeArray)
+	{
+		if (type.op == spv::OpTypeMatrix)
+		{
+			uint32_t num_elements = type.columns;
+			// GLSL does not allow the replication constructor for matrices
+			// mat4(vec4(0.0)) needs to be manually expanded to mat4(vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0));
+			std::string res;
+			res += type_to_glsl(type);
+			res += "(";
+			for (uint32_t i = 0; i < num_elements; i++)
+			{
+				res += to_expression(c.subconstants[0]);
+				if (i < num_elements - 1)
+					res += ", ";
+			}
+			res += ")";
+			return res;
+		}
+		else
+		{
+			return join(type_to_glsl(type), "(", to_expression(c.subconstants[0]), ")");
+		}
+	}
 	else if (!c.subconstants.empty())
 	{
 		// Handles Arrays and structures.
@@ -5989,8 +6016,16 @@ string CompilerGLSL::constant_expression(const SPIRConstant &c,
 		}
 
 		uint32_t subconstant_index = 0;
-		for (auto &elem : c.subconstants)
+		size_t num_elements = c.subconstants.size();
+		if (c.replicated)
 		{
+			if (type.array.size() != 1)
+				SPIRV_CROSS_THROW("Multidimensional arrays not yet supported as replicated constans");
+			num_elements = type.array[0];
+		}
+		for (size_t i = 0; i < num_elements; i++)
+		{
+			auto &elem = c.subconstants[c.replicated ? 0 : i];
 			if (auto *op = maybe_get<SPIRConstantOp>(elem))
 			{
 				res += constant_op_expression(*op);
@@ -6021,7 +6056,7 @@ string CompilerGLSL::constant_expression(const SPIRConstant &c,
 				}
 			}
 
-			if (&elem != &c.subconstants.back())
+			if (i != num_elements - 1)
 				res += ", ";
 
 			subconstant_index++;
@@ -6095,17 +6130,44 @@ string CompilerGLSL::constant_expression(const SPIRConstant &c,
 #pragma warning(disable : 4996)
 #endif
 
+string CompilerGLSL::convert_floate4m3_to_string(const SPIRConstant &c, uint32_t col, uint32_t row)
+{
+	string res;
+	float float_value = c.scalar_floate4m3(col, row);
+
+	// There is no infinity in e4m3.
+	if (std::isnan(float_value))
+	{
+		SPIRType type { OpTypeFloat };
+		type.basetype = SPIRType::Half;
+		type.vecsize = 1;
+		type.columns = 1;
+		res = join(type_to_glsl(type), "(0.0 / 0.0)");
+	}
+	else
+	{
+		SPIRType type { OpTypeFloat };
+		type.basetype = SPIRType::FloatE4M3;
+		type.vecsize = 1;
+		type.columns = 1;
+		res = join(type_to_glsl(type), "(", format_float(float_value), ")");
+	}
+
+	return res;
+}
+
 string CompilerGLSL::convert_half_to_string(const SPIRConstant &c, uint32_t col, uint32_t row)
 {
 	string res;
-	float float_value = c.scalar_f16(col, row);
+	bool is_bfloat8 = get<SPIRType>(c.constant_type).basetype == SPIRType::FloatE5M2;
+	float float_value = is_bfloat8 ? c.scalar_bf8(col, row) : c.scalar_f16(col, row);
 
 	// There is no literal "hf" in GL_NV_gpu_shader5, so to avoid lots
 	// of complicated workarounds, just value-cast to the half type always.
 	if (std::isnan(float_value) || std::isinf(float_value))
 	{
 		SPIRType type { OpTypeFloat };
-		type.basetype = SPIRType::Half;
+		type.basetype = is_bfloat8 ? SPIRType::FloatE5M2 : SPIRType::Half;
 		type.vecsize = 1;
 		type.columns = 1;
 
@@ -6121,7 +6183,7 @@ string CompilerGLSL::convert_half_to_string(const SPIRConstant &c, uint32_t col,
 	else
 	{
 		SPIRType type { OpTypeFloat };
-		type.basetype = SPIRType::Half;
+		type.basetype = is_bfloat8 ? SPIRType::FloatE5M2 : SPIRType::Half;
 		type.vecsize = 1;
 		type.columns = 1;
 		res = join(type_to_glsl(type), "(", format_float(float_value), ")");
@@ -6358,6 +6420,29 @@ string CompilerGLSL::constant_expression_vector(const SPIRConstant &c, uint32_t 
 
 	switch (type.basetype)
 	{
+	case SPIRType::FloatE4M3:
+		if (splat || swizzle_splat)
+		{
+			res += convert_floate4m3_to_string(c, vector, 0);
+			if (swizzle_splat)
+				res = remap_swizzle(get<SPIRType>(c.constant_type), 1, res);
+		}
+		else
+		{
+			for (uint32_t i = 0; i < c.vector_size(); i++)
+			{
+				if (c.vector_size() > 1 && c.specialization_constant_id(vector, i) != 0)
+					res += to_expression(c.specialization_constant_id(vector, i));
+				else
+					res += convert_floate4m3_to_string(c, vector, i);
+
+				if (i + 1 < c.vector_size())
+					res += ", ";
+			}
+		}
+		break;
+
+	case SPIRType::FloatE5M2:
 	case SPIRType::Half:
 		if (splat || swizzle_splat)
 		{
@@ -9795,6 +9880,22 @@ string CompilerGLSL::bitcast_glsl_op(const SPIRType &out_type, const SPIRType &i
 		return "bfloat16BitsToUintEXT";
 	else if (out_type.basetype == SPIRType::Short && in_type.basetype == SPIRType::BFloat16)
 		return "bfloat16BitsToIntEXT";
+	else if (out_type.basetype == SPIRType::FloatE4M3 && in_type.basetype == SPIRType::UByte)
+		return "uintBitsToFloate4m3EXT";
+	else if (out_type.basetype == SPIRType::FloatE4M3 && in_type.basetype == SPIRType::SByte)
+		return "intBitsToFloate4m3EXT";
+	else if (out_type.basetype == SPIRType::UByte && in_type.basetype == SPIRType::FloatE4M3)
+		return "floate4m3BitsToUintEXT";
+	else if (out_type.basetype == SPIRType::SByte && in_type.basetype == SPIRType::FloatE4M3)
+		return "floate4m3BitsToIntEXT";
+	else if (out_type.basetype == SPIRType::FloatE5M2 && in_type.basetype == SPIRType::UByte)
+		return "uintBitsToFloate5m2EXT";
+	else if (out_type.basetype == SPIRType::FloatE5M2 && in_type.basetype == SPIRType::SByte)
+		return "intBitsToFloate5m2EXT";
+	else if (out_type.basetype == SPIRType::UByte && in_type.basetype == SPIRType::FloatE5M2)
+		return "floate5m2BitsToUintEXT";
+	else if (out_type.basetype == SPIRType::SByte && in_type.basetype == SPIRType::FloatE5M2)
+		return "floate5m2BitsToIntEXT";
 
 	return "";
 }
@@ -13761,13 +13862,42 @@ void CompilerGLSL::emit_instruction(const Instruction &instruction)
 		break;
 	}
 
+	case OpCooperativeMatrixConvertNV:
+		if (!options.vulkan_semantics)
+			SPIRV_CROSS_THROW("CooperativeMatrixConvertNV requires vulkan semantics.");
+		require_extension_internal("GL_NV_cooperative_matrix2");
+		// fallthrough
 	case OpFConvert:
 	{
 		uint32_t result_type = ops[0];
 		uint32_t id = ops[1];
 
-		auto func = type_to_glsl_constructor(get<SPIRType>(result_type));
-		emit_unary_func_op(result_type, id, ops[2], func.c_str());
+		auto &type = get<SPIRType>(result_type);
+
+		if (type.op == OpTypeCooperativeMatrixKHR && opcode == OpFConvert)
+		{
+			auto &expr_type = expression_type(ops[2]);
+			if (get<SPIRConstant>(type.cooperative.use_id).scalar() !=
+			    get<SPIRConstant>(expr_type.cooperative.use_id).scalar())
+			{
+				// Somewhat questionable with spec constant uses.
+				if (!options.vulkan_semantics)
+					SPIRV_CROSS_THROW("NV_cooperative_matrix2 requires vulkan semantics.");
+				require_extension_internal("GL_NV_cooperative_matrix2");
+			}
+		}
+
+		if ((type.basetype == SPIRType::FloatE4M3 || type.basetype == SPIRType::FloatE5M2) &&
+		    has_decoration(id, spv::DecorationSaturatedToLargestFloat8NormalConversionEXT))
+		{
+			emit_uninitialized_temporary_expression(result_type, id);
+			statement("saturatedConvertEXT(", to_expression(id), ", ", to_unpacked_expression(ops[2]), ");");
+		}
+		else
+		{
+			auto func = type_to_glsl_constructor(type);
+			emit_unary_func_op(result_type, id, ops[2], func.c_str());
+		}
 		break;
 	}
 
@@ -15583,6 +15713,51 @@ void CompilerGLSL::emit_instruction(const Instruction &instruction)
 		break;
 	}
 
+	case OpCompositeConstructReplicateEXT:
+	{
+		uint32_t result_type = ops[0];
+		uint32_t id = ops[1];
+
+		auto &type = get<SPIRType>(result_type);
+		auto value_to_replicate = to_expression(ops[2]);
+		std::string rhs;
+		// Matrices don't have a replicating constructor for vectors. Need to manually replicate
+		if (type.op == spv::OpTypeMatrix || type.op == spv::OpTypeArray)
+		{
+			if (type.op == spv::OpTypeArray && type.array.size() != 1)
+			{
+				SPIRV_CROSS_THROW(
+				    "Multi-dimensional arrays currently not supported for OpCompositeConstructReplicateEXT");
+			}
+			uint32_t num_elements = type.op == spv::OpTypeMatrix ? type.columns : type.array[0];
+			if (backend.use_initializer_list && type.op == spv::OpTypeArray)
+			{
+				rhs += "{";
+			}
+			else
+			{
+				rhs += type_to_glsl_constructor(type);
+				rhs += "(";
+			}
+			for (uint32_t i = 0; i < num_elements; i++)
+			{
+				rhs += value_to_replicate;
+				if (i < num_elements - 1)
+					rhs += ", ";
+			}
+			if (backend.use_initializer_list && type.op == spv::OpTypeArray)
+				rhs += "}";
+			else
+				rhs += ")";
+		}
+		else
+		{
+			rhs = join(type_to_glsl(type), "(", to_expression(ops[2]), ")");
+		}
+		emit_op(result_type, id, rhs, true);
+		break;
+	}
+
 	default:
 		statement("// unimplemented op ", instruction.op);
 		break;
@@ -16512,6 +16687,16 @@ string CompilerGLSL::type_to_glsl(const SPIRType &type, uint32_t id)
 				SPIRV_CROSS_THROW("bfloat16 requires Vulkan semantics.");
 			require_extension_internal("GL_EXT_bfloat16");
 			return "bfloat16_t";
+		case SPIRType::FloatE4M3:
+			if (!options.vulkan_semantics)
+				SPIRV_CROSS_THROW("floate4m3_t requires Vulkan semantics.");
+			require_extension_internal("GL_EXT_float_e4m3");
+			return "floate4m3_t";
+		case SPIRType::FloatE5M2:
+			if (!options.vulkan_semantics)
+				SPIRV_CROSS_THROW("floate5m2_t requires Vulkan semantics.");
+			require_extension_internal("GL_EXT_float_e5m2");
+			return "floate5m2_t";
 		case SPIRType::Float:
 			return "float";
 		case SPIRType::Double:
@@ -16549,6 +16734,16 @@ string CompilerGLSL::type_to_glsl(const SPIRType &type, uint32_t id)
 				SPIRV_CROSS_THROW("bfloat16 requires Vulkan semantics.");
 			require_extension_internal("GL_EXT_bfloat16");
 			return join("bf16vec", type.vecsize);
+		case SPIRType::FloatE4M3:
+			if (!options.vulkan_semantics)
+				SPIRV_CROSS_THROW("floate4m3_t requires Vulkan semantics.");
+			require_extension_internal("GL_EXT_float_e4m3");
+			return join("fe4m3vec", type.vecsize);
+		case SPIRType::FloatE5M2:
+			if (!options.vulkan_semantics)
+				SPIRV_CROSS_THROW("floate5m2_t requires Vulkan semantics.");
+			require_extension_internal("GL_EXT_float_e5m2");
+			return join("fe5m2vec", type.vecsize);
 		case SPIRType::Float:
 			return join("vec", type.vecsize);
 		case SPIRType::Double:

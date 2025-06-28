@@ -1,24 +1,8 @@
-commit 1a69a919fa302e92b337594bd0a8aaea61037d91
-Author: Chip Davis <cdavis5x@gmail.com>
-Date:   Tue May 20 02:34:14 2025 -0600
+commit d7440cbc6c50332600fdf21c45e6a5df0b07e54c
+Merge: 2345c781 6e3a91bb
+Author: Hans-Kristian Arntzen <post@arntzen-software.no>
+Date:   Fri Jun 27 12:27:55 2025 +0200
 
-    MSL: Implement clustered subgroup operations for sizes other than 4.
+    Merge pull request #2503 from KhronosGroup/fix-2502
     
-    This is required by Vulkan 1.4. Fortunately, I hit upon a way to do this
-    with minimal overhead. The Metal compiler even inlines and unrolls the
-    recursive template used here. I just hope that the Vulkan committee
-    never agrees to mandate prefix op support--I have no idea how to do that
-    one cheaply.
-    
-    Unfortunately, the extra goop is needed to handle the case where one or
-    more threads are inactive.
-    
-    The function-like macro parameter used in `FUNC_SUBGROUP_CLUSTERED()`
-    does work with Clang and GCC. I don't know if it works with MSVC.
-    
-    Fix `LogicalAnd`, `LogicalOr`, and `LogicalXor` ops as well. These need
-    a cast for the Metal compiler to allow this, just like with the shuffle
-    and broadcast ops. The tests for these were marked "invalid," meaning no
-    validation on the transpiled MSL shader was done. Is it any wonder no
-    one caught this? It works now, though, so we can drop the `.invalid.`
-    marker.
+    MSL: Always emit access qualifier when emitting coherency.

@@ -37,6 +37,7 @@ reference/opt/shaders-hlsl/asm/comp/control-flow-hints.asm.comp
 reference/opt/shaders-hlsl/asm/comp/global-parameter-name-alias.asm.comp
 reference/opt/shaders-hlsl/asm/comp/nmin-max-clamp.asm.comp
 reference/opt/shaders-hlsl/asm/comp/nmin-max-clamp.relax-nan.asm.comp
+reference/opt/shaders-hlsl/asm/comp/replicated-composites.spv16.vk.asm.comp
 reference/opt/shaders-hlsl/asm/frag/array-of-structured-buffers.structured.fxconly.asm.frag
 reference/opt/shaders-hlsl/asm/frag/cbuffer-stripped.asm.frag
 reference/opt/shaders-hlsl/asm/frag/combined-sampler-reuse.asm.frag
@@ -211,6 +212,7 @@ reference/opt/shaders-msl/asm/comp/multiple-entry.asm.comp
 reference/opt/shaders-msl/asm/comp/op-spec-constant-op-vector-related.asm.comp
 reference/opt/shaders-msl/asm/comp/quantize.asm.comp
 reference/opt/shaders-msl/asm/comp/relaxed-block-layout.asm.comp
+reference/opt/shaders-msl/asm/comp/replicated-composites.spv16.asm.comp
 reference/opt/shaders-msl/asm/comp/specialization-constant-workgroup.asm.comp
 reference/opt/shaders-msl/asm/comp/struct-resource-name-aliasing.asm.comp
 reference/opt/shaders-msl/asm/comp/uint_smulextended.asm.comp
@@ -1004,6 +1006,8 @@ reference/opt/shaders/vulkan/comp/buffer-reference-decorations.nocompat.vk.comp.
 reference/opt/shaders/vulkan/comp/buffer-reference.nocompat.vk.comp.vk
 reference/opt/shaders/vulkan/comp/fp-atomic.nocompat.vk.comp.vk
 reference/opt/shaders/vulkan/comp/ray-query.nocompat.spv14.invalid.vk.comp.vk
+reference/opt/shaders/vulkan/comp/replicated-composites.nocompat.spv16.asm.vk.comp.vk
+reference/opt/shaders/vulkan/comp/replicated-composites.spv16.vk.nocompat.comp.vk
 reference/opt/shaders/vulkan/comp/spec-constant-op-member-array.vk.comp
 reference/opt/shaders/vulkan/comp/spec-constant-op-member-array.vk.comp.vk
 reference/opt/shaders/vulkan/comp/spec-constant-work-group-size.vk.comp
@@ -1209,6 +1213,7 @@ reference/shaders-hlsl/asm/comp/control-flow-hints.asm.comp
 reference/shaders-hlsl/asm/comp/global-parameter-name-alias.asm.comp
 reference/shaders-hlsl/asm/comp/nmin-max-clamp.asm.comp
 reference/shaders-hlsl/asm/comp/nmin-max-clamp.relax-nan.asm.comp
+reference/shaders-hlsl/asm/comp/replicated-composites.spv16.vk.asm.comp
 reference/shaders-hlsl/asm/frag/array-of-structured-buffers.structured.fxconly.asm.frag
 reference/shaders-hlsl/asm/frag/cbuffer-stripped.asm.frag
 reference/shaders-hlsl/asm/frag/combined-sampler-reuse.asm.frag
@@ -1522,11 +1527,12 @@ reference/shaders-msl-no-opt/comp/int64min-literal.msl22.comp
 reference/shaders-msl-no-opt/comp/integer-dot-product.comp
 reference/shaders-msl-no-opt/comp/intmin-literal.comp
 reference/shaders-msl-no-opt/comp/loop.comp
+reference/shaders-msl-no-opt/comp/read-only-coherent-image.msl32.comp
 reference/shaders-msl-no-opt/comp/return.comp
 reference/shaders-msl-no-opt/comp/simple-bindless-ssbo.msl2.argument.argument-tier-1.device-argument-buffer.comp
 reference/shaders-msl-no-opt/comp/std140-array-load-composite-construct.comp
 reference/shaders-msl-no-opt/comp/struct-packing-scalar.nocompat.invalid.vk.comp
-reference/shaders-msl-no-opt/comp/subgroups.nocompat.invalid.vk.msl12.emulate-subgroup.comp
+reference/shaders-msl-no-opt/comp/subgroups.nocompat.vk.msl12.emulate-subgroup.comp
 reference/shaders-msl-no-opt/comp/subgroups.nocompat.vk.msl21.comp
 reference/shaders-msl-no-opt/comp/subgroups.nocompat.vk.msl21.fixed-subgroup.comp
 reference/shaders-msl-no-opt/comp/subgroups.nocompat.vk.msl21.ios.comp
@@ -1660,6 +1666,7 @@ reference/shaders-msl/asm/comp/multiple-entry.asm.comp
 reference/shaders-msl/asm/comp/op-spec-constant-op-vector-related.asm.comp
 reference/shaders-msl/asm/comp/quantize.asm.comp
 reference/shaders-msl/asm/comp/relaxed-block-layout.asm.comp
+reference/shaders-msl/asm/comp/replicated-composites.spv16.asm.comp
 reference/shaders-msl/asm/comp/specialization-constant-workgroup.asm.comp
 reference/shaders-msl/asm/comp/struct-resource-name-aliasing.asm.comp
 reference/shaders-msl/asm/comp/uint_smulextended.asm.comp
@@ -2340,7 +2347,9 @@ reference/shaders-no-opt/vert/pass-array-by-value.vert
 reference/shaders-no-opt/vert/vertex-layer.vert
 reference/shaders-no-opt/vulkan/comp/bda-declaration-order.vk.nocompat.comp.vk
 reference/shaders-no-opt/vulkan/comp/bfloat16.vk.nocompat.comp.vk
+reference/shaders-no-opt/vulkan/comp/float8.vk.nocompat.comp.vk
 reference/shaders-no-opt/vulkan/comp/image-64bit.vk.nocompat.comp.vk
+reference/shaders-no-opt/vulkan/comp/nv-coopmat-2.vk.nocompat.spv16.comp.vk
 reference/shaders-no-opt/vulkan/frag/shading-rate.vk.nocompat.frag.vk
 reference/shaders-no-opt/vulkan/frag/spec-constant.vk.frag
 reference/shaders-no-opt/vulkan/frag/spec-constant.vk.frag.vk
@@ -2703,6 +2712,8 @@ reference/shaders/vulkan/comp/buffer-reference-decorations.nocompat.vk.comp.vk
 reference/shaders/vulkan/comp/buffer-reference.nocompat.vk.comp.vk
 reference/shaders/vulkan/comp/fp-atomic.nocompat.vk.comp.vk
 reference/shaders/vulkan/comp/ray-query.nocompat.spv14.invalid.vk.comp.vk
+reference/shaders/vulkan/comp/replicated-composites.nocompat.spv16.asm.vk.comp.vk
+reference/shaders/vulkan/comp/replicated-composites.spv16.vk.nocompat.comp.vk
 reference/shaders/vulkan/comp/spec-constant-op-member-array.vk.comp
 reference/shaders/vulkan/comp/spec-constant-op-member-array.vk.comp.vk
 reference/shaders/vulkan/comp/spec-constant-work-group-size.vk.comp
@@ -2915,6 +2926,7 @@ shaders-hlsl/asm/comp/control-flow-hints.asm.comp
 shaders-hlsl/asm/comp/global-parameter-name-alias.asm.comp
 shaders-hlsl/asm/comp/nmin-max-clamp.asm.comp
 shaders-hlsl/asm/comp/nmin-max-clamp.relax-nan.asm.comp
+shaders-hlsl/asm/comp/replicated-composites.spv16.vk.asm.comp
 shaders-hlsl/asm/frag/array-of-structured-buffers.structured.fxconly.asm.frag
 shaders-hlsl/asm/frag/cbuffer-stripped.asm.frag
 shaders-hlsl/asm/frag/combined-sampler-reuse.asm.frag
@@ -3228,11 +3240,12 @@ shaders-msl-no-opt/comp/int64min-literal.msl22.comp
 shaders-msl-no-opt/comp/integer-dot-product.comp
 shaders-msl-no-opt/comp/intmin-literal.comp
 shaders-msl-no-opt/comp/loop.comp
+shaders-msl-no-opt/comp/read-only-coherent-image.msl32.comp
 shaders-msl-no-opt/comp/return.comp
 shaders-msl-no-opt/comp/simple-bindless-ssbo.msl2.argument.argument-tier-1.device-argument-buffer.comp
 shaders-msl-no-opt/comp/std140-array-load-composite-construct.comp
 shaders-msl-no-opt/comp/struct-packing-scalar.nocompat.invalid.vk.comp
-shaders-msl-no-opt/comp/subgroups.nocompat.invalid.vk.msl12.emulate-subgroup.comp
+shaders-msl-no-opt/comp/subgroups.nocompat.vk.msl12.emulate-subgroup.comp
 shaders-msl-no-opt/comp/subgroups.nocompat.vk.msl21.comp
 shaders-msl-no-opt/comp/subgroups.nocompat.vk.msl21.fixed-subgroup.comp
 shaders-msl-no-opt/comp/subgroups.nocompat.vk.msl21.ios.comp
@@ -3366,6 +3379,7 @@ shaders-msl/asm/comp/multiple-entry.asm.comp
 shaders-msl/asm/comp/op-spec-constant-op-vector-related.asm.comp
 shaders-msl/asm/comp/quantize.asm.comp
 shaders-msl/asm/comp/relaxed-block-layout.asm.comp
+shaders-msl/asm/comp/replicated-composites.spv16.asm.comp
 shaders-msl/asm/comp/specialization-constant-workgroup.asm.comp
 shaders-msl/asm/comp/struct-resource-name-aliasing.asm.comp
 shaders-msl/asm/comp/uint_smulextended.asm.comp
@@ -4036,7 +4050,9 @@ shaders-no-opt/vert/pass-array-by-value.vert
 shaders-no-opt/vert/vertex-layer.vert
 shaders-no-opt/vulkan/comp/bda-declaration-order.vk.nocompat.comp
 shaders-no-opt/vulkan/comp/bfloat16.vk.nocompat.comp
+shaders-no-opt/vulkan/comp/float8.vk.nocompat.comp
 shaders-no-opt/vulkan/comp/image-64bit.vk.nocompat.comp
+shaders-no-opt/vulkan/comp/nv-coopmat-2.vk.nocompat.spv16.comp
 shaders-no-opt/vulkan/frag/shading-rate.vk.nocompat.frag
 shaders-no-opt/vulkan/frag/spec-constant.vk.frag
 shaders-no-opt/vulkan/frag/ubo-offset-out-of-order.vk.nocompat.frag
@@ -4390,6 +4406,8 @@ shaders/vulkan/comp/buffer-reference-decorations.nocompat.vk.comp
 shaders/vulkan/comp/buffer-reference.nocompat.vk.comp
 shaders/vulkan/comp/fp-atomic.nocompat.vk.comp
 shaders/vulkan/comp/ray-query.nocompat.spv14.invalid.vk.comp
+shaders/vulkan/comp/replicated-composites.nocompat.spv16.asm.vk.comp
+shaders/vulkan/comp/replicated-composites.spv16.vk.nocompat.comp
 shaders/vulkan/comp/spec-constant-op-member-array.vk.comp
 shaders/vulkan/comp/spec-constant-work-group-size.vk.comp
 shaders/vulkan/frag/block-match-sad.frag
