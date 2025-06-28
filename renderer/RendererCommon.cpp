@@ -28,9 +28,9 @@ THE SOFTWARE.
 #include <charconv>
 #include <string_view>
 
+#include <spirv_cross.hpp>
 #include <spirv-tools/optimizer.hpp>
 #include <SPIRV/SPVRemapper.h>
-#include <spirv_cross.hpp>
 
 #include <magic_enum/magic_enum_containers.hpp>
 
