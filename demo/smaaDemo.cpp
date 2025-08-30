@@ -2199,8 +2199,13 @@ void SMAADemo::createShapes() {
 
 	const float bigShapeSide = shapeDistance * shapesPerSide;
 
-	if (shapesBuffer) {
-		renderer.deleteBuffer(std::move(shapesBuffer));
+	if (shapeVertexBuffer) {
+		assert(shapeIndexBuffer);
+		renderer.deleteBuffer(std::move(shapeIndexBuffer));
+		renderer.deleteBuffer(std::move(shapeVertexBuffer));
+		shapeNumVertices = 0;
+	} else {
+		assert(!shapeIndexBuffer);
 	}
 	shapes.clear();
 	shapes.reserve(numShapes);
@@ -2273,8 +2278,13 @@ static float sRGB2linear(float v) {
 
 
 void SMAADemo::colorShapes() {
-	if (shapesBuffer) {
-		renderer.deleteBuffer(std::move(shapesBuffer));
+	if (shapeVertexBuffer) {
+		assert(shapeIndexBuffer);
+		renderer.deleteBuffer(std::move(shapeVertexBuffer));
+		renderer.deleteBuffer(std::move(shapeIndexBuffer));
+		shapeNumVertices = 0;
+	} else {
+		assert(!shapeIndexBuffer);
 	}
 
 	if (colorMode == ColorMode::RGB) {
@@ -3169,6 +3179,7 @@ void SMAADemo::render() {
 void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources & /* r */) {
 	struct ShapeVertex {
 		glm::vec3  pos;
+		glm::vec3  col;
 	};
 
 	renderer.bindGraphicsPipeline(getCachedPipeline(shapePipeline, [&] () {
@@ -3185,6 +3196,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 		      .numSamples(numSamples)
 		      .descriptorSetLayout<ShapeSceneDS>(0)
 		      .vertexAttrib(ATTR_POS, 0, 3, VtxFormat::Float, offsetof(ShapeVertex, pos))
+		      .vertexAttrib(ATTR_COLOR, 0, 3, VtxFormat::Float, offsetof(ShapeVertex, col))
 		      .vertexBufferStride(0, sizeof(ShapeVertex))
 		      .depthWrite(true)
 		      .depthTest(true)
@@ -3307,9 +3319,51 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 
 		par_shapes_scale(mesh, scale, scale, scale);
 
+		size_t numShapes = shapes.size();
+
+		std::vector<ShapeVertex> vertices;
+		vertices.reserve(mesh->npoints * numShapes);
+
+		std::vector<PAR_SHAPES_T> indices;
+		indices.reserve(mesh->ntriangles * 3 * numShapes);
+
+		for (size_t i = 0; i < numShapes; i++) {
+			// indices first to use current vertices buf size as offset
+			PAR_SHAPES_T vertexOffset = vertices.size();
+
+			for (ssize_t j = 0; j < mesh->ntriangles; j++) {
+				indices.push_back(mesh->triangles[j * 3 + 0] + vertexOffset);
+				indices.push_back(mesh->triangles[j * 3 + 1] + vertexOffset);
+				indices.push_back(mesh->triangles[j * 3 + 2] + vertexOffset);
+			}
+
+			for (ssize_t j = 0; j < mesh->npoints; j++) {
+				ShapeVertex v;
+				const ShaderDefines::Shape &shape = shapes[i];
+				v.pos.x = mesh->points[j * 3 + 0];
+				v.pos.y = mesh->points[j * 3 + 1];
+				v.pos.z = mesh->points[j * 3 + 2];
+				v.col = shape.color;
+
+				// not using quaternion multiply because of bug compatibility
+				glm::vec3 rotationQuat;
+				rotationQuat.x = shape.rotation.x;
+				rotationQuat.y = shape.rotation.y;
+				rotationQuat.z = shape.rotation.z;
+				glm::vec3 uv = glm::cross(rotationQuat, v.pos);
+				glm::vec3 uuv = glm::cross(rotationQuat, uv);
+				uv *= (2.0 * shape.rotation.w);
+				uuv *= 2.0;
+				v.pos = v.pos + uv + uuv;
+
+				v.pos += shape.position;
+				vertices.push_back(v);
+			}
+		}
+
 		shapeNumVertices  = mesh->ntriangles * 3;
-		shapeVertexBuffer = renderer.createBuffer({ BufferUsage::Vertex }, mesh->npoints    * sizeof(ShapeVertex),      mesh->points);
-		shapeIndexBuffer  = renderer.createBuffer({ BufferUsage::Index },  mesh->ntriangles * 3 * sizeof(PAR_SHAPES_T), mesh->triangles);
+		shapeVertexBuffer = renderer.createBuffer({ BufferUsage::Vertex }, vertices.size() * sizeof(ShapeVertex),  vertices.data());
+		shapeIndexBuffer  = renderer.createBuffer({ BufferUsage::Index },  indices.size()  * sizeof(PAR_SHAPES_T), indices.data());
 
 		par_shapes_free_mesh(mesh);
 	} else {
@@ -3336,7 +3390,7 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 		numShapes     = shapeOrderNum;
 	}
 
-	renderer.drawIndexedInstanced(shapeNumVertices, numShapes);
+	renderer.drawIndexed(shapeNumVertices * numShapes, 0);
 }
 
 

@@ -25,12 +25,9 @@ THE SOFTWARE.
 #include "shaderDefines.h"
 
 
-[[vk::binding(1, 0)]] StructuredBuffer <Shape> shapes;
-
-
 struct VertexIn {
-    float3  position : POSITION0;
-    uint    instance : SV_InstanceID;
+    [[vk::location(ATTR_POS)]]   float3  position : POSITION0;
+    [[vk::location(ATTR_COLOR)]] float3  color    : COLOR0;
 };
 
 
@@ -50,25 +47,11 @@ struct FragmentOut {
 
 VertexOut vertexShader(VertexIn vin)
 {
-    Shape shape = shapes[vin.instance];
-
-    // rotate
-    // this is quaternion multiplication from glm
-    float3 v = vin.position;
-    float3 rotationQuat = shape.rotation.xyz;
-    float qw = shape.rotation.w;
-    float3 uv = cross(rotationQuat, v);
-    float3 uuv = cross(rotationQuat, uv);
-    uv *= (2.0 * qw);
-    uuv *= 2.0;
-    float3 rotatedPos = v + uv + uuv;
-    float4 worldPos = float4(rotatedPos + shape.position, 1.0);
-
     VertexOut vout;
-    vout.position = worldPos * viewProj;
-    vout.color    = shape.color;
+    vout.position = float4(vin.position, 1.0) * viewProj;
+    vout.color    = vin.color;
     vout.currPos  = vout.position.xyw;
-    vout.prevPos  = (prevViewProj * worldPos).xyw;
+    vout.prevPos  = (prevViewProj * float4(vin.position, 1.0)).xyw;
     // Positions in projection space are in [-1, 1] range, while texture
     // coordinates are in [0, 1] range. So, we divide by 2 to get velocities in
     // the scale (and flip the y axis):

@@ -27,11 +27,7 @@ THE SOFTWARE.
 
 
 layout(location = ATTR_POS) in vec3 position;
-
-
-readonly restrict layout(std430, set = 0, binding = 1) buffer shapeData {
-    Shape shapes[];
-};
+layout(location = ATTR_COLOR) in vec4 col;
 
 
 layout(location = 0) out vec3 currPos;
@@ -41,27 +37,13 @@ layout(location = 2) out vec3 color;
 
 void main(void)
 {
-    Shape shape = shapes[gl_InstanceIndex];
-
-    // rotate
-    // this is quaternion multiplication from glm
-    vec3 v = position;
-    vec3 rotationQuat = shape.rotation.xyz;
-    float qw = shape.rotation.w;
-    vec3 uv = cross(rotationQuat, v);
-    vec3 uuv = cross(rotationQuat, uv);
-    uv *= (2.0 * qw);
-    uuv *= 2.0;
-    vec3 rotatedPos = v + uv + uuv;
-    vec4 worldPos = vec4(rotatedPos + shape.position, 1.0);
-
-    gl_Position = viewProj * worldPos;
+    gl_Position = viewProj * vec4(position, 1.0);
     currPos     = gl_Position.xyw;
-    prevPos     = (prevViewProj * worldPos).xyw;
+    prevPos     = (prevViewProj * vec4(position, 1.0)).xyw;
     // Positions in projection space are in [-1, 1] range, while texture
     // coordinates are in [0, 1] range. So, we divide by 2 to get velocities in
     // the scale (and flip the y axis):
     currPos.xy *= vec2(0.5, -0.5);
     prevPos.xy *= vec2(0.5, -0.5);
-    color = shape.color;
+    color = col.xyz;
 }
