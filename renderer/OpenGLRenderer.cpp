@@ -623,6 +623,14 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	LOG_TODO("check extensions")
 	// at least direct state access, texture storage
 
+	if (GL_SUPPORTED_VERSION(4, 3) || GL_SUPPORTED_EXT(ARB_compute_shader)) {
+		features.computeShader = true;
+		LOG("Compute shaders supported");
+	} else {
+		features.computeShader = false;
+		LOG("Compute shaders not supported");
+	}
+
 	if (GL_SUPPORTED_VERSION(4, 3) || GL_SUPPORTED_EXT(ARB_shader_storage_buffer_object)) {
 		features.SSBOSupported = true;
 		LOG("Shader storage buffer supported");
@@ -1245,6 +1253,7 @@ static void processShaderResources(ShaderResources &shaderResources, const Resou
 
 
 ComputePipelineHandle Renderer::createComputePipeline(const ComputePipelineDesc &desc) {
+	assert(impl->features.computeShader);
 	assert(!desc.computeShaderName.empty());
 	assert(!desc.name_.empty());
 
@@ -2358,6 +2367,7 @@ void Renderer::setScissorRect(unsigned int x, unsigned int y, unsigned int width
 
 void Renderer::bindComputePipeline(ComputePipelineHandle pipeline) {
 #ifndef NDEBUG
+	assert(impl->features.computeShader);
 	assert(impl->inFrame);
 	assert(pipeline);
 	assert(!impl->inRenderPass);
@@ -2957,6 +2967,7 @@ void Renderer::drawIndexedVertexOffset(unsigned int vertexCount, unsigned int fi
 
 void Renderer::dispatchCompute2D(unsigned int xGroups, unsigned int yGroups) {
 #ifndef NDEBUG
+	assert(impl->features.computeShader);
 	assert(!impl->inRenderPass);
 	assert(std::holds_alternative<ComputePipelineHandle>(impl->currentPipeline));
 	assert(xGroups > 0);
