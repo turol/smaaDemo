@@ -1295,6 +1295,9 @@ void SMAADemo::initRender() {
 	renderer   = Renderer::createRenderer(rendererDesc);
 	renderSize = renderer.getDrawableSize();
 	const auto &features = renderer.getFeatures();
+	if (!features.computeShader) {
+		pipelineType = PipelineType::Graphics;
+	}
 	LOG("Max MSAA samples: {}",  features.maxMSAASamples);
 	LOG("sRGB frame buffer: {}", features.sRGBFramebuffer ? "yes" : "no");
 	LOG("swapchain can be used as storage image: {}", features.swapchainStorage ? "yes" : "no");
@@ -2646,9 +2649,11 @@ void SMAADemo::processInput() {
 				} break;
 
 			case SDL_SCANCODE_P:
+				if (renderer.getFeatures().computeShader) {
 				// switch between compute and graphics pipelines
 				pipelineType = magic_enum::enum_next_value_circular(pipelineType);
 				rebuildRG    = true;
+				}
 				break;
 
 			case SDL_SCANCODE_Q:
@@ -2994,6 +2999,9 @@ void SMAADemo::runAuto() {
 								useTexGather = gather;
 
 								for (auto p : magic_enum::enum_values<PipelineType>()) {
+									if (p == PipelineType::Compute && !renderer.getFeatures().computeShader) {
+										continue;
+									}
 									pipelineType = p;
 									innermostLoop();
 								}
@@ -3003,6 +3011,9 @@ void SMAADemo::runAuto() {
 
 					case AAMethod::SMAA:
 						for (auto p : magic_enum::enum_values<PipelineType>()) {
+							if (p == PipelineType::Compute && !renderer.getFeatures().computeShader) {
+								continue;
+							}
 							pipelineType = p;
 
 							for (unsigned int q = 0; q < maxSMAAQuality; q++) {
@@ -3034,7 +3045,10 @@ void SMAADemo::runAuto() {
 						break;
 
 					case AAMethod::SMAA2X:
-						for (auto p : magic_enum::enum_values<PipelineType>()) {
+ 						for (auto p : magic_enum::enum_values<PipelineType>()) {
+							if (p == PipelineType::Compute && !renderer.getFeatures().computeShader) {
+								continue;
+							}
 							pipelineType = p;
 
 							for (unsigned int q = 0; q < maxSMAAQuality; q++) {
@@ -4024,11 +4038,21 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 
 			{
 				ImGui::Separator();
+
+				bool computeSupport = renderer.getFeatures().computeShader;
+				if (!computeSupport) {
+					ImGui::BeginDisabled();
+				}
+
 				ImGui::Text("Preferred pipeline type");
 				auto newPipelineType = enumRadioButton(pipelineType);
+				if (computeSupport) {
 				if (pipelineType != newPipelineType) {
 					pipelineType  = newPipelineType;
 					rebuildRG = true;
+				}
+				} else {
+					ImGui::EndDisabled();
 				}
 			}
 
