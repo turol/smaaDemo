@@ -493,7 +493,6 @@ class SMAADemo {
 	RandomGen                                         random                  { 1 };
 	std::vector<Image>                                images;
 	std::vector<ShaderDefines::Shape>                 shapes;
-	BufferHandle                                      shapesBuffer;
 
 	ShaderDefines::Globals                            globals;
 	glm::mat4                                         currViewProj;
@@ -742,8 +741,12 @@ SMAADemo::~SMAADemo() {
 	}
 
 	if (renderer) {
-		if (shapesBuffer) {
-			renderer.deleteBuffer(std::move(shapesBuffer));
+		if (shapeVertexBuffer) {
+			assert(shapeIndexBuffer);
+			renderer.deleteBuffer(std::move(shapeIndexBuffer));
+			renderer.deleteBuffer(std::move(shapeVertexBuffer));
+		} else {
+			assert(!shapeIndexBuffer);
 		}
 
 		renderGraph.reset(renderer);
@@ -1013,7 +1016,6 @@ struct DescriptorTyper<TextureHandle> {
 
 struct ShapeSceneDS {
 	BufferHandle  globals;
-	BufferHandle  instances;
 
 	DS_LAYOUT_MEMBERS;
 };
@@ -1021,7 +1023,6 @@ struct ShapeSceneDS {
 
 const DescriptorLayout ShapeSceneDS::layout[] = {
 	  { DescriptorType::UniformBuffer,  offsetof(ShapeSceneDS, globals)   }
-	, { DescriptorType::StorageBuffer,  offsetof(ShapeSceneDS, instances) }
 	, { DescriptorType::End,            0                                 }
 };
 
@@ -2244,8 +2245,13 @@ void SMAADemo::createShapes() {
 
 
 void SMAADemo::shuffleShapeRendering() {
-	if (shapesBuffer) {
-		renderer.deleteBuffer(std::move(shapesBuffer));
+	if (shapeVertexBuffer) {
+		assert(shapeIndexBuffer);
+		renderer.deleteBuffer(std::move(shapeVertexBuffer));
+		renderer.deleteBuffer(std::move(shapeIndexBuffer));
+		shapeNumVertices = 0;
+	} else {
+		assert(!shapeIndexBuffer);
 	}
 
 	const unsigned int numShapes = static_cast<unsigned int>(shapes.size());
@@ -2257,8 +2263,13 @@ void SMAADemo::shuffleShapeRendering() {
 
 
 void SMAADemo::reorderShapeRendering() {
-	if (shapesBuffer) {
-		renderer.deleteBuffer(std::move(shapesBuffer));
+	if (shapeVertexBuffer) {
+		assert(shapeIndexBuffer);
+		renderer.deleteBuffer(std::move(shapeIndexBuffer));
+		renderer.deleteBuffer(std::move(shapeVertexBuffer));
+		shapeNumVertices = 0;
+	} else {
+		assert(!shapeIndexBuffer);
 	}
 
 	auto shapeCompare = [] (const ShaderDefines::Shape &a, const ShaderDefines::Shape &b) {
@@ -3374,13 +3385,8 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 	renderer.bindVertexBuffer(0, shapeVertexBuffer);
 	renderer.bindIndexBuffer(shapeIndexBuffer, IndexFormat::b32);
 
-	if (!shapesBuffer) {
-		shapesBuffer = renderer.createBuffer({ BufferUsage::Storage }, static_cast<uint32_t>(sizeof(ShaderDefines::Shape) * shapes.size()), &shapes[0]);
-	}
-
 	ShapeSceneDS shapeDS;
 	shapeDS.globals   = renderer.createEphemeralBuffer({ BufferUsage::Uniform }, sizeof(ShaderDefines::Globals), &globals);
-	shapeDS.instances = shapesBuffer;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, shapeDS, layoutUsage);
 
 	unsigned int numShapes = static_cast<unsigned int>(shapes.size());
