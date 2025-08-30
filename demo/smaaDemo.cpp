@@ -2650,9 +2650,9 @@ void SMAADemo::processInput() {
 
 			case SDL_SCANCODE_P:
 				if (renderer.getFeatures().computeShader) {
-				// switch between compute and graphics pipelines
-				pipelineType = magic_enum::enum_next_value_circular(pipelineType);
-				rebuildRG    = true;
+					// switch between compute and graphics pipelines
+					pipelineType = magic_enum::enum_next_value_circular(pipelineType);
+					rebuildRG    = true;
 				}
 				break;
 
@@ -4047,10 +4047,10 @@ void SMAADemo::updateGUI(uint64_t elapsed) {
 				ImGui::Text("Preferred pipeline type");
 				auto newPipelineType = enumRadioButton(pipelineType);
 				if (computeSupport) {
-				if (pipelineType != newPipelineType) {
-					pipelineType  = newPipelineType;
-					rebuildRG = true;
-				}
+					if (pipelineType != newPipelineType) {
+						pipelineType  = newPipelineType;
+						rebuildRG = true;
+					}
 				} else {
 					ImGui::EndDisabled();
 				}
