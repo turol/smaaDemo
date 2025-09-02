@@ -2201,7 +2201,7 @@ void SMAADemo::createShapes() {
 	const float shapeDiameter = sqrtf(3.0f);
 	const float shapeDistance = shapeDiameter + 1.0f;
 
-	const float bigShapeSide = shapeDistance * shapesPerSide;
+	const float bigShapeSide = shapeDistance * float(shapesPerSide);
 
 	if (shapeVertexBuffer) {
 		assert(shapeIndexBuffer);
@@ -2229,9 +2229,9 @@ void SMAADemo::createShapes() {
 				qw *= reciprocLen;
 
 				ShaderDefines::Shape shape;
-				shape.position = glm::vec3((x * shapeDistance) - (bigShapeSide / 2.0f)
-				                        , (y * shapeDistance) - (bigShapeSide / 2.0f)
-				                        , (z * shapeDistance) - (bigShapeSide / 2.0f));
+				shape.position = glm::vec3((float(x) * shapeDistance) - (bigShapeSide / 2.0f)
+				                         , (float(y) * shapeDistance) - (bigShapeSide / 2.0f)
+				                         , (float(z) * shapeDistance) - (bigShapeSide / 2.0f));
 
 				shape.order    = order;
 				order++;
@@ -2926,7 +2926,7 @@ void SMAADemo::processInput() {
 		case SDL_MOUSEWHEEL:
 			io.AddMouseWheelEvent(static_cast<float>(event.wheel.x), static_cast<float>(event.wheel.y));
 			if (!io.WantCaptureMouse) {
-				cameraDistance -= event.wheel.y;
+				cameraDistance -= float(event.wheel.y);
 			}
 			break;
 
