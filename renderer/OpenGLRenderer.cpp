@@ -623,12 +623,18 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	LOG_TODO("check extensions")
 	// at least direct state access, texture storage
 
+	if (desc.gles) {
+		features.computeShader = false;
+		LOG("Compute shaders not supported");
+		LOG_TODO("Fix compute shader output image layouts for GLSL ES")
+	} else {
 	if (GL_SUPPORTED_VERSION(4, 3) || GL_SUPPORTED_EXT(ARB_compute_shader)) {
 		features.computeShader = true;
 		LOG("Compute shaders supported");
 	} else {
 		features.computeShader = false;
 		LOG("Compute shaders not supported");
+	}
 	}
 
 	if (GL_SUPPORTED_VERSION(4, 3) || GL_SUPPORTED_EXT(ARB_shader_storage_buffer_object)) {
