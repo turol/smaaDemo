@@ -1332,6 +1332,12 @@ ComputePipelineHandle Renderer::createComputePipeline(const ComputePipelineDesc 
 		spirv_cross::CompilerGLSL::Options glslOptions;
 		glslOptions.vertex.fixup_clipspace = false;
 		glslOptions.vertex.support_nonzero_base_instance = false;
+		if (impl->gles) {
+			glslOptions.version = 310;
+			glslOptions.es      = true;
+			// WebGL requires initialized variables
+			glslOptions.force_zero_initialized_variables = true;
+		}
 
 		spirv_cross::CompilerGLSL glslComp(spirv);
 		glslComp.set_common_options(glslOptions);
