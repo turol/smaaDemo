@@ -30,7 +30,6 @@ THE SOFTWARE.
 
 #include <spirv_cross.hpp>
 #include <spirv-tools/optimizer.hpp>
-#include <SPIRV/SPVRemapper.h>
 
 #include <magic_enum/magic_enum_containers.hpp>
 
@@ -400,7 +399,7 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 // increase this when the shader compiler options change
 // so that the same source generates a different SPV
 // or the cache json format changes
-const unsigned int shaderVersion = 145;
+const unsigned int shaderVersion = 146;
 
 
 // helper for storing in cache .json
@@ -935,15 +934,7 @@ compilationNeeded:
 			THROW_ERROR("SPIR-V for shader \"{}\" is not valid after optimization", cacheKey)
 		}
 
-		// glslang SPV remapper
-		if (optimizeShaders) {
-			spv::spirvbin_t remapper;
-			remapper.remap(spirv);
-
-			if (!validate(spirv)) {
-				THROW_ERROR("SPIR-V for shader \"{}\" is not valid after remapping", cacheKey)
-			}
-		}
+		LOG_TODO("spirv-opt id remapper")
 	}
 
 	if (!skipShaderCache) {

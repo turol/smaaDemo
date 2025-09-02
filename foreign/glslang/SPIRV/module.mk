@@ -19,7 +19,6 @@ FILES:= \
 	Logger.cpp \
 	SpvBuilder.cpp \
 	SpvPostProcess.cpp \
-	SPVRemapper.cpp \
 	# empty line
 
 
