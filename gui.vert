@@ -27,19 +27,19 @@ THE SOFTWARE.
 #include "shaderUtils.h"
 
 
-layout(location = ATTR_POS)   in vec2 position;
-layout(location = ATTR_UV)    in vec2 uv;
-layout(location = ATTR_COLOR) in vec4 color;
+layout(location = ATTR_POS)   in vec2 vertexPosition;
+layout(location = ATTR_UV)    in vec2 vertexUV;
+layout(location = ATTR_COLOR) in vec4 vertexColor;
 
 
-layout (location = 0) out vec4 out_color;
-layout (location = 1) out vec2 out_uv;
+layout (location = 0) out vec4 color;
+layout (location = 1) out vec2 uv;
 
 
 void main(void)
 {
-    gl_Position   = guiOrtho * vec4(position, 0.0, 1.0);
-    out_uv        = uv;
-    out_color.xyz = sRGB2linear(color.xyz);
-    out_color.a   = color.a;
+    gl_Position = guiOrtho * vec4(vertexPosition, 0.0, 1.0);
+    uv          = vertexUV;
+    color.xyz   = sRGB2linear(vertexColor.xyz);
+    color.a     = vertexColor.a;
 }
