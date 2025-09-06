@@ -399,7 +399,7 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 // increase this when the shader compiler options change
 // so that the same source generates a different SPV
 // or the cache json format changes
-const unsigned int shaderVersion = 146;
+const unsigned int shaderVersion = 147;
 
 
 // helper for storing in cache .json
@@ -921,8 +921,10 @@ compilationNeeded:
 			// SPIRV-Tools optimizer
 			opt.RegisterPerformancePasses();
 		} else {
-			// legalize only
-			opt.RegisterLegalizationPasses();
+			// if HLSL we need to legalize
+			if (shaderLanguage == ShaderLanguage::HLSL) {
+				opt.RegisterLegalizationPasses();
+			}
 		}
 
 		bool success = opt.Run(&spirv[0], spirv.size(), &spirv, options);
