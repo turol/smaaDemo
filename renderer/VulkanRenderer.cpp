@@ -2799,7 +2799,8 @@ void RendererImpl::waitForDeviceIdle() {
 			case Frame::Status::Pending:
 				f.status = Frame::Status::Done;
 				count++;
-				// fallthrough
+				HEDLEY_FALL_THROUGH;
+
 			case Frame::Status::Done:
 				cleanupFrame(i);
 				break;

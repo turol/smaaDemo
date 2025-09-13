@@ -573,7 +573,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			vsync = true;
 			break;
 		}
-		// fallthrough
+		HEDLEY_FALL_THROUGH;
 
 	case VSync::On:
 		retval = SDL_GL_SetSwapInterval(1);
@@ -1990,7 +1990,7 @@ void Renderer::setSwapchainDesc(const SwapchainDesc &desc) {
 			} else {
 				break;
 			}
-			// fallthrough
+			HEDLEY_FALL_THROUGH;
 
 		case VSync::On:
 			LOG_TODO("check return val")
