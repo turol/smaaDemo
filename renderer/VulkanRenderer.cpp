@@ -2776,6 +2776,7 @@ void RendererImpl::waitForDeviceIdle() {
 
 		case Frame::Status::Pending:
 			fences.push_back(f.fence);
+			break;
 
 		case Frame::Status::Done:
 			break;
