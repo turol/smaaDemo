@@ -1530,7 +1530,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	glGenFramebuffers(1, &fb.fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, fb.fbo);
 
-	unsigned int width = 0, height UNUSED = 0;
+	unsigned int width = 0, height DEBUG_ASSERTED = 0;
 
 	unsigned int numColorAttachments = 0;
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
@@ -2245,7 +2245,7 @@ void RendererImpl::waitForFrame(unsigned int frameIdx) {
 }
 
 
-void RendererImpl::deleteFrameInternal(Frame &f UNUSED) {
+void RendererImpl::deleteFrameInternal(Frame &f DEBUG_ASSERTED) {
 	assert(!f.outstanding);
 }
 
@@ -2330,7 +2330,7 @@ void Renderer::endRenderPass() {
 }
 
 
-void Renderer::layoutTransition(RenderTargetHandle image, Layout src UNUSED, Layout dest) {
+void Renderer::layoutTransition(RenderTargetHandle image, Layout src DEBUG_ASSERTED, Layout dest) {
 	assert(image);
 	assert(dest != Layout::Undefined);
 	assert(src != dest);
