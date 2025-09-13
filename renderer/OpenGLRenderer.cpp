@@ -194,8 +194,7 @@ static unsigned int glIndexSize(IndexFormat indexFormat) {
 
 	}
 
-	HEDLEY_UNREACHABLE();
-	return 0;
+	HEDLEY_UNREACHABLE_RETURN(0);
 }
 
 static GLenum glTexFormat(Format format) {

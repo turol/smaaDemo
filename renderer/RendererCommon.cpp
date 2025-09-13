@@ -65,8 +65,7 @@ auto format_as(ShaderCacheKey cacheKey) {
 bool isColorFormat(Format format) {
 	switch (format) {
 	case Format::Invalid:
-		HEDLEY_UNREACHABLE();
-		return false;
+		HEDLEY_UNREACHABLE_RETURN(false);
 
 	case Format::R8:
 	case Format::RG8:
@@ -89,16 +88,14 @@ bool isColorFormat(Format format) {
 
 	}
 
-	HEDLEY_UNREACHABLE();
-	return false;
+	HEDLEY_UNREACHABLE_RETURN(false);
 }
 
 
 bool isDepthFormat(Format format) {
 	switch (format) {
 	case Format::Invalid:
-		HEDLEY_UNREACHABLE();
-		return false;
+		HEDLEY_UNREACHABLE_RETURN(false);
 
 	case Format::R8:
 	case Format::RG8:
@@ -121,16 +118,14 @@ bool isDepthFormat(Format format) {
 
 	}
 
-	HEDLEY_UNREACHABLE();
-	return false;
+	HEDLEY_UNREACHABLE_RETURN(false);
 }
 
 
 bool issRGBFormat(Format format) {
 	switch (format) {
 	case Format::Invalid:
-		HEDLEY_UNREACHABLE();
-		return false;
+		HEDLEY_UNREACHABLE_RETURN(false);
 
 	case Format::R8:
 	case Format::RG8:
@@ -155,16 +150,14 @@ bool issRGBFormat(Format format) {
 
 	}
 
-	HEDLEY_UNREACHABLE();
-	return false;
+   	HEDLEY_UNREACHABLE_RETURN(false);
 }
 
 
 uint32_t formatSize(Format format) {
 	switch (format) {
 	case Format::Invalid:
-		HEDLEY_UNREACHABLE();
-		return 4;
+		HEDLEY_UNREACHABLE_RETURN(4);
 
 	case Format::R8:
 		return 1;
@@ -211,8 +204,7 @@ uint32_t formatSize(Format format) {
 
 	}
 
-	HEDLEY_UNREACHABLE();
-	return 4;
+	HEDLEY_UNREACHABLE_RETURN(4);
 }
 
 

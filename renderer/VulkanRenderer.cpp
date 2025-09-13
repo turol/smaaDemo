@@ -107,8 +107,7 @@ static vk::IndexType vulkanIndexFormat(IndexFormat indexFormat) {
 
 	}
 
-	HEDLEY_UNREACHABLE();
-	return vk::IndexType::eNoneKHR;
+	HEDLEY_UNREACHABLE_RETURN(vk::IndexType::eNoneKHR);
 }
 
 
@@ -127,8 +126,7 @@ static vk::Format vulkanVertexFormat(VtxFormat format, uint8_t count) {
 
 		}
 
-		HEDLEY_UNREACHABLE();
-		return vk::Format::eUndefined;
+		HEDLEY_UNREACHABLE_RETURN(vk::Format::eUndefined);
 
 	case VtxFormat::UNorm8:
 		assert(count == 4);
@@ -136,16 +134,14 @@ static vk::Format vulkanVertexFormat(VtxFormat format, uint8_t count) {
 
 	}
 
-	HEDLEY_UNREACHABLE();
-	return vk::Format::eUndefined;
+	HEDLEY_UNREACHABLE_RETURN(vk::Format::eUndefined);
 }
 
 
 static vk::Format vulkanFormat(Format format) {
 	switch (format) {
 	case Format::Invalid:
-		HEDLEY_UNREACHABLE();
-		return vk::Format::eUndefined;
+		HEDLEY_UNREACHABLE_RETURN(vk::Format::eUndefined);
 
 	case Format::R8:
 		return vk::Format::eR8Unorm;
@@ -194,8 +190,7 @@ static vk::Format vulkanFormat(Format format) {
 
 	}
 
-	HEDLEY_UNREACHABLE();
-	return vk::Format::eUndefined;
+	HEDLEY_UNREACHABLE_RETURN(vk::Format::eUndefined);
 }
 
 
@@ -1186,8 +1181,7 @@ static vk::ImageLayout vulkanColorLayout(Layout l) {
 		return vk::ImageLayout::eColorAttachmentOptimal;
 	}
 
-	HEDLEY_UNREACHABLE();
-	return vk::ImageLayout::eUndefined;
+	HEDLEY_UNREACHABLE_RETURN(vk::ImageLayout::eUndefined);
 }
 
 
@@ -1212,8 +1206,7 @@ static vk::ImageLayout vulkanDepthStencilLayout(Layout l) {
 		return vk::ImageLayout::eDepthStencilAttachmentOptimal;
 	}
 
-	HEDLEY_UNREACHABLE();
-	return vk::ImageLayout::eUndefined;
+	HEDLEY_UNREACHABLE_RETURN(vk::ImageLayout::eUndefined);
 }
 
 
@@ -1328,8 +1321,7 @@ static vk::SampleCountFlagBits sampleCountFlagsFromNum(unsigned int numSamples) 
 
 	}
 
-	HEDLEY_UNREACHABLE();
-	return vk::SampleCountFlagBits::e1;
+	HEDLEY_UNREACHABLE_RETURN(vk::SampleCountFlagBits::e1);
 }
 
 
@@ -1630,8 +1622,7 @@ static vk::BlendFactor vulkanBlendFactor(BlendFunc b) {
 
 	}
 
-	HEDLEY_UNREACHABLE();
-	return vk::BlendFactor::eZero;
+	HEDLEY_UNREACHABLE_RETURN(vk::BlendFactor::eZero);
 }
 
 
@@ -2131,9 +2122,7 @@ static vk::Filter vulkanFiltermode(FilterMode m) {
         return vk::Filter::eLinear;
 	}
 
-	HEDLEY_UNREACHABLE();
-
-	return vk::Filter::eNearest;
+	HEDLEY_UNREACHABLE_RETURN(vk::Filter::eNearest);
 }
 
 
