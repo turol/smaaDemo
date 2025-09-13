@@ -320,27 +320,21 @@ static const char *errorSource(GLenum source)
 	{
 	case GL_DEBUG_SOURCE_API:
 		return "API";
-		break;
 
 	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
 		return "window system";
-		break;
 
 	case GL_DEBUG_SOURCE_SHADER_COMPILER:
 		return "shader compiler";
-		break;
 
 	case GL_DEBUG_SOURCE_THIRD_PARTY:
 		return "third party";
-		break;
 
 	case GL_DEBUG_SOURCE_APPLICATION:
 		return "application";
-		break;
 
 	case GL_DEBUG_SOURCE_OTHER:
 		return "other";
-		break;
 
 	default:
 		break;
@@ -357,43 +351,34 @@ static const char *errorType(GLenum type)
 	case GL_DEBUG_TYPE_ERROR:
 	case GL_DEBUG_CATEGORY_API_ERROR_AMD:
 		return "error";
-		break;
 
 	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
 	case GL_DEBUG_CATEGORY_DEPRECATION_AMD:
 		return "deprecated behavior";
-		break;
 
 	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
 	case GL_DEBUG_CATEGORY_UNDEFINED_BEHAVIOR_AMD:
 		return "undefined behavior";
-		break;
 
 	case GL_DEBUG_TYPE_PORTABILITY:
 		return "portability";
-		break;
 
 	case GL_DEBUG_TYPE_PERFORMANCE:
 	case GL_DEBUG_CATEGORY_PERFORMANCE_AMD:
 		return "performance";
-		break;
 
 	case GL_DEBUG_TYPE_OTHER:
 	case GL_DEBUG_CATEGORY_OTHER_AMD:
 		return "other";
-		break;
 
 	case GL_DEBUG_CATEGORY_WINDOW_SYSTEM_AMD:
 		return "window system error";
-		break;
 
 	case GL_DEBUG_CATEGORY_SHADER_COMPILER_AMD:
 		return "shader compiler error";
-		break;
 
 	case GL_DEBUG_CATEGORY_APPLICATION_AMD:
 		return "application error";
-		break;
 
 	default:
 		break;
@@ -2551,7 +2536,6 @@ void Renderer::bindDescriptorSet(PipelineType /* bindPoint */, unsigned int inde
 		case DescriptorType::End:
 			// can't happen because createDesciptorSetLayout doesn't let it
 			HEDLEY_UNREACHABLE();
-			break;
 
 		case DescriptorType::UniformBuffer: {
 			// this is part of the struct, we know it's correctly aligned and right type

@@ -3650,7 +3650,6 @@ void Renderer::bindDescriptorSet(PipelineType bindPoint, unsigned int dsIndex, D
 		case DescriptorType::End:
 			// can't happen because createDesciptorSetLayout doesn't let it
 			HEDLEY_UNREACHABLE();
-			break;
 
 		case DescriptorType::UniformBuffer:
 		case DescriptorType::StorageBuffer: {

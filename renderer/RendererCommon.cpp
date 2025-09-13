@@ -696,7 +696,6 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 
 		default:
 			HEDLEY_UNREACHABLE();  // shouldn't happen
-			break;
 	}
 	cacheKey.entryPoint       = entryPoint;
 	cacheKey.stage            = stage;
@@ -805,7 +804,6 @@ compilationNeeded:
 
 		default:
 			HEDLEY_UNREACHABLE();  // shouldn't happen
-			break;
 
 		}
 
@@ -829,7 +827,6 @@ compilationNeeded:
 
 		default:
 			HEDLEY_UNREACHABLE();  // shouldn't happen
-			break;
 		}
 
 		char *sourceString   = src.data();
