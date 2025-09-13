@@ -1530,7 +1530,7 @@ FramebufferHandle Renderer::createFramebuffer(const FramebufferDesc &desc) {
 	glGenFramebuffers(1, &fb.fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, fb.fbo);
 
-	unsigned int width UNUSED = 0, height UNUSED = 0;
+	unsigned int width = 0, height UNUSED = 0;
 
 	unsigned int numColorAttachments = 0;
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
