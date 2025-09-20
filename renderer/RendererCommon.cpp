@@ -525,7 +525,7 @@ void from_json(const nlohmann::json &j, ShaderCacheData &data) {
 
 
 static void logSpvMessage(spv_message_level_t level_, const char *source, const spv_position_t &position, const char *message) {
-	const char *level;
+	const char *level = "";
 	switch (level_) {
 	case SPV_MSG_FATAL:
 		level = "FATAL";
@@ -549,10 +549,6 @@ static void logSpvMessage(spv_message_level_t level_, const char *source, const 
 
 	case SPV_MSG_DEBUG:
 		level = "DEBUG";
-		break;
-
-	default:
-		level = "UNKNOWN";
 		break;
 	}
 
@@ -693,9 +689,6 @@ std::vector<uint32_t> RendererBase::compileSpirv(const std::string &name, const 
 		case ShaderLanguage::HLSL:
 			cacheKey.filename = name + ".hlsl";
 			break;
-
-		default:
-			HEDLEY_UNREACHABLE();  // shouldn't happen
 	}
 	cacheKey.entryPoint       = entryPoint;
 	cacheKey.stage            = stage;
@@ -788,7 +781,7 @@ compilationNeeded:
 		preamble.push_back('\0');
 		LOG("shader preamble: \"\n{}\"\n", preamble.data());
 
-		EShLanguage language;
+		EShLanguage language = EShLangVertex;
 		switch (stage) {
 		case ShaderStage::Vertex:
 			language = EShLangVertex;
@@ -801,15 +794,11 @@ compilationNeeded:
 		case ShaderStage::Compute:
 			language = EShLangCompute;
 			break;
-
-		default:
-			HEDLEY_UNREACHABLE();  // shouldn't happen
-
 		}
 
 		glslang::TShader shader(language);
 
-		glslang::EShSource source;
+		glslang::EShSource source = glslang::EShSourceNone;
 		switch (shaderLanguage) {
 		case ShaderLanguage::GLSL:
 			source = glslang::EShSourceGlsl;
@@ -824,9 +813,6 @@ compilationNeeded:
 			}
 			shader.setEntryPoint("main");
 			break;
-
-		default:
-			HEDLEY_UNREACHABLE();  // shouldn't happen
 		}
 
 		char *sourceString   = src.data();
