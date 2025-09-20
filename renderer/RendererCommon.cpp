@@ -871,12 +871,8 @@ compilationNeeded:
 		// convert to SPIR-V
 		spv::SpvBuildLogger logger;
 		glslang::SpvOptions spvOptions;
-		LOG_TODO("only when tracing")
-		if (true) {
-			spvOptions.generateDebugInfo = true;
-		} else {
-			spvOptions.stripDebugInfo = true;
-		}
+		LOG_TODO("only generate debug info when tracing")
+		spvOptions.generateDebugInfo = true;
 		spvOptions.disableOptimizer = true;
 		spvOptions.optimizeSize     = false;
 		spvOptions.validate         = validateShaders;
