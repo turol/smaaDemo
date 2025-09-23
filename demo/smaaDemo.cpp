@@ -63,6 +63,12 @@ THE SOFTWARE.
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#ifdef __EMSCRIPTEN__
+
+#include <emscripten.h>
+
+#endif  // __EMSCRIPTEN__
+
 
 namespace ShaderDefines {
 
@@ -4547,6 +4553,12 @@ int main(int argc, char *argv[]) {
 		demo->createShapes();
 		printHelp();
 
+#ifdef __EMSCRIPTEN__
+
+		emscripten_set_main_loop_arg([] (void *arg) { return reinterpret_cast<SMAADemo *>(arg)->mainLoopIteration(); }, demo.get(), 0, 1);
+
+#else  // __EMSCRIPTEN__
+
 		if (demo->isAutoMode()) {
 			demo->runAuto();
 		} else {
@@ -4565,6 +4577,7 @@ int main(int argc, char *argv[]) {
 				}
 			}
 		}
+#endif  // __EMSCRIPTEN__
 	} catch (std::exception &e) {
 		LOG("caught std::exception \"{}\"", e.what());
 #ifndef _MSC_VER
