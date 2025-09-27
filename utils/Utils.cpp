@@ -79,9 +79,9 @@ void logWriteError(std::string_view message) {
 
 void logShutdown() {
 	if (logFile) {
-	fflush(logFile);
-	fclose(logFile);
-	logFile = nullptr;
+		fflush(logFile);
+		fclose(logFile);
+		logFile = nullptr;
 	}
 }
 
