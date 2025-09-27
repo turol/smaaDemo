@@ -28,7 +28,7 @@
 #include <assert.h>
 #include <numeric>
 
-using namespace spv;
+using namespace SPIRV_CROSS_SPV_HEADER_NAMESPACE;
 using namespace SPIRV_CROSS_NAMESPACE;
 using namespace std;
 
@@ -124,7 +124,7 @@ void CompilerMSL::add_msl_resource_binding(const MSLResourceBinding &binding)
 void CompilerMSL::add_dynamic_buffer(uint32_t desc_set, uint32_t binding, uint32_t index)
 {
 	SetBindingPair pair = { desc_set, binding };
-	buffers_requiring_dynamic_offset[pair] = { index, 0 };
+	buffers_requiring_dynamic_offset[pair] = { index, 0, "" };
 }
 
 void CompilerMSL::add_inline_uniform_block(uint32_t desc_set, uint32_t binding)
@@ -164,7 +164,7 @@ bool CompilerMSL::is_msl_shader_output_used(uint32_t location)
 	       location_outputs_in_use_fallback.count(location) == 0;
 }
 
-uint32_t CompilerMSL::get_automatic_builtin_input_location(spv::BuiltIn builtin) const
+uint32_t CompilerMSL::get_automatic_builtin_input_location(BuiltIn builtin) const
 {
 	auto itr = builtin_to_automatic_input_location.find(builtin);
 	if (itr == builtin_to_automatic_input_location.end())
@@ -173,7 +173,7 @@ uint32_t CompilerMSL::get_automatic_builtin_input_location(spv::BuiltIn builtin)
 		return itr->second;
 }
 
-uint32_t CompilerMSL::get_automatic_builtin_output_location(spv::BuiltIn builtin) const
+uint32_t CompilerMSL::get_automatic_builtin_output_location(BuiltIn builtin) const
 {
 	auto itr = builtin_to_automatic_output_location.find(builtin);
 	if (itr == builtin_to_automatic_output_location.end())
@@ -242,7 +242,7 @@ void CompilerMSL::set_fragment_output_components(uint32_t location, uint32_t com
 	fragment_output_components[location] = components;
 }
 
-bool CompilerMSL::builtin_translates_to_nonarray(spv::BuiltIn builtin) const
+bool CompilerMSL::builtin_translates_to_nonarray(BuiltIn builtin) const
 {
 	return (builtin == BuiltInSampleMask);
 }
@@ -684,28 +684,6 @@ void CompilerMSL::build_implicit_builtins()
 				mark_implicit_builtin(StorageClassInput, BuiltInBaseInstance, var_id);
 			}
 
-			if (need_multiview)
-			{
-				// Multiview shaders are not allowed to write to gl_Layer, ostensibly because
-				// it is implicitly written from gl_ViewIndex, but we have to do that explicitly.
-				// Note that we can't just abuse gl_ViewIndex for this purpose: it's an input, but
-				// gl_Layer is an output in vertex-pipeline shaders.
-				uint32_t type_ptr_out_id = ir.increase_bound_by(2);
-				SPIRType uint_type_ptr_out = get_uint_type();
-				uint_type_ptr.op = OpTypePointer;
-				uint_type_ptr_out.pointer = true;
-				uint_type_ptr_out.pointer_depth++;
-				uint_type_ptr_out.parent_type = get_uint_type_id();
-				uint_type_ptr_out.storage = StorageClassOutput;
-				auto &ptr_out_type = set<SPIRType>(type_ptr_out_id, uint_type_ptr_out);
-				ptr_out_type.self = get_uint_type_id();
-				uint32_t var_id = type_ptr_out_id + 1;
-				set<SPIRVariable>(var_id, type_ptr_out_id, StorageClassOutput);
-				set_decoration(var_id, DecorationBuiltIn, BuiltInLayer);
-				builtin_layer_id = var_id;
-				mark_implicit_builtin(StorageClassOutput, BuiltInLayer, var_id);
-			}
-
 			if (need_multiview && !has_view_idx)
 			{
 				uint32_t var_id = ir.increase_bound_by(1);
@@ -716,6 +694,28 @@ void CompilerMSL::build_implicit_builtins()
 				builtin_view_idx_id = var_id;
 				mark_implicit_builtin(StorageClassInput, BuiltInViewIndex, var_id);
 			}
+		}
+
+		if (need_multiview)
+		{
+			// Multiview shaders are not allowed to write to gl_Layer, ostensibly because
+			// it is implicitly written from gl_ViewIndex, but we have to do that explicitly.
+			// Note that we can't just abuse gl_ViewIndex for this purpose: it's an input, but
+			// gl_Layer is an output in vertex-pipeline shaders.
+			uint32_t type_ptr_out_id = ir.increase_bound_by(2);
+			SPIRType uint_type_ptr_out = get_uint_type();
+			uint_type_ptr_out.op = OpTypePointer;
+			uint_type_ptr_out.pointer = true;
+			uint_type_ptr_out.pointer_depth++;
+			uint_type_ptr_out.parent_type = get_uint_type_id();
+			uint_type_ptr_out.storage = StorageClassOutput;
+			auto &ptr_out_type = set<SPIRType>(type_ptr_out_id, uint_type_ptr_out);
+			ptr_out_type.self = get_uint_type_id();
+			uint32_t var_id = type_ptr_out_id + 1;
+			set<SPIRVariable>(var_id, type_ptr_out_id, StorageClassOutput);
+			set_decoration(var_id, DecorationBuiltIn, BuiltInLayer);
+			builtin_layer_id = var_id;
+			mark_implicit_builtin(StorageClassOutput, BuiltInLayer, var_id);
 		}
 
 		if ((need_tesc_params && (msl_options.multi_patch_workgroup || !has_invocation_id || !has_primitive_id)) ||
@@ -894,7 +894,7 @@ void CompilerMSL::build_implicit_builtins()
 			set<SPIRType>(type_id, bool_type);
 
 			SPIRType bool_type_ptr_in = bool_type;
-			bool_type_ptr_in.op = spv::OpTypePointer;
+			bool_type_ptr_in.op = OpTypePointer;
 			bool_type_ptr_in.pointer = true;
 			bool_type_ptr_in.pointer_depth++;
 			bool_type_ptr_in.parent_type = type_id;
@@ -998,7 +998,7 @@ void CompilerMSL::build_implicit_builtins()
 			set<SPIRType>(type_id, float_type);
 
 			SPIRType float_type_ptr_in = float_type;
-			float_type_ptr_in.op = spv::OpTypePointer;
+			float_type_ptr_in.op = OpTypePointer;
 			float_type_ptr_in.pointer = true;
 			float_type_ptr_in.pointer_depth++;
 			float_type_ptr_in.parent_type = type_id;
@@ -1028,7 +1028,7 @@ void CompilerMSL::build_implicit_builtins()
 			set<SPIRType>(type_id, float_type);
 
 			SPIRType float_type_ptr_in = float_type;
-			float_type_ptr_in.op = spv::OpTypePointer;
+			float_type_ptr_in.op = OpTypePointer;
 			float_type_ptr_in.pointer = true;
 			float_type_ptr_in.pointer_depth++;
 			float_type_ptr_in.parent_type = type_id;
@@ -1182,7 +1182,7 @@ void CompilerMSL::build_implicit_builtins()
 		builtin_mesh_sizes_id = var_id;
 	}
 
-	if (get_execution_model() == spv::ExecutionModelTaskEXT)
+	if (get_execution_model() == ExecutionModelTaskEXT)
 	{
 		uint32_t offset = ir.increase_bound_by(3);
 		uint32_t type_id = offset;
@@ -1194,7 +1194,7 @@ void CompilerMSL::build_implicit_builtins()
 		set<SPIRType>(type_id, mesh_grid_type);
 
 		SPIRType mesh_grid_type_ptr = mesh_grid_type;
-		mesh_grid_type_ptr.op = spv::OpTypePointer;
+		mesh_grid_type_ptr.op = OpTypePointer;
 		mesh_grid_type_ptr.pointer = true;
 		mesh_grid_type_ptr.pointer_depth++;
 		mesh_grid_type_ptr.parent_type = type_id;
@@ -1211,7 +1211,7 @@ void CompilerMSL::build_implicit_builtins()
 // Checks if the specified builtin variable (e.g. gl_InstanceIndex) is marked as active.
 // If not, it marks it as active and forces a recompilation.
 // This might be used when the optimization of inactive builtins was too optimistic (e.g. when "spvOut" is emitted).
-void CompilerMSL::ensure_builtin(spv::StorageClass storage, spv::BuiltIn builtin)
+void CompilerMSL::ensure_builtin(StorageClass storage, BuiltIn builtin)
 {
 	Bitset *active_builtins = nullptr;
 	switch (storage)
@@ -1494,19 +1494,22 @@ void CompilerMSL::emit_entry_point_declarations()
 	// Emit dynamic buffers here.
 	for (auto &dynamic_buffer : buffers_requiring_dynamic_offset)
 	{
-		if (!dynamic_buffer.second.second)
+		if (!dynamic_buffer.second.var_id)
 		{
 			// Could happen if no buffer was used at requested binding point.
 			continue;
 		}
 
-		const auto &var = get<SPIRVariable>(dynamic_buffer.second.second);
+		const auto &var = get<SPIRVariable>(dynamic_buffer.second.var_id);
 		uint32_t var_id = var.self;
 		const auto &type = get_variable_data_type(var);
+
+		add_local_variable_name(var.self);
 		string name = to_name(var.self);
+
 		uint32_t desc_set = get_decoration(var.self, DecorationDescriptorSet);
 		uint32_t arg_id = argument_buffer_ids[desc_set];
-		uint32_t base_index = dynamic_buffer.second.first;
+		uint32_t base_index = dynamic_buffer.second.base_index;
 
 		if (is_array(type))
 		{
@@ -1524,7 +1527,7 @@ void CompilerMSL::emit_entry_point_declarations()
 			{
 				statement("(", get_argument_address_space(var), " ", type_to_glsl(type), "* ",
 				          to_restrict(var_id, false), ")((", get_argument_address_space(var), " char* ",
-				          to_restrict(var_id, false), ")", to_name(arg_id), ".", ensure_valid_name(name, "m"),
+				          to_restrict(var_id, false), ")", to_name(arg_id), ".", dynamic_buffer.second.mbr_name,
 				          "[", i, "]", " + ", to_name(dynamic_offsets_buffer_id), "[", base_index + i, "]),");
 			}
 
@@ -1537,7 +1540,7 @@ void CompilerMSL::emit_entry_point_declarations()
 			statement(get_argument_address_space(var), " auto& ", to_restrict(var_id, true), name, " = *(",
 			          get_argument_address_space(var), " ", type_to_glsl(type), "* ", to_restrict(var_id, false), ")((",
 			          get_argument_address_space(var), " char* ", to_restrict(var_id, false), ")", to_name(arg_id), ".",
-			          ensure_valid_name(name, "m"), " + ", to_name(dynamic_offsets_buffer_id), "[", base_index, "]);");
+			          dynamic_buffer.second.mbr_name, " + ", to_name(dynamic_offsets_buffer_id), "[", base_index, "]);");
 		}
 	}
 
@@ -1547,6 +1550,8 @@ void CompilerMSL::emit_entry_point_declarations()
 		const auto &var = *arg;
 		const auto &type = get_variable_data_type(var);
 		const auto &buffer_type = get_variable_element_type(var);
+
+		// This has already been added as a resource name.
 		const string name = to_name(var.self);
 
 		if (is_var_runtime_size_array(var))
@@ -1557,10 +1562,24 @@ void CompilerMSL::emit_entry_point_declarations()
 			}
 
 			string resource_name;
+
 			if (descriptor_set_is_argument_buffer(get_decoration(var.self, DecorationDescriptorSet)))
+			{
 				resource_name = ir.meta[var.self].decoration.qualified_alias;
+			}
 			else
-				resource_name = name + "_";
+			{
+				bool is_aliased = std::find_if(buffer_aliases_discrete.begin(), buffer_aliases_discrete.end(),
+				                               [&](uint32_t id) { return var.self == id; }) != buffer_aliases_discrete.end();
+
+				uint32_t desc_set = get_decoration(var.self, DecorationDescriptorSet);
+				uint32_t desc_binding = get_decoration(var.self, DecorationBinding);
+
+				if (is_aliased)
+					resource_name = join("spvBufferAliasSet", desc_set, "Binding", desc_binding);
+				else
+					resource_name = join("spvDescriptorSet", desc_set, "Binding", desc_binding);
+			}
 
 			switch (type.basetype)
 			{
@@ -1572,7 +1591,7 @@ void CompilerMSL::emit_entry_point_declarations()
 			case SPIRType::SampledImage:
 				statement("spvDescriptorArray<", type_to_glsl(buffer_type, var.self), "> ", name, " {", resource_name, "};");
 				// Unsupported with argument buffer for now.
-				statement("spvDescriptorArray<sampler> ", name, "Smplr {", name, "Smplr_};");
+				statement("spvDescriptorArray<sampler> ", name, "Smplr {", resource_name, "Smplr};");
 				break;
 			case SPIRType::Struct:
 				statement("spvDescriptorArray<", get_argument_address_space(var), " ", type_to_glsl(buffer_type), "*> ",
@@ -1604,8 +1623,14 @@ void CompilerMSL::emit_entry_point_declarations()
 	for (auto &var_id : buffer_aliases_discrete)
 	{
 		const auto &var = get<SPIRVariable>(var_id);
+
+		// We already declare this alias in a different way.
+		if (is_var_runtime_size_array(var))
+			continue;
+
 		const auto &type = get_variable_data_type(var);
 		auto addr_space = get_argument_address_space(var);
+		// This resource name has already been added.
 		auto name = to_name(var_id);
 
 		uint32_t desc_set = get_decoration(var_id, DecorationDescriptorSet);
@@ -1618,36 +1643,6 @@ void CompilerMSL::emit_entry_point_declarations()
 	}
 	// Discrete descriptors are processed in entry point emission every compiler iteration.
 	buffer_aliases_discrete.clear();
-
-	for (auto &var_pair : buffer_aliases_argument)
-	{
-		uint32_t var_id = var_pair.first;
-		uint32_t alias_id = var_pair.second;
-
-		const auto &var = get<SPIRVariable>(var_id);
-		const auto &type = get_variable_data_type(var);
-		auto addr_space = get_argument_address_space(var);
-
-		if (type.array.empty())
-		{
-			statement(addr_space, " auto& ", to_restrict(var_id, true), to_name(var_id), " = (", addr_space, " ",
-			          type_to_glsl(type), "&)", ir.meta[alias_id].decoration.qualified_alias, ";");
-		}
-		else
-		{
-			const char *desc_addr_space = descriptor_address_space(var_id, var.storage, "thread");
-
-			// Esoteric type cast. Reference to array of pointers.
-			// Auto here defers to UBO or SSBO. The address space of the reference needs to refer to the
-			// address space of the argument buffer itself, which is usually constant, but can be const device for
-			// large argument buffers.
-			is_using_builtin_array = true;
-			statement(desc_addr_space, " auto& ", to_restrict(var_id, true), to_name(var_id), " = (", addr_space, " ",
-			          type_to_glsl(type), "* ", desc_addr_space, " (&)",
-			          type_to_array_glsl(type, var_id), ")", ir.meta[alias_id].decoration.qualified_alias, ";");
-			is_using_builtin_array = false;
-		}
-	}
 
 	// Emit disabled fragment outputs.
 	std::sort(disabled_frag_outputs.begin(), disabled_frag_outputs.end());
@@ -1711,6 +1706,7 @@ string CompilerMSL::compile()
 	backend.array_is_value_type_in_buffer_blocks = false;
 	backend.support_pointer_to_pointer = true;
 	backend.implicit_c_integer_promotion_rules = true;
+	backend.supports_spec_constant_array_size = false;
 
 	capture_output_to_buffer = msl_options.capture_output_to_buffer;
 	is_rasterization_disabled = msl_options.disable_rasterization || capture_output_to_buffer;
@@ -1879,6 +1875,10 @@ void CompilerMSL::preprocess_op_codes()
 	if ((preproc.uses_buffer_write && !msl_options.supports_msl_version(2, 1)) ||
 	    (preproc.uses_image_write && !msl_options.supports_msl_version(2, 2)))
 		is_rasterization_disabled = true;
+
+	// FIXME: This currently does not consider BDA side effects, so we cannot deduce const device for BDA.
+	if (preproc.uses_buffer_write || preproc.uses_image_write)
+		has_descriptor_side_effects = true;
 
 	// Tessellation control shaders are run as compute functions in Metal, and so
 	// must capture their output to a buffer.
@@ -2705,7 +2705,7 @@ uint32_t CompilerMSL::build_msl_interpolant_type(uint32_t type_id, bool is_noper
 	return new_type_id;
 }
 
-bool CompilerMSL::add_component_variable_to_interface_block(spv::StorageClass storage, const std::string &ib_var_ref,
+bool CompilerMSL::add_component_variable_to_interface_block(StorageClass storage, const std::string &ib_var_ref,
                                                             SPIRVariable &var,
                                                             const SPIRType &type,
                                                             InterfaceBlockMeta &meta)
@@ -3765,7 +3765,7 @@ void CompilerMSL::add_tess_level_input(const std::string &base_ref, const std::s
 	}
 }
 
-bool CompilerMSL::variable_storage_requires_stage_io(spv::StorageClass storage) const
+bool CompilerMSL::variable_storage_requires_stage_io(StorageClass storage) const
 {
 	if (storage == StorageClassOutput)
 		return !capture_output_to_buffer;
@@ -4874,7 +4874,7 @@ uint32_t CompilerMSL::ensure_correct_builtin_type(uint32_t type_id, BuiltIn buil
 
 		uint32_t ptr_type_id = next_id++;
 		auto &ptr_type = set<SPIRType>(ptr_type_id, base_type);
-		ptr_type.op = spv::OpTypePointer;
+		ptr_type.op = OpTypePointer;
 		ptr_type.pointer = true;
 		ptr_type.pointer_depth++;
 		ptr_type.storage = type.storage;
@@ -5874,8 +5874,8 @@ void CompilerMSL::emit_custom_templates()
 			begin_scope();
 			statement("return elements[pos];");
 			end_scope();
-			if (get_execution_model() == spv::ExecutionModelMeshEXT ||
-			    get_execution_model() == spv::ExecutionModelTaskEXT)
+			if (get_execution_model() == ExecutionModelMeshEXT ||
+			    get_execution_model() == ExecutionModelTaskEXT)
 			{
 				statement("");
 				statement("object_data T& operator [] (size_t pos) object_data");
@@ -6982,6 +6982,40 @@ void CompilerMSL::emit_custom_functions()
 				statement("return (vec<bool, N>)simd_shuffle((vec<ushort, N>)value, lane);");
 			end_scope();
 			statement("");
+
+			if (msl_options.supports_msl_version(2, 2))
+			{
+				// Despite being a template in MSL, it does not support 64-bit shuffles.
+				// Unsure if there's a cleaner way to statically unroll based on vec<> template, but this will do.
+				statement("template<>");
+				statement("inline ulong spvSubgroupShuffle(ulong value, ushort lane)");
+				begin_scope();
+				statement("return as_type<ulong>(spvSubgroupShuffle(as_type<uint2>(value), lane));");
+				end_scope();
+				statement("");
+				statement("template<>");
+				statement("inline ulong2 spvSubgroupShuffle(ulong2 value, ushort lane)");
+				begin_scope();
+				statement("return ulong2(spvSubgroupShuffle(value.x, lane), spvSubgroupShuffle(value.y, lane));");
+				end_scope();
+				statement("");
+				statement("inline ulong3 spvSubgroupShuffle(ulong3 value, ushort lane)");
+				begin_scope();
+				statement("return ulong3(spvSubgroupShuffle(value.xy, lane), spvSubgroupShuffle(value.z, lane));");
+				end_scope();
+				statement("");
+				statement("inline ulong4 spvSubgroupShuffle(ulong4 value, ushort lane)");
+				begin_scope();
+				statement("return ulong4(spvSubgroupShuffle(value.xy, lane), spvSubgroupShuffle(value.zw, lane));");
+				end_scope();
+				statement("");
+				statement("template<uint N>");
+				statement("inline vec<long, N> spvSubgroupShuffle(vec<long, N> value, ushort lane)");
+				begin_scope();
+				statement("return vec<long, N>(spvSubgroupShuffle(vec<ulong, N>(value), lane));");
+				end_scope();
+				statement("");
+			}
 			break;
 
 		case SPVFuncImplSubgroupShuffleXor:
@@ -8031,18 +8065,14 @@ void CompilerMSL::emit_custom_functions()
 
 		case SPVFuncImplVariableSizedDescriptor:
 			statement("template<typename T>");
-			statement("struct spvBufferDescriptor");
+			statement("struct spvBufferDescriptor;");
+			statement("");
+			statement("template<typename T>");
+			statement("struct spvBufferDescriptor<device T*>");
 			begin_scope();
-			statement("T value;");
+			statement("device T* value;");
 			statement("int length;");
-			statement("const device T& operator -> () const device");
-			begin_scope();
-			statement("return value;");
-			end_scope();
-			statement("const device T& operator * () const device");
-			begin_scope();
-			statement("return value;");
-			end_scope();
+			statement("int padding;");
 			end_scope_decl();
 			statement("");
 			break;
@@ -8053,13 +8083,9 @@ void CompilerMSL::emit_custom_functions()
 				statement("template<typename T>");
 				statement("struct spvDescriptorArray");
 				begin_scope();
-				statement("spvDescriptorArray(const device spvDescriptor<T>* ptr) : ptr(&ptr->value)");
-				begin_scope();
-				end_scope();
-				statement("const device T& operator [] (size_t i) const");
-				begin_scope();
-				statement("return ptr[i];");
-				end_scope();
+				statement("spvDescriptorArray(const device spvDescriptor<T>* ptr_) : ptr(&ptr_->value) {}");
+				statement("spvDescriptorArray(const device void *ptr_) : spvDescriptorArray(static_cast<const device spvDescriptor<T>*>(ptr_)) {}");
+				statement("const device T& operator [] (size_t i) const { return ptr[i]; }");
 				statement("const device T* ptr;");
 				end_scope_decl();
 				statement("");
@@ -8077,17 +8103,10 @@ void CompilerMSL::emit_custom_functions()
 				statement("template<typename T>");
 				statement("struct spvDescriptorArray<device T*>");
 				begin_scope();
-				statement("spvDescriptorArray(const device spvBufferDescriptor<device T*>* ptr) : ptr(ptr)");
-				begin_scope();
-				end_scope();
-				statement("const device T* operator [] (size_t i) const");
-				begin_scope();
-				statement("return ptr[i].value;");
-				end_scope();
-				statement("const int length(int i) const");
-				begin_scope();
-				statement("return ptr[i].length;");
-				end_scope();
+				statement("spvDescriptorArray(const device spvBufferDescriptor<device T*>* ptr_) : ptr(ptr_) {}");
+				statement("spvDescriptorArray(const device void *ptr_) : spvDescriptorArray(static_cast<const device spvBufferDescriptor<device T*>*>(ptr_)) {}");
+				statement("device T* operator [] (size_t i) const { return ptr[i].value; }");
+				statement("int length(int i) const { return ptr[i].length; }");
 				statement("const device spvBufferDescriptor<device T*>* ptr;");
 				end_scope_decl();
 				statement("");
@@ -8410,9 +8429,22 @@ void CompilerMSL::emit_specialization_constants_and_structs()
 					if (unique_func_constants[constant_id] == c.self)
 						statement("constant ", sc_type_name, " ", sc_tmp_name, " [[function_constant(", constant_id,
 						          ")]];");
-					statement("constant ", sc_type_name, " ", sc_name, " = is_function_constant_defined(", sc_tmp_name,
-					          ") ? ", bitcast_expression(type, sc_tmp_type, sc_tmp_name), " : ", constant_expression(c),
-					          ";");
+					// RenderDoc and other instrumentation may reuse the same SpecId with different base types.
+					// We deduplicate to one [[function_constant(id)]] temp and then initialize all variants from it.
+					// Metal forbids as_type to/from 'bool', so if either side is Boolean, avoid bitcasting here and
+					// prefer a value cast via a constructor instead (e.g. uint(tmp) / float(tmp) / bool(tmp)).
+					// This preserves expected toggle semantics and prevents illegal MSL like as_type<uint>(bool_tmp).
+					{
+						string sc_true_expr;
+						if (sc_tmp_type == type.basetype)
+							sc_true_expr = sc_tmp_name;
+						else if (sc_tmp_type == SPIRType::Boolean || type.basetype == SPIRType::Boolean)
+							sc_true_expr = join(sc_type_name, "(", sc_tmp_name, ")");
+						else
+							sc_true_expr = bitcast_expression(type, sc_tmp_type, sc_tmp_name);
+						statement("constant ", sc_type_name, " ", sc_name, " = is_function_constant_defined(", sc_tmp_name,
+						          ") ? ", sc_true_expr, " : ", constant_expression(c), ";");
+					}
 				}
 				else if (has_decoration(c.self, DecorationSpecId))
 				{
@@ -9212,13 +9244,18 @@ bool CompilerMSL::is_out_of_bounds_tessellation_level(uint32_t id_lhs)
 }
 
 bool CompilerMSL::prepare_access_chain_for_scalar_access(std::string &expr, const SPIRType &type,
-                                                         spv::StorageClass storage, bool &is_packed)
+                                                         StorageClass storage, bool &is_packed)
 {
 	// If there is any risk of writes happening with the access chain in question,
 	// and there is a risk of concurrent write access to other components,
 	// we must cast the access chain to a plain pointer to ensure we only access the exact scalars we expect.
 	// The MSL compiler refuses to allow component-level access for any non-packed vector types.
-	if (!is_packed && (storage == StorageClassStorageBuffer || storage == StorageClassWorkgroup))
+	// MSL refuses to take address or reference to vector component, even for packed types, so just force
+	// through the pointer cast. No much we can do sadly.
+	// For packed types, we could technically omit this if we know the reference does not have to turn into a pointer
+	// of some kind, but that requires external analysis passes to figure out, and
+	// this case is likely rare enough that we don't need to bother.
+	if (storage == StorageClassStorageBuffer || storage == StorageClassWorkgroup)
 	{
 		const char *addr_space = storage == StorageClassWorkgroup ? "threadgroup" : "device";
 		expr = join("((", addr_space, " ", type_to_glsl(type), "*)&", enclose_expression(expr), ")");
@@ -9542,21 +9579,21 @@ void CompilerMSL::emit_instruction(const Instruction &instruction)
 		break;
 
 	case OpFMul:
-		if (msl_options.invariant_float_math || has_decoration(ops[1], DecorationNoContraction))
+		if (msl_options.invariant_float_math || has_legacy_nocontract(ops[0], ops[1]))
 			MSL_BFOP(spvFMul);
 		else
 			MSL_BOP(*);
 		break;
 
 	case OpFAdd:
-		if (msl_options.invariant_float_math || has_decoration(ops[1], DecorationNoContraction))
+		if (msl_options.invariant_float_math || has_legacy_nocontract(ops[0], ops[1]))
 			MSL_BFOP(spvFAdd);
 		else
 			MSL_BOP(+);
 		break;
 
 	case OpFSub:
-		if (msl_options.invariant_float_math || has_decoration(ops[1], DecorationNoContraction))
+		if (msl_options.invariant_float_math || has_legacy_nocontract(ops[0], ops[1]))
 			MSL_BFOP(spvFSub);
 		else
 			MSL_BOP(-);
@@ -10054,7 +10091,7 @@ void CompilerMSL::emit_instruction(const Instruction &instruction)
 	case OpVectorTimesMatrix:
 	case OpMatrixTimesVector:
 	{
-		if (!msl_options.invariant_float_math && !has_decoration(ops[1], DecorationNoContraction))
+		if (!msl_options.invariant_float_math && !has_legacy_nocontract(ops[0], ops[1]))
 		{
 			CompilerGLSL::emit_instruction(instruction);
 			break;
@@ -10096,7 +10133,7 @@ void CompilerMSL::emit_instruction(const Instruction &instruction)
 
 	case OpMatrixTimesMatrix:
 	{
-		if (!msl_options.invariant_float_math && !has_decoration(ops[1], DecorationNoContraction))
+		if (!msl_options.invariant_float_math && !has_legacy_nocontract(ops[0], ops[1]))
 		{
 			CompilerGLSL::emit_instruction(instruction);
 			break;
@@ -10782,13 +10819,13 @@ bool CompilerMSL::emit_array_copy(const char *expr, uint32_t lhs_id, uint32_t rh
 	auto *lhs_var = maybe_get_backing_variable(lhs_id);
 	if (lhs_var && lhs_storage == StorageClassStorageBuffer && storage_class_array_is_thread(lhs_var->storage))
 		lhs_is_array_template = true;
-	else if (lhs_var && lhs_storage != StorageClassGeneric && type_is_block_like(get<SPIRType>(lhs_var->basetype)))
+	else if (lhs_var && lhs_storage != StorageClassGeneric && type_is_explicit_layout(get<SPIRType>(lhs_var->basetype)))
 		lhs_is_array_template = false;
 
 	auto *rhs_var = maybe_get_backing_variable(rhs_id);
 	if (rhs_var && rhs_storage == StorageClassStorageBuffer && storage_class_array_is_thread(rhs_var->storage))
 		rhs_is_array_template = true;
-	else if (rhs_var && rhs_storage != StorageClassGeneric && type_is_block_like(get<SPIRType>(rhs_var->basetype)))
+	else if (rhs_var && rhs_storage != StorageClassGeneric && type_is_explicit_layout(get<SPIRType>(rhs_var->basetype)))
 		rhs_is_array_template = false;
 
 	// If threadgroup storage qualifiers are *not* used:
@@ -10879,7 +10916,7 @@ bool CompilerMSL::emit_array_copy(const char *expr, uint32_t lhs_id, uint32_t rh
 	return true;
 }
 
-uint32_t CompilerMSL::get_physical_tess_level_array_size(spv::BuiltIn builtin) const
+uint32_t CompilerMSL::get_physical_tess_level_array_size(BuiltIn builtin) const
 {
 	if (is_tessellating_triangles())
 		return builtin == BuiltInTessLevelInner ? 1 : 3;
@@ -11239,35 +11276,76 @@ void CompilerMSL::emit_glsl_op(uint32_t result_type, uint32_t id, uint32_t eop, 
 
 	auto &restype = get<SPIRType>(result_type);
 
+	// Only precise:: preserves NaN in trancendentals (supposedly, cannot find documentation for this).
+	const auto drop_nan_inf = FPFastMathModeNotInfMask | FPFastMathModeNotNaNMask;
+	bool preserve_nan = (get_fp_fast_math_flags_for_op(result_type, id) & drop_nan_inf) != drop_nan_inf;
+	const char *preserve_str = preserve_nan ? "precise" : "fast";
+
+	// TODO: Emit the default behavior to match existing code. Might need to be revisited.
+	// Only fp32 has the precise:: override.
+#define EMIT_PRECISE_OVERRIDE(glsl_op, op) \
+	case GLSLstd450##glsl_op: \
+		if (restype.basetype == SPIRType::Float && preserve_nan) \
+			emit_unary_func_op(result_type, id, args[0], "precise::" op); \
+		else \
+			CompilerGLSL::emit_glsl_op(result_type, id, eop, args, count); \
+		break
+
 	switch (op)
 	{
+	EMIT_PRECISE_OVERRIDE(Cos, "cos");
+	EMIT_PRECISE_OVERRIDE(Sin, "sin");
+	EMIT_PRECISE_OVERRIDE(Tan, "tan");
+	EMIT_PRECISE_OVERRIDE(Acos, "acos");
+	EMIT_PRECISE_OVERRIDE(Asin, "asin");
+	EMIT_PRECISE_OVERRIDE(Atan, "atan");
+	EMIT_PRECISE_OVERRIDE(Exp, "exp");
+	EMIT_PRECISE_OVERRIDE(Exp2, "exp2");
+	EMIT_PRECISE_OVERRIDE(Log, "log");
+	EMIT_PRECISE_OVERRIDE(Log2, "log2");
+	EMIT_PRECISE_OVERRIDE(Sqrt, "sqrt");
+#undef EMIT_PRECISE_OVERRIDE
+
 	case GLSLstd450Sinh:
 		if (restype.basetype == SPIRType::Half)
 		{
+			auto ftype = restype;
+			ftype.basetype = SPIRType::Float;
+
 			// MSL does not have overload for half. Force-cast back to half.
-			auto expr = join("half(fast::sinh(", to_unpacked_expression(args[0]), "))");
+			auto expr = join(type_to_glsl(restype), "(", preserve_str, "::sinh(", type_to_glsl(ftype), "(", to_unpacked_expression(args[0]), ")))");
 			emit_op(result_type, id, expr, should_forward(args[0]));
 			inherit_expression_dependencies(id, args[0]);
 		}
+		else if (preserve_nan)
+			emit_unary_func_op(result_type, id, args[0], "precise::sinh");
 		else
 			emit_unary_func_op(result_type, id, args[0], "fast::sinh");
 		break;
 	case GLSLstd450Cosh:
 		if (restype.basetype == SPIRType::Half)
 		{
+			auto ftype = restype;
+			ftype.basetype = SPIRType::Float;
+
 			// MSL does not have overload for half. Force-cast back to half.
-			auto expr = join("half(fast::cosh(", to_unpacked_expression(args[0]), "))");
+			auto expr = join(type_to_glsl(restype), "(", preserve_str, "::cosh(", type_to_glsl(ftype), "(", to_unpacked_expression(args[0]), ")))");
 			emit_op(result_type, id, expr, should_forward(args[0]));
 			inherit_expression_dependencies(id, args[0]);
 		}
+		else if (preserve_nan)
+			emit_unary_func_op(result_type, id, args[0], "precise::cosh");
 		else
 			emit_unary_func_op(result_type, id, args[0], "fast::cosh");
 		break;
 	case GLSLstd450Tanh:
 		if (restype.basetype == SPIRType::Half)
 		{
+			auto ftype = restype;
+			ftype.basetype = SPIRType::Float;
+
 			// MSL does not have overload for half. Force-cast back to half.
-			auto expr = join("half(fast::tanh(", to_unpacked_expression(args[0]), "))");
+			auto expr = join(type_to_glsl(restype), "(", preserve_str, "::tanh(", type_to_glsl(ftype), "(", to_unpacked_expression(args[0]), ")))");
 			emit_op(result_type, id, expr, should_forward(args[0]));
 			inherit_expression_dependencies(id, args[0]);
 		}
@@ -11278,7 +11356,13 @@ void CompilerMSL::emit_glsl_op(uint32_t result_type, uint32_t id, uint32_t eop, 
 		if (restype.basetype == SPIRType::Half)
 		{
 			// MSL does not have overload for half. Force-cast back to half.
-			auto expr = join("half(fast::atan2(", to_unpacked_expression(args[0]), ", ", to_unpacked_expression(args[1]), "))");
+			auto ftype = restype;
+			ftype.basetype = SPIRType::Float;
+
+			auto expr = join(type_to_glsl(restype),
+			                 "(", preserve_str, "::atan2(",
+			                 type_to_glsl(ftype), "(", to_unpacked_expression(args[0]), "), ",
+			                 type_to_glsl(ftype), "(", to_unpacked_expression(args[1]), ")))");
 			emit_op(result_type, id, expr, should_forward(args[0]) && should_forward(args[1]));
 			inherit_expression_dependencies(id, args[0]);
 			inherit_expression_dependencies(id, args[1]);
@@ -11287,7 +11371,10 @@ void CompilerMSL::emit_glsl_op(uint32_t result_type, uint32_t id, uint32_t eop, 
 			emit_binary_func_op(result_type, id, args[0], args[1], "precise::atan2");
 		break;
 	case GLSLstd450InverseSqrt:
-		emit_unary_func_op(result_type, id, args[0], "rsqrt");
+		if (restype.basetype == SPIRType::Float && preserve_nan)
+			emit_unary_func_op(result_type, id, args[0], "precise::rsqrt");
+		else
+			emit_unary_func_op(result_type, id, args[0], "rsqrt");
 		break;
 	case GLSLstd450RoundEven:
 		emit_unary_func_op(result_type, id, args[0], "rint");
@@ -11519,11 +11606,14 @@ void CompilerMSL::emit_glsl_op(uint32_t result_type, uint32_t id, uint32_t eop, 
 	{
 		auto &exp_type = expression_type(args[0]);
 		// MSL does not support scalar versions here.
-		// MSL has no implementation for normalize in the fast:: namespace for half2 and half3
+		// MSL has no implementation for normalize in the fast:: namespace for half
 		// Returns -1 or 1 for valid input, sign() does the job.
+
+		// precise::normalize asm looks ridiculous.
+		// Don't think this actually matters unless proven otherwise.
 		if (exp_type.vecsize == 1)
 			emit_unary_func_op(result_type, id, args[0], "sign");
-		else if (exp_type.vecsize <= 3 && exp_type.basetype == SPIRType::Half)
+		else if (exp_type.basetype == SPIRType::Half)
 			emit_unary_func_op(result_type, id, args[0], "normalize");
 		else
 			emit_unary_func_op(result_type, id, args[0], "fast::normalize");
@@ -11586,7 +11676,10 @@ void CompilerMSL::emit_glsl_op(uint32_t result_type, uint32_t id, uint32_t eop, 
 
 	case GLSLstd450Pow:
 		// powr makes x < 0.0 undefined, just like SPIR-V.
-		emit_binary_func_op(result_type, id, args[0], args[1], "powr");
+		if (restype.basetype == SPIRType::Float && preserve_nan)
+			emit_binary_func_op(result_type, id, args[0], args[1], "precise::powr");
+		else
+			emit_binary_func_op(result_type, id, args[0], args[1], "powr");
 		break;
 
 	default:
@@ -12973,7 +13066,6 @@ string CompilerMSL::to_swizzle_expression(uint32_t id)
 string CompilerMSL::to_buffer_size_expression(uint32_t id)
 {
 	auto expr = to_expression(id);
-	auto index = expr.find_first_of('[');
 
 	// This is quite crude, but we need to translate the reference name (*spvDescriptorSetN.name) to
 	// the pointer expression spvDescriptorSetN.name to make a reasonable expression here.
@@ -12981,17 +13073,26 @@ string CompilerMSL::to_buffer_size_expression(uint32_t id)
 	if (expr.size() >= 3 && expr[0] == '(' && expr[1] == '*')
 		expr = address_of_expression(expr);
 
+	auto index = expr.find_first_of('[');
+	string buffer_expr, array_expr;
+
+	if (index != string::npos)
+	{
+		buffer_expr = expr.substr(0, index);
+		array_expr = expr.substr(index);
+	}
+
 	// If a buffer is part of an argument buffer translate this to a legal identifier.
 	for (auto &c : expr)
 		if (c == '.')
 			c = '_';
 
 	if (index == string::npos)
+	{
 		return expr + buffer_size_name_suffix;
+	}
 	else
 	{
-		auto buffer_expr = expr.substr(0, index);
-		auto array_expr = expr.substr(index);
 		if (auto var = maybe_get_backing_variable(id))
 		{
 			if (is_var_runtime_size_array(*var))
@@ -13004,6 +13105,11 @@ string CompilerMSL::to_buffer_size_expression(uint32_t id)
 					return buffer_expr + ".length(" + array_expr.substr(1, last_pos - 1) + ")";
 			}
 		}
+
+		for (auto &c : buffer_expr)
+			if (c == '.')
+				c = '_';
+
 		return buffer_expr + buffer_size_name_suffix + array_expr;
 	}
 }
@@ -13722,7 +13828,7 @@ uint32_t CompilerMSL::get_member_location(uint32_t type_id, uint32_t index, uint
 		return k_unknown_location;
 }
 
-uint32_t CompilerMSL::get_or_allocate_builtin_input_member_location(spv::BuiltIn builtin,
+uint32_t CompilerMSL::get_or_allocate_builtin_input_member_location(BuiltIn builtin,
                                                                     uint32_t type_id, uint32_t index,
                                                                     uint32_t *comp)
 {
@@ -13767,7 +13873,7 @@ uint32_t CompilerMSL::get_or_allocate_builtin_input_member_location(spv::BuiltIn
 	return loc;
 }
 
-uint32_t CompilerMSL::get_or_allocate_builtin_output_member_location(spv::BuiltIn builtin,
+uint32_t CompilerMSL::get_or_allocate_builtin_output_member_location(BuiltIn builtin,
                                                                      uint32_t type_id, uint32_t index,
                                                                      uint32_t *comp)
 {
@@ -13810,6 +13916,24 @@ uint32_t CompilerMSL::get_or_allocate_builtin_output_member_location(spv::BuiltI
 	return loc;
 }
 
+bool CompilerMSL::entry_point_returns_stage_output() const
+{
+	if (get_execution_model() == ExecutionModelVertex && msl_options.vertex_for_tessellation)
+		return false;
+	bool ep_should_return_output = !get_is_rasterization_disabled();
+	return stage_out_var_id && ep_should_return_output;
+}
+
+bool CompilerMSL::entry_point_requires_const_device_buffers() const
+{
+	// For fragment, we don't really need it, but it might help avoid pessimization
+	// if the compiler deduces it needs to use late-Z for whatever reason.
+	return (get_execution_model() == ExecutionModelFragment && !has_descriptor_side_effects) ||
+	       (entry_point_returns_stage_output() &&
+	        (get_execution_model() == ExecutionModelVertex ||
+	         get_execution_model() == ExecutionModelTessellationEvaluation));
+}
+
 // Returns the type declaration for a function, including the
 // entry type if the current function is the entry point function
 string CompilerMSL::func_type_decl(SPIRType &type)
@@ -13820,8 +13944,7 @@ string CompilerMSL::func_type_decl(SPIRType &type)
 		return return_type;
 
 	// If an outgoing interface block has been defined, and it should be returned, override the entry point return type
-	bool ep_should_return_output = !get_is_rasterization_disabled();
-	if (stage_out_var_id && ep_should_return_output)
+	if (entry_point_returns_stage_output())
 		return_type = type_to_glsl(get_stage_out_struct_type()) + type_to_array_glsl(type, 0);
 
 	// Prepend a entry type, based on the execution model
@@ -13884,7 +14007,7 @@ bool CompilerMSL::is_tese_shader() const
 
 bool CompilerMSL::is_mesh_shader() const
 {
-	return get_execution_model() == spv::ExecutionModelMeshEXT;
+	return get_execution_model() == ExecutionModelMeshEXT;
 }
 
 bool CompilerMSL::uses_explicit_early_fragment_test()
@@ -13945,16 +14068,14 @@ string CompilerMSL::get_type_address_space(const SPIRType &type, uint32_t id, bo
 
 	case StorageClassStorageBuffer:
 	{
-		// For arguments from variable pointers, we use the write count deduction, so
-		// we should not assume any constness here. Only for global SSBOs.
-		bool readonly = false;
-		if (!var || has_decoration(type.self, DecorationBlock))
-			readonly = flags.get(DecorationNonWritable);
-
-		if (decoration_flags_signal_coherent(flags))
-			readonly = false;
-
-		addr_space = readonly ? "const device" : "device";
+		// When dealing with descriptor aliasing, it becomes very problematic to make use of
+		// readonly qualifiers.
+		// If rasterization is not disabled in vertex/tese, Metal does not allow side effects and refuses to compile "device",
+		// even if there are no writes. Just force const device.
+		if (entry_point_requires_const_device_buffers())
+			addr_space = "const device";
+		else
+			addr_space = "device";
 		break;
 	}
 
@@ -13971,7 +14092,12 @@ string CompilerMSL::get_type_address_space(const SPIRType &type, uint32_t id, bo
 		{
 			bool ssbo = has_decoration(type.self, DecorationBufferBlock);
 			if (ssbo)
-				addr_space = flags.get(DecorationNonWritable) ? "const device" : "device";
+			{
+				if (entry_point_requires_const_device_buffers())
+					addr_space = "const device";
+				else
+					addr_space = "device";
+			}
 			else
 				addr_space = "constant";
 		}
@@ -14045,6 +14171,9 @@ string CompilerMSL::get_type_address_space(const SPIRType &type, uint32_t id, bo
 	default:
 		break;
 	}
+
+	if (!addr_space && var && is_var_runtime_size_array(*var))
+		addr_space = "device";
 
 	if (!addr_space)
 	{
@@ -14589,17 +14718,21 @@ void CompilerMSL::entry_point_args_discrete_descriptors(string &ep_args)
 			// For fully mutable-style aliasing, we need argument buffers where we can exploit the fact
 			// that descriptors are all 8 bytes.
 			SPIRVariable *discrete_descriptor_alias = nullptr;
-			if (var.storage == StorageClassUniform || var.storage == StorageClassStorageBuffer)
+
+			const auto resource_is_aliasing_candidate = [this](const SPIRVariable &var_) {
+				return is_var_runtime_size_array(var_) || var_.storage == StorageClassUniform ||
+				       var_.storage == StorageClassStorageBuffer;
+			};
+
+			if (resource_is_aliasing_candidate(var))
 			{
 				for (auto &resource : resources)
 				{
-					if (get_decoration(resource.var->self, DecorationDescriptorSet) ==
+					if (resource_is_aliasing_candidate(*resource.var) &&
+					    get_decoration(resource.var->self, DecorationDescriptorSet) ==
 					    get_decoration(var_id, DecorationDescriptorSet) &&
 					    get_decoration(resource.var->self, DecorationBinding) ==
-					    get_decoration(var_id, DecorationBinding) &&
-					    resource.basetype == SPIRType::Struct && type.basetype == SPIRType::Struct &&
-					    (resource.var->storage == StorageClassUniform ||
-					     resource.var->storage == StorageClassStorageBuffer))
+					    get_decoration(var_id, DecorationBinding))
 					{
 						discrete_descriptor_alias = resource.var;
 						// Self-reference marks that we should declare the resource,
@@ -14608,6 +14741,13 @@ void CompilerMSL::entry_point_args_discrete_descriptors(string &ep_args)
 						// Need to promote interlocked usage so that the primary declaration is correct.
 						if (interlocked_resources.count(var_id))
 							interlocked_resources.insert(resource.var->self);
+
+						// Aliasing with unroll just gets too messy to deal with. I sure hope this never comes up ...
+						if ((is_array(get_variable_data_type(*resource.var)) && !is_var_runtime_size_array(*resource.var)) ||
+						    (is_array(get_variable_data_type(var)) && !is_var_runtime_size_array(var)))
+						{
+							SPIRV_CROSS_THROW("Attempting to alias same binding with a descriptor array which is not implemented through argument buffers. This is unsupported.");
+						}
 						break;
 					}
 				}
@@ -14678,6 +14818,57 @@ void CompilerMSL::entry_point_args_discrete_descriptors(string &ep_args)
 
 		uint32_t var_id = var.self;
 
+		if (is_var_runtime_size_array(var))
+		{
+			add_spv_func_and_recompile(SPVFuncImplVariableDescriptorArray);
+			const bool ssbo = has_decoration(type.self, DecorationBufferBlock);
+			if ((var.storage == StorageClassStorageBuffer || ssbo) && msl_options.runtime_array_rich_descriptor)
+				add_spv_func_and_recompile(SPVFuncImplVariableSizedDescriptor);
+			else
+				add_spv_func_and_recompile(SPVFuncImplVariableDescriptor);
+		}
+
+		if (r.discrete_descriptor_alias)
+		{
+			if (r.var == r.discrete_descriptor_alias)
+			{
+				auto primary_name = join("spvBufferAliasSet",
+				                         get_decoration(var_id, DecorationDescriptorSet),
+				                         "Binding",
+				                         get_decoration(var_id, DecorationBinding));
+
+				// Declare the primary alias as void*
+				if (!ep_args.empty())
+					ep_args += ", ";
+				ep_args += get_argument_address_space(var) + " const void* " + primary_name;
+				ep_args += " [[buffer(" + convert_to_string(r.index) + ")";
+				if (interlocked_resources.count(var_id))
+					ep_args += ", raster_order_group(0)";
+				ep_args += "]]";
+			}
+
+			buffer_aliases_discrete.push_back(r.var->self);
+			continue;
+		}
+
+		uint32_t desc_set = get_decoration(var_id, DecorationDescriptorSet);
+		uint32_t desc_binding = get_decoration(var_id, DecorationBinding);
+
+		if (is_var_runtime_size_array(var))
+		{
+			// This must be implemented as an argument buffer. Cast to intended descriptor array type on-demand.
+			if (!ep_args.empty())
+				ep_args += ", ";
+			ep_args += join("device const void* spvDescriptorSet", desc_set, "Binding", desc_binding);
+			if (type.basetype == SPIRType::SampledImage && r.basetype == SPIRType::Sampler)
+				ep_args += "Smplr";
+			ep_args += " [[buffer(" + convert_to_string(r.index) + ")";
+			if (interlocked_resources.count(var_id))
+				ep_args += ", raster_order_group(0)";
+			ep_args += "]]";
+			continue;
+		}
+
 		switch (r.basetype)
 		{
 		case SPIRType::Struct:
@@ -14686,72 +14877,23 @@ void CompilerMSL::entry_point_args_discrete_descriptors(string &ep_args)
 			if (m.members.size() == 0)
 				break;
 
-			if (r.discrete_descriptor_alias)
-			{
-				if (r.var == r.discrete_descriptor_alias)
-				{
-					auto primary_name = join("spvBufferAliasSet",
-					                         get_decoration(var_id, DecorationDescriptorSet),
-					                         "Binding",
-					                         get_decoration(var_id, DecorationBinding));
-
-					// Declare the primary alias as void*
-					if (!ep_args.empty())
-						ep_args += ", ";
-					ep_args += get_argument_address_space(var) + " void* " + primary_name;
-					ep_args += " [[buffer(" + convert_to_string(r.index) + ")";
-					if (interlocked_resources.count(var_id))
-						ep_args += ", raster_order_group(0)";
-					ep_args += "]]";
-				}
-
-				buffer_aliases_discrete.push_back(r.var->self);
-			}
-			else if (!type.array.empty())
+			if (!type.array.empty())
 			{
 				if (type.array.size() > 1)
 					SPIRV_CROSS_THROW("Arrays of arrays of buffers are not supported.");
 
 				is_using_builtin_array = true;
-				if (is_var_runtime_size_array(var))
+				uint32_t array_size = get_resource_array_size(type, var_id);
+				for (uint32_t i = 0; i < array_size; ++i)
 				{
-					add_spv_func_and_recompile(SPVFuncImplVariableDescriptorArray);
 					if (!ep_args.empty())
 						ep_args += ", ";
-					const bool ssbo = has_decoration(type.self, DecorationBufferBlock);
-					if ((var.storage == spv::StorageClassStorageBuffer || ssbo) &&
-					    msl_options.runtime_array_rich_descriptor)
-					{
-						add_spv_func_and_recompile(SPVFuncImplVariableSizedDescriptor);
-						ep_args += "const device spvBufferDescriptor<" + get_argument_address_space(var) + " " +
-						           type_to_glsl(type) + "*>* ";
-					}
-					else
-					{
-						add_spv_func_and_recompile(SPVFuncImplVariableDescriptor);
-						ep_args += "const device spvDescriptor<" + get_argument_address_space(var) + " " +
-						           type_to_glsl(type) + "*>* ";
-					}
-					ep_args += to_restrict(var_id, true) + r.name + "_";
-					ep_args += " [[buffer(" + convert_to_string(r.index) + ")";
+					ep_args += get_argument_address_space(var) + " " + type_to_glsl(type) + "* " +
+							   to_restrict(var_id, true) + r.name + "_" + convert_to_string(i);
+					ep_args += " [[buffer(" + convert_to_string(r.index + i) + ")";
 					if (interlocked_resources.count(var_id))
 						ep_args += ", raster_order_group(0)";
 					ep_args += "]]";
-				}
-				else
-				{
-					uint32_t array_size = get_resource_array_size(type, var_id);
-					for (uint32_t i = 0; i < array_size; ++i)
-					{
-						if (!ep_args.empty())
-							ep_args += ", ";
-						ep_args += get_argument_address_space(var) + " " + type_to_glsl(type) + "* " +
-						           to_restrict(var_id, true) + r.name + "_" + convert_to_string(i);
-						ep_args += " [[buffer(" + convert_to_string(r.index + i) + ")";
-						if (interlocked_resources.count(var_id))
-							ep_args += ", raster_order_group(0)";
-						ep_args += "]]";
-					}
 				}
 				is_using_builtin_array = false;
 			}
@@ -14777,10 +14919,7 @@ void CompilerMSL::entry_point_args_discrete_descriptors(string &ep_args)
 			if (!ep_args.empty())
 				ep_args += ", ";
 			ep_args += sampler_type(type, var_id, false) + " " + r.name;
-			if (is_var_runtime_size_array(var))
-				ep_args += "_ [[buffer(" + convert_to_string(r.index) + ")]]";
-			else
-				ep_args += " [[sampler(" + convert_to_string(r.index) + ")]]";
+			ep_args += " [[sampler(" + convert_to_string(r.index) + ")]]";
 			break;
 		case SPIRType::Image:
 		{
@@ -14795,10 +14934,7 @@ void CompilerMSL::entry_point_args_discrete_descriptors(string &ep_args)
 				if (r.plane > 0)
 					ep_args += join(plane_name_suffix, r.plane);
 
-				if (is_var_runtime_size_array(var))
-					ep_args += "_ [[buffer(" + convert_to_string(r.index) + ")";
-				else
-					ep_args += " [[texture(" + convert_to_string(r.index) + ")";
+				ep_args += " [[texture(" + convert_to_string(r.index) + ")";
 
 				if (interlocked_resources.count(var_id))
 					ep_args += ", raster_order_group(0)";
@@ -14828,23 +14964,10 @@ void CompilerMSL::entry_point_args_discrete_descriptors(string &ep_args)
 		}
 		case SPIRType::AccelerationStructure:
 		{
-			if (is_var_runtime_size_array(var))
-			{
-				add_spv_func_and_recompile(SPVFuncImplVariableDescriptor);
-				const auto &parent_type = get<SPIRType>(type.parent_type);
-				if (!ep_args.empty())
-					ep_args += ", ";
-				ep_args += "const device spvDescriptor<" + type_to_glsl(parent_type) + ">* " +
-				           to_restrict(var_id, true) + r.name + "_";
-				ep_args += " [[buffer(" + convert_to_string(r.index) + ")]]";
-			}
-			else
-			{
-				if (!ep_args.empty())
-					ep_args += ", ";
-				ep_args += type_to_glsl(type, var_id) + " " + r.name;
-				ep_args += " [[buffer(" + convert_to_string(r.index) + ")]]";
-			}
+			if (!ep_args.empty())
+				ep_args += ", ";
+			ep_args += type_to_glsl(type, var_id) + " " + r.name;
+			ep_args += " [[buffer(" + convert_to_string(r.index) + ")]]";
 			break;
 		}
 		default:
@@ -16246,6 +16369,12 @@ const std::unordered_set<std::string> &CompilerMSL::get_illegal_func_names()
 		"M_2_SQRTPI",
 		"M_SQRT2",
 		"M_SQRT1_2",
+		"int8",
+		"uint8",
+		"int16",
+		"uint16",
+		"float8",
+		"float16",
 	};
 
 	return illegal_func_names;
@@ -16610,7 +16739,7 @@ string CompilerMSL::type_to_array_glsl(const SPIRType &type, uint32_t variable_i
 	default:
 		if (type_is_array_of_pointers(type) || using_builtin_array())
 		{
-			const SPIRVariable *var = variable_id ? &get<SPIRVariable>(variable_id) : nullptr;
+			const SPIRVariable *var = variable_id ? maybe_get<SPIRVariable>(variable_id) : nullptr;
 			if (var && (var->storage == StorageClassUniform || var->storage == StorageClassStorageBuffer) &&
 			    is_array(get_variable_data_type(*var)))
 			{
@@ -16639,7 +16768,7 @@ string CompilerMSL::constant_op_expression(const SPIRConstantOp &cop)
 	}
 }
 
-bool CompilerMSL::variable_decl_is_remapped_storage(const SPIRVariable &variable, spv::StorageClass storage) const
+bool CompilerMSL::variable_decl_is_remapped_storage(const SPIRVariable &variable, StorageClass storage) const
 {
 	if (variable.storage == storage)
 		return true;
@@ -17385,13 +17514,18 @@ void CompilerMSL::emit_subgroup_cluster_op_cast(uint32_t result_type, uint32_t r
 	inherit_expression_dependencies(result_id, op0);
 }
 
+// Note: Metal forbids bitcasting to/from 'bool' using as_type. This function is used widely
+// for generating casts in the backend. To avoid generating illegal MSL when the canonical
+// function constant type (from deduplicated SpecId) is Boolean, fall back to value-cast in
+// that case by returning type_to_glsl(out_type) instead of as_type<...>.
 string CompilerMSL::bitcast_glsl_op(const SPIRType &out_type, const SPIRType &in_type)
 {
 	if (out_type.basetype == in_type.basetype)
 		return "";
 
-	assert(out_type.basetype != SPIRType::Boolean);
-	assert(in_type.basetype != SPIRType::Boolean);
+	// Avoid bitcasting to/from booleans in MSL; use value cast instead.
+	if (out_type.basetype == SPIRType::Boolean || in_type.basetype == SPIRType::Boolean)
+		return type_to_glsl(out_type);
 
 	bool integral_cast = type_is_integral(out_type) && type_is_integral(in_type) && (out_type.vecsize == in_type.vecsize);
 	bool same_size_cast = (out_type.width * out_type.vecsize) == (in_type.width * in_type.vecsize);
@@ -18282,7 +18416,7 @@ void CompilerMSL::analyze_workgroup_variables()
 	});
 }
 
-bool CompilerMSL::SampledImageScanner::handle(spv::Op opcode, const uint32_t *args, uint32_t length)
+bool CompilerMSL::SampledImageScanner::handle(Op opcode, const uint32_t *args, uint32_t length)
 {
 	switch (opcode)
 	{
@@ -18603,11 +18737,8 @@ CompilerMSL::SPVFuncImpl CompilerMSL::OpCodePreprocessor::get_spv_func_impl(Op o
 
 	case OpFAdd:
 	case OpFSub:
-		if (compiler.msl_options.invariant_float_math ||
-		    compiler.has_decoration(args[1], DecorationNoContraction))
-		{
+		if (compiler.msl_options.invariant_float_math || compiler.has_legacy_nocontract(args[0], args[1]))
 			return opcode == OpFAdd ? SPVFuncImplFAdd : SPVFuncImplFSub;
-		}
 		break;
 
 	case OpFMul:
@@ -18615,11 +18746,8 @@ CompilerMSL::SPVFuncImpl CompilerMSL::OpCodePreprocessor::get_spv_func_impl(Op o
 	case OpMatrixTimesVector:
 	case OpVectorTimesMatrix:
 	case OpMatrixTimesMatrix:
-		if (compiler.msl_options.invariant_float_math ||
-		    compiler.has_decoration(args[1], DecorationNoContraction))
-		{
+		if (compiler.msl_options.invariant_float_math || compiler.has_legacy_nocontract(args[0], args[1]))
 			return SPVFuncImplFMul;
-		}
 		break;
 
 	case OpQuantizeToF16:
@@ -19508,7 +19636,7 @@ void CompilerMSL::analyze_argument_buffers()
 
 		auto &ptr_type = set<SPIRType>(ptr_type_id, OpTypePointer);
 		ptr_type = buffer_type;
-		ptr_type.op = spv::OpTypePointer;
+		ptr_type.op = OpTypePointer;
 		ptr_type.pointer = true;
 		ptr_type.pointer_depth++;
 		ptr_type.parent_type = type_id;
@@ -19610,6 +19738,8 @@ void CompilerMSL::analyze_argument_buffers()
 				next_arg_buff_index += resource.plane_count * count;
 			}
 
+			// Here we're locking down the member name early before compilation loops, so ensure that
+			// the resource name is not reused, even through a reset().
 			string mbr_name = ensure_valid_name(resource.name, "m");
 			if (resource.plane > 0)
 				mbr_name += join(plane_name_suffix, resource.plane);
@@ -19667,7 +19797,9 @@ void CompilerMSL::analyze_argument_buffers()
 				{
 					// Don't set the qualified name here; we'll define a variable holding the corrected buffer address later.
 					buffer_type.member_types.push_back(var.basetype);
-					buffers_requiring_dynamic_offset[pair].second = var.self;
+					auto &dynamic_buffer = buffers_requiring_dynamic_offset[pair];
+					dynamic_buffer.var_id = var.self;
+					dynamic_buffer.mbr_name = mbr_name;
 				}
 				else if (inline_uniform_blocks.count(pair))
 				{
@@ -19782,7 +19914,7 @@ void CompilerMSL::add_argument_buffer_padding_buffer_type(SPIRType &struct_type,
 		uint32_t ptr_type_id = buff_type_id + 1;
 		auto &ptr_type = set<SPIRType>(ptr_type_id, OpTypePointer);
 		ptr_type = buff_type;
-		ptr_type.op = spv::OpTypePointer;
+		ptr_type.op = OpTypePointer;
 		ptr_type.pointer = true;
 		ptr_type.pointer_depth++;
 		ptr_type.parent_type = buff_type_id;
@@ -19900,7 +20032,7 @@ bool CompilerMSL::specialization_constant_is_macro(uint32_t const_id) const
 }
 
 // Start with all fast math flags enabled, and selectively disable based execution modes and float controls
-uint32_t CompilerMSL::get_fp_fast_math_flags(bool incl_ops)
+uint32_t CompilerMSL::get_fp_fast_math_flags(bool incl_ops) const
 {
 	uint32_t fp_flags = ~0;
 	auto &ep = get_entry_point();

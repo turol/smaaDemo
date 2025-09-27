@@ -1,8 +1,5 @@
-commit d7440cbc6c50332600fdf21c45e6a5df0b07e54c
-Merge: 2345c781 6e3a91bb
+commit 7affe74d77f93a622bb5002789d5332d32e512ee
 Author: Hans-Kristian Arntzen <post@arntzen-software.no>
-Date:   Fri Jun 27 12:27:55 2025 +0200
+Date:   Wed Sep 24 15:07:08 2025 +0200
 
-    Merge pull request #2503 from KhronosGroup/fix-2502
-    
-    MSL: Always emit access qualifier when emitting coherency.
+    MSL: Throw on attempting to alias unrolled discrete descriptors.
