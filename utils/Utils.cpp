@@ -78,18 +78,18 @@ void logWriteError(std::string_view message) {
 
 
 void logShutdown() {
-	assert(logFile);
-
+	if (logFile) {
 	fflush(logFile);
 	fclose(logFile);
 	logFile = nullptr;
+	}
 }
 
 
 void logFlush() {
-	assert(logFile);
+	FILE *f = logFile ? logFile : stdout;
 
-	fflush(logFile);
+	fflush(f);
 }
 
 
