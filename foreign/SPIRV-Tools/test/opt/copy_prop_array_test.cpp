@@ -2146,6 +2146,173 @@ OpFunctionEnd
   SetTargetEnv(SPV_ENV_UNIVERSAL_1_4);
   SinglePassRunAndMatch<CopyPropagateArrays>(before, true);
 }
+
+TEST_F(CopyPropArrayPassTest, PropCopyLogical) {
+  const std::string before = R"(
+; CHECK: [[v4array_ptr:%\w+]] = OpTypePointer Uniform %14
+; CHECK: [[v4_ptr:%\w+]] = OpTypePointer Uniform %7
+; CHECK: [[ac:%\w+]] = OpAccessChain [[v4array_ptr]] %19 %21 %33
+; CHECK: %47 = OpAccessChain [[v4_ptr]] [[ac]] %37
+      OpCapability Shader
+ %1 = OpExtInstImport "GLSL.std.450"
+      OpMemoryModel Logical GLSL450
+      OpEntryPoint Vertex %4 "main" %19 %30 %32
+      OpSource GLSL 430
+      OpName %4 "main"
+      OpDecorate %14 ArrayStride 16
+      OpDecorate %15 ArrayStride 16
+      OpMemberDecorate %16 0 Offset 0
+      OpMemberDecorate %16 1 Offset 32
+      OpDecorate %17 Block
+      OpMemberDecorate %17 0 Offset 0
+      OpDecorate %19 Binding 0
+      OpDecorate %19 DescriptorSet 0
+      OpDecorate %28 Block
+      OpMemberDecorate %28 0 BuiltIn Position
+      OpMemberDecorate %28 1 BuiltIn PointSize
+      OpMemberDecorate %28 2 BuiltIn ClipDistance
+      OpDecorate %32 Location 0
+ %2 = OpTypeVoid
+ %3 = OpTypeFunction %2
+ %6 = OpTypeFloat 32
+ %7 = OpTypeVector %6 4
+ %8 = OpTypeInt 32 0
+ %9 = OpConstant %8 2
+%10 = OpTypeArray %7 %9
+%11 = OpTypeStruct %10 %10
+%14 = OpTypeArray %7 %9
+%15 = OpTypeArray %7 %9
+%16 = OpTypeStruct %14 %15
+%17 = OpTypeStruct %16
+%18 = OpTypePointer Uniform %17
+%19 = OpVariable %18 Uniform
+%20 = OpTypeInt 32 1
+%21 = OpConstant %20 0
+%22 = OpTypePointer Uniform %16
+%26 = OpConstant %8 1
+%27 = OpTypeArray %6 %26
+%28 = OpTypeStruct %7 %6 %27
+%29 = OpTypePointer Output %28
+%30 = OpVariable %29 Output
+%31 = OpTypePointer Input %7
+%32 = OpVariable %31 Input
+%33 = OpConstant %8 0
+%34 = OpTypePointer Input %6
+%38 = OpTypePointer Function %7
+%41 = OpTypePointer Output %7
+%43 = OpTypePointer Function %10
+ %4 = OpFunction %2 None %3
+ %5 = OpLabel
+%44 = OpVariable %43 Function
+%23 = OpAccessChain %22 %19 %21
+%24 = OpLoad %16 %23
+%25 = OpCopyLogical %11 %24
+%46 = OpCompositeExtract %10 %25 0
+      OpStore %44 %46
+%35 = OpAccessChain %34 %32 %33
+%36 = OpLoad %6 %35
+%37 = OpConvertFToS %20 %36
+%47 = OpAccessChain %38 %44 %37
+%40 = OpLoad %7 %47
+%42 = OpAccessChain %41 %30 %21
+      OpStore %42 %40
+      OpReturn
+      OpFunctionEnd
+)";
+
+  SetTargetEnv(SPV_ENV_UNIVERSAL_1_6);
+  SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
+  SetDisassembleOptions(SPV_BINARY_TO_TEXT_OPTION_NO_HEADER);
+  SinglePassRunAndMatch<CopyPropagateArrays>(before, true);
+}
+
+// Ensure that the use of the global variable in a debug instruction does not
+// stop copy propagation. We expect the image operand to OpImageTexelPointer to
+// be replaced.
+TEST_F(CopyPropArrayPassTest, DebugInstNotStore) {
+  const std::string before = R"(
+               OpCapability Shader
+               OpCapability SampledBuffer
+               OpExtension "SPV_KHR_non_semantic_info"
+              OpExtension "SPV_EXT_descriptor_indexing"
+          %1 = OpExtInstImport "GLSL.std.450"
+          %2 = OpExtInstImport "NonSemantic.Shader.DebugInfo.100"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %3 "maincomp"
+               OpExecutionMode %3 LocalSize 16 16 1
+          %4 = OpString ""
+       %uint = OpTypeInt 32 0
+     %uint_0 = OpConstant %uint 0
+     %uint_1 = OpConstant %uint 1
+     %uint_6 = OpConstant %uint 6
+     %uint_8 = OpConstant %uint 8
+     %uint_2 = OpConstant %uint 2
+     %uint_7 = OpConstant %uint 7
+     %uint_3 = OpConstant %uint 3
+    %uint_32 = OpConstant %uint 32
+    %uint_16 = OpConstant %uint 16
+     %uint_4 = OpConstant %uint 4
+         %16 = OpTypeImage %uint Buffer 2 0 0 2 R32ui
+%_ptr_UniformConstant_16 = OpTypePointer UniformConstant %16
+       %void = OpTypeVoid
+     %uint_5 = OpConstant %uint 5
+    %uint_70 = OpConstant %uint 70
+    %uint_71 = OpConstant %uint 71
+    %uint_72 = OpConstant %uint 72
+    %uint_17 = OpConstant %uint 17
+     %uint_9 = OpConstant %uint 9
+    %uint_25 = OpConstant %uint 25
+    %uint_14 = OpConstant %uint 14
+    %uint_24 = OpConstant %uint 24
+    %uint_13 = OpConstant %uint 13
+         %29 = OpTypeFunction %void
+%_ptr_Function_16 = OpTypePointer Function %16
+%_ptr_Image_uint = OpTypePointer Image %uint
+; CHECK: [[GV:%\w+]] = OpVariable {{%\w+}} UniformConstant
+         %32 = OpVariable %_ptr_UniformConstant_16 UniformConstant
+         %33 = OpExtInst %void %2 DebugInfoNone
+         %34 = OpExtInst %void %2 DebugExpression
+         %35 = OpExtInst %void %2 DebugTypeBasic %4 %uint_32 %uint_3 %uint_0
+         %36 = OpExtInst %void %2 DebugTypeVector %35 %uint_3
+         %37 = OpExtInst %void %2 DebugSource %4 %4
+         %38 = OpExtInst %void %2 DebugCompilationUnit %uint_1 %uint_4 %37 %uint_5
+         %39 = OpExtInst %void %2 DebugTypeTemplateParameter %4 %36 %33 %37 %uint_0 %uint_0
+         %40 = OpExtInst %void %2 DebugTypeBasic %4 %uint_32 %uint_6 %uint_0
+         %41 = OpExtInst %void %2 DebugSource %4 %4
+         %42 = OpExtInst %void %2 DebugCompilationUnit %uint_1 %uint_4 %41 %uint_5
+         %43 = OpExtInst %void %2 DebugTypeComposite %4 %uint_0 %37 %uint_0 %uint_0 %38 %4 %33 %uint_3
+         %44 = OpExtInst %void %2 DebugTypeTemplateParameter %4 %40 %33 %37 %uint_0 %uint_0
+         %45 = OpExtInst %void %2 DebugTypeTemplate %43 %44
+         %46 = OpExtInst %void %2 DebugTypeFunction %uint_3 %void %40
+         %47 = OpExtInst %void %2 DebugFunction %4 %46 %37 %uint_70 %uint_1 %38 %4 %uint_3 %uint_71
+         %48 = OpExtInst %void %2 DebugLexicalBlock %37 %uint_71 %uint_1 %47
+         %49 = OpExtInst %void %2 DebugLocalVariable %4 %45 %37 %uint_72 %uint_17 %48 %uint_4
+         %50 = OpExtInst %void %2 DebugTypeFunction %uint_3 %void
+         %51 = OpExtInst %void %2 DebugSource %4 %4
+         %52 = OpExtInst %void %2 DebugCompilationUnit %uint_1 %uint_4 %51 %uint_5
+         %53 = OpExtInst %void %2 DebugFunction %4 %50 %51 %uint_24 %uint_1 %52 %4 %uint_3 %uint_25
+         %54 = OpExtInst %void %2 DebugGlobalVariable %4 %45 %37 %uint_17 %uint_16 %38 %4 %32 %uint_8
+         %55 = OpExtInst %void %2 DebugTypeMember %4 %40 %37 %uint_14 %uint_7 %uint_0 %uint_32 %uint_3
+         %56 = OpExtInst %void %2 DebugTypeComposite %4 %uint_1 %37 %uint_13 %uint_9 %38 %4 %uint_32 %uint_3 %55
+         %57 = OpExtInst %void %2 DebugEntryPoint %53 %42 %4 %4
+          %3 = OpFunction %void None %29
+         %58 = OpLabel
+         %59 = OpVariable %_ptr_Function_16 Function
+         %60 = OpLoad %16 %32
+               OpStore %59 %60
+         %61 = OpExtInst %void %2 DebugDeclare %49 %59 %34
+         %62 = OpExtInst %void %2 DebugLine %37 %uint_0 %uint_0 %uint_2 %uint_2
+; CHECK: OpImageTexelPointer %_ptr_Image_uint [[GV]] %uint_0 %uint_0
+         %63 = OpImageTexelPointer %_ptr_Image_uint %59 %uint_0 %uint_0
+         %64 = OpAtomicIAdd %uint %63 %uint_1 %uint_0 %uint_1
+               OpReturn
+               OpFunctionEnd
+)";
+
+  SetTargetEnv(SPV_ENV_VULKAN_1_1);
+  SinglePassRunAndMatch<CopyPropagateArrays>(before, false);
+}
+
 }  // namespace
 }  // namespace opt
 }  // namespace spvtools

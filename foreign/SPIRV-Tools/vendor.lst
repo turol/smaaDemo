@@ -734,6 +734,8 @@ source/opt/replace_desc_array_access_using_var_index.cpp
 source/opt/replace_desc_array_access_using_var_index.h
 source/opt/replace_invalid_opc.cpp
 source/opt/replace_invalid_opc.h
+source/opt/resolve_binding_conflicts_pass.cpp
+source/opt/resolve_binding_conflicts_pass.h
 source/opt/scalar_analysis.cpp
 source/opt/scalar_analysis.h
 source/opt/scalar_analysis_nodes.h
@@ -744,6 +746,8 @@ source/opt/set_spec_constant_default_value_pass.cpp
 source/opt/set_spec_constant_default_value_pass.h
 source/opt/simplification_pass.cpp
 source/opt/simplification_pass.h
+source/opt/split_combined_image_sampler_pass.cpp
+source/opt/split_combined_image_sampler_pass.h
 source/opt/spread_volatile_semantics.cpp
 source/opt/spread_volatile_semantics.h
 source/opt/ssa_rewrite_pass.cpp
@@ -919,6 +923,7 @@ source/val/validate_id.cpp
 source/val/validate_image.cpp
 source/val/validate_instruction.cpp
 source/val/validate_interfaces.cpp
+source/val/validate_invalid_type.cpp
 source/val/validate_layout.cpp
 source/val/validate_literals.cpp
 source/val/validate_logicals.cpp
@@ -1006,6 +1011,12 @@ test/diff/diff_files/different_function_parameter_count_src.spvasm
 test/diff/diff_files/extra_if_block_autogen.cpp
 test/diff/diff_files/extra_if_block_dst.spvasm
 test/diff/diff_files/extra_if_block_src.spvasm
+test/diff/diff_files/function_group_by_full_type_autogen.cpp
+test/diff/diff_files/function_group_by_full_type_dst.spvasm
+test/diff/diff_files/function_group_by_full_type_src.spvasm
+test/diff/diff_files/function_group_by_mapped_id_autogen.cpp
+test/diff/diff_files/function_group_by_mapped_id_dst.spvasm
+test/diff/diff_files/function_group_by_mapped_id_src.spvasm
 test/diff/diff_files/generate_tests.py
 test/diff/diff_files/index_signedness_autogen.cpp
 test/diff/diff_files/index_signedness_dst.spvasm
@@ -1300,6 +1311,7 @@ test/lint/CMakeLists.txt
 test/lint/divergence_analysis_test.cpp
 test/name_mapper_test.cpp
 test/named_id_test.cpp
+test/op_unknown_test.cpp
 test/opcode_make_test.cpp
 test/opcode_require_capabilities_test.cpp
 test/opcode_split_test.cpp
@@ -1432,10 +1444,12 @@ test/opt/remove_dontinline_test.cpp
 test/opt/remove_unused_interface_variables_test.cpp
 test/opt/replace_desc_array_access_using_var_index_test.cpp
 test/opt/replace_invalid_opc_test.cpp
+test/opt/resolve_binding_conflicts_pass_test.cpp
 test/opt/scalar_analysis.cpp
 test/opt/scalar_replacement_test.cpp
 test/opt/set_spec_const_default_value_test.cpp
 test/opt/simplification_test.cpp
+test/opt/split_combined_image_sampler_pass_test.cpp
 test/opt/spread_volatile_semantics_test.cpp
 test/opt/strength_reduction_test.cpp
 test/opt/strip_debug_info_test.cpp
@@ -1566,6 +1580,7 @@ test/val/val_function_test.cpp
 test/val/val_id_test.cpp
 test/val/val_image_test.cpp
 test/val/val_interfaces_test.cpp
+test/val/val_invalid_type_test.cpp
 test/val/val_layout_test.cpp
 test/val/val_limits_test.cpp
 test/val/val_literals_test.cpp

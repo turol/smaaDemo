@@ -1818,6 +1818,68 @@ OpFunctionEnd
       HasSubstr("Memory accesses with PhysicalStorageBuffer must use Aligned"));
 }
 
+TEST_F(ValidateMemory, PSBStoreAlignedZero) {
+  const std::string body = R"(
+OpCapability PhysicalStorageBufferAddresses
+OpCapability Shader
+OpExtension "SPV_EXT_physical_storage_buffer"
+OpMemoryModel PhysicalStorageBuffer64 GLSL450
+OpEntryPoint Fragment %main "main"
+OpExecutionMode %main OriginUpperLeft
+%uint = OpTypeInt 32 0
+%uint_1 = OpConstant %uint 1
+%ptr = OpTypePointer PhysicalStorageBuffer %uint
+%pptr_f = OpTypePointer Function %ptr
+%void = OpTypeVoid
+%voidfn = OpTypeFunction %void
+%main = OpFunction %void None %voidfn
+%entry = OpLabel
+%val1 = OpVariable %pptr_f Function
+%val2 = OpLoad %ptr %val1
+OpStore %val2 %uint_1 Aligned 0
+OpReturn
+OpFunctionEnd
+)";
+
+  CompileSuccessfully(body.c_str(), SPV_ENV_VULKAN_1_2);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_2));
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr(
+          "Memory accesses Aligned operand value 0 is not a power of two"));
+}
+
+TEST_F(ValidateMemory, PSBStoreAlignedNonPoT) {
+  const std::string body = R"(
+OpCapability PhysicalStorageBufferAddresses
+OpCapability Shader
+OpExtension "SPV_EXT_physical_storage_buffer"
+OpMemoryModel PhysicalStorageBuffer64 GLSL450
+OpEntryPoint Fragment %main "main"
+OpExecutionMode %main OriginUpperLeft
+%uint = OpTypeInt 32 0
+%uint_1 = OpConstant %uint 1
+%ptr = OpTypePointer PhysicalStorageBuffer %uint
+%pptr_f = OpTypePointer Function %ptr
+%void = OpTypeVoid
+%voidfn = OpTypeFunction %void
+%main = OpFunction %void None %voidfn
+%entry = OpLabel
+%val1 = OpVariable %pptr_f Function
+%val2 = OpLoad %ptr %val1
+OpStore %val2 %uint_1 Aligned 3
+OpReturn
+OpFunctionEnd
+)";
+
+  CompileSuccessfully(body.c_str(), SPV_ENV_VULKAN_1_2);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_2));
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr(
+          "Memory accesses Aligned operand value 3 is not a power of two."));
+}
+
 TEST_F(ValidateMemory, PSBCopyMemoryAlignedSuccess) {
   const std::string body = R"(
 OpCapability PhysicalStorageBufferAddresses
@@ -2650,9 +2712,10 @@ TEST_F(ValidateMemory, CoopMatKHRInvalidStorageClassFail) {
 OpCapability Shader
 OpCapability Float16
 OpCapability CooperativeMatrixKHR
+OpCapability VulkanMemoryModelKHR
 OpExtension "SPV_KHR_cooperative_matrix"
 OpExtension "SPV_KHR_vulkan_memory_model"
-OpMemoryModel Logical GLSL450
+OpMemoryModel Logical VulkanKHR
 OpEntryPoint GLCompute %main "main"
 %void = OpTypeVoid
 %func = OpTypeFunction %void
@@ -2675,8 +2738,8 @@ OpEntryPoint GLCompute %main "main"
 OpReturn
 OpFunctionEnd)";
 
-  CompileSuccessfully(body.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(body.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr(
@@ -2690,9 +2753,10 @@ TEST_F(ValidateMemory, CoopMatMatrixKHRLengthResultTypeBad) {
 OpCapability Shader
 OpCapability Float16
 OpCapability CooperativeMatrixKHR
+OpCapability VulkanMemoryModelKHR
 OpExtension "SPV_KHR_cooperative_matrix"
 OpExtension "SPV_KHR_vulkan_memory_model"
-OpMemoryModel Logical GLSL450
+OpMemoryModel Logical VulkanKHR
 OpEntryPoint GLCompute %main "main"
 %void = OpTypeVoid
 %func = OpTypeFunction %void
@@ -2714,8 +2778,8 @@ OpEntryPoint GLCompute %main "main"
 OpReturn
 OpFunctionEnd)";
 
-  CompileSuccessfully(body.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(body.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr("The Result Type of OpCooperativeMatrixLengthKHR <id> "
@@ -2728,9 +2792,10 @@ TEST_F(ValidateMemory, CoopMatMatrixKHRLengthOperandTypeBad) {
 OpCapability Shader
 OpCapability Float16
 OpCapability CooperativeMatrixKHR
+OpCapability VulkanMemoryModelKHR
 OpExtension "SPV_KHR_cooperative_matrix"
 OpExtension "SPV_KHR_vulkan_memory_model"
-OpMemoryModel Logical GLSL450
+OpMemoryModel Logical VulkanKHR
 OpEntryPoint GLCompute %main "main"
 %void = OpTypeVoid
 %func = OpTypeFunction %void
@@ -2752,8 +2817,8 @@ OpEntryPoint GLCompute %main "main"
 OpReturn
 OpFunctionEnd)";
 
-  CompileSuccessfully(body.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(body.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr("The type in OpCooperativeMatrixLengthKHR <id> '5[%uint]' "
@@ -2766,9 +2831,10 @@ TEST_F(ValidateMemory, CoopMatMatrixKHRLengthGood) {
 OpCapability Shader
 OpCapability Float16
 OpCapability CooperativeMatrixKHR
+OpCapability VulkanMemoryModelKHR
 OpExtension "SPV_KHR_cooperative_matrix"
 OpExtension "SPV_KHR_vulkan_memory_model"
-OpMemoryModel Logical GLSL450
+OpMemoryModel Logical VulkanKHR
 OpEntryPoint GLCompute %main "main"
 %void = OpTypeVoid
 %func = OpTypeFunction %void
@@ -2790,8 +2856,8 @@ OpEntryPoint GLCompute %main "main"
 OpReturn
 OpFunctionEnd)";
 
-  CompileSuccessfully(body.c_str());
-  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
+  CompileSuccessfully(body.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
 }
 
 TEST_F(ValidateMemory, VulkanRTAOutsideOfStructBad) {
@@ -5388,8 +5454,8 @@ OpExecutionMode %func OriginUpperLeft
 OpReturn
 OpFunctionEnd
 )";
-  CompileSuccessfully(spirv.c_str(), SPV_ENV_VULKAN_1_0);
-  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_0));
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_VULKAN_1_3);
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_3));
   EXPECT_THAT(getDiagnosticString(),
               AnyVUID(" VUID-StandaloneSpirv-OpVariable-04734"));
   EXPECT_THAT(getDiagnosticString(),
@@ -5416,8 +5482,8 @@ OpExecutionMode %func OriginUpperLeft
 OpReturn
 OpFunctionEnd
 )";
-  CompileSuccessfully(spirv.c_str(), SPV_ENV_VULKAN_1_0);
-  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_VULKAN_1_0));
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_VULKAN_1_3);
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_VULKAN_1_3));
 }
 
 TEST_F(ValidateMemory, LoadRuntimeArray) {
@@ -7492,8 +7558,8 @@ TEST_F(ValidateMemory, CoopMat2TensorLayoutAndViewSuccess) {
       R"(
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
 }
 
 TEST_F(ValidateMemory, CoopMat2TensorLayoutInvalidDimFail) {
@@ -7506,8 +7572,8 @@ TEST_F(ValidateMemory, CoopMat2TensorLayoutInvalidDimFail) {
       R"(
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(), HasSubstr("must be between 1 and 5"));
 }
 
@@ -7521,8 +7587,8 @@ TEST_F(ValidateMemory, CoopMat2TensorLayoutInvalidClampFail) {
       R"(
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("must be a valid TensorClampMode"));
 }
@@ -7539,8 +7605,8 @@ TEST_F(ValidateMemory, CoopMat2TensorViewInvalidDimFail) {
       R"(
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(), HasSubstr("must be between 1 and 5"));
 }
 
@@ -7556,8 +7622,8 @@ TEST_F(ValidateMemory, CoopMat2TensorViewInvalidPermutationFail) {
       R"(
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("Permutation values don't form a valid permutation"));
 }
@@ -7574,8 +7640,8 @@ TEST_F(ValidateMemory, CoopMat2TensorViewInvalidPermutation2Fail) {
       R"(
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("Incorrect number of permutation values."));
 }
@@ -7593,8 +7659,8 @@ TEST_F(ValidateMemory, CoopMat2TensorLayoutBlockSizePass) {
       %tl2 = OpTensorLayoutSetBlockSizeNV %layout %tl %b %b %b
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
 }
 
 TEST_F(ValidateMemory, CoopMat2TensorLayoutBlockSizeFail) {
@@ -7610,8 +7676,8 @@ TEST_F(ValidateMemory, CoopMat2TensorLayoutBlockSizeFail) {
       %tl2 = OpTensorLayoutSetBlockSizeNV %layout %tl %b %b %b %b
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("unexpected number of operands"));
 }
@@ -7629,8 +7695,8 @@ TEST_F(ValidateMemory, CoopMat2TensorLayoutDimensionPass) {
       %tl2 = OpTensorLayoutSetDimensionNV %layout %tl %b %b %b
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
 }
 
 TEST_F(ValidateMemory, CoopMat2TensorLayoutDimensionFail) {
@@ -7646,8 +7712,8 @@ TEST_F(ValidateMemory, CoopMat2TensorLayoutDimensionFail) {
       %tl2 = OpTensorLayoutSetDimensionNV %layout %tl %b %b %b %b
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("unexpected number of operands"));
 }
@@ -7665,8 +7731,8 @@ TEST_F(ValidateMemory, CoopMat2TensorLayoutStridePass) {
       %tl2 = OpTensorLayoutSetStrideNV %layout %tl %b %b %b
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
 }
 
 TEST_F(ValidateMemory, CoopMat2TensorLayoutStrideFail) {
@@ -7682,8 +7748,8 @@ TEST_F(ValidateMemory, CoopMat2TensorLayoutStrideFail) {
       %tl2 = OpTensorLayoutSetStrideNV %layout %tl %b %b %b %b
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("unexpected number of operands"));
 }
@@ -7701,8 +7767,8 @@ TEST_F(ValidateMemory, CoopMat2TensorLayoutSlicePass) {
       %tl2 = OpTensorLayoutSliceNV %layout %tl %b %b %b %b %b %b
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
 }
 
 TEST_F(ValidateMemory, CoopMat2TensorLayoutSliceFail) {
@@ -7718,8 +7784,8 @@ TEST_F(ValidateMemory, CoopMat2TensorLayoutSliceFail) {
       %tl2 = OpTensorLayoutSliceNV %layout %tl %b %b %b
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("unexpected number of operands"));
 }
@@ -7737,8 +7803,8 @@ TEST_F(ValidateMemory, CoopMat2TensorLayoutSetClampValuePass) {
       %tl2 = OpTensorLayoutSetClampValueNV %layout %tl %b
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
 }
 
 TEST_F(ValidateMemory, CoopMat2TensorViewDimensionPass) {
@@ -7757,8 +7823,8 @@ TEST_F(ValidateMemory, CoopMat2TensorViewDimensionPass) {
       %tv2 = OpTensorViewSetDimensionNV %view %tv %b %b %b
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
 }
 
 TEST_F(ValidateMemory, CoopMat2TensorViewDimensionFail) {
@@ -7777,8 +7843,8 @@ TEST_F(ValidateMemory, CoopMat2TensorViewDimensionFail) {
       %tv2 = OpTensorViewSetDimensionNV %view %tv %b %b %b %b
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("unexpected number of operands"));
 }
@@ -7799,8 +7865,8 @@ TEST_F(ValidateMemory, CoopMat2TensorViewStridePass) {
       %tv2 = OpTensorViewSetStrideNV %view %tv %b %b %b
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
 }
 
 TEST_F(ValidateMemory, CoopMat2TensorViewStrideFail) {
@@ -7819,8 +7885,8 @@ TEST_F(ValidateMemory, CoopMat2TensorViewStrideFail) {
       %tv2 = OpTensorViewSetStrideNV %view %tv %b %b %b %b
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("unexpected number of operands"));
 }
@@ -7841,8 +7907,8 @@ TEST_F(ValidateMemory, CoopMat2TensorViewClipPass) {
       %tv2 = OpTensorViewSetClipNV %view %tv %b %b %b %b
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
 }
 
 TEST_F(ValidateMemory, CoopMat2LoadStoreTensorPass) {
@@ -7872,8 +7938,8 @@ TEST_F(ValidateMemory, CoopMat2LoadStoreTensorPass) {
       OpCooperativeMatrixStoreTensorNV %array_ptr %mat %tl Aligned 4 TensorView %tv
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
 }
 
 TEST_F(ValidateMemory, CoopMat2LoadTensorWrongLayoutTypeFail) {
@@ -7894,8 +7960,8 @@ TEST_F(ValidateMemory, CoopMat2LoadTensorWrongLayoutTypeFail) {
       %mat2 = OpCooperativeMatrixLoadTensorNV %f16mat %array_ptr %mat %tv None None
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("does not have a tensor layout type"));
 }
@@ -7918,8 +7984,8 @@ TEST_F(ValidateMemory, CoopMat2LoadTensorWrongObjectTypeFail) {
       %mat2 = OpCooperativeMatrixLoadTensorNV %f16mat %array_ptr %mat %tl None None
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("type does not match Result Type"));
 }
@@ -7942,8 +8008,8 @@ TEST_F(ValidateMemory, CoopMat2LoadTensorDecodeFuncTypeFail) {
       %mat2 = OpCooperativeMatrixLoadTensorNV %f32mat %array_ptr %mat %tl None DecodeFunc %decodefunc
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("return type must match matrix component type"));
 }
@@ -7981,8 +8047,8 @@ TEST_F(ValidateMemory, CoopMat2LoadTensorDecodeFuncArrayTypeFail) {
       OpDecorate %psb2 Restrict
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("dimension equal to the tensor dimension"));
 }
@@ -8016,8 +8082,8 @@ TEST_F(ValidateMemory, CoopMat2LoadTensorDecodeFuncPointerTypeFail) {
       OpFunctionEnd
       )");
 
-  CompileSuccessfully(spirv.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(spirv.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr("first parameter must be pointer to PhysicalStorageBuffer"));
@@ -8179,8 +8245,8 @@ OpEntryPoint GLCompute %main "main"
 OpReturn
 OpFunctionEnd)";
 
-  CompileSuccessfully(body.c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(body.c_str(), SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr(

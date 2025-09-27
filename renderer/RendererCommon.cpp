@@ -391,7 +391,7 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 // increase this when the shader compiler options change
 // so that the same source generates a different SPV
 // or the cache json format changes
-const unsigned int shaderVersion = 147;
+const unsigned int shaderVersion = 148;
 
 
 // helper for storing in cache .json

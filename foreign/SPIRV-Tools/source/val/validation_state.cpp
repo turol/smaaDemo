@@ -946,6 +946,32 @@ bool ValidationState_t::IsVoidType(uint32_t id) const {
   return inst && inst->opcode() == spv::Op::OpTypeVoid;
 }
 
+bool ValidationState_t::IsBfloat16ScalarType(uint32_t id) const {
+  const Instruction* inst = FindDef(id);
+  if (inst && inst->opcode() == spv::Op::OpTypeFloat) {
+    if (inst->words().size() > 3) {
+      if (inst->GetOperandAs<spv::FPEncoding>(2) ==
+          spv::FPEncoding::BFloat16KHR) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+bool ValidationState_t::IsBfloat16VectorType(uint32_t id) const {
+  const Instruction* inst = FindDef(id);
+  if (!inst) {
+    return false;
+  }
+
+  if (inst->opcode() == spv::Op::OpTypeVector) {
+    return IsBfloat16ScalarType(GetComponentType(id));
+  }
+
+  return false;
+}
+
 bool ValidationState_t::IsFloatScalarType(uint32_t id) const {
   const Instruction* inst = FindDef(id);
   return inst && inst->opcode() == spv::Op::OpTypeFloat;
@@ -1768,6 +1794,10 @@ bool ValidationState_t::ContainsSizedIntOrFloatType(uint32_t id, spv::Op type,
 
   const auto f = [type, width](const Instruction* inst) {
     if (inst->opcode() == type) {
+      // Bfloat16 is a special type.
+      if (type == spv::Op::OpTypeFloat && inst->words().size() > 3)
+        return false;
+
       return inst->GetOperandAs<uint32_t>(1u) == width;
     }
     return false;
@@ -2311,6 +2341,8 @@ std::string ValidationState_t::VkErrorID(uint32_t id,
       return VUID_WRAP(VUID-StandaloneSpirv-None-04644);
     case 4645:
       return VUID_WRAP(VUID-StandaloneSpirv-None-04645);
+    case 10609:
+      return VUID_WRAP(VUID-StandaloneSpirv-OpControlBarrier-10609);
     case 4650:
       return VUID_WRAP(VUID-StandaloneSpirv-OpControlBarrier-04650);
     case 4651:
@@ -2523,6 +2555,8 @@ std::string ValidationState_t::VkErrorID(uint32_t id,
       return VUID_WRAP(VUID-StandaloneSpirv-OpEntryPoint-08722);
     case 8973:
       return VUID_WRAP(VUID-StandaloneSpirv-Pointer-08973);
+    case 9557:
+    return VUID_WRAP(VUID-StandaloneSpirv-Input-09557);
     case 9638:
       return VUID_WRAP(VUID-StandaloneSpirv-OpTypeImage-09638);
     case 9658:
@@ -2532,8 +2566,12 @@ std::string ValidationState_t::VkErrorID(uint32_t id,
     case 10213:
       // This use to be a standalone, but maintenance8 will set allow_offset_texture_operand now
       return VUID_WRAP(VUID-RuntimeSpirv-Offset-10213);
+    case 10370:
+      return VUID_WRAP(VUID-StandaloneSpirv-OpTypeFloat-10370);
     case 10583:
       return VUID_WRAP(VUID-StandaloneSpirv-Component-10583);
+    case 10684:
+      return VUID_WRAP(VUID-StandaloneSpirv-None-10684);
     default:
       return "";  // unknown id
   }

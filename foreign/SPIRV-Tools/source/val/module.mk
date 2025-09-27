@@ -39,6 +39,7 @@ FILES:= \
 	validate_image.cpp \
 	validate_instruction.cpp \
 	validate_interfaces.cpp \
+	validate_invalid_type.cpp \
 	validate_layout.cpp \
 	validate_literals.cpp \
 	validate_logicals.cpp \

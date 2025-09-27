@@ -1166,6 +1166,50 @@ TEST_F(ValidateArithmetics, OuterProductRightOperandWrongDimension) {
                 "vector size of the right operand: OuterProduct"));
 }
 
+std::string GenerateBFloatCode(const std::string& main_body) {
+  const std::string prefix =
+      R"(
+OpCapability Shader
+OpCapability BFloat16TypeKHR
+OpCapability BFloat16DotProductKHR
+OpCapability BFloat16CooperativeMatrixKHR
+OpExtension "SPV_KHR_bfloat16"
+%1 = OpExtInstImport "GLSL.std.450"
+OpMemoryModel Logical GLSL450
+OpEntryPoint GLCompute %main "main"
+OpExecutionMode %main LocalSize 1 1 1
+OpSource GLSL 450
+OpName %main "main"
+%void = OpTypeVoid
+%func = OpTypeFunction %void
+%bfloat16 = OpTypeFloat 16 BFloat16KHR
+%_ptr_Function_bfloat16 = OpTypePointer Function %bfloat16
+%v2bfloat16 = OpTypeVector %bfloat16 2
+%_ptr_Function_v2bfloat16 = OpTypePointer Function %v2bfloat16
+%main = OpFunction %void None %func
+%main_entry = OpLabel)";
+
+  const std::string suffix =
+      R"(
+OpReturn
+OpFunctionEnd)";
+
+  return prefix + main_body + suffix;
+}
+
+TEST_F(ValidateArithmetics, DotBfloat16) {
+  const std::string body = R"(
+%v1 = OpVariable %_ptr_Function_v2bfloat16 Function
+%v2 = OpVariable %_ptr_Function_v2bfloat16 Function
+%12 = OpLoad %v2bfloat16 %v1
+%14 = OpLoad %v2bfloat16 %v2
+%15 = OpDot %bfloat16 %12 %14
+)";
+
+  CompileSuccessfully(GenerateBFloatCode(body).c_str());
+  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
+}
+
 std::string GenerateCoopMatCode(const std::string& extra_types,
                                 const std::string& main_body) {
   const std::string prefix =
@@ -1477,10 +1521,11 @@ OpCapability Float16
 OpCapability CooperativeMatrixKHR
 OpCapability CooperativeMatrixReductionsNV
 OpCapability CooperativeMatrixPerElementOperationsNV
+OpCapability VulkanMemoryModel
 OpExtension "SPV_KHR_cooperative_matrix"
 OpExtension "SPV_NV_cooperative_matrix2"
 OpExtension "SPV_KHR_vulkan_memory_model"
-OpMemoryModel Logical GLSL450
+OpMemoryModel Logical Vulkan
 OpEntryPoint GLCompute %main "main"
 %void = OpTypeVoid
 %func = OpTypeFunction %void
@@ -1564,8 +1609,9 @@ TEST_F(ValidateArithmetics, CoopMatKHRSuccess) {
 %val18 = OpCooperativeMatrixMulAddKHR %u32matC %u32mat_A_1 %u32mat_B_1 %u32mat_C_1
 )";
 
-  CompileSuccessfully(GenerateCoopMatKHRCode("", body).c_str());
-  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
+  CompileSuccessfully(GenerateCoopMatKHRCode("", body).c_str(),
+                      SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
 }
 
 TEST_F(ValidateArithmetics, CoopMatMatrixKHRTimesScalarMismatchFail) {
@@ -1573,8 +1619,10 @@ TEST_F(ValidateArithmetics, CoopMatMatrixKHRTimesScalarMismatchFail) {
 %val1 = OpMatrixTimesScalar %f16matA %f16mat_A_1 %f32_1
 )";
 
-  CompileSuccessfully(GenerateCoopMatKHRCode("", body).c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_DATA, ValidateInstructions());
+  CompileSuccessfully(GenerateCoopMatKHRCode("", body).c_str(),
+                      SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_DATA,
+            ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr("Expected scalar operand type to be equal to the component "
@@ -1592,8 +1640,10 @@ TEST_F(ValidateArithmetics, CoopMatKHRScopeFail) {
 %val1 = OpFAdd %f16matA %f16matdv_16x16_1 %f16mat_A_1
 )";
 
-  CompileSuccessfully(GenerateCoopMatKHRCode(types, body).c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_DATA, ValidateInstructions());
+  CompileSuccessfully(GenerateCoopMatKHRCode(types, body).c_str(),
+                      SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_DATA,
+            ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr("Expected scopes of Matrix and Result Type to be identical"));
@@ -1609,8 +1659,10 @@ TEST_F(ValidateArithmetics, CoopMatKHRDimFail) {
 %val1 = OpCooperativeMatrixMulAddKHR %mat16x4 %f16mat_A_1 %f16mat_B_1 %mat16x4_C_1
 )";
 
-  CompileSuccessfully(GenerateCoopMatKHRCode(types, body).c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_DATA, ValidateInstructions());
+  CompileSuccessfully(GenerateCoopMatKHRCode(types, body).c_str(),
+                      SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_DATA,
+            ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr("Cooperative matrix 'N' mismatch: CooperativeMatrixMulAddKHR"));
@@ -1641,8 +1693,9 @@ OpFunctionEnd
 %val5 = OpCooperativeMatrixReduceNV %f16matC8 %f16mat_C_1 Row|Column %reducefunc
 )";
 
-  CompileSuccessfully(GenerateCoopMatKHRCode(extra_types, body).c_str());
-  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
+  CompileSuccessfully(GenerateCoopMatKHRCode(extra_types, body).c_str(),
+                      SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
 }
 
 TEST_F(ValidateArithmetics, CoopMat2Reduce2x2DimFail) {
@@ -1662,8 +1715,10 @@ OpFunctionEnd
 %val1 = OpCooperativeMatrixReduceNV %f16matC %f16mat_C_1 2x2 %reducefunc
 )";
 
-  CompileSuccessfully(GenerateCoopMatKHRCode(extra_types, body).c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_DATA, ValidateInstructions());
+  CompileSuccessfully(GenerateCoopMatKHRCode(extra_types, body).c_str(),
+                      SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_DATA,
+            ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("For Reduce2x2, result rows/cols must be half of "
                         "matrix rows/cols: CooperativeMatrixReduceNV"));
@@ -1688,8 +1743,10 @@ OpFunctionEnd
 %val1 = OpCooperativeMatrixReduceNV %f16matC8x16 %f16mat_C_1 Row %reducefunc
 )";
 
-  CompileSuccessfully(GenerateCoopMatKHRCode(extra_types, body).c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_DATA, ValidateInstructions());
+  CompileSuccessfully(GenerateCoopMatKHRCode(extra_types, body).c_str(),
+                      SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_DATA,
+            ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("For ReduceRow, result rows must match matrix rows: "
                         "CooperativeMatrixReduceNV"));
@@ -1714,8 +1771,10 @@ OpFunctionEnd
 %val1 = OpCooperativeMatrixReduceNV %f16matC16x8 %f16mat_C_1 Column %reducefunc
 )";
 
-  CompileSuccessfully(GenerateCoopMatKHRCode(extra_types, body).c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_DATA, ValidateInstructions());
+  CompileSuccessfully(GenerateCoopMatKHRCode(extra_types, body).c_str(),
+                      SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_DATA,
+            ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("For ReduceColumn, result cols must match matrix cols: "
                         "CooperativeMatrixReduceNV"));
@@ -1740,8 +1799,10 @@ OpFunctionEnd
 %val1 = OpCooperativeMatrixReduceNV %f16matC8 %f16mat_C_1 Row|Column|2x2 %reducefunc
 )";
 
-  CompileSuccessfully(GenerateCoopMatKHRCode(extra_types, body).c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_DATA, ValidateInstructions());
+  CompileSuccessfully(GenerateCoopMatKHRCode(extra_types, body).c_str(),
+                      SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_DATA,
+            ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("Reduce 2x2 must not be used with Row/Column: "
                         "CooperativeMatrixReduceNV"));
@@ -1764,8 +1825,10 @@ OpFunctionEnd
 %val1 = OpCooperativeMatrixReduceNV %f16matC %f16mat_C_1 Row|Column %reducefunc
 )";
 
-  CompileSuccessfully(GenerateCoopMatKHRCode(extra_types, body).c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_DATA, ValidateInstructions());
+  CompileSuccessfully(GenerateCoopMatKHRCode(extra_types, body).c_str(),
+                      SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_DATA,
+            ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("CombineFunc return type and parameters must match "
                         "matrix component type: CooperativeMatrixReduceNV"));
@@ -1800,8 +1863,9 @@ OpFunctionEnd
 %val2 = OpCooperativeMatrixPerElementOpNV %f16matC %f16mat_C_1 %elemfunc2 %f16_1
 )";
 
-  CompileSuccessfully(GenerateCoopMatKHRCode(extra_types, body).c_str());
-  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
+  CompileSuccessfully(GenerateCoopMatKHRCode(extra_types, body).c_str(),
+                      SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
 }
 
 TEST_F(ValidateArithmetics, CoopMat2PerElementOpElemTyFail) {
@@ -1822,8 +1886,9 @@ OpFunctionEnd
 %val1 = OpCooperativeMatrixPerElementOpNV %f16matC %f16mat_C_1 %elemfunc
 )";
 
-  CompileSuccessfully(GenerateCoopMatKHRCode(extra_types, body).c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(GenerateCoopMatKHRCode(extra_types, body).c_str(),
+                      SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("must match matrix component type"));
 }
@@ -1846,8 +1911,9 @@ OpFunctionEnd
 %val1 = OpCooperativeMatrixPerElementOpNV %f16matC %f16mat_C_1 %elemfunc
 )";
 
-  CompileSuccessfully(GenerateCoopMatKHRCode(extra_types, body).c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  CompileSuccessfully(GenerateCoopMatKHRCode(extra_types, body).c_str(),
+                      SPV_ENV_UNIVERSAL_1_3);
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(), HasSubstr("must be a 32-bit integer"));
 }
 

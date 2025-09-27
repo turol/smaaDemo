@@ -76,7 +76,8 @@ SPVTOOLS_SRC_FILES := \
 		source/val/validate_scopes.cpp \
 		source/val/validate_small_type_uses.cpp \
 		source/val/validate_tensor_layout.cpp \
-		source/val/validate_type.cpp
+		source/val/validate_type.cpp\
+		source/val/validate_invalid_type.cpp
 
 SPVTOOLS_OPT_SRC_FILES := \
 		source/opt/aggressive_dead_code_elim_pass.cpp \
@@ -172,11 +173,13 @@ SPVTOOLS_OPT_SRC_FILES := \
 		source/opt/remove_unused_interface_variables_pass.cpp \
 		source/opt/replace_desc_array_access_using_var_index.cpp \
 		source/opt/replace_invalid_opc.cpp \
+		source/opt/resolve_binding_conflicts_pass.cpp \
 		source/opt/scalar_analysis.cpp \
 		source/opt/scalar_analysis_simplification.cpp \
 		source/opt/scalar_replacement_pass.cpp \
 		source/opt/set_spec_constant_default_value_pass.cpp \
 		source/opt/simplification_pass.cpp \
+		source/opt/split_combined_image_sampler_pass.cpp \
 		source/opt/spread_volatile_semantics.cpp \
 		source/opt/ssa_rewrite_pass.cpp \
 		source/opt/strength_reduction_pass.cpp \
@@ -225,8 +228,7 @@ $(1)/opencl.std.insts.inc \
 		                --core-insts-output=$(1)/core.insts-unified1.inc \
 		                --glsl-insts-output=$(1)/glsl.std.450.insts.inc \
 		                --opencl-insts-output=$(1)/opencl.std.insts.inc \
-		                --operand-kinds-output=$(1)/operand.kinds-unified1.inc \
-										--output-language=c++
+		                --operand-kinds-output=$(1)/operand.kinds-unified1.inc
 		@echo "[$(TARGET_ARCH_ABI)] Grammar (from unified1)  : instructions & operands <= grammar JSON files"
 $(LOCAL_PATH)/source/opcode.cpp: $(1)/core.insts-unified1.inc
 $(LOCAL_PATH)/source/operand.cpp: $(1)/operand.kinds-unified1.inc
@@ -301,8 +303,7 @@ $(1)/extension_enum.inc $(1)/enum_string_mapping.inc: \
 		                --extinst-debuginfo-grammar=$(SPV_DEBUGINFO_GRAMMAR) \
 		                --extinst-cldebuginfo100-grammar=$(SPV_CLDEBUGINFO100_GRAMMAR) \
 		                --extension-enum-output=$(1)/extension_enum.inc \
-		                --enum-string-mapping-output=$(1)/enum_string_mapping.inc \
-										--output-language=c++
+		                --enum-string-mapping-output=$(1)/enum_string_mapping.inc
 		@echo "[$(TARGET_ARCH_ABI)] Generate enum<->string mapping <= grammar JSON files"
 # Generated header extension_enum.inc is transitively included by table.h, which is
 # used pervasively.  Capture the pervasive dependency.

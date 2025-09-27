@@ -104,11 +104,13 @@ FILES:= \
 	remove_duplicates_pass.cpp \
 	remove_unused_interface_variables_pass.cpp \
 	replace_invalid_opc.cpp \
+	resolve_binding_conflicts_pass.cpp \
 	scalar_analysis.cpp \
 	scalar_analysis_simplification.cpp \
 	scalar_replacement_pass.cpp \
 	set_spec_constant_default_value_pass.cpp \
 	simplification_pass.cpp \
+	split_combined_image_sampler_pass.cpp \
 	spread_volatile_semantics.cpp \
 	ssa_rewrite_pass.cpp \
 	strength_reduction_pass.cpp \

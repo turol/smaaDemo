@@ -68,9 +68,7 @@ template("spvtools_core_tables") {
       "--extinst-cldebuginfo100-grammar",
       rebase_path(cldebuginfo100_insts_file, root_build_dir),
       "--operand-kinds-output",
-      rebase_path(operand_kinds_file, root_build_dir),
-      "--output-language",
-      "c++"
+      rebase_path(operand_kinds_file, root_build_dir)
     ]
   }
 }
@@ -102,9 +100,7 @@ template("spvtools_core_enums") {
       "--extension-enum-output",
       rebase_path(extension_enum_file, root_build_dir),
       "--enum-string-mapping-output",
-      rebase_path(extension_map_file, root_build_dir),
-      "--output-language",
-      "c++"
+      rebase_path(extension_map_file, root_build_dir)
     ]
     inputs = [
       core_json_file,
@@ -145,9 +141,7 @@ template("spvtools_glsl_tables") {
       "--extinst-glsl-grammar",
       rebase_path(glsl_json_file, root_build_dir),
       "--glsl-insts-output",
-      rebase_path(glsl_insts_file, root_build_dir),
-      "--output-language",
-      "c++"
+      rebase_path(glsl_insts_file, root_build_dir)
     ]
     inputs = [
       core_json_file,
@@ -559,6 +553,7 @@ static_library("spvtools_val") {
     "source/val/validate_small_type_uses.cpp",
     "source/val/validate_tensor_layout.cpp",
     "source/val/validate_type.cpp",
+    "source/val/validate_invalid_type.cpp",
     "source/val/validation_state.cpp",
     "source/val/validation_state.h",
   ]
@@ -771,6 +766,8 @@ static_library("spvtools_opt") {
     "source/opt/replace_desc_array_access_using_var_index.h",
     "source/opt/replace_invalid_opc.cpp",
     "source/opt/replace_invalid_opc.h",
+    "source/opt/resolve_binding_conflicts_pass.cpp",
+    "source/opt/resolve_binding_conflicts_pass.h",
     "source/opt/scalar_analysis.cpp",
     "source/opt/scalar_analysis.h",
     "source/opt/scalar_analysis_nodes.h",
@@ -781,6 +778,8 @@ static_library("spvtools_opt") {
     "source/opt/set_spec_constant_default_value_pass.h",
     "source/opt/simplification_pass.cpp",
     "source/opt/simplification_pass.h",
+    "source/opt/split_combined_image_sampler_pass.cpp",
+    "source/opt/split_combined_image_sampler_pass.h",
     "source/opt/spread_volatile_semantics.cpp",
     "source/opt/spread_volatile_semantics.h",
     "source/opt/ssa_rewrite_pass.cpp",
@@ -1382,6 +1381,7 @@ if (build_with_chromium && spvtools_build_executables) {
       "test/libspirv_macros_test.cpp",
       "test/name_mapper_test.cpp",
       "test/named_id_test.cpp",
+      "test/op_unknown_test.cpp",
       "test/opcode_make_test.cpp",
       "test/opcode_require_capabilities_test.cpp",
       "test/opcode_split_test.cpp",

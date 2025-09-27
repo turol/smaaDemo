@@ -1,19 +1,10 @@
-commit f289d047f49fb60488301ec62bafab85573668cc
+commit a62abcb402009b9ca5975e6167c09f237f630e0e
 Author: Steven Perron <stevenperron@google.com>
-Date:   Tue Feb 25 15:54:39 2025 -0500
+Date:   Wed Apr 23 07:29:35 2025 -0400
 
-    [OPT] Update DebugDeclare if the var is not an OpVariable (#6014)
+    [OPT] Don't fold n % 1.0 (#6100)
     
-    When inlining, DXC can pass the result of an OpAccessChain as a
-    parameter. Even if this is not valid SPIR-V, HLSL allows this for the
-    `this` pointer in member function. Part of legalizing is to inline these
-    functions.
+    If values are not whole number, then the result is not 0. For example,
+    `(1.5 % 1.0) == 0.5`.
     
-    When this happens, the `var` operand on a debug declare for the parameter
-    will be replaced by the result of the OpAccessChain. This in invalid.
-    The debug declare needs the variable with the indexes.
-    
-    This commit add a pass over each function after inlining that will fix
-    up the debug declares that are invalid in this way.
-    
-    Fixes https://github.com/microsoft/DirectXShaderCompiler/issues/5191
+    Fixes #6097
