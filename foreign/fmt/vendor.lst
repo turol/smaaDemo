@@ -1,4 +1,5 @@
 .clang-format
+.clang-tidy
 .github/dependabot.yml
 .github/issue_template.md
 .github/pull_request_template.md
@@ -46,11 +47,6 @@ support/AndroidManifest.xml
 support/C++.sublime-syntax
 support/README
 support/Vagrantfile
-support/bazel/.bazelversion
-support/bazel/BUILD.bazel
-support/bazel/MODULE.bazel
-support/bazel/README.md
-support/bazel/WORKSPACE.bazel
 support/build.gradle
 support/check-commits
 support/cmake/FindSetEnv.cmake
