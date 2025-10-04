@@ -604,9 +604,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	glewInit();
 #endif  // USE_GLEW
 
-	LOG_TODO("check extensions")
-	// at least direct state access, texture storage
-
 	if (desc.gles) {
 		features.computeShader = false;
 		LOG("Compute shaders not supported");
