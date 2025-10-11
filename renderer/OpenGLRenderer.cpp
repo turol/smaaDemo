@@ -2699,11 +2699,13 @@ void RendererImpl::rebindDescriptorSets() {
 		if (std::holds_alternative<CSampler>(d)) {
 			const CSampler &combined = std::get<CSampler>(d);
 			const Texture &tex  = textures.get(combined.tex);
-			glBindTextureUnit(i, tex.tex);
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(tex.target, tex.tex);
 		} else if (std::holds_alternative<TextureHandle>(d)) {
 			const TextureHandle &handle = std::get<TextureHandle>(d);
 			const Texture &tex  = textures.get(handle);
-			glBindTextureUnit(i, tex.tex);
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(tex.target, tex.tex);
 		} else {
 			HEDLEY_UNREACHABLE();
 		}
