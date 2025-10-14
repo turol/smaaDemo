@@ -817,6 +817,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	LOG("maxMSAASamples: {}", features.maxMSAASamples);
 	features.computeShader  = true;
 	features.SSBOSupported  = true;
+	features.texGather      = true;
 
 	recreateSwapchain();
 	recreateRingBuffer(desc.ephemeralRingBufSize);

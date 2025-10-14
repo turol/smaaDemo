@@ -1299,6 +1299,7 @@ struct RendererFeatures {
 	bool      swapchainStorage = false;
 	bool      computeShader    = false;
 	bool      SSBOSupported    = false;
+	bool      texGather        = false;
 
 
 	RendererFeatures() {

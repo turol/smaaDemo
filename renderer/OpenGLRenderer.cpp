@@ -618,6 +618,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 	}
 
+	LOG_TODO("check if texGather actually supported")
+	features.texGather = true;
+
 	if (GL_SUPPORTED_VERSION(4, 3) || GL_SUPPORTED_EXT(ARB_shader_storage_buffer_object)) {
 		features.SSBOSupported = true;
 		LOG("Shader storage buffer supported");
