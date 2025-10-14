@@ -673,7 +673,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	LOG("GL vendor: \"{}\"",    reinterpret_cast<const char *>(glGetString(GL_VENDOR)));
 	LOG("GL renderer: \"{}\"",  reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
 	LOG("GL version: \"{}\"",   reinterpret_cast<const char *>(glGetString(GL_VERSION)));
-	LOG("GLSL version: \"{}\"", reinterpret_cast<const char *>(glGetString(GL_SHADING_LANGUAGE_VERSION)));
+	const char *glslVersionString = reinterpret_cast<const char *>(glGetString(GL_SHADING_LANGUAGE_VERSION));
+	LOG("GLSL version: \"{}\"", glslVersionString);
 
 	LOG("Interesting GL values:");
 	glValues.reserve(sizeof(interestingValues) / sizeof(interestingValues[0]));
@@ -691,27 +692,54 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	if (GL_SUPPORTED_VERSION(4, 0)) {
 		spirvEnvironment = SPV_ENV_OPENGL_4_0;
+		glslVersion      = 400;
 	}
 
 	if (GL_SUPPORTED_VERSION(4, 1)) {
 		spirvEnvironment = SPV_ENV_OPENGL_4_1;
+		glslVersion      = 410;
 	}
 
 	if (GL_SUPPORTED_VERSION(4, 2)) {
 		spirvEnvironment = SPV_ENV_OPENGL_4_2;
+		glslVersion      = 420;
 	}
 
 	if (GL_SUPPORTED_VERSION(4, 3)) {
 		spirvEnvironment = SPV_ENV_OPENGL_4_3;
+		glslVersion      = 430;
 	}
 
 	// There is no SPIR-V target env for OpenGL 4.4
+	if (GL_SUPPORTED_VERSION(4, 4)) {
+		glslVersion      = 440;
+	}
 
 	if (GL_SUPPORTED_VERSION(4, 5)) {
 		spirvEnvironment = SPV_ENV_OPENGL_4_5;
+		glslVersion      = 450;
+	}
+
+	if (gles) {
+		if (strstr(glslVersionString, "3.20") != nullptr) {
+			glslVersion = 320;
+		} else if (strstr(glslVersionString, "3.10") != nullptr) {
+			glslVersion = 310;
+		} else if (strstr(glslVersionString, "3.00") != nullptr) {
+			glslVersion = 300;
+		} else {
+			glslVersion = 200;
+		}
+
+		if (glslVersion >= 310) {
+			features.texGather = true;
+		} else {
+			features.texGather = false;
+		}
 	}
 
 	LOG("Using SPIR-V target environment {}", magic_enum::enum_name(spirvEnvironment));
+	LOG("Using GLSL version {}", glslVersion);
 
 	LOG_TODO("use GL_UPPER_LEFT to match Vulkan")
 	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
@@ -1329,8 +1357,8 @@ ComputePipelineHandle Renderer::createComputePipeline(const ComputePipelineDesc 
 		spirv_cross::CompilerGLSL::Options glslOptions;
 		glslOptions.vertex.fixup_clipspace = false;
 		glslOptions.vertex.support_nonzero_base_instance = false;
+		glslOptions.version = impl->glslVersion;
 		if (impl->gles) {
-			glslOptions.version = 310;
 			glslOptions.es      = true;
 			// WebGL requires initialized variables
 			glslOptions.force_zero_initialized_variables = true;
@@ -1462,8 +1490,8 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 		spirv_cross::CompilerGLSL::Options glslOptions;
 		glslOptions.vertex.fixup_clipspace = false;
 		glslOptions.vertex.support_nonzero_base_instance = false;
+		glslOptions.version = impl->glslVersion;
 		if (impl->gles) {
-			glslOptions.version = 300;
 			glslOptions.es      = true;
 			// WebGL requires initialized variables
 			glslOptions.force_zero_initialized_variables = true;

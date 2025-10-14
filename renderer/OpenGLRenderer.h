@@ -726,6 +726,7 @@ struct RendererImpl : public RendererBase {
 	SDL_Window                                              *window             = nullptr;
 	SDL_GLContext                                           context             = nullptr;
 	bool                                                    gles                = false;
+	unsigned int                                            glslVersion         = 330;
 
 	HashMap<GLenum, int>                                    glValues;
 
