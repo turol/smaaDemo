@@ -944,12 +944,14 @@ bool Renderer::isRenderTargetFormatSupported(Format format) const {
 
 	glGetInternalformativ(target, internalFormat, GL_INTERNALFORMAT_SUPPORTED, sizeof(int), &params);
 	if (params == GL_FALSE) {
+		LOG("isRenderTargetFormatSupported {} internal format not supported", magic_enum::enum_name(format).data());
 		return false;
 	}
 
 	params = 0;
 	glGetInternalformativ(target, internalFormat, GL_FRAMEBUFFER_RENDERABLE, sizeof(int), &params);
 	if (params != GL_FULL_SUPPORT) {
+		LOG("isRenderTargetFormatSupported {} no full support for render", magic_enum::enum_name(format).data());
 		return false;
 	}
 
@@ -958,6 +960,7 @@ bool Renderer::isRenderTargetFormatSupported(Format format) const {
 	params = 0;
 	glGetInternalformativ(target, internalFormat, renderable, sizeof(int), &params);
 	if (params == GL_FALSE) {
+		LOG("isRenderTargetFormatSupported {} not renderable", magic_enum::enum_name(format).data());
 		return false;
 	}
 
