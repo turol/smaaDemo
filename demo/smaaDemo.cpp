@@ -1308,6 +1308,9 @@ void SMAADemo::initRender() {
 	LOG("sRGB frame buffer: {}", features.sRGBFramebuffer ? "yes" : "no");
 	LOG("swapchain can be used as storage image: {}", features.swapchainStorage ? "yes" : "no");
 	LOG("SSBO support: {}",      features.SSBOSupported   ? "yes" : "no");
+	LOG("texGather support: {}",                      features.texGather        ? "yes" : "no");
+
+	useTexGather = features.texGather;
 	maxMSAAQuality = msaaSamplesToQuality(features.maxMSAASamples) + 1;
 	if (msaaQuality >= maxMSAAQuality) {
 		msaaQuality = maxMSAAQuality - 1;
@@ -3002,6 +3005,9 @@ void SMAADemo::runAuto() {
 							fxaaQuality = q;
 
 							for (bool gather : { true, false }) {
+								if (gather && !renderer.getFeatures().texGather) {
+									continue;
+								}
 								useTexGather = gather;
 
 								for (auto p : magic_enum::enum_values<PipelineType>()) {
@@ -3037,6 +3043,9 @@ void SMAADemo::runAuto() {
 										smaaPredication = predication;
 
 										for (bool gather : { true, false }) {
+											if (gather && !renderer.getFeatures().texGather) {
+												continue;
+											}
 											useTexGather = gather;
 
 											for (auto d : magic_enum::enum_values<SMAADebugMode>()) {
@@ -3066,6 +3075,9 @@ void SMAADemo::runAuto() {
 									smaaEdgeMethod = e;
 
 									for (bool gather : { true, false }) {
+										if (gather && !renderer.getFeatures().texGather) {
+											continue;
+										}
 										useTexGather = gather;
 
 										innermostLoop();
