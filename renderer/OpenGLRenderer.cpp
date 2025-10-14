@@ -562,6 +562,13 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		features.sRGBFramebuffer = value;
 	}
 
+	{
+		int major = -1, minor = -1;
+		SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
+		SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
+		LOG("Actual GL context version: {}.{}", major, minor);
+	}
+
 	bool vsync = false;
 	int retval = 0;
 	switch (desc.swapchain.vsync) {
