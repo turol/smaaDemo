@@ -636,10 +636,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		LOG("Shader storage buffer not supported");
 	}
 
-	if (!GL_SUPPORTED_EXT(ARB_direct_state_access)) {
-		THROW_ERROR("ARB_direct_state_access not found")
-	}
-
 	if (!GL_SUPPORTED_EXT(ARB_buffer_storage)) {
 		THROW_ERROR("ARB_buffer_storage not found")
 	}
