@@ -931,6 +931,12 @@ bool Renderer::isRenderTargetFormatSupported(Format format) const {
 	GLenum internalFormat = glTexFormat(format);
 	int params            = 0;
 
+	// GLES does not support these queries, answer true and hope for the best
+	if (impl->gles) {
+		LOG("isRenderTargetFormatSupported {} true because GLES", magic_enum::enum_name(format).data());
+		return true;
+	}
+
 	glGetInternalformativ(target, internalFormat, GL_INTERNALFORMAT_SUPPORTED, sizeof(int), &params);
 	if (params == GL_FALSE) {
 		LOG("isRenderTargetFormatSupported {} internal format not supported", magic_enum::enum_name(format).data());
