@@ -644,10 +644,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		THROW_ERROR("ARB_buffer_storage not found")
 	}
 
-	if (!GL_SUPPORTED_EXT(ARB_clip_control)) {
-		THROW_ERROR("ARB_clip_control not found")
-	}
-
 	if (!(GL_SUPPORTED_EXT(ARB_texture_view) || GL_SUPPORTED_VERSION(4, 3))) {
 		THROW_ERROR("ARB_texture_view not found")
 	}
@@ -740,9 +736,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	LOG("Using SPIR-V target environment {}", magic_enum::enum_name(spirvEnvironment));
 	LOG("Using GLSL version {}", glslVersion);
-
-	LOG_TODO("use GL_UPPER_LEFT to match Vulkan")
-	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
@@ -1358,7 +1351,7 @@ ComputePipelineHandle Renderer::createComputePipeline(const ComputePipelineDesc 
 	GLuint computeShader = 0;
 	{
 		spirv_cross::CompilerGLSL::Options glslOptions;
-		glslOptions.vertex.fixup_clipspace = false;
+		glslOptions.vertex.fixup_clipspace               = true;
 		glslOptions.vertex.support_nonzero_base_instance = false;
 		glslOptions.version = impl->glslVersion;
 		if (impl->gles) {
@@ -1491,7 +1484,7 @@ GraphicsPipelineHandle Renderer::createGraphicsPipeline(const GraphicsPipelineDe
 	GLuint fragmentShader = 0;
 	{
 		spirv_cross::CompilerGLSL::Options glslOptions;
-		glslOptions.vertex.fixup_clipspace = false;
+		glslOptions.vertex.fixup_clipspace               = true;
 		glslOptions.vertex.support_nonzero_base_instance = false;
 		glslOptions.version = impl->glslVersion;
 		if (impl->gles) {
