@@ -797,8 +797,21 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 		TCLAP::SwitchArg                       fullscreenSwitch("f",     "fullscreen",        "Start in fullscreen mode",         cmd, false);
 		TCLAP::SwitchArg                       noVsyncSwitch("",         "novsync",           "Disable vsync",                    cmd, false);
 		TCLAP::SwitchArg                       noTransferQSwitch("",     "no-transfer-queue", "Disable transfer queue",           cmd, false);
+
 #ifdef RENDERER_OPENGL
-		TCLAP::SwitchArg                       glesSwitch("",            "gles",              "Use OpenGL ES",                    cmd, false);
+
+#if defined(__EMSCRIPTEN__)
+
+		const bool glesDefault = true;
+
+#else  // __EMSCRIPTEN__
+
+		const bool glesDefault = false;
+
+#endif  // __EMSCRIPTEN__
+
+		TCLAP::SwitchArg                       glesSwitch("",            "gles",              "Use OpenGL ES",                    cmd, glesDefault);
+
 #endif  // RENDERER_OPENGL
 
 		TCLAP::ValueArg<unsigned int>          windowWidthSwitch("",     "width",             "Window width",             false, rendererDesc.swapchain.width,  "width",                 cmd);
