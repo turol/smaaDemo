@@ -2334,10 +2334,12 @@ void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHa
 		glDisable(GL_FRAMEBUFFER_SRGB);
 	}
 
+	if (!impl->gles) {
 	if (fb.numSamples > 1) {
 		glEnable(GL_MULTISAMPLE);
 	} else {
 		glDisable(GL_MULTISAMPLE);
+	}
 	}
 
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
