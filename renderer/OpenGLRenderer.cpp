@@ -611,6 +611,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	glewInit();
 #endif  // USE_GLEW
 
+	LOG("GL vendor: \"{}\"",    reinterpret_cast<const char *>(glGetString(GL_VENDOR)));
+	LOG("GL renderer: \"{}\"",  reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
+	LOG("GL version: \"{}\"",   reinterpret_cast<const char *>(glGetString(GL_VERSION)));
+	const char *glslVersionString = reinterpret_cast<const char *>(glGetString(GL_SHADING_LANGUAGE_VERSION));
+	LOG("GLSL version: \"{}\"", glslVersionString);
+
 	if (desc.gles) {
 		features.computeShader = false;
 		LOG("Compute shaders not supported");
@@ -683,12 +689,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			}
 		}
 	}
-
-	LOG("GL vendor: \"{}\"",    reinterpret_cast<const char *>(glGetString(GL_VENDOR)));
-	LOG("GL renderer: \"{}\"",  reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
-	LOG("GL version: \"{}\"",   reinterpret_cast<const char *>(glGetString(GL_VERSION)));
-	const char *glslVersionString = reinterpret_cast<const char *>(glGetString(GL_SHADING_LANGUAGE_VERSION));
-	LOG("GLSL version: \"{}\"", glslVersionString);
 
 	LOG("Interesting GL values:");
 	glValues.reserve(sizeof(interestingValues) / sizeof(interestingValues[0]));
