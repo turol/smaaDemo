@@ -800,7 +800,7 @@ void SMAADemo::parseCommandLine(int argc, char *argv[]) {
 
 #ifdef RENDERER_OPENGL
 
-#if defined(__EMSCRIPTEN__)
+#if defined(__EMSCRIPTEN__) || defined(__arm__) || defined(__aarch64__)
 
 		const bool glesDefault = true;
 
