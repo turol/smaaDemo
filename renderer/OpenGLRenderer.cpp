@@ -636,6 +636,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		LOG("Shader storage buffer not supported");
 	}
 
+#ifdef USE_GLEW
+
 	if (!GL_SUPPORTED_EXT(ARB_buffer_storage)) {
 		THROW_ERROR("ARB_buffer_storage not found")
 	}
@@ -647,6 +649,26 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	if (!GL_SUPPORTED_EXT(ARB_texture_storage_multisample)) {
 		THROW_ERROR("ARB_texture_storage_multisample not found")
 	}
+
+#else  // USE_GLEW
+
+	if (!(GL_SUPPORTED_EXT(ARB_buffer_storage) || GL_SUPPORTED_EXT(EXT_buffer_storage))) {
+		THROW_ERROR("ARB_buffer_storage or EXT_buffer_storage not found")
+	}
+
+	if (!(GL_SUPPORTED_EXT(ARB_texture_view) || GL_SUPPORTED_EXT(EXT_texture_view) || GL_SUPPORTED_VERSION(4, 3))) {
+		THROW_ERROR("ARB_texture_view or EXT_texture_view not found")
+	}
+
+	if (gles) {
+		LOG_TODO("Check GL ES 3.1")
+	} else {
+	if (!GL_SUPPORTED_EXT(ARB_texture_storage_multisample)) {
+		THROW_ERROR("ARB_texture_storage_multisample not found")
+	}
+	}
+
+#endif  // USE_GLEW
 
 	if (wantKHRDebug) {
 		if (!GL_SUPPORTED_EXT(KHR_debug)) {
