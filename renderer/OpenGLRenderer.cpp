@@ -663,9 +663,9 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	if (gles) {
 		LOG_TODO("Check GL ES 3.1")
 	} else {
-	if (!GL_SUPPORTED_EXT(ARB_texture_storage_multisample)) {
-		THROW_ERROR("ARB_texture_storage_multisample not found")
-	}
+		if (!GL_SUPPORTED_EXT(ARB_texture_storage_multisample)) {
+			THROW_ERROR("ARB_texture_storage_multisample not found")
+		}
 	}
 
 #endif  // USE_GLEW
@@ -2335,11 +2335,11 @@ void Renderer::beginRenderPass(RenderPassHandle rpHandle, FramebufferHandle fbHa
 	}
 
 	if (!impl->gles) {
-	if (fb.numSamples > 1) {
-		glEnable(GL_MULTISAMPLE);
-	} else {
-		glDisable(GL_MULTISAMPLE);
-	}
+		if (fb.numSamples > 1) {
+			glEnable(GL_MULTISAMPLE);
+		} else {
+			glDisable(GL_MULTISAMPLE);
+		}
 	}
 
 	for (unsigned int i = 0; i < MAX_COLOR_RENDERTARGETS; i++) {
