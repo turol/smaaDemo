@@ -631,9 +631,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 	}
 
-	LOG_TODO("check if texGather actually supported")
-	features.texGather = true;
-
 	if (GL_SUPPORTED_VERSION(4, 3) || GL_SUPPORTED_EXT(ARB_shader_storage_buffer_object)) {
 		features.SSBOSupported = true;
 		LOG("Shader storage buffer supported");
@@ -656,6 +653,42 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		THROW_ERROR("ARB_texture_storage_multisample not found")
 	}
 
+	if (gles) {
+		if (strstr(glslVersionString, "3.20") != nullptr) {
+			glslVersion = 320;
+		} else if (strstr(glslVersionString, "3.10") != nullptr) {
+			glslVersion = 310;
+		} else if (strstr(glslVersionString, "3.00") != nullptr) {
+			glslVersion = 300;
+		} else {
+			glslVersion = 200;
+		}
+	} else {
+		if (GL_SUPPORTED_VERSION(4, 0)) {
+			glslVersion      = 400;
+		}
+
+		if (GL_SUPPORTED_VERSION(4, 1)) {
+			glslVersion      = 410;
+		}
+
+		if (GL_SUPPORTED_VERSION(4, 2)) {
+			glslVersion      = 420;
+		}
+
+		if (GL_SUPPORTED_VERSION(4, 3)) {
+			glslVersion      = 430;
+		}
+
+		if (GL_SUPPORTED_VERSION(4, 4)) {
+			glslVersion      = 440;
+		}
+
+		if (GL_SUPPORTED_VERSION(4, 5)) {
+			glslVersion      = 450;
+		}
+	}
+
 #else  // USE_GLEW
 
 	if (!(GL_SUPPORTED_EXT(ARB_buffer_storage) || GL_SUPPORTED_EXT(EXT_buffer_storage))) {
@@ -673,6 +706,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 			THROW_ERROR("ARB_texture_storage_multisample not found")
 		}
 	}
+
+	glslVersion = epoxy_glsl_version();
 
 #endif  // USE_GLEW
 
@@ -704,51 +739,35 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 
 	features.maxMSAASamples = std::min(glValues[GL_MAX_COLOR_TEXTURE_SAMPLES], glValues[GL_MAX_DEPTH_TEXTURE_SAMPLES]);
 
-	if (GL_SUPPORTED_VERSION(4, 0)) {
-		spirvEnvironment = SPV_ENV_OPENGL_4_0;
-		glslVersion      = 400;
-	}
-
-	if (GL_SUPPORTED_VERSION(4, 1)) {
-		spirvEnvironment = SPV_ENV_OPENGL_4_1;
-		glslVersion      = 410;
-	}
-
-	if (GL_SUPPORTED_VERSION(4, 2)) {
-		spirvEnvironment = SPV_ENV_OPENGL_4_2;
-		glslVersion      = 420;
-	}
-
-	if (GL_SUPPORTED_VERSION(4, 3)) {
-		spirvEnvironment = SPV_ENV_OPENGL_4_3;
-		glslVersion      = 430;
-	}
-
-	// There is no SPIR-V target env for OpenGL 4.4
-	if (GL_SUPPORTED_VERSION(4, 4)) {
-		glslVersion      = 440;
-	}
-
-	if (GL_SUPPORTED_VERSION(4, 5)) {
-		spirvEnvironment = SPV_ENV_OPENGL_4_5;
-		glslVersion      = 450;
-	}
-
 	if (gles) {
-		if (strstr(glslVersionString, "3.20") != nullptr) {
-			glslVersion = 320;
-		} else if (strstr(glslVersionString, "3.10") != nullptr) {
-			glslVersion = 310;
-		} else if (strstr(glslVersionString, "3.00") != nullptr) {
-			glslVersion = 300;
-		} else {
-			glslVersion = 200;
-		}
-
 		if (glslVersion >= 310) {
 			features.texGather = true;
 		} else {
 			features.texGather = false;
+		}
+	} else {
+		features.texGather = true;
+
+		if (glslVersion >= 400) {
+			spirvEnvironment = SPV_ENV_OPENGL_4_0;
+		}
+
+		if (glslVersion >= 410) {
+			spirvEnvironment = SPV_ENV_OPENGL_4_1;
+		}
+
+		if (glslVersion >= 420) {
+			spirvEnvironment = SPV_ENV_OPENGL_4_2;
+		}
+
+		if (glslVersion >= 430) {
+			spirvEnvironment = SPV_ENV_OPENGL_4_3;
+		}
+
+		// There is no SPIR-V target env for OpenGL 4.4
+
+		if (glslVersion >= 450) {
+			spirvEnvironment = SPV_ENV_OPENGL_4_5;
 		}
 	}
 
