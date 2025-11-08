@@ -726,6 +726,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	deviceCreateInfo.pQueueCreateInfos        = queueCreateInfos.data();
 
 	vk::PhysicalDeviceFeatures enabledFeatures;
+	enabledFeatures.shaderStorageImageWriteWithoutFormat = deviceFeatures.shaderStorageImageWriteWithoutFormat;
+	enabledFeatures.shaderStorageImageReadWithoutFormat  = deviceFeatures.shaderStorageImageReadWithoutFormat;
 	if (desc.robustness) {
 		LOG("Robust buffer access requested");
 		if (deviceFeatures.robustBufferAccess) {
