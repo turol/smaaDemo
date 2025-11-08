@@ -13,7 +13,7 @@ UBSAN:=n
 
 RENDERER:=vulkan
 
-GL_LOADER:=glew
+GL_LOADER:=epoxy
 
 INTERNAL_glslang:=y
 LDLIBS_glslang:=
@@ -53,6 +53,7 @@ CXXFLAGS+=-Wzero-as-null-pointer-constant
 LDFLAGS:=-g -Wl,-rpath,. -Wl,-rpath,/usr/local/lib:./lib32
 LDLIBS:=-lpthread
 LDLIBS_sdl2:=$(shell sdl2-config --libs)
+LDLIBS_epoxy:=$(shell pkg-config --libs epoxy)
 LDLIBS_opengl:=-lGL
 LDLIBS_vulkan:=-lvulkan
 
