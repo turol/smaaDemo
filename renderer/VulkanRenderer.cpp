@@ -817,6 +817,15 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 	}
 	LOG("maxMSAASamples: {}", features.maxMSAASamples);
+	if (deviceFeatures.shaderStorageImageWriteWithoutFormat && deviceFeatures.shaderStorageImageReadWithoutFormat) {
+		// need these to work around a spec deficiency
+		// https://github.com/KhronosGroup/GLSL/issues/57
+		// https://github.com/KhronosGroup/glslang/issues/1720
+		features.computeShader  = true;
+	} else {
+		// disable compute shaders if they are not available
+		features.computeShader  = false;
+	}
 	features.computeShader  = true;
 	features.SSBOSupported  = true;
 	features.texGather      = true;
