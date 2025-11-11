@@ -826,7 +826,6 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		// disable compute shaders if they are not available
 		features.computeShader  = false;
 	}
-	features.computeShader  = true;
 	features.SSBOSupported  = true;
 	features.texGather      = true;
 
