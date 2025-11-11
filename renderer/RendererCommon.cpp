@@ -746,6 +746,17 @@ compilationNeeded:
 		validate = [] (const std::vector<uint32_t> &) { return true; };
 	}
 
+	bool initiallyValid = true;
+	switch (shaderLanguage) {
+	case ShaderLanguage::GLSL:
+		break;
+
+	case ShaderLanguage::HLSL:
+		// SPIR-V generated from HLSL can be initially invalid and require legalization passes
+		initiallyValid = false;
+		break;
+	}
+
 	Includer includer(this);
 
 	std::vector<uint32_t> spirv;
@@ -861,11 +872,11 @@ compilationNeeded:
 		spvOptions.generateDebugInfo = true;
 		spvOptions.disableOptimizer = true;
 		spvOptions.optimizeSize     = false;
-		spvOptions.validate         = validateShaders;
+		spvOptions.validate         = validateShaders && initiallyValid;
 		glslang::GlslangToSpv(*program.getIntermediate(language), spirv, &logger, &spvOptions);
 
 		// HLSL is not necessarily valid, might need legalization first
-		if (shaderLanguage != ShaderLanguage::HLSL && !validate(spirv)) {
+		if (initiallyValid && !validate(spirv)) {
 			THROW_ERROR("SPIR-V for shader \"{}\" is not valid after compilation", cacheKey)
 		}
 	}
@@ -875,7 +886,7 @@ compilationNeeded:
 	}
 
 	// SPIR-V optimization
-	if (optimizeShaders || shaderLanguage == ShaderLanguage::HLSL) {
+	if (optimizeShaders || !initiallyValid) {
 		spvtools::Optimizer opt(spirvEnvironment);
 
 		opt.SetMessageConsumer([] (spv_message_level_t level, const char *source, const spv_position_t &position, const char *message) {
@@ -883,7 +894,7 @@ compilationNeeded:
 		});
 
 		spvtools::OptimizerOptions options;
-		if (shaderLanguage == ShaderLanguage::HLSL) {
+		if (!initiallyValid) {
 			// HLSL is not necessarily valid before legalization
 			options.set_run_validator(false);
 		}
@@ -893,7 +904,7 @@ compilationNeeded:
 			opt.RegisterPerformancePasses();
 		} else {
 			// if HLSL we need to legalize
-			if (shaderLanguage == ShaderLanguage::HLSL) {
+			if (!initiallyValid) {
 				opt.RegisterLegalizationPasses();
 			}
 		}
