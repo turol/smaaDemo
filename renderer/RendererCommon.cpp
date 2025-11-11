@@ -870,9 +870,9 @@ compilationNeeded:
 		glslang::SpvOptions spvOptions;
 		LOG_TODO("only generate debug info when tracing")
 		spvOptions.generateDebugInfo = true;
-		spvOptions.disableOptimizer = true;
-		spvOptions.optimizeSize     = false;
-		spvOptions.validate         = validateShaders && initiallyValid;
+		spvOptions.disableOptimizer  = true;
+		spvOptions.optimizeSize      = false;
+		spvOptions.validate          = validateShaders && initiallyValid;
 		glslang::GlslangToSpv(*program.getIntermediate(language), spirv, &logger, &spvOptions);
 
 		// HLSL is not necessarily valid, might need legalization first
