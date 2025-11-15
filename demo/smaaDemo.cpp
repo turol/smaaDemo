@@ -3399,15 +3399,15 @@ void SMAADemo::renderShapeScene(RenderPasses rp, DemoRenderGraph::PassResources 
 				v.pos.x = mesh->points[j * 3 + 0];
 				v.pos.y = mesh->points[j * 3 + 1];
 				v.pos.z = mesh->points[j * 3 + 2];
-				v.col = shape.color;
+				v.col   = shape.color;
 
 				// not using quaternion multiply because of bug compatibility
 				glm::vec3 rotationQuat;
 				rotationQuat.x = shape.rotation.x;
 				rotationQuat.y = shape.rotation.y;
 				rotationQuat.z = shape.rotation.z;
-				glm::vec3 uv = glm::cross(rotationQuat, v.pos);
-				glm::vec3 uuv = glm::cross(rotationQuat, uv);
+				glm::vec3 uv   = glm::cross(rotationQuat, v.pos);
+				glm::vec3 uuv  = glm::cross(rotationQuat, uv);
 				uv *= (2.0 * shape.rotation.w);
 				uuv *= 2.0;
 				v.pos = v.pos + uv + uuv;
@@ -3467,8 +3467,8 @@ void SMAADemo::renderImageScene(RenderPasses rp, DemoRenderGraph::PassResources 
 
 	assert(activeScene - 1 < images.size());
 	ColorTexDS colorDS;
-	colorDS.globals = renderer.createEphemeralBuffer({ BufferUsage::Uniform }, sizeof(ShaderDefines::Globals), &globals);
-	colorDS.color = image.tex;
+	colorDS.globals       = renderer.createEphemeralBuffer({ BufferUsage::Uniform }, sizeof(ShaderDefines::Globals), &globals);
+	colorDS.color         = image.tex;
 	colorDS.linearSampler = linearSampler;
 	renderer.bindDescriptorSet(PipelineType::Graphics, 0, colorDS, layoutUsage);
 	renderer.draw(0, 3);
