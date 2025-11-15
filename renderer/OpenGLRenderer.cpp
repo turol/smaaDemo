@@ -702,9 +702,8 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 #endif  // USE_GLEW
 
 	if (desc.gles) {
-		features.computeShader = false;
-		LOG("Compute shaders not supported");
-		LOG_TODO("Fix compute shader output image layouts for GLSL ES")
+		features.computeShader = (glslVersion >= 310);
+		LOG("Compute shaders {}supported", features.computeShader ? "" : "not ");
 	} else {
 		if (GL_SUPPORTED_VERSION(4, 3) || GL_SUPPORTED_EXT(ARB_compute_shader)) {
 			features.computeShader = true;
