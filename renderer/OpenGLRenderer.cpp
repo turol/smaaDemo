@@ -689,6 +689,10 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 	}
 
+#elif defined(__EMSCRIPTEN__)
+
+	glslVersion = 300;
+
 #else  // USE_GLEW
 
 	if (!(GL_SUPPORTED_EXT(ARB_buffer_storage) || GL_SUPPORTED_EXT(EXT_buffer_storage))) {
