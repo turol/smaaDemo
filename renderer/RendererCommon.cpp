@@ -391,7 +391,7 @@ std::vector<char> RendererBase::loadSource(const std::string &name) {
 // increase this when the shader compiler options change
 // so that the same source generates a different SPV
 // or the cache json format changes
-const unsigned int shaderVersion = 148;
+const unsigned int shaderVersion = 149;
 
 
 // helper for storing in cache .json
@@ -749,6 +749,15 @@ compilationNeeded:
 	bool initiallyValid = true;
 	switch (shaderLanguage) {
 	case ShaderLanguage::GLSL:
+		// GLSL ES and Vulkan without typeless loads/stores require format on images
+		// but it's not allowed on function parameters
+		// https://github.com/KhronosGroup/GLSL/issues/57
+		// https://github.com/KhronosGroup/glslang/issues/1720
+		// Legalization is required to fix those shaders
+		if (stage == ShaderStage::Compute) {
+			LOG_TODO("only required if compute shader uses images")
+			initiallyValid = false;
+		}
 		break;
 
 	case ShaderLanguage::HLSL:
@@ -875,7 +884,7 @@ compilationNeeded:
 		spvOptions.validate          = validateShaders && initiallyValid;
 		glslang::GlslangToSpv(*program.getIntermediate(language), spirv, &logger, &spvOptions);
 
-		// HLSL is not necessarily valid, might need legalization first
+		// HLSL and compute shaders are not necessarily valid, might need legalization first
 		if (initiallyValid && !validate(spirv)) {
 			THROW_ERROR("SPIR-V for shader \"{}\" is not valid after compilation", cacheKey)
 		}
@@ -896,14 +905,20 @@ compilationNeeded:
 		spvtools::OptimizerOptions options;
 		if (!initiallyValid) {
 			// HLSL is not necessarily valid before legalization
+			// same goes for compute shaders
 			options.set_run_validator(false);
 		}
 
 		if (optimizeShaders) {
+			if (!initiallyValid) {
+				LOG_TODO("why is this legalization necessary? minimize the passes")
+				opt.RegisterLegalizationPasses();
+			}
+
 			// SPIRV-Tools optimizer
 			opt.RegisterPerformancePasses();
 		} else {
-			// if HLSL we need to legalize
+			// if HLSL or compute shader we need to legalize
 			if (!initiallyValid) {
 				opt.RegisterLegalizationPasses();
 			}
