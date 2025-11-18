@@ -1,5 +1,5 @@
-commit 0af55ccecd98d4e5a8d1fad7de25ba429d60e863
+commit a532f5b1cf27d6a3c099437e6959cf7e398a0a67
 Author: Christophe <christophe@lunarg.com>
-Date:   Tue Feb 27 18:19:47 2024 +0100
+Date:   Wed Oct 15 12:59:12 2025 +0200
 
-    Trying to fix C.I. timeout...
+    Updated API doc for 1.0.2

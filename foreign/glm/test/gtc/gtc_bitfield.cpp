@@ -20,10 +20,12 @@ namespace mask
 #	pragma clang diagnostic ignored "-Wsign-conversion"
 #endif
 
+#ifdef GLM_TEST_PERF
 	static inline int mask_zero(int Bits)
 	{
 		return ~((~0) << Bits);
 	}
+#endif//GLM_TEST_PERF
 
 #if GLM_COMPILER & GLM_COMPILER_CLANG
 #	pragma clang diagnostic push
@@ -32,7 +34,7 @@ namespace mask
 
 	static inline int mask_mix(int Bits)
 	{
-		return Bits >= sizeof(int) * 8 ? 0xffffffff : (static_cast<int>(1) << Bits) - static_cast<int>(1);
+		return Bits >= static_cast<int>(sizeof(int) * 8) ? 0xffffffff : (static_cast<int>(1) << Bits) - static_cast<int>(1);
 	}
 
 #if GLM_COMPILER & GLM_COMPILER_CLANG
@@ -60,6 +62,7 @@ namespace mask
 		return Mask;
 	}
 
+#ifdef GLM_TEST_PERF
 	static int perf()
 	{
 		int const Count = 1000;
@@ -125,6 +128,7 @@ namespace mask
 
 		return TimeDefault <= TimeLoop ? 0 : 1;
 	}
+#endif//GLM_TEST_PERF
 
 #if GLM_COMPILER & GLM_COMPILER_CLANG
 #	pragma clang diagnostic pop
@@ -208,6 +212,7 @@ namespace mask
 	}
 }//namespace mask
 
+#ifdef GLM_TEST_PERF
 namespace bitfieldInterleave3
 {
 	template<typename PARAM, typename RET>
@@ -227,6 +232,8 @@ namespace bitfieldInterleave3
 	{
 		int Error(0);
 
+		std::clock_t const LastTime = std::clock();
+
 		glm::uint16 const test_max = 5; // previously 11
 
 		glm::uint16 x_max = 1 << test_max;
@@ -241,6 +248,10 @@ namespace bitfieldInterleave3
 			glm::uint64 ResultB = glm::bitfieldInterleave(x, y, z);
 			Error += ResultA == ResultB ? 0 : 1;
 		}
+
+		std::clock_t const Time = std::clock() - LastTime;
+
+		std::printf("glm::bitfieldInterleave3 Test %d clocks\n", static_cast<int>(Time));
 
 		return Error;
 	}
@@ -267,6 +278,8 @@ namespace bitfieldInterleave4
 	{
 		int Error(0);
 
+		std::clock_t const LastTime = std::clock();
+
 		glm::uint16 const test_max = 5; // previously 11
 
 		glm::uint16 x_max = 1 << test_max;
@@ -284,12 +297,18 @@ namespace bitfieldInterleave4
 			Error += ResultA == ResultB ? 0 : 1;
 		}
 
+		std::clock_t const Time = std::clock() - LastTime;
+
+		std::printf("glm::bitfieldInterleave4 Test %d clocks\n", static_cast<int>(Time));
+
 		return Error;
 	}
 }
+#endif//GLM_TEST_PERF
 
 namespace bitfieldInterleave
 {
+#ifdef GLM_TEST_PERF
 	static inline glm::uint64 fastBitfieldInterleave(glm::uint32 x, glm::uint32 y)
 	{
 		glm::uint64 REG1;
@@ -495,10 +514,12 @@ namespace bitfieldInterleave
 #endif
 	}
 #endif//GLM_ARCH & GLM_ARCH_SSE2_BIT
-
+#endif//GLM_TEST_PERF
 	static int test()
 	{
 		int Error = 0;
+
+		std::clock_t const LastTime = std::clock();
 
 		glm::uint8 const test_loop = 15; // 127 ideally
 
@@ -560,9 +581,14 @@ namespace bitfieldInterleave
 			}
 		}
 
+		std::clock_t const Time = std::clock() - LastTime;
+
+		std::printf("glm::bitfieldInterleave Test %d clocks\n", static_cast<int>(Time));
+
 		return Error;
 	}
 
+#ifdef GLM_TEST_PERF
 	static int perf()
 	{
 		glm::uint32 x_max = 1 << 4;
@@ -677,8 +703,10 @@ namespace bitfieldInterleave
 
 		return 0;
 	}
+#endif//GLM_TEST_PERF
 }//namespace bitfieldInterleave
 
+#ifdef GLM_TEST_PERF
 namespace bitfieldInterleave5
 {
 	GLM_FUNC_QUALIFIER
@@ -764,6 +792,8 @@ namespace bitfieldInterleave5
 	{
 		int Error = 0;
 
+		std::clock_t const LastTime = std::clock();
+
 		glm::size_t count = 256 / divider;
 
 		for(glm::size_t j = 0; j < count; ++j)
@@ -803,6 +833,10 @@ namespace bitfieldInterleave5
 			Error += A == B ? 0 : 1;
 		}
 */
+		std::clock_t const Time = std::clock() - LastTime;
+
+		std::printf("glm::bitfieldInterleave4 Test %d clocks\n", static_cast<int>(Time));
+
 		return Error;
 	}
 
@@ -962,21 +996,33 @@ namespace bitfieldInterleave5
 
 		return Error;
 	}
-
 }//namespace bitfieldInterleave5
+#endif//GLM_TEST_PERF
 
 static int test_bitfieldRotateRight()
 {
+	std::clock_t const LastTime = std::clock();
+
 	glm::ivec4 const A = glm::bitfieldRotateRight(glm::ivec4(2), 1);
 	glm::ivec4 const B = glm::ivec4(2) >> 1;
+
+	std::clock_t const Time = std::clock() - LastTime;
+
+	std::printf("glm::bitfieldRotateRight Test %d clocks\n", static_cast<int>(Time));
 
 	return A == B;
 }
 
 static int test_bitfieldRotateLeft()
 {
+	std::clock_t const LastTime = std::clock();
+
 	glm::ivec4 const A = glm::bitfieldRotateLeft(glm::ivec4(2), 1);
 	glm::ivec4 const B = glm::ivec4(2) << 1;
+
+	std::clock_t const Time = std::clock() - LastTime;
+
+	std::printf("glm::bitfieldRotateLeft Test %d clocks\n", static_cast<int>(Time));
 
 	return A == B;
 }
@@ -986,6 +1032,9 @@ int main()
 	int Error = 0;
 
 	Error += ::bitfieldInterleave::test();
+
+#ifdef GLM_TEST_PERF
+
 	Error += ::bitfieldInterleave3::test();
 	Error += ::bitfieldInterleave4::test();
 
@@ -995,8 +1044,15 @@ int main()
 
 	Error += ::bitfieldInterleave::perf();
 
+#endif//GLM_TEST_PERF
+
 	Error += ::mask::test();
+
+#ifdef GLM_TEST_PERF
+
 	Error += ::mask::perf();
+
+#endif//GLM_TEST_PERF
 
 	Error += test_bitfieldRotateRight();
 	Error += test_bitfieldRotateLeft();
