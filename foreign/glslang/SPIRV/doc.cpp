@@ -977,7 +977,7 @@ const char* CapabilityString(int info)
     case (int)Capability::SubgroupBallotKHR: return "SubgroupBallotKHR";
     case (int)Capability::DrawParameters:    return "DrawParameters";
     case (int)Capability::SubgroupVoteKHR:   return "SubgroupVoteKHR";
-    case (int)Capability::GroupNonUniformRotateKHR: return "CapabilityGroupNonUniformRotateKHR";
+    case (int)Capability::GroupNonUniformRotateKHR: return "GroupNonUniformRotateKHR";
 
     case (int)Capability::StorageUniformBufferBlock16: return "StorageUniformBufferBlock16";
     case (int)Capability::StorageUniform16:            return "StorageUniform16";
@@ -1023,7 +1023,7 @@ const char* CapabilityString(int info)
     case (int)Capability::RayTracingPositionFetchKHR:      return "RayTracingPositionFetchKHR";
     case (int)Capability::DisplacementMicromapNV:           return "DisplacementMicromapNV";
     case (int)Capability::RayTracingOpacityMicromapEXT:    return "RayTracingOpacityMicromapEXT";
-    case (int)Capability::RayTracingDisplacementMicromapNV: return "CapabilityRayTracingDisplacementMicromapNV";
+    case (int)Capability::RayTracingDisplacementMicromapNV: return "RayTracingDisplacementMicromapNV";
     case (int)Capability::RayQueryPositionFetchKHR:        return "RayQueryPositionFetchKHR";
     case (int)Capability::ComputeDerivativeGroupQuadsNV:   return "ComputeDerivativeGroupQuadsNV";
     case (int)Capability::ComputeDerivativeGroupLinearNV:  return "ComputeDerivativeGroupLinearNV";
@@ -1071,9 +1071,9 @@ const char* CapabilityString(int info)
     case (int)Capability::CooperativeVectorNV:                     return "CooperativeVectorNV";
     case (int)Capability::CooperativeVectorTrainingNV:             return "CooperativeVectorTrainingNV";
 
-    case (int)Capability::FragmentShaderSampleInterlockEXT:        return "CapabilityFragmentShaderSampleInterlockEXT";
-    case (int)Capability::FragmentShaderPixelInterlockEXT:         return "CapabilityFragmentShaderPixelInterlockEXT";
-    case (int)Capability::FragmentShaderShadingRateInterlockEXT:   return "CapabilityFragmentShaderShadingRateInterlockEXT";
+    case (int)Capability::FragmentShaderSampleInterlockEXT:        return "FragmentShaderSampleInterlockEXT";
+    case (int)Capability::FragmentShaderPixelInterlockEXT:         return "FragmentShaderPixelInterlockEXT";
+    case (int)Capability::FragmentShaderShadingRateInterlockEXT:   return "FragmentShaderShadingRateInterlockEXT";
 
     case (int)Capability::TileImageColorReadAccessEXT:           return "TileImageColorReadAccessEXT";
     case (int)Capability::TileImageDepthReadAccessEXT:           return "TileImageDepthReadAccessEXT";
@@ -1090,7 +1090,7 @@ const char* CapabilityString(int info)
     case (int)Capability::QuadControlKHR:                          return "QuadControlKHR";
     case (int)Capability::Int64ImageEXT:                           return "Int64ImageEXT";
 
-    case (int)Capability::IntegerFunctions2INTEL:              return "CapabilityIntegerFunctions2INTEL";
+    case (int)Capability::IntegerFunctions2INTEL:              return "IntegerFunctions2INTEL";
 
     case (int)Capability::ExpectAssumeKHR:                         return "ExpectAssumeKHR";
 
@@ -1101,9 +1101,9 @@ const char* CapabilityString(int info)
     case (int)Capability::AtomicFloat32MinMaxEXT:                  return "AtomicFloat32MinMaxEXT";
     case (int)Capability::AtomicFloat64MinMaxEXT:                  return "AtomicFloat64MinMaxEXT";
 
-    case (int)Capability::WorkgroupMemoryExplicitLayoutKHR:            return "CapabilityWorkgroupMemoryExplicitLayoutKHR";
-    case (int)Capability::WorkgroupMemoryExplicitLayout8BitAccessKHR:  return "CapabilityWorkgroupMemoryExplicitLayout8BitAccessKHR";
-    case (int)Capability::WorkgroupMemoryExplicitLayout16BitAccessKHR: return "CapabilityWorkgroupMemoryExplicitLayout16BitAccessKHR";
+    case (int)Capability::WorkgroupMemoryExplicitLayoutKHR:            return "WorkgroupMemoryExplicitLayoutKHR";
+    case (int)Capability::WorkgroupMemoryExplicitLayout8BitAccessKHR:  return "WorkgroupMemoryExplicitLayout8BitAccessKHR";
+    case (int)Capability::WorkgroupMemoryExplicitLayout16BitAccessKHR: return "WorkgroupMemoryExplicitLayout16BitAccessKHR";
     case (int)Capability::CoreBuiltinsARM:                             return "CoreBuiltinsARM";
 
     case (int)Capability::ShaderInvocationReorderNV:                return "ShaderInvocationReorderNV";
@@ -1114,7 +1114,9 @@ const char* CapabilityString(int info)
     case (int)Capability::TileShadingQCOM:                     return "TileShadingQCOM";
     case (int)Capability::TextureBlockMatch2QCOM:              return "TextureBlockMatch2QCOM";
 
-    case (int)Capability::ReplicatedCompositesEXT:             return "CapabilityReplicatedCompositesEXT";
+    case (int)Capability::CooperativeMatrixConversionQCOM:     return "CooperativeMatrixConversionQCOM";
+
+    case (int)Capability::ReplicatedCompositesEXT:             return "ReplicatedCompositesEXT";
 
     case (int)Capability::DotProductKHR:                       return "DotProductKHR";
     case (int)Capability::DotProductInputAllKHR:               return "DotProductInputAllKHR";
@@ -1126,12 +1128,12 @@ const char* CapabilityString(int info)
     case (int)Capability::RayTracingSpheresGeometryNV:             return "RayTracingSpheresGeometryNV";
     case (int)Capability::RayTracingLinearSweptSpheresGeometryNV:  return "RayTracingLinearSweptSpheresGeometryNV";
 
-    case (int)Capability::BFloat16TypeKHR:                     return "CapabilityBFloat16TypeKHR";
-    case (int)Capability::BFloat16DotProductKHR:               return "CapabilityBFloat16DotProductKHR";
-    case (int)Capability::BFloat16CooperativeMatrixKHR:        return "CapabilityBFloat16CooperativeMatrixKHR";
+    case (int)Capability::BFloat16TypeKHR:                     return "BFloat16TypeKHR";
+    case (int)Capability::BFloat16DotProductKHR:               return "BFloat16DotProductKHR";
+    case (int)Capability::BFloat16CooperativeMatrixKHR:        return "BFloat16CooperativeMatrixKHR";
 
-    case (int)Capability::Float8EXT:                           return "CapabilityFloat8EXT";
-    case (int)Capability::Float8CooperativeMatrixEXT:          return "CapabilityFloat8CooperativeMatrixEXT";
+    case (int)Capability::Float8EXT:                           return "Float8EXT";
+    case (int)Capability::Float8CooperativeMatrixEXT:          return "Float8CooperativeMatrixEXT";
 
     default: return "Bad";
     }
@@ -1699,6 +1701,11 @@ const char* OpcodeString(int op)
     case (int)Op::OpImageBlockMatchWindowSADQCOM:    return "OpImageBlockMatchWindowSADQCOM";
     case (int)Op::OpImageBlockMatchGatherSSDQCOM:    return "OpImageBlockMatchGatherSSDQCOM";
     case (int)Op::OpImageBlockMatchGatherSADQCOM:    return "OpImageBlockMatchGatherSADQCOM";
+
+    case (int)Op::OpBitCastArrayQCOM:                return "OpBitCastArrayQCOM";
+    case (int)Op::OpCompositeConstructCoopMatQCOM:   return "OpCompositeConstructCoopMatQCOM";
+    case (int)Op::OpCompositeExtractCoopMatQCOM:     return "OpCompositeExtractCoopMatQCOM";
+    case (int)Op::OpExtractSubArrayQCOM:             return "OpExtractSubArrayQCOM";
 
     case (int)Op::OpConstantCompositeReplicateEXT: return "OpConstantCompositeReplicateEXT";
     case (int)Op::OpSpecConstantCompositeReplicateEXT: return "OpSpecConstantCompositeReplicateEXT";
@@ -3723,6 +3730,19 @@ void Parameterize()
         InstructionDesc[enumCast(Op::OpImageBlockMatchGatherSADQCOM)].operands.push(OperandId, "'block size'");
         InstructionDesc[enumCast(Op::OpImageBlockMatchGatherSADQCOM)].operands.push(OperandImageOperands, "", true);
         InstructionDesc[enumCast(Op::OpImageBlockMatchGatherSADQCOM)].setResultAndType(true, true);
+
+        InstructionDesc[enumCast(Op::OpBitCastArrayQCOM)].operands.push(OperandId, "'source array'");
+        InstructionDesc[enumCast(Op::OpBitCastArrayQCOM)].setResultAndType(true, true);
+
+        InstructionDesc[enumCast(Op::OpCompositeConstructCoopMatQCOM)].operands.push(OperandId, "'source array'");
+        InstructionDesc[enumCast(Op::OpCompositeConstructCoopMatQCOM)].setResultAndType(true, true);
+
+        InstructionDesc[enumCast(Op::OpCompositeExtractCoopMatQCOM)].operands.push(OperandId, "'source cooperative matrix'");
+        InstructionDesc[enumCast(Op::OpCompositeExtractCoopMatQCOM)].setResultAndType(true, true);
+
+        InstructionDesc[enumCast(Op::OpExtractSubArrayQCOM)].operands.push(OperandId, "'source array'");
+        InstructionDesc[enumCast(Op::OpExtractSubArrayQCOM)].operands.push(OperandId, "'start index'");
+        InstructionDesc[enumCast(Op::OpExtractSubArrayQCOM)].setResultAndType(true, true);
 
         InstructionDesc[enumCast(Op::OpConstantCompositeReplicateEXT)].operands.push(OperandId, "'Value'");
         InstructionDesc[enumCast(Op::OpSpecConstantCompositeReplicateEXT)].operands.push(OperandId, "'Value'");

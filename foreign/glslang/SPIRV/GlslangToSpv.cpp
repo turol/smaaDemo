@@ -2403,6 +2403,16 @@ bool TGlslangToSpvTraverser::visitBinary(glslang::TVisit /* visit */, glslang::T
             node->getRight()->traverse(this);
             spv::Id index = accessChainLoad(node->getRight()->getType());
 
+            // Zero-extend smaller unsigned integer types for array indexing.
+            // SPIR-V OpAccessChain treats indices as signed, so we need to zero-extend
+            // unsigned types to preserve their values (signed types are fine as-is).
+            spv::Id indexType = builder.getTypeId(index);
+            if (builder.isUintType(indexType) && builder.getScalarTypeWidth(indexType) < 32) {
+                // Zero-extend unsigned types to preserve their values
+                spv::Id uintType = builder.makeUintType(32);
+                index = builder.createUnaryOp(spv::Op::OpUConvert, uintType, index);
+            }
+
             addIndirectionIndexCapabilities(node->getLeft()->getType(), node->getRight()->getType());
 
             // restore the saved access chain
@@ -4252,6 +4262,24 @@ bool TGlslangToSpvTraverser::visitAggregate(glslang::TVisit visit, glslang::TInt
         // store the result to the pointer
         builder.createStore(result, operands[0]);
         result = 0;
+    } else if (node->getOp() == glslang::EOpBitCastArrayQCOM) {
+        builder.addCapability(spv::Capability::CooperativeMatrixConversionQCOM);
+        builder.addExtension(spv::E_SPV_QCOM_cooperative_matrix_conversion);
+        result = builder.createUnaryOp(spv::Op::OpBitCastArrayQCOM, resultType(), operands[0]);
+    } else if (node->getOp() == glslang::EOpCompositeConstructCoopMatQCOM) {
+        builder.addCapability(spv::Capability::CooperativeMatrixConversionQCOM);
+        builder.addExtension(spv::E_SPV_QCOM_cooperative_matrix_conversion);
+        result = builder.createUnaryOp(spv::Op::OpCompositeConstructCoopMatQCOM, resultType(), operands[0]);
+    } else if (node->getOp() == glslang::EOpCompositeExtractCoopMatQCOM) {
+        builder.addCapability(spv::Capability::CooperativeMatrixConversionQCOM);
+        builder.addExtension(spv::E_SPV_QCOM_cooperative_matrix_conversion);
+        result = builder.createUnaryOp(spv::Op::OpCompositeExtractCoopMatQCOM, resultType(), operands[0]);
+    } else if (node->getOp() == glslang::EOpExtractSubArrayQCOM) {
+        builder.addCapability(spv::Capability::CooperativeMatrixConversionQCOM);
+        builder.addExtension(spv::E_SPV_QCOM_cooperative_matrix_conversion);
+
+        std::vector<spv::Id> arguments { operands[0], operands[1] };;
+        result = builder.createOp(spv::Op::OpExtractSubArrayQCOM, resultType(), arguments);
     } else if (node->getOp() == glslang::EOpCooperativeVectorMatMulNV ||
                node->getOp() == glslang::EOpCooperativeVectorMatMulAddNV) {
         auto matrixOperands = spv::CooperativeMatrixOperandsMask::MaskNone;
@@ -5371,7 +5399,7 @@ spv::Id TGlslangToSpvTraverser::convertGlslangToSpvType(const glslang::TType& ty
         spv::Id scope = makeArraySizeId(*type.getTypeParameters()->arraySizes, 0);
         spv::Id rows = makeArraySizeId(*type.getTypeParameters()->arraySizes, 1);
         spv::Id cols = makeArraySizeId(*type.getTypeParameters()->arraySizes, 2);
-        spv::Id use = builder.makeUintConstant(type.getCoopMatKHRuse());
+        spv::Id use = makeArraySizeId(*type.getTypeParameters()->arraySizes, 3, true);
 
         spvType = builder.makeCooperativeMatrixTypeKHR(spvType, scope, rows, cols, use);
     }

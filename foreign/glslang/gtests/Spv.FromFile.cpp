@@ -77,6 +77,8 @@ using VulkanAstSemantics = GlslangTest<::testing::TestWithParam<std::string>>;
 using HlslIoMap = GlslangTest<::testing::TestWithParam<IoMapData>>;
 using GlslIoMap = GlslangTest<::testing::TestWithParam<IoMapData>>;
 using CompileVulkanToSpirvTestQCOM = GlslangTest<::testing::TestWithParam<std::string>>;
+using CompileVulkanToSpirv13TestQCOM = GlslangTest<::testing::TestWithParam<std::string>>;
+using CompileVulkanToSpirv14TestQCOM = GlslangTest<::testing::TestWithParam<std::string>>;
 using CompileVulkanToSpirvTestAMD = GlslangTest<::testing::TestWithParam<std::string>>;
 using CompileVulkanToSpirvTestNV = GlslangTest<::testing::TestWithParam<std::string>>;
 using CompileVulkanToSpirv14TestNV = GlslangTest<::testing::TestWithParam<std::string>>;
@@ -211,6 +213,20 @@ TEST_P(CompileVulkanToSpirvTestQCOM, FromFile)
 {
     loadFileCompileAndCheck(GlobalTestSettings.testRoot, GetParam(),
                             Source::GLSL, Semantics::Vulkan, glslang::EShTargetVulkan_1_0, glslang::EShTargetSpv_1_0,
+                            Target::Spv);
+}
+
+TEST_P(CompileVulkanToSpirv13TestQCOM, FromFile)
+{
+    loadFileCompileAndCheck(GlobalTestSettings.testRoot, GetParam(),
+                            Source::GLSL, Semantics::Vulkan, glslang::EShTargetVulkan_1_1, glslang::EShTargetSpv_1_3,
+                            Target::Spv);
+}
+
+TEST_P(CompileVulkanToSpirv14TestQCOM, FromFile)
+{
+    loadFileCompileAndCheck(GlobalTestSettings.testRoot, GetParam(),
+                            Source::GLSL, Semantics::Vulkan, glslang::EShTargetVulkan_1_1, glslang::EShTargetSpv_1_4,
                             Target::Spv);
 }
 
@@ -910,15 +926,6 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(
     Glsl, CompileVulkanToSpirvTestQCOM,
     ::testing::ValuesIn(std::vector<std::string>({
-        "spv.tpipSampleWeighted.frag",
-        "spv.tpipBoxFilter.frag",
-        "spv.tpipBlockMatchSSD.frag",
-        "spv.tpipBlockMatchSAD.frag",
-        "spv.tpipTextureArrays.frag",
-        "spv.tpipBlockMatchGatherSAD.frag",
-        "spv.tpipBlockMatchGatherSSD.frag",
-        "spv.tpipBlockMatchWindowSAD.frag",
-        "spv.tpipBlockMatchWindowSSD.frag",
         "spv.qcom.tileShading.0.comp",
         "spv.qcom.tileShading.1.comp",
         "spv.qcom.es.tileShading.0.comp",
@@ -930,6 +937,31 @@ INSTANTIATE_TEST_SUITE_P(
         "spv.qcom.es.tileShading.1.frag",
     })),
     FileNameAsCustomTestSuffix
+);
+
+INSTANTIATE_TEST_SUITE_P(
+    Glsl, CompileVulkanToSpirv13TestQCOM,
+    ::testing::ValuesIn(std::vector<std::string>({
+        "spv.qcom.coopmatConversion.1.comp",
+        "spv.qcom.coopmatConversion.2.comp",
+    })),
+    FileNameAsCustomTestSuffix
+);
+
+INSTANTIATE_TEST_SUITE_P(
+    Glsl, CompileVulkanToSpirv14TestQCOM,
+    ::testing::ValuesIn(std::vector<std::string>({
+        "spv.tpipSampleWeighted.frag",
+        "spv.tpipBoxFilter.frag",
+        "spv.tpipBlockMatchSSD.frag",
+        "spv.tpipBlockMatchSAD.frag",
+        "spv.tpipTextureArrays.frag",
+        "spv.tpipBlockMatchGatherSAD.frag",
+        "spv.tpipBlockMatchGatherSSD.frag",
+        "spv.tpipBlockMatchWindowSAD.frag",
+        "spv.tpipBlockMatchWindowSSD.frag",
+})),
+FileNameAsCustomTestSuffix
 );
 
 INSTANTIATE_TEST_SUITE_P(

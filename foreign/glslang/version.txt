@@ -1,5 +1,5 @@
-commit 8a85691a0740d390761a1008b4696f57facd02c4
+commit a57276bf558f5cf94d3a9854ebdf5a2236849a5a
 Author: Jeremy Hayes <jeremy@lunarg.com>
-Date:   Thu Jun 26 16:48:41 2025 -0600
+Date:   Thu Sep 25 13:44:05 2025 -0600
 
-    Update CHANGES for 15.4.0
+    Update CHANGES for 16.0.0

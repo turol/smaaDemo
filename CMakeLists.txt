@@ -105,7 +105,6 @@ target_link_libraries(smaaDemo PRIVATE
 		SPIRV
 		SPIRV-Tools-opt
 		spirv-cross-glsl
-		SPVRemapper
 		${SDL2_LIBRARIES}
 	)
 
