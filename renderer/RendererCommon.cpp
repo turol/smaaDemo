@@ -912,15 +912,15 @@ compilationNeeded:
 		if (optimizeShaders) {
 			if (!initiallyValid) {
 				LOG_TODO("why is this legalization necessary? minimize the passes")
-				opt.RegisterLegalizationPasses();
+				opt.RegisterLegalizationPasses(false);
 			}
 
 			// SPIRV-Tools optimizer
-			opt.RegisterPerformancePasses();
+			opt.RegisterPerformancePasses(false);
 		} else {
 			// if HLSL or compute shader we need to legalize
 			if (!initiallyValid) {
-				opt.RegisterLegalizationPasses();
+				opt.RegisterLegalizationPasses(false);
 			}
 		}
 
