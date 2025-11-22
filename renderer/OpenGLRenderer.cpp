@@ -53,6 +53,7 @@ static const GLValueName interestingValues[] = {
 	  GLVALUE(GL_MAX_COLOR_TEXTURE_SAMPLES)
 	, GLVALUE(GL_MAX_DEPTH_TEXTURE_SAMPLES)
 	, GLVALUE(GL_MAX_INTEGER_SAMPLES)
+	, GLVALUE(GL_MAX_TEXTURE_SIZE)
 	, GLVALUE(GL_NUM_PROGRAM_BINARY_FORMATS)
 	, GLVALUE(GL_NUM_SHADER_BINARY_FORMATS)
 	, GLVALUE(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT)
@@ -741,6 +742,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	ssboAlign  = glValues[GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT];
 
 	features.maxMSAASamples = std::min(glValues[GL_MAX_COLOR_TEXTURE_SAMPLES], glValues[GL_MAX_DEPTH_TEXTURE_SAMPLES]);
+	features.maxTextureSize = glValues[GL_MAX_TEXTURE_SIZE];
 
 	if (gles) {
 		if (glslVersion >= 310) {

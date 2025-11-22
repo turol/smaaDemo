@@ -35,6 +35,12 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 {
 	SDL_Init(SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
 
+	features.maxMSAASamples = 8;
+	features.maxTextureSize = 1024;
+	features.computeShader  = true;
+	features.SSBOSupported  = true;
+	features.texGather      = true;
+
 	currentRefreshRate = 60;
 	maxRefreshRate     = 60;
 

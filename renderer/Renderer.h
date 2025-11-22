@@ -1295,6 +1295,7 @@ struct RendererDesc {
 
 struct RendererFeatures {
 	uint32_t  maxMSAASamples   = 1;
+	uint32_t  maxTextureSize   = 0;
 	bool      sRGBFramebuffer  = false;
 	bool      swapchainStorage = false;
 	bool      computeShader    = false;

@@ -1318,6 +1318,7 @@ void SMAADemo::initRender() {
 		pipelineType = PipelineType::Graphics;
 	}
 	LOG("Max MSAA samples: {}",  features.maxMSAASamples);
+	LOG("Max texture size: {}",  features.maxTextureSize);
 	LOG("sRGB frame buffer: {}", features.sRGBFramebuffer ? "yes" : "no");
 	LOG("swapchain can be used as storage image: {}", features.swapchainStorage ? "yes" : "no");
 	LOG("SSBO support: {}",      features.SSBOSupported   ? "yes" : "no");

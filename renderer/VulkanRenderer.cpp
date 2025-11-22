@@ -815,6 +815,7 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 		}
 	}
 	LOG("maxMSAASamples: {}", features.maxMSAASamples);
+	features.maxTextureSize = deviceProperties.limits.maxImageDimension2D;
 	features.computeShader  = true;
 	features.SSBOSupported  = true;
 	features.texGather      = true;
