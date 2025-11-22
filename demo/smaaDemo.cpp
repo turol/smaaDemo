@@ -1460,7 +1460,6 @@ void SMAADemo::initRender() {
 			}
 		}
 
-		LOG_TODO("clipboard")
 		io.SetClipboardTextFn = SetClipboardText;
 		io.GetClipboardTextFn = GetClipboardText;
 		io.ClipboardUserData  = clipboardText;
