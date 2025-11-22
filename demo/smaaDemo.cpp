@@ -1465,9 +1465,7 @@ void SMAADemo::initRender() {
 		io.GetClipboardTextFn = GetClipboardText;
 		io.ClipboardUserData  = clipboardText;
 
-		if (imguiFontsTex) {
-			renderer.deleteTexture(std::move(imguiFontsTex));
-		}
+		assert(!imguiFontsTex);
 
 		// Build texture atlas
 		unsigned char *pixels = nullptr;
