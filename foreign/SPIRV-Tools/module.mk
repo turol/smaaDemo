@@ -25,6 +25,8 @@ SPIRV-HEADERS_DIR:=$(d)/../SPIRV-Headers/include/spirv/unified1
 
 vpath %.json $(TOPDIR)/$(SPIRV-HEADERS_DIR) $(TOPDIR)/$(d)/source
 
+SPV_GENERATOR:=$(d)/utils/generate_grammar_tables.py
+
 SPV_GENERATED:= \
 	build-version.inc \
 	core.insts-unified1.inc \
@@ -40,7 +42,7 @@ SPV_GENERATED:= \
 # $(call spvtools_vendor_tables, VENDOR_TABLE, SHORT_NAME, OPERAND_KIND_PREFIX)
 define spvtools_vendor_tables
 
-$1.insts.inc: $(d)/utils/generate_grammar_tables.py extinst.$1.grammar.json
+$1.insts.inc: $(SPV_GENERATOR) extinst.$1.grammar.json
 	$$(PYTHON) $$(word 1, $$^) --extinst-vendor-grammar=$$(word 2, $$^) --vendor-insts-output=$$@ --vendor-operand-kind-prefix=$3
 
 SPV_GENERATED:=$$(SPV_GENERATED) $1.insts.inc
@@ -81,11 +83,11 @@ build-version.inc: $(d)/utils/update_build_version.py $(d)/CHANGES
 	touch $@
 
 
-core.insts-unified1.inc operand.kinds-unified1.inc: $(d)/utils/generate_grammar_tables.py spirv.core.grammar.json extinst.debuginfo.grammar.json extinst.opencl.debuginfo.100.grammar.json
+core.insts-unified1.inc operand.kinds-unified1.inc: $(SPV_GENERATOR) spirv.core.grammar.json extinst.debuginfo.grammar.json extinst.opencl.debuginfo.100.grammar.json
 	$(PYTHON) $(word 1, $^) --spirv-core-grammar=$(word 2, $^) --extinst-debuginfo-grammar=$(word 3, $^) --extinst-cldebuginfo100-grammar=$(word 4, $^) --core-insts-output=core.insts-unified1.inc --operand-kinds-output=operand.kinds-unified1.inc
 
 
-enum_string_mapping.inc extension_enum.inc: $(d)/utils/generate_grammar_tables.py spirv.core.grammar.json extinst.debuginfo.grammar.json extinst.opencl.debuginfo.100.grammar.json
+enum_string_mapping.inc extension_enum.inc: $(SPV_GENERATOR) spirv.core.grammar.json extinst.debuginfo.grammar.json extinst.opencl.debuginfo.100.grammar.json
 	$(PYTHON) $(word 1, $^) --spirv-core-grammar=$(word 2, $^) --extinst-debuginfo-grammar=$(word 3, $^) --extinst-cldebuginfo100-grammar=$(word 4, $^) --extension-enum-output=extension_enum.inc --enum-string-mapping-output=enum_string_mapping.inc
 
 
@@ -93,11 +95,11 @@ generators.inc: $(d)/utils/generate_registry_tables.py $(d)/../SPIRV-Headers/inc
 	$(PYTHON) $(word 1, $^) --xml=$(word 2, $^) --generator-output=$@
 
 
-glsl.std.450.insts.inc: $(d)/utils/generate_grammar_tables.py extinst.glsl.std.450.grammar.json
+glsl.std.450.insts.inc: $(SPV_GENERATOR) extinst.glsl.std.450.grammar.json
 	$(PYTHON) $(word 1, $^) --extinst-glsl-grammar=$(word 2, $^) --glsl-insts-output=$@
 
 
-opencl.std.insts.inc: $(d)/utils/generate_grammar_tables.py extinst.opencl.std.100.grammar.json
+opencl.std.insts.inc: $(SPV_GENERATOR) extinst.opencl.std.100.grammar.json
 	$(PYTHON) $(word 1, $^) --extinst-opencl-grammar=$(word 2, $^) --opencl-insts-output=$@
 
 
