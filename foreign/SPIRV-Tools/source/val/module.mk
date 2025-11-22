@@ -35,6 +35,7 @@ FILES:= \
 	validate_execution_limitations.cpp \
 	validate_extensions.cpp \
 	validate_function.cpp \
+	validate_graph.cpp \
 	validate_id.cpp \
 	validate_image.cpp \
 	validate_instruction.cpp \

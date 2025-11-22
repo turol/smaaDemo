@@ -100,9 +100,6 @@ kokoro/scripts/windows/build.bat
 kokoro/shaderc-smoketest/build.sh
 kokoro/shaderc-smoketest/continuous.cfg
 kokoro/shaderc-smoketest/presubmit.cfg
-kokoro/windows-msvc-2019-release/build.bat
-kokoro/windows-msvc-2019-release/continuous.cfg
-kokoro/windows-msvc-2019-release/presubmit.cfg
 kokoro/windows-msvc-2022-debug/build.bat
 kokoro/windows-msvc-2022-debug/continuous.cfg
 kokoro/windows-msvc-2022-debug/presubmit.cfg
@@ -527,6 +524,8 @@ source/latest_version_opencl_std_header.h
 source/latest_version_spirv_header.h
 source/libspirv.cpp
 source/link/CMakeLists.txt
+source/link/fnvar.cpp
+source/link/fnvar.h
 source/link/linker.cpp
 source/lint/CMakeLists.txt
 source/lint/divergence_analysis.cpp
@@ -927,6 +926,7 @@ source/val/validate_derivatives.cpp
 source/val/validate_execution_limitations.cpp
 source/val/validate_extensions.cpp
 source/val/validate_function.cpp
+source/val/validate_graph.cpp
 source/val/validate_id.cpp
 source/val/validate_image.cpp
 source/val/validate_instruction.cpp
@@ -1310,6 +1310,7 @@ test/libspirv_macros_test.cpp
 test/link/CMakeLists.txt
 test/link/binary_version_test.cpp
 test/link/entry_points_test.cpp
+test/link/function_variants.cpp
 test/link/global_values_amount_test.cpp
 test/link/ids_limit_test.cpp
 test/link/linker_fixture.h
@@ -1580,6 +1581,8 @@ test/val/val_entry_point_test.cpp
 test/val/val_explicit_reserved_test.cpp
 test/val/val_ext_inst_debug_test.cpp
 test/val/val_ext_inst_test.cpp
+test/val/val_extension_spv_intel_function_variants.cpp
+test/val/val_extension_spv_intel_inline_assembly.cpp
 test/val/val_extension_spv_khr_bit_instructions_test.cpp
 test/val/val_extension_spv_khr_expect_assume_test.cpp
 test/val/val_extension_spv_khr_integer_dot_product_test.cpp
@@ -1592,6 +1595,7 @@ test/val/val_extension_spv_nv_raw_access_chains.cpp
 test/val/val_extensions_test.cpp
 test/val/val_fixtures.h
 test/val/val_function_test.cpp
+test/val/val_graph_test.cpp
 test/val/val_id_test.cpp
 test/val/val_image_test.cpp
 test/val/val_interfaces_test.cpp
@@ -1600,6 +1604,7 @@ test/val/val_layout_test.cpp
 test/val/val_limits_test.cpp
 test/val/val_literals_test.cpp
 test/val/val_logicals_test.cpp
+test/val/val_memory_semantics_test.cpp
 test/val/val_memory_test.cpp
 test/val/val_mesh_shading_test.cpp
 test/val/val_misc_test.cpp

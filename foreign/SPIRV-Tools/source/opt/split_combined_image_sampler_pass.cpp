@@ -275,8 +275,10 @@ spv_result_t SplitCombinedImageSamplerPass::RemapVar(
   auto [ptr_image_ty, ptr_sampler_ty] = SplitType(*combined_var_type);
   assert(ptr_image_ty);
   assert(ptr_sampler_ty);
+  // TODO(1841): Handle id overflow.
   Instruction* sampler_var = builder.AddVariable(
       ptr_sampler_ty->result_id(), SpvStorageClassUniformConstant);
+  // TODO(1841): Handle id overflow.
   Instruction* image_var = builder.AddVariable(ptr_image_ty->result_id(),
                                                SpvStorageClassUniformConstant);
   modified_ = true;
@@ -354,8 +356,10 @@ spv_result_t SplitCombinedImageSamplerPass::RemapUses(
 
         // Create loads for the image part and sampler part.
         builder.SetInsertPoint(load);
+        // TODO(1841): Handle id overflow.
         auto* image = builder.AddLoad(PointeeTypeId(use.image_part),
                                       use.image_part->result_id());
+        // TODO(1841): Handle id overflow.
         auto* sampler = builder.AddLoad(PointeeTypeId(use.sampler_part),
                                         use.sampler_part->result_id());
 
@@ -459,9 +463,11 @@ spv_result_t SplitCombinedImageSamplerPass::RemapUses(
 
         auto [result_image_part_ty, result_sampler_part_ty] =
             SplitType(*def_use_mgr_->GetDef(original_access_chain->type_id()));
+        // TODO(1841): Handle id overflow.
         auto* result_image_part = builder.AddOpcodeAccessChain(
             use.user->opcode(), result_image_part_ty->result_id(),
             use.image_part->result_id(), indices);
+        // TODO(1841): Handle id overflow.
         auto* result_sampler_part = builder.AddOpcodeAccessChain(
             use.user->opcode(), result_sampler_part_ty->result_id(),
             use.sampler_part->result_id(), indices);
@@ -556,10 +562,14 @@ spv_result_t SplitCombinedImageSamplerPass::RemapFunctions() {
       Instruction* sampler;
     };
     std::vector<Replacement> replacements;
+    bool error = false;
 
     Function::RewriteParamFn rewriter =
         [&](std::unique_ptr<Instruction>&& param,
             std::back_insert_iterator<Function::ParamList>& appender) {
+          if (error) {
+            return;
+          }
           if (combined_types_.count(param->type_id()) == 0) {
             appender = std::move(param);
             return;
@@ -569,12 +579,22 @@ spv_result_t SplitCombinedImageSamplerPass::RemapFunctions() {
           auto* combined_inst = param.release();
           auto* combined_type = def_use_mgr_->GetDef(combined_inst->type_id());
           auto [image_type, sampler_type] = SplitType(*combined_type);
+          uint32_t image_param_id = context()->TakeNextId();
+          if (image_param_id == 0) {
+            error = true;
+            return;
+          }
           auto image_param = MakeUnique<Instruction>(
               context(), spv::Op::OpFunctionParameter, image_type->result_id(),
-              context()->TakeNextId(), Instruction::OperandList{});
+              image_param_id, Instruction::OperandList{});
+          uint32_t sampler_param_id = context()->TakeNextId();
+          if (sampler_param_id == 0) {
+            error = true;
+            return;
+          }
           auto sampler_param = MakeUnique<Instruction>(
               context(), spv::Op::OpFunctionParameter,
-              sampler_type->result_id(), context()->TakeNextId(),
+              sampler_type->result_id(), sampler_param_id,
               Instruction::OperandList{});
           replacements.push_back(
               {combined_inst, image_param.get(), sampler_param.get()});
@@ -582,6 +602,10 @@ spv_result_t SplitCombinedImageSamplerPass::RemapFunctions() {
           appender = std::move(sampler_param);
         };
     fn.RewriteParams(rewriter);
+
+    if (error) {
+      return SPV_ERROR_INTERNAL;
+    }
 
     for (auto& r : replacements) {
       modified_ = true;

@@ -124,9 +124,8 @@ list(APPEND OPCODE_CPP_DEPENDS ${GENERATOR_INC_FILE})
 # We need to wrap the .inc files with a custom target to avoid problems when
 # multiple targets depend on the same custom command.
 add_custom_target(core_tables
-	DEPENDS ${OPCODE_CPP_DEPENDS}
-	        ${CORE_TABLES_BODY_INC_FILE}
-		${CORE_TABLES_HEADER_INC_FILE})
+  DEPENDS ${OPCODE_CPP_DEPENDS}
+          spirv-tools-tables)
 add_custom_target(extinst_tables
   DEPENDS ${EXTINST_CPP_DEPENDS})
 
@@ -261,6 +260,7 @@ set(SPIRV_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/val/validate_extensions.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/val/validate_execution_limitations.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/val/validate_function.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/val/validate_graph.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/val/validate_id.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/val/validate_image.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/val/validate_interfaces.cpp
@@ -351,6 +351,9 @@ target_compile_definitions(${SPIRV_TOOLS}-shared
 
 if(SPIRV_TOOLS_BUILD_STATIC)
   add_library(${SPIRV_TOOLS}-static STATIC ${SPIRV_SOURCES})
+  if (SPIRV_TOOLS_USE_MIMALLOC AND SPIRV_TOOLS_USE_MIMALLOC_IN_STATIC_BUILD)
+    target_link_libraries(${SPIRV_TOOLS}-shared PRIVATE mimalloc-static)
+  endif()
   spirv_tools_default_target_options(${SPIRV_TOOLS}-static)
   # The static target does not have the '-static' suffix.
   set_target_properties(${SPIRV_TOOLS}-static PROPERTIES OUTPUT_NAME "${SPIRV_TOOLS}")
@@ -383,7 +386,7 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
 endif()
 
 if(ENABLE_SPIRV_TOOLS_INSTALL)
-  if (SPIRV_TOOLS_USE_MIMALLOC AND NOT SPIRV_TOOLS_BUILD_STATIC)
+  if (SPIRV_TOOLS_USE_MIMALLOC AND (NOT SPIRV_TOOLS_BUILD_STATIC OR SPIRV_TOOLS_USE_MIMALLOC_IN_STATIC_BUILD))
     list(APPEND SPIRV_TOOLS_TARGETS mimalloc-static)
   endif()
   install(TARGETS ${SPIRV_TOOLS_TARGETS} EXPORT ${SPIRV_TOOLS}Targets)

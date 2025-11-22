@@ -471,7 +471,7 @@ spv_result_t checkLayout(uint32_t struct_id, spv::StorageClass storage_class,
         return vstate.MissingFeature("uniformBufferStandardLayout feature",
                                      "--uniform-buffer-standard-layout", true);
       } else {
-        return vstate.MissingFeature("scalarBlockLayoutfeature feature",
+        return vstate.MissingFeature("scalarBlockLayout feature",
                                      "--scalar-block-layout", true);
       }
     }
@@ -848,32 +848,35 @@ spv_result_t CheckDecorationsOfEntryPoints(ValidationState_t& vstate) {
           if (storage_class == spv::StorageClass::TaskPayloadWorkgroupEXT) {
             if (has_task_payload) {
               return vstate.diag(SPV_ERROR_INVALID_ID, var_instr)
-                     << "There can be at most one OpVariable with storage "
+                     << "There can be at most one "
+                        "OpVariable with storage "
                         "class TaskPayloadWorkgroupEXT associated with "
                         "an OpEntryPoint";
             }
             has_task_payload = true;
           }
-        }
-        if (vstate.version() >= SPV_SPIRV_VERSION_WORD(1, 4)) {
+
           // Starting in 1.4, OpEntryPoint must list all global variables
           // it statically uses and those interfaces must be unique.
           if (storage_class == spv::StorageClass::Function) {
             return vstate.diag(SPV_ERROR_INVALID_ID, var_instr)
-                   << "OpEntryPoint interfaces should only list global "
+                   << "In SPIR-V 1.4 or later, OpEntryPoint interfaces should "
+                      "only list global "
                       "variables";
           }
 
           if (!seen_vars.insert(var_instr).second) {
             return vstate.diag(SPV_ERROR_INVALID_ID, var_instr)
-                   << "Non-unique OpEntryPoint interface "
+                   << "In SPIR-V 1.4 or later, non-unique OpEntryPoint "
+                      "interface "
                    << vstate.getIdName(interface) << " is disallowed";
           }
         } else {
           if (storage_class != spv::StorageClass::Input &&
               storage_class != spv::StorageClass::Output) {
             return vstate.diag(SPV_ERROR_INVALID_ID, var_instr)
-                   << "OpEntryPoint interfaces must be OpVariables with "
+                   << "In SPIR-V 1.3 or earlier, OpEntryPoint interfaces must "
+                      "be OpVariables with "
                       "Storage Class of Input(1) or Output(3). Found Storage "
                       "Class "
                    << uint32_t(storage_class) << " for Entry Point id "
@@ -1176,6 +1179,56 @@ void ComputeMemberConstraintsForArray(MemberConstraints* constraints,
   }
 }
 
+spv_result_t CheckDecorationsOfVariables(ValidationState_t& vstate) {
+  if (!spvIsVulkanEnv(vstate.context()->target_env)) {
+    return SPV_SUCCESS;
+  }
+  for (const auto& inst : vstate.ordered_instructions()) {
+    if ((spv::Op::OpVariable == inst.opcode()) ||
+        (spv::Op::OpUntypedVariableKHR == inst.opcode())) {
+      const auto var_id = inst.id();
+      const auto storageClass = inst.GetOperandAs<spv::StorageClass>(2);
+      const bool uniform = storageClass == spv::StorageClass::Uniform;
+      const bool uniform_constant =
+          storageClass == spv::StorageClass::UniformConstant;
+      const bool storage_buffer =
+          storageClass == spv::StorageClass::StorageBuffer;
+
+      const char* sc_str = uniform            ? "Uniform"
+                           : uniform_constant ? "UniformConstant"
+                                              : "StorageBuffer";
+      // Check variables in the UniformConstant, StorageBuffer, and Uniform
+      // storage classes are decorated with DescriptorSet and Binding
+      // (VUID-06677).
+      if (uniform_constant || storage_buffer || uniform) {
+        // Skip validation if the variable is not used and we're looking
+        // at a module coming from HLSL that has not been legalized yet.
+        if (vstate.options()->before_hlsl_legalization &&
+            vstate.EntryPointReferences(var_id).empty()) {
+          continue;
+        }
+        if (!hasDecoration(var_id, spv::Decoration::DescriptorSet, vstate)) {
+          return vstate.diag(SPV_ERROR_INVALID_ID, vstate.FindDef(var_id))
+                 << vstate.VkErrorID(6677) << sc_str << " id '" << var_id
+                 << "' is missing DescriptorSet decoration.\n"
+                 << "From Vulkan spec:\n"
+                 << "These variables must have DescriptorSet and Binding "
+                    "decorations specified";
+        }
+        if (!hasDecoration(var_id, spv::Decoration::Binding, vstate)) {
+          return vstate.diag(SPV_ERROR_INVALID_ID, vstate.FindDef(var_id))
+                 << vstate.VkErrorID(6677) << sc_str << " id '" << var_id
+                 << "' is missing Binding decoration.\n"
+                 << "From Vulkan spec:\n"
+                 << "These variables must have DescriptorSet and Binding "
+                    "decorations specified";
+        }
+      }
+    }
+  }
+  return SPV_SUCCESS;
+}
+
 spv_result_t CheckDecorationsOfBuffers(ValidationState_t& vstate) {
   // Set of entry points that are known to use a push constant.
   std::unordered_set<uint32_t> uses_push_constant;
@@ -1195,8 +1248,6 @@ spv_result_t CheckDecorationsOfBuffers(ValidationState_t& vstate) {
       const auto storageClassVal = words[3];
       const auto storageClass = spv::StorageClass(storageClassVal);
       const bool uniform = storageClass == spv::StorageClass::Uniform;
-      const bool uniform_constant =
-          storageClass == spv::StorageClass::UniformConstant;
       const bool push_constant =
           storageClass == spv::StorageClass::PushConstant;
       const bool storage_buffer =
@@ -1217,29 +1268,6 @@ spv_result_t CheckDecorationsOfBuffers(ValidationState_t& vstate) {
                      << "There must be no more than one push constant block "
                      << "statically used per shader entry point.";
             }
-          }
-        }
-        // Vulkan: Check DescriptorSet and Binding decoration for
-        // UniformConstant which cannot be a struct.
-        if (uniform_constant) {
-          auto entry_points = vstate.EntryPointReferences(var_id);
-          if (!entry_points.empty() &&
-              !hasDecoration(var_id, spv::Decoration::DescriptorSet, vstate)) {
-            return vstate.diag(SPV_ERROR_INVALID_ID, vstate.FindDef(var_id))
-                   << vstate.VkErrorID(6677) << "UniformConstant id '" << var_id
-                   << "' is missing DescriptorSet decoration.\n"
-                   << "From Vulkan spec:\n"
-                   << "These variables must have DescriptorSet and Binding "
-                      "decorations specified";
-          }
-          if (!entry_points.empty() &&
-              !hasDecoration(var_id, spv::Decoration::Binding, vstate)) {
-            return vstate.diag(SPV_ERROR_INVALID_ID, vstate.FindDef(var_id))
-                   << vstate.VkErrorID(6677) << "UniformConstant id '" << var_id
-                   << "' is missing Binding decoration.\n"
-                   << "From Vulkan spec:\n"
-                   << "These variables must have DescriptorSet and Binding "
-                      "decorations specified";
           }
         }
       }
@@ -1326,32 +1354,6 @@ spv_result_t CheckDecorationsOfBuffers(ValidationState_t& vstate) {
                    << "From Vulkan spec:\n"
                    << "Such variables must be identified with a Block or "
                       "BufferBlock decoration";
-          }
-          // Vulkan: Check DescriptorSet and Binding decoration for
-          // Uniform and StorageBuffer variables.
-          if (uniform || storage_buffer) {
-            auto entry_points = vstate.EntryPointReferences(var_id);
-            if (!entry_points.empty() &&
-                !hasDecoration(var_id, spv::Decoration::DescriptorSet,
-                               vstate)) {
-              return vstate.diag(SPV_ERROR_INVALID_ID, vstate.FindDef(var_id))
-                     << vstate.VkErrorID(6677)
-                     << getStorageClassString(storageClass) << " id '" << var_id
-                     << "' is missing DescriptorSet decoration.\n"
-                     << "From Vulkan spec:\n"
-                     << "These variables must have DescriptorSet and Binding "
-                        "decorations specified";
-            }
-            if (!entry_points.empty() &&
-                !hasDecoration(var_id, spv::Decoration::Binding, vstate)) {
-              return vstate.diag(SPV_ERROR_INVALID_ID, vstate.FindDef(var_id))
-                     << vstate.VkErrorID(6677)
-                     << getStorageClassString(storageClass) << " id '" << var_id
-                     << "' is missing Binding decoration.\n"
-                     << "From Vulkan spec:\n"
-                     << "These variables must have DescriptorSet and Binding "
-                        "decorations specified";
-            }
           }
         }
 
@@ -1767,14 +1769,19 @@ spv_result_t CheckFPRoundingModeForShaders(ValidationState_t& vstate,
   return SPV_SUCCESS;
 }
 
-// Returns SPV_SUCCESS if validation rules are satisfied for the NonWritable
+// Returns SPV_SUCCESS if validation rules are satisfied for the NonReadable or
+// NonWritable
 // decoration.  Otherwise emits a diagnostic and returns something other than
 // SPV_SUCCESS.  The |inst| parameter is the object being decorated.  This must
 // be called after TypePass and AnnotateCheckDecorationsOfBuffers are called.
-spv_result_t CheckNonWritableDecoration(ValidationState_t& vstate,
-                                        const Instruction& inst,
-                                        const Decoration& decoration) {
+spv_result_t CheckNonReadableWritableDecorations(ValidationState_t& vstate,
+                                                 const Instruction& inst,
+                                                 const Decoration& decoration) {
   assert(inst.id() && "Parser ensures the target of the decoration has an ID");
+  const bool is_non_writable =
+      decoration.dec_type() == spv::Decoration::NonWritable;
+  assert(is_non_writable ||
+         decoration.dec_type() == spv::Decoration::NonReadable);
 
   if (decoration.struct_member_index() == Decoration::kInvalidMember) {
     // The target must be a memory object declaration.
@@ -1786,7 +1793,10 @@ spv_result_t CheckNonWritableDecoration(ValidationState_t& vstate,
         opcode != spv::Op::OpFunctionParameter &&
         opcode != spv::Op::OpRawAccessChainNV) {
       return vstate.diag(SPV_ERROR_INVALID_ID, &inst)
-             << "Target of NonWritable decoration must be a memory object "
+             << "Target of "
+             << (is_non_writable ? "NonWritable" : "NonReadable")
+             << " decoration must be a "
+                "memory object "
                 "declaration (a variable or a function parameter)";
     }
     const auto var_storage_class =
@@ -1797,7 +1807,8 @@ spv_result_t CheckNonWritableDecoration(ValidationState_t& vstate,
                   : spv::StorageClass::Max;
     if ((var_storage_class == spv::StorageClass::Function ||
          var_storage_class == spv::StorageClass::Private) &&
-        vstate.features().nonwritable_var_in_function_or_private) {
+        vstate.features().nonwritable_var_in_function_or_private &&
+        is_non_writable) {
       // New permitted feature in SPIR-V 1.4.
     } else if (var_storage_class == spv::StorageClass::TileAttachmentQCOM) {
     } else if (
@@ -1805,12 +1816,18 @@ spv_result_t CheckNonWritableDecoration(ValidationState_t& vstate,
         vstate.IsPointerToUniformBlock(type_id) ||
         vstate.IsPointerToStorageBuffer(type_id) ||
         vstate.IsPointerToStorageImage(type_id) ||
+        vstate.IsPointerToTensor(type_id) ||
         opcode == spv::Op::OpRawAccessChainNV) {
     } else {
       return vstate.diag(SPV_ERROR_INVALID_ID, &inst)
-             << "Target of NonWritable decoration is invalid: must point to a "
-                "storage image, uniform block, "
-             << (vstate.features().nonwritable_var_in_function_or_private
+             << "Target of "
+             << (is_non_writable ? "NonWritable" : "NonReadable")
+             << " decoration is invalid: "
+                "must point to a "
+                "storage image, tensor variable in UniformConstant storage "
+                "class, uniform block, "
+             << (vstate.features().nonwritable_var_in_function_or_private &&
+                         is_non_writable
                      ? "storage buffer, or variable in Private or Function "
                        "storage class"
                      : "or storage buffer");
@@ -2098,8 +2115,10 @@ spv_result_t CheckDecorationsFromDecoration(ValidationState_t& vstate) {
             PASS_OR_BAIL(
                 CheckFPRoundingModeForShaders(vstate, *inst, decoration));
           break;
+        case spv::Decoration::NonReadable:
         case spv::Decoration::NonWritable:
-          PASS_OR_BAIL(CheckNonWritableDecoration(vstate, *inst, decoration));
+          PASS_OR_BAIL(
+              CheckNonReadableWritableDecorations(vstate, *inst, decoration));
           break;
         case spv::Decoration::Uniform:
         case spv::Decoration::UniformId:
@@ -2333,6 +2352,7 @@ spv_result_t ValidateDecorations(ValidationState_t& vstate) {
   if (auto error = CheckImportedVariableInitialization(vstate)) return error;
   if (auto error = CheckDecorationsOfEntryPoints(vstate)) return error;
   if (auto error = CheckDecorationsOfBuffers(vstate)) return error;
+  if (auto error = CheckDecorationsOfVariables(vstate)) return error;
   if (auto error = CheckDecorationsCompatibility(vstate)) return error;
   if (auto error = CheckLinkageAttrOfFunctions(vstate)) return error;
   if (auto error = CheckVulkanMemoryModelDeprecatedDecorations(vstate))

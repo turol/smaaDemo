@@ -211,6 +211,7 @@ TEST_P(IntegerInstructionFoldingTest, Case) {
 #define UINT_0_ID 109
 #define INT_NULL_ID 110
 #define UINT_NULL_ID 111
+#define HALF_3_ID 112
 const std::string& Header() {
   static const std::string header = R"(OpCapability Shader
 OpCapability Float16
@@ -256,6 +257,7 @@ OpName %main "main"
 %v2float = OpTypeVector %float 2
 %v2double = OpTypeVector %double 2
 %v2half = OpTypeVector %half 2
+%v4half = OpTypeVector %half 4
 %v2bool = OpTypeVector %bool 2
 %m2x2int = OpTypeMatrix %v2int 2
 %mat4v2float = OpTypeMatrix %v2float 4
@@ -275,6 +277,7 @@ OpName %main "main"
 %_ptr_v4int = OpTypePointer Function %v4int
 %_ptr_v4float = OpTypePointer Function %v4float
 %_ptr_v4double = OpTypePointer Function %v4double
+%_ptr_v4half = OpTypePointer Function %v4half
 %_ptr_struct_v2int_int_int = OpTypePointer Function %struct_v2int_int_int
 %_ptr_v2float = OpTypePointer Function %v2float
 %_ptr_v2double = OpTypePointer Function %v2double
@@ -286,6 +289,9 @@ OpName %main "main"
 %short_n5 = OpConstant %short -5
 %ubyte_1 = OpConstant %ubyte 1
 %byte_n1 = OpConstant %byte -1
+%ushort_0 = OpConstant %ushort 0
+%ushort_1 = OpConstant %ushort 1
+%ushort_2 = OpConstant %ushort 2
 %100 = OpConstant %int 0 ; Need a def with an numerical id to define id maps.
 %110 = OpConstantNull %int ; Need a def with an numerical id to define id maps.
 %103 = OpConstant %int 7 ; Need a def with an numerical id to define id maps.
@@ -402,9 +408,13 @@ OpName %main "main"
 %v2double_2_0p5 = OpConstantComposite %v2double %double_2 %double_0p5
 %v2double_null = OpConstantNull %v2double
 %108 = OpConstant %half 0
+%half_0p5 = OpConstant %half 0.5
 %half_1 = OpConstant %half 1
 %half_2 = OpConstant %half 2
+%112 = OpConstant %half 3
+%half_null = OpConstantNull %half
 %half_0_1 = OpConstantComposite %v2half %108 %half_1
+%v4half_0_1_0_0 = OpConstantComposite %v4half %108 %half_1 %108 %108
 %106 = OpConstantComposite %v4float %float_0 %float_0 %float_0 %float_0
 %v4float_0_0_0_0 = OpConstantComposite %v4float %float_0 %float_0 %float_0 %float_0
 %v4float_0_0_0_1 = OpConstantComposite %v4float %float_0 %float_0 %float_0 %float_1
@@ -771,7 +781,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
-          "%2 = OpExtInst %int %1 UMin %int_3 %int_4\n" +
+          "%2 = OpExtInst %int %1 SMin %int_3 %int_4\n" +
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 3),
@@ -783,7 +793,39 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 2),
-  // Test case 34: fold UMax 3 4
+    // Test case 34: fold SMin short -5 2
+  InstructionFoldingCase<uint32_t>(
+      Header() + "%main = OpFunction %void None %void_func\n" +
+          "%main_lab = OpLabel\n" +
+          "%2 = OpExtInst %short %1 SMin %short_n5 %short_2\n" +
+          "OpReturn\n" +
+          "OpFunctionEnd",
+      2, -5),
+    // Test case 35: fold UMin ushort 2 0
+  InstructionFoldingCase<uint32_t>(
+      Header() + "%main = OpFunction %void None %void_func\n" +
+          "%main_lab = OpLabel\n" +
+          "%2 = OpExtInst %ushort %1 UMin %ushort_2 %ushort_0\n" +
+          "OpReturn\n" +
+          "OpFunctionEnd",
+      2, 0),
+    // Test case 36: fold SMin int OpConstNull -1
+  InstructionFoldingCase<uint32_t>(
+      Header() + "%main = OpFunction %void None %void_func\n" +
+          "%main_lab = OpLabel\n" +
+          "%2 = OpExtInst %int %1 SMin %110 %int_n1\n" +
+          "OpReturn\n" +
+          "OpFunctionEnd",
+      2, -1),
+  // Test case 37: fold SMin int -1 OpConstNull
+  InstructionFoldingCase<uint32_t>(
+      Header() + "%main = OpFunction %void None %void_func\n" +
+          "%main_lab = OpLabel\n" +
+          "%2 = OpExtInst %int %1 SMin %int_n1 %110\n" +
+          "OpReturn\n" +
+          "OpFunctionEnd",
+      2, -1),
+    // Test case 38: fold UMax 3 4
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
@@ -791,7 +833,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 4),
-  // Test case 35: fold UMax 3 2
+    // Test case 39: fold UMax 3 2
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
@@ -799,15 +841,15 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 3),
-  // Test case 36: fold SMax 3 4
+    // Test case 40: fold SMax 3 4
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
-          "%2 = OpExtInst %int %1 UMax %int_3 %int_4\n" +
+          "%2 = OpExtInst %int %1 SMax %int_3 %int_4\n" +
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 4),
-  // Test case 37: fold SMax 3 2
+    // Test case 41: fold SMax 3 2
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
@@ -815,7 +857,31 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 3),
-  // Test case 38: fold UClamp 2 3 4
+    // Test case 42: fold SMax short -5 2
+  InstructionFoldingCase<uint32_t>(
+      Header() + "%main = OpFunction %void None %void_func\n" +
+          "%main_lab = OpLabel\n" +
+          "%2 = OpExtInst %short %1 SMax %short_n5 %short_2\n" +
+          "OpReturn\n" +
+          "OpFunctionEnd",
+      2, 2),
+    // Test case 43: fold UMax ushort 2 0
+  InstructionFoldingCase<uint32_t>(
+      Header() + "%main = OpFunction %void None %void_func\n" +
+          "%main_lab = OpLabel\n" +
+          "%2 = OpExtInst %ushort %1 UMax %ushort_2 %ushort_0\n" +
+          "OpReturn\n" +
+          "OpFunctionEnd",
+      2, 2),
+    // Test case 44: fold SMax int OpConstNull 1
+  InstructionFoldingCase<uint32_t>(
+      Header() + "%main = OpFunction %void None %void_func\n" +
+          "%main_lab = OpLabel\n" +
+          "%2 = OpExtInst %int %1 SMax %110 %int_1\n" +
+          "OpReturn\n" +
+          "OpFunctionEnd",
+      2, 1),
+    // Test case 45: fold UClamp 2 3 4
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
@@ -823,7 +889,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 3),
-  // Test case 39: fold UClamp 2 0 4
+    // Test case 46: fold UClamp 2 0 4
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
@@ -831,7 +897,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 2),
-  // Test case 40: fold UClamp 2 0 1
+    // Test case 47: fold UClamp 2 0 1
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
@@ -839,7 +905,15 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 1),
-  // Test case 41: fold SClamp 2 3 4
+    // Test case 48: fold UClamp short 2 0 1
+  InstructionFoldingCase<uint32_t>(
+      Header() + "%main = OpFunction %void None %void_func\n" +
+          "%main_lab = OpLabel\n" +
+          "%2 = OpExtInst %ushort %1 UClamp %ushort_2 %ushort_0 %ushort_1\n" +
+          "OpReturn\n" +
+          "OpFunctionEnd",
+      2, 1),
+    // Test case 49: fold SClamp 2 3 4
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
@@ -847,7 +921,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 3),
-  // Test case 42: fold SClamp 2 0 4
+    // Test case 50: fold SClamp 2 0 4
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
@@ -855,7 +929,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 2),
-  // Test case 43: fold SClamp 2 0 1
+    // Test case 51: fold SClamp 2 0 1
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
@@ -863,7 +937,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 1),
-  // Test case 44: SClamp 1 2 x
+    // Test case 52: SClamp 1 2 x
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
@@ -872,7 +946,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 2),
-  // Test case 45: SClamp 2 x 1
+    // Test case 53: SClamp 2 x 1
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
@@ -881,7 +955,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 1),
-  // Test case 46: UClamp 1 2 x
+    // Test case 54: UClamp 1 2 x
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
@@ -890,7 +964,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 2),
-  // Test case 47: UClamp 2 x 1
+    // Test case 55: UClamp 2 x 1
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
@@ -899,7 +973,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 1),
-    // Test case 48: Bit-cast int 0 to unsigned int
+    // Test case 56: Bit-cast int 0 to unsigned int
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -907,7 +981,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 0),
-    // Test case 49: Bit-cast int -24 to unsigned int
+    // Test case 57: Bit-cast int -24 to unsigned int
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -915,7 +989,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, static_cast<uint32_t>(-24)),
-    // Test case 50: Bit-cast float 1.0f to unsigned int
+    // Test case 58: Bit-cast float 1.0f to unsigned int
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -923,7 +997,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, static_cast<uint32_t>(0x3f800000)),
-    // Test case 51: Bit-cast ushort 0xBC00 to ushort
+    // Test case 59: Bit-cast ushort 0xBC00 to ushort
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -931,7 +1005,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 0xBC00),
-    // Test case 52: Bit-cast short 0xBC00 to ushort
+    // Test case 60: Bit-cast short 0xBC00 to ushort
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -939,7 +1013,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 0xBC00),
-    // Test case 53: Bit-cast half 1 to ushort
+    // Test case 61: Bit-cast half 1 to ushort
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -947,7 +1021,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 0x3C00),
-    // Test case 54: Bit-cast ushort 0xBC00 to short
+    // Test case 62: Bit-cast ushort 0xBC00 to short
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -955,7 +1029,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 0xFFFFBC00),
-    // Test case 55: Bit-cast short 0xBC00 to short
+    // Test case 63: Bit-cast short 0xBC00 to short
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -963,7 +1037,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 0xFFFFBC00),
-    // Test case 56: Bit-cast half 1 to short
+    // Test case 64: Bit-cast half 1 to short
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -971,7 +1045,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 0x3C00),
-    // Test case 57: Bit-cast ushort 0xBC00 to half
+    // Test case 65: Bit-cast ushort 0xBC00 to half
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -979,7 +1053,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 0xBC00),
-    // Test case 58: Bit-cast short 0xBC00 to half
+    // Test case 66: Bit-cast short 0xBC00 to half
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -987,7 +1061,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 0xFFFFBC00),
-    // Test case 59: Bit-cast half 1 to half
+    // Test case 67: Bit-cast half 1 to half
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -995,7 +1069,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 0x3C00),
-    // Test case 60: Bit-cast ubyte 1 to byte
+    // Test case 68: Bit-cast ubyte 1 to byte
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -1003,7 +1077,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 1),
-    // Test case 61: Bit-cast byte -1 to ubyte
+    // Test case 69: Bit-cast byte -1 to ubyte
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -1011,7 +1085,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 0xFF),
-    // Test case 62: Negate 2.
+    // Test case 70: Negate 2.
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -1019,7 +1093,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, -2),
-    // Test case 63: Negate negative short.
+    // Test case 71: Negate negative short.
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -1027,7 +1101,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 0x4400 /* expected to be sign extended. */),
-    // Test case 64: Negate positive short.
+    // Test case 72: Negate positive short.
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -1035,7 +1109,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 0xFFFFBC00 /* expected to be sign extended. */),
-    // Test case 65: Negate a negative short.
+    // Test case 73: Negate a negative short.
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -1043,7 +1117,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 0x4400 /* expected to be zero extended. */),
-    // Test case 66: Negate positive short.
+    // Test case 74: Negate positive short.
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -1051,7 +1125,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 0xBC00 /* expected to be zero extended. */),
-    // Test case 67: Fold 2 + 3 (short)
+    // Test case 75: Fold 2 + 3 (short)
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -1059,7 +1133,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 5),
-    // Test case 68: Fold 2 + -5 (short)
+    // Test case 76: Fold 2 + -5 (short)
     InstructionFoldingCase<uint32_t>(
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
@@ -1067,7 +1141,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
             "OpReturn\n" +
             "OpFunctionEnd",
         2, -3),
-  // Test case 69: Fold int(3ll)
+    // Test case 77: Fold int(3ll)
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
@@ -1075,7 +1149,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 3),
-  // Test case 70: Fold short(-3ll)
+    // Test case 78: Fold short(-3ll)
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
@@ -1083,7 +1157,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, -3),
-  // Test case 71: Fold short(32768ll) - This should do a sign extend when
+    // Test case 79: Fold short(32768ll) - This should do a sign extend when
   // converting to short.
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
@@ -1092,7 +1166,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, -32768),
-  // Test case 72: Fold short(-57344) - This should do a sign extend when
+    // Test case 80: Fold short(-57344) - This should do a sign extend when
   // converting to short making the upper bits 0.
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
@@ -1101,7 +1175,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 8192),
-  // Test case 73: Fold int(-5(short)). The -5 should be interpreted as an unsigned value, and be zero extended to 32-bits.
+    // Test case 81: Fold int(-5(short)). The -5 should be interpreted as an unsigned value, and be zero extended to 32-bits.
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
@@ -1109,7 +1183,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, IntegerInstructionFoldingTest,
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 65531),
-  // Test case 74: Fold short(-24(int)). The upper bits should be cleared. So 0xFFFFFFE8 should become 0x0000FFE8.
+    // Test case 82: Fold short(-24(int)). The upper bits should be cleared. So 0xFFFFFFE8 should become 0x0000FFE8.
   InstructionFoldingCase<uint32_t>(
       Header() + "%main = OpFunction %void None %void_func\n" +
           "%main_lab = OpLabel\n" +
@@ -1136,6 +1210,7 @@ TEST_P(LongIntegerInstructionFoldingTest, Case) {
       });
 }
 
+// clang-format off
 INSTANTIATE_TEST_SUITE_P(
     TestCase, LongIntegerInstructionFoldingTest,
     ::testing::Values(
@@ -1280,7 +1355,41 @@ INSTANTIATE_TEST_SUITE_P(
             Header() + "%main = OpFunction %void None %void_func\n" +
                 "%main_lab = OpLabel\n" + "%2 = OpUConvert %ulong %short_n5\n" +
                 "OpReturn\n" + "OpFunctionEnd",
-            2, 65531ull)));
+            2, 65531ull),
+        // Test case 16: fold SMin long 0 -1.
+        InstructionFoldingCase<uint64_t>(
+            Header() + "%main = OpFunction %void None %void_func\n" +
+                "%main_lab = OpLabel\n" +
+                "%2 = OpExtInst %long %1 SMin %long_0 %long_n1\n" +
+                "OpReturn\n" +
+                "OpFunctionEnd",
+            2, -1ll),
+        // Test case 17: fold UMin ulong 9223372036854775809 max.
+        InstructionFoldingCase<uint64_t>(
+            Header() + "%main = OpFunction %void None %void_func\n" +
+                "%main_lab = OpLabel\n" +
+                "%2 = OpExtInst %ulong %1 UMin %ulong_9223372036854775809 %ulong_max\n" +
+                "OpReturn\n" +
+                "OpFunctionEnd",
+            2, 9223372036854775809ull),
+        // Test case 18: fold SMax long 0 -1.
+        InstructionFoldingCase<uint64_t>(
+            Header() + "%main = OpFunction %void None %void_func\n" +
+                "%main_lab = OpLabel\n" +
+                "%2 = OpExtInst %long %1 SMax %long_0 %long_n1\n" +
+                "OpReturn\n" +
+                "OpFunctionEnd",
+            2, 0ll),
+        // Test case 19: fold UMax ulong 9223372036854775809 max.
+        InstructionFoldingCase<uint64_t>(
+            Header() + "%main = OpFunction %void None %void_func\n" +
+                "%main_lab = OpLabel\n" +
+                "%2 = OpExtInst %ulong %1 UMax %ulong_9223372036854775809 %ulong_max\n" +
+                "OpReturn\n" +
+                "OpFunctionEnd",
+            2, 18446744073709551615ull)
+        ));
+// clang-format on
 
 using UIntVectorInstructionFoldingTest =
     ::testing::TestWithParam<InstructionFoldingCase<std::vector<uint32_t>>>;
@@ -1338,7 +1447,7 @@ INSTANTIATE_TEST_SUITE_P(TestCase, UIntVectorInstructionFoldingTest,
           "%2 = OpSNegate %v2uint %v2uint_0x3f800000_0xbf800000\n" +
           "OpReturn\n" +
           "OpFunctionEnd",
-      2, {static_cast<uint32_t>(-0x3f800000), static_cast<uint32_t>(-0xbf800000)}),
+      2, {static_cast<uint32_t>(-0x3f800000), static_cast<uint32_t>(-0xbf800000ll)}),
     // Test case 6: fold vector components of uint (including integer overflow)
     InstructionFoldingCase<std::vector<uint32_t>>(
       Header() + "%main = OpFunction %void None %void_func\n" +
@@ -1581,7 +1690,7 @@ TEST_P(FloatVectorInstructionFoldingTest, Case) {
 // clang-format off
 INSTANTIATE_TEST_SUITE_P(TestCase, FloatVectorInstructionFoldingTest,
 ::testing::Values(
-   // Test case 0: FMix {2.0, 2.0}, {2.0, 3.0} {0.2,0.5}
+   // Test case 0: FMix {2.0, 3.0}, {0.0, 0.0} {0.2,0.5}
    InstructionFoldingCase<std::vector<float>>(
        Header() + "%main = OpFunction %void None %void_func\n" +
            "%main_lab = OpLabel\n" +
@@ -4826,6 +4935,38 @@ INSTANTIATE_TEST_SUITE_P(FloatRedundantFoldingTest, GeneralInstructionFoldingTes
         Header() + "%main = OpFunction %void None %void_func\n" +
             "%main_lab = OpLabel\n" +
             "%2 = OpMatrixTimesScalar %float_coop_matrix %undef_float_coop_matrix %float_3\n" +
+            "OpReturn\n" +
+            "OpFunctionEnd",
+        2, 0),
+    // Test case 32: Don't fold FMix half (1.0, 2.0, 0.5)
+    InstructionFoldingCase<uint32_t>(
+        Header() + "%main = OpFunction %void None %void_func\n" +
+            "%main_lab = OpLabel\n" +
+            "%2 = OpExtInst %half %1 FMix %half_1 %half_2 %half_0p5\n" +
+            "OpReturn\n" +
+            "OpFunctionEnd",
+        2, 0),
+    // Test case 33: Fold FMix half (3.0, 2.0, 0.0)
+    InstructionFoldingCase<uint32_t>(
+        Header() + "%main = OpFunction %void None %void_func\n" +
+            "%main_lab = OpLabel\n" +
+            "%2 = OpExtInst %half %1 FMix %112 %half_2 %108\n" +
+            "OpReturn\n" +
+            "OpFunctionEnd",
+        2, HALF_3_ID),
+    // Test case 34: Fold FMix half (3.0, 2.0, null)
+    InstructionFoldingCase<uint32_t>(
+        Header() + "%main = OpFunction %void None %void_func\n" +
+            "%main_lab = OpLabel\n" +
+            "%2 = OpExtInst %half %1 FMix %112 %half_2 %half_null\n" +
+            "OpReturn\n" +
+            "OpFunctionEnd",
+        2, HALF_3_ID),
+    // Test case 35: Don't fold FMix half (1.0, 2.0, 1.0)
+    InstructionFoldingCase<uint32_t>(
+        Header() + "%main = OpFunction %void None %void_func\n" +
+            "%main_lab = OpLabel\n" +
+            "%2 = OpExtInst %half %1 FMix %half_1 %half_2 %half_1\n" +
             "OpReturn\n" +
             "OpFunctionEnd",
         2, 0)
@@ -8177,7 +8318,22 @@ INSTANTIATE_TEST_SUITE_P(CompositeExtractOrInsertMatchingTest, MatchingInstructi
             "OpReturn\n" +
             "OpFunctionEnd",
         5, false),
-    // Test case 7: Extracting the undefined literal value from a vector
+    // Test case 7: Don't fold: Using fmix feeding extract with half type in
+    // the a position.
+    InstructionFoldingCase<bool>(
+        Header() +
+            "%main = OpFunction %void None %void_func\n" +
+            "%main_lab = OpLabel\n" +
+            "%m = OpVariable %_ptr_v4half Function\n" +
+            "%n = OpVariable %_ptr_v4half Function\n" +
+            "%2 = OpLoad %v4half %m\n" +
+            "%3 = OpLoad %v4half %n\n" +
+            "%4 = OpExtInst %v4half %1 FMix %2 %3 %v4half_0_1_0_0\n" +
+            "%5 = OpCompositeExtract %half %4 0\n" +
+            "OpReturn\n" +
+            "OpFunctionEnd",
+        5, false),
+    // Test case 8: Extracting the undefined literal value from a vector
     // shuffle.
     InstructionFoldingCase<bool>(
         Header() +
@@ -8192,7 +8348,7 @@ INSTANTIATE_TEST_SUITE_P(CompositeExtractOrInsertMatchingTest, MatchingInstructi
             "OpReturn\n" +
             "OpFunctionEnd",
         4, true),
-    // Test case 8: Inserting every element of a vector turns into a composite construct.
+    // Test case 9: Inserting every element of a vector turns into a composite construct.
     InstructionFoldingCase<bool>(
         Header() +
             "; CHECK: [[int:%\\w+]] = OpTypeInt 32 1\n" +
@@ -8211,7 +8367,7 @@ INSTANTIATE_TEST_SUITE_P(CompositeExtractOrInsertMatchingTest, MatchingInstructi
             "OpReturn\n" +
             "OpFunctionEnd",
         5, true),
-    // Test case 9: Inserting every element of a vector turns into a composite construct in a different order.
+    // Test case 10: Inserting every element of a vector turns into a composite construct in a different order.
     InstructionFoldingCase<bool>(
         Header() +
             "; CHECK: [[int:%\\w+]] = OpTypeInt 32 1\n" +
@@ -8230,7 +8386,7 @@ INSTANTIATE_TEST_SUITE_P(CompositeExtractOrInsertMatchingTest, MatchingInstructi
             "OpReturn\n" +
             "OpFunctionEnd",
         5, true),
-    // Test case 10: Check multiple inserts to the same position are handled correctly.
+    // Test case 11: Check multiple inserts to the same position are handled correctly.
     InstructionFoldingCase<bool>(
         Header() +
             "; CHECK: [[int:%\\w+]] = OpTypeInt 32 1\n" +
@@ -8250,7 +8406,7 @@ INSTANTIATE_TEST_SUITE_P(CompositeExtractOrInsertMatchingTest, MatchingInstructi
             "OpReturn\n" +
             "OpFunctionEnd",
         6, true),
-    // Test case 11: The last indexes are 0 and 1, but they have different first indexes.  This should not be folded.
+    // Test case 12: The last indexes are 0 and 1, but they have different first indexes.  This should not be folded.
     InstructionFoldingCase<bool>(
         Header() +
             "%main = OpFunction %void None %void_func\n" +
@@ -8260,7 +8416,7 @@ INSTANTIATE_TEST_SUITE_P(CompositeExtractOrInsertMatchingTest, MatchingInstructi
             "OpReturn\n" +
             "OpFunctionEnd",
         3, false),
-    // Test case 12: Don't fold when there is a partial insertion.
+    // Test case 13: Don't fold when there is a partial insertion.
     InstructionFoldingCase<bool>(
         Header() +
             "%main = OpFunction %void None %void_func\n" +
@@ -8271,7 +8427,7 @@ INSTANTIATE_TEST_SUITE_P(CompositeExtractOrInsertMatchingTest, MatchingInstructi
             "OpReturn\n" +
             "OpFunctionEnd",
         4, false),
-    // Test case 13: Insert into a column of a matrix
+    // Test case 14: Insert into a column of a matrix
     InstructionFoldingCase<bool>(
         Header() +
             "; CHECK: [[int:%\\w+]] = OpTypeInt 32 1\n" +
@@ -8290,7 +8446,7 @@ INSTANTIATE_TEST_SUITE_P(CompositeExtractOrInsertMatchingTest, MatchingInstructi
             "OpReturn\n" +
             "OpFunctionEnd",
         3, true),
-    // Test case 14: Insert all elements of the matrix.
+    // Test case 15: Insert all elements of the matrix.
     InstructionFoldingCase<bool>(
         Header() +
             "; CHECK: [[int:%\\w+]] = OpTypeInt 32 1\n" +
@@ -8313,7 +8469,7 @@ INSTANTIATE_TEST_SUITE_P(CompositeExtractOrInsertMatchingTest, MatchingInstructi
             "OpReturn\n" +
             "OpFunctionEnd",
         5, true),
-    // Test case 15: Replace construct with extract when reconstructing a member
+    // Test case 16: Replace construct with extract when reconstructing a member
     // of another object.
     InstructionFoldingCase<bool>(
         Header() +
@@ -8330,7 +8486,7 @@ INSTANTIATE_TEST_SUITE_P(CompositeExtractOrInsertMatchingTest, MatchingInstructi
             "OpReturn\n" +
             "OpFunctionEnd",
         5, true),
-    // Test case 16: Don't fold when type cannot be deduced to a constant.
+    // Test case 17: Don't fold when type cannot be deduced to a constant.
     InstructionFoldingCase<bool>(
         Header() +
             "%main = OpFunction %void None %void_func\n" +
@@ -8339,7 +8495,7 @@ INSTANTIATE_TEST_SUITE_P(CompositeExtractOrInsertMatchingTest, MatchingInstructi
             "OpReturn\n" +
             "OpFunctionEnd",
         4, false),
-    // Test case 17: Don't fold when index into composite is out of bounds.
+    // Test case 18: Don't fold when index into composite is out of bounds.
     InstructionFoldingCase<bool>(
 	Header() +
             "%main = OpFunction %void None %void_func\n" +
@@ -8348,7 +8504,7 @@ INSTANTIATE_TEST_SUITE_P(CompositeExtractOrInsertMatchingTest, MatchingInstructi
 	    "OpReturn\n" +
 	    "OpFunctionEnd",
 	4, false),
-    // Test case 18: Fold when every element of an array is inserted.
+    // Test case 19: Fold when every element of an array is inserted.
     InstructionFoldingCase<bool>(
         Header() +
             "; CHECK: [[int:%\\w+]] = OpTypeInt 32 1\n" +
@@ -8365,7 +8521,7 @@ INSTANTIATE_TEST_SUITE_P(CompositeExtractOrInsertMatchingTest, MatchingInstructi
             "OpReturn\n" +
             "OpFunctionEnd",
         5, true),
-    // Test case 19: Don't fold for isomorphic structs
+    // Test case 20: Don't fold for isomorphic structs
     InstructionFoldingCase<bool>(
         Header() +
             "%structA = OpTypeStruct %ulong\n" +

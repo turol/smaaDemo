@@ -1,8 +1,5 @@
-commit 2a611a970fdbc41ac2e3e328802aed9985352dca
-Merge: 54cec5d 21a60b8
-Author: Kévin Petit <kevin.petit@arm.com>
-Date:   Thu Jun 19 08:05:44 2025 +0100
+commit 1de2e410ae8b5f7276afcfd9f3401a1c4e2cb2d7
+Author: Wooyoung Kim <wooykim@qti.qualcomm.com>
+Date:   Wed Jul 2 08:52:46 2025 -0700
 
-    Merge pull request #529 from dneto0/tosa-in-spv-headers-bazel
-    
-    BUILD.bazel: Add the TOSA header to spv_headers
+    SPV_QCOM_cooperative_matrix_conversion (#533) (#533)

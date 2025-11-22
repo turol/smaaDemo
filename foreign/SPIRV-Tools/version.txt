@@ -1,5 +1,5 @@
-commit 33e02568181e3312f49a3cf33df470bf96ef293a
-Author: Nathan Gauër <brioche@google.com>
-Date:   Mon Jun 23 21:59:33 2025 +0200
+commit 7f2d9ee926f98fc77a3ed1e1e0f113b8c9c49458
+Author: Steven Perron <stevenperron@google.com>
+Date:   Mon Sep 22 16:06:52 2025 -0400
 
-    Prepare release v2025.3 (#6192)
+    Prepare release v2025.4 (#6335)
