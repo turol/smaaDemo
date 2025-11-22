@@ -19,6 +19,7 @@ FILES:= \
 	block_merge_pass.cpp \
 	block_merge_util.cpp \
 	build_module.cpp \
+	canonicalize_ids_pass.cpp \
 	ccp_pass.cpp \
 	cfg_cleanup_pass.cpp \
 	cfg.cpp \

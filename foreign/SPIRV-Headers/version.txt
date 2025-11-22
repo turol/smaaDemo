@@ -1,5 +1,8 @@
-commit 6d0784e9f1ab92c17eeea94821b2465c14a52be9
-Author: josopait <josopait@goopax.com>
-Date:   Wed May 7 17:40:58 2025 +0200
+commit 2a611a970fdbc41ac2e3e328802aed9985352dca
+Merge: 54cec5d 21a60b8
+Author: Kévin Petit <kevin.petit@arm.com>
+Date:   Thu Jun 19 08:05:44 2025 +0100
 
-    Register Goopax SPIV-V generator (#514)
+    Merge pull request #529 from dneto0/tosa-in-spv-headers-bazel
+    
+    BUILD.bazel: Add the TOSA header to spv_headers

@@ -25,40 +25,35 @@ SPIRV-HEADERS_DIR:=$(d)/../SPIRV-Headers/include/spirv/unified1
 
 vpath %.json $(TOPDIR)/$(SPIRV-HEADERS_DIR) $(TOPDIR)/$(d)/source
 
-SPV_GENERATOR:=$(d)/utils/generate_grammar_tables.py
+SPV_GENERATOR:=$(d)/utils/ggt.py
+
 
 SPV_GENERATED:= \
 	build-version.inc \
-	core.insts-unified1.inc \
-	enum_string_mapping.inc \
-	extension_enum.inc \
+	core_tables_body.inc \
+	core_tables_header.inc \
 	generators.inc \
-	glsl.std.450.insts.inc \
-	opencl.std.insts.inc \
-	operand.kinds-unified1.inc \
 	# empty line
 
 
-# $(call spvtools_vendor_tables, VENDOR_TABLE, SHORT_NAME, OPERAND_KIND_PREFIX)
-define spvtools_vendor_tables
-
-$1.insts.inc: $(SPV_GENERATOR) extinst.$1.grammar.json
-	$$(PYTHON) $$(word 1, $$^) --extinst-vendor-grammar=$$(word 2, $$^) --vendor-insts-output=$$@ --vendor-operand-kind-prefix=$3
-
-SPV_GENERATED:=$$(SPV_GENERATED) $1.insts.inc
-
-endef  # spvtools_vendor_tables
-
-
-$(eval $(call spvtools_vendor_tables,spv-amd-shader-explicit-vertex-parameter,spv-amd-sevp,) )
-$(eval $(call spvtools_vendor_tables,spv-amd-shader-trinary-minmax,spv-amd-stm,) )
-$(eval $(call spvtools_vendor_tables,spv-amd-gcn-shader,spv-amd-gs,) )
-$(eval $(call spvtools_vendor_tables,spv-amd-shader-ballot,spv-amd-sb,) )
-$(eval $(call spvtools_vendor_tables,debuginfo,debuginfo,) )
-$(eval $(call spvtools_vendor_tables,opencl.debuginfo.100,cldi100,CLDEBUG100_) )
-$(eval $(call spvtools_vendor_tables,nonsemantic.shader.debuginfo.100,shdi100,SHDEBUG100_) )
-$(eval $(call spvtools_vendor_tables,nonsemantic.clspvreflection,clspvreflection,) )
-$(eval $(call spvtools_vendor_tables,nonsemantic.vkspreflection,vkspreflection,) )
+core_tables_body.inc core_tables_header.inc: $(SPV_GENERATOR) $(TOPDIR)/$(SPIRV-HEADERS_DIR)/*.json
+	$(PYTHON) $(word 1, $^)                                                                          \
+	--core-tables-body-output=core_tables_body.inc                                                   \
+	--core-tables-header-output=core_tables_header.inc                                               \
+	--spirv-core-grammar=$(TOPDIR)/$(SPIRV-HEADERS_DIR)/spirv.core.grammar.json                                \
+	--extinst=,$(TOPDIR)/$(SPIRV-HEADERS_DIR)/extinst.glsl.std.450.grammar.json                                \
+	--extinst=,$(TOPDIR)/$(SPIRV-HEADERS_DIR)/extinst.opencl.std.100.grammar.json                              \
+	--extinst=CLDEBUG100_,$(TOPDIR)/$(SPIRV-HEADERS_DIR)/extinst.opencl.debuginfo.100.grammar.json             \
+	--extinst=SHDEBUG100_,$(TOPDIR)/$(SPIRV-HEADERS_DIR)/extinst.nonsemantic.shader.debuginfo.100.grammar.json \
+	--extinst=,$(TOPDIR)/$(SPIRV-HEADERS_DIR)/extinst.spv-amd-shader-explicit-vertex-parameter.grammar.json    \
+	--extinst=,$(TOPDIR)/$(SPIRV-HEADERS_DIR)/extinst.spv-amd-shader-trinary-minmax.grammar.json               \
+	--extinst=,$(TOPDIR)/$(SPIRV-HEADERS_DIR)/extinst.spv-amd-gcn-shader.grammar.json                          \
+	--extinst=,$(TOPDIR)/$(SPIRV-HEADERS_DIR)/extinst.spv-amd-shader-ballot.grammar.json                       \
+	--extinst=,$(TOPDIR)/$(SPIRV-HEADERS_DIR)/extinst.debuginfo.grammar.json                                   \
+	--extinst=,$(TOPDIR)/$(SPIRV-HEADERS_DIR)/extinst.nonsemantic.clspvreflection.grammar.json                 \
+	--extinst=,$(TOPDIR)/$(SPIRV-HEADERS_DIR)/extinst.nonsemantic.vkspreflection.grammar.json                  \
+	--extinst=TOSA_,$(TOPDIR)/$(SPIRV-HEADERS_DIR)/extinst.tosa.001000.1.grammar.json                          \
+	# empty line
 
 
 # $(call spvtools_extinst_lang_headers, NAME, GRAMMAR_FILE)
@@ -77,30 +72,17 @@ $(eval $(call spvtools_extinst_lang_headers,OpenCLDebugInfo100,extinst.opencl.de
 $(eval $(call spvtools_extinst_lang_headers,NonSemanticShaderDebugInfo100,extinst.nonsemantic.shader.debuginfo.100.grammar.json) )
 
 
+
+## SPIRV-Tools/utils/generate_registry_tables.py --xml=/home/turo/softaa/SPIRV-Tools/external/spirv-headers/include/spirv/spir-v.xml --generator-output=/home/turo/softaa/SPIRV-Tools/build/generators.inc
+
 build-version.inc: $(d)/utils/update_build_version.py $(d)/CHANGES
 	$(PYTHON) $(word 1, $^) $(word 2, $^) $@
 	# update_build_version.py doesn't touch the timestamp unless the file actually changes
 	touch $@
 
 
-core.insts-unified1.inc operand.kinds-unified1.inc: $(SPV_GENERATOR) spirv.core.grammar.json extinst.debuginfo.grammar.json extinst.opencl.debuginfo.100.grammar.json
-	$(PYTHON) $(word 1, $^) --spirv-core-grammar=$(word 2, $^) --extinst-debuginfo-grammar=$(word 3, $^) --extinst-cldebuginfo100-grammar=$(word 4, $^) --core-insts-output=core.insts-unified1.inc --operand-kinds-output=operand.kinds-unified1.inc
-
-
-enum_string_mapping.inc extension_enum.inc: $(SPV_GENERATOR) spirv.core.grammar.json extinst.debuginfo.grammar.json extinst.opencl.debuginfo.100.grammar.json
-	$(PYTHON) $(word 1, $^) --spirv-core-grammar=$(word 2, $^) --extinst-debuginfo-grammar=$(word 3, $^) --extinst-cldebuginfo100-grammar=$(word 4, $^) --extension-enum-output=extension_enum.inc --enum-string-mapping-output=enum_string_mapping.inc
-
-
 generators.inc: $(d)/utils/generate_registry_tables.py $(d)/../SPIRV-Headers/include/spirv/spir-v.xml
 	$(PYTHON) $(word 1, $^) --xml=$(word 2, $^) --generator-output=$@
-
-
-glsl.std.450.insts.inc: $(SPV_GENERATOR) extinst.glsl.std.450.grammar.json
-	$(PYTHON) $(word 1, $^) --extinst-glsl-grammar=$(word 2, $^) --glsl-insts-output=$@
-
-
-opencl.std.insts.inc: $(SPV_GENERATOR) extinst.opencl.std.100.grammar.json
-	$(PYTHON) $(word 1, $^) --extinst-opencl-grammar=$(word 2, $^) --opencl-insts-output=$@
 
 
 $(SRC_spirv-tools:.cpp=$(OBJSUFFIX)): $(SPV_GENERATED)

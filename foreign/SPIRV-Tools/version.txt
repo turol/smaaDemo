@@ -1,10 +1,5 @@
-commit a62abcb402009b9ca5975e6167c09f237f630e0e
-Author: Steven Perron <stevenperron@google.com>
-Date:   Wed Apr 23 07:29:35 2025 -0400
+commit 33e02568181e3312f49a3cf33df470bf96ef293a
+Author: Nathan Gauër <brioche@google.com>
+Date:   Mon Jun 23 21:59:33 2025 +0200
 
-    [OPT] Don't fold n % 1.0 (#6100)
-    
-    If values are not whole number, then the result is not 0. For example,
-    `(1.5 % 1.0) == 0.5`.
-    
-    Fixes #6097
+    Prepare release v2025.3 (#6192)

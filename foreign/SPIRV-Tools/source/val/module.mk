@@ -55,6 +55,7 @@ FILES:= \
 	validate_ray_tracing_reorder.cpp \
 	validate_scopes.cpp \
 	validate_small_type_uses.cpp \
+	validate_tensor.cpp \
 	validate_tensor_layout.cpp \
 	validate_type.cpp \
 	validation_state.cpp \

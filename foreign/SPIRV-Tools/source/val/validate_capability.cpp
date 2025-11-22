@@ -18,6 +18,7 @@
 #include <string>
 
 #include "source/opcode.h"
+#include "source/table2.h"
 #include "source/val/instruction.h"
 #include "source/val/validate.h"
 #include "source/val/validation_state.h"
@@ -145,6 +146,7 @@ bool IsSupportOptionalVulkan_1_0(uint32_t capability) {
     case spv::Capability::Float16:
     case spv::Capability::Int8:
     case spv::Capability::BFloat16TypeKHR:
+    case spv::Capability::Float8EXT:
       return true;
     default:
       break;
@@ -276,6 +278,7 @@ bool IsSupportOptionalOpenCL_1_2(uint32_t capability) {
   switch (spv::Capability(capability)) {
     case spv::Capability::ImageBasic:
     case spv::Capability::Float64:
+    case spv::Capability::Float16:
       return true;
     default:
       break;
@@ -285,16 +288,16 @@ bool IsSupportOptionalOpenCL_1_2(uint32_t capability) {
 
 // Checks if |capability| was enabled by extension.
 bool IsEnabledByExtension(ValidationState_t& _, uint32_t capability) {
-  spv_operand_desc operand_desc = nullptr;
-  _.grammar().lookupOperand(SPV_OPERAND_TYPE_CAPABILITY, capability,
-                            &operand_desc);
+  const spvtools::OperandDesc* operand_desc = nullptr;
+  spvtools::LookupOperand(SPV_OPERAND_TYPE_CAPABILITY, capability,
+                          &operand_desc);
 
   // operand_desc is expected to be not null, otherwise validator would have
   // failed at an earlier stage. This 'assert' is 'just in case'.
   assert(operand_desc);
 
-  ExtensionSet operand_exts(operand_desc->numExtensions,
-                            operand_desc->extensions);
+  ExtensionSet operand_exts(operand_desc->extensions_range.count(),
+                            operand_desc->extensions().data());
   if (operand_exts.empty()) return false;
 
   return _.HasAnyOfExtensions(operand_exts);
@@ -352,14 +355,14 @@ spv_result_t CapabilityPass(ValidationState_t& _, const Instruction* inst) {
   assert(operand.offset < inst->words().size());
 
   const uint32_t capability = inst->word(operand.offset);
-  const auto capability_str = [&_, capability]() {
-    spv_operand_desc desc = nullptr;
-    if (_.grammar().lookupOperand(SPV_OPERAND_TYPE_CAPABILITY, capability,
-                                  &desc) != SPV_SUCCESS ||
+  const auto capability_str = [capability]() {
+    const spvtools::OperandDesc* desc = nullptr;
+    if (spvtools::LookupOperand(SPV_OPERAND_TYPE_CAPABILITY, capability,
+                                &desc) != SPV_SUCCESS ||
         !desc) {
       return std::string("Unknown");
     }
-    return std::string(desc->name);
+    return std::string(desc->name().data());
   };
 
   const auto env = _.context()->target_env;

@@ -10394,7 +10394,7 @@ TEST_F(ValidateDecorations, ComponentMultipleArrays) {
                OpDecorate %gl_PerVertex Block
                OpDecorate %FOO Component 2
                OpDecorate %FOO Location 1
-               OpDecorate %FOO0 Location 4
+               OpDecorate %FOO0 Location 1
                OpDecorate %FOO0 Component 0
        %void = OpTypeVoid
           %3 = OpTypeFunction %void
@@ -10976,6 +10976,37 @@ OpFunctionEnd
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr("Invalid explicit layout decorations on type for operand"));
+}
+
+TEST_F(ValidateDecorations, InvalidLayoutUntypedStore) {
+  const std::string spirv = R"(
+OpCapability Shader
+OpCapability UntypedPointersKHR
+OpExtension "SPV_KHR_untyped_pointers"
+OpExtension "SPV_KHR_storage_buffer_storage_class"
+OpMemoryModel Logical GLSL450
+OpEntryPoint GLCompute %main "main"
+OpExecutionMode %main LocalSize 1 1 1
+OpDecorate %block Block
+OpMemberDecorate %block 0 Offset 0
+OpDecorate %var DescriptorSet 0
+OpDecorate %var Binding 0
+%void = OpTypeVoid
+%int = OpTypeInt 32 0
+%block = OpTypeStruct %int
+%block_null = OpConstantNull %block
+%ptr = OpTypeUntypedPointerKHR StorageBuffer
+%var = OpUntypedVariableKHR %ptr StorageBuffer %block
+%void_fn = OpTypeFunction %void
+%main = OpFunction %void None %void_fn
+%entry = OpLabel
+OpStore %var %block_null
+OpReturn
+OpFunctionEnd
+)";
+
+  CompileSuccessfully(spirv, SPV_ENV_VULKAN_1_0);
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_VULKAN_1_0));
 }
 
 TEST_F(ValidateDecorations, ExplicitLayoutOnPtrPhysicalStorageBuffer) {

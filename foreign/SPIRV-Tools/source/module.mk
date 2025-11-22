@@ -19,7 +19,6 @@ FILES:= \
 	binary.cpp \
 	diagnostic.cpp \
 	disassemble.cpp \
-	enum_string_mapping.cpp \
 	extensions.cpp \
 	ext_inst.cpp \
 	libspirv.cpp \
@@ -37,6 +36,7 @@ FILES:= \
 	spirv_target_env.cpp \
 	spirv_validator_options.cpp \
 	table.cpp \
+	table2.cpp \
 	text.cpp \
 	text_handler.cpp \
 	to_string.cpp \
