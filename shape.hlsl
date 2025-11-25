@@ -51,7 +51,7 @@ VertexOut vertexShader(VertexIn vin)
     vout.position = float4(vin.position, 1.0) * viewProj;
     vout.color    = vin.color;
     vout.currPos  = vout.position.xyw;
-    vout.prevPos  = (prevViewProj * float4(vin.position, 1.0)).xyw;
+    vout.prevPos  = (float4(vin.position, 1.0) * prevViewProj).xyw;
     // Positions in projection space are in [-1, 1] range, while texture
     // coordinates are in [0, 1] range. So, we divide by 2 to get velocities in
     // the scale (and flip the y axis):
