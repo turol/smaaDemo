@@ -1479,7 +1479,7 @@ void SMAADemo::initRender() {
 			   .name("GUI")
 			   .mipLevelData(0, pixels, width * height * 4);
 		imguiFontsTex = renderer.createTexture(texDesc);
-		io.Fonts->TexID = 0;
+		io.Fonts->SetTexID(0);
 	}
 #endif  // IMGUI_DISABLE
 }
@@ -4520,7 +4520,7 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 
 					pcmd->UserCallback(cmd_list, pcmd);
 				} else {
-					assert(pcmd->TextureId == 0);
+					assert(pcmd->GetTexID() == 0);
 					renderer.setScissorRect(static_cast<unsigned int>(pcmd->ClipRect.x), static_cast<unsigned int>(pcmd->ClipRect.y),
 						static_cast<unsigned int>(pcmd->ClipRect.z - pcmd->ClipRect.x), static_cast<unsigned int>(pcmd->ClipRect.w - pcmd->ClipRect.y));
 					renderer.drawIndexedVertexOffset(pcmd->ElemCount, indexOffset, vertexOffset);
