@@ -544,7 +544,7 @@ class SMAADemo {
 	std::vector<GameController>                       gameControllers;
 
 	// gui things
-	TextureHandle                                     imguiFontsTex;
+	std::vector<TextureHandle>                        imguiTextures;
 	ImGuiContext                                      *imGuiContext           = nullptr;
 	bool                                              textInputActive         = false;
 	char                                              imageFileName[inputTextBufferSize];
@@ -727,8 +727,12 @@ SMAADemo::~SMAADemo() {
 
 #ifndef IMGUI_DISABLE
 	if (imGuiContext) {
-		assert(imguiFontsTex);
-		renderer.deleteTexture(std::move(imguiFontsTex));
+		for (TextureHandle &tex : imguiTextures) {
+			if (tex) {
+				renderer.deleteTexture(std::move(tex));
+			}
+		}
+		imguiTextures.clear();
 
 		ImGui::DestroyContext(imGuiContext);
 		imGuiContext = nullptr;
@@ -1464,8 +1468,6 @@ void SMAADemo::initRender() {
 		io.GetClipboardTextFn = GetClipboardText;
 		io.ClipboardUserData  = clipboardText;
 
-		assert(!imguiFontsTex);
-
 		// Build texture atlas
 		unsigned char *pixels = nullptr;
 		int width = 0, height = 0;
@@ -1478,8 +1480,8 @@ void SMAADemo::initRender() {
 			   .usage({ TextureUsage::Sampling })
 			   .name("GUI")
 			   .mipLevelData(0, pixels, width * height * 4);
-		imguiFontsTex = renderer.createTexture(texDesc);
-		io.Fonts->SetTexID(0);
+		imguiTextures.emplace_back(renderer.createTexture(texDesc));
+		io.Fonts->SetTexID(imguiTextures.size());
 	}
 #endif  // IMGUI_DISABLE
 }
@@ -4472,9 +4474,7 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 
 		ColorTexDS colorDS;
 		colorDS.globals = renderer.createEphemeralBuffer({ BufferUsage::Uniform }, sizeof(ShaderDefines::Globals), &globals);
-		colorDS.color = imguiFontsTex;
 		colorDS.linearSampler  = linearSampler;
-		renderer.bindDescriptorSet(PipelineType::Graphics, 0, colorDS, layoutUsage);
 
 		assert(sizeof(ImDrawIdx) == sizeof(uint16_t) || sizeof(ImDrawIdx) == sizeof(uint32_t));
 
@@ -4506,6 +4506,7 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 
 		indexOffset  = 0;
 		vertexOffset = 0;
+		unsigned int currentTex = 0;
 		for (int n = 0; n < drawData->CmdListsCount; n++) {
 			const ImDrawList* cmd_list = drawData->CmdLists[n];
 
@@ -4520,7 +4521,14 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 
 					pcmd->UserCallback(cmd_list, pcmd);
 				} else {
-					assert(pcmd->GetTexID() == 0);
+					unsigned int id = pcmd->GetTexID();
+					assert(id != 0);
+					if (currentTex != id) {
+						assert(!imguiTextures.empty());
+						colorDS.color = imguiTextures.at(id - 1);
+						renderer.bindDescriptorSet(PipelineType::Graphics, 0, colorDS, layoutUsage);
+					}
+
 					renderer.setScissorRect(static_cast<unsigned int>(pcmd->ClipRect.x), static_cast<unsigned int>(pcmd->ClipRect.y),
 						static_cast<unsigned int>(pcmd->ClipRect.z - pcmd->ClipRect.x), static_cast<unsigned int>(pcmd->ClipRect.w - pcmd->ClipRect.y));
 					renderer.drawIndexedVertexOffset(pcmd->ElemCount, indexOffset, vertexOffset);
