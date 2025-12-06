@@ -727,6 +727,17 @@ SMAADemo::~SMAADemo() {
 
 #ifndef IMGUI_DISABLE
 	if (imGuiContext) {
+#if IMGUI_VERSION_NUM >= 19200
+		for (ImTextureData *tex : ImGui::GetPlatformIO().Textures) {
+			assert(!tex->BackendUserData);
+
+			if (tex->TexID) {
+				tex->TexID  = 0;
+			}
+			tex->SetStatus(ImTextureStatus_Destroyed);
+		}
+#endif  // IMGUI_VERSION_NUM
+
 		for (TextureHandle &tex : imguiTextures) {
 			if (tex) {
 				renderer.deleteTexture(std::move(tex));
@@ -1468,6 +1479,8 @@ void SMAADemo::initRender() {
 		io.GetClipboardTextFn = GetClipboardText;
 		io.ClipboardUserData  = clipboardText;
 
+#if IMGUI_VERSION_NUM < 19200
+
 		// Build texture atlas
 		unsigned char *pixels = nullptr;
 		int width = 0, height = 0;
@@ -1482,6 +1495,13 @@ void SMAADemo::initRender() {
 			   .mipLevelData(0, pixels, width * height * 4);
 		imguiTextures.emplace_back(renderer.createTexture(texDesc));
 		io.Fonts->SetTexID(imguiTextures.size());
+
+#else  // IMGUI_VERSION_NUM
+
+		io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
+
+#endif  // IMGUI_VERSION_NUM
+
 	}
 #endif  // IMGUI_DISABLE
 }
@@ -4453,6 +4473,76 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 		assert(!drawData->CmdLists.empty());
 		assert(drawData->TotalVtxCount >  0);
 		assert(drawData->TotalIdxCount >  0);
+
+#if IMGUI_VERSION_NUM >= 19200
+
+		// these are true for now but maybe not always
+		assert(drawData->Textures != nullptr);
+		assert(drawData->Textures == &ImGui::GetPlatformIO().Textures);
+
+		for (ImTextureData *tex : *drawData->Textures) {
+			assert(tex->BackendUserData == nullptr);
+
+			switch(tex->Status) {
+			case ImTextureStatus_OK: {
+				assert(tex->TexID != 0);
+				// nothing to do
+			} break;
+
+			case ImTextureStatus_Destroyed: {
+				assert(tex->TexID == 0);
+				// nothing to do
+			} break;
+
+			case ImTextureStatus_WantCreate: {
+				assert(tex->TexID == 0);
+
+				TextureDesc texDesc;
+				texDesc.width(tex->Width)
+					   .height(tex->Height)
+					   .format(Format::sRGBA8)
+					   .usage({ TextureUsage::Sampling })
+					   .name("GUI")
+					   .mipLevelData(0, tex->GetPixels(), tex->Width * tex->Height * 4);
+				imguiTextures.emplace_back(renderer.createTexture(texDesc));
+				tex->SetTexID(imguiTextures.size());
+				tex->SetStatus(ImTextureStatus_OK);
+			} break;
+
+			case ImTextureStatus_WantUpdates: {
+				assert(tex->TexID != 0);
+
+				LOG_TODO("we recreate the whole texture instead of updating")
+
+				uint64_t id = tex->GetTexID() - 1;
+				assert(imguiTextures.at(id));
+				renderer.deleteTexture(std::move(imguiTextures.at(id)));
+
+				TextureDesc texDesc;
+				texDesc.width(tex->Width)
+					   .height(tex->Height)
+					   .format(Format::sRGBA8)
+					   .usage({ TextureUsage::Sampling })
+					   .name("GUI")
+					   .mipLevelData(0, tex->GetPixels(), tex->Width * tex->Height * 4);
+				imguiTextures.at(id) = renderer.createTexture(texDesc);
+				tex->SetStatus(ImTextureStatus_OK);
+			} break;
+
+			case ImTextureStatus_WantDestroy: {
+				assert(tex->TexID != 0);
+
+				uint64_t id = tex->GetTexID() - 1;
+				assert(imguiTextures.at(id));
+				renderer.deleteTexture(std::move(imguiTextures.at(id)));
+
+				tex->SetStatus(ImTextureStatus_Destroyed);
+				tex->SetTexID(ImTextureID_Invalid);
+			} break;
+			}
+		}
+
+#endif  // IMGUI_VERSION_NUM
 
 		renderer.bindGraphicsPipeline(getCachedPipeline(guiPipeline, [&] () {
 			GraphicsPipelineDesc plDesc;
