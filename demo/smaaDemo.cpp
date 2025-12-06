@@ -727,7 +727,6 @@ SMAADemo::~SMAADemo() {
 
 #ifndef IMGUI_DISABLE
 	if (imGuiContext) {
-#if IMGUI_VERSION_NUM >= 19200
 		for (ImTextureData *tex : ImGui::GetPlatformIO().Textures) {
 			assert(!tex->BackendUserData);
 
@@ -736,7 +735,6 @@ SMAADemo::~SMAADemo() {
 			}
 			tex->SetStatus(ImTextureStatus_Destroyed);
 		}
-#endif  // IMGUI_VERSION_NUM
 
 		for (TextureHandle &tex : imguiTextures) {
 			if (tex) {
@@ -1478,30 +1476,7 @@ void SMAADemo::initRender() {
 		io.SetClipboardTextFn = SetClipboardText;
 		io.GetClipboardTextFn = GetClipboardText;
 		io.ClipboardUserData  = clipboardText;
-
-#if IMGUI_VERSION_NUM < 19200
-
-		// Build texture atlas
-		unsigned char *pixels = nullptr;
-		int width = 0, height = 0;
-		io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-
-		TextureDesc texDesc;
-		texDesc.width(width)
-			   .height(height)
-			   .format(Format::sRGBA8)
-			   .usage({ TextureUsage::Sampling })
-			   .name("GUI")
-			   .mipLevelData(0, pixels, width * height * 4);
-		imguiTextures.emplace_back(renderer.createTexture(texDesc));
-		io.Fonts->SetTexID(imguiTextures.size());
-
-#else  // IMGUI_VERSION_NUM
-
 		io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
-
-#endif  // IMGUI_VERSION_NUM
-
 	}
 #endif  // IMGUI_DISABLE
 }
@@ -4474,8 +4449,6 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 		assert(drawData->TotalVtxCount >  0);
 		assert(drawData->TotalIdxCount >  0);
 
-#if IMGUI_VERSION_NUM >= 19200
-
 		// these are true for now but maybe not always
 		assert(drawData->Textures != nullptr);
 		assert(drawData->Textures == &ImGui::GetPlatformIO().Textures);
@@ -4541,8 +4514,6 @@ void SMAADemo::renderGUI(RenderPasses rp, DemoRenderGraph::PassResources & /* r 
 			} break;
 			}
 		}
-
-#endif  // IMGUI_VERSION_NUM
 
 		renderer.bindGraphicsPipeline(getCachedPipeline(guiPipeline, [&] () {
 			GraphicsPipelineDesc plDesc;
