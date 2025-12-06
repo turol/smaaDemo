@@ -29,6 +29,8 @@ backends/imgui_impl_glut.cpp
 backends/imgui_impl_glut.h
 backends/imgui_impl_metal.h
 backends/imgui_impl_metal.mm
+backends/imgui_impl_null.cpp
+backends/imgui_impl_null.h
 backends/imgui_impl_opengl2.cpp
 backends/imgui_impl_opengl2.h
 backends/imgui_impl_opengl3.cpp
@@ -118,13 +120,14 @@ examples/example_glfw_wgpu/CMakeLists.txt
 examples/example_glfw_wgpu/Makefile.emscripten
 examples/example_glfw_wgpu/README.md
 examples/example_glfw_wgpu/main.cpp
-examples/example_glfw_wgpu/web/index.html
 examples/example_glut_opengl2/Makefile
 examples/example_glut_opengl2/example_glut_opengl2.vcxproj
 examples/example_glut_opengl2/example_glut_opengl2.vcxproj.filters
 examples/example_glut_opengl2/main.cpp
 examples/example_null/Makefile
 examples/example_null/build_win32.bat
+examples/example_null/example_null.vcxproj
+examples/example_null/example_null.vcxproj.filters
 examples/example_null/main.cpp
 examples/example_sdl2_directx11/build_win32.bat
 examples/example_sdl2_directx11/example_sdl2_directx11.vcxproj
@@ -157,6 +160,10 @@ examples/example_sdl2_vulkan/build_win64.bat
 examples/example_sdl2_vulkan/example_sdl2_vulkan.vcxproj
 examples/example_sdl2_vulkan/example_sdl2_vulkan.vcxproj.filters
 examples/example_sdl2_vulkan/main.cpp
+examples/example_sdl2_wgpu/CMakeLists.txt
+examples/example_sdl2_wgpu/Makefile.emscripten
+examples/example_sdl2_wgpu/README.md
+examples/example_sdl2_wgpu/main.cpp
 examples/example_sdl3_directx11/build_win32.bat
 examples/example_sdl3_directx11/example_sdl3_directx11.vcxproj
 examples/example_sdl3_directx11/example_sdl3_directx11.vcxproj.filters
@@ -187,6 +194,10 @@ examples/example_sdl3_vulkan/build_win64.bat
 examples/example_sdl3_vulkan/example_sdl3_vulkan.vcxproj
 examples/example_sdl3_vulkan/example_sdl3_vulkan.vcxproj.filters
 examples/example_sdl3_vulkan/main.cpp
+examples/example_sdl3_wgpu/CMakeLists.txt
+examples/example_sdl3_wgpu/Makefile.emscripten
+examples/example_sdl3_wgpu/README.md
+examples/example_sdl3_wgpu/main.cpp
 examples/example_win32_directx10/build_win32.bat
 examples/example_win32_directx10/example_win32_directx10.vcxproj
 examples/example_win32_directx10/example_win32_directx10.vcxproj.filters

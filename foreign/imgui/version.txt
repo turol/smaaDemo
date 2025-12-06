@@ -1,5 +1,5 @@
-commit 9a5d5c45f54b1301ea471622eddede70384243af
+commit 6d910d5487d11ca567b61c7824b0c78c569d62f0
 Author: ocornut <omar@miracleworld.net>
-Date:   Tue Oct 14 19:16:43 2025 +0200
+Date:   Thu Nov 20 17:25:43 2025 +0100
 
-    Version 1.92.4
+    Version 1.92.5
