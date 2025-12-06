@@ -1,5 +1,5 @@
-commit 85b2fe8486190fa9326565a2fb5fccb6caea4396
+commit 5d4126876bc10396d4c6511853ff10964414c776
 Author: ocornut <omar@miracleworld.net>
-Date:   Wed Jun 25 18:46:41 2025 +0200
+Date:   Wed Jul 9 18:53:58 2025 +0200
 
-    Docs: update binaries.
+    Version 1.92.1
