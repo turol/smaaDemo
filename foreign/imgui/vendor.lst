@@ -79,6 +79,7 @@ examples/example_android_opengl3/android/app/build.gradle
 examples/example_android_opengl3/android/app/src/main/AndroidManifest.xml
 examples/example_android_opengl3/android/app/src/main/java/MainActivity.kt
 examples/example_android_opengl3/android/build.gradle
+examples/example_android_opengl3/android/gradle/libs.versions.toml
 examples/example_android_opengl3/android/settings.gradle
 examples/example_android_opengl3/main.cpp
 examples/example_apple_metal/Makefile
