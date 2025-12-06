@@ -1,5 +1,5 @@
-commit bf75bfec48fc00f532af8926130b70c0e26eb099
+commit 9a5d5c45f54b1301ea471622eddede70384243af
 Author: ocornut <omar@miracleworld.net>
-Date:   Wed Sep 17 19:05:22 2025 +0200
+Date:   Tue Oct 14 19:16:43 2025 +0200
 
-    Amend f6890ed mostly to please static analyzers.
+    Version 1.92.4

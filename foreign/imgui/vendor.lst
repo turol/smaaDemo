@@ -5,6 +5,7 @@
 .github/ISSUE_TEMPLATE/issue_template.yml
 .github/pull_request_template.md
 .github/workflows/build.yml
+.github/workflows/build_windows_vulkan_libs.ps1
 .github/workflows/manual.yml
 .github/workflows/scheduled.yml
 .github/workflows/static-analysis.yml
@@ -156,6 +157,10 @@ examples/example_sdl2_vulkan/build_win64.bat
 examples/example_sdl2_vulkan/example_sdl2_vulkan.vcxproj
 examples/example_sdl2_vulkan/example_sdl2_vulkan.vcxproj.filters
 examples/example_sdl2_vulkan/main.cpp
+examples/example_sdl3_directx11/build_win32.bat
+examples/example_sdl3_directx11/example_sdl3_directx11.vcxproj
+examples/example_sdl3_directx11/example_sdl3_directx11.vcxproj.filters
+examples/example_sdl3_directx11/main.cpp
 examples/example_sdl3_metal/Makefile
 examples/example_sdl3_metal/main.mm
 examples/example_sdl3_opengl3/Makefile
@@ -238,6 +243,7 @@ misc/debuggers/README.txt
 misc/debuggers/imgui.gdb
 misc/debuggers/imgui.natstepfilter
 misc/debuggers/imgui.natvis
+misc/debuggers/imgui_lldb.py
 misc/fonts/Cousine-Regular.ttf
 misc/fonts/DroidSans.ttf
 misc/fonts/Karla-Regular.ttf
