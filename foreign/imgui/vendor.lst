@@ -81,6 +81,7 @@ examples/example_android_opengl3/android/app/src/main/java/MainActivity.kt
 examples/example_android_opengl3/android/build.gradle
 examples/example_android_opengl3/android/settings.gradle
 examples/example_android_opengl3/main.cpp
+examples/example_apple_metal/Makefile
 examples/example_apple_metal/README.md
 examples/example_apple_metal/example_apple_metal.xcodeproj/project.pbxproj
 examples/example_apple_metal/iOS/Info-iOS.plist
@@ -88,6 +89,7 @@ examples/example_apple_metal/iOS/LaunchScreen.storyboard
 examples/example_apple_metal/macOS/Info-macOS.plist
 examples/example_apple_metal/macOS/MainMenu.storyboard
 examples/example_apple_metal/main.mm
+examples/example_apple_opengl2/Makefile
 examples/example_apple_opengl2/example_apple_opengl2.xcodeproj/project.pbxproj
 examples/example_apple_opengl2/main.mm
 examples/example_glfw_metal/Makefile
@@ -104,6 +106,7 @@ examples/example_glfw_opengl3/example_glfw_opengl3.vcxproj
 examples/example_glfw_opengl3/example_glfw_opengl3.vcxproj.filters
 examples/example_glfw_opengl3/main.cpp
 examples/example_glfw_vulkan/CMakeLists.txt
+examples/example_glfw_vulkan/Makefile
 examples/example_glfw_vulkan/build_win32.bat
 examples/example_glfw_vulkan/build_win64.bat
 examples/example_glfw_vulkan/example_glfw_vulkan.vcxproj
@@ -146,6 +149,7 @@ examples/example_sdl2_sdlrenderer2/build_win32.bat
 examples/example_sdl2_sdlrenderer2/example_sdl2_sdlrenderer2.vcxproj
 examples/example_sdl2_sdlrenderer2/example_sdl2_sdlrenderer2.vcxproj.filters
 examples/example_sdl2_sdlrenderer2/main.cpp
+examples/example_sdl2_vulkan/Makefile
 examples/example_sdl2_vulkan/build_win32.bat
 examples/example_sdl2_vulkan/build_win64.bat
 examples/example_sdl2_vulkan/example_sdl2_vulkan.vcxproj
@@ -169,6 +173,7 @@ examples/example_sdl3_sdlrenderer3/build_win32.bat
 examples/example_sdl3_sdlrenderer3/example_sdl3_sdlrenderer3.vcxproj
 examples/example_sdl3_sdlrenderer3/example_sdl3_sdlrenderer3.vcxproj.filters
 examples/example_sdl3_sdlrenderer3/main.cpp
+examples/example_sdl3_vulkan/Makefile
 examples/example_sdl3_vulkan/build_win32.bat
 examples/example_sdl3_vulkan/build_win64.bat
 examples/example_sdl3_vulkan/example_sdl3_vulkan.vcxproj
