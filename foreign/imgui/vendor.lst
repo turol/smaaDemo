@@ -155,6 +155,8 @@ examples/example_sdl2_vulkan/build_win64.bat
 examples/example_sdl2_vulkan/example_sdl2_vulkan.vcxproj
 examples/example_sdl2_vulkan/example_sdl2_vulkan.vcxproj.filters
 examples/example_sdl2_vulkan/main.cpp
+examples/example_sdl3_metal/Makefile
+examples/example_sdl3_metal/main.mm
 examples/example_sdl3_opengl3/Makefile
 examples/example_sdl3_opengl3/Makefile.emscripten
 examples/example_sdl3_opengl3/README.md
