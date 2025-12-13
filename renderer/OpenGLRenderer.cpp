@@ -41,29 +41,6 @@ THE SOFTWARE.
 namespace renderer {
 
 
-struct GLValueName {
-	GLenum      value;
-	const char  *name;
-};
-
-
-#define GLVALUE(x) { x, "" #x }
-
-static const GLValueName interestingValues[] = {
-	  GLVALUE(GL_MAX_COLOR_TEXTURE_SAMPLES)
-	, GLVALUE(GL_MAX_DEPTH_TEXTURE_SAMPLES)
-	, GLVALUE(GL_MAX_INTEGER_SAMPLES)
-	, GLVALUE(GL_MAX_TEXTURE_SIZE)
-	, GLVALUE(GL_NUM_PROGRAM_BINARY_FORMATS)
-	, GLVALUE(GL_NUM_SHADER_BINARY_FORMATS)
-	, GLVALUE(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT)
-	, GLVALUE(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT)
-};
-
-
-#undef GLVALUE
-
-
 void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /* length */, const GLchar *message, const void * /* userParam */);
 
 
@@ -730,13 +707,25 @@ RendererImpl::RendererImpl(const RendererDesc &desc)
 	}
 
 	LOG("Interesting GL values:");
-	glValues.reserve(sizeof(interestingValues) / sizeof(interestingValues[0]));
-	for (const auto &v : interestingValues) {
-		GLint temp = -1;
-		glGetIntegerv(v.value, &temp);
-		LOG("{}: {}", v.name, temp);
-		glValues.emplace(v.value, temp);
+
+#define GLVALUE(x)                   \
+	{                                \
+		GLint temp = -1;             \
+		glGetIntegerv(x, &temp);     \
+		LOG("{}: {}", "" #x, temp);  \
+		glValues.emplace(x, temp);   \
 	}
+
+	GLVALUE(GL_MAX_COLOR_TEXTURE_SAMPLES)
+	GLVALUE(GL_MAX_DEPTH_TEXTURE_SAMPLES)
+	GLVALUE(GL_MAX_INTEGER_SAMPLES)
+	GLVALUE(GL_MAX_TEXTURE_SIZE)
+	GLVALUE(GL_NUM_PROGRAM_BINARY_FORMATS)
+	GLVALUE(GL_NUM_SHADER_BINARY_FORMATS)
+	GLVALUE(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT)
+	GLVALUE(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT)
+
+#undef GLVALUE
 
 	uboAlign   = glValues[GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT];
 	ssboAlign  = glValues[GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT];
