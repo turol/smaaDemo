@@ -1047,6 +1047,10 @@ bool Renderer::isRenderTargetFormatSupported(Format format) const {
 	vk::ImageFormatProperties prop;
 	auto result = impl->physicalDevice.getImageFormatProperties(vulkanFormat(format), vk::ImageType::e2D, vk::ImageTiling::eOptimal, flags, vk::ImageCreateFlags(), &prop);
 
+	vk::FormatProperties prop2 = impl->physicalDevice.getFormatProperties(vulkanFormat(format));
+	LOG("format {} linear tiling properties for: {}",  magic_enum::enum_name(format), vk::to_string(prop2.linearTilingFeatures));
+	LOG("format {} optimal tiling properties for: {}", magic_enum::enum_name(format), vk::to_string(prop2.optimalTilingFeatures));
+
 	return (result == vk::Result::eSuccess);
 }
 
