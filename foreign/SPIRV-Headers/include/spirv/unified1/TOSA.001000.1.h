@@ -1,4 +1,5 @@
-// (c) 2022-2025 Arm Ltd.
+// SPDX-FileCopyrightText: 2022-2025 Arm Ltd.
+// SPDX-License-Identifier: MIT
 
 #ifndef SPIRV_UNIFIED1_TOSA_001000_1_H_
 #define SPIRV_UNIFIED1_TOSA_001000_1_H_
@@ -8,7 +9,7 @@ extern "C" {
 #endif
 
 enum {
-    TOSAVersion = 1000000,
+    TOSAVersion = 1000001,
     TOSAVersion_BitWidthPadding = 0x7fffffff
 };
 enum {

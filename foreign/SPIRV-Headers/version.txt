@@ -1,5 +1,5 @@
-commit 1de2e410ae8b5f7276afcfd9f3401a1c4e2cb2d7
-Author: Wooyoung Kim <wooykim@qti.qualcomm.com>
-Date:   Wed Jul 2 08:52:46 2025 -0700
+commit 0a7f626a6ae86284a413d105b47a6fb413bf6c92
+Author: Jeff Bolz <jbolz@nvidia.com>
+Date:   Tue Dec 16 14:00:06 2025 -0600
 
-    SPV_QCOM_cooperative_matrix_conversion (#533) (#533)
+    SPV_EXT_long_vector (#560)
