@@ -637,6 +637,8 @@ source/opt/freeze_spec_constant_value_pass.cpp
 source/opt/freeze_spec_constant_value_pass.h
 source/opt/function.cpp
 source/opt/function.h
+source/opt/graph.cpp
+source/opt/graph.h
 source/opt/graphics_robust_access_pass.cpp
 source/opt/graphics_robust_access_pass.h
 source/opt/if_conversion.cpp
@@ -893,6 +895,7 @@ source/util/parse_number.cpp
 source/util/parse_number.h
 source/util/small_vector.h
 source/util/span.h
+source/util/status.h
 source/util/string_utils.cpp
 source/util/string_utils.h
 source/util/timer.cpp
@@ -934,6 +937,7 @@ source/val/validate_interfaces.cpp
 source/val/validate_invalid_type.cpp
 source/val/validate_layout.cpp
 source/val/validate_literals.cpp
+source/val/validate_logical_pointers.cpp
 source/val/validate_logicals.cpp
 source/val/validate_memory.cpp
 source/val/validate_memory_semantics.cpp
@@ -1081,6 +1085,7 @@ test/diff/diff_test_utils.h
 test/diff/lcs_test.cpp
 test/enum_set_test.cpp
 test/enum_string_mapping_test.cpp
+test/ext_inst.arm_motion_engine_test.cpp
 test/ext_inst.cldebug100_test.cpp
 test/ext_inst.debuginfo_test.cpp
 test/ext_inst.glsl_test.cpp
@@ -1603,6 +1608,7 @@ test/val/val_invalid_type_test.cpp
 test/val/val_layout_test.cpp
 test/val/val_limits_test.cpp
 test/val/val_literals_test.cpp
+test/val/val_logical_pointers_test.cpp
 test/val/val_logicals_test.cpp
 test/val/val_memory_semantics_test.cpp
 test/val/val_memory_test.cpp

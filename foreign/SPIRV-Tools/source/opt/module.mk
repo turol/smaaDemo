@@ -57,6 +57,7 @@ FILES:= \
 	fold_spec_constant_op_and_composite_pass.cpp \
 	freeze_spec_constant_value_pass.cpp \
 	function.cpp \
+	graph.cpp \
 	graphics_robust_access_pass.cpp \
 	if_conversion.cpp \
 	inline_exhaustive_pass.cpp \

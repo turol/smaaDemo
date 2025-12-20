@@ -1,5 +1,12 @@
-commit 7f2d9ee926f98fc77a3ed1e1e0f113b8c9c49458
-Author: Steven Perron <stevenperron@google.com>
-Date:   Mon Sep 22 16:06:52 2025 -0400
+commit 262bdab48146c937467f826699a40da0fdfc0f1a
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Wed Nov 19 13:50:43 2025 -0500
 
-    Prepare release v2025.4 (#6335)
+    Roll external/abseil_cpp/ 48bf10f14..a5e3599b2 (2 commits) (#6421)
+    
+    https://github.com/abseil/abseil-cpp/compare/48bf10f14296...a5e3599b234f
+    
+    Created with:
+      roll-dep external/abseil_cpp
+    
+    Co-authored-by: GitHub Actions[bot] <>

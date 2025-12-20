@@ -43,6 +43,7 @@ FILES:= \
 	validate_invalid_type.cpp \
 	validate_layout.cpp \
 	validate_literals.cpp \
+	validate_logical_pointers.cpp \
 	validate_logicals.cpp \
 	validate_memory.cpp \
 	validate_memory_semantics.cpp \
