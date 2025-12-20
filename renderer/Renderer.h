@@ -1361,7 +1361,7 @@ public:
 	}
 
 
-	bool isRenderTargetFormatSupported(Format format) const;
+	bool isRenderTargetFormatSupported(Format format, bool linearSamplingRequired) const;
 	unsigned int getCurrentRefreshRate() const;
 	unsigned int getMaxRefreshRate() const;
 

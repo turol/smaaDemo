@@ -961,7 +961,7 @@ RendererImpl::~RendererImpl() {
 }
 
 
-bool Renderer::isRenderTargetFormatSupported(Format format) const {
+bool Renderer::isRenderTargetFormatSupported(Format format, bool /* linearSamplingRequired*/ ) const {
 	GLenum target         = GL_TEXTURE_2D;
 	GLenum internalFormat = glTexFormat(format);
 	int params            = 0;

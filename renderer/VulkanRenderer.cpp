@@ -1036,7 +1036,7 @@ RendererImpl::~RendererImpl() {
 }
 
 
-bool Renderer::isRenderTargetFormatSupported(Format format) const {
+bool Renderer::isRenderTargetFormatSupported(Format format, bool linearSamplingRequired) const {
 	LOG_TODO("cache these at startup")
 	vk::ImageUsageFlags flags(vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
 	if (isDepthFormat(format)) {
@@ -1046,12 +1046,26 @@ bool Renderer::isRenderTargetFormatSupported(Format format) const {
 	}
 	vk::ImageFormatProperties prop;
 	auto result = impl->physicalDevice.getImageFormatProperties(vulkanFormat(format), vk::ImageType::e2D, vk::ImageTiling::eOptimal, flags, vk::ImageCreateFlags(), &prop);
+	if (result != vk::Result::eSuccess) {
+		return false;
+	}
 
 	vk::FormatProperties prop2 = impl->physicalDevice.getFormatProperties(vulkanFormat(format));
 	LOG("format {} linear tiling properties for: {}",  magic_enum::enum_name(format), vk::to_string(prop2.linearTilingFeatures));
 	LOG("format {} optimal tiling properties for: {}", magic_enum::enum_name(format), vk::to_string(prop2.optimalTilingFeatures));
+	if (!(prop2.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImage)) {
+		LOG(" no sampled image");
+		return false;
+	}
 
-	return (result == vk::Result::eSuccess);
+	if (linearSamplingRequired) {
+		if (!(prop2.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear)) {
+			LOG(" no linear sampling");
+			return false;
+		}
+	}
+
+	return true;
 }
 
 

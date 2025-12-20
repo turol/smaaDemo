@@ -74,7 +74,7 @@ RendererImpl::~RendererImpl() {
 }
 
 
-bool Renderer::isRenderTargetFormatSupported(Format /* format */) const {
+bool Renderer::isRenderTargetFormatSupported(Format /* format */, bool /* linearSamplingRequired */) const {
 	LOG_TODO("actually check it...")
 	return true;
 }

@@ -1378,7 +1378,7 @@ void SMAADemo::initRender() {
 	}
 
 	for (auto depth : depths) {
-		if (renderer.isRenderTargetFormatSupported(depth)) {
+		if (renderer.isRenderTargetFormatSupported(depth, false)) {
 			depthFormat = depth;
 			break;
 		}
