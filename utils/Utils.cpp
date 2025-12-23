@@ -51,6 +51,7 @@ void logInit() {
 	std::string logFileName(logFilePath);
 	SDL_free(logFilePath);
 	logFileName += "logfile.txt";
+	fmt::print("Logging to {}\n", logFileName);
 	logFile = fopen(logFileName.c_str(), "wb");
 }
 
